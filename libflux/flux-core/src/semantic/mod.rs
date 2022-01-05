@@ -45,7 +45,7 @@ use crate::{
         infer::Constraints,
         nodes::Symbol,
         sub::Substitution,
-        types::{Label, MonoType, PolyType, PolyTypeHashMap, Property, Record},
+        types::{MonoType, PolyType, PolyTypeHashMap, Property, Record, RecordLabel},
     },
 };
 
@@ -260,7 +260,7 @@ fn build_record(
         );
         r = Record::Extension {
             head: Property {
-                k: Label::from(name.clone()),
+                k: RecordLabel::from(name.clone()),
                 v: ty,
             },
             tail: MonoType::record(r),

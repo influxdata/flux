@@ -578,12 +578,23 @@ impl<'a> Converter<'a> {
                     }
                 };
                 for prop in &rec.properties {
-                    let name = match &prop.name {
-                        ast::PropertyKey::Identifier(id) => &id.name,
-                        ast::PropertyKey::StringLit(lit) => &lit.value,
-                    };
                     let property = types::Property {
-                        k: types::Label::from(self.symbols.lookup(name)),
+                        k: match &prop.name {
+                            ast::PropertyKey::Identifier(id) => {
+                                if id.name.len() == 1 && id.name.starts_with(char::is_uppercase) {
+                                    let tvar = tvars
+                                        .entry(id.name.clone())
+                                        .or_insert_with(|| self.sub.fresh())
+                                        .clone();
+                                    tvar.into()
+                                } else {
+                                    types::Label::from(self.symbols.lookup(&id.name)).into()
+                                }
+                            }
+                            ast::PropertyKey::StringLit(lit) => {
+                                types::Label::from(self.symbols.lookup(&lit.value)).into()
+                            }
+                        },
                         v: self.convert_monotype(&prop.monotype, tvars),
                     };
                     r = MonoType::from(types::Record::Extension {
@@ -2672,13 +2683,13 @@ mod tests {
 
     #[test]
     fn test_convert_monotype_record() {
-        let monotype = Parser::new("{ A with B: int }").parse_monotype();
+        let monotype = Parser::new("{ A with b: int }").parse_monotype();
 
         let mut m = BTreeMap::<String, types::Tvar>::new();
         let got = convert_monotype(&monotype, &mut m, &mut sub::Substitution::default()).unwrap();
         let want = MonoType::from(types::Record::Extension {
             head: types::Property {
-                k: types::Label::from("B"),
+                k: types::RecordLabel::from("b"),
                 v: MonoType::INT,
             },
             tail: MonoType::BoundVar(Tvar(0)),

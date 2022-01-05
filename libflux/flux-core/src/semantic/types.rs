@@ -30,6 +30,7 @@ pub type SemanticMapIter<'a, K, V> = std::collections::btree_map::Iter<'a, K, V>
 
 struct Unifier<'a, E = Error> {
     sub: &'a mut Substitution,
+    delayed_records: Vec<(Record, Record)>,
     errors: Errors<E>,
 }
 
@@ -37,11 +38,27 @@ impl<'a, E> Unifier<'a, E> {
     fn new(sub: &'a mut Substitution) -> Self {
         Unifier {
             sub,
+            delayed_records: Vec::new(),
             errors: Errors::new(),
         }
     }
 
-    fn finish<T>(self, value: T) -> Result<T, Errors<E>> {
+    fn finish<T>(mut self, value: T) -> Result<T, Errors<E>>
+    where
+        E: From<Error>,
+    {
+        if !self.delayed_records.is_empty() {
+            let mut sub_unifier = Unifier::new(self.sub);
+            while let Some((expected, actual)) = self.delayed_records.pop() {
+                let expected = expected.apply(sub_unifier.sub);
+                let actual = actual.apply(sub_unifier.sub);
+                expected.unify_now(&actual, &mut sub_unifier);
+            }
+
+            self.errors
+                .extend(sub_unifier.errors.into_iter().map(E::from));
+        }
+
         if self.errors.has_errors() {
             Err(self.errors)
         } else {
@@ -324,6 +341,7 @@ pub enum Kind {
     Comparable,
     Divisible,
     Equatable,
+    Label,
     Negatable,
     Nullable,
     Numeric,
@@ -344,6 +362,7 @@ impl FromStr for Kind {
             "Numeric" => Kind::Numeric,
             "Comparable" => Kind::Comparable,
             "Equatable" => Kind::Equatable,
+            "Label" => Kind::Label,
             "Nullable" => Kind::Nullable,
             "Negatable" => Kind::Negatable,
             "Timeable" => Kind::Timeable,
@@ -401,6 +420,8 @@ pub enum MonoType {
     #[display(fmt = "{}", _0)]
     Builtin(BuiltinType),
 
+    #[display(fmt = "\"{}\"", _0)]
+    Label(Label),
     #[display(fmt = "#{}", _0)]
     Var(Tvar),
 
@@ -440,6 +461,7 @@ impl Serialize for MonoType {
             Regexp,
             Bytes,
             Var(Tvar),
+            Label(&'a Label),
             Arr(&'a MonoType),
             Dict(&'a Ptr<Dictionary>),
             Record(&'a Ptr<Record>),
@@ -469,6 +491,7 @@ impl Serialize for MonoType {
                 CollectionType::Vector => MonoTypeSer::Vector(&p.arg),
                 CollectionType::Stream => MonoTypeSer::Stream(&p.arg),
             },
+            Self::Label(p) => MonoTypeSer::Label(p),
             Self::Dict(p) => MonoTypeSer::Dict(p),
             Self::Record(p) => MonoTypeSer::Record(p),
             Self::Fun(p) => MonoTypeSer::Fun(p),
@@ -586,6 +609,7 @@ impl BuiltinType {
                 Kind::Addable
                 | Kind::Comparable
                 | Kind::Equatable
+                | Kind::Label
                 | Kind::Nullable
                 | Kind::Basic
                 | Kind::Stringable => Ok(()),
@@ -647,9 +671,11 @@ impl Substitutable for MonoType {
 
     fn walk(&self, sub: &dyn Substituter) -> Option<Self> {
         match self {
-            MonoType::Error | MonoType::Builtin(_) | MonoType::BoundVar(_) | MonoType::Var(_) => {
-                None
-            }
+            MonoType::Error
+            | MonoType::Builtin(_)
+            | MonoType::Label(_)
+            | MonoType::BoundVar(_)
+            | MonoType::Var(_) => None,
             MonoType::Collection(app) => app.visit(sub).map(MonoType::app),
             MonoType::Dict(dict) => dict.visit(sub).map(MonoType::dict),
             MonoType::Record(obj) => obj.visit(sub).map(MonoType::record),
@@ -778,7 +804,16 @@ impl MonoType {
             // An error has already occurred so assume everything is ok here so that we do not
             // create additional, spurious errors
             (MonoType::Error, _) | (_, MonoType::Error) => (),
+
             (MonoType::Builtin(exp), MonoType::Builtin(act)) => exp.unify(*act, unifier),
+
+            (MonoType::Label(l), MonoType::Label(r)) if l == r => {}
+            (MonoType::Label(_), MonoType::Label(_))
+            | (MonoType::Builtin(BuiltinType::String), MonoType::Label(_))
+            | (MonoType::Label(_), MonoType::Builtin(BuiltinType::String)) => {
+                return MonoType::STRING
+            }
+
             (MonoType::Var(tv), MonoType::Var(tv2)) => {
                 match (unifier.sub.try_apply(*tv), unifier.sub.try_apply(*tv2)) {
                     (Some(self_), Some(actual)) => {
@@ -805,10 +840,15 @@ impl MonoType {
                 }
                 None => tv.unify(t, unifier),
             },
+
             (MonoType::Collection(t), MonoType::Collection(s)) => t.unify(s, unifier),
+
             (MonoType::Dict(t), MonoType::Dict(s)) => t.unify(s, unifier),
+
             (MonoType::Record(t), MonoType::Record(s)) => t.unify(s, unifier),
+
             (MonoType::Fun(t), MonoType::Fun(s)) => t.unify(s, unifier),
+
             (exp, act) => {
                 unifier.errors.push(Error::CannotUnify {
                     exp: exp.clone(),
@@ -827,6 +867,7 @@ impl MonoType {
             // TODO Should constrain bound vars as well, but we can't just store it in `cons` as
             // they would override constraints of free variables
             MonoType::BoundVar(_) => Ok(()),
+            MonoType::Label(_) => BuiltinType::String.constrain(with),
             MonoType::Var(tvr) => {
                 tvr.constrain(with, cons);
                 Ok(())
@@ -840,7 +881,9 @@ impl MonoType {
 
     fn contains(&self, tv: Tvar) -> bool {
         match self {
-            MonoType::Error | MonoType::Builtin(_) | MonoType::BoundVar(_) => false,
+            MonoType::Error | MonoType::Builtin(_) | MonoType::Label(_) | MonoType::BoundVar(_) => {
+                false
+            }
             MonoType::Var(tvr) => tv == *tvr,
             MonoType::Collection(app) => app.contains(tv),
             MonoType::Dict(dict) => dict.contains(tv),
@@ -915,8 +958,8 @@ impl ena::unify::UnifyKey for Tvar {
 }
 impl ena::unify::UnifyValue for MonoType {
     type Error = ena::unify::NoError;
-    fn unify_values(_value1: &Self, _value2: &Self) -> Result<Self, ena::unify::NoError> {
-        unreachable!("We should never unify two values with each other within the substitution. If we reach this we did not resolve the variable before unifying")
+    fn unify_values(value1: &Self, value2: &Self) -> Result<Self, ena::unify::NoError> {
+        unreachable!("We should never unify two values with each other within the substitution. If we reach this we did not resolve the variable before unifying {} <=> {}", value1, value2)
     }
 }
 
@@ -1121,7 +1164,7 @@ impl fmt::Display for Record {
     }
 }
 
-fn collect_record(record: &Record) -> (RefMonoTypeVecMap<'_, Label>, Option<&MonoType>) {
+fn collect_record(record: &Record) -> (RefMonoTypeVecMap<'_, RecordLabel>, Option<&MonoType>) {
     let mut a = RefMonoTypeVecMap::new();
 
     let mut fields = record.fields();
@@ -1200,6 +1243,20 @@ impl Record {
     // self represents the expected type.
     //
     fn unify(&self, actual: &Self, unifier: &mut Unifier<'_>) {
+        let has_variable_label = |r: &Record| {
+            r.fields().any(|prop| match prop.k {
+                RecordLabel::Variable(v) => unifier.sub.try_apply(v).is_none(),
+                RecordLabel::Concrete(_) => false,
+            })
+        };
+        if has_variable_label(self) || has_variable_label(actual) {
+            unifier.delayed_records.push((self.clone(), actual.clone()));
+            return;
+        }
+        self.unify_now(actual, unifier)
+    }
+
+    fn unify_now(&self, actual: &Self, unifier: &mut Unifier<'_>) {
         match (self, actual) {
             (Record::Empty, Record::Empty) => (),
             (
@@ -1255,6 +1312,19 @@ impl Record {
                     tail: r,
                 },
             ) if a != b => {
+                match (a, b) {
+                    (RecordLabel::Variable(a), RecordLabel::Concrete(b)) => {
+                        if unifier.sub.try_apply(*a).is_none() {
+                            a.unify(&MonoType::Label(b.clone()), unifier)
+                        }
+                    }
+                    (RecordLabel::Concrete(a), RecordLabel::Variable(b)) => {
+                        if unifier.sub.try_apply(*b).is_none() {
+                            b.unify(&MonoType::Label(a.clone()), unifier)
+                        }
+                    }
+                    _ => (),
+                }
                 let var = unifier.sub.fresh();
                 let exp = MonoType::from(Record::Extension {
                     head: Property {
@@ -1390,10 +1460,7 @@ fn unify_in_context<T>(
 ) where
     T: TypeLike,
 {
-    let mut sub_unifier = Unifier {
-        sub: unifier.sub,
-        errors: Errors::new(),
-    };
+    let mut sub_unifier = Unifier::new(unifier.sub);
     exp.unify(act.typ(), &mut sub_unifier);
 
     unifier.errors.extend(
@@ -1402,6 +1469,72 @@ fn unify_in_context<T>(
             .into_iter()
             .map(|e| act.error(context(e))),
     );
+
+    unifier.delayed_records.extend(sub_unifier.delayed_records);
+}
+
+/// Labels in records that are allowed be variables
+#[derive(Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Clone, Serialize, derive_more::From)]
+pub enum RecordLabel {
+    /// A variable label
+    Variable(Tvar),
+    /// A concrete label
+    Concrete(Label),
+}
+
+impl Substitutable for RecordLabel {
+    fn walk(&self, sub: &dyn Substituter) -> Option<Self> {
+        match self {
+            Self::Variable(tvr) => sub.try_apply(*tvr).and_then(|new| match new {
+                MonoType::Label(l) => Some(Self::Concrete(l)),
+                MonoType::Var(l) => Some(Self::Variable(l)),
+                _ => None,
+            }),
+            Self::Concrete(_) => None,
+        }
+    }
+}
+
+impl fmt::Display for RecordLabel {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            Self::Variable(v) => v.fmt(f),
+            Self::Concrete(v) => v.fmt(f),
+        }
+    }
+}
+
+impl PartialEq<str> for RecordLabel {
+    fn eq(&self, other: &str) -> bool {
+        match self {
+            Self::Variable(_) => false,
+            Self::Concrete(l) => l == other,
+        }
+    }
+}
+
+impl PartialEq<&str> for RecordLabel {
+    fn eq(&self, other: &&str) -> bool {
+        *self == **other
+    }
+}
+
+impl From<String> for RecordLabel {
+    fn from(name: String) -> Self {
+        Self::Concrete(Label::from(name))
+    }
+}
+
+impl From<&str> for RecordLabel {
+    fn from(name: &str) -> Self {
+        Self::Concrete(Label::from(name))
+    }
+}
+
+impl From<Symbol> for RecordLabel {
+    fn from(name: Symbol) -> Self {
+        Self::Concrete(Label::from(name))
+    }
 }
 
 /// Wrapper around [`Symbol`] that ignores the package in comparisons. Allowing field lookups of
@@ -1510,15 +1643,15 @@ impl Label {
 #[derive(Debug, Display, Clone, PartialEq, Serialize)]
 #[display(fmt = "{}:{}", k, v)]
 #[allow(missing_docs)]
-pub struct Property<K = Label, V = MonoType> {
+pub struct Property<K = RecordLabel, V = MonoType> {
     pub k: K,
     pub v: V,
 }
 
 impl<K, V> Substitutable for Property<K, V>
 where
-    K: Clone,
-    V: Substitutable,
+    K: Substitutable + Clone,
+    V: Substitutable + Clone,
 {
     fn walk(&self, sub: &dyn Substituter) -> Option<Self> {
         self.v.visit(sub).map(|v| Property {
@@ -1654,11 +1787,9 @@ impl Function {
     ) -> Result<(), Errors<T::Error>>
     where
         T: TypeLike + Clone,
+        T::Error: From<Error>,
     {
-        let mut unifier = Unifier {
-            sub,
-            errors: Errors::new(),
-        };
+        let mut unifier = Unifier::new(sub);
 
         self.unify(actual, &mut unifier);
 
@@ -1801,7 +1932,7 @@ impl Function {
 
     fn constrain(&self, with: Kind, _: &mut TvarKinds) -> Result<(), Error> {
         Err(Error::CannotConstrain {
-            act: MonoType::fun(self.clone()),
+            act: MonoType::from(self.clone()),
             exp: with,
         })
     }
@@ -2015,11 +2146,11 @@ mod tests {
             Record::new(
                 [
                     Property {
-                        k: Label::from("a"),
+                        k: RecordLabel::from("a"),
                         v: MonoType::INT,
                     },
                     Property {
-                        k: Label::from("b"),
+                        k: RecordLabel::from("b"),
                         v: MonoType::STRING,
                     }
                 ],
@@ -2032,11 +2163,11 @@ mod tests {
             Record::new(
                 [
                     Property {
-                        k: Label::from("a"),
+                        k: RecordLabel::from("a"),
                         v: MonoType::INT,
                     },
                     Property {
-                        k: Label::from("b"),
+                        k: RecordLabel::from("b"),
                         v: MonoType::STRING,
                     }
                 ],
@@ -2210,11 +2341,11 @@ mod tests {
                     retn: MonoType::from(Record::new(
                         [
                             Property {
-                                k: Label::from("x"),
+                                k: RecordLabel::from("x"),
                                 v: MonoType::BoundVar(Tvar(0)),
                             },
                             Property {
-                                k: Label::from("y"),
+                                k: RecordLabel::from("y"),
                                 v: MonoType::BoundVar(Tvar(1)),
                             }
                         ],
@@ -2259,11 +2390,11 @@ mod tests {
                     retn: MonoType::from(Record::new(
                         [
                             Property {
-                                k: Label::from("x"),
+                                k: RecordLabel::from("x"),
                                 v: MonoType::BoundVar(Tvar(0)),
                             },
                             Property {
-                                k: Label::from("y"),
+                                k: RecordLabel::from("y"),
                                 v: MonoType::BoundVar(Tvar(1)),
                             }
                         ],
@@ -2291,11 +2422,11 @@ mod tests {
                     retn: MonoType::from(Record::new(
                         [
                             Property {
-                                k: Label::from("x"),
+                                k: RecordLabel::from("x"),
                                 v: MonoType::BoundVar(Tvar(0)),
                             },
                             Property {
-                                k: Label::from("y"),
+                                k: RecordLabel::from("y"),
                                 v: MonoType::BoundVar(Tvar(1)),
                             }
                         ],
@@ -2314,11 +2445,11 @@ mod tests {
             MonoType::from(Record::new(
                 [
                     Property {
-                        k: Label::from("a"),
+                        k: RecordLabel::from("a"),
                         v: MonoType::INT,
                     },
                     Property {
-                        k: Label::from("b"),
+                        k: RecordLabel::from("b"),
                         v: MonoType::STRING,
                     }
                 ],
@@ -2328,11 +2459,11 @@ mod tests {
             MonoType::from(Record::new(
                 [
                     Property {
-                        k: Label::from("b"),
+                        k: RecordLabel::from("b"),
                         v: MonoType::STRING,
                     },
                     Property {
-                        k: Label::from("a"),
+                        k: RecordLabel::from("a"),
                         v: MonoType::INT,
                     }
                 ],
@@ -2344,19 +2475,19 @@ mod tests {
             MonoType::from(Record::new(
                 [
                     Property {
-                        k: Label::from("a"),
+                        k: RecordLabel::from("a"),
                         v: MonoType::INT,
                     },
                     Property {
-                        k: Label::from("b"),
+                        k: RecordLabel::from("b"),
                         v: MonoType::STRING,
                     },
                     Property {
-                        k: Label::from("b"),
+                        k: RecordLabel::from("b"),
                         v: MonoType::INT,
                     },
                     Property {
-                        k: Label::from("c"),
+                        k: RecordLabel::from("c"),
                         v: MonoType::FLOAT,
                     }
                 ],
@@ -2366,19 +2497,19 @@ mod tests {
             MonoType::from(Record::new(
                 [
                     Property {
-                        k: Label::from("c"),
+                        k: RecordLabel::from("c"),
                         v: MonoType::FLOAT,
                     },
                     Property {
-                        k: Label::from("b"),
+                        k: RecordLabel::from("b"),
                         v: MonoType::STRING,
                     },
                     Property {
-                        k: Label::from("b"),
+                        k: RecordLabel::from("b"),
                         v: MonoType::INT,
                     },
                     Property {
-                        k: Label::from("a"),
+                        k: RecordLabel::from("a"),
                         v: MonoType::INT,
                     }
                 ],
@@ -2390,19 +2521,19 @@ mod tests {
             MonoType::from(Record::new(
                 [
                     Property {
-                        k: Label::from("a"),
+                        k: RecordLabel::from("a"),
                         v: MonoType::INT,
                     },
                     Property {
-                        k: Label::from("b"),
+                        k: RecordLabel::from("b"),
                         v: MonoType::STRING,
                     },
                     Property {
-                        k: Label::from("b"),
+                        k: RecordLabel::from("b"),
                         v: MonoType::INT,
                     },
                     Property {
-                        k: Label::from("c"),
+                        k: RecordLabel::from("c"),
                         v: MonoType::FLOAT,
                     }
                 ],
@@ -2412,19 +2543,19 @@ mod tests {
             MonoType::from(Record::new(
                 [
                     Property {
-                        k: Label::from("a"),
+                        k: RecordLabel::from("a"),
                         v: MonoType::INT,
                     },
                     Property {
-                        k: Label::from("b"),
+                        k: RecordLabel::from("b"),
                         v: MonoType::INT,
                     },
                     Property {
-                        k: Label::from("b"),
+                        k: RecordLabel::from("b"),
                         v: MonoType::STRING,
                     },
                     Property {
-                        k: Label::from("c"),
+                        k: RecordLabel::from("c"),
                         v: MonoType::FLOAT,
                     }
                 ],
@@ -2436,11 +2567,11 @@ mod tests {
             MonoType::from(Record::new(
                 [
                     Property {
-                        k: Label::from("a"),
+                        k: RecordLabel::from("a"),
                         v: MonoType::INT,
                     },
                     Property {
-                        k: Label::from("b"),
+                        k: RecordLabel::from("b"),
                         v: MonoType::STRING,
                     }
                 ],
@@ -2450,11 +2581,11 @@ mod tests {
             MonoType::from(Record::new(
                 [
                     Property {
-                        k: Label::from("b"),
+                        k: RecordLabel::from("b"),
                         v: MonoType::INT,
                     },
                     Property {
-                        k: Label::from("a"),
+                        k: RecordLabel::from("a"),
                         v: MonoType::INT,
                     }
                 ],
@@ -2465,7 +2596,7 @@ mod tests {
             // {a:int}
             MonoType::from(Record::Extension {
                 head: Property {
-                    k: Label::from("a"),
+                    k: RecordLabel::from("a"),
                     v: MonoType::INT,
                 },
                 tail: MonoType::from(Record::Empty),
@@ -2473,7 +2604,7 @@ mod tests {
             // {A with a:int}
             MonoType::from(Record::Extension {
                 head: Property {
-                    k: Label::from("a"),
+                    k: RecordLabel::from("a"),
                     v: MonoType::INT,
                 },
                 tail: MonoType::BoundVar(Tvar(0)),
@@ -2483,7 +2614,7 @@ mod tests {
             // {A with a:int}
             MonoType::from(Record::Extension {
                 head: Property {
-                    k: Label::from("a"),
+                    k: RecordLabel::from("a"),
                     v: MonoType::INT,
                 },
                 tail: MonoType::BoundVar(Tvar(0)),
@@ -2491,7 +2622,7 @@ mod tests {
             // {B with a:int}
             MonoType::from(Record::Extension {
                 head: Property {
-                    k: Label::from("a"),
+                    k: RecordLabel::from("a"),
                     v: MonoType::INT,
                 },
                 tail: MonoType::BoundVar(Tvar(1)),
@@ -2832,6 +2963,7 @@ mod tests {
             Kind::Numeric,
             Kind::Comparable,
             Kind::Equatable,
+            Kind::Label,
             Kind::Nullable,
             Kind::Record,
             Kind::Negatable,

@@ -7,7 +7,7 @@ use crate::semantic::{
     sub::{merge, merge3, merge4, merge_collect},
     types::{
         Collection, Dictionary, Function, Kind, Label, MonoType, MonoTypeVecMap, PolyType,
-        Property, Record, SemanticMap, Tvar, TvarMap,
+        Property, Record, RecordLabel, SemanticMap, Tvar, TvarMap,
     },
 };
 
@@ -44,6 +44,12 @@ pub trait Fresh {
     fn fresh_ref(&self, f: &mut Fresher, sub: &mut TvarMap) -> Option<Self>
     where
         Self: Sized;
+}
+
+impl Fresh for RecordLabel {
+    fn fresh_ref(&self, _: &mut Fresher, _: &mut TvarMap) -> Option<Self> {
+        None
+    }
 }
 
 impl Fresh for Label {
@@ -143,7 +149,7 @@ impl Fresh for PolyType {
 impl Fresh for MonoType {
     fn fresh_ref(&self, f: &mut Fresher, sub: &mut TvarMap) -> Option<Self> {
         match self {
-            MonoType::Error | MonoType::Builtin(_) => None,
+            MonoType::Error | MonoType::Builtin(_) | MonoType::Label(_) => None,
             MonoType::BoundVar(tvr) => tvr.fresh_ref(f, sub).map(MonoType::BoundVar),
             MonoType::Var(tvr) => tvr.fresh_ref(f, sub).map(MonoType::Var),
             MonoType::Collection(app) => app.fresh_ref(f, sub).map(MonoType::app),

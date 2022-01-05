@@ -53,18 +53,18 @@ fn parse_map(package: Option<&str>, m: HashMap<&str, &str>) -> PolyTypeHashMap<S
             let typ_expr = p.parse_type_expression();
 
             if let Err(err) = ast::check::check(ast::walk::Node::TypeExpression(&typ_expr)) {
-                panic!("TypeExpression parsing failed for {}. {:?}", name, err);
+                panic!("TypeExpression parsing failed for {}. {}", name, err);
             }
-            let poly = convert_polytype(&typ_expr, &mut Substitution::default());
+            let poly = convert_polytype(&typ_expr, &mut Substitution::default())
+                .unwrap_or_else(|err| panic!("{}", err));
 
-            // let poly = parse(expr).expect(format!("failed to parse {}", name).as_str());
-            return (
+            (
                 match package {
                     None => Symbol::from(name),
                     Some(package) => Symbol::from(name).with_package(package),
                 },
-                poly.unwrap(),
-            );
+                poly,
+            )
         })
         .collect()
 }
@@ -399,6 +399,8 @@ macro_rules! package {
          map
     }}
 }
+
+mod labels;
 
 #[test]
 fn dictionary_literals() {

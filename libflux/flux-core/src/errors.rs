@@ -178,6 +178,15 @@ pub struct Located<E> {
     pub error: E,
 }
 
+impl<E> From<E> for Located<E> {
+    fn from(error: E) -> Self {
+        Self {
+            location: Default::default(),
+            error,
+        }
+    }
+}
+
 impl<E> Located<E> {
     pub(crate) fn map<F>(self, f: impl FnOnce(E) -> F) -> Located<F> {
         Located {
