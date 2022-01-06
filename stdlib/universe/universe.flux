@@ -131,7 +131,11 @@ builtin quantile : (
     where
     A: Record
 
-builtin pivot : (<-tables: [A], rowKey: [string], columnKey: [string], valueColumn: string) => [B]
+builtin pivot : (<-tables: [A],
+                 rowKey: [string],
+                 columnKey: [string],
+                 valueColumn: string,
+                 ?collisionFn: (x1: C, x2: C) => C) => [B]
     where
     A: Record,
     B: Record

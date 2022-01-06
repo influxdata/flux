@@ -11,6 +11,7 @@ import (
 	"github.com/influxdata/flux/array"
 	"github.com/influxdata/flux/arrow"
 	"github.com/influxdata/flux/codes"
+	"github.com/influxdata/flux/compiler"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/table"
 	"github.com/influxdata/flux/internal/errors"
@@ -32,9 +33,10 @@ const (
 )
 
 type PivotOpSpec struct {
-	RowKey      []string `json:"rowKey"`
-	ColumnKey   []string `json:"columnKey"`
-	ValueColumn string   `json:"valueColumn"`
+	RowKey      []string                     `json:"rowKey"`
+	ColumnKey   []string                     `json:"columnKey"`
+	ValueColumn string                       `json:"valueColumn"`
+	CollisionFn interpreter.ResolvedFunction `json:"collisionFn"`
 }
 
 func init() {
@@ -95,6 +97,21 @@ func createPivotOpSpec(args flux.Arguments, a *flux.Administration) (flux.Operat
 	}
 	spec.ValueColumn = valueCol
 
+	if f, ok, err := args.GetFunction("collisionFn"); err != nil {
+		return nil, err
+	} else if ok {
+		fn, err := interpreter.ResolveFunction(f)
+		if err != nil {
+			return nil, err
+		}
+		spec.CollisionFn = fn
+	} else {
+		spec.CollisionFn = interpreter.ResolvedFunction{
+			Fn:    nil,
+			Scope: nil,
+		}
+	}
+
 	return spec, nil
 }
 
@@ -111,6 +128,7 @@ type PivotProcedureSpec struct {
 	RowKey      []string
 	ColumnKey   []string
 	ValueColumn string
+	CollisionFn interpreter.ResolvedFunction
 
 	// IsSortedByFunc is a function that can be set by the planner
 	// that can be used to determine if the parent is sorted by
@@ -135,6 +153,7 @@ func newPivotProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.Proc
 		RowKey:      spec.RowKey,
 		ColumnKey:   spec.ColumnKey,
 		ValueColumn: spec.ValueColumn,
+		CollisionFn: spec.CollisionFn,
 	}
 
 	return p, nil
@@ -150,6 +169,7 @@ func (s *PivotProcedureSpec) Copy() plan.ProcedureSpec {
 	ns.ColumnKey = make([]string, len(s.ColumnKey))
 	copy(ns.ColumnKey, s.ColumnKey)
 	ns.ValueColumn = s.ValueColumn
+	ns.CollisionFn = s.CollisionFn.Copy()
 	return ns
 }
 
@@ -159,9 +179,10 @@ func createPivotTransformation(id execute.DatasetID, mode execute.AccumulationMo
 		return nil, nil, errors.Newf(codes.Internal, "invalid spec type %T", spec)
 	}
 
+	ctx := a.Context()
 	cache := execute.NewTableBuilderCache(a.Allocator())
 	d := execute.NewDataset(id, mode, cache)
-	t := NewPivotTransformation(d, cache, s)
+	t := NewPivotTransformation(ctx, d, cache, s)
 	return t, d, nil
 }
 
@@ -173,6 +194,7 @@ type rowCol struct {
 type pivotTransformation struct {
 	execute.ExecutionNode
 	d     execute.Dataset
+	ctx   context.Context
 	cache execute.TableBuilderCache
 	spec  PivotProcedureSpec
 	// for each table, we need to store a map to keep track of which rows/columns have already been created.
@@ -181,9 +203,10 @@ type pivotTransformation struct {
 	nextRowCol map[string]rowCol
 }
 
-func NewPivotTransformation(d execute.Dataset, cache execute.TableBuilderCache, spec *PivotProcedureSpec) *pivotTransformation {
+func NewPivotTransformation(ctx context.Context, d execute.Dataset, cache execute.TableBuilderCache, spec *PivotProcedureSpec) *pivotTransformation {
 	t := &pivotTransformation{
 		d:          d,
+		ctx:        ctx,
 		cache:      cache,
 		spec:       *spec,
 		colKeyMaps: make(map[string]map[string]int),
@@ -275,6 +298,7 @@ func (t *pivotTransformation) Process(id execute.DatasetID, tbl flux.Table) erro
 		for row := 0; row < cr.Len(); row++ {
 			rowKey := ""
 			colKey := ""
+
 			for _, rk := range t.spec.RowKey {
 				j := rowKeyIndex[rk]
 				c := cr.Cols()[j]
@@ -305,9 +329,11 @@ func (t *pivotTransformation) Process(id execute.DatasetID, tbl flux.Table) erro
 					return err
 				}
 				t.colKeyMaps[groupKeyString][colKey] = nextCol
+
 			}
+
 			//  1.  if we've not seen rowKey before, then we need to append a new row, with copied values for the
-			//  existing columns, as well as zero values for the pivoted columns.
+			//  existing columns, as well as nil values for the pivoted columns.
 			if _, ok := t.rowKeyMaps[groupKeyString][rowKey]; !ok {
 				// rowkey U groupKey cols
 				for cidx := range cols {
@@ -326,13 +352,43 @@ func (t *pivotTransformation) Process(id execute.DatasetID, tbl flux.Table) erro
 				t.rowKeyMaps[groupKeyString][rowKey] = nextRowCol.nextRow
 				nextRowCol.nextRow++
 				t.nextRowCol[groupKeyString] = nextRowCol
+
 			}
 
 			// at this point, we've created, added and back-filled all the columns we know about
 			// if we found a new row key, we added a new row with zeroes set for all the value columns
 			// so in all cases we know the row exists, and the column exists.  we need to grab the
 			// value from valueCol and assign it to its pivoted position.
-			if err := builder.SetValue(t.rowKeyMaps[groupKeyString][rowKey], t.colKeyMaps[groupKeyString][colKey], execute.ValueForRow(cr, row, valueColIndex)); err != nil {
+			nextVal := execute.ValueForRow(cr, row, valueColIndex)
+			if t.spec.CollisionFn.Fn != nil {
+				preVal, err := builder.GetValue(t.rowKeyMaps[groupKeyString][rowKey], t.colKeyMaps[groupKeyString][colKey])
+				if err != nil {
+					return errors.New(codes.NotFound, err)
+				}
+
+				//if !preVal.IsNull() {
+				params := semantic.NewObjectType([]semantic.PropertyType{
+					{Key: []byte("x1"), Value: preVal.Type()},
+					{Key: []byte("x2"), Value: nextVal.Type()},
+				})
+				preparedFn, err := compiler.Compile(compiler.ToScope(t.spec.CollisionFn.Scope), t.spec.CollisionFn.Fn, params)
+				if err != nil {
+					return err
+				}
+
+				if !preVal.IsNull() {
+					input := values.NewObjectWithValues(map[string]values.Value{
+						"x1": preVal,
+						"x2": nextVal,
+					})
+
+					nextVal, err = preparedFn.Eval(t.ctx, input)
+					if err != nil {
+						return err
+					}
+				}
+			}
+			if err := builder.SetValue(t.rowKeyMaps[groupKeyString][rowKey], t.colKeyMaps[groupKeyString][colKey], nextVal); err != nil {
 				return err
 			}
 

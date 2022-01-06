@@ -459,6 +459,9 @@ type TableBuilder interface {
 	SetValue(i, j int, value values.Value) error
 	SetNil(i, j int) error
 
+	// Gets the recorded value, if it exists.
+	GetValue(i, j int) (values.Value, error)
+
 	// Append will add a single value to the end of a column.  Will set the number of
 	// rows in the table to the size of the new column. It's the caller's job to make sure
 	// that the expected number of rows in each column is equal.
@@ -703,6 +706,13 @@ func (b *ColListTableBuilder) SetBool(i int, j int, value bool) error {
 	return nil
 }
 
+func (b *ColListTableBuilder) GetBool(i int, j int) (values.Value, error) {
+	if err := b.checkCol(j, flux.TBool); err != nil {
+		return values.NewNull(semantic.BasicBool), err
+	}
+	return values.New(b.cols[j].(*boolColumnBuilder).data[i]), nil
+}
+
 func (b *ColListTableBuilder) AppendBool(j int, value bool) error {
 	if err := b.checkCol(j, flux.TBool); err != nil {
 		return err
@@ -754,6 +764,13 @@ func (b *ColListTableBuilder) SetInt(i int, j int, value int64) error {
 	b.cols[j].(*intColumnBuilder).data[i] = value
 	b.cols[j].SetNil(i, false)
 	return nil
+}
+
+func (b *ColListTableBuilder) GetInt(i int, j int) (values.Value, error) {
+	if err := b.checkCol(j, flux.TInt); err != nil {
+		return values.NewNull(semantic.BasicInt), err
+	}
+	return values.New(b.cols[j].(*intColumnBuilder).data[i]), nil
 }
 
 func (b *ColListTableBuilder) AppendInt(j int, value int64) error {
@@ -812,6 +829,13 @@ func (b *ColListTableBuilder) SetUInt(i int, j int, value uint64) error {
 	return nil
 }
 
+func (b *ColListTableBuilder) GetUInt(i int, j int) (values.Value, error) {
+	if err := b.checkCol(j, flux.TUInt); err != nil {
+		return values.NewNull(semantic.BasicUint), err
+	}
+	return values.New(b.cols[j].(*uintColumnBuilder).data[i]), nil
+}
+
 func (b *ColListTableBuilder) AppendUInt(j int, value uint64) error {
 	if err := b.checkCol(j, flux.TUInt); err != nil {
 		return err
@@ -865,6 +889,16 @@ func (b *ColListTableBuilder) SetFloat(i int, j int, value float64) error {
 	b.cols[j].(*floatColumnBuilder).data[i] = value
 	b.cols[j].SetNil(i, false)
 	return nil
+}
+
+func (b *ColListTableBuilder) GetFloat(i int, j int) (values.Value, error) {
+	if err := b.checkCol(j, flux.TFloat); err != nil {
+		return values.NewNull(semantic.BasicFloat), err
+	}
+	if b.cols[j].IsNil(i) {
+		return values.NewNull(semantic.BasicFloat), nil
+	}
+	return values.New(b.cols[j].(*floatColumnBuilder).data[i]), nil
 }
 
 func (b *ColListTableBuilder) AppendFloat(j int, value float64) error {
@@ -922,6 +956,13 @@ func (b *ColListTableBuilder) SetString(i int, j int, value string) error {
 	return nil
 }
 
+func (b *ColListTableBuilder) GetString(i int, j int) (values.Value, error) {
+	if err := b.checkCol(j, flux.TString); err != nil {
+		return values.NewNull(semantic.BasicString), err
+	}
+	return values.New(b.cols[j].(*stringColumnBuilder).data[i]), nil
+}
+
 func (b *ColListTableBuilder) AppendString(j int, value string) error {
 	if err := b.checkCol(j, flux.TString); err != nil {
 		return err
@@ -973,6 +1014,13 @@ func (b *ColListTableBuilder) SetTime(i int, j int, value Time) error {
 	b.cols[j].(*timeColumnBuilder).data[i] = value
 	b.cols[j].SetNil(i, false)
 	return nil
+}
+
+func (b *ColListTableBuilder) GetTime(i int, j int) (values.Value, error) {
+	if err := b.checkCol(j, flux.TTime); err != nil {
+		return values.NewNull(semantic.BasicTime), err
+	}
+	return values.New(b.cols[j].(*timeColumnBuilder).data[i]), nil
 }
 
 func (b *ColListTableBuilder) AppendTime(j int, value Time) error {
@@ -1041,6 +1089,34 @@ func (b *ColListTableBuilder) SetValue(i, j int, v values.Value) error {
 		return b.SetTime(i, j, v.Time())
 	default:
 		panic(fmt.Errorf("unexpected value type %v", v.Type()))
+	}
+}
+
+func (b *ColListTableBuilder) GetValue(i, j int) (values.Value, error) {
+	if i >= b.NRows() {
+		return nil, fmt.Errorf("table builder row index out of bounds: %d", i)
+	}
+	if j >= b.NCols() {
+		return nil, fmt.Errorf("table builder column index out of bounds: %d", j)
+	}
+
+	typ := b.colMeta[j].Type
+
+	switch typ {
+	case flux.TBool:
+		return b.GetBool(i, j)
+	case flux.TInt:
+		return b.GetInt(i, j)
+	case flux.TUInt:
+		return b.GetUInt(i, j)
+	case flux.TFloat:
+		return b.GetFloat(i, j)
+	case flux.TString:
+		return b.GetString(i, j)
+	case flux.TTime:
+		return b.GetTime(i, j)
+	default:
+		panic(fmt.Errorf("unexpected value type %v", typ))
 	}
 }
 
