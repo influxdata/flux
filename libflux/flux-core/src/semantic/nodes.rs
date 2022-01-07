@@ -163,13 +163,17 @@ impl InferState<'_, '_> {
         }
     }
 
-    fn equal(&mut self, exp: &MonoType, act: &MonoType, loc: &ast::SourceLocation) {
-        if let Err(err) = infer::equal(exp, act, loc, self.sub) {
-            self.errors
-                .extend(err.error.into_iter().map(|error| Located {
-                    location: loc.clone(),
-                    error: error.into(),
-                }));
+    fn equal(&mut self, exp: &MonoType, act: &MonoType, loc: &ast::SourceLocation) -> MonoType {
+        match infer::equal(exp, act, loc, self.sub) {
+            Ok(typ) => typ,
+            Err(err) => {
+                self.errors
+                    .extend(err.error.into_iter().map(|error| Located {
+                        location: loc.clone(),
+                        error: error.into(),
+                    }));
+                MonoType::Error
+            }
         }
     }
 
@@ -272,7 +276,7 @@ impl Expression {
             Expression::Binary(e) => e.typ.clone(),
             Expression::Unary(e) => e.typ.clone(),
             Expression::Call(e) => e.typ.clone(),
-            Expression::Conditional(e) => e.alternate.type_of(),
+            Expression::Conditional(e) => e.typ.clone(),
             Expression::StringExpr(_) => MonoType::STRING,
             Expression::Integer(_) => MonoType::INT,
             Expression::Float(_) => MonoType::FLOAT,
@@ -859,7 +863,9 @@ impl ArrayExpr {
                 None => {
                     elt = Some(el.type_of());
                 }
-                Some(elt) => infer.equal(elt, &el.type_of(), el.loc()),
+                Some(elt) => {
+                    infer.equal(elt, &el.type_of(), el.loc());
+                }
             }
         }
         let elt = elt.unwrap_or_else(|| MonoType::Var(infer.sub.fresh()));
@@ -1524,25 +1530,23 @@ pub struct ConditionalExpr {
     pub test: Expression,
     pub consequent: Expression,
     pub alternate: Expression,
+    pub typ: MonoType,
 }
 
 impl ConditionalExpr {
     fn infer(&mut self, infer: &mut InferState<'_, '_>) -> Result {
         self.test.infer(infer)?;
+        infer.equal(&MonoType::BOOL, &self.test.type_of(), self.test.loc());
+
         self.consequent.infer(infer)?;
         self.alternate.infer(infer)?;
-        infer.solve(&[
-            Constraint::Equal {
-                exp: MonoType::BOOL,
-                act: self.test.type_of(),
-                loc: self.test.loc().clone(),
-            },
-            Constraint::Equal {
-                exp: self.consequent.type_of(),
-                act: self.alternate.type_of(),
-                loc: self.alternate.loc().clone(),
-            },
-        ]);
+
+        self.typ = infer.equal(
+            &self.consequent.type_of(),
+            &self.alternate.type_of(),
+            self.alternate.loc(),
+        );
+
         Ok(())
     }
     fn apply(mut self, sub: &Substitution) -> Self {

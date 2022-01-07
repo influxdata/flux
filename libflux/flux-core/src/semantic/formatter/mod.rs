@@ -647,7 +647,7 @@ impl Formatter {
             self.unindent();
         }
         self.write_rune(')');
-        self.write_string(&format!(":{}", &n.consequent.type_of()));
+        self.write_string(&format!(":{}", &n.typ));
     }
 
     fn format_member_assignment(&mut self, n: &semantic::nodes::MemberAssgn) {

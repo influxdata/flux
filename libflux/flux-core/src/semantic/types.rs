@@ -32,6 +32,23 @@ struct Unifier<'a, E = Error> {
     errors: Errors<E>,
 }
 
+impl<'a, E> Unifier<'a, E> {
+    fn new(sub: &'a mut Substitution) -> Self {
+        Unifier {
+            sub,
+            errors: Errors::new(),
+        }
+    }
+
+    fn finish<T>(self, value: T) -> Result<T, Errors<E>> {
+        if self.errors.has_errors() {
+            Err(self.errors)
+        } else {
+            Ok(value)
+        }
+    }
+}
+
 /// A type scheme that quantifies the free variables of a monotype.
 #[derive(Debug, Clone)]
 pub struct PolyType {
@@ -778,26 +795,19 @@ impl MonoType {
         &self, // self represents the expected type
         actual: &Self,
         sub: &mut Substitution,
-    ) -> Result<(), Errors<Error>> {
-        let mut unifier = Unifier {
-            sub,
-            errors: Errors::new(),
-        };
+    ) -> Result<MonoType, Errors<Error>> {
+        let mut unifier = Unifier::new(sub);
 
-        self.unify(actual, &mut unifier);
+        let typ = self.unify(actual, &mut unifier);
 
-        if unifier.errors.has_errors() {
-            Err(unifier.errors)
-        } else {
-            Ok(())
-        }
+        unifier.finish(typ)
     }
 
     fn unify(
         &self, // self represents the expected type
         actual: &Self,
         unifier: &mut Unifier<'_>,
-    ) {
+    ) -> MonoType {
         log::debug!("Unify {} <=> {}", self, actual);
         match (self, actual) {
             // An error has already occurred so assume everything is ok here so that we do not
@@ -806,18 +816,28 @@ impl MonoType {
             (MonoType::Builtin(exp), MonoType::Builtin(act)) => exp.unify(*act, unifier),
             (MonoType::Var(tv), MonoType::Var(tv2)) => {
                 match (unifier.sub.try_apply(*tv), unifier.sub.try_apply(*tv2)) {
-                    (Some(self_), Some(actual)) => self_.unify(&actual, unifier),
-                    (Some(self_), None) => self_.unify(&MonoType::Var(*tv2), unifier),
-                    (None, Some(actual)) => MonoType::Var(*tv).unify(&actual, unifier),
+                    (Some(self_), Some(actual)) => {
+                        self_.unify(&actual, unifier);
+                    }
+                    (Some(self_), None) => {
+                        self_.unify(&MonoType::Var(*tv2), unifier);
+                    }
+                    (None, Some(actual)) => {
+                        MonoType::Var(*tv).unify(&actual, unifier);
+                    }
                     (None, None) => tv.unify(&MonoType::Var(*tv2), unifier),
                 }
             }
             (MonoType::Var(tv), t) => match unifier.sub.try_apply(*tv) {
-                Some(typ) => typ.unify(t, unifier),
+                Some(typ) => {
+                    typ.unify(t, unifier);
+                }
                 None => tv.unify(t, unifier),
             },
             (t, MonoType::Var(tv)) => match unifier.sub.try_apply(*tv) {
-                Some(typ) => t.unify(&typ, unifier),
+                Some(typ) => {
+                    t.unify(&typ, unifier);
+                }
                 None => tv.unify(t, unifier),
             },
             (MonoType::Arr(t), MonoType::Arr(s)) => t.unify(s, unifier),
@@ -832,6 +852,7 @@ impl MonoType {
                 });
             }
         }
+        self.clone()
     }
 
     /// Validates that the current type meets the constraints of the specified kind.
@@ -1014,7 +1035,7 @@ impl MaxTvar for Array {
 impl Array {
     // self represents the expected type.
     fn unify(&self, with: &Self, unifier: &mut Unifier<'_>) {
-        self.0.unify(&with.0, unifier)
+        self.0.unify(&with.0, unifier);
     }
 
     fn constrain(&self, with: Kind, cons: &mut TvarKinds) -> Result<(), Error> {
@@ -1055,7 +1076,7 @@ impl MaxTvar for Vector {
 impl Vector {
     // self represents the expected type.
     fn unify(&self, with: &Self, unifier: &mut Unifier<'_>) {
-        self.0.unify(&with.0, unifier)
+        self.0.unify(&with.0, unifier);
     }
 
     fn constrain(&self, with: Kind, cons: &mut TvarKinds) -> Result<(), Error> {
@@ -1096,7 +1117,7 @@ impl MaxTvar for Dictionary {
 impl Dictionary {
     fn unify(&self, actual: &Self, unifier: &mut Unifier<'_>) {
         self.key.unify(&actual.key, unifier);
-        self.val.unify(&actual.val, unifier)
+        self.val.unify(&actual.val, unifier);
     }
 
     fn constrain(&self, with: Kind, _: &mut TvarKinds) -> Result<(), Error> {
@@ -1319,7 +1340,7 @@ impl Record {
                 },
             ) if a == b => {
                 t.unify(u, unifier);
-                l.unify(r, unifier)
+                l.unify(r, unifier);
             }
             (
                 Record::Extension {
@@ -1347,7 +1368,7 @@ impl Record {
                     tail: MonoType::Var(var),
                 });
                 l.unify(&act, unifier);
-                exp.unify(r, unifier)
+                exp.unify(r, unifier);
             }
             // If we are expecting {a: u | r} but find {}, label `a` is missing.
             (
@@ -1769,11 +1790,7 @@ impl Function {
 
         self.unify(actual, &mut unifier);
 
-        if unifier.errors.has_errors() {
-            Err(unifier.errors)
-        } else {
-            Ok(())
-        }
+        unifier.finish(())
     }
 
     /// Given two function types f and g, the process for unifying their arguments is as follows:
