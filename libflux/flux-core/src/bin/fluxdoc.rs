@@ -307,7 +307,6 @@ const EXCEPTIONS: &[&str] = &[
     "internal/promql",
     "internal/testutil",
     "planner",
-    "strings",
     "testing",
     "testing/chronograf",
     "testing/expect",
