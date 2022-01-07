@@ -61,17 +61,13 @@
 //
 // - The `GOOGLE_APPLICATION_CREDENTIALS` environment variable that identifies the
 //   location of yur credential JSON file.
-// - Provide your BigQuery API key using the apiKey URL parameters in your BigQuery DSN.
+// - Provide your BigQuery credentials using the `credentials` URL parameters in your BigQuery DSN.
 //
-// #### BigQuery apiKey URL parameter
+// #### BigQuery credential URL parameter
 // Provide your base-64 encoded service account, refresh token, or JSON credentials
 // using the credentials URL parameter in your BigQuery DSN.
 //
-// ```txt
-// bigquery://projectid/?apiKey=AIzaSyB6XK8IO5AzKZXoioQOVNTFYzbDBjY5hy4
-// ```
-//
-// #### BigQuery credential URL parameter
+// ##### BigQuery credential URL parameter
 // ```txt
 // bigquery://projectid/?credentials=eyJ0eXBlIjoiYXV0...
 // ```
@@ -128,7 +124,7 @@ package sql
 //   - postgres
 //   - snowflake
 //   - sqlite3 _(Does not work with InfluxDB OSS or InfluxDB Cloud)_
-//   - sqlserver, mssql
+//   - sqlserver
 //   - vertica, vertigo
 //
 // - dataSourceName: Data source name (DNS) or connection string used to connect
