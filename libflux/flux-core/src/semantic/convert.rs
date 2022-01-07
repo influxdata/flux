@@ -759,7 +759,7 @@ impl<'a> Converter<'a> {
 
         Ok(FunctionExpr {
             loc: expr.base.location,
-            typ: MonoType::Var(self.sub.fresh()),
+            typ: MonoType::Error,
             params,
             body,
             vectorized: None,
@@ -947,7 +947,7 @@ impl<'a> Converter<'a> {
         }?;
         Ok(CallExpr {
             loc: expr.base.location,
-            typ: MonoType::Var(self.sub.fresh()),
+            typ: MonoType::Error,
             callee,
             arguments,
             pipe: None,
@@ -963,7 +963,7 @@ impl<'a> Converter<'a> {
         let property = self.symbols.lookup_property_key(&property);
         Ok(MemberExpr {
             loc: expr.base.location,
-            typ: MonoType::Var(self.sub.fresh()),
+            typ: MonoType::Error,
             object,
             property,
         })
@@ -974,7 +974,7 @@ impl<'a> Converter<'a> {
         let index = self.convert_expression(expr.index)?;
         Ok(IndexExpr {
             loc: expr.base.location,
-            typ: MonoType::Var(self.sub.fresh()),
+            typ: MonoType::Error,
             array,
             index,
         })
@@ -992,7 +992,7 @@ impl<'a> Converter<'a> {
         let right = self.convert_expression(expr.right)?;
         Ok(BinaryExpr {
             loc: expr.base.location,
-            typ: MonoType::Var(self.sub.fresh()),
+            typ: MonoType::Error,
             operator: expr.operator,
             left,
             right,
@@ -1003,7 +1003,7 @@ impl<'a> Converter<'a> {
         let argument = self.convert_expression(expr.argument)?;
         Ok(UnaryExpr {
             loc: expr.base.location,
-            typ: MonoType::Var(self.sub.fresh()),
+            typ: MonoType::Error,
             operator: expr.operator,
             argument,
         })
@@ -1032,7 +1032,7 @@ impl<'a> Converter<'a> {
             test,
             consequent,
             alternate,
-            typ: MonoType::Var(self.sub.fresh()),
+            typ: MonoType::Error,
         })
     }
 
@@ -1048,7 +1048,7 @@ impl<'a> Converter<'a> {
         };
         Ok(ObjectExpr {
             loc: expr.base.location,
-            typ: MonoType::Var(self.sub.fresh()),
+            typ: MonoType::Error,
             with,
             properties,
         })
@@ -1070,7 +1070,7 @@ impl<'a> Converter<'a> {
             Some(expr) => self.convert_expression(expr)?,
             None => Expression::Identifier(IdentifierExpr {
                 loc: key.loc.clone(),
-                typ: MonoType::Var(self.sub.fresh()),
+                typ: MonoType::Error,
                 name: self
                     .symbols
                     .lookup_option(&key.name)
@@ -1092,7 +1092,7 @@ impl<'a> Converter<'a> {
             .collect::<Result<Vec<Expression>>>()?;
         Ok(ArrayExpr {
             loc: expr.base.location,
-            typ: MonoType::Var(self.sub.fresh()),
+            typ: MonoType::Error,
             elements,
         })
     }
@@ -1107,7 +1107,7 @@ impl<'a> Converter<'a> {
         }
         Ok(DictExpr {
             loc: expr.base.location,
-            typ: MonoType::Var(self.sub.fresh()),
+            typ: MonoType::Error,
             elements,
         })
     }
@@ -1140,7 +1140,7 @@ impl<'a> Converter<'a> {
 
     fn convert_identifier_expression(&mut self, id: ast::Identifier) -> Result<IdentifierExpr> {
         Ok(IdentifierExpr {
-            typ: MonoType::Var(self.sub.fresh()),
+            typ: MonoType::Error,
             name: self.symbols.lookup(&id.name),
             loc: id.base.location,
         })

@@ -1427,6 +1427,7 @@ pub struct CallExpr {
 
 impl CallExpr {
     fn infer(&mut self, infer: &mut InferState<'_, '_>) -> Result {
+        self.typ = MonoType::Var(infer.sub.fresh());
         // First, recursively infer every type of the children of this call expression,
         // update the environment and the constraints, and use the inferred types to
         // build the fields of the type for this call expression.
@@ -1613,6 +1614,7 @@ impl MemberExpr {
         }
 
         let r = {
+            self.typ = MonoType::Var(infer.sub.fresh());
             let head = types::Property {
                 k: Label::from(self.property.to_owned()),
                 v: self.typ.to_owned(),
@@ -1651,6 +1653,8 @@ impl IndexExpr {
     fn infer(&mut self, infer: &mut InferState<'_, '_>) -> Result {
         self.array.infer(infer)?;
         self.index.infer(infer)?;
+
+        self.typ = MonoType::Var(infer.sub.fresh());
 
         infer.solve(&[
             Constraint::Equal {

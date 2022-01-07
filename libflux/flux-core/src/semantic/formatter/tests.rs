@@ -114,16 +114,16 @@ fn format_function_expression() {
         expect![[r#"
             package main
             (a) => {
-                return a:t19
-            }:(a:t19) => t19
+                return a:A
+            }:(a:A) => A
             f = (a, b=1) => {
-                return a:t21 +:t21 b:t21
-            }:(a:t21, ?b:t21) => t21
+                return a:C +:C b:C
+            }:(a:C, ?b:C) => C
             x = f:(a:int, ?b:int) => int(a: 2):int
             y = f:(a:int, ?b:int) => int(a: x:int, b: f:(a:int, ?b:int) => int(a: x:int):int):int
             g = (t) => {
-                return t:t28
-            }:(<-t:t28) => t28"#]],
+                return t:t12
+            }:(<-t:t12) => t12"#]],
     )
 }
 
@@ -265,8 +265,8 @@ fn format_block_statement() {
         expect![[r#"
             package main
             (r) => {
-                v = (if r:t10 <:bool 0 then -r:t10:t10 else r:t10):t10
-                return v:t10 *:t10 v:t10
-            }:(r:t10) => t10"#]],
+                v = (if r:A <:bool 0 then -r:A:A else r:A):A
+                return v:A *:A v:A
+            }:(r:A) => A"#]],
     )
 }
