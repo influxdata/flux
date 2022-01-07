@@ -165,6 +165,8 @@ builtin from : (driverName: string, dataSourceName: string, query: string) => [A
 //   call to `Exec`. Default is `10000`.
 //
 //   If writing to SQLite database, set the batchSize to `999` or less.
+// 
+// - tables: Input data. Default is piped-forward data (`<-`).
 //
 // ## Examples
 // For examples and more information about each supported SQL database, see
