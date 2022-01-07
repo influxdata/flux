@@ -1309,20 +1309,9 @@ impl BinaryExpr {
         let binop_arithmetic_constraints =
             |this: &mut BinaryExpr, infer: &mut InferState<'_, '_>, kind| {
                 let left = this.left.type_of();
-                this.typ = left.clone();
 
-                infer.solve(&[
-                    Constraint::Equal {
-                        exp: left.clone(),
-                        act: this.right.type_of(),
-                        loc: this.right.loc().clone(),
-                    },
-                    Constraint::Kind {
-                        act: left,
-                        exp: kind,
-                        loc: this.loc.clone(),
-                    },
-                ]);
+                this.typ = infer.equal(&left, &this.right.type_of(), this.right.loc());
+                infer.constrain(kind, &left, &this.loc);
             };
         let binop_compare_constraints =
             |this: &mut BinaryExpr, infer: &mut InferState<'_, '_>, kind| {
