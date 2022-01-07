@@ -710,6 +710,9 @@ func (b *ColListTableBuilder) GetBool(i int, j int) (values.Value, error) {
 	if err := b.checkCol(j, flux.TBool); err != nil {
 		return values.NewNull(semantic.BasicBool), err
 	}
+	if b.cols[j].IsNil(i) {
+		return values.NewNull(semantic.BasicBool), nil
+	}
 	return values.New(b.cols[j].(*boolColumnBuilder).data[i]), nil
 }
 
@@ -769,6 +772,9 @@ func (b *ColListTableBuilder) SetInt(i int, j int, value int64) error {
 func (b *ColListTableBuilder) GetInt(i int, j int) (values.Value, error) {
 	if err := b.checkCol(j, flux.TInt); err != nil {
 		return values.NewNull(semantic.BasicInt), err
+	}
+	if b.cols[j].IsNil(i) {
+		return values.NewNull(semantic.BasicInt), nil
 	}
 	return values.New(b.cols[j].(*intColumnBuilder).data[i]), nil
 }
@@ -832,6 +838,9 @@ func (b *ColListTableBuilder) SetUInt(i int, j int, value uint64) error {
 func (b *ColListTableBuilder) GetUInt(i int, j int) (values.Value, error) {
 	if err := b.checkCol(j, flux.TUInt); err != nil {
 		return values.NewNull(semantic.BasicUint), err
+	}
+	if b.cols[j].IsNil(i) {
+		return values.NewNull(semantic.BasicUint), nil
 	}
 	return values.New(b.cols[j].(*uintColumnBuilder).data[i]), nil
 }
@@ -960,6 +969,9 @@ func (b *ColListTableBuilder) GetString(i int, j int) (values.Value, error) {
 	if err := b.checkCol(j, flux.TString); err != nil {
 		return values.NewNull(semantic.BasicString), err
 	}
+	if b.cols[j].IsNil(i) {
+		return values.NewNull(semantic.BasicString), nil
+	}
 	return values.New(b.cols[j].(*stringColumnBuilder).data[i]), nil
 }
 
@@ -1019,6 +1031,9 @@ func (b *ColListTableBuilder) SetTime(i int, j int, value Time) error {
 func (b *ColListTableBuilder) GetTime(i int, j int) (values.Value, error) {
 	if err := b.checkCol(j, flux.TTime); err != nil {
 		return values.NewNull(semantic.BasicTime), err
+	}
+	if b.cols[j].IsNil(i) {
+		return values.NewNull(semantic.BasicTime), nil
 	}
 	return values.New(b.cols[j].(*timeColumnBuilder).data[i]), nil
 }
