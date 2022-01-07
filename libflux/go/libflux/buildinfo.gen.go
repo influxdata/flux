@@ -212,6 +212,7 @@ var sourceHashes = map[string]string{
 	"stdlib/experimental/sum_test.flux":                                                           "17ea2d801c7f5ff63f31de5ff3257778a54f0eaa3f4c30337dae2ee9fe428ed4",
 	"stdlib/experimental/table/fill_test.flux":                                                    "60813f53da61e0be3cc62bd24705de7ce66001269c583cda0e4d22edeb7671ce",
 	"stdlib/experimental/table/table.flux":                                                        "c669715378c0f2ab00218c995eddc7351e768b8714deaa7d2480d7d729d3438c",
+	"stdlib/experimental/textreader/textreader.flux":                                              "2d78dd386903349f82206832879add9e771738ff8d989e921c96dc1f0124ed9e",
 	"stdlib/experimental/unique_test.flux":                                                        "8c30000f13f635aceff0692d55654008a097b5dfce4ce94a36a6ec8866b00b5b",
 	"stdlib/experimental/usage/usage.flux":                                                        "21bd0eb4ac6071db1dcbee7b43a5972e91203be678a426921c81d244e01488a7",
 	"stdlib/experimental/window_test.flux":                                                        "c2387f880f8ac6e6cba1d9ac5f585af12d2ff0a2c85bc7c381fa38ce295c3973",

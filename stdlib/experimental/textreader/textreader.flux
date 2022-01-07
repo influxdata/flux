@@ -30,4 +30,4 @@ package textreader
 // outputs table with single record {a:1, b:2, c:3}
 // ```
 //
-builtin from : (txt: string, parser: (row: string) => A ) => [A] where A: Record
+builtin from : (txt: string, parseFn: (line: string) => A ) => [A] where A: Record
