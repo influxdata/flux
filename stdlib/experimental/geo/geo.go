@@ -342,6 +342,10 @@ func parseGeometryArgument(name string, arg values.Object, units *units) (geom i
 	points, polygonOk := arg.Get("points")
 	if polygonOk && arg.Len() == 1 {
 		array := points.Array()
+		// XXX: remove when array/stream are different types <https://github.com/influxdata/flux/issues/4343>
+		if _, ok := array.(values.TableObject); ok {
+			return nil, errors.New(codes.Invalid, "points cannot be a table stream; expected an array")
+		}
 		if array.Len() < 3 {
 			err = errors.Newf(codes.Invalid, "polygon must have at least 3 points")
 		}

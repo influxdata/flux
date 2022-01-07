@@ -27,15 +27,15 @@ import "strings"
 // - origin: monitoring component.
 // - type: Event type. Default is `""`.
 // - timestamp: time alert was generated. Default is `now()`.
-// 
+//
 // ## Examples
 // ### Send the last reported value and status to Alerta
 // ```no_run
 // import "contrib/bonitoo-io/alerta"
 // import "influxdata/influxdb/secrets"
-// 
+//
 // apiKey = secrets.get(key: "ALERTA_API_KEY")
-// 
+//
 // lastReported =
 //   from(bucket: "example-bucket")
 //     |> range(start: -1m)
@@ -45,9 +45,9 @@ import "strings"
 //     )
 //     |> last()
 //     |> findRecord(fn: (key) => true, idx: 0)
-// 
+//
 // severity = if lastReported._value > 50 then "warning" else "ok"
-// 
+//
 // alerta.alert(
 //   url: "https://alerta.io:8080/alert",
 //   apiKey: apiKey,
@@ -85,33 +85,35 @@ alert = (
     origin="InfluxDB",
     type="",
     timestamp=now(),
-) => {
-    alert = {
-        resource: resource,
-        event: event,
-        environment: environment,
-        severity: severity,
-        service: service,
-        group: group,
-        value: value,
-        text: text,
-        tags: tags,
-        attributes: attributes,
-        origin: origin,
-        type: type,
-        createTime: strings.substring(v: string(v: timestamp), start: 0, end: 23) + "Z",
-    // Alerta supports ISO 8601 date format YYYY-MM-DDThh:mm:ss.sssZ only
-    }
-    headers = {"Authorization": "Key " + apiKey, "Content-Type": "application/json"}
-    body = json.encode(v: alert)
+) =>
+    {
+        alert = {
+            resource: resource,
+            event: event,
+            environment: environment,
+            severity: severity,
+            service: service,
+            group: group,
+            value: value,
+            text: text,
+            tags: tags,
+            attributes: attributes,
+            origin: origin,
+            type: type,
+            createTime: strings.substring(v: string(v: timestamp), start: 0, end: 23) + "Z",
+                // Alerta supports ISO 8601 date format YYYY-MM-DDThh:mm:ss.sssZ only
 
-    return http.post(headers: headers, url: url, data: body)
-}
+        }
+        headers = {"Authorization": "Key " + apiKey, "Content-Type": "application/json"}
+        body = json.encode(v: alert)
+
+        return http.post(headers: headers, url: url, data: body)
+    }
 
 // endpoint sends alerts to Alerta using data from input rows.
 //
 // ## Parameters
-// 
+//
 // - url: (Required) Alerta URL.
 // - apiKey: (Required) Alerta API key.
 // - environment: Alert environment. Default is `""`.
@@ -121,12 +123,12 @@ alert = (
 // ## Usage
 // `alerta.endpoint` is a factory function that outputs another function.
 //     The output function requires a `mapFn` parameter.
-// 
+//
 // ### mapFn
 // A function that builds the object used to generate the POST request. Requires an `r` parameter.
-// 
+//
 // `mapFn` accepts a table row (`r`) and returns an object that must include the following fields:
-// 
+//
 // - `resource`
 // - `event`
 // - `severity`
@@ -138,7 +140,7 @@ alert = (
 // - `attributes`
 // - `type`
 // - `timestamp`
-// 
+//
 // For more information, see `alerta.alert()` parameters.
 //
 // ## Examples
@@ -146,7 +148,7 @@ alert = (
 // ```no_run
 // import "contrib/bonitoo-io/alerta"
 // import "influxdata/influxdb/secrets"
-// 
+//
 // apiKey = secrets.get(key: "ALERTA_API_KEY")
 // endpoint = alerta.endpoint(
 //     url: "https://alerta.io:8080/alert",
@@ -154,11 +156,11 @@ alert = (
 //     environment: "Production",
 //     origin: "InfluxDB",
 // )
-// 
+//
 // crit_events = from(bucket: "example-bucket")
 //     |> range(start: -1m)
 //     |> filter(fn: (r) => r._measurement == "statuses" and status == "crit")
-// 
+//
 // crit_events
 //     |> endpoint(
 //         mapFn: (r) => {
@@ -178,34 +180,38 @@ alert = (
 //         },
 //     )()
 // ```
-// 
+//
 // tags: notification endpoints,transformations
 //
-endpoint = (url, apiKey, environment="", origin="") => (mapFn) => (tables=<-) => tables
-    |> map(
-        fn: (r) => {
-            obj = mapFn(r: r)
-    
-            return {r with
-                _sent: string(
-                    v: 2 == alert(
-                        url: url,
-                        apiKey: apiKey,
-                        resource: obj.resource,
-                        event: obj.event,
-                        environment: environment,
-                        severity: obj.severity,
-                        service: obj.service,
-                        group: obj.group,
-                        value: obj.value,
-                        text: obj.text,
-                        tags: obj.tags,
-                        attributes: obj.attributes,
-                        origin: origin,
-                        type: obj.type,
-                        timestamp: obj.timestamp,
-                    ) / 100,
-                ),
-            }
-        },
-    )
+endpoint = (url, apiKey, environment="", origin="") =>
+    (mapFn) =>
+        (tables=<-) =>
+            tables
+                |> map(
+                    fn: (r) => {
+                        obj = mapFn(r: r)
+
+                        return {r with _sent:
+                                string(
+                                    v:
+                                        2 == alert(
+                                                url: url,
+                                                apiKey: apiKey,
+                                                resource: obj.resource,
+                                                event: obj.event,
+                                                environment: environment,
+                                                severity: obj.severity,
+                                                service: obj.service,
+                                                group: obj.group,
+                                                value: obj.value,
+                                                text: obj.text,
+                                                tags: obj.tags,
+                                                attributes: obj.attributes,
+                                                origin: origin,
+                                                type: obj.type,
+                                                timestamp: obj.timestamp,
+                                            ) / 100,
+                                ),
+                        }
+                    },
+                )

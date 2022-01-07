@@ -5,7 +5,8 @@ import "testing"
 
 option now = () => 2030-01-01T00:00:00Z
 
-inData = "
+inData =
+    "
 #datatype,string,long,string,string,string,dateTime:RFC3339,boolean
 #group,false,false,true,true,true,false,false
 #default,_result,,,,,,
@@ -91,7 +92,8 @@ inData = "
 ,,9,thmWJ,zmk1YWi,gpmhNEw,2018-12-19T22:14:10Z,96
 ,,9,thmWJ,zmk1YWi,gpmhNEw,2018-12-19T22:14:20Z,10
 "
-outData = "
+outData =
+    "
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,string,dateTime:RFC3339,boolean,string
 #group,false,false,true,true,true,true,true,false,false,false
 #default,_result,,,,,,,,,
@@ -173,8 +175,10 @@ outData = "
 ,,9,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,zmk1YWi,gpmhNEw,2018-12-19T22:14:10Z,96,server01
 ,,9,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,zmk1YWi,gpmhNEw,2018-12-19T22:14:20Z,10,server01
 "
-t_set_new_column = (table=<-) => table
-    |> range(start: 2018-01-01T00:00:00Z)
-    |> set(key: "t1", value: "server01")
+t_set_new_column = (table=<-) =>
+    table
+        |> range(start: 2018-01-01T00:00:00Z)
+        |> set(key: "t1", value: "server01")
 
-test _set_new_column = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_set_new_column})
+test _set_new_column = () =>
+    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_set_new_column})

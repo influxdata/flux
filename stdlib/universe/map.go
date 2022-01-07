@@ -2,7 +2,6 @@ package universe
 
 import (
 	"context"
-	"sort"
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/codes"
@@ -220,7 +219,7 @@ func (t *mapTransformation) groupOn(key flux.GroupKey, m semantic.MonoType) (map
 				return nil, err
 			}
 
-			if Record.Name() == c.Label {
+			if semantic.NewSymbol(Record.Name()).Name() == c.Label {
 				on[c.Label] = true
 				break
 			}
@@ -269,22 +268,15 @@ func (t *mapTransformation) createSchema(fn *execute.RowMapPreparedFn, b execute
 	}
 
 	// Add columns from function in sorted order.
-	n, err := m.Type().NumProperties()
+	sortedProps, err := m.Type().SortedProperties()
 	if err != nil {
 		return err
 	}
 
-	keys := make([]string, 0, n)
-	for i := 0; i < n; i++ {
-		Record, err := m.Type().RecordProperty(i)
-		if err != nil {
-			return err
-		}
-		keys = append(keys, Record.Name())
-	}
-	sort.Strings(keys)
+	for _, prop := range sortedProps {
+		s := semantic.NewSymbol(prop.Name())
+		k := s.Name()
 
-	for _, k := range keys {
 		if t.mergeKey && b.Key().HasCol(k) {
 			continue
 		}

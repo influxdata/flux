@@ -456,6 +456,127 @@ func FresherEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
 	return builder.EndObject()
 }
 
+type Packages struct {
+	_tab flatbuffers.Table
+}
+
+func GetRootAsPackages(buf []byte, offset flatbuffers.UOffsetT) *Packages {
+	n := flatbuffers.GetUOffsetT(buf[offset:])
+	x := &Packages{}
+	x.Init(buf, n+offset)
+	return x
+}
+
+func GetSizePrefixedRootAsPackages(buf []byte, offset flatbuffers.UOffsetT) *Packages {
+	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
+	x := &Packages{}
+	x.Init(buf, n+offset+flatbuffers.SizeUint32)
+	return x
+}
+
+func (rcv *Packages) Init(buf []byte, i flatbuffers.UOffsetT) {
+	rcv._tab.Bytes = buf
+	rcv._tab.Pos = i
+}
+
+func (rcv *Packages) Table() flatbuffers.Table {
+	return rcv._tab
+}
+
+func (rcv *Packages) Packages(obj *PackageExports, j int) bool {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(4))
+	if o != 0 {
+		x := rcv._tab.Vector(o)
+		x += flatbuffers.UOffsetT(j) * 4
+		x = rcv._tab.Indirect(x)
+		obj.Init(rcv._tab.Bytes, x)
+		return true
+	}
+	return false
+}
+
+func (rcv *Packages) PackagesLength() int {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(4))
+	if o != 0 {
+		return rcv._tab.VectorLen(o)
+	}
+	return 0
+}
+
+func PackagesStart(builder *flatbuffers.Builder) {
+	builder.StartObject(1)
+}
+func PackagesAddPackages(builder *flatbuffers.Builder, packages flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(0, flatbuffers.UOffsetT(packages), 0)
+}
+func PackagesStartPackagesVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
+	return builder.StartVector(4, numElems, 4)
+}
+func PackagesEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
+	return builder.EndObject()
+}
+
+type PackageExports struct {
+	_tab flatbuffers.Table
+}
+
+func GetRootAsPackageExports(buf []byte, offset flatbuffers.UOffsetT) *PackageExports {
+	n := flatbuffers.GetUOffsetT(buf[offset:])
+	x := &PackageExports{}
+	x.Init(buf, n+offset)
+	return x
+}
+
+func GetSizePrefixedRootAsPackageExports(buf []byte, offset flatbuffers.UOffsetT) *PackageExports {
+	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
+	x := &PackageExports{}
+	x.Init(buf, n+offset+flatbuffers.SizeUint32)
+	return x
+}
+
+func (rcv *PackageExports) Init(buf []byte, i flatbuffers.UOffsetT) {
+	rcv._tab.Bytes = buf
+	rcv._tab.Pos = i
+}
+
+func (rcv *PackageExports) Table() flatbuffers.Table {
+	return rcv._tab
+}
+
+func (rcv *PackageExports) Id() []byte {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(4))
+	if o != 0 {
+		return rcv._tab.ByteVector(o + rcv._tab.Pos)
+	}
+	return nil
+}
+
+func (rcv *PackageExports) Package(obj *TypeEnvironment) *TypeEnvironment {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
+	if o != 0 {
+		x := rcv._tab.Indirect(o + rcv._tab.Pos)
+		if obj == nil {
+			obj = new(TypeEnvironment)
+		}
+		obj.Init(rcv._tab.Bytes, x)
+		return obj
+	}
+	return nil
+}
+
+func PackageExportsStart(builder *flatbuffers.Builder) {
+	builder.StartObject(2)
+}
+func PackageExportsAddId(builder *flatbuffers.Builder, id flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(0, flatbuffers.UOffsetT(id), 0)
+}
+func PackageExportsAddPackage(builder *flatbuffers.Builder, package_ flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(1, flatbuffers.UOffsetT(package_), 0)
+}
+func PackageExportsEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
+	return builder.EndObject()
+}
+
 type TypeEnvironment struct {
 	_tab flatbuffers.Table
 }

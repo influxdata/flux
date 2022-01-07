@@ -1,20 +1,20 @@
-// Package influxdb provides tools for working with the InfluxDB API. 
-// 
+// Package influxdb provides tools for working with the InfluxDB API.
+//
 // introduced: 0.114.0
-// 
+//
 package influxdb
 
 
 // api submits an HTTP request to the specified InfluxDB API path and returns a
 // record containing the HTTP status code, response headers, and the response body.
-// 
+//
 // ## Response format
 // `influxdb.api()` returns a record with the following properties:
-// 
+//
 // - **statusCode**: HTTP status code returned by the GET request (int).
 // - **headers**: HTTP response headers (dict).
-// - **body**: HTTP response body (bytes). 
-// 
+// - **body**: HTTP response body (bytes).
+//
 // ## Parameters
 // - method: HTTP request method.
 // - path: InfluxDB API path.
@@ -26,29 +26,29 @@ package influxdb
 // - headers: HTTP request headers.
 // - query: URL query parameters.
 // - timeout: HTTP request timeout. Default is `30s`.
-// - body: HTTP request body as bytes. 
-// 
+// - body: HTTP request body as bytes.
+//
 // ## Examples
 // ### Retrieve the health of an InfluxDB OSS instance
 // ```no_run
 // import "experimental/influxdb"
 // import "influxdata/influxdb/secrets"
-// 
+//
 // token = secrets.get(key: "INFLUX_TOKEN")
-// 
+//
 // response = influxdb.api(method: "get", path: "/health", host: "http://localhost:8086", token: token)
-// 
+//
 // string(v: response.body)
 // ```
-// 
+//
 // ### Create a bucket through the InfluxDB Cloud API
 // ```no_run
 // import "experimental/influxdb"
 // import "json"
 // import "influxdata/influxdb/secrets"
-// 
+//
 // token = secrets.get(key: "INFLUX_TOKEN")
-// 
+//
 // influxdb.api(
 //     method: "post",
 //     path: "/api/v2/buckets",
@@ -57,14 +57,14 @@ package influxdb
 //     body: json.encode(v: {name: "example-bucket", description: "This is an example bucket.", orgID: "x000X0x0xx0X00x0", retentionRules: []}),
 // )
 // ```
-// 
+//
 builtin api : (
-    method: string,
-    path: string,
-    ?host: string,
-    ?token: string,
-    ?body: bytes,
-    ?headers: [string:string],
-    ?query: [string:string],
-    ?timeout: duration,
-) => {statusCode: int, body: bytes, headers: [string:string]}
+        method: string,
+        path: string,
+        ?host: string,
+        ?token: string,
+        ?body: bytes,
+        ?headers: [string:string],
+        ?query: [string:string],
+        ?timeout: duration,
+    ) => {statusCode: int, body: bytes, headers: [string:string]}

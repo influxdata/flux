@@ -1,5 +1,3 @@
-use std::iter::FromIterator;
-
 use super::*;
 use crate::{
     ast::{

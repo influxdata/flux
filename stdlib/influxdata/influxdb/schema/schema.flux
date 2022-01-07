@@ -12,12 +12,12 @@ package schema
 // - tables: Input data. Default is piped-forward data (`<-`).
 //
 // ## Examples
-// 
+//
 // ### Pivot InfluxDB fields into columns
 // ```
 // # import "array"
 // import "influxdata/influxdb/schema"
-// 
+//
 // # data = array.from(
 // #     rows: [
 // #         {_time: 2021-01-01T12:00:00Z, _measurement: "m", loc: "Seattle", _field: "temp", _value: "73.1"},
@@ -36,8 +36,9 @@ package schema
 //
 // tags: transformations
 //
-fieldsAsCols = (tables=<-) => tables
-    |> pivot(rowKey: ["_time"], columnKey: ["_field"], valueColumn: "_value")
+fieldsAsCols = (tables=<-) =>
+    tables
+        |> pivot(rowKey: ["_time"], columnKey: ["_field"], valueColumn: "_value")
 
 // tagValues returns a list of unique values for a given tag.
 //
@@ -55,7 +56,7 @@ fieldsAsCols = (tables=<-) => tables
 //   Absolute start times are defined using time values.
 //
 // ## Examples
-// 
+//
 // ### Query unique tag values from an InfluxDB bucket
 // ```no_run
 // import "influxdata/influxdb/schema"
@@ -68,15 +69,16 @@ fieldsAsCols = (tables=<-) => tables
 //
 // tags: metadata
 //
-tagValues = (bucket, tag, predicate=(r) => true, start=-30d) => from(bucket: bucket)
-    |> range(start: start)
-    |> filter(fn: predicate)
-    |> keep(columns: [tag])
-    |> group()
-    |> distinct(column: tag)
+tagValues = (bucket, tag, predicate=(r) => true, start=-30d) =>
+    from(bucket: bucket)
+        |> range(start: start)
+        |> filter(fn: predicate)
+        |> keep(columns: [tag])
+        |> group()
+        |> distinct(column: tag)
 
 // tagKeys returns a list of tag keys for all series that match the `predicate`.
-// 
+//
 // Results include a single table with a single column, `_value`.
 //
 // ## Parameters
@@ -100,15 +102,16 @@ tagValues = (bucket, tag, predicate=(r) => true, start=-30d) => from(bucket: buc
 //
 // tags: metadata
 //
-tagKeys = (bucket, predicate=(r) => true, start=-30d) => from(bucket: bucket)
-    |> range(start: start)
-    |> filter(fn: predicate)
-    |> keys()
-    |> keep(columns: ["_value"])
-    |> distinct()
+tagKeys = (bucket, predicate=(r) => true, start=-30d) =>
+    from(bucket: bucket)
+        |> range(start: start)
+        |> filter(fn: predicate)
+        |> keys()
+        |> keep(columns: ["_value"])
+        |> distinct()
 
 // measurementTagValues returns a list of tag values for a specific measurement.
-// 
+//
 // Results include a single table with a single column, `_value`.
 //
 // ## Parameters
@@ -117,11 +120,11 @@ tagKeys = (bucket, predicate=(r) => true, start=-30d) => from(bucket: bucket)
 // - tag: Tag to return all unique values from.
 //
 // ## Examples
-// 
+//
 // ### Query unique tag values from an InfluxDB measurement
 // ```no_run
 // import "influxdata/influxdb/schema"
-// 
+//
 // schema.measurementTagValues(
 //     bucket: "example-bucket",
 //     measurement: "example-measurement",
@@ -131,7 +134,8 @@ tagKeys = (bucket, predicate=(r) => true, start=-30d) => from(bucket: bucket)
 //
 // tags: metadata
 //
-measurementTagValues = (bucket, measurement, tag) => tagValues(bucket: bucket, tag: tag, predicate: (r) => r._measurement == measurement)
+measurementTagValues = (bucket, measurement, tag) =>
+    tagValues(bucket: bucket, tag: tag, predicate: (r) => r._measurement == measurement)
 
 // measurementTagKeys returns the list of tag keys for a specific measurement.
 //
@@ -142,11 +146,11 @@ measurementTagValues = (bucket, measurement, tag) => tagValues(bucket: bucket, t
 // - measurement: Measurement to return tag keys from.
 //
 // ## Examples
-// 
+//
 // ### Query tag keys from an InfluxDB measurement
 // ```no_run
 // import "influxdata/influxdb/schema"
-// 
+//
 // schema.measurementTagKeys(
 //     bucket: "example-bucket",
 //     measurement: "example-measurement",
@@ -158,9 +162,9 @@ measurementTagValues = (bucket, measurement, tag) => tagValues(bucket: bucket, t
 measurementTagKeys = (bucket, measurement) => tagKeys(bucket: bucket, predicate: (r) => r._measurement == measurement)
 
 // fieldKeys returns field keys in a bucket.
-// 
+//
 // Results include a single table with a single column, `_value`.
-// 
+//
 // **Note**: FieldKeys is a special application of `tagValues that returns field
 // keys in a given bucket.
 //
@@ -175,7 +179,7 @@ measurementTagKeys = (bucket, measurement) => tagKeys(bucket: bucket, predicate:
 //   Absolute start times are defined using time values.
 //
 // ## Examples
-// 
+//
 // ### Query field keys from an InfluxDB bucket
 // ```no_run
 // import "influxdata/influxdb/schema"
@@ -185,10 +189,11 @@ measurementTagKeys = (bucket, measurement) => tagKeys(bucket: bucket, predicate:
 //
 // tags: metadata
 //
-fieldKeys = (bucket, predicate=(r) => true, start=-30d) => tagValues(bucket: bucket, tag: "_field", predicate: predicate, start: start)
+fieldKeys = (bucket, predicate=(r) => true, start=-30d) =>
+    tagValues(bucket: bucket, tag: "_field", predicate: predicate, start: start)
 
 // measurementFieldKeys returns a list of fields in a measurement.
-// 
+//
 // Results include a single table with a single column, `_value`.
 //
 // ## Parameters
@@ -201,7 +206,7 @@ fieldKeys = (bucket, predicate=(r) => true, start=-30d) => tagValues(bucket: buc
 //   Absolute start times are defined using time values.
 //
 // ## Examples
-// 
+//
 // ### Query field keys from an InfluxDB measurement
 // ```no_run
 // import "influxdata/influxdb/schema"
@@ -211,24 +216,25 @@ fieldKeys = (bucket, predicate=(r) => true, start=-30d) => tagValues(bucket: buc
 //     measurement: "example-measurement",
 // )
 // ```
-// 
+//
 // tags: metadata
 //
-measurementFieldKeys = (bucket, measurement, start=-30d) => fieldKeys(bucket: bucket, predicate: (r) => r._measurement == measurement, start: start)
+measurementFieldKeys = (bucket, measurement, start=-30d) =>
+    fieldKeys(bucket: bucket, predicate: (r) => r._measurement == measurement, start: start)
 
 // measurements returns a list of measurements in a specific bucket.
-// 
+//
 // Results include a single table with a single column, `_value`.
 //
 // ## Parameters
 // - bucket: Bucket to retrieve measurements from.
 //
 // ## Examples
-// 
+//
 // ### Return a list of measurements in an InfluxDB bucket
 // ```no_run
 // import "influxdata/influxdb/schema"
-// 
+//
 // schema.measurements(bucket: "example-bucket")
 // ```
 //

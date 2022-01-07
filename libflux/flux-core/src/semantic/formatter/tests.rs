@@ -2,12 +2,13 @@ use expect_test::{expect, Expect};
 
 use crate::semantic::{
     formatter::format,
+    import::Packages,
     types::{Function, MonoType, PolyTypeMap, SemanticMap, Tvar},
     Analyzer,
 };
 
 fn check(actual: &str, expect: Expect) {
-    let mut analyzer = Analyzer::new_with_defaults(Default::default(), PolyTypeMap::new());
+    let mut analyzer = Analyzer::new_with_defaults(Default::default(), Packages::new());
     let (_, mut sem_pkg) = analyzer
         .analyze_source("main".to_string(), "main.flux".to_string(), actual)
         .unwrap_or_else(|err| panic!("{}", err));

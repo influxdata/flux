@@ -21,8 +21,8 @@ struct TokenError {
 }
 
 /// Represents a Flux parser and its state.
-pub struct Parser {
-    s: Scanner,
+pub struct Parser<'input> {
+    s: Scanner<'input>,
     t: Option<Token>,
     errs: Vec<String>,
     // blocks maintains a count of the end tokens for nested blocks
@@ -30,12 +30,12 @@ pub struct Parser {
     blocks: HashMap<TokenType, i32, DefaultHasher>,
 
     fname: String,
-    source: String,
+    source: &'input str,
 }
 
-impl Parser {
+impl<'input> Parser<'input> {
     /// Instantiates a new parser with the given string as input.
-    pub fn new(src: &str) -> Parser {
+    pub fn new(src: &'input str) -> Parser {
         let s = Scanner::new(src);
         Parser {
             s,
@@ -43,7 +43,7 @@ impl Parser {
             errs: Vec::new(),
             blocks: HashMap::default(),
             fname: "".to_string(),
-            source: src.to_string(),
+            source: src,
         }
     }
 
@@ -292,6 +292,17 @@ impl Parser {
 
     const METADATA: &'static str = "parser-type=rust";
 
+    /// Parses a file of Flux source code, returning a [`Package`].
+    pub fn parse_single_package(&mut self, pkgpath: String, fname: String) -> Package {
+        let ast_file = self.parse_file(fname);
+        Package {
+            base: ast_file.base.clone(),
+            path: pkgpath,
+            package: ast_file.get_package().to_string(),
+            files: vec![ast_file],
+        }
+    }
+
     /// Parses a file of Flux source code, returning a [`File`].
     pub fn parse_file(&mut self, fname: String) -> File {
         self.fname = fname;
@@ -460,7 +471,7 @@ impl Parser {
         let colon = self.expect(TokenType::Colon);
         let _type = self.parse_type_expression();
         Statement::Builtin(Box::new(BuiltinStmt {
-            base: self.base_node_from_other_end_c(&t, &id.base, &t),
+            base: self.base_node_from_other_end_c(&t, &_type.base, &t),
             colon: colon.comments,
             id,
             ty: _type,
@@ -485,7 +496,8 @@ impl Parser {
         }
     }
 
-    fn parse_monotype(&mut self) -> MonoType {
+    /// Parses a mono type
+    pub fn parse_monotype(&mut self) -> MonoType {
         // Tvar | Basic | Array | Dict | Record | Function
         let t = self.peek();
         match t.tok {

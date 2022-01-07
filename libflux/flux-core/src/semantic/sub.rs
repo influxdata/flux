@@ -168,8 +168,16 @@ pub trait Substitutable {
     fn apply_ref(&self, sub: &dyn Substituter) -> Option<Self>
     where
         Self: Sized;
+
     /// Get all free type variables in a type.
-    fn free_vars(&self) -> Vec<Tvar>;
+    fn mk_free_vars(&self) -> Vec<Tvar> {
+        let mut vars = Vec::new();
+        self.free_vars(&mut vars);
+        vars
+    }
+
+    /// Get all free type variables in a type.
+    fn free_vars(&self, vars: &mut Vec<Tvar>);
 }
 
 impl<T> Substitutable for Box<T>
@@ -179,8 +187,8 @@ where
     fn apply_ref(&self, sub: &dyn Substituter) -> Option<Self> {
         T::apply_ref(self, sub).map(Box::new)
     }
-    fn free_vars(&self) -> Vec<Tvar> {
-        T::free_vars(self)
+    fn free_vars(&self, vars: &mut Vec<Tvar>) {
+        T::free_vars(self, vars)
     }
 }
 
@@ -323,7 +331,7 @@ where
 
 /// Merges two values using `f` if either or both them is `Some(..)`.
 /// If both are `None`, `None` is returned.
-fn merge<A: ?Sized, B: ?Sized>(
+pub(crate) fn merge<A: ?Sized, B: ?Sized>(
     a_original: &A,
     a: Option<A::Owned>,
     b_original: &B,
@@ -434,7 +442,7 @@ where
     I::IntoIter: FusedIterator + Clone,
     F: FnMut(&mut S, I::Item) -> Option<U>,
     G: FnMut(&mut S, I::Item) -> U,
-    R: std::iter::FromIterator<U>,
+    R: FromIterator<U>,
 {
     merge_iter(state, types, action, converter).map(|iter| iter.collect())
 }

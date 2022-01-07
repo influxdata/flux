@@ -9,7 +9,7 @@ import "http"
 import "json"
 
 // event sends an event to [ServiceNow](https://servicenow.com/).
-// 
+//
 // ServiceNow Event API fields are described in
 // [ServiceNow Create Event documentation](https://docs.servicenow.com/bundle/paris-it-operations-management/page/product/event-management/task/t_EMCreateEventManually.html).
 //
@@ -88,50 +88,52 @@ event = (
     description,
     severity,
     additionalInfo=record.any,
-) => {
-    event = {
-        source: source,
-        node: node,
-        type: metricType,
-        resource: resource,
-        metric_name: metricName,
-        message_key: messageKey,
-        description: description,
-        severity: if severity == "critical" then
-            "1"
-        else if severity == "major" then
-            "2"
-        else if severity == "minor" then
-            "3"
-        else if severity == "warning" then
-            "4"
-        else if severity == "info" then
-            "5"
-        else if severity == "clear" then
-            "0"
-        else
-            "",
-        // shouldn't happen
-        additional_info: if additionalInfo == record.any then "" else string(v: json.encode(v: additionalInfo)),
-    }
-    payload = {records: [event]}
-    headers = {"Authorization": http.basicAuth(u: username, p: password), "Content-Type": "application/json"}
-    body = json.encode(v: payload)
+) =>
+    {
+        event = {
+            source: source,
+            node: node,
+            type: metricType,
+            resource: resource,
+            metric_name: metricName,
+            message_key: messageKey,
+            description: description,
+            severity:
+                if severity == "critical" then
+                    "1"
+                else if severity == "major" then
+                    "2"
+                else if severity == "minor" then
+                    "3"
+                else if severity == "warning" then
+                    "4"
+                else if severity == "info" then
+                    "5"
+                else if severity == "clear" then
+                    "0"
+                else
+                    "",
+            // shouldn't happen
+            additional_info: if additionalInfo == record.any then "" else string(v: json.encode(v: additionalInfo)),
+        }
+        payload = {records: [event]}
+        headers = {"Authorization": http.basicAuth(u: username, p: password), "Content-Type": "application/json"}
+        body = json.encode(v: payload)
 
-    return http.post(headers: headers, url: url, data: body)
-}
+        return http.post(headers: headers, url: url, data: body)
+    }
 
 // endpoint sends events to [ServiceNow](https://servicenow.com/) using data from input rows.
 //
 // ## Parameters
-// 
+//
 // - url: ServiceNow web service URL.
 // - username: ServiceNow username to use for HTTP BASIC authentication.
 // - password: ServiceNow password to use for HTTP BASIC authentication.
 // - source: Source name. Default is `"Flux"`.
 //
 // ## Usage
-// 
+//
 // `servicenow.endpoint` is a factory function that outputs another function.
 // The output function requires a `mapFn` parameter.
 //
@@ -185,28 +187,33 @@ event = (
 // ```
 //
 // tags: notification endpoints
-endpoint = (url, username, password, source="Flux") => (mapFn) => (tables=<-) => tables
-    |> map(
-        fn: (r) => {
-            obj = mapFn(r: r)
-    
-            return {r with
-                _sent: string(
-                    v: 2 == event(
-                        url: url,
-                        username: username,
-                        password: password,
-                        source: source,
-                        node: obj.node,
-                        metricType: obj.metricType,
-                        resource: obj.resource,
-                        metricName: obj.metricName,
-                        messageKey: obj.messageKey,
-                        description: obj.description,
-                        severity: obj.severity,
-                        additionalInfo: record.get(r: obj, key: "additionalInfo", default: record.any),
-                    ) / 100,
-                ),
-            }
-        },
-    )
+endpoint = (url, username, password, source="Flux") =>
+    (mapFn) =>
+        (tables=<-) =>
+            tables
+                |> map(
+                    fn: (r) => {
+                        obj = mapFn(r: r)
+
+                        return {r with _sent:
+                                string(
+                                    v:
+                                        2 == event(
+                                                url: url,
+                                                username: username,
+                                                password: password,
+                                                source: source,
+                                                node: obj.node,
+                                                metricType: obj.metricType,
+                                                resource: obj.resource,
+                                                metricName: obj.metricName,
+                                                messageKey: obj.messageKey,
+                                                description: obj.description,
+                                                severity: obj.severity,
+                                                additionalInfo:
+                                                    record.get(r: obj, key: "additionalInfo", default: record.any),
+                                            ) / 100,
+                                ),
+                        }
+                    },
+                )

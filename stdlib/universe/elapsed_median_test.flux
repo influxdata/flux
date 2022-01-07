@@ -5,7 +5,8 @@ import "testing"
 
 option now = () => 2030-01-01T00:00:00Z
 
-inData = "
+inData =
+    "
 #datatype,string,long,dateTime:RFC3339,double,string,string
 #group,false,false,false,false,true,true
 #default,_result,,,,,
@@ -30,12 +31,14 @@ outData = "
 ,result,table,elapsed
 ,,0,10
 "
-t_elapsed = (table=<-) => table
-    |> range(start: 2018-05-22T19:53:26Z)
-    |> filter(fn: (r) => r._measurement == "mem" and r._field == "active")
-    |> elapsed()
-    |> group()
-    |> map(fn: (r) => ({r with elapsed: float(v: r.elapsed)}))
-    |> median(column: "elapsed")
+t_elapsed = (table=<-) =>
+    table
+        |> range(start: 2018-05-22T19:53:26Z)
+        |> filter(fn: (r) => r._measurement == "mem" and r._field == "active")
+        |> elapsed()
+        |> group()
+        |> map(fn: (r) => ({r with elapsed: float(v: r.elapsed)}))
+        |> median(column: "elapsed")
 
-test _elapsed_median = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_elapsed})
+test _elapsed_median = () =>
+    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_elapsed})

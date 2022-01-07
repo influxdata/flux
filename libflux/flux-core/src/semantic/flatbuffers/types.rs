@@ -1,14 +1,17 @@
 //! This module defines methods for serializing and deserializing MonoTypes
 //! and PolyTypes using the flatbuffer encoding.
+
 use crate::semantic::{
-    flatbuffers::semantic_generated::fbsemantic as fb, fresh::Fresher, ExportEnvironment,
+    flatbuffers::semantic_generated::fbsemantic as fb, fresh::Fresher, PackageExports,
 };
 
 #[rustfmt::skip]
 use crate::semantic::{
     bootstrap::Module,
     nodes::Symbol,
+    import::Packages,
     types::{
+        Label,
         Array,
         Dictionary,
         Function,
@@ -21,6 +24,7 @@ use crate::semantic::{
         Record,
         Tvar,
         TvarKinds,
+        BuiltinType,
         Vector,
     },
     flatbuffers::serialize_pkg_into,
@@ -32,16 +36,36 @@ impl From<fb::Fresher<'_>> for Fresher {
     }
 }
 
-impl From<fb::TypeEnvironment<'_>> for Option<ExportEnvironment> {
-    fn from(env: fb::TypeEnvironment) -> Option<ExportEnvironment> {
+impl From<fb::Packages<'_>> for Option<Packages> {
+    fn from(fb_packages: fb::Packages<'_>) -> Option<Packages> {
+        let fb_packages = fb_packages.packages()?;
+        let mut packages = Packages::new();
+        for package in fb_packages.iter() {
+            let (id, package) = Option::<(String, PackageExports)>::from(package)?;
+            packages.insert(id, package);
+        }
+        Some(packages)
+    }
+}
+
+impl From<fb::PackageExports<'_>> for Option<(String, PackageExports)> {
+    fn from(a: fb::PackageExports<'_>) -> Self {
+        let id: String = a.id()?.into();
+        let exports: Option<PackageExports> = a.package()?.into();
+        Some((id, exports?))
+    }
+}
+
+impl From<fb::TypeEnvironment<'_>> for Option<PackageExports> {
+    fn from(env: fb::TypeEnvironment) -> Option<PackageExports> {
         let env = env.assignments()?;
         let mut types = PolyTypeMap::new();
         for value in env.iter() {
             let assignment: Option<(String, PolyType)> = value.into();
             let (id, ty) = assignment?;
-            types.insert(id, ty);
+            types.insert(Symbol::from(id), ty);
         }
-        Some(ExportEnvironment::from(types))
+        PackageExports::try_from(types).ok()
     }
 }
 
@@ -155,18 +179,18 @@ fn from_table(table: flatbuffers::Table, t: fb::MonoType) -> Option<MonoType> {
 
 impl From<fb::Basic<'_>> for MonoType {
     fn from(t: fb::Basic) -> MonoType {
-        match t.t() {
-            fb::Type::Bool => MonoType::Bool,
-            fb::Type::Int => MonoType::Int,
-            fb::Type::Uint => MonoType::Uint,
-            fb::Type::Float => MonoType::Float,
-            fb::Type::String => MonoType::String,
-            fb::Type::Duration => MonoType::Duration,
-            fb::Type::Time => MonoType::Time,
-            fb::Type::Regexp => MonoType::Regexp,
-            fb::Type::Bytes => MonoType::Bytes,
+        MonoType::from(match t.t() {
+            fb::Type::Bool => BuiltinType::Bool,
+            fb::Type::Int => BuiltinType::Int,
+            fb::Type::Uint => BuiltinType::Uint,
+            fb::Type::Float => BuiltinType::Float,
+            fb::Type::String => BuiltinType::String,
+            fb::Type::Duration => BuiltinType::Duration,
+            fb::Type::Time => BuiltinType::Time,
+            fb::Type::Regexp => BuiltinType::Regexp,
+            fb::Type::Bytes => BuiltinType::Bytes,
             _ => unreachable!("Unknown fb::Type"),
-        }
+        })
     }
 }
 
@@ -218,7 +242,7 @@ impl From<fb::Record<'_>> for Option<MonoType> {
 impl From<fb::Prop<'_>> for Option<Property> {
     fn from(t: fb::Prop) -> Option<Property> {
         Some(Property {
-            k: t.k()?.to_owned(),
+            k: Label::from(t.k()?),
             v: from_table(t.v()?, t.v_type())?,
         })
     }
@@ -306,12 +330,41 @@ where
     mapped
 }
 
+pub fn build_packages<'a>(
+    builder: &mut flatbuffers::FlatBufferBuilder<'a>,
+    env: Packages,
+) -> flatbuffers::WIPOffset<fb::Packages<'a>> {
+    let packages = build_vec(env.into_iter().collect(), builder, build_package);
+    let packages = builder.create_vector(packages.as_slice());
+    fb::Packages::create(
+        builder,
+        &fb::PackagesArgs {
+            packages: Some(packages),
+        },
+    )
+}
+
+fn build_package<'a>(
+    builder: &mut flatbuffers::FlatBufferBuilder<'a>,
+    (id, package): (String, PackageExports),
+) -> flatbuffers::WIPOffset<fb::PackageExports<'a>> {
+    let id = builder.create_string(&id);
+    let package = build_env(builder, package);
+    fb::PackageExports::create(
+        builder,
+        &fb::PackageExportsArgs {
+            id: Some(id),
+            package: Some(package),
+        },
+    )
+}
+
 pub fn build_env<'a>(
     builder: &mut flatbuffers::FlatBufferBuilder<'a>,
-    env: ExportEnvironment,
+    env: PackageExports,
 ) -> flatbuffers::WIPOffset<fb::TypeEnvironment<'a>> {
     let assignments = build_vec(
-        env.values.into_iter().collect(),
+        env.into_bindings().collect(),
         builder,
         build_type_assignment,
     );
@@ -337,9 +390,9 @@ pub fn build_module<'a>(
 
 fn build_type_assignment<'a>(
     builder: &mut flatbuffers::FlatBufferBuilder<'a>,
-    assignment: (String, PolyType),
+    assignment: (Symbol, PolyType),
 ) -> flatbuffers::WIPOffset<fb::TypeAssignment<'a>> {
-    let id = builder.create_string(&assignment.0);
+    let id = builder.create_string(assignment.0.full_name());
     let ty = build_polytype(builder, assignment.1);
     fb::TypeAssignment::create(
         builder,
@@ -402,57 +455,7 @@ pub fn build_type(
 ) {
     match t {
         MonoType::Error => unreachable!(),
-        MonoType::Bool => {
-            let a = fb::BasicArgs { t: fb::Type::Bool };
-            let v = fb::Basic::create(builder, &a);
-            (v.as_union_value(), fb::MonoType::Basic)
-        }
-        MonoType::Int => {
-            let a = fb::BasicArgs { t: fb::Type::Int };
-            let v = fb::Basic::create(builder, &a);
-            (v.as_union_value(), fb::MonoType::Basic)
-        }
-        MonoType::Uint => {
-            let a = fb::BasicArgs { t: fb::Type::Uint };
-            let v = fb::Basic::create(builder, &a);
-            (v.as_union_value(), fb::MonoType::Basic)
-        }
-        MonoType::Float => {
-            let a = fb::BasicArgs { t: fb::Type::Float };
-            let v = fb::Basic::create(builder, &a);
-            (v.as_union_value(), fb::MonoType::Basic)
-        }
-        MonoType::String => {
-            let a = fb::BasicArgs {
-                t: fb::Type::String,
-            };
-            let v = fb::Basic::create(builder, &a);
-            (v.as_union_value(), fb::MonoType::Basic)
-        }
-        MonoType::Duration => {
-            let a = fb::BasicArgs {
-                t: fb::Type::Duration,
-            };
-            let v = fb::Basic::create(builder, &a);
-            (v.as_union_value(), fb::MonoType::Basic)
-        }
-        MonoType::Time => {
-            let a = fb::BasicArgs { t: fb::Type::Time };
-            let v = fb::Basic::create(builder, &a);
-            (v.as_union_value(), fb::MonoType::Basic)
-        }
-        MonoType::Regexp => {
-            let a = fb::BasicArgs {
-                t: fb::Type::Regexp,
-            };
-            let v = fb::Basic::create(builder, &a);
-            (v.as_union_value(), fb::MonoType::Basic)
-        }
-        MonoType::Bytes => {
-            let a = fb::BasicArgs { t: fb::Type::Bytes };
-            let v = fb::Basic::create(builder, &a);
-            (v.as_union_value(), fb::MonoType::Basic)
-        }
+        MonoType::Builtin(typ) => build_basic_type(builder, typ),
         MonoType::Var(tvr) => {
             let offset = build_var(builder, *tvr);
             (offset.as_union_value(), fb::MonoType::Var)
@@ -478,6 +481,29 @@ pub fn build_type(
             (offset.as_union_value(), fb::MonoType::Fun)
         }
     }
+}
+
+fn build_basic_type(
+    builder: &mut flatbuffers::FlatBufferBuilder,
+    t: &BuiltinType,
+) -> (
+    flatbuffers::WIPOffset<flatbuffers::UnionWIPOffset>,
+    fb::MonoType,
+) {
+    let t = match t {
+        BuiltinType::Bool => fb::Type::Bool,
+        BuiltinType::Int => fb::Type::Int,
+        BuiltinType::Uint => fb::Type::Uint,
+        BuiltinType::Float => fb::Type::Float,
+        BuiltinType::String => fb::Type::String,
+        BuiltinType::Duration => fb::Type::Duration,
+        BuiltinType::Time => fb::Type::Time,
+        BuiltinType::Regexp => fb::Type::Regexp,
+        BuiltinType::Bytes => fb::Type::Bytes,
+    };
+    let a = fb::BasicArgs { t };
+    let v = fb::Basic::create(builder, &a);
+    (v.as_union_value(), fb::MonoType::Basic)
 }
 
 fn build_var<'a>(
@@ -579,7 +605,7 @@ fn build_prop<'a>(
     prop: &Property,
 ) -> flatbuffers::WIPOffset<fb::Prop<'a>> {
     let (off, typ) = build_type(builder, &prop.v);
-    let k = builder.create_string(&prop.k);
+    let k = builder.create_string(prop.k.as_symbol().full_name());
     fb::Prop::create(
         builder,
         &fb::PropArgs {
@@ -594,7 +620,7 @@ fn build_fun<'a>(
     builder: &mut flatbuffers::FlatBufferBuilder<'a>,
     mut fun: &Function,
 ) -> flatbuffers::WIPOffset<fb::Fun<'a>> {
-    let mut args = Vec::new();
+    let mut args: Vec<(&str, _, _, _)> = Vec::new();
     if let Some(pipe) = &fun.pipe {
         args.push((&pipe.k, &pipe.v, true, false))
     };
@@ -620,7 +646,7 @@ fn build_fun<'a>(
 
 fn build_arg<'a>(
     builder: &mut flatbuffers::FlatBufferBuilder<'a>,
-    arg: (&String, &MonoType, bool, bool),
+    arg: (&str, &MonoType, bool, bool),
 ) -> flatbuffers::WIPOffset<fb::Argument<'a>> {
     let name = builder.create_string(arg.0);
     let (buf_offset, typ) = build_type(builder, arg.1);
@@ -639,9 +665,11 @@ fn build_arg<'a>(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    use std::convert::TryInto;
+
     use crate::{
-        ast::get_err_type_expression,
-        parser,
+        ast, parser,
         semantic::{convert::convert_polytype, sub::Substitution, types::SemanticMap},
     };
 
@@ -669,9 +697,7 @@ mod tests {
         let mut p = parser::Parser::new(expr.clone());
 
         let typ_expr = p.parse_type_expression();
-        let err = get_err_type_expression(typ_expr.clone());
-
-        if err != "" {
+        if let Err(err) = ast::check::check(ast::walk::Node::TypeExpression(&typ_expr)) {
             panic!("TypeExpression parsing failed for {}. {:?}", expr, err);
         }
         let want = convert_polytype(typ_expr, &mut Substitution::default()).unwrap();
@@ -686,29 +712,28 @@ mod tests {
     fn serde_type_environment() {
         let mut p = parser::Parser::new("bool");
         let typ_expr = p.parse_type_expression();
-        let err = get_err_type_expression(typ_expr.clone());
-        if err != "" {
+        if let Err(err) = ast::check::check(ast::walk::Node::TypeExpression(&typ_expr)) {
             panic!("TypeExpression parsing failed for bool. {:?}", err);
         }
         let a = convert_polytype(typ_expr, &mut Substitution::default()).unwrap();
 
         let mut p = parser::Parser::new("time");
         let typ_expr = p.parse_type_expression();
-        let err = get_err_type_expression(typ_expr.clone());
-        if err != "" {
+        if let Err(err) = ast::check::check(ast::walk::Node::TypeExpression(&typ_expr)) {
             panic!("TypeExpression parsing failed for time. {:?}", err);
         }
         let b = convert_polytype(typ_expr, &mut Substitution::default()).unwrap();
 
-        let want: ExportEnvironment = semantic_map! {
-            String::from("a") => a,
-            String::from("b") => b,
+        let want: PackageExports = semantic_map! {
+            Symbol::from("a") => a,
+            Symbol::from("b") => b,
         }
-        .into();
+        .try_into()
+        .unwrap();
 
         let mut builder = flatbuffers::FlatBufferBuilder::new();
         let buf = serialize(&mut builder, want.clone(), build_env);
-        let got = deserialize::<fb::TypeEnvironment, Option<ExportEnvironment>>(buf);
+        let got = deserialize::<fb::TypeEnvironment, Option<PackageExports>>(buf);
 
         assert_eq!(want, got.unwrap());
     }
@@ -733,7 +758,7 @@ mod tests {
         let want = PolyType {
             vars: vec![],
             cons: TvarKinds::new(),
-            expr: MonoType::from(Vector(MonoType::Int)),
+            expr: MonoType::from(Vector(MonoType::INT)),
         };
 
         let mut builder = flatbuffers::FlatBufferBuilder::new();

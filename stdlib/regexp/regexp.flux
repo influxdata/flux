@@ -1,255 +1,187 @@
-// Flux regular expressions package includes functions that provide enhanced
-// regular expression functionality.
+// Package regexp provides tools for working with regular expressions.
+//
+// introduced: 0.33.0
+//
 package regexp
 
 
-// compile is a function that parses a regular expression and,
-//  if successful, returns a Regexp object that can be used to
-//  match against text.
+// compile parses a string into a regular expression and returns a regexp type
+// that can be used to match against strings.
 //
 // ## Parameters
-// - `v` is the string value to parse into regular expression.
+// - v: String value to parse into a regular expression.
 //
-// ## Example
+// ## Examples
 //
-// ```
+// ### Convert a string into a regular expression
+// ```no_run
 // import "regexp"
 //
 // regexp.compile(v: "abcd")
-// // Returns the regexp object `abcd`
+// // Returns the regexp object /abcd/
 // ```
 //
-// ## Use a string value as a regular expression
+// tags: type-conversions
 //
-// ```
-// import "regexp"
-//
-// data
-//   |> map(fn: (r) => ({
-//       r with
-//       regexStr: r.regexStr,
-//       _value: r._value,
-//       firstRegexMatch: findString(
-//         r: regexp.compile(v: regexStr),
-//         v: r._value
-//       )
-//     })
-//   )
-// ```
 builtin compile : (v: string) => regexp
 
-// quoteMeta is a function that escapes all regular expression
-//  metacharacters inside of a string.
+// quoteMeta escapes all regular expression metacharacters in a string.
 //
 // ## Parameters
-// - `v` is the string that contains regular expression metacharacters
-//   to escape
+// - v: String that contains regular expression metacharacters to escape.
 //
-// ## Example
+// ## Examples
 //
-// ```
+// ### Escape regular expression metacharacters in a string
+// ```no_run
 // import "regexp"
 //
 // regexp.quoteMeta(v: ".+*?()|[]{}^$")
 // // Returns "\.\+\*\?\(\)\|\[\]\{\}\^\$"
 // ```
 //
-// ## Escape regular expression meta characters in column values
-//
-// ```
-// import "regexp"
-//
-// data
-//   |> map(fn: (r) => ({
-//       r with
-//       notes: r.notes,
-//       notes_escaped: regexp.quoteMeta(v: r.notes)
-//     })
-//   )
-// ```
 builtin quoteMeta : (v: string) => string
 
-// findString is a function that returns the left-most regular expression
-//  match in a string.
+// findString returns the left-most regular expression match in a string.
 //
 // ## Parameters
-// - `r` is the regular expression used to search v.
-// - `v` is the string value to search.
+// - r: Regular expression used to search `v`.
+// - v: String value to search.
 //
-// ## Example
+// ## Examples
 //
-// ```
+// ### Return the first regular expression match in a string
+// ```no_run
 // import "regexp"
 //
 // regexp.findString(r: /foo.?/, v: "seafood fool")
 // // Returns "food"
 // ```
 //
-// ## Find the first regular expression match in each row
-//
+// ### Find the first regular expression match in each row
 // ```
 // import "regexp"
+// import "sampledata"
 //
-// data
-//   |> map(fn: (r) => ({
-//       r with
-//       message: r.message,
-//       regexp: r.regexp,
-//       match: regexp.findString(r: r.regexp, v: r.message)
-//     })
-//   )
+// regex = /.{6}$/
+//
+// < sampledata.string()
+// >     |> map(fn: (r) => ({r with _value: regexp.findString(v: r._value, r: regex)}))
 // ```
+//
 builtin findString : (r: regexp, v: string) => string
 
-// findStringIdex is a function that returns a two-element array of integers
-//  defining the beginning and ending indexes of the left-most regular
-//  expression match in a string.
+// findStringIndex returns a two-element array of integers that represent the
+// beginning and ending indexes of the first regular expression match in a string.
 //
 // ## Parameters
-// - 'r' is the regular expression used to search v.
-// - `v` is the string value to search.
+// - r: Regular expression used to search `v`.
+// - v: String value to search.
 //
-// ## Example
+// ## Examples
 //
-// ```
+// ### Index the bounds of first regular expression match in each row
+// ```no_run
 // import "regexp"
 //
 // regexp.findStringIndex(r: /ab?/, v: "tablet")
 // // Returns [1, 3]
 // ```
 //
-// ## Index the bounds of first regular expression match in each row
-//
-// ```
-// import "regexp"
-//
-// data
-//   |> map(fn: (r) => ({
-//       r with
-//       regexStr: r.regexStr,
-//       _value: r._value,
-//       matchIndex: regexp.findStringIndex(
-//         r: regexp.compile(r.regexStr),
-//         v: r._value
-//       )
-//     })
-//   )
-// ```
 builtin findStringIndex : (r: regexp, v: string) => [int]
 
-// matchRegexpString is a function that tests if a string contains any
-//  match to a regular expression.
+// matchRegexpString tests if a string contains any match to a regular expression.
 //
 // ## Parameters
-// - `r` is the regular expression used to search v.
-// - `v` is the string value to search.
+// - r: Regular expression used to search `v`.
+// - v: String value to search.
 //
-// ## Example
+// ## Examples
 //
-// ```
+// ### Test if a string contains a regular expression match
+// ```no_run
 // import "regexp"
 //
 // regexp.matchRegexpString(r: /(gopher){2}/, v: "gophergophergopher")
 // // Returns true
 // ```
 //
-// ## Filter by columns that contain matches to a regular expression
-//
+// ### Filter by rows that contain matches to a regular expression
 // ```
 // import "regexp"
+// import "sampledata"
 //
-// data
-//   |> filter(fn: (r) =>
-//     regexp.matchRegexpString(
-//       r: /Alert\:/,
-//       v: r.message
-//     )
-//   )
+// sampledata.string()
+//   |> filter(fn: (r) => regexp.matchRegexpString(r: /_\d/, v: r._value))
 // ```
 builtin matchRegexpString : (r: regexp, v: string) => bool
 
-// replaceAllString is a function that replaces all reguar expression matches
-//  in a string with a specified replacement.
+// replaceAllString replaces all reguar expression matches in a string with a
+// specified replacement.
 //
 // ## Parameters
-// - `r` is the regular expression used to search v.
-// - `v` is the string value to search.
-// - `t` is the replacement for matches to r.
+// - r: Regular expression used to search `v`.
+// - v: String value to search.
+// - t: Replacement for matches to `r`.
 //
-// ## Example
+// ## Examples
 //
-// ```
+// ### Replace regular expression matches in a string
+// ```no_run
 // import "regexp"
 //
 // regexp.replaceAllString(r: /a(x*)b/, v: "-ab-axxb-", t: "T")
 // // Returns "-T-T-"
 // ```
 //
-// ## Replace regular expression matches in string column values
-//
+// ### Replace regular expression matches in string column values
 // ```
 // import "regexp"
+// import "sampledata"
 //
-// data
-//   |> map(fn: (r) => ({
-//       r with
-//       message: r.message,
-//       updated_message: regexp.replaceAllString(
-//         r: /cat|bird|ferret/,
-//         v: r.message,
-//         t: "dog"
-//       )
-//   }))
+// < sampledata.string()
+// >     |> map(fn: (r) => ({r with _value: regexp.replaceAllString(r: /smpl_/, v: r._value, t: "")}))
 // ```
+//
 builtin replaceAllString : (r: regexp, v: string, t: string) => string
 
-// splitRegexp is a function that splits a string into substrings separated
-//  by regular expression matches and return an array of i substrings
-//  between matches.
+// splitRegexp splits a string into substrings separated by regular expression
+// matches and returns an array of `i` substrings between matches.
 //
 // ## Parameters
-// - `r` is the regular expression used to search v.
-// - `v` is the string value to be searched.
-// - `i` is the maximum number of substrings to return.
+// - r: Regular expression used to search `v`.
+// - v: String value to be searched.
+// - i: Maximum number of substrings to return.
 //
 //   -1 returns all matching substrings.
 //
-// ## Example
+// ## Examples
 //
-// ```
+// ### Return an array of regular expression matches
+// ```no_run
 // import "regexp"
 //
-// regexp.splitRegexp(r: /a*/, v: "abaabaccadaaae", i: 5)
-// // Returns ["", "b", "b", "c", "cadaaae"]
+// regexp.splitRegexp(r: /a*/, v: "abaabaccadaaae", i: -1)
+// // Returns ["", "b", "b", "c", "c", "d", "e"]
 // ```
+//
 builtin splitRegexp : (r: regexp, v: string, i: int) => [string]
 
-// getString is a function that returns the source string used to compile
-//  a regular expression.
+// getString returns the source string used to compile a regular expression.
 //
 // ## Parameters
-// - `r` is the regular expression object to convert to a string.
+// - r: Regular expression object to convert to a string.
 //
 // ## Example
 //
-// ```
+// ### Convert a regular expression to a string
+// ```no_run
 // import "regexp"
 //
 // regexp.getString(r: /[a-zA-Z]/)
 // // Returns "[a-zA-Z]"
 // ```
 //
-// ## Convert regular expressions into strings in each row
+// tags: type-conversions
 //
-// ```
-// import "regexp"
-//
-// data
-//   |> map(fn: (r) => ({
-//       r with
-//       regex: r.regex,
-//       regexStr: regexp.getString(r: r.regex)
-//     })
-//   )
-// ```
 builtin getString : (r: regexp) => string

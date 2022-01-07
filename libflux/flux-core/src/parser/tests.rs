@@ -1390,7 +1390,7 @@ fn builtin() {
         parsed,
         File {
             base: BaseNode {
-                location: loc.get(1, 1, 1, 13),
+                location: loc.get(1, 1, 1, 19),
                 ..BaseNode::default()
             },
             name: "".to_string(),
@@ -1399,7 +1399,7 @@ fn builtin() {
             imports: vec![],
             body: vec![Statement::Builtin(Box::new(BuiltinStmt {
                 base: BaseNode {
-                    location: loc.get(1, 1, 1, 13),
+                    location: loc.get(1, 1, 1, 19),
                     ..BaseNode::default()
                 },
                 id: Identifier {
@@ -1593,7 +1593,7 @@ builtin foo
         parsed,
         File {
             base: BaseNode {
-                location: loc.get(2, 1, 2, 12),
+                location: loc.get(2, 1, 4, 6),
                 ..BaseNode::default()
             },
             name: "".to_string(),
@@ -1602,7 +1602,7 @@ builtin foo
             imports: vec![],
             body: vec![Statement::Builtin(Box::new(BuiltinStmt {
                 base: BaseNode {
-                    location: loc.get(2, 1, 2, 12),
+                    location: loc.get(2, 1, 4, 6),
                     comments: vec![ast::Comment {
                         text: String::from("// Comment\n"),
                     }],

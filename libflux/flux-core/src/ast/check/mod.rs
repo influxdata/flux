@@ -1,10 +1,11 @@
 //! Checking the AST.
 
+use codespan_reporting::diagnostic;
 use thiserror::Error;
 
 use crate::{
     ast::{walk, PropertyKey},
-    errors::{located, Errors, Located},
+    errors::{located, AsDiagnostic, Errors, Located},
 };
 
 /// Inspects an AST node and returns a list of found AST errors plus
@@ -12,7 +13,7 @@ use crate::{
 pub fn check(node: walk::Node) -> Result<(), Errors<Error>> {
     let mut errors = Errors::new();
     walk::walk(
-        &walk::create_visitor(&mut |n| {
+        &mut |n: walk::Node| {
             // collect any errors we found prior to ast.check().
             for err in n.base().errors.iter() {
                 errors.push(located(
@@ -23,7 +24,7 @@ pub fn check(node: walk::Node) -> Result<(), Errors<Error>> {
                 ));
             }
 
-            match *n {
+            match n {
                 walk::Node::BadStmt(n) => errors.push(located(
                     n.base.location.clone(),
                     ErrorKind {
@@ -75,7 +76,7 @@ pub fn check(node: walk::Node) -> Result<(), Errors<Error>> {
                 }
                 _ => {}
             }
-        }),
+        },
         node,
     );
     if errors.is_empty() {
@@ -94,6 +95,12 @@ pub type Error = Located<ErrorKind>;
 pub struct ErrorKind {
     /// Error message.
     pub message: String,
+}
+
+impl AsDiagnostic for ErrorKind {
+    fn as_diagnostic(&self, _source: &dyn crate::semantic::Source) -> diagnostic::Diagnostic<()> {
+        diagnostic::Diagnostic::error().with_message(self.to_string())
+    }
 }
 
 #[cfg(test)]

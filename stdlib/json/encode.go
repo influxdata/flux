@@ -3,7 +3,6 @@ package json
 import (
 	"context"
 	"encoding/json"
-	"github.com/influxdata/flux"
 	"time"
 
 	"github.com/influxdata/flux/codes"
@@ -67,10 +66,8 @@ func convertValue(v values.Value) (interface{}, error) {
 		// the Array interface. Since TableObject will currently panic
 		// if the methods provided by this interface are invoked, short-circuit
 		// by returning an error.
-		// XXX: In the future we may delineate the difference between
-		//      fully-realized and streamed collections making this unnecessary.
-		//      <https://github.com/influxdata/flux/issues/4275>
-		case *flux.TableObject:
+		// XXX: remove when array/stream are different types <https://github.com/influxdata/flux/issues/4343>
+		case values.TableObject:
 			return nil, errors.New(
 				codes.Invalid,
 				"got table stream instead of array. "+

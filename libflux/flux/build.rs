@@ -8,9 +8,7 @@ use std::{
 };
 
 use anyhow::{bail, Result};
-use fluxcore::semantic::{
-    bootstrap, flatbuffers::types as fb, sub::Substitutable, ExportEnvironment,
-};
+use fluxcore::semantic::{bootstrap, flatbuffers::types as fb, sub::Substitutable};
 use walkdir::WalkDir;
 
 fn serialize<'a, T, S, F>(ty: T, f: F, path: &path::Path) -> Result<()>
@@ -63,12 +61,13 @@ fn main() -> Result<()> {
 
     // Validate there aren't any free type variables in the environment
     for (name, ty) in prelude.iter() {
-        if !ty.free_vars().is_empty() {
+        if !ty.mk_free_vars().is_empty() {
             bail!("found free variables in type of {}: {}", name, ty);
         }
     }
-    for (name, ty) in &imports {
-        if !ty.free_vars().is_empty() {
+    for (name, package) in &imports {
+        let ty = package.typ();
+        if !ty.mk_free_vars().is_empty() {
             bail!("found free variables in type of package {}: {}", name, ty);
         }
     }
@@ -77,7 +76,7 @@ fn main() -> Result<()> {
     serialize(prelude, fb::build_env, &path)?;
 
     let path = dir.join("stdlib.data");
-    serialize(ExportEnvironment::from(imports), fb::build_env, &path)?;
+    serialize(imports, fb::build_packages, &path)?;
 
     Ok(())
 }

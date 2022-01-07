@@ -6,7 +6,8 @@ import "strings"
 
 option now = () => 2030-01-01T00:00:00Z
 
-inData = "
+inData =
+    "
 #datatype,string,long,dateTime:RFC3339,string,string,string,string,string,string,string
 #group,false,false,false,false,true,true,true,true,true,true
 #default,_result,,,,,,,,,
@@ -18,7 +19,8 @@ inData = "
 ,,0,2018-05-22T19:54:06Z,cLnSkNMI ,used_percent,disk,disk1,apfs,host.local,/
 ,,0,2018-05-22T19:54:16Z,13F2,used_percent,disk,disk1,apfs,host.local,/
 "
-outData = "
+outData =
+    "
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,string,string,string,string
 #group,false,false,true,true,false,false,true,true,true,true,true,true
 #default,_result,,,,,,,,,,,
@@ -31,14 +33,16 @@ outData = "
 ,,0,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,2018-05-22T19:54:16Z,const,used_percent,disk,disk1,apfs,host.local,/
 "
 myVal = "wrong"
-t_shadow_var = (table=<-) => table
-    |> range(start: 2018-05-22T19:53:26Z)
-    |> map(
-        fn: (r) => {
-            myVal = "const"
-    
-            return {r with _value: myVal}
-        },
-    )
+t_shadow_var = (table=<-) =>
+    table
+        |> range(start: 2018-05-22T19:53:26Z)
+        |> map(
+            fn: (r) => {
+                myVal = "const"
 
-test _shadow_var = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_shadow_var})
+                return {r with _value: myVal}
+            },
+        )
+
+test _shadow_var = () =>
+    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_shadow_var})

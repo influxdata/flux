@@ -5,7 +5,8 @@ import "testing"
 
 option now = () => 2030-01-01T00:00:00Z
 
-inData = "
+inData =
+    "
 #datatype,string,long,dateTime:RFC3339,double,string,string,string
 #group,false,false,false,false,true,true,true
 #default,_result,,,,,,
@@ -27,7 +28,8 @@ inData = "
 ,,3,2018-05-22T19:54:06Z,2,RAM,user2,b
 ,,3,2018-05-22T19:54:16Z,10,RAM,user2,b
 "
-outData = "
+outData =
+    "
 #datatype,string,long,string,dateTime:RFC3339,double,double,string,string,string
 #group,false,false,true,false,false,false,true,false,true
 #default,_result,,,,,,,,
@@ -40,16 +42,18 @@ outData = "
 ,,1,RAM,2018-05-22T19:53:56Z,5,0,user1,user2,b
 "
 t_join = (table=<-) => {
-    left = table
-        |> range(start: 2018-05-22T19:53:00Z, stop: 2018-05-22T19:55:00Z)
-        |> drop(columns: ["_start", "_stop"])
-        |> filter(fn: (r) => r.user == "user1")
-        |> group(columns: ["user"])
-    right = table
-        |> range(start: 2018-05-22T19:53:00Z, stop: 2018-05-22T19:55:00Z)
-        |> drop(columns: ["_start", "_stop"])
-        |> filter(fn: (r) => r.user == "user2")
-        |> group(columns: ["_measurement", "_field"])
+    left =
+        table
+            |> range(start: 2018-05-22T19:53:00Z, stop: 2018-05-22T19:55:00Z)
+            |> drop(columns: ["_start", "_stop"])
+            |> filter(fn: (r) => r.user == "user1")
+            |> group(columns: ["user"])
+    right =
+        table
+            |> range(start: 2018-05-22T19:53:00Z, stop: 2018-05-22T19:55:00Z)
+            |> drop(columns: ["_start", "_stop"])
+            |> filter(fn: (r) => r.user == "user2")
+            |> group(columns: ["_measurement", "_field"])
 
     return join(tables: {left: left, right: right}, on: ["_time", "_measurement", "_field"])
 }

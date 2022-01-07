@@ -4,6 +4,7 @@ use derive_more::Display;
 
 use crate::{
     ast::SourceLocation,
+    errors::{Errors, Located},
     semantic::{
         env::Environment,
         sub::{Substitutable, Substituter, Substitution},
@@ -115,26 +116,41 @@ impl Substitutable for Error {
             err,
         })
     }
-    fn free_vars(&self) -> Vec<Tvar> {
-        self.err.free_vars()
+    fn free_vars(&self, vars: &mut Vec<Tvar>) {
+        self.err.free_vars(vars)
     }
 }
 
 // Solve a set of type constraints
-pub fn solve(cons: &[Constraint], sub: &mut Substitution) -> Result<(), Error> {
+pub fn solve(
+    cons: &[Constraint],
+    sub: &mut Substitution,
+) -> Result<(), Errors<Located<types::Error>>> {
+    let mut errors = Errors::new();
     for constraint in cons {
         match constraint {
             Constraint::Kind { exp, act, loc } => {
                 // Apply the current substitution to the type, then constrain
-                constrain(*exp, act, loc, sub)?;
+                if let Err(err) = constrain(*exp, act, loc, sub) {
+                    errors.push(err);
+                }
             }
             Constraint::Equal { exp, act, loc } => {
                 // Apply the current substitution to the constraint, then unify
-                equal(exp, act, loc, sub)?;
+                if let Err(err) = equal(exp, act, loc, sub) {
+                    errors.extend(err.error.into_iter().map(|error| Located {
+                        location: loc.clone(),
+                        error,
+                    }));
+                }
             }
         }
     }
-    Ok(())
+    if errors.has_errors() {
+        Err(errors)
+    } else {
+        Ok(())
+    }
 }
 
 pub fn constrain(
@@ -142,13 +158,13 @@ pub fn constrain(
     act: &MonoType,
     loc: &SourceLocation,
     sub: &mut Substitution,
-) -> Result<(), Error> {
+) -> Result<(), Located<types::Error>> {
     log::debug!("Constraint::Kind {:?}: {} => {}", loc.source, exp, act);
     act.apply_cow(sub)
         .constrain(exp, sub.cons())
-        .map_err(|err| Error {
-            loc: loc.clone(),
-            err,
+        .map_err(|error| Located {
+            location: loc.clone(),
+            error,
         })
 }
 
@@ -157,11 +173,11 @@ pub fn equal(
     act: &MonoType,
     loc: &SourceLocation,
     sub: &mut Substitution,
-) -> Result<(), Error> {
+) -> Result<(), Located<Errors<types::Error>>> {
     log::debug!("Constraint::Equal {:?}: {} <===> {}", loc.source, exp, act);
-    exp.unify(act, sub).map_err(|err| Error {
-        loc: loc.clone(),
-        err,
+    exp.try_unify(act, sub).map_err(|error| Located {
+        location: loc.clone(),
+        error,
     })
 }
 
@@ -174,7 +190,7 @@ pub fn equal(
 // type environment.
 //
 pub fn generalize(env: &Environment, with: &TvarKinds, t: MonoType) -> PolyType {
-    let vars = minus(&env.free_vars(), t.free_vars());
+    let vars = minus(&env.mk_free_vars(), t.mk_free_vars());
     let mut cons = TvarKinds::new();
     for tv in &vars {
         if let Some(kinds) = with.get(tv) {

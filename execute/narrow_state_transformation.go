@@ -12,11 +12,10 @@ type NarrowStateTransformation interface {
 	// Process will process the TableView.
 	Process(chunk table.Chunk, state interface{}, d *TransportDataset, mem memory.Allocator) (interface{}, bool, error)
 
-	Disposable
+	Closer
 }
 
 var _ Transport = (*narrowStateTransformation)(nil)
-var _ Transformation = (*narrowStateTransformation)(nil)
 
 type narrowStateTransformation struct {
 	t NarrowStateTransformation
@@ -30,7 +29,7 @@ func NewNarrowStateTransformation(id DatasetID, t NarrowStateTransformation, mem
 		t: t,
 		d: NewTransportDataset(id, mem),
 	}
-	return tr, tr.d, nil
+	return NewTransformationFromTransport(tr), tr.d, nil
 }
 
 // ProcessMessage will process the incoming message.
@@ -55,60 +54,31 @@ func (n *narrowStateTransformation) ProcessMessage(m Message) error {
 			return err
 		}
 		if v, ok := n.d.Delete(m.Key()); ok {
-			if v, ok := v.(Disposable); ok {
-				v.Dispose()
+			if v, ok := v.(Closer); ok {
+				if err := v.Close(); err != nil {
+					return err
+				}
 			}
 		}
 		return nil
 	case ProcessMsg:
-		return n.Process(m.SrcDatasetID(), m.Table())
+		panic("unreachable")
 	}
 	return nil
-}
-
-// Process is implemented to remain compatible with legacy upstreams.
-// It converts the incoming stream into a set of appropriate messages.
-func (n *narrowStateTransformation) Process(id DatasetID, tbl flux.Table) error {
-	if err := tbl.Do(func(cr flux.ColReader) error {
-		chunk := table.ChunkFromReader(cr)
-		chunk.Retain()
-		m := processChunkMsg{
-			srcMessage: srcMessage(id),
-			chunk:      chunk,
-		}
-		return n.ProcessMessage(&m)
-	}); err != nil {
-		return err
-	}
-
-	m := flushKeyMsg{
-		srcMessage: srcMessage(id),
-		key:        tbl.Key(),
-	}
-	return n.ProcessMessage(&m)
 }
 
 // Finish is implemented to remain compatible with legacy upstreams.
 func (n *narrowStateTransformation) Finish(id DatasetID, err error) {
 	_ = n.d.Range(func(key flux.GroupKey, value interface{}) error {
-		if v, ok := value.(Disposable); ok {
-			v.Dispose()
+		if v, ok := value.(Closer); ok {
+			return v.Close()
 		}
 		return nil
 	})
+	err = Close(err, n.t)
 	n.d.Finish(err)
-	n.t.Dispose()
 }
 
 func (n *narrowStateTransformation) OperationType() string {
 	return OperationType(n.t)
-}
-func (n *narrowStateTransformation) RetractTable(id DatasetID, key flux.GroupKey) error {
-	return nil
-}
-func (n *narrowStateTransformation) UpdateWatermark(id DatasetID, t Time) error {
-	return nil
-}
-func (n *narrowStateTransformation) UpdateProcessingTime(id DatasetID, t Time) error {
-	return nil
 }

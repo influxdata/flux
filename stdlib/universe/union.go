@@ -8,6 +8,7 @@ import (
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
+	"github.com/influxdata/flux/internal/feature"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic"
@@ -99,6 +100,10 @@ func createUnionTransformation(id execute.DatasetID, mode execute.AccumulationMo
 	s, ok := spec.(*UnionProcedureSpec)
 	if !ok {
 		return nil, nil, errors.Newf(codes.Invalid, "invalid spec type %T", spec)
+	}
+
+	if feature.OptimizeUnionTransformation().Enabled(a.Context()) {
+		return newUnionTransformation2(id, a.Parents(), a.Allocator())
 	}
 
 	cache := execute.NewTableBuilderCache(a.Allocator())

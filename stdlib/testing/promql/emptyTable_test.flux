@@ -6,7 +6,8 @@ import "internal/promql"
 
 option now = () => 2030-01-01T00:00:00Z
 
-outData = "
+outData =
+    "
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double
 #group,false,true,true,true,false,false
 #default,_result,0,1970-01-01T00:00:00Z,1970-01-01T00:00:00Z,,

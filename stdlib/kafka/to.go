@@ -70,6 +70,10 @@ func (o *ToKafkaOpSpec) ReadArgs(args flux.Arguments) error {
 	if err != nil {
 		return err
 	}
+	// XXX: remove when array/stream are different types <https://github.com/influxdata/flux/issues/4343>
+	if _, ok := brokers.(values.TableObject); ok {
+		return errors.New(codes.Invalid, "brokers cannot be a table stream; expected an array")
+	}
 	l := brokers.Len()
 
 	o.Brokers = make([]string, l)
@@ -119,6 +123,10 @@ func (o *ToKafkaOpSpec) ReadArgs(args flux.Arguments) error {
 	}
 	o.TagColumns = o.TagColumns[:0]
 	if ok {
+		// XXX: remove when array/stream are different types <https://github.com/influxdata/flux/issues/4343>
+		if _, ok := tagColumns.(values.TableObject); ok {
+			return errors.New(codes.Invalid, "tagColumns cannot be a table stream; expected an array")
+		}
 		for i := 0; i < tagColumns.Len(); i++ {
 			o.TagColumns = append(o.TagColumns, tagColumns.Get(i).Str())
 		}
@@ -127,6 +135,10 @@ func (o *ToKafkaOpSpec) ReadArgs(args flux.Arguments) error {
 	valueColumns, ok, err := args.GetArray("valueColumns", semantic.String)
 	if err != nil {
 		return err
+	}
+	// XXX: remove when array/stream are different types <https://github.com/influxdata/flux/issues/4343>
+	if _, ok := valueColumns.(values.TableObject); ok {
+		return errors.New(codes.Invalid, "valueColumns cannot be a table stream; expected an array")
 	}
 	o.ValueColumns = o.ValueColumns[:0]
 	if !ok || valueColumns.Len() == 0 {

@@ -5,7 +5,8 @@ import "testing"
 
 option now = () => 2030-01-01T00:00:00Z
 
-inData = "
+inData =
+    "
 #datatype,string,long,dateTime:RFC3339,string,string,string,double
 #group,false,false,false,true,true,true,false
 #default,_result,,,,,,
@@ -72,15 +73,17 @@ inData = "
 "
 
 testcase show_fields_with_meas_pred {
-    result = testing.loadStorage(csv: inData)
-        |> range(start: 2018-01-01T00:00:00Z, stop: 2019-01-01T00:00:00Z)
-        |> filter(fn: (r) => r._measurement == "sys")
-        |> keep(columns: ["_field"])
-        |> group()
-        |> distinct(column: "_field")
-        |> sort()
+        result =
+            testing.loadStorage(csv: inData)
+                |> range(start: 2018-01-01T00:00:00Z, stop: 2019-01-01T00:00:00Z)
+                |> filter(fn: (r) => r._measurement == "sys")
+                |> keep(columns: ["_field"])
+                |> group()
+                |> distinct(column: "_field")
+                |> sort()
 
-    out_fields = "
+        out_fields =
+            "
 #datatype,string,long,string
 #group,false,false,false
 #default,0,,
@@ -91,5 +94,5 @@ testcase show_fields_with_meas_pred {
 ,,0,load9
 "
 
-    testing.diff(got: result, want: testing.loadMem(csv: out_fields)) |> yield()
-}
+        testing.diff(got: result, want: testing.loadMem(csv: out_fields)) |> yield()
+    }

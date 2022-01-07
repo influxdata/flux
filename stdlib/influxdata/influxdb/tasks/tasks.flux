@@ -1,7 +1,7 @@
 // Package tasks provides tools for working with InfluxDB tasks.
 //
 // introduced: 0.84.0
-// 
+//
 package tasks
 
 
@@ -35,16 +35,16 @@ builtin _lastSuccess : (orTime: T, lastSuccessTime: time) => time where T: Timea
 //
 // ```no_run
 // import "influxdata/influxdb/tasks"
-// 
+//
 // option task = {
 //     name: "Example task",
 //     every: 30m,
 // }
-// 
+//
 // from(bucket: "example-bucket")
 //     |> range(start: tasks.lastSuccess(orTime: -task.every))
 // ```
-// 
+//
 // tags: metadata
 //
 lastSuccess = (orTime) => _lastSuccess(orTime, lastSuccessTime)

@@ -3,7 +3,8 @@ package planner_test
 
 import "testing"
 
-input = "
+input =
+    "
 #datatype,string,long,dateTime:RFC3339,string,string,string,double
 #group,false,false,false,true,true,true,false
 #default,_result,,,,,,
@@ -29,7 +30,8 @@ input = "
 ,,2,2018-05-22T19:53:56Z,system,host.local,load5,1.89
 ,,2,2018-05-22T19:54:16Z,system,host.local,load5,1.93
 "
-output = "
+output =
+    "
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,double
 #group,false,false,true,true,false,true,true,true,false
 #default,_result,,,,,,,,
@@ -44,9 +46,11 @@ output = "
 ,,7,2018-05-22T19:53:40Z,2018-05-22T19:54:00Z,2018-05-22T19:53:56Z,system,host.local,load5,1.89
 ,,8,2018-05-22T19:54:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:16Z,system,host.local,load5,1.93
 "
-window_min_fn = (tables=<-) => tables
-    |> range(start: 2018-04-22T19:53:00Z, stop: 2018-05-22T19:54:20Z)
-    |> window(every: 20s)
-    |> min()
+window_min_fn = (tables=<-) =>
+    tables
+        |> range(start: 2018-04-22T19:53:00Z, stop: 2018-05-22T19:54:20Z)
+        |> window(every: 20s)
+        |> min()
 
-test window_min_pushdown = () => ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: window_min_fn})
+test window_min_pushdown = () =>
+    ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: window_min_fn})

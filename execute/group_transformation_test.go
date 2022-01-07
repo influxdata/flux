@@ -206,8 +206,9 @@ func TestGroupTransformation_Finish(t *testing.T) {
 	tr, d, err := execute.NewGroupTransformation(
 		executetest.RandomDatasetID(),
 		&mock.GroupTransformation{
-			DisposeFn: func() {
+			CloseFn: func() error {
 				isDisposed = true
+				return nil
 			},
 		},
 		memory.DefaultAllocator,

@@ -4,7 +4,8 @@ package planner_test
 import "testing"
 import "planner"
 
-inData = "
+inData =
+    "
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,string,double
 #group,false,false,false,false,false,true,true,true,true,false
 #default,_result,,,,,,,,,
@@ -89,12 +90,14 @@ inData = "
 "
 
 testcase group_min_table {
-    result = testing.loadStorage(csv: inData)
-        |> range(start: 2019-11-25T00:00:00Z, stop: 2030-01-01T00:00:00Z)
-        |> group(columns: ["t0"])
-        |> min()
-        |> drop(columns: ["_start", "_stop"])
-    out_min_table = "
+        result =
+            testing.loadStorage(csv: inData)
+                |> range(start: 2019-11-25T00:00:00Z, stop: 2030-01-01T00:00:00Z)
+                |> group(columns: ["t0"])
+                |> min()
+                |> drop(columns: ["_start", "_stop"])
+        out_min_table =
+            "
 #datatype,string,long,dateTime:RFC3339,string,string,string,string,double
 #group,false,false,false,false,false,true,false,false
 #default,_result,,,,,,,
@@ -104,15 +107,17 @@ testcase group_min_table {
 ,,2,2019-11-25T00:00:00Z,m0,f0,a-2,b-0,1.0
 "
 
-    testing.diff(got: result, want: testing.loadMem(csv: out_min_table)) |> yield()
-}
+        testing.diff(got: result, want: testing.loadMem(csv: out_min_table)) |> yield()
+    }
 testcase group_max_table {
-    result = testing.loadStorage(csv: inData)
-        |> range(start: 2019-11-25T00:00:00Z, stop: 2030-01-01T00:00:00Z)
-        |> group(columns: ["t0"])
-        |> max()
-        |> drop(columns: ["_start", "_stop"])
-    out_max_table = "
+        result =
+            testing.loadStorage(csv: inData)
+                |> range(start: 2019-11-25T00:00:00Z, stop: 2030-01-01T00:00:00Z)
+                |> group(columns: ["t0"])
+                |> max()
+                |> drop(columns: ["_start", "_stop"])
+        out_max_table =
+            "
 #datatype,string,long,dateTime:RFC3339,string,string,string,string,double
 #group,false,false,false,false,false,true,false,false
 #default,_result,,,,,,,
@@ -122,15 +127,17 @@ testcase group_max_table {
 ,,2,2019-11-25T00:00:30Z,m0,f0,a-2,b-1,8.0
 "
 
-    testing.diff(got: result, want: testing.loadMem(csv: out_max_table)) |> yield()
-}
+        testing.diff(got: result, want: testing.loadMem(csv: out_max_table)) |> yield()
+    }
 testcase group_no_agg_table {
-    result = testing.loadStorage(csv: inData)
-        |> range(start: 2019-11-25T00:00:00Z, stop: 2030-01-01T00:00:00Z)
-        |> group(columns: ["t0"])
-        |> drop(columns: ["_start", "_stop"])
-        |> sort(columns: ["t1", "_time"])
-    out_no_agg_table = "
+        result =
+            testing.loadStorage(csv: inData)
+                |> range(start: 2019-11-25T00:00:00Z, stop: 2030-01-01T00:00:00Z)
+                |> group(columns: ["t0"])
+                |> drop(columns: ["_start", "_stop"])
+                |> sort(columns: ["t1", "_time"])
+        out_no_agg_table =
+            "
 #datatype,string,long,dateTime:RFC3339,string,string,string,string,double
 #group,false,false,false,false,false,true,false,false
 #default,_result,,,,,,,
@@ -209,5 +216,5 @@ testcase group_no_agg_table {
 ,,2,2019-11-25T00:01:50Z,m0,f0,a-2,b-1,8.0
 "
 
-    testing.diff(got: result, want: testing.loadMem(csv: out_no_agg_table)) |> yield()
-}
+        testing.diff(got: result, want: testing.loadMem(csv: out_no_agg_table)) |> yield()
+    }

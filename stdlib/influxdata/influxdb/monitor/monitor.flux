@@ -27,7 +27,7 @@ option write = (tables=<-) => tables |> experimental.to(bucket: bucket)
 //
 option log = (tables=<-) => tables |> experimental.to(bucket: bucket)
 
-// logs retrieves notification events stored in the `notifications` measurement 
+// logs retrieves notification events stored in the `notifications` measurement
 // in the `_monitoring` bucket.
 //
 // ## Parameters
@@ -53,7 +53,7 @@ option log = (tables=<-) => tables |> experimental.to(bucket: bucket)
 // ### Query notification events from the last hour
 // ```no_run
 // import "influxdata/influxdb/monitor"
-// 
+//
 // monitor.logs(
 //     start: -2h,
 //     fn: (r) => true,
@@ -62,11 +62,12 @@ option log = (tables=<-) => tables |> experimental.to(bucket: bucket)
 //
 // tags: inputs
 //
-logs = (start, stop=now(), fn) => influxdb.from(bucket: bucket)
-    |> range(start: start, stop: stop)
-    |> filter(fn: (r) => r._measurement == "notifications")
-    |> filter(fn: fn)
-    |> v1.fieldsAsCols()
+logs = (start, stop=now(), fn) =>
+    influxdb.from(bucket: bucket)
+        |> range(start: start, stop: stop)
+        |> filter(fn: (r) => r._measurement == "notifications")
+        |> filter(fn: fn)
+        |> v1.fieldsAsCols()
 
 // from retrieves check statuses stored in the `statuses` measurement in the
 // `_monitoring` bucket.
@@ -101,11 +102,12 @@ logs = (start, stop=now(), fn) => influxdb.from(bucket: bucket)
 // )
 // ```
 //
-from = (start, stop=now(), fn=(r) => true) => influxdb.from(bucket: bucket)
-    |> range(start: start, stop: stop)
-    |> filter(fn: (r) => r._measurement == "statuses")
-    |> filter(fn: fn)
-    |> v1.fieldsAsCols()
+from = (start, stop=now(), fn=(r) => true) =>
+    influxdb.from(bucket: bucket)
+        |> range(start: start, stop: stop)
+        |> filter(fn: (r) => r._measurement == "statuses")
+        |> filter(fn: fn)
+        |> v1.fieldsAsCols()
 
 // levelOK is the string representation of the "ok" level.
 levelOK = "ok"
@@ -123,34 +125,38 @@ levelCrit = "crit"
 levelUnknown = "unknown"
 
 _stateChanges = (fromLevel="any", toLevel="any", tables=<-) => {
-    toLevelFilter = if toLevel == "any" then
-        (r) => r._level != fromLevel and exists r._level
-    else
-        (r) => r._level == toLevel
-    fromLevelFilter = if fromLevel == "any" then
-        (r) => r._level != toLevel and exists r._level
-    else
-        (r) => r._level == fromLevel
+    toLevelFilter =
+        if toLevel == "any" then
+            (r) => r._level != fromLevel and exists r._level
+        else
+            (r) => r._level == toLevel
+    fromLevelFilter =
+        if fromLevel == "any" then
+            (r) => r._level != toLevel and exists r._level
+        else
+            (r) => r._level == fromLevel
 
-    return tables
-        |> map(
-            fn: (r) => ({r with
-                level_value: if toLevelFilter(r: r) then
-                    1
-                else if fromLevelFilter(r: r) then
-                    0
-                else
-                    -10,
-            }),
-        )
-        |> duplicate(column: "_level", as: "____temp_level____")
-        |> drop(columns: ["_level"])
-        |> rename(columns: {"____temp_level____": "_level"})
-        |> sort(columns: ["_source_timestamp", "_time"], desc: false)
-        |> difference(columns: ["level_value"])
-        |> filter(fn: (r) => r.level_value == 1)
-        |> drop(columns: ["level_value"])
-        |> experimental.group(mode: "extend", columns: ["_level"])
+    return
+        tables
+            |> map(
+                fn: (r) =>
+                    ({r with level_value:
+                            if toLevelFilter(r: r) then
+                                1
+                            else if fromLevelFilter(r: r) then
+                                0
+                            else
+                                -10,
+                    }),
+            )
+            |> duplicate(column: "_level", as: "____temp_level____")
+            |> drop(columns: ["_level"])
+            |> rename(columns: {"____temp_level____": "_level"})
+            |> sort(columns: ["_source_timestamp", "_time"], desc: false)
+            |> difference(columns: ["level_value"])
+            |> filter(fn: (r) => r.level_value == 1)
+            |> drop(columns: ["level_value"])
+            |> experimental.group(mode: "extend", columns: ["_level"])
 }
 
 // notify sends a notification to an endpoint and logs it in the `notifications`
@@ -161,9 +167,9 @@ _stateChanges = (fromLevel="any", toLevel="any", tables=<-) => {
 // - data: Notification data to append to the output.
 //
 //     This data specifies which notification rule and notification endpoint to
-//     associate with the sent notification. 
+//     associate with the sent notification.
 //     The data record must contain the following properties:
-//     
+//
 //     - \_notification\_rule\_id
 //     - \_notification\_rule\_name
 //     - \_notification\_endpoint\_id
@@ -173,7 +179,7 @@ _stateChanges = (fromLevel="any", toLevel="any", tables=<-) => {
 //     information about sent notifications and automatically assigns these values.
 //     If writing a custom notification task, we recommend using **unique arbitrary**
 //     values for data record properties.
-// 
+//
 // - tables: Input data. Default is piped-forward data (`<-`).
 //
 // ## Examples
@@ -183,9 +189,9 @@ _stateChanges = (fromLevel="any", toLevel="any", tables=<-) => {
 // import "influxdata/influxdb/monitor"
 // import "influxdata/influxdb/secrets"
 // import "slack"
-// 
+//
 // token = secrets.get(key: "SLACK_TOKEN")
-// 
+//
 // endpoint = slack.endpoint(token: token)(
 //     mapFn: (r) => ({
 //         channel: "Alerts",
@@ -193,14 +199,14 @@ _stateChanges = (fromLevel="any", toLevel="any", tables=<-) => {
 //         color: "danger",
 //     }),
 // )
-// 
+//
 // notification_data = {
 //     _notification_rule_id: "0000000000000001",
 //     _notification_rule_name: "example-rule-name",
 //     _notification_endpoint_id: "0000000000000002",
 //     _notification_endpoint_name: "example-endpoint-name",
 // }
-// 
+//
 // monitor.from(
 //     range: -5m,
 //     fn: (r) => r._level == "crit",
@@ -211,29 +217,30 @@ _stateChanges = (fromLevel="any", toLevel="any", tables=<-) => {
 //         data: notification_data,
 //     )
 // ```
-// 
-notify = (tables=<-, endpoint, data) => tables
-    |> experimental.set(o: data)
-    |> experimental.group(mode: "extend", columns: experimental.objectKeys(o: data))
-    |> map(fn: (r) => ({r with _measurement: "notifications", _status_timestamp: int(v: r._time), _time: now()}))
-    |> endpoint()
-    |> experimental.group(mode: "extend", columns: ["_sent"])
-    |> log()
+//
+notify = (tables=<-, endpoint, data) =>
+    tables
+        |> experimental.set(o: data)
+        |> experimental.group(mode: "extend", columns: experimental.objectKeys(o: data))
+        |> map(fn: (r) => ({r with _measurement: "notifications", _status_timestamp: int(v: r._time), _time: now()}))
+        |> endpoint()
+        |> experimental.group(mode: "extend", columns: ["_sent"])
+        |> log()
 
 // stateChangesOnly takes a stream of tables that contains a _level column
 // and returns a stream of tables grouped by `_level` where each record
 // represents a state change.
-// 
+//
 // ## Parameters
 // - tables: Input data. Default is piped-forward data (`<-`).
 //
 // ## Examples
-// 
+//
 // ### Return records representing state changes
 // ```
 // import "array"
 // import "influxdata/influxdb/monitor"
-// 
+//
 // data = array.from(
 //     rows: [
 //         {_time: 2021-01-01T00:00:00Z, _level: "ok"},
@@ -242,38 +249,40 @@ notify = (tables=<-, endpoint, data) => tables
 //         {_time: 2021-01-01T00:03:00Z, _level: "crit"},
 //     ],
 // )
-// 
+//
 // < data
 // >     |> monitor.stateChangesOnly()
 // ```
 //
 // tags: transformations
 // introduced: 0.65.0
-// 
+//
 stateChangesOnly = (tables=<-) => {
-    return tables
-        |> map(
-            fn: (r) => ({r with
-                level_value: if r._level == levelCrit then
-                    4
-                else if r._level == levelWarn then
-                    3
-                else if r._level == levelInfo then
-                    2
-                else if r._level == levelOK then
-                    1
-                else
-                    0,
-            }),
-        )
-        |> duplicate(column: "_level", as: "____temp_level____")
-        |> drop(columns: ["_level"])
-        |> rename(columns: {"____temp_level____": "_level"})
-        |> sort(columns: ["_source_timestamp", "_time"], desc: false)
-        |> difference(columns: ["level_value"])
-        |> filter(fn: (r) => r.level_value != 0)
-        |> drop(columns: ["level_value"])
-        |> experimental.group(mode: "extend", columns: ["_level"])
+    return
+        tables
+            |> map(
+                fn: (r) =>
+                    ({r with level_value:
+                            if r._level == levelCrit then
+                                4
+                            else if r._level == levelWarn then
+                                3
+                            else if r._level == levelInfo then
+                                2
+                            else if r._level == levelOK then
+                                1
+                            else
+                                0,
+                    }),
+            )
+            |> duplicate(column: "_level", as: "____temp_level____")
+            |> drop(columns: ["_level"])
+            |> rename(columns: {"____temp_level____": "_level"})
+            |> sort(columns: ["_source_timestamp", "_time"], desc: false)
+            |> difference(columns: ["level_value"])
+            |> filter(fn: (r) => r.level_value != 0)
+            |> drop(columns: ["level_value"])
+            |> experimental.group(mode: "extend", columns: ["_level"])
 }
 
 // stateChanges detects state changes in a stream of data with a `_level` column
@@ -285,7 +294,7 @@ stateChangesOnly = (tables=<-) => {
 // - tables: Input data. Default is piped-forward data (`<-`).
 //
 // ## Examples
-// 
+//
 // ### Detect when the state changes to critical
 // ```
 // import "array"
@@ -308,10 +317,11 @@ stateChangesOnly = (tables=<-) => {
 // tags: transformations
 //
 stateChanges = (fromLevel="any", toLevel="any", tables=<-) => {
-    return if fromLevel == "any" and toLevel == "any" then
-        tables |> stateChangesOnly()
-    else
-        tables |> _stateChanges(fromLevel: fromLevel, toLevel: toLevel)
+    return
+        if fromLevel == "any" and toLevel == "any" then
+            tables |> stateChangesOnly()
+        else
+            tables |> _stateChanges(fromLevel: fromLevel, toLevel: toLevel)
 }
 
 // deadman detects when a group stops reporting data.
@@ -326,7 +336,7 @@ stateChanges = (fromLevel="any", toLevel="any", tables=<-) => {
 // - tables: Input data. Default is piped-forward data (`<-`).
 //
 // ## Examples
-// 
+//
 // ### Detect if a host hasn’t reported since a specific time
 // ```
 // import "array"
@@ -347,9 +357,9 @@ stateChanges = (fromLevel="any", toLevel="any", tables=<-) => {
 // ```
 //
 // ### Detect if a host hasn't reported since a relative time
-// 
+//
 // Use `experimental.addDuration()` to return a time value relative to a specified time.
-// 
+//
 // ```no_run
 // import "influxdata/influxdb/monitor"
 // import "experimental"//
@@ -359,12 +369,13 @@ stateChanges = (fromLevel="any", toLevel="any", tables=<-) => {
 //     |> filter(fn: (r) => r._measurement == "example-measurement")
 //     |> monitor.deadman(t: experimental.addDuration(d: -5m, from: now()))
 // ```
-// 
+//
 // tags: transformations
 //
-deadman = (t, tables=<-) => tables
-    |> max(column: "_time")
-    |> map(fn: (r) => ({r with dead: r._time < t}))
+deadman = (t, tables=<-) =>
+    tables
+        |> max(column: "_time")
+        |> map(fn: (r) => ({r with dead: r._time < t}))
 
 // check checks input data and assigns a level (`ok`, `info`, `warn`, or `crit`)
 // to each row based on predicate functions.
@@ -378,14 +389,14 @@ deadman = (t, tables=<-) => tables
 // - info: Predicate function that determines `info` status. Default is `(r) => false`.
 // - ok: Predicate function that determines `ok` status. `Default is (r) => true`.
 // - messageFn: Predicate function that constructs a message to append to each row.
-// 
+//
 //   The message is stored in the `_message` column.
 //
 // - data: Check data to append to output. used to identify this check.
 //   This data specifies which notification rule and notification endpoint to
-//     associate with the sent notification. 
+//     associate with the sent notification.
 //     The data record must contain the following properties:
-//     
+//
 // 	   - **\_check\_id**: check ID _(string)_
 // 	   - **\_check\_name**: check name _(string)_
 // 	   - **\_type**: check type (threshold, deadman, or custom) _(string)_
@@ -395,15 +406,15 @@ deadman = (t, tables=<-) => tables
 //     check statuses and automatically assigns these values.
 //     If writing a custom check task, we recommend using **unique arbitrary**
 //     values for data record properties.
-// 
+//
 // - tables: Input data. Default is piped-forward data (`<-`).
 //
 // ## Examples
-// 
+//
 // ### Monitor InfluxDB disk usage collected by Telegraf
 // ```no_run
 // import "influxdata/influxdb/monitor"
-// 
+//
 // from(bucket: "telegraf")
 //     |> range(start: -1h)
 //     |> filter(
@@ -441,39 +452,42 @@ check = (
     warn=(r) => false,
     info=(r) => false,
     ok=(r) => true,
-) => tables
-    |> experimental.set(o: data.tags)
-    |> experimental.group(mode: "extend", columns: experimental.objectKeys(o: data.tags))
-    |> map(
-        fn: (r) => ({r with
-            _measurement: "statuses",
-            _source_measurement: r._measurement,
-            _type: data._type,
-            _check_id: data._check_id,
-            _check_name: data._check_name,
-            _level: if crit(r: r) then
-                levelCrit
-            else if warn(r: r) then
-                levelWarn
-            else if info(r: r) then
-                levelInfo
-            else if ok(r: r) then
-                levelOK
-            else
-                levelUnknown,
-            _source_timestamp: int(v: r._time),
-            _time: now(),
-        }),
-    )
-    |> map(fn: (r) => ({r with _message: messageFn(r: r)}))
-    |> experimental.group(
-        mode: "extend",
-        columns: [
-            "_source_measurement",
-            "_type",
-            "_check_id",
-            "_check_name",
-            "_level",
-        ],
-    )
-    |> write()
+) =>
+    tables
+        |> experimental.set(o: data.tags)
+        |> experimental.group(mode: "extend", columns: experimental.objectKeys(o: data.tags))
+        |> map(
+            fn: (r) =>
+                ({r with
+                    _measurement: "statuses",
+                    _source_measurement: r._measurement,
+                    _type: data._type,
+                    _check_id: data._check_id,
+                    _check_name: data._check_name,
+                    _level:
+                        if crit(r: r) then
+                            levelCrit
+                        else if warn(r: r) then
+                            levelWarn
+                        else if info(r: r) then
+                            levelInfo
+                        else if ok(r: r) then
+                            levelOK
+                        else
+                            levelUnknown,
+                    _source_timestamp: int(v: r._time),
+                    _time: now(),
+                }),
+        )
+        |> map(fn: (r) => ({r with _message: messageFn(r: r)}))
+        |> experimental.group(
+            mode: "extend",
+            columns: [
+                "_source_measurement",
+                "_type",
+                "_check_id",
+                "_check_name",
+                "_level",
+            ],
+        )
+        |> write()

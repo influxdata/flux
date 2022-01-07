@@ -6,7 +6,8 @@ import "experimental"
 
 option now = () => 2030-01-01T00:00:00Z
 
-inData = "
+inData =
+    "
 #group,false,false,true,true,false,false,true,true,true
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string
 #default,_result,,,,,,,,
@@ -97,7 +98,8 @@ inData = "
 ,,2,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-03-20T00:00:00Z,14250,total_cases,covid-19,United States
 ,,2,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-03-21T00:00:00Z,19624,total_cases,covid-19,United States
 "
-outData = "
+outData =
+    "
 #group,false,false,true,true,true,true,false,false,true
 #datatype,string,long,string,string,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string
 #default,_result,,,,,,,,
@@ -178,8 +180,9 @@ outData = "
 ,,2,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-18T00:00:00Z,14250,United States
 ,,2,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-19T00:00:00Z,19624,United States
 "
-t_alignTime = (table=<-) => table
-    |> range(start: 2020-01-01T00:00:00Z, stop: 2020-04-01T00:00:00Z)
-    |> experimental.alignTime(alignTo: 2020-01-01T00:00:00Z)
+t_alignTime = (table=<-) =>
+    table
+        |> range(start: 2020-01-01T00:00:00Z, stop: 2020-04-01T00:00:00Z)
+        |> experimental.alignTime(alignTo: 2020-01-01T00:00:00Z)
 
 test _set = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_alignTime})

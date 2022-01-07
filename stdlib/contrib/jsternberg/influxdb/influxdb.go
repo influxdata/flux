@@ -41,7 +41,10 @@ func createMaskOpSpec(args flux.Arguments, a *flux.Administration) (flux.Operati
 	if err != nil {
 		return nil, err
 	}
-
+	// FIXME: needs a test
+	if _, ok := columns.(*flux.TableObject); ok {
+		return nil, errors.New(codes.Invalid, "got a table stream; expected an array")
+	}
 	spec.Columns = make([]string, columns.Len())
 	columns.Range(func(i int, v values.Value) {
 		spec.Columns[i] = v.Str()

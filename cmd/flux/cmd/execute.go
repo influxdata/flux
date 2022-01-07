@@ -36,8 +36,13 @@ func execute(cmd *cobra.Command, args []string) error {
 	fluxinit.FluxInit()
 	ctx, deps := injectDependencies(context.Background())
 	r := repl.New(ctx, deps)
-	if err := r.Input(args[0]); err != nil {
-		return fmt.Errorf("failed to execute query: %v", err)
+	if fluxError, err := r.Input(args[0]); err != nil {
+		if fluxError != nil {
+			fluxError.Print()
+		} else {
+			fmt.Println(err)
+		}
+		return fmt.Errorf("failed to execute query")
 	}
 	return nil
 }

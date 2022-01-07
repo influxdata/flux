@@ -6,7 +6,8 @@ import "testing"
 
 option now = () => 2030-01-01T00:00:00Z
 
-input = "
+input =
+    "
 #group,false,false,false,false,true,true,true,true,true,true,true
 #datatype,string,long,dateTime:RFC3339,long,string,string,string,string,string,string,string
 #default,_result,,,,,,,,,,
@@ -59,72 +60,80 @@ input = "
 "
 
 testcase show_tag_values_measurement_or_predicate {
-    got = testing.loadStorage(csv: input)
-        |> range(start: -100y)
-        |> filter(fn: (r) => r["_measurement"] == "cpu")
-        |> filter(fn: (r) => r["_measurement"] == "someOtherThing" or r["host"] == "euterpe.local")
-        |> keep(columns: ["region"])
-        |> group()
-        |> distinct(column: "region")
-        |> limit(n: 200)
-        |> sort()
+        got =
+            testing.loadStorage(csv: input)
+                |> range(start: -100y)
+                |> filter(fn: (r) => r["_measurement"] == "cpu")
+                |> filter(fn: (r) => r["_measurement"] == "someOtherThing" or r["host"] == "euterpe.local")
+                |> keep(columns: ["region"])
+                |> group()
+                |> distinct(column: "region")
+                |> limit(n: 200)
+                |> sort()
 
-    want = csv.from(
-        csv: "#datatype,string,long,string
+        want =
+            csv.from(
+                csv:
+                    "#datatype,string,long,string
 #group,false,false,false
 #default,0,,
 ,result,table,_value
 ,,0,north
 ,,0,south
 ",
-    )
+            )
 
-    testing.diff(got, want)
-}
+        testing.diff(got, want)
+    }
 
 testcase show_tag_values_measurement_or_negation {
-    got = testing.loadStorage(csv: input)
-        |> range(start: -100y)
-        |> filter(fn: (r) => r["_measurement"] != "cpu")
-        |> filter(fn: (r) => r["_measurement"] == "someOtherThing" or r["fstype"] != "apfs")
-        |> keep(columns: ["fstype"])
-        |> group()
-        |> distinct(column: "fstype")
-        |> limit(n: 200)
-        |> sort()
+    got =
+        testing.loadStorage(csv: input)
+            |> range(start: -100y)
+            |> filter(fn: (r) => r["_measurement"] != "cpu")
+            |> filter(fn: (r) => r["_measurement"] == "someOtherThing" or r["fstype"] != "apfs")
+            |> keep(columns: ["fstype"])
+            |> group()
+            |> distinct(column: "fstype")
+            |> limit(n: 200)
+            |> sort()
 
-    want = csv.from(
-        csv: "#datatype,string,long,string
+    want =
+        csv.from(
+            csv: "#datatype,string,long,string
 #group,false,false,false
 #default,0,,
 ,result,table,_value
 ,,0,hfs
 ",
-    )
+        )
 
     testing.diff(got, want)
 }
 
 testcase show_tag_values_measurement_or_regex {
-    got = testing.loadStorage(csv: input)
-        |> range(start: -100y)
-        |> filter(fn: (r) => r["_measurement"] =~ /cp.*/)
-        |> filter(fn: (r) => r["_measurement"] == "someOtherThing" or r["host"] !~ /mnemo.*/)
-        |> keep(columns: ["region"])
-        |> group()
-        |> distinct(column: "region")
-        |> limit(n: 200)
-        |> sort()
+        got =
+            testing.loadStorage(csv: input)
+                |> range(start: -100y)
+                |> filter(fn: (r) => r["_measurement"] =~ /cp.*/)
+                |> filter(fn: (r) => r["_measurement"] == "someOtherThing" or r["host"] !~ /mnemo.*/)
+                |> keep(columns: ["region"])
+                |> group()
+                |> distinct(column: "region")
+                |> limit(n: 200)
+                |> sort()
 
-    want = csv.from(
-        csv: "#datatype,string,long,string
+        want =
+            csv.from(
+                csv:
+                    "#datatype,string,long,string
 #group,false,false,false
 #default,0,,
 ,result,table,_value
 ,,0,north
 ,,0,south
 ",
-    )
+            )
 
-    testing.diff(got, want)
-}
+        testing.diff(got, want)
+    }

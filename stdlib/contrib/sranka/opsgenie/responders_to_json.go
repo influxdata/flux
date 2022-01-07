@@ -43,6 +43,10 @@ func RespondersToJSON(args interpreter.Arguments) (values.Value, error) {
 	if err != nil {
 		return nil, err
 	}
+	// XXX: remove when array/stream are different types <https://github.com/influxdata/flux/issues/4343>
+	if _, ok := v.(values.TableObject); ok {
+		return nil, errors.New("got a table stream; expected an array")
+	}
 	responders := make([]interface{}, v.Len())
 	for i := 0; i < v.Len(); i++ {
 		item := v.Get(i).Str()

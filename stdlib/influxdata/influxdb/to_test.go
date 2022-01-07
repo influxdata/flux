@@ -2,7 +2,6 @@ package influxdb_test
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"sort"
 	"testing"
@@ -14,6 +13,7 @@ import (
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
 	"github.com/influxdata/flux/interpreter"
+	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/mock"
 	"github.com/influxdata/flux/stdlib/influxdata/influxdb"
 	"github.com/influxdata/flux/values/valuestest"
@@ -692,45 +692,6 @@ func TestTo_Process(t *testing.T) {
 				},
 			},
 		},
-		{
-			name: "input tables with duplicate group key",
-			spec: &influxdb.ToProcedureSpec{
-				Spec: &influxdb.ToOpSpec{
-					Org:               "my-org",
-					Bucket:            "my-bucket",
-					TimeColumn:        "_time",
-					TagColumns:        []string{"tag1", "tag2"},
-					MeasurementColumn: "_measurement",
-				},
-			},
-			data: []*executetest.Table{
-				{
-					KeyCols: []string{"_field", "_measurement"},
-					ColMeta: []flux.ColMeta{
-						{Label: "_time", Type: flux.TTime},
-						{Label: "_measurement", Type: flux.TString},
-						{Label: "_field", Type: flux.TString},
-						{Label: "_value", Type: flux.TFloat},
-					},
-					Data: [][]interface{}{
-						{execute.Time(11), "m", "f", 1.0},
-					},
-				},
-				{
-					KeyCols: []string{"_field", "_measurement"},
-					ColMeta: []flux.ColMeta{
-						{Label: "_time", Type: flux.TTime},
-						{Label: "_measurement", Type: flux.TString},
-						{Label: "_field", Type: flux.TString},
-						{Label: "_value", Type: flux.TFloat},
-					},
-					Data: [][]interface{}{
-						{execute.Time(11), "m", "f", 1.0},
-					},
-				},
-			},
-			wantErr: errors.New("to() found duplicate table with group key: {_field=f,_measurement=m}"),
-		},
 	}
 
 	for _, tc := range testCases {
@@ -760,14 +721,17 @@ func TestTo_Process(t *testing.T) {
 				}
 			}
 
-			executetest.ProcessTestHelper(
+			executetest.ProcessTestHelper2(
 				t,
 				inTables,
 				wantTables,
 				tc.wantErr,
-				func(d execute.Dataset, c execute.TableBuilderCache) execute.Transformation {
-					newT, _ := influxdb.NewToTransformation(context.TODO(), d, c, tc.spec, provider)
-					return newT
+				func(id execute.DatasetID, alloc *memory.Allocator) (execute.Transformation, execute.Dataset) {
+					tr, d, err := influxdb.NewToTransformation(context.TODO(), id, tc.spec, provider, alloc)
+					if err != nil {
+						t.Fatal(err)
+					}
+					return tr, d
 				},
 			)
 			for _, m := range writer.writes {

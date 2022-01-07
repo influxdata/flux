@@ -7,10 +7,12 @@ import "testing"
 
 xytest = (rows, fn, epsilon=0.000000001, nansEqual=true) => {
     data = array.from(rows: rows)
-    got = data
-        |> map(fn: (r) => ({_value: fn(x: r.x, y: r.y)}))
-    want = data
-        |> map(fn: (r) => ({_value: r._value}))
+    got =
+        data
+            |> map(fn: (r) => ({_value: fn(x: r.x, y: r.y)}))
+    want =
+        data
+            |> map(fn: (r) => ({_value: r._value}))
 
     return testing.diff(got: got, want: want, epsilon: epsilon, nansEqual: nansEqual)
 }

@@ -1,18 +1,20 @@
 //! Various conversions from AST nodes to their associated
 //! types in the semantic graph.
 
-use std::{collections::BTreeMap, fmt, rc::Rc};
+use std::{collections::BTreeMap, fmt, sync::Arc};
 
+use codespan_reporting::diagnostic;
+use serde::{Serialize, Serializer};
 use thiserror::Error;
 
 use crate::{
     ast,
-    errors::{located, Errors, Located},
+    errors::{located, AsDiagnostic, Errors, Located},
     semantic::{
         env::Environment,
         nodes::*,
         sub::Substitution,
-        types::{self, MonoType, MonoTypeMap, SemanticMap},
+        types::{self, BuiltinType, MonoType, MonoTypeMap, SemanticMap},
     },
 };
 
@@ -45,6 +47,12 @@ pub enum ErrorKind {
     ExtraParameterRecord,
     #[error("invalid duration, {0}")]
     InvalidDuration(String),
+}
+
+impl AsDiagnostic for ErrorKind {
+    fn as_diagnostic(&self, _source: &dyn crate::semantic::Source) -> diagnostic::Diagnostic<()> {
+        diagnostic::Diagnostic::error().with_message(self.to_string())
+    }
 }
 
 /// Result encapsulates any error during the conversion process.
@@ -99,44 +107,55 @@ pub(crate) fn convert_monotype(
 #[allow(missing_docs)]
 #[derive(Debug, PartialOrd, Ord, PartialEq, Eq, Hash, Clone)]
 pub struct Symbol {
-    name: Rc<str>,
+    name: Arc<str>,
+}
+
+impl Serialize for Symbol {
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        self.name.serialize(serializer)
+    }
 }
 
 impl std::ops::Deref for Symbol {
     type Target = str;
     fn deref(&self) -> &Self::Target {
-        &self.name
+        self.as_str()
     }
 }
 
 impl PartialEq<str> for Symbol {
     fn eq(&self, other: &str) -> bool {
-        &self.name[..] == other
+        &self[..] == other
     }
 }
 
 impl PartialEq<&str> for Symbol {
     fn eq(&self, other: &&str) -> bool {
-        &self.name[..] == *other
+        &self[..] == *other
     }
 }
 
 impl fmt::Display for Symbol {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.write_str(&self.name)
+        f.write_str(&self[..])
     }
 }
 
 impl From<&str> for Symbol {
     fn from(name: &str) -> Self {
-        Self::from(name.to_owned())
+        Self {
+            name: Arc::from(name),
+        }
     }
 }
 
 impl From<String> for Symbol {
     fn from(name: String) -> Self {
         Self {
-            name: Rc::from(name),
+            name: Arc::from(name),
         }
     }
 }
@@ -144,7 +163,27 @@ impl From<String> for Symbol {
 impl Symbol {
     /// Casts self into a `&str`
     pub fn as_str(&self) -> &str {
-        self
+        self.name.split_once('@').map_or(&self.name, |x| x.0)
+    }
+
+    /// Returns just the name of the symbol
+    pub fn name(&self) -> &str {
+        self.as_str()
+    }
+
+    /// Returns the package that his symbol was defined in (if it exists)
+    pub fn package(&self) -> Option<&str> {
+        self.name.split_once('@').map(|x| x.1)
+    }
+
+    /// Returns the full name, package qualified name of `Symbol`
+    pub fn full_name(&self) -> &str {
+        &self.name
+    }
+
+    /// Attaches a package identifier to `self`
+    pub fn with_package(self, package: &str) -> Self {
+        Symbol::from(format!("{}@{}", self.as_str(), package))
     }
 }
 
@@ -164,21 +203,22 @@ impl<'a> Symbols<'a> {
         }
     }
 
-    fn new_symbol(&mut self, name: &str) -> Symbol {
-        Symbol {
-            name: Rc::from(name),
-        }
+    fn new_symbol(&mut self, name: String) -> Symbol {
+        Symbol::from(name)
     }
 
-    fn insert(&mut self, name: String) -> Symbol {
-        let symbol = self.new_symbol(&name);
+    fn insert(&mut self, package: Option<&str>, name: String) -> Symbol {
+        let symbol = self.new_symbol(match package {
+            Some(package) => format!("{}@{}", name, package),
+            None => name.clone(),
+        });
         self.symbols.insert(name, symbol.clone());
         symbol
     }
 
     fn lookup(&mut self, name: &str) -> Symbol {
         self.lookup_option(name)
-            .unwrap_or_else(|| self.new_symbol(name))
+            .unwrap_or_else(|| self.new_symbol(name.into()))
     }
 
     fn lookup_option(&mut self, name: &str) -> Option<Symbol> {
@@ -247,21 +287,26 @@ impl<'a> Converter<'a> {
     }
 
     fn convert_package(&mut self, pkg: ast::Package) -> Result<Package> {
+        let package = pkg.package;
+
+        self.symbols.enter_scope();
+
         let files = pkg
             .files
             .into_iter()
-            .map(|file| self.convert_file(file))
+            .map(|file| self.convert_file(&package, file))
             .collect::<Result<Vec<File>>>()?;
+
+        self.symbols.exit_scope();
+
         Ok(Package {
             loc: pkg.base.location,
-            package: pkg.package,
+            package,
             files,
         })
     }
 
-    fn convert_file(&mut self, file: ast::File) -> Result<File> {
-        self.symbols.enter_scope();
-
+    fn convert_file(&mut self, package_name: &str, file: ast::File) -> Result<File> {
         let package = self.convert_package_clause(file.package)?;
         let imports = file
             .imports
@@ -271,10 +316,9 @@ impl<'a> Converter<'a> {
         let body = file
             .body
             .into_iter()
-            .map(|s| self.convert_statement(s))
+            .map(|s| self.convert_statement(package_name, s))
             .collect::<Result<Vec<Statement>>>()?;
 
-        self.symbols.exit_scope();
         Ok(File {
             loc: file.base.location,
             package,
@@ -302,17 +346,16 @@ impl<'a> Converter<'a> {
         &mut self,
         imp: ast::ImportDeclaration,
     ) -> Result<ImportDeclaration> {
-        let import_symbol = {
-            let path = &imp.path.value;
-            let name = match &imp.alias {
-                None => path.rsplit_once('/').map_or(&path[..], |t| t.1).to_owned(),
-                Some(id) => id.name.clone(),
-            };
-            self.symbols.insert(name)
-        };
-        let alias = match imp.alias {
-            None => None,
-            Some(id) => Some(self.convert_identifier(id)?),
+        let path = &imp.path.value;
+        let (import_symbol, alias) = match imp.alias {
+            None => {
+                let name = path.rsplit_once('/').map_or(&path[..], |t| t.1).to_owned();
+                (self.symbols.insert(None, name), None)
+            }
+            Some(id) => {
+                let id = self.define_identifier(None, id)?;
+                (id.name.clone(), Some(id))
+            }
         };
         let path = self.convert_string_literal(imp.path)?;
 
@@ -324,14 +367,14 @@ impl<'a> Converter<'a> {
         })
     }
 
-    fn convert_statement(&mut self, stmt: ast::Statement) -> Result<Statement> {
+    fn convert_statement(&mut self, package: &str, stmt: ast::Statement) -> Result<Statement> {
         match stmt {
             ast::Statement::Option(s) => Ok(Statement::Option(Box::new(
                 self.convert_option_statement(*s)?,
             ))),
-            ast::Statement::Builtin(s) => {
-                Ok(Statement::Builtin(self.convert_builtin_statement(*s)?))
-            }
+            ast::Statement::Builtin(s) => Ok(Statement::Builtin(
+                self.convert_builtin_statement(package, *s)?,
+            )),
             ast::Statement::Test(s) => {
                 Ok(Statement::Test(Box::new(self.convert_test_statement(*s)?)))
             }
@@ -347,7 +390,7 @@ impl<'a> Converter<'a> {
             //  This is not a problem when parsing, because we parse it only in the option assignment case,
             //  and we return an OptionStmt, which is a Statement.
             ast::Statement::Variable(s) => Ok(Statement::Variable(Box::new(
-                self.convert_variable_assignment(*s)?,
+                self.convert_variable_assignment(Some(package), *s)?,
             ))),
             ast::Statement::Bad(s) => Ok(Statement::Error(s.base.location.clone())),
         }
@@ -355,9 +398,9 @@ impl<'a> Converter<'a> {
 
     fn convert_assignment(&mut self, assign: ast::Assignment) -> Result<Assignment> {
         match assign {
-            ast::Assignment::Variable(a) => {
-                Ok(Assignment::Variable(self.convert_variable_assignment(*a)?))
-            }
+            ast::Assignment::Variable(a) => Ok(Assignment::Variable(
+                self.convert_variable_assignment(None, *a)?,
+            )),
             ast::Assignment::Member(a) => {
                 Ok(Assignment::Member(self.convert_member_assignment(*a)?))
             }
@@ -371,11 +414,35 @@ impl<'a> Converter<'a> {
         })
     }
 
-    fn convert_builtin_statement(&mut self, stmt: ast::BuiltinStmt) -> Result<BuiltinStmt> {
+    fn convert_builtin_statement(
+        &mut self,
+        package: &str,
+        stmt: ast::BuiltinStmt,
+    ) -> Result<BuiltinStmt> {
         Ok(BuiltinStmt {
             loc: stmt.base.location,
-            id: self.define_identifier(stmt.id)?,
+            id: self.define_identifier(Some(package), stmt.id)?,
             typ_expr: self.convert_polytype(stmt.ty)?,
+        })
+    }
+
+    fn convert_builtintype(&mut self, basic: ast::NamedType) -> Result<BuiltinType> {
+        Ok(match basic.name.name.as_str() {
+            "bool" => BuiltinType::Bool,
+            "int" => BuiltinType::Int,
+            "uint" => BuiltinType::Uint,
+            "float" => BuiltinType::Float,
+            "string" => BuiltinType::String,
+            "duration" => BuiltinType::Duration,
+            "time" => BuiltinType::Time,
+            "regexp" => BuiltinType::Regexp,
+            "bytes" => BuiltinType::Bytes,
+            _ => {
+                return Err(located(
+                    basic.base.location,
+                    ErrorKind::InvalidNamedType(basic.name.name.to_string()),
+                ))
+            }
         })
     }
 
@@ -391,24 +458,8 @@ impl<'a> Converter<'a> {
                     .or_insert_with(|| self.sub.fresh());
                 Ok(MonoType::Var(*tvar))
             }
-            ast::MonoType::Basic(basic) => match basic.name.name.as_str() {
-                "bool" => Ok(MonoType::Bool),
-                "int" => Ok(MonoType::Int),
-                "uint" => Ok(MonoType::Uint),
-                "float" => Ok(MonoType::Float),
-                "string" => Ok(MonoType::String),
-                "duration" => Ok(MonoType::Duration),
-                "time" => Ok(MonoType::Time),
-                "regexp" => Ok(MonoType::Regexp),
-                "bytes" => Ok(MonoType::Bytes),
-                _ => {
-                    self.errors.push(located(
-                        basic.base.location.clone(),
-                        ErrorKind::InvalidNamedType(basic.name.name.to_string()),
-                    ));
-                    Ok(MonoType::Error)
-                }
-            },
+
+            ast::MonoType::Basic(basic) => Ok(MonoType::from(self.convert_builtintype(basic)?)),
             ast::MonoType::Array(arr) => Ok(MonoType::from(types::Array(
                 self.convert_monotype(arr.element, tvars)?,
             ))),
@@ -471,7 +522,7 @@ impl<'a> Converter<'a> {
                 };
                 for prop in rec.properties {
                     let property = types::Property {
-                        k: prop.name.name,
+                        k: types::Label::from(self.symbols.lookup(&prop.name.name)),
                         v: self.convert_monotype(prop.monotype, tvars)?,
                     };
                     r = MonoType::from(types::Record::Extension {
@@ -531,7 +582,7 @@ impl<'a> Converter<'a> {
     fn convert_test_statement(&mut self, stmt: ast::TestStmt) -> Result<TestStmt> {
         Ok(TestStmt {
             loc: stmt.base.location,
-            assignment: self.convert_variable_assignment(stmt.assignment)?,
+            assignment: self.convert_variable_assignment(None, stmt.assignment)?,
         })
     }
 
@@ -549,10 +600,14 @@ impl<'a> Converter<'a> {
         })
     }
 
-    fn convert_variable_assignment(&mut self, stmt: ast::VariableAssgn) -> Result<VariableAssgn> {
+    fn convert_variable_assignment(
+        &mut self,
+        package: Option<&str>,
+        stmt: ast::VariableAssgn,
+    ) -> Result<VariableAssgn> {
         let expr = self.convert_expression(stmt.init)?;
         Ok(VariableAssgn::new(
-            self.define_identifier(stmt.id)?,
+            self.define_identifier(package, stmt.id)?,
             expr,
             stmt.base.location,
         ))
@@ -665,12 +720,39 @@ impl<'a> Converter<'a> {
 
     fn convert_function_params(
         &mut self,
-        props: Vec<ast::Property>,
+        mut props: Vec<ast::Property>,
     ) -> Result<Vec<FunctionParameter>> {
+        // The defaults must be converted first so that the parameters are not in scope
+        let mut piped = false;
+        enum Default {
+            Expr(Expression),
+            Piped,
+            None,
+        }
+        let defaults: Vec<_> = props
+            .iter_mut()
+            .map(|prop| {
+                if let Some(expr) = prop.value.take() {
+                    match expr {
+                        ast::Expression::PipeLit(lit) => {
+                            if piped {
+                                return Err(located(lit.base.location, ErrorKind::AtMostOnePipe));
+                            } else {
+                                piped = true;
+                            }
+                            Ok(Default::Piped)
+                        }
+                        e => Ok(Default::Expr(self.convert_expression(e)?)),
+                    }
+                } else {
+                    Ok(Default::None)
+                }
+            })
+            .collect::<Result<_>>()?;
+
         // The iteration here is complex, cannot use iter().map()..., better to write it explicitly.
         let mut params: Vec<FunctionParameter> = Vec::new();
-        let mut piped = false;
-        for prop in props {
+        for (prop, default) in props.into_iter().zip(defaults) {
             let id = match prop.key {
                 ast::PropertyKey::Identifier(id) => id,
                 _ => {
@@ -681,23 +763,14 @@ impl<'a> Converter<'a> {
                     continue;
                 }
             };
-            let key = self.define_identifier(id)?;
-            let mut default: Option<Expression> = None;
-            let mut is_pipe = false;
-            if let Some(expr) = prop.value {
-                match expr {
-                    ast::Expression::PipeLit(lit) => {
-                        if piped {
-                            self.errors
-                                .push(located(lit.base.location, ErrorKind::AtMostOnePipe));
-                        } else {
-                            piped = true;
-                            is_pipe = true;
-                        };
-                    }
-                    e => default = Some(self.convert_expression(e)?),
-                }
+            let key = self.define_identifier(None, id)?;
+
+            let (is_pipe, default) = match default {
+                Default::Expr(expr) => (false, Some(expr)),
+                Default::Piped => (true, None),
+                Default::None => (false, None),
             };
+
             params.push(FunctionParameter {
                 loc: prop.base.location,
                 is_pipe,
@@ -742,7 +815,7 @@ impl<'a> Converter<'a> {
         for s in block.body {
             match s {
                 ast::Statement::Variable(dec) => body.push(TempBlock::Variable(Box::new(
-                    self.convert_variable_assignment(*dec)?,
+                    self.convert_variable_assignment(None, *dec)?,
                 ))),
                 ast::Statement::Expr(stmt) => {
                     body.push(TempBlock::Expr(self.convert_expression_statement(*stmt)?))
@@ -839,6 +912,7 @@ impl<'a> Converter<'a> {
             ast::PropertyKey::Identifier(id) => id.name,
             ast::PropertyKey::StringLit(lit) => lit.value,
         };
+        let property = self.symbols.lookup(&property);
         Ok(MemberExpr {
             loc: expr.base.location,
             typ: MonoType::Var(self.sub.fresh()),
@@ -986,8 +1060,12 @@ impl<'a> Converter<'a> {
         })
     }
 
-    fn define_identifier(&mut self, id: ast::Identifier) -> Result<Identifier> {
-        let name = self.symbols.insert(id.name);
+    fn define_identifier(
+        &mut self,
+        package: Option<&str>,
+        id: ast::Identifier,
+    ) -> Result<Identifier> {
+        let name = self.symbols.insert(package, id.name);
         Ok(Identifier {
             loc: id.base.location,
             name,
@@ -1106,13 +1184,25 @@ impl<'a> Converter<'a> {
 // We create a default base node and clone it in various AST nodes.
 #[cfg(test)]
 mod tests {
+    use expect_test::expect;
     use pretty_assertions::assert_eq;
 
     use super::*;
-    use crate::semantic::{
-        sub,
-        types::{MonoType, Tvar},
+    use crate::{
+        ast,
+        parser::Parser,
+        semantic::{
+            sub,
+            types::{MonoType, Tvar},
+            walk::{walk_mut, NodeMut},
+        },
     };
+
+    fn parse_package(pkg: &str) -> ast::Package {
+        let pkg = Parser::new(pkg).parse_single_package("path".to_string(), "foo.flux".to_string());
+        ast::check::check(ast::walk::Node::Package(&pkg)).unwrap_or_else(|err| panic!("{}", err));
+        pkg
+    }
 
     // type_info() is used for the expected semantic graph.
     // The id for the Tvar does not matter, because that is not compared.
@@ -1124,7 +1214,15 @@ mod tests {
         let mut sub = sub::Substitution::default();
         let mut converter = Converter::new(&mut sub);
         let r = converter.convert_package(pkg);
-        converter.finish(r)
+        let mut pkg = converter.finish(r)?;
+
+        // We don't want to specifc the exact locations for each node in the tests
+        walk_mut(
+            &mut |n: &mut NodeMut| n.set_loc(ast::BaseNode::default().location),
+            &mut NodeMut::Package(&mut pkg),
+        );
+
+        Ok(pkg)
     }
 
     #[test]
@@ -1148,29 +1246,10 @@ mod tests {
     #[test]
     fn test_convert_package() {
         let b = ast::BaseNode::default();
-        let pkg = ast::Package {
-            base: b.clone(),
-            path: "path".to_string(),
-            package: "main".to_string(),
-            files: vec![ast::File {
-                base: b.clone(),
-                name: "foo.flux".to_string(),
-                metadata: String::new(),
-                package: Some(ast::PackageClause {
-                    base: b.clone(),
-                    name: ast::Identifier {
-                        base: b.clone(),
-                        name: "foo".to_string(),
-                    },
-                }),
-                imports: Vec::new(),
-                body: Vec::new(),
-                eof: vec![],
-            }],
-        };
+        let pkg = parse_package("package foo");
         let want = Package {
             loc: b.location.clone(),
-            package: "main".to_string(),
+            package: "foo".to_string(),
             files: vec![File {
                 loc: b.location.clone(),
                 package: Some(PackageClause {
@@ -1191,49 +1270,15 @@ mod tests {
     #[test]
     fn test_convert_imports() {
         let b = ast::BaseNode::default();
-        let pkg = ast::Package {
-            base: b.clone(),
-            path: "path".to_string(),
-            package: "main".to_string(),
-            files: vec![ast::File {
-                base: b.clone(),
-                name: "foo.flux".to_string(),
-                metadata: String::new(),
-                package: Some(ast::PackageClause {
-                    base: b.clone(),
-                    name: ast::Identifier {
-                        base: b.clone(),
-                        name: "foo".to_string(),
-                    },
-                }),
-                imports: vec![
-                    ast::ImportDeclaration {
-                        base: b.clone(),
-                        path: ast::StringLit {
-                            base: b.clone(),
-                            value: "path/foo".to_string(),
-                        },
-                        alias: None,
-                    },
-                    ast::ImportDeclaration {
-                        base: b.clone(),
-                        path: ast::StringLit {
-                            base: b.clone(),
-                            value: "path/bar".to_string(),
-                        },
-                        alias: Some(ast::Identifier {
-                            base: b.clone(),
-                            name: "b".to_string(),
-                        }),
-                    },
-                ],
-                body: Vec::new(),
-                eof: vec![],
-            }],
-        };
+        let pkg = parse_package(
+            r#"package foo
+            import "path/foo"
+            import b "path/bar"
+            "#,
+        );
         let want = Package {
             loc: b.location.clone(),
-            package: "main".to_string(),
+            package: "foo".to_string(),
             files: vec![File {
                 loc: b.location.clone(),
                 package: Some(PackageClause {
@@ -1320,7 +1365,7 @@ mod tests {
                     Statement::Variable(Box::new(VariableAssgn::new(
                         Identifier {
                             loc: b.location.clone(),
-                            name: Symbol::from("a"),
+                            name: Symbol::from("a@main"),
                         },
                         Expression::Boolean(BooleanLit {
                             loc: b.location.clone(),
@@ -1333,7 +1378,7 @@ mod tests {
                         expression: Expression::Identifier(IdentifierExpr {
                             loc: b.location.clone(),
                             typ: type_info(),
-                            name: Symbol::from("a"),
+                            name: Symbol::from("a@main"),
                         }),
                     }),
                 ],
@@ -1346,41 +1391,7 @@ mod tests {
     #[test]
     fn test_convert_object() {
         let b = ast::BaseNode::default();
-        let pkg = ast::Package {
-            base: b.clone(),
-            path: "path".to_string(),
-            package: "main".to_string(),
-            files: vec![ast::File {
-                base: b.clone(),
-                name: "foo.flux".to_string(),
-                metadata: String::new(),
-                package: None,
-                imports: Vec::new(),
-                body: vec![ast::Statement::Expr(Box::new(ast::ExprStmt {
-                    base: b.clone(),
-                    expression: ast::Expression::Object(Box::new(ast::ObjectExpr {
-                        base: b.clone(),
-                        lbrace: vec![],
-                        with: None,
-                        properties: vec![ast::Property {
-                            base: b.clone(),
-                            key: ast::PropertyKey::Identifier(ast::Identifier {
-                                base: b.clone(),
-                                name: "a".to_string(),
-                            }),
-                            separator: vec![],
-                            value: Some(ast::Expression::Integer(ast::IntegerLit {
-                                base: b.clone(),
-                                value: 10,
-                            })),
-                            comma: vec![],
-                        }],
-                        rbrace: vec![],
-                    })),
-                }))],
-                eof: vec![],
-            }],
-        };
+        let pkg = parse_package(r#"{ a: 10 }"#);
         let want = Package {
             loc: b.location.clone(),
             package: "main".to_string(),
@@ -1416,41 +1427,7 @@ mod tests {
     #[test]
     fn test_convert_object_with_string_key() {
         let b = ast::BaseNode::default();
-        let pkg = ast::Package {
-            base: b.clone(),
-            path: "path".to_string(),
-            package: "main".to_string(),
-            files: vec![ast::File {
-                base: b.clone(),
-                name: "foo.flux".to_string(),
-                metadata: String::new(),
-                package: None,
-                imports: Vec::new(),
-                body: vec![ast::Statement::Expr(Box::new(ast::ExprStmt {
-                    base: b.clone(),
-                    expression: ast::Expression::Object(Box::new(ast::ObjectExpr {
-                        base: b.clone(),
-                        lbrace: vec![],
-                        with: None,
-                        properties: vec![ast::Property {
-                            base: b.clone(),
-                            key: ast::PropertyKey::StringLit(ast::StringLit {
-                                base: b.clone(),
-                                value: "a".to_string(),
-                            }),
-                            separator: vec![],
-                            value: Some(ast::Expression::Integer(ast::IntegerLit {
-                                base: b.clone(),
-                                value: 10,
-                            })),
-                            comma: vec![],
-                        }],
-                        rbrace: vec![],
-                    })),
-                }))],
-                eof: vec![],
-            }],
-        };
+        let pkg = parse_package(r#"{ "a": 10 }"#);
         let want = Package {
             loc: b.location.clone(),
             package: "main".to_string(),
@@ -1486,56 +1463,7 @@ mod tests {
     #[test]
     fn test_convert_object_with_mixed_keys() {
         let b = ast::BaseNode::default();
-        let pkg = ast::Package {
-            base: b.clone(),
-            path: "path".to_string(),
-            package: "main".to_string(),
-            files: vec![ast::File {
-                base: b.clone(),
-                name: "foo.flux".to_string(),
-                metadata: String::new(),
-                package: None,
-                imports: Vec::new(),
-                body: vec![ast::Statement::Expr(Box::new(ast::ExprStmt {
-                    base: b.clone(),
-                    expression: ast::Expression::Object(Box::new(ast::ObjectExpr {
-                        base: b.clone(),
-                        lbrace: vec![],
-                        with: None,
-                        properties: vec![
-                            ast::Property {
-                                base: b.clone(),
-                                key: ast::PropertyKey::StringLit(ast::StringLit {
-                                    base: b.clone(),
-                                    value: "a".to_string(),
-                                }),
-                                separator: vec![],
-                                value: Some(ast::Expression::Integer(ast::IntegerLit {
-                                    base: b.clone(),
-                                    value: 10,
-                                })),
-                                comma: vec![],
-                            },
-                            ast::Property {
-                                base: b.clone(),
-                                key: ast::PropertyKey::Identifier(ast::Identifier {
-                                    base: b.clone(),
-                                    name: "b".to_string(),
-                                }),
-                                separator: vec![],
-                                value: Some(ast::Expression::Integer(ast::IntegerLit {
-                                    base: b.clone(),
-                                    value: 11,
-                                })),
-                                comma: vec![],
-                            },
-                        ],
-                        rbrace: vec![],
-                    })),
-                }))],
-                eof: vec![],
-            }],
-        };
+        let pkg = parse_package(r#"{ "a": 10, b: 11 }"#);
         let want = Package {
             loc: b.location.clone(),
             package: "main".to_string(),
@@ -1584,50 +1512,7 @@ mod tests {
     #[test]
     fn test_convert_object_with_implicit_keys() {
         let b = ast::BaseNode::default();
-        let pkg = ast::Package {
-            base: b.clone(),
-            path: "path".to_string(),
-            package: "main".to_string(),
-            files: vec![ast::File {
-                base: b.clone(),
-                name: "foo.flux".to_string(),
-                metadata: String::new(),
-                package: None,
-                imports: Vec::new(),
-                body: vec![ast::Statement::Expr(Box::new(ast::ExprStmt {
-                    base: b.clone(),
-                    expression: ast::Expression::Object(Box::new(ast::ObjectExpr {
-                        base: b.clone(),
-                        lbrace: vec![],
-                        with: None,
-                        properties: vec![
-                            ast::Property {
-                                base: b.clone(),
-                                key: ast::PropertyKey::Identifier(ast::Identifier {
-                                    base: b.clone(),
-                                    name: "a".to_string(),
-                                }),
-                                separator: vec![],
-                                value: None,
-                                comma: vec![],
-                            },
-                            ast::Property {
-                                base: b.clone(),
-                                key: ast::PropertyKey::Identifier(ast::Identifier {
-                                    base: b.clone(),
-                                    name: "b".to_string(),
-                                }),
-                                separator: vec![],
-                                value: None,
-                                comma: vec![],
-                            },
-                        ],
-                        rbrace: vec![],
-                    })),
-                }))],
-                eof: vec![],
-            }],
-        };
+        let pkg = parse_package("{ a, b }");
         let want = Package {
             loc: b.location.clone(),
             package: "main".to_string(),
@@ -1678,108 +1563,9 @@ mod tests {
     #[test]
     fn test_convert_options_declaration() {
         let b = ast::BaseNode::default();
-        let pkg = ast::Package {
-            base: b.clone(),
-            path: "path".to_string(),
-            package: "main".to_string(),
-            files: vec![ast::File {
-                base: b.clone(),
-                name: "foo.flux".to_string(),
-                metadata: String::new(),
-                package: None,
-                imports: Vec::new(),
-                body: vec![ast::Statement::Option(Box::new(ast::OptionStmt {
-                    base: b.clone(),
-                    assignment: ast::Assignment::Variable(Box::new(ast::VariableAssgn {
-                        base: b.clone(),
-                        id: ast::Identifier {
-                            base: b.clone(),
-                            name: "task".to_string(),
-                        },
-                        init: ast::Expression::Object(Box::new(ast::ObjectExpr {
-                            base: b.clone(),
-                            lbrace: vec![],
-                            with: None,
-                            properties: vec![
-                                ast::Property {
-                                    base: b.clone(),
-                                    key: ast::PropertyKey::Identifier(ast::Identifier {
-                                        base: b.clone(),
-                                        name: "name".to_string(),
-                                    }),
-                                    separator: vec![],
-                                    value: Some(ast::Expression::StringLit(ast::StringLit {
-                                        base: b.clone(),
-                                        value: "foo".to_string(),
-                                    })),
-                                    comma: vec![],
-                                },
-                                ast::Property {
-                                    base: b.clone(),
-                                    key: ast::PropertyKey::Identifier(ast::Identifier {
-                                        base: b.clone(),
-                                        name: "every".to_string(),
-                                    }),
-                                    separator: vec![],
-                                    value: Some(ast::Expression::Duration(ast::DurationLit {
-                                        base: b.clone(),
-                                        values: vec![ast::Duration {
-                                            magnitude: 1,
-                                            unit: "h".to_string(),
-                                        }],
-                                    })),
-                                    comma: vec![],
-                                },
-                                ast::Property {
-                                    base: b.clone(),
-                                    key: ast::PropertyKey::Identifier(ast::Identifier {
-                                        base: b.clone(),
-                                        name: "delay".to_string(),
-                                    }),
-                                    separator: vec![],
-                                    value: Some(ast::Expression::Duration(ast::DurationLit {
-                                        base: b.clone(),
-                                        values: vec![ast::Duration {
-                                            magnitude: 10,
-                                            unit: "m".to_string(),
-                                        }],
-                                    })),
-                                    comma: vec![],
-                                },
-                                ast::Property {
-                                    base: b.clone(),
-                                    key: ast::PropertyKey::Identifier(ast::Identifier {
-                                        base: b.clone(),
-                                        name: "cron".to_string(),
-                                    }),
-                                    separator: vec![],
-                                    value: Some(ast::Expression::StringLit(ast::StringLit {
-                                        base: b.clone(),
-                                        value: "0 2 * * *".to_string(),
-                                    })),
-                                    comma: vec![],
-                                },
-                                ast::Property {
-                                    base: b.clone(),
-                                    key: ast::PropertyKey::Identifier(ast::Identifier {
-                                        base: b.clone(),
-                                        name: "retry".to_string(),
-                                    }),
-                                    separator: vec![],
-                                    value: Some(ast::Expression::Integer(ast::IntegerLit {
-                                        base: b.clone(),
-                                        value: 5,
-                                    })),
-                                    comma: vec![],
-                                },
-                            ],
-                            rbrace: vec![],
-                        })),
-                    })),
-                }))],
-                eof: vec![],
-            }],
-        };
+        let pkg = parse_package(
+            r#"option task = { name: "foo", every: 1h, delay: 10m, cron: "0 2 * * *", retry: 5}"#,
+        );
         let want = Package {
             loc: b.location.clone(),
             package: "main".to_string(),
@@ -1876,42 +1662,7 @@ mod tests {
     #[test]
     fn test_convert_qualified_option_statement() {
         let b = ast::BaseNode::default();
-        let pkg = ast::Package {
-            base: b.clone(),
-            path: "path".to_string(),
-            package: "main".to_string(),
-            files: vec![ast::File {
-                base: b.clone(),
-                name: "foo.flux".to_string(),
-                metadata: String::new(),
-                package: None,
-                imports: Vec::new(),
-                body: vec![ast::Statement::Option(Box::new(ast::OptionStmt {
-                    base: b.clone(),
-                    assignment: ast::Assignment::Member(Box::new(ast::MemberAssgn {
-                        base: b.clone(),
-                        member: ast::MemberExpr {
-                            base: b.clone(),
-                            object: ast::Expression::Identifier(ast::Identifier {
-                                base: b.clone(),
-                                name: "alert".to_string(),
-                            }),
-                            lbrack: vec![],
-                            property: ast::PropertyKey::Identifier(ast::Identifier {
-                                base: b.clone(),
-                                name: "state".to_string(),
-                            }),
-                            rbrack: vec![],
-                        },
-                        init: ast::Expression::StringLit(ast::StringLit {
-                            base: b.clone(),
-                            value: "Warning".to_string(),
-                        }),
-                    })),
-                }))],
-                eof: vec![],
-            }],
-        };
+        let pkg = parse_package(r#"option alert.state = "Warning""#);
         let want = Package {
             loc: b.location.clone(),
             package: "main".to_string(),
@@ -1931,7 +1682,7 @@ mod tests {
                                 typ: type_info(),
                                 name: Symbol::from("alert"),
                             }),
-                            property: "state".to_string(),
+                            property: Symbol::from("state"),
                         },
                         init: Expression::StringLit(StringLit {
                             loc: b.location.clone(),
@@ -1948,116 +1699,10 @@ mod tests {
     #[test]
     fn test_convert_function() {
         let b = ast::BaseNode::default();
-        let pkg = ast::Package {
-            base: b.clone(),
-            path: "path".to_string(),
-            package: "main".to_string(),
-            files: vec![ast::File {
-                base: b.clone(),
-                name: "foo.flux".to_string(),
-                metadata: String::new(),
-                package: None,
-                imports: Vec::new(),
-                body: vec![
-                    ast::Statement::Variable(Box::new(ast::VariableAssgn {
-                        base: b.clone(),
-                        id: ast::Identifier {
-                            base: b.clone(),
-                            name: "f".to_string(),
-                        },
-                        init: ast::Expression::Function(Box::new(ast::FunctionExpr {
-                            base: b.clone(),
-                            lparen: vec![],
-                            params: vec![
-                                ast::Property {
-                                    base: b.clone(),
-                                    key: ast::PropertyKey::Identifier(ast::Identifier {
-                                        base: b.clone(),
-                                        name: "a".to_string(),
-                                    }),
-                                    separator: vec![],
-                                    value: None,
-                                    comma: vec![],
-                                },
-                                ast::Property {
-                                    base: b.clone(),
-                                    key: ast::PropertyKey::Identifier(ast::Identifier {
-                                        base: b.clone(),
-                                        name: "b".to_string(),
-                                    }),
-                                    separator: vec![],
-                                    value: None,
-                                    comma: vec![],
-                                },
-                            ],
-                            rparen: vec![],
-                            arrow: vec![],
-                            body: ast::FunctionBody::Expr(ast::Expression::Binary(Box::new(
-                                ast::BinaryExpr {
-                                    base: b.clone(),
-                                    operator: ast::Operator::AdditionOperator,
-                                    left: ast::Expression::Identifier(ast::Identifier {
-                                        base: b.clone(),
-                                        name: "a".to_string(),
-                                    }),
-                                    right: ast::Expression::Identifier(ast::Identifier {
-                                        base: b.clone(),
-                                        name: "b".to_string(),
-                                    }),
-                                },
-                            ))),
-                        })),
-                    })),
-                    ast::Statement::Expr(Box::new(ast::ExprStmt {
-                        base: b.clone(),
-                        expression: ast::Expression::Call(Box::new(ast::CallExpr {
-                            base: b.clone(),
-                            callee: ast::Expression::Identifier(ast::Identifier {
-                                base: b.clone(),
-                                name: "f".to_string(),
-                            }),
-                            lparen: vec![],
-                            arguments: vec![ast::Expression::Object(Box::new(ast::ObjectExpr {
-                                base: b.clone(),
-                                lbrace: vec![],
-                                with: None,
-                                properties: vec![
-                                    ast::Property {
-                                        base: b.clone(),
-                                        key: ast::PropertyKey::Identifier(ast::Identifier {
-                                            base: b.clone(),
-                                            name: "a".to_string(),
-                                        }),
-                                        separator: vec![],
-                                        value: Some(ast::Expression::Integer(ast::IntegerLit {
-                                            base: b.clone(),
-                                            value: 2,
-                                        })),
-                                        comma: vec![],
-                                    },
-                                    ast::Property {
-                                        base: b.clone(),
-                                        key: ast::PropertyKey::Identifier(ast::Identifier {
-                                            base: b.clone(),
-                                            name: "b".to_string(),
-                                        }),
-                                        separator: vec![],
-                                        value: Some(ast::Expression::Integer(ast::IntegerLit {
-                                            base: b.clone(),
-                                            value: 3,
-                                        })),
-                                        comma: vec![],
-                                    },
-                                ],
-                                rbrace: vec![],
-                            }))],
-                            rparen: vec![],
-                        })),
-                    })),
-                ],
-                eof: vec![],
-            }],
-        };
+        let pkg = parse_package(
+            "f = (a, b) => a + b
+            f(a: 2, b: 3)",
+        );
         let want = Package {
             loc: b.location.clone(),
             package: "main".to_string(),
@@ -2069,7 +1714,7 @@ mod tests {
                     Statement::Variable(Box::new(VariableAssgn::new(
                         Identifier {
                             loc: b.location.clone(),
-                            name: Symbol::from("f"),
+                            name: Symbol::from("f@main"),
                         },
                         Expression::Function(Box::new(FunctionExpr {
                             loc: b.location.clone(),
@@ -2125,7 +1770,7 @@ mod tests {
                             callee: Expression::Identifier(IdentifierExpr {
                                 loc: b.location.clone(),
                                 typ: type_info(),
-                                name: Symbol::from("f"),
+                                name: Symbol::from("f@main"),
                             }),
                             arguments: vec![
                                 Property {
@@ -2163,125 +1808,10 @@ mod tests {
     #[test]
     fn test_convert_function_with_defaults() {
         let b = ast::BaseNode::default();
-        let pkg = ast::Package {
-            base: b.clone(),
-            path: "path".to_string(),
-            package: "main".to_string(),
-            files: vec![ast::File {
-                base: b.clone(),
-                name: "foo.flux".to_string(),
-                metadata: String::new(),
-                package: None,
-                imports: Vec::new(),
-                body: vec![
-                    ast::Statement::Variable(Box::new(ast::VariableAssgn {
-                        base: b.clone(),
-                        id: ast::Identifier {
-                            base: b.clone(),
-                            name: "f".to_string(),
-                        },
-                        init: ast::Expression::Function(Box::new(ast::FunctionExpr {
-                            base: b.clone(),
-                            lparen: vec![],
-                            params: vec![
-                                ast::Property {
-                                    base: b.clone(),
-                                    key: ast::PropertyKey::Identifier(ast::Identifier {
-                                        base: b.clone(),
-                                        name: "a".to_string(),
-                                    }),
-                                    separator: vec![],
-                                    value: Some(ast::Expression::Integer(ast::IntegerLit {
-                                        base: b.clone(),
-                                        value: 0,
-                                    })),
-                                    comma: vec![],
-                                },
-                                ast::Property {
-                                    base: b.clone(),
-                                    key: ast::PropertyKey::Identifier(ast::Identifier {
-                                        base: b.clone(),
-                                        name: "b".to_string(),
-                                    }),
-                                    separator: vec![],
-                                    value: Some(ast::Expression::Integer(ast::IntegerLit {
-                                        base: b.clone(),
-                                        value: 0,
-                                    })),
-                                    comma: vec![],
-                                },
-                                ast::Property {
-                                    base: b.clone(),
-                                    key: ast::PropertyKey::Identifier(ast::Identifier {
-                                        base: b.clone(),
-                                        name: "c".to_string(),
-                                    }),
-                                    separator: vec![],
-                                    value: None,
-                                    comma: vec![],
-                                },
-                            ],
-                            rparen: vec![],
-                            arrow: vec![],
-                            body: ast::FunctionBody::Expr(ast::Expression::Binary(Box::new(
-                                ast::BinaryExpr {
-                                    base: b.clone(),
-                                    operator: ast::Operator::AdditionOperator,
-                                    left: ast::Expression::Binary(Box::new(ast::BinaryExpr {
-                                        base: b.clone(),
-                                        operator: ast::Operator::AdditionOperator,
-                                        left: ast::Expression::Identifier(ast::Identifier {
-                                            base: b.clone(),
-                                            name: "a".to_string(),
-                                        }),
-                                        right: ast::Expression::Identifier(ast::Identifier {
-                                            base: b.clone(),
-                                            name: "b".to_string(),
-                                        }),
-                                    })),
-                                    right: ast::Expression::Identifier(ast::Identifier {
-                                        base: b.clone(),
-                                        name: "c".to_string(),
-                                    }),
-                                },
-                            ))),
-                        })),
-                    })),
-                    ast::Statement::Expr(Box::new(ast::ExprStmt {
-                        base: b.clone(),
-                        expression: ast::Expression::Call(Box::new(ast::CallExpr {
-                            base: b.clone(),
-                            callee: ast::Expression::Identifier(ast::Identifier {
-                                base: b.clone(),
-                                name: "f".to_string(),
-                            }),
-                            lparen: vec![],
-                            arguments: vec![ast::Expression::Object(Box::new(ast::ObjectExpr {
-                                base: b.clone(),
-                                lbrace: vec![],
-                                with: None,
-                                properties: vec![ast::Property {
-                                    base: b.clone(),
-                                    key: ast::PropertyKey::Identifier(ast::Identifier {
-                                        base: b.clone(),
-                                        name: "c".to_string(),
-                                    }),
-                                    separator: vec![],
-                                    value: Some(ast::Expression::Integer(ast::IntegerLit {
-                                        base: b.clone(),
-                                        value: 42,
-                                    })),
-                                    comma: vec![],
-                                }],
-                                rbrace: vec![],
-                            }))],
-                            rparen: vec![],
-                        })),
-                    })),
-                ],
-                eof: vec![],
-            }],
-        };
+        let pkg = parse_package(
+            "f = (a=0, b=0, c) => a + b + c
+            f(c: 42)",
+        );
         let want = Package {
             loc: b.location.clone(),
             package: "main".to_string(),
@@ -2293,7 +1823,7 @@ mod tests {
                     Statement::Variable(Box::new(VariableAssgn::new(
                         Identifier {
                             loc: b.location.clone(),
-                            name: Symbol::from("f"),
+                            name: Symbol::from("f@main"),
                         },
                         Expression::Function(Box::new(FunctionExpr {
                             loc: b.location.clone(),
@@ -2374,7 +1904,7 @@ mod tests {
                             callee: Expression::Identifier(IdentifierExpr {
                                 loc: b.location.clone(),
                                 typ: type_info(),
-                                name: Symbol::from("f"),
+                                name: Symbol::from("f@main"),
                             }),
                             arguments: vec![Property {
                                 loc: b.location.clone(),
@@ -2398,80 +1928,10 @@ mod tests {
 
     #[test]
     fn test_convert_function_multiple_pipes() {
-        let b = ast::BaseNode::default();
-        let pkg = ast::Package {
-            base: b.clone(),
-            path: "path".to_string(),
-            package: "main".to_string(),
-            files: vec![ast::File {
-                base: b.clone(),
-                name: "foo.flux".to_string(),
-                metadata: String::new(),
-                package: None,
-                imports: Vec::new(),
-                body: vec![ast::Statement::Variable(Box::new(ast::VariableAssgn {
-                    base: b.clone(),
-                    id: ast::Identifier {
-                        base: b.clone(),
-                        name: "f".to_string(),
-                    },
-                    init: ast::Expression::Function(Box::new(ast::FunctionExpr {
-                        base: b.clone(),
-                        lparen: vec![],
-                        params: vec![
-                            ast::Property {
-                                base: b.clone(),
-                                key: ast::PropertyKey::Identifier(ast::Identifier {
-                                    base: b.clone(),
-                                    name: "a".to_string(),
-                                }),
-                                separator: vec![],
-                                value: None,
-                                comma: vec![],
-                            },
-                            ast::Property {
-                                base: b.clone(),
-                                key: ast::PropertyKey::Identifier(ast::Identifier {
-                                    base: b.clone(),
-                                    name: "piped1".to_string(),
-                                }),
-                                separator: vec![],
-                                value: Some(ast::Expression::PipeLit(ast::PipeLit {
-                                    base: b.clone(),
-                                })),
-                                comma: vec![],
-                            },
-                            ast::Property {
-                                base: b.clone(),
-                                key: ast::PropertyKey::Identifier(ast::Identifier {
-                                    base: b.clone(),
-                                    name: "piped2".to_string(),
-                                }),
-                                separator: vec![],
-                                value: Some(ast::Expression::PipeLit(ast::PipeLit {
-                                    base: b.clone(),
-                                })),
-                                comma: vec![],
-                            },
-                        ],
-                        rparen: vec![],
-                        arrow: vec![],
-                        body: ast::FunctionBody::Expr(ast::Expression::Identifier(
-                            ast::Identifier {
-                                base: b.clone(),
-                                name: "a".to_string(),
-                            },
-                        )),
-                    })),
-                }))],
-                eof: vec![],
-            }],
-        };
+        let pkg = parse_package("f = (a, piped1=<-, piped2=<-) => a");
         let got = test_convert(pkg).err().unwrap().to_string();
-        assert_eq!(
-            "error @0:0-0:0: function types can have at most one pipe parameter".to_string(),
-            got
-        );
+        expect![["error foo.flux@1:27-1:29: function types can have at most one pipe parameter"]]
+            .assert_eq(&got);
     }
 
     #[test]
@@ -2543,123 +2003,19 @@ mod tests {
             }],
         };
         let got = test_convert(pkg).err().unwrap().to_string();
-        assert_eq!(
-            "error @0:0-0:0: function parameters are more than one record expression".to_string(),
-            got
-        );
+
+        expect![["error @0:0-0:0: function parameters are more than one record expression"]]
+            .assert_eq(&got);
     }
 
     #[test]
     fn test_convert_pipe_expression() {
         let b = ast::BaseNode::default();
-        let pkg = ast::Package {
-            base: b.clone(),
-            path: "path".to_string(),
-            package: "main".to_string(),
-            files: vec![ast::File {
-                base: b.clone(),
-                name: "foo.flux".to_string(),
-                metadata: String::new(),
-                package: None,
-                imports: Vec::new(),
-                body: vec![
-                    ast::Statement::Variable(Box::new(ast::VariableAssgn {
-                        base: b.clone(),
-                        id: ast::Identifier {
-                            base: b.clone(),
-                            name: "f".to_string(),
-                        },
-                        init: ast::Expression::Function(Box::new(ast::FunctionExpr {
-                            base: b.clone(),
-                            lparen: vec![],
-                            params: vec![
-                                ast::Property {
-                                    base: b.clone(),
-                                    key: ast::PropertyKey::Identifier(ast::Identifier {
-                                        base: b.clone(),
-                                        name: "piped".to_string(),
-                                    }),
-                                    separator: vec![],
-                                    value: Some(ast::Expression::PipeLit(ast::PipeLit {
-                                        base: b.clone(),
-                                    })),
-                                    comma: vec![],
-                                },
-                                ast::Property {
-                                    base: b.clone(),
-                                    key: ast::PropertyKey::Identifier(ast::Identifier {
-                                        base: b.clone(),
-                                        name: "a".to_string(),
-                                    }),
-                                    separator: vec![],
-                                    value: None,
-                                    comma: vec![],
-                                },
-                            ],
-                            rparen: vec![],
-                            arrow: vec![],
-                            body: ast::FunctionBody::Expr(ast::Expression::Binary(Box::new(
-                                ast::BinaryExpr {
-                                    base: b.clone(),
-                                    operator: ast::Operator::AdditionOperator,
-                                    left: ast::Expression::Identifier(ast::Identifier {
-                                        base: b.clone(),
-                                        name: "a".to_string(),
-                                    }),
-                                    right: ast::Expression::Identifier(ast::Identifier {
-                                        base: b.clone(),
-                                        name: "piped".to_string(),
-                                    }),
-                                },
-                            ))),
-                        })),
-                    })),
-                    ast::Statement::Expr(Box::new(ast::ExprStmt {
-                        base: b.clone(),
-                        expression: ast::Expression::PipeExpr(Box::new(ast::PipeExpr {
-                            base: b.clone(),
-                            argument: ast::Expression::Integer(ast::IntegerLit {
-                                base: b.clone(),
-                                value: 3,
-                            }),
-                            call: ast::CallExpr {
-                                base: b.clone(),
-                                callee: ast::Expression::Identifier(ast::Identifier {
-                                    base: b.clone(),
-                                    name: "f".to_string(),
-                                }),
-                                lparen: vec![],
-                                arguments: vec![ast::Expression::Object(Box::new(
-                                    ast::ObjectExpr {
-                                        base: b.clone(),
-                                        lbrace: vec![],
-                                        with: None,
-                                        properties: vec![ast::Property {
-                                            base: b.clone(),
-                                            key: ast::PropertyKey::Identifier(ast::Identifier {
-                                                base: b.clone(),
-                                                name: "a".to_string(),
-                                            }),
-                                            separator: vec![],
-                                            value: Some(ast::Expression::Integer(
-                                                ast::IntegerLit {
-                                                    base: b.clone(),
-                                                    value: 2,
-                                                },
-                                            )),
-                                            comma: vec![],
-                                        }],
-                                        rbrace: vec![],
-                                    },
-                                ))],
-                                rparen: vec![],
-                            },
-                        })),
-                    })),
-                ],
-                eof: vec![],
-            }],
-        };
+        let pkg = parse_package(
+            "f = (piped=<-, a) => a + piped
+            3 |> f(a: 2)",
+        );
+
         let want = Package {
             loc: b.location.clone(),
             package: "main".to_string(),
@@ -2671,7 +2027,7 @@ mod tests {
                     Statement::Variable(Box::new(VariableAssgn::new(
                         Identifier {
                             loc: b.location.clone(),
-                            name: Symbol::from("f"),
+                            name: Symbol::from("f@main"),
                         },
                         Expression::Function(Box::new(FunctionExpr {
                             loc: b.location.clone(),
@@ -2730,7 +2086,7 @@ mod tests {
                             callee: Expression::Identifier(IdentifierExpr {
                                 loc: b.location.clone(),
                                 typ: type_info(),
-                                name: Symbol::from("f"),
+                                name: Symbol::from("f@main"),
                             }),
                             arguments: vec![Property {
                                 loc: b.location.clone(),
@@ -2887,35 +2243,8 @@ mod tests {
     #[test]
     fn test_convert_index_expression() {
         let b = ast::BaseNode::default();
-        let pkg = ast::Package {
-            base: b.clone(),
-            path: "path".to_string(),
-            package: "main".to_string(),
-            files: vec![ast::File {
-                base: b.clone(),
-                name: "foo.flux".to_string(),
-                metadata: String::new(),
-                package: None,
-                imports: Vec::new(),
-                body: vec![ast::Statement::Expr(Box::new(ast::ExprStmt {
-                    base: b.clone(),
-                    expression: ast::Expression::Index(Box::new(ast::IndexExpr {
-                        base: b.clone(),
-                        array: ast::Expression::Identifier(ast::Identifier {
-                            base: b.clone(),
-                            name: "a".to_string(),
-                        }),
-                        lbrack: vec![],
-                        index: ast::Expression::Integer(ast::IntegerLit {
-                            base: b.clone(),
-                            value: 3,
-                        }),
-                        rbrack: vec![],
-                    })),
-                }))],
-                eof: vec![],
-            }],
-        };
+        let pkg =
+            Parser::new("a[3]").parse_single_package("path".to_string(), "foo.flux".to_string());
         let want = Package {
             loc: b.location.clone(),
             package: "main".to_string(),
@@ -2948,44 +2277,8 @@ mod tests {
     #[test]
     fn test_convert_nested_index_expression() {
         let b = ast::BaseNode::default();
-        let pkg = ast::Package {
-            base: b.clone(),
-            path: "path".to_string(),
-            package: "main".to_string(),
-            files: vec![ast::File {
-                base: b.clone(),
-                name: "foo.flux".to_string(),
-                metadata: String::new(),
-                package: None,
-                imports: Vec::new(),
-                body: vec![ast::Statement::Expr(Box::new(ast::ExprStmt {
-                    base: b.clone(),
-                    expression: ast::Expression::Index(Box::new(ast::IndexExpr {
-                        base: b.clone(),
-                        array: ast::Expression::Index(Box::new(ast::IndexExpr {
-                            base: b.clone(),
-                            array: ast::Expression::Identifier(ast::Identifier {
-                                base: b.clone(),
-                                name: "a".to_string(),
-                            }),
-                            lbrack: vec![],
-                            index: ast::Expression::Integer(ast::IntegerLit {
-                                base: b.clone(),
-                                value: 3,
-                            }),
-                            rbrack: vec![],
-                        })),
-                        lbrack: vec![],
-                        index: ast::Expression::Integer(ast::IntegerLit {
-                            base: b.clone(),
-                            value: 5,
-                        }),
-                        rbrack: vec![],
-                    })),
-                }))],
-                eof: vec![],
-            }],
-        };
+        let pkg =
+            Parser::new("a[3][5]").parse_single_package("path".to_string(), "foo.flux".to_string());
         let want = Package {
             loc: b.location.clone(),
             package: "main".to_string(),
@@ -3024,43 +2317,10 @@ mod tests {
     }
 
     #[test]
-    fn test_convert_access_idexed_object_returned_from_function_call() {
+    fn test_convert_access_indexed_object_returned_from_function_call() {
         let b = ast::BaseNode::default();
-        let pkg = ast::Package {
-            base: b.clone(),
-            path: "path".to_string(),
-            package: "main".to_string(),
-            files: vec![ast::File {
-                base: b.clone(),
-                name: "foo.flux".to_string(),
-                metadata: String::new(),
-                package: None,
-                imports: Vec::new(),
-                body: vec![ast::Statement::Expr(Box::new(ast::ExprStmt {
-                    base: b.clone(),
-                    expression: ast::Expression::Index(Box::new(ast::IndexExpr {
-                        base: b.clone(),
-                        array: ast::Expression::Call(Box::new(ast::CallExpr {
-                            base: b.clone(),
-                            callee: ast::Expression::Identifier(ast::Identifier {
-                                base: b.clone(),
-                                name: "f".to_string(),
-                            }),
-                            lparen: vec![],
-                            arguments: vec![],
-                            rparen: vec![],
-                        })),
-                        lbrack: vec![],
-                        index: ast::Expression::Integer(ast::IntegerLit {
-                            base: b.clone(),
-                            value: 3,
-                        }),
-                        rbrack: vec![],
-                    })),
-                }))],
-                eof: vec![],
-            }],
-        };
+        let pkg =
+            Parser::new("f()[3]").parse_single_package("path".to_string(), "foo.flux".to_string());
         let want = Package {
             loc: b.location.clone(),
             package: "main".to_string(),
@@ -3157,9 +2417,9 @@ mod tests {
                                 typ: type_info(),
                                 name: Symbol::from("a"),
                             }),
-                            property: "b".to_string(),
+                            property: Symbol::from("b"),
                         })),
-                        property: "c".to_string(),
+                        property: Symbol::from("c"),
                     })),
                 })],
             }],
@@ -3171,50 +2431,9 @@ mod tests {
     #[test]
     fn test_convert_member_with_call_expression() {
         let b = ast::BaseNode::default();
-        let pkg = ast::Package {
-            base: b.clone(),
-            path: "path".to_string(),
-            package: "main".to_string(),
-            files: vec![ast::File {
-                base: b.clone(),
-                name: "foo.flux".to_string(),
-                metadata: String::new(),
-                package: None,
-                imports: Vec::new(),
-                body: vec![ast::Statement::Expr(Box::new(ast::ExprStmt {
-                    base: b.clone(),
-                    expression: ast::Expression::Member(Box::new(ast::MemberExpr {
-                        base: b.clone(),
-                        object: ast::Expression::Call(Box::new(ast::CallExpr {
-                            base: b.clone(),
-                            callee: ast::Expression::Member(Box::new(ast::MemberExpr {
-                                base: b.clone(),
-                                object: ast::Expression::Identifier(ast::Identifier {
-                                    base: b.clone(),
-                                    name: "a".to_string(),
-                                }),
-                                lbrack: vec![],
-                                property: ast::PropertyKey::Identifier(ast::Identifier {
-                                    base: b.clone(),
-                                    name: "b".to_string(),
-                                }),
-                                rbrack: vec![],
-                            })),
-                            lparen: vec![],
-                            arguments: vec![],
-                            rparen: vec![],
-                        })),
-                        lbrack: vec![],
-                        property: ast::PropertyKey::Identifier(ast::Identifier {
-                            base: b.clone(),
-                            name: "c".to_string(),
-                        }),
-                        rbrack: vec![],
-                    })),
-                }))],
-                eof: vec![],
-            }],
-        };
+        let pkg =
+            Parser::new("a.b().c").parse_single_package("path".to_string(), "foo.flux".to_string());
+
         let want = Package {
             loc: b.location.clone(),
             package: "main".to_string(),
@@ -3239,11 +2458,11 @@ mod tests {
                                     typ: type_info(),
                                     name: Symbol::from("a"),
                                 }),
-                                property: "b".to_string(),
+                                property: Symbol::from("b"),
                             })),
                             arguments: Vec::new(),
                         })),
-                        property: "c".to_string(),
+                        property: Symbol::from("c"),
                     })),
                 })],
             }],
@@ -3251,6 +2470,7 @@ mod tests {
         let got = test_convert(pkg).unwrap();
         assert_eq!(want, got);
     }
+
     #[test]
     fn test_convert_bad_stmt() {
         let b = ast::BaseNode::default();
@@ -3273,6 +2493,7 @@ mod tests {
         };
         test_convert(pkg).unwrap();
     }
+
     #[test]
     fn test_convert_bad_expr() {
         let b = ast::BaseNode::default();
@@ -3302,166 +2523,50 @@ mod tests {
 
     #[test]
     fn test_convert_monotype_int() {
-        let b = ast::BaseNode::default();
-        let monotype = ast::MonoType::Basic(ast::NamedType {
-            base: b.clone(),
-            name: ast::Identifier {
-                base: b.clone(),
-                name: "int".to_string(),
-            },
-        });
+        let monotype = Parser::new("int").parse_monotype();
         let mut m = BTreeMap::<String, types::Tvar>::new();
         let got = convert_monotype(monotype, &mut m, &mut sub::Substitution::default()).unwrap();
-        let want = MonoType::Int;
+        let want = MonoType::INT;
         assert_eq!(want, got);
     }
 
     #[test]
     fn test_convert_monotype_record() {
-        let b = ast::BaseNode::default();
-        let monotype = ast::MonoType::Record(ast::RecordType {
-            base: b.clone(),
-            tvar: Some(ast::Identifier {
-                base: b.clone(),
-                name: "A".to_string(),
-            }),
-            properties: vec![ast::PropertyType {
-                base: b.clone(),
-                name: ast::Identifier {
-                    base: b.clone(),
-                    name: "B".to_string(),
-                },
-                monotype: ast::MonoType::Basic(ast::NamedType {
-                    base: b.clone(),
-                    name: ast::Identifier {
-                        base: b.clone(),
-                        name: "int".to_string(),
-                    },
-                }),
-            }],
-        });
+        let monotype = Parser::new("{ A with B: int }").parse_monotype();
+
         let mut m = BTreeMap::<String, types::Tvar>::new();
         let got = convert_monotype(monotype, &mut m, &mut sub::Substitution::default()).unwrap();
         let want = MonoType::from(types::Record::Extension {
             head: types::Property {
-                k: "B".to_string(),
-                v: MonoType::Int,
+                k: types::Label::from("B"),
+                v: MonoType::INT,
             },
             tail: MonoType::Var(Tvar(0)),
         });
         assert_eq!(want, got);
     }
+
     #[test]
     fn test_convert_monotype_function() {
-        let b = ast::BaseNode::default();
-        let monotype_ex = ast::MonoType::Function(Box::new(ast::FunctionType {
-            base: b.clone(),
-            parameters: vec![ast::ParameterType::Optional {
-                base: b.clone(),
-                name: ast::Identifier {
-                    base: b.clone(),
-                    name: "A".to_string(),
-                },
-                monotype: ast::MonoType::Basic(ast::NamedType {
-                    base: b.clone(),
-                    name: ast::Identifier {
-                        base: b.clone(),
-                        name: "int".to_string(),
-                    },
-                }),
-            }],
-            monotype: ast::MonoType::Basic(ast::NamedType {
-                base: b.clone(),
-                name: ast::Identifier {
-                    base: b.clone(),
-                    name: "int".to_string(),
-                },
-            }),
-        }));
+        let monotype_ex = Parser::new("(?A: int) => int").parse_monotype();
+
         let mut m = BTreeMap::<String, types::Tvar>::new();
         let got = convert_monotype(monotype_ex, &mut m, &mut sub::Substitution::default()).unwrap();
         let mut opt = MonoTypeMap::new();
-        opt.insert(String::from("A"), MonoType::Int);
+        opt.insert(String::from("A"), MonoType::INT);
         let want = MonoType::from(types::Function {
             req: MonoTypeMap::new(),
             opt,
             pipe: None,
-            retn: MonoType::Int,
+            retn: MonoType::INT,
         });
         assert_eq!(want, got);
     }
 
     #[test]
     fn test_convert_polytype() {
-        // (A: T, B: S) => T where T: Addable, S: Divisible
-        let b = ast::BaseNode::default();
-        let type_exp = ast::TypeExpression {
-            base: b.clone(),
-            monotype: ast::MonoType::Function(Box::new(ast::FunctionType {
-                base: b.clone(),
-                parameters: vec![
-                    ast::ParameterType::Required {
-                        base: b.clone(),
-                        name: ast::Identifier {
-                            base: b.clone(),
-                            name: "A".to_string(),
-                        },
-                        monotype: ast::MonoType::Tvar(ast::TvarType {
-                            base: b.clone(),
-                            name: ast::Identifier {
-                                base: b.clone(),
-                                name: "T".to_string(),
-                            },
-                        }),
-                    },
-                    ast::ParameterType::Required {
-                        base: b.clone(),
-                        name: ast::Identifier {
-                            base: b.clone(),
-                            name: "B".to_string(),
-                        },
-                        monotype: ast::MonoType::Tvar(ast::TvarType {
-                            base: b.clone(),
-                            name: ast::Identifier {
-                                base: b.clone(),
-                                name: "S".to_string(),
-                            },
-                        }),
-                    },
-                ],
-                monotype: ast::MonoType::Tvar(ast::TvarType {
-                    base: b.clone(),
-                    name: ast::Identifier {
-                        base: b.clone(),
-                        name: "T".to_string(),
-                    },
-                }),
-            })),
-            constraints: vec![
-                ast::TypeConstraint {
-                    base: b.clone(),
-                    tvar: ast::Identifier {
-                        base: b.clone(),
-                        name: "T".to_string(),
-                    },
-                    kinds: vec![ast::Identifier {
-                        base: b.clone(),
-                        name: "Addable".to_string(),
-                    }],
-                },
-                ast::TypeConstraint {
-                    base: b.clone(),
-                    tvar: ast::Identifier {
-                        base: b.clone(),
-                        name: "S".to_string(),
-                    },
-                    kinds: vec![ast::Identifier {
-                        base: b.clone(),
-                        name: "Divisible".to_string(),
-                    }],
-                },
-            ],
-        };
+        let type_exp =
+            Parser::new("(A: T, B: S) => T where T: Addable, S: Divisible").parse_type_expression();
         let got = convert_polytype(type_exp, &mut sub::Substitution::default()).unwrap();
         let mut vars = Vec::<types::Tvar>::new();
         vars.push(types::Tvar(0));
@@ -3490,62 +2595,8 @@ mod tests {
 
     #[test]
     fn test_convert_polytype_2() {
-        // (A: T, B: S) => T where T: Addable
-        let b = ast::BaseNode::default();
-        let type_exp = ast::TypeExpression {
-            base: b.clone(),
-            monotype: ast::MonoType::Function(Box::new(ast::FunctionType {
-                base: b.clone(),
-                parameters: vec![
-                    ast::ParameterType::Required {
-                        base: b.clone(),
-                        name: ast::Identifier {
-                            base: b.clone(),
-                            name: "A".to_string(),
-                        },
-                        monotype: ast::MonoType::Tvar(ast::TvarType {
-                            base: b.clone(),
-                            name: ast::Identifier {
-                                base: b.clone(),
-                                name: "T".to_string(),
-                            },
-                        }),
-                    },
-                    ast::ParameterType::Required {
-                        base: b.clone(),
-                        name: ast::Identifier {
-                            base: b.clone(),
-                            name: "B".to_string(),
-                        },
-                        monotype: ast::MonoType::Tvar(ast::TvarType {
-                            base: b.clone(),
-                            name: ast::Identifier {
-                                base: b.clone(),
-                                name: "S".to_string(),
-                            },
-                        }),
-                    },
-                ],
-                monotype: ast::MonoType::Tvar(ast::TvarType {
-                    base: b.clone(),
-                    name: ast::Identifier {
-                        base: b.clone(),
-                        name: "T".to_string(),
-                    },
-                }),
-            })),
-            constraints: vec![ast::TypeConstraint {
-                base: b.clone(),
-                tvar: ast::Identifier {
-                    base: b.clone(),
-                    name: "T".to_string(),
-                },
-                kinds: vec![ast::Identifier {
-                    base: b.clone(),
-                    name: "Addable".to_string(),
-                }],
-            }],
-        };
+        let type_exp = Parser::new("(A: T, B: S) => T where T: Addable").parse_type_expression();
+
         let got = convert_polytype(type_exp, &mut sub::Substitution::default()).unwrap();
         let mut vars = Vec::<types::Tvar>::new();
         vars.push(types::Tvar(0));

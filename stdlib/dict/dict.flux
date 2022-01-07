@@ -11,7 +11,7 @@ package dict
 // - pairs: List of records with `key` and `value` properties.
 //
 // ## Examples
-// 
+//
 // ### Create a dictionary from a list of records
 //
 // ```no_run
@@ -26,7 +26,7 @@ package dict
 //
 // // Returns [1: "foo", 2: "bar"]
 // ```
-// 
+//
 builtin fromList : (pairs: [{key: K, value: V}]) => [K:V] where K: Comparable
 
 // get returns the value of a specified key in a dictionary or a default value
@@ -67,10 +67,10 @@ builtin get : (dict: [K:V], key: K, default: V) => V where K: Comparable
 // - key: Key to insert into the dictionary.
 //   Must be the same type as the existing keys in the dictionary.
 // - value: Value to insert into the dictionary.
-//   Must be the same type as the existing values in the dictionary. 
+//   Must be the same type as the existing values in the dictionary.
 //
 // ## Examples
-// 
+//
 // ### Insert a new key-value pair into the a dictionary
 //
 // ```no_run
@@ -105,7 +105,7 @@ builtin get : (dict: [K:V], key: K, default: V) => V where K: Comparable
 builtin insert : (dict: [K:V], key: K, value: V) => [K:V] where K: Comparable
 
 // remove removes a key value pair from a dictionary and returns an updated
-// dictionary. 
+// dictionary.
 //
 // ## Parameters
 // - dict: Dictionary to remove the key-value pair from.
@@ -113,7 +113,7 @@ builtin insert : (dict: [K:V], key: K, value: V) => [K:V] where K: Comparable
 //   Must be the same type as existing keys in the dictionary.
 //
 // ## Examples
-// 
+//
 // ### Remove a property from a dictionary
 //
 // ```no_run

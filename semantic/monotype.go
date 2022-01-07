@@ -334,10 +334,12 @@ func (mt MonoType) SortedProperties() ([]*RecordProperty, error) {
 		}
 	}
 	sort.Slice(ps, func(i, j int) bool {
-		if ps[i].Name() == ps[j].Name() {
+		l := NewSymbol(ps[i].Name()).Name()
+		r := NewSymbol(ps[j].Name()).Name()
+		if l == r {
 			return i < j
 		}
-		return ps[i].Name() < ps[j].Name()
+		return l < r
 	})
 	return ps, nil
 }
@@ -590,7 +592,8 @@ func (mt MonoType) string(m map[uint64]uint64) string {
 			} else {
 				needBar = true
 			}
-			sb.WriteString(prop.Name() + ": ")
+			field := NewSymbol(prop.Name())
+			sb.WriteString(field.Name() + ": ")
 			ty, err := prop.TypeOf()
 			if err != nil {
 				return "<" + err.Error() + ">"

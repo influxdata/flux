@@ -54,7 +54,7 @@ builtin toSensuName : (v: string) => string
 // - handlers: Sensu handlers to execute. Default is `[]`.
 // - status: Event status code that indicates [state](https://docs.influxdata.com/flux/v0.x/stdlib/contrib/sranka/sensu/event/#state).
 //   Default is `0`.
-// 
+//
 //   | Status code     | State                   |
 //   | :-------------- | :---------------------- |
 //   | 0               | OK                      |
@@ -112,24 +112,25 @@ event = (
     state="",
     namespace="default",
     entityName="influxdb",
-) => {
-    data = {
-        entity: {entity_class: "proxy", metadata: {name: toSensuName(v: entityName)}},
-        check: {
-            output: text,
-            state: if state != "" then state else if status == 0 then "passing" else "failing",
-            status: status,
-            handlers: handlers,
-            // required
-            interval: 60,
-            metadata: {name: toSensuName(v: checkName)},
-        },
-    }
-    headers = {"Content-Type": "application/json; charset=utf-8", "Authorization": "Key " + apiKey}
-    enc = json.encode(v: data)
+) =>
+    {
+        data = {
+            entity: {entity_class: "proxy", metadata: {name: toSensuName(v: entityName)}},
+            check: {
+                output: text,
+                state: if state != "" then state else if status == 0 then "passing" else "failing",
+                status: status,
+                handlers: handlers,
+                // required
+                interval: 60,
+                metadata: {name: toSensuName(v: checkName)},
+            },
+        }
+        headers = {"Content-Type": "application/json; charset=utf-8", "Authorization": "Key " + apiKey}
+        enc = json.encode(v: data)
 
-    return http.post(headers: headers, url: url + "/api/core/v2/namespaces/" + namespace + "/events", data: enc)
-}
+        return http.post(headers: headers, url: url + "/api/core/v2/namespaces/" + namespace + "/events", data: enc)
+    }
 
 // endpoint sends an event
 // to the [Sensu Events API](https://docs.sensu.io/sensu-go/latest/api/events/#create-a-new-event)
@@ -198,24 +199,28 @@ endpoint = (
     handlers=[],
     namespace="default",
     entityName="influxdb",
-) => (mapFn) => (tables=<-) => tables
-    |> map(
-        fn: (r) => {
-            obj = mapFn(r: r)
-    
-            return {r with
-                _sent: string(
-                    v: 2 == event(
-                        url: url,
-                        apiKey: apiKey,
-                        checkName: obj.checkName,
-                        text: obj.text,
-                        handlers: handlers,
-                        status: obj.status,
-                        namespace: namespace,
-                        entityName: entityName,
-                    ) / 100,
-                ),
-            }
-        },
-    )
+) =>
+    (mapFn) =>
+        (tables=<-) =>
+            tables
+                |> map(
+                    fn: (r) => {
+                        obj = mapFn(r: r)
+
+                        return {r with _sent:
+                                string(
+                                    v:
+                                        2 == event(
+                                                url: url,
+                                                apiKey: apiKey,
+                                                checkName: obj.checkName,
+                                                text: obj.text,
+                                                handlers: handlers,
+                                                status: obj.status,
+                                                namespace: namespace,
+                                                entityName: entityName,
+                                            ) / 100,
+                                ),
+                        }
+                    },
+                )

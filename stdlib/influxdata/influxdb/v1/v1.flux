@@ -1,8 +1,8 @@
 // Package v1 provides tools for managing data from an InfluxDB v1.x database or
 // structured using the InfluxDB v1 data structure.
 //
-// ### Deprecated functions 
-// In Flux 0.88.0, the following v1 package functions moved to 
+// ### Deprecated functions
+// In Flux 0.88.0, the following v1 package functions moved to
 // the InfluxDB schema package. These functions are still available in the v1
 // package for backwards compatibility, but are deprecated in favor of the
 // schema package.
@@ -15,9 +15,9 @@
 // - `v1.measurementTagValues()`
 // - `v1.tagKeys()`
 // - `v1.tagValues()`
-// 
+//
 // introduced: 0.16.0
-// 
+//
 package v1
 
 
@@ -27,24 +27,24 @@ import "influxdata/influxdb/schema"
 //
 // ## Parameters
 // - json: InfluxDB 1.x query results in JSON format.
-// 
+//
 //   _`json` and `file` are mutually exclusive._
-// 
+//
 // - file: File path to file containing InfluxDB 1.x query results in JSON format.
-// 
+//
 //   The path can be absolute or relative.
 //   If relative, it is relative to the working directory of the `fluxd` process.
 //   The JSON file must exist in the same file system running the `fluxd` process.
-// 
+//
 //   **Note**: InfluxDB OSS and InfluxDB Cloud do not support the `file` parameter.
 //   Neither allow access to the underlying filesystem.
-// 
+//
 // ## Examples
-// 
+//
 // ### Convert a InfluxDB 1.x JSON query output string to a stream of tables
 // ```
 // import "influxdata/influxdb/v1"
-// 
+//
 // jsonData = "{
 //     \"results\": [
 //         {
@@ -75,17 +75,17 @@ import "influxdata/influxdb/schema"
 //         }
 //     ]
 // }"
-// 
+//
 // > v1.json(json: jsonData)
 // ```
 //
 // ### Convert a InfluxDB 1.x JSON query output file to a stream of tables
 // ```no_run
 // import "influxdata/influxdb/v1"
-// 
+//
 // v1.json(file: "/path/to/results.json")
 // ```
-// 
+//
 // tags: inputs
 //
 builtin json : (?json: string, ?file: string) => [A] where A: Record
@@ -93,12 +93,12 @@ builtin json : (?json: string, ?file: string) => [A] where A: Record
 // databases returns a list of databases in an InfluxDB 1.x (1.7+) instance.
 //
 // Output includes the following columns:
-// 
+//
 // - **databaseName**: Database name (string)
 // - **retentionPolicy**: Retention policy name (string)
 // - **retentionPeriod**: Retention period in nanoseconds (integer)
 // - **default**: Default retention policy for the database (boolean)
-// 
+//
 // ## Parameters
 // - org: Organization name.
 // - orgID: Organization ID.
@@ -113,24 +113,29 @@ builtin json : (?json: string, ?file: string) => [A] where A: Record
 //
 // v1.databases()
 // ```
-// 
+//
 // tags: metadata
 //
-builtin databases : (?org: string, ?orgID: string, ?host: string, ?token: string) => [{
-    organizationID: string,
-    databaseName: string,
-    retentionPolicy: string,
-    retentionPeriod: int,
-    default: bool,
-    bucketID: string,
-}]
+builtin databases : (
+        ?org: string,
+        ?orgID: string,
+        ?host: string,
+        ?token: string,
+    ) => [{
+        organizationID: string,
+        databaseName: string,
+        retentionPolicy: string,
+        retentionPeriod: int,
+        default: bool,
+        bucketID: string,
+    }]
 
 // fieldsAsCols is a special application of `pivot()` that pivots input data
 // on `_field` and `_time` columns to align fields within each input table that
 // have the same timestamp.
 //
 // **Deprecated**: See influxdata/influxdata/schema.fieldsAsCols.
-// 
+//
 // ## Parameters
 // - tables: Input data. Default is piped-forward data (`<-`).
 //
@@ -140,7 +145,7 @@ builtin databases : (?org: string, ?orgID: string, ?host: string, ?token: string
 // ```
 // # import "array"
 // import "influxdata/influxdb/v1"
-// 
+//
 // # data = array.from(
 // #     rows: [
 // #         {_time: 2021-01-01T12:00:00Z, _measurement: "m", loc: "Seattle", _field: "temp", _value: "73.1"},
@@ -178,7 +183,7 @@ fieldsAsCols = schema.fieldsAsCols
 //   Absolute start times are defined using time values.
 //
 // ## Examples
-// 
+//
 // ### Query unique tag values from an InfluxDB bucket
 // ```no_run
 // import "influxdata/influxdb/v1"
@@ -188,14 +193,14 @@ fieldsAsCols = schema.fieldsAsCols
 //     tag: "host",
 // )
 // ```
-// 
+//
 // deprecated: 0.88.0
 // tags: metadata
 //
 tagValues = schema.tagValues
 
 // measurementTagValues returns a list of tag values for a specific measurement.
-// 
+//
 // Results include a single table with a single column, `_value`.
 //
 // ## Parameters
@@ -204,11 +209,11 @@ tagValues = schema.tagValues
 // - tag: Tag to return all unique values from.
 //
 // ## Examples
-// 
+//
 // ### Query unique tag values from an InfluxDB measurement
 // ```no_run
 // import "influxdata/influxdb/schema"
-// 
+//
 // schema.measurementTagValues(
 //     bucket: "example-bucket",
 //     measurement: "example-measurement",
@@ -222,7 +227,7 @@ tagValues = schema.tagValues
 measurementTagValues = schema.measurementTagValues
 
 // tagKeys returns a list of tag keys for all series that match the `predicate`.
-// 
+//
 // Results include a single table with a single column, `_value`.
 //
 // ## Parameters
@@ -258,11 +263,11 @@ tagKeys = schema.tagKeys
 // - measurement: Measurement to return tag keys from.
 //
 // ## Examples
-// 
+//
 // ### Query tag keys from an InfluxDB measurement
 // ```no_run
 // import "influxdata/influxdb/schema"
-// 
+//
 // schema.measurementTagKeys(
 //     bucket: "example-bucket",
 //     measurement: "example-measurement",
@@ -275,9 +280,9 @@ tagKeys = schema.tagKeys
 measurementTagKeys = schema.measurementTagKeys
 
 // fieldKeys returns field keys in a bucket.
-// 
+//
 // Results include a single table with a single column, `_value`.
-// 
+//
 // **Note**: FieldKeys is a special application of `tagValues that returns field
 // keys in a given bucket.
 //
@@ -292,7 +297,7 @@ measurementTagKeys = schema.measurementTagKeys
 //   Absolute start times are defined using time values.
 //
 // ## Examples
-// 
+//
 // ### Query field keys from an InfluxDB bucket
 // ```no_run
 // import "influxdata/influxdb/schema"
@@ -306,7 +311,7 @@ measurementTagKeys = schema.measurementTagKeys
 fieldKeys = schema.fieldKeys
 
 // measurementFieldKeys returns a list of fields in a measurement.
-// 
+//
 // Results include a single table with a single column, `_value`.
 //
 // ## Parameters
@@ -319,7 +324,7 @@ fieldKeys = schema.fieldKeys
 //   Absolute start times are defined using time values.
 //
 // ## Examples
-// 
+//
 // ### Query field keys from an InfluxDB measurement
 // ```no_run
 // import "influxdata/influxdb/schema"
@@ -329,30 +334,29 @@ fieldKeys = schema.fieldKeys
 //     measurement: "example-measurement",
 // )
 // ```
-// 
+//
 // tags: metadata
 // deprecated: 0.88.0
 //
 measurementFieldKeys = schema.measurementFieldKeys
 
 // measurements returns a list of measurements in a specific bucket.
-// 
+//
 // Results include a single table with a single column, `_value`.
 //
 // ## Parameters
 // - bucket: Bucket to retrieve measurements from.
 //
 // ## Examples
-// 
+//
 // ### Return a list of measurements in an InfluxDB bucket
 // ```no_run
 // import "influxdata/influxdb/schema"
-// 
+//
 // schema.measurements(bucket: "example-bucket")
 // ```
 //
 // tags: metadata
 // deprecated: 0.88.0
 //
-measurements = schema.measurements
-// Maintain backwards compatibility by mapping the functions into the schema package.
+measurements = schema.measurements// Maintain backwards compatibility by mapping the functions into the schema package.

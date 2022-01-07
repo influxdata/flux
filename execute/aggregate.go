@@ -43,7 +43,7 @@ type AggregateTransformation interface {
 	// will never be called.
 	Compute(key flux.GroupKey, state interface{}, d *TransportDataset, mem memory.Allocator) error
 
-	Disposable
+	Closer
 }
 
 type aggregateTransformation struct {
@@ -58,7 +58,7 @@ func NewAggregateTransformation(id DatasetID, t AggregateTransformation, mem mem
 		t: t,
 		d: NewTransportDataset(id, mem),
 	}
-	return tr, tr.d, nil
+	return NewTransformationFromTransport(tr), tr.d, nil
 }
 
 // ProcessMessage will process the incoming message.
@@ -74,32 +74,9 @@ func (t *aggregateTransformation) ProcessMessage(m Message) error {
 	case FlushKeyMsg:
 		return t.flushKey(m.Key())
 	case ProcessMsg:
-		return t.Process(m.SrcDatasetID(), m.Table())
+		panic("unreachable")
 	}
 	return nil
-}
-
-// Process is implemented to remain compatible with legacy upstreams.
-// It converts the incoming stream into a set of appropriate messages.
-func (t *aggregateTransformation) Process(id DatasetID, tbl flux.Table) error {
-	if tbl.Empty() {
-		// Since the table is empty, it won't produce any column readers.
-		// Create an empty buffer which can be processed instead
-		// to force the creation of state.
-		buffer := arrow.EmptyBuffer(tbl.Key(), tbl.Cols())
-		chunk := table.ChunkFromBuffer(buffer)
-		if err := t.processChunk(chunk); err != nil {
-			return err
-		}
-	} else {
-		if err := tbl.Do(func(cr flux.ColReader) error {
-			chunk := table.ChunkFromReader(cr)
-			return t.processChunk(chunk)
-		}); err != nil {
-			return err
-		}
-	}
-	return t.flushKey(tbl.Key())
 }
 
 func (t *aggregateTransformation) processChunk(chunk table.Chunk) error {
@@ -120,9 +97,11 @@ func (t *aggregateTransformation) computeFor(key flux.GroupKey, state interface{
 	}
 
 	// If this state is disposable, we are done with it so invoke
-	// the Dispose method.
-	if v, ok := state.(Disposable); ok {
-		v.Dispose()
+	// the Close method.
+	if v, ok := state.(Closer); ok {
+		if err := v.Close(); err != nil {
+			return err
+		}
 	}
 	return t.d.FlushKey(key)
 }
@@ -143,21 +122,12 @@ func (t *aggregateTransformation) Finish(id DatasetID, err error) {
 			return t.computeFor(key, value)
 		})
 	}
+	err = Close(err, t.t)
 	t.d.Finish(err)
-	t.t.Dispose()
 }
 
 func (t *aggregateTransformation) OperationType() string {
 	return OperationType(t.t)
-}
-func (t *aggregateTransformation) RetractTable(id DatasetID, key flux.GroupKey) error {
-	return nil
-}
-func (t *aggregateTransformation) UpdateWatermark(id DatasetID, mark Time) error {
-	return nil
-}
-func (t *aggregateTransformation) UpdateProcessingTime(id DatasetID, ts Time) error {
-	return nil
 }
 
 type SimpleAggregateConfig struct {
@@ -224,7 +194,7 @@ type simpleAggregateTransformation struct {
 }
 
 func (t *simpleAggregateTransformation) RetractTable(id DatasetID, key flux.GroupKey) error {
-	//TODO(nathanielc): Store intermediate state for retractions
+	// TODO(nathanielc): Store intermediate state for retractions
 	return t.d.RetractTable(key)
 }
 
@@ -320,8 +290,10 @@ func (t *simpleAggregateTransformation) Process(id DatasetID, tbl flux.Table) er
 			if err := builder.AppendNil(bj); err != nil {
 				return err
 			}
-			if vf, ok := vf.(Disposable); ok {
-				vf.Dispose()
+			if vf, ok := vf.(Closer); ok {
+				if err := vf.Close(); err != nil {
+					return err
+				}
 			}
 			continue
 		}
@@ -354,8 +326,10 @@ func (t *simpleAggregateTransformation) Process(id DatasetID, tbl flux.Table) er
 				return err
 			}
 		}
-		if vf, ok := vf.(Disposable); ok {
-			vf.Dispose()
+		if vf, ok := vf.(Closer); ok {
+			if err := vf.Close(); err != nil {
+				return err
+			}
 		}
 	}
 
@@ -385,18 +359,20 @@ type aggregateState struct {
 	agg ValueFunc
 }
 
-func (s *aggregateState) Dispose() {
-	if v, ok := s.agg.(Disposable); ok {
-		v.Dispose()
+func (s *aggregateState) Close() error {
+	if v, ok := s.agg.(Closer); ok {
+		return v.Close()
 	}
+	return nil
 }
 
 type aggregateStateList []aggregateState
 
-func (a aggregateStateList) Dispose() {
+func (a aggregateStateList) Close() (err error) {
 	for i := range a {
-		a[i].Dispose()
+		err = Close(err, &a[i])
 	}
+	return err
 }
 
 func (t *simpleAggregateTransformation2) initializeState(chunk table.Chunk, current interface{}) (aggregateStateList, error) {
@@ -527,10 +503,11 @@ func (t *simpleAggregateTransformation2) Compute(key flux.GroupKey, state interf
 	return d.Process(out)
 }
 
-func (t *simpleAggregateTransformation2) Dispose() {
-	if disposable, ok := t.agg.(Disposable); ok {
-		disposable.Dispose()
+func (t *simpleAggregateTransformation2) Close() error {
+	if closer, ok := t.agg.(Closer); ok {
+		return closer.Close()
 	}
+	return nil
 }
 
 type SimpleAggregate interface {

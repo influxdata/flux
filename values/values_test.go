@@ -60,6 +60,19 @@ func TestUnexpectedKind(t *testing.T) {
 	}
 }
 
+func TestUnwrap_ArrayIsOk(t *testing.T) {
+	values.Unwrap(values.NewArray(semantic.NewArrayType(semantic.BasicInt)))
+}
+
+func TestUnwrap_TableObjectIsPanic(t *testing.T) {
+	defer func() {
+		if r := recover(); r == nil {
+			t.Fatal("Expected panic, but there was none")
+		}
+	}()
+	values.Unwrap(&flux.TableObject{})
+}
+
 // result stores results from the benchmark at the package level.
 // Assigning to a global value prevents the optimizer from removing
 // the assignment as it cannot determine whether the value will

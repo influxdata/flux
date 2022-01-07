@@ -2,7 +2,7 @@
 name = "flux-core"
 version = "0.4.0"
 authors = ["Nathaniel Cook <nathaniel@influxdata.com>"]
-edition = "2018"
+edition = "2021"
 
 [lib]
 name = "fluxcore"
@@ -30,11 +30,13 @@ anyhow = "1"
 ena = "0.14"
 env_logger = "0.9"
 thiserror = "1"
+codespan-reporting = "0.11"
 comrak = "0.10.1"
 fnv = "1.0.7"
 derive_more = { version = "0.99.11", default-features = false, features = [
     "display"
 ] }
+pretty = "0.11.2"
 serde = { version = "^1.0.59", features = ["rc"] }
 serde_derive = "^1.0.59"
 serde_json = "1.0"
@@ -59,7 +61,7 @@ tempfile = "3"
 [dev-dependencies]
 env_logger = "0.9"
 colored = "1.8"
-pretty_assertions = "0.7.2"
+pretty_assertions = "1"
 criterion = "0.3.3"
 expect-test = "1.1.0"
 

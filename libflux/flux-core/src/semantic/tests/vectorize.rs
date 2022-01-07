@@ -1,13 +1,13 @@
 use super::*;
 use crate::semantic::{
+    import::Packages,
     nodes::{FunctionExpr, Package},
     walk::{walk, Node},
 };
 
 fn vectorize(src: &str) -> anyhow::Result<Package> {
-    let pkg = parse_program(src);
-    let mut analyzer = Analyzer::new(Default::default(), HashMap::default(), Default::default());
-    let (_, mut pkg) = analyzer.analyze_ast(pkg)?;
+    let mut analyzer = Analyzer::new(Default::default(), Packages::default(), Default::default());
+    let (_, mut pkg) = analyzer.analyze_source("main".into(), "".into(), src)?;
 
     semantic::nodes::vectorize(&mut pkg)?;
     Ok(pkg)

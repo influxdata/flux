@@ -126,47 +126,57 @@ func (r *REPL) completer(d prompt.Document) []prompt.Suggest {
 	return prompt.FilterHasPrefix(s, d.GetWordBeforeCursor(), true)
 }
 
-func (r *REPL) Input(t string) error {
+func (r *REPL) Input(t string) (*libflux.FluxError, error) {
 	return r.executeLine(t)
 }
 
 // input processes a line of input and prints the result.
 func (r *REPL) input(t string) {
-	if err := r.executeLine(t); err != nil {
-		fmt.Println("Error:", err)
+	if fluxError, err := r.executeLine(t); err != nil {
+		if fluxError != nil {
+			fluxError.Print()
+		} else {
+			fmt.Println("Error:", err)
+		}
 	}
 }
 
 func (r *REPL) Eval(t string) ([]interpreter.SideEffect, error) {
+	s, _, err := r.evalWithFluxError(t)
+	return s, err
+}
+
+func (r *REPL) evalWithFluxError(t string) ([]interpreter.SideEffect, *libflux.FluxError, error) {
 	if t == "" {
-		return nil, nil
+		return nil, nil, nil
 	}
 
 	if t[0] == '@' {
 		q, err := LoadQuery(t)
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 		t = q
 	}
 
-	pkg, err := r.analyzeLine(t)
+	pkg, fluxError, err := r.analyzeLine(t)
 	if err != nil {
-		return nil, err
+		return nil, fluxError, err
 	}
 
 	deps := execute.DefaultExecutionDependencies()
 	r.ctx = deps.Inject(r.ctx)
 
-	return r.itrp.Eval(r.ctx, pkg, r.scope, r.importer)
+	x, err := r.itrp.Eval(r.ctx, pkg, r.scope, r.importer)
+	return x, nil, err
 }
 
 // executeLine processes a line of input.
 // If the input evaluates to a valid value, that value is returned.
-func (r *REPL) executeLine(t string) error {
-	ses, err := r.Eval(t)
+func (r *REPL) executeLine(t string) (*libflux.FluxError, error) {
+	ses, fluxError, err := r.evalWithFluxError(t)
 	if err != nil {
-		return err
+		return fluxError, err
 	}
 
 	for _, se := range ses {
@@ -174,19 +184,19 @@ func (r *REPL) executeLine(t string) error {
 			if t, ok := se.Value.(*flux.TableObject); ok {
 				now, ok := r.scope.Lookup("now")
 				if !ok {
-					return fmt.Errorf("now option not set")
+					return nil, fmt.Errorf("now option not set")
 				}
 				ctx := r.deps.Inject(context.TODO())
 				nowTime, err := now.Function().Call(ctx, nil)
 				if err != nil {
-					return err
+					return nil, err
 				}
 				s, err := spec.FromTableObject(r.ctx, t, nowTime.Time().Time())
 				if err != nil {
-					return err
+					return nil, err
 				}
 				if err := r.doQuery(r.ctx, s, r.deps); err != nil {
-					return err
+					return nil, err
 				}
 			} else {
 				values.Display(os.Stdout, se.Value)
@@ -194,20 +204,21 @@ func (r *REPL) executeLine(t string) error {
 			}
 		}
 	}
-	return nil
+	return nil, nil
 }
 
-func (r *REPL) analyzeLine(t string) (*semantic.Package, error) {
-	pkg, err := r.analyzer.Analyze(libflux.ParseString(t))
-	if err != nil {
-		return nil, err
+func (r *REPL) analyzeLine(t string) (*semantic.Package, *libflux.FluxError, error) {
+	pkg, fluxError := r.analyzer.AnalyzeString(t)
+	if fluxError != nil {
+		return nil, fluxError, fluxError.GoError()
 	}
 
 	bs, err := pkg.MarshalFB()
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	return semantic.DeserializeFromFlatBuffer(bs)
+	x, err := semantic.DeserializeFromFlatBuffer(bs)
+	return x, nil, err
 }
 
 func (r *REPL) doQuery(ctx context.Context, spec *flux.Spec, deps flux.Dependencies) error {

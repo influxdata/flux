@@ -19,11 +19,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			Errors:   nil,
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
-					Column: 136,
-					Line:   31,
+					Column: 109,
+					Line:   35,
 				},
 				File:   "linearreg_test.flux",
-				Source: "package statsmodels_test\n\n\nimport \"testing\"\nimport \"contrib/anaisdg/statsmodels\"\n\ninData = \"\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_measurement,shelter,type\n,,0,2020-05-21T21:30:48.901Z,2020-05-21T21:50:48.9Z,2020-05-21T21:43:45Z,7,young,cats,A,calico\n,,0,2020-05-21T21:30:48.901Z,2020-05-21T21:50:48.9Z,2020-05-21T21:45:08Z,5,young,cats,A,calico\n,,0,2020-05-21T21:30:48.901Z,2020-05-21T21:50:48.9Z,2020-05-21T21:46:25Z,4,young,cats,A,calico\n,,0,2020-05-21T21:30:48.901Z,2020-05-21T21:50:48.9Z,2020-05-21T21:48:38Z,3,young,cats,A,calico\n\"\noutData = \"\n#group,false,false,false,true,true,true,true,false,false,true,false,false,false,false,false,true,false,false,false\n#datatype,string,long,double,string,string,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,double,double,double,double,double,string,double,double,double\n#default,_result,,,,,,,,,,,,,,,,,,\n,result,table,N,_field,_measurement,_start,_stop,_time,errors,shelter,slope,sx,sxx,sxy,sy,type,x,y,y_hat\n,,0,4,young,cats,2020-05-21T21:30:48.901Z,2020-05-21T21:50:48.9Z,2020-05-21T21:43:45Z,0.0899999999999999,A,-1.3,10,30,41,19,calico,1,7,6.7\n,,0,4,young,cats,2020-05-21T21:30:48.901Z,2020-05-21T21:50:48.9Z,2020-05-21T21:45:08Z,0.16000000000000028,A,-1.3,10,30,41,19,calico,2,5,5.4\n,,0,4,young,cats,2020-05-21T21:30:48.901Z,2020-05-21T21:50:48.9Z,2020-05-21T21:46:25Z,0.009999999999999929,A,-1.3,10,30,41,19,calico,3,4,4.1\n,,0,4,young,cats,2020-05-21T21:30:48.901Z,2020-05-21T21:50:48.9Z,2020-05-21T21:48:38Z,0.04000000000000007,A,-1.3,10,30,41,19,calico,4,3,2.8\n\"\nt_linearRegression = (table=<-) => table\n    |> range(start: 2020-05-21T21:30:48.901Z, stop: 2020-05-21T21:50:48.9Z)\n    |> statsmodels.linearRegression()\n\ntest _linearRegression = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_linearRegression})",
+				Source: "package statsmodels_test\n\n\nimport \"testing\"\nimport \"contrib/anaisdg/statsmodels\"\n\ninData =\n    \"\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_measurement,shelter,type\n,,0,2020-05-21T21:30:48.901Z,2020-05-21T21:50:48.9Z,2020-05-21T21:43:45Z,7,young,cats,A,calico\n,,0,2020-05-21T21:30:48.901Z,2020-05-21T21:50:48.9Z,2020-05-21T21:45:08Z,5,young,cats,A,calico\n,,0,2020-05-21T21:30:48.901Z,2020-05-21T21:50:48.9Z,2020-05-21T21:46:25Z,4,young,cats,A,calico\n,,0,2020-05-21T21:30:48.901Z,2020-05-21T21:50:48.9Z,2020-05-21T21:48:38Z,3,young,cats,A,calico\n\"\noutData =\n    \"\n#group,false,false,false,true,true,true,true,false,false,true,false,false,false,false,false,true,false,false,false\n#datatype,string,long,double,string,string,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,double,double,double,double,double,string,double,double,double\n#default,_result,,,,,,,,,,,,,,,,,,\n,result,table,N,_field,_measurement,_start,_stop,_time,errors,shelter,slope,sx,sxx,sxy,sy,type,x,y,y_hat\n,,0,4,young,cats,2020-05-21T21:30:48.901Z,2020-05-21T21:50:48.9Z,2020-05-21T21:43:45Z,0.0899999999999999,A,-1.3,10,30,41,19,calico,1,7,6.7\n,,0,4,young,cats,2020-05-21T21:30:48.901Z,2020-05-21T21:50:48.9Z,2020-05-21T21:45:08Z,0.16000000000000028,A,-1.3,10,30,41,19,calico,2,5,5.4\n,,0,4,young,cats,2020-05-21T21:30:48.901Z,2020-05-21T21:50:48.9Z,2020-05-21T21:46:25Z,0.009999999999999929,A,-1.3,10,30,41,19,calico,3,4,4.1\n,,0,4,young,cats,2020-05-21T21:30:48.901Z,2020-05-21T21:50:48.9Z,2020-05-21T21:48:38Z,0.04000000000000007,A,-1.3,10,30,41,19,calico,4,3,2.8\n\"\nt_linearRegression = (table=<-) =>\n    table\n        |> range(start: 2020-05-21T21:30:48.901Z, stop: 2020-05-21T21:50:48.9Z)\n        |> statsmodels.linearRegression()\n\ntest _linearRegression = () =>\n    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_linearRegression})",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -37,10 +37,10 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 2,
-						Line:   16,
+						Line:   17,
 					},
 					File:   "linearreg_test.flux",
-					Source: "inData = \"\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_measurement,shelter,type\n,,0,2020-05-21T21:30:48.901Z,2020-05-21T21:50:48.9Z,2020-05-21T21:43:45Z,7,young,cats,A,calico\n,,0,2020-05-21T21:30:48.901Z,2020-05-21T21:50:48.9Z,2020-05-21T21:45:08Z,5,young,cats,A,calico\n,,0,2020-05-21T21:30:48.901Z,2020-05-21T21:50:48.9Z,2020-05-21T21:46:25Z,4,young,cats,A,calico\n,,0,2020-05-21T21:30:48.901Z,2020-05-21T21:50:48.9Z,2020-05-21T21:48:38Z,3,young,cats,A,calico\n\"",
+					Source: "inData =\n    \"\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_measurement,shelter,type\n,,0,2020-05-21T21:30:48.901Z,2020-05-21T21:50:48.9Z,2020-05-21T21:43:45Z,7,young,cats,A,calico\n,,0,2020-05-21T21:30:48.901Z,2020-05-21T21:50:48.9Z,2020-05-21T21:45:08Z,5,young,cats,A,calico\n,,0,2020-05-21T21:30:48.901Z,2020-05-21T21:50:48.9Z,2020-05-21T21:46:25Z,4,young,cats,A,calico\n,,0,2020-05-21T21:30:48.901Z,2020-05-21T21:50:48.9Z,2020-05-21T21:48:38Z,3,young,cats,A,calico\n\"",
 					Start: ast.Position{
 						Column: 1,
 						Line:   7,
@@ -73,13 +73,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 2,
-							Line:   16,
+							Line:   17,
 						},
 						File:   "linearreg_test.flux",
 						Source: "\"\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_measurement,shelter,type\n,,0,2020-05-21T21:30:48.901Z,2020-05-21T21:50:48.9Z,2020-05-21T21:43:45Z,7,young,cats,A,calico\n,,0,2020-05-21T21:30:48.901Z,2020-05-21T21:50:48.9Z,2020-05-21T21:45:08Z,5,young,cats,A,calico\n,,0,2020-05-21T21:30:48.901Z,2020-05-21T21:50:48.9Z,2020-05-21T21:46:25Z,4,young,cats,A,calico\n,,0,2020-05-21T21:30:48.901Z,2020-05-21T21:50:48.9Z,2020-05-21T21:48:38Z,3,young,cats,A,calico\n\"",
 						Start: ast.Position{
-							Column: 10,
-							Line:   7,
+							Column: 5,
+							Line:   8,
 						},
 					},
 				},
@@ -92,13 +92,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 2,
-						Line:   26,
+						Line:   28,
 					},
 					File:   "linearreg_test.flux",
-					Source: "outData = \"\n#group,false,false,false,true,true,true,true,false,false,true,false,false,false,false,false,true,false,false,false\n#datatype,string,long,double,string,string,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,double,double,double,double,double,string,double,double,double\n#default,_result,,,,,,,,,,,,,,,,,,\n,result,table,N,_field,_measurement,_start,_stop,_time,errors,shelter,slope,sx,sxx,sxy,sy,type,x,y,y_hat\n,,0,4,young,cats,2020-05-21T21:30:48.901Z,2020-05-21T21:50:48.9Z,2020-05-21T21:43:45Z,0.0899999999999999,A,-1.3,10,30,41,19,calico,1,7,6.7\n,,0,4,young,cats,2020-05-21T21:30:48.901Z,2020-05-21T21:50:48.9Z,2020-05-21T21:45:08Z,0.16000000000000028,A,-1.3,10,30,41,19,calico,2,5,5.4\n,,0,4,young,cats,2020-05-21T21:30:48.901Z,2020-05-21T21:50:48.9Z,2020-05-21T21:46:25Z,0.009999999999999929,A,-1.3,10,30,41,19,calico,3,4,4.1\n,,0,4,young,cats,2020-05-21T21:30:48.901Z,2020-05-21T21:50:48.9Z,2020-05-21T21:48:38Z,0.04000000000000007,A,-1.3,10,30,41,19,calico,4,3,2.8\n\"",
+					Source: "outData =\n    \"\n#group,false,false,false,true,true,true,true,false,false,true,false,false,false,false,false,true,false,false,false\n#datatype,string,long,double,string,string,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,double,double,double,double,double,string,double,double,double\n#default,_result,,,,,,,,,,,,,,,,,,\n,result,table,N,_field,_measurement,_start,_stop,_time,errors,shelter,slope,sx,sxx,sxy,sy,type,x,y,y_hat\n,,0,4,young,cats,2020-05-21T21:30:48.901Z,2020-05-21T21:50:48.9Z,2020-05-21T21:43:45Z,0.0899999999999999,A,-1.3,10,30,41,19,calico,1,7,6.7\n,,0,4,young,cats,2020-05-21T21:30:48.901Z,2020-05-21T21:50:48.9Z,2020-05-21T21:45:08Z,0.16000000000000028,A,-1.3,10,30,41,19,calico,2,5,5.4\n,,0,4,young,cats,2020-05-21T21:30:48.901Z,2020-05-21T21:50:48.9Z,2020-05-21T21:46:25Z,0.009999999999999929,A,-1.3,10,30,41,19,calico,3,4,4.1\n,,0,4,young,cats,2020-05-21T21:30:48.901Z,2020-05-21T21:50:48.9Z,2020-05-21T21:48:38Z,0.04000000000000007,A,-1.3,10,30,41,19,calico,4,3,2.8\n\"",
 					Start: ast.Position{
 						Column: 1,
-						Line:   17,
+						Line:   18,
 					},
 				},
 			},
@@ -109,13 +109,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 8,
-							Line:   17,
+							Line:   18,
 						},
 						File:   "linearreg_test.flux",
 						Source: "outData",
 						Start: ast.Position{
 							Column: 1,
-							Line:   17,
+							Line:   18,
 						},
 					},
 				},
@@ -128,13 +128,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 2,
-							Line:   26,
+							Line:   28,
 						},
 						File:   "linearreg_test.flux",
 						Source: "\"\n#group,false,false,false,true,true,true,true,false,false,true,false,false,false,false,false,true,false,false,false\n#datatype,string,long,double,string,string,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,double,double,double,double,double,string,double,double,double\n#default,_result,,,,,,,,,,,,,,,,,,\n,result,table,N,_field,_measurement,_start,_stop,_time,errors,shelter,slope,sx,sxx,sxy,sy,type,x,y,y_hat\n,,0,4,young,cats,2020-05-21T21:30:48.901Z,2020-05-21T21:50:48.9Z,2020-05-21T21:43:45Z,0.0899999999999999,A,-1.3,10,30,41,19,calico,1,7,6.7\n,,0,4,young,cats,2020-05-21T21:30:48.901Z,2020-05-21T21:50:48.9Z,2020-05-21T21:45:08Z,0.16000000000000028,A,-1.3,10,30,41,19,calico,2,5,5.4\n,,0,4,young,cats,2020-05-21T21:30:48.901Z,2020-05-21T21:50:48.9Z,2020-05-21T21:46:25Z,0.009999999999999929,A,-1.3,10,30,41,19,calico,3,4,4.1\n,,0,4,young,cats,2020-05-21T21:30:48.901Z,2020-05-21T21:50:48.9Z,2020-05-21T21:48:38Z,0.04000000000000007,A,-1.3,10,30,41,19,calico,4,3,2.8\n\"",
 						Start: ast.Position{
-							Column: 11,
-							Line:   17,
+							Column: 5,
+							Line:   19,
 						},
 					},
 				},
@@ -146,14 +146,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
-						Column: 38,
-						Line:   29,
+						Column: 42,
+						Line:   32,
 					},
 					File:   "linearreg_test.flux",
-					Source: "t_linearRegression = (table=<-) => table\n    |> range(start: 2020-05-21T21:30:48.901Z, stop: 2020-05-21T21:50:48.9Z)\n    |> statsmodels.linearRegression()",
+					Source: "t_linearRegression = (table=<-) =>\n    table\n        |> range(start: 2020-05-21T21:30:48.901Z, stop: 2020-05-21T21:50:48.9Z)\n        |> statsmodels.linearRegression()",
 					Start: ast.Position{
 						Column: 1,
-						Line:   27,
+						Line:   29,
 					},
 				},
 			},
@@ -164,13 +164,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 19,
-							Line:   27,
+							Line:   29,
 						},
 						File:   "linearreg_test.flux",
 						Source: "t_linearRegression",
 						Start: ast.Position{
 							Column: 1,
-							Line:   27,
+							Line:   29,
 						},
 					},
 				},
@@ -183,14 +183,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 38,
-							Line:   29,
+							Column: 42,
+							Line:   32,
 						},
 						File:   "linearreg_test.flux",
-						Source: "(table=<-) => table\n    |> range(start: 2020-05-21T21:30:48.901Z, stop: 2020-05-21T21:50:48.9Z)\n    |> statsmodels.linearRegression()",
+						Source: "(table=<-) =>\n    table\n        |> range(start: 2020-05-21T21:30:48.901Z, stop: 2020-05-21T21:50:48.9Z)\n        |> statsmodels.linearRegression()",
 						Start: ast.Position{
 							Column: 22,
-							Line:   27,
+							Line:   29,
 						},
 					},
 				},
@@ -202,14 +202,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 41,
-										Line:   27,
+										Column: 10,
+										Line:   30,
 									},
 									File:   "linearreg_test.flux",
 									Source: "table",
 									Start: ast.Position{
-										Column: 36,
-										Line:   27,
+										Column: 5,
+										Line:   30,
 									},
 								},
 							},
@@ -220,14 +220,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 76,
-									Line:   28,
+									Column: 80,
+									Line:   31,
 								},
 								File:   "linearreg_test.flux",
-								Source: "table\n    |> range(start: 2020-05-21T21:30:48.901Z, stop: 2020-05-21T21:50:48.9Z)",
+								Source: "table\n        |> range(start: 2020-05-21T21:30:48.901Z, stop: 2020-05-21T21:50:48.9Z)",
 								Start: ast.Position{
-									Column: 36,
-									Line:   27,
+									Column: 5,
+									Line:   30,
 								},
 							},
 						},
@@ -238,14 +238,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 75,
-											Line:   28,
+											Column: 79,
+											Line:   31,
 										},
 										File:   "linearreg_test.flux",
 										Source: "start: 2020-05-21T21:30:48.901Z, stop: 2020-05-21T21:50:48.9Z",
 										Start: ast.Position{
-											Column: 14,
-											Line:   28,
+											Column: 18,
+											Line:   31,
 										},
 									},
 								},
@@ -256,14 +256,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 45,
-												Line:   28,
+												Column: 49,
+												Line:   31,
 											},
 											File:   "linearreg_test.flux",
 											Source: "start: 2020-05-21T21:30:48.901Z",
 											Start: ast.Position{
-												Column: 14,
-												Line:   28,
+												Column: 18,
+												Line:   31,
 											},
 										},
 									},
@@ -274,14 +274,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 19,
-													Line:   28,
+													Column: 23,
+													Line:   31,
 												},
 												File:   "linearreg_test.flux",
 												Source: "start",
 												Start: ast.Position{
-													Column: 14,
-													Line:   28,
+													Column: 18,
+													Line:   31,
 												},
 											},
 										},
@@ -294,14 +294,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 45,
-													Line:   28,
+													Column: 49,
+													Line:   31,
 												},
 												File:   "linearreg_test.flux",
 												Source: "2020-05-21T21:30:48.901Z",
 												Start: ast.Position{
-													Column: 21,
-													Line:   28,
+													Column: 25,
+													Line:   31,
 												},
 											},
 										},
@@ -313,14 +313,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 75,
-												Line:   28,
+												Column: 79,
+												Line:   31,
 											},
 											File:   "linearreg_test.flux",
 											Source: "stop: 2020-05-21T21:50:48.9Z",
 											Start: ast.Position{
-												Column: 47,
-												Line:   28,
+												Column: 51,
+												Line:   31,
 											},
 										},
 									},
@@ -331,14 +331,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 51,
-													Line:   28,
+													Column: 55,
+													Line:   31,
 												},
 												File:   "linearreg_test.flux",
 												Source: "stop",
 												Start: ast.Position{
-													Column: 47,
-													Line:   28,
+													Column: 51,
+													Line:   31,
 												},
 											},
 										},
@@ -351,14 +351,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 75,
-													Line:   28,
+													Column: 79,
+													Line:   31,
 												},
 												File:   "linearreg_test.flux",
 												Source: "2020-05-21T21:50:48.9Z",
 												Start: ast.Position{
-													Column: 53,
-													Line:   28,
+													Column: 57,
+													Line:   31,
 												},
 											},
 										},
@@ -373,14 +373,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 76,
-										Line:   28,
+										Column: 80,
+										Line:   31,
 									},
 									File:   "linearreg_test.flux",
 									Source: "range(start: 2020-05-21T21:30:48.901Z, stop: 2020-05-21T21:50:48.9Z)",
 									Start: ast.Position{
-										Column: 8,
-										Line:   28,
+										Column: 12,
+										Line:   31,
 									},
 								},
 							},
@@ -390,14 +390,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 13,
-											Line:   28,
+											Column: 17,
+											Line:   31,
 										},
 										File:   "linearreg_test.flux",
 										Source: "range",
 										Start: ast.Position{
-											Column: 8,
-											Line:   28,
+											Column: 12,
+											Line:   31,
 										},
 									},
 								},
@@ -412,14 +412,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 38,
-								Line:   29,
+								Column: 42,
+								Line:   32,
 							},
 							File:   "linearreg_test.flux",
-							Source: "table\n    |> range(start: 2020-05-21T21:30:48.901Z, stop: 2020-05-21T21:50:48.9Z)\n    |> statsmodels.linearRegression()",
+							Source: "table\n        |> range(start: 2020-05-21T21:30:48.901Z, stop: 2020-05-21T21:50:48.9Z)\n        |> statsmodels.linearRegression()",
 							Start: ast.Position{
-								Column: 36,
-								Line:   27,
+								Column: 5,
+								Line:   30,
 							},
 						},
 					},
@@ -430,14 +430,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 38,
-									Line:   29,
+									Column: 42,
+									Line:   32,
 								},
 								File:   "linearreg_test.flux",
 								Source: "statsmodels.linearRegression()",
 								Start: ast.Position{
-									Column: 8,
-									Line:   29,
+									Column: 12,
+									Line:   32,
 								},
 							},
 						},
@@ -447,14 +447,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 36,
-										Line:   29,
+										Column: 40,
+										Line:   32,
 									},
 									File:   "linearreg_test.flux",
 									Source: "statsmodels.linearRegression",
 									Start: ast.Position{
-										Column: 8,
-										Line:   29,
+										Column: 12,
+										Line:   32,
 									},
 								},
 							},
@@ -465,14 +465,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 19,
-											Line:   29,
+											Column: 23,
+											Line:   32,
 										},
 										File:   "linearreg_test.flux",
 										Source: "statsmodels",
 										Start: ast.Position{
-											Column: 8,
-											Line:   29,
+											Column: 12,
+											Line:   32,
 										},
 									},
 								},
@@ -484,14 +484,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 36,
-											Line:   29,
+											Column: 40,
+											Line:   32,
 										},
 										File:   "linearreg_test.flux",
 										Source: "linearRegression",
 										Start: ast.Position{
-											Column: 20,
-											Line:   29,
+											Column: 24,
+											Line:   32,
 										},
 									},
 								},
@@ -511,13 +511,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 31,
-								Line:   27,
+								Line:   29,
 							},
 							File:   "linearreg_test.flux",
 							Source: "table=<-",
 							Start: ast.Position{
 								Column: 23,
-								Line:   27,
+								Line:   29,
 							},
 						},
 					},
@@ -529,13 +529,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 28,
-									Line:   27,
+									Line:   29,
 								},
 								File:   "linearreg_test.flux",
 								Source: "table",
 								Start: ast.Position{
 									Column: 23,
-									Line:   27,
+									Line:   29,
 								},
 							},
 						},
@@ -548,13 +548,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 31,
-								Line:   27,
+								Line:   29,
 							},
 							File:   "linearreg_test.flux",
 							Source: "<-",
 							Start: ast.Position{
 								Column: 29,
-								Line:   27,
+								Line:   29,
 							},
 						},
 					}},
@@ -568,14 +568,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 136,
-							Line:   31,
+							Column: 109,
+							Line:   35,
 						},
 						File:   "linearreg_test.flux",
-						Source: "_linearRegression = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_linearRegression})",
+						Source: "_linearRegression = () =>\n    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_linearRegression})",
 						Start: ast.Position{
 							Column: 6,
-							Line:   31,
+							Line:   34,
 						},
 					},
 				},
@@ -586,13 +586,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 23,
-								Line:   31,
+								Line:   34,
 							},
 							File:   "linearreg_test.flux",
 							Source: "_linearRegression",
 							Start: ast.Position{
 								Column: 6,
-								Line:   31,
+								Line:   34,
 							},
 						},
 					},
@@ -605,14 +605,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 136,
-								Line:   31,
+								Column: 109,
+								Line:   35,
 							},
 							File:   "linearreg_test.flux",
-							Source: "() => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_linearRegression})",
+							Source: "() =>\n    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_linearRegression})",
 							Start: ast.Position{
 								Column: 26,
-								Line:   31,
+								Line:   34,
 							},
 						},
 					},
@@ -622,14 +622,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 136,
-									Line:   31,
+									Column: 109,
+									Line:   35,
 								},
 								File:   "linearreg_test.flux",
 								Source: "({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_linearRegression})",
 								Start: ast.Position{
-									Column: 32,
-									Line:   31,
+									Column: 5,
+									Line:   35,
 								},
 							},
 						},
@@ -639,14 +639,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 135,
-										Line:   31,
+										Column: 108,
+										Line:   35,
 									},
 									File:   "linearreg_test.flux",
 									Source: "{input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_linearRegression}",
 									Start: ast.Position{
-										Column: 33,
-										Line:   31,
+										Column: 6,
+										Line:   35,
 									},
 								},
 							},
@@ -657,14 +657,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 73,
-											Line:   31,
+											Column: 46,
+											Line:   35,
 										},
 										File:   "linearreg_test.flux",
 										Source: "input: testing.loadStorage(csv: inData)",
 										Start: ast.Position{
-											Column: 34,
-											Line:   31,
+											Column: 7,
+											Line:   35,
 										},
 									},
 								},
@@ -675,14 +675,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 39,
-												Line:   31,
+												Column: 12,
+												Line:   35,
 											},
 											File:   "linearreg_test.flux",
 											Source: "input",
 											Start: ast.Position{
-												Column: 34,
-												Line:   31,
+												Column: 7,
+												Line:   35,
 											},
 										},
 									},
@@ -696,14 +696,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 72,
-													Line:   31,
+													Column: 45,
+													Line:   35,
 												},
 												File:   "linearreg_test.flux",
 												Source: "csv: inData",
 												Start: ast.Position{
-													Column: 61,
-													Line:   31,
+													Column: 34,
+													Line:   35,
 												},
 											},
 										},
@@ -714,14 +714,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 72,
-														Line:   31,
+														Column: 45,
+														Line:   35,
 													},
 													File:   "linearreg_test.flux",
 													Source: "csv: inData",
 													Start: ast.Position{
-														Column: 61,
-														Line:   31,
+														Column: 34,
+														Line:   35,
 													},
 												},
 											},
@@ -732,14 +732,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 64,
-															Line:   31,
+															Column: 37,
+															Line:   35,
 														},
 														File:   "linearreg_test.flux",
 														Source: "csv",
 														Start: ast.Position{
-															Column: 61,
-															Line:   31,
+															Column: 34,
+															Line:   35,
 														},
 													},
 												},
@@ -752,14 +752,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 72,
-															Line:   31,
+															Column: 45,
+															Line:   35,
 														},
 														File:   "linearreg_test.flux",
 														Source: "inData",
 														Start: ast.Position{
-															Column: 66,
-															Line:   31,
+															Column: 39,
+															Line:   35,
 														},
 													},
 												},
@@ -774,14 +774,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 73,
-												Line:   31,
+												Column: 46,
+												Line:   35,
 											},
 											File:   "linearreg_test.flux",
 											Source: "testing.loadStorage(csv: inData)",
 											Start: ast.Position{
-												Column: 41,
-												Line:   31,
+												Column: 14,
+												Line:   35,
 											},
 										},
 									},
@@ -791,14 +791,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 60,
-													Line:   31,
+													Column: 33,
+													Line:   35,
 												},
 												File:   "linearreg_test.flux",
 												Source: "testing.loadStorage",
 												Start: ast.Position{
-													Column: 41,
-													Line:   31,
+													Column: 14,
+													Line:   35,
 												},
 											},
 										},
@@ -809,14 +809,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 48,
-														Line:   31,
+														Column: 21,
+														Line:   35,
 													},
 													File:   "linearreg_test.flux",
 													Source: "testing",
 													Start: ast.Position{
-														Column: 41,
-														Line:   31,
+														Column: 14,
+														Line:   35,
 													},
 												},
 											},
@@ -828,14 +828,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 60,
-														Line:   31,
+														Column: 33,
+														Line:   35,
 													},
 													File:   "linearreg_test.flux",
 													Source: "loadStorage",
 													Start: ast.Position{
-														Column: 49,
-														Line:   31,
+														Column: 22,
+														Line:   35,
 													},
 												},
 											},
@@ -852,14 +852,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 110,
-											Line:   31,
+											Column: 83,
+											Line:   35,
 										},
 										File:   "linearreg_test.flux",
 										Source: "want: testing.loadMem(csv: outData)",
 										Start: ast.Position{
-											Column: 75,
-											Line:   31,
+											Column: 48,
+											Line:   35,
 										},
 									},
 								},
@@ -870,14 +870,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 79,
-												Line:   31,
+												Column: 52,
+												Line:   35,
 											},
 											File:   "linearreg_test.flux",
 											Source: "want",
 											Start: ast.Position{
-												Column: 75,
-												Line:   31,
+												Column: 48,
+												Line:   35,
 											},
 										},
 									},
@@ -891,14 +891,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 109,
-													Line:   31,
+													Column: 82,
+													Line:   35,
 												},
 												File:   "linearreg_test.flux",
 												Source: "csv: outData",
 												Start: ast.Position{
-													Column: 97,
-													Line:   31,
+													Column: 70,
+													Line:   35,
 												},
 											},
 										},
@@ -909,14 +909,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 109,
-														Line:   31,
+														Column: 82,
+														Line:   35,
 													},
 													File:   "linearreg_test.flux",
 													Source: "csv: outData",
 													Start: ast.Position{
-														Column: 97,
-														Line:   31,
+														Column: 70,
+														Line:   35,
 													},
 												},
 											},
@@ -927,14 +927,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 100,
-															Line:   31,
+															Column: 73,
+															Line:   35,
 														},
 														File:   "linearreg_test.flux",
 														Source: "csv",
 														Start: ast.Position{
-															Column: 97,
-															Line:   31,
+															Column: 70,
+															Line:   35,
 														},
 													},
 												},
@@ -947,14 +947,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 109,
-															Line:   31,
+															Column: 82,
+															Line:   35,
 														},
 														File:   "linearreg_test.flux",
 														Source: "outData",
 														Start: ast.Position{
-															Column: 102,
-															Line:   31,
+															Column: 75,
+															Line:   35,
 														},
 													},
 												},
@@ -969,14 +969,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 110,
-												Line:   31,
+												Column: 83,
+												Line:   35,
 											},
 											File:   "linearreg_test.flux",
 											Source: "testing.loadMem(csv: outData)",
 											Start: ast.Position{
-												Column: 81,
-												Line:   31,
+												Column: 54,
+												Line:   35,
 											},
 										},
 									},
@@ -986,14 +986,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 96,
-													Line:   31,
+													Column: 69,
+													Line:   35,
 												},
 												File:   "linearreg_test.flux",
 												Source: "testing.loadMem",
 												Start: ast.Position{
-													Column: 81,
-													Line:   31,
+													Column: 54,
+													Line:   35,
 												},
 											},
 										},
@@ -1004,14 +1004,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 88,
-														Line:   31,
+														Column: 61,
+														Line:   35,
 													},
 													File:   "linearreg_test.flux",
 													Source: "testing",
 													Start: ast.Position{
-														Column: 81,
-														Line:   31,
+														Column: 54,
+														Line:   35,
 													},
 												},
 											},
@@ -1023,14 +1023,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 96,
-														Line:   31,
+														Column: 69,
+														Line:   35,
 													},
 													File:   "linearreg_test.flux",
 													Source: "loadMem",
 													Start: ast.Position{
-														Column: 89,
-														Line:   31,
+														Column: 62,
+														Line:   35,
 													},
 												},
 											},
@@ -1047,14 +1047,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 134,
-											Line:   31,
+											Column: 107,
+											Line:   35,
 										},
 										File:   "linearreg_test.flux",
 										Source: "fn: t_linearRegression",
 										Start: ast.Position{
-											Column: 112,
-											Line:   31,
+											Column: 85,
+											Line:   35,
 										},
 									},
 								},
@@ -1065,14 +1065,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 114,
-												Line:   31,
+												Column: 87,
+												Line:   35,
 											},
 											File:   "linearreg_test.flux",
 											Source: "fn",
 											Start: ast.Position{
-												Column: 112,
-												Line:   31,
+												Column: 85,
+												Line:   35,
 											},
 										},
 									},
@@ -1085,14 +1085,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 134,
-												Line:   31,
+												Column: 107,
+												Line:   35,
 											},
 											File:   "linearreg_test.flux",
 											Source: "t_linearRegression",
 											Start: ast.Position{
-												Column: 116,
-												Line:   31,
+												Column: 89,
+												Line:   35,
 											},
 										},
 									},
@@ -1115,14 +1115,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
-						Column: 136,
-						Line:   31,
+						Column: 109,
+						Line:   35,
 					},
 					File:   "linearreg_test.flux",
-					Source: "test _linearRegression = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_linearRegression})",
+					Source: "test _linearRegression = () =>\n    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_linearRegression})",
 					Start: ast.Position{
 						Column: 1,
-						Line:   31,
+						Line:   34,
 					},
 				},
 			},

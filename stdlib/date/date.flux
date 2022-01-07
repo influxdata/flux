@@ -14,7 +14,7 @@ package date
 //   Durations are relative to `now()`.
 //
 // ## Examples
-// 
+//
 // ### Return the second of a time value
 //
 // ```no_run
@@ -47,7 +47,7 @@ builtin second : (t: T) => int where T: Timeable
 //    Durations are relative to `now()`.
 //
 // ## Examples
-// 
+//
 // ### Return the minute of a time value
 //
 // ```no_run
@@ -79,7 +79,7 @@ builtin minute : (t: T) => int where T: Timeable
 //   Durations are relative to `now()`.
 //
 // ## Examples
-// 
+//
 // ### Return the hour of a time value
 //
 // ```no_run
@@ -113,14 +113,14 @@ builtin hour : (t: T) => int where T: Timeable
 //   Durations are relative to `now()`.
 //
 // ## Examples
-// 
+//
 // ### Return the day of the week for a time value
 //
 // ```no_run
 // import "date"
 //
 // date.weekDay(t: 2020-02-11T12:21:03.293534940Z)
-// 
+//
 // // Returns 2
 // ```
 //
@@ -132,7 +132,7 @@ builtin hour : (t: T) => int where T: Timeable
 // option now = () => 2020-02-11T12:21:03.293534940Z
 //
 // date.weekDay(t: -84h)
-// 
+//
 // // Returns 6
 // ```
 builtin weekDay : (t: T) => int where T: Timeable
@@ -147,7 +147,7 @@ builtin weekDay : (t: T) => int where T: Timeable
 //   Durations are relative to `now()`.
 //
 // ## Examples
-// 
+//
 // ### Return the day of the month for a time value
 //
 // ```no_run
@@ -166,7 +166,7 @@ builtin weekDay : (t: T) => int where T: Timeable
 // option now = () => 2020-02-11T12:21:03.293534940Z
 //
 // date.monthDay(t: -8d)
-// 
+//
 // // Returns 25
 // ```
 builtin monthDay : (t: T) => int where T: Timeable
@@ -188,7 +188,7 @@ builtin monthDay : (t: T) => int where T: Timeable
 // import "date"
 //
 // date.yearDay(t: 2020-02-11T12:21:03.293534940Z)
-// 
+//
 // // Returns 42
 // ```
 //
@@ -214,14 +214,14 @@ builtin yearDay : (t: T) => int where T: Timeable
 //   Durations are relative to `now()`.
 //
 // ## Examples
-// 
+//
 // ### Return the month of a time value
 //
 // ```no_run
 // import "date"
 //
 // date.month(t: 2020-02-11T12:21:03.293534940Z)
-// 
+//
 // // Returns 2
 // ```
 //
@@ -247,14 +247,14 @@ builtin month : (t: T) => int where T: Timeable
 //   Durations are relative to `now()`.
 //
 // ## Examples
-// 
+//
 // ### Return the year for a time value
 //
 // ```no_run
 // import "date"
 //
 // date.year(t: 2020-02-11T12:21:03.293534940Z)
-// 
+//
 // // Returns 2020
 // ```
 //
@@ -266,7 +266,7 @@ builtin month : (t: T) => int where T: Timeable
 // option now = () => 2020-02-11T12:21:03.293534940Z
 //
 // date.year(t: -14y)
-// 
+//
 // // Returns 2007
 // ```
 builtin year : (t: T) => int where T: Timeable
@@ -281,7 +281,7 @@ builtin year : (t: T) => int where T: Timeable
 //   Durations are relative to `now()`.
 //
 // ## Examples
-// 
+//
 // ### Return the week of the year
 //
 // ```no_run
@@ -314,14 +314,14 @@ builtin week : (t: T) => int where T: Timeable
 //   Durations are relative to `now()`.
 //
 // ## Examples
-// 
+//
 // ### Return the quarter for a time value
 //
 // ```no_run
 // import "date"
 //
 // date.quarter(t: 2020-02-11T12:21:03.293534940Z)
-// 
+//
 // // Returns 1
 // ```
 //
@@ -333,7 +333,7 @@ builtin week : (t: T) => int where T: Timeable
 // option now = () => 2020-02-11T12:21:03.293534940Z
 //
 // date.quarter(t: -7mo)
-// 
+//
 // // Returns 2
 // ```
 builtin quarter : (t: T) => int where T: Timeable
@@ -348,14 +348,14 @@ builtin quarter : (t: T) => int where T: Timeable
 //   Durations are relative to `now()`.
 //
 // ## Examples
-// 
+//
 // ### Return the millisecond of the time value
 //
 // ```no_run
 // import "date"
 //
 // date.millisecond(t: 2020-02-11T12:21:03.293534940Z)
-// 
+//
 // // Returns 293
 // ```
 //
@@ -367,7 +367,7 @@ builtin quarter : (t: T) => int where T: Timeable
 // option now = () => 2020-02-11T12:21:03.293534940Z
 //
 // date.millisecond(t: -150ms)
-// 
+//
 // // Returns 127
 // ```
 builtin millisecond : (t: T) => int where T: Timeable
@@ -382,14 +382,14 @@ builtin millisecond : (t: T) => int where T: Timeable
 //   Durations are relative to `now()`.
 //
 // ## Examples
-// 
+//
 // ### Return the microsecond of a time value
 //
 // ```no_run
 // import "date"
 //
 // date.microsecond(t: 2020-02-11T12:21:03.293534940Z)
-// 
+//
 // // Returns 293534
 // ```
 //
@@ -416,14 +416,14 @@ builtin microsecond : (t: T) => int where T: Timeable
 //   Durations are relative to `now()`.
 //
 // ## Examples
-// 
+//
 // ### Return the nanosecond for a time value
 //
 // ```no_run
 // import "date"
 //
 // date.nanosecond(t: 2020-02-11T12:21:03.293534940Z)
-// 
+//
 // // Returns 293534940
 // ```
 //
@@ -435,7 +435,7 @@ builtin microsecond : (t: T) => int where T: Timeable
 // option now = () => 2020-02-11T12:21:03.293534940Z
 //
 // date.nanosecond(t: -2111984ns)
-// 
+//
 // // Returns 128412016
 // ```
 builtin nanosecond : (t: T) => int where T: Timeable

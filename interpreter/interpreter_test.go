@@ -738,8 +738,8 @@ func TestInterpreter_MultipleEval(t *testing.T) {
 							Value: values.NewInt(0),
 							Node: &semantic.CallExpression{
 								Callee: &semantic.MemberExpression{
-									Object:   &semantic.IdentifierExpression{Name: "testutil"},
-									Property: "yield",
+									Object:   &semantic.IdentifierExpression{Name: semantic.NewSymbol("testutil")},
+									Property: semantic.NewSymbol("yield@testutil"),
 								},
 								Arguments: &semantic.ObjectExpression{Properties: []*semantic.Property{}},
 								Pipe:      &semantic.IntegerLiteral{Value: 0},
@@ -749,7 +749,7 @@ func TestInterpreter_MultipleEval(t *testing.T) {
 							Value: values.NewInt(1),
 							Node: &semantic.ExpressionStatement{
 								Expression: &semantic.CallExpression{
-									Callee:    &semantic.IdentifierExpression{Name: "foo"},
+									Callee:    &semantic.IdentifierExpression{Name: semantic.NewSymbol("foo")},
 									Arguments: &semantic.ObjectExpression{Properties: []*semantic.Property{}},
 								},
 							},
@@ -870,8 +870,8 @@ func TestStack(t *testing.T) {
 			FunctionName: "window",
 			Location: ast.SourceLocation{
 				File:   "universe.flux",
-				Start:  ast.Position{Line: 241, Column: 8},
-				End:    ast.Position{Line: 241, Column: 47},
+				Start:  ast.Position{Line: 302, Column: 12},
+				End:    ast.Position{Line: 302, Column: 51},
 				Source: `window(every: inf, timeColumn: timeDst)`,
 			},
 		},

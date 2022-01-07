@@ -1,14 +1,20 @@
 // Package system provides functions for reading values from the system.
+//
+// introduced: 0.18.0
+//
 package system
 
 
-// time is a function that returns the current system time
+// time returns the current system time.
 //
-// ## Example
+// ## Examples
+//
+// ### Return a stream of tables with the current system time
 // ```
-// import "system"
 // import "array"
+// import "system"
 //
 // array.from(rows:[{time: system.time()}])
 // ```
+//
 builtin time : () => time

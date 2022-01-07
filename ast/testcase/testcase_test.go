@@ -140,16 +140,17 @@ testcase b extends "flux/a/a_test" {
 
 import "testing/assert"
 
-a_test = (() => {
-    want = 4
-    a = () => {
-        assert.equal(want: want, got: 2 + 2)
+a_test =
+    (() => {
+        want = 4
+        a = () => {
+            assert.equal(want: want, got: 2 + 2)
 
-        return {}
-    }
+            return {}
+        }
 
-    return {want, a}
-})()`,
+        return {want, a}
+    })()`,
 		`package main
 
 

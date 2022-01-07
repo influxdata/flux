@@ -25,70 +25,53 @@ use std::collections::HashMap;
 
 use colored::*;
 use derive_more::Display;
+use expect_test::expect;
 
 use crate::{
-    ast::{self, get_err_type_expression},
-    errors::Errors,
-    parser::{self, parse_string},
+    ast, parser,
     semantic::{
         self,
-        bootstrap::build_polytype,
         convert::convert_polytype,
         env::Environment,
         fresh::Fresher,
-        import::Importer,
+        import::Packages,
         nodes::Symbol,
         sub::Substitution,
         types::{MonoType, PolyType, PolyTypeMap, SemanticMap, TvarKinds},
-        Analyzer, AnalyzerConfig, ExportEnvironment,
+        Analyzer, AnalyzerConfig, PackageExports,
     },
 };
 
 mod vectorize;
 
-fn parse_program(src: &str) -> ast::Package {
-    let file = parse_string("".to_string(), src);
-
-    ast::Package {
-        base: file.base.clone(),
-        path: "path".to_string(),
-        package: "main".to_string(),
-        files: vec![file],
-    }
-}
-
-fn parse_map(m: HashMap<&str, &str>) -> PolyTypeMap {
+fn parse_map(package: Option<&str>, m: HashMap<&str, &str>) -> PolyTypeMap<Symbol> {
     m.into_iter()
         .map(|(name, expr)| {
             let mut p = parser::Parser::new(expr);
 
             let typ_expr = p.parse_type_expression();
-            let err = get_err_type_expression(typ_expr.clone());
 
-            if err != "" {
+            if let Err(err) = ast::check::check(ast::walk::Node::TypeExpression(&typ_expr)) {
                 panic!("TypeExpression parsing failed for {}. {:?}", name, err);
             }
             let poly = convert_polytype(typ_expr, &mut Substitution::default());
 
             // let poly = parse(expr).expect(format!("failed to parse {}", name).as_str());
-            return (name.to_string(), poly.unwrap());
+            return (
+                match package {
+                    None => Symbol::from(name),
+                    Some(package) => Symbol::from(name).with_package(package),
+                },
+                poly.unwrap(),
+            );
         })
         .collect()
-}
-
-impl Importer for HashMap<&str, PolyType> {
-    fn import(&mut self, name: &str) -> Option<PolyType> {
-        match self.get(name) {
-            Some(pty) => Some(pty.clone()),
-            None => None,
-        }
-    }
 }
 
 #[derive(Debug, Display, PartialEq)]
 enum Error {
     #[display(fmt = "{}", _0)]
-    Semantic(Errors<semantic::Error>),
+    Semantic(semantic::FileErrors),
     #[display(
         fmt = "\n\n{}\n\n{}\n{}\n{}\n{}\n",
         r#""unexpected types:".red().bold()"#,
@@ -100,9 +83,24 @@ enum Error {
                     + &format!("\t{}: {}\n", name, poly))"#
     )]
     TypeMismatch {
-        want: SemanticMap<String, PolyType>,
-        got: SemanticMap<String, PolyType>,
+        want: SemanticMap<Symbol, PolyType>,
+        got: SemanticMap<Symbol, PolyType>,
     },
+}
+
+impl Error {
+    fn pretty(&self, source: &str) -> String {
+        match self {
+            Self::Semantic(err) => err.pretty(source),
+            _ => self.to_string(),
+        }
+    }
+    fn pretty_short(&self, source: &str) -> String {
+        match self {
+            Self::Semantic(err) => err.pretty_short(source),
+            _ => self.to_string(),
+        }
+    }
 }
 
 impl std::error::Error for Error {}
@@ -113,43 +111,40 @@ fn infer_types(
     imp: HashMap<&str, HashMap<&str, &str>>,
     want: Option<HashMap<&str, &str>>,
     config: AnalyzerConfig,
-) -> Result<ExportEnvironment, Error> {
+) -> Result<(PackageExports, semantic::nodes::Package), Error> {
     let _ = env_logger::try_init();
     // Parse polytype expressions in external packages.
-    let imports: SemanticMap<&str, SemanticMap<String, PolyType>> = imp
+    let imports: SemanticMap<&str, SemanticMap<_, PolyType>> = imp
         .into_iter()
-        .map(|(path, pkg)| (path, parse_map(pkg)))
+        .map(|(path, pkg)| (path, parse_map(Some(path), pkg)))
         .collect();
 
     // Instantiate package importer using generic objects
-    let importer: HashMap<&str, PolyType> = imports
+    let importer: Packages = imports
         .into_iter()
-        .map(|(path, types)| (path, build_polytype(types).unwrap()))
+        .map(|(path, types)| (path.to_string(), PackageExports::try_from(types).unwrap()))
         .collect();
 
     // Parse polytype expressions in initial environment.
-    let env = parse_map(env);
+    let env = parse_map(None, env);
 
     let env = Environment::from(env);
 
-    let pkg = parse_program(src);
     let mut analyzer = Analyzer::new(Environment::new(env), importer, config);
-    let (env, _) = analyzer.analyze_ast(pkg).map_err(Error::Semantic)?;
+    let (env, pkg) = analyzer
+        .analyze_source("main".into(), "".into(), src)
+        .map_err(Error::Semantic)?;
 
     // Parse polytype expressions in expected environment.
     // Only perform this step if a map of wanted types exists.
     if let Some(want_env) = want {
-        let got = env
-            .values
-            .iter()
-            .map(|(k, v)| (k.to_string(), v.clone()))
-            .collect();
-        let want = parse_map(want_env);
+        let got = env.clone().into_bindings().collect();
+        let want = parse_map(Some("main"), want_env);
         if want != got {
             return Err(Error::TypeMismatch { want, got });
         }
     }
-    return Ok(env);
+    return Ok((env, pkg));
 }
 
 /// The test_infer! macro generates test cases for type inference.
@@ -254,14 +249,13 @@ macro_rules! test_infer_err {
             env = $env;
         )?
         match infer_types($src, env, imp, None, AnalyzerConfig::default()) {
-            Ok(env) => {
+            Ok((env, _)) => {
                 panic!(
                     "\n\n{}\n\n{}\n",
                     "expected type error but instead inferred the: following types:"
                         .red()
                         .bold(),
-                    env.values
-                        .iter()
+                    env.iter()
                         .fold(String::new(), |acc, (name, poly)| acc
                             + &format!("\t{}: {}\n", name, poly))
                 )
@@ -269,9 +263,9 @@ macro_rules! test_infer_err {
             Err(err @ Error::TypeMismatch {.. }) => {
                 panic!("{}", err)
             }
-            Err(Error::Semantic(errors)) => {
-                for err in errors {
-                    if let semantic::Error{error: semantic::ErrorKind::InvalidAST(_),..} = err {
+            Err(Error::Semantic(error)) => {
+                for err in error.errors {
+                    if let semantic::ErrorKind::InvalidAST(_) = err.error {
                         panic!("{}", err);
                     }
                 }
@@ -314,7 +308,36 @@ macro_rules! test_error_msg {
             None,
             AnalyzerConfig::default(),
         ) {
-            Err(e) => $expect.assert_eq(&e.to_string()),
+            Err(e) => {
+                let got = e.pretty($src);
+                $expect.assert_eq(&got);
+            }
+            Ok(_) => panic!("expected error, instead program passed type checking"),
+        }
+    }};
+
+    ( $(imp: $imp:expr,)? $(env: $env:expr,)? src: $src:expr $(,)?, expect_short: $expect:expr $(,)? ) => {{
+        #[allow(unused_mut, unused_assignments)]
+        let mut imp = HashMap::default();
+        $(
+            imp = $imp;
+        )?
+        #[allow(unused_mut, unused_assignments)]
+        let mut env = HashMap::default();
+        $(
+            env = $env;
+        )?
+        match infer_types(
+            $src,
+            env,
+            imp,
+            None,
+            AnalyzerConfig::default(),
+        ) {
+            Err(e) => {
+                let got = e.pretty_short($src);
+                $expect.assert_eq(&got);
+            }
             Ok(_) => panic!("expected error, instead program passed type checking"),
         }
     }};
@@ -2886,7 +2909,20 @@ fn infer_pipe() {
             f = (arg=(x=<-) => x) => 0 |> arg()
             g = () => f(arg: (x) => 5 + x)
         "#,
-        err: "error @3:23-3:43: missing pipe argument (argument arg)",
+        expect: expect![[r#"
+            error: missing pipe argument (argument arg)
+              ┌─ main:3:30
+              │
+            3 │             g = () => f(arg: (x) => 5 + x)
+              │                              ^^^^^^^^^^^^
+
+            error: found unexpected argument x (argument arg)
+              ┌─ main:3:30
+              │
+            3 │             g = () => f(arg: (x) => 5 + x)
+              │                              ^^^^^^^^^^^^
+
+        "#]],
     }
 }
 
@@ -3466,7 +3502,7 @@ fn copy_bindings_from_other_env() {
         PolyType {
             vars: Vec::new(),
             cons: TvarKinds::new(),
-            expr: MonoType::Bool,
+            expr: MonoType::BOOL,
         },
     );
     let mut sub_env = Environment::new(env.clone());
@@ -3494,7 +3530,7 @@ fn copy_bindings_from_other_env() {
                 Symbol::from("a") => PolyType {
                     vars: Vec::new(),
                     cons: TvarKinds::new(),
-                    expr: MonoType::Bool,
+                    expr: MonoType::BOOL,
                 }
             )
         }
@@ -3592,7 +3628,7 @@ fn test_error_messages() {
             f(x: "x", y: "y")
         "#,
         // Location points to entire call expression
-        err: "error @3:13-3:30: string is not Subtractable (argument x)",
+        err: "error @3:18-3:21: string is not Subtractable (argument x)",
     }
     test_error_msg! {
         src: r#"
@@ -3600,7 +3636,7 @@ fn test_error_messages() {
             f(r: {b: 1})
         "#,
         // Location points to entire call expression
-        err: "error @3:13-3:25: record is missing label a (argument r)",
+        err: "error @3:18-3:24: record is missing label a (argument r)",
     }
     test_error_msg! {
         src: r#"
@@ -3616,7 +3652,20 @@ fn test_error_messages() {
             fn = (r) => match(r)
         "#,
         // Location points to call expression `match(r)`
-        err: "error @3:25-3:33: found unexpected argument r",
+        expect: expect![[r#"
+            error: found unexpected argument r
+              ┌─ main:3:31
+              │
+            3 │             fn = (r) => match(r)
+              │                               ^
+
+            error: missing required argument o
+              ┌─ main:3:25
+              │
+            3 │             fn = (r) => match(r)
+              │                         ^^^^^^^^
+
+        "#]],
     }
     test_error_msg! {
         src: r#"
@@ -3624,7 +3673,20 @@ fn test_error_messages() {
             f(a: 0, c: 1)
         "#,
         // Location points to call expression `f(a: 0, c: 1)`
-        err: "error @3:13-3:26: found unexpected argument c",
+        expect: expect![[r#"
+            error: found unexpected argument c
+              ┌─ main:3:24
+              │
+            3 │             f(a: 0, c: 1)
+              │                        ^
+
+            error: missing required argument b
+              ┌─ main:3:13
+              │
+            3 │             f(a: 0, c: 1)
+              │             ^^^^^^^^^^^^^
+
+        "#]],
     }
     test_error_msg! {
         src: r#"
@@ -3708,9 +3770,37 @@ fn primitive_kind_errors() {
             isType(v: {}, type: "record")
             isType(v: [], type: "array")
         "#,
-        err: "error @2:13-2:42: {} is not Basic (argument v)
+        expect: expect_test::expect![[r#"
+            error: {} is not Basic (argument v)
+              ┌─ main:2:23
+              │
+            2 │             isType(v: {}, type: "record")
+              │                       ^^
 
-error @3:13-3:41: [A] is not Basic (argument v)",
+            error: [A] is not Basic (argument v)
+              ┌─ main:3:23
+              │
+            3 │             isType(v: [], type: "array")
+              │                       ^^
+
+        "#]]
+    }
+}
+
+#[test]
+fn primitive_kind_short_errors() {
+    test_error_msg! {
+        env: map![
+            "isType" => "(v: A, type: string) => bool where A: Basic",
+        ],
+        src: r#"
+            isType(v: {}, type: "record")
+            isType(v: [], type: "array")
+        "#,
+        expect_short: expect_test::expect![[r#"
+            main:2:23: error: {} is not Basic (argument v)
+            main:3:23: error: [A] is not Basic (argument v)
+        "#]]
     }
 }
 
@@ -3720,7 +3810,14 @@ fn invalid_mono_type() {
         src: r#"
             builtin x : abc
         "#,
-        expect: expect_test::expect![[r#"error @2:25-2:28: invalid named type abc"#]]
+        expect: expect_test::expect![[r#"
+            error: invalid named type abc
+              ┌─ main:2:25
+              │
+            2 │             builtin x : abc
+              │                         ^^^
+
+        "#]]
     }
 }
 
@@ -3730,6 +3827,119 @@ fn missing_return() {
         src: r#"
             () => { }
         "#,
-        expect: expect_test::expect![[r#"error @2:19-2:22: missing return statement in block"#]]
+        expect: expect_test::expect![[r#"
+            error: missing return statement in block
+              ┌─ main:2:19
+              │
+            2 │             () => { }
+              │                   ^^^
+
+        "#]]
+    }
+}
+
+#[test]
+fn symbol_resolution() {
+    let imp = map![
+        "types" => package![
+            "isType" => "(v: A, type: string) => bool } where A: Basic",
+        ],
+    ];
+    let src = r#"
+            import "types"
+            x = types.isType(v: 1, type: "int")
+
+            foo = () => (1)
+            foo()
+
+            types = { isType: (v, type) => 1 }
+            y = types.isType(v: 1, type: "int")
+
+            t = types
+            z = t.isType(v: 1, type: "int")
+        "#;
+    let (_, pkg) = infer_types(src, Default::default(), imp, None, Default::default())
+        .unwrap_or_else(|err| panic!("{}", err));
+
+    let mut member_expr_1 = None;
+    let mut member_expr_2 = None;
+    let mut member_expr_3 = None;
+    let mut ident_expr = None;
+    semantic::walk::walk(
+        &mut |node| {
+            if let semantic::walk::Node::MemberExpr(e) = node {
+                if e.loc.start.line == 3 {
+                    member_expr_1 = Some(e);
+                }
+                if e.loc.start.line == 9 {
+                    member_expr_2 = Some(e);
+                }
+                if e.loc.start.line == 12 {
+                    member_expr_3 = Some(e);
+                }
+            }
+            if let semantic::walk::Node::IdentifierExpr(e) = node {
+                if e.name == "foo" {
+                    ident_expr = Some(e);
+                }
+            }
+        },
+        semantic::walk::Node::Package(&pkg),
+    );
+    assert_eq!(
+        member_expr_1.expect("member expression").property,
+        Symbol::from("isType").with_package("types")
+    );
+    assert_eq!(
+        ident_expr.expect("ident expression").name,
+        Symbol::from("foo").with_package("main")
+    );
+    assert_eq!(
+        member_expr_2.expect("member expression").property,
+        Symbol::from("isType")
+    );
+
+    // Not currently detected as from the `types` package but could be with better analysis
+    assert_eq!(
+        member_expr_3.expect("member expression").property,
+        Symbol::from("isType")
+    );
+}
+
+#[test]
+fn multiple_errors_in_function_call() {
+    test_error_msg! {
+        env: map![
+            "f" => "(a: float, b: int, c: string) => bool",
+        ],
+        src: r#"
+            f(a: 1, b: "record", d: {})
+        "#,
+        expect: expect![[r#"
+            error: found unexpected argument d
+              ┌─ main:2:37
+              │
+            2 │             f(a: 1, b: "record", d: {})
+              │                                     ^^
+
+            error: expected float but found int (argument a)
+              ┌─ main:2:18
+              │
+            2 │             f(a: 1, b: "record", d: {})
+              │                  ^
+
+            error: expected int but found string (argument b)
+              ┌─ main:2:24
+              │
+            2 │             f(a: 1, b: "record", d: {})
+              │                        ^^^^^^^^
+
+            error: missing required argument c
+              ┌─ main:2:13
+              │
+            2 │             f(a: 1, b: "record", d: {})
+              │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+        "#]]
     }
 }

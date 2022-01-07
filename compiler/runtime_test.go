@@ -83,3 +83,19 @@ func TestFunctionValue_Resolve(t *testing.T) {
 		t.Errorf("unexpected resolved function: -want/+got\n%s", cmp.Diff(want, got, semantictest.CmpOptions...))
 	}
 }
+
+// XXX: sort of confusing but this error message is actually coming
+//      from runtime.Eval but can also be seen in interpreter...
+func TestIndexExpr_TableObjectIsError(t *testing.T) {
+	src := `
+	import "array"
+	array.from(rows: [{}])[0]`
+	_, _, err := runtime.Eval(context.Background(), src)
+	if err == nil {
+		t.Fatal("expected error, got none")
+	}
+
+	if want, got := "cannot index into table stream; expected an array", err.Error(); want != got {
+		t.Errorf("wanted error %q, got %q", want, got)
+	}
+}

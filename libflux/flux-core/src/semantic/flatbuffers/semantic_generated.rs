@@ -1287,6 +1287,247 @@ pub mod fbsemantic {
             ds.finish()
         }
     }
+    pub enum PackagesOffset {}
+    #[derive(Copy, Clone, PartialEq)]
+
+    pub struct Packages<'a> {
+        pub _tab: flatbuffers::Table<'a>,
+    }
+
+    impl<'a> flatbuffers::Follow<'a> for Packages<'a> {
+        type Inner = Packages<'a>;
+        #[inline]
+        fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
+            Self {
+                _tab: flatbuffers::Table { buf, loc },
+            }
+        }
+    }
+
+    impl<'a> Packages<'a> {
+        #[inline]
+        pub fn init_from_table(table: flatbuffers::Table<'a>) -> Self {
+            Packages { _tab: table }
+        }
+        #[allow(unused_mut)]
+        pub fn create<'bldr: 'args, 'args: 'mut_bldr, 'mut_bldr>(
+            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr>,
+            args: &'args PackagesArgs<'args>,
+        ) -> flatbuffers::WIPOffset<Packages<'bldr>> {
+            let mut builder = PackagesBuilder::new(_fbb);
+            if let Some(x) = args.packages {
+                builder.add_packages(x);
+            }
+            builder.finish()
+        }
+
+        pub const VT_PACKAGES: flatbuffers::VOffsetT = 4;
+
+        #[inline]
+        pub fn packages(
+            &self,
+        ) -> Option<flatbuffers::Vector<'a, flatbuffers::ForwardsUOffset<PackageExports<'a>>>>
+        {
+            self._tab.get::<flatbuffers::ForwardsUOffset<
+                flatbuffers::Vector<'a, flatbuffers::ForwardsUOffset<PackageExports>>,
+            >>(Packages::VT_PACKAGES, None)
+        }
+    }
+
+    impl flatbuffers::Verifiable for Packages<'_> {
+        #[inline]
+        fn run_verifier(
+            v: &mut flatbuffers::Verifier,
+            pos: usize,
+        ) -> Result<(), flatbuffers::InvalidFlatbuffer> {
+            use self::flatbuffers::Verifiable;
+            v.visit_table(pos)?
+                .visit_field::<flatbuffers::ForwardsUOffset<
+                    flatbuffers::Vector<'_, flatbuffers::ForwardsUOffset<PackageExports>>,
+                >>(&"packages", Self::VT_PACKAGES, false)?
+                .finish();
+            Ok(())
+        }
+    }
+    pub struct PackagesArgs<'a> {
+        pub packages: Option<
+            flatbuffers::WIPOffset<
+                flatbuffers::Vector<'a, flatbuffers::ForwardsUOffset<PackageExports<'a>>>,
+            >,
+        >,
+    }
+    impl<'a> Default for PackagesArgs<'a> {
+        #[inline]
+        fn default() -> Self {
+            PackagesArgs { packages: None }
+        }
+    }
+    pub struct PackagesBuilder<'a: 'b, 'b> {
+        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a>,
+        start_: flatbuffers::WIPOffset<flatbuffers::TableUnfinishedWIPOffset>,
+    }
+    impl<'a: 'b, 'b> PackagesBuilder<'a, 'b> {
+        #[inline]
+        pub fn add_packages(
+            &mut self,
+            packages: flatbuffers::WIPOffset<
+                flatbuffers::Vector<'b, flatbuffers::ForwardsUOffset<PackageExports<'b>>>,
+            >,
+        ) {
+            self.fbb_
+                .push_slot_always::<flatbuffers::WIPOffset<_>>(Packages::VT_PACKAGES, packages);
+        }
+        #[inline]
+        pub fn new(_fbb: &'b mut flatbuffers::FlatBufferBuilder<'a>) -> PackagesBuilder<'a, 'b> {
+            let start = _fbb.start_table();
+            PackagesBuilder {
+                fbb_: _fbb,
+                start_: start,
+            }
+        }
+        #[inline]
+        pub fn finish(self) -> flatbuffers::WIPOffset<Packages<'a>> {
+            let o = self.fbb_.end_table(self.start_);
+            flatbuffers::WIPOffset::new(o.value())
+        }
+    }
+
+    impl std::fmt::Debug for Packages<'_> {
+        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+            let mut ds = f.debug_struct("Packages");
+            ds.field("packages", &self.packages());
+            ds.finish()
+        }
+    }
+    pub enum PackageExportsOffset {}
+    #[derive(Copy, Clone, PartialEq)]
+
+    pub struct PackageExports<'a> {
+        pub _tab: flatbuffers::Table<'a>,
+    }
+
+    impl<'a> flatbuffers::Follow<'a> for PackageExports<'a> {
+        type Inner = PackageExports<'a>;
+        #[inline]
+        fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
+            Self {
+                _tab: flatbuffers::Table { buf, loc },
+            }
+        }
+    }
+
+    impl<'a> PackageExports<'a> {
+        #[inline]
+        pub fn init_from_table(table: flatbuffers::Table<'a>) -> Self {
+            PackageExports { _tab: table }
+        }
+        #[allow(unused_mut)]
+        pub fn create<'bldr: 'args, 'args: 'mut_bldr, 'mut_bldr>(
+            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr>,
+            args: &'args PackageExportsArgs<'args>,
+        ) -> flatbuffers::WIPOffset<PackageExports<'bldr>> {
+            let mut builder = PackageExportsBuilder::new(_fbb);
+            if let Some(x) = args.package {
+                builder.add_package(x);
+            }
+            if let Some(x) = args.id {
+                builder.add_id(x);
+            }
+            builder.finish()
+        }
+
+        pub const VT_ID: flatbuffers::VOffsetT = 4;
+        pub const VT_PACKAGE: flatbuffers::VOffsetT = 6;
+
+        #[inline]
+        pub fn id(&self) -> Option<&'a str> {
+            self._tab
+                .get::<flatbuffers::ForwardsUOffset<&str>>(PackageExports::VT_ID, None)
+        }
+        #[inline]
+        pub fn package(&self) -> Option<TypeEnvironment<'a>> {
+            self._tab
+                .get::<flatbuffers::ForwardsUOffset<TypeEnvironment>>(
+                    PackageExports::VT_PACKAGE,
+                    None,
+                )
+        }
+    }
+
+    impl flatbuffers::Verifiable for PackageExports<'_> {
+        #[inline]
+        fn run_verifier(
+            v: &mut flatbuffers::Verifier,
+            pos: usize,
+        ) -> Result<(), flatbuffers::InvalidFlatbuffer> {
+            use self::flatbuffers::Verifiable;
+            v.visit_table(pos)?
+                .visit_field::<flatbuffers::ForwardsUOffset<&str>>(&"id", Self::VT_ID, false)?
+                .visit_field::<flatbuffers::ForwardsUOffset<TypeEnvironment>>(
+                    &"package",
+                    Self::VT_PACKAGE,
+                    false,
+                )?
+                .finish();
+            Ok(())
+        }
+    }
+    pub struct PackageExportsArgs<'a> {
+        pub id: Option<flatbuffers::WIPOffset<&'a str>>,
+        pub package: Option<flatbuffers::WIPOffset<TypeEnvironment<'a>>>,
+    }
+    impl<'a> Default for PackageExportsArgs<'a> {
+        #[inline]
+        fn default() -> Self {
+            PackageExportsArgs {
+                id: None,
+                package: None,
+            }
+        }
+    }
+    pub struct PackageExportsBuilder<'a: 'b, 'b> {
+        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a>,
+        start_: flatbuffers::WIPOffset<flatbuffers::TableUnfinishedWIPOffset>,
+    }
+    impl<'a: 'b, 'b> PackageExportsBuilder<'a, 'b> {
+        #[inline]
+        pub fn add_id(&mut self, id: flatbuffers::WIPOffset<&'b str>) {
+            self.fbb_
+                .push_slot_always::<flatbuffers::WIPOffset<_>>(PackageExports::VT_ID, id);
+        }
+        #[inline]
+        pub fn add_package(&mut self, package: flatbuffers::WIPOffset<TypeEnvironment<'b>>) {
+            self.fbb_
+                .push_slot_always::<flatbuffers::WIPOffset<TypeEnvironment>>(
+                    PackageExports::VT_PACKAGE,
+                    package,
+                );
+        }
+        #[inline]
+        pub fn new(
+            _fbb: &'b mut flatbuffers::FlatBufferBuilder<'a>,
+        ) -> PackageExportsBuilder<'a, 'b> {
+            let start = _fbb.start_table();
+            PackageExportsBuilder {
+                fbb_: _fbb,
+                start_: start,
+            }
+        }
+        #[inline]
+        pub fn finish(self) -> flatbuffers::WIPOffset<PackageExports<'a>> {
+            let o = self.fbb_.end_table(self.start_);
+            flatbuffers::WIPOffset::new(o.value())
+        }
+    }
+
+    impl std::fmt::Debug for PackageExports<'_> {
+        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+            let mut ds = f.debug_struct("PackageExports");
+            ds.field("id", &self.id());
+            ds.field("package", &self.package());
+            ds.finish()
+        }
+    }
     pub enum TypeEnvironmentOffset {}
     #[derive(Copy, Clone, PartialEq)]
 

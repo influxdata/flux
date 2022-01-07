@@ -1,8 +1,6 @@
 package semantic_test
 
 import (
-	"errors"
-	"fmt"
 	"regexp"
 	"strconv"
 	"strings"
@@ -12,8 +10,6 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/internal/fbsemantic"
-	"github.com/influxdata/flux/parser"
-	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic"
 )
 
@@ -173,7 +169,7 @@ func getUnaryOpFlatBuffer() (*semantic.Package, []byte) {
 							End:    ast.Position{Line: 1, Column: 2},
 							Source: `x`,
 						},
-						Name: "x",
+						Name: semantic.NewSymbol("x"),
 					},
 					Init: &semantic.UnaryExpression{
 						Loc: semantic.Loc{
@@ -376,7 +372,7 @@ func getSemanticFnExpr(fnExpr *semantic.FunctionExpression) *semantic.FunctionEx
 							End:    ast.Position{Line: 1, Column: 7},
 							Source: `a`,
 						},
-						Name: "a",
+						Name: semantic.NewSymbol("a"),
 					},
 				},
 				{
@@ -391,7 +387,7 @@ func getSemanticFnExpr(fnExpr *semantic.FunctionExpression) *semantic.FunctionEx
 							End:    ast.Position{Line: 1, Column: 10},
 							Source: `b`,
 						},
-						Name: "b",
+						Name: semantic.NewSymbol("b"),
 					},
 				},
 				{
@@ -406,7 +402,7 @@ func getSemanticFnExpr(fnExpr *semantic.FunctionExpression) *semantic.FunctionEx
 							End:    ast.Position{Line: 1, Column: 16},
 							Source: `c`,
 						},
-						Name: "c",
+						Name: semantic.NewSymbol("c"),
 					},
 				},
 			},
@@ -416,7 +412,7 @@ func getSemanticFnExpr(fnExpr *semantic.FunctionExpression) *semantic.FunctionEx
 					End:    ast.Position{Line: 1, Column: 10},
 					Source: `b`,
 				},
-				Name: "b",
+				Name: semantic.NewSymbol("b"),
 			},
 		},
 		Defaults: &semantic.ObjectExpression{
@@ -438,7 +434,7 @@ func getSemanticFnExpr(fnExpr *semantic.FunctionExpression) *semantic.FunctionEx
 							End:    ast.Position{Line: 1, Column: 16},
 							Source: `c`,
 						},
-						Name: "c",
+						Name: semantic.NewSymbol("c"),
 					},
 					Value: &semantic.IntegerLiteral{
 						Loc: semantic.Loc{
@@ -470,7 +466,7 @@ func getSemanticFnExpr(fnExpr *semantic.FunctionExpression) *semantic.FunctionEx
 							End:    ast.Position{Line: 1, Column: 34},
 							Source: `c`,
 						},
-						Name: "c",
+						Name: semantic.NewSymbol("c"),
 					},
 				},
 			},
@@ -501,7 +497,7 @@ func getSemanticPkg(feSemanticPkg *semantic.FunctionExpression) *semantic.Packag
 							End:    ast.Position{Line: 1, Column: 2},
 							Source: `f`,
 						},
-						Name: "f",
+						Name: semantic.NewSymbol("f"),
 					},
 					Init: feSemanticPkg,
 				},
@@ -704,552 +700,4 @@ type MyAssignement struct {
 	Init       semantic.Expression
 
 	Typ string
-}
-
-// transformGraph takes a semantic graph produced by Go, and modifies it
-// so it looks like something produced by Rust.
-// The differences do not affect program behavior at runtime.
-func transformGraph(pkg *semantic.Package) error {
-	semantic.Walk(&transformingVisitor{}, pkg)
-	return nil
-}
-
-type transformingVisitor struct{}
-
-func (tv *transformingVisitor) Visit(node semantic.Node) semantic.Visitor {
-	return tv
-}
-
-// toMonthsAndNanos takes a slice of durations,
-// and represents them as months and nanoseconds,
-// which is how durations are represented in a flatbuffer.
-func toMonthsAndNanos(ds []ast.Duration) []ast.Duration {
-	var ns int64
-	var mos int64
-	for _, d := range ds {
-		switch d.Unit {
-		case ast.NanosecondUnit:
-			ns += d.Magnitude
-		case ast.MicrosecondUnit:
-			ns += 1000 * d.Magnitude
-		case ast.MillisecondUnit:
-			ns += 1000000 * d.Magnitude
-		case ast.SecondUnit:
-			ns += 1000000000 * d.Magnitude
-		case ast.MinuteUnit:
-			ns += 60 * 1000000000 * d.Magnitude
-		case ast.HourUnit:
-			ns += 60 * 60 * 1000000000 * d.Magnitude
-		case ast.DayUnit:
-			ns += 24 * 60 * 60 * 1000000000 * d.Magnitude
-		case ast.WeekUnit:
-			ns += 7 * 24 * 60 * 60 * 1000000000 * d.Magnitude
-		case ast.MonthUnit:
-			mos += d.Magnitude
-		case ast.YearUnit:
-			mos += 12 * d.Magnitude
-		default:
-		}
-	}
-	outDurs := make([]ast.Duration, 2)
-	outDurs[0] = ast.Duration{Magnitude: mos, Unit: ast.MonthUnit}
-	outDurs[1] = ast.Duration{Magnitude: ns, Unit: ast.NanosecondUnit}
-	return outDurs
-}
-
-func (tv *transformingVisitor) Done(node semantic.Node) {
-	switch n := node.(type) {
-	case *semantic.CallExpression:
-		// Rust call expr args are just an array, so there's no location info.
-		n.Arguments.Source = ""
-	case *semantic.DurationLiteral:
-		// Rust duration literals use the months + nanos representation,
-		// Go uses AST units.
-		n.Values = toMonthsAndNanos(n.Values)
-	case *semantic.File:
-		if len(n.Body) == 0 {
-			n.Body = nil
-		}
-	case *semantic.FunctionExpression:
-		// Blocks in Rust models blocks as linked lists, so we don't have a location for the
-		// entire block including the curly braces.  It uses location of the statements instead.
-		nStmts := len(n.Block.Body)
-		n.Block.Start = n.Block.Body[0].Location().Start
-		n.Block.End = n.Block.Body[nStmts-1].Location().End
-		n.Block.Source = ""
-	}
-}
-
-var tvarRegexp *regexp.Regexp = regexp.MustCompile("t[0-9]+")
-
-// canonicalizeError reindexes type variable numbers in error messages
-// starting from zero, so that tests don't fail when the stdlib is updated.
-func canonicalizeError(errMsg string) string {
-	count := 0
-	tvm := make(map[int]int)
-	return tvarRegexp.ReplaceAllStringFunc(errMsg, func(in string) string {
-		n, err := strconv.Atoi(in[1:])
-		if err != nil {
-			panic(err)
-		}
-		var nn int
-		var ok bool
-		if nn, ok = tvm[n]; !ok {
-			nn = count
-			count++
-			tvm[n] = nn
-		}
-		t := fmt.Sprintf("t%v", nn)
-		return t
-	})
-}
-
-type exprTypeChecker struct {
-	errs []error
-}
-
-func (e *exprTypeChecker) Visit(node semantic.Node) semantic.Visitor {
-	return e
-}
-
-func (e *exprTypeChecker) Done(node semantic.Node) {
-	nva, ok := node.(*semantic.NativeVariableAssignment)
-	if !ok {
-		return
-	}
-	pty := nva.Typ.String()
-	initTy := nva.Init.TypeOf().String()
-	if !strings.Contains(pty, initTy) {
-		err := fmt.Errorf("expected RHS of assignment for %q to have a type contained by %q, but it had %q", nva.Identifier.Name, pty, initTy)
-		e.errs = append(e.errs, err)
-	}
-}
-
-func checkExprTypes(pkg *semantic.Package) []error {
-	v := new(exprTypeChecker)
-	semantic.Walk(v, pkg)
-	return v.errs
-}
-
-func TestFlatBuffersRoundTrip(t *testing.T) {
-	tcs := []struct {
-		name    string
-		fluxSrc string
-		err     error
-		// For each variable assignment, the expected inferred type of the variable
-		types map[string]string
-	}{
-		{
-			name:    "package",
-			fluxSrc: `package foo`,
-		},
-		{
-			name: "import",
-			fluxSrc: `
-                import "math"
-                import c "csv"`,
-		},
-		{
-			name:    "option with assignment",
-			fluxSrc: `option o = "hello"`,
-			types: map[string]string{
-				"o": "string",
-			},
-		},
-		{
-			name:    "option with member assignment error",
-			fluxSrc: `option o.m = "hello"`,
-			err:     errors.New("error @1:8-1:9: undefined identifier o"),
-		},
-		{
-			name: "option with member assignment",
-			fluxSrc: `
-                import "influxdata/influxdb/monitor"
-                option monitor.log = (tables=<-) => tables`,
-		},
-		{
-			name:    "builtin statement",
-			fluxSrc: `builtin foo : int`,
-		},
-		{
-			name: "test statement",
-			fluxSrc: `
-		       import "testing"
-		       test t = () => ({input: testing.loadStorage(csv: ""), want: testing.loadMem(csv: ""), fn: (table=<-) => table})`,
-			types: map[string]string{
-				"t": "() => {fn: (<-table: A) => A, input: [{D with _field: B, _field: B, _measurement: C, _measurement: C, _start: time, _stop: time, _time: time, _time: time}], want: [E]} where E: Record",
-			},
-		},
-		{
-			name:    "expression statement",
-			fluxSrc: `42`,
-		},
-		{
-			name:    "native variable assignment",
-			fluxSrc: `x = 42`,
-			types: map[string]string{
-				"x": "int",
-			},
-		},
-		{
-			name: "string expression",
-			fluxSrc: `
-                str = "hello"
-                x = "${str} world"`,
-			types: map[string]string{
-				"str": "string",
-				"x":   "string",
-			},
-		},
-		{
-			name: "array expression/index expression",
-			fluxSrc: `
-                x = [1, 2, 3]
-                y = x[2]`,
-			types: map[string]string{
-				"x": "[int]",
-				"y": "int",
-			},
-		},
-		{
-			name:    "simple fn",
-			fluxSrc: `f = (x) => x`,
-			types: map[string]string{
-				"f": "(x: A) => A",
-			},
-		},
-		{
-			name:    "simple fn with block (return statement)",
-			fluxSrc: `f = (x) => {return x}`,
-			types: map[string]string{
-				"f": "(x: A) => A",
-			},
-		},
-		{
-			name: "simple fn with 2 stmts",
-			fluxSrc: `
-                f = (x) => {
-                    z = x + 1
-                    127 // expr statement
-                    return z
-                }`,
-			types: map[string]string{
-				"f": "(x: int) => int",
-				"z": "int",
-			},
-		},
-		{
-			name:    "simple fn with 2 params",
-			fluxSrc: `f = (x, y) => x + y`,
-			types: map[string]string{
-				"f": "(x: A, y: A) => A where A: Addable",
-			},
-		},
-		{
-			name:    "apply",
-			fluxSrc: `apply = (f, p) => f(param: p)`,
-			types: map[string]string{
-				"apply": "(f: (param: A) => B, p: A) => B",
-			},
-		},
-		{
-			name:    "apply2",
-			fluxSrc: `apply2 = (f, p0, p1) => f(param0: p0, param1: p1)`,
-			types: map[string]string{
-				"apply2": "(f: (param0: A, param1: B) => C, p0: A, p1: B) => C",
-			},
-		},
-		{
-			name:    "default args",
-			fluxSrc: `f = (x=1, y) => x + y`,
-			types: map[string]string{
-				"f": "(?x: A, y: A) => A where A: Addable",
-			},
-		},
-		{
-			name:    "two default args",
-			fluxSrc: `f = (x=1, y=10, z) => x + y + z`,
-			types: map[string]string{
-				"f": "(?x: A, ?y: A, z: A) => A where A: Addable",
-			},
-		},
-		{
-			name:    "pipe args",
-			fluxSrc: `f = (x=<-, y) => x + y`,
-			types: map[string]string{
-				"f": "(<-x: A, y: A) => A where A: Addable",
-			},
-		},
-		{
-			name: "binary expression",
-			fluxSrc: `
-                x = 1 * 2 / 3 - 1 + 7 % 8^9
-                lt = 1 < 3
-                lte = 1 <= 3
-                gt = 1 > 3
-                gte = 1 >= 3
-                eq = 1 == 3
-                neq = 1 != 3
-                rem = "foo" =~ /foo/
-                renm = "food" !~ /foog/`,
-			types: map[string]string{
-				"x":    "int",
-				"lt":   "bool",
-				"lte":  "bool",
-				"gt":   "bool",
-				"gte":  "bool",
-				"eq":   "bool",
-				"neq":  "bool",
-				"rem":  "bool",
-				"renm": "bool",
-			},
-		},
-		{
-			name: "call expression",
-			fluxSrc: `
-                f = (x) => x + 1
-                y = f(x: 10)`,
-			types: map[string]string{
-				"f": "(x: int) => int",
-				"y": "int",
-			},
-		},
-		{
-			name: "call expression two args",
-			fluxSrc: `
-                f = (x, y) => x + y
-                y = f(x: 10, y: 30)`,
-			types: map[string]string{
-				"f": "(x: A, y: A) => A where A: Addable",
-				"y": "int",
-			},
-		},
-		{
-			name: "call expression two args with pipe",
-			fluxSrc: `
-                f = (x, y=<-) => x + y
-                y = 30 |> f(x: 10)`,
-			types: map[string]string{
-				"f": "(x: A, <-y: A) => A where A: Addable",
-				"y": "int",
-			},
-		},
-		{
-			name: "conditional expression",
-			fluxSrc: `
-                ans = if 100 > 0 then "yes" else "no"`,
-			types: map[string]string{
-				"ans": "string",
-			},
-		},
-		{
-			name: "identifier expression",
-			fluxSrc: `
-                x = 34
-                y = x`,
-			types: map[string]string{
-				"x": "int",
-				"y": "int",
-			},
-		},
-		{
-			name:    "logical expression",
-			fluxSrc: `x = true and false or true`,
-			types: map[string]string{
-				"x": "bool",
-			},
-		},
-		{
-			name: "member expression/object expression",
-			fluxSrc: `
-                o = {temp: 30.0, loc: "FL"}
-                t = o.temp`,
-			types: map[string]string{
-				"o": "{loc: string, temp: float}",
-				"t": "float",
-			},
-		},
-		{
-			name: "object expression with",
-			fluxSrc: `
-                o = {temp: 30.0, loc: "FL"}
-                o2 = {o with city: "Tampa"}`,
-			types: map[string]string{
-				"o":  "{loc: string, temp: float}",
-				"o2": "{city: string, loc: string, temp: float}",
-			},
-		},
-		{
-			name: "object expression extends",
-			fluxSrc: `
-                f = (r) => ({r with val: 32})
-                o = f(r: {val: "thirty-two"})`,
-			types: map[string]string{
-				"f": "(r: A) => {A with val: int}",
-				"o": "{val: int, val: string}",
-			},
-		},
-		{
-			name: "unary expression",
-			fluxSrc: `
-                x = -1
-                y = +1
-                b = not false`,
-			types: map[string]string{
-				"x": "int",
-				"y": "int",
-				"b": "bool",
-			},
-		},
-		{
-			name:    "exists operator",
-			fluxSrc: `e = exists {foo: 30}.bar`,
-			err:     errors.New("error @1:12-1:21: record is missing label bar"),
-		},
-		{
-			name:    "exists operator with tvar",
-			fluxSrc: `f = (r) => exists r.foo`,
-			types: map[string]string{
-				"f": "(r: {B with foo: A}) => bool",
-			},
-		},
-		{
-			// This seems to be a bug: https://github.com/influxdata/flux/issues/2355
-			name: "exists operator with tvar and call",
-			fluxSrc: `
-                f = (r) => exists r.foo
-                ff = (r) => f(r: {r with bar: 1})`,
-			types: map[string]string{
-				"f": "(r: {B with foo: A}) => bool",
-				// Note: B is unused in the monotype, and C is not quantified.
-				// Type of ff should be the same as f.
-				"ff": "(r: {B with foo: A}) => bool",
-			},
-		},
-		{
-			name:    "datetime literal",
-			fluxSrc: `t = 2018-08-15T13:36:23-07:00`,
-			types: map[string]string{
-				"t": "time",
-			},
-		},
-		{
-			name:    "duration literal",
-			fluxSrc: `d = 1y1mo1w1d1h1m1s1ms1us1ns`,
-			types: map[string]string{
-				"d": "duration",
-			},
-		},
-		{
-			name:    "negative duration literal",
-			fluxSrc: `d = -1y1d`,
-			types: map[string]string{
-				"d": "duration",
-			},
-		},
-		{
-			name:    "zero duration literal",
-			fluxSrc: `d = 0d`,
-			types: map[string]string{
-				"d": "duration",
-			},
-		},
-		{
-			name:    "regexp literal",
-			fluxSrc: `re = /foo/`,
-			types: map[string]string{
-				"re": "regexp",
-			},
-		},
-		{
-			name:    "float literal",
-			fluxSrc: `f = 3.0`,
-			types: map[string]string{
-				"f": "float",
-			},
-		},
-		{
-			name: "typical query",
-			fluxSrc: `
-				v = {
-					bucket: "telegraf",
-					windowPeriod: 15s,
-					timeRangeStart: -5m
-				}
-				q = from(bucket: v.bucket)
-					|> filter(fn: (r) => r._measurement == "disk")
-					|> filter(fn: (r) => r._field == "used_percent")`,
-			types: map[string]string{
-				"v": "{bucket: string, timeRangeStart: duration, windowPeriod: duration}",
-				"q": "[{B with _field: string, _measurement: string, _time: time, _value: A}]",
-			},
-		},
-	}
-	for _, tc := range tcs {
-		tc := tc
-		t.Run(tc.name, func(t *testing.T) {
-			t.Parallel()
-			astPkg := parser.ParseSource(tc.fluxSrc)
-			want, err := semantic.New(astPkg)
-			if err != nil {
-				t.Fatal(err)
-			}
-			if err := transformGraph(want); err != nil {
-				t.Fatal(err)
-			}
-
-			got, err := runtime.AnalyzeSource(tc.fluxSrc)
-			if err != nil {
-				if tc.err == nil {
-					t.Fatal(err)
-				}
-				if want, got := tc.err.Error(), canonicalizeError(err.Error()); want != got {
-					t.Fatalf("expected error %q, but got %q", want, got)
-				}
-				return
-			}
-			if tc.err != nil {
-				t.Fatalf("expected error %q, but got nothing", tc.err)
-			}
-
-			errs := checkExprTypes(got)
-			if len(errs) > 0 {
-				for _, e := range errs {
-					t.Error(e)
-				}
-				t.Fatal("found errors in expression types")
-			}
-
-			// Create a special comparison option to compare the types
-			// of NativeVariableAssignments using the expected types in the map
-			// provided by the test case.
-			assignCmp := cmp.Transformer("assign", func(nva *semantic.NativeVariableAssignment) *MyAssignement {
-				var typStr string
-				if nva.Typ.IsNil() == true {
-					// This is the assignment from Go.
-					var ok bool
-					typStr, ok = tc.types[nva.Identifier.Name]
-					if !ok {
-						typStr = "*** missing type ***"
-					}
-				} else {
-					// This is the assignment from Rust.
-					typStr = nva.Typ.CanonicalString()
-				}
-				return &MyAssignement{
-					Loc:        nva.Loc,
-					Identifier: nva.Identifier,
-					Init:       nva.Init,
-					Typ:        typStr,
-				}
-			})
-
-			opts := make(cmp.Options, len(cmpOpts), len(cmpOpts)+2)
-			copy(opts, cmpOpts)
-			opts = append(opts, assignCmp, cmp.AllowUnexported(MyAssignement{}))
-			if diff := cmp.Diff(want, got, opts...); diff != "" {
-				t.Fatalf("differences in semantic graph: -want/+got:\n%v", diff)
-			}
-		})
-	}
 }

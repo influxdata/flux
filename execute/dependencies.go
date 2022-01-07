@@ -4,9 +4,13 @@ import (
 	"context"
 	"time"
 
+	"github.com/influxdata/flux/codes"
+	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/metadata"
+	"github.com/influxdata/flux/semantic"
+	"github.com/influxdata/flux/values"
 	"go.uber.org/zap"
 )
 
@@ -39,6 +43,24 @@ type ExecutionDependencies struct {
 func (d ExecutionDependencies) Inject(ctx context.Context) context.Context {
 	ctx = context.WithValue(ctx, executionDependenciesKey, d)
 	return interpreter.Packages{}.Inject(ctx)
+}
+
+// ResolveTimeable returns the time represented by a value.
+// The value's type must be Timeable, one of time or duration.
+func (d ExecutionDependencies) ResolveTimeable(t values.Value) (values.Time, error) {
+	if d.Now == nil {
+		return 0, errors.New(codes.Internal, "now time not set on execution dependecies")
+	}
+	var time values.Time
+	switch t.Type().Nature() {
+	case semantic.Duration:
+		time = values.ConvertTime(*d.Now).Add(t.Duration())
+	case semantic.Time:
+		time = t.Time()
+	default:
+		return 0, errors.Newf(codes.Internal, "%s is not Timeable", t.Type().Nature())
+	}
+	return time, nil
 }
 
 func HaveExecutionDependencies(ctx context.Context) bool {

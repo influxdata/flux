@@ -5,11 +5,16 @@ import (
 	"fmt"
 	"sort"
 
+	"github.com/apache/arrow/go/arrow/bitutil"
+	"github.com/apache/arrow/go/arrow/memory"
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/array"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/compiler"
 	"github.com/influxdata/flux/dependencies/influxdb"
 	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/execute/table"
+	"github.com/influxdata/flux/internal/arrowutil"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/plan"
@@ -45,41 +50,22 @@ func createToTransformation(id execute.DatasetID, mode execute.AccumulationMode,
 		return nil, nil, fmt.Errorf("invalid spec type %T", spec)
 	}
 
-	var (
-		cache = execute.NewTableBuilderCache(a.Allocator())
-		d     = execute.NewDataset(id, mode, cache)
-		deps  = influxdb.GetProvider(a.Context())
-	)
-
-	t, err := NewToTransformation(a.Context(), d, cache, s, deps)
-	if err != nil {
-		return nil, nil, err
-	}
-	return t, d, nil
+	deps := influxdb.GetProvider(a.Context())
+	return NewToTransformation(a.Context(), id, s, deps, a.Allocator())
 }
 
-// ToTransformation is the transformation for the `to` flux function.
-type ToTransformation struct {
-	execute.ExecutionNode
+// toTransformation is the transformation for the `to` flux function.
+type toTransformation struct {
 	ctx                context.Context
-	bucket             NameOrID
-	org                NameOrID
-	d                  execute.Dataset
 	fn                 *execute.RowMapFn
-	cache              execute.TableBuilderCache
 	spec               *ToOpSpec
 	implicitTagColumns bool
 	writer             influxdb.Writer
 	span               opentracing.Span
 }
 
-// RetractTable retracts the table for the transformation for the `to` flux function.
-func (t *ToTransformation) RetractTable(id execute.DatasetID, key flux.GroupKey) error {
-	return t.d.RetractTable(key)
-}
-
 // NewToTransformation returns a new *ToTransformation with the appropriate fields set.
-func NewToTransformation(ctx context.Context, d execute.Dataset, cache execute.TableBuilderCache, spec *ToProcedureSpec, deps influxdb.Provider) (*ToTransformation, error) {
+func NewToTransformation(ctx context.Context, id execute.DatasetID, spec *ToProcedureSpec, deps influxdb.Provider, mem memory.Allocator) (execute.Transformation, execute.Dataset, error) {
 	var fn *execute.RowMapFn
 	if spec.Spec.FieldFn.Fn != nil {
 		fn = execute.NewRowMapFn(spec.Spec.FieldFn.Fn, compiler.ToScope(spec.Spec.FieldFn.Scope))
@@ -105,25 +91,21 @@ func NewToTransformation(ctx context.Context, d execute.Dataset, cache execute.T
 	}
 	writer, err := deps.WriterFor(ctx, conf)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
-	return &ToTransformation{
+	return execute.NewNarrowTransformation(id, &toTransformation{
 		ctx:                ctx,
-		bucket:             bucket,
-		org:                org,
-		d:                  d,
 		fn:                 fn,
-		cache:              cache,
 		spec:               spec.Spec,
 		implicitTagColumns: spec.Spec.TagColumns == nil,
 		writer:             writer,
 		span:               span,
-	}, nil
+	}, mem)
 }
 
 // Process does the actual work for the ToTransformation.
-func (t *ToTransformation) Process(id execute.DatasetID, tbl flux.Table) error {
+func (t *toTransformation) Process(chunk table.Chunk, d *execute.TransportDataset, mem memory.Allocator) error {
 	// If no tag columns are specified, by default we exclude
 	// _field and _value from being tag columns.
 	if t.implicitTagColumns {
@@ -136,9 +118,9 @@ func (t *ToTransformation) Process(id execute.DatasetID, tbl flux.Table) error {
 		// If a field function is specified then we exclude any column that
 		// is referenced in the function expression from being a tag column.
 		if t.spec.FieldFn.Fn != nil {
-			recordParam := t.spec.FieldFn.Fn.Parameters.List[0].Key.Name
+			recordParam := t.spec.FieldFn.Fn.Parameters.List[0].Key.Name.Name()
 			exprNode := t.spec.FieldFn.Fn.Block
-			colVisitor := newFieldFunctionVisitor(recordParam, tbl.Cols())
+			colVisitor := newFieldFunctionVisitor(recordParam, chunk.Cols())
 
 			// Walk the field function expression and record which columns
 			// are referenced. None of these columns will be used as tag columns.
@@ -148,48 +130,38 @@ func (t *ToTransformation) Process(id execute.DatasetID, tbl flux.Table) error {
 			}
 		}
 
-		addTagsFromTable(t.spec, tbl, excludeColumns)
-	}
-	return writeTableToAPI(t.ctx, t, tbl)
-}
-
-// UpdateWatermark updates the watermark for the transformation for the `to` flux function.
-func (t *ToTransformation) UpdateWatermark(id execute.DatasetID, pt execute.Time) error {
-	return t.d.UpdateWatermark(pt)
-}
-
-// UpdateProcessingTime updates the processing time for the transformation for the `to` flux function.
-func (t *ToTransformation) UpdateProcessingTime(id execute.DatasetID, pt execute.Time) error {
-	return t.d.UpdateProcessingTime(pt)
-}
-
-// Finish is called after the `to` flux function's transformation is done processing.
-func (t *ToTransformation) Finish(id execute.DatasetID, err error) {
-	defer t.span.Finish()
-
-	if err != nil {
-		t.d.Finish(err)
-		return
+		t.addTagsFromTable(chunk.Cols(), excludeColumns)
 	}
 
-	err = t.writer.Close()
-	t.d.Finish(err)
+	if err := t.writeTable(chunk); err != nil {
+		return err
+	}
+
+	// Filter out rows with null times if they exist.
+	filtered := t.filterNulls(chunk, mem)
+	return d.Process(filtered)
 }
 
-func writeTableToAPI(ctx context.Context, t *ToTransformation, tbl flux.Table) (err error) {
+func (t *toTransformation) addTagsFromTable(cols []flux.ColMeta, exclude map[string]bool) {
+	if cap(t.spec.TagColumns) < len(cols) {
+		t.spec.TagColumns = make([]string, 0, len(cols))
+	} else {
+		t.spec.TagColumns = t.spec.TagColumns[:0]
+	}
+
+	for _, column := range cols {
+		if column.Type == flux.TString && !exclude[column.Label] {
+			t.spec.TagColumns = append(t.spec.TagColumns, column.Label)
+		}
+	}
+	sort.Strings(t.spec.TagColumns)
+}
+
+func (t *toTransformation) writeTable(chunk table.Chunk) (err error) {
 	spec := t.spec
 
-	builder, isNew := t.cache.TableBuilder(tbl.Key())
-	if isNew {
-		if err := execute.AddTableCols(tbl, builder); err != nil {
-			return err
-		}
-	} else {
-		return fmt.Errorf("to() found duplicate table with group key: %v", tbl.Key())
-	}
-
 	// cache tag columns
-	columns := tbl.Cols()
+	columns := chunk.Cols()
 	isTag := make([]bool, len(columns))
 	for i, col := range columns {
 		tagIdx := sort.SearchStrings(spec.TagColumns, col.Label)
@@ -226,106 +198,137 @@ func writeTableToAPI(ctx context.Context, t *ToTransformation, tbl flux.Table) (
 	}
 
 	var fieldValues values.Object
-	return tbl.Do(func(er flux.ColReader) error {
-		var metrics []lp.Metric
-		metrics = make([]lp.Metric, 0, er.Len())
+	metrics := make([]lp.Metric, 0, chunk.Len())
+	er := chunk.Buffer()
 
-	outer:
-		for i := 0; i < er.Len(); i++ {
-			metric := &RowMetric{
-				Tags: make([]*lp.Tag, 0, len(spec.TagColumns)),
-			}
+outer:
+	for i := 0; i < chunk.Len(); i++ {
+		metric := &RowMetric{
+			Tags: make([]*lp.Tag, 0, len(spec.TagColumns)),
+		}
 
-			// gather the timestamp, tags and measurement name
-			for j, col := range er.Cols() {
-				switch {
-				case col.Label == spec.MeasurementColumn:
-					metric.NameStr = er.Strings(j).Value(i)
-				case col.Label == timeColLabel:
-					valueTime := execute.ValueForRow(er, i, j)
-					if valueTime.IsNull() {
-						// skip rows with null timestamp
-						continue outer
-					}
-					metric.TS = valueTime.Time().Time()
-				case isTag[j]:
-					if col.Type != flux.TString {
-						return errors.New(codes.Invalid, "invalid type for tag column")
-					}
-
-					metric.Tags = append(metric.Tags, &lp.Tag{
-						Key:   col.Label,
-						Value: er.Strings(j).Value(i),
-					})
+		// gather the timestamp, tags and measurement name
+		for j, col := range chunk.Cols() {
+			switch {
+			case col.Label == spec.MeasurementColumn:
+				metric.NameStr = er.Strings(j).Value(i)
+			case col.Label == timeColLabel:
+				valueTime := execute.ValueForRow(&er, i, j)
+				if valueTime.IsNull() {
+					// skip rows with null timestamp
+					continue outer
 				}
-			}
-
-			if metric.TS.IsZero() {
-				return errors.New(codes.Invalid, "timestamp missing from block")
-			}
-
-			if fn == nil {
-				if fieldValues, err = defaultFieldMapping(er, i); err != nil {
-					return err
+				metric.TS = valueTime.Time().Time()
+			case isTag[j]:
+				if col.Type != flux.TString {
+					return errors.New(codes.Invalid, "invalid type for tag column")
 				}
-			} else if fieldValues, err = fn.Eval(t.ctx, i, er); err != nil {
-				return err
-			}
 
-			metric.Fields = make([]*lp.Field, 0, fieldValues.Len())
-
-			var err error
-
-			fieldValues.Range(func(k string, v values.Value) {
-				if !v.IsNull() {
-					field := &lp.Field{Key: k}
-
-					switch v.Type().Nature() {
-					case semantic.Float:
-						field.Value = v.Float()
-					case semantic.Int:
-						field.Value = v.Int()
-					case semantic.UInt:
-						field.Value = v.UInt()
-					case semantic.String:
-						field.Value = v.Str()
-					case semantic.Time:
-						field.Value = int64(v.Time())
-					case semantic.Bool:
-						field.Value = v.Bool()
-					default:
-						if err == nil {
-							err = fmt.Errorf("unsupported field type %v", v.Type())
-						}
-
-						return
-					}
-
-					metric.Fields = append(metric.Fields, field)
-				}
-			})
-
-			if err != nil {
-				return err
-			}
-
-			// drop metrics without any measurements
-			if len(metric.Fields) > 0 {
-				metrics = append(metrics, metric)
-			}
-
-			if err := execute.AppendRecord(i, er, builder); err != nil {
-				return err
+				metric.Tags = append(metric.Tags, &lp.Tag{
+					Key:   col.Label,
+					Value: er.Strings(j).Value(i),
+				})
 			}
 		}
 
-		// only write if we have any metrics to write
-		if len(metrics) > 0 {
-			err = t.writer.Write(metrics...)
+		if metric.TS.IsZero() {
+			return errors.New(codes.Invalid, "timestamp missing from block")
 		}
 
-		return err
-	})
+		if fn == nil {
+			if fieldValues, err = defaultFieldMapping(&er, i); err != nil {
+				return err
+			}
+		} else if fieldValues, err = fn.Eval(t.ctx, i, &er); err != nil {
+			return err
+		}
+
+		metric.Fields = make([]*lp.Field, 0, fieldValues.Len())
+
+		var err error
+
+		fieldValues.Range(func(k string, v values.Value) {
+			if !v.IsNull() {
+				field := &lp.Field{Key: k}
+
+				switch v.Type().Nature() {
+				case semantic.Float:
+					field.Value = v.Float()
+				case semantic.Int:
+					field.Value = v.Int()
+				case semantic.UInt:
+					field.Value = v.UInt()
+				case semantic.String:
+					field.Value = v.Str()
+				case semantic.Time:
+					field.Value = int64(v.Time())
+				case semantic.Bool:
+					field.Value = v.Bool()
+				default:
+					if err == nil {
+						err = fmt.Errorf("unsupported field type %v", v.Type())
+					}
+
+					return
+				}
+
+				metric.Fields = append(metric.Fields, field)
+			}
+		})
+
+		if err != nil {
+			return err
+		}
+
+		// drop metrics without any measurements
+		if len(metric.Fields) > 0 {
+			metrics = append(metrics, metric)
+		}
+	}
+
+	// only write if we have any metrics to write
+	if len(metrics) > 0 {
+		err = t.writer.Write(metrics...)
+	}
+
+	return err
+}
+
+// filterNulls will filter out the rows where the time is null from the table chunk.
+// If the table chunk does not have any rows where the time is null, it retains and
+// returns the original table chunk.
+//
+// This filter is necessary because the `to()` function will only output the rows that
+// are written and rows where the time is null are not written.
+func (t *toTransformation) filterNulls(chunk table.Chunk, mem memory.Allocator) table.Chunk {
+	idx := execute.ColIdx(t.spec.TimeColumn, chunk.Cols())
+	ts := chunk.Ints(idx)
+	if ts.NullN() == 0 {
+		// If there are no null values, no filtering is needed.
+		// Retain a copy of this table chunk and send it along.
+		chunk.Retain()
+		return chunk
+	}
+
+	bitset := memory.NewResizableBuffer(mem)
+	bitset.Resize(ts.Len())
+
+	for i, n := 0, ts.Len(); i < n; i++ {
+		bitutil.SetBitTo(bitset.Buf(), i, ts.IsValid(i))
+	}
+
+	buffer := chunk.Buffer()
+	buffer.Values = make([]array.Interface, chunk.NCols())
+	for j := range buffer.Values {
+		arr := chunk.Values(j)
+		buffer.Values[j] = arrowutil.Filter(arr, bitset.Bytes(), mem)
+	}
+	return table.ChunkFromBuffer(buffer)
+}
+
+func (t *toTransformation) Close() error {
+	defer t.span.Finish()
+	return t.writer.Close()
 }
 
 // fieldFunctionVisitor implements semantic.Visitor.
@@ -362,8 +365,8 @@ func (v *fieldFunctionVisitor) Visit(node semantic.Node) semantic.Visitor {
 	}
 	if member, ok := node.(*semantic.MemberExpression); ok {
 		if obj, ok := member.Object.(*semantic.IdentifierExpression); ok {
-			if obj.Name == v.rowParam && v.columns[member.Property] {
-				v.captured[member.Property] = true
+			if obj.Name.Name() == v.rowParam && v.columns[member.Property.Name()] {
+				v.captured[member.Property.Name()] = true
 			}
 		}
 	}
@@ -372,21 +375,6 @@ func (v *fieldFunctionVisitor) Visit(node semantic.Node) semantic.Visitor {
 }
 
 func (v *fieldFunctionVisitor) Done(semantic.Node) {}
-
-func addTagsFromTable(spec *ToOpSpec, table flux.Table, exclude map[string]bool) {
-	if cap(spec.TagColumns) < len(table.Cols()) {
-		spec.TagColumns = make([]string, 0, len(table.Cols()))
-	} else {
-		spec.TagColumns = spec.TagColumns[:0]
-	}
-
-	for _, column := range table.Cols() {
-		if column.Type == flux.TString && !exclude[column.Label] {
-			spec.TagColumns = append(spec.TagColumns, column.Label)
-		}
-	}
-	sort.Strings(spec.TagColumns)
-}
 
 func defaultFieldMapping(er flux.ColReader, row int) (values.Object, error) {
 	fieldColumnIdx := execute.ColIdx(defaultFieldColLabel, er.Cols())
@@ -413,7 +401,7 @@ func defaultFieldMapping(er flux.ColReader, row int) (values.Object, error) {
 	return fieldValueMapping, nil
 }
 
-/////////////////////
+// ///////////////////
 // from idpe query
 
 // ToOpSpec is the flux.OperationSpec for the `to` flux function.
@@ -514,6 +502,10 @@ func (o *ToOpSpec) ReadArgs(args flux.Arguments) error {
 	}
 
 	if tags, ok, _ := args.GetArray("tagColumns", semantic.String); ok {
+		// XXX: remove when array/stream are different types <https://github.com/influxdata/flux/issues/4343>
+		if _, ok := tags.(values.TableObject); ok {
+			return errors.New(codes.Invalid, "tagColumns cannot be a table stream; expected an array")
+		}
 		o.TagColumns = make([]string, tags.Len())
 		tags.Sort(func(i, j values.Value) bool {
 			return i.Str() < j.Str()

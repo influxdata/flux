@@ -4,7 +4,8 @@ package influxql_test
 import "testing"
 import "internal/influxql"
 
-inData = "
+inData =
+    "
 #datatype,string,long,dateTime:RFC3339,string,string,string,string,double
 #group,false,false,false,true,true,true,true,false
 #default,0,,,,,,,
@@ -410,7 +411,8 @@ inData = "
 ,,3,1970-01-01T00:01:38Z,m,1,1,f,0.023503857583366802
 ,,3,1970-01-01T00:01:39Z,m,1,1,f,0.9492834672803911
 "
-outData = "
+outData =
+    "
 #datatype,string,long,dateTime:RFC3339,string,double
 #group,false,false,false,true,false
 #default,0,,,,
@@ -419,13 +421,14 @@ outData = "
 "
 
 // SELECT max(f) FROM m
-t_selector = (tables=<-) => tables
-    |> range(start: influxql.minTime, stop: influxql.maxTime)
-    |> filter(fn: (r) => r._measurement == "m")
-    |> filter(fn: (r) => r._field == "f")
-    |> group(columns: ["_measurement", "_field"])
-    |> max()
-    |> keep(columns: ["_time", "_value", "_measurement"])
-    |> rename(columns: {_time: "time", _value: "max"})
+t_selector = (tables=<-) =>
+    tables
+        |> range(start: influxql.minTime, stop: influxql.maxTime)
+        |> filter(fn: (r) => r._measurement == "m")
+        |> filter(fn: (r) => r._field == "f")
+        |> group(columns: ["_measurement", "_field"])
+        |> max()
+        |> keep(columns: ["_time", "_value", "_measurement"])
+        |> rename(columns: {_time: "time", _value: "max"})
 
 test _selector = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_selector})

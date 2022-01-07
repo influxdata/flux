@@ -3,11 +3,11 @@ use std::{
     any::Any,
     error::Error as StdError,
     fmt,
-    iter::FromIterator,
     ops::{Index, IndexMut},
     slice, vec,
 };
 
+use codespan_reporting::diagnostic;
 use derive_more::Display;
 
 use crate::{
@@ -61,6 +61,10 @@ impl<T> Errors<T> {
 
     pub fn iter(&self) -> slice::Iter<T> {
         self.errors.iter()
+    }
+
+    pub fn iter_mut(&mut self) -> slice::IterMut<T> {
+        self.errors.iter_mut()
     }
 
     pub fn drain(
@@ -177,6 +181,15 @@ pub struct Located<E> {
     pub error: E,
 }
 
+impl<E> Located<E> {
+    pub(crate) fn map<F>(self, f: impl FnOnce(E) -> F) -> Located<F> {
+        Located {
+            location: self.location,
+            error: f(self.error),
+        }
+    }
+}
+
 impl<T: StdError> StdError for Located<T> {
     fn source(&self) -> Option<&(dyn StdError + 'static)> {
         self.error.source()
@@ -198,7 +211,25 @@ where
             error,
         })
     }
-    fn free_vars(&self) -> Vec<Tvar> {
-        self.error.free_vars()
+    fn free_vars(&self, vars: &mut Vec<Tvar>) {
+        self.error.free_vars(vars)
+    }
+}
+
+pub(crate) trait AsDiagnostic {
+    fn as_diagnostic(&self, source: &dyn crate::semantic::Source) -> diagnostic::Diagnostic<()>;
+}
+
+impl<E> AsDiagnostic for Located<E>
+where
+    E: AsDiagnostic,
+{
+    fn as_diagnostic(&self, source: &dyn crate::semantic::Source) -> diagnostic::Diagnostic<()> {
+        self.error
+            .as_diagnostic(source)
+            .with_labels(vec![diagnostic::Label::primary(
+                (),
+                source.codespan_range(&self.location),
+            )])
     }
 }

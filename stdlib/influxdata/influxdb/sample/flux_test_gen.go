@@ -19,11 +19,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			Errors:   nil,
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
-					Column: 138,
-					Line:   39,
+					Column: 110,
+					Line:   43,
 				},
 				File:   "alignToNow_test.flux",
-				Source: "package sample_test\n\n\nimport \"influxdata/influxdb/sample\"\nimport \"testing\"\n\noption now = () => 2030-01-01T00:00:00Z\n\ninData = \"\ndatatype,string,long,dateTime:RFC3339,double,string,string,string\n#group,false,false,false,false,true,true,true\n#default,_result,,,,,,\n,result,table,_time,_value,_field,_measurement,host\n,,0,2018-05-22T19:53:26Z,50.12,used_percent,mem,host.local\n,,0,2018-05-22T19:53:36Z,51.45,used_percent,mem,host.local\n,,0,2018-05-22T19:53:46Z,48.3,used_percent,mem,host.local\n,,0,2018-05-22T19:53:56Z,49.34,used_percent,mem,host.local\n,,0,2018-05-22T19:54:06Z,49.06,used_percent,mem,host.local\n,,0,2018-05-22T19:54:16Z,50.75,used_percent,mem,host.local\n\"\n\noutData = \"\n#group,false,false,true,true,false,false,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string\n#default,_result,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_measurement,host\n,,0,2029-12-31T23:59:10Z,2030-01-01T00:00:44Z,2029-12-31T23:59:10Z,50.12,used_percent,mem,host.local\n,,0,2029-12-31T23:59:10Z,2030-01-01T00:00:44Z,2029-12-31T23:59:20Z,51.45,used_percent,mem,host.local\n,,0,2029-12-31T23:59:10Z,2030-01-01T00:00:44Z,2029-12-31T23:59:30Z,48.3,used_percent,mem,host.local\n,,0,2029-12-31T23:59:10Z,2030-01-01T00:00:44Z,2029-12-31T23:59:40Z,49.34,used_percent,mem,host.local\n,,0,2029-12-31T23:59:10Z,2030-01-01T00:00:44Z,2029-12-31T23:59:50Z,49.06,used_percent,mem,host.local\n,,0,2029-12-31T23:59:10Z,2030-01-01T00:00:44Z,2030-01-01T00:00:00Z,50.75,used_percent,mem,host.local\n\"\n\nt_sample_alignToNow = (table=<-) => table\n    |> range(start: 2018-05-22T19:53:26Z, stop: 2018-05-22T19:55:00Z)\n    |> sample.alignToNow()\n\ntest _sample_alignToNow = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_sample_alignToNow})",
+				Source: "package sample_test\n\n\nimport \"influxdata/influxdb/sample\"\nimport \"testing\"\n\noption now = () => 2030-01-01T00:00:00Z\n\ninData =\n    \"\ndatatype,string,long,dateTime:RFC3339,double,string,string,string\n#group,false,false,false,false,true,true,true\n#default,_result,,,,,,\n,result,table,_time,_value,_field,_measurement,host\n,,0,2018-05-22T19:53:26Z,50.12,used_percent,mem,host.local\n,,0,2018-05-22T19:53:36Z,51.45,used_percent,mem,host.local\n,,0,2018-05-22T19:53:46Z,48.3,used_percent,mem,host.local\n,,0,2018-05-22T19:53:56Z,49.34,used_percent,mem,host.local\n,,0,2018-05-22T19:54:06Z,49.06,used_percent,mem,host.local\n,,0,2018-05-22T19:54:16Z,50.75,used_percent,mem,host.local\n\"\n\noutData =\n    \"\n#group,false,false,true,true,false,false,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string\n#default,_result,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_measurement,host\n,,0,2029-12-31T23:59:10Z,2030-01-01T00:00:44Z,2029-12-31T23:59:10Z,50.12,used_percent,mem,host.local\n,,0,2029-12-31T23:59:10Z,2030-01-01T00:00:44Z,2029-12-31T23:59:20Z,51.45,used_percent,mem,host.local\n,,0,2029-12-31T23:59:10Z,2030-01-01T00:00:44Z,2029-12-31T23:59:30Z,48.3,used_percent,mem,host.local\n,,0,2029-12-31T23:59:10Z,2030-01-01T00:00:44Z,2029-12-31T23:59:40Z,49.34,used_percent,mem,host.local\n,,0,2029-12-31T23:59:10Z,2030-01-01T00:00:44Z,2029-12-31T23:59:50Z,49.06,used_percent,mem,host.local\n,,0,2029-12-31T23:59:10Z,2030-01-01T00:00:44Z,2030-01-01T00:00:00Z,50.75,used_percent,mem,host.local\n\"\n\nt_sample_alignToNow = (table=<-) =>\n    table\n        |> range(start: 2018-05-22T19:53:26Z, stop: 2018-05-22T19:55:00Z)\n        |> sample.alignToNow()\n\ntest _sample_alignToNow = () =>\n    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_sample_alignToNow})",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -132,10 +132,10 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 2,
-						Line:   20,
+						Line:   21,
 					},
 					File:   "alignToNow_test.flux",
-					Source: "inData = \"\ndatatype,string,long,dateTime:RFC3339,double,string,string,string\n#group,false,false,false,false,true,true,true\n#default,_result,,,,,,\n,result,table,_time,_value,_field,_measurement,host\n,,0,2018-05-22T19:53:26Z,50.12,used_percent,mem,host.local\n,,0,2018-05-22T19:53:36Z,51.45,used_percent,mem,host.local\n,,0,2018-05-22T19:53:46Z,48.3,used_percent,mem,host.local\n,,0,2018-05-22T19:53:56Z,49.34,used_percent,mem,host.local\n,,0,2018-05-22T19:54:06Z,49.06,used_percent,mem,host.local\n,,0,2018-05-22T19:54:16Z,50.75,used_percent,mem,host.local\n\"",
+					Source: "inData =\n    \"\ndatatype,string,long,dateTime:RFC3339,double,string,string,string\n#group,false,false,false,false,true,true,true\n#default,_result,,,,,,\n,result,table,_time,_value,_field,_measurement,host\n,,0,2018-05-22T19:53:26Z,50.12,used_percent,mem,host.local\n,,0,2018-05-22T19:53:36Z,51.45,used_percent,mem,host.local\n,,0,2018-05-22T19:53:46Z,48.3,used_percent,mem,host.local\n,,0,2018-05-22T19:53:56Z,49.34,used_percent,mem,host.local\n,,0,2018-05-22T19:54:06Z,49.06,used_percent,mem,host.local\n,,0,2018-05-22T19:54:16Z,50.75,used_percent,mem,host.local\n\"",
 					Start: ast.Position{
 						Column: 1,
 						Line:   9,
@@ -168,13 +168,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 2,
-							Line:   20,
+							Line:   21,
 						},
 						File:   "alignToNow_test.flux",
 						Source: "\"\ndatatype,string,long,dateTime:RFC3339,double,string,string,string\n#group,false,false,false,false,true,true,true\n#default,_result,,,,,,\n,result,table,_time,_value,_field,_measurement,host\n,,0,2018-05-22T19:53:26Z,50.12,used_percent,mem,host.local\n,,0,2018-05-22T19:53:36Z,51.45,used_percent,mem,host.local\n,,0,2018-05-22T19:53:46Z,48.3,used_percent,mem,host.local\n,,0,2018-05-22T19:53:56Z,49.34,used_percent,mem,host.local\n,,0,2018-05-22T19:54:06Z,49.06,used_percent,mem,host.local\n,,0,2018-05-22T19:54:16Z,50.75,used_percent,mem,host.local\n\"",
 						Start: ast.Position{
-							Column: 10,
-							Line:   9,
+							Column: 5,
+							Line:   10,
 						},
 					},
 				},
@@ -187,13 +187,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 2,
-						Line:   33,
+						Line:   35,
 					},
 					File:   "alignToNow_test.flux",
-					Source: "outData = \"\n#group,false,false,true,true,false,false,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string\n#default,_result,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_measurement,host\n,,0,2029-12-31T23:59:10Z,2030-01-01T00:00:44Z,2029-12-31T23:59:10Z,50.12,used_percent,mem,host.local\n,,0,2029-12-31T23:59:10Z,2030-01-01T00:00:44Z,2029-12-31T23:59:20Z,51.45,used_percent,mem,host.local\n,,0,2029-12-31T23:59:10Z,2030-01-01T00:00:44Z,2029-12-31T23:59:30Z,48.3,used_percent,mem,host.local\n,,0,2029-12-31T23:59:10Z,2030-01-01T00:00:44Z,2029-12-31T23:59:40Z,49.34,used_percent,mem,host.local\n,,0,2029-12-31T23:59:10Z,2030-01-01T00:00:44Z,2029-12-31T23:59:50Z,49.06,used_percent,mem,host.local\n,,0,2029-12-31T23:59:10Z,2030-01-01T00:00:44Z,2030-01-01T00:00:00Z,50.75,used_percent,mem,host.local\n\"",
+					Source: "outData =\n    \"\n#group,false,false,true,true,false,false,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string\n#default,_result,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_measurement,host\n,,0,2029-12-31T23:59:10Z,2030-01-01T00:00:44Z,2029-12-31T23:59:10Z,50.12,used_percent,mem,host.local\n,,0,2029-12-31T23:59:10Z,2030-01-01T00:00:44Z,2029-12-31T23:59:20Z,51.45,used_percent,mem,host.local\n,,0,2029-12-31T23:59:10Z,2030-01-01T00:00:44Z,2029-12-31T23:59:30Z,48.3,used_percent,mem,host.local\n,,0,2029-12-31T23:59:10Z,2030-01-01T00:00:44Z,2029-12-31T23:59:40Z,49.34,used_percent,mem,host.local\n,,0,2029-12-31T23:59:10Z,2030-01-01T00:00:44Z,2029-12-31T23:59:50Z,49.06,used_percent,mem,host.local\n,,0,2029-12-31T23:59:10Z,2030-01-01T00:00:44Z,2030-01-01T00:00:00Z,50.75,used_percent,mem,host.local\n\"",
 					Start: ast.Position{
 						Column: 1,
-						Line:   22,
+						Line:   23,
 					},
 				},
 			},
@@ -204,13 +204,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 8,
-							Line:   22,
+							Line:   23,
 						},
 						File:   "alignToNow_test.flux",
 						Source: "outData",
 						Start: ast.Position{
 							Column: 1,
-							Line:   22,
+							Line:   23,
 						},
 					},
 				},
@@ -223,13 +223,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 2,
-							Line:   33,
+							Line:   35,
 						},
 						File:   "alignToNow_test.flux",
 						Source: "\"\n#group,false,false,true,true,false,false,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string\n#default,_result,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_measurement,host\n,,0,2029-12-31T23:59:10Z,2030-01-01T00:00:44Z,2029-12-31T23:59:10Z,50.12,used_percent,mem,host.local\n,,0,2029-12-31T23:59:10Z,2030-01-01T00:00:44Z,2029-12-31T23:59:20Z,51.45,used_percent,mem,host.local\n,,0,2029-12-31T23:59:10Z,2030-01-01T00:00:44Z,2029-12-31T23:59:30Z,48.3,used_percent,mem,host.local\n,,0,2029-12-31T23:59:10Z,2030-01-01T00:00:44Z,2029-12-31T23:59:40Z,49.34,used_percent,mem,host.local\n,,0,2029-12-31T23:59:10Z,2030-01-01T00:00:44Z,2029-12-31T23:59:50Z,49.06,used_percent,mem,host.local\n,,0,2029-12-31T23:59:10Z,2030-01-01T00:00:44Z,2030-01-01T00:00:00Z,50.75,used_percent,mem,host.local\n\"",
 						Start: ast.Position{
-							Column: 11,
-							Line:   22,
+							Column: 5,
+							Line:   24,
 						},
 					},
 				},
@@ -241,14 +241,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
-						Column: 27,
-						Line:   37,
+						Column: 31,
+						Line:   40,
 					},
 					File:   "alignToNow_test.flux",
-					Source: "t_sample_alignToNow = (table=<-) => table\n    |> range(start: 2018-05-22T19:53:26Z, stop: 2018-05-22T19:55:00Z)\n    |> sample.alignToNow()",
+					Source: "t_sample_alignToNow = (table=<-) =>\n    table\n        |> range(start: 2018-05-22T19:53:26Z, stop: 2018-05-22T19:55:00Z)\n        |> sample.alignToNow()",
 					Start: ast.Position{
 						Column: 1,
-						Line:   35,
+						Line:   37,
 					},
 				},
 			},
@@ -259,13 +259,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 20,
-							Line:   35,
+							Line:   37,
 						},
 						File:   "alignToNow_test.flux",
 						Source: "t_sample_alignToNow",
 						Start: ast.Position{
 							Column: 1,
-							Line:   35,
+							Line:   37,
 						},
 					},
 				},
@@ -278,14 +278,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 27,
-							Line:   37,
+							Column: 31,
+							Line:   40,
 						},
 						File:   "alignToNow_test.flux",
-						Source: "(table=<-) => table\n    |> range(start: 2018-05-22T19:53:26Z, stop: 2018-05-22T19:55:00Z)\n    |> sample.alignToNow()",
+						Source: "(table=<-) =>\n    table\n        |> range(start: 2018-05-22T19:53:26Z, stop: 2018-05-22T19:55:00Z)\n        |> sample.alignToNow()",
 						Start: ast.Position{
 							Column: 23,
-							Line:   35,
+							Line:   37,
 						},
 					},
 				},
@@ -297,14 +297,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 42,
-										Line:   35,
+										Column: 10,
+										Line:   38,
 									},
 									File:   "alignToNow_test.flux",
 									Source: "table",
 									Start: ast.Position{
-										Column: 37,
-										Line:   35,
+										Column: 5,
+										Line:   38,
 									},
 								},
 							},
@@ -315,14 +315,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 70,
-									Line:   36,
+									Column: 74,
+									Line:   39,
 								},
 								File:   "alignToNow_test.flux",
-								Source: "table\n    |> range(start: 2018-05-22T19:53:26Z, stop: 2018-05-22T19:55:00Z)",
+								Source: "table\n        |> range(start: 2018-05-22T19:53:26Z, stop: 2018-05-22T19:55:00Z)",
 								Start: ast.Position{
-									Column: 37,
-									Line:   35,
+									Column: 5,
+									Line:   38,
 								},
 							},
 						},
@@ -333,14 +333,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 69,
-											Line:   36,
+											Column: 73,
+											Line:   39,
 										},
 										File:   "alignToNow_test.flux",
 										Source: "start: 2018-05-22T19:53:26Z, stop: 2018-05-22T19:55:00Z",
 										Start: ast.Position{
-											Column: 14,
-											Line:   36,
+											Column: 18,
+											Line:   39,
 										},
 									},
 								},
@@ -351,14 +351,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 41,
-												Line:   36,
+												Column: 45,
+												Line:   39,
 											},
 											File:   "alignToNow_test.flux",
 											Source: "start: 2018-05-22T19:53:26Z",
 											Start: ast.Position{
-												Column: 14,
-												Line:   36,
+												Column: 18,
+												Line:   39,
 											},
 										},
 									},
@@ -369,14 +369,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 19,
-													Line:   36,
+													Column: 23,
+													Line:   39,
 												},
 												File:   "alignToNow_test.flux",
 												Source: "start",
 												Start: ast.Position{
-													Column: 14,
-													Line:   36,
+													Column: 18,
+													Line:   39,
 												},
 											},
 										},
@@ -389,14 +389,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 41,
-													Line:   36,
+													Column: 45,
+													Line:   39,
 												},
 												File:   "alignToNow_test.flux",
 												Source: "2018-05-22T19:53:26Z",
 												Start: ast.Position{
-													Column: 21,
-													Line:   36,
+													Column: 25,
+													Line:   39,
 												},
 											},
 										},
@@ -408,14 +408,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 69,
-												Line:   36,
+												Column: 73,
+												Line:   39,
 											},
 											File:   "alignToNow_test.flux",
 											Source: "stop: 2018-05-22T19:55:00Z",
 											Start: ast.Position{
-												Column: 43,
-												Line:   36,
+												Column: 47,
+												Line:   39,
 											},
 										},
 									},
@@ -426,14 +426,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 47,
-													Line:   36,
+													Column: 51,
+													Line:   39,
 												},
 												File:   "alignToNow_test.flux",
 												Source: "stop",
 												Start: ast.Position{
-													Column: 43,
-													Line:   36,
+													Column: 47,
+													Line:   39,
 												},
 											},
 										},
@@ -446,14 +446,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 69,
-													Line:   36,
+													Column: 73,
+													Line:   39,
 												},
 												File:   "alignToNow_test.flux",
 												Source: "2018-05-22T19:55:00Z",
 												Start: ast.Position{
-													Column: 49,
-													Line:   36,
+													Column: 53,
+													Line:   39,
 												},
 											},
 										},
@@ -468,14 +468,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 70,
-										Line:   36,
+										Column: 74,
+										Line:   39,
 									},
 									File:   "alignToNow_test.flux",
 									Source: "range(start: 2018-05-22T19:53:26Z, stop: 2018-05-22T19:55:00Z)",
 									Start: ast.Position{
-										Column: 8,
-										Line:   36,
+										Column: 12,
+										Line:   39,
 									},
 								},
 							},
@@ -485,14 +485,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 13,
-											Line:   36,
+											Column: 17,
+											Line:   39,
 										},
 										File:   "alignToNow_test.flux",
 										Source: "range",
 										Start: ast.Position{
-											Column: 8,
-											Line:   36,
+											Column: 12,
+											Line:   39,
 										},
 									},
 								},
@@ -507,14 +507,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 27,
-								Line:   37,
+								Column: 31,
+								Line:   40,
 							},
 							File:   "alignToNow_test.flux",
-							Source: "table\n    |> range(start: 2018-05-22T19:53:26Z, stop: 2018-05-22T19:55:00Z)\n    |> sample.alignToNow()",
+							Source: "table\n        |> range(start: 2018-05-22T19:53:26Z, stop: 2018-05-22T19:55:00Z)\n        |> sample.alignToNow()",
 							Start: ast.Position{
-								Column: 37,
-								Line:   35,
+								Column: 5,
+								Line:   38,
 							},
 						},
 					},
@@ -525,14 +525,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 27,
-									Line:   37,
+									Column: 31,
+									Line:   40,
 								},
 								File:   "alignToNow_test.flux",
 								Source: "sample.alignToNow()",
 								Start: ast.Position{
-									Column: 8,
-									Line:   37,
+									Column: 12,
+									Line:   40,
 								},
 							},
 						},
@@ -542,14 +542,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 25,
-										Line:   37,
+										Column: 29,
+										Line:   40,
 									},
 									File:   "alignToNow_test.flux",
 									Source: "sample.alignToNow",
 									Start: ast.Position{
-										Column: 8,
-										Line:   37,
+										Column: 12,
+										Line:   40,
 									},
 								},
 							},
@@ -560,14 +560,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 14,
-											Line:   37,
+											Column: 18,
+											Line:   40,
 										},
 										File:   "alignToNow_test.flux",
 										Source: "sample",
 										Start: ast.Position{
-											Column: 8,
-											Line:   37,
+											Column: 12,
+											Line:   40,
 										},
 									},
 								},
@@ -579,14 +579,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 25,
-											Line:   37,
+											Column: 29,
+											Line:   40,
 										},
 										File:   "alignToNow_test.flux",
 										Source: "alignToNow",
 										Start: ast.Position{
-											Column: 15,
-											Line:   37,
+											Column: 19,
+											Line:   40,
 										},
 									},
 								},
@@ -606,13 +606,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 32,
-								Line:   35,
+								Line:   37,
 							},
 							File:   "alignToNow_test.flux",
 							Source: "table=<-",
 							Start: ast.Position{
 								Column: 24,
-								Line:   35,
+								Line:   37,
 							},
 						},
 					},
@@ -624,13 +624,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 29,
-									Line:   35,
+									Line:   37,
 								},
 								File:   "alignToNow_test.flux",
 								Source: "table",
 								Start: ast.Position{
 									Column: 24,
-									Line:   35,
+									Line:   37,
 								},
 							},
 						},
@@ -643,13 +643,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 32,
-								Line:   35,
+								Line:   37,
 							},
 							File:   "alignToNow_test.flux",
 							Source: "<-",
 							Start: ast.Position{
 								Column: 30,
-								Line:   35,
+								Line:   37,
 							},
 						},
 					}},
@@ -663,14 +663,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 138,
-							Line:   39,
+							Column: 110,
+							Line:   43,
 						},
 						File:   "alignToNow_test.flux",
-						Source: "_sample_alignToNow = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_sample_alignToNow})",
+						Source: "_sample_alignToNow = () =>\n    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_sample_alignToNow})",
 						Start: ast.Position{
 							Column: 6,
-							Line:   39,
+							Line:   42,
 						},
 					},
 				},
@@ -681,13 +681,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 24,
-								Line:   39,
+								Line:   42,
 							},
 							File:   "alignToNow_test.flux",
 							Source: "_sample_alignToNow",
 							Start: ast.Position{
 								Column: 6,
-								Line:   39,
+								Line:   42,
 							},
 						},
 					},
@@ -700,14 +700,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 138,
-								Line:   39,
+								Column: 110,
+								Line:   43,
 							},
 							File:   "alignToNow_test.flux",
-							Source: "() => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_sample_alignToNow})",
+							Source: "() =>\n    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_sample_alignToNow})",
 							Start: ast.Position{
 								Column: 27,
-								Line:   39,
+								Line:   42,
 							},
 						},
 					},
@@ -717,14 +717,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 138,
-									Line:   39,
+									Column: 110,
+									Line:   43,
 								},
 								File:   "alignToNow_test.flux",
 								Source: "({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_sample_alignToNow})",
 								Start: ast.Position{
-									Column: 33,
-									Line:   39,
+									Column: 5,
+									Line:   43,
 								},
 							},
 						},
@@ -734,14 +734,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 137,
-										Line:   39,
+										Column: 109,
+										Line:   43,
 									},
 									File:   "alignToNow_test.flux",
 									Source: "{input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_sample_alignToNow}",
 									Start: ast.Position{
-										Column: 34,
-										Line:   39,
+										Column: 6,
+										Line:   43,
 									},
 								},
 							},
@@ -752,14 +752,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 74,
-											Line:   39,
+											Column: 46,
+											Line:   43,
 										},
 										File:   "alignToNow_test.flux",
 										Source: "input: testing.loadStorage(csv: inData)",
 										Start: ast.Position{
-											Column: 35,
-											Line:   39,
+											Column: 7,
+											Line:   43,
 										},
 									},
 								},
@@ -770,14 +770,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 40,
-												Line:   39,
+												Column: 12,
+												Line:   43,
 											},
 											File:   "alignToNow_test.flux",
 											Source: "input",
 											Start: ast.Position{
-												Column: 35,
-												Line:   39,
+												Column: 7,
+												Line:   43,
 											},
 										},
 									},
@@ -791,14 +791,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 73,
-													Line:   39,
+													Column: 45,
+													Line:   43,
 												},
 												File:   "alignToNow_test.flux",
 												Source: "csv: inData",
 												Start: ast.Position{
-													Column: 62,
-													Line:   39,
+													Column: 34,
+													Line:   43,
 												},
 											},
 										},
@@ -809,14 +809,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 73,
-														Line:   39,
+														Column: 45,
+														Line:   43,
 													},
 													File:   "alignToNow_test.flux",
 													Source: "csv: inData",
 													Start: ast.Position{
-														Column: 62,
-														Line:   39,
+														Column: 34,
+														Line:   43,
 													},
 												},
 											},
@@ -827,14 +827,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 65,
-															Line:   39,
+															Column: 37,
+															Line:   43,
 														},
 														File:   "alignToNow_test.flux",
 														Source: "csv",
 														Start: ast.Position{
-															Column: 62,
-															Line:   39,
+															Column: 34,
+															Line:   43,
 														},
 													},
 												},
@@ -847,14 +847,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 73,
-															Line:   39,
+															Column: 45,
+															Line:   43,
 														},
 														File:   "alignToNow_test.flux",
 														Source: "inData",
 														Start: ast.Position{
-															Column: 67,
-															Line:   39,
+															Column: 39,
+															Line:   43,
 														},
 													},
 												},
@@ -869,14 +869,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 74,
-												Line:   39,
+												Column: 46,
+												Line:   43,
 											},
 											File:   "alignToNow_test.flux",
 											Source: "testing.loadStorage(csv: inData)",
 											Start: ast.Position{
-												Column: 42,
-												Line:   39,
+												Column: 14,
+												Line:   43,
 											},
 										},
 									},
@@ -886,14 +886,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 61,
-													Line:   39,
+													Column: 33,
+													Line:   43,
 												},
 												File:   "alignToNow_test.flux",
 												Source: "testing.loadStorage",
 												Start: ast.Position{
-													Column: 42,
-													Line:   39,
+													Column: 14,
+													Line:   43,
 												},
 											},
 										},
@@ -904,14 +904,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 49,
-														Line:   39,
+														Column: 21,
+														Line:   43,
 													},
 													File:   "alignToNow_test.flux",
 													Source: "testing",
 													Start: ast.Position{
-														Column: 42,
-														Line:   39,
+														Column: 14,
+														Line:   43,
 													},
 												},
 											},
@@ -923,14 +923,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 61,
-														Line:   39,
+														Column: 33,
+														Line:   43,
 													},
 													File:   "alignToNow_test.flux",
 													Source: "loadStorage",
 													Start: ast.Position{
-														Column: 50,
-														Line:   39,
+														Column: 22,
+														Line:   43,
 													},
 												},
 											},
@@ -947,14 +947,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 111,
-											Line:   39,
+											Column: 83,
+											Line:   43,
 										},
 										File:   "alignToNow_test.flux",
 										Source: "want: testing.loadMem(csv: outData)",
 										Start: ast.Position{
-											Column: 76,
-											Line:   39,
+											Column: 48,
+											Line:   43,
 										},
 									},
 								},
@@ -965,14 +965,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 80,
-												Line:   39,
+												Column: 52,
+												Line:   43,
 											},
 											File:   "alignToNow_test.flux",
 											Source: "want",
 											Start: ast.Position{
-												Column: 76,
-												Line:   39,
+												Column: 48,
+												Line:   43,
 											},
 										},
 									},
@@ -986,14 +986,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 110,
-													Line:   39,
+													Column: 82,
+													Line:   43,
 												},
 												File:   "alignToNow_test.flux",
 												Source: "csv: outData",
 												Start: ast.Position{
-													Column: 98,
-													Line:   39,
+													Column: 70,
+													Line:   43,
 												},
 											},
 										},
@@ -1004,14 +1004,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 110,
-														Line:   39,
+														Column: 82,
+														Line:   43,
 													},
 													File:   "alignToNow_test.flux",
 													Source: "csv: outData",
 													Start: ast.Position{
-														Column: 98,
-														Line:   39,
+														Column: 70,
+														Line:   43,
 													},
 												},
 											},
@@ -1022,14 +1022,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 101,
-															Line:   39,
+															Column: 73,
+															Line:   43,
 														},
 														File:   "alignToNow_test.flux",
 														Source: "csv",
 														Start: ast.Position{
-															Column: 98,
-															Line:   39,
+															Column: 70,
+															Line:   43,
 														},
 													},
 												},
@@ -1042,14 +1042,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 110,
-															Line:   39,
+															Column: 82,
+															Line:   43,
 														},
 														File:   "alignToNow_test.flux",
 														Source: "outData",
 														Start: ast.Position{
-															Column: 103,
-															Line:   39,
+															Column: 75,
+															Line:   43,
 														},
 													},
 												},
@@ -1064,14 +1064,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 111,
-												Line:   39,
+												Column: 83,
+												Line:   43,
 											},
 											File:   "alignToNow_test.flux",
 											Source: "testing.loadMem(csv: outData)",
 											Start: ast.Position{
-												Column: 82,
-												Line:   39,
+												Column: 54,
+												Line:   43,
 											},
 										},
 									},
@@ -1081,14 +1081,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 97,
-													Line:   39,
+													Column: 69,
+													Line:   43,
 												},
 												File:   "alignToNow_test.flux",
 												Source: "testing.loadMem",
 												Start: ast.Position{
-													Column: 82,
-													Line:   39,
+													Column: 54,
+													Line:   43,
 												},
 											},
 										},
@@ -1099,14 +1099,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 89,
-														Line:   39,
+														Column: 61,
+														Line:   43,
 													},
 													File:   "alignToNow_test.flux",
 													Source: "testing",
 													Start: ast.Position{
-														Column: 82,
-														Line:   39,
+														Column: 54,
+														Line:   43,
 													},
 												},
 											},
@@ -1118,14 +1118,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 97,
-														Line:   39,
+														Column: 69,
+														Line:   43,
 													},
 													File:   "alignToNow_test.flux",
 													Source: "loadMem",
 													Start: ast.Position{
-														Column: 90,
-														Line:   39,
+														Column: 62,
+														Line:   43,
 													},
 												},
 											},
@@ -1142,14 +1142,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 136,
-											Line:   39,
+											Column: 108,
+											Line:   43,
 										},
 										File:   "alignToNow_test.flux",
 										Source: "fn: t_sample_alignToNow",
 										Start: ast.Position{
-											Column: 113,
-											Line:   39,
+											Column: 85,
+											Line:   43,
 										},
 									},
 								},
@@ -1160,14 +1160,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 115,
-												Line:   39,
+												Column: 87,
+												Line:   43,
 											},
 											File:   "alignToNow_test.flux",
 											Source: "fn",
 											Start: ast.Position{
-												Column: 113,
-												Line:   39,
+												Column: 85,
+												Line:   43,
 											},
 										},
 									},
@@ -1180,14 +1180,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 136,
-												Line:   39,
+												Column: 108,
+												Line:   43,
 											},
 											File:   "alignToNow_test.flux",
 											Source: "t_sample_alignToNow",
 											Start: ast.Position{
-												Column: 117,
-												Line:   39,
+												Column: 89,
+												Line:   43,
 											},
 										},
 									},
@@ -1210,14 +1210,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
-						Column: 138,
-						Line:   39,
+						Column: 110,
+						Line:   43,
 					},
 					File:   "alignToNow_test.flux",
-					Source: "test _sample_alignToNow = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_sample_alignToNow})",
+					Source: "test _sample_alignToNow = () =>\n    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_sample_alignToNow})",
 					Start: ast.Position{
 						Column: 1,
-						Line:   39,
+						Line:   42,
 					},
 				},
 			},

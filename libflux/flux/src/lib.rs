@@ -14,8 +14,9 @@ extern crate pretty_assertions;
 
 use std::{ffi::*, mem, os::raw::c_char};
 
-use anyhow::{self, bail, Result};
+use anyhow::anyhow;
 use once_cell::sync::Lazy;
+use thiserror::Error;
 
 pub use fluxcore::{ast, formatter, scanner, semantic, *};
 use fluxcore::{
@@ -26,46 +27,58 @@ use fluxcore::{
             semantic_generated::fbsemantic as fb,
             types::{build_env, build_type},
         },
+        import::{Importer, Packages},
         nodes::{Package, Symbol},
         sub::Substitution,
-        types::{MonoType, PolyType, TvarKinds},
-        Analyzer, AnalyzerConfig, ExportEnvironment,
+        types::{MonoType, PolyType, SemanticMap, TvarKinds},
+        Analyzer, AnalyzerConfig, PackageExports,
     },
 };
+
+/// Result type for flux
+pub type Result<T, E = Error> = std::result::Result<T, E>;
+
+/// Error type for flux
+#[derive(Error, Debug)]
+pub enum Error {
+    /// Semantic error
+    #[error(transparent)]
+    Semantic(#[from] semantic::FileErrors),
+
+    /// Other errors that do not have a dedicated variant
+    #[error(transparent)]
+    Other(#[from] anyhow::Error),
+}
 
 use crate::semantic::flatbuffers::semantic_generated::fbsemantic::MonoTypeHolderArgs;
 
 /// Prelude are the names and types of values that are inscope in all Flux scripts.
-pub fn prelude() -> Option<ExportEnvironment> {
+pub fn prelude() -> Option<PackageExports> {
     let buf = include_bytes!(concat!(env!("OUT_DIR"), "/prelude.data"));
     flatbuffers::root::<fb::TypeEnvironment>(buf)
         .unwrap()
         .into()
 }
 
-static PRELUDE: Lazy<Option<ExportEnvironment>> = Lazy::new(prelude);
+static PRELUDE: Lazy<Option<PackageExports>> = Lazy::new(prelude);
 
 /// Imports is a map of import path to types of packages.
-pub fn imports() -> Option<ExportEnvironment> {
+pub fn imports() -> Option<Packages> {
     let buf = include_bytes!(concat!(env!("OUT_DIR"), "/stdlib.data"));
-    flatbuffers::root::<fb::TypeEnvironment>(buf)
-        .unwrap()
-        .into()
+    flatbuffers::root::<fb::Packages>(buf).unwrap().into()
 }
 
 /// Creates a new analyzer that can semantically analyze Flux source code.
 ///
 /// The analyzer is aware of the stdlib and prelude.
-pub fn new_semantic_analyzer(
-    config: AnalyzerConfig,
-) -> Result<Analyzer<'static, ExportEnvironment>> {
+pub fn new_semantic_analyzer(config: AnalyzerConfig) -> Result<Analyzer<'static, Packages>> {
     let env = match &*PRELUDE {
         Some(prelude) => prelude,
-        None => bail!("missing prelude"),
+        None => return Err(anyhow!("missing prelude").into()),
     };
     let importer = match imports() {
         Some(imports) => imports,
-        None => bail!("missing stdlib imports"),
+        None => return Err(anyhow!("missing stdlib inports").into()),
     };
     Ok(Analyzer::new(Environment::from(env), importer, config))
 }
@@ -73,19 +86,18 @@ pub fn new_semantic_analyzer(
 /// An error handle designed to allow passing `Error` instances to library
 /// consumers across language boundaries.
 pub struct ErrorHandle {
-    /// A heap-allocated `Error`
-    pub err: CString,
+    /// A heap-allocated `Error` message
+    message: CString,
+
+    /// The actual error
+    err: Error,
 }
 
-impl From<anyhow::Error> for Box<ErrorHandle> {
-    fn from(mut err: anyhow::Error) -> Self {
-        (&mut err).into()
-    }
-}
-impl From<&mut anyhow::Error> for Box<ErrorHandle> {
-    fn from(err: &mut anyhow::Error) -> Self {
+impl From<Error> for Box<ErrorHandle> {
+    fn from(err: Error) -> Self {
         Box::new(ErrorHandle {
-            err: CString::new(format!("{}", err)).unwrap(),
+            message: CString::new(format!("{}", err)).unwrap(),
+            err,
         })
     }
 }
@@ -157,7 +169,7 @@ pub extern "C" fn flux_ast_format(
     for file in &ast_pkg.files {
         let s = match formatter::convert_to_string(file) {
             Ok(v) => v,
-            Err(e) => return Some(e.into()),
+            Err(e) => return Some(Error::from(e).into()),
         };
         out_str.push_str(&s);
     }
@@ -165,7 +177,7 @@ pub extern "C" fn flux_ast_format(
     let len = out_str.len();
     let cstr = match CString::new(out_str) {
         Ok(bytes) => bytes,
-        Err(e) => return Some(anyhow::Error::from(e).into()),
+        Err(e) => return Some(Error::from(anyhow::Error::from(e)).into()),
     };
     out.data = cstr.into_raw() as *mut u8;
     out.len = len;
@@ -183,7 +195,7 @@ pub unsafe extern "C" fn flux_ast_get_error(
 ) -> Option<Box<ErrorHandle>> {
     let ast_pkg = ast::walk::Node::Package(&*ast_pkg);
     match ast::check::check(ast_pkg) {
-        Err(e) => Some(anyhow::Error::from(e).into()),
+        Err(e) => Some(Error::from(anyhow::Error::from(e)).into()),
         Ok(_) => None,
     }
 }
@@ -217,7 +229,7 @@ pub unsafe extern "C" fn flux_parse_json(
             *out_pkg = Some(Box::new(pkg));
             None
         }
-        Err(err) => Some(anyhow::Error::from(err).into()),
+        Err(err) => Some(Error::from(anyhow::Error::from(err)).into()),
     }
 }
 
@@ -235,7 +247,7 @@ pub unsafe extern "C" fn flux_ast_marshal_json(
     let data = match serde_json::to_vec(ast_pkg) {
         Ok(v) => v,
         Err(err) => {
-            return Some(anyhow::Error::from(err).into());
+            return Some(Error::from(anyhow::Error::from(err)).into());
         }
     };
 
@@ -260,7 +272,7 @@ pub unsafe extern "C" fn flux_ast_marshal_fb(
     let (mut vec, offset) = match ast::flatbuffers::serialize(ast_pkg) {
         Ok(vec_offset) => vec_offset,
         Err(err) => {
-            return Some(err.into());
+            return Some(Error::from(err).into());
         }
     };
 
@@ -292,7 +304,7 @@ pub unsafe extern "C" fn flux_semantic_marshal_fb(
     let (mut vec, offset) = match semantic::flatbuffers::serialize_pkg(sem_pkg) {
         Ok(vec_offset) => vec_offset,
         Err(err) => {
-            return Some(err.into());
+            return Some(Error::from(err).into());
         }
     };
 
@@ -311,7 +323,21 @@ pub unsafe extern "C" fn flux_semantic_marshal_fb(
 /// parameter
 #[no_mangle]
 pub unsafe extern "C" fn flux_error_str(errh: &ErrorHandle) -> *const c_char {
-    errh.err.as_ptr()
+    errh.message.as_ptr()
+}
+
+/// flux_error_print prints the error message associated with the given error to stdout.
+///
+/// # Safety
+///
+/// This function is unsafe because it dereferences a raw pointer passed as a
+/// parameter
+#[no_mangle]
+pub unsafe extern "C" fn flux_error_print(errh: &ErrorHandle) {
+    match &errh.err {
+        Error::Semantic(err) => err.print(),
+        Error::Other(err) => println!("{}", err),
+    }
 }
 
 /// # Safety
@@ -332,7 +358,7 @@ pub unsafe extern "C" fn flux_merge_ast_pkgs(
 
     match merge_packages(out_pkg, in_pkg) {
         Ok(_) => None,
-        Err(e) => Some(e.into()),
+        Err(e) => Some(Error::from(e).into()),
     }
 }
 
@@ -402,11 +428,11 @@ pub unsafe extern "C" fn flux_find_var_type(
 fn new_stateful_analyzer() -> Result<StatefulAnalyzer> {
     let env = match prelude() {
         Some(prelude) => prelude,
-        None => bail!("missing prelude"),
+        None => return Err(anyhow!("missing prelude").into()),
     };
     let imports = match imports() {
         Some(imports) => imports,
-        None => bail!("missing stdlib imports"),
+        None => return Err(anyhow!("missing stdlib inports").into()),
     };
     Ok(StatefulAnalyzer { env, imports })
 }
@@ -414,8 +440,8 @@ fn new_stateful_analyzer() -> Result<StatefulAnalyzer> {
 /// StatefulAnalyzer updates its environment with the contents of any previously analyzed package.
 /// This enables uses cases where analysis is performed iteratively, for example in a REPL.
 pub struct StatefulAnalyzer {
-    env: ExportEnvironment,
-    imports: ExportEnvironment,
+    env: PackageExports,
+    imports: Packages,
 }
 
 impl StatefulAnalyzer {
@@ -447,8 +473,8 @@ impl StatefulAnalyzer {
 
                 // A failure should have already happened if any of these
                 // imports would have failed.
-                if let Some(poly) = self.imports.lookup(path) {
-                    env.add(dec.import_symbol.to_string(), poly.to_owned());
+                if let Some(typ) = self.imports.import(path) {
+                    env.add(dec.import_symbol.clone(), typ);
                 }
             }
         }
@@ -478,20 +504,41 @@ pub extern "C" fn flux_free_stateful_analyzer(_: Option<Box<Result<StatefulAnaly
 #[allow(clippy::boxed_local)]
 pub unsafe extern "C" fn flux_analyze_with(
     analyzer: *mut Result<StatefulAnalyzer>,
+    csrc: *const c_char,
     ast_pkg: Box<ast::Package>,
     out_sem_pkg: *mut Option<Box<semantic::nodes::Package>>,
 ) -> Option<Box<ErrorHandle>> {
     let ast_pkg = *ast_pkg;
-    let analyzer = match &mut *analyzer {
+    let analyzer = &mut *analyzer;
+    let analyzer = match analyzer {
         Ok(a) => a,
-        Err(err) => {
-            return Some(err.into());
+        Err(_) => {
+            match mem::replace(
+                analyzer,
+                Err(Error::from(anyhow!("The error has already been return!"))),
+            ) {
+                Err(err) => {
+                    return Some(err.into());
+                }
+                Ok(_) => unreachable!(),
+            }
         }
+    };
+
+    let src = if csrc.is_null() {
+        None
+    } else {
+        Some(std::str::from_utf8(CStr::from_ptr(csrc).to_bytes()).unwrap())
     };
 
     let sem_pkg = Box::new(match analyzer.analyze(ast_pkg) {
         Ok(sem_pkg) => sem_pkg,
-        Err(err) => {
+        Err(mut err) => {
+            if let Some(src) = src {
+                if let Error::Semantic(err) = &mut err {
+                    err.source = Some(src.into());
+                }
+            }
             return Some(err.into());
         }
     });
@@ -517,25 +564,25 @@ pub fn infer_with_env(
     ast_pkg: ast::Package,
     mut sub: Substitution,
     env: Option<Environment<'static>>,
-) -> Result<(ExportEnvironment, Package)> {
-    let prelude = match prelude() {
+) -> Result<(Environment<'static>, Package)> {
+    let prelude = match &*PRELUDE {
         Some(prelude) => prelude,
-        None => bail!("missing prelude"),
+        None => return Err(anyhow!("missing prelude").into()),
     };
     let env = if let Some(mut e) = env {
-        e.parent = Some(Box::new(Environment::from(&prelude)));
+        e.external = Some(prelude);
         e
     } else {
-        Environment::from(&prelude)
+        Environment::from(prelude)
     };
     let importer = match imports() {
         Some(imports) => imports,
-        None => bail!("missing stdlib imports"),
+        None => return Err(anyhow!("missing stdlib inports").into()),
     };
     let mut analyzer = Analyzer::new_with_defaults(env, importer);
-    analyzer
-        .analyze_ast_with_substitution(ast_pkg, &mut sub)
-        .map_err(anyhow::Error::from)
+    let (_, pkg) = analyzer.analyze_ast_with_substitution(ast_pkg, &mut sub)?;
+    let (env, _) = analyzer.drop();
+    Ok((env, pkg))
 }
 
 /// Given a Flux source and a variable name, find out the type of that variable in the Flux source code.
@@ -556,7 +603,7 @@ pub fn find_var_type(ast_pkg: ast::Package, var_name: String) -> Result<MonoType
             expr: MonoType::Var(tvar),
         },
     );
-    infer_with_env(ast_pkg, sub, Some(env))
+    infer_with_env(ast_pkg, sub, Some(Environment::new(env)))
         .map(|(env, _)| env.lookup(&var_name).unwrap().expr.clone())
 }
 
@@ -565,7 +612,14 @@ pub fn find_var_type(ast_pkg: ast::Package, var_name: String) -> Result<MonoType
 /// This function is unsafe because it dereferences a raw pointer.
 #[no_mangle]
 pub unsafe extern "C" fn flux_get_env_stdlib(buf: *mut flux_buffer_t) {
-    let env = imports().unwrap();
+    let imports = imports().unwrap();
+    let env = PackageExports::try_from(
+        imports
+            .into_iter()
+            .map(|(k, v)| (Symbol::from(k), v.typ()))
+            .collect::<SemanticMap<_, _>>(),
+    )
+    .unwrap();
     let mut builder = flatbuffers::FlatBufferBuilder::new();
     let fb_type_env = build_env(&mut builder, env);
 
@@ -583,14 +637,12 @@ pub unsafe extern "C" fn flux_get_env_stdlib(buf: *mut flux_buffer_t) {
 mod tests {
     use fluxcore::{
         ast,
-        ast::get_err_type_expression,
         parser::Parser,
         semantic::{
             convert::convert_polytype,
             fresh::Fresher,
-            nodes::Symbol,
             sub::Substitution,
-            types::{MonoType, Property, Ptr, Record, Tvar, TvarMap},
+            types::{Label, MonoType, Property, Ptr, Record, Tvar, TvarMap},
         },
     };
 
@@ -652,23 +704,23 @@ mod tests {
         let mut ty = MonoType::from(Record::new(
             [
                 Property {
-                    k: "a".to_string(),
+                    k: Label::from("a"),
                     v: MonoType::Var(Tvar(4949)),
                 },
                 Property {
-                    k: "b".to_string(),
+                    k: Label::from("b"),
                     v: MonoType::Var(Tvar(4949)),
                 },
                 Property {
-                    k: "e".to_string(),
+                    k: Label::from("e"),
                     v: MonoType::Var(Tvar(4957)),
                 },
                 Property {
-                    k: "f".to_string(),
+                    k: Label::from("f"),
                     v: MonoType::Var(Tvar(4957)),
                 },
                 Property {
-                    k: "g".to_string(),
+                    k: Label::from("g"),
                     v: MonoType::Var(Tvar(4957)),
                 },
             ],
@@ -744,7 +796,7 @@ vint = v + 2
         let mut p = Parser::new(&source);
         let pkg: ast::Package = p.parse_file("".to_string()).into();
         let t = find_var_type(pkg, "v".into()).expect("Should be able to get a MonoType.");
-        assert_eq!(t, MonoType::Int);
+        assert_eq!(t, MonoType::INT);
 
         assert_eq!(serde_json::to_string_pretty(&t).unwrap(), "\"Int\"");
     }
@@ -822,7 +874,7 @@ from(bucket: v.bucket)
             error test@1:9-1:10: invalid expression: invalid token for primary expression: DIV
 
             error test@1:16-1:17: got unexpected token in string expression test@1:17-1:17: EOF"#]]
-        .assert_eq(&errh.unwrap().err.into_string().unwrap());
+        .assert_eq(&errh.unwrap().message.into_string().unwrap());
     }
 
     #[test]
@@ -852,19 +904,12 @@ from(bucket: v.bucket)
         let mut p = parser::Parser::new(code);
 
         let typ_expr = p.parse_type_expression();
-        let err = get_err_type_expression(typ_expr.clone());
-
-        if err != "" {
+        if let Err(err) = ast::check::check(ast::walk::Node::TypeExpression(&typ_expr)) {
             panic!("TypeExpression parsing failed. {:?}", err);
         }
         let want = convert_polytype(typ_expr, &mut Substitution::default()).unwrap();
 
-        assert_eq!(
-            want,
-            got.lookup(&Symbol::from("x"))
-                .expect("'x' not found")
-                .clone()
-        );
+        assert_eq!(want, got.lookup("x").expect("'x' not found").clone());
     }
 
     #[test]
@@ -895,9 +940,7 @@ from(bucket: v.bucket)
         let mut p = parser::Parser::new(code);
 
         let typ_expr = p.parse_type_expression();
-        let err = get_err_type_expression(typ_expr.clone());
-
-        if err != "" {
+        if let Err(err) = ast::check::check(ast::walk::Node::TypeExpression(&typ_expr)) {
             panic!("TypeExpression parsing failed for {:?}", err);
         }
         let want_a = convert_polytype(typ_expr, &mut Substitution::default()).unwrap();
@@ -913,9 +956,7 @@ from(bucket: v.bucket)
         let mut p = parser::Parser::new(code);
 
         let typ_expr = p.parse_type_expression();
-        let err = get_err_type_expression(typ_expr.clone());
-
-        if err != "" {
+        if let Err(err) = ast::check::check(ast::walk::Node::TypeExpression(&typ_expr)) {
             panic!("TypeExpression parsing failed for {:?}", err);
         }
         let want_b = convert_polytype(typ_expr, &mut Substitution::default()).unwrap();
@@ -931,31 +972,14 @@ from(bucket: v.bucket)
         let mut p = parser::Parser::new(code);
 
         let typ_expr = p.parse_type_expression();
-        let err = get_err_type_expression(typ_expr.clone());
-
-        if err != "" {
+        if let Err(err) = ast::check::check(ast::walk::Node::TypeExpression(&typ_expr)) {
             panic!("TypeExpression parsing failed for {:?}", err);
         }
         let want_c = convert_polytype(typ_expr, &mut Substitution::default()).unwrap();
 
-        assert_eq!(
-            want_a,
-            got.lookup(&Symbol::from("a"))
-                .expect("'a' not found")
-                .clone()
-        );
-        assert_eq!(
-            want_b,
-            got.lookup(&Symbol::from("b"))
-                .expect("'b' not found")
-                .clone()
-        );
-        assert_eq!(
-            want_c,
-            got.lookup(&Symbol::from("c"))
-                .expect("'c' not found")
-                .clone()
-        );
+        assert_eq!(want_a, got.lookup("a").expect("'a' not found").clone());
+        assert_eq!(want_b, got.lookup("b").expect("'b' not found").clone());
+        assert_eq!(want_c, got.lookup("c").expect("'c' not found").clone());
     }
 
     #[test]

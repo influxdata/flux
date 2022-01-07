@@ -29,7 +29,7 @@ package influxdb
 //      The cardinality calculation excludes points that match the specified start time.
 //      Use a relative duration or absolute time. For example, `-1h` or `2019-08-28T22:00:00Z`.
 //      Durations are relative to `now()`. Default is `now()`.
-// 
+//
 // - predicate: Predicate function that filters records.
 //      Default is `(r) => true`.
 //
@@ -71,16 +71,19 @@ package influxdb
 // tags: metadata
 //
 builtin cardinality : (
-    ?bucket: string,
-    ?bucketID: string,
-    ?org: string,
-    ?orgID: string,
-    ?host: string,
-    ?token: string,
-    start: A,
-    ?stop: B,
-    ?predicate: (r: {T with _measurement: string, _field: string, _value: S}) => bool,
-) => [{_start: time, _stop: time, _value: int}] where A: Timeable, B: Timeable
+        ?bucket: string,
+        ?bucketID: string,
+        ?org: string,
+        ?orgID: string,
+        ?host: string,
+        ?token: string,
+        start: A,
+        ?stop: B,
+        ?predicate: (r: {T with _measurement: string, _field: string, _value: S}) => bool,
+    ) => [{_start: time, _stop: time, _value: int}]
+    where
+    A: Timeable,
+    B: Timeable
 
 // from queries data from an InfluxDB data source.
 //
@@ -101,29 +104,29 @@ builtin cardinality : (
 // ## Parameters
 // - bucket: Name of the bucket to query.
 //   _`bucket` and `bucketID` are mutually exclusive_.
-// 
+//
 //     **InfluxDB 1.x or Enterprise**: Provide an empty string (`""`).
-// 
+//
 // - bucketID: String-encoded bucket ID to query.
 //   _`bucket` and `bucketID` are mutually exclusive_.
 //
 //     **InfluxDB 1.x or Enterprise**: Provide an empty string (`""`).
 //
 // - host: URL of the InfluxDB instance to query.
-// 
+//
 //     See [InfluxDB Cloud regions](https://docs.influxdata.com/influxdb/cloud/reference/regions/)
 //     or [InfluxDB OSS URLs](https://docs.influxdata.com/influxdb/latest/reference/urls/).
-// 
+//
 // - org: Organization name.
 //   _`org` and `orgID` are mutually exclusive_.
-// 
+//
 //     **InfluxDB 1.x or Enterprise**: Provide an empty string (`""`).
-// 
+//
 // - orgID: String-encoded organization ID to query.
 //   _`org` and `orgID` are mutually exclusive_.
-// 
+//
 //     **InfluxDB 1.x or Enterprise**: Provide an empty string (`""`).
-// 
+//
 // - token: InfluxDB API token.
 //
 //     **InfluxDB 1.x or Enterprise**: If authentication is disabled, provide an
@@ -131,7 +134,7 @@ builtin cardinality : (
 //     username and password using the `<username>:<password>` syntax.
 //
 // ## Examples
-// 
+//
 // ### Query InfluxDB using the bucket name
 // ```no_run
 // from(bucket: "example-bucket")
@@ -159,13 +162,13 @@ builtin cardinality : (
 // tags: inputs
 //
 builtin from : (
-    ?bucket: string,
-    ?bucketID: string,
-    ?org: string,
-    ?orgID: string,
-    ?host: string,
-    ?token: string,
-) => [{B with _measurement: string, _field: string, _time: time, _value: A}]
+        ?bucket: string,
+        ?bucketID: string,
+        ?org: string,
+        ?orgID: string,
+        ?host: string,
+        ?token: string,
+    ) => [{B with _measurement: string, _field: string, _time: time, _value: A}]
 
 // to writes data to an InfluxDB Cloud or 2.x bucket.
 //
@@ -180,7 +183,7 @@ builtin from : (
 //
 // All other columns are written to InfluxDB as
 // [tags](https://docs.influxdata.com/influxdb/cloud/reference/key-concepts/data-elements/#tags).
-// 
+//
 // **Note**: to() ignores rows with null `_time` values and does not write them
 // to InfluxDB.
 //
@@ -194,17 +197,17 @@ builtin from : (
 // - bucketID: String-encoded bucket ID to to write to.
 //   _`bucket` and `bucketID` are mutually exclusive_.
 // - host: URL of the InfluxDB instance to write to.
-// 
+//
 //     See [InfluxDB Cloud regions](https://docs.influxdata.com/influxdb/cloud/reference/regions/)
 //     or [InfluxDB OSS URLs](https://docs.influxdata.com/influxdb/latest/reference/urls/).
 //
 //     `host` is required when writing to a remote InfluxDB instance.
 //     If specified, `token` is also required.
-// 
+//
 // - org: Organization name.
-//   _`org` and `orgID` are mutually exclusive_. 
+//   _`org` and `orgID` are mutually exclusive_.
 // - orgID: String-encoded organization ID to query.
-//   _`org` and `orgID` are mutually exclusive_. 
+//   _`org` and `orgID` are mutually exclusive_.
 // - token: InfluxDB API token.
 //
 //     **InfluxDB 1.x or Enterprise**: If authentication is disabled, provide an
@@ -212,7 +215,7 @@ builtin from : (
 //     username and password using the `<username>:<password>` syntax.
 //
 //     `token` is required when writing to another organization or when `host`
-//     is specified. 
+//     is specified.
 //
 // - timeColumn: Time column of the output. Default is `"_time"`.
 // - measurementColumn: Measurement column of the output. Default is `"_measurement"`.
@@ -287,18 +290,21 @@ builtin from : (
 // tags: outputs
 //
 builtin to : (
-    <-tables: [A],
-    ?bucket: string,
-    ?bucketID: string,
-    ?org: string,
-    ?orgID: string,
-    ?host: string,
-    ?token: string,
-    ?timeColumn: string,
-    ?measurementColumn: string,
-    ?tagColumns: [string],
-    ?fieldFn: (r: A) => B,
-) => [A] where A: Record, B: Record
+        <-tables: [A],
+        ?bucket: string,
+        ?bucketID: string,
+        ?org: string,
+        ?orgID: string,
+        ?host: string,
+        ?token: string,
+        ?timeColumn: string,
+        ?measurementColumn: string,
+        ?tagColumns: [string],
+        ?fieldFn: (r: A) => B,
+    ) => [A]
+    where
+    A: Record,
+    B: Record
 
 // buckets returns a list of buckets in the specified organization.
 //
@@ -312,10 +318,10 @@ builtin to : (
 //   _`org` and `orgID` are mutually exclusive_.
 //
 // - host: URL of the InfluxDB instance.
-// 
+//
 //     See [InfluxDB Cloud regions](https://docs.influxdata.com/influxdb/cloud/reference/regions/)
 //     or [InfluxDB OSS URLs](https://docs.influxdata.com/influxdb/latest/reference/urls/).
-//     
+//
 //     _`host` is required when `org` or `orgID` are specified._
 //
 // - token: InfluxDB API token.
@@ -323,7 +329,7 @@ builtin to : (
 //     _`token` is required when `host`, `org, or `orgID` are specified._
 //
 // ## Examples
-// 
+//
 // ### List buckets in an InfluxDB organization
 // ```no_run
 // buckets(
@@ -335,11 +341,16 @@ builtin to : (
 //
 // introduced: 0.16.0
 // tags: metadata
-// 
-builtin buckets : (?org: string, ?orgID: string, ?host: string, ?token: string) => [{
-    name: string,
-    id: string,
-    organizationID: string,
-    retentionPolicy: string,
-    retentionPeriod: int,
-}]
+//
+builtin buckets : (
+        ?org: string,
+        ?orgID: string,
+        ?host: string,
+        ?token: string,
+    ) => [{
+        name: string,
+        id: string,
+        organizationID: string,
+        retentionPolicy: string,
+        retentionPeriod: int,
+    }]

@@ -1,7 +1,31 @@
+// Package table provides tools working with Flux tables.
+//
+// introduced: 0.115.0
+//
 package table
 
 
-// fill will ensure that all tables within this stream have at least
-// one row. If a table has no rows, one row will be created with null values
-// for every column not part of the group key.
+// fill adds a single row to empty tables in a stream of tables.
+//
+// Columns that are in the group key are filled with the column value defined in the group key.
+// Columns not in the group key are filled with a null value.
+//
+// ## Parameters
+// - tables: Input data. Default is piped-forward data (`<-`).
+//
+// ## Examples
+// ### Fill empty tables
+// ```
+// import "experimental/table"
+// import "sampledata"
+//
+// data = sampledata.int()
+//     |> filter(fn: (r) => r.tag != "t2", onEmpty: "keep")
+//
+// < data
+// >     |> table.fill()
+// ```
+//
+// tags: transformations,table
+//
 builtin fill : (<-tables: [A]) => [A] where A: Record

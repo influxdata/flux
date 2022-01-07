@@ -6,7 +6,8 @@ import "contrib/RohanSreerama5/naiveBayesClassifier"
 
 option now = () => 2020-01-01T00:00:00Z
 
-inData = "#group,false,false,true,true,false,false,true,true,true,true
+inData =
+    "#group,false,false,true,true,false,false,true,true,true,true
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string
 #default,_result,,,,,,,,,
 ,result,table,_start,_stop,_time,_value,Animal_name,_field,_measurement,airborne
@@ -1532,7 +1533,8 @@ inData = "#group,false,false,true,true,false,false,true,true,true,true
 ,,1503,2020-01-01T08:00:00Z,2020-08-21T15:44:03.401997Z,2020-01-07T15:49:25.987892129Z,0,wren,fins,zoo-data,1
 
 "
-outData = "#group,false,false,false,false,false,true,false,true,true,false,false,false,false,false,false
+outData =
+    "#group,false,false,false,false,false,true,false,true,true,false,false,false,false,false,false
 #datatype,string,long,string,double,double,string,string,long,string,long,double,double,double,long,long
 #default,MAIN,,,,,,,,,,,,,,
 ,result,table,Animal_name,P_x_k,Probability,_field_Probability_table,_field_r,_value,airborne_P_k_x_class,airborne_P_value_x,p_k,p_x,sum,tc_P_k_x_class,tc_P_value_x
@@ -1556,7 +1558,9 @@ outData = "#group,false,false,false,false,false,true,false,true,true,false,false
 ,,3,crab,0.2631578947368421,0.17241379310344826,aquatic,aquatic,1,1,29,0.25675675675675674,0.3918918918918919,5,74,74
 
 "
-t_naive_bayes = (table=<-) => table
-    |> naiveBayesClassifier.naiveBayes(myClass: "airborne", myField: "aquatic", myMeasurement: "zoo-data")
+t_naive_bayes = (table=<-) =>
+    table
+        |> naiveBayesClassifier.naiveBayes(myClass: "airborne", myField: "aquatic", myMeasurement: "zoo-data")
 
-test _naive_bayes = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_naive_bayes})
+test _naive_bayes = () =>
+    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_naive_bayes})

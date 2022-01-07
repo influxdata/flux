@@ -1,7 +1,7 @@
 use pretty_assertions::assert_eq;
 
 use super::*;
-use crate::ast::tests::Locator;
+use crate::ast::{self, tests::Locator};
 
 #[test]
 fn test_parse_type_expression() {
@@ -1266,8 +1266,9 @@ fn test_parse_record_type_tvar_properties() {
 fn test_parse_record_unclosed_error() {
     let mut p = Parser::new(r#"(r:{A with a:int) => int"#);
     let parsed = p.parse_type_expression();
-    assert_eq!(
-        get_err_type_expression(parsed),
-        "expected RBRACE, got RPAREN".to_string()
+    expect_test::expect![["error @1:4-1:18: expected RBRACE, got RPAREN"]].assert_eq(
+        &ast::check::check(ast::walk::Node::TypeExpression(&parsed))
+            .unwrap_err()
+            .to_string(),
     );
 }

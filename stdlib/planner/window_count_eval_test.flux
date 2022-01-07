@@ -6,7 +6,8 @@ import "planner"
 
 option planner.disablePhysicalRules = ["PushDownWindowAggregateRule"]
 
-input = "
+input =
+    "
 #datatype,string,long,dateTime:RFC3339,string,string,string,double
 #group,false,false,false,true,true,true,false
 #default,_result,,,,,,
@@ -32,7 +33,8 @@ input = "
 ,,2,2018-05-22T19:53:56Z,system,host.local,load5,1.89
 ,,2,2018-05-22T19:54:16Z,system,host.local,load5,1.93
 "
-output = "
+output =
+    "
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,string,long
 #group,false,false,true,true,true,true,true,false
 #default,_result,,,,,,,
@@ -47,9 +49,11 @@ output = "
 ,,7,2018-05-22T19:53:40Z,2018-05-22T19:54:00Z,system,host.local,load5,3
 ,,8,2018-05-22T19:54:00Z,2018-05-22T19:54:20Z,system,host.local,load5,1
 "
-window_count_fn = (tables=<-) => tables
-    |> range(start: 0)
-    |> window(every: 20s)
-    |> count()
+window_count_fn = (tables=<-) =>
+    tables
+        |> range(start: 0)
+        |> window(every: 20s)
+        |> count()
 
-test window_count_evaluate = () => ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: window_count_fn})
+test window_count_evaluate = () =>
+    ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: window_count_fn})

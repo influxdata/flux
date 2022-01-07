@@ -5,7 +5,8 @@ import "testing"
 
 option now = () => 2030-01-01T00:00:00Z
 
-inData = "
+inData =
+    "
 #datatype,string,long,dateTime:RFC3339,string,string,string,string
 #group,false,false,false,true,false,false,true
 #default,_result,,,,,,
@@ -33,7 +34,8 @@ inData = "
 ,,3,2018-05-22T19:54:10Z,_m3,h4,n1,ff
 ,,3,2018-05-22T19:54:20Z,_m3,h4,n4,ff
 "
-outData = "
+outData =
+    "
 #datatype,string,long,string,string,string,string
 #group,false,false,true,false,false,true
 #default,_result,,,,,
@@ -58,8 +60,10 @@ outData = "
 ,,3,_m3,name,n1,ff
 ,,3,_m3,name,n4,ff
 "
-t_key_values_host_name = (table=<-) => table
-    |> keyValues(keyColumns: ["host", "name"])
-    |> drop(columns: ["_start", "_stop"])
+t_key_values_host_name = (table=<-) =>
+    table
+        |> keyValues(keyColumns: ["host", "name"])
+        |> drop(columns: ["_start", "_stop"])
 
-test _key_values_host_name = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_key_values_host_name})
+test _key_values_host_name = () =>
+    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_key_values_host_name})

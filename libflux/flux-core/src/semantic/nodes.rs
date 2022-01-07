@@ -14,20 +14,21 @@ use std::{collections::HashMap, fmt::Debug, vec::Vec};
 
 use anyhow::{anyhow, bail, Result as AnyhowResult};
 use chrono::{prelude::DateTime, FixedOffset};
+use codespan_reporting::diagnostic;
 use derivative::Derivative;
 use derive_more::Display;
 
 use crate::{
     ast,
-    errors::{located, Errors, Located},
+    errors::{located, AsDiagnostic, Errors, Located},
     semantic::{
         env::Environment,
         import::Importer,
         infer::{self, Constraint},
         sub::{Substitutable, Substituter, Substitution},
         types::{
-            self, Array, Dictionary, Function, Kind, MonoType, MonoTypeMap, PolyType, PolyTypeMap,
-            Tvar, TvarKinds,
+            self, Array, Dictionary, Function, Kind, Label, MonoType, MonoTypeMap, PolyType,
+            PolyTypeMap, SemanticMap, Tvar, TvarKinds,
         },
     },
 };
@@ -68,6 +69,15 @@ pub enum ErrorKind {
 
 impl std::error::Error for Error {}
 
+impl AsDiagnostic for ErrorKind {
+    fn as_diagnostic(&self, _source: &dyn crate::semantic::Source) -> diagnostic::Diagnostic<()> {
+        match self {
+            ErrorKind::Inference(err) => err.as_diagnostic(),
+            _ => diagnostic::Diagnostic::error().with_message(self.to_string()),
+        }
+    }
+}
+
 impl Substitutable for ErrorKind {
     fn apply_ref(&self, sub: &dyn Substituter) -> Option<Self> {
         match self {
@@ -82,9 +92,9 @@ impl Substitutable for ErrorKind {
             | Self::Bug(_) => None,
         }
     }
-    fn free_vars(&self) -> Vec<Tvar> {
+    fn free_vars(&self, vars: &mut Vec<Tvar>) {
         match self {
-            Self::Inference(err) => err.free_vars(),
+            Self::Inference(err) => err.free_vars(vars),
             Self::UndefinedBuiltin(_)
             | Self::UndefinedIdentifier(_)
             | Self::InvalidBinOp(_)
@@ -92,7 +102,7 @@ impl Substitutable for ErrorKind {
             | Self::InvalidImportPath(_)
             | Self::UnableToVectorize(_)
             | Self::InvalidReturn
-            | Self::Bug(_) => Vec::new(),
+            | Self::Bug(_) => (),
         }
     }
 }
@@ -103,12 +113,25 @@ impl From<types::Error> for ErrorKind {
     }
 }
 
-impl From<infer::Error> for Error {
-    fn from(err: infer::Error) -> Self {
-        Located {
-            location: err.loc,
-            error: ErrorKind::Inference(err.err),
-        }
+impl From<Located<types::Error>> for Error {
+    fn from(err: Located<types::Error>) -> Self {
+        err.map(ErrorKind::Inference)
+    }
+}
+
+impl From<Errors<Located<types::Error>>> for Errors<Error> {
+    fn from(err: Errors<Located<types::Error>>) -> Self {
+        err.into_iter().map(Error::from).collect()
+    }
+}
+
+impl From<Located<Errors<types::Error>>> for Errors<Error> {
+    fn from(err: Located<Errors<types::Error>>) -> Self {
+        let location = err.location;
+        err.error
+            .into_iter()
+            .map(|error| located(location.clone(), ErrorKind::Inference(error)))
+            .collect()
     }
 }
 
@@ -116,11 +139,23 @@ type VectorizeEnv = HashMap<Symbol, MonoType>;
 
 struct InferState<'a, 'env> {
     sub: &'a mut Substitution,
-    env: Environment<'env>,
+    importer: &'a mut dyn Importer,
+    imports: SemanticMap<Symbol, String>,
+    env: &'a mut Environment<'env>,
     errors: Errors<Error>,
 }
 
 impl InferState<'_, '_> {
+    fn lookup(&mut self, loc: &ast::SourceLocation, name: &Symbol) -> PolyType {
+        self.env.lookup(name).cloned().unwrap_or_else(|| {
+            self.error(
+                loc.clone(),
+                ErrorKind::UndefinedIdentifier(name.to_string()),
+            );
+            PolyType::error()
+        })
+    }
+
     fn constrain(&mut self, exp: Kind, act: &MonoType, loc: &ast::SourceLocation) {
         if let Err(err) = infer::constrain(exp, act, loc, self.sub) {
             self.errors.push(err.into());
@@ -129,13 +164,17 @@ impl InferState<'_, '_> {
 
     fn equal(&mut self, exp: &MonoType, act: &MonoType, loc: &ast::SourceLocation) {
         if let Err(err) = infer::equal(exp, act, loc, self.sub) {
-            self.errors.push(err.into());
+            self.errors
+                .extend(err.error.into_iter().map(|error| Located {
+                    location: loc.clone(),
+                    error: error.into(),
+                }));
         }
     }
 
     fn solve(&mut self, cons: &impl AsRef<[Constraint]>) {
         if let Err(err) = infer::solve(cons.as_ref(), self.sub) {
-            self.errors.push(err.into());
+            self.errors.extend(err.into_iter().map(Error::from));
         }
     }
 
@@ -225,7 +264,7 @@ impl Expression {
             Expression::Array(e) => e.typ.clone(),
             Expression::Dict(e) => e.typ.clone(),
             Expression::Function(e) => e.typ.clone(),
-            Expression::Logical(_) => MonoType::Bool,
+            Expression::Logical(_) => MonoType::BOOL,
             Expression::Object(e) => e.typ.clone(),
             Expression::Member(e) => e.typ.clone(),
             Expression::Index(e) => e.typ.clone(),
@@ -233,15 +272,15 @@ impl Expression {
             Expression::Unary(e) => e.typ.clone(),
             Expression::Call(e) => e.typ.clone(),
             Expression::Conditional(e) => e.alternate.type_of(),
-            Expression::StringExpr(_) => MonoType::String,
-            Expression::Integer(_) => MonoType::Int,
-            Expression::Float(_) => MonoType::Float,
-            Expression::StringLit(_) => MonoType::String,
-            Expression::Duration(_) => MonoType::Duration,
-            Expression::Uint(_) => MonoType::Uint,
-            Expression::Boolean(_) => MonoType::Bool,
-            Expression::DateTime(_) => MonoType::Time,
-            Expression::Regexp(_) => MonoType::Regexp,
+            Expression::StringExpr(_) => MonoType::STRING,
+            Expression::Integer(_) => MonoType::INT,
+            Expression::Float(_) => MonoType::FLOAT,
+            Expression::StringLit(_) => MonoType::STRING,
+            Expression::Duration(_) => MonoType::DURATION,
+            Expression::Uint(_) => MonoType::UINT,
+            Expression::Boolean(_) => MonoType::BOOL,
+            Expression::DateTime(_) => MonoType::TIME,
+            Expression::Regexp(_) => MonoType::REGEXP,
             Expression::Error(_) => MonoType::Error,
         }
     }
@@ -346,6 +385,7 @@ impl Expression {
                                 )),
                             )
                         })?
+                        .v
                         .clone(),
                     object,
                     property: member.property.clone(),
@@ -363,22 +403,23 @@ impl Expression {
 
 /// Infer the types of a Flux package.
 #[allow(missing_docs)]
-pub fn infer_package<'a, T>(
+pub fn infer_package<T>(
     pkg: &mut Package,
-    env: Environment<'a>,
+    env: &mut Environment<'_>,
     sub: &mut Substitution,
     importer: &mut T,
-) -> std::result::Result<Environment<'a>, Errors<Error>>
+) -> std::result::Result<(), Errors<Error>>
 where
     T: Importer,
 {
     let mut infer = InferState {
         sub,
+        importer,
+        imports: Default::default(),
         env,
         errors: Errors::new(),
     };
-    pkg.infer(&mut infer, importer)
-        .map_err(|err| err.apply(infer.sub))?;
+    pkg.infer(&mut infer).map_err(|err| err.apply(infer.sub))?;
 
     infer.env.apply_mut(infer.sub);
 
@@ -388,7 +429,7 @@ where
         }
         Err(infer.errors)
     } else {
-        Ok(infer.env)
+        Ok(())
     }
 }
 
@@ -434,12 +475,9 @@ pub struct Package {
 }
 
 impl Package {
-    fn infer<T>(&mut self, infer: &mut InferState, importer: &mut T) -> Result
-    where
-        T: Importer,
-    {
+    fn infer(&mut self, infer: &mut InferState) -> Result {
         for file in &mut self.files {
-            file.infer(infer, importer)?;
+            file.infer(infer)?;
         }
         Ok(())
     }
@@ -460,28 +498,24 @@ pub struct File {
 }
 
 impl File {
-    fn infer<T>(&mut self, infer: &mut InferState, importer: &mut T) -> Result
-    where
-        T: Importer,
-    {
-        let mut imports = Vec::with_capacity(self.imports.len());
-
+    fn infer(&mut self, infer: &mut InferState) -> Result {
         for dec in &self.imports {
             let path = &dec.path.value;
             let name = dec.import_symbol.clone();
 
-            imports.push(name.clone());
+            infer.imports.insert(name.clone(), path.clone());
 
-            let poly = importer.import(path).unwrap_or_else(|| {
+            let poly = infer.importer.import(path).unwrap_or_else(|| {
                 infer.error(dec.loc.clone(), ErrorKind::InvalidImportPath(path.clone()));
                 PolyType::error()
             });
+
             infer.env.add(name, poly);
         }
 
         for node in &mut self.body {
             match node {
-                Statement::Builtin(stmt) => stmt.infer(&mut infer.env)?,
+                Statement::Builtin(stmt) => stmt.infer(infer)?,
                 Statement::Variable(stmt) => stmt.infer(infer)?,
                 Statement::Option(stmt) => stmt.infer(infer)?,
                 Statement::Expr(stmt) => stmt.infer(infer)?,
@@ -492,9 +526,10 @@ impl File {
             }
         }
 
-        for name in imports {
-            infer.env.remove(&name);
+        for name in infer.imports.keys() {
+            infer.env.remove(name);
         }
+        infer.imports.clear();
         Ok(())
     }
     fn apply(mut self, sub: &Substitution) -> Self {
@@ -564,8 +599,8 @@ pub struct BuiltinStmt {
 }
 
 impl BuiltinStmt {
-    fn infer(&mut self, env: &mut Environment) -> std::result::Result<(), Error> {
-        env.add(self.id.name.clone(), self.typ_expr.clone());
+    fn infer(&mut self, infer: &mut InferState<'_, '_>) -> std::result::Result<(), Error> {
+        infer.env.add(self.id.name.clone(), self.typ_expr.clone());
         Ok(())
     }
     fn apply(self, _: &Substitution) -> Self {
@@ -698,7 +733,7 @@ impl VariableAssgn {
         infer.env.apply_mut(infer.sub);
 
         let t = self.init.type_of().apply(infer.sub);
-        let p = infer::generalize(&infer.env, infer.sub.cons(), t);
+        let p = infer::generalize(infer.env, infer.sub.cons(), t);
 
         // Update variable assignment nodes with the free vars
         // and kind constraints obtained from generalization.
@@ -971,7 +1006,7 @@ impl FunctionExpr {
 
         if self.params.iter().any(|param| param.default.is_some()) {
             let t = func.apply(infer.sub);
-            let p = infer::generalize(&infer.env, infer.sub.cons(), t);
+            let p = infer::generalize(infer.env, infer.sub.cons(), t);
             self.infer_default_params(infer, p)?
         };
 
@@ -1118,7 +1153,7 @@ impl FunctionExpr {
                                 loc: e.loc.clone(),
                                 typ: MonoType::from(types::Record::new(
                                     properties.iter().map(|p| types::Property {
-                                        k: p.key.name.to_string(),
+                                        k: Label::from(p.key.name.clone()),
                                         v: p.value.type_of(),
                                     }),
                                     with.as_ref().map(|with| with.typ.clone()),
@@ -1287,7 +1322,7 @@ impl BinaryExpr {
             };
         let binop_compare_constraints =
             |this: &mut BinaryExpr, infer: &mut InferState<'_, '_>, kind| {
-                this.typ = MonoType::Bool;
+                this.typ = MonoType::BOOL;
                 infer.solve(&[
                     // https://github.com/influxdata/flux/issues/2393
                     // Constraint::Equal{self.left.type_of(), self.right.type_of()),
@@ -1324,7 +1359,7 @@ impl BinaryExpr {
                 binop_compare_constraints(self, infer, Kind::Equatable)
             }
             ast::Operator::GreaterThanEqualOperator | ast::Operator::LessThanEqualOperator => {
-                self.typ = MonoType::Bool;
+                self.typ = MonoType::BOOL;
                 infer.solve(&[
                     // https://github.com/influxdata/flux/issues/2393
                     // Constraint::Equal{self.left.type_of(), self.right.type_of()),
@@ -1352,16 +1387,16 @@ impl BinaryExpr {
             }
             // Regular expression operators.
             ast::Operator::RegexpMatchOperator | ast::Operator::NotRegexpMatchOperator => {
-                self.typ = MonoType::Bool;
+                self.typ = MonoType::BOOL;
                 infer.solve(&[
                     Constraint::Equal {
                         act: self.left.type_of(),
-                        exp: MonoType::String,
+                        exp: MonoType::STRING,
                         loc: self.left.loc().clone(),
                     },
                     Constraint::Equal {
                         act: self.right.type_of(),
-                        exp: MonoType::Regexp,
+                        exp: MonoType::REGEXP,
                         loc: self.right.loc().clone(),
                     },
                 ]);
@@ -1413,35 +1448,56 @@ impl CallExpr {
         {
             expr.infer(infer)?;
             // Every argument is required in a function call.
-            req.insert(id.name.to_string(), expr.type_of());
+            req.insert(id.name.to_string(), (expr.type_of(), expr.loc()));
         }
         if let Some(ref mut p) = &mut self.pipe {
             p.infer(infer)?;
             pipe = Some(types::Property {
                 k: "<-".to_string(),
-                v: p.type_of(),
+                v: (p.type_of(), p.loc()),
             });
         }
-        // Constrain the callee to be a Function.
-        infer.solve(&[Constraint::Equal {
-            exp: self.callee.type_of(),
-            act: MonoType::from(Function {
-                opt: MonoTypeMap::new(),
-                req,
-                pipe,
-                // The return type of a function call is the type of the call itself.
-                // Remind that, when two functions are unified, their return types are unified too.
-                // As an example take:
-                //   f = (a) => a + 1
-                //   f(a: 0)
-                // The return type of `f` is `int`.
-                // The return type of `f(a: 0)` is `t0` (a fresh type variable).
-                // Upon unification a substitution "t0 => int" is created, so that the compiler
-                // can infer that, for instance, `f(a: 0) + 1` is legal.
-                retn: self.typ.clone(),
-            }),
-            loc: self.loc.clone(),
-        }]);
+        match &*self.callee.type_of().apply_cow(infer.sub) {
+            MonoType::Fun(func) => {
+                if let Err(err) = func.try_unify(
+                    &Function {
+                        opt: MonoTypeMap::new(),
+                        req,
+                        pipe,
+                        retn: (self.typ.clone(), &self.loc),
+                    },
+                    infer.sub,
+                ) {
+                    infer.errors.extend(err.into_iter().map(Error::from));
+                }
+            }
+            callee => {
+                // Constrain the callee to be a Function.
+                infer.equal(
+                    callee,
+                    &MonoType::from(Function {
+                        opt: MonoTypeMap::new(),
+                        req: req.into_iter().map(|(k, (v, _))| (k, v)).collect(),
+                        pipe: pipe.map(|prop| types::Property {
+                            k: prop.k,
+                            v: prop.v.0,
+                        }),
+                        // The return type of a function call is the type of the call itself.
+                        // Remind that, when two functions are unified, their return types are unified too.
+                        // As an example take:
+                        //   f = (a) => a + 1
+                        //   f(a: 0)
+                        // The return type of `f` is `int`.
+                        // The return type of `f(a: 0)` is `t0` (a fresh type variable).
+                        // Upon unification a substitution "t0 => int" is created, so that the compiler
+                        // can infer that, for instance, `f(a: 0) + 1` is legal.
+                        retn: self.typ.clone(),
+                    }),
+                    &self.loc,
+                );
+            }
+        }
+
         Ok(())
     }
     fn apply(mut self, sub: &Substitution) -> Self {
@@ -1479,7 +1535,7 @@ impl ConditionalExpr {
         self.alternate.infer(infer)?;
         infer.solve(&[
             Constraint::Equal {
-                exp: MonoType::Bool,
+                exp: MonoType::BOOL,
                 act: self.test.type_of(),
                 loc: self.test.loc().clone(),
             },
@@ -1515,12 +1571,12 @@ impl LogicalExpr {
         self.right.infer(infer)?;
         infer.solve(&[
             Constraint::Equal {
-                exp: MonoType::Bool,
+                exp: MonoType::BOOL,
                 act: self.left.type_of(),
                 loc: self.left.loc().clone(),
             },
             Constraint::Equal {
-                exp: MonoType::Bool,
+                exp: MonoType::BOOL,
                 act: self.right.type_of(),
                 loc: self.right.loc().clone(),
             },
@@ -1543,7 +1599,7 @@ pub struct MemberExpr {
     pub typ: MonoType,
 
     pub object: Expression,
-    pub property: String,
+    pub property: Symbol,
 }
 
 impl MemberExpr {
@@ -1555,11 +1611,19 @@ impl MemberExpr {
     //
     fn infer(&mut self, infer: &mut InferState<'_, '_>) -> Result {
         self.object.infer(infer)?;
-        let t = self.object.type_of();
+        let t = self.object.type_of().apply(infer.sub);
+
+        if let Expression::Identifier(object) = &self.object {
+            if let Some(package_name) = infer.imports.get(&object.name) {
+                if let Some(property) = infer.importer.symbol(package_name, &self.property) {
+                    self.property = property;
+                }
+            }
+        }
 
         let r = {
             let head = types::Property {
-                k: self.property.to_owned(),
+                k: Label::from(self.property.to_owned()),
                 v: self.typ.to_owned(),
             };
             let tail = MonoType::Var(infer.sub.fresh());
@@ -1600,7 +1664,7 @@ impl IndexExpr {
         infer.solve(&[
             Constraint::Equal {
                 act: self.index.type_of(),
-                exp: MonoType::Int,
+                exp: MonoType::INT,
                 loc: self.index.loc().clone(),
             },
             Constraint::Equal {
@@ -1646,7 +1710,7 @@ impl ObjectExpr {
             prop.value.infer(infer)?;
             r = MonoType::from(types::Record::Extension {
                 head: types::Property {
-                    k: prop.key.name.to_string(),
+                    k: Label::from(prop.key.name.clone()),
                     v: prop.value.type_of(),
                 },
                 tail: r,
@@ -1686,15 +1750,15 @@ impl UnaryExpr {
         self.argument.infer(infer)?;
         match self.operator {
             ast::Operator::NotOperator => {
-                self.typ = MonoType::Bool;
+                self.typ = MonoType::BOOL;
                 infer.solve(&[Constraint::Equal {
                     act: self.argument.type_of(),
-                    exp: MonoType::Bool,
+                    exp: MonoType::BOOL,
                     loc: self.argument.loc().clone(),
                 }]);
             }
             ast::Operator::ExistsOperator => {
-                self.typ = MonoType::Bool;
+                self.typ = MonoType::BOOL;
             }
             ast::Operator::AdditionOperator | ast::Operator::SubtractionOperator => {
                 self.typ = self.argument.type_of();
@@ -1749,13 +1813,7 @@ pub struct IdentifierExpr {
 
 impl IdentifierExpr {
     fn infer(&mut self, infer: &mut InferState<'_, '_>) -> Result {
-        let poly = infer.env.lookup(&self.name).cloned().unwrap_or_else(|| {
-            infer.error(
-                self.loc.clone(),
-                ErrorKind::UndefinedIdentifier(self.name.to_string()),
-            );
-            PolyType::error()
-        });
+        let poly = infer.lookup(&self.loc, &self.name);
 
         let (t, cons) = infer::instantiate(poly, infer.sub, self.loc.clone());
         infer.solve(&cons);
@@ -2229,14 +2287,14 @@ mod tests {
             }],
         };
         let sub: Substitution = semantic_map! {
-            Tvar(0) => MonoType::Int,
-            Tvar(1) => MonoType::Int,
-            Tvar(2) => MonoType::Int,
-            Tvar(3) => MonoType::Int,
-            Tvar(4) => MonoType::Int,
-            Tvar(5) => MonoType::Int,
-            Tvar(6) => MonoType::Int,
-            Tvar(7) => MonoType::Int,
+            Tvar(0) => MonoType::INT,
+            Tvar(1) => MonoType::INT,
+            Tvar(2) => MonoType::INT,
+            Tvar(3) => MonoType::INT,
+            Tvar(4) => MonoType::INT,
+            Tvar(5) => MonoType::INT,
+            Tvar(6) => MonoType::INT,
+            Tvar(7) => MonoType::INT,
         }
         .into();
         let pkg = inject_pkg_types(pkg, &sub);
@@ -2245,7 +2303,7 @@ mod tests {
             &mut |node: Node| {
                 let typ = node.type_of();
                 if let Some(typ) = typ {
-                    assert_eq!(typ, MonoType::Int);
+                    assert_eq!(typ, MonoType::INT);
                     no_types_checked += 1;
                 }
             },

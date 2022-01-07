@@ -5,7 +5,8 @@ import "testing"
 
 option now = () => 2030-01-01T00:00:00Z
 
-inData = "
+inData =
+    "
 #datatype,string,long,dateTime:RFC3339,double,string,string,string
 #group,false,false,false,false,true,true,true
 #default,_result,,,,,,
@@ -35,7 +36,8 @@ inData = "
 ,,3,2018-05-22T19:54:06Z,82.598876953125,used_percent,swap,host.local
 ,,3,2018-05-22T19:54:16Z,82.6416015625,used_percent,swap,host.local
 "
-outData = "
+outData =
+    "
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string
 #group,false,false,true,true,false,false,true,true,true
 #default,_result,,,,,,,,
@@ -45,8 +47,9 @@ outData = "
 ,,2,2018-05-22T19:00:00Z,2018-05-22T20:00:00Z,2018-05-22T19:53:26Z,1.95,load5,system,host.local
 ,,3,2018-05-22T19:00:00Z,2018-05-22T20:00:00Z,2018-05-22T19:53:26Z,82.9833984375,used_percent,swap,host.local
 "
-t_limit = (table=<-) => table
-    |> range(start: 2018-05-22T19:00:00Z, stop: 2018-05-22T20:00:00Z)
-    |> limit(n: 1)
+t_limit = (table=<-) =>
+    table
+        |> range(start: 2018-05-22T19:00:00Z, stop: 2018-05-22T20:00:00Z)
+        |> limit(n: 1)
 
 test _limit = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_limit})

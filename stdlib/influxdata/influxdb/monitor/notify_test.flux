@@ -10,7 +10,8 @@ option now = () => 2018-05-22T19:54:40Z
 option monitor.log = (tables=<-) => tables |> drop(columns: ["_start", "_stop"])
 
 // Note this input data is identical to the output data of the check test case, post pivot.
-inData = "
+inData =
+    "
 #datatype,string,long,string,string,string,string,string,dateTime:RFC3339,string,string,string,string,string,string,double
 #group,false,false,true,true,true,true,true,false,true,true,true,true,true,true,false
 #default,got,,,,,,,,,,,,,,
@@ -35,7 +36,8 @@ inData = "
 ,,1,000000000000000a,cpu threshold check,ok,statuses,cpu,2018-05-22T19:54:20Z,threshold,vaaa,vbbb,cpu-total,host.local,_source_timestamp,1527018820000000000
 ,,2,000000000000000a,cpu threshold check,warn,statuses,cpu,2018-05-22T19:54:20Z,threshold,vaaa,vbbb,cpu-total,host.local,_source_timestamp,1527018860000000000
 "
-outData = "
+outData =
+    "
 #datatype,string,long,string,string,string,string,string,string,string,string,string,string,long,long,dateTime:RFC3339,string,string,string,string,string,double,string
 #group,false,false,true,true,true,true,true,true,true,true,false,true,false,false,false,true,true,true,true,true,false,true
 #default,got,,,,,,,,,,,,,,,,,,,,,
@@ -45,10 +47,17 @@ outData = "
 ,,2,0000000000000001,http-rule,00000000000002,http-endpoint,000000000000000a,cpu threshold check,warn,notifications,whoa!,cpu,1527018860000000000,1527018860000000000,2018-05-22T19:54:40Z,threshold,vaaa,vbbb,cpu-total,host.local,7.05,true
 "
 endpoint = () => (tables=<-) => tables |> experimental.set(o: {_sent: "true"})
-notification = {_notification_rule_id: "0000000000000001", _notification_rule_name: "http-rule", _notification_endpoint_id: "00000000000002", _notification_endpoint_name: "http-endpoint"}
-t_notify = (table=<-) => table
-    |> range(start: -1m)
-    |> v1.fieldsAsCols()
-    |> monitor.notify(data: notification, endpoint: endpoint())
+notification = {
+    _notification_rule_id: "0000000000000001",
+    _notification_rule_name: "http-rule",
+    _notification_endpoint_id: "00000000000002",
+    _notification_endpoint_name: "http-endpoint",
+}
+t_notify = (table=<-) =>
+    table
+        |> range(start: -1m)
+        |> v1.fieldsAsCols()
+        |> monitor.notify(data: notification, endpoint: endpoint())
 
-test monitor_notify = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_notify})
+test monitor_notify = () =>
+    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_notify})

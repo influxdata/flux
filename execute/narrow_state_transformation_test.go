@@ -270,8 +270,9 @@ func TestNarrowStateTransformation_Finish(t *testing.T) {
 					disposeCount: &disposeCount,
 				}, true, nil
 			},
-			DisposeFn: func() {
+			CloseFn: func() error {
 				isDisposed = true
+				return nil
 			},
 		},
 		memory.DefaultAllocator,

@@ -10,7 +10,8 @@ option now = () => 2030-01-01T00:00:00Z
 // change units
 option geo.units = {distance: "mile"}
 
-inData = "
+inData =
+    "
 #group,false,false,false,false,true,true,true,true,true,true,true,true,true,true
 #datatype,string,long,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string,string
 #default,_result,,,,,,,,,,,,,
@@ -30,7 +31,8 @@ inData = "
 ,,7,2020-04-08T16:19:27Z,1586304000,tid,mta,via,LLIR,GO506_20_6431,89c2592bc,13,IN_TRANSIT_TO,237,GO506_20_6431
 ,,8,2020-04-08T16:16:50Z,1586304000,tid,mta,via,LLIR,GO506_20_6431,89c25f18c,13,IN_TRANSIT_TO,237,GO506_20_6431
 "
-outData = "
+outData =
+    "
 #group,false,false,true,true,false,false,true,true,false,false,true,true,true,true,false,true
 #datatype,string,long,string,string,double,dateTime:RFC3339,string,string,double,double,string,string,string,string,long,string
 #default,_result,,,,,,,,,,,,,,,
@@ -45,10 +47,17 @@ refPoint = {lat: 40.6892, lon: -74.0445}
 
 // limit float to 3 decimal places
 limitFloat = (value) => float(v: int(v: value * 1000.0)) / 1000.0
-t_stDistanceInMiles = (table=<-) => table
-    |> range(start: 2020-04-01T00:00:00Z)
-    |> v1.fieldsAsCols()
-    |> map(fn: (r) => ({r with _st_distance: limitFloat(value: geo.ST_Distance(region: refPoint, geometry: {lat: r.lat, lon: r.lon}))}))
-    |> drop(columns: ["_start", "_stop"])
+t_stDistanceInMiles = (table=<-) =>
+    table
+        |> range(start: 2020-04-01T00:00:00Z)
+        |> v1.fieldsAsCols()
+        |> map(
+            fn: (r) =>
+                ({r with _st_distance:
+                        limitFloat(value: geo.ST_Distance(region: refPoint, geometry: {lat: r.lat, lon: r.lon})),
+                }),
+        )
+        |> drop(columns: ["_start", "_stop"])
 
-test _stDistanceInMiles = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_stDistanceInMiles})
+test _stDistanceInMiles = () =>
+    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_stDistanceInMiles})
