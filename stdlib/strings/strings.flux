@@ -1,4 +1,7 @@
-// Package strings provides functions to manipulate UTF-8 encoded strings.
+// Package strings provides functions to operate on UTF-8 encoded strings.
+//
+// introduced: 0.18.0
+//
 package strings
 
 
@@ -6,41 +9,48 @@ package strings
 //
 // ## Parameters
 //
-// - `v` is the string value to convert.
+// - v: String value to convert.
 //
-// ## Convert all values of a column to title case
+// ## Examples
 //
+// ### Convert all values of a column to title case
 // ```
-//  import "strings"
+// import "sampledata"
+// import "strings"
 //
-//  data
-//      |> map(fn: (r) => ({ r with pageTitle: strings.title(v: r.pageTitle) }))
+// < sampledata.string()
+// >     |> map(fn: (r) => ({ r with _value: strings.title(v: r._value) }))
+// ```
 //
 builtin title : (v: string) => string
 
 // toUpper converts a string to uppercase.
 //
+// #### toUpper vs toTitle
+// The results of `toUpper()` and `toTitle()` are often the same, however the
+// difference is visible when using special characters:
+//
+// ```no_run
+// str = "ǳ"
+//
+// strings.toUpper(v: str) // Returns Ǳ
+// strings.toTitle(v: str) // Returns ǲ
+// ```
+//
 // ## Parameters
 //
-// - `v` is the string value to convert.
+// - v: String value to convert.
 //
-// ## Convert all values of a column to upper case
+// ## Examples
 //
+// ### Convert all values of a column to upper case
 // ```
+// import "sampledata"
 // import "strings"
 //
-// data
-//   |> map(fn: (r) => ({ r with envVars: strings.toUpper(v: r.envVars) }))
+// < sampledata.string()
+// >     |> map(fn: (r) => ({ r with _value: strings.toUpper(v: r._value) }))
 // ```
-//
-// The difference between toTitle and toUpper
-//
-//      - The results of toUpper() and toTitle are often the same, however the difference is visible when using special characters:
-//
-//      - str = "ǳ"
-//
-//      - strings.toUpper(v: str) // Returns Ǳ
-//      - strings.toTitle(v: str) // Returns ǲ
 //
 builtin toUpper : (v: string) => string
 
@@ -48,18 +58,17 @@ builtin toUpper : (v: string) => string
 //
 // ## Parameters
 //
-// - `v` is the string value to convert.
+// - v: String value to convert.
 //
-// ## Convert all values of a column to lower case
+// ## Examples
 //
+// ### Convert all values of a column to lower case
 // ```
+// import "sampledata"
 // import "strings"
 //
-// data
-//   |> map(fn: (r) => ({
-//        r with exclamation: strings.toLower(v: r.exclamation)
-//      })
-//    )
+// < sampledata.string()
+// >     |> map(fn: (r) => ({r with _value: strings.toLower(v: r._value)}))
 // ```
 //
 builtin toLower : (v: string) => string
@@ -68,22 +77,23 @@ builtin toLower : (v: string) => string
 //
 // ## Parameters
 //
-// - `v` is the string to remove characters from.
-// - `cutset` is the  leading and trailing characters to remove from the string.
+// - v: String to remove characters from.
+// - cutset: Leading and trailing characters to remove from the string.
 //
-//      Only characters that match the cutset string exactly are trimmed.
+//   Only characters that match the cutset string exactly are trimmed.
 //
-// ## Trim leading and trailing periods from all values in a column
+// ## Examples
 //
+// ### Trim leading and trailing periods from all values in a column
 // ```
+// # import "sampledata"
 // import "strings"
+// #
+// # data = sampledata.string() |> map(fn: (r) => ({r with _value: ".${r._value}."}))
 //
-// data
-//   |> map(fn: (r) => ({
-//       r with
-//       variables: strings.trim(v: r.variables, cutset: ".")
-//     })
-//   )
+// < data
+// >     |> map(fn: (r) => ({r with _value: strings.trim(v: r._value, cutset: "smpl_")}))
+// ```
 //
 builtin trim : (v: string, cutset: string) => string
 
@@ -91,20 +101,18 @@ builtin trim : (v: string, cutset: string) => string
 //
 // ## Parameters
 //
-// - `v` is the string to trim
-// - `prefix` is the prefix to remove
+// - v: String to trim.
+// - prefix: Prefix to remove.
 //
-// ## Trim leading and trailing periods from all values in a column
+// ## Examples
 //
+// ### Trim a prefix from all values in a column
 // ```
+// import "sampledata"
 // import "strings"
 //
-// data
-//   |> map(fn: (r) => ({
-//       r with
-//       sensorID: strings.trimPrefix(v: r.sensorId, prefix: "s12_")
-//     })
-//   )
+// < sampledata.string()
+// >     |> map(fn: (r) => ({r with _value: strings.trimPrefix(v: r._value, prefix: "smpl_")}))
 // ```
 //
 builtin trimPrefix : (v: string, prefix: string) => string
@@ -113,36 +121,43 @@ builtin trimPrefix : (v: string, prefix: string) => string
 //
 // ## Parameters
 //
-// - `v` is the string to remove spaces from
+// - v: String to remove spaces from.
 //
-// ## Trim leading and trailing spaces from all values in a column
+// ## Examples
 //
+// ### Trim leading and trailing spaces from all values in a column
 // ```
+// # import "sampledata"
 // import "strings"
 //
-// data
-//   |> map(fn: (r) => ({ r with userInput: strings.trimSpace(v: r.userInput) }))
+// # data = sampledata.string() |> map(fn: (r) => ({r with _value: "   ${r._value}   "}))
+//
+// < data
+// >     |> map(fn: (r) => ({r with _value: strings.trimSpace(v: r._value)}))
 // ```
+//
 builtin trimSpace : (v: string) => string
 
-// The trimSuffix removes a suffix from a string. Strings that do not end with the suffix are returned unchanged.
+// trimSuffix removes a suffix from a string.
+//
+// Strings that do not end with the suffix are returned unchanged.
 //
 // ## Parameters
 //
-// - `v` is the string to trim
-// - `suffix` is the suffix to remove.
+// - v: String to trim
+// - suffix: Suffix to remove.
 //
-// ## Remove a suffix from all values in a column
+// ## Examples
 //
+// ### Remove a suffix from all values in a column
 // ```
+// # import "sampledata"
 // import "strings"
 //
-// data
-//   |> map(fn: (r) => ({
-//       r with
-//       sensorID: strings.trimSuffix(v: r.sensorId, suffix: "_s12")
-//     })
-//   )
+// # data = sampledata.string() |> map(fn: (r) => ({r with _value: "${r._value}_ex1"}))
+//
+// < data
+// >     |> map(fn: (r) => ({ r with _value: strings.trimSuffix(v: r._value, suffix: "_ex1") }))
 // ```
 //
 builtin trimSuffix : (v: string, suffix: string) => string
@@ -151,22 +166,22 @@ builtin trimSuffix : (v: string, suffix: string) => string
 //
 // ## Parameters
 //
-// - `v` is the string to to remove characters from
-// - `cutset` is the trailing characters to trim from the string.
+// - v: String to to remove characters from
+// - cutset: Trailing characters to trim from the string.
 //
-//      Only characters that match the cutset string exactly are trimmed.
+//   Only characters that match the cutset string exactly are trimmed.
 //
-// ## Trim trailing periods from all values in a column
+// ## Examples
 //
+// ### Trim trailing periods from all values in a column
 // ```
+// # import "sampledata"
 // import "strings"
+// #
+// # data = sampledata.string() |> map(fn: (r) => ({r with _value: "${r._value}..."}))
 //
-// data
-//   |> map(fn: (r) => ({
-//       r with
-//       variables: strings.trimRight(v: r.variables, cutset: ".")
-//     })
-//   )
+// < data
+// >     |> map(fn: (r) => ({ r with _value: strings.trimRight(v: r._value, cutset: ".")}))
 // ```
 //
 builtin trimRight : (v: string, cutset: string) => string
@@ -175,37 +190,50 @@ builtin trimRight : (v: string, cutset: string) => string
 //
 // ## Parameters
 //
-// - `v` is the string to to remove characters from
-// - `cutset` is the trailing characters to trim from the string.
+// - v: String to to remove characters from
+// - cutset: Leading characters to trim from the string.
 //
-// ## Trim leading periods from all values in a column
+// ## Examples
 //
+// ### Trim leading periods from all values in a column
 // ```
+// # import "sampledata"
 // import "strings"
+// #
+// # data = sampledata.string() |> map(fn: (r) => ({r with _value: "...${r._value}"}))
 //
-// data
-//   |> map(fn: (r) => ({
-//       r with
-//       variables: strings.trimLeft(v: r.variables, cutset: ".")
-//     })
-//   )
+// < data
+// >     |> map(fn: (r) => ({ r with _value: strings.trimLeft(v: r._value, cutset: ".")}))
 // ```
 //
 builtin trimLeft : (v: string, cutset: string) => string
 
 // toTitle converts all characters in a string to title case.
 //
+// #### toTitle vs toUpper
+// The results of `toTitle()` and `toUpper()` are often the same, however the
+// difference is visible when using special characters:
+//
+// ```no_run
+// str = "ǳ"
+//
+// strings.toTitle(v: str) // Returns ǲ
+// strings.toUpper(v: str) // Returns Ǳ
+// ```
+//
 // ## Parameters
 //
-// - `v` is the string value to convert.
+// - v: String value to convert.
 //
-// ## Convert characters in a string to title case
+// ## Examples
 //
+// ### Convert characters in a string to title case
 // ```
+// import "sampledata"
 // import "strings"
 //
-// data
-//   |> map(fn: (r) => ({ r with pageTitle: strings.toTitle(v: r.pageTitle) }))
+// sampledata.string()
+//     |> map(fn: (r) => ({r with _value: strings.toTitle(v: r._value)}))
 // ```
 //
 builtin toTitle : (v: string) => string
@@ -214,16 +242,18 @@ builtin toTitle : (v: string) => string
 //
 // ## Parameters
 //
-// - `v` is the string value to search.
-// - `prefix` is the string prefix to search for.
+// - v: String value to search.
+// - prefix: Prefix to search for.
 //
-// ## Filter based on the presence of a prefix in a column value
+// ## Examples
 //
+// ### Filter based on the presence of a prefix in a column value
 // ```
+// import "sampledata"
 // import "strings"
 //
-// data
-//   |> filter(fn:(r) => strings.hasPrefix(v: r.metric, prefix: "int_" ))
+// < sampledata.string()
+// >     |> filter(fn:(r) => strings.hasPrefix(v: r._value, prefix: "smpl_5" ))
 // ```
 //
 builtin hasPrefix : (v: string, prefix: string) => bool
@@ -232,16 +262,18 @@ builtin hasPrefix : (v: string, prefix: string) => bool
 //
 // ## Parameters
 //
-// - `v` is the string value to search.
-// - `prefix` is the string suffix to search for.
+// - v: String value to search.
+// - suffix: Suffix to search for.
 //
-// ## Filter based on the presence of a suffix in a column value
+// ## Examples
 //
+// ### Filter based on the presence of a suffix in a column value
 // ```
+// import "sampledata"
 // import "strings"
 //
-// data
-//   |> filter(fn:(r) => strings.hasSuffix(v: r.metric, suffix: "_count" ))
+// < sampledata.string()
+// >     |> filter(fn:(r) => strings.hasSuffix(v: r._value, suffix: "4" ))
 // ```
 //
 builtin hasSuffix : (v: string, suffix: string) => bool
@@ -250,20 +282,18 @@ builtin hasSuffix : (v: string, suffix: string) => bool
 //
 // ## Parameters
 //
-// - `v` is the string value to search
-// - `substr` is the substring value to search for
+// - v: String value to search.
+// - substr: Substring value to search for.
 //
-// ## Report if a string contains a specific substring
+// ## Examples
 //
+// ### Filter based on the presence of a substring in a column value
 // ```
+// import "sampledata"
 // import "strings"
 //
-// data
-//   |> map(fn: (r) => ({
-//       r with
-//       _value: strings.containsStr(v: r.author, substr: "John")
-//     })
-//   )
+// < sampledata.string()
+// >     |> filter(fn: (r) => strings.containsStr(v: r._value, substr: "5"))
 // ```
 //
 builtin containsStr : (v: string, substr: string) => bool
@@ -272,20 +302,18 @@ builtin containsStr : (v: string, substr: string) => bool
 //
 // ## Parameters
 //
-// - `v` is the string value to search
-// - `chars` is the character to search for
+// - v: String value to search.
+// - chars: Characters to search for.
 //
-// ## Report if a string contains specific characters
+// ## Examples
 //
+// ### Filter based on the presence of a specific characters in a column value
 // ```
+// import "sampledata"
 // import "strings"
 //
-// data
-//   |> map(fn: (r) => ({
-//       r with
-//       _value: strings.containsAny(v: r.price, chars: "£$¢")
-//     })
-//   )
+// < sampledata.string()
+// >     |> filter(fn: (r) => strings.containsAny(v: r._value, chars: "a79"))
 // ```
 //
 builtin containsAny : (v: string, chars: string) => bool
@@ -294,164 +322,172 @@ builtin containsAny : (v: string, chars: string) => bool
 //
 // ## Parameters
 //
-// - `v` is the string value to compare
-// - `t` is the string value to compare against
+// - v: String value to compare.
+// - t: String value to compare against.
 //
-// ## Ignore case when testing if two strings are the same
+// ## Examples
 //
+// ### Ignore case when comparing two strings
 // ```
+// # import "array"
 // import "strings"
+// #
+// # data = array.from(
+// #     rows: [
+// #         {time: 2022-01-01T00:00:00Z, string1: "RJqcVGNlcJ", string2: "rjQCvGNLCj"},
+// #         {time: 2022-01-01T00:01:00Z, string1: "hBumdSljCQ", string2: "unfbcNAXUA"},
+// #         {time: 2022-01-01T00:02:00Z, string1: "ITcHyLZuqu", string2: "KKtCcRHsKj"},
+// #         {time: 2022-01-01T00:03:00Z, string1: "HyXdjvrjgp", string2: "hyxDJvrJGP"},
+// #         {time: 2022-01-01T00:04:00Z, string1: "SVepvUBAVx", string2: "GuKKjuGsyI"},
+// #     ],
+// # )
 //
-// data
-//   |> map(fn: (r) => ({
-//       r with
-//       string1: r.string1,
-//       string2: r.string2,
-//       same: strings.equalFold(v: r.string1, t: r.string2)
-//     })
-//   )
+// < data
+// >     |> map(fn: (r) => ({r with same: strings.equalFold(v: r.string1, t: r.string2)}))
 // ```
 //
 builtin equalFold : (v: string, t: string) => bool
 
 // compare compares the lexicographical order of two strings.
 //
-//      Return values
-//      Comparison	Return value
-//      v < t	    -1
-//      v == t	    0
-//      v > t	    1
+// #### Return values
+// | Comparison | Return value |
+// | :--------- | -----------: |
+// | v < t      |           -1 |
+// | v == t     |            0 |
+// | v > t      |            1 |
 //
 // ## Parameters
 //
-// - `v` is the string value to compare
-// - `t` is the string value to compare against
+// - v: String value to compare.
+// - t: String value to compare against.
 //
-// ## Compare the lexicographical order of column values
+// ## Examples
 //
+// ### Compare the lexicographical order of column values
 // ```
+// # import "array"
 // import "strings"
+// #
+// # data = array.from(
+// #     rows: [
+// #         {time: 2022-01-01T00:00:00Z, string1: "RJqcVGNlcJ", string2: "rjQCvGNLCj"},
+// #         {time: 2022-01-01T00:01:00Z, string1: "unfbcNAXUA", string2: "hBumdSljCQ"},
+// #         {time: 2022-01-01T00:02:00Z, string1: "ITcHyLZuqu", string2: "ITcHyLZuqu"},
+// #         {time: 2022-01-01T00:03:00Z, string1: "HyXdjvrjgp", string2: "hyxDJvrJGP"},
+// #         {time: 2022-01-01T00:04:00Z, string1: "SVepvUBAVx", string2: "GuKKjuGsyI"},
+// #     ],
+// # )
 //
-// data
-//   |> map(fn: (r) => ({
-//       r with
-//       _value: strings.compare(v: r.tag1, t: r.tag2)
-//     })
-//   )
+// < data
+// >     |> map(fn: (r) => ({r with same: strings.compare(v: r.string1, t: r.string2)}))
 // ```
 //
 builtin compare : (v: string, t: string) => int
 
-//countStr counts the number of non-overlapping instances of a substring appears in a string.
+// countStr counts the number of non-overlapping instances of a substring appears in a string.
 //
 // ## Parameters
 //
-// - `v` is the string value to search
-// - `substr` is the substr value to count
+// - v: String value to search.
+// - substr: Substring to count occurences of.
 //
-//      The function counts only non-overlapping instances of substr. For example:
-//      strings.coutnStr(v: "ooooo", substr: "oo")
-//      // Returns 2 -- (oo)(oo)o
+//   The function counts only non-overlapping instances of `substr`.
 //
-// ## Count instances of a substring within a string
+// ## Examples
 //
+// ### Count instances of a substring within a string
 // ```
+// import "sampledata"
 // import "strings"
 //
-// data
-//   |> map(fn: (r) => ({
-//       r with
-//        _value: strings.countStr(v: r.message, substr: "uh")
-//     })
-//   )
+// < sampledata.string()
+// >     |> map(fn: (r) => ({r with _value: strings.countStr(v: r._value, substr: "p")}))
 // ```
 //
 builtin countStr : (v: string, substr: string) => int
 
-// index returns the index of the first instance of a substring in a string. If the substring is not present, it returns -1.
+// index returns the index of the first instance of a substring in a string.
+// If the substring is not present, it returns `-1`.
 //
 // ## Parameters
 //
-// - `v` is the string value to search
-// - `substr` is the substring to search for
+// - v: String value to search.
+// - substr: Substring to search for.
 //
-// ## Find the first occurrence of a substring
+// ## Examples
 //
+// ### Find the index of the first occurrence of a substring
 // ```
+// import "sampledata"
 // import "strings"
 //
-// data
-//   |> map(fn: (r) => ({
-//       r with
-//       the_index: strings.index(v: r.pageTitle, substr: "the")
-//     })
-//   )
+// < sampledata.string()
+// >     |> map(fn: (r) => ({r with _value: strings.index(v: r._value, substr: "g")}))
 // ```
 //
 builtin index : (v: string, substr: string) => int
 
-// indexAny returns the index of the first instance of specified characters in a string. If none of the specified characters are present, it returns -1.
+// indexAny returns the index of the first instance of specified characters in a string.
+// If none of the specified characters are present, it returns `-1`.
 //
 // ## Parameters
 //
-// - `v` is the string value to search
-// - `chars` are the chars to search for
+// - v: String value to search.
+// - chars: Characters to search for.
 //
-// ## Find the first occurrence of characters from a string
+// ## Examples
 //
+// ### Find the index of the first occurrence of characters from a string
 // ```
+// import "sampledata"
 // import "strings"
 //
-// data
-//   |> map(fn: (r) => ({
-//       r with
-//       charIndex: strings.indexAny(v: r._field, chars: "_-")
-//     })
-//   )
+// < sampledata.string()
+// >     |> map(fn: (r) => ({r with _value: strings.indexAny(v: r._value, chars: "g7t")}))
 // ```
 //
 builtin indexAny : (v: string, chars: string) => int
 
-// lastIndex returns the index of the last instance of a substring in a string. If the substring is not present, the function returns -1.
+// lastIndex returns the index of the last instance of a substring in a string.
+// If the substring is not present, the function returns -1.
 //
 // ## Parameters
 //
-// - `v` is the string value to search
-// - `substr` is the substring to search for
+// - v: String value to search.
+// - substr: Substring to search for.
 //
-// ## Find the last occurrence of a substring
+// ## Examples
 //
+// ### Find the index of the last occurrence of a substring
 // ```
+// import "sampledata"
 // import "strings"
 //
-// data
-//   |> map(fn: (r) => ({
-//       r with
-//       the_index: strings.lastIndex(v: r.pageTitle, substr: "the")
-//     })
-//   )
+// < sampledata.string()
+// >     |> map(fn: (r) => ({r with _value: strings.lastIndex(v: r._value, substr: "g")}))
 // ```
 //
 builtin lastIndex : (v: string, substr: string) => int
 
-// lastIndexAny returns the index of the last instance of any specified characters in a string. If none of the specified characters are present, the function returns -1.
+// lastIndexAny returns the index of the last instance of any specified
+// characters in a string.
+// If none of the specified characters are present, the function returns `-1`.
 //
 // ## Parameters
 //
-// - `v` is the string value to search
-// - `chars` are the characters to search for
+// - v: String value to search.
+// - chars: Characters to search for.
 //
-// ## Find the last occurrence of characters from a string
+// ## Examples
 //
+// ### Find the index of the last occurrence of characters from a string
 // ```
+// import "sampledata"
 // import "strings"
 //
-// data
-//   |> map(fn: (r) => ({
-//       r with
-//       charLastIndex: strings.lastIndexAny(v: r._field, chars: "_-")
-//     })
-//   )
+// < sampledata.string()
+// >     |> map(fn: (r) => ({r with _value: strings.lastIndexAny(v: r._value, chars: "g7t")}))
 // ```
 //
 builtin lastIndexAny : (v: string, chars: string) => int
@@ -460,15 +496,20 @@ builtin lastIndexAny : (v: string, chars: string) => int
 //
 // ## Parameters
 //
-// - `v` is the single-character string to test.
+// - v: Single-character string to test.
 //
-// ## Filter by columns with digits as values
+// ## Examples
 //
+// ### Filter by columns with digits as values
 // ```
+// # import "regexp"
+// # import "sampledata"
 // import "strings"
+// #
+// # data = sampledata.string() |> map(fn: (r) => ({ r with _value: regexp.findString(r: /\S{1}$/, v: r._value)}))
 //
-// data
-//   |> filter(fn: (r) => strings.isDigit(v: r.serverRef))
+// < data
+// >     |> filter(fn: (r) => strings.isDigit(v: r._value))
 // ```
 //
 builtin isDigit : (v: string) => bool
@@ -477,15 +518,20 @@ builtin isDigit : (v: string) => bool
 //
 // ## Parameters
 //
-// - `v` is the single-character string to test.
+// - v: Single-character string to test.
 //
-// ## Filter by columns with digits as values
+// ## Examples
 //
+// ### Filter by columns with digits as values
 // ```
+// # import "regexp"
+// # import "sampledata"
 // import "strings"
+// #
+// # data = sampledata.string() |> map(fn: (r) => ({ r with _value: regexp.findString(r: /\S{1}$/, v: r._value)}))
 //
-// data
-//   |> filter(fn: (r) => strings.isLetter(v: r.serverRef))
+// < data
+// >     |> filter(fn: (r) => strings.isLetter(v: r._value))
 // ```
 //
 builtin isLetter : (v: string) => bool
@@ -494,15 +540,32 @@ builtin isLetter : (v: string) => bool
 //
 // ## Parameters
 //
-// - `v` is the single-character string value to test.
+// - v: Single-character string value to test.
 //
-// ## Filter by columns with single-letter lowercase values
+// ## Examples
 //
+// ### Filter by columns with single-letter lowercase values
 // ```
+// # import "array"
 // import "strings"
+// #
+// # data = array.from(
+// #     rows: [
+// #         {_time: 2022-01-01T00:00:00Z, tag: "t1", _value: "a"},
+// #         {_time: 2022-01-01T00:01:00Z, tag: "t1", _value: "B"},
+// #         {_time: 2022-01-01T00:02:00Z, tag: "t1", _value: "C"},
+// #         {_time: 2022-01-01T00:03:00Z, tag: "t1", _value: "d"},
+// #         {_time: 2022-01-01T00:04:00Z, tag: "t1", _value: "e"},
+// #         {_time: 2022-01-01T00:00:00Z, tag: "t2", _value: "F"},
+// #         {_time: 2022-01-01T00:01:00Z, tag: "t2", _value: "g"},
+// #         {_time: 2022-01-01T00:02:00Z, tag: "t2", _value: "H"},
+// #         {_time: 2022-01-01T00:03:00Z, tag: "t2", _value: "i"},
+// #         {_time: 2022-01-01T00:04:00Z, tag: "t2", _value: "J"},
+// #     ]
+// # )  |> group(columns: ["tag"])
 //
-// data
-//   |> filter(fn: (r) => strings.isLower(v: r.host))
+// < data
+// >    |> filter(fn: (r) => strings.isLower(v: r._value))
 // ```
 //
 builtin isLower : (v: string) => bool
@@ -511,62 +574,77 @@ builtin isLower : (v: string) => bool
 //
 // ## Parameters
 //
-// - `v` is the single-character string value to test.
+// - v: Single-character string value to test.
 //
-// ## Filter by columns with single-letter uppercase values
+// ## Examples
 //
+// ### Filter by columns with single-letter uppercase values
 // ```
+// # import "array"
 // import "strings"
+// #
+// # data = array.from(
+// #     rows: [
+// #         {_time: 2022-01-01T00:00:00Z, tag: "t1", _value: "a"},
+// #         {_time: 2022-01-01T00:01:00Z, tag: "t1", _value: "B"},
+// #         {_time: 2022-01-01T00:02:00Z, tag: "t1", _value: "C"},
+// #         {_time: 2022-01-01T00:03:00Z, tag: "t1", _value: "d"},
+// #         {_time: 2022-01-01T00:04:00Z, tag: "t1", _value: "e"},
+// #         {_time: 2022-01-01T00:00:00Z, tag: "t2", _value: "F"},
+// #         {_time: 2022-01-01T00:01:00Z, tag: "t2", _value: "g"},
+// #         {_time: 2022-01-01T00:02:00Z, tag: "t2", _value: "H"},
+// #         {_time: 2022-01-01T00:03:00Z, tag: "t2", _value: "i"},
+// #         {_time: 2022-01-01T00:04:00Z, tag: "t2", _value: "J"},
+// #     ]
+// # )  |> group(columns: ["tag"])
 //
-// data
-//   |> filter(fn: (r) => strings.isUpper(v: r.host))
+// < data
+// >    |> filter(fn: (r) => strings.isUpper(v: r._value))
 // ```
 //
 builtin isUpper : (v: string) => bool
 
-// repeat returns a string consisting of i copies of a specified string.
+// repeat returns a string consisting of `i` copies of a specified string.
 //
 // ## Parameters
 //
-// - `v` is the string value to repeat.
-// - `i` is the number of times to repeat v.
+// - v: String value to repeat.
+// - i: Number of times to repeat `v`.
 //
-// ## Repeat a string based on existing columns
+// ## Examples
 //
+// ### Repeat a string based on existing columns
 // ```
+// # import "math"
+// # import "sampledata"
 // import "strings"
+// #
+// # data = sampledata.float() |> map(fn: (r) => ({r with _value: math.abs(x: r._value) / 2.0})) |> toInt()
 //
-// data
-//   |> map(fn: (r) => ({
-//       laugh: r.laugh
-//       intensity: r.intensity
-//       laughter: strings.repeat(v: r.laugh, i: r.intensity)
-//     })
-//   )
+// < data
+// >     |> map(fn: (r) => ({r with _value: strings.repeat(v: "ha", i: r._value)}))
 // ```
 //
 builtin repeat : (v: string, i: int) => string
 
-// replace replaces the first i non-overlapping instances of a substring with a specified replacement.
+// replace replaces the first `i` non-overlapping instances of a substring with
+// a specified replacement.
 //
 // ## Parameters
 //
-// - `v` is the string value to search.
-// - `t` is the substring value to replace.
-// - `u` is the replacement for i instances of t.
-// - `i` is the number of non-overlapping t matches to replace.
+// - v: String value to search.
+// - t: Substring value to replace.
+// - u: Replacement for `i` instances of `t`.
+// - i: Number of non-overlapping `t` matches to replace.
 //
-// ## Replace a specific number of string matches
+// ## Examples
 //
+// ### Replace a specific number of string matches
 // ```
+// import "sampledata"
 // import "strings"
-//
-// data
-//   |> map(fn: (r) => ({
-//       r with
-//       content: strings.replace(v: r.content, t: "he", u: "her", i: 3)
-//     })
-//   )
+// < sampledata.string()
+// >     |> map(fn: (r) => ({r with _value: strings.replace(v: r._value, t: "p", u: "XX", i: 2)}))
 // ```
 //
 builtin replace : (v: string, t: string, u: string, i: int) => string
@@ -575,21 +653,19 @@ builtin replace : (v: string, t: string, u: string, i: int) => string
 //
 // ## Parameters
 //
-// - `v` is the string value to search.
-// - `t` is the substring to replace.
-// - `u` is the replacement for all instances of t.
+// - v: String value to search.
+// - t: Substring to replace.
+// - u: Replacement for all instances of `t`.
 //
-// ## Replace string matches
+// ## Examples
 //
+// ### Replace string matches
 // ```
+// import "sampledata"
 // import "strings"
 //
-// data
-//   |> map(fn: (r) => ({
-//       r with
-//       content: strings.replaceAll(v: r.content, t: "he", u: "her")
-//     })
-//   )
+// < sampledata.string()
+// >     |> map(fn: (r) => ({r with _value: strings.replaceAll(v: r._value, t: "p", u: "XX")}))
 // ```
 //
 builtin replaceAll : (v: string, t: string, u: string) => string
@@ -598,76 +674,84 @@ builtin replaceAll : (v: string, t: string, u: string) => string
 //
 // ## Parameters
 //
-// - `v` is the string value to split.
-// - `t` is the string value that acts as the separator.
+// - v: String value to split.
+// - t: String value that acts as the separator.
 //
-// ## Split a string into an array of substrings
+// ## Examples
 //
-// ```
+// ### Split a string into an array of substrings
+// ```no_run
 // import "strings"
 //
-// data
-//   |> map (fn:(r) => strings.split(v: r.searchTags, t: ","))
+// strings.split(v: "foo, bar, baz, quz", t: ", ")
+// // Returns ["foo", "bar", "baz", "quz"]
 // ```
 //
 builtin split : (v: string, t: string) => [string]
 
-// splitAfter splits a string after a specified separator and returns an array of substrings. Split substrings include the separator, t.
+// splitAfter splits a string after a specified separator and returns an array of substrings.
+// Split substrings include the separator, `t`.
 //
 // ## Parameters
 //
-// - `v` is the string value to split.
-// - `t` is the string value that acts as the separator.
+// - v: String value to split.
+// - t: String value that acts as the separator.
 //
-// ## Split a string into an array of substrings
+// ## Examples
 //
-// ```
+// ### Split a string into an array of substrings
+// ```no_run
 // import "strings"
 //
-// data
-//    |> map (fn:(r) => strings.splitAfter(v: r.searchTags, t: ","))
+// strings.splitAfter(v: "foo, bar, baz, quz", t: ", ")
+// // Returns ["foo, ", "bar, ", "baz, ", "quz"]
 // ```
 //
 builtin splitAfter : (v: string, t: string) => [string]
 
-// splitN splits a string on a specified separator and returns an array of i substrings.
+// splitN splits a string on a specified separator and returns an array of `i` substrings.
 //
 // ## Parameters
 //
-// - `v` is the string value to split.
-// - `t` is the string value that acts as the separator.
-// - `i` is the maximum number of split substrings to return. -1 returns all matching substrings.
+// - v: String value to split.
+// - t: String value that acts as the separator.
+// - i: Maximum number of split substrings to return.
 //
-//       - The last substring is the unsplit remainder.
+//      `-1` returns all matching substrings.
+//       The last substring is the unsplit remainder.
 //
-// ## Split a string into an array of substrings
+// ## Examples
 //
-// ```
+// ### Split a string into an array of substrings
+// ```no_run
 // import "strings"
 //
-// data
-//    |> map (fn:(r) => strings.splitN(v: r.searchTags, t: ","))
+// strings.splitN(v: "foo, bar, baz, quz", t: ", ", i: 3)
+// // Returns ["foo", "bar", "baz, quz"]
 // ```
 //
-builtin splitN : (v: string, t: string, n: int) => [string]
+builtin splitN : (v: string, t: string, i: int) => [string]
 
-// splitAfterN splits a string after a specified separator and returns an array of i substrings. Split substrings include the separator t.
+// splitAfterN splits a string after a specified separator and returns an array of `i` substrings.
+// Split substrings include the separator, `t`.
 //
 // ## Parameters
 //
-// - `v` is the string value to split.
-// - `t` is the string value that acts as the separator.
-// - `i` is the maximum number of split substrings to return. -1 returns all matching substrings.
+// - v: String value to split.
+// - t: String value that acts as the separator.
+// - i: Maximum number of split substrings to return.
 //
-//       - The last substring is the unsplit remainder.
+//     `-1` returns all matching substrings.
+//     The last substring is the unsplit remainder.
 //
-// ## Split a string into an array of substrings
+// ## Examples
 //
-// ```
+// ### Split a string into an array of substrings
+// ```no_run
 // import "strings"
 //
-// data
-//    |> map (fn:(r) => strings.splitAfterN(v: r.searchTags, t: ","))
+// strings.splitAfterN(v: "foo, bar, baz, quz", t: ", ", i: 3)
+// // Returns ["foo, ", "bar, ", "baz, quz"]
 // ```
 //
 builtin splitAfterN : (v: string, t: string, i: int) => [string]
@@ -676,17 +760,17 @@ builtin splitAfterN : (v: string, t: string, i: int) => [string]
 //
 // ## Parameters
 //
-// - `arr` is the array of strings to concatenate.
-// - `t` is the separator to use in the concatenated value.
+// - arr: Array of strings to concatenate.
+// - v: Separator to use in the concatenated value.
 //
-// ## Join a list of strings into a single string
+// ## Examples
 //
-// ```
+// ### Join a list of strings into a single string
+// ```no_run
 // import "strings"
 //
-// searchTags = ["tag1", "tag2", "tag3"]
-//
-// strings.joinStr(arr: searchTags, v: ","))
+// strings.joinStr(arr: ["foo", "bar", "baz", "quz"], v: ", ")
+// // Returns "foo, bar, baz, quz"
 // ```
 //
 builtin joinStr : (arr: [string], v: string) => string
@@ -695,28 +779,32 @@ builtin joinStr : (arr: [string], v: string) => string
 //
 // ## Parameters
 //
-// - `v` is the string value to measure.
+// - v: String value to measure.
 //
-// ## Filter based on string value length
+// ## Examples
 //
+// ### Filter based on string value length
 // ```
+// # import "regexp"
+// # import "sampledata"
 // import "strings"
+// #
+// # data = sampledata.string() |> map(fn: (r) => ({r with _value: regexp.replaceAllString(r: /[sm]|\d/, v: r._value, t: "")}))
 //
-// data
-//    |> filter(fn: (r) => strings.strlen(v: r._measurement) <= 4)
+// < data
+// >     |> filter(fn: (r) => strings.strlen(v: r._value) <= 6)
 // ```
 //
-// ## Store the length of string values
-//
+// ### Store the length of string values
 // ```
+// # import "regexp"
+// # import "sampledata"
 // import "strings"
+// #
+// # data = sampledata.string() |> map(fn: (r) => ({r with _value: regexp.replaceAllString(r: /[sm]|\d/, v: r._value, t: "")}))
 //
-// data
-//   |> map(fn: (r) => ({
-//       r with
-//       length: strings.strlen(v: r._value)
-//     })
-//   )
+// < data
+// >  |> map(fn: (r) => ({ r with length: strings.strlen(v: r._value)}))
 // ```
 //
 builtin strlen : (v: string) => int
@@ -725,20 +813,18 @@ builtin strlen : (v: string) => int
 //
 // ## Parameters
 //
-// - `v` is the string value to search for.
-// - `start` is the starting inclusive index of the substring.
-// - `end` is the ending exclusive index of the substring.
+// - v: String value to search for.
+// - start: Starting inclusive index of the substring.
+// - end: Ending exclusive index of the substring.
 //
-// ## Store the first four characters of a string
+// ## Examples
 //
+// ### Return part of a string based on character index
 // ```
+// import "sampledata"
 // import "strings"
 //
-// data
-//   |> map(fn: (r) => ({
-//       r with
-//       abbr: strings.substring(v: r.name, start: 0, end: 4)
-//     })
-//   )
+// < sampledata.string()
+// >     |> map(fn: (r) => ({r with _value: strings.substring(v: r._value, start: 5, end: 9)}))
 // ```
 builtin substring : (v: string, start: int, end: int) => string
