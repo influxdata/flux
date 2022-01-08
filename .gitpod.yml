@@ -1,0 +1,11 @@
+tasks:
+- init: |
+    pushd $(mktemp -d)
+    sudo /workspace/flux/install_flatc.sh
+    popd
+    go install github.com/influxdata/pkg-config
+    make generate
+    go build ./cmd/flux
+vscode:
+  extensions:
+    - golang.go
