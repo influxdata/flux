@@ -372,3 +372,67 @@ func (f *RowReducePreparedFn) Eval(ctx context.Context, row int, cr flux.ColRead
 	}
 	return v.Object(), nil
 }
+
+type RowMapReduceFn struct {
+	dynamicFn
+}
+
+func NewRowMapReduceFn(fn *semantic.FunctionExpression, scope compiler.Scope) *RowMapReduceFn {
+	return &RowMapReduceFn{
+		dynamicFn: newDynamicFn(fn, scope),
+	}
+}
+
+func (f *RowMapReduceFn) Prepare(cols []flux.ColMeta, reducerType map[string]semantic.MonoType) (*RowMapReducePreparedFn, error) {
+	fn, err := f.prepare(cols, reducerType)
+	if err != nil {
+		return nil, err
+	}
+
+	if k := fn.returnType().Nature(); k != semantic.Nature(semantic.Object) {
+		return nil, errors.Newf(codes.Invalid, "mapReduce function must return an object, got %s", k.String())
+	}
+
+	propRow, err := fn.returnType().RecordProperty(0)
+	if err != nil {
+		return nil, errors.Wrap(err, codes.Invalid, "mapReduce function must return a record '{ row: ..., accumulator: ... }'")
+	}
+	if propRow.Name() != "row" {
+		return nil, errors.Wrap(err, codes.Invalid, "mapReduce function must return a record '{ row: ..., accumulator: ... }'")
+	}
+
+	propAccumulator, err := fn.returnType().RecordProperty(1)
+	if err != nil {
+		return nil, errors.Wrap(err, codes.Invalid, "mapReduce function must return a record '{ row: ..., accumulator: ... }'")
+	}
+	if propAccumulator.Name() != "accumulator" {
+		return nil, errors.Wrap(err, codes.Invalid, "mapReduce function must return a record '{ row: ..., accumulator: ... }'")
+	}
+	propAccumulatorType, err := propAccumulator.TypeOf()
+	if err != nil {
+		return nil, errors.Wrap(err, codes.Invalid, "mapReduce function must return a record '{ row: ..., accumulator: ... }'")
+	}
+	if !propAccumulatorType.Equal(reducerType["accumulator"]) {
+		return nil, errors.Wrap(err, codes.Invalid, "mapReduce function must return a record '{ row: ..., accumulator: ... }' where the types of 'accumulator' must be identical to the one of the 'identity' argument")
+	}
+
+	return &RowMapReducePreparedFn{
+		rowFn: rowFn{preparedFn: fn},
+	}, nil
+}
+
+type RowMapReducePreparedFn struct {
+	rowFn
+}
+
+func (f *RowMapReducePreparedFn) Type() semantic.MonoType {
+	return f.fn.Type()
+}
+
+func (f *RowMapReducePreparedFn) Eval(ctx context.Context, row int, cr flux.ColReader, extraParams map[string]values.Value) (values.Object, error) {
+	v, err := f.eval(ctx, row, cr, extraParams)
+	if err != nil {
+		return nil, err
+	}
+	return v.Object(), nil
+}

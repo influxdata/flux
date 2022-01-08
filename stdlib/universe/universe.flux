@@ -116,6 +116,7 @@ builtin keys : (<-tables: [A], ?column: string) => [B] where A: Record, B: Recor
 builtin last : (<-tables: [A], ?column: string) => [A] where A: Record
 builtin limit : (<-tables: [A], n: int, ?offset: int) => [A]
 builtin map : (<-tables: [A], fn: (r: A) => B, ?mergeKey: bool) => [B]
+builtin mapReduce : (<-tables: [A], fn: (r: A, accumulator: C) => { row: B, accumulator: C }, ?mergeKey: bool) => [B] where A: Record, B: Record, C: Record
 builtin max : (<-tables: [A], ?column: string) => [A] where A: Record
 builtin mean : (<-tables: [A], ?column: string) => [B] where A: Record, B: Record
 builtin min : (<-tables: [A], ?column: string) => [A] where A: Record

@@ -168,7 +168,7 @@ func (t *mapTransformation) Process(id execute.DatasetID, tbl flux.Table) error 
 			key := groupKeyForObject(i, cr, m, on)
 			builder, created := t.cache.TableBuilder(key)
 			if created {
-				if err := t.createSchema(fn, builder, m); err != nil {
+				if err := t.createSchema(fn.Type(), builder, m); err != nil {
 					return err
 				}
 			}
@@ -237,16 +237,14 @@ func (t *mapTransformation) groupOn(key flux.GroupKey, m semantic.MonoType) (map
 // should be rewritten to use the inferred type from type inference
 // and it should be capable of consolidating schemas from non-uniform
 // tables.
-func (t *mapTransformation) createSchema(fn *execute.RowMapPreparedFn, b execute.TableBuilder, m values.Object) error {
+func (t *mapTransformation) createSchema(rowType semantic.MonoType, b execute.TableBuilder, m values.Object) error {
 	if t.mergeKey {
 		if err := execute.AddTableKeyCols(b.Key(), b); err != nil {
 			return err
 		}
 	}
 
-	returnType := fn.Type()
-
-	numProps, err := returnType.NumProperties()
+	numProps, err := rowType.NumProperties()
 	if err != nil {
 		return err
 	}
@@ -256,7 +254,7 @@ func (t *mapTransformation) createSchema(fn *execute.RowMapPreparedFn, b execute
 	// Scan properties in reverse order to ensure we only
 	// add visible properties to the list.
 	for i := numProps - 1; i >= 0; i-- {
-		prop, err := returnType.RecordProperty(i)
+		prop, err := rowType.RecordProperty(i)
 		if err != nil {
 			return err
 		}
