@@ -10,6 +10,11 @@ import (
 )
 
 // Validator reports whether a given URL is valid.
+//
+// XXX: `sql.validateDataSource` bypasses this for BigQuery DSNs since they have
+// no host information in them and therefore can't have their IP validated.
+// If validation is refactored to later consider more than just IPs, give the
+// `sql.validateDataSource` another look.
 type Validator interface {
 	Validate(*url.URL) error
 	ValidateIP(net.IP) error
