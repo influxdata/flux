@@ -1,4 +1,4 @@
-use std::ops;
+use std::{cell::RefCell, ops};
 
 use derive_more::Display;
 
@@ -8,7 +8,7 @@ use crate::{
     semantic::{
         env::Environment,
         sub::{Substitutable, Substituter, Substitution},
-        types::{self, minus, Kind, MonoType, PolyType, SubstitutionMap, Tvar, TvarKinds},
+        types::{self, Kind, MonoType, PolyType, SubstitutionMap, Tvar, TvarKinds},
     },
 };
 
@@ -181,6 +181,62 @@ pub fn equal(
     })
 }
 
+pub(crate) fn temporary_generalize(
+    env: &Environment,
+    sub: &mut Substitution,
+    t: MonoType,
+) -> PolyType {
+    struct Generalize {
+        env_free_vars: Vec<Tvar>,
+        vars: RefCell<Vec<(Tvar, Tvar)>>,
+    }
+
+    impl Substituter for Generalize {
+        fn try_apply_bound(&self, var: Tvar) -> Option<MonoType> {
+            let mut vars = self.vars.borrow_mut();
+            if vars.iter().all(|(_, v)| *v != var) {
+                vars.push((var, var));
+            }
+            None
+        }
+        fn try_apply(&self, var: Tvar) -> Option<MonoType> {
+            if !self.env_free_vars.contains(&var) {
+                let mut vars = self.vars.borrow_mut();
+                match vars.iter().find(|(v, _)| *v == var) {
+                    Some((_, new_var)) => Some(MonoType::BoundVar(*new_var)),
+                    None => {
+                        let new_var = Tvar(vars.len() as u64);
+                        vars.push((var, new_var));
+                        Some(MonoType::BoundVar(new_var))
+                    }
+                }
+            } else {
+                None
+            }
+        }
+    }
+
+    let generalize = Generalize {
+        env_free_vars: env.mk_free_vars(),
+        vars: Default::default(),
+    };
+    let t = t.apply(&generalize);
+
+    let vars = generalize.vars.into_inner();
+
+    let mut cons = TvarKinds::new();
+    for (tv, bound_tv) in &vars {
+        if let Some(kinds) = sub.cons().get(tv) {
+            cons.insert(*bound_tv, kinds.to_owned());
+        }
+    }
+    PolyType {
+        vars: vars.into_iter().map(|(_, tv)| tv).collect(),
+        cons,
+        expr: t,
+    }
+}
+
 // Create a parametric type from a monotype by universally quantifying
 // all of its free type variables.
 //
@@ -189,16 +245,54 @@ pub fn equal(
 // quantified if has not already been quantified another type in the
 // type environment.
 //
-pub fn generalize(env: &Environment, with: &TvarKinds, t: MonoType) -> PolyType {
-    let vars = minus(&env.mk_free_vars(), t.mk_free_vars());
+pub fn generalize(env: &Environment, sub: &mut Substitution, t: MonoType) -> PolyType {
+    struct Generalize<'a> {
+        env_free_vars: Vec<Tvar>,
+        sub: &'a Substitution,
+        vars: RefCell<Vec<(Tvar, Tvar)>>,
+    }
+
+    impl Substituter for Generalize<'_> {
+        fn try_apply(&self, var: Tvar) -> Option<MonoType> {
+            if !self.env_free_vars.contains(&var) {
+                if (var.0 as usize) < self.sub.len() {
+                    if let Some(new_var) = self.sub.try_apply(var) {
+                        return Some(new_var);
+                    }
+                }
+
+                let mut vars = self.vars.borrow_mut();
+                let new_var = Tvar(vars.len() as u64);
+                vars.push((var, new_var));
+                let new_type = MonoType::BoundVar(new_var);
+                if var.0 as usize > self.sub.len() {
+                    self.sub.mk_fresh(var.0 as usize - self.sub.len() + 1);
+                }
+                self.sub.union_type(var, new_type.clone()).ok()?;
+                Some(new_type)
+            } else {
+                None
+            }
+        }
+    }
+
+    let generalize = Generalize {
+        env_free_vars: env.mk_free_vars(),
+        sub,
+        vars: Default::default(),
+    };
+    let t = t.apply(&generalize);
+
+    let vars = generalize.vars.into_inner();
+
     let mut cons = TvarKinds::new();
-    for tv in &vars {
-        if let Some(kinds) = with.get(tv) {
-            cons.insert(*tv, kinds.to_owned());
+    for (tv, bound_tv) in &vars {
+        if let Some(kinds) = sub.cons().get(tv) {
+            cons.insert(*bound_tv, kinds.to_owned());
         }
     }
     PolyType {
-        vars,
+        vars: vars.into_iter().map(|(_, tv)| tv).collect(),
         cons,
         expr: t,
     }
@@ -236,6 +330,19 @@ pub fn instantiate(
                 .collect::<Vec<Constraint>>()
                 .into()
         });
+
+    // Equivalent to `SubstitutionMap` but instantiates bound variables instead of free variables
+    struct InstantiationMap(SubstitutionMap);
+
+    impl Substituter for InstantiationMap {
+        fn try_apply(&self, _var: Tvar) -> Option<MonoType> {
+            None
+        }
+        fn try_apply_bound(&self, var: Tvar) -> Option<MonoType> {
+            self.0.get(&var).cloned()
+        }
+    }
+
     // Instantiate monotype using new fresh type variables
-    (poly.expr.apply(&sub), constraints)
+    (poly.expr.apply(&InstantiationMap(sub)), constraints)
 }

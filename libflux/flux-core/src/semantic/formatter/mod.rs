@@ -178,6 +178,7 @@ impl Formatter {
     fn format_monotype(&mut self, n: &MonoType) {
         match n {
             MonoType::Var(tv) => self.format_tvar(tv),
+            MonoType::BoundVar(tv) => self.format_tvar(tv),
             MonoType::Arr(arr) => self.format_array_type(arr),
             MonoType::Dict(dict) => self.format_dict_type(dict),
             MonoType::Record(rec) => self.format_record_type(rec),
