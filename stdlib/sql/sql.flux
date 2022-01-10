@@ -151,7 +151,7 @@ builtin from : (driverName: string, dataSourceName: string, query: string) => [A
 //   - postgres
 //   - snowflake
 //   - sqlite3 _(Does not work with InfluxDB OSS or InfluxDB Cloud)_
-//   - sqlserver, mssql
+//   - sqlserver
 //   - vertica, vertigo
 //
 // - dataSourceName: Data source name (DNS) or connection string used
