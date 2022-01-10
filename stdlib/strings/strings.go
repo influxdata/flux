@@ -411,7 +411,7 @@ func init() {
 	runtime.RegisterPackageValue("strings", "lastIndex",
 		generateDualArgStringFunctionReturnInt("lastIndex", []string{stringArgV, substr}, strings.LastIndex))
 	runtime.RegisterPackageValue("strings", "lastIndexAny",
-		generateDualArgStringFunctionReturnInt("lastIndexAny", []string{stringArgV, substr}, strings.LastIndexAny))
+		generateDualArgStringFunctionReturnInt("lastIndexAny", []string{stringArgV, chars}, strings.LastIndexAny))
 	runtime.RegisterPackageValue("strings", "isDigit",
 		generateUnicodeIsFunction("isDigit", unicode.IsDigit))
 	runtime.RegisterPackageValue("strings", "isLetter",

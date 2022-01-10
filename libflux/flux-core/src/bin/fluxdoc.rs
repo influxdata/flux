@@ -293,7 +293,6 @@ impl<'a> example::Executor for CLIExecutor<'a> {
 //
 // See https://github.com/influxdata/flux/issues/4141 for tacking removing of this list.
 const EXCEPTIONS: &[&str] = &[
-    "array",
     "contrib/jsternberg/aggregate",
     "contrib/jsternberg/influxdb",
     "contrib/jsternberg/math",
@@ -308,10 +307,6 @@ const EXCEPTIONS: &[&str] = &[
     "internal/promql",
     "internal/testutil",
     "planner",
-    "slack",
-    "socket",
-    "sql",
-    "strings",
     "testing",
     "testing/chronograf",
     "testing/expect",
