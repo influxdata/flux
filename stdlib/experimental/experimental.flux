@@ -18,6 +18,9 @@ package experimental
 // - d: Duration to add.
 // - to: Time to add the duration to.
 //
+//   Use an absolute time or a relative duration.
+//   Durations are relative to `now()`.
+//
 // ## Examples
 //
 // ### Add six hours to a timestamp
@@ -51,6 +54,17 @@ package experimental
 // // Returns 2022-01-09T16:27:40Z
 // ```
 //
+// ### Add six hours to a relative duration
+// ```no_run
+// import "experimental"
+//
+// option now = () => 2022-01-01T12:00:00Z
+//
+// experimental.addDuration(d: 6h, to: 3h)
+//
+// // Returns 2022-01-01T21:00:00.000000000Z
+// ```
+//
 // tags: date/time
 //
 builtin addDuration : (d: duration, to: T) => time where T: Timeable
@@ -59,6 +73,10 @@ builtin addDuration : (d: duration, to: T) => time where T: Timeable
 //
 // ## Parameters
 // - from: Time to subtract the duration from.
+//
+//   Use an absolute time or a relative duration.
+//   Durations are relative to `now()`.
+//
 // - d: Duration to subtract.
 //
 // ## Examples
@@ -67,12 +85,20 @@ builtin addDuration : (d: duration, to: T) => time where T: Timeable
 // ```no_run
 // import "experimental"
 //
-// experimental.subDuration(
-//     from: 2019-09-16T12:00:00Z,
-//     d: 6h,
-// )
+// experimental.subDuration(from: 2019-09-16T12:00:00Z, d: 6h)
 //
 // // Returns 2019-09-16T06:00:00.000000000Z
+// ```
+//
+// ### Subtract six hours from a relative duration
+// ```no_run
+// import "experimental"
+//
+// option now = () => 2022-01-01T12:00:00Z
+//
+// experimental.subDuration(d: 6h, from: -3h)
+//
+// // Returns 2022-01-01T03:00:00.000000000Z
 // ```
 //
 // ### Subtract two days from one hour ago
