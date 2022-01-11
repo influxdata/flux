@@ -307,7 +307,6 @@ const EXCEPTIONS: &[&str] = &[
     "internal/promql",
     "internal/testutil",
     "planner",
-    "testing",
     "testing/chronograf",
     "testing/expect",
     "testing/influxql",
@@ -316,7 +315,6 @@ const EXCEPTIONS: &[&str] = &[
     "testing/prometheus",
     "testing/promql",
     "testing/usage",
-    "timezone",
     "universe",
     "universe/holt_winters",
 ];

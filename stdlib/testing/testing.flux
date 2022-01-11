@@ -1,107 +1,130 @@
-// Package testing functions test piped-forward data in specific ways and return errors if the tests fail.
+// Package testing provides functions for testing Flux operations.
+//
+// introduced: 0.14.0
+//
 package testing
 
 
 import "array"
 import c "csv"
 
-// assertEquals tests whether two streams have identical data.
+// assertEquals tests whether two streams of tables are identical.
 //
-//      If equal, the function outputs the tested data stream unchanged.
-//      If unequal, the function returns an error.
+// If equal, the function outputs the tested data stream unchanged.
+// If unequal, the function returns an error.
 //
 // assertEquals can be used to perform in-line tests in a query.
 //
 // ## Parameters
-// - `name` is the unique name given to the assertion.
-// - `got` is the stream containing data to test. Defaults to piped-forward data (<-).
-// - `want` is the stream that contains the expected data to test against.
+// - name: Unique assertion name.
+// - got: Data to test. Default is piped-forward data (`<-`).
+// - want: Expected data to test against.
 //
-// ## Assert of separate streams
+// ## Examples
+//
+// ### Test if streams of tables are different
 // ```
+// import "sampledata"
+// import "testing"
+//
+// want = sampledata.int()
+// got = sampledata.float() |> toInt()
+//
+// testing.assertEquals(name: "test_equality", got: got, want: want)
+// ```
+//
+// ### Test if streams of tables are different mid-script
+// ```no_run
 // import "testing"
 //
 // want = from(bucket: "backup-example-bucket")
-//   |> range(start: -5m)
-//
-// got = from(bucket: "example-bucket")
-//   |> range(start: -5m)
-//
-// testing.assertEquals(got: got, want: want)
-// ```
-//
-// ## Inline assertion
-// ```
-// import "testing"
-//
-// want = from(bucket: "backup-example-bucket")
-//   |> range(start: -5m)
+//     |> range(start: -5m)
 //
 // from(bucket: "example-bucket")
-//   |> range(start: -5m)
-//   |> testing.assertEquals(want: want)
+//     |> range(start: -5m)
+//     |> testing.assertEquals(want: want)
 // ```
+//
+// tags: tests
 //
 builtin assertEquals : (name: string, <-got: [A], want: [A]) => [A]
 
 // assertEmpty tests if an input stream is empty. If not empty, the function returns an error.
+//
 // assertEmpty can be used to perform in-line tests in a query.
 //
-// ## Check if there is a difference between streams
+// ## Parameters
+// - tables: Input data. Default is piped-forward data (`<-`).
 //
-//      This example uses the testing.diff() function which outputs the diff for the two streams.
-//      The .testing.assertEmpty() function checks to see if the diff is empty.
+// ## Examples
+//
+// ### Check if there is a difference between streams
+// This example uses `testing.diff()` to output the difference between two streams of tables.
+// `testing.assertEmpty()` checks to see if the difference is empty.
 //
 // ```
+// import "sampledata"
 // import "testing"
 //
-// got = from(bucket: "example-bucket")
-//   |> range(start: -15m)
-// want = from(bucket: "backup_example-bucket")
-//   |> range(start: -15m)
+// want = sampledata.int()
+// got = sampledata.float() |> toInt()
+//
 // got
-//   |> testing.diff(want: want)
-//   |> testing.assertEmpty()
+//     |> testing.diff(want: want)
+//     |> testing.assertEmpty()
 // ```
+//
+// introduced: 0.18.0
+// tags: tests
 //
 builtin assertEmpty : (<-tables: [A]) => [A]
 
 // diff produces a diff between two streams.
 //
-// It matches tables from each stream with the same group keys.
+// The function matches tables from each stream based on group keys.
+// For each matched table, it produces a diff.
+// Any added or removed rows are added to the table as a row.
+// An additional string column with the name diff is created and contains a
+// `-` if the row was present in the `got` table and not in the `want` table or
+// `+` if the opposite is true.
 //
-//      For each matched table, it produces a diff. Any added or removed rows are added to the table as a row.
-//      An additional string column with the name diff is created and contains a
-//      - if the row was present in the got table and not in the want table or + if the opposite is true.
-//
-// The diff function is guaranteed to emit at least one row if the tables are different and no rows if the tables are the same. The exact diff produced may change.
-// diff can be used to perform in-line diffs in a query.
+// `diff()` function is guaranteed to emit at least one row if the tables are
+// different and no rows if the tables are the same.
+// The exact diff produced may change.
+// `diff()` can be used to perform in-line diffs in a query.
 //
 // ## Parameters
-// - `got` is the stream containing data to test. Defaults to piped-forward data (<-).
-// - `want` is the stream that contains the expected data to test against.
-// - `epsilon` specifies how far apart two float values can be, but still considered equal. Defaults to 0.000000001.
+// - got: Stream containing data to test. Default is piped-forward data (`<-`).
+// - want: Stream that contains data to test against.
+// - epsilon: Specify how far apart two float values can be, but still considered equal. Defaults to 0.000000001.
 //
-// ## Diff separate streams
+// ## Examples
+//
+// ### Output a diff between two streams of tables
 // ```
+// import "sampledata"
 // import "testing"
 //
-// want = from(bucket: "backup-example-bucket")
-//   |> range(start: -5m)
-// got = from(bucket: "example-bucket")
-//   |> range(start: -5m)
-// testing.diff(got: got, want: want)
+// want = sampledata.int()
+// got = sampledata.int()
+//     |> map(fn: (r) => ({r with _value: if r._value > 15 then r._value + 1 else r._value }))
+//
+// < testing.diff(got: got, want: want)
 // ```
 //
-// ## Inline diff
-// ```
+// ### Return a diff between a stream of tables an the expected output
+// ```no_run
 // import "testing"
 //
 // want = from(bucket: "backup-example-bucket") |> range(start: -5m)
+//
 // from(bucket: "example-bucket")
-//   |> range(start: -5m)
-//   |> testing.diff(want: want)
+//     |> range(start: -5m)
+//     |> testing.diff(want: want)
 // ```
+//
+// introduced: 0.18.0
+// tags: tests
 //
 builtin diff : (
         <-got: [A],
@@ -111,20 +134,23 @@ builtin diff : (
         ?nansEqual: bool,
     ) => [{A with _diff: string}]
 
-// loadStorage loads annotated CSV test data as if it were queried from InfluxDB.
+// loadStorage loads annotated CSV test data as if queried from InfluxDB.
 // This function ensures tests behave correctly in both the Flux and InfluxDB test suites.
 //
 // ## Function Requirements
-// - Test data requires the _field, _measurement, and _time columns
+// - Test data requires `_field`, `_measurement`, and `_time` columns.
 //
 // ## Parameters
-// - `csv` is the annotated CSV data to load
+// - csv: Annotated CSV data to load.
 //
 // ## Examples
+//
+// ### Load annoated CSV as if queried from InfluxDB
 // ```
 // import "testing"
 //
-// csvData = "
+// csvData =
+//     "
 // #datatype,string,long,string,dateTime:RFC3339,string,double
 // #group,false,false,true,false,true,false
 // #default,_result,,,,,
@@ -136,6 +162,8 @@ builtin diff : (
 //
 // testing.loadStorage(csv: csvData)
 // ```
+//
+// introduced: 0.20.0
 //
 option loadStorage = (csv) =>
     c.from(csv: csv)
@@ -153,46 +181,61 @@ option loadStorage = (csv) =>
                 }),
         )
 
-// load loads tests data from a stream of tables.
+// load loads test data from a stream of tables.
 //
 // ## Parameters
-// - `tables` is the input data. Default is piped-forward data (<-).
+// - tables: Input data. Default is piped-forward data (`<-`).
 //
-// ## Load a raw stream of tables in a test case
+// ## Examples
 //
-//      The following test uses array.from() to create two streams of tables to compare in the test.
+// ### Load a raw stream of tables in a test case
+// The following test uses `array.from()` to create two streams of tables to
+// compare in the test.
 //
 // ```
 // import "testing"
 // import "array"
 //
-// got = array.from(rows: [
-//   {_time: 2021-01-01T00:00:00Z, _measurement: "m", _field: "t", _value: 1.2},
-//   {_time: 2021-01-01T01:00:00Z, _measurement: "m", _field: "t", _value: 0.8},
-//   {_time: 2021-01-01T02:00:00Z, _measurement: "m", _field: "t", _value: 3.2}
-// ])
+// got =
+//     array.from(
+//         rows: [
+//             {_time: 2021-01-01T00:00:00Z, _measurement: "m", _field: "t", _value: 1.2},
+//             {_time: 2021-01-01T01:00:00Z, _measurement: "m", _field: "t", _value: 0.8},
+//             {_time: 2021-01-01T02:00:00Z, _measurement: "m", _field: "t", _value: 3.2},
+//         ],
+//     )
 //
-// want = array.from(rows: [
-//   {_time: 2021-01-01T00:00:00Z, _measurement: "m", _field: "t", _value: 1.2},
-//   {_time: 2021-01-01T01:00:00Z, _measurement: "m", _field: "t", _value: 0.8},
-//   {_time: 2021-01-01T02:00:00Z, _measurement: "m", _field: "t", _value: 3.1}
-// ])
+// want =
+//     array.from(
+//         rows: [
+//             {_time: 2021-01-01T00:00:00Z, _measurement: "m", _field: "t", _value: 1.2},
+//             {_time: 2021-01-01T01:00:00Z, _measurement: "m", _field: "t", _value: 0.8},
+//             {_time: 2021-01-01T02:00:00Z, _measurement: "m", _field: "t", _value: 3.1},
+//         ],
+//     )
 //
-// testing.diff(got, want)
+// testing.load(tables: got)
+//     |> testing.diff(want: want)
 // ```
+//
+// introduced: 0.112.0
 //
 option load = (tables=<-) => tables
 
-// loadMem loads annotated CSV test data from memory to emulate query results returned by Flux.
+// loadMem loads annotated CSV test data from memory to emulate query results
+// returned by Flux.
 //
 // ## Parameters
-// - `csv` is the annotated CSV data to load.
+// - csv: Annotated CSV data to load.
 //
 // ## Examples
+//
+// ### Load annotated CSV as if returned by Flux
 // ```
 // import "testing"
 //
-// csvData = "
+// csvData =
+//     "
 // #datatype,string,long,string,dateTime:RFC3339,string,double
 // #group,false,false,true,false,true,false
 // #default,_result,,,,,
@@ -204,18 +247,24 @@ option load = (tables=<-) => tables
 //
 // testing.loadMem(csv: csvData)
 // ```
+//
+// introduced: 0.20.0
+//
 option loadMem = (csv) => c.from(csv: csv)
 
 // inspect returns information about a test case.
 //
 // ## Parameters
-// - `case` is the test case to inspect.
+// - case: Test case to inspect.
 //
-// ## Define and inspect a test case
-// ```
+// ## Examples
+//
+// ### Define and inspect a test case
+// ```no_run
 // import "testing"
 //
-// inData = "
+// inData =
+//     "
 // #datatype,string,long,string,dateTime:RFC3339,string,double
 // #group,false,false,true,false,true,false
 // #default,_result,,,,,
@@ -225,7 +274,8 @@ option loadMem = (csv) => c.from(csv: csv)
 // ,,0,m,2021-01-03T00:00:00Z,t,2.2
 // "
 //
-// outData = "
+// outData =
+//     "
 // #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,double
 // #group,false,false,true,true,true,true,false
 // #default,_result,,,,,,
@@ -234,23 +284,25 @@ option loadMem = (csv) => c.from(csv: csv)
 // "
 //
 // t_sum = (table=<-) =>
-//   (table
-//     |> range(start:2021-01-01T00:00:00Z, stop:2021-01-03T01:00:00Z)
-//     |> sum())
+//     table
+//         |> range(start: 2021-01-01T00:00:00Z, stop: 2021-01-03T01:00:00Z)
+//         |> sum()
 //
-// test _sum = () =>
-//   ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_sum})
+// test _sum = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_sum})
 //
 // testing.inpsect(case: _sum)
 //
 // // Returns: {
-// //   fn: (<-table: [{_time: time | t10997}]) -> [t10996],
-// //   input: fromCSV -> range -> map,
-// //   want: fromCSV -> yield,
-// //   got: fromCSV -> range -> map -> range -> sum -> yield,
-// //   diff: ( fromCSV; fromCSV -> range -> map -> range -> sum;  ) -> diff -> yield
+// //     fn: (<-table: [{_time: time | t10997}]) -> [t10996],
+// //     input: fromCSV -> range -> map,
+// //     want: fromCSV -> yield,
+// //     got: fromCSV -> range -> map -> range -> sum -> yield,
+// //     diff: ( fromCSV; fromCSV -> range -> map -> range -> sum;  ) -> diff -> yield
 // // }
 // ```
+//
+// introduced: 0.18.0
+//
 inspect = (case) => {
     tc = case()
     got = tc.input |> tc.fn()
@@ -268,13 +320,16 @@ inspect = (case) => {
 // run executes a specified test case.
 //
 // ## Parameters
-// - `case` is the test case to run.
+// - case: Test case to run.
 //
-// ## Define and execute a test case
+// ## Exmamples
+//
+// ### Define and execute a test case
 // ```
 // import "testing"
 //
-// inData = "
+// inData =
+//     "
 // #datatype,string,long,string,dateTime:RFC3339,string,double
 // #group,false,false,true,false,true,false
 // #default,_result,,,,,
@@ -284,7 +339,8 @@ inspect = (case) => {
 // ,,0,m,2021-01-03T00:00:00Z,t,2.2
 // "
 //
-// outData = "
+// outData =
+//     "
 // #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,double
 // #group,false,false,true,true,true,true,false
 // #default,_result,,,,,,
@@ -293,28 +349,33 @@ inspect = (case) => {
 // "
 //
 // t_sum = (table=<-) =>
-//   (table
-//     |> range(start:2021-01-01T00:00:00Z, stop:2021-01-03T01:00:00Z)
-//     |> sum())
+//     table
+//         |> range(start: 2021-01-01T00:00:00Z, stop: 2021-01-03T01:00:00Z)
+//         |> sum()
 //
-// test _sum = () =>
-//   ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_sum})
+// test _sum = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_sum})
 //
 // testing.run(case: _sum)
 // ```
+//
+// introduced: 0.20.0
+//
 run = (case) => {
     return inspect(case: case).diff |> assertEmpty()
 }
 
 // benchmark executes a test case without comparing test output with the expected test output.
-// This lets you accurately benchmark a test case without the added overhead of comparing test output that occurs in testing.run().
+// This lets you accurately benchmark a test case without the added overhead of
+// comparing test output that occurs in `testing.run()`.
 //
 // ## Parameters
-// - `case` is the test case to benchmark.
+// - case: Test case to benchmark.
 //
-// ## Define and benchmark a test case
+// ## Examples
 //
-//      The following script defines a test case for the sum() function and enables profilers to measure query performance.
+// ### Define and benchmark a test case
+// The following script defines a test case for the sum() function and enables
+// profilers to measure query performance.
 //
 // ```
 // import "testing"
@@ -322,7 +383,8 @@ run = (case) => {
 //
 // option profiler.enabledProfilers = ["query", "operator"]
 //
-// inData = "
+// inData =
+//     "
 // #datatype,string,long,string,dateTime:RFC3339,string,double
 // #group,false,false,true,false,true,false
 // #default,_result,,,,,
@@ -332,7 +394,8 @@ run = (case) => {
 // ,,0,m,2021-01-03T00:00:00Z,t,2.2
 // "
 //
-// outData = "
+// outData =
+//     "
 // #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,double
 // #group,false,false,true,true,true,true,false
 // #default,_result,,,,,,
@@ -341,26 +404,40 @@ run = (case) => {
 // "
 //
 // t_sum = (table=<-) =>
-//   (table
-//     |> range(start:2021-01-01T00:00:00Z, stop:2021-01-03T01:00:00Z)
-//     |> sum())
+//     table
+//         |> range(start: 2021-01-01T00:00:00Z, stop: 2021-01-03T01:00:00Z)
+//         |> sum()
 //
-// test _sum = () =>
-//   ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_sum})
+// test _sum = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_sum})
 //
 // testing.benchmark(case: _sum)
 // ```
+//
+// introduced: 0.49.0
+//
 benchmark = (case) => {
     tc = case()
 
     return tc.input |> tc.fn()
 }
 
-// assertEquals tests whether two values are equal
+// assertEqualValues tests whether two values are equal.
 //
 // ## Parameters
-// - `got` is the value to test.
-// - `want` is the expected data to test against.
+// - got: Value to test.
+// - want: Expected value to test against.
+//
+// ## Examples
+//
+// ### Test if two values are equal
+// ```
+// import "testing"
+//
+// < testing.assertEqualValues(got: 5, want: true)
+// ```
+//
+// introduced: 0.141.0
+// tags: tests
 //
 assertEqualValues = (got, want) => {
     return
