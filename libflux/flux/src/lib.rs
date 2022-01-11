@@ -12,7 +12,7 @@ extern crate serde_derive;
 #[macro_use]
 extern crate pretty_assertions;
 
-use std::{ffi::*, mem, os::raw::c_char};
+use std::{any::Any, ffi::*, mem, os::raw::c_char, panic::catch_unwind};
 
 use anyhow::anyhow;
 use once_cell::sync::Lazy;
@@ -48,6 +48,20 @@ pub enum Error {
     /// Other errors that do not have a dedicated variant
     #[error(transparent)]
     Other(#[from] anyhow::Error),
+}
+
+impl From<Box<dyn Any + Send>> for Error {
+    fn from(err: Box<dyn Any + Send>) -> Self {
+        Error::Other(anyhow!(
+            "{}",
+            err.downcast::<String>().map(|s| *s).unwrap_or_else(|err| {
+                err.downcast::<&str>()
+                    .ok()
+                    .map(|s| s.to_string())
+                    .unwrap_or_else(|| "Unknown panic occurred".to_string())
+            }),
+        ))
+    }
 }
 
 use crate::semantic::flatbuffers::semantic_generated::fbsemantic::MonoTypeHolderArgs;
@@ -166,33 +180,43 @@ pub extern "C" fn flux_ast_format(
     csrc: *const c_char,
     out: &mut flux_buffer_t,
 ) -> Option<Box<ErrorHandle>> {
-    let mut out_str = String::new();
-    let source = if csrc.is_null() {
-        None
-    } else {
-        unsafe {
-            match CStr::from_ptr(csrc).to_str() {
-                Ok(s) => Some(s),
-                Err(err) => return Some(Error::from(anyhow::Error::from(err)).into()),
+    let result = catch_unwind(move || {
+        let mut out_str = String::new();
+        let source = if csrc.is_null() {
+            None
+        } else {
+            unsafe {
+                match CStr::from_ptr(csrc).to_str() {
+                    Ok(s) => Some(s),
+                    Err(err) => return Err(Error::from(anyhow::Error::from(err)).into()),
+                }
             }
-        }
-    };
-    for file in &ast_pkg.files {
-        let s = match formatter::convert_to_string(file, source) {
-            Ok(v) => v,
-            Err(e) => return Some(Error::from(e).into()),
         };
-        out_str.push_str(&s);
-    }
+        for file in &ast_pkg.files {
+            let s = match formatter::convert_to_string(file, source) {
+                Ok(v) => v,
+                Err(e) => return Err(Error::from(e).into()),
+            };
+            out_str.push_str(&s);
+        }
 
-    let len = out_str.len();
-    let cstr = match CString::new(out_str) {
-        Ok(bytes) => bytes,
-        Err(e) => return Some(Error::from(anyhow::Error::from(e)).into()),
-    };
-    out.data = cstr.into_raw() as *mut u8;
-    out.len = len;
-    None
+        Ok(out_str)
+    })
+    .unwrap_or_else(|err| Err(Error::from(err).into()));
+
+    match result {
+        Ok(out_str) => {
+            let len = out_str.len();
+            let cstr = match CString::new(out_str) {
+                Ok(bytes) => bytes,
+                Err(e) => return Some(Error::from(anyhow::Error::from(e)).into()),
+            };
+            out.data = cstr.into_raw() as *mut u8;
+            out.len = len;
+            None
+        }
+        Err(err) => Some(err),
+    }
 }
 
 /// flux_ast_get_error returns the first error in the given AST.
@@ -204,11 +228,14 @@ pub extern "C" fn flux_ast_format(
 pub unsafe extern "C" fn flux_ast_get_error(
     ast_pkg: *const ast::Package,
 ) -> Option<Box<ErrorHandle>> {
-    let ast_pkg = ast::walk::Node::Package(&*ast_pkg);
-    match ast::check::check(ast_pkg) {
-        Err(e) => Some(Error::from(anyhow::Error::from(e)).into()),
-        Ok(_) => None,
-    }
+    catch_unwind(|| {
+        let ast_pkg = ast::walk::Node::Package(&*ast_pkg);
+        match ast::check::check(ast_pkg) {
+            Err(e) => Some(Error::from(anyhow::Error::from(e)).into()),
+            Ok(_) => None,
+        }
+    })
+    .unwrap_or_else(|err| Some(Error::from(err).into()))
 }
 
 /// Frees an AST package.
@@ -387,13 +414,14 @@ pub unsafe extern "C" fn flux_analyze(
     ast_pkg: Box<ast::Package>,
     out_sem_pkg: *mut Option<Box<semantic::nodes::Package>>,
 ) -> Option<Box<ErrorHandle>> {
-    match analyze(&ast_pkg) {
+    catch_unwind(move || match analyze(&ast_pkg) {
         Ok(sem_pkg) => {
             *out_sem_pkg = Some(Box::new(sem_pkg));
             None
         }
         Err(err) => Some(err.into()),
-    }
+    })
+    .unwrap_or_else(|err| Some(Error::from(err).into()))
 }
 
 /// flux_find_var_type() is a C-compatible wrapper around the find_var_type() function below.
