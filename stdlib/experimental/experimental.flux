@@ -46,10 +46,7 @@ package experimental
 //
 // option now = () => 2021-12-10T16:27:40Z
 //
-// experimental.addDuration(
-//     d: 1mo,
-//     to: -1d,
-// )
+// experimental.addDuration(d: 1mo, to: -1d)
 //
 // // Returns 2022-01-09T16:27:40Z
 // ```
