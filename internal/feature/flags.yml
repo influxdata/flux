@@ -45,3 +45,9 @@
   key: optimizeUnionTransformation
   default: false
   contact: Jonathan Sternberg
+
+- name: Optimize Sort Limit
+  description: Optimize sort limit
+  key: optimizeSortLimit
+  default: false
+  contact: Jonathan Sternberg

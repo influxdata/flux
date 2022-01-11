@@ -89,6 +89,18 @@ func OptimizeUnionTransformation() BoolFlag {
 	return optimizeUnionTransformation
 }
 
+var optimizeSortLimit = feature.MakeBoolFlag(
+	"Optimize Sort Limit",
+	"optimizeSortLimit",
+	"Jonathan Sternberg",
+	false,
+)
+
+// OptimizeSortLimit - Optimize sort limit
+func OptimizeSortLimit() BoolFlag {
+	return optimizeSortLimit
+}
+
 // Inject will inject the Flagger into the context.
 func Inject(ctx context.Context, flagger Flagger) context.Context {
 	return feature.Inject(ctx, flagger)
@@ -101,6 +113,7 @@ var all = []Flag{
 	queryConcurrencyLimit,
 	optimizeShiftTransformation,
 	optimizeUnionTransformation,
+	optimizeSortLimit,
 }
 
 var byKey = map[string]Flag{
@@ -110,6 +123,7 @@ var byKey = map[string]Flag{
 	"queryConcurrencyLimit":            queryConcurrencyLimit,
 	"optimizeShiftTransformation":      optimizeShiftTransformation,
 	"optimizeUnionTransformation":      optimizeUnionTransformation,
+	"optimizeSortLimit":                optimizeSortLimit,
 }
 
 // Flags returns all feature flags.
