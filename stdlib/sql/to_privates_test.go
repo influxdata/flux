@@ -4,9 +4,7 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	flux "github.com/influxdata/flux"
-	"github.com/influxdata/flux/codes"
-	"github.com/influxdata/flux/internal/errors"
+	"github.com/influxdata/flux"
 )
 
 // represents unsupported type
@@ -43,67 +41,39 @@ func TestTranslationDriverReturn(t *testing.T) {
 
 	// verify invalid return error
 	_, err := getTranslationFunc("bananas")
-	if !cmp.Equal(errors.New(codes.Internal, "invalid driverName: bananas").Error(), err.Error()) {
-		t.Log(cmp.Diff(errors.New(codes.Internal, "invalid driverName: bananas").Error(), err.Error()))
-		t.Fail()
-	}
+	assertErrorMsg(t, "invalid driverName: bananas", err)
 
 	// verify that valid returns expected happiness for SQLITE
 	_, err = getTranslationFunc("sqlite3")
-	if !cmp.Equal(nil, err) {
-		t.Log(cmp.Diff(nil, err))
-		t.Fail()
-	}
+	assertErrorIsNil(t, err)
 
 	// verify that valid returns expected happiness for Postgres
 	_, err = getTranslationFunc("postgres")
-	if !cmp.Equal(nil, err) {
-		t.Log(cmp.Diff(nil, err))
-		t.Fail()
-	}
+	assertErrorIsNil(t, err)
 
 	// verify that valid returns expected happiness for MySQL
 	_, err = getTranslationFunc("mysql")
-	if !cmp.Equal(nil, err) {
-		t.Log(cmp.Diff(nil, err))
-		t.Fail()
-	}
+	assertErrorIsNil(t, err)
 
 	// verify that valid returns expected happiness for Snowflake
 	_, err = getTranslationFunc("snowflake")
-	if !cmp.Equal(nil, err) {
-		t.Log(cmp.Diff(nil, err))
-		t.Fail()
-	}
+	assertErrorIsNil(t, err)
 
 	// verify that valid returns expected happiness for Mssql
 	_, err = getTranslationFunc("sqlserver")
-	if !cmp.Equal(nil, err) {
-		t.Log(cmp.Diff(nil, err))
-		t.Fail()
-	}
+	assertErrorIsNil(t, err)
 
 	// verify that valid returns expected happiness for BigQuery
 	_, err = getTranslationFunc("bigquery")
-	if !cmp.Equal(nil, err) {
-		t.Log(cmp.Diff(nil, err))
-		t.Fail()
-	}
+	assertErrorIsNil(t, err)
 
 	// verify that valid returns expected error for AWS Athena (yes, error)
-	expectedErr := errors.Newf(codes.Invalid, "writing is not supported for awsathena")
 	_, err = getTranslationFunc("awsathena")
-	if !cmp.Equal(expectedErr, err) {
-		t.Log(cmp.Diff(expectedErr, err))
-		t.Fail()
-	}
+	assertErrorMsg(t, "writing is not supported for awsathena", err)
 
 	// verify that valid returns expected happiness for SAP HANA
 	_, err = getTranslationFunc("hdb")
-	if !cmp.Equal(nil, err) {
-		t.Log(cmp.Diff(nil, err))
-		t.Fail()
-	}
+	assertErrorIsNil(t, err)
 
 }
 
@@ -116,39 +86,20 @@ func TestSqliteTranslation(t *testing.T) {
 	}
 	columnLabel := "apples"
 	quote, err := getQuoteIdentFunc("sqlite3")
-	if !cmp.Equal(nil, err) {
-		t.Log(cmp.Diff(nil, err))
-		t.Fail()
-	}
+	assertErrorIsNil(t, err)
+
 	sqlT, err := getTranslationFunc("sqlite3")
-	if !cmp.Equal(nil, err) {
-		t.Log(cmp.Diff(nil, err))
-		t.Fail()
-	}
+	assertErrorIsNil(t, err)
 
 	for dbTypeString, fluxType := range sqliteTypeTranslations {
 		v, err := sqlT()(fluxType, columnLabel)
-		if !cmp.Equal(nil, err) {
-			t.Log(cmp.Diff(nil, err))
-			t.Fail()
-		}
-		if !cmp.Equal(quote(columnLabel)+" "+dbTypeString, v) {
-			t.Log(cmp.Diff(quote(columnLabel)+" "+dbTypeString, v))
-			t.Fail()
-		}
+		assertErrorIsNil(t, err)
+		assertTranslation(t, quote, columnLabel, dbTypeString, v)
 	}
 
 	// as SQLITE has NO BOOLEAN column type, we need to return an error rather than doing implicit conversions
 	_, err = sqlT()(flux.TBool, columnLabel)
-	if cmp.Equal(nil, err) {
-		t.Log(cmp.Diff(nil, err))
-		t.Fail()
-	}
-	if !cmp.Equal("SQLite does not support column type bool", err.Error()) {
-		t.Log(cmp.Diff("SQLite does not support column type bool", err.Error()))
-		t.Fail()
-	}
-
+	assertErrorMsg(t, "SQLite does not support column type bool", err)
 }
 
 func TestPostgresTranslation(t *testing.T) {
@@ -163,38 +114,20 @@ func TestPostgresTranslation(t *testing.T) {
 	columnLabel := "apples"
 	// verify that valid returns expected happiness for postgres
 	quote, err := getQuoteIdentFunc("postgres")
-	if !cmp.Equal(nil, err) {
-		t.Log(cmp.Diff(nil, err))
-		t.Fail()
-	}
+	assertErrorIsNil(t, err)
+
 	sqlT, err := getTranslationFunc("postgres")
-	if !cmp.Equal(nil, err) {
-		t.Log(cmp.Diff(nil, err))
-		t.Fail()
-	}
+	assertErrorIsNil(t, err)
 
 	for dbTypeString, fluxType := range postgresTypeTranslations {
 		v, err := sqlT()(fluxType, columnLabel)
-		if !cmp.Equal(nil, err) {
-			t.Log(cmp.Diff(nil, err))
-			t.Fail()
-		}
-		if !cmp.Equal(quote(columnLabel)+" "+dbTypeString, v) {
-			t.Log(cmp.Diff(quote(columnLabel)+" "+dbTypeString, v))
-			t.Fail()
-		}
+		assertErrorIsNil(t, err)
+		assertTranslation(t, quote, columnLabel, dbTypeString, v)
 	}
 
 	// test no match
 	_, err = sqlT()(unsupportedType, columnLabel)
-	if cmp.Equal(nil, err) {
-		t.Log(cmp.Diff(nil, err))
-		t.Fail()
-	}
-	if !cmp.Equal("PostgreSQL does not support column type unknown", err.Error()) {
-		t.Log(cmp.Diff("PostgreSQL does not support column type unknown", err.Error()))
-		t.Fail()
-	}
+	assertErrorMsg(t, "PostgreSQL does not support column type unknown", err)
 }
 
 func TestMysqlTranslation(t *testing.T) {
@@ -209,38 +142,21 @@ func TestMysqlTranslation(t *testing.T) {
 	columnLabel := "apples"
 	// verify that valid returns expected happiness for mysql
 	quote, err := getQuoteIdentFunc("mysql")
-	if !cmp.Equal(nil, err) {
-		t.Log(cmp.Diff(nil, err))
-		t.Fail()
-	}
+	assertErrorIsNil(t, err)
+
 	sqlT, err := getTranslationFunc("mysql")
-	if !cmp.Equal(nil, err) {
-		t.Log(cmp.Diff(nil, err))
-		t.Fail()
-	}
+	assertErrorIsNil(t, err)
 
 	for dbTypeString, fluxType := range mysqlTypeTranslations {
 		v, err := sqlT()(fluxType, columnLabel)
-		if !cmp.Equal(nil, err) {
-			t.Log(cmp.Diff(nil, err))
-			t.Fail()
-		}
-		if !cmp.Equal(quote(columnLabel)+" "+dbTypeString, v) {
-			t.Log(cmp.Diff(quote(columnLabel)+" "+dbTypeString, v))
-			t.Fail()
-		}
+		assertErrorIsNil(t, err)
+		assertTranslation(t, quote, columnLabel, dbTypeString, v)
+
 	}
 
 	// test no match
 	_, err = sqlT()(unsupportedType, columnLabel)
-	if cmp.Equal(nil, err) {
-		t.Log(cmp.Diff(nil, err))
-		t.Fail()
-	}
-	if !cmp.Equal("MySQL does not support column type unknown", err.Error()) {
-		t.Log(cmp.Diff("MySQL does not support column type unknown", err.Error()))
-		t.Fail()
-	}
+	assertErrorMsg(t, "MySQL does not support column type unknown", err)
 }
 
 func TestSnowflakeTranslation(t *testing.T) {
@@ -255,38 +171,20 @@ func TestSnowflakeTranslation(t *testing.T) {
 	columnLabel := "apples"
 	// verify that valid returns expected happiness for snowflake
 	quote, err := getQuoteIdentFunc("snowflake")
-	if !cmp.Equal(nil, err) {
-		t.Log(cmp.Diff(nil, err))
-		t.Fail()
-	}
+	assertErrorIsNil(t, err)
+
 	sqlT, err := getTranslationFunc("snowflake")
-	if !cmp.Equal(nil, err) {
-		t.Log(cmp.Diff(nil, err))
-		t.Fail()
-	}
+	assertErrorIsNil(t, err)
 
 	for dbTypeString, fluxType := range snowflakeTypeTranslations {
 		v, err := sqlT()(fluxType, columnLabel)
-		if !cmp.Equal(nil, err) {
-			t.Log(cmp.Diff(nil, err))
-			t.Fail()
-		}
-		if !cmp.Equal(quote(columnLabel)+" "+dbTypeString, v) {
-			t.Log(cmp.Diff(quote(columnLabel)+" "+dbTypeString, v))
-			t.Fail()
-		}
+		assertErrorIsNil(t, err)
+		assertTranslation(t, quote, columnLabel, dbTypeString, v)
 	}
 
 	// test no match
 	_, err = sqlT()(unsupportedType, columnLabel)
-	if cmp.Equal(nil, err) {
-		t.Log(cmp.Diff(nil, err))
-		t.Fail()
-	}
-	if !cmp.Equal("Snowflake does not support column type unknown", err.Error()) {
-		t.Log(cmp.Diff("Snowflake does not support column type unknown", err.Error()))
-		t.Fail()
-	}
+	assertErrorMsg(t, "Snowflake does not support column type unknown", err)
 }
 
 func TestMssqlTranslation(t *testing.T) {
@@ -301,38 +199,20 @@ func TestMssqlTranslation(t *testing.T) {
 	columnLabel := "apples"
 	// verify that valid returns expected happiness for mssql
 	quote, err := getQuoteIdentFunc("sqlserver")
-	if !cmp.Equal(nil, err) {
-		t.Log(cmp.Diff(nil, err))
-		t.Fail()
-	}
+	assertErrorIsNil(t, err)
+
 	sqlT, err := getTranslationFunc("sqlserver")
-	if !cmp.Equal(nil, err) {
-		t.Log(cmp.Diff(nil, err))
-		t.Fail()
-	}
+	assertErrorIsNil(t, err)
 
 	for dbTypeString, fluxType := range mssqlTypeTranslations {
 		v, err := sqlT()(fluxType, columnLabel)
-		if !cmp.Equal(nil, err) {
-			t.Log(cmp.Diff(nil, err))
-			t.Fail()
-		}
-		if !cmp.Equal(quote(columnLabel)+" "+dbTypeString, v) {
-			t.Log(cmp.Diff(quote(columnLabel)+" "+dbTypeString, v))
-			t.Fail()
-		}
+		assertErrorIsNil(t, err)
+		assertTranslation(t, quote, columnLabel, dbTypeString, v)
 	}
 
 	// test no match
 	_, err = sqlT()(unsupportedType, columnLabel)
-	if cmp.Equal(nil, err) {
-		t.Log(cmp.Diff(nil, err))
-		t.Fail()
-	}
-	if !cmp.Equal("SQLServer does not support column type unknown", err.Error()) {
-		t.Log(cmp.Diff("SQLServer does not support column type unknown", err.Error()))
-		t.Fail()
-	}
+	assertErrorMsg(t, "SQLServer does not support column type unknown", err)
 }
 
 func TestBigQueryTranslation(t *testing.T) {
@@ -347,38 +227,20 @@ func TestBigQueryTranslation(t *testing.T) {
 	columnLabel := "apples"
 	// verify that valid returns expected happiness for bigquery
 	quote, err := getQuoteIdentFunc("bigquery")
-	if !cmp.Equal(nil, err) {
-		t.Log(cmp.Diff(nil, err))
-		t.Fail()
-	}
+	assertErrorIsNil(t, err)
+
 	sqlT, err := getTranslationFunc("bigquery")
-	if !cmp.Equal(nil, err) {
-		t.Log(cmp.Diff(nil, err))
-		t.Fail()
-	}
+	assertErrorIsNil(t, err)
 
 	for dbTypeString, fluxType := range bigqueryTypeTranslations {
 		v, err := sqlT()(fluxType, columnLabel)
-		if !cmp.Equal(nil, err) {
-			t.Log(cmp.Diff(nil, err))
-			t.Fail()
-		}
-		if !cmp.Equal(quote(columnLabel)+" "+dbTypeString, v) {
-			t.Log(cmp.Diff(quote(columnLabel)+" "+dbTypeString, v))
-			t.Fail()
-		}
+		assertErrorIsNil(t, err)
+		assertTranslation(t, quote, columnLabel, dbTypeString, v)
 	}
 
 	// test no match
 	_, err = sqlT()(unsupportedType, columnLabel)
-	if cmp.Equal(nil, err) {
-		t.Log(cmp.Diff(nil, err))
-		t.Fail()
-	}
-	if !cmp.Equal("BigQuery does not support column type unknown", err.Error()) {
-		t.Log(cmp.Diff("BigQuery does not support column type unknown", err.Error()))
-		t.Fail()
-	}
+	assertErrorMsg(t, "BigQuery does not support column type unknown", err)
 }
 
 func TestHdbTranslation(t *testing.T) {
@@ -393,37 +255,41 @@ func TestHdbTranslation(t *testing.T) {
 	columnLabel := "apples"
 	// verify that valid returns expected happiness for hdb
 	quote, err := getQuoteIdentFunc("hdb")
-	if !cmp.Equal(nil, err) {
-		t.Log(cmp.Diff(nil, err))
-		t.Fail()
-	}
+	assertErrorIsNil(t, err)
 	sqlT, err := getTranslationFunc("hdb")
-	if !cmp.Equal(nil, err) {
-		t.Log(cmp.Diff(nil, err))
-		t.Fail()
-	}
-
+	assertErrorIsNil(t, err)
 	for dbTypeString, fluxType := range hdbTypeTranslations {
 		v, err := sqlT()(fluxType, columnLabel)
-		if !cmp.Equal(nil, err) {
-			t.Log(cmp.Diff(nil, err))
-			t.Fail()
-		}
-		if !cmp.Equal(quote(columnLabel)+" "+dbTypeString, v) {
-			t.Log(cmp.Diff(quote(columnLabel)+" "+dbTypeString, v))
-			t.Fail()
-		}
+		assertErrorIsNil(t, err)
+		assertTranslation(t, quote, columnLabel, dbTypeString, v)
 	}
 
 	// test no match
 	var _unsupportedType flux.ColType = 666
 	_, err = sqlT()(_unsupportedType, columnLabel)
-	if cmp.Equal(nil, err) {
-		t.Log(cmp.Diff(nil, err))
-		t.Fail()
+	assertErrorMsg(t, "SAP HANA does not support column type unknown", err)
+}
+
+// Ensure an error has the expected message.
+func assertErrorMsg(t *testing.T, want string, got error) {
+	if got == nil {
+		t.Error("expected error, got nil")
 	}
-	if !cmp.Equal("SAP HANA does not support column type unknown", err.Error()) {
-		t.Log(cmp.Diff("SAP HANA does not support column type unknown", err.Error()))
-		t.Fail()
+	if diff := cmp.Diff(want, got.Error()); diff != "" {
+		t.Errorf("expected error does not match: (-want/+got):\n%s", diff)
+	}
+}
+
+// Ensure the output from the traslate func uses the appropriate quote func
+func assertTranslation(t *testing.T, quoteFunc quoteIdentFunc, label string, dbType string, got string) {
+	if diff := cmp.Diff(quoteFunc(label)+" "+dbType, got); diff != "" {
+		t.Errorf("quoted ident does not match: (-want/+got):\n%s", diff)
+	}
+}
+
+// Check if an error is nil, failing the test when it isn't
+func assertErrorIsNil(t *testing.T, got error) {
+	if got != nil {
+		t.Errorf("expected error to be nil, got %v", got)
 	}
 }
