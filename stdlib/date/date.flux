@@ -38,6 +38,9 @@ package date
 // ```
 builtin second : (t: T) => int where T: Timeable
 
+// builtin _minute used by minute
+builtin _minute : (t: T, location: {zone: string, offset: duration}) => int where T: Timeable
+
 // minute returns the minute of a specified time. Results range from `[0 - 59]`.
 //
 // ## Parameters
@@ -45,6 +48,7 @@ builtin second : (t: T) => int where T: Timeable
 //
 //    Use an absolute time, relative duration, or integer.
 //    Durations are relative to `now()`.
+// - location: Location loads a timezone based on a location name.
 //
 // ## Examples
 //
@@ -68,7 +72,10 @@ builtin second : (t: T) => int where T: Timeable
 //
 // // Returns 6
 // ```
-builtin minute : (t: T) => int where T: Timeable
+minute = (t, location=location) => _minute(t, location)
+
+// builtin _hour used by hour
+builtin _hour : (t: T, location: {zone: string, offset: duration}) => int where T: Timeable
 
 // hour returns the hour of a specified time. Results range from `[0 - 23]`.
 //
@@ -77,6 +84,7 @@ builtin minute : (t: T) => int where T: Timeable
 //
 //   Use an absolute time, relative duration, or integer.
 //   Durations are relative to `now()`.
+// - location: Location loads a timezone based on a location name.
 //
 // ## Examples
 //
@@ -101,7 +109,10 @@ builtin minute : (t: T) => int where T: Timeable
 //
 // // Returns 7
 // ```
-builtin hour : (t: T) => int where T: Timeable
+hour = (t, location=location) => _hour(t, location)
+
+// builtin _weekDay used by weekDay
+builtin _weekDay : (t: T, location: {zone: string, offset: duration}) => int where T: Timeable
 
 // weekDay returns the day of the week for a specified time.
 // Results range from `[0 - 6]`.
@@ -111,6 +122,7 @@ builtin hour : (t: T) => int where T: Timeable
 //
 //   Use an absolute time, relative duration, or integer.
 //   Durations are relative to `now()`.
+// - location: Location loads a timezone based on a location name.
 //
 // ## Examples
 //
@@ -135,7 +147,10 @@ builtin hour : (t: T) => int where T: Timeable
 //
 // // Returns 6
 // ```
-builtin weekDay : (t: T) => int where T: Timeable
+weekDay = (t, location=location) => _weekDay(t, location)
+
+// builtin _monthDay used by monthDay
+builtin _monthDay : (t: T, location: {zone: string, offset: duration}) => int where T: Timeable
 
 // monthDay returns the day of the month for a specified time.
 // Results range from `[1 - 31]`.
@@ -145,6 +160,7 @@ builtin weekDay : (t: T) => int where T: Timeable
 //
 //   Use an absolute time, relative duration, or integer.
 //   Durations are relative to `now()`.
+// - location: Location loads a timezone based on a location name.
 //
 // ## Examples
 //
@@ -169,7 +185,10 @@ builtin weekDay : (t: T) => int where T: Timeable
 //
 // // Returns 25
 // ```
-builtin monthDay : (t: T) => int where T: Timeable
+monthDay = (t, location=location) => _monthDay(t, location)
+
+// builtin _yearDay used by yearDay
+builtin _yearDay : (t: T, location: {zone: string, offset: duration}) => int where T: Timeable
 
 // yearDay returns the day of the year for a specified time.
 // Results can include leap days and range from `[1 - 366]`.
@@ -179,6 +198,7 @@ builtin monthDay : (t: T) => int where T: Timeable
 //
 //   Use an absolute time, relative duration, or integer.
 //   Durations are relative to `now()`.
+// - location: Location loads a timezone based on a location name.
 //
 // ## Examples
 //
@@ -203,7 +223,10 @@ builtin monthDay : (t: T) => int where T: Timeable
 //
 // // Returns 276
 // ```
-builtin yearDay : (t: T) => int where T: Timeable
+yearDay = (t, location=location) => _yearDay(t, location)
+
+// builtin _month used by month
+builtin _month : (t: T, location: {zone: string, offset: duration}) => int where T: Timeable
 
 // month returns the month of a specified time. Results range from `[1 - 12]`.
 //
@@ -212,6 +235,7 @@ builtin yearDay : (t: T) => int where T: Timeable
 //
 //   Use an absolute time, relative duration, or integer.
 //   Durations are relative to `now()`.
+// - location: Location loads a timezone based on a location name.
 //
 // ## Examples
 //
@@ -236,7 +260,10 @@ builtin yearDay : (t: T) => int where T: Timeable
 //
 // // Returns 8
 // ```
-builtin month : (t: T) => int where T: Timeable
+month = (t, location=location) => _month(t, location)
+
+// builtin _year used by year
+builtin _year : (t: T, location: {zone: string, offset: duration}) => int where T: Timeable
 
 // year returns the year of a specified time.
 //
@@ -245,6 +272,7 @@ builtin month : (t: T) => int where T: Timeable
 //
 //   Use an absolute time, relative duration, or integer.
 //   Durations are relative to `now()`.
+// - location: Location loads a timezone based on a location name.
 //
 // ## Examples
 //
@@ -269,7 +297,10 @@ builtin month : (t: T) => int where T: Timeable
 //
 // // Returns 2007
 // ```
-builtin year : (t: T) => int where T: Timeable
+year = (t, location=location) => _year(t, location)
+
+// builtin _week used by week
+builtin _week : (t: T, location: {zone: string, offset: duration}) => int where T: Timeable
 
 // week returns the ISO week of the year for a specified time.
 // Results range from `[1 - 53]`.
@@ -279,6 +310,7 @@ builtin year : (t: T) => int where T: Timeable
 //
 //   Use an absolute time, relative duration, or integer.
 //   Durations are relative to `now()`.
+// - location: Location loads a timezone based on a location name.
 //
 // ## Examples
 //
@@ -303,7 +335,10 @@ builtin year : (t: T) => int where T: Timeable
 //
 // // Returns 42
 // ```
-builtin week : (t: T) => int where T: Timeable
+week = (t, location=location) => _week(t, location)
+
+// builtin _quarter used by quarter
+builtin _quarter : (t: T, location: {zone: string, offset: duration}) => int where T: Timeable
 
 // quarter returns the quarter for a specified time. Results range from `[1-4]`.
 //
@@ -312,6 +347,7 @@ builtin week : (t: T) => int where T: Timeable
 //
 //   Use an absolute time, relative duration, or integer.
 //   Durations are relative to `now()`.
+// - location: Location loads a timezone based on a location name.
 //
 // ## Examples
 //
@@ -336,7 +372,7 @@ builtin week : (t: T) => int where T: Timeable
 //
 // // Returns 2
 // ```
-builtin quarter : (t: T) => int where T: Timeable
+quarter = (t, location=location) => _quarter(t, location)
 
 // millisecond returns the milliseconds for a specified time.
 // Results range from `[0-999]`.
