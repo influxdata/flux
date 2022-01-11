@@ -122,9 +122,14 @@ func validateDataSource(validator url.Validator, driverName string, dataSourceNa
 		return errors.Newf(codes.Invalid, "sql driver %s not supported", driverName)
 	}
 
-	if err = validator.Validate(u); err != nil {
-		return errors.Newf(codes.Invalid, "data source did not pass url validation: %v", err)
+	// Bigquery DSNs don't contain any host information, so IP validation is not possible.
+	// XXX: Revisit if `url.Validate()` is refactored to check more than just IPs.
+	if driverName != "bigquery" {
+		if err = validator.Validate(u); err != nil {
+			return errors.Newf(codes.Invalid, "data source did not pass url validation: %v", err)
+		}
 	}
+
 	return nil
 
 }
