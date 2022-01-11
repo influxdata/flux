@@ -1,9 +1,8 @@
 //! Checking the semantic graph.
 
-use std::collections::HashMap;
-
 use crate::{
     errors::{located, AsDiagnostic, Located},
+    map::HashMap,
     semantic::{
         nodes,
         nodes::{Assignment, Expression, Statement},

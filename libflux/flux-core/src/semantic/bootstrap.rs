@@ -3,14 +3,16 @@
 //! This package does not assume a location of the source code but does assume which packages are
 //! part of the prelude.
 
-use std::{collections::HashSet, env::consts, fs, io, io::Write, path::Path};
+use std::{env::consts, fs, io, io::Write, path::Path};
 
 use anyhow::{anyhow, bail, Result};
 use libflate::gzip::Encoder;
 use walkdir::WalkDir;
 
 use crate::{
-    ast, parser,
+    ast,
+    map::{HashMap, HashSet},
+    parser,
     semantic::{
         env::Environment,
         flatbuffers::types::{build_module, finish_serialize},
@@ -18,7 +20,7 @@ use crate::{
         import::{Importer, Packages},
         nodes::{self, Package, Symbol},
         sub::Substitutable,
-        types::{MonoType, PolyType, PolyTypeMap, Record, SemanticMap, Tvar, TvarKinds},
+        types::{MonoType, PolyType, PolyTypeHashMap, Record, SemanticMap, Tvar, TvarKinds},
         Analyzer, PackageExports,
     },
 };
@@ -149,7 +151,7 @@ struct InferState {
 
 impl InferState {
     fn infer_pre(&mut self, ast_packages: &ASTPackageMap) -> Result<PackageExports> {
-        let mut prelude_map = SemanticMap::new();
+        let mut prelude_map = HashMap::new();
         for name in PRELUDE {
             // Infer each package in the prelude allowing the earlier packages to be used by later
             // packages within the prelude list.
@@ -249,7 +251,7 @@ fn prelude_from_importer<I>(importer: &mut I) -> Result<PackageExports>
 where
     I: Importer,
 {
-    let mut env = PolyTypeMap::new();
+    let mut env = PolyTypeHashMap::new();
     for pkg in PRELUDE {
         if let Some(pkg_type) = importer.import(pkg) {
             if let MonoType::Record(typ) = pkg_type.expr {
@@ -266,7 +268,7 @@ where
 }
 
 fn add_record_to_map(
-    env: &mut PolyTypeMap<Symbol>,
+    env: &mut PolyTypeHashMap<Symbol>,
     r: &Record,
     free_vars: &[Tvar],
     cons: &TvarKinds,
@@ -360,7 +362,7 @@ mod tests {
     use crate::{
         ast,
         parser::{self, parse_string},
-        semantic::{convert::convert_polytype, nodes::Symbol, sub::Substitution},
+        semantic::{convert::convert_polytype, sub::Substitution},
     };
 
     #[test]
@@ -389,18 +391,14 @@ mod tests {
         let mut infer_state = InferState::default();
         let (types, _) = infer_state.infer_pkg("c", &ast_packages, &PackageExports::new())?;
 
-        let want = PackageExports::try_from(semantic_map! {
-            Symbol::from("z@c") => {
-                let mut p = parser::Parser::new("int");
-                let typ_expr = p.parse_type_expression();
-                if let Err(err) = ast::check::check(ast::walk::Node::TypeExpression(&typ_expr)) {
-                    panic!(
-                        "TypeExpression parsing failed for int. {:?}", err
-                    );
-                }
-                convert_polytype(typ_expr, &mut Substitution::default())?
-            },
-        })
+        let want = PackageExports::try_from(vec![(types.lookup_symbol("z").unwrap().clone(), {
+            let mut p = parser::Parser::new("int");
+            let typ_expr = p.parse_type_expression();
+            if let Err(err) = ast::check::check(ast::walk::Node::TypeExpression(&typ_expr)) {
+                panic!("TypeExpression parsing failed for int. {:?}", err);
+            }
+            convert_polytype(typ_expr, &mut Substitution::default())?
+        })])
         .unwrap();
         if want != types {
             bail!(

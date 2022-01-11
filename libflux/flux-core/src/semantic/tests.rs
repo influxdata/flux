@@ -21,14 +21,15 @@
 //! `assert_eq`, as the types retured from type inference can be
 //! arbitrarily complex.
 //!
-use std::collections::HashMap;
 
 use colored::*;
 use derive_more::Display;
 use expect_test::expect;
 
 use crate::{
-    ast, parser,
+    ast,
+    map::HashMap,
+    parser,
     semantic::{
         self,
         convert::convert_polytype,
@@ -37,14 +38,14 @@ use crate::{
         import::Packages,
         nodes::Symbol,
         sub::Substitution,
-        types::{MonoType, PolyType, PolyTypeMap, SemanticMap, TvarKinds},
+        types::{MonoType, PolyType, PolyTypeHashMap, SemanticMap, TvarKinds},
         Analyzer, AnalyzerConfig, PackageExports,
     },
 };
 
 mod vectorize;
 
-fn parse_map(package: Option<&str>, m: HashMap<&str, &str>) -> PolyTypeMap<Symbol> {
+fn parse_map(package: Option<&str>, m: HashMap<&str, &str>) -> PolyTypeHashMap<Symbol> {
     m.into_iter()
         .map(|(name, expr)| {
             let mut p = parser::Parser::new(expr);
@@ -83,8 +84,8 @@ enum Error {
                     + &format!("\t{}: {}\n", name, poly))"#
     )]
     TypeMismatch {
-        want: SemanticMap<Symbol, PolyType>,
-        got: SemanticMap<Symbol, PolyType>,
+        want: SemanticMap<String, PolyType>,
+        got: SemanticMap<String, PolyType>,
     },
 }
 
@@ -114,7 +115,7 @@ fn infer_types(
 ) -> Result<(PackageExports, semantic::nodes::Package), Error> {
     let _ = env_logger::try_init();
     // Parse polytype expressions in external packages.
-    let imports: SemanticMap<&str, SemanticMap<_, PolyType>> = imp
+    let imports: SemanticMap<&str, _> = imp
         .into_iter()
         .map(|(path, pkg)| (path, parse_map(Some(path), pkg)))
         .collect();
@@ -138,8 +139,15 @@ fn infer_types(
     // Parse polytype expressions in expected environment.
     // Only perform this step if a map of wanted types exists.
     if let Some(want_env) = want {
-        let got = env.clone().into_bindings().collect();
-        let want = parse_map(Some("main"), want_env);
+        let got = env
+            .clone()
+            .into_bindings()
+            .map(|(k, v)| (k.to_string(), v))
+            .collect();
+        let want = parse_map(Some("main"), want_env)
+            .into_iter()
+            .map(|(k, v)| (k.to_string(), v))
+            .collect();
         if want != got {
             return Err(Error::TypeMismatch { want, got });
         }
@@ -3497,8 +3505,9 @@ fn issue_4051() {
 fn copy_bindings_from_other_env() {
     let mut env = Environment::empty(true);
     let mut f = Fresher::default();
+    let a = Symbol::from("a");
     env.add(
-        Symbol::from("a"),
+        a.clone(),
         PolyType {
             vars: Vec::new(),
             cons: TvarKinds::new(),
@@ -3506,8 +3515,9 @@ fn copy_bindings_from_other_env() {
         },
     );
     let mut sub_env = Environment::new(env.clone());
+    let b = Symbol::from("b");
     sub_env.add(
-        Symbol::from("b"),
+        b.clone(),
         PolyType {
             vars: Vec::new(),
             cons: TvarKinds::new(),
@@ -3521,13 +3531,13 @@ fn copy_bindings_from_other_env() {
             external: None,
             parent: Some(env.clone().into()),
             readwrite: true,
-            values: semantic_map!(
-                Symbol::from("b") => PolyType {
+            values: maplit::hashmap!(
+                b => PolyType {
                     vars: Vec::new(),
                     cons: TvarKinds::new(),
                     expr: MonoType::Var(f.fresh()),
                 },
-                Symbol::from("a") => PolyType {
+                a => PolyType {
                     vars: Vec::new(),
                     cons: TvarKinds::new(),
                     expr: MonoType::BOOL,
@@ -3888,22 +3898,16 @@ fn symbol_resolution() {
     );
     assert_eq!(
         member_expr_1.expect("member expression").property,
-        Symbol::from("isType").with_package("types")
+        Symbol::from("isType").with_package("types").to_string()
     );
     assert_eq!(
         ident_expr.expect("ident expression").name,
-        Symbol::from("foo").with_package("main")
+        Symbol::from("foo").with_package("main").to_string()
     );
-    assert_eq!(
-        member_expr_2.expect("member expression").property,
-        Symbol::from("isType")
-    );
+    assert_eq!(member_expr_2.expect("member expression").property, "isType");
 
     // Not currently detected as from the `types` package but could be with better analysis
-    assert_eq!(
-        member_expr_3.expect("member expression").property,
-        Symbol::from("isType")
-    );
+    assert_eq!(member_expr_3.expect("member expression").property, "isType");
 }
 
 #[test]

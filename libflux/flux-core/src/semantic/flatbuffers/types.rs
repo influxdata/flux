@@ -1,8 +1,9 @@
 //! This module defines methods for serializing and deserializing MonoTypes
 //! and PolyTypes using the flatbuffer encoding.
 
-use crate::semantic::{
-    flatbuffers::semantic_generated::fbsemantic as fb, fresh::Fresher, PackageExports,
+use crate::{
+    map::HashMap,
+    semantic::{flatbuffers::semantic_generated::fbsemantic as fb, fresh::Fresher, PackageExports},
 };
 
 #[rustfmt::skip]
@@ -30,6 +31,52 @@ use crate::semantic::{
     flatbuffers::serialize_pkg_into,
 };
 
+#[derive(Default)]
+struct DeserializeFlatBuffer {
+    symbols: HashMap<*const u8, Symbol>,
+}
+
+impl DeserializeFlatBuffer {
+    fn deserialize_packages(&mut self, fb_packages: fb::Packages<'_>) -> Option<Packages> {
+        let fb_packages = fb_packages.packages()?;
+        let mut packages = Packages::new();
+        for package in fb_packages.iter() {
+            let (id, package) = self.deserialize_package_entry(package)?;
+            packages.insert(id, package);
+        }
+        Some(packages)
+    }
+
+    fn deserialize_package_entry(
+        &mut self,
+        a: fb::PackageExports<'_>,
+    ) -> Option<(String, PackageExports)> {
+        let id: String = a.id()?.into();
+        let exports: Option<PackageExports> = self.deserialize_package_exports(a.package()?);
+        Some((id, exports?))
+    }
+
+    fn deserialize_package_exports<'a>(
+        &mut self,
+        env: fb::TypeEnvironment<'a>,
+    ) -> Option<PackageExports> {
+        let env = env.assignments()?;
+        let mut types = Vec::new();
+        for value in env.iter() {
+            let assignment: Option<(&'a str, PolyType)> = value.into();
+            let (id, ty) = assignment?;
+            types.push((
+                self.symbols
+                    .entry(id.as_ptr())
+                    .or_insert_with(|| Symbol::from(id))
+                    .clone(),
+                ty,
+            ));
+        }
+        PackageExports::try_from(types).ok()
+    }
+}
+
 impl From<fb::Fresher<'_>> for Fresher {
     fn from(f: fb::Fresher) -> Fresher {
         Fresher::from(f.u())
@@ -38,41 +85,20 @@ impl From<fb::Fresher<'_>> for Fresher {
 
 impl From<fb::Packages<'_>> for Option<Packages> {
     fn from(fb_packages: fb::Packages<'_>) -> Option<Packages> {
-        let fb_packages = fb_packages.packages()?;
-        let mut packages = Packages::new();
-        for package in fb_packages.iter() {
-            let (id, package) = Option::<(String, PackageExports)>::from(package)?;
-            packages.insert(id, package);
-        }
-        Some(packages)
-    }
-}
-
-impl From<fb::PackageExports<'_>> for Option<(String, PackageExports)> {
-    fn from(a: fb::PackageExports<'_>) -> Self {
-        let id: String = a.id()?.into();
-        let exports: Option<PackageExports> = a.package()?.into();
-        Some((id, exports?))
+        DeserializeFlatBuffer::default().deserialize_packages(fb_packages)
     }
 }
 
 impl From<fb::TypeEnvironment<'_>> for Option<PackageExports> {
     fn from(env: fb::TypeEnvironment) -> Option<PackageExports> {
-        let env = env.assignments()?;
-        let mut types = PolyTypeMap::new();
-        for value in env.iter() {
-            let assignment: Option<(String, PolyType)> = value.into();
-            let (id, ty) = assignment?;
-            types.insert(Symbol::from(id), ty);
-        }
-        PackageExports::try_from(types).ok()
+        DeserializeFlatBuffer::default().deserialize_package_exports(env)
     }
 }
 
-impl From<fb::TypeAssignment<'_>> for Option<(String, PolyType)> {
-    fn from(a: fb::TypeAssignment) -> Option<(String, PolyType)> {
+impl<'a> From<fb::TypeAssignment<'a>> for Option<(&'a str, PolyType)> {
+    fn from(a: fb::TypeAssignment<'a>) -> Self {
         let ty: Option<PolyType> = a.ty()?.into();
-        Some((a.id()?.into(), ty?))
+        Some((a.id()?, ty?))
     }
 }
 
@@ -724,16 +750,42 @@ mod tests {
         }
         let b = convert_polytype(typ_expr, &mut Substitution::default()).unwrap();
 
-        let want: PackageExports = semantic_map! {
-            Symbol::from("a") => a,
-            Symbol::from("b") => b,
-        }
+        let want: PackageExports = vec![
+            (Symbol::from("a"), a.clone()),
+            (Symbol::from("b"), b.clone()),
+        ]
         .try_into()
         .unwrap();
 
         let mut builder = flatbuffers::FlatBufferBuilder::new();
-        let buf = serialize(&mut builder, want.clone(), build_env);
+        let buf = serialize(&mut builder, want, build_env);
         let got = deserialize::<fb::TypeEnvironment, Option<PackageExports>>(buf);
+        let mut deserializer = DeserializeFlatBuffer::default();
+        let got = deserializer
+            .deserialize_package_exports(flatbuffers::root::<fb::TypeEnvironment>(buf).unwrap());
+
+        let want: PackageExports = vec![
+            (
+                deserializer
+                    .symbols
+                    .values()
+                    .find(|s| *s == "a")
+                    .unwrap()
+                    .clone(),
+                a,
+            ),
+            (
+                deserializer
+                    .symbols
+                    .values()
+                    .find(|s| *s == "b")
+                    .unwrap()
+                    .clone(),
+                b,
+            ),
+        ]
+        .try_into()
+        .unwrap();
 
         assert_eq!(want, got.unwrap());
     }

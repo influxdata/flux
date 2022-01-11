@@ -105,9 +105,29 @@ pub(crate) fn convert_monotype(
 }
 
 #[allow(missing_docs)]
-#[derive(Debug, PartialOrd, Ord, PartialEq, Eq, Hash, Clone)]
+#[derive(Clone)]
 pub struct Symbol {
     name: Arc<str>,
+}
+
+impl fmt::Debug for Symbol {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{:?}#{}", self.name.as_ptr(), &self[..])
+    }
+}
+
+impl PartialEq for Symbol {
+    fn eq(&self, other: &Self) -> bool {
+        Arc::ptr_eq(&self.name, &other.name)
+    }
+}
+
+impl Eq for Symbol {}
+
+impl std::hash::Hash for Symbol {
+    fn hash<H: std::hash::Hasher>(&self, hasher: &mut H) {
+        self.name.as_ptr().hash(hasher)
+    }
 }
 
 impl Serialize for Symbol {
@@ -123,6 +143,12 @@ impl std::ops::Deref for Symbol {
     type Target = str;
     fn deref(&self) -> &Self::Target {
         self.as_str()
+    }
+}
+
+impl PartialEq<String> for Symbol {
+    fn eq(&self, other: &String) -> bool {
+        &self[..] == other
     }
 }
 
@@ -188,37 +214,81 @@ impl Symbol {
 }
 
 #[derive(Debug, Default)]
+struct SymbolStack {
+    symbols: Vec<BTreeMap<String, Symbol>>,
+}
+
+impl SymbolStack {
+    fn get(&mut self, name: &str) -> Option<&Symbol> {
+        self.symbols
+            .iter()
+            .rev()
+            .find_map(|symbols| symbols.get(name))
+    }
+
+    fn insert(&mut self, package: Option<&str>, name: String) -> Symbol {
+        let symbol = Symbol::from(match package {
+            Some(package) => format!("{}@{}", name, package),
+            None => name.clone(),
+        });
+        self.symbols
+            .last_mut()
+            .unwrap()
+            .insert(name, symbol.clone());
+        symbol
+    }
+
+    fn enter_scope(&mut self) {
+        self.symbols.push(Default::default());
+    }
+
+    fn exit_scope(&mut self) {
+        match self.symbols.pop() {
+            Some(_) => (),
+            None => panic!("cannot pop final stack frame from symbols"),
+        }
+    }
+}
+
+#[derive(Debug, Default)]
 struct Symbols<'a> {
-    parent: Option<Box<Symbols<'a>>>,
+    symbols: SymbolStack,
+    local_labels: BTreeMap<String, Symbol>,
     env: Option<&'a Environment<'a>>,
-    symbols: BTreeMap<String, Symbol>,
 }
 
 impl<'a> Symbols<'a> {
     fn with_env(env: &'a Environment) -> Self {
         Symbols {
-            parent: None,
             env: Some(env),
-            symbols: BTreeMap::default(),
+            local_labels: Default::default(),
+            symbols: SymbolStack::default(),
         }
     }
 
-    fn new_symbol(&mut self, name: String) -> Symbol {
-        Symbol::from(name)
+    fn insert(&mut self, package: Option<&str>, name: String) -> Symbol {
+        let symbol = self.symbols.insert(package, name);
+        if package.is_none() && !self.local_labels.contains_key(&symbol[..]) {
+            self.local_labels.insert(symbol.to_string(), symbol.clone());
+        }
+        symbol
     }
 
-    fn insert(&mut self, package: Option<&str>, name: String) -> Symbol {
-        let symbol = self.new_symbol(match package {
-            Some(package) => format!("{}@{}", name, package),
-            None => name.clone(),
-        });
-        self.symbols.insert(name, symbol.clone());
-        symbol
+    /// Property keys don't rely on `Symbol` equality so we can use a single `Symbol` for all
+    /// properties of the same name in a single package
+    fn lookup_property_key(&mut self, name: &str) -> Symbol {
+        if let Some(symbol) = self.local_labels.get(name).cloned() {
+            symbol
+        } else {
+            let symbol = Symbol::from(name);
+            self.local_labels.insert(name.to_string(), symbol.clone());
+            symbol
+        }
     }
 
     fn lookup(&mut self, name: &str) -> Symbol {
         self.lookup_option(name)
-            .unwrap_or_else(|| self.new_symbol(name.into()))
+            .unwrap_or_else(|| Symbol::from(name))
     }
 
     fn lookup_option(&mut self, name: &str) -> Option<Symbol> {
@@ -226,25 +296,14 @@ impl<'a> Symbols<'a> {
             .get(name)
             .or_else(|| self.env.and_then(|env| env.lookup_symbol(name)))
             .cloned()
-            .or_else(|| {
-                if let Some(parent) = &mut self.parent {
-                    parent.lookup_option(name)
-                } else {
-                    None
-                }
-            })
     }
 
     fn enter_scope(&mut self) {
-        let parent = std::mem::take(self);
-        self.parent = Some(Box::new(parent));
+        self.symbols.enter_scope()
     }
 
     fn exit_scope(&mut self) {
-        match self.parent.take() {
-            Some(env) => *self = *env,
-            None => panic!("cannot pop final stack frame from symbols"),
-        }
+        self.symbols.exit_scope()
     }
 }
 
@@ -912,7 +971,7 @@ impl<'a> Converter<'a> {
             ast::PropertyKey::Identifier(id) => id.name,
             ast::PropertyKey::StringLit(lit) => lit.value,
         };
-        let property = self.symbols.lookup(&property);
+        let property = self.symbols.lookup_property_key(&property);
         Ok(MemberExpr {
             loc: expr.base.location,
             typ: MonoType::Var(self.sub.fresh()),
@@ -1007,12 +1066,12 @@ impl<'a> Converter<'a> {
 
     fn convert_property(&mut self, prop: ast::Property) -> Result<Property> {
         let key = match prop.key {
-            ast::PropertyKey::Identifier(id) => self.convert_identifier(id)?,
+            ast::PropertyKey::Identifier(id) => self.convert_property_key(id)?,
             ast::PropertyKey::StringLit(lit) => {
                 let loc = lit.base.location.clone();
                 let name = self.convert_string_literal(lit)?.value;
                 Identifier {
-                    name: self.symbols.lookup(&name),
+                    name: self.symbols.lookup_property_key(&name),
                     loc,
                 }
             }
@@ -1022,7 +1081,10 @@ impl<'a> Converter<'a> {
             None => Expression::Identifier(IdentifierExpr {
                 loc: key.loc.clone(),
                 typ: MonoType::Var(self.sub.fresh()),
-                name: key.name.clone(),
+                name: self
+                    .symbols
+                    .lookup_option(&key.name)
+                    .unwrap_or_else(|| key.name.clone()),
             }),
         };
         Ok(Property {
@@ -1069,6 +1131,13 @@ impl<'a> Converter<'a> {
         Ok(Identifier {
             loc: id.base.location,
             name,
+        })
+    }
+
+    fn convert_property_key(&mut self, id: ast::Identifier) -> Result<Identifier> {
+        Ok(Identifier {
+            name: self.symbols.lookup_property_key(&id.name),
+            loc: id.base.location,
         })
     }
 
@@ -1225,6 +1294,31 @@ mod tests {
         Ok(pkg)
     }
 
+    fn collect_symbols(pkg: &Package) -> BTreeMap<String, Symbol> {
+        use crate::semantic::walk;
+
+        let mut map = BTreeMap::new();
+
+        walk::walk(
+            &mut |node| {
+                let symbol = match node {
+                    walk::Node::Identifier(id) => &id.name,
+                    walk::Node::ImportDeclaration(import) => &import.import_symbol,
+                    walk::Node::IdentifierExpr(id) => &id.name,
+                    walk::Node::MemberExpr(member) => &member.property,
+                    _ => return,
+                };
+
+                if !map.contains_key(symbol.full_name()) {
+                    map.insert(symbol.full_name().to_string(), symbol.clone());
+                }
+            },
+            walk::Node::Package(pkg),
+        );
+
+        map
+    }
+
     #[test]
     fn test_convert_empty() {
         let b = ast::BaseNode::default();
@@ -1247,6 +1341,10 @@ mod tests {
     fn test_convert_package() {
         let b = ast::BaseNode::default();
         let pkg = parse_package("package foo");
+
+        let got = test_convert(pkg).unwrap();
+        let symbols = collect_symbols(&got);
+
         let want = Package {
             loc: b.location.clone(),
             package: "foo".to_string(),
@@ -1256,14 +1354,13 @@ mod tests {
                     loc: b.location.clone(),
                     name: Identifier {
                         loc: b.location.clone(),
-                        name: Symbol::from("foo"),
+                        name: symbols["foo"].clone(),
                     },
                 }),
                 imports: Vec::new(),
                 body: Vec::new(),
             }],
         };
-        let got = test_convert(pkg).unwrap();
         assert_eq!(want, got);
     }
 
@@ -1271,21 +1368,25 @@ mod tests {
     fn test_convert_imports() {
         let b = ast::BaseNode::default();
         let pkg = parse_package(
-            r#"package foo
+            r#"package qux
             import "path/foo"
             import b "path/bar"
             "#,
         );
+
+        let got = test_convert(pkg).unwrap();
+        let symbols = collect_symbols(&got);
+
         let want = Package {
             loc: b.location.clone(),
-            package: "foo".to_string(),
+            package: "qux".to_string(),
             files: vec![File {
                 loc: b.location.clone(),
                 package: Some(PackageClause {
                     loc: b.location.clone(),
                     name: Identifier {
                         loc: b.location.clone(),
-                        name: Symbol::from("foo"),
+                        name: symbols["qux"].clone(),
                     },
                 }),
                 imports: vec![
@@ -1296,7 +1397,7 @@ mod tests {
                             value: "path/foo".to_string(),
                         },
                         alias: None,
-                        import_symbol: Symbol::from("foo"),
+                        import_symbol: symbols["foo"].clone(),
                     },
                     ImportDeclaration {
                         loc: b.location.clone(),
@@ -1306,15 +1407,14 @@ mod tests {
                         },
                         alias: Some(Identifier {
                             loc: b.location.clone(),
-                            name: Symbol::from("b"),
+                            name: symbols["b"].clone(),
                         }),
-                        import_symbol: Symbol::from("b"),
+                        import_symbol: symbols["b"].clone(),
                     },
                 ],
                 body: Vec::new(),
             }],
         };
-        let got = test_convert(pkg).unwrap();
         assert_eq!(want, got);
     }
 
@@ -1354,6 +1454,10 @@ mod tests {
                 eof: vec![],
             }],
         };
+
+        let got = test_convert(pkg).unwrap();
+        let symbols = collect_symbols(&got);
+
         let want = Package {
             loc: b.location.clone(),
             package: "main".to_string(),
@@ -1365,7 +1469,7 @@ mod tests {
                     Statement::Variable(Box::new(VariableAssgn::new(
                         Identifier {
                             loc: b.location.clone(),
-                            name: Symbol::from("a@main"),
+                            name: symbols["a@main"].clone(),
                         },
                         Expression::Boolean(BooleanLit {
                             loc: b.location.clone(),
@@ -1378,13 +1482,12 @@ mod tests {
                         expression: Expression::Identifier(IdentifierExpr {
                             loc: b.location.clone(),
                             typ: type_info(),
-                            name: Symbol::from("a@main"),
+                            name: symbols["a@main"].clone(),
                         }),
                     }),
                 ],
             }],
         };
-        let got = test_convert(pkg).unwrap();
         assert_eq!(want, got);
     }
 
@@ -1392,6 +1495,10 @@ mod tests {
     fn test_convert_object() {
         let b = ast::BaseNode::default();
         let pkg = parse_package(r#"{ a: 10 }"#);
+
+        let got = test_convert(pkg).unwrap();
+        let symbols = collect_symbols(&got);
+
         let want = Package {
             loc: b.location.clone(),
             package: "main".to_string(),
@@ -1409,7 +1516,7 @@ mod tests {
                             loc: b.location.clone(),
                             key: Identifier {
                                 loc: b.location.clone(),
-                                name: Symbol::from("a"),
+                                name: symbols["a"].clone(),
                             },
                             value: Expression::Integer(IntegerLit {
                                 loc: b.location.clone(),
@@ -1420,7 +1527,6 @@ mod tests {
                 })],
             }],
         };
-        let got = test_convert(pkg).unwrap();
         assert_eq!(want, got);
     }
 
@@ -1428,6 +1534,10 @@ mod tests {
     fn test_convert_object_with_string_key() {
         let b = ast::BaseNode::default();
         let pkg = parse_package(r#"{ "a": 10 }"#);
+
+        let got = test_convert(pkg).unwrap();
+        let symbols = collect_symbols(&got);
+
         let want = Package {
             loc: b.location.clone(),
             package: "main".to_string(),
@@ -1445,7 +1555,7 @@ mod tests {
                             loc: b.location.clone(),
                             key: Identifier {
                                 loc: b.location.clone(),
-                                name: Symbol::from("a"),
+                                name: symbols["a"].clone(),
                             },
                             value: Expression::Integer(IntegerLit {
                                 loc: b.location.clone(),
@@ -1456,7 +1566,6 @@ mod tests {
                 })],
             }],
         };
-        let got = test_convert(pkg).unwrap();
         assert_eq!(want, got);
     }
 
@@ -1464,6 +1573,10 @@ mod tests {
     fn test_convert_object_with_mixed_keys() {
         let b = ast::BaseNode::default();
         let pkg = parse_package(r#"{ "a": 10, b: 11 }"#);
+
+        let got = test_convert(pkg).unwrap();
+        let symbols = collect_symbols(&got);
+
         let want = Package {
             loc: b.location.clone(),
             package: "main".to_string(),
@@ -1482,7 +1595,7 @@ mod tests {
                                 loc: b.location.clone(),
                                 key: Identifier {
                                     loc: b.location.clone(),
-                                    name: Symbol::from("a"),
+                                    name: symbols["a"].clone(),
                                 },
                                 value: Expression::Integer(IntegerLit {
                                     loc: b.location.clone(),
@@ -1493,7 +1606,7 @@ mod tests {
                                 loc: b.location.clone(),
                                 key: Identifier {
                                     loc: b.location.clone(),
-                                    name: Symbol::from("b"),
+                                    name: symbols["b"].clone(),
                                 },
                                 value: Expression::Integer(IntegerLit {
                                     loc: b.location.clone(),
@@ -1505,7 +1618,6 @@ mod tests {
                 })],
             }],
         };
-        let got = test_convert(pkg).unwrap();
         assert_eq!(want, got);
     }
 
@@ -1513,6 +1625,10 @@ mod tests {
     fn test_convert_object_with_implicit_keys() {
         let b = ast::BaseNode::default();
         let pkg = parse_package("{ a, b }");
+
+        let got = test_convert(pkg).unwrap();
+        let symbols = collect_symbols(&got);
+
         let want = Package {
             loc: b.location.clone(),
             package: "main".to_string(),
@@ -1531,24 +1647,24 @@ mod tests {
                                 loc: b.location.clone(),
                                 key: Identifier {
                                     loc: b.location.clone(),
-                                    name: Symbol::from("a"),
+                                    name: symbols["a"].clone(),
                                 },
                                 value: Expression::Identifier(IdentifierExpr {
                                     loc: b.location.clone(),
                                     typ: type_info(),
-                                    name: Symbol::from("a"),
+                                    name: symbols["a"].clone(),
                                 }),
                             },
                             Property {
                                 loc: b.location.clone(),
                                 key: Identifier {
                                     loc: b.location.clone(),
-                                    name: Symbol::from("b"),
+                                    name: symbols["b"].clone(),
                                 },
                                 value: Expression::Identifier(IdentifierExpr {
                                     loc: b.location.clone(),
                                     typ: type_info(),
-                                    name: Symbol::from("b"),
+                                    name: symbols["b"].clone(),
                                 }),
                             },
                         ],
@@ -1556,7 +1672,6 @@ mod tests {
                 })],
             }],
         };
-        let got = test_convert(pkg).unwrap();
         assert_eq!(want, got);
     }
 
@@ -1566,6 +1681,10 @@ mod tests {
         let pkg = parse_package(
             r#"option task = { name: "foo", every: 1h, delay: 10m, cron: "0 2 * * *", retry: 5}"#,
         );
+
+        let got = test_convert(pkg).unwrap();
+        let symbols = collect_symbols(&got);
+
         let want = Package {
             loc: b.location.clone(),
             package: "main".to_string(),
@@ -1578,7 +1697,7 @@ mod tests {
                     assignment: Assignment::Variable(VariableAssgn::new(
                         Identifier {
                             loc: b.location.clone(),
-                            name: Symbol::from("task"),
+                            name: symbols["task"].clone(),
                         },
                         Expression::Object(Box::new(ObjectExpr {
                             loc: b.location.clone(),
@@ -1589,7 +1708,7 @@ mod tests {
                                     loc: b.location.clone(),
                                     key: Identifier {
                                         loc: b.location.clone(),
-                                        name: Symbol::from("name"),
+                                        name: symbols["name"].clone(),
                                     },
                                     value: Expression::StringLit(StringLit {
                                         loc: b.location.clone(),
@@ -1600,7 +1719,7 @@ mod tests {
                                     loc: b.location.clone(),
                                     key: Identifier {
                                         loc: b.location.clone(),
-                                        name: Symbol::from("every"),
+                                        name: symbols["every"].clone(),
                                     },
                                     value: Expression::Duration(DurationLit {
                                         loc: b.location.clone(),
@@ -1615,7 +1734,7 @@ mod tests {
                                     loc: b.location.clone(),
                                     key: Identifier {
                                         loc: b.location.clone(),
-                                        name: Symbol::from("delay"),
+                                        name: symbols["delay"].clone(),
                                     },
                                     value: Expression::Duration(DurationLit {
                                         loc: b.location.clone(),
@@ -1630,7 +1749,7 @@ mod tests {
                                     loc: b.location.clone(),
                                     key: Identifier {
                                         loc: b.location.clone(),
-                                        name: Symbol::from("cron"),
+                                        name: symbols["cron"].clone(),
                                     },
                                     value: Expression::StringLit(StringLit {
                                         loc: b.location.clone(),
@@ -1641,7 +1760,7 @@ mod tests {
                                     loc: b.location.clone(),
                                     key: Identifier {
                                         loc: b.location.clone(),
-                                        name: Symbol::from("retry"),
+                                        name: symbols["retry"].clone(),
                                     },
                                     value: Expression::Integer(IntegerLit {
                                         loc: b.location.clone(),
@@ -1655,7 +1774,6 @@ mod tests {
                 }))],
             }],
         };
-        let got = test_convert(pkg).unwrap();
         assert_eq!(want, got);
     }
 
@@ -1663,6 +1781,10 @@ mod tests {
     fn test_convert_qualified_option_statement() {
         let b = ast::BaseNode::default();
         let pkg = parse_package(r#"option alert.state = "Warning""#);
+
+        let got = test_convert(pkg).unwrap();
+        let symbols = collect_symbols(&got);
+
         let want = Package {
             loc: b.location.clone(),
             package: "main".to_string(),
@@ -1680,9 +1802,9 @@ mod tests {
                             object: Expression::Identifier(IdentifierExpr {
                                 loc: b.location.clone(),
                                 typ: type_info(),
-                                name: Symbol::from("alert"),
+                                name: symbols["alert"].clone(),
                             }),
-                            property: Symbol::from("state"),
+                            property: symbols["state"].clone(),
                         },
                         init: Expression::StringLit(StringLit {
                             loc: b.location.clone(),
@@ -1692,7 +1814,6 @@ mod tests {
                 }))],
             }],
         };
-        let got = test_convert(pkg).unwrap();
         assert_eq!(want, got);
     }
 
@@ -1703,6 +1824,10 @@ mod tests {
             "f = (a, b) => a + b
             f(a: 2, b: 3)",
         );
+
+        let got = test_convert(pkg).unwrap();
+        let symbols = collect_symbols(&got);
+
         let want = Package {
             loc: b.location.clone(),
             package: "main".to_string(),
@@ -1714,7 +1839,7 @@ mod tests {
                     Statement::Variable(Box::new(VariableAssgn::new(
                         Identifier {
                             loc: b.location.clone(),
-                            name: Symbol::from("f@main"),
+                            name: symbols["f@main"].clone(),
                         },
                         Expression::Function(Box::new(FunctionExpr {
                             loc: b.location.clone(),
@@ -1725,7 +1850,7 @@ mod tests {
                                     is_pipe: false,
                                     key: Identifier {
                                         loc: b.location.clone(),
-                                        name: Symbol::from("a"),
+                                        name: symbols["a"].clone(),
                                     },
                                     default: None,
                                 },
@@ -1734,7 +1859,7 @@ mod tests {
                                     is_pipe: false,
                                     key: Identifier {
                                         loc: b.location.clone(),
-                                        name: Symbol::from("b"),
+                                        name: symbols["b"].clone(),
                                     },
                                     default: None,
                                 },
@@ -1748,12 +1873,12 @@ mod tests {
                                     left: Expression::Identifier(IdentifierExpr {
                                         loc: b.location.clone(),
                                         typ: type_info(),
-                                        name: Symbol::from("a"),
+                                        name: symbols["a"].clone(),
                                     }),
                                     right: Expression::Identifier(IdentifierExpr {
                                         loc: b.location.clone(),
                                         typ: type_info(),
-                                        name: Symbol::from("b"),
+                                        name: symbols["b"].clone(),
                                     }),
                                 })),
                             }),
@@ -1770,14 +1895,14 @@ mod tests {
                             callee: Expression::Identifier(IdentifierExpr {
                                 loc: b.location.clone(),
                                 typ: type_info(),
-                                name: Symbol::from("f@main"),
+                                name: symbols["f@main"].clone(),
                             }),
                             arguments: vec![
                                 Property {
                                     loc: b.location.clone(),
                                     key: Identifier {
                                         loc: b.location.clone(),
-                                        name: Symbol::from("a"),
+                                        name: symbols["a"].clone(),
                                     },
                                     value: Expression::Integer(IntegerLit {
                                         loc: b.location.clone(),
@@ -1788,7 +1913,7 @@ mod tests {
                                     loc: b.location.clone(),
                                     key: Identifier {
                                         loc: b.location.clone(),
-                                        name: Symbol::from("b"),
+                                        name: symbols["b"].clone(),
                                     },
                                     value: Expression::Integer(IntegerLit {
                                         loc: b.location.clone(),
@@ -1801,7 +1926,6 @@ mod tests {
                 ],
             }],
         };
-        let got = test_convert(pkg).unwrap();
         assert_eq!(want, got);
     }
 
@@ -1812,6 +1936,10 @@ mod tests {
             "f = (a=0, b=0, c) => a + b + c
             f(c: 42)",
         );
+
+        let got = test_convert(pkg).unwrap();
+        let symbols = collect_symbols(&got);
+
         let want = Package {
             loc: b.location.clone(),
             package: "main".to_string(),
@@ -1823,7 +1951,7 @@ mod tests {
                     Statement::Variable(Box::new(VariableAssgn::new(
                         Identifier {
                             loc: b.location.clone(),
-                            name: Symbol::from("f@main"),
+                            name: symbols["f@main"].clone(),
                         },
                         Expression::Function(Box::new(FunctionExpr {
                             loc: b.location.clone(),
@@ -1834,7 +1962,7 @@ mod tests {
                                     is_pipe: false,
                                     key: Identifier {
                                         loc: b.location.clone(),
-                                        name: Symbol::from("a"),
+                                        name: symbols["a"].clone(),
                                     },
                                     default: Some(Expression::Integer(IntegerLit {
                                         loc: b.location.clone(),
@@ -1846,7 +1974,7 @@ mod tests {
                                     is_pipe: false,
                                     key: Identifier {
                                         loc: b.location.clone(),
-                                        name: Symbol::from("b"),
+                                        name: symbols["b"].clone(),
                                     },
                                     default: Some(Expression::Integer(IntegerLit {
                                         loc: b.location.clone(),
@@ -1858,7 +1986,7 @@ mod tests {
                                     is_pipe: false,
                                     key: Identifier {
                                         loc: b.location.clone(),
-                                        name: Symbol::from("c"),
+                                        name: symbols["c"].clone(),
                                     },
                                     default: None,
                                 },
@@ -1876,18 +2004,18 @@ mod tests {
                                         left: Expression::Identifier(IdentifierExpr {
                                             loc: b.location.clone(),
                                             typ: type_info(),
-                                            name: Symbol::from("a"),
+                                            name: symbols["a"].clone(),
                                         }),
                                         right: Expression::Identifier(IdentifierExpr {
                                             loc: b.location.clone(),
                                             typ: type_info(),
-                                            name: Symbol::from("b"),
+                                            name: symbols["b"].clone(),
                                         }),
                                     })),
                                     right: Expression::Identifier(IdentifierExpr {
                                         loc: b.location.clone(),
                                         typ: type_info(),
-                                        name: Symbol::from("c"),
+                                        name: symbols["c"].clone(),
                                     }),
                                 })),
                             }),
@@ -1904,13 +2032,13 @@ mod tests {
                             callee: Expression::Identifier(IdentifierExpr {
                                 loc: b.location.clone(),
                                 typ: type_info(),
-                                name: Symbol::from("f@main"),
+                                name: symbols["f@main"].clone(),
                             }),
                             arguments: vec![Property {
                                 loc: b.location.clone(),
                                 key: Identifier {
                                     loc: b.location.clone(),
-                                    name: Symbol::from("c"),
+                                    name: symbols["c"].clone(),
                                 },
                                 value: Expression::Integer(IntegerLit {
                                     loc: b.location.clone(),
@@ -1922,7 +2050,6 @@ mod tests {
                 ],
             }],
         };
-        let got = test_convert(pkg).unwrap();
         assert_eq!(want, got);
     }
 
@@ -2016,6 +2143,9 @@ mod tests {
             3 |> f(a: 2)",
         );
 
+        let got = test_convert(pkg).unwrap();
+        let symbols = collect_symbols(&got);
+
         let want = Package {
             loc: b.location.clone(),
             package: "main".to_string(),
@@ -2027,7 +2157,7 @@ mod tests {
                     Statement::Variable(Box::new(VariableAssgn::new(
                         Identifier {
                             loc: b.location.clone(),
-                            name: Symbol::from("f@main"),
+                            name: symbols["f@main"].clone(),
                         },
                         Expression::Function(Box::new(FunctionExpr {
                             loc: b.location.clone(),
@@ -2038,7 +2168,7 @@ mod tests {
                                     is_pipe: true,
                                     key: Identifier {
                                         loc: b.location.clone(),
-                                        name: Symbol::from("piped"),
+                                        name: symbols["piped"].clone(),
                                     },
                                     default: None,
                                 },
@@ -2047,7 +2177,7 @@ mod tests {
                                     is_pipe: false,
                                     key: Identifier {
                                         loc: b.location.clone(),
-                                        name: Symbol::from("a"),
+                                        name: symbols["a"].clone(),
                                     },
                                     default: None,
                                 },
@@ -2061,12 +2191,12 @@ mod tests {
                                     left: Expression::Identifier(IdentifierExpr {
                                         loc: b.location.clone(),
                                         typ: type_info(),
-                                        name: Symbol::from("a"),
+                                        name: symbols["a"].clone(),
                                     }),
                                     right: Expression::Identifier(IdentifierExpr {
                                         loc: b.location.clone(),
                                         typ: type_info(),
-                                        name: Symbol::from("piped"),
+                                        name: symbols["piped"].clone(),
                                     }),
                                 })),
                             }),
@@ -2086,13 +2216,13 @@ mod tests {
                             callee: Expression::Identifier(IdentifierExpr {
                                 loc: b.location.clone(),
                                 typ: type_info(),
-                                name: Symbol::from("f@main"),
+                                name: symbols["f@main"].clone(),
                             }),
                             arguments: vec![Property {
                                 loc: b.location.clone(),
                                 key: Identifier {
                                     loc: b.location.clone(),
-                                    name: Symbol::from("a"),
+                                    name: symbols["a"].clone(),
                                 },
                                 value: Expression::Integer(IntegerLit {
                                     loc: b.location.clone(),
@@ -2104,13 +2234,16 @@ mod tests {
                 ],
             }],
         };
-        let got = test_convert(pkg).unwrap();
         assert_eq!(want, got);
     }
 
     #[test]
     fn test_function_expression_simple() {
         let b = ast::BaseNode::default();
+        let symbols = ["a", "b"]
+            .into_iter()
+            .map(|s| (s.to_string(), Symbol::from(s)))
+            .collect::<BTreeMap<_, _>>();
         let f = FunctionExpr {
             loc: b.location.clone(),
             typ: type_info(),
@@ -2120,7 +2253,7 @@ mod tests {
                     is_pipe: false,
                     key: Identifier {
                         loc: b.location.clone(),
-                        name: Symbol::from("a"),
+                        name: symbols["a"].clone(),
                     },
                     default: None,
                 },
@@ -2129,7 +2262,7 @@ mod tests {
                     is_pipe: false,
                     key: Identifier {
                         loc: b.location.clone(),
-                        name: Symbol::from("b"),
+                        name: symbols["b"].clone(),
                     },
                     default: None,
                 },
@@ -2143,12 +2276,12 @@ mod tests {
                     left: Expression::Identifier(IdentifierExpr {
                         loc: b.location.clone(),
                         typ: type_info(),
-                        name: Symbol::from("a"),
+                        name: symbols["a"].clone(),
                     }),
                     right: Expression::Identifier(IdentifierExpr {
                         loc: b.location.clone(),
                         typ: type_info(),
-                        name: Symbol::from("b"),
+                        name: symbols["b"].clone(),
                     }),
                 })),
             }),
@@ -2161,12 +2294,16 @@ mod tests {
     #[test]
     fn test_function_expression_defaults_and_pipes() {
         let b = ast::BaseNode::default();
+        let symbols = ["a", "b", "c", "d"]
+            .into_iter()
+            .map(|s| (s.to_string(), Symbol::from(s)))
+            .collect::<BTreeMap<_, _>>();
         let piped = FunctionParameter {
             loc: b.location.clone(),
             is_pipe: true,
             key: Identifier {
                 loc: b.location.clone(),
-                name: Symbol::from("a"),
+                name: symbols["a"].clone(),
             },
             default: Some(Expression::Integer(IntegerLit {
                 loc: b.location.clone(),
@@ -2178,7 +2315,7 @@ mod tests {
             is_pipe: false,
             key: Identifier {
                 loc: b.location.clone(),
-                name: Symbol::from("b"),
+                name: symbols["b"].clone(),
             },
             default: Some(Expression::Integer(IntegerLit {
                 loc: b.location.clone(),
@@ -2190,7 +2327,7 @@ mod tests {
             is_pipe: false,
             key: Identifier {
                 loc: b.location.clone(),
-                name: Symbol::from("c"),
+                name: symbols["c"].clone(),
             },
             default: Some(Expression::Integer(IntegerLit {
                 loc: b.location.clone(),
@@ -2202,7 +2339,7 @@ mod tests {
             is_pipe: false,
             key: Identifier {
                 loc: b.location.clone(),
-                name: Symbol::from("d"),
+                name: symbols["d"].clone(),
             },
             default: None,
         };
@@ -2225,12 +2362,12 @@ mod tests {
                     left: Expression::Identifier(IdentifierExpr {
                         loc: b.location.clone(),
                         typ: type_info(),
-                        name: Symbol::from("a"),
+                        name: symbols["a"].clone(),
                     }),
                     right: Expression::Identifier(IdentifierExpr {
                         loc: b.location.clone(),
                         typ: type_info(),
-                        name: Symbol::from("b"),
+                        name: symbols["b"].clone(),
                     }),
                 })),
             }),
@@ -2245,6 +2382,10 @@ mod tests {
         let b = ast::BaseNode::default();
         let pkg =
             Parser::new("a[3]").parse_single_package("path".to_string(), "foo.flux".to_string());
+
+        let got = test_convert(pkg).unwrap();
+        let symbols = collect_symbols(&got);
+
         let want = Package {
             loc: b.location.clone(),
             package: "main".to_string(),
@@ -2260,7 +2401,7 @@ mod tests {
                         array: Expression::Identifier(IdentifierExpr {
                             loc: b.location.clone(),
                             typ: type_info(),
-                            name: Symbol::from("a"),
+                            name: symbols["a"].clone(),
                         }),
                         index: Expression::Integer(IntegerLit {
                             loc: b.location.clone(),
@@ -2270,7 +2411,6 @@ mod tests {
                 })],
             }],
         };
-        let got = test_convert(pkg).unwrap();
         assert_eq!(want, got);
     }
 
@@ -2279,6 +2419,10 @@ mod tests {
         let b = ast::BaseNode::default();
         let pkg =
             Parser::new("a[3][5]").parse_single_package("path".to_string(), "foo.flux".to_string());
+
+        let got = test_convert(pkg).unwrap();
+        let symbols = collect_symbols(&got);
+
         let want = Package {
             loc: b.location.clone(),
             package: "main".to_string(),
@@ -2297,7 +2441,7 @@ mod tests {
                             array: Expression::Identifier(IdentifierExpr {
                                 loc: b.location.clone(),
                                 typ: type_info(),
-                                name: Symbol::from("a"),
+                                name: symbols["a"].clone(),
                             }),
                             index: Expression::Integer(IntegerLit {
                                 loc: b.location.clone(),
@@ -2312,7 +2456,6 @@ mod tests {
                 })],
             }],
         };
-        let got = test_convert(pkg).unwrap();
         assert_eq!(want, got);
     }
 
@@ -2321,6 +2464,10 @@ mod tests {
         let b = ast::BaseNode::default();
         let pkg =
             Parser::new("f()[3]").parse_single_package("path".to_string(), "foo.flux".to_string());
+
+        let got = test_convert(pkg).unwrap();
+        let symbols = collect_symbols(&got);
+
         let want = Package {
             loc: b.location.clone(),
             package: "main".to_string(),
@@ -2340,7 +2487,7 @@ mod tests {
                             callee: Expression::Identifier(IdentifierExpr {
                                 loc: b.location.clone(),
                                 typ: type_info(),
-                                name: Symbol::from("f"),
+                                name: symbols["f"].clone(),
                             }),
                             arguments: Vec::new(),
                         })),
@@ -2352,7 +2499,6 @@ mod tests {
                 })],
             }],
         };
-        let got = test_convert(pkg).unwrap();
         assert_eq!(want, got);
     }
 
@@ -2397,6 +2543,10 @@ mod tests {
                 eof: vec![],
             }],
         };
+
+        let got = test_convert(pkg).unwrap();
+        let symbols = collect_symbols(&got);
+
         let want = Package {
             loc: b.location.clone(),
             package: "main".to_string(),
@@ -2415,16 +2565,15 @@ mod tests {
                             object: Expression::Identifier(IdentifierExpr {
                                 loc: b.location.clone(),
                                 typ: type_info(),
-                                name: Symbol::from("a"),
+                                name: symbols["a"].clone(),
                             }),
-                            property: Symbol::from("b"),
+                            property: symbols["b"].clone(),
                         })),
-                        property: Symbol::from("c"),
+                        property: symbols["c"].clone(),
                     })),
                 })],
             }],
         };
-        let got = test_convert(pkg).unwrap();
         assert_eq!(want, got);
     }
 
@@ -2433,6 +2582,9 @@ mod tests {
         let b = ast::BaseNode::default();
         let pkg =
             Parser::new("a.b().c").parse_single_package("path".to_string(), "foo.flux".to_string());
+        let got = test_convert(pkg).unwrap();
+
+        let symbols = collect_symbols(&got);
 
         let want = Package {
             loc: b.location.clone(),
@@ -2456,18 +2608,17 @@ mod tests {
                                 object: Expression::Identifier(IdentifierExpr {
                                     loc: b.location.clone(),
                                     typ: type_info(),
-                                    name: Symbol::from("a"),
+                                    name: symbols["a"].clone(),
                                 }),
-                                property: Symbol::from("b"),
+                                property: symbols["b"].clone(),
                             })),
                             arguments: Vec::new(),
                         })),
-                        property: Symbol::from("c"),
+                        property: symbols["c"].clone(),
                     })),
                 })],
             }],
         };
-        let got = test_convert(pkg).unwrap();
         assert_eq!(want, got);
     }
 
