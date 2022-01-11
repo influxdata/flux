@@ -2,7 +2,6 @@ package universe
 
 import (
 	"container/heap"
-	"context"
 	"sort"
 
 	"github.com/apache/arrow/go/arrow/memory"
@@ -52,7 +51,7 @@ func createSortOpSpec(args flux.Arguments, a *flux.Administration) (flux.Operati
 			return nil, err
 		}
 	} else {
-		//Default behavior to sort by value
+		// Default behavior to sort by value
 		spec.Columns = []string{execute.DefaultValueColLabel}
 	}
 
@@ -137,18 +136,7 @@ func NewSortTransformation(id execute.DatasetID, spec *SortProcedureSpec, mem me
 }
 
 func (s *sortTransformation) Process(id execute.DatasetID, tbl flux.Table) error {
-	sortCols := make([]int, 0, len(s.cols))
-	for _, col := range s.cols {
-		if idx := execute.ColIdx(col, tbl.Cols()); idx >= 0 {
-			// If the sort key is part of the group key, skip it anyway.
-			// They are all sorted anyway.
-			if tbl.Key().HasCol(col) {
-				continue
-			}
-			sortCols = append(sortCols, idx)
-		}
-	}
-
+	sortCols := s.sortCols(tbl.Key(), tbl.Cols())
 	mh := &sortTableMergeHeap{
 		cols:     tbl.Cols(),
 		key:      tbl.Key(),
@@ -161,11 +149,26 @@ func (s *sortTransformation) Process(id execute.DatasetID, tbl flux.Table) error
 		return err
 	}
 
-	out, err := mh.Table(s.mem)
+	out, err := mh.Table(-1, s.mem)
 	if err != nil {
 		return err
 	}
 	return s.d.Process(out)
+}
+
+func (s *sortTransformation) sortCols(key flux.GroupKey, cols []flux.ColMeta) []int {
+	sortCols := make([]int, 0, len(s.cols))
+	for _, col := range s.cols {
+		if idx := execute.ColIdx(col, cols); idx >= 0 {
+			// If the sort key is part of the group key, skip it anyway.
+			// They are all sorted anyway.
+			if key.HasCol(col) {
+				continue
+			}
+			sortCols = append(sortCols, idx)
+		}
+	}
+	return sortCols
 }
 
 func (s *sortTransformation) processView(mh *sortTableMergeHeap, cr flux.ColReader) error {
@@ -327,7 +330,7 @@ func (s *sortTableMergeHeap) ValueLen() int {
 	return n
 }
 
-func (s *sortTableMergeHeap) Table(mem memory.Allocator) (flux.Table, error) {
+func (s *sortTableMergeHeap) Table(limit int, mem memory.Allocator) (flux.Table, error) {
 	// Construct the buffered builder that will contain the full table.
 	builder := table.NewBufferedBuilder(s.key, mem)
 
@@ -365,13 +368,19 @@ func (s *sortTableMergeHeap) Table(mem memory.Allocator) (flux.Table, error) {
 	}()
 
 	// Continue merging the tables until there are none.
-	for len(s.items) > 0 {
+	for len(s.items) > 0 && limit != 0 {
 		n := s.ValueLen()
 		if n > table.BufferSize {
 			n = table.BufferSize
 		}
+		if limit > 0 && n > limit {
+			n = limit
+		}
 
 		buffer := s.NextBuffer(builders, keys, n, mem)
+		if limit > 0 {
+			limit -= buffer.Len()
+		}
 		if err := builder.AppendBuffer(&buffer); err != nil {
 			buffer.Release()
 			return nil, err
@@ -442,20 +451,4 @@ func (s *sortTableMergeHeap) NextBuffer(builders []array.Builder, keys []array.I
 		buffer.Values[i] = builders[i].NewArray()
 	}
 	return buffer
-}
-
-// TODO(jsternberg): Remove this when all uses of this rule have been removed.
-// This is now the default and so this doesn't do anything.
-type OptimizeSortRule struct{}
-
-func (r OptimizeSortRule) Name() string {
-	return "OptimizeSortRule"
-}
-
-func (r OptimizeSortRule) Pattern() plan.Pattern {
-	return plan.Pat(SortKind, plan.Any())
-}
-
-func (r OptimizeSortRule) Rewrite(ctx context.Context, node plan.Node) (plan.Node, bool, error) {
-	return node, false, nil
 }

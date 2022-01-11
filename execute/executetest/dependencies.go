@@ -32,6 +32,7 @@ var testFlags = map[string]interface{}{
 	"groupTransformationGroup":         true,
 	"optimizeShiftTransformation":      true,
 	"optimizeUnionTransformation":      true,
+	"optimizeSortLimit":                true,
 }
 
 type testFlagger struct{}
