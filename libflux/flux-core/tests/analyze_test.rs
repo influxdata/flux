@@ -1,14 +1,39 @@
+use std::collections::BTreeMap;
+
 use fluxcore::{
     ast,
     semantic::{
         import::Packages,
         nodes::*,
         types::{Function, MonoType, SemanticMap, Tvar},
-        walk::{walk_mut, NodeMut},
+        walk::{self, walk_mut, NodeMut},
         Analyzer,
     },
 };
 use pretty_assertions::assert_eq;
+
+fn collect_symbols(pkg: &Package) -> BTreeMap<String, Symbol> {
+    let mut map = BTreeMap::new();
+
+    walk::walk(
+        &mut |node| {
+            let symbol = match node {
+                walk::Node::Identifier(id) => &id.name,
+                walk::Node::ImportDeclaration(import) => &import.import_symbol,
+                walk::Node::IdentifierExpr(id) => &id.name,
+                walk::Node::MemberExpr(member) => &member.property,
+                _ => return,
+            };
+
+            if !map.contains_key(symbol.full_name()) {
+                map.insert(symbol.full_name().to_string(), symbol.clone());
+            }
+        },
+        walk::Node::Package(pkg),
+    );
+
+    map
+}
 
 #[test]
 fn analyze_end_to_end() {
@@ -26,6 +51,7 @@ f(a: s)
         "#,
         )
         .unwrap();
+    let symbols = collect_symbols(&got);
     let f_type = Function {
         req: fluxcore::semantic_map! {
             "a".to_string() => MonoType::Var(Tvar(4)),
@@ -61,7 +87,7 @@ f(a: s)
                 Statement::Variable(Box::new(VariableAssgn::new(
                     Identifier {
                         loc: ast::BaseNode::default().location,
-                        name: Symbol::from("n@main"),
+                        name: symbols["n@main"].clone(),
                     },
                     Expression::Integer(IntegerLit {
                         loc: ast::BaseNode::default().location,
@@ -72,7 +98,7 @@ f(a: s)
                 Statement::Variable(Box::new(VariableAssgn::new(
                     Identifier {
                         loc: ast::BaseNode::default().location,
-                        name: Symbol::from("s@main"),
+                        name: symbols["s@main"].clone(),
                     },
                     Expression::StringLit(StringLit {
                         loc: ast::BaseNode::default().location,
@@ -83,7 +109,7 @@ f(a: s)
                 Statement::Variable(Box::new(VariableAssgn::new(
                     Identifier {
                         loc: ast::BaseNode::default().location,
-                        name: Symbol::from("f@main"),
+                        name: symbols["f@main"].clone(),
                     },
                     Expression::Function(Box::new(FunctionExpr {
                         loc: ast::BaseNode::default().location,
@@ -93,7 +119,7 @@ f(a: s)
                             is_pipe: false,
                             key: Identifier {
                                 loc: ast::BaseNode::default().location,
-                                name: Symbol::from("a"),
+                                name: symbols["a"].clone(),
                             },
                             default: None,
                         }],
@@ -106,12 +132,12 @@ f(a: s)
                                 left: Expression::Identifier(IdentifierExpr {
                                     loc: ast::BaseNode::default().location,
                                     typ: MonoType::Var(Tvar(4)),
-                                    name: Symbol::from("a"),
+                                    name: symbols["a"].clone(),
                                 }),
                                 right: Expression::Identifier(IdentifierExpr {
                                     loc: ast::BaseNode::default().location,
                                     typ: MonoType::Var(Tvar(4)),
-                                    name: Symbol::from("a"),
+                                    name: symbols["a"].clone(),
                                 }),
                             })),
                         }),
@@ -128,18 +154,18 @@ f(a: s)
                         callee: Expression::Identifier(IdentifierExpr {
                             loc: ast::BaseNode::default().location,
                             typ: MonoType::from(f_call_int_type),
-                            name: Symbol::from("f@main"),
+                            name: symbols["f@main"].clone(),
                         }),
                         arguments: vec![Property {
                             loc: ast::BaseNode::default().location,
                             key: Identifier {
                                 loc: ast::BaseNode::default().location,
-                                name: Symbol::from("a"),
+                                name: symbols["a"].clone(),
                             },
                             value: Expression::Identifier(IdentifierExpr {
                                 loc: ast::BaseNode::default().location,
                                 typ: MonoType::INT,
-                                name: Symbol::from("n@main"),
+                                name: symbols["n@main"].clone(),
                             }),
                         }],
                     })),
@@ -153,18 +179,18 @@ f(a: s)
                         callee: Expression::Identifier(IdentifierExpr {
                             loc: ast::BaseNode::default().location,
                             typ: MonoType::from(f_call_string_type),
-                            name: Symbol::from("f@main"),
+                            name: symbols["f@main"].clone(),
                         }),
                         arguments: vec![Property {
                             loc: ast::BaseNode::default().location,
                             key: Identifier {
                                 loc: ast::BaseNode::default().location,
-                                name: Symbol::from("a"),
+                                name: symbols["a"].clone(),
                             },
                             value: Expression::Identifier(IdentifierExpr {
                                 loc: ast::BaseNode::default().location,
                                 typ: MonoType::STRING,
-                                name: Symbol::from("s@main"),
+                                name: symbols["s@main"].clone(),
                             }),
                         }],
                     })),

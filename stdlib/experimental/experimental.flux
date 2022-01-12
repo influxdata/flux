@@ -12,11 +12,15 @@
 package experimental
 
 
+// builtin _addDuration used by addDuration
+builtin _addDuration : (d: duration, to: T, location: {zone: string, offset: duration}) => time where T: Timeable
+
 // addDuration adds a duration to a time value and returns the resulting time value.
 //
 // ## Parameters
 // - d: Duration to add.
 // - to: Time to add the duration to.
+// - location: Location to use for the time value.
 //
 //   Use an absolute time or a relative duration.
 //   Durations are relative to `now()`.
@@ -64,7 +68,10 @@ package experimental
 //
 // tags: date/time
 //
-builtin addDuration : (d: duration, to: T) => time where T: Timeable
+addDuration = (d, to, location=location) => _addDuration(d, to, location)
+
+// builtin _subDuration used by subDuration
+builtin _subDuration : (from: T, d: duration, location: {zone: string, offset: duration}) => time where T: Timeable
 
 // subDuration subtracts a duration from a time value and returns the resulting time value.
 //
@@ -75,6 +82,7 @@ builtin addDuration : (d: duration, to: T) => time where T: Timeable
 //   Durations are relative to `now()`.
 //
 // - d: Duration to subtract.
+// - location: Location to use for the time value.
 //
 // ## Examples
 //
@@ -119,7 +127,7 @@ builtin addDuration : (d: duration, to: T) => time where T: Timeable
 //
 // tags: date/time
 //
-builtin subDuration : (from: T, d: duration) => time where T: Timeable
+subDuration = (d, from, location=location) => _subDuration(d, from, location)
 
 // group introduces an `extend` mode to the existing `group()` function.
 //
@@ -238,7 +246,7 @@ builtin set : (<-tables: [A], o: B) => [C] where A: Record, B: Record, C: Record
 //   fields with the column name as the field key and the column value as the field value.
 //
 // If using the `from()` to query data from InfluxDB, use pivot() to transform
-// data into the structure `experimetnal.to()` expects.
+// data into the structure `experimental.to()` expects.
 //
 // ## Parameters
 // - bucket: Name of the bucket to write to.

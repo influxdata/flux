@@ -44,7 +44,7 @@ use crate::{
         infer::Constraints,
         nodes::Symbol,
         sub::Substitution,
-        types::{Label, MonoType, PolyType, Property, Record},
+        types::{Label, MonoType, PolyType, PolyTypeHashMap, Property, Record},
     },
 };
 
@@ -136,9 +136,22 @@ impl Default for PackageExports {
     }
 }
 
-impl TryFrom<types::PolyTypeMap<Symbol>> for PackageExports {
+impl TryFrom<PolyTypeHashMap<Symbol>> for PackageExports {
     type Error = Errors<Error>;
-    fn try_from(values: types::PolyTypeMap<Symbol>) -> Result<Self, Errors<Error>> {
+    fn try_from(values: PolyTypeHashMap<Symbol>) -> Result<Self, Errors<Error>> {
+        Ok(PackageExports {
+            typ: build_polytype(values.iter().map(|(k, v)| (k.clone(), v.clone())))?,
+            values: values
+                .into_iter()
+                .map(|(symbol, typ)| (symbol.to_string(), (symbol, typ)))
+                .collect(),
+        })
+    }
+}
+
+impl TryFrom<Vec<(Symbol, PolyType)>> for PackageExports {
+    type Error = Errors<Error>;
+    fn try_from(values: Vec<(Symbol, PolyType)>) -> Result<Self, Errors<Error>> {
         Ok(PackageExports {
             typ: build_polytype(values.iter().map(|(k, v)| (k.clone(), v.clone())))?,
             values: values

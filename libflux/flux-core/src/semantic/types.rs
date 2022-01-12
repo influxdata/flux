@@ -2,8 +2,10 @@
 
 use std::{
     cmp,
-    collections::{BTreeMap, BTreeSet, HashMap},
+    collections::{BTreeMap, BTreeSet},
     fmt::{self, Write},
+    hash::Hash,
+    str::FromStr,
 };
 
 use codespan_reporting::diagnostic;
@@ -12,6 +14,7 @@ use serde::ser::{Serialize, Serializer};
 
 use crate::{
     errors::{Errors, Located},
+    map::HashMap,
     semantic::{
         fresh::{Fresh, Fresher},
         nodes::Symbol,
@@ -29,6 +32,23 @@ struct Unifier<'a, E = Error> {
     errors: Errors<E>,
 }
 
+impl<'a, E> Unifier<'a, E> {
+    fn new(sub: &'a mut Substitution) -> Self {
+        Unifier {
+            sub,
+            errors: Errors::new(),
+        }
+    }
+
+    fn finish<T>(self, value: T) -> Result<T, Errors<E>> {
+        if self.errors.has_errors() {
+            Err(self.errors)
+        } else {
+            Ok(value)
+        }
+    }
+}
+
 /// A type scheme that quantifies the free variables of a monotype.
 #[derive(Debug, Clone)]
 pub struct PolyType {
@@ -44,6 +64,9 @@ pub struct PolyType {
 pub type PolyTypeMap<T = String> = SemanticMap<T, PolyType>;
 /// Nested map of polytypes that preserves a sorted order when iterating
 pub type PolyTypeMapMap = SemanticMap<String, PolyTypeMap>;
+
+/// Map of identifier to a polytype.
+pub type PolyTypeHashMap<T = String> = HashMap<T, PolyType>;
 
 /// Alias the maplit literal construction macro so we can specify the type here.
 #[macro_export]
@@ -363,6 +386,28 @@ pub enum Kind {
     Stringable,
     Subtractable,
     Timeable,
+}
+
+impl FromStr for Kind {
+    type Err = ();
+
+    fn from_str(name: &str) -> Result<Self, Self::Err> {
+        Ok(match name {
+            "Addable" => Kind::Addable,
+            "Subtractable" => Kind::Subtractable,
+            "Divisible" => Kind::Divisible,
+            "Numeric" => Kind::Numeric,
+            "Comparable" => Kind::Comparable,
+            "Equatable" => Kind::Equatable,
+            "Nullable" => Kind::Nullable,
+            "Negatable" => Kind::Negatable,
+            "Timeable" => Kind::Timeable,
+            "Record" => Kind::Record,
+            "Basic" => Kind::Basic,
+            "Stringable" => Kind::Stringable,
+            _ => return Err(()),
+        })
+    }
 }
 
 /// Pointer type used in `MonoType`
@@ -750,26 +795,19 @@ impl MonoType {
         &self, // self represents the expected type
         actual: &Self,
         sub: &mut Substitution,
-    ) -> Result<(), Errors<Error>> {
-        let mut unifier = Unifier {
-            sub,
-            errors: Errors::new(),
-        };
+    ) -> Result<MonoType, Errors<Error>> {
+        let mut unifier = Unifier::new(sub);
 
-        self.unify(actual, &mut unifier);
+        let typ = self.unify(actual, &mut unifier);
 
-        if unifier.errors.has_errors() {
-            Err(unifier.errors)
-        } else {
-            Ok(())
-        }
+        unifier.finish(typ)
     }
 
     fn unify(
         &self, // self represents the expected type
         actual: &Self,
         unifier: &mut Unifier<'_>,
-    ) {
+    ) -> MonoType {
         log::debug!("Unify {} <=> {}", self, actual);
         match (self, actual) {
             // An error has already occurred so assume everything is ok here so that we do not
@@ -778,18 +816,28 @@ impl MonoType {
             (MonoType::Builtin(exp), MonoType::Builtin(act)) => exp.unify(*act, unifier),
             (MonoType::Var(tv), MonoType::Var(tv2)) => {
                 match (unifier.sub.try_apply(*tv), unifier.sub.try_apply(*tv2)) {
-                    (Some(self_), Some(actual)) => self_.unify(&actual, unifier),
-                    (Some(self_), None) => self_.unify(&MonoType::Var(*tv2), unifier),
-                    (None, Some(actual)) => MonoType::Var(*tv).unify(&actual, unifier),
+                    (Some(self_), Some(actual)) => {
+                        self_.unify(&actual, unifier);
+                    }
+                    (Some(self_), None) => {
+                        self_.unify(&MonoType::Var(*tv2), unifier);
+                    }
+                    (None, Some(actual)) => {
+                        MonoType::Var(*tv).unify(&actual, unifier);
+                    }
                     (None, None) => tv.unify(&MonoType::Var(*tv2), unifier),
                 }
             }
             (MonoType::Var(tv), t) => match unifier.sub.try_apply(*tv) {
-                Some(typ) => typ.unify(t, unifier),
+                Some(typ) => {
+                    typ.unify(t, unifier);
+                }
                 None => tv.unify(t, unifier),
             },
             (t, MonoType::Var(tv)) => match unifier.sub.try_apply(*tv) {
-                Some(typ) => t.unify(&typ, unifier),
+                Some(typ) => {
+                    t.unify(&typ, unifier);
+                }
                 None => tv.unify(t, unifier),
             },
             (MonoType::Arr(t), MonoType::Arr(s)) => t.unify(s, unifier),
@@ -804,6 +852,7 @@ impl MonoType {
                 });
             }
         }
+        self.clone()
     }
 
     /// Validates that the current type meets the constraints of the specified kind.
@@ -986,7 +1035,7 @@ impl MaxTvar for Array {
 impl Array {
     // self represents the expected type.
     fn unify(&self, with: &Self, unifier: &mut Unifier<'_>) {
-        self.0.unify(&with.0, unifier)
+        self.0.unify(&with.0, unifier);
     }
 
     fn constrain(&self, with: Kind, cons: &mut TvarKinds) -> Result<(), Error> {
@@ -1027,7 +1076,7 @@ impl MaxTvar for Vector {
 impl Vector {
     // self represents the expected type.
     fn unify(&self, with: &Self, unifier: &mut Unifier<'_>) {
-        self.0.unify(&with.0, unifier)
+        self.0.unify(&with.0, unifier);
     }
 
     fn constrain(&self, with: Kind, cons: &mut TvarKinds) -> Result<(), Error> {
@@ -1068,7 +1117,7 @@ impl MaxTvar for Dictionary {
 impl Dictionary {
     fn unify(&self, actual: &Self, unifier: &mut Unifier<'_>) {
         self.key.unify(&actual.key, unifier);
-        self.val.unify(&actual.val, unifier)
+        self.val.unify(&actual.val, unifier);
     }
 
     fn constrain(&self, with: Kind, _: &mut TvarKinds) -> Result<(), Error> {
@@ -1291,7 +1340,7 @@ impl Record {
                 },
             ) if a == b => {
                 t.unify(u, unifier);
-                l.unify(r, unifier)
+                l.unify(r, unifier);
             }
             (
                 Record::Extension {
@@ -1319,7 +1368,7 @@ impl Record {
                     tail: MonoType::Var(var),
                 });
                 l.unify(&act, unifier);
-                exp.unify(r, unifier)
+                exp.unify(r, unifier);
             }
             // If we are expecting {a: u | r} but find {}, label `a` is missing.
             (
@@ -1391,7 +1440,7 @@ impl Record {
         }
     }
 
-    fn fields(&self) -> impl Iterator<Item = &Property> {
+    pub(crate) fn fields(&self) -> impl Iterator<Item = &Property> {
         let mut record = Some(self);
         std::iter::from_fn(move || match record {
             Some(Record::Extension { head, tail }) => {
@@ -1626,7 +1675,22 @@ impl fmt::Display for Function {
     }
 }
 
-#[allow(clippy::implicit_hasher)]
+impl<K: Eq + Hash + Clone> Substitutable for PolyTypeHashMap<K> {
+    fn apply_ref(&self, sub: &dyn Substituter) -> Option<Self> {
+        merge_collect(
+            &mut (),
+            self,
+            |_, (k, v)| v.apply_ref(sub).map(|v| (k.clone(), v)),
+            |_, (k, v)| (k.clone(), v.clone()),
+        )
+    }
+    fn free_vars(&self, vars: &mut Vec<Tvar>) {
+        for t in self.values() {
+            t.free_vars(vars);
+        }
+    }
+}
+
 impl<K: Ord + Clone, T: Substitutable + Clone> Substitutable for SemanticMap<K, T> {
     fn apply_ref(&self, sub: &dyn Substituter) -> Option<Self> {
         merge_collect(
@@ -1726,11 +1790,7 @@ impl Function {
 
         self.unify(actual, &mut unifier);
 
-        if unifier.errors.has_errors() {
-            Err(unifier.errors)
-        } else {
-            Ok(())
-        }
+        unifier.finish(())
     }
 
     /// Given two function types f and g, the process for unifying their arguments is as follows:

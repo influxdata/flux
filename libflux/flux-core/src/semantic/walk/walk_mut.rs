@@ -656,7 +656,6 @@ mod tests {
     }
 
     mod mutate_nodes {
-        use std::collections::HashSet;
 
         use super::*;
         use crate::semantic::types::{MonoType, Tvar};
@@ -681,7 +680,7 @@ mod tests {
 
         // TypeCollector collects the types found in the graph while walking.
         struct TypeCollector {
-            types: Vec<Tvar>,
+            types: Vec<MonoType>,
         }
 
         impl TypeCollector {
@@ -739,8 +738,8 @@ mod tests {
                     NodeMut::RegexpLit(n) => Some(Expression::Regexp((*n).clone()).type_of()),
                     _ => None,
                 };
-                if let Some(MonoType::Var(tv)) = typ {
-                    self.types.push(tv);
+                if let Some(typ) = typ {
+                    self.types.push(typ);
                 }
                 true
             }
@@ -801,12 +800,8 @@ join(tables:[a,b], on:["t1"], fn: (a,b) => (a["_field"] - b["_field"]) / b["_fie
             walk_mut(&mut v, &mut NodeMut::Package(&mut pkg));
             let types = v.types;
             assert!(types.len() > 0);
-            // every tvar has a unique id
-            let mut ids: HashSet<u64> = HashSet::new();
-            for tvar in types {
-                assert!(!ids.contains(&tvar.0));
-                ids.insert(tvar.0);
-            }
+            // no type is a type variable
+            assert!(types.iter().all(|t| !matches!(t, MonoType::Var(_))));
             // now mutate the types
             walk_mut(
                 &mut |n: &mut NodeMut| {
@@ -831,7 +826,9 @@ join(tables:[a,b], on:["t1"], fn: (a,b) => (a["_field"] - b["_field"]) / b["_fie
             let types = v.types;
             assert!(types.len() > 0);
             for tvar in types {
-                assert_eq!(tvar, Tvar(1234));
+                if let MonoType::Var(tvar) = tvar {
+                    assert_eq!(tvar, Tvar(1234));
+                }
             }
         }
     }

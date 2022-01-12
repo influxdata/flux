@@ -4,7 +4,7 @@ use std::{fmt, mem};
 use crate::semantic::{
     nodes::Symbol,
     sub::{apply2, Substitutable, Substituter},
-    types::{PolyType, PolyTypeMap, Tvar},
+    types::{PolyType, PolyTypeHashMap, PolyTypeMap, Tvar},
     PackageExports,
 };
 
@@ -20,7 +20,7 @@ pub struct Environment<'a> {
     /// An optional parent environment.
     pub parent: Option<Box<Environment<'a>>>,
     /// Values in the environment.
-    pub values: PolyTypeMap<Symbol>,
+    pub values: PolyTypeHashMap<Symbol>,
     /// Read/write permissions flag.
     pub readwrite: bool,
 }
@@ -72,8 +72,8 @@ impl Substitutable for Environment<'_> {
 }
 
 // Derive a type environment from a hash map
-impl From<PolyTypeMap<Symbol>> for Environment<'_> {
-    fn from(bindings: PolyTypeMap<Symbol>) -> Self {
+impl From<PolyTypeHashMap<Symbol>> for Environment<'_> {
+    fn from(bindings: PolyTypeHashMap<Symbol>) -> Self {
         Environment {
             external: None,
             parent: None,
@@ -89,7 +89,7 @@ impl From<PolyTypeMap> for Environment<'_> {
             bindings
                 .into_iter()
                 .map(|(k, v)| (Symbol::from(k), v))
-                .collect::<PolyTypeMap<Symbol>>(),
+                .collect::<PolyTypeHashMap<Symbol>>(),
         )
     }
 }
@@ -114,7 +114,7 @@ impl Environment<'_> {
         Environment {
             external: None,
             parent: None,
-            values: PolyTypeMap::new(),
+            values: Default::default(),
             readwrite,
         }
     }
@@ -129,7 +129,7 @@ impl Environment<'_> {
         Environment {
             external: None,
             parent: Some(Box::new(from)),
-            values: PolyTypeMap::new(),
+            values: Default::default(),
             readwrite: true,
         }
     }
