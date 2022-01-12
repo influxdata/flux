@@ -225,6 +225,32 @@ func (t *ToSQLTransformation) Finish(id execute.DatasetID, err error) {
 
 type translationFunc func(f flux.ColType, colname string) (string, error)
 
+// quoteIdentFunc is used to quote identifiers like table and column names for a
+// given SQL dialect.
+type quoteIdentFunc func(name string) string
+
+// doubleQuote wraps the input in double quotes and escapes any interior quotes.
+// If the input contains an interior nul byte, it will be truncated.
+// Useful for quoting _table or column identifiers_ for many database engines.
+func doubleQuote(s string) string {
+	end := strings.IndexRune(s, 0)
+	if end > -1 {
+		s = s[:end]
+	}
+	return fmt.Sprintf(`"%s"`, strings.ReplaceAll(s, `"`, `""`))
+}
+
+// singleQuote wraps the input in single quotes and escapes any interior quotes.
+// If the input contains an interior nul byte, it will be truncated.
+// Useful for producing _string literals_ for many database engines.
+func singleQuote(s string) string {
+	end := strings.IndexRune(s, 0)
+	if end > -1 {
+		s = s[:end]
+	}
+	return fmt.Sprintf("'%s'", strings.ReplaceAll(s, "'", "''"))
+}
+
 func correctBatchSize(batchSize, numberCols int) int {
 	/*
 		BatchSize for the DB is the number of parameters that can be queued within each call to Exec.
@@ -284,6 +310,43 @@ func getTranslationFunc(driverName string) (func() translationFunc, error) {
 	}
 }
 
+func getQuoteIdentFunc(driverName string) (quoteIdentFunc, error) {
+	switch driverName {
+	case "sqlite3":
+		return doubleQuote, nil
+	case "postgres", "sqlmock":
+		return postgresQuoteIdent, nil
+	case "vertica", "vertigo":
+		return doubleQuote, nil
+	case "mysql":
+		return mysqlQuoteIdent, nil
+	case "snowflake":
+		// n.b. snowflake automatically UPPERCASES identifiers when they are
+		// specified as bare words in queries (and DDL). Case is preserved when
+		// identifiers are quoted.
+		// Therefore, snowflake users may see breakage with this quoting behavior
+		// since they will now need to explicitly match the case of the
+		// identifiers already defined in schema.
+		return doubleQuote, nil
+	case "mssql", "sqlserver":
+		return doubleQuote, nil
+	case "awsathena": // read-only support for AWS Athena (see awsathena.go)
+		return nil, errors.Newf(codes.Invalid, "writing is not supported for %s", driverName)
+	case "bigquery":
+		// BigQuery offers 2 dialects, "legacy" and "standard."
+		// For the "legacy" dialect, it seems to use MS-style quoting with
+		// square brackets.
+		// The "standard" dialect (which is the default) seems to use backticks
+		// in the style of MySQL (which makes sense for Google from a product
+		// standpoint since their "Cloud SQL" product also speaks this dialect).
+		return mysqlQuoteIdent, nil
+	case "hdb":
+		return func(name string) string { return hdbEscapeName(name, true) }, nil
+	default:
+		return nil, errors.Newf(codes.Internal, "invalid driverName: %s", driverName)
+	}
+}
+
 func supportsTx(driverName string) bool {
 	return driverName != "sqlmock" && driverName != "awsathena"
 }
@@ -291,6 +354,17 @@ func supportsTx(driverName string) bool {
 func CreateInsertComponents(t *ToSQLTransformation, tbl flux.Table) (colNames []string, valStringArray [][]string, valArgsArray [][]interface{}, err error) {
 	cols := tbl.Cols()
 	batchSize := correctBatchSize(t.spec.Spec.BatchSize, len(cols))
+	driverName := t.spec.Spec.DriverName
+
+	quoteIdent, err := getQuoteIdentFunc(driverName)
+	if err != nil {
+		return nil, nil, nil, err
+	}
+	// the following allows driver-specific type errors (of which there can be MANY) to be returned, rather than the default of invalid type
+	translateColumn, err := getTranslationFunc(driverName)
+	if err != nil {
+		return nil, nil, nil, err
+	}
 
 	labels := make(map[string]idxType, len(cols))
 	var questionMarks, newSQLTableCols []string
@@ -298,16 +372,13 @@ func CreateInsertComponents(t *ToSQLTransformation, tbl flux.Table) (colNames []
 		labels[col.Label] = idxType{Idx: i, Type: col.Type}
 		questionMarks = append(questionMarks, "?")
 		colNames = append(colNames, col.Label)
-		driverName := t.spec.Spec.DriverName
-		// the following allows driver-specific type errors (of which there can be MANY) to be returned, rather than the default of invalid type
-		translateColumn, err := getTranslationFunc(driverName)
-		if err != nil {
-			return nil, nil, nil, err
-		}
 
 		switch col.Type {
 		case flux.TFloat, flux.TInt, flux.TUInt, flux.TString, flux.TBool, flux.TTime:
-			// each type is handled within the function - precise mapping is handled within each driver's implementation
+			// Each type is handled within the function - precise mapping is
+			// handled within each driver's implementation.
+			// The expectation is the identifiers in these values are
+			// quoted/escaped making them safe for formatting into SQL below.
 			v, err := translateColumn()(col.Type, col.Label)
 			if err != nil {
 				return nil, nil, nil, err
@@ -340,15 +411,33 @@ func CreateInsertComponents(t *ToSQLTransformation, tbl flux.Table) (colNames []
 		if t.spec.Spec.DriverName != "sqlmock" {
 			var q string
 			if isMssqlDriver(t.spec.Spec.DriverName) { // SQL Server does not support IF NOT EXIST
-				q = fmt.Sprintf("IF OBJECT_ID('%s', 'U') IS NULL BEGIN CREATE TABLE %s (%s) END", t.spec.Spec.Table, t.spec.Spec.Table, strings.Join(newSQLTableCols, ","))
+				q = fmt.Sprintf("IF OBJECT_ID(%s, 'U') IS NULL BEGIN CREATE TABLE %s (%s) END",
+					singleQuote(t.spec.Spec.Table),
+					quoteIdent(t.spec.Spec.Table),
+					// XXX: Items in `newSQLTableCols` should include _quoted column identifiers_, ref: influxdata/idpe#8689
+					strings.Join(newSQLTableCols, ","),
+				)
 			} else if t.spec.Spec.DriverName == "hdb" { // SAP HANA does not support IF NOT EXIST
 				// wrap CREATE TABLE statement with HDB-specific "if not exists" SQLScript check
-				q = fmt.Sprintf("CREATE TABLE %s (%s)", hdbEscapeName(t.spec.Spec.Table, true), strings.Join(newSQLTableCols, ","))
+				q = fmt.Sprintf(
+					"CREATE TABLE %s (%s)",
+					hdbEscapeName(t.spec.Spec.Table, true),
+					// XXX: Items in `newSQLTableCols` should include _quoted column identifiers_, ref: influxdata/idpe#8689
+					strings.Join(newSQLTableCols, ","),
+				)
+				// The table name we pass to `hdbAddIfNotExist` cannot be escaped
+				// using `hdbEscapeName` here since it needs to appear as both a
+				// string literal and a quoted identifier in the SQL generated within.
 				q = hdbAddIfNotExist(t.spec.Spec.Table, q)
 				// SAP HANA does not support INSERT/UPDATE batching via a single SQL command
 				batchSize = 1
 			} else {
-				q = fmt.Sprintf("CREATE TABLE IF NOT EXISTS %s (%s)", t.spec.Spec.Table, strings.Join(newSQLTableCols, ","))
+				q = fmt.Sprintf(
+					"CREATE TABLE IF NOT EXISTS %s (%s)",
+					quoteIdent(t.spec.Spec.Table),
+					// XXX: Items in `newSQLTableCols` should include _quoted column identifiers_, ref: influxdata/idpe#8689
+					strings.Join(newSQLTableCols, ","),
+				)
 			}
 			_, err = t.tx.Exec(q)
 			if err != nil {
@@ -425,8 +514,14 @@ func CreateInsertComponents(t *ToSQLTransformation, tbl flux.Table) (colNames []
 	return colNames, valStringArray, valArgsArray, err
 }
 
+// ExecuteQueries runs the SQL statements required to insert the new rows.
 func ExecuteQueries(tx *sql.Tx, s *ToSQLOpSpec, colNames []string, valueStrings *[]string, valueArgs *[]interface{}) (err error) {
 	concatValueStrings := strings.Join(*valueStrings, ",")
+
+	quoteIdent, err := getQuoteIdentFunc(s.DriverName)
+	if err != nil {
+		return err
+	}
 
 	// PostgreSQL uses $n instead of ? for placeholders
 	if s.DriverName == "postgres" {
@@ -441,10 +536,23 @@ func ExecuteQueries(tx *sql.Tx, s *ToSQLOpSpec, colNames []string, valueStrings 
 		}
 	}
 
-	query := fmt.Sprintf("INSERT INTO %s (%s) VALUES %s", s.Table, strings.Join(colNames, ","), concatValueStrings)
+	// N.B. identifiers that will be string formatted into SQL statements must be
+	// quoted/escaped, ref: influxdata/idpe#8689
+	quotedTable := quoteIdent(s.Table)
+	quotedColNames := make([]string, len(colNames))
+	for idx, name := range colNames {
+		quotedColNames[idx] = quoteIdent(name)
+	}
+	query := fmt.Sprintf("INSERT INTO %s (%s) VALUES %s", quotedTable, strings.Join(quotedColNames, ","), concatValueStrings)
+
 	if isMssqlDriver(s.DriverName) && mssqlCheckParameter(s.DataSourceName, mssqlIdentityInsertEnabled) {
-		prologue := fmt.Sprintf("DECLARE @tableHasIdentity INT = OBJECTPROPERTY(OBJECT_ID('%s'), 'TableHasIdentity'); IF @tableHasIdentity = 1 BEGIN SET IDENTITY_INSERT %s ON END", s.Table, s.Table)
-		epilogue := fmt.Sprintf("IF @tableHasIdentity = 1 BEGIN SET IDENTITY_INSERT %s OFF END", s.Table)
+		// XXX: identifiers that will be string formatted into SQL statements must be quoted, ref: influxdata/idpe#8689
+		prologue := fmt.Sprintf(
+			"SET QUOTED_IDENTIFIER ON; DECLARE @tableHasIdentity INT = OBJECTPROPERTY(OBJECT_ID(%s), 'TableHasIdentity'); IF @tableHasIdentity = 1 BEGIN SET IDENTITY_INSERT %s ON END",
+			singleQuote(s.Table),
+			quotedTable,
+		)
+		epilogue := fmt.Sprintf("IF @tableHasIdentity = 1 BEGIN SET IDENTITY_INSERT %s OFF END", quotedTable)
 		query = strings.Join([]string{prologue, query, epilogue}, "; ")
 	}
 	if s.DriverName != "sqlmock" {

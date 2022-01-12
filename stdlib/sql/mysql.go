@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/influxdata/flux"
@@ -189,6 +190,10 @@ func MysqlColumnTranslateFunc() translationFunc {
 		if !found {
 			return "", errors.Newf(codes.Internal, "MySQL does not support column type %s", f.String())
 		}
-		return colName + " " + s, nil
+		return mysqlQuoteIdent(colName) + " " + s, nil
 	}
+}
+
+func mysqlQuoteIdent(name string) string {
+	return fmt.Sprintf("`%s`", strings.ReplaceAll(name, "`", "``"))
 }

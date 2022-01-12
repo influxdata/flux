@@ -128,15 +128,17 @@ test-rust:
 	$(CARGO) test --doc && \
 	$(CARGO) clippy $(CARGO_ARGS) -- -Dclippy::all
 
+INTEGRATION_INJECTION_TESTS=integration_hdb_injection,integration_sqlite_injection,integration_vertica_injection,integration_mssql_injection,integration_mysql_injection,integration_mariadb_injection,integration_pg_injection
 INTEGRATION_WRITE_TESTS=integration_hdb_write_to,integration_sqlite_write_to,integration_vertica_write_to,integration_mssql_write_to,integration_mysql_write_to,integration_mariadb_write_to,integration_pg_write_to
 INTEGRATION_READ_TESTS=integration_hdb_read_from_seed,integration_hdb_read_from_nonseed,integration_sqlite_read_from_seed,integration_sqlite_read_from_nonseed,integration_vertica_read_from_seed,integration_vertica_read_from_nonseed,integration_mssql_read_from_seed,integration_mssql_read_from_nonseed,integration_mariadb_read_from_seed,integration_mariadb_read_from_nonseed,integration_mysql_read_from_seed,integration_mysql_read_from_nonseed,integration_pg_read_from_seed,integration_pg_read_from_nonseed
-INTEGRATION_TESTS="$(INTEGRATION_WRITE_TESTS),$(INTEGRATION_READ_TESTS)"
+INTEGRATION_TESTS="$(INTEGRATION_INJECTION_TESTS),$(INTEGRATION_WRITE_TESTS),$(INTEGRATION_READ_TESTS)"
 
 test-flux:
 	$(GO_RUN) ./cmd/flux test -v --skip $(INTEGRATION_TESTS)
 
 test-flux-integration:
 	./etc/spawn-dbs.sh
+	$(GO_RUN) ./cmd/flux test -v --test $(INTEGRATION_INJECTION_TESTS)
 	$(GO_RUN) ./cmd/flux test -v --test $(INTEGRATION_WRITE_TESTS)
 	$(GO_RUN) ./cmd/flux test -v --test $(INTEGRATION_READ_TESTS)
 

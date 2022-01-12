@@ -10,6 +10,7 @@ import (
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/values"
+	"github.com/lib/pq"
 )
 
 type PostgresRowReader struct {
@@ -155,7 +156,10 @@ func PostgresColumnTranslateFunc() translationFunc {
 		if !found {
 			return "", errors.Newf(codes.Internal, "PostgreSQL does not support column type %s", f.String())
 		}
-		return colName + " " + s, nil
+		return postgresQuoteIdent(colName) + " " + s, nil
 	}
+}
 
+func postgresQuoteIdent(name string) string {
+	return pq.QuoteIdentifier(name)
 }

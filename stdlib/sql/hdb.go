@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"fmt"
 	"math/big"
-	"strconv"
 	"strings"
 	"time"
 
@@ -196,8 +195,8 @@ func HdbColumnTranslateFunc() translationFunc {
 // Template for conditional query by table existence check
 var hdbDoIfTableNotExistsTemplate = `DO
 BEGIN
-    DECLARE SCHEMA_NAME NVARCHAR(%d) = '%s';
-    DECLARE TABLE_NAME NVARCHAR(%d) = '%s';
+    DECLARE SCHEMA_NAME NVARCHAR(%d) = %s;
+    DECLARE TABLE_NAME NVARCHAR(%d) = %s;
     DECLARE X_EXISTS INT = 0;
     SELECT COUNT(*) INTO X_EXISTS FROM TABLES %s;
     IF :X_EXISTS = 0
@@ -209,22 +208,32 @@ END;
 
 // hdbAddIfNotExist adds SAP HANA specific table existence check to CREATE TABLE statement.
 func hdbAddIfNotExist(table string, query string) string {
-	var where string
+	var where, schema, tbl string
 	var args []interface{}
-	parts := strings.SplitN(strings.ToUpper(table), ".", 2) // schema and table name assumed uppercase in HDB by default (see Notes)
-	if len(parts) == 2 {                                    // fully-qualified table name
+	// Schema and table name assumed uppercase in HDB by default (see Notes)
+	// XXX: since we are currently forcing identifiers to be UPPER CASE.
+	//  Shadowing the table param ensures we use the UPPER CASE form regardless
+	//  of which branch we land in for the `if` below.
+	table = strings.ToUpper(table)
+	parts := strings.SplitN(table, ".", 2)
+
+	// XXX: maybe we should panic if len(parts) is greater than 2?
+	if len(parts) == 2 {
+		// When there are 2 parts, we assume a fully-qualified table name (ex: `schema.tbl`)
+		schema = parts[0]
+		tbl = parts[1]
 		where = "WHERE SCHEMA_NAME=ESCAPE_DOUBLE_QUOTES(:SCHEMA_NAME) AND TABLE_NAME=ESCAPE_DOUBLE_QUOTES(:TABLE_NAME)"
-		args = append(args, len(parts[0]))
-		args = append(args, parts[0])
-		args = append(args, len(parts[1]))
-		args = append(args, parts[1])
-	} else { // table in user default schema
+	} else {
+		// Otherwise we assume there's only one part (table, with an implicit default schema).
 		where = "WHERE TABLE_NAME=ESCAPE_DOUBLE_QUOTES(:TABLE_NAME)"
-		args = append(args, len("default"))
-		args = append(args, "default")
-		args = append(args, len(table))
-		args = append(args, table)
+		schema = "default"
+		tbl = table
 	}
+	args = append(args, len(schema))
+	args = append(args, singleQuote(schema))
+	args = append(args, len(tbl))
+	args = append(args, singleQuote(tbl))
+
 	args = append(args, where)
 	args = append(args, query)
 
@@ -233,12 +242,26 @@ func hdbAddIfNotExist(table string, query string) string {
 
 // hdbEscapeName escapes name in double quotes and convert it to uppercase per HDB naming conventions
 func hdbEscapeName(name string, toUpper bool) string {
+	// XXX(onelson): Seems like it would be better to *just* quote/escape without
+	// the case transformation. If the mandate is to "always quote identifiers"
+	// as an SQL injection mitigation step, the case transformation feels like
+	// an unexpected twist on what otherwise might be easier to explain.
+	// Eg: "We quote all identifiers as a security precaution. Quoted identifiers are case-sensitive."
+	// Currently, it is (arbitrarily) impossible for Flux to reference objects
+	// in HDB that don't have an UPPER CASE identifier (which is perfectly valid).
+
+	// truncate `name` to the first interior nul byte (if one is present).
+	end := strings.IndexRune(name, 0)
+	if end > -1 {
+		name = name[:end]
+	}
+
 	parts := strings.Split(name, ".")
 	for i := range parts {
 		if toUpper {
 			parts[i] = strings.ToUpper(parts[i])
 		}
-		parts[i] = strconv.Quote(strings.Trim(parts[i], "\""))
+		parts[i] = doubleQuote(strings.Trim(parts[i], "\""))
 	}
 	return strings.Join(parts, ".")
 }
