@@ -27,6 +27,12 @@ LUCY = {NAME: "Lucy", AGE: 14}
 sophie = {name: "Sophie", age: 15, "fav food": "salmon"}
 SOPHIE = {NAME: "Sophie", AGE: 15, "FAV FOOD": "salmon"}
 
+SEED_WANT =
+    union(tables: [array.from(rows: [STANLEY]) |> debug.opaque(), array.from(rows: [LUCY]) |> debug.opaque()])
+        |> sort(columns: ["AGE"], desc: true)
+seed_want =
+    union(tables: [array.from(rows: [stanley]) |> debug.opaque(), array.from(rows: [lucy]) |> debug.opaque()])
+        |> sort(columns: ["age"], desc: true)
 nonseed_want = array.from(rows: [sophie])
 NONSEED_WANT = array.from(rows: [SOPHIE])
 
@@ -48,12 +54,7 @@ testcase integration_hdb_read_from_seed {
             query: "SELECT name, age, \"FAV FOOD\" FROM \"PET INFO\" WHERE seeded = true",
         )
 
-    testing.diff(
-        got: got,
-        want:
-            union(tables: [array.from(rows: [STANLEY]) |> debug.opaque(), array.from(rows: [LUCY]) |> debug.opaque()])
-                |> sort(columns: ["AGE"], desc: true),
-    )
+    testing.diff(got: got, want: SEED_WANT)
         |> yield()
 }
 
@@ -99,12 +100,7 @@ testcase integration_pg_read_from_seed {
             query: "SELECT name, age, \"fav food\" FROM \"pet info\" WHERE seeded = true",
         )
 
-    testing.diff(
-        got: got,
-        want:
-            union(tables: [array.from(rows: [stanley]) |> debug.opaque(), array.from(rows: [lucy]) |> debug.opaque()])
-                |> sort(columns: ["age"], desc: true),
-    )
+    testing.diff(got: got, want: seed_want)
         |> yield()
 }
 
@@ -147,12 +143,7 @@ testcase integration_mysql_read_from_seed {
             query: "SELECT name, age, `fav food` FROM `pet info` WHERE seeded = true",
         )
 
-    testing.diff(
-        got: got,
-        want:
-            union(tables: [array.from(rows: [stanley]) |> debug.opaque(), array.from(rows: [lucy]) |> debug.opaque()])
-                |> sort(columns: ["age"], desc: true),
-    )
+    testing.diff(got: got, want: seed_want)
         |> yield()
 }
 
@@ -195,12 +186,7 @@ testcase integration_mariadb_read_from_seed {
             query: "SELECT name, age, `fav food` FROM `pet info` WHERE seeded = true",
         )
 
-    testing.diff(
-        got: got,
-        want:
-            union(tables: [array.from(rows: [stanley]) |> debug.opaque(), array.from(rows: [lucy]) |> debug.opaque()])
-                |> sort(columns: ["age"], desc: true),
-    )
+    testing.diff(got: got, want: seed_want)
         |> yield()
 }
 
@@ -243,12 +229,7 @@ testcase integration_mssql_read_from_seed {
             query: "SELECT name, age, \"fav food\" FROM \"pet info\" WHERE seeded = 1",
         )
 
-    testing.diff(
-        got: got,
-        want:
-            union(tables: [array.from(rows: [stanley]) |> debug.opaque(), array.from(rows: [lucy]) |> debug.opaque()])
-                |> sort(columns: ["age"], desc: true),
-    )
+    testing.diff(got: got, want: seed_want)
         |> yield()
 }
 
@@ -295,12 +276,7 @@ testcase integration_vertica_read_from_seed {
             query: "SELECT name, age, \"fav food\" FROM \"pet info\" where seeded = true",
         )
 
-    testing.diff(
-        got: got,
-        want:
-            union(tables: [array.from(rows: [stanley]) |> debug.opaque(), array.from(rows: [lucy]) |> debug.opaque()])
-                |> sort(columns: ["age"], desc: true),
-    )
+    testing.diff(got: got, want: seed_want)
         |> yield()
 }
 
@@ -358,12 +334,7 @@ testcase integration_sqlite_read_from_seed {
             query: "SELECT name, age, \"fav food\" FROM \"pet info\" where seeded = true",
         )
 
-    testing.diff(
-        got: got,
-        want:
-            union(tables: [array.from(rows: [stanley]) |> debug.opaque(), array.from(rows: [lucy]) |> debug.opaque()])
-                |> sort(columns: ["age"], desc: true),
-    )
+    testing.diff(got: got, want: seed_want)
         |> yield()
 }
 
