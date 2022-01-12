@@ -88,7 +88,7 @@ builtin assertEmpty : (<-tables: [A]) => [A]
 // `-` if the row was present in the `got` table and not in the `want` table or
 // `+` if the opposite is true.
 //
-// `diff()` function is guaranteed to emit at least one row if the tables are
+// `diff()` function emits at least one row if the tables are
 // different and no rows if the tables are the same.
 // The exact diff produced may change.
 // `diff()` can be used to perform in-line diffs in a query.
@@ -322,7 +322,7 @@ inspect = (case) => {
 // ## Parameters
 // - case: Test case to run.
 //
-// ## Exmamples
+// ## Examples
 //
 // ### Define and execute a test case
 // ```
