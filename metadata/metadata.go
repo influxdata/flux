@@ -1,5 +1,7 @@
 package metadata
 
+import "fmt"
+
 // Metadata is made as a standalone package to avoid import cycle:
 // influxd -> flux -> flux/interpreter -> flux/execute -> flux
 type Metadata map[string][]interface{}
@@ -29,4 +31,18 @@ func (md Metadata) Range(fn func(key string, value interface{}) bool) {
 
 func (md Metadata) Del(key string) {
 	delete(md, key)
+}
+
+func (md Metadata) Get(key string) (interface{}, error) {
+	if values, ok := md[key]; ok && len(values) != 0 {
+		return values[0], nil
+	}
+	return nil, fmt.Errorf("key %s does not exist in Metadata", key)
+}
+
+func (md Metadata) GetAll(key string) []interface{} {
+	if values, ok := md[key]; ok {
+		return values
+	}
+	return []interface{}{}
 }
