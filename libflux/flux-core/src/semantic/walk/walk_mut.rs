@@ -658,10 +658,7 @@ mod tests {
     mod mutate_nodes {
 
         use super::*;
-        use crate::{
-            map::HashSet,
-            semantic::types::{MonoType, Tvar},
-        };
+        use crate::semantic::types::{MonoType, Tvar};
 
         // LocationCollector collects the locations found in the graph while walking.
         struct LocationCollector {
