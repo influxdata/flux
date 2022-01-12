@@ -173,7 +173,7 @@ pub fn equal(
     act: &MonoType,
     loc: &SourceLocation,
     sub: &mut Substitution,
-) -> Result<(), Located<Errors<types::Error>>> {
+) -> Result<MonoType, Located<Errors<types::Error>>> {
     log::debug!("Constraint::Equal {:?}: {} <===> {}", loc.source, exp, act);
     exp.try_unify(act, sub).map_err(|error| Located {
         location: loc.clone(),
