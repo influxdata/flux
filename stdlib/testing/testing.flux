@@ -97,6 +97,8 @@ builtin assertEmpty : (<-tables: [A]) => [A]
 // - got: Stream containing data to test. Default is piped-forward data (`<-`).
 // - want: Stream that contains data to test against.
 // - epsilon: Specify how far apart two float values can be, but still considered equal. Defaults to 0.000000001.
+// - verbose: Include detailed differences in output. Default is `false`.
+// - nansEqual: Consider `NaN` float values equal. Default is `false`.
 //
 // ## Examples
 //

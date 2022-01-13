@@ -42,7 +42,7 @@ fixed = (offset) => ({zone: utc.zone, offset: offset})
 // location returns a location record based on a location or timezone name.
 //
 // ## Parameters
-// - `name` is the name of the location as defined by the tzdata database.
+// - name: Location name (as defined by your operating system timezone database).
 //
 // ## Examples
 //
