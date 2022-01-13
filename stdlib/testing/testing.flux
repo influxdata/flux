@@ -433,7 +433,7 @@ benchmark = (case) => {
 // ```
 // import "testing"
 //
-// < testing.assertEqualValues(got: 5, want: true)
+// < testing.assertEqualValues(got: 5, want: 12)
 // ```
 //
 // introduced: 0.141.0

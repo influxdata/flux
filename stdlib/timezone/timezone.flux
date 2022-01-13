@@ -28,7 +28,7 @@ utc = {zone: "UTC", offset: 0h}
 // ```
 //
 // ### Set the location option using a fixed location
-// ```
+// ```no_run
 // import "timezone"
 //
 // // This results in midnight at 00:00:00-08:00 on any day.
