@@ -8,6 +8,10 @@ package influxdb
 // api submits an HTTP request to the specified InfluxDB API path and returns a
 // record containing the HTTP status code, response headers, and the response body.
 //
+// **Note**: `influxdb.api()` uses the authorization of the specified `token` or, if executed
+// from the InfluxDB UI, the authorization of the InfluxDB user that invokes the script.
+// Authorization permissions and limits apply to each request.
+//
 // ## Response format
 // `influxdb.api()` returns a record with the following properties:
 //

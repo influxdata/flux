@@ -22,6 +22,9 @@ builtin _addDuration : (d: duration, to: T, location: {zone: string, offset: dur
 // - to: Time to add the duration to.
 // - location: Location to use for the time value.
 //
+//   Use an absolute time or a relative duration.
+//   Durations are relative to `now()`.
+//
 // ## Examples
 //
 // ### Add six hours to a timestamp
@@ -47,12 +50,20 @@ builtin _addDuration : (d: duration, to: T, location: {zone: string, offset: dur
 //
 // option now = () => 2021-12-10T16:27:40Z
 //
-// experimental.addDuration(
-//     d: 1mo,
-//     to: -1d,
-// )
+// experimental.addDuration(d: 1mo, to: -1d)
 //
 // // Returns 2022-01-09T16:27:40Z
+// ```
+//
+// ### Add six hours to a relative duration
+// ```no_run
+// import "experimental"
+//
+// option now = () => 2022-01-01T12:00:00Z
+//
+// experimental.addDuration(d: 6h, to: 3h)
+//
+// // Returns 2022-01-01T21:00:00.000000000Z
 // ```
 //
 // tags: date/time
@@ -66,6 +77,10 @@ builtin _subDuration : (from: T, d: duration, location: {zone: string, offset: d
 //
 // ## Parameters
 // - from: Time to subtract the duration from.
+//
+//   Use an absolute time or a relative duration.
+//   Durations are relative to `now()`.
+//
 // - d: Duration to subtract.
 // - location: Location to use for the time value.
 //
@@ -75,12 +90,20 @@ builtin _subDuration : (from: T, d: duration, location: {zone: string, offset: d
 // ```no_run
 // import "experimental"
 //
-// experimental.subDuration(
-//     from: 2019-09-16T12:00:00Z,
-//     d: 6h,
-// )
+// experimental.subDuration(from: 2019-09-16T12:00:00Z, d: 6h)
 //
 // // Returns 2019-09-16T06:00:00.000000000Z
+// ```
+//
+// ### Subtract six hours from a relative duration
+// ```no_run
+// import "experimental"
+//
+// option now = () => 2022-01-01T12:00:00Z
+//
+// experimental.subDuration(d: 6h, from: -3h)
+//
+// // Returns 2022-01-01T03:00:00.000000000Z
 // ```
 //
 // ### Subtract two days from one hour ago
