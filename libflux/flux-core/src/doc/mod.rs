@@ -63,6 +63,8 @@ pub struct PackageDoc {
     pub description: Option<String>,
     /// the members are the values and functions of a package
     pub members: BTreeMap<String, Doc>,
+    /// the location in the source code of the package
+    pub source_location: ast::SourceLocation,
     /// list of any examples of the value
     pub examples: Vec<Example>,
     /// any Metadata associated with the package
@@ -192,6 +194,15 @@ fn parse_file_doc_comments(
                     loc: pkg_clause.base.location.clone(),
                 })
             }
+            let package_declaration_line = pr
+                .description
+                .clone()
+                .unwrap()
+                .split('\n')
+                .collect::<Vec<_>>()
+                .len() // number of lines in the description
+                + 2 // ?
+                + 2; // length of headline
             PackageDoc {
                 path: pkgpath.to_string(),
                 name,
@@ -200,6 +211,18 @@ fn parse_file_doc_comments(
                 members: BTreeMap::new(),
                 examples: pr.examples,
                 metadata: pr.metadata,
+                source_location: ast::SourceLocation {
+                    file: Some(pkgpath.to_string()),
+                    start: ast::Position {
+                        line: package_declaration_line as u32,
+                        column: 0,
+                    },
+                    end: ast::Position {
+                        line: package_declaration_line as u32,
+                        column: 0,
+                    },
+                    source: None,
+                },
             }
         }
         None => {
@@ -216,6 +239,12 @@ fn parse_file_doc_comments(
                 members: BTreeMap::new(),
                 examples: vec![],
                 metadata: None,
+                source_location: ast::SourceLocation {
+                    file: Some(pkgpath.to_string()),
+                    start: ast::Position { line: 0, column: 0 },
+                    end: ast::Position { line: 0, column: 0 },
+                    source: None,
+                },
             }
         }
     };
@@ -722,6 +751,12 @@ pub fn nest_docs(original_docs: Vec<PackageDoc>) -> PackageDoc {
         members: std::collections::BTreeMap::new(),
         examples: Vec::new(),
         metadata: None,
+        source_location: ast::SourceLocation {
+            file: Some(original_docs.first().unwrap().path.clone()), // not correct
+            start: ast::Position { line: 0, column: 0 },
+            end: ast::Position { line: 0, column: 0 },
+            source: None,
+        },
     };
     for current_pkg in original_docs {
         let parent = find_parent(current_pkg.path.clone(), &mut nested_docs);
@@ -753,6 +788,12 @@ fn find_parent(path: String, nested_docs: &mut PackageDoc) -> &mut PackageDoc {
                 members: std::collections::BTreeMap::new(),
                 examples: Vec::new(),
                 metadata: None,
+                source_location: ast::SourceLocation {
+                    file: Some(path.to_string()),
+                    start: ast::Position { line: 0, column: 0 },
+                    end: ast::Position { line: 0, column: 0 },
+                    source: None,
+                },
             }))
         });
         match current {
