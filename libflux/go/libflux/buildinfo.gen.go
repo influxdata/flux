@@ -109,7 +109,7 @@ var sourceHashes = map[string]string{
 	"stdlib/contrib/tomhollingworth/events/duration_with_stop_test.flux":                          "ec06b590cf7010b89e57f1bb3aee7374fb46290dc8d3f441f5d12d94bce47925",
 	"stdlib/csv/csv.flux":                                                                         "ac55d5e63aff271d5b795f2c2c050a495db99eb8e1d88d573c955c077e802585",
 	"stdlib/csv/csv_test.flux":                                                                    "8aaf56893a1aefb65883ba96ebdb0283670d76ec872bfedfe389d778bdc1bb8f",
-	"stdlib/date/date.flux":                                                                       "8d37728f7d5c97184134989d0e59a6c880f0755fc3c197afb65b0363bf1ef4b4",
+	"stdlib/date/date.flux":                                                                       "aae0c1fc7ad3534a12e1f40cf201177cda3ea0a8428a9d14e7d0e1a99ebccdc8",
 	"stdlib/date/date_test.flux":                                                                  "42ea61ee595ab6cfc5631505cf5a757f5a7fa24bd5cc43466099956552b071cf",
 	"stdlib/date/hour_duration_test.flux":                                                         "7da9263cddf0fa443e9dc55b176139d1dd67cb689c0be243d8b595799fc066f4",
 	"stdlib/date/hour_time_test.flux":                                                             "23007876c06a11d25f62368aa1ad6f66ed230dd917deac912a390ec8f72d7fc5",
@@ -156,12 +156,8 @@ var sourceHashes = map[string]string{
 	"stdlib/experimental/count_test.flux":                                                         "52cb0044fcc3fcc17b52d0b73ee019f60c785de08d3e601722128583b684668c",
 	"stdlib/experimental/csv/csv.flux":                                                            "82403693c622e5eaea2cb91f3c3dc1cbe6433cefd905253be89a2bd3c016a329",
 	"stdlib/experimental/distinct_test.flux":                                                      "ebc7f2bf1bc49266a8809f8a3e5cffe5467ac2774c14d40e50c85d14f8c6cd87",
-<<<<<<< HEAD
-	"stdlib/experimental/experimental.flux":                                                       "3f824c86e81ab1236352d4e45d310e4f31784bd4e99a8d6c7685311db24c3555",
-=======
 	"stdlib/experimental/durations_test.flux":                                                     "6394bbfc88ab51a42cfee4a0f1e6ed327b860662922dd99aa6f99ebda5b167ee",
-	"stdlib/experimental/experimental.flux":                                                       "9b83a1a6200b752e832a365e11a8af12763b738c969a17387c35f67191a21f17",
->>>>>>> master
+	"stdlib/experimental/experimental.flux":                                                       "ef4511fde35628658d5ea5a2a6dc9624808453a60bb6093799f6b3b7cd416653",
 	"stdlib/experimental/experimental_test.flux":                                                  "206cbb54d35da80a6736dec990219f5bbabcdc3c65fbb9d1041058c8aae3450d",
 	"stdlib/experimental/fill_test.flux":                                                          "adc4f95f746ccdaf4a0843633753e723a4524ea0afbfb2cd6b70726d855ebfb8",
 	"stdlib/experimental/first_test.flux":                                                         "3dffabf42ff18aa9a6515010e3496f13a44e0429c38636f6962361dbc8693c3f",
@@ -189,7 +185,7 @@ var sourceHashes = map[string]string{
 	"stdlib/experimental/histogram_quantile_test.flux":                                            "54ec84dda20dbb9d0bd883965d43673ab48991b3595ac40bbb47dbe9bc253e3e",
 	"stdlib/experimental/histogram_test.flux":                                                     "20d406b3a55cd011e2a467c50644f2fd0ea3a8b1bf4647a67b4df8a4408395b2",
 	"stdlib/experimental/http/http.flux":                                                          "f7795441a9a7fed397328d84f7d15a6ba74aa296fdc930a6ead0ba3eb95f0bce",
-	"stdlib/experimental/influxdb/influxdb.flux":                                                  "40c2e6f6927e69cc660d1caf0c44c0d8a6cc13093a9b2cb6045aebe5205fdcde",
+	"stdlib/experimental/influxdb/influxdb.flux":                                                  "4f8e99e748fb2f466fac6ee594aa2c36e6bdcddc5209ea31f518bcd59851bc8e",
 	"stdlib/experimental/integral_test.flux":                                                      "7414a80441f483e702707feb608d3c43ce1b6998d0e49715b3e4dbbd10029c2b",
 	"stdlib/experimental/join_right_side_more_cols_test.flux":                                     "5335d49b402bc1d45158924c62fdb8fc8ae00f6353cdce42f05d980f68780152",
 	"stdlib/experimental/join_test.flux":                                                          "71000d5678d45a879206b156fd004257ea9149288d5eb415e132f065363f6d51",
@@ -420,17 +416,13 @@ var sourceHashes = map[string]string{
 	"stdlib/testing/promql/resets_test.flux":                                                      "30a27b1bb9c31aa480d6e478971b71ce00b4dd91a816ba400f15110d5d9bde84",
 	"stdlib/testing/promql/timestamp_test.flux":                                                   "754af9d3ca4e7d500db579ea7c35ecfdbd6d73b9aecc60733d5fb91004aa1366",
 	"stdlib/testing/promql/year_test.flux":                                                        "05b08fa7d5591aa2c15eea596135cbcf68a779ad0b499a56081e52fd7b7c6591",
-	"stdlib/testing/testing.flux":                                                                 "574069f5419d5aacdd9c3066e784c0c485b45773e19bf8e022b4b1660c8a1312",
+	"stdlib/testing/testing.flux":                                                                 "f96eaa9a2ce8b50c840eb807fe122f7a51f3ffb9c8a5e2032cb58bae02e98fc2",
 	"stdlib/testing/usage/api_test.flux":                                                          "0771892b631ac63eaa1fee0615de31669fe6df365c5962d238984eddabc9bded",
 	"stdlib/testing/usage/duration_test.flux":                                                     "38d653755721435b4b47d8216853cec23c18d0ab241c21a4e0f0428a8e399a97",
 	"stdlib/testing/usage/reads_test.flux":                                                        "7c8f88a7f2aac9f7878c0344c354609cdf1a92c76518d5493d277e671ed56ee9",
 	"stdlib/testing/usage/storage_test.flux":                                                      "11360536a5023809df4ee2fdeb7404cc8286abc6e2b59485c6bdb05c0d8a9af5",
 	"stdlib/testing/usage/writes_test.flux":                                                       "88ddcba45de796c2794e93483f1dbc425873df979f9881c92dc6339a5dad07ac",
-<<<<<<< HEAD
 	"stdlib/timezone/timezone.flux":                                                               "a6e70b287a4db8ba43c66e858b0b8278d0e259c11f72b9c09e0fbb4f6e2d7d34",
-=======
-	"stdlib/timezone/timezone.flux":                                                               "90799480607d6f2767acc53cf900c49c3a2246078d868e2fba96121dd3f4e39a",
->>>>>>> master
 	"stdlib/types/is_type_test.flux":                                                              "66daa27dea82fff1325bd6823274a2946ce75e4e27c9b6068c2f2c82677f7257",
 	"stdlib/types/types.flux":                                                                     "8a00287eb69c97ab09af84a4e0ea435047a7b9373199a875312cd1c57812d50c",
 	"stdlib/universe/aggregate_empty_window_count_test.flux":                                      "39ac3741edab42fc471bcee92c70db37ad62c23ed3cb5574c238235d9bd9f9a0",
