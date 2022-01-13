@@ -50,7 +50,7 @@ builtin _minute : (t: T, location: {zone: string, offset: duration}) => int wher
 //    Durations are relative to `now()`.
 //
 // - location: Location used to determine timezone.
-//   Default is the `location` option in the `universe` package.
+//   Default is the `location` option.
 //
 // ## Examples
 //
@@ -88,7 +88,7 @@ builtin _hour : (t: T, location: {zone: string, offset: duration}) => int where 
 //   Durations are relative to `now()`.
 //
 // - location: Location used to determine timezone.
-//   Default is the `location` option in the `universe` package.
+//   Default is the `location` option.
 //
 // ## Examples
 //
@@ -128,7 +128,7 @@ builtin _weekDay : (t: T, location: {zone: string, offset: duration}) => int whe
 //   Durations are relative to `now()`.
 //
 // - location: Location used to determine timezone.
-//   Default is the `location` option in the `universe` package.
+//   Default is the `location` option.
 //
 // ## Examples
 //
@@ -168,7 +168,7 @@ builtin _monthDay : (t: T, location: {zone: string, offset: duration}) => int wh
 //   Durations are relative to `now()`.
 //
 // - location: Location used to determine timezone.
-//   Default is the `location` option in the `universe` package.
+//   Default is the `location` option.
 //
 // ## Examples
 //
@@ -208,7 +208,7 @@ builtin _yearDay : (t: T, location: {zone: string, offset: duration}) => int whe
 //   Durations are relative to `now()`.
 //
 // - location: Location used to determine timezone.
-//   Default is the `location` option in the `universe` package.
+//   Default is the `location` option.
 //
 // ## Examples
 //
@@ -247,7 +247,7 @@ builtin _month : (t: T, location: {zone: string, offset: duration}) => int where
 //   Durations are relative to `now()`.
 //
 // - location: Location used to determine timezone.
-//   Default is the `location` option in the `universe` package.
+//   Default is the `location` option.
 //
 // ## Examples
 //
@@ -286,7 +286,7 @@ builtin _year : (t: T, location: {zone: string, offset: duration}) => int where 
 //   Durations are relative to `now()`.
 //
 // - location: Location used to determine timezone.
-//   Default is the `location` option in the `universe` package.
+//   Default is the `location` option.
 //
 // ## Examples
 //
@@ -326,7 +326,7 @@ builtin _week : (t: T, location: {zone: string, offset: duration}) => int where 
 //   Durations are relative to `now()`.
 //
 // - location: Location used to determine timezone.
-//   Default is the `location` option in the `universe` package.
+//   Default is the `location` option.
 //
 // ## Examples
 //
@@ -365,7 +365,7 @@ builtin _quarter : (t: T, location: {zone: string, offset: duration}) => int whe
 //   Durations are relative to `now()`.
 //
 // - location: Location used to determine timezone.
-//   Default is the `location` option in the `universe` package.
+//   Default is the `location` option.
 //
 // ## Examples
 //
