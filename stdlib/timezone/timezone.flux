@@ -56,7 +56,7 @@ fixed = (offset) => ({zone: utc.zone, offset: offset})
 // ```
 //
 // ### Set the location option using a timezone-based location
-// ```
+// ```no_run
 // import "timezone"
 //
 // option location = timezone.location(name: "America/Los_Angeles")
