@@ -19,7 +19,7 @@ utc = {zone: "UTC", offset: 0h}
 // ## Examples
 //
 // ### Return a fixed location record
-// ```
+// ```no_run
 // import "timezone"
 //
 // timezone.fixed(offset: -8h)
