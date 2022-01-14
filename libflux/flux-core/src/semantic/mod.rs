@@ -140,9 +140,13 @@ impl TryFrom<PolyTypeHashMap<Symbol>> for PackageExports {
     type Error = Errors<Error>;
     fn try_from(values: PolyTypeHashMap<Symbol>) -> Result<Self, Errors<Error>> {
         Ok(PackageExports {
-            typ: build_polytype(values.iter().map(|(k, v)| (k.clone(), v.clone())))?,
+            typ: build_polytype(
+                values
+                    .iter_by(|l, r| l.name().cmp(r.name()))
+                    .map(|(k, v)| (k.clone(), v.clone())),
+            )?,
             values: values
-                .into_iter()
+                .into_iter_by(|l, r| l.name().cmp(r.name()))
                 .map(|(symbol, typ)| (symbol.to_string(), (symbol, typ)))
                 .collect(),
         })
