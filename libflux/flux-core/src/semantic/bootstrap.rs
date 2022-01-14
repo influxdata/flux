@@ -241,7 +241,7 @@ impl InferState {
 
         let env = Environment::new(prelude.into());
         let mut analyzer = Analyzer::new_with_defaults(env, &mut self.imports);
-        let (exports, sem_pkg) = analyzer.analyze_ast(file)?;
+        let (exports, sem_pkg) = analyzer.analyze_ast(file).map_err(|err| err.error)?;
 
         Ok((exports, sem_pkg))
     }

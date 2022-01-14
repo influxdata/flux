@@ -134,7 +134,7 @@ fn infer_types(
     let mut analyzer = Analyzer::new(Environment::new(env), importer, config);
     let (env, pkg) = analyzer
         .analyze_source("main".into(), "".into(), src)
-        .map_err(Error::Semantic)?;
+        .map_err(|err| Error::Semantic(err.error))?;
 
     // Parse polytype expressions in expected environment.
     // Only perform this step if a map of wanted types exists.

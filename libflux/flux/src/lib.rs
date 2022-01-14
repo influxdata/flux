@@ -455,7 +455,7 @@ impl StatefulAnalyzer {
                 // back from the analyzer.
                 let (_env, imports) = analyzer.drop();
                 self.imports = imports;
-                return Err(e.into());
+                return Err(e.error.into());
             }
         };
         // Restore the imports.
@@ -552,7 +552,7 @@ pub unsafe extern "C" fn flux_analyze_with(
 /// and prelude.
 pub fn analyze(ast_pkg: ast::Package) -> Result<Package> {
     let mut analyzer = new_semantic_analyzer(AnalyzerConfig::default())?;
-    let (_, sem_pkg) = analyzer.analyze_ast(ast_pkg)?;
+    let (_, sem_pkg) = analyzer.analyze_ast(ast_pkg).map_err(|err| err.error)?;
     Ok(sem_pkg)
 }
 
@@ -580,7 +580,9 @@ pub fn infer_with_env(
         None => return Err(anyhow!("missing stdlib inports").into()),
     };
     let mut analyzer = Analyzer::new_with_defaults(env, importer);
-    let (_, pkg) = analyzer.analyze_ast_with_substitution(ast_pkg, &mut sub)?;
+    let (_, pkg) = analyzer
+        .analyze_ast_with_substitution(ast_pkg, &mut sub)
+        .map_err(|err| err.error)?;
     let (env, _) = analyzer.drop();
     Ok((env, pkg))
 }

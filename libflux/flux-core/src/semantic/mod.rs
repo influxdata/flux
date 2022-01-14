@@ -38,7 +38,7 @@ use thiserror::Error;
 
 use crate::{
     ast,
-    errors::{AsDiagnostic, Errors, Located},
+    errors::{AsDiagnostic, Errors, Located, Salvage, SalvageResult},
     parser,
     semantic::{
         infer::Constraints,
@@ -425,7 +425,7 @@ impl<'env, I: import::Importer> Analyzer<'env, I> {
         pkgpath: String,
         file_name: String,
         src: &str,
-    ) -> Result<(PackageExports, nodes::Package), FileErrors> {
+    ) -> SalvageResult<(PackageExports, nodes::Package), FileErrors> {
         let ast_file = parser::parse_string(file_name, src);
         let ast_pkg = ast::Package {
             base: ast_file.base.clone(),
@@ -434,7 +434,7 @@ impl<'env, I: import::Importer> Analyzer<'env, I> {
             files: vec![ast_file],
         };
         self.analyze_ast(ast_pkg).map_err(|mut err| {
-            err.source = Some(src.into());
+            err.error.source = Some(src.into());
             err
         })
     }
@@ -443,7 +443,7 @@ impl<'env, I: import::Importer> Analyzer<'env, I> {
     pub fn analyze_ast(
         &mut self,
         ast_pkg: ast::Package,
-    ) -> Result<(PackageExports, nodes::Package), FileErrors> {
+    ) -> SalvageResult<(PackageExports, nodes::Package), FileErrors> {
         self.analyze_ast_with_substitution(ast_pkg, &mut sub::Substitution::default())
     }
 
@@ -455,7 +455,7 @@ impl<'env, I: import::Importer> Analyzer<'env, I> {
         // operation.
         ast_pkg: ast::Package,
         sub: &mut sub::Substitution,
-    ) -> Result<(PackageExports, nodes::Package), FileErrors> {
+    ) -> SalvageResult<(PackageExports, nodes::Package), FileErrors> {
         let mut errors = Errors::new();
         if !self.config.skip_checks {
             if let Err(err) = ast::check::check(ast::walk::Node::Package(&ast_pkg)) {
@@ -493,15 +493,21 @@ impl<'env, I: import::Importer> Analyzer<'env, I> {
                 PackageExports::default()
             }
         };
+
+        let sem_pkg = nodes::inject_pkg_types(sem_pkg, sub);
+
         if errors.has_errors() {
-            return Err(FileErrors {
-                file: sem_pkg.package,
-                source: None,
-                errors,
+            return Err(Salvage {
+                error: FileErrors {
+                    file: sem_pkg.package.clone(),
+                    source: None,
+                    errors,
+                },
+                value: Some((env, sem_pkg)),
             });
         }
 
-        Ok((env, nodes::inject_pkg_types(sem_pkg, sub)))
+        Ok((env, sem_pkg))
     }
 
     /// Drop returns ownership of the environment and importer.
