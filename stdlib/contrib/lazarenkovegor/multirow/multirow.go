@@ -122,8 +122,14 @@ func MakeRowObject(rowTp *semantic.MonoType, reader flux.ColReader, rowIndex int
 			} else {
 				value = values.NewBool(column.Value(rowIndex))
 			}
-
-		case flux.TInt, flux.TTime:
+		case flux.TTime:
+			column := reader.Times(i)
+			if column.IsNull(rowIndex) {
+				value = values.NewNull(semantic.BasicTime)
+			} else {
+				value = values.NewTime(values.Time(column.Value(rowIndex)))
+			}
+		case flux.TInt:
 			column := reader.Ints(i)
 			if column.IsNull(rowIndex) {
 				value = values.NewNull(semantic.BasicInt)
@@ -332,7 +338,8 @@ func (s *part) KeyColumnsNums() []int {
 
 func (s *part) AppendData(group *Group, row []values.Value) error {
 	for _, colNum := range s.dataColumnsNums {
-		ab := s.getBuilder(s.columns[colNum], group)
+		cb := s.columns[colNum]
+		ab := s.getBuilder(cb, group)
 		value := row[colNum]
 		if value.IsNull() {
 			ab.AppendNull()
@@ -340,7 +347,11 @@ func (s *part) AppendData(group *Group, row []values.Value) error {
 		}
 		switch b := ab.(type) {
 		case *array.IntBuilder:
-			b.Append(value.Int())
+			if cb.colMeta.Type == flux.TTime {
+				b.Append(int64(value.Time()))
+			} else {
+				b.Append(value.Int())
+			}
 		case *array.UintBuilder:
 			b.Append(value.UInt())
 		case *array.FloatBuilder:
@@ -417,16 +428,13 @@ func (s *TableBuilder) BeginPart(size int, colsMeta []flux.ColMeta) (Part, error
 	nullColumns := make([]*colBuilder, 0, colCount)
 	virtualColumnsNums := make([]int, 0, colCount)
 	for colNum, colMeta := range colsMeta {
-
 		if colMeta.Type == flux.TInvalid {
-			return nil, fmt.Errorf("column %s have invaid result", colMeta.Label)
+			continue
 		}
-
 		var (
 			cb *colBuilder
 			ok bool
 		)
-
 		if cb, ok = s.columnsBuilders[colMeta.Label]; !ok {
 			keyCols := s.srcKey.Cols()
 			keyColIndex := execute.ColIdx(colMeta.Label, keyCols)
@@ -435,8 +443,7 @@ func (s *TableBuilder) BeginPart(size int, colsMeta []flux.ColMeta) (Part, error
 			}
 
 			si := sort.SearchStrings(s.virtualColumns, colMeta.Label)
-			l := len(s.virtualColumns)
-			isVirtual := l > 0 && (si == l || s.virtualColumns[si] == colMeta.Label)
+			isVirtual := si < len(s.virtualColumns) && s.virtualColumns[si] == colMeta.Label
 
 			cb = &colBuilder{
 				make(map[*Group]array.Builder),
@@ -511,7 +518,7 @@ func (s *TableBuilder) Table() (flux.Table, error) {
 		}
 		columns = append(columns, flux.ColMeta{Label: n, Type: v.colMeta.Type})
 	}
-	dataColumns := columns[keyColsCount+1:]
+	dataColumns := columns[keyColsCount:]
 	sort.Slice(dataColumns, func(i, j int) bool {
 		return dataColumns[i].Label < dataColumns[j].Label
 	})
