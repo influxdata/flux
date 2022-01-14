@@ -1,7 +1,7 @@
 // Package rows provides additional functions for remapping values in rows.
 //
-
 package multirow
+
 
 // map is an alternate implementation of `map()` that is more functional.
 //
@@ -12,8 +12,6 @@ package multirow
 // *  allows you to remove extra(virtual columns of accumulator) columns from the result calculation
 // *  allows you to get the current line number and the total number of lines in this group
 // *  use scalar value as row (default new column name _value can change by column param)
-
-
 // ## Parameters
 //
 // - fn: A single argument function to apply to each record.
@@ -38,8 +36,6 @@ package multirow
 //   default: {}
 // - virtual A array of string with virtual column names, than used only for intermediate calculations and should not be included in the final result
 //   default: []
-
-
 // ## Example
 //import "csv"
 //  import "contrib/lazarenkovegor/multirow"
@@ -53,7 +49,6 @@ package multirow
 //  ,,,test2,test12,3
 //  ,,,test2,test13,4
 //  "
-
 //  csv.from(csv:data)
 //  |>multirow.map(fn: (previous, row) => {
 //          x = previous.x_col*2 -1
@@ -65,16 +60,26 @@ package multirow
 //          init : {x_col : 100},
 //          virtual : ["x_col"]
 //  )
+builtin map : (
+        <-tables: [A],
+        ?left: int,
+        ?right: int,
+        ?init: C,
+        ?virtual: [string],
+        fn: (
+            ?index: int,
+            ?count: int,
+            ?row: A,
+            ?window: [A],
+            ?previous: D,
+        ) => X,
+        ?column: string,
+    ) => [B]
+    where
+    A: Record,
+    B: Record,
+    C: Record,
+    D: Record
 
-
-builtin map : (<-tables: [A],
-?left : int,
-?right : int,
-?init : C,
-?virtual : [string],
-fn: (?index: int, ?count : int, ?row : A, ?window : [A], ?previous : D) => X, ?column : string) => [B] where A: Record, B : Record, C : Record, D : Record
-
-
-rowNumber = (t=<-, column="_value") =>  t |> map(fn: (index) => index, column:column)
-simpleAMA = (t=<-, n, column="_value") =>  t |> map(left: n-1, fn: (window) => window |> mean(column:column))
-
+rowNumber = (t=<-, column="_value") => t |> map(fn: (index) => index, column: column)
+simpleAMA = (t=<-, n, column="_value") => t |> map(left: n - 1, fn: (window) => window |> mean(column: column))

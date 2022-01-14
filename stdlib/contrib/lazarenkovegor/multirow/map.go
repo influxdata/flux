@@ -162,12 +162,11 @@ func createMapProcSpec(qs flux.OperationSpec, pa plan.Administration) (plan.Proc
 
 type mapTransformation struct {
 	execute.ExecutionNode
-	ds       execute.Dataset
-	cache    table.BuilderCache
-	spec     *MapPlan
-	ctx      context.Context
-	mem      *memory.Allocator
-	previous values.Object
+	ds    execute.Dataset
+	cache table.BuilderCache
+	spec  *MapPlan
+	ctx   context.Context
+	mem   *memory.Allocator
 }
 
 func (s *mapTransformation) RetractTable(id execute.DatasetID, key flux.GroupKey) error {
@@ -212,6 +211,7 @@ func (s *mapTransformation) Process(id execute.DatasetID, tbl flux.Table) error 
 
 	if err := tbl.Do(func(reader flux.ColReader) error {
 		l := reader.Len()
+		var previous values.Object
 		for curRowId := 0; curRowId < l; curRowId++ {
 
 			var row values.Object
@@ -232,7 +232,7 @@ func (s *mapTransformation) Process(id execute.DatasetID, tbl flux.Table) error 
 				rows = s.makeWindowRows(arrayOfRowTp, rowTp, reader, from, to)
 			}
 
-			if err := s.doUserFunction(useFnArgsType, row, rows, fromArrayArgsType, userFunction, tb, curRowId, l); err != nil {
+			if err := s.doUserFunction(useFnArgsType, row, rows, fromArrayArgsType, userFunction, tb, curRowId, l, &previous); err != nil {
 				return err
 			}
 		}
@@ -264,7 +264,7 @@ func (s *mapTransformation) makeWindowRows(arrayOfRowTp semantic.MonoType, rowTp
 }
 
 func (s *mapTransformation) doUserFunction(useFnArgsType semantic.MonoType, row values.Object, rows values.Array, fromArrayArgsType semantic.MonoType,
-	userFunction compiler.Func, out *TableBuilder, index int, count int) error {
+	userFunction compiler.Func, out *TableBuilder, index int, count int, previous *values.Object) error {
 	args := values.NewObject(useFnArgsType)
 
 	if s.spec.HasWindowParam {
@@ -284,15 +284,15 @@ func (s *mapTransformation) doUserFunction(useFnArgsType semantic.MonoType, row 
 		args.Set("index", values.NewInt(int64(index)))
 	}
 	if s.spec.HasPreviousParam {
-		if s.previous == nil {
+		if *previous == nil {
 			if s.spec.InitValue == nil {
-				s.previous = values.NewObjectWithValues(nil)
+				*previous = values.NewObjectWithValues(nil)
 			} else {
-				s.previous = s.spec.InitValue
+				*previous = s.spec.InitValue
 			}
 		}
 
-		args.Set("previous", s.previous)
+		args.Set("previous", *previous)
 	}
 
 	if s.spec.HasCountParam {
@@ -308,7 +308,7 @@ func (s *mapTransformation) doUserFunction(useFnArgsType semantic.MonoType, row 
 		return err
 	}
 	if s.spec.HasPreviousParam {
-		s.previous = obj
+		*previous = obj
 	}
 	return nil
 }
