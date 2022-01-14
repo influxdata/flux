@@ -28,6 +28,7 @@ require (
 	github.com/google/go-cmp v0.5.6
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect
 	github.com/influxdata/influxdb-client-go/v2 v2.3.1-0.20210518120617-5d1fff431040
+	github.com/influxdata/influxdb-iox-client-go v0.0.0-20220111160005-725f09aa0ddf // indirect
 	github.com/influxdata/line-protocol v0.0.0-20200327222509-2487e7298839
 	github.com/influxdata/pkg-config v0.2.10
 	github.com/influxdata/promql/v2 v2.12.0
@@ -59,6 +60,6 @@ require (
 	golang.org/x/tools v0.1.4
 	gonum.org/v1/gonum v0.8.2
 	google.golang.org/api v0.47.0
-	google.golang.org/grpc v1.39.0
+	google.golang.org/grpc v1.43.0
 	gopkg.in/yaml.v2 v2.3.0
 )

@@ -12,6 +12,7 @@ import (
 	"github.com/influxdata/flux/dependencies/secret"
 	"github.com/influxdata/flux/dependencies/url"
 	"github.com/influxdata/flux/internal/errors"
+	"github.com/influxdata/influxdb-iox-client-go"
 )
 
 var _ Dependencies = (*Deps)(nil)
@@ -27,8 +28,13 @@ type key int
 
 const dependenciesKey key = iota
 
+// FIXME: many other dependencies are specified using interfaces, perhaps to
+//  help with testing. Should this also be an interface?
+type IOxClient = *influxdbiox.Client
+
 type Dependencies interface {
 	Dependency
+	IOxClient() (IOxClient, error)
 	HTTPClient() (http.Client, error)
 	FilesystemService() (filesystem.Service, error)
 	SecretService() (secret.Service, error)
@@ -42,10 +48,18 @@ type Deps struct {
 }
 
 type WrappedDeps struct {
+	IOxClient         IOxClient
 	HTTPClient        http.Client
 	FilesystemService filesystem.Service
 	SecretService     secret.Service
 	URLValidator      url.Validator
+}
+
+func (d Deps) IOxClient() (IOxClient, error) {
+	if d.Deps.IOxClient != nil {
+		return d.Deps.IOxClient, nil
+	}
+	return nil, errors.New(codes.Unimplemented, "IOx client uninitialized in dependencies")
 }
 
 func (d Deps) HTTPClient() (http.Client, error) {
@@ -98,6 +112,7 @@ func NewDefaultDependencies() Deps {
 	validator := url.PassValidator{}
 	return Deps{
 		Deps: WrappedDeps{
+			IOxClient:  nil, // FIXME: verify this should be nil here.
 			HTTPClient: http.NewLimitedDefaultClient(validator),
 			// Default to having no filesystem, no secrets, and no url validation (always pass).
 			FilesystemService: nil,
