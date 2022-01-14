@@ -1679,13 +1679,13 @@ impl<K: Eq + Hash + Clone> Substitutable for PolyTypeHashMap<K> {
     fn apply_ref(&self, sub: &dyn Substituter) -> Option<Self> {
         merge_collect(
             &mut (),
-            self,
+            self.unordered_iter(),
             |_, (k, v)| v.apply_ref(sub).map(|v| (k.clone(), v)),
             |_, (k, v)| (k.clone(), v.clone()),
         )
     }
     fn free_vars(&self, vars: &mut Vec<Tvar>) {
-        for t in self.values() {
+        for t in self.unordered_values() {
             t.free_vars(vars);
         }
     }

@@ -145,7 +145,7 @@ fn infer_types(
             .map(|(k, v)| (k.to_string(), v))
             .collect();
         let want = parse_map(Some("main"), want_env)
-            .into_iter()
+            .into_iter_by(|l, r| l.name().cmp(r.name()))
             .map(|(k, v)| (k.to_string(), v))
             .collect();
         if want != got {
@@ -3543,6 +3543,7 @@ fn copy_bindings_from_other_env() {
                     expr: MonoType::BOOL,
                 }
             )
+            .into()
         }
     );
 }

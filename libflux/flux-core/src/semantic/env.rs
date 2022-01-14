@@ -160,7 +160,11 @@ impl Environment<'_> {
     /// If the type is present, returns a pointer to `t`; otherwise, returns `None`.
     pub fn lookup_str(&self, v: &str) -> Option<&PolyType> {
         // TODO Avoid iteration here
-        if let Some((_, t)) = self.values.iter().find(|(symbol, _)| *symbol == v) {
+        if let Some((_, t)) = self
+            .values
+            .iter_by(|l, r| l.name().cmp(r.name()))
+            .find(|(symbol, _)| *symbol == v)
+        {
             Some(t)
         } else if let Some(t) = self.external.as_ref().and_then(|env| env.lookup(v)) {
             Some(t)
@@ -173,7 +177,11 @@ impl Environment<'_> {
 
     pub(crate) fn lookup_symbol(&self, v: &str) -> Option<&Symbol> {
         // TODO Avoid iteration here
-        if let Some(t) = self.values.keys().find(|symbol| *symbol == v) {
+        if let Some(t) = self
+            .values
+            .keys_by(|l, r| l.name().cmp(r.name()))
+            .find(|symbol| *symbol == v)
+        {
             Some(t)
         } else if let Some(env) = &self.parent {
             env.lookup_symbol(v)
@@ -206,7 +214,7 @@ impl Environment<'_> {
     /// This does not change the current environment's `parent` or `readwrite` flag.
     #[cfg(test)]
     pub fn copy_bindings_from(&mut self, other: &Environment) {
-        for (name, t) in other.values.iter() {
+        for (name, t) in other.values.iter_by(|l, r| l.name().cmp(r.name())) {
             self.add(name.clone(), t.clone());
         }
     }
@@ -214,13 +222,17 @@ impl Environment<'_> {
     /// Returns a string keyed `PolyTypeMap`
     pub fn string_values(self) -> PolyTypeMap {
         self.values
-            .into_iter()
+            .into_iter_by(|l, r| l.name().cmp(r.name()))
             .map(|(k, v)| (k.to_string(), v))
             .collect()
     }
 
     fn fmt_display(&self, f: &mut fmt::DebugMap<'_, '_>) {
-        f.entries(self.values.iter().map(|(k, v)| (k, v.to_string())));
+        f.entries(
+            self.values
+                .iter_by(|l, r| l.name().cmp(r.name()))
+                .map(|(k, v)| (k, v.to_string())),
+        );
         if let Some(parent) = &self.parent {
             parent.fmt_display(f);
         }

@@ -531,7 +531,7 @@ impl File {
             }
         }
 
-        for name in infer.imports.keys() {
+        for name in infer.imports.keys_by(|l, r| l.name().cmp(r.name())) {
             infer.env.remove(name);
         }
         infer.imports.clear();
