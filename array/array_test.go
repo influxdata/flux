@@ -3,8 +3,10 @@ package array_test
 import (
 	"testing"
 
+	apachearray "github.com/apache/arrow/go/arrow/array"
 	"github.com/apache/arrow/go/arrow/memory"
 	"github.com/influxdata/flux/array"
+	fluxmemory "github.com/influxdata/flux/memory"
 )
 
 func TestString(t *testing.T) {
@@ -115,6 +117,34 @@ func TestString(t *testing.T) {
 				}
 			}
 		})
+	}
+}
+
+func TestNewStringFromArray(t *testing.T) {
+	alloc := &fluxmemory.Allocator{}
+	// Need to use the Apache binary builder to be able to create an actual
+	// Arrow Binary array.
+	sb := apachearray.NewBinaryBuilder(alloc, array.StringType)
+	vals := []string{"a", "b", "c"}
+	for _, v := range vals {
+		sb.AppendString(v)
+	}
+	a := sb.NewArray()
+	s := array.NewStringFromBinaryArray(a.(*apachearray.Binary))
+	if want, got := len(vals), s.Len(); want != got {
+		t.Errorf("wanted length of %v, got %v", want, got)
+		t.Fail()
+	}
+	for i, v := range vals {
+		if want, got := v, s.Value(i); want != got {
+			t.Errorf("at offset %v, wanted %v, got %v", i, want, got)
+		}
+	}
+
+	a.Release()
+	s.Release()
+	if want, got := int64(0), alloc.Allocated(); want != got {
+		t.Errorf("epxected allocated to be %v, was %v", want, got)
 	}
 }
 
