@@ -463,18 +463,15 @@ impl<'env, I: import::Importer> Analyzer<'env, I> {
             }
         }
 
-        let file = ast_pkg.package.clone();
-        let mut sem_pkg = match convert::convert_package(ast_pkg, &self.env, sub) {
-            Ok(sem_pkg) => sem_pkg,
-            Err(err) => {
+        let mut sem_pkg = {
+            let mut converter = convert::Converter::with_env(sub, &self.env);
+            let sem_pkg = converter.convert_package(ast_pkg);
+            if let Err(err) = converter.finish(()) {
                 errors.extend(err.into_iter().map(Error::from));
-                return Err(FileErrors {
-                    file,
-                    source: None,
-                    errors,
-                });
             }
+            sem_pkg
         };
+
         if !self.config.skip_checks {
             if let Err(err) = check::check(&sem_pkg) {
                 errors.push(err.into());
