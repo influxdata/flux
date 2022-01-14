@@ -1,14 +1,10 @@
 // Aliasing over map types makes it easy to switch them out across the crate to test alternatives
 use std::{borrow::Borrow, cmp::Ordering, hash::Hash};
 
-/// Hashmap type used with libflux
+/// Hashmap type used with libflux. Forces iteration to be deterministic (unless unordered
+/// iteration is explicitly opted in to)
 #[derive(Debug, Clone)]
 pub struct HashMap<K, V>(std::collections::HashMap<K, V>);
-
-/// Hashset type used with libflux
-pub(crate) type HashSet<T> = std::collections::HashSet<T>;
-
-use std::collections::hash_map::Entry;
 
 impl<K, V> From<std::collections::HashMap<K, V>> for HashMap<K, V> {
     fn from(v: std::collections::HashMap<K, V>) -> Self {
@@ -86,7 +82,7 @@ where
         self.0.remove(key)
     }
 
-    pub fn entry(&mut self, key: K) -> Entry<K, V> {
+    pub fn entry(&mut self, key: K) -> std::collections::hash_map::Entry<K, V> {
         self.0.entry(key)
     }
 
@@ -155,5 +151,39 @@ where
 
     pub fn keys(&self) -> impl Iterator<Item = &K> {
         self.keys_by(std::cmp::Ord::cmp)
+    }
+}
+
+/// Hashset type used with libflux. Forces iteration to be deterministic (unless unordered
+/// iteration is explicitly opted in to)
+#[derive(Debug, Clone)]
+pub(crate) struct HashSet<T>(std::collections::HashSet<T>);
+
+impl<T> Default for HashSet<T> {
+    fn default() -> Self {
+        Self(std::collections::HashSet::default())
+    }
+}
+
+impl<T> HashSet<T> {
+    pub fn new() -> Self {
+        Self(std::collections::HashSet::new())
+    }
+}
+
+impl<T> HashSet<T>
+where
+    T: Eq + Hash,
+{
+    pub fn contains<Q>(&self, key: &Q) -> bool
+    where
+        T: Borrow<Q>,
+        Q: ?Sized + Eq + Hash,
+    {
+        self.0.contains(key)
+    }
+
+    pub fn insert(&mut self, key: T) -> bool {
+        self.0.insert(key)
     }
 }
