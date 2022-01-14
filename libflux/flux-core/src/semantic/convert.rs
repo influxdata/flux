@@ -518,7 +518,13 @@ impl<'a> Converter<'a> {
                 Ok(MonoType::Var(*tvar))
             }
 
-            ast::MonoType::Basic(basic) => Ok(MonoType::from(self.convert_builtintype(basic)?)),
+            ast::MonoType::Basic(basic) => Ok(match self.convert_builtintype(basic) {
+                Ok(builtin) => MonoType::from(builtin),
+                Err(err) => {
+                    self.errors.push(err);
+                    MonoType::Error
+                }
+            }),
             ast::MonoType::Array(arr) => Ok(MonoType::from(types::Array(
                 self.convert_monotype(arr.element, tvars)?,
             ))),
@@ -784,7 +790,8 @@ impl<'a> Converter<'a> {
                     match expr {
                         ast::Expression::PipeLit(lit) => {
                             if piped {
-                                return Err(located(lit.base.location, ErrorKind::AtMostOnePipe));
+                                self.errors
+                                    .push(located(lit.base.location, ErrorKind::AtMostOnePipe));
                             } else {
                                 piped = true;
                             }
@@ -923,28 +930,37 @@ impl<'a> Converter<'a> {
     fn convert_call_expression(&mut self, expr: ast::CallExpr) -> Result<CallExpr> {
         let callee = self.convert_expression(expr.callee)?;
         // TODO(affo): I'd prefer these checks to be in ast.Check().
-        if expr.arguments.len() > 1 {
-            return Err(located(expr.base.location, ErrorKind::ExtraParameterRecord));
-        }
         let mut args = expr
             .arguments
             .into_iter()
             .map(|a| match a {
                 ast::Expression::Object(obj) => self.convert_object_expression(*obj),
-                _ => Err(located(
-                    a.base().location.clone(),
-                    ErrorKind::ParametersNotRecord,
-                )),
+                _ => {
+                    self.errors.push(located(
+                        a.base().location.clone(),
+                        ErrorKind::ParametersNotRecord,
+                    ));
+
+                    Ok(ObjectExpr {
+                        loc: a.base().location.clone(),
+                        typ: MonoType::Error,
+                        with: None,
+                        properties: Vec::new(),
+                    })
+                }
             })
             .collect::<Result<Vec<ObjectExpr>>>()?;
         let arguments = match args.len() {
-            0 => Ok(Vec::new()),
-            1 => Ok(args.pop().expect("there must be 1 element").properties),
-            _ => Err(located(
-                expr.base.location.clone(),
-                ErrorKind::ExtraParameterRecord,
-            )),
-        }?;
+            0 => Vec::new(),
+            1 => args.pop().expect("there must be 1 element").properties,
+            _ => {
+                self.errors.push(located(
+                    expr.base.location.clone(),
+                    ErrorKind::ExtraParameterRecord,
+                ));
+                args.remove(0).properties
+            }
+        };
         Ok(CallExpr {
             loc: expr.base.location,
             typ: MonoType::Error,

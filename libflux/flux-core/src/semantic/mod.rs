@@ -485,26 +485,15 @@ impl<'env, I: import::Importer> Analyzer<'env, I> {
         let env = match nodes::infer_package(&mut sem_pkg, &mut self.env, sub, &mut self.importer) {
             Ok(()) => {
                 let env = self.env.exit_scope();
-                match PackageExports::try_from(env.values) {
-                    Ok(env) => env,
-                    Err(err) => {
-                        errors.extend(err);
-                        return Err(FileErrors {
-                            file: sem_pkg.package,
-                            source: None,
-                            errors,
-                        });
-                    }
-                }
+                PackageExports::try_from(env.values).unwrap_or_else(|err| {
+                    errors.extend(err);
+                    PackageExports::default()
+                })
             }
             Err(err) => {
                 self.env.exit_scope();
                 errors.extend(err.into_iter().map(Error::from));
-                return Err(FileErrors {
-                    file: sem_pkg.package,
-                    source: None,
-                    errors,
-                });
+                PackageExports::default()
             }
         };
         if errors.has_errors() {
