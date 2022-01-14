@@ -242,7 +242,9 @@ fn parse_docs(
     let mut docs = Vec::with_capacity(ast_packages.len());
     let mut diagnostics = Vec::new();
     for (pkgpath, ast_pkg) in ast_packages {
-        let (pkgtypes, _) = analyzer.analyze_ast(ast_pkg.clone())?;
+        let (pkgtypes, _) = analyzer
+            .analyze_ast(ast_pkg.clone())
+            .map_err(|err| err.error)?;
         let (doc, mut diags) = doc::parse_package_doc_comments(&ast_pkg, &pkgpath, &pkgtypes)
             .context(format!("generating docs for \"{}\"", &pkgpath))?;
         if !exceptions.contains(&pkgpath.as_str()) {
