@@ -120,7 +120,7 @@ func TestString(t *testing.T) {
 	}
 }
 
-func TestNewStringFromArray(t *testing.T) {
+func TestNewStringFromBinaryArray(t *testing.T) {
 	alloc := &fluxmemory.Allocator{}
 	// Need to use the Apache binary builder to be able to create an actual
 	// Arrow Binary array.
