@@ -200,8 +200,13 @@ func copyAndSort(src []string) []string {
 	return dst
 }
 
-func asBytes(ptr uintptr, size int) []byte {
-	return *(*[]byte)(unsafe.Pointer(&reflect.SliceHeader{Data: ptr, Len: size, Cap: size}))
+func appendBytes(ptr unsafe.Pointer, size int, builder *strings.Builder) {
+	type Slice struct {
+		Data unsafe.Pointer
+		Len  int
+		Cap  int
+	}
+	builder.Write(*(*[]byte)(unsafe.Pointer(&Slice{Data: ptr, Len: size, Cap: size})))
 }
 
 func MakeStringKey(values []values.Value) string {
@@ -222,29 +227,34 @@ func MakeStringKey(values []values.Value) string {
 		case fbsemantic.TypeBool:
 			val := v.Bool()
 			const l = int(unsafe.Sizeof(val))
-			sb.Write(asBytes(uintptr(unsafe.Pointer(&val)), l))
+			appendBytes(unsafe.Pointer(&val), l, &sb)
+			//sb.Write(asBytes(uintptr(unsafe.Pointer(&val)), l))
 		case fbsemantic.TypeInt:
 			val := v.Int()
 			const l = int(unsafe.Sizeof(val))
-			sb.Write(asBytes(uintptr(unsafe.Pointer(&val)), l))
+			appendBytes(unsafe.Pointer(&val), l, &sb)
+			//sb.Write(asBytes(uintptr(unsafe.Pointer(&val)), l))
 		case fbsemantic.TypeUint:
 			val := v.UInt()
 			const l = int(unsafe.Sizeof(val))
-			sb.Write(asBytes(uintptr(unsafe.Pointer(&val)), l))
+			appendBytes(unsafe.Pointer(&val), l, &sb)
+			//sb.Write(asBytes(uintptr(unsafe.Pointer(&val)), l))
 		case fbsemantic.TypeFloat:
 			val := v.Float()
 			const l = int(unsafe.Sizeof(val))
-			sb.Write(asBytes(uintptr(unsafe.Pointer(&val)), l))
+			//sb.Write(asBytes(uintptr(unsafe.Pointer(&val)), l))
 		case fbsemantic.TypeString:
 			sb.WriteString(v.Str())
 		case fbsemantic.TypeDuration:
 			val := v.Duration()
 			const l = int(unsafe.Sizeof(val))
-			sb.Write(asBytes(uintptr(unsafe.Pointer(&val)), l))
+			appendBytes(unsafe.Pointer(&val), l, &sb)
+			//sb.Write(asBytes(uintptr(unsafe.Pointer(&val)), l))
 		case fbsemantic.TypeTime:
 			val := v.Time()
 			const l = int(unsafe.Sizeof(val))
-			sb.Write(asBytes(uintptr(unsafe.Pointer(&val)), l))
+			appendBytes(unsafe.Pointer(&val), l, &sb)
+			//sb.Write(asBytes(uintptr(unsafe.Pointer(&val)), l))
 		case fbsemantic.TypeRegexp:
 			sb.WriteString(v.Regexp().String())
 		case fbsemantic.TypeBytes:
