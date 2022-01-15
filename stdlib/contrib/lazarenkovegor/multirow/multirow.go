@@ -582,15 +582,15 @@ func (s *TableBuilder) reserve() {
 	}
 }
 
-func (s *TableBuilder) AppendRows(ctx context.Context, res values.Value, needLastObject bool) (error, values.Object) {
+func (s *TableBuilder) AppendRows(ctx context.Context, res values.Value, needLastObject bool) (values.Object, error) {
 	if to, ok := res.(*flux.TableObject); ok {
 		pr, err := lang.CompileTableObject(ctx, to, time.Now())
 		if err != nil {
-			return err, nil
+			return nil, err
 		}
 		q, err := pr.Start(ctx, s.mem)
 		if err != nil {
-			return err, nil
+			return nil, err
 		}
 		r := <-q.Results()
 		var obj values.Object
@@ -667,7 +667,7 @@ func (s *TableBuilder) AppendRows(ctx context.Context, res values.Value, needLas
 			})
 		})
 
-		return err, obj
+		return obj, err
 	}
 
 	switch res.Type().Kind() {
@@ -683,13 +683,13 @@ func (s *TableBuilder) AppendRows(ctx context.Context, res values.Value, needLas
 			obj = v.Object()
 			err = s.addRecord(obj)
 		})
-		return err, obj
+		return obj, err
 	case semantic.Record:
 		obj := res.Object()
-		return s.addRecord(obj), obj
+		return obj, s.addRecord(obj)
 	default:
 		obj := values.NewObjectWithValues(map[string]values.Value{s.defaultValueColumn: res})
-		return s.addRecord(obj), obj
+		return obj, s.addRecord(obj)
 	}
 }
 

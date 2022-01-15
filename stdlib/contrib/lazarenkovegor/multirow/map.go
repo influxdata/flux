@@ -303,7 +303,7 @@ func (s *mapTransformation) doUserFunction(useFnArgsType semantic.MonoType, row 
 		return err
 	}
 
-	err, obj := out.AppendRows(s.ctx, res, s.spec.HasPreviousParam)
+	obj, err := out.AppendRows(s.ctx, res, s.spec.HasPreviousParam)
 	if err != nil {
 		return err
 	}
