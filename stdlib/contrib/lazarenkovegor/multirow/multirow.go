@@ -228,33 +228,28 @@ func MakeStringKey(values []values.Value) string {
 			val := v.Bool()
 			const l = int(unsafe.Sizeof(val))
 			appendBytes(unsafe.Pointer(&val), l, &sb)
-			//sb.Write(asBytes(uintptr(unsafe.Pointer(&val)), l))
 		case fbsemantic.TypeInt:
 			val := v.Int()
 			const l = int(unsafe.Sizeof(val))
 			appendBytes(unsafe.Pointer(&val), l, &sb)
-			//sb.Write(asBytes(uintptr(unsafe.Pointer(&val)), l))
 		case fbsemantic.TypeUint:
 			val := v.UInt()
 			const l = int(unsafe.Sizeof(val))
 			appendBytes(unsafe.Pointer(&val), l, &sb)
-			//sb.Write(asBytes(uintptr(unsafe.Pointer(&val)), l))
 		case fbsemantic.TypeFloat:
 			val := v.Float()
 			const l = int(unsafe.Sizeof(val))
-			//sb.Write(asBytes(uintptr(unsafe.Pointer(&val)), l))
+			appendBytes(unsafe.Pointer(&val), l, &sb)
 		case fbsemantic.TypeString:
 			sb.WriteString(v.Str())
 		case fbsemantic.TypeDuration:
 			val := v.Duration()
 			const l = int(unsafe.Sizeof(val))
 			appendBytes(unsafe.Pointer(&val), l, &sb)
-			//sb.Write(asBytes(uintptr(unsafe.Pointer(&val)), l))
 		case fbsemantic.TypeTime:
 			val := v.Time()
 			const l = int(unsafe.Sizeof(val))
 			appendBytes(unsafe.Pointer(&val), l, &sb)
-			//sb.Write(asBytes(uintptr(unsafe.Pointer(&val)), l))
 		case fbsemantic.TypeRegexp:
 			sb.WriteString(v.Regexp().String())
 		case fbsemantic.TypeBytes:
