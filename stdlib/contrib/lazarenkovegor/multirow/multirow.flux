@@ -1,4 +1,4 @@
-// Package rows provides additional functions for remapping values in rows.
+// Package multirow provides additional functions for remapping values in rows.
 //
 package multirow
 
@@ -13,28 +13,24 @@ package multirow
 // *  allows you to get the current line number and the total number of lines in this group
 // *  use scalar value as row (default new column name _value can change by column param)
 // ## Parameters
-//
+// - tables: Input tables streams for transformation
 // - fn: A single argument function to apply to each record.
-//   The return value must be a:
-// * record
-// * array of record
-// * primitive type
-// * tables stream
-// This function has many parameters, but they are all optional:
-// * index - current row index in current group as int
-// * count - row count in current group as int
-// * row - current process row as record
-// * window  - table with rows [index - left: index + right]  as table stream
-// * previous - previous process result in same group as record
-// - left A numbers of records before current for add to window stream
+//   the return value must be: record, array of record, primitive type, tables stream.
+//   This function has many parameters, but they are all optional:
+//    - index: current row index in current group as int
+//    - count: row count in current group as int
+//    - row: current process row as record
+//    - window: table with rows [index - left: index + right]  as table stream
+//    - previous: previous process result in same group as record
+// - left: Numbers of records before current for add to window stream
 //   default: 0
-// - right A numbers of records after current for add to window stream
+// - right: Numbers of records after current for add to window stream
 //   default: 0
-// - column A name of new column for all primitive results of fn
+// - column: Name of new column for all primitive results of fn
 //   default: "_value"
-// - init  A record then will pass to previous param of first row
+// - init:  Record then will pass to previous param of first row
 //   default: {}
-// - virtual A array of string with virtual column names, than used only for intermediate calculations and should not be included in the final result
+// - virtual: Array of string with virtual column names, than used only for intermediate calculations and should not be included in the final result
 //   default: []
 // ## Example
 //import "csv"
@@ -80,6 +76,3 @@ builtin map : (
     B: Record,
     C: Record,
     D: Record
-
-rowNumber = (t=<-, column="_value") => t |> map(fn: (index) => index, column: column)
-simpleAMA = (t=<-, n, column="_value") => t |> map(left: n - 1, fn: (window) => window |> mean(column: column))
