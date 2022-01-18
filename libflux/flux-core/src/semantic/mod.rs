@@ -515,7 +515,14 @@ impl<'env, I: import::Importer> Analyzer<'env, I> {
             });
         }
 
-        Ok((env, nodes::inject_pkg_types(sem_pkg, sub)))
+        let mut nodes = nodes::inject_pkg_types(sem_pkg, sub);
+
+        // Try to vectorize all the function expressions in a package. This will
+        // return an error if it finds a function can't be vectorized, but we
+        // don't expect all functions to be vectorizable. So we just let it
+        // vectorize what it can, and fail silently for all other cases.
+        let _ = nodes::vectorize(&mut nodes);
+        Ok((env, nodes))
     }
 
     /// Drop returns ownership of the environment and importer.

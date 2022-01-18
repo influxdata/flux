@@ -8,7 +8,9 @@
     "IsComparable": true,
     "Value": "Value",
     "Append": "Append",
-    "NewArray": "NewIntArray"
+    "NewArray": "NewIntArray",
+    "ValueType": "Int",
+    "ColType": "TInt"
   },
   {
     "Name": "Uint",
@@ -19,7 +21,9 @@
     "IsComparable": true,
     "Value": "Value",
     "Append": "Append",
-    "NewArray": "NewUintArray"
+    "NewArray": "NewUintArray",
+    "ValueType": "UInt",
+    "ColType": "TUInt"
   },
   {
     "Name": "Float",
@@ -30,7 +34,9 @@
     "IsComparable": true,
     "Value": "Value",
     "Append": "Append",
-    "NewArray": "NewFloatArray"
+    "NewArray": "NewFloatArray",
+    "ValueType": "Float",
+    "ColType": "TFloat"
   },
   {
     "Name": "Boolean",
@@ -41,7 +47,9 @@
     "IsComparable": false,
     "Value": "Value",
     "Append": "Append",
-    "NewArray": "NewBooleanArray"
+    "NewArray": "NewBooleanArray",
+    "ValueType": "Bool",
+    "ColType": "TBool"
   },
   {
     "Name": "String",
@@ -52,6 +60,8 @@
     "IsComparable": true,
     "Value": "Value",
     "Append": "Append",
-    "NewArray": "NewStringArray"
+    "NewArray": "NewStringArray",
+    "ValueType": "Str",
+    "ColType": "TString"
   }
 ]
