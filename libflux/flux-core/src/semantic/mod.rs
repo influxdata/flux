@@ -433,7 +433,7 @@ impl<'env, I: import::Importer> Analyzer<'env, I> {
             package: ast_file.get_package().to_string(),
             files: vec![ast_file],
         };
-        self.analyze_ast(ast_pkg).map_err(|mut err| {
+        self.analyze_ast(&ast_pkg).map_err(|mut err| {
             err.error.source = Some(src.into());
             err
         })
@@ -442,7 +442,7 @@ impl<'env, I: import::Importer> Analyzer<'env, I> {
     /// Analyze Flux AST returning the semantic package and the package environment.
     pub fn analyze_ast(
         &mut self,
-        ast_pkg: ast::Package,
+        ast_pkg: &ast::Package,
     ) -> SalvageResult<(PackageExports, nodes::Package), FileErrors> {
         self.analyze_ast_with_substitution(ast_pkg, &mut sub::Substitution::default())
     }
@@ -451,14 +451,12 @@ impl<'env, I: import::Importer> Analyzer<'env, I> {
     /// A custom fresher may be provided.
     pub fn analyze_ast_with_substitution(
         &mut self,
-        // TODO(nathanielc): Change analyze steps to not move the ast::Package as it is a readonly
-        // operation.
-        ast_pkg: ast::Package,
+        ast_pkg: &ast::Package,
         sub: &mut sub::Substitution,
     ) -> SalvageResult<(PackageExports, nodes::Package), FileErrors> {
         let mut errors = Errors::new();
         if !self.config.skip_checks {
-            if let Err(err) = ast::check::check(ast::walk::Node::Package(&ast_pkg)) {
+            if let Err(err) = ast::check::check(ast::walk::Node::Package(ast_pkg)) {
                 errors.extend(err.into_iter().map(Error::from));
             }
         }

@@ -55,7 +55,7 @@ fn parse_map(package: Option<&str>, m: HashMap<&str, &str>) -> PolyTypeHashMap<S
             if let Err(err) = ast::check::check(ast::walk::Node::TypeExpression(&typ_expr)) {
                 panic!("TypeExpression parsing failed for {}. {:?}", name, err);
             }
-            let poly = convert_polytype(typ_expr, &mut Substitution::default());
+            let poly = convert_polytype(&typ_expr, &mut Substitution::default());
 
             // let poly = parse(expr).expect(format!("failed to parse {}", name).as_str());
             return (

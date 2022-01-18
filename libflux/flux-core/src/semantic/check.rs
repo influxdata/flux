@@ -334,7 +334,7 @@ mod tests {
         }
         let ast_pkg = merge_ast_files(ast_files);
         let sem_pkg = convert::convert_package(
-            ast_pkg,
+            &ast_pkg,
             &Default::default(),
             &mut sub::Substitution::default(),
         )?;

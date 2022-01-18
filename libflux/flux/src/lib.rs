@@ -376,7 +376,7 @@ pub unsafe extern "C" fn flux_analyze(
     ast_pkg: Box<ast::Package>,
     out_sem_pkg: *mut Option<Box<semantic::nodes::Package>>,
 ) -> Option<Box<ErrorHandle>> {
-    match analyze(*ast_pkg) {
+    match analyze(&ast_pkg) {
         Ok(sem_pkg) => {
             *out_sem_pkg = Some(Box::new(sem_pkg));
             None
@@ -401,7 +401,7 @@ pub unsafe extern "C" fn flux_find_var_type(
 ) -> Option<Box<ErrorHandle>> {
     let buf = CStr::from_ptr(var_name).to_bytes(); // Unsafe
     let name = String::from_utf8(buf.to_vec()).unwrap();
-    find_var_type(*ast_pkg, name).map_or_else(
+    find_var_type(&ast_pkg, name).map_or_else(
         |e| Some(Box::from(e)),
         |t| {
             let mut builder = flatbuffers::FlatBufferBuilder::new();
@@ -445,7 +445,7 @@ pub struct StatefulAnalyzer {
 }
 
 impl StatefulAnalyzer {
-    fn analyze(&mut self, ast_pkg: ast::Package) -> Result<fluxcore::semantic::nodes::Package> {
+    fn analyze(&mut self, ast_pkg: &ast::Package) -> Result<fluxcore::semantic::nodes::Package> {
         let mut analyzer =
             Analyzer::new_with_defaults(Environment::from(&self.env), mem::take(&mut self.imports));
         let (mut env, sem_pkg) = match analyzer.analyze_ast(ast_pkg) {
@@ -508,7 +508,7 @@ pub unsafe extern "C" fn flux_analyze_with(
     ast_pkg: Box<ast::Package>,
     out_sem_pkg: *mut Option<Box<semantic::nodes::Package>>,
 ) -> Option<Box<ErrorHandle>> {
-    let ast_pkg = *ast_pkg;
+    let ast_pkg = &ast_pkg;
     let analyzer = &mut *analyzer;
     let analyzer = match analyzer {
         Ok(a) => a,
@@ -550,7 +550,7 @@ pub unsafe extern "C" fn flux_analyze_with(
 /// analyze consumes the given AST package and returns a semantic package
 /// that has been type-inferred.  This function is aware of the standard library
 /// and prelude.
-pub fn analyze(ast_pkg: ast::Package) -> Result<Package> {
+pub fn analyze(ast_pkg: &ast::Package) -> Result<Package> {
     let mut analyzer = new_semantic_analyzer(AnalyzerConfig::default())?;
     let (_, sem_pkg) = analyzer.analyze_ast(ast_pkg).map_err(|err| err.error)?;
     Ok(sem_pkg)
@@ -561,7 +561,7 @@ pub fn analyze(ast_pkg: ast::Package) -> Result<Package> {
 /// inferred type environment and substitution.
 /// This function is aware of the standard library and prelude.
 pub fn infer_with_env(
-    ast_pkg: ast::Package,
+    ast_pkg: &ast::Package,
     mut sub: Substitution,
     env: Option<Environment<'static>>,
 ) -> Result<(Environment<'static>, Package)> {
@@ -592,7 +592,7 @@ pub fn infer_with_env(
 /// will be used in semantic analysis. The Flux source code itself should not contain any definition
 /// for that variable.
 /// This version of find_var_type is aware of the prelude and builtins.
-pub fn find_var_type(ast_pkg: ast::Package, var_name: String) -> Result<MonoType> {
+pub fn find_var_type(ast_pkg: &ast::Package, var_name: String) -> Result<MonoType> {
     let sub = Substitution::default();
     let tvar = sub.fresh();
     let mut env = Environment::empty(true);
@@ -748,7 +748,7 @@ vstr = v.str + "hello"
 "#;
         let mut p = Parser::new(&source);
         let pkg: ast::Package = p.parse_file("".to_string()).into();
-        let mut t = find_var_type(pkg, "v".into()).expect("Should be able to get a MonoType.");
+        let mut t = find_var_type(&pkg, "v".into()).expect("Should be able to get a MonoType.");
         let mut v = MonoTypeNormalizer::new();
         v.normalize(&mut t);
         assert_eq!(format!("{}", t), "{B with int:int, sweet:A, str:string}");
@@ -797,7 +797,7 @@ vint = v + 2
 "#;
         let mut p = Parser::new(&source);
         let pkg: ast::Package = p.parse_file("".to_string()).into();
-        let t = find_var_type(pkg, "v".into()).expect("Should be able to get a MonoType.");
+        let t = find_var_type(&pkg, "v".into()).expect("Should be able to get a MonoType.");
         assert_eq!(t, MonoType::INT);
 
         assert_eq!(serde_json::to_string_pretty(&t).unwrap(), "\"Int\"");
@@ -812,7 +812,7 @@ p = o.ethan
 "#;
         let mut p = Parser::new(&source);
         let pkg: ast::Package = p.parse_file("".to_string()).into();
-        let mut t = find_var_type(pkg, "v".into()).expect("Should be able to get a MonoType.");
+        let mut t = find_var_type(&pkg, "v".into()).expect("Should be able to get a MonoType.");
         let mut v = MonoTypeNormalizer::new();
         v.normalize(&mut t);
         assert_eq!(format!("{}", t), "{B with int:int, ethan:A}");
@@ -857,7 +857,7 @@ from(bucket: v.bucket)
 "#;
         let mut p = Parser::new(&source);
         let pkg: ast::Package = p.parse_file("".to_string()).into();
-        let mut ty = find_var_type(pkg, "v".to_string()).expect("should be able to find var type");
+        let mut ty = find_var_type(&pkg, "v".to_string()).expect("should be able to find var type");
         let mut v = MonoTypeNormalizer::new();
         v.normalize(&mut ty);
         assert_eq!(
@@ -909,7 +909,7 @@ from(bucket: v.bucket)
         if let Err(err) = ast::check::check(ast::walk::Node::TypeExpression(&typ_expr)) {
             panic!("TypeExpression parsing failed. {:?}", err);
         }
-        let want = convert_polytype(typ_expr, &mut Substitution::default()).unwrap();
+        let want = convert_polytype(&typ_expr, &mut Substitution::default()).unwrap();
 
         assert_eq!(want, got.lookup("x").expect("'x' not found").clone());
     }
@@ -945,7 +945,7 @@ from(bucket: v.bucket)
         if let Err(err) = ast::check::check(ast::walk::Node::TypeExpression(&typ_expr)) {
             panic!("TypeExpression parsing failed for {:?}", err);
         }
-        let want_a = convert_polytype(typ_expr, &mut Substitution::default()).unwrap();
+        let want_a = convert_polytype(&typ_expr, &mut Substitution::default()).unwrap();
 
         let code = " [{ D with
                 _value: A
@@ -961,7 +961,7 @@ from(bucket: v.bucket)
         if let Err(err) = ast::check::check(ast::walk::Node::TypeExpression(&typ_expr)) {
             panic!("TypeExpression parsing failed for {:?}", err);
         }
-        let want_b = convert_polytype(typ_expr, &mut Substitution::default()).unwrap();
+        let want_b = convert_polytype(&typ_expr, &mut Substitution::default()).unwrap();
 
         let code = "[{ D with
                 _value: A
@@ -977,7 +977,7 @@ from(bucket: v.bucket)
         if let Err(err) = ast::check::check(ast::walk::Node::TypeExpression(&typ_expr)) {
             panic!("TypeExpression parsing failed for {:?}", err);
         }
-        let want_c = convert_polytype(typ_expr, &mut Substitution::default()).unwrap();
+        let want_c = convert_polytype(&typ_expr, &mut Substitution::default()).unwrap();
 
         assert_eq!(want_a, got.lookup("a").expect("'a' not found").clone());
         assert_eq!(want_b, got.lookup("b").expect("'b' not found").clone());
@@ -987,7 +987,7 @@ from(bucket: v.bucket)
     #[test]
     fn analyze_error() {
         let ast: ast::Package = fluxcore::parser::parse_string("".to_string(), "x = ()").into();
-        match analyze(ast) {
+        match analyze(&ast) {
             Ok(_) => panic!("expected an error, got none"),
             Err(e) => {
                 expect_test::expect![[r#"
