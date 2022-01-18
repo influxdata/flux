@@ -380,10 +380,7 @@ impl<'a> Converter<'a> {
     }
 
     fn convert_package_clause(&mut self, pkg: Option<ast::PackageClause>) -> Option<PackageClause> {
-        if pkg.is_none() {
-            return None;
-        }
-        let pkg = pkg.unwrap();
+        let pkg = pkg?;
         let name = self.convert_identifier(pkg.name);
         Some(PackageClause {
             loc: pkg.base.location,
