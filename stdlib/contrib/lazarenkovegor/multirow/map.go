@@ -155,7 +155,7 @@ func createMapOpSpec(args flux.Arguments, a *flux.Administration) (flux.Operatio
 func createMapProcSpec(qs flux.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
 	spec, ok := qs.(*MapOpSpec)
 	if !ok {
-		return nil, errors.Newf(codes.Internal, "invalid spec type %T", qs)
+		return nil, errors.Newf(codes.Invalid, "invalid spec type %T", qs)
 	}
 
 	return &MapPlan{MapOpSpec: *spec}, nil
@@ -329,7 +329,7 @@ func (s *mapTransformation) Finish(id execute.DatasetID, err error) {
 func createMapTransformation(id execute.DatasetID, mode execute.AccumulationMode, spec plan.ProcedureSpec, a execute.Administration) (execute.Transformation, execute.Dataset, error) {
 	s, ok := spec.(*MapPlan)
 	if !ok {
-		return nil, nil, errors.Newf(codes.Internal, "invalid spec type %T", spec)
+		return nil, nil, errors.Newf(codes.Invalid, "invalid spec type %T", spec)
 	}
 
 	w := &mapTransformation{
