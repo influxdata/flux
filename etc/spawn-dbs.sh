@@ -22,7 +22,6 @@
 # docker ps --format '{{.Names}}' | grep flux-integ-tests | xargs docker rm -f
 # ```
 
-
 set -e
 
 PREFIX=flux-integ-tests
@@ -260,17 +259,43 @@ function run_pg {
   docker exec "${PG_NAME}" psql -U postgres -c "${PG_SEED}"
 }
 
-run_maria_db
+function should_start {
+    # Start a databases if no the script is invoked without any arguments, or if the database is
+    # among the arguments
+    [ "$1" == "" ] || (echo "$2" | grep "$1")
+}
 
-run_mssql
+if should_start "mariadb" "$@" ; then
+    echo "Starting MariaDB"
+    run_maria_db
+fi
 
-run_mysql
+if should_start "mssql" "$@" ; then
+    echo "Starting MSSQL"
+    run_mssql
+fi
 
-run_vertica
+if should_start "mysql" "$@" ; then
+    echo "Starting MySQL"
+    run_mysql
+fi
 
-run_sap_hana
+if should_start "vertica" "$@" ; then
+    echo "Starting Vertica"
+    run_vertica
+fi
 
-run_pg
+if should_start "saphana" "$@" ; then
+    echo "Starting SAP Hana"
+    run_sap_hana
+fi
 
-sqlite3 "${SQLITE_DB_PATH}" "${SQLITE_SEED}"
+if should_start "postgres" "$@" ; then
+    echo "Starting Postgres"
+    run_pg
+fi
 
+if should_start "sqlite" "$@" ; then
+    echo "Starting Sqlite"
+    sqlite3 "${SQLITE_DB_PATH}" "${SQLITE_SEED}"
+fi
