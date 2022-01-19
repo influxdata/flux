@@ -3,6 +3,12 @@ package multirow
 import (
 	"context"
 	"fmt"
+	"reflect"
+	"sort"
+	"strings"
+	"time"
+	"unsafe"
+
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/array"
 	"github.com/influxdata/flux/arrow"
@@ -15,11 +21,6 @@ import (
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
-	"reflect"
-	"sort"
-	"strings"
-	"time"
-	"unsafe"
 )
 
 const pkgpath = "contrib/lazarenkovegor/multirow"
@@ -172,7 +173,7 @@ func ColsMonoType(cols []flux.ColMeta) (semantic.MonoType, error) {
 	for i, c := range cols {
 		vtype := flux.SemanticType(c.Type)
 		if vtype.Kind() == semantic.Unknown {
-			return semantic.MonoType{}, errors.Newf(codes.Internal, "unknown column type: %s", c.Type)
+			return semantic.MonoType{}, errors.Newf(codes.Invalid, "unknown column type: %s", c.Type)
 		}
 		properties[i] = semantic.PropertyType{
 			Key:   []byte(c.Label),

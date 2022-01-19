@@ -33,29 +33,33 @@ package multirow
 // - virtual: Array of string with virtual column names, than used only for intermediate calculations and should not be included in the final result
 //   default: []
 // ## Example
-//import "csv"
-//  import "contrib/lazarenkovegor/multirow"
-//  data = "
-//  #datatype,string,long,string,string,long
-//  #group,false,false,false,false,false
-//  #default,_result,0,,,
-//  ,result,table,strcol0,strcol1,intcol3
-//  ,,,test1,test10,1
-//  ,,,test1,test11,
-//  ,,,test2,test12,3
-//  ,,,test2,test13,4
-//  "
-//  csv.from(csv:data)
-//  |>multirow.map(fn: (previous, row) => {
-//          x = previous.x_col*2 -1
-//          return {row with
-//            concat : (if exists previous.concat then previous.concat + "," else "")  + row.strcol1,
-//            x_col : x,
-//            val :  x % 100
-//          }},
-//          init : {x_col : 100},
-//          virtual : ["x_col"]
-//  )
+// import "csv"
+// import "contrib/lazarenkovegor/multirow"
+// data =
+//     "
+//   #datatype,string,long,string,string,long
+//   #group,false,false,false,false,false
+//   #default,_result,0,,,
+//   ,result,table,strcol0,strcol1,intcol3
+//   ,,,test1,test10,1
+//   ,,,test1,test11,
+//   ,,,test2,test12,3
+//   ,,,test2,test13,4
+//   "
+//
+// csv.from(csv: data)
+//     |> multirow.map(
+//         fn: (previous, row) => {
+//             x = previous.x_col * 2 - 1
+//
+//             return {row with concat: (if exists previous.concat then previous.concat + "," else "") + row.strcol1,
+//                 x_col: x,
+//                 val: x % 100,
+//             }
+//         },
+//         init: {x_col: 100},
+//         virtual: ["x_col"],
+//     )
 builtin map : (
         <-tables: [A],
         ?left: int,

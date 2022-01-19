@@ -3,6 +3,7 @@ package multirow
 import (
 	"context"
 	"fmt"
+
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/compiler"
