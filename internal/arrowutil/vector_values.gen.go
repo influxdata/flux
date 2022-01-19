@@ -141,41 +141,43 @@ func NewIntVectorValue(arr *array.Int) values.Vector {
 	}
 }
 
-func (v IntVectorValue) ElementType() semantic.MonoType { return v.et }
+func (v *IntVectorValue) ElementType() semantic.MonoType { return v.et }
 
-func (v IntVectorValue) Type() semantic.MonoType { return v.typ }
-func (v IntVectorValue) IsNull() bool            { return false }
-func (v IntVectorValue) Str() string             { panic(values.UnexpectedKind(semantic.Vector, semantic.String)) }
-func (v IntVectorValue) Bytes() []byte           { panic(values.UnexpectedKind(semantic.Vector, semantic.Bytes)) }
-func (v IntVectorValue) Int() int64              { panic(values.UnexpectedKind(semantic.Vector, semantic.Int)) }
-func (v IntVectorValue) UInt() uint64            { panic(values.UnexpectedKind(semantic.Vector, semantic.UInt)) }
-func (v IntVectorValue) Float() float64 {
+func (v *IntVectorValue) Type() semantic.MonoType { return v.typ }
+func (v *IntVectorValue) IsNull() bool            { return false }
+func (v *IntVectorValue) Str() string             { panic(values.UnexpectedKind(semantic.Vector, semantic.String)) }
+func (v *IntVectorValue) Bytes() []byte {
+	panic(values.UnexpectedKind(semantic.Vector, semantic.Bytes))
+}
+func (v *IntVectorValue) Int() int64   { panic(values.UnexpectedKind(semantic.Vector, semantic.Int)) }
+func (v *IntVectorValue) UInt() uint64 { panic(values.UnexpectedKind(semantic.Vector, semantic.UInt)) }
+func (v *IntVectorValue) Float() float64 {
 	panic(values.UnexpectedKind(semantic.Vector, semantic.Float))
 }
-func (v IntVectorValue) Bool() bool { panic(values.UnexpectedKind(semantic.Vector, semantic.Bool)) }
-func (v IntVectorValue) Time() values.Time {
+func (v *IntVectorValue) Bool() bool { panic(values.UnexpectedKind(semantic.Vector, semantic.Bool)) }
+func (v *IntVectorValue) Time() values.Time {
 	panic(values.UnexpectedKind(semantic.Vector, semantic.Time))
 }
-func (v IntVectorValue) Duration() values.Duration {
+func (v *IntVectorValue) Duration() values.Duration {
 	panic(values.UnexpectedKind(semantic.Vector, semantic.Duration))
 }
-func (v IntVectorValue) Regexp() *regexp.Regexp {
+func (v *IntVectorValue) Regexp() *regexp.Regexp {
 	panic(values.UnexpectedKind(semantic.Vector, semantic.Regexp))
 }
-func (v IntVectorValue) Array() values.Array {
+func (v *IntVectorValue) Array() values.Array {
 	panic(values.UnexpectedKind(semantic.Vector, semantic.Array))
 }
-func (v IntVectorValue) Object() values.Object {
+func (v *IntVectorValue) Object() values.Object {
 	panic(values.UnexpectedKind(semantic.Vector, semantic.Object))
 }
-func (v IntVectorValue) Function() values.Function {
+func (v *IntVectorValue) Function() values.Function {
 	panic(values.UnexpectedKind(semantic.Vector, semantic.Function))
 }
-func (v IntVectorValue) Dict() values.Dictionary {
+func (v *IntVectorValue) Dict() values.Dictionary {
 	panic(values.UnexpectedKind(semantic.Vector, semantic.Dictionary))
 }
 
-func (v IntVectorValue) Equal(other values.Value) bool {
+func (v *IntVectorValue) Equal(other values.Value) bool {
 	otherv, ok := other.(IntVectorValue)
 	if !ok {
 		return false
@@ -193,24 +195,26 @@ func (v IntVectorValue) Equal(other values.Value) bool {
 	}
 	return true
 }
-func (v IntVectorValue) Get(i int) values.Value {
+func (v *IntVectorValue) Get(i int) values.Value {
 	if v.arr.IsNull(i) {
 		return values.Null
 	}
 	return values.New(v.arr.Value(i))
 }
 
-func (v IntVectorValue) Set(i int, value values.Value) { panic("cannot set value on immutable vector") }
-func (v IntVectorValue) Append(value values.Value)     { panic("cannot append to immutable vector") }
+func (v *IntVectorValue) Set(i int, value values.Value) {
+	panic("cannot set value on immutable vector")
+}
+func (v *IntVectorValue) Append(value values.Value) { panic("cannot append to immutable vector") }
 
-func (v IntVectorValue) Len() int { return v.arr.Len() }
-func (v IntVectorValue) Range(f func(i int, v values.Value)) {
+func (v *IntVectorValue) Len() int { return v.arr.Len() }
+func (v *IntVectorValue) Range(f func(i int, v values.Value)) {
 	for i, n := 0, v.arr.Len(); i < n; i++ {
 		f(i, v.Get(i))
 	}
 }
 
-func (v IntVectorValue) Sort(f func(i values.Value, j values.Value) bool) {
+func (v *IntVectorValue) Sort(f func(i values.Value, j values.Value) bool) {
 	panic("cannot sort immutable vector")
 }
 
@@ -231,43 +235,45 @@ func NewUintVectorValue(arr *array.Uint) values.Vector {
 	}
 }
 
-func (v UintVectorValue) ElementType() semantic.MonoType { return v.et }
+func (v *UintVectorValue) ElementType() semantic.MonoType { return v.et }
 
-func (v UintVectorValue) Type() semantic.MonoType { return v.typ }
-func (v UintVectorValue) IsNull() bool            { return false }
-func (v UintVectorValue) Str() string             { panic(values.UnexpectedKind(semantic.Vector, semantic.String)) }
-func (v UintVectorValue) Bytes() []byte {
+func (v *UintVectorValue) Type() semantic.MonoType { return v.typ }
+func (v *UintVectorValue) IsNull() bool            { return false }
+func (v *UintVectorValue) Str() string {
+	panic(values.UnexpectedKind(semantic.Vector, semantic.String))
+}
+func (v *UintVectorValue) Bytes() []byte {
 	panic(values.UnexpectedKind(semantic.Vector, semantic.Bytes))
 }
-func (v UintVectorValue) Int() int64   { panic(values.UnexpectedKind(semantic.Vector, semantic.Int)) }
-func (v UintVectorValue) UInt() uint64 { panic(values.UnexpectedKind(semantic.Vector, semantic.UInt)) }
-func (v UintVectorValue) Float() float64 {
+func (v *UintVectorValue) Int() int64   { panic(values.UnexpectedKind(semantic.Vector, semantic.Int)) }
+func (v *UintVectorValue) UInt() uint64 { panic(values.UnexpectedKind(semantic.Vector, semantic.UInt)) }
+func (v *UintVectorValue) Float() float64 {
 	panic(values.UnexpectedKind(semantic.Vector, semantic.Float))
 }
-func (v UintVectorValue) Bool() bool { panic(values.UnexpectedKind(semantic.Vector, semantic.Bool)) }
-func (v UintVectorValue) Time() values.Time {
+func (v *UintVectorValue) Bool() bool { panic(values.UnexpectedKind(semantic.Vector, semantic.Bool)) }
+func (v *UintVectorValue) Time() values.Time {
 	panic(values.UnexpectedKind(semantic.Vector, semantic.Time))
 }
-func (v UintVectorValue) Duration() values.Duration {
+func (v *UintVectorValue) Duration() values.Duration {
 	panic(values.UnexpectedKind(semantic.Vector, semantic.Duration))
 }
-func (v UintVectorValue) Regexp() *regexp.Regexp {
+func (v *UintVectorValue) Regexp() *regexp.Regexp {
 	panic(values.UnexpectedKind(semantic.Vector, semantic.Regexp))
 }
-func (v UintVectorValue) Array() values.Array {
+func (v *UintVectorValue) Array() values.Array {
 	panic(values.UnexpectedKind(semantic.Vector, semantic.Array))
 }
-func (v UintVectorValue) Object() values.Object {
+func (v *UintVectorValue) Object() values.Object {
 	panic(values.UnexpectedKind(semantic.Vector, semantic.Object))
 }
-func (v UintVectorValue) Function() values.Function {
+func (v *UintVectorValue) Function() values.Function {
 	panic(values.UnexpectedKind(semantic.Vector, semantic.Function))
 }
-func (v UintVectorValue) Dict() values.Dictionary {
+func (v *UintVectorValue) Dict() values.Dictionary {
 	panic(values.UnexpectedKind(semantic.Vector, semantic.Dictionary))
 }
 
-func (v UintVectorValue) Equal(other values.Value) bool {
+func (v *UintVectorValue) Equal(other values.Value) bool {
 	otherv, ok := other.(UintVectorValue)
 	if !ok {
 		return false
@@ -285,26 +291,26 @@ func (v UintVectorValue) Equal(other values.Value) bool {
 	}
 	return true
 }
-func (v UintVectorValue) Get(i int) values.Value {
+func (v *UintVectorValue) Get(i int) values.Value {
 	if v.arr.IsNull(i) {
 		return values.Null
 	}
 	return values.New(v.arr.Value(i))
 }
 
-func (v UintVectorValue) Set(i int, value values.Value) {
+func (v *UintVectorValue) Set(i int, value values.Value) {
 	panic("cannot set value on immutable vector")
 }
-func (v UintVectorValue) Append(value values.Value) { panic("cannot append to immutable vector") }
+func (v *UintVectorValue) Append(value values.Value) { panic("cannot append to immutable vector") }
 
-func (v UintVectorValue) Len() int { return v.arr.Len() }
-func (v UintVectorValue) Range(f func(i int, v values.Value)) {
+func (v *UintVectorValue) Len() int { return v.arr.Len() }
+func (v *UintVectorValue) Range(f func(i int, v values.Value)) {
 	for i, n := 0, v.arr.Len(); i < n; i++ {
 		f(i, v.Get(i))
 	}
 }
 
-func (v UintVectorValue) Sort(f func(i values.Value, j values.Value) bool) {
+func (v *UintVectorValue) Sort(f func(i values.Value, j values.Value) bool) {
 	panic("cannot sort immutable vector")
 }
 
@@ -325,45 +331,47 @@ func NewFloatVectorValue(arr *array.Float) values.Vector {
 	}
 }
 
-func (v FloatVectorValue) ElementType() semantic.MonoType { return v.et }
+func (v *FloatVectorValue) ElementType() semantic.MonoType { return v.et }
 
-func (v FloatVectorValue) Type() semantic.MonoType { return v.typ }
-func (v FloatVectorValue) IsNull() bool            { return false }
-func (v FloatVectorValue) Str() string {
+func (v *FloatVectorValue) Type() semantic.MonoType { return v.typ }
+func (v *FloatVectorValue) IsNull() bool            { return false }
+func (v *FloatVectorValue) Str() string {
 	panic(values.UnexpectedKind(semantic.Vector, semantic.String))
 }
-func (v FloatVectorValue) Bytes() []byte {
+func (v *FloatVectorValue) Bytes() []byte {
 	panic(values.UnexpectedKind(semantic.Vector, semantic.Bytes))
 }
-func (v FloatVectorValue) Int() int64   { panic(values.UnexpectedKind(semantic.Vector, semantic.Int)) }
-func (v FloatVectorValue) UInt() uint64 { panic(values.UnexpectedKind(semantic.Vector, semantic.UInt)) }
-func (v FloatVectorValue) Float() float64 {
+func (v *FloatVectorValue) Int() int64 { panic(values.UnexpectedKind(semantic.Vector, semantic.Int)) }
+func (v *FloatVectorValue) UInt() uint64 {
+	panic(values.UnexpectedKind(semantic.Vector, semantic.UInt))
+}
+func (v *FloatVectorValue) Float() float64 {
 	panic(values.UnexpectedKind(semantic.Vector, semantic.Float))
 }
-func (v FloatVectorValue) Bool() bool { panic(values.UnexpectedKind(semantic.Vector, semantic.Bool)) }
-func (v FloatVectorValue) Time() values.Time {
+func (v *FloatVectorValue) Bool() bool { panic(values.UnexpectedKind(semantic.Vector, semantic.Bool)) }
+func (v *FloatVectorValue) Time() values.Time {
 	panic(values.UnexpectedKind(semantic.Vector, semantic.Time))
 }
-func (v FloatVectorValue) Duration() values.Duration {
+func (v *FloatVectorValue) Duration() values.Duration {
 	panic(values.UnexpectedKind(semantic.Vector, semantic.Duration))
 }
-func (v FloatVectorValue) Regexp() *regexp.Regexp {
+func (v *FloatVectorValue) Regexp() *regexp.Regexp {
 	panic(values.UnexpectedKind(semantic.Vector, semantic.Regexp))
 }
-func (v FloatVectorValue) Array() values.Array {
+func (v *FloatVectorValue) Array() values.Array {
 	panic(values.UnexpectedKind(semantic.Vector, semantic.Array))
 }
-func (v FloatVectorValue) Object() values.Object {
+func (v *FloatVectorValue) Object() values.Object {
 	panic(values.UnexpectedKind(semantic.Vector, semantic.Object))
 }
-func (v FloatVectorValue) Function() values.Function {
+func (v *FloatVectorValue) Function() values.Function {
 	panic(values.UnexpectedKind(semantic.Vector, semantic.Function))
 }
-func (v FloatVectorValue) Dict() values.Dictionary {
+func (v *FloatVectorValue) Dict() values.Dictionary {
 	panic(values.UnexpectedKind(semantic.Vector, semantic.Dictionary))
 }
 
-func (v FloatVectorValue) Equal(other values.Value) bool {
+func (v *FloatVectorValue) Equal(other values.Value) bool {
 	otherv, ok := other.(FloatVectorValue)
 	if !ok {
 		return false
@@ -381,26 +389,26 @@ func (v FloatVectorValue) Equal(other values.Value) bool {
 	}
 	return true
 }
-func (v FloatVectorValue) Get(i int) values.Value {
+func (v *FloatVectorValue) Get(i int) values.Value {
 	if v.arr.IsNull(i) {
 		return values.Null
 	}
 	return values.New(v.arr.Value(i))
 }
 
-func (v FloatVectorValue) Set(i int, value values.Value) {
+func (v *FloatVectorValue) Set(i int, value values.Value) {
 	panic("cannot set value on immutable vector")
 }
-func (v FloatVectorValue) Append(value values.Value) { panic("cannot append to immutable vector") }
+func (v *FloatVectorValue) Append(value values.Value) { panic("cannot append to immutable vector") }
 
-func (v FloatVectorValue) Len() int { return v.arr.Len() }
-func (v FloatVectorValue) Range(f func(i int, v values.Value)) {
+func (v *FloatVectorValue) Len() int { return v.arr.Len() }
+func (v *FloatVectorValue) Range(f func(i int, v values.Value)) {
 	for i, n := 0, v.arr.Len(); i < n; i++ {
 		f(i, v.Get(i))
 	}
 }
 
-func (v FloatVectorValue) Sort(f func(i values.Value, j values.Value) bool) {
+func (v *FloatVectorValue) Sort(f func(i values.Value, j values.Value) bool) {
 	panic("cannot sort immutable vector")
 }
 
@@ -421,47 +429,49 @@ func NewBooleanVectorValue(arr *array.Boolean) values.Vector {
 	}
 }
 
-func (v BooleanVectorValue) ElementType() semantic.MonoType { return v.et }
+func (v *BooleanVectorValue) ElementType() semantic.MonoType { return v.et }
 
-func (v BooleanVectorValue) Type() semantic.MonoType { return v.typ }
-func (v BooleanVectorValue) IsNull() bool            { return false }
-func (v BooleanVectorValue) Str() string {
+func (v *BooleanVectorValue) Type() semantic.MonoType { return v.typ }
+func (v *BooleanVectorValue) IsNull() bool            { return false }
+func (v *BooleanVectorValue) Str() string {
 	panic(values.UnexpectedKind(semantic.Vector, semantic.String))
 }
-func (v BooleanVectorValue) Bytes() []byte {
+func (v *BooleanVectorValue) Bytes() []byte {
 	panic(values.UnexpectedKind(semantic.Vector, semantic.Bytes))
 }
-func (v BooleanVectorValue) Int() int64 { panic(values.UnexpectedKind(semantic.Vector, semantic.Int)) }
-func (v BooleanVectorValue) UInt() uint64 {
+func (v *BooleanVectorValue) Int() int64 { panic(values.UnexpectedKind(semantic.Vector, semantic.Int)) }
+func (v *BooleanVectorValue) UInt() uint64 {
 	panic(values.UnexpectedKind(semantic.Vector, semantic.UInt))
 }
-func (v BooleanVectorValue) Float() float64 {
+func (v *BooleanVectorValue) Float() float64 {
 	panic(values.UnexpectedKind(semantic.Vector, semantic.Float))
 }
-func (v BooleanVectorValue) Bool() bool { panic(values.UnexpectedKind(semantic.Vector, semantic.Bool)) }
-func (v BooleanVectorValue) Time() values.Time {
+func (v *BooleanVectorValue) Bool() bool {
+	panic(values.UnexpectedKind(semantic.Vector, semantic.Bool))
+}
+func (v *BooleanVectorValue) Time() values.Time {
 	panic(values.UnexpectedKind(semantic.Vector, semantic.Time))
 }
-func (v BooleanVectorValue) Duration() values.Duration {
+func (v *BooleanVectorValue) Duration() values.Duration {
 	panic(values.UnexpectedKind(semantic.Vector, semantic.Duration))
 }
-func (v BooleanVectorValue) Regexp() *regexp.Regexp {
+func (v *BooleanVectorValue) Regexp() *regexp.Regexp {
 	panic(values.UnexpectedKind(semantic.Vector, semantic.Regexp))
 }
-func (v BooleanVectorValue) Array() values.Array {
+func (v *BooleanVectorValue) Array() values.Array {
 	panic(values.UnexpectedKind(semantic.Vector, semantic.Array))
 }
-func (v BooleanVectorValue) Object() values.Object {
+func (v *BooleanVectorValue) Object() values.Object {
 	panic(values.UnexpectedKind(semantic.Vector, semantic.Object))
 }
-func (v BooleanVectorValue) Function() values.Function {
+func (v *BooleanVectorValue) Function() values.Function {
 	panic(values.UnexpectedKind(semantic.Vector, semantic.Function))
 }
-func (v BooleanVectorValue) Dict() values.Dictionary {
+func (v *BooleanVectorValue) Dict() values.Dictionary {
 	panic(values.UnexpectedKind(semantic.Vector, semantic.Dictionary))
 }
 
-func (v BooleanVectorValue) Equal(other values.Value) bool {
+func (v *BooleanVectorValue) Equal(other values.Value) bool {
 	otherv, ok := other.(BooleanVectorValue)
 	if !ok {
 		return false
@@ -479,26 +489,26 @@ func (v BooleanVectorValue) Equal(other values.Value) bool {
 	}
 	return true
 }
-func (v BooleanVectorValue) Get(i int) values.Value {
+func (v *BooleanVectorValue) Get(i int) values.Value {
 	if v.arr.IsNull(i) {
 		return values.Null
 	}
 	return values.New(v.arr.Value(i))
 }
 
-func (v BooleanVectorValue) Set(i int, value values.Value) {
+func (v *BooleanVectorValue) Set(i int, value values.Value) {
 	panic("cannot set value on immutable vector")
 }
-func (v BooleanVectorValue) Append(value values.Value) { panic("cannot append to immutable vector") }
+func (v *BooleanVectorValue) Append(value values.Value) { panic("cannot append to immutable vector") }
 
-func (v BooleanVectorValue) Len() int { return v.arr.Len() }
-func (v BooleanVectorValue) Range(f func(i int, v values.Value)) {
+func (v *BooleanVectorValue) Len() int { return v.arr.Len() }
+func (v *BooleanVectorValue) Range(f func(i int, v values.Value)) {
 	for i, n := 0, v.arr.Len(); i < n; i++ {
 		f(i, v.Get(i))
 	}
 }
 
-func (v BooleanVectorValue) Sort(f func(i values.Value, j values.Value) bool) {
+func (v *BooleanVectorValue) Sort(f func(i values.Value, j values.Value) bool) {
 	panic("cannot sort immutable vector")
 }
 
@@ -519,47 +529,47 @@ func NewStringVectorValue(arr *array.String) values.Vector {
 	}
 }
 
-func (v StringVectorValue) ElementType() semantic.MonoType { return v.et }
+func (v *StringVectorValue) ElementType() semantic.MonoType { return v.et }
 
-func (v StringVectorValue) Type() semantic.MonoType { return v.typ }
-func (v StringVectorValue) IsNull() bool            { return false }
-func (v StringVectorValue) Str() string {
+func (v *StringVectorValue) Type() semantic.MonoType { return v.typ }
+func (v *StringVectorValue) IsNull() bool            { return false }
+func (v *StringVectorValue) Str() string {
 	panic(values.UnexpectedKind(semantic.Vector, semantic.String))
 }
-func (v StringVectorValue) Bytes() []byte {
+func (v *StringVectorValue) Bytes() []byte {
 	panic(values.UnexpectedKind(semantic.Vector, semantic.Bytes))
 }
-func (v StringVectorValue) Int() int64 { panic(values.UnexpectedKind(semantic.Vector, semantic.Int)) }
-func (v StringVectorValue) UInt() uint64 {
+func (v *StringVectorValue) Int() int64 { panic(values.UnexpectedKind(semantic.Vector, semantic.Int)) }
+func (v *StringVectorValue) UInt() uint64 {
 	panic(values.UnexpectedKind(semantic.Vector, semantic.UInt))
 }
-func (v StringVectorValue) Float() float64 {
+func (v *StringVectorValue) Float() float64 {
 	panic(values.UnexpectedKind(semantic.Vector, semantic.Float))
 }
-func (v StringVectorValue) Bool() bool { panic(values.UnexpectedKind(semantic.Vector, semantic.Bool)) }
-func (v StringVectorValue) Time() values.Time {
+func (v *StringVectorValue) Bool() bool { panic(values.UnexpectedKind(semantic.Vector, semantic.Bool)) }
+func (v *StringVectorValue) Time() values.Time {
 	panic(values.UnexpectedKind(semantic.Vector, semantic.Time))
 }
-func (v StringVectorValue) Duration() values.Duration {
+func (v *StringVectorValue) Duration() values.Duration {
 	panic(values.UnexpectedKind(semantic.Vector, semantic.Duration))
 }
-func (v StringVectorValue) Regexp() *regexp.Regexp {
+func (v *StringVectorValue) Regexp() *regexp.Regexp {
 	panic(values.UnexpectedKind(semantic.Vector, semantic.Regexp))
 }
-func (v StringVectorValue) Array() values.Array {
+func (v *StringVectorValue) Array() values.Array {
 	panic(values.UnexpectedKind(semantic.Vector, semantic.Array))
 }
-func (v StringVectorValue) Object() values.Object {
+func (v *StringVectorValue) Object() values.Object {
 	panic(values.UnexpectedKind(semantic.Vector, semantic.Object))
 }
-func (v StringVectorValue) Function() values.Function {
+func (v *StringVectorValue) Function() values.Function {
 	panic(values.UnexpectedKind(semantic.Vector, semantic.Function))
 }
-func (v StringVectorValue) Dict() values.Dictionary {
+func (v *StringVectorValue) Dict() values.Dictionary {
 	panic(values.UnexpectedKind(semantic.Vector, semantic.Dictionary))
 }
 
-func (v StringVectorValue) Equal(other values.Value) bool {
+func (v *StringVectorValue) Equal(other values.Value) bool {
 	otherv, ok := other.(StringVectorValue)
 	if !ok {
 		return false
@@ -577,25 +587,25 @@ func (v StringVectorValue) Equal(other values.Value) bool {
 	}
 	return true
 }
-func (v StringVectorValue) Get(i int) values.Value {
+func (v *StringVectorValue) Get(i int) values.Value {
 	if v.arr.IsNull(i) {
 		return values.Null
 	}
 	return values.New(v.arr.Value(i))
 }
 
-func (v StringVectorValue) Set(i int, value values.Value) {
+func (v *StringVectorValue) Set(i int, value values.Value) {
 	panic("cannot set value on immutable vector")
 }
-func (v StringVectorValue) Append(value values.Value) { panic("cannot append to immutable vector") }
+func (v *StringVectorValue) Append(value values.Value) { panic("cannot append to immutable vector") }
 
-func (v StringVectorValue) Len() int { return v.arr.Len() }
-func (v StringVectorValue) Range(f func(i int, v values.Value)) {
+func (v *StringVectorValue) Len() int { return v.arr.Len() }
+func (v *StringVectorValue) Range(f func(i int, v values.Value)) {
 	for i, n := 0, v.arr.Len(); i < n; i++ {
 		f(i, v.Get(i))
 	}
 }
 
-func (v StringVectorValue) Sort(f func(i values.Value, j values.Value) bool) {
+func (v *StringVectorValue) Sort(f func(i values.Value, j values.Value) bool) {
 	panic("cannot sort immutable vector")
 }
