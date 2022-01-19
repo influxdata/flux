@@ -31,6 +31,7 @@ builtin derivative : (
     A: Record,
     B: Record
 
+// die returns a fatal error from within a flux script
 builtin die : (msg: string) => A
 builtin difference : (
         <-tables: [T],
@@ -244,9 +245,6 @@ builtin inf : duration
 builtin length : (arr: [A]) => int
 builtin linearBins : (start: float, width: float, count: int, ?infinity: bool) => [float]
 builtin logarithmicBins : (start: float, factor: float, count: int, ?infinity: bool) => [float]
-
-// die returns a fatal error from within a flux script
-builtin die : (msg: string) => A
 
 // Time weighted average where values at the beginning and end of the range are linearly interpolated.
 timeWeightedAvg = (tables=<-, unit) =>
