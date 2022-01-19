@@ -331,7 +331,6 @@ func createMapTransformation(id execute.DatasetID, mode execute.AccumulationMode
 	if !ok {
 		return nil, nil, errors.Newf(codes.Invalid, "invalid spec type %T", spec)
 	}
-
 	w := &mapTransformation{
 		ctx:  a.Context(),
 		mem:  a.Allocator(),
