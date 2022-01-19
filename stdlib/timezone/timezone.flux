@@ -1,67 +1,45 @@
 // Package timezone defines functions for setting timezones
-// on the location option in package universe.
-//
-// introduced: 0.134.0
-//
+// on the location option in package location.
 package timezone
 
 
-// utc is the default location with a completely linear clock and no offset.
-// It is used as the default for location-related options.
+// utc is the default location with a completely linear clock
+// and no offset. It is used as the default for location related
+// options.
 utc = {zone: "UTC", offset: 0h}
 
-// fixed returns a location record with a fixed offset.
+// fixed is a function that constructs a location with a fixed offset.
 //
 // ## Parameters
-// - offset: Fixed duration for the location offset.
+// - `offset` is the fixed duration for the location offset.
 //   This duration is the offset from UTC.
 //
-// ## Examples
+// ## Example
 //
-// ### Return a fixed location record
-// ```no_run
-// import "timezone"
-//
-// timezone.fixed(offset: -8h)
-//
-// // Returns {offset: -8h, zone: "UTC"}
 // ```
-//
-// ### Set the location option using a fixed location
-// ```no_run
 // import "timezone"
 //
 // // This results in midnight at 00:00:00-08:00 on any day.
 // option location = timezone.fixed(offset: -8h)
-// ```
 //
-// tags: date/time,location
-//
+// from(...)
+//   |> range(...)
+//   |> window(every: 1d)
 fixed = (offset) => ({zone: utc.zone, offset: offset})
 
-// location returns a location record based on a location or timezone name.
+// location loads a timezone based on a location name.
 //
 // ## Parameters
 // - `name` is the name of the location as defined by the tzdata database.
 //
-// ## Examples
+// ## Example
 //
-// ### Return a timezone-based location record
-// ```no_run
-// import "timezone"
-//
-// timezone.location(name: "America/Los_Angeles")
-//
-// // Returns {offset: 0ns, zone: "America/Los_Angeles"}
-// ```
-//
-// ### Set the location option using a timezone-based location
 // ```
 // import "timezone"
 //
 // option location = timezone.location(name: "America/Los_Angeles")
-// ```
 //
-// tags: date/time,location
-//
+// from(...)
+//   |> range(...)
+//   |> window(every: 1d)
 builtin location : (name: string) => {zone: string, offset: duration}
