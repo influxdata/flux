@@ -6,6 +6,7 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
+	"github.com/influxdata/flux/array"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
@@ -189,9 +190,10 @@ func TransformValue(v values.Value) map[string]interface{} {
 		if !ok {
 			panic("value is not a vector")
 		}
-		elements := make([]map[string]interface{}, vec.Len())
+		a := vec.Arr()
+		elements := make([]map[string]interface{}, a.Len())
 		for i := range elements {
-			elements[i] = TransformValue(vec.Get(i))
+			elements[i] = TransformValue(getValue(a, i))
 		}
 		return map[string]interface{}{
 			"type":     semantic.Vector.String(),
@@ -199,5 +201,26 @@ func TransformValue(v values.Value) map[string]interface{} {
 		}
 	default:
 		panic(fmt.Errorf("unexpected value type %v with nature %v", v.Type(), v.Type().Nature()))
+	}
+}
+
+func getValue(arr array.Interface, i int) values.Value {
+	if arr.IsNull(i) {
+		return nil
+	}
+
+	switch arr := arr.(type) {
+	case *array.Int:
+		return values.New(arr.Value(i))
+	case *array.Uint:
+		return values.New(arr.Value(i))
+	case *array.Float:
+		return values.New(arr.Value(i))
+	case *array.String:
+		return values.New(arr.Value(i))
+	case *array.Boolean:
+		return values.New(arr.Value(i))
+	default:
+		panic("unimplemented")
 	}
 }

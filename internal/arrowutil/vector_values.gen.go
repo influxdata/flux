@@ -41,7 +41,7 @@ func NewVectorValue(arr array.Interface, typ flux.ColType) values.Vector {
 }
 
 // A convenience method for unit testing
-func NewVectorFromElements(es ...interface{}) values.Vector {
+func NewVectorFromElements(mem *memory.Allocator, es ...interface{}) values.Vector {
 	var typ flux.ColType
 	switch es[0].(type) {
 
@@ -68,14 +68,13 @@ func NewVectorFromElements(es ...interface{}) values.Vector {
 	for i, e := range es {
 		vs[i] = values.New(e)
 	}
-	return newVectorFromSlice(vs, typ)
+	return newVectorFromSlice(vs, typ, mem)
 }
 
-func newVectorFromSlice(values []values.Value, typ flux.ColType) values.Vector {
+func newVectorFromSlice(values []values.Value, typ flux.ColType, mem *memory.Allocator) values.Vector {
 	switch elemType := flux.SemanticType(typ); elemType {
 
 	case semantic.BasicInt:
-		mem := memory.DefaultAllocator
 		b := array.NewIntBuilder(mem)
 		for _, v := range values {
 			b.Append(v.Int())
@@ -84,7 +83,6 @@ func newVectorFromSlice(values []values.Value, typ flux.ColType) values.Vector {
 		return NewIntVectorValue(arr)
 
 	case semantic.BasicUint:
-		mem := memory.DefaultAllocator
 		b := array.NewUintBuilder(mem)
 		for _, v := range values {
 			b.Append(v.UInt())
@@ -93,7 +91,6 @@ func newVectorFromSlice(values []values.Value, typ flux.ColType) values.Vector {
 		return NewUintVectorValue(arr)
 
 	case semantic.BasicFloat:
-		mem := memory.DefaultAllocator
 		b := array.NewFloatBuilder(mem)
 		for _, v := range values {
 			b.Append(v.Float())
@@ -102,7 +99,6 @@ func newVectorFromSlice(values []values.Value, typ flux.ColType) values.Vector {
 		return NewFloatVectorValue(arr)
 
 	case semantic.BasicBool:
-		mem := memory.DefaultAllocator
 		b := array.NewBooleanBuilder(mem)
 		for _, v := range values {
 			b.Append(v.Bool())
@@ -111,7 +107,6 @@ func newVectorFromSlice(values []values.Value, typ flux.ColType) values.Vector {
 		return NewBooleanVectorValue(arr)
 
 	case semantic.BasicString:
-		mem := memory.DefaultAllocator
 		b := array.NewStringBuilder(mem)
 		for _, v := range values {
 			b.Append(v.Str())
@@ -124,24 +119,36 @@ func newVectorFromSlice(values []values.Value, typ flux.ColType) values.Vector {
 	}
 }
 
-var _ values.Value = IntVectorValue{}
-var _ values.Vector = IntVectorValue{}
+var _ values.Value = &IntVectorValue{}
+var _ values.Vector = &IntVectorValue{}
+var _ array.Interface = &array.Int{}
 
 type IntVectorValue struct {
 	arr *array.Int
 	typ semantic.MonoType
-	et  semantic.MonoType
 }
 
 func NewIntVectorValue(arr *array.Int) values.Vector {
-	return IntVectorValue{
+	return &IntVectorValue{
 		arr: arr,
 		typ: semantic.NewVectorType(semantic.BasicInt),
-		et:  semantic.BasicInt,
 	}
 }
 
-func (v *IntVectorValue) ElementType() semantic.MonoType { return v.et }
+func (v *IntVectorValue) ElementType() semantic.MonoType {
+	t, err := v.typ.ElemType()
+	if err != nil {
+		panic("could not get element type of vector value")
+	}
+	return t
+}
+func (v *IntVectorValue) Arr() array.Interface { return v.arr }
+func (v *IntVectorValue) Retain() {
+	v.arr.Retain()
+}
+func (v *IntVectorValue) Release() {
+	v.arr.Release()
+}
 
 func (v *IntVectorValue) Type() semantic.MonoType { return v.typ }
 func (v *IntVectorValue) IsNull() bool            { return false }
@@ -178,64 +185,39 @@ func (v *IntVectorValue) Dict() values.Dictionary {
 }
 
 func (v *IntVectorValue) Equal(other values.Value) bool {
-	otherv, ok := other.(IntVectorValue)
-	if !ok {
-		return false
-	}
-	if otherv.Type().Nature() != semantic.Vector {
-		return false
-	} else if v.Len() != otherv.Len() {
-		return false
-	}
-
-	for i, n := 0, v.arr.Len(); i < n; i++ {
-		if !v.Get(i).Equal(otherv.Get(i)) {
-			return false
-		}
-	}
-	return true
-}
-func (v *IntVectorValue) Get(i int) values.Value {
-	if v.arr.IsNull(i) {
-		return values.Null
-	}
-	return values.New(v.arr.Value(i))
+	panic("cannot compare two vectors for equality")
 }
 
-func (v *IntVectorValue) Set(i int, value values.Value) {
-	panic("cannot set value on immutable vector")
-}
-func (v *IntVectorValue) Append(value values.Value) { panic("cannot append to immutable vector") }
-
-func (v *IntVectorValue) Len() int { return v.arr.Len() }
-func (v *IntVectorValue) Range(f func(i int, v values.Value)) {
-	for i, n := 0, v.arr.Len(); i < n; i++ {
-		f(i, v.Get(i))
-	}
-}
-
-func (v *IntVectorValue) Sort(f func(i values.Value, j values.Value) bool) {
-	panic("cannot sort immutable vector")
-}
-
-var _ values.Value = UintVectorValue{}
-var _ values.Vector = UintVectorValue{}
+var _ values.Value = &UintVectorValue{}
+var _ values.Vector = &UintVectorValue{}
+var _ array.Interface = &array.Uint{}
 
 type UintVectorValue struct {
 	arr *array.Uint
 	typ semantic.MonoType
-	et  semantic.MonoType
 }
 
 func NewUintVectorValue(arr *array.Uint) values.Vector {
-	return UintVectorValue{
+	return &UintVectorValue{
 		arr: arr,
 		typ: semantic.NewVectorType(semantic.BasicUint),
-		et:  semantic.BasicUint,
 	}
 }
 
-func (v *UintVectorValue) ElementType() semantic.MonoType { return v.et }
+func (v *UintVectorValue) ElementType() semantic.MonoType {
+	t, err := v.typ.ElemType()
+	if err != nil {
+		panic("could not get element type of vector value")
+	}
+	return t
+}
+func (v *UintVectorValue) Arr() array.Interface { return v.arr }
+func (v *UintVectorValue) Retain() {
+	v.arr.Retain()
+}
+func (v *UintVectorValue) Release() {
+	v.arr.Release()
+}
 
 func (v *UintVectorValue) Type() semantic.MonoType { return v.typ }
 func (v *UintVectorValue) IsNull() bool            { return false }
@@ -274,64 +256,39 @@ func (v *UintVectorValue) Dict() values.Dictionary {
 }
 
 func (v *UintVectorValue) Equal(other values.Value) bool {
-	otherv, ok := other.(UintVectorValue)
-	if !ok {
-		return false
-	}
-	if otherv.Type().Nature() != semantic.Vector {
-		return false
-	} else if v.Len() != otherv.Len() {
-		return false
-	}
-
-	for i, n := 0, v.arr.Len(); i < n; i++ {
-		if !v.Get(i).Equal(otherv.Get(i)) {
-			return false
-		}
-	}
-	return true
-}
-func (v *UintVectorValue) Get(i int) values.Value {
-	if v.arr.IsNull(i) {
-		return values.Null
-	}
-	return values.New(v.arr.Value(i))
+	panic("cannot compare two vectors for equality")
 }
 
-func (v *UintVectorValue) Set(i int, value values.Value) {
-	panic("cannot set value on immutable vector")
-}
-func (v *UintVectorValue) Append(value values.Value) { panic("cannot append to immutable vector") }
-
-func (v *UintVectorValue) Len() int { return v.arr.Len() }
-func (v *UintVectorValue) Range(f func(i int, v values.Value)) {
-	for i, n := 0, v.arr.Len(); i < n; i++ {
-		f(i, v.Get(i))
-	}
-}
-
-func (v *UintVectorValue) Sort(f func(i values.Value, j values.Value) bool) {
-	panic("cannot sort immutable vector")
-}
-
-var _ values.Value = FloatVectorValue{}
-var _ values.Vector = FloatVectorValue{}
+var _ values.Value = &FloatVectorValue{}
+var _ values.Vector = &FloatVectorValue{}
+var _ array.Interface = &array.Float{}
 
 type FloatVectorValue struct {
 	arr *array.Float
 	typ semantic.MonoType
-	et  semantic.MonoType
 }
 
 func NewFloatVectorValue(arr *array.Float) values.Vector {
-	return FloatVectorValue{
+	return &FloatVectorValue{
 		arr: arr,
 		typ: semantic.NewVectorType(semantic.BasicFloat),
-		et:  semantic.BasicFloat,
 	}
 }
 
-func (v *FloatVectorValue) ElementType() semantic.MonoType { return v.et }
+func (v *FloatVectorValue) ElementType() semantic.MonoType {
+	t, err := v.typ.ElemType()
+	if err != nil {
+		panic("could not get element type of vector value")
+	}
+	return t
+}
+func (v *FloatVectorValue) Arr() array.Interface { return v.arr }
+func (v *FloatVectorValue) Retain() {
+	v.arr.Retain()
+}
+func (v *FloatVectorValue) Release() {
+	v.arr.Release()
+}
 
 func (v *FloatVectorValue) Type() semantic.MonoType { return v.typ }
 func (v *FloatVectorValue) IsNull() bool            { return false }
@@ -372,64 +329,39 @@ func (v *FloatVectorValue) Dict() values.Dictionary {
 }
 
 func (v *FloatVectorValue) Equal(other values.Value) bool {
-	otherv, ok := other.(FloatVectorValue)
-	if !ok {
-		return false
-	}
-	if otherv.Type().Nature() != semantic.Vector {
-		return false
-	} else if v.Len() != otherv.Len() {
-		return false
-	}
-
-	for i, n := 0, v.arr.Len(); i < n; i++ {
-		if !v.Get(i).Equal(otherv.Get(i)) {
-			return false
-		}
-	}
-	return true
-}
-func (v *FloatVectorValue) Get(i int) values.Value {
-	if v.arr.IsNull(i) {
-		return values.Null
-	}
-	return values.New(v.arr.Value(i))
+	panic("cannot compare two vectors for equality")
 }
 
-func (v *FloatVectorValue) Set(i int, value values.Value) {
-	panic("cannot set value on immutable vector")
-}
-func (v *FloatVectorValue) Append(value values.Value) { panic("cannot append to immutable vector") }
-
-func (v *FloatVectorValue) Len() int { return v.arr.Len() }
-func (v *FloatVectorValue) Range(f func(i int, v values.Value)) {
-	for i, n := 0, v.arr.Len(); i < n; i++ {
-		f(i, v.Get(i))
-	}
-}
-
-func (v *FloatVectorValue) Sort(f func(i values.Value, j values.Value) bool) {
-	panic("cannot sort immutable vector")
-}
-
-var _ values.Value = BooleanVectorValue{}
-var _ values.Vector = BooleanVectorValue{}
+var _ values.Value = &BooleanVectorValue{}
+var _ values.Vector = &BooleanVectorValue{}
+var _ array.Interface = &array.Boolean{}
 
 type BooleanVectorValue struct {
 	arr *array.Boolean
 	typ semantic.MonoType
-	et  semantic.MonoType
 }
 
 func NewBooleanVectorValue(arr *array.Boolean) values.Vector {
-	return BooleanVectorValue{
+	return &BooleanVectorValue{
 		arr: arr,
 		typ: semantic.NewVectorType(semantic.BasicBool),
-		et:  semantic.BasicBool,
 	}
 }
 
-func (v *BooleanVectorValue) ElementType() semantic.MonoType { return v.et }
+func (v *BooleanVectorValue) ElementType() semantic.MonoType {
+	t, err := v.typ.ElemType()
+	if err != nil {
+		panic("could not get element type of vector value")
+	}
+	return t
+}
+func (v *BooleanVectorValue) Arr() array.Interface { return v.arr }
+func (v *BooleanVectorValue) Retain() {
+	v.arr.Retain()
+}
+func (v *BooleanVectorValue) Release() {
+	v.arr.Release()
+}
 
 func (v *BooleanVectorValue) Type() semantic.MonoType { return v.typ }
 func (v *BooleanVectorValue) IsNull() bool            { return false }
@@ -472,64 +404,39 @@ func (v *BooleanVectorValue) Dict() values.Dictionary {
 }
 
 func (v *BooleanVectorValue) Equal(other values.Value) bool {
-	otherv, ok := other.(BooleanVectorValue)
-	if !ok {
-		return false
-	}
-	if otherv.Type().Nature() != semantic.Vector {
-		return false
-	} else if v.Len() != otherv.Len() {
-		return false
-	}
-
-	for i, n := 0, v.arr.Len(); i < n; i++ {
-		if !v.Get(i).Equal(otherv.Get(i)) {
-			return false
-		}
-	}
-	return true
-}
-func (v *BooleanVectorValue) Get(i int) values.Value {
-	if v.arr.IsNull(i) {
-		return values.Null
-	}
-	return values.New(v.arr.Value(i))
+	panic("cannot compare two vectors for equality")
 }
 
-func (v *BooleanVectorValue) Set(i int, value values.Value) {
-	panic("cannot set value on immutable vector")
-}
-func (v *BooleanVectorValue) Append(value values.Value) { panic("cannot append to immutable vector") }
-
-func (v *BooleanVectorValue) Len() int { return v.arr.Len() }
-func (v *BooleanVectorValue) Range(f func(i int, v values.Value)) {
-	for i, n := 0, v.arr.Len(); i < n; i++ {
-		f(i, v.Get(i))
-	}
-}
-
-func (v *BooleanVectorValue) Sort(f func(i values.Value, j values.Value) bool) {
-	panic("cannot sort immutable vector")
-}
-
-var _ values.Value = StringVectorValue{}
-var _ values.Vector = StringVectorValue{}
+var _ values.Value = &StringVectorValue{}
+var _ values.Vector = &StringVectorValue{}
+var _ array.Interface = &array.String{}
 
 type StringVectorValue struct {
 	arr *array.String
 	typ semantic.MonoType
-	et  semantic.MonoType
 }
 
 func NewStringVectorValue(arr *array.String) values.Vector {
-	return StringVectorValue{
+	return &StringVectorValue{
 		arr: arr,
 		typ: semantic.NewVectorType(semantic.BasicString),
-		et:  semantic.BasicString,
 	}
 }
 
-func (v *StringVectorValue) ElementType() semantic.MonoType { return v.et }
+func (v *StringVectorValue) ElementType() semantic.MonoType {
+	t, err := v.typ.ElemType()
+	if err != nil {
+		panic("could not get element type of vector value")
+	}
+	return t
+}
+func (v *StringVectorValue) Arr() array.Interface { return v.arr }
+func (v *StringVectorValue) Retain() {
+	v.arr.Retain()
+}
+func (v *StringVectorValue) Release() {
+	v.arr.Release()
+}
 
 func (v *StringVectorValue) Type() semantic.MonoType { return v.typ }
 func (v *StringVectorValue) IsNull() bool            { return false }
@@ -570,42 +477,5 @@ func (v *StringVectorValue) Dict() values.Dictionary {
 }
 
 func (v *StringVectorValue) Equal(other values.Value) bool {
-	otherv, ok := other.(StringVectorValue)
-	if !ok {
-		return false
-	}
-	if otherv.Type().Nature() != semantic.Vector {
-		return false
-	} else if v.Len() != otherv.Len() {
-		return false
-	}
-
-	for i, n := 0, v.arr.Len(); i < n; i++ {
-		if !v.Get(i).Equal(otherv.Get(i)) {
-			return false
-		}
-	}
-	return true
-}
-func (v *StringVectorValue) Get(i int) values.Value {
-	if v.arr.IsNull(i) {
-		return values.Null
-	}
-	return values.New(v.arr.Value(i))
-}
-
-func (v *StringVectorValue) Set(i int, value values.Value) {
-	panic("cannot set value on immutable vector")
-}
-func (v *StringVectorValue) Append(value values.Value) { panic("cannot append to immutable vector") }
-
-func (v *StringVectorValue) Len() int { return v.arr.Len() }
-func (v *StringVectorValue) Range(f func(i int, v values.Value)) {
-	for i, n := 0, v.arr.Len(); i < n; i++ {
-		f(i, v.Get(i))
-	}
-}
-
-func (v *StringVectorValue) Sort(f func(i values.Value, j values.Value) bool) {
-	panic("cannot sort immutable vector")
+	panic("cannot compare two vectors for equality")
 }

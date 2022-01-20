@@ -7,10 +7,26 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/influxdata/flux/compiler"
 	"github.com/influxdata/flux/internal/arrowutil"
+	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
+
+func vectorizedObjectFromMap(mp map[string]interface{}, mem *memory.Allocator) values.Object {
+	obj := make(map[string]values.Value)
+	for k, v := range mp {
+		switch s := v.(type) {
+		case []interface{}:
+			obj[k] = arrowutil.NewVectorFromElements(mem, s...)
+		case map[string]interface{}:
+			obj[k] = vectorizedObjectFromMap(v.(map[string]interface{}), mem)
+		default:
+			panic("bad input to vectorizedObjectFromMap")
+		}
+	}
+	return values.NewObjectWithValues(obj)
+}
 
 // Check that:
 //     1. Vectorized inputs yield vectorized outputs when compiled and evaluated
@@ -24,50 +40,56 @@ func TestVectorizedFns(t *testing.T) {
 		name         string
 		fn           string
 		vectorizable bool
+		allocated    int64
+		maxAllocated int64
 		inType       semantic.MonoType
-		input        values.Object
-		want         values.Value
+		input        map[string]interface{}
+		want         map[string]interface{}
 		skipComp     bool
 	}{
 		{
 			name:         "field access",
 			fn:           `(r) => ({c: r.a, d: r.b})`,
 			vectorizable: true,
+			allocated:    256, // This should be 128 (2 vectorized fields, each containing 1 int64)
+			maxAllocated: 448,
 			inType: semantic.NewObjectType([]semantic.PropertyType{
 				{Key: []byte("r"), Value: semantic.NewObjectType([]semantic.PropertyType{
 					{Key: []byte("a"), Value: semantic.NewVectorType(semantic.BasicInt)},
 					{Key: []byte("b"), Value: semantic.NewVectorType(semantic.BasicInt)},
 				})},
 			}),
-			input: values.NewObjectWithValues(map[string]values.Value{
-				"r": values.NewObjectWithValues(map[string]values.Value{
-					"a": arrowutil.NewVectorFromElements(int64(1)),
-					"b": arrowutil.NewVectorFromElements(int64(2)),
-				}),
-			}),
-			want: values.NewObjectWithValues(map[string]values.Value{
-				"c": arrowutil.NewVectorFromElements(int64(1)),
-				"d": arrowutil.NewVectorFromElements(int64(2)),
-			}),
+			input: map[string]interface{}{
+				"r": map[string]interface{}{
+					"a": []interface{}{int64(1)},
+					"b": []interface{}{int64(2)},
+				},
+			},
+			want: map[string]interface{}{
+				"c": []interface{}{int64(1)},
+				"d": []interface{}{int64(2)},
+			},
 		},
 		{
 			name:         "extend record",
 			fn:           `(r) => ({r with b: r.a})`,
 			vectorizable: true,
+			allocated:    128, // This should be 64 (1 vectorized field that contains 1 float64)
+			maxAllocated: 320,
 			inType: semantic.NewObjectType([]semantic.PropertyType{
 				{Key: []byte("r"), Value: semantic.NewObjectType([]semantic.PropertyType{
 					{Key: []byte("a"), Value: semantic.NewVectorType(semantic.BasicFloat)},
 				})},
 			}),
-			input: values.NewObjectWithValues(map[string]values.Value{
-				"r": values.NewObjectWithValues(map[string]values.Value{
-					"a": arrowutil.NewVectorFromElements(1.2),
-				}),
-			}),
-			want: values.NewObjectWithValues(map[string]values.Value{
-				"a": arrowutil.NewVectorFromElements(1.2),
-				"b": arrowutil.NewVectorFromElements(1.2),
-			}),
+			input: map[string]interface{}{
+				"r": map[string]interface{}{
+					"a": []interface{}{1.2},
+				},
+			},
+			want: map[string]interface{}{
+				"a": []interface{}{1.2},
+				"b": []interface{}{1.2},
+			},
 		},
 		{
 			name:         "no binary expressions",
@@ -85,6 +107,7 @@ func TestVectorizedFns(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
+			mem := memory.Allocator{}
 			pkg, err := runtime.AnalyzeSource(tc.fn)
 			if err != nil {
 				t.Fatalf("unexpected error: %s", err)
@@ -111,14 +134,22 @@ func TestVectorizedFns(t *testing.T) {
 			if err != nil {
 				t.Fatalf("unexpected error: %s", err)
 			}
-
-			got, err := f.Eval(context.TODO(), tc.input)
+			input := vectorizedObjectFromMap(tc.input, &mem)
+			got, err := f.Eval(context.TODO(), input)
 			if err != nil {
 				t.Fatalf("unexpected error: %s", err)
 			}
 
-			if !cmp.Equal(tc.want, got, CmpOptions...) {
-				t.Errorf("unexpected value -want/+got\n%s", cmp.Diff(tc.want, got, CmpOptions...))
+			want := vectorizedObjectFromMap(tc.want, &memory.Allocator{})
+			if !cmp.Equal(want, got, CmpOptions...) {
+				t.Errorf("unexpected value -want/+got\n%s", cmp.Diff(want, got, CmpOptions...))
+			}
+
+			if want, got := tc.allocated, mem.Allocated(); want != got {
+				t.Fatalf("unexpected allocated count -want/+got\n\t- %d\n\t+ %d", want, got)
+			}
+			if want, got := tc.maxAllocated, mem.MaxAllocated(); want != got {
+				t.Fatalf("unexpected max allocated count -want/+got\n\t- %d\n\t+ %d", want, got)
 			}
 		})
 	}

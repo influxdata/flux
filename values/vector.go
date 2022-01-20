@@ -1,13 +1,14 @@
 package values
 
 import (
+	arrow "github.com/influxdata/flux/array"
 	"github.com/influxdata/flux/semantic"
 )
 
 type Vector interface {
 	Value
 	ElementType() semantic.MonoType
-	Get(i int) Value
-	Set(i int, value Value)
-	Len() int
+	Arr() arrow.Interface
+	Retain()
+	Release()
 }
