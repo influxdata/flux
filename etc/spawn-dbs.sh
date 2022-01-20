@@ -22,7 +22,6 @@
 # docker ps --format '{{.Names}}' | grep flux-integ-tests | xargs docker rm -f
 # ```
 
-
 set -e
 
 PREFIX=flux-integ-tests
@@ -162,64 +161,6 @@ rm -f "$SQLITE_DB_PATH"
 docker stop "${HDB_NAME}" "${PG_NAME}" "${MYSQL_NAME}" "${MARIADB_NAME}" "${MS_NAME}" "${VERTICA_NAME}" \
 || docker rm -f "${HDB_NAME}" "${PG_NAME}" "${MYSQL_NAME}" "${MARIADB_NAME}" "${MS_NAME}" "${VERTICA_NAME}"
 
-docker run --rm --detach \
-  --name "${HDB_NAME}" \
-  --hostname hxehost \
-  --publish 39041:39041 \
-  -e AGREE_TO_SAP_LICENSE=true \
-  -e 'MASTER_PASSWORD=fluX!234' \
-  -v "${HDB_SEED_FILE}:${HDB_SEED_FILE}:ro" \
-  "${HDB_TAG}"
-
-# mysql is sort of annoying when it comes to logging so to look at the query log,
-# you'll probably want to either use `docker cp` to get a copy of `/tmp/query.log`
-# out of the container, or `docker exec ${MYSQL_NAME} cat /tmp/query.log` and
-# redirect the output to a host-local file.
-docker run --rm --detach \
-  --name "${MYSQL_NAME}" \
-  --publish 3306:3306 \
-  -e MYSQL_USER=flux \
-  -e MYSQL_ROOT_PASSWORD=flux \
-  -e MYSQL_PASSWORD=flux \
-  -e MYSQL_DATABASE=flux \
-  "${MYSQL_TAG}" \
-  --general-log=1 --general-log-file=/tmp/query.log
-
-docker run --rm --detach \
-  --name "${MARIADB_NAME}" \
-  --publish 3307:3306 \
-  -e MARIADB_USER=flux \
-  -e MARIADB_ROOT_PASSWORD=flux \
-  -e MARIADB_PASSWORD=flux \
-  -e MARIADB_DATABASE=flux \
-  "${MARIADB_TAG}" \
-  --general-log=1 --general-log-file=/tmp/query.log
-
-docker run --rm --detach \
-  --name "${PG_NAME}" \
-  --publish 5432:5432 \
-  -e POSTGRES_HOST_AUTH_METHOD=trust \
-  "${PG_TAG}" \
-  postgres -c log_statement=all
-
-# To look at the query log for MSSQL, try something like the following:
-# ```
-# docker exec -it flux-integ-tests-mssql /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P 'fluX!234' -Q 'SELECT TOP(100) t.TEXT FROM sys.dm_exec_query_stats s CROSS APPLY sys.dm_exec_sql_text(s.sql_handle) t ORDER BY s.last_execution_time'
-# ```
-docker run --rm --detach \
-  --name "${MS_NAME}" \
-  --publish 1433:1433 \
-  -e ACCEPT_EULA=Y \
-  -e 'SA_PASSWORD=fluX!234' \
-  -e MSSQL_PID=Developer \
-  "${MS_TAG}"
-
-docker run --rm --detach \
-  --name "${VERTICA_NAME}" \
-  --publish 5433:5433 \
-  -e VERTICA_DB_NAME=flux \
-  "${VERTICA_TAG}"
-
 function wait_for () {
   name="${1}"
   cmd="${2}"
@@ -230,22 +171,133 @@ function wait_for () {
   >&2 echo "${name}: Ready"
 }
 
-wait_for "MariaDB" "docker exec ${MARIADB_NAME} env MYSQL_PWD=flux mysql --database=flux --host=127.0.0.1 --user=flux --execute '\q'"
-docker exec "${MARIADB_NAME}" env MYSQL_PWD=flux mysql --database=flux --host=127.0.0.1 --user=flux --execute "${MYSQL_SEED}"
+function run_maria_db {
+  docker run --rm --detach \
+    --name "${MARIADB_NAME}" \
+    --publish 3307:3306 \
+    -e MARIADB_USER=flux \
+    -e MARIADB_ROOT_PASSWORD=flux \
+    -e MARIADB_PASSWORD=flux \
+    -e MARIADB_DATABASE=flux \
+    "${MARIADB_TAG}" \
+    --general-log=1 --general-log-file=/tmp/query.log
 
-wait_for "MSSQL" "docker exec ${MS_NAME} /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P 'fluX!234' -Q 'EXIT'"
-docker exec "${MS_NAME}" /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P 'fluX!234' -Q "${MSSQL_SEED}";
+  wait_for "MariaDB" "docker exec ${MARIADB_NAME} env MYSQL_PWD=flux mysql --database=flux --host=127.0.0.1 --user=flux --execute '\q'"
+  docker exec "${MARIADB_NAME}" env MYSQL_PWD=flux mysql --database=flux --host=127.0.0.1 --user=flux --execute "${MYSQL_SEED}"
+}
 
-wait_for "MySQL" "docker exec ${MYSQL_NAME} env MYSQL_PWD=flux mysql --database=flux --host=127.0.0.1 --user=flux --execute '\q'"
-docker exec "${MYSQL_NAME}" env MYSQL_PWD=flux mysql --database=flux --host=127.0.0.1 --user=flux --execute "${MYSQL_SEED}"
+function run_mssql {
+  # To look at the query log for MSSQL, try something like the following:
+  # ```
+  # docker exec -it flux-integ-tests-mssql /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P 'fluX!234' -Q 'SELECT TOP(100) t.TEXT FROM sys.dm_exec_query_stats s CROSS APPLY sys.dm_exec_sql_text(s.sql_handle) t ORDER BY s.last_execution_time'
+  # ```
+  docker run --rm --detach \
+    --name "${MS_NAME}" \
+    --publish 1433:1433 \
+    -e ACCEPT_EULA=Y \
+    -e 'SA_PASSWORD=fluX!234' \
+    -e MSSQL_PID=Developer \
+    "${MS_TAG}"
 
-wait_for "Postgres" "docker exec ${PG_NAME} psql -U postgres -c '\q'"
-docker exec "${PG_NAME}" psql -U postgres -c "${PG_SEED}"
+  wait_for "MSSQL" "docker exec ${MS_NAME} /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P 'fluX!234' -Q 'EXIT'"
+  docker exec "${MS_NAME}" /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P 'fluX!234' -Q "${MSSQL_SEED}";
+}
 
-wait_for "Vertica" "docker exec ${VERTICA_NAME} /opt/vertica/bin/vsql -l"
-docker exec "${VERTICA_NAME}" /opt/vertica/bin/vsql -d flux -v AUTOCOMMIT=on -c "${VERTICA_SEED}"
+function run_mysql {
+  # mysql is sort of annoying when it comes to logging so to look at the query log,
+  # you'll probably want to either use `docker cp` to get a copy of `/tmp/query.log`
+  # out of the container, or `docker exec ${MYSQL_NAME} cat /tmp/query.log` and
+  # redirect the output to a host-local file.
+  docker run --rm --detach \
+    --name "${MYSQL_NAME}" \
+    --publish 3306:3306 \
+    -e MYSQL_USER=flux \
+    -e MYSQL_ROOT_PASSWORD=flux \
+    -e MYSQL_PASSWORD=flux \
+    -e MYSQL_DATABASE=flux \
+    "${MYSQL_TAG}" \
+    --general-log=1 --general-log-file=/tmp/query.log
 
-wait_for "SAP HANA" "docker exec -it ${HDB_NAME} /usr/sap/HXE/HDB90/exe/hdbsql -i 90 -u SYSTEM -p 'fluX!234' -d HXE '\q'"
-docker exec -it "${HDB_NAME}" /usr/sap/HXE/HDB90/exe/hdbsql -i 90 -u SYSTEM -p 'fluX!234' -d HXE -I "${HDB_SEED_FILE}"
+  wait_for "MySQL" "docker exec ${MYSQL_NAME} env MYSQL_PWD=flux mysql --database=flux --host=127.0.0.1 --user=flux --execute '\q'"
+  docker exec "${MYSQL_NAME}" env MYSQL_PWD=flux mysql --database=flux --host=127.0.0.1 --user=flux --execute "${MYSQL_SEED}"
+}
 
-sqlite3 "${SQLITE_DB_PATH}" "${SQLITE_SEED}"
+function run_vertica {
+  docker run --rm --detach \
+    --name "${VERTICA_NAME}" \
+    --publish 5433:5433 \
+    -e VERTICA_DB_NAME=flux \
+    "${VERTICA_TAG}"
+
+  wait_for "Vertica" "docker exec ${VERTICA_NAME} /opt/vertica/bin/vsql -l"
+  docker exec "${VERTICA_NAME}" /opt/vertica/bin/vsql -d flux -v AUTOCOMMIT=on -c "${VERTICA_SEED}"
+}
+
+function run_sap_hana {
+  docker run --rm --detach \
+    --name "${HDB_NAME}" \
+    --hostname hxehost \
+    --publish 39041:39041 \
+    -e AGREE_TO_SAP_LICENSE=true \
+    -e 'MASTER_PASSWORD=fluX!234' \
+    -v "${HDB_SEED_FILE}:${HDB_SEED_FILE}:ro" \
+    "${HDB_TAG}"
+
+  wait_for "SAP HANA" "docker exec -it ${HDB_NAME} /usr/sap/HXE/HDB90/exe/hdbsql -i 90 -u SYSTEM -p 'fluX!234' -d HXE '\q'"
+  docker exec -it "${HDB_NAME}" /usr/sap/HXE/HDB90/exe/hdbsql -i 90 -u SYSTEM -p 'fluX!234' -d HXE -I "${HDB_SEED_FILE}"
+}
+
+function run_pg {
+  docker run --rm --detach \
+    --name "${PG_NAME}" \
+    --publish 5432:5432 \
+    -e POSTGRES_HOST_AUTH_METHOD=trust \
+    "${PG_TAG}" \
+    postgres -c log_statement=all
+
+  wait_for "Postgres" "docker exec ${PG_NAME} psql -U postgres -c '\q'"
+  docker exec "${PG_NAME}" psql -U postgres -c "${PG_SEED}"
+}
+
+function should_start {
+    # Start a databases if no the script is invoked without any arguments, or if the database is
+    # among the arguments
+    [ "$1" == "" ] || (echo "${@:2}" | grep "$1")
+}
+
+if should_start "mariadb" "$@" ; then
+    echo "Starting MariaDB"
+    run_maria_db &
+fi
+
+if should_start "mssql" "$@" ; then
+    echo "Starting MSSQL"
+    run_mssql &
+fi
+
+if should_start "mysql" "$@" ; then
+    echo "Starting MySQL"
+    run_mysql &
+fi
+
+if should_start "vertica" "$@" ; then
+    echo "Starting Vertica"
+    run_vertica &
+fi
+
+if should_start "saphana" "$@" ; then
+    echo "Starting SAP Hana"
+    run_sap_hana &
+fi
+
+if should_start "postgres" "$@" ; then
+    echo "Starting Postgres"
+    run_pg &
+fi
+
+if should_start "sqlite" "$@" ; then
+    echo "Starting Sqlite"
+    sqlite3 "${SQLITE_DB_PATH}" "${SQLITE_SEED}" &
+fi
+
+wait
