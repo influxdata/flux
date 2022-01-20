@@ -500,6 +500,7 @@ var _ Writer = &httpWriter{}
 func (h *httpWriter) Write(metric ...protocol.Metric) error {
 	buf := new(bytes.Buffer)
 	enc := protocol.NewEncoder(buf)
+	enc.SetFieldTypeSupport(protocol.UintSupport)
 	for i := range metric {
 		buf.Truncate(0)
 		_, err := enc.Encode(metric[i])
