@@ -262,40 +262,42 @@ function run_pg {
 function should_start {
     # Start a databases if no the script is invoked without any arguments, or if the database is
     # among the arguments
-    [ "$1" == "" ] || (echo "$2" | grep "$1")
+    [ "$1" == "" ] || (echo "${@:2}" | grep "$1")
 }
 
 if should_start "mariadb" "$@" ; then
     echo "Starting MariaDB"
-    run_maria_db
+    run_maria_db &
 fi
 
 if should_start "mssql" "$@" ; then
     echo "Starting MSSQL"
-    run_mssql
+    run_mssql &
 fi
 
 if should_start "mysql" "$@" ; then
     echo "Starting MySQL"
-    run_mysql
+    run_mysql &
 fi
 
 if should_start "vertica" "$@" ; then
     echo "Starting Vertica"
-    run_vertica
+    run_vertica &
 fi
 
 if should_start "saphana" "$@" ; then
     echo "Starting SAP Hana"
-    run_sap_hana
+    run_sap_hana &
 fi
 
 if should_start "postgres" "$@" ; then
     echo "Starting Postgres"
-    run_pg
+    run_pg &
 fi
 
 if should_start "sqlite" "$@" ; then
     echo "Starting Sqlite"
-    sqlite3 "${SQLITE_DB_PATH}" "${SQLITE_SEED}"
+    sqlite3 "${SQLITE_DB_PATH}" "${SQLITE_SEED}" &
 fi
+
+wait
