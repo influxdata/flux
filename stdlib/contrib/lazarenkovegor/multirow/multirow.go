@@ -402,14 +402,18 @@ func (s *part) End() {
 
 type TableValues []array.Interface
 
-func (s TableValues) Get(row, col int) values.Value {
+func (s TableValues) Get(row, col int, colType flux.ColType) values.Value {
 	ca := s[col]
 	if ca.IsNull(row) {
 		return values.Null
 	}
 	switch b := ca.(type) {
 	case *array.Int:
-		return values.NewInt(b.Value(row))
+		i := b.Value(row)
+		if colType == flux.TTime {
+			return values.NewTime(values.Time(i))
+		}
+		return values.NewInt(i)
 	case *array.Uint:
 		return values.NewUInt(b.Value(row))
 	case *array.Float:
@@ -618,7 +622,8 @@ func (s *TableBuilder) AppendRows(ctx context.Context, res values.Value, needLas
 				for rowNum := 0; rowNum < rowCount; rowNum++ {
 					row := make([]values.Value, colCount)
 					for _, colNum := range part.KeyColumnsNums() {
-						row[colNum] = memTable.Get(rowNum, colNum)
+
+						row[colNum] = memTable.Get(rowNum, colNum, cols[colNum].Type)
 					}
 					gr := part.LookupGroup(row)
 					rowGroup[rowNum] = gr
@@ -629,7 +634,7 @@ func (s *TableBuilder) AppendRows(ctx context.Context, res values.Value, needLas
 				for rowNum := 0; rowNum < rowCount; rowNum++ {
 					row := make([]values.Value, colCount)
 					for _, colNum := range part.DataColumnsNums() {
-						row[colNum] = memTable.Get(rowNum, colNum)
+						row[colNum] = memTable.Get(rowNum, colNum, cols[colNum].Type)
 					}
 					gr := rowGroup[rowNum]
 					if err := part.AppendData(gr, row); err != nil {
@@ -637,16 +642,15 @@ func (s *TableBuilder) AppendRows(ctx context.Context, res values.Value, needLas
 					}
 					if rowNum == rowCount-1 && needLastObject {
 						objKV := make(map[string]values.Value)
-						cols := part.Cols()
 						for _, colNum := range part.DataColumnsNums() {
-							val := memTable.Get(rowNum, colNum)
+							val := memTable.Get(rowNum, colNum, cols[colNum].Type)
 							if val.IsNull() {
 								continue
 							}
 							objKV[cols[colNum].Label] = val
 						}
 						for _, colNum := range part.VirtualColumnsNums() {
-							val := memTable.Get(rowNum, colNum)
+							val := memTable.Get(rowNum, colNum, cols[colNum].Type)
 							if val.IsNull() {
 								continue
 							}
