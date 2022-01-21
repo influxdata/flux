@@ -5,7 +5,6 @@ import (
 	"context"
 	"fmt"
 	"reflect"
-	"runtime/debug"
 	"sync"
 	"time"
 
@@ -16,7 +15,6 @@ import (
 	"github.com/influxdata/flux/metadata"
 	"github.com/influxdata/flux/plan"
 	"go.uber.org/zap"
-	"go.uber.org/zap/zapcore"
 )
 
 type Executor interface {
@@ -267,27 +265,7 @@ func (es *executionState) do() {
 			defer wg.Done()
 
 			// Setup panic handling on the source goroutines
-			defer func() {
-				if e := recover(); e != nil {
-					// We had a panic, abort the entire execution.
-					err, ok := e.(error)
-					if !ok {
-						err = fmt.Errorf("%v", e)
-					}
-
-					if errors.Code(err) == codes.ResourceExhausted {
-						es.abort(err)
-						return
-					}
-
-					err = errors.Wrap(err, codes.Internal, "panic")
-					es.abort(err)
-					if entry := es.logger.Check(zapcore.InfoLevel, "Execute source panic"); entry != nil {
-						entry.Stack = string(debug.Stack())
-						entry.Write(zap.Error(err))
-					}
-				}
-			}()
+			defer es.recover()
 			src.Run(ctx)
 
 			if mdn, ok := src.(MetadataNode); ok {
