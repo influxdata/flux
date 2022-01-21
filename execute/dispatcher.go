@@ -2,14 +2,9 @@ package execute
 
 import (
 	"context"
-	"fmt"
-	"runtime/debug"
 	"sync"
 
-	"github.com/influxdata/flux/codes"
-	"github.com/influxdata/flux/internal/errors"
 	"go.uber.org/zap"
-	"go.uber.org/zap/zapcore"
 )
 
 // Dispatcher schedules work for a query.
@@ -76,26 +71,7 @@ func (d *poolDispatcher) Start(n int, ctx context.Context) {
 		go func() {
 			defer d.wg.Done()
 			// Setup panic handling on the worker goroutines
-			defer func() {
-				if e := recover(); e != nil {
-					err, ok := e.(error)
-					if !ok {
-						err = fmt.Errorf("%v", e)
-					}
-
-					if errors.Code(err) == codes.ResourceExhausted {
-						d.setErr(err)
-						return
-					}
-
-					err = errors.Wrap(err, codes.Internal, "panic")
-					d.setErr(err)
-					if entry := d.logger.Check(zapcore.InfoLevel, "Dispatcher panic"); entry != nil {
-						entry.Stack = string(debug.Stack())
-						entry.Write(zap.Error(err))
-					}
-				}
-			}()
+			defer d.recover()
 			d.run(ctx)
 		}()
 	}
