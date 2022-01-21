@@ -3,7 +3,6 @@ package multirow
 import (
 	"context"
 	"fmt"
-
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/compiler"
@@ -11,6 +10,7 @@ import (
 	"github.com/influxdata/flux/execute/table"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/internal/execute/dataset"
+	"github.com/influxdata/flux/internal/fbsemantic"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/plan"
@@ -35,11 +35,15 @@ func init() {
 	execute.RegisterTransformation(MapKind, createMapTransformation)
 }
 
+type WindowFilter struct {
+	TimeColIndex int
+	Do           func(filter *WindowFilter, colReader flux.ColReader, currentIndex, lastIndex int) (from int, to int)
+}
+
 type MapOpSpec struct {
 	Fn               interpreter.ResolvedFunction
 	FromArrayFn      values.Function
-	Left             int
-	Right            int
+	WindowFilter     *WindowFilter
 	HasRowParam      bool
 	HasWindowParam   bool
 	HasIndexParam    bool
@@ -65,6 +69,83 @@ func (s *MapPlan) Copy() plan.ProcedureSpec {
 
 func (s *MapOpSpec) Kind() flux.OperationKind {
 	return MapKind
+}
+
+func makeWindowFilter(left values.Value, right values.Value) (*WindowFilter, error) {
+	getFrom := func(filter *WindowFilter, reader flux.ColReader, curIndex int, lastIndex int) int { return curIndex }
+	getTo := getFrom
+	res := &WindowFilter{TimeColIndex: -2}
+	if left != values.Null {
+		if bt, err := left.Type().Basic(); err != nil {
+			return nil, errors.Newf(codes.Invalid, "invalid left param: %s", err.Error())
+		} else {
+			switch bt {
+			case fbsemantic.TypeInt:
+				val := int(left.Int())
+				getFrom = func(filter *WindowFilter, reader flux.ColReader, curIndex int, lastIndex int) int {
+					res := curIndex - val
+					if res < 0 {
+						res = 0
+					}
+					return res
+				}
+			case fbsemantic.TypeDuration:
+				val := left.Duration()
+				res.TimeColIndex = -1
+				getFrom = func(filter *WindowFilter, reader flux.ColReader, curIndex int, lastIndex int) int {
+					from := curIndex
+					minTime := int64(values.Time(reader.Times(filter.TimeColIndex).Value(curIndex)).Add(val.Mul(-1)))
+					for from > 0 {
+						if reader.Times(filter.TimeColIndex).Value(from-1) < minTime {
+							break
+						}
+						from--
+					}
+					return from
+				}
+			default:
+				return nil, errors.Newf(codes.Invalid, "invalid left param type %T", bt)
+			}
+		}
+	}
+
+	if right != values.Null {
+		if bt, err := right.Type().Basic(); err != nil {
+			return nil, errors.Newf(codes.Invalid, "invalid right param: %s", err.Error())
+		} else {
+			switch bt {
+			case fbsemantic.TypeInt:
+				val := int(right.Int())
+				getTo = func(filter *WindowFilter, reader flux.ColReader, curIndex int, lastIndex int) int {
+					res := curIndex + val
+					if res > lastIndex {
+						res = lastIndex
+					}
+					return res
+				}
+			case fbsemantic.TypeDuration:
+				val := right.Duration()
+				res.TimeColIndex = -1
+				getTo = func(filter *WindowFilter, reader flux.ColReader, curIndex int, lastIndex int) int {
+					from := curIndex
+					maxTime := int64(values.Time(reader.Times(filter.TimeColIndex).Value(curIndex)).Add(val))
+					for from < lastIndex {
+						if reader.Times(filter.TimeColIndex).Value(from+1) > maxTime {
+							break
+						}
+						from++
+					}
+					return from
+				}
+			default:
+				return nil, errors.Newf(codes.Invalid, "invalid left param type %T", bt)
+			}
+		}
+	}
+	res.Do = func(filter *WindowFilter, colReader flux.ColReader, currentIndex, lastIndex int) (from int, to int) {
+		return getFrom(res, colReader, currentIndex, lastIndex), getTo(res, colReader, currentIndex, lastIndex)
+	}
+	return res, nil
 }
 
 func createMapOpSpec(args flux.Arguments, a *flux.Administration) (flux.OperationSpec, error) {
@@ -126,17 +207,15 @@ func createMapOpSpec(args flux.Arguments, a *flux.Administration) (flux.Operatio
 		return nil, fmt.Errorf("can't resolve function array.from")
 	}
 
-	if n, found, err := args.GetInt("left"); err != nil {
-		return nil, err
-	} else if found {
-		spec.Left = int(n)
+	var left values.Value = values.Null
+	var right values.Value = values.Null
+	if val, found := args.Get("left"); found {
+		left = val
 	}
-
-	if n, found, err := args.GetInt("right"); err != nil {
-		return nil, err
-	} else if found {
-		spec.Right = int(n)
+	if val, found := args.Get("right"); found {
+		right = val
 	}
+	spec.WindowFilter, err = makeWindowFilter(left, right)
 
 	if n, found, err := args.GetArrayAllowEmpty("virtual", semantic.String); err != nil {
 		return nil, err
@@ -212,9 +291,19 @@ func (s *mapTransformation) Process(id execute.DatasetID, tbl flux.Table) error 
 
 	if err := tbl.Do(func(reader flux.ColReader) error {
 		l := reader.Len()
+		if l == 0 {
+			return nil
+		}
+		lastIndex := l - 1
 		var previous values.Object
-		for curRowId := 0; curRowId < l; curRowId++ {
+		if s.spec.WindowFilter.TimeColIndex == -1 {
+			s.spec.WindowFilter.TimeColIndex = execute.ColIdx("_time", reader.Cols())
+			if s.spec.WindowFilter.TimeColIndex == -1 {
+				return errors.New(codes.Invalid, "column _time not fount, but needs for make window")
+			}
+		}
 
+		for curRowId := 0; curRowId < l; curRowId++ {
 			var row values.Object
 			if s.spec.HasRowParam {
 				row = MakeRowObject(nil, reader, curRowId)
@@ -222,14 +311,7 @@ func (s *mapTransformation) Process(id execute.DatasetID, tbl flux.Table) error 
 
 			var rows values.Array
 			if s.spec.HasWindowParam {
-				from := curRowId - s.spec.Left
-				if from < 0 {
-					from = 0
-				}
-				to := curRowId + s.spec.Right
-				if to >= l {
-					to = l - 1
-				}
+				from, to := s.spec.WindowFilter.Do(s.spec.WindowFilter, reader, curRowId, lastIndex)
 				rows = s.makeWindowRows(arrayOfRowTp, rowTp, reader, from, to)
 			}
 

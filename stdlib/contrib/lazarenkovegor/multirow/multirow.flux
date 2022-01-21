@@ -22,9 +22,9 @@ package multirow
 //    - row: current process row as record
 //    - window: table with rows [index - left: index + right]  as table stream
 //    - previous: previous process result in same group as record
-// - left: Numbers of records before current for add to window stream
+// - left: row count or _time duration of records before current for add to window stream
 //   default: 0
-// - right: Numbers of records after current for add to window stream
+// - right: row count or _time duration of records after current for add to window stream
 //   default: 0
 // - column: Name of new column for all primitive results of fn
 //   default: "_value"
@@ -62,8 +62,8 @@ package multirow
 //     )
 builtin map : (
         <-tables: [A],
-        ?left: int,
-        ?right: int,
+        ?left: E,
+        ?right: F,
         ?init: C,
         ?virtual: [string],
         fn: (

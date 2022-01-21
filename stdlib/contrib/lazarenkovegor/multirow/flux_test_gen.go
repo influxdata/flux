@@ -3647,6 +3647,1999 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
 					Column: 110,
+					Line:   50,
+				},
+				File:   "map_mixwindow_test.flux",
+				Source: "package multirow_test\n\n\nimport \"testing\"\nimport \"contrib/lazarenkovegor/multirow\"\n\ninData =\n    \"\n#datatype,string,long,string,long,dateTime:RFC3339,string\n#group,false,false,false,false,false,false\n#default,_result,0,,,2000-01-01T00:00:00Z,m0\n,result,table,_field,_value,_time,_measurement\n,,,test1,1,2020-08-02T17:22:00Z,\n,,,test1,2,2020-08-02T17:22:00Z,\n,,,test2,3,2020-08-02T17:22:01Z,\n,,,test2,4,2020-08-02T17:22:01Z,\n,,,test2,5,2020-08-02T17:22:01Z,\n,,,test2,6,2020-08-02T17:22:02Z,\n,,,test2,7,2020-08-02T17:22:03Z,\n,,,test2,8,2020-08-02T17:22:03Z,\n,,,test2,9,2020-08-02T17:22:04Z,\n\"\n\noutData =\n    \"\n#datatype,string,long,string,long,dateTime:RFC3339\n#group,false,false,false,false,false\n#default,_result,0,,,2000-01-01T00:00:00Z\n,result,table,_field,_value,_time\n,,,test1,2,2020-08-02T17:22:00Z\n,,,test1,3,2020-08-02T17:22:00Z\n,,,test2,4,2020-08-02T17:22:01Z\n,,,test2,5,2020-08-02T17:22:01Z\n,,,test2,6,2020-08-02T17:22:01Z\n,,,test2,5,2020-08-02T17:22:02Z\n,,,test2,3,2020-08-02T17:22:03Z\n,,,test2,4,2020-08-02T17:22:03Z\n,,,test2,3,2020-08-02T17:22:04Z\n\"\n\nt_map = (table=<-) =>\n    table\n        |> drop(columns: [\"_start\", \"_stop\"])\n        |> multirow.map(\n            left: 1s,\n            right: 1,\n            fn: (window, row) => window |> count() |> map(fn: (r) => ({r with _time: row._time, _field: row._field})),\n        )\n\ntest _map = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_map})",
+				Start: ast.Position{
+					Column: 1,
+					Line:   1,
+				},
+			},
+		},
+		Body: []ast.Statement{&ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Comments: nil,
+				Errors:   nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 2,
+						Line:   22,
+					},
+					File:   "map_mixwindow_test.flux",
+					Source: "inData =\n    \"\n#datatype,string,long,string,long,dateTime:RFC3339,string\n#group,false,false,false,false,false,false\n#default,_result,0,,,2000-01-01T00:00:00Z,m0\n,result,table,_field,_value,_time,_measurement\n,,,test1,1,2020-08-02T17:22:00Z,\n,,,test1,2,2020-08-02T17:22:00Z,\n,,,test2,3,2020-08-02T17:22:01Z,\n,,,test2,4,2020-08-02T17:22:01Z,\n,,,test2,5,2020-08-02T17:22:01Z,\n,,,test2,6,2020-08-02T17:22:02Z,\n,,,test2,7,2020-08-02T17:22:03Z,\n,,,test2,8,2020-08-02T17:22:03Z,\n,,,test2,9,2020-08-02T17:22:04Z,\n\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   7,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Comments: nil,
+					Errors:   nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 7,
+							Line:   7,
+						},
+						File:   "map_mixwindow_test.flux",
+						Source: "inData",
+						Start: ast.Position{
+							Column: 1,
+							Line:   7,
+						},
+					},
+				},
+				Name: "inData",
+			},
+			Init: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Comments: nil,
+					Errors:   nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 2,
+							Line:   22,
+						},
+						File:   "map_mixwindow_test.flux",
+						Source: "\"\n#datatype,string,long,string,long,dateTime:RFC3339,string\n#group,false,false,false,false,false,false\n#default,_result,0,,,2000-01-01T00:00:00Z,m0\n,result,table,_field,_value,_time,_measurement\n,,,test1,1,2020-08-02T17:22:00Z,\n,,,test1,2,2020-08-02T17:22:00Z,\n,,,test2,3,2020-08-02T17:22:01Z,\n,,,test2,4,2020-08-02T17:22:01Z,\n,,,test2,5,2020-08-02T17:22:01Z,\n,,,test2,6,2020-08-02T17:22:02Z,\n,,,test2,7,2020-08-02T17:22:03Z,\n,,,test2,8,2020-08-02T17:22:03Z,\n,,,test2,9,2020-08-02T17:22:04Z,\n\"",
+						Start: ast.Position{
+							Column: 5,
+							Line:   8,
+						},
+					},
+				},
+				Value: "\n#datatype,string,long,string,long,dateTime:RFC3339,string\n#group,false,false,false,false,false,false\n#default,_result,0,,,2000-01-01T00:00:00Z,m0\n,result,table,_field,_value,_time,_measurement\n,,,test1,1,2020-08-02T17:22:00Z,\n,,,test1,2,2020-08-02T17:22:00Z,\n,,,test2,3,2020-08-02T17:22:01Z,\n,,,test2,4,2020-08-02T17:22:01Z,\n,,,test2,5,2020-08-02T17:22:01Z,\n,,,test2,6,2020-08-02T17:22:02Z,\n,,,test2,7,2020-08-02T17:22:03Z,\n,,,test2,8,2020-08-02T17:22:03Z,\n,,,test2,9,2020-08-02T17:22:04Z,\n",
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Comments: nil,
+				Errors:   nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 2,
+						Line:   39,
+					},
+					File:   "map_mixwindow_test.flux",
+					Source: "outData =\n    \"\n#datatype,string,long,string,long,dateTime:RFC3339\n#group,false,false,false,false,false\n#default,_result,0,,,2000-01-01T00:00:00Z\n,result,table,_field,_value,_time\n,,,test1,2,2020-08-02T17:22:00Z\n,,,test1,3,2020-08-02T17:22:00Z\n,,,test2,4,2020-08-02T17:22:01Z\n,,,test2,5,2020-08-02T17:22:01Z\n,,,test2,6,2020-08-02T17:22:01Z\n,,,test2,5,2020-08-02T17:22:02Z\n,,,test2,3,2020-08-02T17:22:03Z\n,,,test2,4,2020-08-02T17:22:03Z\n,,,test2,3,2020-08-02T17:22:04Z\n\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   24,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Comments: nil,
+					Errors:   nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 8,
+							Line:   24,
+						},
+						File:   "map_mixwindow_test.flux",
+						Source: "outData",
+						Start: ast.Position{
+							Column: 1,
+							Line:   24,
+						},
+					},
+				},
+				Name: "outData",
+			},
+			Init: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Comments: nil,
+					Errors:   nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 2,
+							Line:   39,
+						},
+						File:   "map_mixwindow_test.flux",
+						Source: "\"\n#datatype,string,long,string,long,dateTime:RFC3339\n#group,false,false,false,false,false\n#default,_result,0,,,2000-01-01T00:00:00Z\n,result,table,_field,_value,_time\n,,,test1,2,2020-08-02T17:22:00Z\n,,,test1,3,2020-08-02T17:22:00Z\n,,,test2,4,2020-08-02T17:22:01Z\n,,,test2,5,2020-08-02T17:22:01Z\n,,,test2,6,2020-08-02T17:22:01Z\n,,,test2,5,2020-08-02T17:22:02Z\n,,,test2,3,2020-08-02T17:22:03Z\n,,,test2,4,2020-08-02T17:22:03Z\n,,,test2,3,2020-08-02T17:22:04Z\n\"",
+						Start: ast.Position{
+							Column: 5,
+							Line:   25,
+						},
+					},
+				},
+				Value: "\n#datatype,string,long,string,long,dateTime:RFC3339\n#group,false,false,false,false,false\n#default,_result,0,,,2000-01-01T00:00:00Z\n,result,table,_field,_value,_time\n,,,test1,2,2020-08-02T17:22:00Z\n,,,test1,3,2020-08-02T17:22:00Z\n,,,test2,4,2020-08-02T17:22:01Z\n,,,test2,5,2020-08-02T17:22:01Z\n,,,test2,6,2020-08-02T17:22:01Z\n,,,test2,5,2020-08-02T17:22:02Z\n,,,test2,3,2020-08-02T17:22:03Z\n,,,test2,4,2020-08-02T17:22:03Z\n,,,test2,3,2020-08-02T17:22:04Z\n",
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Comments: nil,
+				Errors:   nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 10,
+						Line:   48,
+					},
+					File:   "map_mixwindow_test.flux",
+					Source: "t_map = (table=<-) =>\n    table\n        |> drop(columns: [\"_start\", \"_stop\"])\n        |> multirow.map(\n            left: 1s,\n            right: 1,\n            fn: (window, row) => window |> count() |> map(fn: (r) => ({r with _time: row._time, _field: row._field})),\n        )",
+					Start: ast.Position{
+						Column: 1,
+						Line:   41,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Comments: nil,
+					Errors:   nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 6,
+							Line:   41,
+						},
+						File:   "map_mixwindow_test.flux",
+						Source: "t_map",
+						Start: ast.Position{
+							Column: 1,
+							Line:   41,
+						},
+					},
+				},
+				Name: "t_map",
+			},
+			Init: &ast.FunctionExpression{
+				Arrow: nil,
+				BaseNode: ast.BaseNode{
+					Comments: nil,
+					Errors:   nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 10,
+							Line:   48,
+						},
+						File:   "map_mixwindow_test.flux",
+						Source: "(table=<-) =>\n    table\n        |> drop(columns: [\"_start\", \"_stop\"])\n        |> multirow.map(\n            left: 1s,\n            right: 1,\n            fn: (window, row) => window |> count() |> map(fn: (r) => ({r with _time: row._time, _field: row._field})),\n        )",
+						Start: ast.Position{
+							Column: 9,
+							Line:   41,
+						},
+					},
+				},
+				Body: &ast.PipeExpression{
+					Argument: &ast.PipeExpression{
+						Argument: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Comments: nil,
+								Errors:   nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 10,
+										Line:   42,
+									},
+									File:   "map_mixwindow_test.flux",
+									Source: "table",
+									Start: ast.Position{
+										Column: 5,
+										Line:   42,
+									},
+								},
+							},
+							Name: "table",
+						},
+						BaseNode: ast.BaseNode{
+							Comments: nil,
+							Errors:   nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 46,
+									Line:   43,
+								},
+								File:   "map_mixwindow_test.flux",
+								Source: "table\n        |> drop(columns: [\"_start\", \"_stop\"])",
+								Start: ast.Position{
+									Column: 5,
+									Line:   42,
+								},
+							},
+						},
+						Call: &ast.CallExpression{
+							Arguments: []ast.Expression{&ast.ObjectExpression{
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 45,
+											Line:   43,
+										},
+										File:   "map_mixwindow_test.flux",
+										Source: "columns: [\"_start\", \"_stop\"]",
+										Start: ast.Position{
+											Column: 17,
+											Line:   43,
+										},
+									},
+								},
+								Lbrace: nil,
+								Properties: []*ast.Property{&ast.Property{
+									BaseNode: ast.BaseNode{
+										Comments: nil,
+										Errors:   nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 45,
+												Line:   43,
+											},
+											File:   "map_mixwindow_test.flux",
+											Source: "columns: [\"_start\", \"_stop\"]",
+											Start: ast.Position{
+												Column: 17,
+												Line:   43,
+											},
+										},
+									},
+									Comma: nil,
+									Key: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Comments: nil,
+											Errors:   nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 24,
+													Line:   43,
+												},
+												File:   "map_mixwindow_test.flux",
+												Source: "columns",
+												Start: ast.Position{
+													Column: 17,
+													Line:   43,
+												},
+											},
+										},
+										Name: "columns",
+									},
+									Separator: nil,
+									Value: &ast.ArrayExpression{
+										BaseNode: ast.BaseNode{
+											Comments: nil,
+											Errors:   nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 45,
+													Line:   43,
+												},
+												File:   "map_mixwindow_test.flux",
+												Source: "[\"_start\", \"_stop\"]",
+												Start: ast.Position{
+													Column: 26,
+													Line:   43,
+												},
+											},
+										},
+										Elements: []ast.Expression{&ast.StringLiteral{
+											BaseNode: ast.BaseNode{
+												Comments: nil,
+												Errors:   nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 35,
+														Line:   43,
+													},
+													File:   "map_mixwindow_test.flux",
+													Source: "\"_start\"",
+													Start: ast.Position{
+														Column: 27,
+														Line:   43,
+													},
+												},
+											},
+											Value: "_start",
+										}, &ast.StringLiteral{
+											BaseNode: ast.BaseNode{
+												Comments: nil,
+												Errors:   nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 44,
+														Line:   43,
+													},
+													File:   "map_mixwindow_test.flux",
+													Source: "\"_stop\"",
+													Start: ast.Position{
+														Column: 37,
+														Line:   43,
+													},
+												},
+											},
+											Value: "_stop",
+										}},
+										Lbrack: nil,
+										Rbrack: nil,
+									},
+								}},
+								Rbrace: nil,
+								With:   nil,
+							}},
+							BaseNode: ast.BaseNode{
+								Comments: nil,
+								Errors:   nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 46,
+										Line:   43,
+									},
+									File:   "map_mixwindow_test.flux",
+									Source: "drop(columns: [\"_start\", \"_stop\"])",
+									Start: ast.Position{
+										Column: 12,
+										Line:   43,
+									},
+								},
+							},
+							Callee: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 16,
+											Line:   43,
+										},
+										File:   "map_mixwindow_test.flux",
+										Source: "drop",
+										Start: ast.Position{
+											Column: 12,
+											Line:   43,
+										},
+									},
+								},
+								Name: "drop",
+							},
+							Lparen: nil,
+							Rparen: nil,
+						},
+					},
+					BaseNode: ast.BaseNode{
+						Comments: nil,
+						Errors:   nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 10,
+								Line:   48,
+							},
+							File:   "map_mixwindow_test.flux",
+							Source: "table\n        |> drop(columns: [\"_start\", \"_stop\"])\n        |> multirow.map(\n            left: 1s,\n            right: 1,\n            fn: (window, row) => window |> count() |> map(fn: (r) => ({r with _time: row._time, _field: row._field})),\n        )",
+							Start: ast.Position{
+								Column: 5,
+								Line:   42,
+							},
+						},
+					},
+					Call: &ast.CallExpression{
+						Arguments: []ast.Expression{&ast.ObjectExpression{
+							BaseNode: ast.BaseNode{
+								Comments: nil,
+								Errors:   nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 118,
+										Line:   47,
+									},
+									File:   "map_mixwindow_test.flux",
+									Source: "left: 1s,\n            right: 1,\n            fn: (window, row) => window |> count() |> map(fn: (r) => ({r with _time: row._time, _field: row._field}))",
+									Start: ast.Position{
+										Column: 13,
+										Line:   45,
+									},
+								},
+							},
+							Lbrace: nil,
+							Properties: []*ast.Property{&ast.Property{
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 21,
+											Line:   45,
+										},
+										File:   "map_mixwindow_test.flux",
+										Source: "left: 1s",
+										Start: ast.Position{
+											Column: 13,
+											Line:   45,
+										},
+									},
+								},
+								Comma: nil,
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Comments: nil,
+										Errors:   nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 17,
+												Line:   45,
+											},
+											File:   "map_mixwindow_test.flux",
+											Source: "left",
+											Start: ast.Position{
+												Column: 13,
+												Line:   45,
+											},
+										},
+									},
+									Name: "left",
+								},
+								Separator: nil,
+								Value: &ast.DurationLiteral{
+									BaseNode: ast.BaseNode{
+										Comments: nil,
+										Errors:   nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 21,
+												Line:   45,
+											},
+											File:   "map_mixwindow_test.flux",
+											Source: "1s",
+											Start: ast.Position{
+												Column: 19,
+												Line:   45,
+											},
+										},
+									},
+									Values: []ast.Duration{ast.Duration{
+										Magnitude: int64(1),
+										Unit:      "s",
+									}},
+								},
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 21,
+											Line:   46,
+										},
+										File:   "map_mixwindow_test.flux",
+										Source: "right: 1",
+										Start: ast.Position{
+											Column: 13,
+											Line:   46,
+										},
+									},
+								},
+								Comma: nil,
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Comments: nil,
+										Errors:   nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 18,
+												Line:   46,
+											},
+											File:   "map_mixwindow_test.flux",
+											Source: "right",
+											Start: ast.Position{
+												Column: 13,
+												Line:   46,
+											},
+										},
+									},
+									Name: "right",
+								},
+								Separator: nil,
+								Value: &ast.IntegerLiteral{
+									BaseNode: ast.BaseNode{
+										Comments: nil,
+										Errors:   nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 21,
+												Line:   46,
+											},
+											File:   "map_mixwindow_test.flux",
+											Source: "1",
+											Start: ast.Position{
+												Column: 20,
+												Line:   46,
+											},
+										},
+									},
+									Value: int64(1),
+								},
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 118,
+											Line:   47,
+										},
+										File:   "map_mixwindow_test.flux",
+										Source: "fn: (window, row) => window |> count() |> map(fn: (r) => ({r with _time: row._time, _field: row._field}))",
+										Start: ast.Position{
+											Column: 13,
+											Line:   47,
+										},
+									},
+								},
+								Comma: nil,
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Comments: nil,
+										Errors:   nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 15,
+												Line:   47,
+											},
+											File:   "map_mixwindow_test.flux",
+											Source: "fn",
+											Start: ast.Position{
+												Column: 13,
+												Line:   47,
+											},
+										},
+									},
+									Name: "fn",
+								},
+								Separator: nil,
+								Value: &ast.FunctionExpression{
+									Arrow: nil,
+									BaseNode: ast.BaseNode{
+										Comments: nil,
+										Errors:   nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 118,
+												Line:   47,
+											},
+											File:   "map_mixwindow_test.flux",
+											Source: "(window, row) => window |> count() |> map(fn: (r) => ({r with _time: row._time, _field: row._field}))",
+											Start: ast.Position{
+												Column: 17,
+												Line:   47,
+											},
+										},
+									},
+									Body: &ast.PipeExpression{
+										Argument: &ast.PipeExpression{
+											Argument: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Comments: nil,
+													Errors:   nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 40,
+															Line:   47,
+														},
+														File:   "map_mixwindow_test.flux",
+														Source: "window",
+														Start: ast.Position{
+															Column: 34,
+															Line:   47,
+														},
+													},
+												},
+												Name: "window",
+											},
+											BaseNode: ast.BaseNode{
+												Comments: nil,
+												Errors:   nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 51,
+														Line:   47,
+													},
+													File:   "map_mixwindow_test.flux",
+													Source: "window |> count()",
+													Start: ast.Position{
+														Column: 34,
+														Line:   47,
+													},
+												},
+											},
+											Call: &ast.CallExpression{
+												Arguments: nil,
+												BaseNode: ast.BaseNode{
+													Comments: nil,
+													Errors:   nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 51,
+															Line:   47,
+														},
+														File:   "map_mixwindow_test.flux",
+														Source: "count()",
+														Start: ast.Position{
+															Column: 44,
+															Line:   47,
+														},
+													},
+												},
+												Callee: &ast.Identifier{
+													BaseNode: ast.BaseNode{
+														Comments: nil,
+														Errors:   nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 49,
+																Line:   47,
+															},
+															File:   "map_mixwindow_test.flux",
+															Source: "count",
+															Start: ast.Position{
+																Column: 44,
+																Line:   47,
+															},
+														},
+													},
+													Name: "count",
+												},
+												Lparen: nil,
+												Rparen: nil,
+											},
+										},
+										BaseNode: ast.BaseNode{
+											Comments: nil,
+											Errors:   nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 118,
+													Line:   47,
+												},
+												File:   "map_mixwindow_test.flux",
+												Source: "window |> count() |> map(fn: (r) => ({r with _time: row._time, _field: row._field}))",
+												Start: ast.Position{
+													Column: 34,
+													Line:   47,
+												},
+											},
+										},
+										Call: &ast.CallExpression{
+											Arguments: []ast.Expression{&ast.ObjectExpression{
+												BaseNode: ast.BaseNode{
+													Comments: nil,
+													Errors:   nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 117,
+															Line:   47,
+														},
+														File:   "map_mixwindow_test.flux",
+														Source: "fn: (r) => ({r with _time: row._time, _field: row._field})",
+														Start: ast.Position{
+															Column: 59,
+															Line:   47,
+														},
+													},
+												},
+												Lbrace: nil,
+												Properties: []*ast.Property{&ast.Property{
+													BaseNode: ast.BaseNode{
+														Comments: nil,
+														Errors:   nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 117,
+																Line:   47,
+															},
+															File:   "map_mixwindow_test.flux",
+															Source: "fn: (r) => ({r with _time: row._time, _field: row._field})",
+															Start: ast.Position{
+																Column: 59,
+																Line:   47,
+															},
+														},
+													},
+													Comma: nil,
+													Key: &ast.Identifier{
+														BaseNode: ast.BaseNode{
+															Comments: nil,
+															Errors:   nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 61,
+																	Line:   47,
+																},
+																File:   "map_mixwindow_test.flux",
+																Source: "fn",
+																Start: ast.Position{
+																	Column: 59,
+																	Line:   47,
+																},
+															},
+														},
+														Name: "fn",
+													},
+													Separator: nil,
+													Value: &ast.FunctionExpression{
+														Arrow: nil,
+														BaseNode: ast.BaseNode{
+															Comments: nil,
+															Errors:   nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 117,
+																	Line:   47,
+																},
+																File:   "map_mixwindow_test.flux",
+																Source: "(r) => ({r with _time: row._time, _field: row._field})",
+																Start: ast.Position{
+																	Column: 63,
+																	Line:   47,
+																},
+															},
+														},
+														Body: &ast.ParenExpression{
+															BaseNode: ast.BaseNode{
+																Comments: nil,
+																Errors:   nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 117,
+																		Line:   47,
+																	},
+																	File:   "map_mixwindow_test.flux",
+																	Source: "({r with _time: row._time, _field: row._field})",
+																	Start: ast.Position{
+																		Column: 70,
+																		Line:   47,
+																	},
+																},
+															},
+															Expression: &ast.ObjectExpression{
+																BaseNode: ast.BaseNode{
+																	Comments: nil,
+																	Errors:   nil,
+																	Loc: &ast.SourceLocation{
+																		End: ast.Position{
+																			Column: 116,
+																			Line:   47,
+																		},
+																		File:   "map_mixwindow_test.flux",
+																		Source: "{r with _time: row._time, _field: row._field}",
+																		Start: ast.Position{
+																			Column: 71,
+																			Line:   47,
+																		},
+																	},
+																},
+																Lbrace: nil,
+																Properties: []*ast.Property{&ast.Property{
+																	BaseNode: ast.BaseNode{
+																		Comments: nil,
+																		Errors:   nil,
+																		Loc: &ast.SourceLocation{
+																			End: ast.Position{
+																				Column: 95,
+																				Line:   47,
+																			},
+																			File:   "map_mixwindow_test.flux",
+																			Source: "_time: row._time",
+																			Start: ast.Position{
+																				Column: 79,
+																				Line:   47,
+																			},
+																		},
+																	},
+																	Comma: nil,
+																	Key: &ast.Identifier{
+																		BaseNode: ast.BaseNode{
+																			Comments: nil,
+																			Errors:   nil,
+																			Loc: &ast.SourceLocation{
+																				End: ast.Position{
+																					Column: 84,
+																					Line:   47,
+																				},
+																				File:   "map_mixwindow_test.flux",
+																				Source: "_time",
+																				Start: ast.Position{
+																					Column: 79,
+																					Line:   47,
+																				},
+																			},
+																		},
+																		Name: "_time",
+																	},
+																	Separator: nil,
+																	Value: &ast.MemberExpression{
+																		BaseNode: ast.BaseNode{
+																			Comments: nil,
+																			Errors:   nil,
+																			Loc: &ast.SourceLocation{
+																				End: ast.Position{
+																					Column: 95,
+																					Line:   47,
+																				},
+																				File:   "map_mixwindow_test.flux",
+																				Source: "row._time",
+																				Start: ast.Position{
+																					Column: 86,
+																					Line:   47,
+																				},
+																			},
+																		},
+																		Lbrack: nil,
+																		Object: &ast.Identifier{
+																			BaseNode: ast.BaseNode{
+																				Comments: nil,
+																				Errors:   nil,
+																				Loc: &ast.SourceLocation{
+																					End: ast.Position{
+																						Column: 89,
+																						Line:   47,
+																					},
+																					File:   "map_mixwindow_test.flux",
+																					Source: "row",
+																					Start: ast.Position{
+																						Column: 86,
+																						Line:   47,
+																					},
+																				},
+																			},
+																			Name: "row",
+																		},
+																		Property: &ast.Identifier{
+																			BaseNode: ast.BaseNode{
+																				Comments: nil,
+																				Errors:   nil,
+																				Loc: &ast.SourceLocation{
+																					End: ast.Position{
+																						Column: 95,
+																						Line:   47,
+																					},
+																					File:   "map_mixwindow_test.flux",
+																					Source: "_time",
+																					Start: ast.Position{
+																						Column: 90,
+																						Line:   47,
+																					},
+																				},
+																			},
+																			Name: "_time",
+																		},
+																		Rbrack: nil,
+																	},
+																}, &ast.Property{
+																	BaseNode: ast.BaseNode{
+																		Comments: nil,
+																		Errors:   nil,
+																		Loc: &ast.SourceLocation{
+																			End: ast.Position{
+																				Column: 115,
+																				Line:   47,
+																			},
+																			File:   "map_mixwindow_test.flux",
+																			Source: "_field: row._field",
+																			Start: ast.Position{
+																				Column: 97,
+																				Line:   47,
+																			},
+																		},
+																	},
+																	Comma: nil,
+																	Key: &ast.Identifier{
+																		BaseNode: ast.BaseNode{
+																			Comments: nil,
+																			Errors:   nil,
+																			Loc: &ast.SourceLocation{
+																				End: ast.Position{
+																					Column: 103,
+																					Line:   47,
+																				},
+																				File:   "map_mixwindow_test.flux",
+																				Source: "_field",
+																				Start: ast.Position{
+																					Column: 97,
+																					Line:   47,
+																				},
+																			},
+																		},
+																		Name: "_field",
+																	},
+																	Separator: nil,
+																	Value: &ast.MemberExpression{
+																		BaseNode: ast.BaseNode{
+																			Comments: nil,
+																			Errors:   nil,
+																			Loc: &ast.SourceLocation{
+																				End: ast.Position{
+																					Column: 115,
+																					Line:   47,
+																				},
+																				File:   "map_mixwindow_test.flux",
+																				Source: "row._field",
+																				Start: ast.Position{
+																					Column: 105,
+																					Line:   47,
+																				},
+																			},
+																		},
+																		Lbrack: nil,
+																		Object: &ast.Identifier{
+																			BaseNode: ast.BaseNode{
+																				Comments: nil,
+																				Errors:   nil,
+																				Loc: &ast.SourceLocation{
+																					End: ast.Position{
+																						Column: 108,
+																						Line:   47,
+																					},
+																					File:   "map_mixwindow_test.flux",
+																					Source: "row",
+																					Start: ast.Position{
+																						Column: 105,
+																						Line:   47,
+																					},
+																				},
+																			},
+																			Name: "row",
+																		},
+																		Property: &ast.Identifier{
+																			BaseNode: ast.BaseNode{
+																				Comments: nil,
+																				Errors:   nil,
+																				Loc: &ast.SourceLocation{
+																					End: ast.Position{
+																						Column: 115,
+																						Line:   47,
+																					},
+																					File:   "map_mixwindow_test.flux",
+																					Source: "_field",
+																					Start: ast.Position{
+																						Column: 109,
+																						Line:   47,
+																					},
+																				},
+																			},
+																			Name: "_field",
+																		},
+																		Rbrack: nil,
+																	},
+																}},
+																Rbrace: nil,
+																With: &ast.Identifier{
+																	BaseNode: ast.BaseNode{
+																		Comments: nil,
+																		Errors:   nil,
+																		Loc: &ast.SourceLocation{
+																			End: ast.Position{
+																				Column: 73,
+																				Line:   47,
+																			},
+																			File:   "map_mixwindow_test.flux",
+																			Source: "r",
+																			Start: ast.Position{
+																				Column: 72,
+																				Line:   47,
+																			},
+																		},
+																	},
+																	Name: "r",
+																},
+															},
+															Lparen: nil,
+															Rparen: nil,
+														},
+														Lparen: nil,
+														Params: []*ast.Property{&ast.Property{
+															BaseNode: ast.BaseNode{
+																Comments: nil,
+																Errors:   nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 65,
+																		Line:   47,
+																	},
+																	File:   "map_mixwindow_test.flux",
+																	Source: "r",
+																	Start: ast.Position{
+																		Column: 64,
+																		Line:   47,
+																	},
+																},
+															},
+															Comma: nil,
+															Key: &ast.Identifier{
+																BaseNode: ast.BaseNode{
+																	Comments: nil,
+																	Errors:   nil,
+																	Loc: &ast.SourceLocation{
+																		End: ast.Position{
+																			Column: 65,
+																			Line:   47,
+																		},
+																		File:   "map_mixwindow_test.flux",
+																		Source: "r",
+																		Start: ast.Position{
+																			Column: 64,
+																			Line:   47,
+																		},
+																	},
+																},
+																Name: "r",
+															},
+															Separator: nil,
+															Value:     nil,
+														}},
+														Rparan: nil,
+													},
+												}},
+												Rbrace: nil,
+												With:   nil,
+											}},
+											BaseNode: ast.BaseNode{
+												Comments: nil,
+												Errors:   nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 118,
+														Line:   47,
+													},
+													File:   "map_mixwindow_test.flux",
+													Source: "map(fn: (r) => ({r with _time: row._time, _field: row._field}))",
+													Start: ast.Position{
+														Column: 55,
+														Line:   47,
+													},
+												},
+											},
+											Callee: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Comments: nil,
+													Errors:   nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 58,
+															Line:   47,
+														},
+														File:   "map_mixwindow_test.flux",
+														Source: "map",
+														Start: ast.Position{
+															Column: 55,
+															Line:   47,
+														},
+													},
+												},
+												Name: "map",
+											},
+											Lparen: nil,
+											Rparen: nil,
+										},
+									},
+									Lparen: nil,
+									Params: []*ast.Property{&ast.Property{
+										BaseNode: ast.BaseNode{
+											Comments: nil,
+											Errors:   nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 24,
+													Line:   47,
+												},
+												File:   "map_mixwindow_test.flux",
+												Source: "window",
+												Start: ast.Position{
+													Column: 18,
+													Line:   47,
+												},
+											},
+										},
+										Comma: nil,
+										Key: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Comments: nil,
+												Errors:   nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 24,
+														Line:   47,
+													},
+													File:   "map_mixwindow_test.flux",
+													Source: "window",
+													Start: ast.Position{
+														Column: 18,
+														Line:   47,
+													},
+												},
+											},
+											Name: "window",
+										},
+										Separator: nil,
+										Value:     nil,
+									}, &ast.Property{
+										BaseNode: ast.BaseNode{
+											Comments: nil,
+											Errors:   nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 29,
+													Line:   47,
+												},
+												File:   "map_mixwindow_test.flux",
+												Source: "row",
+												Start: ast.Position{
+													Column: 26,
+													Line:   47,
+												},
+											},
+										},
+										Comma: nil,
+										Key: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Comments: nil,
+												Errors:   nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 29,
+														Line:   47,
+													},
+													File:   "map_mixwindow_test.flux",
+													Source: "row",
+													Start: ast.Position{
+														Column: 26,
+														Line:   47,
+													},
+												},
+											},
+											Name: "row",
+										},
+										Separator: nil,
+										Value:     nil,
+									}},
+									Rparan: nil,
+								},
+							}},
+							Rbrace: nil,
+							With:   nil,
+						}},
+						BaseNode: ast.BaseNode{
+							Comments: nil,
+							Errors:   nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 10,
+									Line:   48,
+								},
+								File:   "map_mixwindow_test.flux",
+								Source: "multirow.map(\n            left: 1s,\n            right: 1,\n            fn: (window, row) => window |> count() |> map(fn: (r) => ({r with _time: row._time, _field: row._field})),\n        )",
+								Start: ast.Position{
+									Column: 12,
+									Line:   44,
+								},
+							},
+						},
+						Callee: &ast.MemberExpression{
+							BaseNode: ast.BaseNode{
+								Comments: nil,
+								Errors:   nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 24,
+										Line:   44,
+									},
+									File:   "map_mixwindow_test.flux",
+									Source: "multirow.map",
+									Start: ast.Position{
+										Column: 12,
+										Line:   44,
+									},
+								},
+							},
+							Lbrack: nil,
+							Object: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 20,
+											Line:   44,
+										},
+										File:   "map_mixwindow_test.flux",
+										Source: "multirow",
+										Start: ast.Position{
+											Column: 12,
+											Line:   44,
+										},
+									},
+								},
+								Name: "multirow",
+							},
+							Property: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 24,
+											Line:   44,
+										},
+										File:   "map_mixwindow_test.flux",
+										Source: "map",
+										Start: ast.Position{
+											Column: 21,
+											Line:   44,
+										},
+									},
+								},
+								Name: "map",
+							},
+							Rbrack: nil,
+						},
+						Lparen: nil,
+						Rparen: nil,
+					},
+				},
+				Lparen: nil,
+				Params: []*ast.Property{&ast.Property{
+					BaseNode: ast.BaseNode{
+						Comments: nil,
+						Errors:   nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 18,
+								Line:   41,
+							},
+							File:   "map_mixwindow_test.flux",
+							Source: "table=<-",
+							Start: ast.Position{
+								Column: 10,
+								Line:   41,
+							},
+						},
+					},
+					Comma: nil,
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Comments: nil,
+							Errors:   nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 15,
+									Line:   41,
+								},
+								File:   "map_mixwindow_test.flux",
+								Source: "table",
+								Start: ast.Position{
+									Column: 10,
+									Line:   41,
+								},
+							},
+						},
+						Name: "table",
+					},
+					Separator: nil,
+					Value: &ast.PipeLiteral{BaseNode: ast.BaseNode{
+						Comments: nil,
+						Errors:   nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 18,
+								Line:   41,
+							},
+							File:   "map_mixwindow_test.flux",
+							Source: "<-",
+							Start: ast.Position{
+								Column: 16,
+								Line:   41,
+							},
+						},
+					}},
+				}},
+				Rparan: nil,
+			},
+		}, &ast.TestStatement{
+			Assignment: &ast.VariableAssignment{
+				BaseNode: ast.BaseNode{
+					Comments: nil,
+					Errors:   nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 110,
+							Line:   50,
+						},
+						File:   "map_mixwindow_test.flux",
+						Source: "_map = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_map})",
+						Start: ast.Position{
+							Column: 6,
+							Line:   50,
+						},
+					},
+				},
+				ID: &ast.Identifier{
+					BaseNode: ast.BaseNode{
+						Comments: nil,
+						Errors:   nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 10,
+								Line:   50,
+							},
+							File:   "map_mixwindow_test.flux",
+							Source: "_map",
+							Start: ast.Position{
+								Column: 6,
+								Line:   50,
+							},
+						},
+					},
+					Name: "_map",
+				},
+				Init: &ast.FunctionExpression{
+					Arrow: nil,
+					BaseNode: ast.BaseNode{
+						Comments: nil,
+						Errors:   nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 110,
+								Line:   50,
+							},
+							File:   "map_mixwindow_test.flux",
+							Source: "() => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_map})",
+							Start: ast.Position{
+								Column: 13,
+								Line:   50,
+							},
+						},
+					},
+					Body: &ast.ParenExpression{
+						BaseNode: ast.BaseNode{
+							Comments: nil,
+							Errors:   nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 110,
+									Line:   50,
+								},
+								File:   "map_mixwindow_test.flux",
+								Source: "({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_map})",
+								Start: ast.Position{
+									Column: 19,
+									Line:   50,
+								},
+							},
+						},
+						Expression: &ast.ObjectExpression{
+							BaseNode: ast.BaseNode{
+								Comments: nil,
+								Errors:   nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 109,
+										Line:   50,
+									},
+									File:   "map_mixwindow_test.flux",
+									Source: "{input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_map}",
+									Start: ast.Position{
+										Column: 20,
+										Line:   50,
+									},
+								},
+							},
+							Lbrace: nil,
+							Properties: []*ast.Property{&ast.Property{
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 60,
+											Line:   50,
+										},
+										File:   "map_mixwindow_test.flux",
+										Source: "input: testing.loadStorage(csv: inData)",
+										Start: ast.Position{
+											Column: 21,
+											Line:   50,
+										},
+									},
+								},
+								Comma: nil,
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Comments: nil,
+										Errors:   nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 26,
+												Line:   50,
+											},
+											File:   "map_mixwindow_test.flux",
+											Source: "input",
+											Start: ast.Position{
+												Column: 21,
+												Line:   50,
+											},
+										},
+									},
+									Name: "input",
+								},
+								Separator: nil,
+								Value: &ast.CallExpression{
+									Arguments: []ast.Expression{&ast.ObjectExpression{
+										BaseNode: ast.BaseNode{
+											Comments: nil,
+											Errors:   nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 59,
+													Line:   50,
+												},
+												File:   "map_mixwindow_test.flux",
+												Source: "csv: inData",
+												Start: ast.Position{
+													Column: 48,
+													Line:   50,
+												},
+											},
+										},
+										Lbrace: nil,
+										Properties: []*ast.Property{&ast.Property{
+											BaseNode: ast.BaseNode{
+												Comments: nil,
+												Errors:   nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 59,
+														Line:   50,
+													},
+													File:   "map_mixwindow_test.flux",
+													Source: "csv: inData",
+													Start: ast.Position{
+														Column: 48,
+														Line:   50,
+													},
+												},
+											},
+											Comma: nil,
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Comments: nil,
+													Errors:   nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 51,
+															Line:   50,
+														},
+														File:   "map_mixwindow_test.flux",
+														Source: "csv",
+														Start: ast.Position{
+															Column: 48,
+															Line:   50,
+														},
+													},
+												},
+												Name: "csv",
+											},
+											Separator: nil,
+											Value: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Comments: nil,
+													Errors:   nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 59,
+															Line:   50,
+														},
+														File:   "map_mixwindow_test.flux",
+														Source: "inData",
+														Start: ast.Position{
+															Column: 53,
+															Line:   50,
+														},
+													},
+												},
+												Name: "inData",
+											},
+										}},
+										Rbrace: nil,
+										With:   nil,
+									}},
+									BaseNode: ast.BaseNode{
+										Comments: nil,
+										Errors:   nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 60,
+												Line:   50,
+											},
+											File:   "map_mixwindow_test.flux",
+											Source: "testing.loadStorage(csv: inData)",
+											Start: ast.Position{
+												Column: 28,
+												Line:   50,
+											},
+										},
+									},
+									Callee: &ast.MemberExpression{
+										BaseNode: ast.BaseNode{
+											Comments: nil,
+											Errors:   nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 47,
+													Line:   50,
+												},
+												File:   "map_mixwindow_test.flux",
+												Source: "testing.loadStorage",
+												Start: ast.Position{
+													Column: 28,
+													Line:   50,
+												},
+											},
+										},
+										Lbrack: nil,
+										Object: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Comments: nil,
+												Errors:   nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 35,
+														Line:   50,
+													},
+													File:   "map_mixwindow_test.flux",
+													Source: "testing",
+													Start: ast.Position{
+														Column: 28,
+														Line:   50,
+													},
+												},
+											},
+											Name: "testing",
+										},
+										Property: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Comments: nil,
+												Errors:   nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 47,
+														Line:   50,
+													},
+													File:   "map_mixwindow_test.flux",
+													Source: "loadStorage",
+													Start: ast.Position{
+														Column: 36,
+														Line:   50,
+													},
+												},
+											},
+											Name: "loadStorage",
+										},
+										Rbrack: nil,
+									},
+									Lparen: nil,
+									Rparen: nil,
+								},
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 97,
+											Line:   50,
+										},
+										File:   "map_mixwindow_test.flux",
+										Source: "want: testing.loadMem(csv: outData)",
+										Start: ast.Position{
+											Column: 62,
+											Line:   50,
+										},
+									},
+								},
+								Comma: nil,
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Comments: nil,
+										Errors:   nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 66,
+												Line:   50,
+											},
+											File:   "map_mixwindow_test.flux",
+											Source: "want",
+											Start: ast.Position{
+												Column: 62,
+												Line:   50,
+											},
+										},
+									},
+									Name: "want",
+								},
+								Separator: nil,
+								Value: &ast.CallExpression{
+									Arguments: []ast.Expression{&ast.ObjectExpression{
+										BaseNode: ast.BaseNode{
+											Comments: nil,
+											Errors:   nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 96,
+													Line:   50,
+												},
+												File:   "map_mixwindow_test.flux",
+												Source: "csv: outData",
+												Start: ast.Position{
+													Column: 84,
+													Line:   50,
+												},
+											},
+										},
+										Lbrace: nil,
+										Properties: []*ast.Property{&ast.Property{
+											BaseNode: ast.BaseNode{
+												Comments: nil,
+												Errors:   nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 96,
+														Line:   50,
+													},
+													File:   "map_mixwindow_test.flux",
+													Source: "csv: outData",
+													Start: ast.Position{
+														Column: 84,
+														Line:   50,
+													},
+												},
+											},
+											Comma: nil,
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Comments: nil,
+													Errors:   nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 87,
+															Line:   50,
+														},
+														File:   "map_mixwindow_test.flux",
+														Source: "csv",
+														Start: ast.Position{
+															Column: 84,
+															Line:   50,
+														},
+													},
+												},
+												Name: "csv",
+											},
+											Separator: nil,
+											Value: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Comments: nil,
+													Errors:   nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 96,
+															Line:   50,
+														},
+														File:   "map_mixwindow_test.flux",
+														Source: "outData",
+														Start: ast.Position{
+															Column: 89,
+															Line:   50,
+														},
+													},
+												},
+												Name: "outData",
+											},
+										}},
+										Rbrace: nil,
+										With:   nil,
+									}},
+									BaseNode: ast.BaseNode{
+										Comments: nil,
+										Errors:   nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 97,
+												Line:   50,
+											},
+											File:   "map_mixwindow_test.flux",
+											Source: "testing.loadMem(csv: outData)",
+											Start: ast.Position{
+												Column: 68,
+												Line:   50,
+											},
+										},
+									},
+									Callee: &ast.MemberExpression{
+										BaseNode: ast.BaseNode{
+											Comments: nil,
+											Errors:   nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 83,
+													Line:   50,
+												},
+												File:   "map_mixwindow_test.flux",
+												Source: "testing.loadMem",
+												Start: ast.Position{
+													Column: 68,
+													Line:   50,
+												},
+											},
+										},
+										Lbrack: nil,
+										Object: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Comments: nil,
+												Errors:   nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 75,
+														Line:   50,
+													},
+													File:   "map_mixwindow_test.flux",
+													Source: "testing",
+													Start: ast.Position{
+														Column: 68,
+														Line:   50,
+													},
+												},
+											},
+											Name: "testing",
+										},
+										Property: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Comments: nil,
+												Errors:   nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 83,
+														Line:   50,
+													},
+													File:   "map_mixwindow_test.flux",
+													Source: "loadMem",
+													Start: ast.Position{
+														Column: 76,
+														Line:   50,
+													},
+												},
+											},
+											Name: "loadMem",
+										},
+										Rbrack: nil,
+									},
+									Lparen: nil,
+									Rparen: nil,
+								},
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 108,
+											Line:   50,
+										},
+										File:   "map_mixwindow_test.flux",
+										Source: "fn: t_map",
+										Start: ast.Position{
+											Column: 99,
+											Line:   50,
+										},
+									},
+								},
+								Comma: nil,
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Comments: nil,
+										Errors:   nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 101,
+												Line:   50,
+											},
+											File:   "map_mixwindow_test.flux",
+											Source: "fn",
+											Start: ast.Position{
+												Column: 99,
+												Line:   50,
+											},
+										},
+									},
+									Name: "fn",
+								},
+								Separator: nil,
+								Value: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Comments: nil,
+										Errors:   nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 108,
+												Line:   50,
+											},
+											File:   "map_mixwindow_test.flux",
+											Source: "t_map",
+											Start: ast.Position{
+												Column: 103,
+												Line:   50,
+											},
+										},
+									},
+									Name: "t_map",
+								},
+							}},
+							Rbrace: nil,
+							With:   nil,
+						},
+						Lparen: nil,
+						Rparen: nil,
+					},
+					Lparen: nil,
+					Params: []*ast.Property{},
+					Rparan: nil,
+				},
+			},
+			BaseNode: ast.BaseNode{
+				Comments: nil,
+				Errors:   nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 110,
+						Line:   50,
+					},
+					File:   "map_mixwindow_test.flux",
+					Source: "test _map = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_map})",
+					Start: ast.Position{
+						Column: 1,
+						Line:   50,
+					},
+				},
+			},
+		}},
+		Eof: nil,
+		Imports: []*ast.ImportDeclaration{&ast.ImportDeclaration{
+			As: nil,
+			BaseNode: ast.BaseNode{
+				Comments: nil,
+				Errors:   nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 17,
+						Line:   4,
+					},
+					File:   "map_mixwindow_test.flux",
+					Source: "import \"testing\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   4,
+					},
+				},
+			},
+			Path: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Comments: nil,
+					Errors:   nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 17,
+							Line:   4,
+						},
+						File:   "map_mixwindow_test.flux",
+						Source: "\"testing\"",
+						Start: ast.Position{
+							Column: 8,
+							Line:   4,
+						},
+					},
+				},
+				Value: "testing",
+			},
+		}, &ast.ImportDeclaration{
+			As: nil,
+			BaseNode: ast.BaseNode{
+				Comments: nil,
+				Errors:   nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 41,
+						Line:   5,
+					},
+					File:   "map_mixwindow_test.flux",
+					Source: "import \"contrib/lazarenkovegor/multirow\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   5,
+					},
+				},
+			},
+			Path: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Comments: nil,
+					Errors:   nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 41,
+							Line:   5,
+						},
+						File:   "map_mixwindow_test.flux",
+						Source: "\"contrib/lazarenkovegor/multirow\"",
+						Start: ast.Position{
+							Column: 8,
+							Line:   5,
+						},
+					},
+				},
+				Value: "contrib/lazarenkovegor/multirow",
+			},
+		}},
+		Metadata: "parser-type=rust",
+		Name:     "map_mixwindow_test.flux",
+		Package: &ast.PackageClause{
+			BaseNode: ast.BaseNode{
+				Comments: nil,
+				Errors:   nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 22,
+						Line:   1,
+					},
+					File:   "map_mixwindow_test.flux",
+					Source: "package multirow_test",
+					Start: ast.Position{
+						Column: 1,
+						Line:   1,
+					},
+				},
+			},
+			Name: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Comments: nil,
+					Errors:   nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 22,
+							Line:   1,
+						},
+						File:   "map_mixwindow_test.flux",
+						Source: "multirow_test",
+						Start: ast.Position{
+							Column: 9,
+							Line:   1,
+						},
+					},
+				},
+				Name: "multirow_test",
+			},
+		},
+	}, &ast.File{
+		BaseNode: ast.BaseNode{
+			Comments: nil,
+			Errors:   nil,
+			Loc: &ast.SourceLocation{
+				End: ast.Position{
+					Column: 110,
 					Line:   46,
 				},
 				File:   "map_rownumber_test.flux",
