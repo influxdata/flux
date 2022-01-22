@@ -216,6 +216,9 @@ func createMapOpSpec(args flux.Arguments, a *flux.Administration) (flux.Operatio
 		right = val
 	}
 	spec.WindowFilter, err = makeWindowFilter(left, right)
+	if err != nil {
+		return nil, err
+	}
 
 	if n, found, err := args.GetArrayAllowEmpty("virtual", semantic.String); err != nil {
 		return nil, err

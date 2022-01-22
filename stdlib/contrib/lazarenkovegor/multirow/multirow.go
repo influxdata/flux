@@ -587,89 +587,98 @@ func (s *TableBuilder) reserve() {
 	}
 }
 
+func ReadTableObject(ctx context.Context, tableObject *flux.TableObject, mem *memory.Allocator, use func(reader flux.ColReader) error) error {
+	pr, err := lang.CompileTableObject(ctx, tableObject, time.Now())
+	if err != nil {
+		return err
+	}
+	q, err := pr.Start(ctx, mem)
+	if err != nil {
+		return err
+	}
+	defer q.Done()
+
+	r := <-q.Results()
+	if err = q.Err(); err != nil {
+		return err
+	}
+
+	return r.Tables().Do(func(t flux.Table) error {
+		return t.Do(use)
+	})
+}
+
 func (s *TableBuilder) AppendRows(ctx context.Context, res values.Value, needLastObject bool) (values.Object, error) {
 	if to, ok := res.(*flux.TableObject); ok {
-		pr, err := lang.CompileTableObject(ctx, to, time.Now())
-		if err != nil {
-			return nil, err
-		}
-		q, err := pr.Start(ctx, s.mem)
-		if err != nil {
-			return nil, err
-		}
-		r := <-q.Results()
 		var obj values.Object
-		err = r.Tables().Do(func(t flux.Table) error {
-			return t.Do(func(reader flux.ColReader) error {
-				rowCount := reader.Len()
-				if rowCount == 0 {
-					return nil
+		err := ReadTableObject(ctx, to, s.mem, func(reader flux.ColReader) error {
+			rowCount := reader.Len()
+			if rowCount == 0 {
+				return nil
+			}
+			cols := reader.Cols()
+			part, err := s.BeginPart(rowCount, cols)
+			if err != nil {
+				return err
+			}
+			defer part.End()
+
+			colCount := len(cols)
+			memTable := make(TableValues, colCount)
+			for colNum := 0; colNum < colCount; colNum++ {
+				memTable[colNum] = table.Values(reader, colNum)
+			}
+
+			rowGroup := make([]*Group, rowCount)
+			for rowNum := 0; rowNum < rowCount; rowNum++ {
+				row := make([]values.Value, colCount)
+				for _, colNum := range part.KeyColumnsNums() {
+					row[colNum] = memTable.Get(rowNum, colNum, cols[colNum].Type)
 				}
-				cols := reader.Cols()
-				part, err := s.BeginPart(rowCount, cols)
-				if err != nil {
+				gr := part.LookupGroup(row)
+				rowGroup[rowNum] = gr
+				gr.needReserve++
+			}
+			s.reserve()
+
+			for rowNum := 0; rowNum < rowCount; rowNum++ {
+				row := make([]values.Value, colCount)
+				for _, colNum := range part.DataColumnsNums() {
+					row[colNum] = memTable.Get(rowNum, colNum, cols[colNum].Type)
+				}
+				gr := rowGroup[rowNum]
+				if err := part.AppendData(gr, row); err != nil {
 					return err
 				}
-				defer part.End()
-
-				colCount := len(cols)
-				memTable := make(TableValues, colCount)
-				for colNum := 0; colNum < colCount; colNum++ {
-					memTable[colNum] = table.Values(reader, colNum)
-				}
-
-				rowGroup := make([]*Group, rowCount)
-				for rowNum := 0; rowNum < rowCount; rowNum++ {
-					row := make([]values.Value, colCount)
-					for _, colNum := range part.KeyColumnsNums() {
-
-						row[colNum] = memTable.Get(rowNum, colNum, cols[colNum].Type)
-					}
-					gr := part.LookupGroup(row)
-					rowGroup[rowNum] = gr
-					gr.needReserve++
-				}
-				s.reserve()
-
-				for rowNum := 0; rowNum < rowCount; rowNum++ {
-					row := make([]values.Value, colCount)
+				if rowNum == rowCount-1 && needLastObject {
+					objKV := make(map[string]values.Value)
 					for _, colNum := range part.DataColumnsNums() {
-						row[colNum] = memTable.Get(rowNum, colNum, cols[colNum].Type)
-					}
-					gr := rowGroup[rowNum]
-					if err := part.AppendData(gr, row); err != nil {
-						return err
-					}
-					if rowNum == rowCount-1 && needLastObject {
-						objKV := make(map[string]values.Value)
-						for _, colNum := range part.DataColumnsNums() {
-							val := memTable.Get(rowNum, colNum, cols[colNum].Type)
-							if val.IsNull() {
-								continue
-							}
-							objKV[cols[colNum].Label] = val
+						val := memTable.Get(rowNum, colNum, cols[colNum].Type)
+						if val.IsNull() {
+							continue
 						}
-						for _, colNum := range part.VirtualColumnsNums() {
-							val := memTable.Get(rowNum, colNum, cols[colNum].Type)
-							if val.IsNull() {
-								continue
-							}
-							objKV[cols[colNum].Label] = val
-						}
-						for i, m := range gr.GroupKey.Cols() {
-							val := gr.GroupKey.Value(i)
-							if val.IsNull() {
-								continue
-							}
-							objKV[m.Label] = val
-						}
-						obj = values.NewObjectWithValues(objKV)
+						objKV[cols[colNum].Label] = val
 					}
-					gr.RowCount++
+					for _, colNum := range part.VirtualColumnsNums() {
+						val := memTable.Get(rowNum, colNum, cols[colNum].Type)
+						if val.IsNull() {
+							continue
+						}
+						objKV[cols[colNum].Label] = val
+					}
+					for i, m := range gr.GroupKey.Cols() {
+						val := gr.GroupKey.Value(i)
+						if val.IsNull() {
+							continue
+						}
+						objKV[m.Label] = val
+					}
+					obj = values.NewObjectWithValues(objKV)
 				}
+				gr.RowCount++
+			}
 
-				return nil
-			})
+			return nil
 		})
 
 		return obj, err
