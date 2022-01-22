@@ -624,61 +624,10 @@ func (s *TableBuilder) AppendRows(ctx context.Context, res values.Value, needLas
 			defer part.End()
 
 			colCount := len(cols)
-			memTable := make(TableValues, colCount)
-			for colNum := 0; colNum < colCount; colNum++ {
-				memTable[colNum] = table.Values(reader, colNum)
-			}
-
-			rowGroup := make([]*Group, rowCount)
-			for rowNum := 0; rowNum < rowCount; rowNum++ {
-				row := make([]values.Value, colCount)
-				for _, colNum := range part.KeyColumnsNums() {
-					row[colNum] = memTable.Get(rowNum, colNum, cols[colNum].Type)
-				}
-				gr := part.LookupGroup(row)
-				rowGroup[rowNum] = gr
-				gr.needReserve++
-			}
-			s.reserve()
-
-			for rowNum := 0; rowNum < rowCount; rowNum++ {
-				row := make([]values.Value, colCount)
-				for _, colNum := range part.DataColumnsNums() {
-					row[colNum] = memTable.Get(rowNum, colNum, cols[colNum].Type)
-				}
-				gr := rowGroup[rowNum]
-				if err := part.AppendData(gr, row); err != nil {
-					return err
-				}
-				if rowNum == rowCount-1 && needLastObject {
-					objKV := make(map[string]values.Value)
-					for _, colNum := range part.DataColumnsNums() {
-						val := memTable.Get(rowNum, colNum, cols[colNum].Type)
-						if val.IsNull() {
-							continue
-						}
-						objKV[cols[colNum].Label] = val
-					}
-					for _, colNum := range part.VirtualColumnsNums() {
-						val := memTable.Get(rowNum, colNum, cols[colNum].Type)
-						if val.IsNull() {
-							continue
-						}
-						objKV[cols[colNum].Label] = val
-					}
-					for i, m := range gr.GroupKey.Cols() {
-						val := gr.GroupKey.Value(i)
-						if val.IsNull() {
-							continue
-						}
-						objKV[m.Label] = val
-					}
-					obj = values.NewObjectWithValues(objKV)
-				}
-				gr.RowCount++
-			}
-
-			return nil
+			memTable := makeTableValues(reader, colCount)
+			rowGroup := s.appendKeys(rowCount, colCount, part, memTable, cols)
+			obj, err = s.appendValues(rowCount, colCount, part, memTable, cols, rowGroup, needLastObject)
+			return err
 		})
 
 		return obj, err
@@ -705,6 +654,70 @@ func (s *TableBuilder) AppendRows(ctx context.Context, res values.Value, needLas
 		obj := values.NewObjectWithValues(map[string]values.Value{s.defaultValueColumn: res})
 		return obj, s.addRecord(obj)
 	}
+}
+
+func makeTableValues(reader flux.ColReader, colCount int) TableValues {
+	memTable := make(TableValues, colCount)
+	for colNum := 0; colNum < colCount; colNum++ {
+		memTable[colNum] = table.Values(reader, colNum)
+	}
+	return memTable
+}
+
+func (s *TableBuilder) appendValues(rowCount int, colCount int, part Part, memTable TableValues, cols []flux.ColMeta, rowGroup []*Group, needLastObject bool) (values.Object, error) {
+	var obj values.Object
+	for rowNum := 0; rowNum < rowCount; rowNum++ {
+		row := make([]values.Value, colCount)
+		for _, colNum := range part.DataColumnsNums() {
+			row[colNum] = memTable.Get(rowNum, colNum, cols[colNum].Type)
+		}
+		gr := rowGroup[rowNum]
+		if err := part.AppendData(gr, row); err != nil {
+			return nil, err
+		}
+		if rowNum == rowCount-1 && needLastObject {
+			objKV := make(map[string]values.Value)
+			for _, colNum := range part.DataColumnsNums() {
+				val := memTable.Get(rowNum, colNum, cols[colNum].Type)
+				if val.IsNull() {
+					continue
+				}
+				objKV[cols[colNum].Label] = val
+			}
+			for _, colNum := range part.VirtualColumnsNums() {
+				val := memTable.Get(rowNum, colNum, cols[colNum].Type)
+				if val.IsNull() {
+					continue
+				}
+				objKV[cols[colNum].Label] = val
+			}
+			for i, m := range gr.GroupKey.Cols() {
+				val := gr.GroupKey.Value(i)
+				if val.IsNull() {
+					continue
+				}
+				objKV[m.Label] = val
+			}
+			obj = values.NewObjectWithValues(objKV)
+		}
+		gr.RowCount++
+	}
+	return obj, nil
+}
+
+func (s *TableBuilder) appendKeys(rowCount int, colCount int, part Part, memTable TableValues, cols []flux.ColMeta) []*Group {
+	rowGroup := make([]*Group, rowCount)
+	for rowNum := 0; rowNum < rowCount; rowNum++ {
+		row := make([]values.Value, colCount)
+		for _, colNum := range part.KeyColumnsNums() {
+			row[colNum] = memTable.Get(rowNum, colNum, cols[colNum].Type)
+		}
+		gr := part.LookupGroup(row)
+		rowGroup[rowNum] = gr
+		gr.needReserve++
+	}
+	s.reserve()
+	return rowGroup
 }
 
 func (s *TableBuilder) addRecord(v values.Object) error {
