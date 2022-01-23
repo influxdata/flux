@@ -95,11 +95,21 @@ func makeWindowFilter(left values.Value, right values.Value) (*WindowFilter, err
 				getFrom = func(filter *WindowFilter, reader flux.ColReader, curIndex int, lastIndex int) int {
 					from := curIndex
 					minTime := int64(values.Time(reader.Times(filter.TimeColIndex).Value(curIndex)).Add(val.Mul(-1)))
+					d := 1
 					for from > 0 {
-						if reader.Times(filter.TimeColIndex).Value(from-1) < minTime {
-							break
+						i := from - d
+						if i < 0 {
+							i = 0
 						}
-						from--
+						if reader.Times(filter.TimeColIndex).Value(i) < minTime {
+							if d == 1 {
+								break
+							}
+							d = 1
+							continue
+						}
+						from = i
+						d = d << 1
 					}
 					return from
 				}
@@ -127,15 +137,25 @@ func makeWindowFilter(left values.Value, right values.Value) (*WindowFilter, err
 				val := right.Duration()
 				res.TimeColIndex = -1
 				getTo = func(filter *WindowFilter, reader flux.ColReader, curIndex int, lastIndex int) int {
-					from := curIndex
+					to := curIndex
 					maxTime := int64(values.Time(reader.Times(filter.TimeColIndex).Value(curIndex)).Add(val))
-					for from < lastIndex {
-						if reader.Times(filter.TimeColIndex).Value(from+1) > maxTime {
-							break
+					d := 1
+					for to < lastIndex {
+						i := to + d
+						if i > lastIndex {
+							i = lastIndex
 						}
-						from++
+						if reader.Times(filter.TimeColIndex).Value(to+1) > maxTime {
+							if d == 1 {
+								break
+							}
+							d = 1
+							continue
+						}
+						to = i
+						d = d << 1
 					}
-					return from
+					return to
 				}
 			default:
 				return nil, errors.Newf(codes.Invalid, "invalid left param type %T", bt)
