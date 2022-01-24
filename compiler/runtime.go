@@ -39,6 +39,10 @@ func (c compiledFn) Eval(ctx context.Context, input values.Object) (values.Value
 	inputScope := nestScope(c.parentScope)
 	input.Range(func(k string, v values.Value) {
 		inputScope.Set(k, v)
+		vec, ok := v.(values.Vector)
+		if ok {
+			vec.Retain()
+		}
 	})
 
 	return eval(ctx, c.root, inputScope)
@@ -80,6 +84,9 @@ func eval(ctx context.Context, e Evaluator, scope Scope) (values.Value, error) {
 	v, err := e.Eval(ctx, scope)
 	if err != nil {
 		return nil, err
+	}
+	if vec, ok := v.(values.Vector); ok {
+		vec.Retain()
 	}
 	return v, nil
 }
@@ -140,7 +147,7 @@ func (e *stringExpressionEvaluator) Type() semantic.MonoType {
 func (e *stringExpressionEvaluator) Eval(ctx context.Context, scope Scope) (values.Value, error) {
 	var b strings.Builder
 	for _, p := range e.parts {
-		v, err := p.Eval(ctx, scope)
+		v, err := eval(ctx, p, scope)
 		if err != nil {
 			return nil, err
 		}
@@ -174,7 +181,7 @@ func (*interpolatedEvaluator) Type() semantic.MonoType {
 }
 
 func (e *interpolatedEvaluator) Eval(ctx context.Context, scope Scope) (values.Value, error) {
-	o, err := e.s.Eval(ctx, scope)
+	o, err := eval(ctx, e.s, scope)
 	if err != nil {
 		return nil, err
 	}
@@ -195,7 +202,7 @@ func (e *objEvaluator) Type() semantic.MonoType {
 func (e *objEvaluator) Eval(ctx context.Context, scope Scope) (values.Value, error) {
 	return values.BuildObject(func(set values.ObjectSetter) error {
 		if e.with != nil {
-			with, err := e.with.Eval(ctx, scope)
+			with, err := eval(ctx, e.with, scope)
 			if err != nil {
 				return err
 			}
@@ -285,7 +292,7 @@ func (e *logicalEvaluator) Type() semantic.MonoType {
 }
 
 func (e *logicalEvaluator) Eval(ctx context.Context, scope Scope) (values.Value, error) {
-	l, err := e.left.Eval(ctx, scope)
+	l, err := eval(ctx, e.left, scope)
 	if err != nil {
 		return nil, err
 	}
@@ -306,7 +313,7 @@ func (e *logicalEvaluator) Eval(ctx context.Context, scope Scope) (values.Value,
 		panic(errors.Newf(codes.Internal, "unknown logical operator %v", e.operator))
 	}
 
-	r, err := e.right.Eval(ctx, scope)
+	r, err := eval(ctx, e.right, scope)
 	if err != nil {
 		return nil, err
 	}
@@ -376,7 +383,7 @@ func (e *unaryEvaluator) Type() semantic.MonoType {
 }
 
 func (e *unaryEvaluator) Eval(ctx context.Context, scope Scope) (values.Value, error) {
-	v, err := e.node.Eval(ctx, scope)
+	v, err := eval(ctx, e.node, scope)
 	if err != nil {
 		return nil, err
 	}
@@ -543,7 +550,7 @@ func (e *memberEvaluator) Type() semantic.MonoType {
 }
 
 func (e *memberEvaluator) Eval(ctx context.Context, scope Scope) (values.Value, error) {
-	o, err := e.object.Eval(ctx, scope)
+	o, err := eval(ctx, e.object, scope)
 	if err != nil {
 		return nil, err
 	}
@@ -572,7 +579,7 @@ func (e *arrayIndexEvaluator) Type() semantic.MonoType {
 }
 
 func (e *arrayIndexEvaluator) Eval(ctx context.Context, scope Scope) (values.Value, error) {
-	a, err := e.array.Eval(ctx, scope)
+	a, err := eval(ctx, e.array, scope)
 	if err != nil {
 		return nil, err
 	}
@@ -582,7 +589,7 @@ func (e *arrayIndexEvaluator) Eval(ctx context.Context, scope Scope) (values.Val
 	if typ := a.Type().Nature(); typ != semantic.Array {
 		return nil, errors.Newf(codes.Invalid, "cannot index into a value of type %s; expected an array", typ)
 	}
-	i, err := e.index.Eval(ctx, scope)
+	i, err := eval(ctx, e.index, scope)
 	if err != nil {
 		return nil, err
 	}
@@ -615,11 +622,11 @@ func (e *callEvaluator) Type() semantic.MonoType {
 }
 
 func (e *callEvaluator) Eval(ctx context.Context, scope Scope) (values.Value, error) {
-	args, err := e.args.Eval(ctx, scope)
+	args, err := eval(ctx, e.args, scope)
 	if err != nil {
 		return nil, err
 	}
-	f, err := e.callee.Eval(ctx, scope)
+	f, err := eval(ctx, e.callee, scope)
 	if err != nil {
 		return nil, err
 	}

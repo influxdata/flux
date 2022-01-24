@@ -51,7 +51,7 @@ func TestVectorizedFns(t *testing.T) {
 			name:         "field access",
 			fn:           `(r) => ({c: r.a, d: r.b})`,
 			vectorizable: true,
-			allocated:    256, // This should be 128 (2 vectorized fields, each containing 1 int64)
+			allocated:    256,
 			maxAllocated: 448,
 			inType: semantic.NewObjectType([]semantic.PropertyType{
 				{Key: []byte("r"), Value: semantic.NewObjectType([]semantic.PropertyType{
@@ -74,7 +74,7 @@ func TestVectorizedFns(t *testing.T) {
 			name:         "extend record",
 			fn:           `(r) => ({r with b: r.a})`,
 			vectorizable: true,
-			allocated:    128, // This should be 64 (1 vectorized field that contains 1 float64)
+			allocated:    128,
 			maxAllocated: 320,
 			inType: semantic.NewObjectType([]semantic.PropertyType{
 				{Key: []byte("r"), Value: semantic.NewObjectType([]semantic.PropertyType{
