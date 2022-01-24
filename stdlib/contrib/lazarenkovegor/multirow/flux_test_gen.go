@@ -11944,10 +11944,10 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
 					Column: 110,
-					Line:   46,
+					Line:   45,
 				},
 				File:   "map_window_test.flux",
-				Source: "package multirow_test\n\n\nimport \"testing\"\nimport \"contrib/lazarenkovegor/multirow\"\n\ninData =\n    \"\n#datatype,string,long,string,string,dateTime:RFC3339,long\n#group,false,false,true,false,false,false\n#default,_result,0,,m0,2000-01-01T00:00:00Z,\n,result,table,_field,_measurement,_time,_value\n,,,test1,,,0\n,,,test1,,,1\n,,,test1,,,1\n,,,test1,,,2\n,,,test1,,,3\n,,,test1,,,5\n,,,test2,,,8\n,,,test2,,,13\n,,,test2,,,21\n\"\n\noutData =\n    \"\n#datatype,string,long,string,double\n#group,false,false,true,false\n#default,_result,0,,\n,result,table,_field,_value\n,,0,test1,0.5\n,,0,test1,0.6666666666666666\n,,0,test1,1.3333333333333333\n,,0,test1,2\n,,0,test1,3.3333333333333335\n,,0,test1,4\n,,1,test2,10.5\n,,1,test2,14\n,,1,test2,17\n\"\n\nt_map = (table=<-) =>\n    table\n        |> drop(columns: [\"_start\", \"_stop\"])\n        |> multirow.map(left: 1, right: 1, fn: (window) => window |> mean())\n\ntest _map = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_map})",
+				Source: "package multirow_test\n\n\nimport \"testing\"\nimport \"contrib/lazarenkovegor/multirow\"\n\ninData =\n    \"\n#datatype,string,long,string,string,dateTime:RFC3339,long\n#group,false,false,true,false,false,false\n#default,_result,0,,m0,2000-01-01T00:00:00Z,\n,result,table,_field,_measurement,_time,_value\n,,,test1,,,0\n,,,test1,,,1\n,,,test1,,,1\n,,,test1,,,2\n,,,test1,,,3\n,,,test1,,,5\n,,,test2,,,8\n,,,test2,,,13\n,,,test2,,,21\n\"\n\noutData =\n    \"\n#datatype,string,long,string,double\n#group,false,false,true,false\n#default,_result,0,,\n,result,table,_field,_value\n,,0,test1,0.6666666666666666\n,,0,test1,1.3333333333333333\n,,0,test1,2\n,,0,test1,3.3333333333333335\n,,0,test1,4\n,,1,test2,10.5\n,,1,test2,14\n,,1,test2,17\n\"\n\nt_map = (table=<-) =>\n    table\n        |> drop(columns: [\"_start\", \"_stop\"])\n        |> multirow.map(left: 1, right: 1, limit: -5, fn: (window) => window |> mean())\n\ntest _map = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_map})",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -12016,10 +12016,10 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 2,
-						Line:   39,
+						Line:   38,
 					},
 					File:   "map_window_test.flux",
-					Source: "outData =\n    \"\n#datatype,string,long,string,double\n#group,false,false,true,false\n#default,_result,0,,\n,result,table,_field,_value\n,,0,test1,0.5\n,,0,test1,0.6666666666666666\n,,0,test1,1.3333333333333333\n,,0,test1,2\n,,0,test1,3.3333333333333335\n,,0,test1,4\n,,1,test2,10.5\n,,1,test2,14\n,,1,test2,17\n\"",
+					Source: "outData =\n    \"\n#datatype,string,long,string,double\n#group,false,false,true,false\n#default,_result,0,,\n,result,table,_field,_value\n,,0,test1,0.6666666666666666\n,,0,test1,1.3333333333333333\n,,0,test1,2\n,,0,test1,3.3333333333333335\n,,0,test1,4\n,,1,test2,10.5\n,,1,test2,14\n,,1,test2,17\n\"",
 					Start: ast.Position{
 						Column: 1,
 						Line:   24,
@@ -12052,17 +12052,17 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 2,
-							Line:   39,
+							Line:   38,
 						},
 						File:   "map_window_test.flux",
-						Source: "\"\n#datatype,string,long,string,double\n#group,false,false,true,false\n#default,_result,0,,\n,result,table,_field,_value\n,,0,test1,0.5\n,,0,test1,0.6666666666666666\n,,0,test1,1.3333333333333333\n,,0,test1,2\n,,0,test1,3.3333333333333335\n,,0,test1,4\n,,1,test2,10.5\n,,1,test2,14\n,,1,test2,17\n\"",
+						Source: "\"\n#datatype,string,long,string,double\n#group,false,false,true,false\n#default,_result,0,,\n,result,table,_field,_value\n,,0,test1,0.6666666666666666\n,,0,test1,1.3333333333333333\n,,0,test1,2\n,,0,test1,3.3333333333333335\n,,0,test1,4\n,,1,test2,10.5\n,,1,test2,14\n,,1,test2,17\n\"",
 						Start: ast.Position{
 							Column: 5,
 							Line:   25,
 						},
 					},
 				},
-				Value: "\n#datatype,string,long,string,double\n#group,false,false,true,false\n#default,_result,0,,\n,result,table,_field,_value\n,,0,test1,0.5\n,,0,test1,0.6666666666666666\n,,0,test1,1.3333333333333333\n,,0,test1,2\n,,0,test1,3.3333333333333335\n,,0,test1,4\n,,1,test2,10.5\n,,1,test2,14\n,,1,test2,17\n",
+				Value: "\n#datatype,string,long,string,double\n#group,false,false,true,false\n#default,_result,0,,\n,result,table,_field,_value\n,,0,test1,0.6666666666666666\n,,0,test1,1.3333333333333333\n,,0,test1,2\n,,0,test1,3.3333333333333335\n,,0,test1,4\n,,1,test2,10.5\n,,1,test2,14\n,,1,test2,17\n",
 			},
 		}, &ast.VariableAssignment{
 			BaseNode: ast.BaseNode{
@@ -12070,14 +12070,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
-						Column: 77,
-						Line:   44,
+						Column: 88,
+						Line:   43,
 					},
 					File:   "map_window_test.flux",
-					Source: "t_map = (table=<-) =>\n    table\n        |> drop(columns: [\"_start\", \"_stop\"])\n        |> multirow.map(left: 1, right: 1, fn: (window) => window |> mean())",
+					Source: "t_map = (table=<-) =>\n    table\n        |> drop(columns: [\"_start\", \"_stop\"])\n        |> multirow.map(left: 1, right: 1, limit: -5, fn: (window) => window |> mean())",
 					Start: ast.Position{
 						Column: 1,
-						Line:   41,
+						Line:   40,
 					},
 				},
 			},
@@ -12088,13 +12088,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 6,
-							Line:   41,
+							Line:   40,
 						},
 						File:   "map_window_test.flux",
 						Source: "t_map",
 						Start: ast.Position{
 							Column: 1,
-							Line:   41,
+							Line:   40,
 						},
 					},
 				},
@@ -12107,14 +12107,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 77,
-							Line:   44,
+							Column: 88,
+							Line:   43,
 						},
 						File:   "map_window_test.flux",
-						Source: "(table=<-) =>\n    table\n        |> drop(columns: [\"_start\", \"_stop\"])\n        |> multirow.map(left: 1, right: 1, fn: (window) => window |> mean())",
+						Source: "(table=<-) =>\n    table\n        |> drop(columns: [\"_start\", \"_stop\"])\n        |> multirow.map(left: 1, right: 1, limit: -5, fn: (window) => window |> mean())",
 						Start: ast.Position{
 							Column: 9,
-							Line:   41,
+							Line:   40,
 						},
 					},
 				},
@@ -12127,13 +12127,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 10,
-										Line:   42,
+										Line:   41,
 									},
 									File:   "map_window_test.flux",
 									Source: "table",
 									Start: ast.Position{
 										Column: 5,
-										Line:   42,
+										Line:   41,
 									},
 								},
 							},
@@ -12145,13 +12145,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 46,
-									Line:   43,
+									Line:   42,
 								},
 								File:   "map_window_test.flux",
 								Source: "table\n        |> drop(columns: [\"_start\", \"_stop\"])",
 								Start: ast.Position{
 									Column: 5,
-									Line:   42,
+									Line:   41,
 								},
 							},
 						},
@@ -12163,13 +12163,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 45,
-											Line:   43,
+											Line:   42,
 										},
 										File:   "map_window_test.flux",
 										Source: "columns: [\"_start\", \"_stop\"]",
 										Start: ast.Position{
 											Column: 17,
-											Line:   43,
+											Line:   42,
 										},
 									},
 								},
@@ -12181,13 +12181,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 45,
-												Line:   43,
+												Line:   42,
 											},
 											File:   "map_window_test.flux",
 											Source: "columns: [\"_start\", \"_stop\"]",
 											Start: ast.Position{
 												Column: 17,
-												Line:   43,
+												Line:   42,
 											},
 										},
 									},
@@ -12199,13 +12199,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 24,
-													Line:   43,
+													Line:   42,
 												},
 												File:   "map_window_test.flux",
 												Source: "columns",
 												Start: ast.Position{
 													Column: 17,
-													Line:   43,
+													Line:   42,
 												},
 											},
 										},
@@ -12219,13 +12219,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 45,
-													Line:   43,
+													Line:   42,
 												},
 												File:   "map_window_test.flux",
 												Source: "[\"_start\", \"_stop\"]",
 												Start: ast.Position{
 													Column: 26,
-													Line:   43,
+													Line:   42,
 												},
 											},
 										},
@@ -12236,13 +12236,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 35,
-														Line:   43,
+														Line:   42,
 													},
 													File:   "map_window_test.flux",
 													Source: "\"_start\"",
 													Start: ast.Position{
 														Column: 27,
-														Line:   43,
+														Line:   42,
 													},
 												},
 											},
@@ -12254,13 +12254,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 44,
-														Line:   43,
+														Line:   42,
 													},
 													File:   "map_window_test.flux",
 													Source: "\"_stop\"",
 													Start: ast.Position{
 														Column: 37,
-														Line:   43,
+														Line:   42,
 													},
 												},
 											},
@@ -12279,13 +12279,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 46,
-										Line:   43,
+										Line:   42,
 									},
 									File:   "map_window_test.flux",
 									Source: "drop(columns: [\"_start\", \"_stop\"])",
 									Start: ast.Position{
 										Column: 12,
-										Line:   43,
+										Line:   42,
 									},
 								},
 							},
@@ -12296,13 +12296,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 16,
-											Line:   43,
+											Line:   42,
 										},
 										File:   "map_window_test.flux",
 										Source: "drop",
 										Start: ast.Position{
 											Column: 12,
-											Line:   43,
+											Line:   42,
 										},
 									},
 								},
@@ -12317,14 +12317,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 77,
-								Line:   44,
+								Column: 88,
+								Line:   43,
 							},
 							File:   "map_window_test.flux",
-							Source: "table\n        |> drop(columns: [\"_start\", \"_stop\"])\n        |> multirow.map(left: 1, right: 1, fn: (window) => window |> mean())",
+							Source: "table\n        |> drop(columns: [\"_start\", \"_stop\"])\n        |> multirow.map(left: 1, right: 1, limit: -5, fn: (window) => window |> mean())",
 							Start: ast.Position{
 								Column: 5,
-								Line:   42,
+								Line:   41,
 							},
 						},
 					},
@@ -12335,14 +12335,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 76,
-										Line:   44,
+										Column: 87,
+										Line:   43,
 									},
 									File:   "map_window_test.flux",
-									Source: "left: 1, right: 1, fn: (window) => window |> mean()",
+									Source: "left: 1, right: 1, limit: -5, fn: (window) => window |> mean()",
 									Start: ast.Position{
 										Column: 25,
-										Line:   44,
+										Line:   43,
 									},
 								},
 							},
@@ -12354,13 +12354,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 32,
-											Line:   44,
+											Line:   43,
 										},
 										File:   "map_window_test.flux",
 										Source: "left: 1",
 										Start: ast.Position{
 											Column: 25,
-											Line:   44,
+											Line:   43,
 										},
 									},
 								},
@@ -12372,13 +12372,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 29,
-												Line:   44,
+												Line:   43,
 											},
 											File:   "map_window_test.flux",
 											Source: "left",
 											Start: ast.Position{
 												Column: 25,
-												Line:   44,
+												Line:   43,
 											},
 										},
 									},
@@ -12392,13 +12392,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 32,
-												Line:   44,
+												Line:   43,
 											},
 											File:   "map_window_test.flux",
 											Source: "1",
 											Start: ast.Position{
 												Column: 31,
-												Line:   44,
+												Line:   43,
 											},
 										},
 									},
@@ -12411,13 +12411,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 42,
-											Line:   44,
+											Line:   43,
 										},
 										File:   "map_window_test.flux",
 										Source: "right: 1",
 										Start: ast.Position{
 											Column: 34,
-											Line:   44,
+											Line:   43,
 										},
 									},
 								},
@@ -12429,13 +12429,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 39,
-												Line:   44,
+												Line:   43,
 											},
 											File:   "map_window_test.flux",
 											Source: "right",
 											Start: ast.Position{
 												Column: 34,
-												Line:   44,
+												Line:   43,
 											},
 										},
 									},
@@ -12449,13 +12449,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 42,
-												Line:   44,
+												Line:   43,
 											},
 											File:   "map_window_test.flux",
 											Source: "1",
 											Start: ast.Position{
 												Column: 41,
-												Line:   44,
+												Line:   43,
 											},
 										},
 									},
@@ -12467,14 +12467,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 76,
-											Line:   44,
+											Column: 53,
+											Line:   43,
 										},
 										File:   "map_window_test.flux",
-										Source: "fn: (window) => window |> mean()",
+										Source: "limit: -5",
 										Start: ast.Position{
 											Column: 44,
-											Line:   44,
+											Line:   43,
 										},
 									},
 								},
@@ -12485,14 +12485,90 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 46,
-												Line:   44,
+												Column: 49,
+												Line:   43,
+											},
+											File:   "map_window_test.flux",
+											Source: "limit",
+											Start: ast.Position{
+												Column: 44,
+												Line:   43,
+											},
+										},
+									},
+									Name: "limit",
+								},
+								Separator: nil,
+								Value: &ast.UnaryExpression{
+									Argument: &ast.IntegerLiteral{
+										BaseNode: ast.BaseNode{
+											Comments: nil,
+											Errors:   nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 53,
+													Line:   43,
+												},
+												File:   "map_window_test.flux",
+												Source: "5",
+												Start: ast.Position{
+													Column: 52,
+													Line:   43,
+												},
+											},
+										},
+										Value: int64(5),
+									},
+									BaseNode: ast.BaseNode{
+										Comments: nil,
+										Errors:   nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 53,
+												Line:   43,
+											},
+											File:   "map_window_test.flux",
+											Source: "-5",
+											Start: ast.Position{
+												Column: 51,
+												Line:   43,
+											},
+										},
+									},
+									Operator: 6,
+								},
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 87,
+											Line:   43,
+										},
+										File:   "map_window_test.flux",
+										Source: "fn: (window) => window |> mean()",
+										Start: ast.Position{
+											Column: 55,
+											Line:   43,
+										},
+									},
+								},
+								Comma: nil,
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Comments: nil,
+										Errors:   nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 57,
+												Line:   43,
 											},
 											File:   "map_window_test.flux",
 											Source: "fn",
 											Start: ast.Position{
-												Column: 44,
-												Line:   44,
+												Column: 55,
+												Line:   43,
 											},
 										},
 									},
@@ -12506,14 +12582,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 76,
-												Line:   44,
+												Column: 87,
+												Line:   43,
 											},
 											File:   "map_window_test.flux",
 											Source: "(window) => window |> mean()",
 											Start: ast.Position{
-												Column: 48,
-												Line:   44,
+												Column: 59,
+												Line:   43,
 											},
 										},
 									},
@@ -12524,14 +12600,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 66,
-														Line:   44,
+														Column: 77,
+														Line:   43,
 													},
 													File:   "map_window_test.flux",
 													Source: "window",
 													Start: ast.Position{
-														Column: 60,
-														Line:   44,
+														Column: 71,
+														Line:   43,
 													},
 												},
 											},
@@ -12542,14 +12618,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 76,
-													Line:   44,
+													Column: 87,
+													Line:   43,
 												},
 												File:   "map_window_test.flux",
 												Source: "window |> mean()",
 												Start: ast.Position{
-													Column: 60,
-													Line:   44,
+													Column: 71,
+													Line:   43,
 												},
 											},
 										},
@@ -12560,14 +12636,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 76,
-														Line:   44,
+														Column: 87,
+														Line:   43,
 													},
 													File:   "map_window_test.flux",
 													Source: "mean()",
 													Start: ast.Position{
-														Column: 70,
-														Line:   44,
+														Column: 81,
+														Line:   43,
 													},
 												},
 											},
@@ -12577,14 +12653,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 74,
-															Line:   44,
+															Column: 85,
+															Line:   43,
 														},
 														File:   "map_window_test.flux",
 														Source: "mean",
 														Start: ast.Position{
-															Column: 70,
-															Line:   44,
+															Column: 81,
+															Line:   43,
 														},
 													},
 												},
@@ -12601,14 +12677,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 55,
-													Line:   44,
+													Column: 66,
+													Line:   43,
 												},
 												File:   "map_window_test.flux",
 												Source: "window",
 												Start: ast.Position{
-													Column: 49,
-													Line:   44,
+													Column: 60,
+													Line:   43,
 												},
 											},
 										},
@@ -12619,14 +12695,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 55,
-														Line:   44,
+														Column: 66,
+														Line:   43,
 													},
 													File:   "map_window_test.flux",
 													Source: "window",
 													Start: ast.Position{
-														Column: 49,
-														Line:   44,
+														Column: 60,
+														Line:   43,
 													},
 												},
 											},
@@ -12646,14 +12722,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 77,
-									Line:   44,
+									Column: 88,
+									Line:   43,
 								},
 								File:   "map_window_test.flux",
-								Source: "multirow.map(left: 1, right: 1, fn: (window) => window |> mean())",
+								Source: "multirow.map(left: 1, right: 1, limit: -5, fn: (window) => window |> mean())",
 								Start: ast.Position{
 									Column: 12,
-									Line:   44,
+									Line:   43,
 								},
 							},
 						},
@@ -12664,13 +12740,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 24,
-										Line:   44,
+										Line:   43,
 									},
 									File:   "map_window_test.flux",
 									Source: "multirow.map",
 									Start: ast.Position{
 										Column: 12,
-										Line:   44,
+										Line:   43,
 									},
 								},
 							},
@@ -12682,13 +12758,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 20,
-											Line:   44,
+											Line:   43,
 										},
 										File:   "map_window_test.flux",
 										Source: "multirow",
 										Start: ast.Position{
 											Column: 12,
-											Line:   44,
+											Line:   43,
 										},
 									},
 								},
@@ -12701,13 +12777,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 24,
-											Line:   44,
+											Line:   43,
 										},
 										File:   "map_window_test.flux",
 										Source: "map",
 										Start: ast.Position{
 											Column: 21,
-											Line:   44,
+											Line:   43,
 										},
 									},
 								},
@@ -12727,13 +12803,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 18,
-								Line:   41,
+								Line:   40,
 							},
 							File:   "map_window_test.flux",
 							Source: "table=<-",
 							Start: ast.Position{
 								Column: 10,
-								Line:   41,
+								Line:   40,
 							},
 						},
 					},
@@ -12745,13 +12821,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 15,
-									Line:   41,
+									Line:   40,
 								},
 								File:   "map_window_test.flux",
 								Source: "table",
 								Start: ast.Position{
 									Column: 10,
-									Line:   41,
+									Line:   40,
 								},
 							},
 						},
@@ -12764,13 +12840,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 18,
-								Line:   41,
+								Line:   40,
 							},
 							File:   "map_window_test.flux",
 							Source: "<-",
 							Start: ast.Position{
 								Column: 16,
-								Line:   41,
+								Line:   40,
 							},
 						},
 					}},
@@ -12785,13 +12861,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 110,
-							Line:   46,
+							Line:   45,
 						},
 						File:   "map_window_test.flux",
 						Source: "_map = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_map})",
 						Start: ast.Position{
 							Column: 6,
-							Line:   46,
+							Line:   45,
 						},
 					},
 				},
@@ -12802,13 +12878,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 10,
-								Line:   46,
+								Line:   45,
 							},
 							File:   "map_window_test.flux",
 							Source: "_map",
 							Start: ast.Position{
 								Column: 6,
-								Line:   46,
+								Line:   45,
 							},
 						},
 					},
@@ -12822,13 +12898,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 110,
-								Line:   46,
+								Line:   45,
 							},
 							File:   "map_window_test.flux",
 							Source: "() => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_map})",
 							Start: ast.Position{
 								Column: 13,
-								Line:   46,
+								Line:   45,
 							},
 						},
 					},
@@ -12839,13 +12915,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 110,
-									Line:   46,
+									Line:   45,
 								},
 								File:   "map_window_test.flux",
 								Source: "({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_map})",
 								Start: ast.Position{
 									Column: 19,
-									Line:   46,
+									Line:   45,
 								},
 							},
 						},
@@ -12856,13 +12932,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 109,
-										Line:   46,
+										Line:   45,
 									},
 									File:   "map_window_test.flux",
 									Source: "{input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_map}",
 									Start: ast.Position{
 										Column: 20,
-										Line:   46,
+										Line:   45,
 									},
 								},
 							},
@@ -12874,13 +12950,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 60,
-											Line:   46,
+											Line:   45,
 										},
 										File:   "map_window_test.flux",
 										Source: "input: testing.loadStorage(csv: inData)",
 										Start: ast.Position{
 											Column: 21,
-											Line:   46,
+											Line:   45,
 										},
 									},
 								},
@@ -12892,13 +12968,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 26,
-												Line:   46,
+												Line:   45,
 											},
 											File:   "map_window_test.flux",
 											Source: "input",
 											Start: ast.Position{
 												Column: 21,
-												Line:   46,
+												Line:   45,
 											},
 										},
 									},
@@ -12913,13 +12989,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 59,
-													Line:   46,
+													Line:   45,
 												},
 												File:   "map_window_test.flux",
 												Source: "csv: inData",
 												Start: ast.Position{
 													Column: 48,
-													Line:   46,
+													Line:   45,
 												},
 											},
 										},
@@ -12931,13 +13007,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 59,
-														Line:   46,
+														Line:   45,
 													},
 													File:   "map_window_test.flux",
 													Source: "csv: inData",
 													Start: ast.Position{
 														Column: 48,
-														Line:   46,
+														Line:   45,
 													},
 												},
 											},
@@ -12949,13 +13025,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 51,
-															Line:   46,
+															Line:   45,
 														},
 														File:   "map_window_test.flux",
 														Source: "csv",
 														Start: ast.Position{
 															Column: 48,
-															Line:   46,
+															Line:   45,
 														},
 													},
 												},
@@ -12969,13 +13045,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 59,
-															Line:   46,
+															Line:   45,
 														},
 														File:   "map_window_test.flux",
 														Source: "inData",
 														Start: ast.Position{
 															Column: 53,
-															Line:   46,
+															Line:   45,
 														},
 													},
 												},
@@ -12991,13 +13067,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 60,
-												Line:   46,
+												Line:   45,
 											},
 											File:   "map_window_test.flux",
 											Source: "testing.loadStorage(csv: inData)",
 											Start: ast.Position{
 												Column: 28,
-												Line:   46,
+												Line:   45,
 											},
 										},
 									},
@@ -13008,13 +13084,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 47,
-													Line:   46,
+													Line:   45,
 												},
 												File:   "map_window_test.flux",
 												Source: "testing.loadStorage",
 												Start: ast.Position{
 													Column: 28,
-													Line:   46,
+													Line:   45,
 												},
 											},
 										},
@@ -13026,13 +13102,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 35,
-														Line:   46,
+														Line:   45,
 													},
 													File:   "map_window_test.flux",
 													Source: "testing",
 													Start: ast.Position{
 														Column: 28,
-														Line:   46,
+														Line:   45,
 													},
 												},
 											},
@@ -13045,13 +13121,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 47,
-														Line:   46,
+														Line:   45,
 													},
 													File:   "map_window_test.flux",
 													Source: "loadStorage",
 													Start: ast.Position{
 														Column: 36,
-														Line:   46,
+														Line:   45,
 													},
 												},
 											},
@@ -13069,13 +13145,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 97,
-											Line:   46,
+											Line:   45,
 										},
 										File:   "map_window_test.flux",
 										Source: "want: testing.loadMem(csv: outData)",
 										Start: ast.Position{
 											Column: 62,
-											Line:   46,
+											Line:   45,
 										},
 									},
 								},
@@ -13087,13 +13163,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 66,
-												Line:   46,
+												Line:   45,
 											},
 											File:   "map_window_test.flux",
 											Source: "want",
 											Start: ast.Position{
 												Column: 62,
-												Line:   46,
+												Line:   45,
 											},
 										},
 									},
@@ -13108,13 +13184,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 96,
-													Line:   46,
+													Line:   45,
 												},
 												File:   "map_window_test.flux",
 												Source: "csv: outData",
 												Start: ast.Position{
 													Column: 84,
-													Line:   46,
+													Line:   45,
 												},
 											},
 										},
@@ -13126,13 +13202,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 96,
-														Line:   46,
+														Line:   45,
 													},
 													File:   "map_window_test.flux",
 													Source: "csv: outData",
 													Start: ast.Position{
 														Column: 84,
-														Line:   46,
+														Line:   45,
 													},
 												},
 											},
@@ -13144,13 +13220,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 87,
-															Line:   46,
+															Line:   45,
 														},
 														File:   "map_window_test.flux",
 														Source: "csv",
 														Start: ast.Position{
 															Column: 84,
-															Line:   46,
+															Line:   45,
 														},
 													},
 												},
@@ -13164,13 +13240,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 96,
-															Line:   46,
+															Line:   45,
 														},
 														File:   "map_window_test.flux",
 														Source: "outData",
 														Start: ast.Position{
 															Column: 89,
-															Line:   46,
+															Line:   45,
 														},
 													},
 												},
@@ -13186,13 +13262,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 97,
-												Line:   46,
+												Line:   45,
 											},
 											File:   "map_window_test.flux",
 											Source: "testing.loadMem(csv: outData)",
 											Start: ast.Position{
 												Column: 68,
-												Line:   46,
+												Line:   45,
 											},
 										},
 									},
@@ -13203,13 +13279,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 83,
-													Line:   46,
+													Line:   45,
 												},
 												File:   "map_window_test.flux",
 												Source: "testing.loadMem",
 												Start: ast.Position{
 													Column: 68,
-													Line:   46,
+													Line:   45,
 												},
 											},
 										},
@@ -13221,13 +13297,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 75,
-														Line:   46,
+														Line:   45,
 													},
 													File:   "map_window_test.flux",
 													Source: "testing",
 													Start: ast.Position{
 														Column: 68,
-														Line:   46,
+														Line:   45,
 													},
 												},
 											},
@@ -13240,13 +13316,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 83,
-														Line:   46,
+														Line:   45,
 													},
 													File:   "map_window_test.flux",
 													Source: "loadMem",
 													Start: ast.Position{
 														Column: 76,
-														Line:   46,
+														Line:   45,
 													},
 												},
 											},
@@ -13264,13 +13340,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 108,
-											Line:   46,
+											Line:   45,
 										},
 										File:   "map_window_test.flux",
 										Source: "fn: t_map",
 										Start: ast.Position{
 											Column: 99,
-											Line:   46,
+											Line:   45,
 										},
 									},
 								},
@@ -13282,13 +13358,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 101,
-												Line:   46,
+												Line:   45,
 											},
 											File:   "map_window_test.flux",
 											Source: "fn",
 											Start: ast.Position{
 												Column: 99,
-												Line:   46,
+												Line:   45,
 											},
 										},
 									},
@@ -13302,13 +13378,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 108,
-												Line:   46,
+												Line:   45,
 											},
 											File:   "map_window_test.flux",
 											Source: "t_map",
 											Start: ast.Position{
 												Column: 103,
-												Line:   46,
+												Line:   45,
 											},
 										},
 									},
@@ -13332,13 +13408,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 110,
-						Line:   46,
+						Line:   45,
 					},
 					File:   "map_window_test.flux",
 					Source: "test _map = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_map})",
 					Start: ast.Position{
 						Column: 1,
-						Line:   46,
+						Line:   45,
 					},
 				},
 			},

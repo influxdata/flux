@@ -27,7 +27,6 @@ outData =
 #group,false,false,true,false
 #default,_result,0,,
 ,result,table,_field,_value
-,,0,test1,0.5
 ,,0,test1,0.6666666666666666
 ,,0,test1,1.3333333333333333
 ,,0,test1,2
@@ -41,6 +40,6 @@ outData =
 t_map = (table=<-) =>
     table
         |> drop(columns: ["_start", "_stop"])
-        |> multirow.map(left: 1, right: 1, fn: (window) => window |> mean())
+        |> multirow.map(left: 1, right: 1, limit: -5, fn: (window) => window |> mean())
 
 test _map = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_map})

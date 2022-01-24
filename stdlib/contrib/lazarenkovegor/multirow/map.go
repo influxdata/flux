@@ -52,6 +52,7 @@ type MapOpSpec struct {
 	Column           string
 	InitValue        values.Object
 	VirtualColumns   []string
+	Limit            int
 }
 
 type MapPlan struct {
@@ -114,7 +115,7 @@ func makeWindowFilter(left values.Value, right values.Value) (*WindowFilter, err
 					return from
 				}
 			default:
-				return nil, errors.Newf(codes.Invalid, "invalid left param type %T", bt)
+				return nil, errors.Newf(codes.Invalid, "invalid left param type %v", bt)
 			}
 		}
 	}
@@ -158,7 +159,7 @@ func makeWindowFilter(left values.Value, right values.Value) (*WindowFilter, err
 					return to
 				}
 			default:
-				return nil, errors.Newf(codes.Invalid, "invalid left param type %T", bt)
+				return nil, errors.Newf(codes.Invalid, "invalid left param type %v", bt)
 			}
 		}
 	}
@@ -205,7 +206,13 @@ func createMapOpSpec(args flux.Arguments, a *flux.Administration) (flux.Operatio
 	} else {
 		spec.Column = "_value"
 	}
-
+	if c, f, err := args.GetInt("limit"); err != nil {
+		return nil, err
+	} else if f {
+		spec.Limit = int(c)
+	} else {
+		spec.Limit = 0
+	}
 	if o, f, err := args.GetObject("init"); err != nil {
 		return nil, err
 	} else if f {
@@ -326,7 +333,14 @@ func (s *mapTransformation) Process(id execute.DatasetID, tbl flux.Table) error 
 			}
 		}
 
-		for curRowId := 0; curRowId < l; curRowId++ {
+		from := 0
+		to := l - 1
+		if s.spec.Limit > 0 && s.spec.Limit < l {
+			to = s.spec.Limit - 1
+		} else if s.spec.Limit < 0 && l+s.spec.Limit > 0 {
+			from = l + s.spec.Limit
+		}
+		for curRowId := from; curRowId <= to; curRowId++ {
 			var row values.Object
 			if s.spec.HasRowParam {
 				row = MakeRowObject(nil, reader, curRowId)
