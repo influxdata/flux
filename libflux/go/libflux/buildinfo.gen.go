@@ -105,7 +105,7 @@ var sourceHashes = map[string]string{
 	"stdlib/contrib/lazarenkovegor/multirow/map_string_concat_test.flux":                          "0e652a1567512a1e7ab43b149ee0898e8f788a8420aac604eff19cae68574df6",
 	"stdlib/contrib/lazarenkovegor/multirow/map_unpivot_test.flux":                                "36603648bb6e45e4d09fde57ebc351d20c5c6b3074dc7a817cc1e0e953429aa8",
 	"stdlib/contrib/lazarenkovegor/multirow/map_window_test.flux":                                 "d220789c8c9e128e913d8ecef6fe08d25e9ecb91e1e802284c2c27a313d7abdb",
-	"stdlib/contrib/lazarenkovegor/multirow/multirow.flux":                                        "ab7dc04e7d855faaae8c21245beede6b2625e1e981957d0add109c1446eaff0c",
+	"stdlib/contrib/lazarenkovegor/multirow/multirow.flux":                                        "dcb4b7ccb3c032966445a4a25cf789a045c7a096a5b283c286381d9ebebb7a9d",
 	"stdlib/contrib/rhajek/bigpanda/bigpanda.flux":                                                "3a91c7eb4426eaf1468886a4584c9af6df4d78168a5bb03e98a547b117d72145",
 	"stdlib/contrib/sranka/opsgenie/opsgenie.flux":                                                "305576fb09fb758a5e861a3705aac887d35101b42b7cf578e26a368f693678a2",
 	"stdlib/contrib/sranka/sensu/sensu.flux":                                                      "4d2501f912d9ae8131bd361d745ba56098cfdab97dc9307643a47c61c8901678",
