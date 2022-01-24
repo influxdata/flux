@@ -74,7 +74,7 @@ builtin map : (
             ?previous: D,
         ) => X,
         ?column: string,
-        ?limit : int
+        ?limit: int,
     ) => [B]
     where
     A: Record,
