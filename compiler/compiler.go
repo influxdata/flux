@@ -7,6 +7,8 @@ import (
 	"github.com/influxdata/flux/values"
 )
 
+type Substitution map[uint64]semantic.MonoType
+
 func Compile(scope Scope, f *semantic.FunctionExpression, in semantic.MonoType) (Func, error) {
 	if scope == nil {
 		scope = NewScope()
@@ -29,7 +31,7 @@ func Compile(scope Scope, f *semantic.FunctionExpression, in semantic.MonoType) 
 	// so we can use that to construct the tvar substitutions.
 	// Iterate over every argument and find the equivalent
 	// property inside of the input and then generate the substitutions.
-	subst := make(map[uint64]semantic.MonoType)
+	subst := make(Substitution)
 	for i := 0; i < argN; i++ {
 		arg, err := fnType.Argument(i)
 		if err != nil {
@@ -72,7 +74,7 @@ func Compile(scope Scope, f *semantic.FunctionExpression, in semantic.MonoType) 
 // inType and mapping any variables to the value in the other record.
 // If the input type is not a type variable, it will check to ensure
 // that the type in the input matches or it will return an error.
-func substituteTypes(subst map[uint64]semantic.MonoType, inferredType, actualType semantic.MonoType) error {
+func substituteTypes(subst Substitution, inferredType, actualType semantic.MonoType) error {
 	// If the input isn't a valid type, then don't consider it as
 	// part of substituting types. We will trust type inference has
 	// the correct type and that we are just handling a null value
@@ -284,7 +286,7 @@ func findProperty(name string, t semantic.MonoType) (*semantic.RecordProperty, b
 // apply applies a substitution to a type.
 // It will ignore any errors when reading a type.
 // This is safe becase we already validated that the function type is a monotype.
-func apply(sub map[uint64]semantic.MonoType, props []semantic.PropertyType, t semantic.MonoType) semantic.MonoType {
+func apply(sub Substitution, props []semantic.PropertyType, t semantic.MonoType) semantic.MonoType {
 	switch t.Kind() {
 	case semantic.Unknown, semantic.Basic:
 		// Basic types do not contain type variables.
@@ -355,6 +357,8 @@ func apply(sub map[uint64]semantic.MonoType, props []semantic.PropertyType, t se
 				return t
 			}
 			return semantic.ExtendObjectType(props, &tv)
+		default:
+			panic("unknown type in record extension")
 		}
 	case semantic.Fun:
 		n, err := t.NumArguments()
@@ -390,7 +394,7 @@ func apply(sub map[uint64]semantic.MonoType, props []semantic.PropertyType, t se
 }
 
 // compile recursively compiles semantic nodes into evaluators.
-func compile(n semantic.Node, subst map[uint64]semantic.MonoType) (Evaluator, error) {
+func compile(n semantic.Node, subst Substitution) (Evaluator, error) {
 	switch n := n.(type) {
 	case *semantic.Block:
 		body := make([]Evaluator, len(n.Body))
