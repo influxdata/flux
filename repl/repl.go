@@ -15,6 +15,7 @@ import (
 
 	"github.com/c-bata/go-prompt"
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/dependency"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/spec"
 	"github.com/influxdata/flux/interpreter"
@@ -27,8 +28,7 @@ import (
 )
 
 type REPL struct {
-	ctx  context.Context
-	deps flux.Dependencies
+	ctx context.Context
 
 	scope    values.Scope
 	itrp     *interpreter.Interpreter
@@ -39,7 +39,7 @@ type REPL struct {
 	cancelFunc context.CancelFunc
 }
 
-func New(ctx context.Context, deps flux.Dependencies) *REPL {
+func New(ctx context.Context) *REPL {
 	scope := values.NewScope()
 	importer := runtime.StdLib()
 	for _, p := range runtime.PreludeList {
@@ -51,7 +51,6 @@ func New(ctx context.Context, deps flux.Dependencies) *REPL {
 	}
 	return &REPL{
 		ctx:      ctx,
-		deps:     deps,
 		scope:    scope,
 		itrp:     interpreter.NewInterpreter(nil, &lang.ExecOptsConfig{}),
 		analyzer: libflux.NewAnalyzer(),
@@ -164,10 +163,10 @@ func (r *REPL) evalWithFluxError(t string) ([]interpreter.SideEffect, *libflux.F
 		return nil, fluxError, err
 	}
 
-	deps := execute.DefaultExecutionDependencies()
-	r.ctx = deps.Inject(r.ctx)
+	ctx, span := dependency.Inject(r.ctx, execute.DefaultExecutionDependencies())
+	defer span.Finish()
 
-	x, err := r.itrp.Eval(r.ctx, pkg, r.scope, r.importer)
+	x, err := r.itrp.Eval(ctx, pkg, r.scope, r.importer)
 	return x, nil, err
 }
 
@@ -186,8 +185,7 @@ func (r *REPL) executeLine(t string) (*libflux.FluxError, error) {
 				if !ok {
 					return nil, fmt.Errorf("now option not set")
 				}
-				ctx := r.deps.Inject(context.TODO())
-				nowTime, err := now.Function().Call(ctx, nil)
+				nowTime, err := now.Function().Call(r.ctx, nil)
 				if err != nil {
 					return nil, err
 				}
@@ -195,7 +193,7 @@ func (r *REPL) executeLine(t string) (*libflux.FluxError, error) {
 				if err != nil {
 					return nil, err
 				}
-				if err := r.doQuery(r.ctx, s, r.deps); err != nil {
+				if err := r.doQuery(r.ctx, s); err != nil {
 					return nil, err
 				}
 			} else {
@@ -221,7 +219,7 @@ func (r *REPL) analyzeLine(t string) (*semantic.Package, *libflux.FluxError, err
 	return x, nil, err
 }
 
-func (r *REPL) doQuery(ctx context.Context, spec *flux.Spec, deps flux.Dependencies) error {
+func (r *REPL) doQuery(ctx context.Context, spec *flux.Spec) error {
 	// Setup cancel context
 	ctx, cancelFunc := context.WithCancel(ctx)
 	r.setCancel(cancelFunc)
@@ -238,7 +236,7 @@ func (r *REPL) doQuery(ctx context.Context, spec *flux.Spec, deps flux.Dependenc
 	}
 	alloc := &memory.Allocator{}
 
-	qry, err := program.Start(deps.Inject(ctx), alloc)
+	qry, err := program.Start(ctx, alloc)
 	if err != nil {
 		return err
 	}

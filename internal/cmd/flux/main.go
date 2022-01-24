@@ -9,6 +9,7 @@ import (
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/dependencies"
+	"github.com/influxdata/flux/dependency"
 	"github.com/influxdata/flux/fluxinit"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/opentracing/opentracing-go"
@@ -46,9 +47,11 @@ func runE(cmd *cobra.Command, args []string) error {
 	// have already passed to avoid a long load time
 	// for a simple unrelated error.
 	fluxinit.FluxInit()
-	ctx, deps := injectDependencies(ctx)
+	ctx, span := injectDependencies(ctx)
+	defer span.Finish()
+
 	if len(args) == 0 {
-		return replE(ctx, deps)
+		return replE(ctx)
 	}
 	return executeE(ctx, script, flags.Format)
 }
@@ -88,9 +91,9 @@ func configureTracing(ctx context.Context) (context.Context, func(), error) {
 
 const DefaultInfluxDBHost = "http://localhost:9999"
 
-func injectDependencies(ctx context.Context) (context.Context, flux.Dependencies) {
+func injectDependencies(ctx context.Context) (context.Context, *dependency.Span) {
 	deps := dependencies.NewDefaultDependencies(DefaultInfluxDBHost)
-	return deps.Inject(ctx), deps
+	return dependency.Inject(ctx, deps)
 }
 
 func main() {

@@ -3,12 +3,16 @@ package mqtt
 import (
 	"context"
 	"io"
+	"strings"
+	"sync"
 	"time"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/codes"
+	"github.com/influxdata/flux/dependency"
 	"github.com/influxdata/flux/internal/errors"
+	"github.com/influxdata/flux/internal/feature"
 )
 
 const (
@@ -22,6 +26,11 @@ const clientKey key = iota
 
 // Inject will inject this Dialer into the dependency chain.
 func Inject(ctx context.Context, dialer Dialer) context.Context {
+	if feature.MqttPoolDialer().Enabled(ctx) {
+		pool := newPoolDialer(dialer)
+		dependency.OnFinish(ctx, pool)
+		dialer = pool
+	}
 	return context.WithValue(ctx, clientKey, dialer)
 }
 
@@ -145,4 +154,88 @@ type ErrorDialer struct{}
 
 func (d ErrorDialer) Dial(ctx context.Context, brokers []string, options Options) (Client, error) {
 	return nil, errors.New(codes.Invalid, "Dialer.Dial called on an error dependency")
+}
+
+type poolClientOptions struct {
+	brokers string
+	options Options
+}
+
+type poolDialer struct {
+	dialer  Dialer
+	clients map[poolClientOptions]*[]Client
+	mu      sync.Mutex
+}
+
+func newPoolDialer(d Dialer) *poolDialer {
+	return &poolDialer{
+		dialer:  d,
+		clients: make(map[poolClientOptions]*[]Client),
+	}
+}
+
+func (p *poolDialer) Dial(ctx context.Context, brokers []string, options Options) (Client, error) {
+	opts := poolClientOptions{
+		brokers: strings.Join(brokers, ";"),
+		options: options,
+	}
+
+	p.mu.Lock()
+	defer p.mu.Unlock()
+
+	var client Client
+	if clients := p.clients[opts]; clients != nil && len(*clients) > 0 {
+		client = (*clients)[len(*clients)-1]
+		*clients = (*clients)[:len(*clients)-1]
+	} else {
+		var err error
+		client, err = p.dialer.Dial(ctx, brokers, options)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return &poolClient{
+		Client:  client,
+		options: opts,
+		pool:    p,
+	}, nil
+}
+
+func (p *poolDialer) Close() error {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+
+	var firstErr error
+	for _, clients := range p.clients {
+		for _, client := range *clients {
+			if err := client.Close(); err != nil && firstErr == nil {
+				firstErr = err
+			}
+		}
+	}
+	p.clients = nil
+	return firstErr
+}
+
+type poolClient struct {
+	Client
+	options poolClientOptions
+	pool    *poolDialer
+}
+
+func (c *poolClient) Close() error {
+	c.pool.mu.Lock()
+	defer c.pool.mu.Unlock()
+
+	if c.pool.clients == nil {
+		return c.Client.Close()
+	}
+
+	clients, ok := c.pool.clients[c.options]
+	if !ok {
+		clients = new([]Client)
+		c.pool.clients[c.options] = clients
+	}
+	*clients = append(*clients, c.Client)
+	return nil
 }
