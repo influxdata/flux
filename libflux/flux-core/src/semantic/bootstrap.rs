@@ -3,7 +3,7 @@
 //! This package does not assume a location of the source code but does assume which packages are
 //! part of the prelude.
 
-use std::{env::consts, fs, io, io::Write, path::Path};
+use std::{cell::RefCell, env::consts, fs, io, io::Write, path::Path};
 
 use anyhow::{anyhow, bail, Result};
 use libflate::gzip::Encoder;
@@ -19,7 +19,7 @@ use crate::{
         fs::{FileSystemImporter, StdFS},
         import::{Importer, Packages},
         nodes::{self, Package, Symbol},
-        sub::Substitutable,
+        sub::{Substitutable, Substituter},
         types::{MonoType, PolyType, PolyTypeHashMap, Record, SemanticMap, Tvar, TvarKinds},
         Analyzer, PackageExports,
     },
@@ -271,6 +271,23 @@ where
     Ok(exports)
 }
 
+// Collects any `MonoType::BoundVar`s in the type
+struct CollectBoundVars(RefCell<Vec<Tvar>>);
+
+impl Substituter for CollectBoundVars {
+    fn try_apply(&self, _var: Tvar) -> Option<MonoType> {
+        None
+    }
+
+    fn try_apply_bound(&self, var: Tvar) -> Option<MonoType> {
+        let mut vars = self.0.borrow_mut();
+        if let Err(i) = vars.binary_search(&var) {
+            vars.insert(i, var);
+        }
+        None
+    }
+}
+
 fn add_record_to_map(
     env: &mut PolyTypeHashMap<Symbol>,
     r: &Record,
@@ -280,8 +297,12 @@ fn add_record_to_map(
     match r {
         Record::Empty => Ok(()),
         Record::Extension { head, tail } => {
-            let mut new_vars = Vec::new();
-            head.v.free_vars(&mut new_vars);
+            let new_vars = {
+                let new_vars = CollectBoundVars(RefCell::new(Vec::new()));
+                head.v.apply_ref(&new_vars);
+                new_vars.0.into_inner()
+            };
+
             let mut new_cons = TvarKinds::new();
             for var in &new_vars {
                 if !free_vars.iter().any(|v| v == var) {
