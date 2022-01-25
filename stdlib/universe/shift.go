@@ -3,11 +3,14 @@ package universe
 import (
 	"time"
 
+	"github.com/apache/arrow/go/arrow/memory"
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/array"
+	"github.com/influxdata/flux/arrow"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/execute/table"
 	"github.com/influxdata/flux/internal/errors"
-	"github.com/influxdata/flux/internal/feature"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/runtime"
@@ -123,103 +126,86 @@ func createShiftTransformation(id execute.DatasetID, mode execute.AccumulationMo
 	if !ok {
 		return nil, nil, errors.Newf(codes.Internal, "invalid spec type %T", spec)
 	}
-
-	if feature.OptimizeShiftTransformation().Enabled(a.Context()) {
-		return newShiftTransformation2(id, s, a.Allocator())
-	}
-
-	cache := execute.NewTableBuilderCache(a.Allocator())
-	d := execute.NewDataset(id, mode, cache)
-	t := NewShiftTransformation(d, cache, s)
-	return t, d, nil
+	return NewShiftTransformation(id, s, a.Allocator())
 }
 
 type shiftTransformation struct {
-	execute.ExecutionNode
-	d       execute.Dataset
-	cache   execute.TableBuilderCache
-	shift   execute.Duration
 	columns []string
+	shift   execute.Duration
 }
 
-func NewShiftTransformation(d execute.Dataset, cache execute.TableBuilderCache, spec *ShiftProcedureSpec) *shiftTransformation {
-	return &shiftTransformation{
-		d:       d,
-		cache:   cache,
-		shift:   execute.Duration(spec.Shift),
+func NewShiftTransformation(id execute.DatasetID, spec *ShiftProcedureSpec, mem memory.Allocator) (execute.Transformation, execute.Dataset, error) {
+	tr := &shiftTransformation{
 		columns: spec.Columns,
+		shift:   spec.Shift,
 	}
+	return execute.NewNarrowTransformation(id, tr, mem)
 }
 
-func (t *shiftTransformation) RetractTable(id execute.DatasetID, key flux.GroupKey) error {
-	return t.d.RetractTable(key)
-}
+func (s *shiftTransformation) Process(chunk table.Chunk, d *execute.TransportDataset, mem memory.Allocator) error {
+	key := chunk.Key()
+	for _, c := range key.Cols() {
+		if execute.ContainsStr(s.columns, c.Label) {
+			k, err := s.regenerateKey(key)
+			if err != nil {
+				return err
+			}
+			key = k
+			break
+		}
+	}
 
-func (t *shiftTransformation) Process(id execute.DatasetID, tbl flux.Table) error {
-	key := tbl.Key()
-	// Update key
-	cols := make([]flux.ColMeta, len(key.Cols()))
-	vs := make([]values.Value, len(key.Cols()))
-	for j, c := range key.Cols() {
-		if execute.ContainsStr(t.columns, c.Label) {
+	buffer := arrow.TableBuffer{
+		GroupKey: key,
+		Columns:  chunk.Cols(),
+		Values:   make([]array.Interface, chunk.NCols()),
+	}
+	for j, c := range chunk.Cols() {
+		vs := chunk.Values(j)
+		if execute.ContainsStr(s.columns, c.Label) {
 			if c.Type != flux.TTime {
 				return errors.Newf(codes.FailedPrecondition, "column %q is not of type time", c.Label)
 			}
-			cols[j] = c
-			vs[j] = values.NewTime(key.ValueTime(j).Add(t.shift))
+			buffer.Values[j] = s.shiftTimes(vs.(*array.Int), mem)
 		} else {
-			cols[j] = c
-			vs[j] = key.Value(j)
+			vs.Retain()
+			buffer.Values[j] = vs
 		}
 	}
-	key = execute.NewGroupKey(cols, vs)
 
-	builder, created := t.cache.TableBuilder(key)
-	if !created {
-		return errors.Newf(codes.FailedPrecondition, "shift found duplicate table with key: %v", tbl.Key())
-	}
-	if err := execute.AddTableCols(tbl, builder); err != nil {
-		return err
-	}
+	out := table.ChunkFromBuffer(buffer)
+	return d.Process(out)
+}
 
-	return tbl.Do(func(cr flux.ColReader) error {
-		for j, c := range cr.Cols() {
-			if execute.ContainsStr(t.columns, c.Label) {
-				l := cr.Len()
-				for i := 0; i < l; i++ {
-					vs := cr.Times(j)
-					if vs.IsNull(i) {
-						if err := builder.AppendNil(j); err != nil {
-							return err
-						}
-						continue
-					}
-
-					ts := execute.Time(vs.Value(i))
-					if err := builder.AppendTime(j, ts.Add(t.shift)); err != nil {
-						return err
-					}
-				}
-			} else {
-				if err := execute.AppendCol(j, j, cr, builder); err != nil {
-					return err
-				}
+func (s *shiftTransformation) regenerateKey(key flux.GroupKey) (flux.GroupKey, error) {
+	cols := key.Cols()
+	vals := make([]values.Value, len(cols))
+	for j, c := range cols {
+		if execute.ContainsStr(s.columns, c.Label) {
+			if c.Type != flux.TTime {
+				return nil, errors.Newf(codes.FailedPrecondition, "column %q is not of type time", c.Label)
 			}
+			vals[j] = values.NewTime(key.ValueTime(j).Add(s.shift))
+		} else {
+			vals[j] = key.Value(j)
 		}
-		return nil
-	})
+	}
+	return execute.NewGroupKey(cols, vals), nil
 }
 
-func (t *shiftTransformation) UpdateWatermark(id execute.DatasetID, mark execute.Time) error {
-	return t.d.UpdateWatermark(mark)
+func (s *shiftTransformation) shiftTimes(vs *array.Int, mem memory.Allocator) *array.Int {
+	b := array.NewIntBuilder(mem)
+	b.Resize(vs.Len())
+	for i, n := 0, vs.Len(); i < n; i++ {
+		if vs.IsNull(i) {
+			b.AppendNull()
+			continue
+		}
+
+		ts := execute.Time(vs.Value(i)).Add(s.shift)
+		b.Append(int64(ts))
+	}
+	return b.NewIntArray()
 }
 
-func (t *shiftTransformation) UpdateProcessingTime(id execute.DatasetID, pt execute.Time) error {
-	return t.d.UpdateProcessingTime(pt)
-}
-
-func (t *shiftTransformation) Finish(id execute.DatasetID, err error) {
-	t.d.Finish(err)
-}
-
-func (t *shiftTransformation) SetParents(ids []execute.DatasetID) {}
+func (s *shiftTransformation) Close() error { return nil }

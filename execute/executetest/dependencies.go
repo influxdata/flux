@@ -27,12 +27,9 @@ func NewTestExecuteDependencies() flux.Dependency {
 }
 
 var testFlags = map[string]interface{}{
-	"narrowTransformationFilter":       true,
 	"aggregateTransformationTransport": true,
 	"groupTransformationGroup":         true,
-	"optimizeShiftTransformation":      true,
 	"optimizeUnionTransformation":      true,
-	"optimizeSortLimit":                true,
 }
 
 type testFlagger struct{}
