@@ -1171,7 +1171,7 @@ mod test {
     fn assert_docs(src: &str, pkg: PackageDoc, diags: Diagnostics, short: bool) {
         let mut analyzer = Analyzer::new_with_defaults(Environment::empty(true), Packages::new());
         let ast_pkg = parse_program(src);
-        let (types, _) = match analyzer.analyze_ast(ast_pkg.clone()) {
+        let (types, _) = match analyzer.analyze_ast(&ast_pkg) {
             Ok(t) => t,
             Err(e) => panic!("error inferring types {}", e),
         };

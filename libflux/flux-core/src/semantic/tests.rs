@@ -55,7 +55,7 @@ fn parse_map(package: Option<&str>, m: HashMap<&str, &str>) -> PolyTypeHashMap<S
             if let Err(err) = ast::check::check(ast::walk::Node::TypeExpression(&typ_expr)) {
                 panic!("TypeExpression parsing failed for {}. {:?}", name, err);
             }
-            let poly = convert_polytype(typ_expr, &mut Substitution::default());
+            let poly = convert_polytype(&typ_expr, &mut Substitution::default());
 
             // let poly = parse(expr).expect(format!("failed to parse {}", name).as_str());
             return (
@@ -134,7 +134,7 @@ fn infer_types(
     let mut analyzer = Analyzer::new(Environment::new(env), importer, config);
     let (env, pkg) = analyzer
         .analyze_source("main".into(), "".into(), src)
-        .map_err(Error::Semantic)?;
+        .map_err(|err| Error::Semantic(err.error))?;
 
     // Parse polytype expressions in expected environment.
     // Only perform this step if a map of wanted types exists.

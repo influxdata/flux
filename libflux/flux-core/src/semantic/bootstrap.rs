@@ -236,12 +236,11 @@ impl InferState {
     )> {
         let file = ast_packages
             .get(name)
-            .ok_or_else(|| anyhow!(r#"package import "{}" not found"#, name))?
-            .to_owned();
+            .ok_or_else(|| anyhow!(r#"package import "{}" not found"#, name))?;
 
         let env = Environment::new(prelude.into());
         let mut analyzer = Analyzer::new_with_defaults(env, &mut self.imports);
-        let (exports, sem_pkg) = analyzer.analyze_ast(file)?;
+        let (exports, sem_pkg) = analyzer.analyze_ast(file).map_err(|err| err.error)?;
 
         Ok((exports, sem_pkg))
     }
@@ -402,7 +401,7 @@ mod tests {
             if let Err(err) = ast::check::check(ast::walk::Node::TypeExpression(&typ_expr)) {
                 panic!("TypeExpression parsing failed for int. {:?}", err);
             }
-            convert_polytype(typ_expr, &mut Substitution::default())?
+            convert_polytype(&typ_expr, &mut Substitution::default())?
         })])
         .unwrap();
         if want != types {
@@ -422,7 +421,7 @@ mod tests {
                         "TypeExpression parsing failed for int. {:?}", err
                     );
                 }
-                convert_polytype(typ_expr, &mut Substitution::default())?
+                convert_polytype(&typ_expr, &mut Substitution::default())?
             },
             String::from("b") => {
                 let mut p = parser::Parser::new("{x: int , y: int}");
@@ -432,7 +431,7 @@ mod tests {
                         "TypeExpression parsing failed for int. {:?}", err
                     );
                 }
-                convert_polytype(typ_expr, &mut Substitution::default())?
+                convert_polytype(&typ_expr, &mut Substitution::default())?
             },
         };
         if want

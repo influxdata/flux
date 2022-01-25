@@ -71,7 +71,7 @@ pub type Result<T, E = Error> = std::result::Result<T, E>;
 ///
 /// [AST package]: ast::Package
 pub fn convert_package(
-    pkg: ast::Package,
+    pkg: &ast::Package,
     env: &Environment,
     sub: &mut Substitution,
 ) -> Result<Package, Errors<Error>> {
@@ -85,7 +85,7 @@ pub fn convert_package(
 /// [type expression]: ast::TypeExpression
 /// [`PolyType`]: types::PolyType
 pub fn convert_polytype(
-    type_expression: ast::TypeExpression,
+    type_expression: &ast::TypeExpression,
     sub: &mut Substitution,
 ) -> Result<types::PolyType, Errors<Error>> {
     let mut converter = Converter::new(sub);
@@ -95,12 +95,12 @@ pub fn convert_polytype(
 
 #[cfg(test)]
 pub(crate) fn convert_monotype(
-    ty: ast::MonoType,
+    ty: &ast::MonoType,
     tvars: &mut BTreeMap<String, types::Tvar>,
     sub: &mut Substitution,
 ) -> Result<MonoType, Errors<Error>> {
     let mut converter = Converter::new(sub);
-    let r = converter.convert_monotype(ty, tvars);
+    let r = converter.convert_monotype(&ty, tvars);
     converter.finish(r)
 }
 
@@ -226,15 +226,15 @@ impl SymbolStack {
             .find_map(|symbols| symbols.get(name))
     }
 
-    fn insert(&mut self, package: Option<&str>, name: String) -> Symbol {
+    fn insert(&mut self, package: Option<&str>, name: &str) -> Symbol {
         let symbol = Symbol::from(match package {
             Some(package) => format!("{}@{}", name, package),
-            None => name.clone(),
+            None => name.to_owned(),
         });
         self.symbols
             .last_mut()
             .unwrap()
-            .insert(name, symbol.clone());
+            .insert(name.to_owned(), symbol.clone());
         symbol
     }
 
@@ -266,7 +266,7 @@ impl<'a> Symbols<'a> {
         }
     }
 
-    fn insert(&mut self, package: Option<&str>, name: String) -> Symbol {
+    fn insert(&mut self, package: Option<&str>, name: &str) -> Symbol {
         let symbol = self.symbols.insert(package, name);
         if package.is_none() && !self.local_labels.contains_key(&symbol[..]) {
             self.local_labels.insert(symbol.to_string(), symbol.clone());
@@ -307,7 +307,7 @@ impl<'a> Symbols<'a> {
     }
 }
 
-struct Converter<'a> {
+pub(crate) struct Converter<'a> {
     sub: &'a mut Substitution,
     symbols: Symbols<'a>,
     errors: Errors<Error>,
@@ -322,7 +322,7 @@ impl<'a> Converter<'a> {
         }
     }
 
-    fn with_env(sub: &'a mut Substitution, env: &'a Environment) -> Self {
+    pub(crate) fn with_env(sub: &'a mut Substitution, env: &'a Environment) -> Self {
         Converter {
             sub,
             symbols: Symbols::with_env(env),
@@ -330,14 +330,7 @@ impl<'a> Converter<'a> {
         }
     }
 
-    fn finish<R>(mut self, result: Result<R>) -> Result<R, Errors<Error>> {
-        let r = match result {
-            Ok(r) => r,
-            Err(err) => {
-                self.errors.push(err);
-                return Err(self.errors);
-            }
-        };
+    pub(crate) fn finish<R>(self, r: R) -> Result<R, Errors<Error>> {
         if self.errors.has_errors() {
             Err(self.errors)
         } else {
@@ -345,147 +338,133 @@ impl<'a> Converter<'a> {
         }
     }
 
-    fn convert_package(&mut self, pkg: ast::Package) -> Result<Package> {
-        let package = pkg.package;
+    pub(crate) fn convert_package(&mut self, pkg: &ast::Package) -> Package {
+        let package = pkg.package.clone();
 
         self.symbols.enter_scope();
 
         let files = pkg
             .files
-            .into_iter()
+            .iter()
             .map(|file| self.convert_file(&package, file))
-            .collect::<Result<Vec<File>>>()?;
+            .collect::<Vec<File>>();
 
         self.symbols.exit_scope();
 
-        Ok(Package {
-            loc: pkg.base.location,
+        Package {
+            loc: pkg.base.location.clone(),
             package,
             files,
-        })
+        }
     }
 
-    fn convert_file(&mut self, package_name: &str, file: ast::File) -> Result<File> {
-        let package = self.convert_package_clause(file.package)?;
+    fn convert_file(&mut self, package_name: &str, file: &ast::File) -> File {
+        let package = self.convert_package_clause(file.package.as_ref());
         let imports = file
             .imports
-            .into_iter()
+            .iter()
             .map(|i| self.convert_import_declaration(i))
-            .collect::<Result<Vec<ImportDeclaration>>>()?;
+            .collect::<Vec<ImportDeclaration>>();
         let body = file
             .body
-            .into_iter()
+            .iter()
             .map(|s| self.convert_statement(package_name, s))
-            .collect::<Result<Vec<Statement>>>()?;
+            .collect::<Vec<Statement>>();
 
-        Ok(File {
-            loc: file.base.location,
+        File {
+            loc: file.base.location.clone(),
             package,
             imports,
             body,
-        })
+        }
     }
 
     fn convert_package_clause(
         &mut self,
-        pkg: Option<ast::PackageClause>,
-    ) -> Result<Option<PackageClause>> {
-        if pkg.is_none() {
-            return Ok(None);
-        }
-        let pkg = pkg.unwrap();
-        let name = self.convert_identifier(pkg.name)?;
-        Ok(Some(PackageClause {
-            loc: pkg.base.location,
+        pkg: Option<&ast::PackageClause>,
+    ) -> Option<PackageClause> {
+        let pkg = pkg?;
+        let name = self.convert_identifier(&pkg.name);
+        Some(PackageClause {
+            loc: pkg.base.location.clone(),
             name,
-        }))
-    }
-
-    fn convert_import_declaration(
-        &mut self,
-        imp: ast::ImportDeclaration,
-    ) -> Result<ImportDeclaration> {
-        let path = &imp.path.value;
-        let (import_symbol, alias) = match imp.alias {
-            None => {
-                let name = path.rsplit_once('/').map_or(&path[..], |t| t.1).to_owned();
-                (self.symbols.insert(None, name), None)
-            }
-            Some(id) => {
-                let id = self.define_identifier(None, id)?;
-                (id.name.clone(), Some(id))
-            }
-        };
-        let path = self.convert_string_literal(imp.path)?;
-
-        Ok(ImportDeclaration {
-            loc: imp.base.location,
-            alias,
-            path,
-            import_symbol,
         })
     }
 
-    fn convert_statement(&mut self, package: &str, stmt: ast::Statement) -> Result<Statement> {
-        match stmt {
-            ast::Statement::Option(s) => Ok(Statement::Option(Box::new(
-                self.convert_option_statement(*s)?,
-            ))),
-            ast::Statement::Builtin(s) => Ok(Statement::Builtin(
-                self.convert_builtin_statement(package, *s)?,
-            )),
-            ast::Statement::Test(s) => {
-                Ok(Statement::Test(Box::new(self.convert_test_statement(*s)?)))
+    fn convert_import_declaration(&mut self, imp: &ast::ImportDeclaration) -> ImportDeclaration {
+        let path = &imp.path.value;
+        let (import_symbol, alias) = match &imp.alias {
+            None => {
+                let name = path.rsplit_once('/').map_or(&path[..], |t| t.1);
+                (self.symbols.insert(None, name), None)
             }
+            Some(id) => {
+                let id = self.define_identifier(None, id);
+                (id.name.clone(), Some(id))
+            }
+        };
+        let path = self.convert_string_literal(&imp.path);
+
+        ImportDeclaration {
+            loc: imp.base.location.clone(),
+            alias,
+            path,
+            import_symbol,
+        }
+    }
+
+    fn convert_statement(&mut self, package: &str, stmt: &ast::Statement) -> Statement {
+        match stmt {
+            ast::Statement::Option(s) => {
+                Statement::Option(Box::new(self.convert_option_statement(s)))
+            }
+            ast::Statement::Builtin(s) => {
+                Statement::Builtin(self.convert_builtin_statement(package, s))
+            }
+            ast::Statement::Test(s) => Statement::Test(Box::new(self.convert_test_statement(s))),
             ast::Statement::TestCase(s) => {
                 self.errors
                     .push(located(s.base.location.clone(), ErrorKind::TestCase));
-                Ok(Statement::Error(s.base.location.clone()))
+                Statement::Error(s.base.location.clone())
             }
-            ast::Statement::Expr(s) => Ok(Statement::Expr(self.convert_expression_statement(*s)?)),
-            ast::Statement::Return(s) => Ok(Statement::Return(self.convert_return_statement(*s)?)),
+            ast::Statement::Expr(s) => Statement::Expr(self.convert_expression_statement(s)),
+            ast::Statement::Return(s) => Statement::Return(self.convert_return_statement(s)),
             // TODO(affo): we should fix this to include MemberAssignement.
             //  The error lies in AST: the Statement enum does not include that.
             //  This is not a problem when parsing, because we parse it only in the option assignment case,
             //  and we return an OptionStmt, which is a Statement.
-            ast::Statement::Variable(s) => Ok(Statement::Variable(Box::new(
-                self.convert_variable_assignment(Some(package), *s)?,
-            ))),
-            ast::Statement::Bad(s) => Ok(Statement::Error(s.base.location.clone())),
-        }
-    }
-
-    fn convert_assignment(&mut self, assign: ast::Assignment) -> Result<Assignment> {
-        match assign {
-            ast::Assignment::Variable(a) => Ok(Assignment::Variable(
-                self.convert_variable_assignment(None, *a)?,
-            )),
-            ast::Assignment::Member(a) => {
-                Ok(Assignment::Member(self.convert_member_assignment(*a)?))
+            ast::Statement::Variable(s) => {
+                Statement::Variable(Box::new(self.convert_variable_assignment(Some(package), s)))
             }
+            ast::Statement::Bad(s) => Statement::Error(s.base.location.clone()),
         }
     }
 
-    fn convert_option_statement(&mut self, stmt: ast::OptionStmt) -> Result<OptionStmt> {
-        Ok(OptionStmt {
-            loc: stmt.base.location,
-            assignment: self.convert_assignment(stmt.assignment)?,
-        })
+    fn convert_assignment(&mut self, assign: &ast::Assignment) -> Assignment {
+        match assign {
+            ast::Assignment::Variable(a) => {
+                Assignment::Variable(self.convert_variable_assignment(None, a))
+            }
+            ast::Assignment::Member(a) => Assignment::Member(self.convert_member_assignment(a)),
+        }
     }
 
-    fn convert_builtin_statement(
-        &mut self,
-        package: &str,
-        stmt: ast::BuiltinStmt,
-    ) -> Result<BuiltinStmt> {
-        Ok(BuiltinStmt {
-            loc: stmt.base.location,
-            id: self.define_identifier(Some(package), stmt.id)?,
-            typ_expr: self.convert_polytype(stmt.ty)?,
-        })
+    fn convert_option_statement(&mut self, stmt: &ast::OptionStmt) -> OptionStmt {
+        OptionStmt {
+            loc: stmt.base.location.clone(),
+            assignment: self.convert_assignment(&stmt.assignment),
+        }
     }
 
-    fn convert_builtintype(&mut self, basic: ast::NamedType) -> Result<BuiltinType> {
+    fn convert_builtin_statement(&mut self, package: &str, stmt: &ast::BuiltinStmt) -> BuiltinStmt {
+        BuiltinStmt {
+            loc: stmt.base.location.clone(),
+            id: self.define_identifier(Some(package), &stmt.id),
+            typ_expr: self.convert_polytype(&stmt.ty),
+        }
+    }
+
+    fn convert_builtintype(&mut self, basic: &ast::NamedType) -> Result<BuiltinType> {
         Ok(match basic.name.name.as_str() {
             "bool" => BuiltinType::Bool,
             "int" => BuiltinType::Int,
@@ -498,7 +477,7 @@ impl<'a> Converter<'a> {
             "bytes" => BuiltinType::Bytes,
             _ => {
                 return Err(located(
-                    basic.base.location,
+                    basic.base.location.clone(),
                     ErrorKind::InvalidNamedType(basic.name.name.to_string()),
                 ))
             }
@@ -507,38 +486,44 @@ impl<'a> Converter<'a> {
 
     fn convert_monotype(
         &mut self,
-        ty: ast::MonoType,
+        ty: &ast::MonoType,
         tvars: &mut BTreeMap<String, types::Tvar>,
-    ) -> Result<MonoType> {
+    ) -> MonoType {
         match ty {
             ast::MonoType::Tvar(tv) => {
                 let tvar = tvars
-                    .entry(tv.name.name)
+                    .entry(tv.name.name.clone())
                     .or_insert_with(|| self.sub.fresh());
-                Ok(MonoType::Var(*tvar))
+                MonoType::Var(*tvar)
             }
 
-            ast::MonoType::Basic(basic) => Ok(MonoType::from(self.convert_builtintype(basic)?)),
-            ast::MonoType::Array(arr) => Ok(MonoType::from(types::Array(
-                self.convert_monotype(arr.element, tvars)?,
-            ))),
+            ast::MonoType::Basic(basic) => match self.convert_builtintype(basic) {
+                Ok(builtin) => MonoType::from(builtin),
+                Err(err) => {
+                    self.errors.push(err);
+                    MonoType::Error
+                }
+            },
+            ast::MonoType::Array(arr) => {
+                MonoType::from(types::Array(self.convert_monotype(&arr.element, tvars)))
+            }
             ast::MonoType::Dict(dict) => {
-                let key = self.convert_monotype(dict.key, tvars)?;
-                let val = self.convert_monotype(dict.val, tvars)?;
-                Ok(MonoType::from(types::Dictionary { key, val }))
+                let key = self.convert_monotype(&dict.key, tvars);
+                let val = self.convert_monotype(&dict.val, tvars);
+                MonoType::from(types::Dictionary { key, val })
             }
             ast::MonoType::Function(func) => {
                 let mut req = MonoTypeMap::new();
                 let mut opt = MonoTypeMap::new();
                 let mut _pipe = None;
                 let mut dirty = false;
-                for param in func.parameters {
+                for param in &func.parameters {
                     match param {
                         ast::ParameterType::Required { name, monotype, .. } => {
-                            req.insert(name.name, self.convert_monotype(monotype, tvars)?);
+                            req.insert(name.name.clone(), self.convert_monotype(monotype, tvars));
                         }
                         ast::ParameterType::Optional { name, monotype, .. } => {
-                            opt.insert(name.name, self.convert_monotype(monotype, tvars)?);
+                            opt.insert(name.name.clone(), self.convert_monotype(monotype, tvars));
                         }
                         ast::ParameterType::Pipe {
                             name,
@@ -548,59 +533,56 @@ impl<'a> Converter<'a> {
                             if !dirty {
                                 _pipe = Some(types::Property {
                                     k: match name {
-                                        Some(n) => n.name,
+                                        Some(n) => n.name.clone(),
                                         None => String::from("<-"),
                                     },
-                                    v: self.convert_monotype(monotype, tvars)?,
+                                    v: self.convert_monotype(monotype, tvars),
                                 });
                                 dirty = true;
                             } else {
                                 self.errors
-                                    .push(located(base.location, ErrorKind::AtMostOnePipe));
+                                    .push(located(base.location.clone(), ErrorKind::AtMostOnePipe));
                             }
                         }
                     }
                 }
-                Ok(MonoType::from(types::Function {
+                MonoType::from(types::Function {
                     req,
                     opt,
                     pipe: _pipe,
-                    retn: self.convert_monotype(func.monotype, tvars)?,
-                }))
+                    retn: self.convert_monotype(&func.monotype, tvars),
+                })
             }
             ast::MonoType::Record(rec) => {
-                let mut r = match rec.tvar {
+                let mut r = match &rec.tvar {
                     None => MonoType::from(types::Record::Empty),
                     Some(id) => {
                         let tv = ast::MonoType::Tvar(ast::TvarType {
                             base: id.clone().base,
-                            name: id,
+                            name: id.clone(),
                         });
-                        self.convert_monotype(tv, tvars)?
+                        self.convert_monotype(&tv, tvars)
                     }
                 };
-                for prop in rec.properties {
+                for prop in &rec.properties {
                     let property = types::Property {
                         k: types::Label::from(self.symbols.lookup(&prop.name.name)),
-                        v: self.convert_monotype(prop.monotype, tvars)?,
+                        v: self.convert_monotype(&prop.monotype, tvars),
                     };
                     r = MonoType::from(types::Record::Extension {
                         head: property,
                         tail: r,
                     })
                 }
-                Ok(r)
+                r
             }
         }
     }
 
     // [`PolyType`]: types::PolyType
-    fn convert_polytype(
-        &mut self,
-        type_expression: ast::TypeExpression,
-    ) -> Result<types::PolyType> {
+    fn convert_polytype(&mut self, type_expression: &ast::TypeExpression) -> types::PolyType {
         let mut tvars = BTreeMap::<String, types::Tvar>::new();
-        let expr = self.convert_monotype(type_expression.monotype, &mut tvars)?;
+        let expr = self.convert_monotype(&type_expression.monotype, &mut tvars);
         let mut vars = Vec::<types::Tvar>::new();
         let mut cons = SemanticMap::<types::Tvar, Vec<types::Kind>>::new();
 
@@ -624,118 +606,119 @@ impl<'a> Converter<'a> {
                 }
             }
         }
-        Ok(types::PolyType { vars, cons, expr })
+        types::PolyType { vars, cons, expr }
     }
 
-    fn convert_test_statement(&mut self, stmt: ast::TestStmt) -> Result<TestStmt> {
-        Ok(TestStmt {
-            loc: stmt.base.location,
-            assignment: self.convert_variable_assignment(None, stmt.assignment)?,
-        })
+    fn convert_test_statement(&mut self, stmt: &ast::TestStmt) -> TestStmt {
+        TestStmt {
+            loc: stmt.base.location.clone(),
+            assignment: self.convert_variable_assignment(None, &stmt.assignment),
+        }
     }
 
-    fn convert_expression_statement(&mut self, stmt: ast::ExprStmt) -> Result<ExprStmt> {
-        Ok(ExprStmt {
-            loc: stmt.base.location,
-            expression: self.convert_expression(stmt.expression)?,
-        })
+    fn convert_expression_statement(&mut self, stmt: &ast::ExprStmt) -> ExprStmt {
+        ExprStmt {
+            loc: stmt.base.location.clone(),
+            expression: self.convert_expression(&stmt.expression),
+        }
     }
 
-    fn convert_return_statement(&mut self, stmt: ast::ReturnStmt) -> Result<ReturnStmt> {
-        Ok(ReturnStmt {
-            loc: stmt.base.location,
-            argument: self.convert_expression(stmt.argument)?,
-        })
+    fn convert_return_statement(&mut self, stmt: &ast::ReturnStmt) -> ReturnStmt {
+        ReturnStmt {
+            loc: stmt.base.location.clone(),
+            argument: self.convert_expression(&stmt.argument),
+        }
     }
 
     fn convert_variable_assignment(
         &mut self,
         package: Option<&str>,
-        stmt: ast::VariableAssgn,
-    ) -> Result<VariableAssgn> {
-        let expr = self.convert_expression(stmt.init)?;
-        Ok(VariableAssgn::new(
-            self.define_identifier(package, stmt.id)?,
+        stmt: &ast::VariableAssgn,
+    ) -> VariableAssgn {
+        let expr = self.convert_expression(&stmt.init);
+        VariableAssgn::new(
+            self.define_identifier(package, &stmt.id),
             expr,
-            stmt.base.location,
-        ))
+            stmt.base.location.clone(),
+        )
     }
 
-    fn convert_member_assignment(&mut self, stmt: ast::MemberAssgn) -> Result<MemberAssgn> {
-        let init = self.convert_expression(stmt.init)?;
-        Ok(MemberAssgn {
-            loc: stmt.base.location,
-            member: self.convert_member_expression(stmt.member)?,
+    fn convert_member_assignment(&mut self, stmt: &ast::MemberAssgn) -> MemberAssgn {
+        let init = self.convert_expression(&stmt.init);
+        MemberAssgn {
+            loc: stmt.base.location.clone(),
+            member: self.convert_member_expression(&stmt.member),
             init,
-        })
+        }
     }
 
-    fn convert_expression(&mut self, expr: ast::Expression) -> Result<Expression> {
+    fn convert_expression(&mut self, expr: &ast::Expression) -> Expression {
         match expr {
-            ast::Expression::Function(expr) => Ok(Expression::Function(Box::new(
-                self.convert_function_expression(*expr)?,
-            ))),
-            ast::Expression::Call(expr) => Ok(Expression::Call(Box::new(
-                self.convert_call_expression(*expr)?,
-            ))),
-            ast::Expression::Member(expr) => Ok(Expression::Member(Box::new(
-                self.convert_member_expression(*expr)?,
-            ))),
-            ast::Expression::Index(expr) => Ok(Expression::Index(Box::new(
-                self.convert_index_expression(*expr)?,
-            ))),
-            ast::Expression::PipeExpr(expr) => Ok(Expression::Call(Box::new(
-                self.convert_pipe_expression(*expr)?,
-            ))),
-            ast::Expression::Binary(expr) => Ok(Expression::Binary(Box::new(
-                self.convert_binary_expression(*expr)?,
-            ))),
-            ast::Expression::Unary(expr) => Ok(Expression::Unary(Box::new(
-                self.convert_unary_expression(*expr)?,
-            ))),
-            ast::Expression::Logical(expr) => Ok(Expression::Logical(Box::new(
-                self.convert_logical_expression(*expr)?,
-            ))),
-            ast::Expression::Conditional(expr) => Ok(Expression::Conditional(Box::new(
-                self.convert_conditional_expression(*expr)?,
-            ))),
-            ast::Expression::Object(expr) => Ok(Expression::Object(Box::new(
-                self.convert_object_expression(*expr)?,
-            ))),
-            ast::Expression::Array(expr) => Ok(Expression::Array(Box::new(
-                self.convert_array_expression(*expr)?,
-            ))),
-            ast::Expression::Dict(expr) => Ok(Expression::Dict(Box::new(
-                self.convert_dict_expression(*expr)?,
-            ))),
-            ast::Expression::Identifier(expr) => Ok(Expression::Identifier(
-                self.convert_identifier_expression(expr)?,
-            )),
-            ast::Expression::StringExpr(expr) => Ok(Expression::StringExpr(Box::new(
-                self.convert_string_expression(*expr)?,
-            ))),
-            ast::Expression::Paren(expr) => self.convert_expression(expr.expression),
+            ast::Expression::Function(expr) => {
+                Expression::Function(Box::new(self.convert_function_expression(expr)))
+            }
+            ast::Expression::Call(expr) => {
+                Expression::Call(Box::new(self.convert_call_expression(expr)))
+            }
+            ast::Expression::Member(expr) => {
+                Expression::Member(Box::new(self.convert_member_expression(expr)))
+            }
+            ast::Expression::Index(expr) => {
+                Expression::Index(Box::new(self.convert_index_expression(expr)))
+            }
+            ast::Expression::PipeExpr(expr) => {
+                Expression::Call(Box::new(self.convert_pipe_expression(expr)))
+            }
+            ast::Expression::Binary(expr) => {
+                Expression::Binary(Box::new(self.convert_binary_expression(expr)))
+            }
+            ast::Expression::Unary(expr) => {
+                Expression::Unary(Box::new(self.convert_unary_expression(expr)))
+            }
+            ast::Expression::Logical(expr) => {
+                Expression::Logical(Box::new(self.convert_logical_expression(expr)))
+            }
+            ast::Expression::Conditional(expr) => {
+                Expression::Conditional(Box::new(self.convert_conditional_expression(expr)))
+            }
+            ast::Expression::Object(expr) => {
+                Expression::Object(Box::new(self.convert_object_expression(expr)))
+            }
+            ast::Expression::Array(expr) => {
+                Expression::Array(Box::new(self.convert_array_expression(expr)))
+            }
+            ast::Expression::Dict(expr) => {
+                Expression::Dict(Box::new(self.convert_dict_expression(expr)))
+            }
+            ast::Expression::Identifier(expr) => {
+                Expression::Identifier(self.convert_identifier_expression(expr))
+            }
+            ast::Expression::StringExpr(expr) => {
+                Expression::StringExpr(Box::new(self.convert_string_expression(expr)))
+            }
+            ast::Expression::Paren(expr) => self.convert_expression(&expr.expression),
             ast::Expression::StringLit(lit) => {
-                Ok(Expression::StringLit(self.convert_string_literal(lit)?))
+                Expression::StringLit(self.convert_string_literal(lit))
             }
-            ast::Expression::Boolean(lit) => {
-                Ok(Expression::Boolean(self.convert_boolean_literal(lit)?))
+            ast::Expression::Boolean(lit) => Expression::Boolean(self.convert_boolean_literal(lit)),
+            ast::Expression::Float(lit) => Expression::Float(self.convert_float_literal(lit)),
+            ast::Expression::Integer(lit) => Expression::Integer(self.convert_integer_literal(lit)),
+            ast::Expression::Uint(lit) => {
+                Expression::Uint(self.convert_unsigned_integer_literal(lit))
             }
-            ast::Expression::Float(lit) => Ok(Expression::Float(self.convert_float_literal(lit)?)),
-            ast::Expression::Integer(lit) => {
-                Ok(Expression::Integer(self.convert_integer_literal(lit)?))
-            }
-            ast::Expression::Uint(lit) => Ok(Expression::Uint(
-                self.convert_unsigned_integer_literal(lit)?,
-            )),
-            ast::Expression::Regexp(lit) => {
-                Ok(Expression::Regexp(self.convert_regexp_literal(lit)?))
-            }
+            ast::Expression::Regexp(lit) => Expression::Regexp(self.convert_regexp_literal(lit)),
             ast::Expression::Duration(lit) => {
-                Ok(Expression::Duration(self.convert_duration_literal(lit)?))
+                let location = lit.base.location.clone();
+                match self.convert_duration_literal(lit) {
+                    Ok(d) => Expression::Duration(d),
+                    Err(err) => {
+                        self.errors.push(err);
+                        Expression::Error(location)
+                    }
+                }
             }
             ast::Expression::DateTime(lit) => {
-                Ok(Expression::DateTime(self.convert_date_time_literal(lit)?))
+                Expression::DateTime(self.convert_date_time_literal(lit))
             }
             ast::Expression::PipeLit(lit) => {
                 self.errors.push(located(
@@ -743,33 +726,30 @@ impl<'a> Converter<'a> {
                     ErrorKind::InvalidPipeLit,
                 ));
 
-                Ok(Expression::Error(lit.base.location))
+                Expression::Error(lit.base.location.clone())
             }
-            ast::Expression::Bad(bad) => Ok(Expression::Error(bad.base.location.clone())),
+            ast::Expression::Bad(bad) => Expression::Error(bad.base.location.clone()),
         }
     }
 
-    fn convert_function_expression(&mut self, expr: ast::FunctionExpr) -> Result<FunctionExpr> {
+    fn convert_function_expression(&mut self, expr: &ast::FunctionExpr) -> FunctionExpr {
         self.symbols.enter_scope();
 
-        let params = self.convert_function_params(expr.params)?;
-        let body = self.convert_function_body(expr.body)?;
+        let params = self.convert_function_params(&expr.params);
+        let body = self.convert_function_body(&expr.body);
 
         self.symbols.exit_scope();
 
-        Ok(FunctionExpr {
-            loc: expr.base.location,
+        FunctionExpr {
+            loc: expr.base.location.clone(),
             typ: MonoType::Error,
             params,
             body,
             vectorized: None,
-        })
+        }
     }
 
-    fn convert_function_params(
-        &mut self,
-        mut props: Vec<ast::Property>,
-    ) -> Result<Vec<FunctionParameter>> {
+    fn convert_function_params(&mut self, props: &[ast::Property]) -> Vec<FunctionParameter> {
         // The defaults must be converted first so that the parameters are not in scope
         let mut piped = false;
         enum Default {
@@ -778,30 +758,33 @@ impl<'a> Converter<'a> {
             None,
         }
         let defaults: Vec<_> = props
-            .iter_mut()
+            .iter()
             .map(|prop| {
-                if let Some(expr) = prop.value.take() {
+                if let Some(expr) = &prop.value {
                     match expr {
                         ast::Expression::PipeLit(lit) => {
                             if piped {
-                                return Err(located(lit.base.location, ErrorKind::AtMostOnePipe));
+                                self.errors.push(located(
+                                    lit.base.location.clone(),
+                                    ErrorKind::AtMostOnePipe,
+                                ));
                             } else {
                                 piped = true;
                             }
-                            Ok(Default::Piped)
+                            Default::Piped
                         }
-                        e => Ok(Default::Expr(self.convert_expression(e)?)),
+                        e => Default::Expr(self.convert_expression(e)),
                     }
                 } else {
-                    Ok(Default::None)
+                    Default::None
                 }
             })
-            .collect::<Result<_>>()?;
+            .collect();
 
         // The iteration here is complex, cannot use iter().map()..., better to write it explicitly.
         let mut params: Vec<FunctionParameter> = Vec::new();
-        for (prop, default) in props.into_iter().zip(defaults) {
-            let id = match prop.key {
+        for (prop, default) in props.iter().zip(defaults) {
+            let id = match &prop.key {
                 ast::PropertyKey::Identifier(id) => id,
                 _ => {
                     self.errors.push(located(
@@ -811,7 +794,7 @@ impl<'a> Converter<'a> {
                     continue;
                 }
             };
-            let key = self.define_identifier(None, id)?;
+            let key = self.define_identifier(None, id);
 
             let (is_pipe, default) = match default {
                 Default::Expr(expr) => (false, Some(expr)),
@@ -820,29 +803,29 @@ impl<'a> Converter<'a> {
             };
 
             params.push(FunctionParameter {
-                loc: prop.base.location,
+                loc: prop.base.location.clone(),
                 is_pipe,
                 key,
                 default,
             });
         }
-        Ok(params)
+        params
     }
 
-    fn convert_function_body(&mut self, body: ast::FunctionBody) -> Result<Block> {
+    fn convert_function_body(&mut self, body: &ast::FunctionBody) -> Block {
         match body {
             ast::FunctionBody::Expr(expr) => {
-                let argument = self.convert_expression(expr)?;
-                Ok(Block::Return(ReturnStmt {
+                let argument = self.convert_expression(expr);
+                Block::Return(ReturnStmt {
                     loc: argument.loc().clone(),
                     argument,
-                }))
+                })
             }
-            ast::FunctionBody::Block(block) => Ok(self.convert_block(block)?),
+            ast::FunctionBody::Block(block) => self.convert_block(block),
         }
     }
 
-    fn convert_block(&mut self, block: ast::Block) -> Result<Block> {
+    fn convert_block(&mut self, block: &ast::Block) -> Block {
         enum TempBlock {
             Variable(Box<VariableAssgn>),
             Expr(ExprStmt),
@@ -860,16 +843,16 @@ impl<'a> Converter<'a> {
         }
 
         let mut body = Vec::with_capacity(block.body.len());
-        for s in block.body {
+        for s in &block.body {
             match s {
                 ast::Statement::Variable(dec) => body.push(TempBlock::Variable(Box::new(
-                    self.convert_variable_assignment(None, *dec)?,
+                    self.convert_variable_assignment(None, dec),
                 ))),
                 ast::Statement::Expr(stmt) => {
-                    body.push(TempBlock::Expr(self.convert_expression_statement(*stmt)?))
+                    body.push(TempBlock::Expr(self.convert_expression_statement(stmt)))
                 }
                 ast::Statement::Return(stmt) => {
-                    let argument = self.convert_expression(stmt.argument)?;
+                    let argument = self.convert_expression(&stmt.argument);
                     body.push(TempBlock::Return(ReturnStmt {
                         loc: stmt.base.location.clone(),
                         argument,
@@ -902,172 +885,178 @@ impl<'a> Converter<'a> {
                 ));
                 Block::Return(ReturnStmt {
                     loc: block.base.location.clone(),
-                    argument: Expression::Error(block.base.location),
+                    argument: Expression::Error(block.base.location.clone()),
                 })
             }
         };
 
-        body.try_fold(block, |acc, s| match s {
-            TempBlock::Variable(dec) => Ok(Block::Variable(dec, Box::new(acc))),
-            TempBlock::Expr(stmt) => Ok(Block::Expr(stmt, Box::new(acc))),
+        body.fold(block, |acc, s| match s {
+            TempBlock::Variable(dec) => Block::Variable(dec, Box::new(acc)),
+            TempBlock::Expr(stmt) => Block::Expr(stmt, Box::new(acc)),
             TempBlock::Return(s) => {
                 self.errors.push(located(
                     s.loc,
                     ErrorKind::InvalidFunctionStatement("return"),
                 ));
-                Ok(acc)
+                acc
             }
         })
     }
 
-    fn convert_call_expression(&mut self, expr: ast::CallExpr) -> Result<CallExpr> {
-        let callee = self.convert_expression(expr.callee)?;
+    fn convert_call_expression(&mut self, expr: &ast::CallExpr) -> CallExpr {
+        let callee = self.convert_expression(&expr.callee);
         // TODO(affo): I'd prefer these checks to be in ast.Check().
-        if expr.arguments.len() > 1 {
-            return Err(located(expr.base.location, ErrorKind::ExtraParameterRecord));
-        }
         let mut args = expr
             .arguments
-            .into_iter()
+            .iter()
             .map(|a| match a {
-                ast::Expression::Object(obj) => self.convert_object_expression(*obj),
-                _ => Err(located(
-                    a.base().location.clone(),
-                    ErrorKind::ParametersNotRecord,
-                )),
+                ast::Expression::Object(obj) => self.convert_object_expression(obj),
+                _ => {
+                    self.errors.push(located(
+                        a.base().location.clone(),
+                        ErrorKind::ParametersNotRecord,
+                    ));
+
+                    ObjectExpr {
+                        loc: a.base().location.clone(),
+                        typ: MonoType::Error,
+                        with: None,
+                        properties: Vec::new(),
+                    }
+                }
             })
-            .collect::<Result<Vec<ObjectExpr>>>()?;
+            .collect::<Vec<ObjectExpr>>();
         let arguments = match args.len() {
-            0 => Ok(Vec::new()),
-            1 => Ok(args.pop().expect("there must be 1 element").properties),
-            _ => Err(located(
-                expr.base.location.clone(),
-                ErrorKind::ExtraParameterRecord,
-            )),
-        }?;
-        Ok(CallExpr {
-            loc: expr.base.location,
+            0 => Vec::new(),
+            1 => args.pop().expect("there must be 1 element").properties,
+            _ => {
+                self.errors.push(located(
+                    expr.base.location.clone(),
+                    ErrorKind::ExtraParameterRecord,
+                ));
+                args.remove(0).properties
+            }
+        };
+        CallExpr {
+            loc: expr.base.location.clone(),
             typ: MonoType::Error,
             callee,
             arguments,
             pipe: None,
-        })
+        }
     }
 
-    fn convert_member_expression(&mut self, expr: ast::MemberExpr) -> Result<MemberExpr> {
-        let object = self.convert_expression(expr.object)?;
-        let property = match expr.property {
-            ast::PropertyKey::Identifier(id) => id.name,
-            ast::PropertyKey::StringLit(lit) => lit.value,
+    fn convert_member_expression(&mut self, expr: &ast::MemberExpr) -> MemberExpr {
+        let object = self.convert_expression(&expr.object);
+        let property = match &expr.property {
+            ast::PropertyKey::Identifier(id) => &id.name,
+            ast::PropertyKey::StringLit(lit) => &lit.value,
         };
-        let property = self.symbols.lookup_property_key(&property);
-        Ok(MemberExpr {
-            loc: expr.base.location,
+        let property = self.symbols.lookup_property_key(property);
+        MemberExpr {
+            loc: expr.base.location.clone(),
             typ: MonoType::Error,
             object,
             property,
-        })
+        }
     }
 
-    fn convert_index_expression(&mut self, expr: ast::IndexExpr) -> Result<IndexExpr> {
-        let array = self.convert_expression(expr.array)?;
-        let index = self.convert_expression(expr.index)?;
-        Ok(IndexExpr {
-            loc: expr.base.location,
+    fn convert_index_expression(&mut self, expr: &ast::IndexExpr) -> IndexExpr {
+        let array = self.convert_expression(&expr.array);
+        let index = self.convert_expression(&expr.index);
+        IndexExpr {
+            loc: expr.base.location.clone(),
             typ: MonoType::Error,
             array,
             index,
-        })
+        }
     }
 
-    fn convert_pipe_expression(&mut self, expr: ast::PipeExpr) -> Result<CallExpr> {
-        let mut call = self.convert_call_expression(expr.call)?;
-        let pipe = self.convert_expression(expr.argument)?;
+    fn convert_pipe_expression(&mut self, expr: &ast::PipeExpr) -> CallExpr {
+        let mut call = self.convert_call_expression(&expr.call);
+        let pipe = self.convert_expression(&expr.argument);
         call.pipe = Some(pipe);
-        Ok(call)
+        call
     }
 
-    fn convert_binary_expression(&mut self, expr: ast::BinaryExpr) -> Result<BinaryExpr> {
-        let left = self.convert_expression(expr.left)?;
-        let right = self.convert_expression(expr.right)?;
-        Ok(BinaryExpr {
-            loc: expr.base.location,
+    fn convert_binary_expression(&mut self, expr: &ast::BinaryExpr) -> BinaryExpr {
+        let left = self.convert_expression(&expr.left);
+        let right = self.convert_expression(&expr.right);
+        BinaryExpr {
+            loc: expr.base.location.clone(),
             typ: MonoType::Error,
-            operator: expr.operator,
+            operator: expr.operator.clone(),
             left,
             right,
-        })
+        }
     }
 
-    fn convert_unary_expression(&mut self, expr: ast::UnaryExpr) -> Result<UnaryExpr> {
-        let argument = self.convert_expression(expr.argument)?;
-        Ok(UnaryExpr {
-            loc: expr.base.location,
+    fn convert_unary_expression(&mut self, expr: &ast::UnaryExpr) -> UnaryExpr {
+        let argument = self.convert_expression(&expr.argument);
+        UnaryExpr {
+            loc: expr.base.location.clone(),
             typ: MonoType::Error,
-            operator: expr.operator,
+            operator: expr.operator.clone(),
             argument,
-        })
+        }
     }
 
-    fn convert_logical_expression(&mut self, expr: ast::LogicalExpr) -> Result<LogicalExpr> {
-        let left = self.convert_expression(expr.left)?;
-        let right = self.convert_expression(expr.right)?;
-        Ok(LogicalExpr {
-            loc: expr.base.location,
-            operator: expr.operator,
+    fn convert_logical_expression(&mut self, expr: &ast::LogicalExpr) -> LogicalExpr {
+        let left = self.convert_expression(&expr.left);
+        let right = self.convert_expression(&expr.right);
+        LogicalExpr {
+            loc: expr.base.location.clone(),
+            operator: expr.operator.clone(),
             left,
             right,
-        })
+        }
     }
 
-    fn convert_conditional_expression(
-        &mut self,
-        expr: ast::ConditionalExpr,
-    ) -> Result<ConditionalExpr> {
-        let test = self.convert_expression(expr.test)?;
-        let consequent = self.convert_expression(expr.consequent)?;
-        let alternate = self.convert_expression(expr.alternate)?;
-        Ok(ConditionalExpr {
-            loc: expr.base.location,
+    fn convert_conditional_expression(&mut self, expr: &ast::ConditionalExpr) -> ConditionalExpr {
+        let test = self.convert_expression(&expr.test);
+        let consequent = self.convert_expression(&expr.consequent);
+        let alternate = self.convert_expression(&expr.alternate);
+        ConditionalExpr {
+            loc: expr.base.location.clone(),
             test,
             consequent,
             alternate,
             typ: MonoType::Error,
-        })
+        }
     }
 
-    fn convert_object_expression(&mut self, expr: ast::ObjectExpr) -> Result<ObjectExpr> {
+    fn convert_object_expression(&mut self, expr: &ast::ObjectExpr) -> ObjectExpr {
         let properties = expr
             .properties
-            .into_iter()
+            .iter()
             .map(|p| self.convert_property(p))
-            .collect::<Result<Vec<Property>>>()?;
-        let with = match expr.with {
-            Some(with) => Some(self.convert_identifier_expression(with.source)?),
-            None => None,
-        };
-        Ok(ObjectExpr {
-            loc: expr.base.location,
+            .collect::<Vec<Property>>();
+        let with = expr
+            .with
+            .as_ref()
+            .map(|with| self.convert_identifier_expression(&with.source));
+        ObjectExpr {
+            loc: expr.base.location.clone(),
             typ: MonoType::Error,
             with,
             properties,
-        })
+        }
     }
 
-    fn convert_property(&mut self, prop: ast::Property) -> Result<Property> {
-        let key = match prop.key {
-            ast::PropertyKey::Identifier(id) => self.convert_property_key(id)?,
+    fn convert_property(&mut self, prop: &ast::Property) -> Property {
+        let key = match &prop.key {
+            ast::PropertyKey::Identifier(id) => self.convert_property_key(id),
             ast::PropertyKey::StringLit(lit) => {
                 let loc = lit.base.location.clone();
-                let name = self.convert_string_literal(lit)?.value;
+                let name = self.convert_string_literal(lit).value;
                 Identifier {
                     name: self.symbols.lookup_property_key(&name),
                     loc,
                 }
             }
         };
-        let value = match prop.value {
-            Some(expr) => self.convert_expression(expr)?,
+        let value = match &prop.value {
+            Some(expr) => self.convert_expression(expr),
             None => Expression::Identifier(IdentifierExpr {
                 loc: key.loc.clone(),
                 typ: MonoType::Error,
@@ -1077,148 +1066,141 @@ impl<'a> Converter<'a> {
                     .unwrap_or_else(|| key.name.clone()),
             }),
         };
-        Ok(Property {
-            loc: prop.base.location,
+        Property {
+            loc: prop.base.location.clone(),
             key,
             value,
-        })
+        }
     }
 
-    fn convert_array_expression(&mut self, expr: ast::ArrayExpr) -> Result<ArrayExpr> {
+    fn convert_array_expression(&mut self, expr: &ast::ArrayExpr) -> ArrayExpr {
         let elements = expr
             .elements
-            .into_iter()
-            .map(|e| self.convert_expression(e.expression))
-            .collect::<Result<Vec<Expression>>>()?;
-        Ok(ArrayExpr {
-            loc: expr.base.location,
+            .iter()
+            .map(|e| self.convert_expression(&e.expression))
+            .collect::<Vec<Expression>>();
+        ArrayExpr {
+            loc: expr.base.location.clone(),
             typ: MonoType::Error,
             elements,
-        })
+        }
     }
 
-    fn convert_dict_expression(&mut self, expr: ast::DictExpr) -> Result<DictExpr> {
+    fn convert_dict_expression(&mut self, expr: &ast::DictExpr) -> DictExpr {
         let mut elements = Vec::new();
-        for item in expr.elements.into_iter() {
+        for item in &expr.elements {
             elements.push((
-                self.convert_expression(item.key)?,
-                self.convert_expression(item.val)?,
+                self.convert_expression(&item.key),
+                self.convert_expression(&item.val),
             ));
         }
-        Ok(DictExpr {
-            loc: expr.base.location,
+        DictExpr {
+            loc: expr.base.location.clone(),
             typ: MonoType::Error,
             elements,
-        })
+        }
     }
 
-    fn define_identifier(
-        &mut self,
-        package: Option<&str>,
-        id: ast::Identifier,
-    ) -> Result<Identifier> {
-        let name = self.symbols.insert(package, id.name);
-        Ok(Identifier {
-            loc: id.base.location,
+    fn define_identifier(&mut self, package: Option<&str>, id: &ast::Identifier) -> Identifier {
+        let name = self.symbols.insert(package, &id.name);
+        Identifier {
+            loc: id.base.location.clone(),
             name,
-        })
+        }
     }
 
-    fn convert_property_key(&mut self, id: ast::Identifier) -> Result<Identifier> {
-        Ok(Identifier {
+    fn convert_property_key(&mut self, id: &ast::Identifier) -> Identifier {
+        Identifier {
             name: self.symbols.lookup_property_key(&id.name),
-            loc: id.base.location,
-        })
+            loc: id.base.location.clone(),
+        }
     }
 
-    fn convert_identifier(&mut self, id: ast::Identifier) -> Result<Identifier> {
-        Ok(Identifier {
+    fn convert_identifier(&mut self, id: &ast::Identifier) -> Identifier {
+        Identifier {
             name: self.symbols.lookup(&id.name),
-            loc: id.base.location,
-        })
+            loc: id.base.location.clone(),
+        }
     }
 
-    fn convert_identifier_expression(&mut self, id: ast::Identifier) -> Result<IdentifierExpr> {
-        Ok(IdentifierExpr {
+    fn convert_identifier_expression(&mut self, id: &ast::Identifier) -> IdentifierExpr {
+        IdentifierExpr {
             typ: MonoType::Error,
             name: self.symbols.lookup(&id.name),
-            loc: id.base.location,
-        })
+            loc: id.base.location.clone(),
+        }
     }
 
-    fn convert_string_expression(&mut self, expr: ast::StringExpr) -> Result<StringExpr> {
+    fn convert_string_expression(&mut self, expr: &ast::StringExpr) -> StringExpr {
         let parts = expr
             .parts
-            .into_iter()
+            .iter()
             .map(|p| self.convert_string_expression_part(p))
-            .collect::<Result<Vec<StringExprPart>>>()?;
-        Ok(StringExpr {
-            loc: expr.base.location,
+            .collect::<Vec<StringExprPart>>();
+        StringExpr {
+            loc: expr.base.location.clone(),
             parts,
-        })
+        }
     }
 
-    fn convert_string_expression_part(
-        &mut self,
-        expr: ast::StringExprPart,
-    ) -> Result<StringExprPart> {
+    fn convert_string_expression_part(&mut self, expr: &ast::StringExprPart) -> StringExprPart {
         match expr {
-            ast::StringExprPart::Text(txt) => Ok(StringExprPart::Text(TextPart {
-                loc: txt.base.location,
-                value: txt.value,
-            })),
+            ast::StringExprPart::Text(txt) => StringExprPart::Text(TextPart {
+                loc: txt.base.location.clone(),
+                value: txt.value.clone(),
+            }),
             ast::StringExprPart::Interpolated(itp) => {
-                Ok(StringExprPart::Interpolated(InterpolatedPart {
-                    loc: itp.base.location,
-                    expression: self.convert_expression(itp.expression)?,
-                }))
+                StringExprPart::Interpolated(InterpolatedPart {
+                    loc: itp.base.location.clone(),
+                    expression: self.convert_expression(&itp.expression),
+                })
             }
         }
     }
 
-    fn convert_string_literal(&mut self, lit: ast::StringLit) -> Result<StringLit> {
-        Ok(StringLit {
-            loc: lit.base.location,
-            value: lit.value,
-        })
+    fn convert_string_literal(&mut self, lit: &ast::StringLit) -> StringLit {
+        StringLit {
+            loc: lit.base.location.clone(),
+            value: lit.value.clone(),
+        }
     }
 
-    fn convert_boolean_literal(&mut self, lit: ast::BooleanLit) -> Result<BooleanLit> {
-        Ok(BooleanLit {
-            loc: lit.base.location,
+    fn convert_boolean_literal(&mut self, lit: &ast::BooleanLit) -> BooleanLit {
+        BooleanLit {
+            loc: lit.base.location.clone(),
             value: lit.value,
-        })
+        }
     }
 
-    fn convert_float_literal(&mut self, lit: ast::FloatLit) -> Result<FloatLit> {
-        Ok(FloatLit {
-            loc: lit.base.location,
+    fn convert_float_literal(&mut self, lit: &ast::FloatLit) -> FloatLit {
+        FloatLit {
+            loc: lit.base.location.clone(),
             value: lit.value,
-        })
+        }
     }
 
-    fn convert_integer_literal(&mut self, lit: ast::IntegerLit) -> Result<IntegerLit> {
-        Ok(IntegerLit {
-            loc: lit.base.location,
+    fn convert_integer_literal(&mut self, lit: &ast::IntegerLit) -> IntegerLit {
+        IntegerLit {
+            loc: lit.base.location.clone(),
             value: lit.value,
-        })
+        }
     }
 
-    fn convert_unsigned_integer_literal(&mut self, lit: ast::UintLit) -> Result<UintLit> {
-        Ok(UintLit {
-            loc: lit.base.location,
+    fn convert_unsigned_integer_literal(&mut self, lit: &ast::UintLit) -> UintLit {
+        UintLit {
+            loc: lit.base.location.clone(),
             value: lit.value,
-        })
+        }
     }
 
-    fn convert_regexp_literal(&mut self, lit: ast::RegexpLit) -> Result<RegexpLit> {
-        Ok(RegexpLit {
-            loc: lit.base.location,
-            value: lit.value,
-        })
+    fn convert_regexp_literal(&mut self, lit: &ast::RegexpLit) -> RegexpLit {
+        RegexpLit {
+            loc: lit.base.location.clone(),
+            value: lit.value.clone(),
+        }
     }
 
-    fn convert_duration_literal(&mut self, lit: ast::DurationLit) -> Result<DurationLit> {
+    fn convert_duration_literal(&mut self, lit: &ast::DurationLit) -> Result<DurationLit> {
         Ok(DurationLit {
             value: convert_duration(&lit.values).map_err(|e| {
                 located(
@@ -1226,15 +1208,15 @@ impl<'a> Converter<'a> {
                     ErrorKind::InvalidDuration(e.to_string()),
                 )
             })?,
-            loc: lit.base.location,
+            loc: lit.base.location.clone(),
         })
     }
 
-    fn convert_date_time_literal(&mut self, lit: ast::DateTimeLit) -> Result<DateTimeLit> {
-        Ok(DateTimeLit {
-            loc: lit.base.location,
+    fn convert_date_time_literal(&mut self, lit: &ast::DateTimeLit) -> DateTimeLit {
+        DateTimeLit {
+            loc: lit.base.location.clone(),
             value: lit.value,
-        })
+        }
     }
 }
 
@@ -1272,7 +1254,7 @@ mod tests {
     fn test_convert(pkg: ast::Package) -> Result<Package, Errors<Error>> {
         let mut sub = sub::Substitution::default();
         let mut converter = Converter::new(&mut sub);
-        let r = converter.convert_package(pkg);
+        let r = converter.convert_package(&pkg);
         let mut pkg = converter.finish(r)?;
 
         // We don't want to specifc the exact locations for each node in the tests
@@ -2666,7 +2648,7 @@ mod tests {
     fn test_convert_monotype_int() {
         let monotype = Parser::new("int").parse_monotype();
         let mut m = BTreeMap::<String, types::Tvar>::new();
-        let got = convert_monotype(monotype, &mut m, &mut sub::Substitution::default()).unwrap();
+        let got = convert_monotype(&monotype, &mut m, &mut sub::Substitution::default()).unwrap();
         let want = MonoType::INT;
         assert_eq!(want, got);
     }
@@ -2676,7 +2658,7 @@ mod tests {
         let monotype = Parser::new("{ A with B: int }").parse_monotype();
 
         let mut m = BTreeMap::<String, types::Tvar>::new();
-        let got = convert_monotype(monotype, &mut m, &mut sub::Substitution::default()).unwrap();
+        let got = convert_monotype(&monotype, &mut m, &mut sub::Substitution::default()).unwrap();
         let want = MonoType::from(types::Record::Extension {
             head: types::Property {
                 k: types::Label::from("B"),
@@ -2692,7 +2674,8 @@ mod tests {
         let monotype_ex = Parser::new("(?A: int) => int").parse_monotype();
 
         let mut m = BTreeMap::<String, types::Tvar>::new();
-        let got = convert_monotype(monotype_ex, &mut m, &mut sub::Substitution::default()).unwrap();
+        let got =
+            convert_monotype(&monotype_ex, &mut m, &mut sub::Substitution::default()).unwrap();
         let mut opt = MonoTypeMap::new();
         opt.insert(String::from("A"), MonoType::INT);
         let want = MonoType::from(types::Function {
@@ -2708,7 +2691,7 @@ mod tests {
     fn test_convert_polytype() {
         let type_exp =
             Parser::new("(A: T, B: S) => T where T: Addable, S: Divisible").parse_type_expression();
-        let got = convert_polytype(type_exp, &mut sub::Substitution::default()).unwrap();
+        let got = convert_polytype(&type_exp, &mut sub::Substitution::default()).unwrap();
         let mut vars = Vec::<types::Tvar>::new();
         vars.push(types::Tvar(0));
         vars.push(types::Tvar(1));
@@ -2738,7 +2721,7 @@ mod tests {
     fn test_convert_polytype_2() {
         let type_exp = Parser::new("(A: T, B: S) => T where T: Addable").parse_type_expression();
 
-        let got = convert_polytype(type_exp, &mut sub::Substitution::default()).unwrap();
+        let got = convert_polytype(&type_exp, &mut sub::Substitution::default()).unwrap();
         let mut vars = Vec::<types::Tvar>::new();
         vars.push(types::Tvar(0));
         vars.push(types::Tvar(1));

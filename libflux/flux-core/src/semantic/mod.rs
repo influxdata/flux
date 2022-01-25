@@ -38,7 +38,7 @@ use thiserror::Error;
 
 use crate::{
     ast,
-    errors::{AsDiagnostic, Errors, Located},
+    errors::{AsDiagnostic, Errors, Located, Salvage, SalvageResult},
     parser,
     semantic::{
         infer::Constraints,
@@ -425,7 +425,7 @@ impl<'env, I: import::Importer> Analyzer<'env, I> {
         pkgpath: String,
         file_name: String,
         src: &str,
-    ) -> Result<(PackageExports, nodes::Package), FileErrors> {
+    ) -> SalvageResult<(PackageExports, nodes::Package), FileErrors> {
         let ast_file = parser::parse_string(file_name, src);
         let ast_pkg = ast::Package {
             base: ast_file.base.clone(),
@@ -433,8 +433,8 @@ impl<'env, I: import::Importer> Analyzer<'env, I> {
             package: ast_file.get_package().to_string(),
             files: vec![ast_file],
         };
-        self.analyze_ast(ast_pkg).map_err(|mut err| {
-            err.source = Some(src.into());
+        self.analyze_ast(&ast_pkg).map_err(|mut err| {
+            err.error.source = Some(src.into());
             err
         })
     }
@@ -442,8 +442,8 @@ impl<'env, I: import::Importer> Analyzer<'env, I> {
     /// Analyze Flux AST returning the semantic package and the package environment.
     pub fn analyze_ast(
         &mut self,
-        ast_pkg: ast::Package,
-    ) -> Result<(PackageExports, nodes::Package), FileErrors> {
+        ast_pkg: &ast::Package,
+    ) -> SalvageResult<(PackageExports, nodes::Package), FileErrors> {
         self.analyze_ast_with_substitution(ast_pkg, &mut sub::Substitution::default())
     }
 
@@ -451,30 +451,25 @@ impl<'env, I: import::Importer> Analyzer<'env, I> {
     /// A custom fresher may be provided.
     pub fn analyze_ast_with_substitution(
         &mut self,
-        // TODO(nathanielc): Change analyze steps to not move the ast::Package as it is a readonly
-        // operation.
-        ast_pkg: ast::Package,
+        ast_pkg: &ast::Package,
         sub: &mut sub::Substitution,
-    ) -> Result<(PackageExports, nodes::Package), FileErrors> {
+    ) -> SalvageResult<(PackageExports, nodes::Package), FileErrors> {
         let mut errors = Errors::new();
         if !self.config.skip_checks {
-            if let Err(err) = ast::check::check(ast::walk::Node::Package(&ast_pkg)) {
+            if let Err(err) = ast::check::check(ast::walk::Node::Package(ast_pkg)) {
                 errors.extend(err.into_iter().map(Error::from));
             }
         }
 
-        let file = ast_pkg.package.clone();
-        let mut sem_pkg = match convert::convert_package(ast_pkg, &self.env, sub) {
-            Ok(sem_pkg) => sem_pkg,
-            Err(err) => {
+        let mut sem_pkg = {
+            let mut converter = convert::Converter::with_env(sub, &self.env);
+            let sem_pkg = converter.convert_package(ast_pkg);
+            if let Err(err) = converter.finish(()) {
                 errors.extend(err.into_iter().map(Error::from));
-                return Err(FileErrors {
-                    file,
-                    source: None,
-                    errors,
-                });
             }
+            sem_pkg
         };
+
         if !self.config.skip_checks {
             if let Err(err) = check::check(&sem_pkg) {
                 errors.push(err.into());
@@ -485,37 +480,32 @@ impl<'env, I: import::Importer> Analyzer<'env, I> {
         let env = match nodes::infer_package(&mut sem_pkg, &mut self.env, sub, &mut self.importer) {
             Ok(()) => {
                 let env = self.env.exit_scope();
-                match PackageExports::try_from(env.values) {
-                    Ok(env) => env,
-                    Err(err) => {
-                        errors.extend(err);
-                        return Err(FileErrors {
-                            file: sem_pkg.package,
-                            source: None,
-                            errors,
-                        });
-                    }
-                }
+                PackageExports::try_from(env.values).unwrap_or_else(|err| {
+                    errors.extend(err);
+                    PackageExports::default()
+                })
             }
             Err(err) => {
                 self.env.exit_scope();
                 errors.extend(err.into_iter().map(Error::from));
-                return Err(FileErrors {
-                    file: sem_pkg.package,
-                    source: None,
-                    errors,
-                });
+                PackageExports::default()
             }
         };
+
+        let sem_pkg = nodes::inject_pkg_types(sem_pkg, sub);
+
         if errors.has_errors() {
-            return Err(FileErrors {
-                file: sem_pkg.package,
-                source: None,
-                errors,
+            return Err(Salvage {
+                error: FileErrors {
+                    file: sem_pkg.package.clone(),
+                    source: None,
+                    errors,
+                },
+                value: Some((env, sem_pkg)),
             });
         }
 
-        Ok((env, nodes::inject_pkg_types(sem_pkg, sub)))
+        Ok((env, sem_pkg))
     }
 
     /// Drop returns ownership of the environment and importer.
