@@ -121,6 +121,7 @@ builtin mean : (<-tables: [A], ?column: string) => [B] where A: Record, B: Recor
 builtin min : (<-tables: [A], ?column: string) => [A] where A: Record
 builtin mode : (<-tables: [A], ?column: string) => [{C with _value: B}] where A: Record, C: Record
 builtin movingAverage : (<-tables: [{B with _value: A}], n: int) => [{B with _value: float}] where A: Numeric
+builtin rowNumber : (<-tables: [A]) => [{A with _index: int}] where A: Record
 builtin quantile : (
         <-tables: [A],
         ?column: string,
