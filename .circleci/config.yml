@@ -80,6 +80,12 @@ jobs:
       # Run tests
       - run: make test-bench
       # No need to save the pkg/mod cache since the other job does it
+  test-build-reproducibility:
+    docker:
+      - image: quay.io/influxdb/flux-build:latest
+    steps:
+      - checkout
+      - run: make checkreproducibility
   test-valgrind:
     docker:
       - image: quay.io/influxdb/flux-build:latest
@@ -178,6 +184,7 @@ workflows:
       - test
       - test-race
       - test-bench
+      - test-build-reproducibility
       - test-valgrind
       - build-windows
 
