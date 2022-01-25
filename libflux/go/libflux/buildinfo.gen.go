@@ -440,7 +440,7 @@ var sourceHashes = map[string]string{
 	"stdlib/universe/aggregate_window_test.flux":                                                  "11fd1f9129e309895b5bd5e9a1c4e35d724533385974157cf3266e5a0748752f",
 	"stdlib/universe/cmo_test.flux":                                                               "8356f659eaecd6af8379167c79c5324039094aa513945449300d78d27a48ebdf",
 	"stdlib/universe/columns_test.flux":                                                           "0bf0755dd73579c2f11db1f8bf9b0296beff5e9d8d9e4efc95d008fd32b5e91b",
-	"stdlib/universe/contains_test.flux":                                                          "42cd059df4dfb7d6d132ca1d4a2109a4992470826456c206e14d5536a9fa647b",
+	"stdlib/universe/contains_test.flux":                                                          "a1890287ebc1ad6d8c84561f7e0cb725048a1e287f49f5dceac196866a20ee01",
 	"stdlib/universe/count_test.flux":                                                             "35a15982eeb5c28ea9ceab719f7ddb3832eddffc0c6174c0d4c74fdbdf93307f",
 	"stdlib/universe/cov_test.flux":                                                               "31ce1909916806a4fee059a29e913de23fa6a6304dc7085ad250cb3ff7399ffc",
 	"stdlib/universe/covariance_missing_column_1_test.flux":                                       "8ed860a0f32f518eaa6a446b57a4cf264b1e00bcf80938acaab1e893fdfff28a",
