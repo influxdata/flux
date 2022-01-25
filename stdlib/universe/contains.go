@@ -46,14 +46,17 @@ func MakeContainsFunc() values.Function {
 			}
 
 			if set.Len() > 0 {
-				if set.Get(0).Type() != v.Type() {
-					err = errors.Newf(codes.Invalid, "value type %T does not match set type %T", v.Type(), set.Get(0).Type())
-				} else {
-					for i := 0; i < set.Len(); i++ {
-						if set.Get(i).Equal(v) {
-							found = true
-							break
-						}
+				for i := 0; i < set.Len(); i++ {
+					// Skip any members of the `set` array that are invalid.
+					if set.Get(i).Type().Nature() == semantic.Invalid {
+						continue
+					} else if set.Get(i).Type() != v.Type() {
+						err = errors.Newf(codes.Invalid, "value type %T does not match set type %T", v.Type(), set.Get(0).Type())
+						break
+					}
+					if set.Get(i).Equal(v) {
+						found = true
+						break
 					}
 				}
 			}
