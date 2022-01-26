@@ -17,18 +17,6 @@ type (
 	BoolFlag   = feature.BoolFlag
 )
 
-var narrowTransformationFilter = feature.MakeBoolFlag(
-	"Narrow Transformation Filter",
-	"narrowTransformationFilter",
-	"Jonathan Sternberg",
-	false,
-)
-
-// NarrowTransformationFilter - Enable the NarrowTransformation implementation of filter
-func NarrowTransformationFilter() BoolFlag {
-	return narrowTransformationFilter
-}
-
 var aggregateTransformationTransport = feature.MakeBoolFlag(
 	"Aggregate Transformation Transport",
 	"aggregateTransformationTransport",
@@ -65,18 +53,6 @@ func QueryConcurrencyLimit() IntFlag {
 	return queryConcurrencyLimit
 }
 
-var optimizeShiftTransformation = feature.MakeBoolFlag(
-	"Optimize Shift Transformation",
-	"optimizeShiftTransformation",
-	"Jonathan Sternberg",
-	false,
-)
-
-// OptimizeShiftTransformation - Enable optimized shift transformation
-func OptimizeShiftTransformation() BoolFlag {
-	return optimizeShiftTransformation
-}
-
 var optimizeUnionTransformation = feature.MakeBoolFlag(
 	"Optimize Union Transformation",
 	"optimizeUnionTransformation",
@@ -89,41 +65,23 @@ func OptimizeUnionTransformation() BoolFlag {
 	return optimizeUnionTransformation
 }
 
-var optimizeSortLimit = feature.MakeBoolFlag(
-	"Optimize Sort Limit",
-	"optimizeSortLimit",
-	"Jonathan Sternberg",
-	false,
-)
-
-// OptimizeSortLimit - Optimize sort limit
-func OptimizeSortLimit() BoolFlag {
-	return optimizeSortLimit
-}
-
 // Inject will inject the Flagger into the context.
 func Inject(ctx context.Context, flagger Flagger) context.Context {
 	return feature.Inject(ctx, flagger)
 }
 
 var all = []Flag{
-	narrowTransformationFilter,
 	aggregateTransformationTransport,
 	groupTransformationGroup,
 	queryConcurrencyLimit,
-	optimizeShiftTransformation,
 	optimizeUnionTransformation,
-	optimizeSortLimit,
 }
 
 var byKey = map[string]Flag{
-	"narrowTransformationFilter":       narrowTransformationFilter,
 	"aggregateTransformationTransport": aggregateTransformationTransport,
 	"groupTransformationGroup":         groupTransformationGroup,
 	"queryConcurrencyLimit":            queryConcurrencyLimit,
-	"optimizeShiftTransformation":      optimizeShiftTransformation,
 	"optimizeUnionTransformation":      optimizeUnionTransformation,
-	"optimizeSortLimit":                optimizeSortLimit,
 }
 
 // Flags returns all feature flags.
