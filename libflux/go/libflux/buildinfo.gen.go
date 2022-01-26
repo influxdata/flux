@@ -187,6 +187,7 @@ var sourceHashes = map[string]string{
 	"stdlib/experimental/http/http.flux":                                                          "f7795441a9a7fed397328d84f7d15a6ba74aa296fdc930a6ead0ba3eb95f0bce",
 	"stdlib/experimental/influxdb/influxdb.flux":                                                  "4f8e99e748fb2f466fac6ee594aa2c36e6bdcddc5209ea31f518bcd59851bc8e",
 	"stdlib/experimental/integral_test.flux":                                                      "7414a80441f483e702707feb608d3c43ce1b6998d0e49715b3e4dbbd10029c2b",
+	"stdlib/experimental/iox/iox.flux":                                                            "4a4ed85b584490ae6615522e3f5dfd61e5ab157425a348f5f376327d9aa6726a",
 	"stdlib/experimental/join_right_side_more_cols_test.flux":                                     "5335d49b402bc1d45158924c62fdb8fc8ae00f6353cdce42f05d980f68780152",
 	"stdlib/experimental/join_test.flux":                                                          "71000d5678d45a879206b156fd004257ea9149288d5eb415e132f065363f6d51",
 	"stdlib/experimental/json/json.flux":                                                          "778d17b6caffb5c6fd22a3f702c2ac4aacd1bd86fe5330912f867f384538a804",
