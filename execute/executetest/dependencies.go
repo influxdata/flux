@@ -21,7 +21,7 @@ func NewTestExecuteDependencies() flux.Dependency {
 	return dependencyList{
 		dependenciestest.Default(),
 		feature.Dependency{
-			Flagger: testFlagger{},
+			Flagger: TestFlagger(testFlags),
 		},
 	}
 }
@@ -32,10 +32,10 @@ var testFlags = map[string]interface{}{
 	"optimizeUnionTransformation":      true,
 }
 
-type testFlagger struct{}
+type TestFlagger map[string]interface{}
 
-func (t testFlagger) FlagValue(ctx context.Context, flag feature.Flag) interface{} {
-	v, ok := testFlags[flag.Key()]
+func (t TestFlagger) FlagValue(ctx context.Context, flag feature.Flag) interface{} {
+	v, ok := t[flag.Key()]
 	if !ok {
 		return flag.Default()
 	}

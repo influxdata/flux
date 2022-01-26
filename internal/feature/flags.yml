@@ -33,3 +33,9 @@
   key: optimizeUnionTransformation
   default: false
   contact: Jonathan Sternberg
+
+- name: MQTT Pool Dialer
+  description: MQTT pool dialer
+  key: mqttPoolDialer
+  default: false
+  contact: Jonathan Sternberg

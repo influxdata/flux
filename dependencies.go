@@ -11,17 +11,13 @@ import (
 	"github.com/influxdata/flux/dependencies/http"
 	"github.com/influxdata/flux/dependencies/secret"
 	"github.com/influxdata/flux/dependencies/url"
+	"github.com/influxdata/flux/dependency"
 	"github.com/influxdata/flux/internal/errors"
 )
 
 var _ Dependencies = (*Deps)(nil)
 
-// Dependency is an interface that must be implemented by every injectable dependency.
-// On Inject, the dependency is injected into the context and the resulting one is returned.
-// Every dependency must provide a function to extract it from the context.
-type Dependency interface {
-	Inject(ctx context.Context) context.Context
-}
+type Dependency = dependency.Interface
 
 type key int
 

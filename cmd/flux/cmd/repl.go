@@ -15,8 +15,10 @@ var replCmd = &cobra.Command{
 	Long:  "Launch a Flux REPL (Read-Eval-Print-Loop)",
 	Run: func(cmd *cobra.Command, args []string) {
 		fluxinit.FluxInit()
-		ctx, deps := injectDependencies(context.Background())
-		r := repl.New(ctx, deps)
+		ctx, span := injectDependencies(context.Background())
+		defer span.Finish()
+
+		r := repl.New(ctx)
 		r.Run()
 	},
 }

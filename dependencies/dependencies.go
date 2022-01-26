@@ -1,66 +1,46 @@
 package dependencies
 
 import (
-	"context"
-
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/dependencies/bigtable"
 	"github.com/influxdata/flux/dependencies/filesystem"
 	"github.com/influxdata/flux/dependencies/influxdb"
 	"github.com/influxdata/flux/dependencies/mqtt"
+	"github.com/influxdata/flux/dependency"
 )
 
-type Dependencies struct {
-	flux.Deps
-	influxdb influxdb.Dependency
-	bigtable bigtable.Dependency
-	mqtt     mqtt.Dependency
-}
-
-func (d Dependencies) Inject(ctx context.Context) context.Context {
-	return d.mqtt.Inject(d.bigtable.Inject(d.influxdb.Inject(d.Deps.Inject(ctx))))
-}
-
-func NewDefaultDependencies(defaultInfluxDBHost string) Dependencies {
+func NewDefaultDependencies(defaultInfluxDBHost string) flux.Dependency {
 	deps := flux.NewDefaultDependencies()
 	deps.Deps.FilesystemService = filesystem.SystemFS
-
-	return Dependencies{
-		Deps: deps,
-
-		influxdb: influxdb.Dependency{
+	return dependency.List{
+		deps,
+		influxdb.Dependency{
 			Provider: &influxdb.HttpProvider{
 				DefaultConfig: influxdb.Config{
 					Host: defaultInfluxDBHost,
 				},
 			},
 		},
-
-		bigtable: bigtable.Dependency{
+		bigtable.Dependency{
 			Provider: bigtable.DefaultProvider{},
 		},
-
-		mqtt: mqtt.Dependency{
+		mqtt.Dependency{
 			Dialer: mqtt.DefaultDialer{},
 		},
 	}
 }
 
-func NewErrorDependencies() Dependencies {
+func NewErrorDependencies() flux.Dependency {
 	deps := flux.NewEmptyDependencies()
-
-	return Dependencies{
-		Deps: deps,
-
-		influxdb: influxdb.Dependency{
+	return dependency.List{
+		deps,
+		influxdb.Dependency{
 			Provider: &influxdb.ErrorProvider{},
 		},
-
-		bigtable: bigtable.Dependency{
+		bigtable.Dependency{
 			Provider: bigtable.ErrorProvider{},
 		},
-
-		mqtt: mqtt.Dependency{
+		mqtt.Dependency{
 			Dialer: mqtt.ErrorDialer{},
 		},
 	}
