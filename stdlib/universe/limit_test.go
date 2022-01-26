@@ -239,7 +239,7 @@ func TestLimit_Process(t *testing.T) {
 				tc.want,
 				nil,
 				func(id execute.DatasetID, alloc *memory.Allocator) (execute.Transformation, execute.Dataset) {
-					return universe.NewLimitTransformation(tc.spec, id)
+					return universe.NewLimitTransformation(tc.spec, id, alloc)
 				},
 			)
 		})
@@ -311,7 +311,7 @@ func TestProcess_Limit_MultiBuffer(t *testing.T) {
 		N:      4,
 		Offset: 2,
 	}
-	tr, d := universe.NewLimitTransformation(spec, executetest.RandomDatasetID())
+	tr, d := universe.NewLimitTransformation(spec, executetest.RandomDatasetID(), memory.DefaultAllocator)
 	store := executetest.NewDataStore()
 	d.AddTransformation(store)
 
@@ -377,7 +377,7 @@ func benchmarkLimit(b *testing.B, n, l int) {
 			return gen.Input(context.Background(), schema)
 		},
 		func(id execute.DatasetID, alloc *memory.Allocator) (execute.Transformation, execute.Dataset) {
-			return universe.NewLimitTransformation(spec, id)
+			return universe.NewLimitTransformation(spec, id, alloc)
 		},
 	)
 }
