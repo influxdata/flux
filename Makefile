@@ -129,7 +129,7 @@ test-go: libflux-go
 test-rust:
 	cd libflux && $(CARGO) test $(CARGO_ARGS) --all-features && \
 	$(CARGO) test --doc && \
-	$(CARGO) clippy $(CARGO_ARGS) -- -Dclippy::all
+	$(CARGO) clippy $(CARGO_ARGS) -- -Dclippy::all -Dclippy::undocumented_unsafe_blocks
 
 INTEGRATION_INJECTION_TESTS=integration_hdb_injection,integration_sqlite_injection,integration_vertica_injection,integration_mssql_injection,integration_mysql_injection,integration_mariadb_injection,integration_pg_injection
 INTEGRATION_WRITE_TESTS=integration_hdb_write_to,integration_sqlite_write_to,integration_vertica_write_to,integration_mssql_write_to,integration_mysql_write_to,integration_mariadb_write_to,integration_pg_write_to
