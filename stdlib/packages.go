@@ -36,6 +36,7 @@ import (
 	_ "github.com/influxdata/flux/stdlib/experimental/csv"
 	_ "github.com/influxdata/flux/stdlib/experimental/geo"
 	_ "github.com/influxdata/flux/stdlib/experimental/http"
+	_ "github.com/influxdata/flux/stdlib/experimental/http/requests"
 	_ "github.com/influxdata/flux/stdlib/experimental/influxdb"
 	_ "github.com/influxdata/flux/stdlib/experimental/iox"
 	_ "github.com/influxdata/flux/stdlib/experimental/json"

@@ -1,13 +1,16 @@
 package http
 
 import (
+	"crypto/tls"
 	"io"
 	"net"
 	"net/http"
 	"syscall"
 	"time"
 
+	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/dependencies/url"
+	"github.com/influxdata/flux/internal/errors"
 )
 
 // maxResponseBody is the maximum response body we will read before just discarding
@@ -56,7 +59,6 @@ func (l roundTripLimiter) RoundTrip(r *http.Request) (*http.Response, error) {
 
 // NewDefaultClient creates a client with sane defaults.
 func NewDefaultClient(urlValidator url.Validator) *http.Client {
-
 	// Control is called after DNS lookup, but before the network connection is
 	// initiated.
 	control := func(network, address string, c syscall.RawConn) error {
@@ -95,4 +97,44 @@ func NewDefaultClient(urlValidator url.Validator) *http.Client {
 func NewLimitedDefaultClient(urlValidator url.Validator) *http.Client {
 	cli := NewDefaultClient(urlValidator)
 	return LimitHTTPBody(*cli, maxResponseBody)
+}
+
+func WithTimeout(c Client, t time.Duration) (Client, error) {
+	cli, ok := c.(*http.Client)
+	if !ok {
+		return nil, errors.New(codes.Internal, "cannot set timeout on client")
+	}
+	// make shallow copy
+	newClient := *cli
+	newClient.Timeout = t
+	return &newClient, nil
+}
+func WithTLSConfig(c Client, config *tls.Config) (Client, error) {
+	cli, ok := c.(*http.Client)
+	if !ok {
+		return nil, errors.New(codes.Internal, "cannot set timeout on client")
+	}
+	// make shallow copy of client
+	newClient := *cli
+
+	// We control the clients so we can safely deconstruct the client
+	// to change its transport config.
+	switch t := newClient.Transport.(type) {
+	case *http.Transport:
+		newTransport := t.Clone()
+		newTransport.TLSClientConfig = config
+		newClient.Transport = newTransport
+	case roundTripLimiter:
+		transport, ok := t.RoundTripper.(*http.Transport)
+		if !ok {
+			return nil, errors.New(codes.Internal, "roundTripLimiter does not have http a known transport")
+		}
+		newTransport := transport.Clone()
+		newTransport.TLSClientConfig = config
+		t.RoundTripper = newTransport
+		newClient.Transport = t
+	default:
+		return nil, errors.New(codes.Internal, "http client does not have http a known transport")
+	}
+	return &newClient, nil
 }

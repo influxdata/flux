@@ -587,7 +587,7 @@ func TestToKafka_NewTransformation(t *testing.T) {
 					},
 				},
 				Validator: url.PrivateIPValidator{},
-				WantErr:   "kafka broker url did not pass validation: url is not valid, it connects to a private IP",
+				WantErr:   "kafka broker url did not pass validation: no such host",
 			},
 		},
 	}

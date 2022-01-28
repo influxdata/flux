@@ -30,7 +30,7 @@ func TestFromSocketUrlValidation(t *testing.T) {
 				Decoder: "csv",
 			},
 			V:      url.PrivateIPValidator{},
-			ErrMsg: "it connects to a private IP",
+			ErrMsg: "no such host",
 		}, {
 			Name: "no such host",
 			Spec: &FromSocketProcedureSpec{

@@ -232,7 +232,7 @@ func RunSourceURLValidatorTestHelper(t *testing.T, spec plan.PhysicalProcedureSp
 			Msg: "failed to initialize execute state",
 			Err: &flux.Error{
 				Code: codes.Invalid,
-				Msg:  "url is not valid, it connects to a private IP",
+				Msg:  "no such host",
 			},
 		},
 	}

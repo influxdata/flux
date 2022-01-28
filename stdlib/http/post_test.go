@@ -84,7 +84,7 @@ http.post(url:"http://127.1.1.1/path/a/b/c", headers: {x:"a",y:"b",z:"c"}, data:
 	if err == nil {
 		t.Fatal("expected failure")
 	}
-	if !strings.Contains(err.Error(), "url is not valid") {
+	if !strings.Contains(err.Error(), "no such host") {
 		t.Errorf("unexpected cause of failure, got err: %v", err)
 	}
 	// At time of writing, the initial Error should be a 0 (inherit), with an inner 3 (invalid)
