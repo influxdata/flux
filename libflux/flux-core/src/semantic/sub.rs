@@ -41,6 +41,11 @@ impl Substitution {
         Substitution::default()
     }
 
+    /// Returns true if no variables has been created by this substitution
+    pub fn is_empty(&self) -> bool {
+        self.len() == 0
+    }
+
     /// Returns how many variables have been created by this substitution
     pub fn len(&self) -> usize {
         self.table.borrow().len()
