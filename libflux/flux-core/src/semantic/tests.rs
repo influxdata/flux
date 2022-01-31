@@ -2848,44 +2848,44 @@ fn identity_function() {
 
 #[test]
 fn call_expr() {
-    // // missing parameter
-    // test_infer_err! {
-    //     src: r#"
-    //         plusOne = (x) => x + 1.0
-    //         plusOne()
-    //     "#,
-    // }
-    // // missing pipe
-    // test_infer_err! {
-    //     src: r#"
-    //         add = (a=<-,b) => a + b
-    //         add(b:2)
-    //     "#,
-    // }
-    // // function does not take a pipe argument
-    // test_infer_err! {
-    //     src: r#"
-    //         f = () => 0
-    //         g = () => 1 |> f()
-    //     "#,
-    // }
-    // // function requires a pipe argument
-    // test_infer_err! {
-    //     src: r#"
-    //         f = (x=<-) => x
-    //         g = () => f()
-    //     "#,
-    // }
-    // test_infer! {
-    //     src: r#"
-    //         f = (x) => 0 |> x()
-    //         f(x: (v=<-) => v)
-    //         f(x: (w=<-) => w)
-    //     "#,
-    //     exp: map![
-    //         "f" => "(x:(<-:int) => C) => C",
-    //     ]
-    // }
+    // missing parameter
+    test_infer_err! {
+        src: r#"
+            plusOne = (x) => x + 1.0
+            plusOne()
+        "#,
+    }
+    // missing pipe
+    test_infer_err! {
+        src: r#"
+            add = (a=<-,b) => a + b
+            add(b:2)
+        "#,
+    }
+    // function does not take a pipe argument
+    test_infer_err! {
+        src: r#"
+            f = () => 0
+            g = () => 1 |> f()
+        "#,
+    }
+    // function requires a pipe argument
+    test_infer_err! {
+        src: r#"
+            f = (x=<-) => x
+            g = () => f()
+        "#,
+    }
+    test_infer! {
+        src: r#"
+            f = (x) => 0 |> x()
+            f(x: (v=<-) => v)
+            f(x: (w=<-) => w)
+        "#,
+        exp: map![
+            "f" => "(x:(<-:int) => C) => C",
+        ]
+    }
     // pipe args have different names however we infer `f` to have an anonymous pipe argument so
     // this passes
     test_infer! {

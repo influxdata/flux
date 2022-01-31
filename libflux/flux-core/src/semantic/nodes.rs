@@ -1011,6 +1011,10 @@ impl FunctionExpr {
 
         if self.params.iter().any(|param| param.default.is_some()) {
             let t = func.apply(infer.sub);
+            // We must generalize `t` to prevent the types of the default arguments from leaking
+            // into the function. Since the function may get generalized a second time when bound
+            // to a variable we also ensure the substitution does not get updated so we do not get
+            // conflicts with that generalization.
             let p = infer::temporary_generalize(infer.env, infer.sub, t);
             self.infer_default_params(infer, p)?
         };

@@ -185,6 +185,7 @@ pub fn equal(
     })
 }
 
+/// Generalizes `t` without modifying the substitution.
 pub(crate) fn temporary_generalize(
     env: &Environment,
     sub: &mut Substitution,

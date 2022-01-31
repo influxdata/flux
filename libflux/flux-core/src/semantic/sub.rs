@@ -12,6 +12,9 @@ use crate::semantic::types::{union, Error, MonoType, SubstitutionMap, Tvar, Tvar
 #[derive(Clone, Debug, Default)]
 pub struct Substitution {
     table: RefCell<UnificationTable>,
+    // TODO Add `snapshot`/`rollback_to` for `TvarKinds` (like `ena::UnificationTable`) so that
+    // modifications can be reverted. Then replace `temporary_generalize` with
+    // `snapshot(); generalize(); rollback_to()`
     cons: RefCell<TvarKinds>,
 }
 
