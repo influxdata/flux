@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/dependencies"
+	"github.com/influxdata/flux/dependency"
 	"github.com/influxdata/flux/fluxinit"
 	"github.com/influxdata/flux/repl"
 	"github.com/spf13/cobra"
@@ -26,16 +26,17 @@ func init() {
 
 const DefaultInfluxDBHost = "http://localhost:8086"
 
-func injectDependencies(ctx context.Context) (context.Context, flux.Dependencies) {
-
+func injectDependencies(ctx context.Context) (context.Context, *dependency.Span) {
 	deps := dependencies.NewDefaultDependencies(DefaultInfluxDBHost)
-	return deps.Inject(ctx), deps
+	return dependency.Inject(ctx, deps)
 }
 
 func execute(cmd *cobra.Command, args []string) error {
 	fluxinit.FluxInit()
-	ctx, deps := injectDependencies(context.Background())
-	r := repl.New(ctx, deps)
+	ctx, span := injectDependencies(context.Background())
+	defer span.Finish()
+
+	r := repl.New(ctx)
 	if fluxError, err := r.Input(args[0]); err != nil {
 		if fluxError != nil {
 			fluxError.Print()

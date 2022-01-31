@@ -9,6 +9,7 @@ import (
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/codes"
+	"github.com/influxdata/flux/dependency"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/internal/jaeger"
@@ -414,7 +415,6 @@ func (eoc *ExecOptsConfig) ConfigureProfiler(ctx context.Context, profilerNames 
 		deps := execute.GetExecutionDependencies(ctx)
 		deps.ExecutionOptions.OperatorProfiler = tfProfiler
 		deps.ExecutionOptions.Profilers = profilers
-		deps.Inject(ctx)
 	}
 }
 
@@ -424,7 +424,6 @@ func (eoc *ExecOptsConfig) ConfigureNow(ctx context.Context, now time.Time) {
 	// effect as context changes are passed down only.
 	deps := execute.GetExecutionDependencies(ctx)
 	*deps.Now = now
-	deps.Inject(ctx)
 }
 
 func (p *AstProgram) getSpec(ctx context.Context, alloc *memory.Allocator) (*flux.Spec, values.Scope, error) {
@@ -476,7 +475,7 @@ func (p *AstProgram) Start(ctx context.Context, alloc *memory.Allocator) (flux.Q
 	// The program must inject execution dependencies to make it available to
 	// function calls during the evaluation phase (see `tableFind`).
 	deps := execute.NewExecutionDependencies(alloc, &p.Now, p.Logger)
-	ctx = deps.Inject(ctx)
+	ctx, span := dependency.Inject(ctx, deps)
 	nextPlanNodeID := new(int)
 	ctx = context.WithValue(ctx, plan.NextPlanNodeIDKey, nextPlanNodeID)
 
@@ -507,7 +506,15 @@ func (p *AstProgram) Start(ctx context.Context, alloc *memory.Allocator) (flux.Q
 	// Execution.
 	s, cctx = opentracing.StartSpanFromContext(ctx, "start-program")
 	defer s.Finish()
-	return p.Program.Start(cctx, alloc)
+	q, err := p.Program.Start(cctx, alloc)
+	if err != nil {
+		span.Finish()
+		return nil, err
+	}
+	return &spanQuery{
+		Query: q,
+		span:  span,
+	}, nil
 }
 
 func (p *AstProgram) updateProfilers(ctx context.Context, scope values.Scope) error {
@@ -535,6 +542,16 @@ func (p *AstProgram) updateOpts(scope values.Scope) error {
 		p.opts.planOptions.physical = append(p.opts.planOptions.physical, po)
 	}
 	return nil
+}
+
+type spanQuery struct {
+	flux.Query
+	span *dependency.Span
+}
+
+func (q *spanQuery) Done() {
+	q.Query.Done()
+	q.span.Finish()
 }
 
 func getPackageFromScope(pkgName string, scope values.Scope) (values.Package, bool) {

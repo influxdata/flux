@@ -17,18 +17,6 @@ type (
 	BoolFlag   = feature.BoolFlag
 )
 
-var narrowTransformationFilter = feature.MakeBoolFlag(
-	"Narrow Transformation Filter",
-	"narrowTransformationFilter",
-	"Jonathan Sternberg",
-	false,
-)
-
-// NarrowTransformationFilter - Enable the NarrowTransformation implementation of filter
-func NarrowTransformationFilter() BoolFlag {
-	return narrowTransformationFilter
-}
-
 var aggregateTransformationTransport = feature.MakeBoolFlag(
 	"Aggregate Transformation Transport",
 	"aggregateTransformationTransport",
@@ -65,18 +53,6 @@ func QueryConcurrencyLimit() IntFlag {
 	return queryConcurrencyLimit
 }
 
-var optimizeShiftTransformation = feature.MakeBoolFlag(
-	"Optimize Shift Transformation",
-	"optimizeShiftTransformation",
-	"Jonathan Sternberg",
-	false,
-)
-
-// OptimizeShiftTransformation - Enable optimized shift transformation
-func OptimizeShiftTransformation() BoolFlag {
-	return optimizeShiftTransformation
-}
-
 var optimizeUnionTransformation = feature.MakeBoolFlag(
 	"Optimize Union Transformation",
 	"optimizeUnionTransformation",
@@ -89,16 +65,16 @@ func OptimizeUnionTransformation() BoolFlag {
 	return optimizeUnionTransformation
 }
 
-var optimizeSortLimit = feature.MakeBoolFlag(
-	"Optimize Sort Limit",
-	"optimizeSortLimit",
+var mqttPoolDialer = feature.MakeBoolFlag(
+	"MQTT Pool Dialer",
+	"mqttPoolDialer",
 	"Jonathan Sternberg",
 	false,
 )
 
-// OptimizeSortLimit - Optimize sort limit
-func OptimizeSortLimit() BoolFlag {
-	return optimizeSortLimit
+// MqttPoolDialer - MQTT pool dialer
+func MqttPoolDialer() BoolFlag {
+	return mqttPoolDialer
 }
 
 // Inject will inject the Flagger into the context.
@@ -107,23 +83,19 @@ func Inject(ctx context.Context, flagger Flagger) context.Context {
 }
 
 var all = []Flag{
-	narrowTransformationFilter,
 	aggregateTransformationTransport,
 	groupTransformationGroup,
 	queryConcurrencyLimit,
-	optimizeShiftTransformation,
 	optimizeUnionTransformation,
-	optimizeSortLimit,
+	mqttPoolDialer,
 }
 
 var byKey = map[string]Flag{
-	"narrowTransformationFilter":       narrowTransformationFilter,
 	"aggregateTransformationTransport": aggregateTransformationTransport,
 	"groupTransformationGroup":         groupTransformationGroup,
 	"queryConcurrencyLimit":            queryConcurrencyLimit,
-	"optimizeShiftTransformation":      optimizeShiftTransformation,
 	"optimizeUnionTransformation":      optimizeUnionTransformation,
-	"optimizeSortLimit":                optimizeSortLimit,
+	"mqttPoolDialer":                   mqttPoolDialer,
 }
 
 // Flags returns all feature flags.

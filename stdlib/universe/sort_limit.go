@@ -12,7 +12,6 @@ import (
 	"github.com/influxdata/flux/execute/table"
 	"github.com/influxdata/flux/internal/arrowutil"
 	"github.com/influxdata/flux/internal/errors"
-	"github.com/influxdata/flux/internal/feature"
 	"github.com/influxdata/flux/plan"
 )
 
@@ -201,10 +200,6 @@ func (s SortLimitRule) Pattern() plan.Pattern {
 }
 
 func (s SortLimitRule) Rewrite(ctx context.Context, node plan.Node) (plan.Node, bool, error) {
-	if !feature.OptimizeSortLimit().Enabled(ctx) {
-		return node, false, nil
-	}
-
 	limitSpec := node.ProcedureSpec().(*LimitProcedureSpec)
 	if limitSpec.Offset != 0 {
 		return node, false, nil

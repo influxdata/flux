@@ -10,12 +10,6 @@
 #   key:          Programmatic name
 #   default:      Used when unable to reach server and to infer flag type
 #   contact:      Contact for information or issues regarding the flag
-- name: Narrow Transformation Filter
-  description: Enable the NarrowTransformation implementation of filter
-  key: narrowTransformationFilter
-  default: false
-  contact: Jonathan Sternberg
-
 - name: Aggregate Transformation Transport
   description: Enable Transport interface for AggregateTransformation
   key: aggregateTransformationTransport
@@ -34,20 +28,14 @@
   default: 0
   contact: Jonathan Sternberg
 
-- name: Optimize Shift Transformation
-  description: Enable optimized shift transformation
-  key: optimizeShiftTransformation
-  default: false
-  contact: Jonathan Sternberg
-
 - name: Optimize Union Transformation
   description: Optimize the union transformation
   key: optimizeUnionTransformation
   default: false
   contact: Jonathan Sternberg
 
-- name: Optimize Sort Limit
-  description: Optimize sort limit
-  key: optimizeSortLimit
+- name: MQTT Pool Dialer
+  description: MQTT pool dialer
+  key: mqttPoolDialer
   default: false
   contact: Jonathan Sternberg

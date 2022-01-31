@@ -121,7 +121,7 @@ func TestFromSqlUrlValidation(t *testing.T) {
 				Query:          "",
 			},
 			V:      url.PrivateIPValidator{},
-			ErrMsg: "it connects to a private IP",
+			ErrMsg: "no such host",
 		}, {
 			Name: "invalid postgres",
 			Spec: &FromSQLProcedureSpec{
@@ -130,7 +130,7 @@ func TestFromSqlUrlValidation(t *testing.T) {
 				Query:          "",
 			},
 			V:      url.PrivateIPValidator{},
-			ErrMsg: "it connects to a private IP",
+			ErrMsg: "no such host",
 		}, {
 			Name: "invalid bigquery",
 			Spec: &FromSQLProcedureSpec{
@@ -147,7 +147,7 @@ func TestFromSqlUrlValidation(t *testing.T) {
 				Query:          "",
 			},
 			V:      url.PrivateIPValidator{},
-			ErrMsg: "it connects to a private IP",
+			ErrMsg: "no such host",
 		}, {
 			Name: "no such host",
 			Spec: &FromSQLProcedureSpec{

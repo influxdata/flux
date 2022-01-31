@@ -97,15 +97,17 @@ re !~ /foo/
         package: String::from("test"),
         files: f,
     };
-    let mut pkg =
-        match convert::convert_package(pkg, &Default::default(), &mut sub::Substitution::default())
-        {
-            Ok(pkg) => pkg,
-            Err(e) => {
-                assert!(false, "{}", e);
-                return;
-            }
-        };
+    let mut pkg = match convert::convert_package(
+        &pkg,
+        &Default::default(),
+        &mut sub::Substitution::default(),
+    ) {
+        Ok(pkg) => pkg,
+        Err(e) => {
+            assert!(false, "{}", e);
+            return;
+        }
+    };
 
     // We can't serialize the error types so replace any `typ` fields with a dummy variable instead
     walk_mut(
@@ -170,7 +172,7 @@ fn test_serialize_vectorization() {
         files: f,
     };
     let mut analyzer = Analyzer::new(Default::default(), Packages::default(), Default::default());
-    let (_, mut pkg) = match analyzer.analyze_ast(pkg) {
+    let (_, mut pkg) = match analyzer.analyze_ast(&pkg) {
         Ok(pkg) => pkg,
         Err(e) => {
             assert!(false, "{}", e);

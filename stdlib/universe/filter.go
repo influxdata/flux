@@ -16,7 +16,6 @@ import (
 	"github.com/influxdata/flux/internal/arrowutil"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/internal/execute/table"
-	"github.com/influxdata/flux/internal/feature"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/plan"
@@ -140,174 +139,50 @@ func (s *FilterProcedureSpec) PlanDetails() string {
 	return "<non-Expression>"
 }
 
-type filterTransformation struct {
-	execute.ExecutionNode
-	d               *execute.PassthroughDataset
-	ctx             context.Context
-	fn              *execute.RowPredicateFn
-	keepEmptyTables bool
-	alloc           *memory.Allocator
-}
-
 func NewFilterTransformation(ctx context.Context, spec *FilterProcedureSpec, id execute.DatasetID, alloc *memory.Allocator) (execute.Transformation, execute.Dataset, error) {
 	fn := execute.NewRowPredicateFn(spec.Fn.Fn, compiler.ToScope(spec.Fn.Scope))
 	t := &filterTransformation{
-		d:               execute.NewPassthroughDataset(id),
-		fn:              fn,
 		ctx:             ctx,
+		fn:              fn,
 		keepEmptyTables: spec.KeepEmptyTables,
-		alloc:           alloc,
 	}
-
-	if feature.NarrowTransformationFilter().Enabled(ctx) {
-		t := &filterTransformationAdapter{
-			filterTransformation: t,
-		}
-		return execute.NewNarrowTransformation(id, t, alloc)
-	}
-	return t, t.d, nil
+	return execute.NewNarrowTransformation(id, t, alloc)
 }
 
-func (t *filterTransformation) RetractTable(id execute.DatasetID, key flux.GroupKey) error {
-	return t.d.RetractTable(key)
+type filterTransformation struct {
+	ctx             context.Context
+	fn              *execute.RowPredicateFn
+	keepEmptyTables bool
 }
 
-func (t *filterTransformation) Process(id execute.DatasetID, tbl flux.Table) error {
+func (t *filterTransformation) Process(chunk table.Chunk, d *execute.TransportDataset, mem arrowmem.Allocator) error {
 	// Prepare the function for the column types.
-	cols := tbl.Cols()
+	cols := chunk.Cols()
 	fn, err := t.fn.Prepare(cols)
 	if err != nil {
 		// TODO(nathanielc): Should we not fail the query for failed compilation?
 		return err
 	}
 
-	// Retrieve the inferred input type for the function.
-	// If all of the inferred inputs are part of the group
-	// key, we can evaluate a record with only the group key.
-	if t.canFilterByKey(fn, tbl) {
-		return t.filterByKey(tbl)
-	}
-
 	// Prefill the columns that can be inferred from the group key.
 	// Retrieve the input type from the function and record the indices
 	// that need to be obtained from the columns.
 	record := values.NewObject(fn.InputType())
-	indices := make([]int, 0, len(tbl.Cols())-len(tbl.Key().Cols()))
-	for j, c := range tbl.Cols() {
-		if idx := execute.ColIdx(c.Label, tbl.Key().Cols()); idx >= 0 {
-			record.Set(c.Label, tbl.Key().Value(idx))
+	indices := make([]int, 0, len(chunk.Cols())-len(chunk.Key().Cols()))
+	for j, c := range chunk.Cols() {
+		if idx := execute.ColIdx(c.Label, chunk.Key().Cols()); idx >= 0 {
+			record.Set(c.Label, chunk.Key().Value(idx))
 			continue
 		}
 		indices = append(indices, j)
 	}
 
 	// Filter the table and pass in the indices we have to read.
-	table, err := t.filterTable(fn, tbl, record, indices)
-	if err != nil {
-		return err
-	} else if table.Empty() && !t.keepEmptyTables {
-		// Drop the table.
-		return nil
-	}
-	return t.d.Process(table)
-}
-
-// TODO(jsternberg): This doesn't work since it relies on a previously
-// broken implementation of the compiler package related to type inference
-// so this is now commented out. The comment is left to understand the
-// intention, but this if statement does not work and will always return false.
-//
-// I've kept this method invocation in the older filterTransformation implementation
-// just to avoid changing it, but have left it out of the new implementation until
-// we adapt the code to work.
-func (t *filterTransformation) canFilterByKey(fn *execute.RowPredicatePreparedFn, tbl flux.Table) bool {
-	inType := fn.InferredInputType()
-	nargs, err := inType.NumProperties()
-	if err != nil {
-		panic(err)
-	}
-
-	for i := 0; i < nargs; i++ {
-		prop, err := inType.RecordProperty(i)
-		if err != nil {
-			panic(err)
-		}
-
-		// Determine if this key is even valid. If it is not
-		// in the table at all, we don't care if it is missing
-		// since it will always be missing.
-		label := prop.Name()
-		if execute.ColIdx(label, tbl.Cols()) < 0 {
-			continue
-		}
-
-		// Look for a column with this name in the group key.
-		if execute.ColIdx(label, tbl.Key().Cols()) < 0 {
-			// If we cannot find this referenced column in the group
-			// key, then it is provided by the table and we need to
-			// evaluate each row individually.
-			return false
-		}
-	}
-
-	// All referenced keys were part of the group key.
-	return true
-}
-
-// TODO(jsternberg): See the note in canFilterByKey.
-func (t *filterTransformation) filterByKey(tbl flux.Table) error {
-	key := tbl.Key()
-	cols := key.Cols()
-	fn, err := t.fn.Prepare(cols)
-	if err != nil {
+	out, ok, err := t.filterChunk(fn, chunk, record, indices, mem)
+	if err != nil || !ok {
 		return err
 	}
-
-	record, err := values.BuildObjectWithSize(len(cols), func(set values.ObjectSetter) error {
-		for j, c := range cols {
-			set(c.Label, key.Value(j))
-		}
-		return nil
-	})
-	if err != nil {
-		return err
-	}
-
-	v, err := fn.Eval(t.ctx, record)
-	if err != nil {
-		return err
-	}
-
-	if !v {
-		tbl.Done()
-		if !t.keepEmptyTables {
-			return nil
-		}
-		// If we are supposed to keep empty tables, produce
-		// an empty table with this group key and send it
-		// to the next transformation to process it.
-		tbl = execute.NewEmptyTable(tbl.Key(), tbl.Cols())
-	}
-	return t.d.Process(tbl)
-}
-
-func (t *filterTransformation) filterTable(fn *execute.RowPredicatePreparedFn, in flux.Table, record values.Object, indices []int) (flux.Table, error) {
-	return table.StreamWithContext(t.ctx, in.Key(), in.Cols(), func(ctx context.Context, w *table.StreamWriter) error {
-		return in.Do(func(cr flux.ColReader) error {
-			chunk := table.ChunkFromReader(cr)
-			out, ok, err := t.filterChunk(fn, chunk, record, indices, t.alloc)
-			if err != nil || !ok {
-				return err
-			}
-
-			// Produce arrays for each column.
-			vs := make([]array.Interface, len(w.Cols()))
-			for j := range w.Cols() {
-				vs[j] = out.Values(j)
-			}
-			return w.Write(vs)
-		})
-	})
+	return d.Process(out)
 }
 
 func (t *filterTransformation) filterChunk(fn *execute.RowPredicatePreparedFn, chunk table.Chunk, record values.Object, indices []int, mem arrowmem.Allocator) (table.Chunk, bool, error) {
@@ -362,51 +237,7 @@ func (t *filterTransformation) filter(fn *execute.RowPredicatePreparedFn, cr flu
 	return bitset, nil
 }
 
-func (t *filterTransformation) UpdateWatermark(id execute.DatasetID, mark execute.Time) error {
-	return t.d.UpdateWatermark(mark)
-}
-func (t *filterTransformation) UpdateProcessingTime(id execute.DatasetID, pt execute.Time) error {
-	return t.d.UpdateProcessingTime(pt)
-}
-func (t *filterTransformation) Finish(id execute.DatasetID, err error) {
-	t.d.Finish(err)
-}
-
-type filterTransformationAdapter struct {
-	*filterTransformation
-}
-
-func (t *filterTransformationAdapter) Process(chunk table.Chunk, d *execute.TransportDataset, mem arrowmem.Allocator) error {
-	// Prepare the function for the column types.
-	cols := chunk.Cols()
-	fn, err := t.fn.Prepare(cols)
-	if err != nil {
-		// TODO(nathanielc): Should we not fail the query for failed compilation?
-		return err
-	}
-
-	// Prefill the columns that can be inferred from the group key.
-	// Retrieve the input type from the function and record the indices
-	// that need to be obtained from the columns.
-	record := values.NewObject(fn.InputType())
-	indices := make([]int, 0, len(chunk.Cols())-len(chunk.Key().Cols()))
-	for j, c := range chunk.Cols() {
-		if idx := execute.ColIdx(c.Label, chunk.Key().Cols()); idx >= 0 {
-			record.Set(c.Label, chunk.Key().Value(idx))
-			continue
-		}
-		indices = append(indices, j)
-	}
-
-	// Filter the table and pass in the indices we have to read.
-	out, ok, err := t.filterChunk(fn, chunk, record, indices, mem)
-	if err != nil || !ok {
-		return err
-	}
-	return d.Process(out)
-}
-
-func (t *filterTransformationAdapter) Close() error { return nil }
+func (t *filterTransformation) Close() error { return nil }
 
 // RemoveTrivialFilterRule removes Filter nodes whose predicate always evaluates to true.
 type RemoveTrivialFilterRule struct{}

@@ -18,7 +18,10 @@ type Dependencies struct {
 }
 
 func (d Dependencies) Inject(ctx context.Context) context.Context {
-	return d.mqtt.Inject(d.bigtable.Inject(d.influxdb.Inject(d.Deps.Inject(ctx))))
+	ctx = d.Deps.Inject(ctx)
+	ctx = d.influxdb.Inject(ctx)
+	ctx = d.bigtable.Inject(ctx)
+	return d.mqtt.Inject(ctx)
 }
 
 func NewDefaultDependencies(defaultInfluxDBHost string) Dependencies {

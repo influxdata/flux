@@ -7,7 +7,9 @@ use crate::semantic::{
 
 fn vectorize(src: &str) -> anyhow::Result<Package> {
     let mut analyzer = Analyzer::new(Default::default(), Packages::default(), Default::default());
-    let (_, mut pkg) = analyzer.analyze_source("main".into(), "".into(), src)?;
+    let (_, mut pkg) = analyzer
+        .analyze_source("main".into(), "".into(), src)
+        .map_err(|err| err.error)?;
 
     semantic::nodes::vectorize(&mut pkg)?;
     Ok(pkg)
