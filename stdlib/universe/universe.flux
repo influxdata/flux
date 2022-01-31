@@ -1,3 +1,9 @@
+// Package universe provides options and primitive functions that are
+// loaded into the Flux runtime by default and do not require an
+// import statement.
+//
+// introduced: 0.14.0
+// 
 package universe
 
 
@@ -8,18 +14,226 @@ import "strings"
 import "regexp"
 import "experimental/table"
 
-// now is a function option whose default behaviour is to return the current system time
+// now is a function option that, by default, returns the current system time.
+// 
+// #### now() vs system.time()
+// `now()` returns the current system time (UTC). `now()` is cached at runtime,
+// so all executions of `now()` in a Flux script return the same time value.
+// `system.time()` returns the system time (UTC) at which `system.time()` is executed.
+// Each instance of system.time() in a Flux script returns a unique value.
+// 
+// ## Examples
+// 
+// ### Use the current UTC time as a query boundary
+// ```no_run
+// data
+//     |> range(start: -10h, stop: now)
+// ```
+// 
+// ### Define a custom now time
+// ```no_run
+// option now = () => 2022-01-01T00:00:00Z
+// ```
+// 
+// introduced: 0.7.0
+// tags: date/time
+// 
 option now = system.time
 
-// Transformation functions
+// chandeMomentumOscillator applies the technical momentum indicator developed
+// by Tushar Chande to input data.
+// 
+// The Chande Momentum Oscillator (CMO) indicator calculates the difference
+// between the sum of all recent data points with values greater than the median
+// value of the data set and the sum of all recent data points with values lower
+// than the median value of the data set, then divides the result by the sum of
+// all data movement over a given time period.
+// It then multiplies the result by 100 and returns a value between -100 and +100.
+// 
+// #### Output tables
+// For each input table with x rows, `chandeMomentumOscillator()` outputs a
+// table with `x - n` rows.
+// 
+// ## Parameters
+// - n: Period or number of points to use in the calculation.
+// - columns: List of columns to operate on. Default is `["_value"]`.
+// - tables: Input data. Default is piped-forward data (`<-`).
+// 
+// ## Examples
+// 
+// ### Apply the Chande Momentum Oscillator to input data
+// ```
+// import "sampledata"
+// 
+// sampledata.int()
+//     |> chandeMomentumOscillator(n: 2)
+// ``` 
+// 
+// introduced: 0.39.0
+// tags: transformations
+// 
 builtin chandeMomentumOscillator : (<-tables: [A], n: int, ?columns: [string]) => [B] where A: Record, B: Record
+
+// columns returns the column labels in each input table.
+// 
+// For each input table, `columns` outputs a table with the same group key
+// columns and a new column containing the column labels in the input table.
+// Each row in an output table contains the group key value and the label of one
+//  column of the input table.
+// Each output table has the same number of rows as the number of columns of the
+// input table.
+// 
+// ## Parameters
+// - column: Name of the output column to store column labels in.
+//   Default is "_value".
+// - tables: Input data. Default is piped-forward data (`<-`).
+// 
+// ## Examples
+// 
+// ### List all columns per input table
+// ```
+// import "sampledata"
+// 
+// sampledata.string()
+//     |> columns(column: "labels")
+// ```
+// 
+// introduced: 0.14.0
+// tags: transformations
+// 
 builtin columns : (<-tables: [A], ?column: string) => [B] where A: Record, B: Record
+
+// count returns the number of records in a column.
+// 
+// The function counts both null and non-null records.
+// 
+// #### Empty tables
+// `count()` returns `0` for empty tables.
+// To keep empty tables in your data, set the following parameters for the
+// following functions:
+// 
+// | Function            | Parameter           |
+// | :------------------ | :------------------ |
+// | `filter()`          | `onEmpty: "keep"`   |
+// | `window()`          | `createEmpty: true` |
+// | `aggregateWindow()` | `createEmpty: true` |
+// 
+// ## Parameters
+// - column: Column to count values in and store the total count.
+// - tables: Input data. Default is piped-wforward data (`<-`).
+// 
+// ## Examples
+// 
+// ### Count the number of rows in each input table
+// ```
+// import "sampledata"
+// 
+// sampledata.string()
+//     |> count()
+// ```
+// 
+// introduced: 0.7.0
+// tags: transformations,aggregates
+// 
 builtin count : (<-tables: [A], ?column: string) => [B] where A: Record, B: Record
+
+// covariance computes the covariance between two columns.
+// 
+// ## Parameters
+// - columns: List of two columns to operate on.
+// - pearsonr: Normalize results to the Pearson R coefficient. Default is `false`.
+// - valueDst: Column to store the result in. Default is `_value`.
+// - tables: Input data. Default is piped-forward data (`<-`).
+// 
+// ## Examples
+// 
+// ### Calculate the covariance between two columns
+// ```
+// # import "generate"
+// #
+// # data =
+// #     generate.from(count: 5, fn: (n) => n * n, start: 2021-01-01T00:00:00Z, stop: 2021-01-01T00:01:00Z)
+// #         |> toFloat()
+// #         |> map(fn: (r) => ({_time: r._time, x: r._value, y: r._value * r._value / 2.0}))
+// #
+// < data
+// >     |> covariance(columns: ["x", "y"])
+// ```
+// 
+// introduced: 0.7.0
+// tags: transformations,aggregates
+//
 builtin covariance : (<-tables: [A], ?pearsonr: bool, ?valueDst: string, columns: [string]) => [B]
     where
     A: Record,
     B: Record
+
+// cumulativeSum  computes a running sum for non-null records in a table.
+// 
+// The output table schema will be the same as the input table.
+// 
+// ## Parameters
+// - columns: List of columns to operate on. Default is `["_value"]`.
+// - tables: Input data. Default is piped-forward data (`<-`).
+// 
+// ## Examples
+// 
+// ### Return the running total of values in each table
+// ```
+// import "sampledata"
+// 
+// < sampledata.int()
+// >     |> cumulativeSum()
+// ```
+// 
+// introduced: 0.7.0
+// tags: transformations
+//
 builtin cumulativeSum : (<-tables: [A], ?columns: [string]) => [B] where A: Record, B: Record
+
+// derivative computes the rate of change per unit of time between subsequent
+// non-null records.
+// 
+// The function assumes rows are ordered by the `_time`.
+// 
+// #### Output tables
+// The output table schema will be the same as the input table.
+// For each input table with `n` rows, `derivative()` outputs a table with
+// `n - 1` rows.
+// 
+// ## Parameters
+// - unit: Time duration used to calculate the derivative. Default is `1s`.
+// - nonNegative: Disallow negative derivative values. Default is `true`.
+// 
+//   When `true`, if a value is less than the previous value, the function
+//   assumes the previous value should have been a zero.
+// 
+// - columns: List of columns to operate on. Default is `["_value"]`.
+// - timeColumn: Column containing time values to use in the calculation.
+//   Default is `_time`.
+// - tables: Input data. Default is piped-forward data (`<-`).
+// 
+// ## Examples
+// 
+// ### Calculate the non-negative rate of change per second
+// ```
+// import "sampledata"
+// 
+// < sampledata.int()
+// >     |> derivative(nonNegative: true)
+// ```
+// 
+// ### Calculate the rate of change per second with null values
+// ```
+// import "sampledata"
+// 
+// < sampledata.int(includeNull: true)
+// >     |> derivative()
+// ```
+// 
+// introduced: 0.7.0
+// tags: transformations
+// 
 builtin derivative : (
         <-tables: [A],
         ?unit: duration,
@@ -31,8 +245,91 @@ builtin derivative : (
     A: Record,
     B: Record
 
-// die returns a fatal error from within a flux script
+// die stops the Flux script execution and returns an error message.
+// 
+// ## Parameters
+// - msg: Error message to return.
+// 
+// ## Examples
+// 
+// ### Force a script to exit with an error message
+// ```no_run
+// die(msg: "This is an error message")
+// ```
+// 
+// introduced: 0.82.0
+// 
 builtin die : (msg: string) => A
+
+// difference returns the difference between subsequent values.
+// 
+// ### Subtraction rules for numeric types
+// - The difference between two non-null values is their algebraic difference;
+//   or `null`, if the result is negative and `nonNegative: true`;
+// - `null` minus some value is always `null`;
+// - Some value `v` minus `null` is `v` minus the last non-null value seen
+//   before `v`; or `null` if `v` is the first non-null value seen.
+// - If `nonNegative` and `initialZero` are set to `true`, `difference()`
+//   returns the difference between `0` and the subsequent value.
+//   If the subsequent value is less than zero, `difference()` returns `null`.
+// 
+// ### Output tables
+// For each input table with `n` rows, `difference()` outputs a table with
+// `n - 1` rows.
+// 
+// ## Parameters
+// - nonNegative: Disallow negative differences. Default is `false`.
+// 
+//   When `true`, if a value is less than the previous value, the function
+//   assumes the previous value should have been a zero.
+// 
+// - columns: List of columns to operate on. Default is `["_value"]`.
+// - keepFirst: Keep the first row in each input table. Default is `false`.
+// 
+//   If `true`, the difference of the first row of each output table is null.
+// 
+// - initialZero: Use zero (0) as the initial value in the difference calculation
+//   when the subsequent value is less than the previous value and `nonNegative` is
+//   `true`. Default is `false`.
+// - tables: Input data. Default is piped-forward data (`<-`).
+// 
+// ## Examples
+// 
+// ### Calculate the difference between subsequent values
+// ```
+// import "sampledata"
+// 
+// < sampledata.int()
+// >     |> difference()
+// ```
+// 
+// ### Calculate the non-negative difference between subsequent values
+// ```
+// import "sampledata"
+// 
+// < sampledata.int()
+// >     |> difference(nonNegative: true)
+// ```
+// 
+// ### Calculate the difference between subsequent values with null values
+// ```
+// import "sampledata"
+// 
+// < sampledata.int(includeNull: true)
+// >     |> difference()
+// ```
+// 
+// ### Keep the first value when calculating the difference between values
+// ```
+// import "sampledata"
+// 
+// < sampledata.int()
+// >     |> difference(keepFirst: true)
+// ```
+// 
+// introduced: 0.7.1
+// tags: transformations
+// 
 builtin difference : (
         <-tables: [T],
         ?nonNegative: bool,
@@ -44,6 +341,7 @@ builtin difference : (
     T: Record,
     R: Record
 
+// distinct ...
 builtin distinct : (<-tables: [A], ?column: string) => [B] where A: Record, B: Record
 builtin drop : (<-tables: [A], ?fn: (column: string) => bool, ?columns: [string]) => [B] where A: Record, B: Record
 builtin duplicate : (<-tables: [A], column: string, as: string) => [B] where A: Record, B: Record

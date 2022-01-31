@@ -17,4 +17,6 @@ package system
 // array.from(rows:[{time: system.time()}])
 // ```
 //
+// tags: date/time
+// 
 builtin time : () => time
