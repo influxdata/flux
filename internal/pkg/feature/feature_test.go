@@ -26,9 +26,9 @@ func Test_feature(t *testing.T) {
 			name: "int happy path",
 			flag: newFlag("test", 0),
 			values: map[string]interface{}{
-				"test": int32(42),
+				"test": 42,
 			},
-			expected: int32(42),
+			expected: 42,
 		},
 		{
 			name: "float happy path",
@@ -59,7 +59,7 @@ func Test_feature(t *testing.T) {
 		{
 			name:     "int missing use default",
 			flag:     newFlag("test", 65),
-			expected: int32(65),
+			expected: 65,
 		},
 		{
 			name:     "float missing use default",
@@ -84,9 +84,9 @@ func Test_feature(t *testing.T) {
 			name: "int invalid use default",
 			flag: newFlag("test", 42),
 			values: map[string]interface{}{
-				"test": 99.99,
+				"test": "notanint",
 			},
-			expected: int32(42),
+			expected: 42,
 		},
 		{
 			name: "float invalid use default",
@@ -103,6 +103,14 @@ func Test_feature(t *testing.T) {
 				"test": true,
 			},
 			expected: "restaurantattheendoftheuniverse",
+		},
+		{
+			name: "int as float",
+			flag: newFlag("test", 42),
+			values: map[string]interface{}{
+				"test": 99.99,
+			},
+			expected: 99,
 		},
 	}
 
