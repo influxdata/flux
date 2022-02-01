@@ -51,7 +51,7 @@ func (b *Int64Array) Cap() int { return cap(b.rawData) }
 func (b *Int64Array) Len() int { return len(b.rawData) }
 
 // NewArray returns a new array from the data using NewInt64Array.
-func (b *Int64Array) NewArray() array.Interface {
+func (b *Int64Array) NewArray() arrow.Array {
 	return b.NewInt64Array()
 }
 
@@ -186,7 +186,7 @@ func (b *Uint64Array) Cap() int { return cap(b.rawData) }
 func (b *Uint64Array) Len() int { return len(b.rawData) }
 
 // NewArray returns a new array from the data using NewUint64Array.
-func (b *Uint64Array) NewArray() array.Interface {
+func (b *Uint64Array) NewArray() arrow.Array {
 	return b.NewUint64Array()
 }
 
@@ -316,7 +316,7 @@ func (b *Float64Array) Cap() int { return cap(b.rawData) }
 func (b *Float64Array) Len() int { return len(b.rawData) }
 
 // NewArray returns a new array from the data using NewFloat64Array.
-func (b *Float64Array) NewArray() array.Interface {
+func (b *Float64Array) NewArray() arrow.Array {
 	return b.NewFloat64Array()
 }
 
