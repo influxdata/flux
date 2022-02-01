@@ -1,0 +1,110 @@
+package values
+
+import (
+	"fmt"
+	"regexp"
+
+	arrow "github.com/influxdata/flux/array"
+	"github.com/influxdata/flux/memory"
+	"github.com/influxdata/flux/semantic"
+)
+
+func NewVectorValue(arr arrow.Interface, typ semantic.MonoType) Vector {
+	switch typ {
+	{{range .}}
+	case {{.MonoType}}:
+		return New{{.Name}}VectorValue(arr.(*{{.Type}}))
+	{{end}}
+	default:
+		panic(fmt.Errorf("unsupported column data type: %s", typ))
+	}
+}
+
+// A convenience method for unit testing
+func NewVectorFromElements(mem *memory.Allocator, es ...interface{}) Vector {
+	var typ semantic.MonoType
+	switch es[0].(type) {
+	{{range .}}
+	case {{.PrimitiveType}}:
+		typ = {{.MonoType}}
+	{{end}}
+	default:
+		panic(fmt.Errorf("unsupported data type"))
+	}
+
+	vs := make([]Value, len(es))
+	for i, e := range es {
+		vs[i] = New(e)
+	}
+	return newVectorFromSlice(vs, typ, mem)
+}
+
+func newVectorFromSlice(values []Value, typ semantic.MonoType, mem *memory.Allocator) Vector {
+	switch typ {
+	{{range .}}
+	case {{.MonoType}}:
+		b := arrow.New{{.Name}}Builder(mem)
+		for _, v := range values {
+			b.Append(v.{{.ValueType}}())
+		}
+		arr := b.New{{.Name}}Array()
+		return New{{.Name}}VectorValue(arr)
+	{{end}}
+	default:
+		panic(fmt.Errorf("unsupported column data type: %s", typ))
+	}
+}
+
+{{range .}}
+var _ Value = &{{.Name}}VectorValue{}
+var _ Vector = &{{.Name}}VectorValue{}
+var _ arrow.Interface = &{{.Type}}{}
+
+type {{.Name}}VectorValue struct {
+	arr *{{.Type}}
+	typ semantic.MonoType
+}
+
+func New{{.Name}}VectorValue(arr *{{.Type}}) Vector {
+	return &{{.Name}}VectorValue{
+		arr: arr,
+		typ: semantic.NewVectorType({{.MonoType}}),
+	}
+}
+
+
+func (v *{{.Name}}VectorValue) ElementType() semantic.MonoType {
+	t, err := v.typ.ElemType()
+	if err != nil {
+		panic("could not get element type of vector value")
+	}
+	return t
+}
+func (v *{{.Name}}VectorValue) Arr() arrow.Interface { return v.arr }
+func (v *{{.Name}}VectorValue) Retain() {
+	v.arr.Retain()
+}
+func (v *{{.Name}}VectorValue) Release() {
+	v.arr.Release()
+}
+
+func (v *{{.Name}}VectorValue) Type() semantic.MonoType { return v.typ }
+func (v *{{.Name}}VectorValue) IsNull() bool { return false }
+func (v *{{.Name}}VectorValue) Str() string { panic(UnexpectedKind(semantic.Vector, semantic.String)) }
+func (v *{{.Name}}VectorValue) Bytes() []byte { panic(UnexpectedKind(semantic.Vector, semantic.Bytes)) }
+func (v *{{.Name}}VectorValue) Int() int64 { panic(UnexpectedKind(semantic.Vector, semantic.Int)) }
+func (v *{{.Name}}VectorValue) UInt() uint64 { panic(UnexpectedKind(semantic.Vector, semantic.UInt)) }
+func (v *{{.Name}}VectorValue) Float() float64 { panic(UnexpectedKind(semantic.Vector, semantic.Float)) }
+func (v *{{.Name}}VectorValue) Bool() bool { panic(UnexpectedKind(semantic.Vector, semantic.Bool)) }
+func (v *{{.Name}}VectorValue) Time() Time { panic(UnexpectedKind(semantic.Vector, semantic.Time)) }
+func (v *{{.Name}}VectorValue) Duration() Duration { panic(UnexpectedKind(semantic.Vector, semantic.Duration)) }
+func (v *{{.Name}}VectorValue) Regexp() *regexp.Regexp { panic(UnexpectedKind(semantic.Vector, semantic.Regexp)) }
+func (v *{{.Name}}VectorValue) Array() Array { panic(UnexpectedKind(semantic.Vector, semantic.Array)) }
+func (v *{{.Name}}VectorValue) Object() Object { panic(UnexpectedKind(semantic.Vector, semantic.Object)) }
+func (v *{{.Name}}VectorValue) Function() Function { panic(UnexpectedKind(semantic.Vector, semantic.Function)) }
+func (v *{{.Name}}VectorValue) Dict() Dictionary { panic(UnexpectedKind(semantic.Vector, semantic.Dictionary)) }
+
+func (v *{{.Name}}VectorValue) Equal(other Value) bool {
+	panic("cannot compare two vectors for equality")
+}
+{{end}}

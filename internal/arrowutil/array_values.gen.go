@@ -119,6 +119,14 @@ func (v IntArrayValue) Sort(f func(i values.Value, j values.Value) bool) {
 	panic("cannot sort immutable array")
 }
 
+func (v IntArrayValue) Retain() {
+	v.arr.Retain()
+}
+
+func (v IntArrayValue) Release() {
+	v.arr.Release()
+}
+
 var _ values.Value = UintArrayValue{}
 var _ values.Array = UintArrayValue{}
 
@@ -197,6 +205,14 @@ func (v UintArrayValue) Range(f func(i int, v values.Value)) {
 
 func (v UintArrayValue) Sort(f func(i values.Value, j values.Value) bool) {
 	panic("cannot sort immutable array")
+}
+
+func (v UintArrayValue) Retain() {
+	v.arr.Retain()
+}
+
+func (v UintArrayValue) Release() {
+	v.arr.Release()
 }
 
 var _ values.Value = FloatArrayValue{}
@@ -279,6 +295,14 @@ func (v FloatArrayValue) Range(f func(i int, v values.Value)) {
 
 func (v FloatArrayValue) Sort(f func(i values.Value, j values.Value) bool) {
 	panic("cannot sort immutable array")
+}
+
+func (v FloatArrayValue) Retain() {
+	v.arr.Retain()
+}
+
+func (v FloatArrayValue) Release() {
+	v.arr.Release()
 }
 
 var _ values.Value = BooleanArrayValue{}
@@ -369,6 +393,14 @@ func (v BooleanArrayValue) Sort(f func(i values.Value, j values.Value) bool) {
 	panic("cannot sort immutable array")
 }
 
+func (v BooleanArrayValue) Retain() {
+	v.arr.Retain()
+}
+
+func (v BooleanArrayValue) Release() {
+	v.arr.Release()
+}
+
 var _ values.Value = StringArrayValue{}
 var _ values.Array = StringArrayValue{}
 
@@ -453,4 +485,12 @@ func (v StringArrayValue) Range(f func(i int, v values.Value)) {
 
 func (v StringArrayValue) Sort(f func(i values.Value, j values.Value) bool) {
 	panic("cannot sort immutable array")
+}
+
+func (v StringArrayValue) Retain() {
+	v.arr.Retain()
+}
+
+func (v StringArrayValue) Release() {
+	v.arr.Release()
 }

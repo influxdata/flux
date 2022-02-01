@@ -1,0 +1,67 @@
+[
+  {
+    "Name": "Int",
+    "Type": "arrow.Int",
+    "PrimitiveType": "int64",
+    "MonoType": "semantic.BasicInt",
+    "IsNumeric": true,
+    "IsComparable": true,
+    "Value": "Value",
+    "Append": "Append",
+    "NewArray": "NewIntArray",
+    "ValueType": "Int",
+    "ColType": "TInt"
+  },
+  {
+    "Name": "Uint",
+    "Type": "arrow.Uint",
+    "PrimitiveType": "uint64",
+    "MonoType": "semantic.BasicUint",
+    "IsNumeric": true,
+    "IsComparable": true,
+    "Value": "Value",
+    "Append": "Append",
+    "NewArray": "NewUintArray",
+    "ValueType": "UInt",
+    "ColType": "TUInt"
+  },
+  {
+    "Name": "Float",
+    "Type": "arrow.Float",
+    "PrimitiveType": "float64",
+    "MonoType": "semantic.BasicFloat",
+    "IsNumeric": true,
+    "IsComparable": true,
+    "Value": "Value",
+    "Append": "Append",
+    "NewArray": "NewFloatArray",
+    "ValueType": "Float",
+    "ColType": "TFloat"
+  },
+  {
+    "Name": "Boolean",
+    "Type": "arrow.Boolean",
+    "PrimitiveType": "bool",
+    "MonoType": "semantic.BasicBool",
+    "IsNumeric": false,
+    "IsComparable": false,
+    "Value": "Value",
+    "Append": "Append",
+    "NewArray": "NewBooleanArray",
+    "ValueType": "Bool",
+    "ColType": "TBool"
+  },
+  {
+    "Name": "String",
+    "Type": "arrow.String",
+    "PrimitiveType": "string",
+    "MonoType": "semantic.BasicString",
+    "IsNumeric": false,
+    "IsComparable": true,
+    "Value": "Value",
+    "Append": "Append",
+    "NewArray": "NewStringArray",
+    "ValueType": "Str",
+    "ColType": "TString"
+  }
+]

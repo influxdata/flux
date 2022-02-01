@@ -313,6 +313,9 @@ func (b linearBins) Equal(rhs values.Value) bool {
 	return ok
 }
 
+func (b linearBins) Retain()  {}
+func (b linearBins) Release() {}
+
 func (b linearBins) HasSideEffect() bool {
 	return false
 }
@@ -438,6 +441,9 @@ func (b logarithmicBins) Equal(rhs values.Value) bool {
 	_, ok := rhs.(logarithmicBins)
 	return ok
 }
+
+func (b logarithmicBins) Retain()  {}
+func (b logarithmicBins) Release() {}
 
 func (b logarithmicBins) HasSideEffect() bool {
 	return false

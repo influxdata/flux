@@ -87,4 +87,12 @@ func (v {{.Name}}ArrayValue) Range(f func(i int, v values.Value)) {
 }
 
 func (v {{.Name}}ArrayValue) Sort(f func(i values.Value, j values.Value) bool) { panic("cannot sort immutable array") }
+
+func (v {{.Name}}ArrayValue) Retain() {
+	v.arr.Retain()
+}
+
+func (v {{.Name}}ArrayValue) Release() {
+	v.arr.Release()
+}
 {{end}}

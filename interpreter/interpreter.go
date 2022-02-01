@@ -876,6 +876,10 @@ func (f function) Equal(rhs values.Value) bool {
 	v, ok := rhs.(function)
 	return ok && f.e == v.e && f.scope == v.scope
 }
+
+func (f function) Retain()  {}
+func (f function) Release() {}
+
 func (f function) HasSideEffect() bool {
 	// Function definitions do not produce side effects.
 	// Only a function call expression can produce side effects.

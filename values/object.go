@@ -247,3 +247,14 @@ func (o *object) Equal(rhs Value) bool {
 	}
 	return true
 }
+
+func (o *object) Retain() {
+	o.Range(func(name string, v Value) {
+		v.Retain()
+	})
+}
+func (o *object) Release() {
+	o.Range(func(name string, v Value) {
+		v.Release()
+	})
+}

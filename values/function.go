@@ -104,6 +104,9 @@ func (f *function) Equal(rhs Value) bool {
 	return ok && (f == v)
 }
 
+func (f *function) Retain()  {}
+func (f *function) Release() {}
+
 func (f *function) HasSideEffect() bool {
 	return f.hasSideEffect
 }
