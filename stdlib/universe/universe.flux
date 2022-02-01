@@ -20,7 +20,7 @@ import "experimental/table"
 // `now()` returns the current system time (UTC). `now()` is cached at runtime,
 // so all executions of `now()` in a Flux script return the same time value.
 // `system.time()` returns the system time (UTC) at which `system.time()` is executed.
-// Each instance of system.time() in a Flux script returns a unique value.
+// Each instance of `system.time()` in a Flux script returns a unique value.
 //
 // ## Examples
 //
