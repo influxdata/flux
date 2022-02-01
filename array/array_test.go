@@ -163,9 +163,9 @@ func TestStringBuilder_NewArray(t *testing.T) {
 		}
 
 		arr := b.NewArray()
-		assert.Equal(t, 0, mem.CurrentAlloc(), "unexpected memory allocation.")
+		mem.AssertSize(t, 0)
 		arr.Release()
-		assert.Equal(t, 0, mem.CurrentAlloc(), "unexpected memory allocation.")
+		mem.AssertSize(t, 0)
 
 		b.Resize(10)
 		b.ReserveData(10)
@@ -179,7 +179,7 @@ func TestStringBuilder_NewArray(t *testing.T) {
 		arr = b.NewArray()
 		assert.Equal(t, 192, mem.CurrentAlloc(), "unexpected memory allocation.")
 		arr.Release()
-		assert.Equal(t, 0, mem.CurrentAlloc(), "unexpected memory allocation.")
+		mem.AssertSize(t, 0)
 	}
 }
 

@@ -88,7 +88,7 @@ func TestAggregateTransformation_ProcessChunk(t *testing.T) {
 		t.Fatal("expected aggregate function to be invoked, but it was not")
 	}
 	// Memory should have been released since we did not retain the data.
-	assert.Equal(t, 0, mem.CurrentAlloc(), "unexpected memory allocation.")
+	mem.AssertSize(t, 0)
 
 	isAggregated, shouldHaveState = false, true
 	tbl = gen.Table(mem)
@@ -255,7 +255,7 @@ func TestAggregateTransformation_ProcessEmpty(t *testing.T) {
 		&mock.AggregateTransformation{
 			AggregateFn: func(chunk table.Chunk, state interface{}, _ memory.Allocator) (interface{}, bool, error) {
 				// Empty table chunks use no memory.
-				assert.Equal(t, 0, mem.CurrentAlloc(), "unexpected memory allocation.")
+				mem.AssertSize(t, 0)
 				if chunk.Len() > 0 {
 					t.Errorf("table was not empty, is %d", chunk.Len())
 				}
