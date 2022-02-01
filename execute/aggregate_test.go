@@ -5,7 +5,7 @@ import (
 	"sort"
 	"testing"
 
-	"github.com/apache/arrow/go/arrow/memory"
+	"github.com/apache/arrow/go/v7/arrow/memory"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/influxdata/flux"
@@ -18,6 +18,7 @@ import (
 	"github.com/influxdata/flux/mock"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/stdlib/universe"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestAggregateTransformation_ProcessChunk(t *testing.T) {
@@ -42,7 +43,7 @@ func TestAggregateTransformation_ProcessChunk(t *testing.T) {
 				// This accounts for 64 bytes (data) + 64 bytes (null bitmap) for each column
 				// of which there are two. 64 bytes is the minimum that arrow will allocate
 				// for a particular data buffer.
-				mem.AssertSize(t, 256)
+				assert.Equal(t, 256, mem.CurrentAlloc(), "unexpected memory allocation.")
 
 				if shouldHaveState {
 					if state == nil {
@@ -87,7 +88,7 @@ func TestAggregateTransformation_ProcessChunk(t *testing.T) {
 		t.Fatal("expected aggregate function to be invoked, but it was not")
 	}
 	// Memory should have been released since we did not retain the data.
-	mem.AssertSize(t, 0)
+	assert.Equal(t, 0, mem.CurrentAlloc(), "unexpected memory allocation.")
 
 	isAggregated, shouldHaveState = false, true
 	tbl = gen.Table(mem)
@@ -200,7 +201,7 @@ func TestAggregateTransformation_Process(t *testing.T) {
 				// This accounts for 64 bytes (data) + 64 bytes (null bitmap) for each column
 				// of which there are two. 64 bytes is the minimum that arrow will allocate
 				// for a particular data buffer.
-				mem.AssertSize(t, 256)
+				assert.Equal(t, 256, mem.CurrentAlloc(), "unexpected memory allocation.")
 				isAggregated = true
 				return "mystate", true, nil
 			},
@@ -254,7 +255,7 @@ func TestAggregateTransformation_ProcessEmpty(t *testing.T) {
 		&mock.AggregateTransformation{
 			AggregateFn: func(chunk table.Chunk, state interface{}, _ memory.Allocator) (interface{}, bool, error) {
 				// Empty table chunks use no memory.
-				mem.AssertSize(t, 0)
+				assert.Equal(t, 0, mem.CurrentAlloc(), "unexpected memory allocation.")
 				if chunk.Len() > 0 {
 					t.Errorf("table was not empty, is %d", chunk.Len())
 				}

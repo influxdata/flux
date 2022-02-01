@@ -3,8 +3,9 @@ package mutable_test
 import (
 	"testing"
 
-	"github.com/apache/arrow/go/arrow/memory"
+	"github.com/apache/arrow/go/v7/arrow/memory"
 	"github.com/influxdata/flux/internal/mutable"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestInt64Array_Append(t *testing.T) {
@@ -13,7 +14,7 @@ func TestInt64Array_Append(t *testing.T) {
 
 	b := mutable.NewInt64Array(mem)
 	defer b.Release()
-	mem.AssertSize(t, 0)
+	assert.Equal(t, 0, mem.CurrentAlloc(), "unexpected memory allocation.")
 
 	// Appending will change the length to 1.
 	b.Append(1)
@@ -55,7 +56,7 @@ func TestInt64Array_AppendValues(t *testing.T) {
 
 	b := mutable.NewInt64Array(mem)
 	defer b.Release()
-	mem.AssertSize(t, 0)
+	assert.Equal(t, 0, mem.CurrentAlloc(), "unexpected memory allocation.")
 
 	// Append two values.
 	b.AppendValues([]int64{1, 2})
@@ -91,7 +92,7 @@ func TestInt64Array_Reserve(t *testing.T) {
 
 	b := mutable.NewInt64Array(mem)
 	defer b.Release()
-	mem.AssertSize(t, 0)
+	assert.Equal(t, 0, mem.CurrentAlloc(), "unexpected memory allocation.")
 
 	// Reserve will increase the capacity, but not the length.
 	// We do not verify the exact capacity because that doesn't matter,
@@ -118,7 +119,7 @@ func TestInt64Array_Resize(t *testing.T) {
 
 	b := mutable.NewInt64Array(mem)
 	defer b.Release()
-	mem.AssertSize(t, 0)
+	assert.Equal(t, 0, mem.CurrentAlloc(), "unexpected memory allocation.")
 
 	// Resize to 2 for 2 elements.
 	b.Resize(2)
@@ -146,7 +147,7 @@ func TestInt64Array_Set(t *testing.T) {
 
 	b := mutable.NewInt64Array(mem)
 	defer b.Release()
-	mem.AssertSize(t, 0)
+	assert.Equal(t, 0, mem.CurrentAlloc(), "unexpected memory allocation.")
 
 	// Append two values.
 	// Resize the array to two values and set each of the values.
@@ -187,7 +188,7 @@ func TestInt64Array_NewArray(t *testing.T) {
 
 	b := mutable.NewInt64Array(mem)
 	defer b.Release()
-	mem.AssertSize(t, 0)
+	assert.Equal(t, 0, mem.CurrentAlloc(), "unexpected memory allocation.")
 
 	// Append a value.
 	b.Append(1)
@@ -221,7 +222,7 @@ func TestInt64Array_MixReserveResize(t *testing.T) {
 
 	b := mutable.NewInt64Array(mem)
 	defer b.Release()
-	mem.AssertSize(t, 0)
+	assert.Equal(t, 0, mem.CurrentAlloc(), "unexpected memory allocation.")
 
 	s1 := 10
 	s2 := 15
@@ -260,7 +261,7 @@ func TestUint64Array_Append(t *testing.T) {
 
 	b := mutable.NewUint64Array(mem)
 	defer b.Release()
-	mem.AssertSize(t, 0)
+	assert.Equal(t, 0, mem.CurrentAlloc(), "unexpected memory allocation.")
 
 	// Appending will change the length to 1.
 	b.Append(1)
@@ -302,7 +303,7 @@ func TestUint64Array_AppendValues(t *testing.T) {
 
 	b := mutable.NewUint64Array(mem)
 	defer b.Release()
-	mem.AssertSize(t, 0)
+	assert.Equal(t, 0, mem.CurrentAlloc(), "unexpected memory allocation.")
 
 	// Append two values.
 	b.AppendValues([]uint64{1, 2})
@@ -338,7 +339,7 @@ func TestUint64Array_Reserve(t *testing.T) {
 
 	b := mutable.NewUint64Array(mem)
 	defer b.Release()
-	mem.AssertSize(t, 0)
+	assert.Equal(t, 0, mem.CurrentAlloc(), "unexpected memory allocation.")
 
 	// Reserve will increase the capacity, but not the length.
 	// We do not verify the exact capacity because that doesn't matter,
@@ -365,7 +366,7 @@ func TestUint64Array_Resize(t *testing.T) {
 
 	b := mutable.NewUint64Array(mem)
 	defer b.Release()
-	mem.AssertSize(t, 0)
+	assert.Equal(t, 0, mem.CurrentAlloc(), "unexpected memory allocation.")
 
 	// Resize to 2 for 2 elements.
 	b.Resize(2)
@@ -393,7 +394,7 @@ func TestUint64Array_Set(t *testing.T) {
 
 	b := mutable.NewUint64Array(mem)
 	defer b.Release()
-	mem.AssertSize(t, 0)
+	assert.Equal(t, 0, mem.CurrentAlloc(), "unexpected memory allocation.")
 
 	// Append two values.
 	// Resize the array to two values and set each of the values.
@@ -468,7 +469,7 @@ func TestUint64Array_MixReserveResize(t *testing.T) {
 
 	b := mutable.NewUint64Array(mem)
 	defer b.Release()
-	mem.AssertSize(t, 0)
+	assert.Equal(t, 0, mem.CurrentAlloc(), "unexpected memory allocation.")
 
 	s1 := 10
 	s2 := 15
@@ -507,7 +508,7 @@ func TestFloat64Array_Append(t *testing.T) {
 
 	b := mutable.NewFloat64Array(mem)
 	defer b.Release()
-	mem.AssertSize(t, 0)
+	assert.Equal(t, 0, mem.CurrentAlloc(), "unexpected memory allocation.")
 
 	// Appending will change the length to 1.
 	b.Append(1)
@@ -549,7 +550,7 @@ func TestFloat64Array_AppendValues(t *testing.T) {
 
 	b := mutable.NewFloat64Array(mem)
 	defer b.Release()
-	mem.AssertSize(t, 0)
+	assert.Equal(t, 0, mem.CurrentAlloc(), "unexpected memory allocation.")
 
 	// Append two values.
 	b.AppendValues([]float64{1, 2})
@@ -585,7 +586,7 @@ func TestFloat64Array_Reserve(t *testing.T) {
 
 	b := mutable.NewFloat64Array(mem)
 	defer b.Release()
-	mem.AssertSize(t, 0)
+	assert.Equal(t, 0, mem.CurrentAlloc(), "unexpected memory allocation.")
 
 	// Reserve will increase the capacity, but not the length.
 	// We do not verify the exact capacity because that doesn't matter,
@@ -612,7 +613,7 @@ func TestFloat64Array_Resize(t *testing.T) {
 
 	b := mutable.NewFloat64Array(mem)
 	defer b.Release()
-	mem.AssertSize(t, 0)
+	assert.Equal(t, 0, mem.CurrentAlloc(), "unexpected memory allocation.")
 
 	// Resize to 2 for 2 elements.
 	b.Resize(2)
@@ -640,7 +641,7 @@ func TestFloat64Array_Set(t *testing.T) {
 
 	b := mutable.NewFloat64Array(mem)
 	defer b.Release()
-	mem.AssertSize(t, 0)
+	assert.Equal(t, 0, mem.CurrentAlloc(), "unexpected memory allocation.")
 
 	// Append two values.
 	// Resize the array to two values and set each of the values.
@@ -681,7 +682,7 @@ func TestFloat64Array_NewArray(t *testing.T) {
 
 	b := mutable.NewFloat64Array(mem)
 	defer b.Release()
-	mem.AssertSize(t, 0)
+	assert.Equal(t, 0, mem.CurrentAlloc(), "unexpected memory allocation.")
 
 	// Append a value.
 	b.Append(1)
@@ -715,7 +716,7 @@ func TestFloat64Array_MixReserveResize(t *testing.T) {
 
 	b := mutable.NewFloat64Array(mem)
 	defer b.Release()
-	mem.AssertSize(t, 0)
+	assert.Equal(t, 0, mem.CurrentAlloc(), "unexpected memory allocation.")
 
 	s1 := 10
 	s2 := 15

@@ -12,7 +12,8 @@ require (
 	github.com/HdrHistogram/hdrhistogram-go v1.1.0 // indirect
 	github.com/SAP/go-hdb v0.14.1
 	github.com/andreyvit/diff v0.0.0-20170406064948-c7f18ee00883
-	github.com/apache/arrow/go/arrow v0.0.0-20210722123801-4591d76fce28
+	github.com/apache/arrow/go/arrow v0.0.0-20211112161151-bc219186db40 // indirect
+	github.com/apache/arrow/go/v7 v7.0.0-20220201061922-bf0ee3f9c50e
 	github.com/benbjohnson/immutable v0.3.0
 	github.com/bonitoo-io/go-sql-bigquery v0.3.4-1.4.0
 	github.com/c-bata/go-prompt v0.2.2
@@ -24,9 +25,8 @@ require (
 	github.com/go-sql-driver/mysql v1.5.0
 	github.com/gofrs/uuid v3.3.0+incompatible
 	github.com/golang/geo v0.0.0-20190916061304-5b978397cfec
-	github.com/google/flatbuffers v2.0.0+incompatible
-	github.com/google/go-cmp v0.5.6
-	github.com/inconshreveable/mousetrap v1.0.0 // indirect
+	github.com/google/flatbuffers v2.0.5+incompatible
+	github.com/google/go-cmp v0.5.7
 	github.com/influxdata/influxdb-client-go/v2 v2.3.1-0.20210518120617-5d1fff431040
 	github.com/influxdata/line-protocol v0.0.0-20200327222509-2487e7298839
 	github.com/influxdata/pkg-config v0.2.11
@@ -39,26 +39,25 @@ require (
 	github.com/mattn/go-tty v0.0.0-20180907095812-13ff1204f104 // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.1
 	github.com/opentracing/opentracing-go v1.2.0
-	github.com/pierrec/lz4 v2.0.5+incompatible // indirect
 	github.com/pkg/errors v0.9.1
 	github.com/pkg/term v0.0.0-20180730021639-bffc007b7fd5 // indirect
-	github.com/prometheus/client_model v0.0.0-20190812154241-14fe0d1b01d4
-	github.com/prometheus/common v0.6.0
+	github.com/prometheus/client_model v0.1.0
+	github.com/prometheus/common v0.7.0
 	github.com/segmentio/kafka-go v0.1.0
 	github.com/sergi/go-diff v1.0.0 // indirect
 	github.com/snowflakedb/gosnowflake v1.3.13
 	github.com/spf13/cobra v0.0.3
+	github.com/stretchr/testify v1.7.0
 	github.com/uber/athenadriver v1.1.4
 	github.com/uber/jaeger-client-go v2.28.0+incompatible
 	github.com/uber/jaeger-lib v2.4.1+incompatible // indirect
 	github.com/vertica/vertica-sql-go v1.1.1
-	go.uber.org/zap v1.14.0
-	golang.org/x/exp v0.0.0-20200224162631-6cc2880d07d6
-	golang.org/x/net v0.0.0-20210614182718-04defd469f4e
-	golang.org/x/sys v0.0.0-20210823070655-63515b42dcdf // indirect
-	golang.org/x/tools v0.1.4
-	gonum.org/v1/gonum v0.8.2
+	go.uber.org/zap v1.16.0
+	golang.org/x/exp v0.0.0-20211216164055-b2b84827b756
+	golang.org/x/net v0.0.0-20220127200216-cd36cc0744dd
+	golang.org/x/tools v0.1.9
+	gonum.org/v1/gonum v0.9.3
 	google.golang.org/api v0.47.0
-	google.golang.org/grpc v1.39.0
+	google.golang.org/grpc v1.44.0
 	gopkg.in/yaml.v2 v2.3.0
 )

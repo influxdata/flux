@@ -3,7 +3,7 @@ package execute_test
 import (
 	"testing"
 
-	"github.com/apache/arrow/go/arrow/memory"
+	"github.com/apache/arrow/go/v7/arrow/memory"
 	"github.com/google/go-cmp/cmp"
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/codes"
@@ -14,6 +14,7 @@ import (
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/mock"
 	"github.com/influxdata/flux/values"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestNarrowStateTransformation_ProcessChunk(t *testing.T) {
@@ -45,7 +46,7 @@ func TestNarrowStateTransformation_ProcessChunk(t *testing.T) {
 				// This accounts for 64 bytes (data) + 64 bytes (null bitmap) for each column
 				// of which there are two. 64 bytes is the minimum that arrow will allocate
 				// for a particular data buffer.
-				mem.AssertSize(t, 256)
+				assert.Equal(t, 256, mem.CurrentAlloc(), "unexpected memory allocation.")
 
 				// Compare the buffer contents to the table we wanted.
 				// Because we should have produced only one table chunk,
@@ -200,7 +201,7 @@ func TestNarrowStateTransformation_Process(t *testing.T) {
 				// This accounts for 64 bytes (data) + 64 bytes (null bitmap) for each column
 				// of which there are two. 64 bytes is the minimum that arrow will allocate
 				// for a particular data buffer.
-				mem.AssertSize(t, 256)
+				assert.Equal(t, 256, mem.CurrentAlloc(), "unexpected memory allocation.")
 
 				// Compare the buffer contents to the table we wanted.
 				// Because we should have produced only one table chunk,

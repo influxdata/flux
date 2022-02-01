@@ -1,8 +1,8 @@
 package array
 
 import (
-	"github.com/apache/arrow/go/arrow"
-	"github.com/apache/arrow/go/arrow/array"
+	"github.com/apache/arrow/go/v7/arrow"
+	"github.com/apache/arrow/go/v7/arrow/array"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/internal/errors"
 )
@@ -198,7 +198,7 @@ func Slice(arr Interface, i, j int) Interface {
 	if arr, ok := arr.(sliceable); ok {
 		return arr.Slice(i, j)
 	}
-	if arr, ok := arr.(array.Interface); ok {
+	if arr, ok := arr.(arrow.Array); ok {
 		return array.NewSlice(arr, int64(i), int64(j))
 	}
 	err := errors.Newf(codes.Internal, "cannot slice array of type %T", arr)

@@ -3,13 +3,14 @@ package execute_test
 import (
 	"testing"
 
-	"github.com/apache/arrow/go/arrow/memory"
+	"github.com/apache/arrow/go/v7/arrow/memory"
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/table"
 	"github.com/influxdata/flux/execute/table/static"
 	"github.com/influxdata/flux/mock"
 	"github.com/influxdata/flux/values"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestProcessMsg(t *testing.T) {
@@ -30,7 +31,7 @@ func TestProcessMsg(t *testing.T) {
 	}); err != nil {
 		t.Errorf("unexpected error: %s", err)
 	}
-	mem.AssertSize(t, 0)
+	assert.Equal(t, 0, mem.CurrentAlloc(), "unexpected memory allocation.")
 
 	// Create the same set of tables, but this time we are
 	// going to use dup and acknowledge the duplications.
@@ -45,7 +46,7 @@ func TestProcessMsg(t *testing.T) {
 	}); err != nil {
 		t.Errorf("unexpected error: %s", err)
 	}
-	mem.AssertSize(t, 0)
+	assert.Equal(t, 0, mem.CurrentAlloc(), "unexpected memory allocation.")
 
 	// It should be possible to use Do in both of the above situations.
 	if err := ti.Do(func(tbl flux.Table) error {
@@ -60,7 +61,7 @@ func TestProcessMsg(t *testing.T) {
 	}); err != nil {
 		t.Errorf("unexpected error: %s", err)
 	}
-	mem.AssertSize(t, 0)
+	assert.Equal(t, 0, mem.CurrentAlloc(), "unexpected memory allocation.")
 
 	if err := ti.Do(func(tbl flux.Table) error {
 		m := execute.NewProcessMsg(tbl)
@@ -84,7 +85,7 @@ func TestProcessMsg(t *testing.T) {
 	}); err != nil {
 		t.Errorf("unexpected error: %s", err)
 	}
-	mem.AssertSize(t, 0)
+	assert.Equal(t, 0, mem.CurrentAlloc(), "unexpected memory allocation.")
 }
 
 func TestProcessChunkMsg(t *testing.T) {
@@ -121,7 +122,7 @@ func TestProcessChunkMsg(t *testing.T) {
 	}); err != nil {
 		t.Errorf("unexpected error: %s", err)
 	}
-	mem.AssertSize(t, 0)
+	assert.Equal(t, 0, mem.CurrentAlloc(), "unexpected memory allocation.")
 
 	// Create the same set of tables, but this time we are
 	// going to use dup and acknowledge the duplications.
@@ -147,7 +148,7 @@ func TestProcessChunkMsg(t *testing.T) {
 			for i := 0; i < 10; i++ {
 				m.Ack()
 			}
-			mem.AssertSize(t, 0)
+			assert.Equal(t, 0, mem.CurrentAlloc(), "unexpected memory allocation.")
 
 			if diff := table.Diff(
 				table.Iterator{fromTableChunk(dup1.(execute.ProcessChunkMsg).TableChunk())},
@@ -162,7 +163,7 @@ func TestProcessChunkMsg(t *testing.T) {
 	}); err != nil {
 		t.Errorf("unexpected error: %s", err)
 	}
-	mem.AssertSize(t, 0)
+	assert.Equal(t, 0, mem.CurrentAlloc(), "unexpected memory allocation.")
 }
 
 func TestWrapTransformationInTransport(t *testing.T) {

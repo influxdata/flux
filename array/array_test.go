@@ -3,10 +3,11 @@ package array_test
 import (
 	"testing"
 
-	apachearray "github.com/apache/arrow/go/arrow/array"
-	"github.com/apache/arrow/go/arrow/memory"
+	apachearray "github.com/apache/arrow/go/v7/arrow/array"
+	"github.com/apache/arrow/go/v7/arrow/memory"
 	"github.com/influxdata/flux/array"
 	fluxmemory "github.com/influxdata/flux/memory"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestString(t *testing.T) {
@@ -88,11 +89,11 @@ func TestString(t *testing.T) {
 			if want, got := len(tc.want)+2, b.Cap(); want != got {
 				t.Errorf("unexpected builder cap -want/+got:\n\t- %d\n\t+ %d", want, got)
 			}
-			mem.AssertSize(t, tc.sz)
+			assert.Equal(t, tc.sz, mem.CurrentAlloc(), "unexpected memory allocation.")
 
 			arr := b.NewStringArray()
 			defer arr.Release()
-			mem.AssertSize(t, tc.sz)
+			assert.Equal(t, tc.sz, mem.CurrentAlloc(), "unexpected memory allocation.")
 
 			if want, got := len(tc.want), arr.Len(); want != got {
 				t.Fatalf("unexpected length -want/+got:\n\t- %d\n\t+ %d", want, got)
@@ -162,9 +163,9 @@ func TestStringBuilder_NewArray(t *testing.T) {
 		}
 
 		arr := b.NewArray()
-		mem.AssertSize(t, 0)
+		assert.Equal(t, 0, mem.CurrentAlloc(), "unexpected memory allocation.")
 		arr.Release()
-		mem.AssertSize(t, 0)
+		assert.Equal(t, 0, mem.CurrentAlloc(), "unexpected memory allocation.")
 
 		b.Resize(10)
 		b.ReserveData(10)
@@ -176,9 +177,9 @@ func TestStringBuilder_NewArray(t *testing.T) {
 			}
 		}
 		arr = b.NewArray()
-		mem.AssertSize(t, 192)
+		assert.Equal(t, 192, mem.CurrentAlloc(), "unexpected memory allocation.")
 		arr.Release()
-		mem.AssertSize(t, 0)
+		assert.Equal(t, 0, mem.CurrentAlloc(), "unexpected memory allocation.")
 	}
 }
 
