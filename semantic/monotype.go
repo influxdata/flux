@@ -306,13 +306,11 @@ func (v *VectorFB) ElementType() (MonoType, error) {
 }
 
 func getCollection(tbl fbTabler) (collection, bool) {
-	switch tbl.(type) {
+	switch tbl := tbl.(type) {
 	case *fbsemantic.Arr:
-		arr, ok := tbl.(*fbsemantic.Arr)
-		return &ArrFB{fb: arr}, ok
+		return &ArrFB{fb: tbl}, true
 	case *fbsemantic.Vector:
-		vec, ok := tbl.(*fbsemantic.Vector)
-		return &VectorFB{fb: vec}, ok
+		return &VectorFB{fb: tbl}, true
 	default:
 		return nil, false
 	}
