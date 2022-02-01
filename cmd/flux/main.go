@@ -15,7 +15,6 @@ func main() {
 		influxdb.DefaultFromAttributes{
 			Host: func(v string) *string { return &v }(cmd.DefaultInfluxDBHost),
 		},
-		universe.MergeFiltersRule{},
 		universe.OptimizeWindowRule{},
 	)
 	cmd.Execute()
