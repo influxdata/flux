@@ -18,5 +18,5 @@ package system
 // ```
 //
 // tags: date/time
-// 
+//
 builtin time : () => time
