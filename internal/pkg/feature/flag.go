@@ -24,9 +24,9 @@ func MakeFlag(name, key, owner string, defaultValue interface{}) Flag {
 	case float64:
 		return FloatFlag{b, v}
 	case int32:
-		return IntFlag{b, v}
+		return IntFlag{b, int(v)}
 	case int:
-		return IntFlag{b, int32(v)}
+		return IntFlag{b, v}
 	case string:
 		return StringFlag{b, v}
 	default:
@@ -122,24 +122,30 @@ func (f FloatFlag) Float(ctx context.Context) float64 {
 // IntFlag implements Flag for integer values.
 type IntFlag struct {
 	Base
-	defaultInt int32
+	defaultInt int
 }
 
 var _ Flag = IntFlag{}
 
 // MakeIntFlag returns a string flag with the given Base and default.
-func MakeIntFlag(name, key, owner string, defaultValue int32) IntFlag {
+func MakeIntFlag(name, key, owner string, defaultValue int) IntFlag {
 	b := MakeBase(name, key, owner, defaultValue)
 	return IntFlag{b, defaultValue}
 }
 
 // Int value of the flag on the request context.
-func (f IntFlag) Int(ctx context.Context) int32 {
-	i, ok := f.value(ctx).(int32)
-	if !ok {
+func (f IntFlag) Int(ctx context.Context) int {
+	// Ints sometimes get returned as floats.
+	switch i := f.value(ctx).(type) {
+	case float64:
+		return int(i)
+	case int32:
+		return int(i)
+	case int:
+		return i
+	default:
 		return f.defaultInt
 	}
-	return i
 }
 
 // BoolFlag implements Flag for boolean values.
