@@ -3,6 +3,7 @@ package values
 import (
 	"testing"
 
+	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/semantic"
 )
 
@@ -39,10 +40,16 @@ func TestVectorTypes(t *testing.T) {
 		},
 	}
 	for _, tc := range testCases {
-		got := NewVectorFromElements(nil, tc.input...)
+		mem := &memory.Allocator{}
+		got := NewVectorFromElements(mem, tc.input...)
 
 		if !got.ElementType().Equal(tc.wantType) {
 			t.Errorf("expected %v, got %v", tc.wantType, got.ElementType())
+		}
+
+		got.Release()
+		if mem.Allocated() != 0 {
+			t.Errorf("expected bytes allocated to be 0, got %d", mem.Allocated())
 		}
 	}
 }
