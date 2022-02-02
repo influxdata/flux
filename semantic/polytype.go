@@ -227,3 +227,58 @@ func (pt *PolyType) getCanonicalMapping() (map[uint64]uint64, error) {
 	}
 	return tvm, nil
 }
+
+type Instantiator struct {
+	subst Substitutor
+	inst  map[uint64]MonoType
+}
+
+type Substitution struct {
+	TypeMap       map[uint64]MonoType
+	variableCount uint64
+}
+
+type Substitutor interface {
+	Fresh() uint64
+	Apply(v uint64) (MonoType, bool)
+}
+
+func (s *Substitution) Fresh() uint64 {
+	var v = s.variableCount
+	s.variableCount += 1
+	return v
+}
+
+func (i *Substitution) Apply(v uint64) (MonoType, bool) {
+	t, ok := i.TypeMap[v]
+	return t, ok
+}
+
+func (s *Instantiator) Fresh() uint64 {
+	return s.subst.Fresh()
+}
+
+func (i *Instantiator) Apply(v uint64) (MonoType, bool) {
+	t, ok := i.inst[v]
+	if ok {
+		return t, ok
+	}
+	return i.subst.Apply(v)
+}
+
+func (pt PolyType) Instantiator(subst Substitutor) (Substitutor, error) {
+	nvars := pt.NumVars()
+	inst := &Instantiator{subst: subst, inst: make(map[uint64]MonoType)}
+	for i := 0; i < nvars; i++ {
+		arg, err := pt.Var(i)
+		if err != nil {
+			return inst, err
+		}
+		typ, err := NewVarType(subst.Fresh())
+		if err != nil {
+			return inst, err
+		}
+		inst.inst[arg.I()] = typ
+	}
+	return inst, nil
+}

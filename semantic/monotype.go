@@ -706,6 +706,18 @@ func newBasicType(t fbsemantic.Type) MonoType {
 	return mt
 }
 
+func NewVarType(i uint64) (MonoType, error) {
+	builder := flatbuffers.NewBuilder(0)
+
+	offset := buildVarType(builder, i)
+
+	builder.Finish(offset)
+	buf := builder.FinishedBytes()
+	v := fbsemantic.GetRootAsVar(buf, 0)
+
+	return NewMonoType(v.Table(), fbsemantic.MonoTypeVar)
+}
+
 // NewArrayType will construct a new Array MonoType
 // where the inner element for the array is elemType.
 func NewArrayType(elemType MonoType) MonoType {
@@ -985,9 +997,7 @@ func buildObjectType(builder *flatbuffers.Builder, properties []PropertyType, ex
 
 	var extendsOffset flatbuffers.UOffsetT
 	if extends != nil {
-		fbsemantic.VarStart(builder)
-		fbsemantic.VarAddI(builder, *extends)
-		extendsOffset = fbsemantic.VarEnd(builder)
+		extendsOffset = buildVarType(builder, *extends)
 	}
 
 	fbsemantic.RecordStartPropsVector(builder, len(propOffsets))

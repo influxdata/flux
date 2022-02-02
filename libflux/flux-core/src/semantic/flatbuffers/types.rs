@@ -179,7 +179,7 @@ fn from_table(table: flatbuffers::Table, t: fb::MonoType) -> Option<MonoType> {
         }
         fb::MonoType::Var => {
             let var = fb::Var::init_from_table(table);
-            Some(MonoType::Var(Tvar::from(var)))
+            Some(MonoType::BoundVar(Tvar::from(var)))
         }
         fb::MonoType::Arr => {
             let opt: Option<Array> = fb::Arr::init_from_table(table).into();
@@ -251,7 +251,7 @@ impl From<fb::Record<'_>> for Option<MonoType> {
     fn from(t: fb::Record) -> Option<MonoType> {
         let mut r = match t.extends() {
             None => MonoType::from(Record::Empty),
-            Some(tv) => MonoType::Var(tv.into()),
+            Some(tv) => MonoType::BoundVar(tv.into()),
         };
         let p = t.props()?;
         for value in p.iter().rev() {
@@ -482,7 +482,7 @@ pub fn build_type(
     match t {
         MonoType::Error => unreachable!(),
         MonoType::Builtin(typ) => build_basic_type(builder, typ),
-        MonoType::Var(tvr) => {
+        MonoType::BoundVar(tvr) | MonoType::Var(tvr) => {
             let offset = build_var(builder, *tvr);
             (offset.as_union_value(), fb::MonoType::Var)
         }
@@ -605,6 +605,10 @@ fn build_record<'a>(
             Record::Extension {
                 head,
                 tail: MonoType::Var(t),
+            }
+            | Record::Extension {
+                head,
+                tail: MonoType::BoundVar(t),
             } => {
                 props.push(head);
                 break Some(t);

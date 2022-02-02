@@ -111,19 +111,19 @@ fn format_function_expression() {
 
     check(
         script,
-        expect![[r#"
+        expect![[r##"
             package main
             (a) => {
-                return a:A
-            }:(a:A) => A
+                return a:#A
+            }:(a:#A) => #A
             f = (a, b=1) => {
-                return a:C +:C b:C
-            }:(a:C, ?b:C) => C
+                return a:A +:A b:A
+            }:(a:A, ?b:A) => A
             x = f:(a:int, ?b:int) => int(a: 2):int
             y = f:(a:int, ?b:int) => int(a: x:int, b: f:(a:int, ?b:int) => int(a: x:int):int):int
             g = (t) => {
-                return t:t12
-            }:(<-t:t12) => t12"#]],
+                return t:A
+            }:(<-t:A) => A"##]],
     )
 }
 
@@ -262,11 +262,11 @@ fn format_block_statement() {
 
     check(
         script,
-        expect![[r#"
+        expect![[r##"
             package main
             (r) => {
-                v = (if r:A <:bool 0 then -r:A:A else r:A):A
-                return v:A *:A v:A
-            }:(r:A) => A"#]],
+                v = (if r:#A <:bool 0 then -r:#A:#A else r:#A):#A
+                return v:#A *:#A v:#A
+            }:(r:#A) => #A"##]],
     )
 }

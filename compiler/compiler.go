@@ -29,7 +29,9 @@ func Compile(scope Scope, f *semantic.FunctionExpression, in semantic.MonoType) 
 	// so we can use that to construct the tvar substitutions.
 	// Iterate over every argument and find the equivalent
 	// property inside of the input and then generate the substitutions.
-	subst := make(map[uint64]semantic.MonoType)
+	subst := &semantic.Substitution{
+		TypeMap: make(map[uint64]semantic.MonoType),
+	}
 	for i := 0; i < argN; i++ {
 		arg, err := fnType.Argument(i)
 		if err != nil {
@@ -72,7 +74,7 @@ func Compile(scope Scope, f *semantic.FunctionExpression, in semantic.MonoType) 
 // inType and mapping any variables to the value in the other record.
 // If the input type is not a type variable, it will check to ensure
 // that the type in the input matches or it will return an error.
-func substituteTypes(subst map[uint64]semantic.MonoType, inferredType, actualType semantic.MonoType) error {
+func substituteTypes(subst *semantic.Substitution, inferredType, actualType semantic.MonoType) error {
 	// If the input isn't a valid type, then don't consider it as
 	// part of substituting types. We will trust type inference has
 	// the correct type and that we are just handling a null value
@@ -90,14 +92,14 @@ func substituteTypes(subst map[uint64]semantic.MonoType, inferredType, actualTyp
 		// We can do this by calling substituteTypes with the same
 		// input parameter and the substituted monotype since
 		// substituteTypes will verify the types.
-		if t, ok := subst[vn]; ok {
+		if t, ok := subst.Apply(vn); ok {
 			return substituteTypes(subst, t, actualType)
 		}
 
 		// If the input type is not invalid, mark it down
 		// as the real type.
 		if actualType.Nature() != semantic.Invalid {
-			subst[vn] = actualType
+			subst.TypeMap[vn] = actualType
 		}
 		return nil
 	}
@@ -284,7 +286,7 @@ func findProperty(name string, t semantic.MonoType) (*semantic.RecordProperty, b
 // apply applies a substitution to a type.
 // It will ignore any errors when reading a type.
 // This is safe becase we already validated that the function type is a monotype.
-func apply(sub map[uint64]semantic.MonoType, props []semantic.PropertyType, t semantic.MonoType) semantic.MonoType {
+func apply(sub semantic.Substitutor, props []semantic.PropertyType, t semantic.MonoType) semantic.MonoType {
 	switch t.Kind() {
 	case semantic.Unknown, semantic.Basic:
 		// Basic types do not contain type variables.
@@ -295,7 +297,7 @@ func apply(sub map[uint64]semantic.MonoType, props []semantic.PropertyType, t se
 		if err != nil {
 			return t
 		}
-		ty, ok := sub[tv]
+		ty, ok := sub.Apply(tv)
 		if !ok {
 			return t
 		}
@@ -355,6 +357,8 @@ func apply(sub map[uint64]semantic.MonoType, props []semantic.PropertyType, t se
 				return t
 			}
 			return semantic.ExtendObjectType(props, &tv)
+		default:
+			panic("unknown type in record extension")
 		}
 	case semantic.Fun:
 		n, err := t.NumArguments()
@@ -390,7 +394,7 @@ func apply(sub map[uint64]semantic.MonoType, props []semantic.PropertyType, t se
 }
 
 // compile recursively compiles semantic nodes into evaluators.
-func compile(n semantic.Node, subst map[uint64]semantic.MonoType) (Evaluator, error) {
+func compile(n semantic.Node, subst semantic.Substitutor) (Evaluator, error) {
 	switch n := n.(type) {
 	case *semantic.Block:
 		body := make([]Evaluator, len(n.Body))
@@ -416,12 +420,17 @@ func compile(n semantic.Node, subst map[uint64]semantic.MonoType) (Evaluator, er
 			Evaluator: node,
 		}, nil
 	case *semantic.NativeVariableAssignment:
+		subst, err := n.Typ.Instantiator(subst)
+		if err != nil {
+			return nil, err
+		}
 		node, err := compile(n.Init, subst)
 		if err != nil {
 			return nil, err
 		}
+		t := apply(subst, nil, n.Init.TypeOf())
 		return &declarationEvaluator{
-			t:    apply(subst, nil, n.Init.TypeOf()),
+			t:    t,
 			id:   n.Identifier.Name.Name(),
 			init: node,
 		}, nil
