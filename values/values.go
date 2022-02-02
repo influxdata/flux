@@ -42,6 +42,9 @@ type Value interface {
 	Function() Function
 	Dict() Dictionary
 	Equal(Value) bool
+
+	Retain()
+	Release()
 }
 
 type value struct {
@@ -147,6 +150,9 @@ func (v value) Equal(r Value) bool {
 		return false
 	}
 }
+
+func (v value) Retain()  {}
+func (v value) Release() {}
 
 func (v value) String() string {
 	return fmt.Sprintf("%v", v.v)
@@ -384,3 +390,5 @@ func (n null) Object() Object          { panic(UnexpectedKind(semantic.Invalid, 
 func (n null) Function() Function      { panic(UnexpectedKind(semantic.Invalid, semantic.Function)) }
 func (n null) Dict() Dictionary        { panic(UnexpectedKind(semantic.Invalid, semantic.Dictionary)) }
 func (n null) Equal(Value) bool        { return false }
+func (n null) Retain()                 {}
+func (n null) Release()                {}

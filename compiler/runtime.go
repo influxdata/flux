@@ -755,3 +755,6 @@ func (f *functionValue) Equal(rhs values.Value) bool {
 	v, ok := rhs.(*functionValue)
 	return ok && (f == v)
 }
+
+func (f *functionValue) Retain()  {}
+func (f *functionValue) Release() {}

@@ -177,6 +177,9 @@ func (t *TableObject) Equal(rhs values.Value) bool {
 	v, ok := rhs.(*TableObject)
 	return ok && t == v
 }
+func (t *TableObject) Retain()  {}
+func (t *TableObject) Release() {}
+
 func (t *TableObject) Function() values.Function {
 	panic(values.UnexpectedKind(semantic.Array, semantic.Function))
 }
@@ -298,6 +301,9 @@ func (f *function) Equal(rhs values.Value) bool {
 	v, ok := rhs.(*function)
 	return ok && (f == v)
 }
+func (f *function) Retain()  {}
+func (f *function) Release() {}
+
 func (f *function) HasSideEffect() bool {
 	return f.hasSideEffect
 }
