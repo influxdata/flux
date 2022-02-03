@@ -106,7 +106,7 @@ type SourceIterator interface {
 type sourceIterator struct {
 	ExecutionNode
 	id       DatasetID
-	ts       []Transformation
+	ts       TransformationSet
 	iterator SourceIterator
 }
 
@@ -115,37 +115,10 @@ func (s *sourceIterator) AddTransformation(t Transformation) {
 }
 
 func (s *sourceIterator) Run(ctx context.Context) {
-	err := s.iterator.Do(ctx, s.processTable)
+	err := s.iterator.Do(ctx, func(tbl flux.Table) error {
+		return s.ts.Process(s.id, tbl)
+	})
 	for _, t := range s.ts {
 		t.Finish(s.id, err)
 	}
-}
-
-// processTable will call Process on all of the transformations
-// associated with this source.
-//
-// If there are multiple sources, it will copy the table so it
-// can be properly buffered to the multiple transformations.
-func (s *sourceIterator) processTable(tbl flux.Table) error {
-	if len(s.ts) == 0 {
-		tbl.Done()
-		return nil
-	} else if len(s.ts) == 1 {
-		return s.ts[0].Process(s.id, tbl)
-	}
-
-	// There is more than one transformation so we need to
-	// copy the table for each transformation.
-	bufTable, err := CopyTable(tbl)
-	if err != nil {
-		return err
-	}
-	defer bufTable.Done()
-
-	for _, t := range s.ts {
-		if err := t.Process(s.id, bufTable.Copy()); err != nil {
-			return err
-		}
-	}
-	return nil
 }
