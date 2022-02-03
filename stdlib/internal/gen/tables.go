@@ -155,7 +155,7 @@ func createTablesSource(prSpec plan.ProcedureSpec, dsid execute.DatasetID, a exe
 type Source struct {
 	execute.ExecutionNode
 	id execute.DatasetID
-	ts []execute.Transformation
+	ts execute.TransformationSet
 
 	schema gen.Schema
 	alloc  *memory.Allocator
@@ -178,33 +178,9 @@ func (s *Source) Run(ctx context.Context) {
 	}
 
 	err = tables.Do(func(table flux.Table) error {
-		return s.processTable(ctx, table)
+		return s.ts.Process(s.id, table)
 	})
 	for _, t := range s.ts {
 		t.Finish(s.id, err)
 	}
-}
-
-func (s *Source) processTable(ctx context.Context, tbl flux.Table) error {
-	if len(s.ts) == 0 {
-		tbl.Done()
-		return nil
-	} else if len(s.ts) == 1 {
-		return s.ts[0].Process(s.id, tbl)
-	}
-
-	// There is more than one transformation so we need to
-	// copy the table for each transformation.
-	bufTable, err := execute.CopyTable(tbl)
-	if err != nil {
-		return err
-	}
-	defer bufTable.Done()
-
-	for _, t := range s.ts {
-		if err := t.Process(s.id, bufTable.Copy()); err != nil {
-			return err
-		}
-	}
-	return nil
 }
