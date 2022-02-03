@@ -22,4 +22,3 @@ $fluxdoc dump --dir ${stdlib} --stdlib-dir "${stdlib_compiled}" --allow-exceptio
 $fluxdoc dump --dir ${stdlib} --stdlib-dir "${stdlib_compiled}" --allow-exceptions --output ${short_docs} --short
 
 rm -rf "${dir}"
-
