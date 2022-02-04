@@ -444,15 +444,296 @@ builtin drop : (<-tables: [A], ?fn: (column: string) => bool, ?columns: [string]
 // tags: transformations
 //
 builtin duplicate : (<-tables: [A], column: string, as: string) => [B] where A: Record, B: Record
+
+// elapsed returns the time between subsequent records.
+//
+// For each input table, `elapsed()` returns the same table without the first row
+// (because there is no previous time to derive the elapsed time from) and an
+// additional column containing the elapsed time.
+//
+// ## Parameters
+// - unit: Unit of time used in the calculation. Default is `1s`.
+// - timeColumn: Column to use to compute the elapsed time. Default is `_time`.
+// - columnName: Column to store elapsed times in. Default is `elapsed`.
+// - tables: Input data. Default is piped-forward data (`<-`).
+//
+// ## Examples
+//
+// ### Calculate the time between points in seconds
+// ```
+// import "sampledata"
+//
+// < sampledata.int()
+// >     |> elapsed(unit: 1s)
+// ```
+//
+// introduced: 0.36.0
+// tags: transformations
+//
 builtin elapsed : (<-tables: [A], ?unit: duration, ?timeColumn: string, ?columnName: string) => [B]
     where
     A: Record,
     B: Record
+
+// exponentialMovingAverage calculates the exponential moving average of `n`
+// number of values in the `_value` column giving more weight to more recent data.
+//
+// ### Exponential moving average rules
+//
+// - The first value of an exponential moving average over `n` values is the algebraic mean of `n` values.
+// - Subsequent values are calculated as `y(t) = x(t) * k + y(t-1) * (1 - k)`, where:
+//     - `y(t)` is the exponential moving average at time `t`.
+//     - `x(t)` is the value at time `t`.
+//     - `k = 2 / (1 + n)`.
+// - The average over a period populated by only `null` values is `null`.
+// - Exponential moving averages skip `null` values.
+//
+// ## Parameters
+// - n: Number of values to average.
+// - tables: Input data. Default is piped-forward data (`<-`).
+//
+// ## Examples
+//
+// ### Calculate a three point exponential moving average
+// ```
+// import "sampledata"
+//
+// < sampledata.int()
+// >     |> exponentialMovingAverage(n: 3)
+// ```
+//
+// ### Calculate a three point exponential moving average with null values
+// ```
+// import "sampledata"
+//
+// < sampledata.int(includeNull: true)
+// >     |> exponentialMovingAverage(n: 3)
+// ```
+//
+// introduced: 0.37.0
+// tags: transformations
+//
 builtin exponentialMovingAverage : (<-tables: [{B with _value: A}], n: int) => [{B with _value: A}] where A: Numeric
+
+// fill replaces all null values in input tables with a non-null value.
+//
+// Output tables are the same as the input tables with all null values replaced
+// in the specified column.
+//
+// ## Parameters
+// - column: Column to replace null values in. Default is `_value`.
+// - value: Constant value to replace null values with.
+//
+//   Value type must match the type of the specified column.
+//
+// - usePrevious: Replace null values with the previous non-null value.
+//   Default is `false`.
+//
+// - tables: Input data. Default is piped-forward data (`<-`).
+//
+// ## Examples
+//
+// ### Fill null values with a specified non-null value
+// ```
+// import "sampledata"
+//
+// < sampledata.int(includeNull: true)
+// >     |> fill(value: 0)
+// ```
+//
+// ### Fill null values with the previous non-null value
+// ```
+// import "sampledata"
+//
+// < sampledata.int(includeNull: true)
+// >     |> fill(usePrevious: true)
+// ```
+//
+// introduced: 0.14.0
+// tags: transformations
+//
 builtin fill : (<-tables: [A], ?column: string, ?value: B, ?usePrevious: bool) => [C] where A: Record, C: Record
+
+// filter filters data based on conditions defined in a predicate function (`fn`).
+//
+// Output tables have the same schema as the corresponding input tables.
+//
+// ## Parameters
+// - fn: Single argument predicate function that evaluates `true` or `false`.
+//
+//   Records representing each row are passed to the function as `r`.
+//   Records that evaluate to `true` are included in output tables.
+//   Records that evaluate to _null_ or `false` are excluded from output tables.
+//
+// - onEmpty: Action to take with empty tables. Default is `drop`.
+//
+//   **Supported values**:
+//   - **keep**: Keep empty tables.
+//   - **drop**: Drop empty tables.
+//
+// - tables: Input data. Default is piped-forward data (`<-`).
+//
+// ## Examples
+//
+// ### Filter based on InfluxDB measurement, field, and tag
+// ```no_run
+// from(bucket: "example-bucket")
+//     |> range(start: -1h)
+//     |> filter(fn: (r) => r._measurement == "cpu" and r._field == "usage_system" and r.cpu == "cpu-total")
+// ```
+//
+// ### Keep empty tables when filtering
+// ```
+// import "sampledata"
+// import "experimental/table"
+//
+// < sampledata.int()
+// >     |> filter(fn: (r) => r._value > 18, onEmpty: "keep")
+// ```
+//
+// ### Filter values based on thresholds
+// ```
+// import "sampledata"
+//
+// < sampledata.int()
+// >     |> filter(fn: (r) => r._value > 0 and r._value < 10 )
+// ```
+//
+// introduced: 0.7.0
+// tags: transformations,filters
+//
 builtin filter : (<-tables: [A], fn: (r: A) => bool, ?onEmpty: string) => [A] where A: Record
+
+// first returns the first non-null record from each input table.
+//
+// **Note**: `first()` drops empty tables.
+//
+// ## Parameters
+// - column: Column to operate on. Default is `_value`.
+// - tables: Input data. Default is piped-forward data (`<-`).
+//
+// ## Examples
+//
+// ### Return the first row in each input table
+// ```
+// import "sampledata"
+//
+// < sampledata.int()
+// >     |> first()
+// ```
+//
+// introduced: 0.7.0
+// tags: transformations,selectors
+//
 builtin first : (<-tables: [A], ?column: string) => [A] where A: Record
+
+// group regroups input data by modifying group key of input tables.
+//
+// **Note**: Group does not gaurantee sort order.
+// To ensure data is sorted correctly, use `sort()` after `group()`.
+//
+// ## Parameters
+// - columns: List of columns to use in the grouping operation. Default is `[]`.
+//
+//   **Note**: When `columns` is set to an empty array, `group()` ungroups
+//   all data merges it into a single output table.
+//
+// - mode: Grouping mode. Default is `by`.
+//
+//   **Avaliable modes**:
+//   - **by**: Group by columns defined in the `columns` parameter.
+//   - **except**: Group by all columns _except_ those in defined in the
+//     `columns` parameter.
+//
+// - tables: Input data. Default is piped-forward data (`<-`).
+//
+// ## Examples
+//
+// ### Group by specific columns
+// ```
+// import "sampledata"
+//
+// < sampledata.int()
+// >     |> group(columns: ["_time", "tag"])
+// ```
+//
+// ### Group by everything except time
+// ```
+// import "sampledata"
+//
+// < sampledata.int()
+// >     |> group(columns: ["_time"], mode: "except")
+// ```
+//
+// ### Ungroup data
+// ```
+// import "sampledata"
+//
+// // Merge all tables into a single table
+// < sampledata.int()
+// >     |> group()
+// ```
+//
+// introduced: 0.7.0
+// tags: transformations
+//
 builtin group : (<-tables: [A], ?mode: string, ?columns: [string]) => [A] where A: Record
+
+// histogram approximates the cumulative distribution of a dataset by counting
+// data frequencies for a list of bins.
+//
+// A bin is defined by an upper bound where all data points that are less than
+// or equal to the bound are counted in the bin. Bin counts are cumulative.
+//
+// Each input table is converted into a single output table representing a single histogram.
+// Each output table has the same group key as the corresponding input table.
+// Columns not part of the group key are dropped.
+// Output tables include additional columns for the upper bound and count of bins.
+//
+// ## Parameters
+// - column: Column containing input values. Column must be of type float.
+//   Default is `_value`.
+// - upperBoundColumn: Column to store bin upper bounds in. Default is `le`.
+// - countColumn: Column to store bin counts in. Default is `_value`.
+// - bins: List of upper bounds to use when computing the histogram frequencies.
+//
+//   Bins should contain a bin whose bound is the maximum value of the data set.
+//   This value can be set to positive infinity if no maximum is known.
+//
+//   #### Bin helper functions
+//   The following helper functions can be used to generated bins.
+//
+//   - linearBins()
+//   - logarithmicBins()
+//
+// - normalize: Convert counts into frequency values between 0 and 1.
+//   Default is `false`.
+//
+//   **Note**: Normalized histograms cannot be aggregated by summing their counts.
+//
+// - tables: Input data. Default is piped-forward data (`<-`).
+//
+// ## Examples
+//
+// ### Create a cumulative histogram
+// ```
+// import "sampledata"
+//
+// < sampledata.float()
+// >     |> histogram(bins: [0.0, 5.0, 10.0, 20.0])
+// ```
+//
+// ### Create a cumulative histogram with dynamically generated bins
+// ```
+// import "sampledata"
+//
+// < sampledata.float()
+// >     |> histogram(bins: linearBins(start: 0.0, width: 4.0, count: 3))
+// ```
+//
+// introduced: 0.7.0
+// tags: transformations
+//
 builtin histogram : (
         <-tables: [A],
         ?column: string,
@@ -465,6 +746,55 @@ builtin histogram : (
     A: Record,
     B: Record
 
+// histogramQuantile approximates a quantile given a histogram that approximates
+// the cumulative distribution of the dataset.
+//
+// Each input table represents a single histogram.
+// The histogram tables must have two columns – a count column and an upper bound column.
+//
+// The count is the number of values that are less than or equal to the upper bound value.
+// The table can have any number of records, each representing a bin in the histogram.
+// The counts must be monotonically increasing when sorted by upper bound.
+// If any values in the count column or upper bound column are _null_, it returns an error.
+// The count and upper bound columns must **not** be part of the group key.
+//
+// The quantile is computed using linear interpolation between the two closest bounds.
+// If either of the bounds used in interpolation are infinite, the other finite
+// bound is used and no interpolation is performed.
+//
+// ### Output tables
+// Output tables have the same group key as corresponding input tables.
+// Columns not part of the group key are dropped.
+// A single value column of type float is added.
+// The value column represents the value of the desired quantile from the histogram.
+//
+// ## Parameters
+// - quantile: Quantile to compute. Value must be between 0 and 1.
+// - countColumn: Column containing histogram bin counts. Default is `_value`.
+// - upperBoundColumn: Column containing histogram bin upper bounds.
+//   Default is `le`.
+// - valueColumn: Column to store the computed quantile in. Default is `_value.
+// - minValue: Assumed minimum value of the dataset. Default is `0.0`.
+//
+//   If the quantile falls below the lowest upper bound, interpolation is
+//   performed between `minValue` and the lowest upper bound.
+//   When `minValue` is equal to negative infinity, the lowest upper bound is used.
+//
+// - tables: Input data. Default is piped-forward data (`<-`).
+//
+// ## Examples
+//
+// ### Compute the 90th quantile of a histogram
+// ```
+// # import "sampledata"
+// #
+// # data =
+// #     sampledata.float()
+// #         |> histogram(bins: [0.0, 5.0, 10.0, 20.0])
+// #
+// < data
+// >     |> histogramQuantile(quantile: 0.9)
+// ```
 builtin histogramQuantile : (
         <-tables: [A],
         ?quantile: float,
@@ -477,6 +807,86 @@ builtin histogramQuantile : (
     A: Record,
     B: Record
 
+// holtWinters applies the Holt-Winters forecasting method to input tables.
+//
+// The Holt-Winters method predicts `n` seasonally-adjusted values for the
+// specified column at the specified interval. For example, if interval is six
+// minutes (`6m`) and `n` is `3`, results include three predicted values six
+// minutes apart.
+//
+// #### Seasonality
+// `seasonality` delimits the length of a seasonal pattern according to interval.
+// If the interval is two minutes (`2m`) and `seasonality` is `4`, then the
+// seasonal pattern occurs every eight minutes or every four data points.
+// If your interval is two months (`2mo`) and `seasonality` is `4`, then the
+// seasonal pattern occurs every eight months or every four data points.
+// If data doesn’t have a seasonal pattern, set `seasonality` to `0`.
+//
+// #### Space values at even time intervals
+// `holtWinters()` expects values to be spaced at even time intervales.
+// To ensure values are spaced evenly in time, `holtWinters()` applies the
+// following rules:
+//
+// - Data is grouped into time-based "buckets" determined by the interval.
+// - If a bucket includes many values, the first value is used.
+// - If a bucket includes no values, a missing value (`null`) is added for that bucket.
+//
+// By default, `holtWinters()` uses the first value in each time bucket to run
+// the Holt-Winters calculation. To specify other values to use in the
+// calculation, use `aggregateWindow` to normalize irregular times and apply
+// an aggregate or selector transformation.
+//
+// #### Fitted model
+// `holtWinters()` applies the [Nelder-Mead optimization](https://en.wikipedia.org/wiki/Nelder%E2%80%93Mead_method)
+// to include "fitted" data points in results when `withFit` is set to `true`.
+//
+// #### Null timestamps
+// `holtWinters()` discards rows with null timestamps before running the
+// Holt-Winters calculation.
+//
+// #### Null values
+// `holtWinters()` treats `null` values as missing data points and includes them
+// in the Holt-Winters calculation.
+//
+// ## Parameters
+// - n: Number of values to predict.
+// - interval: Interval between two data points.
+// - withFit: Return fitted data in results. Default is `false`.
+// - column: Column to operate on. Default is `_value`.
+// - timeColumn: Column containing time values to use in the calculating.
+//   Default is `_time`.
+// - seasonality: Number of points in a season. Default is `0`.
+// - tables: Input data. Default is piped-forward data (`<-`).
+//
+// ## Examples
+//
+// ### Use holtWinters to predict future values
+// ```
+// import "sampledata"
+//
+// < sampledata.int()
+// >     |> holtWinters(n: 6, interval: 10s)
+// ```
+//
+// ### Use holtWinters with seasonality to predict future values
+// ```
+// import "sampledata"
+//
+// < sampledata.int()
+// >     |> holtWinters(n: 4, interval: 10s, seasonality: 4)
+// ```
+//
+// ### Use the holtWinters fitted model to predict future values
+// ```
+// import "sampledata"
+//
+// < sampledata.int()
+// >     |> holtWinters(n: 3, interval: 10s, withFit: true)
+// ```
+//
+// introduced: 0.38.0
+// tags: transformations
+//
 builtin holtWinters : (
         <-tables: [A],
         n: int,
@@ -490,7 +900,78 @@ builtin holtWinters : (
     A: Record,
     B: Record
 
+// hourSelection retains all rows with time values in a specified hour range.
+//
+// ## Parameters
+// - start: First hour of the hour range (inclusive). Hours range from `[0-23]`.
+// - stop: Last hour of the hour range (inclusive). Hours range from `[0-23]`.
+// - timeColumn: Column that contains the time value. Default is `_time`.
+// - tables: Input data. Default is piped-forward data (`<-`).
+//
+// ## Examples
+//
+// ### Filter by business hours
+// ```
+// # import "generate"
+// #
+// # data = generate.from(count: 8, fn: (n) => n * n, start: 2021-01-01T00:00:00Z, stop: 2021-01-02T00:00:00Z)
+// #
+// < data
+// >     |> hourSelection(start: 9, stop: 17)
+// ```
+//
+// introduced: 0.39.0
+// tags: transformations, date/time, filters
+//
 builtin hourSelection : (<-tables: [A], start: int, stop: int, ?timeColumn: string) => [A] where A: Record
+
+// integral computes the area under the curve per unit of time of subsequent non-null records.
+//
+// `integral()` requires `_start` and `_stop` columns that are part of the group key.
+// The curve is defined using `_time` as the domain and record values as the range.
+//
+// ## Parameters
+// - unit: Unit of time to use to compute the integral.
+// - column: Column to operate on. Default is `_value`.
+// - timeColumn: Column that contains time values to use in the operation.
+//   Default is `_time`.
+// - interpolate: Type of interpolation to use. Default is `""`.
+//
+//   **Available interplation types**:
+//   - linear
+//   - _empty string for no interpolation_
+//
+// - tables: Input data. Default is piped-forward data (`<-`).
+//
+// ## Examples
+//
+// ### Calculate the integral
+// ```
+// # import "sampledata"
+// #
+// # data =
+// #     sampledata.int()
+// #         |> range(start: sampledata.start, stop: sampledata.stop)
+// #
+// < data
+// >     |> integral(unit: 10s)
+// ```
+//
+// ### Calculate the integral with linear interpolation
+// ```
+// # import "sampledata"
+// #
+// # data =
+// #     sampledata.int(includeNull: true)
+// #         |> range(start: sampledata.start, stop: sampledata.stop)
+// #
+// < data
+// >     |> integral(unit: 10s, interpolate: "linear")
+// ```
+//
+// introduced: 0.7.0
+// tags: transformations, aggregates
+//
 builtin integral : (
         <-tables: [A],
         ?unit: duration,
@@ -502,15 +983,547 @@ builtin integral : (
     A: Record,
     B: Record
 
+// join merges two streams of tables into a single output stream based on columns with equal values.
+// Null values are not considered equal when comparing column values.
+// The resulting schema is the union of the input schemas.
+// The resulting group key is the union of the input group keys.
+//
+// #### Output data
+// The schema and group keys of the joined output output data is the union of
+// the input schemas and group keys.
+// Columns that exist in both input streams that are not part specified as
+// columns to join on are renamed using the pattern `<column>_<table>` to
+// prevent ambiguity in joined tables.
+//
+// ### Join vs union
+// `join()` creates new rows based on common values in one or more specified columns.
+// Output rows also contain the differing values from each of the joined streams.
+// `union()` does not modify data in rows, but unions separate streams of tables
+// into a single stream of tables and groups rows of data based on existing group keys.
+//
+// ## Parameters
+// - tables: Record containing two input streams to join.
+// - on: List of columns to join on.
+// - method: Join method. Default is `inner`.
+//
+//   **Supported methods**:
+//   - inner
+//
+// ## Examples
+//
+// ### Join two streams of tables
+// ```
+// import "generate"
+//
+// t1 =
+//     generate.from(count: 4, fn: (n) => n + 1, start: 2021-01-01T00:00:00Z, stop: 2021-01-05T00:00:00Z)
+//         |> set(key: "tag", value: "foo")
+//
+// t2 =
+//     generate.from(count: 4, fn: (n) => n * (-1), start: 2021-01-01T00:00:00Z, stop: 2021-01-05T00:00:00Z)
+//         |> set(key: "tag", value: "foo")
+//
+// > join(tables: {t1: t1, t2: t2}, on: ["_time", "tag"])
+// ```
+//
+// ### Join data from separate data sources
+// ```no_run
+// import "sql"
+//
+// sqlData =
+//     sql.from(
+//         driverName: "postgres",
+//         dataSourceName: "postgresql://username:password@localhost:5432",
+//         query: "SELECT * FROM example_table",
+//     )
+//
+// tsData =
+//     from(bucket: "example-bucket")
+//         |> range(start: -1h)
+//         |> filter(fn: (r) => r._measurement == "example-measurement")
+//         |> filter(fn: (r) => exists r.sensorID)
+//
+// join(tables: {sql: sqlData, ts: tsData}, on: ["_time", "sensorID"])
+// ```
+//
+// introduced: 0.7.0
+// tags: transformations
+//
 builtin join : (<-tables: A, ?method: string, ?on: [string]) => [B] where A: Record, B: Record
+
+// kaufmansAMA calculates the Kaufman’s Adaptive Moving Average (KAMA) using
+// values in input tables.
+//
+// Kaufman’s Adaptive Moving Average is a trend-following indicator designed to
+// account for market noise or volatility.
+//
+// ## Parameters
+// - n: Period or number of points to use in the calculation.
+// - column: Column to operate on. Default is `_value`.
+// - tables: Input data. Default is piped-forward data (`<-`).
+//
+// ## Examples
+//
+// ### Caclulate Kaufman's Adaptive Moving Average for input data
+// ```
+// import "sampledata"
+//
+// < sampledata.int()
+// >     |> kaufmansAMA(n: 3)
+// ```
+//
+// introduced: 0.40.0
+// tags: transformations
+//
 builtin kaufmansAMA : (<-tables: [A], n: int, ?column: string) => [B] where A: Record, B: Record
+
+// keep returns a stream of tables containing only the specified columns.
+//
+// Columns in the group key that are not specifed in the `columns` parameter or
+// identified by the `fn` parameter are removed from the group key and dropped
+// from output tables. `keep()` is the inverse of `drop()`.
+//
+// ## Parameters
+// - columns: Columns to keep in output tables. Cannot be used with `fn`.
+// - fn: Predicate function that takes a column name as a parameter (column) and
+//   returns a boolean indicating whether or not the column should be kept in
+//   output tables. Cannot be used with `columns`.
+// - tables: Input data. Default is piped-forward data (`<-`).
+//
+// ## Examples
+//
+// ### Keep a list of columns
+// ```
+// import "sampledata"
+//
+// < sampledata.int()
+// >     |> keep(columns: ["_time", "_value"])
+// ```
+//
+// ### Keep columns matching a predicate
+// ```
+// import "sampledata"
+//
+// < sampledata.int()
+// >     |> keep(fn: (column) => column =~ /^_?t/)
+// ```
+//
+// introduced: 0.7.0
+// tags: transformations
+//
 builtin keep : (<-tables: [A], ?columns: [string], ?fn: (column: string) => bool) => [B] where A: Record, B: Record
+
+// keyValues returns a stream of tables with each input tables' group key and
+// two columns, _key and _value, that correspond to unique column label and value
+// pairs for each input table.
+//
+// ## Parameters
+// - keyColumns: List of columns from which values are extracted.
+//
+//   All columns must be of the same type.
+//   Each input table must have all of the columns in the `keyColumns` parameter.
+//
+// - tables: Input data. Default is piped-forward data (`<-`).
+//
+// ## Examples
+// ### Get key values from explicitly defined columns
+// ```
+// # import "array"
+// #
+// # data =
+// #     array.from(
+// #         rows: [
+// #             {
+// #                 _field: "co",
+// #                 _measurement: "airSensors",
+// #                 sensorID: "TLM0100",
+// #                 _time: 2021-09-08T14:21:57Z,
+// #                 _value: 0.31,
+// #             },
+// #             {
+// #                 _field: "co",
+// #                 _measurement: "airSensors",
+// #                 sensorID: "TLM0100",
+// #                 _time: 2021-09-08T14:22:07Z,
+// #                 _value: 0.295,
+// #             },
+// #             {
+// #                 _field: "co",
+// #                 _measurement: "airSensors",
+// #                 sensorID: "TLM0100",
+// #                 _time: 2021-09-08T14:22:17Z,
+// #                 _value: 0.314,
+// #             },
+// #             {
+// #                 _field: "co",
+// #                 _measurement: "airSensors",
+// #                 sensorID: "TLM0100",
+// #                 _time: 2021-09-08T14:22:27Z,
+// #                 _value: 0.313,
+// #             },
+// #             {
+// #                 _field: "humidity",
+// #                 _measurement: "airSensors",
+// #                 sensorID: "TLM0100",
+// #                 _time: 2021-09-08T14:21:57Z,
+// #                 _value: 36.03,
+// #             },
+// #             {
+// #                 _field: "humidity",
+// #                 _measurement: "airSensors",
+// #                 sensorID: "TLM0100",
+// #                 _time: 2021-09-08T14:22:07Z,
+// #                 _value: 36.07,
+// #             },
+// #             {
+// #                 _field: "humidity",
+// #                 _measurement: "airSensors",
+// #                 sensorID: "TLM0100",
+// #                 _time: 2021-09-08T14:22:17Z,
+// #                 _value: 36.1,
+// #             },
+// #             {
+// #                 _field: "humidity",
+// #                 _measurement: "airSensors",
+// #                 sensorID: "TLM0100",
+// #                 _time: 2021-09-08T14:22:27Z,
+// #                 _value: 36.12,
+// #             },
+// #             {
+// #                 _field: "temperature",
+// #                 _measurement: "airSensors",
+// #                 sensorID: "TLM0100",
+// #                 _time: 2021-09-08T14:21:57Z,
+// #                 _value: 70.84,
+// #             },
+// #             {
+// #                 _field: "temperature",
+// #                 _measurement: "airSensors",
+// #                 sensorID: "TLM0100",
+// #                 _time: 2021-09-08T14:22:07Z,
+// #                 _value: 70.86,
+// #             },
+// #             {
+// #                 _field: "temperature",
+// #                 _measurement: "airSensors",
+// #                 sensorID: "TLM0100",
+// #                 _time: 2021-09-08T14:22:17Z,
+// #                 _value: 70.89,
+// #             },
+// #             {
+// #                 _field: "temperature",
+// #                 _measurement: "airSensors",
+// #                 sensorID: "TLM0100",
+// #                 _time: 2021-09-08T14:22:27Z,
+// #                 _value: 70.85,
+// #             },
+// #         ],
+// #     )
+// #         |> group(columns: ["_time", "_value"], mode: "except")
+// #
+// < data
+// >     |> keyValues(keyColumns: ["sensorID", "_field"])
+// ```
+//
+// introduced: 0.13.0
+// tags: transformations
+//
 builtin keyValues : (<-tables: [A], ?keyColumns: [string]) => [{C with _key: string, _value: B}]
     where
     A: Record,
     C: Record
+
+// keys returns the columns that are in the group key of each input table.
+//
+// Each output table contains a row for each group key column label.
+// A single group key column label is stored in the specified `column` for each row.
+// All columns not in the group key are dropped.
+//
+// ## Parameters
+// - column: Column to store group key labels in. Default is `_value`.
+// - tables: Input data. Default is piped-forward data (`<-`).
+//
+// ## Examples
+//
+// ### Return group key columns for each input table
+// ```
+// # import "array"
+// #
+// # data =
+// #     array.from(
+// #         rows: [
+// #             {
+// #                 _field: "co",
+// #                 _measurement: "airSensors",
+// #                 sensorID: "TLM0100",
+// #                 _time: 2021-09-08T14:21:57Z,
+// #                 _value: 0.31,
+// #             },
+// #             {
+// #                 _field: "co",
+// #                 _measurement: "airSensors",
+// #                 sensorID: "TLM0100",
+// #                 _time: 2021-09-08T14:22:07Z,
+// #                 _value: 0.295,
+// #             },
+// #             {
+// #                 _field: "co",
+// #                 _measurement: "airSensors",
+// #                 sensorID: "TLM0100",
+// #                 _time: 2021-09-08T14:22:17Z,
+// #                 _value: 0.314,
+// #             },
+// #             {
+// #                 _field: "co",
+// #                 _measurement: "airSensors",
+// #                 sensorID: "TLM0100",
+// #                 _time: 2021-09-08T14:22:27Z,
+// #                 _value: 0.313,
+// #             },
+// #             {
+// #                 _field: "humidity",
+// #                 _measurement: "airSensors",
+// #                 sensorID: "TLM0100",
+// #                 _time: 2021-09-08T14:21:57Z,
+// #                 _value: 36.03,
+// #             },
+// #             {
+// #                 _field: "humidity",
+// #                 _measurement: "airSensors",
+// #                 sensorID: "TLM0100",
+// #                 _time: 2021-09-08T14:22:07Z,
+// #                 _value: 36.07,
+// #             },
+// #             {
+// #                 _field: "humidity",
+// #                 _measurement: "airSensors",
+// #                 sensorID: "TLM0100",
+// #                 _time: 2021-09-08T14:22:17Z,
+// #                 _value: 36.1,
+// #             },
+// #             {
+// #                 _field: "humidity",
+// #                 _measurement: "airSensors",
+// #                 sensorID: "TLM0100",
+// #                 _time: 2021-09-08T14:22:27Z,
+// #                 _value: 36.12,
+// #             },
+// #             {
+// #                 _field: "temperature",
+// #                 _measurement: "airSensors",
+// #                 sensorID: "TLM0100",
+// #                 _time: 2021-09-08T14:21:57Z,
+// #                 _value: 70.84,
+// #             },
+// #             {
+// #                 _field: "temperature",
+// #                 _measurement: "airSensors",
+// #                 sensorID: "TLM0100",
+// #                 _time: 2021-09-08T14:22:07Z,
+// #                 _value: 70.86,
+// #             },
+// #             {
+// #                 _field: "temperature",
+// #                 _measurement: "airSensors",
+// #                 sensorID: "TLM0100",
+// #                 _time: 2021-09-08T14:22:17Z,
+// #                 _value: 70.89,
+// #             },
+// #             {
+// #                 _field: "temperature",
+// #                 _measurement: "airSensors",
+// #                 sensorID: "TLM0100",
+// #                 _time: 2021-09-08T14:22:27Z,
+// #                 _value: 70.85,
+// #             },
+// #         ],
+// #     )
+// #         |> group(columns: ["_time", "_value"], mode: "except")
+// #
+// < data
+// >     |> keys()
+// ```
+//
+// ### Return all distinct group key columns in a single table
+// ```
+// # import "array"
+// #
+// # data =
+// #     array.from(
+// #         rows: [
+// #             {
+// #                 _field: "co",
+// #                 _measurement: "airSensors",
+// #                 sensorID: "TLM0100",
+// #                 _time: 2021-09-08T14:21:57Z,
+// #                 _value: 0.31,
+// #             },
+// #             {
+// #                 _field: "co",
+// #                 _measurement: "airSensors",
+// #                 sensorID: "TLM0100",
+// #                 _time: 2021-09-08T14:22:07Z,
+// #                 _value: 0.295,
+// #             },
+// #             {
+// #                 _field: "co",
+// #                 _measurement: "airSensors",
+// #                 sensorID: "TLM0100",
+// #                 _time: 2021-09-08T14:22:17Z,
+// #                 _value: 0.314,
+// #             },
+// #             {
+// #                 _field: "co",
+// #                 _measurement: "airSensors",
+// #                 sensorID: "TLM0100",
+// #                 _time: 2021-09-08T14:22:27Z,
+// #                 _value: 0.313,
+// #             },
+// #             {
+// #                 _field: "humidity",
+// #                 _measurement: "airSensors",
+// #                 sensorID: "TLM0100",
+// #                 _time: 2021-09-08T14:21:57Z,
+// #                 _value: 36.03,
+// #             },
+// #             {
+// #                 _field: "humidity",
+// #                 _measurement: "airSensors",
+// #                 sensorID: "TLM0100",
+// #                 _time: 2021-09-08T14:22:07Z,
+// #                 _value: 36.07,
+// #             },
+// #             {
+// #                 _field: "humidity",
+// #                 _measurement: "airSensors",
+// #                 sensorID: "TLM0100",
+// #                 _time: 2021-09-08T14:22:17Z,
+// #                 _value: 36.1,
+// #             },
+// #             {
+// #                 _field: "humidity",
+// #                 _measurement: "airSensors",
+// #                 sensorID: "TLM0100",
+// #                 _time: 2021-09-08T14:22:27Z,
+// #                 _value: 36.12,
+// #             },
+// #             {
+// #                 _field: "temperature",
+// #                 _measurement: "airSensors",
+// #                 sensorID: "TLM0100",
+// #                 _time: 2021-09-08T14:21:57Z,
+// #                 _value: 70.84,
+// #             },
+// #             {
+// #                 _field: "temperature",
+// #                 _measurement: "airSensors",
+// #                 sensorID: "TLM0100",
+// #                 _time: 2021-09-08T14:22:07Z,
+// #                 _value: 70.86,
+// #             },
+// #             {
+// #                 _field: "temperature",
+// #                 _measurement: "airSensors",
+// #                 sensorID: "TLM0100",
+// #                 _time: 2021-09-08T14:22:17Z,
+// #                 _value: 70.89,
+// #             },
+// #             {
+// #                 _field: "temperature",
+// #                 _measurement: "airSensors",
+// #                 sensorID: "TLM0100",
+// #                 _time: 2021-09-08T14:22:27Z,
+// #                 _value: 70.85,
+// #             },
+// #         ],
+// #     )
+// #         |> group(columns: ["_time", "_value"], mode: "except")
+// #
+// < data
+//     |> keys()
+//     |> keep(columns: ["_value"])
+// >     |> distinct()
+// ```
+//
+// ### Return group key columns as an array
+// 1. Use `keys()` to replace the `_value` column with the group key labels.
+// 2. Use `findColumn()` to return the `_value` column as an array.
+//
+// ```no_run
+// import "sampledata"
+//
+// sampledata.int()
+//     |> keys()
+//     |> findColumn(fn: (key) => true, column: "_value")
+//
+// // Returns [tag]
+// ```
+//
+// introduced: 0.13.0
+// tags: transformations
+//
 builtin keys : (<-tables: [A], ?column: string) => [B] where A: Record, B: Record
+
+// last returns the last row with a non-null value from each input table.
+//
+// **Note**: `last()` drops empty tables.
+//
+// ## Parameters
+// - column: Column to use to verify the existence of a value.
+//   Default is `_value`.
+//
+//   If this column is `null` in the last record, `last()` returns the previous
+//   record with a non-null value.
+//
+// - tables: Input data. Default is piped-forward data (`<-`).
+//
+// ## Examples
+//
+// ### Return the last row from each input table
+// ```
+// import "sampledata"
+//
+// < sampledata.int()
+// >     |> last()
+// ```
+//
+// introduced: 0.7.0
+// tags: transformations,selectors
+//
 builtin last : (<-tables: [A], ?column: string) => [A] where A: Record
+
+// limit returns the first `n` rows after the specified `offset` from each input table.
+//
+// If an input table has less than `offset + n` rows, `limit()` returns all rows
+// after the offset.
+//
+// ## Parameters
+// - n: Maximum number of rows to return.
+// - offset: Number of rows to skip per table before limiting to `n`.
+//   Default is `0`.
+// - tables: Input data. Default is piped-forward data (`<-`).
+//
+// ## Examples
+//
+// ### Limit results to the first three rows in each table
+// ```
+// import "sampledata"
+//
+// < sampledata.int()
+// >     |> limit(n: 3)
+// ```
+//
+// ### Limit results to the first three rows in each input table after the first two
+// ```
+// import "sampledata"
+//
+// sampledata.int()
+//     |> limit(n: 3, offset: 2)
+// ```
+//
+// introduced: 0.7.0
+// tags: transformations, selectors
+//
 builtin limit : (<-tables: [A], n: int, ?offset: int) => [A]
 builtin map : (<-tables: [A], fn: (r: A) => B, ?mergeKey: bool) => [B]
 builtin max : (<-tables: [A], ?column: string) => [A] where A: Record
@@ -871,6 +1884,35 @@ doubleEMA = (n, tables=<-) =>
         |> map(fn: (r) => ({r with _value: 2.0 * r.__ema - r._value}))
         |> drop(columns: ["__ema"])
 
+// kaufmansER computes the Kaufman's Efficiency Ratio (KER) of values in the
+// `_value` column for each input table.
+//
+// Kaufman’s Efficiency Ratio indicator divides the absolute value of the Chande
+// Momentum Oscillator by 100 to return a value between 0 and 1.
+// Higher values represent a more efficient or trending market.
+//
+// ## Parameters
+// - n: Period or number of points to use in the calculation.
+// - tables: Input data. Default is piped-forward data (`<-`).
+//
+// ## Examples
+//
+// ### Compute the Kaufman's Efficiency Ratio
+// ```
+// import "sampledata"
+//
+// < sampledata.int()
+// >     |> kaufmansER(n: 3)
+// ```
+//
+// introduced: 0.40.0
+// tags: transformations
+//
+kaufmansER = (n, tables=<-) =>
+    tables
+        |> chandeMomentumOscillator(n: n)
+        |> map(fn: (r) => ({r with _value: math.abs(x: r._value) / 100.0}))
+
 // Triple Exponential Moving Average computes the triple exponential moving averages of the `_value` column.
 // eg: A 5 point triple exponential moving average would be called as such:
 // from(bucket: "telegraf/autogen"):
@@ -891,12 +1933,6 @@ tripleEMA = (n, tables=<-) =>
 truncateTimeColumn = (timeColumn="_time", unit, tables=<-) =>
     tables
         |> map(fn: (r) => ({r with _time: date.truncate(t: r._time, unit: unit)}))
-
-// kaufmansER computes Kaufman's Efficiency Ratios of the `_value` column
-kaufmansER = (n, tables=<-) =>
-    tables
-        |> chandeMomentumOscillator(n: n)
-        |> map(fn: (r) => ({r with _value: math.abs(x: r._value) / 100.0}))
 toString = (tables=<-) => tables |> map(fn: (r) => ({r with _value: string(v: r._value)}))
 toInt = (tables=<-) => tables |> map(fn: (r) => ({r with _value: int(v: r._value)}))
 toUInt = (tables=<-) => tables |> map(fn: (r) => ({r with _value: uint(v: r._value)}))
