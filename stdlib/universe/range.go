@@ -76,10 +76,8 @@ type RangeProcedureSpec struct {
 
 // TimeBounds implements plan.BoundsAwareProcedureSpec
 func (s *RangeProcedureSpec) TimeBounds(predecessorBounds *plan.Bounds) *plan.Bounds {
-	bounds := &plan.Bounds{
-		Start: values.ConvertTime(s.Bounds.Start.Time(s.Bounds.Now)),
-		Stop:  values.ConvertTime(s.Bounds.Stop.Time(s.Bounds.Now)),
-	}
+	b := plan.FromFluxBounds(s.Bounds)
+	bounds := &b
 	if predecessorBounds != nil {
 		bounds = bounds.Intersect(predecessorBounds)
 	}
