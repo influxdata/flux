@@ -12,5 +12,5 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 	},
 	Files:   []*ast.File{},
 	Package: "array_test",
-	Path:    "contrib/bonitoo-io/array",
+	Path:    "experimental/array",
 }}

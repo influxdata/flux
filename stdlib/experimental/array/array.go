@@ -12,7 +12,7 @@ import (
 
 var SpecialFns map[string]values.Function
 
-const packagePath = "contrib/bonitoo-io/array"
+const packagePath = "experimental/array"
 
 func init() {
 	SpecialFns = map[string]values.Function{
@@ -99,6 +99,9 @@ func init() {
 					elements := make([]values.Value, arr.Len())
 					input := values.NewObject(inputType)
 					arr.Range(func(i int, v values.Value) {
+						if evalErr != nil {
+							return
+						}
 						input.Set("x", v)
 						tValue, err := f.Eval(ctx, input)
 						if err != nil {
@@ -115,8 +118,70 @@ func init() {
 				}, ctx, args)
 			}, false,
 		),
+		"filter": values.NewFunction(
+			"filter",
+			runtime.MustLookupBuiltinType(packagePath, "filter"),
+			func(ctx context.Context, args values.Object) (values.Value, error) {
+				return interpreter.DoFunctionCallContext(func(ctx context.Context, args interpreter.Arguments) (values.Value, error) {
+					_fn, err := args.GetRequiredFunction("fn")
+					if err != nil {
+						return nil, err
+					}
+					fn, err := interpreter.ResolveFunction(_fn)
+					if err != nil {
+						return nil, err
+					}
+
+					_arr, err := args.GetRequired("arr")
+					if err != nil {
+						return nil, err
+					}
+					arr := _arr.Array()
+
+					if arr.Len() == 0 {
+						return arr, nil
+					}
+
+					elementType, err := arr.Type().ElemType()
+					if err != nil {
+						return nil, err
+					}
+					inputType := semantic.NewObjectType([]semantic.PropertyType{
+						{Key: []byte("x"), Value: elementType},
+					})
+					f, err := compiler.Compile(compiler.ToScope(fn.Scope), fn.Fn, inputType)
+					if err != nil {
+						return nil, err
+					}
+
+					var evalErr error
+					elements := make([]values.Value, 0, arr.Len())
+					input := values.NewObject(inputType)
+					arr.Range(func(i int, v values.Value) {
+						if evalErr != nil {
+							return
+						}
+						input.Set("x", v)
+						tValue, err := f.Eval(ctx, input)
+						if err != nil {
+							evalErr = err
+							return
+						}
+						if tValue.Bool() {
+							elements = append(elements, v)
+						}
+					})
+					if evalErr != nil {
+						return nil, evalErr
+					}
+
+					return values.NewArrayWithBacking(semantic.NewArrayType(elementType), elements), nil
+				}, ctx, args)
+			}, false,
+		),
 	}
 
 	runtime.RegisterPackageValue(packagePath, "concat", SpecialFns["concat"])
 	runtime.RegisterPackageValue(packagePath, "map", SpecialFns["map"])
+	runtime.RegisterPackageValue(packagePath, "filter", SpecialFns["filter"])
 }

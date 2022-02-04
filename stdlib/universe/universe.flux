@@ -333,7 +333,7 @@ builtin contains : (value: A, set: [A]) => bool where A: Nullable
 
 // other builtins
 builtin inf : duration
-builtin length : (arr: [A]) => int
+builtin length : (<-arr: [A]) => int
 builtin linearBins : (start: float, width: float, count: int, ?infinity: bool) => [float]
 builtin logarithmicBins : (start: float, factor: float, count: int, ?infinity: bool) => [float]
 
