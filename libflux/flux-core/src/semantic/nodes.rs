@@ -1121,7 +1121,7 @@ impl FunctionExpr {
                     _ => record.clone(),
                 }
             }
-            let env: VectorizeEnv = self
+            let params: Vec<_> = self
                 .params
                 .iter()
                 .map(|param| {
@@ -1130,6 +1130,8 @@ impl FunctionExpr {
                     (param.key.name.clone(), parameter_type)
                 })
                 .collect();
+            let env: VectorizeEnv = params.iter().cloned().collect();
+
             let body = match &self.body {
                 Block::Variable(..) | Block::Expr(..) => {
                     return Err(located(
@@ -1188,7 +1190,15 @@ impl FunctionExpr {
             };
             Ok(FunctionExpr {
                 loc: self.loc.clone(),
-                typ: self.typ.clone(), // TODO Correct the type
+                typ: MonoType::from(Function {
+                    pipe: None,
+                    req: params
+                        .into_iter()
+                        .map(|(key, value)| (key.to_string(), value))
+                        .collect(),
+                    opt: Default::default(),
+                    retn: body.type_of(),
+                }),
                 params: self.params.clone(),
                 body,
                 vectorized: None,
