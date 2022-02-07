@@ -103,6 +103,9 @@ func (v *{{.Name}}VectorValue) Array() Array { panic(UnexpectedKind(semantic.Vec
 func (v *{{.Name}}VectorValue) Object() Object { panic(UnexpectedKind(semantic.Vector, semantic.Object)) }
 func (v *{{.Name}}VectorValue) Function() Function { panic(UnexpectedKind(semantic.Vector, semantic.Function)) }
 func (v *{{.Name}}VectorValue) Dict() Dictionary { panic(UnexpectedKind(semantic.Vector, semantic.Dictionary)) }
+func (v *{{.Name}}VectorValue) Vector() Vector {
+	return v
+}
 
 func (v *{{.Name}}VectorValue) Equal(other Value) bool {
 	panic("cannot compare two vectors for equality")

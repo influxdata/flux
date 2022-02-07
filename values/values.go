@@ -41,6 +41,7 @@ type Value interface {
 	Object() Object
 	Function() Function
 	Dict() Dictionary
+	Vector() Vector
 	Equal(Value) bool
 
 	Retain()
@@ -109,6 +110,10 @@ func (v value) Function() Function {
 func (v value) Dict() Dictionary {
 	CheckKind(v.t.Nature(), semantic.Dictionary)
 	return v.v.(Dictionary)
+}
+func (v value) Vector() Vector {
+	CheckKind(v.t.Nature(), semantic.Vector)
+	return v.v.(Vector)
 }
 func (v value) Equal(r Value) bool {
 	if v.Type().Nature() != r.Type().Nature() {
@@ -389,6 +394,7 @@ func (n null) Array() Array            { panic(UnexpectedKind(semantic.Invalid, 
 func (n null) Object() Object          { panic(UnexpectedKind(semantic.Invalid, semantic.Object)) }
 func (n null) Function() Function      { panic(UnexpectedKind(semantic.Invalid, semantic.Function)) }
 func (n null) Dict() Dictionary        { panic(UnexpectedKind(semantic.Invalid, semantic.Dictionary)) }
+func (n null) Vector() Vector          { panic(UnexpectedKind(semantic.Invalid, semantic.Vector)) }
 func (n null) Equal(Value) bool        { return false }
 func (n null) Retain()                 {}
 func (n null) Release()                {}

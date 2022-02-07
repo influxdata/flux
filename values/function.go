@@ -96,6 +96,10 @@ func (f *function) Dict() Dictionary {
 	panic(UnexpectedKind(semantic.Function, semantic.Dictionary))
 }
 
+func (f *function) Vector() Vector {
+	panic(UnexpectedKind(semantic.Function, semantic.Vector))
+}
+
 func (f *function) Equal(rhs Value) bool {
 	if f.t != rhs.Type() {
 		return false

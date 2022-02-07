@@ -81,6 +81,9 @@ func (v IntArrayValue) Function() values.Function {
 func (v IntArrayValue) Dict() values.Dictionary {
 	panic(values.UnexpectedKind(semantic.Array, semantic.Dictionary))
 }
+func (v IntArrayValue) Vector() values.Vector {
+	panic(values.UnexpectedKind(semantic.Array, semantic.Vector))
+}
 
 func (v IntArrayValue) Equal(other values.Value) bool {
 	if other.Type().Nature() != semantic.Array {
@@ -168,6 +171,9 @@ func (v UintArrayValue) Function() values.Function {
 }
 func (v UintArrayValue) Dict() values.Dictionary {
 	panic(values.UnexpectedKind(semantic.Array, semantic.Dictionary))
+}
+func (v UintArrayValue) Vector() values.Vector {
+	panic(values.UnexpectedKind(semantic.Array, semantic.Vector))
 }
 
 func (v UintArrayValue) Equal(other values.Value) bool {
@@ -258,6 +264,9 @@ func (v FloatArrayValue) Function() values.Function {
 }
 func (v FloatArrayValue) Dict() values.Dictionary {
 	panic(values.UnexpectedKind(semantic.Array, semantic.Dictionary))
+}
+func (v FloatArrayValue) Vector() values.Vector {
+	panic(values.UnexpectedKind(semantic.Array, semantic.Vector))
 }
 
 func (v FloatArrayValue) Equal(other values.Value) bool {
@@ -353,6 +362,9 @@ func (v BooleanArrayValue) Function() values.Function {
 func (v BooleanArrayValue) Dict() values.Dictionary {
 	panic(values.UnexpectedKind(semantic.Array, semantic.Dictionary))
 }
+func (v BooleanArrayValue) Vector() values.Vector {
+	panic(values.UnexpectedKind(semantic.Array, semantic.Vector))
+}
 
 func (v BooleanArrayValue) Equal(other values.Value) bool {
 	if other.Type().Nature() != semantic.Array {
@@ -446,6 +458,9 @@ func (v StringArrayValue) Function() values.Function {
 }
 func (v StringArrayValue) Dict() values.Dictionary {
 	panic(values.UnexpectedKind(semantic.Array, semantic.Dictionary))
+}
+func (v StringArrayValue) Vector() values.Vector {
+	panic(values.UnexpectedKind(semantic.Array, semantic.Vector))
 }
 
 func (v StringArrayValue) Equal(other values.Value) bool {

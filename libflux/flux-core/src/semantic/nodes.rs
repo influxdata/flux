@@ -1139,6 +1139,12 @@ impl FunctionExpr {
                         ErrorKind::UnableToVectorize("Unable to vectorize statements".into()),
                     ))
                 }
+                // XXX: sean (January 14 2022) - The only type of function expression
+                // currently supported for vectorization is one whose body contains only
+                // a single object expression, the fields of which only reference members of
+                // `r` and do not include any kind of operation, literal, or logical expression.
+                //
+                // We may support other expression types in the future.
                 Block::Return(e) => {
                     let argument = match &e.argument {
                         Expression::Object(e) => {
@@ -1146,11 +1152,34 @@ impl FunctionExpr {
                                 .properties
                                 .iter()
                                 .map(|p| {
-                                    Ok(Property {
-                                        loc: p.loc.clone(),
-                                        key: p.key.clone(),
-                                        value: p.value.vectorize(&env)?,
-                                    })
+                                    let mem = match &p.value {
+                                        Expression::Member(m) => m.clone(),
+                                        _ => {
+                                            return Err(located(
+                                                self.body.loc().clone(),
+                                                ErrorKind::UnableToVectorize(
+                                                    "expression type cannot be vectorized".into(),
+                                                ),
+                                            ))
+                                        }
+                                    };
+                                    match mem.object {
+                                        Expression::Identifier(i) if i.name == "r" => {
+                                            Ok(Property {
+                                                loc: p.loc.clone(),
+                                                key: p.key.clone(),
+                                                value: p.value.vectorize(&env)?,
+                                            })
+                                        }
+                                        _ => {
+                                            return Err(located(
+                                                self.body.loc().clone(),
+                                                ErrorKind::UnableToVectorize(
+                                                    "expression type cannot be vectorized".into(),
+                                                ),
+                                            ))
+                                        }
+                                    }
                                 })
                                 .collect::<Result<Vec<_>>>()?;
 
