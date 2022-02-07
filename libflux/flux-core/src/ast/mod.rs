@@ -67,11 +67,11 @@ impl Default for Position {
 /// Convert a Position to a lsp_types::Position
 /// https://microsoft.github.io/language-server-protocol/specification#position
 #[cfg(feature = "lsp")]
-impl Into<lsp_types::Position> for Position {
-    fn into(self) -> lsp_types::Position {
-        lsp_types::Position {
-            line: self.line - 1,
-            character: self.column - 1,
+impl From<Position> for lsp_types::Position {
+    fn from(position: Position) -> Self {
+        Self {
+            line: position.line - 1,
+            character: position.column - 1,
         }
     }
 }
@@ -99,6 +99,16 @@ impl SourceLocation {
     #[allow(missing_docs)]
     pub fn is_multiline(&self) -> bool {
         self.start.line != self.end.line
+    }
+}
+
+#[cfg(feature = "lsp")]
+impl From<SourceLocation> for lsp_types::Range {
+    fn from(range: SourceLocation) -> Self {
+        Self {
+            start: range.start.into(),
+            end: range.end.into(),
+        }
     }
 }
 
