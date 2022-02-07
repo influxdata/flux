@@ -3,35 +3,54 @@
     "Name": "Int",
     "Type": "arrow.Int",
     "PrimitiveType": "int64",
+    "InterfaceType": "int64",
     "MonoType": "semantic.BasicInt",
+    "ValueName": "Int",
     "ValueType": "Int"
   },
   {
     "Name": "Uint",
     "Type": "arrow.Uint",
     "PrimitiveType": "uint64",
+    "InterfaceType": "uint64",
     "MonoType": "semantic.BasicUint",
+    "ValueName": "Uint",
     "ValueType": "UInt"
   },
   {
     "Name": "Float",
     "Type": "arrow.Float",
     "PrimitiveType": "float64",
+    "InterfaceType": "float64",
     "MonoType": "semantic.BasicFloat",
+    "ValueName": "Float",
     "ValueType": "Float"
   },
   {
     "Name": "Boolean",
     "Type": "arrow.Boolean",
     "PrimitiveType": "bool",
+    "InterfaceType": "bool",
     "MonoType": "semantic.BasicBool",
+    "ValueName": "Boolean",
     "ValueType": "Bool"
   },
   {
     "Name": "String",
     "Type": "arrow.String",
     "PrimitiveType": "string",
+    "InterfaceType": "string",
     "MonoType": "semantic.BasicString",
+    "ValueName": "String",
     "ValueType": "Str"
+  },
+  {
+    "Name": "Time",
+    "Type": "arrow.Int",
+    "PrimitiveType": "int64",
+    "InterfaceType": "Time",
+    "MonoType": "semantic.BasicTime",
+    "ValueName": "Int",
+    "ValueType": "Int"
   }
 ]
