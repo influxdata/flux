@@ -120,6 +120,9 @@ func (a *array) Function() Function {
 func (a *array) Dict() Dictionary {
 	panic(UnexpectedKind(semantic.Array, semantic.Dictionary))
 }
+func (a *array) Vector() Vector {
+	panic(UnexpectedKind(semantic.Array, semantic.Vector))
+}
 func (a *array) Equal(rhs Value) bool {
 	if !a.Type().Equal(rhs.Type()) {
 		return false

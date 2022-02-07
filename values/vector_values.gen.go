@@ -185,6 +185,9 @@ func (v *IntVectorValue) Function() Function {
 func (v *IntVectorValue) Dict() Dictionary {
 	panic(UnexpectedKind(semantic.Vector, semantic.Dictionary))
 }
+func (v *IntVectorValue) Vector() Vector {
+	return v
+}
 
 func (v *IntVectorValue) Equal(other Value) bool {
 	panic("cannot compare two vectors for equality")
@@ -243,6 +246,9 @@ func (v *UintVectorValue) Function() Function {
 }
 func (v *UintVectorValue) Dict() Dictionary {
 	panic(UnexpectedKind(semantic.Vector, semantic.Dictionary))
+}
+func (v *UintVectorValue) Vector() Vector {
+	return v
 }
 
 func (v *UintVectorValue) Equal(other Value) bool {
@@ -303,6 +309,9 @@ func (v *FloatVectorValue) Function() Function {
 func (v *FloatVectorValue) Dict() Dictionary {
 	panic(UnexpectedKind(semantic.Vector, semantic.Dictionary))
 }
+func (v *FloatVectorValue) Vector() Vector {
+	return v
+}
 
 func (v *FloatVectorValue) Equal(other Value) bool {
 	panic("cannot compare two vectors for equality")
@@ -362,6 +371,9 @@ func (v *BooleanVectorValue) Function() Function {
 func (v *BooleanVectorValue) Dict() Dictionary {
 	panic(UnexpectedKind(semantic.Vector, semantic.Dictionary))
 }
+func (v *BooleanVectorValue) Vector() Vector {
+	return v
+}
 
 func (v *BooleanVectorValue) Equal(other Value) bool {
 	panic("cannot compare two vectors for equality")
@@ -420,6 +432,9 @@ func (v *StringVectorValue) Function() Function {
 }
 func (v *StringVectorValue) Dict() Dictionary {
 	panic(UnexpectedKind(semantic.Vector, semantic.Dictionary))
+}
+func (v *StringVectorValue) Vector() Vector {
+	return v
 }
 
 func (v *StringVectorValue) Equal(other Value) bool {
