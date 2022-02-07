@@ -666,13 +666,13 @@ mod tests {
 
         pub fn normalize(&mut self, t: &mut MonoType) {
             match t {
-                MonoType::Var(tv) => {
+                MonoType::BoundVar(tv) | MonoType::Var(tv) => {
                     // This is to avoid using self directly inside a closure,
                     // otherwise it will be captured by that closure and the compiler
                     // will complain that closure requires unique access to `self`
                     let f = &mut self.f;
                     let v = self.tv_map.entry(*tv).or_insert_with(|| f.fresh());
-                    *tv = *v;
+                    *t = MonoType::BoundVar(*v);
                 }
                 MonoType::Arr(arr) => {
                     self.normalize(&mut Ptr::make_mut(arr).0);
@@ -707,26 +707,26 @@ mod tests {
             [
                 Property {
                     k: Label::from("a"),
-                    v: MonoType::Var(Tvar(4949)),
+                    v: MonoType::BoundVar(Tvar(4949)),
                 },
                 Property {
                     k: Label::from("b"),
-                    v: MonoType::Var(Tvar(4949)),
+                    v: MonoType::BoundVar(Tvar(4949)),
                 },
                 Property {
                     k: Label::from("e"),
-                    v: MonoType::Var(Tvar(4957)),
+                    v: MonoType::BoundVar(Tvar(4957)),
                 },
                 Property {
                     k: Label::from("f"),
-                    v: MonoType::Var(Tvar(4957)),
+                    v: MonoType::BoundVar(Tvar(4957)),
                 },
                 Property {
                     k: Label::from("g"),
-                    v: MonoType::Var(Tvar(4957)),
+                    v: MonoType::BoundVar(Tvar(4957)),
                 },
             ],
-            Some(MonoType::Var(Tvar(4972))),
+            Some(MonoType::BoundVar(Tvar(4972))),
         ));
         assert_eq!(
             format!("{}", ty),

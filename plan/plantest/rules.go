@@ -190,7 +190,7 @@ func PhysicalRuleTestHelper(t *testing.T, tc *RuleTestCase, options ...cmp.Optio
 	pp, err := physicalPlanner.Plan(ctx, before)
 	if err != nil {
 		if tc.ValidateError != nil {
-			if got, want := err, tc.ValidateError; !cmp.Equal(want, got) {
+			if got, want := err, tc.ValidateError; !cmp.Equal(want, got, options...) {
 				t.Fatalf("unexpected planner error -want/+got:\n%s", cmp.Diff(want, got))
 			}
 			return

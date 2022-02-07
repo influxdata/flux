@@ -12,7 +12,6 @@ import (
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/runtime"
-	"github.com/influxdata/flux/values"
 )
 
 const (
@@ -185,8 +184,7 @@ func (s *FromRemoteProcedureSpec) TimeBounds(predecessorBounds *plan.Bounds) *pl
 
 	// set the bounds to the range specified in from call, if there is one
 	if !s.Bounds.IsEmpty() {
-		bounds.Start = values.ConvertTime(s.Bounds.Start.Time(s.Bounds.Now))
-		bounds.Stop = values.ConvertTime(s.Bounds.Stop.Time(s.Bounds.Now))
+		*bounds = plan.FromFluxBounds(s.Bounds)
 	}
 	if predecessorBounds != nil {
 		bounds = bounds.Intersect(predecessorBounds)

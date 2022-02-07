@@ -12,6 +12,9 @@ use crate::semantic::types::{union, Error, MonoType, SubstitutionMap, Tvar, Tvar
 #[derive(Clone, Debug, Default)]
 pub struct Substitution {
     table: RefCell<UnificationTable>,
+    // TODO Add `snapshot`/`rollback_to` for `TvarKinds` (like `ena::UnificationTable`) so that
+    // modifications can be reverted. Then replace `temporary_generalize` with
+    // `snapshot(); generalize(); rollback_to()`
     cons: RefCell<TvarKinds>,
 }
 
@@ -41,13 +44,22 @@ impl Substitution {
         Substitution::default()
     }
 
+    /// Returns true if no variables has been created by this substitution
+    pub fn is_empty(&self) -> bool {
+        self.len() == 0
+    }
+
+    /// Returns how many variables have been created by this substitution
+    pub fn len(&self) -> usize {
+        self.table.borrow().len()
+    }
+
     /// Takes a `Substitution` and returns an incremented [`Tvar`].
     pub fn fresh(&self) -> Tvar {
         self.table.borrow_mut().new_key(None)
     }
 
     /// Prepares `count` type variables for testing
-    #[cfg(test)]
     pub(crate) fn mk_fresh(&self, count: usize) {
         let mut sub = self.table.borrow_mut();
         for _ in 0..count {
@@ -103,11 +115,14 @@ impl Substitution {
 
                 let mut cons = self.cons.borrow_mut();
                 if let Some(kinds) = cons.remove(&var) {
-                    for kind in kinds {
+                    for kind in &kinds {
                         // The monotype that is being unified with the
                         // tvar must be constrained with the same kinds
                         // as that of the tvar.
-                        typ.clone().constrain(kind, &mut cons)?;
+                        typ.clone().constrain(*kind, &mut cons)?;
+                    }
+                    if matches!(typ, MonoType::BoundVar(_)) {
+                        cons.insert(var, kinds);
                     }
                 }
             }
@@ -197,6 +212,12 @@ pub trait Substituter {
     /// Apply a substitution to a type variable, returning None if there is no substitution for the
     /// variable.
     fn try_apply(&self, var: Tvar) -> Option<MonoType>;
+    /// Apply a substitution to a bound type variable, returning None if there is no substitution for the
+    /// variable.
+    fn try_apply_bound(&self, var: Tvar) -> Option<MonoType> {
+        let _ = var;
+        None
+    }
 }
 
 impl<F> Substituter for F
@@ -217,6 +238,35 @@ impl Substituter for SubstitutionMap {
 impl Substituter for Substitution {
     fn try_apply(&self, var: Tvar) -> Option<MonoType> {
         Substitution::try_apply(self, var)
+    }
+}
+
+pub(crate) struct BindVars<'a> {
+    sub: &'a dyn Substituter,
+    unbound_vars: RefCell<SubstitutionMap>,
+}
+
+impl<'a> BindVars<'a> {
+    pub fn new(sub: &'a dyn Substituter) -> Self {
+        Self {
+            sub,
+            unbound_vars: Default::default(),
+        }
+    }
+}
+
+impl Substituter for BindVars<'_> {
+    fn try_apply(&self, var: Tvar) -> Option<MonoType> {
+        Some(if let Some(typ) = self.sub.try_apply(var) {
+            typ
+        } else {
+            let mut unbound_vars = self.unbound_vars.borrow_mut();
+            let new_var = Tvar(unbound_vars.len() as u64);
+            unbound_vars
+                .entry(var)
+                .or_insert_with(|| MonoType::BoundVar(new_var))
+                .clone()
+        })
     }
 }
 

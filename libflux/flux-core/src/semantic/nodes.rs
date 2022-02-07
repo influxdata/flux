@@ -26,7 +26,7 @@ use crate::{
         env::Environment,
         import::Importer,
         infer::{self, Constraint},
-        sub::{Substitutable, Substituter, Substitution},
+        sub::{BindVars, Substitutable, Substituter, Substitution},
         types::{
             self, Array, Dictionary, Function, Kind, Label, MonoType, MonoTypeMap, PolyType, Tvar,
             TvarKinds,
@@ -429,8 +429,9 @@ where
     infer.env.apply_mut(infer.sub);
 
     if infer.errors.has_errors() {
+        let sub = BindVars::new(infer.sub);
         for err in &mut infer.errors {
-            err.apply_mut(infer.sub);
+            err.apply_mut(&sub);
         }
         Err(infer.errors)
     } else {
@@ -738,7 +739,7 @@ impl VariableAssgn {
         infer.env.apply_mut(infer.sub);
 
         let t = self.init.type_of().apply(infer.sub);
-        let p = infer::generalize(infer.env, infer.sub.cons(), t);
+        let p = infer::generalize(infer.env, infer.sub, t);
 
         // Update variable assignment nodes with the free vars
         // and kind constraints obtained from generalization.
@@ -1010,7 +1011,11 @@ impl FunctionExpr {
 
         if self.params.iter().any(|param| param.default.is_some()) {
             let t = func.apply(infer.sub);
-            let p = infer::generalize(infer.env, infer.sub.cons(), t);
+            // We must generalize `t` to prevent the types of the default arguments from leaking
+            // into the function. Since the function may get generalized a second time when bound
+            // to a variable we also ensure the substitution does not get updated so we do not get
+            // conflicts with that generalization.
+            let p = infer::temporary_generalize(infer.env, infer.sub, t);
             self.infer_default_params(infer, p)?
         };
 

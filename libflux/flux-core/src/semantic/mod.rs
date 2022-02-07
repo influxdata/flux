@@ -234,7 +234,7 @@ pub fn build_polytype(
     let typ = MonoType::record(r);
     Ok(infer::generalize(
         &env::Environment::empty(false),
-        sub.cons(),
+        &mut sub,
         typ,
     ))
 }

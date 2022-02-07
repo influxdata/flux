@@ -145,3 +145,15 @@ func (a *array) Equal(rhs Value) bool {
 	}
 	return true
 }
+
+func (a *array) Retain() {
+	a.Range(func(i int, v Value) {
+		v.Retain()
+	})
+}
+
+func (a *array) Release() {
+	a.Range(func(i int, v Value) {
+		v.Release()
+	})
+}

@@ -494,7 +494,7 @@ impl<'a> Converter<'a> {
                 let tvar = tvars
                     .entry(tv.name.name.clone())
                     .or_insert_with(|| self.sub.fresh());
-                MonoType::Var(*tvar)
+                MonoType::BoundVar(*tvar)
             }
 
             ast::MonoType::Basic(basic) => match self.convert_builtintype(basic) {
@@ -2664,7 +2664,7 @@ mod tests {
                 k: types::Label::from("B"),
                 v: MonoType::INT,
             },
-            tail: MonoType::Var(Tvar(0)),
+            tail: MonoType::BoundVar(Tvar(0)),
         });
         assert_eq!(want, got);
     }
@@ -2705,13 +2705,13 @@ mod tests {
         cons.insert(types::Tvar(1), kind_vector_2);
 
         let mut req = MonoTypeMap::new();
-        req.insert("A".to_string(), MonoType::Var(Tvar(0)));
-        req.insert("B".to_string(), MonoType::Var(Tvar(1)));
+        req.insert("A".to_string(), MonoType::BoundVar(Tvar(0)));
+        req.insert("B".to_string(), MonoType::BoundVar(Tvar(1)));
         let expr = MonoType::from(types::Function {
             req,
             opt: MonoTypeMap::new(),
             pipe: None,
-            retn: MonoType::Var(Tvar(0)),
+            retn: MonoType::BoundVar(Tvar(0)),
         });
         let want = types::PolyType { vars, cons, expr };
         assert_eq!(want, got);
@@ -2731,13 +2731,13 @@ mod tests {
         cons.insert(types::Tvar(0), kind_vector_1);
 
         let mut req = MonoTypeMap::new();
-        req.insert("A".to_string(), MonoType::Var(Tvar(0)));
-        req.insert("B".to_string(), MonoType::Var(Tvar(1)));
+        req.insert("A".to_string(), MonoType::BoundVar(Tvar(0)));
+        req.insert("B".to_string(), MonoType::BoundVar(Tvar(1)));
         let expr = MonoType::from(types::Function {
             req,
             opt: MonoTypeMap::new(),
             pipe: None,
-            retn: MonoType::Var(Tvar(0)),
+            retn: MonoType::BoundVar(Tvar(0)),
         });
         let want = types::PolyType { vars, cons, expr };
         assert_eq!(want, got);

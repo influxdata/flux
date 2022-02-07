@@ -143,6 +143,7 @@ impl Fresh for PolyType {
 impl Fresh for MonoType {
     fn fresh_ref(&self, f: &mut Fresher, sub: &mut TvarMap) -> Option<Self> {
         match self {
+            MonoType::BoundVar(tvr) => tvr.fresh_ref(f, sub).map(MonoType::BoundVar),
             MonoType::Var(tvr) => tvr.fresh_ref(f, sub).map(MonoType::Var),
             MonoType::Arr(arr) => arr.fresh_ref(f, sub).map(MonoType::arr),
             MonoType::Record(obj) => obj.fresh_ref(f, sub).map(MonoType::record),
@@ -176,13 +177,11 @@ impl Fresh for Record {
     }
     fn fresh_ref(&self, f: &mut Fresher, sub: &mut TvarMap) -> Option<Self> {
         let mut props = MonoTypeVecMap::new();
-        let mut extends = false;
-        let mut tv = Tvar(0);
         let mut cur = self;
-        loop {
+        let tail = loop {
             match cur {
                 Record::Empty => {
-                    break;
+                    break None;
                 }
                 Record::Extension {
                     head,
@@ -194,27 +193,19 @@ impl Fresh for Record {
                         .push(head.v.clone());
                     cur = b;
                 }
-                Record::Extension {
-                    head,
-                    tail: MonoType::Var(t),
-                } => {
-                    extends = true;
-                    tv = *t;
+                Record::Extension { head, tail } => {
                     props
                         .entry(head.k.clone())
                         .or_insert_with(Vec::new)
                         .push(head.v.clone());
-                    break;
-                }
-                _ => {
-                    break;
+                    break Some(tail);
                 }
             }
-        }
+        };
         // If record extends a tvar, freshen it.
         // Otherwise record must extend empty record.
-        let mut r: MonoType = if extends {
-            MonoType::Var(tv.fresh(f, sub))
+        let mut r: MonoType = if let Some(tail) = tail {
+            tail.fresh_ref(f, sub).unwrap_or_else(|| tail.clone())
         } else {
             MonoType::from(Record::Empty)
         };

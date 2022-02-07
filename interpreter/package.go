@@ -144,6 +144,18 @@ func (p *Package) Equal(rhs values.Value) bool {
 	return equal
 }
 
+func (p *Package) Retain() {
+	p.Range(func(k string, v values.Value) {
+		v.Retain()
+	})
+}
+
+func (p *Package) Release() {
+	p.Range(func(k string, v values.Value) {
+		v.Release()
+	})
+}
+
 func (p *Package) String() string {
 	var builder strings.Builder
 	builder.WriteString("pkg{")

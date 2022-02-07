@@ -21,6 +21,9 @@ extern crate fnv;
 #[macro_use]
 extern crate serde_derive;
 extern crate serde_aux;
+#[macro_use]
+#[cfg(test)]
+extern crate pretty_assertions;
 
 // Only include the doc module if the feature is enabled.
 // The code has lots of dependencies we do not want as part of the crate by default.

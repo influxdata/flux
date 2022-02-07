@@ -1,6 +1,9 @@
 package plan
 
-import "github.com/influxdata/flux/values"
+import (
+	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/values"
+)
 
 // EmptyBounds is a time range containing only a single point
 var EmptyBounds = &Bounds{
@@ -106,5 +109,12 @@ func (b *Bounds) Shift(d values.Duration) *Bounds {
 	return &Bounds{
 		Start: b.Start.Add(d),
 		Stop:  b.Stop.Add(d),
+	}
+}
+
+func FromFluxBounds(bounds flux.Bounds) Bounds {
+	return Bounds{
+		Start: values.ConvertTime(bounds.Start.Time(bounds.Now)),
+		Stop:  values.ConvertTime(bounds.Stop.Time(bounds.Now)),
 	}
 }

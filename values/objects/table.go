@@ -163,6 +163,18 @@ func (t *Table) Equal(other values.Value) bool {
 	return true
 }
 
+func (t *Table) Retain() {
+	t.schema.Range(func(i int, v values.Value) {
+		v.Retain()
+	})
+}
+
+func (t *Table) Release() {
+	t.schema.Range(func(i int, v values.Value) {
+		v.Release()
+	})
+}
+
 func (t *Table) String() string {
 	w := bytes.NewBuffer([]byte{})
 	if _, err := execute.NewFormatter(t, nil).WriteTo(w); err != nil {

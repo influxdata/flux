@@ -5,6 +5,7 @@ import (
 	"math"
 	"time"
 
+	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/values"
 )
 
@@ -85,4 +86,11 @@ func (b Bounds) Duration() Duration {
 
 func Now() Time {
 	return values.ConvertTime(time.Now())
+}
+
+func FromFluxBounds(bounds flux.Bounds) Bounds {
+	return Bounds{
+		Start: values.ConvertTime(bounds.Start.Time(bounds.Now)),
+		Stop:  values.ConvertTime(bounds.Stop.Time(bounds.Now)),
+	}
 }

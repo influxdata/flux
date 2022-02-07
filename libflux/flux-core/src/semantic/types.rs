@@ -200,12 +200,6 @@ pub(crate) fn union<T: PartialEq>(mut vars: Vec<T>, mut with: Vec<T>) -> Vec<T> 
     vars
 }
 
-/// Helper function that removes all elements in `vars` from `from`.
-pub(crate) fn minus<T: PartialEq>(vars: &[T], mut from: Vec<T>) -> Vec<T> {
-    from.retain(|tv| !vars.contains(tv));
-    from
-}
-
 /// Errors that can be returned during type inference.
 /// (Note that these error messages are read by end users.
 /// This should be kept in mind when returning one of these errors.)
@@ -457,8 +451,11 @@ pub enum MonoType {
     Error,
     #[display(fmt = "{}", _0)]
     Builtin(BuiltinType),
-    #[display(fmt = "{}", _0)]
+    #[display(fmt = "#{}", _0)]
     Var(Tvar),
+    /// A type variable that is bound to to a `PolyType` that this variable is contained in.
+    #[display(fmt = "{}", _0)]
+    BoundVar(Tvar),
     #[display(fmt = "{}", _0)]
     Arr(Ptr<Array>),
     #[display(fmt = "{}", _0)]
@@ -510,7 +507,9 @@ impl Serialize for MonoType {
                 BuiltinType::Regexp => MonoTypeSer::Regexp,
                 BuiltinType::Bytes => MonoTypeSer::Bytes,
             },
-            Self::Var(v) => MonoTypeSer::Var(*v),
+            // When serializing we tend to expect that all variables are already bound so treat
+            // them the same here
+            Self::BoundVar(v) | Self::Var(v) => MonoTypeSer::Var(*v),
             Self::Arr(p) => MonoTypeSer::Arr(p),
             Self::Dict(p) => MonoTypeSer::Dict(p),
             Self::Record(p) => MonoTypeSer::Record(p),
@@ -654,6 +653,21 @@ impl Substitutable for MonoType {
     fn apply_ref(&self, sub: &dyn Substituter) -> Option<Self> {
         match self {
             MonoType::Error | MonoType::Builtin(_) => None,
+            MonoType::BoundVar(tvr) => sub.try_apply_bound(*tvr).map(|new| {
+                // If a variable is the replacement we do not recurse further
+                // as `instantiate` breaks in cases where it generates a substitution map
+                // like `{ A => B, B => C }` which would replace `A` with the (fresh) variable `B`
+                // which would then be replaced again due to `B => C` which is very wrong (`B` != `fresh B`).
+                // Bit of a hack, but it works.
+                //
+                // For other replacements we need to recurse into them as well so that we may fully
+                // replace any variables that occur in that as well.
+                if let MonoType::Var(_) = new {
+                    new
+                } else {
+                    new.apply(sub)
+                }
+            }),
             MonoType::Var(tvr) => sub.try_apply(*tvr).map(|new| {
                 // If a variable is the replacement we do not recurse further
                 // as `instantiate` breaks in cases where it generates a substitution map
@@ -679,6 +693,8 @@ impl Substitutable for MonoType {
     fn free_vars(&self, vars: &mut Vec<Tvar>) {
         match self {
             MonoType::Error | MonoType::Builtin(_) => (),
+            // By definition a variable that is bound isn't free
+            MonoType::BoundVar(_) => (),
             MonoType::Var(tvr) => {
                 if let Err(i) = vars.binary_search(tvr) {
                     vars.insert(i, *tvr);
@@ -697,7 +713,7 @@ impl MaxTvar for MonoType {
     fn max_tvar(&self) -> Option<Tvar> {
         match self {
             MonoType::Error | MonoType::Builtin(_) => None,
-            MonoType::Var(tvr) => tvr.max_tvar(),
+            MonoType::BoundVar(tvr) | MonoType::Var(tvr) => tvr.max_tvar(),
             MonoType::Arr(arr) => arr.max_tvar(),
             MonoType::Vector(vector) => vector.max_tvar(),
             MonoType::Dict(dict) => dict.max_tvar(),
@@ -860,6 +876,9 @@ impl MonoType {
         match self {
             MonoType::Error => Ok(()),
             MonoType::Builtin(typ) => typ.constrain(with),
+            // TODO Should constrain bound vars as well, but we can't just store it in `cons` as
+            // they would override constraints of free variables
+            MonoType::BoundVar(_) => Ok(()),
             MonoType::Var(tvr) => {
                 tvr.constrain(with, cons);
                 Ok(())
@@ -874,7 +893,7 @@ impl MonoType {
 
     fn contains(&self, tv: Tvar) -> bool {
         match self {
-            MonoType::Error | MonoType::Builtin(_) => false,
+            MonoType::Error | MonoType::Builtin(_) | MonoType::BoundVar(_) => false,
             MonoType::Var(tvr) => tv == *tvr,
             MonoType::Arr(arr) => arr.contains(tv),
             MonoType::Vector(vector) => vector.contains(tv),
@@ -1186,14 +1205,10 @@ impl cmp::PartialEq for Record {
                     a.entry(&head.k).or_insert_with(Vec::new).push(&head.v);
                     self = o;
                 }
-                Record::Extension {
-                    head,
-                    tail: MonoType::Var(t),
-                } => {
+                Record::Extension { head, tail } => {
                     a.entry(&head.k).or_insert_with(Vec::new).push(&head.v);
-                    break Some(t);
+                    break Some(tail);
                 }
-                _ => return false,
             }
         };
         let mut b = RefMonoTypeVecMap::new();
@@ -1207,14 +1222,10 @@ impl cmp::PartialEq for Record {
                     b.entry(&head.k).or_insert_with(Vec::new).push(&head.v);
                     other = o;
                 }
-                Record::Extension {
-                    head,
-                    tail: MonoType::Var(t),
-                } => {
+                Record::Extension { head, tail } => {
                     b.entry(&head.k).or_insert_with(Vec::new).push(&head.v);
-                    break Some(t);
+                    break Some(tail);
                 }
-                _ => return false,
             }
         };
         t == v && a == b
@@ -1430,7 +1441,7 @@ impl Record {
         match self {
             Record::Empty => Ok(None),
             Record::Extension { head, tail } => match tail {
-                MonoType::Var(tv) => {
+                MonoType::BoundVar(tv) | MonoType::Var(tv) => {
                     write!(f, "{}, ", head)?;
                     Ok(Some(*tv))
                 }
@@ -2000,7 +2011,10 @@ mod tests {
     use super::*;
     use crate::{
         ast, parser,
-        semantic::convert::{convert_monotype, convert_polytype},
+        semantic::{
+            convert::{convert_monotype, convert_polytype},
+            infer,
+        },
     };
 
     /// `polytype` is a utility method that returns a `PolyType` from a string.
@@ -2103,7 +2117,7 @@ mod tests {
     }
     #[test]
     fn display_type_tvar() {
-        assert_eq!("t10", MonoType::Var(Tvar(10)).to_string());
+        assert_eq!("t10", MonoType::BoundVar(Tvar(10)).to_string());
     }
     #[test]
     fn display_type_array() {
@@ -2128,7 +2142,7 @@ mod tests {
                         v: MonoType::STRING,
                     }
                 ],
-                Some(MonoType::Var(Tvar(0))),
+                Some(MonoType::BoundVar(Tvar(0))),
             )
             .to_string()
         );
@@ -2291,11 +2305,11 @@ mod tests {
                 cons: TvarKinds::new(),
                 expr: MonoType::from(Function {
                     req: semantic_map! {
-                        String::from("x") => MonoType::Var(Tvar(0)),
+                        String::from("x") => MonoType::BoundVar(Tvar(0)),
                     },
                     opt: MonoTypeMap::new(),
                     pipe: None,
-                    retn: MonoType::Var(Tvar(0)),
+                    retn: MonoType::BoundVar(Tvar(0)),
                 }),
             }
             .to_string(),
@@ -2307,8 +2321,8 @@ mod tests {
                 cons: TvarKinds::new(),
                 expr: MonoType::from(Function {
                     req: semantic_map! {
-                        String::from("x") => MonoType::Var(Tvar(0)),
-                        String::from("y") => MonoType::Var(Tvar(1)),
+                        String::from("x") => MonoType::BoundVar(Tvar(0)),
+                        String::from("y") => MonoType::BoundVar(Tvar(1)),
                     },
                     opt: MonoTypeMap::new(),
                     pipe: None,
@@ -2316,11 +2330,11 @@ mod tests {
                         [
                             Property {
                                 k: Label::from("x"),
-                                v: MonoType::Var(Tvar(0)),
+                                v: MonoType::BoundVar(Tvar(0)),
                             },
                             Property {
                                 k: Label::from("y"),
-                                v: MonoType::Var(Tvar(1)),
+                                v: MonoType::BoundVar(Tvar(1)),
                             }
                         ],
                         Some(MonoType::from(Record::Empty)),
@@ -2336,12 +2350,12 @@ mod tests {
                 cons: semantic_map! {Tvar(0) => vec![Kind::Addable]},
                 expr: MonoType::from(Function {
                     req: semantic_map! {
-                        String::from("a") => MonoType::Var(Tvar(0)),
-                        String::from("b") => MonoType::Var(Tvar(0)),
+                        String::from("a") => MonoType::BoundVar(Tvar(0)),
+                        String::from("b") => MonoType::BoundVar(Tvar(0)),
                     },
                     opt: MonoTypeMap::new(),
                     pipe: None,
-                    retn: MonoType::Var(Tvar(0)),
+                    retn: MonoType::BoundVar(Tvar(0)),
                 }),
             }
             .to_string(),
@@ -2356,8 +2370,8 @@ mod tests {
                 },
                 expr: MonoType::from(Function {
                     req: semantic_map! {
-                        String::from("x") => MonoType::Var(Tvar(0)),
-                        String::from("y") => MonoType::Var(Tvar(1)),
+                        String::from("x") => MonoType::BoundVar(Tvar(0)),
+                        String::from("y") => MonoType::BoundVar(Tvar(1)),
                     },
                     opt: MonoTypeMap::new(),
                     pipe: None,
@@ -2365,11 +2379,11 @@ mod tests {
                         [
                             Property {
                                 k: Label::from("x"),
-                                v: MonoType::Var(Tvar(0)),
+                                v: MonoType::BoundVar(Tvar(0)),
                             },
                             Property {
                                 k: Label::from("y"),
-                                v: MonoType::Var(Tvar(1)),
+                                v: MonoType::BoundVar(Tvar(1)),
                             }
                         ],
                         Some(MonoType::from(Record::Empty)),
@@ -2388,8 +2402,8 @@ mod tests {
                 },
                 expr: MonoType::from(Function {
                     req: semantic_map! {
-                        String::from("x") => MonoType::Var(Tvar(0)),
-                        String::from("y") => MonoType::Var(Tvar(1)),
+                        String::from("x") => MonoType::BoundVar(Tvar(0)),
+                        String::from("y") => MonoType::BoundVar(Tvar(1)),
                     },
                     opt: MonoTypeMap::new(),
                     pipe: None,
@@ -2397,11 +2411,11 @@ mod tests {
                         [
                             Property {
                                 k: Label::from("x"),
-                                v: MonoType::Var(Tvar(0)),
+                                v: MonoType::BoundVar(Tvar(0)),
                             },
                             Property {
                                 k: Label::from("y"),
-                                v: MonoType::Var(Tvar(1)),
+                                v: MonoType::BoundVar(Tvar(1)),
                             }
                         ],
                         Some(MonoType::from(Record::Empty))
@@ -2427,7 +2441,7 @@ mod tests {
                         v: MonoType::STRING,
                     }
                 ],
-                Some(MonoType::Var(Tvar(0))),
+                Some(MonoType::BoundVar(Tvar(0))),
             )),
             // {A with b:string, a:int}
             MonoType::from(Record::new(
@@ -2441,7 +2455,7 @@ mod tests {
                         v: MonoType::INT,
                     }
                 ],
-                Some(MonoType::Var(Tvar(0))),
+                Some(MonoType::BoundVar(Tvar(0))),
             )),
         );
         assert_eq!(
@@ -2465,7 +2479,7 @@ mod tests {
                         v: MonoType::FLOAT,
                     }
                 ],
-                Some(MonoType::Var(Tvar(0))),
+                Some(MonoType::BoundVar(Tvar(0))),
             )),
             // {A with c:float, b:string, b:int, a:int}
             MonoType::from(Record::new(
@@ -2487,7 +2501,7 @@ mod tests {
                         v: MonoType::INT,
                     }
                 ],
-                Some(MonoType::Var(Tvar(0))),
+                Some(MonoType::BoundVar(Tvar(0))),
             ))
         );
         assert_ne!(
@@ -2511,7 +2525,7 @@ mod tests {
                         v: MonoType::FLOAT,
                     }
                 ],
-                Some(MonoType::Var(Tvar(0))),
+                Some(MonoType::BoundVar(Tvar(0))),
             )),
             // {A with a:int, b:int, b:string, c:float}
             MonoType::from(Record::new(
@@ -2533,7 +2547,7 @@ mod tests {
                         v: MonoType::FLOAT,
                     }
                 ],
-                Some(MonoType::Var(Tvar(0))),
+                Some(MonoType::BoundVar(Tvar(0))),
             ))
         );
         assert_ne!(
@@ -2581,7 +2595,7 @@ mod tests {
                     k: Label::from("a"),
                     v: MonoType::INT,
                 },
-                tail: MonoType::Var(Tvar(0)),
+                tail: MonoType::BoundVar(Tvar(0)),
             }),
         );
         assert_ne!(
@@ -2591,7 +2605,7 @@ mod tests {
                     k: Label::from("a"),
                     v: MonoType::INT,
                 },
-                tail: MonoType::Var(Tvar(0)),
+                tail: MonoType::BoundVar(Tvar(0)),
             }),
             // {B with a:int}
             MonoType::from(Record::Extension {
@@ -2599,7 +2613,7 @@ mod tests {
                     k: Label::from("a"),
                     v: MonoType::INT,
                 },
-                tail: MonoType::Var(Tvar(1)),
+                tail: MonoType::BoundVar(Tvar(1)),
             }),
         );
     }
@@ -2831,14 +2845,11 @@ mod tests {
             pipe: None,
             retn: MonoType::INT,
         };
-        if let PolyType {
-            vars: _,
-            cons,
-            expr: MonoType::Fun(f),
-        } = fn_type
-        {
-            let mut sub = Substitution::default();
-            sub.cons().extend(cons);
+
+        let mut sub = Substitution::default();
+        let (fn_type, cons) = infer::instantiate(fn_type, &mut sub, Default::default());
+        infer::solve(&cons, &mut sub).unwrap();
+        if let MonoType::Fun(f) = fn_type {
             sub.mk_fresh(2);
             f.try_unify(&call_type, &mut sub).unwrap();
             assert_eq!(sub.apply(Tvar(0)), MonoType::INT);
@@ -2853,26 +2864,20 @@ mod tests {
     }
     #[test]
     fn unify_higher_order_functions() {
+        let mut sub = Substitution::default();
+
         let f = polytype(
             "(a: A, b: A, ?c: (a: A) => B) => (d:  string) => A where A: Addable, B: Divisible ",
         );
         let g = polytype("(a: int, b: int, c: (a: int) => float) => (d: string) => int");
-        if let (
-            PolyType {
-                vars: _,
-                cons: f_cons,
-                expr: MonoType::Fun(f),
-            },
-            PolyType {
-                vars: _,
-                cons: g_cons,
-                expr: MonoType::Fun(g),
-            },
-        ) = (f, g)
-        {
-            // this extends the first map with the second by generating a new one.
-            let mut sub = Substitution::default();
-            sub.cons().extend(f_cons.into_iter().chain(g_cons));
+
+        let (f, cons) = infer::instantiate(f, &mut sub, Default::default());
+        infer::solve(&cons, &mut sub).unwrap();
+
+        let (g, cons) = infer::instantiate(g, &mut sub, Default::default());
+        infer::solve(&cons, &mut sub).unwrap();
+
+        if let (MonoType::Fun(f), MonoType::Fun(g)) = (f, g) {
             sub.mk_fresh(2);
             f.try_unify(&g, &mut sub).unwrap();
             assert_eq!(sub.apply(Tvar(0)), MonoType::INT);

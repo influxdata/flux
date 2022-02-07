@@ -1,0 +1,37 @@
+[
+  {
+    "Name": "Int",
+    "Type": "arrow.Int",
+    "PrimitiveType": "int64",
+    "MonoType": "semantic.BasicInt",
+    "ValueType": "Int"
+  },
+  {
+    "Name": "Uint",
+    "Type": "arrow.Uint",
+    "PrimitiveType": "uint64",
+    "MonoType": "semantic.BasicUint",
+    "ValueType": "UInt"
+  },
+  {
+    "Name": "Float",
+    "Type": "arrow.Float",
+    "PrimitiveType": "float64",
+    "MonoType": "semantic.BasicFloat",
+    "ValueType": "Float"
+  },
+  {
+    "Name": "Boolean",
+    "Type": "arrow.Boolean",
+    "PrimitiveType": "bool",
+    "MonoType": "semantic.BasicBool",
+    "ValueType": "Bool"
+  },
+  {
+    "Name": "String",
+    "Type": "arrow.String",
+    "PrimitiveType": "string",
+    "MonoType": "semantic.BasicString",
+    "ValueType": "Str"
+  }
+]

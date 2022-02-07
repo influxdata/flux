@@ -123,6 +123,9 @@ func (d emptyDict) Equal(v Value) bool {
 	return d.t.Equal(v.Type()) && v.Dict().Len() == 0
 }
 
+func (d emptyDict) Retain()  {}
+func (d emptyDict) Release() {}
+
 type dict struct {
 	t    semantic.MonoType
 	data *immutable.SortedMap
@@ -235,6 +238,18 @@ func (d dict) Equal(v Value) bool {
 		equal = value.Equal(v.(Value))
 	})
 	return equal
+}
+
+func (d dict) Retain() {
+	d.Range(func(key, value Value) {
+		value.Retain()
+	})
+}
+
+func (d dict) Release() {
+	d.Range(func(key, value Value) {
+		value.Release()
+	})
 }
 
 type (
