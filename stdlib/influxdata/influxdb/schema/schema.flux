@@ -4,6 +4,9 @@
 package schema
 
 
+_startDefault = -30d
+_stopDefault = now()
+
 // fieldsAsCols is a special application of `pivot()` that pivots input data
 // on `_field` and `_time` columns to align fields within each input table that
 // have the same timestamp.
@@ -50,6 +53,9 @@ fieldsAsCols = (tables=<-) =>
 // - predicate: Predicate function that filters tag values.
 //   Default is `(r) => true`.
 // - start: Oldest time to include in results. Default is `-30d`.
+// - stop: Newest time include in results.
+//     The stop time is exclusive, meaning values with a time equal to stop time are excluded from the results.
+//     Default is `now()`.
 //
 //   Relative start times are defined using negative durations.
 //   Negative durations are relative to `now()`.
@@ -69,9 +75,15 @@ fieldsAsCols = (tables=<-) =>
 //
 // tags: metadata
 //
-tagValues = (bucket, tag, predicate=(r) => true, start=-30d) =>
+tagValues = (
+    bucket,
+    tag,
+    predicate=(r) => true,
+    start=_startDefault,
+    stop=_stopDefault,
+) =>
     from(bucket: bucket)
-        |> range(start: start)
+        |> range(start: start, stop: stop)
         |> filter(fn: predicate)
         |> keep(columns: [tag])
         |> group()
@@ -86,6 +98,9 @@ tagValues = (bucket, tag, predicate=(r) => true, start=-30d) =>
 // - predicate: Predicate function that filters tag keys.
 //   Default is `(r) => true`.
 // - start: Oldest time to include in results. Default is `-30d`.
+// - stop: Newest time include in results.
+//     The stop time is exclusive, meaning values with a time equal to stop time are excluded from the results.
+//     Default is `now()`.
 //
 //   Relative start times are defined using negative durations.
 //   Negative durations are relative to `now()`.
@@ -102,9 +117,9 @@ tagValues = (bucket, tag, predicate=(r) => true, start=-30d) =>
 //
 // tags: metadata
 //
-tagKeys = (bucket, predicate=(r) => true, start=-30d) =>
+tagKeys = (bucket, predicate=(r) => true, start=_startDefault, stop=_stopDefault) =>
     from(bucket: bucket)
-        |> range(start: start)
+        |> range(start: start, stop: stop)
         |> filter(fn: predicate)
         |> keys()
         |> keep(columns: ["_value"])
@@ -118,6 +133,10 @@ tagKeys = (bucket, predicate=(r) => true, start=-30d) =>
 // - bucket: Bucket to return tag values from for a specific measurement.
 // - measurement: Measurement to return tag values from.
 // - tag: Tag to return all unique values from.
+// - start: Oldest time to include in results. Default is `-30d`.
+// - stop: Newest time include in results.
+//     The stop time is exclusive, meaning values with a time equal to stop time are excluded from the results.
+//     Default is `now()`.
 //
 // ## Examples
 //
@@ -134,8 +153,20 @@ tagKeys = (bucket, predicate=(r) => true, start=-30d) =>
 //
 // tags: metadata
 //
-measurementTagValues = (bucket, measurement, tag) =>
-    tagValues(bucket: bucket, tag: tag, predicate: (r) => r._measurement == measurement)
+measurementTagValues = (
+    bucket,
+    measurement,
+    tag,
+    start=_startDefault,
+    stop=_stopDefault,
+) =>
+    tagValues(
+        bucket: bucket,
+        tag: tag,
+        predicate: (r) => r._measurement == measurement,
+        start: start,
+        stop: stop,
+    )
 
 // measurementTagKeys returns the list of tag keys for a specific measurement.
 //
@@ -144,6 +175,10 @@ measurementTagValues = (bucket, measurement, tag) =>
 // ## Parameters
 // - bucket: Bucket to return tag keys from for a specific measurement.
 // - measurement: Measurement to return tag keys from.
+// - start: Oldest time to include in results. Default is `-30d`.
+// - stop: Newest time include in results.
+//     The stop time is exclusive, meaning values with a time equal to stop time are excluded from the results.
+//     Default is `now()`.
 //
 // ## Examples
 //
@@ -159,7 +194,8 @@ measurementTagValues = (bucket, measurement, tag) =>
 //
 // tags: metadata
 //
-measurementTagKeys = (bucket, measurement) => tagKeys(bucket: bucket, predicate: (r) => r._measurement == measurement)
+measurementTagKeys = (bucket, measurement, start=_startDefault, stop=_stopDefault) =>
+    tagKeys(bucket: bucket, predicate: (r) => r._measurement == measurement, start: start, stop: stop)
 
 // fieldKeys returns field keys in a bucket.
 //
@@ -173,6 +209,9 @@ measurementTagKeys = (bucket, measurement) => tagKeys(bucket: bucket, predicate:
 // - predicate: Predicate function that filters field keys.
 //   Default is `(r) => true`.
 // - start: Oldest time to include in results. Default is `-30d`.
+// - stop: Newest time include in results.
+//     The stop time is exclusive, meaning values with a time equal to stop time are excluded from the results.
+//     Default is `now()`.
 //
 //   Relative start times are defined using negative durations.
 //   Negative durations are relative to `now()`.
@@ -189,8 +228,14 @@ measurementTagKeys = (bucket, measurement) => tagKeys(bucket: bucket, predicate:
 //
 // tags: metadata
 //
-fieldKeys = (bucket, predicate=(r) => true, start=-30d) =>
-    tagValues(bucket: bucket, tag: "_field", predicate: predicate, start: start)
+fieldKeys = (bucket, predicate=(r) => true, start=_startDefault, stop=_stopDefault) =>
+    tagValues(
+        bucket: bucket,
+        tag: "_field",
+        predicate: predicate,
+        start: start,
+        stop: stop,
+    )
 
 // measurementFieldKeys returns a list of fields in a measurement.
 //
@@ -200,6 +245,9 @@ fieldKeys = (bucket, predicate=(r) => true, start=-30d) =>
 // - bucket: Bucket to retrieve field keys from.
 // - measurement: Measurement to list field keys from.
 // - start: Oldest time to include in results. Default is `-30d`.
+// - stop: Newest time include in results.
+//     The stop time is exclusive, meaning values with a time equal to stop time are excluded from the results.
+//     Default is `now()`.
 //
 //   Relative start times are defined using negative durations.
 //   Negative durations are relative to `now()`.
@@ -219,8 +267,8 @@ fieldKeys = (bucket, predicate=(r) => true, start=-30d) =>
 //
 // tags: metadata
 //
-measurementFieldKeys = (bucket, measurement, start=-30d) =>
-    fieldKeys(bucket: bucket, predicate: (r) => r._measurement == measurement, start: start)
+measurementFieldKeys = (bucket, measurement, start=_startDefault, stop=_stopDefault) =>
+    fieldKeys(bucket: bucket, predicate: (r) => r._measurement == measurement, start: start, stop: stop)
 
 // measurements returns a list of measurements in a specific bucket.
 //
@@ -228,6 +276,10 @@ measurementFieldKeys = (bucket, measurement, start=-30d) =>
 //
 // ## Parameters
 // - bucket: Bucket to retrieve measurements from.
+// - start: Oldest time to include in results. Default is `-30d`.
+// - stop: Newest time include in results.
+//     The stop time is exclusive, meaning values with a time equal to stop time are excluded from the results.
+//     Default is `now()`.
 //
 // ## Examples
 //
@@ -240,4 +292,5 @@ measurementFieldKeys = (bucket, measurement, start=-30d) =>
 //
 // tags: metadata
 //
-measurements = (bucket) => tagValues(bucket: bucket, tag: "_measurement")
+measurements = (bucket, start=_startDefault, stop=_stopDefault) =>
+    tagValues(bucket: bucket, tag: "_measurement", start: start, stop: stop)
