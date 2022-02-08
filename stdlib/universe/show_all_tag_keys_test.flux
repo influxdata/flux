@@ -1121,16 +1121,16 @@ outData =
 #group,false,false,false
 #default,_result,,
 ,result,table,_value
-,,0,_start
-,,0,_stop
 ,,0,_field
 ,,0,_measurement
-,,0,host
+,,0,_start
+,,0,_stop
+,,0,cpu
 ,,0,device
 ,,0,fstype
-,,0,path
+,,0,host
 ,,0,name
-,,0,cpu
+,,0,path
 "
 t_show_all_tag_keys = (table=<-) =>
     table
@@ -1139,6 +1139,7 @@ t_show_all_tag_keys = (table=<-) =>
         |> group()
         |> distinct()
         |> keep(columns: ["_value"])
+        |> sort()
 
 test _show_all_tag_keys = () =>
     ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_show_all_tag_keys})

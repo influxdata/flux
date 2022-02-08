@@ -8,6 +8,7 @@ import (
 	"github.com/influxdata/flux/compiler"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
+	"github.com/influxdata/flux/internal/feature"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/runtime"
@@ -100,6 +101,11 @@ func createMapTransformation(id execute.DatasetID, mode execute.AccumulationMode
 	if !ok {
 		return nil, nil, errors.Newf(codes.Internal, "invalid spec type %T", spec)
 	}
+
+	if feature.VectorizedMap().Enabled(a.Context()) {
+		return newMapTransformation2(a.Context(), id, s, a.Allocator())
+	}
+
 	cache := execute.NewTableBuilderCache(a.Allocator())
 	d := execute.NewDataset(id, mode, cache)
 	t, err := NewMapTransformation(a.Context(), s, d, cache)

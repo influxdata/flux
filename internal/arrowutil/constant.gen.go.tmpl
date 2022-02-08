@@ -1,0 +1,43 @@
+package arrowutil
+
+import (
+	"fmt"
+
+	"github.com/influxdata/flux/array"
+)
+
+func IsConstant(arr array.Interface) bool {
+	switch arr := arr.(type) {
+		{{range .}}case *array.{{.Name}}:
+		return Is{{.Name}}Constant(arr)
+		{{end}}
+	default:
+		panic(fmt.Errorf("unsupported array datat ype: %s", arr.DataType()))
+	}
+}
+
+{{range .}}
+func Is{{.Name}}Constant(arr *array.{{.Name}}) bool {
+	// If all values are null, then that is still constant.
+	if arr.NullN() == arr.Len() {
+									return true
+									} else if arr.NullN() > 0 {
+// At least one value is null, but not all so
+// not constant by definition.
+return false
+}
+
+	{{if eq .Name "String"}}
+	return arr.IsConstant()
+	{{else}}
+	// All values are non-null so check if they are all the same.
+	v := arr.Value(0)
+	for i, n := 1, arr.Len(); i < n; i++ {
+		if arr.Value(i) != v {
+			return false
+		}
+	}
+	return true
+	{{end}}
+}
+{{end}}
