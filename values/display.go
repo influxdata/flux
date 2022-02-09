@@ -2,6 +2,7 @@ package values
 
 import (
 	"bufio"
+	"encoding/hex"
 	"fmt"
 	"io"
 	"sort"
@@ -46,7 +47,9 @@ func display(w *bufio.Writer, v Value, indent int) (err error) {
 		_, err = w.WriteString(v.Str())
 		return
 	case semantic.Bytes:
-		_, err = fmt.Fprint(w, v.Bytes())
+		w.WriteString("0x")
+		enc := hex.NewEncoder(w)
+		_, err = enc.Write(v.Bytes())
 		return
 	case semantic.Int:
 		_, err = fmt.Fprint(w, v.Int())
@@ -129,11 +132,15 @@ func display(w *bufio.Writer, v Value, indent int) (err error) {
 		o.Range(func(k string, v Value) {
 			keys = append(keys, k)
 		})
+		var sep = ", "
+		if multiline {
+			sep = ","
+		}
 		sort.Strings(keys)
 		for i, k := range keys {
 			v, _ := o.Get(k)
 			if i != 0 {
-				_, err = w.WriteString(", ")
+				_, err = w.WriteString(sep)
 				if err != nil {
 					return
 				}
