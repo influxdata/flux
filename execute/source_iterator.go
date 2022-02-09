@@ -118,7 +118,5 @@ func (s *sourceIterator) Run(ctx context.Context) {
 	err := s.iterator.Do(ctx, func(tbl flux.Table) error {
 		return s.ts.Process(s.id, tbl)
 	})
-	for _, t := range s.ts {
-		t.Finish(s.id, err)
-	}
+	s.ts.Finish(s.id, err)
 }

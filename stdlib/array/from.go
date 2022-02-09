@@ -110,9 +110,7 @@ func (s *tableSource) Run(ctx context.Context) {
 		err = s.ts.Process(s.id, tbl)
 	}
 
-	for _, t := range s.ts {
-		t.Finish(s.id, err)
-	}
+	s.ts.Finish(s.id, err)
 }
 
 func buildTable(rows values.Array, mem *memory.Allocator) (flux.Table, error) {
