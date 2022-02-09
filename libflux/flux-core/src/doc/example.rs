@@ -132,7 +132,11 @@ fn block_mode(kind: CodeBlockKind) -> Option<BlockMode> {
 //    '# ' - hide the line in the display
 //    '< ' - mark the line as the input
 //    '> ' - mark the line as the output
+//    '#<' - mark the line as the input and hide
+//    '#>' - mark the line as the output and hide
 fn preprocess(code: &str) -> Result<(String, String)> {
+    const OUTPUT_YIELD: &str = " |> yield(name:\"output\")";
+    const INPUT_YIELD: &str = " |> yield(name:\"input\")";
     let mut display = String::new();
     let mut exec = String::new();
     for line in code.lines().filter(|l| !l.starts_with("```")) {
@@ -147,11 +151,23 @@ fn preprocess(code: &str) -> Result<(String, String)> {
                     exec.push('\n');
                     continue;
                 }
+                "#<" => {
+                    exec.push_str(&line[2..]);
+                    exec.push_str(INPUT_YIELD);
+                    exec.push('\n');
+                    continue;
+                }
+                "#>" => {
+                    exec.push_str(&line[2..]);
+                    exec.push_str(OUTPUT_YIELD);
+                    exec.push('\n');
+                    continue;
+                }
                 "< " => {
                     display.push_str(&line[2..]);
                     display.push('\n');
                     exec.push_str(&line[2..]);
-                    exec.push_str(" |> yield(name:\"input\")");
+                    exec.push_str(INPUT_YIELD);
                     exec.push('\n');
                     continue;
                 }
@@ -159,7 +175,7 @@ fn preprocess(code: &str) -> Result<(String, String)> {
                     display.push_str(&line[2..]);
                     display.push('\n');
                     exec.push_str(&line[2..]);
-                    exec.push_str(" |> yield(name:\"output\")");
+                    exec.push_str(OUTPUT_YIELD);
                     exec.push('\n');
                     continue;
                 }

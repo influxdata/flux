@@ -195,7 +195,7 @@ test-release: Dockerfile_build
 		./gotool.sh github.com/goreleaser/goreleaser release --rm-dist --snapshot"
 
 
-bin/flux:
+bin/flux: $(STDLIB_SOURCES) $$(call go_deps,./internal/cmd/flux)
 	$(GO_BUILD) -o ./bin/flux ./internal/cmd/flux
 
 
