@@ -1,10 +1,12 @@
 package schema_test
 
 
+import "csv"
 import "testing"
 
-input =
-    "
+testcase show_measurements {
+        input =
+            "
 #datatype,string,long,dateTime:RFC3339,string,string,string,double
 #group,false,false,false,true,true,true,false
 #default,_result,,,,,,
@@ -37,22 +39,27 @@ input =
 ,,3,2018-05-22T19:54:06Z,swap,host.local,used_percent,82.59
 ,,3,2018-05-22T19:54:16Z,swap,host.local,used_percent,82.64
 "
-output = "
+        want =
+            csv.from(
+                csv:
+                    "
 #datatype,string,long,string
 #group,false,false,false
 #default,0,,
 ,result,table,_value
 ,,0,swap
 ,,0,system
-"
-show_measurements_fn = (tables=<-) =>
-    tables
-        |> range(start: 2018-01-01T00:00:00Z, stop: 2019-01-01T00:00:00Z)
-        |> filter(fn: (r) => true)
-        |> keep(columns: ["_measurement"])
-        |> group()
-        |> distinct(column: "_measurement")
-        |> sort()
+",
+            )
+        got =
+            csv.from(csv: input)
+                |> testing.load()
+                |> range(start: 2018-01-01T00:00:00Z, stop: 2019-01-01T00:00:00Z)
+                |> filter(fn: (r) => true)
+                |> keep(columns: ["_measurement"])
+                |> group()
+                |> distinct(column: "_measurement")
+                |> sort()
 
-test show_measurements = () =>
-    ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: show_measurements_fn})
+        testing.diff(want: want, got: got)
+    }
