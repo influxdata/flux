@@ -171,16 +171,12 @@ func (s *Source) Run(ctx context.Context) {
 
 	tables, err := gen.Input(ctx, schema)
 	if err != nil {
-		for _, t := range s.ts {
-			t.Finish(s.id, err)
-		}
+		s.ts.Finish(s.id, err)
 		return
 	}
 
 	err = tables.Do(func(table flux.Table) error {
 		return s.ts.Process(s.id, table)
 	})
-	for _, t := range s.ts {
-		t.Finish(s.id, err)
-	}
+	s.ts.Finish(s.id, err)
 }
