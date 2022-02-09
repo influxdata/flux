@@ -135,6 +135,8 @@ Use the following conventions to control example execution, input, and output.
   The `input` yield is parsed into Markdown tables and included with the JSON documentation output.
 - `> ` at the beginning of a line appends a `yield` to the ind of the line to specify output.
   The `output` yield is parsed into Markdown tables and included with the JSON documentation output.
+- `#<` omits the line from the rendered example and marks the line as the input data.
+- `#>` omits the line from the rendered example and marks the line as the output data.
 - To skip example execution, use the `no_run` language identifier on the code block.
 
 ```js
