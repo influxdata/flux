@@ -1525,12 +1525,281 @@ builtin last : (<-tables: [A], ?column: string) => [A] where A: Record
 // tags: transformations, selectors
 //
 builtin limit : (<-tables: [A], n: int, ?offset: int) => [A]
+
+// map iterates over and applies a function to input rows.
+// 
+// Each input row is passed to the `fn` as a record, `r`.
+// Each `r` property represents a column key-value pair.
+// Output values must be of the following supported column types:
+// 
+// - float
+// - integer
+// - unsigned integer
+// - string
+// - boolean
+// - time
+// 
+// ### Output data
+// Output tables are the result of applying the map function (`fn`) to each
+// record of the input tables. Output records are assigned to new tables based
+// on the group key of the input stream.
+// If output record contains a different value for a group key column, the
+// record is regrouped into the appropriate table.
+// If the output record drops a group key column, that column is removed from
+// the group key.
+// 
+// #### Preserve columns
+// By default, map() drops any columns that:
+// 
+// - Are not part of the input table’s group key.
+// - Are not explicitly mapped in the `fn` function.
+// 
+// This often results in the `_time` column being dropped.
+// To preserve the `_time` column and other columns that do not meet the
+// criteria above, use the `with` operator to extend the `r` record.
+// The `with` operator updates a record property if it already exists, creates
+// a new record property if it doesn’t exist, and includes all existing
+// properties in the output record.
+// 
+// ```no_run
+// data
+//     |> map(fn: (r) => ({ r with newColumn: r._value * 2 }))
+// ```
+// 
+// ## Parameters
+// - fn: Single argument function to apply to each record.
+//   The return value must be a record.
+// - tables: Input data. Default is piped-forward data (`<-`).
+// 
+// ## Examples
+// 
+// ### Square the value in each row
+// ```
+// import "sampledata"
+// 
+// < sampledata.int()
+// >     |> map(fn: (r) => ({ r with _value: r._value * r._value }))
+// ```
+// 
+// ### Create a new table with new columns
+// ```
+// import "sampledata"
+// 
+// < sampledata.int()
+// >     |> map(fn: (r) => ({time: r._time, source: r.tag, alert: if r._value > 10 then true else false}))
+// ```
+// 
+// ### Add new columns and preserve existing columns
+// Use the `with` operator on the `r` record to preserve columns not directly
+// operated on by the map operation.
+// 
+// ```
+// import "sampledata"
+// 
+// < sampledata.int()
+// >     |> map(fn: (r) => ({r with server: "server-${r.tag}", valueFloat: float(v: r._value)}))
+// ```
+// 
+// introduced: 0.7.0
+// tags: transformations
+// 
 builtin map : (<-tables: [A], fn: (r: A) => B, ?mergeKey: bool) => [B]
+
+// max returns the row with the maximum value in a specified column from each
+// input table.
+// 
+// **Note:** `max()` drops empty tables.
+// 
+// ## Parameters
+// - column: Column to return maximum values from. Default is `_value`.
+// - tables: Input data. Default is piped-forward data (`<-`).
+// 
+// ## Examples
+// 
+// ### Return the row with the maximum value
+// ```
+// import "sampledata"
+// 
+// < sampledata.int()
+// >     |> max()
+// ```
+// 
+// introduced: 0.7.0
+// tags: transformations, selectors
+// 
 builtin max : (<-tables: [A], ?column: string) => [A] where A: Record
+
+// mean returns the average of non-null values in a specified column from each
+// input table.
+// 
+// ## Parameters
+// - column: Column to use to compute means. Default is `_value`.
+// - tables: Input data. Default is piped-forward data (`<-`).
+// 
+// ## Examples
+// 
+// ### Return the average of values in each input table
+// ```
+// import "sampledata"
+// 
+// < sampledata.int()
+// >     |> mean()
+// ```
+// 
+// introduce: 0.7.0
+// tags: transformations, aggregates
+// 
 builtin mean : (<-tables: [A], ?column: string) => [B] where A: Record, B: Record
+
+// min returns the row with the minimum value in a specified column from each
+// input table.
+// 
+// **Note:** `min()` drops empty tables.
+// 
+// ## Parameters
+// - column: Column to return minimum values from. Default is `_value`.
+// - tables: Input data. Default is piped-forward data (`<-`).
+// 
+// ## Examples
+// 
+// ### Return the row with the minimum value
+// ```
+// import "sampledata"
+// 
+// < sampledata.int()
+// >     |> min()
+// ```
+// 
+// introduced: 0.7.0
+// tags: transformations, selectors
+// 
 builtin min : (<-tables: [A], ?column: string) => [A] where A: Record
+
+// mode returns the non-null value or values that occur most often in a
+// specified column in each input table.
+// 
+// If there are multiple modes, `mode()` returns all mode values in a sorted table.
+// If there is no mode, `mode()` returns `null`.
+// 
+// **Note**: `mode()` drops empty tables.
+// 
+// ## Parameters
+// - column: Column to return the mode from. Default is `_value`.
+// - tables: Input data. Default is piped-forward data (`<-`).
+// 
+// ## Examples
+// 
+// ### Return the mode of each input table
+// ```
+// import "sampledata"
+// 
+// < sampledata.int()
+// >     |> mode()
+// ```
+// 
+// introduced: 0.36.0
+// tags: transformtions, aggregates
+// 
 builtin mode : (<-tables: [A], ?column: string) => [{C with _value: B}] where A: Record, C: Record
+
+// movingAverage calculates the mean of non-null values using the current value
+// and `n - 1` previous values in the `_values` column. 
+// 
+// #### Moving average rules
+// - The average over a period populated by `n` values is equal to their algebraic mean.
+// - The average over a period populated by only `null` values is `null`.
+// - Moving averages skip `null` values.
+// - If `n` is less than the number of records in a table, `movingAverage()`
+//   returns the average of the available values.
+// 
+// ## Parameters
+// - n: Number of values to average.
+// - tables: Input data. Default is piped-forward data (`<-`).
+// 
+// ## Examples
+// 
+// ### Calculate a three point moving average
+// ```
+// import "sampledata"
+// 
+// < sampledata.int()
+// >     |> movingAverage(n: 3)
+// ```
+// 
+// ### Calculate a three point moving average with null values
+// ```
+// import "sampledata"
+// 
+// < sampledata.int(includeNull: true)
+// >     |> movingAverage(n: 3)
+// ```
+// 
+// introduced: 0.35.0
+// tags: transformations
+// 
 builtin movingAverage : (<-tables: [{B with _value: A}], n: int) => [{B with _value: float}] where A: Numeric
+
+// quantile returns rows from each input table with values that fall within a
+// specified quantile or returns the row with the value that represents the
+// specified quantile.
+// 
+// `quantile()` supports columns with float values.
+// 
+// ### Function behavior
+// `quantile()` acts as an aggregate or selector transformation depending on the
+// specified `method`.
+// 
+// - **Aggregate**: When using the `estimate_tdigest` or `exact_mean` methods,
+// `quantile()` acts as an aggregate transformation and outputs non-null records
+// with values that fall within the specified quantile.
+// - **Selector**: When using the `exact_selector` method, `quantile()` acts as
+// a selector selector transformation and outputs the non-null record with the
+// value that represents the specified quantile.
+// 
+// ## Parameters
+// - column: Column to use to compute the quantile. Default is `_value`.
+// - q: Quantile to compute. Must be between `0.0` and `1.0`.
+// - method: Computation method. Default is `estimate_tdigest`.
+// 
+//     **Avaialable methods**:
+// 
+//     - **estimate_tdigest**: Aggregate method that uses a
+//       [t-digest data structure](https://github.com/tdunning/t-digest) to
+//       compute an accurate quantile estimate on large data sources.
+//     - **exact_mean**: Aggregate method that takes the average of the tw
+//       points closest to the quantile value.
+//     - **exact_selector**: Selector method that returns the row with the value
+//       for which at least `q` points are less than.
+// 
+// - compression: Number of centroids to use when compressing the dataset.
+//   Default is `1000.0`.
+// 
+//   A larger number produces a more accurate result at the cost of increased
+//   memory requirements. 
+// 
+// - tables: Input data. Default is piped-forward data (`<-`).
+// 
+// ## Examples
+// 
+// ### Quantile as an aggregate
+// ```
+// import "sampledata"
+// 
+// < sampledata.float()
+// >     |> quantile(q: 0.99, method: "estimate_tdigest")
+// ```
+// 
+// ### Quantile as a selector
+// ```
+// import "sampledata"
+// 
+// < sampledata.float()
+// >     |> quantile(q: 0.5, method: "exact_selector")
+// ```
+// 
+// introduced: 0.24.0
+// tags: transformations, aggregates, selectors
+// 
 builtin quantile : (
         <-tables: [A],
         ?column: string,
@@ -1541,6 +1810,7 @@ builtin quantile : (
     where
     A: Record
 
+// pivot 
 builtin pivot : (<-tables: [A], rowKey: [string], columnKey: [string], valueColumn: string) => [B]
     where
     A: Record,
