@@ -78,6 +78,8 @@ var sourceHashes = map[string]string{
 	"stdlib/contrib/anaisdg/statsmodels/linearreg.flux":                                           "990e002230851d4ea0f620233a8dc82c6df0cc9b7d8d946a59374a7a21878672",
 	"stdlib/contrib/anaisdg/statsmodels/linearreg_test.flux":                                      "c273b5eeeb3da3b8405e6abdb82100793b6719f20755931aeaf9e343568d0dda",
 	"stdlib/contrib/bonitoo-io/alerta/alerta.flux":                                                "ec29116d3f190f5f73d4070b58c90dc7e6c2597e6b9f757bb24dd4832df198aa",
+	"stdlib/contrib/bonitoo-io/array/array.flux":                                                  "d1b04cd3c5c54ade243fdbc611ede33733972bc0a27642ccffe7b7da9f8b7080",
+	"stdlib/contrib/bonitoo-io/array/array_test.flux":                                             "fc945a73ec38971bbaf9fe8735a9cedaacbfbb0fc6f117568e943be2fe69b5b3",
 	"stdlib/contrib/bonitoo-io/hex/hex.flux":                                                      "1947b7a7dceb43f6e688f9085a0354d07a58c9a9d9d53bd1f3a1bed1b25326cd",
 	"stdlib/contrib/bonitoo-io/servicenow/servicenow.flux":                                        "be3f6aa2cb823d4a61e4b01c1b6445de3e5c8bc738a1498a23d2beda7df18554",
 	"stdlib/contrib/bonitoo-io/tickscript/alert_test.flux":                                        "7b015c21f8975d64a2165df7349c1b2b950f217bee1ab5e899aa145e8d8cca8a",
