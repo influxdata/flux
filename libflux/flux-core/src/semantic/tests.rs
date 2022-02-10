@@ -298,7 +298,9 @@ macro_rules! test_infer_err {
 /// ```
 ///
 macro_rules! test_error_msg {
-    ( $(imp: $imp:expr,)? $(env: $env:expr,)? src: $src:expr $(,)?, expect: $expect:expr $(,)? ) => {{
+    ( $(test: $test: ident,)? $(imp: $imp:expr,)? $(env: $env:expr,)? src: $src:expr $(,)?, expect: $expect:expr $(,)? ) => {
+        $(#[test] fn $test() )? {
+
         #[allow(unused_mut, unused_assignments)]
         let mut imp = HashMap::default();
         $(
@@ -324,7 +326,9 @@ macro_rules! test_error_msg {
         }
     }};
 
-    ( $(imp: $imp:expr,)? $(env: $env:expr,)? src: $src:expr $(,)?, expect_short: $expect:expr $(,)? ) => {{
+    ( $(test: $test: ident,)? $(imp: $imp:expr,)? $(env: $env:expr,)? src: $src:expr $(,)?, expect_short: $expect:expr $(,)? ) => {
+        $(#[test] fn $test() )? {
+
         #[allow(unused_mut, unused_assignments)]
         let mut imp = HashMap::default();
         $(
@@ -350,7 +354,9 @@ macro_rules! test_error_msg {
         }
     }};
 
-    ( $(imp: $imp:expr,)? $(env: $env:expr,)? src: $src:expr $(,)?, err: $err:expr $(,)? ) => {{
+    ( $(test: $test: ident,)? $(imp: $imp:expr,)? $(env: $env:expr,)? src: $src:expr $(,)?, err: $err:expr $(,)? ) => {
+        $(#[test] fn $test() )? {
+
         #[allow(unused_mut, unused_assignments)]
         let mut imp = HashMap::default();
         $(
@@ -3548,122 +3554,136 @@ fn copy_bindings_from_other_env() {
     );
 }
 
-#[test]
-fn test_error_messages() {
-    test_error_msg! {
-        src: r#"
+test_error_msg! {
+    test: location_points_to_right_expression_error,
+    src: r#"
             1 + "1"
         "#,
-        // Location points to right expression expression
-        err: "error @2:17-2:20: expected int but found string",
-    }
-    test_error_msg! {
-        src: r#"
+    // Location points to right expression expression
+    err: "error @2:17-2:20: expected int but found string",
+}
+
+test_error_msg! {
+    test: location_points_to_argument_of_unary_error,
+    src: r#"
             -"s"
         "#,
-        // Location points to argument of unary expression
-        err: "error @2:14-2:17: string is not Negatable",
-    }
-    test_error_msg! {
-        src: r#"
+    // Location points to argument of unary expression
+    err: "error @2:14-2:17: string is not Negatable",
+}
+test_error_msg! {
+    test: location_points_to_entire_binary_error,
+    src: r#"
             1h + 2h
         "#,
-        // Location points to entire binary expression
-        err: "error @2:13-2:20: duration is not Addable",
-    }
-    test_error_msg! {
-        src: r#"
+    // Location points to entire binary expression
+    err: "error @2:13-2:20: duration is not Addable",
+}
+test_error_msg! {
+    test: location_points_to_second_interpolated_error,
+    src: r#"
             bob = "Bob"
             joe = {a: 0, b: 0.1}
             "Hey ${bob} it's me ${joe}!"
         "#,
-        // Location points to second interpolated expression
-        err: "error @4:35-4:38: {b:float, a:int} is not Stringable",
-    }
-    test_error_msg! {
-        src: r#"
+    // Location points to second interpolated expression
+    err: "error @4:35-4:38: {b:float, a:int} is not Stringable",
+}
+test_error_msg! {
+    test: location_points_to_if_error,
+    src: r#"
             if 0 then "a" else "b"
         "#,
-        // Location points to if expression
-        err: "error @2:16-2:17: expected bool but found int",
-    }
-    test_error_msg! {
-        src: r#"
+    // Location points to if expression
+    err: "error @2:16-2:17: expected bool but found int",
+}
+test_error_msg! {
+    test: location_points_to_else_error,
+    src: r#"
             if exists 0 then 0 else "b"
         "#,
-        // Location points to else expression
-        err: "error @2:37-2:40: expected int but found string",
-    }
-    test_error_msg! {
-        src: r#"
+    // Location points to else expression
+    err: "error @2:37-2:40: expected int but found string",
+}
+test_error_msg! {
+    test: location_points_to_second_element_error,
+    src: r#"
             [1, "2"]
         "#,
-        // Location points to second element of array
-        err: "error @2:17-2:20: expected int but found string",
-    }
-    test_error_msg! {
-        src: r#"
+    // Location points to second element of array
+    err: "error @2:17-2:20: expected int but found string",
+}
+test_error_msg! {
+    test: location_points_to_index_error,
+    src: r#"
             a = [1, 2, 3]
             a[1.1]
         "#,
-        // Location points to expression representing the index
-        err: "error @3:15-3:18: expected int but found float",
-    }
-    test_error_msg! {
-        src: r#"
+    // Location points to expression representing the index
+    err: "error @3:15-3:18: expected int but found float",
+}
+test_error_msg! {
+    test: location_points_to_right_error,
+    src: r#"
             a = [1, 2, 3]
             a[1] + 1.1
         "#,
-        // Location points to right expression
-        err: "error @3:20-3:23: expected int but found float",
-    }
-    test_error_msg! {
-        src: r#"
+    // Location points to right expression
+    err: "error @3:20-3:23: expected int but found float",
+}
+test_error_msg! {
+    test: location_points_to_identifier_a_error,
+    src: r#"
             a = 1
             a[1]
         "#,
-        // Location points to the identifier a
-        err: "error @3:13-3:14: expected [A] but found int",
-    }
-    test_error_msg! {
-        src: r#"
+    // Location points to the identifier a
+    err: "error @3:13-3:14: expected [A] but found int",
+}
+test_error_msg! {
+    test: location_points_to_identifier_a_error_2,
+    src: r#"
             a = [1, 2, 3]
             a.x
         "#,
-        // Location points to the identifier a
-        err: "error @3:13-3:14: expected {A with x:B} but found [int]",
-    }
-    test_error_msg! {
-        src: r#"
+    // Location points to the identifier a
+    err: "error @3:13-3:14: expected {A with x:B} but found [int]",
+}
+test_error_msg! {
+    test: location_points_to_entire_call_error,
+    src: r#"
             f = (x, y) => x - y
             f(x: "x", y: "y")
         "#,
-        // Location points to entire call expression
-        err: "error @3:18-3:21: string is not Subtractable (argument x)",
-    }
-    test_error_msg! {
-        src: r#"
+    // Location points to entire call expression
+    err: "error @3:18-3:21: string is not Subtractable (argument x)",
+}
+test_error_msg! {
+    test: location_points_to_entire_call_error_2,
+    src: r#"
             f = (r) => r.a
             f(r: {b: 1})
         "#,
-        // Location points to entire call expression
-        err: "error @3:18-3:24: record is missing label a (argument r)",
-    }
-    test_error_msg! {
-        src: r#"
+    // Location points to entire call expression
+    err: "error @3:18-3:24: record is missing label a (argument r)",
+}
+test_error_msg! {
+    test: location_points_to_identifier_a_error_3,
+    src: r#"
             x = 1 + 1
             a
         "#,
-        // Location points to the identifier a
-        err: "error @3:13-3:14: undefined identifier a",
-    }
-    test_error_msg! {
-        src: r#"
+    // Location points to the identifier a
+    err: "error @3:13-3:14: undefined identifier a",
+}
+test_error_msg! {
+    test: location_points_to_call_error,
+    src: r#"
             match = (o) => o.name =~ /^a/
             fn = (r) => match(r)
         "#,
-        // Location points to call expression `match(r)`
-        expect: expect![[r#"
+    // Location points to call expression `match(r)`
+    expect: expect![[r#"
             error: found unexpected argument r
               ┌─ main:3:31
               │
@@ -3677,14 +3697,15 @@ fn test_error_messages() {
               │                         ^^^^^^^^
 
         "#]],
-    }
-    test_error_msg! {
-        src: r#"
+}
+test_error_msg! {
+    test: location_points_to_call_error_2,
+    src: r#"
             f = (a, b) => a + b
             f(a: 0, c: 1)
         "#,
-        // Location points to call expression `f(a: 0, c: 1)`
-        expect: expect![[r#"
+    // Location points to call expression `f(a: 0, c: 1)`
+    expect: expect![[r#"
             error: found unexpected argument c
               ┌─ main:3:24
               │
@@ -3698,15 +3719,15 @@ fn test_error_messages() {
               │             ^^^^^^^^^^^^^
 
         "#]],
-    }
-    test_error_msg! {
-        src: r#"
+}
+test_error_msg! {
+    test: location_points_to_call_error_3,
+    src: r#"
             f = (a, b) => a + b
             f(a: 0)
         "#,
-        // Location points to call expression `f(a: 0)`
-        err: "error @3:13-3:20: missing required argument b",
-    }
+    // Location points to call expression `f(a: 0)`
+    err: "error @3:13-3:20: missing required argument b",
 }
 
 #[test]
