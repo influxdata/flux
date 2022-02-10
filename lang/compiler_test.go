@@ -693,7 +693,7 @@ option planner.disableLogicalRules = "not an array"
 
 // remember to return streaming data
 from(bucket: "does_not_matter")`},
-			wantErr: `error @4:38-4:52: expected [string] but found string`,
+			wantErr: `error @4:38-4:52: expected [string] (array) but found string`,
 		},
 		{
 			name: "physical planner option must be an array",
@@ -704,7 +704,7 @@ option planner.disablePhysicalRules = "not an array"
 
 // remember to return streaming data
 from(bucket: "does_not_matter")`},
-			wantErr: `error @4:39-4:53: expected [string] but found string`,
+			wantErr: `error @4:39-4:53: expected [string] (array) but found string`,
 		},
 		{
 			name: "logical planner option must be an array of strings",

@@ -3609,7 +3609,7 @@ test_error_msg! {
         "#,
     // Location points to second interpolated expression
     expect: expect![[r#"
-        error: {b:float, a:int} is not Stringable
+        error: {b:float, a:int} (record) is not Stringable
           ┌─ main:4:35
           │
         4 │             "Hey ${bob} it's me ${joe}!"
@@ -3702,7 +3702,7 @@ test_error_msg! {
         "#,
     // Location points to the identifier a
     expect: expect![[r#"
-        error: expected [A] but found int
+        error: expected [A] (array) but found int
           ┌─ main:3:13
           │
         3 │             a[1]
@@ -3718,7 +3718,7 @@ test_error_msg! {
         "#,
     // Location points to the identifier a
     expect: expect![[r#"
-        error: expected {A with x:B} but found [int]
+        error: expected {A with x:B} (record) but found [int] (array)
           ┌─ main:3:13
           │
         3 │             a.x
@@ -3909,13 +3909,13 @@ fn primitive_kind_errors() {
             isType(v: [], type: "array")
         "#,
         expect: expect_test::expect![[r#"
-            error: {} is not Basic (argument v)
+            error: {} (record) is not Basic (argument v)
               ┌─ main:2:23
               │
             2 │             isType(v: {}, type: "record")
               │                       ^^
 
-            error: [A] is not Basic (argument v)
+            error: [A] (array) is not Basic (argument v)
               ┌─ main:3:23
               │
             3 │             isType(v: [], type: "array")
@@ -3936,8 +3936,8 @@ fn primitive_kind_short_errors() {
             isType(v: [], type: "array")
         "#,
         expect_short: expect_test::expect![[r#"
-            main:2:23: error: {} is not Basic (argument v)
-            main:3:23: error: [A] is not Basic (argument v)
+            main:2:23: error: {} (record) is not Basic (argument v)
+            main:3:23: error: [A] (array) is not Basic (argument v)
         "#]]
     }
 }

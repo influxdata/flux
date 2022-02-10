@@ -244,15 +244,18 @@ impl fmt::Display for Error {
         match self {
             Error::CannotUnify { exp, act } => write!(
                 f,
-                "expected {} but found {}",
-                exp.clone().fresh(&mut fresh, &mut TvarMap::new()),
-                act.clone().fresh(&mut fresh, &mut TvarMap::new()),
+                "expected {exp}{exp_info} but found {act}{act_info}",
+                exp = exp.clone().fresh(&mut fresh, &mut TvarMap::new()),
+                exp_info = exp.type_info(),
+                act = act.clone().fresh(&mut fresh, &mut TvarMap::new()),
+                act_info = act.type_info(),
             ),
             Error::CannotConstrain { exp, act } => write!(
                 f,
-                "{} is not {}",
-                act.clone().fresh(&mut fresh, &mut TvarMap::new()),
-                exp,
+                "{act}{act_info} is not {exp}",
+                act = act.clone().fresh(&mut fresh, &mut TvarMap::new()),
+                act_info = act.type_info(),
+                exp = exp,
             ),
             Error::OccursCheck(tv, ty) => {
                 write!(f, "recursive types not supported {} != {}", tv, ty)
@@ -266,21 +269,25 @@ impl fmt::Display for Error {
                 cause,
             } => write!(
                 f,
-                "expected {} but found {} for label {} caused by {}",
-                exp.clone().fresh(&mut fresh, &mut TvarMap::new()),
-                act.clone().fresh(&mut fresh, &mut TvarMap::new()),
-                lab,
-                cause,
+                "expected {exp}{exp_info} but found {act}{act_info} for label {lab} caused by {cause}",
+                exp = exp.clone().fresh(&mut fresh, &mut TvarMap::new()),
+                exp_info = exp.type_info(),
+                act = act.clone().fresh(&mut fresh, &mut TvarMap::new()),
+                act_info = act.type_info(),
+                lab = lab,
+                cause = cause
             ),
             Error::MissingArgument(x) => write!(f, "missing required argument {}", x),
             Error::ExtraArgument(x) => write!(f, "found unexpected argument {}", x),
             Error::CannotUnifyArgument(x, e) => write!(f, "{} (argument {})", e, x),
             Error::CannotUnifyReturn { exp, act, cause } => write!(
                 f,
-                "expected {} but found {} for return type caused by {}",
-                exp.clone().fresh(&mut fresh, &mut TvarMap::new()),
-                act.clone().fresh(&mut fresh, &mut TvarMap::new()),
-                cause
+                "expected {exp}{exp_info} but found {act}{act_info} for return type caused by {cause}",
+                exp = exp.clone().fresh(&mut fresh, &mut TvarMap::new()),
+                exp_info = exp.type_info(),
+                act = act.clone().fresh(&mut fresh, &mut TvarMap::new()),
+                act_info = act.type_info(),
+                cause = cause
             ),
             Error::MissingPipeArgument => write!(f, "missing pipe argument"),
             Error::MultiplePipeArguments { exp, act } => {
@@ -920,6 +927,17 @@ impl MonoType {
         match self {
             MonoType::Record(r) => r.fields().find(|p| p.k == field),
             _ => None,
+        }
+    }
+
+    fn type_info(&self) -> &str {
+        match self {
+            MonoType::Arr(_) => " (array)",
+            MonoType::Fun(_) => " (function)",
+            MonoType::Dict(_) => " (dictionary)",
+            MonoType::Record(_) => " (record)",
+            MonoType::Vector(_) => " (vector)",
+            _ => "",
         }
     }
 }
