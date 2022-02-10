@@ -46,7 +46,10 @@ func TestCommand(setup TestSetupFunc) *cobra.Command {
 		Long:  "Run flux tests",
 		Run: func(cmd *cobra.Command, args []string) {
 			fluxinit.FluxInit()
-			runFluxTests(setup, flags)
+			if err := runFluxTests(setup, flags); err != nil {
+				fmt.Println(err)
+				os.Exit(1)
+			}
 		},
 	}
 	testCommand.Flags().StringSliceVarP(&flags.paths, "path", "p", nil, "The root level directory for all packages.")
@@ -62,7 +65,7 @@ func init() {
 }
 
 // runFluxTests invokes the test runner.
-func runFluxTests(setup TestSetupFunc, flags testFlags) {
+func runFluxTests(setup TestSetupFunc, flags testFlags) error {
 	if len(flags.paths) == 0 {
 		flags.paths = []string{"."}
 	}
@@ -70,19 +73,17 @@ func runFluxTests(setup TestSetupFunc, flags testFlags) {
 	reporter := NewTestReporter(flags.verbosity)
 	runner := NewTestRunner(reporter)
 	if err := runner.Gather(flags.paths, flags.testNames); err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+		return err
 	}
 
 	executor, err := setup(context.Background())
 	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+		return err
 	}
 	defer func() { _ = executor.Close() }()
 
 	runner.Run(executor, flags.verbosity, flags.skipTestCases)
-	runner.Finish()
+	return runner.Finish()
 }
 
 // Test wraps the functionality of a single testcase statement,
@@ -542,16 +543,16 @@ func (t *TestRunner) Run(executor TestExecutor, verbosity int, skipTestCases []s
 	}
 }
 
-// Finish summarizes the test run, and returns the
-// exit code based on success for failure.
-func (t *TestRunner) Finish() {
+// Finish summarizes the test run, and returns an
+// error in the event of a failure.
+func (t *TestRunner) Finish() error {
 	t.reporter.Summarize(t.tests)
 	for _, test := range t.tests {
-		if test.Error() != nil {
-			os.Exit(1)
+		if err := test.Error(); err != nil {
+			return err
 		}
 	}
-	os.Exit(0)
+	return nil
 }
 
 // TestReporter handles reporting of test results.
