@@ -43,6 +43,9 @@ Each key-value pair must be on a single line.
   and categorize packages. _See [Metadata tags](#metadata-tags)._
 - **contributors**: Contributor GitHub usernames or other contact information.
 
+When adding a new export to a Flux package the `introduced: NEXT` metadata can be added to the value's docs.
+The release process will automatically replace the `NEXT` with the version of the Flux release.
+
 ```js
 // Package examplePkg provides functions that do x and y.
 //

@@ -1,7 +1,7 @@
 [package]
 name = "flux-core"
-version = "0.4.0"
-authors = ["Nathaniel Cook <nathaniel@influxdata.com>"]
+version = "0.154.0"
+authors = ["Flux Team <flux-developers@influxdata.com>"]
 edition = "2021"
 
 [lib]
