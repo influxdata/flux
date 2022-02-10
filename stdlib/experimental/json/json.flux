@@ -8,14 +8,23 @@ package json
 
 // parse takes JSON data as bytes and returns a value.
 //
-// The function can return lists, records, strings, booleans, and float values.
-// All numeric values are returned as floats.
+// JSON types are converted to Flux types as follows:
+//
+// | JSON type | Flux type |
+// | --------- | --------- |
+// | boolean   | boolean   |
+// | number    | float     |
+// | string    | string    |
+// | array     | array     |
+// | object    | record    |
+//
 //
 // ## Parameters
 // - data: JSON data (as bytes) to parse.
 //
 // ## Examples
-// Parse and use JSON data to restructure tables
+//
+// ### Parse and use JSON data to restructure tables
 // ```
 // # import "array"
 // import "experimental/json"
@@ -47,6 +56,78 @@ package json
 // >     )
 // ```
 //
+// ### Parse JSON and use array functions to manipulate into a table
+//
+// ```
+// import "experimental/json"
+// import "experimental/array"
+//
+// jsonStr = bytes(v:"{
+//      \"node\": {
+//          \"items\": [
+//              {
+//                  \"id\": \"15612462\",
+//                  \"color\": \"red\",
+//                  \"states\": [
+//                      {
+//                          \"name\": \"ready\",
+//                          \"duration\": 10
+//                      },
+//                      {
+//                          \"name\": \"closed\",
+//                          \"duration\": 13
+//                      },
+//                      {
+//                          \"name\": \"pending\",
+//                          \"duration\": 3
+//                      }
+//                  ]
+//              },
+//              {
+//                  \"id\": \"15612462\",
+//                  \"color\": \"blue\",
+//                  \"states\": [
+//                      {
+//                          \"name\": \"ready\",
+//                          \"duration\": 5
+//                      },
+//                      {
+//                          \"name\": \"closed\",
+//                          \"duration\": 0
+//                      },
+//                      {
+//                          \"name\": \"pending\",
+//                          \"duration\": 16
+//                      }
+//                  ]
+//              }
+//          ]
+//      }
+// }")
+//
+//  data = json.parse(data: jsonStr)
+//
+//  // Map over all items in the JSON extracting
+//  // the id, color and pending duration of each.
+//  // Construct a table from the final records.
+//  array.from(rows:
+//      data.node.items
+//          |> array.map(fn:(x) => {
+//              pendingState = x.states
+//                  |> array.filter(fn: (x) => x.name == "pending")
+//              pendingDur = if length(arr: pendingState) == 1
+//                  then
+//                      pendingState[0].duration
+//                  else
+//                      0.0
+//              return {
+//                  id: x.id,
+//                  color: x.color,
+//                  pendingDuration: pendingDur,
+//              }
+//          })
+// > )
+// ```
 // tags: type-conversions
 //
 builtin parse : (data: bytes) => A
