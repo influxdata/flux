@@ -1192,42 +1192,31 @@ impl fmt::Display for Record {
     }
 }
 
+fn collect_record(mut record: &Record) -> (RefMonoTypeVecMap<'_, Label>, Option<&MonoType>) {
+    let mut a = RefMonoTypeVecMap::new();
+    let t = loop {
+        match record {
+            Record::Empty => break None,
+            Record::Extension {
+                head,
+                tail: MonoType::Record(o),
+            } => {
+                a.entry(&head.k).or_insert_with(Vec::new).push(&head.v);
+                record = o;
+            }
+            Record::Extension { head, tail } => {
+                a.entry(&head.k).or_insert_with(Vec::new).push(&head.v);
+                break Some(tail);
+            }
+        }
+    };
+    (a, t)
+}
+
 impl cmp::PartialEq for Record {
-    fn eq(mut self: &Self, mut other: &Self) -> bool {
-        let mut a = RefMonoTypeVecMap::new();
-        let t = loop {
-            match self {
-                Record::Empty => break None,
-                Record::Extension {
-                    head,
-                    tail: MonoType::Record(o),
-                } => {
-                    a.entry(&head.k).or_insert_with(Vec::new).push(&head.v);
-                    self = o;
-                }
-                Record::Extension { head, tail } => {
-                    a.entry(&head.k).or_insert_with(Vec::new).push(&head.v);
-                    break Some(tail);
-                }
-            }
-        };
-        let mut b = RefMonoTypeVecMap::new();
-        let v = loop {
-            match other {
-                Record::Empty => break None,
-                Record::Extension {
-                    head,
-                    tail: MonoType::Record(o),
-                } => {
-                    b.entry(&head.k).or_insert_with(Vec::new).push(&head.v);
-                    other = o;
-                }
-                Record::Extension { head, tail } => {
-                    b.entry(&head.k).or_insert_with(Vec::new).push(&head.v);
-                    break Some(tail);
-                }
-            }
-        };
+    fn eq(self: &Self, other: &Self) -> bool {
+        let (a, t) = collect_record(self);
+        let (b, v) = collect_record(other);
         t == v && a == b
     }
 }
