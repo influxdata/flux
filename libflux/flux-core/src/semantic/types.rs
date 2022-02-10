@@ -1483,7 +1483,7 @@ fn unify_in_context<T>(
 
 /// Wrapper around [`Symbol`] that ignores the package in comparisons. Allowing field lookups of
 /// package exported labels to be done with local symbols
-#[derive(Debug, Eq, Clone, Serialize)]
+#[derive(Eq, Clone, Serialize)]
 pub struct Label(Symbol);
 
 impl std::hash::Hash for Label {
@@ -1496,6 +1496,12 @@ impl std::ops::Deref for Label {
     type Target = str;
     fn deref(&self) -> &Self::Target {
         self.0.name()
+    }
+}
+
+impl fmt::Debug for Label {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        f.debug_tuple("Label").field(&self.0.name()).finish()
     }
 }
 
