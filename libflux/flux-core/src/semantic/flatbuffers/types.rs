@@ -227,6 +227,7 @@ impl From<fb::Collection<'_>> for Option<Collection> {
             collection: match t.collection() {
                 fb::CollectionType::Array => CollectionType::Array,
                 fb::CollectionType::Vector => CollectionType::Vector,
+                fb::CollectionType::Stream => CollectionType::Stream,
                 _ => return None,
             },
             arg: from_table(t.arg()?, t.arg_type())?,
@@ -543,6 +544,7 @@ fn build_app<'a>(
             collection: match collection {
                 CollectionType::Array => fb::CollectionType::Array,
                 CollectionType::Vector => fb::CollectionType::Vector,
+                CollectionType::Stream => fb::CollectionType::Stream,
             },
             arg_type: typ,
             arg: Some(off),

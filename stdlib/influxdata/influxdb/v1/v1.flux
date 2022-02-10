@@ -88,7 +88,7 @@ import "influxdata/influxdb/schema"
 //
 // tags: inputs
 //
-builtin json : (?json: string, ?file: string) => [A] where A: Record
+builtin json : (?json: string, ?file: string) => stream[A] where A: Record
 
 // databases returns a list of databases in an InfluxDB 1.x (1.7+) instance.
 //
@@ -121,7 +121,7 @@ builtin databases : (
         ?orgID: string,
         ?host: string,
         ?token: string,
-    ) => [{
+    ) => stream[{
         organizationID: string,
         databaseName: string,
         retentionPolicy: string,

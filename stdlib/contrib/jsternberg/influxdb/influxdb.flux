@@ -7,7 +7,7 @@ package influxdb
 import "influxdata/influxdb"
 import "influxdata/influxdb/v1"
 
-builtin _mask : (<-tables: [A], columns: [string]) => [B] where A: Record, B: Record
+builtin _mask : (<-tables: stream[A], columns: [string]) => stream[B] where A: Record, B: Record
 
 // from retrieves data from an InfluxDB bucket between the `start` and `stop` times.
 //

@@ -40,7 +40,7 @@ func TestLookupComplexTypes(t *testing.T) {
 			path: "csv",
 			id:   "from",
 			name: "lookup csv.from",
-			want: "(?csv: string, ?file: string, ?mode: string) => [A]",
+			want: "(?csv: string, ?file: string, ?mode: string) => stream[A]",
 		},
 		{
 			path: "date",
@@ -58,13 +58,13 @@ func TestLookupComplexTypes(t *testing.T) {
 			path: "experimental/bigtable",
 			id:   "from",
 			name: "lookup experimental/bigtable.from",
-			want: "(instance: string, project: string, table: string, token: string) => [A]",
+			want: "(instance: string, project: string, table: string, token: string) => stream[A]",
 		},
 		{
 			path: "experimental",
 			id:   "to",
 			name: "lookup experimental.to",
-			want: "(?bucket: string, ?bucketID: string, ?host: string, ?org: string, ?orgID: string, <-tables: [A], ?token: string) => [A]",
+			want: "(?bucket: string, ?bucketID: string, ?host: string, ?org: string, ?orgID: string, <-tables: stream[A], ?token: string) => stream[A]",
 		},
 		{
 			path: "http",
@@ -106,31 +106,31 @@ func TestLookupComplexTypes(t *testing.T) {
 			path: "internal/promql",
 			id:   "changes",
 			name: "lookup internal/promql.changes",
-			want: "(<-tables: [{A with _value: float}]) => [{B with _value: float}]",
+			want: "(<-tables: stream[{A with _value: float}]) => stream[{B with _value: float}]",
 		},
 		{
 			path: "sql",
 			id:   "to",
 			name: "lookup sql.to",
-			want: "(?batchSize: int, dataSourceName: string, driverName: string, table: string, <-tables: [A]) => [A]",
+			want: "(?batchSize: int, dataSourceName: string, driverName: string, table: string, <-tables: stream[A]) => stream[A]",
 		},
 		{
 			path: "testing",
 			id:   "assertEmpty",
 			name: "lookup testing.assertEmpty",
-			want: "(<-tables: [A]) => [A]",
+			want: "(<-tables: stream[A]) => stream[A]",
 		},
 		{
 			path: "universe",
 			id:   "filter",
 			name: "lookup universe.filter",
-			want: "(fn: (r: A) => bool, ?onEmpty: string, <-tables: [A]) => [A]",
+			want: "(fn: (r: A) => bool, ?onEmpty: string, <-tables: stream[A]) => stream[A]",
 		},
 		{
 			path: "universe",
 			id:   "map",
 			name: "lookup universe.map",
-			want: "(fn: (r: A) => B, ?mergeKey: bool, <-tables: [A]) => [B]",
+			want: "(fn: (r: A) => B, ?mergeKey: bool, <-tables: stream[A]) => stream[B]",
 		},
 	} {
 

@@ -7,6 +7,7 @@ union MonoType {
   DictType,
   RecordType,
   FunctionType,
+  StreamType,
 }
 
 table NamedType {
@@ -20,6 +21,11 @@ table TvarType {
 }
 
 table ArrayType {
+  base_node:BaseNode;
+  element:MonoType;
+}
+
+table StreamType {
   base_node:BaseNode;
   element:MonoType;
 }

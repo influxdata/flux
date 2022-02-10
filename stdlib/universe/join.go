@@ -120,8 +120,8 @@ func createJoinOpSpec(args flux.Arguments, a *flux.Administration) (flux.Operati
 		if err != nil {
 			return
 		}
-		if operation.Type().Nature() != semantic.Array {
-			err = errors.Newf(codes.Invalid, "expected %q to be object type; instead got %v",
+		if operation.Type().Nature() != semantic.Stream {
+			err = errors.Newf(codes.Invalid, "expected %q to be stream type; instead got %v",
 				name, operation.Type().Nature())
 			return
 		}

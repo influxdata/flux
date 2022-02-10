@@ -268,14 +268,17 @@ pub mod fbsemantic {
         since = "2.0.0",
         note = "Use associated constants instead. This will no longer be generated in 2021."
     )]
-    pub const ENUM_MAX_COLLECTION_TYPE: u8 = 1;
+    pub const ENUM_MAX_COLLECTION_TYPE: u8 = 2;
     #[deprecated(
         since = "2.0.0",
         note = "Use associated constants instead. This will no longer be generated in 2021."
     )]
     #[allow(non_camel_case_types)]
-    pub const ENUM_VALUES_COLLECTION_TYPE: [CollectionType; 2] =
-        [CollectionType::Array, CollectionType::Vector];
+    pub const ENUM_VALUES_COLLECTION_TYPE: [CollectionType; 3] = [
+        CollectionType::Array,
+        CollectionType::Vector,
+        CollectionType::Stream,
+    ];
 
     #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]
     #[repr(transparent)]
@@ -284,15 +287,17 @@ pub mod fbsemantic {
     impl CollectionType {
         pub const Array: Self = Self(0);
         pub const Vector: Self = Self(1);
+        pub const Stream: Self = Self(2);
 
         pub const ENUM_MIN: u8 = 0;
-        pub const ENUM_MAX: u8 = 1;
-        pub const ENUM_VALUES: &'static [Self] = &[Self::Array, Self::Vector];
+        pub const ENUM_MAX: u8 = 2;
+        pub const ENUM_VALUES: &'static [Self] = &[Self::Array, Self::Vector, Self::Stream];
         /// Returns the variant's name or "" if unknown.
         pub fn variant_name(self) -> Option<&'static str> {
             match self {
                 Self::Array => Some("Array"),
                 Self::Vector => Some("Vector"),
+                Self::Stream => Some("Stream"),
                 _ => None,
             }
         }
@@ -2615,6 +2620,284 @@ pub mod fbsemantic {
                 _ => {
                     let x: Option<()> = None;
                     ds.field("arg", &x)
+                }
+            };
+            ds.finish()
+        }
+    }
+    pub enum StreamOffset {}
+    #[derive(Copy, Clone, PartialEq)]
+
+    pub struct Stream<'a> {
+        pub _tab: flatbuffers::Table<'a>,
+    }
+
+    impl<'a> flatbuffers::Follow<'a> for Stream<'a> {
+        type Inner = Stream<'a>;
+        #[inline]
+        fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
+            Self {
+                _tab: flatbuffers::Table { buf, loc },
+            }
+        }
+    }
+
+    impl<'a> Stream<'a> {
+        #[inline]
+        pub fn init_from_table(table: flatbuffers::Table<'a>) -> Self {
+            Stream { _tab: table }
+        }
+        #[allow(unused_mut)]
+        pub fn create<'bldr: 'args, 'args: 'mut_bldr, 'mut_bldr>(
+            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr>,
+            args: &'args StreamArgs,
+        ) -> flatbuffers::WIPOffset<Stream<'bldr>> {
+            let mut builder = StreamBuilder::new(_fbb);
+            if let Some(x) = args.t {
+                builder.add_t(x);
+            }
+            builder.add_t_type(args.t_type);
+            builder.finish()
+        }
+
+        pub const VT_T_TYPE: flatbuffers::VOffsetT = 4;
+        pub const VT_T: flatbuffers::VOffsetT = 6;
+
+        #[inline]
+        pub fn t_type(&self) -> MonoType {
+            self._tab
+                .get::<MonoType>(Stream::VT_T_TYPE, Some(MonoType::NONE))
+                .unwrap()
+        }
+        #[inline]
+        pub fn t(&self) -> Option<flatbuffers::Table<'a>> {
+            self._tab
+                .get::<flatbuffers::ForwardsUOffset<flatbuffers::Table<'a>>>(Stream::VT_T, None)
+        }
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn t_as_basic(&self) -> Option<Basic<'a>> {
+            if self.t_type() == MonoType::Basic {
+                self.t().map(Basic::init_from_table)
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn t_as_var(&self) -> Option<Var<'a>> {
+            if self.t_type() == MonoType::Var {
+                self.t().map(Var::init_from_table)
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn t_as_collection(&self) -> Option<Collection<'a>> {
+            if self.t_type() == MonoType::Collection {
+                self.t().map(Collection::init_from_table)
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn t_as_record(&self) -> Option<Record<'a>> {
+            if self.t_type() == MonoType::Record {
+                self.t().map(Record::init_from_table)
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn t_as_fun(&self) -> Option<Fun<'a>> {
+            if self.t_type() == MonoType::Fun {
+                self.t().map(Fun::init_from_table)
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn t_as_dict(&self) -> Option<Dict<'a>> {
+            if self.t_type() == MonoType::Dict {
+                self.t().map(Dict::init_from_table)
+            } else {
+                None
+            }
+        }
+    }
+
+    impl flatbuffers::Verifiable for Stream<'_> {
+        #[inline]
+        fn run_verifier(
+            v: &mut flatbuffers::Verifier,
+            pos: usize,
+        ) -> Result<(), flatbuffers::InvalidFlatbuffer> {
+            use self::flatbuffers::Verifiable;
+            v.visit_table(pos)?
+                .visit_union::<MonoType, _>(
+                    &"t_type",
+                    Self::VT_T_TYPE,
+                    &"t",
+                    Self::VT_T,
+                    false,
+                    |key, v, pos| match key {
+                        MonoType::Basic => v
+                            .verify_union_variant::<flatbuffers::ForwardsUOffset<Basic>>(
+                                "MonoType::Basic",
+                                pos,
+                            ),
+                        MonoType::Var => v
+                            .verify_union_variant::<flatbuffers::ForwardsUOffset<Var>>(
+                                "MonoType::Var",
+                                pos,
+                            ),
+                        MonoType::Collection => v
+                            .verify_union_variant::<flatbuffers::ForwardsUOffset<Collection>>(
+                                "MonoType::Collection",
+                                pos,
+                            ),
+                        MonoType::Record => v
+                            .verify_union_variant::<flatbuffers::ForwardsUOffset<Record>>(
+                                "MonoType::Record",
+                                pos,
+                            ),
+                        MonoType::Fun => v
+                            .verify_union_variant::<flatbuffers::ForwardsUOffset<Fun>>(
+                                "MonoType::Fun",
+                                pos,
+                            ),
+                        MonoType::Dict => v
+                            .verify_union_variant::<flatbuffers::ForwardsUOffset<Dict>>(
+                                "MonoType::Dict",
+                                pos,
+                            ),
+                        _ => Ok(()),
+                    },
+                )?
+                .finish();
+            Ok(())
+        }
+    }
+    pub struct StreamArgs {
+        pub t_type: MonoType,
+        pub t: Option<flatbuffers::WIPOffset<flatbuffers::UnionWIPOffset>>,
+    }
+    impl<'a> Default for StreamArgs {
+        #[inline]
+        fn default() -> Self {
+            StreamArgs {
+                t_type: MonoType::NONE,
+                t: None,
+            }
+        }
+    }
+    pub struct StreamBuilder<'a: 'b, 'b> {
+        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a>,
+        start_: flatbuffers::WIPOffset<flatbuffers::TableUnfinishedWIPOffset>,
+    }
+    impl<'a: 'b, 'b> StreamBuilder<'a, 'b> {
+        #[inline]
+        pub fn add_t_type(&mut self, t_type: MonoType) {
+            self.fbb_
+                .push_slot::<MonoType>(Stream::VT_T_TYPE, t_type, MonoType::NONE);
+        }
+        #[inline]
+        pub fn add_t(&mut self, t: flatbuffers::WIPOffset<flatbuffers::UnionWIPOffset>) {
+            self.fbb_
+                .push_slot_always::<flatbuffers::WIPOffset<_>>(Stream::VT_T, t);
+        }
+        #[inline]
+        pub fn new(_fbb: &'b mut flatbuffers::FlatBufferBuilder<'a>) -> StreamBuilder<'a, 'b> {
+            let start = _fbb.start_table();
+            StreamBuilder {
+                fbb_: _fbb,
+                start_: start,
+            }
+        }
+        #[inline]
+        pub fn finish(self) -> flatbuffers::WIPOffset<Stream<'a>> {
+            let o = self.fbb_.end_table(self.start_);
+            flatbuffers::WIPOffset::new(o.value())
+        }
+    }
+
+    impl std::fmt::Debug for Stream<'_> {
+        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+            let mut ds = f.debug_struct("Stream");
+            ds.field("t_type", &self.t_type());
+            match self.t_type() {
+                MonoType::Basic => {
+                    if let Some(x) = self.t_as_basic() {
+                        ds.field("t", &x)
+                    } else {
+                        ds.field(
+                            "t",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                MonoType::Var => {
+                    if let Some(x) = self.t_as_var() {
+                        ds.field("t", &x)
+                    } else {
+                        ds.field(
+                            "t",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                MonoType::Collection => {
+                    if let Some(x) = self.t_as_collection() {
+                        ds.field("t", &x)
+                    } else {
+                        ds.field(
+                            "t",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                MonoType::Record => {
+                    if let Some(x) = self.t_as_record() {
+                        ds.field("t", &x)
+                    } else {
+                        ds.field(
+                            "t",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                MonoType::Fun => {
+                    if let Some(x) = self.t_as_fun() {
+                        ds.field("t", &x)
+                    } else {
+                        ds.field(
+                            "t",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                MonoType::Dict => {
+                    if let Some(x) = self.t_as_dict() {
+                        ds.field("t", &x)
+                    } else {
+                        ds.field(
+                            "t",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                _ => {
+                    let x: Option<()> = None;
+                    ds.field("t", &x)
                 }
             };
             ds.finish()

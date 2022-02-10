@@ -128,6 +128,7 @@ func (*UnsignedIntegerLiteral) node() {}
 func (*NamedType) node()      {}
 func (*TvarType) node()       {}
 func (*ArrayType) node()      {}
+func (*StreamType) node()     {}
 func (*DictType) node()       {}
 func (*RecordType) node()     {}
 func (*FunctionType) node()   {}
@@ -241,6 +242,7 @@ type MonoType interface {
 func (NamedType) monotype()    {}
 func (TvarType) monotype()     {}
 func (ArrayType) monotype()    {}
+func (StreamType) monotype()   {}
 func (DictType) monotype()     {}
 func (RecordType) monotype()   {}
 func (FunctionType) monotype() {}
@@ -302,6 +304,26 @@ func (c *ArrayType) Copy() Node {
 	nc.BaseNode = c.BaseNode.Copy()
 
 	nc.ElementType = c.ElementType.Copy().(*ArrayType)
+	return nc
+}
+
+type StreamType struct {
+	BaseNode
+	ElementType MonoType `json:"element"`
+}
+
+func (StreamType) Type() string {
+	return "StreamType"
+}
+func (c *StreamType) Copy() Node {
+	if c == nil {
+		return c
+	}
+	nc := new(StreamType)
+	*nc = *c
+	nc.BaseNode = c.BaseNode.Copy()
+
+	nc.ElementType = c.ElementType.Copy().(*StreamType)
 	return nc
 }
 

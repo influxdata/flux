@@ -137,7 +137,7 @@ package sql
 //
 // tags: inputs,sql
 //
-builtin from : (driverName: string, dataSourceName: string, query: string) => [A]
+builtin from : (driverName: string, dataSourceName: string, query: string) => stream[A]
 
 // to writes data to an SQL database.
 //
@@ -171,9 +171,9 @@ builtin from : (driverName: string, dataSourceName: string, query: string) => [A
 // tags: outputs,sql
 //
 builtin to : (
-        <-tables: [A],
+        <-tables: stream[A],
         driverName: string,
         dataSourceName: string,
         table: string,
         ?batchSize: int,
-    ) => [A]
+    ) => stream[A]

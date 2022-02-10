@@ -445,6 +445,7 @@ where
                 MonoType::Tvar(_) => (),
                 MonoType::Basic(_) => (),
                 MonoType::Array(a) => walk(v, Node::MonoType(&a.element)),
+                MonoType::Stream(a) => walk(v, Node::MonoType(&a.element)),
                 MonoType::Dict(d) => {
                     walk(v, Node::MonoType(&d.key));
                     walk(v, Node::MonoType(&d.val));

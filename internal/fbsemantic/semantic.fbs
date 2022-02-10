@@ -58,7 +58,8 @@ table Basic {
 
 enum CollectionType : ubyte {
     Array,
-    Vector
+    Vector,
+    Stream
 }
 
 // TODO: required directives have been commented out due to the following issue:
@@ -70,6 +71,10 @@ enum CollectionType : ubyte {
 table Collection {
   collection: CollectionType;
   arg:MonoType /*(required)*/;
+}
+
+table Stream {
+  t:MonoType /*(required)*/;
 }
 
 table Record {

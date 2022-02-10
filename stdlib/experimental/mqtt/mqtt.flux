@@ -52,7 +52,7 @@ package mqtt
 // tags: mqtt,outputs
 //
 builtin to : (
-        <-tables: [A],
+        <-tables: stream[A],
         broker: string,
         ?topic: string,
         ?qos: int,
@@ -65,7 +65,7 @@ builtin to : (
         ?timeColumn: string,
         ?tagColumns: [string],
         ?valueColumns: [string],
-    ) => [B]
+    ) => stream[B]
     where
     A: Record,
     B: Record

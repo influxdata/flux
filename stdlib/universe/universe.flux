@@ -12,21 +12,24 @@ import "experimental/table"
 option now = system.time
 
 // Transformation functions
-builtin chandeMomentumOscillator : (<-tables: [A], n: int, ?columns: [string]) => [B] where A: Record, B: Record
-builtin columns : (<-tables: [A], ?column: string) => [B] where A: Record, B: Record
-builtin count : (<-tables: [A], ?column: string) => [B] where A: Record, B: Record
-builtin covariance : (<-tables: [A], ?pearsonr: bool, ?valueDst: string, columns: [string]) => [B]
+builtin chandeMomentumOscillator : (<-tables: stream[A], n: int, ?columns: [string]) => stream[B]
     where
     A: Record,
     B: Record
-builtin cumulativeSum : (<-tables: [A], ?columns: [string]) => [B] where A: Record, B: Record
+builtin columns : (<-tables: stream[A], ?column: string) => stream[B] where A: Record, B: Record
+builtin count : (<-tables: stream[A], ?column: string) => stream[B] where A: Record, B: Record
+builtin covariance : (<-tables: stream[A], ?pearsonr: bool, ?valueDst: string, columns: [string]) => stream[B]
+    where
+    A: Record,
+    B: Record
+builtin cumulativeSum : (<-tables: stream[A], ?columns: [string]) => stream[B] where A: Record, B: Record
 builtin derivative : (
-        <-tables: [A],
+        <-tables: stream[A],
         ?unit: duration,
         ?nonNegative: bool,
         ?columns: [string],
         ?timeColumn: string,
-    ) => [B]
+    ) => stream[B]
     where
     A: Record,
     B: Record
@@ -34,154 +37,170 @@ builtin derivative : (
 // die returns a fatal error from within a flux script
 builtin die : (msg: string) => A
 builtin difference : (
-        <-tables: [T],
+        <-tables: stream[T],
         ?nonNegative: bool,
         ?columns: [string],
         ?keepFirst: bool,
         ?initialZero: bool,
-    ) => [R]
+    ) => stream[R]
     where
     T: Record,
     R: Record
 
-builtin distinct : (<-tables: [A], ?column: string) => [B] where A: Record, B: Record
-builtin drop : (<-tables: [A], ?fn: (column: string) => bool, ?columns: [string]) => [B] where A: Record, B: Record
-builtin duplicate : (<-tables: [A], column: string, as: string) => [B] where A: Record, B: Record
-builtin elapsed : (<-tables: [A], ?unit: duration, ?timeColumn: string, ?columnName: string) => [B]
+builtin distinct : (<-tables: stream[A], ?column: string) => stream[B] where A: Record, B: Record
+builtin drop : (<-tables: stream[A], ?fn: (column: string) => bool, ?columns: [string]) => stream[B]
     where
     A: Record,
     B: Record
-builtin exponentialMovingAverage : (<-tables: [{B with _value: A}], n: int) => [{B with _value: A}] where A: Numeric
-builtin fill : (<-tables: [A], ?column: string, ?value: B, ?usePrevious: bool) => [C] where A: Record, C: Record
-builtin filter : (<-tables: [A], fn: (r: A) => bool, ?onEmpty: string) => [A] where A: Record
-builtin first : (<-tables: [A], ?column: string) => [A] where A: Record
-builtin group : (<-tables: [A], ?mode: string, ?columns: [string]) => [A] where A: Record
+builtin duplicate : (<-tables: stream[A], column: string, as: string) => stream[B] where A: Record, B: Record
+builtin elapsed : (<-tables: stream[A], ?unit: duration, ?timeColumn: string, ?columnName: string) => stream[B]
+    where
+    A: Record,
+    B: Record
+builtin exponentialMovingAverage : (<-tables: stream[{B with _value: A}], n: int) => stream[{B with _value: A}]
+    where
+    A: Numeric
+builtin fill : (<-tables: stream[A], ?column: string, ?value: B, ?usePrevious: bool) => stream[C]
+    where
+    A: Record,
+    C: Record
+builtin filter : (<-tables: stream[A], fn: (r: A) => bool, ?onEmpty: string) => stream[A] where A: Record
+builtin first : (<-tables: stream[A], ?column: string) => stream[A] where A: Record
+builtin group : (<-tables: stream[A], ?mode: string, ?columns: [string]) => stream[A] where A: Record
 builtin histogram : (
-        <-tables: [A],
+        <-tables: stream[A],
         ?column: string,
         ?upperBoundColumn: string,
         ?countColumn: string,
         bins: [float],
         ?normalize: bool,
-    ) => [B]
+    ) => stream[B]
     where
     A: Record,
     B: Record
 
 builtin histogramQuantile : (
-        <-tables: [A],
+        <-tables: stream[A],
         ?quantile: float,
         ?countColumn: string,
         ?upperBoundColumn: string,
         ?valueColumn: string,
         ?minValue: float,
-    ) => [B]
+    ) => stream[B]
     where
     A: Record,
     B: Record
 
 builtin holtWinters : (
-        <-tables: [A],
+        <-tables: stream[A],
         n: int,
         interval: duration,
         ?withFit: bool,
         ?column: string,
         ?timeColumn: string,
         ?seasonality: int,
-    ) => [B]
+    ) => stream[B]
     where
     A: Record,
     B: Record
 
-builtin hourSelection : (<-tables: [A], start: int, stop: int, ?timeColumn: string) => [A] where A: Record
+builtin hourSelection : (<-tables: stream[A], start: int, stop: int, ?timeColumn: string) => stream[A] where A: Record
 builtin integral : (
-        <-tables: [A],
+        <-tables: stream[A],
         ?unit: duration,
         ?timeColumn: string,
         ?column: string,
         ?interpolate: string,
-    ) => [B]
+    ) => stream[B]
     where
     A: Record,
     B: Record
 
-builtin join : (<-tables: A, ?method: string, ?on: [string]) => [B] where A: Record, B: Record
-builtin kaufmansAMA : (<-tables: [A], n: int, ?column: string) => [B] where A: Record, B: Record
-builtin keep : (<-tables: [A], ?columns: [string], ?fn: (column: string) => bool) => [B] where A: Record, B: Record
-builtin keyValues : (<-tables: [A], ?keyColumns: [string]) => [{C with _key: string, _value: B}]
+builtin join : (<-tables: A, ?method: string, ?on: [string]) => stream[B] where A: Record, B: Record
+builtin kaufmansAMA : (<-tables: stream[A], n: int, ?column: string) => stream[B] where A: Record, B: Record
+builtin keep : (<-tables: stream[A], ?columns: [string], ?fn: (column: string) => bool) => stream[B]
+    where
+    A: Record,
+    B: Record
+builtin keyValues : (<-tables: stream[A], ?keyColumns: [string]) => stream[{C with _key: string, _value: B}]
     where
     A: Record,
     C: Record
-builtin keys : (<-tables: [A], ?column: string) => [B] where A: Record, B: Record
-builtin last : (<-tables: [A], ?column: string) => [A] where A: Record
-builtin limit : (<-tables: [A], n: int, ?offset: int) => [A]
-builtin map : (<-tables: [A], fn: (r: A) => B, ?mergeKey: bool) => [B]
-builtin max : (<-tables: [A], ?column: string) => [A] where A: Record
-builtin mean : (<-tables: [A], ?column: string) => [B] where A: Record, B: Record
-builtin min : (<-tables: [A], ?column: string) => [A] where A: Record
-builtin mode : (<-tables: [A], ?column: string) => [{C with _value: B}] where A: Record, C: Record
-builtin movingAverage : (<-tables: [{B with _value: A}], n: int) => [{B with _value: float}] where A: Numeric
+builtin keys : (<-tables: stream[A], ?column: string) => stream[B] where A: Record, B: Record
+builtin last : (<-tables: stream[A], ?column: string) => stream[A] where A: Record
+builtin limit : (<-tables: stream[A], n: int, ?offset: int) => stream[A]
+builtin map : (<-tables: stream[A], fn: (r: A) => B, ?mergeKey: bool) => stream[B]
+builtin max : (<-tables: stream[A], ?column: string) => stream[A] where A: Record
+builtin mean : (<-tables: stream[A], ?column: string) => stream[B] where A: Record, B: Record
+builtin min : (<-tables: stream[A], ?column: string) => stream[A] where A: Record
+builtin mode : (<-tables: stream[A], ?column: string) => stream[{C with _value: B}] where A: Record, C: Record
+builtin movingAverage : (<-tables: stream[{B with _value: A}], n: int) => stream[{B with _value: float}]
+    where
+    A: Numeric
 builtin quantile : (
-        <-tables: [A],
+        <-tables: stream[A],
         ?column: string,
         q: float,
         ?compression: float,
         ?method: string,
-    ) => [A]
+    ) => stream[A]
     where
     A: Record
 
-builtin pivot : (<-tables: [A], rowKey: [string], columnKey: [string], valueColumn: string) => [B]
+builtin pivot : (<-tables: stream[A], rowKey: [string], columnKey: [string], valueColumn: string) => stream[B]
     where
     A: Record,
     B: Record
 builtin range : (
-        <-tables: [{A with _time: time}],
+        <-tables: stream[{A with _time: time}],
         start: B,
         ?stop: C,
-    ) => [{A with _time: time, _start: time, _stop: time}]
+    ) => stream[{A with _time: time, _start: time, _stop: time}]
 
-builtin reduce : (<-tables: [A], fn: (r: A, accumulator: B) => B, identity: B) => [C]
+builtin reduce : (<-tables: stream[A], fn: (r: A, accumulator: B) => B, identity: B) => stream[C]
     where
     A: Record,
     B: Record,
     C: Record
-builtin relativeStrengthIndex : (<-tables: [A], n: int, ?columns: [string]) => [B] where A: Record, B: Record
-builtin rename : (<-tables: [A], ?fn: (column: string) => string, ?columns: B) => [C]
+builtin relativeStrengthIndex : (<-tables: stream[A], n: int, ?columns: [string]) => stream[B]
+    where
+    A: Record,
+    B: Record
+builtin rename : (<-tables: stream[A], ?fn: (column: string) => string, ?columns: B) => stream[C]
     where
     A: Record,
     B: Record,
     C: Record
-builtin sample : (<-tables: [A], n: int, ?pos: int, ?column: string) => [A] where A: Record
-builtin set : (<-tables: [A], key: string, value: string) => [A] where A: Record
-builtin tail : (<-tables: [A], n: int, ?offset: int) => [A]
-builtin timeShift : (<-tables: [A], duration: duration, ?columns: [string]) => [A]
-builtin skew : (<-tables: [A], ?column: string) => [B] where A: Record, B: Record
-builtin spread : (<-tables: [A], ?column: string) => [B] where A: Record, B: Record
-builtin sort : (<-tables: [A], ?columns: [string], ?desc: bool) => [A] where A: Record
+builtin sample : (<-tables: stream[A], n: int, ?pos: int, ?column: string) => stream[A] where A: Record
+builtin set : (<-tables: stream[A], key: string, value: string) => stream[A] where A: Record
+builtin tail : (<-tables: stream[A], n: int, ?offset: int) => stream[A]
+builtin timeShift : (<-tables: stream[A], duration: duration, ?columns: [string]) => stream[A]
+builtin skew : (<-tables: stream[A], ?column: string) => stream[B] where A: Record, B: Record
+builtin spread : (<-tables: stream[A], ?column: string) => stream[B] where A: Record, B: Record
+builtin sort : (<-tables: stream[A], ?columns: [string], ?desc: bool) => stream[A] where A: Record
 builtin stateTracking : (
-        <-tables: [A],
+        <-tables: stream[A],
         fn: (r: A) => bool,
         ?countColumn: string,
         ?durationColumn: string,
         ?durationUnit: duration,
         ?timeColumn: string,
-    ) => [B]
+    ) => stream[B]
     where
     A: Record,
     B: Record
 
-builtin stddev : (<-tables: [A], ?column: string, ?mode: string) => [B] where A: Record, B: Record
-builtin sum : (<-tables: [A], ?column: string) => [B] where A: Record, B: Record
-builtin tripleExponentialDerivative : (<-tables: [{B with _value: A}], n: int) => [{B with _value: float}]
+builtin stddev : (<-tables: stream[A], ?column: string, ?mode: string) => stream[B] where A: Record, B: Record
+builtin sum : (<-tables: stream[A], ?column: string) => stream[B] where A: Record, B: Record
+builtin tripleExponentialDerivative : (<-tables: stream[{B with _value: A}], n: int) => stream[{B with _value: float}]
     where
     A: Numeric,
     B: Record
-builtin union : (tables: [[A]]) => [A] where A: Record
-builtin unique : (<-tables: [A], ?column: string) => [A] where A: Record
+builtin union : (tables: [stream[A]]) => stream[A] where A: Record
+builtin unique : (<-tables: stream[A], ?column: string) => stream[A] where A: Record
 
 builtin _window : (
-        <-tables: [A],
+        <-tables: stream[A],
         every: duration,
         period: duration,
         offset: duration,
@@ -190,7 +209,7 @@ builtin _window : (
         startColumn: string,
         stopColumn: string,
         createEmpty: bool,
-    ) => [B]
+    ) => stream[B]
     where
     A: Record,
     B: Record
@@ -218,14 +237,14 @@ window = (
             createEmpty,
         )
 
-builtin yield : (<-tables: [A], ?name: string) => [A] where A: Record
+builtin yield : (<-tables: stream[A], ?name: string) => stream[A] where A: Record
 
 // stream/table index functions
-builtin tableFind : (<-tables: [A], fn: (key: B) => bool) => [A] where A: Record, B: Record
-builtin getColumn : (<-table: [A], column: string) => [B] where A: Record
-builtin getRecord : (<-table: [A], idx: int) => A where A: Record
-builtin findColumn : (<-tables: [A], fn: (key: B) => bool, column: string) => [C] where A: Record, B: Record
-builtin findRecord : (<-tables: [A], fn: (key: B) => bool, idx: int) => A where A: Record, B: Record
+builtin tableFind : (<-tables: stream[A], fn: (key: B) => bool) => stream[A] where A: Record, B: Record
+builtin getColumn : (<-table: stream[A], column: string) => [B] where A: Record
+builtin getRecord : (<-table: stream[A], idx: int) => A where A: Record
+builtin findColumn : (<-tables: stream[A], fn: (key: B) => bool, column: string) => [C] where A: Record, B: Record
+builtin findRecord : (<-tables: stream[A], fn: (key: B) => bool, idx: int) => A where A: Record, B: Record
 
 // type conversion functions
 builtin bool : (v: A) => bool

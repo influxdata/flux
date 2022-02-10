@@ -16,7 +16,7 @@ func TestArrayFrom_ReceiveTableObjectIsError(t *testing.T) {
 		t.Fatal("expected error, got none")
 	}
 
-	if want, got := "error calling function \"from\" @2:4-2:44: rows cannot be a table stream; expected an array", err.Error(); want != got {
+	if want, got := "error @2:21-2:43: expected [{}] (array) but found stream[{}] (argument rows)", err.Error(); want != got {
 		t.Errorf("wanted error %q, got %q", want, got)
 	}
 }
