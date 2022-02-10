@@ -1161,7 +1161,7 @@ impl Dictionary {
 /// A record may extend what is referred to as a *record
 /// variable*. A record variable is a type variable that
 /// represents an unknown record type.
-#[derive(Debug, Clone, Serialize)]
+#[derive(Clone, Serialize)]
 #[serde(tag = "type")]
 pub enum Record {
     /// A record that has no properties.
@@ -1173,6 +1173,16 @@ pub enum Record {
         /// `tail` is the record variable.
         tail: MonoType,
     },
+}
+
+impl fmt::Debug for Record {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let (props, tail) = collect_record(self);
+        f.debug_struct("Record")
+            .field("fields", &props.into_iter().collect::<BTreeMap<_, _>>())
+            .field("tail", &tail)
+            .finish()
+    }
 }
 
 impl fmt::Display for Record {
