@@ -2,11 +2,13 @@ package schema_test
 
 
 import "testing"
+import "csv"
 
 option now = () => 2030-01-01T00:00:00Z
 
-input =
-    "
+testcase show_measurements_with_pred {
+        input =
+            "
 #group,false,false,false,false,true,true,true,true,true,true,true
 #datatype,string,long,dateTime:RFC3339,long,string,string,string,string,string,string,string
 #default,_result,,,,,,,,,,
@@ -46,21 +48,26 @@ input =
 ,,7,usage_user,cpu,2020-10-21T20:48:40Z,2.4000000000536965,cpu1,euterpe.local,north
 ,,7,usage_user,cpu,2020-10-21T20:48:50Z,2.0999999999423746,cpu1,euterpe.local,north
 "
-output = "
+        want =
+            csv.from(
+                csv:
+                    "
 #datatype,string,long,string
 #group,false,false,false
 #default,0,,
 ,result,table,_value
 ,,0,cpu
-"
-show_measurements_fn = (tables=<-) =>
-    tables
-        |> range(start: 2018-01-01T00:00:00Z)
-        |> filter(fn: (r) => r._field == "usage_idle")
-        |> keep(columns: ["_measurement"])
-        |> group()
-        |> distinct(column: "_measurement")
-        |> sort()
+",
+            )
+        got =
+            csv.from(csv: input)
+                |> testing.load()
+                |> range(start: 2018-01-01T00:00:00Z)
+                |> filter(fn: (r) => r._field == "usage_idle")
+                |> keep(columns: ["_measurement"])
+                |> group()
+                |> distinct(column: "_measurement")
+                |> sort()
 
-test show_measurements = () =>
-    ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: show_measurements_fn})
+        testing.diff(want: want, got: got)
+    }

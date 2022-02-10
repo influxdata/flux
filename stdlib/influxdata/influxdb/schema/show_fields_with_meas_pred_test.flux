@@ -2,6 +2,7 @@ package schema_test
 
 
 import "testing"
+import "csv"
 
 option now = () => 2030-01-01T00:00:00Z
 
@@ -74,7 +75,8 @@ inData =
 
 testcase show_fields_with_meas_pred {
         result =
-            testing.loadStorage(csv: inData)
+            csv.from(csv: inData)
+                |> testing.load()
                 |> range(start: 2018-01-01T00:00:00Z, stop: 2019-01-01T00:00:00Z)
                 |> filter(fn: (r) => r._measurement == "sys")
                 |> keep(columns: ["_field"])

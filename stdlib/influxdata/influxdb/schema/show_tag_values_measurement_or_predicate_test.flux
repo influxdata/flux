@@ -61,7 +61,8 @@ input =
 
 testcase show_tag_values_measurement_or_predicate {
         got =
-            testing.loadStorage(csv: input)
+            csv.from(csv: input)
+                |> testing.load()
                 |> range(start: -100y)
                 |> filter(fn: (r) => r["_measurement"] == "cpu")
                 |> filter(fn: (r) => r["_measurement"] == "someOtherThing" or r["host"] == "euterpe.local")
@@ -88,7 +89,8 @@ testcase show_tag_values_measurement_or_predicate {
 
 testcase show_tag_values_measurement_or_negation {
     got =
-        testing.loadStorage(csv: input)
+        csv.from(csv: input)
+            |> testing.load()
             |> range(start: -100y)
             |> filter(fn: (r) => r["_measurement"] != "cpu")
             |> filter(fn: (r) => r["_measurement"] == "someOtherThing" or r["fstype"] != "apfs")
@@ -113,7 +115,8 @@ testcase show_tag_values_measurement_or_negation {
 
 testcase show_tag_values_measurement_or_regex {
         got =
-            testing.loadStorage(csv: input)
+            csv.from(csv: input)
+                |> testing.load()
                 |> range(start: -100y)
                 |> filter(fn: (r) => r["_measurement"] =~ /cp.*/)
                 |> filter(fn: (r) => r["_measurement"] == "someOtherThing" or r["host"] !~ /mnemo.*/)
