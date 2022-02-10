@@ -22,8 +22,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Column: 107,
 					Line:   72,
 				},
-				File:   "alert_test.flux",
-				Source: "package tickscript_test\n\n\nimport \"testing\"\nimport \"csv\"\nimport \"contrib/bonitoo-io/tickscript\"\nimport \"influxdata/influxdb/monitor\"\nimport \"influxdata/influxdb/schema\"\n\noption now = () => 2020-11-25T14:05:30Z\n\n// overwrite as buckets are not avail in Flux tests\noption monitor.write = (tables=<-) => tables\noption monitor.log = (tables=<-) => tables\n\ninData =\n    \"\n#group,false,false,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,\n,result,table,_time,_value,_field,_measurement,host,realm\n,,0,2020-11-25T14:05:03.477635916Z,1.819231109049999,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:04.541635074Z,1.635878190200181,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:05.623191313Z,39.33716449678206,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:06.696061106Z,26.33716449678206,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:07.768317097Z,8.33716449678206,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:08.868317091Z,1.33716449678206,kafka_message_in_rate,testm,kafka07,ft\n\"\noutData =\n    \"\n#group,false,false,false,true,true,true,true,false,true,false,true,false,true,false,true\n#datatype,string,long,double,string,string,string,string,string,string,long,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,\n,result,table,KafkaMsgRate,_check_id,_check_name,_level,_measurement,_message,_source_measurement,_source_timestamp,_type,details,host,id,realm\n,,0,1.819231109049999,rate-check,Rate Check,ok,statuses,Realm: ft - Hostname: kafka07 / Metric: kafka_message_in_rate threshold alert: ok - 1.819231109049999,testm,1606313103477635916,custom,some detail: myrealm=ft,kafka07,Realm: ft - Hostname: kafka07 / Metric: kafka_message_in_rate threshold alert,ft\n,,0,1.635878190200181,rate-check,Rate Check,ok,statuses,Realm: ft - Hostname: kafka07 / Metric: kafka_message_in_rate threshold alert: ok - 1.635878190200181,testm,1606313104541635074,custom,some detail: myrealm=ft,kafka07,Realm: ft - Hostname: kafka07 / Metric: kafka_message_in_rate threshold alert,ft\n,,0,1.33716449678206,rate-check,Rate Check,ok,statuses,Realm: ft - Hostname: kafka07 / Metric: kafka_message_in_rate threshold alert: ok - 1.33716449678206,testm,1606313108868317091,custom,some detail: myrealm=ft,kafka07,Realm: ft - Hostname: kafka07 / Metric: kafka_message_in_rate threshold alert,ft\n,,1,39.33716449678206,rate-check,Rate Check,crit,statuses,Realm: ft - Hostname: kafka07 / Metric: kafka_message_in_rate threshold alert: crit - 39.33716449678206,testm,1606313105623191313,custom,some detail: myrealm=ft,kafka07,Realm: ft - Hostname: kafka07 / Metric: kafka_message_in_rate threshold alert,ft\n,,1,26.33716449678206,rate-check,Rate Check,crit,statuses,Realm: ft - Hostname: kafka07 / Metric: kafka_message_in_rate threshold alert: crit - 26.33716449678206,testm,1606313106696061106,custom,some detail: myrealm=ft,kafka07,Realm: ft - Hostname: kafka07 / Metric: kafka_message_in_rate threshold alert,ft\n,,2,8.33716449678206,rate-check,Rate Check,warn,statuses,Realm: ft - Hostname: kafka07 / Metric: kafka_message_in_rate threshold alert: warn - 8.33716449678206,testm,1606313107768317097,custom,some detail: myrealm=ft,kafka07,Realm: ft - Hostname: kafka07 / Metric: kafka_message_in_rate threshold alert,ft\n\"\ncheck = {\n    _check_id: \"rate-check\",\n    _check_name: \"Rate Check\",\n    // tickscript?\n    _type: \"custom\",\n    tags: {},\n}\nmetric_type = \"kafka_message_in_rate\"\ntier = \"ft\"\nh_threshold = 10\nw_threshold = 5\nl_threshold = 0.002\ntickscript_alert = (table=<-) =>\n    table\n        |> range(start: 2020-11-25T14:05:00Z)\n        |> filter(fn: (r) => r._field == metric_type and r.realm == tier)\n        |> schema.fieldsAsCols()\n        |> tickscript.select(column: metric_type, as: \"KafkaMsgRate\")\n        |> tickscript.groupBy(columns: [\"host\", \"realm\"])\n        |> tickscript.alert(\n            check: check,\n            id: (r) => \"Realm: ${r.realm} - Hostname: ${r.host} / Metric: ${metric_type} threshold alert\",\n            message: (r) => \"${r.id}: ${r._level} - ${string(v: r.KafkaMsgRate)}\",\n            details: (r) => \"some detail: myrealm=${r.realm}\",\n            crit: (r) => r.KafkaMsgRate > h_threshold or r.KafkaMsgRate < l_threshold,\n            warn: (r) => r.KafkaMsgRate > w_threshold or r.KafkaMsgRate < l_threshold,\n        )\n        |> drop(columns: [\"_time\"])\n\ntest _tickscript_alert = () =>\n    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: tickscript_alert})",
+				File: "alert_test.flux",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -40,8 +39,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 40,
 							Line:   10,
 						},
-						File:   "alert_test.flux",
-						Source: "now = () => 2020-11-25T14:05:30Z",
+						File: "alert_test.flux",
 						Start: ast.Position{
 							Column: 8,
 							Line:   10,
@@ -57,8 +55,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 11,
 								Line:   10,
 							},
-							File:   "alert_test.flux",
-							Source: "now",
+							File: "alert_test.flux",
 							Start: ast.Position{
 								Column: 8,
 								Line:   10,
@@ -77,8 +74,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 40,
 								Line:   10,
 							},
-							File:   "alert_test.flux",
-							Source: "() => 2020-11-25T14:05:30Z",
+							File: "alert_test.flux",
 							Start: ast.Position{
 								Column: 14,
 								Line:   10,
@@ -94,8 +90,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 40,
 									Line:   10,
 								},
-								File:   "alert_test.flux",
-								Source: "2020-11-25T14:05:30Z",
+								File: "alert_test.flux",
 								Start: ast.Position{
 									Column: 20,
 									Line:   10,
@@ -117,8 +112,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 40,
 						Line:   10,
 					},
-					File:   "alert_test.flux",
-					Source: "option now = () => 2020-11-25T14:05:30Z",
+					File: "alert_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   10,
@@ -135,8 +129,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 45,
 							Line:   13,
 						},
-						File:   "alert_test.flux",
-						Source: "monitor.write = (tables=<-) => tables",
+						File: "alert_test.flux",
 						Start: ast.Position{
 							Column: 8,
 							Line:   13,
@@ -153,8 +146,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 45,
 								Line:   13,
 							},
-							File:   "alert_test.flux",
-							Source: "(tables=<-) => tables",
+							File: "alert_test.flux",
 							Start: ast.Position{
 								Column: 24,
 								Line:   13,
@@ -170,8 +162,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 45,
 									Line:   13,
 								},
-								File:   "alert_test.flux",
-								Source: "tables",
+								File: "alert_test.flux",
 								Start: ast.Position{
 									Column: 39,
 									Line:   13,
@@ -190,8 +181,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 34,
 									Line:   13,
 								},
-								File:   "alert_test.flux",
-								Source: "tables=<-",
+								File: "alert_test.flux",
 								Start: ast.Position{
 									Column: 25,
 									Line:   13,
@@ -208,8 +198,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 31,
 										Line:   13,
 									},
-									File:   "alert_test.flux",
-									Source: "tables",
+									File: "alert_test.flux",
 									Start: ast.Position{
 										Column: 25,
 										Line:   13,
@@ -227,8 +216,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 34,
 									Line:   13,
 								},
-								File:   "alert_test.flux",
-								Source: "<-",
+								File: "alert_test.flux",
 								Start: ast.Position{
 									Column: 32,
 									Line:   13,
@@ -247,8 +235,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 21,
 								Line:   13,
 							},
-							File:   "alert_test.flux",
-							Source: "monitor.write",
+							File: "alert_test.flux",
 							Start: ast.Position{
 								Column: 8,
 								Line:   13,
@@ -265,8 +252,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 15,
 									Line:   13,
 								},
-								File:   "alert_test.flux",
-								Source: "monitor",
+								File: "alert_test.flux",
 								Start: ast.Position{
 									Column: 8,
 									Line:   13,
@@ -284,8 +270,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 21,
 									Line:   13,
 								},
-								File:   "alert_test.flux",
-								Source: "write",
+								File: "alert_test.flux",
 								Start: ast.Position{
 									Column: 16,
 									Line:   13,
@@ -305,8 +290,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 45,
 						Line:   13,
 					},
-					File:   "alert_test.flux",
-					Source: "option monitor.write = (tables=<-) => tables",
+					File: "alert_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   13,
@@ -323,8 +307,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 43,
 							Line:   14,
 						},
-						File:   "alert_test.flux",
-						Source: "monitor.log = (tables=<-) => tables",
+						File: "alert_test.flux",
 						Start: ast.Position{
 							Column: 8,
 							Line:   14,
@@ -341,8 +324,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 43,
 								Line:   14,
 							},
-							File:   "alert_test.flux",
-							Source: "(tables=<-) => tables",
+							File: "alert_test.flux",
 							Start: ast.Position{
 								Column: 22,
 								Line:   14,
@@ -358,8 +340,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 43,
 									Line:   14,
 								},
-								File:   "alert_test.flux",
-								Source: "tables",
+								File: "alert_test.flux",
 								Start: ast.Position{
 									Column: 37,
 									Line:   14,
@@ -378,8 +359,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 32,
 									Line:   14,
 								},
-								File:   "alert_test.flux",
-								Source: "tables=<-",
+								File: "alert_test.flux",
 								Start: ast.Position{
 									Column: 23,
 									Line:   14,
@@ -396,8 +376,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 29,
 										Line:   14,
 									},
-									File:   "alert_test.flux",
-									Source: "tables",
+									File: "alert_test.flux",
 									Start: ast.Position{
 										Column: 23,
 										Line:   14,
@@ -415,8 +394,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 32,
 									Line:   14,
 								},
-								File:   "alert_test.flux",
-								Source: "<-",
+								File: "alert_test.flux",
 								Start: ast.Position{
 									Column: 30,
 									Line:   14,
@@ -435,8 +413,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 19,
 								Line:   14,
 							},
-							File:   "alert_test.flux",
-							Source: "monitor.log",
+							File: "alert_test.flux",
 							Start: ast.Position{
 								Column: 8,
 								Line:   14,
@@ -453,8 +430,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 15,
 									Line:   14,
 								},
-								File:   "alert_test.flux",
-								Source: "monitor",
+								File: "alert_test.flux",
 								Start: ast.Position{
 									Column: 8,
 									Line:   14,
@@ -472,8 +448,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 19,
 									Line:   14,
 								},
-								File:   "alert_test.flux",
-								Source: "log",
+								File: "alert_test.flux",
 								Start: ast.Position{
 									Column: 16,
 									Line:   14,
@@ -493,8 +468,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 43,
 						Line:   14,
 					},
-					File:   "alert_test.flux",
-					Source: "option monitor.log = (tables=<-) => tables",
+					File: "alert_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   14,
@@ -510,8 +484,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 2,
 						Line:   28,
 					},
-					File:   "alert_test.flux",
-					Source: "inData =\n    \"\n#group,false,false,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,\n,result,table,_time,_value,_field,_measurement,host,realm\n,,0,2020-11-25T14:05:03.477635916Z,1.819231109049999,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:04.541635074Z,1.635878190200181,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:05.623191313Z,39.33716449678206,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:06.696061106Z,26.33716449678206,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:07.768317097Z,8.33716449678206,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:08.868317091Z,1.33716449678206,kafka_message_in_rate,testm,kafka07,ft\n\"",
+					File: "alert_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   16,
@@ -527,8 +500,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 7,
 							Line:   16,
 						},
-						File:   "alert_test.flux",
-						Source: "inData",
+						File: "alert_test.flux",
 						Start: ast.Position{
 							Column: 1,
 							Line:   16,
@@ -546,8 +518,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 2,
 							Line:   28,
 						},
-						File:   "alert_test.flux",
-						Source: "\"\n#group,false,false,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,\n,result,table,_time,_value,_field,_measurement,host,realm\n,,0,2020-11-25T14:05:03.477635916Z,1.819231109049999,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:04.541635074Z,1.635878190200181,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:05.623191313Z,39.33716449678206,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:06.696061106Z,26.33716449678206,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:07.768317097Z,8.33716449678206,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:08.868317091Z,1.33716449678206,kafka_message_in_rate,testm,kafka07,ft\n\"",
+						File: "alert_test.flux",
 						Start: ast.Position{
 							Column: 5,
 							Line:   17,
@@ -565,8 +536,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 2,
 						Line:   41,
 					},
-					File:   "alert_test.flux",
-					Source: "outData =\n    \"\n#group,false,false,false,true,true,true,true,false,true,false,true,false,true,false,true\n#datatype,string,long,double,string,string,string,string,string,string,long,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,\n,result,table,KafkaMsgRate,_check_id,_check_name,_level,_measurement,_message,_source_measurement,_source_timestamp,_type,details,host,id,realm\n,,0,1.819231109049999,rate-check,Rate Check,ok,statuses,Realm: ft - Hostname: kafka07 / Metric: kafka_message_in_rate threshold alert: ok - 1.819231109049999,testm,1606313103477635916,custom,some detail: myrealm=ft,kafka07,Realm: ft - Hostname: kafka07 / Metric: kafka_message_in_rate threshold alert,ft\n,,0,1.635878190200181,rate-check,Rate Check,ok,statuses,Realm: ft - Hostname: kafka07 / Metric: kafka_message_in_rate threshold alert: ok - 1.635878190200181,testm,1606313104541635074,custom,some detail: myrealm=ft,kafka07,Realm: ft - Hostname: kafka07 / Metric: kafka_message_in_rate threshold alert,ft\n,,0,1.33716449678206,rate-check,Rate Check,ok,statuses,Realm: ft - Hostname: kafka07 / Metric: kafka_message_in_rate threshold alert: ok - 1.33716449678206,testm,1606313108868317091,custom,some detail: myrealm=ft,kafka07,Realm: ft - Hostname: kafka07 / Metric: kafka_message_in_rate threshold alert,ft\n,,1,39.33716449678206,rate-check,Rate Check,crit,statuses,Realm: ft - Hostname: kafka07 / Metric: kafka_message_in_rate threshold alert: crit - 39.33716449678206,testm,1606313105623191313,custom,some detail: myrealm=ft,kafka07,Realm: ft - Hostname: kafka07 / Metric: kafka_message_in_rate threshold alert,ft\n,,1,26.33716449678206,rate-check,Rate Check,crit,statuses,Realm: ft - Hostname: kafka07 / Metric: kafka_message_in_rate threshold alert: crit - 26.33716449678206,testm,1606313106696061106,custom,some detail: myrealm=ft,kafka07,Realm: ft - Hostname: kafka07 / Metric: kafka_message_in_rate threshold alert,ft\n,,2,8.33716449678206,rate-check,Rate Check,warn,statuses,Realm: ft - Hostname: kafka07 / Metric: kafka_message_in_rate threshold alert: warn - 8.33716449678206,testm,1606313107768317097,custom,some detail: myrealm=ft,kafka07,Realm: ft - Hostname: kafka07 / Metric: kafka_message_in_rate threshold alert,ft\n\"",
+					File: "alert_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   29,
@@ -582,8 +552,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 8,
 							Line:   29,
 						},
-						File:   "alert_test.flux",
-						Source: "outData",
+						File: "alert_test.flux",
 						Start: ast.Position{
 							Column: 1,
 							Line:   29,
@@ -601,8 +570,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 2,
 							Line:   41,
 						},
-						File:   "alert_test.flux",
-						Source: "\"\n#group,false,false,false,true,true,true,true,false,true,false,true,false,true,false,true\n#datatype,string,long,double,string,string,string,string,string,string,long,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,\n,result,table,KafkaMsgRate,_check_id,_check_name,_level,_measurement,_message,_source_measurement,_source_timestamp,_type,details,host,id,realm\n,,0,1.819231109049999,rate-check,Rate Check,ok,statuses,Realm: ft - Hostname: kafka07 / Metric: kafka_message_in_rate threshold alert: ok - 1.819231109049999,testm,1606313103477635916,custom,some detail: myrealm=ft,kafka07,Realm: ft - Hostname: kafka07 / Metric: kafka_message_in_rate threshold alert,ft\n,,0,1.635878190200181,rate-check,Rate Check,ok,statuses,Realm: ft - Hostname: kafka07 / Metric: kafka_message_in_rate threshold alert: ok - 1.635878190200181,testm,1606313104541635074,custom,some detail: myrealm=ft,kafka07,Realm: ft - Hostname: kafka07 / Metric: kafka_message_in_rate threshold alert,ft\n,,0,1.33716449678206,rate-check,Rate Check,ok,statuses,Realm: ft - Hostname: kafka07 / Metric: kafka_message_in_rate threshold alert: ok - 1.33716449678206,testm,1606313108868317091,custom,some detail: myrealm=ft,kafka07,Realm: ft - Hostname: kafka07 / Metric: kafka_message_in_rate threshold alert,ft\n,,1,39.33716449678206,rate-check,Rate Check,crit,statuses,Realm: ft - Hostname: kafka07 / Metric: kafka_message_in_rate threshold alert: crit - 39.33716449678206,testm,1606313105623191313,custom,some detail: myrealm=ft,kafka07,Realm: ft - Hostname: kafka07 / Metric: kafka_message_in_rate threshold alert,ft\n,,1,26.33716449678206,rate-check,Rate Check,crit,statuses,Realm: ft - Hostname: kafka07 / Metric: kafka_message_in_rate threshold alert: crit - 26.33716449678206,testm,1606313106696061106,custom,some detail: myrealm=ft,kafka07,Realm: ft - Hostname: kafka07 / Metric: kafka_message_in_rate threshold alert,ft\n,,2,8.33716449678206,rate-check,Rate Check,warn,statuses,Realm: ft - Hostname: kafka07 / Metric: kafka_message_in_rate threshold alert: warn - 8.33716449678206,testm,1606313107768317097,custom,some detail: myrealm=ft,kafka07,Realm: ft - Hostname: kafka07 / Metric: kafka_message_in_rate threshold alert,ft\n\"",
+						File: "alert_test.flux",
 						Start: ast.Position{
 							Column: 5,
 							Line:   30,
@@ -620,8 +588,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 2,
 						Line:   48,
 					},
-					File:   "alert_test.flux",
-					Source: "check = {\n    _check_id: \"rate-check\",\n    _check_name: \"Rate Check\",\n    // tickscript?\n    _type: \"custom\",\n    tags: {},\n}",
+					File: "alert_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   42,
@@ -637,8 +604,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 6,
 							Line:   42,
 						},
-						File:   "alert_test.flux",
-						Source: "check",
+						File: "alert_test.flux",
 						Start: ast.Position{
 							Column: 1,
 							Line:   42,
@@ -656,8 +622,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 2,
 							Line:   48,
 						},
-						File:   "alert_test.flux",
-						Source: "{\n    _check_id: \"rate-check\",\n    _check_name: \"Rate Check\",\n    // tickscript?\n    _type: \"custom\",\n    tags: {},\n}",
+						File: "alert_test.flux",
 						Start: ast.Position{
 							Column: 9,
 							Line:   42,
@@ -674,8 +639,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 28,
 								Line:   43,
 							},
-							File:   "alert_test.flux",
-							Source: "_check_id: \"rate-check\"",
+							File: "alert_test.flux",
 							Start: ast.Position{
 								Column: 5,
 								Line:   43,
@@ -692,8 +656,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 14,
 									Line:   43,
 								},
-								File:   "alert_test.flux",
-								Source: "_check_id",
+								File: "alert_test.flux",
 								Start: ast.Position{
 									Column: 5,
 									Line:   43,
@@ -712,8 +675,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 28,
 									Line:   43,
 								},
-								File:   "alert_test.flux",
-								Source: "\"rate-check\"",
+								File: "alert_test.flux",
 								Start: ast.Position{
 									Column: 16,
 									Line:   43,
@@ -731,8 +693,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 30,
 								Line:   44,
 							},
-							File:   "alert_test.flux",
-							Source: "_check_name: \"Rate Check\"",
+							File: "alert_test.flux",
 							Start: ast.Position{
 								Column: 5,
 								Line:   44,
@@ -749,8 +710,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 16,
 									Line:   44,
 								},
-								File:   "alert_test.flux",
-								Source: "_check_name",
+								File: "alert_test.flux",
 								Start: ast.Position{
 									Column: 5,
 									Line:   44,
@@ -769,8 +729,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 30,
 									Line:   44,
 								},
-								File:   "alert_test.flux",
-								Source: "\"Rate Check\"",
+								File: "alert_test.flux",
 								Start: ast.Position{
 									Column: 18,
 									Line:   44,
@@ -788,8 +747,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 20,
 								Line:   46,
 							},
-							File:   "alert_test.flux",
-							Source: "_type: \"custom\"",
+							File: "alert_test.flux",
 							Start: ast.Position{
 								Column: 5,
 								Line:   46,
@@ -806,8 +764,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 10,
 									Line:   46,
 								},
-								File:   "alert_test.flux",
-								Source: "_type",
+								File: "alert_test.flux",
 								Start: ast.Position{
 									Column: 5,
 									Line:   46,
@@ -826,8 +783,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 20,
 									Line:   46,
 								},
-								File:   "alert_test.flux",
-								Source: "\"custom\"",
+								File: "alert_test.flux",
 								Start: ast.Position{
 									Column: 12,
 									Line:   46,
@@ -845,8 +801,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 13,
 								Line:   47,
 							},
-							File:   "alert_test.flux",
-							Source: "tags: {}",
+							File: "alert_test.flux",
 							Start: ast.Position{
 								Column: 5,
 								Line:   47,
@@ -863,8 +818,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 9,
 									Line:   47,
 								},
-								File:   "alert_test.flux",
-								Source: "tags",
+								File: "alert_test.flux",
 								Start: ast.Position{
 									Column: 5,
 									Line:   47,
@@ -883,8 +837,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 13,
 									Line:   47,
 								},
-								File:   "alert_test.flux",
-								Source: "{}",
+								File: "alert_test.flux",
 								Start: ast.Position{
 									Column: 11,
 									Line:   47,
@@ -909,8 +862,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 38,
 						Line:   49,
 					},
-					File:   "alert_test.flux",
-					Source: "metric_type = \"kafka_message_in_rate\"",
+					File: "alert_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   49,
@@ -926,8 +878,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 12,
 							Line:   49,
 						},
-						File:   "alert_test.flux",
-						Source: "metric_type",
+						File: "alert_test.flux",
 						Start: ast.Position{
 							Column: 1,
 							Line:   49,
@@ -945,8 +896,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 38,
 							Line:   49,
 						},
-						File:   "alert_test.flux",
-						Source: "\"kafka_message_in_rate\"",
+						File: "alert_test.flux",
 						Start: ast.Position{
 							Column: 15,
 							Line:   49,
@@ -964,8 +914,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 12,
 						Line:   50,
 					},
-					File:   "alert_test.flux",
-					Source: "tier = \"ft\"",
+					File: "alert_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   50,
@@ -981,8 +930,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 5,
 							Line:   50,
 						},
-						File:   "alert_test.flux",
-						Source: "tier",
+						File: "alert_test.flux",
 						Start: ast.Position{
 							Column: 1,
 							Line:   50,
@@ -1000,8 +948,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 12,
 							Line:   50,
 						},
-						File:   "alert_test.flux",
-						Source: "\"ft\"",
+						File: "alert_test.flux",
 						Start: ast.Position{
 							Column: 8,
 							Line:   50,
@@ -1019,8 +966,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 17,
 						Line:   51,
 					},
-					File:   "alert_test.flux",
-					Source: "h_threshold = 10",
+					File: "alert_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   51,
@@ -1036,8 +982,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 12,
 							Line:   51,
 						},
-						File:   "alert_test.flux",
-						Source: "h_threshold",
+						File: "alert_test.flux",
 						Start: ast.Position{
 							Column: 1,
 							Line:   51,
@@ -1055,8 +1000,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 17,
 							Line:   51,
 						},
-						File:   "alert_test.flux",
-						Source: "10",
+						File: "alert_test.flux",
 						Start: ast.Position{
 							Column: 15,
 							Line:   51,
@@ -1074,8 +1018,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 16,
 						Line:   52,
 					},
-					File:   "alert_test.flux",
-					Source: "w_threshold = 5",
+					File: "alert_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   52,
@@ -1091,8 +1034,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 12,
 							Line:   52,
 						},
-						File:   "alert_test.flux",
-						Source: "w_threshold",
+						File: "alert_test.flux",
 						Start: ast.Position{
 							Column: 1,
 							Line:   52,
@@ -1110,8 +1052,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 16,
 							Line:   52,
 						},
-						File:   "alert_test.flux",
-						Source: "5",
+						File: "alert_test.flux",
 						Start: ast.Position{
 							Column: 15,
 							Line:   52,
@@ -1129,8 +1070,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 20,
 						Line:   53,
 					},
-					File:   "alert_test.flux",
-					Source: "l_threshold = 0.002",
+					File: "alert_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   53,
@@ -1146,8 +1086,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 12,
 							Line:   53,
 						},
-						File:   "alert_test.flux",
-						Source: "l_threshold",
+						File: "alert_test.flux",
 						Start: ast.Position{
 							Column: 1,
 							Line:   53,
@@ -1165,8 +1104,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 20,
 							Line:   53,
 						},
-						File:   "alert_test.flux",
-						Source: "0.002",
+						File: "alert_test.flux",
 						Start: ast.Position{
 							Column: 15,
 							Line:   53,
@@ -1184,8 +1122,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 36,
 						Line:   69,
 					},
-					File:   "alert_test.flux",
-					Source: "tickscript_alert = (table=<-) =>\n    table\n        |> range(start: 2020-11-25T14:05:00Z)\n        |> filter(fn: (r) => r._field == metric_type and r.realm == tier)\n        |> schema.fieldsAsCols()\n        |> tickscript.select(column: metric_type, as: \"KafkaMsgRate\")\n        |> tickscript.groupBy(columns: [\"host\", \"realm\"])\n        |> tickscript.alert(\n            check: check,\n            id: (r) => \"Realm: ${r.realm} - Hostname: ${r.host} / Metric: ${metric_type} threshold alert\",\n            message: (r) => \"${r.id}: ${r._level} - ${string(v: r.KafkaMsgRate)}\",\n            details: (r) => \"some detail: myrealm=${r.realm}\",\n            crit: (r) => r.KafkaMsgRate > h_threshold or r.KafkaMsgRate < l_threshold,\n            warn: (r) => r.KafkaMsgRate > w_threshold or r.KafkaMsgRate < l_threshold,\n        )\n        |> drop(columns: [\"_time\"])",
+					File: "alert_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   54,
@@ -1201,8 +1138,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 17,
 							Line:   54,
 						},
-						File:   "alert_test.flux",
-						Source: "tickscript_alert",
+						File: "alert_test.flux",
 						Start: ast.Position{
 							Column: 1,
 							Line:   54,
@@ -1221,8 +1157,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 36,
 							Line:   69,
 						},
-						File:   "alert_test.flux",
-						Source: "(table=<-) =>\n    table\n        |> range(start: 2020-11-25T14:05:00Z)\n        |> filter(fn: (r) => r._field == metric_type and r.realm == tier)\n        |> schema.fieldsAsCols()\n        |> tickscript.select(column: metric_type, as: \"KafkaMsgRate\")\n        |> tickscript.groupBy(columns: [\"host\", \"realm\"])\n        |> tickscript.alert(\n            check: check,\n            id: (r) => \"Realm: ${r.realm} - Hostname: ${r.host} / Metric: ${metric_type} threshold alert\",\n            message: (r) => \"${r.id}: ${r._level} - ${string(v: r.KafkaMsgRate)}\",\n            details: (r) => \"some detail: myrealm=${r.realm}\",\n            crit: (r) => r.KafkaMsgRate > h_threshold or r.KafkaMsgRate < l_threshold,\n            warn: (r) => r.KafkaMsgRate > w_threshold or r.KafkaMsgRate < l_threshold,\n        )\n        |> drop(columns: [\"_time\"])",
+						File: "alert_test.flux",
 						Start: ast.Position{
 							Column: 20,
 							Line:   54,
@@ -1245,8 +1180,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 10,
 															Line:   55,
 														},
-														File:   "alert_test.flux",
-														Source: "table",
+														File: "alert_test.flux",
 														Start: ast.Position{
 															Column: 5,
 															Line:   55,
@@ -1263,8 +1197,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 46,
 														Line:   56,
 													},
-													File:   "alert_test.flux",
-													Source: "table\n        |> range(start: 2020-11-25T14:05:00Z)",
+													File: "alert_test.flux",
 													Start: ast.Position{
 														Column: 5,
 														Line:   55,
@@ -1281,8 +1214,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Column: 45,
 																Line:   56,
 															},
-															File:   "alert_test.flux",
-															Source: "start: 2020-11-25T14:05:00Z",
+															File: "alert_test.flux",
 															Start: ast.Position{
 																Column: 18,
 																Line:   56,
@@ -1299,8 +1231,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Column: 45,
 																	Line:   56,
 																},
-																File:   "alert_test.flux",
-																Source: "start: 2020-11-25T14:05:00Z",
+																File: "alert_test.flux",
 																Start: ast.Position{
 																	Column: 18,
 																	Line:   56,
@@ -1317,8 +1248,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Column: 23,
 																		Line:   56,
 																	},
-																	File:   "alert_test.flux",
-																	Source: "start",
+																	File: "alert_test.flux",
 																	Start: ast.Position{
 																		Column: 18,
 																		Line:   56,
@@ -1337,8 +1267,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Column: 45,
 																		Line:   56,
 																	},
-																	File:   "alert_test.flux",
-																	Source: "2020-11-25T14:05:00Z",
+																	File: "alert_test.flux",
 																	Start: ast.Position{
 																		Column: 25,
 																		Line:   56,
@@ -1359,8 +1288,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 46,
 															Line:   56,
 														},
-														File:   "alert_test.flux",
-														Source: "range(start: 2020-11-25T14:05:00Z)",
+														File: "alert_test.flux",
 														Start: ast.Position{
 															Column: 12,
 															Line:   56,
@@ -1376,8 +1304,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Column: 17,
 																Line:   56,
 															},
-															File:   "alert_test.flux",
-															Source: "range",
+															File: "alert_test.flux",
 															Start: ast.Position{
 																Column: 12,
 																Line:   56,
@@ -1398,8 +1325,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 74,
 													Line:   57,
 												},
-												File:   "alert_test.flux",
-												Source: "table\n        |> range(start: 2020-11-25T14:05:00Z)\n        |> filter(fn: (r) => r._field == metric_type and r.realm == tier)",
+												File: "alert_test.flux",
 												Start: ast.Position{
 													Column: 5,
 													Line:   55,
@@ -1416,8 +1342,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 73,
 															Line:   57,
 														},
-														File:   "alert_test.flux",
-														Source: "fn: (r) => r._field == metric_type and r.realm == tier",
+														File: "alert_test.flux",
 														Start: ast.Position{
 															Column: 19,
 															Line:   57,
@@ -1434,8 +1359,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Column: 73,
 																Line:   57,
 															},
-															File:   "alert_test.flux",
-															Source: "fn: (r) => r._field == metric_type and r.realm == tier",
+															File: "alert_test.flux",
 															Start: ast.Position{
 																Column: 19,
 																Line:   57,
@@ -1452,8 +1376,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Column: 21,
 																	Line:   57,
 																},
-																File:   "alert_test.flux",
-																Source: "fn",
+																File: "alert_test.flux",
 																Start: ast.Position{
 																	Column: 19,
 																	Line:   57,
@@ -1473,8 +1396,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Column: 73,
 																	Line:   57,
 																},
-																File:   "alert_test.flux",
-																Source: "(r) => r._field == metric_type and r.realm == tier",
+																File: "alert_test.flux",
 																Start: ast.Position{
 																	Column: 23,
 																	Line:   57,
@@ -1490,8 +1412,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Column: 73,
 																		Line:   57,
 																	},
-																	File:   "alert_test.flux",
-																	Source: "r._field == metric_type and r.realm == tier",
+																	File: "alert_test.flux",
 																	Start: ast.Position{
 																		Column: 30,
 																		Line:   57,
@@ -1507,8 +1428,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																			Column: 53,
 																			Line:   57,
 																		},
-																		File:   "alert_test.flux",
-																		Source: "r._field == metric_type",
+																		File: "alert_test.flux",
 																		Start: ast.Position{
 																			Column: 30,
 																			Line:   57,
@@ -1524,8 +1444,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																				Column: 38,
 																				Line:   57,
 																			},
-																			File:   "alert_test.flux",
-																			Source: "r._field",
+																			File: "alert_test.flux",
 																			Start: ast.Position{
 																				Column: 30,
 																				Line:   57,
@@ -1542,8 +1461,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																					Column: 31,
 																					Line:   57,
 																				},
-																				File:   "alert_test.flux",
-																				Source: "r",
+																				File: "alert_test.flux",
 																				Start: ast.Position{
 																					Column: 30,
 																					Line:   57,
@@ -1561,8 +1479,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																					Column: 38,
 																					Line:   57,
 																				},
-																				File:   "alert_test.flux",
-																				Source: "_field",
+																				File: "alert_test.flux",
 																				Start: ast.Position{
 																					Column: 32,
 																					Line:   57,
@@ -1583,8 +1500,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																				Column: 53,
 																				Line:   57,
 																			},
-																			File:   "alert_test.flux",
-																			Source: "metric_type",
+																			File: "alert_test.flux",
 																			Start: ast.Position{
 																				Column: 42,
 																				Line:   57,
@@ -1604,8 +1520,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																			Column: 73,
 																			Line:   57,
 																		},
-																		File:   "alert_test.flux",
-																		Source: "r.realm == tier",
+																		File: "alert_test.flux",
 																		Start: ast.Position{
 																			Column: 58,
 																			Line:   57,
@@ -1621,8 +1536,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																				Column: 65,
 																				Line:   57,
 																			},
-																			File:   "alert_test.flux",
-																			Source: "r.realm",
+																			File: "alert_test.flux",
 																			Start: ast.Position{
 																				Column: 58,
 																				Line:   57,
@@ -1639,8 +1553,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																					Column: 59,
 																					Line:   57,
 																				},
-																				File:   "alert_test.flux",
-																				Source: "r",
+																				File: "alert_test.flux",
 																				Start: ast.Position{
 																					Column: 58,
 																					Line:   57,
@@ -1658,8 +1571,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																					Column: 65,
 																					Line:   57,
 																				},
-																				File:   "alert_test.flux",
-																				Source: "realm",
+																				File: "alert_test.flux",
 																				Start: ast.Position{
 																					Column: 60,
 																					Line:   57,
@@ -1680,8 +1592,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																				Column: 73,
 																				Line:   57,
 																			},
-																			File:   "alert_test.flux",
-																			Source: "tier",
+																			File: "alert_test.flux",
 																			Start: ast.Position{
 																				Column: 69,
 																				Line:   57,
@@ -1702,8 +1613,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Column: 25,
 																		Line:   57,
 																	},
-																	File:   "alert_test.flux",
-																	Source: "r",
+																	File: "alert_test.flux",
 																	Start: ast.Position{
 																		Column: 24,
 																		Line:   57,
@@ -1720,8 +1630,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																			Column: 25,
 																			Line:   57,
 																		},
-																		File:   "alert_test.flux",
-																		Source: "r",
+																		File: "alert_test.flux",
 																		Start: ast.Position{
 																			Column: 24,
 																			Line:   57,
@@ -1747,8 +1656,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 74,
 														Line:   57,
 													},
-													File:   "alert_test.flux",
-													Source: "filter(fn: (r) => r._field == metric_type and r.realm == tier)",
+													File: "alert_test.flux",
 													Start: ast.Position{
 														Column: 12,
 														Line:   57,
@@ -1764,8 +1672,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 18,
 															Line:   57,
 														},
-														File:   "alert_test.flux",
-														Source: "filter",
+														File: "alert_test.flux",
 														Start: ast.Position{
 															Column: 12,
 															Line:   57,
@@ -1786,8 +1693,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 33,
 												Line:   58,
 											},
-											File:   "alert_test.flux",
-											Source: "table\n        |> range(start: 2020-11-25T14:05:00Z)\n        |> filter(fn: (r) => r._field == metric_type and r.realm == tier)\n        |> schema.fieldsAsCols()",
+											File: "alert_test.flux",
 											Start: ast.Position{
 												Column: 5,
 												Line:   55,
@@ -1804,8 +1710,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 33,
 													Line:   58,
 												},
-												File:   "alert_test.flux",
-												Source: "schema.fieldsAsCols()",
+												File: "alert_test.flux",
 												Start: ast.Position{
 													Column: 12,
 													Line:   58,
@@ -1821,8 +1726,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 31,
 														Line:   58,
 													},
-													File:   "alert_test.flux",
-													Source: "schema.fieldsAsCols",
+													File: "alert_test.flux",
 													Start: ast.Position{
 														Column: 12,
 														Line:   58,
@@ -1839,8 +1743,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 18,
 															Line:   58,
 														},
-														File:   "alert_test.flux",
-														Source: "schema",
+														File: "alert_test.flux",
 														Start: ast.Position{
 															Column: 12,
 															Line:   58,
@@ -1858,8 +1761,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 31,
 															Line:   58,
 														},
-														File:   "alert_test.flux",
-														Source: "fieldsAsCols",
+														File: "alert_test.flux",
 														Start: ast.Position{
 															Column: 19,
 															Line:   58,
@@ -1882,8 +1784,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 70,
 											Line:   59,
 										},
-										File:   "alert_test.flux",
-										Source: "table\n        |> range(start: 2020-11-25T14:05:00Z)\n        |> filter(fn: (r) => r._field == metric_type and r.realm == tier)\n        |> schema.fieldsAsCols()\n        |> tickscript.select(column: metric_type, as: \"KafkaMsgRate\")",
+										File: "alert_test.flux",
 										Start: ast.Position{
 											Column: 5,
 											Line:   55,
@@ -1900,8 +1801,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 69,
 													Line:   59,
 												},
-												File:   "alert_test.flux",
-												Source: "column: metric_type, as: \"KafkaMsgRate\"",
+												File: "alert_test.flux",
 												Start: ast.Position{
 													Column: 30,
 													Line:   59,
@@ -1918,8 +1818,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 49,
 														Line:   59,
 													},
-													File:   "alert_test.flux",
-													Source: "column: metric_type",
+													File: "alert_test.flux",
 													Start: ast.Position{
 														Column: 30,
 														Line:   59,
@@ -1936,8 +1835,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 36,
 															Line:   59,
 														},
-														File:   "alert_test.flux",
-														Source: "column",
+														File: "alert_test.flux",
 														Start: ast.Position{
 															Column: 30,
 															Line:   59,
@@ -1956,8 +1854,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 49,
 															Line:   59,
 														},
-														File:   "alert_test.flux",
-														Source: "metric_type",
+														File: "alert_test.flux",
 														Start: ast.Position{
 															Column: 38,
 															Line:   59,
@@ -1975,8 +1872,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 69,
 														Line:   59,
 													},
-													File:   "alert_test.flux",
-													Source: "as: \"KafkaMsgRate\"",
+													File: "alert_test.flux",
 													Start: ast.Position{
 														Column: 51,
 														Line:   59,
@@ -1993,8 +1889,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 53,
 															Line:   59,
 														},
-														File:   "alert_test.flux",
-														Source: "as",
+														File: "alert_test.flux",
 														Start: ast.Position{
 															Column: 51,
 															Line:   59,
@@ -2013,8 +1908,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 69,
 															Line:   59,
 														},
-														File:   "alert_test.flux",
-														Source: "\"KafkaMsgRate\"",
+														File: "alert_test.flux",
 														Start: ast.Position{
 															Column: 55,
 															Line:   59,
@@ -2035,8 +1929,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 70,
 												Line:   59,
 											},
-											File:   "alert_test.flux",
-											Source: "tickscript.select(column: metric_type, as: \"KafkaMsgRate\")",
+											File: "alert_test.flux",
 											Start: ast.Position{
 												Column: 12,
 												Line:   59,
@@ -2052,8 +1945,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 29,
 													Line:   59,
 												},
-												File:   "alert_test.flux",
-												Source: "tickscript.select",
+												File: "alert_test.flux",
 												Start: ast.Position{
 													Column: 12,
 													Line:   59,
@@ -2070,8 +1962,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 22,
 														Line:   59,
 													},
-													File:   "alert_test.flux",
-													Source: "tickscript",
+													File: "alert_test.flux",
 													Start: ast.Position{
 														Column: 12,
 														Line:   59,
@@ -2089,8 +1980,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 29,
 														Line:   59,
 													},
-													File:   "alert_test.flux",
-													Source: "select",
+													File: "alert_test.flux",
 													Start: ast.Position{
 														Column: 23,
 														Line:   59,
@@ -2113,8 +2003,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 58,
 										Line:   60,
 									},
-									File:   "alert_test.flux",
-									Source: "table\n        |> range(start: 2020-11-25T14:05:00Z)\n        |> filter(fn: (r) => r._field == metric_type and r.realm == tier)\n        |> schema.fieldsAsCols()\n        |> tickscript.select(column: metric_type, as: \"KafkaMsgRate\")\n        |> tickscript.groupBy(columns: [\"host\", \"realm\"])",
+									File: "alert_test.flux",
 									Start: ast.Position{
 										Column: 5,
 										Line:   55,
@@ -2131,8 +2020,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 57,
 												Line:   60,
 											},
-											File:   "alert_test.flux",
-											Source: "columns: [\"host\", \"realm\"]",
+											File: "alert_test.flux",
 											Start: ast.Position{
 												Column: 31,
 												Line:   60,
@@ -2149,8 +2037,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 57,
 													Line:   60,
 												},
-												File:   "alert_test.flux",
-												Source: "columns: [\"host\", \"realm\"]",
+												File: "alert_test.flux",
 												Start: ast.Position{
 													Column: 31,
 													Line:   60,
@@ -2167,8 +2054,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 38,
 														Line:   60,
 													},
-													File:   "alert_test.flux",
-													Source: "columns",
+													File: "alert_test.flux",
 													Start: ast.Position{
 														Column: 31,
 														Line:   60,
@@ -2187,8 +2073,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 57,
 														Line:   60,
 													},
-													File:   "alert_test.flux",
-													Source: "[\"host\", \"realm\"]",
+													File: "alert_test.flux",
 													Start: ast.Position{
 														Column: 40,
 														Line:   60,
@@ -2204,8 +2089,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 47,
 															Line:   60,
 														},
-														File:   "alert_test.flux",
-														Source: "\"host\"",
+														File: "alert_test.flux",
 														Start: ast.Position{
 															Column: 41,
 															Line:   60,
@@ -2222,8 +2106,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 56,
 															Line:   60,
 														},
-														File:   "alert_test.flux",
-														Source: "\"realm\"",
+														File: "alert_test.flux",
 														Start: ast.Position{
 															Column: 49,
 															Line:   60,
@@ -2247,8 +2130,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 58,
 											Line:   60,
 										},
-										File:   "alert_test.flux",
-										Source: "tickscript.groupBy(columns: [\"host\", \"realm\"])",
+										File: "alert_test.flux",
 										Start: ast.Position{
 											Column: 12,
 											Line:   60,
@@ -2264,8 +2146,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 30,
 												Line:   60,
 											},
-											File:   "alert_test.flux",
-											Source: "tickscript.groupBy",
+											File: "alert_test.flux",
 											Start: ast.Position{
 												Column: 12,
 												Line:   60,
@@ -2282,8 +2163,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 22,
 													Line:   60,
 												},
-												File:   "alert_test.flux",
-												Source: "tickscript",
+												File: "alert_test.flux",
 												Start: ast.Position{
 													Column: 12,
 													Line:   60,
@@ -2301,8 +2181,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 30,
 													Line:   60,
 												},
-												File:   "alert_test.flux",
-												Source: "groupBy",
+												File: "alert_test.flux",
 												Start: ast.Position{
 													Column: 23,
 													Line:   60,
@@ -2325,8 +2204,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 10,
 									Line:   68,
 								},
-								File:   "alert_test.flux",
-								Source: "table\n        |> range(start: 2020-11-25T14:05:00Z)\n        |> filter(fn: (r) => r._field == metric_type and r.realm == tier)\n        |> schema.fieldsAsCols()\n        |> tickscript.select(column: metric_type, as: \"KafkaMsgRate\")\n        |> tickscript.groupBy(columns: [\"host\", \"realm\"])\n        |> tickscript.alert(\n            check: check,\n            id: (r) => \"Realm: ${r.realm} - Hostname: ${r.host} / Metric: ${metric_type} threshold alert\",\n            message: (r) => \"${r.id}: ${r._level} - ${string(v: r.KafkaMsgRate)}\",\n            details: (r) => \"some detail: myrealm=${r.realm}\",\n            crit: (r) => r.KafkaMsgRate > h_threshold or r.KafkaMsgRate < l_threshold,\n            warn: (r) => r.KafkaMsgRate > w_threshold or r.KafkaMsgRate < l_threshold,\n        )",
+								File: "alert_test.flux",
 								Start: ast.Position{
 									Column: 5,
 									Line:   55,
@@ -2343,8 +2221,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 86,
 											Line:   67,
 										},
-										File:   "alert_test.flux",
-										Source: "check: check,\n            id: (r) => \"Realm: ${r.realm} - Hostname: ${r.host} / Metric: ${metric_type} threshold alert\",\n            message: (r) => \"${r.id}: ${r._level} - ${string(v: r.KafkaMsgRate)}\",\n            details: (r) => \"some detail: myrealm=${r.realm}\",\n            crit: (r) => r.KafkaMsgRate > h_threshold or r.KafkaMsgRate < l_threshold,\n            warn: (r) => r.KafkaMsgRate > w_threshold or r.KafkaMsgRate < l_threshold",
+										File: "alert_test.flux",
 										Start: ast.Position{
 											Column: 13,
 											Line:   62,
@@ -2361,8 +2238,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 25,
 												Line:   62,
 											},
-											File:   "alert_test.flux",
-											Source: "check: check",
+											File: "alert_test.flux",
 											Start: ast.Position{
 												Column: 13,
 												Line:   62,
@@ -2379,8 +2255,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 18,
 													Line:   62,
 												},
-												File:   "alert_test.flux",
-												Source: "check",
+												File: "alert_test.flux",
 												Start: ast.Position{
 													Column: 13,
 													Line:   62,
@@ -2399,8 +2274,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 25,
 													Line:   62,
 												},
-												File:   "alert_test.flux",
-												Source: "check",
+												File: "alert_test.flux",
 												Start: ast.Position{
 													Column: 20,
 													Line:   62,
@@ -2418,8 +2292,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 106,
 												Line:   63,
 											},
-											File:   "alert_test.flux",
-											Source: "id: (r) => \"Realm: ${r.realm} - Hostname: ${r.host} / Metric: ${metric_type} threshold alert\"",
+											File: "alert_test.flux",
 											Start: ast.Position{
 												Column: 13,
 												Line:   63,
@@ -2436,8 +2309,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 15,
 													Line:   63,
 												},
-												File:   "alert_test.flux",
-												Source: "id",
+												File: "alert_test.flux",
 												Start: ast.Position{
 													Column: 13,
 													Line:   63,
@@ -2457,8 +2329,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 106,
 													Line:   63,
 												},
-												File:   "alert_test.flux",
-												Source: "(r) => \"Realm: ${r.realm} - Hostname: ${r.host} / Metric: ${metric_type} threshold alert\"",
+												File: "alert_test.flux",
 												Start: ast.Position{
 													Column: 17,
 													Line:   63,
@@ -2474,8 +2345,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 106,
 														Line:   63,
 													},
-													File:   "alert_test.flux",
-													Source: "\"Realm: ${r.realm} - Hostname: ${r.host} / Metric: ${metric_type} threshold alert\"",
+													File: "alert_test.flux",
 													Start: ast.Position{
 														Column: 24,
 														Line:   63,
@@ -2491,8 +2361,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 32,
 															Line:   63,
 														},
-														File:   "alert_test.flux",
-														Source: "Realm: ",
+														File: "alert_test.flux",
 														Start: ast.Position{
 															Column: 25,
 															Line:   63,
@@ -2509,8 +2378,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 42,
 															Line:   63,
 														},
-														File:   "alert_test.flux",
-														Source: "${r.realm}",
+														File: "alert_test.flux",
 														Start: ast.Position{
 															Column: 32,
 															Line:   63,
@@ -2526,8 +2394,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Column: 41,
 																Line:   63,
 															},
-															File:   "alert_test.flux",
-															Source: "r.realm",
+															File: "alert_test.flux",
 															Start: ast.Position{
 																Column: 34,
 																Line:   63,
@@ -2544,8 +2411,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Column: 35,
 																	Line:   63,
 																},
-																File:   "alert_test.flux",
-																Source: "r",
+																File: "alert_test.flux",
 																Start: ast.Position{
 																	Column: 34,
 																	Line:   63,
@@ -2563,8 +2429,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Column: 41,
 																	Line:   63,
 																},
-																File:   "alert_test.flux",
-																Source: "realm",
+																File: "alert_test.flux",
 																Start: ast.Position{
 																	Column: 36,
 																	Line:   63,
@@ -2584,8 +2449,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 55,
 															Line:   63,
 														},
-														File:   "alert_test.flux",
-														Source: " - Hostname: ",
+														File: "alert_test.flux",
 														Start: ast.Position{
 															Column: 42,
 															Line:   63,
@@ -2602,8 +2466,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 64,
 															Line:   63,
 														},
-														File:   "alert_test.flux",
-														Source: "${r.host}",
+														File: "alert_test.flux",
 														Start: ast.Position{
 															Column: 55,
 															Line:   63,
@@ -2619,8 +2482,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Column: 63,
 																Line:   63,
 															},
-															File:   "alert_test.flux",
-															Source: "r.host",
+															File: "alert_test.flux",
 															Start: ast.Position{
 																Column: 57,
 																Line:   63,
@@ -2637,8 +2499,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Column: 58,
 																	Line:   63,
 																},
-																File:   "alert_test.flux",
-																Source: "r",
+																File: "alert_test.flux",
 																Start: ast.Position{
 																	Column: 57,
 																	Line:   63,
@@ -2656,8 +2517,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Column: 63,
 																	Line:   63,
 																},
-																File:   "alert_test.flux",
-																Source: "host",
+																File: "alert_test.flux",
 																Start: ast.Position{
 																	Column: 59,
 																	Line:   63,
@@ -2677,8 +2537,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 75,
 															Line:   63,
 														},
-														File:   "alert_test.flux",
-														Source: " / Metric: ",
+														File: "alert_test.flux",
 														Start: ast.Position{
 															Column: 64,
 															Line:   63,
@@ -2695,8 +2554,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 89,
 															Line:   63,
 														},
-														File:   "alert_test.flux",
-														Source: "${metric_type}",
+														File: "alert_test.flux",
 														Start: ast.Position{
 															Column: 75,
 															Line:   63,
@@ -2712,8 +2570,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Column: 88,
 																Line:   63,
 															},
-															File:   "alert_test.flux",
-															Source: "metric_type",
+															File: "alert_test.flux",
 															Start: ast.Position{
 																Column: 77,
 																Line:   63,
@@ -2731,8 +2588,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 105,
 															Line:   63,
 														},
-														File:   "alert_test.flux",
-														Source: " threshold alert",
+														File: "alert_test.flux",
 														Start: ast.Position{
 															Column: 89,
 															Line:   63,
@@ -2752,8 +2608,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 19,
 														Line:   63,
 													},
-													File:   "alert_test.flux",
-													Source: "r",
+													File: "alert_test.flux",
 													Start: ast.Position{
 														Column: 18,
 														Line:   63,
@@ -2770,8 +2625,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 19,
 															Line:   63,
 														},
-														File:   "alert_test.flux",
-														Source: "r",
+														File: "alert_test.flux",
 														Start: ast.Position{
 															Column: 18,
 															Line:   63,
@@ -2794,8 +2648,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 82,
 												Line:   64,
 											},
-											File:   "alert_test.flux",
-											Source: "message: (r) => \"${r.id}: ${r._level} - ${string(v: r.KafkaMsgRate)}\"",
+											File: "alert_test.flux",
 											Start: ast.Position{
 												Column: 13,
 												Line:   64,
@@ -2812,8 +2665,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 20,
 													Line:   64,
 												},
-												File:   "alert_test.flux",
-												Source: "message",
+												File: "alert_test.flux",
 												Start: ast.Position{
 													Column: 13,
 													Line:   64,
@@ -2833,8 +2685,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 82,
 													Line:   64,
 												},
-												File:   "alert_test.flux",
-												Source: "(r) => \"${r.id}: ${r._level} - ${string(v: r.KafkaMsgRate)}\"",
+												File: "alert_test.flux",
 												Start: ast.Position{
 													Column: 22,
 													Line:   64,
@@ -2850,8 +2701,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 82,
 														Line:   64,
 													},
-													File:   "alert_test.flux",
-													Source: "\"${r.id}: ${r._level} - ${string(v: r.KafkaMsgRate)}\"",
+													File: "alert_test.flux",
 													Start: ast.Position{
 														Column: 29,
 														Line:   64,
@@ -2867,8 +2717,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 37,
 															Line:   64,
 														},
-														File:   "alert_test.flux",
-														Source: "${r.id}",
+														File: "alert_test.flux",
 														Start: ast.Position{
 															Column: 30,
 															Line:   64,
@@ -2884,8 +2733,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Column: 36,
 																Line:   64,
 															},
-															File:   "alert_test.flux",
-															Source: "r.id",
+															File: "alert_test.flux",
 															Start: ast.Position{
 																Column: 32,
 																Line:   64,
@@ -2902,8 +2750,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Column: 33,
 																	Line:   64,
 																},
-																File:   "alert_test.flux",
-																Source: "r",
+																File: "alert_test.flux",
 																Start: ast.Position{
 																	Column: 32,
 																	Line:   64,
@@ -2921,8 +2768,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Column: 36,
 																	Line:   64,
 																},
-																File:   "alert_test.flux",
-																Source: "id",
+																File: "alert_test.flux",
 																Start: ast.Position{
 																	Column: 34,
 																	Line:   64,
@@ -2942,8 +2788,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 39,
 															Line:   64,
 														},
-														File:   "alert_test.flux",
-														Source: ": ",
+														File: "alert_test.flux",
 														Start: ast.Position{
 															Column: 37,
 															Line:   64,
@@ -2960,8 +2805,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 50,
 															Line:   64,
 														},
-														File:   "alert_test.flux",
-														Source: "${r._level}",
+														File: "alert_test.flux",
 														Start: ast.Position{
 															Column: 39,
 															Line:   64,
@@ -2977,8 +2821,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Column: 49,
 																Line:   64,
 															},
-															File:   "alert_test.flux",
-															Source: "r._level",
+															File: "alert_test.flux",
 															Start: ast.Position{
 																Column: 41,
 																Line:   64,
@@ -2995,8 +2838,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Column: 42,
 																	Line:   64,
 																},
-																File:   "alert_test.flux",
-																Source: "r",
+																File: "alert_test.flux",
 																Start: ast.Position{
 																	Column: 41,
 																	Line:   64,
@@ -3014,8 +2856,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Column: 49,
 																	Line:   64,
 																},
-																File:   "alert_test.flux",
-																Source: "_level",
+																File: "alert_test.flux",
 																Start: ast.Position{
 																	Column: 43,
 																	Line:   64,
@@ -3035,8 +2876,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 53,
 															Line:   64,
 														},
-														File:   "alert_test.flux",
-														Source: " - ",
+														File: "alert_test.flux",
 														Start: ast.Position{
 															Column: 50,
 															Line:   64,
@@ -3053,8 +2893,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 81,
 															Line:   64,
 														},
-														File:   "alert_test.flux",
-														Source: "${string(v: r.KafkaMsgRate)}",
+														File: "alert_test.flux",
 														Start: ast.Position{
 															Column: 53,
 															Line:   64,
@@ -3071,8 +2910,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Column: 79,
 																	Line:   64,
 																},
-																File:   "alert_test.flux",
-																Source: "v: r.KafkaMsgRate",
+																File: "alert_test.flux",
 																Start: ast.Position{
 																	Column: 62,
 																	Line:   64,
@@ -3089,8 +2927,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Column: 79,
 																		Line:   64,
 																	},
-																	File:   "alert_test.flux",
-																	Source: "v: r.KafkaMsgRate",
+																	File: "alert_test.flux",
 																	Start: ast.Position{
 																		Column: 62,
 																		Line:   64,
@@ -3107,8 +2944,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																			Column: 63,
 																			Line:   64,
 																		},
-																		File:   "alert_test.flux",
-																		Source: "v",
+																		File: "alert_test.flux",
 																		Start: ast.Position{
 																			Column: 62,
 																			Line:   64,
@@ -3127,8 +2963,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																			Column: 79,
 																			Line:   64,
 																		},
-																		File:   "alert_test.flux",
-																		Source: "r.KafkaMsgRate",
+																		File: "alert_test.flux",
 																		Start: ast.Position{
 																			Column: 65,
 																			Line:   64,
@@ -3145,8 +2980,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																				Column: 66,
 																				Line:   64,
 																			},
-																			File:   "alert_test.flux",
-																			Source: "r",
+																			File: "alert_test.flux",
 																			Start: ast.Position{
 																				Column: 65,
 																				Line:   64,
@@ -3164,8 +2998,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																				Column: 79,
 																				Line:   64,
 																			},
-																			File:   "alert_test.flux",
-																			Source: "KafkaMsgRate",
+																			File: "alert_test.flux",
 																			Start: ast.Position{
 																				Column: 67,
 																				Line:   64,
@@ -3188,8 +3021,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Column: 80,
 																Line:   64,
 															},
-															File:   "alert_test.flux",
-															Source: "string(v: r.KafkaMsgRate)",
+															File: "alert_test.flux",
 															Start: ast.Position{
 																Column: 55,
 																Line:   64,
@@ -3205,8 +3037,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Column: 61,
 																	Line:   64,
 																},
-																File:   "alert_test.flux",
-																Source: "string",
+																File: "alert_test.flux",
 																Start: ast.Position{
 																	Column: 55,
 																	Line:   64,
@@ -3230,8 +3061,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 24,
 														Line:   64,
 													},
-													File:   "alert_test.flux",
-													Source: "r",
+													File: "alert_test.flux",
 													Start: ast.Position{
 														Column: 23,
 														Line:   64,
@@ -3248,8 +3078,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 24,
 															Line:   64,
 														},
-														File:   "alert_test.flux",
-														Source: "r",
+														File: "alert_test.flux",
 														Start: ast.Position{
 															Column: 23,
 															Line:   64,
@@ -3272,8 +3101,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 62,
 												Line:   65,
 											},
-											File:   "alert_test.flux",
-											Source: "details: (r) => \"some detail: myrealm=${r.realm}\"",
+											File: "alert_test.flux",
 											Start: ast.Position{
 												Column: 13,
 												Line:   65,
@@ -3290,8 +3118,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 20,
 													Line:   65,
 												},
-												File:   "alert_test.flux",
-												Source: "details",
+												File: "alert_test.flux",
 												Start: ast.Position{
 													Column: 13,
 													Line:   65,
@@ -3311,8 +3138,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 62,
 													Line:   65,
 												},
-												File:   "alert_test.flux",
-												Source: "(r) => \"some detail: myrealm=${r.realm}\"",
+												File: "alert_test.flux",
 												Start: ast.Position{
 													Column: 22,
 													Line:   65,
@@ -3328,8 +3154,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 62,
 														Line:   65,
 													},
-													File:   "alert_test.flux",
-													Source: "\"some detail: myrealm=${r.realm}\"",
+													File: "alert_test.flux",
 													Start: ast.Position{
 														Column: 29,
 														Line:   65,
@@ -3345,8 +3170,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 51,
 															Line:   65,
 														},
-														File:   "alert_test.flux",
-														Source: "some detail: myrealm=",
+														File: "alert_test.flux",
 														Start: ast.Position{
 															Column: 30,
 															Line:   65,
@@ -3363,8 +3187,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 61,
 															Line:   65,
 														},
-														File:   "alert_test.flux",
-														Source: "${r.realm}",
+														File: "alert_test.flux",
 														Start: ast.Position{
 															Column: 51,
 															Line:   65,
@@ -3380,8 +3203,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Column: 60,
 																Line:   65,
 															},
-															File:   "alert_test.flux",
-															Source: "r.realm",
+															File: "alert_test.flux",
 															Start: ast.Position{
 																Column: 53,
 																Line:   65,
@@ -3398,8 +3220,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Column: 54,
 																	Line:   65,
 																},
-																File:   "alert_test.flux",
-																Source: "r",
+																File: "alert_test.flux",
 																Start: ast.Position{
 																	Column: 53,
 																	Line:   65,
@@ -3417,8 +3238,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Column: 60,
 																	Line:   65,
 																},
-																File:   "alert_test.flux",
-																Source: "realm",
+																File: "alert_test.flux",
 																Start: ast.Position{
 																	Column: 55,
 																	Line:   65,
@@ -3441,8 +3261,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 24,
 														Line:   65,
 													},
-													File:   "alert_test.flux",
-													Source: "r",
+													File: "alert_test.flux",
 													Start: ast.Position{
 														Column: 23,
 														Line:   65,
@@ -3459,8 +3278,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 24,
 															Line:   65,
 														},
-														File:   "alert_test.flux",
-														Source: "r",
+														File: "alert_test.flux",
 														Start: ast.Position{
 															Column: 23,
 															Line:   65,
@@ -3483,8 +3301,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 86,
 												Line:   66,
 											},
-											File:   "alert_test.flux",
-											Source: "crit: (r) => r.KafkaMsgRate > h_threshold or r.KafkaMsgRate < l_threshold",
+											File: "alert_test.flux",
 											Start: ast.Position{
 												Column: 13,
 												Line:   66,
@@ -3501,8 +3318,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 17,
 													Line:   66,
 												},
-												File:   "alert_test.flux",
-												Source: "crit",
+												File: "alert_test.flux",
 												Start: ast.Position{
 													Column: 13,
 													Line:   66,
@@ -3522,8 +3338,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 86,
 													Line:   66,
 												},
-												File:   "alert_test.flux",
-												Source: "(r) => r.KafkaMsgRate > h_threshold or r.KafkaMsgRate < l_threshold",
+												File: "alert_test.flux",
 												Start: ast.Position{
 													Column: 19,
 													Line:   66,
@@ -3539,8 +3354,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 86,
 														Line:   66,
 													},
-													File:   "alert_test.flux",
-													Source: "r.KafkaMsgRate > h_threshold or r.KafkaMsgRate < l_threshold",
+													File: "alert_test.flux",
 													Start: ast.Position{
 														Column: 26,
 														Line:   66,
@@ -3556,8 +3370,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 54,
 															Line:   66,
 														},
-														File:   "alert_test.flux",
-														Source: "r.KafkaMsgRate > h_threshold",
+														File: "alert_test.flux",
 														Start: ast.Position{
 															Column: 26,
 															Line:   66,
@@ -3573,8 +3386,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Column: 40,
 																Line:   66,
 															},
-															File:   "alert_test.flux",
-															Source: "r.KafkaMsgRate",
+															File: "alert_test.flux",
 															Start: ast.Position{
 																Column: 26,
 																Line:   66,
@@ -3591,8 +3403,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Column: 27,
 																	Line:   66,
 																},
-																File:   "alert_test.flux",
-																Source: "r",
+																File: "alert_test.flux",
 																Start: ast.Position{
 																	Column: 26,
 																	Line:   66,
@@ -3610,8 +3421,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Column: 40,
 																	Line:   66,
 																},
-																File:   "alert_test.flux",
-																Source: "KafkaMsgRate",
+																File: "alert_test.flux",
 																Start: ast.Position{
 																	Column: 28,
 																	Line:   66,
@@ -3632,8 +3442,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Column: 54,
 																Line:   66,
 															},
-															File:   "alert_test.flux",
-															Source: "h_threshold",
+															File: "alert_test.flux",
 															Start: ast.Position{
 																Column: 43,
 																Line:   66,
@@ -3653,8 +3462,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 86,
 															Line:   66,
 														},
-														File:   "alert_test.flux",
-														Source: "r.KafkaMsgRate < l_threshold",
+														File: "alert_test.flux",
 														Start: ast.Position{
 															Column: 58,
 															Line:   66,
@@ -3670,8 +3478,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Column: 72,
 																Line:   66,
 															},
-															File:   "alert_test.flux",
-															Source: "r.KafkaMsgRate",
+															File: "alert_test.flux",
 															Start: ast.Position{
 																Column: 58,
 																Line:   66,
@@ -3688,8 +3495,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Column: 59,
 																	Line:   66,
 																},
-																File:   "alert_test.flux",
-																Source: "r",
+																File: "alert_test.flux",
 																Start: ast.Position{
 																	Column: 58,
 																	Line:   66,
@@ -3707,8 +3513,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Column: 72,
 																	Line:   66,
 																},
-																File:   "alert_test.flux",
-																Source: "KafkaMsgRate",
+																File: "alert_test.flux",
 																Start: ast.Position{
 																	Column: 60,
 																	Line:   66,
@@ -3729,8 +3534,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Column: 86,
 																Line:   66,
 															},
-															File:   "alert_test.flux",
-															Source: "l_threshold",
+															File: "alert_test.flux",
 															Start: ast.Position{
 																Column: 75,
 																Line:   66,
@@ -3751,8 +3555,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 21,
 														Line:   66,
 													},
-													File:   "alert_test.flux",
-													Source: "r",
+													File: "alert_test.flux",
 													Start: ast.Position{
 														Column: 20,
 														Line:   66,
@@ -3769,8 +3572,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 21,
 															Line:   66,
 														},
-														File:   "alert_test.flux",
-														Source: "r",
+														File: "alert_test.flux",
 														Start: ast.Position{
 															Column: 20,
 															Line:   66,
@@ -3793,8 +3595,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 86,
 												Line:   67,
 											},
-											File:   "alert_test.flux",
-											Source: "warn: (r) => r.KafkaMsgRate > w_threshold or r.KafkaMsgRate < l_threshold",
+											File: "alert_test.flux",
 											Start: ast.Position{
 												Column: 13,
 												Line:   67,
@@ -3811,8 +3612,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 17,
 													Line:   67,
 												},
-												File:   "alert_test.flux",
-												Source: "warn",
+												File: "alert_test.flux",
 												Start: ast.Position{
 													Column: 13,
 													Line:   67,
@@ -3832,8 +3632,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 86,
 													Line:   67,
 												},
-												File:   "alert_test.flux",
-												Source: "(r) => r.KafkaMsgRate > w_threshold or r.KafkaMsgRate < l_threshold",
+												File: "alert_test.flux",
 												Start: ast.Position{
 													Column: 19,
 													Line:   67,
@@ -3849,8 +3648,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 86,
 														Line:   67,
 													},
-													File:   "alert_test.flux",
-													Source: "r.KafkaMsgRate > w_threshold or r.KafkaMsgRate < l_threshold",
+													File: "alert_test.flux",
 													Start: ast.Position{
 														Column: 26,
 														Line:   67,
@@ -3866,8 +3664,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 54,
 															Line:   67,
 														},
-														File:   "alert_test.flux",
-														Source: "r.KafkaMsgRate > w_threshold",
+														File: "alert_test.flux",
 														Start: ast.Position{
 															Column: 26,
 															Line:   67,
@@ -3883,8 +3680,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Column: 40,
 																Line:   67,
 															},
-															File:   "alert_test.flux",
-															Source: "r.KafkaMsgRate",
+															File: "alert_test.flux",
 															Start: ast.Position{
 																Column: 26,
 																Line:   67,
@@ -3901,8 +3697,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Column: 27,
 																	Line:   67,
 																},
-																File:   "alert_test.flux",
-																Source: "r",
+																File: "alert_test.flux",
 																Start: ast.Position{
 																	Column: 26,
 																	Line:   67,
@@ -3920,8 +3715,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Column: 40,
 																	Line:   67,
 																},
-																File:   "alert_test.flux",
-																Source: "KafkaMsgRate",
+																File: "alert_test.flux",
 																Start: ast.Position{
 																	Column: 28,
 																	Line:   67,
@@ -3942,8 +3736,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Column: 54,
 																Line:   67,
 															},
-															File:   "alert_test.flux",
-															Source: "w_threshold",
+															File: "alert_test.flux",
 															Start: ast.Position{
 																Column: 43,
 																Line:   67,
@@ -3963,8 +3756,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 86,
 															Line:   67,
 														},
-														File:   "alert_test.flux",
-														Source: "r.KafkaMsgRate < l_threshold",
+														File: "alert_test.flux",
 														Start: ast.Position{
 															Column: 58,
 															Line:   67,
@@ -3980,8 +3772,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Column: 72,
 																Line:   67,
 															},
-															File:   "alert_test.flux",
-															Source: "r.KafkaMsgRate",
+															File: "alert_test.flux",
 															Start: ast.Position{
 																Column: 58,
 																Line:   67,
@@ -3998,8 +3789,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Column: 59,
 																	Line:   67,
 																},
-																File:   "alert_test.flux",
-																Source: "r",
+																File: "alert_test.flux",
 																Start: ast.Position{
 																	Column: 58,
 																	Line:   67,
@@ -4017,8 +3807,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Column: 72,
 																	Line:   67,
 																},
-																File:   "alert_test.flux",
-																Source: "KafkaMsgRate",
+																File: "alert_test.flux",
 																Start: ast.Position{
 																	Column: 60,
 																	Line:   67,
@@ -4039,8 +3828,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Column: 86,
 																Line:   67,
 															},
-															File:   "alert_test.flux",
-															Source: "l_threshold",
+															File: "alert_test.flux",
 															Start: ast.Position{
 																Column: 75,
 																Line:   67,
@@ -4061,8 +3849,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 21,
 														Line:   67,
 													},
-													File:   "alert_test.flux",
-													Source: "r",
+													File: "alert_test.flux",
 													Start: ast.Position{
 														Column: 20,
 														Line:   67,
@@ -4079,8 +3866,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 21,
 															Line:   67,
 														},
-														File:   "alert_test.flux",
-														Source: "r",
+														File: "alert_test.flux",
 														Start: ast.Position{
 															Column: 20,
 															Line:   67,
@@ -4106,8 +3892,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 10,
 										Line:   68,
 									},
-									File:   "alert_test.flux",
-									Source: "tickscript.alert(\n            check: check,\n            id: (r) => \"Realm: ${r.realm} - Hostname: ${r.host} / Metric: ${metric_type} threshold alert\",\n            message: (r) => \"${r.id}: ${r._level} - ${string(v: r.KafkaMsgRate)}\",\n            details: (r) => \"some detail: myrealm=${r.realm}\",\n            crit: (r) => r.KafkaMsgRate > h_threshold or r.KafkaMsgRate < l_threshold,\n            warn: (r) => r.KafkaMsgRate > w_threshold or r.KafkaMsgRate < l_threshold,\n        )",
+									File: "alert_test.flux",
 									Start: ast.Position{
 										Column: 12,
 										Line:   61,
@@ -4123,8 +3908,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 28,
 											Line:   61,
 										},
-										File:   "alert_test.flux",
-										Source: "tickscript.alert",
+										File: "alert_test.flux",
 										Start: ast.Position{
 											Column: 12,
 											Line:   61,
@@ -4141,8 +3925,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 22,
 												Line:   61,
 											},
-											File:   "alert_test.flux",
-											Source: "tickscript",
+											File: "alert_test.flux",
 											Start: ast.Position{
 												Column: 12,
 												Line:   61,
@@ -4160,8 +3943,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 28,
 												Line:   61,
 											},
-											File:   "alert_test.flux",
-											Source: "alert",
+											File: "alert_test.flux",
 											Start: ast.Position{
 												Column: 23,
 												Line:   61,
@@ -4184,8 +3966,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 36,
 								Line:   69,
 							},
-							File:   "alert_test.flux",
-							Source: "table\n        |> range(start: 2020-11-25T14:05:00Z)\n        |> filter(fn: (r) => r._field == metric_type and r.realm == tier)\n        |> schema.fieldsAsCols()\n        |> tickscript.select(column: metric_type, as: \"KafkaMsgRate\")\n        |> tickscript.groupBy(columns: [\"host\", \"realm\"])\n        |> tickscript.alert(\n            check: check,\n            id: (r) => \"Realm: ${r.realm} - Hostname: ${r.host} / Metric: ${metric_type} threshold alert\",\n            message: (r) => \"${r.id}: ${r._level} - ${string(v: r.KafkaMsgRate)}\",\n            details: (r) => \"some detail: myrealm=${r.realm}\",\n            crit: (r) => r.KafkaMsgRate > h_threshold or r.KafkaMsgRate < l_threshold,\n            warn: (r) => r.KafkaMsgRate > w_threshold or r.KafkaMsgRate < l_threshold,\n        )\n        |> drop(columns: [\"_time\"])",
+							File: "alert_test.flux",
 							Start: ast.Position{
 								Column: 5,
 								Line:   55,
@@ -4202,8 +3983,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 35,
 										Line:   69,
 									},
-									File:   "alert_test.flux",
-									Source: "columns: [\"_time\"]",
+									File: "alert_test.flux",
 									Start: ast.Position{
 										Column: 17,
 										Line:   69,
@@ -4220,8 +4000,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 35,
 											Line:   69,
 										},
-										File:   "alert_test.flux",
-										Source: "columns: [\"_time\"]",
+										File: "alert_test.flux",
 										Start: ast.Position{
 											Column: 17,
 											Line:   69,
@@ -4238,8 +4017,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 24,
 												Line:   69,
 											},
-											File:   "alert_test.flux",
-											Source: "columns",
+											File: "alert_test.flux",
 											Start: ast.Position{
 												Column: 17,
 												Line:   69,
@@ -4258,8 +4036,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 35,
 												Line:   69,
 											},
-											File:   "alert_test.flux",
-											Source: "[\"_time\"]",
+											File: "alert_test.flux",
 											Start: ast.Position{
 												Column: 26,
 												Line:   69,
@@ -4275,8 +4052,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 34,
 													Line:   69,
 												},
-												File:   "alert_test.flux",
-												Source: "\"_time\"",
+												File: "alert_test.flux",
 												Start: ast.Position{
 													Column: 27,
 													Line:   69,
@@ -4300,8 +4076,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 36,
 									Line:   69,
 								},
-								File:   "alert_test.flux",
-								Source: "drop(columns: [\"_time\"])",
+								File: "alert_test.flux",
 								Start: ast.Position{
 									Column: 12,
 									Line:   69,
@@ -4317,8 +4092,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 16,
 										Line:   69,
 									},
-									File:   "alert_test.flux",
-									Source: "drop",
+									File: "alert_test.flux",
 									Start: ast.Position{
 										Column: 12,
 										Line:   69,
@@ -4341,8 +4115,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 29,
 								Line:   54,
 							},
-							File:   "alert_test.flux",
-							Source: "table=<-",
+							File: "alert_test.flux",
 							Start: ast.Position{
 								Column: 21,
 								Line:   54,
@@ -4359,8 +4132,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 26,
 									Line:   54,
 								},
-								File:   "alert_test.flux",
-								Source: "table",
+								File: "alert_test.flux",
 								Start: ast.Position{
 									Column: 21,
 									Line:   54,
@@ -4378,8 +4150,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 29,
 								Line:   54,
 							},
-							File:   "alert_test.flux",
-							Source: "<-",
+							File: "alert_test.flux",
 							Start: ast.Position{
 								Column: 27,
 								Line:   54,
@@ -4399,8 +4170,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 107,
 							Line:   72,
 						},
-						File:   "alert_test.flux",
-						Source: "_tickscript_alert = () =>\n    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: tickscript_alert})",
+						File: "alert_test.flux",
 						Start: ast.Position{
 							Column: 6,
 							Line:   71,
@@ -4416,8 +4186,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 23,
 								Line:   71,
 							},
-							File:   "alert_test.flux",
-							Source: "_tickscript_alert",
+							File: "alert_test.flux",
 							Start: ast.Position{
 								Column: 6,
 								Line:   71,
@@ -4436,8 +4205,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 107,
 								Line:   72,
 							},
-							File:   "alert_test.flux",
-							Source: "() =>\n    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: tickscript_alert})",
+							File: "alert_test.flux",
 							Start: ast.Position{
 								Column: 26,
 								Line:   71,
@@ -4453,8 +4221,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 107,
 									Line:   72,
 								},
-								File:   "alert_test.flux",
-								Source: "({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: tickscript_alert})",
+								File: "alert_test.flux",
 								Start: ast.Position{
 									Column: 5,
 									Line:   72,
@@ -4470,8 +4237,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 106,
 										Line:   72,
 									},
-									File:   "alert_test.flux",
-									Source: "{input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: tickscript_alert}",
+									File: "alert_test.flux",
 									Start: ast.Position{
 										Column: 6,
 										Line:   72,
@@ -4488,8 +4254,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 46,
 											Line:   72,
 										},
-										File:   "alert_test.flux",
-										Source: "input: testing.loadStorage(csv: inData)",
+										File: "alert_test.flux",
 										Start: ast.Position{
 											Column: 7,
 											Line:   72,
@@ -4506,8 +4271,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 12,
 												Line:   72,
 											},
-											File:   "alert_test.flux",
-											Source: "input",
+											File: "alert_test.flux",
 											Start: ast.Position{
 												Column: 7,
 												Line:   72,
@@ -4527,8 +4291,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 45,
 													Line:   72,
 												},
-												File:   "alert_test.flux",
-												Source: "csv: inData",
+												File: "alert_test.flux",
 												Start: ast.Position{
 													Column: 34,
 													Line:   72,
@@ -4545,8 +4308,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 45,
 														Line:   72,
 													},
-													File:   "alert_test.flux",
-													Source: "csv: inData",
+													File: "alert_test.flux",
 													Start: ast.Position{
 														Column: 34,
 														Line:   72,
@@ -4563,8 +4325,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 37,
 															Line:   72,
 														},
-														File:   "alert_test.flux",
-														Source: "csv",
+														File: "alert_test.flux",
 														Start: ast.Position{
 															Column: 34,
 															Line:   72,
@@ -4583,8 +4344,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 45,
 															Line:   72,
 														},
-														File:   "alert_test.flux",
-														Source: "inData",
+														File: "alert_test.flux",
 														Start: ast.Position{
 															Column: 39,
 															Line:   72,
@@ -4605,8 +4365,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 46,
 												Line:   72,
 											},
-											File:   "alert_test.flux",
-											Source: "testing.loadStorage(csv: inData)",
+											File: "alert_test.flux",
 											Start: ast.Position{
 												Column: 14,
 												Line:   72,
@@ -4622,8 +4381,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 33,
 													Line:   72,
 												},
-												File:   "alert_test.flux",
-												Source: "testing.loadStorage",
+												File: "alert_test.flux",
 												Start: ast.Position{
 													Column: 14,
 													Line:   72,
@@ -4640,8 +4398,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 21,
 														Line:   72,
 													},
-													File:   "alert_test.flux",
-													Source: "testing",
+													File: "alert_test.flux",
 													Start: ast.Position{
 														Column: 14,
 														Line:   72,
@@ -4659,8 +4416,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 33,
 														Line:   72,
 													},
-													File:   "alert_test.flux",
-													Source: "loadStorage",
+													File: "alert_test.flux",
 													Start: ast.Position{
 														Column: 22,
 														Line:   72,
@@ -4683,8 +4439,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 83,
 											Line:   72,
 										},
-										File:   "alert_test.flux",
-										Source: "want: testing.loadMem(csv: outData)",
+										File: "alert_test.flux",
 										Start: ast.Position{
 											Column: 48,
 											Line:   72,
@@ -4701,8 +4456,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 52,
 												Line:   72,
 											},
-											File:   "alert_test.flux",
-											Source: "want",
+											File: "alert_test.flux",
 											Start: ast.Position{
 												Column: 48,
 												Line:   72,
@@ -4722,8 +4476,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 82,
 													Line:   72,
 												},
-												File:   "alert_test.flux",
-												Source: "csv: outData",
+												File: "alert_test.flux",
 												Start: ast.Position{
 													Column: 70,
 													Line:   72,
@@ -4740,8 +4493,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 82,
 														Line:   72,
 													},
-													File:   "alert_test.flux",
-													Source: "csv: outData",
+													File: "alert_test.flux",
 													Start: ast.Position{
 														Column: 70,
 														Line:   72,
@@ -4758,8 +4510,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 73,
 															Line:   72,
 														},
-														File:   "alert_test.flux",
-														Source: "csv",
+														File: "alert_test.flux",
 														Start: ast.Position{
 															Column: 70,
 															Line:   72,
@@ -4778,8 +4529,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 82,
 															Line:   72,
 														},
-														File:   "alert_test.flux",
-														Source: "outData",
+														File: "alert_test.flux",
 														Start: ast.Position{
 															Column: 75,
 															Line:   72,
@@ -4800,8 +4550,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 83,
 												Line:   72,
 											},
-											File:   "alert_test.flux",
-											Source: "testing.loadMem(csv: outData)",
+											File: "alert_test.flux",
 											Start: ast.Position{
 												Column: 54,
 												Line:   72,
@@ -4817,8 +4566,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 69,
 													Line:   72,
 												},
-												File:   "alert_test.flux",
-												Source: "testing.loadMem",
+												File: "alert_test.flux",
 												Start: ast.Position{
 													Column: 54,
 													Line:   72,
@@ -4835,8 +4583,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 61,
 														Line:   72,
 													},
-													File:   "alert_test.flux",
-													Source: "testing",
+													File: "alert_test.flux",
 													Start: ast.Position{
 														Column: 54,
 														Line:   72,
@@ -4854,8 +4601,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 69,
 														Line:   72,
 													},
-													File:   "alert_test.flux",
-													Source: "loadMem",
+													File: "alert_test.flux",
 													Start: ast.Position{
 														Column: 62,
 														Line:   72,
@@ -4878,8 +4624,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 105,
 											Line:   72,
 										},
-										File:   "alert_test.flux",
-										Source: "fn: tickscript_alert",
+										File: "alert_test.flux",
 										Start: ast.Position{
 											Column: 85,
 											Line:   72,
@@ -4896,8 +4641,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 87,
 												Line:   72,
 											},
-											File:   "alert_test.flux",
-											Source: "fn",
+											File: "alert_test.flux",
 											Start: ast.Position{
 												Column: 85,
 												Line:   72,
@@ -4916,8 +4660,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 105,
 												Line:   72,
 											},
-											File:   "alert_test.flux",
-											Source: "tickscript_alert",
+											File: "alert_test.flux",
 											Start: ast.Position{
 												Column: 89,
 												Line:   72,
@@ -4946,8 +4689,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 107,
 						Line:   72,
 					},
-					File:   "alert_test.flux",
-					Source: "test _tickscript_alert = () =>\n    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: tickscript_alert})",
+					File: "alert_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   71,
@@ -4966,8 +4708,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 17,
 						Line:   4,
 					},
-					File:   "alert_test.flux",
-					Source: "import \"testing\"",
+					File: "alert_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   4,
@@ -4983,8 +4724,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 17,
 							Line:   4,
 						},
-						File:   "alert_test.flux",
-						Source: "\"testing\"",
+						File: "alert_test.flux",
 						Start: ast.Position{
 							Column: 8,
 							Line:   4,
@@ -5003,8 +4743,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 13,
 						Line:   5,
 					},
-					File:   "alert_test.flux",
-					Source: "import \"csv\"",
+					File: "alert_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   5,
@@ -5020,8 +4759,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 13,
 							Line:   5,
 						},
-						File:   "alert_test.flux",
-						Source: "\"csv\"",
+						File: "alert_test.flux",
 						Start: ast.Position{
 							Column: 8,
 							Line:   5,
@@ -5040,8 +4778,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 39,
 						Line:   6,
 					},
-					File:   "alert_test.flux",
-					Source: "import \"contrib/bonitoo-io/tickscript\"",
+					File: "alert_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   6,
@@ -5057,8 +4794,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 39,
 							Line:   6,
 						},
-						File:   "alert_test.flux",
-						Source: "\"contrib/bonitoo-io/tickscript\"",
+						File: "alert_test.flux",
 						Start: ast.Position{
 							Column: 8,
 							Line:   6,
@@ -5077,8 +4813,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 37,
 						Line:   7,
 					},
-					File:   "alert_test.flux",
-					Source: "import \"influxdata/influxdb/monitor\"",
+					File: "alert_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   7,
@@ -5094,8 +4829,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 37,
 							Line:   7,
 						},
-						File:   "alert_test.flux",
-						Source: "\"influxdata/influxdb/monitor\"",
+						File: "alert_test.flux",
 						Start: ast.Position{
 							Column: 8,
 							Line:   7,
@@ -5114,8 +4848,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 36,
 						Line:   8,
 					},
-					File:   "alert_test.flux",
-					Source: "import \"influxdata/influxdb/schema\"",
+					File: "alert_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   8,
@@ -5131,8 +4864,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 36,
 							Line:   8,
 						},
-						File:   "alert_test.flux",
-						Source: "\"influxdata/influxdb/schema\"",
+						File: "alert_test.flux",
 						Start: ast.Position{
 							Column: 8,
 							Line:   8,
@@ -5153,8 +4885,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 24,
 						Line:   1,
 					},
-					File:   "alert_test.flux",
-					Source: "package tickscript_test",
+					File: "alert_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   1,
@@ -5170,8 +4901,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 24,
 							Line:   1,
 						},
-						File:   "alert_test.flux",
-						Source: "tickscript_test",
+						File: "alert_test.flux",
 						Start: ast.Position{
 							Column: 9,
 							Line:   1,
@@ -5190,8 +4920,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Column: 107,
 					Line:   73,
 				},
-				File:   "alert_with_topic_test.flux",
-				Source: "package tickscript_test\n\n\nimport \"testing\"\nimport \"csv\"\nimport \"contrib/bonitoo-io/tickscript\"\nimport \"influxdata/influxdb/monitor\"\nimport \"influxdata/influxdb/schema\"\n\noption now = () => 2020-11-25T14:05:30Z\n\n// overwrite as buckets are not avail in Flux tests\noption monitor.write = (tables=<-) => tables\noption monitor.log = (tables=<-) => tables\n\ninData =\n    \"\n#group,false,false,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,\n,result,table,_time,_value,_field,_measurement,host,realm\n,,0,2020-11-25T14:05:03.477635916Z,1.819231109049999,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:04.541635074Z,1.635878190200181,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:05.623191313Z,39.33716449678206,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:06.696061106Z,26.33716449678206,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:07.768317097Z,8.33716449678206,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:08.868317091Z,1.33716449678206,kafka_message_in_rate,testm,kafka07,ft\n\"\noutData =\n    \"\n#group,false,false,false,true,true,true,true,false,true,false,true,false,true,false,true,true\n#datatype,string,long,double,string,string,string,string,string,string,long,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,,\n,result,table,KafkaMsgRate,_check_id,_check_name,_level,_measurement,_message,_source_measurement,_source_timestamp,_type,details,host,id,realm,_topic\n,,0,1.819231109049999,rate-check,Rate Check,ok,statuses,Realm: ft - Hostname: kafka07 / Metric: kafka_message_in_rate threshold alert: ok - 1.819231109049999,testm,1606313103477635916,custom,some detail: myrealm=ft,kafka07,Realm: ft - Hostname: kafka07 / Metric: kafka_message_in_rate threshold alert,ft,TESTING\n,,0,1.635878190200181,rate-check,Rate Check,ok,statuses,Realm: ft - Hostname: kafka07 / Metric: kafka_message_in_rate threshold alert: ok - 1.635878190200181,testm,1606313104541635074,custom,some detail: myrealm=ft,kafka07,Realm: ft - Hostname: kafka07 / Metric: kafka_message_in_rate threshold alert,ft,TESTING\n,,0,1.33716449678206,rate-check,Rate Check,ok,statuses,Realm: ft - Hostname: kafka07 / Metric: kafka_message_in_rate threshold alert: ok - 1.33716449678206,testm,1606313108868317091,custom,some detail: myrealm=ft,kafka07,Realm: ft - Hostname: kafka07 / Metric: kafka_message_in_rate threshold alert,ft,TESTING\n,,1,39.33716449678206,rate-check,Rate Check,crit,statuses,Realm: ft - Hostname: kafka07 / Metric: kafka_message_in_rate threshold alert: crit - 39.33716449678206,testm,1606313105623191313,custom,some detail: myrealm=ft,kafka07,Realm: ft - Hostname: kafka07 / Metric: kafka_message_in_rate threshold alert,ft,TESTING\n,,1,26.33716449678206,rate-check,Rate Check,crit,statuses,Realm: ft - Hostname: kafka07 / Metric: kafka_message_in_rate threshold alert: crit - 26.33716449678206,testm,1606313106696061106,custom,some detail: myrealm=ft,kafka07,Realm: ft - Hostname: kafka07 / Metric: kafka_message_in_rate threshold alert,ft,TESTING\n,,2,8.33716449678206,rate-check,Rate Check,warn,statuses,Realm: ft - Hostname: kafka07 / Metric: kafka_message_in_rate threshold alert: warn - 8.33716449678206,testm,1606313107768317097,custom,some detail: myrealm=ft,kafka07,Realm: ft - Hostname: kafka07 / Metric: kafka_message_in_rate threshold alert,ft,TESTING\n\"\ncheck = {\n    _check_id: \"rate-check\",\n    _check_name: \"Rate Check\",\n    // tickscript?\n    _type: \"custom\",\n    tags: {},\n}\nmetric_type = \"kafka_message_in_rate\"\ntier = \"ft\"\nh_threshold = 10\nw_threshold = 5\nl_threshold = 0.002\ntickscript_alert = (table=<-) =>\n    table\n        |> range(start: 2020-11-25T14:05:00Z)\n        |> filter(fn: (r) => r._field == metric_type and r.realm == tier)\n        |> schema.fieldsAsCols()\n        |> tickscript.select(column: metric_type, as: \"KafkaMsgRate\")\n        |> tickscript.groupBy(columns: [\"host\", \"realm\"])\n        |> tickscript.alert(\n            check: check,\n            id: (r) => \"Realm: ${r.realm} - Hostname: ${r.host} / Metric: ${metric_type} threshold alert\",\n            message: (r) => \"${r.id}: ${r._level} - ${string(v: r.KafkaMsgRate)}\",\n            details: (r) => \"some detail: myrealm=${r.realm}\",\n            crit: (r) => r.KafkaMsgRate > h_threshold or r.KafkaMsgRate < l_threshold,\n            warn: (r) => r.KafkaMsgRate > w_threshold or r.KafkaMsgRate < l_threshold,\n            topic: \"TESTING\",\n        )\n        |> drop(columns: [\"_time\"])\n\ntest _tickscript_alert = () =>\n    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: tickscript_alert})",
+				File: "alert_with_topic_test.flux",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -5208,8 +4937,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 40,
 							Line:   10,
 						},
-						File:   "alert_with_topic_test.flux",
-						Source: "now = () => 2020-11-25T14:05:30Z",
+						File: "alert_with_topic_test.flux",
 						Start: ast.Position{
 							Column: 8,
 							Line:   10,
@@ -5225,8 +4953,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 11,
 								Line:   10,
 							},
-							File:   "alert_with_topic_test.flux",
-							Source: "now",
+							File: "alert_with_topic_test.flux",
 							Start: ast.Position{
 								Column: 8,
 								Line:   10,
@@ -5245,8 +4972,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 40,
 								Line:   10,
 							},
-							File:   "alert_with_topic_test.flux",
-							Source: "() => 2020-11-25T14:05:30Z",
+							File: "alert_with_topic_test.flux",
 							Start: ast.Position{
 								Column: 14,
 								Line:   10,
@@ -5262,8 +4988,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 40,
 									Line:   10,
 								},
-								File:   "alert_with_topic_test.flux",
-								Source: "2020-11-25T14:05:30Z",
+								File: "alert_with_topic_test.flux",
 								Start: ast.Position{
 									Column: 20,
 									Line:   10,
@@ -5285,8 +5010,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 40,
 						Line:   10,
 					},
-					File:   "alert_with_topic_test.flux",
-					Source: "option now = () => 2020-11-25T14:05:30Z",
+					File: "alert_with_topic_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   10,
@@ -5303,8 +5027,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 45,
 							Line:   13,
 						},
-						File:   "alert_with_topic_test.flux",
-						Source: "monitor.write = (tables=<-) => tables",
+						File: "alert_with_topic_test.flux",
 						Start: ast.Position{
 							Column: 8,
 							Line:   13,
@@ -5321,8 +5044,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 45,
 								Line:   13,
 							},
-							File:   "alert_with_topic_test.flux",
-							Source: "(tables=<-) => tables",
+							File: "alert_with_topic_test.flux",
 							Start: ast.Position{
 								Column: 24,
 								Line:   13,
@@ -5338,8 +5060,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 45,
 									Line:   13,
 								},
-								File:   "alert_with_topic_test.flux",
-								Source: "tables",
+								File: "alert_with_topic_test.flux",
 								Start: ast.Position{
 									Column: 39,
 									Line:   13,
@@ -5358,8 +5079,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 34,
 									Line:   13,
 								},
-								File:   "alert_with_topic_test.flux",
-								Source: "tables=<-",
+								File: "alert_with_topic_test.flux",
 								Start: ast.Position{
 									Column: 25,
 									Line:   13,
@@ -5376,8 +5096,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 31,
 										Line:   13,
 									},
-									File:   "alert_with_topic_test.flux",
-									Source: "tables",
+									File: "alert_with_topic_test.flux",
 									Start: ast.Position{
 										Column: 25,
 										Line:   13,
@@ -5395,8 +5114,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 34,
 									Line:   13,
 								},
-								File:   "alert_with_topic_test.flux",
-								Source: "<-",
+								File: "alert_with_topic_test.flux",
 								Start: ast.Position{
 									Column: 32,
 									Line:   13,
@@ -5415,8 +5133,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 21,
 								Line:   13,
 							},
-							File:   "alert_with_topic_test.flux",
-							Source: "monitor.write",
+							File: "alert_with_topic_test.flux",
 							Start: ast.Position{
 								Column: 8,
 								Line:   13,
@@ -5433,8 +5150,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 15,
 									Line:   13,
 								},
-								File:   "alert_with_topic_test.flux",
-								Source: "monitor",
+								File: "alert_with_topic_test.flux",
 								Start: ast.Position{
 									Column: 8,
 									Line:   13,
@@ -5452,8 +5168,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 21,
 									Line:   13,
 								},
-								File:   "alert_with_topic_test.flux",
-								Source: "write",
+								File: "alert_with_topic_test.flux",
 								Start: ast.Position{
 									Column: 16,
 									Line:   13,
@@ -5473,8 +5188,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 45,
 						Line:   13,
 					},
-					File:   "alert_with_topic_test.flux",
-					Source: "option monitor.write = (tables=<-) => tables",
+					File: "alert_with_topic_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   13,
@@ -5491,8 +5205,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 43,
 							Line:   14,
 						},
-						File:   "alert_with_topic_test.flux",
-						Source: "monitor.log = (tables=<-) => tables",
+						File: "alert_with_topic_test.flux",
 						Start: ast.Position{
 							Column: 8,
 							Line:   14,
@@ -5509,8 +5222,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 43,
 								Line:   14,
 							},
-							File:   "alert_with_topic_test.flux",
-							Source: "(tables=<-) => tables",
+							File: "alert_with_topic_test.flux",
 							Start: ast.Position{
 								Column: 22,
 								Line:   14,
@@ -5526,8 +5238,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 43,
 									Line:   14,
 								},
-								File:   "alert_with_topic_test.flux",
-								Source: "tables",
+								File: "alert_with_topic_test.flux",
 								Start: ast.Position{
 									Column: 37,
 									Line:   14,
@@ -5546,8 +5257,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 32,
 									Line:   14,
 								},
-								File:   "alert_with_topic_test.flux",
-								Source: "tables=<-",
+								File: "alert_with_topic_test.flux",
 								Start: ast.Position{
 									Column: 23,
 									Line:   14,
@@ -5564,8 +5274,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 29,
 										Line:   14,
 									},
-									File:   "alert_with_topic_test.flux",
-									Source: "tables",
+									File: "alert_with_topic_test.flux",
 									Start: ast.Position{
 										Column: 23,
 										Line:   14,
@@ -5583,8 +5292,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 32,
 									Line:   14,
 								},
-								File:   "alert_with_topic_test.flux",
-								Source: "<-",
+								File: "alert_with_topic_test.flux",
 								Start: ast.Position{
 									Column: 30,
 									Line:   14,
@@ -5603,8 +5311,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 19,
 								Line:   14,
 							},
-							File:   "alert_with_topic_test.flux",
-							Source: "monitor.log",
+							File: "alert_with_topic_test.flux",
 							Start: ast.Position{
 								Column: 8,
 								Line:   14,
@@ -5621,8 +5328,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 15,
 									Line:   14,
 								},
-								File:   "alert_with_topic_test.flux",
-								Source: "monitor",
+								File: "alert_with_topic_test.flux",
 								Start: ast.Position{
 									Column: 8,
 									Line:   14,
@@ -5640,8 +5346,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 19,
 									Line:   14,
 								},
-								File:   "alert_with_topic_test.flux",
-								Source: "log",
+								File: "alert_with_topic_test.flux",
 								Start: ast.Position{
 									Column: 16,
 									Line:   14,
@@ -5661,8 +5366,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 43,
 						Line:   14,
 					},
-					File:   "alert_with_topic_test.flux",
-					Source: "option monitor.log = (tables=<-) => tables",
+					File: "alert_with_topic_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   14,
@@ -5678,8 +5382,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 2,
 						Line:   28,
 					},
-					File:   "alert_with_topic_test.flux",
-					Source: "inData =\n    \"\n#group,false,false,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,\n,result,table,_time,_value,_field,_measurement,host,realm\n,,0,2020-11-25T14:05:03.477635916Z,1.819231109049999,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:04.541635074Z,1.635878190200181,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:05.623191313Z,39.33716449678206,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:06.696061106Z,26.33716449678206,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:07.768317097Z,8.33716449678206,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:08.868317091Z,1.33716449678206,kafka_message_in_rate,testm,kafka07,ft\n\"",
+					File: "alert_with_topic_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   16,
@@ -5695,8 +5398,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 7,
 							Line:   16,
 						},
-						File:   "alert_with_topic_test.flux",
-						Source: "inData",
+						File: "alert_with_topic_test.flux",
 						Start: ast.Position{
 							Column: 1,
 							Line:   16,
@@ -5714,8 +5416,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 2,
 							Line:   28,
 						},
-						File:   "alert_with_topic_test.flux",
-						Source: "\"\n#group,false,false,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,\n,result,table,_time,_value,_field,_measurement,host,realm\n,,0,2020-11-25T14:05:03.477635916Z,1.819231109049999,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:04.541635074Z,1.635878190200181,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:05.623191313Z,39.33716449678206,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:06.696061106Z,26.33716449678206,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:07.768317097Z,8.33716449678206,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:08.868317091Z,1.33716449678206,kafka_message_in_rate,testm,kafka07,ft\n\"",
+						File: "alert_with_topic_test.flux",
 						Start: ast.Position{
 							Column: 5,
 							Line:   17,
@@ -5733,8 +5434,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 2,
 						Line:   41,
 					},
-					File:   "alert_with_topic_test.flux",
-					Source: "outData =\n    \"\n#group,false,false,false,true,true,true,true,false,true,false,true,false,true,false,true,true\n#datatype,string,long,double,string,string,string,string,string,string,long,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,,\n,result,table,KafkaMsgRate,_check_id,_check_name,_level,_measurement,_message,_source_measurement,_source_timestamp,_type,details,host,id,realm,_topic\n,,0,1.819231109049999,rate-check,Rate Check,ok,statuses,Realm: ft - Hostname: kafka07 / Metric: kafka_message_in_rate threshold alert: ok - 1.819231109049999,testm,1606313103477635916,custom,some detail: myrealm=ft,kafka07,Realm: ft - Hostname: kafka07 / Metric: kafka_message_in_rate threshold alert,ft,TESTING\n,,0,1.635878190200181,rate-check,Rate Check,ok,statuses,Realm: ft - Hostname: kafka07 / Metric: kafka_message_in_rate threshold alert: ok - 1.635878190200181,testm,1606313104541635074,custom,some detail: myrealm=ft,kafka07,Realm: ft - Hostname: kafka07 / Metric: kafka_message_in_rate threshold alert,ft,TESTING\n,,0,1.33716449678206,rate-check,Rate Check,ok,statuses,Realm: ft - Hostname: kafka07 / Metric: kafka_message_in_rate threshold alert: ok - 1.33716449678206,testm,1606313108868317091,custom,some detail: myrealm=ft,kafka07,Realm: ft - Hostname: kafka07 / Metric: kafka_message_in_rate threshold alert,ft,TESTING\n,,1,39.33716449678206,rate-check,Rate Check,crit,statuses,Realm: ft - Hostname: kafka07 / Metric: kafka_message_in_rate threshold alert: crit - 39.33716449678206,testm,1606313105623191313,custom,some detail: myrealm=ft,kafka07,Realm: ft - Hostname: kafka07 / Metric: kafka_message_in_rate threshold alert,ft,TESTING\n,,1,26.33716449678206,rate-check,Rate Check,crit,statuses,Realm: ft - Hostname: kafka07 / Metric: kafka_message_in_rate threshold alert: crit - 26.33716449678206,testm,1606313106696061106,custom,some detail: myrealm=ft,kafka07,Realm: ft - Hostname: kafka07 / Metric: kafka_message_in_rate threshold alert,ft,TESTING\n,,2,8.33716449678206,rate-check,Rate Check,warn,statuses,Realm: ft - Hostname: kafka07 / Metric: kafka_message_in_rate threshold alert: warn - 8.33716449678206,testm,1606313107768317097,custom,some detail: myrealm=ft,kafka07,Realm: ft - Hostname: kafka07 / Metric: kafka_message_in_rate threshold alert,ft,TESTING\n\"",
+					File: "alert_with_topic_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   29,
@@ -5750,8 +5450,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 8,
 							Line:   29,
 						},
-						File:   "alert_with_topic_test.flux",
-						Source: "outData",
+						File: "alert_with_topic_test.flux",
 						Start: ast.Position{
 							Column: 1,
 							Line:   29,
@@ -5769,8 +5468,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 2,
 							Line:   41,
 						},
-						File:   "alert_with_topic_test.flux",
-						Source: "\"\n#group,false,false,false,true,true,true,true,false,true,false,true,false,true,false,true,true\n#datatype,string,long,double,string,string,string,string,string,string,long,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,,\n,result,table,KafkaMsgRate,_check_id,_check_name,_level,_measurement,_message,_source_measurement,_source_timestamp,_type,details,host,id,realm,_topic\n,,0,1.819231109049999,rate-check,Rate Check,ok,statuses,Realm: ft - Hostname: kafka07 / Metric: kafka_message_in_rate threshold alert: ok - 1.819231109049999,testm,1606313103477635916,custom,some detail: myrealm=ft,kafka07,Realm: ft - Hostname: kafka07 / Metric: kafka_message_in_rate threshold alert,ft,TESTING\n,,0,1.635878190200181,rate-check,Rate Check,ok,statuses,Realm: ft - Hostname: kafka07 / Metric: kafka_message_in_rate threshold alert: ok - 1.635878190200181,testm,1606313104541635074,custom,some detail: myrealm=ft,kafka07,Realm: ft - Hostname: kafka07 / Metric: kafka_message_in_rate threshold alert,ft,TESTING\n,,0,1.33716449678206,rate-check,Rate Check,ok,statuses,Realm: ft - Hostname: kafka07 / Metric: kafka_message_in_rate threshold alert: ok - 1.33716449678206,testm,1606313108868317091,custom,some detail: myrealm=ft,kafka07,Realm: ft - Hostname: kafka07 / Metric: kafka_message_in_rate threshold alert,ft,TESTING\n,,1,39.33716449678206,rate-check,Rate Check,crit,statuses,Realm: ft - Hostname: kafka07 / Metric: kafka_message_in_rate threshold alert: crit - 39.33716449678206,testm,1606313105623191313,custom,some detail: myrealm=ft,kafka07,Realm: ft - Hostname: kafka07 / Metric: kafka_message_in_rate threshold alert,ft,TESTING\n,,1,26.33716449678206,rate-check,Rate Check,crit,statuses,Realm: ft - Hostname: kafka07 / Metric: kafka_message_in_rate threshold alert: crit - 26.33716449678206,testm,1606313106696061106,custom,some detail: myrealm=ft,kafka07,Realm: ft - Hostname: kafka07 / Metric: kafka_message_in_rate threshold alert,ft,TESTING\n,,2,8.33716449678206,rate-check,Rate Check,warn,statuses,Realm: ft - Hostname: kafka07 / Metric: kafka_message_in_rate threshold alert: warn - 8.33716449678206,testm,1606313107768317097,custom,some detail: myrealm=ft,kafka07,Realm: ft - Hostname: kafka07 / Metric: kafka_message_in_rate threshold alert,ft,TESTING\n\"",
+						File: "alert_with_topic_test.flux",
 						Start: ast.Position{
 							Column: 5,
 							Line:   30,
@@ -5788,8 +5486,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 2,
 						Line:   48,
 					},
-					File:   "alert_with_topic_test.flux",
-					Source: "check = {\n    _check_id: \"rate-check\",\n    _check_name: \"Rate Check\",\n    // tickscript?\n    _type: \"custom\",\n    tags: {},\n}",
+					File: "alert_with_topic_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   42,
@@ -5805,8 +5502,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 6,
 							Line:   42,
 						},
-						File:   "alert_with_topic_test.flux",
-						Source: "check",
+						File: "alert_with_topic_test.flux",
 						Start: ast.Position{
 							Column: 1,
 							Line:   42,
@@ -5824,8 +5520,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 2,
 							Line:   48,
 						},
-						File:   "alert_with_topic_test.flux",
-						Source: "{\n    _check_id: \"rate-check\",\n    _check_name: \"Rate Check\",\n    // tickscript?\n    _type: \"custom\",\n    tags: {},\n}",
+						File: "alert_with_topic_test.flux",
 						Start: ast.Position{
 							Column: 9,
 							Line:   42,
@@ -5842,8 +5537,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 28,
 								Line:   43,
 							},
-							File:   "alert_with_topic_test.flux",
-							Source: "_check_id: \"rate-check\"",
+							File: "alert_with_topic_test.flux",
 							Start: ast.Position{
 								Column: 5,
 								Line:   43,
@@ -5860,8 +5554,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 14,
 									Line:   43,
 								},
-								File:   "alert_with_topic_test.flux",
-								Source: "_check_id",
+								File: "alert_with_topic_test.flux",
 								Start: ast.Position{
 									Column: 5,
 									Line:   43,
@@ -5880,8 +5573,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 28,
 									Line:   43,
 								},
-								File:   "alert_with_topic_test.flux",
-								Source: "\"rate-check\"",
+								File: "alert_with_topic_test.flux",
 								Start: ast.Position{
 									Column: 16,
 									Line:   43,
@@ -5899,8 +5591,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 30,
 								Line:   44,
 							},
-							File:   "alert_with_topic_test.flux",
-							Source: "_check_name: \"Rate Check\"",
+							File: "alert_with_topic_test.flux",
 							Start: ast.Position{
 								Column: 5,
 								Line:   44,
@@ -5917,8 +5608,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 16,
 									Line:   44,
 								},
-								File:   "alert_with_topic_test.flux",
-								Source: "_check_name",
+								File: "alert_with_topic_test.flux",
 								Start: ast.Position{
 									Column: 5,
 									Line:   44,
@@ -5937,8 +5627,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 30,
 									Line:   44,
 								},
-								File:   "alert_with_topic_test.flux",
-								Source: "\"Rate Check\"",
+								File: "alert_with_topic_test.flux",
 								Start: ast.Position{
 									Column: 18,
 									Line:   44,
@@ -5956,8 +5645,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 20,
 								Line:   46,
 							},
-							File:   "alert_with_topic_test.flux",
-							Source: "_type: \"custom\"",
+							File: "alert_with_topic_test.flux",
 							Start: ast.Position{
 								Column: 5,
 								Line:   46,
@@ -5974,8 +5662,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 10,
 									Line:   46,
 								},
-								File:   "alert_with_topic_test.flux",
-								Source: "_type",
+								File: "alert_with_topic_test.flux",
 								Start: ast.Position{
 									Column: 5,
 									Line:   46,
@@ -5994,8 +5681,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 20,
 									Line:   46,
 								},
-								File:   "alert_with_topic_test.flux",
-								Source: "\"custom\"",
+								File: "alert_with_topic_test.flux",
 								Start: ast.Position{
 									Column: 12,
 									Line:   46,
@@ -6013,8 +5699,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 13,
 								Line:   47,
 							},
-							File:   "alert_with_topic_test.flux",
-							Source: "tags: {}",
+							File: "alert_with_topic_test.flux",
 							Start: ast.Position{
 								Column: 5,
 								Line:   47,
@@ -6031,8 +5716,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 9,
 									Line:   47,
 								},
-								File:   "alert_with_topic_test.flux",
-								Source: "tags",
+								File: "alert_with_topic_test.flux",
 								Start: ast.Position{
 									Column: 5,
 									Line:   47,
@@ -6051,8 +5735,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 13,
 									Line:   47,
 								},
-								File:   "alert_with_topic_test.flux",
-								Source: "{}",
+								File: "alert_with_topic_test.flux",
 								Start: ast.Position{
 									Column: 11,
 									Line:   47,
@@ -6077,8 +5760,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 38,
 						Line:   49,
 					},
-					File:   "alert_with_topic_test.flux",
-					Source: "metric_type = \"kafka_message_in_rate\"",
+					File: "alert_with_topic_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   49,
@@ -6094,8 +5776,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 12,
 							Line:   49,
 						},
-						File:   "alert_with_topic_test.flux",
-						Source: "metric_type",
+						File: "alert_with_topic_test.flux",
 						Start: ast.Position{
 							Column: 1,
 							Line:   49,
@@ -6113,8 +5794,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 38,
 							Line:   49,
 						},
-						File:   "alert_with_topic_test.flux",
-						Source: "\"kafka_message_in_rate\"",
+						File: "alert_with_topic_test.flux",
 						Start: ast.Position{
 							Column: 15,
 							Line:   49,
@@ -6132,8 +5812,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 12,
 						Line:   50,
 					},
-					File:   "alert_with_topic_test.flux",
-					Source: "tier = \"ft\"",
+					File: "alert_with_topic_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   50,
@@ -6149,8 +5828,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 5,
 							Line:   50,
 						},
-						File:   "alert_with_topic_test.flux",
-						Source: "tier",
+						File: "alert_with_topic_test.flux",
 						Start: ast.Position{
 							Column: 1,
 							Line:   50,
@@ -6168,8 +5846,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 12,
 							Line:   50,
 						},
-						File:   "alert_with_topic_test.flux",
-						Source: "\"ft\"",
+						File: "alert_with_topic_test.flux",
 						Start: ast.Position{
 							Column: 8,
 							Line:   50,
@@ -6187,8 +5864,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 17,
 						Line:   51,
 					},
-					File:   "alert_with_topic_test.flux",
-					Source: "h_threshold = 10",
+					File: "alert_with_topic_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   51,
@@ -6204,8 +5880,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 12,
 							Line:   51,
 						},
-						File:   "alert_with_topic_test.flux",
-						Source: "h_threshold",
+						File: "alert_with_topic_test.flux",
 						Start: ast.Position{
 							Column: 1,
 							Line:   51,
@@ -6223,8 +5898,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 17,
 							Line:   51,
 						},
-						File:   "alert_with_topic_test.flux",
-						Source: "10",
+						File: "alert_with_topic_test.flux",
 						Start: ast.Position{
 							Column: 15,
 							Line:   51,
@@ -6242,8 +5916,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 16,
 						Line:   52,
 					},
-					File:   "alert_with_topic_test.flux",
-					Source: "w_threshold = 5",
+					File: "alert_with_topic_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   52,
@@ -6259,8 +5932,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 12,
 							Line:   52,
 						},
-						File:   "alert_with_topic_test.flux",
-						Source: "w_threshold",
+						File: "alert_with_topic_test.flux",
 						Start: ast.Position{
 							Column: 1,
 							Line:   52,
@@ -6278,8 +5950,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 16,
 							Line:   52,
 						},
-						File:   "alert_with_topic_test.flux",
-						Source: "5",
+						File: "alert_with_topic_test.flux",
 						Start: ast.Position{
 							Column: 15,
 							Line:   52,
@@ -6297,8 +5968,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 20,
 						Line:   53,
 					},
-					File:   "alert_with_topic_test.flux",
-					Source: "l_threshold = 0.002",
+					File: "alert_with_topic_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   53,
@@ -6314,8 +5984,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 12,
 							Line:   53,
 						},
-						File:   "alert_with_topic_test.flux",
-						Source: "l_threshold",
+						File: "alert_with_topic_test.flux",
 						Start: ast.Position{
 							Column: 1,
 							Line:   53,
@@ -6333,8 +6002,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 20,
 							Line:   53,
 						},
-						File:   "alert_with_topic_test.flux",
-						Source: "0.002",
+						File: "alert_with_topic_test.flux",
 						Start: ast.Position{
 							Column: 15,
 							Line:   53,
@@ -6352,8 +6020,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 36,
 						Line:   70,
 					},
-					File:   "alert_with_topic_test.flux",
-					Source: "tickscript_alert = (table=<-) =>\n    table\n        |> range(start: 2020-11-25T14:05:00Z)\n        |> filter(fn: (r) => r._field == metric_type and r.realm == tier)\n        |> schema.fieldsAsCols()\n        |> tickscript.select(column: metric_type, as: \"KafkaMsgRate\")\n        |> tickscript.groupBy(columns: [\"host\", \"realm\"])\n        |> tickscript.alert(\n            check: check,\n            id: (r) => \"Realm: ${r.realm} - Hostname: ${r.host} / Metric: ${metric_type} threshold alert\",\n            message: (r) => \"${r.id}: ${r._level} - ${string(v: r.KafkaMsgRate)}\",\n            details: (r) => \"some detail: myrealm=${r.realm}\",\n            crit: (r) => r.KafkaMsgRate > h_threshold or r.KafkaMsgRate < l_threshold,\n            warn: (r) => r.KafkaMsgRate > w_threshold or r.KafkaMsgRate < l_threshold,\n            topic: \"TESTING\",\n        )\n        |> drop(columns: [\"_time\"])",
+					File: "alert_with_topic_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   54,
@@ -6369,8 +6036,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 17,
 							Line:   54,
 						},
-						File:   "alert_with_topic_test.flux",
-						Source: "tickscript_alert",
+						File: "alert_with_topic_test.flux",
 						Start: ast.Position{
 							Column: 1,
 							Line:   54,
@@ -6389,8 +6055,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 36,
 							Line:   70,
 						},
-						File:   "alert_with_topic_test.flux",
-						Source: "(table=<-) =>\n    table\n        |> range(start: 2020-11-25T14:05:00Z)\n        |> filter(fn: (r) => r._field == metric_type and r.realm == tier)\n        |> schema.fieldsAsCols()\n        |> tickscript.select(column: metric_type, as: \"KafkaMsgRate\")\n        |> tickscript.groupBy(columns: [\"host\", \"realm\"])\n        |> tickscript.alert(\n            check: check,\n            id: (r) => \"Realm: ${r.realm} - Hostname: ${r.host} / Metric: ${metric_type} threshold alert\",\n            message: (r) => \"${r.id}: ${r._level} - ${string(v: r.KafkaMsgRate)}\",\n            details: (r) => \"some detail: myrealm=${r.realm}\",\n            crit: (r) => r.KafkaMsgRate > h_threshold or r.KafkaMsgRate < l_threshold,\n            warn: (r) => r.KafkaMsgRate > w_threshold or r.KafkaMsgRate < l_threshold,\n            topic: \"TESTING\",\n        )\n        |> drop(columns: [\"_time\"])",
+						File: "alert_with_topic_test.flux",
 						Start: ast.Position{
 							Column: 20,
 							Line:   54,
@@ -6413,8 +6078,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 10,
 															Line:   55,
 														},
-														File:   "alert_with_topic_test.flux",
-														Source: "table",
+														File: "alert_with_topic_test.flux",
 														Start: ast.Position{
 															Column: 5,
 															Line:   55,
@@ -6431,8 +6095,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 46,
 														Line:   56,
 													},
-													File:   "alert_with_topic_test.flux",
-													Source: "table\n        |> range(start: 2020-11-25T14:05:00Z)",
+													File: "alert_with_topic_test.flux",
 													Start: ast.Position{
 														Column: 5,
 														Line:   55,
@@ -6449,8 +6112,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Column: 45,
 																Line:   56,
 															},
-															File:   "alert_with_topic_test.flux",
-															Source: "start: 2020-11-25T14:05:00Z",
+															File: "alert_with_topic_test.flux",
 															Start: ast.Position{
 																Column: 18,
 																Line:   56,
@@ -6467,8 +6129,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Column: 45,
 																	Line:   56,
 																},
-																File:   "alert_with_topic_test.flux",
-																Source: "start: 2020-11-25T14:05:00Z",
+																File: "alert_with_topic_test.flux",
 																Start: ast.Position{
 																	Column: 18,
 																	Line:   56,
@@ -6485,8 +6146,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Column: 23,
 																		Line:   56,
 																	},
-																	File:   "alert_with_topic_test.flux",
-																	Source: "start",
+																	File: "alert_with_topic_test.flux",
 																	Start: ast.Position{
 																		Column: 18,
 																		Line:   56,
@@ -6505,8 +6165,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Column: 45,
 																		Line:   56,
 																	},
-																	File:   "alert_with_topic_test.flux",
-																	Source: "2020-11-25T14:05:00Z",
+																	File: "alert_with_topic_test.flux",
 																	Start: ast.Position{
 																		Column: 25,
 																		Line:   56,
@@ -6527,8 +6186,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 46,
 															Line:   56,
 														},
-														File:   "alert_with_topic_test.flux",
-														Source: "range(start: 2020-11-25T14:05:00Z)",
+														File: "alert_with_topic_test.flux",
 														Start: ast.Position{
 															Column: 12,
 															Line:   56,
@@ -6544,8 +6202,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Column: 17,
 																Line:   56,
 															},
-															File:   "alert_with_topic_test.flux",
-															Source: "range",
+															File: "alert_with_topic_test.flux",
 															Start: ast.Position{
 																Column: 12,
 																Line:   56,
@@ -6566,8 +6223,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 74,
 													Line:   57,
 												},
-												File:   "alert_with_topic_test.flux",
-												Source: "table\n        |> range(start: 2020-11-25T14:05:00Z)\n        |> filter(fn: (r) => r._field == metric_type and r.realm == tier)",
+												File: "alert_with_topic_test.flux",
 												Start: ast.Position{
 													Column: 5,
 													Line:   55,
@@ -6584,8 +6240,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 73,
 															Line:   57,
 														},
-														File:   "alert_with_topic_test.flux",
-														Source: "fn: (r) => r._field == metric_type and r.realm == tier",
+														File: "alert_with_topic_test.flux",
 														Start: ast.Position{
 															Column: 19,
 															Line:   57,
@@ -6602,8 +6257,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Column: 73,
 																Line:   57,
 															},
-															File:   "alert_with_topic_test.flux",
-															Source: "fn: (r) => r._field == metric_type and r.realm == tier",
+															File: "alert_with_topic_test.flux",
 															Start: ast.Position{
 																Column: 19,
 																Line:   57,
@@ -6620,8 +6274,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Column: 21,
 																	Line:   57,
 																},
-																File:   "alert_with_topic_test.flux",
-																Source: "fn",
+																File: "alert_with_topic_test.flux",
 																Start: ast.Position{
 																	Column: 19,
 																	Line:   57,
@@ -6641,8 +6294,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Column: 73,
 																	Line:   57,
 																},
-																File:   "alert_with_topic_test.flux",
-																Source: "(r) => r._field == metric_type and r.realm == tier",
+																File: "alert_with_topic_test.flux",
 																Start: ast.Position{
 																	Column: 23,
 																	Line:   57,
@@ -6658,8 +6310,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Column: 73,
 																		Line:   57,
 																	},
-																	File:   "alert_with_topic_test.flux",
-																	Source: "r._field == metric_type and r.realm == tier",
+																	File: "alert_with_topic_test.flux",
 																	Start: ast.Position{
 																		Column: 30,
 																		Line:   57,
@@ -6675,8 +6326,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																			Column: 53,
 																			Line:   57,
 																		},
-																		File:   "alert_with_topic_test.flux",
-																		Source: "r._field == metric_type",
+																		File: "alert_with_topic_test.flux",
 																		Start: ast.Position{
 																			Column: 30,
 																			Line:   57,
@@ -6692,8 +6342,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																				Column: 38,
 																				Line:   57,
 																			},
-																			File:   "alert_with_topic_test.flux",
-																			Source: "r._field",
+																			File: "alert_with_topic_test.flux",
 																			Start: ast.Position{
 																				Column: 30,
 																				Line:   57,
@@ -6710,8 +6359,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																					Column: 31,
 																					Line:   57,
 																				},
-																				File:   "alert_with_topic_test.flux",
-																				Source: "r",
+																				File: "alert_with_topic_test.flux",
 																				Start: ast.Position{
 																					Column: 30,
 																					Line:   57,
@@ -6729,8 +6377,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																					Column: 38,
 																					Line:   57,
 																				},
-																				File:   "alert_with_topic_test.flux",
-																				Source: "_field",
+																				File: "alert_with_topic_test.flux",
 																				Start: ast.Position{
 																					Column: 32,
 																					Line:   57,
@@ -6751,8 +6398,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																				Column: 53,
 																				Line:   57,
 																			},
-																			File:   "alert_with_topic_test.flux",
-																			Source: "metric_type",
+																			File: "alert_with_topic_test.flux",
 																			Start: ast.Position{
 																				Column: 42,
 																				Line:   57,
@@ -6772,8 +6418,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																			Column: 73,
 																			Line:   57,
 																		},
-																		File:   "alert_with_topic_test.flux",
-																		Source: "r.realm == tier",
+																		File: "alert_with_topic_test.flux",
 																		Start: ast.Position{
 																			Column: 58,
 																			Line:   57,
@@ -6789,8 +6434,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																				Column: 65,
 																				Line:   57,
 																			},
-																			File:   "alert_with_topic_test.flux",
-																			Source: "r.realm",
+																			File: "alert_with_topic_test.flux",
 																			Start: ast.Position{
 																				Column: 58,
 																				Line:   57,
@@ -6807,8 +6451,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																					Column: 59,
 																					Line:   57,
 																				},
-																				File:   "alert_with_topic_test.flux",
-																				Source: "r",
+																				File: "alert_with_topic_test.flux",
 																				Start: ast.Position{
 																					Column: 58,
 																					Line:   57,
@@ -6826,8 +6469,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																					Column: 65,
 																					Line:   57,
 																				},
-																				File:   "alert_with_topic_test.flux",
-																				Source: "realm",
+																				File: "alert_with_topic_test.flux",
 																				Start: ast.Position{
 																					Column: 60,
 																					Line:   57,
@@ -6848,8 +6490,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																				Column: 73,
 																				Line:   57,
 																			},
-																			File:   "alert_with_topic_test.flux",
-																			Source: "tier",
+																			File: "alert_with_topic_test.flux",
 																			Start: ast.Position{
 																				Column: 69,
 																				Line:   57,
@@ -6870,8 +6511,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Column: 25,
 																		Line:   57,
 																	},
-																	File:   "alert_with_topic_test.flux",
-																	Source: "r",
+																	File: "alert_with_topic_test.flux",
 																	Start: ast.Position{
 																		Column: 24,
 																		Line:   57,
@@ -6888,8 +6528,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																			Column: 25,
 																			Line:   57,
 																		},
-																		File:   "alert_with_topic_test.flux",
-																		Source: "r",
+																		File: "alert_with_topic_test.flux",
 																		Start: ast.Position{
 																			Column: 24,
 																			Line:   57,
@@ -6915,8 +6554,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 74,
 														Line:   57,
 													},
-													File:   "alert_with_topic_test.flux",
-													Source: "filter(fn: (r) => r._field == metric_type and r.realm == tier)",
+													File: "alert_with_topic_test.flux",
 													Start: ast.Position{
 														Column: 12,
 														Line:   57,
@@ -6932,8 +6570,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 18,
 															Line:   57,
 														},
-														File:   "alert_with_topic_test.flux",
-														Source: "filter",
+														File: "alert_with_topic_test.flux",
 														Start: ast.Position{
 															Column: 12,
 															Line:   57,
@@ -6954,8 +6591,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 33,
 												Line:   58,
 											},
-											File:   "alert_with_topic_test.flux",
-											Source: "table\n        |> range(start: 2020-11-25T14:05:00Z)\n        |> filter(fn: (r) => r._field == metric_type and r.realm == tier)\n        |> schema.fieldsAsCols()",
+											File: "alert_with_topic_test.flux",
 											Start: ast.Position{
 												Column: 5,
 												Line:   55,
@@ -6972,8 +6608,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 33,
 													Line:   58,
 												},
-												File:   "alert_with_topic_test.flux",
-												Source: "schema.fieldsAsCols()",
+												File: "alert_with_topic_test.flux",
 												Start: ast.Position{
 													Column: 12,
 													Line:   58,
@@ -6989,8 +6624,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 31,
 														Line:   58,
 													},
-													File:   "alert_with_topic_test.flux",
-													Source: "schema.fieldsAsCols",
+													File: "alert_with_topic_test.flux",
 													Start: ast.Position{
 														Column: 12,
 														Line:   58,
@@ -7007,8 +6641,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 18,
 															Line:   58,
 														},
-														File:   "alert_with_topic_test.flux",
-														Source: "schema",
+														File: "alert_with_topic_test.flux",
 														Start: ast.Position{
 															Column: 12,
 															Line:   58,
@@ -7026,8 +6659,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 31,
 															Line:   58,
 														},
-														File:   "alert_with_topic_test.flux",
-														Source: "fieldsAsCols",
+														File: "alert_with_topic_test.flux",
 														Start: ast.Position{
 															Column: 19,
 															Line:   58,
@@ -7050,8 +6682,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 70,
 											Line:   59,
 										},
-										File:   "alert_with_topic_test.flux",
-										Source: "table\n        |> range(start: 2020-11-25T14:05:00Z)\n        |> filter(fn: (r) => r._field == metric_type and r.realm == tier)\n        |> schema.fieldsAsCols()\n        |> tickscript.select(column: metric_type, as: \"KafkaMsgRate\")",
+										File: "alert_with_topic_test.flux",
 										Start: ast.Position{
 											Column: 5,
 											Line:   55,
@@ -7068,8 +6699,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 69,
 													Line:   59,
 												},
-												File:   "alert_with_topic_test.flux",
-												Source: "column: metric_type, as: \"KafkaMsgRate\"",
+												File: "alert_with_topic_test.flux",
 												Start: ast.Position{
 													Column: 30,
 													Line:   59,
@@ -7086,8 +6716,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 49,
 														Line:   59,
 													},
-													File:   "alert_with_topic_test.flux",
-													Source: "column: metric_type",
+													File: "alert_with_topic_test.flux",
 													Start: ast.Position{
 														Column: 30,
 														Line:   59,
@@ -7104,8 +6733,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 36,
 															Line:   59,
 														},
-														File:   "alert_with_topic_test.flux",
-														Source: "column",
+														File: "alert_with_topic_test.flux",
 														Start: ast.Position{
 															Column: 30,
 															Line:   59,
@@ -7124,8 +6752,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 49,
 															Line:   59,
 														},
-														File:   "alert_with_topic_test.flux",
-														Source: "metric_type",
+														File: "alert_with_topic_test.flux",
 														Start: ast.Position{
 															Column: 38,
 															Line:   59,
@@ -7143,8 +6770,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 69,
 														Line:   59,
 													},
-													File:   "alert_with_topic_test.flux",
-													Source: "as: \"KafkaMsgRate\"",
+													File: "alert_with_topic_test.flux",
 													Start: ast.Position{
 														Column: 51,
 														Line:   59,
@@ -7161,8 +6787,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 53,
 															Line:   59,
 														},
-														File:   "alert_with_topic_test.flux",
-														Source: "as",
+														File: "alert_with_topic_test.flux",
 														Start: ast.Position{
 															Column: 51,
 															Line:   59,
@@ -7181,8 +6806,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 69,
 															Line:   59,
 														},
-														File:   "alert_with_topic_test.flux",
-														Source: "\"KafkaMsgRate\"",
+														File: "alert_with_topic_test.flux",
 														Start: ast.Position{
 															Column: 55,
 															Line:   59,
@@ -7203,8 +6827,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 70,
 												Line:   59,
 											},
-											File:   "alert_with_topic_test.flux",
-											Source: "tickscript.select(column: metric_type, as: \"KafkaMsgRate\")",
+											File: "alert_with_topic_test.flux",
 											Start: ast.Position{
 												Column: 12,
 												Line:   59,
@@ -7220,8 +6843,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 29,
 													Line:   59,
 												},
-												File:   "alert_with_topic_test.flux",
-												Source: "tickscript.select",
+												File: "alert_with_topic_test.flux",
 												Start: ast.Position{
 													Column: 12,
 													Line:   59,
@@ -7238,8 +6860,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 22,
 														Line:   59,
 													},
-													File:   "alert_with_topic_test.flux",
-													Source: "tickscript",
+													File: "alert_with_topic_test.flux",
 													Start: ast.Position{
 														Column: 12,
 														Line:   59,
@@ -7257,8 +6878,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 29,
 														Line:   59,
 													},
-													File:   "alert_with_topic_test.flux",
-													Source: "select",
+													File: "alert_with_topic_test.flux",
 													Start: ast.Position{
 														Column: 23,
 														Line:   59,
@@ -7281,8 +6901,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 58,
 										Line:   60,
 									},
-									File:   "alert_with_topic_test.flux",
-									Source: "table\n        |> range(start: 2020-11-25T14:05:00Z)\n        |> filter(fn: (r) => r._field == metric_type and r.realm == tier)\n        |> schema.fieldsAsCols()\n        |> tickscript.select(column: metric_type, as: \"KafkaMsgRate\")\n        |> tickscript.groupBy(columns: [\"host\", \"realm\"])",
+									File: "alert_with_topic_test.flux",
 									Start: ast.Position{
 										Column: 5,
 										Line:   55,
@@ -7299,8 +6918,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 57,
 												Line:   60,
 											},
-											File:   "alert_with_topic_test.flux",
-											Source: "columns: [\"host\", \"realm\"]",
+											File: "alert_with_topic_test.flux",
 											Start: ast.Position{
 												Column: 31,
 												Line:   60,
@@ -7317,8 +6935,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 57,
 													Line:   60,
 												},
-												File:   "alert_with_topic_test.flux",
-												Source: "columns: [\"host\", \"realm\"]",
+												File: "alert_with_topic_test.flux",
 												Start: ast.Position{
 													Column: 31,
 													Line:   60,
@@ -7335,8 +6952,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 38,
 														Line:   60,
 													},
-													File:   "alert_with_topic_test.flux",
-													Source: "columns",
+													File: "alert_with_topic_test.flux",
 													Start: ast.Position{
 														Column: 31,
 														Line:   60,
@@ -7355,8 +6971,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 57,
 														Line:   60,
 													},
-													File:   "alert_with_topic_test.flux",
-													Source: "[\"host\", \"realm\"]",
+													File: "alert_with_topic_test.flux",
 													Start: ast.Position{
 														Column: 40,
 														Line:   60,
@@ -7372,8 +6987,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 47,
 															Line:   60,
 														},
-														File:   "alert_with_topic_test.flux",
-														Source: "\"host\"",
+														File: "alert_with_topic_test.flux",
 														Start: ast.Position{
 															Column: 41,
 															Line:   60,
@@ -7390,8 +7004,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 56,
 															Line:   60,
 														},
-														File:   "alert_with_topic_test.flux",
-														Source: "\"realm\"",
+														File: "alert_with_topic_test.flux",
 														Start: ast.Position{
 															Column: 49,
 															Line:   60,
@@ -7415,8 +7028,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 58,
 											Line:   60,
 										},
-										File:   "alert_with_topic_test.flux",
-										Source: "tickscript.groupBy(columns: [\"host\", \"realm\"])",
+										File: "alert_with_topic_test.flux",
 										Start: ast.Position{
 											Column: 12,
 											Line:   60,
@@ -7432,8 +7044,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 30,
 												Line:   60,
 											},
-											File:   "alert_with_topic_test.flux",
-											Source: "tickscript.groupBy",
+											File: "alert_with_topic_test.flux",
 											Start: ast.Position{
 												Column: 12,
 												Line:   60,
@@ -7450,8 +7061,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 22,
 													Line:   60,
 												},
-												File:   "alert_with_topic_test.flux",
-												Source: "tickscript",
+												File: "alert_with_topic_test.flux",
 												Start: ast.Position{
 													Column: 12,
 													Line:   60,
@@ -7469,8 +7079,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 30,
 													Line:   60,
 												},
-												File:   "alert_with_topic_test.flux",
-												Source: "groupBy",
+												File: "alert_with_topic_test.flux",
 												Start: ast.Position{
 													Column: 23,
 													Line:   60,
@@ -7493,8 +7102,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 10,
 									Line:   69,
 								},
-								File:   "alert_with_topic_test.flux",
-								Source: "table\n        |> range(start: 2020-11-25T14:05:00Z)\n        |> filter(fn: (r) => r._field == metric_type and r.realm == tier)\n        |> schema.fieldsAsCols()\n        |> tickscript.select(column: metric_type, as: \"KafkaMsgRate\")\n        |> tickscript.groupBy(columns: [\"host\", \"realm\"])\n        |> tickscript.alert(\n            check: check,\n            id: (r) => \"Realm: ${r.realm} - Hostname: ${r.host} / Metric: ${metric_type} threshold alert\",\n            message: (r) => \"${r.id}: ${r._level} - ${string(v: r.KafkaMsgRate)}\",\n            details: (r) => \"some detail: myrealm=${r.realm}\",\n            crit: (r) => r.KafkaMsgRate > h_threshold or r.KafkaMsgRate < l_threshold,\n            warn: (r) => r.KafkaMsgRate > w_threshold or r.KafkaMsgRate < l_threshold,\n            topic: \"TESTING\",\n        )",
+								File: "alert_with_topic_test.flux",
 								Start: ast.Position{
 									Column: 5,
 									Line:   55,
@@ -7511,8 +7119,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 29,
 											Line:   68,
 										},
-										File:   "alert_with_topic_test.flux",
-										Source: "check: check,\n            id: (r) => \"Realm: ${r.realm} - Hostname: ${r.host} / Metric: ${metric_type} threshold alert\",\n            message: (r) => \"${r.id}: ${r._level} - ${string(v: r.KafkaMsgRate)}\",\n            details: (r) => \"some detail: myrealm=${r.realm}\",\n            crit: (r) => r.KafkaMsgRate > h_threshold or r.KafkaMsgRate < l_threshold,\n            warn: (r) => r.KafkaMsgRate > w_threshold or r.KafkaMsgRate < l_threshold,\n            topic: \"TESTING\"",
+										File: "alert_with_topic_test.flux",
 										Start: ast.Position{
 											Column: 13,
 											Line:   62,
@@ -7529,8 +7136,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 25,
 												Line:   62,
 											},
-											File:   "alert_with_topic_test.flux",
-											Source: "check: check",
+											File: "alert_with_topic_test.flux",
 											Start: ast.Position{
 												Column: 13,
 												Line:   62,
@@ -7547,8 +7153,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 18,
 													Line:   62,
 												},
-												File:   "alert_with_topic_test.flux",
-												Source: "check",
+												File: "alert_with_topic_test.flux",
 												Start: ast.Position{
 													Column: 13,
 													Line:   62,
@@ -7567,8 +7172,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 25,
 													Line:   62,
 												},
-												File:   "alert_with_topic_test.flux",
-												Source: "check",
+												File: "alert_with_topic_test.flux",
 												Start: ast.Position{
 													Column: 20,
 													Line:   62,
@@ -7586,8 +7190,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 106,
 												Line:   63,
 											},
-											File:   "alert_with_topic_test.flux",
-											Source: "id: (r) => \"Realm: ${r.realm} - Hostname: ${r.host} / Metric: ${metric_type} threshold alert\"",
+											File: "alert_with_topic_test.flux",
 											Start: ast.Position{
 												Column: 13,
 												Line:   63,
@@ -7604,8 +7207,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 15,
 													Line:   63,
 												},
-												File:   "alert_with_topic_test.flux",
-												Source: "id",
+												File: "alert_with_topic_test.flux",
 												Start: ast.Position{
 													Column: 13,
 													Line:   63,
@@ -7625,8 +7227,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 106,
 													Line:   63,
 												},
-												File:   "alert_with_topic_test.flux",
-												Source: "(r) => \"Realm: ${r.realm} - Hostname: ${r.host} / Metric: ${metric_type} threshold alert\"",
+												File: "alert_with_topic_test.flux",
 												Start: ast.Position{
 													Column: 17,
 													Line:   63,
@@ -7642,8 +7243,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 106,
 														Line:   63,
 													},
-													File:   "alert_with_topic_test.flux",
-													Source: "\"Realm: ${r.realm} - Hostname: ${r.host} / Metric: ${metric_type} threshold alert\"",
+													File: "alert_with_topic_test.flux",
 													Start: ast.Position{
 														Column: 24,
 														Line:   63,
@@ -7659,8 +7259,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 32,
 															Line:   63,
 														},
-														File:   "alert_with_topic_test.flux",
-														Source: "Realm: ",
+														File: "alert_with_topic_test.flux",
 														Start: ast.Position{
 															Column: 25,
 															Line:   63,
@@ -7677,8 +7276,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 42,
 															Line:   63,
 														},
-														File:   "alert_with_topic_test.flux",
-														Source: "${r.realm}",
+														File: "alert_with_topic_test.flux",
 														Start: ast.Position{
 															Column: 32,
 															Line:   63,
@@ -7694,8 +7292,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Column: 41,
 																Line:   63,
 															},
-															File:   "alert_with_topic_test.flux",
-															Source: "r.realm",
+															File: "alert_with_topic_test.flux",
 															Start: ast.Position{
 																Column: 34,
 																Line:   63,
@@ -7712,8 +7309,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Column: 35,
 																	Line:   63,
 																},
-																File:   "alert_with_topic_test.flux",
-																Source: "r",
+																File: "alert_with_topic_test.flux",
 																Start: ast.Position{
 																	Column: 34,
 																	Line:   63,
@@ -7731,8 +7327,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Column: 41,
 																	Line:   63,
 																},
-																File:   "alert_with_topic_test.flux",
-																Source: "realm",
+																File: "alert_with_topic_test.flux",
 																Start: ast.Position{
 																	Column: 36,
 																	Line:   63,
@@ -7752,8 +7347,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 55,
 															Line:   63,
 														},
-														File:   "alert_with_topic_test.flux",
-														Source: " - Hostname: ",
+														File: "alert_with_topic_test.flux",
 														Start: ast.Position{
 															Column: 42,
 															Line:   63,
@@ -7770,8 +7364,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 64,
 															Line:   63,
 														},
-														File:   "alert_with_topic_test.flux",
-														Source: "${r.host}",
+														File: "alert_with_topic_test.flux",
 														Start: ast.Position{
 															Column: 55,
 															Line:   63,
@@ -7787,8 +7380,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Column: 63,
 																Line:   63,
 															},
-															File:   "alert_with_topic_test.flux",
-															Source: "r.host",
+															File: "alert_with_topic_test.flux",
 															Start: ast.Position{
 																Column: 57,
 																Line:   63,
@@ -7805,8 +7397,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Column: 58,
 																	Line:   63,
 																},
-																File:   "alert_with_topic_test.flux",
-																Source: "r",
+																File: "alert_with_topic_test.flux",
 																Start: ast.Position{
 																	Column: 57,
 																	Line:   63,
@@ -7824,8 +7415,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Column: 63,
 																	Line:   63,
 																},
-																File:   "alert_with_topic_test.flux",
-																Source: "host",
+																File: "alert_with_topic_test.flux",
 																Start: ast.Position{
 																	Column: 59,
 																	Line:   63,
@@ -7845,8 +7435,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 75,
 															Line:   63,
 														},
-														File:   "alert_with_topic_test.flux",
-														Source: " / Metric: ",
+														File: "alert_with_topic_test.flux",
 														Start: ast.Position{
 															Column: 64,
 															Line:   63,
@@ -7863,8 +7452,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 89,
 															Line:   63,
 														},
-														File:   "alert_with_topic_test.flux",
-														Source: "${metric_type}",
+														File: "alert_with_topic_test.flux",
 														Start: ast.Position{
 															Column: 75,
 															Line:   63,
@@ -7880,8 +7468,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Column: 88,
 																Line:   63,
 															},
-															File:   "alert_with_topic_test.flux",
-															Source: "metric_type",
+															File: "alert_with_topic_test.flux",
 															Start: ast.Position{
 																Column: 77,
 																Line:   63,
@@ -7899,8 +7486,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 105,
 															Line:   63,
 														},
-														File:   "alert_with_topic_test.flux",
-														Source: " threshold alert",
+														File: "alert_with_topic_test.flux",
 														Start: ast.Position{
 															Column: 89,
 															Line:   63,
@@ -7920,8 +7506,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 19,
 														Line:   63,
 													},
-													File:   "alert_with_topic_test.flux",
-													Source: "r",
+													File: "alert_with_topic_test.flux",
 													Start: ast.Position{
 														Column: 18,
 														Line:   63,
@@ -7938,8 +7523,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 19,
 															Line:   63,
 														},
-														File:   "alert_with_topic_test.flux",
-														Source: "r",
+														File: "alert_with_topic_test.flux",
 														Start: ast.Position{
 															Column: 18,
 															Line:   63,
@@ -7962,8 +7546,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 82,
 												Line:   64,
 											},
-											File:   "alert_with_topic_test.flux",
-											Source: "message: (r) => \"${r.id}: ${r._level} - ${string(v: r.KafkaMsgRate)}\"",
+											File: "alert_with_topic_test.flux",
 											Start: ast.Position{
 												Column: 13,
 												Line:   64,
@@ -7980,8 +7563,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 20,
 													Line:   64,
 												},
-												File:   "alert_with_topic_test.flux",
-												Source: "message",
+												File: "alert_with_topic_test.flux",
 												Start: ast.Position{
 													Column: 13,
 													Line:   64,
@@ -8001,8 +7583,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 82,
 													Line:   64,
 												},
-												File:   "alert_with_topic_test.flux",
-												Source: "(r) => \"${r.id}: ${r._level} - ${string(v: r.KafkaMsgRate)}\"",
+												File: "alert_with_topic_test.flux",
 												Start: ast.Position{
 													Column: 22,
 													Line:   64,
@@ -8018,8 +7599,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 82,
 														Line:   64,
 													},
-													File:   "alert_with_topic_test.flux",
-													Source: "\"${r.id}: ${r._level} - ${string(v: r.KafkaMsgRate)}\"",
+													File: "alert_with_topic_test.flux",
 													Start: ast.Position{
 														Column: 29,
 														Line:   64,
@@ -8035,8 +7615,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 37,
 															Line:   64,
 														},
-														File:   "alert_with_topic_test.flux",
-														Source: "${r.id}",
+														File: "alert_with_topic_test.flux",
 														Start: ast.Position{
 															Column: 30,
 															Line:   64,
@@ -8052,8 +7631,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Column: 36,
 																Line:   64,
 															},
-															File:   "alert_with_topic_test.flux",
-															Source: "r.id",
+															File: "alert_with_topic_test.flux",
 															Start: ast.Position{
 																Column: 32,
 																Line:   64,
@@ -8070,8 +7648,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Column: 33,
 																	Line:   64,
 																},
-																File:   "alert_with_topic_test.flux",
-																Source: "r",
+																File: "alert_with_topic_test.flux",
 																Start: ast.Position{
 																	Column: 32,
 																	Line:   64,
@@ -8089,8 +7666,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Column: 36,
 																	Line:   64,
 																},
-																File:   "alert_with_topic_test.flux",
-																Source: "id",
+																File: "alert_with_topic_test.flux",
 																Start: ast.Position{
 																	Column: 34,
 																	Line:   64,
@@ -8110,8 +7686,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 39,
 															Line:   64,
 														},
-														File:   "alert_with_topic_test.flux",
-														Source: ": ",
+														File: "alert_with_topic_test.flux",
 														Start: ast.Position{
 															Column: 37,
 															Line:   64,
@@ -8128,8 +7703,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 50,
 															Line:   64,
 														},
-														File:   "alert_with_topic_test.flux",
-														Source: "${r._level}",
+														File: "alert_with_topic_test.flux",
 														Start: ast.Position{
 															Column: 39,
 															Line:   64,
@@ -8145,8 +7719,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Column: 49,
 																Line:   64,
 															},
-															File:   "alert_with_topic_test.flux",
-															Source: "r._level",
+															File: "alert_with_topic_test.flux",
 															Start: ast.Position{
 																Column: 41,
 																Line:   64,
@@ -8163,8 +7736,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Column: 42,
 																	Line:   64,
 																},
-																File:   "alert_with_topic_test.flux",
-																Source: "r",
+																File: "alert_with_topic_test.flux",
 																Start: ast.Position{
 																	Column: 41,
 																	Line:   64,
@@ -8182,8 +7754,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Column: 49,
 																	Line:   64,
 																},
-																File:   "alert_with_topic_test.flux",
-																Source: "_level",
+																File: "alert_with_topic_test.flux",
 																Start: ast.Position{
 																	Column: 43,
 																	Line:   64,
@@ -8203,8 +7774,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 53,
 															Line:   64,
 														},
-														File:   "alert_with_topic_test.flux",
-														Source: " - ",
+														File: "alert_with_topic_test.flux",
 														Start: ast.Position{
 															Column: 50,
 															Line:   64,
@@ -8221,8 +7791,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 81,
 															Line:   64,
 														},
-														File:   "alert_with_topic_test.flux",
-														Source: "${string(v: r.KafkaMsgRate)}",
+														File: "alert_with_topic_test.flux",
 														Start: ast.Position{
 															Column: 53,
 															Line:   64,
@@ -8239,8 +7808,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Column: 79,
 																	Line:   64,
 																},
-																File:   "alert_with_topic_test.flux",
-																Source: "v: r.KafkaMsgRate",
+																File: "alert_with_topic_test.flux",
 																Start: ast.Position{
 																	Column: 62,
 																	Line:   64,
@@ -8257,8 +7825,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Column: 79,
 																		Line:   64,
 																	},
-																	File:   "alert_with_topic_test.flux",
-																	Source: "v: r.KafkaMsgRate",
+																	File: "alert_with_topic_test.flux",
 																	Start: ast.Position{
 																		Column: 62,
 																		Line:   64,
@@ -8275,8 +7842,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																			Column: 63,
 																			Line:   64,
 																		},
-																		File:   "alert_with_topic_test.flux",
-																		Source: "v",
+																		File: "alert_with_topic_test.flux",
 																		Start: ast.Position{
 																			Column: 62,
 																			Line:   64,
@@ -8295,8 +7861,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																			Column: 79,
 																			Line:   64,
 																		},
-																		File:   "alert_with_topic_test.flux",
-																		Source: "r.KafkaMsgRate",
+																		File: "alert_with_topic_test.flux",
 																		Start: ast.Position{
 																			Column: 65,
 																			Line:   64,
@@ -8313,8 +7878,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																				Column: 66,
 																				Line:   64,
 																			},
-																			File:   "alert_with_topic_test.flux",
-																			Source: "r",
+																			File: "alert_with_topic_test.flux",
 																			Start: ast.Position{
 																				Column: 65,
 																				Line:   64,
@@ -8332,8 +7896,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																				Column: 79,
 																				Line:   64,
 																			},
-																			File:   "alert_with_topic_test.flux",
-																			Source: "KafkaMsgRate",
+																			File: "alert_with_topic_test.flux",
 																			Start: ast.Position{
 																				Column: 67,
 																				Line:   64,
@@ -8356,8 +7919,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Column: 80,
 																Line:   64,
 															},
-															File:   "alert_with_topic_test.flux",
-															Source: "string(v: r.KafkaMsgRate)",
+															File: "alert_with_topic_test.flux",
 															Start: ast.Position{
 																Column: 55,
 																Line:   64,
@@ -8373,8 +7935,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Column: 61,
 																	Line:   64,
 																},
-																File:   "alert_with_topic_test.flux",
-																Source: "string",
+																File: "alert_with_topic_test.flux",
 																Start: ast.Position{
 																	Column: 55,
 																	Line:   64,
@@ -8398,8 +7959,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 24,
 														Line:   64,
 													},
-													File:   "alert_with_topic_test.flux",
-													Source: "r",
+													File: "alert_with_topic_test.flux",
 													Start: ast.Position{
 														Column: 23,
 														Line:   64,
@@ -8416,8 +7976,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 24,
 															Line:   64,
 														},
-														File:   "alert_with_topic_test.flux",
-														Source: "r",
+														File: "alert_with_topic_test.flux",
 														Start: ast.Position{
 															Column: 23,
 															Line:   64,
@@ -8440,8 +7999,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 62,
 												Line:   65,
 											},
-											File:   "alert_with_topic_test.flux",
-											Source: "details: (r) => \"some detail: myrealm=${r.realm}\"",
+											File: "alert_with_topic_test.flux",
 											Start: ast.Position{
 												Column: 13,
 												Line:   65,
@@ -8458,8 +8016,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 20,
 													Line:   65,
 												},
-												File:   "alert_with_topic_test.flux",
-												Source: "details",
+												File: "alert_with_topic_test.flux",
 												Start: ast.Position{
 													Column: 13,
 													Line:   65,
@@ -8479,8 +8036,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 62,
 													Line:   65,
 												},
-												File:   "alert_with_topic_test.flux",
-												Source: "(r) => \"some detail: myrealm=${r.realm}\"",
+												File: "alert_with_topic_test.flux",
 												Start: ast.Position{
 													Column: 22,
 													Line:   65,
@@ -8496,8 +8052,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 62,
 														Line:   65,
 													},
-													File:   "alert_with_topic_test.flux",
-													Source: "\"some detail: myrealm=${r.realm}\"",
+													File: "alert_with_topic_test.flux",
 													Start: ast.Position{
 														Column: 29,
 														Line:   65,
@@ -8513,8 +8068,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 51,
 															Line:   65,
 														},
-														File:   "alert_with_topic_test.flux",
-														Source: "some detail: myrealm=",
+														File: "alert_with_topic_test.flux",
 														Start: ast.Position{
 															Column: 30,
 															Line:   65,
@@ -8531,8 +8085,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 61,
 															Line:   65,
 														},
-														File:   "alert_with_topic_test.flux",
-														Source: "${r.realm}",
+														File: "alert_with_topic_test.flux",
 														Start: ast.Position{
 															Column: 51,
 															Line:   65,
@@ -8548,8 +8101,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Column: 60,
 																Line:   65,
 															},
-															File:   "alert_with_topic_test.flux",
-															Source: "r.realm",
+															File: "alert_with_topic_test.flux",
 															Start: ast.Position{
 																Column: 53,
 																Line:   65,
@@ -8566,8 +8118,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Column: 54,
 																	Line:   65,
 																},
-																File:   "alert_with_topic_test.flux",
-																Source: "r",
+																File: "alert_with_topic_test.flux",
 																Start: ast.Position{
 																	Column: 53,
 																	Line:   65,
@@ -8585,8 +8136,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Column: 60,
 																	Line:   65,
 																},
-																File:   "alert_with_topic_test.flux",
-																Source: "realm",
+																File: "alert_with_topic_test.flux",
 																Start: ast.Position{
 																	Column: 55,
 																	Line:   65,
@@ -8609,8 +8159,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 24,
 														Line:   65,
 													},
-													File:   "alert_with_topic_test.flux",
-													Source: "r",
+													File: "alert_with_topic_test.flux",
 													Start: ast.Position{
 														Column: 23,
 														Line:   65,
@@ -8627,8 +8176,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 24,
 															Line:   65,
 														},
-														File:   "alert_with_topic_test.flux",
-														Source: "r",
+														File: "alert_with_topic_test.flux",
 														Start: ast.Position{
 															Column: 23,
 															Line:   65,
@@ -8651,8 +8199,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 86,
 												Line:   66,
 											},
-											File:   "alert_with_topic_test.flux",
-											Source: "crit: (r) => r.KafkaMsgRate > h_threshold or r.KafkaMsgRate < l_threshold",
+											File: "alert_with_topic_test.flux",
 											Start: ast.Position{
 												Column: 13,
 												Line:   66,
@@ -8669,8 +8216,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 17,
 													Line:   66,
 												},
-												File:   "alert_with_topic_test.flux",
-												Source: "crit",
+												File: "alert_with_topic_test.flux",
 												Start: ast.Position{
 													Column: 13,
 													Line:   66,
@@ -8690,8 +8236,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 86,
 													Line:   66,
 												},
-												File:   "alert_with_topic_test.flux",
-												Source: "(r) => r.KafkaMsgRate > h_threshold or r.KafkaMsgRate < l_threshold",
+												File: "alert_with_topic_test.flux",
 												Start: ast.Position{
 													Column: 19,
 													Line:   66,
@@ -8707,8 +8252,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 86,
 														Line:   66,
 													},
-													File:   "alert_with_topic_test.flux",
-													Source: "r.KafkaMsgRate > h_threshold or r.KafkaMsgRate < l_threshold",
+													File: "alert_with_topic_test.flux",
 													Start: ast.Position{
 														Column: 26,
 														Line:   66,
@@ -8724,8 +8268,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 54,
 															Line:   66,
 														},
-														File:   "alert_with_topic_test.flux",
-														Source: "r.KafkaMsgRate > h_threshold",
+														File: "alert_with_topic_test.flux",
 														Start: ast.Position{
 															Column: 26,
 															Line:   66,
@@ -8741,8 +8284,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Column: 40,
 																Line:   66,
 															},
-															File:   "alert_with_topic_test.flux",
-															Source: "r.KafkaMsgRate",
+															File: "alert_with_topic_test.flux",
 															Start: ast.Position{
 																Column: 26,
 																Line:   66,
@@ -8759,8 +8301,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Column: 27,
 																	Line:   66,
 																},
-																File:   "alert_with_topic_test.flux",
-																Source: "r",
+																File: "alert_with_topic_test.flux",
 																Start: ast.Position{
 																	Column: 26,
 																	Line:   66,
@@ -8778,8 +8319,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Column: 40,
 																	Line:   66,
 																},
-																File:   "alert_with_topic_test.flux",
-																Source: "KafkaMsgRate",
+																File: "alert_with_topic_test.flux",
 																Start: ast.Position{
 																	Column: 28,
 																	Line:   66,
@@ -8800,8 +8340,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Column: 54,
 																Line:   66,
 															},
-															File:   "alert_with_topic_test.flux",
-															Source: "h_threshold",
+															File: "alert_with_topic_test.flux",
 															Start: ast.Position{
 																Column: 43,
 																Line:   66,
@@ -8821,8 +8360,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 86,
 															Line:   66,
 														},
-														File:   "alert_with_topic_test.flux",
-														Source: "r.KafkaMsgRate < l_threshold",
+														File: "alert_with_topic_test.flux",
 														Start: ast.Position{
 															Column: 58,
 															Line:   66,
@@ -8838,8 +8376,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Column: 72,
 																Line:   66,
 															},
-															File:   "alert_with_topic_test.flux",
-															Source: "r.KafkaMsgRate",
+															File: "alert_with_topic_test.flux",
 															Start: ast.Position{
 																Column: 58,
 																Line:   66,
@@ -8856,8 +8393,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Column: 59,
 																	Line:   66,
 																},
-																File:   "alert_with_topic_test.flux",
-																Source: "r",
+																File: "alert_with_topic_test.flux",
 																Start: ast.Position{
 																	Column: 58,
 																	Line:   66,
@@ -8875,8 +8411,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Column: 72,
 																	Line:   66,
 																},
-																File:   "alert_with_topic_test.flux",
-																Source: "KafkaMsgRate",
+																File: "alert_with_topic_test.flux",
 																Start: ast.Position{
 																	Column: 60,
 																	Line:   66,
@@ -8897,8 +8432,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Column: 86,
 																Line:   66,
 															},
-															File:   "alert_with_topic_test.flux",
-															Source: "l_threshold",
+															File: "alert_with_topic_test.flux",
 															Start: ast.Position{
 																Column: 75,
 																Line:   66,
@@ -8919,8 +8453,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 21,
 														Line:   66,
 													},
-													File:   "alert_with_topic_test.flux",
-													Source: "r",
+													File: "alert_with_topic_test.flux",
 													Start: ast.Position{
 														Column: 20,
 														Line:   66,
@@ -8937,8 +8470,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 21,
 															Line:   66,
 														},
-														File:   "alert_with_topic_test.flux",
-														Source: "r",
+														File: "alert_with_topic_test.flux",
 														Start: ast.Position{
 															Column: 20,
 															Line:   66,
@@ -8961,8 +8493,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 86,
 												Line:   67,
 											},
-											File:   "alert_with_topic_test.flux",
-											Source: "warn: (r) => r.KafkaMsgRate > w_threshold or r.KafkaMsgRate < l_threshold",
+											File: "alert_with_topic_test.flux",
 											Start: ast.Position{
 												Column: 13,
 												Line:   67,
@@ -8979,8 +8510,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 17,
 													Line:   67,
 												},
-												File:   "alert_with_topic_test.flux",
-												Source: "warn",
+												File: "alert_with_topic_test.flux",
 												Start: ast.Position{
 													Column: 13,
 													Line:   67,
@@ -9000,8 +8530,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 86,
 													Line:   67,
 												},
-												File:   "alert_with_topic_test.flux",
-												Source: "(r) => r.KafkaMsgRate > w_threshold or r.KafkaMsgRate < l_threshold",
+												File: "alert_with_topic_test.flux",
 												Start: ast.Position{
 													Column: 19,
 													Line:   67,
@@ -9017,8 +8546,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 86,
 														Line:   67,
 													},
-													File:   "alert_with_topic_test.flux",
-													Source: "r.KafkaMsgRate > w_threshold or r.KafkaMsgRate < l_threshold",
+													File: "alert_with_topic_test.flux",
 													Start: ast.Position{
 														Column: 26,
 														Line:   67,
@@ -9034,8 +8562,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 54,
 															Line:   67,
 														},
-														File:   "alert_with_topic_test.flux",
-														Source: "r.KafkaMsgRate > w_threshold",
+														File: "alert_with_topic_test.flux",
 														Start: ast.Position{
 															Column: 26,
 															Line:   67,
@@ -9051,8 +8578,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Column: 40,
 																Line:   67,
 															},
-															File:   "alert_with_topic_test.flux",
-															Source: "r.KafkaMsgRate",
+															File: "alert_with_topic_test.flux",
 															Start: ast.Position{
 																Column: 26,
 																Line:   67,
@@ -9069,8 +8595,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Column: 27,
 																	Line:   67,
 																},
-																File:   "alert_with_topic_test.flux",
-																Source: "r",
+																File: "alert_with_topic_test.flux",
 																Start: ast.Position{
 																	Column: 26,
 																	Line:   67,
@@ -9088,8 +8613,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Column: 40,
 																	Line:   67,
 																},
-																File:   "alert_with_topic_test.flux",
-																Source: "KafkaMsgRate",
+																File: "alert_with_topic_test.flux",
 																Start: ast.Position{
 																	Column: 28,
 																	Line:   67,
@@ -9110,8 +8634,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Column: 54,
 																Line:   67,
 															},
-															File:   "alert_with_topic_test.flux",
-															Source: "w_threshold",
+															File: "alert_with_topic_test.flux",
 															Start: ast.Position{
 																Column: 43,
 																Line:   67,
@@ -9131,8 +8654,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 86,
 															Line:   67,
 														},
-														File:   "alert_with_topic_test.flux",
-														Source: "r.KafkaMsgRate < l_threshold",
+														File: "alert_with_topic_test.flux",
 														Start: ast.Position{
 															Column: 58,
 															Line:   67,
@@ -9148,8 +8670,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Column: 72,
 																Line:   67,
 															},
-															File:   "alert_with_topic_test.flux",
-															Source: "r.KafkaMsgRate",
+															File: "alert_with_topic_test.flux",
 															Start: ast.Position{
 																Column: 58,
 																Line:   67,
@@ -9166,8 +8687,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Column: 59,
 																	Line:   67,
 																},
-																File:   "alert_with_topic_test.flux",
-																Source: "r",
+																File: "alert_with_topic_test.flux",
 																Start: ast.Position{
 																	Column: 58,
 																	Line:   67,
@@ -9185,8 +8705,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Column: 72,
 																	Line:   67,
 																},
-																File:   "alert_with_topic_test.flux",
-																Source: "KafkaMsgRate",
+																File: "alert_with_topic_test.flux",
 																Start: ast.Position{
 																	Column: 60,
 																	Line:   67,
@@ -9207,8 +8726,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Column: 86,
 																Line:   67,
 															},
-															File:   "alert_with_topic_test.flux",
-															Source: "l_threshold",
+															File: "alert_with_topic_test.flux",
 															Start: ast.Position{
 																Column: 75,
 																Line:   67,
@@ -9229,8 +8747,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 21,
 														Line:   67,
 													},
-													File:   "alert_with_topic_test.flux",
-													Source: "r",
+													File: "alert_with_topic_test.flux",
 													Start: ast.Position{
 														Column: 20,
 														Line:   67,
@@ -9247,8 +8764,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 21,
 															Line:   67,
 														},
-														File:   "alert_with_topic_test.flux",
-														Source: "r",
+														File: "alert_with_topic_test.flux",
 														Start: ast.Position{
 															Column: 20,
 															Line:   67,
@@ -9271,8 +8787,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 29,
 												Line:   68,
 											},
-											File:   "alert_with_topic_test.flux",
-											Source: "topic: \"TESTING\"",
+											File: "alert_with_topic_test.flux",
 											Start: ast.Position{
 												Column: 13,
 												Line:   68,
@@ -9289,8 +8804,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 18,
 													Line:   68,
 												},
-												File:   "alert_with_topic_test.flux",
-												Source: "topic",
+												File: "alert_with_topic_test.flux",
 												Start: ast.Position{
 													Column: 13,
 													Line:   68,
@@ -9309,8 +8823,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 29,
 													Line:   68,
 												},
-												File:   "alert_with_topic_test.flux",
-												Source: "\"TESTING\"",
+												File: "alert_with_topic_test.flux",
 												Start: ast.Position{
 													Column: 20,
 													Line:   68,
@@ -9331,8 +8844,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 10,
 										Line:   69,
 									},
-									File:   "alert_with_topic_test.flux",
-									Source: "tickscript.alert(\n            check: check,\n            id: (r) => \"Realm: ${r.realm} - Hostname: ${r.host} / Metric: ${metric_type} threshold alert\",\n            message: (r) => \"${r.id}: ${r._level} - ${string(v: r.KafkaMsgRate)}\",\n            details: (r) => \"some detail: myrealm=${r.realm}\",\n            crit: (r) => r.KafkaMsgRate > h_threshold or r.KafkaMsgRate < l_threshold,\n            warn: (r) => r.KafkaMsgRate > w_threshold or r.KafkaMsgRate < l_threshold,\n            topic: \"TESTING\",\n        )",
+									File: "alert_with_topic_test.flux",
 									Start: ast.Position{
 										Column: 12,
 										Line:   61,
@@ -9348,8 +8860,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 28,
 											Line:   61,
 										},
-										File:   "alert_with_topic_test.flux",
-										Source: "tickscript.alert",
+										File: "alert_with_topic_test.flux",
 										Start: ast.Position{
 											Column: 12,
 											Line:   61,
@@ -9366,8 +8877,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 22,
 												Line:   61,
 											},
-											File:   "alert_with_topic_test.flux",
-											Source: "tickscript",
+											File: "alert_with_topic_test.flux",
 											Start: ast.Position{
 												Column: 12,
 												Line:   61,
@@ -9385,8 +8895,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 28,
 												Line:   61,
 											},
-											File:   "alert_with_topic_test.flux",
-											Source: "alert",
+											File: "alert_with_topic_test.flux",
 											Start: ast.Position{
 												Column: 23,
 												Line:   61,
@@ -9409,8 +8918,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 36,
 								Line:   70,
 							},
-							File:   "alert_with_topic_test.flux",
-							Source: "table\n        |> range(start: 2020-11-25T14:05:00Z)\n        |> filter(fn: (r) => r._field == metric_type and r.realm == tier)\n        |> schema.fieldsAsCols()\n        |> tickscript.select(column: metric_type, as: \"KafkaMsgRate\")\n        |> tickscript.groupBy(columns: [\"host\", \"realm\"])\n        |> tickscript.alert(\n            check: check,\n            id: (r) => \"Realm: ${r.realm} - Hostname: ${r.host} / Metric: ${metric_type} threshold alert\",\n            message: (r) => \"${r.id}: ${r._level} - ${string(v: r.KafkaMsgRate)}\",\n            details: (r) => \"some detail: myrealm=${r.realm}\",\n            crit: (r) => r.KafkaMsgRate > h_threshold or r.KafkaMsgRate < l_threshold,\n            warn: (r) => r.KafkaMsgRate > w_threshold or r.KafkaMsgRate < l_threshold,\n            topic: \"TESTING\",\n        )\n        |> drop(columns: [\"_time\"])",
+							File: "alert_with_topic_test.flux",
 							Start: ast.Position{
 								Column: 5,
 								Line:   55,
@@ -9427,8 +8935,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 35,
 										Line:   70,
 									},
-									File:   "alert_with_topic_test.flux",
-									Source: "columns: [\"_time\"]",
+									File: "alert_with_topic_test.flux",
 									Start: ast.Position{
 										Column: 17,
 										Line:   70,
@@ -9445,8 +8952,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 35,
 											Line:   70,
 										},
-										File:   "alert_with_topic_test.flux",
-										Source: "columns: [\"_time\"]",
+										File: "alert_with_topic_test.flux",
 										Start: ast.Position{
 											Column: 17,
 											Line:   70,
@@ -9463,8 +8969,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 24,
 												Line:   70,
 											},
-											File:   "alert_with_topic_test.flux",
-											Source: "columns",
+											File: "alert_with_topic_test.flux",
 											Start: ast.Position{
 												Column: 17,
 												Line:   70,
@@ -9483,8 +8988,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 35,
 												Line:   70,
 											},
-											File:   "alert_with_topic_test.flux",
-											Source: "[\"_time\"]",
+											File: "alert_with_topic_test.flux",
 											Start: ast.Position{
 												Column: 26,
 												Line:   70,
@@ -9500,8 +9004,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 34,
 													Line:   70,
 												},
-												File:   "alert_with_topic_test.flux",
-												Source: "\"_time\"",
+												File: "alert_with_topic_test.flux",
 												Start: ast.Position{
 													Column: 27,
 													Line:   70,
@@ -9525,8 +9028,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 36,
 									Line:   70,
 								},
-								File:   "alert_with_topic_test.flux",
-								Source: "drop(columns: [\"_time\"])",
+								File: "alert_with_topic_test.flux",
 								Start: ast.Position{
 									Column: 12,
 									Line:   70,
@@ -9542,8 +9044,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 16,
 										Line:   70,
 									},
-									File:   "alert_with_topic_test.flux",
-									Source: "drop",
+									File: "alert_with_topic_test.flux",
 									Start: ast.Position{
 										Column: 12,
 										Line:   70,
@@ -9566,8 +9067,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 29,
 								Line:   54,
 							},
-							File:   "alert_with_topic_test.flux",
-							Source: "table=<-",
+							File: "alert_with_topic_test.flux",
 							Start: ast.Position{
 								Column: 21,
 								Line:   54,
@@ -9584,8 +9084,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 26,
 									Line:   54,
 								},
-								File:   "alert_with_topic_test.flux",
-								Source: "table",
+								File: "alert_with_topic_test.flux",
 								Start: ast.Position{
 									Column: 21,
 									Line:   54,
@@ -9603,8 +9102,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 29,
 								Line:   54,
 							},
-							File:   "alert_with_topic_test.flux",
-							Source: "<-",
+							File: "alert_with_topic_test.flux",
 							Start: ast.Position{
 								Column: 27,
 								Line:   54,
@@ -9624,8 +9122,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 107,
 							Line:   73,
 						},
-						File:   "alert_with_topic_test.flux",
-						Source: "_tickscript_alert = () =>\n    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: tickscript_alert})",
+						File: "alert_with_topic_test.flux",
 						Start: ast.Position{
 							Column: 6,
 							Line:   72,
@@ -9641,8 +9138,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 23,
 								Line:   72,
 							},
-							File:   "alert_with_topic_test.flux",
-							Source: "_tickscript_alert",
+							File: "alert_with_topic_test.flux",
 							Start: ast.Position{
 								Column: 6,
 								Line:   72,
@@ -9661,8 +9157,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 107,
 								Line:   73,
 							},
-							File:   "alert_with_topic_test.flux",
-							Source: "() =>\n    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: tickscript_alert})",
+							File: "alert_with_topic_test.flux",
 							Start: ast.Position{
 								Column: 26,
 								Line:   72,
@@ -9678,8 +9173,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 107,
 									Line:   73,
 								},
-								File:   "alert_with_topic_test.flux",
-								Source: "({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: tickscript_alert})",
+								File: "alert_with_topic_test.flux",
 								Start: ast.Position{
 									Column: 5,
 									Line:   73,
@@ -9695,8 +9189,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 106,
 										Line:   73,
 									},
-									File:   "alert_with_topic_test.flux",
-									Source: "{input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: tickscript_alert}",
+									File: "alert_with_topic_test.flux",
 									Start: ast.Position{
 										Column: 6,
 										Line:   73,
@@ -9713,8 +9206,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 46,
 											Line:   73,
 										},
-										File:   "alert_with_topic_test.flux",
-										Source: "input: testing.loadStorage(csv: inData)",
+										File: "alert_with_topic_test.flux",
 										Start: ast.Position{
 											Column: 7,
 											Line:   73,
@@ -9731,8 +9223,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 12,
 												Line:   73,
 											},
-											File:   "alert_with_topic_test.flux",
-											Source: "input",
+											File: "alert_with_topic_test.flux",
 											Start: ast.Position{
 												Column: 7,
 												Line:   73,
@@ -9752,8 +9243,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 45,
 													Line:   73,
 												},
-												File:   "alert_with_topic_test.flux",
-												Source: "csv: inData",
+												File: "alert_with_topic_test.flux",
 												Start: ast.Position{
 													Column: 34,
 													Line:   73,
@@ -9770,8 +9260,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 45,
 														Line:   73,
 													},
-													File:   "alert_with_topic_test.flux",
-													Source: "csv: inData",
+													File: "alert_with_topic_test.flux",
 													Start: ast.Position{
 														Column: 34,
 														Line:   73,
@@ -9788,8 +9277,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 37,
 															Line:   73,
 														},
-														File:   "alert_with_topic_test.flux",
-														Source: "csv",
+														File: "alert_with_topic_test.flux",
 														Start: ast.Position{
 															Column: 34,
 															Line:   73,
@@ -9808,8 +9296,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 45,
 															Line:   73,
 														},
-														File:   "alert_with_topic_test.flux",
-														Source: "inData",
+														File: "alert_with_topic_test.flux",
 														Start: ast.Position{
 															Column: 39,
 															Line:   73,
@@ -9830,8 +9317,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 46,
 												Line:   73,
 											},
-											File:   "alert_with_topic_test.flux",
-											Source: "testing.loadStorage(csv: inData)",
+											File: "alert_with_topic_test.flux",
 											Start: ast.Position{
 												Column: 14,
 												Line:   73,
@@ -9847,8 +9333,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 33,
 													Line:   73,
 												},
-												File:   "alert_with_topic_test.flux",
-												Source: "testing.loadStorage",
+												File: "alert_with_topic_test.flux",
 												Start: ast.Position{
 													Column: 14,
 													Line:   73,
@@ -9865,8 +9350,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 21,
 														Line:   73,
 													},
-													File:   "alert_with_topic_test.flux",
-													Source: "testing",
+													File: "alert_with_topic_test.flux",
 													Start: ast.Position{
 														Column: 14,
 														Line:   73,
@@ -9884,8 +9368,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 33,
 														Line:   73,
 													},
-													File:   "alert_with_topic_test.flux",
-													Source: "loadStorage",
+													File: "alert_with_topic_test.flux",
 													Start: ast.Position{
 														Column: 22,
 														Line:   73,
@@ -9908,8 +9391,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 83,
 											Line:   73,
 										},
-										File:   "alert_with_topic_test.flux",
-										Source: "want: testing.loadMem(csv: outData)",
+										File: "alert_with_topic_test.flux",
 										Start: ast.Position{
 											Column: 48,
 											Line:   73,
@@ -9926,8 +9408,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 52,
 												Line:   73,
 											},
-											File:   "alert_with_topic_test.flux",
-											Source: "want",
+											File: "alert_with_topic_test.flux",
 											Start: ast.Position{
 												Column: 48,
 												Line:   73,
@@ -9947,8 +9428,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 82,
 													Line:   73,
 												},
-												File:   "alert_with_topic_test.flux",
-												Source: "csv: outData",
+												File: "alert_with_topic_test.flux",
 												Start: ast.Position{
 													Column: 70,
 													Line:   73,
@@ -9965,8 +9445,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 82,
 														Line:   73,
 													},
-													File:   "alert_with_topic_test.flux",
-													Source: "csv: outData",
+													File: "alert_with_topic_test.flux",
 													Start: ast.Position{
 														Column: 70,
 														Line:   73,
@@ -9983,8 +9462,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 73,
 															Line:   73,
 														},
-														File:   "alert_with_topic_test.flux",
-														Source: "csv",
+														File: "alert_with_topic_test.flux",
 														Start: ast.Position{
 															Column: 70,
 															Line:   73,
@@ -10003,8 +9481,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 82,
 															Line:   73,
 														},
-														File:   "alert_with_topic_test.flux",
-														Source: "outData",
+														File: "alert_with_topic_test.flux",
 														Start: ast.Position{
 															Column: 75,
 															Line:   73,
@@ -10025,8 +9502,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 83,
 												Line:   73,
 											},
-											File:   "alert_with_topic_test.flux",
-											Source: "testing.loadMem(csv: outData)",
+											File: "alert_with_topic_test.flux",
 											Start: ast.Position{
 												Column: 54,
 												Line:   73,
@@ -10042,8 +9518,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 69,
 													Line:   73,
 												},
-												File:   "alert_with_topic_test.flux",
-												Source: "testing.loadMem",
+												File: "alert_with_topic_test.flux",
 												Start: ast.Position{
 													Column: 54,
 													Line:   73,
@@ -10060,8 +9535,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 61,
 														Line:   73,
 													},
-													File:   "alert_with_topic_test.flux",
-													Source: "testing",
+													File: "alert_with_topic_test.flux",
 													Start: ast.Position{
 														Column: 54,
 														Line:   73,
@@ -10079,8 +9553,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 69,
 														Line:   73,
 													},
-													File:   "alert_with_topic_test.flux",
-													Source: "loadMem",
+													File: "alert_with_topic_test.flux",
 													Start: ast.Position{
 														Column: 62,
 														Line:   73,
@@ -10103,8 +9576,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 105,
 											Line:   73,
 										},
-										File:   "alert_with_topic_test.flux",
-										Source: "fn: tickscript_alert",
+										File: "alert_with_topic_test.flux",
 										Start: ast.Position{
 											Column: 85,
 											Line:   73,
@@ -10121,8 +9593,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 87,
 												Line:   73,
 											},
-											File:   "alert_with_topic_test.flux",
-											Source: "fn",
+											File: "alert_with_topic_test.flux",
 											Start: ast.Position{
 												Column: 85,
 												Line:   73,
@@ -10141,8 +9612,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 105,
 												Line:   73,
 											},
-											File:   "alert_with_topic_test.flux",
-											Source: "tickscript_alert",
+											File: "alert_with_topic_test.flux",
 											Start: ast.Position{
 												Column: 89,
 												Line:   73,
@@ -10171,8 +9641,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 107,
 						Line:   73,
 					},
-					File:   "alert_with_topic_test.flux",
-					Source: "test _tickscript_alert = () =>\n    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: tickscript_alert})",
+					File: "alert_with_topic_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   72,
@@ -10191,8 +9660,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 17,
 						Line:   4,
 					},
-					File:   "alert_with_topic_test.flux",
-					Source: "import \"testing\"",
+					File: "alert_with_topic_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   4,
@@ -10208,8 +9676,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 17,
 							Line:   4,
 						},
-						File:   "alert_with_topic_test.flux",
-						Source: "\"testing\"",
+						File: "alert_with_topic_test.flux",
 						Start: ast.Position{
 							Column: 8,
 							Line:   4,
@@ -10228,8 +9695,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 13,
 						Line:   5,
 					},
-					File:   "alert_with_topic_test.flux",
-					Source: "import \"csv\"",
+					File: "alert_with_topic_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   5,
@@ -10245,8 +9711,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 13,
 							Line:   5,
 						},
-						File:   "alert_with_topic_test.flux",
-						Source: "\"csv\"",
+						File: "alert_with_topic_test.flux",
 						Start: ast.Position{
 							Column: 8,
 							Line:   5,
@@ -10265,8 +9730,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 39,
 						Line:   6,
 					},
-					File:   "alert_with_topic_test.flux",
-					Source: "import \"contrib/bonitoo-io/tickscript\"",
+					File: "alert_with_topic_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   6,
@@ -10282,8 +9746,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 39,
 							Line:   6,
 						},
-						File:   "alert_with_topic_test.flux",
-						Source: "\"contrib/bonitoo-io/tickscript\"",
+						File: "alert_with_topic_test.flux",
 						Start: ast.Position{
 							Column: 8,
 							Line:   6,
@@ -10302,8 +9765,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 37,
 						Line:   7,
 					},
-					File:   "alert_with_topic_test.flux",
-					Source: "import \"influxdata/influxdb/monitor\"",
+					File: "alert_with_topic_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   7,
@@ -10319,8 +9781,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 37,
 							Line:   7,
 						},
-						File:   "alert_with_topic_test.flux",
-						Source: "\"influxdata/influxdb/monitor\"",
+						File: "alert_with_topic_test.flux",
 						Start: ast.Position{
 							Column: 8,
 							Line:   7,
@@ -10339,8 +9800,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 36,
 						Line:   8,
 					},
-					File:   "alert_with_topic_test.flux",
-					Source: "import \"influxdata/influxdb/schema\"",
+					File: "alert_with_topic_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   8,
@@ -10356,8 +9816,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 36,
 							Line:   8,
 						},
-						File:   "alert_with_topic_test.flux",
-						Source: "\"influxdata/influxdb/schema\"",
+						File: "alert_with_topic_test.flux",
 						Start: ast.Position{
 							Column: 8,
 							Line:   8,
@@ -10378,8 +9837,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 24,
 						Line:   1,
 					},
-					File:   "alert_with_topic_test.flux",
-					Source: "package tickscript_test",
+					File: "alert_with_topic_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   1,
@@ -10395,8 +9853,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 24,
 							Line:   1,
 						},
-						File:   "alert_with_topic_test.flux",
-						Source: "tickscript_test",
+						File: "alert_with_topic_test.flux",
 						Start: ast.Position{
 							Column: 9,
 							Line:   1,
@@ -10415,8 +9872,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Column: 109,
 					Line:   63,
 				},
-				File:   "deadman_empty_test.flux",
-				Source: "package tickscript_test\n\n\nimport \"testing\"\nimport \"csv\"\nimport \"contrib/bonitoo-io/tickscript\"\nimport \"influxdata/influxdb/monitor\"\nimport \"influxdata/influxdb/schema\"\n\noption now = () => 2020-11-25T14:05:30Z\n\n// overwrite as buckets are not avail in Flux tests\noption monitor.write = (tables=<-) => tables\noption monitor.log = (tables=<-) => tables\n\ninData =\n    \"\n#group,false,false,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,\n,result,table,_time,_value,_field,_measurement,host,realm\n,,0,2020-11-25T14:05:03.477635916Z,1.819231109049999,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:04.541635074Z,1.635878190200181,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:05.623191313Z,39.33716449678206,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:06.696061106Z,26.33716449678206,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:07.768317097Z,8.33716449678206,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:08.868317091Z,1.33716449678206,kafka_message_in_rate,testm,kafka07,ft\n\"\noutData =\n    \"\n#group,false,false,true,true,true,true,false,true,false,true,false,false\n#datatype,string,long,string,string,string,string,string,string,long,string,boolean,string\n#default,_result,,,,,,,,,,,\n,result,table,_check_id,_check_name,_level,_measurement,_message,_source_measurement,_source_timestamp,_type,dead,id\n,,0,rate-check,Rate Check,crit,statuses,Deadman Check: Rate Check is: dead,testm,1606313130000000000,deadman,true,Realm: ft - Hostname: unknown / Metric: kafka_message_in_rate deadman alert\n\"\ncheck = {\n    _check_id: \"rate-check\",\n    _check_name: \"Rate Check\",\n    // tickscript?\n    _type: \"deadman\",\n    tags: {},\n}\nmetric_type = \"kafka_message_in_rate\"\ntier = \"ft\"\ntickscript_deadman = (table=<-) =>\n    table\n        |> range(start: 2020-11-25T14:05:15Z)\n        |> filter(fn: (r) => r._measurement == \"testm\" and r._field == metric_type and r.realm == tier)\n        |> schema.fieldsAsCols()\n        |> tickscript.groupBy(columns: [\"host\", \"realm\"])\n        |> tickscript.deadman(\n            check: check,\n            measurement: \"testm\",\n            threshold: 10,\n            id: (r) => \"Realm: ${tier} - Hostname: unknown / Metric: ${metric_type} deadman alert\",\n        )\n        // to avoid issue with validation\n        |> drop(columns: [\"details\"])\n        |> drop(columns: [\"_time\"])\n\ntest _tickscript_deadman = () =>\n    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: tickscript_deadman})",
+				File: "deadman_empty_test.flux",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -10433,8 +9889,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 40,
 							Line:   10,
 						},
-						File:   "deadman_empty_test.flux",
-						Source: "now = () => 2020-11-25T14:05:30Z",
+						File: "deadman_empty_test.flux",
 						Start: ast.Position{
 							Column: 8,
 							Line:   10,
@@ -10450,8 +9905,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 11,
 								Line:   10,
 							},
-							File:   "deadman_empty_test.flux",
-							Source: "now",
+							File: "deadman_empty_test.flux",
 							Start: ast.Position{
 								Column: 8,
 								Line:   10,
@@ -10470,8 +9924,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 40,
 								Line:   10,
 							},
-							File:   "deadman_empty_test.flux",
-							Source: "() => 2020-11-25T14:05:30Z",
+							File: "deadman_empty_test.flux",
 							Start: ast.Position{
 								Column: 14,
 								Line:   10,
@@ -10487,8 +9940,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 40,
 									Line:   10,
 								},
-								File:   "deadman_empty_test.flux",
-								Source: "2020-11-25T14:05:30Z",
+								File: "deadman_empty_test.flux",
 								Start: ast.Position{
 									Column: 20,
 									Line:   10,
@@ -10510,8 +9962,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 40,
 						Line:   10,
 					},
-					File:   "deadman_empty_test.flux",
-					Source: "option now = () => 2020-11-25T14:05:30Z",
+					File: "deadman_empty_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   10,
@@ -10528,8 +9979,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 45,
 							Line:   13,
 						},
-						File:   "deadman_empty_test.flux",
-						Source: "monitor.write = (tables=<-) => tables",
+						File: "deadman_empty_test.flux",
 						Start: ast.Position{
 							Column: 8,
 							Line:   13,
@@ -10546,8 +9996,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 45,
 								Line:   13,
 							},
-							File:   "deadman_empty_test.flux",
-							Source: "(tables=<-) => tables",
+							File: "deadman_empty_test.flux",
 							Start: ast.Position{
 								Column: 24,
 								Line:   13,
@@ -10563,8 +10012,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 45,
 									Line:   13,
 								},
-								File:   "deadman_empty_test.flux",
-								Source: "tables",
+								File: "deadman_empty_test.flux",
 								Start: ast.Position{
 									Column: 39,
 									Line:   13,
@@ -10583,8 +10031,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 34,
 									Line:   13,
 								},
-								File:   "deadman_empty_test.flux",
-								Source: "tables=<-",
+								File: "deadman_empty_test.flux",
 								Start: ast.Position{
 									Column: 25,
 									Line:   13,
@@ -10601,8 +10048,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 31,
 										Line:   13,
 									},
-									File:   "deadman_empty_test.flux",
-									Source: "tables",
+									File: "deadman_empty_test.flux",
 									Start: ast.Position{
 										Column: 25,
 										Line:   13,
@@ -10620,8 +10066,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 34,
 									Line:   13,
 								},
-								File:   "deadman_empty_test.flux",
-								Source: "<-",
+								File: "deadman_empty_test.flux",
 								Start: ast.Position{
 									Column: 32,
 									Line:   13,
@@ -10640,8 +10085,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 21,
 								Line:   13,
 							},
-							File:   "deadman_empty_test.flux",
-							Source: "monitor.write",
+							File: "deadman_empty_test.flux",
 							Start: ast.Position{
 								Column: 8,
 								Line:   13,
@@ -10658,8 +10102,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 15,
 									Line:   13,
 								},
-								File:   "deadman_empty_test.flux",
-								Source: "monitor",
+								File: "deadman_empty_test.flux",
 								Start: ast.Position{
 									Column: 8,
 									Line:   13,
@@ -10677,8 +10120,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 21,
 									Line:   13,
 								},
-								File:   "deadman_empty_test.flux",
-								Source: "write",
+								File: "deadman_empty_test.flux",
 								Start: ast.Position{
 									Column: 16,
 									Line:   13,
@@ -10698,8 +10140,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 45,
 						Line:   13,
 					},
-					File:   "deadman_empty_test.flux",
-					Source: "option monitor.write = (tables=<-) => tables",
+					File: "deadman_empty_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   13,
@@ -10716,8 +10157,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 43,
 							Line:   14,
 						},
-						File:   "deadman_empty_test.flux",
-						Source: "monitor.log = (tables=<-) => tables",
+						File: "deadman_empty_test.flux",
 						Start: ast.Position{
 							Column: 8,
 							Line:   14,
@@ -10734,8 +10174,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 43,
 								Line:   14,
 							},
-							File:   "deadman_empty_test.flux",
-							Source: "(tables=<-) => tables",
+							File: "deadman_empty_test.flux",
 							Start: ast.Position{
 								Column: 22,
 								Line:   14,
@@ -10751,8 +10190,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 43,
 									Line:   14,
 								},
-								File:   "deadman_empty_test.flux",
-								Source: "tables",
+								File: "deadman_empty_test.flux",
 								Start: ast.Position{
 									Column: 37,
 									Line:   14,
@@ -10771,8 +10209,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 32,
 									Line:   14,
 								},
-								File:   "deadman_empty_test.flux",
-								Source: "tables=<-",
+								File: "deadman_empty_test.flux",
 								Start: ast.Position{
 									Column: 23,
 									Line:   14,
@@ -10789,8 +10226,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 29,
 										Line:   14,
 									},
-									File:   "deadman_empty_test.flux",
-									Source: "tables",
+									File: "deadman_empty_test.flux",
 									Start: ast.Position{
 										Column: 23,
 										Line:   14,
@@ -10808,8 +10244,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 32,
 									Line:   14,
 								},
-								File:   "deadman_empty_test.flux",
-								Source: "<-",
+								File: "deadman_empty_test.flux",
 								Start: ast.Position{
 									Column: 30,
 									Line:   14,
@@ -10828,8 +10263,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 19,
 								Line:   14,
 							},
-							File:   "deadman_empty_test.flux",
-							Source: "monitor.log",
+							File: "deadman_empty_test.flux",
 							Start: ast.Position{
 								Column: 8,
 								Line:   14,
@@ -10846,8 +10280,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 15,
 									Line:   14,
 								},
-								File:   "deadman_empty_test.flux",
-								Source: "monitor",
+								File: "deadman_empty_test.flux",
 								Start: ast.Position{
 									Column: 8,
 									Line:   14,
@@ -10865,8 +10298,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 19,
 									Line:   14,
 								},
-								File:   "deadman_empty_test.flux",
-								Source: "log",
+								File: "deadman_empty_test.flux",
 								Start: ast.Position{
 									Column: 16,
 									Line:   14,
@@ -10886,8 +10318,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 43,
 						Line:   14,
 					},
-					File:   "deadman_empty_test.flux",
-					Source: "option monitor.log = (tables=<-) => tables",
+					File: "deadman_empty_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   14,
@@ -10903,8 +10334,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 2,
 						Line:   28,
 					},
-					File:   "deadman_empty_test.flux",
-					Source: "inData =\n    \"\n#group,false,false,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,\n,result,table,_time,_value,_field,_measurement,host,realm\n,,0,2020-11-25T14:05:03.477635916Z,1.819231109049999,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:04.541635074Z,1.635878190200181,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:05.623191313Z,39.33716449678206,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:06.696061106Z,26.33716449678206,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:07.768317097Z,8.33716449678206,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:08.868317091Z,1.33716449678206,kafka_message_in_rate,testm,kafka07,ft\n\"",
+					File: "deadman_empty_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   16,
@@ -10920,8 +10350,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 7,
 							Line:   16,
 						},
-						File:   "deadman_empty_test.flux",
-						Source: "inData",
+						File: "deadman_empty_test.flux",
 						Start: ast.Position{
 							Column: 1,
 							Line:   16,
@@ -10939,8 +10368,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 2,
 							Line:   28,
 						},
-						File:   "deadman_empty_test.flux",
-						Source: "\"\n#group,false,false,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,\n,result,table,_time,_value,_field,_measurement,host,realm\n,,0,2020-11-25T14:05:03.477635916Z,1.819231109049999,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:04.541635074Z,1.635878190200181,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:05.623191313Z,39.33716449678206,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:06.696061106Z,26.33716449678206,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:07.768317097Z,8.33716449678206,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:08.868317091Z,1.33716449678206,kafka_message_in_rate,testm,kafka07,ft\n\"",
+						File: "deadman_empty_test.flux",
 						Start: ast.Position{
 							Column: 5,
 							Line:   17,
@@ -10958,8 +10386,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 2,
 						Line:   36,
 					},
-					File:   "deadman_empty_test.flux",
-					Source: "outData =\n    \"\n#group,false,false,true,true,true,true,false,true,false,true,false,false\n#datatype,string,long,string,string,string,string,string,string,long,string,boolean,string\n#default,_result,,,,,,,,,,,\n,result,table,_check_id,_check_name,_level,_measurement,_message,_source_measurement,_source_timestamp,_type,dead,id\n,,0,rate-check,Rate Check,crit,statuses,Deadman Check: Rate Check is: dead,testm,1606313130000000000,deadman,true,Realm: ft - Hostname: unknown / Metric: kafka_message_in_rate deadman alert\n\"",
+					File: "deadman_empty_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   29,
@@ -10975,8 +10402,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 8,
 							Line:   29,
 						},
-						File:   "deadman_empty_test.flux",
-						Source: "outData",
+						File: "deadman_empty_test.flux",
 						Start: ast.Position{
 							Column: 1,
 							Line:   29,
@@ -10994,8 +10420,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 2,
 							Line:   36,
 						},
-						File:   "deadman_empty_test.flux",
-						Source: "\"\n#group,false,false,true,true,true,true,false,true,false,true,false,false\n#datatype,string,long,string,string,string,string,string,string,long,string,boolean,string\n#default,_result,,,,,,,,,,,\n,result,table,_check_id,_check_name,_level,_measurement,_message,_source_measurement,_source_timestamp,_type,dead,id\n,,0,rate-check,Rate Check,crit,statuses,Deadman Check: Rate Check is: dead,testm,1606313130000000000,deadman,true,Realm: ft - Hostname: unknown / Metric: kafka_message_in_rate deadman alert\n\"",
+						File: "deadman_empty_test.flux",
 						Start: ast.Position{
 							Column: 5,
 							Line:   30,
@@ -11013,8 +10438,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 2,
 						Line:   43,
 					},
-					File:   "deadman_empty_test.flux",
-					Source: "check = {\n    _check_id: \"rate-check\",\n    _check_name: \"Rate Check\",\n    // tickscript?\n    _type: \"deadman\",\n    tags: {},\n}",
+					File: "deadman_empty_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   37,
@@ -11030,8 +10454,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 6,
 							Line:   37,
 						},
-						File:   "deadman_empty_test.flux",
-						Source: "check",
+						File: "deadman_empty_test.flux",
 						Start: ast.Position{
 							Column: 1,
 							Line:   37,
@@ -11049,8 +10472,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 2,
 							Line:   43,
 						},
-						File:   "deadman_empty_test.flux",
-						Source: "{\n    _check_id: \"rate-check\",\n    _check_name: \"Rate Check\",\n    // tickscript?\n    _type: \"deadman\",\n    tags: {},\n}",
+						File: "deadman_empty_test.flux",
 						Start: ast.Position{
 							Column: 9,
 							Line:   37,
@@ -11067,8 +10489,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 28,
 								Line:   38,
 							},
-							File:   "deadman_empty_test.flux",
-							Source: "_check_id: \"rate-check\"",
+							File: "deadman_empty_test.flux",
 							Start: ast.Position{
 								Column: 5,
 								Line:   38,
@@ -11085,8 +10506,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 14,
 									Line:   38,
 								},
-								File:   "deadman_empty_test.flux",
-								Source: "_check_id",
+								File: "deadman_empty_test.flux",
 								Start: ast.Position{
 									Column: 5,
 									Line:   38,
@@ -11105,8 +10525,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 28,
 									Line:   38,
 								},
-								File:   "deadman_empty_test.flux",
-								Source: "\"rate-check\"",
+								File: "deadman_empty_test.flux",
 								Start: ast.Position{
 									Column: 16,
 									Line:   38,
@@ -11124,8 +10543,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 30,
 								Line:   39,
 							},
-							File:   "deadman_empty_test.flux",
-							Source: "_check_name: \"Rate Check\"",
+							File: "deadman_empty_test.flux",
 							Start: ast.Position{
 								Column: 5,
 								Line:   39,
@@ -11142,8 +10560,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 16,
 									Line:   39,
 								},
-								File:   "deadman_empty_test.flux",
-								Source: "_check_name",
+								File: "deadman_empty_test.flux",
 								Start: ast.Position{
 									Column: 5,
 									Line:   39,
@@ -11162,8 +10579,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 30,
 									Line:   39,
 								},
-								File:   "deadman_empty_test.flux",
-								Source: "\"Rate Check\"",
+								File: "deadman_empty_test.flux",
 								Start: ast.Position{
 									Column: 18,
 									Line:   39,
@@ -11181,8 +10597,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 21,
 								Line:   41,
 							},
-							File:   "deadman_empty_test.flux",
-							Source: "_type: \"deadman\"",
+							File: "deadman_empty_test.flux",
 							Start: ast.Position{
 								Column: 5,
 								Line:   41,
@@ -11199,8 +10614,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 10,
 									Line:   41,
 								},
-								File:   "deadman_empty_test.flux",
-								Source: "_type",
+								File: "deadman_empty_test.flux",
 								Start: ast.Position{
 									Column: 5,
 									Line:   41,
@@ -11219,8 +10633,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 21,
 									Line:   41,
 								},
-								File:   "deadman_empty_test.flux",
-								Source: "\"deadman\"",
+								File: "deadman_empty_test.flux",
 								Start: ast.Position{
 									Column: 12,
 									Line:   41,
@@ -11238,8 +10651,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 13,
 								Line:   42,
 							},
-							File:   "deadman_empty_test.flux",
-							Source: "tags: {}",
+							File: "deadman_empty_test.flux",
 							Start: ast.Position{
 								Column: 5,
 								Line:   42,
@@ -11256,8 +10668,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 9,
 									Line:   42,
 								},
-								File:   "deadman_empty_test.flux",
-								Source: "tags",
+								File: "deadman_empty_test.flux",
 								Start: ast.Position{
 									Column: 5,
 									Line:   42,
@@ -11276,8 +10687,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 13,
 									Line:   42,
 								},
-								File:   "deadman_empty_test.flux",
-								Source: "{}",
+								File: "deadman_empty_test.flux",
 								Start: ast.Position{
 									Column: 11,
 									Line:   42,
@@ -11302,8 +10712,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 38,
 						Line:   44,
 					},
-					File:   "deadman_empty_test.flux",
-					Source: "metric_type = \"kafka_message_in_rate\"",
+					File: "deadman_empty_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   44,
@@ -11319,8 +10728,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 12,
 							Line:   44,
 						},
-						File:   "deadman_empty_test.flux",
-						Source: "metric_type",
+						File: "deadman_empty_test.flux",
 						Start: ast.Position{
 							Column: 1,
 							Line:   44,
@@ -11338,8 +10746,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 38,
 							Line:   44,
 						},
-						File:   "deadman_empty_test.flux",
-						Source: "\"kafka_message_in_rate\"",
+						File: "deadman_empty_test.flux",
 						Start: ast.Position{
 							Column: 15,
 							Line:   44,
@@ -11357,8 +10764,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 12,
 						Line:   45,
 					},
-					File:   "deadman_empty_test.flux",
-					Source: "tier = \"ft\"",
+					File: "deadman_empty_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   45,
@@ -11374,8 +10780,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 5,
 							Line:   45,
 						},
-						File:   "deadman_empty_test.flux",
-						Source: "tier",
+						File: "deadman_empty_test.flux",
 						Start: ast.Position{
 							Column: 1,
 							Line:   45,
@@ -11393,8 +10798,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 12,
 							Line:   45,
 						},
-						File:   "deadman_empty_test.flux",
-						Source: "\"ft\"",
+						File: "deadman_empty_test.flux",
 						Start: ast.Position{
 							Column: 8,
 							Line:   45,
@@ -11412,8 +10816,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 36,
 						Line:   60,
 					},
-					File:   "deadman_empty_test.flux",
-					Source: "tickscript_deadman = (table=<-) =>\n    table\n        |> range(start: 2020-11-25T14:05:15Z)\n        |> filter(fn: (r) => r._measurement == \"testm\" and r._field == metric_type and r.realm == tier)\n        |> schema.fieldsAsCols()\n        |> tickscript.groupBy(columns: [\"host\", \"realm\"])\n        |> tickscript.deadman(\n            check: check,\n            measurement: \"testm\",\n            threshold: 10,\n            id: (r) => \"Realm: ${tier} - Hostname: unknown / Metric: ${metric_type} deadman alert\",\n        )\n        // to avoid issue with validation\n        |> drop(columns: [\"details\"])\n        |> drop(columns: [\"_time\"])",
+					File: "deadman_empty_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   46,
@@ -11429,8 +10832,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 19,
 							Line:   46,
 						},
-						File:   "deadman_empty_test.flux",
-						Source: "tickscript_deadman",
+						File: "deadman_empty_test.flux",
 						Start: ast.Position{
 							Column: 1,
 							Line:   46,
@@ -11449,8 +10851,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 36,
 							Line:   60,
 						},
-						File:   "deadman_empty_test.flux",
-						Source: "(table=<-) =>\n    table\n        |> range(start: 2020-11-25T14:05:15Z)\n        |> filter(fn: (r) => r._measurement == \"testm\" and r._field == metric_type and r.realm == tier)\n        |> schema.fieldsAsCols()\n        |> tickscript.groupBy(columns: [\"host\", \"realm\"])\n        |> tickscript.deadman(\n            check: check,\n            measurement: \"testm\",\n            threshold: 10,\n            id: (r) => \"Realm: ${tier} - Hostname: unknown / Metric: ${metric_type} deadman alert\",\n        )\n        // to avoid issue with validation\n        |> drop(columns: [\"details\"])\n        |> drop(columns: [\"_time\"])",
+						File: "deadman_empty_test.flux",
 						Start: ast.Position{
 							Column: 22,
 							Line:   46,
@@ -11473,8 +10874,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 10,
 															Line:   47,
 														},
-														File:   "deadman_empty_test.flux",
-														Source: "table",
+														File: "deadman_empty_test.flux",
 														Start: ast.Position{
 															Column: 5,
 															Line:   47,
@@ -11491,8 +10891,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 46,
 														Line:   48,
 													},
-													File:   "deadman_empty_test.flux",
-													Source: "table\n        |> range(start: 2020-11-25T14:05:15Z)",
+													File: "deadman_empty_test.flux",
 													Start: ast.Position{
 														Column: 5,
 														Line:   47,
@@ -11509,8 +10908,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Column: 45,
 																Line:   48,
 															},
-															File:   "deadman_empty_test.flux",
-															Source: "start: 2020-11-25T14:05:15Z",
+															File: "deadman_empty_test.flux",
 															Start: ast.Position{
 																Column: 18,
 																Line:   48,
@@ -11527,8 +10925,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Column: 45,
 																	Line:   48,
 																},
-																File:   "deadman_empty_test.flux",
-																Source: "start: 2020-11-25T14:05:15Z",
+																File: "deadman_empty_test.flux",
 																Start: ast.Position{
 																	Column: 18,
 																	Line:   48,
@@ -11545,8 +10942,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Column: 23,
 																		Line:   48,
 																	},
-																	File:   "deadman_empty_test.flux",
-																	Source: "start",
+																	File: "deadman_empty_test.flux",
 																	Start: ast.Position{
 																		Column: 18,
 																		Line:   48,
@@ -11565,8 +10961,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Column: 45,
 																		Line:   48,
 																	},
-																	File:   "deadman_empty_test.flux",
-																	Source: "2020-11-25T14:05:15Z",
+																	File: "deadman_empty_test.flux",
 																	Start: ast.Position{
 																		Column: 25,
 																		Line:   48,
@@ -11587,8 +10982,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 46,
 															Line:   48,
 														},
-														File:   "deadman_empty_test.flux",
-														Source: "range(start: 2020-11-25T14:05:15Z)",
+														File: "deadman_empty_test.flux",
 														Start: ast.Position{
 															Column: 12,
 															Line:   48,
@@ -11604,8 +10998,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Column: 17,
 																Line:   48,
 															},
-															File:   "deadman_empty_test.flux",
-															Source: "range",
+															File: "deadman_empty_test.flux",
 															Start: ast.Position{
 																Column: 12,
 																Line:   48,
@@ -11626,8 +11019,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 104,
 													Line:   49,
 												},
-												File:   "deadman_empty_test.flux",
-												Source: "table\n        |> range(start: 2020-11-25T14:05:15Z)\n        |> filter(fn: (r) => r._measurement == \"testm\" and r._field == metric_type and r.realm == tier)",
+												File: "deadman_empty_test.flux",
 												Start: ast.Position{
 													Column: 5,
 													Line:   47,
@@ -11644,8 +11036,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 103,
 															Line:   49,
 														},
-														File:   "deadman_empty_test.flux",
-														Source: "fn: (r) => r._measurement == \"testm\" and r._field == metric_type and r.realm == tier",
+														File: "deadman_empty_test.flux",
 														Start: ast.Position{
 															Column: 19,
 															Line:   49,
@@ -11662,8 +11053,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Column: 103,
 																Line:   49,
 															},
-															File:   "deadman_empty_test.flux",
-															Source: "fn: (r) => r._measurement == \"testm\" and r._field == metric_type and r.realm == tier",
+															File: "deadman_empty_test.flux",
 															Start: ast.Position{
 																Column: 19,
 																Line:   49,
@@ -11680,8 +11070,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Column: 21,
 																	Line:   49,
 																},
-																File:   "deadman_empty_test.flux",
-																Source: "fn",
+																File: "deadman_empty_test.flux",
 																Start: ast.Position{
 																	Column: 19,
 																	Line:   49,
@@ -11701,8 +11090,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Column: 103,
 																	Line:   49,
 																},
-																File:   "deadman_empty_test.flux",
-																Source: "(r) => r._measurement == \"testm\" and r._field == metric_type and r.realm == tier",
+																File: "deadman_empty_test.flux",
 																Start: ast.Position{
 																	Column: 23,
 																	Line:   49,
@@ -11718,8 +11106,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Column: 103,
 																		Line:   49,
 																	},
-																	File:   "deadman_empty_test.flux",
-																	Source: "r._measurement == \"testm\" and r._field == metric_type and r.realm == tier",
+																	File: "deadman_empty_test.flux",
 																	Start: ast.Position{
 																		Column: 30,
 																		Line:   49,
@@ -11735,8 +11122,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																			Column: 83,
 																			Line:   49,
 																		},
-																		File:   "deadman_empty_test.flux",
-																		Source: "r._measurement == \"testm\" and r._field == metric_type",
+																		File: "deadman_empty_test.flux",
 																		Start: ast.Position{
 																			Column: 30,
 																			Line:   49,
@@ -11752,8 +11138,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																				Column: 55,
 																				Line:   49,
 																			},
-																			File:   "deadman_empty_test.flux",
-																			Source: "r._measurement == \"testm\"",
+																			File: "deadman_empty_test.flux",
 																			Start: ast.Position{
 																				Column: 30,
 																				Line:   49,
@@ -11769,8 +11154,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																					Column: 44,
 																					Line:   49,
 																				},
-																				File:   "deadman_empty_test.flux",
-																				Source: "r._measurement",
+																				File: "deadman_empty_test.flux",
 																				Start: ast.Position{
 																					Column: 30,
 																					Line:   49,
@@ -11787,8 +11171,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																						Column: 31,
 																						Line:   49,
 																					},
-																					File:   "deadman_empty_test.flux",
-																					Source: "r",
+																					File: "deadman_empty_test.flux",
 																					Start: ast.Position{
 																						Column: 30,
 																						Line:   49,
@@ -11806,8 +11189,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																						Column: 44,
 																						Line:   49,
 																					},
-																					File:   "deadman_empty_test.flux",
-																					Source: "_measurement",
+																					File: "deadman_empty_test.flux",
 																					Start: ast.Position{
 																						Column: 32,
 																						Line:   49,
@@ -11828,8 +11210,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																					Column: 55,
 																					Line:   49,
 																				},
-																				File:   "deadman_empty_test.flux",
-																				Source: "\"testm\"",
+																				File: "deadman_empty_test.flux",
 																				Start: ast.Position{
 																					Column: 48,
 																					Line:   49,
@@ -11849,8 +11230,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																				Column: 83,
 																				Line:   49,
 																			},
-																			File:   "deadman_empty_test.flux",
-																			Source: "r._field == metric_type",
+																			File: "deadman_empty_test.flux",
 																			Start: ast.Position{
 																				Column: 60,
 																				Line:   49,
@@ -11866,8 +11246,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																					Column: 68,
 																					Line:   49,
 																				},
-																				File:   "deadman_empty_test.flux",
-																				Source: "r._field",
+																				File: "deadman_empty_test.flux",
 																				Start: ast.Position{
 																					Column: 60,
 																					Line:   49,
@@ -11884,8 +11263,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																						Column: 61,
 																						Line:   49,
 																					},
-																					File:   "deadman_empty_test.flux",
-																					Source: "r",
+																					File: "deadman_empty_test.flux",
 																					Start: ast.Position{
 																						Column: 60,
 																						Line:   49,
@@ -11903,8 +11281,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																						Column: 68,
 																						Line:   49,
 																					},
-																					File:   "deadman_empty_test.flux",
-																					Source: "_field",
+																					File: "deadman_empty_test.flux",
 																					Start: ast.Position{
 																						Column: 62,
 																						Line:   49,
@@ -11925,8 +11302,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																					Column: 83,
 																					Line:   49,
 																				},
-																				File:   "deadman_empty_test.flux",
-																				Source: "metric_type",
+																				File: "deadman_empty_test.flux",
 																				Start: ast.Position{
 																					Column: 72,
 																					Line:   49,
@@ -11947,8 +11323,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																			Column: 103,
 																			Line:   49,
 																		},
-																		File:   "deadman_empty_test.flux",
-																		Source: "r.realm == tier",
+																		File: "deadman_empty_test.flux",
 																		Start: ast.Position{
 																			Column: 88,
 																			Line:   49,
@@ -11964,8 +11339,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																				Column: 95,
 																				Line:   49,
 																			},
-																			File:   "deadman_empty_test.flux",
-																			Source: "r.realm",
+																			File: "deadman_empty_test.flux",
 																			Start: ast.Position{
 																				Column: 88,
 																				Line:   49,
@@ -11982,8 +11356,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																					Column: 89,
 																					Line:   49,
 																				},
-																				File:   "deadman_empty_test.flux",
-																				Source: "r",
+																				File: "deadman_empty_test.flux",
 																				Start: ast.Position{
 																					Column: 88,
 																					Line:   49,
@@ -12001,8 +11374,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																					Column: 95,
 																					Line:   49,
 																				},
-																				File:   "deadman_empty_test.flux",
-																				Source: "realm",
+																				File: "deadman_empty_test.flux",
 																				Start: ast.Position{
 																					Column: 90,
 																					Line:   49,
@@ -12023,8 +11395,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																				Column: 103,
 																				Line:   49,
 																			},
-																			File:   "deadman_empty_test.flux",
-																			Source: "tier",
+																			File: "deadman_empty_test.flux",
 																			Start: ast.Position{
 																				Column: 99,
 																				Line:   49,
@@ -12045,8 +11416,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Column: 25,
 																		Line:   49,
 																	},
-																	File:   "deadman_empty_test.flux",
-																	Source: "r",
+																	File: "deadman_empty_test.flux",
 																	Start: ast.Position{
 																		Column: 24,
 																		Line:   49,
@@ -12063,8 +11433,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																			Column: 25,
 																			Line:   49,
 																		},
-																		File:   "deadman_empty_test.flux",
-																		Source: "r",
+																		File: "deadman_empty_test.flux",
 																		Start: ast.Position{
 																			Column: 24,
 																			Line:   49,
@@ -12090,8 +11459,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 104,
 														Line:   49,
 													},
-													File:   "deadman_empty_test.flux",
-													Source: "filter(fn: (r) => r._measurement == \"testm\" and r._field == metric_type and r.realm == tier)",
+													File: "deadman_empty_test.flux",
 													Start: ast.Position{
 														Column: 12,
 														Line:   49,
@@ -12107,8 +11475,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 18,
 															Line:   49,
 														},
-														File:   "deadman_empty_test.flux",
-														Source: "filter",
+														File: "deadman_empty_test.flux",
 														Start: ast.Position{
 															Column: 12,
 															Line:   49,
@@ -12129,8 +11496,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 33,
 												Line:   50,
 											},
-											File:   "deadman_empty_test.flux",
-											Source: "table\n        |> range(start: 2020-11-25T14:05:15Z)\n        |> filter(fn: (r) => r._measurement == \"testm\" and r._field == metric_type and r.realm == tier)\n        |> schema.fieldsAsCols()",
+											File: "deadman_empty_test.flux",
 											Start: ast.Position{
 												Column: 5,
 												Line:   47,
@@ -12147,8 +11513,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 33,
 													Line:   50,
 												},
-												File:   "deadman_empty_test.flux",
-												Source: "schema.fieldsAsCols()",
+												File: "deadman_empty_test.flux",
 												Start: ast.Position{
 													Column: 12,
 													Line:   50,
@@ -12164,8 +11529,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 31,
 														Line:   50,
 													},
-													File:   "deadman_empty_test.flux",
-													Source: "schema.fieldsAsCols",
+													File: "deadman_empty_test.flux",
 													Start: ast.Position{
 														Column: 12,
 														Line:   50,
@@ -12182,8 +11546,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 18,
 															Line:   50,
 														},
-														File:   "deadman_empty_test.flux",
-														Source: "schema",
+														File: "deadman_empty_test.flux",
 														Start: ast.Position{
 															Column: 12,
 															Line:   50,
@@ -12201,8 +11564,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 31,
 															Line:   50,
 														},
-														File:   "deadman_empty_test.flux",
-														Source: "fieldsAsCols",
+														File: "deadman_empty_test.flux",
 														Start: ast.Position{
 															Column: 19,
 															Line:   50,
@@ -12225,8 +11587,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 58,
 											Line:   51,
 										},
-										File:   "deadman_empty_test.flux",
-										Source: "table\n        |> range(start: 2020-11-25T14:05:15Z)\n        |> filter(fn: (r) => r._measurement == \"testm\" and r._field == metric_type and r.realm == tier)\n        |> schema.fieldsAsCols()\n        |> tickscript.groupBy(columns: [\"host\", \"realm\"])",
+										File: "deadman_empty_test.flux",
 										Start: ast.Position{
 											Column: 5,
 											Line:   47,
@@ -12243,8 +11604,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 57,
 													Line:   51,
 												},
-												File:   "deadman_empty_test.flux",
-												Source: "columns: [\"host\", \"realm\"]",
+												File: "deadman_empty_test.flux",
 												Start: ast.Position{
 													Column: 31,
 													Line:   51,
@@ -12261,8 +11621,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 57,
 														Line:   51,
 													},
-													File:   "deadman_empty_test.flux",
-													Source: "columns: [\"host\", \"realm\"]",
+													File: "deadman_empty_test.flux",
 													Start: ast.Position{
 														Column: 31,
 														Line:   51,
@@ -12279,8 +11638,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 38,
 															Line:   51,
 														},
-														File:   "deadman_empty_test.flux",
-														Source: "columns",
+														File: "deadman_empty_test.flux",
 														Start: ast.Position{
 															Column: 31,
 															Line:   51,
@@ -12299,8 +11657,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 57,
 															Line:   51,
 														},
-														File:   "deadman_empty_test.flux",
-														Source: "[\"host\", \"realm\"]",
+														File: "deadman_empty_test.flux",
 														Start: ast.Position{
 															Column: 40,
 															Line:   51,
@@ -12316,8 +11673,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Column: 47,
 																Line:   51,
 															},
-															File:   "deadman_empty_test.flux",
-															Source: "\"host\"",
+															File: "deadman_empty_test.flux",
 															Start: ast.Position{
 																Column: 41,
 																Line:   51,
@@ -12334,8 +11690,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Column: 56,
 																Line:   51,
 															},
-															File:   "deadman_empty_test.flux",
-															Source: "\"realm\"",
+															File: "deadman_empty_test.flux",
 															Start: ast.Position{
 																Column: 49,
 																Line:   51,
@@ -12359,8 +11714,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 58,
 												Line:   51,
 											},
-											File:   "deadman_empty_test.flux",
-											Source: "tickscript.groupBy(columns: [\"host\", \"realm\"])",
+											File: "deadman_empty_test.flux",
 											Start: ast.Position{
 												Column: 12,
 												Line:   51,
@@ -12376,8 +11730,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 30,
 													Line:   51,
 												},
-												File:   "deadman_empty_test.flux",
-												Source: "tickscript.groupBy",
+												File: "deadman_empty_test.flux",
 												Start: ast.Position{
 													Column: 12,
 													Line:   51,
@@ -12394,8 +11747,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 22,
 														Line:   51,
 													},
-													File:   "deadman_empty_test.flux",
-													Source: "tickscript",
+													File: "deadman_empty_test.flux",
 													Start: ast.Position{
 														Column: 12,
 														Line:   51,
@@ -12413,8 +11765,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 30,
 														Line:   51,
 													},
-													File:   "deadman_empty_test.flux",
-													Source: "groupBy",
+													File: "deadman_empty_test.flux",
 													Start: ast.Position{
 														Column: 23,
 														Line:   51,
@@ -12437,8 +11788,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 10,
 										Line:   57,
 									},
-									File:   "deadman_empty_test.flux",
-									Source: "table\n        |> range(start: 2020-11-25T14:05:15Z)\n        |> filter(fn: (r) => r._measurement == \"testm\" and r._field == metric_type and r.realm == tier)\n        |> schema.fieldsAsCols()\n        |> tickscript.groupBy(columns: [\"host\", \"realm\"])\n        |> tickscript.deadman(\n            check: check,\n            measurement: \"testm\",\n            threshold: 10,\n            id: (r) => \"Realm: ${tier} - Hostname: unknown / Metric: ${metric_type} deadman alert\",\n        )",
+									File: "deadman_empty_test.flux",
 									Start: ast.Position{
 										Column: 5,
 										Line:   47,
@@ -12455,8 +11805,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 99,
 												Line:   56,
 											},
-											File:   "deadman_empty_test.flux",
-											Source: "check: check,\n            measurement: \"testm\",\n            threshold: 10,\n            id: (r) => \"Realm: ${tier} - Hostname: unknown / Metric: ${metric_type} deadman alert\"",
+											File: "deadman_empty_test.flux",
 											Start: ast.Position{
 												Column: 13,
 												Line:   53,
@@ -12473,8 +11822,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 25,
 													Line:   53,
 												},
-												File:   "deadman_empty_test.flux",
-												Source: "check: check",
+												File: "deadman_empty_test.flux",
 												Start: ast.Position{
 													Column: 13,
 													Line:   53,
@@ -12491,8 +11839,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 18,
 														Line:   53,
 													},
-													File:   "deadman_empty_test.flux",
-													Source: "check",
+													File: "deadman_empty_test.flux",
 													Start: ast.Position{
 														Column: 13,
 														Line:   53,
@@ -12511,8 +11858,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 25,
 														Line:   53,
 													},
-													File:   "deadman_empty_test.flux",
-													Source: "check",
+													File: "deadman_empty_test.flux",
 													Start: ast.Position{
 														Column: 20,
 														Line:   53,
@@ -12530,8 +11876,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 33,
 													Line:   54,
 												},
-												File:   "deadman_empty_test.flux",
-												Source: "measurement: \"testm\"",
+												File: "deadman_empty_test.flux",
 												Start: ast.Position{
 													Column: 13,
 													Line:   54,
@@ -12548,8 +11893,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 24,
 														Line:   54,
 													},
-													File:   "deadman_empty_test.flux",
-													Source: "measurement",
+													File: "deadman_empty_test.flux",
 													Start: ast.Position{
 														Column: 13,
 														Line:   54,
@@ -12568,8 +11912,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 33,
 														Line:   54,
 													},
-													File:   "deadman_empty_test.flux",
-													Source: "\"testm\"",
+													File: "deadman_empty_test.flux",
 													Start: ast.Position{
 														Column: 26,
 														Line:   54,
@@ -12587,8 +11930,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 26,
 													Line:   55,
 												},
-												File:   "deadman_empty_test.flux",
-												Source: "threshold: 10",
+												File: "deadman_empty_test.flux",
 												Start: ast.Position{
 													Column: 13,
 													Line:   55,
@@ -12605,8 +11947,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 22,
 														Line:   55,
 													},
-													File:   "deadman_empty_test.flux",
-													Source: "threshold",
+													File: "deadman_empty_test.flux",
 													Start: ast.Position{
 														Column: 13,
 														Line:   55,
@@ -12625,8 +11966,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 26,
 														Line:   55,
 													},
-													File:   "deadman_empty_test.flux",
-													Source: "10",
+													File: "deadman_empty_test.flux",
 													Start: ast.Position{
 														Column: 24,
 														Line:   55,
@@ -12644,8 +11984,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 99,
 													Line:   56,
 												},
-												File:   "deadman_empty_test.flux",
-												Source: "id: (r) => \"Realm: ${tier} - Hostname: unknown / Metric: ${metric_type} deadman alert\"",
+												File: "deadman_empty_test.flux",
 												Start: ast.Position{
 													Column: 13,
 													Line:   56,
@@ -12662,8 +12001,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 15,
 														Line:   56,
 													},
-													File:   "deadman_empty_test.flux",
-													Source: "id",
+													File: "deadman_empty_test.flux",
 													Start: ast.Position{
 														Column: 13,
 														Line:   56,
@@ -12683,8 +12021,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 99,
 														Line:   56,
 													},
-													File:   "deadman_empty_test.flux",
-													Source: "(r) => \"Realm: ${tier} - Hostname: unknown / Metric: ${metric_type} deadman alert\"",
+													File: "deadman_empty_test.flux",
 													Start: ast.Position{
 														Column: 17,
 														Line:   56,
@@ -12700,8 +12037,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 99,
 															Line:   56,
 														},
-														File:   "deadman_empty_test.flux",
-														Source: "\"Realm: ${tier} - Hostname: unknown / Metric: ${metric_type} deadman alert\"",
+														File: "deadman_empty_test.flux",
 														Start: ast.Position{
 															Column: 24,
 															Line:   56,
@@ -12717,8 +12053,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Column: 32,
 																Line:   56,
 															},
-															File:   "deadman_empty_test.flux",
-															Source: "Realm: ",
+															File: "deadman_empty_test.flux",
 															Start: ast.Position{
 																Column: 25,
 																Line:   56,
@@ -12735,8 +12070,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Column: 39,
 																Line:   56,
 															},
-															File:   "deadman_empty_test.flux",
-															Source: "${tier}",
+															File: "deadman_empty_test.flux",
 															Start: ast.Position{
 																Column: 32,
 																Line:   56,
@@ -12752,8 +12086,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Column: 38,
 																	Line:   56,
 																},
-																File:   "deadman_empty_test.flux",
-																Source: "tier",
+																File: "deadman_empty_test.flux",
 																Start: ast.Position{
 																	Column: 34,
 																	Line:   56,
@@ -12771,8 +12104,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Column: 70,
 																Line:   56,
 															},
-															File:   "deadman_empty_test.flux",
-															Source: " - Hostname: unknown / Metric: ",
+															File: "deadman_empty_test.flux",
 															Start: ast.Position{
 																Column: 39,
 																Line:   56,
@@ -12789,8 +12121,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Column: 84,
 																Line:   56,
 															},
-															File:   "deadman_empty_test.flux",
-															Source: "${metric_type}",
+															File: "deadman_empty_test.flux",
 															Start: ast.Position{
 																Column: 70,
 																Line:   56,
@@ -12806,8 +12137,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Column: 83,
 																	Line:   56,
 																},
-																File:   "deadman_empty_test.flux",
-																Source: "metric_type",
+																File: "deadman_empty_test.flux",
 																Start: ast.Position{
 																	Column: 72,
 																	Line:   56,
@@ -12825,8 +12155,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Column: 98,
 																Line:   56,
 															},
-															File:   "deadman_empty_test.flux",
-															Source: " deadman alert",
+															File: "deadman_empty_test.flux",
 															Start: ast.Position{
 																Column: 84,
 																Line:   56,
@@ -12846,8 +12175,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 19,
 															Line:   56,
 														},
-														File:   "deadman_empty_test.flux",
-														Source: "r",
+														File: "deadman_empty_test.flux",
 														Start: ast.Position{
 															Column: 18,
 															Line:   56,
@@ -12864,8 +12192,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Column: 19,
 																Line:   56,
 															},
-															File:   "deadman_empty_test.flux",
-															Source: "r",
+															File: "deadman_empty_test.flux",
 															Start: ast.Position{
 																Column: 18,
 																Line:   56,
@@ -12891,8 +12218,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 10,
 											Line:   57,
 										},
-										File:   "deadman_empty_test.flux",
-										Source: "tickscript.deadman(\n            check: check,\n            measurement: \"testm\",\n            threshold: 10,\n            id: (r) => \"Realm: ${tier} - Hostname: unknown / Metric: ${metric_type} deadman alert\",\n        )",
+										File: "deadman_empty_test.flux",
 										Start: ast.Position{
 											Column: 12,
 											Line:   52,
@@ -12908,8 +12234,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 30,
 												Line:   52,
 											},
-											File:   "deadman_empty_test.flux",
-											Source: "tickscript.deadman",
+											File: "deadman_empty_test.flux",
 											Start: ast.Position{
 												Column: 12,
 												Line:   52,
@@ -12926,8 +12251,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 22,
 													Line:   52,
 												},
-												File:   "deadman_empty_test.flux",
-												Source: "tickscript",
+												File: "deadman_empty_test.flux",
 												Start: ast.Position{
 													Column: 12,
 													Line:   52,
@@ -12945,8 +12269,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 30,
 													Line:   52,
 												},
-												File:   "deadman_empty_test.flux",
-												Source: "deadman",
+												File: "deadman_empty_test.flux",
 												Start: ast.Position{
 													Column: 23,
 													Line:   52,
@@ -12969,8 +12292,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 38,
 									Line:   59,
 								},
-								File:   "deadman_empty_test.flux",
-								Source: "table\n        |> range(start: 2020-11-25T14:05:15Z)\n        |> filter(fn: (r) => r._measurement == \"testm\" and r._field == metric_type and r.realm == tier)\n        |> schema.fieldsAsCols()\n        |> tickscript.groupBy(columns: [\"host\", \"realm\"])\n        |> tickscript.deadman(\n            check: check,\n            measurement: \"testm\",\n            threshold: 10,\n            id: (r) => \"Realm: ${tier} - Hostname: unknown / Metric: ${metric_type} deadman alert\",\n        )\n        // to avoid issue with validation\n        |> drop(columns: [\"details\"])",
+								File: "deadman_empty_test.flux",
 								Start: ast.Position{
 									Column: 5,
 									Line:   47,
@@ -12987,8 +12309,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 37,
 											Line:   59,
 										},
-										File:   "deadman_empty_test.flux",
-										Source: "columns: [\"details\"]",
+										File: "deadman_empty_test.flux",
 										Start: ast.Position{
 											Column: 17,
 											Line:   59,
@@ -13005,8 +12326,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 37,
 												Line:   59,
 											},
-											File:   "deadman_empty_test.flux",
-											Source: "columns: [\"details\"]",
+											File: "deadman_empty_test.flux",
 											Start: ast.Position{
 												Column: 17,
 												Line:   59,
@@ -13023,8 +12343,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 24,
 													Line:   59,
 												},
-												File:   "deadman_empty_test.flux",
-												Source: "columns",
+												File: "deadman_empty_test.flux",
 												Start: ast.Position{
 													Column: 17,
 													Line:   59,
@@ -13043,8 +12362,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 37,
 													Line:   59,
 												},
-												File:   "deadman_empty_test.flux",
-												Source: "[\"details\"]",
+												File: "deadman_empty_test.flux",
 												Start: ast.Position{
 													Column: 26,
 													Line:   59,
@@ -13060,8 +12378,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 36,
 														Line:   59,
 													},
-													File:   "deadman_empty_test.flux",
-													Source: "\"details\"",
+													File: "deadman_empty_test.flux",
 													Start: ast.Position{
 														Column: 27,
 														Line:   59,
@@ -13085,8 +12402,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 38,
 										Line:   59,
 									},
-									File:   "deadman_empty_test.flux",
-									Source: "drop(columns: [\"details\"])",
+									File: "deadman_empty_test.flux",
 									Start: ast.Position{
 										Column: 12,
 										Line:   59,
@@ -13102,8 +12418,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 16,
 											Line:   59,
 										},
-										File:   "deadman_empty_test.flux",
-										Source: "drop",
+										File: "deadman_empty_test.flux",
 										Start: ast.Position{
 											Column: 12,
 											Line:   59,
@@ -13124,8 +12439,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 36,
 								Line:   60,
 							},
-							File:   "deadman_empty_test.flux",
-							Source: "table\n        |> range(start: 2020-11-25T14:05:15Z)\n        |> filter(fn: (r) => r._measurement == \"testm\" and r._field == metric_type and r.realm == tier)\n        |> schema.fieldsAsCols()\n        |> tickscript.groupBy(columns: [\"host\", \"realm\"])\n        |> tickscript.deadman(\n            check: check,\n            measurement: \"testm\",\n            threshold: 10,\n            id: (r) => \"Realm: ${tier} - Hostname: unknown / Metric: ${metric_type} deadman alert\",\n        )\n        // to avoid issue with validation\n        |> drop(columns: [\"details\"])\n        |> drop(columns: [\"_time\"])",
+							File: "deadman_empty_test.flux",
 							Start: ast.Position{
 								Column: 5,
 								Line:   47,
@@ -13142,8 +12456,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 35,
 										Line:   60,
 									},
-									File:   "deadman_empty_test.flux",
-									Source: "columns: [\"_time\"]",
+									File: "deadman_empty_test.flux",
 									Start: ast.Position{
 										Column: 17,
 										Line:   60,
@@ -13160,8 +12473,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 35,
 											Line:   60,
 										},
-										File:   "deadman_empty_test.flux",
-										Source: "columns: [\"_time\"]",
+										File: "deadman_empty_test.flux",
 										Start: ast.Position{
 											Column: 17,
 											Line:   60,
@@ -13178,8 +12490,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 24,
 												Line:   60,
 											},
-											File:   "deadman_empty_test.flux",
-											Source: "columns",
+											File: "deadman_empty_test.flux",
 											Start: ast.Position{
 												Column: 17,
 												Line:   60,
@@ -13198,8 +12509,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 35,
 												Line:   60,
 											},
-											File:   "deadman_empty_test.flux",
-											Source: "[\"_time\"]",
+											File: "deadman_empty_test.flux",
 											Start: ast.Position{
 												Column: 26,
 												Line:   60,
@@ -13215,8 +12525,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 34,
 													Line:   60,
 												},
-												File:   "deadman_empty_test.flux",
-												Source: "\"_time\"",
+												File: "deadman_empty_test.flux",
 												Start: ast.Position{
 													Column: 27,
 													Line:   60,
@@ -13240,8 +12549,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 36,
 									Line:   60,
 								},
-								File:   "deadman_empty_test.flux",
-								Source: "drop(columns: [\"_time\"])",
+								File: "deadman_empty_test.flux",
 								Start: ast.Position{
 									Column: 12,
 									Line:   60,
@@ -13257,8 +12565,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 16,
 										Line:   60,
 									},
-									File:   "deadman_empty_test.flux",
-									Source: "drop",
+									File: "deadman_empty_test.flux",
 									Start: ast.Position{
 										Column: 12,
 										Line:   60,
@@ -13281,8 +12588,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 31,
 								Line:   46,
 							},
-							File:   "deadman_empty_test.flux",
-							Source: "table=<-",
+							File: "deadman_empty_test.flux",
 							Start: ast.Position{
 								Column: 23,
 								Line:   46,
@@ -13299,8 +12605,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 28,
 									Line:   46,
 								},
-								File:   "deadman_empty_test.flux",
-								Source: "table",
+								File: "deadman_empty_test.flux",
 								Start: ast.Position{
 									Column: 23,
 									Line:   46,
@@ -13318,8 +12623,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 31,
 								Line:   46,
 							},
-							File:   "deadman_empty_test.flux",
-							Source: "<-",
+							File: "deadman_empty_test.flux",
 							Start: ast.Position{
 								Column: 29,
 								Line:   46,
@@ -13339,8 +12643,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 109,
 							Line:   63,
 						},
-						File:   "deadman_empty_test.flux",
-						Source: "_tickscript_deadman = () =>\n    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: tickscript_deadman})",
+						File: "deadman_empty_test.flux",
 						Start: ast.Position{
 							Column: 6,
 							Line:   62,
@@ -13356,8 +12659,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 25,
 								Line:   62,
 							},
-							File:   "deadman_empty_test.flux",
-							Source: "_tickscript_deadman",
+							File: "deadman_empty_test.flux",
 							Start: ast.Position{
 								Column: 6,
 								Line:   62,
@@ -13376,8 +12678,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 109,
 								Line:   63,
 							},
-							File:   "deadman_empty_test.flux",
-							Source: "() =>\n    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: tickscript_deadman})",
+							File: "deadman_empty_test.flux",
 							Start: ast.Position{
 								Column: 28,
 								Line:   62,
@@ -13393,8 +12694,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 109,
 									Line:   63,
 								},
-								File:   "deadman_empty_test.flux",
-								Source: "({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: tickscript_deadman})",
+								File: "deadman_empty_test.flux",
 								Start: ast.Position{
 									Column: 5,
 									Line:   63,
@@ -13410,8 +12710,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 108,
 										Line:   63,
 									},
-									File:   "deadman_empty_test.flux",
-									Source: "{input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: tickscript_deadman}",
+									File: "deadman_empty_test.flux",
 									Start: ast.Position{
 										Column: 6,
 										Line:   63,
@@ -13428,8 +12727,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 46,
 											Line:   63,
 										},
-										File:   "deadman_empty_test.flux",
-										Source: "input: testing.loadStorage(csv: inData)",
+										File: "deadman_empty_test.flux",
 										Start: ast.Position{
 											Column: 7,
 											Line:   63,
@@ -13446,8 +12744,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 12,
 												Line:   63,
 											},
-											File:   "deadman_empty_test.flux",
-											Source: "input",
+											File: "deadman_empty_test.flux",
 											Start: ast.Position{
 												Column: 7,
 												Line:   63,
@@ -13467,8 +12764,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 45,
 													Line:   63,
 												},
-												File:   "deadman_empty_test.flux",
-												Source: "csv: inData",
+												File: "deadman_empty_test.flux",
 												Start: ast.Position{
 													Column: 34,
 													Line:   63,
@@ -13485,8 +12781,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 45,
 														Line:   63,
 													},
-													File:   "deadman_empty_test.flux",
-													Source: "csv: inData",
+													File: "deadman_empty_test.flux",
 													Start: ast.Position{
 														Column: 34,
 														Line:   63,
@@ -13503,8 +12798,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 37,
 															Line:   63,
 														},
-														File:   "deadman_empty_test.flux",
-														Source: "csv",
+														File: "deadman_empty_test.flux",
 														Start: ast.Position{
 															Column: 34,
 															Line:   63,
@@ -13523,8 +12817,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 45,
 															Line:   63,
 														},
-														File:   "deadman_empty_test.flux",
-														Source: "inData",
+														File: "deadman_empty_test.flux",
 														Start: ast.Position{
 															Column: 39,
 															Line:   63,
@@ -13545,8 +12838,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 46,
 												Line:   63,
 											},
-											File:   "deadman_empty_test.flux",
-											Source: "testing.loadStorage(csv: inData)",
+											File: "deadman_empty_test.flux",
 											Start: ast.Position{
 												Column: 14,
 												Line:   63,
@@ -13562,8 +12854,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 33,
 													Line:   63,
 												},
-												File:   "deadman_empty_test.flux",
-												Source: "testing.loadStorage",
+												File: "deadman_empty_test.flux",
 												Start: ast.Position{
 													Column: 14,
 													Line:   63,
@@ -13580,8 +12871,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 21,
 														Line:   63,
 													},
-													File:   "deadman_empty_test.flux",
-													Source: "testing",
+													File: "deadman_empty_test.flux",
 													Start: ast.Position{
 														Column: 14,
 														Line:   63,
@@ -13599,8 +12889,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 33,
 														Line:   63,
 													},
-													File:   "deadman_empty_test.flux",
-													Source: "loadStorage",
+													File: "deadman_empty_test.flux",
 													Start: ast.Position{
 														Column: 22,
 														Line:   63,
@@ -13623,8 +12912,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 83,
 											Line:   63,
 										},
-										File:   "deadman_empty_test.flux",
-										Source: "want: testing.loadMem(csv: outData)",
+										File: "deadman_empty_test.flux",
 										Start: ast.Position{
 											Column: 48,
 											Line:   63,
@@ -13641,8 +12929,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 52,
 												Line:   63,
 											},
-											File:   "deadman_empty_test.flux",
-											Source: "want",
+											File: "deadman_empty_test.flux",
 											Start: ast.Position{
 												Column: 48,
 												Line:   63,
@@ -13662,8 +12949,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 82,
 													Line:   63,
 												},
-												File:   "deadman_empty_test.flux",
-												Source: "csv: outData",
+												File: "deadman_empty_test.flux",
 												Start: ast.Position{
 													Column: 70,
 													Line:   63,
@@ -13680,8 +12966,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 82,
 														Line:   63,
 													},
-													File:   "deadman_empty_test.flux",
-													Source: "csv: outData",
+													File: "deadman_empty_test.flux",
 													Start: ast.Position{
 														Column: 70,
 														Line:   63,
@@ -13698,8 +12983,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 73,
 															Line:   63,
 														},
-														File:   "deadman_empty_test.flux",
-														Source: "csv",
+														File: "deadman_empty_test.flux",
 														Start: ast.Position{
 															Column: 70,
 															Line:   63,
@@ -13718,8 +13002,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 82,
 															Line:   63,
 														},
-														File:   "deadman_empty_test.flux",
-														Source: "outData",
+														File: "deadman_empty_test.flux",
 														Start: ast.Position{
 															Column: 75,
 															Line:   63,
@@ -13740,8 +13023,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 83,
 												Line:   63,
 											},
-											File:   "deadman_empty_test.flux",
-											Source: "testing.loadMem(csv: outData)",
+											File: "deadman_empty_test.flux",
 											Start: ast.Position{
 												Column: 54,
 												Line:   63,
@@ -13757,8 +13039,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 69,
 													Line:   63,
 												},
-												File:   "deadman_empty_test.flux",
-												Source: "testing.loadMem",
+												File: "deadman_empty_test.flux",
 												Start: ast.Position{
 													Column: 54,
 													Line:   63,
@@ -13775,8 +13056,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 61,
 														Line:   63,
 													},
-													File:   "deadman_empty_test.flux",
-													Source: "testing",
+													File: "deadman_empty_test.flux",
 													Start: ast.Position{
 														Column: 54,
 														Line:   63,
@@ -13794,8 +13074,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 69,
 														Line:   63,
 													},
-													File:   "deadman_empty_test.flux",
-													Source: "loadMem",
+													File: "deadman_empty_test.flux",
 													Start: ast.Position{
 														Column: 62,
 														Line:   63,
@@ -13818,8 +13097,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 107,
 											Line:   63,
 										},
-										File:   "deadman_empty_test.flux",
-										Source: "fn: tickscript_deadman",
+										File: "deadman_empty_test.flux",
 										Start: ast.Position{
 											Column: 85,
 											Line:   63,
@@ -13836,8 +13114,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 87,
 												Line:   63,
 											},
-											File:   "deadman_empty_test.flux",
-											Source: "fn",
+											File: "deadman_empty_test.flux",
 											Start: ast.Position{
 												Column: 85,
 												Line:   63,
@@ -13856,8 +13133,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 107,
 												Line:   63,
 											},
-											File:   "deadman_empty_test.flux",
-											Source: "tickscript_deadman",
+											File: "deadman_empty_test.flux",
 											Start: ast.Position{
 												Column: 89,
 												Line:   63,
@@ -13886,8 +13162,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 109,
 						Line:   63,
 					},
-					File:   "deadman_empty_test.flux",
-					Source: "test _tickscript_deadman = () =>\n    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: tickscript_deadman})",
+					File: "deadman_empty_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   62,
@@ -13906,8 +13181,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 17,
 						Line:   4,
 					},
-					File:   "deadman_empty_test.flux",
-					Source: "import \"testing\"",
+					File: "deadman_empty_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   4,
@@ -13923,8 +13197,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 17,
 							Line:   4,
 						},
-						File:   "deadman_empty_test.flux",
-						Source: "\"testing\"",
+						File: "deadman_empty_test.flux",
 						Start: ast.Position{
 							Column: 8,
 							Line:   4,
@@ -13943,8 +13216,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 13,
 						Line:   5,
 					},
-					File:   "deadman_empty_test.flux",
-					Source: "import \"csv\"",
+					File: "deadman_empty_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   5,
@@ -13960,8 +13232,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 13,
 							Line:   5,
 						},
-						File:   "deadman_empty_test.flux",
-						Source: "\"csv\"",
+						File: "deadman_empty_test.flux",
 						Start: ast.Position{
 							Column: 8,
 							Line:   5,
@@ -13980,8 +13251,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 39,
 						Line:   6,
 					},
-					File:   "deadman_empty_test.flux",
-					Source: "import \"contrib/bonitoo-io/tickscript\"",
+					File: "deadman_empty_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   6,
@@ -13997,8 +13267,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 39,
 							Line:   6,
 						},
-						File:   "deadman_empty_test.flux",
-						Source: "\"contrib/bonitoo-io/tickscript\"",
+						File: "deadman_empty_test.flux",
 						Start: ast.Position{
 							Column: 8,
 							Line:   6,
@@ -14017,8 +13286,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 37,
 						Line:   7,
 					},
-					File:   "deadman_empty_test.flux",
-					Source: "import \"influxdata/influxdb/monitor\"",
+					File: "deadman_empty_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   7,
@@ -14034,8 +13302,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 37,
 							Line:   7,
 						},
-						File:   "deadman_empty_test.flux",
-						Source: "\"influxdata/influxdb/monitor\"",
+						File: "deadman_empty_test.flux",
 						Start: ast.Position{
 							Column: 8,
 							Line:   7,
@@ -14054,8 +13321,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 36,
 						Line:   8,
 					},
-					File:   "deadman_empty_test.flux",
-					Source: "import \"influxdata/influxdb/schema\"",
+					File: "deadman_empty_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   8,
@@ -14071,8 +13337,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 36,
 							Line:   8,
 						},
-						File:   "deadman_empty_test.flux",
-						Source: "\"influxdata/influxdb/schema\"",
+						File: "deadman_empty_test.flux",
 						Start: ast.Position{
 							Column: 8,
 							Line:   8,
@@ -14093,8 +13358,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 24,
 						Line:   1,
 					},
-					File:   "deadman_empty_test.flux",
-					Source: "package tickscript_test",
+					File: "deadman_empty_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   1,
@@ -14110,8 +13374,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 24,
 							Line:   1,
 						},
-						File:   "deadman_empty_test.flux",
-						Source: "tickscript_test",
+						File: "deadman_empty_test.flux",
 						Start: ast.Position{
 							Column: 9,
 							Line:   1,
@@ -14130,8 +13393,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Column: 109,
 					Line:   63,
 				},
-				File:   "deadman_threshold_test.flux",
-				Source: "package tickscript_test\n\n\nimport \"testing\"\nimport \"csv\"\nimport \"contrib/bonitoo-io/tickscript\"\nimport \"influxdata/influxdb/monitor\"\nimport \"influxdata/influxdb/schema\"\n\noption now = () => 2020-11-25T14:05:30Z\n\n// overwrite as buckets are not avail in Flux tests\noption monitor.write = (tables=<-) => tables\noption monitor.log = (tables=<-) => tables\n\ninData =\n    \"\n#group,false,false,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,\n,result,table,_time,_value,_field,_measurement,host,realm\n,,0,2020-11-25T14:05:03.477635916Z,1.819231109049999,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:04.541635074Z,1.635878190200181,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:05.623191313Z,39.33716449678206,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:06.696061106Z,26.33716449678206,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:07.768317097Z,8.33716449678206,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:08.868317091Z,1.33716449678206,kafka_message_in_rate,testm,kafka07,ft\n\"\noutData =\n    \"\n#group,false,false,true,true,true,true,false,true,false,true,false,true,false,true\n#datatype,string,long,string,string,string,string,string,string,long,string,boolean,string,string,string\n#default,_result,,,,,,,,,,,,,\n,result,table,_check_id,_check_name,_level,_measurement,_message,_source_measurement,_source_timestamp,_type,dead,host,id,realm\n,,0,rate-check,Rate Check,crit,statuses,Deadman Check: Rate Check is: dead,testm,1606313130000000000,deadman,true,kafka07,Realm: ft - Hostname: kafka07 / Metric: kafka_message_in_rate deadman alert,ft\n\"\ncheck = {\n    _check_id: \"rate-check\",\n    _check_name: \"Rate Check\",\n    // tickscript?\n    _type: \"deadman\",\n    tags: {},\n}\nmetric_type = \"kafka_message_in_rate\"\ntier = \"ft\"\ntickscript_deadman = (table=<-) =>\n    table\n        |> range(start: 2020-11-25T14:05:00Z)\n        |> filter(fn: (r) => r._measurement == \"testm\" and r._field == metric_type and r.realm == tier)\n        |> schema.fieldsAsCols()\n        |> tickscript.groupBy(columns: [\"host\", \"realm\"])\n        |> tickscript.deadman(\n            check: check,\n            measurement: \"testm\",\n            threshold: 10,\n            id: (r) => \"Realm: ${r.realm} - Hostname: ${r.host} / Metric: ${metric_type} deadman alert\",\n        )\n        // to avoid issue with validation\n        |> drop(columns: [\"details\"])\n        |> drop(columns: [\"_time\"])\n\ntest _tickscript_deadman = () =>\n    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: tickscript_deadman})",
+				File: "deadman_threshold_test.flux",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -14148,8 +13410,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 40,
 							Line:   10,
 						},
-						File:   "deadman_threshold_test.flux",
-						Source: "now = () => 2020-11-25T14:05:30Z",
+						File: "deadman_threshold_test.flux",
 						Start: ast.Position{
 							Column: 8,
 							Line:   10,
@@ -14165,8 +13426,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 11,
 								Line:   10,
 							},
-							File:   "deadman_threshold_test.flux",
-							Source: "now",
+							File: "deadman_threshold_test.flux",
 							Start: ast.Position{
 								Column: 8,
 								Line:   10,
@@ -14185,8 +13445,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 40,
 								Line:   10,
 							},
-							File:   "deadman_threshold_test.flux",
-							Source: "() => 2020-11-25T14:05:30Z",
+							File: "deadman_threshold_test.flux",
 							Start: ast.Position{
 								Column: 14,
 								Line:   10,
@@ -14202,8 +13461,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 40,
 									Line:   10,
 								},
-								File:   "deadman_threshold_test.flux",
-								Source: "2020-11-25T14:05:30Z",
+								File: "deadman_threshold_test.flux",
 								Start: ast.Position{
 									Column: 20,
 									Line:   10,
@@ -14225,8 +13483,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 40,
 						Line:   10,
 					},
-					File:   "deadman_threshold_test.flux",
-					Source: "option now = () => 2020-11-25T14:05:30Z",
+					File: "deadman_threshold_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   10,
@@ -14243,8 +13500,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 45,
 							Line:   13,
 						},
-						File:   "deadman_threshold_test.flux",
-						Source: "monitor.write = (tables=<-) => tables",
+						File: "deadman_threshold_test.flux",
 						Start: ast.Position{
 							Column: 8,
 							Line:   13,
@@ -14261,8 +13517,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 45,
 								Line:   13,
 							},
-							File:   "deadman_threshold_test.flux",
-							Source: "(tables=<-) => tables",
+							File: "deadman_threshold_test.flux",
 							Start: ast.Position{
 								Column: 24,
 								Line:   13,
@@ -14278,8 +13533,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 45,
 									Line:   13,
 								},
-								File:   "deadman_threshold_test.flux",
-								Source: "tables",
+								File: "deadman_threshold_test.flux",
 								Start: ast.Position{
 									Column: 39,
 									Line:   13,
@@ -14298,8 +13552,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 34,
 									Line:   13,
 								},
-								File:   "deadman_threshold_test.flux",
-								Source: "tables=<-",
+								File: "deadman_threshold_test.flux",
 								Start: ast.Position{
 									Column: 25,
 									Line:   13,
@@ -14316,8 +13569,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 31,
 										Line:   13,
 									},
-									File:   "deadman_threshold_test.flux",
-									Source: "tables",
+									File: "deadman_threshold_test.flux",
 									Start: ast.Position{
 										Column: 25,
 										Line:   13,
@@ -14335,8 +13587,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 34,
 									Line:   13,
 								},
-								File:   "deadman_threshold_test.flux",
-								Source: "<-",
+								File: "deadman_threshold_test.flux",
 								Start: ast.Position{
 									Column: 32,
 									Line:   13,
@@ -14355,8 +13606,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 21,
 								Line:   13,
 							},
-							File:   "deadman_threshold_test.flux",
-							Source: "monitor.write",
+							File: "deadman_threshold_test.flux",
 							Start: ast.Position{
 								Column: 8,
 								Line:   13,
@@ -14373,8 +13623,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 15,
 									Line:   13,
 								},
-								File:   "deadman_threshold_test.flux",
-								Source: "monitor",
+								File: "deadman_threshold_test.flux",
 								Start: ast.Position{
 									Column: 8,
 									Line:   13,
@@ -14392,8 +13641,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 21,
 									Line:   13,
 								},
-								File:   "deadman_threshold_test.flux",
-								Source: "write",
+								File: "deadman_threshold_test.flux",
 								Start: ast.Position{
 									Column: 16,
 									Line:   13,
@@ -14413,8 +13661,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 45,
 						Line:   13,
 					},
-					File:   "deadman_threshold_test.flux",
-					Source: "option monitor.write = (tables=<-) => tables",
+					File: "deadman_threshold_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   13,
@@ -14431,8 +13678,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 43,
 							Line:   14,
 						},
-						File:   "deadman_threshold_test.flux",
-						Source: "monitor.log = (tables=<-) => tables",
+						File: "deadman_threshold_test.flux",
 						Start: ast.Position{
 							Column: 8,
 							Line:   14,
@@ -14449,8 +13695,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 43,
 								Line:   14,
 							},
-							File:   "deadman_threshold_test.flux",
-							Source: "(tables=<-) => tables",
+							File: "deadman_threshold_test.flux",
 							Start: ast.Position{
 								Column: 22,
 								Line:   14,
@@ -14466,8 +13711,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 43,
 									Line:   14,
 								},
-								File:   "deadman_threshold_test.flux",
-								Source: "tables",
+								File: "deadman_threshold_test.flux",
 								Start: ast.Position{
 									Column: 37,
 									Line:   14,
@@ -14486,8 +13730,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 32,
 									Line:   14,
 								},
-								File:   "deadman_threshold_test.flux",
-								Source: "tables=<-",
+								File: "deadman_threshold_test.flux",
 								Start: ast.Position{
 									Column: 23,
 									Line:   14,
@@ -14504,8 +13747,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 29,
 										Line:   14,
 									},
-									File:   "deadman_threshold_test.flux",
-									Source: "tables",
+									File: "deadman_threshold_test.flux",
 									Start: ast.Position{
 										Column: 23,
 										Line:   14,
@@ -14523,8 +13765,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 32,
 									Line:   14,
 								},
-								File:   "deadman_threshold_test.flux",
-								Source: "<-",
+								File: "deadman_threshold_test.flux",
 								Start: ast.Position{
 									Column: 30,
 									Line:   14,
@@ -14543,8 +13784,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 19,
 								Line:   14,
 							},
-							File:   "deadman_threshold_test.flux",
-							Source: "monitor.log",
+							File: "deadman_threshold_test.flux",
 							Start: ast.Position{
 								Column: 8,
 								Line:   14,
@@ -14561,8 +13801,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 15,
 									Line:   14,
 								},
-								File:   "deadman_threshold_test.flux",
-								Source: "monitor",
+								File: "deadman_threshold_test.flux",
 								Start: ast.Position{
 									Column: 8,
 									Line:   14,
@@ -14580,8 +13819,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 19,
 									Line:   14,
 								},
-								File:   "deadman_threshold_test.flux",
-								Source: "log",
+								File: "deadman_threshold_test.flux",
 								Start: ast.Position{
 									Column: 16,
 									Line:   14,
@@ -14601,8 +13839,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 43,
 						Line:   14,
 					},
-					File:   "deadman_threshold_test.flux",
-					Source: "option monitor.log = (tables=<-) => tables",
+					File: "deadman_threshold_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   14,
@@ -14618,8 +13855,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 2,
 						Line:   28,
 					},
-					File:   "deadman_threshold_test.flux",
-					Source: "inData =\n    \"\n#group,false,false,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,\n,result,table,_time,_value,_field,_measurement,host,realm\n,,0,2020-11-25T14:05:03.477635916Z,1.819231109049999,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:04.541635074Z,1.635878190200181,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:05.623191313Z,39.33716449678206,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:06.696061106Z,26.33716449678206,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:07.768317097Z,8.33716449678206,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:08.868317091Z,1.33716449678206,kafka_message_in_rate,testm,kafka07,ft\n\"",
+					File: "deadman_threshold_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   16,
@@ -14635,8 +13871,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 7,
 							Line:   16,
 						},
-						File:   "deadman_threshold_test.flux",
-						Source: "inData",
+						File: "deadman_threshold_test.flux",
 						Start: ast.Position{
 							Column: 1,
 							Line:   16,
@@ -14654,8 +13889,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 2,
 							Line:   28,
 						},
-						File:   "deadman_threshold_test.flux",
-						Source: "\"\n#group,false,false,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,\n,result,table,_time,_value,_field,_measurement,host,realm\n,,0,2020-11-25T14:05:03.477635916Z,1.819231109049999,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:04.541635074Z,1.635878190200181,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:05.623191313Z,39.33716449678206,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:06.696061106Z,26.33716449678206,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:07.768317097Z,8.33716449678206,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:08.868317091Z,1.33716449678206,kafka_message_in_rate,testm,kafka07,ft\n\"",
+						File: "deadman_threshold_test.flux",
 						Start: ast.Position{
 							Column: 5,
 							Line:   17,
@@ -14673,8 +13907,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 2,
 						Line:   36,
 					},
-					File:   "deadman_threshold_test.flux",
-					Source: "outData =\n    \"\n#group,false,false,true,true,true,true,false,true,false,true,false,true,false,true\n#datatype,string,long,string,string,string,string,string,string,long,string,boolean,string,string,string\n#default,_result,,,,,,,,,,,,,\n,result,table,_check_id,_check_name,_level,_measurement,_message,_source_measurement,_source_timestamp,_type,dead,host,id,realm\n,,0,rate-check,Rate Check,crit,statuses,Deadman Check: Rate Check is: dead,testm,1606313130000000000,deadman,true,kafka07,Realm: ft - Hostname: kafka07 / Metric: kafka_message_in_rate deadman alert,ft\n\"",
+					File: "deadman_threshold_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   29,
@@ -14690,8 +13923,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 8,
 							Line:   29,
 						},
-						File:   "deadman_threshold_test.flux",
-						Source: "outData",
+						File: "deadman_threshold_test.flux",
 						Start: ast.Position{
 							Column: 1,
 							Line:   29,
@@ -14709,8 +13941,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 2,
 							Line:   36,
 						},
-						File:   "deadman_threshold_test.flux",
-						Source: "\"\n#group,false,false,true,true,true,true,false,true,false,true,false,true,false,true\n#datatype,string,long,string,string,string,string,string,string,long,string,boolean,string,string,string\n#default,_result,,,,,,,,,,,,,\n,result,table,_check_id,_check_name,_level,_measurement,_message,_source_measurement,_source_timestamp,_type,dead,host,id,realm\n,,0,rate-check,Rate Check,crit,statuses,Deadman Check: Rate Check is: dead,testm,1606313130000000000,deadman,true,kafka07,Realm: ft - Hostname: kafka07 / Metric: kafka_message_in_rate deadman alert,ft\n\"",
+						File: "deadman_threshold_test.flux",
 						Start: ast.Position{
 							Column: 5,
 							Line:   30,
@@ -14728,8 +13959,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 2,
 						Line:   43,
 					},
-					File:   "deadman_threshold_test.flux",
-					Source: "check = {\n    _check_id: \"rate-check\",\n    _check_name: \"Rate Check\",\n    // tickscript?\n    _type: \"deadman\",\n    tags: {},\n}",
+					File: "deadman_threshold_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   37,
@@ -14745,8 +13975,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 6,
 							Line:   37,
 						},
-						File:   "deadman_threshold_test.flux",
-						Source: "check",
+						File: "deadman_threshold_test.flux",
 						Start: ast.Position{
 							Column: 1,
 							Line:   37,
@@ -14764,8 +13993,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 2,
 							Line:   43,
 						},
-						File:   "deadman_threshold_test.flux",
-						Source: "{\n    _check_id: \"rate-check\",\n    _check_name: \"Rate Check\",\n    // tickscript?\n    _type: \"deadman\",\n    tags: {},\n}",
+						File: "deadman_threshold_test.flux",
 						Start: ast.Position{
 							Column: 9,
 							Line:   37,
@@ -14782,8 +14010,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 28,
 								Line:   38,
 							},
-							File:   "deadman_threshold_test.flux",
-							Source: "_check_id: \"rate-check\"",
+							File: "deadman_threshold_test.flux",
 							Start: ast.Position{
 								Column: 5,
 								Line:   38,
@@ -14800,8 +14027,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 14,
 									Line:   38,
 								},
-								File:   "deadman_threshold_test.flux",
-								Source: "_check_id",
+								File: "deadman_threshold_test.flux",
 								Start: ast.Position{
 									Column: 5,
 									Line:   38,
@@ -14820,8 +14046,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 28,
 									Line:   38,
 								},
-								File:   "deadman_threshold_test.flux",
-								Source: "\"rate-check\"",
+								File: "deadman_threshold_test.flux",
 								Start: ast.Position{
 									Column: 16,
 									Line:   38,
@@ -14839,8 +14064,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 30,
 								Line:   39,
 							},
-							File:   "deadman_threshold_test.flux",
-							Source: "_check_name: \"Rate Check\"",
+							File: "deadman_threshold_test.flux",
 							Start: ast.Position{
 								Column: 5,
 								Line:   39,
@@ -14857,8 +14081,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 16,
 									Line:   39,
 								},
-								File:   "deadman_threshold_test.flux",
-								Source: "_check_name",
+								File: "deadman_threshold_test.flux",
 								Start: ast.Position{
 									Column: 5,
 									Line:   39,
@@ -14877,8 +14100,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 30,
 									Line:   39,
 								},
-								File:   "deadman_threshold_test.flux",
-								Source: "\"Rate Check\"",
+								File: "deadman_threshold_test.flux",
 								Start: ast.Position{
 									Column: 18,
 									Line:   39,
@@ -14896,8 +14118,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 21,
 								Line:   41,
 							},
-							File:   "deadman_threshold_test.flux",
-							Source: "_type: \"deadman\"",
+							File: "deadman_threshold_test.flux",
 							Start: ast.Position{
 								Column: 5,
 								Line:   41,
@@ -14914,8 +14135,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 10,
 									Line:   41,
 								},
-								File:   "deadman_threshold_test.flux",
-								Source: "_type",
+								File: "deadman_threshold_test.flux",
 								Start: ast.Position{
 									Column: 5,
 									Line:   41,
@@ -14934,8 +14154,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 21,
 									Line:   41,
 								},
-								File:   "deadman_threshold_test.flux",
-								Source: "\"deadman\"",
+								File: "deadman_threshold_test.flux",
 								Start: ast.Position{
 									Column: 12,
 									Line:   41,
@@ -14953,8 +14172,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 13,
 								Line:   42,
 							},
-							File:   "deadman_threshold_test.flux",
-							Source: "tags: {}",
+							File: "deadman_threshold_test.flux",
 							Start: ast.Position{
 								Column: 5,
 								Line:   42,
@@ -14971,8 +14189,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 9,
 									Line:   42,
 								},
-								File:   "deadman_threshold_test.flux",
-								Source: "tags",
+								File: "deadman_threshold_test.flux",
 								Start: ast.Position{
 									Column: 5,
 									Line:   42,
@@ -14991,8 +14208,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 13,
 									Line:   42,
 								},
-								File:   "deadman_threshold_test.flux",
-								Source: "{}",
+								File: "deadman_threshold_test.flux",
 								Start: ast.Position{
 									Column: 11,
 									Line:   42,
@@ -15017,8 +14233,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 38,
 						Line:   44,
 					},
-					File:   "deadman_threshold_test.flux",
-					Source: "metric_type = \"kafka_message_in_rate\"",
+					File: "deadman_threshold_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   44,
@@ -15034,8 +14249,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 12,
 							Line:   44,
 						},
-						File:   "deadman_threshold_test.flux",
-						Source: "metric_type",
+						File: "deadman_threshold_test.flux",
 						Start: ast.Position{
 							Column: 1,
 							Line:   44,
@@ -15053,8 +14267,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 38,
 							Line:   44,
 						},
-						File:   "deadman_threshold_test.flux",
-						Source: "\"kafka_message_in_rate\"",
+						File: "deadman_threshold_test.flux",
 						Start: ast.Position{
 							Column: 15,
 							Line:   44,
@@ -15072,8 +14285,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 12,
 						Line:   45,
 					},
-					File:   "deadman_threshold_test.flux",
-					Source: "tier = \"ft\"",
+					File: "deadman_threshold_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   45,
@@ -15089,8 +14301,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 5,
 							Line:   45,
 						},
-						File:   "deadman_threshold_test.flux",
-						Source: "tier",
+						File: "deadman_threshold_test.flux",
 						Start: ast.Position{
 							Column: 1,
 							Line:   45,
@@ -15108,8 +14319,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 12,
 							Line:   45,
 						},
-						File:   "deadman_threshold_test.flux",
-						Source: "\"ft\"",
+						File: "deadman_threshold_test.flux",
 						Start: ast.Position{
 							Column: 8,
 							Line:   45,
@@ -15127,8 +14337,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 36,
 						Line:   60,
 					},
-					File:   "deadman_threshold_test.flux",
-					Source: "tickscript_deadman = (table=<-) =>\n    table\n        |> range(start: 2020-11-25T14:05:00Z)\n        |> filter(fn: (r) => r._measurement == \"testm\" and r._field == metric_type and r.realm == tier)\n        |> schema.fieldsAsCols()\n        |> tickscript.groupBy(columns: [\"host\", \"realm\"])\n        |> tickscript.deadman(\n            check: check,\n            measurement: \"testm\",\n            threshold: 10,\n            id: (r) => \"Realm: ${r.realm} - Hostname: ${r.host} / Metric: ${metric_type} deadman alert\",\n        )\n        // to avoid issue with validation\n        |> drop(columns: [\"details\"])\n        |> drop(columns: [\"_time\"])",
+					File: "deadman_threshold_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   46,
@@ -15144,8 +14353,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 19,
 							Line:   46,
 						},
-						File:   "deadman_threshold_test.flux",
-						Source: "tickscript_deadman",
+						File: "deadman_threshold_test.flux",
 						Start: ast.Position{
 							Column: 1,
 							Line:   46,
@@ -15164,8 +14372,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 36,
 							Line:   60,
 						},
-						File:   "deadman_threshold_test.flux",
-						Source: "(table=<-) =>\n    table\n        |> range(start: 2020-11-25T14:05:00Z)\n        |> filter(fn: (r) => r._measurement == \"testm\" and r._field == metric_type and r.realm == tier)\n        |> schema.fieldsAsCols()\n        |> tickscript.groupBy(columns: [\"host\", \"realm\"])\n        |> tickscript.deadman(\n            check: check,\n            measurement: \"testm\",\n            threshold: 10,\n            id: (r) => \"Realm: ${r.realm} - Hostname: ${r.host} / Metric: ${metric_type} deadman alert\",\n        )\n        // to avoid issue with validation\n        |> drop(columns: [\"details\"])\n        |> drop(columns: [\"_time\"])",
+						File: "deadman_threshold_test.flux",
 						Start: ast.Position{
 							Column: 22,
 							Line:   46,
@@ -15188,8 +14395,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 10,
 															Line:   47,
 														},
-														File:   "deadman_threshold_test.flux",
-														Source: "table",
+														File: "deadman_threshold_test.flux",
 														Start: ast.Position{
 															Column: 5,
 															Line:   47,
@@ -15206,8 +14412,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 46,
 														Line:   48,
 													},
-													File:   "deadman_threshold_test.flux",
-													Source: "table\n        |> range(start: 2020-11-25T14:05:00Z)",
+													File: "deadman_threshold_test.flux",
 													Start: ast.Position{
 														Column: 5,
 														Line:   47,
@@ -15224,8 +14429,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Column: 45,
 																Line:   48,
 															},
-															File:   "deadman_threshold_test.flux",
-															Source: "start: 2020-11-25T14:05:00Z",
+															File: "deadman_threshold_test.flux",
 															Start: ast.Position{
 																Column: 18,
 																Line:   48,
@@ -15242,8 +14446,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Column: 45,
 																	Line:   48,
 																},
-																File:   "deadman_threshold_test.flux",
-																Source: "start: 2020-11-25T14:05:00Z",
+																File: "deadman_threshold_test.flux",
 																Start: ast.Position{
 																	Column: 18,
 																	Line:   48,
@@ -15260,8 +14463,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Column: 23,
 																		Line:   48,
 																	},
-																	File:   "deadman_threshold_test.flux",
-																	Source: "start",
+																	File: "deadman_threshold_test.flux",
 																	Start: ast.Position{
 																		Column: 18,
 																		Line:   48,
@@ -15280,8 +14482,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Column: 45,
 																		Line:   48,
 																	},
-																	File:   "deadman_threshold_test.flux",
-																	Source: "2020-11-25T14:05:00Z",
+																	File: "deadman_threshold_test.flux",
 																	Start: ast.Position{
 																		Column: 25,
 																		Line:   48,
@@ -15302,8 +14503,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 46,
 															Line:   48,
 														},
-														File:   "deadman_threshold_test.flux",
-														Source: "range(start: 2020-11-25T14:05:00Z)",
+														File: "deadman_threshold_test.flux",
 														Start: ast.Position{
 															Column: 12,
 															Line:   48,
@@ -15319,8 +14519,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Column: 17,
 																Line:   48,
 															},
-															File:   "deadman_threshold_test.flux",
-															Source: "range",
+															File: "deadman_threshold_test.flux",
 															Start: ast.Position{
 																Column: 12,
 																Line:   48,
@@ -15341,8 +14540,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 104,
 													Line:   49,
 												},
-												File:   "deadman_threshold_test.flux",
-												Source: "table\n        |> range(start: 2020-11-25T14:05:00Z)\n        |> filter(fn: (r) => r._measurement == \"testm\" and r._field == metric_type and r.realm == tier)",
+												File: "deadman_threshold_test.flux",
 												Start: ast.Position{
 													Column: 5,
 													Line:   47,
@@ -15359,8 +14557,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 103,
 															Line:   49,
 														},
-														File:   "deadman_threshold_test.flux",
-														Source: "fn: (r) => r._measurement == \"testm\" and r._field == metric_type and r.realm == tier",
+														File: "deadman_threshold_test.flux",
 														Start: ast.Position{
 															Column: 19,
 															Line:   49,
@@ -15377,8 +14574,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Column: 103,
 																Line:   49,
 															},
-															File:   "deadman_threshold_test.flux",
-															Source: "fn: (r) => r._measurement == \"testm\" and r._field == metric_type and r.realm == tier",
+															File: "deadman_threshold_test.flux",
 															Start: ast.Position{
 																Column: 19,
 																Line:   49,
@@ -15395,8 +14591,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Column: 21,
 																	Line:   49,
 																},
-																File:   "deadman_threshold_test.flux",
-																Source: "fn",
+																File: "deadman_threshold_test.flux",
 																Start: ast.Position{
 																	Column: 19,
 																	Line:   49,
@@ -15416,8 +14611,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Column: 103,
 																	Line:   49,
 																},
-																File:   "deadman_threshold_test.flux",
-																Source: "(r) => r._measurement == \"testm\" and r._field == metric_type and r.realm == tier",
+																File: "deadman_threshold_test.flux",
 																Start: ast.Position{
 																	Column: 23,
 																	Line:   49,
@@ -15433,8 +14627,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Column: 103,
 																		Line:   49,
 																	},
-																	File:   "deadman_threshold_test.flux",
-																	Source: "r._measurement == \"testm\" and r._field == metric_type and r.realm == tier",
+																	File: "deadman_threshold_test.flux",
 																	Start: ast.Position{
 																		Column: 30,
 																		Line:   49,
@@ -15450,8 +14643,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																			Column: 83,
 																			Line:   49,
 																		},
-																		File:   "deadman_threshold_test.flux",
-																		Source: "r._measurement == \"testm\" and r._field == metric_type",
+																		File: "deadman_threshold_test.flux",
 																		Start: ast.Position{
 																			Column: 30,
 																			Line:   49,
@@ -15467,8 +14659,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																				Column: 55,
 																				Line:   49,
 																			},
-																			File:   "deadman_threshold_test.flux",
-																			Source: "r._measurement == \"testm\"",
+																			File: "deadman_threshold_test.flux",
 																			Start: ast.Position{
 																				Column: 30,
 																				Line:   49,
@@ -15484,8 +14675,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																					Column: 44,
 																					Line:   49,
 																				},
-																				File:   "deadman_threshold_test.flux",
-																				Source: "r._measurement",
+																				File: "deadman_threshold_test.flux",
 																				Start: ast.Position{
 																					Column: 30,
 																					Line:   49,
@@ -15502,8 +14692,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																						Column: 31,
 																						Line:   49,
 																					},
-																					File:   "deadman_threshold_test.flux",
-																					Source: "r",
+																					File: "deadman_threshold_test.flux",
 																					Start: ast.Position{
 																						Column: 30,
 																						Line:   49,
@@ -15521,8 +14710,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																						Column: 44,
 																						Line:   49,
 																					},
-																					File:   "deadman_threshold_test.flux",
-																					Source: "_measurement",
+																					File: "deadman_threshold_test.flux",
 																					Start: ast.Position{
 																						Column: 32,
 																						Line:   49,
@@ -15543,8 +14731,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																					Column: 55,
 																					Line:   49,
 																				},
-																				File:   "deadman_threshold_test.flux",
-																				Source: "\"testm\"",
+																				File: "deadman_threshold_test.flux",
 																				Start: ast.Position{
 																					Column: 48,
 																					Line:   49,
@@ -15564,8 +14751,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																				Column: 83,
 																				Line:   49,
 																			},
-																			File:   "deadman_threshold_test.flux",
-																			Source: "r._field == metric_type",
+																			File: "deadman_threshold_test.flux",
 																			Start: ast.Position{
 																				Column: 60,
 																				Line:   49,
@@ -15581,8 +14767,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																					Column: 68,
 																					Line:   49,
 																				},
-																				File:   "deadman_threshold_test.flux",
-																				Source: "r._field",
+																				File: "deadman_threshold_test.flux",
 																				Start: ast.Position{
 																					Column: 60,
 																					Line:   49,
@@ -15599,8 +14784,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																						Column: 61,
 																						Line:   49,
 																					},
-																					File:   "deadman_threshold_test.flux",
-																					Source: "r",
+																					File: "deadman_threshold_test.flux",
 																					Start: ast.Position{
 																						Column: 60,
 																						Line:   49,
@@ -15618,8 +14802,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																						Column: 68,
 																						Line:   49,
 																					},
-																					File:   "deadman_threshold_test.flux",
-																					Source: "_field",
+																					File: "deadman_threshold_test.flux",
 																					Start: ast.Position{
 																						Column: 62,
 																						Line:   49,
@@ -15640,8 +14823,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																					Column: 83,
 																					Line:   49,
 																				},
-																				File:   "deadman_threshold_test.flux",
-																				Source: "metric_type",
+																				File: "deadman_threshold_test.flux",
 																				Start: ast.Position{
 																					Column: 72,
 																					Line:   49,
@@ -15662,8 +14844,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																			Column: 103,
 																			Line:   49,
 																		},
-																		File:   "deadman_threshold_test.flux",
-																		Source: "r.realm == tier",
+																		File: "deadman_threshold_test.flux",
 																		Start: ast.Position{
 																			Column: 88,
 																			Line:   49,
@@ -15679,8 +14860,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																				Column: 95,
 																				Line:   49,
 																			},
-																			File:   "deadman_threshold_test.flux",
-																			Source: "r.realm",
+																			File: "deadman_threshold_test.flux",
 																			Start: ast.Position{
 																				Column: 88,
 																				Line:   49,
@@ -15697,8 +14877,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																					Column: 89,
 																					Line:   49,
 																				},
-																				File:   "deadman_threshold_test.flux",
-																				Source: "r",
+																				File: "deadman_threshold_test.flux",
 																				Start: ast.Position{
 																					Column: 88,
 																					Line:   49,
@@ -15716,8 +14895,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																					Column: 95,
 																					Line:   49,
 																				},
-																				File:   "deadman_threshold_test.flux",
-																				Source: "realm",
+																				File: "deadman_threshold_test.flux",
 																				Start: ast.Position{
 																					Column: 90,
 																					Line:   49,
@@ -15738,8 +14916,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																				Column: 103,
 																				Line:   49,
 																			},
-																			File:   "deadman_threshold_test.flux",
-																			Source: "tier",
+																			File: "deadman_threshold_test.flux",
 																			Start: ast.Position{
 																				Column: 99,
 																				Line:   49,
@@ -15760,8 +14937,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Column: 25,
 																		Line:   49,
 																	},
-																	File:   "deadman_threshold_test.flux",
-																	Source: "r",
+																	File: "deadman_threshold_test.flux",
 																	Start: ast.Position{
 																		Column: 24,
 																		Line:   49,
@@ -15778,8 +14954,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																			Column: 25,
 																			Line:   49,
 																		},
-																		File:   "deadman_threshold_test.flux",
-																		Source: "r",
+																		File: "deadman_threshold_test.flux",
 																		Start: ast.Position{
 																			Column: 24,
 																			Line:   49,
@@ -15805,8 +14980,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 104,
 														Line:   49,
 													},
-													File:   "deadman_threshold_test.flux",
-													Source: "filter(fn: (r) => r._measurement == \"testm\" and r._field == metric_type and r.realm == tier)",
+													File: "deadman_threshold_test.flux",
 													Start: ast.Position{
 														Column: 12,
 														Line:   49,
@@ -15822,8 +14996,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 18,
 															Line:   49,
 														},
-														File:   "deadman_threshold_test.flux",
-														Source: "filter",
+														File: "deadman_threshold_test.flux",
 														Start: ast.Position{
 															Column: 12,
 															Line:   49,
@@ -15844,8 +15017,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 33,
 												Line:   50,
 											},
-											File:   "deadman_threshold_test.flux",
-											Source: "table\n        |> range(start: 2020-11-25T14:05:00Z)\n        |> filter(fn: (r) => r._measurement == \"testm\" and r._field == metric_type and r.realm == tier)\n        |> schema.fieldsAsCols()",
+											File: "deadman_threshold_test.flux",
 											Start: ast.Position{
 												Column: 5,
 												Line:   47,
@@ -15862,8 +15034,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 33,
 													Line:   50,
 												},
-												File:   "deadman_threshold_test.flux",
-												Source: "schema.fieldsAsCols()",
+												File: "deadman_threshold_test.flux",
 												Start: ast.Position{
 													Column: 12,
 													Line:   50,
@@ -15879,8 +15050,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 31,
 														Line:   50,
 													},
-													File:   "deadman_threshold_test.flux",
-													Source: "schema.fieldsAsCols",
+													File: "deadman_threshold_test.flux",
 													Start: ast.Position{
 														Column: 12,
 														Line:   50,
@@ -15897,8 +15067,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 18,
 															Line:   50,
 														},
-														File:   "deadman_threshold_test.flux",
-														Source: "schema",
+														File: "deadman_threshold_test.flux",
 														Start: ast.Position{
 															Column: 12,
 															Line:   50,
@@ -15916,8 +15085,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 31,
 															Line:   50,
 														},
-														File:   "deadman_threshold_test.flux",
-														Source: "fieldsAsCols",
+														File: "deadman_threshold_test.flux",
 														Start: ast.Position{
 															Column: 19,
 															Line:   50,
@@ -15940,8 +15108,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 58,
 											Line:   51,
 										},
-										File:   "deadman_threshold_test.flux",
-										Source: "table\n        |> range(start: 2020-11-25T14:05:00Z)\n        |> filter(fn: (r) => r._measurement == \"testm\" and r._field == metric_type and r.realm == tier)\n        |> schema.fieldsAsCols()\n        |> tickscript.groupBy(columns: [\"host\", \"realm\"])",
+										File: "deadman_threshold_test.flux",
 										Start: ast.Position{
 											Column: 5,
 											Line:   47,
@@ -15958,8 +15125,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 57,
 													Line:   51,
 												},
-												File:   "deadman_threshold_test.flux",
-												Source: "columns: [\"host\", \"realm\"]",
+												File: "deadman_threshold_test.flux",
 												Start: ast.Position{
 													Column: 31,
 													Line:   51,
@@ -15976,8 +15142,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 57,
 														Line:   51,
 													},
-													File:   "deadman_threshold_test.flux",
-													Source: "columns: [\"host\", \"realm\"]",
+													File: "deadman_threshold_test.flux",
 													Start: ast.Position{
 														Column: 31,
 														Line:   51,
@@ -15994,8 +15159,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 38,
 															Line:   51,
 														},
-														File:   "deadman_threshold_test.flux",
-														Source: "columns",
+														File: "deadman_threshold_test.flux",
 														Start: ast.Position{
 															Column: 31,
 															Line:   51,
@@ -16014,8 +15178,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 57,
 															Line:   51,
 														},
-														File:   "deadman_threshold_test.flux",
-														Source: "[\"host\", \"realm\"]",
+														File: "deadman_threshold_test.flux",
 														Start: ast.Position{
 															Column: 40,
 															Line:   51,
@@ -16031,8 +15194,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Column: 47,
 																Line:   51,
 															},
-															File:   "deadman_threshold_test.flux",
-															Source: "\"host\"",
+															File: "deadman_threshold_test.flux",
 															Start: ast.Position{
 																Column: 41,
 																Line:   51,
@@ -16049,8 +15211,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Column: 56,
 																Line:   51,
 															},
-															File:   "deadman_threshold_test.flux",
-															Source: "\"realm\"",
+															File: "deadman_threshold_test.flux",
 															Start: ast.Position{
 																Column: 49,
 																Line:   51,
@@ -16074,8 +15235,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 58,
 												Line:   51,
 											},
-											File:   "deadman_threshold_test.flux",
-											Source: "tickscript.groupBy(columns: [\"host\", \"realm\"])",
+											File: "deadman_threshold_test.flux",
 											Start: ast.Position{
 												Column: 12,
 												Line:   51,
@@ -16091,8 +15251,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 30,
 													Line:   51,
 												},
-												File:   "deadman_threshold_test.flux",
-												Source: "tickscript.groupBy",
+												File: "deadman_threshold_test.flux",
 												Start: ast.Position{
 													Column: 12,
 													Line:   51,
@@ -16109,8 +15268,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 22,
 														Line:   51,
 													},
-													File:   "deadman_threshold_test.flux",
-													Source: "tickscript",
+													File: "deadman_threshold_test.flux",
 													Start: ast.Position{
 														Column: 12,
 														Line:   51,
@@ -16128,8 +15286,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 30,
 														Line:   51,
 													},
-													File:   "deadman_threshold_test.flux",
-													Source: "groupBy",
+													File: "deadman_threshold_test.flux",
 													Start: ast.Position{
 														Column: 23,
 														Line:   51,
@@ -16152,8 +15309,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 10,
 										Line:   57,
 									},
-									File:   "deadman_threshold_test.flux",
-									Source: "table\n        |> range(start: 2020-11-25T14:05:00Z)\n        |> filter(fn: (r) => r._measurement == \"testm\" and r._field == metric_type and r.realm == tier)\n        |> schema.fieldsAsCols()\n        |> tickscript.groupBy(columns: [\"host\", \"realm\"])\n        |> tickscript.deadman(\n            check: check,\n            measurement: \"testm\",\n            threshold: 10,\n            id: (r) => \"Realm: ${r.realm} - Hostname: ${r.host} / Metric: ${metric_type} deadman alert\",\n        )",
+									File: "deadman_threshold_test.flux",
 									Start: ast.Position{
 										Column: 5,
 										Line:   47,
@@ -16170,8 +15326,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 104,
 												Line:   56,
 											},
-											File:   "deadman_threshold_test.flux",
-											Source: "check: check,\n            measurement: \"testm\",\n            threshold: 10,\n            id: (r) => \"Realm: ${r.realm} - Hostname: ${r.host} / Metric: ${metric_type} deadman alert\"",
+											File: "deadman_threshold_test.flux",
 											Start: ast.Position{
 												Column: 13,
 												Line:   53,
@@ -16188,8 +15343,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 25,
 													Line:   53,
 												},
-												File:   "deadman_threshold_test.flux",
-												Source: "check: check",
+												File: "deadman_threshold_test.flux",
 												Start: ast.Position{
 													Column: 13,
 													Line:   53,
@@ -16206,8 +15360,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 18,
 														Line:   53,
 													},
-													File:   "deadman_threshold_test.flux",
-													Source: "check",
+													File: "deadman_threshold_test.flux",
 													Start: ast.Position{
 														Column: 13,
 														Line:   53,
@@ -16226,8 +15379,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 25,
 														Line:   53,
 													},
-													File:   "deadman_threshold_test.flux",
-													Source: "check",
+													File: "deadman_threshold_test.flux",
 													Start: ast.Position{
 														Column: 20,
 														Line:   53,
@@ -16245,8 +15397,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 33,
 													Line:   54,
 												},
-												File:   "deadman_threshold_test.flux",
-												Source: "measurement: \"testm\"",
+												File: "deadman_threshold_test.flux",
 												Start: ast.Position{
 													Column: 13,
 													Line:   54,
@@ -16263,8 +15414,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 24,
 														Line:   54,
 													},
-													File:   "deadman_threshold_test.flux",
-													Source: "measurement",
+													File: "deadman_threshold_test.flux",
 													Start: ast.Position{
 														Column: 13,
 														Line:   54,
@@ -16283,8 +15433,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 33,
 														Line:   54,
 													},
-													File:   "deadman_threshold_test.flux",
-													Source: "\"testm\"",
+													File: "deadman_threshold_test.flux",
 													Start: ast.Position{
 														Column: 26,
 														Line:   54,
@@ -16302,8 +15451,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 26,
 													Line:   55,
 												},
-												File:   "deadman_threshold_test.flux",
-												Source: "threshold: 10",
+												File: "deadman_threshold_test.flux",
 												Start: ast.Position{
 													Column: 13,
 													Line:   55,
@@ -16320,8 +15468,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 22,
 														Line:   55,
 													},
-													File:   "deadman_threshold_test.flux",
-													Source: "threshold",
+													File: "deadman_threshold_test.flux",
 													Start: ast.Position{
 														Column: 13,
 														Line:   55,
@@ -16340,8 +15487,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 26,
 														Line:   55,
 													},
-													File:   "deadman_threshold_test.flux",
-													Source: "10",
+													File: "deadman_threshold_test.flux",
 													Start: ast.Position{
 														Column: 24,
 														Line:   55,
@@ -16359,8 +15505,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 104,
 													Line:   56,
 												},
-												File:   "deadman_threshold_test.flux",
-												Source: "id: (r) => \"Realm: ${r.realm} - Hostname: ${r.host} / Metric: ${metric_type} deadman alert\"",
+												File: "deadman_threshold_test.flux",
 												Start: ast.Position{
 													Column: 13,
 													Line:   56,
@@ -16377,8 +15522,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 15,
 														Line:   56,
 													},
-													File:   "deadman_threshold_test.flux",
-													Source: "id",
+													File: "deadman_threshold_test.flux",
 													Start: ast.Position{
 														Column: 13,
 														Line:   56,
@@ -16398,8 +15542,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 104,
 														Line:   56,
 													},
-													File:   "deadman_threshold_test.flux",
-													Source: "(r) => \"Realm: ${r.realm} - Hostname: ${r.host} / Metric: ${metric_type} deadman alert\"",
+													File: "deadman_threshold_test.flux",
 													Start: ast.Position{
 														Column: 17,
 														Line:   56,
@@ -16415,8 +15558,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 104,
 															Line:   56,
 														},
-														File:   "deadman_threshold_test.flux",
-														Source: "\"Realm: ${r.realm} - Hostname: ${r.host} / Metric: ${metric_type} deadman alert\"",
+														File: "deadman_threshold_test.flux",
 														Start: ast.Position{
 															Column: 24,
 															Line:   56,
@@ -16432,8 +15574,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Column: 32,
 																Line:   56,
 															},
-															File:   "deadman_threshold_test.flux",
-															Source: "Realm: ",
+															File: "deadman_threshold_test.flux",
 															Start: ast.Position{
 																Column: 25,
 																Line:   56,
@@ -16450,8 +15591,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Column: 42,
 																Line:   56,
 															},
-															File:   "deadman_threshold_test.flux",
-															Source: "${r.realm}",
+															File: "deadman_threshold_test.flux",
 															Start: ast.Position{
 																Column: 32,
 																Line:   56,
@@ -16467,8 +15607,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Column: 41,
 																	Line:   56,
 																},
-																File:   "deadman_threshold_test.flux",
-																Source: "r.realm",
+																File: "deadman_threshold_test.flux",
 																Start: ast.Position{
 																	Column: 34,
 																	Line:   56,
@@ -16485,8 +15624,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Column: 35,
 																		Line:   56,
 																	},
-																	File:   "deadman_threshold_test.flux",
-																	Source: "r",
+																	File: "deadman_threshold_test.flux",
 																	Start: ast.Position{
 																		Column: 34,
 																		Line:   56,
@@ -16504,8 +15642,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Column: 41,
 																		Line:   56,
 																	},
-																	File:   "deadman_threshold_test.flux",
-																	Source: "realm",
+																	File: "deadman_threshold_test.flux",
 																	Start: ast.Position{
 																		Column: 36,
 																		Line:   56,
@@ -16525,8 +15662,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Column: 55,
 																Line:   56,
 															},
-															File:   "deadman_threshold_test.flux",
-															Source: " - Hostname: ",
+															File: "deadman_threshold_test.flux",
 															Start: ast.Position{
 																Column: 42,
 																Line:   56,
@@ -16543,8 +15679,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Column: 64,
 																Line:   56,
 															},
-															File:   "deadman_threshold_test.flux",
-															Source: "${r.host}",
+															File: "deadman_threshold_test.flux",
 															Start: ast.Position{
 																Column: 55,
 																Line:   56,
@@ -16560,8 +15695,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Column: 63,
 																	Line:   56,
 																},
-																File:   "deadman_threshold_test.flux",
-																Source: "r.host",
+																File: "deadman_threshold_test.flux",
 																Start: ast.Position{
 																	Column: 57,
 																	Line:   56,
@@ -16578,8 +15712,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Column: 58,
 																		Line:   56,
 																	},
-																	File:   "deadman_threshold_test.flux",
-																	Source: "r",
+																	File: "deadman_threshold_test.flux",
 																	Start: ast.Position{
 																		Column: 57,
 																		Line:   56,
@@ -16597,8 +15730,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Column: 63,
 																		Line:   56,
 																	},
-																	File:   "deadman_threshold_test.flux",
-																	Source: "host",
+																	File: "deadman_threshold_test.flux",
 																	Start: ast.Position{
 																		Column: 59,
 																		Line:   56,
@@ -16618,8 +15750,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Column: 75,
 																Line:   56,
 															},
-															File:   "deadman_threshold_test.flux",
-															Source: " / Metric: ",
+															File: "deadman_threshold_test.flux",
 															Start: ast.Position{
 																Column: 64,
 																Line:   56,
@@ -16636,8 +15767,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Column: 89,
 																Line:   56,
 															},
-															File:   "deadman_threshold_test.flux",
-															Source: "${metric_type}",
+															File: "deadman_threshold_test.flux",
 															Start: ast.Position{
 																Column: 75,
 																Line:   56,
@@ -16653,8 +15783,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Column: 88,
 																	Line:   56,
 																},
-																File:   "deadman_threshold_test.flux",
-																Source: "metric_type",
+																File: "deadman_threshold_test.flux",
 																Start: ast.Position{
 																	Column: 77,
 																	Line:   56,
@@ -16672,8 +15801,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Column: 103,
 																Line:   56,
 															},
-															File:   "deadman_threshold_test.flux",
-															Source: " deadman alert",
+															File: "deadman_threshold_test.flux",
 															Start: ast.Position{
 																Column: 89,
 																Line:   56,
@@ -16693,8 +15821,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 19,
 															Line:   56,
 														},
-														File:   "deadman_threshold_test.flux",
-														Source: "r",
+														File: "deadman_threshold_test.flux",
 														Start: ast.Position{
 															Column: 18,
 															Line:   56,
@@ -16711,8 +15838,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Column: 19,
 																Line:   56,
 															},
-															File:   "deadman_threshold_test.flux",
-															Source: "r",
+															File: "deadman_threshold_test.flux",
 															Start: ast.Position{
 																Column: 18,
 																Line:   56,
@@ -16738,8 +15864,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 10,
 											Line:   57,
 										},
-										File:   "deadman_threshold_test.flux",
-										Source: "tickscript.deadman(\n            check: check,\n            measurement: \"testm\",\n            threshold: 10,\n            id: (r) => \"Realm: ${r.realm} - Hostname: ${r.host} / Metric: ${metric_type} deadman alert\",\n        )",
+										File: "deadman_threshold_test.flux",
 										Start: ast.Position{
 											Column: 12,
 											Line:   52,
@@ -16755,8 +15880,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 30,
 												Line:   52,
 											},
-											File:   "deadman_threshold_test.flux",
-											Source: "tickscript.deadman",
+											File: "deadman_threshold_test.flux",
 											Start: ast.Position{
 												Column: 12,
 												Line:   52,
@@ -16773,8 +15897,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 22,
 													Line:   52,
 												},
-												File:   "deadman_threshold_test.flux",
-												Source: "tickscript",
+												File: "deadman_threshold_test.flux",
 												Start: ast.Position{
 													Column: 12,
 													Line:   52,
@@ -16792,8 +15915,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 30,
 													Line:   52,
 												},
-												File:   "deadman_threshold_test.flux",
-												Source: "deadman",
+												File: "deadman_threshold_test.flux",
 												Start: ast.Position{
 													Column: 23,
 													Line:   52,
@@ -16816,8 +15938,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 38,
 									Line:   59,
 								},
-								File:   "deadman_threshold_test.flux",
-								Source: "table\n        |> range(start: 2020-11-25T14:05:00Z)\n        |> filter(fn: (r) => r._measurement == \"testm\" and r._field == metric_type and r.realm == tier)\n        |> schema.fieldsAsCols()\n        |> tickscript.groupBy(columns: [\"host\", \"realm\"])\n        |> tickscript.deadman(\n            check: check,\n            measurement: \"testm\",\n            threshold: 10,\n            id: (r) => \"Realm: ${r.realm} - Hostname: ${r.host} / Metric: ${metric_type} deadman alert\",\n        )\n        // to avoid issue with validation\n        |> drop(columns: [\"details\"])",
+								File: "deadman_threshold_test.flux",
 								Start: ast.Position{
 									Column: 5,
 									Line:   47,
@@ -16834,8 +15955,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 37,
 											Line:   59,
 										},
-										File:   "deadman_threshold_test.flux",
-										Source: "columns: [\"details\"]",
+										File: "deadman_threshold_test.flux",
 										Start: ast.Position{
 											Column: 17,
 											Line:   59,
@@ -16852,8 +15972,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 37,
 												Line:   59,
 											},
-											File:   "deadman_threshold_test.flux",
-											Source: "columns: [\"details\"]",
+											File: "deadman_threshold_test.flux",
 											Start: ast.Position{
 												Column: 17,
 												Line:   59,
@@ -16870,8 +15989,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 24,
 													Line:   59,
 												},
-												File:   "deadman_threshold_test.flux",
-												Source: "columns",
+												File: "deadman_threshold_test.flux",
 												Start: ast.Position{
 													Column: 17,
 													Line:   59,
@@ -16890,8 +16008,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 37,
 													Line:   59,
 												},
-												File:   "deadman_threshold_test.flux",
-												Source: "[\"details\"]",
+												File: "deadman_threshold_test.flux",
 												Start: ast.Position{
 													Column: 26,
 													Line:   59,
@@ -16907,8 +16024,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 36,
 														Line:   59,
 													},
-													File:   "deadman_threshold_test.flux",
-													Source: "\"details\"",
+													File: "deadman_threshold_test.flux",
 													Start: ast.Position{
 														Column: 27,
 														Line:   59,
@@ -16932,8 +16048,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 38,
 										Line:   59,
 									},
-									File:   "deadman_threshold_test.flux",
-									Source: "drop(columns: [\"details\"])",
+									File: "deadman_threshold_test.flux",
 									Start: ast.Position{
 										Column: 12,
 										Line:   59,
@@ -16949,8 +16064,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 16,
 											Line:   59,
 										},
-										File:   "deadman_threshold_test.flux",
-										Source: "drop",
+										File: "deadman_threshold_test.flux",
 										Start: ast.Position{
 											Column: 12,
 											Line:   59,
@@ -16971,8 +16085,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 36,
 								Line:   60,
 							},
-							File:   "deadman_threshold_test.flux",
-							Source: "table\n        |> range(start: 2020-11-25T14:05:00Z)\n        |> filter(fn: (r) => r._measurement == \"testm\" and r._field == metric_type and r.realm == tier)\n        |> schema.fieldsAsCols()\n        |> tickscript.groupBy(columns: [\"host\", \"realm\"])\n        |> tickscript.deadman(\n            check: check,\n            measurement: \"testm\",\n            threshold: 10,\n            id: (r) => \"Realm: ${r.realm} - Hostname: ${r.host} / Metric: ${metric_type} deadman alert\",\n        )\n        // to avoid issue with validation\n        |> drop(columns: [\"details\"])\n        |> drop(columns: [\"_time\"])",
+							File: "deadman_threshold_test.flux",
 							Start: ast.Position{
 								Column: 5,
 								Line:   47,
@@ -16989,8 +16102,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 35,
 										Line:   60,
 									},
-									File:   "deadman_threshold_test.flux",
-									Source: "columns: [\"_time\"]",
+									File: "deadman_threshold_test.flux",
 									Start: ast.Position{
 										Column: 17,
 										Line:   60,
@@ -17007,8 +16119,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 35,
 											Line:   60,
 										},
-										File:   "deadman_threshold_test.flux",
-										Source: "columns: [\"_time\"]",
+										File: "deadman_threshold_test.flux",
 										Start: ast.Position{
 											Column: 17,
 											Line:   60,
@@ -17025,8 +16136,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 24,
 												Line:   60,
 											},
-											File:   "deadman_threshold_test.flux",
-											Source: "columns",
+											File: "deadman_threshold_test.flux",
 											Start: ast.Position{
 												Column: 17,
 												Line:   60,
@@ -17045,8 +16155,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 35,
 												Line:   60,
 											},
-											File:   "deadman_threshold_test.flux",
-											Source: "[\"_time\"]",
+											File: "deadman_threshold_test.flux",
 											Start: ast.Position{
 												Column: 26,
 												Line:   60,
@@ -17062,8 +16171,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 34,
 													Line:   60,
 												},
-												File:   "deadman_threshold_test.flux",
-												Source: "\"_time\"",
+												File: "deadman_threshold_test.flux",
 												Start: ast.Position{
 													Column: 27,
 													Line:   60,
@@ -17087,8 +16195,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 36,
 									Line:   60,
 								},
-								File:   "deadman_threshold_test.flux",
-								Source: "drop(columns: [\"_time\"])",
+								File: "deadman_threshold_test.flux",
 								Start: ast.Position{
 									Column: 12,
 									Line:   60,
@@ -17104,8 +16211,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 16,
 										Line:   60,
 									},
-									File:   "deadman_threshold_test.flux",
-									Source: "drop",
+									File: "deadman_threshold_test.flux",
 									Start: ast.Position{
 										Column: 12,
 										Line:   60,
@@ -17128,8 +16234,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 31,
 								Line:   46,
 							},
-							File:   "deadman_threshold_test.flux",
-							Source: "table=<-",
+							File: "deadman_threshold_test.flux",
 							Start: ast.Position{
 								Column: 23,
 								Line:   46,
@@ -17146,8 +16251,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 28,
 									Line:   46,
 								},
-								File:   "deadman_threshold_test.flux",
-								Source: "table",
+								File: "deadman_threshold_test.flux",
 								Start: ast.Position{
 									Column: 23,
 									Line:   46,
@@ -17165,8 +16269,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 31,
 								Line:   46,
 							},
-							File:   "deadman_threshold_test.flux",
-							Source: "<-",
+							File: "deadman_threshold_test.flux",
 							Start: ast.Position{
 								Column: 29,
 								Line:   46,
@@ -17186,8 +16289,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 109,
 							Line:   63,
 						},
-						File:   "deadman_threshold_test.flux",
-						Source: "_tickscript_deadman = () =>\n    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: tickscript_deadman})",
+						File: "deadman_threshold_test.flux",
 						Start: ast.Position{
 							Column: 6,
 							Line:   62,
@@ -17203,8 +16305,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 25,
 								Line:   62,
 							},
-							File:   "deadman_threshold_test.flux",
-							Source: "_tickscript_deadman",
+							File: "deadman_threshold_test.flux",
 							Start: ast.Position{
 								Column: 6,
 								Line:   62,
@@ -17223,8 +16324,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 109,
 								Line:   63,
 							},
-							File:   "deadman_threshold_test.flux",
-							Source: "() =>\n    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: tickscript_deadman})",
+							File: "deadman_threshold_test.flux",
 							Start: ast.Position{
 								Column: 28,
 								Line:   62,
@@ -17240,8 +16340,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 109,
 									Line:   63,
 								},
-								File:   "deadman_threshold_test.flux",
-								Source: "({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: tickscript_deadman})",
+								File: "deadman_threshold_test.flux",
 								Start: ast.Position{
 									Column: 5,
 									Line:   63,
@@ -17257,8 +16356,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 108,
 										Line:   63,
 									},
-									File:   "deadman_threshold_test.flux",
-									Source: "{input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: tickscript_deadman}",
+									File: "deadman_threshold_test.flux",
 									Start: ast.Position{
 										Column: 6,
 										Line:   63,
@@ -17275,8 +16373,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 46,
 											Line:   63,
 										},
-										File:   "deadman_threshold_test.flux",
-										Source: "input: testing.loadStorage(csv: inData)",
+										File: "deadman_threshold_test.flux",
 										Start: ast.Position{
 											Column: 7,
 											Line:   63,
@@ -17293,8 +16390,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 12,
 												Line:   63,
 											},
-											File:   "deadman_threshold_test.flux",
-											Source: "input",
+											File: "deadman_threshold_test.flux",
 											Start: ast.Position{
 												Column: 7,
 												Line:   63,
@@ -17314,8 +16410,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 45,
 													Line:   63,
 												},
-												File:   "deadman_threshold_test.flux",
-												Source: "csv: inData",
+												File: "deadman_threshold_test.flux",
 												Start: ast.Position{
 													Column: 34,
 													Line:   63,
@@ -17332,8 +16427,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 45,
 														Line:   63,
 													},
-													File:   "deadman_threshold_test.flux",
-													Source: "csv: inData",
+													File: "deadman_threshold_test.flux",
 													Start: ast.Position{
 														Column: 34,
 														Line:   63,
@@ -17350,8 +16444,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 37,
 															Line:   63,
 														},
-														File:   "deadman_threshold_test.flux",
-														Source: "csv",
+														File: "deadman_threshold_test.flux",
 														Start: ast.Position{
 															Column: 34,
 															Line:   63,
@@ -17370,8 +16463,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 45,
 															Line:   63,
 														},
-														File:   "deadman_threshold_test.flux",
-														Source: "inData",
+														File: "deadman_threshold_test.flux",
 														Start: ast.Position{
 															Column: 39,
 															Line:   63,
@@ -17392,8 +16484,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 46,
 												Line:   63,
 											},
-											File:   "deadman_threshold_test.flux",
-											Source: "testing.loadStorage(csv: inData)",
+											File: "deadman_threshold_test.flux",
 											Start: ast.Position{
 												Column: 14,
 												Line:   63,
@@ -17409,8 +16500,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 33,
 													Line:   63,
 												},
-												File:   "deadman_threshold_test.flux",
-												Source: "testing.loadStorage",
+												File: "deadman_threshold_test.flux",
 												Start: ast.Position{
 													Column: 14,
 													Line:   63,
@@ -17427,8 +16517,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 21,
 														Line:   63,
 													},
-													File:   "deadman_threshold_test.flux",
-													Source: "testing",
+													File: "deadman_threshold_test.flux",
 													Start: ast.Position{
 														Column: 14,
 														Line:   63,
@@ -17446,8 +16535,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 33,
 														Line:   63,
 													},
-													File:   "deadman_threshold_test.flux",
-													Source: "loadStorage",
+													File: "deadman_threshold_test.flux",
 													Start: ast.Position{
 														Column: 22,
 														Line:   63,
@@ -17470,8 +16558,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 83,
 											Line:   63,
 										},
-										File:   "deadman_threshold_test.flux",
-										Source: "want: testing.loadMem(csv: outData)",
+										File: "deadman_threshold_test.flux",
 										Start: ast.Position{
 											Column: 48,
 											Line:   63,
@@ -17488,8 +16575,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 52,
 												Line:   63,
 											},
-											File:   "deadman_threshold_test.flux",
-											Source: "want",
+											File: "deadman_threshold_test.flux",
 											Start: ast.Position{
 												Column: 48,
 												Line:   63,
@@ -17509,8 +16595,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 82,
 													Line:   63,
 												},
-												File:   "deadman_threshold_test.flux",
-												Source: "csv: outData",
+												File: "deadman_threshold_test.flux",
 												Start: ast.Position{
 													Column: 70,
 													Line:   63,
@@ -17527,8 +16612,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 82,
 														Line:   63,
 													},
-													File:   "deadman_threshold_test.flux",
-													Source: "csv: outData",
+													File: "deadman_threshold_test.flux",
 													Start: ast.Position{
 														Column: 70,
 														Line:   63,
@@ -17545,8 +16629,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 73,
 															Line:   63,
 														},
-														File:   "deadman_threshold_test.flux",
-														Source: "csv",
+														File: "deadman_threshold_test.flux",
 														Start: ast.Position{
 															Column: 70,
 															Line:   63,
@@ -17565,8 +16648,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 82,
 															Line:   63,
 														},
-														File:   "deadman_threshold_test.flux",
-														Source: "outData",
+														File: "deadman_threshold_test.flux",
 														Start: ast.Position{
 															Column: 75,
 															Line:   63,
@@ -17587,8 +16669,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 83,
 												Line:   63,
 											},
-											File:   "deadman_threshold_test.flux",
-											Source: "testing.loadMem(csv: outData)",
+											File: "deadman_threshold_test.flux",
 											Start: ast.Position{
 												Column: 54,
 												Line:   63,
@@ -17604,8 +16685,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 69,
 													Line:   63,
 												},
-												File:   "deadman_threshold_test.flux",
-												Source: "testing.loadMem",
+												File: "deadman_threshold_test.flux",
 												Start: ast.Position{
 													Column: 54,
 													Line:   63,
@@ -17622,8 +16702,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 61,
 														Line:   63,
 													},
-													File:   "deadman_threshold_test.flux",
-													Source: "testing",
+													File: "deadman_threshold_test.flux",
 													Start: ast.Position{
 														Column: 54,
 														Line:   63,
@@ -17641,8 +16720,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 69,
 														Line:   63,
 													},
-													File:   "deadman_threshold_test.flux",
-													Source: "loadMem",
+													File: "deadman_threshold_test.flux",
 													Start: ast.Position{
 														Column: 62,
 														Line:   63,
@@ -17665,8 +16743,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 107,
 											Line:   63,
 										},
-										File:   "deadman_threshold_test.flux",
-										Source: "fn: tickscript_deadman",
+										File: "deadman_threshold_test.flux",
 										Start: ast.Position{
 											Column: 85,
 											Line:   63,
@@ -17683,8 +16760,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 87,
 												Line:   63,
 											},
-											File:   "deadman_threshold_test.flux",
-											Source: "fn",
+											File: "deadman_threshold_test.flux",
 											Start: ast.Position{
 												Column: 85,
 												Line:   63,
@@ -17703,8 +16779,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 107,
 												Line:   63,
 											},
-											File:   "deadman_threshold_test.flux",
-											Source: "tickscript_deadman",
+											File: "deadman_threshold_test.flux",
 											Start: ast.Position{
 												Column: 89,
 												Line:   63,
@@ -17733,8 +16808,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 109,
 						Line:   63,
 					},
-					File:   "deadman_threshold_test.flux",
-					Source: "test _tickscript_deadman = () =>\n    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: tickscript_deadman})",
+					File: "deadman_threshold_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   62,
@@ -17753,8 +16827,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 17,
 						Line:   4,
 					},
-					File:   "deadman_threshold_test.flux",
-					Source: "import \"testing\"",
+					File: "deadman_threshold_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   4,
@@ -17770,8 +16843,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 17,
 							Line:   4,
 						},
-						File:   "deadman_threshold_test.flux",
-						Source: "\"testing\"",
+						File: "deadman_threshold_test.flux",
 						Start: ast.Position{
 							Column: 8,
 							Line:   4,
@@ -17790,8 +16862,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 13,
 						Line:   5,
 					},
-					File:   "deadman_threshold_test.flux",
-					Source: "import \"csv\"",
+					File: "deadman_threshold_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   5,
@@ -17807,8 +16878,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 13,
 							Line:   5,
 						},
-						File:   "deadman_threshold_test.flux",
-						Source: "\"csv\"",
+						File: "deadman_threshold_test.flux",
 						Start: ast.Position{
 							Column: 8,
 							Line:   5,
@@ -17827,8 +16897,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 39,
 						Line:   6,
 					},
-					File:   "deadman_threshold_test.flux",
-					Source: "import \"contrib/bonitoo-io/tickscript\"",
+					File: "deadman_threshold_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   6,
@@ -17844,8 +16913,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 39,
 							Line:   6,
 						},
-						File:   "deadman_threshold_test.flux",
-						Source: "\"contrib/bonitoo-io/tickscript\"",
+						File: "deadman_threshold_test.flux",
 						Start: ast.Position{
 							Column: 8,
 							Line:   6,
@@ -17864,8 +16932,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 37,
 						Line:   7,
 					},
-					File:   "deadman_threshold_test.flux",
-					Source: "import \"influxdata/influxdb/monitor\"",
+					File: "deadman_threshold_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   7,
@@ -17881,8 +16948,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 37,
 							Line:   7,
 						},
-						File:   "deadman_threshold_test.flux",
-						Source: "\"influxdata/influxdb/monitor\"",
+						File: "deadman_threshold_test.flux",
 						Start: ast.Position{
 							Column: 8,
 							Line:   7,
@@ -17901,8 +16967,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 36,
 						Line:   8,
 					},
-					File:   "deadman_threshold_test.flux",
-					Source: "import \"influxdata/influxdb/schema\"",
+					File: "deadman_threshold_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   8,
@@ -17918,8 +16983,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 36,
 							Line:   8,
 						},
-						File:   "deadman_threshold_test.flux",
-						Source: "\"influxdata/influxdb/schema\"",
+						File: "deadman_threshold_test.flux",
 						Start: ast.Position{
 							Column: 8,
 							Line:   8,
@@ -17940,8 +17004,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 24,
 						Line:   1,
 					},
-					File:   "deadman_threshold_test.flux",
-					Source: "package tickscript_test",
+					File: "deadman_threshold_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   1,
@@ -17957,8 +17020,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 24,
 							Line:   1,
 						},
-						File:   "deadman_threshold_test.flux",
-						Source: "tickscript_test",
+						File: "deadman_threshold_test.flux",
 						Start: ast.Position{
 							Column: 9,
 							Line:   1,

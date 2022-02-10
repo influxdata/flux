@@ -22,8 +22,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Column: 103,
 					Line:   32,
 				},
-				File:   "secrets_test.flux",
-				Source: "package secrets_test\n\n\nimport \"testing\"\nimport \"influxdata/influxdb/secrets\"\n\noption now = () => 2030-01-01T00:00:00Z\n\ninData =\n    \"\n#datatype,string,long,dateTime:RFC3339,double,string,string\n#group,false,false,false,false,true,true\n#default,_result,,,,,\n,result,table,_time,_value,_field,_measurement\n,,0,2018-05-22T19:53:26Z,1.83,load1,system\n\"\noutData =\n    \"\n#datatype,string,long,dateTime:RFC3339,double,string,string,string\n#group,false,false,false,false,true,true,false\n#default,_result,,,,,,\n,result,table,_time,_value,_field,_measurement,token\n,,0,2018-05-22T19:53:26Z,1.83,load1,system,mysecrettoken\n\"\ntoken = secrets.get(key: \"token\")\nt_get_secret = (table=<-) =>\n    table\n        |> set(key: \"token\", value: token)\n        |> drop(columns: [\"_start\", \"_stop\"])\n\ntest _get_secret = () =>\n    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_get_secret})",
+				File: "secrets_test.flux",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -40,8 +39,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 40,
 							Line:   7,
 						},
-						File:   "secrets_test.flux",
-						Source: "now = () => 2030-01-01T00:00:00Z",
+						File: "secrets_test.flux",
 						Start: ast.Position{
 							Column: 8,
 							Line:   7,
@@ -57,8 +55,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 11,
 								Line:   7,
 							},
-							File:   "secrets_test.flux",
-							Source: "now",
+							File: "secrets_test.flux",
 							Start: ast.Position{
 								Column: 8,
 								Line:   7,
@@ -77,8 +74,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 40,
 								Line:   7,
 							},
-							File:   "secrets_test.flux",
-							Source: "() => 2030-01-01T00:00:00Z",
+							File: "secrets_test.flux",
 							Start: ast.Position{
 								Column: 14,
 								Line:   7,
@@ -94,8 +90,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 40,
 									Line:   7,
 								},
-								File:   "secrets_test.flux",
-								Source: "2030-01-01T00:00:00Z",
+								File: "secrets_test.flux",
 								Start: ast.Position{
 									Column: 20,
 									Line:   7,
@@ -117,8 +112,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 40,
 						Line:   7,
 					},
-					File:   "secrets_test.flux",
-					Source: "option now = () => 2030-01-01T00:00:00Z",
+					File: "secrets_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   7,
@@ -134,8 +128,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 2,
 						Line:   16,
 					},
-					File:   "secrets_test.flux",
-					Source: "inData =\n    \"\n#datatype,string,long,dateTime:RFC3339,double,string,string\n#group,false,false,false,false,true,true\n#default,_result,,,,,\n,result,table,_time,_value,_field,_measurement\n,,0,2018-05-22T19:53:26Z,1.83,load1,system\n\"",
+					File: "secrets_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   9,
@@ -151,8 +144,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 7,
 							Line:   9,
 						},
-						File:   "secrets_test.flux",
-						Source: "inData",
+						File: "secrets_test.flux",
 						Start: ast.Position{
 							Column: 1,
 							Line:   9,
@@ -170,8 +162,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 2,
 							Line:   16,
 						},
-						File:   "secrets_test.flux",
-						Source: "\"\n#datatype,string,long,dateTime:RFC3339,double,string,string\n#group,false,false,false,false,true,true\n#default,_result,,,,,\n,result,table,_time,_value,_field,_measurement\n,,0,2018-05-22T19:53:26Z,1.83,load1,system\n\"",
+						File: "secrets_test.flux",
 						Start: ast.Position{
 							Column: 5,
 							Line:   10,
@@ -189,8 +180,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 2,
 						Line:   24,
 					},
-					File:   "secrets_test.flux",
-					Source: "outData =\n    \"\n#datatype,string,long,dateTime:RFC3339,double,string,string,string\n#group,false,false,false,false,true,true,false\n#default,_result,,,,,,\n,result,table,_time,_value,_field,_measurement,token\n,,0,2018-05-22T19:53:26Z,1.83,load1,system,mysecrettoken\n\"",
+					File: "secrets_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   17,
@@ -206,8 +196,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 8,
 							Line:   17,
 						},
-						File:   "secrets_test.flux",
-						Source: "outData",
+						File: "secrets_test.flux",
 						Start: ast.Position{
 							Column: 1,
 							Line:   17,
@@ -225,8 +214,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 2,
 							Line:   24,
 						},
-						File:   "secrets_test.flux",
-						Source: "\"\n#datatype,string,long,dateTime:RFC3339,double,string,string,string\n#group,false,false,false,false,true,true,false\n#default,_result,,,,,,\n,result,table,_time,_value,_field,_measurement,token\n,,0,2018-05-22T19:53:26Z,1.83,load1,system,mysecrettoken\n\"",
+						File: "secrets_test.flux",
 						Start: ast.Position{
 							Column: 5,
 							Line:   18,
@@ -244,8 +232,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 34,
 						Line:   25,
 					},
-					File:   "secrets_test.flux",
-					Source: "token = secrets.get(key: \"token\")",
+					File: "secrets_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   25,
@@ -261,8 +248,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 6,
 							Line:   25,
 						},
-						File:   "secrets_test.flux",
-						Source: "token",
+						File: "secrets_test.flux",
 						Start: ast.Position{
 							Column: 1,
 							Line:   25,
@@ -281,8 +267,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 33,
 								Line:   25,
 							},
-							File:   "secrets_test.flux",
-							Source: "key: \"token\"",
+							File: "secrets_test.flux",
 							Start: ast.Position{
 								Column: 21,
 								Line:   25,
@@ -299,8 +284,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 33,
 									Line:   25,
 								},
-								File:   "secrets_test.flux",
-								Source: "key: \"token\"",
+								File: "secrets_test.flux",
 								Start: ast.Position{
 									Column: 21,
 									Line:   25,
@@ -317,8 +301,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 24,
 										Line:   25,
 									},
-									File:   "secrets_test.flux",
-									Source: "key",
+									File: "secrets_test.flux",
 									Start: ast.Position{
 										Column: 21,
 										Line:   25,
@@ -337,8 +320,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 33,
 										Line:   25,
 									},
-									File:   "secrets_test.flux",
-									Source: "\"token\"",
+									File: "secrets_test.flux",
 									Start: ast.Position{
 										Column: 26,
 										Line:   25,
@@ -359,8 +341,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 34,
 							Line:   25,
 						},
-						File:   "secrets_test.flux",
-						Source: "secrets.get(key: \"token\")",
+						File: "secrets_test.flux",
 						Start: ast.Position{
 							Column: 9,
 							Line:   25,
@@ -376,8 +357,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 20,
 								Line:   25,
 							},
-							File:   "secrets_test.flux",
-							Source: "secrets.get",
+							File: "secrets_test.flux",
 							Start: ast.Position{
 								Column: 9,
 								Line:   25,
@@ -394,8 +374,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 16,
 									Line:   25,
 								},
-								File:   "secrets_test.flux",
-								Source: "secrets",
+								File: "secrets_test.flux",
 								Start: ast.Position{
 									Column: 9,
 									Line:   25,
@@ -413,8 +392,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 20,
 									Line:   25,
 								},
-								File:   "secrets_test.flux",
-								Source: "get",
+								File: "secrets_test.flux",
 								Start: ast.Position{
 									Column: 17,
 									Line:   25,
@@ -437,8 +415,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 46,
 						Line:   29,
 					},
-					File:   "secrets_test.flux",
-					Source: "t_get_secret = (table=<-) =>\n    table\n        |> set(key: \"token\", value: token)\n        |> drop(columns: [\"_start\", \"_stop\"])",
+					File: "secrets_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   26,
@@ -454,8 +431,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 13,
 							Line:   26,
 						},
-						File:   "secrets_test.flux",
-						Source: "t_get_secret",
+						File: "secrets_test.flux",
 						Start: ast.Position{
 							Column: 1,
 							Line:   26,
@@ -474,8 +450,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 46,
 							Line:   29,
 						},
-						File:   "secrets_test.flux",
-						Source: "(table=<-) =>\n    table\n        |> set(key: \"token\", value: token)\n        |> drop(columns: [\"_start\", \"_stop\"])",
+						File: "secrets_test.flux",
 						Start: ast.Position{
 							Column: 16,
 							Line:   26,
@@ -493,8 +468,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 10,
 										Line:   27,
 									},
-									File:   "secrets_test.flux",
-									Source: "table",
+									File: "secrets_test.flux",
 									Start: ast.Position{
 										Column: 5,
 										Line:   27,
@@ -511,8 +485,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 43,
 									Line:   28,
 								},
-								File:   "secrets_test.flux",
-								Source: "table\n        |> set(key: \"token\", value: token)",
+								File: "secrets_test.flux",
 								Start: ast.Position{
 									Column: 5,
 									Line:   27,
@@ -529,8 +502,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 42,
 											Line:   28,
 										},
-										File:   "secrets_test.flux",
-										Source: "key: \"token\", value: token",
+										File: "secrets_test.flux",
 										Start: ast.Position{
 											Column: 16,
 											Line:   28,
@@ -547,8 +519,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 28,
 												Line:   28,
 											},
-											File:   "secrets_test.flux",
-											Source: "key: \"token\"",
+											File: "secrets_test.flux",
 											Start: ast.Position{
 												Column: 16,
 												Line:   28,
@@ -565,8 +536,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 19,
 													Line:   28,
 												},
-												File:   "secrets_test.flux",
-												Source: "key",
+												File: "secrets_test.flux",
 												Start: ast.Position{
 													Column: 16,
 													Line:   28,
@@ -585,8 +555,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 28,
 													Line:   28,
 												},
-												File:   "secrets_test.flux",
-												Source: "\"token\"",
+												File: "secrets_test.flux",
 												Start: ast.Position{
 													Column: 21,
 													Line:   28,
@@ -604,8 +573,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 42,
 												Line:   28,
 											},
-											File:   "secrets_test.flux",
-											Source: "value: token",
+											File: "secrets_test.flux",
 											Start: ast.Position{
 												Column: 30,
 												Line:   28,
@@ -622,8 +590,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 35,
 													Line:   28,
 												},
-												File:   "secrets_test.flux",
-												Source: "value",
+												File: "secrets_test.flux",
 												Start: ast.Position{
 													Column: 30,
 													Line:   28,
@@ -642,8 +609,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 42,
 													Line:   28,
 												},
-												File:   "secrets_test.flux",
-												Source: "token",
+												File: "secrets_test.flux",
 												Start: ast.Position{
 													Column: 37,
 													Line:   28,
@@ -664,8 +630,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 43,
 										Line:   28,
 									},
-									File:   "secrets_test.flux",
-									Source: "set(key: \"token\", value: token)",
+									File: "secrets_test.flux",
 									Start: ast.Position{
 										Column: 12,
 										Line:   28,
@@ -681,8 +646,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 15,
 											Line:   28,
 										},
-										File:   "secrets_test.flux",
-										Source: "set",
+										File: "secrets_test.flux",
 										Start: ast.Position{
 											Column: 12,
 											Line:   28,
@@ -703,8 +667,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 46,
 								Line:   29,
 							},
-							File:   "secrets_test.flux",
-							Source: "table\n        |> set(key: \"token\", value: token)\n        |> drop(columns: [\"_start\", \"_stop\"])",
+							File: "secrets_test.flux",
 							Start: ast.Position{
 								Column: 5,
 								Line:   27,
@@ -721,8 +684,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 45,
 										Line:   29,
 									},
-									File:   "secrets_test.flux",
-									Source: "columns: [\"_start\", \"_stop\"]",
+									File: "secrets_test.flux",
 									Start: ast.Position{
 										Column: 17,
 										Line:   29,
@@ -739,8 +701,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 45,
 											Line:   29,
 										},
-										File:   "secrets_test.flux",
-										Source: "columns: [\"_start\", \"_stop\"]",
+										File: "secrets_test.flux",
 										Start: ast.Position{
 											Column: 17,
 											Line:   29,
@@ -757,8 +718,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 24,
 												Line:   29,
 											},
-											File:   "secrets_test.flux",
-											Source: "columns",
+											File: "secrets_test.flux",
 											Start: ast.Position{
 												Column: 17,
 												Line:   29,
@@ -777,8 +737,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 45,
 												Line:   29,
 											},
-											File:   "secrets_test.flux",
-											Source: "[\"_start\", \"_stop\"]",
+											File: "secrets_test.flux",
 											Start: ast.Position{
 												Column: 26,
 												Line:   29,
@@ -794,8 +753,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 35,
 													Line:   29,
 												},
-												File:   "secrets_test.flux",
-												Source: "\"_start\"",
+												File: "secrets_test.flux",
 												Start: ast.Position{
 													Column: 27,
 													Line:   29,
@@ -812,8 +770,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 44,
 													Line:   29,
 												},
-												File:   "secrets_test.flux",
-												Source: "\"_stop\"",
+												File: "secrets_test.flux",
 												Start: ast.Position{
 													Column: 37,
 													Line:   29,
@@ -837,8 +794,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 46,
 									Line:   29,
 								},
-								File:   "secrets_test.flux",
-								Source: "drop(columns: [\"_start\", \"_stop\"])",
+								File: "secrets_test.flux",
 								Start: ast.Position{
 									Column: 12,
 									Line:   29,
@@ -854,8 +810,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 16,
 										Line:   29,
 									},
-									File:   "secrets_test.flux",
-									Source: "drop",
+									File: "secrets_test.flux",
 									Start: ast.Position{
 										Column: 12,
 										Line:   29,
@@ -878,8 +833,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 25,
 								Line:   26,
 							},
-							File:   "secrets_test.flux",
-							Source: "table=<-",
+							File: "secrets_test.flux",
 							Start: ast.Position{
 								Column: 17,
 								Line:   26,
@@ -896,8 +850,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 22,
 									Line:   26,
 								},
-								File:   "secrets_test.flux",
-								Source: "table",
+								File: "secrets_test.flux",
 								Start: ast.Position{
 									Column: 17,
 									Line:   26,
@@ -915,8 +868,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 25,
 								Line:   26,
 							},
-							File:   "secrets_test.flux",
-							Source: "<-",
+							File: "secrets_test.flux",
 							Start: ast.Position{
 								Column: 23,
 								Line:   26,
@@ -936,8 +888,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 103,
 							Line:   32,
 						},
-						File:   "secrets_test.flux",
-						Source: "_get_secret = () =>\n    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_get_secret})",
+						File: "secrets_test.flux",
 						Start: ast.Position{
 							Column: 6,
 							Line:   31,
@@ -953,8 +904,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 17,
 								Line:   31,
 							},
-							File:   "secrets_test.flux",
-							Source: "_get_secret",
+							File: "secrets_test.flux",
 							Start: ast.Position{
 								Column: 6,
 								Line:   31,
@@ -973,8 +923,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 103,
 								Line:   32,
 							},
-							File:   "secrets_test.flux",
-							Source: "() =>\n    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_get_secret})",
+							File: "secrets_test.flux",
 							Start: ast.Position{
 								Column: 20,
 								Line:   31,
@@ -990,8 +939,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 103,
 									Line:   32,
 								},
-								File:   "secrets_test.flux",
-								Source: "({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_get_secret})",
+								File: "secrets_test.flux",
 								Start: ast.Position{
 									Column: 5,
 									Line:   32,
@@ -1007,8 +955,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 102,
 										Line:   32,
 									},
-									File:   "secrets_test.flux",
-									Source: "{input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_get_secret}",
+									File: "secrets_test.flux",
 									Start: ast.Position{
 										Column: 6,
 										Line:   32,
@@ -1025,8 +972,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 46,
 											Line:   32,
 										},
-										File:   "secrets_test.flux",
-										Source: "input: testing.loadStorage(csv: inData)",
+										File: "secrets_test.flux",
 										Start: ast.Position{
 											Column: 7,
 											Line:   32,
@@ -1043,8 +989,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 12,
 												Line:   32,
 											},
-											File:   "secrets_test.flux",
-											Source: "input",
+											File: "secrets_test.flux",
 											Start: ast.Position{
 												Column: 7,
 												Line:   32,
@@ -1064,8 +1009,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 45,
 													Line:   32,
 												},
-												File:   "secrets_test.flux",
-												Source: "csv: inData",
+												File: "secrets_test.flux",
 												Start: ast.Position{
 													Column: 34,
 													Line:   32,
@@ -1082,8 +1026,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 45,
 														Line:   32,
 													},
-													File:   "secrets_test.flux",
-													Source: "csv: inData",
+													File: "secrets_test.flux",
 													Start: ast.Position{
 														Column: 34,
 														Line:   32,
@@ -1100,8 +1043,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 37,
 															Line:   32,
 														},
-														File:   "secrets_test.flux",
-														Source: "csv",
+														File: "secrets_test.flux",
 														Start: ast.Position{
 															Column: 34,
 															Line:   32,
@@ -1120,8 +1062,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 45,
 															Line:   32,
 														},
-														File:   "secrets_test.flux",
-														Source: "inData",
+														File: "secrets_test.flux",
 														Start: ast.Position{
 															Column: 39,
 															Line:   32,
@@ -1142,8 +1083,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 46,
 												Line:   32,
 											},
-											File:   "secrets_test.flux",
-											Source: "testing.loadStorage(csv: inData)",
+											File: "secrets_test.flux",
 											Start: ast.Position{
 												Column: 14,
 												Line:   32,
@@ -1159,8 +1099,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 33,
 													Line:   32,
 												},
-												File:   "secrets_test.flux",
-												Source: "testing.loadStorage",
+												File: "secrets_test.flux",
 												Start: ast.Position{
 													Column: 14,
 													Line:   32,
@@ -1177,8 +1116,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 21,
 														Line:   32,
 													},
-													File:   "secrets_test.flux",
-													Source: "testing",
+													File: "secrets_test.flux",
 													Start: ast.Position{
 														Column: 14,
 														Line:   32,
@@ -1196,8 +1134,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 33,
 														Line:   32,
 													},
-													File:   "secrets_test.flux",
-													Source: "loadStorage",
+													File: "secrets_test.flux",
 													Start: ast.Position{
 														Column: 22,
 														Line:   32,
@@ -1220,8 +1157,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 83,
 											Line:   32,
 										},
-										File:   "secrets_test.flux",
-										Source: "want: testing.loadMem(csv: outData)",
+										File: "secrets_test.flux",
 										Start: ast.Position{
 											Column: 48,
 											Line:   32,
@@ -1238,8 +1174,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 52,
 												Line:   32,
 											},
-											File:   "secrets_test.flux",
-											Source: "want",
+											File: "secrets_test.flux",
 											Start: ast.Position{
 												Column: 48,
 												Line:   32,
@@ -1259,8 +1194,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 82,
 													Line:   32,
 												},
-												File:   "secrets_test.flux",
-												Source: "csv: outData",
+												File: "secrets_test.flux",
 												Start: ast.Position{
 													Column: 70,
 													Line:   32,
@@ -1277,8 +1211,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 82,
 														Line:   32,
 													},
-													File:   "secrets_test.flux",
-													Source: "csv: outData",
+													File: "secrets_test.flux",
 													Start: ast.Position{
 														Column: 70,
 														Line:   32,
@@ -1295,8 +1228,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 73,
 															Line:   32,
 														},
-														File:   "secrets_test.flux",
-														Source: "csv",
+														File: "secrets_test.flux",
 														Start: ast.Position{
 															Column: 70,
 															Line:   32,
@@ -1315,8 +1247,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 82,
 															Line:   32,
 														},
-														File:   "secrets_test.flux",
-														Source: "outData",
+														File: "secrets_test.flux",
 														Start: ast.Position{
 															Column: 75,
 															Line:   32,
@@ -1337,8 +1268,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 83,
 												Line:   32,
 											},
-											File:   "secrets_test.flux",
-											Source: "testing.loadMem(csv: outData)",
+											File: "secrets_test.flux",
 											Start: ast.Position{
 												Column: 54,
 												Line:   32,
@@ -1354,8 +1284,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 69,
 													Line:   32,
 												},
-												File:   "secrets_test.flux",
-												Source: "testing.loadMem",
+												File: "secrets_test.flux",
 												Start: ast.Position{
 													Column: 54,
 													Line:   32,
@@ -1372,8 +1301,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 61,
 														Line:   32,
 													},
-													File:   "secrets_test.flux",
-													Source: "testing",
+													File: "secrets_test.flux",
 													Start: ast.Position{
 														Column: 54,
 														Line:   32,
@@ -1391,8 +1319,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 69,
 														Line:   32,
 													},
-													File:   "secrets_test.flux",
-													Source: "loadMem",
+													File: "secrets_test.flux",
 													Start: ast.Position{
 														Column: 62,
 														Line:   32,
@@ -1415,8 +1342,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 101,
 											Line:   32,
 										},
-										File:   "secrets_test.flux",
-										Source: "fn: t_get_secret",
+										File: "secrets_test.flux",
 										Start: ast.Position{
 											Column: 85,
 											Line:   32,
@@ -1433,8 +1359,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 87,
 												Line:   32,
 											},
-											File:   "secrets_test.flux",
-											Source: "fn",
+											File: "secrets_test.flux",
 											Start: ast.Position{
 												Column: 85,
 												Line:   32,
@@ -1453,8 +1378,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 101,
 												Line:   32,
 											},
-											File:   "secrets_test.flux",
-											Source: "t_get_secret",
+											File: "secrets_test.flux",
 											Start: ast.Position{
 												Column: 89,
 												Line:   32,
@@ -1483,8 +1407,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 103,
 						Line:   32,
 					},
-					File:   "secrets_test.flux",
-					Source: "test _get_secret = () =>\n    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_get_secret})",
+					File: "secrets_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   31,
@@ -1503,8 +1426,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 17,
 						Line:   4,
 					},
-					File:   "secrets_test.flux",
-					Source: "import \"testing\"",
+					File: "secrets_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   4,
@@ -1520,8 +1442,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 17,
 							Line:   4,
 						},
-						File:   "secrets_test.flux",
-						Source: "\"testing\"",
+						File: "secrets_test.flux",
 						Start: ast.Position{
 							Column: 8,
 							Line:   4,
@@ -1540,8 +1461,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 37,
 						Line:   5,
 					},
-					File:   "secrets_test.flux",
-					Source: "import \"influxdata/influxdb/secrets\"",
+					File: "secrets_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   5,
@@ -1557,8 +1477,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 37,
 							Line:   5,
 						},
-						File:   "secrets_test.flux",
-						Source: "\"influxdata/influxdb/secrets\"",
+						File: "secrets_test.flux",
 						Start: ast.Position{
 							Column: 8,
 							Line:   5,
@@ -1579,8 +1498,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 21,
 						Line:   1,
 					},
-					File:   "secrets_test.flux",
-					Source: "package secrets_test",
+					File: "secrets_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   1,
@@ -1596,8 +1514,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 21,
 							Line:   1,
 						},
-						File:   "secrets_test.flux",
-						Source: "secrets_test",
+						File: "secrets_test.flux",
 						Start: ast.Position{
 							Column: 9,
 							Line:   1,

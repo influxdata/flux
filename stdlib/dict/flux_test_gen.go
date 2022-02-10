@@ -22,8 +22,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Column: 112,
 					Line:   56,
 				},
-				File:   "dict_insert_remove_test.flux",
-				Source: "package dict_test\n\n\nimport \"testing\"\nimport \"dict\"\n\noption now = () => 2030-01-01T00:00:00Z\n\ncodes1 = dict.fromList(pairs: [{key: \"internal\", value: 0}, {key: \"invalid\", value: 1}, {key: \"unknown\", value: 3}])\ncodes2 = dict.remove(dict: codes1, key: \"unknown\")\ncodes3 = dict.insert(dict: codes2, key: \"unimplemented\", value: 2)\ninData =\n    \"\n#datatype,string,long,dateTime:RFC3339,string,string,string,string\n#group,false,false,false,true,true,true,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,_field,error_type,_value\n,,0,2018-05-22T19:53:26Z,requests,error,internal,some internal error\n,,0,2018-05-22T19:53:36Z,requests,error,internal,another internal error\n,,1,2018-05-22T19:53:46Z,requests,error,invalid,unknown parameter\n,,1,2018-05-22T19:53:56Z,requests,error,invalid,cannot use duration as value\n,,2,2018-05-22T19:54:06Z,requests,error,unimplemented,implement me\n,,2,2018-05-22T19:54:16Z,requests,error,unimplemented,not implemented\n,,3,2018-05-22T19:53:26Z,requests,error,unknown,unknown error\n,,3,2018-05-22T19:53:36Z,requests,error,unknown,network error\n\"\noutData =\n    \"\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,long,long,long\n#group,false,false,false,true,true,true,false,false,false,false\n#default,_result,,,,,,,,,\n,result,table,_time,_measurement,_field,error_type,_value,error_code1,error_code2,error_code3\n,,0,2018-05-22T19:53:26Z,requests,error,internal,some internal error,0,0,0\n,,0,2018-05-22T19:53:36Z,requests,error,internal,another internal error,0,0,0\n,,1,2018-05-22T19:53:46Z,requests,error,invalid,unknown parameter,1,1,1\n,,1,2018-05-22T19:53:56Z,requests,error,invalid,cannot use duration as value,1,1,1\n,,2,2018-05-22T19:54:06Z,requests,error,unimplemented,implement me,-1,-1,2\n,,2,2018-05-22T19:54:16Z,requests,error,unimplemented,not implemented,-1,-1,2\n,,3,2018-05-22T19:53:26Z,requests,error,unknown,unknown error,3,-1,-1\n,,3,2018-05-22T19:53:36Z,requests,error,unknown,network error,3,-1,-1\n\"\nt_dict = (table=<-) =>\n    table\n        |> range(start: 2018-05-22T19:53:26Z)\n        |> drop(columns: [\"_start\", \"_stop\"])\n        |> map(\n            fn: (r) => {\n                error_code1 = dict.get(dict: codes1, key: r.error_type, default: -1)\n                error_code2 = dict.get(dict: codes2, key: r.error_type, default: -1)\n                error_code3 = dict.get(dict: codes3, key: r.error_type, default: -1)\n\n                return {r with error_code1: error_code1, error_code2: error_code2, error_code3: error_code3}\n            },\n        )\n\ntest _dict = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_dict})",
+				File: "dict_insert_remove_test.flux",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -40,8 +39,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 40,
 							Line:   7,
 						},
-						File:   "dict_insert_remove_test.flux",
-						Source: "now = () => 2030-01-01T00:00:00Z",
+						File: "dict_insert_remove_test.flux",
 						Start: ast.Position{
 							Column: 8,
 							Line:   7,
@@ -57,8 +55,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 11,
 								Line:   7,
 							},
-							File:   "dict_insert_remove_test.flux",
-							Source: "now",
+							File: "dict_insert_remove_test.flux",
 							Start: ast.Position{
 								Column: 8,
 								Line:   7,
@@ -77,8 +74,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 40,
 								Line:   7,
 							},
-							File:   "dict_insert_remove_test.flux",
-							Source: "() => 2030-01-01T00:00:00Z",
+							File: "dict_insert_remove_test.flux",
 							Start: ast.Position{
 								Column: 14,
 								Line:   7,
@@ -94,8 +90,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 40,
 									Line:   7,
 								},
-								File:   "dict_insert_remove_test.flux",
-								Source: "2030-01-01T00:00:00Z",
+								File: "dict_insert_remove_test.flux",
 								Start: ast.Position{
 									Column: 20,
 									Line:   7,
@@ -117,8 +112,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 40,
 						Line:   7,
 					},
-					File:   "dict_insert_remove_test.flux",
-					Source: "option now = () => 2030-01-01T00:00:00Z",
+					File: "dict_insert_remove_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   7,
@@ -134,8 +128,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 117,
 						Line:   9,
 					},
-					File:   "dict_insert_remove_test.flux",
-					Source: "codes1 = dict.fromList(pairs: [{key: \"internal\", value: 0}, {key: \"invalid\", value: 1}, {key: \"unknown\", value: 3}])",
+					File: "dict_insert_remove_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   9,
@@ -151,8 +144,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 7,
 							Line:   9,
 						},
-						File:   "dict_insert_remove_test.flux",
-						Source: "codes1",
+						File: "dict_insert_remove_test.flux",
 						Start: ast.Position{
 							Column: 1,
 							Line:   9,
@@ -171,8 +163,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 116,
 								Line:   9,
 							},
-							File:   "dict_insert_remove_test.flux",
-							Source: "pairs: [{key: \"internal\", value: 0}, {key: \"invalid\", value: 1}, {key: \"unknown\", value: 3}]",
+							File: "dict_insert_remove_test.flux",
 							Start: ast.Position{
 								Column: 24,
 								Line:   9,
@@ -189,8 +180,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 116,
 									Line:   9,
 								},
-								File:   "dict_insert_remove_test.flux",
-								Source: "pairs: [{key: \"internal\", value: 0}, {key: \"invalid\", value: 1}, {key: \"unknown\", value: 3}]",
+								File: "dict_insert_remove_test.flux",
 								Start: ast.Position{
 									Column: 24,
 									Line:   9,
@@ -207,8 +197,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 29,
 										Line:   9,
 									},
-									File:   "dict_insert_remove_test.flux",
-									Source: "pairs",
+									File: "dict_insert_remove_test.flux",
 									Start: ast.Position{
 										Column: 24,
 										Line:   9,
@@ -227,8 +216,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 116,
 										Line:   9,
 									},
-									File:   "dict_insert_remove_test.flux",
-									Source: "[{key: \"internal\", value: 0}, {key: \"invalid\", value: 1}, {key: \"unknown\", value: 3}]",
+									File: "dict_insert_remove_test.flux",
 									Start: ast.Position{
 										Column: 31,
 										Line:   9,
@@ -244,8 +232,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 59,
 											Line:   9,
 										},
-										File:   "dict_insert_remove_test.flux",
-										Source: "{key: \"internal\", value: 0}",
+										File: "dict_insert_remove_test.flux",
 										Start: ast.Position{
 											Column: 32,
 											Line:   9,
@@ -262,8 +249,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 48,
 												Line:   9,
 											},
-											File:   "dict_insert_remove_test.flux",
-											Source: "key: \"internal\"",
+											File: "dict_insert_remove_test.flux",
 											Start: ast.Position{
 												Column: 33,
 												Line:   9,
@@ -280,8 +266,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 36,
 													Line:   9,
 												},
-												File:   "dict_insert_remove_test.flux",
-												Source: "key",
+												File: "dict_insert_remove_test.flux",
 												Start: ast.Position{
 													Column: 33,
 													Line:   9,
@@ -300,8 +285,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 48,
 													Line:   9,
 												},
-												File:   "dict_insert_remove_test.flux",
-												Source: "\"internal\"",
+												File: "dict_insert_remove_test.flux",
 												Start: ast.Position{
 													Column: 38,
 													Line:   9,
@@ -319,8 +303,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 58,
 												Line:   9,
 											},
-											File:   "dict_insert_remove_test.flux",
-											Source: "value: 0",
+											File: "dict_insert_remove_test.flux",
 											Start: ast.Position{
 												Column: 50,
 												Line:   9,
@@ -337,8 +320,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 55,
 													Line:   9,
 												},
-												File:   "dict_insert_remove_test.flux",
-												Source: "value",
+												File: "dict_insert_remove_test.flux",
 												Start: ast.Position{
 													Column: 50,
 													Line:   9,
@@ -357,8 +339,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 58,
 													Line:   9,
 												},
-												File:   "dict_insert_remove_test.flux",
-												Source: "0",
+												File: "dict_insert_remove_test.flux",
 												Start: ast.Position{
 													Column: 57,
 													Line:   9,
@@ -379,8 +360,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 87,
 											Line:   9,
 										},
-										File:   "dict_insert_remove_test.flux",
-										Source: "{key: \"invalid\", value: 1}",
+										File: "dict_insert_remove_test.flux",
 										Start: ast.Position{
 											Column: 61,
 											Line:   9,
@@ -397,8 +377,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 76,
 												Line:   9,
 											},
-											File:   "dict_insert_remove_test.flux",
-											Source: "key: \"invalid\"",
+											File: "dict_insert_remove_test.flux",
 											Start: ast.Position{
 												Column: 62,
 												Line:   9,
@@ -415,8 +394,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 65,
 													Line:   9,
 												},
-												File:   "dict_insert_remove_test.flux",
-												Source: "key",
+												File: "dict_insert_remove_test.flux",
 												Start: ast.Position{
 													Column: 62,
 													Line:   9,
@@ -435,8 +413,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 76,
 													Line:   9,
 												},
-												File:   "dict_insert_remove_test.flux",
-												Source: "\"invalid\"",
+												File: "dict_insert_remove_test.flux",
 												Start: ast.Position{
 													Column: 67,
 													Line:   9,
@@ -454,8 +431,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 86,
 												Line:   9,
 											},
-											File:   "dict_insert_remove_test.flux",
-											Source: "value: 1",
+											File: "dict_insert_remove_test.flux",
 											Start: ast.Position{
 												Column: 78,
 												Line:   9,
@@ -472,8 +448,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 83,
 													Line:   9,
 												},
-												File:   "dict_insert_remove_test.flux",
-												Source: "value",
+												File: "dict_insert_remove_test.flux",
 												Start: ast.Position{
 													Column: 78,
 													Line:   9,
@@ -492,8 +467,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 86,
 													Line:   9,
 												},
-												File:   "dict_insert_remove_test.flux",
-												Source: "1",
+												File: "dict_insert_remove_test.flux",
 												Start: ast.Position{
 													Column: 85,
 													Line:   9,
@@ -514,8 +488,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 115,
 											Line:   9,
 										},
-										File:   "dict_insert_remove_test.flux",
-										Source: "{key: \"unknown\", value: 3}",
+										File: "dict_insert_remove_test.flux",
 										Start: ast.Position{
 											Column: 89,
 											Line:   9,
@@ -532,8 +505,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 104,
 												Line:   9,
 											},
-											File:   "dict_insert_remove_test.flux",
-											Source: "key: \"unknown\"",
+											File: "dict_insert_remove_test.flux",
 											Start: ast.Position{
 												Column: 90,
 												Line:   9,
@@ -550,8 +522,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 93,
 													Line:   9,
 												},
-												File:   "dict_insert_remove_test.flux",
-												Source: "key",
+												File: "dict_insert_remove_test.flux",
 												Start: ast.Position{
 													Column: 90,
 													Line:   9,
@@ -570,8 +541,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 104,
 													Line:   9,
 												},
-												File:   "dict_insert_remove_test.flux",
-												Source: "\"unknown\"",
+												File: "dict_insert_remove_test.flux",
 												Start: ast.Position{
 													Column: 95,
 													Line:   9,
@@ -589,8 +559,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 114,
 												Line:   9,
 											},
-											File:   "dict_insert_remove_test.flux",
-											Source: "value: 3",
+											File: "dict_insert_remove_test.flux",
 											Start: ast.Position{
 												Column: 106,
 												Line:   9,
@@ -607,8 +576,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 111,
 													Line:   9,
 												},
-												File:   "dict_insert_remove_test.flux",
-												Source: "value",
+												File: "dict_insert_remove_test.flux",
 												Start: ast.Position{
 													Column: 106,
 													Line:   9,
@@ -627,8 +595,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 114,
 													Line:   9,
 												},
-												File:   "dict_insert_remove_test.flux",
-												Source: "3",
+												File: "dict_insert_remove_test.flux",
 												Start: ast.Position{
 													Column: 113,
 													Line:   9,
@@ -656,8 +623,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 117,
 							Line:   9,
 						},
-						File:   "dict_insert_remove_test.flux",
-						Source: "dict.fromList(pairs: [{key: \"internal\", value: 0}, {key: \"invalid\", value: 1}, {key: \"unknown\", value: 3}])",
+						File: "dict_insert_remove_test.flux",
 						Start: ast.Position{
 							Column: 10,
 							Line:   9,
@@ -673,8 +639,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 23,
 								Line:   9,
 							},
-							File:   "dict_insert_remove_test.flux",
-							Source: "dict.fromList",
+							File: "dict_insert_remove_test.flux",
 							Start: ast.Position{
 								Column: 10,
 								Line:   9,
@@ -691,8 +656,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 14,
 									Line:   9,
 								},
-								File:   "dict_insert_remove_test.flux",
-								Source: "dict",
+								File: "dict_insert_remove_test.flux",
 								Start: ast.Position{
 									Column: 10,
 									Line:   9,
@@ -710,8 +674,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 23,
 									Line:   9,
 								},
-								File:   "dict_insert_remove_test.flux",
-								Source: "fromList",
+								File: "dict_insert_remove_test.flux",
 								Start: ast.Position{
 									Column: 15,
 									Line:   9,
@@ -734,8 +697,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 51,
 						Line:   10,
 					},
-					File:   "dict_insert_remove_test.flux",
-					Source: "codes2 = dict.remove(dict: codes1, key: \"unknown\")",
+					File: "dict_insert_remove_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   10,
@@ -751,8 +713,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 7,
 							Line:   10,
 						},
-						File:   "dict_insert_remove_test.flux",
-						Source: "codes2",
+						File: "dict_insert_remove_test.flux",
 						Start: ast.Position{
 							Column: 1,
 							Line:   10,
@@ -771,8 +732,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 50,
 								Line:   10,
 							},
-							File:   "dict_insert_remove_test.flux",
-							Source: "dict: codes1, key: \"unknown\"",
+							File: "dict_insert_remove_test.flux",
 							Start: ast.Position{
 								Column: 22,
 								Line:   10,
@@ -789,8 +749,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 34,
 									Line:   10,
 								},
-								File:   "dict_insert_remove_test.flux",
-								Source: "dict: codes1",
+								File: "dict_insert_remove_test.flux",
 								Start: ast.Position{
 									Column: 22,
 									Line:   10,
@@ -807,8 +766,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 26,
 										Line:   10,
 									},
-									File:   "dict_insert_remove_test.flux",
-									Source: "dict",
+									File: "dict_insert_remove_test.flux",
 									Start: ast.Position{
 										Column: 22,
 										Line:   10,
@@ -827,8 +785,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 34,
 										Line:   10,
 									},
-									File:   "dict_insert_remove_test.flux",
-									Source: "codes1",
+									File: "dict_insert_remove_test.flux",
 									Start: ast.Position{
 										Column: 28,
 										Line:   10,
@@ -846,8 +803,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 50,
 									Line:   10,
 								},
-								File:   "dict_insert_remove_test.flux",
-								Source: "key: \"unknown\"",
+								File: "dict_insert_remove_test.flux",
 								Start: ast.Position{
 									Column: 36,
 									Line:   10,
@@ -864,8 +820,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 39,
 										Line:   10,
 									},
-									File:   "dict_insert_remove_test.flux",
-									Source: "key",
+									File: "dict_insert_remove_test.flux",
 									Start: ast.Position{
 										Column: 36,
 										Line:   10,
@@ -884,8 +839,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 50,
 										Line:   10,
 									},
-									File:   "dict_insert_remove_test.flux",
-									Source: "\"unknown\"",
+									File: "dict_insert_remove_test.flux",
 									Start: ast.Position{
 										Column: 41,
 										Line:   10,
@@ -906,8 +860,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 51,
 							Line:   10,
 						},
-						File:   "dict_insert_remove_test.flux",
-						Source: "dict.remove(dict: codes1, key: \"unknown\")",
+						File: "dict_insert_remove_test.flux",
 						Start: ast.Position{
 							Column: 10,
 							Line:   10,
@@ -923,8 +876,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 21,
 								Line:   10,
 							},
-							File:   "dict_insert_remove_test.flux",
-							Source: "dict.remove",
+							File: "dict_insert_remove_test.flux",
 							Start: ast.Position{
 								Column: 10,
 								Line:   10,
@@ -941,8 +893,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 14,
 									Line:   10,
 								},
-								File:   "dict_insert_remove_test.flux",
-								Source: "dict",
+								File: "dict_insert_remove_test.flux",
 								Start: ast.Position{
 									Column: 10,
 									Line:   10,
@@ -960,8 +911,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 21,
 									Line:   10,
 								},
-								File:   "dict_insert_remove_test.flux",
-								Source: "remove",
+								File: "dict_insert_remove_test.flux",
 								Start: ast.Position{
 									Column: 15,
 									Line:   10,
@@ -984,8 +934,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 67,
 						Line:   11,
 					},
-					File:   "dict_insert_remove_test.flux",
-					Source: "codes3 = dict.insert(dict: codes2, key: \"unimplemented\", value: 2)",
+					File: "dict_insert_remove_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   11,
@@ -1001,8 +950,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 7,
 							Line:   11,
 						},
-						File:   "dict_insert_remove_test.flux",
-						Source: "codes3",
+						File: "dict_insert_remove_test.flux",
 						Start: ast.Position{
 							Column: 1,
 							Line:   11,
@@ -1021,8 +969,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 66,
 								Line:   11,
 							},
-							File:   "dict_insert_remove_test.flux",
-							Source: "dict: codes2, key: \"unimplemented\", value: 2",
+							File: "dict_insert_remove_test.flux",
 							Start: ast.Position{
 								Column: 22,
 								Line:   11,
@@ -1039,8 +986,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 34,
 									Line:   11,
 								},
-								File:   "dict_insert_remove_test.flux",
-								Source: "dict: codes2",
+								File: "dict_insert_remove_test.flux",
 								Start: ast.Position{
 									Column: 22,
 									Line:   11,
@@ -1057,8 +1003,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 26,
 										Line:   11,
 									},
-									File:   "dict_insert_remove_test.flux",
-									Source: "dict",
+									File: "dict_insert_remove_test.flux",
 									Start: ast.Position{
 										Column: 22,
 										Line:   11,
@@ -1077,8 +1022,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 34,
 										Line:   11,
 									},
-									File:   "dict_insert_remove_test.flux",
-									Source: "codes2",
+									File: "dict_insert_remove_test.flux",
 									Start: ast.Position{
 										Column: 28,
 										Line:   11,
@@ -1096,8 +1040,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 56,
 									Line:   11,
 								},
-								File:   "dict_insert_remove_test.flux",
-								Source: "key: \"unimplemented\"",
+								File: "dict_insert_remove_test.flux",
 								Start: ast.Position{
 									Column: 36,
 									Line:   11,
@@ -1114,8 +1057,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 39,
 										Line:   11,
 									},
-									File:   "dict_insert_remove_test.flux",
-									Source: "key",
+									File: "dict_insert_remove_test.flux",
 									Start: ast.Position{
 										Column: 36,
 										Line:   11,
@@ -1134,8 +1076,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 56,
 										Line:   11,
 									},
-									File:   "dict_insert_remove_test.flux",
-									Source: "\"unimplemented\"",
+									File: "dict_insert_remove_test.flux",
 									Start: ast.Position{
 										Column: 41,
 										Line:   11,
@@ -1153,8 +1094,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 66,
 									Line:   11,
 								},
-								File:   "dict_insert_remove_test.flux",
-								Source: "value: 2",
+								File: "dict_insert_remove_test.flux",
 								Start: ast.Position{
 									Column: 58,
 									Line:   11,
@@ -1171,8 +1111,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 63,
 										Line:   11,
 									},
-									File:   "dict_insert_remove_test.flux",
-									Source: "value",
+									File: "dict_insert_remove_test.flux",
 									Start: ast.Position{
 										Column: 58,
 										Line:   11,
@@ -1191,8 +1130,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 66,
 										Line:   11,
 									},
-									File:   "dict_insert_remove_test.flux",
-									Source: "2",
+									File: "dict_insert_remove_test.flux",
 									Start: ast.Position{
 										Column: 65,
 										Line:   11,
@@ -1213,8 +1151,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 67,
 							Line:   11,
 						},
-						File:   "dict_insert_remove_test.flux",
-						Source: "dict.insert(dict: codes2, key: \"unimplemented\", value: 2)",
+						File: "dict_insert_remove_test.flux",
 						Start: ast.Position{
 							Column: 10,
 							Line:   11,
@@ -1230,8 +1167,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 21,
 								Line:   11,
 							},
-							File:   "dict_insert_remove_test.flux",
-							Source: "dict.insert",
+							File: "dict_insert_remove_test.flux",
 							Start: ast.Position{
 								Column: 10,
 								Line:   11,
@@ -1248,8 +1184,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 14,
 									Line:   11,
 								},
-								File:   "dict_insert_remove_test.flux",
-								Source: "dict",
+								File: "dict_insert_remove_test.flux",
 								Start: ast.Position{
 									Column: 10,
 									Line:   11,
@@ -1267,8 +1202,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 21,
 									Line:   11,
 								},
-								File:   "dict_insert_remove_test.flux",
-								Source: "insert",
+								File: "dict_insert_remove_test.flux",
 								Start: ast.Position{
 									Column: 15,
 									Line:   11,
@@ -1291,8 +1225,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 2,
 						Line:   26,
 					},
-					File:   "dict_insert_remove_test.flux",
-					Source: "inData =\n    \"\n#datatype,string,long,dateTime:RFC3339,string,string,string,string\n#group,false,false,false,true,true,true,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,_field,error_type,_value\n,,0,2018-05-22T19:53:26Z,requests,error,internal,some internal error\n,,0,2018-05-22T19:53:36Z,requests,error,internal,another internal error\n,,1,2018-05-22T19:53:46Z,requests,error,invalid,unknown parameter\n,,1,2018-05-22T19:53:56Z,requests,error,invalid,cannot use duration as value\n,,2,2018-05-22T19:54:06Z,requests,error,unimplemented,implement me\n,,2,2018-05-22T19:54:16Z,requests,error,unimplemented,not implemented\n,,3,2018-05-22T19:53:26Z,requests,error,unknown,unknown error\n,,3,2018-05-22T19:53:36Z,requests,error,unknown,network error\n\"",
+					File: "dict_insert_remove_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   12,
@@ -1308,8 +1241,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 7,
 							Line:   12,
 						},
-						File:   "dict_insert_remove_test.flux",
-						Source: "inData",
+						File: "dict_insert_remove_test.flux",
 						Start: ast.Position{
 							Column: 1,
 							Line:   12,
@@ -1327,8 +1259,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 2,
 							Line:   26,
 						},
-						File:   "dict_insert_remove_test.flux",
-						Source: "\"\n#datatype,string,long,dateTime:RFC3339,string,string,string,string\n#group,false,false,false,true,true,true,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,_field,error_type,_value\n,,0,2018-05-22T19:53:26Z,requests,error,internal,some internal error\n,,0,2018-05-22T19:53:36Z,requests,error,internal,another internal error\n,,1,2018-05-22T19:53:46Z,requests,error,invalid,unknown parameter\n,,1,2018-05-22T19:53:56Z,requests,error,invalid,cannot use duration as value\n,,2,2018-05-22T19:54:06Z,requests,error,unimplemented,implement me\n,,2,2018-05-22T19:54:16Z,requests,error,unimplemented,not implemented\n,,3,2018-05-22T19:53:26Z,requests,error,unknown,unknown error\n,,3,2018-05-22T19:53:36Z,requests,error,unknown,network error\n\"",
+						File: "dict_insert_remove_test.flux",
 						Start: ast.Position{
 							Column: 5,
 							Line:   13,
@@ -1346,8 +1277,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 2,
 						Line:   41,
 					},
-					File:   "dict_insert_remove_test.flux",
-					Source: "outData =\n    \"\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,long,long,long\n#group,false,false,false,true,true,true,false,false,false,false\n#default,_result,,,,,,,,,\n,result,table,_time,_measurement,_field,error_type,_value,error_code1,error_code2,error_code3\n,,0,2018-05-22T19:53:26Z,requests,error,internal,some internal error,0,0,0\n,,0,2018-05-22T19:53:36Z,requests,error,internal,another internal error,0,0,0\n,,1,2018-05-22T19:53:46Z,requests,error,invalid,unknown parameter,1,1,1\n,,1,2018-05-22T19:53:56Z,requests,error,invalid,cannot use duration as value,1,1,1\n,,2,2018-05-22T19:54:06Z,requests,error,unimplemented,implement me,-1,-1,2\n,,2,2018-05-22T19:54:16Z,requests,error,unimplemented,not implemented,-1,-1,2\n,,3,2018-05-22T19:53:26Z,requests,error,unknown,unknown error,3,-1,-1\n,,3,2018-05-22T19:53:36Z,requests,error,unknown,network error,3,-1,-1\n\"",
+					File: "dict_insert_remove_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   27,
@@ -1363,8 +1293,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 8,
 							Line:   27,
 						},
-						File:   "dict_insert_remove_test.flux",
-						Source: "outData",
+						File: "dict_insert_remove_test.flux",
 						Start: ast.Position{
 							Column: 1,
 							Line:   27,
@@ -1382,8 +1311,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 2,
 							Line:   41,
 						},
-						File:   "dict_insert_remove_test.flux",
-						Source: "\"\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,long,long,long\n#group,false,false,false,true,true,true,false,false,false,false\n#default,_result,,,,,,,,,\n,result,table,_time,_measurement,_field,error_type,_value,error_code1,error_code2,error_code3\n,,0,2018-05-22T19:53:26Z,requests,error,internal,some internal error,0,0,0\n,,0,2018-05-22T19:53:36Z,requests,error,internal,another internal error,0,0,0\n,,1,2018-05-22T19:53:46Z,requests,error,invalid,unknown parameter,1,1,1\n,,1,2018-05-22T19:53:56Z,requests,error,invalid,cannot use duration as value,1,1,1\n,,2,2018-05-22T19:54:06Z,requests,error,unimplemented,implement me,-1,-1,2\n,,2,2018-05-22T19:54:16Z,requests,error,unimplemented,not implemented,-1,-1,2\n,,3,2018-05-22T19:53:26Z,requests,error,unknown,unknown error,3,-1,-1\n,,3,2018-05-22T19:53:36Z,requests,error,unknown,network error,3,-1,-1\n\"",
+						File: "dict_insert_remove_test.flux",
 						Start: ast.Position{
 							Column: 5,
 							Line:   28,
@@ -1401,8 +1329,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 10,
 						Line:   54,
 					},
-					File:   "dict_insert_remove_test.flux",
-					Source: "t_dict = (table=<-) =>\n    table\n        |> range(start: 2018-05-22T19:53:26Z)\n        |> drop(columns: [\"_start\", \"_stop\"])\n        |> map(\n            fn: (r) => {\n                error_code1 = dict.get(dict: codes1, key: r.error_type, default: -1)\n                error_code2 = dict.get(dict: codes2, key: r.error_type, default: -1)\n                error_code3 = dict.get(dict: codes3, key: r.error_type, default: -1)\n\n                return {r with error_code1: error_code1, error_code2: error_code2, error_code3: error_code3}\n            },\n        )",
+					File: "dict_insert_remove_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   42,
@@ -1418,8 +1345,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 7,
 							Line:   42,
 						},
-						File:   "dict_insert_remove_test.flux",
-						Source: "t_dict",
+						File: "dict_insert_remove_test.flux",
 						Start: ast.Position{
 							Column: 1,
 							Line:   42,
@@ -1438,8 +1364,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 10,
 							Line:   54,
 						},
-						File:   "dict_insert_remove_test.flux",
-						Source: "(table=<-) =>\n    table\n        |> range(start: 2018-05-22T19:53:26Z)\n        |> drop(columns: [\"_start\", \"_stop\"])\n        |> map(\n            fn: (r) => {\n                error_code1 = dict.get(dict: codes1, key: r.error_type, default: -1)\n                error_code2 = dict.get(dict: codes2, key: r.error_type, default: -1)\n                error_code3 = dict.get(dict: codes3, key: r.error_type, default: -1)\n\n                return {r with error_code1: error_code1, error_code2: error_code2, error_code3: error_code3}\n            },\n        )",
+						File: "dict_insert_remove_test.flux",
 						Start: ast.Position{
 							Column: 10,
 							Line:   42,
@@ -1458,8 +1383,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 10,
 											Line:   43,
 										},
-										File:   "dict_insert_remove_test.flux",
-										Source: "table",
+										File: "dict_insert_remove_test.flux",
 										Start: ast.Position{
 											Column: 5,
 											Line:   43,
@@ -1476,8 +1400,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 46,
 										Line:   44,
 									},
-									File:   "dict_insert_remove_test.flux",
-									Source: "table\n        |> range(start: 2018-05-22T19:53:26Z)",
+									File: "dict_insert_remove_test.flux",
 									Start: ast.Position{
 										Column: 5,
 										Line:   43,
@@ -1494,8 +1417,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 45,
 												Line:   44,
 											},
-											File:   "dict_insert_remove_test.flux",
-											Source: "start: 2018-05-22T19:53:26Z",
+											File: "dict_insert_remove_test.flux",
 											Start: ast.Position{
 												Column: 18,
 												Line:   44,
@@ -1512,8 +1434,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 45,
 													Line:   44,
 												},
-												File:   "dict_insert_remove_test.flux",
-												Source: "start: 2018-05-22T19:53:26Z",
+												File: "dict_insert_remove_test.flux",
 												Start: ast.Position{
 													Column: 18,
 													Line:   44,
@@ -1530,8 +1451,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 23,
 														Line:   44,
 													},
-													File:   "dict_insert_remove_test.flux",
-													Source: "start",
+													File: "dict_insert_remove_test.flux",
 													Start: ast.Position{
 														Column: 18,
 														Line:   44,
@@ -1550,8 +1470,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 45,
 														Line:   44,
 													},
-													File:   "dict_insert_remove_test.flux",
-													Source: "2018-05-22T19:53:26Z",
+													File: "dict_insert_remove_test.flux",
 													Start: ast.Position{
 														Column: 25,
 														Line:   44,
@@ -1572,8 +1491,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 46,
 											Line:   44,
 										},
-										File:   "dict_insert_remove_test.flux",
-										Source: "range(start: 2018-05-22T19:53:26Z)",
+										File: "dict_insert_remove_test.flux",
 										Start: ast.Position{
 											Column: 12,
 											Line:   44,
@@ -1589,8 +1507,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 17,
 												Line:   44,
 											},
-											File:   "dict_insert_remove_test.flux",
-											Source: "range",
+											File: "dict_insert_remove_test.flux",
 											Start: ast.Position{
 												Column: 12,
 												Line:   44,
@@ -1611,8 +1528,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 46,
 									Line:   45,
 								},
-								File:   "dict_insert_remove_test.flux",
-								Source: "table\n        |> range(start: 2018-05-22T19:53:26Z)\n        |> drop(columns: [\"_start\", \"_stop\"])",
+								File: "dict_insert_remove_test.flux",
 								Start: ast.Position{
 									Column: 5,
 									Line:   43,
@@ -1629,8 +1545,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 45,
 											Line:   45,
 										},
-										File:   "dict_insert_remove_test.flux",
-										Source: "columns: [\"_start\", \"_stop\"]",
+										File: "dict_insert_remove_test.flux",
 										Start: ast.Position{
 											Column: 17,
 											Line:   45,
@@ -1647,8 +1562,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 45,
 												Line:   45,
 											},
-											File:   "dict_insert_remove_test.flux",
-											Source: "columns: [\"_start\", \"_stop\"]",
+											File: "dict_insert_remove_test.flux",
 											Start: ast.Position{
 												Column: 17,
 												Line:   45,
@@ -1665,8 +1579,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 24,
 													Line:   45,
 												},
-												File:   "dict_insert_remove_test.flux",
-												Source: "columns",
+												File: "dict_insert_remove_test.flux",
 												Start: ast.Position{
 													Column: 17,
 													Line:   45,
@@ -1685,8 +1598,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 45,
 													Line:   45,
 												},
-												File:   "dict_insert_remove_test.flux",
-												Source: "[\"_start\", \"_stop\"]",
+												File: "dict_insert_remove_test.flux",
 												Start: ast.Position{
 													Column: 26,
 													Line:   45,
@@ -1702,8 +1614,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 35,
 														Line:   45,
 													},
-													File:   "dict_insert_remove_test.flux",
-													Source: "\"_start\"",
+													File: "dict_insert_remove_test.flux",
 													Start: ast.Position{
 														Column: 27,
 														Line:   45,
@@ -1720,8 +1631,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 44,
 														Line:   45,
 													},
-													File:   "dict_insert_remove_test.flux",
-													Source: "\"_stop\"",
+													File: "dict_insert_remove_test.flux",
 													Start: ast.Position{
 														Column: 37,
 														Line:   45,
@@ -1745,8 +1655,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 46,
 										Line:   45,
 									},
-									File:   "dict_insert_remove_test.flux",
-									Source: "drop(columns: [\"_start\", \"_stop\"])",
+									File: "dict_insert_remove_test.flux",
 									Start: ast.Position{
 										Column: 12,
 										Line:   45,
@@ -1762,8 +1671,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 16,
 											Line:   45,
 										},
-										File:   "dict_insert_remove_test.flux",
-										Source: "drop",
+										File: "dict_insert_remove_test.flux",
 										Start: ast.Position{
 											Column: 12,
 											Line:   45,
@@ -1784,8 +1692,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 10,
 								Line:   54,
 							},
-							File:   "dict_insert_remove_test.flux",
-							Source: "table\n        |> range(start: 2018-05-22T19:53:26Z)\n        |> drop(columns: [\"_start\", \"_stop\"])\n        |> map(\n            fn: (r) => {\n                error_code1 = dict.get(dict: codes1, key: r.error_type, default: -1)\n                error_code2 = dict.get(dict: codes2, key: r.error_type, default: -1)\n                error_code3 = dict.get(dict: codes3, key: r.error_type, default: -1)\n\n                return {r with error_code1: error_code1, error_code2: error_code2, error_code3: error_code3}\n            },\n        )",
+							File: "dict_insert_remove_test.flux",
 							Start: ast.Position{
 								Column: 5,
 								Line:   43,
@@ -1802,8 +1709,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 14,
 										Line:   53,
 									},
-									File:   "dict_insert_remove_test.flux",
-									Source: "fn: (r) => {\n                error_code1 = dict.get(dict: codes1, key: r.error_type, default: -1)\n                error_code2 = dict.get(dict: codes2, key: r.error_type, default: -1)\n                error_code3 = dict.get(dict: codes3, key: r.error_type, default: -1)\n\n                return {r with error_code1: error_code1, error_code2: error_code2, error_code3: error_code3}\n            }",
+									File: "dict_insert_remove_test.flux",
 									Start: ast.Position{
 										Column: 13,
 										Line:   47,
@@ -1820,8 +1726,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 14,
 											Line:   53,
 										},
-										File:   "dict_insert_remove_test.flux",
-										Source: "fn: (r) => {\n                error_code1 = dict.get(dict: codes1, key: r.error_type, default: -1)\n                error_code2 = dict.get(dict: codes2, key: r.error_type, default: -1)\n                error_code3 = dict.get(dict: codes3, key: r.error_type, default: -1)\n\n                return {r with error_code1: error_code1, error_code2: error_code2, error_code3: error_code3}\n            }",
+										File: "dict_insert_remove_test.flux",
 										Start: ast.Position{
 											Column: 13,
 											Line:   47,
@@ -1838,8 +1743,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 15,
 												Line:   47,
 											},
-											File:   "dict_insert_remove_test.flux",
-											Source: "fn",
+											File: "dict_insert_remove_test.flux",
 											Start: ast.Position{
 												Column: 13,
 												Line:   47,
@@ -1859,8 +1763,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 14,
 												Line:   53,
 											},
-											File:   "dict_insert_remove_test.flux",
-											Source: "(r) => {\n                error_code1 = dict.get(dict: codes1, key: r.error_type, default: -1)\n                error_code2 = dict.get(dict: codes2, key: r.error_type, default: -1)\n                error_code3 = dict.get(dict: codes3, key: r.error_type, default: -1)\n\n                return {r with error_code1: error_code1, error_code2: error_code2, error_code3: error_code3}\n            }",
+											File: "dict_insert_remove_test.flux",
 											Start: ast.Position{
 												Column: 17,
 												Line:   47,
@@ -1876,8 +1779,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 14,
 													Line:   53,
 												},
-												File:   "dict_insert_remove_test.flux",
-												Source: "{\n                error_code1 = dict.get(dict: codes1, key: r.error_type, default: -1)\n                error_code2 = dict.get(dict: codes2, key: r.error_type, default: -1)\n                error_code3 = dict.get(dict: codes3, key: r.error_type, default: -1)\n\n                return {r with error_code1: error_code1, error_code2: error_code2, error_code3: error_code3}\n            }",
+												File: "dict_insert_remove_test.flux",
 												Start: ast.Position{
 													Column: 24,
 													Line:   47,
@@ -1893,8 +1795,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 85,
 														Line:   48,
 													},
-													File:   "dict_insert_remove_test.flux",
-													Source: "error_code1 = dict.get(dict: codes1, key: r.error_type, default: -1)",
+													File: "dict_insert_remove_test.flux",
 													Start: ast.Position{
 														Column: 17,
 														Line:   48,
@@ -1910,8 +1811,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 28,
 															Line:   48,
 														},
-														File:   "dict_insert_remove_test.flux",
-														Source: "error_code1",
+														File: "dict_insert_remove_test.flux",
 														Start: ast.Position{
 															Column: 17,
 															Line:   48,
@@ -1930,8 +1830,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Column: 84,
 																Line:   48,
 															},
-															File:   "dict_insert_remove_test.flux",
-															Source: "dict: codes1, key: r.error_type, default: -1",
+															File: "dict_insert_remove_test.flux",
 															Start: ast.Position{
 																Column: 40,
 																Line:   48,
@@ -1948,8 +1847,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Column: 52,
 																	Line:   48,
 																},
-																File:   "dict_insert_remove_test.flux",
-																Source: "dict: codes1",
+																File: "dict_insert_remove_test.flux",
 																Start: ast.Position{
 																	Column: 40,
 																	Line:   48,
@@ -1966,8 +1864,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Column: 44,
 																		Line:   48,
 																	},
-																	File:   "dict_insert_remove_test.flux",
-																	Source: "dict",
+																	File: "dict_insert_remove_test.flux",
 																	Start: ast.Position{
 																		Column: 40,
 																		Line:   48,
@@ -1986,8 +1883,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Column: 52,
 																		Line:   48,
 																	},
-																	File:   "dict_insert_remove_test.flux",
-																	Source: "codes1",
+																	File: "dict_insert_remove_test.flux",
 																	Start: ast.Position{
 																		Column: 46,
 																		Line:   48,
@@ -2005,8 +1901,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Column: 71,
 																	Line:   48,
 																},
-																File:   "dict_insert_remove_test.flux",
-																Source: "key: r.error_type",
+																File: "dict_insert_remove_test.flux",
 																Start: ast.Position{
 																	Column: 54,
 																	Line:   48,
@@ -2023,8 +1918,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Column: 57,
 																		Line:   48,
 																	},
-																	File:   "dict_insert_remove_test.flux",
-																	Source: "key",
+																	File: "dict_insert_remove_test.flux",
 																	Start: ast.Position{
 																		Column: 54,
 																		Line:   48,
@@ -2043,8 +1937,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Column: 71,
 																		Line:   48,
 																	},
-																	File:   "dict_insert_remove_test.flux",
-																	Source: "r.error_type",
+																	File: "dict_insert_remove_test.flux",
 																	Start: ast.Position{
 																		Column: 59,
 																		Line:   48,
@@ -2061,8 +1954,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																			Column: 60,
 																			Line:   48,
 																		},
-																		File:   "dict_insert_remove_test.flux",
-																		Source: "r",
+																		File: "dict_insert_remove_test.flux",
 																		Start: ast.Position{
 																			Column: 59,
 																			Line:   48,
@@ -2080,8 +1972,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																			Column: 71,
 																			Line:   48,
 																		},
-																		File:   "dict_insert_remove_test.flux",
-																		Source: "error_type",
+																		File: "dict_insert_remove_test.flux",
 																		Start: ast.Position{
 																			Column: 61,
 																			Line:   48,
@@ -2101,8 +1992,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Column: 84,
 																	Line:   48,
 																},
-																File:   "dict_insert_remove_test.flux",
-																Source: "default: -1",
+																File: "dict_insert_remove_test.flux",
 																Start: ast.Position{
 																	Column: 73,
 																	Line:   48,
@@ -2119,8 +2009,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Column: 80,
 																		Line:   48,
 																	},
-																	File:   "dict_insert_remove_test.flux",
-																	Source: "default",
+																	File: "dict_insert_remove_test.flux",
 																	Start: ast.Position{
 																		Column: 73,
 																		Line:   48,
@@ -2140,8 +2029,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																			Column: 84,
 																			Line:   48,
 																		},
-																		File:   "dict_insert_remove_test.flux",
-																		Source: "1",
+																		File: "dict_insert_remove_test.flux",
 																		Start: ast.Position{
 																			Column: 83,
 																			Line:   48,
@@ -2158,8 +2046,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Column: 84,
 																		Line:   48,
 																	},
-																	File:   "dict_insert_remove_test.flux",
-																	Source: "-1",
+																	File: "dict_insert_remove_test.flux",
 																	Start: ast.Position{
 																		Column: 82,
 																		Line:   48,
@@ -2180,8 +2067,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 85,
 															Line:   48,
 														},
-														File:   "dict_insert_remove_test.flux",
-														Source: "dict.get(dict: codes1, key: r.error_type, default: -1)",
+														File: "dict_insert_remove_test.flux",
 														Start: ast.Position{
 															Column: 31,
 															Line:   48,
@@ -2197,8 +2083,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Column: 39,
 																Line:   48,
 															},
-															File:   "dict_insert_remove_test.flux",
-															Source: "dict.get",
+															File: "dict_insert_remove_test.flux",
 															Start: ast.Position{
 																Column: 31,
 																Line:   48,
@@ -2215,8 +2100,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Column: 35,
 																	Line:   48,
 																},
-																File:   "dict_insert_remove_test.flux",
-																Source: "dict",
+																File: "dict_insert_remove_test.flux",
 																Start: ast.Position{
 																	Column: 31,
 																	Line:   48,
@@ -2234,8 +2118,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Column: 39,
 																	Line:   48,
 																},
-																File:   "dict_insert_remove_test.flux",
-																Source: "get",
+																File: "dict_insert_remove_test.flux",
 																Start: ast.Position{
 																	Column: 36,
 																	Line:   48,
@@ -2258,8 +2141,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 85,
 														Line:   49,
 													},
-													File:   "dict_insert_remove_test.flux",
-													Source: "error_code2 = dict.get(dict: codes2, key: r.error_type, default: -1)",
+													File: "dict_insert_remove_test.flux",
 													Start: ast.Position{
 														Column: 17,
 														Line:   49,
@@ -2275,8 +2157,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 28,
 															Line:   49,
 														},
-														File:   "dict_insert_remove_test.flux",
-														Source: "error_code2",
+														File: "dict_insert_remove_test.flux",
 														Start: ast.Position{
 															Column: 17,
 															Line:   49,
@@ -2295,8 +2176,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Column: 84,
 																Line:   49,
 															},
-															File:   "dict_insert_remove_test.flux",
-															Source: "dict: codes2, key: r.error_type, default: -1",
+															File: "dict_insert_remove_test.flux",
 															Start: ast.Position{
 																Column: 40,
 																Line:   49,
@@ -2313,8 +2193,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Column: 52,
 																	Line:   49,
 																},
-																File:   "dict_insert_remove_test.flux",
-																Source: "dict: codes2",
+																File: "dict_insert_remove_test.flux",
 																Start: ast.Position{
 																	Column: 40,
 																	Line:   49,
@@ -2331,8 +2210,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Column: 44,
 																		Line:   49,
 																	},
-																	File:   "dict_insert_remove_test.flux",
-																	Source: "dict",
+																	File: "dict_insert_remove_test.flux",
 																	Start: ast.Position{
 																		Column: 40,
 																		Line:   49,
@@ -2351,8 +2229,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Column: 52,
 																		Line:   49,
 																	},
-																	File:   "dict_insert_remove_test.flux",
-																	Source: "codes2",
+																	File: "dict_insert_remove_test.flux",
 																	Start: ast.Position{
 																		Column: 46,
 																		Line:   49,
@@ -2370,8 +2247,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Column: 71,
 																	Line:   49,
 																},
-																File:   "dict_insert_remove_test.flux",
-																Source: "key: r.error_type",
+																File: "dict_insert_remove_test.flux",
 																Start: ast.Position{
 																	Column: 54,
 																	Line:   49,
@@ -2388,8 +2264,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Column: 57,
 																		Line:   49,
 																	},
-																	File:   "dict_insert_remove_test.flux",
-																	Source: "key",
+																	File: "dict_insert_remove_test.flux",
 																	Start: ast.Position{
 																		Column: 54,
 																		Line:   49,
@@ -2408,8 +2283,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Column: 71,
 																		Line:   49,
 																	},
-																	File:   "dict_insert_remove_test.flux",
-																	Source: "r.error_type",
+																	File: "dict_insert_remove_test.flux",
 																	Start: ast.Position{
 																		Column: 59,
 																		Line:   49,
@@ -2426,8 +2300,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																			Column: 60,
 																			Line:   49,
 																		},
-																		File:   "dict_insert_remove_test.flux",
-																		Source: "r",
+																		File: "dict_insert_remove_test.flux",
 																		Start: ast.Position{
 																			Column: 59,
 																			Line:   49,
@@ -2445,8 +2318,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																			Column: 71,
 																			Line:   49,
 																		},
-																		File:   "dict_insert_remove_test.flux",
-																		Source: "error_type",
+																		File: "dict_insert_remove_test.flux",
 																		Start: ast.Position{
 																			Column: 61,
 																			Line:   49,
@@ -2466,8 +2338,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Column: 84,
 																	Line:   49,
 																},
-																File:   "dict_insert_remove_test.flux",
-																Source: "default: -1",
+																File: "dict_insert_remove_test.flux",
 																Start: ast.Position{
 																	Column: 73,
 																	Line:   49,
@@ -2484,8 +2355,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Column: 80,
 																		Line:   49,
 																	},
-																	File:   "dict_insert_remove_test.flux",
-																	Source: "default",
+																	File: "dict_insert_remove_test.flux",
 																	Start: ast.Position{
 																		Column: 73,
 																		Line:   49,
@@ -2505,8 +2375,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																			Column: 84,
 																			Line:   49,
 																		},
-																		File:   "dict_insert_remove_test.flux",
-																		Source: "1",
+																		File: "dict_insert_remove_test.flux",
 																		Start: ast.Position{
 																			Column: 83,
 																			Line:   49,
@@ -2523,8 +2392,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Column: 84,
 																		Line:   49,
 																	},
-																	File:   "dict_insert_remove_test.flux",
-																	Source: "-1",
+																	File: "dict_insert_remove_test.flux",
 																	Start: ast.Position{
 																		Column: 82,
 																		Line:   49,
@@ -2545,8 +2413,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 85,
 															Line:   49,
 														},
-														File:   "dict_insert_remove_test.flux",
-														Source: "dict.get(dict: codes2, key: r.error_type, default: -1)",
+														File: "dict_insert_remove_test.flux",
 														Start: ast.Position{
 															Column: 31,
 															Line:   49,
@@ -2562,8 +2429,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Column: 39,
 																Line:   49,
 															},
-															File:   "dict_insert_remove_test.flux",
-															Source: "dict.get",
+															File: "dict_insert_remove_test.flux",
 															Start: ast.Position{
 																Column: 31,
 																Line:   49,
@@ -2580,8 +2446,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Column: 35,
 																	Line:   49,
 																},
-																File:   "dict_insert_remove_test.flux",
-																Source: "dict",
+																File: "dict_insert_remove_test.flux",
 																Start: ast.Position{
 																	Column: 31,
 																	Line:   49,
@@ -2599,8 +2464,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Column: 39,
 																	Line:   49,
 																},
-																File:   "dict_insert_remove_test.flux",
-																Source: "get",
+																File: "dict_insert_remove_test.flux",
 																Start: ast.Position{
 																	Column: 36,
 																	Line:   49,
@@ -2623,8 +2487,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 85,
 														Line:   50,
 													},
-													File:   "dict_insert_remove_test.flux",
-													Source: "error_code3 = dict.get(dict: codes3, key: r.error_type, default: -1)",
+													File: "dict_insert_remove_test.flux",
 													Start: ast.Position{
 														Column: 17,
 														Line:   50,
@@ -2640,8 +2503,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 28,
 															Line:   50,
 														},
-														File:   "dict_insert_remove_test.flux",
-														Source: "error_code3",
+														File: "dict_insert_remove_test.flux",
 														Start: ast.Position{
 															Column: 17,
 															Line:   50,
@@ -2660,8 +2522,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Column: 84,
 																Line:   50,
 															},
-															File:   "dict_insert_remove_test.flux",
-															Source: "dict: codes3, key: r.error_type, default: -1",
+															File: "dict_insert_remove_test.flux",
 															Start: ast.Position{
 																Column: 40,
 																Line:   50,
@@ -2678,8 +2539,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Column: 52,
 																	Line:   50,
 																},
-																File:   "dict_insert_remove_test.flux",
-																Source: "dict: codes3",
+																File: "dict_insert_remove_test.flux",
 																Start: ast.Position{
 																	Column: 40,
 																	Line:   50,
@@ -2696,8 +2556,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Column: 44,
 																		Line:   50,
 																	},
-																	File:   "dict_insert_remove_test.flux",
-																	Source: "dict",
+																	File: "dict_insert_remove_test.flux",
 																	Start: ast.Position{
 																		Column: 40,
 																		Line:   50,
@@ -2716,8 +2575,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Column: 52,
 																		Line:   50,
 																	},
-																	File:   "dict_insert_remove_test.flux",
-																	Source: "codes3",
+																	File: "dict_insert_remove_test.flux",
 																	Start: ast.Position{
 																		Column: 46,
 																		Line:   50,
@@ -2735,8 +2593,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Column: 71,
 																	Line:   50,
 																},
-																File:   "dict_insert_remove_test.flux",
-																Source: "key: r.error_type",
+																File: "dict_insert_remove_test.flux",
 																Start: ast.Position{
 																	Column: 54,
 																	Line:   50,
@@ -2753,8 +2610,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Column: 57,
 																		Line:   50,
 																	},
-																	File:   "dict_insert_remove_test.flux",
-																	Source: "key",
+																	File: "dict_insert_remove_test.flux",
 																	Start: ast.Position{
 																		Column: 54,
 																		Line:   50,
@@ -2773,8 +2629,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Column: 71,
 																		Line:   50,
 																	},
-																	File:   "dict_insert_remove_test.flux",
-																	Source: "r.error_type",
+																	File: "dict_insert_remove_test.flux",
 																	Start: ast.Position{
 																		Column: 59,
 																		Line:   50,
@@ -2791,8 +2646,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																			Column: 60,
 																			Line:   50,
 																		},
-																		File:   "dict_insert_remove_test.flux",
-																		Source: "r",
+																		File: "dict_insert_remove_test.flux",
 																		Start: ast.Position{
 																			Column: 59,
 																			Line:   50,
@@ -2810,8 +2664,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																			Column: 71,
 																			Line:   50,
 																		},
-																		File:   "dict_insert_remove_test.flux",
-																		Source: "error_type",
+																		File: "dict_insert_remove_test.flux",
 																		Start: ast.Position{
 																			Column: 61,
 																			Line:   50,
@@ -2831,8 +2684,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Column: 84,
 																	Line:   50,
 																},
-																File:   "dict_insert_remove_test.flux",
-																Source: "default: -1",
+																File: "dict_insert_remove_test.flux",
 																Start: ast.Position{
 																	Column: 73,
 																	Line:   50,
@@ -2849,8 +2701,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Column: 80,
 																		Line:   50,
 																	},
-																	File:   "dict_insert_remove_test.flux",
-																	Source: "default",
+																	File: "dict_insert_remove_test.flux",
 																	Start: ast.Position{
 																		Column: 73,
 																		Line:   50,
@@ -2870,8 +2721,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																			Column: 84,
 																			Line:   50,
 																		},
-																		File:   "dict_insert_remove_test.flux",
-																		Source: "1",
+																		File: "dict_insert_remove_test.flux",
 																		Start: ast.Position{
 																			Column: 83,
 																			Line:   50,
@@ -2888,8 +2738,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Column: 84,
 																		Line:   50,
 																	},
-																	File:   "dict_insert_remove_test.flux",
-																	Source: "-1",
+																	File: "dict_insert_remove_test.flux",
 																	Start: ast.Position{
 																		Column: 82,
 																		Line:   50,
@@ -2910,8 +2759,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 85,
 															Line:   50,
 														},
-														File:   "dict_insert_remove_test.flux",
-														Source: "dict.get(dict: codes3, key: r.error_type, default: -1)",
+														File: "dict_insert_remove_test.flux",
 														Start: ast.Position{
 															Column: 31,
 															Line:   50,
@@ -2927,8 +2775,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Column: 39,
 																Line:   50,
 															},
-															File:   "dict_insert_remove_test.flux",
-															Source: "dict.get",
+															File: "dict_insert_remove_test.flux",
 															Start: ast.Position{
 																Column: 31,
 																Line:   50,
@@ -2945,8 +2792,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Column: 35,
 																	Line:   50,
 																},
-																File:   "dict_insert_remove_test.flux",
-																Source: "dict",
+																File: "dict_insert_remove_test.flux",
 																Start: ast.Position{
 																	Column: 31,
 																	Line:   50,
@@ -2964,8 +2810,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Column: 39,
 																	Line:   50,
 																},
-																File:   "dict_insert_remove_test.flux",
-																Source: "get",
+																File: "dict_insert_remove_test.flux",
 																Start: ast.Position{
 																	Column: 36,
 																	Line:   50,
@@ -2989,8 +2834,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 109,
 															Line:   52,
 														},
-														File:   "dict_insert_remove_test.flux",
-														Source: "{r with error_code1: error_code1, error_code2: error_code2, error_code3: error_code3}",
+														File: "dict_insert_remove_test.flux",
 														Start: ast.Position{
 															Column: 24,
 															Line:   52,
@@ -3007,8 +2851,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Column: 56,
 																Line:   52,
 															},
-															File:   "dict_insert_remove_test.flux",
-															Source: "error_code1: error_code1",
+															File: "dict_insert_remove_test.flux",
 															Start: ast.Position{
 																Column: 32,
 																Line:   52,
@@ -3025,8 +2868,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Column: 43,
 																	Line:   52,
 																},
-																File:   "dict_insert_remove_test.flux",
-																Source: "error_code1",
+																File: "dict_insert_remove_test.flux",
 																Start: ast.Position{
 																	Column: 32,
 																	Line:   52,
@@ -3045,8 +2887,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Column: 56,
 																	Line:   52,
 																},
-																File:   "dict_insert_remove_test.flux",
-																Source: "error_code1",
+																File: "dict_insert_remove_test.flux",
 																Start: ast.Position{
 																	Column: 45,
 																	Line:   52,
@@ -3064,8 +2905,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Column: 82,
 																Line:   52,
 															},
-															File:   "dict_insert_remove_test.flux",
-															Source: "error_code2: error_code2",
+															File: "dict_insert_remove_test.flux",
 															Start: ast.Position{
 																Column: 58,
 																Line:   52,
@@ -3082,8 +2922,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Column: 69,
 																	Line:   52,
 																},
-																File:   "dict_insert_remove_test.flux",
-																Source: "error_code2",
+																File: "dict_insert_remove_test.flux",
 																Start: ast.Position{
 																	Column: 58,
 																	Line:   52,
@@ -3102,8 +2941,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Column: 82,
 																	Line:   52,
 																},
-																File:   "dict_insert_remove_test.flux",
-																Source: "error_code2",
+																File: "dict_insert_remove_test.flux",
 																Start: ast.Position{
 																	Column: 71,
 																	Line:   52,
@@ -3121,8 +2959,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Column: 108,
 																Line:   52,
 															},
-															File:   "dict_insert_remove_test.flux",
-															Source: "error_code3: error_code3",
+															File: "dict_insert_remove_test.flux",
 															Start: ast.Position{
 																Column: 84,
 																Line:   52,
@@ -3139,8 +2976,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Column: 95,
 																	Line:   52,
 																},
-																File:   "dict_insert_remove_test.flux",
-																Source: "error_code3",
+																File: "dict_insert_remove_test.flux",
 																Start: ast.Position{
 																	Column: 84,
 																	Line:   52,
@@ -3159,8 +2995,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Column: 108,
 																	Line:   52,
 																},
-																File:   "dict_insert_remove_test.flux",
-																Source: "error_code3",
+																File: "dict_insert_remove_test.flux",
 																Start: ast.Position{
 																	Column: 97,
 																	Line:   52,
@@ -3180,8 +3015,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Column: 26,
 																Line:   52,
 															},
-															File:   "dict_insert_remove_test.flux",
-															Source: "r",
+															File: "dict_insert_remove_test.flux",
 															Start: ast.Position{
 																Column: 25,
 																Line:   52,
@@ -3199,8 +3033,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 109,
 														Line:   52,
 													},
-													File:   "dict_insert_remove_test.flux",
-													Source: "return {r with error_code1: error_code1, error_code2: error_code2, error_code3: error_code3}",
+													File: "dict_insert_remove_test.flux",
 													Start: ast.Position{
 														Column: 17,
 														Line:   52,
@@ -3221,8 +3054,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 19,
 													Line:   47,
 												},
-												File:   "dict_insert_remove_test.flux",
-												Source: "r",
+												File: "dict_insert_remove_test.flux",
 												Start: ast.Position{
 													Column: 18,
 													Line:   47,
@@ -3239,8 +3071,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 19,
 														Line:   47,
 													},
-													File:   "dict_insert_remove_test.flux",
-													Source: "r",
+													File: "dict_insert_remove_test.flux",
 													Start: ast.Position{
 														Column: 18,
 														Line:   47,
@@ -3266,8 +3097,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 10,
 									Line:   54,
 								},
-								File:   "dict_insert_remove_test.flux",
-								Source: "map(\n            fn: (r) => {\n                error_code1 = dict.get(dict: codes1, key: r.error_type, default: -1)\n                error_code2 = dict.get(dict: codes2, key: r.error_type, default: -1)\n                error_code3 = dict.get(dict: codes3, key: r.error_type, default: -1)\n\n                return {r with error_code1: error_code1, error_code2: error_code2, error_code3: error_code3}\n            },\n        )",
+								File: "dict_insert_remove_test.flux",
 								Start: ast.Position{
 									Column: 12,
 									Line:   46,
@@ -3283,8 +3113,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 15,
 										Line:   46,
 									},
-									File:   "dict_insert_remove_test.flux",
-									Source: "map",
+									File: "dict_insert_remove_test.flux",
 									Start: ast.Position{
 										Column: 12,
 										Line:   46,
@@ -3307,8 +3136,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 19,
 								Line:   42,
 							},
-							File:   "dict_insert_remove_test.flux",
-							Source: "table=<-",
+							File: "dict_insert_remove_test.flux",
 							Start: ast.Position{
 								Column: 11,
 								Line:   42,
@@ -3325,8 +3153,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 16,
 									Line:   42,
 								},
-								File:   "dict_insert_remove_test.flux",
-								Source: "table",
+								File: "dict_insert_remove_test.flux",
 								Start: ast.Position{
 									Column: 11,
 									Line:   42,
@@ -3344,8 +3171,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 19,
 								Line:   42,
 							},
-							File:   "dict_insert_remove_test.flux",
-							Source: "<-",
+							File: "dict_insert_remove_test.flux",
 							Start: ast.Position{
 								Column: 17,
 								Line:   42,
@@ -3365,8 +3191,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 112,
 							Line:   56,
 						},
-						File:   "dict_insert_remove_test.flux",
-						Source: "_dict = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_dict})",
+						File: "dict_insert_remove_test.flux",
 						Start: ast.Position{
 							Column: 6,
 							Line:   56,
@@ -3382,8 +3207,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 11,
 								Line:   56,
 							},
-							File:   "dict_insert_remove_test.flux",
-							Source: "_dict",
+							File: "dict_insert_remove_test.flux",
 							Start: ast.Position{
 								Column: 6,
 								Line:   56,
@@ -3402,8 +3226,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 112,
 								Line:   56,
 							},
-							File:   "dict_insert_remove_test.flux",
-							Source: "() => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_dict})",
+							File: "dict_insert_remove_test.flux",
 							Start: ast.Position{
 								Column: 14,
 								Line:   56,
@@ -3419,8 +3242,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 112,
 									Line:   56,
 								},
-								File:   "dict_insert_remove_test.flux",
-								Source: "({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_dict})",
+								File: "dict_insert_remove_test.flux",
 								Start: ast.Position{
 									Column: 20,
 									Line:   56,
@@ -3436,8 +3258,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 111,
 										Line:   56,
 									},
-									File:   "dict_insert_remove_test.flux",
-									Source: "{input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_dict}",
+									File: "dict_insert_remove_test.flux",
 									Start: ast.Position{
 										Column: 21,
 										Line:   56,
@@ -3454,8 +3275,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 61,
 											Line:   56,
 										},
-										File:   "dict_insert_remove_test.flux",
-										Source: "input: testing.loadStorage(csv: inData)",
+										File: "dict_insert_remove_test.flux",
 										Start: ast.Position{
 											Column: 22,
 											Line:   56,
@@ -3472,8 +3292,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 27,
 												Line:   56,
 											},
-											File:   "dict_insert_remove_test.flux",
-											Source: "input",
+											File: "dict_insert_remove_test.flux",
 											Start: ast.Position{
 												Column: 22,
 												Line:   56,
@@ -3493,8 +3312,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 60,
 													Line:   56,
 												},
-												File:   "dict_insert_remove_test.flux",
-												Source: "csv: inData",
+												File: "dict_insert_remove_test.flux",
 												Start: ast.Position{
 													Column: 49,
 													Line:   56,
@@ -3511,8 +3329,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 60,
 														Line:   56,
 													},
-													File:   "dict_insert_remove_test.flux",
-													Source: "csv: inData",
+													File: "dict_insert_remove_test.flux",
 													Start: ast.Position{
 														Column: 49,
 														Line:   56,
@@ -3529,8 +3346,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 52,
 															Line:   56,
 														},
-														File:   "dict_insert_remove_test.flux",
-														Source: "csv",
+														File: "dict_insert_remove_test.flux",
 														Start: ast.Position{
 															Column: 49,
 															Line:   56,
@@ -3549,8 +3365,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 60,
 															Line:   56,
 														},
-														File:   "dict_insert_remove_test.flux",
-														Source: "inData",
+														File: "dict_insert_remove_test.flux",
 														Start: ast.Position{
 															Column: 54,
 															Line:   56,
@@ -3571,8 +3386,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 61,
 												Line:   56,
 											},
-											File:   "dict_insert_remove_test.flux",
-											Source: "testing.loadStorage(csv: inData)",
+											File: "dict_insert_remove_test.flux",
 											Start: ast.Position{
 												Column: 29,
 												Line:   56,
@@ -3588,8 +3402,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 48,
 													Line:   56,
 												},
-												File:   "dict_insert_remove_test.flux",
-												Source: "testing.loadStorage",
+												File: "dict_insert_remove_test.flux",
 												Start: ast.Position{
 													Column: 29,
 													Line:   56,
@@ -3606,8 +3419,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 36,
 														Line:   56,
 													},
-													File:   "dict_insert_remove_test.flux",
-													Source: "testing",
+													File: "dict_insert_remove_test.flux",
 													Start: ast.Position{
 														Column: 29,
 														Line:   56,
@@ -3625,8 +3437,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 48,
 														Line:   56,
 													},
-													File:   "dict_insert_remove_test.flux",
-													Source: "loadStorage",
+													File: "dict_insert_remove_test.flux",
 													Start: ast.Position{
 														Column: 37,
 														Line:   56,
@@ -3649,8 +3460,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 98,
 											Line:   56,
 										},
-										File:   "dict_insert_remove_test.flux",
-										Source: "want: testing.loadMem(csv: outData)",
+										File: "dict_insert_remove_test.flux",
 										Start: ast.Position{
 											Column: 63,
 											Line:   56,
@@ -3667,8 +3477,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 67,
 												Line:   56,
 											},
-											File:   "dict_insert_remove_test.flux",
-											Source: "want",
+											File: "dict_insert_remove_test.flux",
 											Start: ast.Position{
 												Column: 63,
 												Line:   56,
@@ -3688,8 +3497,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 97,
 													Line:   56,
 												},
-												File:   "dict_insert_remove_test.flux",
-												Source: "csv: outData",
+												File: "dict_insert_remove_test.flux",
 												Start: ast.Position{
 													Column: 85,
 													Line:   56,
@@ -3706,8 +3514,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 97,
 														Line:   56,
 													},
-													File:   "dict_insert_remove_test.flux",
-													Source: "csv: outData",
+													File: "dict_insert_remove_test.flux",
 													Start: ast.Position{
 														Column: 85,
 														Line:   56,
@@ -3724,8 +3531,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 88,
 															Line:   56,
 														},
-														File:   "dict_insert_remove_test.flux",
-														Source: "csv",
+														File: "dict_insert_remove_test.flux",
 														Start: ast.Position{
 															Column: 85,
 															Line:   56,
@@ -3744,8 +3550,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 97,
 															Line:   56,
 														},
-														File:   "dict_insert_remove_test.flux",
-														Source: "outData",
+														File: "dict_insert_remove_test.flux",
 														Start: ast.Position{
 															Column: 90,
 															Line:   56,
@@ -3766,8 +3571,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 98,
 												Line:   56,
 											},
-											File:   "dict_insert_remove_test.flux",
-											Source: "testing.loadMem(csv: outData)",
+											File: "dict_insert_remove_test.flux",
 											Start: ast.Position{
 												Column: 69,
 												Line:   56,
@@ -3783,8 +3587,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 84,
 													Line:   56,
 												},
-												File:   "dict_insert_remove_test.flux",
-												Source: "testing.loadMem",
+												File: "dict_insert_remove_test.flux",
 												Start: ast.Position{
 													Column: 69,
 													Line:   56,
@@ -3801,8 +3604,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 76,
 														Line:   56,
 													},
-													File:   "dict_insert_remove_test.flux",
-													Source: "testing",
+													File: "dict_insert_remove_test.flux",
 													Start: ast.Position{
 														Column: 69,
 														Line:   56,
@@ -3820,8 +3622,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 84,
 														Line:   56,
 													},
-													File:   "dict_insert_remove_test.flux",
-													Source: "loadMem",
+													File: "dict_insert_remove_test.flux",
 													Start: ast.Position{
 														Column: 77,
 														Line:   56,
@@ -3844,8 +3645,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 110,
 											Line:   56,
 										},
-										File:   "dict_insert_remove_test.flux",
-										Source: "fn: t_dict",
+										File: "dict_insert_remove_test.flux",
 										Start: ast.Position{
 											Column: 100,
 											Line:   56,
@@ -3862,8 +3662,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 102,
 												Line:   56,
 											},
-											File:   "dict_insert_remove_test.flux",
-											Source: "fn",
+											File: "dict_insert_remove_test.flux",
 											Start: ast.Position{
 												Column: 100,
 												Line:   56,
@@ -3882,8 +3681,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 110,
 												Line:   56,
 											},
-											File:   "dict_insert_remove_test.flux",
-											Source: "t_dict",
+											File: "dict_insert_remove_test.flux",
 											Start: ast.Position{
 												Column: 104,
 												Line:   56,
@@ -3912,8 +3710,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 112,
 						Line:   56,
 					},
-					File:   "dict_insert_remove_test.flux",
-					Source: "test _dict = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_dict})",
+					File: "dict_insert_remove_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   56,
@@ -3932,8 +3729,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 17,
 						Line:   4,
 					},
-					File:   "dict_insert_remove_test.flux",
-					Source: "import \"testing\"",
+					File: "dict_insert_remove_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   4,
@@ -3949,8 +3745,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 17,
 							Line:   4,
 						},
-						File:   "dict_insert_remove_test.flux",
-						Source: "\"testing\"",
+						File: "dict_insert_remove_test.flux",
 						Start: ast.Position{
 							Column: 8,
 							Line:   4,
@@ -3969,8 +3764,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 14,
 						Line:   5,
 					},
-					File:   "dict_insert_remove_test.flux",
-					Source: "import \"dict\"",
+					File: "dict_insert_remove_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   5,
@@ -3986,8 +3780,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 14,
 							Line:   5,
 						},
-						File:   "dict_insert_remove_test.flux",
-						Source: "\"dict\"",
+						File: "dict_insert_remove_test.flux",
 						Start: ast.Position{
 							Column: 8,
 							Line:   5,
@@ -4008,8 +3801,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 18,
 						Line:   1,
 					},
-					File:   "dict_insert_remove_test.flux",
-					Source: "package dict_test",
+					File: "dict_insert_remove_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   1,
@@ -4025,8 +3817,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 18,
 							Line:   1,
 						},
-						File:   "dict_insert_remove_test.flux",
-						Source: "dict_test",
+						File: "dict_insert_remove_test.flux",
 						Start: ast.Position{
 							Column: 9,
 							Line:   1,
@@ -4045,8 +3836,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Column: 112,
 					Line:   39,
 				},
-				File:   "dict_lit_lambda_test.flux",
-				Source: "package dict_test\n\n\nimport \"testing\"\nimport \"dict\"\n\ninData =\n    \"\n#datatype,string,long,dateTime:RFC3339,string,string,long\n#group,false,false,false,true,true,false\n#default,_result,,,,,\n,result,table,_time,_measurement,_field,_value\n,,0,2018-05-22T19:53:26Z,_m,_f,0\n,,0,2018-05-22T19:53:36Z,_m,_f,1\n,,0,2018-05-22T19:53:46Z,_m,_f,2\n\"\noutData =\n    \"\n#datatype,string,long,dateTime:RFC3339,string,string,long,string\n#group,false,false,false,true,true,false,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,_field,_value,code\n,,0,2018-05-22T19:53:26Z,_m,_f,0,a\n,,0,2018-05-22T19:53:36Z,_m,_f,1,b\n,,0,2018-05-22T19:53:46Z,_m,_f,2,c\n\"\nt_dict = (table=<-) =>\n    table\n        |> range(start: 2018-05-22T19:53:26Z)\n        |> drop(columns: [\"_start\", \"_stop\"])\n        |> map(\n            fn: (r) => {\n                codes = [0: \"a\", 1: \"b\"]\n\n                return {r with code: dict.get(dict: codes, key: r._value, default: \"c\")}\n            },\n        )\n\ntest _dict = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_dict})",
+				File: "dict_lit_lambda_test.flux",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -4062,8 +3852,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 2,
 						Line:   16,
 					},
-					File:   "dict_lit_lambda_test.flux",
-					Source: "inData =\n    \"\n#datatype,string,long,dateTime:RFC3339,string,string,long\n#group,false,false,false,true,true,false\n#default,_result,,,,,\n,result,table,_time,_measurement,_field,_value\n,,0,2018-05-22T19:53:26Z,_m,_f,0\n,,0,2018-05-22T19:53:36Z,_m,_f,1\n,,0,2018-05-22T19:53:46Z,_m,_f,2\n\"",
+					File: "dict_lit_lambda_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   7,
@@ -4079,8 +3868,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 7,
 							Line:   7,
 						},
-						File:   "dict_lit_lambda_test.flux",
-						Source: "inData",
+						File: "dict_lit_lambda_test.flux",
 						Start: ast.Position{
 							Column: 1,
 							Line:   7,
@@ -4098,8 +3886,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 2,
 							Line:   16,
 						},
-						File:   "dict_lit_lambda_test.flux",
-						Source: "\"\n#datatype,string,long,dateTime:RFC3339,string,string,long\n#group,false,false,false,true,true,false\n#default,_result,,,,,\n,result,table,_time,_measurement,_field,_value\n,,0,2018-05-22T19:53:26Z,_m,_f,0\n,,0,2018-05-22T19:53:36Z,_m,_f,1\n,,0,2018-05-22T19:53:46Z,_m,_f,2\n\"",
+						File: "dict_lit_lambda_test.flux",
 						Start: ast.Position{
 							Column: 5,
 							Line:   8,
@@ -4117,8 +3904,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 2,
 						Line:   26,
 					},
-					File:   "dict_lit_lambda_test.flux",
-					Source: "outData =\n    \"\n#datatype,string,long,dateTime:RFC3339,string,string,long,string\n#group,false,false,false,true,true,false,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,_field,_value,code\n,,0,2018-05-22T19:53:26Z,_m,_f,0,a\n,,0,2018-05-22T19:53:36Z,_m,_f,1,b\n,,0,2018-05-22T19:53:46Z,_m,_f,2,c\n\"",
+					File: "dict_lit_lambda_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   17,
@@ -4134,8 +3920,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 8,
 							Line:   17,
 						},
-						File:   "dict_lit_lambda_test.flux",
-						Source: "outData",
+						File: "dict_lit_lambda_test.flux",
 						Start: ast.Position{
 							Column: 1,
 							Line:   17,
@@ -4153,8 +3938,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 2,
 							Line:   26,
 						},
-						File:   "dict_lit_lambda_test.flux",
-						Source: "\"\n#datatype,string,long,dateTime:RFC3339,string,string,long,string\n#group,false,false,false,true,true,false,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,_field,_value,code\n,,0,2018-05-22T19:53:26Z,_m,_f,0,a\n,,0,2018-05-22T19:53:36Z,_m,_f,1,b\n,,0,2018-05-22T19:53:46Z,_m,_f,2,c\n\"",
+						File: "dict_lit_lambda_test.flux",
 						Start: ast.Position{
 							Column: 5,
 							Line:   18,
@@ -4172,8 +3956,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 10,
 						Line:   37,
 					},
-					File:   "dict_lit_lambda_test.flux",
-					Source: "t_dict = (table=<-) =>\n    table\n        |> range(start: 2018-05-22T19:53:26Z)\n        |> drop(columns: [\"_start\", \"_stop\"])\n        |> map(\n            fn: (r) => {\n                codes = [0: \"a\", 1: \"b\"]\n\n                return {r with code: dict.get(dict: codes, key: r._value, default: \"c\")}\n            },\n        )",
+					File: "dict_lit_lambda_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   27,
@@ -4189,8 +3972,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 7,
 							Line:   27,
 						},
-						File:   "dict_lit_lambda_test.flux",
-						Source: "t_dict",
+						File: "dict_lit_lambda_test.flux",
 						Start: ast.Position{
 							Column: 1,
 							Line:   27,
@@ -4209,8 +3991,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 10,
 							Line:   37,
 						},
-						File:   "dict_lit_lambda_test.flux",
-						Source: "(table=<-) =>\n    table\n        |> range(start: 2018-05-22T19:53:26Z)\n        |> drop(columns: [\"_start\", \"_stop\"])\n        |> map(\n            fn: (r) => {\n                codes = [0: \"a\", 1: \"b\"]\n\n                return {r with code: dict.get(dict: codes, key: r._value, default: \"c\")}\n            },\n        )",
+						File: "dict_lit_lambda_test.flux",
 						Start: ast.Position{
 							Column: 10,
 							Line:   27,
@@ -4229,8 +4010,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 10,
 											Line:   28,
 										},
-										File:   "dict_lit_lambda_test.flux",
-										Source: "table",
+										File: "dict_lit_lambda_test.flux",
 										Start: ast.Position{
 											Column: 5,
 											Line:   28,
@@ -4247,8 +4027,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 46,
 										Line:   29,
 									},
-									File:   "dict_lit_lambda_test.flux",
-									Source: "table\n        |> range(start: 2018-05-22T19:53:26Z)",
+									File: "dict_lit_lambda_test.flux",
 									Start: ast.Position{
 										Column: 5,
 										Line:   28,
@@ -4265,8 +4044,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 45,
 												Line:   29,
 											},
-											File:   "dict_lit_lambda_test.flux",
-											Source: "start: 2018-05-22T19:53:26Z",
+											File: "dict_lit_lambda_test.flux",
 											Start: ast.Position{
 												Column: 18,
 												Line:   29,
@@ -4283,8 +4061,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 45,
 													Line:   29,
 												},
-												File:   "dict_lit_lambda_test.flux",
-												Source: "start: 2018-05-22T19:53:26Z",
+												File: "dict_lit_lambda_test.flux",
 												Start: ast.Position{
 													Column: 18,
 													Line:   29,
@@ -4301,8 +4078,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 23,
 														Line:   29,
 													},
-													File:   "dict_lit_lambda_test.flux",
-													Source: "start",
+													File: "dict_lit_lambda_test.flux",
 													Start: ast.Position{
 														Column: 18,
 														Line:   29,
@@ -4321,8 +4097,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 45,
 														Line:   29,
 													},
-													File:   "dict_lit_lambda_test.flux",
-													Source: "2018-05-22T19:53:26Z",
+													File: "dict_lit_lambda_test.flux",
 													Start: ast.Position{
 														Column: 25,
 														Line:   29,
@@ -4343,8 +4118,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 46,
 											Line:   29,
 										},
-										File:   "dict_lit_lambda_test.flux",
-										Source: "range(start: 2018-05-22T19:53:26Z)",
+										File: "dict_lit_lambda_test.flux",
 										Start: ast.Position{
 											Column: 12,
 											Line:   29,
@@ -4360,8 +4134,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 17,
 												Line:   29,
 											},
-											File:   "dict_lit_lambda_test.flux",
-											Source: "range",
+											File: "dict_lit_lambda_test.flux",
 											Start: ast.Position{
 												Column: 12,
 												Line:   29,
@@ -4382,8 +4155,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 46,
 									Line:   30,
 								},
-								File:   "dict_lit_lambda_test.flux",
-								Source: "table\n        |> range(start: 2018-05-22T19:53:26Z)\n        |> drop(columns: [\"_start\", \"_stop\"])",
+								File: "dict_lit_lambda_test.flux",
 								Start: ast.Position{
 									Column: 5,
 									Line:   28,
@@ -4400,8 +4172,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 45,
 											Line:   30,
 										},
-										File:   "dict_lit_lambda_test.flux",
-										Source: "columns: [\"_start\", \"_stop\"]",
+										File: "dict_lit_lambda_test.flux",
 										Start: ast.Position{
 											Column: 17,
 											Line:   30,
@@ -4418,8 +4189,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 45,
 												Line:   30,
 											},
-											File:   "dict_lit_lambda_test.flux",
-											Source: "columns: [\"_start\", \"_stop\"]",
+											File: "dict_lit_lambda_test.flux",
 											Start: ast.Position{
 												Column: 17,
 												Line:   30,
@@ -4436,8 +4206,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 24,
 													Line:   30,
 												},
-												File:   "dict_lit_lambda_test.flux",
-												Source: "columns",
+												File: "dict_lit_lambda_test.flux",
 												Start: ast.Position{
 													Column: 17,
 													Line:   30,
@@ -4456,8 +4225,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 45,
 													Line:   30,
 												},
-												File:   "dict_lit_lambda_test.flux",
-												Source: "[\"_start\", \"_stop\"]",
+												File: "dict_lit_lambda_test.flux",
 												Start: ast.Position{
 													Column: 26,
 													Line:   30,
@@ -4473,8 +4241,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 35,
 														Line:   30,
 													},
-													File:   "dict_lit_lambda_test.flux",
-													Source: "\"_start\"",
+													File: "dict_lit_lambda_test.flux",
 													Start: ast.Position{
 														Column: 27,
 														Line:   30,
@@ -4491,8 +4258,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 44,
 														Line:   30,
 													},
-													File:   "dict_lit_lambda_test.flux",
-													Source: "\"_stop\"",
+													File: "dict_lit_lambda_test.flux",
 													Start: ast.Position{
 														Column: 37,
 														Line:   30,
@@ -4516,8 +4282,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 46,
 										Line:   30,
 									},
-									File:   "dict_lit_lambda_test.flux",
-									Source: "drop(columns: [\"_start\", \"_stop\"])",
+									File: "dict_lit_lambda_test.flux",
 									Start: ast.Position{
 										Column: 12,
 										Line:   30,
@@ -4533,8 +4298,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 16,
 											Line:   30,
 										},
-										File:   "dict_lit_lambda_test.flux",
-										Source: "drop",
+										File: "dict_lit_lambda_test.flux",
 										Start: ast.Position{
 											Column: 12,
 											Line:   30,
@@ -4555,8 +4319,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 10,
 								Line:   37,
 							},
-							File:   "dict_lit_lambda_test.flux",
-							Source: "table\n        |> range(start: 2018-05-22T19:53:26Z)\n        |> drop(columns: [\"_start\", \"_stop\"])\n        |> map(\n            fn: (r) => {\n                codes = [0: \"a\", 1: \"b\"]\n\n                return {r with code: dict.get(dict: codes, key: r._value, default: \"c\")}\n            },\n        )",
+							File: "dict_lit_lambda_test.flux",
 							Start: ast.Position{
 								Column: 5,
 								Line:   28,
@@ -4573,8 +4336,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 14,
 										Line:   36,
 									},
-									File:   "dict_lit_lambda_test.flux",
-									Source: "fn: (r) => {\n                codes = [0: \"a\", 1: \"b\"]\n\n                return {r with code: dict.get(dict: codes, key: r._value, default: \"c\")}\n            }",
+									File: "dict_lit_lambda_test.flux",
 									Start: ast.Position{
 										Column: 13,
 										Line:   32,
@@ -4591,8 +4353,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 14,
 											Line:   36,
 										},
-										File:   "dict_lit_lambda_test.flux",
-										Source: "fn: (r) => {\n                codes = [0: \"a\", 1: \"b\"]\n\n                return {r with code: dict.get(dict: codes, key: r._value, default: \"c\")}\n            }",
+										File: "dict_lit_lambda_test.flux",
 										Start: ast.Position{
 											Column: 13,
 											Line:   32,
@@ -4609,8 +4370,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 15,
 												Line:   32,
 											},
-											File:   "dict_lit_lambda_test.flux",
-											Source: "fn",
+											File: "dict_lit_lambda_test.flux",
 											Start: ast.Position{
 												Column: 13,
 												Line:   32,
@@ -4630,8 +4390,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 14,
 												Line:   36,
 											},
-											File:   "dict_lit_lambda_test.flux",
-											Source: "(r) => {\n                codes = [0: \"a\", 1: \"b\"]\n\n                return {r with code: dict.get(dict: codes, key: r._value, default: \"c\")}\n            }",
+											File: "dict_lit_lambda_test.flux",
 											Start: ast.Position{
 												Column: 17,
 												Line:   32,
@@ -4647,8 +4406,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 14,
 													Line:   36,
 												},
-												File:   "dict_lit_lambda_test.flux",
-												Source: "{\n                codes = [0: \"a\", 1: \"b\"]\n\n                return {r with code: dict.get(dict: codes, key: r._value, default: \"c\")}\n            }",
+												File: "dict_lit_lambda_test.flux",
 												Start: ast.Position{
 													Column: 24,
 													Line:   32,
@@ -4664,8 +4422,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 41,
 														Line:   33,
 													},
-													File:   "dict_lit_lambda_test.flux",
-													Source: "codes = [0: \"a\", 1: \"b\"]",
+													File: "dict_lit_lambda_test.flux",
 													Start: ast.Position{
 														Column: 17,
 														Line:   33,
@@ -4681,8 +4438,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 22,
 															Line:   33,
 														},
-														File:   "dict_lit_lambda_test.flux",
-														Source: "codes",
+														File: "dict_lit_lambda_test.flux",
 														Start: ast.Position{
 															Column: 17,
 															Line:   33,
@@ -4700,8 +4456,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 41,
 															Line:   33,
 														},
-														File:   "dict_lit_lambda_test.flux",
-														Source: "[0: \"a\", 1: \"b\"]",
+														File: "dict_lit_lambda_test.flux",
 														Start: ast.Position{
 															Column: 25,
 															Line:   33,
@@ -4719,8 +4474,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Column: 27,
 																	Line:   33,
 																},
-																File:   "dict_lit_lambda_test.flux",
-																Source: "0",
+																File: "dict_lit_lambda_test.flux",
 																Start: ast.Position{
 																	Column: 26,
 																	Line:   33,
@@ -4738,8 +4492,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Column: 32,
 																	Line:   33,
 																},
-																File:   "dict_lit_lambda_test.flux",
-																Source: "\"a\"",
+																File: "dict_lit_lambda_test.flux",
 																Start: ast.Position{
 																	Column: 29,
 																	Line:   33,
@@ -4759,8 +4512,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Column: 35,
 																	Line:   33,
 																},
-																File:   "dict_lit_lambda_test.flux",
-																Source: "1",
+																File: "dict_lit_lambda_test.flux",
 																Start: ast.Position{
 																	Column: 34,
 																	Line:   33,
@@ -4778,8 +4530,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Column: 40,
 																	Line:   33,
 																},
-																File:   "dict_lit_lambda_test.flux",
-																Source: "\"b\"",
+																File: "dict_lit_lambda_test.flux",
 																Start: ast.Position{
 																	Column: 37,
 																	Line:   33,
@@ -4802,8 +4553,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 89,
 															Line:   35,
 														},
-														File:   "dict_lit_lambda_test.flux",
-														Source: "{r with code: dict.get(dict: codes, key: r._value, default: \"c\")}",
+														File: "dict_lit_lambda_test.flux",
 														Start: ast.Position{
 															Column: 24,
 															Line:   35,
@@ -4820,8 +4570,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Column: 88,
 																Line:   35,
 															},
-															File:   "dict_lit_lambda_test.flux",
-															Source: "code: dict.get(dict: codes, key: r._value, default: \"c\")",
+															File: "dict_lit_lambda_test.flux",
 															Start: ast.Position{
 																Column: 32,
 																Line:   35,
@@ -4838,8 +4587,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Column: 36,
 																	Line:   35,
 																},
-																File:   "dict_lit_lambda_test.flux",
-																Source: "code",
+																File: "dict_lit_lambda_test.flux",
 																Start: ast.Position{
 																	Column: 32,
 																	Line:   35,
@@ -4859,8 +4607,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Column: 87,
 																		Line:   35,
 																	},
-																	File:   "dict_lit_lambda_test.flux",
-																	Source: "dict: codes, key: r._value, default: \"c\"",
+																	File: "dict_lit_lambda_test.flux",
 																	Start: ast.Position{
 																		Column: 47,
 																		Line:   35,
@@ -4877,8 +4624,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																			Column: 58,
 																			Line:   35,
 																		},
-																		File:   "dict_lit_lambda_test.flux",
-																		Source: "dict: codes",
+																		File: "dict_lit_lambda_test.flux",
 																		Start: ast.Position{
 																			Column: 47,
 																			Line:   35,
@@ -4895,8 +4641,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																				Column: 51,
 																				Line:   35,
 																			},
-																			File:   "dict_lit_lambda_test.flux",
-																			Source: "dict",
+																			File: "dict_lit_lambda_test.flux",
 																			Start: ast.Position{
 																				Column: 47,
 																				Line:   35,
@@ -4915,8 +4660,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																				Column: 58,
 																				Line:   35,
 																			},
-																			File:   "dict_lit_lambda_test.flux",
-																			Source: "codes",
+																			File: "dict_lit_lambda_test.flux",
 																			Start: ast.Position{
 																				Column: 53,
 																				Line:   35,
@@ -4934,8 +4678,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																			Column: 73,
 																			Line:   35,
 																		},
-																		File:   "dict_lit_lambda_test.flux",
-																		Source: "key: r._value",
+																		File: "dict_lit_lambda_test.flux",
 																		Start: ast.Position{
 																			Column: 60,
 																			Line:   35,
@@ -4952,8 +4695,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																				Column: 63,
 																				Line:   35,
 																			},
-																			File:   "dict_lit_lambda_test.flux",
-																			Source: "key",
+																			File: "dict_lit_lambda_test.flux",
 																			Start: ast.Position{
 																				Column: 60,
 																				Line:   35,
@@ -4972,8 +4714,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																				Column: 73,
 																				Line:   35,
 																			},
-																			File:   "dict_lit_lambda_test.flux",
-																			Source: "r._value",
+																			File: "dict_lit_lambda_test.flux",
 																			Start: ast.Position{
 																				Column: 65,
 																				Line:   35,
@@ -4990,8 +4731,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																					Column: 66,
 																					Line:   35,
 																				},
-																				File:   "dict_lit_lambda_test.flux",
-																				Source: "r",
+																				File: "dict_lit_lambda_test.flux",
 																				Start: ast.Position{
 																					Column: 65,
 																					Line:   35,
@@ -5009,8 +4749,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																					Column: 73,
 																					Line:   35,
 																				},
-																				File:   "dict_lit_lambda_test.flux",
-																				Source: "_value",
+																				File: "dict_lit_lambda_test.flux",
 																				Start: ast.Position{
 																					Column: 67,
 																					Line:   35,
@@ -5030,8 +4769,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																			Column: 87,
 																			Line:   35,
 																		},
-																		File:   "dict_lit_lambda_test.flux",
-																		Source: "default: \"c\"",
+																		File: "dict_lit_lambda_test.flux",
 																		Start: ast.Position{
 																			Column: 75,
 																			Line:   35,
@@ -5048,8 +4786,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																				Column: 82,
 																				Line:   35,
 																			},
-																			File:   "dict_lit_lambda_test.flux",
-																			Source: "default",
+																			File: "dict_lit_lambda_test.flux",
 																			Start: ast.Position{
 																				Column: 75,
 																				Line:   35,
@@ -5068,8 +4805,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																				Column: 87,
 																				Line:   35,
 																			},
-																			File:   "dict_lit_lambda_test.flux",
-																			Source: "\"c\"",
+																			File: "dict_lit_lambda_test.flux",
 																			Start: ast.Position{
 																				Column: 84,
 																				Line:   35,
@@ -5090,8 +4826,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Column: 88,
 																	Line:   35,
 																},
-																File:   "dict_lit_lambda_test.flux",
-																Source: "dict.get(dict: codes, key: r._value, default: \"c\")",
+																File: "dict_lit_lambda_test.flux",
 																Start: ast.Position{
 																	Column: 38,
 																	Line:   35,
@@ -5107,8 +4842,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Column: 46,
 																		Line:   35,
 																	},
-																	File:   "dict_lit_lambda_test.flux",
-																	Source: "dict.get",
+																	File: "dict_lit_lambda_test.flux",
 																	Start: ast.Position{
 																		Column: 38,
 																		Line:   35,
@@ -5125,8 +4859,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																			Column: 42,
 																			Line:   35,
 																		},
-																		File:   "dict_lit_lambda_test.flux",
-																		Source: "dict",
+																		File: "dict_lit_lambda_test.flux",
 																		Start: ast.Position{
 																			Column: 38,
 																			Line:   35,
@@ -5144,8 +4877,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																			Column: 46,
 																			Line:   35,
 																		},
-																		File:   "dict_lit_lambda_test.flux",
-																		Source: "get",
+																		File: "dict_lit_lambda_test.flux",
 																		Start: ast.Position{
 																			Column: 43,
 																			Line:   35,
@@ -5170,8 +4902,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Column: 26,
 																Line:   35,
 															},
-															File:   "dict_lit_lambda_test.flux",
-															Source: "r",
+															File: "dict_lit_lambda_test.flux",
 															Start: ast.Position{
 																Column: 25,
 																Line:   35,
@@ -5189,8 +4920,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 89,
 														Line:   35,
 													},
-													File:   "dict_lit_lambda_test.flux",
-													Source: "return {r with code: dict.get(dict: codes, key: r._value, default: \"c\")}",
+													File: "dict_lit_lambda_test.flux",
 													Start: ast.Position{
 														Column: 17,
 														Line:   35,
@@ -5211,8 +4941,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 19,
 													Line:   32,
 												},
-												File:   "dict_lit_lambda_test.flux",
-												Source: "r",
+												File: "dict_lit_lambda_test.flux",
 												Start: ast.Position{
 													Column: 18,
 													Line:   32,
@@ -5229,8 +4958,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 19,
 														Line:   32,
 													},
-													File:   "dict_lit_lambda_test.flux",
-													Source: "r",
+													File: "dict_lit_lambda_test.flux",
 													Start: ast.Position{
 														Column: 18,
 														Line:   32,
@@ -5256,8 +4984,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 10,
 									Line:   37,
 								},
-								File:   "dict_lit_lambda_test.flux",
-								Source: "map(\n            fn: (r) => {\n                codes = [0: \"a\", 1: \"b\"]\n\n                return {r with code: dict.get(dict: codes, key: r._value, default: \"c\")}\n            },\n        )",
+								File: "dict_lit_lambda_test.flux",
 								Start: ast.Position{
 									Column: 12,
 									Line:   31,
@@ -5273,8 +5000,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 15,
 										Line:   31,
 									},
-									File:   "dict_lit_lambda_test.flux",
-									Source: "map",
+									File: "dict_lit_lambda_test.flux",
 									Start: ast.Position{
 										Column: 12,
 										Line:   31,
@@ -5297,8 +5023,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 19,
 								Line:   27,
 							},
-							File:   "dict_lit_lambda_test.flux",
-							Source: "table=<-",
+							File: "dict_lit_lambda_test.flux",
 							Start: ast.Position{
 								Column: 11,
 								Line:   27,
@@ -5315,8 +5040,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 16,
 									Line:   27,
 								},
-								File:   "dict_lit_lambda_test.flux",
-								Source: "table",
+								File: "dict_lit_lambda_test.flux",
 								Start: ast.Position{
 									Column: 11,
 									Line:   27,
@@ -5334,8 +5058,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 19,
 								Line:   27,
 							},
-							File:   "dict_lit_lambda_test.flux",
-							Source: "<-",
+							File: "dict_lit_lambda_test.flux",
 							Start: ast.Position{
 								Column: 17,
 								Line:   27,
@@ -5355,8 +5078,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 112,
 							Line:   39,
 						},
-						File:   "dict_lit_lambda_test.flux",
-						Source: "_dict = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_dict})",
+						File: "dict_lit_lambda_test.flux",
 						Start: ast.Position{
 							Column: 6,
 							Line:   39,
@@ -5372,8 +5094,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 11,
 								Line:   39,
 							},
-							File:   "dict_lit_lambda_test.flux",
-							Source: "_dict",
+							File: "dict_lit_lambda_test.flux",
 							Start: ast.Position{
 								Column: 6,
 								Line:   39,
@@ -5392,8 +5113,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 112,
 								Line:   39,
 							},
-							File:   "dict_lit_lambda_test.flux",
-							Source: "() => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_dict})",
+							File: "dict_lit_lambda_test.flux",
 							Start: ast.Position{
 								Column: 14,
 								Line:   39,
@@ -5409,8 +5129,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 112,
 									Line:   39,
 								},
-								File:   "dict_lit_lambda_test.flux",
-								Source: "({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_dict})",
+								File: "dict_lit_lambda_test.flux",
 								Start: ast.Position{
 									Column: 20,
 									Line:   39,
@@ -5426,8 +5145,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 111,
 										Line:   39,
 									},
-									File:   "dict_lit_lambda_test.flux",
-									Source: "{input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_dict}",
+									File: "dict_lit_lambda_test.flux",
 									Start: ast.Position{
 										Column: 21,
 										Line:   39,
@@ -5444,8 +5162,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 61,
 											Line:   39,
 										},
-										File:   "dict_lit_lambda_test.flux",
-										Source: "input: testing.loadStorage(csv: inData)",
+										File: "dict_lit_lambda_test.flux",
 										Start: ast.Position{
 											Column: 22,
 											Line:   39,
@@ -5462,8 +5179,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 27,
 												Line:   39,
 											},
-											File:   "dict_lit_lambda_test.flux",
-											Source: "input",
+											File: "dict_lit_lambda_test.flux",
 											Start: ast.Position{
 												Column: 22,
 												Line:   39,
@@ -5483,8 +5199,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 60,
 													Line:   39,
 												},
-												File:   "dict_lit_lambda_test.flux",
-												Source: "csv: inData",
+												File: "dict_lit_lambda_test.flux",
 												Start: ast.Position{
 													Column: 49,
 													Line:   39,
@@ -5501,8 +5216,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 60,
 														Line:   39,
 													},
-													File:   "dict_lit_lambda_test.flux",
-													Source: "csv: inData",
+													File: "dict_lit_lambda_test.flux",
 													Start: ast.Position{
 														Column: 49,
 														Line:   39,
@@ -5519,8 +5233,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 52,
 															Line:   39,
 														},
-														File:   "dict_lit_lambda_test.flux",
-														Source: "csv",
+														File: "dict_lit_lambda_test.flux",
 														Start: ast.Position{
 															Column: 49,
 															Line:   39,
@@ -5539,8 +5252,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 60,
 															Line:   39,
 														},
-														File:   "dict_lit_lambda_test.flux",
-														Source: "inData",
+														File: "dict_lit_lambda_test.flux",
 														Start: ast.Position{
 															Column: 54,
 															Line:   39,
@@ -5561,8 +5273,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 61,
 												Line:   39,
 											},
-											File:   "dict_lit_lambda_test.flux",
-											Source: "testing.loadStorage(csv: inData)",
+											File: "dict_lit_lambda_test.flux",
 											Start: ast.Position{
 												Column: 29,
 												Line:   39,
@@ -5578,8 +5289,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 48,
 													Line:   39,
 												},
-												File:   "dict_lit_lambda_test.flux",
-												Source: "testing.loadStorage",
+												File: "dict_lit_lambda_test.flux",
 												Start: ast.Position{
 													Column: 29,
 													Line:   39,
@@ -5596,8 +5306,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 36,
 														Line:   39,
 													},
-													File:   "dict_lit_lambda_test.flux",
-													Source: "testing",
+													File: "dict_lit_lambda_test.flux",
 													Start: ast.Position{
 														Column: 29,
 														Line:   39,
@@ -5615,8 +5324,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 48,
 														Line:   39,
 													},
-													File:   "dict_lit_lambda_test.flux",
-													Source: "loadStorage",
+													File: "dict_lit_lambda_test.flux",
 													Start: ast.Position{
 														Column: 37,
 														Line:   39,
@@ -5639,8 +5347,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 98,
 											Line:   39,
 										},
-										File:   "dict_lit_lambda_test.flux",
-										Source: "want: testing.loadMem(csv: outData)",
+										File: "dict_lit_lambda_test.flux",
 										Start: ast.Position{
 											Column: 63,
 											Line:   39,
@@ -5657,8 +5364,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 67,
 												Line:   39,
 											},
-											File:   "dict_lit_lambda_test.flux",
-											Source: "want",
+											File: "dict_lit_lambda_test.flux",
 											Start: ast.Position{
 												Column: 63,
 												Line:   39,
@@ -5678,8 +5384,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 97,
 													Line:   39,
 												},
-												File:   "dict_lit_lambda_test.flux",
-												Source: "csv: outData",
+												File: "dict_lit_lambda_test.flux",
 												Start: ast.Position{
 													Column: 85,
 													Line:   39,
@@ -5696,8 +5401,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 97,
 														Line:   39,
 													},
-													File:   "dict_lit_lambda_test.flux",
-													Source: "csv: outData",
+													File: "dict_lit_lambda_test.flux",
 													Start: ast.Position{
 														Column: 85,
 														Line:   39,
@@ -5714,8 +5418,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 88,
 															Line:   39,
 														},
-														File:   "dict_lit_lambda_test.flux",
-														Source: "csv",
+														File: "dict_lit_lambda_test.flux",
 														Start: ast.Position{
 															Column: 85,
 															Line:   39,
@@ -5734,8 +5437,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 97,
 															Line:   39,
 														},
-														File:   "dict_lit_lambda_test.flux",
-														Source: "outData",
+														File: "dict_lit_lambda_test.flux",
 														Start: ast.Position{
 															Column: 90,
 															Line:   39,
@@ -5756,8 +5458,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 98,
 												Line:   39,
 											},
-											File:   "dict_lit_lambda_test.flux",
-											Source: "testing.loadMem(csv: outData)",
+											File: "dict_lit_lambda_test.flux",
 											Start: ast.Position{
 												Column: 69,
 												Line:   39,
@@ -5773,8 +5474,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 84,
 													Line:   39,
 												},
-												File:   "dict_lit_lambda_test.flux",
-												Source: "testing.loadMem",
+												File: "dict_lit_lambda_test.flux",
 												Start: ast.Position{
 													Column: 69,
 													Line:   39,
@@ -5791,8 +5491,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 76,
 														Line:   39,
 													},
-													File:   "dict_lit_lambda_test.flux",
-													Source: "testing",
+													File: "dict_lit_lambda_test.flux",
 													Start: ast.Position{
 														Column: 69,
 														Line:   39,
@@ -5810,8 +5509,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 84,
 														Line:   39,
 													},
-													File:   "dict_lit_lambda_test.flux",
-													Source: "loadMem",
+													File: "dict_lit_lambda_test.flux",
 													Start: ast.Position{
 														Column: 77,
 														Line:   39,
@@ -5834,8 +5532,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 110,
 											Line:   39,
 										},
-										File:   "dict_lit_lambda_test.flux",
-										Source: "fn: t_dict",
+										File: "dict_lit_lambda_test.flux",
 										Start: ast.Position{
 											Column: 100,
 											Line:   39,
@@ -5852,8 +5549,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 102,
 												Line:   39,
 											},
-											File:   "dict_lit_lambda_test.flux",
-											Source: "fn",
+											File: "dict_lit_lambda_test.flux",
 											Start: ast.Position{
 												Column: 100,
 												Line:   39,
@@ -5872,8 +5568,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 110,
 												Line:   39,
 											},
-											File:   "dict_lit_lambda_test.flux",
-											Source: "t_dict",
+											File: "dict_lit_lambda_test.flux",
 											Start: ast.Position{
 												Column: 104,
 												Line:   39,
@@ -5902,8 +5597,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 112,
 						Line:   39,
 					},
-					File:   "dict_lit_lambda_test.flux",
-					Source: "test _dict = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_dict})",
+					File: "dict_lit_lambda_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   39,
@@ -5922,8 +5616,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 17,
 						Line:   4,
 					},
-					File:   "dict_lit_lambda_test.flux",
-					Source: "import \"testing\"",
+					File: "dict_lit_lambda_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   4,
@@ -5939,8 +5632,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 17,
 							Line:   4,
 						},
-						File:   "dict_lit_lambda_test.flux",
-						Source: "\"testing\"",
+						File: "dict_lit_lambda_test.flux",
 						Start: ast.Position{
 							Column: 8,
 							Line:   4,
@@ -5959,8 +5651,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 14,
 						Line:   5,
 					},
-					File:   "dict_lit_lambda_test.flux",
-					Source: "import \"dict\"",
+					File: "dict_lit_lambda_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   5,
@@ -5976,8 +5667,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 14,
 							Line:   5,
 						},
-						File:   "dict_lit_lambda_test.flux",
-						Source: "\"dict\"",
+						File: "dict_lit_lambda_test.flux",
 						Start: ast.Position{
 							Column: 8,
 							Line:   5,
@@ -5998,8 +5688,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 18,
 						Line:   1,
 					},
-					File:   "dict_lit_lambda_test.flux",
-					Source: "package dict_test",
+					File: "dict_lit_lambda_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   1,
@@ -6015,8 +5704,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 18,
 							Line:   1,
 						},
-						File:   "dict_lit_lambda_test.flux",
-						Source: "dict_test",
+						File: "dict_lit_lambda_test.flux",
 						Start: ast.Position{
 							Column: 9,
 							Line:   1,
@@ -6035,8 +5723,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Column: 112,
 					Line:   34,
 				},
-				File:   "dict_lit_test.flux",
-				Source: "package dict_test\n\n\nimport \"testing\"\nimport \"dict\"\n\ncodes = [0: \"a\", 1: \"b\"]\ninData =\n    \"\n#datatype,string,long,dateTime:RFC3339,string,string,long\n#group,false,false,false,true,true,false\n#default,_result,,,,,\n,result,table,_time,_measurement,_field,_value\n,,0,2018-05-22T19:53:26Z,_m,_f,0\n,,0,2018-05-22T19:53:36Z,_m,_f,1\n,,0,2018-05-22T19:53:46Z,_m,_f,2\n\"\noutData =\n    \"\n#datatype,string,long,dateTime:RFC3339,string,string,long,string\n#group,false,false,false,true,true,false,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,_field,_value,code\n,,0,2018-05-22T19:53:26Z,_m,_f,0,a\n,,0,2018-05-22T19:53:36Z,_m,_f,1,b\n,,0,2018-05-22T19:53:46Z,_m,_f,2,c\n\"\nt_dict = (table=<-) =>\n    table\n        |> range(start: 2018-05-22T19:53:26Z)\n        |> drop(columns: [\"_start\", \"_stop\"])\n        |> map(fn: (r) => ({r with code: dict.get(dict: codes, key: r._value, default: \"c\")}))\n\ntest _dict = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_dict})",
+				File: "dict_lit_test.flux",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -6052,8 +5739,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 25,
 						Line:   7,
 					},
-					File:   "dict_lit_test.flux",
-					Source: "codes = [0: \"a\", 1: \"b\"]",
+					File: "dict_lit_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   7,
@@ -6069,8 +5755,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 6,
 							Line:   7,
 						},
-						File:   "dict_lit_test.flux",
-						Source: "codes",
+						File: "dict_lit_test.flux",
 						Start: ast.Position{
 							Column: 1,
 							Line:   7,
@@ -6088,8 +5773,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 25,
 							Line:   7,
 						},
-						File:   "dict_lit_test.flux",
-						Source: "[0: \"a\", 1: \"b\"]",
+						File: "dict_lit_test.flux",
 						Start: ast.Position{
 							Column: 9,
 							Line:   7,
@@ -6107,8 +5791,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 11,
 									Line:   7,
 								},
-								File:   "dict_lit_test.flux",
-								Source: "0",
+								File: "dict_lit_test.flux",
 								Start: ast.Position{
 									Column: 10,
 									Line:   7,
@@ -6126,8 +5809,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 16,
 									Line:   7,
 								},
-								File:   "dict_lit_test.flux",
-								Source: "\"a\"",
+								File: "dict_lit_test.flux",
 								Start: ast.Position{
 									Column: 13,
 									Line:   7,
@@ -6147,8 +5829,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 19,
 									Line:   7,
 								},
-								File:   "dict_lit_test.flux",
-								Source: "1",
+								File: "dict_lit_test.flux",
 								Start: ast.Position{
 									Column: 18,
 									Line:   7,
@@ -6166,8 +5847,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 24,
 									Line:   7,
 								},
-								File:   "dict_lit_test.flux",
-								Source: "\"b\"",
+								File: "dict_lit_test.flux",
 								Start: ast.Position{
 									Column: 21,
 									Line:   7,
@@ -6189,8 +5869,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 2,
 						Line:   17,
 					},
-					File:   "dict_lit_test.flux",
-					Source: "inData =\n    \"\n#datatype,string,long,dateTime:RFC3339,string,string,long\n#group,false,false,false,true,true,false\n#default,_result,,,,,\n,result,table,_time,_measurement,_field,_value\n,,0,2018-05-22T19:53:26Z,_m,_f,0\n,,0,2018-05-22T19:53:36Z,_m,_f,1\n,,0,2018-05-22T19:53:46Z,_m,_f,2\n\"",
+					File: "dict_lit_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   8,
@@ -6206,8 +5885,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 7,
 							Line:   8,
 						},
-						File:   "dict_lit_test.flux",
-						Source: "inData",
+						File: "dict_lit_test.flux",
 						Start: ast.Position{
 							Column: 1,
 							Line:   8,
@@ -6225,8 +5903,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 2,
 							Line:   17,
 						},
-						File:   "dict_lit_test.flux",
-						Source: "\"\n#datatype,string,long,dateTime:RFC3339,string,string,long\n#group,false,false,false,true,true,false\n#default,_result,,,,,\n,result,table,_time,_measurement,_field,_value\n,,0,2018-05-22T19:53:26Z,_m,_f,0\n,,0,2018-05-22T19:53:36Z,_m,_f,1\n,,0,2018-05-22T19:53:46Z,_m,_f,2\n\"",
+						File: "dict_lit_test.flux",
 						Start: ast.Position{
 							Column: 5,
 							Line:   9,
@@ -6244,8 +5921,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 2,
 						Line:   27,
 					},
-					File:   "dict_lit_test.flux",
-					Source: "outData =\n    \"\n#datatype,string,long,dateTime:RFC3339,string,string,long,string\n#group,false,false,false,true,true,false,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,_field,_value,code\n,,0,2018-05-22T19:53:26Z,_m,_f,0,a\n,,0,2018-05-22T19:53:36Z,_m,_f,1,b\n,,0,2018-05-22T19:53:46Z,_m,_f,2,c\n\"",
+					File: "dict_lit_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   18,
@@ -6261,8 +5937,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 8,
 							Line:   18,
 						},
-						File:   "dict_lit_test.flux",
-						Source: "outData",
+						File: "dict_lit_test.flux",
 						Start: ast.Position{
 							Column: 1,
 							Line:   18,
@@ -6280,8 +5955,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 2,
 							Line:   27,
 						},
-						File:   "dict_lit_test.flux",
-						Source: "\"\n#datatype,string,long,dateTime:RFC3339,string,string,long,string\n#group,false,false,false,true,true,false,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,_field,_value,code\n,,0,2018-05-22T19:53:26Z,_m,_f,0,a\n,,0,2018-05-22T19:53:36Z,_m,_f,1,b\n,,0,2018-05-22T19:53:46Z,_m,_f,2,c\n\"",
+						File: "dict_lit_test.flux",
 						Start: ast.Position{
 							Column: 5,
 							Line:   19,
@@ -6299,8 +5973,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 95,
 						Line:   32,
 					},
-					File:   "dict_lit_test.flux",
-					Source: "t_dict = (table=<-) =>\n    table\n        |> range(start: 2018-05-22T19:53:26Z)\n        |> drop(columns: [\"_start\", \"_stop\"])\n        |> map(fn: (r) => ({r with code: dict.get(dict: codes, key: r._value, default: \"c\")}))",
+					File: "dict_lit_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   28,
@@ -6316,8 +5989,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 7,
 							Line:   28,
 						},
-						File:   "dict_lit_test.flux",
-						Source: "t_dict",
+						File: "dict_lit_test.flux",
 						Start: ast.Position{
 							Column: 1,
 							Line:   28,
@@ -6336,8 +6008,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 95,
 							Line:   32,
 						},
-						File:   "dict_lit_test.flux",
-						Source: "(table=<-) =>\n    table\n        |> range(start: 2018-05-22T19:53:26Z)\n        |> drop(columns: [\"_start\", \"_stop\"])\n        |> map(fn: (r) => ({r with code: dict.get(dict: codes, key: r._value, default: \"c\")}))",
+						File: "dict_lit_test.flux",
 						Start: ast.Position{
 							Column: 10,
 							Line:   28,
@@ -6356,8 +6027,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 10,
 											Line:   29,
 										},
-										File:   "dict_lit_test.flux",
-										Source: "table",
+										File: "dict_lit_test.flux",
 										Start: ast.Position{
 											Column: 5,
 											Line:   29,
@@ -6374,8 +6044,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 46,
 										Line:   30,
 									},
-									File:   "dict_lit_test.flux",
-									Source: "table\n        |> range(start: 2018-05-22T19:53:26Z)",
+									File: "dict_lit_test.flux",
 									Start: ast.Position{
 										Column: 5,
 										Line:   29,
@@ -6392,8 +6061,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 45,
 												Line:   30,
 											},
-											File:   "dict_lit_test.flux",
-											Source: "start: 2018-05-22T19:53:26Z",
+											File: "dict_lit_test.flux",
 											Start: ast.Position{
 												Column: 18,
 												Line:   30,
@@ -6410,8 +6078,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 45,
 													Line:   30,
 												},
-												File:   "dict_lit_test.flux",
-												Source: "start: 2018-05-22T19:53:26Z",
+												File: "dict_lit_test.flux",
 												Start: ast.Position{
 													Column: 18,
 													Line:   30,
@@ -6428,8 +6095,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 23,
 														Line:   30,
 													},
-													File:   "dict_lit_test.flux",
-													Source: "start",
+													File: "dict_lit_test.flux",
 													Start: ast.Position{
 														Column: 18,
 														Line:   30,
@@ -6448,8 +6114,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 45,
 														Line:   30,
 													},
-													File:   "dict_lit_test.flux",
-													Source: "2018-05-22T19:53:26Z",
+													File: "dict_lit_test.flux",
 													Start: ast.Position{
 														Column: 25,
 														Line:   30,
@@ -6470,8 +6135,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 46,
 											Line:   30,
 										},
-										File:   "dict_lit_test.flux",
-										Source: "range(start: 2018-05-22T19:53:26Z)",
+										File: "dict_lit_test.flux",
 										Start: ast.Position{
 											Column: 12,
 											Line:   30,
@@ -6487,8 +6151,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 17,
 												Line:   30,
 											},
-											File:   "dict_lit_test.flux",
-											Source: "range",
+											File: "dict_lit_test.flux",
 											Start: ast.Position{
 												Column: 12,
 												Line:   30,
@@ -6509,8 +6172,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 46,
 									Line:   31,
 								},
-								File:   "dict_lit_test.flux",
-								Source: "table\n        |> range(start: 2018-05-22T19:53:26Z)\n        |> drop(columns: [\"_start\", \"_stop\"])",
+								File: "dict_lit_test.flux",
 								Start: ast.Position{
 									Column: 5,
 									Line:   29,
@@ -6527,8 +6189,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 45,
 											Line:   31,
 										},
-										File:   "dict_lit_test.flux",
-										Source: "columns: [\"_start\", \"_stop\"]",
+										File: "dict_lit_test.flux",
 										Start: ast.Position{
 											Column: 17,
 											Line:   31,
@@ -6545,8 +6206,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 45,
 												Line:   31,
 											},
-											File:   "dict_lit_test.flux",
-											Source: "columns: [\"_start\", \"_stop\"]",
+											File: "dict_lit_test.flux",
 											Start: ast.Position{
 												Column: 17,
 												Line:   31,
@@ -6563,8 +6223,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 24,
 													Line:   31,
 												},
-												File:   "dict_lit_test.flux",
-												Source: "columns",
+												File: "dict_lit_test.flux",
 												Start: ast.Position{
 													Column: 17,
 													Line:   31,
@@ -6583,8 +6242,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 45,
 													Line:   31,
 												},
-												File:   "dict_lit_test.flux",
-												Source: "[\"_start\", \"_stop\"]",
+												File: "dict_lit_test.flux",
 												Start: ast.Position{
 													Column: 26,
 													Line:   31,
@@ -6600,8 +6258,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 35,
 														Line:   31,
 													},
-													File:   "dict_lit_test.flux",
-													Source: "\"_start\"",
+													File: "dict_lit_test.flux",
 													Start: ast.Position{
 														Column: 27,
 														Line:   31,
@@ -6618,8 +6275,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 44,
 														Line:   31,
 													},
-													File:   "dict_lit_test.flux",
-													Source: "\"_stop\"",
+													File: "dict_lit_test.flux",
 													Start: ast.Position{
 														Column: 37,
 														Line:   31,
@@ -6643,8 +6299,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 46,
 										Line:   31,
 									},
-									File:   "dict_lit_test.flux",
-									Source: "drop(columns: [\"_start\", \"_stop\"])",
+									File: "dict_lit_test.flux",
 									Start: ast.Position{
 										Column: 12,
 										Line:   31,
@@ -6660,8 +6315,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 16,
 											Line:   31,
 										},
-										File:   "dict_lit_test.flux",
-										Source: "drop",
+										File: "dict_lit_test.flux",
 										Start: ast.Position{
 											Column: 12,
 											Line:   31,
@@ -6682,8 +6336,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 95,
 								Line:   32,
 							},
-							File:   "dict_lit_test.flux",
-							Source: "table\n        |> range(start: 2018-05-22T19:53:26Z)\n        |> drop(columns: [\"_start\", \"_stop\"])\n        |> map(fn: (r) => ({r with code: dict.get(dict: codes, key: r._value, default: \"c\")}))",
+							File: "dict_lit_test.flux",
 							Start: ast.Position{
 								Column: 5,
 								Line:   29,
@@ -6700,8 +6353,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 94,
 										Line:   32,
 									},
-									File:   "dict_lit_test.flux",
-									Source: "fn: (r) => ({r with code: dict.get(dict: codes, key: r._value, default: \"c\")})",
+									File: "dict_lit_test.flux",
 									Start: ast.Position{
 										Column: 16,
 										Line:   32,
@@ -6718,8 +6370,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 94,
 											Line:   32,
 										},
-										File:   "dict_lit_test.flux",
-										Source: "fn: (r) => ({r with code: dict.get(dict: codes, key: r._value, default: \"c\")})",
+										File: "dict_lit_test.flux",
 										Start: ast.Position{
 											Column: 16,
 											Line:   32,
@@ -6736,8 +6387,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 18,
 												Line:   32,
 											},
-											File:   "dict_lit_test.flux",
-											Source: "fn",
+											File: "dict_lit_test.flux",
 											Start: ast.Position{
 												Column: 16,
 												Line:   32,
@@ -6757,8 +6407,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 94,
 												Line:   32,
 											},
-											File:   "dict_lit_test.flux",
-											Source: "(r) => ({r with code: dict.get(dict: codes, key: r._value, default: \"c\")})",
+											File: "dict_lit_test.flux",
 											Start: ast.Position{
 												Column: 20,
 												Line:   32,
@@ -6774,8 +6423,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 94,
 													Line:   32,
 												},
-												File:   "dict_lit_test.flux",
-												Source: "({r with code: dict.get(dict: codes, key: r._value, default: \"c\")})",
+												File: "dict_lit_test.flux",
 												Start: ast.Position{
 													Column: 27,
 													Line:   32,
@@ -6791,8 +6439,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 93,
 														Line:   32,
 													},
-													File:   "dict_lit_test.flux",
-													Source: "{r with code: dict.get(dict: codes, key: r._value, default: \"c\")}",
+													File: "dict_lit_test.flux",
 													Start: ast.Position{
 														Column: 28,
 														Line:   32,
@@ -6809,8 +6456,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 92,
 															Line:   32,
 														},
-														File:   "dict_lit_test.flux",
-														Source: "code: dict.get(dict: codes, key: r._value, default: \"c\")",
+														File: "dict_lit_test.flux",
 														Start: ast.Position{
 															Column: 36,
 															Line:   32,
@@ -6827,8 +6473,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Column: 40,
 																Line:   32,
 															},
-															File:   "dict_lit_test.flux",
-															Source: "code",
+															File: "dict_lit_test.flux",
 															Start: ast.Position{
 																Column: 36,
 																Line:   32,
@@ -6848,8 +6493,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Column: 91,
 																	Line:   32,
 																},
-																File:   "dict_lit_test.flux",
-																Source: "dict: codes, key: r._value, default: \"c\"",
+																File: "dict_lit_test.flux",
 																Start: ast.Position{
 																	Column: 51,
 																	Line:   32,
@@ -6866,8 +6510,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Column: 62,
 																		Line:   32,
 																	},
-																	File:   "dict_lit_test.flux",
-																	Source: "dict: codes",
+																	File: "dict_lit_test.flux",
 																	Start: ast.Position{
 																		Column: 51,
 																		Line:   32,
@@ -6884,8 +6527,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																			Column: 55,
 																			Line:   32,
 																		},
-																		File:   "dict_lit_test.flux",
-																		Source: "dict",
+																		File: "dict_lit_test.flux",
 																		Start: ast.Position{
 																			Column: 51,
 																			Line:   32,
@@ -6904,8 +6546,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																			Column: 62,
 																			Line:   32,
 																		},
-																		File:   "dict_lit_test.flux",
-																		Source: "codes",
+																		File: "dict_lit_test.flux",
 																		Start: ast.Position{
 																			Column: 57,
 																			Line:   32,
@@ -6923,8 +6564,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Column: 77,
 																		Line:   32,
 																	},
-																	File:   "dict_lit_test.flux",
-																	Source: "key: r._value",
+																	File: "dict_lit_test.flux",
 																	Start: ast.Position{
 																		Column: 64,
 																		Line:   32,
@@ -6941,8 +6581,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																			Column: 67,
 																			Line:   32,
 																		},
-																		File:   "dict_lit_test.flux",
-																		Source: "key",
+																		File: "dict_lit_test.flux",
 																		Start: ast.Position{
 																			Column: 64,
 																			Line:   32,
@@ -6961,8 +6600,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																			Column: 77,
 																			Line:   32,
 																		},
-																		File:   "dict_lit_test.flux",
-																		Source: "r._value",
+																		File: "dict_lit_test.flux",
 																		Start: ast.Position{
 																			Column: 69,
 																			Line:   32,
@@ -6979,8 +6617,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																				Column: 70,
 																				Line:   32,
 																			},
-																			File:   "dict_lit_test.flux",
-																			Source: "r",
+																			File: "dict_lit_test.flux",
 																			Start: ast.Position{
 																				Column: 69,
 																				Line:   32,
@@ -6998,8 +6635,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																				Column: 77,
 																				Line:   32,
 																			},
-																			File:   "dict_lit_test.flux",
-																			Source: "_value",
+																			File: "dict_lit_test.flux",
 																			Start: ast.Position{
 																				Column: 71,
 																				Line:   32,
@@ -7019,8 +6655,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Column: 91,
 																		Line:   32,
 																	},
-																	File:   "dict_lit_test.flux",
-																	Source: "default: \"c\"",
+																	File: "dict_lit_test.flux",
 																	Start: ast.Position{
 																		Column: 79,
 																		Line:   32,
@@ -7037,8 +6672,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																			Column: 86,
 																			Line:   32,
 																		},
-																		File:   "dict_lit_test.flux",
-																		Source: "default",
+																		File: "dict_lit_test.flux",
 																		Start: ast.Position{
 																			Column: 79,
 																			Line:   32,
@@ -7057,8 +6691,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																			Column: 91,
 																			Line:   32,
 																		},
-																		File:   "dict_lit_test.flux",
-																		Source: "\"c\"",
+																		File: "dict_lit_test.flux",
 																		Start: ast.Position{
 																			Column: 88,
 																			Line:   32,
@@ -7079,8 +6712,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Column: 92,
 																Line:   32,
 															},
-															File:   "dict_lit_test.flux",
-															Source: "dict.get(dict: codes, key: r._value, default: \"c\")",
+															File: "dict_lit_test.flux",
 															Start: ast.Position{
 																Column: 42,
 																Line:   32,
@@ -7096,8 +6728,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Column: 50,
 																	Line:   32,
 																},
-																File:   "dict_lit_test.flux",
-																Source: "dict.get",
+																File: "dict_lit_test.flux",
 																Start: ast.Position{
 																	Column: 42,
 																	Line:   32,
@@ -7114,8 +6745,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Column: 46,
 																		Line:   32,
 																	},
-																	File:   "dict_lit_test.flux",
-																	Source: "dict",
+																	File: "dict_lit_test.flux",
 																	Start: ast.Position{
 																		Column: 42,
 																		Line:   32,
@@ -7133,8 +6763,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Column: 50,
 																		Line:   32,
 																	},
-																	File:   "dict_lit_test.flux",
-																	Source: "get",
+																	File: "dict_lit_test.flux",
 																	Start: ast.Position{
 																		Column: 47,
 																		Line:   32,
@@ -7159,8 +6788,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 30,
 															Line:   32,
 														},
-														File:   "dict_lit_test.flux",
-														Source: "r",
+														File: "dict_lit_test.flux",
 														Start: ast.Position{
 															Column: 29,
 															Line:   32,
@@ -7183,8 +6811,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 22,
 													Line:   32,
 												},
-												File:   "dict_lit_test.flux",
-												Source: "r",
+												File: "dict_lit_test.flux",
 												Start: ast.Position{
 													Column: 21,
 													Line:   32,
@@ -7201,8 +6828,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 22,
 														Line:   32,
 													},
-													File:   "dict_lit_test.flux",
-													Source: "r",
+													File: "dict_lit_test.flux",
 													Start: ast.Position{
 														Column: 21,
 														Line:   32,
@@ -7228,8 +6854,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 95,
 									Line:   32,
 								},
-								File:   "dict_lit_test.flux",
-								Source: "map(fn: (r) => ({r with code: dict.get(dict: codes, key: r._value, default: \"c\")}))",
+								File: "dict_lit_test.flux",
 								Start: ast.Position{
 									Column: 12,
 									Line:   32,
@@ -7245,8 +6870,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 15,
 										Line:   32,
 									},
-									File:   "dict_lit_test.flux",
-									Source: "map",
+									File: "dict_lit_test.flux",
 									Start: ast.Position{
 										Column: 12,
 										Line:   32,
@@ -7269,8 +6893,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 19,
 								Line:   28,
 							},
-							File:   "dict_lit_test.flux",
-							Source: "table=<-",
+							File: "dict_lit_test.flux",
 							Start: ast.Position{
 								Column: 11,
 								Line:   28,
@@ -7287,8 +6910,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 16,
 									Line:   28,
 								},
-								File:   "dict_lit_test.flux",
-								Source: "table",
+								File: "dict_lit_test.flux",
 								Start: ast.Position{
 									Column: 11,
 									Line:   28,
@@ -7306,8 +6928,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 19,
 								Line:   28,
 							},
-							File:   "dict_lit_test.flux",
-							Source: "<-",
+							File: "dict_lit_test.flux",
 							Start: ast.Position{
 								Column: 17,
 								Line:   28,
@@ -7327,8 +6948,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 112,
 							Line:   34,
 						},
-						File:   "dict_lit_test.flux",
-						Source: "_dict = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_dict})",
+						File: "dict_lit_test.flux",
 						Start: ast.Position{
 							Column: 6,
 							Line:   34,
@@ -7344,8 +6964,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 11,
 								Line:   34,
 							},
-							File:   "dict_lit_test.flux",
-							Source: "_dict",
+							File: "dict_lit_test.flux",
 							Start: ast.Position{
 								Column: 6,
 								Line:   34,
@@ -7364,8 +6983,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 112,
 								Line:   34,
 							},
-							File:   "dict_lit_test.flux",
-							Source: "() => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_dict})",
+							File: "dict_lit_test.flux",
 							Start: ast.Position{
 								Column: 14,
 								Line:   34,
@@ -7381,8 +6999,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 112,
 									Line:   34,
 								},
-								File:   "dict_lit_test.flux",
-								Source: "({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_dict})",
+								File: "dict_lit_test.flux",
 								Start: ast.Position{
 									Column: 20,
 									Line:   34,
@@ -7398,8 +7015,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 111,
 										Line:   34,
 									},
-									File:   "dict_lit_test.flux",
-									Source: "{input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_dict}",
+									File: "dict_lit_test.flux",
 									Start: ast.Position{
 										Column: 21,
 										Line:   34,
@@ -7416,8 +7032,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 61,
 											Line:   34,
 										},
-										File:   "dict_lit_test.flux",
-										Source: "input: testing.loadStorage(csv: inData)",
+										File: "dict_lit_test.flux",
 										Start: ast.Position{
 											Column: 22,
 											Line:   34,
@@ -7434,8 +7049,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 27,
 												Line:   34,
 											},
-											File:   "dict_lit_test.flux",
-											Source: "input",
+											File: "dict_lit_test.flux",
 											Start: ast.Position{
 												Column: 22,
 												Line:   34,
@@ -7455,8 +7069,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 60,
 													Line:   34,
 												},
-												File:   "dict_lit_test.flux",
-												Source: "csv: inData",
+												File: "dict_lit_test.flux",
 												Start: ast.Position{
 													Column: 49,
 													Line:   34,
@@ -7473,8 +7086,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 60,
 														Line:   34,
 													},
-													File:   "dict_lit_test.flux",
-													Source: "csv: inData",
+													File: "dict_lit_test.flux",
 													Start: ast.Position{
 														Column: 49,
 														Line:   34,
@@ -7491,8 +7103,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 52,
 															Line:   34,
 														},
-														File:   "dict_lit_test.flux",
-														Source: "csv",
+														File: "dict_lit_test.flux",
 														Start: ast.Position{
 															Column: 49,
 															Line:   34,
@@ -7511,8 +7122,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 60,
 															Line:   34,
 														},
-														File:   "dict_lit_test.flux",
-														Source: "inData",
+														File: "dict_lit_test.flux",
 														Start: ast.Position{
 															Column: 54,
 															Line:   34,
@@ -7533,8 +7143,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 61,
 												Line:   34,
 											},
-											File:   "dict_lit_test.flux",
-											Source: "testing.loadStorage(csv: inData)",
+											File: "dict_lit_test.flux",
 											Start: ast.Position{
 												Column: 29,
 												Line:   34,
@@ -7550,8 +7159,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 48,
 													Line:   34,
 												},
-												File:   "dict_lit_test.flux",
-												Source: "testing.loadStorage",
+												File: "dict_lit_test.flux",
 												Start: ast.Position{
 													Column: 29,
 													Line:   34,
@@ -7568,8 +7176,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 36,
 														Line:   34,
 													},
-													File:   "dict_lit_test.flux",
-													Source: "testing",
+													File: "dict_lit_test.flux",
 													Start: ast.Position{
 														Column: 29,
 														Line:   34,
@@ -7587,8 +7194,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 48,
 														Line:   34,
 													},
-													File:   "dict_lit_test.flux",
-													Source: "loadStorage",
+													File: "dict_lit_test.flux",
 													Start: ast.Position{
 														Column: 37,
 														Line:   34,
@@ -7611,8 +7217,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 98,
 											Line:   34,
 										},
-										File:   "dict_lit_test.flux",
-										Source: "want: testing.loadMem(csv: outData)",
+										File: "dict_lit_test.flux",
 										Start: ast.Position{
 											Column: 63,
 											Line:   34,
@@ -7629,8 +7234,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 67,
 												Line:   34,
 											},
-											File:   "dict_lit_test.flux",
-											Source: "want",
+											File: "dict_lit_test.flux",
 											Start: ast.Position{
 												Column: 63,
 												Line:   34,
@@ -7650,8 +7254,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 97,
 													Line:   34,
 												},
-												File:   "dict_lit_test.flux",
-												Source: "csv: outData",
+												File: "dict_lit_test.flux",
 												Start: ast.Position{
 													Column: 85,
 													Line:   34,
@@ -7668,8 +7271,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 97,
 														Line:   34,
 													},
-													File:   "dict_lit_test.flux",
-													Source: "csv: outData",
+													File: "dict_lit_test.flux",
 													Start: ast.Position{
 														Column: 85,
 														Line:   34,
@@ -7686,8 +7288,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 88,
 															Line:   34,
 														},
-														File:   "dict_lit_test.flux",
-														Source: "csv",
+														File: "dict_lit_test.flux",
 														Start: ast.Position{
 															Column: 85,
 															Line:   34,
@@ -7706,8 +7307,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 97,
 															Line:   34,
 														},
-														File:   "dict_lit_test.flux",
-														Source: "outData",
+														File: "dict_lit_test.flux",
 														Start: ast.Position{
 															Column: 90,
 															Line:   34,
@@ -7728,8 +7328,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 98,
 												Line:   34,
 											},
-											File:   "dict_lit_test.flux",
-											Source: "testing.loadMem(csv: outData)",
+											File: "dict_lit_test.flux",
 											Start: ast.Position{
 												Column: 69,
 												Line:   34,
@@ -7745,8 +7344,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 84,
 													Line:   34,
 												},
-												File:   "dict_lit_test.flux",
-												Source: "testing.loadMem",
+												File: "dict_lit_test.flux",
 												Start: ast.Position{
 													Column: 69,
 													Line:   34,
@@ -7763,8 +7361,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 76,
 														Line:   34,
 													},
-													File:   "dict_lit_test.flux",
-													Source: "testing",
+													File: "dict_lit_test.flux",
 													Start: ast.Position{
 														Column: 69,
 														Line:   34,
@@ -7782,8 +7379,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 84,
 														Line:   34,
 													},
-													File:   "dict_lit_test.flux",
-													Source: "loadMem",
+													File: "dict_lit_test.flux",
 													Start: ast.Position{
 														Column: 77,
 														Line:   34,
@@ -7806,8 +7402,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 110,
 											Line:   34,
 										},
-										File:   "dict_lit_test.flux",
-										Source: "fn: t_dict",
+										File: "dict_lit_test.flux",
 										Start: ast.Position{
 											Column: 100,
 											Line:   34,
@@ -7824,8 +7419,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 102,
 												Line:   34,
 											},
-											File:   "dict_lit_test.flux",
-											Source: "fn",
+											File: "dict_lit_test.flux",
 											Start: ast.Position{
 												Column: 100,
 												Line:   34,
@@ -7844,8 +7438,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 110,
 												Line:   34,
 											},
-											File:   "dict_lit_test.flux",
-											Source: "t_dict",
+											File: "dict_lit_test.flux",
 											Start: ast.Position{
 												Column: 104,
 												Line:   34,
@@ -7874,8 +7467,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 112,
 						Line:   34,
 					},
-					File:   "dict_lit_test.flux",
-					Source: "test _dict = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_dict})",
+					File: "dict_lit_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   34,
@@ -7894,8 +7486,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 17,
 						Line:   4,
 					},
-					File:   "dict_lit_test.flux",
-					Source: "import \"testing\"",
+					File: "dict_lit_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   4,
@@ -7911,8 +7502,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 17,
 							Line:   4,
 						},
-						File:   "dict_lit_test.flux",
-						Source: "\"testing\"",
+						File: "dict_lit_test.flux",
 						Start: ast.Position{
 							Column: 8,
 							Line:   4,
@@ -7931,8 +7521,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 14,
 						Line:   5,
 					},
-					File:   "dict_lit_test.flux",
-					Source: "import \"dict\"",
+					File: "dict_lit_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   5,
@@ -7948,8 +7537,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 14,
 							Line:   5,
 						},
-						File:   "dict_lit_test.flux",
-						Source: "\"dict\"",
+						File: "dict_lit_test.flux",
 						Start: ast.Position{
 							Column: 8,
 							Line:   5,
@@ -7970,8 +7558,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 18,
 						Line:   1,
 					},
-					File:   "dict_lit_test.flux",
-					Source: "package dict_test",
+					File: "dict_lit_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   1,
@@ -7987,8 +7574,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 18,
 							Line:   1,
 						},
-						File:   "dict_lit_test.flux",
-						Source: "dict_test",
+						File: "dict_lit_test.flux",
 						Start: ast.Position{
 							Column: 9,
 							Line:   1,
@@ -8007,8 +7593,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Column: 112,
 					Line:   53,
 				},
-				File:   "dict_test.flux",
-				Source: "package dict_test\n\n\nimport \"testing\"\nimport \"dict\"\n\noption now = () => 2030-01-01T00:00:00Z\n\ncodes =\n    dict.fromList(pairs: [{key: \"internal\", value: 0}, {key: \"invalid\", value: 1}, {key: \"unimplemented\", value: 2}])\ninData =\n    \"\n#datatype,string,long,dateTime:RFC3339,string,string,string,string\n#group,false,false,false,true,true,true,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,_field,error_type,_value\n,,0,2018-05-22T19:53:26Z,requests,error,internal,some internal error\n,,0,2018-05-22T19:53:36Z,requests,error,internal,another internal error\n,,1,2018-05-22T19:53:46Z,requests,error,invalid,unknown parameter\n,,1,2018-05-22T19:53:56Z,requests,error,invalid,cannot use duration as value\n,,2,2018-05-22T19:54:06Z,requests,error,unimplemented,implement me\n,,2,2018-05-22T19:54:16Z,requests,error,unimplemented,not implemented\n,,3,2018-05-22T19:53:26Z,requests,error,unknown,unknown error\n,,3,2018-05-22T19:53:36Z,requests,error,unknown,network error\n\"\noutData =\n    \"\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,long\n#group,false,false,false,true,true,true,false,false\n#default,_result,,,,,,,\n,result,table,_time,_measurement,_field,error_type,_value,error_code\n,,0,2018-05-22T19:53:26Z,requests,error,internal,some internal error,0\n,,0,2018-05-22T19:53:36Z,requests,error,internal,another internal error,0\n,,1,2018-05-22T19:53:46Z,requests,error,invalid,unknown parameter,1\n,,1,2018-05-22T19:53:56Z,requests,error,invalid,cannot use duration as value,1\n,,2,2018-05-22T19:54:06Z,requests,error,unimplemented,implement me,2\n,,2,2018-05-22T19:54:16Z,requests,error,unimplemented,not implemented,2\n,,3,2018-05-22T19:53:26Z,requests,error,unknown,unknown error,-1\n,,3,2018-05-22T19:53:36Z,requests,error,unknown,network error,-1\n\"\nt_dict = (table=<-) =>\n    table\n        |> range(start: 2018-05-22T19:53:26Z)\n        |> drop(columns: [\"_start\", \"_stop\"])\n        |> map(\n            fn: (r) => {\n                error_code = dict.get(dict: codes, key: r.error_type, default: -1)\n\n                return {r with error_code: error_code}\n            },\n        )\n\ntest _dict = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_dict})",
+				File: "dict_test.flux",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -8025,8 +7610,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 40,
 							Line:   7,
 						},
-						File:   "dict_test.flux",
-						Source: "now = () => 2030-01-01T00:00:00Z",
+						File: "dict_test.flux",
 						Start: ast.Position{
 							Column: 8,
 							Line:   7,
@@ -8042,8 +7626,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 11,
 								Line:   7,
 							},
-							File:   "dict_test.flux",
-							Source: "now",
+							File: "dict_test.flux",
 							Start: ast.Position{
 								Column: 8,
 								Line:   7,
@@ -8062,8 +7645,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 40,
 								Line:   7,
 							},
-							File:   "dict_test.flux",
-							Source: "() => 2030-01-01T00:00:00Z",
+							File: "dict_test.flux",
 							Start: ast.Position{
 								Column: 14,
 								Line:   7,
@@ -8079,8 +7661,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 40,
 									Line:   7,
 								},
-								File:   "dict_test.flux",
-								Source: "2030-01-01T00:00:00Z",
+								File: "dict_test.flux",
 								Start: ast.Position{
 									Column: 20,
 									Line:   7,
@@ -8102,8 +7683,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 40,
 						Line:   7,
 					},
-					File:   "dict_test.flux",
-					Source: "option now = () => 2030-01-01T00:00:00Z",
+					File: "dict_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   7,
@@ -8119,8 +7699,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 118,
 						Line:   10,
 					},
-					File:   "dict_test.flux",
-					Source: "codes =\n    dict.fromList(pairs: [{key: \"internal\", value: 0}, {key: \"invalid\", value: 1}, {key: \"unimplemented\", value: 2}])",
+					File: "dict_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   9,
@@ -8136,8 +7715,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 6,
 							Line:   9,
 						},
-						File:   "dict_test.flux",
-						Source: "codes",
+						File: "dict_test.flux",
 						Start: ast.Position{
 							Column: 1,
 							Line:   9,
@@ -8156,8 +7734,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 117,
 								Line:   10,
 							},
-							File:   "dict_test.flux",
-							Source: "pairs: [{key: \"internal\", value: 0}, {key: \"invalid\", value: 1}, {key: \"unimplemented\", value: 2}]",
+							File: "dict_test.flux",
 							Start: ast.Position{
 								Column: 19,
 								Line:   10,
@@ -8174,8 +7751,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 117,
 									Line:   10,
 								},
-								File:   "dict_test.flux",
-								Source: "pairs: [{key: \"internal\", value: 0}, {key: \"invalid\", value: 1}, {key: \"unimplemented\", value: 2}]",
+								File: "dict_test.flux",
 								Start: ast.Position{
 									Column: 19,
 									Line:   10,
@@ -8192,8 +7768,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 24,
 										Line:   10,
 									},
-									File:   "dict_test.flux",
-									Source: "pairs",
+									File: "dict_test.flux",
 									Start: ast.Position{
 										Column: 19,
 										Line:   10,
@@ -8212,8 +7787,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 117,
 										Line:   10,
 									},
-									File:   "dict_test.flux",
-									Source: "[{key: \"internal\", value: 0}, {key: \"invalid\", value: 1}, {key: \"unimplemented\", value: 2}]",
+									File: "dict_test.flux",
 									Start: ast.Position{
 										Column: 26,
 										Line:   10,
@@ -8229,8 +7803,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 54,
 											Line:   10,
 										},
-										File:   "dict_test.flux",
-										Source: "{key: \"internal\", value: 0}",
+										File: "dict_test.flux",
 										Start: ast.Position{
 											Column: 27,
 											Line:   10,
@@ -8247,8 +7820,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 43,
 												Line:   10,
 											},
-											File:   "dict_test.flux",
-											Source: "key: \"internal\"",
+											File: "dict_test.flux",
 											Start: ast.Position{
 												Column: 28,
 												Line:   10,
@@ -8265,8 +7837,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 31,
 													Line:   10,
 												},
-												File:   "dict_test.flux",
-												Source: "key",
+												File: "dict_test.flux",
 												Start: ast.Position{
 													Column: 28,
 													Line:   10,
@@ -8285,8 +7856,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 43,
 													Line:   10,
 												},
-												File:   "dict_test.flux",
-												Source: "\"internal\"",
+												File: "dict_test.flux",
 												Start: ast.Position{
 													Column: 33,
 													Line:   10,
@@ -8304,8 +7874,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 53,
 												Line:   10,
 											},
-											File:   "dict_test.flux",
-											Source: "value: 0",
+											File: "dict_test.flux",
 											Start: ast.Position{
 												Column: 45,
 												Line:   10,
@@ -8322,8 +7891,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 50,
 													Line:   10,
 												},
-												File:   "dict_test.flux",
-												Source: "value",
+												File: "dict_test.flux",
 												Start: ast.Position{
 													Column: 45,
 													Line:   10,
@@ -8342,8 +7910,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 53,
 													Line:   10,
 												},
-												File:   "dict_test.flux",
-												Source: "0",
+												File: "dict_test.flux",
 												Start: ast.Position{
 													Column: 52,
 													Line:   10,
@@ -8364,8 +7931,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 82,
 											Line:   10,
 										},
-										File:   "dict_test.flux",
-										Source: "{key: \"invalid\", value: 1}",
+										File: "dict_test.flux",
 										Start: ast.Position{
 											Column: 56,
 											Line:   10,
@@ -8382,8 +7948,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 71,
 												Line:   10,
 											},
-											File:   "dict_test.flux",
-											Source: "key: \"invalid\"",
+											File: "dict_test.flux",
 											Start: ast.Position{
 												Column: 57,
 												Line:   10,
@@ -8400,8 +7965,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 60,
 													Line:   10,
 												},
-												File:   "dict_test.flux",
-												Source: "key",
+												File: "dict_test.flux",
 												Start: ast.Position{
 													Column: 57,
 													Line:   10,
@@ -8420,8 +7984,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 71,
 													Line:   10,
 												},
-												File:   "dict_test.flux",
-												Source: "\"invalid\"",
+												File: "dict_test.flux",
 												Start: ast.Position{
 													Column: 62,
 													Line:   10,
@@ -8439,8 +8002,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 81,
 												Line:   10,
 											},
-											File:   "dict_test.flux",
-											Source: "value: 1",
+											File: "dict_test.flux",
 											Start: ast.Position{
 												Column: 73,
 												Line:   10,
@@ -8457,8 +8019,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 78,
 													Line:   10,
 												},
-												File:   "dict_test.flux",
-												Source: "value",
+												File: "dict_test.flux",
 												Start: ast.Position{
 													Column: 73,
 													Line:   10,
@@ -8477,8 +8038,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 81,
 													Line:   10,
 												},
-												File:   "dict_test.flux",
-												Source: "1",
+												File: "dict_test.flux",
 												Start: ast.Position{
 													Column: 80,
 													Line:   10,
@@ -8499,8 +8059,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 116,
 											Line:   10,
 										},
-										File:   "dict_test.flux",
-										Source: "{key: \"unimplemented\", value: 2}",
+										File: "dict_test.flux",
 										Start: ast.Position{
 											Column: 84,
 											Line:   10,
@@ -8517,8 +8076,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 105,
 												Line:   10,
 											},
-											File:   "dict_test.flux",
-											Source: "key: \"unimplemented\"",
+											File: "dict_test.flux",
 											Start: ast.Position{
 												Column: 85,
 												Line:   10,
@@ -8535,8 +8093,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 88,
 													Line:   10,
 												},
-												File:   "dict_test.flux",
-												Source: "key",
+												File: "dict_test.flux",
 												Start: ast.Position{
 													Column: 85,
 													Line:   10,
@@ -8555,8 +8112,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 105,
 													Line:   10,
 												},
-												File:   "dict_test.flux",
-												Source: "\"unimplemented\"",
+												File: "dict_test.flux",
 												Start: ast.Position{
 													Column: 90,
 													Line:   10,
@@ -8574,8 +8130,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 115,
 												Line:   10,
 											},
-											File:   "dict_test.flux",
-											Source: "value: 2",
+											File: "dict_test.flux",
 											Start: ast.Position{
 												Column: 107,
 												Line:   10,
@@ -8592,8 +8147,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 112,
 													Line:   10,
 												},
-												File:   "dict_test.flux",
-												Source: "value",
+												File: "dict_test.flux",
 												Start: ast.Position{
 													Column: 107,
 													Line:   10,
@@ -8612,8 +8166,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 115,
 													Line:   10,
 												},
-												File:   "dict_test.flux",
-												Source: "2",
+												File: "dict_test.flux",
 												Start: ast.Position{
 													Column: 114,
 													Line:   10,
@@ -8641,8 +8194,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 118,
 							Line:   10,
 						},
-						File:   "dict_test.flux",
-						Source: "dict.fromList(pairs: [{key: \"internal\", value: 0}, {key: \"invalid\", value: 1}, {key: \"unimplemented\", value: 2}])",
+						File: "dict_test.flux",
 						Start: ast.Position{
 							Column: 5,
 							Line:   10,
@@ -8658,8 +8210,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 18,
 								Line:   10,
 							},
-							File:   "dict_test.flux",
-							Source: "dict.fromList",
+							File: "dict_test.flux",
 							Start: ast.Position{
 								Column: 5,
 								Line:   10,
@@ -8676,8 +8227,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 9,
 									Line:   10,
 								},
-								File:   "dict_test.flux",
-								Source: "dict",
+								File: "dict_test.flux",
 								Start: ast.Position{
 									Column: 5,
 									Line:   10,
@@ -8695,8 +8245,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 18,
 									Line:   10,
 								},
-								File:   "dict_test.flux",
-								Source: "fromList",
+								File: "dict_test.flux",
 								Start: ast.Position{
 									Column: 10,
 									Line:   10,
@@ -8719,8 +8268,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 2,
 						Line:   25,
 					},
-					File:   "dict_test.flux",
-					Source: "inData =\n    \"\n#datatype,string,long,dateTime:RFC3339,string,string,string,string\n#group,false,false,false,true,true,true,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,_field,error_type,_value\n,,0,2018-05-22T19:53:26Z,requests,error,internal,some internal error\n,,0,2018-05-22T19:53:36Z,requests,error,internal,another internal error\n,,1,2018-05-22T19:53:46Z,requests,error,invalid,unknown parameter\n,,1,2018-05-22T19:53:56Z,requests,error,invalid,cannot use duration as value\n,,2,2018-05-22T19:54:06Z,requests,error,unimplemented,implement me\n,,2,2018-05-22T19:54:16Z,requests,error,unimplemented,not implemented\n,,3,2018-05-22T19:53:26Z,requests,error,unknown,unknown error\n,,3,2018-05-22T19:53:36Z,requests,error,unknown,network error\n\"",
+					File: "dict_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   11,
@@ -8736,8 +8284,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 7,
 							Line:   11,
 						},
-						File:   "dict_test.flux",
-						Source: "inData",
+						File: "dict_test.flux",
 						Start: ast.Position{
 							Column: 1,
 							Line:   11,
@@ -8755,8 +8302,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 2,
 							Line:   25,
 						},
-						File:   "dict_test.flux",
-						Source: "\"\n#datatype,string,long,dateTime:RFC3339,string,string,string,string\n#group,false,false,false,true,true,true,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,_field,error_type,_value\n,,0,2018-05-22T19:53:26Z,requests,error,internal,some internal error\n,,0,2018-05-22T19:53:36Z,requests,error,internal,another internal error\n,,1,2018-05-22T19:53:46Z,requests,error,invalid,unknown parameter\n,,1,2018-05-22T19:53:56Z,requests,error,invalid,cannot use duration as value\n,,2,2018-05-22T19:54:06Z,requests,error,unimplemented,implement me\n,,2,2018-05-22T19:54:16Z,requests,error,unimplemented,not implemented\n,,3,2018-05-22T19:53:26Z,requests,error,unknown,unknown error\n,,3,2018-05-22T19:53:36Z,requests,error,unknown,network error\n\"",
+						File: "dict_test.flux",
 						Start: ast.Position{
 							Column: 5,
 							Line:   12,
@@ -8774,8 +8320,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 2,
 						Line:   40,
 					},
-					File:   "dict_test.flux",
-					Source: "outData =\n    \"\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,long\n#group,false,false,false,true,true,true,false,false\n#default,_result,,,,,,,\n,result,table,_time,_measurement,_field,error_type,_value,error_code\n,,0,2018-05-22T19:53:26Z,requests,error,internal,some internal error,0\n,,0,2018-05-22T19:53:36Z,requests,error,internal,another internal error,0\n,,1,2018-05-22T19:53:46Z,requests,error,invalid,unknown parameter,1\n,,1,2018-05-22T19:53:56Z,requests,error,invalid,cannot use duration as value,1\n,,2,2018-05-22T19:54:06Z,requests,error,unimplemented,implement me,2\n,,2,2018-05-22T19:54:16Z,requests,error,unimplemented,not implemented,2\n,,3,2018-05-22T19:53:26Z,requests,error,unknown,unknown error,-1\n,,3,2018-05-22T19:53:36Z,requests,error,unknown,network error,-1\n\"",
+					File: "dict_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   26,
@@ -8791,8 +8336,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 8,
 							Line:   26,
 						},
-						File:   "dict_test.flux",
-						Source: "outData",
+						File: "dict_test.flux",
 						Start: ast.Position{
 							Column: 1,
 							Line:   26,
@@ -8810,8 +8354,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 2,
 							Line:   40,
 						},
-						File:   "dict_test.flux",
-						Source: "\"\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,long\n#group,false,false,false,true,true,true,false,false\n#default,_result,,,,,,,\n,result,table,_time,_measurement,_field,error_type,_value,error_code\n,,0,2018-05-22T19:53:26Z,requests,error,internal,some internal error,0\n,,0,2018-05-22T19:53:36Z,requests,error,internal,another internal error,0\n,,1,2018-05-22T19:53:46Z,requests,error,invalid,unknown parameter,1\n,,1,2018-05-22T19:53:56Z,requests,error,invalid,cannot use duration as value,1\n,,2,2018-05-22T19:54:06Z,requests,error,unimplemented,implement me,2\n,,2,2018-05-22T19:54:16Z,requests,error,unimplemented,not implemented,2\n,,3,2018-05-22T19:53:26Z,requests,error,unknown,unknown error,-1\n,,3,2018-05-22T19:53:36Z,requests,error,unknown,network error,-1\n\"",
+						File: "dict_test.flux",
 						Start: ast.Position{
 							Column: 5,
 							Line:   27,
@@ -8829,8 +8372,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 10,
 						Line:   51,
 					},
-					File:   "dict_test.flux",
-					Source: "t_dict = (table=<-) =>\n    table\n        |> range(start: 2018-05-22T19:53:26Z)\n        |> drop(columns: [\"_start\", \"_stop\"])\n        |> map(\n            fn: (r) => {\n                error_code = dict.get(dict: codes, key: r.error_type, default: -1)\n\n                return {r with error_code: error_code}\n            },\n        )",
+					File: "dict_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   41,
@@ -8846,8 +8388,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 7,
 							Line:   41,
 						},
-						File:   "dict_test.flux",
-						Source: "t_dict",
+						File: "dict_test.flux",
 						Start: ast.Position{
 							Column: 1,
 							Line:   41,
@@ -8866,8 +8407,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 10,
 							Line:   51,
 						},
-						File:   "dict_test.flux",
-						Source: "(table=<-) =>\n    table\n        |> range(start: 2018-05-22T19:53:26Z)\n        |> drop(columns: [\"_start\", \"_stop\"])\n        |> map(\n            fn: (r) => {\n                error_code = dict.get(dict: codes, key: r.error_type, default: -1)\n\n                return {r with error_code: error_code}\n            },\n        )",
+						File: "dict_test.flux",
 						Start: ast.Position{
 							Column: 10,
 							Line:   41,
@@ -8886,8 +8426,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 10,
 											Line:   42,
 										},
-										File:   "dict_test.flux",
-										Source: "table",
+										File: "dict_test.flux",
 										Start: ast.Position{
 											Column: 5,
 											Line:   42,
@@ -8904,8 +8443,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 46,
 										Line:   43,
 									},
-									File:   "dict_test.flux",
-									Source: "table\n        |> range(start: 2018-05-22T19:53:26Z)",
+									File: "dict_test.flux",
 									Start: ast.Position{
 										Column: 5,
 										Line:   42,
@@ -8922,8 +8460,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 45,
 												Line:   43,
 											},
-											File:   "dict_test.flux",
-											Source: "start: 2018-05-22T19:53:26Z",
+											File: "dict_test.flux",
 											Start: ast.Position{
 												Column: 18,
 												Line:   43,
@@ -8940,8 +8477,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 45,
 													Line:   43,
 												},
-												File:   "dict_test.flux",
-												Source: "start: 2018-05-22T19:53:26Z",
+												File: "dict_test.flux",
 												Start: ast.Position{
 													Column: 18,
 													Line:   43,
@@ -8958,8 +8494,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 23,
 														Line:   43,
 													},
-													File:   "dict_test.flux",
-													Source: "start",
+													File: "dict_test.flux",
 													Start: ast.Position{
 														Column: 18,
 														Line:   43,
@@ -8978,8 +8513,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 45,
 														Line:   43,
 													},
-													File:   "dict_test.flux",
-													Source: "2018-05-22T19:53:26Z",
+													File: "dict_test.flux",
 													Start: ast.Position{
 														Column: 25,
 														Line:   43,
@@ -9000,8 +8534,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 46,
 											Line:   43,
 										},
-										File:   "dict_test.flux",
-										Source: "range(start: 2018-05-22T19:53:26Z)",
+										File: "dict_test.flux",
 										Start: ast.Position{
 											Column: 12,
 											Line:   43,
@@ -9017,8 +8550,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 17,
 												Line:   43,
 											},
-											File:   "dict_test.flux",
-											Source: "range",
+											File: "dict_test.flux",
 											Start: ast.Position{
 												Column: 12,
 												Line:   43,
@@ -9039,8 +8571,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 46,
 									Line:   44,
 								},
-								File:   "dict_test.flux",
-								Source: "table\n        |> range(start: 2018-05-22T19:53:26Z)\n        |> drop(columns: [\"_start\", \"_stop\"])",
+								File: "dict_test.flux",
 								Start: ast.Position{
 									Column: 5,
 									Line:   42,
@@ -9057,8 +8588,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 45,
 											Line:   44,
 										},
-										File:   "dict_test.flux",
-										Source: "columns: [\"_start\", \"_stop\"]",
+										File: "dict_test.flux",
 										Start: ast.Position{
 											Column: 17,
 											Line:   44,
@@ -9075,8 +8605,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 45,
 												Line:   44,
 											},
-											File:   "dict_test.flux",
-											Source: "columns: [\"_start\", \"_stop\"]",
+											File: "dict_test.flux",
 											Start: ast.Position{
 												Column: 17,
 												Line:   44,
@@ -9093,8 +8622,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 24,
 													Line:   44,
 												},
-												File:   "dict_test.flux",
-												Source: "columns",
+												File: "dict_test.flux",
 												Start: ast.Position{
 													Column: 17,
 													Line:   44,
@@ -9113,8 +8641,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 45,
 													Line:   44,
 												},
-												File:   "dict_test.flux",
-												Source: "[\"_start\", \"_stop\"]",
+												File: "dict_test.flux",
 												Start: ast.Position{
 													Column: 26,
 													Line:   44,
@@ -9130,8 +8657,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 35,
 														Line:   44,
 													},
-													File:   "dict_test.flux",
-													Source: "\"_start\"",
+													File: "dict_test.flux",
 													Start: ast.Position{
 														Column: 27,
 														Line:   44,
@@ -9148,8 +8674,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 44,
 														Line:   44,
 													},
-													File:   "dict_test.flux",
-													Source: "\"_stop\"",
+													File: "dict_test.flux",
 													Start: ast.Position{
 														Column: 37,
 														Line:   44,
@@ -9173,8 +8698,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 46,
 										Line:   44,
 									},
-									File:   "dict_test.flux",
-									Source: "drop(columns: [\"_start\", \"_stop\"])",
+									File: "dict_test.flux",
 									Start: ast.Position{
 										Column: 12,
 										Line:   44,
@@ -9190,8 +8714,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 16,
 											Line:   44,
 										},
-										File:   "dict_test.flux",
-										Source: "drop",
+										File: "dict_test.flux",
 										Start: ast.Position{
 											Column: 12,
 											Line:   44,
@@ -9212,8 +8735,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 10,
 								Line:   51,
 							},
-							File:   "dict_test.flux",
-							Source: "table\n        |> range(start: 2018-05-22T19:53:26Z)\n        |> drop(columns: [\"_start\", \"_stop\"])\n        |> map(\n            fn: (r) => {\n                error_code = dict.get(dict: codes, key: r.error_type, default: -1)\n\n                return {r with error_code: error_code}\n            },\n        )",
+							File: "dict_test.flux",
 							Start: ast.Position{
 								Column: 5,
 								Line:   42,
@@ -9230,8 +8752,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 14,
 										Line:   50,
 									},
-									File:   "dict_test.flux",
-									Source: "fn: (r) => {\n                error_code = dict.get(dict: codes, key: r.error_type, default: -1)\n\n                return {r with error_code: error_code}\n            }",
+									File: "dict_test.flux",
 									Start: ast.Position{
 										Column: 13,
 										Line:   46,
@@ -9248,8 +8769,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 14,
 											Line:   50,
 										},
-										File:   "dict_test.flux",
-										Source: "fn: (r) => {\n                error_code = dict.get(dict: codes, key: r.error_type, default: -1)\n\n                return {r with error_code: error_code}\n            }",
+										File: "dict_test.flux",
 										Start: ast.Position{
 											Column: 13,
 											Line:   46,
@@ -9266,8 +8786,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 15,
 												Line:   46,
 											},
-											File:   "dict_test.flux",
-											Source: "fn",
+											File: "dict_test.flux",
 											Start: ast.Position{
 												Column: 13,
 												Line:   46,
@@ -9287,8 +8806,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 14,
 												Line:   50,
 											},
-											File:   "dict_test.flux",
-											Source: "(r) => {\n                error_code = dict.get(dict: codes, key: r.error_type, default: -1)\n\n                return {r with error_code: error_code}\n            }",
+											File: "dict_test.flux",
 											Start: ast.Position{
 												Column: 17,
 												Line:   46,
@@ -9304,8 +8822,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 14,
 													Line:   50,
 												},
-												File:   "dict_test.flux",
-												Source: "{\n                error_code = dict.get(dict: codes, key: r.error_type, default: -1)\n\n                return {r with error_code: error_code}\n            }",
+												File: "dict_test.flux",
 												Start: ast.Position{
 													Column: 24,
 													Line:   46,
@@ -9321,8 +8838,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 83,
 														Line:   47,
 													},
-													File:   "dict_test.flux",
-													Source: "error_code = dict.get(dict: codes, key: r.error_type, default: -1)",
+													File: "dict_test.flux",
 													Start: ast.Position{
 														Column: 17,
 														Line:   47,
@@ -9338,8 +8854,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 27,
 															Line:   47,
 														},
-														File:   "dict_test.flux",
-														Source: "error_code",
+														File: "dict_test.flux",
 														Start: ast.Position{
 															Column: 17,
 															Line:   47,
@@ -9358,8 +8873,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Column: 82,
 																Line:   47,
 															},
-															File:   "dict_test.flux",
-															Source: "dict: codes, key: r.error_type, default: -1",
+															File: "dict_test.flux",
 															Start: ast.Position{
 																Column: 39,
 																Line:   47,
@@ -9376,8 +8890,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Column: 50,
 																	Line:   47,
 																},
-																File:   "dict_test.flux",
-																Source: "dict: codes",
+																File: "dict_test.flux",
 																Start: ast.Position{
 																	Column: 39,
 																	Line:   47,
@@ -9394,8 +8907,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Column: 43,
 																		Line:   47,
 																	},
-																	File:   "dict_test.flux",
-																	Source: "dict",
+																	File: "dict_test.flux",
 																	Start: ast.Position{
 																		Column: 39,
 																		Line:   47,
@@ -9414,8 +8926,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Column: 50,
 																		Line:   47,
 																	},
-																	File:   "dict_test.flux",
-																	Source: "codes",
+																	File: "dict_test.flux",
 																	Start: ast.Position{
 																		Column: 45,
 																		Line:   47,
@@ -9433,8 +8944,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Column: 69,
 																	Line:   47,
 																},
-																File:   "dict_test.flux",
-																Source: "key: r.error_type",
+																File: "dict_test.flux",
 																Start: ast.Position{
 																	Column: 52,
 																	Line:   47,
@@ -9451,8 +8961,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Column: 55,
 																		Line:   47,
 																	},
-																	File:   "dict_test.flux",
-																	Source: "key",
+																	File: "dict_test.flux",
 																	Start: ast.Position{
 																		Column: 52,
 																		Line:   47,
@@ -9471,8 +8980,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Column: 69,
 																		Line:   47,
 																	},
-																	File:   "dict_test.flux",
-																	Source: "r.error_type",
+																	File: "dict_test.flux",
 																	Start: ast.Position{
 																		Column: 57,
 																		Line:   47,
@@ -9489,8 +8997,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																			Column: 58,
 																			Line:   47,
 																		},
-																		File:   "dict_test.flux",
-																		Source: "r",
+																		File: "dict_test.flux",
 																		Start: ast.Position{
 																			Column: 57,
 																			Line:   47,
@@ -9508,8 +9015,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																			Column: 69,
 																			Line:   47,
 																		},
-																		File:   "dict_test.flux",
-																		Source: "error_type",
+																		File: "dict_test.flux",
 																		Start: ast.Position{
 																			Column: 59,
 																			Line:   47,
@@ -9529,8 +9035,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Column: 82,
 																	Line:   47,
 																},
-																File:   "dict_test.flux",
-																Source: "default: -1",
+																File: "dict_test.flux",
 																Start: ast.Position{
 																	Column: 71,
 																	Line:   47,
@@ -9547,8 +9052,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Column: 78,
 																		Line:   47,
 																	},
-																	File:   "dict_test.flux",
-																	Source: "default",
+																	File: "dict_test.flux",
 																	Start: ast.Position{
 																		Column: 71,
 																		Line:   47,
@@ -9568,8 +9072,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																			Column: 82,
 																			Line:   47,
 																		},
-																		File:   "dict_test.flux",
-																		Source: "1",
+																		File: "dict_test.flux",
 																		Start: ast.Position{
 																			Column: 81,
 																			Line:   47,
@@ -9586,8 +9089,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Column: 82,
 																		Line:   47,
 																	},
-																	File:   "dict_test.flux",
-																	Source: "-1",
+																	File: "dict_test.flux",
 																	Start: ast.Position{
 																		Column: 80,
 																		Line:   47,
@@ -9608,8 +9110,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 83,
 															Line:   47,
 														},
-														File:   "dict_test.flux",
-														Source: "dict.get(dict: codes, key: r.error_type, default: -1)",
+														File: "dict_test.flux",
 														Start: ast.Position{
 															Column: 30,
 															Line:   47,
@@ -9625,8 +9126,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Column: 38,
 																Line:   47,
 															},
-															File:   "dict_test.flux",
-															Source: "dict.get",
+															File: "dict_test.flux",
 															Start: ast.Position{
 																Column: 30,
 																Line:   47,
@@ -9643,8 +9143,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Column: 34,
 																	Line:   47,
 																},
-																File:   "dict_test.flux",
-																Source: "dict",
+																File: "dict_test.flux",
 																Start: ast.Position{
 																	Column: 30,
 																	Line:   47,
@@ -9662,8 +9161,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Column: 38,
 																	Line:   47,
 																},
-																File:   "dict_test.flux",
-																Source: "get",
+																File: "dict_test.flux",
 																Start: ast.Position{
 																	Column: 35,
 																	Line:   47,
@@ -9687,8 +9185,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 55,
 															Line:   49,
 														},
-														File:   "dict_test.flux",
-														Source: "{r with error_code: error_code}",
+														File: "dict_test.flux",
 														Start: ast.Position{
 															Column: 24,
 															Line:   49,
@@ -9705,8 +9202,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Column: 54,
 																Line:   49,
 															},
-															File:   "dict_test.flux",
-															Source: "error_code: error_code",
+															File: "dict_test.flux",
 															Start: ast.Position{
 																Column: 32,
 																Line:   49,
@@ -9723,8 +9219,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Column: 42,
 																	Line:   49,
 																},
-																File:   "dict_test.flux",
-																Source: "error_code",
+																File: "dict_test.flux",
 																Start: ast.Position{
 																	Column: 32,
 																	Line:   49,
@@ -9743,8 +9238,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Column: 54,
 																	Line:   49,
 																},
-																File:   "dict_test.flux",
-																Source: "error_code",
+																File: "dict_test.flux",
 																Start: ast.Position{
 																	Column: 44,
 																	Line:   49,
@@ -9764,8 +9258,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Column: 26,
 																Line:   49,
 															},
-															File:   "dict_test.flux",
-															Source: "r",
+															File: "dict_test.flux",
 															Start: ast.Position{
 																Column: 25,
 																Line:   49,
@@ -9783,8 +9276,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 55,
 														Line:   49,
 													},
-													File:   "dict_test.flux",
-													Source: "return {r with error_code: error_code}",
+													File: "dict_test.flux",
 													Start: ast.Position{
 														Column: 17,
 														Line:   49,
@@ -9805,8 +9297,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 19,
 													Line:   46,
 												},
-												File:   "dict_test.flux",
-												Source: "r",
+												File: "dict_test.flux",
 												Start: ast.Position{
 													Column: 18,
 													Line:   46,
@@ -9823,8 +9314,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 19,
 														Line:   46,
 													},
-													File:   "dict_test.flux",
-													Source: "r",
+													File: "dict_test.flux",
 													Start: ast.Position{
 														Column: 18,
 														Line:   46,
@@ -9850,8 +9340,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 10,
 									Line:   51,
 								},
-								File:   "dict_test.flux",
-								Source: "map(\n            fn: (r) => {\n                error_code = dict.get(dict: codes, key: r.error_type, default: -1)\n\n                return {r with error_code: error_code}\n            },\n        )",
+								File: "dict_test.flux",
 								Start: ast.Position{
 									Column: 12,
 									Line:   45,
@@ -9867,8 +9356,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 15,
 										Line:   45,
 									},
-									File:   "dict_test.flux",
-									Source: "map",
+									File: "dict_test.flux",
 									Start: ast.Position{
 										Column: 12,
 										Line:   45,
@@ -9891,8 +9379,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 19,
 								Line:   41,
 							},
-							File:   "dict_test.flux",
-							Source: "table=<-",
+							File: "dict_test.flux",
 							Start: ast.Position{
 								Column: 11,
 								Line:   41,
@@ -9909,8 +9396,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 16,
 									Line:   41,
 								},
-								File:   "dict_test.flux",
-								Source: "table",
+								File: "dict_test.flux",
 								Start: ast.Position{
 									Column: 11,
 									Line:   41,
@@ -9928,8 +9414,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 19,
 								Line:   41,
 							},
-							File:   "dict_test.flux",
-							Source: "<-",
+							File: "dict_test.flux",
 							Start: ast.Position{
 								Column: 17,
 								Line:   41,
@@ -9949,8 +9434,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 112,
 							Line:   53,
 						},
-						File:   "dict_test.flux",
-						Source: "_dict = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_dict})",
+						File: "dict_test.flux",
 						Start: ast.Position{
 							Column: 6,
 							Line:   53,
@@ -9966,8 +9450,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 11,
 								Line:   53,
 							},
-							File:   "dict_test.flux",
-							Source: "_dict",
+							File: "dict_test.flux",
 							Start: ast.Position{
 								Column: 6,
 								Line:   53,
@@ -9986,8 +9469,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 112,
 								Line:   53,
 							},
-							File:   "dict_test.flux",
-							Source: "() => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_dict})",
+							File: "dict_test.flux",
 							Start: ast.Position{
 								Column: 14,
 								Line:   53,
@@ -10003,8 +9485,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 112,
 									Line:   53,
 								},
-								File:   "dict_test.flux",
-								Source: "({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_dict})",
+								File: "dict_test.flux",
 								Start: ast.Position{
 									Column: 20,
 									Line:   53,
@@ -10020,8 +9501,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 111,
 										Line:   53,
 									},
-									File:   "dict_test.flux",
-									Source: "{input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_dict}",
+									File: "dict_test.flux",
 									Start: ast.Position{
 										Column: 21,
 										Line:   53,
@@ -10038,8 +9518,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 61,
 											Line:   53,
 										},
-										File:   "dict_test.flux",
-										Source: "input: testing.loadStorage(csv: inData)",
+										File: "dict_test.flux",
 										Start: ast.Position{
 											Column: 22,
 											Line:   53,
@@ -10056,8 +9535,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 27,
 												Line:   53,
 											},
-											File:   "dict_test.flux",
-											Source: "input",
+											File: "dict_test.flux",
 											Start: ast.Position{
 												Column: 22,
 												Line:   53,
@@ -10077,8 +9555,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 60,
 													Line:   53,
 												},
-												File:   "dict_test.flux",
-												Source: "csv: inData",
+												File: "dict_test.flux",
 												Start: ast.Position{
 													Column: 49,
 													Line:   53,
@@ -10095,8 +9572,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 60,
 														Line:   53,
 													},
-													File:   "dict_test.flux",
-													Source: "csv: inData",
+													File: "dict_test.flux",
 													Start: ast.Position{
 														Column: 49,
 														Line:   53,
@@ -10113,8 +9589,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 52,
 															Line:   53,
 														},
-														File:   "dict_test.flux",
-														Source: "csv",
+														File: "dict_test.flux",
 														Start: ast.Position{
 															Column: 49,
 															Line:   53,
@@ -10133,8 +9608,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 60,
 															Line:   53,
 														},
-														File:   "dict_test.flux",
-														Source: "inData",
+														File: "dict_test.flux",
 														Start: ast.Position{
 															Column: 54,
 															Line:   53,
@@ -10155,8 +9629,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 61,
 												Line:   53,
 											},
-											File:   "dict_test.flux",
-											Source: "testing.loadStorage(csv: inData)",
+											File: "dict_test.flux",
 											Start: ast.Position{
 												Column: 29,
 												Line:   53,
@@ -10172,8 +9645,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 48,
 													Line:   53,
 												},
-												File:   "dict_test.flux",
-												Source: "testing.loadStorage",
+												File: "dict_test.flux",
 												Start: ast.Position{
 													Column: 29,
 													Line:   53,
@@ -10190,8 +9662,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 36,
 														Line:   53,
 													},
-													File:   "dict_test.flux",
-													Source: "testing",
+													File: "dict_test.flux",
 													Start: ast.Position{
 														Column: 29,
 														Line:   53,
@@ -10209,8 +9680,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 48,
 														Line:   53,
 													},
-													File:   "dict_test.flux",
-													Source: "loadStorage",
+													File: "dict_test.flux",
 													Start: ast.Position{
 														Column: 37,
 														Line:   53,
@@ -10233,8 +9703,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 98,
 											Line:   53,
 										},
-										File:   "dict_test.flux",
-										Source: "want: testing.loadMem(csv: outData)",
+										File: "dict_test.flux",
 										Start: ast.Position{
 											Column: 63,
 											Line:   53,
@@ -10251,8 +9720,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 67,
 												Line:   53,
 											},
-											File:   "dict_test.flux",
-											Source: "want",
+											File: "dict_test.flux",
 											Start: ast.Position{
 												Column: 63,
 												Line:   53,
@@ -10272,8 +9740,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 97,
 													Line:   53,
 												},
-												File:   "dict_test.flux",
-												Source: "csv: outData",
+												File: "dict_test.flux",
 												Start: ast.Position{
 													Column: 85,
 													Line:   53,
@@ -10290,8 +9757,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 97,
 														Line:   53,
 													},
-													File:   "dict_test.flux",
-													Source: "csv: outData",
+													File: "dict_test.flux",
 													Start: ast.Position{
 														Column: 85,
 														Line:   53,
@@ -10308,8 +9774,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 88,
 															Line:   53,
 														},
-														File:   "dict_test.flux",
-														Source: "csv",
+														File: "dict_test.flux",
 														Start: ast.Position{
 															Column: 85,
 															Line:   53,
@@ -10328,8 +9793,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 97,
 															Line:   53,
 														},
-														File:   "dict_test.flux",
-														Source: "outData",
+														File: "dict_test.flux",
 														Start: ast.Position{
 															Column: 90,
 															Line:   53,
@@ -10350,8 +9814,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 98,
 												Line:   53,
 											},
-											File:   "dict_test.flux",
-											Source: "testing.loadMem(csv: outData)",
+											File: "dict_test.flux",
 											Start: ast.Position{
 												Column: 69,
 												Line:   53,
@@ -10367,8 +9830,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 84,
 													Line:   53,
 												},
-												File:   "dict_test.flux",
-												Source: "testing.loadMem",
+												File: "dict_test.flux",
 												Start: ast.Position{
 													Column: 69,
 													Line:   53,
@@ -10385,8 +9847,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 76,
 														Line:   53,
 													},
-													File:   "dict_test.flux",
-													Source: "testing",
+													File: "dict_test.flux",
 													Start: ast.Position{
 														Column: 69,
 														Line:   53,
@@ -10404,8 +9865,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 84,
 														Line:   53,
 													},
-													File:   "dict_test.flux",
-													Source: "loadMem",
+													File: "dict_test.flux",
 													Start: ast.Position{
 														Column: 77,
 														Line:   53,
@@ -10428,8 +9888,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 110,
 											Line:   53,
 										},
-										File:   "dict_test.flux",
-										Source: "fn: t_dict",
+										File: "dict_test.flux",
 										Start: ast.Position{
 											Column: 100,
 											Line:   53,
@@ -10446,8 +9905,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 102,
 												Line:   53,
 											},
-											File:   "dict_test.flux",
-											Source: "fn",
+											File: "dict_test.flux",
 											Start: ast.Position{
 												Column: 100,
 												Line:   53,
@@ -10466,8 +9924,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 110,
 												Line:   53,
 											},
-											File:   "dict_test.flux",
-											Source: "t_dict",
+											File: "dict_test.flux",
 											Start: ast.Position{
 												Column: 104,
 												Line:   53,
@@ -10496,8 +9953,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 112,
 						Line:   53,
 					},
-					File:   "dict_test.flux",
-					Source: "test _dict = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_dict})",
+					File: "dict_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   53,
@@ -10516,8 +9972,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 17,
 						Line:   4,
 					},
-					File:   "dict_test.flux",
-					Source: "import \"testing\"",
+					File: "dict_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   4,
@@ -10533,8 +9988,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 17,
 							Line:   4,
 						},
-						File:   "dict_test.flux",
-						Source: "\"testing\"",
+						File: "dict_test.flux",
 						Start: ast.Position{
 							Column: 8,
 							Line:   4,
@@ -10553,8 +10007,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 14,
 						Line:   5,
 					},
-					File:   "dict_test.flux",
-					Source: "import \"dict\"",
+					File: "dict_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   5,
@@ -10570,8 +10023,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 14,
 							Line:   5,
 						},
-						File:   "dict_test.flux",
-						Source: "\"dict\"",
+						File: "dict_test.flux",
 						Start: ast.Position{
 							Column: 8,
 							Line:   5,
@@ -10592,8 +10044,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 18,
 						Line:   1,
 					},
-					File:   "dict_test.flux",
-					Source: "package dict_test",
+					File: "dict_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   1,
@@ -10609,8 +10060,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 18,
 							Line:   1,
 						},
-						File:   "dict_test.flux",
-						Source: "dict_test",
+						File: "dict_test.flux",
 						Start: ast.Position{
 							Column: 9,
 							Line:   1,
@@ -10629,8 +10079,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Column: 112,
 					Line:   37,
 				},
-				File:   "empty_dict_lambda_test.flux",
-				Source: "package dict_test\n\n\nimport \"testing\"\nimport \"dict\"\n\ninData =\n    \"\n#datatype,string,long,dateTime:RFC3339,string,string,long\n#group,false,false,false,true,true,false\n#default,_result,,,,,\n,result,table,_time,_measurement,_field,_value\n,,0,2018-05-22T19:53:26Z,_m,_f,0\n,,0,2018-05-22T19:53:36Z,_m,_f,0\n\"\noutData =\n    \"\n#datatype,string,long,dateTime:RFC3339,string,string,long,long\n#group,false,false,false,true,true,false,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,_field,_value,code\n,,0,2018-05-22T19:53:26Z,_m,_f,0,2\n,,0,2018-05-22T19:53:36Z,_m,_f,0,2\n\"\nt_dict = (table=<-) =>\n    table\n        |> range(start: 2018-05-22T19:53:26Z)\n        |> drop(columns: [\"_start\", \"_stop\"])\n        |> map(\n            fn: (r) => {\n                codes = [:]\n\n                return {r with code: dict.get(dict: codes, key: 0, default: 2)}\n            },\n        )\n\ntest _dict = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_dict})",
+				File: "empty_dict_lambda_test.flux",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -10646,8 +10095,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 2,
 						Line:   15,
 					},
-					File:   "empty_dict_lambda_test.flux",
-					Source: "inData =\n    \"\n#datatype,string,long,dateTime:RFC3339,string,string,long\n#group,false,false,false,true,true,false\n#default,_result,,,,,\n,result,table,_time,_measurement,_field,_value\n,,0,2018-05-22T19:53:26Z,_m,_f,0\n,,0,2018-05-22T19:53:36Z,_m,_f,0\n\"",
+					File: "empty_dict_lambda_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   7,
@@ -10663,8 +10111,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 7,
 							Line:   7,
 						},
-						File:   "empty_dict_lambda_test.flux",
-						Source: "inData",
+						File: "empty_dict_lambda_test.flux",
 						Start: ast.Position{
 							Column: 1,
 							Line:   7,
@@ -10682,8 +10129,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 2,
 							Line:   15,
 						},
-						File:   "empty_dict_lambda_test.flux",
-						Source: "\"\n#datatype,string,long,dateTime:RFC3339,string,string,long\n#group,false,false,false,true,true,false\n#default,_result,,,,,\n,result,table,_time,_measurement,_field,_value\n,,0,2018-05-22T19:53:26Z,_m,_f,0\n,,0,2018-05-22T19:53:36Z,_m,_f,0\n\"",
+						File: "empty_dict_lambda_test.flux",
 						Start: ast.Position{
 							Column: 5,
 							Line:   8,
@@ -10701,8 +10147,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 2,
 						Line:   24,
 					},
-					File:   "empty_dict_lambda_test.flux",
-					Source: "outData =\n    \"\n#datatype,string,long,dateTime:RFC3339,string,string,long,long\n#group,false,false,false,true,true,false,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,_field,_value,code\n,,0,2018-05-22T19:53:26Z,_m,_f,0,2\n,,0,2018-05-22T19:53:36Z,_m,_f,0,2\n\"",
+					File: "empty_dict_lambda_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   16,
@@ -10718,8 +10163,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 8,
 							Line:   16,
 						},
-						File:   "empty_dict_lambda_test.flux",
-						Source: "outData",
+						File: "empty_dict_lambda_test.flux",
 						Start: ast.Position{
 							Column: 1,
 							Line:   16,
@@ -10737,8 +10181,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 2,
 							Line:   24,
 						},
-						File:   "empty_dict_lambda_test.flux",
-						Source: "\"\n#datatype,string,long,dateTime:RFC3339,string,string,long,long\n#group,false,false,false,true,true,false,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,_field,_value,code\n,,0,2018-05-22T19:53:26Z,_m,_f,0,2\n,,0,2018-05-22T19:53:36Z,_m,_f,0,2\n\"",
+						File: "empty_dict_lambda_test.flux",
 						Start: ast.Position{
 							Column: 5,
 							Line:   17,
@@ -10756,8 +10199,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 10,
 						Line:   35,
 					},
-					File:   "empty_dict_lambda_test.flux",
-					Source: "t_dict = (table=<-) =>\n    table\n        |> range(start: 2018-05-22T19:53:26Z)\n        |> drop(columns: [\"_start\", \"_stop\"])\n        |> map(\n            fn: (r) => {\n                codes = [:]\n\n                return {r with code: dict.get(dict: codes, key: 0, default: 2)}\n            },\n        )",
+					File: "empty_dict_lambda_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   25,
@@ -10773,8 +10215,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 7,
 							Line:   25,
 						},
-						File:   "empty_dict_lambda_test.flux",
-						Source: "t_dict",
+						File: "empty_dict_lambda_test.flux",
 						Start: ast.Position{
 							Column: 1,
 							Line:   25,
@@ -10793,8 +10234,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 10,
 							Line:   35,
 						},
-						File:   "empty_dict_lambda_test.flux",
-						Source: "(table=<-) =>\n    table\n        |> range(start: 2018-05-22T19:53:26Z)\n        |> drop(columns: [\"_start\", \"_stop\"])\n        |> map(\n            fn: (r) => {\n                codes = [:]\n\n                return {r with code: dict.get(dict: codes, key: 0, default: 2)}\n            },\n        )",
+						File: "empty_dict_lambda_test.flux",
 						Start: ast.Position{
 							Column: 10,
 							Line:   25,
@@ -10813,8 +10253,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 10,
 											Line:   26,
 										},
-										File:   "empty_dict_lambda_test.flux",
-										Source: "table",
+										File: "empty_dict_lambda_test.flux",
 										Start: ast.Position{
 											Column: 5,
 											Line:   26,
@@ -10831,8 +10270,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 46,
 										Line:   27,
 									},
-									File:   "empty_dict_lambda_test.flux",
-									Source: "table\n        |> range(start: 2018-05-22T19:53:26Z)",
+									File: "empty_dict_lambda_test.flux",
 									Start: ast.Position{
 										Column: 5,
 										Line:   26,
@@ -10849,8 +10287,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 45,
 												Line:   27,
 											},
-											File:   "empty_dict_lambda_test.flux",
-											Source: "start: 2018-05-22T19:53:26Z",
+											File: "empty_dict_lambda_test.flux",
 											Start: ast.Position{
 												Column: 18,
 												Line:   27,
@@ -10867,8 +10304,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 45,
 													Line:   27,
 												},
-												File:   "empty_dict_lambda_test.flux",
-												Source: "start: 2018-05-22T19:53:26Z",
+												File: "empty_dict_lambda_test.flux",
 												Start: ast.Position{
 													Column: 18,
 													Line:   27,
@@ -10885,8 +10321,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 23,
 														Line:   27,
 													},
-													File:   "empty_dict_lambda_test.flux",
-													Source: "start",
+													File: "empty_dict_lambda_test.flux",
 													Start: ast.Position{
 														Column: 18,
 														Line:   27,
@@ -10905,8 +10340,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 45,
 														Line:   27,
 													},
-													File:   "empty_dict_lambda_test.flux",
-													Source: "2018-05-22T19:53:26Z",
+													File: "empty_dict_lambda_test.flux",
 													Start: ast.Position{
 														Column: 25,
 														Line:   27,
@@ -10927,8 +10361,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 46,
 											Line:   27,
 										},
-										File:   "empty_dict_lambda_test.flux",
-										Source: "range(start: 2018-05-22T19:53:26Z)",
+										File: "empty_dict_lambda_test.flux",
 										Start: ast.Position{
 											Column: 12,
 											Line:   27,
@@ -10944,8 +10377,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 17,
 												Line:   27,
 											},
-											File:   "empty_dict_lambda_test.flux",
-											Source: "range",
+											File: "empty_dict_lambda_test.flux",
 											Start: ast.Position{
 												Column: 12,
 												Line:   27,
@@ -10966,8 +10398,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 46,
 									Line:   28,
 								},
-								File:   "empty_dict_lambda_test.flux",
-								Source: "table\n        |> range(start: 2018-05-22T19:53:26Z)\n        |> drop(columns: [\"_start\", \"_stop\"])",
+								File: "empty_dict_lambda_test.flux",
 								Start: ast.Position{
 									Column: 5,
 									Line:   26,
@@ -10984,8 +10415,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 45,
 											Line:   28,
 										},
-										File:   "empty_dict_lambda_test.flux",
-										Source: "columns: [\"_start\", \"_stop\"]",
+										File: "empty_dict_lambda_test.flux",
 										Start: ast.Position{
 											Column: 17,
 											Line:   28,
@@ -11002,8 +10432,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 45,
 												Line:   28,
 											},
-											File:   "empty_dict_lambda_test.flux",
-											Source: "columns: [\"_start\", \"_stop\"]",
+											File: "empty_dict_lambda_test.flux",
 											Start: ast.Position{
 												Column: 17,
 												Line:   28,
@@ -11020,8 +10449,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 24,
 													Line:   28,
 												},
-												File:   "empty_dict_lambda_test.flux",
-												Source: "columns",
+												File: "empty_dict_lambda_test.flux",
 												Start: ast.Position{
 													Column: 17,
 													Line:   28,
@@ -11040,8 +10468,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 45,
 													Line:   28,
 												},
-												File:   "empty_dict_lambda_test.flux",
-												Source: "[\"_start\", \"_stop\"]",
+												File: "empty_dict_lambda_test.flux",
 												Start: ast.Position{
 													Column: 26,
 													Line:   28,
@@ -11057,8 +10484,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 35,
 														Line:   28,
 													},
-													File:   "empty_dict_lambda_test.flux",
-													Source: "\"_start\"",
+													File: "empty_dict_lambda_test.flux",
 													Start: ast.Position{
 														Column: 27,
 														Line:   28,
@@ -11075,8 +10501,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 44,
 														Line:   28,
 													},
-													File:   "empty_dict_lambda_test.flux",
-													Source: "\"_stop\"",
+													File: "empty_dict_lambda_test.flux",
 													Start: ast.Position{
 														Column: 37,
 														Line:   28,
@@ -11100,8 +10525,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 46,
 										Line:   28,
 									},
-									File:   "empty_dict_lambda_test.flux",
-									Source: "drop(columns: [\"_start\", \"_stop\"])",
+									File: "empty_dict_lambda_test.flux",
 									Start: ast.Position{
 										Column: 12,
 										Line:   28,
@@ -11117,8 +10541,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 16,
 											Line:   28,
 										},
-										File:   "empty_dict_lambda_test.flux",
-										Source: "drop",
+										File: "empty_dict_lambda_test.flux",
 										Start: ast.Position{
 											Column: 12,
 											Line:   28,
@@ -11139,8 +10562,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 10,
 								Line:   35,
 							},
-							File:   "empty_dict_lambda_test.flux",
-							Source: "table\n        |> range(start: 2018-05-22T19:53:26Z)\n        |> drop(columns: [\"_start\", \"_stop\"])\n        |> map(\n            fn: (r) => {\n                codes = [:]\n\n                return {r with code: dict.get(dict: codes, key: 0, default: 2)}\n            },\n        )",
+							File: "empty_dict_lambda_test.flux",
 							Start: ast.Position{
 								Column: 5,
 								Line:   26,
@@ -11157,8 +10579,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 14,
 										Line:   34,
 									},
-									File:   "empty_dict_lambda_test.flux",
-									Source: "fn: (r) => {\n                codes = [:]\n\n                return {r with code: dict.get(dict: codes, key: 0, default: 2)}\n            }",
+									File: "empty_dict_lambda_test.flux",
 									Start: ast.Position{
 										Column: 13,
 										Line:   30,
@@ -11175,8 +10596,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 14,
 											Line:   34,
 										},
-										File:   "empty_dict_lambda_test.flux",
-										Source: "fn: (r) => {\n                codes = [:]\n\n                return {r with code: dict.get(dict: codes, key: 0, default: 2)}\n            }",
+										File: "empty_dict_lambda_test.flux",
 										Start: ast.Position{
 											Column: 13,
 											Line:   30,
@@ -11193,8 +10613,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 15,
 												Line:   30,
 											},
-											File:   "empty_dict_lambda_test.flux",
-											Source: "fn",
+											File: "empty_dict_lambda_test.flux",
 											Start: ast.Position{
 												Column: 13,
 												Line:   30,
@@ -11214,8 +10633,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 14,
 												Line:   34,
 											},
-											File:   "empty_dict_lambda_test.flux",
-											Source: "(r) => {\n                codes = [:]\n\n                return {r with code: dict.get(dict: codes, key: 0, default: 2)}\n            }",
+											File: "empty_dict_lambda_test.flux",
 											Start: ast.Position{
 												Column: 17,
 												Line:   30,
@@ -11231,8 +10649,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 14,
 													Line:   34,
 												},
-												File:   "empty_dict_lambda_test.flux",
-												Source: "{\n                codes = [:]\n\n                return {r with code: dict.get(dict: codes, key: 0, default: 2)}\n            }",
+												File: "empty_dict_lambda_test.flux",
 												Start: ast.Position{
 													Column: 24,
 													Line:   30,
@@ -11248,8 +10665,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 28,
 														Line:   31,
 													},
-													File:   "empty_dict_lambda_test.flux",
-													Source: "codes = [:]",
+													File: "empty_dict_lambda_test.flux",
 													Start: ast.Position{
 														Column: 17,
 														Line:   31,
@@ -11265,8 +10681,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 22,
 															Line:   31,
 														},
-														File:   "empty_dict_lambda_test.flux",
-														Source: "codes",
+														File: "empty_dict_lambda_test.flux",
 														Start: ast.Position{
 															Column: 17,
 															Line:   31,
@@ -11284,8 +10699,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 28,
 															Line:   31,
 														},
-														File:   "empty_dict_lambda_test.flux",
-														Source: "[:]",
+														File: "empty_dict_lambda_test.flux",
 														Start: ast.Position{
 															Column: 25,
 															Line:   31,
@@ -11306,8 +10720,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 80,
 															Line:   33,
 														},
-														File:   "empty_dict_lambda_test.flux",
-														Source: "{r with code: dict.get(dict: codes, key: 0, default: 2)}",
+														File: "empty_dict_lambda_test.flux",
 														Start: ast.Position{
 															Column: 24,
 															Line:   33,
@@ -11324,8 +10737,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Column: 79,
 																Line:   33,
 															},
-															File:   "empty_dict_lambda_test.flux",
-															Source: "code: dict.get(dict: codes, key: 0, default: 2)",
+															File: "empty_dict_lambda_test.flux",
 															Start: ast.Position{
 																Column: 32,
 																Line:   33,
@@ -11342,8 +10754,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Column: 36,
 																	Line:   33,
 																},
-																File:   "empty_dict_lambda_test.flux",
-																Source: "code",
+																File: "empty_dict_lambda_test.flux",
 																Start: ast.Position{
 																	Column: 32,
 																	Line:   33,
@@ -11363,8 +10774,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Column: 78,
 																		Line:   33,
 																	},
-																	File:   "empty_dict_lambda_test.flux",
-																	Source: "dict: codes, key: 0, default: 2",
+																	File: "empty_dict_lambda_test.flux",
 																	Start: ast.Position{
 																		Column: 47,
 																		Line:   33,
@@ -11381,8 +10791,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																			Column: 58,
 																			Line:   33,
 																		},
-																		File:   "empty_dict_lambda_test.flux",
-																		Source: "dict: codes",
+																		File: "empty_dict_lambda_test.flux",
 																		Start: ast.Position{
 																			Column: 47,
 																			Line:   33,
@@ -11399,8 +10808,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																				Column: 51,
 																				Line:   33,
 																			},
-																			File:   "empty_dict_lambda_test.flux",
-																			Source: "dict",
+																			File: "empty_dict_lambda_test.flux",
 																			Start: ast.Position{
 																				Column: 47,
 																				Line:   33,
@@ -11419,8 +10827,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																				Column: 58,
 																				Line:   33,
 																			},
-																			File:   "empty_dict_lambda_test.flux",
-																			Source: "codes",
+																			File: "empty_dict_lambda_test.flux",
 																			Start: ast.Position{
 																				Column: 53,
 																				Line:   33,
@@ -11438,8 +10845,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																			Column: 66,
 																			Line:   33,
 																		},
-																		File:   "empty_dict_lambda_test.flux",
-																		Source: "key: 0",
+																		File: "empty_dict_lambda_test.flux",
 																		Start: ast.Position{
 																			Column: 60,
 																			Line:   33,
@@ -11456,8 +10862,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																				Column: 63,
 																				Line:   33,
 																			},
-																			File:   "empty_dict_lambda_test.flux",
-																			Source: "key",
+																			File: "empty_dict_lambda_test.flux",
 																			Start: ast.Position{
 																				Column: 60,
 																				Line:   33,
@@ -11476,8 +10881,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																				Column: 66,
 																				Line:   33,
 																			},
-																			File:   "empty_dict_lambda_test.flux",
-																			Source: "0",
+																			File: "empty_dict_lambda_test.flux",
 																			Start: ast.Position{
 																				Column: 65,
 																				Line:   33,
@@ -11495,8 +10899,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																			Column: 78,
 																			Line:   33,
 																		},
-																		File:   "empty_dict_lambda_test.flux",
-																		Source: "default: 2",
+																		File: "empty_dict_lambda_test.flux",
 																		Start: ast.Position{
 																			Column: 68,
 																			Line:   33,
@@ -11513,8 +10916,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																				Column: 75,
 																				Line:   33,
 																			},
-																			File:   "empty_dict_lambda_test.flux",
-																			Source: "default",
+																			File: "empty_dict_lambda_test.flux",
 																			Start: ast.Position{
 																				Column: 68,
 																				Line:   33,
@@ -11533,8 +10935,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																				Column: 78,
 																				Line:   33,
 																			},
-																			File:   "empty_dict_lambda_test.flux",
-																			Source: "2",
+																			File: "empty_dict_lambda_test.flux",
 																			Start: ast.Position{
 																				Column: 77,
 																				Line:   33,
@@ -11555,8 +10956,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Column: 79,
 																	Line:   33,
 																},
-																File:   "empty_dict_lambda_test.flux",
-																Source: "dict.get(dict: codes, key: 0, default: 2)",
+																File: "empty_dict_lambda_test.flux",
 																Start: ast.Position{
 																	Column: 38,
 																	Line:   33,
@@ -11572,8 +10972,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Column: 46,
 																		Line:   33,
 																	},
-																	File:   "empty_dict_lambda_test.flux",
-																	Source: "dict.get",
+																	File: "empty_dict_lambda_test.flux",
 																	Start: ast.Position{
 																		Column: 38,
 																		Line:   33,
@@ -11590,8 +10989,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																			Column: 42,
 																			Line:   33,
 																		},
-																		File:   "empty_dict_lambda_test.flux",
-																		Source: "dict",
+																		File: "empty_dict_lambda_test.flux",
 																		Start: ast.Position{
 																			Column: 38,
 																			Line:   33,
@@ -11609,8 +11007,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																			Column: 46,
 																			Line:   33,
 																		},
-																		File:   "empty_dict_lambda_test.flux",
-																		Source: "get",
+																		File: "empty_dict_lambda_test.flux",
 																		Start: ast.Position{
 																			Column: 43,
 																			Line:   33,
@@ -11635,8 +11032,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Column: 26,
 																Line:   33,
 															},
-															File:   "empty_dict_lambda_test.flux",
-															Source: "r",
+															File: "empty_dict_lambda_test.flux",
 															Start: ast.Position{
 																Column: 25,
 																Line:   33,
@@ -11654,8 +11050,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 80,
 														Line:   33,
 													},
-													File:   "empty_dict_lambda_test.flux",
-													Source: "return {r with code: dict.get(dict: codes, key: 0, default: 2)}",
+													File: "empty_dict_lambda_test.flux",
 													Start: ast.Position{
 														Column: 17,
 														Line:   33,
@@ -11676,8 +11071,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 19,
 													Line:   30,
 												},
-												File:   "empty_dict_lambda_test.flux",
-												Source: "r",
+												File: "empty_dict_lambda_test.flux",
 												Start: ast.Position{
 													Column: 18,
 													Line:   30,
@@ -11694,8 +11088,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 19,
 														Line:   30,
 													},
-													File:   "empty_dict_lambda_test.flux",
-													Source: "r",
+													File: "empty_dict_lambda_test.flux",
 													Start: ast.Position{
 														Column: 18,
 														Line:   30,
@@ -11721,8 +11114,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 10,
 									Line:   35,
 								},
-								File:   "empty_dict_lambda_test.flux",
-								Source: "map(\n            fn: (r) => {\n                codes = [:]\n\n                return {r with code: dict.get(dict: codes, key: 0, default: 2)}\n            },\n        )",
+								File: "empty_dict_lambda_test.flux",
 								Start: ast.Position{
 									Column: 12,
 									Line:   29,
@@ -11738,8 +11130,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 15,
 										Line:   29,
 									},
-									File:   "empty_dict_lambda_test.flux",
-									Source: "map",
+									File: "empty_dict_lambda_test.flux",
 									Start: ast.Position{
 										Column: 12,
 										Line:   29,
@@ -11762,8 +11153,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 19,
 								Line:   25,
 							},
-							File:   "empty_dict_lambda_test.flux",
-							Source: "table=<-",
+							File: "empty_dict_lambda_test.flux",
 							Start: ast.Position{
 								Column: 11,
 								Line:   25,
@@ -11780,8 +11170,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 16,
 									Line:   25,
 								},
-								File:   "empty_dict_lambda_test.flux",
-								Source: "table",
+								File: "empty_dict_lambda_test.flux",
 								Start: ast.Position{
 									Column: 11,
 									Line:   25,
@@ -11799,8 +11188,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 19,
 								Line:   25,
 							},
-							File:   "empty_dict_lambda_test.flux",
-							Source: "<-",
+							File: "empty_dict_lambda_test.flux",
 							Start: ast.Position{
 								Column: 17,
 								Line:   25,
@@ -11820,8 +11208,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 112,
 							Line:   37,
 						},
-						File:   "empty_dict_lambda_test.flux",
-						Source: "_dict = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_dict})",
+						File: "empty_dict_lambda_test.flux",
 						Start: ast.Position{
 							Column: 6,
 							Line:   37,
@@ -11837,8 +11224,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 11,
 								Line:   37,
 							},
-							File:   "empty_dict_lambda_test.flux",
-							Source: "_dict",
+							File: "empty_dict_lambda_test.flux",
 							Start: ast.Position{
 								Column: 6,
 								Line:   37,
@@ -11857,8 +11243,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 112,
 								Line:   37,
 							},
-							File:   "empty_dict_lambda_test.flux",
-							Source: "() => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_dict})",
+							File: "empty_dict_lambda_test.flux",
 							Start: ast.Position{
 								Column: 14,
 								Line:   37,
@@ -11874,8 +11259,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 112,
 									Line:   37,
 								},
-								File:   "empty_dict_lambda_test.flux",
-								Source: "({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_dict})",
+								File: "empty_dict_lambda_test.flux",
 								Start: ast.Position{
 									Column: 20,
 									Line:   37,
@@ -11891,8 +11275,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 111,
 										Line:   37,
 									},
-									File:   "empty_dict_lambda_test.flux",
-									Source: "{input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_dict}",
+									File: "empty_dict_lambda_test.flux",
 									Start: ast.Position{
 										Column: 21,
 										Line:   37,
@@ -11909,8 +11292,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 61,
 											Line:   37,
 										},
-										File:   "empty_dict_lambda_test.flux",
-										Source: "input: testing.loadStorage(csv: inData)",
+										File: "empty_dict_lambda_test.flux",
 										Start: ast.Position{
 											Column: 22,
 											Line:   37,
@@ -11927,8 +11309,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 27,
 												Line:   37,
 											},
-											File:   "empty_dict_lambda_test.flux",
-											Source: "input",
+											File: "empty_dict_lambda_test.flux",
 											Start: ast.Position{
 												Column: 22,
 												Line:   37,
@@ -11948,8 +11329,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 60,
 													Line:   37,
 												},
-												File:   "empty_dict_lambda_test.flux",
-												Source: "csv: inData",
+												File: "empty_dict_lambda_test.flux",
 												Start: ast.Position{
 													Column: 49,
 													Line:   37,
@@ -11966,8 +11346,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 60,
 														Line:   37,
 													},
-													File:   "empty_dict_lambda_test.flux",
-													Source: "csv: inData",
+													File: "empty_dict_lambda_test.flux",
 													Start: ast.Position{
 														Column: 49,
 														Line:   37,
@@ -11984,8 +11363,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 52,
 															Line:   37,
 														},
-														File:   "empty_dict_lambda_test.flux",
-														Source: "csv",
+														File: "empty_dict_lambda_test.flux",
 														Start: ast.Position{
 															Column: 49,
 															Line:   37,
@@ -12004,8 +11382,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 60,
 															Line:   37,
 														},
-														File:   "empty_dict_lambda_test.flux",
-														Source: "inData",
+														File: "empty_dict_lambda_test.flux",
 														Start: ast.Position{
 															Column: 54,
 															Line:   37,
@@ -12026,8 +11403,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 61,
 												Line:   37,
 											},
-											File:   "empty_dict_lambda_test.flux",
-											Source: "testing.loadStorage(csv: inData)",
+											File: "empty_dict_lambda_test.flux",
 											Start: ast.Position{
 												Column: 29,
 												Line:   37,
@@ -12043,8 +11419,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 48,
 													Line:   37,
 												},
-												File:   "empty_dict_lambda_test.flux",
-												Source: "testing.loadStorage",
+												File: "empty_dict_lambda_test.flux",
 												Start: ast.Position{
 													Column: 29,
 													Line:   37,
@@ -12061,8 +11436,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 36,
 														Line:   37,
 													},
-													File:   "empty_dict_lambda_test.flux",
-													Source: "testing",
+													File: "empty_dict_lambda_test.flux",
 													Start: ast.Position{
 														Column: 29,
 														Line:   37,
@@ -12080,8 +11454,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 48,
 														Line:   37,
 													},
-													File:   "empty_dict_lambda_test.flux",
-													Source: "loadStorage",
+													File: "empty_dict_lambda_test.flux",
 													Start: ast.Position{
 														Column: 37,
 														Line:   37,
@@ -12104,8 +11477,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 98,
 											Line:   37,
 										},
-										File:   "empty_dict_lambda_test.flux",
-										Source: "want: testing.loadMem(csv: outData)",
+										File: "empty_dict_lambda_test.flux",
 										Start: ast.Position{
 											Column: 63,
 											Line:   37,
@@ -12122,8 +11494,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 67,
 												Line:   37,
 											},
-											File:   "empty_dict_lambda_test.flux",
-											Source: "want",
+											File: "empty_dict_lambda_test.flux",
 											Start: ast.Position{
 												Column: 63,
 												Line:   37,
@@ -12143,8 +11514,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 97,
 													Line:   37,
 												},
-												File:   "empty_dict_lambda_test.flux",
-												Source: "csv: outData",
+												File: "empty_dict_lambda_test.flux",
 												Start: ast.Position{
 													Column: 85,
 													Line:   37,
@@ -12161,8 +11531,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 97,
 														Line:   37,
 													},
-													File:   "empty_dict_lambda_test.flux",
-													Source: "csv: outData",
+													File: "empty_dict_lambda_test.flux",
 													Start: ast.Position{
 														Column: 85,
 														Line:   37,
@@ -12179,8 +11548,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 88,
 															Line:   37,
 														},
-														File:   "empty_dict_lambda_test.flux",
-														Source: "csv",
+														File: "empty_dict_lambda_test.flux",
 														Start: ast.Position{
 															Column: 85,
 															Line:   37,
@@ -12199,8 +11567,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 97,
 															Line:   37,
 														},
-														File:   "empty_dict_lambda_test.flux",
-														Source: "outData",
+														File: "empty_dict_lambda_test.flux",
 														Start: ast.Position{
 															Column: 90,
 															Line:   37,
@@ -12221,8 +11588,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 98,
 												Line:   37,
 											},
-											File:   "empty_dict_lambda_test.flux",
-											Source: "testing.loadMem(csv: outData)",
+											File: "empty_dict_lambda_test.flux",
 											Start: ast.Position{
 												Column: 69,
 												Line:   37,
@@ -12238,8 +11604,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 84,
 													Line:   37,
 												},
-												File:   "empty_dict_lambda_test.flux",
-												Source: "testing.loadMem",
+												File: "empty_dict_lambda_test.flux",
 												Start: ast.Position{
 													Column: 69,
 													Line:   37,
@@ -12256,8 +11621,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 76,
 														Line:   37,
 													},
-													File:   "empty_dict_lambda_test.flux",
-													Source: "testing",
+													File: "empty_dict_lambda_test.flux",
 													Start: ast.Position{
 														Column: 69,
 														Line:   37,
@@ -12275,8 +11639,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 84,
 														Line:   37,
 													},
-													File:   "empty_dict_lambda_test.flux",
-													Source: "loadMem",
+													File: "empty_dict_lambda_test.flux",
 													Start: ast.Position{
 														Column: 77,
 														Line:   37,
@@ -12299,8 +11662,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 110,
 											Line:   37,
 										},
-										File:   "empty_dict_lambda_test.flux",
-										Source: "fn: t_dict",
+										File: "empty_dict_lambda_test.flux",
 										Start: ast.Position{
 											Column: 100,
 											Line:   37,
@@ -12317,8 +11679,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 102,
 												Line:   37,
 											},
-											File:   "empty_dict_lambda_test.flux",
-											Source: "fn",
+											File: "empty_dict_lambda_test.flux",
 											Start: ast.Position{
 												Column: 100,
 												Line:   37,
@@ -12337,8 +11698,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 110,
 												Line:   37,
 											},
-											File:   "empty_dict_lambda_test.flux",
-											Source: "t_dict",
+											File: "empty_dict_lambda_test.flux",
 											Start: ast.Position{
 												Column: 104,
 												Line:   37,
@@ -12367,8 +11727,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 112,
 						Line:   37,
 					},
-					File:   "empty_dict_lambda_test.flux",
-					Source: "test _dict = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_dict})",
+					File: "empty_dict_lambda_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   37,
@@ -12387,8 +11746,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 17,
 						Line:   4,
 					},
-					File:   "empty_dict_lambda_test.flux",
-					Source: "import \"testing\"",
+					File: "empty_dict_lambda_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   4,
@@ -12404,8 +11762,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 17,
 							Line:   4,
 						},
-						File:   "empty_dict_lambda_test.flux",
-						Source: "\"testing\"",
+						File: "empty_dict_lambda_test.flux",
 						Start: ast.Position{
 							Column: 8,
 							Line:   4,
@@ -12424,8 +11781,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 14,
 						Line:   5,
 					},
-					File:   "empty_dict_lambda_test.flux",
-					Source: "import \"dict\"",
+					File: "empty_dict_lambda_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   5,
@@ -12441,8 +11797,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 14,
 							Line:   5,
 						},
-						File:   "empty_dict_lambda_test.flux",
-						Source: "\"dict\"",
+						File: "empty_dict_lambda_test.flux",
 						Start: ast.Position{
 							Column: 8,
 							Line:   5,
@@ -12463,8 +11818,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 18,
 						Line:   1,
 					},
-					File:   "empty_dict_lambda_test.flux",
-					Source: "package dict_test",
+					File: "empty_dict_lambda_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   1,
@@ -12480,8 +11834,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 18,
 							Line:   1,
 						},
-						File:   "empty_dict_lambda_test.flux",
-						Source: "dict_test",
+						File: "empty_dict_lambda_test.flux",
 						Start: ast.Position{
 							Column: 9,
 							Line:   1,
@@ -12500,8 +11853,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Column: 112,
 					Line:   32,
 				},
-				File:   "empty_dict_lit_test.flux",
-				Source: "package dict_test\n\n\nimport \"testing\"\nimport \"dict\"\n\ncodes = [:]\ninData =\n    \"\n#datatype,string,long,dateTime:RFC3339,string,string,long\n#group,false,false,false,true,true,false\n#default,_result,,,,,\n,result,table,_time,_measurement,_field,_value\n,,0,2018-05-22T19:53:26Z,_m,_f,0\n,,0,2018-05-22T19:53:36Z,_m,_f,0\n\"\noutData =\n    \"\n#datatype,string,long,dateTime:RFC3339,string,string,long,long\n#group,false,false,false,true,true,false,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,_field,_value,code\n,,0,2018-05-22T19:53:26Z,_m,_f,0,2\n,,0,2018-05-22T19:53:36Z,_m,_f,0,2\n\"\nt_dict = (table=<-) =>\n    table\n        |> range(start: 2018-05-22T19:53:26Z)\n        |> drop(columns: [\"_start\", \"_stop\"])\n        |> map(fn: (r) => ({r with code: dict.get(dict: codes, key: 1, default: 2)}))\n\ntest _dict = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_dict})",
+				File: "empty_dict_lit_test.flux",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -12517,8 +11869,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 12,
 						Line:   7,
 					},
-					File:   "empty_dict_lit_test.flux",
-					Source: "codes = [:]",
+					File: "empty_dict_lit_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   7,
@@ -12534,8 +11885,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 6,
 							Line:   7,
 						},
-						File:   "empty_dict_lit_test.flux",
-						Source: "codes",
+						File: "empty_dict_lit_test.flux",
 						Start: ast.Position{
 							Column: 1,
 							Line:   7,
@@ -12553,8 +11903,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 12,
 							Line:   7,
 						},
-						File:   "empty_dict_lit_test.flux",
-						Source: "[:]",
+						File: "empty_dict_lit_test.flux",
 						Start: ast.Position{
 							Column: 9,
 							Line:   7,
@@ -12574,8 +11923,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 2,
 						Line:   16,
 					},
-					File:   "empty_dict_lit_test.flux",
-					Source: "inData =\n    \"\n#datatype,string,long,dateTime:RFC3339,string,string,long\n#group,false,false,false,true,true,false\n#default,_result,,,,,\n,result,table,_time,_measurement,_field,_value\n,,0,2018-05-22T19:53:26Z,_m,_f,0\n,,0,2018-05-22T19:53:36Z,_m,_f,0\n\"",
+					File: "empty_dict_lit_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   8,
@@ -12591,8 +11939,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 7,
 							Line:   8,
 						},
-						File:   "empty_dict_lit_test.flux",
-						Source: "inData",
+						File: "empty_dict_lit_test.flux",
 						Start: ast.Position{
 							Column: 1,
 							Line:   8,
@@ -12610,8 +11957,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 2,
 							Line:   16,
 						},
-						File:   "empty_dict_lit_test.flux",
-						Source: "\"\n#datatype,string,long,dateTime:RFC3339,string,string,long\n#group,false,false,false,true,true,false\n#default,_result,,,,,\n,result,table,_time,_measurement,_field,_value\n,,0,2018-05-22T19:53:26Z,_m,_f,0\n,,0,2018-05-22T19:53:36Z,_m,_f,0\n\"",
+						File: "empty_dict_lit_test.flux",
 						Start: ast.Position{
 							Column: 5,
 							Line:   9,
@@ -12629,8 +11975,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 2,
 						Line:   25,
 					},
-					File:   "empty_dict_lit_test.flux",
-					Source: "outData =\n    \"\n#datatype,string,long,dateTime:RFC3339,string,string,long,long\n#group,false,false,false,true,true,false,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,_field,_value,code\n,,0,2018-05-22T19:53:26Z,_m,_f,0,2\n,,0,2018-05-22T19:53:36Z,_m,_f,0,2\n\"",
+					File: "empty_dict_lit_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   17,
@@ -12646,8 +11991,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 8,
 							Line:   17,
 						},
-						File:   "empty_dict_lit_test.flux",
-						Source: "outData",
+						File: "empty_dict_lit_test.flux",
 						Start: ast.Position{
 							Column: 1,
 							Line:   17,
@@ -12665,8 +12009,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 2,
 							Line:   25,
 						},
-						File:   "empty_dict_lit_test.flux",
-						Source: "\"\n#datatype,string,long,dateTime:RFC3339,string,string,long,long\n#group,false,false,false,true,true,false,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,_field,_value,code\n,,0,2018-05-22T19:53:26Z,_m,_f,0,2\n,,0,2018-05-22T19:53:36Z,_m,_f,0,2\n\"",
+						File: "empty_dict_lit_test.flux",
 						Start: ast.Position{
 							Column: 5,
 							Line:   18,
@@ -12684,8 +12027,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 86,
 						Line:   30,
 					},
-					File:   "empty_dict_lit_test.flux",
-					Source: "t_dict = (table=<-) =>\n    table\n        |> range(start: 2018-05-22T19:53:26Z)\n        |> drop(columns: [\"_start\", \"_stop\"])\n        |> map(fn: (r) => ({r with code: dict.get(dict: codes, key: 1, default: 2)}))",
+					File: "empty_dict_lit_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   26,
@@ -12701,8 +12043,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 7,
 							Line:   26,
 						},
-						File:   "empty_dict_lit_test.flux",
-						Source: "t_dict",
+						File: "empty_dict_lit_test.flux",
 						Start: ast.Position{
 							Column: 1,
 							Line:   26,
@@ -12721,8 +12062,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 86,
 							Line:   30,
 						},
-						File:   "empty_dict_lit_test.flux",
-						Source: "(table=<-) =>\n    table\n        |> range(start: 2018-05-22T19:53:26Z)\n        |> drop(columns: [\"_start\", \"_stop\"])\n        |> map(fn: (r) => ({r with code: dict.get(dict: codes, key: 1, default: 2)}))",
+						File: "empty_dict_lit_test.flux",
 						Start: ast.Position{
 							Column: 10,
 							Line:   26,
@@ -12741,8 +12081,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 10,
 											Line:   27,
 										},
-										File:   "empty_dict_lit_test.flux",
-										Source: "table",
+										File: "empty_dict_lit_test.flux",
 										Start: ast.Position{
 											Column: 5,
 											Line:   27,
@@ -12759,8 +12098,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 46,
 										Line:   28,
 									},
-									File:   "empty_dict_lit_test.flux",
-									Source: "table\n        |> range(start: 2018-05-22T19:53:26Z)",
+									File: "empty_dict_lit_test.flux",
 									Start: ast.Position{
 										Column: 5,
 										Line:   27,
@@ -12777,8 +12115,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 45,
 												Line:   28,
 											},
-											File:   "empty_dict_lit_test.flux",
-											Source: "start: 2018-05-22T19:53:26Z",
+											File: "empty_dict_lit_test.flux",
 											Start: ast.Position{
 												Column: 18,
 												Line:   28,
@@ -12795,8 +12132,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 45,
 													Line:   28,
 												},
-												File:   "empty_dict_lit_test.flux",
-												Source: "start: 2018-05-22T19:53:26Z",
+												File: "empty_dict_lit_test.flux",
 												Start: ast.Position{
 													Column: 18,
 													Line:   28,
@@ -12813,8 +12149,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 23,
 														Line:   28,
 													},
-													File:   "empty_dict_lit_test.flux",
-													Source: "start",
+													File: "empty_dict_lit_test.flux",
 													Start: ast.Position{
 														Column: 18,
 														Line:   28,
@@ -12833,8 +12168,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 45,
 														Line:   28,
 													},
-													File:   "empty_dict_lit_test.flux",
-													Source: "2018-05-22T19:53:26Z",
+													File: "empty_dict_lit_test.flux",
 													Start: ast.Position{
 														Column: 25,
 														Line:   28,
@@ -12855,8 +12189,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 46,
 											Line:   28,
 										},
-										File:   "empty_dict_lit_test.flux",
-										Source: "range(start: 2018-05-22T19:53:26Z)",
+										File: "empty_dict_lit_test.flux",
 										Start: ast.Position{
 											Column: 12,
 											Line:   28,
@@ -12872,8 +12205,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 17,
 												Line:   28,
 											},
-											File:   "empty_dict_lit_test.flux",
-											Source: "range",
+											File: "empty_dict_lit_test.flux",
 											Start: ast.Position{
 												Column: 12,
 												Line:   28,
@@ -12894,8 +12226,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 46,
 									Line:   29,
 								},
-								File:   "empty_dict_lit_test.flux",
-								Source: "table\n        |> range(start: 2018-05-22T19:53:26Z)\n        |> drop(columns: [\"_start\", \"_stop\"])",
+								File: "empty_dict_lit_test.flux",
 								Start: ast.Position{
 									Column: 5,
 									Line:   27,
@@ -12912,8 +12243,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 45,
 											Line:   29,
 										},
-										File:   "empty_dict_lit_test.flux",
-										Source: "columns: [\"_start\", \"_stop\"]",
+										File: "empty_dict_lit_test.flux",
 										Start: ast.Position{
 											Column: 17,
 											Line:   29,
@@ -12930,8 +12260,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 45,
 												Line:   29,
 											},
-											File:   "empty_dict_lit_test.flux",
-											Source: "columns: [\"_start\", \"_stop\"]",
+											File: "empty_dict_lit_test.flux",
 											Start: ast.Position{
 												Column: 17,
 												Line:   29,
@@ -12948,8 +12277,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 24,
 													Line:   29,
 												},
-												File:   "empty_dict_lit_test.flux",
-												Source: "columns",
+												File: "empty_dict_lit_test.flux",
 												Start: ast.Position{
 													Column: 17,
 													Line:   29,
@@ -12968,8 +12296,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 45,
 													Line:   29,
 												},
-												File:   "empty_dict_lit_test.flux",
-												Source: "[\"_start\", \"_stop\"]",
+												File: "empty_dict_lit_test.flux",
 												Start: ast.Position{
 													Column: 26,
 													Line:   29,
@@ -12985,8 +12312,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 35,
 														Line:   29,
 													},
-													File:   "empty_dict_lit_test.flux",
-													Source: "\"_start\"",
+													File: "empty_dict_lit_test.flux",
 													Start: ast.Position{
 														Column: 27,
 														Line:   29,
@@ -13003,8 +12329,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 44,
 														Line:   29,
 													},
-													File:   "empty_dict_lit_test.flux",
-													Source: "\"_stop\"",
+													File: "empty_dict_lit_test.flux",
 													Start: ast.Position{
 														Column: 37,
 														Line:   29,
@@ -13028,8 +12353,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 46,
 										Line:   29,
 									},
-									File:   "empty_dict_lit_test.flux",
-									Source: "drop(columns: [\"_start\", \"_stop\"])",
+									File: "empty_dict_lit_test.flux",
 									Start: ast.Position{
 										Column: 12,
 										Line:   29,
@@ -13045,8 +12369,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 16,
 											Line:   29,
 										},
-										File:   "empty_dict_lit_test.flux",
-										Source: "drop",
+										File: "empty_dict_lit_test.flux",
 										Start: ast.Position{
 											Column: 12,
 											Line:   29,
@@ -13067,8 +12390,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 86,
 								Line:   30,
 							},
-							File:   "empty_dict_lit_test.flux",
-							Source: "table\n        |> range(start: 2018-05-22T19:53:26Z)\n        |> drop(columns: [\"_start\", \"_stop\"])\n        |> map(fn: (r) => ({r with code: dict.get(dict: codes, key: 1, default: 2)}))",
+							File: "empty_dict_lit_test.flux",
 							Start: ast.Position{
 								Column: 5,
 								Line:   27,
@@ -13085,8 +12407,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 85,
 										Line:   30,
 									},
-									File:   "empty_dict_lit_test.flux",
-									Source: "fn: (r) => ({r with code: dict.get(dict: codes, key: 1, default: 2)})",
+									File: "empty_dict_lit_test.flux",
 									Start: ast.Position{
 										Column: 16,
 										Line:   30,
@@ -13103,8 +12424,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 85,
 											Line:   30,
 										},
-										File:   "empty_dict_lit_test.flux",
-										Source: "fn: (r) => ({r with code: dict.get(dict: codes, key: 1, default: 2)})",
+										File: "empty_dict_lit_test.flux",
 										Start: ast.Position{
 											Column: 16,
 											Line:   30,
@@ -13121,8 +12441,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 18,
 												Line:   30,
 											},
-											File:   "empty_dict_lit_test.flux",
-											Source: "fn",
+											File: "empty_dict_lit_test.flux",
 											Start: ast.Position{
 												Column: 16,
 												Line:   30,
@@ -13142,8 +12461,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 85,
 												Line:   30,
 											},
-											File:   "empty_dict_lit_test.flux",
-											Source: "(r) => ({r with code: dict.get(dict: codes, key: 1, default: 2)})",
+											File: "empty_dict_lit_test.flux",
 											Start: ast.Position{
 												Column: 20,
 												Line:   30,
@@ -13159,8 +12477,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 85,
 													Line:   30,
 												},
-												File:   "empty_dict_lit_test.flux",
-												Source: "({r with code: dict.get(dict: codes, key: 1, default: 2)})",
+												File: "empty_dict_lit_test.flux",
 												Start: ast.Position{
 													Column: 27,
 													Line:   30,
@@ -13176,8 +12493,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 84,
 														Line:   30,
 													},
-													File:   "empty_dict_lit_test.flux",
-													Source: "{r with code: dict.get(dict: codes, key: 1, default: 2)}",
+													File: "empty_dict_lit_test.flux",
 													Start: ast.Position{
 														Column: 28,
 														Line:   30,
@@ -13194,8 +12510,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 83,
 															Line:   30,
 														},
-														File:   "empty_dict_lit_test.flux",
-														Source: "code: dict.get(dict: codes, key: 1, default: 2)",
+														File: "empty_dict_lit_test.flux",
 														Start: ast.Position{
 															Column: 36,
 															Line:   30,
@@ -13212,8 +12527,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Column: 40,
 																Line:   30,
 															},
-															File:   "empty_dict_lit_test.flux",
-															Source: "code",
+															File: "empty_dict_lit_test.flux",
 															Start: ast.Position{
 																Column: 36,
 																Line:   30,
@@ -13233,8 +12547,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Column: 82,
 																	Line:   30,
 																},
-																File:   "empty_dict_lit_test.flux",
-																Source: "dict: codes, key: 1, default: 2",
+																File: "empty_dict_lit_test.flux",
 																Start: ast.Position{
 																	Column: 51,
 																	Line:   30,
@@ -13251,8 +12564,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Column: 62,
 																		Line:   30,
 																	},
-																	File:   "empty_dict_lit_test.flux",
-																	Source: "dict: codes",
+																	File: "empty_dict_lit_test.flux",
 																	Start: ast.Position{
 																		Column: 51,
 																		Line:   30,
@@ -13269,8 +12581,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																			Column: 55,
 																			Line:   30,
 																		},
-																		File:   "empty_dict_lit_test.flux",
-																		Source: "dict",
+																		File: "empty_dict_lit_test.flux",
 																		Start: ast.Position{
 																			Column: 51,
 																			Line:   30,
@@ -13289,8 +12600,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																			Column: 62,
 																			Line:   30,
 																		},
-																		File:   "empty_dict_lit_test.flux",
-																		Source: "codes",
+																		File: "empty_dict_lit_test.flux",
 																		Start: ast.Position{
 																			Column: 57,
 																			Line:   30,
@@ -13308,8 +12618,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Column: 70,
 																		Line:   30,
 																	},
-																	File:   "empty_dict_lit_test.flux",
-																	Source: "key: 1",
+																	File: "empty_dict_lit_test.flux",
 																	Start: ast.Position{
 																		Column: 64,
 																		Line:   30,
@@ -13326,8 +12635,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																			Column: 67,
 																			Line:   30,
 																		},
-																		File:   "empty_dict_lit_test.flux",
-																		Source: "key",
+																		File: "empty_dict_lit_test.flux",
 																		Start: ast.Position{
 																			Column: 64,
 																			Line:   30,
@@ -13346,8 +12654,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																			Column: 70,
 																			Line:   30,
 																		},
-																		File:   "empty_dict_lit_test.flux",
-																		Source: "1",
+																		File: "empty_dict_lit_test.flux",
 																		Start: ast.Position{
 																			Column: 69,
 																			Line:   30,
@@ -13365,8 +12672,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Column: 82,
 																		Line:   30,
 																	},
-																	File:   "empty_dict_lit_test.flux",
-																	Source: "default: 2",
+																	File: "empty_dict_lit_test.flux",
 																	Start: ast.Position{
 																		Column: 72,
 																		Line:   30,
@@ -13383,8 +12689,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																			Column: 79,
 																			Line:   30,
 																		},
-																		File:   "empty_dict_lit_test.flux",
-																		Source: "default",
+																		File: "empty_dict_lit_test.flux",
 																		Start: ast.Position{
 																			Column: 72,
 																			Line:   30,
@@ -13403,8 +12708,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																			Column: 82,
 																			Line:   30,
 																		},
-																		File:   "empty_dict_lit_test.flux",
-																		Source: "2",
+																		File: "empty_dict_lit_test.flux",
 																		Start: ast.Position{
 																			Column: 81,
 																			Line:   30,
@@ -13425,8 +12729,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Column: 83,
 																Line:   30,
 															},
-															File:   "empty_dict_lit_test.flux",
-															Source: "dict.get(dict: codes, key: 1, default: 2)",
+															File: "empty_dict_lit_test.flux",
 															Start: ast.Position{
 																Column: 42,
 																Line:   30,
@@ -13442,8 +12745,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Column: 50,
 																	Line:   30,
 																},
-																File:   "empty_dict_lit_test.flux",
-																Source: "dict.get",
+																File: "empty_dict_lit_test.flux",
 																Start: ast.Position{
 																	Column: 42,
 																	Line:   30,
@@ -13460,8 +12762,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Column: 46,
 																		Line:   30,
 																	},
-																	File:   "empty_dict_lit_test.flux",
-																	Source: "dict",
+																	File: "empty_dict_lit_test.flux",
 																	Start: ast.Position{
 																		Column: 42,
 																		Line:   30,
@@ -13479,8 +12780,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Column: 50,
 																		Line:   30,
 																	},
-																	File:   "empty_dict_lit_test.flux",
-																	Source: "get",
+																	File: "empty_dict_lit_test.flux",
 																	Start: ast.Position{
 																		Column: 47,
 																		Line:   30,
@@ -13505,8 +12805,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 30,
 															Line:   30,
 														},
-														File:   "empty_dict_lit_test.flux",
-														Source: "r",
+														File: "empty_dict_lit_test.flux",
 														Start: ast.Position{
 															Column: 29,
 															Line:   30,
@@ -13529,8 +12828,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 22,
 													Line:   30,
 												},
-												File:   "empty_dict_lit_test.flux",
-												Source: "r",
+												File: "empty_dict_lit_test.flux",
 												Start: ast.Position{
 													Column: 21,
 													Line:   30,
@@ -13547,8 +12845,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 22,
 														Line:   30,
 													},
-													File:   "empty_dict_lit_test.flux",
-													Source: "r",
+													File: "empty_dict_lit_test.flux",
 													Start: ast.Position{
 														Column: 21,
 														Line:   30,
@@ -13574,8 +12871,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 86,
 									Line:   30,
 								},
-								File:   "empty_dict_lit_test.flux",
-								Source: "map(fn: (r) => ({r with code: dict.get(dict: codes, key: 1, default: 2)}))",
+								File: "empty_dict_lit_test.flux",
 								Start: ast.Position{
 									Column: 12,
 									Line:   30,
@@ -13591,8 +12887,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 15,
 										Line:   30,
 									},
-									File:   "empty_dict_lit_test.flux",
-									Source: "map",
+									File: "empty_dict_lit_test.flux",
 									Start: ast.Position{
 										Column: 12,
 										Line:   30,
@@ -13615,8 +12910,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 19,
 								Line:   26,
 							},
-							File:   "empty_dict_lit_test.flux",
-							Source: "table=<-",
+							File: "empty_dict_lit_test.flux",
 							Start: ast.Position{
 								Column: 11,
 								Line:   26,
@@ -13633,8 +12927,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 16,
 									Line:   26,
 								},
-								File:   "empty_dict_lit_test.flux",
-								Source: "table",
+								File: "empty_dict_lit_test.flux",
 								Start: ast.Position{
 									Column: 11,
 									Line:   26,
@@ -13652,8 +12945,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 19,
 								Line:   26,
 							},
-							File:   "empty_dict_lit_test.flux",
-							Source: "<-",
+							File: "empty_dict_lit_test.flux",
 							Start: ast.Position{
 								Column: 17,
 								Line:   26,
@@ -13673,8 +12965,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 112,
 							Line:   32,
 						},
-						File:   "empty_dict_lit_test.flux",
-						Source: "_dict = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_dict})",
+						File: "empty_dict_lit_test.flux",
 						Start: ast.Position{
 							Column: 6,
 							Line:   32,
@@ -13690,8 +12981,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 11,
 								Line:   32,
 							},
-							File:   "empty_dict_lit_test.flux",
-							Source: "_dict",
+							File: "empty_dict_lit_test.flux",
 							Start: ast.Position{
 								Column: 6,
 								Line:   32,
@@ -13710,8 +13000,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 112,
 								Line:   32,
 							},
-							File:   "empty_dict_lit_test.flux",
-							Source: "() => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_dict})",
+							File: "empty_dict_lit_test.flux",
 							Start: ast.Position{
 								Column: 14,
 								Line:   32,
@@ -13727,8 +13016,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 112,
 									Line:   32,
 								},
-								File:   "empty_dict_lit_test.flux",
-								Source: "({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_dict})",
+								File: "empty_dict_lit_test.flux",
 								Start: ast.Position{
 									Column: 20,
 									Line:   32,
@@ -13744,8 +13032,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 111,
 										Line:   32,
 									},
-									File:   "empty_dict_lit_test.flux",
-									Source: "{input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_dict}",
+									File: "empty_dict_lit_test.flux",
 									Start: ast.Position{
 										Column: 21,
 										Line:   32,
@@ -13762,8 +13049,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 61,
 											Line:   32,
 										},
-										File:   "empty_dict_lit_test.flux",
-										Source: "input: testing.loadStorage(csv: inData)",
+										File: "empty_dict_lit_test.flux",
 										Start: ast.Position{
 											Column: 22,
 											Line:   32,
@@ -13780,8 +13066,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 27,
 												Line:   32,
 											},
-											File:   "empty_dict_lit_test.flux",
-											Source: "input",
+											File: "empty_dict_lit_test.flux",
 											Start: ast.Position{
 												Column: 22,
 												Line:   32,
@@ -13801,8 +13086,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 60,
 													Line:   32,
 												},
-												File:   "empty_dict_lit_test.flux",
-												Source: "csv: inData",
+												File: "empty_dict_lit_test.flux",
 												Start: ast.Position{
 													Column: 49,
 													Line:   32,
@@ -13819,8 +13103,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 60,
 														Line:   32,
 													},
-													File:   "empty_dict_lit_test.flux",
-													Source: "csv: inData",
+													File: "empty_dict_lit_test.flux",
 													Start: ast.Position{
 														Column: 49,
 														Line:   32,
@@ -13837,8 +13120,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 52,
 															Line:   32,
 														},
-														File:   "empty_dict_lit_test.flux",
-														Source: "csv",
+														File: "empty_dict_lit_test.flux",
 														Start: ast.Position{
 															Column: 49,
 															Line:   32,
@@ -13857,8 +13139,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 60,
 															Line:   32,
 														},
-														File:   "empty_dict_lit_test.flux",
-														Source: "inData",
+														File: "empty_dict_lit_test.flux",
 														Start: ast.Position{
 															Column: 54,
 															Line:   32,
@@ -13879,8 +13160,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 61,
 												Line:   32,
 											},
-											File:   "empty_dict_lit_test.flux",
-											Source: "testing.loadStorage(csv: inData)",
+											File: "empty_dict_lit_test.flux",
 											Start: ast.Position{
 												Column: 29,
 												Line:   32,
@@ -13896,8 +13176,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 48,
 													Line:   32,
 												},
-												File:   "empty_dict_lit_test.flux",
-												Source: "testing.loadStorage",
+												File: "empty_dict_lit_test.flux",
 												Start: ast.Position{
 													Column: 29,
 													Line:   32,
@@ -13914,8 +13193,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 36,
 														Line:   32,
 													},
-													File:   "empty_dict_lit_test.flux",
-													Source: "testing",
+													File: "empty_dict_lit_test.flux",
 													Start: ast.Position{
 														Column: 29,
 														Line:   32,
@@ -13933,8 +13211,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 48,
 														Line:   32,
 													},
-													File:   "empty_dict_lit_test.flux",
-													Source: "loadStorage",
+													File: "empty_dict_lit_test.flux",
 													Start: ast.Position{
 														Column: 37,
 														Line:   32,
@@ -13957,8 +13234,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 98,
 											Line:   32,
 										},
-										File:   "empty_dict_lit_test.flux",
-										Source: "want: testing.loadMem(csv: outData)",
+										File: "empty_dict_lit_test.flux",
 										Start: ast.Position{
 											Column: 63,
 											Line:   32,
@@ -13975,8 +13251,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 67,
 												Line:   32,
 											},
-											File:   "empty_dict_lit_test.flux",
-											Source: "want",
+											File: "empty_dict_lit_test.flux",
 											Start: ast.Position{
 												Column: 63,
 												Line:   32,
@@ -13996,8 +13271,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 97,
 													Line:   32,
 												},
-												File:   "empty_dict_lit_test.flux",
-												Source: "csv: outData",
+												File: "empty_dict_lit_test.flux",
 												Start: ast.Position{
 													Column: 85,
 													Line:   32,
@@ -14014,8 +13288,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 97,
 														Line:   32,
 													},
-													File:   "empty_dict_lit_test.flux",
-													Source: "csv: outData",
+													File: "empty_dict_lit_test.flux",
 													Start: ast.Position{
 														Column: 85,
 														Line:   32,
@@ -14032,8 +13305,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 88,
 															Line:   32,
 														},
-														File:   "empty_dict_lit_test.flux",
-														Source: "csv",
+														File: "empty_dict_lit_test.flux",
 														Start: ast.Position{
 															Column: 85,
 															Line:   32,
@@ -14052,8 +13324,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 97,
 															Line:   32,
 														},
-														File:   "empty_dict_lit_test.flux",
-														Source: "outData",
+														File: "empty_dict_lit_test.flux",
 														Start: ast.Position{
 															Column: 90,
 															Line:   32,
@@ -14074,8 +13345,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 98,
 												Line:   32,
 											},
-											File:   "empty_dict_lit_test.flux",
-											Source: "testing.loadMem(csv: outData)",
+											File: "empty_dict_lit_test.flux",
 											Start: ast.Position{
 												Column: 69,
 												Line:   32,
@@ -14091,8 +13361,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 84,
 													Line:   32,
 												},
-												File:   "empty_dict_lit_test.flux",
-												Source: "testing.loadMem",
+												File: "empty_dict_lit_test.flux",
 												Start: ast.Position{
 													Column: 69,
 													Line:   32,
@@ -14109,8 +13378,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 76,
 														Line:   32,
 													},
-													File:   "empty_dict_lit_test.flux",
-													Source: "testing",
+													File: "empty_dict_lit_test.flux",
 													Start: ast.Position{
 														Column: 69,
 														Line:   32,
@@ -14128,8 +13396,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 84,
 														Line:   32,
 													},
-													File:   "empty_dict_lit_test.flux",
-													Source: "loadMem",
+													File: "empty_dict_lit_test.flux",
 													Start: ast.Position{
 														Column: 77,
 														Line:   32,
@@ -14152,8 +13419,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 110,
 											Line:   32,
 										},
-										File:   "empty_dict_lit_test.flux",
-										Source: "fn: t_dict",
+										File: "empty_dict_lit_test.flux",
 										Start: ast.Position{
 											Column: 100,
 											Line:   32,
@@ -14170,8 +13436,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 102,
 												Line:   32,
 											},
-											File:   "empty_dict_lit_test.flux",
-											Source: "fn",
+											File: "empty_dict_lit_test.flux",
 											Start: ast.Position{
 												Column: 100,
 												Line:   32,
@@ -14190,8 +13455,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 110,
 												Line:   32,
 											},
-											File:   "empty_dict_lit_test.flux",
-											Source: "t_dict",
+											File: "empty_dict_lit_test.flux",
 											Start: ast.Position{
 												Column: 104,
 												Line:   32,
@@ -14220,8 +13484,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 112,
 						Line:   32,
 					},
-					File:   "empty_dict_lit_test.flux",
-					Source: "test _dict = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_dict})",
+					File: "empty_dict_lit_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   32,
@@ -14240,8 +13503,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 17,
 						Line:   4,
 					},
-					File:   "empty_dict_lit_test.flux",
-					Source: "import \"testing\"",
+					File: "empty_dict_lit_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   4,
@@ -14257,8 +13519,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 17,
 							Line:   4,
 						},
-						File:   "empty_dict_lit_test.flux",
-						Source: "\"testing\"",
+						File: "empty_dict_lit_test.flux",
 						Start: ast.Position{
 							Column: 8,
 							Line:   4,
@@ -14277,8 +13538,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 14,
 						Line:   5,
 					},
-					File:   "empty_dict_lit_test.flux",
-					Source: "import \"dict\"",
+					File: "empty_dict_lit_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   5,
@@ -14294,8 +13554,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 14,
 							Line:   5,
 						},
-						File:   "empty_dict_lit_test.flux",
-						Source: "\"dict\"",
+						File: "empty_dict_lit_test.flux",
 						Start: ast.Position{
 							Column: 8,
 							Line:   5,
@@ -14316,8 +13575,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 18,
 						Line:   1,
 					},
-					File:   "empty_dict_lit_test.flux",
-					Source: "package dict_test",
+					File: "empty_dict_lit_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   1,
@@ -14333,8 +13591,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 18,
 							Line:   1,
 						},
-						File:   "empty_dict_lit_test.flux",
-						Source: "dict_test",
+						File: "empty_dict_lit_test.flux",
 						Start: ast.Position{
 							Column: 9,
 							Line:   1,

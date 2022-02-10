@@ -22,8 +22,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Column: 120,
 					Line:   52,
 				},
-				File:   "duration_test.flux",
-				Source: "package events_test\n\n\nimport \"testing\"\nimport \"contrib/tomhollingworth/events\"\n\noption now = () => 2018-05-22T19:54:16Z\n\ninData =\n    \"\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string,string,string\n#group,false,false,false,false,true,true,true,true,true,true\n#default,_result,,,,,,,,,\n,result,table,_time,_value,_field,_measurement,device,fstype,host,path\n,,0,2018-05-22T19:53:26Z,34.98234271799806,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T19:53:36Z,34.98234941084654,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T19:53:46Z,34.982447293755506,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T19:53:56Z,34.982447293755506,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T19:54:06Z,34.98204153981662,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T19:54:16Z,34.982252364543626,used_percent,disk,disk1s1,apfs,host.local,/\n,,1,2018-05-22T19:53:26Z,34.98234271799806,used_percent,disk,disk1s2,apfs,host.local,/\n,,1,2018-05-22T19:53:36Z,34.98234941084654,used_percent,disk,disk1s2,apfs,host.local,/\n,,1,2018-05-22T19:53:46Z,34.982447293755506,used_percent,disk,disk1s2,apfs,host.local,/\n,,1,2018-05-22T19:53:56Z,34.982447293755506,used_percent,disk,disk1s2,apfs,host.local,/\n,,1,2018-05-22T19:54:06Z,34.98204153981662,used_percent,disk,disk1s2,apfs,host.local,/\n,,1,2018-05-22T19:54:16Z,34.982252364543626,used_percent,disk,disk1s2,apfs,host.local,/\n\"\noutData =\n    \"\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string,string,string,long\n#group,false,false,true,true,false,false,true,true,true,true,true,true,false\n#default,_result,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_measurement,device,fstype,host,path,duration\n,,0,2018-05-22T19:53:26Z,2018-05-22T19:54:36Z,2018-05-22T19:53:26Z,34.98234271799806,used_percent,disk,disk1s1,apfs,host.local,/,10\n,,0,2018-05-22T19:53:26Z,2018-05-22T19:54:36Z,2018-05-22T19:53:36Z,34.98234941084654,used_percent,disk,disk1s1,apfs,host.local,/,10\n,,0,2018-05-22T19:53:26Z,2018-05-22T19:54:36Z,2018-05-22T19:53:46Z,34.982447293755506,used_percent,disk,disk1s1,apfs,host.local,/,10\n,,0,2018-05-22T19:53:26Z,2018-05-22T19:54:36Z,2018-05-22T19:53:56Z,34.982447293755506,used_percent,disk,disk1s1,apfs,host.local,/,10\n,,0,2018-05-22T19:53:26Z,2018-05-22T19:54:36Z,2018-05-22T19:54:06Z,34.98204153981662,used_percent,disk,disk1s1,apfs,host.local,/,10\n,,0,2018-05-22T19:53:26Z,2018-05-22T19:54:36Z,2018-05-22T19:54:16Z,34.982252364543626,used_percent,disk,disk1s1,apfs,host.local,/,20\n,,1,2018-05-22T19:53:26Z,2018-05-22T19:54:36Z,2018-05-22T19:53:26Z,34.98234271799806,used_percent,disk,disk1s2,apfs,host.local,/,10\n,,1,2018-05-22T19:53:26Z,2018-05-22T19:54:36Z,2018-05-22T19:53:36Z,34.98234941084654,used_percent,disk,disk1s2,apfs,host.local,/,10\n,,1,2018-05-22T19:53:26Z,2018-05-22T19:54:36Z,2018-05-22T19:53:46Z,34.982447293755506,used_percent,disk,disk1s2,apfs,host.local,/,10\n,,1,2018-05-22T19:53:26Z,2018-05-22T19:54:36Z,2018-05-22T19:53:56Z,34.982447293755506,used_percent,disk,disk1s2,apfs,host.local,/,10\n,,1,2018-05-22T19:53:26Z,2018-05-22T19:54:36Z,2018-05-22T19:54:06Z,34.98204153981662,used_percent,disk,disk1s2,apfs,host.local,/,10\n,,1,2018-05-22T19:53:26Z,2018-05-22T19:54:36Z,2018-05-22T19:54:16Z,34.982252364543626,used_percent,disk,disk1s2,apfs,host.local,/,20\n\"\nt_duration = (table=<-) =>\n    table\n        |> range(start: 2018-05-22T19:53:26Z, stop: 2018-05-22T19:54:36Z)\n        |> events.duration()\n\ntest _duration = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_duration})",
+				File: "duration_test.flux",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -40,8 +39,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 40,
 							Line:   7,
 						},
-						File:   "duration_test.flux",
-						Source: "now = () => 2018-05-22T19:54:16Z",
+						File: "duration_test.flux",
 						Start: ast.Position{
 							Column: 8,
 							Line:   7,
@@ -57,8 +55,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 11,
 								Line:   7,
 							},
-							File:   "duration_test.flux",
-							Source: "now",
+							File: "duration_test.flux",
 							Start: ast.Position{
 								Column: 8,
 								Line:   7,
@@ -77,8 +74,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 40,
 								Line:   7,
 							},
-							File:   "duration_test.flux",
-							Source: "() => 2018-05-22T19:54:16Z",
+							File: "duration_test.flux",
 							Start: ast.Position{
 								Column: 14,
 								Line:   7,
@@ -94,8 +90,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 40,
 									Line:   7,
 								},
-								File:   "duration_test.flux",
-								Source: "2018-05-22T19:54:16Z",
+								File: "duration_test.flux",
 								Start: ast.Position{
 									Column: 20,
 									Line:   7,
@@ -117,8 +112,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 40,
 						Line:   7,
 					},
-					File:   "duration_test.flux",
-					Source: "option now = () => 2018-05-22T19:54:16Z",
+					File: "duration_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   7,
@@ -134,8 +128,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 2,
 						Line:   27,
 					},
-					File:   "duration_test.flux",
-					Source: "inData =\n    \"\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string,string,string\n#group,false,false,false,false,true,true,true,true,true,true\n#default,_result,,,,,,,,,\n,result,table,_time,_value,_field,_measurement,device,fstype,host,path\n,,0,2018-05-22T19:53:26Z,34.98234271799806,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T19:53:36Z,34.98234941084654,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T19:53:46Z,34.982447293755506,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T19:53:56Z,34.982447293755506,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T19:54:06Z,34.98204153981662,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T19:54:16Z,34.982252364543626,used_percent,disk,disk1s1,apfs,host.local,/\n,,1,2018-05-22T19:53:26Z,34.98234271799806,used_percent,disk,disk1s2,apfs,host.local,/\n,,1,2018-05-22T19:53:36Z,34.98234941084654,used_percent,disk,disk1s2,apfs,host.local,/\n,,1,2018-05-22T19:53:46Z,34.982447293755506,used_percent,disk,disk1s2,apfs,host.local,/\n,,1,2018-05-22T19:53:56Z,34.982447293755506,used_percent,disk,disk1s2,apfs,host.local,/\n,,1,2018-05-22T19:54:06Z,34.98204153981662,used_percent,disk,disk1s2,apfs,host.local,/\n,,1,2018-05-22T19:54:16Z,34.982252364543626,used_percent,disk,disk1s2,apfs,host.local,/\n\"",
+					File: "duration_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   9,
@@ -151,8 +144,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 7,
 							Line:   9,
 						},
-						File:   "duration_test.flux",
-						Source: "inData",
+						File: "duration_test.flux",
 						Start: ast.Position{
 							Column: 1,
 							Line:   9,
@@ -170,8 +162,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 2,
 							Line:   27,
 						},
-						File:   "duration_test.flux",
-						Source: "\"\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string,string,string\n#group,false,false,false,false,true,true,true,true,true,true\n#default,_result,,,,,,,,,\n,result,table,_time,_value,_field,_measurement,device,fstype,host,path\n,,0,2018-05-22T19:53:26Z,34.98234271799806,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T19:53:36Z,34.98234941084654,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T19:53:46Z,34.982447293755506,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T19:53:56Z,34.982447293755506,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T19:54:06Z,34.98204153981662,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T19:54:16Z,34.982252364543626,used_percent,disk,disk1s1,apfs,host.local,/\n,,1,2018-05-22T19:53:26Z,34.98234271799806,used_percent,disk,disk1s2,apfs,host.local,/\n,,1,2018-05-22T19:53:36Z,34.98234941084654,used_percent,disk,disk1s2,apfs,host.local,/\n,,1,2018-05-22T19:53:46Z,34.982447293755506,used_percent,disk,disk1s2,apfs,host.local,/\n,,1,2018-05-22T19:53:56Z,34.982447293755506,used_percent,disk,disk1s2,apfs,host.local,/\n,,1,2018-05-22T19:54:06Z,34.98204153981662,used_percent,disk,disk1s2,apfs,host.local,/\n,,1,2018-05-22T19:54:16Z,34.982252364543626,used_percent,disk,disk1s2,apfs,host.local,/\n\"",
+						File: "duration_test.flux",
 						Start: ast.Position{
 							Column: 5,
 							Line:   10,
@@ -189,8 +180,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 2,
 						Line:   46,
 					},
-					File:   "duration_test.flux",
-					Source: "outData =\n    \"\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string,string,string,long\n#group,false,false,true,true,false,false,true,true,true,true,true,true,false\n#default,_result,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_measurement,device,fstype,host,path,duration\n,,0,2018-05-22T19:53:26Z,2018-05-22T19:54:36Z,2018-05-22T19:53:26Z,34.98234271799806,used_percent,disk,disk1s1,apfs,host.local,/,10\n,,0,2018-05-22T19:53:26Z,2018-05-22T19:54:36Z,2018-05-22T19:53:36Z,34.98234941084654,used_percent,disk,disk1s1,apfs,host.local,/,10\n,,0,2018-05-22T19:53:26Z,2018-05-22T19:54:36Z,2018-05-22T19:53:46Z,34.982447293755506,used_percent,disk,disk1s1,apfs,host.local,/,10\n,,0,2018-05-22T19:53:26Z,2018-05-22T19:54:36Z,2018-05-22T19:53:56Z,34.982447293755506,used_percent,disk,disk1s1,apfs,host.local,/,10\n,,0,2018-05-22T19:53:26Z,2018-05-22T19:54:36Z,2018-05-22T19:54:06Z,34.98204153981662,used_percent,disk,disk1s1,apfs,host.local,/,10\n,,0,2018-05-22T19:53:26Z,2018-05-22T19:54:36Z,2018-05-22T19:54:16Z,34.982252364543626,used_percent,disk,disk1s1,apfs,host.local,/,20\n,,1,2018-05-22T19:53:26Z,2018-05-22T19:54:36Z,2018-05-22T19:53:26Z,34.98234271799806,used_percent,disk,disk1s2,apfs,host.local,/,10\n,,1,2018-05-22T19:53:26Z,2018-05-22T19:54:36Z,2018-05-22T19:53:36Z,34.98234941084654,used_percent,disk,disk1s2,apfs,host.local,/,10\n,,1,2018-05-22T19:53:26Z,2018-05-22T19:54:36Z,2018-05-22T19:53:46Z,34.982447293755506,used_percent,disk,disk1s2,apfs,host.local,/,10\n,,1,2018-05-22T19:53:26Z,2018-05-22T19:54:36Z,2018-05-22T19:53:56Z,34.982447293755506,used_percent,disk,disk1s2,apfs,host.local,/,10\n,,1,2018-05-22T19:53:26Z,2018-05-22T19:54:36Z,2018-05-22T19:54:06Z,34.98204153981662,used_percent,disk,disk1s2,apfs,host.local,/,10\n,,1,2018-05-22T19:53:26Z,2018-05-22T19:54:36Z,2018-05-22T19:54:16Z,34.982252364543626,used_percent,disk,disk1s2,apfs,host.local,/,20\n\"",
+					File: "duration_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   28,
@@ -206,8 +196,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 8,
 							Line:   28,
 						},
-						File:   "duration_test.flux",
-						Source: "outData",
+						File: "duration_test.flux",
 						Start: ast.Position{
 							Column: 1,
 							Line:   28,
@@ -225,8 +214,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 2,
 							Line:   46,
 						},
-						File:   "duration_test.flux",
-						Source: "\"\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string,string,string,long\n#group,false,false,true,true,false,false,true,true,true,true,true,true,false\n#default,_result,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_measurement,device,fstype,host,path,duration\n,,0,2018-05-22T19:53:26Z,2018-05-22T19:54:36Z,2018-05-22T19:53:26Z,34.98234271799806,used_percent,disk,disk1s1,apfs,host.local,/,10\n,,0,2018-05-22T19:53:26Z,2018-05-22T19:54:36Z,2018-05-22T19:53:36Z,34.98234941084654,used_percent,disk,disk1s1,apfs,host.local,/,10\n,,0,2018-05-22T19:53:26Z,2018-05-22T19:54:36Z,2018-05-22T19:53:46Z,34.982447293755506,used_percent,disk,disk1s1,apfs,host.local,/,10\n,,0,2018-05-22T19:53:26Z,2018-05-22T19:54:36Z,2018-05-22T19:53:56Z,34.982447293755506,used_percent,disk,disk1s1,apfs,host.local,/,10\n,,0,2018-05-22T19:53:26Z,2018-05-22T19:54:36Z,2018-05-22T19:54:06Z,34.98204153981662,used_percent,disk,disk1s1,apfs,host.local,/,10\n,,0,2018-05-22T19:53:26Z,2018-05-22T19:54:36Z,2018-05-22T19:54:16Z,34.982252364543626,used_percent,disk,disk1s1,apfs,host.local,/,20\n,,1,2018-05-22T19:53:26Z,2018-05-22T19:54:36Z,2018-05-22T19:53:26Z,34.98234271799806,used_percent,disk,disk1s2,apfs,host.local,/,10\n,,1,2018-05-22T19:53:26Z,2018-05-22T19:54:36Z,2018-05-22T19:53:36Z,34.98234941084654,used_percent,disk,disk1s2,apfs,host.local,/,10\n,,1,2018-05-22T19:53:26Z,2018-05-22T19:54:36Z,2018-05-22T19:53:46Z,34.982447293755506,used_percent,disk,disk1s2,apfs,host.local,/,10\n,,1,2018-05-22T19:53:26Z,2018-05-22T19:54:36Z,2018-05-22T19:53:56Z,34.982447293755506,used_percent,disk,disk1s2,apfs,host.local,/,10\n,,1,2018-05-22T19:53:26Z,2018-05-22T19:54:36Z,2018-05-22T19:54:06Z,34.98204153981662,used_percent,disk,disk1s2,apfs,host.local,/,10\n,,1,2018-05-22T19:53:26Z,2018-05-22T19:54:36Z,2018-05-22T19:54:16Z,34.982252364543626,used_percent,disk,disk1s2,apfs,host.local,/,20\n\"",
+						File: "duration_test.flux",
 						Start: ast.Position{
 							Column: 5,
 							Line:   29,
@@ -244,8 +232,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 29,
 						Line:   50,
 					},
-					File:   "duration_test.flux",
-					Source: "t_duration = (table=<-) =>\n    table\n        |> range(start: 2018-05-22T19:53:26Z, stop: 2018-05-22T19:54:36Z)\n        |> events.duration()",
+					File: "duration_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   47,
@@ -261,8 +248,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 11,
 							Line:   47,
 						},
-						File:   "duration_test.flux",
-						Source: "t_duration",
+						File: "duration_test.flux",
 						Start: ast.Position{
 							Column: 1,
 							Line:   47,
@@ -281,8 +267,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 29,
 							Line:   50,
 						},
-						File:   "duration_test.flux",
-						Source: "(table=<-) =>\n    table\n        |> range(start: 2018-05-22T19:53:26Z, stop: 2018-05-22T19:54:36Z)\n        |> events.duration()",
+						File: "duration_test.flux",
 						Start: ast.Position{
 							Column: 14,
 							Line:   47,
@@ -300,8 +285,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 10,
 										Line:   48,
 									},
-									File:   "duration_test.flux",
-									Source: "table",
+									File: "duration_test.flux",
 									Start: ast.Position{
 										Column: 5,
 										Line:   48,
@@ -318,8 +302,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 74,
 									Line:   49,
 								},
-								File:   "duration_test.flux",
-								Source: "table\n        |> range(start: 2018-05-22T19:53:26Z, stop: 2018-05-22T19:54:36Z)",
+								File: "duration_test.flux",
 								Start: ast.Position{
 									Column: 5,
 									Line:   48,
@@ -336,8 +319,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 73,
 											Line:   49,
 										},
-										File:   "duration_test.flux",
-										Source: "start: 2018-05-22T19:53:26Z, stop: 2018-05-22T19:54:36Z",
+										File: "duration_test.flux",
 										Start: ast.Position{
 											Column: 18,
 											Line:   49,
@@ -354,8 +336,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 45,
 												Line:   49,
 											},
-											File:   "duration_test.flux",
-											Source: "start: 2018-05-22T19:53:26Z",
+											File: "duration_test.flux",
 											Start: ast.Position{
 												Column: 18,
 												Line:   49,
@@ -372,8 +353,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 23,
 													Line:   49,
 												},
-												File:   "duration_test.flux",
-												Source: "start",
+												File: "duration_test.flux",
 												Start: ast.Position{
 													Column: 18,
 													Line:   49,
@@ -392,8 +372,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 45,
 													Line:   49,
 												},
-												File:   "duration_test.flux",
-												Source: "2018-05-22T19:53:26Z",
+												File: "duration_test.flux",
 												Start: ast.Position{
 													Column: 25,
 													Line:   49,
@@ -411,8 +390,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 73,
 												Line:   49,
 											},
-											File:   "duration_test.flux",
-											Source: "stop: 2018-05-22T19:54:36Z",
+											File: "duration_test.flux",
 											Start: ast.Position{
 												Column: 47,
 												Line:   49,
@@ -429,8 +407,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 51,
 													Line:   49,
 												},
-												File:   "duration_test.flux",
-												Source: "stop",
+												File: "duration_test.flux",
 												Start: ast.Position{
 													Column: 47,
 													Line:   49,
@@ -449,8 +426,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 73,
 													Line:   49,
 												},
-												File:   "duration_test.flux",
-												Source: "2018-05-22T19:54:36Z",
+												File: "duration_test.flux",
 												Start: ast.Position{
 													Column: 53,
 													Line:   49,
@@ -471,8 +447,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 74,
 										Line:   49,
 									},
-									File:   "duration_test.flux",
-									Source: "range(start: 2018-05-22T19:53:26Z, stop: 2018-05-22T19:54:36Z)",
+									File: "duration_test.flux",
 									Start: ast.Position{
 										Column: 12,
 										Line:   49,
@@ -488,8 +463,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 17,
 											Line:   49,
 										},
-										File:   "duration_test.flux",
-										Source: "range",
+										File: "duration_test.flux",
 										Start: ast.Position{
 											Column: 12,
 											Line:   49,
@@ -510,8 +484,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 29,
 								Line:   50,
 							},
-							File:   "duration_test.flux",
-							Source: "table\n        |> range(start: 2018-05-22T19:53:26Z, stop: 2018-05-22T19:54:36Z)\n        |> events.duration()",
+							File: "duration_test.flux",
 							Start: ast.Position{
 								Column: 5,
 								Line:   48,
@@ -528,8 +501,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 29,
 									Line:   50,
 								},
-								File:   "duration_test.flux",
-								Source: "events.duration()",
+								File: "duration_test.flux",
 								Start: ast.Position{
 									Column: 12,
 									Line:   50,
@@ -545,8 +517,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 27,
 										Line:   50,
 									},
-									File:   "duration_test.flux",
-									Source: "events.duration",
+									File: "duration_test.flux",
 									Start: ast.Position{
 										Column: 12,
 										Line:   50,
@@ -563,8 +534,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 18,
 											Line:   50,
 										},
-										File:   "duration_test.flux",
-										Source: "events",
+										File: "duration_test.flux",
 										Start: ast.Position{
 											Column: 12,
 											Line:   50,
@@ -582,8 +552,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 27,
 											Line:   50,
 										},
-										File:   "duration_test.flux",
-										Source: "duration",
+										File: "duration_test.flux",
 										Start: ast.Position{
 											Column: 19,
 											Line:   50,
@@ -608,8 +577,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 23,
 								Line:   47,
 							},
-							File:   "duration_test.flux",
-							Source: "table=<-",
+							File: "duration_test.flux",
 							Start: ast.Position{
 								Column: 15,
 								Line:   47,
@@ -626,8 +594,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 20,
 									Line:   47,
 								},
-								File:   "duration_test.flux",
-								Source: "table",
+								File: "duration_test.flux",
 								Start: ast.Position{
 									Column: 15,
 									Line:   47,
@@ -645,8 +612,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 23,
 								Line:   47,
 							},
-							File:   "duration_test.flux",
-							Source: "<-",
+							File: "duration_test.flux",
 							Start: ast.Position{
 								Column: 21,
 								Line:   47,
@@ -666,8 +632,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 120,
 							Line:   52,
 						},
-						File:   "duration_test.flux",
-						Source: "_duration = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_duration})",
+						File: "duration_test.flux",
 						Start: ast.Position{
 							Column: 6,
 							Line:   52,
@@ -683,8 +648,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 15,
 								Line:   52,
 							},
-							File:   "duration_test.flux",
-							Source: "_duration",
+							File: "duration_test.flux",
 							Start: ast.Position{
 								Column: 6,
 								Line:   52,
@@ -703,8 +667,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 120,
 								Line:   52,
 							},
-							File:   "duration_test.flux",
-							Source: "() => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_duration})",
+							File: "duration_test.flux",
 							Start: ast.Position{
 								Column: 18,
 								Line:   52,
@@ -720,8 +683,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 120,
 									Line:   52,
 								},
-								File:   "duration_test.flux",
-								Source: "({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_duration})",
+								File: "duration_test.flux",
 								Start: ast.Position{
 									Column: 24,
 									Line:   52,
@@ -737,8 +699,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 119,
 										Line:   52,
 									},
-									File:   "duration_test.flux",
-									Source: "{input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_duration}",
+									File: "duration_test.flux",
 									Start: ast.Position{
 										Column: 25,
 										Line:   52,
@@ -755,8 +716,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 65,
 											Line:   52,
 										},
-										File:   "duration_test.flux",
-										Source: "input: testing.loadStorage(csv: inData)",
+										File: "duration_test.flux",
 										Start: ast.Position{
 											Column: 26,
 											Line:   52,
@@ -773,8 +733,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 31,
 												Line:   52,
 											},
-											File:   "duration_test.flux",
-											Source: "input",
+											File: "duration_test.flux",
 											Start: ast.Position{
 												Column: 26,
 												Line:   52,
@@ -794,8 +753,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 64,
 													Line:   52,
 												},
-												File:   "duration_test.flux",
-												Source: "csv: inData",
+												File: "duration_test.flux",
 												Start: ast.Position{
 													Column: 53,
 													Line:   52,
@@ -812,8 +770,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 64,
 														Line:   52,
 													},
-													File:   "duration_test.flux",
-													Source: "csv: inData",
+													File: "duration_test.flux",
 													Start: ast.Position{
 														Column: 53,
 														Line:   52,
@@ -830,8 +787,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 56,
 															Line:   52,
 														},
-														File:   "duration_test.flux",
-														Source: "csv",
+														File: "duration_test.flux",
 														Start: ast.Position{
 															Column: 53,
 															Line:   52,
@@ -850,8 +806,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 64,
 															Line:   52,
 														},
-														File:   "duration_test.flux",
-														Source: "inData",
+														File: "duration_test.flux",
 														Start: ast.Position{
 															Column: 58,
 															Line:   52,
@@ -872,8 +827,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 65,
 												Line:   52,
 											},
-											File:   "duration_test.flux",
-											Source: "testing.loadStorage(csv: inData)",
+											File: "duration_test.flux",
 											Start: ast.Position{
 												Column: 33,
 												Line:   52,
@@ -889,8 +843,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 52,
 													Line:   52,
 												},
-												File:   "duration_test.flux",
-												Source: "testing.loadStorage",
+												File: "duration_test.flux",
 												Start: ast.Position{
 													Column: 33,
 													Line:   52,
@@ -907,8 +860,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 40,
 														Line:   52,
 													},
-													File:   "duration_test.flux",
-													Source: "testing",
+													File: "duration_test.flux",
 													Start: ast.Position{
 														Column: 33,
 														Line:   52,
@@ -926,8 +878,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 52,
 														Line:   52,
 													},
-													File:   "duration_test.flux",
-													Source: "loadStorage",
+													File: "duration_test.flux",
 													Start: ast.Position{
 														Column: 41,
 														Line:   52,
@@ -950,8 +901,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 102,
 											Line:   52,
 										},
-										File:   "duration_test.flux",
-										Source: "want: testing.loadMem(csv: outData)",
+										File: "duration_test.flux",
 										Start: ast.Position{
 											Column: 67,
 											Line:   52,
@@ -968,8 +918,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 71,
 												Line:   52,
 											},
-											File:   "duration_test.flux",
-											Source: "want",
+											File: "duration_test.flux",
 											Start: ast.Position{
 												Column: 67,
 												Line:   52,
@@ -989,8 +938,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 101,
 													Line:   52,
 												},
-												File:   "duration_test.flux",
-												Source: "csv: outData",
+												File: "duration_test.flux",
 												Start: ast.Position{
 													Column: 89,
 													Line:   52,
@@ -1007,8 +955,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 101,
 														Line:   52,
 													},
-													File:   "duration_test.flux",
-													Source: "csv: outData",
+													File: "duration_test.flux",
 													Start: ast.Position{
 														Column: 89,
 														Line:   52,
@@ -1025,8 +972,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 92,
 															Line:   52,
 														},
-														File:   "duration_test.flux",
-														Source: "csv",
+														File: "duration_test.flux",
 														Start: ast.Position{
 															Column: 89,
 															Line:   52,
@@ -1045,8 +991,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 101,
 															Line:   52,
 														},
-														File:   "duration_test.flux",
-														Source: "outData",
+														File: "duration_test.flux",
 														Start: ast.Position{
 															Column: 94,
 															Line:   52,
@@ -1067,8 +1012,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 102,
 												Line:   52,
 											},
-											File:   "duration_test.flux",
-											Source: "testing.loadMem(csv: outData)",
+											File: "duration_test.flux",
 											Start: ast.Position{
 												Column: 73,
 												Line:   52,
@@ -1084,8 +1028,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 88,
 													Line:   52,
 												},
-												File:   "duration_test.flux",
-												Source: "testing.loadMem",
+												File: "duration_test.flux",
 												Start: ast.Position{
 													Column: 73,
 													Line:   52,
@@ -1102,8 +1045,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 80,
 														Line:   52,
 													},
-													File:   "duration_test.flux",
-													Source: "testing",
+													File: "duration_test.flux",
 													Start: ast.Position{
 														Column: 73,
 														Line:   52,
@@ -1121,8 +1063,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 88,
 														Line:   52,
 													},
-													File:   "duration_test.flux",
-													Source: "loadMem",
+													File: "duration_test.flux",
 													Start: ast.Position{
 														Column: 81,
 														Line:   52,
@@ -1145,8 +1086,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 118,
 											Line:   52,
 										},
-										File:   "duration_test.flux",
-										Source: "fn: t_duration",
+										File: "duration_test.flux",
 										Start: ast.Position{
 											Column: 104,
 											Line:   52,
@@ -1163,8 +1103,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 106,
 												Line:   52,
 											},
-											File:   "duration_test.flux",
-											Source: "fn",
+											File: "duration_test.flux",
 											Start: ast.Position{
 												Column: 104,
 												Line:   52,
@@ -1183,8 +1122,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 118,
 												Line:   52,
 											},
-											File:   "duration_test.flux",
-											Source: "t_duration",
+											File: "duration_test.flux",
 											Start: ast.Position{
 												Column: 108,
 												Line:   52,
@@ -1213,8 +1151,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 120,
 						Line:   52,
 					},
-					File:   "duration_test.flux",
-					Source: "test _duration = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_duration})",
+					File: "duration_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   52,
@@ -1233,8 +1170,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 17,
 						Line:   4,
 					},
-					File:   "duration_test.flux",
-					Source: "import \"testing\"",
+					File: "duration_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   4,
@@ -1250,8 +1186,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 17,
 							Line:   4,
 						},
-						File:   "duration_test.flux",
-						Source: "\"testing\"",
+						File: "duration_test.flux",
 						Start: ast.Position{
 							Column: 8,
 							Line:   4,
@@ -1270,8 +1205,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 40,
 						Line:   5,
 					},
-					File:   "duration_test.flux",
-					Source: "import \"contrib/tomhollingworth/events\"",
+					File: "duration_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   5,
@@ -1287,8 +1221,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 40,
 							Line:   5,
 						},
-						File:   "duration_test.flux",
-						Source: "\"contrib/tomhollingworth/events\"",
+						File: "duration_test.flux",
 						Start: ast.Position{
 							Column: 8,
 							Line:   5,
@@ -1309,8 +1242,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 20,
 						Line:   1,
 					},
-					File:   "duration_test.flux",
-					Source: "package events_test",
+					File: "duration_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   1,
@@ -1326,8 +1258,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 20,
 							Line:   1,
 						},
-						File:   "duration_test.flux",
-						Source: "events_test",
+						File: "duration_test.flux",
 						Start: ast.Position{
 							Column: 9,
 							Line:   1,
@@ -1346,8 +1277,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Column: 120,
 					Line:   52,
 				},
-				File:   "duration_with_stop_test.flux",
-				Source: "package events_test\n\n\nimport \"testing\"\nimport \"contrib/tomhollingworth/events\"\n\noption now = () => 2018-05-22T19:54:16Z\n\ninData =\n    \"\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string,string,string\n#group,false,false,false,false,true,true,true,true,true,true\n#default,_result,,,,,,,,,\n,result,table,_time,_value,_field,_measurement,device,fstype,host,path\n,,0,2018-05-22T19:53:26Z,34.98234271799806,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T19:53:36Z,34.98234941084654,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T19:53:46Z,34.982447293755506,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T19:53:56Z,34.982447293755506,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T19:54:06Z,34.98204153981662,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T19:54:16Z,34.982252364543626,used_percent,disk,disk1s1,apfs,host.local,/\n,,1,2018-05-22T19:53:26Z,34.98234271799806,used_percent,disk,disk1s2,apfs,host.local,/\n,,1,2018-05-22T19:53:36Z,34.98234941084654,used_percent,disk,disk1s2,apfs,host.local,/\n,,1,2018-05-22T19:53:46Z,34.982447293755506,used_percent,disk,disk1s2,apfs,host.local,/\n,,1,2018-05-22T19:53:56Z,34.982447293755506,used_percent,disk,disk1s2,apfs,host.local,/\n,,1,2018-05-22T19:54:06Z,34.98204153981662,used_percent,disk,disk1s2,apfs,host.local,/\n,,1,2018-05-22T19:54:16Z,34.982252364543626,used_percent,disk,disk1s2,apfs,host.local,/\n\"\noutData =\n    \"\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string,string,string,long\n#group,false,false,true,true,false,false,true,true,true,true,true,true,false\n#default,_result,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_measurement,device,fstype,host,path,duration\n,,0,2018-05-22T19:53:26Z,2018-05-22T19:54:36Z,2018-05-22T19:53:26Z,34.98234271799806,used_percent,disk,disk1s1,apfs,host.local,/,10\n,,0,2018-05-22T19:53:26Z,2018-05-22T19:54:36Z,2018-05-22T19:53:36Z,34.98234941084654,used_percent,disk,disk1s1,apfs,host.local,/,10\n,,0,2018-05-22T19:53:26Z,2018-05-22T19:54:36Z,2018-05-22T19:53:46Z,34.982447293755506,used_percent,disk,disk1s1,apfs,host.local,/,10\n,,0,2018-05-22T19:53:26Z,2018-05-22T19:54:36Z,2018-05-22T19:53:56Z,34.982447293755506,used_percent,disk,disk1s1,apfs,host.local,/,10\n,,0,2018-05-22T19:53:26Z,2018-05-22T19:54:36Z,2018-05-22T19:54:06Z,34.98204153981662,used_percent,disk,disk1s1,apfs,host.local,/,10\n,,0,2018-05-22T19:53:26Z,2018-05-22T19:54:36Z,2018-05-22T19:54:16Z,34.982252364543626,used_percent,disk,disk1s1,apfs,host.local,/,30\n,,1,2018-05-22T19:53:26Z,2018-05-22T19:54:36Z,2018-05-22T19:53:26Z,34.98234271799806,used_percent,disk,disk1s2,apfs,host.local,/,10\n,,1,2018-05-22T19:53:26Z,2018-05-22T19:54:36Z,2018-05-22T19:53:36Z,34.98234941084654,used_percent,disk,disk1s2,apfs,host.local,/,10\n,,1,2018-05-22T19:53:26Z,2018-05-22T19:54:36Z,2018-05-22T19:53:46Z,34.982447293755506,used_percent,disk,disk1s2,apfs,host.local,/,10\n,,1,2018-05-22T19:53:26Z,2018-05-22T19:54:36Z,2018-05-22T19:53:56Z,34.982447293755506,used_percent,disk,disk1s2,apfs,host.local,/,10\n,,1,2018-05-22T19:53:26Z,2018-05-22T19:54:36Z,2018-05-22T19:54:06Z,34.98204153981662,used_percent,disk,disk1s2,apfs,host.local,/,10\n,,1,2018-05-22T19:53:26Z,2018-05-22T19:54:36Z,2018-05-22T19:54:16Z,34.982252364543626,used_percent,disk,disk1s2,apfs,host.local,/,30\n\"\nt_duration = (table=<-) =>\n    table\n        |> range(start: 2018-05-22T19:53:26Z, stop: 2018-05-22T19:54:36Z)\n        |> events.duration(stop: 2018-05-22T19:54:46Z)\n\ntest _duration = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_duration})",
+				File: "duration_with_stop_test.flux",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -1364,8 +1294,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 40,
 							Line:   7,
 						},
-						File:   "duration_with_stop_test.flux",
-						Source: "now = () => 2018-05-22T19:54:16Z",
+						File: "duration_with_stop_test.flux",
 						Start: ast.Position{
 							Column: 8,
 							Line:   7,
@@ -1381,8 +1310,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 11,
 								Line:   7,
 							},
-							File:   "duration_with_stop_test.flux",
-							Source: "now",
+							File: "duration_with_stop_test.flux",
 							Start: ast.Position{
 								Column: 8,
 								Line:   7,
@@ -1401,8 +1329,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 40,
 								Line:   7,
 							},
-							File:   "duration_with_stop_test.flux",
-							Source: "() => 2018-05-22T19:54:16Z",
+							File: "duration_with_stop_test.flux",
 							Start: ast.Position{
 								Column: 14,
 								Line:   7,
@@ -1418,8 +1345,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 40,
 									Line:   7,
 								},
-								File:   "duration_with_stop_test.flux",
-								Source: "2018-05-22T19:54:16Z",
+								File: "duration_with_stop_test.flux",
 								Start: ast.Position{
 									Column: 20,
 									Line:   7,
@@ -1441,8 +1367,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 40,
 						Line:   7,
 					},
-					File:   "duration_with_stop_test.flux",
-					Source: "option now = () => 2018-05-22T19:54:16Z",
+					File: "duration_with_stop_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   7,
@@ -1458,8 +1383,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 2,
 						Line:   27,
 					},
-					File:   "duration_with_stop_test.flux",
-					Source: "inData =\n    \"\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string,string,string\n#group,false,false,false,false,true,true,true,true,true,true\n#default,_result,,,,,,,,,\n,result,table,_time,_value,_field,_measurement,device,fstype,host,path\n,,0,2018-05-22T19:53:26Z,34.98234271799806,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T19:53:36Z,34.98234941084654,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T19:53:46Z,34.982447293755506,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T19:53:56Z,34.982447293755506,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T19:54:06Z,34.98204153981662,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T19:54:16Z,34.982252364543626,used_percent,disk,disk1s1,apfs,host.local,/\n,,1,2018-05-22T19:53:26Z,34.98234271799806,used_percent,disk,disk1s2,apfs,host.local,/\n,,1,2018-05-22T19:53:36Z,34.98234941084654,used_percent,disk,disk1s2,apfs,host.local,/\n,,1,2018-05-22T19:53:46Z,34.982447293755506,used_percent,disk,disk1s2,apfs,host.local,/\n,,1,2018-05-22T19:53:56Z,34.982447293755506,used_percent,disk,disk1s2,apfs,host.local,/\n,,1,2018-05-22T19:54:06Z,34.98204153981662,used_percent,disk,disk1s2,apfs,host.local,/\n,,1,2018-05-22T19:54:16Z,34.982252364543626,used_percent,disk,disk1s2,apfs,host.local,/\n\"",
+					File: "duration_with_stop_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   9,
@@ -1475,8 +1399,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 7,
 							Line:   9,
 						},
-						File:   "duration_with_stop_test.flux",
-						Source: "inData",
+						File: "duration_with_stop_test.flux",
 						Start: ast.Position{
 							Column: 1,
 							Line:   9,
@@ -1494,8 +1417,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 2,
 							Line:   27,
 						},
-						File:   "duration_with_stop_test.flux",
-						Source: "\"\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string,string,string\n#group,false,false,false,false,true,true,true,true,true,true\n#default,_result,,,,,,,,,\n,result,table,_time,_value,_field,_measurement,device,fstype,host,path\n,,0,2018-05-22T19:53:26Z,34.98234271799806,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T19:53:36Z,34.98234941084654,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T19:53:46Z,34.982447293755506,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T19:53:56Z,34.982447293755506,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T19:54:06Z,34.98204153981662,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T19:54:16Z,34.982252364543626,used_percent,disk,disk1s1,apfs,host.local,/\n,,1,2018-05-22T19:53:26Z,34.98234271799806,used_percent,disk,disk1s2,apfs,host.local,/\n,,1,2018-05-22T19:53:36Z,34.98234941084654,used_percent,disk,disk1s2,apfs,host.local,/\n,,1,2018-05-22T19:53:46Z,34.982447293755506,used_percent,disk,disk1s2,apfs,host.local,/\n,,1,2018-05-22T19:53:56Z,34.982447293755506,used_percent,disk,disk1s2,apfs,host.local,/\n,,1,2018-05-22T19:54:06Z,34.98204153981662,used_percent,disk,disk1s2,apfs,host.local,/\n,,1,2018-05-22T19:54:16Z,34.982252364543626,used_percent,disk,disk1s2,apfs,host.local,/\n\"",
+						File: "duration_with_stop_test.flux",
 						Start: ast.Position{
 							Column: 5,
 							Line:   10,
@@ -1513,8 +1435,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 2,
 						Line:   46,
 					},
-					File:   "duration_with_stop_test.flux",
-					Source: "outData =\n    \"\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string,string,string,long\n#group,false,false,true,true,false,false,true,true,true,true,true,true,false\n#default,_result,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_measurement,device,fstype,host,path,duration\n,,0,2018-05-22T19:53:26Z,2018-05-22T19:54:36Z,2018-05-22T19:53:26Z,34.98234271799806,used_percent,disk,disk1s1,apfs,host.local,/,10\n,,0,2018-05-22T19:53:26Z,2018-05-22T19:54:36Z,2018-05-22T19:53:36Z,34.98234941084654,used_percent,disk,disk1s1,apfs,host.local,/,10\n,,0,2018-05-22T19:53:26Z,2018-05-22T19:54:36Z,2018-05-22T19:53:46Z,34.982447293755506,used_percent,disk,disk1s1,apfs,host.local,/,10\n,,0,2018-05-22T19:53:26Z,2018-05-22T19:54:36Z,2018-05-22T19:53:56Z,34.982447293755506,used_percent,disk,disk1s1,apfs,host.local,/,10\n,,0,2018-05-22T19:53:26Z,2018-05-22T19:54:36Z,2018-05-22T19:54:06Z,34.98204153981662,used_percent,disk,disk1s1,apfs,host.local,/,10\n,,0,2018-05-22T19:53:26Z,2018-05-22T19:54:36Z,2018-05-22T19:54:16Z,34.982252364543626,used_percent,disk,disk1s1,apfs,host.local,/,30\n,,1,2018-05-22T19:53:26Z,2018-05-22T19:54:36Z,2018-05-22T19:53:26Z,34.98234271799806,used_percent,disk,disk1s2,apfs,host.local,/,10\n,,1,2018-05-22T19:53:26Z,2018-05-22T19:54:36Z,2018-05-22T19:53:36Z,34.98234941084654,used_percent,disk,disk1s2,apfs,host.local,/,10\n,,1,2018-05-22T19:53:26Z,2018-05-22T19:54:36Z,2018-05-22T19:53:46Z,34.982447293755506,used_percent,disk,disk1s2,apfs,host.local,/,10\n,,1,2018-05-22T19:53:26Z,2018-05-22T19:54:36Z,2018-05-22T19:53:56Z,34.982447293755506,used_percent,disk,disk1s2,apfs,host.local,/,10\n,,1,2018-05-22T19:53:26Z,2018-05-22T19:54:36Z,2018-05-22T19:54:06Z,34.98204153981662,used_percent,disk,disk1s2,apfs,host.local,/,10\n,,1,2018-05-22T19:53:26Z,2018-05-22T19:54:36Z,2018-05-22T19:54:16Z,34.982252364543626,used_percent,disk,disk1s2,apfs,host.local,/,30\n\"",
+					File: "duration_with_stop_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   28,
@@ -1530,8 +1451,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 8,
 							Line:   28,
 						},
-						File:   "duration_with_stop_test.flux",
-						Source: "outData",
+						File: "duration_with_stop_test.flux",
 						Start: ast.Position{
 							Column: 1,
 							Line:   28,
@@ -1549,8 +1469,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 2,
 							Line:   46,
 						},
-						File:   "duration_with_stop_test.flux",
-						Source: "\"\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string,string,string,long\n#group,false,false,true,true,false,false,true,true,true,true,true,true,false\n#default,_result,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_measurement,device,fstype,host,path,duration\n,,0,2018-05-22T19:53:26Z,2018-05-22T19:54:36Z,2018-05-22T19:53:26Z,34.98234271799806,used_percent,disk,disk1s1,apfs,host.local,/,10\n,,0,2018-05-22T19:53:26Z,2018-05-22T19:54:36Z,2018-05-22T19:53:36Z,34.98234941084654,used_percent,disk,disk1s1,apfs,host.local,/,10\n,,0,2018-05-22T19:53:26Z,2018-05-22T19:54:36Z,2018-05-22T19:53:46Z,34.982447293755506,used_percent,disk,disk1s1,apfs,host.local,/,10\n,,0,2018-05-22T19:53:26Z,2018-05-22T19:54:36Z,2018-05-22T19:53:56Z,34.982447293755506,used_percent,disk,disk1s1,apfs,host.local,/,10\n,,0,2018-05-22T19:53:26Z,2018-05-22T19:54:36Z,2018-05-22T19:54:06Z,34.98204153981662,used_percent,disk,disk1s1,apfs,host.local,/,10\n,,0,2018-05-22T19:53:26Z,2018-05-22T19:54:36Z,2018-05-22T19:54:16Z,34.982252364543626,used_percent,disk,disk1s1,apfs,host.local,/,30\n,,1,2018-05-22T19:53:26Z,2018-05-22T19:54:36Z,2018-05-22T19:53:26Z,34.98234271799806,used_percent,disk,disk1s2,apfs,host.local,/,10\n,,1,2018-05-22T19:53:26Z,2018-05-22T19:54:36Z,2018-05-22T19:53:36Z,34.98234941084654,used_percent,disk,disk1s2,apfs,host.local,/,10\n,,1,2018-05-22T19:53:26Z,2018-05-22T19:54:36Z,2018-05-22T19:53:46Z,34.982447293755506,used_percent,disk,disk1s2,apfs,host.local,/,10\n,,1,2018-05-22T19:53:26Z,2018-05-22T19:54:36Z,2018-05-22T19:53:56Z,34.982447293755506,used_percent,disk,disk1s2,apfs,host.local,/,10\n,,1,2018-05-22T19:53:26Z,2018-05-22T19:54:36Z,2018-05-22T19:54:06Z,34.98204153981662,used_percent,disk,disk1s2,apfs,host.local,/,10\n,,1,2018-05-22T19:53:26Z,2018-05-22T19:54:36Z,2018-05-22T19:54:16Z,34.982252364543626,used_percent,disk,disk1s2,apfs,host.local,/,30\n\"",
+						File: "duration_with_stop_test.flux",
 						Start: ast.Position{
 							Column: 5,
 							Line:   29,
@@ -1568,8 +1487,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 55,
 						Line:   50,
 					},
-					File:   "duration_with_stop_test.flux",
-					Source: "t_duration = (table=<-) =>\n    table\n        |> range(start: 2018-05-22T19:53:26Z, stop: 2018-05-22T19:54:36Z)\n        |> events.duration(stop: 2018-05-22T19:54:46Z)",
+					File: "duration_with_stop_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   47,
@@ -1585,8 +1503,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 11,
 							Line:   47,
 						},
-						File:   "duration_with_stop_test.flux",
-						Source: "t_duration",
+						File: "duration_with_stop_test.flux",
 						Start: ast.Position{
 							Column: 1,
 							Line:   47,
@@ -1605,8 +1522,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 55,
 							Line:   50,
 						},
-						File:   "duration_with_stop_test.flux",
-						Source: "(table=<-) =>\n    table\n        |> range(start: 2018-05-22T19:53:26Z, stop: 2018-05-22T19:54:36Z)\n        |> events.duration(stop: 2018-05-22T19:54:46Z)",
+						File: "duration_with_stop_test.flux",
 						Start: ast.Position{
 							Column: 14,
 							Line:   47,
@@ -1624,8 +1540,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 10,
 										Line:   48,
 									},
-									File:   "duration_with_stop_test.flux",
-									Source: "table",
+									File: "duration_with_stop_test.flux",
 									Start: ast.Position{
 										Column: 5,
 										Line:   48,
@@ -1642,8 +1557,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 74,
 									Line:   49,
 								},
-								File:   "duration_with_stop_test.flux",
-								Source: "table\n        |> range(start: 2018-05-22T19:53:26Z, stop: 2018-05-22T19:54:36Z)",
+								File: "duration_with_stop_test.flux",
 								Start: ast.Position{
 									Column: 5,
 									Line:   48,
@@ -1660,8 +1574,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 73,
 											Line:   49,
 										},
-										File:   "duration_with_stop_test.flux",
-										Source: "start: 2018-05-22T19:53:26Z, stop: 2018-05-22T19:54:36Z",
+										File: "duration_with_stop_test.flux",
 										Start: ast.Position{
 											Column: 18,
 											Line:   49,
@@ -1678,8 +1591,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 45,
 												Line:   49,
 											},
-											File:   "duration_with_stop_test.flux",
-											Source: "start: 2018-05-22T19:53:26Z",
+											File: "duration_with_stop_test.flux",
 											Start: ast.Position{
 												Column: 18,
 												Line:   49,
@@ -1696,8 +1608,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 23,
 													Line:   49,
 												},
-												File:   "duration_with_stop_test.flux",
-												Source: "start",
+												File: "duration_with_stop_test.flux",
 												Start: ast.Position{
 													Column: 18,
 													Line:   49,
@@ -1716,8 +1627,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 45,
 													Line:   49,
 												},
-												File:   "duration_with_stop_test.flux",
-												Source: "2018-05-22T19:53:26Z",
+												File: "duration_with_stop_test.flux",
 												Start: ast.Position{
 													Column: 25,
 													Line:   49,
@@ -1735,8 +1645,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 73,
 												Line:   49,
 											},
-											File:   "duration_with_stop_test.flux",
-											Source: "stop: 2018-05-22T19:54:36Z",
+											File: "duration_with_stop_test.flux",
 											Start: ast.Position{
 												Column: 47,
 												Line:   49,
@@ -1753,8 +1662,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 51,
 													Line:   49,
 												},
-												File:   "duration_with_stop_test.flux",
-												Source: "stop",
+												File: "duration_with_stop_test.flux",
 												Start: ast.Position{
 													Column: 47,
 													Line:   49,
@@ -1773,8 +1681,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 73,
 													Line:   49,
 												},
-												File:   "duration_with_stop_test.flux",
-												Source: "2018-05-22T19:54:36Z",
+												File: "duration_with_stop_test.flux",
 												Start: ast.Position{
 													Column: 53,
 													Line:   49,
@@ -1795,8 +1702,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 74,
 										Line:   49,
 									},
-									File:   "duration_with_stop_test.flux",
-									Source: "range(start: 2018-05-22T19:53:26Z, stop: 2018-05-22T19:54:36Z)",
+									File: "duration_with_stop_test.flux",
 									Start: ast.Position{
 										Column: 12,
 										Line:   49,
@@ -1812,8 +1718,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 17,
 											Line:   49,
 										},
-										File:   "duration_with_stop_test.flux",
-										Source: "range",
+										File: "duration_with_stop_test.flux",
 										Start: ast.Position{
 											Column: 12,
 											Line:   49,
@@ -1834,8 +1739,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 55,
 								Line:   50,
 							},
-							File:   "duration_with_stop_test.flux",
-							Source: "table\n        |> range(start: 2018-05-22T19:53:26Z, stop: 2018-05-22T19:54:36Z)\n        |> events.duration(stop: 2018-05-22T19:54:46Z)",
+							File: "duration_with_stop_test.flux",
 							Start: ast.Position{
 								Column: 5,
 								Line:   48,
@@ -1852,8 +1756,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 54,
 										Line:   50,
 									},
-									File:   "duration_with_stop_test.flux",
-									Source: "stop: 2018-05-22T19:54:46Z",
+									File: "duration_with_stop_test.flux",
 									Start: ast.Position{
 										Column: 28,
 										Line:   50,
@@ -1870,8 +1773,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 54,
 											Line:   50,
 										},
-										File:   "duration_with_stop_test.flux",
-										Source: "stop: 2018-05-22T19:54:46Z",
+										File: "duration_with_stop_test.flux",
 										Start: ast.Position{
 											Column: 28,
 											Line:   50,
@@ -1888,8 +1790,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 32,
 												Line:   50,
 											},
-											File:   "duration_with_stop_test.flux",
-											Source: "stop",
+											File: "duration_with_stop_test.flux",
 											Start: ast.Position{
 												Column: 28,
 												Line:   50,
@@ -1908,8 +1809,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 54,
 												Line:   50,
 											},
-											File:   "duration_with_stop_test.flux",
-											Source: "2018-05-22T19:54:46Z",
+											File: "duration_with_stop_test.flux",
 											Start: ast.Position{
 												Column: 34,
 												Line:   50,
@@ -1930,8 +1830,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 55,
 									Line:   50,
 								},
-								File:   "duration_with_stop_test.flux",
-								Source: "events.duration(stop: 2018-05-22T19:54:46Z)",
+								File: "duration_with_stop_test.flux",
 								Start: ast.Position{
 									Column: 12,
 									Line:   50,
@@ -1947,8 +1846,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 27,
 										Line:   50,
 									},
-									File:   "duration_with_stop_test.flux",
-									Source: "events.duration",
+									File: "duration_with_stop_test.flux",
 									Start: ast.Position{
 										Column: 12,
 										Line:   50,
@@ -1965,8 +1863,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 18,
 											Line:   50,
 										},
-										File:   "duration_with_stop_test.flux",
-										Source: "events",
+										File: "duration_with_stop_test.flux",
 										Start: ast.Position{
 											Column: 12,
 											Line:   50,
@@ -1984,8 +1881,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 27,
 											Line:   50,
 										},
-										File:   "duration_with_stop_test.flux",
-										Source: "duration",
+										File: "duration_with_stop_test.flux",
 										Start: ast.Position{
 											Column: 19,
 											Line:   50,
@@ -2010,8 +1906,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 23,
 								Line:   47,
 							},
-							File:   "duration_with_stop_test.flux",
-							Source: "table=<-",
+							File: "duration_with_stop_test.flux",
 							Start: ast.Position{
 								Column: 15,
 								Line:   47,
@@ -2028,8 +1923,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 20,
 									Line:   47,
 								},
-								File:   "duration_with_stop_test.flux",
-								Source: "table",
+								File: "duration_with_stop_test.flux",
 								Start: ast.Position{
 									Column: 15,
 									Line:   47,
@@ -2047,8 +1941,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 23,
 								Line:   47,
 							},
-							File:   "duration_with_stop_test.flux",
-							Source: "<-",
+							File: "duration_with_stop_test.flux",
 							Start: ast.Position{
 								Column: 21,
 								Line:   47,
@@ -2068,8 +1961,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 120,
 							Line:   52,
 						},
-						File:   "duration_with_stop_test.flux",
-						Source: "_duration = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_duration})",
+						File: "duration_with_stop_test.flux",
 						Start: ast.Position{
 							Column: 6,
 							Line:   52,
@@ -2085,8 +1977,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 15,
 								Line:   52,
 							},
-							File:   "duration_with_stop_test.flux",
-							Source: "_duration",
+							File: "duration_with_stop_test.flux",
 							Start: ast.Position{
 								Column: 6,
 								Line:   52,
@@ -2105,8 +1996,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 120,
 								Line:   52,
 							},
-							File:   "duration_with_stop_test.flux",
-							Source: "() => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_duration})",
+							File: "duration_with_stop_test.flux",
 							Start: ast.Position{
 								Column: 18,
 								Line:   52,
@@ -2122,8 +2012,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 120,
 									Line:   52,
 								},
-								File:   "duration_with_stop_test.flux",
-								Source: "({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_duration})",
+								File: "duration_with_stop_test.flux",
 								Start: ast.Position{
 									Column: 24,
 									Line:   52,
@@ -2139,8 +2028,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 119,
 										Line:   52,
 									},
-									File:   "duration_with_stop_test.flux",
-									Source: "{input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_duration}",
+									File: "duration_with_stop_test.flux",
 									Start: ast.Position{
 										Column: 25,
 										Line:   52,
@@ -2157,8 +2045,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 65,
 											Line:   52,
 										},
-										File:   "duration_with_stop_test.flux",
-										Source: "input: testing.loadStorage(csv: inData)",
+										File: "duration_with_stop_test.flux",
 										Start: ast.Position{
 											Column: 26,
 											Line:   52,
@@ -2175,8 +2062,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 31,
 												Line:   52,
 											},
-											File:   "duration_with_stop_test.flux",
-											Source: "input",
+											File: "duration_with_stop_test.flux",
 											Start: ast.Position{
 												Column: 26,
 												Line:   52,
@@ -2196,8 +2082,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 64,
 													Line:   52,
 												},
-												File:   "duration_with_stop_test.flux",
-												Source: "csv: inData",
+												File: "duration_with_stop_test.flux",
 												Start: ast.Position{
 													Column: 53,
 													Line:   52,
@@ -2214,8 +2099,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 64,
 														Line:   52,
 													},
-													File:   "duration_with_stop_test.flux",
-													Source: "csv: inData",
+													File: "duration_with_stop_test.flux",
 													Start: ast.Position{
 														Column: 53,
 														Line:   52,
@@ -2232,8 +2116,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 56,
 															Line:   52,
 														},
-														File:   "duration_with_stop_test.flux",
-														Source: "csv",
+														File: "duration_with_stop_test.flux",
 														Start: ast.Position{
 															Column: 53,
 															Line:   52,
@@ -2252,8 +2135,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 64,
 															Line:   52,
 														},
-														File:   "duration_with_stop_test.flux",
-														Source: "inData",
+														File: "duration_with_stop_test.flux",
 														Start: ast.Position{
 															Column: 58,
 															Line:   52,
@@ -2274,8 +2156,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 65,
 												Line:   52,
 											},
-											File:   "duration_with_stop_test.flux",
-											Source: "testing.loadStorage(csv: inData)",
+											File: "duration_with_stop_test.flux",
 											Start: ast.Position{
 												Column: 33,
 												Line:   52,
@@ -2291,8 +2172,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 52,
 													Line:   52,
 												},
-												File:   "duration_with_stop_test.flux",
-												Source: "testing.loadStorage",
+												File: "duration_with_stop_test.flux",
 												Start: ast.Position{
 													Column: 33,
 													Line:   52,
@@ -2309,8 +2189,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 40,
 														Line:   52,
 													},
-													File:   "duration_with_stop_test.flux",
-													Source: "testing",
+													File: "duration_with_stop_test.flux",
 													Start: ast.Position{
 														Column: 33,
 														Line:   52,
@@ -2328,8 +2207,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 52,
 														Line:   52,
 													},
-													File:   "duration_with_stop_test.flux",
-													Source: "loadStorage",
+													File: "duration_with_stop_test.flux",
 													Start: ast.Position{
 														Column: 41,
 														Line:   52,
@@ -2352,8 +2230,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 102,
 											Line:   52,
 										},
-										File:   "duration_with_stop_test.flux",
-										Source: "want: testing.loadMem(csv: outData)",
+										File: "duration_with_stop_test.flux",
 										Start: ast.Position{
 											Column: 67,
 											Line:   52,
@@ -2370,8 +2247,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 71,
 												Line:   52,
 											},
-											File:   "duration_with_stop_test.flux",
-											Source: "want",
+											File: "duration_with_stop_test.flux",
 											Start: ast.Position{
 												Column: 67,
 												Line:   52,
@@ -2391,8 +2267,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 101,
 													Line:   52,
 												},
-												File:   "duration_with_stop_test.flux",
-												Source: "csv: outData",
+												File: "duration_with_stop_test.flux",
 												Start: ast.Position{
 													Column: 89,
 													Line:   52,
@@ -2409,8 +2284,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 101,
 														Line:   52,
 													},
-													File:   "duration_with_stop_test.flux",
-													Source: "csv: outData",
+													File: "duration_with_stop_test.flux",
 													Start: ast.Position{
 														Column: 89,
 														Line:   52,
@@ -2427,8 +2301,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 92,
 															Line:   52,
 														},
-														File:   "duration_with_stop_test.flux",
-														Source: "csv",
+														File: "duration_with_stop_test.flux",
 														Start: ast.Position{
 															Column: 89,
 															Line:   52,
@@ -2447,8 +2320,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 101,
 															Line:   52,
 														},
-														File:   "duration_with_stop_test.flux",
-														Source: "outData",
+														File: "duration_with_stop_test.flux",
 														Start: ast.Position{
 															Column: 94,
 															Line:   52,
@@ -2469,8 +2341,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 102,
 												Line:   52,
 											},
-											File:   "duration_with_stop_test.flux",
-											Source: "testing.loadMem(csv: outData)",
+											File: "duration_with_stop_test.flux",
 											Start: ast.Position{
 												Column: 73,
 												Line:   52,
@@ -2486,8 +2357,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 88,
 													Line:   52,
 												},
-												File:   "duration_with_stop_test.flux",
-												Source: "testing.loadMem",
+												File: "duration_with_stop_test.flux",
 												Start: ast.Position{
 													Column: 73,
 													Line:   52,
@@ -2504,8 +2374,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 80,
 														Line:   52,
 													},
-													File:   "duration_with_stop_test.flux",
-													Source: "testing",
+													File: "duration_with_stop_test.flux",
 													Start: ast.Position{
 														Column: 73,
 														Line:   52,
@@ -2523,8 +2392,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 88,
 														Line:   52,
 													},
-													File:   "duration_with_stop_test.flux",
-													Source: "loadMem",
+													File: "duration_with_stop_test.flux",
 													Start: ast.Position{
 														Column: 81,
 														Line:   52,
@@ -2547,8 +2415,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 118,
 											Line:   52,
 										},
-										File:   "duration_with_stop_test.flux",
-										Source: "fn: t_duration",
+										File: "duration_with_stop_test.flux",
 										Start: ast.Position{
 											Column: 104,
 											Line:   52,
@@ -2565,8 +2432,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 106,
 												Line:   52,
 											},
-											File:   "duration_with_stop_test.flux",
-											Source: "fn",
+											File: "duration_with_stop_test.flux",
 											Start: ast.Position{
 												Column: 104,
 												Line:   52,
@@ -2585,8 +2451,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 118,
 												Line:   52,
 											},
-											File:   "duration_with_stop_test.flux",
-											Source: "t_duration",
+											File: "duration_with_stop_test.flux",
 											Start: ast.Position{
 												Column: 108,
 												Line:   52,
@@ -2615,8 +2480,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 120,
 						Line:   52,
 					},
-					File:   "duration_with_stop_test.flux",
-					Source: "test _duration = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_duration})",
+					File: "duration_with_stop_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   52,
@@ -2635,8 +2499,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 17,
 						Line:   4,
 					},
-					File:   "duration_with_stop_test.flux",
-					Source: "import \"testing\"",
+					File: "duration_with_stop_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   4,
@@ -2652,8 +2515,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 17,
 							Line:   4,
 						},
-						File:   "duration_with_stop_test.flux",
-						Source: "\"testing\"",
+						File: "duration_with_stop_test.flux",
 						Start: ast.Position{
 							Column: 8,
 							Line:   4,
@@ -2672,8 +2534,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 40,
 						Line:   5,
 					},
-					File:   "duration_with_stop_test.flux",
-					Source: "import \"contrib/tomhollingworth/events\"",
+					File: "duration_with_stop_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   5,
@@ -2689,8 +2550,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 40,
 							Line:   5,
 						},
-						File:   "duration_with_stop_test.flux",
-						Source: "\"contrib/tomhollingworth/events\"",
+						File: "duration_with_stop_test.flux",
 						Start: ast.Position{
 							Column: 8,
 							Line:   5,
@@ -2711,8 +2571,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 20,
 						Line:   1,
 					},
-					File:   "duration_with_stop_test.flux",
-					Source: "package events_test",
+					File: "duration_with_stop_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   1,
@@ -2728,8 +2587,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 20,
 							Line:   1,
 						},
-						File:   "duration_with_stop_test.flux",
-						Source: "events_test",
+						File: "duration_with_stop_test.flux",
 						Start: ast.Position{
 							Column: 9,
 							Line:   1,

@@ -22,8 +22,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Column: 104,
 					Line:   62,
 				},
-				File:   "interpolate_test.flux",
-				Source: "package interpolate_test\n\n\nimport \"testing\"\nimport \"interpolate\"\n\ninData =\n    \"\n#datatype,string,long,dateTime:RFC3339,string,string,double\n#group,false,false,false,true,true,false\n#default,_result,,,,,\n,result,table,_time,_measurement,_field,_value\n,,0,2014-01-01T01:00:00Z,_m,FF,0\n,,0,2014-01-01T01:02:00Z,_m,FF,2\n,,0,2014-01-01T01:04:00Z,_m,FF,4\n,,0,2014-01-01T01:06:00Z,_m,FF,6\n,,0,2014-01-01T01:08:00Z,_m,FF,8\n,,0,2014-01-01T01:10:00Z,_m,FF,10\n,,1,2014-01-01T01:01:00Z,_m,QQ,11\n,,1,2014-01-01T01:03:00Z,_m,QQ,9\n,,1,2014-01-01T01:05:00Z,_m,QQ,7\n,,1,2014-01-01T01:07:00Z,_m,QQ,5\n,,1,2014-01-01T01:09:00Z,_m,QQ,3\n,,1,2014-01-01T01:11:00Z,_m,QQ,1\n\"\noutData =\n    \"\n#datatype,string,long,dateTime:RFC3339,string,string,double\n#group,false,false,false,true,true,false\n#default,_result,,,,,\n,result,table,_time,_measurement,_field,_value\n,,0,2014-01-01T01:00:00Z,_m,FF,0\n,,0,2014-01-01T01:01:00Z,_m,FF,1\n,,0,2014-01-01T01:02:00Z,_m,FF,2\n,,0,2014-01-01T01:03:00Z,_m,FF,3\n,,0,2014-01-01T01:04:00Z,_m,FF,4\n,,0,2014-01-01T01:05:00Z,_m,FF,5\n,,0,2014-01-01T01:06:00Z,_m,FF,6\n,,0,2014-01-01T01:07:00Z,_m,FF,7\n,,0,2014-01-01T01:08:00Z,_m,FF,8\n,,0,2014-01-01T01:09:00Z,_m,FF,9\n,,0,2014-01-01T01:10:00Z,_m,FF,10\n,,1,2014-01-01T01:01:00Z,_m,QQ,11\n,,1,2014-01-01T01:02:00Z,_m,QQ,10\n,,1,2014-01-01T01:03:00Z,_m,QQ,9\n,,1,2014-01-01T01:04:00Z,_m,QQ,8\n,,1,2014-01-01T01:05:00Z,_m,QQ,7\n,,1,2014-01-01T01:06:00Z,_m,QQ,6\n,,1,2014-01-01T01:07:00Z,_m,QQ,5\n,,1,2014-01-01T01:08:00Z,_m,QQ,4\n,,1,2014-01-01T01:09:00Z,_m,QQ,3\n,,1,2014-01-01T01:10:00Z,_m,QQ,2\n,,1,2014-01-01T01:11:00Z,_m,QQ,1\n\"\ninterpolateFn = (table=<-) =>\n    table\n        |> range(start: 2014-01-01T01:00:00Z, stop: 2014-01-01T02:00:00Z)\n        |> interpolate.linear(every: 1m)\n        |> drop(columns: [\"_start\", \"_stop\"])\n\ntest interpolate_test = () =>\n    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: interpolateFn})",
+				File: "interpolate_test.flux",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -39,8 +38,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 2,
 						Line:   25,
 					},
-					File:   "interpolate_test.flux",
-					Source: "inData =\n    \"\n#datatype,string,long,dateTime:RFC3339,string,string,double\n#group,false,false,false,true,true,false\n#default,_result,,,,,\n,result,table,_time,_measurement,_field,_value\n,,0,2014-01-01T01:00:00Z,_m,FF,0\n,,0,2014-01-01T01:02:00Z,_m,FF,2\n,,0,2014-01-01T01:04:00Z,_m,FF,4\n,,0,2014-01-01T01:06:00Z,_m,FF,6\n,,0,2014-01-01T01:08:00Z,_m,FF,8\n,,0,2014-01-01T01:10:00Z,_m,FF,10\n,,1,2014-01-01T01:01:00Z,_m,QQ,11\n,,1,2014-01-01T01:03:00Z,_m,QQ,9\n,,1,2014-01-01T01:05:00Z,_m,QQ,7\n,,1,2014-01-01T01:07:00Z,_m,QQ,5\n,,1,2014-01-01T01:09:00Z,_m,QQ,3\n,,1,2014-01-01T01:11:00Z,_m,QQ,1\n\"",
+					File: "interpolate_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   7,
@@ -56,8 +54,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 7,
 							Line:   7,
 						},
-						File:   "interpolate_test.flux",
-						Source: "inData",
+						File: "interpolate_test.flux",
 						Start: ast.Position{
 							Column: 1,
 							Line:   7,
@@ -75,8 +72,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 2,
 							Line:   25,
 						},
-						File:   "interpolate_test.flux",
-						Source: "\"\n#datatype,string,long,dateTime:RFC3339,string,string,double\n#group,false,false,false,true,true,false\n#default,_result,,,,,\n,result,table,_time,_measurement,_field,_value\n,,0,2014-01-01T01:00:00Z,_m,FF,0\n,,0,2014-01-01T01:02:00Z,_m,FF,2\n,,0,2014-01-01T01:04:00Z,_m,FF,4\n,,0,2014-01-01T01:06:00Z,_m,FF,6\n,,0,2014-01-01T01:08:00Z,_m,FF,8\n,,0,2014-01-01T01:10:00Z,_m,FF,10\n,,1,2014-01-01T01:01:00Z,_m,QQ,11\n,,1,2014-01-01T01:03:00Z,_m,QQ,9\n,,1,2014-01-01T01:05:00Z,_m,QQ,7\n,,1,2014-01-01T01:07:00Z,_m,QQ,5\n,,1,2014-01-01T01:09:00Z,_m,QQ,3\n,,1,2014-01-01T01:11:00Z,_m,QQ,1\n\"",
+						File: "interpolate_test.flux",
 						Start: ast.Position{
 							Column: 5,
 							Line:   8,
@@ -94,8 +90,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 2,
 						Line:   54,
 					},
-					File:   "interpolate_test.flux",
-					Source: "outData =\n    \"\n#datatype,string,long,dateTime:RFC3339,string,string,double\n#group,false,false,false,true,true,false\n#default,_result,,,,,\n,result,table,_time,_measurement,_field,_value\n,,0,2014-01-01T01:00:00Z,_m,FF,0\n,,0,2014-01-01T01:01:00Z,_m,FF,1\n,,0,2014-01-01T01:02:00Z,_m,FF,2\n,,0,2014-01-01T01:03:00Z,_m,FF,3\n,,0,2014-01-01T01:04:00Z,_m,FF,4\n,,0,2014-01-01T01:05:00Z,_m,FF,5\n,,0,2014-01-01T01:06:00Z,_m,FF,6\n,,0,2014-01-01T01:07:00Z,_m,FF,7\n,,0,2014-01-01T01:08:00Z,_m,FF,8\n,,0,2014-01-01T01:09:00Z,_m,FF,9\n,,0,2014-01-01T01:10:00Z,_m,FF,10\n,,1,2014-01-01T01:01:00Z,_m,QQ,11\n,,1,2014-01-01T01:02:00Z,_m,QQ,10\n,,1,2014-01-01T01:03:00Z,_m,QQ,9\n,,1,2014-01-01T01:04:00Z,_m,QQ,8\n,,1,2014-01-01T01:05:00Z,_m,QQ,7\n,,1,2014-01-01T01:06:00Z,_m,QQ,6\n,,1,2014-01-01T01:07:00Z,_m,QQ,5\n,,1,2014-01-01T01:08:00Z,_m,QQ,4\n,,1,2014-01-01T01:09:00Z,_m,QQ,3\n,,1,2014-01-01T01:10:00Z,_m,QQ,2\n,,1,2014-01-01T01:11:00Z,_m,QQ,1\n\"",
+					File: "interpolate_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   26,
@@ -111,8 +106,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 8,
 							Line:   26,
 						},
-						File:   "interpolate_test.flux",
-						Source: "outData",
+						File: "interpolate_test.flux",
 						Start: ast.Position{
 							Column: 1,
 							Line:   26,
@@ -130,8 +124,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 2,
 							Line:   54,
 						},
-						File:   "interpolate_test.flux",
-						Source: "\"\n#datatype,string,long,dateTime:RFC3339,string,string,double\n#group,false,false,false,true,true,false\n#default,_result,,,,,\n,result,table,_time,_measurement,_field,_value\n,,0,2014-01-01T01:00:00Z,_m,FF,0\n,,0,2014-01-01T01:01:00Z,_m,FF,1\n,,0,2014-01-01T01:02:00Z,_m,FF,2\n,,0,2014-01-01T01:03:00Z,_m,FF,3\n,,0,2014-01-01T01:04:00Z,_m,FF,4\n,,0,2014-01-01T01:05:00Z,_m,FF,5\n,,0,2014-01-01T01:06:00Z,_m,FF,6\n,,0,2014-01-01T01:07:00Z,_m,FF,7\n,,0,2014-01-01T01:08:00Z,_m,FF,8\n,,0,2014-01-01T01:09:00Z,_m,FF,9\n,,0,2014-01-01T01:10:00Z,_m,FF,10\n,,1,2014-01-01T01:01:00Z,_m,QQ,11\n,,1,2014-01-01T01:02:00Z,_m,QQ,10\n,,1,2014-01-01T01:03:00Z,_m,QQ,9\n,,1,2014-01-01T01:04:00Z,_m,QQ,8\n,,1,2014-01-01T01:05:00Z,_m,QQ,7\n,,1,2014-01-01T01:06:00Z,_m,QQ,6\n,,1,2014-01-01T01:07:00Z,_m,QQ,5\n,,1,2014-01-01T01:08:00Z,_m,QQ,4\n,,1,2014-01-01T01:09:00Z,_m,QQ,3\n,,1,2014-01-01T01:10:00Z,_m,QQ,2\n,,1,2014-01-01T01:11:00Z,_m,QQ,1\n\"",
+						File: "interpolate_test.flux",
 						Start: ast.Position{
 							Column: 5,
 							Line:   27,
@@ -149,8 +142,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 46,
 						Line:   59,
 					},
-					File:   "interpolate_test.flux",
-					Source: "interpolateFn = (table=<-) =>\n    table\n        |> range(start: 2014-01-01T01:00:00Z, stop: 2014-01-01T02:00:00Z)\n        |> interpolate.linear(every: 1m)\n        |> drop(columns: [\"_start\", \"_stop\"])",
+					File: "interpolate_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   55,
@@ -166,8 +158,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 14,
 							Line:   55,
 						},
-						File:   "interpolate_test.flux",
-						Source: "interpolateFn",
+						File: "interpolate_test.flux",
 						Start: ast.Position{
 							Column: 1,
 							Line:   55,
@@ -186,8 +177,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 46,
 							Line:   59,
 						},
-						File:   "interpolate_test.flux",
-						Source: "(table=<-) =>\n    table\n        |> range(start: 2014-01-01T01:00:00Z, stop: 2014-01-01T02:00:00Z)\n        |> interpolate.linear(every: 1m)\n        |> drop(columns: [\"_start\", \"_stop\"])",
+						File: "interpolate_test.flux",
 						Start: ast.Position{
 							Column: 17,
 							Line:   55,
@@ -206,8 +196,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 10,
 											Line:   56,
 										},
-										File:   "interpolate_test.flux",
-										Source: "table",
+										File: "interpolate_test.flux",
 										Start: ast.Position{
 											Column: 5,
 											Line:   56,
@@ -224,8 +213,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 74,
 										Line:   57,
 									},
-									File:   "interpolate_test.flux",
-									Source: "table\n        |> range(start: 2014-01-01T01:00:00Z, stop: 2014-01-01T02:00:00Z)",
+									File: "interpolate_test.flux",
 									Start: ast.Position{
 										Column: 5,
 										Line:   56,
@@ -242,8 +230,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 73,
 												Line:   57,
 											},
-											File:   "interpolate_test.flux",
-											Source: "start: 2014-01-01T01:00:00Z, stop: 2014-01-01T02:00:00Z",
+											File: "interpolate_test.flux",
 											Start: ast.Position{
 												Column: 18,
 												Line:   57,
@@ -260,8 +247,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 45,
 													Line:   57,
 												},
-												File:   "interpolate_test.flux",
-												Source: "start: 2014-01-01T01:00:00Z",
+												File: "interpolate_test.flux",
 												Start: ast.Position{
 													Column: 18,
 													Line:   57,
@@ -278,8 +264,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 23,
 														Line:   57,
 													},
-													File:   "interpolate_test.flux",
-													Source: "start",
+													File: "interpolate_test.flux",
 													Start: ast.Position{
 														Column: 18,
 														Line:   57,
@@ -298,8 +283,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 45,
 														Line:   57,
 													},
-													File:   "interpolate_test.flux",
-													Source: "2014-01-01T01:00:00Z",
+													File: "interpolate_test.flux",
 													Start: ast.Position{
 														Column: 25,
 														Line:   57,
@@ -317,8 +301,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 73,
 													Line:   57,
 												},
-												File:   "interpolate_test.flux",
-												Source: "stop: 2014-01-01T02:00:00Z",
+												File: "interpolate_test.flux",
 												Start: ast.Position{
 													Column: 47,
 													Line:   57,
@@ -335,8 +318,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 51,
 														Line:   57,
 													},
-													File:   "interpolate_test.flux",
-													Source: "stop",
+													File: "interpolate_test.flux",
 													Start: ast.Position{
 														Column: 47,
 														Line:   57,
@@ -355,8 +337,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 73,
 														Line:   57,
 													},
-													File:   "interpolate_test.flux",
-													Source: "2014-01-01T02:00:00Z",
+													File: "interpolate_test.flux",
 													Start: ast.Position{
 														Column: 53,
 														Line:   57,
@@ -377,8 +358,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 74,
 											Line:   57,
 										},
-										File:   "interpolate_test.flux",
-										Source: "range(start: 2014-01-01T01:00:00Z, stop: 2014-01-01T02:00:00Z)",
+										File: "interpolate_test.flux",
 										Start: ast.Position{
 											Column: 12,
 											Line:   57,
@@ -394,8 +374,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 17,
 												Line:   57,
 											},
-											File:   "interpolate_test.flux",
-											Source: "range",
+											File: "interpolate_test.flux",
 											Start: ast.Position{
 												Column: 12,
 												Line:   57,
@@ -416,8 +395,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 41,
 									Line:   58,
 								},
-								File:   "interpolate_test.flux",
-								Source: "table\n        |> range(start: 2014-01-01T01:00:00Z, stop: 2014-01-01T02:00:00Z)\n        |> interpolate.linear(every: 1m)",
+								File: "interpolate_test.flux",
 								Start: ast.Position{
 									Column: 5,
 									Line:   56,
@@ -434,8 +412,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 40,
 											Line:   58,
 										},
-										File:   "interpolate_test.flux",
-										Source: "every: 1m",
+										File: "interpolate_test.flux",
 										Start: ast.Position{
 											Column: 31,
 											Line:   58,
@@ -452,8 +429,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 40,
 												Line:   58,
 											},
-											File:   "interpolate_test.flux",
-											Source: "every: 1m",
+											File: "interpolate_test.flux",
 											Start: ast.Position{
 												Column: 31,
 												Line:   58,
@@ -470,8 +446,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 36,
 													Line:   58,
 												},
-												File:   "interpolate_test.flux",
-												Source: "every",
+												File: "interpolate_test.flux",
 												Start: ast.Position{
 													Column: 31,
 													Line:   58,
@@ -490,8 +465,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 40,
 													Line:   58,
 												},
-												File:   "interpolate_test.flux",
-												Source: "1m",
+												File: "interpolate_test.flux",
 												Start: ast.Position{
 													Column: 38,
 													Line:   58,
@@ -515,8 +489,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 41,
 										Line:   58,
 									},
-									File:   "interpolate_test.flux",
-									Source: "interpolate.linear(every: 1m)",
+									File: "interpolate_test.flux",
 									Start: ast.Position{
 										Column: 12,
 										Line:   58,
@@ -532,8 +505,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 30,
 											Line:   58,
 										},
-										File:   "interpolate_test.flux",
-										Source: "interpolate.linear",
+										File: "interpolate_test.flux",
 										Start: ast.Position{
 											Column: 12,
 											Line:   58,
@@ -550,8 +522,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 23,
 												Line:   58,
 											},
-											File:   "interpolate_test.flux",
-											Source: "interpolate",
+											File: "interpolate_test.flux",
 											Start: ast.Position{
 												Column: 12,
 												Line:   58,
@@ -569,8 +540,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 30,
 												Line:   58,
 											},
-											File:   "interpolate_test.flux",
-											Source: "linear",
+											File: "interpolate_test.flux",
 											Start: ast.Position{
 												Column: 24,
 												Line:   58,
@@ -593,8 +563,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 46,
 								Line:   59,
 							},
-							File:   "interpolate_test.flux",
-							Source: "table\n        |> range(start: 2014-01-01T01:00:00Z, stop: 2014-01-01T02:00:00Z)\n        |> interpolate.linear(every: 1m)\n        |> drop(columns: [\"_start\", \"_stop\"])",
+							File: "interpolate_test.flux",
 							Start: ast.Position{
 								Column: 5,
 								Line:   56,
@@ -611,8 +580,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 45,
 										Line:   59,
 									},
-									File:   "interpolate_test.flux",
-									Source: "columns: [\"_start\", \"_stop\"]",
+									File: "interpolate_test.flux",
 									Start: ast.Position{
 										Column: 17,
 										Line:   59,
@@ -629,8 +597,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 45,
 											Line:   59,
 										},
-										File:   "interpolate_test.flux",
-										Source: "columns: [\"_start\", \"_stop\"]",
+										File: "interpolate_test.flux",
 										Start: ast.Position{
 											Column: 17,
 											Line:   59,
@@ -647,8 +614,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 24,
 												Line:   59,
 											},
-											File:   "interpolate_test.flux",
-											Source: "columns",
+											File: "interpolate_test.flux",
 											Start: ast.Position{
 												Column: 17,
 												Line:   59,
@@ -667,8 +633,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 45,
 												Line:   59,
 											},
-											File:   "interpolate_test.flux",
-											Source: "[\"_start\", \"_stop\"]",
+											File: "interpolate_test.flux",
 											Start: ast.Position{
 												Column: 26,
 												Line:   59,
@@ -684,8 +649,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 35,
 													Line:   59,
 												},
-												File:   "interpolate_test.flux",
-												Source: "\"_start\"",
+												File: "interpolate_test.flux",
 												Start: ast.Position{
 													Column: 27,
 													Line:   59,
@@ -702,8 +666,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 44,
 													Line:   59,
 												},
-												File:   "interpolate_test.flux",
-												Source: "\"_stop\"",
+												File: "interpolate_test.flux",
 												Start: ast.Position{
 													Column: 37,
 													Line:   59,
@@ -727,8 +690,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 46,
 									Line:   59,
 								},
-								File:   "interpolate_test.flux",
-								Source: "drop(columns: [\"_start\", \"_stop\"])",
+								File: "interpolate_test.flux",
 								Start: ast.Position{
 									Column: 12,
 									Line:   59,
@@ -744,8 +706,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 16,
 										Line:   59,
 									},
-									File:   "interpolate_test.flux",
-									Source: "drop",
+									File: "interpolate_test.flux",
 									Start: ast.Position{
 										Column: 12,
 										Line:   59,
@@ -768,8 +729,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 26,
 								Line:   55,
 							},
-							File:   "interpolate_test.flux",
-							Source: "table=<-",
+							File: "interpolate_test.flux",
 							Start: ast.Position{
 								Column: 18,
 								Line:   55,
@@ -786,8 +746,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 23,
 									Line:   55,
 								},
-								File:   "interpolate_test.flux",
-								Source: "table",
+								File: "interpolate_test.flux",
 								Start: ast.Position{
 									Column: 18,
 									Line:   55,
@@ -805,8 +764,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 26,
 								Line:   55,
 							},
-							File:   "interpolate_test.flux",
-							Source: "<-",
+							File: "interpolate_test.flux",
 							Start: ast.Position{
 								Column: 24,
 								Line:   55,
@@ -826,8 +784,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 104,
 							Line:   62,
 						},
-						File:   "interpolate_test.flux",
-						Source: "interpolate_test = () =>\n    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: interpolateFn})",
+						File: "interpolate_test.flux",
 						Start: ast.Position{
 							Column: 6,
 							Line:   61,
@@ -843,8 +800,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 22,
 								Line:   61,
 							},
-							File:   "interpolate_test.flux",
-							Source: "interpolate_test",
+							File: "interpolate_test.flux",
 							Start: ast.Position{
 								Column: 6,
 								Line:   61,
@@ -863,8 +819,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 104,
 								Line:   62,
 							},
-							File:   "interpolate_test.flux",
-							Source: "() =>\n    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: interpolateFn})",
+							File: "interpolate_test.flux",
 							Start: ast.Position{
 								Column: 25,
 								Line:   61,
@@ -880,8 +835,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 104,
 									Line:   62,
 								},
-								File:   "interpolate_test.flux",
-								Source: "({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: interpolateFn})",
+								File: "interpolate_test.flux",
 								Start: ast.Position{
 									Column: 5,
 									Line:   62,
@@ -897,8 +851,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 103,
 										Line:   62,
 									},
-									File:   "interpolate_test.flux",
-									Source: "{input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: interpolateFn}",
+									File: "interpolate_test.flux",
 									Start: ast.Position{
 										Column: 6,
 										Line:   62,
@@ -915,8 +868,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 46,
 											Line:   62,
 										},
-										File:   "interpolate_test.flux",
-										Source: "input: testing.loadStorage(csv: inData)",
+										File: "interpolate_test.flux",
 										Start: ast.Position{
 											Column: 7,
 											Line:   62,
@@ -933,8 +885,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 12,
 												Line:   62,
 											},
-											File:   "interpolate_test.flux",
-											Source: "input",
+											File: "interpolate_test.flux",
 											Start: ast.Position{
 												Column: 7,
 												Line:   62,
@@ -954,8 +905,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 45,
 													Line:   62,
 												},
-												File:   "interpolate_test.flux",
-												Source: "csv: inData",
+												File: "interpolate_test.flux",
 												Start: ast.Position{
 													Column: 34,
 													Line:   62,
@@ -972,8 +922,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 45,
 														Line:   62,
 													},
-													File:   "interpolate_test.flux",
-													Source: "csv: inData",
+													File: "interpolate_test.flux",
 													Start: ast.Position{
 														Column: 34,
 														Line:   62,
@@ -990,8 +939,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 37,
 															Line:   62,
 														},
-														File:   "interpolate_test.flux",
-														Source: "csv",
+														File: "interpolate_test.flux",
 														Start: ast.Position{
 															Column: 34,
 															Line:   62,
@@ -1010,8 +958,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 45,
 															Line:   62,
 														},
-														File:   "interpolate_test.flux",
-														Source: "inData",
+														File: "interpolate_test.flux",
 														Start: ast.Position{
 															Column: 39,
 															Line:   62,
@@ -1032,8 +979,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 46,
 												Line:   62,
 											},
-											File:   "interpolate_test.flux",
-											Source: "testing.loadStorage(csv: inData)",
+											File: "interpolate_test.flux",
 											Start: ast.Position{
 												Column: 14,
 												Line:   62,
@@ -1049,8 +995,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 33,
 													Line:   62,
 												},
-												File:   "interpolate_test.flux",
-												Source: "testing.loadStorage",
+												File: "interpolate_test.flux",
 												Start: ast.Position{
 													Column: 14,
 													Line:   62,
@@ -1067,8 +1012,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 21,
 														Line:   62,
 													},
-													File:   "interpolate_test.flux",
-													Source: "testing",
+													File: "interpolate_test.flux",
 													Start: ast.Position{
 														Column: 14,
 														Line:   62,
@@ -1086,8 +1030,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 33,
 														Line:   62,
 													},
-													File:   "interpolate_test.flux",
-													Source: "loadStorage",
+													File: "interpolate_test.flux",
 													Start: ast.Position{
 														Column: 22,
 														Line:   62,
@@ -1110,8 +1053,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 83,
 											Line:   62,
 										},
-										File:   "interpolate_test.flux",
-										Source: "want: testing.loadMem(csv: outData)",
+										File: "interpolate_test.flux",
 										Start: ast.Position{
 											Column: 48,
 											Line:   62,
@@ -1128,8 +1070,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 52,
 												Line:   62,
 											},
-											File:   "interpolate_test.flux",
-											Source: "want",
+											File: "interpolate_test.flux",
 											Start: ast.Position{
 												Column: 48,
 												Line:   62,
@@ -1149,8 +1090,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 82,
 													Line:   62,
 												},
-												File:   "interpolate_test.flux",
-												Source: "csv: outData",
+												File: "interpolate_test.flux",
 												Start: ast.Position{
 													Column: 70,
 													Line:   62,
@@ -1167,8 +1107,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 82,
 														Line:   62,
 													},
-													File:   "interpolate_test.flux",
-													Source: "csv: outData",
+													File: "interpolate_test.flux",
 													Start: ast.Position{
 														Column: 70,
 														Line:   62,
@@ -1185,8 +1124,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 73,
 															Line:   62,
 														},
-														File:   "interpolate_test.flux",
-														Source: "csv",
+														File: "interpolate_test.flux",
 														Start: ast.Position{
 															Column: 70,
 															Line:   62,
@@ -1205,8 +1143,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 82,
 															Line:   62,
 														},
-														File:   "interpolate_test.flux",
-														Source: "outData",
+														File: "interpolate_test.flux",
 														Start: ast.Position{
 															Column: 75,
 															Line:   62,
@@ -1227,8 +1164,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 83,
 												Line:   62,
 											},
-											File:   "interpolate_test.flux",
-											Source: "testing.loadMem(csv: outData)",
+											File: "interpolate_test.flux",
 											Start: ast.Position{
 												Column: 54,
 												Line:   62,
@@ -1244,8 +1180,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 69,
 													Line:   62,
 												},
-												File:   "interpolate_test.flux",
-												Source: "testing.loadMem",
+												File: "interpolate_test.flux",
 												Start: ast.Position{
 													Column: 54,
 													Line:   62,
@@ -1262,8 +1197,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 61,
 														Line:   62,
 													},
-													File:   "interpolate_test.flux",
-													Source: "testing",
+													File: "interpolate_test.flux",
 													Start: ast.Position{
 														Column: 54,
 														Line:   62,
@@ -1281,8 +1215,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 69,
 														Line:   62,
 													},
-													File:   "interpolate_test.flux",
-													Source: "loadMem",
+													File: "interpolate_test.flux",
 													Start: ast.Position{
 														Column: 62,
 														Line:   62,
@@ -1305,8 +1238,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 102,
 											Line:   62,
 										},
-										File:   "interpolate_test.flux",
-										Source: "fn: interpolateFn",
+										File: "interpolate_test.flux",
 										Start: ast.Position{
 											Column: 85,
 											Line:   62,
@@ -1323,8 +1255,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 87,
 												Line:   62,
 											},
-											File:   "interpolate_test.flux",
-											Source: "fn",
+											File: "interpolate_test.flux",
 											Start: ast.Position{
 												Column: 85,
 												Line:   62,
@@ -1343,8 +1274,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 102,
 												Line:   62,
 											},
-											File:   "interpolate_test.flux",
-											Source: "interpolateFn",
+											File: "interpolate_test.flux",
 											Start: ast.Position{
 												Column: 89,
 												Line:   62,
@@ -1373,8 +1303,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 104,
 						Line:   62,
 					},
-					File:   "interpolate_test.flux",
-					Source: "test interpolate_test = () =>\n    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: interpolateFn})",
+					File: "interpolate_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   61,
@@ -1393,8 +1322,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 17,
 						Line:   4,
 					},
-					File:   "interpolate_test.flux",
-					Source: "import \"testing\"",
+					File: "interpolate_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   4,
@@ -1410,8 +1338,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 17,
 							Line:   4,
 						},
-						File:   "interpolate_test.flux",
-						Source: "\"testing\"",
+						File: "interpolate_test.flux",
 						Start: ast.Position{
 							Column: 8,
 							Line:   4,
@@ -1430,8 +1357,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 21,
 						Line:   5,
 					},
-					File:   "interpolate_test.flux",
-					Source: "import \"interpolate\"",
+					File: "interpolate_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   5,
@@ -1447,8 +1373,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 21,
 							Line:   5,
 						},
-						File:   "interpolate_test.flux",
-						Source: "\"interpolate\"",
+						File: "interpolate_test.flux",
 						Start: ast.Position{
 							Column: 8,
 							Line:   5,
@@ -1469,8 +1394,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 25,
 						Line:   1,
 					},
-					File:   "interpolate_test.flux",
-					Source: "package interpolate_test",
+					File: "interpolate_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   1,
@@ -1486,8 +1410,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 25,
 							Line:   1,
 						},
-						File:   "interpolate_test.flux",
-						Source: "interpolate_test",
+						File: "interpolate_test.flux",
 						Start: ast.Position{
 							Column: 9,
 							Line:   1,

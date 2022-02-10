@@ -22,8 +22,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Column: 110,
 					Line:   37,
 				},
-				File:   "http_endpoint_test.flux",
-				Source: "package http_test\n\n\nimport \"testing\"\nimport \"http\"\nimport \"json\"\n\noption now = () => 2030-01-01T00:00:00Z\n\ninData =\n    \"\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string,string,string\n#group,false,false,false,false,true,true,true,true,true,true\n#default,_result,,,,,,,,,\n,result,table,_time,_value,_field,_measurement,device,fstype,host,path\n,,0,2018-05-22T00:00:00Z,1,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:00:10Z,2,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:00:20Z,3,used_percent,disk,disk1s1,apfs,host.local,/\n\"\noutData =\n    \"\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string,string,string,string\n#group,false,false,false,false,true,true,true,true,true,true,true\n#default,_result,,,,,,,,,,\n,result,table,_time,_value,_field,_measurement,device,fstype,host,path,_sent\n,,0,2018-05-22T00:00:00Z,1,used_percent,disk,disk1s1,apfs,host.local,/,true\n,,0,2018-05-22T00:00:10Z,2,used_percent,disk,disk1s1,apfs,host.local,/,true\n,,0,2018-05-22T00:00:20Z,3,used_percent,disk,disk1s1,apfs,host.local,/,true\n\"\nendpoint = http.endpoint(url: \"http://localhost:7777\")\npost = (table=<-) =>\n    table\n        |> range(start: 2018-05-22T00:00:00Z)\n        |> drop(columns: [\"_start\", \"_stop\"])\n        |> endpoint(mapFn: (r) => ({data: json.encode(v: r)}))()\n\ntest _post = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: post})",
+				File: "http_endpoint_test.flux",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -40,8 +39,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 40,
 							Line:   8,
 						},
-						File:   "http_endpoint_test.flux",
-						Source: "now = () => 2030-01-01T00:00:00Z",
+						File: "http_endpoint_test.flux",
 						Start: ast.Position{
 							Column: 8,
 							Line:   8,
@@ -57,8 +55,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 11,
 								Line:   8,
 							},
-							File:   "http_endpoint_test.flux",
-							Source: "now",
+							File: "http_endpoint_test.flux",
 							Start: ast.Position{
 								Column: 8,
 								Line:   8,
@@ -77,8 +74,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 40,
 								Line:   8,
 							},
-							File:   "http_endpoint_test.flux",
-							Source: "() => 2030-01-01T00:00:00Z",
+							File: "http_endpoint_test.flux",
 							Start: ast.Position{
 								Column: 14,
 								Line:   8,
@@ -94,8 +90,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 40,
 									Line:   8,
 								},
-								File:   "http_endpoint_test.flux",
-								Source: "2030-01-01T00:00:00Z",
+								File: "http_endpoint_test.flux",
 								Start: ast.Position{
 									Column: 20,
 									Line:   8,
@@ -117,8 +112,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 40,
 						Line:   8,
 					},
-					File:   "http_endpoint_test.flux",
-					Source: "option now = () => 2030-01-01T00:00:00Z",
+					File: "http_endpoint_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   8,
@@ -134,8 +128,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 2,
 						Line:   19,
 					},
-					File:   "http_endpoint_test.flux",
-					Source: "inData =\n    \"\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string,string,string\n#group,false,false,false,false,true,true,true,true,true,true\n#default,_result,,,,,,,,,\n,result,table,_time,_value,_field,_measurement,device,fstype,host,path\n,,0,2018-05-22T00:00:00Z,1,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:00:10Z,2,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:00:20Z,3,used_percent,disk,disk1s1,apfs,host.local,/\n\"",
+					File: "http_endpoint_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   10,
@@ -151,8 +144,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 7,
 							Line:   10,
 						},
-						File:   "http_endpoint_test.flux",
-						Source: "inData",
+						File: "http_endpoint_test.flux",
 						Start: ast.Position{
 							Column: 1,
 							Line:   10,
@@ -170,8 +162,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 2,
 							Line:   19,
 						},
-						File:   "http_endpoint_test.flux",
-						Source: "\"\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string,string,string\n#group,false,false,false,false,true,true,true,true,true,true\n#default,_result,,,,,,,,,\n,result,table,_time,_value,_field,_measurement,device,fstype,host,path\n,,0,2018-05-22T00:00:00Z,1,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:00:10Z,2,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:00:20Z,3,used_percent,disk,disk1s1,apfs,host.local,/\n\"",
+						File: "http_endpoint_test.flux",
 						Start: ast.Position{
 							Column: 5,
 							Line:   11,
@@ -189,8 +180,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 2,
 						Line:   29,
 					},
-					File:   "http_endpoint_test.flux",
-					Source: "outData =\n    \"\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string,string,string,string\n#group,false,false,false,false,true,true,true,true,true,true,true\n#default,_result,,,,,,,,,,\n,result,table,_time,_value,_field,_measurement,device,fstype,host,path,_sent\n,,0,2018-05-22T00:00:00Z,1,used_percent,disk,disk1s1,apfs,host.local,/,true\n,,0,2018-05-22T00:00:10Z,2,used_percent,disk,disk1s1,apfs,host.local,/,true\n,,0,2018-05-22T00:00:20Z,3,used_percent,disk,disk1s1,apfs,host.local,/,true\n\"",
+					File: "http_endpoint_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   20,
@@ -206,8 +196,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 8,
 							Line:   20,
 						},
-						File:   "http_endpoint_test.flux",
-						Source: "outData",
+						File: "http_endpoint_test.flux",
 						Start: ast.Position{
 							Column: 1,
 							Line:   20,
@@ -225,8 +214,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 2,
 							Line:   29,
 						},
-						File:   "http_endpoint_test.flux",
-						Source: "\"\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string,string,string,string\n#group,false,false,false,false,true,true,true,true,true,true,true\n#default,_result,,,,,,,,,,\n,result,table,_time,_value,_field,_measurement,device,fstype,host,path,_sent\n,,0,2018-05-22T00:00:00Z,1,used_percent,disk,disk1s1,apfs,host.local,/,true\n,,0,2018-05-22T00:00:10Z,2,used_percent,disk,disk1s1,apfs,host.local,/,true\n,,0,2018-05-22T00:00:20Z,3,used_percent,disk,disk1s1,apfs,host.local,/,true\n\"",
+						File: "http_endpoint_test.flux",
 						Start: ast.Position{
 							Column: 5,
 							Line:   21,
@@ -244,8 +232,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 55,
 						Line:   30,
 					},
-					File:   "http_endpoint_test.flux",
-					Source: "endpoint = http.endpoint(url: \"http://localhost:7777\")",
+					File: "http_endpoint_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   30,
@@ -261,8 +248,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 9,
 							Line:   30,
 						},
-						File:   "http_endpoint_test.flux",
-						Source: "endpoint",
+						File: "http_endpoint_test.flux",
 						Start: ast.Position{
 							Column: 1,
 							Line:   30,
@@ -281,8 +267,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 54,
 								Line:   30,
 							},
-							File:   "http_endpoint_test.flux",
-							Source: "url: \"http://localhost:7777\"",
+							File: "http_endpoint_test.flux",
 							Start: ast.Position{
 								Column: 26,
 								Line:   30,
@@ -299,8 +284,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 54,
 									Line:   30,
 								},
-								File:   "http_endpoint_test.flux",
-								Source: "url: \"http://localhost:7777\"",
+								File: "http_endpoint_test.flux",
 								Start: ast.Position{
 									Column: 26,
 									Line:   30,
@@ -317,8 +301,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 29,
 										Line:   30,
 									},
-									File:   "http_endpoint_test.flux",
-									Source: "url",
+									File: "http_endpoint_test.flux",
 									Start: ast.Position{
 										Column: 26,
 										Line:   30,
@@ -337,8 +320,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 54,
 										Line:   30,
 									},
-									File:   "http_endpoint_test.flux",
-									Source: "\"http://localhost:7777\"",
+									File: "http_endpoint_test.flux",
 									Start: ast.Position{
 										Column: 31,
 										Line:   30,
@@ -359,8 +341,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 55,
 							Line:   30,
 						},
-						File:   "http_endpoint_test.flux",
-						Source: "http.endpoint(url: \"http://localhost:7777\")",
+						File: "http_endpoint_test.flux",
 						Start: ast.Position{
 							Column: 12,
 							Line:   30,
@@ -376,8 +357,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 25,
 								Line:   30,
 							},
-							File:   "http_endpoint_test.flux",
-							Source: "http.endpoint",
+							File: "http_endpoint_test.flux",
 							Start: ast.Position{
 								Column: 12,
 								Line:   30,
@@ -394,8 +374,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 16,
 									Line:   30,
 								},
-								File:   "http_endpoint_test.flux",
-								Source: "http",
+								File: "http_endpoint_test.flux",
 								Start: ast.Position{
 									Column: 12,
 									Line:   30,
@@ -413,8 +392,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 25,
 									Line:   30,
 								},
-								File:   "http_endpoint_test.flux",
-								Source: "endpoint",
+								File: "http_endpoint_test.flux",
 								Start: ast.Position{
 									Column: 17,
 									Line:   30,
@@ -437,8 +415,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 65,
 						Line:   35,
 					},
-					File:   "http_endpoint_test.flux",
-					Source: "post = (table=<-) =>\n    table\n        |> range(start: 2018-05-22T00:00:00Z)\n        |> drop(columns: [\"_start\", \"_stop\"])\n        |> endpoint(mapFn: (r) => ({data: json.encode(v: r)}))()",
+					File: "http_endpoint_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   31,
@@ -454,8 +431,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 5,
 							Line:   31,
 						},
-						File:   "http_endpoint_test.flux",
-						Source: "post",
+						File: "http_endpoint_test.flux",
 						Start: ast.Position{
 							Column: 1,
 							Line:   31,
@@ -474,8 +450,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 65,
 							Line:   35,
 						},
-						File:   "http_endpoint_test.flux",
-						Source: "(table=<-) =>\n    table\n        |> range(start: 2018-05-22T00:00:00Z)\n        |> drop(columns: [\"_start\", \"_stop\"])\n        |> endpoint(mapFn: (r) => ({data: json.encode(v: r)}))()",
+						File: "http_endpoint_test.flux",
 						Start: ast.Position{
 							Column: 8,
 							Line:   31,
@@ -494,8 +469,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 10,
 											Line:   32,
 										},
-										File:   "http_endpoint_test.flux",
-										Source: "table",
+										File: "http_endpoint_test.flux",
 										Start: ast.Position{
 											Column: 5,
 											Line:   32,
@@ -512,8 +486,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 46,
 										Line:   33,
 									},
-									File:   "http_endpoint_test.flux",
-									Source: "table\n        |> range(start: 2018-05-22T00:00:00Z)",
+									File: "http_endpoint_test.flux",
 									Start: ast.Position{
 										Column: 5,
 										Line:   32,
@@ -530,8 +503,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 45,
 												Line:   33,
 											},
-											File:   "http_endpoint_test.flux",
-											Source: "start: 2018-05-22T00:00:00Z",
+											File: "http_endpoint_test.flux",
 											Start: ast.Position{
 												Column: 18,
 												Line:   33,
@@ -548,8 +520,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 45,
 													Line:   33,
 												},
-												File:   "http_endpoint_test.flux",
-												Source: "start: 2018-05-22T00:00:00Z",
+												File: "http_endpoint_test.flux",
 												Start: ast.Position{
 													Column: 18,
 													Line:   33,
@@ -566,8 +537,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 23,
 														Line:   33,
 													},
-													File:   "http_endpoint_test.flux",
-													Source: "start",
+													File: "http_endpoint_test.flux",
 													Start: ast.Position{
 														Column: 18,
 														Line:   33,
@@ -586,8 +556,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 45,
 														Line:   33,
 													},
-													File:   "http_endpoint_test.flux",
-													Source: "2018-05-22T00:00:00Z",
+													File: "http_endpoint_test.flux",
 													Start: ast.Position{
 														Column: 25,
 														Line:   33,
@@ -608,8 +577,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 46,
 											Line:   33,
 										},
-										File:   "http_endpoint_test.flux",
-										Source: "range(start: 2018-05-22T00:00:00Z)",
+										File: "http_endpoint_test.flux",
 										Start: ast.Position{
 											Column: 12,
 											Line:   33,
@@ -625,8 +593,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 17,
 												Line:   33,
 											},
-											File:   "http_endpoint_test.flux",
-											Source: "range",
+											File: "http_endpoint_test.flux",
 											Start: ast.Position{
 												Column: 12,
 												Line:   33,
@@ -647,8 +614,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 46,
 									Line:   34,
 								},
-								File:   "http_endpoint_test.flux",
-								Source: "table\n        |> range(start: 2018-05-22T00:00:00Z)\n        |> drop(columns: [\"_start\", \"_stop\"])",
+								File: "http_endpoint_test.flux",
 								Start: ast.Position{
 									Column: 5,
 									Line:   32,
@@ -665,8 +631,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 45,
 											Line:   34,
 										},
-										File:   "http_endpoint_test.flux",
-										Source: "columns: [\"_start\", \"_stop\"]",
+										File: "http_endpoint_test.flux",
 										Start: ast.Position{
 											Column: 17,
 											Line:   34,
@@ -683,8 +648,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 45,
 												Line:   34,
 											},
-											File:   "http_endpoint_test.flux",
-											Source: "columns: [\"_start\", \"_stop\"]",
+											File: "http_endpoint_test.flux",
 											Start: ast.Position{
 												Column: 17,
 												Line:   34,
@@ -701,8 +665,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 24,
 													Line:   34,
 												},
-												File:   "http_endpoint_test.flux",
-												Source: "columns",
+												File: "http_endpoint_test.flux",
 												Start: ast.Position{
 													Column: 17,
 													Line:   34,
@@ -721,8 +684,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 45,
 													Line:   34,
 												},
-												File:   "http_endpoint_test.flux",
-												Source: "[\"_start\", \"_stop\"]",
+												File: "http_endpoint_test.flux",
 												Start: ast.Position{
 													Column: 26,
 													Line:   34,
@@ -738,8 +700,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 35,
 														Line:   34,
 													},
-													File:   "http_endpoint_test.flux",
-													Source: "\"_start\"",
+													File: "http_endpoint_test.flux",
 													Start: ast.Position{
 														Column: 27,
 														Line:   34,
@@ -756,8 +717,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 44,
 														Line:   34,
 													},
-													File:   "http_endpoint_test.flux",
-													Source: "\"_stop\"",
+													File: "http_endpoint_test.flux",
 													Start: ast.Position{
 														Column: 37,
 														Line:   34,
@@ -781,8 +741,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 46,
 										Line:   34,
 									},
-									File:   "http_endpoint_test.flux",
-									Source: "drop(columns: [\"_start\", \"_stop\"])",
+									File: "http_endpoint_test.flux",
 									Start: ast.Position{
 										Column: 12,
 										Line:   34,
@@ -798,8 +757,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 16,
 											Line:   34,
 										},
-										File:   "http_endpoint_test.flux",
-										Source: "drop",
+										File: "http_endpoint_test.flux",
 										Start: ast.Position{
 											Column: 12,
 											Line:   34,
@@ -820,8 +778,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 65,
 								Line:   35,
 							},
-							File:   "http_endpoint_test.flux",
-							Source: "table\n        |> range(start: 2018-05-22T00:00:00Z)\n        |> drop(columns: [\"_start\", \"_stop\"])\n        |> endpoint(mapFn: (r) => ({data: json.encode(v: r)}))()",
+							File: "http_endpoint_test.flux",
 							Start: ast.Position{
 								Column: 5,
 								Line:   32,
@@ -838,8 +795,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 65,
 									Line:   35,
 								},
-								File:   "http_endpoint_test.flux",
-								Source: "endpoint(mapFn: (r) => ({data: json.encode(v: r)}))()",
+								File: "http_endpoint_test.flux",
 								Start: ast.Position{
 									Column: 12,
 									Line:   35,
@@ -856,8 +812,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 62,
 											Line:   35,
 										},
-										File:   "http_endpoint_test.flux",
-										Source: "mapFn: (r) => ({data: json.encode(v: r)})",
+										File: "http_endpoint_test.flux",
 										Start: ast.Position{
 											Column: 21,
 											Line:   35,
@@ -874,8 +829,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 62,
 												Line:   35,
 											},
-											File:   "http_endpoint_test.flux",
-											Source: "mapFn: (r) => ({data: json.encode(v: r)})",
+											File: "http_endpoint_test.flux",
 											Start: ast.Position{
 												Column: 21,
 												Line:   35,
@@ -892,8 +846,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 26,
 													Line:   35,
 												},
-												File:   "http_endpoint_test.flux",
-												Source: "mapFn",
+												File: "http_endpoint_test.flux",
 												Start: ast.Position{
 													Column: 21,
 													Line:   35,
@@ -913,8 +866,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 62,
 													Line:   35,
 												},
-												File:   "http_endpoint_test.flux",
-												Source: "(r) => ({data: json.encode(v: r)})",
+												File: "http_endpoint_test.flux",
 												Start: ast.Position{
 													Column: 28,
 													Line:   35,
@@ -930,8 +882,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 62,
 														Line:   35,
 													},
-													File:   "http_endpoint_test.flux",
-													Source: "({data: json.encode(v: r)})",
+													File: "http_endpoint_test.flux",
 													Start: ast.Position{
 														Column: 35,
 														Line:   35,
@@ -947,8 +898,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 61,
 															Line:   35,
 														},
-														File:   "http_endpoint_test.flux",
-														Source: "{data: json.encode(v: r)}",
+														File: "http_endpoint_test.flux",
 														Start: ast.Position{
 															Column: 36,
 															Line:   35,
@@ -965,8 +915,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Column: 60,
 																Line:   35,
 															},
-															File:   "http_endpoint_test.flux",
-															Source: "data: json.encode(v: r)",
+															File: "http_endpoint_test.flux",
 															Start: ast.Position{
 																Column: 37,
 																Line:   35,
@@ -983,8 +932,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Column: 41,
 																	Line:   35,
 																},
-																File:   "http_endpoint_test.flux",
-																Source: "data",
+																File: "http_endpoint_test.flux",
 																Start: ast.Position{
 																	Column: 37,
 																	Line:   35,
@@ -1004,8 +952,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Column: 59,
 																		Line:   35,
 																	},
-																	File:   "http_endpoint_test.flux",
-																	Source: "v: r",
+																	File: "http_endpoint_test.flux",
 																	Start: ast.Position{
 																		Column: 55,
 																		Line:   35,
@@ -1022,8 +969,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																			Column: 59,
 																			Line:   35,
 																		},
-																		File:   "http_endpoint_test.flux",
-																		Source: "v: r",
+																		File: "http_endpoint_test.flux",
 																		Start: ast.Position{
 																			Column: 55,
 																			Line:   35,
@@ -1040,8 +986,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																				Column: 56,
 																				Line:   35,
 																			},
-																			File:   "http_endpoint_test.flux",
-																			Source: "v",
+																			File: "http_endpoint_test.flux",
 																			Start: ast.Position{
 																				Column: 55,
 																				Line:   35,
@@ -1060,8 +1005,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																				Column: 59,
 																				Line:   35,
 																			},
-																			File:   "http_endpoint_test.flux",
-																			Source: "r",
+																			File: "http_endpoint_test.flux",
 																			Start: ast.Position{
 																				Column: 58,
 																				Line:   35,
@@ -1082,8 +1026,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Column: 60,
 																	Line:   35,
 																},
-																File:   "http_endpoint_test.flux",
-																Source: "json.encode(v: r)",
+																File: "http_endpoint_test.flux",
 																Start: ast.Position{
 																	Column: 43,
 																	Line:   35,
@@ -1099,8 +1042,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Column: 54,
 																		Line:   35,
 																	},
-																	File:   "http_endpoint_test.flux",
-																	Source: "json.encode",
+																	File: "http_endpoint_test.flux",
 																	Start: ast.Position{
 																		Column: 43,
 																		Line:   35,
@@ -1117,8 +1059,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																			Column: 47,
 																			Line:   35,
 																		},
-																		File:   "http_endpoint_test.flux",
-																		Source: "json",
+																		File: "http_endpoint_test.flux",
 																		Start: ast.Position{
 																			Column: 43,
 																			Line:   35,
@@ -1136,8 +1077,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																			Column: 54,
 																			Line:   35,
 																		},
-																		File:   "http_endpoint_test.flux",
-																		Source: "encode",
+																		File: "http_endpoint_test.flux",
 																		Start: ast.Position{
 																			Column: 48,
 																			Line:   35,
@@ -1168,8 +1108,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 30,
 														Line:   35,
 													},
-													File:   "http_endpoint_test.flux",
-													Source: "r",
+													File: "http_endpoint_test.flux",
 													Start: ast.Position{
 														Column: 29,
 														Line:   35,
@@ -1186,8 +1125,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 30,
 															Line:   35,
 														},
-														File:   "http_endpoint_test.flux",
-														Source: "r",
+														File: "http_endpoint_test.flux",
 														Start: ast.Position{
 															Column: 29,
 															Line:   35,
@@ -1213,8 +1151,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 63,
 										Line:   35,
 									},
-									File:   "http_endpoint_test.flux",
-									Source: "endpoint(mapFn: (r) => ({data: json.encode(v: r)}))",
+									File: "http_endpoint_test.flux",
 									Start: ast.Position{
 										Column: 12,
 										Line:   35,
@@ -1230,8 +1167,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 20,
 											Line:   35,
 										},
-										File:   "http_endpoint_test.flux",
-										Source: "endpoint",
+										File: "http_endpoint_test.flux",
 										Start: ast.Position{
 											Column: 12,
 											Line:   35,
@@ -1257,8 +1193,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 17,
 								Line:   31,
 							},
-							File:   "http_endpoint_test.flux",
-							Source: "table=<-",
+							File: "http_endpoint_test.flux",
 							Start: ast.Position{
 								Column: 9,
 								Line:   31,
@@ -1275,8 +1210,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 14,
 									Line:   31,
 								},
-								File:   "http_endpoint_test.flux",
-								Source: "table",
+								File: "http_endpoint_test.flux",
 								Start: ast.Position{
 									Column: 9,
 									Line:   31,
@@ -1294,8 +1228,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 17,
 								Line:   31,
 							},
-							File:   "http_endpoint_test.flux",
-							Source: "<-",
+							File: "http_endpoint_test.flux",
 							Start: ast.Position{
 								Column: 15,
 								Line:   31,
@@ -1315,8 +1248,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 110,
 							Line:   37,
 						},
-						File:   "http_endpoint_test.flux",
-						Source: "_post = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: post})",
+						File: "http_endpoint_test.flux",
 						Start: ast.Position{
 							Column: 6,
 							Line:   37,
@@ -1332,8 +1264,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 11,
 								Line:   37,
 							},
-							File:   "http_endpoint_test.flux",
-							Source: "_post",
+							File: "http_endpoint_test.flux",
 							Start: ast.Position{
 								Column: 6,
 								Line:   37,
@@ -1352,8 +1283,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 110,
 								Line:   37,
 							},
-							File:   "http_endpoint_test.flux",
-							Source: "() => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: post})",
+							File: "http_endpoint_test.flux",
 							Start: ast.Position{
 								Column: 14,
 								Line:   37,
@@ -1369,8 +1299,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 110,
 									Line:   37,
 								},
-								File:   "http_endpoint_test.flux",
-								Source: "({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: post})",
+								File: "http_endpoint_test.flux",
 								Start: ast.Position{
 									Column: 20,
 									Line:   37,
@@ -1386,8 +1315,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 109,
 										Line:   37,
 									},
-									File:   "http_endpoint_test.flux",
-									Source: "{input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: post}",
+									File: "http_endpoint_test.flux",
 									Start: ast.Position{
 										Column: 21,
 										Line:   37,
@@ -1404,8 +1332,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 61,
 											Line:   37,
 										},
-										File:   "http_endpoint_test.flux",
-										Source: "input: testing.loadStorage(csv: inData)",
+										File: "http_endpoint_test.flux",
 										Start: ast.Position{
 											Column: 22,
 											Line:   37,
@@ -1422,8 +1349,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 27,
 												Line:   37,
 											},
-											File:   "http_endpoint_test.flux",
-											Source: "input",
+											File: "http_endpoint_test.flux",
 											Start: ast.Position{
 												Column: 22,
 												Line:   37,
@@ -1443,8 +1369,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 60,
 													Line:   37,
 												},
-												File:   "http_endpoint_test.flux",
-												Source: "csv: inData",
+												File: "http_endpoint_test.flux",
 												Start: ast.Position{
 													Column: 49,
 													Line:   37,
@@ -1461,8 +1386,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 60,
 														Line:   37,
 													},
-													File:   "http_endpoint_test.flux",
-													Source: "csv: inData",
+													File: "http_endpoint_test.flux",
 													Start: ast.Position{
 														Column: 49,
 														Line:   37,
@@ -1479,8 +1403,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 52,
 															Line:   37,
 														},
-														File:   "http_endpoint_test.flux",
-														Source: "csv",
+														File: "http_endpoint_test.flux",
 														Start: ast.Position{
 															Column: 49,
 															Line:   37,
@@ -1499,8 +1422,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 60,
 															Line:   37,
 														},
-														File:   "http_endpoint_test.flux",
-														Source: "inData",
+														File: "http_endpoint_test.flux",
 														Start: ast.Position{
 															Column: 54,
 															Line:   37,
@@ -1521,8 +1443,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 61,
 												Line:   37,
 											},
-											File:   "http_endpoint_test.flux",
-											Source: "testing.loadStorage(csv: inData)",
+											File: "http_endpoint_test.flux",
 											Start: ast.Position{
 												Column: 29,
 												Line:   37,
@@ -1538,8 +1459,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 48,
 													Line:   37,
 												},
-												File:   "http_endpoint_test.flux",
-												Source: "testing.loadStorage",
+												File: "http_endpoint_test.flux",
 												Start: ast.Position{
 													Column: 29,
 													Line:   37,
@@ -1556,8 +1476,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 36,
 														Line:   37,
 													},
-													File:   "http_endpoint_test.flux",
-													Source: "testing",
+													File: "http_endpoint_test.flux",
 													Start: ast.Position{
 														Column: 29,
 														Line:   37,
@@ -1575,8 +1494,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 48,
 														Line:   37,
 													},
-													File:   "http_endpoint_test.flux",
-													Source: "loadStorage",
+													File: "http_endpoint_test.flux",
 													Start: ast.Position{
 														Column: 37,
 														Line:   37,
@@ -1599,8 +1517,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 98,
 											Line:   37,
 										},
-										File:   "http_endpoint_test.flux",
-										Source: "want: testing.loadMem(csv: outData)",
+										File: "http_endpoint_test.flux",
 										Start: ast.Position{
 											Column: 63,
 											Line:   37,
@@ -1617,8 +1534,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 67,
 												Line:   37,
 											},
-											File:   "http_endpoint_test.flux",
-											Source: "want",
+											File: "http_endpoint_test.flux",
 											Start: ast.Position{
 												Column: 63,
 												Line:   37,
@@ -1638,8 +1554,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 97,
 													Line:   37,
 												},
-												File:   "http_endpoint_test.flux",
-												Source: "csv: outData",
+												File: "http_endpoint_test.flux",
 												Start: ast.Position{
 													Column: 85,
 													Line:   37,
@@ -1656,8 +1571,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 97,
 														Line:   37,
 													},
-													File:   "http_endpoint_test.flux",
-													Source: "csv: outData",
+													File: "http_endpoint_test.flux",
 													Start: ast.Position{
 														Column: 85,
 														Line:   37,
@@ -1674,8 +1588,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 88,
 															Line:   37,
 														},
-														File:   "http_endpoint_test.flux",
-														Source: "csv",
+														File: "http_endpoint_test.flux",
 														Start: ast.Position{
 															Column: 85,
 															Line:   37,
@@ -1694,8 +1607,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 97,
 															Line:   37,
 														},
-														File:   "http_endpoint_test.flux",
-														Source: "outData",
+														File: "http_endpoint_test.flux",
 														Start: ast.Position{
 															Column: 90,
 															Line:   37,
@@ -1716,8 +1628,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 98,
 												Line:   37,
 											},
-											File:   "http_endpoint_test.flux",
-											Source: "testing.loadMem(csv: outData)",
+											File: "http_endpoint_test.flux",
 											Start: ast.Position{
 												Column: 69,
 												Line:   37,
@@ -1733,8 +1644,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 84,
 													Line:   37,
 												},
-												File:   "http_endpoint_test.flux",
-												Source: "testing.loadMem",
+												File: "http_endpoint_test.flux",
 												Start: ast.Position{
 													Column: 69,
 													Line:   37,
@@ -1751,8 +1661,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 76,
 														Line:   37,
 													},
-													File:   "http_endpoint_test.flux",
-													Source: "testing",
+													File: "http_endpoint_test.flux",
 													Start: ast.Position{
 														Column: 69,
 														Line:   37,
@@ -1770,8 +1679,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 84,
 														Line:   37,
 													},
-													File:   "http_endpoint_test.flux",
-													Source: "loadMem",
+													File: "http_endpoint_test.flux",
 													Start: ast.Position{
 														Column: 77,
 														Line:   37,
@@ -1794,8 +1702,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 108,
 											Line:   37,
 										},
-										File:   "http_endpoint_test.flux",
-										Source: "fn: post",
+										File: "http_endpoint_test.flux",
 										Start: ast.Position{
 											Column: 100,
 											Line:   37,
@@ -1812,8 +1719,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 102,
 												Line:   37,
 											},
-											File:   "http_endpoint_test.flux",
-											Source: "fn",
+											File: "http_endpoint_test.flux",
 											Start: ast.Position{
 												Column: 100,
 												Line:   37,
@@ -1832,8 +1738,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 108,
 												Line:   37,
 											},
-											File:   "http_endpoint_test.flux",
-											Source: "post",
+											File: "http_endpoint_test.flux",
 											Start: ast.Position{
 												Column: 104,
 												Line:   37,
@@ -1862,8 +1767,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 110,
 						Line:   37,
 					},
-					File:   "http_endpoint_test.flux",
-					Source: "test _post = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: post})",
+					File: "http_endpoint_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   37,
@@ -1882,8 +1786,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 17,
 						Line:   4,
 					},
-					File:   "http_endpoint_test.flux",
-					Source: "import \"testing\"",
+					File: "http_endpoint_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   4,
@@ -1899,8 +1802,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 17,
 							Line:   4,
 						},
-						File:   "http_endpoint_test.flux",
-						Source: "\"testing\"",
+						File: "http_endpoint_test.flux",
 						Start: ast.Position{
 							Column: 8,
 							Line:   4,
@@ -1919,8 +1821,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 14,
 						Line:   5,
 					},
-					File:   "http_endpoint_test.flux",
-					Source: "import \"http\"",
+					File: "http_endpoint_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   5,
@@ -1936,8 +1837,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 14,
 							Line:   5,
 						},
-						File:   "http_endpoint_test.flux",
-						Source: "\"http\"",
+						File: "http_endpoint_test.flux",
 						Start: ast.Position{
 							Column: 8,
 							Line:   5,
@@ -1956,8 +1856,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 14,
 						Line:   6,
 					},
-					File:   "http_endpoint_test.flux",
-					Source: "import \"json\"",
+					File: "http_endpoint_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   6,
@@ -1973,8 +1872,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 14,
 							Line:   6,
 						},
-						File:   "http_endpoint_test.flux",
-						Source: "\"json\"",
+						File: "http_endpoint_test.flux",
 						Start: ast.Position{
 							Column: 8,
 							Line:   6,
@@ -1995,8 +1893,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 18,
 						Line:   1,
 					},
-					File:   "http_endpoint_test.flux",
-					Source: "package http_test",
+					File: "http_endpoint_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   1,
@@ -2012,8 +1909,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 18,
 							Line:   1,
 						},
-						File:   "http_endpoint_test.flux",
-						Source: "http_test",
+						File: "http_endpoint_test.flux",
 						Start: ast.Position{
 							Column: 9,
 							Line:   1,
@@ -2032,8 +1928,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Column: 107,
 					Line:   37,
 				},
-				File:   "http_path_encode_endpoint_test.flux",
-				Source: "package http_test\n\n\nimport \"testing\"\nimport \"http\"\nimport \"json\"\n\noption now = () => 2030-01-01T00:00:00Z\n\ninData =\n    \"\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string,string,string\n#group,false,false,false,false,true,true,true,true,true,true\n#default,_result,,,,,,,,,\n,result,table,_time,_value,_field,_measurement,device,fstype,host,path\n,,0,2018-05-22T00:00:00Z,1,used_percent,disk,disk1s1,apfs,host.local,/hellohi!@#\n,,1,2018-05-22T00:00:10Z,2,used_percent,disk,disk1s1,apfs,host.local,./random$^%\n,,2,2018-05-22T00:00:20Z,3,used_percent,disk,disk1s1,apfs,host.local,/#$name#$\n\"\noutData =\n    \"\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string,string,string,string\n#group,false,false,false,false,true,true,true,true,true,true,false\n#default,_result,,,,,,,,,,\n,result,table,_time,_value,_field,_measurement,device,fstype,host,path,_sent\n,,0,2018-05-22T00:00:10Z,2,used_percent,disk,disk1s1,apfs,host.local,./random$^%,.%2Frandom$%5E%25\n,,1,2018-05-22T00:00:20Z,3,used_percent,disk,disk1s1,apfs,host.local,/#$name#$,%2F%23$name%23$\n,,2,2018-05-22T00:00:00Z,1,used_percent,disk,disk1s1,apfs,host.local,/hellohi!@#,%2Fhellohi%21@%23\n\"\npath_encode_test = (table=<-) =>\n    table\n        |> range(start: 2018-05-22T00:00:00Z)\n        |> drop(columns: [\"_start\", \"_stop\"])\n        |> map(fn: (r) => ({r with _sent: http.pathEscape(inputString: r.path)}))\n\ntest _path_encode = () =>\n    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: path_encode_test})",
+				File: "http_path_encode_endpoint_test.flux",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -2050,8 +1945,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 40,
 							Line:   8,
 						},
-						File:   "http_path_encode_endpoint_test.flux",
-						Source: "now = () => 2030-01-01T00:00:00Z",
+						File: "http_path_encode_endpoint_test.flux",
 						Start: ast.Position{
 							Column: 8,
 							Line:   8,
@@ -2067,8 +1961,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 11,
 								Line:   8,
 							},
-							File:   "http_path_encode_endpoint_test.flux",
-							Source: "now",
+							File: "http_path_encode_endpoint_test.flux",
 							Start: ast.Position{
 								Column: 8,
 								Line:   8,
@@ -2087,8 +1980,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 40,
 								Line:   8,
 							},
-							File:   "http_path_encode_endpoint_test.flux",
-							Source: "() => 2030-01-01T00:00:00Z",
+							File: "http_path_encode_endpoint_test.flux",
 							Start: ast.Position{
 								Column: 14,
 								Line:   8,
@@ -2104,8 +1996,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 40,
 									Line:   8,
 								},
-								File:   "http_path_encode_endpoint_test.flux",
-								Source: "2030-01-01T00:00:00Z",
+								File: "http_path_encode_endpoint_test.flux",
 								Start: ast.Position{
 									Column: 20,
 									Line:   8,
@@ -2127,8 +2018,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 40,
 						Line:   8,
 					},
-					File:   "http_path_encode_endpoint_test.flux",
-					Source: "option now = () => 2030-01-01T00:00:00Z",
+					File: "http_path_encode_endpoint_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   8,
@@ -2144,8 +2034,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 2,
 						Line:   19,
 					},
-					File:   "http_path_encode_endpoint_test.flux",
-					Source: "inData =\n    \"\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string,string,string\n#group,false,false,false,false,true,true,true,true,true,true\n#default,_result,,,,,,,,,\n,result,table,_time,_value,_field,_measurement,device,fstype,host,path\n,,0,2018-05-22T00:00:00Z,1,used_percent,disk,disk1s1,apfs,host.local,/hellohi!@#\n,,1,2018-05-22T00:00:10Z,2,used_percent,disk,disk1s1,apfs,host.local,./random$^%\n,,2,2018-05-22T00:00:20Z,3,used_percent,disk,disk1s1,apfs,host.local,/#$name#$\n\"",
+					File: "http_path_encode_endpoint_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   10,
@@ -2161,8 +2050,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 7,
 							Line:   10,
 						},
-						File:   "http_path_encode_endpoint_test.flux",
-						Source: "inData",
+						File: "http_path_encode_endpoint_test.flux",
 						Start: ast.Position{
 							Column: 1,
 							Line:   10,
@@ -2180,8 +2068,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 2,
 							Line:   19,
 						},
-						File:   "http_path_encode_endpoint_test.flux",
-						Source: "\"\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string,string,string\n#group,false,false,false,false,true,true,true,true,true,true\n#default,_result,,,,,,,,,\n,result,table,_time,_value,_field,_measurement,device,fstype,host,path\n,,0,2018-05-22T00:00:00Z,1,used_percent,disk,disk1s1,apfs,host.local,/hellohi!@#\n,,1,2018-05-22T00:00:10Z,2,used_percent,disk,disk1s1,apfs,host.local,./random$^%\n,,2,2018-05-22T00:00:20Z,3,used_percent,disk,disk1s1,apfs,host.local,/#$name#$\n\"",
+						File: "http_path_encode_endpoint_test.flux",
 						Start: ast.Position{
 							Column: 5,
 							Line:   11,
@@ -2199,8 +2086,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 2,
 						Line:   29,
 					},
-					File:   "http_path_encode_endpoint_test.flux",
-					Source: "outData =\n    \"\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string,string,string,string\n#group,false,false,false,false,true,true,true,true,true,true,false\n#default,_result,,,,,,,,,,\n,result,table,_time,_value,_field,_measurement,device,fstype,host,path,_sent\n,,0,2018-05-22T00:00:10Z,2,used_percent,disk,disk1s1,apfs,host.local,./random$^%,.%2Frandom$%5E%25\n,,1,2018-05-22T00:00:20Z,3,used_percent,disk,disk1s1,apfs,host.local,/#$name#$,%2F%23$name%23$\n,,2,2018-05-22T00:00:00Z,1,used_percent,disk,disk1s1,apfs,host.local,/hellohi!@#,%2Fhellohi%21@%23\n\"",
+					File: "http_path_encode_endpoint_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   20,
@@ -2216,8 +2102,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 8,
 							Line:   20,
 						},
-						File:   "http_path_encode_endpoint_test.flux",
-						Source: "outData",
+						File: "http_path_encode_endpoint_test.flux",
 						Start: ast.Position{
 							Column: 1,
 							Line:   20,
@@ -2235,8 +2120,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 2,
 							Line:   29,
 						},
-						File:   "http_path_encode_endpoint_test.flux",
-						Source: "\"\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string,string,string,string\n#group,false,false,false,false,true,true,true,true,true,true,false\n#default,_result,,,,,,,,,,\n,result,table,_time,_value,_field,_measurement,device,fstype,host,path,_sent\n,,0,2018-05-22T00:00:10Z,2,used_percent,disk,disk1s1,apfs,host.local,./random$^%,.%2Frandom$%5E%25\n,,1,2018-05-22T00:00:20Z,3,used_percent,disk,disk1s1,apfs,host.local,/#$name#$,%2F%23$name%23$\n,,2,2018-05-22T00:00:00Z,1,used_percent,disk,disk1s1,apfs,host.local,/hellohi!@#,%2Fhellohi%21@%23\n\"",
+						File: "http_path_encode_endpoint_test.flux",
 						Start: ast.Position{
 							Column: 5,
 							Line:   21,
@@ -2254,8 +2138,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 82,
 						Line:   34,
 					},
-					File:   "http_path_encode_endpoint_test.flux",
-					Source: "path_encode_test = (table=<-) =>\n    table\n        |> range(start: 2018-05-22T00:00:00Z)\n        |> drop(columns: [\"_start\", \"_stop\"])\n        |> map(fn: (r) => ({r with _sent: http.pathEscape(inputString: r.path)}))",
+					File: "http_path_encode_endpoint_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   30,
@@ -2271,8 +2154,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 17,
 							Line:   30,
 						},
-						File:   "http_path_encode_endpoint_test.flux",
-						Source: "path_encode_test",
+						File: "http_path_encode_endpoint_test.flux",
 						Start: ast.Position{
 							Column: 1,
 							Line:   30,
@@ -2291,8 +2173,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 82,
 							Line:   34,
 						},
-						File:   "http_path_encode_endpoint_test.flux",
-						Source: "(table=<-) =>\n    table\n        |> range(start: 2018-05-22T00:00:00Z)\n        |> drop(columns: [\"_start\", \"_stop\"])\n        |> map(fn: (r) => ({r with _sent: http.pathEscape(inputString: r.path)}))",
+						File: "http_path_encode_endpoint_test.flux",
 						Start: ast.Position{
 							Column: 20,
 							Line:   30,
@@ -2311,8 +2192,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 10,
 											Line:   31,
 										},
-										File:   "http_path_encode_endpoint_test.flux",
-										Source: "table",
+										File: "http_path_encode_endpoint_test.flux",
 										Start: ast.Position{
 											Column: 5,
 											Line:   31,
@@ -2329,8 +2209,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 46,
 										Line:   32,
 									},
-									File:   "http_path_encode_endpoint_test.flux",
-									Source: "table\n        |> range(start: 2018-05-22T00:00:00Z)",
+									File: "http_path_encode_endpoint_test.flux",
 									Start: ast.Position{
 										Column: 5,
 										Line:   31,
@@ -2347,8 +2226,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 45,
 												Line:   32,
 											},
-											File:   "http_path_encode_endpoint_test.flux",
-											Source: "start: 2018-05-22T00:00:00Z",
+											File: "http_path_encode_endpoint_test.flux",
 											Start: ast.Position{
 												Column: 18,
 												Line:   32,
@@ -2365,8 +2243,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 45,
 													Line:   32,
 												},
-												File:   "http_path_encode_endpoint_test.flux",
-												Source: "start: 2018-05-22T00:00:00Z",
+												File: "http_path_encode_endpoint_test.flux",
 												Start: ast.Position{
 													Column: 18,
 													Line:   32,
@@ -2383,8 +2260,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 23,
 														Line:   32,
 													},
-													File:   "http_path_encode_endpoint_test.flux",
-													Source: "start",
+													File: "http_path_encode_endpoint_test.flux",
 													Start: ast.Position{
 														Column: 18,
 														Line:   32,
@@ -2403,8 +2279,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 45,
 														Line:   32,
 													},
-													File:   "http_path_encode_endpoint_test.flux",
-													Source: "2018-05-22T00:00:00Z",
+													File: "http_path_encode_endpoint_test.flux",
 													Start: ast.Position{
 														Column: 25,
 														Line:   32,
@@ -2425,8 +2300,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 46,
 											Line:   32,
 										},
-										File:   "http_path_encode_endpoint_test.flux",
-										Source: "range(start: 2018-05-22T00:00:00Z)",
+										File: "http_path_encode_endpoint_test.flux",
 										Start: ast.Position{
 											Column: 12,
 											Line:   32,
@@ -2442,8 +2316,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 17,
 												Line:   32,
 											},
-											File:   "http_path_encode_endpoint_test.flux",
-											Source: "range",
+											File: "http_path_encode_endpoint_test.flux",
 											Start: ast.Position{
 												Column: 12,
 												Line:   32,
@@ -2464,8 +2337,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 46,
 									Line:   33,
 								},
-								File:   "http_path_encode_endpoint_test.flux",
-								Source: "table\n        |> range(start: 2018-05-22T00:00:00Z)\n        |> drop(columns: [\"_start\", \"_stop\"])",
+								File: "http_path_encode_endpoint_test.flux",
 								Start: ast.Position{
 									Column: 5,
 									Line:   31,
@@ -2482,8 +2354,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 45,
 											Line:   33,
 										},
-										File:   "http_path_encode_endpoint_test.flux",
-										Source: "columns: [\"_start\", \"_stop\"]",
+										File: "http_path_encode_endpoint_test.flux",
 										Start: ast.Position{
 											Column: 17,
 											Line:   33,
@@ -2500,8 +2371,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 45,
 												Line:   33,
 											},
-											File:   "http_path_encode_endpoint_test.flux",
-											Source: "columns: [\"_start\", \"_stop\"]",
+											File: "http_path_encode_endpoint_test.flux",
 											Start: ast.Position{
 												Column: 17,
 												Line:   33,
@@ -2518,8 +2388,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 24,
 													Line:   33,
 												},
-												File:   "http_path_encode_endpoint_test.flux",
-												Source: "columns",
+												File: "http_path_encode_endpoint_test.flux",
 												Start: ast.Position{
 													Column: 17,
 													Line:   33,
@@ -2538,8 +2407,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 45,
 													Line:   33,
 												},
-												File:   "http_path_encode_endpoint_test.flux",
-												Source: "[\"_start\", \"_stop\"]",
+												File: "http_path_encode_endpoint_test.flux",
 												Start: ast.Position{
 													Column: 26,
 													Line:   33,
@@ -2555,8 +2423,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 35,
 														Line:   33,
 													},
-													File:   "http_path_encode_endpoint_test.flux",
-													Source: "\"_start\"",
+													File: "http_path_encode_endpoint_test.flux",
 													Start: ast.Position{
 														Column: 27,
 														Line:   33,
@@ -2573,8 +2440,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 44,
 														Line:   33,
 													},
-													File:   "http_path_encode_endpoint_test.flux",
-													Source: "\"_stop\"",
+													File: "http_path_encode_endpoint_test.flux",
 													Start: ast.Position{
 														Column: 37,
 														Line:   33,
@@ -2598,8 +2464,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 46,
 										Line:   33,
 									},
-									File:   "http_path_encode_endpoint_test.flux",
-									Source: "drop(columns: [\"_start\", \"_stop\"])",
+									File: "http_path_encode_endpoint_test.flux",
 									Start: ast.Position{
 										Column: 12,
 										Line:   33,
@@ -2615,8 +2480,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 16,
 											Line:   33,
 										},
-										File:   "http_path_encode_endpoint_test.flux",
-										Source: "drop",
+										File: "http_path_encode_endpoint_test.flux",
 										Start: ast.Position{
 											Column: 12,
 											Line:   33,
@@ -2637,8 +2501,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 82,
 								Line:   34,
 							},
-							File:   "http_path_encode_endpoint_test.flux",
-							Source: "table\n        |> range(start: 2018-05-22T00:00:00Z)\n        |> drop(columns: [\"_start\", \"_stop\"])\n        |> map(fn: (r) => ({r with _sent: http.pathEscape(inputString: r.path)}))",
+							File: "http_path_encode_endpoint_test.flux",
 							Start: ast.Position{
 								Column: 5,
 								Line:   31,
@@ -2655,8 +2518,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 81,
 										Line:   34,
 									},
-									File:   "http_path_encode_endpoint_test.flux",
-									Source: "fn: (r) => ({r with _sent: http.pathEscape(inputString: r.path)})",
+									File: "http_path_encode_endpoint_test.flux",
 									Start: ast.Position{
 										Column: 16,
 										Line:   34,
@@ -2673,8 +2535,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 81,
 											Line:   34,
 										},
-										File:   "http_path_encode_endpoint_test.flux",
-										Source: "fn: (r) => ({r with _sent: http.pathEscape(inputString: r.path)})",
+										File: "http_path_encode_endpoint_test.flux",
 										Start: ast.Position{
 											Column: 16,
 											Line:   34,
@@ -2691,8 +2552,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 18,
 												Line:   34,
 											},
-											File:   "http_path_encode_endpoint_test.flux",
-											Source: "fn",
+											File: "http_path_encode_endpoint_test.flux",
 											Start: ast.Position{
 												Column: 16,
 												Line:   34,
@@ -2712,8 +2572,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 81,
 												Line:   34,
 											},
-											File:   "http_path_encode_endpoint_test.flux",
-											Source: "(r) => ({r with _sent: http.pathEscape(inputString: r.path)})",
+											File: "http_path_encode_endpoint_test.flux",
 											Start: ast.Position{
 												Column: 20,
 												Line:   34,
@@ -2729,8 +2588,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 81,
 													Line:   34,
 												},
-												File:   "http_path_encode_endpoint_test.flux",
-												Source: "({r with _sent: http.pathEscape(inputString: r.path)})",
+												File: "http_path_encode_endpoint_test.flux",
 												Start: ast.Position{
 													Column: 27,
 													Line:   34,
@@ -2746,8 +2604,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 80,
 														Line:   34,
 													},
-													File:   "http_path_encode_endpoint_test.flux",
-													Source: "{r with _sent: http.pathEscape(inputString: r.path)}",
+													File: "http_path_encode_endpoint_test.flux",
 													Start: ast.Position{
 														Column: 28,
 														Line:   34,
@@ -2764,8 +2621,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 79,
 															Line:   34,
 														},
-														File:   "http_path_encode_endpoint_test.flux",
-														Source: "_sent: http.pathEscape(inputString: r.path)",
+														File: "http_path_encode_endpoint_test.flux",
 														Start: ast.Position{
 															Column: 36,
 															Line:   34,
@@ -2782,8 +2638,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Column: 41,
 																Line:   34,
 															},
-															File:   "http_path_encode_endpoint_test.flux",
-															Source: "_sent",
+															File: "http_path_encode_endpoint_test.flux",
 															Start: ast.Position{
 																Column: 36,
 																Line:   34,
@@ -2803,8 +2658,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Column: 78,
 																	Line:   34,
 																},
-																File:   "http_path_encode_endpoint_test.flux",
-																Source: "inputString: r.path",
+																File: "http_path_encode_endpoint_test.flux",
 																Start: ast.Position{
 																	Column: 59,
 																	Line:   34,
@@ -2821,8 +2675,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Column: 78,
 																		Line:   34,
 																	},
-																	File:   "http_path_encode_endpoint_test.flux",
-																	Source: "inputString: r.path",
+																	File: "http_path_encode_endpoint_test.flux",
 																	Start: ast.Position{
 																		Column: 59,
 																		Line:   34,
@@ -2839,8 +2692,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																			Column: 70,
 																			Line:   34,
 																		},
-																		File:   "http_path_encode_endpoint_test.flux",
-																		Source: "inputString",
+																		File: "http_path_encode_endpoint_test.flux",
 																		Start: ast.Position{
 																			Column: 59,
 																			Line:   34,
@@ -2859,8 +2711,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																			Column: 78,
 																			Line:   34,
 																		},
-																		File:   "http_path_encode_endpoint_test.flux",
-																		Source: "r.path",
+																		File: "http_path_encode_endpoint_test.flux",
 																		Start: ast.Position{
 																			Column: 72,
 																			Line:   34,
@@ -2877,8 +2728,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																				Column: 73,
 																				Line:   34,
 																			},
-																			File:   "http_path_encode_endpoint_test.flux",
-																			Source: "r",
+																			File: "http_path_encode_endpoint_test.flux",
 																			Start: ast.Position{
 																				Column: 72,
 																				Line:   34,
@@ -2896,8 +2746,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																				Column: 78,
 																				Line:   34,
 																			},
-																			File:   "http_path_encode_endpoint_test.flux",
-																			Source: "path",
+																			File: "http_path_encode_endpoint_test.flux",
 																			Start: ast.Position{
 																				Column: 74,
 																				Line:   34,
@@ -2920,8 +2769,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Column: 79,
 																Line:   34,
 															},
-															File:   "http_path_encode_endpoint_test.flux",
-															Source: "http.pathEscape(inputString: r.path)",
+															File: "http_path_encode_endpoint_test.flux",
 															Start: ast.Position{
 																Column: 43,
 																Line:   34,
@@ -2937,8 +2785,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Column: 58,
 																	Line:   34,
 																},
-																File:   "http_path_encode_endpoint_test.flux",
-																Source: "http.pathEscape",
+																File: "http_path_encode_endpoint_test.flux",
 																Start: ast.Position{
 																	Column: 43,
 																	Line:   34,
@@ -2955,8 +2802,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Column: 47,
 																		Line:   34,
 																	},
-																	File:   "http_path_encode_endpoint_test.flux",
-																	Source: "http",
+																	File: "http_path_encode_endpoint_test.flux",
 																	Start: ast.Position{
 																		Column: 43,
 																		Line:   34,
@@ -2974,8 +2820,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Column: 58,
 																		Line:   34,
 																	},
-																	File:   "http_path_encode_endpoint_test.flux",
-																	Source: "pathEscape",
+																	File: "http_path_encode_endpoint_test.flux",
 																	Start: ast.Position{
 																		Column: 48,
 																		Line:   34,
@@ -3000,8 +2845,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 30,
 															Line:   34,
 														},
-														File:   "http_path_encode_endpoint_test.flux",
-														Source: "r",
+														File: "http_path_encode_endpoint_test.flux",
 														Start: ast.Position{
 															Column: 29,
 															Line:   34,
@@ -3024,8 +2868,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 22,
 													Line:   34,
 												},
-												File:   "http_path_encode_endpoint_test.flux",
-												Source: "r",
+												File: "http_path_encode_endpoint_test.flux",
 												Start: ast.Position{
 													Column: 21,
 													Line:   34,
@@ -3042,8 +2885,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 22,
 														Line:   34,
 													},
-													File:   "http_path_encode_endpoint_test.flux",
-													Source: "r",
+													File: "http_path_encode_endpoint_test.flux",
 													Start: ast.Position{
 														Column: 21,
 														Line:   34,
@@ -3069,8 +2911,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 82,
 									Line:   34,
 								},
-								File:   "http_path_encode_endpoint_test.flux",
-								Source: "map(fn: (r) => ({r with _sent: http.pathEscape(inputString: r.path)}))",
+								File: "http_path_encode_endpoint_test.flux",
 								Start: ast.Position{
 									Column: 12,
 									Line:   34,
@@ -3086,8 +2927,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 15,
 										Line:   34,
 									},
-									File:   "http_path_encode_endpoint_test.flux",
-									Source: "map",
+									File: "http_path_encode_endpoint_test.flux",
 									Start: ast.Position{
 										Column: 12,
 										Line:   34,
@@ -3110,8 +2950,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 29,
 								Line:   30,
 							},
-							File:   "http_path_encode_endpoint_test.flux",
-							Source: "table=<-",
+							File: "http_path_encode_endpoint_test.flux",
 							Start: ast.Position{
 								Column: 21,
 								Line:   30,
@@ -3128,8 +2967,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 26,
 									Line:   30,
 								},
-								File:   "http_path_encode_endpoint_test.flux",
-								Source: "table",
+								File: "http_path_encode_endpoint_test.flux",
 								Start: ast.Position{
 									Column: 21,
 									Line:   30,
@@ -3147,8 +2985,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 29,
 								Line:   30,
 							},
-							File:   "http_path_encode_endpoint_test.flux",
-							Source: "<-",
+							File: "http_path_encode_endpoint_test.flux",
 							Start: ast.Position{
 								Column: 27,
 								Line:   30,
@@ -3168,8 +3005,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 107,
 							Line:   37,
 						},
-						File:   "http_path_encode_endpoint_test.flux",
-						Source: "_path_encode = () =>\n    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: path_encode_test})",
+						File: "http_path_encode_endpoint_test.flux",
 						Start: ast.Position{
 							Column: 6,
 							Line:   36,
@@ -3185,8 +3021,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 18,
 								Line:   36,
 							},
-							File:   "http_path_encode_endpoint_test.flux",
-							Source: "_path_encode",
+							File: "http_path_encode_endpoint_test.flux",
 							Start: ast.Position{
 								Column: 6,
 								Line:   36,
@@ -3205,8 +3040,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 107,
 								Line:   37,
 							},
-							File:   "http_path_encode_endpoint_test.flux",
-							Source: "() =>\n    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: path_encode_test})",
+							File: "http_path_encode_endpoint_test.flux",
 							Start: ast.Position{
 								Column: 21,
 								Line:   36,
@@ -3222,8 +3056,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 107,
 									Line:   37,
 								},
-								File:   "http_path_encode_endpoint_test.flux",
-								Source: "({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: path_encode_test})",
+								File: "http_path_encode_endpoint_test.flux",
 								Start: ast.Position{
 									Column: 5,
 									Line:   37,
@@ -3239,8 +3072,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 106,
 										Line:   37,
 									},
-									File:   "http_path_encode_endpoint_test.flux",
-									Source: "{input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: path_encode_test}",
+									File: "http_path_encode_endpoint_test.flux",
 									Start: ast.Position{
 										Column: 6,
 										Line:   37,
@@ -3257,8 +3089,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 46,
 											Line:   37,
 										},
-										File:   "http_path_encode_endpoint_test.flux",
-										Source: "input: testing.loadStorage(csv: inData)",
+										File: "http_path_encode_endpoint_test.flux",
 										Start: ast.Position{
 											Column: 7,
 											Line:   37,
@@ -3275,8 +3106,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 12,
 												Line:   37,
 											},
-											File:   "http_path_encode_endpoint_test.flux",
-											Source: "input",
+											File: "http_path_encode_endpoint_test.flux",
 											Start: ast.Position{
 												Column: 7,
 												Line:   37,
@@ -3296,8 +3126,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 45,
 													Line:   37,
 												},
-												File:   "http_path_encode_endpoint_test.flux",
-												Source: "csv: inData",
+												File: "http_path_encode_endpoint_test.flux",
 												Start: ast.Position{
 													Column: 34,
 													Line:   37,
@@ -3314,8 +3143,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 45,
 														Line:   37,
 													},
-													File:   "http_path_encode_endpoint_test.flux",
-													Source: "csv: inData",
+													File: "http_path_encode_endpoint_test.flux",
 													Start: ast.Position{
 														Column: 34,
 														Line:   37,
@@ -3332,8 +3160,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 37,
 															Line:   37,
 														},
-														File:   "http_path_encode_endpoint_test.flux",
-														Source: "csv",
+														File: "http_path_encode_endpoint_test.flux",
 														Start: ast.Position{
 															Column: 34,
 															Line:   37,
@@ -3352,8 +3179,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 45,
 															Line:   37,
 														},
-														File:   "http_path_encode_endpoint_test.flux",
-														Source: "inData",
+														File: "http_path_encode_endpoint_test.flux",
 														Start: ast.Position{
 															Column: 39,
 															Line:   37,
@@ -3374,8 +3200,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 46,
 												Line:   37,
 											},
-											File:   "http_path_encode_endpoint_test.flux",
-											Source: "testing.loadStorage(csv: inData)",
+											File: "http_path_encode_endpoint_test.flux",
 											Start: ast.Position{
 												Column: 14,
 												Line:   37,
@@ -3391,8 +3216,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 33,
 													Line:   37,
 												},
-												File:   "http_path_encode_endpoint_test.flux",
-												Source: "testing.loadStorage",
+												File: "http_path_encode_endpoint_test.flux",
 												Start: ast.Position{
 													Column: 14,
 													Line:   37,
@@ -3409,8 +3233,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 21,
 														Line:   37,
 													},
-													File:   "http_path_encode_endpoint_test.flux",
-													Source: "testing",
+													File: "http_path_encode_endpoint_test.flux",
 													Start: ast.Position{
 														Column: 14,
 														Line:   37,
@@ -3428,8 +3251,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 33,
 														Line:   37,
 													},
-													File:   "http_path_encode_endpoint_test.flux",
-													Source: "loadStorage",
+													File: "http_path_encode_endpoint_test.flux",
 													Start: ast.Position{
 														Column: 22,
 														Line:   37,
@@ -3452,8 +3274,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 83,
 											Line:   37,
 										},
-										File:   "http_path_encode_endpoint_test.flux",
-										Source: "want: testing.loadMem(csv: outData)",
+										File: "http_path_encode_endpoint_test.flux",
 										Start: ast.Position{
 											Column: 48,
 											Line:   37,
@@ -3470,8 +3291,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 52,
 												Line:   37,
 											},
-											File:   "http_path_encode_endpoint_test.flux",
-											Source: "want",
+											File: "http_path_encode_endpoint_test.flux",
 											Start: ast.Position{
 												Column: 48,
 												Line:   37,
@@ -3491,8 +3311,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 82,
 													Line:   37,
 												},
-												File:   "http_path_encode_endpoint_test.flux",
-												Source: "csv: outData",
+												File: "http_path_encode_endpoint_test.flux",
 												Start: ast.Position{
 													Column: 70,
 													Line:   37,
@@ -3509,8 +3328,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 82,
 														Line:   37,
 													},
-													File:   "http_path_encode_endpoint_test.flux",
-													Source: "csv: outData",
+													File: "http_path_encode_endpoint_test.flux",
 													Start: ast.Position{
 														Column: 70,
 														Line:   37,
@@ -3527,8 +3345,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 73,
 															Line:   37,
 														},
-														File:   "http_path_encode_endpoint_test.flux",
-														Source: "csv",
+														File: "http_path_encode_endpoint_test.flux",
 														Start: ast.Position{
 															Column: 70,
 															Line:   37,
@@ -3547,8 +3364,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 82,
 															Line:   37,
 														},
-														File:   "http_path_encode_endpoint_test.flux",
-														Source: "outData",
+														File: "http_path_encode_endpoint_test.flux",
 														Start: ast.Position{
 															Column: 75,
 															Line:   37,
@@ -3569,8 +3385,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 83,
 												Line:   37,
 											},
-											File:   "http_path_encode_endpoint_test.flux",
-											Source: "testing.loadMem(csv: outData)",
+											File: "http_path_encode_endpoint_test.flux",
 											Start: ast.Position{
 												Column: 54,
 												Line:   37,
@@ -3586,8 +3401,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 69,
 													Line:   37,
 												},
-												File:   "http_path_encode_endpoint_test.flux",
-												Source: "testing.loadMem",
+												File: "http_path_encode_endpoint_test.flux",
 												Start: ast.Position{
 													Column: 54,
 													Line:   37,
@@ -3604,8 +3418,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 61,
 														Line:   37,
 													},
-													File:   "http_path_encode_endpoint_test.flux",
-													Source: "testing",
+													File: "http_path_encode_endpoint_test.flux",
 													Start: ast.Position{
 														Column: 54,
 														Line:   37,
@@ -3623,8 +3436,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 69,
 														Line:   37,
 													},
-													File:   "http_path_encode_endpoint_test.flux",
-													Source: "loadMem",
+													File: "http_path_encode_endpoint_test.flux",
 													Start: ast.Position{
 														Column: 62,
 														Line:   37,
@@ -3647,8 +3459,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 105,
 											Line:   37,
 										},
-										File:   "http_path_encode_endpoint_test.flux",
-										Source: "fn: path_encode_test",
+										File: "http_path_encode_endpoint_test.flux",
 										Start: ast.Position{
 											Column: 85,
 											Line:   37,
@@ -3665,8 +3476,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 87,
 												Line:   37,
 											},
-											File:   "http_path_encode_endpoint_test.flux",
-											Source: "fn",
+											File: "http_path_encode_endpoint_test.flux",
 											Start: ast.Position{
 												Column: 85,
 												Line:   37,
@@ -3685,8 +3495,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 105,
 												Line:   37,
 											},
-											File:   "http_path_encode_endpoint_test.flux",
-											Source: "path_encode_test",
+											File: "http_path_encode_endpoint_test.flux",
 											Start: ast.Position{
 												Column: 89,
 												Line:   37,
@@ -3715,8 +3524,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 107,
 						Line:   37,
 					},
-					File:   "http_path_encode_endpoint_test.flux",
-					Source: "test _path_encode = () =>\n    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: path_encode_test})",
+					File: "http_path_encode_endpoint_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   36,
@@ -3735,8 +3543,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 17,
 						Line:   4,
 					},
-					File:   "http_path_encode_endpoint_test.flux",
-					Source: "import \"testing\"",
+					File: "http_path_encode_endpoint_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   4,
@@ -3752,8 +3559,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 17,
 							Line:   4,
 						},
-						File:   "http_path_encode_endpoint_test.flux",
-						Source: "\"testing\"",
+						File: "http_path_encode_endpoint_test.flux",
 						Start: ast.Position{
 							Column: 8,
 							Line:   4,
@@ -3772,8 +3578,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 14,
 						Line:   5,
 					},
-					File:   "http_path_encode_endpoint_test.flux",
-					Source: "import \"http\"",
+					File: "http_path_encode_endpoint_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   5,
@@ -3789,8 +3594,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 14,
 							Line:   5,
 						},
-						File:   "http_path_encode_endpoint_test.flux",
-						Source: "\"http\"",
+						File: "http_path_encode_endpoint_test.flux",
 						Start: ast.Position{
 							Column: 8,
 							Line:   5,
@@ -3809,8 +3613,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 14,
 						Line:   6,
 					},
-					File:   "http_path_encode_endpoint_test.flux",
-					Source: "import \"json\"",
+					File: "http_path_encode_endpoint_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   6,
@@ -3826,8 +3629,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 14,
 							Line:   6,
 						},
-						File:   "http_path_encode_endpoint_test.flux",
-						Source: "\"json\"",
+						File: "http_path_encode_endpoint_test.flux",
 						Start: ast.Position{
 							Column: 8,
 							Line:   6,
@@ -3848,8 +3650,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 18,
 						Line:   1,
 					},
-					File:   "http_path_encode_endpoint_test.flux",
-					Source: "package http_test",
+					File: "http_path_encode_endpoint_test.flux",
 					Start: ast.Position{
 						Column: 1,
 						Line:   1,
@@ -3865,8 +3666,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 18,
 							Line:   1,
 						},
-						File:   "http_path_encode_endpoint_test.flux",
-						Source: "http_test",
+						File: "http_path_encode_endpoint_test.flux",
 						Start: ast.Position{
 							Column: 9,
 							Line:   1,
