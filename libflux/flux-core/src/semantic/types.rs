@@ -1224,7 +1224,7 @@ fn collect_record(mut record: &Record) -> (RefMonoTypeVecMap<'_, Label>, Option<
 }
 
 impl cmp::PartialEq for Record {
-    fn eq(self: &Self, other: &Self) -> bool {
+    fn eq(&self, other: &Self) -> bool {
         let (a, t) = collect_record(self);
         let (b, v) = collect_record(other);
         t == v && a == b
