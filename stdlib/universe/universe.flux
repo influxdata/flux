@@ -1527,18 +1527,18 @@ builtin last : (<-tables: [A], ?column: string) => [A] where A: Record
 builtin limit : (<-tables: [A], n: int, ?offset: int) => [A]
 
 // map iterates over and applies a function to input rows.
-// 
+//
 // Each input row is passed to the `fn` as a record, `r`.
 // Each `r` property represents a column key-value pair.
 // Output values must be of the following supported column types:
-// 
+//
 // - float
 // - integer
 // - unsigned integer
 // - string
 // - boolean
 // - time
-// 
+//
 // ### Output data
 // Output tables are the result of applying the map function (`fn`) to each
 // record of the input tables. Output records are assigned to new tables based
@@ -1547,222 +1547,222 @@ builtin limit : (<-tables: [A], n: int, ?offset: int) => [A]
 // record is regrouped into the appropriate table.
 // If the output record drops a group key column, that column is removed from
 // the group key.
-// 
+//
 // #### Preserve columns
 // By default, map() drops any columns that:
-// 
+//
 // - Are not part of the input table’s group key.
 // - Are not explicitly mapped in the `fn` function.
-// 
+//
 // This often results in the `_time` column being dropped.
 // To preserve the `_time` column and other columns that do not meet the
 // criteria above, use the `with` operator to extend the `r` record.
 // The `with` operator updates a record property if it already exists, creates
 // a new record property if it doesn’t exist, and includes all existing
 // properties in the output record.
-// 
+//
 // ```no_run
 // data
 //     |> map(fn: (r) => ({ r with newColumn: r._value * 2 }))
 // ```
-// 
+//
 // ## Parameters
 // - fn: Single argument function to apply to each record.
 //   The return value must be a record.
 // - tables: Input data. Default is piped-forward data (`<-`).
-// 
+//
 // ## Examples
-// 
+//
 // ### Square the value in each row
 // ```
 // import "sampledata"
-// 
+//
 // < sampledata.int()
 // >     |> map(fn: (r) => ({ r with _value: r._value * r._value }))
 // ```
-// 
+//
 // ### Create a new table with new columns
 // ```
 // import "sampledata"
-// 
+//
 // < sampledata.int()
 // >     |> map(fn: (r) => ({time: r._time, source: r.tag, alert: if r._value > 10 then true else false}))
 // ```
-// 
+//
 // ### Add new columns and preserve existing columns
 // Use the `with` operator on the `r` record to preserve columns not directly
 // operated on by the map operation.
-// 
+//
 // ```
 // import "sampledata"
-// 
+//
 // < sampledata.int()
 // >     |> map(fn: (r) => ({r with server: "server-${r.tag}", valueFloat: float(v: r._value)}))
 // ```
-// 
+//
 // introduced: 0.7.0
 // tags: transformations
-// 
+//
 builtin map : (<-tables: [A], fn: (r: A) => B, ?mergeKey: bool) => [B]
 
 // max returns the row with the maximum value in a specified column from each
 // input table.
-// 
+//
 // **Note:** `max()` drops empty tables.
-// 
+//
 // ## Parameters
 // - column: Column to return maximum values from. Default is `_value`.
 // - tables: Input data. Default is piped-forward data (`<-`).
-// 
+//
 // ## Examples
-// 
+//
 // ### Return the row with the maximum value
 // ```
 // import "sampledata"
-// 
+//
 // < sampledata.int()
 // >     |> max()
 // ```
-// 
+//
 // introduced: 0.7.0
 // tags: transformations, selectors
-// 
+//
 builtin max : (<-tables: [A], ?column: string) => [A] where A: Record
 
 // mean returns the average of non-null values in a specified column from each
 // input table.
-// 
+//
 // ## Parameters
 // - column: Column to use to compute means. Default is `_value`.
 // - tables: Input data. Default is piped-forward data (`<-`).
-// 
+//
 // ## Examples
-// 
+//
 // ### Return the average of values in each input table
 // ```
 // import "sampledata"
-// 
+//
 // < sampledata.int()
 // >     |> mean()
 // ```
-// 
+//
 // introduce: 0.7.0
 // tags: transformations, aggregates
-// 
+//
 builtin mean : (<-tables: [A], ?column: string) => [B] where A: Record, B: Record
 
 // min returns the row with the minimum value in a specified column from each
 // input table.
-// 
+//
 // **Note:** `min()` drops empty tables.
-// 
+//
 // ## Parameters
 // - column: Column to return minimum values from. Default is `_value`.
 // - tables: Input data. Default is piped-forward data (`<-`).
-// 
+//
 // ## Examples
-// 
+//
 // ### Return the row with the minimum value
 // ```
 // import "sampledata"
-// 
+//
 // < sampledata.int()
 // >     |> min()
 // ```
-// 
+//
 // introduced: 0.7.0
 // tags: transformations, selectors
-// 
+//
 builtin min : (<-tables: [A], ?column: string) => [A] where A: Record
 
 // mode returns the non-null value or values that occur most often in a
 // specified column in each input table.
-// 
+//
 // If there are multiple modes, `mode()` returns all mode values in a sorted table.
 // If there is no mode, `mode()` returns `null`.
-// 
+//
 // **Note**: `mode()` drops empty tables.
-// 
+//
 // ## Parameters
 // - column: Column to return the mode from. Default is `_value`.
 // - tables: Input data. Default is piped-forward data (`<-`).
-// 
+//
 // ## Examples
-// 
+//
 // ### Return the mode of each input table
 // ```
 // import "sampledata"
-// 
+//
 // < sampledata.int()
 // >     |> mode()
 // ```
-// 
+//
 // introduced: 0.36.0
 // tags: transformtions, aggregates
-// 
+//
 builtin mode : (<-tables: [A], ?column: string) => [{C with _value: B}] where A: Record, C: Record
 
 // movingAverage calculates the mean of non-null values using the current value
-// and `n - 1` previous values in the `_values` column. 
-// 
-// #### Moving average rules
+// and `n - 1` previous values in the `_values` column.
+//
+// ### Moving average rules
 // - The average over a period populated by `n` values is equal to their algebraic mean.
 // - The average over a period populated by only `null` values is `null`.
 // - Moving averages skip `null` values.
 // - If `n` is less than the number of records in a table, `movingAverage()`
 //   returns the average of the available values.
-// 
+//
 // ## Parameters
 // - n: Number of values to average.
 // - tables: Input data. Default is piped-forward data (`<-`).
-// 
+//
 // ## Examples
-// 
+//
 // ### Calculate a three point moving average
 // ```
 // import "sampledata"
-// 
+//
 // < sampledata.int()
 // >     |> movingAverage(n: 3)
 // ```
-// 
+//
 // ### Calculate a three point moving average with null values
 // ```
 // import "sampledata"
-// 
+//
 // < sampledata.int(includeNull: true)
 // >     |> movingAverage(n: 3)
 // ```
-// 
+//
 // introduced: 0.35.0
 // tags: transformations
-// 
+//
 builtin movingAverage : (<-tables: [{B with _value: A}], n: int) => [{B with _value: float}] where A: Numeric
 
 // quantile returns rows from each input table with values that fall within a
 // specified quantile or returns the row with the value that represents the
 // specified quantile.
-// 
+//
 // `quantile()` supports columns with float values.
-// 
+//
 // ### Function behavior
 // `quantile()` acts as an aggregate or selector transformation depending on the
 // specified `method`.
-// 
+//
 // - **Aggregate**: When using the `estimate_tdigest` or `exact_mean` methods,
 // `quantile()` acts as an aggregate transformation and outputs non-null records
 // with values that fall within the specified quantile.
 // - **Selector**: When using the `exact_selector` method, `quantile()` acts as
 // a selector selector transformation and outputs the non-null record with the
 // value that represents the specified quantile.
-// 
+//
 // ## Parameters
 // - column: Column to use to compute the quantile. Default is `_value`.
 // - q: Quantile to compute. Must be between `0.0` and `1.0`.
 // - method: Computation method. Default is `estimate_tdigest`.
-// 
+//
 //     **Avaialable methods**:
-// 
+//
 //     - **estimate_tdigest**: Aggregate method that uses a
 //       [t-digest data structure](https://github.com/tdunning/t-digest) to
 //       compute an accurate quantile estimate on large data sources.
@@ -1770,36 +1770,36 @@ builtin movingAverage : (<-tables: [{B with _value: A}], n: int) => [{B with _va
 //       points closest to the quantile value.
 //     - **exact_selector**: Selector method that returns the row with the value
 //       for which at least `q` points are less than.
-// 
+//
 // - compression: Number of centroids to use when compressing the dataset.
 //   Default is `1000.0`.
-// 
+//
 //   A larger number produces a more accurate result at the cost of increased
-//   memory requirements. 
-// 
+//   memory requirements.
+//
 // - tables: Input data. Default is piped-forward data (`<-`).
-// 
+//
 // ## Examples
-// 
+//
 // ### Quantile as an aggregate
 // ```
 // import "sampledata"
-// 
+//
 // < sampledata.float()
 // >     |> quantile(q: 0.99, method: "estimate_tdigest")
 // ```
-// 
+//
 // ### Quantile as a selector
 // ```
 // import "sampledata"
-// 
+//
 // < sampledata.float()
 // >     |> quantile(q: 0.5, method: "exact_selector")
 // ```
-// 
+//
 // introduced: 0.24.0
 // tags: transformations, aggregates, selectors
-// 
+//
 builtin quantile : (
         <-tables: [A],
         ?column: string,
@@ -1810,23 +1810,293 @@ builtin quantile : (
     where
     A: Record
 
-// pivot 
+// pivot collects unique values stored vertically (column-wise) and aligns them
+// horizontally (row-wise) into logical sets.
+//
+// ### Output data
+// The group key of the resulting table is the same as the input tables,
+// excluding columns found in the `columnKey` and `valueColumn `parameters.
+// These columns are not part of the resulting output table and are dropped from
+// the group key.
+//
+// Every input row should have a 1:1 mapping to a particular row and column
+// combination in the output table. Row and column combinations are determined
+// by the `rowKey` and `columnKey` parameters. In cases where more than one
+// value is identified for the same row and column pair, the last value
+// encountered in the set of table rows is used as the result.
+//
+// The output is constructed as follows:
+//
+// - The set of columns for the new table is the `rowKey` unioned with the group key,
+//   but excluding the columns indicated by the `columnKey` and the `valueColumn`.
+// - A new column is added to the set of columns for each unique value
+//   identified by the `columnKey` parameter.
+// - The label of a new column is the concatenation of the values of `columnKey`
+//   using `_` as a separator. If the value is null, "null" is used.
+// - A new row is created for each unique value identified by the
+//   `rowKey` parameter.
+// - For each new row, values for group key columns stay the same, while values
+//   for new columns are determined from the input tables by the value in
+//   `valueColumn` at the row identified by the `rowKey` values and the new
+//   column’s label. If no value is found, the value is set to `null`.
+// - Any column that is not part of the group key or not specified in the
+//   `rowKey`, `columnKey` and `valueColumn` parameters is dropped.
+//
+// ## Parameters
+// - rowKey: Columns to use to uniquely identify an output row.
+// - columnKey: Columns to use to identify new output columns.
+// - valueColumn: Column to use to populate the value of pivoted `columnKey` columns.
+// - tables: Input data. Default is piped-forward data (`<-`).
+//
+// ## Examples
+//
+// ### Align fields into rows based on time
+// ```
+// # import "csv"
+// #
+// # csvData = "#datatype,string,long,dateTime:RFC3339,string,string,double
+// # #group,false,false,false,true,true,false
+// # #default,,,,,,
+// # ,result,table,_time,_measurement,_field,_value
+// # ,,0,1970-01-01T00:00:01Z,m1,f1,1.0
+// # ,,0,1970-01-01T00:00:01Z,m1,f2,2.0
+// # ,,0,1970-01-01T00:00:01Z,m1,f3,
+// # ,,0,1970-01-01T00:00:02Z,m1,f1,4.0
+// # ,,0,1970-01-01T00:00:02Z,m1,f2,5.0
+// # ,,0,1970-01-01T00:00:02Z,m1,f3,6.0
+// # ,,0,1970-01-01T00:00:03Z,m1,f1,
+// # ,,0,1970-01-01T00:00:03Z,m1,f2,7.0
+// # ,,0,1970-01-01T00:00:04Z,m1,f3,8.0
+// # "
+// #
+// # data = csv.from(csv: csvData)
+// #
+// < data
+// >     |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
+// ```
+//
+// ### Associate values to tags by time
+// ```
+// import "sampledata"
+//
+// < sampledata.int()
+// >     |> pivot(rowKey: ["_time"], columnKey: ["tag"], valueColumn: "_value")
+// ```
+//
+// introduced: 0.7.0
+// tags: transformations
+//
 builtin pivot : (<-tables: [A], rowKey: [string], columnKey: [string], valueColumn: string) => [B]
     where
     A: Record,
     B: Record
+
+// range filters rows based on time bounds.
+//
+// Input data must have a `_time` column of type time.
+// Rows with a null value in the `_time` are filtered.
+// Each input table’s group key value is modified to fit within the time bounds.
+// Tables with all rows outside the time bounds are filtered entirely.
+//
+// ## Parameters
+// - start: Earliest time to include in results.
+//
+//   Results _include_ rows with `_time` values that match the specified start time.
+//   Use a relative duration, absolute time, or integer (Unix timestamp in seconds).
+//   For example, `-1h`, `2019-08-28T22:00:00Z`, or `1567029600`.
+//   Durations are relative to `now()`.
+//
+// - stop: Latest time to include in results. Default is `now()`.
+//
+//   Results _exclude_ rows with `_time` values that match the specified start time.
+//   Use a relative duration, absolute time, or integer (Unix timestamp in seconds).
+//   For example, `-1h`, `2019-08-28T22:00:00Z`, or `1567029600`.
+//   Durations are relative to `now()`.
+//
+// - tables: Input data. Default is piped-forward data (`<-`).
+//
+// ## Examples
+//
+// ### Query a time range relative to now
+// ```no_run
+// from(bucket:"example-bucket")
+//     |> range(start: -12h)
+// ```
+//
+// ### Query an absolute time range
+// ```no_run
+// from(bucket:"example-bucket")
+//     |> range(start: 2021-05-22T23:30:00Z, stop: 2021-05-23T00:00:00Z)
+// ```
+//
+// ### Query an absolute time range using Unix timestamps
+// ```no_run
+// from(bucket:"example-bucket")
+//     |> range(start: 1621726200000000000, stop: 1621728000000000000)
+// ```
+//
+// introduced: 0.7.0
+// tags: transformations, filters
+//
 builtin range : (
         <-tables: [{A with _time: time}],
         start: B,
         ?stop: C,
     ) => [{A with _time: time, _start: time, _stop: time}]
 
+// reduce aggregates rows in each input table using a reducer function (`fn`).
+//
+// The output for each table is the group key of the table with columns
+// corresponding to each field in the reducer record.
+// If the reducer record contains a column with the same name as a group key column,
+// the group key column’s value is overwritten, and the outgoing group key is changed.
+// However, if two reduced tables write to the same destination group key, the
+// function returns an error.
+//
+// ### Dropped columns
+// `reduce()` drops any columns that:
+//
+// - Are not part of the input table’s group key.
+// - Are not explicitly mapped in the `identity` record or the reducer function (`fn`).
+//
+// ## Parameters
+// - fn: Reducer function to apply to each row record (`r`).
+//
+//   The reducer function accepts two parameters:
+//
+//   - **r**: Record representing the current row.
+//   - **accumulator**: Record returned from the reducer function's operation on
+//     the previous row.
+//
+// - identity: Record that defines the reducer record and provides initial values
+//   for the reducer operation on the first row.
+//
+//   May be used more than once in asynchronous processing use cases.
+//   The data type of values in the identity record determine the data type of
+//   output values.
+//
+// - tables: Input data. Default is piped-forward data (`<-`).
+//
+// ## Examples
+//
+// ### Compute the sum of the value column
+// ```
+// import "sampledata"
+//
+// < sampledata.int()
+// >     |> reduce(fn: (r, accumulator) => ({sum: r._value + accumulator.sum}), identity: {sum: 0})
+// ```
+//
+// ### Compute the sum and count in a single reducer
+// ```
+// import "sampledata"
+//
+// < sampledata.int()
+//     |> reduce(
+//         fn: (r, accumulator) => ({sum: r._value + accumulator.sum, count: accumulator.count + 1}),
+//         identity: {sum: 0, count: 0},
+// >     )
+// ```
+//
+// ### Compute the product of all values
+// ```
+// import "sampledata"
+//
+// < sampledata.int()
+// >     |> reduce(fn: (r, accumulator) => ({prod: r._value * accumulator.prod}), identity: {prod: 1})
+// ```
+//
+// ### Calculate the average of all values
+// ```
+// import "sampledata"
+//
+// < sampledata.int()
+//     |> reduce(
+//         fn: (r, accumulator) =>
+//             ({
+//                 count: accumulator.count + 1,
+//                 total: accumulator.total + r._value,
+//                 avg: float(v: accumulator.total + r._value) / float(v: accumulator.count + 1),
+//             }),
+//         identity: {count: 0, total: 0, avg: 0.0},
+// >     )
+// ```
+//
+// introduced: 0.23.0
+// tags: transformations, aggregates
+//
 builtin reduce : (<-tables: [A], fn: (r: A, accumulator: B) => B, identity: B) => [C]
     where
     A: Record,
     B: Record,
     C: Record
+
+// relativeStrengthIndex measures the relative speed and change of values in input tables.
+//
+// ### Relative strength index (RSI) rules
+// - The general equation for calculating a relative strength index (RSI) is
+//   `RSI = 100 - (100 / (1 + (AVG GAIN / AVG LOSS)))`.
+// - For the first value of the RSI, `AVG GAIN` and `AVG LOSS` are averages of the `n` period.
+// - For subsequent calculations:
+//   - `AVG GAIN` = `((PREVIOUS AVG GAIN) * (n - 1)) / n`
+//   - `AVG LOSS` = `((PREVIOUS AVG LOSS) * (n - 1)) / n`
+// - `relativeStrengthIndex()` ignores `null` values.
+//
+// ### Output tables
+// For each input table with `x` rows, `relativeStrengthIndex()` outputs a table
+// with `x - n` rows.
+//
+// ## Parameters
+// - n: Number of values to use to calculate the RSI.
+// - columns: Columns to operate on. Default is `["_value"]`.
+// - tables: Input data. Default is piped-forward data (`<-`).
+//
+// ## Examples
+//
+// ### Calculate a three point relative strength index
+// ```
+// import "sampledata"
+//
+// < sampledata.int()
+// >     |> relativeStrengthIndex(n: 3)
+// ```
+//
+// introduced: 0.38.0
+// tags: transformations
+//
 builtin relativeStrengthIndex : (<-tables: [A], n: int, ?columns: [string]) => [B] where A: Record, B: Record
+
+// rename renames columns in a table.
+//
+// If a column in group key is renamed, the column name in the group key is updated.
+//
+// ## Parameters
+// - columns: Record that maps old column names to new column names.
+// - fn: Function that takes the current column name (`column`) and returns a
+//   new column name.
+// - tables: Input data. Default is piped-forward data (`<-`).
+//
+// ## Examples
+//
+// ### Map column names to new column names
+// ```
+// import "sampledata"
+//
+// < sampledata.int()
+// >     |> rename(columns: {tag: "uid", _value: "val"})
+// ```
+//
+// ### Rename columns using a function
+// ```
+// import "sampledata"
+//
+// < sampledata.int()
+// >     |> rename(fn: (column) => "${column}_new")
+// ```
+//
+// introduced: 0.7.0
+// tags: transformations
+//
 builtin rename : (<-tables: [A], ?fn: (column: string) => string, ?columns: B) => [C]
     where
     A: Record,
