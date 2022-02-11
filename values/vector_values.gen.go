@@ -33,6 +33,9 @@ func NewVectorValue(arr arrow.Interface, typ semantic.MonoType) Vector {
 	case semantic.BasicString:
 		return NewStringVectorValue(arr.(*arrow.String))
 
+	case semantic.BasicTime:
+		return NewTimeVectorValue(arr.(*arrow.Int))
+
 	default:
 		panic(fmt.Errorf("unsupported column data type: %s", typ))
 	}
@@ -57,6 +60,9 @@ func NewVectorFromElements(mem *memory.Allocator, es ...interface{}) Vector {
 
 	case string:
 		typ = semantic.BasicString
+
+	case Time:
+		typ = semantic.BasicTime
 
 	default:
 		panic(fmt.Errorf("unsupported data type"))
@@ -111,6 +117,14 @@ func newVectorFromSlice(values []Value, typ semantic.MonoType, mem *memory.Alloc
 		}
 		arr := b.NewStringArray()
 		return NewStringVectorValue(arr)
+
+	case semantic.BasicTime:
+		b := arrow.NewIntBuilder(mem)
+		for _, v := range values {
+			b.Append(v.Int())
+		}
+		arr := b.NewIntArray()
+		return NewTimeVectorValue(arr)
 
 	default:
 		panic(fmt.Errorf("unsupported column data type: %s", typ))
@@ -171,6 +185,9 @@ func (v *IntVectorValue) Function() Function {
 func (v *IntVectorValue) Dict() Dictionary {
 	panic(UnexpectedKind(semantic.Vector, semantic.Dictionary))
 }
+func (v *IntVectorValue) Vector() Vector {
+	return v
+}
 
 func (v *IntVectorValue) Equal(other Value) bool {
 	panic("cannot compare two vectors for equality")
@@ -229,6 +246,9 @@ func (v *UintVectorValue) Function() Function {
 }
 func (v *UintVectorValue) Dict() Dictionary {
 	panic(UnexpectedKind(semantic.Vector, semantic.Dictionary))
+}
+func (v *UintVectorValue) Vector() Vector {
+	return v
 }
 
 func (v *UintVectorValue) Equal(other Value) bool {
@@ -289,6 +309,9 @@ func (v *FloatVectorValue) Function() Function {
 func (v *FloatVectorValue) Dict() Dictionary {
 	panic(UnexpectedKind(semantic.Vector, semantic.Dictionary))
 }
+func (v *FloatVectorValue) Vector() Vector {
+	return v
+}
 
 func (v *FloatVectorValue) Equal(other Value) bool {
 	panic("cannot compare two vectors for equality")
@@ -347,6 +370,9 @@ func (v *BooleanVectorValue) Function() Function {
 }
 func (v *BooleanVectorValue) Dict() Dictionary {
 	panic(UnexpectedKind(semantic.Vector, semantic.Dictionary))
+}
+func (v *BooleanVectorValue) Vector() Vector {
+	return v
 }
 
 func (v *BooleanVectorValue) Equal(other Value) bool {
@@ -407,7 +433,72 @@ func (v *StringVectorValue) Function() Function {
 func (v *StringVectorValue) Dict() Dictionary {
 	panic(UnexpectedKind(semantic.Vector, semantic.Dictionary))
 }
+func (v *StringVectorValue) Vector() Vector {
+	return v
+}
 
 func (v *StringVectorValue) Equal(other Value) bool {
+	panic("cannot compare two vectors for equality")
+}
+
+var _ Value = &TimeVectorValue{}
+var _ Vector = &TimeVectorValue{}
+var _ arrow.Interface = &arrow.Int{}
+
+type TimeVectorValue struct {
+	arr *arrow.Int
+	typ semantic.MonoType
+}
+
+func NewTimeVectorValue(arr *arrow.Int) Vector {
+	return &TimeVectorValue{
+		arr: arr,
+		typ: semantic.NewVectorType(semantic.BasicTime),
+	}
+}
+
+func (v *TimeVectorValue) ElementType() semantic.MonoType {
+	t, err := v.typ.ElemType()
+	if err != nil {
+		panic("could not get element type of vector value")
+	}
+	return t
+}
+func (v *TimeVectorValue) Arr() arrow.Interface { return v.arr }
+func (v *TimeVectorValue) Retain() {
+	v.arr.Retain()
+}
+func (v *TimeVectorValue) Release() {
+	v.arr.Release()
+}
+
+func (v *TimeVectorValue) Type() semantic.MonoType { return v.typ }
+func (v *TimeVectorValue) IsNull() bool            { return false }
+func (v *TimeVectorValue) Str() string             { panic(UnexpectedKind(semantic.Vector, semantic.String)) }
+func (v *TimeVectorValue) Bytes() []byte           { panic(UnexpectedKind(semantic.Vector, semantic.Bytes)) }
+func (v *TimeVectorValue) Int() int64              { panic(UnexpectedKind(semantic.Vector, semantic.Int)) }
+func (v *TimeVectorValue) UInt() uint64            { panic(UnexpectedKind(semantic.Vector, semantic.UInt)) }
+func (v *TimeVectorValue) Float() float64          { panic(UnexpectedKind(semantic.Vector, semantic.Float)) }
+func (v *TimeVectorValue) Bool() bool              { panic(UnexpectedKind(semantic.Vector, semantic.Bool)) }
+func (v *TimeVectorValue) Time() Time              { panic(UnexpectedKind(semantic.Vector, semantic.Time)) }
+func (v *TimeVectorValue) Duration() Duration {
+	panic(UnexpectedKind(semantic.Vector, semantic.Duration))
+}
+func (v *TimeVectorValue) Regexp() *regexp.Regexp {
+	panic(UnexpectedKind(semantic.Vector, semantic.Regexp))
+}
+func (v *TimeVectorValue) Array() Array   { panic(UnexpectedKind(semantic.Vector, semantic.Array)) }
+func (v *TimeVectorValue) Object() Object { panic(UnexpectedKind(semantic.Vector, semantic.Object)) }
+func (v *TimeVectorValue) Function() Function {
+	panic(UnexpectedKind(semantic.Vector, semantic.Function))
+}
+func (v *TimeVectorValue) Dict() Dictionary {
+	panic(UnexpectedKind(semantic.Vector, semantic.Dictionary))
+}
+func (v *TimeVectorValue) Vector() Vector {
+	return v
+}
+
+func (v *TimeVectorValue) Equal(other Value) bool {
 	panic("cannot compare two vectors for equality")
 }

@@ -180,6 +180,9 @@ func (a *String) ValueLen(i int) int {
 	}
 	return len(a.value)
 }
+func (a *String) IsConstant() bool {
+	return a.data == nil
+}
 
 type sliceable interface {
 	Slice(i, j int) Interface

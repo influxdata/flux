@@ -1121,7 +1121,7 @@ impl FunctionExpr {
                     _ => record.clone(),
                 }
             }
-            let env: VectorizeEnv = self
+            let params: Vec<_> = self
                 .params
                 .iter()
                 .map(|param| {
@@ -1130,6 +1130,8 @@ impl FunctionExpr {
                     (param.key.name.clone(), parameter_type)
                 })
                 .collect();
+            let env: VectorizeEnv = params.iter().cloned().collect();
+
             let body = match &self.body {
                 Block::Variable(..) | Block::Expr(..) => {
                     return Err(located(
@@ -1137,6 +1139,12 @@ impl FunctionExpr {
                         ErrorKind::UnableToVectorize("Unable to vectorize statements".into()),
                     ))
                 }
+                // XXX: sean (January 14 2022) - The only type of function expression
+                // currently supported for vectorization is one whose body contains only
+                // a single object expression, the fields of which only reference members of
+                // `r` and do not include any kind of operation, literal, or logical expression.
+                //
+                // We may support other expression types in the future.
                 Block::Return(e) => {
                     let argument = match &e.argument {
                         Expression::Object(e) => {
@@ -1144,11 +1152,34 @@ impl FunctionExpr {
                                 .properties
                                 .iter()
                                 .map(|p| {
-                                    Ok(Property {
-                                        loc: p.loc.clone(),
-                                        key: p.key.clone(),
-                                        value: p.value.vectorize(&env)?,
-                                    })
+                                    let mem = match &p.value {
+                                        Expression::Member(m) => m.clone(),
+                                        _ => {
+                                            return Err(located(
+                                                self.body.loc().clone(),
+                                                ErrorKind::UnableToVectorize(
+                                                    "expression type cannot be vectorized".into(),
+                                                ),
+                                            ))
+                                        }
+                                    };
+                                    match mem.object {
+                                        Expression::Identifier(i) if i.name == "r" => {
+                                            Ok(Property {
+                                                loc: p.loc.clone(),
+                                                key: p.key.clone(),
+                                                value: p.value.vectorize(&env)?,
+                                            })
+                                        }
+                                        _ => {
+                                            return Err(located(
+                                                self.body.loc().clone(),
+                                                ErrorKind::UnableToVectorize(
+                                                    "expression type cannot be vectorized".into(),
+                                                ),
+                                            ))
+                                        }
+                                    }
                                 })
                                 .collect::<Result<Vec<_>>>()?;
 
@@ -1188,7 +1219,15 @@ impl FunctionExpr {
             };
             Ok(FunctionExpr {
                 loc: self.loc.clone(),
-                typ: self.typ.clone(), // TODO Correct the type
+                typ: MonoType::from(Function {
+                    pipe: None,
+                    req: params
+                        .into_iter()
+                        .map(|(key, value)| (key.to_string(), value))
+                        .collect(),
+                    opt: Default::default(),
+                    retn: body.type_of(),
+                }),
                 params: self.params.clone(),
                 body,
                 vectorized: None,

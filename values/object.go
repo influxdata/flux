@@ -231,6 +231,9 @@ func (o *object) Function() Function {
 func (o *object) Dict() Dictionary {
 	panic(UnexpectedKind(semantic.Object, semantic.Dictionary))
 }
+func (o *object) Vector() Vector {
+	panic(UnexpectedKind(semantic.Object, semantic.Vector))
+}
 func (o *object) Equal(rhs Value) bool {
 	if rhs.Type().Nature() != semantic.Object {
 		return false

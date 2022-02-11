@@ -1647,12 +1647,103 @@ builtin string : (v: A) => string
 builtin time : (v: A) => time
 builtin uint : (v: A) => uint
 
+// display returns the Flux literal representation of any value as a string.
+//
+// Basic types are converted directly to a string.
+// Bytes types are represented as a string of lowercase hexadecimal characters prefixed with `0x`.
+// Composite types (arrays, dictionaries, and records) are represented in a syntax similar
+// to their equivalent Flux literal representation.
+//
+// Note the following about the resulting string representation:
+// - It cannot always be parsed back into the original value.
+// - It may span multiple lines.
+// - It may change between Flux versions.
+//
+//`display()` differs from `string()` in that `display()` recursively converts values inside
+// composite types to strings. `string()` does not operate on composite types.
+//
+//  ## Parameters
+//  - v: Value to convert for display.
+//
+//  ## Examples
+//
+//  ### Display a value as part of a table
+//
+//  Use `array.from()` and `display()` to quickly observe any value.
+//
+//  ```no_run
+//  import "array"
+//
+//  array.from(rows:[{
+//      dict: display(v: ["a":1, "b": 2])
+//      record: display(v:{x: 1, y: 2}),
+//      array: display(v: [5,6,7])
+//  > }])
+//  ```
+//
+//  ### Display a record
+//
+//  ```no_run
+//  x = {a: 1, b: 2, c: 3}
+//  display(v: x)
+//
+//  // Returns {a: 1, b: 2, c: 3}
+//  ```
+//
+//  ### Display an array
+//
+//  ```no_run
+//  x = [1, 2, 3]
+//  display(v: x)
+//
+//  // Returns [1, 2, 3]
+//  ```
+//
+//  ### Display a dictionary
+//
+//  ```no_run
+//  x = ["a": 1, "b": 2, "c": 3]
+//  display(v: x)
+//
+//  // Returns [a: 1, b: 2, c: 3]
+//  ```
+//
+//  ### Display bytes
+//
+//  ```no_run
+//  x = bytes(v:"abc")
+//  display(v: x)
+//
+//  // Returns 0x616263
+//  ```
+//
+//  ### Display a composite value
+//
+//  ```no_run
+//  x = {
+//      bytes: bytes(v: "abc"),
+//      string: "str",
+//      array: [1,2,3],
+//      dict: ["a": 1, "b": 2, "c": 3],
+//  }
+//  display(v: x)
+//
+//  // Returns
+//  // {
+//  //    array: [1, 2, 3],
+//  //    bytes: 0x616263,
+//  //    dict: [a: 1, b: 2, c: 3],
+//  //    string: str
+//  // }
+//  ```
+builtin display : (v: A) => string
+
 // contains function
 builtin contains : (value: A, set: [A]) => bool where A: Nullable
 
 // other builtins
 builtin inf : duration
-builtin length : (arr: [A]) => int
+builtin length : (<-arr: [A]) => int
 builtin linearBins : (start: float, width: float, count: int, ?infinity: bool) => [float]
 builtin logarithmicBins : (start: float, factor: float, count: int, ?infinity: bool) => [float]
 

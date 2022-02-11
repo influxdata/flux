@@ -5,6 +5,8 @@
 package requests
 
 
+import "array"
+
 _emptyBody = bytes(v: "")
 
 // defaultConfig is the global default for all http requests using the requests package.
@@ -33,7 +35,7 @@ _emptyBody = bytes(v: "")
 // Change the configuration for a single request. Change only the configuration values
 // you need by extending the default configuration with your changes.
 //
-// ```no_run
+// ```
 // import "experimental/http/requests"
 //
 // // NOTE: Flux syntax does not yet let you specify anything but an identifier
@@ -46,7 +48,8 @@ _emptyBody = bytes(v: "")
 //      // extending the default.
 //      timeout: 60s,
 // }
-// requests.get(url:"http://example.com", config: config)
+// response = requests.get(url:"http://example.com", config: config)
+// requests.peek(response: response)
 // ```
 option defaultConfig = {
     // Timeout on the request. If the timeout is zero no timeout is applied
@@ -63,7 +66,7 @@ builtin _do : (
         ?headers: [string:string],
         ?body: bytes,
         config: {A with timeout: duration, insecureSkipVerify: bool},
-    ) => {statusCode: int, body: bytes, headers: [string:string]}
+    ) => {statusCode: int, body: bytes, headers: [string:string], duration: duration}
 
 // do makes an http request.
 //
@@ -83,15 +86,17 @@ builtin _do : (
 // - statusCode: HTTP status code returned from the request.
 // - body: Contents of the request. A maximum size of 100MB will be read from the response body.
 // - headers: Headers present on the response.
+// - duration: Duration of request.
 //
 // ## Examples
 //
 // ### Make a GET request
 //
-// ```no_run
+// ```
 // import "experimental/http/requests"
 //
-// resp = requests.do(url:"http://example.com", method: "GET")
+// response = requests.do(url:"http://example.com", method: "GET")
+// requests.peek(response: response)
 // ```
 //
 // ### Make a GET request that needs authorization
@@ -102,11 +107,13 @@ builtin _do : (
 //
 // token = secrets.get(key:"TOKEN")
 //
-// resp = requests.do(
+// response = requests.do(
 //     method: "GET",
 //     url: "http://example.com",
 //     headers: ["Authorization": "token ${token}"],
 // )
+//
+// requests.peek(response: response)
 // ```
 //
 // ### Make a GET request with query parameters
@@ -114,12 +121,15 @@ builtin _do : (
 // ```no_run
 // import "experimental/http/requests"
 //
-// resp = requests.do(
+// response = requests.do(
 //     method: "GET",
 //     url: "http://example.com",
 //     params: ["start": ["100"]],
 // )
+//
+// requests.peek(response: response)
 // ```
+//
 //
 // tags: http,inputs
 do = (
@@ -150,13 +160,26 @@ do = (
 // - body: Data to send with the request.
 // - config: Set of options to control how the request should be performed.
 //
-// ### Make a POST request
+// ## Examples
 //
-// ```no_run
-// import "json"
+// ### Make a POST request with a JSON body and decode JSON response
+//
+// ```
 // import "experimental/http/requests"
+// import ejson "experimental/json"
+// import "json"
+// import "array"
 //
-// resp = requests.post(url:"http://example.com", body: json.encode(v: {data: {x:1, y: 2, z:3}))
+// response =
+//     requests.post(
+//         url: "https://goolnk.com/api/v1/shorten",
+//         body: json.encode(v: {url: "http://www.influxdata.com"}),
+//         headers: ["Content-Type": "application/json"],
+//     )
+//
+// data = ejson.parse(data: response.body)
+//
+// > array.from(rows: [data])
 // ```
 //
 // tags: http,inputs
@@ -187,12 +210,47 @@ post = (
 // - body: Data to send with the request.
 // - config: Set of options to control how the request should be performed.
 //
+// ## Examples
+//
 // ### Make a GET request
 //
 // ```no_run
 // import "experimental/http/requests"
 //
-// resp = requests.get(url:"http://example.com")
+// response = requests.get(url:"http://example.com")
+//
+// requests.peek(response: response)
+// ```
+//
+// ### Make a GET request and decode the JSON response
+//
+// ```
+// import "experimental/http/requests"
+// import "experimental/json"
+// import "array"
+//
+// response = requests.get(
+//     url: "https://api.agify.io",
+//     params: ["name": ["nathaniel"]],
+// )
+//
+// // api.agify.io returns JSON with the form
+// //
+// // {
+// //    name: string,
+// //    age: number,
+// //    count: number,
+// // }
+// //
+// // Define a data variable that parses the JSON response body into a Flux record.
+// data = json.parse(data: response.body)
+//
+// // Use array.from() to construct a table with one row containing our response data.
+// // We do not care about the count so only include name and age.
+// array.from(rows:[{
+//      name: data.name,
+//      age: data.age,
+// > }])
 // ```
 //
 // tags: http,inputs
@@ -210,4 +268,47 @@ get = (
         headers: headers,
         body: body,
         config: config,
+    )
+
+// peek converts an HTTP response into a table for easy inspection.
+//
+// The output table includes the following columns:
+//  - **body** with the response body as a string
+//  - **statusCode** with the returned status code as an integer
+//  - **headers** with a string representation of the headers
+//  - **duration** the duration of the request as a number of nanoseconds
+//
+// To customize how the response data is structured in a table, use `array.from()`
+// with a function like `json.parse()`. Parse the response body into a set of values
+// and then use `array.from()` to construct a table from those values.
+//
+// ## Parameters
+//
+// - response: Response data from an HTTP request.
+//
+// ## Examples
+//
+// ### Inspect the response of an HTTP request
+//
+// ```
+// import "experimental/http/requests"
+//
+// requests.peek(response: requests.get(
+//     url: "https://api.agify.io",
+//     params: ["name": ["natalie"]],
+// ))
+// #     // We don't want the duration of the request to change
+// #     // each time we run the example so set it to a static value
+// #>    |> map(fn: (r) => ({r with duration: int(v:100ms)}))
+// ```
+peek = (response) =>
+    array.from(
+        rows: [
+            {
+                statusCode: response.statusCode,
+                body: string(v: response.body),
+                headers: display(v: response.headers),
+                duration: int(v: response.duration),
+            },
+        ],
     )

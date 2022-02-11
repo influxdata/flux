@@ -70,7 +70,7 @@ func Compile(scope Scope, f *semantic.FunctionExpression, in semantic.MonoType) 
 	}, nil
 }
 
-// substituteTypes will generate a substitution map by recursing through
+// substituteTypes will populate a substitution map by recursing through
 // inType and mapping any variables to the value in the other record.
 // If the input type is not a type variable, it will check to ensure
 // that the type in the input matches or it will return an error.
@@ -258,6 +258,16 @@ func substituteTypes(subst *semantic.Substitution, inferredType, actualType sema
 			}
 		}
 		return nil
+	case semantic.Vec:
+		lt, err := inferredType.ElemType()
+		if err != nil {
+			return err
+		}
+		rt, err := actualType.ElemType()
+		if err != nil {
+			return err
+		}
+		return substituteTypes(subst, lt, rt)
 	case semantic.Fun:
 		// TODO: https://github.com/influxdata/flux/issues/2587
 		return errors.New(codes.Unimplemented)
@@ -387,6 +397,12 @@ func apply(sub semantic.Substitutor, props []semantic.PropertyType, t semantic.M
 			return t
 		}
 		return semantic.NewFunctionType(apply(sub, nil, retn), args)
+	case semantic.Vec:
+		element, err := t.ElemType()
+		if err != nil {
+			return t
+		}
+		return semantic.NewVectorType(apply(sub, nil, element))
 	}
 	// If none of the above cases are matched, something has gone
 	// seriously wrong and we should panic.
@@ -515,7 +531,7 @@ func compile(n semantic.Node, subst semantic.Substitutor) (Evaluator, error) {
 		}
 		t := apply(subst, nil, n.TypeOf())
 		return &memberEvaluator{
-			t:        apply(subst, nil, n.TypeOf()),
+			t:        t,
 			object:   object,
 			property: n.Property.Name(),
 			nullable: isNullable(t),

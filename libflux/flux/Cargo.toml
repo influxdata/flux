@@ -11,6 +11,7 @@ crate-type = ["rlib", "staticlib", "cdylib"]
 [features]
 default = ["strict"]
 strict = []
+lsp = ["flux-core/lsp"]
 
 [dependencies]
 anyhow ="1"

@@ -79,6 +79,15 @@ resp = requests.do(
 				t.Errorf("unexpected header H1 want: %q got: %q", want, got)
 			}
 		}
+		if durationV, ok := resp.Get("duration"); !ok {
+			t.Error("no duration found in response")
+		} else {
+			duration := durationV.Duration()
+			got := duration.Duration()
+			if got <= 0 {
+				t.Errorf("unexpected duration want: > 0  got: %q", got)
+			}
+		}
 	}
 	if want, got := "/path/a/b/c", req.URL.Path; want != got {
 		t.Errorf("unexpected url want: %q got: %q", want, got)

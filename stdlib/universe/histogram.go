@@ -305,6 +305,10 @@ func (b linearBins) Dict() values.Dictionary {
 	panic(values.UnexpectedKind(semantic.Dictionary, semantic.Function))
 }
 
+func (b linearBins) Vector() values.Vector {
+	panic(values.UnexpectedKind(semantic.Vector, semantic.Function))
+}
+
 func (b linearBins) Equal(rhs values.Value) bool {
 	if b.Type() != rhs.Type() {
 		return false
@@ -432,6 +436,10 @@ func (b logarithmicBins) Function() values.Function {
 
 func (b logarithmicBins) Dict() values.Dictionary {
 	panic(values.UnexpectedKind(semantic.Dictionary, semantic.Function))
+}
+
+func (b logarithmicBins) Vector() values.Vector {
+	panic(values.UnexpectedKind(semantic.Vector, semantic.Function))
 }
 
 func (b logarithmicBins) Equal(rhs values.Value) bool {

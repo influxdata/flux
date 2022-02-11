@@ -25,7 +25,7 @@ func NewVectorFromElements(mem *memory.Allocator, es ...interface{}) Vector {
 	var typ semantic.MonoType
 	switch es[0].(type) {
 	{{range .}}
-	case {{.PrimitiveType}}:
+	case {{.InterfaceType}}:
 		typ = {{.MonoType}}
 	{{end}}
 	default:
@@ -43,11 +43,11 @@ func newVectorFromSlice(values []Value, typ semantic.MonoType, mem *memory.Alloc
 	switch typ {
 	{{range .}}
 	case {{.MonoType}}:
-		b := arrow.New{{.Name}}Builder(mem)
+		b := arrow.New{{.ValueName}}Builder(mem)
 		for _, v := range values {
 			b.Append(v.{{.ValueType}}())
 		}
-		arr := b.New{{.Name}}Array()
+		arr := b.New{{.ValueName}}Array()
 		return New{{.Name}}VectorValue(arr)
 	{{end}}
 	default:
@@ -103,6 +103,9 @@ func (v *{{.Name}}VectorValue) Array() Array { panic(UnexpectedKind(semantic.Vec
 func (v *{{.Name}}VectorValue) Object() Object { panic(UnexpectedKind(semantic.Vector, semantic.Object)) }
 func (v *{{.Name}}VectorValue) Function() Function { panic(UnexpectedKind(semantic.Vector, semantic.Function)) }
 func (v *{{.Name}}VectorValue) Dict() Dictionary { panic(UnexpectedKind(semantic.Vector, semantic.Dictionary)) }
+func (v *{{.Name}}VectorValue) Vector() Vector {
+	return v
+}
 
 func (v *{{.Name}}VectorValue) Equal(other Value) bool {
 	panic("cannot compare two vectors for equality")

@@ -32,7 +32,7 @@ func TestDisplay(t *testing.T) {
 		},
 		{
 			value:   values.NewBytes([]byte{10, 11, 12}),
-			display: "[10 11 12]",
+			display: "0x0a0b0c",
 		},
 		{
 			value:   values.NewInt(1),
@@ -104,7 +104,7 @@ func TestDisplay(t *testing.T) {
 					"d": values.NewInt(1),
 				},
 			),
-			display: "{\n    a: 1, \n    b: 1, \n    c: 1, \n    d: 1\n}",
+			display: "{\n    a: 1,\n    b: 1,\n    c: 1,\n    d: 1\n}",
 		},
 		{
 			value:   values.NewEmptyDict(semantic.NewDictType(semantic.BasicInt, semantic.BasicInt)),

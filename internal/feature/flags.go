@@ -77,6 +77,18 @@ func MqttPoolDialer() BoolFlag {
 	return mqttPoolDialer
 }
 
+var vectorizedMap = feature.MakeBoolFlag(
+	"Vectorized Map",
+	"vectorizedMap",
+	"Jonathan Sternberg",
+	false,
+)
+
+// VectorizedMap - Enables the version of map that supports vectorized functions
+func VectorizedMap() BoolFlag {
+	return vectorizedMap
+}
+
 // Inject will inject the Flagger into the context.
 func Inject(ctx context.Context, flagger Flagger) context.Context {
 	return feature.Inject(ctx, flagger)
@@ -88,6 +100,7 @@ var all = []Flag{
 	queryConcurrencyLimit,
 	optimizeUnionTransformation,
 	mqttPoolDialer,
+	vectorizedMap,
 }
 
 var byKey = map[string]Flag{
@@ -96,6 +109,7 @@ var byKey = map[string]Flag{
 	"queryConcurrencyLimit":            queryConcurrencyLimit,
 	"optimizeUnionTransformation":      optimizeUnionTransformation,
 	"mqttPoolDialer":                   mqttPoolDialer,
+	"vectorizedMap":                    vectorizedMap,
 }
 
 // Flags returns all feature flags.

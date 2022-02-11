@@ -33,7 +33,7 @@ jobs:
       - run: make vet
       - run: GOGC=50 make staticcheck
       - run: make libflux-wasm
-      - run: make test GO_TEST_FLAGS='-coverprofile=coverage.txt -covermode=atomic'
+      - run: make test GO_TEST_FLAGS='-coverprofile=coverage.txt -covermode=atomic' GO_TAGS=assert
       - save_cache:
           name: Saving GOPATH/pkg/mod
           key: flux-gomod-{{checksum "go.sum"}}
@@ -62,7 +62,7 @@ jobs:
           keys:
             - flux-gomod-{{checksum "go.sum"}}
       # Run tests
-      - run: make test-race
+      - run: make test-race GO_TAGS=assert
       # No need to save the pkg/mod cache since the other job does it
   test-bench:
     docker:

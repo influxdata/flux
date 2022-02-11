@@ -125,6 +125,9 @@ func (p *Package) Function() values.Function {
 func (p *Package) Dict() values.Dictionary {
 	panic(values.UnexpectedKind(semantic.Object, semantic.Dictionary))
 }
+func (p *Package) Vector() values.Vector {
+	panic(values.UnexpectedKind(semantic.Object, semantic.Vector))
+}
 func (p *Package) Equal(rhs values.Value) bool {
 	if p.Type() != rhs.Type() {
 		return false
