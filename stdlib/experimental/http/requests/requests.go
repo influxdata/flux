@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"time"
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/codes"
@@ -22,8 +23,8 @@ import (
 )
 
 // http get mirrors the http post originally completed for alerts & notifications
-var request = values.NewFunction(
-	"_request",
+var do = values.NewFunction(
+	"_do",
 	runtime.MustLookupBuiltinType("experimental/http/requests", "_do"),
 	func(ctx context.Context, args values.Object) (values.Value, error) {
 		// Get URL
@@ -158,10 +159,18 @@ var request = values.NewFunction(
 		}
 
 		// Do request, using local anonymous functions to facilitate timing the request
-		statusCode, responseBody, headers, err := func(req *http.Request) (int, []byte, values.Dictionary, error) {
-			s, cctx := opentracing.StartSpanFromContext(req.Context(), "requests._do")
+		statusCode, responseBody, headers, duration, err := func(req *http.Request) (statusCode int, body []byte, headers values.Dictionary, duration time.Duration, err error) {
+			startTime := time.Now()
+			s, cctx := opentracing.StartSpanFromContext(req.Context(), "requests._do", opentracing.StartTime(startTime))
 			s.SetTag("url", req.URL.String())
-			defer s.Finish()
+			defer func() {
+				finishTime := time.Now()
+				s.FinishWithOptions(opentracing.FinishOptions{
+					FinishTime: finishTime,
+				})
+				// set duration to return
+				duration = finishTime.Sub(startTime)
+			}()
 
 			req = req.WithContext(cctx)
 			response, err := dc.Do(req)
@@ -170,24 +179,26 @@ var request = values.NewFunction(
 				// DNS server address. This error is private in the net/http
 				// package, so string matching is used.
 				if strings.HasSuffix(err.Error(), "no such host") {
-					return 0, nil, nil, errors.New(codes.Invalid, "no such host")
+					err = errors.New(codes.Invalid, "no such host")
+					return
 				}
-				return 0, nil, nil, err
+				return
 			}
-			body, err := ioutil.ReadAll(response.Body)
+			body, err = ioutil.ReadAll(response.Body)
 			_ = response.Body.Close()
 			if err != nil {
-				return 0, nil, nil, err
+				return
 			}
 			s.LogFields(
 				log.Int("statusCode", response.StatusCode),
 				log.Int("responseSize", len(body)),
 			)
-			headers, err := headerToDict(response.Header)
+			headers, err = headerToDict(response.Header)
 			if err != nil {
-				return 0, nil, nil, err
+				return
 			}
-			return response.StatusCode, body, headers, nil
+			statusCode = response.StatusCode
+			return
 		}(req)
 		if err != nil {
 			return nil, err
@@ -196,10 +207,12 @@ var request = values.NewFunction(
 		return values.NewObjectWithValues(map[string]values.Value{
 			"statusCode": values.NewInt(int64(statusCode)),
 			"headers":    headers,
-			"body":       values.NewBytes(responseBody)}), nil
+			"body":       values.NewBytes(responseBody),
+			"duration":   values.NewDuration(values.ConvertDurationNsecs(duration)),
+		}), nil
 
 	},
-	true, // get has side-effects
+	true, // _do has side-effects
 )
 
 // headerToDict constructs a values.Dictionary from a map of header keys and values.
@@ -216,5 +229,5 @@ func headerToDict(header http.Header) (values.Dictionary, error) {
 }
 
 func init() {
-	runtime.RegisterPackageValue("experimental/http/requests", "_do", request)
+	runtime.RegisterPackageValue("experimental/http/requests", "_do", do)
 }

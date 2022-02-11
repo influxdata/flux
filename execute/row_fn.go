@@ -26,9 +26,13 @@ type compiledFn struct {
 	recordType semantic.MonoType
 	cols       []flux.ColMeta
 	extraTypes map[string]semantic.MonoType
+	vectorized bool
 }
 
-func (f *compiledFn) isCacheHit(cols []flux.ColMeta, extraTypes map[string]semantic.MonoType) bool {
+func (f *compiledFn) isCacheHit(cols []flux.ColMeta, extraTypes map[string]semantic.MonoType, vectorized bool) bool {
+	if f.vectorized != vectorized {
+		return false
+	}
 	if len(f.cols) != len(cols) {
 		return false
 	}
@@ -57,12 +61,15 @@ func newDynamicFn(fn *semantic.FunctionExpression, scope compiler.Scope) dynamic
 }
 
 // typeof returns an object monotype that matches the current column data.
-func (f *dynamicFn) typeof(cols []flux.ColMeta) (semantic.MonoType, error) {
+func (f *dynamicFn) typeof(cols []flux.ColMeta, vectorized bool) (semantic.MonoType, error) {
 	properties := make([]semantic.PropertyType, len(cols))
 	for i, c := range cols {
 		vtype := flux.SemanticType(c.Type)
 		if vtype.Kind() == semantic.Unknown {
 			return semantic.MonoType{}, errors.Newf(codes.Internal, "unknown column type: %s", c.Type)
+		}
+		if vectorized {
+			vtype = semantic.NewVectorType(vtype)
 		}
 		properties[i] = semantic.PropertyType{
 			Key:   []byte(c.Label),
@@ -72,12 +79,12 @@ func (f *dynamicFn) typeof(cols []flux.ColMeta) (semantic.MonoType, error) {
 	return semantic.NewObjectType(properties), nil
 }
 
-func (f *dynamicFn) compileFunction(cols []flux.ColMeta, extraTypes map[string]semantic.MonoType) error {
+func (f *dynamicFn) compileFunction(cols []flux.ColMeta, extraTypes map[string]semantic.MonoType, vectorized bool) error {
 
 	// If the types have not changed we do not need to recompile, just use the cached version
-	if f.compiledFn == nil || !f.compiledFn.isCacheHit(cols, extraTypes) {
+	if f.compiledFn == nil || !f.compiledFn.isCacheHit(cols, extraTypes, vectorized) {
 		// Prepare the type of the record column.
-		recordType, err := f.typeof(cols)
+		recordType, err := f.typeof(cols, vectorized)
 		if err != nil {
 			return err
 		}
@@ -104,13 +111,14 @@ func (f *dynamicFn) compileFunction(cols []flux.ColMeta, extraTypes map[string]s
 			recordType: recordType,
 			cols:       cols,
 			extraTypes: extraTypes,
+			vectorized: vectorized,
 		}
 	}
 	return nil
 }
 
-func (f *dynamicFn) prepare(cols []flux.ColMeta, extraTypes map[string]semantic.MonoType) (preparedFn, error) {
-	err := f.compileFunction(cols, extraTypes)
+func (f *dynamicFn) prepare(cols []flux.ColMeta, extraTypes map[string]semantic.MonoType, vectorized bool) (preparedFn, error) {
+	err := f.compileFunction(cols, extraTypes, vectorized)
 	if err != nil {
 		return preparedFn{}, err
 	}
@@ -206,7 +214,7 @@ func NewTablePredicateFn(fn *semantic.FunctionExpression, scope compiler.Scope) 
 }
 
 func (f *TablePredicateFn) Prepare(tbl flux.Table) (*TablePredicatePreparedFn, error) {
-	fn, err := f.prepare(tbl.Key().Cols(), nil)
+	fn, err := f.prepare(tbl.Key().Cols(), nil, false)
 	if err != nil {
 		return nil, err
 	} else if fn.returnType().Nature() != semantic.Bool {
@@ -253,7 +261,7 @@ func NewRowPredicateFn(fn *semantic.FunctionExpression, scope compiler.Scope) *R
 }
 
 func (f *RowPredicateFn) Prepare(cols []flux.ColMeta) (*RowPredicatePreparedFn, error) {
-	fn, err := f.prepare(cols, nil)
+	fn, err := f.prepare(cols, nil, false)
 	if err != nil {
 		return nil, err
 	} else if fn.returnType().Nature() != semantic.Bool {
@@ -310,7 +318,7 @@ func NewRowMapFn(fn *semantic.FunctionExpression, scope compiler.Scope) *RowMapF
 }
 
 func (f *RowMapFn) Prepare(cols []flux.ColMeta) (*RowMapPreparedFn, error) {
-	fn, err := f.prepare(cols, nil)
+	fn, err := f.prepare(cols, nil, false)
 	if err != nil {
 		return nil, err
 	} else if k := fn.returnType().Nature(); k != semantic.Object {
@@ -348,7 +356,7 @@ func NewRowReduceFn(fn *semantic.FunctionExpression, scope compiler.Scope) *RowR
 }
 
 func (f *RowReduceFn) Prepare(cols []flux.ColMeta, reducerType map[string]semantic.MonoType) (*RowReducePreparedFn, error) {
-	fn, err := f.prepare(cols, reducerType)
+	fn, err := f.prepare(cols, reducerType, false)
 	if err != nil {
 		return nil, err
 	}

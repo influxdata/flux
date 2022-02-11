@@ -118,6 +118,9 @@ func (d emptyDict) Function() Function {
 func (d emptyDict) Dict() Dictionary {
 	return d
 }
+func (d emptyDict) Vector() Vector {
+	panic(UnexpectedKind(semantic.Dictionary, semantic.Vector))
+}
 
 func (d emptyDict) Equal(v Value) bool {
 	return d.t.Equal(v.Type()) && v.Dict().Len() == 0
@@ -212,6 +215,9 @@ func (d dict) Function() Function {
 }
 func (d dict) Dict() Dictionary {
 	return d
+}
+func (d dict) Vector() Vector {
+	panic(UnexpectedKind(semantic.Dictionary, semantic.Vector))
 }
 
 func (d dict) Equal(v Value) bool {

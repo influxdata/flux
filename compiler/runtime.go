@@ -39,9 +39,17 @@ func (c compiledFn) Eval(ctx context.Context, input values.Object) (values.Value
 	inputScope := nestScope(c.parentScope)
 	input.Range(func(k string, v values.Value) {
 		inputScope.Set(k, v)
+		v.Retain()
 	})
 
+	defer releaseScope(inputScope)
 	return eval(ctx, c.root, inputScope)
+}
+
+func releaseScope(s Scope) {
+	s.LocalRange(func(k string, v values.Value) {
+		v.Release()
+	})
 }
 
 type Scope interface {
@@ -94,15 +102,14 @@ func (e *blockEvaluator) Type() semantic.MonoType {
 }
 
 func (e *blockEvaluator) Eval(ctx context.Context, scope Scope) (values.Value, error) {
-	var err error
-	var value values.Value
-	for _, b := range e.body {
-		value, err = eval(ctx, b, scope)
+	for _, b := range e.body[:len(e.body)-1] {
+		value, err := eval(ctx, b, scope)
 		if err != nil {
 			return nil, err
 		}
+		value.Release()
 	}
-	return value, nil
+	return eval(ctx, e.body[len(e.body)-1], scope)
 }
 
 type returnEvaluator struct {
@@ -126,6 +133,8 @@ func (e *declarationEvaluator) Eval(ctx context.Context, scope Scope) (values.Va
 	}
 
 	scope.Set(e.id, v)
+	v.Retain()
+
 	return v, nil
 }
 
@@ -178,8 +187,8 @@ func (e *interpolatedEvaluator) Eval(ctx context.Context, scope Scope) (values.V
 	if err != nil {
 		return nil, err
 	}
-	v, err := values.Stringify(o)
-	return v, err
+	defer o.Release()
+	return values.Stringify(o)
 }
 
 type objEvaluator struct {
@@ -289,6 +298,7 @@ func (e *logicalEvaluator) Eval(ctx context.Context, scope Scope) (values.Value,
 	if err != nil {
 		return nil, err
 	}
+	defer l.Release()
 	if typ := l.Type().Nature(); !l.IsNull() && typ != semantic.Bool {
 		return nil, errors.Newf(codes.Invalid, "cannot use operand of type %s with logical %s; exected boolean", typ, e.operator)
 	}
@@ -332,6 +342,7 @@ func (e *conditionalEvaluator) Eval(ctx context.Context, scope Scope) (values.Va
 	if err != nil {
 		return nil, err
 	}
+	defer t.Release()
 	if typ := t.Type().Nature(); !t.IsNull() && typ != semantic.Bool {
 		return nil, errors.Newf(codes.Invalid, "cannot use test of type %s in conditional expression; expected boolean", typ)
 	}
@@ -358,10 +369,12 @@ func (e *binaryEvaluator) Eval(ctx context.Context, scope Scope) (values.Value, 
 	if err != nil {
 		return nil, err
 	}
+	defer l.Release()
 	r, err := eval(ctx, e.right, scope)
 	if err != nil {
 		return nil, err
 	}
+	defer r.Release()
 	return e.f(l, r)
 }
 
@@ -528,6 +541,7 @@ func (e *identifierEvaluator) Type() semantic.MonoType {
 
 func (e *identifierEvaluator) Eval(ctx context.Context, scope Scope) (values.Value, error) {
 	v := scope.Get(e.name)
+	v.Retain()
 	return v, nil
 }
 
@@ -547,6 +561,7 @@ func (e *memberEvaluator) Eval(ctx context.Context, scope Scope) (values.Value, 
 	if err != nil {
 		return nil, err
 	}
+	defer o.Release()
 	if o.IsNull() {
 		return nil, errors.Newf(codes.Invalid, "cannot access property of a null value; expected record")
 	}
@@ -558,6 +573,7 @@ func (e *memberEvaluator) Eval(ctx context.Context, scope Scope) (values.Value, 
 	if !ok && !e.nullable {
 		return nil, errors.Newf(codes.Invalid, "member %q with type %s is not in the record", e.property, e.t.Nature())
 	}
+	v.Retain()
 	return v, nil
 }
 
@@ -576,6 +592,7 @@ func (e *arrayIndexEvaluator) Eval(ctx context.Context, scope Scope) (values.Val
 	if err != nil {
 		return nil, err
 	}
+	defer a.Release()
 	if a.IsNull() {
 		return nil, errors.New(codes.Invalid, "cannot index into a null value; expected an array")
 	}
@@ -586,6 +603,7 @@ func (e *arrayIndexEvaluator) Eval(ctx context.Context, scope Scope) (values.Val
 	if err != nil {
 		return nil, err
 	}
+	defer i.Release()
 	if i.IsNull() {
 		return nil, errors.New(codes.Invalid, "cannot index into an array with null value; expected an int")
 	}
@@ -601,7 +619,9 @@ func (e *arrayIndexEvaluator) Eval(ctx context.Context, scope Scope) (values.Val
 	if ix < 0 || ix >= l {
 		return nil, errors.Newf(codes.OutOfRange, "cannot access element %v of array of length %v", ix, l)
 	}
-	return a.Array().Get(ix), nil
+	v := a.Array().Get(ix)
+	v.Retain()
+	return v, nil
 }
 
 type callEvaluator struct {
@@ -619,10 +639,12 @@ func (e *callEvaluator) Eval(ctx context.Context, scope Scope) (values.Value, er
 	if err != nil {
 		return nil, err
 	}
+	defer args.Release()
 	f, err := e.callee.Eval(ctx, scope)
 	if err != nil {
 		return nil, err
 	}
+	defer f.Release()
 	if f.IsNull() {
 		return nil, errors.Newf(codes.Invalid, "attempt to call a null value; expected function")
 	}
@@ -696,9 +718,12 @@ func (f *functionValue) Call(ctx context.Context, args values.Object) (values.Va
 				return nil, err
 			}
 			a = v
+		} else {
+			a.Retain()
 		}
 		scope.Set(p.Key, a)
 	}
+	defer releaseScope(scope)
 
 	fn, err := Compile(scope, f.fn, args.Type())
 	if err != nil {
@@ -747,6 +772,9 @@ func (f *functionValue) Function() values.Function {
 }
 func (f *functionValue) Dict() values.Dictionary {
 	panic(values.UnexpectedKind(semantic.Function, semantic.Dictionary))
+}
+func (f *functionValue) Vector() values.Vector {
+	panic(values.UnexpectedKind(semantic.Function, semantic.Vector))
 }
 func (f *functionValue) Equal(rhs values.Value) bool {
 	if f.Type() != rhs.Type() {

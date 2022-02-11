@@ -9,9 +9,12 @@ import (
 	"github.com/influxdata/flux/dependencies/dependenciestest"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
+	"github.com/influxdata/flux/internal/gen"
 	"github.com/influxdata/flux/interpreter"
+	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/querytest"
 	"github.com/influxdata/flux/runtime"
+	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/stdlib/influxdata/influxdb"
 	"github.com/influxdata/flux/stdlib/universe"
 	"github.com/influxdata/flux/values"
@@ -1016,4 +1019,55 @@ f
 			)
 		})
 	}
+}
+
+func BenchmarkMap_Process(b *testing.B) {
+	genSource := func(alloc *memory.Allocator) (flux.TableIterator, error) {
+		return gen.Input(context.Background(), gen.Schema{
+			Tags: []gen.Tag{
+				{Name: "t0", Cardinality: 1},
+				{Name: "t1", Cardinality: 1},
+			},
+			NumPoints: 1000,
+			Alloc:     alloc,
+		})
+	}
+
+	genTransformation := func(fn func(b *testing.B) *semantic.FunctionExpression) func(id execute.DatasetID, alloc *memory.Allocator) (execute.Transformation, execute.Dataset) {
+		return func(id execute.DatasetID, alloc *memory.Allocator) (execute.Transformation, execute.Dataset) {
+			spec := &universe.MapProcedureSpec{
+				Fn: interpreter.ResolvedFunction{
+					Fn:    fn(b),
+					Scope: valuestest.Scope(),
+				},
+			}
+
+			tr, d, err := universe.NewMapTransformation2(context.Background(), id, spec, alloc)
+			if err != nil {
+				b.Fatal(err)
+			}
+			return tr, d
+		}
+	}
+
+	const source = `(r) => ({r with v: r._value})`
+	b.Run("Row", func(b *testing.B) {
+		executetest.ProcessBenchmarkHelper(b,
+			genSource,
+			genTransformation(func(b *testing.B) *semantic.FunctionExpression {
+				fn := executetest.FunctionExpression(b, source)
+				fn.Vectorized = nil
+				return fn
+			}),
+		)
+	})
+
+	b.Run("Vectorized", func(b *testing.B) {
+		executetest.ProcessBenchmarkHelper(b,
+			genSource,
+			genTransformation(func(b *testing.B) *semantic.FunctionExpression {
+				return executetest.FunctionExpression(b, source)
+			}),
+		)
+	})
 }

@@ -492,7 +492,7 @@ impl<'env, I: import::Importer> Analyzer<'env, I> {
             }
         };
 
-        let sem_pkg = nodes::inject_pkg_types(sem_pkg, sub);
+        let mut sem_pkg = nodes::inject_pkg_types(sem_pkg, sub);
 
         if errors.has_errors() {
             return Err(Salvage {
@@ -505,6 +505,11 @@ impl<'env, I: import::Importer> Analyzer<'env, I> {
             });
         }
 
+        // Try to vectorize all the function expressions in a package. This will
+        // return an error if it finds a function can't be vectorized, but we
+        // don't expect all functions to be vectorizable. So we just let it
+        // vectorize what it can, and fail silently for all other cases.
+        let _ = nodes::vectorize(&mut sem_pkg);
         Ok((env, sem_pkg))
     }
 

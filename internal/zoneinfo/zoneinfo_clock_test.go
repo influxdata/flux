@@ -9,9 +9,13 @@ import (
 
 func TestLocation_ToLocalClock(t *testing.T) {
 	const (
-		US_Pacific     = "America/Los_Angeles"
-		Australia_East = "Australia/Sydney"
-		American_Samoa = "Pacific/Apia"
+		American_Samoa  = "Pacific/Apia"
+		America_Phoenix = "America/Phoenix"
+		America_Denver  = "America/Denver"
+		Asia_Kolkata    = "Asia/Kolkata"
+		Australia_East  = "Australia/Sydney"
+		Europe_Moscow   = "Europe/Moscow"
+		US_Pacific      = "America/Los_Angeles"
 	)
 	for _, tt := range []struct {
 		name    string
@@ -19,6 +23,48 @@ func TestLocation_ToLocalClock(t *testing.T) {
 		s       string
 		want    string
 	}{
+		{
+			name:    "America_Phoenix",
+			locname: America_Phoenix,
+			s:       "2017-02-24T12:00:00Z",
+			want:    "2017-02-24T12:00:00-07:00",
+		},
+		{
+			name:    "America_Phoenix DST", // Phoenix doesn't observe DST
+			locname: America_Phoenix,
+			s:       "2017-09-03T12:00:00Z",
+			want:    "2017-09-03T12:00:00-07:00",
+		},
+		{
+			name:    "America_Denver",
+			locname: America_Denver,
+			s:       "2017-02-24T12:00:00Z",
+			want:    "2017-02-24T12:00:00-07:00",
+		},
+		{
+			name:    "America_Denver DST", // Denver observes DST
+			locname: America_Denver,
+			s:       "2017-09-03T12:00:00Z",
+			want:    "2017-09-03T12:00:00-06:00",
+		},
+		{
+			name:    "Europe_Moscow", // Moscow doesn't observe DST between 2015 - 2019
+			locname: Europe_Moscow,
+			s:       "2017-03-30T03:00:00Z",
+			want:    "2017-03-30T03:00:00+03:00",
+		},
+		{
+			name:    "Europe_Moscow DST", // Moscow observe DST in 2009
+			locname: Europe_Moscow,
+			s:       "2009-03-30T03:00:00Z",
+			want:    "2009-03-30T03:00:00+04:00",
+		},
+		{
+			name:    "Asia_Kolkata",
+			locname: Asia_Kolkata,
+			s:       "2017-09-03T12:00:00Z",
+			want:    "2017-09-03T12:00:00+05:30",
+		},
 		{
 			name:    "US_Pacific",
 			locname: US_Pacific,

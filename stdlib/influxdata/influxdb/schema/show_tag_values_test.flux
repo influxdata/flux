@@ -2,11 +2,13 @@ package schema_test
 
 
 import "testing"
+import "csv"
 
 option now = () => 2030-01-01T00:00:00Z
 
-input =
-    "
+testcase show_tag_values {
+        input =
+            "
 #group,false,false,false,false,true,true,true,true,true,true,true
 #datatype,string,long,dateTime:RFC3339,long,string,string,string,string,string,string,string
 #default,_result,,,,,,,,,,
@@ -57,23 +59,27 @@ input =
 ,,9,usage_user,cpu,2020-10-21T20:48:40Z,2.4000000000536965,cpu1,euterpe.local,north
 ,,9,usage_user,cpu,2020-10-21T20:48:50Z,2.0999999999423746,cpu1,euterpe.local,north
 "
-output =
-    "
+        want =
+            csv.from(
+                csv:
+                    "
 #datatype,string,long,string
 #group,false,false,false
 #default,0,,
 ,result,table,_value
 ,,0,euterpe.local
 ,,0,mnemosyne.local
-"
-show_tag_values_fn = (tables=<-) =>
-    tables
-        |> range(start: 2018-01-01T00:00:00Z)
-        |> filter(fn: (r) => true)
-        |> keep(columns: ["host"])
-        |> group()
-        |> distinct(column: "host")
-        |> sort()
+",
+            )
+        got =
+            csv.from(csv: input)
+                |> testing.load()
+                |> range(start: 2018-01-01T00:00:00Z)
+                |> filter(fn: (r) => true)
+                |> keep(columns: ["host"])
+                |> group()
+                |> distinct(column: "host")
+                |> sort()
 
-test show_tag_values = () =>
-    ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: show_tag_values_fn})
+        testing.diff(want: want, got: got)
+    }

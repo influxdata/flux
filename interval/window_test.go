@@ -536,9 +536,12 @@ func TestWindow_GetLatestBounds(t *testing.T) {
 
 func TestWindow_GetLatestBounds_InLocation(t *testing.T) {
 	const (
-		US_Pacific     = "America/Los_Angeles"
-		Australia_East = "Australia/Sydney"
-		American_Samoa = "Pacific/Apia"
+		American_Samoa  = "Pacific/Apia"
+		America_Phoenix = "America/Phoenix"
+		America_Denver  = "America/Denver"
+		Australia_East  = "Australia/Sydney"
+		Europe_Moscow   = "Europe/Moscow"
+		US_Pacific      = "America/Los_Angeles"
 	)
 
 	type window struct {
@@ -554,6 +557,84 @@ func TestWindow_GetLatestBounds_InLocation(t *testing.T) {
 		t    string
 		want [2]string
 	}{
+		{
+			name: "America_Phoenix",
+			loc:  America_Phoenix,
+			w: window{
+				every:  "1d",
+				period: "1d",
+			},
+			t: "2017-02-24T12:00:00-07:00",
+			want: [2]string{
+				"2017-02-24T00:00:00-07:00",
+				"2017-02-25T00:00:00-07:00",
+			},
+		},
+		{
+			name: "America_Phoenix DST", // Phoenix doesn't observe DST
+			loc:  America_Phoenix,
+			w: window{
+				every:  "1d",
+				period: "1d",
+			},
+			t: "2017-09-03T12:00:00-07:00",
+			want: [2]string{
+				"2017-09-03T00:00:00-07:00",
+				"2017-09-04T00:00:00-07:00",
+			},
+		},
+		{
+			name: "America_Denver",
+			loc:  America_Denver,
+			w: window{
+				every:  "1d",
+				period: "1d",
+			},
+			t: "2017-02-24T12:00:00-07:00",
+			want: [2]string{
+				"2017-02-24T00:00:00-07:00",
+				"2017-02-25T00:00:00-07:00",
+			},
+		},
+		{
+			name: "America_Denver DST", // Denver observes DST
+			loc:  America_Denver,
+			w: window{
+				every:  "1d",
+				period: "1d",
+			},
+			t: "2017-09-03T12:00:00-06:00",
+			want: [2]string{
+				"2017-09-03T00:00:00-06:00",
+				"2017-09-04T00:00:00-06:00",
+			},
+		},
+		{
+			name: "Europe_Moscow", // Moscow doesn't observe DST between 2015 - 2019
+			loc:  Europe_Moscow,
+			w: window{
+				every:  "1d",
+				period: "1d",
+			},
+			t: "2017-09-03T12:00:00+03:00",
+			want: [2]string{
+				"2017-09-03T00:00:00+03:00",
+				"2017-09-04T00:00:00+03:00",
+			},
+		},
+		{
+			name: "Europe_Moscow DST", // Moscow observe DST in 2009
+			loc:  Europe_Moscow,
+			w: window{
+				every:  "1d",
+				period: "1d",
+			},
+			t: "2009-03-30T12:00:00+04:00",
+			want: [2]string{
+				"2009-03-30T00:00:00+04:00",
+				"2009-03-31T00:00:00+04:00",
+			},
+		},
 		{
 			name: "US_Pacific",
 			loc:  US_Pacific,
