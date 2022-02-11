@@ -4,6 +4,9 @@
 package schema
 
 
+// internal only option to make testing possible
+option _from = from
+
 _startDefault = -30d
 _stopDefault = now()
 
@@ -82,7 +85,7 @@ tagValues = (
     start=_startDefault,
     stop=_stopDefault,
 ) =>
-    from(bucket: bucket)
+    _from(bucket: bucket)
         |> range(start: start, stop: stop)
         |> filter(fn: predicate)
         |> keep(columns: [tag])
@@ -118,7 +121,7 @@ tagValues = (
 // tags: metadata
 //
 tagKeys = (bucket, predicate=(r) => true, start=_startDefault, stop=_stopDefault) =>
-    from(bucket: bucket)
+    _from(bucket: bucket)
         |> range(start: start, stop: stop)
         |> filter(fn: predicate)
         |> keys()
