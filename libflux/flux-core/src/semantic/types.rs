@@ -464,15 +464,13 @@ pub enum MonoType {
     #[display(fmt = "{}", _0)]
     BoundVar(Tvar),
     #[display(fmt = "{}", _0)]
-    Arr(Ptr<Array>),
+    Collection(Ptr<Collection>),
     #[display(fmt = "{}", _0)]
     Dict(Ptr<Dictionary>),
     #[display(fmt = "{}", _0)]
     Record(Ptr<Record>),
     #[display(fmt = "{}", _0)]
     Fun(Ptr<Function>),
-    #[display(fmt = "{}", _0)]
-    Vector(Ptr<Vector>),
 }
 
 impl Serialize for MonoType {
@@ -494,11 +492,11 @@ impl Serialize for MonoType {
             Regexp,
             Bytes,
             Var(Tvar),
-            Arr(&'a Ptr<Array>),
+            Arr(&'a MonoType),
             Dict(&'a Ptr<Dictionary>),
             Record(&'a Ptr<Record>),
             Fun(&'a Ptr<Function>),
-            Vector(&'a Ptr<Vector>),
+            Vector(&'a MonoType),
         }
 
         match self {
@@ -517,14 +515,43 @@ impl Serialize for MonoType {
             // When serializing we tend to expect that all variables are already bound so treat
             // them the same here
             Self::BoundVar(v) | Self::Var(v) => MonoTypeSer::Var(*v),
-            Self::Arr(p) => MonoTypeSer::Arr(p),
+            Self::Collection(p) => match p.collection {
+                CollectionType::Array => MonoTypeSer::Arr(&p.arg),
+                CollectionType::Vector => MonoTypeSer::Vector(&p.arg),
+            },
             Self::Dict(p) => MonoTypeSer::Dict(p),
             Self::Record(p) => MonoTypeSer::Record(p),
             Self::Fun(p) => MonoTypeSer::Fun(p),
-            Self::Vector(p) => MonoTypeSer::Vector(p),
         }
         .serialize(serializer)
     }
+}
+
+#[derive(Debug, Clone, PartialEq)]
+#[allow(missing_docs)]
+pub struct Collection {
+    pub collection: CollectionType,
+    pub arg: MonoType,
+}
+
+impl fmt::Display for Collection {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self.collection {
+            CollectionType::Array => {
+                write!(f, "[{}]", self.arg)
+            }
+            CollectionType::Vector => {
+                write!(f, "v[{}]", self.arg)
+            }
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+#[allow(missing_docs)]
+pub enum CollectionType {
+    Array,
+    Vector,
 }
 
 /// An ordered map of string identifiers to monotypes.
@@ -690,8 +717,7 @@ impl Substitutable for MonoType {
                     new.apply(sub)
                 }
             }),
-            MonoType::Arr(arr) => arr.apply_ref(sub).map(MonoType::arr),
-            MonoType::Vector(vector) => vector.apply_ref(sub).map(MonoType::vector),
+            MonoType::Collection(app) => app.apply_ref(sub).map(MonoType::app),
             MonoType::Dict(dict) => dict.apply_ref(sub).map(MonoType::dict),
             MonoType::Record(obj) => obj.apply_ref(sub).map(MonoType::record),
             MonoType::Fun(fun) => fun.apply_ref(sub).map(MonoType::fun),
@@ -707,8 +733,7 @@ impl Substitutable for MonoType {
                     vars.insert(i, *tvr);
                 }
             }
-            MonoType::Arr(arr) => arr.free_vars(vars),
-            MonoType::Vector(vector) => vector.free_vars(vars),
+            MonoType::Collection(app) => app.free_vars(vars),
             MonoType::Dict(dict) => dict.free_vars(vars),
             MonoType::Record(obj) => obj.free_vars(vars),
             MonoType::Fun(fun) => fun.free_vars(vars),
@@ -721,8 +746,7 @@ impl MaxTvar for MonoType {
         match self {
             MonoType::Error | MonoType::Builtin(_) => None,
             MonoType::BoundVar(tvr) | MonoType::Var(tvr) => tvr.max_tvar(),
-            MonoType::Arr(arr) => arr.max_tvar(),
-            MonoType::Vector(vector) => vector.max_tvar(),
+            MonoType::Collection(app) => app.max_tvar(),
             MonoType::Dict(dict) => dict.max_tvar(),
             MonoType::Record(obj) => obj.max_tvar(),
             MonoType::Fun(fun) => fun.max_tvar(),
@@ -742,17 +766,12 @@ impl From<BuiltinType> for MonoType {
     }
 }
 
-impl From<Array> for MonoType {
-    fn from(a: Array) -> MonoType {
-        MonoType::Arr(Ptr::new(a))
+impl From<Collection> for MonoType {
+    fn from(a: Collection) -> MonoType {
+        MonoType::Collection(Ptr::new(a))
     }
 }
 
-impl From<Vector> for MonoType {
-    fn from(v: Vector) -> MonoType {
-        MonoType::Vector(Ptr::new(v))
-    }
-}
 impl From<Dictionary> for MonoType {
     fn from(d: Dictionary) -> MonoType {
         MonoType::Dict(Ptr::new(d))
@@ -785,14 +804,25 @@ impl MonoType {
 }
 
 impl MonoType {
+    /// Creates an application type
+    pub fn app(a: impl Into<Ptr<Collection>>) -> Self {
+        Self::Collection(a.into())
+    }
+
     /// Creates an array type
-    pub fn arr(a: impl Into<Ptr<Array>>) -> Self {
-        Self::Arr(a.into())
+    pub fn arr(arg: MonoType) -> Self {
+        Self::app(Collection {
+            collection: CollectionType::Array,
+            arg,
+        })
     }
 
     /// Creates a vector type
-    pub fn vector(v: impl Into<Ptr<Vector>>) -> Self {
-        Self::Vector(v.into())
+    pub fn vector(arg: MonoType) -> Self {
+        Self::app(Collection {
+            collection: CollectionType::Vector,
+            arg,
+        })
     }
 
     /// Creates a dictionary type
@@ -863,8 +893,7 @@ impl MonoType {
                 }
                 None => tv.unify(t, unifier),
             },
-            (MonoType::Arr(t), MonoType::Arr(s)) => t.unify(s, unifier),
-            (MonoType::Vector(t), MonoType::Vector(s)) => t.unify(s, unifier),
+            (MonoType::Collection(t), MonoType::Collection(s)) => t.unify(s, unifier),
             (MonoType::Dict(t), MonoType::Dict(s)) => t.unify(s, unifier),
             (MonoType::Record(t), MonoType::Record(s)) => t.unify(s, unifier),
             (MonoType::Fun(t), MonoType::Fun(s)) => t.unify(s, unifier),
@@ -890,8 +919,7 @@ impl MonoType {
                 tvr.constrain(with, cons);
                 Ok(())
             }
-            MonoType::Arr(arr) => arr.constrain(with, cons),
-            MonoType::Vector(vector) => vector.constrain(with, cons),
+            MonoType::Collection(app) => app.constrain(with, cons),
             MonoType::Dict(dict) => dict.constrain(with, cons),
             MonoType::Record(obj) => obj.constrain(with, cons),
             MonoType::Fun(fun) => fun.constrain(with, cons),
@@ -902,8 +930,7 @@ impl MonoType {
         match self {
             MonoType::Error | MonoType::Builtin(_) | MonoType::BoundVar(_) => false,
             MonoType::Var(tvr) => tv == *tvr,
-            MonoType::Arr(arr) => arr.contains(tv),
-            MonoType::Vector(vector) => vector.contains(tv),
+            MonoType::Collection(app) => app.contains(tv),
             MonoType::Dict(dict) => dict.contains(tv),
             MonoType::Record(row) => row.contains(tv),
             MonoType::Fun(fun) => fun.contains(tv),
@@ -932,11 +959,13 @@ impl MonoType {
 
     fn type_info(&self) -> &str {
         match self {
-            MonoType::Arr(_) => " (array)",
             MonoType::Fun(_) => " (function)",
             MonoType::Dict(_) => " (dictionary)",
             MonoType::Record(_) => " (record)",
-            MonoType::Vector(_) => " (vector)",
+            MonoType::Collection(app) => match app.collection {
+                CollectionType::Array => " (array)",
+                CollectionType::Vector => " (vector)",
+            },
             _ => "",
         }
     }
@@ -1052,79 +1081,51 @@ impl Tvar {
     }
 }
 
-/// A homogeneous list type.
-#[derive(Debug, Display, Clone, PartialEq, Serialize)]
-#[display(fmt = "[{}]", _0)]
-pub struct Array(pub MonoType);
-
-impl Substitutable for Array {
+impl Substitutable for Collection {
     fn apply_ref(&self, sub: &dyn Substituter) -> Option<Self> {
-        self.0.apply_ref(sub).map(Array)
+        self.arg.apply_ref(sub).map(|arg| Collection {
+            collection: self.collection,
+            arg,
+        })
     }
     fn free_vars(&self, vars: &mut Vec<Tvar>) {
-        self.0.free_vars(vars)
+        self.arg.free_vars(vars)
     }
 }
 
-impl MaxTvar for Array {
+impl MaxTvar for Collection {
     fn max_tvar(&self) -> Option<Tvar> {
-        self.0.max_tvar()
+        self.arg.max_tvar()
     }
 }
 
-impl Array {
+impl Collection {
     // self represents the expected type.
     fn unify(&self, with: &Self, unifier: &mut Unifier<'_>) {
-        self.0.unify(&with.0, unifier);
+        if self.collection != with.collection {
+            unifier.errors.push(Error::CannotUnify {
+                exp: MonoType::from(self.clone()),
+                act: MonoType::from(with.clone()),
+            });
+        }
+        self.arg.unify(&with.arg, unifier);
     }
 
     fn constrain(&self, with: Kind, cons: &mut TvarKinds) -> Result<(), Error> {
-        match with {
-            Kind::Equatable => self.0.constrain(with, cons),
-            _ => Err(Error::CannotConstrain {
-                act: MonoType::arr(self.clone()),
-                exp: with,
-            }),
+        match self.collection {
+            CollectionType::Array => match with {
+                Kind::Equatable => self.arg.constrain(with, cons),
+                _ => Err(Error::CannotConstrain {
+                    act: MonoType::app(self.clone()),
+                    exp: with,
+                }),
+            },
+            CollectionType::Vector => self.arg.constrain(with, cons),
         }
     }
 
     fn contains(&self, tv: Tvar) -> bool {
-        self.0.contains(tv)
-    }
-}
-
-/// monotype vector used by vectorization transformation
-#[derive(Debug, Display, Clone, PartialEq, Serialize)]
-#[display(fmt = "v[{}]", _0)]
-pub struct Vector(pub MonoType);
-
-impl Substitutable for Vector {
-    fn apply_ref(&self, sub: &dyn Substituter) -> Option<Self> {
-        self.0.apply_ref(sub).map(Vector)
-    }
-    fn free_vars(&self, vars: &mut Vec<Tvar>) {
-        self.0.free_vars(vars)
-    }
-}
-
-impl MaxTvar for Vector {
-    fn max_tvar(&self) -> Option<Tvar> {
-        self.0.max_tvar()
-    }
-}
-
-impl Vector {
-    // self represents the expected type.
-    fn unify(&self, with: &Self, unifier: &mut Unifier<'_>) {
-        self.0.unify(&with.0, unifier);
-    }
-
-    fn constrain(&self, with: Kind, cons: &mut TvarKinds) -> Result<(), Error> {
-        self.0.constrain(with, cons)
-    }
-
-    fn contains(&self, tv: Tvar) -> bool {
-        self.0.contains(tv)
+        self.arg.contains(tv)
     }
 }
 
@@ -2144,11 +2145,11 @@ mod tests {
     }
     #[test]
     fn display_type_array() {
-        assert_eq!("[int]", MonoType::from(Array(MonoType::INT)).to_string());
+        assert_eq!("[int]", MonoType::arr(MonoType::INT).to_string());
     }
     #[test]
     fn display_type_vector() {
-        assert_eq!("v[int]", MonoType::from(Vector(MonoType::INT)).to_string());
+        assert_eq!("v[int]", MonoType::vector(MonoType::INT).to_string());
     }
     #[test]
     fn display_type_record() {
@@ -2716,14 +2717,14 @@ mod tests {
         ];
 
         for c in allowable_cons_int {
-            let vector_int = MonoType::from(Vector(MonoType::INT));
+            let vector_int = MonoType::vector(MonoType::INT);
             vector_int.constrain(c, &mut TvarKinds::new()).unwrap();
         }
 
         // kind constraints not allowed for Vector(MonoType::STRING)
         let unallowable_cons_string = vec![Kind::Subtractable, Kind::Divisible, Kind::Numeric];
         for c in unallowable_cons_string {
-            let vector_string = MonoType::from(Vector(MonoType::STRING));
+            let vector_string = MonoType::vector(MonoType::STRING);
             let sub = vector_string
                 .constrain(c, &mut TvarKinds::new())
                 .map(|_| ());
@@ -2739,7 +2740,7 @@ mod tests {
         // kind constraints not allowed for Vector(MonoType::TIME)
         let unallowable_cons_time = vec![Kind::Subtractable, Kind::Divisible, Kind::Numeric];
         for c in unallowable_cons_time {
-            let vector_time = MonoType::from(Vector(MonoType::TIME));
+            let vector_time = MonoType::vector(MonoType::TIME);
             let sub = vector_time.constrain(c, &mut TvarKinds::new()).map(|_| ());
             assert_eq!(
                 Err(Error::CannotConstrain {
@@ -2760,7 +2761,7 @@ mod tests {
         ];
 
         for c in allowable_cons_time {
-            let vector_time = MonoType::from(Vector(MonoType::TIME));
+            let vector_time = MonoType::vector(MonoType::TIME);
             vector_time.constrain(c, &mut TvarKinds::new()).unwrap();
         }
     }

@@ -125,7 +125,7 @@ func substituteTypes(subst *semantic.Substitution, inferredType, actualType sema
 			return errors.Newf(codes.FailedPrecondition, "type conflict: %s != %s", inferredType, actualType)
 		}
 		return nil
-	case semantic.Arr:
+	case semantic.Collection:
 		lt, err := inferredType.ElemType()
 		if err != nil {
 			return err
@@ -258,16 +258,6 @@ func substituteTypes(subst *semantic.Substitution, inferredType, actualType sema
 			}
 		}
 		return nil
-	case semantic.Vec:
-		lt, err := inferredType.ElemType()
-		if err != nil {
-			return err
-		}
-		rt, err := actualType.ElemType()
-		if err != nil {
-			return err
-		}
-		return substituteTypes(subst, lt, rt)
 	case semantic.Fun:
 		// TODO: https://github.com/influxdata/flux/issues/2587
 		return errors.New(codes.Unimplemented)
@@ -312,12 +302,18 @@ func apply(sub semantic.Substitutor, props []semantic.PropertyType, t semantic.M
 			return t
 		}
 		return ty
-	case semantic.Arr:
+	case semantic.Collection:
+		collection, err := t.CollectionType()
+		if err != nil {
+			return t
+		}
+
 		element, err := t.ElemType()
 		if err != nil {
 			return t
 		}
-		return semantic.NewArrayType(apply(sub, props, element))
+
+		return semantic.NewAppType(collection, apply(sub, props, element))
 	case semantic.Dict:
 		key, err := t.KeyType()
 		if err != nil {
@@ -397,12 +393,6 @@ func apply(sub semantic.Substitutor, props []semantic.PropertyType, t semantic.M
 			return t
 		}
 		return semantic.NewFunctionType(apply(sub, nil, retn), args)
-	case semantic.Vec:
-		element, err := t.ElemType()
-		if err != nil {
-			return t
-		}
-		return semantic.NewVectorType(apply(sub, nil, element))
 	}
 	// If none of the above cases are matched, something has gone
 	// seriously wrong and we should panic.
