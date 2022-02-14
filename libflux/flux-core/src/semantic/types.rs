@@ -1161,7 +1161,7 @@ impl Dictionary {
 /// A record may extend what is referred to as a *record
 /// variable*. A record variable is a type variable that
 /// represents an unknown record type.
-#[derive(Debug, Clone, Serialize)]
+#[derive(Clone, Serialize)]
 #[serde(tag = "type")]
 pub enum Record {
     /// A record that has no properties.
@@ -1173,6 +1173,16 @@ pub enum Record {
         /// `tail` is the record variable.
         tail: MonoType,
     },
+}
+
+impl fmt::Debug for Record {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let (props, tail) = collect_record(self);
+        f.debug_struct("Record")
+            .field("fields", &props.into_iter().collect::<BTreeMap<_, _>>())
+            .field("tail", &tail)
+            .finish()
+    }
 }
 
 impl fmt::Display for Record {
@@ -1192,42 +1202,31 @@ impl fmt::Display for Record {
     }
 }
 
+fn collect_record(mut record: &Record) -> (RefMonoTypeVecMap<'_, Label>, Option<&MonoType>) {
+    let mut a = RefMonoTypeVecMap::new();
+    let t = loop {
+        match record {
+            Record::Empty => break None,
+            Record::Extension {
+                head,
+                tail: MonoType::Record(o),
+            } => {
+                a.entry(&head.k).or_insert_with(Vec::new).push(&head.v);
+                record = o;
+            }
+            Record::Extension { head, tail } => {
+                a.entry(&head.k).or_insert_with(Vec::new).push(&head.v);
+                break Some(tail);
+            }
+        }
+    };
+    (a, t)
+}
+
 impl cmp::PartialEq for Record {
-    fn eq(mut self: &Self, mut other: &Self) -> bool {
-        let mut a = RefMonoTypeVecMap::new();
-        let t = loop {
-            match self {
-                Record::Empty => break None,
-                Record::Extension {
-                    head,
-                    tail: MonoType::Record(o),
-                } => {
-                    a.entry(&head.k).or_insert_with(Vec::new).push(&head.v);
-                    self = o;
-                }
-                Record::Extension { head, tail } => {
-                    a.entry(&head.k).or_insert_with(Vec::new).push(&head.v);
-                    break Some(tail);
-                }
-            }
-        };
-        let mut b = RefMonoTypeVecMap::new();
-        let v = loop {
-            match other {
-                Record::Empty => break None,
-                Record::Extension {
-                    head,
-                    tail: MonoType::Record(o),
-                } => {
-                    b.entry(&head.k).or_insert_with(Vec::new).push(&head.v);
-                    other = o;
-                }
-                Record::Extension { head, tail } => {
-                    b.entry(&head.k).or_insert_with(Vec::new).push(&head.v);
-                    break Some(tail);
-                }
-            }
-        };
+    fn eq(&self, other: &Self) -> bool {
+        let (a, t) = collect_record(self);
+        let (b, v) = collect_record(other);
         t == v && a == b
     }
 }
@@ -1494,7 +1493,7 @@ fn unify_in_context<T>(
 
 /// Wrapper around [`Symbol`] that ignores the package in comparisons. Allowing field lookups of
 /// package exported labels to be done with local symbols
-#[derive(Debug, Eq, Clone, Serialize)]
+#[derive(Eq, Clone, Serialize)]
 pub struct Label(Symbol);
 
 impl std::hash::Hash for Label {
@@ -1507,6 +1506,12 @@ impl std::ops::Deref for Label {
     type Target = str;
     fn deref(&self) -> &Self::Target {
         self.0.name()
+    }
+}
+
+impl fmt::Debug for Label {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        f.debug_tuple("Label").field(&self.0.name()).finish()
     }
 }
 
