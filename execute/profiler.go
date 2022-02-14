@@ -267,10 +267,6 @@ func StartSpanFromContext(ctx context.Context, operationName string, label strin
 	}
 	if start.IsZero() {
 		start = time.Now()
-		opts = append(opts, opentracing.StartTime(start))
-	}
-	if flux.IsQueryTracingEnabled(ctx) {
-		span, ctx = opentracing.StartSpanFromContext(ctx, operationName, opts...)
 	}
 
 	if HaveExecutionDependencies(ctx) {
