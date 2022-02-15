@@ -16,6 +16,7 @@ import (
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/ast"
+	"github.com/influxdata/flux/ast/astutil"
 	"github.com/influxdata/flux/ast/testcase"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/dependencies/filesystem"
@@ -55,7 +56,7 @@ func TestCommand(setup TestSetupFunc) *cobra.Command {
 	testCommand.Flags().StringSliceVarP(&flags.paths, "path", "p", nil, "The root level directory for all packages.")
 	testCommand.Flags().StringSliceVar(&flags.testNames, "test", []string{}, "The name of a specific test to run.")
 	testCommand.Flags().StringSliceVar(&flags.skipTestCases, "skip", []string{}, "Comma-separated list of test cases to skip.")
-	testCommand.Flags().CountVarP(&flags.verbosity, "verbose", "v", "verbose (-v, or -vv)")
+	testCommand.Flags().CountVarP(&flags.verbosity, "verbose", "v", "verbose (-v, -vv, or -vvv)")
 	return testCommand
 }
 
@@ -117,6 +118,22 @@ func (t *Test) Run(executor TestExecutor) {
 	t.err = executor.Run(t.ast)
 }
 
+func (t *Test) SourceCode() (string, error) {
+	var sb strings.Builder
+	for _, file := range t.ast.Files {
+		content, err := astutil.Format(file)
+		if err != nil {
+			return "", err
+		}
+		sb.WriteString("// File: ")
+		sb.WriteString(file.Name)
+		sb.WriteRune('\n')
+		sb.WriteString(content)
+		sb.WriteRune('\n')
+	}
+	return sb.String(), nil
+}
+
 // contains checks a slice of strings for a given string.
 func contains(names []string, name string) bool {
 	for _, n := range names {
@@ -176,7 +193,7 @@ func (t *TestRunner) Gather(roots []string, names []string) error {
 		for _, file := range files {
 			q, err := filesystem.ReadFile(ctx, file)
 			if err != nil {
-				return err
+				return errors.Wrapf(err, codes.Invalid, "could not find test file %q", file)
 			}
 			baseAST := parser.ParseSource(string(q))
 			if len(baseAST.Files) > 0 {
@@ -574,7 +591,19 @@ func (t *TestReporter) ReportTestRun(test *Test) {
 		} else {
 			fmt.Print(".")
 		}
+	} else if t.verbosity == 1 {
+		if err := test.Error(); err != nil {
+			fmt.Printf("%s...fail: %s\n", test.Name(), err)
+		} else {
+			fmt.Printf("%s...success\n", test.Name())
+		}
 	} else {
+		source, err := test.SourceCode()
+		if err != nil {
+			fmt.Printf("failed to get source for test %s\n", test.Name())
+		} else {
+			fmt.Printf("Full source for test case %q\n%s", test.Name(), source)
+		}
 		if err := test.Error(); err != nil {
 			fmt.Printf("%s...fail: %s\n", test.Name(), err)
 		} else {
