@@ -504,9 +504,7 @@ impl<'a> Converter<'a> {
                     MonoType::Error
                 }
             },
-            ast::MonoType::Array(arr) => {
-                MonoType::from(types::Array(self.convert_monotype(&arr.element, tvars)))
-            }
+            ast::MonoType::Array(arr) => MonoType::arr(self.convert_monotype(&arr.element, tvars)),
             ast::MonoType::Dict(dict) => {
                 let key = self.convert_monotype(&dict.key, tvars);
                 let val = self.convert_monotype(&dict.val, tvars);

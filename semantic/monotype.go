@@ -34,16 +34,14 @@ func NewMonoType(tbl flatbuffers.Table, t fbsemantic.MonoType) (MonoType, error)
 		tbler = new(fbsemantic.Basic)
 	case fbsemantic.MonoTypeVar:
 		tbler = new(fbsemantic.Var)
-	case fbsemantic.MonoTypeArr:
-		tbler = new(fbsemantic.Arr)
+	case fbsemantic.MonoTypeCollection:
+		tbler = new(fbsemantic.Collection)
 	case fbsemantic.MonoTypeRecord:
 		tbler = new(fbsemantic.Record)
 	case fbsemantic.MonoTypeFun:
 		tbler = new(fbsemantic.Fun)
 	case fbsemantic.MonoTypeDict:
 		tbler = new(fbsemantic.Dict)
-	case fbsemantic.MonoTypeVector:
-		tbler = new(fbsemantic.Vector)
 	default:
 		return MonoType{}, errors.Newf(codes.Internal, "unknown type (%v)", t)
 	}
@@ -86,16 +84,23 @@ func nature(tbl flatbuffers.Table, t fbsemantic.MonoType) Nature {
 		default:
 			return Invalid
 		}
-	case fbsemantic.MonoTypeArr:
-		return Array
+	case fbsemantic.MonoTypeCollection:
+		var app fbsemantic.Collection
+		app.Init(tbl.Bytes, tbl.Pos)
+		switch app.Collection() {
+		case fbsemantic.CollectionTypeArray:
+			return Array
+		case fbsemantic.CollectionTypeVector:
+			return Vector
+		default:
+			return Invalid
+		}
 	case fbsemantic.MonoTypeRecord:
 		return Object
 	case fbsemantic.MonoTypeFun:
 		return Function
 	case fbsemantic.MonoTypeDict:
 		return Dictionary
-	case fbsemantic.MonoTypeVector:
-		return Vector
 	case fbsemantic.MonoTypeNONE,
 		fbsemantic.MonoTypeVar:
 		fallthrough
@@ -108,14 +113,13 @@ func nature(tbl flatbuffers.Table, t fbsemantic.MonoType) Nature {
 type Kind fbsemantic.MonoType
 
 const (
-	Unknown = Kind(fbsemantic.MonoTypeNONE)
-	Basic   = Kind(fbsemantic.MonoTypeBasic)
-	Var     = Kind(fbsemantic.MonoTypeVar)
-	Arr     = Kind(fbsemantic.MonoTypeArr)
-	Record  = Kind(fbsemantic.MonoTypeRecord)
-	Fun     = Kind(fbsemantic.MonoTypeFun)
-	Dict    = Kind(fbsemantic.MonoTypeDict)
-	Vec     = Kind(fbsemantic.MonoTypeVector)
+	Unknown    = Kind(fbsemantic.MonoTypeNONE)
+	Basic      = Kind(fbsemantic.MonoTypeBasic)
+	Var        = Kind(fbsemantic.MonoTypeVar)
+	Collection = Kind(fbsemantic.MonoTypeCollection)
+	Record     = Kind(fbsemantic.MonoTypeRecord)
+	Fun        = Kind(fbsemantic.MonoTypeFun)
+	Dict       = Kind(fbsemantic.MonoTypeDict)
 )
 
 // Kind returns what kind of monotype the receiver is.
@@ -268,6 +272,14 @@ func (mt MonoType) ReturnType() (MonoType, error) {
 	return NewMonoType(tbl, f.RetnType())
 }
 
+func (mt MonoType) CollectionType() (fbsemantic.CollectionType, error) {
+	c, ok := getCollection(mt.tbl)
+	if !ok {
+		return fbsemantic.CollectionTypeArray, errors.New(codes.Internal, "MonoType is not a collection")
+	}
+	return c.CollectionType(), nil
+}
+
 // ElemType returns the element type if this monotype is an array or vector, and an error otherise
 func (mt MonoType) ElemType() (MonoType, error) {
 	c, ok := getCollection(mt.tbl)
@@ -278,39 +290,30 @@ func (mt MonoType) ElemType() (MonoType, error) {
 }
 
 type collection interface {
+	CollectionType() fbsemantic.CollectionType
 	ElementType() (MonoType, error)
 }
 
-type ArrFB struct {
-	fb *fbsemantic.Arr
+type CollectionFB struct {
+	fb *fbsemantic.Collection
 }
 
-func (a *ArrFB) ElementType() (MonoType, error) {
+func (a *CollectionFB) CollectionType() fbsemantic.CollectionType {
+	return a.fb.Collection()
+}
+
+func (a *CollectionFB) ElementType() (MonoType, error) {
 	var tbl flatbuffers.Table
-	if !a.fb.T(&tbl) {
+	if !a.fb.Arg(&tbl) {
 		return MonoType{}, errors.New(codes.Internal, "missing array type")
 	}
-	return NewMonoType(tbl, a.fb.TType())
-}
-
-type VectorFB struct {
-	fb *fbsemantic.Vector
-}
-
-func (v *VectorFB) ElementType() (MonoType, error) {
-	var tbl flatbuffers.Table
-	if !v.fb.T(&tbl) {
-		return MonoType{}, errors.New(codes.Internal, "missing vector type")
-	}
-	return NewMonoType(tbl, v.fb.TType())
+	return NewMonoType(tbl, a.fb.ArgType())
 }
 
 func getCollection(tbl fbTabler) (collection, bool) {
 	switch tbl := tbl.(type) {
-	case *fbsemantic.Arr:
-		return &ArrFB{fb: tbl}, true
-	case *fbsemantic.Vector:
-		return &VectorFB{fb: tbl}, true
+	case *fbsemantic.Collection:
+		return &CollectionFB{fb: tbl}, true
 	default:
 		return nil, false
 	}
@@ -492,7 +495,7 @@ func (mt MonoType) getCanonicalMapping(counter *uint64, tvm map[uint64]uint64) e
 			return err
 		}
 		updateTVarMap(counter, tvm, tv)
-	case Arr:
+	case Collection:
 		et, err := mt.ElemType()
 		if err != nil {
 			return err
@@ -596,7 +599,7 @@ func (mt MonoType) string(m map[uint64]uint64) string {
 		default:
 			return fmt.Sprintf("t%d", i)
 		}
-	case Arr:
+	case Collection:
 		et, err := mt.ElemType()
 		if err != nil {
 			return "<" + err.Error() + ">"
@@ -677,12 +680,6 @@ func (mt MonoType) string(m map[uint64]uint64) string {
 			return "<" + err.Error() + ">"
 		}
 		return "[" + kt.string(m) + ": " + vt.string(m) + "]"
-	case Vec:
-		et, err := mt.ElemType()
-		if err != nil {
-			return "<" + err.Error() + ">"
-		}
-		return "[" + et.string(m) + "]"
 	default:
 		return "<" + fmt.Sprintf("unknown monotype (%v)", tk) + ">"
 	}
@@ -721,27 +718,21 @@ func NewVarType(i uint64) (MonoType, error) {
 // NewArrayType will construct a new Array MonoType
 // where the inner element for the array is elemType.
 func NewArrayType(elemType MonoType) MonoType {
-	builder := flatbuffers.NewBuilder(32)
-	offset := buildArrayType(builder, elemType)
-	builder.Finish(offset)
-
-	buf := builder.FinishedBytes()
-	arr := fbsemantic.GetRootAsArr(buf, 0)
-	mt, err := NewMonoType(arr.Table(), fbsemantic.MonoTypeArr)
-	if err != nil {
-		panic(err)
-	}
-	return mt
+	return NewAppType(fbsemantic.CollectionTypeArray, elemType)
 }
 
 func NewVectorType(elemType MonoType) MonoType {
+	return NewAppType(fbsemantic.CollectionTypeVector, elemType)
+}
+
+func NewAppType(collection fbsemantic.CollectionType, elemType MonoType) MonoType {
 	builder := flatbuffers.NewBuilder(32)
-	offset := buildVectorType(builder, elemType)
+	offset := buildAppType(builder, collection, elemType)
 	builder.Finish(offset)
 
 	buf := builder.FinishedBytes()
-	arr := fbsemantic.GetRootAsVector(buf, 0)
-	mt, err := NewMonoType(arr.Table(), fbsemantic.MonoTypeVector)
+	arr := fbsemantic.GetRootAsCollection(buf, 0)
+	mt, err := NewMonoType(arr.Table(), fbsemantic.MonoTypeCollection)
 	if err != nil {
 		panic(err)
 	}
@@ -842,12 +833,12 @@ func copyMonoType(builder *flatbuffers.Builder, t MonoType) flatbuffers.UOffsetT
 		var tv fbsemantic.Var
 		tv.Init(table.Bytes, table.Pos)
 		return buildVarType(builder, tv.I())
-	case fbsemantic.MonoTypeArr:
-		var arr fbsemantic.Arr
-		arr.Init(table.Bytes, table.Pos)
+	case fbsemantic.MonoTypeCollection:
+		var app fbsemantic.Collection
+		app.Init(table.Bytes, table.Pos)
 
-		elem := monoTypeFromFunc(arr.T, arr.TType())
-		return buildArrayType(builder, elem)
+		elem := monoTypeFromFunc(app.Arg, app.ArgType())
+		return buildAppType(builder, app.Collection(), elem)
 	case fbsemantic.MonoTypeRecord:
 		var record fbsemantic.Record
 		record.Init(table.Bytes, table.Pos)
@@ -891,12 +882,6 @@ func copyMonoType(builder *flatbuffers.Builder, t MonoType) flatbuffers.UOffsetT
 		key := monoTypeFromFunc(dict.K, dict.KType())
 		value := monoTypeFromFunc(dict.V, dict.VType())
 		return buildDictType(builder, key, value)
-	case fbsemantic.MonoTypeVector:
-		var vector fbsemantic.Vector
-		vector.Init(table.Bytes, table.Pos)
-
-		elem := monoTypeFromFunc(vector.T, vector.TType())
-		return buildVectorType(builder, elem)
 	default:
 		panic(fmt.Sprintf("unknown monotype (%v)", t.mt))
 	}
@@ -933,22 +918,13 @@ func buildVarType(builder *flatbuffers.Builder, i uint64) flatbuffers.UOffsetT {
 	return fbsemantic.VarEnd(builder)
 }
 
-// buildArrayType will construct an arr type in the builder
-// and return the offset for the type.
-func buildArrayType(builder *flatbuffers.Builder, elemType MonoType) flatbuffers.UOffsetT {
+func buildAppType(builder *flatbuffers.Builder, collection fbsemantic.CollectionType, elemType MonoType) flatbuffers.UOffsetT {
 	offset := copyMonoType(builder, elemType)
-	fbsemantic.ArrStart(builder)
-	fbsemantic.ArrAddTType(builder, elemType.mt)
-	fbsemantic.ArrAddT(builder, offset)
-	return fbsemantic.ArrEnd(builder)
-}
-
-func buildVectorType(builder *flatbuffers.Builder, elemType MonoType) flatbuffers.UOffsetT {
-	offset := copyMonoType(builder, elemType)
-	fbsemantic.VectorStart(builder)
-	fbsemantic.VectorAddTType(builder, elemType.mt)
-	fbsemantic.VectorAddT(builder, offset)
-	return fbsemantic.VectorEnd(builder)
+	fbsemantic.CollectionStart(builder)
+	fbsemantic.CollectionAddCollection(builder, collection)
+	fbsemantic.CollectionAddArgType(builder, elemType.mt)
+	fbsemantic.CollectionAddArg(builder, offset)
+	return fbsemantic.CollectionEnd(builder)
 }
 
 // buildFunctionType will construct a fun type in the builder

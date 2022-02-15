@@ -674,8 +674,8 @@ mod tests {
                     let v = self.tv_map.entry(*tv).or_insert_with(|| f.fresh());
                     *t = MonoType::BoundVar(*v);
                 }
-                MonoType::Arr(arr) => {
-                    self.normalize(&mut Ptr::make_mut(arr).0);
+                MonoType::Collection(app) => {
+                    self.normalize(&mut Ptr::make_mut(app).arg);
                 }
                 MonoType::Record(r) => {
                     if let Record::Extension { head, tail } = Ptr::make_mut(r) {
