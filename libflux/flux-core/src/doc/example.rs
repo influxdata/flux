@@ -16,7 +16,7 @@ use crate::{
 /// Executes Flux code producing input and output tables.
 pub trait Executor {
     /// Execute the provided Flux code and return the CSV Flux results.
-    fn execute(&mut self, code: &str) -> Result<String>;
+    fn execute(&self, code: &str) -> Result<String>;
 }
 
 /// A list of test results
@@ -24,10 +24,7 @@ pub type TestResults = Vec<Result<String>>;
 
 /// Evaluates all examples in the documentation perfoming an inplace update of their inputs/outpts
 /// and content.
-pub fn evaluate_package_examples(
-    docs: &mut PackageDoc,
-    executor: &mut impl Executor,
-) -> TestResults {
+pub fn evaluate_package_examples(docs: &mut PackageDoc, executor: &impl Executor) -> TestResults {
     let path = &docs.path;
     let mut results = TestResults::new();
     for example in docs.examples.iter_mut() {
@@ -52,7 +49,7 @@ pub fn evaluate_package_examples(
     results
 }
 
-fn evaluate_doc_examples(doc: &mut Doc, executor: &mut impl Executor) -> TestResults {
+fn evaluate_doc_examples(doc: &mut Doc, executor: &impl Executor) -> TestResults {
     match doc {
         Doc::Package(pkg) => evaluate_package_examples(pkg, executor),
         Doc::Value(v) => v
@@ -72,7 +69,7 @@ fn evaluate_doc_examples(doc: &mut Doc, executor: &mut impl Executor) -> TestRes
     }
 }
 
-fn evaluate_example(example: &mut Example, executor: &mut impl Executor) -> Result<()> {
+fn evaluate_example(example: &mut Example, executor: &impl Executor) -> Result<()> {
     let blocks = preprocess_code_blocks(&example.content)?;
     if blocks.len() > 1 {
         bail!(
@@ -457,7 +454,7 @@ mod tests {
         results: &'a str,
     }
     impl<'a> Executor for MockExecutor<'a> {
-        fn execute(&mut self, code: &str) -> Result<String> {
+        fn execute(&self, code: &str) -> Result<String> {
             self.code.assert_eq(code);
             Ok(self.results.to_string())
         }

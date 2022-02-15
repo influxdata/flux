@@ -498,6 +498,7 @@ dependencies = [
  "pretty",
  "pretty_assertions",
  "pulldown-cmark",
+ "rayon",
  "regex",
  "serde",
  "serde-aux",

@@ -1,4 +1,5 @@
 use std::{
+    collections::BinaryHeap,
     fs::File,
     io::{self, Write},
     path::{Path, PathBuf},
@@ -6,6 +7,7 @@ use std::{
 };
 
 use anyhow::{bail, Context, Result};
+use rayon::prelude::*;
 use structopt::StructOpt;
 
 use fluxcore::{
@@ -157,12 +159,12 @@ fn dump(
         }
     } else {
         // Evaluate examples only if not in short mode as shorten removes them.
-        let mut executor = CLIExecutor {
+        let executor = CLIExecutor {
             path: flux_cmd_path,
         };
         for d in docs.iter_mut() {
             if !exceptions.contains(&d.path.as_str()) {
-                for result in example::evaluate_package_examples(d, &mut executor) {
+                for result in example::evaluate_package_examples(d, &executor) {
                     result?;
                 }
             }
@@ -211,31 +213,93 @@ fn lint(
         pass = false;
     }
     // Evaluate doc examples
-    let mut executor = CLIExecutor {
+    let executor = CLIExecutor {
         path: flux_cmd_path,
     };
 
-    let mut test_count = 0;
-    for d in docs.iter_mut() {
+    let tests = docs.par_iter_mut().enumerate().map(|(i, d)| {
         if !exceptions.contains(&d.path.as_str()) {
-            for result in example::evaluate_package_examples(d, &mut executor) {
-                test_count += 1;
-                match result {
-                    Ok(name) => eprintln!("OK ... {}", name),
-                    Err(e) => {
-                        eprintln!("Error {:?}\n", e);
-                        pass = false;
-                    }
+            (i, example::evaluate_package_examples(d, &executor))
+        } else {
+            (i, Vec::new())
+        }
+    });
+
+    let mut test_count = 0;
+    consume_sequentially(tests, |results| {
+        for result in results {
+            test_count += 1;
+            match result {
+                Ok(name) => eprintln!("OK ... {}", name),
+                Err(e) => {
+                    eprintln!("Error {:?}\n", e);
+                    pass = false;
                 }
             }
         }
-    }
+    });
+
     if pass {
         eprintln!("Finished running {} tests", test_count);
         Ok(())
     } else {
         bail!("docs do not pass lint")
     }
+}
+
+/// Iterates through `iter` in parallel however each item is passed to `consume` in the same order
+/// that they were produced by the iterator as long as the iterator uses `enumerate` to supply
+/// indices. Will deadlock if the indicies passed are not a complete 0..N sequence.
+fn consume_sequentially<T>(
+    iter: impl IndexedParallelIterator<Item = (usize, T)>,
+    mut consume: impl FnMut(T) + Send,
+) where
+    T: Send,
+{
+    let (sender, receiver) = std::sync::mpsc::sync_channel::<Element<T>>(12);
+
+    struct Element<T>(usize, T);
+
+    impl<T> PartialEq for Element<T> {
+        fn eq(&self, other: &Self) -> bool {
+            self.0 == other.0
+        }
+    }
+
+    impl<T> Eq for Element<T> {}
+
+    impl<T> PartialOrd for Element<T> {
+        fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+            other.0.partial_cmp(&self.0)
+        }
+    }
+
+    impl<T> Ord for Element<T> {
+        fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+            other.0.cmp(&self.0)
+        }
+    }
+
+    let mut heap = BinaryHeap::new();
+    let mut current = 0;
+
+    rayon::join(
+        move || {
+            iter.for_each(|(i, t)| {
+                let _ = sender.send(Element(i, t));
+            });
+        },
+        move || {
+            for t in receiver {
+                heap.push(t);
+                while heap.peek().map(|e| e.0) == Some(current) {
+                    current += 1;
+                    let Element(_, t) = heap.pop().unwrap();
+                    consume(t);
+                }
+            }
+        },
+    );
 }
 
 /// Parse documentation for the specified directory.
@@ -268,7 +332,7 @@ struct CLIExecutor<'a> {
 }
 
 impl<'a> example::Executor for CLIExecutor<'a> {
-    fn execute(&mut self, code: &str) -> Result<String> {
+    fn execute(&self, code: &str) -> Result<String> {
         let tmpfile = tempfile::NamedTempFile::new()?;
         write!(tmpfile.reopen()?, "{}", code)?;
 
