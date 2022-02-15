@@ -497,7 +497,7 @@ testcase tagValues {
         schema.tagValues(bucket: "bucket", tag: "host", start: start, stop: stop)
             |> sort()
 
-    testing.diff(want: want, got: got)
+    testing.diff(want: want, got: got) |> yield()
 }
 testcase tagValues_with_predicate {
     want = array.from(rows: [{_value: "cpu0"}, {_value: "cpu1"}])
@@ -512,7 +512,7 @@ testcase tagValues_with_predicate {
         )
             |> sort()
 
-    testing.diff(want: want, got: got)
+    testing.diff(want: want, got: got) |> yield()
 }
 testcase tagValues_empty {
     want =
@@ -532,7 +532,7 @@ testcase tagValues_empty {
         )
             |> sort()
 
-    testing.diff(want: want, got: got)
+    testing.diff(want: want, got: got) |> yield()
 }
 testcase measurementTagValues {
     want = array.from(rows: [{_value: "cpu0"}, {_value: "cpu1"}])
@@ -547,7 +547,7 @@ testcase measurementTagValues {
         )
             |> sort()
 
-    testing.diff(want: want, got: got)
+    testing.diff(want: want, got: got) |> yield()
 }
 testcase tagKeys {
     want =
@@ -566,7 +566,7 @@ testcase tagKeys {
             |> filter(fn: (r) => r._value != "_start" and r._value != "_stop")
             |> sort()
 
-    testing.diff(want: want, got: got)
+    testing.diff(want: want, got: got) |> yield()
 }
 testcase tagKeys_with_predicate {
     want = array.from(rows: [{_value: "_field"}, {_value: "_measurement"}, {_value: "cpu"}, {_value: "host"}])
@@ -576,7 +576,7 @@ testcase tagKeys_with_predicate {
             |> filter(fn: (r) => r._value != "_start" and r._value != "_stop")
             |> sort()
 
-    testing.diff(want: want, got: got)
+    testing.diff(want: want, got: got) |> yield()
 }
 testcase measurementTagKeys {
     want = array.from(rows: [{_value: "_field"}, {_value: "_measurement"}, {_value: "cpu"}, {_value: "host"}])
@@ -586,7 +586,7 @@ testcase measurementTagKeys {
             |> filter(fn: (r) => r._value != "_start" and r._value != "_stop")
             |> sort()
 
-    testing.diff(want: want, got: got)
+    testing.diff(want: want, got: got) |> yield()
 }
 testcase fieldKeys {
     want = array.from(rows: [{_value: "usage_idle"}, {_value: "usage_user"}, {_value: "used_percent"}])
@@ -595,7 +595,7 @@ testcase fieldKeys {
         schema.fieldKeys(bucket: "bucket", start: start, stop: stop)
             |> sort()
 
-    testing.diff(want: want, got: got)
+    testing.diff(want: want, got: got) |> yield()
 }
 
 testcase fieldKeys_with_predicate {
@@ -610,7 +610,7 @@ testcase fieldKeys_with_predicate {
         )
             |> sort()
 
-    testing.diff(want: want, got: got)
+    testing.diff(want: want, got: got) |> yield()
 }
 testcase measurementFieldKeys {
     want = array.from(rows: [{_value: "usage_idle"}, {_value: "usage_user"}])
@@ -619,7 +619,7 @@ testcase measurementFieldKeys {
         schema.measurementFieldKeys(bucket: "bucket", measurement: "cpu", start: start, stop: stop)
             |> sort()
 
-    testing.diff(want: want, got: got)
+    testing.diff(want: want, got: got) |> yield()
 }
 testcase measurements {
     want = array.from(rows: [{_value: "cpu"}, {_value: "swap"}])
@@ -628,5 +628,5 @@ testcase measurements {
         schema.measurements(bucket: "bucket", start: start, stop: stop)
             |> sort()
 
-    testing.diff(want: want, got: got)
+    testing.diff(want: want, got: got) |> yield()
 }

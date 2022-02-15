@@ -245,7 +245,7 @@ var sourceHashes = map[string]string{
 	"stdlib/influxdata/influxdb/schema/influxFieldsAsCols_test.flux":                              "6d97a41cba0c9d1f850f7d96d2992dc4f9b1857b6902b62eec3ea8858c6584e9",
 	"stdlib/influxdata/influxdb/schema/influxRawQuery_test.flux":                                  "18bb812c67cf6a6f7fa57e5f3f185eca74400af4eba5490b36f8c00bd289d31b",
 	"stdlib/influxdata/influxdb/schema/schema.flux":                                               "f867154633c2448ffebde0ba4febc53fe0bea9be8f44432d0c961d56c4da9042",
-	"stdlib/influxdata/influxdb/schema/schema_test.flux":                                          "5d4f55abf11a08a539675c70075420597fc6ff00dbe9106972c8213cda077aa6",
+	"stdlib/influxdata/influxdb/schema/schema_test.flux":                                          "b1e66a39f1544c155f34c073357a1270f9bf8aa52225b144afaa079515cbe2b1",
 	"stdlib/influxdata/influxdb/secrets/secrets.flux":                                             "bb18f4f710630536b7b0d86bff0d51b5b146f896dc8a45f0421d943bf13eab54",
 	"stdlib/influxdata/influxdb/secrets/secrets_test.flux":                                        "32de87692a7ab5ddeb211bdc4e548a710e373ab9cefeb5f99301808d8f77dc5d",
 	"stdlib/influxdata/influxdb/tasks/last_success_duration_no_option_test.flux":                  "e6cbb655dff0ecf1f9790446a18088a3a757eef49da7cfedf1ed5bd018735e0c",
