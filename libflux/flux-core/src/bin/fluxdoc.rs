@@ -162,7 +162,9 @@ fn dump(
         };
         for d in docs.iter_mut() {
             if !exceptions.contains(&d.path.as_str()) {
-                example::evaluate_package_examples(d, &mut executor)?;
+                for result in example::evaluate_package_examples(d, &mut executor) {
+                    result?;
+                }
             }
         }
     }
@@ -212,21 +214,28 @@ fn lint(
     let mut executor = CLIExecutor {
         path: flux_cmd_path,
     };
+
+    let mut test_count = 0;
     for d in docs.iter_mut() {
         if !exceptions.contains(&d.path.as_str()) {
-            match example::evaluate_package_examples(d, &mut executor) {
-                Ok(_) => {}
-                Err(e) => {
-                    println!("Error {:?}\n", e);
-                    pass = false;
+            for result in example::evaluate_package_examples(d, &mut executor) {
+                test_count += 1;
+                match result {
+                    Ok(name) => eprintln!("OK ... {}", name),
+                    Err(e) => {
+                        eprintln!("Error {:?}\n", e);
+                        pass = false;
+                    }
                 }
             }
         }
     }
-    if !pass {
-        bail!("docs do not pass lint");
+    if pass {
+        eprintln!("Finished running {} tests", test_count);
+        Ok(())
+    } else {
+        bail!("docs do not pass lint")
     }
-    Ok(())
 }
 
 /// Parse documentation for the specified directory.

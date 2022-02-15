@@ -19,42 +19,57 @@ pub trait Executor {
     fn execute(&mut self, code: &str) -> Result<String>;
 }
 
+/// A list of test results
+pub type TestResults = Vec<Result<String>>;
+
 /// Evaluates all examples in the documentation perfoming an inplace update of their inputs/outpts
 /// and content.
 pub fn evaluate_package_examples(
     docs: &mut PackageDoc,
     executor: &mut impl Executor,
-) -> Result<()> {
+) -> TestResults {
     let path = &docs.path;
+    let mut results = TestResults::new();
     for example in docs.examples.iter_mut() {
-        evaluate_example(example, executor)
-            .with_context(|| format!("executing example for package {}", path))?;
-        eprintln!("{} ... OK", path);
+        results.push(
+            evaluate_example(example, executor)
+                .with_context(|| format!("executing example for package {}", path))
+                .map(|()| path.to_string()),
+        );
     }
     for (name, doc) in docs.members.iter_mut() {
-        evaluate_doc_examples(doc, executor)
-            .with_context(|| format!("executing example for {}.{}", path, name))?;
-        eprintln!("{}.{} ... OK", path, name);
+        results.extend(
+            evaluate_doc_examples(doc, executor)
+                .into_iter()
+                .map(|result| {
+                    result
+                        .with_context(|| format!("executing example for {}.{}", path, name))
+                        .map(|title| format!("{}.{}.{}", path, name, title))
+                }),
+        );
     }
-    Ok(())
+
+    results
 }
 
-fn evaluate_doc_examples(doc: &mut Doc, executor: &mut impl Executor) -> Result<()> {
+fn evaluate_doc_examples(doc: &mut Doc, executor: &mut impl Executor) -> TestResults {
     match doc {
-        Doc::Package(pkg) => evaluate_package_examples(pkg, executor)?,
-        Doc::Value(v) => {
-            for example in v.examples.iter_mut() {
-                evaluate_example(example, executor)?;
-            }
-        }
-        Doc::Function(f) => {
-            for example in f.examples.iter_mut() {
+        Doc::Package(pkg) => evaluate_package_examples(pkg, executor),
+        Doc::Value(v) => v
+            .examples
+            .iter_mut()
+            .map(|example| evaluate_example(example, executor).map(|()| example.title.clone()))
+            .collect(),
+        Doc::Function(f) => f
+            .examples
+            .iter_mut()
+            .map(|example| {
                 evaluate_example(example, executor)
-                    .with_context(|| format!("executing `{}`", example.title))?;
-            }
-        }
+                    .with_context(|| format!("executing `{}`", example.title))
+                    .map(|()| example.title.clone())
+            })
+            .collect(),
     }
-    Ok(())
 }
 
 fn evaluate_example(example: &mut Example, executor: &mut impl Executor) -> Result<()> {
@@ -496,7 +511,9 @@ array.from(rows: [{_value: "a"}, {_value: "b"}])
 "#,
         };
 
-        evaluate_package_examples(&mut doc, &mut executor).unwrap();
+        for result in evaluate_package_examples(&mut doc, &mut executor) {
+            result.unwrap();
+        }
 
         let example = doc.examples.first().unwrap();
         let input = example.input.as_ref().unwrap().join("\n");
