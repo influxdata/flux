@@ -60,6 +60,7 @@ type toTransformation struct {
 	fn                 *execute.RowMapFn
 	spec               *ToOpSpec
 	implicitTagColumns bool
+	tagColumns         []string
 	writer             influxdb.Writer
 	span               opentracing.Span
 }
@@ -99,6 +100,7 @@ func NewToTransformation(ctx context.Context, id execute.DatasetID, spec *ToProc
 		fn:                 fn,
 		spec:               spec.Spec,
 		implicitTagColumns: spec.Spec.TagColumns == nil,
+		tagColumns:         append([]string(nil), spec.Spec.TagColumns...),
 		writer:             writer,
 		span:               span,
 	}, mem)
@@ -143,18 +145,18 @@ func (t *toTransformation) Process(chunk table.Chunk, d *execute.TransportDatase
 }
 
 func (t *toTransformation) addTagsFromTable(cols []flux.ColMeta, exclude map[string]bool) {
-	if cap(t.spec.TagColumns) < len(cols) {
-		t.spec.TagColumns = make([]string, 0, len(cols))
+	if cap(t.tagColumns) < len(cols) {
+		t.tagColumns = make([]string, 0, len(cols))
 	} else {
-		t.spec.TagColumns = t.spec.TagColumns[:0]
+		t.tagColumns = t.tagColumns[:0]
 	}
 
 	for _, column := range cols {
 		if column.Type == flux.TString && !exclude[column.Label] {
-			t.spec.TagColumns = append(t.spec.TagColumns, column.Label)
+			t.tagColumns = append(t.tagColumns, column.Label)
 		}
 	}
-	sort.Strings(t.spec.TagColumns)
+	sort.Strings(t.tagColumns)
 }
 
 func (t *toTransformation) writeTable(chunk table.Chunk) (err error) {
@@ -164,8 +166,8 @@ func (t *toTransformation) writeTable(chunk table.Chunk) (err error) {
 	columns := chunk.Cols()
 	isTag := make([]bool, len(columns))
 	for i, col := range columns {
-		tagIdx := sort.SearchStrings(spec.TagColumns, col.Label)
-		isTag[i] = tagIdx < len(spec.TagColumns) && spec.TagColumns[tagIdx] == col.Label
+		tagIdx := sort.SearchStrings(t.tagColumns, col.Label)
+		isTag[i] = tagIdx < len(t.tagColumns) && t.tagColumns[tagIdx] == col.Label
 	}
 
 	// do measurement
@@ -204,7 +206,7 @@ func (t *toTransformation) writeTable(chunk table.Chunk) (err error) {
 outer:
 	for i := 0; i < chunk.Len(); i++ {
 		metric := &RowMetric{
-			Tags: make([]*lp.Tag, 0, len(spec.TagColumns)),
+			Tags: make([]*lp.Tag, 0, len(t.tagColumns)),
 		}
 
 		// gather the timestamp, tags and measurement name

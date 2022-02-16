@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/influxdata/flux"
 	influxdb2 "github.com/influxdata/flux/dependencies/influxdb"
 	"github.com/influxdata/flux/execute"
@@ -721,6 +722,8 @@ func TestTo_Process(t *testing.T) {
 				}
 			}
 
+			specCopy := tc.spec.Copy().(*influxdb.ToProcedureSpec)
+
 			executetest.ProcessTestHelper2(
 				t,
 				inTables,
@@ -734,6 +737,15 @@ func TestTo_Process(t *testing.T) {
 					return tr, d
 				},
 			)
+
+			// Check for modifications to the spec, but ignore the FieldFn.
+			// This is a deep structure with unexported types that are subject
+			// to change.
+			if ! cmp.Equal( tc.spec.Spec, specCopy.Spec,
+					cmpopts.IgnoreFields(influxdb.ToOpSpec{}, "FieldFn") ) {
+				t.Errorf("spec was modified during transformation %#v != %#v", tc.spec.Spec, specCopy.Spec )
+			}
+
 			for _, m := range writer.writes {
 				rm := m.(*influxdb.RowMetric)
 				sort.Slice(rm.Fields, func(i, j int) bool {
