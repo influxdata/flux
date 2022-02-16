@@ -1,11 +1,16 @@
 package universe
 
 import (
+	"github.com/apache/arrow/go/arrow/memory"
+
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/array"
 	"github.com/influxdata/flux/arrow"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/internal/arrowutil"
 	"github.com/influxdata/flux/internal/errors"
+	"github.com/influxdata/flux/internal/execute/table"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/runtime"
@@ -127,44 +132,29 @@ func createDifferenceTransformation(id execute.DatasetID, mode execute.Accumulat
 	if !ok {
 		return nil, nil, errors.Newf(codes.Internal, "invalid spec type %T", spec)
 	}
-	cache := execute.NewTableBuilderCache(a.Allocator())
-	d := execute.NewDataset(id, mode, cache)
-	t := NewDifferenceTransformation(d, cache, s)
-	return t, d, nil
+	return NewDifferenceTransformation(s, id, a.Allocator())
 }
 
 type differenceTransformation struct {
-	execute.ExecutionNode
-	d     execute.Dataset
-	cache execute.TableBuilderCache
-
 	nonNegative bool
 	columns     []string
 	keepFirst   bool
 	initialZero bool
 }
 
-func NewDifferenceTransformation(d execute.Dataset, cache execute.TableBuilderCache, spec *DifferenceProcedureSpec) *differenceTransformation {
-	return &differenceTransformation{
-		d:           d,
-		cache:       cache,
+func NewDifferenceTransformation(spec *DifferenceProcedureSpec, id execute.DatasetID, alloc memory.Allocator) (execute.Transformation, execute.Dataset, error) {
+	t := &differenceTransformation{
 		nonNegative: spec.NonNegative,
 		columns:     spec.Columns,
 		keepFirst:   spec.KeepFirst,
 		initialZero: spec.InitialZero,
 	}
+
+	return execute.NewNarrowStateTransformation(id, t, alloc)
 }
 
-func (t *differenceTransformation) RetractTable(id execute.DatasetID, key flux.GroupKey) error {
-	return t.d.RetractTable(key)
-}
+func (t *differenceTransformation) createDifferences(cols []flux.ColMeta) []*difference {
 
-func (t *differenceTransformation) Process(id execute.DatasetID, tbl flux.Table) error {
-	builder, created := t.cache.TableBuilder(tbl.Key())
-	if !created {
-		return errors.Newf(codes.FailedPrecondition, "difference found duplicate table with key: %v", tbl.Key())
-	}
-	cols := tbl.Cols()
 	differences := make([]*difference, len(cols))
 	for j, c := range cols {
 		found := false
@@ -175,9 +165,25 @@ func (t *differenceTransformation) Process(id execute.DatasetID, tbl flux.Table)
 			}
 		}
 		if !found {
-			if _, err := builder.AddCol(c); err != nil {
-				return err
+			continue
+		}
+		differences[j] = newDifference(t.nonNegative, t.keepFirst, t.initialZero)
+	}
+	return differences
+}
+
+func (t *differenceTransformation) createOutputColumns(cols []flux.ColMeta) ([]flux.ColMeta, error) {
+	newCols := make([]flux.ColMeta, len(cols))
+	for j, c := range cols {
+		found := false
+		for _, label := range t.columns {
+			if c.Label == label {
+				found = true
+				break
 			}
+		}
+		if !found {
+			newCols[j] = c
 			continue
 		}
 		var typ flux.ColType
@@ -187,149 +193,164 @@ func (t *differenceTransformation) Process(id execute.DatasetID, tbl flux.Table)
 		case flux.TFloat:
 			typ = flux.TFloat
 		case flux.TTime:
-			return errors.New(codes.FailedPrecondition, "difference does not support time columns. Try the elapsed function")
+			return nil, errors.New(codes.FailedPrecondition, "difference does not support time columns. Try the elapsed function")
 		default:
-			return errors.Newf(codes.Invalid, `difference does not support column "%s" of type "%v"`, c.Label, c.Type)
+			return nil, errors.Newf(codes.Invalid, `difference does not support column "%s" of type "%v"`, c.Label, c.Type)
 		}
-		if _, err := builder.AddCol(flux.ColMeta{
+		newCols[j] = flux.ColMeta{
 			Label: c.Label,
 			Type:  typ,
-		}); err != nil {
-			return err
 		}
-		differences[j] = newDifference(t.nonNegative, t.keepFirst, t.initialZero)
+	}
+	return newCols, nil
+}
+
+type differenceState struct {
+	differences   []*difference
+	firstIdx      int
+	outputColumns []flux.ColMeta
+}
+
+func (t *differenceTransformation) Process(chunk table.Chunk, state interface{}, d *execute.TransportDataset, mem memory.Allocator) (interface{}, bool, error) {
+	var dstate *differenceState
+	if state != nil {
+		dstate = state.(*differenceState)
 	}
 
-	// We need to drop the first row since its difference is undefined
-	firstIdx := 1
-	if t.keepFirst {
-		// The user wants to keep the first row
-		firstIdx = 0
-	}
-	return tbl.Do(func(cr flux.ColReader) error {
-		l := cr.Len()
-		if l == 0 {
-			return nil
+	if dstate == nil {
+		// We need to drop the first row since its difference is undefined
+		firstIdx := 1
+		if t.keepFirst {
+			// The user wants to keep the first row
+			firstIdx = 0
 		}
-		for j, c := range cols {
-			d := differences[j]
+		outputColumns, err := t.createOutputColumns(chunk.Cols())
+		if err != nil {
+			return nil, false, err
+		}
+		dstate = &differenceState{
+			differences:   t.createDifferences(chunk.Cols()),
+			firstIdx:      firstIdx,
+			outputColumns: outputColumns,
+		}
+	}
+
+	buffer := arrow.TableBuffer{
+		GroupKey: chunk.Key(),
+		Columns:  dstate.outputColumns,
+		Values:   make([]array.Interface, len(dstate.outputColumns)),
+	}
+
+	if err := t.processChunk(dstate.differences, dstate.firstIdx, mem, &buffer, chunk); err != nil {
+		return nil, false, err
+	}
+
+	// Now that we skipped the first row, start at 0 for the rest of the batches
+	dstate.firstIdx = 0
+
+	out := table.ChunkFromBuffer(buffer)
+	if err := d.Process(out); err != nil {
+		return nil, false, err
+	}
+
+	return dstate, true, nil
+}
+
+func (t *differenceTransformation) Close() error { return nil }
+
+func (t *differenceTransformation) processChunk(differences []*difference, firstIdx int, mem memory.Allocator, buffer *arrow.TableBuffer, chunk table.Chunk) error {
+
+	l := chunk.Len()
+	for j, c := range chunk.Cols() {
+		d := differences[j]
+		var out array.Interface
+		if l == 0 {
+			out = arrow.Empty(c.Type)
+		} else {
 			switch c.Type {
-			case flux.TBool:
-				s := arrow.BoolSlice(cr.Bools(j), firstIdx, l)
-				if err := builder.AppendBools(j, s); err != nil {
-					s.Release()
-					return err
-				}
-				s.Release()
 			case flux.TInt:
-				values := cr.Ints(j)
-				if d == nil {
-					s := arrow.IntSlice(values, firstIdx, l)
-					if err := builder.AppendInts(j, s); err != nil {
-						s.Release()
-						return err
-					}
-					s.Release()
-					continue
-				}
-				for i := 0; i < l; i++ {
-					v, ok := d.updateInt(values.Value(i), values.IsValid(i))
-					if i < firstIdx {
-						continue
-					}
-					if ok {
-						if err := builder.AppendInt(j, v); err != nil {
-							return err
-						}
-					} else {
-						if err := builder.AppendNil(j); err != nil {
-							return err
-						}
-					}
-				}
+				values := chunk.Ints(j)
+				out = processInts(d, l, values, firstIdx, mem)
 			case flux.TUInt:
-				values := cr.UInts(j)
-				if d == nil {
-					s := arrow.UintSlice(values, firstIdx, l)
-					if err := builder.AppendUInts(j, s); err != nil {
-						s.Release()
-						return err
-					}
-					s.Release()
-					continue
-				}
-				for i := 0; i < l; i++ {
-					v, ok := d.updateUInt(values.Value(i), values.IsValid(i))
-					if i < firstIdx {
-						continue
-					}
-					if ok {
-						if err := builder.AppendInt(j, v); err != nil {
-							return err
-						}
-					} else {
-						if err := builder.AppendNil(j); err != nil {
-							return err
-						}
-					}
-				}
+				values := chunk.Uints(j)
+				out = processUints(d, l, values, firstIdx, mem)
 			case flux.TFloat:
-				values := cr.Floats(j)
-				if d == nil {
-					s := arrow.FloatSlice(values, firstIdx, l)
-					if err := builder.AppendFloats(j, s); err != nil {
-						s.Release()
-						return err
-					}
-					s.Release()
-					continue
-				}
-				for i := 0; i < l; i++ {
-					v, ok := d.updateFloat(values.Value(i), values.IsValid(i))
-					if i < firstIdx {
-						continue
-					}
-					if ok {
-						if err := builder.AppendFloat(j, v); err != nil {
-							return err
-						}
-					} else {
-						if err := builder.AppendNil(j); err != nil {
-							return err
-						}
-					}
-				}
+				values := chunk.Floats(j)
+				out = processFloats(d, l, values, firstIdx, mem)
 			case flux.TString:
-				s := arrow.StringSlice(cr.Strings(j), firstIdx, l)
-				if err := builder.AppendStrings(j, s); err != nil {
-					s.Release()
-					return err
-				}
-				s.Release()
+				out = arrow.StringSlice(chunk.Strings(j), firstIdx, l)
 			case flux.TTime:
-				s := arrow.IntSlice(cr.Times(j), firstIdx, l)
-				if err := builder.AppendTimes(j, s); err != nil {
-					s.Release()
-					return err
-				}
-				s.Release()
+				out = arrow.IntSlice(chunk.Ints(j), firstIdx, l)
+			case flux.TBool:
+				out = arrow.BoolSlice(chunk.Bools(j), firstIdx, l)
 			}
 		}
-
-		// Now that we skipped the first row, start at 0 for the rest of the batches
-		firstIdx = 0
-		return nil
-	})
+		buffer.Values[j] = out
+	}
+	return nil
 }
 
-func (t *differenceTransformation) UpdateWatermark(id execute.DatasetID, mark execute.Time) error {
-	return t.d.UpdateWatermark(mark)
+func processInts(d *difference, l int, values *array.Int, firstIdx int, mem memory.Allocator) *array.Int {
+	if d == nil {
+		return arrow.IntSlice(values, firstIdx, l)
+	}
+
+	b := arrowutil.NewIntBuilder(mem)
+	b.Resize(l)
+	for i := 0; i < l; i++ {
+		v, ok := d.updateInt(values.Value(i), values.IsValid(i))
+		if i < firstIdx {
+			continue
+		}
+		if ok {
+			b.Append(v)
+		} else {
+			b.AppendNull()
+		}
+	}
+	return b.NewIntArray()
 }
-func (t *differenceTransformation) UpdateProcessingTime(id execute.DatasetID, pt execute.Time) error {
-	return t.d.UpdateProcessingTime(pt)
+
+func processUints(d *difference, l int, values *array.Uint, firstIdx int, mem memory.Allocator) array.Interface {
+	if d == nil {
+		return arrow.UintSlice(values, firstIdx, l)
+	}
+
+	b := arrowutil.NewIntBuilder(mem)
+	b.Resize(l)
+	for i := 0; i < l; i++ {
+		v, ok := d.updateUInt(values.Value(i), values.IsValid(i))
+		if i < firstIdx {
+			continue
+		}
+		if ok {
+			b.Append(v)
+		} else {
+			b.AppendNull()
+		}
+	}
+	return b.NewIntArray()
 }
-func (t *differenceTransformation) Finish(id execute.DatasetID, err error) {
-	t.d.Finish(err)
+
+func processFloats(d *difference, l int, values *array.Float, firstIdx int, mem memory.Allocator) *array.Float {
+	if d == nil {
+		return arrow.FloatSlice(values, firstIdx, l)
+	}
+
+	b := arrowutil.NewFloatBuilder(mem)
+	b.Resize(l)
+	for i := 0; i < l; i++ {
+		v, ok := d.updateFloat(values.Value(i), values.IsValid(i))
+		if i < firstIdx {
+			continue
+		}
+		if ok {
+			b.Append(v)
+		} else {
+			b.AppendNull()
+		}
+	}
+	return b.NewFloatArray()
 }
 
 func newDifference(nonNegative, keepFirst, initialZero bool) *difference {
