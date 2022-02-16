@@ -20,4 +20,7 @@ builtin sink : (<-tables: [A]) => [A] where A: Record
 
 builtin getOption : (pkg: string, name: string) => A
 
+// feature returns the value associated with the given feature flag.
+builtin feature : (key: string) => A
+
 option vectorize = false
