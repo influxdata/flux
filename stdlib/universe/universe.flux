@@ -1543,7 +1543,7 @@ builtin limit : (<-tables: [A], n: int, ?offset: int) => [A]
 // Output tables are the result of applying the map function (`fn`) to each
 // record of the input tables. Output records are assigned to new tables based
 // on the group key of the input stream.
-// If output record contains a different value for a group key column, the
+// If the output record contains a different value for a group key column, the
 // record is regrouped into the appropriate table.
 // If the output record drops a group key column, that column is removed from
 // the group key.
@@ -1840,7 +1840,7 @@ builtin quantile : (
 //   `valueColumn` at the row identified by the `rowKey` values and the new
 //   column’s label. If no value is found, the value is set to `null`.
 // - Any column that is not part of the group key or not specified in the
-//   `rowKey`, `columnKey` and `valueColumn` parameters is dropped.
+//   `rowKey`, `columnKey`, and `valueColumn` parameters is dropped.
 //
 // ## Parameters
 // - rowKey: Columns to use to uniquely identify an output row.
