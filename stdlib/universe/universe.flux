@@ -1549,14 +1549,8 @@ builtin limit : (<-tables: [A], n: int, ?offset: int) => [A]
 // the group key.
 //
 // #### Preserve columns
-// By default, map() drops any columns that:
-//
-// - Are not part of the input table’s group key.
-// - Are not explicitly mapped in the `fn` function.
-//
-// This often results in the `_time` column being dropped.
-// To preserve the `_time` column and other columns that do not meet the
-// criteria above, use the `with` operator to extend the `r` record.
+// `map()` drops any columns that are not mapped explictly by column label or
+// implicitly using the `with` operator in the `fn` function.
 // The `with` operator updates a record property if it already exists, creates
 // a new record property if it doesn’t exist, and includes all existing
 // properties in the output record.
@@ -1646,7 +1640,7 @@ builtin max : (<-tables: [A], ?column: string) => [A] where A: Record
 // >     |> mean()
 // ```
 //
-// introduce: 0.7.0
+// introduced: 0.7.0
 // tags: transformations, aggregates
 //
 builtin mean : (<-tables: [A], ?column: string) => [B] where A: Record, B: Record
@@ -1766,7 +1760,7 @@ builtin movingAverage : (<-tables: [{B with _value: A}], n: int) => [{B with _va
 //     - **estimate_tdigest**: Aggregate method that uses a
 //       [t-digest data structure](https://github.com/tdunning/t-digest) to
 //       compute an accurate quantile estimate on large data sources.
-//     - **exact_mean**: Aggregate method that takes the average of the tw
+//     - **exact_mean**: Aggregate method that takes the average of the two
 //       points closest to the quantile value.
 //     - **exact_selector**: Selector method that returns the row with the value
 //       for which at least `q` points are less than.
@@ -1815,7 +1809,7 @@ builtin quantile : (
 //
 // ### Output data
 // The group key of the resulting table is the same as the input tables,
-// excluding columns found in the `columnKey` and `valueColumn `parameters.
+// excluding columns found in the `columnKey` and `valueColumn` parameters.
 // These columns are not part of the resulting output table and are dropped from
 // the group key.
 //
@@ -1895,6 +1889,9 @@ builtin pivot : (<-tables: [A], rowKey: [string], columnKey: [string], valueColu
 //
 // Input data must have a `_time` column of type time.
 // Rows with a null value in the `_time` are filtered.
+// `range()` adds a `_start` column with the value of `start` and a `_stop`
+// column with the value of `stop`.
+// `_start` and `_stop` columns are added to the group key.
 // Each input table’s group key value is modified to fit within the time bounds.
 // Tables with all rows outside the time bounds are filtered entirely.
 //
