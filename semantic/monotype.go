@@ -618,7 +618,20 @@ func (mt MonoType) string(m map[uint64]uint64) string {
 		if err != nil {
 			return "<" + err.Error() + ">"
 		}
-		return "[" + et.string(m) + "]"
+
+		ct, err := mt.CollectionType()
+		if err != nil {
+			return "<" + err.Error() + ">"
+		}
+
+		switch ct {
+		case fbsemantic.CollectionTypeStream:
+			return "stream[" + et.string(m) + "]"
+		case fbsemantic.CollectionTypeVector:
+			return "v[" + et.string(m) + "]"
+		default:
+			return "[" + et.string(m) + "]"
+		}
 	case Record:
 		var sb strings.Builder
 		sb.WriteString("{")
