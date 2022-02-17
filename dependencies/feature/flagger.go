@@ -33,3 +33,10 @@ func Flags() []Flag {
 func ByKey(k string) (Flag, bool) {
 	return feature.ByKey(k)
 }
+
+type Metrics = feature.Metrics
+
+// SetMetrics sets the metric store for feature flags.
+func SetMetrics(m Metrics) {
+	feature.SetMetrics(m)
+}

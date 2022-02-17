@@ -73,6 +73,10 @@ func (f Base) value(ctx context.Context) interface{} {
 	return flagger.FlagValue(ctx, f)
 }
 
+func (f Base) inc(v interface{}) {
+	metrics.Inc(f.key, v)
+}
+
 // StringFlag implements Flag for string values.
 type StringFlag struct {
 	Base
@@ -88,7 +92,8 @@ func MakeStringFlag(name, key, owner string, defaultValue string) StringFlag {
 }
 
 // String value of the flag on the request context.
-func (f StringFlag) String(ctx context.Context) string {
+func (f StringFlag) String(ctx context.Context) (v string) {
+	defer func() { f.inc(v) }()
 	s, ok := f.value(ctx).(string)
 	if !ok {
 		return f.defaultString
@@ -111,7 +116,8 @@ func MakeFloatFlag(name, key, owner string, defaultValue float64) FloatFlag {
 }
 
 // Float value of the flag on the request context.
-func (f FloatFlag) Float(ctx context.Context) float64 {
+func (f FloatFlag) Float(ctx context.Context) (v float64) {
+	defer func() { f.inc(v) }()
 	v, ok := f.value(ctx).(float64)
 	if !ok {
 		return f.defaultFloat
@@ -134,7 +140,8 @@ func MakeIntFlag(name, key, owner string, defaultValue int) IntFlag {
 }
 
 // Int value of the flag on the request context.
-func (f IntFlag) Int(ctx context.Context) int {
+func (f IntFlag) Int(ctx context.Context) (v int) {
+	defer func() { f.inc(v) }()
 	// Ints sometimes get returned as floats.
 	switch i := f.value(ctx).(type) {
 	case float64:
@@ -163,7 +170,8 @@ func MakeBoolFlag(name, key, owner string, defaultValue bool) BoolFlag {
 }
 
 // Enabled indicates whether flag is true or false on the request context.
-func (f BoolFlag) Enabled(ctx context.Context) bool {
+func (f BoolFlag) Enabled(ctx context.Context) (v bool) {
+	defer func() { f.inc(v) }()
 	i, ok := f.value(ctx).(bool)
 	if !ok {
 		return f.defaultBool
