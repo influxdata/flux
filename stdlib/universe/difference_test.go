@@ -104,8 +104,8 @@ func TestDifference_Process(t *testing.T) {
 					{Label: "_value", Type: flux.TString},
 				},
 				Data: [][]interface{}{
-					{execute.Time(1), int64(20)},
-					{execute.Time(2), int64(10)},
+					{execute.Time(1), "a"},
+					{execute.Time(2), "b"},
 				},
 			}},
 			wantErr: errors.New(codes.Invalid, `difference does not support column "_value" of type "string"`),
