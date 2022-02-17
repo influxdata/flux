@@ -741,9 +741,9 @@ func TestTo_Process(t *testing.T) {
 			// Check for modifications to the spec, but ignore the FieldFn.
 			// This is a deep structure with unexported types that are subject
 			// to change.
-			if ! cmp.Equal( tc.spec.Spec, specCopy.Spec,
-					cmpopts.IgnoreFields(influxdb.ToOpSpec{}, "FieldFn") ) {
-				t.Errorf("spec was modified during transformation %#v != %#v", tc.spec.Spec, specCopy.Spec )
+			if !cmp.Equal(tc.spec.Spec, specCopy.Spec,
+				cmpopts.IgnoreFields(influxdb.ToOpSpec{}, "FieldFn")) {
+				t.Errorf("spec was modified during transformation %#v != %#v", tc.spec.Spec, specCopy.Spec)
 			}
 
 			for _, m := range writer.writes {
