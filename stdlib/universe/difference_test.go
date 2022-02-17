@@ -10,6 +10,7 @@ import (
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/querytest"
 	"github.com/influxdata/flux/stdlib/universe"
+	"github.com/influxdata/flux/values"
 )
 
 func TestDifferenceOperation_Marshaling(t *testing.T) {
@@ -445,6 +446,80 @@ func TestDifference_Process(t *testing.T) {
 					{execute.Time(4), nil, nil, nil},
 				},
 			}},
+		},
+		{
+			name: "with multiple tables",
+			spec: &universe.DifferenceProcedureSpec{
+				Columns: []string{"a", "b"},
+			},
+			data: []flux.Table{&executetest.Table{
+				GroupKey: execute.NewGroupKey(
+					[]flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+					},
+					[]values.Value{values.NewTime(execute.Time(0))},
+				),
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "a", Type: flux.TFloat},
+				},
+				Data: [][]interface{}{
+					{execute.Time(0), 2.0},
+					{execute.Time(1), 6.0},
+				},
+			},
+				&executetest.Table{
+					GroupKey: execute.NewGroupKey(
+						[]flux.ColMeta{
+							{Label: "_time", Type: flux.TTime},
+						},
+						[]values.Value{values.NewTime(execute.Time(2))},
+					),
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "b", Type: flux.TInt},
+					},
+					Data: [][]interface{}{
+						{execute.Time(2), int64(1)},
+						{execute.Time(3), int64(2)},
+					},
+				},
+			},
+			want: []*executetest.Table{{
+				GroupKey: execute.NewGroupKey(
+					[]flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+					},
+					[]values.Value{values.NewTime(execute.Time(0))},
+				),
+				KeyCols:   []string{"_time"},
+				KeyValues: []interface{}{execute.Time(0)},
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "a", Type: flux.TFloat},
+				},
+				Data: [][]interface{}{
+					{execute.Time(1), 4.0},
+				},
+			},
+				{
+					GroupKey: execute.NewGroupKey(
+						[]flux.ColMeta{
+							{Label: "_time", Type: flux.TTime},
+						},
+						[]values.Value{values.NewTime(execute.Time(2))},
+					),
+					KeyCols:   []string{"_time"},
+					KeyValues: []interface{}{execute.Time(2)},
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "b", Type: flux.TInt},
+					},
+					Data: [][]interface{}{
+						{execute.Time(3), int64(1)},
+					},
+				},
+			},
 		},
 		{
 			name: "float with tags and keepFirst",
