@@ -45,3 +45,9 @@
   key: vectorizedMap
   default: false
   contact: Jonathan Sternberg
+
+- name: Narrow Transformation Difference
+  description: Enable the NarrowTransformation implementation of difference
+  key: narrowTransformationDifference
+  default: false
+  contact: Markus Westerlind

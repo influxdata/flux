@@ -25,6 +25,17 @@ func TestDifferenceOperation_Marshaling(t *testing.T) {
 	querytest.OperationMarshalingTestHelper(t, data, op)
 }
 
+func TestDifference_PassThrough(t *testing.T) {
+	executetest.TransformationPassThroughTestHelper(t, func(d execute.Dataset, c execute.TableBuilderCache) execute.Transformation {
+		s := universe.NewDifferenceTransformation(
+			d,
+			c,
+			&universe.DifferenceProcedureSpec{},
+		)
+		return s
+	})
+}
+
 func TestDifference_Process(t *testing.T) {
 	testCases := []struct {
 		name    string
@@ -782,7 +793,7 @@ func TestDifference_Process(t *testing.T) {
 				tc.want,
 				tc.wantErr,
 				func(id execute.DatasetID, alloc *memory.Allocator) (execute.Transformation, execute.Dataset) {
-					tr, d, err := universe.NewDifferenceTransformation(tc.spec, id, alloc)
+					tr, d, err := universe.NewNarrowDifferenceTransformation(tc.spec, id, alloc)
 					if err != nil {
 						t.Fatal(err)
 					}
@@ -1025,7 +1036,7 @@ func TestDifference_Process_With_NonNegative_KeepFirst_InitialZero(t *testing.T)
 				tc.want,
 				tc.wantErr,
 				func(id execute.DatasetID, alloc *memory.Allocator) (execute.Transformation, execute.Dataset) {
-					tr, d, err := universe.NewDifferenceTransformation(tc.spec, id, alloc)
+					tr, d, err := universe.NewNarrowDifferenceTransformation(tc.spec, id, alloc)
 					if err != nil {
 						t.Fatal(err)
 					}
