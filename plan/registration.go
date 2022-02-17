@@ -72,6 +72,7 @@ func HasSideEffect(spec ProcedureSpec) bool {
 
 var ruleNameToLogicalRule = make(map[string]Rule)
 var ruleNameToPhysicalRule = make(map[string]Rule)
+var ruleNameToParallelizeRules = make(map[string]Rule)
 
 // RegisterLogicalRules registers the rule created by createFn with the logical plan.
 func RegisterLogicalRules(rules ...Rule) {
@@ -81,6 +82,11 @@ func RegisterLogicalRules(rules ...Rule) {
 // RegisterPhysicalRules registers the rule created by createFn with the physical plan.
 func RegisterPhysicalRules(rules ...Rule) {
 	registerRule(ruleNameToPhysicalRule, rules...)
+}
+
+// RegisterParallelizationRule registers the rule created by createFn with the physical plan.
+func RegisterParallelizeRules(rules ...Rule) {
+	registerRule(ruleNameToParallelizeRules, rules...)
 }
 
 func registerRule(ruleMap map[string]Rule, rules ...Rule) {
@@ -96,4 +102,5 @@ func registerRule(ruleMap map[string]Rule, rules ...Rule) {
 func ClearRegisteredRules() {
 	ruleNameToLogicalRule = make(map[string]Rule)
 	ruleNameToPhysicalRule = make(map[string]Rule)
+	ruleNameToParallelizeRules = make(map[string]Rule)
 }
