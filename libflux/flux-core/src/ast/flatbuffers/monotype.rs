@@ -14,6 +14,7 @@ use crate::ast::{
     NamedType,
     TvarType,
     ArrayType,
+    StreamType,
     DictType,
     PropertyType,
     RecordType,
@@ -152,6 +153,10 @@ fn build_monotype<'a>(
             let offset = build_array_type(builder, *t);
             (offset.as_union_value(), fb::MonoType::ArrayType)
         }
+        MonoType::Stream(t) => {
+            let offset = build_stream_type(builder, *t);
+            (offset.as_union_value(), fb::MonoType::StreamType)
+        }
         MonoType::Dict(t) => {
             let offset = build_dict_type(builder, *t);
             (offset.as_union_value(), fb::MonoType::DictType)
@@ -203,6 +208,22 @@ fn build_array_type<'a>(
     fb::ArrayType::create(
         builder,
         &fb::ArrayTypeArgs {
+            base_node: Some(base_node),
+            element: Some(offset),
+            element_type: t,
+        },
+    )
+}
+
+fn build_stream_type<'a>(
+    builder: &mut flatbuffers::FlatBufferBuilder<'a>,
+    a: StreamType,
+) -> flatbuffers::WIPOffset<fb::StreamType<'a>> {
+    let base_node = build_base_node(builder, a.base);
+    let (offset, t) = build_monotype(builder, a.element);
+    fb::StreamType::create(
+        builder,
+        &fb::StreamTypeArgs {
             base_node: Some(base_node),
             element: Some(offset),
             element_type: t,

@@ -167,7 +167,7 @@ subDuration = (d, from, location=location) => _subDuration(d, from, location)
 //
 // tags: transformations
 //
-builtin group : (<-tables: [A], mode: string, columns: [string]) => [A] where A: Record
+builtin group : (<-tables: stream[A], mode: string, columns: [string]) => stream[A] where A: Record
 
 // objectKeys returns an array of property keys in a specified record.
 //
@@ -234,7 +234,7 @@ builtin objectKeys : (o: A) => [string] where A: Record
 // introduced: 0.40.0
 // tags: transformations
 //
-builtin set : (<-tables: [A], o: B) => [C] where A: Record, B: Record, C: Record
+builtin set : (<-tables: stream[A], o: B) => stream[C] where A: Record, B: Record, C: Record
 
 // to writes _pivoted_ data to an InfluxDB 2.x or InfluxDB Cloud bucket.
 //
@@ -296,14 +296,14 @@ builtin set : (<-tables: [A], o: B) => [C] where A: Record, B: Record, C: Record
 // tags: outputs
 //
 builtin to : (
-        <-tables: [A],
+        <-tables: stream[A],
         ?bucket: string,
         ?bucketID: string,
         ?org: string,
         ?orgID: string,
         ?host: string,
         ?token: string,
-    ) => [A]
+    ) => stream[A]
     where
     A: Record
 
@@ -387,7 +387,11 @@ builtin to : (
 // introduced: 0.65.0
 // tags: transformations
 //
-builtin join : (left: [A], right: [B], fn: (left: A, right: B) => C) => [C] where A: Record, B: Record, C: Record
+builtin join : (left: stream[A], right: stream[B], fn: (left: A, right: B) => C) => stream[C]
+    where
+    A: Record,
+    B: Record,
+    C: Record
 
 // chain runs two queries in a single Flux script sequentially and outputs the
 // results of the second query.
@@ -428,7 +432,7 @@ builtin join : (left: [A], right: [B], fn: (left: A, right: B) => C) => [C] wher
 //
 // introduced: 0.68.0
 //
-builtin chain : (first: [A], second: [B]) => [B] where A: Record, B: Record
+builtin chain : (first: stream[A], second: stream[B]) => stream[B] where A: Record, B: Record
 
 // alignTime shifts time values in input tables to all start at a common start time.
 //
@@ -479,13 +483,13 @@ alignTime = (tables=<-, alignTo=time(v: 0)) =>
         |> drop(columns: ["timeDiff"])
 
 builtin _window : (
-        <-tables: [{T with _start: time, _stop: time, _time: time}],
+        <-tables: stream[{T with _start: time, _stop: time, _time: time}],
         every: duration,
         period: duration,
         offset: duration,
         location: {zone: string, offset: duration},
         createEmpty: bool,
-    ) => [{T with _start: time, _stop: time, _time: time}]
+    ) => stream[{T with _start: time, _stop: time, _time: time}]
 
 // window groups records based on time.
 //
@@ -624,10 +628,10 @@ window = (
 // tags: transformations, aggregates
 //
 builtin integral : (
-        <-tables: [{T with _time: time, _value: B}],
+        <-tables: stream[{T with _time: time, _value: B}],
         ?unit: duration,
         ?interpolate: string,
-    ) => [{T with _value: B}]
+    ) => stream[{T with _value: B}]
 
 // count returns the number of records in each input table.
 //
@@ -660,7 +664,7 @@ builtin integral : (
 // introduced: 0.107.0
 // tags: transformations,aggregates
 //
-builtin count : (<-tables: [{T with _value: A}]) => [{T with _value: int}]
+builtin count : (<-tables: stream[{T with _value: A}]) => stream[{T with _value: int}]
 
 // histogramQuantile approximates a quantile given a histogram with the
 // cumulative distribution of the dataset.
@@ -724,10 +728,10 @@ builtin count : (<-tables: [{T with _value: A}]) => [{T with _value: int}]
 // tags: transformations,aggregates
 //
 builtin histogramQuantile : (
-        <-tables: [{T with _value: float, le: float}],
+        <-tables: stream[{T with _value: float, le: float}],
         ?quantile: float,
         ?minValue: float,
-    ) => [{T with _value: float}]
+    ) => stream[{T with _value: float}]
 
 // mean computes the mean or average of non-null values in the `_value` column
 // of each input table.
@@ -750,7 +754,7 @@ builtin histogramQuantile : (
 // introduced: 0.107.0
 // tags: transformations,aggregates
 //
-builtin mean : (<-tables: [{T with _value: float}]) => [{T with _value: float}]
+builtin mean : (<-tables: stream[{T with _value: float}]) => stream[{T with _value: float}]
 
 // mode computes the mode or value that occurs most often in the `_value` column
 // in each input table.
@@ -783,7 +787,7 @@ builtin mean : (<-tables: [{T with _value: float}]) => [{T with _value: float}]
 // introduces: 0.107.0
 // tags: transformations,aggregates
 //
-builtin mode : (<-tables: [{T with _value: A}]) => [{T with _value: A}]
+builtin mode : (<-tables: stream[{T with _value: A}]) => stream[{T with _value: A}]
 
 // quantile returns non-null records with values in the `_value` column that
 // fall within the specified quantile or represent the specified quantile.
@@ -855,11 +859,11 @@ builtin mode : (<-tables: [{T with _value: A}]) => [{T with _value: A}]
 // tags: transformations,aggregates,selectors
 //
 builtin quantile : (
-        <-tables: [{T with _value: float}],
+        <-tables: stream[{T with _value: float}],
         q: float,
         ?compression: float,
         ?method: string,
-    ) => [{T with _value: float}]
+    ) => stream[{T with _value: float}]
 
 // skew returns the skew of non-null values in the `_value` column for each
 // input table as a float.
@@ -880,7 +884,7 @@ builtin quantile : (
 // introduced: 0.107.0
 // tags: transformations,aggregates
 //
-builtin skew : (<-tables: [{T with _value: float}]) => [{T with _value: float}]
+builtin skew : (<-tables: stream[{T with _value: float}]) => stream[{T with _value: float}]
 
 // spread returns the difference between the minimum and maximum values in the
 // `_value` column for each input table.
@@ -901,7 +905,7 @@ builtin skew : (<-tables: [{T with _value: float}]) => [{T with _value: float}]
 // introduced: 0.107.0
 // tags: transformations,aggregates
 //
-builtin spread : (<-tables: [{T with _value: A}]) => [{T with _value: A}] where A: Numeric
+builtin spread : (<-tables: stream[{T with _value: A}]) => stream[{T with _value: A}] where A: Numeric
 
 // stddev returns the standard deviation of non-null values in the `_value`
 // column for each input table.
@@ -940,7 +944,7 @@ builtin spread : (<-tables: [{T with _value: A}]) => [{T with _value: A}] where 
 // introduced: 0.107.0
 // tags: transformations,aggregates
 //
-builtin stddev : (<-tables: [{T with _value: float}], ?mode: string) => [{T with _value: float}]
+builtin stddev : (<-tables: stream[{T with _value: float}], ?mode: string) => stream[{T with _value: float}]
 
 // sum returns the sum of non-null values in the `_value` column for each input table.
 //
@@ -960,7 +964,7 @@ builtin stddev : (<-tables: [{T with _value: float}], ?mode: string) => [{T with
 // introduced: 0.107.0
 // tags: transformations,aggregates
 //
-builtin sum : (<-tables: [{T with _value: A}]) => [{T with _value: A}] where A: Numeric
+builtin sum : (<-tables: stream[{T with _value: A}]) => stream[{T with _value: A}] where A: Numeric
 
 // kaufmansAMA calculates the Kaufman's Adaptive Moving Average (KAMA) of input
 // tables using the `_value` column in each table.
@@ -985,7 +989,7 @@ builtin sum : (<-tables: [{T with _value: A}]) => [{T with _value: A}] where A: 
 // introduced: 0.107.0
 // tags: transformations
 //
-builtin kaufmansAMA : (<-tables: [{T with _value: A}], n: int) => [{T with _value: float}] where A: Numeric
+builtin kaufmansAMA : (<-tables: stream[{T with _value: A}], n: int) => stream[{T with _value: float}] where A: Numeric
 
 // distinct returns unique values from the `_value` column.
 //
@@ -1011,7 +1015,7 @@ builtin kaufmansAMA : (<-tables: [{T with _value: A}], n: int) => [{T with _valu
 // introduced: 0.112.0
 // tags: transformations,selectors
 //
-builtin distinct : (<-tables: [{T with _value: A}]) => [{T with _value: A}]
+builtin distinct : (<-tables: stream[{T with _value: A}]) => stream[{T with _value: A}]
 
 // fill replaces all null values in the `_value` column with a non-null value.
 //
@@ -1044,7 +1048,7 @@ builtin distinct : (<-tables: [{T with _value: A}]) => [{T with _value: A}]
 // introduced: 0.112.0
 // tags: transformations
 //
-builtin fill : (<-tables: [{T with _value: A}], ?value: A, ?usePrevious: bool) => [{T with _value: A}]
+builtin fill : (<-tables: stream[{T with _value: A}], ?value: A, ?usePrevious: bool) => stream[{T with _value: A}]
 
 // first returns the first record with a non-null value in the `_value` column
 // for each input table.
@@ -1067,7 +1071,7 @@ builtin fill : (<-tables: [{T with _value: A}], ?value: A, ?usePrevious: bool) =
 // introduced: 0.112.0
 // tags: transformations,selectors
 //
-builtin first : (<-tables: [{T with _value: A}]) => [{T with _value: A}]
+builtin first : (<-tables: stream[{T with _value: A}]) => stream[{T with _value: A}]
 
 // last returns the last record with a non-null value in the `_value` column
 // for each input table.
@@ -1090,7 +1094,7 @@ builtin first : (<-tables: [{T with _value: A}]) => [{T with _value: A}]
 // introduced: 0.112.0
 // tags: transformations,selectors
 //
-builtin last : (<-tables: [{T with _value: A}]) => [{T with _value: A}]
+builtin last : (<-tables: stream[{T with _value: A}]) => stream[{T with _value: A}]
 
 // max returns the record with the highest value in the `_value` column for each
 // input table.
@@ -1113,7 +1117,7 @@ builtin last : (<-tables: [{T with _value: A}]) => [{T with _value: A}]
 // introduced: 0.112.0
 // tags: transformations,selectors
 //
-builtin max : (<-tables: [{T with _value: A}]) => [{T with _value: A}]
+builtin max : (<-tables: stream[{T with _value: A}]) => stream[{T with _value: A}]
 
 // min returns the record with the lowest value in the `_value` column for each
 // input table.
@@ -1136,7 +1140,7 @@ builtin max : (<-tables: [{T with _value: A}]) => [{T with _value: A}]
 // introduced: 0.112.0
 // tags: transformations,selectors
 //
-builtin min : (<-tables: [{T with _value: A}]) => [{T with _value: A}]
+builtin min : (<-tables: stream[{T with _value: A}]) => stream[{T with _value: A}]
 
 // unique returns all records containing unique values in the `_value` column.
 //
@@ -1164,7 +1168,7 @@ builtin min : (<-tables: [{T with _value: A}]) => [{T with _value: A}]
 // introduced: 0.112.0
 // tags: transformations,selectors
 //
-builtin unique : (<-tables: [{T with _value: A}]) => [{T with _value: A}]
+builtin unique : (<-tables: stream[{T with _value: A}]) => stream[{T with _value: A}]
 
 // histogram approximates the cumulative distribution of a dataset by counting
 // data frequencies for a list of bins.
@@ -1220,7 +1224,7 @@ builtin unique : (<-tables: [{T with _value: A}]) => [{T with _value: A}]
 // tags: transformations
 //
 builtin histogram : (
-        <-tables: [{T with _value: float}],
+        <-tables: stream[{T with _value: float}],
         bins: [float],
         ?normalize: bool,
-    ) => [{T with _value: float, le: float}]
+    ) => stream[{T with _value: float, le: float}]

@@ -25,11 +25,10 @@ table TypeAssignment {
 union MonoType {
   Basic,
   Var,
-  Arr,
+  Collection,
   Record,
   Fun,
   Dict,
-  Vector,
 }
 
 table MonoTypeHolder {
@@ -56,17 +55,25 @@ table Basic {
   t:Type;
 }
 
+
+enum CollectionType : ubyte {
+    Array,
+    Vector,
+    Stream
+}
+
 // TODO: required directives have been commented out due to the following issue:
 // https://github.com/google/flatbuffers/issues/5055
 //
 // Uncomment when the fix https://github.com/google/flatbuffers/pull/5056 has
 // been released.
 
-table Arr {
-  t:MonoType /*(required)*/;
+table Collection {
+  collection: CollectionType;
+  arg:MonoType /*(required)*/;
 }
 
-table Vector {
+table Stream {
   t:MonoType /*(required)*/;
 }
 

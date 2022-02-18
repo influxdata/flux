@@ -95,13 +95,13 @@ package events
 // tags: transformations,events
 //
 builtin duration : (
-        <-tables: [A],
+        <-tables: stream[A],
         ?unit: duration,
         ?timeColumn: string,
         ?columnName: string,
         ?stopColumn: string,
         ?stop: time,
-    ) => [B]
+    ) => stream[B]
     where
     A: Record,
     B: Record

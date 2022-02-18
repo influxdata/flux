@@ -447,10 +447,6 @@ func init() {
 					return nil, fmt.Errorf("missing argument %q", "arr")
 				}
 				arr := val.Array()
-				// XXX: remove when array/stream are different types <https://github.com/influxdata/flux/issues/4343>
-				if _, ok := arr.(values.TableObject); ok {
-					return nil, fmt.Errorf("%q cannot be a table stream; expected an array", "arr")
-				}
 				if arr.Len() >= 0 {
 					et, _ := arr.Type().ElemType()
 					if et.Nature() != semantic.String {

@@ -452,7 +452,7 @@ dependencies = [
 
 [[package]]
 name = "flux"
-version = "0.5.1"
+version = "0.154.0"
 dependencies = [
  "anyhow",
  "criterion",
@@ -473,7 +473,7 @@ dependencies = [
 
 [[package]]
 name = "flux-core"
-version = "0.4.0"
+version = "0.154.0"
 dependencies = [
  "anyhow",
  "chrono",
@@ -498,6 +498,7 @@ dependencies = [
  "pretty",
  "pretty_assertions",
  "pulldown-cmark",
+ "rayon",
  "regex",
  "serde",
  "serde-aux",

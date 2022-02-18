@@ -38,7 +38,7 @@ import "contrib/jsternberg/math"
 //     tables |> aggregate.table(columns: {
 //         "min_bottom_degrees": aggregate.min(column: "bottom_degrees"),
 //     ])
-builtin table : (<-tables: [A], columns: C) => [B] where A: Record, B: Record, C: Record
+builtin table : (<-tables: stream[A], columns: C) => stream[B] where A: Record, B: Record, C: Record
 
 // window will aggregate columns and create tables by
 // organizing incoming points into windows.
@@ -65,12 +65,12 @@ builtin table : (<-tables: [A], columns: C) => [B] where A: Record, B: Record, C
 //         The length of the interval. This defaults to the
 //         every duration.
 builtin window : (
-        <-tables: [A],
+        <-tables: stream[A],
         ?time: string,
         every: duration,
         ?period: duration,
         columns: C,
-    ) => [B]
+    ) => stream[B]
     where
     A: Record,
     B: Record,

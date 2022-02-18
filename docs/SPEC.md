@@ -481,6 +481,8 @@ Examples:
     2018-07-01T00:00:00Z + 2y  // 2020-07-01T00:00:00Z
     2018-07-01T00:00:00Z + 5h  // 2018-07-01T05:00:00Z
 
+[IMPL#2026](https://github.com/influxdata/flux/issues/2026)
+
 #### Binary types
 
 A _bytes type_ represents a sequence of byte values.

@@ -6,8 +6,8 @@ use crate::semantic::{
     nodes::Symbol,
     sub::{merge, merge3, merge4, merge_collect},
     types::{
-        Array, Function, Kind, Label, MonoType, MonoTypeVecMap, PolyType, Property, Record,
-        SemanticMap, Tvar, TvarMap,
+        Collection, Dictionary, Function, Kind, Label, MonoType, MonoTypeVecMap, PolyType,
+        Property, Record, SemanticMap, Tvar, TvarMap,
     },
 };
 
@@ -143,12 +143,13 @@ impl Fresh for PolyType {
 impl Fresh for MonoType {
     fn fresh_ref(&self, f: &mut Fresher, sub: &mut TvarMap) -> Option<Self> {
         match self {
+            MonoType::Error | MonoType::Builtin(_) => None,
             MonoType::BoundVar(tvr) => tvr.fresh_ref(f, sub).map(MonoType::BoundVar),
             MonoType::Var(tvr) => tvr.fresh_ref(f, sub).map(MonoType::Var),
-            MonoType::Arr(arr) => arr.fresh_ref(f, sub).map(MonoType::arr),
+            MonoType::Collection(app) => app.fresh_ref(f, sub).map(MonoType::app),
             MonoType::Record(obj) => obj.fresh_ref(f, sub).map(MonoType::record),
             MonoType::Fun(fun) => fun.fresh_ref(f, sub).map(MonoType::fun),
-            _ => None,
+            MonoType::Dict(dict) => dict.fresh_ref(f, sub).map(MonoType::dict),
         }
     }
 }
@@ -162,12 +163,24 @@ impl Fresh for Tvar {
     }
 }
 
-impl Fresh for Array {
-    fn fresh(self, f: &mut Fresher, sub: &mut TvarMap) -> Self {
-        Array(self.0.fresh(f, sub))
-    }
+impl Fresh for Collection {
     fn fresh_ref(&self, f: &mut Fresher, sub: &mut TvarMap) -> Option<Self> {
-        self.0.fresh_ref(f, sub).map(Array)
+        self.arg.fresh_ref(f, sub).map(|arg| Collection {
+            collection: self.collection,
+            arg,
+        })
+    }
+}
+
+impl Fresh for Dictionary {
+    fn fresh_ref(&self, f: &mut Fresher, sub: &mut TvarMap) -> Option<Self> {
+        merge(
+            &self.key,
+            self.key.fresh_ref(f, sub),
+            &self.val,
+            self.val.fresh_ref(f, sub),
+        )
+        .map(|(key, val)| Self { key, val })
     }
 }
 

@@ -16,6 +16,7 @@ import (
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/ast"
+	"github.com/influxdata/flux/ast/astutil"
 	"github.com/influxdata/flux/ast/testcase"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/dependencies/filesystem"
@@ -46,13 +47,16 @@ func TestCommand(setup TestSetupFunc) *cobra.Command {
 		Long:  "Run flux tests",
 		Run: func(cmd *cobra.Command, args []string) {
 			fluxinit.FluxInit()
-			runFluxTests(setup, flags)
+			if err := runFluxTests(setup, flags); err != nil {
+				fmt.Println(err)
+				os.Exit(1)
+			}
 		},
 	}
 	testCommand.Flags().StringSliceVarP(&flags.paths, "path", "p", nil, "The root level directory for all packages.")
 	testCommand.Flags().StringSliceVar(&flags.testNames, "test", []string{}, "The name of a specific test to run.")
 	testCommand.Flags().StringSliceVar(&flags.skipTestCases, "skip", []string{}, "Comma-separated list of test cases to skip.")
-	testCommand.Flags().CountVarP(&flags.verbosity, "verbose", "v", "verbose (-v, or -vv)")
+	testCommand.Flags().CountVarP(&flags.verbosity, "verbose", "v", "verbose (-v, -vv, or -vvv)")
 	return testCommand
 }
 
@@ -62,7 +66,7 @@ func init() {
 }
 
 // runFluxTests invokes the test runner.
-func runFluxTests(setup TestSetupFunc, flags testFlags) {
+func runFluxTests(setup TestSetupFunc, flags testFlags) error {
 	if len(flags.paths) == 0 {
 		flags.paths = []string{"."}
 	}
@@ -70,19 +74,17 @@ func runFluxTests(setup TestSetupFunc, flags testFlags) {
 	reporter := NewTestReporter(flags.verbosity)
 	runner := NewTestRunner(reporter)
 	if err := runner.Gather(flags.paths, flags.testNames); err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+		return err
 	}
 
 	executor, err := setup(context.Background())
 	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+		return err
 	}
 	defer func() { _ = executor.Close() }()
 
 	runner.Run(executor, flags.verbosity, flags.skipTestCases)
-	runner.Finish()
+	return runner.Finish()
 }
 
 // Test wraps the functionality of a single testcase statement,
@@ -114,6 +116,22 @@ func (t *Test) Error() error {
 // Run the test, saving the error to the err property of the struct.
 func (t *Test) Run(executor TestExecutor) {
 	t.err = executor.Run(t.ast)
+}
+
+func (t *Test) SourceCode() (string, error) {
+	var sb strings.Builder
+	for _, file := range t.ast.Files {
+		content, err := astutil.Format(file)
+		if err != nil {
+			return "", err
+		}
+		sb.WriteString("// File: ")
+		sb.WriteString(file.Name)
+		sb.WriteRune('\n')
+		sb.WriteString(content)
+		sb.WriteRune('\n')
+	}
+	return sb.String(), nil
 }
 
 // contains checks a slice of strings for a given string.
@@ -175,7 +193,7 @@ func (t *TestRunner) Gather(roots []string, names []string) error {
 		for _, file := range files {
 			q, err := filesystem.ReadFile(ctx, file)
 			if err != nil {
-				return err
+				return errors.Wrapf(err, codes.Invalid, "could not find test file %q", file)
 			}
 			baseAST := parser.ParseSource(string(q))
 			if len(baseAST.Files) > 0 {
@@ -542,16 +560,16 @@ func (t *TestRunner) Run(executor TestExecutor, verbosity int, skipTestCases []s
 	}
 }
 
-// Finish summarizes the test run, and returns the
-// exit code based on success for failure.
-func (t *TestRunner) Finish() {
+// Finish summarizes the test run, and returns an
+// error in the event of a failure.
+func (t *TestRunner) Finish() error {
 	t.reporter.Summarize(t.tests)
 	for _, test := range t.tests {
-		if test.Error() != nil {
-			os.Exit(1)
+		if err := test.Error(); err != nil {
+			return err
 		}
 	}
-	os.Exit(0)
+	return nil
 }
 
 // TestReporter handles reporting of test results.
@@ -573,7 +591,19 @@ func (t *TestReporter) ReportTestRun(test *Test) {
 		} else {
 			fmt.Print(".")
 		}
+	} else if t.verbosity == 1 {
+		if err := test.Error(); err != nil {
+			fmt.Printf("%s...fail: %s\n", test.Name(), err)
+		} else {
+			fmt.Printf("%s...success\n", test.Name())
+		}
 	} else {
+		source, err := test.SourceCode()
+		if err != nil {
+			fmt.Printf("failed to get source for test %s\n", test.Name())
+		} else {
+			fmt.Printf("Full source for test case %q\n%s", test.Name(), source)
+		}
 		if err := test.Error(); err != nil {
 			fmt.Printf("%s...fail: %s\n", test.Name(), err)
 		} else {

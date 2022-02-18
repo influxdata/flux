@@ -31,7 +31,7 @@ import "strings"
 // >     |> pagerduty.dedupKey()
 // ```
 //
-builtin dedupKey : (<-tables: [A], ?exclude: [string]) => [{A with _pagerdutyDedupKey: string}]
+builtin dedupKey : (<-tables: stream[A], ?exclude: [string]) => stream[{A with _pagerdutyDedupKey: string}]
 
 // defaultURL is the default PagerDuty URL used by functions in the `pagerduty` package.
 option defaultURL = "https://events.pagerduty.com/v2/enqueue"

@@ -69,6 +69,13 @@ func ByKey(k string) (Flag, bool) {
 	v, found := byKey[k]
 	return v, found
 }
+
+type Metrics = feature.Metrics
+
+// SetMetrics sets the metric store for feature flags.
+func SetMetrics(m Metrics) {
+	feature.SetMetrics(m)
+}
 `
 
 type flagConfig struct {

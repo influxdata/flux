@@ -146,7 +146,7 @@ requests.do(method: "GET", url:"http://notarealaddressatall/path/a/b/c", headers
 	if err == nil {
 		t.Fatal("expected failure")
 	}
-	if !strings.Contains(err.Error(), "no such host") {
+	if !strings.Contains(err.Error(), "no such host") && !strings.Contains(err.Error(), "Temporary failure in name resolution") {
 		t.Errorf("unexpected cause of failure, got err: %v", err)
 	}
 }

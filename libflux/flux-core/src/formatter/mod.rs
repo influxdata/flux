@@ -408,6 +408,9 @@ impl<'doc> Formatter<'doc> {
             ast::MonoType::Array(arr) => {
                 docs![arena, "[", self.format_monotype(&arr.element), "]",]
             }
+            ast::MonoType::Stream(stream) => {
+                docs![arena, "stream[", self.format_monotype(&stream.element), "]",]
+            }
             ast::MonoType::Dict(dict) => {
                 docs![
                     arena,

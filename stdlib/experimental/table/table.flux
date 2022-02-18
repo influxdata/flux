@@ -28,4 +28,4 @@ package table
 //
 // tags: transformations,table
 //
-builtin fill : (<-tables: [A]) => [A] where A: Record
+builtin fill : (<-tables: stream[A]) => stream[A] where A: Record

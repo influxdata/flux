@@ -95,7 +95,7 @@ func TestIndexExpr_TableObjectIsError(t *testing.T) {
 		t.Fatal("expected error, got none")
 	}
 
-	if want, got := "cannot index into table stream; expected an array", err.Error(); want != got {
+	if want, got := "error @3:2-3:24: expected [{}] (array) but found stream[{}]", err.Error(); want != got {
 		t.Errorf("wanted error %q, got %q", want, got)
 	}
 }

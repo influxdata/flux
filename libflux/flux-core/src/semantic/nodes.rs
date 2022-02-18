@@ -28,7 +28,7 @@ use crate::{
         infer::{self, Constraint},
         sub::{BindVars, Substitutable, Substituter, Substitution},
         types::{
-            self, Array, Dictionary, Function, Kind, Label, MonoType, MonoTypeMap, PolyType, Tvar,
+            self, Dictionary, Function, Kind, Label, MonoType, MonoTypeMap, PolyType, Tvar,
             TvarKinds,
         },
     },
@@ -870,7 +870,7 @@ impl ArrayExpr {
             }
         }
         let elt = elt.unwrap_or_else(|| MonoType::Var(infer.sub.fresh()));
-        self.typ = MonoType::from(Array(elt));
+        self.typ = MonoType::arr(elt);
         Ok(())
     }
     fn apply(mut self, sub: &Substitution) -> Self {
@@ -1113,7 +1113,7 @@ impl FunctionExpr {
                         Record::Extension { head, tail } => Record::Extension {
                             head: types::Property {
                                 k: head.k.clone(),
-                                v: MonoType::vector(types::Vector(head.v.clone())),
+                                v: MonoType::vector(head.v.clone()),
                             },
                             tail: vectorize_fields(tail),
                         },
@@ -1708,7 +1708,7 @@ impl IndexExpr {
             },
             Constraint::Equal {
                 act: self.array.type_of(),
-                exp: MonoType::from(Array(self.typ.clone())),
+                exp: MonoType::arr(self.typ.clone()),
                 loc: self.array.loc().clone(),
             },
         ]);

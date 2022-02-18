@@ -42,4 +42,4 @@ package socket
 //
 // tags: inputs
 //
-builtin from : (url: string, ?decoder: string) => [A]
+builtin from : (url: string, ?decoder: string) => stream[A]

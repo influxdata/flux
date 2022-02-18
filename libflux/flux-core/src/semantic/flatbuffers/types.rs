@@ -11,9 +11,9 @@ use crate::semantic::{
     bootstrap::Module,
     nodes::Symbol,
     import::Packages,
-    types::{
+    types::{CollectionType,
         Label,
-        Array,
+        Collection,
         Dictionary,
         Function,
         Kind,
@@ -26,7 +26,6 @@ use crate::semantic::{
         Tvar,
         TvarKinds,
         BuiltinType,
-        Vector,
     },
     flatbuffers::serialize_pkg_into,
 };
@@ -181,12 +180,8 @@ fn from_table(table: flatbuffers::Table, t: fb::MonoType) -> Option<MonoType> {
             let var = fb::Var::init_from_table(table);
             Some(MonoType::BoundVar(Tvar::from(var)))
         }
-        fb::MonoType::Arr => {
-            let opt: Option<Array> = fb::Arr::init_from_table(table).into();
-            Some(MonoType::arr(opt?))
-        }
-        fb::MonoType::Vector => {
-            let opt: Option<Vector> = fb::Vector::init_from_table(table).into();
+        fb::MonoType::Collection => {
+            let opt: Option<Collection> = fb::Collection::init_from_table(table).into();
             Some(MonoType::from(opt?))
         }
         fb::MonoType::Fun => {
@@ -226,15 +221,17 @@ impl From<fb::Var<'_>> for Tvar {
     }
 }
 
-impl From<fb::Arr<'_>> for Option<Array> {
-    fn from(t: fb::Arr) -> Option<Array> {
-        Some(Array(from_table(t.t()?, t.t_type())?))
-    }
-}
-
-impl From<fb::Vector<'_>> for Option<Vector> {
-    fn from(t: fb::Vector) -> Option<Vector> {
-        Some(Vector(from_table(t.t()?, t.t_type())?))
+impl From<fb::Collection<'_>> for Option<Collection> {
+    fn from(t: fb::Collection) -> Self {
+        Some(Collection {
+            collection: match t.collection() {
+                fb::CollectionType::Array => CollectionType::Array,
+                fb::CollectionType::Vector => CollectionType::Vector,
+                fb::CollectionType::Stream => CollectionType::Stream,
+                _ => return None,
+            },
+            arg: from_table(t.arg()?, t.arg_type())?,
+        })
     }
 }
 
@@ -486,13 +483,9 @@ pub fn build_type(
             let offset = build_var(builder, *tvr);
             (offset.as_union_value(), fb::MonoType::Var)
         }
-        MonoType::Arr(arr) => {
-            let offset = build_arr(builder, arr);
-            (offset.as_union_value(), fb::MonoType::Arr)
-        }
-        MonoType::Vector(vector) => {
-            let offset = build_vect(builder, vector);
-            (offset.as_union_value(), fb::MonoType::Vector)
+        MonoType::Collection(app) => {
+            let offset = build_app(builder, app.collection, &app.arg);
+            (offset.as_union_value(), fb::MonoType::Collection)
         }
         MonoType::Dict(dict) => {
             let offset = build_dict(builder, dict);
@@ -539,30 +532,22 @@ fn build_var<'a>(
     fb::Var::create(builder, &fb::VarArgs { i: var.0 })
 }
 
-fn build_arr<'a>(
+fn build_app<'a>(
     builder: &mut flatbuffers::FlatBufferBuilder<'a>,
-    mut arr: &Array,
-) -> flatbuffers::WIPOffset<fb::Arr<'a>> {
-    let (off, typ) = build_type(builder, &arr.0);
-    fb::Arr::create(
+    collection: CollectionType,
+    typ: &MonoType,
+) -> flatbuffers::WIPOffset<fb::Collection<'a>> {
+    let (off, typ) = build_type(builder, typ);
+    fb::Collection::create(
         builder,
-        &fb::ArrArgs {
-            t_type: typ,
-            t: Some(off),
-        },
-    )
-}
-
-fn build_vect<'a>(
-    builder: &mut flatbuffers::FlatBufferBuilder<'a>,
-    mut vector: &Vector,
-) -> flatbuffers::WIPOffset<fb::Vector<'a>> {
-    let (off, typ) = build_type(builder, &vector.0);
-    fb::Vector::create(
-        builder,
-        &fb::VectorArgs {
-            t_type: typ,
-            t: Some(off),
+        &fb::CollectionArgs {
+            collection: match collection {
+                CollectionType::Array => fb::CollectionType::Array,
+                CollectionType::Vector => fb::CollectionType::Vector,
+                CollectionType::Stream => fb::CollectionType::Stream,
+            },
+            arg_type: typ,
+            arg: Some(off),
         },
     )
 }
@@ -814,7 +799,7 @@ mod tests {
         let want = PolyType {
             vars: vec![],
             cons: TvarKinds::new(),
-            expr: MonoType::from(Vector(MonoType::INT)),
+            expr: MonoType::vector(MonoType::INT),
         };
 
         let mut builder = flatbuffers::FlatBufferBuilder::new();

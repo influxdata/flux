@@ -23,7 +23,7 @@ func TestJoinStr_ReceiveTableObjectIsError(t *testing.T) {
 		t.Fatal("expected error, got none")
 	}
 
-	if want, got := "error calling function \"joinStr\" @4:2-4:92: \"arr\" cannot be a table stream; expected an array", err.Error(); want != got {
+	if want, got := "error @4:59-4:83: expected [string] (array) but found stream[string] (argument arr)", err.Error(); want != got {
 		t.Errorf("wanted error %q, got %q", want, got)
 	}
 }

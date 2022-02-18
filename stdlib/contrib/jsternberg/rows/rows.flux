@@ -68,4 +68,4 @@ package rows
 //
 // tags: transformations
 //
-builtin map : (<-tables: [A], fn: (r: A) => B) => [B] where A: Record, B: Record
+builtin map : (<-tables: stream[A], fn: (r: A) => B) => stream[B] where A: Record, B: Record

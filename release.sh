@@ -5,6 +5,8 @@ cd $DIR
 
 set -e
 
+./etc/checkprepared.sh
+
 remote=$(git rev-parse "@{u}") # "@{u}" gets the current upstream branch
 local=$(git rev-parse @) # '@' gets the current local branch
 # check if local commit syncs with remote

@@ -236,10 +236,6 @@ func (irtp *Interpreter) evaluateNowOption(ctx context.Context, name string, ini
 }
 
 func convert(rules values.Array) ([]string, error) {
-	// XXX: remove when array/stream are different types <https://github.com/influxdata/flux/issues/4343>
-	if _, ok := rules.(values.TableObject); ok {
-		return nil, errors.New(codes.Invalid, "got table stream; expected an array")
-	}
 	noRules := rules.Len()
 	rs := make([]string, noRules)
 	rules.Range(func(i int, v values.Value) {
@@ -394,10 +390,6 @@ func (itrp *Interpreter) doExpression(ctx context.Context, expr semantic.Express
 			return nil, err
 		}
 		ix := int(idx.Int())
-		// XXX: remove when array/stream are different types <https://github.com/influxdata/flux/issues/4343>
-		if _, ok := arr.(values.TableObject); ok {
-			return nil, errors.New(codes.Invalid, "cannot index into table stream; expected an array")
-		}
 		l := arr.Array().Len()
 		if ix < 0 || ix >= l {
 			return nil, errors.Newf(codes.Invalid, "cannot access element %v of array of length %v", ix, l)
@@ -1271,10 +1263,6 @@ func resolveValue(v values.Value) (semantic.Node, bool, error) {
 		return nil, false, nil
 	case semantic.Array:
 		arr := v.Array()
-		// XXX: remove when array/stream are different types <https://github.com/influxdata/flux/issues/4343>
-		if _, ok := arr.(values.TableObject); ok {
-			return nil, false, errors.New(codes.Invalid, "got a table stream; expected an array")
-		}
 		node := new(semantic.ArrayExpression)
 		node.Elements = make([]semantic.Expression, arr.Len())
 		var (
@@ -1380,10 +1368,6 @@ func ToStringArray(a values.Array) ([]string, error) {
 	if t.Nature() != semantic.String {
 		return nil, errors.Newf(codes.Invalid, "cannot convert array of %v to an array of strings", t)
 	}
-	// XXX: remove when array/stream are different types <https://github.com/influxdata/flux/issues/4343>
-	if _, ok := a.(values.TableObject); ok {
-		return nil, errors.New(codes.Invalid, "got a table stream; expected an array")
-	}
 	strs := make([]string, a.Len())
 	a.Range(func(i int, v values.Value) {
 		strs[i] = v.Str()
@@ -1397,10 +1381,6 @@ func ToFloatArray(a values.Array) ([]float64, error) {
 	}
 	if t.Nature() != semantic.Float {
 		return nil, errors.Newf(codes.Invalid, "cannot convert array of %v to an array of floats", t)
-	}
-	// XXX: remove when array/stream are different types <https://github.com/influxdata/flux/issues/4343>
-	if _, ok := a.(values.TableObject); ok {
-		return nil, errors.New(codes.Invalid, "got a table stream; expected an array")
 	}
 	vs := make([]float64, a.Len())
 	a.Range(func(i int, v values.Value) {
@@ -1577,10 +1557,6 @@ func (a *arguments) GetArrayAllowEmpty(name string, t semantic.Nature) (values.A
 		return nil, ok, err
 	}
 	arr := v.Array()
-	// XXX: remove when array/stream are different types <https://github.com/influxdata/flux/issues/4343>
-	if _, ok := arr.(values.TableObject); ok {
-		return nil, false, errors.New(codes.Invalid, "got a table stream; expected an array")
-	}
 	if arr.Len() > 0 {
 		et, err := arr.Type().ElemType()
 		if err != nil {
@@ -1616,10 +1592,6 @@ func (a *arguments) GetRequiredArrayAllowEmpty(name string, t semantic.Nature) (
 		return nil, err
 	}
 	arr := v.Array()
-	// XXX: remove when array/stream are different types <https://github.com/influxdata/flux/issues/4343>
-	if _, ok := arr.(values.TableObject); ok {
-		return nil, errors.New(codes.Invalid, "got a table stream; expected an array")
-	}
 	if arr.Array().Len() > 0 {
 		et, err := arr.Type().ElemType()
 		if err != nil {

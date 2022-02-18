@@ -19,20 +19,30 @@ type PhysicalPlanner interface {
 // The new plan will be configured to apply any physical rules that have been registered.
 func NewPhysicalPlanner(options ...PhysicalOption) PhysicalPlanner {
 	pp := &physicalPlanner{
-		heuristicPlanner:   newHeuristicPlanner(),
-		defaultMemoryLimit: math.MaxInt64,
+		heuristicPlannerPhysical: newHeuristicPlanner(),
+		heuristicPlannerParallel: newHeuristicPlanner(),
+		defaultMemoryLimit:       math.MaxInt64,
 	}
 
-	rules := make([]Rule, len(ruleNameToPhysicalRule))
+	rulesPhysical := make([]Rule, len(ruleNameToPhysicalRule))
 	i := 0
 	for _, v := range ruleNameToPhysicalRule {
-		rules[i] = v
+		rulesPhysical[i] = v
 		i++
 	}
 
-	pp.addRules(rules...)
+	rulesParallel := make([]Rule, len(ruleNameToParallelizeRules))
+	i = 0
+	for _, v := range ruleNameToParallelizeRules {
+		rulesParallel[i] = v
+		i++
+	}
 
-	pp.addRules(physicalConverterRule{})
+	pp.heuristicPlannerPhysical.addRules(rulesPhysical...)
+
+	pp.heuristicPlannerPhysical.addRules(physicalConverterRule{})
+
+	pp.heuristicPlannerParallel.addRules(rulesParallel...)
 
 	// Options may add or remove rules, so process them after we've
 	// added registered rules.
@@ -44,7 +54,12 @@ func NewPhysicalPlanner(options ...PhysicalOption) PhysicalPlanner {
 }
 
 func (pp *physicalPlanner) Plan(ctx context.Context, spec *Spec) (*Spec, error) {
-	transformedSpec, err := pp.heuristicPlanner.Plan(ctx, spec)
+	intermediateSpec, err := pp.heuristicPlannerPhysical.Plan(ctx, spec)
+	if err != nil {
+		return nil, err
+	}
+
+	transformedSpec, err := pp.heuristicPlannerParallel.Plan(ctx, intermediateSpec)
 	if err != nil {
 		return nil, err
 	}
@@ -120,15 +135,17 @@ func validatePhysicalPlan(plan *Spec) error {
 		if ppn.TriggerSpec == nil {
 			return fmt.Errorf("invalid physical query plan; trigger spec not set on \"%v\"", ppn.id)
 		}
+
 		return nil
 	})
 	return err
 }
 
 type physicalPlanner struct {
-	*heuristicPlanner
-	defaultMemoryLimit int64
-	disableValidation  bool
+	heuristicPlannerPhysical *heuristicPlanner
+	heuristicPlannerParallel *heuristicPlanner
+	defaultMemoryLimit       int64
+	disableValidation        bool
 }
 
 // PhysicalOption is an option to configure the behavior of the physical plan.
@@ -153,17 +170,25 @@ func WithDefaultMemoryLimit(memBytes int64) PhysicalOption {
 // OnlyPhysicalRules produces a physical plan option that forces only a particular set of rules to be applied.
 func OnlyPhysicalRules(rules ...Rule) PhysicalOption {
 	return physicalOption(func(pp *physicalPlanner) {
-		pp.clearRules()
+		pp.heuristicPlannerPhysical.clearRules()
+		pp.heuristicPlannerParallel.clearRules()
 		// Always add physicalConverterRule. It doesn't change the plan but only convert nodes to physical.
 		// This is required for some pieces to work on the physical plan (e.g. SetTriggerSpec).
-		pp.addRules(physicalConverterRule{})
-		pp.addRules(rules...)
+		pp.heuristicPlannerPhysical.addRules(physicalConverterRule{})
+		pp.heuristicPlannerPhysical.addRules(rules...)
+	})
+}
+
+func AddParallelRules(rules ...Rule) PhysicalOption {
+	return physicalOption(func(pp *physicalPlanner) {
+		pp.heuristicPlannerParallel.addRules(rules...)
 	})
 }
 
 func RemovePhysicalRules(rules ...string) PhysicalOption {
 	return physicalOption(func(pp *physicalPlanner) {
-		pp.removeRules(rules...)
+		pp.heuristicPlannerPhysical.removeRules(rules...)
+		pp.heuristicPlannerParallel.removeRules(rules...)
 	})
 }
 
@@ -233,7 +258,7 @@ type PhysicalPlanNode struct {
 	TriggerSpec TriggerSpec
 
 	// The attributes required from inputs to this node
-	RequiredAttrs []PhysicalAttributes
+	RequiredAttrs PhysicalAttributes
 
 	// The attributes provided to consumers of this node's output
 	OutputAttrs PhysicalAttributes

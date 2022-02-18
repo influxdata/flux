@@ -526,6 +526,16 @@ impl<'input> Parser<'input> {
             }
             TokenType::LBrace => self.parse_record_type(),
             TokenType::LParen => self.parse_function_type(),
+            TokenType::Ident if t.lit == "stream" => {
+                let start = self.expect(TokenType::Ident);
+                self.open(TokenType::LBrack, TokenType::RBrack);
+                let ty = self.parse_monotype();
+                let end = self.close(TokenType::RBrack);
+                MonoType::Stream(Box::new(StreamType {
+                    base: self.base_node_from_tokens(&start, &end),
+                    element: ty,
+                }))
+            }
             _ => {
                 if t.lit.len() == 1 {
                     self.parse_tvar()

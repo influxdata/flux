@@ -11,36 +11,33 @@ import (
 type MonoType byte
 
 const (
-	MonoTypeNONE   MonoType = 0
-	MonoTypeBasic  MonoType = 1
-	MonoTypeVar    MonoType = 2
-	MonoTypeArr    MonoType = 3
-	MonoTypeRecord MonoType = 4
-	MonoTypeFun    MonoType = 5
-	MonoTypeDict   MonoType = 6
-	MonoTypeVector MonoType = 7
+	MonoTypeNONE       MonoType = 0
+	MonoTypeBasic      MonoType = 1
+	MonoTypeVar        MonoType = 2
+	MonoTypeCollection MonoType = 3
+	MonoTypeRecord     MonoType = 4
+	MonoTypeFun        MonoType = 5
+	MonoTypeDict       MonoType = 6
 )
 
 var EnumNamesMonoType = map[MonoType]string{
-	MonoTypeNONE:   "NONE",
-	MonoTypeBasic:  "Basic",
-	MonoTypeVar:    "Var",
-	MonoTypeArr:    "Arr",
-	MonoTypeRecord: "Record",
-	MonoTypeFun:    "Fun",
-	MonoTypeDict:   "Dict",
-	MonoTypeVector: "Vector",
+	MonoTypeNONE:       "NONE",
+	MonoTypeBasic:      "Basic",
+	MonoTypeVar:        "Var",
+	MonoTypeCollection: "Collection",
+	MonoTypeRecord:     "Record",
+	MonoTypeFun:        "Fun",
+	MonoTypeDict:       "Dict",
 }
 
 var EnumValuesMonoType = map[string]MonoType{
-	"NONE":   MonoTypeNONE,
-	"Basic":  MonoTypeBasic,
-	"Var":    MonoTypeVar,
-	"Arr":    MonoTypeArr,
-	"Record": MonoTypeRecord,
-	"Fun":    MonoTypeFun,
-	"Dict":   MonoTypeDict,
-	"Vector": MonoTypeVector,
+	"NONE":       MonoTypeNONE,
+	"Basic":      MonoTypeBasic,
+	"Var":        MonoTypeVar,
+	"Collection": MonoTypeCollection,
+	"Record":     MonoTypeRecord,
+	"Fun":        MonoTypeFun,
+	"Dict":       MonoTypeDict,
 }
 
 func (v MonoType) String() string {
@@ -93,6 +90,33 @@ func (v Type) String() string {
 		return s
 	}
 	return "Type(" + strconv.FormatInt(int64(v), 10) + ")"
+}
+
+type CollectionType byte
+
+const (
+	CollectionTypeArray  CollectionType = 0
+	CollectionTypeVector CollectionType = 1
+	CollectionTypeStream CollectionType = 2
+)
+
+var EnumNamesCollectionType = map[CollectionType]string{
+	CollectionTypeArray:  "Array",
+	CollectionTypeVector: "Vector",
+	CollectionTypeStream: "Stream",
+}
+
+var EnumValuesCollectionType = map[string]CollectionType{
+	"Array":  CollectionTypeArray,
+	"Vector": CollectionTypeVector,
+	"Stream": CollectionTypeStream,
+}
+
+func (v CollectionType) String() string {
+	if s, ok := EnumNamesCollectionType[v]; ok {
+		return s
+	}
+	return "CollectionType(" + strconv.FormatInt(int64(v), 10) + ")"
 }
 
 type Kind byte
@@ -857,47 +881,59 @@ func BasicEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
 	return builder.EndObject()
 }
 
-type Arr struct {
+type Collection struct {
 	_tab flatbuffers.Table
 }
 
-func GetRootAsArr(buf []byte, offset flatbuffers.UOffsetT) *Arr {
+func GetRootAsCollection(buf []byte, offset flatbuffers.UOffsetT) *Collection {
 	n := flatbuffers.GetUOffsetT(buf[offset:])
-	x := &Arr{}
+	x := &Collection{}
 	x.Init(buf, n+offset)
 	return x
 }
 
-func GetSizePrefixedRootAsArr(buf []byte, offset flatbuffers.UOffsetT) *Arr {
+func GetSizePrefixedRootAsCollection(buf []byte, offset flatbuffers.UOffsetT) *Collection {
 	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
-	x := &Arr{}
+	x := &Collection{}
 	x.Init(buf, n+offset+flatbuffers.SizeUint32)
 	return x
 }
 
-func (rcv *Arr) Init(buf []byte, i flatbuffers.UOffsetT) {
+func (rcv *Collection) Init(buf []byte, i flatbuffers.UOffsetT) {
 	rcv._tab.Bytes = buf
 	rcv._tab.Pos = i
 }
 
-func (rcv *Arr) Table() flatbuffers.Table {
+func (rcv *Collection) Table() flatbuffers.Table {
 	return rcv._tab
 }
 
-func (rcv *Arr) TType() MonoType {
+func (rcv *Collection) Collection() CollectionType {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(4))
+	if o != 0 {
+		return CollectionType(rcv._tab.GetByte(o + rcv._tab.Pos))
+	}
+	return 0
+}
+
+func (rcv *Collection) MutateCollection(n CollectionType) bool {
+	return rcv._tab.MutateByteSlot(4, byte(n))
+}
+
+func (rcv *Collection) ArgType() MonoType {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
 	if o != 0 {
 		return MonoType(rcv._tab.GetByte(o + rcv._tab.Pos))
 	}
 	return 0
 }
 
-func (rcv *Arr) MutateTType(n MonoType) bool {
-	return rcv._tab.MutateByteSlot(4, byte(n))
+func (rcv *Collection) MutateArgType(n MonoType) bool {
+	return rcv._tab.MutateByteSlot(6, byte(n))
 }
 
-func (rcv *Arr) T(obj *flatbuffers.Table) bool {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
+func (rcv *Collection) Arg(obj *flatbuffers.Table) bool {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(8))
 	if o != 0 {
 		rcv._tab.Union(obj, o)
 		return true
@@ -905,47 +941,50 @@ func (rcv *Arr) T(obj *flatbuffers.Table) bool {
 	return false
 }
 
-func ArrStart(builder *flatbuffers.Builder) {
-	builder.StartObject(2)
+func CollectionStart(builder *flatbuffers.Builder) {
+	builder.StartObject(3)
 }
-func ArrAddTType(builder *flatbuffers.Builder, tType MonoType) {
-	builder.PrependByteSlot(0, byte(tType), 0)
+func CollectionAddCollection(builder *flatbuffers.Builder, collection CollectionType) {
+	builder.PrependByteSlot(0, byte(collection), 0)
 }
-func ArrAddT(builder *flatbuffers.Builder, t flatbuffers.UOffsetT) {
-	builder.PrependUOffsetTSlot(1, flatbuffers.UOffsetT(t), 0)
+func CollectionAddArgType(builder *flatbuffers.Builder, argType MonoType) {
+	builder.PrependByteSlot(1, byte(argType), 0)
 }
-func ArrEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
+func CollectionAddArg(builder *flatbuffers.Builder, arg flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(2, flatbuffers.UOffsetT(arg), 0)
+}
+func CollectionEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
 	return builder.EndObject()
 }
 
-type Vector struct {
+type Stream struct {
 	_tab flatbuffers.Table
 }
 
-func GetRootAsVector(buf []byte, offset flatbuffers.UOffsetT) *Vector {
+func GetRootAsStream(buf []byte, offset flatbuffers.UOffsetT) *Stream {
 	n := flatbuffers.GetUOffsetT(buf[offset:])
-	x := &Vector{}
+	x := &Stream{}
 	x.Init(buf, n+offset)
 	return x
 }
 
-func GetSizePrefixedRootAsVector(buf []byte, offset flatbuffers.UOffsetT) *Vector {
+func GetSizePrefixedRootAsStream(buf []byte, offset flatbuffers.UOffsetT) *Stream {
 	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
-	x := &Vector{}
+	x := &Stream{}
 	x.Init(buf, n+offset+flatbuffers.SizeUint32)
 	return x
 }
 
-func (rcv *Vector) Init(buf []byte, i flatbuffers.UOffsetT) {
+func (rcv *Stream) Init(buf []byte, i flatbuffers.UOffsetT) {
 	rcv._tab.Bytes = buf
 	rcv._tab.Pos = i
 }
 
-func (rcv *Vector) Table() flatbuffers.Table {
+func (rcv *Stream) Table() flatbuffers.Table {
 	return rcv._tab
 }
 
-func (rcv *Vector) TType() MonoType {
+func (rcv *Stream) TType() MonoType {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(4))
 	if o != 0 {
 		return MonoType(rcv._tab.GetByte(o + rcv._tab.Pos))
@@ -953,11 +992,11 @@ func (rcv *Vector) TType() MonoType {
 	return 0
 }
 
-func (rcv *Vector) MutateTType(n MonoType) bool {
+func (rcv *Stream) MutateTType(n MonoType) bool {
 	return rcv._tab.MutateByteSlot(4, byte(n))
 }
 
-func (rcv *Vector) T(obj *flatbuffers.Table) bool {
+func (rcv *Stream) T(obj *flatbuffers.Table) bool {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
 	if o != 0 {
 		rcv._tab.Union(obj, o)
@@ -966,16 +1005,16 @@ func (rcv *Vector) T(obj *flatbuffers.Table) bool {
 	return false
 }
 
-func VectorStart(builder *flatbuffers.Builder) {
+func StreamStart(builder *flatbuffers.Builder) {
 	builder.StartObject(2)
 }
-func VectorAddTType(builder *flatbuffers.Builder, tType MonoType) {
+func StreamAddTType(builder *flatbuffers.Builder, tType MonoType) {
 	builder.PrependByteSlot(0, byte(tType), 0)
 }
-func VectorAddT(builder *flatbuffers.Builder, t flatbuffers.UOffsetT) {
+func StreamAddT(builder *flatbuffers.Builder, t flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(1, flatbuffers.UOffsetT(t), 0)
 }
-func VectorEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
+func StreamEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
 	return builder.EndObject()
 }
 

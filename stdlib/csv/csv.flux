@@ -89,4 +89,4 @@ package csv
 // ```
 //
 // tags: csv,inputs
-builtin from : (?csv: string, ?file: string, ?mode: string) => [A] where A: Record
+builtin from : (?csv: string, ?file: string, ?mode: string) => stream[A] where A: Record

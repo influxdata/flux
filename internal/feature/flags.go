@@ -89,6 +89,18 @@ func VectorizedMap() BoolFlag {
 	return vectorizedMap
 }
 
+var narrowTransformationDifference = feature.MakeBoolFlag(
+	"Narrow Transformation Difference",
+	"narrowTransformationDifference",
+	"Markus Westerlind",
+	false,
+)
+
+// NarrowTransformationDifference - Enable the NarrowTransformation implementation of difference
+func NarrowTransformationDifference() BoolFlag {
+	return narrowTransformationDifference
+}
+
 // Inject will inject the Flagger into the context.
 func Inject(ctx context.Context, flagger Flagger) context.Context {
 	return feature.Inject(ctx, flagger)
@@ -101,6 +113,7 @@ var all = []Flag{
 	optimizeUnionTransformation,
 	mqttPoolDialer,
 	vectorizedMap,
+	narrowTransformationDifference,
 }
 
 var byKey = map[string]Flag{
@@ -110,6 +123,7 @@ var byKey = map[string]Flag{
 	"optimizeUnionTransformation":      optimizeUnionTransformation,
 	"mqttPoolDialer":                   mqttPoolDialer,
 	"vectorizedMap":                    vectorizedMap,
+	"narrowTransformationDifference":   narrowTransformationDifference,
 }
 
 // Flags returns all feature flags.
@@ -121,4 +135,11 @@ func Flags() []Flag {
 func ByKey(k string) (Flag, bool) {
 	v, found := byKey[k]
 	return v, found
+}
+
+type Metrics = feature.Metrics
+
+// SetMetrics sets the metric store for feature flags.
+func SetMetrics(m Metrics) {
+	feature.SetMetrics(m)
 }

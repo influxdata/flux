@@ -24,21 +24,20 @@ pub mod fbsemantic {
         since = "2.0.0",
         note = "Use associated constants instead. This will no longer be generated in 2021."
     )]
-    pub const ENUM_MAX_MONO_TYPE: u8 = 7;
+    pub const ENUM_MAX_MONO_TYPE: u8 = 6;
     #[deprecated(
         since = "2.0.0",
         note = "Use associated constants instead. This will no longer be generated in 2021."
     )]
     #[allow(non_camel_case_types)]
-    pub const ENUM_VALUES_MONO_TYPE: [MonoType; 8] = [
+    pub const ENUM_VALUES_MONO_TYPE: [MonoType; 7] = [
         MonoType::NONE,
         MonoType::Basic,
         MonoType::Var,
-        MonoType::Arr,
+        MonoType::Collection,
         MonoType::Record,
         MonoType::Fun,
         MonoType::Dict,
-        MonoType::Vector,
     ];
 
     #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]
@@ -49,23 +48,21 @@ pub mod fbsemantic {
         pub const NONE: Self = Self(0);
         pub const Basic: Self = Self(1);
         pub const Var: Self = Self(2);
-        pub const Arr: Self = Self(3);
+        pub const Collection: Self = Self(3);
         pub const Record: Self = Self(4);
         pub const Fun: Self = Self(5);
         pub const Dict: Self = Self(6);
-        pub const Vector: Self = Self(7);
 
         pub const ENUM_MIN: u8 = 0;
-        pub const ENUM_MAX: u8 = 7;
+        pub const ENUM_MAX: u8 = 6;
         pub const ENUM_VALUES: &'static [Self] = &[
             Self::NONE,
             Self::Basic,
             Self::Var,
-            Self::Arr,
+            Self::Collection,
             Self::Record,
             Self::Fun,
             Self::Dict,
-            Self::Vector,
         ];
         /// Returns the variant's name or "" if unknown.
         pub fn variant_name(self) -> Option<&'static str> {
@@ -73,11 +70,10 @@ pub mod fbsemantic {
                 Self::NONE => Some("NONE"),
                 Self::Basic => Some("Basic"),
                 Self::Var => Some("Var"),
-                Self::Arr => Some("Arr"),
+                Self::Collection => Some("Collection"),
                 Self::Record => Some("Record"),
                 Self::Fun => Some("Fun"),
                 Self::Dict => Some("Dict"),
-                Self::Vector => Some("Vector"),
                 _ => None,
             }
         }
@@ -263,6 +259,103 @@ pub mod fbsemantic {
     }
 
     impl flatbuffers::SimpleToVerifyInSlice for Type {}
+    #[deprecated(
+        since = "2.0.0",
+        note = "Use associated constants instead. This will no longer be generated in 2021."
+    )]
+    pub const ENUM_MIN_COLLECTION_TYPE: u8 = 0;
+    #[deprecated(
+        since = "2.0.0",
+        note = "Use associated constants instead. This will no longer be generated in 2021."
+    )]
+    pub const ENUM_MAX_COLLECTION_TYPE: u8 = 2;
+    #[deprecated(
+        since = "2.0.0",
+        note = "Use associated constants instead. This will no longer be generated in 2021."
+    )]
+    #[allow(non_camel_case_types)]
+    pub const ENUM_VALUES_COLLECTION_TYPE: [CollectionType; 3] = [
+        CollectionType::Array,
+        CollectionType::Vector,
+        CollectionType::Stream,
+    ];
+
+    #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]
+    #[repr(transparent)]
+    pub struct CollectionType(pub u8);
+    #[allow(non_upper_case_globals)]
+    impl CollectionType {
+        pub const Array: Self = Self(0);
+        pub const Vector: Self = Self(1);
+        pub const Stream: Self = Self(2);
+
+        pub const ENUM_MIN: u8 = 0;
+        pub const ENUM_MAX: u8 = 2;
+        pub const ENUM_VALUES: &'static [Self] = &[Self::Array, Self::Vector, Self::Stream];
+        /// Returns the variant's name or "" if unknown.
+        pub fn variant_name(self) -> Option<&'static str> {
+            match self {
+                Self::Array => Some("Array"),
+                Self::Vector => Some("Vector"),
+                Self::Stream => Some("Stream"),
+                _ => None,
+            }
+        }
+    }
+    impl std::fmt::Debug for CollectionType {
+        fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+            if let Some(name) = self.variant_name() {
+                f.write_str(name)
+            } else {
+                f.write_fmt(format_args!("<UNKNOWN {:?}>", self.0))
+            }
+        }
+    }
+    impl<'a> flatbuffers::Follow<'a> for CollectionType {
+        type Inner = Self;
+        #[inline]
+        fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
+            let b = unsafe { flatbuffers::read_scalar_at::<u8>(buf, loc) };
+            Self(b)
+        }
+    }
+
+    impl flatbuffers::Push for CollectionType {
+        type Output = CollectionType;
+        #[inline]
+        fn push(&self, dst: &mut [u8], _rest: &[u8]) {
+            unsafe {
+                flatbuffers::emplace_scalar::<u8>(dst, self.0);
+            }
+        }
+    }
+
+    impl flatbuffers::EndianScalar for CollectionType {
+        #[inline]
+        fn to_little_endian(self) -> Self {
+            let b = u8::to_le(self.0);
+            Self(b)
+        }
+        #[inline]
+        #[allow(clippy::wrong_self_convention)]
+        fn from_little_endian(self) -> Self {
+            let b = u8::from_le(self.0);
+            Self(b)
+        }
+    }
+
+    impl<'a> flatbuffers::Verifiable for CollectionType {
+        #[inline]
+        fn run_verifier(
+            v: &mut flatbuffers::Verifier,
+            pos: usize,
+        ) -> Result<(), flatbuffers::InvalidFlatbuffer> {
+            use self::flatbuffers::Verifiable;
+            u8::run_verifier(v, pos)
+        }
+    }
+
+    impl flatbuffers::SimpleToVerifyInSlice for CollectionType {}
     #[deprecated(
         since = "2.0.0",
         note = "Use associated constants instead. This will no longer be generated in 2021."
@@ -1834,9 +1927,9 @@ pub mod fbsemantic {
 
         #[inline]
         #[allow(non_snake_case)]
-        pub fn typ_as_arr(&self) -> Option<Arr<'a>> {
-            if self.typ_type() == MonoType::Arr {
-                self.typ().map(Arr::init_from_table)
+        pub fn typ_as_collection(&self) -> Option<Collection<'a>> {
+            if self.typ_type() == MonoType::Collection {
+                self.typ().map(Collection::init_from_table)
             } else {
                 None
             }
@@ -1871,16 +1964,6 @@ pub mod fbsemantic {
                 None
             }
         }
-
-        #[inline]
-        #[allow(non_snake_case)]
-        pub fn typ_as_vector(&self) -> Option<Vector<'a>> {
-            if self.typ_type() == MonoType::Vector {
-                self.typ().map(Vector::init_from_table)
-            } else {
-                None
-            }
-        }
     }
 
     impl flatbuffers::Verifiable for MonoTypeHolder<'_> {
@@ -1908,9 +1991,9 @@ pub mod fbsemantic {
                                 "MonoType::Var",
                                 pos,
                             ),
-                        MonoType::Arr => v
-                            .verify_union_variant::<flatbuffers::ForwardsUOffset<Arr>>(
-                                "MonoType::Arr",
+                        MonoType::Collection => v
+                            .verify_union_variant::<flatbuffers::ForwardsUOffset<Collection>>(
+                                "MonoType::Collection",
                                 pos,
                             ),
                         MonoType::Record => v
@@ -1926,11 +2009,6 @@ pub mod fbsemantic {
                         MonoType::Dict => v
                             .verify_union_variant::<flatbuffers::ForwardsUOffset<Dict>>(
                                 "MonoType::Dict",
-                                pos,
-                            ),
-                        MonoType::Vector => v
-                            .verify_union_variant::<flatbuffers::ForwardsUOffset<Vector>>(
-                                "MonoType::Vector",
                                 pos,
                             ),
                         _ => Ok(()),
@@ -2010,8 +2088,8 @@ pub mod fbsemantic {
                         )
                     }
                 }
-                MonoType::Arr => {
-                    if let Some(x) = self.typ_as_arr() {
+                MonoType::Collection => {
+                    if let Some(x) = self.typ_as_collection() {
                         ds.field("typ", &x)
                     } else {
                         ds.field(
@@ -2042,16 +2120,6 @@ pub mod fbsemantic {
                 }
                 MonoType::Dict => {
                     if let Some(x) = self.typ_as_dict() {
-                        ds.field("typ", &x)
-                    } else {
-                        ds.field(
-                            "typ",
-                            &"InvalidFlatbuffer: Union discriminant does not match value.",
-                        )
-                    }
-                }
-                MonoType::Vector => {
-                    if let Some(x) = self.typ_as_vector() {
                         ds.field("typ", &x)
                     } else {
                         ds.field(
@@ -2256,15 +2324,15 @@ pub mod fbsemantic {
             ds.finish()
         }
     }
-    pub enum ArrOffset {}
+    pub enum CollectionOffset {}
     #[derive(Copy, Clone, PartialEq)]
 
-    pub struct Arr<'a> {
+    pub struct Collection<'a> {
         pub _tab: flatbuffers::Table<'a>,
     }
 
-    impl<'a> flatbuffers::Follow<'a> for Arr<'a> {
-        type Inner = Arr<'a>;
+    impl<'a> flatbuffers::Follow<'a> for Collection<'a> {
+        type Inner = Collection<'a>;
         #[inline]
         fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
             Self {
@@ -2273,43 +2341,54 @@ pub mod fbsemantic {
         }
     }
 
-    impl<'a> Arr<'a> {
+    impl<'a> Collection<'a> {
         #[inline]
         pub fn init_from_table(table: flatbuffers::Table<'a>) -> Self {
-            Arr { _tab: table }
+            Collection { _tab: table }
         }
         #[allow(unused_mut)]
         pub fn create<'bldr: 'args, 'args: 'mut_bldr, 'mut_bldr>(
             _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr>,
-            args: &'args ArrArgs,
-        ) -> flatbuffers::WIPOffset<Arr<'bldr>> {
-            let mut builder = ArrBuilder::new(_fbb);
-            if let Some(x) = args.t {
-                builder.add_t(x);
+            args: &'args CollectionArgs,
+        ) -> flatbuffers::WIPOffset<Collection<'bldr>> {
+            let mut builder = CollectionBuilder::new(_fbb);
+            if let Some(x) = args.arg {
+                builder.add_arg(x);
             }
-            builder.add_t_type(args.t_type);
+            builder.add_arg_type(args.arg_type);
+            builder.add_collection(args.collection);
             builder.finish()
         }
 
-        pub const VT_T_TYPE: flatbuffers::VOffsetT = 4;
-        pub const VT_T: flatbuffers::VOffsetT = 6;
+        pub const VT_COLLECTION: flatbuffers::VOffsetT = 4;
+        pub const VT_ARG_TYPE: flatbuffers::VOffsetT = 6;
+        pub const VT_ARG: flatbuffers::VOffsetT = 8;
 
         #[inline]
-        pub fn t_type(&self) -> MonoType {
+        pub fn collection(&self) -> CollectionType {
             self._tab
-                .get::<MonoType>(Arr::VT_T_TYPE, Some(MonoType::NONE))
+                .get::<CollectionType>(Collection::VT_COLLECTION, Some(CollectionType::Array))
                 .unwrap()
         }
         #[inline]
-        pub fn t(&self) -> Option<flatbuffers::Table<'a>> {
+        pub fn arg_type(&self) -> MonoType {
             self._tab
-                .get::<flatbuffers::ForwardsUOffset<flatbuffers::Table<'a>>>(Arr::VT_T, None)
+                .get::<MonoType>(Collection::VT_ARG_TYPE, Some(MonoType::NONE))
+                .unwrap()
+        }
+        #[inline]
+        pub fn arg(&self) -> Option<flatbuffers::Table<'a>> {
+            self._tab
+                .get::<flatbuffers::ForwardsUOffset<flatbuffers::Table<'a>>>(
+                    Collection::VT_ARG,
+                    None,
+                )
         }
         #[inline]
         #[allow(non_snake_case)]
-        pub fn t_as_basic(&self) -> Option<Basic<'a>> {
-            if self.t_type() == MonoType::Basic {
-                self.t().map(Basic::init_from_table)
+        pub fn arg_as_basic(&self) -> Option<Basic<'a>> {
+            if self.arg_type() == MonoType::Basic {
+                self.arg().map(Basic::init_from_table)
             } else {
                 None
             }
@@ -2317,9 +2396,9 @@ pub mod fbsemantic {
 
         #[inline]
         #[allow(non_snake_case)]
-        pub fn t_as_var(&self) -> Option<Var<'a>> {
-            if self.t_type() == MonoType::Var {
-                self.t().map(Var::init_from_table)
+        pub fn arg_as_var(&self) -> Option<Var<'a>> {
+            if self.arg_type() == MonoType::Var {
+                self.arg().map(Var::init_from_table)
             } else {
                 None
             }
@@ -2327,9 +2406,9 @@ pub mod fbsemantic {
 
         #[inline]
         #[allow(non_snake_case)]
-        pub fn t_as_arr(&self) -> Option<Arr<'a>> {
-            if self.t_type() == MonoType::Arr {
-                self.t().map(Arr::init_from_table)
+        pub fn arg_as_collection(&self) -> Option<Collection<'a>> {
+            if self.arg_type() == MonoType::Collection {
+                self.arg().map(Collection::init_from_table)
             } else {
                 None
             }
@@ -2337,9 +2416,9 @@ pub mod fbsemantic {
 
         #[inline]
         #[allow(non_snake_case)]
-        pub fn t_as_record(&self) -> Option<Record<'a>> {
-            if self.t_type() == MonoType::Record {
-                self.t().map(Record::init_from_table)
+        pub fn arg_as_record(&self) -> Option<Record<'a>> {
+            if self.arg_type() == MonoType::Record {
+                self.arg().map(Record::init_from_table)
             } else {
                 None
             }
@@ -2347,9 +2426,9 @@ pub mod fbsemantic {
 
         #[inline]
         #[allow(non_snake_case)]
-        pub fn t_as_fun(&self) -> Option<Fun<'a>> {
-            if self.t_type() == MonoType::Fun {
-                self.t().map(Fun::init_from_table)
+        pub fn arg_as_fun(&self) -> Option<Fun<'a>> {
+            if self.arg_type() == MonoType::Fun {
+                self.arg().map(Fun::init_from_table)
             } else {
                 None
             }
@@ -2357,26 +2436,16 @@ pub mod fbsemantic {
 
         #[inline]
         #[allow(non_snake_case)]
-        pub fn t_as_dict(&self) -> Option<Dict<'a>> {
-            if self.t_type() == MonoType::Dict {
-                self.t().map(Dict::init_from_table)
-            } else {
-                None
-            }
-        }
-
-        #[inline]
-        #[allow(non_snake_case)]
-        pub fn t_as_vector(&self) -> Option<Vector<'a>> {
-            if self.t_type() == MonoType::Vector {
-                self.t().map(Vector::init_from_table)
+        pub fn arg_as_dict(&self) -> Option<Dict<'a>> {
+            if self.arg_type() == MonoType::Dict {
+                self.arg().map(Dict::init_from_table)
             } else {
                 None
             }
         }
     }
 
-    impl flatbuffers::Verifiable for Arr<'_> {
+    impl flatbuffers::Verifiable for Collection<'_> {
         #[inline]
         fn run_verifier(
             v: &mut flatbuffers::Verifier,
@@ -2384,11 +2453,12 @@ pub mod fbsemantic {
         ) -> Result<(), flatbuffers::InvalidFlatbuffer> {
             use self::flatbuffers::Verifiable;
             v.visit_table(pos)?
+                .visit_field::<CollectionType>(&"collection", Self::VT_COLLECTION, false)?
                 .visit_union::<MonoType, _>(
-                    &"t_type",
-                    Self::VT_T_TYPE,
-                    &"t",
-                    Self::VT_T,
+                    &"arg_type",
+                    Self::VT_ARG_TYPE,
+                    &"arg",
+                    Self::VT_ARG,
                     false,
                     |key, v, pos| match key {
                         MonoType::Basic => v
@@ -2401,9 +2471,9 @@ pub mod fbsemantic {
                                 "MonoType::Var",
                                 pos,
                             ),
-                        MonoType::Arr => v
-                            .verify_union_variant::<flatbuffers::ForwardsUOffset<Arr>>(
-                                "MonoType::Arr",
+                        MonoType::Collection => v
+                            .verify_union_variant::<flatbuffers::ForwardsUOffset<Collection>>(
+                                "MonoType::Collection",
                                 pos,
                             ),
                         MonoType::Record => v
@@ -2421,11 +2491,6 @@ pub mod fbsemantic {
                                 "MonoType::Dict",
                                 pos,
                             ),
-                        MonoType::Vector => v
-                            .verify_union_variant::<flatbuffers::ForwardsUOffset<Vector>>(
-                                "MonoType::Vector",
-                                pos,
-                            ),
                         _ => Ok(()),
                     },
                 )?
@@ -2433,141 +2498,142 @@ pub mod fbsemantic {
             Ok(())
         }
     }
-    pub struct ArrArgs {
-        pub t_type: MonoType,
-        pub t: Option<flatbuffers::WIPOffset<flatbuffers::UnionWIPOffset>>,
+    pub struct CollectionArgs {
+        pub collection: CollectionType,
+        pub arg_type: MonoType,
+        pub arg: Option<flatbuffers::WIPOffset<flatbuffers::UnionWIPOffset>>,
     }
-    impl<'a> Default for ArrArgs {
+    impl<'a> Default for CollectionArgs {
         #[inline]
         fn default() -> Self {
-            ArrArgs {
-                t_type: MonoType::NONE,
-                t: None,
+            CollectionArgs {
+                collection: CollectionType::Array,
+                arg_type: MonoType::NONE,
+                arg: None,
             }
         }
     }
-    pub struct ArrBuilder<'a: 'b, 'b> {
+    pub struct CollectionBuilder<'a: 'b, 'b> {
         fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a>,
         start_: flatbuffers::WIPOffset<flatbuffers::TableUnfinishedWIPOffset>,
     }
-    impl<'a: 'b, 'b> ArrBuilder<'a, 'b> {
+    impl<'a: 'b, 'b> CollectionBuilder<'a, 'b> {
         #[inline]
-        pub fn add_t_type(&mut self, t_type: MonoType) {
-            self.fbb_
-                .push_slot::<MonoType>(Arr::VT_T_TYPE, t_type, MonoType::NONE);
+        pub fn add_collection(&mut self, collection: CollectionType) {
+            self.fbb_.push_slot::<CollectionType>(
+                Collection::VT_COLLECTION,
+                collection,
+                CollectionType::Array,
+            );
         }
         #[inline]
-        pub fn add_t(&mut self, t: flatbuffers::WIPOffset<flatbuffers::UnionWIPOffset>) {
+        pub fn add_arg_type(&mut self, arg_type: MonoType) {
             self.fbb_
-                .push_slot_always::<flatbuffers::WIPOffset<_>>(Arr::VT_T, t);
+                .push_slot::<MonoType>(Collection::VT_ARG_TYPE, arg_type, MonoType::NONE);
         }
         #[inline]
-        pub fn new(_fbb: &'b mut flatbuffers::FlatBufferBuilder<'a>) -> ArrBuilder<'a, 'b> {
+        pub fn add_arg(&mut self, arg: flatbuffers::WIPOffset<flatbuffers::UnionWIPOffset>) {
+            self.fbb_
+                .push_slot_always::<flatbuffers::WIPOffset<_>>(Collection::VT_ARG, arg);
+        }
+        #[inline]
+        pub fn new(_fbb: &'b mut flatbuffers::FlatBufferBuilder<'a>) -> CollectionBuilder<'a, 'b> {
             let start = _fbb.start_table();
-            ArrBuilder {
+            CollectionBuilder {
                 fbb_: _fbb,
                 start_: start,
             }
         }
         #[inline]
-        pub fn finish(self) -> flatbuffers::WIPOffset<Arr<'a>> {
+        pub fn finish(self) -> flatbuffers::WIPOffset<Collection<'a>> {
             let o = self.fbb_.end_table(self.start_);
             flatbuffers::WIPOffset::new(o.value())
         }
     }
 
-    impl std::fmt::Debug for Arr<'_> {
+    impl std::fmt::Debug for Collection<'_> {
         fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-            let mut ds = f.debug_struct("Arr");
-            ds.field("t_type", &self.t_type());
-            match self.t_type() {
+            let mut ds = f.debug_struct("Collection");
+            ds.field("collection", &self.collection());
+            ds.field("arg_type", &self.arg_type());
+            match self.arg_type() {
                 MonoType::Basic => {
-                    if let Some(x) = self.t_as_basic() {
-                        ds.field("t", &x)
+                    if let Some(x) = self.arg_as_basic() {
+                        ds.field("arg", &x)
                     } else {
                         ds.field(
-                            "t",
+                            "arg",
                             &"InvalidFlatbuffer: Union discriminant does not match value.",
                         )
                     }
                 }
                 MonoType::Var => {
-                    if let Some(x) = self.t_as_var() {
-                        ds.field("t", &x)
+                    if let Some(x) = self.arg_as_var() {
+                        ds.field("arg", &x)
                     } else {
                         ds.field(
-                            "t",
+                            "arg",
                             &"InvalidFlatbuffer: Union discriminant does not match value.",
                         )
                     }
                 }
-                MonoType::Arr => {
-                    if let Some(x) = self.t_as_arr() {
-                        ds.field("t", &x)
+                MonoType::Collection => {
+                    if let Some(x) = self.arg_as_collection() {
+                        ds.field("arg", &x)
                     } else {
                         ds.field(
-                            "t",
+                            "arg",
                             &"InvalidFlatbuffer: Union discriminant does not match value.",
                         )
                     }
                 }
                 MonoType::Record => {
-                    if let Some(x) = self.t_as_record() {
-                        ds.field("t", &x)
+                    if let Some(x) = self.arg_as_record() {
+                        ds.field("arg", &x)
                     } else {
                         ds.field(
-                            "t",
+                            "arg",
                             &"InvalidFlatbuffer: Union discriminant does not match value.",
                         )
                     }
                 }
                 MonoType::Fun => {
-                    if let Some(x) = self.t_as_fun() {
-                        ds.field("t", &x)
+                    if let Some(x) = self.arg_as_fun() {
+                        ds.field("arg", &x)
                     } else {
                         ds.field(
-                            "t",
+                            "arg",
                             &"InvalidFlatbuffer: Union discriminant does not match value.",
                         )
                     }
                 }
                 MonoType::Dict => {
-                    if let Some(x) = self.t_as_dict() {
-                        ds.field("t", &x)
+                    if let Some(x) = self.arg_as_dict() {
+                        ds.field("arg", &x)
                     } else {
                         ds.field(
-                            "t",
-                            &"InvalidFlatbuffer: Union discriminant does not match value.",
-                        )
-                    }
-                }
-                MonoType::Vector => {
-                    if let Some(x) = self.t_as_vector() {
-                        ds.field("t", &x)
-                    } else {
-                        ds.field(
-                            "t",
+                            "arg",
                             &"InvalidFlatbuffer: Union discriminant does not match value.",
                         )
                     }
                 }
                 _ => {
                     let x: Option<()> = None;
-                    ds.field("t", &x)
+                    ds.field("arg", &x)
                 }
             };
             ds.finish()
         }
     }
-    pub enum VectorOffset {}
+    pub enum StreamOffset {}
     #[derive(Copy, Clone, PartialEq)]
 
-    pub struct Vector<'a> {
+    pub struct Stream<'a> {
         pub _tab: flatbuffers::Table<'a>,
     }
 
-    impl<'a> flatbuffers::Follow<'a> for Vector<'a> {
-        type Inner = Vector<'a>;
+    impl<'a> flatbuffers::Follow<'a> for Stream<'a> {
+        type Inner = Stream<'a>;
         #[inline]
         fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
             Self {
@@ -2576,17 +2642,17 @@ pub mod fbsemantic {
         }
     }
 
-    impl<'a> Vector<'a> {
+    impl<'a> Stream<'a> {
         #[inline]
         pub fn init_from_table(table: flatbuffers::Table<'a>) -> Self {
-            Vector { _tab: table }
+            Stream { _tab: table }
         }
         #[allow(unused_mut)]
         pub fn create<'bldr: 'args, 'args: 'mut_bldr, 'mut_bldr>(
             _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr>,
-            args: &'args VectorArgs,
-        ) -> flatbuffers::WIPOffset<Vector<'bldr>> {
-            let mut builder = VectorBuilder::new(_fbb);
+            args: &'args StreamArgs,
+        ) -> flatbuffers::WIPOffset<Stream<'bldr>> {
+            let mut builder = StreamBuilder::new(_fbb);
             if let Some(x) = args.t {
                 builder.add_t(x);
             }
@@ -2600,13 +2666,13 @@ pub mod fbsemantic {
         #[inline]
         pub fn t_type(&self) -> MonoType {
             self._tab
-                .get::<MonoType>(Vector::VT_T_TYPE, Some(MonoType::NONE))
+                .get::<MonoType>(Stream::VT_T_TYPE, Some(MonoType::NONE))
                 .unwrap()
         }
         #[inline]
         pub fn t(&self) -> Option<flatbuffers::Table<'a>> {
             self._tab
-                .get::<flatbuffers::ForwardsUOffset<flatbuffers::Table<'a>>>(Vector::VT_T, None)
+                .get::<flatbuffers::ForwardsUOffset<flatbuffers::Table<'a>>>(Stream::VT_T, None)
         }
         #[inline]
         #[allow(non_snake_case)]
@@ -2630,9 +2696,9 @@ pub mod fbsemantic {
 
         #[inline]
         #[allow(non_snake_case)]
-        pub fn t_as_arr(&self) -> Option<Arr<'a>> {
-            if self.t_type() == MonoType::Arr {
-                self.t().map(Arr::init_from_table)
+        pub fn t_as_collection(&self) -> Option<Collection<'a>> {
+            if self.t_type() == MonoType::Collection {
+                self.t().map(Collection::init_from_table)
             } else {
                 None
             }
@@ -2667,19 +2733,9 @@ pub mod fbsemantic {
                 None
             }
         }
-
-        #[inline]
-        #[allow(non_snake_case)]
-        pub fn t_as_vector(&self) -> Option<Vector<'a>> {
-            if self.t_type() == MonoType::Vector {
-                self.t().map(Vector::init_from_table)
-            } else {
-                None
-            }
-        }
     }
 
-    impl flatbuffers::Verifiable for Vector<'_> {
+    impl flatbuffers::Verifiable for Stream<'_> {
         #[inline]
         fn run_verifier(
             v: &mut flatbuffers::Verifier,
@@ -2704,9 +2760,9 @@ pub mod fbsemantic {
                                 "MonoType::Var",
                                 pos,
                             ),
-                        MonoType::Arr => v
-                            .verify_union_variant::<flatbuffers::ForwardsUOffset<Arr>>(
-                                "MonoType::Arr",
+                        MonoType::Collection => v
+                            .verify_union_variant::<flatbuffers::ForwardsUOffset<Collection>>(
+                                "MonoType::Collection",
                                 pos,
                             ),
                         MonoType::Record => v
@@ -2724,11 +2780,6 @@ pub mod fbsemantic {
                                 "MonoType::Dict",
                                 pos,
                             ),
-                        MonoType::Vector => v
-                            .verify_union_variant::<flatbuffers::ForwardsUOffset<Vector>>(
-                                "MonoType::Vector",
-                                pos,
-                            ),
                         _ => Ok(()),
                     },
                 )?
@@ -2736,52 +2787,52 @@ pub mod fbsemantic {
             Ok(())
         }
     }
-    pub struct VectorArgs {
+    pub struct StreamArgs {
         pub t_type: MonoType,
         pub t: Option<flatbuffers::WIPOffset<flatbuffers::UnionWIPOffset>>,
     }
-    impl<'a> Default for VectorArgs {
+    impl<'a> Default for StreamArgs {
         #[inline]
         fn default() -> Self {
-            VectorArgs {
+            StreamArgs {
                 t_type: MonoType::NONE,
                 t: None,
             }
         }
     }
-    pub struct VectorBuilder<'a: 'b, 'b> {
+    pub struct StreamBuilder<'a: 'b, 'b> {
         fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a>,
         start_: flatbuffers::WIPOffset<flatbuffers::TableUnfinishedWIPOffset>,
     }
-    impl<'a: 'b, 'b> VectorBuilder<'a, 'b> {
+    impl<'a: 'b, 'b> StreamBuilder<'a, 'b> {
         #[inline]
         pub fn add_t_type(&mut self, t_type: MonoType) {
             self.fbb_
-                .push_slot::<MonoType>(Vector::VT_T_TYPE, t_type, MonoType::NONE);
+                .push_slot::<MonoType>(Stream::VT_T_TYPE, t_type, MonoType::NONE);
         }
         #[inline]
         pub fn add_t(&mut self, t: flatbuffers::WIPOffset<flatbuffers::UnionWIPOffset>) {
             self.fbb_
-                .push_slot_always::<flatbuffers::WIPOffset<_>>(Vector::VT_T, t);
+                .push_slot_always::<flatbuffers::WIPOffset<_>>(Stream::VT_T, t);
         }
         #[inline]
-        pub fn new(_fbb: &'b mut flatbuffers::FlatBufferBuilder<'a>) -> VectorBuilder<'a, 'b> {
+        pub fn new(_fbb: &'b mut flatbuffers::FlatBufferBuilder<'a>) -> StreamBuilder<'a, 'b> {
             let start = _fbb.start_table();
-            VectorBuilder {
+            StreamBuilder {
                 fbb_: _fbb,
                 start_: start,
             }
         }
         #[inline]
-        pub fn finish(self) -> flatbuffers::WIPOffset<Vector<'a>> {
+        pub fn finish(self) -> flatbuffers::WIPOffset<Stream<'a>> {
             let o = self.fbb_.end_table(self.start_);
             flatbuffers::WIPOffset::new(o.value())
         }
     }
 
-    impl std::fmt::Debug for Vector<'_> {
+    impl std::fmt::Debug for Stream<'_> {
         fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-            let mut ds = f.debug_struct("Vector");
+            let mut ds = f.debug_struct("Stream");
             ds.field("t_type", &self.t_type());
             match self.t_type() {
                 MonoType::Basic => {
@@ -2804,8 +2855,8 @@ pub mod fbsemantic {
                         )
                     }
                 }
-                MonoType::Arr => {
-                    if let Some(x) = self.t_as_arr() {
+                MonoType::Collection => {
+                    if let Some(x) = self.t_as_collection() {
                         ds.field("t", &x)
                     } else {
                         ds.field(
@@ -2836,16 +2887,6 @@ pub mod fbsemantic {
                 }
                 MonoType::Dict => {
                     if let Some(x) = self.t_as_dict() {
-                        ds.field("t", &x)
-                    } else {
-                        ds.field(
-                            "t",
-                            &"InvalidFlatbuffer: Union discriminant does not match value.",
-                        )
-                    }
-                }
-                MonoType::Vector => {
-                    if let Some(x) = self.t_as_vector() {
                         ds.field("t", &x)
                     } else {
                         ds.field(
@@ -3078,9 +3119,9 @@ pub mod fbsemantic {
 
         #[inline]
         #[allow(non_snake_case)]
-        pub fn retn_as_arr(&self) -> Option<Arr<'a>> {
-            if self.retn_type() == MonoType::Arr {
-                self.retn().map(Arr::init_from_table)
+        pub fn retn_as_collection(&self) -> Option<Collection<'a>> {
+            if self.retn_type() == MonoType::Collection {
+                self.retn().map(Collection::init_from_table)
             } else {
                 None
             }
@@ -3115,16 +3156,6 @@ pub mod fbsemantic {
                 None
             }
         }
-
-        #[inline]
-        #[allow(non_snake_case)]
-        pub fn retn_as_vector(&self) -> Option<Vector<'a>> {
-            if self.retn_type() == MonoType::Vector {
-                self.retn().map(Vector::init_from_table)
-            } else {
-                None
-            }
-        }
     }
 
     impl flatbuffers::Verifiable for Fun<'_> {
@@ -3155,9 +3186,9 @@ pub mod fbsemantic {
                                 "MonoType::Var",
                                 pos,
                             ),
-                        MonoType::Arr => v
-                            .verify_union_variant::<flatbuffers::ForwardsUOffset<Arr>>(
-                                "MonoType::Arr",
+                        MonoType::Collection => v
+                            .verify_union_variant::<flatbuffers::ForwardsUOffset<Collection>>(
+                                "MonoType::Collection",
                                 pos,
                             ),
                         MonoType::Record => v
@@ -3173,11 +3204,6 @@ pub mod fbsemantic {
                         MonoType::Dict => v
                             .verify_union_variant::<flatbuffers::ForwardsUOffset<Dict>>(
                                 "MonoType::Dict",
-                                pos,
-                            ),
-                        MonoType::Vector => v
-                            .verify_union_variant::<flatbuffers::ForwardsUOffset<Vector>>(
-                                "MonoType::Vector",
                                 pos,
                             ),
                         _ => Ok(()),
@@ -3272,8 +3298,8 @@ pub mod fbsemantic {
                         )
                     }
                 }
-                MonoType::Arr => {
-                    if let Some(x) = self.retn_as_arr() {
+                MonoType::Collection => {
+                    if let Some(x) = self.retn_as_collection() {
                         ds.field("retn", &x)
                     } else {
                         ds.field(
@@ -3304,16 +3330,6 @@ pub mod fbsemantic {
                 }
                 MonoType::Dict => {
                     if let Some(x) = self.retn_as_dict() {
-                        ds.field("retn", &x)
-                    } else {
-                        ds.field(
-                            "retn",
-                            &"InvalidFlatbuffer: Union discriminant does not match value.",
-                        )
-                    }
-                }
-                MonoType::Vector => {
-                    if let Some(x) = self.retn_as_vector() {
                         ds.field("retn", &x)
                     } else {
                         ds.field(
@@ -3418,9 +3434,9 @@ pub mod fbsemantic {
 
         #[inline]
         #[allow(non_snake_case)]
-        pub fn k_as_arr(&self) -> Option<Arr<'a>> {
-            if self.k_type() == MonoType::Arr {
-                self.k().map(Arr::init_from_table)
+        pub fn k_as_collection(&self) -> Option<Collection<'a>> {
+            if self.k_type() == MonoType::Collection {
+                self.k().map(Collection::init_from_table)
             } else {
                 None
             }
@@ -3458,16 +3474,6 @@ pub mod fbsemantic {
 
         #[inline]
         #[allow(non_snake_case)]
-        pub fn k_as_vector(&self) -> Option<Vector<'a>> {
-            if self.k_type() == MonoType::Vector {
-                self.k().map(Vector::init_from_table)
-            } else {
-                None
-            }
-        }
-
-        #[inline]
-        #[allow(non_snake_case)]
         pub fn v_as_basic(&self) -> Option<Basic<'a>> {
             if self.v_type() == MonoType::Basic {
                 self.v().map(Basic::init_from_table)
@@ -3488,9 +3494,9 @@ pub mod fbsemantic {
 
         #[inline]
         #[allow(non_snake_case)]
-        pub fn v_as_arr(&self) -> Option<Arr<'a>> {
-            if self.v_type() == MonoType::Arr {
-                self.v().map(Arr::init_from_table)
+        pub fn v_as_collection(&self) -> Option<Collection<'a>> {
+            if self.v_type() == MonoType::Collection {
+                self.v().map(Collection::init_from_table)
             } else {
                 None
             }
@@ -3525,16 +3531,6 @@ pub mod fbsemantic {
                 None
             }
         }
-
-        #[inline]
-        #[allow(non_snake_case)]
-        pub fn v_as_vector(&self) -> Option<Vector<'a>> {
-            if self.v_type() == MonoType::Vector {
-                self.v().map(Vector::init_from_table)
-            } else {
-                None
-            }
-        }
     }
 
     impl flatbuffers::Verifiable for Dict<'_> {
@@ -3562,9 +3558,9 @@ pub mod fbsemantic {
                                 "MonoType::Var",
                                 pos,
                             ),
-                        MonoType::Arr => v
-                            .verify_union_variant::<flatbuffers::ForwardsUOffset<Arr>>(
-                                "MonoType::Arr",
+                        MonoType::Collection => v
+                            .verify_union_variant::<flatbuffers::ForwardsUOffset<Collection>>(
+                                "MonoType::Collection",
                                 pos,
                             ),
                         MonoType::Record => v
@@ -3580,11 +3576,6 @@ pub mod fbsemantic {
                         MonoType::Dict => v
                             .verify_union_variant::<flatbuffers::ForwardsUOffset<Dict>>(
                                 "MonoType::Dict",
-                                pos,
-                            ),
-                        MonoType::Vector => v
-                            .verify_union_variant::<flatbuffers::ForwardsUOffset<Vector>>(
-                                "MonoType::Vector",
                                 pos,
                             ),
                         _ => Ok(()),
@@ -3607,9 +3598,9 @@ pub mod fbsemantic {
                                 "MonoType::Var",
                                 pos,
                             ),
-                        MonoType::Arr => v
-                            .verify_union_variant::<flatbuffers::ForwardsUOffset<Arr>>(
-                                "MonoType::Arr",
+                        MonoType::Collection => v
+                            .verify_union_variant::<flatbuffers::ForwardsUOffset<Collection>>(
+                                "MonoType::Collection",
                                 pos,
                             ),
                         MonoType::Record => v
@@ -3625,11 +3616,6 @@ pub mod fbsemantic {
                         MonoType::Dict => v
                             .verify_union_variant::<flatbuffers::ForwardsUOffset<Dict>>(
                                 "MonoType::Dict",
-                                pos,
-                            ),
-                        MonoType::Vector => v
-                            .verify_union_variant::<flatbuffers::ForwardsUOffset<Vector>>(
-                                "MonoType::Vector",
                                 pos,
                             ),
                         _ => Ok(()),
@@ -3721,8 +3707,8 @@ pub mod fbsemantic {
                         )
                     }
                 }
-                MonoType::Arr => {
-                    if let Some(x) = self.k_as_arr() {
+                MonoType::Collection => {
+                    if let Some(x) = self.k_as_collection() {
                         ds.field("k", &x)
                     } else {
                         ds.field(
@@ -3761,16 +3747,6 @@ pub mod fbsemantic {
                         )
                     }
                 }
-                MonoType::Vector => {
-                    if let Some(x) = self.k_as_vector() {
-                        ds.field("k", &x)
-                    } else {
-                        ds.field(
-                            "k",
-                            &"InvalidFlatbuffer: Union discriminant does not match value.",
-                        )
-                    }
-                }
                 _ => {
                     let x: Option<()> = None;
                     ds.field("k", &x)
@@ -3798,8 +3774,8 @@ pub mod fbsemantic {
                         )
                     }
                 }
-                MonoType::Arr => {
-                    if let Some(x) = self.v_as_arr() {
+                MonoType::Collection => {
+                    if let Some(x) = self.v_as_collection() {
                         ds.field("v", &x)
                     } else {
                         ds.field(
@@ -3830,16 +3806,6 @@ pub mod fbsemantic {
                 }
                 MonoType::Dict => {
                     if let Some(x) = self.v_as_dict() {
-                        ds.field("v", &x)
-                    } else {
-                        ds.field(
-                            "v",
-                            &"InvalidFlatbuffer: Union discriminant does not match value.",
-                        )
-                    }
-                }
-                MonoType::Vector => {
-                    if let Some(x) = self.v_as_vector() {
                         ds.field("v", &x)
                     } else {
                         ds.field(
@@ -3952,9 +3918,9 @@ pub mod fbsemantic {
 
         #[inline]
         #[allow(non_snake_case)]
-        pub fn t_as_arr(&self) -> Option<Arr<'a>> {
-            if self.t_type() == MonoType::Arr {
-                self.t().map(Arr::init_from_table)
+        pub fn t_as_collection(&self) -> Option<Collection<'a>> {
+            if self.t_type() == MonoType::Collection {
+                self.t().map(Collection::init_from_table)
             } else {
                 None
             }
@@ -3989,16 +3955,6 @@ pub mod fbsemantic {
                 None
             }
         }
-
-        #[inline]
-        #[allow(non_snake_case)]
-        pub fn t_as_vector(&self) -> Option<Vector<'a>> {
-            if self.t_type() == MonoType::Vector {
-                self.t().map(Vector::init_from_table)
-            } else {
-                None
-            }
-        }
     }
 
     impl flatbuffers::Verifiable for Argument<'_> {
@@ -4027,9 +3983,9 @@ pub mod fbsemantic {
                                 "MonoType::Var",
                                 pos,
                             ),
-                        MonoType::Arr => v
-                            .verify_union_variant::<flatbuffers::ForwardsUOffset<Arr>>(
-                                "MonoType::Arr",
+                        MonoType::Collection => v
+                            .verify_union_variant::<flatbuffers::ForwardsUOffset<Collection>>(
+                                "MonoType::Collection",
                                 pos,
                             ),
                         MonoType::Record => v
@@ -4045,11 +4001,6 @@ pub mod fbsemantic {
                         MonoType::Dict => v
                             .verify_union_variant::<flatbuffers::ForwardsUOffset<Dict>>(
                                 "MonoType::Dict",
-                                pos,
-                            ),
-                        MonoType::Vector => v
-                            .verify_union_variant::<flatbuffers::ForwardsUOffset<Vector>>(
-                                "MonoType::Vector",
                                 pos,
                             ),
                         _ => Ok(()),
@@ -4150,8 +4101,8 @@ pub mod fbsemantic {
                         )
                     }
                 }
-                MonoType::Arr => {
-                    if let Some(x) = self.t_as_arr() {
+                MonoType::Collection => {
+                    if let Some(x) = self.t_as_collection() {
                         ds.field("t", &x)
                     } else {
                         ds.field(
@@ -4182,16 +4133,6 @@ pub mod fbsemantic {
                 }
                 MonoType::Dict => {
                     if let Some(x) = self.t_as_dict() {
-                        ds.field("t", &x)
-                    } else {
-                        ds.field(
-                            "t",
-                            &"InvalidFlatbuffer: Union discriminant does not match value.",
-                        )
-                    }
-                }
-                MonoType::Vector => {
-                    if let Some(x) = self.t_as_vector() {
                         ds.field("t", &x)
                     } else {
                         ds.field(
@@ -4290,9 +4231,9 @@ pub mod fbsemantic {
 
         #[inline]
         #[allow(non_snake_case)]
-        pub fn v_as_arr(&self) -> Option<Arr<'a>> {
-            if self.v_type() == MonoType::Arr {
-                self.v().map(Arr::init_from_table)
+        pub fn v_as_collection(&self) -> Option<Collection<'a>> {
+            if self.v_type() == MonoType::Collection {
+                self.v().map(Collection::init_from_table)
             } else {
                 None
             }
@@ -4327,16 +4268,6 @@ pub mod fbsemantic {
                 None
             }
         }
-
-        #[inline]
-        #[allow(non_snake_case)]
-        pub fn v_as_vector(&self) -> Option<Vector<'a>> {
-            if self.v_type() == MonoType::Vector {
-                self.v().map(Vector::init_from_table)
-            } else {
-                None
-            }
-        }
     }
 
     impl flatbuffers::Verifiable for Prop<'_> {
@@ -4365,9 +4296,9 @@ pub mod fbsemantic {
                                 "MonoType::Var",
                                 pos,
                             ),
-                        MonoType::Arr => v
-                            .verify_union_variant::<flatbuffers::ForwardsUOffset<Arr>>(
-                                "MonoType::Arr",
+                        MonoType::Collection => v
+                            .verify_union_variant::<flatbuffers::ForwardsUOffset<Collection>>(
+                                "MonoType::Collection",
                                 pos,
                             ),
                         MonoType::Record => v
@@ -4383,11 +4314,6 @@ pub mod fbsemantic {
                         MonoType::Dict => v
                             .verify_union_variant::<flatbuffers::ForwardsUOffset<Dict>>(
                                 "MonoType::Dict",
-                                pos,
-                            ),
-                        MonoType::Vector => v
-                            .verify_union_variant::<flatbuffers::ForwardsUOffset<Vector>>(
-                                "MonoType::Vector",
                                 pos,
                             ),
                         _ => Ok(()),
@@ -4473,8 +4399,8 @@ pub mod fbsemantic {
                         )
                     }
                 }
-                MonoType::Arr => {
-                    if let Some(x) = self.v_as_arr() {
+                MonoType::Collection => {
+                    if let Some(x) = self.v_as_collection() {
                         ds.field("v", &x)
                     } else {
                         ds.field(
@@ -4505,16 +4431,6 @@ pub mod fbsemantic {
                 }
                 MonoType::Dict => {
                     if let Some(x) = self.v_as_dict() {
-                        ds.field("v", &x)
-                    } else {
-                        ds.field(
-                            "v",
-                            &"InvalidFlatbuffer: Union discriminant does not match value.",
-                        )
-                    }
-                }
-                MonoType::Vector => {
-                    if let Some(x) = self.v_as_vector() {
                         ds.field("v", &x)
                     } else {
                         ds.field(
@@ -4629,9 +4545,9 @@ pub mod fbsemantic {
 
         #[inline]
         #[allow(non_snake_case)]
-        pub fn expr_as_arr(&self) -> Option<Arr<'a>> {
-            if self.expr_type() == MonoType::Arr {
-                self.expr().map(Arr::init_from_table)
+        pub fn expr_as_collection(&self) -> Option<Collection<'a>> {
+            if self.expr_type() == MonoType::Collection {
+                self.expr().map(Collection::init_from_table)
             } else {
                 None
             }
@@ -4662,16 +4578,6 @@ pub mod fbsemantic {
         pub fn expr_as_dict(&self) -> Option<Dict<'a>> {
             if self.expr_type() == MonoType::Dict {
                 self.expr().map(Dict::init_from_table)
-            } else {
-                None
-            }
-        }
-
-        #[inline]
-        #[allow(non_snake_case)]
-        pub fn expr_as_vector(&self) -> Option<Vector<'a>> {
-            if self.expr_type() == MonoType::Vector {
-                self.expr().map(Vector::init_from_table)
             } else {
                 None
             }
@@ -4709,9 +4615,9 @@ pub mod fbsemantic {
                                 "MonoType::Var",
                                 pos,
                             ),
-                        MonoType::Arr => v
-                            .verify_union_variant::<flatbuffers::ForwardsUOffset<Arr>>(
-                                "MonoType::Arr",
+                        MonoType::Collection => v
+                            .verify_union_variant::<flatbuffers::ForwardsUOffset<Collection>>(
+                                "MonoType::Collection",
                                 pos,
                             ),
                         MonoType::Record => v
@@ -4727,11 +4633,6 @@ pub mod fbsemantic {
                         MonoType::Dict => v
                             .verify_union_variant::<flatbuffers::ForwardsUOffset<Dict>>(
                                 "MonoType::Dict",
-                                pos,
-                            ),
-                        MonoType::Vector => v
-                            .verify_union_variant::<flatbuffers::ForwardsUOffset<Vector>>(
-                                "MonoType::Vector",
                                 pos,
                             ),
                         _ => Ok(()),
@@ -4841,8 +4742,8 @@ pub mod fbsemantic {
                         )
                     }
                 }
-                MonoType::Arr => {
-                    if let Some(x) = self.expr_as_arr() {
+                MonoType::Collection => {
+                    if let Some(x) = self.expr_as_collection() {
                         ds.field("expr", &x)
                     } else {
                         ds.field(
@@ -4873,16 +4774,6 @@ pub mod fbsemantic {
                 }
                 MonoType::Dict => {
                     if let Some(x) = self.expr_as_dict() {
-                        ds.field("expr", &x)
-                    } else {
-                        ds.field(
-                            "expr",
-                            &"InvalidFlatbuffer: Union discriminant does not match value.",
-                        )
-                    }
-                }
-                MonoType::Vector => {
-                    if let Some(x) = self.expr_as_vector() {
                         ds.field("expr", &x)
                     } else {
                         ds.field(
@@ -10524,9 +10415,9 @@ pub mod fbsemantic {
 
         #[inline]
         #[allow(non_snake_case)]
-        pub fn typ_as_arr(&self) -> Option<Arr<'a>> {
-            if self.typ_type() == MonoType::Arr {
-                self.typ().map(Arr::init_from_table)
+        pub fn typ_as_collection(&self) -> Option<Collection<'a>> {
+            if self.typ_type() == MonoType::Collection {
+                self.typ().map(Collection::init_from_table)
             } else {
                 None
             }
@@ -10557,16 +10448,6 @@ pub mod fbsemantic {
         pub fn typ_as_dict(&self) -> Option<Dict<'a>> {
             if self.typ_type() == MonoType::Dict {
                 self.typ().map(Dict::init_from_table)
-            } else {
-                None
-            }
-        }
-
-        #[inline]
-        #[allow(non_snake_case)]
-        pub fn typ_as_vector(&self) -> Option<Vector<'a>> {
-            if self.typ_type() == MonoType::Vector {
-                self.typ().map(Vector::init_from_table)
             } else {
                 None
             }
@@ -10606,9 +10487,9 @@ pub mod fbsemantic {
                                 "MonoType::Var",
                                 pos,
                             ),
-                        MonoType::Arr => v
-                            .verify_union_variant::<flatbuffers::ForwardsUOffset<Arr>>(
-                                "MonoType::Arr",
+                        MonoType::Collection => v
+                            .verify_union_variant::<flatbuffers::ForwardsUOffset<Collection>>(
+                                "MonoType::Collection",
                                 pos,
                             ),
                         MonoType::Record => v
@@ -10624,11 +10505,6 @@ pub mod fbsemantic {
                         MonoType::Dict => v
                             .verify_union_variant::<flatbuffers::ForwardsUOffset<Dict>>(
                                 "MonoType::Dict",
-                                pos,
-                            ),
-                        MonoType::Vector => v
-                            .verify_union_variant::<flatbuffers::ForwardsUOffset<Vector>>(
-                                "MonoType::Vector",
                                 pos,
                             ),
                         _ => Ok(()),
@@ -10738,8 +10614,8 @@ pub mod fbsemantic {
                         )
                     }
                 }
-                MonoType::Arr => {
-                    if let Some(x) = self.typ_as_arr() {
+                MonoType::Collection => {
+                    if let Some(x) = self.typ_as_collection() {
                         ds.field("typ", &x)
                     } else {
                         ds.field(
@@ -10770,16 +10646,6 @@ pub mod fbsemantic {
                 }
                 MonoType::Dict => {
                     if let Some(x) = self.typ_as_dict() {
-                        ds.field("typ", &x)
-                    } else {
-                        ds.field(
-                            "typ",
-                            &"InvalidFlatbuffer: Union discriminant does not match value.",
-                        )
-                    }
-                }
-                MonoType::Vector => {
-                    if let Some(x) = self.typ_as_vector() {
                         ds.field("typ", &x)
                     } else {
                         ds.field(
@@ -10891,9 +10757,9 @@ pub mod fbsemantic {
 
         #[inline]
         #[allow(non_snake_case)]
-        pub fn typ_as_arr(&self) -> Option<Arr<'a>> {
-            if self.typ_type() == MonoType::Arr {
-                self.typ().map(Arr::init_from_table)
+        pub fn typ_as_collection(&self) -> Option<Collection<'a>> {
+            if self.typ_type() == MonoType::Collection {
+                self.typ().map(Collection::init_from_table)
             } else {
                 None
             }
@@ -10924,16 +10790,6 @@ pub mod fbsemantic {
         pub fn typ_as_dict(&self) -> Option<Dict<'a>> {
             if self.typ_type() == MonoType::Dict {
                 self.typ().map(Dict::init_from_table)
-            } else {
-                None
-            }
-        }
-
-        #[inline]
-        #[allow(non_snake_case)]
-        pub fn typ_as_vector(&self) -> Option<Vector<'a>> {
-            if self.typ_type() == MonoType::Vector {
-                self.typ().map(Vector::init_from_table)
             } else {
                 None
             }
@@ -10973,9 +10829,9 @@ pub mod fbsemantic {
                                 "MonoType::Var",
                                 pos,
                             ),
-                        MonoType::Arr => v
-                            .verify_union_variant::<flatbuffers::ForwardsUOffset<Arr>>(
-                                "MonoType::Arr",
+                        MonoType::Collection => v
+                            .verify_union_variant::<flatbuffers::ForwardsUOffset<Collection>>(
+                                "MonoType::Collection",
                                 pos,
                             ),
                         MonoType::Record => v
@@ -10991,11 +10847,6 @@ pub mod fbsemantic {
                         MonoType::Dict => v
                             .verify_union_variant::<flatbuffers::ForwardsUOffset<Dict>>(
                                 "MonoType::Dict",
-                                pos,
-                            ),
-                        MonoType::Vector => v
-                            .verify_union_variant::<flatbuffers::ForwardsUOffset<Vector>>(
-                                "MonoType::Vector",
                                 pos,
                             ),
                         _ => Ok(()),
@@ -11105,8 +10956,8 @@ pub mod fbsemantic {
                         )
                     }
                 }
-                MonoType::Arr => {
-                    if let Some(x) = self.typ_as_arr() {
+                MonoType::Collection => {
+                    if let Some(x) = self.typ_as_collection() {
                         ds.field("typ", &x)
                     } else {
                         ds.field(
@@ -11137,16 +10988,6 @@ pub mod fbsemantic {
                 }
                 MonoType::Dict => {
                     if let Some(x) = self.typ_as_dict() {
-                        ds.field("typ", &x)
-                    } else {
-                        ds.field(
-                            "typ",
-                            &"InvalidFlatbuffer: Union discriminant does not match value.",
-                        )
-                    }
-                }
-                MonoType::Vector => {
-                    if let Some(x) = self.typ_as_vector() {
                         ds.field("typ", &x)
                     } else {
                         ds.field(
@@ -12331,9 +12172,9 @@ pub mod fbsemantic {
 
         #[inline]
         #[allow(non_snake_case)]
-        pub fn typ_as_arr(&self) -> Option<Arr<'a>> {
-            if self.typ_type() == MonoType::Arr {
-                self.typ().map(Arr::init_from_table)
+        pub fn typ_as_collection(&self) -> Option<Collection<'a>> {
+            if self.typ_type() == MonoType::Collection {
+                self.typ().map(Collection::init_from_table)
             } else {
                 None
             }
@@ -12364,16 +12205,6 @@ pub mod fbsemantic {
         pub fn typ_as_dict(&self) -> Option<Dict<'a>> {
             if self.typ_type() == MonoType::Dict {
                 self.typ().map(Dict::init_from_table)
-            } else {
-                None
-            }
-        }
-
-        #[inline]
-        #[allow(non_snake_case)]
-        pub fn typ_as_vector(&self) -> Option<Vector<'a>> {
-            if self.typ_type() == MonoType::Vector {
-                self.typ().map(Vector::init_from_table)
             } else {
                 None
             }
@@ -12414,9 +12245,9 @@ pub mod fbsemantic {
                                 "MonoType::Var",
                                 pos,
                             ),
-                        MonoType::Arr => v
-                            .verify_union_variant::<flatbuffers::ForwardsUOffset<Arr>>(
-                                "MonoType::Arr",
+                        MonoType::Collection => v
+                            .verify_union_variant::<flatbuffers::ForwardsUOffset<Collection>>(
+                                "MonoType::Collection",
                                 pos,
                             ),
                         MonoType::Record => v
@@ -12432,11 +12263,6 @@ pub mod fbsemantic {
                         MonoType::Dict => v
                             .verify_union_variant::<flatbuffers::ForwardsUOffset<Dict>>(
                                 "MonoType::Dict",
-                                pos,
-                            ),
-                        MonoType::Vector => v
-                            .verify_union_variant::<flatbuffers::ForwardsUOffset<Vector>>(
-                                "MonoType::Vector",
                                 pos,
                             ),
                         _ => Ok(()),
@@ -12577,8 +12403,8 @@ pub mod fbsemantic {
                         )
                     }
                 }
-                MonoType::Arr => {
-                    if let Some(x) = self.typ_as_arr() {
+                MonoType::Collection => {
+                    if let Some(x) = self.typ_as_collection() {
                         ds.field("typ", &x)
                     } else {
                         ds.field(
@@ -12609,16 +12435,6 @@ pub mod fbsemantic {
                 }
                 MonoType::Dict => {
                     if let Some(x) = self.typ_as_dict() {
-                        ds.field("typ", &x)
-                    } else {
-                        ds.field(
-                            "typ",
-                            &"InvalidFlatbuffer: Union discriminant does not match value.",
-                        )
-                    }
-                }
-                MonoType::Vector => {
-                    if let Some(x) = self.typ_as_vector() {
                         ds.field("typ", &x)
                     } else {
                         ds.field(
@@ -13965,9 +13781,9 @@ pub mod fbsemantic {
 
         #[inline]
         #[allow(non_snake_case)]
-        pub fn typ_as_arr(&self) -> Option<Arr<'a>> {
-            if self.typ_type() == MonoType::Arr {
-                self.typ().map(Arr::init_from_table)
+        pub fn typ_as_collection(&self) -> Option<Collection<'a>> {
+            if self.typ_type() == MonoType::Collection {
+                self.typ().map(Collection::init_from_table)
             } else {
                 None
             }
@@ -13998,16 +13814,6 @@ pub mod fbsemantic {
         pub fn typ_as_dict(&self) -> Option<Dict<'a>> {
             if self.typ_type() == MonoType::Dict {
                 self.typ().map(Dict::init_from_table)
-            } else {
-                None
-            }
-        }
-
-        #[inline]
-        #[allow(non_snake_case)]
-        pub fn typ_as_vector(&self) -> Option<Vector<'a>> {
-            if self.typ_type() == MonoType::Vector {
-                self.typ().map(Vector::init_from_table)
             } else {
                 None
             }
@@ -14080,11 +13886,10 @@ pub mod fbsemantic {
         match key {
           MonoType::Basic => v.verify_union_variant::<flatbuffers::ForwardsUOffset<Basic>>("MonoType::Basic", pos),
           MonoType::Var => v.verify_union_variant::<flatbuffers::ForwardsUOffset<Var>>("MonoType::Var", pos),
-          MonoType::Arr => v.verify_union_variant::<flatbuffers::ForwardsUOffset<Arr>>("MonoType::Arr", pos),
+          MonoType::Collection => v.verify_union_variant::<flatbuffers::ForwardsUOffset<Collection>>("MonoType::Collection", pos),
           MonoType::Record => v.verify_union_variant::<flatbuffers::ForwardsUOffset<Record>>("MonoType::Record", pos),
           MonoType::Fun => v.verify_union_variant::<flatbuffers::ForwardsUOffset<Fun>>("MonoType::Fun", pos),
           MonoType::Dict => v.verify_union_variant::<flatbuffers::ForwardsUOffset<Dict>>("MonoType::Dict", pos),
-          MonoType::Vector => v.verify_union_variant::<flatbuffers::ForwardsUOffset<Vector>>("MonoType::Vector", pos),
           _ => Ok(()),
         }
      })?
@@ -14655,8 +14460,8 @@ pub mod fbsemantic {
                         )
                     }
                 }
-                MonoType::Arr => {
-                    if let Some(x) = self.typ_as_arr() {
+                MonoType::Collection => {
+                    if let Some(x) = self.typ_as_collection() {
                         ds.field("typ", &x)
                     } else {
                         ds.field(
@@ -14687,16 +14492,6 @@ pub mod fbsemantic {
                 }
                 MonoType::Dict => {
                     if let Some(x) = self.typ_as_dict() {
-                        ds.field("typ", &x)
-                    } else {
-                        ds.field(
-                            "typ",
-                            &"InvalidFlatbuffer: Union discriminant does not match value.",
-                        )
-                    }
-                }
-                MonoType::Vector => {
-                    if let Some(x) = self.typ_as_vector() {
                         ds.field("typ", &x)
                     } else {
                         ds.field(
@@ -15268,9 +15063,9 @@ pub mod fbsemantic {
 
         #[inline]
         #[allow(non_snake_case)]
-        pub fn typ_as_arr(&self) -> Option<Arr<'a>> {
-            if self.typ_type() == MonoType::Arr {
-                self.typ().map(Arr::init_from_table)
+        pub fn typ_as_collection(&self) -> Option<Collection<'a>> {
+            if self.typ_type() == MonoType::Collection {
+                self.typ().map(Collection::init_from_table)
             } else {
                 None
             }
@@ -15301,16 +15096,6 @@ pub mod fbsemantic {
         pub fn typ_as_dict(&self) -> Option<Dict<'a>> {
             if self.typ_type() == MonoType::Dict {
                 self.typ().map(Dict::init_from_table)
-            } else {
-                None
-            }
-        }
-
-        #[inline]
-        #[allow(non_snake_case)]
-        pub fn typ_as_vector(&self) -> Option<Vector<'a>> {
-            if self.typ_type() == MonoType::Vector {
-                self.typ().map(Vector::init_from_table)
             } else {
                 None
             }
@@ -15383,11 +15168,10 @@ pub mod fbsemantic {
         match key {
           MonoType::Basic => v.verify_union_variant::<flatbuffers::ForwardsUOffset<Basic>>("MonoType::Basic", pos),
           MonoType::Var => v.verify_union_variant::<flatbuffers::ForwardsUOffset<Var>>("MonoType::Var", pos),
-          MonoType::Arr => v.verify_union_variant::<flatbuffers::ForwardsUOffset<Arr>>("MonoType::Arr", pos),
+          MonoType::Collection => v.verify_union_variant::<flatbuffers::ForwardsUOffset<Collection>>("MonoType::Collection", pos),
           MonoType::Record => v.verify_union_variant::<flatbuffers::ForwardsUOffset<Record>>("MonoType::Record", pos),
           MonoType::Fun => v.verify_union_variant::<flatbuffers::ForwardsUOffset<Fun>>("MonoType::Fun", pos),
           MonoType::Dict => v.verify_union_variant::<flatbuffers::ForwardsUOffset<Dict>>("MonoType::Dict", pos),
-          MonoType::Vector => v.verify_union_variant::<flatbuffers::ForwardsUOffset<Vector>>("MonoType::Vector", pos),
           _ => Ok(()),
         }
      })?
@@ -15963,8 +15747,8 @@ pub mod fbsemantic {
                         )
                     }
                 }
-                MonoType::Arr => {
-                    if let Some(x) = self.typ_as_arr() {
+                MonoType::Collection => {
+                    if let Some(x) = self.typ_as_collection() {
                         ds.field("typ", &x)
                     } else {
                         ds.field(
@@ -15995,16 +15779,6 @@ pub mod fbsemantic {
                 }
                 MonoType::Dict => {
                     if let Some(x) = self.typ_as_dict() {
-                        ds.field("typ", &x)
-                    } else {
-                        ds.field(
-                            "typ",
-                            &"InvalidFlatbuffer: Union discriminant does not match value.",
-                        )
-                    }
-                }
-                MonoType::Vector => {
-                    if let Some(x) = self.typ_as_vector() {
                         ds.field("typ", &x)
                     } else {
                         ds.field(
@@ -19049,9 +18823,9 @@ pub mod fbsemantic {
 
         #[inline]
         #[allow(non_snake_case)]
-        pub fn typ_as_arr(&self) -> Option<Arr<'a>> {
-            if self.typ_type() == MonoType::Arr {
-                self.typ().map(Arr::init_from_table)
+        pub fn typ_as_collection(&self) -> Option<Collection<'a>> {
+            if self.typ_type() == MonoType::Collection {
+                self.typ().map(Collection::init_from_table)
             } else {
                 None
             }
@@ -19082,16 +18856,6 @@ pub mod fbsemantic {
         pub fn typ_as_dict(&self) -> Option<Dict<'a>> {
             if self.typ_type() == MonoType::Dict {
                 self.typ().map(Dict::init_from_table)
-            } else {
-                None
-            }
-        }
-
-        #[inline]
-        #[allow(non_snake_case)]
-        pub fn typ_as_vector(&self) -> Option<Vector<'a>> {
-            if self.typ_type() == MonoType::Vector {
-                self.typ().map(Vector::init_from_table)
             } else {
                 None
             }
@@ -19138,11 +18902,10 @@ pub mod fbsemantic {
         match key {
           MonoType::Basic => v.verify_union_variant::<flatbuffers::ForwardsUOffset<Basic>>("MonoType::Basic", pos),
           MonoType::Var => v.verify_union_variant::<flatbuffers::ForwardsUOffset<Var>>("MonoType::Var", pos),
-          MonoType::Arr => v.verify_union_variant::<flatbuffers::ForwardsUOffset<Arr>>("MonoType::Arr", pos),
+          MonoType::Collection => v.verify_union_variant::<flatbuffers::ForwardsUOffset<Collection>>("MonoType::Collection", pos),
           MonoType::Record => v.verify_union_variant::<flatbuffers::ForwardsUOffset<Record>>("MonoType::Record", pos),
           MonoType::Fun => v.verify_union_variant::<flatbuffers::ForwardsUOffset<Fun>>("MonoType::Fun", pos),
           MonoType::Dict => v.verify_union_variant::<flatbuffers::ForwardsUOffset<Dict>>("MonoType::Dict", pos),
-          MonoType::Vector => v.verify_union_variant::<flatbuffers::ForwardsUOffset<Vector>>("MonoType::Vector", pos),
           _ => Ok(()),
         }
      })?
@@ -19478,8 +19241,8 @@ pub mod fbsemantic {
                         )
                     }
                 }
-                MonoType::Arr => {
-                    if let Some(x) = self.typ_as_arr() {
+                MonoType::Collection => {
+                    if let Some(x) = self.typ_as_collection() {
                         ds.field("typ", &x)
                     } else {
                         ds.field(
@@ -19510,16 +19273,6 @@ pub mod fbsemantic {
                 }
                 MonoType::Dict => {
                     if let Some(x) = self.typ_as_dict() {
-                        ds.field("typ", &x)
-                    } else {
-                        ds.field(
-                            "typ",
-                            &"InvalidFlatbuffer: Union discriminant does not match value.",
-                        )
-                    }
-                }
-                MonoType::Vector => {
-                    if let Some(x) = self.typ_as_vector() {
                         ds.field("typ", &x)
                     } else {
                         ds.field(
@@ -20079,9 +19832,9 @@ pub mod fbsemantic {
 
         #[inline]
         #[allow(non_snake_case)]
-        pub fn typ_as_arr(&self) -> Option<Arr<'a>> {
-            if self.typ_type() == MonoType::Arr {
-                self.typ().map(Arr::init_from_table)
+        pub fn typ_as_collection(&self) -> Option<Collection<'a>> {
+            if self.typ_type() == MonoType::Collection {
+                self.typ().map(Collection::init_from_table)
             } else {
                 None
             }
@@ -20112,16 +19865,6 @@ pub mod fbsemantic {
         pub fn typ_as_dict(&self) -> Option<Dict<'a>> {
             if self.typ_type() == MonoType::Dict {
                 self.typ().map(Dict::init_from_table)
-            } else {
-                None
-            }
-        }
-
-        #[inline]
-        #[allow(non_snake_case)]
-        pub fn typ_as_vector(&self) -> Option<Vector<'a>> {
-            if self.typ_type() == MonoType::Vector {
-                self.typ().map(Vector::init_from_table)
             } else {
                 None
             }
@@ -20193,11 +19936,10 @@ pub mod fbsemantic {
         match key {
           MonoType::Basic => v.verify_union_variant::<flatbuffers::ForwardsUOffset<Basic>>("MonoType::Basic", pos),
           MonoType::Var => v.verify_union_variant::<flatbuffers::ForwardsUOffset<Var>>("MonoType::Var", pos),
-          MonoType::Arr => v.verify_union_variant::<flatbuffers::ForwardsUOffset<Arr>>("MonoType::Arr", pos),
+          MonoType::Collection => v.verify_union_variant::<flatbuffers::ForwardsUOffset<Collection>>("MonoType::Collection", pos),
           MonoType::Record => v.verify_union_variant::<flatbuffers::ForwardsUOffset<Record>>("MonoType::Record", pos),
           MonoType::Fun => v.verify_union_variant::<flatbuffers::ForwardsUOffset<Fun>>("MonoType::Fun", pos),
           MonoType::Dict => v.verify_union_variant::<flatbuffers::ForwardsUOffset<Dict>>("MonoType::Dict", pos),
-          MonoType::Vector => v.verify_union_variant::<flatbuffers::ForwardsUOffset<Vector>>("MonoType::Vector", pos),
           _ => Ok(()),
         }
      })?
@@ -20754,8 +20496,8 @@ pub mod fbsemantic {
                         )
                     }
                 }
-                MonoType::Arr => {
-                    if let Some(x) = self.typ_as_arr() {
+                MonoType::Collection => {
+                    if let Some(x) = self.typ_as_collection() {
                         ds.field("typ", &x)
                     } else {
                         ds.field(
@@ -20786,16 +20528,6 @@ pub mod fbsemantic {
                 }
                 MonoType::Dict => {
                     if let Some(x) = self.typ_as_dict() {
-                        ds.field("typ", &x)
-                    } else {
-                        ds.field(
-                            "typ",
-                            &"InvalidFlatbuffer: Union discriminant does not match value.",
-                        )
-                    }
-                }
-                MonoType::Vector => {
-                    if let Some(x) = self.typ_as_vector() {
                         ds.field("typ", &x)
                     } else {
                         ds.field(
@@ -20919,9 +20651,9 @@ pub mod fbsemantic {
 
         #[inline]
         #[allow(non_snake_case)]
-        pub fn typ_as_arr(&self) -> Option<Arr<'a>> {
-            if self.typ_type() == MonoType::Arr {
-                self.typ().map(Arr::init_from_table)
+        pub fn typ_as_collection(&self) -> Option<Collection<'a>> {
+            if self.typ_type() == MonoType::Collection {
+                self.typ().map(Collection::init_from_table)
             } else {
                 None
             }
@@ -20952,16 +20684,6 @@ pub mod fbsemantic {
         pub fn typ_as_dict(&self) -> Option<Dict<'a>> {
             if self.typ_type() == MonoType::Dict {
                 self.typ().map(Dict::init_from_table)
-            } else {
-                None
-            }
-        }
-
-        #[inline]
-        #[allow(non_snake_case)]
-        pub fn typ_as_vector(&self) -> Option<Vector<'a>> {
-            if self.typ_type() == MonoType::Vector {
-                self.typ().map(Vector::init_from_table)
             } else {
                 None
             }
@@ -21006,9 +20728,9 @@ pub mod fbsemantic {
                                 "MonoType::Var",
                                 pos,
                             ),
-                        MonoType::Arr => v
-                            .verify_union_variant::<flatbuffers::ForwardsUOffset<Arr>>(
-                                "MonoType::Arr",
+                        MonoType::Collection => v
+                            .verify_union_variant::<flatbuffers::ForwardsUOffset<Collection>>(
+                                "MonoType::Collection",
                                 pos,
                             ),
                         MonoType::Record => v
@@ -21024,11 +20746,6 @@ pub mod fbsemantic {
                         MonoType::Dict => v
                             .verify_union_variant::<flatbuffers::ForwardsUOffset<Dict>>(
                                 "MonoType::Dict",
-                                pos,
-                            ),
-                        MonoType::Vector => v
-                            .verify_union_variant::<flatbuffers::ForwardsUOffset<Vector>>(
-                                "MonoType::Vector",
                                 pos,
                             ),
                         _ => Ok(()),
@@ -21152,8 +20869,8 @@ pub mod fbsemantic {
                         )
                     }
                 }
-                MonoType::Arr => {
-                    if let Some(x) = self.typ_as_arr() {
+                MonoType::Collection => {
+                    if let Some(x) = self.typ_as_collection() {
                         ds.field("typ", &x)
                     } else {
                         ds.field(
@@ -21184,16 +20901,6 @@ pub mod fbsemantic {
                 }
                 MonoType::Dict => {
                     if let Some(x) = self.typ_as_dict() {
-                        ds.field("typ", &x)
-                    } else {
-                        ds.field(
-                            "typ",
-                            &"InvalidFlatbuffer: Union discriminant does not match value.",
-                        )
-                    }
-                }
-                MonoType::Vector => {
-                    if let Some(x) = self.typ_as_vector() {
                         ds.field("typ", &x)
                     } else {
                         ds.field(
@@ -21534,9 +21241,9 @@ pub mod fbsemantic {
 
         #[inline]
         #[allow(non_snake_case)]
-        pub fn typ_as_arr(&self) -> Option<Arr<'a>> {
-            if self.typ_type() == MonoType::Arr {
-                self.typ().map(Arr::init_from_table)
+        pub fn typ_as_collection(&self) -> Option<Collection<'a>> {
+            if self.typ_type() == MonoType::Collection {
+                self.typ().map(Collection::init_from_table)
             } else {
                 None
             }
@@ -21567,16 +21274,6 @@ pub mod fbsemantic {
         pub fn typ_as_dict(&self) -> Option<Dict<'a>> {
             if self.typ_type() == MonoType::Dict {
                 self.typ().map(Dict::init_from_table)
-            } else {
-                None
-            }
-        }
-
-        #[inline]
-        #[allow(non_snake_case)]
-        pub fn typ_as_vector(&self) -> Option<Vector<'a>> {
-            if self.typ_type() == MonoType::Vector {
-                self.typ().map(Vector::init_from_table)
             } else {
                 None
             }
@@ -21623,11 +21320,10 @@ pub mod fbsemantic {
         match key {
           MonoType::Basic => v.verify_union_variant::<flatbuffers::ForwardsUOffset<Basic>>("MonoType::Basic", pos),
           MonoType::Var => v.verify_union_variant::<flatbuffers::ForwardsUOffset<Var>>("MonoType::Var", pos),
-          MonoType::Arr => v.verify_union_variant::<flatbuffers::ForwardsUOffset<Arr>>("MonoType::Arr", pos),
+          MonoType::Collection => v.verify_union_variant::<flatbuffers::ForwardsUOffset<Collection>>("MonoType::Collection", pos),
           MonoType::Record => v.verify_union_variant::<flatbuffers::ForwardsUOffset<Record>>("MonoType::Record", pos),
           MonoType::Fun => v.verify_union_variant::<flatbuffers::ForwardsUOffset<Fun>>("MonoType::Fun", pos),
           MonoType::Dict => v.verify_union_variant::<flatbuffers::ForwardsUOffset<Dict>>("MonoType::Dict", pos),
-          MonoType::Vector => v.verify_union_variant::<flatbuffers::ForwardsUOffset<Vector>>("MonoType::Vector", pos),
           _ => Ok(()),
         }
      })?
@@ -21966,8 +21662,8 @@ pub mod fbsemantic {
                         )
                     }
                 }
-                MonoType::Arr => {
-                    if let Some(x) = self.typ_as_arr() {
+                MonoType::Collection => {
+                    if let Some(x) = self.typ_as_collection() {
                         ds.field("typ", &x)
                     } else {
                         ds.field(
@@ -21998,16 +21694,6 @@ pub mod fbsemantic {
                 }
                 MonoType::Dict => {
                     if let Some(x) = self.typ_as_dict() {
-                        ds.field("typ", &x)
-                    } else {
-                        ds.field(
-                            "typ",
-                            &"InvalidFlatbuffer: Union discriminant does not match value.",
-                        )
-                    }
-                }
-                MonoType::Vector => {
-                    if let Some(x) = self.typ_as_vector() {
                         ds.field("typ", &x)
                     } else {
                         ds.field(
@@ -22725,9 +22411,9 @@ pub mod fbsemantic {
 
         #[inline]
         #[allow(non_snake_case)]
-        pub fn typ_as_arr(&self) -> Option<Arr<'a>> {
-            if self.typ_type() == MonoType::Arr {
-                self.typ().map(Arr::init_from_table)
+        pub fn typ_as_collection(&self) -> Option<Collection<'a>> {
+            if self.typ_type() == MonoType::Collection {
+                self.typ().map(Collection::init_from_table)
             } else {
                 None
             }
@@ -22758,16 +22444,6 @@ pub mod fbsemantic {
         pub fn typ_as_dict(&self) -> Option<Dict<'a>> {
             if self.typ_type() == MonoType::Dict {
                 self.typ().map(Dict::init_from_table)
-            } else {
-                None
-            }
-        }
-
-        #[inline]
-        #[allow(non_snake_case)]
-        pub fn typ_as_vector(&self) -> Option<Vector<'a>> {
-            if self.typ_type() == MonoType::Vector {
-                self.typ().map(Vector::init_from_table)
             } else {
                 None
             }
@@ -22805,9 +22481,9 @@ pub mod fbsemantic {
                                 "MonoType::Var",
                                 pos,
                             ),
-                        MonoType::Arr => v
-                            .verify_union_variant::<flatbuffers::ForwardsUOffset<Arr>>(
-                                "MonoType::Arr",
+                        MonoType::Collection => v
+                            .verify_union_variant::<flatbuffers::ForwardsUOffset<Collection>>(
+                                "MonoType::Collection",
                                 pos,
                             ),
                         MonoType::Record => v
@@ -22823,11 +22499,6 @@ pub mod fbsemantic {
                         MonoType::Dict => v
                             .verify_union_variant::<flatbuffers::ForwardsUOffset<Dict>>(
                                 "MonoType::Dict",
-                                pos,
-                            ),
-                        MonoType::Vector => v
-                            .verify_union_variant::<flatbuffers::ForwardsUOffset<Vector>>(
-                                "MonoType::Vector",
                                 pos,
                             ),
                         _ => Ok(()),
@@ -22929,8 +22600,8 @@ pub mod fbsemantic {
                         )
                     }
                 }
-                MonoType::Arr => {
-                    if let Some(x) = self.typ_as_arr() {
+                MonoType::Collection => {
+                    if let Some(x) = self.typ_as_collection() {
                         ds.field("typ", &x)
                     } else {
                         ds.field(
@@ -22961,16 +22632,6 @@ pub mod fbsemantic {
                 }
                 MonoType::Dict => {
                     if let Some(x) = self.typ_as_dict() {
-                        ds.field("typ", &x)
-                    } else {
-                        ds.field(
-                            "typ",
-                            &"InvalidFlatbuffer: Union discriminant does not match value.",
-                        )
-                    }
-                }
-                MonoType::Vector => {
-                    if let Some(x) = self.typ_as_vector() {
                         ds.field("typ", &x)
                     } else {
                         ds.field(

@@ -88,7 +88,7 @@ import "influxdata/influxdb/schema"
 //
 // tags: inputs
 //
-builtin json : (?json: string, ?file: string) => [A] where A: Record
+builtin json : (?json: string, ?file: string) => stream[A] where A: Record
 
 // databases returns a list of databases in an InfluxDB 1.x (1.7+) instance.
 //
@@ -121,7 +121,7 @@ builtin databases : (
         ?orgID: string,
         ?host: string,
         ?token: string,
-    ) => [{
+    ) => stream[{
         organizationID: string,
         databaseName: string,
         retentionPolicy: string,
@@ -177,6 +177,9 @@ fieldsAsCols = schema.fieldsAsCols
 // - predicate: Predicate function that filters tag values.
 //   Default is `(r) => true`.
 // - start: Oldest time to include in results. Default is `-30d`.
+// - stop: Newest time include in results.
+//     The stop time is exclusive, meaning values with a time equal to stop time are excluded from the results.
+//     Default is `now()`.
 //
 //   Relative start times are defined using negative durations.
 //   Negative durations are relative to `now()`.
@@ -207,6 +210,10 @@ tagValues = schema.tagValues
 // - bucket: Bucket to return tag values from for a specific measurement.
 // - measurement: Measurement to return tag values from.
 // - tag: Tag to return all unique values from.
+// - start: Oldest time to include in results. Default is `-30d`.
+// - stop: Newest time include in results.
+//     The stop time is exclusive, meaning values with a time equal to stop time are excluded from the results.
+//     Default is `now()`.
 //
 // ## Examples
 //
@@ -235,6 +242,9 @@ measurementTagValues = schema.measurementTagValues
 // - predicate: Predicate function that filters tag keys.
 //   Default is `(r) => true`.
 // - start: Oldest time to include in results. Default is `-30d`.
+// - stop: Newest time include in results.
+//     The stop time is exclusive, meaning values with a time equal to stop time are excluded from the results.
+//     Default is `now()`.
 //
 //   Relative start times are defined using negative durations.
 //   Negative durations are relative to `now()`.
@@ -261,6 +271,10 @@ tagKeys = schema.tagKeys
 // ## Parameters
 // - bucket: Bucket to return tag keys from for a specific measurement.
 // - measurement: Measurement to return tag keys from.
+// - start: Oldest time to include in results. Default is `-30d`.
+// - stop: Newest time include in results.
+//     The stop time is exclusive, meaning values with a time equal to stop time are excluded from the results.
+//     Default is `now()`.
 //
 // ## Examples
 //
@@ -291,6 +305,9 @@ measurementTagKeys = schema.measurementTagKeys
 // - predicate: Predicate function that filters field keys.
 //   Default is `(r) => true`.
 // - start: Oldest time to include in results. Default is `-30d`.
+// - stop: Newest time include in results.
+//     The stop time is exclusive, meaning values with a time equal to stop time are excluded from the results.
+//     Default is `now()`.
 //
 //   Relative start times are defined using negative durations.
 //   Negative durations are relative to `now()`.
@@ -318,6 +335,9 @@ fieldKeys = schema.fieldKeys
 // - bucket: Bucket to retrieve field keys from.
 // - measurement: Measurement to list field keys from.
 // - start: Oldest time to include in results. Default is `-30d`.
+// - stop: Newest time include in results.
+//     The stop time is exclusive, meaning values with a time equal to stop time are excluded from the results.
+//     Default is `now()`.
 //
 //   Relative start times are defined using negative durations.
 //   Negative durations are relative to `now()`.
@@ -346,6 +366,10 @@ measurementFieldKeys = schema.measurementFieldKeys
 //
 // ## Parameters
 // - bucket: Bucket to retrieve measurements from.
+// - start: Oldest time to include in results. Default is `-30d`.
+// - stop: Newest time include in results.
+//     The stop time is exclusive, meaning values with a time equal to stop time are excluded from the results.
+//     Default is `now()`.
 //
 // ## Examples
 //

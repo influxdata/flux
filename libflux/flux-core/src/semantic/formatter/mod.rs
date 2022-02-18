@@ -7,7 +7,7 @@ use chrono::SecondsFormat;
 use crate::{
     ast, semantic,
     semantic::{
-        types::{MonoType, PolyType, Tvar, TvarKinds},
+        types::{CollectionType, MonoType, PolyType, Tvar, TvarKinds},
         walk,
     },
 };
@@ -179,11 +179,14 @@ impl Formatter {
         match n {
             MonoType::Var(tv) => self.format_tvar(tv),
             MonoType::BoundVar(tv) => self.format_tvar(tv),
-            MonoType::Arr(arr) => self.format_array_type(arr),
+            MonoType::Collection(app) => match app.collection {
+                CollectionType::Array => self.format_array_type(&app.arg),
+                // Collection::Vector => self.format_vector_type(vec),
+                _ => self.err = Some(anyhow!("bad expression")),
+            },
             MonoType::Dict(dict) => self.format_dict_type(dict),
             MonoType::Record(rec) => self.format_record_type(rec),
             MonoType::Fun(fun) => self.format_function_type(fun),
-            // MonoType::Vector(vec) => self.format_vector_type(vec),
             _ => self.err = Some(anyhow!("bad expression")),
         }
     }
@@ -244,9 +247,9 @@ impl Formatter {
         self.write_rune(']');
     }
 
-    fn format_array_type(&mut self, n: &semantic::types::Array) {
+    fn format_array_type(&mut self, n: &MonoType) {
         self.write_rune('[');
-        self.format_monotype(&n.0);
+        self.format_monotype(n);
         self.write_rune(']');
     }
 
