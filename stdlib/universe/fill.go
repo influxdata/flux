@@ -4,6 +4,7 @@ import (
 	"context"
 	"strconv"
 
+	arrowmem "github.com/apache/arrow/go/arrow/memory"
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/array"
 	"github.com/influxdata/flux/arrow"
@@ -11,6 +12,7 @@ import (
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/internal/execute/table"
+	"github.com/influxdata/flux/internal/feature"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/runtime"
@@ -175,6 +177,11 @@ func createFillTransformation(id execute.DatasetID, mode execute.AccumulationMod
 	if !ok {
 		return nil, nil, errors.Newf(codes.Internal, "invalid spec type %T", spec)
 	}
+
+	if feature.NarrowTransformationFill().Enabled(a.Context()) {
+		return NewNarrowFillTransformation(a.Context(), s, id, a.Allocator())
+	}
+
 	t, d := NewFillTransformation(a.Context(), s, id, a.Allocator())
 	return t, d, nil
 }
@@ -264,6 +271,161 @@ func (t *fillTransformation) UpdateProcessingTime(id execute.DatasetID, pt execu
 }
 func (t *fillTransformation) Finish(id execute.DatasetID, err error) {
 	t.d.Finish(err)
+}
+
+type fillTransformationAdapter struct {
+	fillTransformation fillTransformation
+}
+
+func NewNarrowFillTransformation(ctx context.Context, spec *FillProcedureSpec, id execute.DatasetID, alloc *memory.Allocator) (execute.Transformation, execute.Dataset, error) {
+	fillTransformation := fillTransformation{
+		ctx:  ctx,
+		spec: spec,
+	}
+	t := &fillTransformationAdapter{
+		fillTransformation,
+	}
+	return execute.NewNarrowStateTransformation(id, t, alloc)
+}
+
+type fillState struct {
+	colIdx        int
+	fillValue     interface{}
+	groupKey      flux.GroupKey
+	outputColumns []flux.ColMeta
+}
+
+func (t *fillTransformationAdapter) Process(chunk table.Chunk, state interface{}, d *execute.TransportDataset, mem arrowmem.Allocator) (interface{}, bool, error) {
+	return t.fillTransformation.adaptedProcess(chunk, state, d, mem)
+}
+
+func (t *fillTransformation) adaptedProcess(chunk table.Chunk, state interface{}, d *execute.TransportDataset, mem arrowmem.Allocator) (interface{}, bool, error) {
+	var dstate *fillState
+	if state != nil {
+		dstate = state.(*fillState)
+	}
+
+	if dstate == nil {
+		// column index
+		colIdx := execute.ColIdx(t.spec.Column, chunk.Cols())
+		if colIdx < 0 && t.spec.UsePrevious {
+			// usePrevious was used on a column that doesn't exist. In this case, just
+			// act as a passthrough. This functionality says "I was provided a non-existent
+			// value, so the new value also doesn't exist.
+			if err := d.Process(chunk); err != nil {
+				return nil, false, err
+			}
+		}
+
+		// key
+		key := chunk.Key()
+		if idx := execute.ColIdx(t.spec.Column, key.Cols()); idx >= 0 {
+			if key.IsNull(idx) {
+				var err error
+				gkb := execute.NewGroupKeyBuilder(key)
+				gkb.SetKeyValue(t.spec.Column, t.spec.Value)
+				key, err = gkb.Build()
+				if err != nil {
+					return nil, false, err
+				}
+			} else {
+				if err := d.Process(chunk); err != nil {
+					return nil, false, err
+				}
+			}
+		}
+
+		// fill value
+		var fillValue interface{}
+		if !t.spec.UsePrevious {
+			if colIdx > -1 && chunk.Cols()[colIdx].Type != flux.ColumnType(t.spec.Value.Type()) {
+				return nil, false, errors.Newf(codes.FailedPrecondition, "fill column type mismatch: %s/%s", chunk.Cols()[colIdx].Type.String(), flux.ColumnType(t.spec.Value.Type()).String())
+			}
+			fillValue = values.Unwrap(t.spec.Value)
+		}
+
+		// output columns
+		var outputColumns []flux.ColMeta
+		// In case of missing fill column, add it to the existing columns
+		if colIdx < 0 {
+			colsLen := len(chunk.Cols())
+
+			newCols := make([]flux.ColMeta, colsLen, colsLen+1)
+			copy(newCols, chunk.Cols())
+			c := flux.ColMeta{
+				Label: t.spec.Column,
+				Type:  flux.ColumnType(t.spec.Value.Type()),
+			}
+			outputColumns = append(newCols, c)
+			colIdx = len(outputColumns) - 1
+
+		} else {
+			outputColumns = chunk.Cols()
+		}
+
+		// populate state
+		dstate = &fillState{
+			colIdx:        colIdx,
+			fillValue:     fillValue,
+			groupKey:      key,
+			outputColumns: outputColumns,
+		}
+	}
+
+	buffer := arrow.TableBuffer{
+		GroupKey: dstate.groupKey,
+		Columns:  dstate.outputColumns,
+		Values:   make([]array.Interface, len(chunk.Cols())),
+	}
+
+	if err := t.fillChunk(&buffer, chunk, dstate.colIdx, &dstate.fillValue, mem); err != nil {
+		return nil, false, err
+	}
+
+	out := table.ChunkFromBuffer(buffer)
+	if err := d.Process(out); err != nil {
+		return nil, false, err
+	}
+	return dstate, true, nil
+}
+
+func (t *fillTransformationAdapter) Close() error { return nil }
+
+func (t *fillTransformation) fillChunk(buffer *arrow.TableBuffer, chunk table.Chunk, colIdx int, fillValue *interface{}, mem arrowmem.Allocator) error {
+	if chunk.Len() == 0 {
+		return nil
+	}
+	vs := make([]array.Interface, len(buffer.Cols()))
+
+	// Iterate over the existing columns and if column already exist(colIdx matches with i) call fillColumn on it
+	for i, col := range chunk.Cols() {
+		arr := chunk.Values(i)
+		if i != colIdx {
+			vs[i] = arr
+			vs[i].Retain()
+			continue
+		}
+		vs[i] = t.fillColumnNT(col.Type, arr, fillValue, mem)
+	}
+
+	// If the fill column is new, create a completely null column and call fillColumn on it
+	if vs[colIdx] == nil {
+		colType := flux.ColumnType(t.spec.Value.Type())
+		arr := t.addNullColumnNT(colType, chunk.Len(), mem)
+		defer arr.Release()
+		vs[colIdx] = t.fillColumnNT(colType, arr, fillValue, mem)
+	}
+	buffer.Values = vs
+	return nil
+}
+
+func (t *fillTransformation) addNullColumnNT(typ flux.ColType, l int, mem arrowmem.Allocator) array.Interface {
+	builder := arrow.NewBuilder(typ, mem)
+	builder.Resize(l)
+	for i := 0; i < l; i++ {
+		builder.AppendNull()
+	}
+	return builder.NewArray()
 }
 
 func (t *fillTransformation) fillTable(w *table.StreamWriter, cr flux.ColReader, colIdx int, fillValue *interface{}) error {

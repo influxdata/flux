@@ -9,6 +9,7 @@ package universe
 import (
 	"fmt"
 
+	arrowmem "github.com/apache/arrow/go/arrow/memory"
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/array"
 	"github.com/influxdata/flux/values"
@@ -191,6 +192,206 @@ func (t *fillTransformation) fillTimeColumn(arr *array.Int, fillValue *interface
 		fillValueTime = int64((*fillValue).(values.Time))
 	}
 	b := array.NewIntBuilder(t.alloc)
+	b.Resize(arr.Len())
+	for i := 0; i < arr.Len(); i++ {
+		if arr.IsNull(i) {
+			if fillValueNull {
+				b.AppendNull()
+			} else {
+				b.Append(fillValueTime)
+			}
+		} else {
+			v := arr.Value(i)
+			b.Append(v)
+			if t.spec.UsePrevious {
+				fillValueTime = v
+				fillValueNull = false
+			}
+		}
+	}
+	if t.spec.UsePrevious && !fillValueNull {
+		*fillValue = fillValueTime
+	}
+	return b.NewArray()
+}
+
+func (t *fillTransformation) fillColumnNT(typ flux.ColType, arr array.Interface, fillValue *interface{}, mem arrowmem.Allocator) array.Interface {
+	switch typ {
+	case flux.TInt:
+		return t.fillIntColumnNT(arr.(*array.Int), fillValue, mem)
+	case flux.TUInt:
+		return t.fillUintColumnNT(arr.(*array.Uint), fillValue, mem)
+	case flux.TFloat:
+		return t.fillFloatColumnNT(arr.(*array.Float), fillValue, mem)
+	case flux.TBool:
+		return t.fillBooleanColumnNT(arr.(*array.Boolean), fillValue, mem)
+	case flux.TString:
+		return t.fillStringColumnNT(arr.(*array.String), fillValue, mem)
+	case flux.TTime:
+		return t.fillTimeColumnNT(arr.(*array.Int), fillValue, mem)
+
+	default:
+		panic(fmt.Errorf("unsupported array data type: %s", arr.DataType()))
+	}
+}
+
+func (t *fillTransformation) fillIntColumnNT(arr *array.Int, fillValue *interface{}, mem arrowmem.Allocator) array.Interface {
+	fillValueNull := *fillValue == nil
+	var fillValueInt int64
+	if !fillValueNull {
+		fillValueInt = (*fillValue).(int64)
+	}
+	b := array.NewIntBuilder(mem)
+	b.Resize(arr.Len())
+	for i := 0; i < arr.Len(); i++ {
+		if arr.IsNull(i) {
+			if fillValueNull {
+				b.AppendNull()
+			} else {
+				b.Append(fillValueInt)
+			}
+		} else {
+			v := arr.Value(i)
+			b.Append(v)
+			if t.spec.UsePrevious {
+				fillValueInt = v
+				fillValueNull = false
+			}
+		}
+	}
+	if t.spec.UsePrevious && !fillValueNull {
+		*fillValue = fillValueInt
+	}
+	return b.NewArray()
+}
+
+func (t *fillTransformation) fillUintColumnNT(arr *array.Uint, fillValue *interface{}, mem arrowmem.Allocator) array.Interface {
+	fillValueNull := *fillValue == nil
+	var fillValueUint uint64
+	if !fillValueNull {
+		fillValueUint = (*fillValue).(uint64)
+	}
+	b := array.NewUintBuilder(mem)
+	b.Resize(arr.Len())
+	for i := 0; i < arr.Len(); i++ {
+		if arr.IsNull(i) {
+			if fillValueNull {
+				b.AppendNull()
+			} else {
+				b.Append(fillValueUint)
+			}
+		} else {
+			v := arr.Value(i)
+			b.Append(v)
+			if t.spec.UsePrevious {
+				fillValueUint = v
+				fillValueNull = false
+			}
+		}
+	}
+	if t.spec.UsePrevious && !fillValueNull {
+		*fillValue = fillValueUint
+	}
+	return b.NewArray()
+}
+
+func (t *fillTransformation) fillFloatColumnNT(arr *array.Float, fillValue *interface{}, mem arrowmem.Allocator) array.Interface {
+	fillValueNull := *fillValue == nil
+	var fillValueFloat float64
+	if !fillValueNull {
+		fillValueFloat = (*fillValue).(float64)
+	}
+	b := array.NewFloatBuilder(mem)
+	b.Resize(arr.Len())
+	for i := 0; i < arr.Len(); i++ {
+		if arr.IsNull(i) {
+			if fillValueNull {
+				b.AppendNull()
+			} else {
+				b.Append(fillValueFloat)
+			}
+		} else {
+			v := arr.Value(i)
+			b.Append(v)
+			if t.spec.UsePrevious {
+				fillValueFloat = v
+				fillValueNull = false
+			}
+		}
+	}
+	if t.spec.UsePrevious && !fillValueNull {
+		*fillValue = fillValueFloat
+	}
+	return b.NewArray()
+}
+
+func (t *fillTransformation) fillBooleanColumnNT(arr *array.Boolean, fillValue *interface{}, mem arrowmem.Allocator) array.Interface {
+	fillValueNull := *fillValue == nil
+	var fillValueBoolean bool
+	if !fillValueNull {
+		fillValueBoolean = (*fillValue).(bool)
+	}
+	b := array.NewBooleanBuilder(mem)
+	b.Resize(arr.Len())
+	for i := 0; i < arr.Len(); i++ {
+		if arr.IsNull(i) {
+			if fillValueNull {
+				b.AppendNull()
+			} else {
+				b.Append(fillValueBoolean)
+			}
+		} else {
+			v := arr.Value(i)
+			b.Append(v)
+			if t.spec.UsePrevious {
+				fillValueBoolean = v
+				fillValueNull = false
+			}
+		}
+	}
+	if t.spec.UsePrevious && !fillValueNull {
+		*fillValue = fillValueBoolean
+	}
+	return b.NewArray()
+}
+
+func (t *fillTransformation) fillStringColumnNT(arr *array.String, fillValue *interface{}, mem arrowmem.Allocator) array.Interface {
+	fillValueNull := *fillValue == nil
+	var fillValueString string
+	if !fillValueNull {
+		fillValueString = (*fillValue).(string)
+	}
+	b := array.NewStringBuilder(mem)
+	b.Resize(arr.Len())
+	for i := 0; i < arr.Len(); i++ {
+		if arr.IsNull(i) {
+			if fillValueNull {
+				b.AppendNull()
+			} else {
+				b.Append(fillValueString)
+			}
+		} else {
+			v := arr.Value(i)
+			b.Append(v)
+			if t.spec.UsePrevious {
+				fillValueString = v
+				fillValueNull = false
+			}
+		}
+	}
+	if t.spec.UsePrevious && !fillValueNull {
+		*fillValue = fillValueString
+	}
+	return b.NewArray()
+}
+
+func (t *fillTransformation) fillTimeColumnNT(arr *array.Int, fillValue *interface{}, mem arrowmem.Allocator) array.Interface {
+	fillValueNull := *fillValue == nil
+	var fillValueTime int64
+	if !fillValueNull {
+		fillValueTime = int64((*fillValue).(values.Time))
+	}
+	b := array.NewIntBuilder(mem)
 	b.Resize(arr.Len())
 	for i := 0; i < arr.Len(); i++ {
 		if arr.IsNull(i) {
