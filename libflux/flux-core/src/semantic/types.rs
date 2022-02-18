@@ -1,6 +1,7 @@
 //! Semantic representations of types.
 
 use std::{
+    cell::Cell,
     cmp,
     collections::{BTreeMap, BTreeSet},
     fmt::{self, Write},
@@ -129,24 +130,6 @@ impl Substitutable for PolyType {
     fn free_vars(&self, vars: &mut Vec<Tvar>) {
         self.expr.free_vars(vars);
         vars.retain(|v| !self.vars.contains(v));
-    }
-}
-
-impl MaxTvar for [Tvar] {
-    fn max_tvar(&self) -> Option<Tvar> {
-        self.iter().max().cloned()
-    }
-}
-
-impl MaxTvar for [Option<Tvar>] {
-    fn max_tvar(&self) -> Option<Tvar> {
-        self.iter().max().and_then(|t| *t)
-    }
-}
-
-impl MaxTvar for PolyType {
-    fn max_tvar(&self) -> Option<Tvar> {
-        [self.vars.max_tvar(), self.expr.max_tvar()].max_tvar()
     }
 }
 
@@ -729,19 +712,6 @@ impl Substitutable for MonoType {
     }
 }
 
-impl MaxTvar for MonoType {
-    fn max_tvar(&self) -> Option<Tvar> {
-        match self {
-            MonoType::Error | MonoType::Builtin(_) => None,
-            MonoType::BoundVar(tvr) | MonoType::Var(tvr) => tvr.max_tvar(),
-            MonoType::Collection(app) => app.max_tvar(),
-            MonoType::Dict(dict) => dict.max_tvar(),
-            MonoType::Record(obj) => obj.max_tvar(),
-            MonoType::Fun(fun) => fun.max_tvar(),
-        }
-    }
-}
-
 impl From<Tvar> for MonoType {
     fn from(a: Tvar) -> MonoType {
         MonoType::Var(a)
@@ -1029,12 +999,6 @@ impl fmt::Display for Tvar {
     }
 }
 
-impl MaxTvar for Tvar {
-    fn max_tvar(&self) -> Option<Tvar> {
-        Some(*self)
-    }
-}
-
 impl Tvar {
     fn unify(self, with: &MonoType, unifier: &mut Unifier<'_>) {
         match *with {
@@ -1102,12 +1066,6 @@ impl Substitutable for Collection {
     }
 }
 
-impl MaxTvar for Collection {
-    fn max_tvar(&self) -> Option<Tvar> {
-        self.arg.max_tvar()
-    }
-}
-
 impl Collection {
     // self represents the expected type.
     fn unify(&self, with: &Self, unifier: &mut Unifier<'_>) {
@@ -1155,12 +1113,6 @@ impl Substitutable for Dictionary {
     fn free_vars(&self, vars: &mut Vec<Tvar>) {
         self.key.free_vars(vars);
         self.val.free_vars(vars);
-    }
-}
-
-impl MaxTvar for Dictionary {
-    fn max_tvar(&self) -> Option<Tvar> {
-        [self.key.max_tvar(), self.val.max_tvar()].max_tvar()
     }
 }
 
@@ -1264,15 +1216,6 @@ impl Substitutable for Record {
                 tail.free_vars(vars);
                 head.v.free_vars(vars);
             }
-        }
-    }
-}
-
-impl MaxTvar for Record {
-    fn max_tvar(&self) -> Option<Tvar> {
-        match self {
-            Record::Empty => None,
-            Record::Extension { head, tail } => [head.max_tvar(), tail.max_tvar()].max_tvar(),
         }
     }
 }
@@ -1658,12 +1601,6 @@ where
     }
 }
 
-impl<T> MaxTvar for Property<T> {
-    fn max_tvar(&self) -> Option<Tvar> {
-        self.v.max_tvar()
-    }
-}
-
 /// Represents a function type.
 ///
 /// A function type is defined by a set of required arguments,
@@ -1801,35 +1738,6 @@ impl Substitutable for Function {
         self.opt.free_vars(vars);
         self.pipe.free_vars(vars);
         self.retn.free_vars(vars);
-    }
-}
-
-impl<U, T: MaxTvar> MaxTvar for SemanticMap<U, T> {
-    fn max_tvar(&self) -> Option<Tvar> {
-        self.iter()
-            .map(|(_, t)| t.max_tvar())
-            .fold(None, |max, tv| if tv > max { tv } else { max })
-    }
-}
-
-impl<T: MaxTvar> MaxTvar for Option<T> {
-    fn max_tvar(&self) -> Option<Tvar> {
-        match self {
-            None => None,
-            Some(t) => t.max_tvar(),
-        }
-    }
-}
-
-impl MaxTvar for Function {
-    fn max_tvar(&self) -> Option<Tvar> {
-        [
-            self.req.max_tvar(),
-            self.opt.max_tvar(),
-            self.pipe.max_tvar(),
-            self.retn.max_tvar(),
-        ]
-        .max_tvar()
     }
 }
 
@@ -2047,6 +1955,29 @@ impl TypeLike for (MonoType, &'_ crate::ast::SourceLocation) {
 pub trait MaxTvar {
     /// Return the maximum type variable of a type.
     fn max_tvar(&self) -> Option<Tvar>;
+}
+
+impl<T> MaxTvar for T
+where
+    T: Substitutable,
+{
+    fn max_tvar(&self) -> Option<Tvar> {
+        #[derive(Default)]
+        struct MaxTvars {
+            max: Cell<Option<Tvar>>,
+        }
+
+        impl Substituter for MaxTvars {
+            fn try_apply(&self, var: Tvar) -> Option<MonoType> {
+                self.max.set(self.max.get().max(Some(var)));
+                None
+            }
+        }
+
+        let max = MaxTvars::default();
+        self.visit(&max);
+        max.max.into_inner()
+    }
 }
 
 #[cfg(test)]
