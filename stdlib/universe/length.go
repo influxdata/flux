@@ -27,20 +27,9 @@ func MakeLengthFunc() values.Function {
 				return nil, errors.Newf(codes.Invalid, "arr must be an array, got %s", got)
 			}
 
-			maybeArr := v.Array()
-			switch maybeArr.(type) {
-			// The type system currently conflates TableObject (aka "table stream")
-			// with fully-realized arrays of records requiring it to implement
-			// the Array interface. Since TableObject will currently panic
-			// if the methods provided by this interface are invoked, short-circuit
-			// by returning an error.
-			// XXX: remove when array/stream are different types <https://github.com/influxdata/flux/issues/4343>
-			case values.TableObject:
-				return nil, errors.New(codes.Invalid, "arr must be an array, got table stream")
-			default:
-				l := maybeArr.Len()
-				return values.NewInt(int64(l)), nil
-			}
+			arr := v.Array()
+			l := arr.Len()
+			return values.NewInt(int64(l)), nil
 		}, false,
 	)
 }

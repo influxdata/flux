@@ -80,9 +80,6 @@ func createJoinOpSpec(args flux.Arguments, a *flux.Administration) (flux.Operati
 	// On specifies the columns to join on, and is required.
 	if array, err := args.GetRequiredArray("on", semantic.String); err != nil {
 		return nil, err
-	} else if _, ok := array.(values.TableObject); ok {
-		// XXX: remove when array/stream are different types <https://github.com/influxdata/flux/issues/4343>
-		return nil, errors.New(codes.Invalid, "on cannot be a table stream; expected an array")
 	} else if array.Len() == 0 {
 		return nil, errors.New(codes.Invalid, "at least one column in 'on' column list is required")
 	} else {
