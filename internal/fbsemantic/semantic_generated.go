@@ -97,16 +97,19 @@ type CollectionType byte
 const (
 	CollectionTypeArray  CollectionType = 0
 	CollectionTypeVector CollectionType = 1
+	CollectionTypeStream CollectionType = 2
 )
 
 var EnumNamesCollectionType = map[CollectionType]string{
 	CollectionTypeArray:  "Array",
 	CollectionTypeVector: "Vector",
+	CollectionTypeStream: "Stream",
 }
 
 var EnumValuesCollectionType = map[string]CollectionType{
 	"Array":  CollectionTypeArray,
 	"Vector": CollectionTypeVector,
+	"Stream": CollectionTypeStream,
 }
 
 func (v CollectionType) String() string {
@@ -951,6 +954,67 @@ func CollectionAddArg(builder *flatbuffers.Builder, arg flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(2, flatbuffers.UOffsetT(arg), 0)
 }
 func CollectionEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
+	return builder.EndObject()
+}
+
+type Stream struct {
+	_tab flatbuffers.Table
+}
+
+func GetRootAsStream(buf []byte, offset flatbuffers.UOffsetT) *Stream {
+	n := flatbuffers.GetUOffsetT(buf[offset:])
+	x := &Stream{}
+	x.Init(buf, n+offset)
+	return x
+}
+
+func GetSizePrefixedRootAsStream(buf []byte, offset flatbuffers.UOffsetT) *Stream {
+	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
+	x := &Stream{}
+	x.Init(buf, n+offset+flatbuffers.SizeUint32)
+	return x
+}
+
+func (rcv *Stream) Init(buf []byte, i flatbuffers.UOffsetT) {
+	rcv._tab.Bytes = buf
+	rcv._tab.Pos = i
+}
+
+func (rcv *Stream) Table() flatbuffers.Table {
+	return rcv._tab
+}
+
+func (rcv *Stream) TType() MonoType {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(4))
+	if o != 0 {
+		return MonoType(rcv._tab.GetByte(o + rcv._tab.Pos))
+	}
+	return 0
+}
+
+func (rcv *Stream) MutateTType(n MonoType) bool {
+	return rcv._tab.MutateByteSlot(4, byte(n))
+}
+
+func (rcv *Stream) T(obj *flatbuffers.Table) bool {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
+	if o != 0 {
+		rcv._tab.Union(obj, o)
+		return true
+	}
+	return false
+}
+
+func StreamStart(builder *flatbuffers.Builder) {
+	builder.StartObject(2)
+}
+func StreamAddTType(builder *flatbuffers.Builder, tType MonoType) {
+	builder.PrependByteSlot(0, byte(tType), 0)
+}
+func StreamAddT(builder *flatbuffers.Builder, t flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(1, flatbuffers.UOffsetT(t), 0)
+}
+func StreamEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
 	return builder.EndObject()
 }
 

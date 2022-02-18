@@ -72,14 +72,10 @@ pub fn imports() -> Option<Packages> {
 ///
 /// The analyzer is aware of the stdlib and prelude.
 pub fn new_semantic_analyzer(config: AnalyzerConfig) -> Result<Analyzer<'static, Packages>> {
-    let env = match &*PRELUDE {
-        Some(prelude) => prelude,
-        None => return Err(anyhow!("missing prelude").into()),
-    };
-    let importer = match imports() {
-        Some(imports) => imports,
-        None => return Err(anyhow!("missing stdlib inports").into()),
-    };
+    let env = PRELUDE.as_ref().ok_or_else(|| anyhow!("missing prelude"))?;
+
+    let importer = imports().ok_or_else(|| anyhow!("missing stdlib inports"))?;
+
     Ok(Analyzer::new(Environment::from(env), importer, config))
 }
 
@@ -895,7 +891,7 @@ from(bucket: v.bucket)
 
         // TODO(algow): re-introduce equality constraints for binary comparison operators
         // https://github.com/influxdata/flux/issues/2466
-        let code = "[{ C with
+        let code = "stream[{ C with
                 _value: A
                     , _value: A
                     , _time: time
@@ -932,7 +928,7 @@ from(bucket: v.bucket)
 
         // TODO(algow): re-introduce equality constraints for binary comparison operators
         // https://github.com/influxdata/flux/issues/2466
-        let code = "[{ D with
+        let code = "stream[{ D with
                 _value: A
                     , A: B
                     , _time: time
@@ -947,7 +943,7 @@ from(bucket: v.bucket)
         }
         let want_a = convert_polytype(&typ_expr, &mut Substitution::default()).unwrap();
 
-        let code = " [{ D with
+        let code = "stream[{ D with
                 _value: A
                     , B: B
                     , _time: time
@@ -963,7 +959,7 @@ from(bucket: v.bucket)
         }
         let want_b = convert_polytype(&typ_expr, &mut Substitution::default()).unwrap();
 
-        let code = "[{ D with
+        let code = "stream[{ D with
                 _value: A
                     , A: B
                     , B: C

@@ -456,19 +456,26 @@ pub enum BuiltinType {
 pub enum MonoType {
     #[display(fmt = "<error>")]
     Error,
+
     #[display(fmt = "{}", _0)]
     Builtin(BuiltinType),
+
     #[display(fmt = "#{}", _0)]
     Var(Tvar),
+
     /// A type variable that is bound to to a `PolyType` that this variable is contained in.
     #[display(fmt = "{}", _0)]
     BoundVar(Tvar),
+
     #[display(fmt = "{}", _0)]
     Collection(Ptr<Collection>),
+
     #[display(fmt = "{}", _0)]
     Dict(Ptr<Dictionary>),
+
     #[display(fmt = "{}", _0)]
     Record(Ptr<Record>),
+
     #[display(fmt = "{}", _0)]
     Fun(Ptr<Function>),
 }
@@ -497,6 +504,7 @@ impl Serialize for MonoType {
             Record(&'a Ptr<Record>),
             Fun(&'a Ptr<Function>),
             Vector(&'a MonoType),
+            Stream(&'a MonoType),
         }
 
         match self {
@@ -518,6 +526,7 @@ impl Serialize for MonoType {
             Self::Collection(p) => match p.collection {
                 CollectionType::Array => MonoTypeSer::Arr(&p.arg),
                 CollectionType::Vector => MonoTypeSer::Vector(&p.arg),
+                CollectionType::Stream => MonoTypeSer::Stream(&p.arg),
             },
             Self::Dict(p) => MonoTypeSer::Dict(p),
             Self::Record(p) => MonoTypeSer::Record(p),
@@ -543,6 +552,9 @@ impl fmt::Display for Collection {
             CollectionType::Vector => {
                 write!(f, "v[{}]", self.arg)
             }
+            CollectionType::Stream => {
+                write!(f, "stream[{}]", self.arg)
+            }
         }
     }
 }
@@ -552,6 +564,7 @@ impl fmt::Display for Collection {
 pub enum CollectionType {
     Array,
     Vector,
+    Stream,
 }
 
 /// An ordered map of string identifiers to monotypes.
@@ -825,6 +838,14 @@ impl MonoType {
         })
     }
 
+    /// Creates a stream type
+    pub fn stream(arg: MonoType) -> Self {
+        Self::app(Collection {
+            collection: CollectionType::Stream,
+            arg,
+        })
+    }
+
     /// Creates a dictionary type
     pub fn dict(d: impl Into<Ptr<Dictionary>>) -> Self {
         Self::Dict(d.into())
@@ -965,6 +986,7 @@ impl MonoType {
             MonoType::Collection(app) => match app.collection {
                 CollectionType::Array => " (array)",
                 CollectionType::Vector => " (vector)",
+                CollectionType::Stream => "",
             },
             _ => "",
         }
@@ -1113,7 +1135,7 @@ impl Collection {
 
     fn constrain(&self, with: Kind, cons: &mut TvarKinds) -> Result<(), Error> {
         match self.collection {
-            CollectionType::Array => match with {
+            CollectionType::Array | CollectionType::Stream => match with {
                 Kind::Equatable => self.arg.constrain(with, cons),
                 _ => Err(Error::CannotConstrain {
                     act: MonoType::app(self.clone()),

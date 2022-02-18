@@ -18,6 +18,7 @@ const (
 	MonoTypeDictType     MonoType = 4
 	MonoTypeRecordType   MonoType = 5
 	MonoTypeFunctionType MonoType = 6
+	MonoTypeStreamType   MonoType = 7
 )
 
 var EnumNamesMonoType = map[MonoType]string{
@@ -28,6 +29,7 @@ var EnumNamesMonoType = map[MonoType]string{
 	MonoTypeDictType:     "DictType",
 	MonoTypeRecordType:   "RecordType",
 	MonoTypeFunctionType: "FunctionType",
+	MonoTypeStreamType:   "StreamType",
 }
 
 var EnumValuesMonoType = map[string]MonoType{
@@ -38,6 +40,7 @@ var EnumValuesMonoType = map[string]MonoType{
 	"DictType":     MonoTypeDictType,
 	"RecordType":   MonoTypeRecordType,
 	"FunctionType": MonoTypeFunctionType,
+	"StreamType":   MonoTypeStreamType,
 }
 
 func (v MonoType) String() string {
@@ -658,6 +661,83 @@ func ArrayTypeAddElement(builder *flatbuffers.Builder, element flatbuffers.UOffs
 	builder.PrependUOffsetTSlot(2, flatbuffers.UOffsetT(element), 0)
 }
 func ArrayTypeEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
+	return builder.EndObject()
+}
+
+type StreamType struct {
+	_tab flatbuffers.Table
+}
+
+func GetRootAsStreamType(buf []byte, offset flatbuffers.UOffsetT) *StreamType {
+	n := flatbuffers.GetUOffsetT(buf[offset:])
+	x := &StreamType{}
+	x.Init(buf, n+offset)
+	return x
+}
+
+func GetSizePrefixedRootAsStreamType(buf []byte, offset flatbuffers.UOffsetT) *StreamType {
+	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
+	x := &StreamType{}
+	x.Init(buf, n+offset+flatbuffers.SizeUint32)
+	return x
+}
+
+func (rcv *StreamType) Init(buf []byte, i flatbuffers.UOffsetT) {
+	rcv._tab.Bytes = buf
+	rcv._tab.Pos = i
+}
+
+func (rcv *StreamType) Table() flatbuffers.Table {
+	return rcv._tab
+}
+
+func (rcv *StreamType) BaseNode(obj *BaseNode) *BaseNode {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(4))
+	if o != 0 {
+		x := rcv._tab.Indirect(o + rcv._tab.Pos)
+		if obj == nil {
+			obj = new(BaseNode)
+		}
+		obj.Init(rcv._tab.Bytes, x)
+		return obj
+	}
+	return nil
+}
+
+func (rcv *StreamType) ElementType() MonoType {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
+	if o != 0 {
+		return MonoType(rcv._tab.GetByte(o + rcv._tab.Pos))
+	}
+	return 0
+}
+
+func (rcv *StreamType) MutateElementType(n MonoType) bool {
+	return rcv._tab.MutateByteSlot(6, byte(n))
+}
+
+func (rcv *StreamType) Element(obj *flatbuffers.Table) bool {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(8))
+	if o != 0 {
+		rcv._tab.Union(obj, o)
+		return true
+	}
+	return false
+}
+
+func StreamTypeStart(builder *flatbuffers.Builder) {
+	builder.StartObject(3)
+}
+func StreamTypeAddBaseNode(builder *flatbuffers.Builder, baseNode flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(0, flatbuffers.UOffsetT(baseNode), 0)
+}
+func StreamTypeAddElementType(builder *flatbuffers.Builder, elementType MonoType) {
+	builder.PrependByteSlot(1, byte(elementType), 0)
+}
+func StreamTypeAddElement(builder *flatbuffers.Builder, element flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(2, flatbuffers.UOffsetT(element), 0)
+}
+func StreamTypeEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
 	return builder.EndObject()
 }
 

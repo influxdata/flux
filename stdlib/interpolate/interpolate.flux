@@ -41,6 +41,6 @@ package interpolate
 // tags: transformations
 //
 builtin linear : (
-        <-tables: [{T with _time: time, _value: float}],
+        <-tables: stream[{T with _time: time, _value: float}],
         every: duration,
-    ) => [{T with _time: time, _value: float}]
+    ) => stream[{T with _time: time, _value: float}]

@@ -90,7 +90,7 @@ func TestLength_ReceiveTableObjectIsError(t *testing.T) {
 		t.Fatal("expected error, got none")
 	}
 
-	if want, got := "error calling function \"length\" @2:4-2:39: arr must be an array, got table stream", err.Error(); want != got {
+	if want, got := "error @2:16-2:38: expected [{}] (array) but found stream[{}] (argument arr)", err.Error(); want != got {
 		t.Errorf("wanted error %q, got %q", want, got)
 	}
 }

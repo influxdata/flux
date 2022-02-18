@@ -60,37 +60,28 @@ func convertValue(v values.Value) (interface{}, error) {
 		return v.Regexp().String(), nil
 	case semantic.Array:
 		arr := v.Array()
-		switch arr.(type) {
-		// The type system currently conflates TableObject (aka "table stream")
-		// with fully-realized arrays of records requiring it to implement
-		// the Array interface. Since TableObject will currently panic
-		// if the methods provided by this interface are invoked, short-circuit
-		// by returning an error.
-		// XXX: remove when array/stream are different types <https://github.com/influxdata/flux/issues/4343>
-		case values.TableObject:
-			return nil, errors.New(
-				codes.Invalid,
-				"got table stream instead of array. "+
-					"Try using tableFind() or findRecord() to extract data from stream")
-		default:
-			a := make([]interface{}, arr.Len())
-			var rangeErr error
-			arr.Range(func(i int, v values.Value) {
-				if rangeErr != nil {
-					return // short circuit if we already hit an error
-				}
-				val, err := convertValue(v)
-				if err != nil {
-					rangeErr = err
-					return
-				}
-				a[i] = val
-			})
+		a := make([]interface{}, arr.Len())
+		var rangeErr error
+		arr.Range(func(i int, v values.Value) {
 			if rangeErr != nil {
-				return nil, rangeErr
+				return // short circuit if we already hit an error
 			}
-			return a, nil
+			val, err := convertValue(v)
+			if err != nil {
+				rangeErr = err
+				return
+			}
+			a[i] = val
+		})
+		if rangeErr != nil {
+			return nil, rangeErr
 		}
+		return a, nil
+	case semantic.Stream:
+		return nil, errors.New(
+			codes.Invalid,
+			"got table stream instead of array. "+
+				"Try using tableFind() or findRecord() to extract data from stream")
 	case semantic.Object:
 		obj := v.Object()
 		o := make(map[string]interface{}, obj.Len())

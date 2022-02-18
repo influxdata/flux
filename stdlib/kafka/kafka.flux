@@ -45,7 +45,7 @@ package kafka
 // tags: outputs
 //
 builtin to : (
-        <-tables: [A],
+        <-tables: stream[A],
         brokers: [string],
         topic: string,
         ?balancer: string,
@@ -54,6 +54,6 @@ builtin to : (
         ?timeColumn: string,
         ?tagColumns: [string],
         ?valueColumns: [string],
-    ) => [A]
+    ) => stream[A]
     where
     A: Record

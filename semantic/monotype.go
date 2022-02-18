@@ -92,6 +92,8 @@ func nature(tbl flatbuffers.Table, t fbsemantic.MonoType) Nature {
 			return Array
 		case fbsemantic.CollectionTypeVector:
 			return Vector
+		case fbsemantic.CollectionTypeStream:
+			return Stream
 		default:
 			return Invalid
 		}
@@ -308,6 +310,18 @@ func (a *CollectionFB) ElementType() (MonoType, error) {
 		return MonoType{}, errors.New(codes.Internal, "missing array type")
 	}
 	return NewMonoType(tbl, a.fb.ArgType())
+}
+
+type StreamFB struct {
+	fb *fbsemantic.Stream
+}
+
+func (a *StreamFB) ElementType() (MonoType, error) {
+	var tbl flatbuffers.Table
+	if !a.fb.T(&tbl) {
+		return MonoType{}, errors.New(codes.Internal, "missing array type")
+	}
+	return NewMonoType(tbl, a.fb.TType())
 }
 
 func getCollection(tbl fbTabler) (collection, bool) {
@@ -604,7 +618,20 @@ func (mt MonoType) string(m map[uint64]uint64) string {
 		if err != nil {
 			return "<" + err.Error() + ">"
 		}
-		return "[" + et.string(m) + "]"
+
+		ct, err := mt.CollectionType()
+		if err != nil {
+			return "<" + err.Error() + ">"
+		}
+
+		switch ct {
+		case fbsemantic.CollectionTypeStream:
+			return "stream[" + et.string(m) + "]"
+		case fbsemantic.CollectionTypeVector:
+			return "v[" + et.string(m) + "]"
+		default:
+			return "[" + et.string(m) + "]"
+		}
 	case Record:
 		var sb strings.Builder
 		sb.WriteString("{")
@@ -723,6 +750,10 @@ func NewArrayType(elemType MonoType) MonoType {
 
 func NewVectorType(elemType MonoType) MonoType {
 	return NewAppType(fbsemantic.CollectionTypeVector, elemType)
+}
+
+func NewStreamType(elemType MonoType) MonoType {
+	return NewAppType(fbsemantic.CollectionTypeStream, elemType)
 }
 
 func NewAppType(collection fbsemantic.CollectionType, elemType MonoType) MonoType {

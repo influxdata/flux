@@ -43,4 +43,4 @@ package array
 // ```
 //
 // tags: inputs
-builtin from : (rows: [A]) => [A] where A: Record
+builtin from : (rows: [A]) => stream[A] where A: Record

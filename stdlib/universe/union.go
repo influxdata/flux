@@ -34,7 +34,7 @@ func init() {
 }
 
 func createUnionOpSpec(args flux.Arguments, a *flux.Administration) (flux.OperationSpec, error) {
-	tables, err := args.GetRequiredArray("tables", semantic.Array)
+	tables, err := args.GetRequiredArray("tables", semantic.Stream)
 	if err != nil {
 		return nil, err
 	}

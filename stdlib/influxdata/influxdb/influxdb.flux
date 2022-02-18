@@ -80,7 +80,7 @@ builtin cardinality : (
         start: A,
         ?stop: B,
         ?predicate: (r: {T with _measurement: string, _field: string, _value: S}) => bool,
-    ) => [{_start: time, _stop: time, _value: int}]
+    ) => stream[{_start: time, _stop: time, _value: int}]
     where
     A: Timeable,
     B: Timeable
@@ -168,7 +168,7 @@ builtin from : (
         ?orgID: string,
         ?host: string,
         ?token: string,
-    ) => [{B with _measurement: string, _field: string, _time: time, _value: A}]
+    ) => stream[{B with _measurement: string, _field: string, _time: time, _value: A}]
 
 // to writes data to an InfluxDB Cloud or 2.x bucket.
 //
@@ -290,7 +290,7 @@ builtin from : (
 // tags: outputs
 //
 builtin to : (
-        <-tables: [A],
+        <-tables: stream[A],
         ?bucket: string,
         ?bucketID: string,
         ?org: string,
@@ -301,7 +301,7 @@ builtin to : (
         ?measurementColumn: string,
         ?tagColumns: [string],
         ?fieldFn: (r: A) => B,
-    ) => [A]
+    ) => stream[A]
     where
     A: Record,
     B: Record

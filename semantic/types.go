@@ -23,6 +23,7 @@ const (
 	Function
 	Dictionary
 	Vector
+	Stream
 )
 
 var natureNames = []string{
@@ -41,6 +42,7 @@ var natureNames = []string{
 	Function:   "function",
 	Dictionary: "dictionary",
 	Vector:     "vector",
+	Stream:     "stream",
 }
 
 func (n Nature) String() string {

@@ -47,7 +47,7 @@ import c "csv"
 //
 // tags: tests
 //
-builtin assertEquals : (name: string, <-got: [A], want: [A]) => [A]
+builtin assertEquals : (name: string, <-got: stream[A], want: stream[A]) => stream[A]
 
 // assertEmpty tests if an input stream is empty. If not empty, the function returns an error.
 //
@@ -77,7 +77,7 @@ builtin assertEquals : (name: string, <-got: [A], want: [A]) => [A]
 // introduced: 0.18.0
 // tags: tests
 //
-builtin assertEmpty : (<-tables: [A]) => [A]
+builtin assertEmpty : (<-tables: stream[A]) => stream[A]
 
 // diff produces a diff between two streams.
 //
@@ -129,12 +129,12 @@ builtin assertEmpty : (<-tables: [A]) => [A]
 // tags: tests
 //
 builtin diff : (
-        <-got: [A],
-        want: [A],
+        <-got: stream[A],
+        want: stream[A],
         ?verbose: bool,
         ?epsilon: float,
         ?nansEqual: bool,
-    ) => [{A with _diff: string}]
+    ) => stream[{A with _diff: string}]
 
 // loadStorage loads annotated CSV test data as if queried from InfluxDB.
 // This function ensures tests behave correctly in both the Flux and InfluxDB test suites.
