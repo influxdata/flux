@@ -42,10 +42,6 @@ func createFromOpSpec(args flux.Arguments, a *flux.Administration) (flux.Operati
 		}
 		spec.Rows = rows.Array()
 	}
-	// XXX: remove when array/stream are different types <https://github.com/influxdata/flux/issues/4343>
-	if _, ok := spec.Rows.(values.TableObject); ok {
-		return nil, errors.Newf(codes.Invalid, "rows cannot be a table stream; expected an array")
-	}
 	if spec.Rows.Len() == 0 {
 		return nil, errors.New(codes.Invalid, "rows must be non-empty")
 	}
@@ -147,10 +143,6 @@ func buildTable(rows values.Array, mem *memory.Allocator) (flux.Table, error) {
 
 	key := execute.NewGroupKey(nil, nil)
 	builder := table.NewArrowBuilder(key, mem)
-	// XXX: remove when array/stream are different types <https://github.com/influxdata/flux/issues/4343>
-	if _, ok := rows.(values.TableObject); ok {
-		return nil, errors.Newf(codes.Invalid, "rows cannot be a table stream; expected an array")
-	}
 	for _, col := range cols {
 		i, err := builder.AddCol(col)
 		if err != nil {

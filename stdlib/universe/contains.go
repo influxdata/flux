@@ -40,10 +40,6 @@ func MakeContainsFunc() values.Function {
 
 			set := setarg.Array()
 			found := false
-			// XXX: remove when array/stream are different types <https://github.com/influxdata/flux/issues/4343>
-			if _, ok := set.(values.TableObject); ok {
-				return nil, errors.New(codes.Invalid, "set cannot be a table stream; expected an array")
-			}
 
 			if set.Len() > 0 {
 				for i := 0; i < set.Len(); i++ {

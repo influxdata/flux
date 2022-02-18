@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
@@ -18,10 +17,6 @@ func TestDisplay(t *testing.T) {
 		value   values.Value
 		display string
 	}{
-		{
-			value:   &flux.TableObject{},
-			display: "<table stream>",
-		},
 		{
 			value:   values.NewNull(semantic.BasicInt),
 			display: "<null>",

@@ -32,9 +32,6 @@ func display(w *bufio.Writer, v Value, indent int) (err error) {
 	if v.IsNull() {
 		_, err = w.WriteString("<null>")
 		return
-	} else if _, ok := v.(TableObject); ok {
-		_, err = w.WriteString("<table stream>")
-		return
 	}
 	switch v.Type().Nature() {
 	default:
@@ -42,6 +39,9 @@ func display(w *bufio.Writer, v Value, indent int) (err error) {
 		return
 	case semantic.Invalid:
 		_, err = w.WriteString("<invalid>")
+		return
+	case semantic.Stream:
+		_, err = w.WriteString("<stream>")
 		return
 	case semantic.String:
 		_, err = w.WriteString(v.Str())
