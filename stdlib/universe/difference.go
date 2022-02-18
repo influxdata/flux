@@ -1,11 +1,17 @@
 package universe
 
 import (
+	"github.com/apache/arrow/go/arrow/memory"
+
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/array"
 	"github.com/influxdata/flux/arrow"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/internal/arrowutil"
 	"github.com/influxdata/flux/internal/errors"
+	"github.com/influxdata/flux/internal/execute/table"
+	"github.com/influxdata/flux/internal/feature"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/runtime"
@@ -126,6 +132,10 @@ func createDifferenceTransformation(id execute.DatasetID, mode execute.Accumulat
 	s, ok := spec.(*DifferenceProcedureSpec)
 	if !ok {
 		return nil, nil, errors.Newf(codes.Internal, "invalid spec type %T", spec)
+	}
+
+	if feature.NarrowTransformationDifference().Enabled(a.Context()) {
+		return NewNarrowDifferenceTransformation(s, id, a.Allocator())
 	}
 	cache := execute.NewTableBuilderCache(a.Allocator())
 	d := execute.NewDataset(id, mode, cache)
@@ -330,6 +340,228 @@ func (t *differenceTransformation) UpdateProcessingTime(id execute.DatasetID, pt
 }
 func (t *differenceTransformation) Finish(id execute.DatasetID, err error) {
 	t.d.Finish(err)
+}
+
+type differenceTransformationAdapter struct {
+	differenceTransformation differenceTransformation
+}
+
+func NewNarrowDifferenceTransformation(spec *DifferenceProcedureSpec, id execute.DatasetID, alloc memory.Allocator) (execute.Transformation, execute.Dataset, error) {
+	differenceTransformation := differenceTransformation{
+		nonNegative: spec.NonNegative,
+		columns:     spec.Columns,
+		keepFirst:   spec.KeepFirst,
+		initialZero: spec.InitialZero,
+	}
+	t := &differenceTransformationAdapter{
+		differenceTransformation,
+	}
+	return execute.NewNarrowStateTransformation(id, t, alloc)
+
+}
+
+func (t *differenceTransformation) createDifferences(cols []flux.ColMeta) []*difference {
+
+	differences := make([]*difference, len(cols))
+	for j, c := range cols {
+		found := false
+		for _, label := range t.columns {
+			if c.Label == label {
+				found = true
+				break
+			}
+		}
+		if !found {
+			continue
+		}
+		differences[j] = newDifference(t.nonNegative, t.keepFirst, t.initialZero)
+	}
+	return differences
+}
+
+func (t *differenceTransformation) createOutputColumns(cols []flux.ColMeta) ([]flux.ColMeta, error) {
+	newCols := make([]flux.ColMeta, len(cols))
+	for j, c := range cols {
+		found := false
+		for _, label := range t.columns {
+			if c.Label == label {
+				found = true
+				break
+			}
+		}
+		if !found {
+			newCols[j] = c
+			continue
+		}
+		var typ flux.ColType
+		switch c.Type {
+		case flux.TInt, flux.TUInt:
+			typ = flux.TInt
+		case flux.TFloat:
+			typ = flux.TFloat
+		case flux.TTime:
+			return nil, errors.New(codes.FailedPrecondition, "difference does not support time columns. Try the elapsed function")
+		default:
+			return nil, errors.Newf(codes.Invalid, `difference does not support column "%s" of type "%v"`, c.Label, c.Type)
+		}
+		newCols[j] = flux.ColMeta{
+			Label: c.Label,
+			Type:  typ,
+		}
+	}
+	return newCols, nil
+}
+
+type differenceState struct {
+	differences   []*difference
+	firstIdx      int
+	outputColumns []flux.ColMeta
+}
+
+func (t *differenceTransformationAdapter) Process(chunk table.Chunk, state interface{}, d *execute.TransportDataset, mem memory.Allocator) (interface{}, bool, error) {
+	return t.differenceTransformation.adaptedProcess(chunk, state, d, mem)
+}
+
+func (t *differenceTransformation) adaptedProcess(chunk table.Chunk, state interface{}, d *execute.TransportDataset, mem memory.Allocator) (interface{}, bool, error) {
+	var dstate *differenceState
+	if state != nil {
+		dstate = state.(*differenceState)
+	}
+
+	if dstate == nil {
+		// We need to drop the first row since its difference is undefined
+		firstIdx := 1
+		if t.keepFirst {
+			// The user wants to keep the first row
+			firstIdx = 0
+		}
+		outputColumns, err := t.createOutputColumns(chunk.Cols())
+		if err != nil {
+			return nil, false, err
+		}
+		dstate = &differenceState{
+			differences:   t.createDifferences(chunk.Cols()),
+			firstIdx:      firstIdx,
+			outputColumns: outputColumns,
+		}
+	}
+
+	buffer := arrow.TableBuffer{
+		GroupKey: chunk.Key(),
+		Columns:  dstate.outputColumns,
+		Values:   make([]array.Interface, len(dstate.outputColumns)),
+	}
+
+	if err := t.processChunk(dstate.differences, dstate.firstIdx, mem, &buffer, chunk); err != nil {
+		return nil, false, err
+	}
+
+	// Now that we skipped the first row, start at 0 for the rest of the batches
+	dstate.firstIdx = 0
+
+	out := table.ChunkFromBuffer(buffer)
+	if err := d.Process(out); err != nil {
+		return nil, false, err
+	}
+
+	return dstate, true, nil
+}
+
+func (t *differenceTransformationAdapter) Close() error { return nil }
+
+func (t *differenceTransformation) processChunk(differences []*difference, firstIdx int, mem memory.Allocator, buffer *arrow.TableBuffer, chunk table.Chunk) error {
+
+	l := chunk.Len()
+	for j, c := range chunk.Cols() {
+		d := differences[j]
+		var out array.Interface
+		if l == 0 {
+			out = arrow.Empty(c.Type)
+		} else {
+			switch c.Type {
+			case flux.TInt:
+				values := chunk.Ints(j)
+				out = processInts(d, l, values, firstIdx, mem)
+			case flux.TUInt:
+				values := chunk.Uints(j)
+				out = processUints(d, l, values, firstIdx, mem)
+			case flux.TFloat:
+				values := chunk.Floats(j)
+				out = processFloats(d, l, values, firstIdx, mem)
+			case flux.TString:
+				out = arrow.StringSlice(chunk.Strings(j), firstIdx, l)
+			case flux.TTime:
+				out = arrow.IntSlice(chunk.Ints(j), firstIdx, l)
+			case flux.TBool:
+				out = arrow.BoolSlice(chunk.Bools(j), firstIdx, l)
+			}
+		}
+		buffer.Values[j] = out
+	}
+	return nil
+}
+
+func processInts(d *difference, l int, values *array.Int, firstIdx int, mem memory.Allocator) *array.Int {
+	if d == nil {
+		return arrow.IntSlice(values, firstIdx, l)
+	}
+
+	b := arrowutil.NewIntBuilder(mem)
+	b.Resize(l)
+	for i := 0; i < l; i++ {
+		v, ok := d.updateInt(values.Value(i), values.IsValid(i))
+		if i < firstIdx {
+			continue
+		}
+		if ok {
+			b.Append(v)
+		} else {
+			b.AppendNull()
+		}
+	}
+	return b.NewIntArray()
+}
+
+func processUints(d *difference, l int, values *array.Uint, firstIdx int, mem memory.Allocator) array.Interface {
+	if d == nil {
+		return arrow.UintSlice(values, firstIdx, l)
+	}
+
+	b := arrowutil.NewIntBuilder(mem)
+	b.Resize(l)
+	for i := 0; i < l; i++ {
+		v, ok := d.updateUInt(values.Value(i), values.IsValid(i))
+		if i < firstIdx {
+			continue
+		}
+		if ok {
+			b.Append(v)
+		} else {
+			b.AppendNull()
+		}
+	}
+	return b.NewIntArray()
+}
+
+func processFloats(d *difference, l int, values *array.Float, firstIdx int, mem memory.Allocator) *array.Float {
+	if d == nil {
+		return arrow.FloatSlice(values, firstIdx, l)
+	}
+
+	b := arrowutil.NewFloatBuilder(mem)
+	b.Resize(l)
+	for i := 0; i < l; i++ {
+		v, ok := d.updateFloat(values.Value(i), values.IsValid(i))
+		if i < firstIdx {
+			continue
+		}
+		if ok {
+			b.Append(v)
+		} else {
+			b.AppendNull()
+		}
+	}
+	return b.NewFloatArray()
 }
 
 func newDifference(nonNegative, keepFirst, initialZero bool) *difference {
