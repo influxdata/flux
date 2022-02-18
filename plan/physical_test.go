@@ -94,11 +94,9 @@ func TestPhysicalIntegrityCheckOption(t *testing.T) {
 	}
 }
 
+// This spec tracks in each node which parallel-test rules have executed
 const MockParallelKind = "mock-parallel"
 
-// MockProcedureSpec provides a type that implements ProcedureSpec but does not require
-// importing packages which register rules and procedure kinds, which makes it useful for
-// unit testing.
 type MockParallelSpec struct {
 	plan.DefaultCost
 	physical bool
@@ -117,7 +115,7 @@ func (ps MockParallelSpec) Copy() plan.ProcedureSpec {
 func TestPhysicalParallelSequence(t *testing.T) {
 	node0 := plan.CreatePhysicalNode(plan.NodeID("0"), MockParallelSpec{})
 	node1 := plan.CreatePhysicalNode(plan.NodeID("1"), MockParallelSpec{})
-	spec := &plantest.PlanSpec{
+	testSpec := &plantest.PlanSpec{
 		Nodes: []plan.Node{
 			node0,
 			node1,
@@ -127,7 +125,7 @@ func TestPhysicalParallelSequence(t *testing.T) {
 		},
 	}
 
-	inputPlan := plantest.CreatePlanSpec(spec)
+	inputPlan := plantest.CreatePlanSpec(testSpec)
 
 	// no integrity check enabled, everything should go smoothly
 	planner := plan.NewPhysicalPlanner(
@@ -143,8 +141,12 @@ func TestPhysicalParallelSequence(t *testing.T) {
 					}
 
 					// Ensure the parallel rules have not executed.
-					if spec.parallel {
-						return nil, false, fmt.Errorf("parallel already executed")
+					for _, node := range testSpec.Nodes {
+						ppn := node.(*plan.PhysicalPlanNode)
+						spec := ppn.Spec.(MockParallelSpec)
+						if spec.parallel {
+							return nil, false, fmt.Errorf("a parallel rule has already executed")
+						}
 					}
 
 					ppn.Spec = MockParallelSpec{
@@ -167,8 +169,12 @@ func TestPhysicalParallelSequence(t *testing.T) {
 					}
 
 					// Ensure the physical rules have executed.
-					if !spec.physical {
-						return nil, false, fmt.Errorf("physical is not already executed")
+					for _, node := range testSpec.Nodes {
+						ppn := node.(*plan.PhysicalPlanNode)
+						spec := ppn.Spec.(MockParallelSpec)
+						if !spec.physical {
+							return nil, false, fmt.Errorf("not all physical rules have run")
+						}
 					}
 
 					ppn.Spec = MockParallelSpec{
@@ -187,7 +193,7 @@ func TestPhysicalParallelSequence(t *testing.T) {
 	}
 
 	// Ensure all nodes were visited.
-	for _, node := range spec.Nodes {
+	for _, node := range testSpec.Nodes {
 		ppn := node.(*plan.PhysicalPlanNode)
 		spec := ppn.Spec.(MockParallelSpec)
 		if !spec.parallel || !spec.physical {
