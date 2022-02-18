@@ -297,7 +297,7 @@ fn add_record_to_map(
     for field in r.fields() {
         let new_vars = {
             let new_vars = CollectBoundVars(RefCell::new(Vec::new()));
-            field.v.apply_ref(&new_vars);
+            head.v.visit(&new_vars);
             new_vars.0.into_inner()
         };
 

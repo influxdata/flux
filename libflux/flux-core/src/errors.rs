@@ -205,8 +205,8 @@ impl<E> Substitutable for Located<E>
 where
     E: Substitutable,
 {
-    fn apply_ref(&self, sub: &dyn Substituter) -> Option<Self> {
-        self.error.apply_ref(sub).map(|error| Located {
+    fn walk(&self, sub: &dyn Substituter) -> Option<Self> {
+        self.error.visit(sub).map(|error| Located {
             location: self.location.clone(),
             error,
         })

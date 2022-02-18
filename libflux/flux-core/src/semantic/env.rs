@@ -34,7 +34,7 @@ impl fmt::Display for Environment<'_> {
 }
 
 impl Substitutable for Environment<'_> {
-    fn apply_ref(&self, sub: &dyn Substituter) -> Option<Self> {
+    fn walk(&self, sub: &dyn Substituter) -> Option<Self> {
         match (self.readwrite, &self.parent) {
             // This is a performance optimization where false implies
             // this is the top-level of the type environment and apply
@@ -43,7 +43,7 @@ impl Substitutable for Environment<'_> {
             // Even though this is the top-level of the type environment
             // and apply should be a no-op, readwrite is set to true so
             // we apply anyway.
-            (true, None) => self.values.apply_ref(sub).map(|values| Environment {
+            (true, None) => self.values.visit(sub).map(|values| Environment {
                 external: self.external,
                 parent: None,
                 values,

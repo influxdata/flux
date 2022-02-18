@@ -110,8 +110,8 @@ pub struct Error {
 impl std::error::Error for Error {}
 
 impl Substitutable for Error {
-    fn apply_ref(&self, sub: &dyn Substituter) -> Option<Self> {
-        self.err.apply_ref(sub).map(|err| Error {
+    fn walk(&self, sub: &dyn Substituter) -> Option<Self> {
+        self.err.visit(sub).map(|err| Error {
             loc: self.loc.clone(),
             err,
         })

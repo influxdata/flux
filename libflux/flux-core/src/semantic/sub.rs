@@ -154,7 +154,7 @@ pub trait Substitutable {
     where
         Self: Sized,
     {
-        self.apply_ref(sub).unwrap_or(self)
+        self.visit(sub).unwrap_or(self)
     }
 
     /// Apply a substitution to a type variable.
@@ -162,7 +162,7 @@ pub trait Substitutable {
     where
         Self: Sized,
     {
-        if let Some(new) = self.apply_ref(sub) {
+        if let Some(new) = self.visit(sub) {
             *self = new;
         }
     }
@@ -172,7 +172,7 @@ pub trait Substitutable {
     where
         Self: Clone + Sized,
     {
-        match self.apply_ref(sub) {
+        match self.visit(sub) {
             Some(t) => Cow::Owned(t),
             None => Cow::Borrowed(self),
         }
@@ -180,7 +180,16 @@ pub trait Substitutable {
 
     /// Apply a substitution to a type variable. Should return `None` if there was nothing to apply
     /// which allows for optimizations.
-    fn apply_ref(&self, sub: &dyn Substituter) -> Option<Self>
+    fn visit(&self, sub: &dyn Substituter) -> Option<Self>
+    where
+        Self: Sized,
+    {
+        self.walk(sub)
+    }
+
+    /// Apply a substitution to a type variable. Should return `None` if there was nothing to apply
+    /// which allows for optimizations.
+    fn walk(&self, sub: &dyn Substituter) -> Option<Self>
     where
         Self: Sized;
 
@@ -199,8 +208,8 @@ impl<T> Substitutable for Box<T>
 where
     T: Substitutable,
 {
-    fn apply_ref(&self, sub: &dyn Substituter) -> Option<Self> {
-        T::apply_ref(self, sub).map(Box::new)
+    fn walk(&self, sub: &dyn Substituter) -> Option<Self> {
+        T::visit(self, sub).map(Box::new)
     }
     fn free_vars(&self, vars: &mut Vec<Tvar>) {
         T::free_vars(self, vars)
@@ -285,13 +294,13 @@ where
 {
     merge4(
         a,
-        a.apply_ref(sub),
+        a.visit(sub),
         b,
-        b.apply_ref(sub),
+        b.visit(sub),
         c,
-        c.apply_ref(sub),
+        c.visit(sub),
         d,
-        d.apply_ref(sub),
+        d.visit(sub),
     )
 }
 
@@ -301,14 +310,7 @@ where
     B: Substitutable + Clone,
     C: Substitutable + Clone,
 {
-    merge3(
-        a,
-        a.apply_ref(sub),
-        b,
-        b.apply_ref(sub),
-        c,
-        c.apply_ref(sub),
-    )
+    merge3(a, a.visit(sub), b, b.visit(sub), c, c.visit(sub))
 }
 
 pub(crate) fn apply2<A, B>(a: &A, b: &B, sub: &dyn Substituter) -> Option<(A, B)>
@@ -316,7 +318,7 @@ where
     A: Substitutable + Clone,
     B: Substitutable + Clone,
 {
-    merge(a, a.apply_ref(sub), b, b.apply_ref(sub))
+    merge(a, a.visit(sub), b, b.visit(sub))
 }
 
 #[allow(clippy::too_many_arguments, clippy::type_complexity)]

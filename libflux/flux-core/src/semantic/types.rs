@@ -113,11 +113,11 @@ impl PartialEq for PolyType {
 }
 
 impl Substitutable for PolyType {
-    fn apply_ref(&self, sub: &dyn Substituter) -> Option<Self> {
+    fn walk(&self, sub: &dyn Substituter) -> Option<Self> {
         // `vars` defines new distinct variables for `expr` so any substitutions applied on a
         // variable named the same must not be applied in `expr`
         self.expr
-            .apply_ref(&|var| {
+            .visit(&|var| {
                 if self.vars.contains(&var) {
                     None
                 } else {
@@ -298,15 +298,15 @@ impl fmt::Display for Error {
 }
 
 impl Substitutable for Error {
-    fn apply_ref(&self, sub: &dyn Substituter) -> Option<Self> {
+    fn walk(&self, sub: &dyn Substituter) -> Option<Self> {
         match self {
             Error::CannotUnify { exp, act } => {
                 apply2(exp, act, sub).map(|(exp, act)| Error::CannotUnify { exp, act })
             }
             Error::CannotConstrain { exp, act } => act
-                .apply_ref(sub)
+                .visit(sub)
                 .map(|act| Error::CannotConstrain { exp: *exp, act }),
-            Error::OccursCheck(tv, ty) => ty.apply_ref(sub).map(|ty| Error::OccursCheck(*tv, ty)),
+            Error::OccursCheck(tv, ty) => ty.visit(sub).map(|ty| Error::OccursCheck(*tv, ty)),
             Error::CannotUnifyLabel {
                 lab,
                 exp,
@@ -319,7 +319,7 @@ impl Substitutable for Error {
                 cause,
             }),
             Error::CannotUnifyArgument(x, e) => e
-                .apply_ref(sub)
+                .visit(sub)
                 .map(|e| Error::CannotUnifyArgument(x.clone(), e)),
             Error::CannotUnifyReturn { exp, act, cause } => apply3(exp, act, cause, sub)
                 .map(|(exp, act, cause)| Error::CannotUnifyReturn { exp, act, cause }),
@@ -415,8 +415,8 @@ impl FromStr for Kind {
 pub type Ptr<T> = std::sync::Arc<T>;
 
 impl<T: Substitutable> Substitutable for Ptr<T> {
-    fn apply_ref(&self, sub: &dyn Substituter) -> Option<Self> {
-        T::apply_ref(self, sub).map(Ptr::new)
+    fn walk(&self, sub: &dyn Substituter) -> Option<Self> {
+        T::visit(self, sub).map(Ptr::new)
     }
     fn free_vars(&self, vars: &mut Vec<Tvar>) {
         T::free_vars(self, vars)
@@ -697,7 +697,7 @@ impl BuiltinType {
 }
 
 impl Substitutable for MonoType {
-    fn apply_ref(&self, sub: &dyn Substituter) -> Option<Self> {
+    fn walk(&self, sub: &dyn Substituter) -> Option<Self> {
         match self {
             MonoType::Error | MonoType::Builtin(_) => None,
             MonoType::BoundVar(tvr) => sub.try_apply_bound(*tvr).map(|new| {
@@ -730,10 +730,10 @@ impl Substitutable for MonoType {
                     new.apply(sub)
                 }
             }),
-            MonoType::Collection(app) => app.apply_ref(sub).map(MonoType::app),
-            MonoType::Dict(dict) => dict.apply_ref(sub).map(MonoType::dict),
-            MonoType::Record(obj) => obj.apply_ref(sub).map(MonoType::record),
-            MonoType::Fun(fun) => fun.apply_ref(sub).map(MonoType::fun),
+            MonoType::Collection(app) => app.visit(sub).map(MonoType::app),
+            MonoType::Dict(dict) => dict.visit(sub).map(MonoType::dict),
+            MonoType::Record(obj) => obj.visit(sub).map(MonoType::record),
+            MonoType::Fun(fun) => fun.visit(sub).map(MonoType::fun),
         }
     }
     fn free_vars(&self, vars: &mut Vec<Tvar>) {
@@ -1116,8 +1116,8 @@ impl Tvar {
 }
 
 impl Substitutable for Collection {
-    fn apply_ref(&self, sub: &dyn Substituter) -> Option<Self> {
-        self.arg.apply_ref(sub).map(|arg| Collection {
+    fn walk(&self, sub: &dyn Substituter) -> Option<Self> {
+        self.arg.visit(sub).map(|arg| Collection {
             collection: self.collection,
             arg,
         })
@@ -1174,7 +1174,7 @@ pub struct Dictionary {
 }
 
 impl Substitutable for Dictionary {
-    fn apply_ref(&self, sub: &dyn Substituter) -> Option<Self> {
+    fn walk(&self, sub: &dyn Substituter) -> Option<Self> {
         apply2(&self.key, &self.val, sub).map(|(key, val)| Dictionary { key, val })
     }
     fn free_vars(&self, vars: &mut Vec<Tvar>) {
@@ -1274,7 +1274,7 @@ impl cmp::PartialEq for Record {
 }
 
 impl Substitutable for Record {
-    fn apply_ref(&self, sub: &dyn Substituter) -> Option<Self> {
+    fn walk(&self, sub: &dyn Substituter) -> Option<Self> {
         match self {
             Record::Empty => None,
             Record::Extension { head, tail } => {
@@ -1672,8 +1672,8 @@ where
     K: Clone,
     V: Substitutable,
 {
-    fn apply_ref(&self, sub: &dyn Substituter) -> Option<Self> {
-        self.v.apply_ref(sub).map(|v| Property {
+    fn walk(&self, sub: &dyn Substituter) -> Option<Self> {
+        self.v.visit(sub).map(|v| Property {
             k: self.k.clone(),
             v,
         })
@@ -1760,11 +1760,11 @@ impl fmt::Display for Function {
 }
 
 impl<K: Eq + Hash + Clone> Substitutable for PolyTypeHashMap<K> {
-    fn apply_ref(&self, sub: &dyn Substituter) -> Option<Self> {
+    fn walk(&self, sub: &dyn Substituter) -> Option<Self> {
         merge_collect(
             &mut (),
             self.unordered_iter(),
-            |_, (k, v)| v.apply_ref(sub).map(|v| (k.clone(), v)),
+            |_, (k, v)| v.visit(sub).map(|v| (k.clone(), v)),
             |_, (k, v)| (k.clone(), v.clone()),
         )
     }
@@ -1776,11 +1776,11 @@ impl<K: Eq + Hash + Clone> Substitutable for PolyTypeHashMap<K> {
 }
 
 impl<K: Ord + Clone, T: Substitutable + Clone> Substitutable for SemanticMap<K, T> {
-    fn apply_ref(&self, sub: &dyn Substituter) -> Option<Self> {
+    fn walk(&self, sub: &dyn Substituter) -> Option<Self> {
         merge_collect(
             &mut (),
             self,
-            |_, (k, v)| v.apply_ref(sub).map(|v| (k.clone(), v)),
+            |_, (k, v)| v.visit(sub).map(|v| (k.clone(), v)),
             |_, (k, v)| (k.clone(), v.clone()),
         )
     }
@@ -1792,10 +1792,10 @@ impl<K: Ord + Clone, T: Substitutable + Clone> Substitutable for SemanticMap<K, 
 }
 
 impl<T: Substitutable> Substitutable for Option<T> {
-    fn apply_ref(&self, sub: &dyn Substituter) -> Option<Self> {
+    fn walk(&self, sub: &dyn Substituter) -> Option<Self> {
         match self {
             None => None,
-            Some(t) => t.apply_ref(sub).map(Some),
+            Some(t) => t.visit(sub).map(Some),
         }
     }
     fn free_vars(&self, vars: &mut Vec<Tvar>) {
@@ -1807,7 +1807,7 @@ impl<T: Substitutable> Substitutable for Option<T> {
 }
 
 impl Substitutable for Function {
-    fn apply_ref(&self, sub: &dyn Substituter) -> Option<Self> {
+    fn walk(&self, sub: &dyn Substituter) -> Option<Self> {
         let Function {
             req,
             opt,
