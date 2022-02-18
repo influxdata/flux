@@ -116,9 +116,6 @@ impl Substitutable for Error {
             err,
         })
     }
-    fn free_vars(&self, vars: &mut Vec<Tvar>) {
-        self.err.free_vars(vars)
-    }
 }
 
 // Solve a set of type constraints
@@ -222,7 +219,7 @@ pub(crate) fn temporary_generalize(
     }
 
     let generalize = Generalize {
-        env_free_vars: env.mk_free_vars(),
+        env_free_vars: env.free_vars(),
         vars: Default::default(),
     };
     let t = t.apply(&generalize);
@@ -282,7 +279,7 @@ pub fn generalize(env: &Environment, sub: &mut Substitution, t: MonoType) -> Pol
     }
 
     let generalize = Generalize {
-        env_free_vars: env.mk_free_vars(),
+        env_free_vars: env.free_vars(),
         sub,
         vars: Default::default(),
     };

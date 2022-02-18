@@ -127,10 +127,6 @@ impl Substitutable for PolyType {
             expr,
         })
     }
-    fn free_vars(&self, vars: &mut Vec<Tvar>) {
-        self.expr.free_vars(vars);
-        vars.retain(|v| !self.vars.contains(v));
-    }
 }
 
 impl PolyType {
@@ -310,37 +306,6 @@ impl Substitutable for Error {
             | Error::MultiplePipeArguments { .. } => None,
         }
     }
-    fn free_vars(&self, vars: &mut Vec<Tvar>) {
-        match self {
-            Error::CannotUnify { exp, act } => {
-                exp.free_vars(vars);
-                act.free_vars(vars);
-            }
-            Error::CannotConstrain { exp: _, act } => act.free_vars(vars),
-            Error::OccursCheck(tv, ty) => {
-                ty.free_vars(vars);
-                if let Err(i) = vars.binary_search(tv) {
-                    vars.insert(i, *tv);
-                }
-            }
-            Error::CannotUnifyLabel { exp, act, .. } => {
-                exp.free_vars(vars);
-                act.free_vars(vars);
-            }
-            Error::CannotUnifyArgument(_, e) => e.free_vars(vars),
-            Error::CannotUnifyReturn { exp, act, cause } => {
-                exp.free_vars(vars);
-                act.free_vars(vars);
-                cause.free_vars(vars);
-            }
-            Error::MissingLabel(_)
-            | Error::ExtraLabel(_)
-            | Error::MissingArgument(_)
-            | Error::ExtraArgument(_)
-            | Error::MissingPipeArgument
-            | Error::MultiplePipeArguments { .. } => (),
-        }
-    }
 }
 
 impl Error {
@@ -396,9 +361,6 @@ pub type Ptr<T> = std::sync::Arc<T>;
 impl<T: Substitutable> Substitutable for Ptr<T> {
     fn walk(&self, sub: &dyn Substituter) -> Option<Self> {
         T::visit(self, sub).map(Ptr::new)
-    }
-    fn free_vars(&self, vars: &mut Vec<Tvar>) {
-        T::free_vars(self, vars)
     }
 }
 
@@ -692,22 +654,6 @@ impl Substitutable for MonoType {
             MonoType::Dict(dict) => dict.visit(sub).map(MonoType::dict),
             MonoType::Record(obj) => obj.visit(sub).map(MonoType::record),
             MonoType::Fun(fun) => fun.visit(sub).map(MonoType::fun),
-        }
-    }
-    fn free_vars(&self, vars: &mut Vec<Tvar>) {
-        match self {
-            MonoType::Error | MonoType::Builtin(_) => (),
-            // By definition a variable that is bound isn't free
-            MonoType::BoundVar(_) => (),
-            MonoType::Var(tvr) => {
-                if let Err(i) = vars.binary_search(tvr) {
-                    vars.insert(i, *tvr);
-                }
-            }
-            MonoType::Collection(app) => app.free_vars(vars),
-            MonoType::Dict(dict) => dict.free_vars(vars),
-            MonoType::Record(obj) => obj.free_vars(vars),
-            MonoType::Fun(fun) => fun.free_vars(vars),
         }
     }
 }
@@ -1061,9 +1007,6 @@ impl Substitutable for Collection {
             arg,
         })
     }
-    fn free_vars(&self, vars: &mut Vec<Tvar>) {
-        self.arg.free_vars(vars)
-    }
 }
 
 impl Collection {
@@ -1109,10 +1052,6 @@ pub struct Dictionary {
 impl Substitutable for Dictionary {
     fn walk(&self, sub: &dyn Substituter) -> Option<Self> {
         apply2(&self.key, &self.val, sub).map(|(key, val)| Dictionary { key, val })
-    }
-    fn free_vars(&self, vars: &mut Vec<Tvar>) {
-        self.key.free_vars(vars);
-        self.val.free_vars(vars);
     }
 }
 
@@ -1206,15 +1145,6 @@ impl Substitutable for Record {
             Record::Empty => None,
             Record::Extension { head, tail } => {
                 apply2(head, tail, sub).map(|(head, tail)| Record::Extension { head, tail })
-            }
-        }
-    }
-    fn free_vars(&self, vars: &mut Vec<Tvar>) {
-        match self {
-            Record::Empty => (),
-            Record::Extension { head, tail } => {
-                tail.free_vars(vars);
-                head.v.free_vars(vars);
             }
         }
     }
@@ -1596,9 +1526,6 @@ where
             v,
         })
     }
-    fn free_vars(&self, vars: &mut Vec<Tvar>) {
-        self.v.free_vars(vars)
-    }
 }
 
 /// Represents a function type.
@@ -1680,11 +1607,6 @@ impl<K: Eq + Hash + Clone> Substitutable for PolyTypeHashMap<K> {
             |_, (k, v)| (k.clone(), v.clone()),
         )
     }
-    fn free_vars(&self, vars: &mut Vec<Tvar>) {
-        for t in self.unordered_values() {
-            t.free_vars(vars);
-        }
-    }
 }
 
 impl<K: Ord + Clone, T: Substitutable + Clone> Substitutable for SemanticMap<K, T> {
@@ -1696,11 +1618,6 @@ impl<K: Ord + Clone, T: Substitutable + Clone> Substitutable for SemanticMap<K, 
             |_, (k, v)| (k.clone(), v.clone()),
         )
     }
-    fn free_vars(&self, vars: &mut Vec<Tvar>) {
-        for t in self.values() {
-            t.free_vars(vars);
-        }
-    }
 }
 
 impl<T: Substitutable> Substitutable for Option<T> {
@@ -1708,12 +1625,6 @@ impl<T: Substitutable> Substitutable for Option<T> {
         match self {
             None => None,
             Some(t) => t.visit(sub).map(Some),
-        }
-    }
-    fn free_vars(&self, vars: &mut Vec<Tvar>) {
-        match self {
-            Some(t) => t.free_vars(vars),
-            None => (),
         }
     }
 }
@@ -1732,12 +1643,6 @@ impl Substitutable for Function {
             pipe,
             retn,
         })
-    }
-    fn free_vars(&self, vars: &mut Vec<Tvar>) {
-        self.req.free_vars(vars);
-        self.opt.free_vars(vars);
-        self.pipe.free_vars(vars);
-        self.retn.free_vars(vars);
     }
 }
 

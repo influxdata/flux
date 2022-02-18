@@ -93,19 +93,6 @@ impl Substitutable for ErrorKind {
             | Self::Bug(_) => None,
         }
     }
-    fn free_vars(&self, vars: &mut Vec<Tvar>) {
-        match self {
-            Self::Inference(err) => err.free_vars(vars),
-            Self::UndefinedBuiltin(_)
-            | Self::UndefinedIdentifier(_)
-            | Self::InvalidBinOp(_)
-            | Self::InvalidUnaryOp(_)
-            | Self::InvalidImportPath(_)
-            | Self::UnableToVectorize(_)
-            | Self::InvalidReturn
-            | Self::Bug(_) => (),
-        }
-    }
 }
 
 impl From<types::Error> for ErrorKind {

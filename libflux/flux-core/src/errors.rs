@@ -12,10 +12,7 @@ use derive_more::Display;
 
 use crate::{
     ast,
-    semantic::{
-        sub::{Substitutable, Substituter},
-        types::Tvar,
-    },
+    semantic::sub::{Substitutable, Substituter},
 };
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
@@ -210,9 +207,6 @@ where
             location: self.location.clone(),
             error,
         })
-    }
-    fn free_vars(&self, vars: &mut Vec<Tvar>) {
-        self.error.free_vars(vars)
     }
 }
 

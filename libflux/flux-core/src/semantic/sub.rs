@@ -194,14 +194,41 @@ pub trait Substitutable {
         Self: Sized;
 
     /// Get all free type variables in a type.
-    fn mk_free_vars(&self) -> Vec<Tvar> {
-        let mut vars = Vec::new();
-        self.free_vars(&mut vars);
-        vars
-    }
+    fn free_vars(&self) -> Vec<Tvar>
+    where
+        Self: Sized,
+    {
+        #[derive(Default)]
+        struct FreeVars {
+            vars: RefCell<Vec<Tvar>>,
+        }
 
-    /// Get all free type variables in a type.
-    fn free_vars(&self, vars: &mut Vec<Tvar>);
+        impl Substituter for FreeVars {
+            fn try_apply(&self, var: Tvar) -> Option<MonoType> {
+                let mut vars = self.vars.borrow_mut();
+                if let Err(i) = vars.binary_search(&var) {
+                    vars.insert(i, var);
+                }
+                None
+            }
+
+            fn visit_poly_type_spec(
+                &self,
+                sub: &dyn Substituter,
+                typ: &PolyType,
+            ) -> Option<PolyType> {
+                typ.expr.visit(sub);
+                self.vars.borrow_mut().retain(|v| !typ.vars.contains(v));
+                None
+            }
+        }
+
+        let free_vars = FreeVars::default();
+
+        self.visit(&free_vars);
+
+        free_vars.vars.into_inner()
+    }
 }
 
 impl<T> Substitutable for Box<T>
@@ -210,9 +237,6 @@ where
 {
     fn walk(&self, sub: &dyn Substituter) -> Option<Self> {
         T::visit(self, sub).map(Box::new)
-    }
-    fn free_vars(&self, vars: &mut Vec<Tvar>) {
-        T::free_vars(self, vars)
     }
 }
 
@@ -228,7 +252,7 @@ pub trait Substituter {
         None
     }
 
-    // Hack to llow `visit_poly_type_spec` to be implemented both here as a default and in `impl`
+    // Hack to allow `visit_poly_type_spec` to be implemented both here as a default and in `impl`
     // blocks. `self` and `sub` should refer to the same object, but passing `sub` lets us call
     // `walk` without needing a `Self: Sized` bound.
     #[doc(hidden)]

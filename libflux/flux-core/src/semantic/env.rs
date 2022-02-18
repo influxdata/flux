@@ -4,7 +4,7 @@ use std::{fmt, mem};
 use crate::semantic::{
     nodes::Symbol,
     sub::{apply2, Substitutable, Substituter},
-    types::{PolyType, PolyTypeHashMap, PolyTypeMap, Tvar},
+    types::{PolyType, PolyTypeHashMap, PolyTypeMap},
     PackageExports,
 };
 
@@ -56,16 +56,6 @@ impl Substitutable for Environment<'_> {
                     values,
                     readwrite: true,
                 })
-            }
-        }
-    }
-    fn free_vars(&self, vars: &mut Vec<Tvar>) {
-        match (self.readwrite, &self.parent) {
-            (false, None) | (false, _) => (),
-            (true, None) => self.values.free_vars(vars),
-            (true, Some(env)) => {
-                env.free_vars(vars);
-                self.values.free_vars(vars);
             }
         }
     }
