@@ -1,7 +1,7 @@
 //! Substitutions during type inference.
 use std::{borrow::Cow, cell::RefCell, iter::FusedIterator};
 
-use crate::semantic::types::{union, Error, MonoType, SubstitutionMap, Tvar, TvarKinds};
+use crate::semantic::types::{union, Error, MonoType, PolyType, SubstitutionMap, Tvar, TvarKinds};
 
 /// A substitution defines a function that takes a monotype as input
 /// and returns a monotype as output. The output type is interpreted
@@ -227,6 +227,32 @@ pub trait Substituter {
         let _ = var;
         None
     }
+
+    // Hack to llow `visit_poly_type_spec` to be implemented both here as a default and in `impl`
+    // blocks. `self` and `sub` should refer to the same object, but passing `sub` lets us call
+    // `walk` without needing a `Self: Sized` bound.
+    #[doc(hidden)]
+    fn visit_poly_type_spec(&self, sub: &dyn Substituter, typ: &PolyType) -> Option<PolyType> {
+        typ.walk(sub)
+    }
+
+    /// Apply a substitution to a type, returning None if there is no substitution for the
+    /// type.
+    fn visit_type(&self, typ: &MonoType) -> Option<MonoType> {
+        match *typ {
+            MonoType::Var(var) => self.try_apply(var),
+            MonoType::BoundVar(var) => self.try_apply_bound(var),
+            _ => None,
+        }
+    }
+}
+
+impl<'a> dyn Substituter + 'a {
+    /// Apply a substitution to a polytype, returning None if there is no substitution for the
+    /// type.
+    pub fn visit_poly_type(&self, typ: &PolyType) -> Option<PolyType> {
+        self.visit_poly_type_spec(self, typ)
+    }
 }
 
 impl<F> Substituter for F
@@ -242,11 +268,47 @@ impl Substituter for SubstitutionMap {
     fn try_apply(&self, var: Tvar) -> Option<MonoType> {
         self.get(&var).cloned()
     }
+
+    fn visit_poly_type_spec(&self, sub: &dyn Substituter, typ: &PolyType) -> Option<PolyType> {
+        // `vars` defines new distinct variables for `expr` so any substitutions applied on a
+        // variable named the same must not be applied in `expr`
+        typ.expr
+            .visit(&|var| {
+                if typ.vars.contains(&var) {
+                    None
+                } else {
+                    sub.try_apply(var)
+                }
+            })
+            .map(|expr| PolyType {
+                vars: typ.vars.clone(),
+                cons: typ.cons.clone(),
+                expr,
+            })
+    }
 }
 
 impl Substituter for Substitution {
     fn try_apply(&self, var: Tvar) -> Option<MonoType> {
         Substitution::try_apply(self, var)
+    }
+
+    fn visit_poly_type_spec(&self, sub: &dyn Substituter, typ: &PolyType) -> Option<PolyType> {
+        // `vars` defines new distinct variables for `expr` so any substitutions applied on a
+        // variable named the same must not be applied in `expr`
+        typ.expr
+            .visit(&|var| {
+                if typ.vars.contains(&var) {
+                    None
+                } else {
+                    sub.try_apply(var)
+                }
+            })
+            .map(|expr| PolyType {
+                vars: typ.vars.clone(),
+                cons: typ.cons.clone(),
+                expr,
+            })
     }
 }
 

@@ -113,22 +113,18 @@ impl PartialEq for PolyType {
 }
 
 impl Substitutable for PolyType {
+    fn visit(&self, sub: &dyn Substituter) -> Option<Self> {
+        sub.visit_poly_type(self)
+    }
+
     fn walk(&self, sub: &dyn Substituter) -> Option<Self> {
         // `vars` defines new distinct variables for `expr` so any substitutions applied on a
         // variable named the same must not be applied in `expr`
-        self.expr
-            .visit(&|var| {
-                if self.vars.contains(&var) {
-                    None
-                } else {
-                    sub.try_apply(var)
-                }
-            })
-            .map(|expr| PolyType {
-                vars: self.vars.clone(),
-                cons: self.cons.clone(),
-                expr,
-            })
+        self.expr.visit(sub).map(|expr| PolyType {
+            vars: self.vars.clone(),
+            cons: self.cons.clone(),
+            expr,
+        })
     }
     fn free_vars(&self, vars: &mut Vec<Tvar>) {
         self.expr.free_vars(vars);
@@ -697,39 +693,18 @@ impl BuiltinType {
 }
 
 impl Substitutable for MonoType {
+    fn visit(&self, sub: &dyn Substituter) -> Option<Self> {
+        match sub.visit_type(self) {
+            Some(typ) => Some(typ.walk(sub).unwrap_or(typ)),
+            None => self.walk(sub),
+        }
+    }
+
     fn walk(&self, sub: &dyn Substituter) -> Option<Self> {
         match self {
-            MonoType::Error | MonoType::Builtin(_) => None,
-            MonoType::BoundVar(tvr) => sub.try_apply_bound(*tvr).map(|new| {
-                // If a variable is the replacement we do not recurse further
-                // as `instantiate` breaks in cases where it generates a substitution map
-                // like `{ A => B, B => C }` which would replace `A` with the (fresh) variable `B`
-                // which would then be replaced again due to `B => C` which is very wrong (`B` != `fresh B`).
-                // Bit of a hack, but it works.
-                //
-                // For other replacements we need to recurse into them as well so that we may fully
-                // replace any variables that occur in that as well.
-                if let MonoType::Var(_) = new {
-                    new
-                } else {
-                    new.apply(sub)
-                }
-            }),
-            MonoType::Var(tvr) => sub.try_apply(*tvr).map(|new| {
-                // If a variable is the replacement we do not recurse further
-                // as `instantiate` breaks in cases where it generates a substitution map
-                // like `{ A => B, B => C }` which would replace `A` with the (fresh) variable `B`
-                // which would then be replaced again due to `B => C` which is very wrong (`B` != `fresh B`).
-                // Bit of a hack, but it works.
-                //
-                // For other replacements we need to recurse into them as well so that we may fully
-                // replace any variables that occur in that as well.
-                if let MonoType::Var(_) = new {
-                    new
-                } else {
-                    new.apply(sub)
-                }
-            }),
+            MonoType::Error | MonoType::Builtin(_) | MonoType::BoundVar(_) | MonoType::Var(_) => {
+                None
+            }
             MonoType::Collection(app) => app.visit(sub).map(MonoType::app),
             MonoType::Dict(dict) => dict.visit(sub).map(MonoType::dict),
             MonoType::Record(obj) => obj.visit(sub).map(MonoType::record),
