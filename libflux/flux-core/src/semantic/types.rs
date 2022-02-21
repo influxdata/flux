@@ -1779,6 +1779,26 @@ impl Substitutable for Function {
     }
 }
 
+impl<T> Function<T> {
+    pub(crate) fn map<U>(self, mut f: impl FnMut(T) -> U) -> Function<U> {
+        let Self {
+            opt,
+            req,
+            pipe,
+            retn,
+        } = self;
+        Function {
+            opt: opt.into_iter().map(|(k, v)| (k, f(v))).collect(),
+            req: req.into_iter().map(|(k, v)| (k, f(v))).collect(),
+            pipe: pipe.map(|prop| Property {
+                k: prop.k,
+                v: f(prop.v),
+            }),
+            retn: f(retn),
+        }
+    }
+}
+
 impl Function {
     pub(crate) fn try_unify<T>(
         &self,

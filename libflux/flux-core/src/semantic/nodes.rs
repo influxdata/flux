@@ -1310,44 +1310,29 @@ impl CallExpr {
                 v: (p.type_of(), p.loc()),
             });
         }
+
+        let act = Function {
+            opt: MonoTypeMap::new(),
+            req,
+            pipe,
+            retn: (self.typ.clone(), &self.loc),
+        };
+
         match &*self.callee.type_of().apply_cow(infer.sub) {
             MonoType::Fun(func) => {
-                if let Err(err) = func.try_unify(
-                    &Function {
-                        opt: MonoTypeMap::new(),
-                        req,
-                        pipe,
-                        retn: (self.typ.clone(), &self.loc),
-                    },
-                    infer.sub,
-                ) {
+                if let Err(err) = func.try_unify(&act, infer.sub) {
+                    log::debug!(
+                        "Unify error: {} <=> {} : {}",
+                        func,
+                        act.map(|(typ, _)| typ),
+                        err
+                    );
                     infer.errors.extend(err.into_iter().map(Error::from));
                 }
             }
             callee => {
                 // Constrain the callee to be a Function.
-                infer.equal(
-                    callee,
-                    &MonoType::from(Function {
-                        opt: MonoTypeMap::new(),
-                        req: req.into_iter().map(|(k, (v, _))| (k, v)).collect(),
-                        pipe: pipe.map(|prop| types::Property {
-                            k: prop.k,
-                            v: prop.v.0,
-                        }),
-                        // The return type of a function call is the type of the call itself.
-                        // Remind that, when two functions are unified, their return types are unified too.
-                        // As an example take:
-                        //   f = (a) => a + 1
-                        //   f(a: 0)
-                        // The return type of `f` is `int`.
-                        // The return type of `f(a: 0)` is `t0` (a fresh type variable).
-                        // Upon unification a substitution "t0 => int" is created, so that the compiler
-                        // can infer that, for instance, `f(a: 0) + 1` is legal.
-                        retn: self.typ.clone(),
-                    }),
-                    &self.loc,
-                );
+                infer.equal(callee, &MonoType::from(act.map(|(typ, _)| typ)), &self.loc);
             }
         }
 
