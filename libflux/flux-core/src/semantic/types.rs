@@ -1246,7 +1246,7 @@ impl Record {
         let has_variable_label = |r: &Record| {
             r.fields().any(|prop| match prop.k {
                 RecordLabel::Variable(v) => unifier.sub.try_apply(v).is_none(),
-                RecordLabel::Concrete(_) => false,
+                RecordLabel::BoundVariable(_) | RecordLabel::Concrete(_) => false,
             })
         };
         if has_variable_label(self) || has_variable_label(actual) {
@@ -1474,12 +1474,20 @@ fn unify_in_context<T>(
 }
 
 /// Labels in records that are allowed be variables
-#[derive(Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Clone, Serialize, derive_more::From)]
+#[derive(Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Clone, Serialize)]
 pub enum RecordLabel {
     /// A variable label
     Variable(Tvar),
+    /// A variable label
+    BoundVariable(Tvar),
     /// A concrete label
     Concrete(Label),
+}
+
+impl From<Label> for RecordLabel {
+    fn from(label: Label) -> Self {
+        Self::Concrete(label)
+    }
 }
 
 impl Substitutable for RecordLabel {
@@ -1487,9 +1495,18 @@ impl Substitutable for RecordLabel {
         match self {
             Self::Variable(tvr) => sub.try_apply(*tvr).and_then(|new| match new {
                 MonoType::Label(l) => Some(Self::Concrete(l)),
+                MonoType::BoundVar(l) => Some(Self::BoundVariable(l)),
                 MonoType::Var(l) => Some(Self::Variable(l)),
                 _ => None,
             }),
+
+            Self::BoundVariable(tvr) => sub.try_apply_bound(*tvr).and_then(|new| match new {
+                MonoType::Label(l) => Some(Self::Concrete(l)),
+                MonoType::BoundVar(l) => Some(Self::BoundVariable(l)),
+                MonoType::Var(l) => Some(Self::Variable(l)),
+                _ => None,
+            }),
+
             Self::Concrete(_) => None,
         }
     }
@@ -1498,7 +1515,8 @@ impl Substitutable for RecordLabel {
 impl fmt::Display for RecordLabel {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            Self::Variable(v) => v.fmt(f),
+            Self::BoundVariable(v) => v.fmt(f),
+            Self::Variable(v) => write!(f, "#{}", v),
             Self::Concrete(v) => v.fmt(f),
         }
     }
@@ -1507,7 +1525,7 @@ impl fmt::Display for RecordLabel {
 impl PartialEq<str> for RecordLabel {
     fn eq(&self, other: &str) -> bool {
         match self {
-            Self::Variable(_) => false,
+            Self::BoundVariable(_) | Self::Variable(_) => false,
             Self::Concrete(l) => l == other,
         }
     }
@@ -1654,10 +1672,8 @@ where
     V: Substitutable + Clone,
 {
     fn walk(&self, sub: &dyn Substituter) -> Option<Self> {
-        self.v.visit(sub).map(|v| Property {
-            k: self.k.clone(),
-            v,
-        })
+        let Self { k, v } = self;
+        apply2(k, v, sub).map(|(k, v)| Property { k, v })
     }
 }
 

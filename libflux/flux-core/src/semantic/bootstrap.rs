@@ -315,7 +315,9 @@ fn add_record_to_map(
         env.insert(
             match &field.k {
                 RecordLabel::Concrete(s) => s.clone().into(),
-                RecordLabel::Variable(_) => bail!("Record contains variable labels"),
+                RecordLabel::BoundVariable(_) | RecordLabel::Variable(_) => {
+                    bail!("Record contains variable labels")
+                }
             },
             PolyType {
                 vars: new_vars,

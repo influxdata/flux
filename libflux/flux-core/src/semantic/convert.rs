@@ -586,7 +586,7 @@ impl<'a> Converter<'a> {
                                         .entry(id.name.clone())
                                         .or_insert_with(|| self.sub.fresh())
                                         .clone();
-                                    tvar.into()
+                                    types::RecordLabel::BoundVariable(tvar)
                                 } else {
                                     types::Label::from(self.symbols.lookup(&id.name)).into()
                                 }

@@ -1654,7 +1654,7 @@ impl IdentifierExpr {
     fn infer(&mut self, infer: &mut InferState<'_, '_>) -> Result {
         let poly = infer.lookup(&self.loc, &self.name);
 
-        let (t, cons) = infer::instantiate(poly, infer.sub, self.loc.clone());
+        let (t, cons) = infer::instantiate(poly.clone(), infer.sub, self.loc.clone());
         infer.solve(&cons);
         self.typ = t;
         Ok(())
