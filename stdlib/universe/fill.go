@@ -392,20 +392,22 @@ func (t *fillTransformation) adaptedProcess(chunk table.Chunk, state interface{}
 func (t *fillTransformationAdapter) Close() error { return nil }
 
 func (t *fillTransformation) fillChunk(buffer *arrow.TableBuffer, chunk table.Chunk, colIdx int, fillValue *interface{}, mem arrowmem.Allocator) error {
-	if chunk.Len() == 0 {
-		return nil
-	}
+	l := chunk.Len()
 	vs := make([]array.Interface, len(buffer.Cols()))
 
 	// Iterate over the existing columns and if column already exist(colIdx matches with i) call fillColumn on it
 	for i, col := range chunk.Cols() {
-		arr := chunk.Values(i)
-		if i != colIdx {
-			vs[i] = arr
-			vs[i].Retain()
-			continue
+		if l == 0 {
+			vs[i] = arrow.Empty(col.Type)
+		} else {
+			arr := chunk.Values(i)
+			if i != colIdx {
+				vs[i] = arr
+				vs[i].Retain()
+				continue
+			}
+			vs[i] = t.fillColumnNT(col.Type, arr, fillValue, mem)
 		}
-		vs[i] = t.fillColumnNT(col.Type, arr, fillValue, mem)
 	}
 
 	// If the fill column is new, create a completely null column and call fillColumn on it
