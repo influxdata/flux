@@ -12,8 +12,26 @@ mod strconv;
 /// Returns a [`File`] with the value of the `name` parameter
 /// as the file name.
 pub fn parse_string(name: String, s: &str) -> File {
-    let mut p = Parser::new(s);
-    p.parse_file(name)
+    if true {
+        parse_string_lalrpop(name, s)
+    } else {
+        let mut p = Parser::new(s);
+        p.parse_file(name)
+    }
+}
+
+pub(crate) fn parse_string_lalrpop(name: String, s: &str) -> File {
+    let mut scanner = crate::scanner::Scanner::new(s);
+    let mut file = crate::grammar::FileParser::new()
+        .parse(std::iter::from_fn(|| {
+            let token = scanner.scan();
+            Some((token.start_offset, token.tok, token.end_offset))
+        }))
+        .unwrap();
+
+    file.name = name;
+
+    file
 }
 
 struct TokenError {

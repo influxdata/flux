@@ -5,3 +5,6 @@ members = ["flux-core", "flux"]
 [profile.release]
 lto = true
 opt-level = 'z'
+
+[profile.dev.build-override]
+opt-level = 2

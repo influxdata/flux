@@ -1,0 +1,81 @@
+use crate::{ast, ast::*, scanner::*};
+
+grammar;
+
+extern {
+    type Location = u32;
+    type Error = String;
+
+    enum TokenType {
+        "identifier" => TokenType::Ident,
+        "string literal" => TokenType::String,
+        "int literal" => TokenType::Int,
+        "float literal" => TokenType::Float,
+
+        "if" => TokenType::If,
+        "else" => TokenType::Else,
+        "then" => TokenType::Then,
+        "builtin" => TokenType::Builtin,
+        "package" => TokenType::Package,
+
+        ":" => TokenType::Colon,
+        "," => TokenType::Comma,
+        "." => TokenType::Dot,
+        "=>" => TokenType::Arrow,
+
+        "=" => TokenType::Eq,
+
+        "==" => TokenType::Eq,
+        "!=" => TokenType::Neq,
+        "<=" => TokenType::Lte,
+        "<" => TokenType::Lt,
+        ">=" => TokenType::Gte,
+        ">" => TokenType::Gt,
+        "=~" => TokenType::RegexEq,
+        "!~" => TokenType::RegexNeq,
+
+        "{" => TokenType::LBrace,
+        "[" => TokenType::LBrack,
+        "(" => TokenType::LParen,
+
+        "}" => TokenType::RBrace,
+        "]" => TokenType::RBrack,
+        ")" => TokenType::RParen,
+
+        "EOF" => TokenType::Eof,
+    }
+}
+
+pub File: ast::File = {
+    <package: Package?> <imports: Import*> <body: Body> "EOF" => {
+        ast::File {
+            base: Default::default(),
+            name: "".into(),
+            package,
+            imports,
+            body,
+            metadata: String::from("parser-type=lalrpop"),
+            eof: Default::default(),
+        }
+    }
+}
+
+Package: ast::PackageClause = {
+    "package" <name: Identifier> => ast::PackageClause {
+        base: Default::default(),
+        name,
+    }
+}
+
+Import: ast::ImportDeclaration = {
+}
+
+Body: Vec<Statement> = {
+}
+
+Identifier: ast::Identifier = {
+    <name: "identifier"> => ast::Identifier {
+        base: Default::default(),
+        name,
+    },
+}
