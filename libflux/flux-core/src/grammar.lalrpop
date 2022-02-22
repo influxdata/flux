@@ -1,4 +1,4 @@
-use crate::{ast, ast::*, scanner::*};
+use crate::{ast, ast::*, scanner::*, parser::strconv};
 
 grammar;
 
@@ -6,48 +6,53 @@ extern {
     type Location = u32;
     type Error = String;
 
-    enum TokenType {
-        "identifier" => TokenType::Ident,
-        "string literal" => TokenType::String,
-        "int literal" => TokenType::Int,
-        "float literal" => TokenType::Float,
+    enum Token {
+        "identifier" => Token { tok: TokenType::Ident, .. },
+        "string literal" => Token { tok: TokenType::String, .. },
+        "int literal" => Token { tok: TokenType::Int, .. },
+        "float literal" => Token { tok: TokenType::Float, .. },
+        "duration literal" => Token { tok: TokenType::Duration, .. },
+        "time literal" => Token { tok: TokenType::Time, .. },
+        "regex literal" => Token { tok: TokenType::Regex, .. },
 
-        "if" => TokenType::If,
-        "else" => TokenType::Else,
-        "then" => TokenType::Then,
-        "builtin" => TokenType::Builtin,
-        "package" => TokenType::Package,
+        "if" => Token { tok: TokenType::If, .. },
+        "else" => Token { tok: TokenType::Else, .. },
+        "then" => Token { tok: TokenType::Then, .. },
+        "builtin" => Token { tok: TokenType::Builtin, .. },
+        "package" => Token { tok: TokenType::Package, .. },
 
-        ":" => TokenType::Colon,
-        "," => TokenType::Comma,
-        "." => TokenType::Dot,
-        "=>" => TokenType::Arrow,
+        ":" => Token { tok: TokenType::Colon, .. },
+        "," => Token { tok: TokenType::Comma, .. },
+        "." => Token { tok: TokenType::Dot, .. },
+        "=>" => Token { tok: TokenType::Arrow, .. },
 
-        "=" => TokenType::Eq,
+        "=" => Token { tok: TokenType::Assign, .. },
 
-        "==" => TokenType::Eq,
-        "!=" => TokenType::Neq,
-        "<=" => TokenType::Lte,
-        "<" => TokenType::Lt,
-        ">=" => TokenType::Gte,
-        ">" => TokenType::Gt,
-        "=~" => TokenType::RegexEq,
-        "!~" => TokenType::RegexNeq,
+        "/" => Token { tok: TokenType::Div, .. },
 
-        "{" => TokenType::LBrace,
-        "[" => TokenType::LBrack,
-        "(" => TokenType::LParen,
+        "==" => Token { tok: TokenType::Eq, .. },
+        "!=" => Token { tok: TokenType::Neq, .. },
+        "<=" => Token { tok: TokenType::Lte, .. },
+        "<" => Token { tok: TokenType::Lt, .. },
+        ">=" => Token { tok: TokenType::Gte, .. },
+        ">" => Token { tok: TokenType::Gt, .. },
+        "=~" => Token { tok: TokenType::RegexEq, .. },
+        "!~" => Token { tok: TokenType::RegexNeq, .. },
 
-        "}" => TokenType::RBrace,
-        "]" => TokenType::RBrack,
-        ")" => TokenType::RParen,
+        "{" => Token { tok: TokenType::LBrace, .. },
+        "[" => Token { tok: TokenType::LBrack, .. },
+        "(" => Token { tok: TokenType::LParen, .. },
 
-        "EOF" => TokenType::Eof,
+        "}" => Token { tok: TokenType::RBrace, .. },
+        "]" => Token { tok: TokenType::RBrack, .. },
+        ")" => Token { tok: TokenType::RParen, .. },
+
+        "EOF" => Token { tok: TokenType::Eof, .. },
     }
 }
 
 pub File: ast::File = {
-    <package: Package?> <imports: Import*> <body: Body> "EOF" => {
+    <package: Package?> <imports: Import*> <body: Body> <eof: Comments<"EOF">> => {
         ast::File {
             base: Default::default(),
             name: "".into(),
@@ -55,9 +60,14 @@ pub File: ast::File = {
             imports,
             body,
             metadata: String::from("parser-type=lalrpop"),
-            eof: Default::default(),
+            eof,
         }
     }
+}
+
+#[inline]
+Comments<T>: Vec<Comment> = {
+    T => <>.comments
 }
 
 Package: ast::PackageClause = {
@@ -71,11 +81,200 @@ Import: ast::ImportDeclaration = {
 }
 
 Body: Vec<Statement> = {
+    <Statement*>
+}
+
+Statement: Statement = {
+    <id: Identifier> "=" <init: Expression> => Statement::Variable(Box::new(VariableAssgn {
+        base: Default::default(),
+        id,
+        init,
+    })),
+}
+
+StringLit: StringLit = {
+    <t: "string literal"> => StringLit {
+        base: Default::default(),
+        value: t.lit,
+    }
+}
+
+Atom: Expression = {
+    <Identifier> => Expression::Identifier(<>),
+
+    <t: "int literal"> =>? Ok(Expression::Integer(IntegerLit {
+        base: Default::default(),
+        value: t.lit.parse::<i64>().map_err(|err| err.to_string())?,
+    })),
+
+    <t: "float literal"> =>? Ok(Expression::Float(FloatLit {
+        base: Default::default(),
+        value: t.lit.parse::<f64>().map_err(|err| err.to_string())?,
+    })),
+
+    <StringLit> => Expression::StringLit(<>),
+
+    <t: "time literal"> =>? {
+        let value = strconv::parse_time(t.lit.as_str())
+            .map_err(|err| err.to_string())?;
+        Ok(Expression::DateTime(DateTimeLit {
+            base: Default::default(),
+            value,
+        }))
+    },
+
+    <t: "regex literal"> =>? {
+        let value = strconv::parse_regex(t.lit.as_str())
+            .map_err(|err| err.to_string())?;
+        Ok(Expression::Regexp(RegexpLit {
+            base: Default::default(),
+            value,
+        }))
+    },
+
+    <t: "duration literal"> =>? {
+        let values = strconv::parse_duration(t.lit.as_str())
+            .map_err(|err| err.to_string())?;
+        Ok(Expression::Duration(DurationLit {
+            base: Default::default(),
+            values,
+        }))
+    },
+
+    <lparen: "("> <expression: Expression> <rparen: ")"> => Expression::Paren(Box::new(ParenExpr {
+        base: Default::default(),
+        lparen: lparen.comments,
+        expression,
+        rparen: rparen.comments,
+    })),
+
+    <lbrack: "["> <elements: ArrayItems> <rbrack: "]"> => Expression::Array(Box::new(ArrayExpr {
+        lbrack: lbrack.comments,
+        base: Default::default(),
+        elements,
+        rbrack: rbrack.comments,
+    })),
+
+    <lbrace: Comments<"{">> <properties: CommaSep<Property>> <rbrace: Comments<"}">> => Expression::Object(Box::new(ObjectExpr {
+        lbrace,
+        base: Default::default(),
+        with: None,
+        properties,
+        rbrace,
+    })),
+
+}
+
+Expression: Expression = {
+    Atom,
+
+    <callee: Atom> <lparen: Comments<"(">> <arguments: CommaSep<Expression>> <rparen: Comments<")">> => {
+        Expression::Call(Box::new(CallExpr {
+            base: Default::default(),
+            callee,
+            lparen,
+            arguments,
+            rparen,
+        }))
+    },
+
+    <left: Atom> "/" <right: Expression> => {
+        Expression::Binary(Box::new(BinaryExpr {
+            base: Default::default(),
+            operator: Operator::DivisionOperator,
+            left,
+            right,
+        }))
+    }
+}
+
+PropertyItems: Vec<Property> = {
+    => Vec::new(),
+
+    <prop: Property> => {
+        vec![prop]
+    },
+
+    <mut vec: PropertyItem+> <last: Property?> => {
+        vec.extend(last);
+        vec
+    },
+}
+
+PropertyItem: Property = {
+    <mut prop: Property> <comma: ","> => {
+        prop.comma = comma.comments;
+        prop
+    },
+}
+
+PropertyKey: PropertyKey = {
+    <Identifier> => PropertyKey::Identifier(<>),
+
+    <StringLit> => PropertyKey::StringLit(<>),
+}
+
+Property: Property = {
+    <key: PropertyKey> <prop: (Comments<":"> Expression)?> => {
+        let (separator, value) = match prop {
+            Some((s, v)) => (s, Some(v)),
+            None => (Vec::new(), None),
+        };
+        Property {
+            base: Default::default(),
+            key,
+            separator,
+            value,
+            comma: Vec::new(),
+        }
+    }
+}
+
+ArrayItems: Vec<ArrayItem> = {
+    => Vec::new(),
+
+    <expression: Expression> => {
+        vec![ArrayItem {
+            expression,
+            comma: Vec::new(),
+        }]
+    },
+
+    <mut vec: ArrayItem+> <last: Expression?> => {
+        vec.extend(last.map(|expression| ArrayItem {
+            expression,
+            comma: Vec::new(),
+        }));
+        vec
+    },
+}
+
+ArrayItem: ArrayItem = {
+    <expression: Expression> <comma: ","> => {
+        ArrayItem {
+            expression,
+            comma: comma.comments,
+        }
+    },
 }
 
 Identifier: ast::Identifier = {
     <name: "identifier"> => ast::Identifier {
         base: Default::default(),
-        name,
+        name: name.lit,
+    },
+}
+
+
+CommaSep<T>: Vec<T> = {
+    => Vec::new(),
+
+    <single: T> => {
+        vec![single]
+    },
+
+    <mut vec: (<T> ",")+> <last: T?> => {
+        vec.extend(last);
+        vec
     },
 }

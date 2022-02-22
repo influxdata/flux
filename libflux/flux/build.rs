@@ -49,13 +49,6 @@ fn canonicalize_all_files(root: &Path) -> Vec<String> {
 }
 
 fn main() -> Result<()> {
-    const GRAMMAR: &str = "src/parser/grammar.lalrpop";
-    lalrpop::Configuration::new()
-        .use_cargo_dir_conventions()
-        .process_file(GRAMMAR)?;
-
-    println!("cargo:rerun-if-changed={}", GRAMMAR);
-
     let dir = path::PathBuf::from(env::var("OUT_DIR")?);
 
     let stdlib_path = Path::new(stdlib_relative_path());

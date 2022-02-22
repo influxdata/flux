@@ -5,7 +5,7 @@ use std::{collections::HashMap, mem, str};
 use super::DefaultHasher;
 use crate::{ast, ast::*, scanner, scanner::*};
 
-mod strconv;
+pub(crate) mod strconv;
 
 /// Parses a string of Flux source code.
 ///
@@ -22,12 +22,18 @@ pub fn parse_string(name: String, s: &str) -> File {
 
 pub(crate) fn parse_string_lalrpop(name: String, s: &str) -> File {
     let mut scanner = crate::scanner::Scanner::new(s);
+    let mut eof = false;
     let mut file = crate::grammar::FileParser::new()
         .parse(std::iter::from_fn(|| {
-            let token = scanner.scan();
-            Some((token.start_offset, token.tok, token.end_offset))
+            if eof {
+                return None;
+            }
+            let token = scanner.scan_with_regex();
+            let end_offset = token.end_offset;
+            eof |= token.tok == TokenType::Eof;
+            Some((token.start_offset, token, end_offset))
         }))
-        .unwrap();
+        .unwrap_or_else(|err| panic!("{}\n{:#?}", err, err));
 
     file.name = name;
 
