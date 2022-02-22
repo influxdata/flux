@@ -103,7 +103,7 @@ func (e *executor) createExecutionState(ctx context.Context, p *plan.Spec, a *me
 	}
 	v := &createExecutionNodeVisitor{
 		es:    es,
-		nodes: make(map[plan.Node]Node),
+		nodes: make(map[plan.Node][]Node),
 	}
 
 	if err := p.BottomUpWalk(v.Visit); err != nil {
@@ -122,7 +122,7 @@ func (e *executor) createExecutionState(ctx context.Context, p *plan.Spec, a *me
 // and creates a node responsible for executing that physical operation.
 type createExecutionNodeVisitor struct {
 	es    *executionState
-	nodes map[plan.Node]Node
+	nodes map[plan.Node][]Node
 }
 
 func skipYields(pn plan.Node) plan.Node {
@@ -155,12 +155,11 @@ func (v *createExecutionNodeVisitor) Visit(node plan.Node) error {
 	}
 	spec := node.ProcedureSpec()
 	kind := spec.Kind()
-	id := DatasetIDFromNodeID(node.ID())
 
 	if yieldSpec, ok := spec.(plan.YieldProcedureSpec); ok {
 		r := newResult(yieldSpec.YieldName())
 		v.es.results[yieldSpec.YieldName()] = r
-		v.nodes[skipYields(node)].AddTransformation(r)
+		v.nodes[skipYields(node)][0].AddTransformation(r)
 		return nil
 	}
 
@@ -173,75 +172,126 @@ func (v *createExecutionNodeVisitor) Visit(node plan.Node) error {
 		}
 	}
 
-	// Build execution context
-	ec := executionContext{
-		es:            v.es,
-		parents:       make([]DatasetID, len(node.Predecessors())),
-		streamContext: streamContext,
+	// There are three types of instantiations we need to support here.
+	//
+	// 1. Standard instantiation. These are non-parallel, non-merge nodes.
+	//    There is a 1:1 relationship between planner node and execution graph
+	//    node. Only a single copy of the node is made and it references the
+	//    single copy of the predecessor nodes.
+	//
+	// 2. Parallel instantiation. There are multiple copies of the node and of
+	//    all predecessors. This applies to both source and non-source nodes.
+	//
+	// 3. Merge instantiation. There is a single copy of the node, but multiple copies of the
+	//    predecessors. These copies merge into the node.
+
+	copies := 1
+	if attr, ok := ppn.OutputAttrs[plan.ParallelRunKey]; ok {
+		copies = attr.(plan.ParallelRunAttribute).Factor
 	}
 
-	for i, pred := range nonYieldPredecessors(node) {
-		ec.parents[i] = DatasetIDFromNodeID(pred.ID())
+	predCopies := 1
+	if attr, ok := ppn.OutputAttrs[plan.ParallelMergeKey]; ok {
+		predCopies = attr.(plan.ParallelMergeAttribute).Factor
 	}
+
+	// Build execution context for each copy.
+	ec := make([]executionContext, copies)
+	for i := 0; i < copies; i++ {
+		ec[i] = executionContext{
+			es:            v.es,
+			parents:       make([]DatasetID, len(node.Predecessors())*predCopies),
+			streamContext: streamContext,
+			parallelOpts:  ParallelOpts{Group: i, Factor: copies},
+		}
+
+		for pi, pred := range nonYieldPredecessors(node) {
+			for j := 0; j < predCopies; j++ {
+				ec[i].parents[pi*predCopies+j] = DatasetIDFromNodeID(pred.ID(), j)
+			}
+		}
+	}
+
+	v.nodes[node] = make([]Node, copies)
 
 	// If node is a leaf, create a source
 	if len(node.Predecessors()) == 0 {
 		createSourceFn, ok := procedureToSource[kind]
-
 		if !ok {
 			return fmt.Errorf("unsupported source kind %v", kind)
 		}
 
-		source, err := createSourceFn(spec, id, ec)
+		for i := 0; i < copies; i++ {
+			id := DatasetIDFromNodeID(node.ID(), i)
 
-		if err != nil {
-			return err
+			source, err := createSourceFn(spec, id, ec[i])
+
+			if err != nil {
+				return err
+			}
+
+			source.SetLabel(string(node.ID()))
+			v.es.sources = append(v.es.sources, source)
+			v.nodes[node][i] = source
 		}
-
-		source.SetLabel(string(node.ID()))
-		v.es.sources = append(v.es.sources, source)
-		v.nodes[node] = source
 	} else {
-
-		// If node is internal, create a transformation.
-		// For each predecessor, add a transport for sending data upstream.
+		// If node is internal, create a transformation. For each
+		// predecessor, add a transport for sending data upstream.
 		createTransformationFn, ok := procedureToTransformation[kind]
 
 		if !ok {
 			return fmt.Errorf("unsupported procedure %v", kind)
 		}
 
-		tr, ds, err := createTransformationFn(id, DiscardingMode, spec, ec)
+		for i := 0; i < copies; i++ {
+			id := DatasetIDFromNodeID(node.ID(), i)
 
-		if err != nil {
-			return err
-		}
+			tr, ds, err := createTransformationFn(id, DiscardingMode, spec, ec[i])
 
-		if ds, ok := ds.(DatasetContext); ok {
-			ds.WithContext(v.es.ctx)
-		}
+			if err != nil {
+				return err
+			}
 
-		if ppn.TriggerSpec == nil {
-			ppn.TriggerSpec = plan.DefaultTriggerSpec
-		}
-		ds.SetTriggerSpec(ppn.TriggerSpec)
-		v.nodes[node] = ds
+			if ds, ok := ds.(DatasetContext); ok {
+				ds.WithContext(v.es.ctx)
+			}
 
-		for _, p := range nonYieldPredecessors(node) {
-			executionNode := v.nodes[p]
-			transport := newConsecutiveTransport(v.es.ctx, v.es.dispatcher, tr, node, v.es.logger, v.es.alloc)
-			v.es.transports = append(v.es.transports, transport)
-			executionNode.AddTransformation(transport)
-		}
+			if ppn.TriggerSpec == nil {
+				ppn.TriggerSpec = plan.DefaultTriggerSpec
+			}
+			ds.SetTriggerSpec(ppn.TriggerSpec)
+			v.nodes[node][i] = ds
 
-		if plan.HasSideEffect(spec) && len(node.Successors()) == 0 {
-			name := string(node.ID())
-			r := newResult(name)
-			v.es.results[name] = r
-			v.nodes[skipYields(node)].AddTransformation(r)
+			for _, p := range nonYieldPredecessors(node) {
+				// In case (1) above, both copies and predCopies are 1. We link
+				// forward from the only copy of the predecessor node.
+				//   i == 0 AND j == 0
+				//
+				// In case (2) above, both copies is > 1 and predCopies is 1.
+				// We link forward from corresponding copy for the node.
+				//   ( iterating i ) AND j == 0
+				//
+				// In case (3) above, both copies is 1 and predCopies is > 1.
+				// We link forward from all copies for the node to achieve the
+				// fan-in.
+				//   i == 0 AND ( iterating j )
+				for j := 0; j < predCopies; j++ {
+					// Either i == 0 && j == 0: we are either iterating i, or we are iterating j.
+					executionNode := v.nodes[p][i+j]
+					transport := newConsecutiveTransport(v.es.ctx, v.es.dispatcher, tr, node, v.es.logger, v.es.alloc)
+					v.es.transports = append(v.es.transports, transport)
+					executionNode.AddTransformation(transport)
+				}
+			}
+
+			if plan.HasSideEffect(spec) && len(node.Successors()) == 0 {
+				name := string(node.ID())
+				r := newResult(name)
+				v.es.results[name] = r
+				v.nodes[skipYields(node)][i].AddTransformation(r)
+			}
 		}
 	}
-
 	return nil
 }
 
@@ -304,11 +354,17 @@ func (es *executionState) do() {
 	}()
 }
 
+type ParallelOpts struct {
+	Group  int
+	Factor int
+}
+
 // Need a unique stream context per execution context
 type executionContext struct {
 	es            *executionState
 	parents       []DatasetID
 	streamContext streamContext
+	parallelOpts  ParallelOpts
 }
 
 func resolveTime(qt flux.Time, now time.Time) Time {
@@ -333,4 +389,8 @@ func (ec executionContext) Allocator() *memory.Allocator {
 
 func (ec executionContext) Parents() []DatasetID {
 	return ec.parents
+}
+
+func (ec executionContext) ParallelOpts() ParallelOpts {
+	return ec.parallelOpts
 }

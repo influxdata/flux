@@ -37,3 +37,7 @@ func (a *Administration) Allocator() *memory.Allocator {
 func (a *Administration) Parents() []execute.DatasetID {
 	return nil
 }
+
+func (a *Administration) ParallelOpts() execute.ParallelOpts {
+	return execute.ParallelOpts{Group: -1, Factor: 0}
+}

@@ -7,7 +7,6 @@ import (
 	"strings"
 	"testing"
 
-	uuid "github.com/gofrs/uuid"
 	"github.com/google/go-cmp/cmp"
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/dependencies/dependenciestest"
@@ -26,6 +25,8 @@ type FromProcedureSpec struct {
 	execute.ExecutionNode
 	data []*Table
 	ts   []execute.Transformation
+	a    execute.Administration
+	id   execute.DatasetID
 }
 
 // NewFromProcedureSpec specifies a from-test procedure with source data
@@ -54,9 +55,7 @@ func (src *FromProcedureSpec) AddTransformation(t execute.Transformation) {
 }
 
 func (src *FromProcedureSpec) Run(ctx context.Context) {
-	// uuid.NewV4 can return an error because of enthropy. We will stick with the previous
-	// behavior of panicing on errors when creating new uuid's
-	id := execute.DatasetID(uuid.Must(uuid.NewV4()))
+	popts := src.a.ParallelOpts()
 
 	if len(src.ts) == 0 {
 		return
@@ -65,7 +64,12 @@ func (src *FromProcedureSpec) Run(ctx context.Context) {
 
 		var max execute.Time
 		for _, tbl := range src.data {
-			t.Process(id, tbl)
+			// If restricted to a parallel run group we may need to skip the table.
+			if popts.Factor > 1 && popts.Group != tbl.ResidesOnPartition {
+				continue
+			}
+			tbl.ParallelGroup = popts.Group
+			t.Process(src.id, tbl)
 			stopIdx := execute.ColIdx(execute.DefaultStopColLabel, tbl.Cols())
 			if stopIdx >= 0 {
 				if s := tbl.Key().ValueTime(stopIdx); s > max {
@@ -73,15 +77,17 @@ func (src *FromProcedureSpec) Run(ctx context.Context) {
 				}
 			}
 		}
-		t.UpdateWatermark(id, max)
-		t.Finish(id, nil)
+		t.UpdateWatermark(src.id, max)
+		t.Finish(src.id, nil)
 		return
 	}
 
 	buffers := make([]flux.BufferedTable, 0, len(src.data))
+	residesOnPartition := make([]int, 0, len(src.data))
 	for _, tbl := range src.data {
 		bufTable, _ := execute.CopyTable(tbl)
 		buffers = append(buffers, bufTable)
+		residesOnPartition = append(residesOnPartition, tbl.ResidesOnPartition)
 	}
 
 	// Ensure that the buffers are released after the source has finished.
@@ -93,8 +99,11 @@ func (src *FromProcedureSpec) Run(ctx context.Context) {
 
 	for _, t := range src.ts {
 		var max execute.Time
-		for _, tbl := range buffers {
-			t.Process(id, tbl.Copy())
+		for i, tbl := range buffers {
+			if popts.Factor > 1 && popts.Group != residesOnPartition[i] {
+				continue
+			}
+			t.Process(src.id, tbl.Copy())
 			stopIdx := execute.ColIdx(execute.DefaultStopColLabel, tbl.Cols())
 			if stopIdx >= 0 {
 				if s := tbl.Key().ValueTime(stopIdx); s > max {
@@ -102,13 +111,16 @@ func (src *FromProcedureSpec) Run(ctx context.Context) {
 				}
 			}
 		}
-		t.UpdateWatermark(id, max)
-		t.Finish(id, nil)
+		t.UpdateWatermark(src.id, max)
+		t.Finish(src.id, nil)
 	}
 }
 
 func CreateFromSource(spec plan.ProcedureSpec, id execute.DatasetID, a execute.Administration) (execute.Source, error) {
-	return spec.(*FromProcedureSpec), nil
+	fps := *spec.(*FromProcedureSpec)
+	fps.a = a
+	fps.id = id
+	return &fps, nil
 }
 
 // AllocatingFromProcedureSpec is a procedure spec AND an execution node

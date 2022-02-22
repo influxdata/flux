@@ -46,6 +46,11 @@ type Table struct {
 	Alloc *memory.Allocator
 	// IsDone indicates if this table has been used.
 	IsDone bool
+	// PartitionSource indicates which partition the table is on.
+	ResidesOnPartition int
+	// ParallelGroup is assigned during execution so we can see in the
+	// execution output which group the data originated from.
+	ParallelGroup int
 }
 
 // Normalize ensures all fields of the table are set correctly.
@@ -130,7 +135,11 @@ func (t *Table) Do(f func(flux.ColReader) error) error {
 			b := arrow.NewIntBuilder(t.Alloc)
 			for i := range t.Data {
 				if v := t.Data[i][j]; v != nil {
-					b.Append(v.(int64))
+					if col.Label == "_parallel_group" {
+						b.Append(int64(t.ParallelGroup))
+					} else {
+						b.Append(v.(int64))
+					}
 				} else {
 					b.AppendNull()
 				}

@@ -123,6 +123,53 @@ func (pp *physicalPlanner) Plan(ctx context.Context, spec *Spec) (*Spec, error) 
 	return transformedSpec, nil
 }
 
+func ValidateAttributes(plan *Spec) error {
+	err := plan.BottomUpWalk(func(pn Node) error {
+		ppn, ok := pn.(*PhysicalPlanNode)
+		if !ok {
+			return fmt.Errorf("invalid physical query plan; found logical operation \"%v\"", pn.ID())
+		}
+
+		for key, attr := range ppn.RequiredAttrs {
+			for _, pred := range ppn.Predecessors() {
+				ppred := pred.(*PhysicalPlanNode)
+				predAttr, ok := ppred.OutputAttrs[key]
+				if !ok {
+					return fmt.Errorf("invalid physical query plan; attribute \"%v\" required by "+
+						"\"%v\" is missing from predecessor \"%v\"", key, ppn.id, ppred.id)
+				}
+				if attr != predAttr {
+					return fmt.Errorf("invalid physical query plan; attribute \"%v\" required by "+
+						"\"%v\" does not match attribute in predecessor \"%v\"", key, ppn.id, ppred.id)
+				}
+			}
+		}
+
+		for key, attr := range ppn.OutputAttrs {
+			if attr.SuccessorsMustRequire() {
+				for _, succ := range ppn.Successors() {
+					has := false
+					psucc := succ.(*PhysicalPlanNode)
+					for skey, _ := range succ.(*PhysicalPlanNode).RequiredAttrs {
+						if key == skey {
+							has = true
+						}
+					}
+					if !has {
+						return fmt.Errorf("invalid physical query plan; attribute \"%v\" on "+
+							"\"%v\" must be required by all successors, but isn't on \"%v\"",
+							key, ppn.id, psucc.id)
+					}
+				}
+			}
+		}
+
+		return nil
+	})
+	return err
+
+}
+
 func validatePhysicalPlan(plan *Spec) error {
 	err := plan.BottomUpWalk(func(pn Node) error {
 		if validator, ok := pn.ProcedureSpec().(PostPhysicalValidator); ok {
@@ -138,7 +185,12 @@ func validatePhysicalPlan(plan *Spec) error {
 
 		return nil
 	})
-	return err
+
+	if err != nil {
+		return err
+	}
+
+	return ValidateAttributes(plan)
 }
 
 type physicalPlanner struct {
@@ -308,9 +360,53 @@ func (ppn *PhysicalPlanNode) Cost(inStats []Statistics) (cost Cost, outStats Sta
 	return ppn.Spec.Cost(inStats)
 }
 
-// PhysicalAttributes encapsulates sny physical attributes of the result produced
+type PhysicalAttr interface {
+	SuccessorsMustRequire() bool
+}
+
+
+// PhysicalAttributes encapsulates any physical attributes of the result produced
 // by a physical plan node, such as collation, etc.
-type PhysicalAttributes struct {
+type PhysicalAttributes map[string]PhysicalAttr
+
+func (ppn *PhysicalPlanNode) SetOutputAttr(name string, v PhysicalAttr) {
+	if ppn.OutputAttrs == nil {
+		ppn.OutputAttrs = make(PhysicalAttributes)
+	}
+	ppn.OutputAttrs[name] = v
+}
+
+func (ppn *PhysicalPlanNode) SetRequiredAttr(name string, v PhysicalAttr) {
+	if ppn.RequiredAttrs == nil {
+		ppn.RequiredAttrs = make(PhysicalAttributes)
+	}
+	ppn.RequiredAttrs[name] = v
+}
+
+// Physical attributes used in specifying parallelization. The Run attribute
+// means the node executes in parallel. It accepts parallel data (a subset of
+// the source) and produces parallel data. The merge attribute means that the
+// node accepts parallel data, merges the streams, and produces non-parallel
+// data that covers the entire data source.
+const ParallelRunKey = "parallel-run"
+const ParallelMergeKey = "parallel-merge"
+
+type ParallelRunAttribute struct {
+	Factor int
+}
+
+// If a node produces parallel data, then all successors must require parallel
+// data, otherwise there will be a plan error.
+func (ParallelRunAttribute) SuccessorsMustRequire() bool {
+	return true
+}
+
+type ParallelMergeAttribute struct {
+	Factor int
+}
+
+func (ParallelMergeAttribute) SuccessorsMustRequire() bool {
+	return false
 }
 
 // CreatePhysicalNode creates a single physical plan node from a procedure spec.
