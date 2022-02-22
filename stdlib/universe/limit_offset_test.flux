@@ -51,9 +51,15 @@ outData =
 ,,3,2018-05-22T19:00:00Z,2018-05-22T20:00:00Z,2018-05-22T19:53:36Z,82.598876953125,used_percent,swap,host.local
 ,,3,2018-05-22T19:00:00Z,2018-05-22T20:00:00Z,2018-05-22T19:53:46Z,82.598876953125,used_percent,swap,host.local
 "
-t_limit = (table=<-) =>
-    table
+
+input = () =>
+    testing.loadStorage(csv: inData)
         |> range(start: 2018-05-22T19:00:00Z, stop: 2018-05-22T20:00:00Z)
         |> limit(n: 2, offset: 1)
 
-test _limit_offset = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_limit})
+testcase limit_offset {
+    want = input()
+    got = testing.loadMem(csv: outData)
+
+    testing.diff(want: want, got: got) |> yield()
+}

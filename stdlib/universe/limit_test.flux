@@ -1,6 +1,7 @@
 package universe_test
 
 
+import "csv"
 import "testing"
 
 option now = () => 2030-01-01T00:00:00Z
@@ -47,9 +48,14 @@ outData =
 ,,2,2018-05-22T19:00:00Z,2018-05-22T20:00:00Z,2018-05-22T19:53:26Z,1.95,load5,system,host.local
 ,,3,2018-05-22T19:00:00Z,2018-05-22T20:00:00Z,2018-05-22T19:53:26Z,82.9833984375,used_percent,swap,host.local
 "
-t_limit = (table=<-) =>
-    table
+
+input = () =>
+    testing.loadStorage(csv: inData)
         |> range(start: 2018-05-22T19:00:00Z, stop: 2018-05-22T20:00:00Z)
         |> limit(n: 1)
 
-test _limit = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_limit})
+testcase limit_1 {
+    want = input()
+    got = testing.loadMem(csv: outData)
+    testing.diff(want: want, got: got) |> yield()
+}
