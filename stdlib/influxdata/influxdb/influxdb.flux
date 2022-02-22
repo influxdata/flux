@@ -347,7 +347,7 @@ builtin buckets : (
         ?orgID: string,
         ?host: string,
         ?token: string,
-    ) => [{
+    ) => stream[{
         name: string,
         id: string,
         organizationID: string,
