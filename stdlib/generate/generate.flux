@@ -37,6 +37,6 @@ builtin from : (
         stop: A,
         count: int,
         fn: (n: int) => int,
-    ) => [{_start: time, _stop: time, _time: time, _value: int}]
+    ) => stream[{_start: time, _stop: time, _time: time, _value: int}]
     where
     A: Timeable
