@@ -54,3 +54,25 @@ fn labels_dynamic_string() {
         ],
     }
 }
+
+#[test]
+fn undefined_field() {
+    test_error_msg! {
+        env: map![
+            "fill" => "(<-tables: [{ A with B: C }], ?column: B, ?value: D) => [{ A with B: D }]
+                where B: Label
+                "
+        ],
+        src: r#"
+            x = [{ b: 1 }] |> fill(column: "a", value: "x")
+        "#,
+        expect: expect![[r#"
+            error: record is missing label a
+              ┌─ main:2:31
+              │
+            2 │             x = [{ b: 1 }] |> fill(column: "a", value: "x")
+              │                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+        "#]],
+    }
+}

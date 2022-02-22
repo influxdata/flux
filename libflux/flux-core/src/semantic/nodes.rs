@@ -1320,7 +1320,10 @@ impl CallExpr {
 
         match &*self.callee.type_of().apply_cow(infer.sub) {
             MonoType::Fun(func) => {
-                if let Err(err) = func.try_unify(&act, infer.sub) {
+                if let Err(err) = func.try_unify_with(&act, infer.sub, |error| Located {
+                    location: self.loc.clone(),
+                    error,
+                }) {
                     log::debug!(
                         "Unify error: {} <=> {} : {}",
                         func,

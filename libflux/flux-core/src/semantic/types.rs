@@ -43,10 +43,7 @@ impl<'a, E> Unifier<'a, E> {
         }
     }
 
-    fn finish<T>(mut self, value: T) -> Result<T, Errors<E>>
-    where
-        E: From<Error>,
-    {
+    fn finish<T>(mut self, value: T, mk_error: impl Fn(Error) -> E) -> Result<T, Errors<E>> {
         if !self.delayed_records.is_empty() {
             let mut sub_unifier = Unifier::new(self.sub);
             while let Some((expected, actual)) = self.delayed_records.pop() {
@@ -56,7 +53,7 @@ impl<'a, E> Unifier<'a, E> {
             }
 
             self.errors
-                .extend(sub_unifier.errors.into_iter().map(E::from));
+                .extend(sub_unifier.errors.into_iter().map(&mk_error));
         }
 
         if self.errors.has_errors() {
@@ -791,7 +788,7 @@ impl MonoType {
 
         let typ = self.unify(actual, &mut unifier);
 
-        unifier.finish(typ)
+        unifier.finish(typ, From::from)
     }
 
     fn unify(
@@ -1822,20 +1819,32 @@ impl<T> Function<T> {
 }
 
 impl Function {
-    pub(crate) fn try_unify<T>(
+    #[cfg(test)]
+    fn try_unify<T>(
         &self,
         actual: &Function<T>,
         sub: &mut Substitution,
+    ) -> Result<(), Errors<Error>>
+    where
+        T: TypeLike<Error = Error> + Clone,
+    {
+        self.try_unify_with(actual, sub, From::from)
+    }
+
+    pub(crate) fn try_unify_with<T>(
+        &self,
+        actual: &Function<T>,
+        sub: &mut Substitution,
+        mk_error: impl Fn(Error) -> T::Error,
     ) -> Result<(), Errors<T::Error>>
     where
         T: TypeLike + Clone,
-        T::Error: From<Error>,
     {
         let mut unifier = Unifier::new(sub);
 
         self.unify(actual, &mut unifier);
 
-        unifier.finish(())
+        unifier.finish((), mk_error)
     }
 
     /// Given two function types f and g, the process for unifying their arguments is as follows:
