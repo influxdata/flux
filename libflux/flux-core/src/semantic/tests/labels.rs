@@ -76,3 +76,19 @@ fn undefined_field() {
         "#]],
     }
 }
+
+#[test]
+fn merge_labels_to_string() {
+    test_infer! {
+        src: r#"
+            x = if 1 == 1 then "a" else "b"
+            y = if 1 == 1 then "a" else "b" + "b"
+            z = ["a", "b"]
+        "#,
+        exp: map![
+            "x" => "string",
+            "y" => "string",
+            "z" => "[string]",
+        ],
+    }
+}
