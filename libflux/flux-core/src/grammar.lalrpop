@@ -100,7 +100,11 @@ StringLit: StringLit = {
 }
 
 Atom: Expression = {
-    <Identifier> => Expression::Identifier(<>),
+    AtomIdent<"identifier">
+}
+
+AtomIdent<T>: Expression = {
+    <Identifier> if T == "identifier" => Expression::Identifier(<>),
 
     <t: "int literal"> =>? Ok(Expression::Integer(IntegerLit {
         base: Default::default(),
@@ -141,11 +145,18 @@ Atom: Expression = {
         }))
     },
 
-    <lparen: "("> <expression: Expression> <rparen: ")"> => Expression::Paren(Box::new(ParenExpr {
+    <lparen: Comments<"(">> <expression: Identifier> <tail: ParenTail> => Expression::Paren(Box::new(ParenExpr {
         base: Default::default(),
-        lparen: lparen.comments,
+        lparen,
         expression,
-        rparen: rparen.comments,
+        rparen,
+    })),
+
+    <lparen: Comments<"(">> <expression: ExpressionIdent<"">> <rparen: Comments<")">> => Expression::Paren(Box::new(ParenExpr {
+        base: Default::default(),
+        lparen,
+        expression,
+        rparen,
     })),
 
     <lbrack: "["> <elements: ArrayItems> <rbrack: "]"> => Expression::Array(Box::new(ArrayExpr {
@@ -162,11 +173,20 @@ Atom: Expression = {
         properties,
         rbrace,
     })),
+}
 
+ParenTail: () = {
+    <rparen: Comments<")">> => rparen,
+
+    <rparen: Comments<")">> "=>" => rparen,
 }
 
 Expression: Expression = {
-    Atom,
+    ExpressionIdent<"identifier">
+}
+
+ExpressionIdent<T>: Expression = {
+    AtomIdent<T>,
 
     <callee: Atom> <lparen: Comments<"(">> <arguments: CommaSep<Expression>> <rparen: Comments<")">> => {
         Expression::Call(Box::new(CallExpr {
@@ -177,6 +197,7 @@ Expression: Expression = {
             rparen,
         }))
     },
+
 
     <left: Atom> "/" <right: Expression> => {
         Expression::Binary(Box::new(BinaryExpr {
