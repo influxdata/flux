@@ -250,11 +250,13 @@ func (a *QuantileAgg) NewBoolAgg() execute.DoBoolAgg {
 }
 
 func (a *QuantileAgg) NewIntAgg() execute.DoIntAgg {
-	return nil
+	agg := a.NewFloatAgg()
+	return agg.(execute.DoIntAgg)
 }
 
 func (a *QuantileAgg) NewUIntAgg() execute.DoUIntAgg {
-	return nil
+	agg := a.NewFloatAgg()
+	return agg.(execute.DoUIntAgg)
 }
 
 func (a *QuantileAgg) NewFloatAgg() execute.DoFloatAgg {
@@ -292,6 +294,24 @@ func (s *QuantileAggState) DoFloat(vs *array.Float) {
 	for i := 0; i < vs.Len(); i++ {
 		if vs.IsValid(i) {
 			s.digest.Add(vs.Value(i), 1)
+			s.ok = true
+		}
+	}
+}
+
+func (s *QuantileAggState) DoInt(vs *array.Int) {
+	for i := 0; i < vs.Len(); i++ {
+		if vs.IsValid(i) {
+			s.digest.Add(float64(vs.Value(i)), 1)
+			s.ok = true
+		}
+	}
+}
+
+func (s *QuantileAggState) DoUInt(vs *array.Uint) {
+	for i := 0; i < vs.Len(); i++ {
+		if vs.IsValid(i) {
+			s.digest.Add(float64(vs.Value(i)), 1)
 			s.ok = true
 		}
 	}
