@@ -2,10 +2,10 @@ package execute_test
 
 import (
 	"context"
+	"fmt"
 	"math"
 	"testing"
 	"time"
-	"fmt"
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/influxdata/flux"
@@ -50,12 +50,12 @@ func createPhysicalNode(id plan.NodeID, spec plan.PhysicalProcedureSpec, opts ..
 func TestParallel_Execute(t *testing.T) {
 
 	testcases := []struct {
-		name      string
-		spec      *plantest.PlanSpec
-		want      map[string][]*executetest.Table
-		allocator *memory.Allocator
-		wantErr   error
-		wantValidationErr   error
+		name              string
+		spec              *plantest.PlanSpec
+		want              map[string][]*executetest.Table
+		allocator         *memory.Allocator
+		wantErr           error
+		wantValidationErr error
 	}{
 		{
 			name: `parallel-from`,
@@ -263,7 +263,7 @@ func TestParallel_Execute(t *testing.T) {
 			spec: &plantest.PlanSpec{
 				Nodes: []plan.Node{
 					createPhysicalNode("from-test",
-						executetest.NewFromProcedureSpec( []*executetest.Table{ })),
+						executetest.NewFromProcedureSpec([]*executetest.Table{})),
 					createPhysicalNode("filter",
 						&universe.FilterProcedureSpec{
 							Fn: interpreter.ResolvedFunction{
@@ -284,7 +284,7 @@ func TestParallel_Execute(t *testing.T) {
 					{2, 3},
 				},
 			},
-			wantValidationErr: fmt.Errorf( "invalid physical query plan; attribute \"parallel-run\" " +
+			wantValidationErr: fmt.Errorf("invalid physical query plan; attribute \"parallel-run\" " +
 				"required by \"filter\" is missing from predecessor \"from-test\""),
 		},
 		{
@@ -292,7 +292,7 @@ func TestParallel_Execute(t *testing.T) {
 			spec: &plantest.PlanSpec{
 				Nodes: []plan.Node{
 					createPhysicalNode("from-test",
-						executetest.NewFromProcedureSpec( []*executetest.Table{ }),
+						executetest.NewFromProcedureSpec([]*executetest.Table{}),
 						withOutputAttr(plan.ParallelRunKey, plan.ParallelRunAttribute{Factor: 2})),
 					createPhysicalNode("filter",
 						&universe.FilterProcedureSpec{
@@ -313,7 +313,7 @@ func TestParallel_Execute(t *testing.T) {
 					{2, 3},
 				},
 			},
-			wantValidationErr: fmt.Errorf( "invalid physical query plan; attribute \"parallel-run\" " +
+			wantValidationErr: fmt.Errorf("invalid physical query plan; attribute \"parallel-run\" " +
 				"on \"from-test\" must be required by all successors, but isn't on \"filter\""),
 		},
 		{
@@ -321,7 +321,7 @@ func TestParallel_Execute(t *testing.T) {
 			spec: &plantest.PlanSpec{
 				Nodes: []plan.Node{
 					createPhysicalNode("from-test",
-						executetest.NewFromProcedureSpec( []*executetest.Table{ }),
+						executetest.NewFromProcedureSpec([]*executetest.Table{}),
 						withOutputAttr(plan.ParallelRunKey, plan.ParallelRunAttribute{Factor: 2})),
 					createPhysicalNode("filter",
 						&universe.FilterProcedureSpec{
@@ -343,7 +343,7 @@ func TestParallel_Execute(t *testing.T) {
 					{2, 3},
 				},
 			},
-			wantValidationErr: fmt.Errorf( "invalid physical query plan; attribute \"parallel-run\" " +
+			wantValidationErr: fmt.Errorf("invalid physical query plan; attribute \"parallel-run\" " +
 				"required by \"filter\" does not match attribute in predecessor \"from-test\""),
 		},
 	}
@@ -377,7 +377,6 @@ func TestParallel_Execute(t *testing.T) {
 				}
 				return
 			}
-
 
 			exe := execute.NewExecutor(zaptest.NewLogger(t))
 

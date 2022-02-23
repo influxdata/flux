@@ -172,7 +172,8 @@ func (v *createExecutionNodeVisitor) Visit(node plan.Node) error {
 		}
 	}
 
-	// There are three types of instantiations we need to support here.
+	// There are three types of instantiations we need to support here, and for
+	// each one of these, there are source nodes and non-source nodes.
 	//
 	// 1. Standard instantiation. These are non-parallel, non-merge nodes.
 	//    There is a 1:1 relationship between planner node and execution graph

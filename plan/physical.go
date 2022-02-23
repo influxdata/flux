@@ -364,7 +364,6 @@ type PhysicalAttr interface {
 	SuccessorsMustRequire() bool
 }
 
-
 // PhysicalAttributes encapsulates any physical attributes of the result produced
 // by a physical plan node, such as collation, etc.
 type PhysicalAttributes map[string]PhysicalAttr
