@@ -58,7 +58,7 @@ type aggregateWindow interface {
 	Initialize(valueType flux.ColType, mem memory.Allocator) ([]array.Builder, error)
 	Aggregate(ts, indices, start, stop *array.Int, values array.Interface, builders []array.Builder)
 	Merge(prevT, nextT *array.Int, prev, next []array.Interface, mem memory.Allocator) (*array.Int, []array.Interface)
-	Compute(buffers []array.Interface) (flux.ColType, array.Interface)
+	Compute(buffers []array.Interface, mem memory.Allocator) (flux.ColType, array.Interface)
 	AppendEmpty(b array.Builder)
 }
 
@@ -384,7 +384,7 @@ func (a *aggregateWindowTransformation) recomputeKey(key flux.GroupKey) flux.Gro
 
 func (a *aggregateWindowTransformation) computeFromState(key flux.GroupKey, s *aggregateWindowState, mem memory.Allocator) arrow.TableBuffer {
 	ts := s.ts
-	vt, vs := a.aggregate.Compute(s.buffers)
+	vt, vs := a.aggregate.Compute(s.buffers, mem)
 
 	if a.createEmpty {
 		ts, vs = a.createEmptyWindows(ts, vs, mem)
@@ -581,7 +581,7 @@ func (a aggregateWindowCount) Merge(prevT, nextT *array.Int, prev, next []array.
 	return ts, []array.Interface{b.NewArray()}
 }
 
-func (a aggregateWindowCount) Compute(buffers []array.Interface) (flux.ColType, array.Interface) {
+func (a aggregateWindowCount) Compute(buffers []array.Interface, mem memory.Allocator) (flux.ColType, array.Interface) {
 	return flux.TInt, buffers[0]
 }
 
@@ -686,7 +686,7 @@ func (a aggregateWindowSum) Merge(prevT, nextT *array.Int, prev, next []array.In
 	}
 }
 
-func (a aggregateWindowSum) Compute(buffers []array.Interface) (flux.ColType, array.Interface) {
+func (a aggregateWindowSum) Compute(buffers []array.Interface, mem memory.Allocator) (flux.ColType, array.Interface) {
 	var valueType flux.ColType
 	switch buffers[0].(type) {
 	case *array.Float:
@@ -705,27 +705,72 @@ func (a aggregateWindowSum) AppendEmpty(b array.Builder) {
 	b.AppendNull()
 }
 
-// type aggregateWindowMean struct{}
-//
-// func (a aggregateWindowMean) Initialize(valueType flux.ColType, mem memory.Allocator) ([]array.Builder, error) {
-// 	// TODO implement me
-// 	panic("implement me")
-// }
-//
-// func (a aggregateWindowMean) Aggregate(ts, indices, start, stop *array.Int, values array.Interface, builders []array.Builder) {
-// 	// TODO implement me
-// 	panic("implement me")
-// }
-//
-// func (a aggregateWindowMean) Merge(prevT, nextT *array.Int, prev, next []array.Interface, mem memory.Allocator) (*array.Int, []array.Interface) {
-// 	// TODO implement me
-// 	panic("implement me")
-// }
-//
-// func (a aggregateWindowMean) Compute(buffers []array.Interface) (flux.ColType, array.Interface) {
-// 	// TODO implement me
-// 	panic("implement me")
-// }
+type aggregateWindowMean struct {
+	sum   aggregateWindowSum
+	count aggregateWindowCount
+}
+
+func (a aggregateWindowMean) Initialize(valueType flux.ColType, mem memory.Allocator) ([]array.Builder, error) {
+	sum, err := a.sum.Initialize(valueType, mem)
+	if err != nil {
+		return nil, err
+	}
+
+	count, err := a.count.Initialize(valueType, mem)
+	if err != nil {
+		return nil, err
+	}
+
+	builders := make([]array.Builder, 0, 2)
+	builders = append(builders, sum...)
+	builders = append(builders, count...)
+	return builders, nil
+}
+
+func (a aggregateWindowMean) Aggregate(ts, indices, start, stop *array.Int, values array.Interface, builders []array.Builder) {
+	a.sum.Aggregate(ts, indices, start, stop, values, builders[:1])
+	a.count.Aggregate(ts, indices, start, stop, values, builders[1:])
+}
+
+func (a aggregateWindowMean) Merge(prevT, nextT *array.Int, prev, next []array.Interface, mem memory.Allocator) (*array.Int, []array.Interface) {
+	ts1, sum := a.sum.Merge(prevT, nextT, prev[:1], next[:1], mem)
+	ts2, count := a.count.Merge(prevT, nextT, prev[1:], next[1:], mem)
+	ts2.Release()
+	return ts1, []array.Interface{sum[0], count[0]}
+}
+
+func (a aggregateWindowMean) Compute(buffers []array.Interface, mem memory.Allocator) (flux.ColType, array.Interface) {
+	count := buffers[1].(*array.Int)
+	b := array.NewFloatBuilder(mem)
+	b.Resize(count.Len())
+
+	switch sum := buffers[0].(type) {
+	case *array.Float:
+		for i, n := 0, sum.Len(); i < n; i++ {
+			v := sum.Value(i) / float64(count.Value(i))
+			b.Append(v)
+		}
+	case *array.Int:
+		for i, n := 0, sum.Len(); i < n; i++ {
+			v := float64(sum.Value(i)) / float64(count.Value(i))
+			b.Append(v)
+		}
+	case *array.Uint:
+		for i, n := 0, sum.Len(); i < n; i++ {
+			v := float64(sum.Value(i)) / float64(count.Value(i))
+			b.Append(v)
+		}
+	default:
+		panic("unreachable")
+	}
+	count.Release()
+	buffers[0].Release()
+	return flux.TFloat, b.NewArray()
+}
+
+func (a aggregateWindowMean) AppendEmpty(b array.Builder) {
+	b.AppendNull()
+}
 
 type AggregateWindowRule struct{}
 
@@ -827,12 +872,12 @@ func (a AggregateWindowRule) isValidAggregateSpec(spec plan.ProcedureSpec) (aggr
 			return nil, "", false
 		}
 		return aggregateWindowSum{}, aggregateSpec.Columns[0], true
-	// case MeanKind:
-	// 	aggregateSpec := spec.(*MeanProcedureSpec)
-	// 	if len(aggregateSpec.Columns) != 1 {
-	// 		return nil, "", false
-	// 	}
-	// 	return aggregateWindowMean{}, aggregateSpec.Columns[0], true
+	case MeanKind:
+		aggregateSpec := spec.(*MeanProcedureSpec)
+		if len(aggregateSpec.Columns) != 1 {
+			return nil, "", false
+		}
+		return aggregateWindowMean{}, aggregateSpec.Columns[0], true
 	default:
 		return nil, "", false
 	}
