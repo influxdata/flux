@@ -565,7 +565,7 @@ var sourceHashes = map[string]string{
 	"stdlib/universe/quantile_agg_test.flux":                                                      "184c61f758aa9e1bc4ad42e07a1a43bcafe1061e821f2e644ae695da817375d4",
 	"stdlib/universe/quantile_aggregate_test.flux":                                                "c50334c1b2350ee134dd0f7408ca62eea3c408368598f66a428281f3610ca3e8",
 	"stdlib/universe/quantile_defaults_test.flux":                                                 "9f33621bc4eb84ab6dcd4800bb676522629233bf805e39f4380e545466285563",
-	"stdlib/universe/quantile_tdigest_test.flux":                                                  "561baf8df39d9b5af263266509efcf4a99b97542cf90f1cf16d7420c7f89b6d7",
+	"stdlib/universe/quantile_tdigest_test.flux":                                                  "cd7d484f72c5e42f4265e0e3ea3d99fe73f5d975ef82f67fca659b86a4fc4227",
 	"stdlib/universe/quantile_test.flux":                                                          "8bd23fc953901b101fa7e3bd9719c96c2f8a8a2e945a6846e0ba880cc46df043",
 	"stdlib/universe/range_nsecs_test.flux":                                                       "c4f3da9d621e1ab250e13c76dd7d59c44058802570844a9ae6e9e9c5ce8aedcf",
 	"stdlib/universe/range_stop_test.flux":                                                        "7545cd387085fc13db22d35f2cbdd0bb5258c1080e3c95407ce3c8b3d2085b01",
