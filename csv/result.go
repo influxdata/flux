@@ -367,7 +367,8 @@ func readMetadata(r *bufferedCSVReader, c ResultDecoderConfig) (tableMetadata, e
 					}
 					switch {
 					case datatypes == nil:
-						return tableMetadata{}, fmt.Errorf("missing expected annotation datatype")
+						return tableMetadata{}, errors.New(codes.FailedPrecondition, "missing expected annotation datatype. "+
+							"Consider using the mode: \"raw\" for csv that is not expected to have annotations.")
 					case groups == nil:
 						return tableMetadata{}, fmt.Errorf("missing expected annotation group")
 					case defaults == nil:
@@ -407,7 +408,8 @@ func readMetadata(r *bufferedCSVReader, c ResultDecoderConfig) (tableMetadata, e
 				if !strings.HasPrefix(line[annotationIdx], commentPrefix) {
 					switch {
 					case datatypes == nil:
-						return tableMetadata{}, fmt.Errorf("missing expected annotation datatype")
+						return tableMetadata{}, errors.New(codes.FailedPrecondition, "missing expected annotation datatype. "+
+							"consider using the mode: \"raw\" for csv that is not expected to have annotations.")
 					case groups == nil:
 						return tableMetadata{}, fmt.Errorf("missing expected annotation group")
 					case defaults == nil:
