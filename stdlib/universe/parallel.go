@@ -15,7 +15,7 @@ import (
 )
 
 const (
-	PartitionMergeKind = "influx2x/partitionMergeKind"
+	ParallelMergeKind = "ParallelMergeKind"
 )
 
 type PartitionMergeProcedureSpec struct {
@@ -23,7 +23,7 @@ type PartitionMergeProcedureSpec struct {
 }
 
 func (o *PartitionMergeProcedureSpec) Kind() plan.ProcedureKind {
-	return PartitionMergeKind
+	return ParallelMergeKind
 }
 
 func (o *PartitionMergeProcedureSpec) Copy() plan.ProcedureSpec {
@@ -33,7 +33,7 @@ func (o *PartitionMergeProcedureSpec) Copy() plan.ProcedureSpec {
 }
 
 func init() {
-	execute.RegisterTransformation(PartitionMergeKind, createPartitionMergeTransformation)
+	execute.RegisterTransformation(ParallelMergeKind, createPartitionMergeTransformation)
 }
 
 func createPartitionMergeTransformation(id execute.DatasetID, mode execute.AccumulationMode, spec plan.ProcedureSpec, a execute.Administration) (execute.Transformation, execute.Dataset, error) {
