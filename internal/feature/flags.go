@@ -101,6 +101,18 @@ func NarrowTransformationDifference() BoolFlag {
 	return narrowTransformationDifference
 }
 
+var optimizeAggregateWindow = feature.MakeBoolFlag(
+	"Optimize Aggregate Window",
+	"optimizeAggregateWindow",
+	"Jonathan Sternberg",
+	false,
+)
+
+// OptimizeAggregateWindow - Enables a version of aggregateWindow written in Go
+func OptimizeAggregateWindow() BoolFlag {
+	return optimizeAggregateWindow
+}
+
 // Inject will inject the Flagger into the context.
 func Inject(ctx context.Context, flagger Flagger) context.Context {
 	return feature.Inject(ctx, flagger)
@@ -114,6 +126,7 @@ var all = []Flag{
 	mqttPoolDialer,
 	vectorizedMap,
 	narrowTransformationDifference,
+	optimizeAggregateWindow,
 }
 
 var byKey = map[string]Flag{
@@ -124,6 +137,7 @@ var byKey = map[string]Flag{
 	"mqttPoolDialer":                   mqttPoolDialer,
 	"vectorizedMap":                    vectorizedMap,
 	"narrowTransformationDifference":   narrowTransformationDifference,
+	"optimizeAggregateWindow":          optimizeAggregateWindow,
 }
 
 // Flags returns all feature flags.

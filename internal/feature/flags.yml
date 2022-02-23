@@ -51,3 +51,9 @@
   key: narrowTransformationDifference
   default: false
   contact: Markus Westerlind
+
+- name: Optimize Aggregate Window
+  description: Enables a version of aggregateWindow written in Go
+  key: optimizeAggregateWindow
+  default: false
+  contact: Jonathan Sternberg
