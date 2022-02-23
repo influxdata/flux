@@ -58,7 +58,9 @@ func TestParallel_Execute(t *testing.T) {
 		wantValidationErr error
 	}{
 		{
-			name: `parallel-from`,
+			// The from node is executed in parallel, then the data is merged,
+			// and finally filtered after the merge.
+			name: `parallel-from-merge-filter`,
 			spec: &plantest.PlanSpec{
 				Nodes: []plan.Node{
 					createPhysicalNode("from-test",
@@ -157,7 +159,9 @@ func TestParallel_Execute(t *testing.T) {
 			},
 		},
 		{
-			name: `parallel-from-filter`,
+			// The from and filter nodes are both executed in parallel, then
+			// the data is merged.
+			name: `parallel-from-filter-merge`,
 			spec: &plantest.PlanSpec{
 				Nodes: []plan.Node{
 					createPhysicalNode("from-test",
