@@ -150,9 +150,10 @@ func ValidateAttributes(plan *Spec) error {
 				for _, succ := range ppn.Successors() {
 					has := false
 					psucc := succ.(*PhysicalPlanNode)
-					for skey, _ := range succ.(*PhysicalPlanNode).RequiredAttrs {
+					for skey := range succ.(*PhysicalPlanNode).RequiredAttrs {
 						if key == skey {
 							has = true
+							break
 						}
 					}
 					if !has {
