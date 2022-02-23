@@ -23,6 +23,7 @@ import (
 
 func init() {
 	// We depend on the registrations that happen in executor_test.go
+	execute.RegisterSource(executetest.ParallelFromTestKind, executetest.CreateParallelFromSource)
 }
 
 type physicalNodeOption func(*plan.PhysicalPlanNode)
@@ -63,8 +64,8 @@ func TestParallel_Execute(t *testing.T) {
 			name: `parallel-from-merge-filter`,
 			spec: &plantest.PlanSpec{
 				Nodes: []plan.Node{
-					createPhysicalNode("from-test",
-						executetest.NewFromProcedureSpec(
+					createPhysicalNode("parallel-from-test",
+						executetest.NewParallelFromProcedureSpec(
 							[]*executetest.Table{
 								{
 									KeyCols: []string{"_start", "_stop"},
@@ -164,8 +165,8 @@ func TestParallel_Execute(t *testing.T) {
 			name: `parallel-from-filter-merge`,
 			spec: &plantest.PlanSpec{
 				Nodes: []plan.Node{
-					createPhysicalNode("from-test",
-						executetest.NewFromProcedureSpec(
+					createPhysicalNode("parallel-from-test",
+						executetest.NewParallelFromProcedureSpec(
 							[]*executetest.Table{
 								{
 									KeyCols: []string{"_start", "_stop"},
@@ -263,11 +264,13 @@ func TestParallel_Execute(t *testing.T) {
 			},
 		},
 		{
+			// Error: the from node does not specify the parallel-run
+			// attribute. It is required its successor, filter.
 			name: `from-missing-output`,
 			spec: &plantest.PlanSpec{
 				Nodes: []plan.Node{
-					createPhysicalNode("from-test",
-						executetest.NewFromProcedureSpec([]*executetest.Table{})),
+					createPhysicalNode("parallel-from-test",
+						executetest.NewParallelFromProcedureSpec([]*executetest.Table{})),
 					createPhysicalNode("filter",
 						&universe.FilterProcedureSpec{
 							Fn: interpreter.ResolvedFunction{
@@ -289,14 +292,17 @@ func TestParallel_Execute(t *testing.T) {
 				},
 			},
 			wantValidationErr: fmt.Errorf("invalid physical query plan; attribute \"parallel-run\" " +
-				"required by \"filter\" is missing from predecessor \"from-test\""),
+				"required by \"filter\" is missing from predecessor \"parallel-from-test\""),
 		},
 		{
+			// Error: the filter node does not require the parallel-run
+			// attribute. The paralle-run attribute dictates that all
+			// successors must require it.
 			name: `from-missing-required`,
 			spec: &plantest.PlanSpec{
 				Nodes: []plan.Node{
-					createPhysicalNode("from-test",
-						executetest.NewFromProcedureSpec([]*executetest.Table{}),
+					createPhysicalNode("parallel-from-test",
+						executetest.NewParallelFromProcedureSpec([]*executetest.Table{}),
 						withOutputAttr(plan.ParallelRunKey, plan.ParallelRunAttribute{Factor: 2})),
 					createPhysicalNode("filter",
 						&universe.FilterProcedureSpec{
@@ -318,14 +324,16 @@ func TestParallel_Execute(t *testing.T) {
 				},
 			},
 			wantValidationErr: fmt.Errorf("invalid physical query plan; attribute \"parallel-run\" " +
-				"on \"from-test\" must be required by all successors, but isn't on \"filter\""),
+				"on \"parallel-from-test\" must be required by all successors, but isn't on \"filter\""),
 		},
 		{
+			// Error: The value of a required attribute does not match value of
+			// the output attribute in the successor.
 			name: `from-factor-mismatch`,
 			spec: &plantest.PlanSpec{
 				Nodes: []plan.Node{
-					createPhysicalNode("from-test",
-						executetest.NewFromProcedureSpec([]*executetest.Table{}),
+					createPhysicalNode("parallel-from-test",
+						executetest.NewParallelFromProcedureSpec([]*executetest.Table{}),
 						withOutputAttr(plan.ParallelRunKey, plan.ParallelRunAttribute{Factor: 2})),
 					createPhysicalNode("filter",
 						&universe.FilterProcedureSpec{
@@ -348,7 +356,7 @@ func TestParallel_Execute(t *testing.T) {
 				},
 			},
 			wantValidationErr: fmt.Errorf("invalid physical query plan; attribute \"parallel-run\" " +
-				"required by \"filter\" does not match attribute in predecessor \"from-test\""),
+				"required by \"filter\" does not match attribute in predecessor \"parallel-from-test\""),
 		},
 	}
 
