@@ -312,9 +312,9 @@ func (t *fillTransformation) adaptedProcess(chunk table.Chunk, state interface{}
 			// usePrevious was used on a column that doesn't exist. In this case, just
 			// act as a passthrough. This functionality says "I was provided a non-existent
 			// value, so the new value also doesn't exist.
-			if err := d.Process(chunk); err != nil {
-				return nil, false, err
-			}
+			chunk.Retain()
+			err := d.Process(chunk)
+			return nil, false, err
 		}
 
 		// key
@@ -329,9 +329,9 @@ func (t *fillTransformation) adaptedProcess(chunk table.Chunk, state interface{}
 					return nil, false, err
 				}
 			} else {
-				if err := d.Process(chunk); err != nil {
-					return nil, false, err
-				}
+				chunk.Retain()
+				err := d.Process(chunk)
+				return nil, false, err
 			}
 		}
 

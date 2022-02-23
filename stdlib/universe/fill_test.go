@@ -1179,6 +1179,34 @@ func TestFill_Process_Narrow(t *testing.T) {
 			}},
 		},
 		{
+			name: "fill previous unknown column",
+			spec: &universe.FillProcedureSpec{
+				DefaultCost: plan.DefaultCost{},
+				Column:      "nonexistent",
+				UsePrevious: true,
+			},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TString},
+				},
+				Data: [][]interface{}{
+					{execute.Time(1), "A"},
+					{execute.Time(2), "B"},
+				},
+			}},
+			want: []*executetest.Table{{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TString},
+				},
+				Data: [][]interface{}{
+					{execute.Time(1), "A"},
+					{execute.Time(2), "B"},
+				},
+			}},
+		},
+		{
 			name: "fill previous first nil",
 			spec: &universe.FillProcedureSpec{
 				DefaultCost: plan.DefaultCost{},
