@@ -163,6 +163,5 @@ func (t *PartitionMergeTransformation) Finish(id execute.DatasetID, err error) {
 
 	if finished {
 		t.dataset.Finish(nil)
-		//log.Printf("--------> %p passing finish on", t)
 	}
 }
