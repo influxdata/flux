@@ -978,6 +978,18 @@ impl MonoType {
         }
     }
 
+    /// Returns an iterator over the fields in the record (or an empty iterator of the type is not
+    /// a record)
+    pub fn fields(&self) -> impl Iterator<Item = &Property> {
+        match self {
+            MonoType::Record(r) => r.fields(),
+            _ => {
+                const RECORD: Record = Record::Empty;
+                RECORD.fields()
+            }
+        }
+    }
+
     fn type_info(&self) -> &str {
         match self {
             MonoType::Fun(_) => " (function)",
@@ -1494,7 +1506,8 @@ impl Record {
         }
     }
 
-    pub(crate) fn fields(&self) -> impl Iterator<Item = &Property> {
+    /// Returns an iterator over the fields in the record
+    pub fn fields(&self) -> impl Iterator<Item = &Property> {
         let mut record = Some(self);
         std::iter::from_fn(move || match record {
             Some(Record::Extension { head, tail }) => {
