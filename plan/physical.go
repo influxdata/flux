@@ -83,7 +83,7 @@ func (pp *physicalPlanner) Plan(ctx context.Context, spec *Spec) (*Spec, error) 
 			return nil, err
 		}
 
-		err = validatePhysicalPlan(transformedSpec)
+		err = ValidatePhysicalPlan(transformedSpec)
 		if err != nil {
 			return nil, err
 		}
@@ -125,8 +125,11 @@ func (pp *physicalPlanner) Plan(ctx context.Context, spec *Spec) (*Spec, error) 
 	return transformedSpec, nil
 }
 
-func ValidateAttributes(plan *Spec) error {
+func ValidatePhysicalPlan(plan *Spec) error {
 	err := plan.BottomUpWalk(func(pn Node) error {
+		if validator, ok := pn.ProcedureSpec().(PostPhysicalValidator); ok {
+			return validator.PostPhysicalValidate(pn.ID())
+		}
 		ppn, ok := pn.(*PhysicalPlanNode)
 		if !ok {
 			return &flux.Error{
@@ -134,7 +137,15 @@ func ValidateAttributes(plan *Spec) error {
 				Msg:  fmt.Sprintf("invalid physical query plan; found logical operation \"%v\"", pn.ID()),
 			}
 		}
+		if ppn.TriggerSpec == nil {
+			return &flux.Error{
+				Code: codes.Internal,
+				Msg:  fmt.Sprintf("invalid physical query plan; trigger spec not set on \"%v\"", ppn.id),
+			}
+		}
 
+		// Check if required attributes are present in the output of
+		// predecessors and their values match.
 		for key, attr := range ppn.RequiredAttrs {
 			for _, pred := range ppn.Predecessors() {
 				ppred := pred.(*PhysicalPlanNode)
@@ -156,6 +167,8 @@ func ValidateAttributes(plan *Spec) error {
 			}
 		}
 
+		// Check if attributes that must be required in successors are indeed
+		// required there.
 		for key, attr := range ppn.OutputAttrs {
 			if attr.SuccessorsMustRequire() {
 				for _, succ := range ppn.Successors() {
@@ -182,35 +195,6 @@ func ValidateAttributes(plan *Spec) error {
 		return nil
 	})
 	return err
-}
-
-func ValidatePhysicalPlan(plan *Spec) error {
-	err := plan.BottomUpWalk(func(pn Node) error {
-		if validator, ok := pn.ProcedureSpec().(PostPhysicalValidator); ok {
-			return validator.PostPhysicalValidate(pn.ID())
-		}
-		ppn, ok := pn.(*PhysicalPlanNode)
-		if !ok {
-			return &flux.Error{
-				Code: codes.Internal,
-				Msg:  fmt.Sprintf("invalid physical query plan; found logical operation \"%v\"", pn.ID()),
-			}
-		}
-		if ppn.TriggerSpec == nil {
-			return &flux.Error{
-				Code: codes.Internal,
-				Msg:  fmt.Sprintf("invalid physical query plan; trigger spec not set on \"%v\"", ppn.id),
-			}
-		}
-
-		return nil
-	})
-
-	if err != nil {
-		return err
-	}
-
-	return ValidateAttributes(plan)
 }
 
 type physicalPlanner struct {

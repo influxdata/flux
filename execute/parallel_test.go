@@ -384,7 +384,11 @@ func TestParallel_Execute(t *testing.T) {
 			// Construct physical query plan
 			ps := plantest.CreatePlanSpec(tc.spec)
 
-			err := plan.ValidateAttributes(ps)
+			if err := ps.TopDownWalk(plan.SetTriggerSpec); err != nil {
+				return
+			}
+
+			err := plan.ValidatePhysicalPlan(ps)
 			if tc.wantValidationErr == nil && err != nil {
 				t.Fatal(err)
 			}
