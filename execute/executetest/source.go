@@ -306,7 +306,6 @@ func CreateParallelFromSource(spec plan.ProcedureSpec, id execute.DatasetID, a e
 	return &fps, nil
 }
 
-
 // RunSourceHelper is a helper for testing an execute.Source.
 // This can be called with a list of wanted tables from the source.
 // The create function should create the source. If there is an error
