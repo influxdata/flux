@@ -208,7 +208,7 @@ func (v *createExecutionNodeVisitor) Visit(node plan.Node) error {
 
 		for pi, pred := range nonYieldPredecessors(node) {
 			for j := 0; j < predCopies; j++ {
-				ec[i].parents[pi*predCopies+j] = DatasetIDFromNodeID(pred.ID(), j)
+				ec[i].parents[pi*predCopies+j] = datasetIDFromNodeID(pred.ID(), j)
 			}
 		}
 	}
@@ -223,7 +223,7 @@ func (v *createExecutionNodeVisitor) Visit(node plan.Node) error {
 		}
 
 		for i := 0; i < copies; i++ {
-			id := DatasetIDFromNodeID(node.ID(), i)
+			id := datasetIDFromNodeID(node.ID(), i)
 
 			source, err := createSourceFn(spec, id, ec[i])
 
@@ -245,7 +245,7 @@ func (v *createExecutionNodeVisitor) Visit(node plan.Node) error {
 		}
 
 		for i := 0; i < copies; i++ {
-			id := DatasetIDFromNodeID(node.ID(), i)
+			id := datasetIDFromNodeID(node.ID(), i)
 
 			tr, ds, err := createTransformationFn(id, DiscardingMode, spec, ec[i])
 

@@ -72,7 +72,7 @@ func (id DatasetID) IsZero() bool {
 	return id == ZeroDatasetID
 }
 
-func DatasetIDFromNodeID(id plan.NodeID, instance int) DatasetID {
+func datasetIDFromNodeID(id plan.NodeID, instance int) DatasetID {
 	return DatasetID(uuid.NewV5(uuid.UUID{}, string(id)+"-"+strconv.Itoa(instance)))
 }
 
