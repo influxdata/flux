@@ -206,14 +206,14 @@ const ParallelFromTestKind = "parallel-from-test"
 // parallel execution.
 type ParallelFromProcedureSpec struct {
 	execute.ExecutionNode
-	data []*Table
+	data []*ParallelTable
 	ts   []execute.Transformation
 	a    execute.Administration
 	id   execute.DatasetID
 }
 
 // NewFromProcedureSpec specifies a from-test procedure with source data
-func NewParallelFromProcedureSpec(data []*Table) *ParallelFromProcedureSpec {
+func NewParallelFromProcedureSpec(data []*ParallelTable) *ParallelFromProcedureSpec {
 	// Normalize data before anything can read it
 	for _, tbl := range data {
 		tbl.Normalize()

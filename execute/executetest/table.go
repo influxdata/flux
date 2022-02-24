@@ -46,11 +46,6 @@ type Table struct {
 	Alloc *memory.Allocator
 	// IsDone indicates if this table has been used.
 	IsDone bool
-	// PartitionSource indicates which partition the table is on.
-	ResidesOnPartition int
-	// ParallelGroup is assigned during execution so we can see in the
-	// execution output which group the data originated from.
-	ParallelGroup int
 }
 
 // Normalize ensures all fields of the table are set correctly.
@@ -135,11 +130,7 @@ func (t *Table) Do(f func(flux.ColReader) error) error {
 			b := arrow.NewIntBuilder(t.Alloc)
 			for i := range t.Data {
 				if v := t.Data[i][j]; v != nil {
-					if col.Label == "_parallel_group" {
-						b.Append(int64(t.ParallelGroup))
-					} else {
-						b.Append(v.(int64))
-					}
+					b.Append(v.(int64))
 				} else {
 					b.AppendNull()
 				}
@@ -368,6 +359,110 @@ func (t *RowWiseTable) Do(f func(flux.ColReader) error) error {
 		release(row)
 	}
 	return nil
+}
+
+const ParallelGroupColName = "_parallel_group"
+
+type ParallelTable struct {
+	*Table
+	// ResidesOnPartition indicates which partition the table is on.
+	ResidesOnPartition int
+	// ParallelGroup is assigned during execution so we can see in the
+	// execution output which group the data originated from.
+	ParallelGroup int
+}
+
+func (t *ParallelTable) Do(f func(flux.ColReader) error) error {
+	if t.Err != nil {
+		return t.Err
+	} else if t.IsDone {
+		return errors.New(codes.Internal, "table already read")
+	}
+	t.IsDone = true
+
+	cols := make([]array.Interface, len(t.ColMeta))
+	for j, col := range t.ColMeta {
+		switch col.Type {
+		case flux.TBool:
+			b := arrow.NewBoolBuilder(t.Alloc)
+			for i := range t.Data {
+				if v := t.Data[i][j]; v != nil {
+					b.Append(v.(bool))
+				} else {
+					b.AppendNull()
+				}
+			}
+			cols[j] = b.NewBooleanArray()
+			b.Release()
+		case flux.TFloat:
+			b := arrow.NewFloatBuilder(t.Alloc)
+			for i := range t.Data {
+				if v := t.Data[i][j]; v != nil {
+					b.Append(v.(float64))
+				} else {
+					b.AppendNull()
+				}
+			}
+			cols[j] = b.NewFloatArray()
+			b.Release()
+		case flux.TInt:
+			b := arrow.NewIntBuilder(t.Alloc)
+			for i := range t.Data {
+				if v := t.Data[i][j]; v != nil {
+					if col.Label == ParallelGroupColName {
+						b.Append(int64(t.ParallelGroup))
+					} else {
+						b.Append(v.(int64))
+					}
+				} else {
+					b.AppendNull()
+				}
+			}
+			cols[j] = b.NewIntArray()
+			b.Release()
+		case flux.TString:
+			b := arrow.NewStringBuilder(t.Alloc)
+			for i := range t.Data {
+				if v := t.Data[i][j]; v != nil {
+					b.Append(v.(string))
+				} else {
+					b.AppendNull()
+				}
+			}
+			cols[j] = b.NewStringArray()
+			b.Release()
+		case flux.TTime:
+			b := arrow.NewIntBuilder(t.Alloc)
+			for i := range t.Data {
+				if v := t.Data[i][j]; v != nil {
+					b.Append(int64(v.(values.Time)))
+				} else {
+					b.AppendNull()
+				}
+			}
+			cols[j] = b.NewIntArray()
+			b.Release()
+		case flux.TUInt:
+			b := arrow.NewUintBuilder(t.Alloc)
+			for i := range t.Data {
+				if v := t.Data[i][j]; v != nil {
+					b.Append(v.(uint64))
+				} else {
+					b.AppendNull()
+				}
+			}
+			cols[j] = b.NewUintArray()
+			b.Release()
+		}
+	}
+
+	cr := &ColReader{
+		key:  t.Key(),
+		meta: t.ColMeta,
+		cols: cols,
+	}
+	defer cr.Release()
+	return f(cr)
 }
 
 func TablesFromCache(c execute.DataCache) ([]*Table, error) {
