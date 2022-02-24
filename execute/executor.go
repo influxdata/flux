@@ -208,7 +208,7 @@ func (v *createExecutionNodeVisitor) Visit(node plan.Node) error {
 
 		for pi, pred := range nonYieldPredecessors(node) {
 			for j := 0; j < predCopies; j++ {
-				ec[i].parents[pi*predCopies+j] = datasetIDFromNodeID(pred.ID(), j)
+				ec[i].parents[pi*predCopies+j] = datasetIDFromNodeID(pred.ID(), i+j)
 			}
 		}
 	}
