@@ -182,20 +182,25 @@ func ValidateAttributes(plan *Spec) error {
 		return nil
 	})
 	return err
-
 }
 
-func validatePhysicalPlan(plan *Spec) error {
+func ValidatePhysicalPlan(plan *Spec) error {
 	err := plan.BottomUpWalk(func(pn Node) error {
 		if validator, ok := pn.ProcedureSpec().(PostPhysicalValidator); ok {
 			return validator.PostPhysicalValidate(pn.ID())
 		}
 		ppn, ok := pn.(*PhysicalPlanNode)
 		if !ok {
-			return fmt.Errorf("invalid physical query plan; found logical operation \"%v\"", pn.ID())
+			return &flux.Error{
+				Code: codes.Internal,
+				Msg:  fmt.Sprintf("invalid physical query plan; found logical operation \"%v\"", pn.ID()),
+			}
 		}
 		if ppn.TriggerSpec == nil {
-			return fmt.Errorf("invalid physical query plan; trigger spec not set on \"%v\"", ppn.id)
+			return &flux.Error{
+				Code: codes.Internal,
+				Msg:  fmt.Sprintf("invalid physical query plan; trigger spec not set on \"%v\"", ppn.id),
+			}
 		}
 
 		return nil
@@ -344,7 +349,10 @@ func (ppn *PhysicalPlanNode) ProcedureSpec() ProcedureSpec {
 func (ppn *PhysicalPlanNode) ReplaceSpec(newSpec ProcedureSpec) error {
 	physSpec, ok := newSpec.(PhysicalProcedureSpec)
 	if !ok {
-		return fmt.Errorf("couldn't replace ProcedureSpec for physical plan node \"%v\"", ppn.ID())
+		return &flux.Error{
+			Code: codes.Internal,
+			Msg:  fmt.Sprintf("couldn't replace ProcedureSpec for physical plan node \"%v\"", ppn.ID()),
+		}
 	}
 
 	ppn.Spec = physSpec
