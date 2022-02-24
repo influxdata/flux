@@ -2,6 +2,7 @@ package execute
 
 import (
 	"context"
+	"strconv"
 
 	"github.com/apache/arrow/go/arrow/memory"
 	uuid "github.com/gofrs/uuid"
@@ -71,8 +72,8 @@ func (id DatasetID) IsZero() bool {
 	return id == ZeroDatasetID
 }
 
-func DatasetIDFromNodeID(id plan.NodeID) DatasetID {
-	return DatasetID(uuid.NewV5(uuid.UUID{}, string(id)))
+func datasetIDFromNodeID(id plan.NodeID, instance int) DatasetID {
+	return DatasetID(uuid.NewV5(uuid.UUID{}, string(id)+"-"+strconv.Itoa(instance)))
 }
 
 type dataset struct {
