@@ -9,6 +9,7 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
 	_ "github.com/influxdata/flux/fluxinit/static"
@@ -291,8 +292,11 @@ func TestParallel_Execute(t *testing.T) {
 					{2, 3},
 				},
 			},
-			wantValidationErr: fmt.Errorf("invalid physical query plan; attribute \"parallel-run\" " +
-				"required by \"filter\" is missing from predecessor \"parallel-from-test\""),
+			wantValidationErr: &flux.Error{
+				Code: codes.Internal,
+				Msg: fmt.Sprintf("invalid physical query plan; attribute \"parallel-run\" " +
+					"required by \"filter\" is missing from predecessor \"parallel-from-test\""),
+			},
 		},
 		{
 			// Error: the filter node does not require the parallel-run
@@ -323,8 +327,11 @@ func TestParallel_Execute(t *testing.T) {
 					{2, 3},
 				},
 			},
-			wantValidationErr: fmt.Errorf("invalid physical query plan; attribute \"parallel-run\" " +
-				"on \"parallel-from-test\" must be required by all successors, but isn't on \"filter\""),
+			wantValidationErr: &flux.Error{
+				Code: codes.Internal,
+				Msg: fmt.Sprintf("invalid physical query plan; attribute \"parallel-run\" " +
+					"on \"parallel-from-test\" must be required by all successors, but isn't on \"filter\""),
+			},
 		},
 		{
 			// Error: The value of a required attribute does not match value of
@@ -355,8 +362,11 @@ func TestParallel_Execute(t *testing.T) {
 					{2, 3},
 				},
 			},
-			wantValidationErr: fmt.Errorf("invalid physical query plan; attribute \"parallel-run\" " +
-				"required by \"filter\" does not match attribute in predecessor \"parallel-from-test\""),
+			wantValidationErr: &flux.Error{
+				Code: codes.Internal,
+				Msg: fmt.Sprintf("invalid physical query plan; attribute \"parallel-run\" " +
+					"required by \"filter\" does not match attribute in predecessor \"parallel-from-test\""),
+			},
 		},
 	}
 
@@ -384,7 +394,7 @@ func TestParallel_Execute(t *testing.T) {
 					t.Fatalf(`expected an error "%v" but got none`, tc.wantValidationErr)
 				}
 
-				if diff := cmp.Diff(tc.wantValidationErr.Error(), err.Error()); diff != "" {
+				if diff := cmp.Diff(tc.wantValidationErr, err); diff != "" {
 					t.Fatalf("unexpected error: -want/+got: %v", diff)
 				}
 				return

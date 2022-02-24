@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"math"
 
+	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/internal/feature"
 	"github.com/influxdata/flux/interpreter"
 )
@@ -127,7 +129,10 @@ func ValidateAttributes(plan *Spec) error {
 	err := plan.BottomUpWalk(func(pn Node) error {
 		ppn, ok := pn.(*PhysicalPlanNode)
 		if !ok {
-			return fmt.Errorf("invalid physical query plan; found logical operation \"%v\"", pn.ID())
+			return &flux.Error{
+				Code: codes.Internal,
+				Msg:  fmt.Sprintf("invalid physical query plan; found logical operation \"%v\"", pn.ID()),
+			}
 		}
 
 		for key, attr := range ppn.RequiredAttrs {
@@ -135,12 +140,18 @@ func ValidateAttributes(plan *Spec) error {
 				ppred := pred.(*PhysicalPlanNode)
 				predAttr, ok := ppred.OutputAttrs[key]
 				if !ok {
-					return fmt.Errorf("invalid physical query plan; attribute \"%v\" required by "+
-						"\"%v\" is missing from predecessor \"%v\"", key, ppn.id, ppred.id)
+					return &flux.Error{
+						Code: codes.Internal,
+						Msg: fmt.Sprintf("invalid physical query plan; attribute \"%v\" required by "+
+							"\"%v\" is missing from predecessor \"%v\"", key, ppn.id, ppred.id),
+					}
 				}
 				if attr != predAttr {
-					return fmt.Errorf("invalid physical query plan; attribute \"%v\" required by "+
-						"\"%v\" does not match attribute in predecessor \"%v\"", key, ppn.id, ppred.id)
+					return &flux.Error{
+						Code: codes.Internal,
+						Msg: fmt.Sprintf("invalid physical query plan; attribute \"%v\" required by "+
+							"\"%v\" does not match attribute in predecessor \"%v\"", key, ppn.id, ppred.id),
+					}
 				}
 			}
 		}
@@ -157,9 +168,12 @@ func ValidateAttributes(plan *Spec) error {
 						}
 					}
 					if !has {
-						return fmt.Errorf("invalid physical query plan; attribute \"%v\" on "+
-							"\"%v\" must be required by all successors, but isn't on \"%v\"",
-							key, ppn.id, psucc.id)
+						return &flux.Error{
+							Code: codes.Internal,
+							Msg: fmt.Sprintf("invalid physical query plan; attribute \"%v\" on "+
+								"\"%v\" must be required by all successors, but isn't on \"%v\"",
+								key, ppn.id, psucc.id),
+						}
 					}
 				}
 			}
