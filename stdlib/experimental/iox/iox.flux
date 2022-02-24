@@ -11,4 +11,4 @@ package iox
 // ## Parameters
 // - bucket: IOx bucket to read data from.
 // - measurement: Measurement to read data from.
-builtin from : (bucket: string, measurement: string) => [{A with _time: time}] where A: Record
+builtin from : (bucket: string, measurement: string) => stream[{A with _time: time}] where A: Record
