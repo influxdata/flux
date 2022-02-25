@@ -52,14 +52,14 @@
   default: false
   contact: Markus Westerlind
 
-- name: Optimize Aggregate Window
-  description: Enables a version of aggregateWindow written in Go
-  key: optimizeAggregateWindow
-  default: false
-  contact: Jonathan Sternberg
-
 - name: Narrow Transformation Fill
   description: Enable the NarrowTransformation implementation of Fill
   key: narrowTransformationFill
   default: false
   contact: Sunil Kartikey
+
+- name: Optimize Aggregate Window
+  description: Enables a version of aggregateWindow written in Go
+  key: optimizeAggregateWindow
+  default: false
+  contact: Jonathan Sternberg

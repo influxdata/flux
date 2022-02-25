@@ -289,10 +289,7 @@ func NewNarrowFillTransformation(ctx context.Context, spec *FillProcedureSpec, i
 }
 
 type fillState struct {
-	colIdx        int
-	fillValue     interface{}
-	groupKey      flux.GroupKey
-	outputColumns []flux.ColMeta
+	fillValue interface{}
 }
 
 func (t *fillTransformationAdapter) Process(chunk table.Chunk, state interface{}, d *execute.TransportDataset, mem arrowmem.Allocator) (interface{}, bool, error) {
@@ -306,79 +303,76 @@ func (t *fillTransformation) adaptedProcess(chunk table.Chunk, state interface{}
 	}
 
 	if dstate == nil {
-		// column index
-		colIdx := execute.ColIdx(t.spec.Column, chunk.Cols())
-		if colIdx < 0 && t.spec.UsePrevious {
-			// usePrevious was used on a column that doesn't exist. In this case, just
-			// act as a passthrough. This functionality says "I was provided a non-existent
-			// value, so the new value also doesn't exist.
-			chunk.Retain()
-			err := d.Process(chunk)
-			return nil, false, err
-		}
-
-		// key
-		key := chunk.Key()
-		if idx := execute.ColIdx(t.spec.Column, key.Cols()); idx >= 0 {
-			if key.IsNull(idx) {
-				var err error
-				gkb := execute.NewGroupKeyBuilder(key)
-				gkb.SetKeyValue(t.spec.Column, t.spec.Value)
-				key, err = gkb.Build()
-				if err != nil {
-					return nil, false, err
-				}
-			} else {
-				chunk.Retain()
-				err := d.Process(chunk)
-				return nil, false, err
-			}
-		}
-
 		// fill value
 		var fillValue interface{}
 		if !t.spec.UsePrevious {
-			if colIdx > -1 && chunk.Cols()[colIdx].Type != flux.ColumnType(t.spec.Value.Type()) {
-				return nil, false, errors.Newf(codes.FailedPrecondition, "fill column type mismatch: %s/%s", chunk.Cols()[colIdx].Type.String(), flux.ColumnType(t.spec.Value.Type()).String())
-			}
 			fillValue = values.Unwrap(t.spec.Value)
-		}
-
-		// output columns
-		var outputColumns []flux.ColMeta
-		// In case of missing fill column, add it to the existing columns
-		if colIdx < 0 {
-			colsLen := len(chunk.Cols())
-
-			newCols := make([]flux.ColMeta, colsLen, colsLen+1)
-			copy(newCols, chunk.Cols())
-			c := flux.ColMeta{
-				Label: t.spec.Column,
-				Type:  flux.ColumnType(t.spec.Value.Type()),
-			}
-			outputColumns = append(newCols, c)
-			colIdx = len(outputColumns) - 1
-
-		} else {
-			outputColumns = chunk.Cols()
 		}
 
 		// populate state
 		dstate = &fillState{
-			colIdx:        colIdx,
-			fillValue:     fillValue,
-			groupKey:      key,
-			outputColumns: outputColumns,
+			fillValue: fillValue,
 		}
 	}
 
+	colIdx := execute.ColIdx(t.spec.Column, chunk.Cols())
+	if !t.spec.UsePrevious {
+		if colIdx > -1 && chunk.Cols()[colIdx].Type != flux.ColumnType(t.spec.Value.Type()) {
+			return nil, false, errors.Newf(codes.FailedPrecondition, "fill column type mismatch: %s/%s", chunk.Cols()[colIdx].Type.String(), flux.ColumnType(t.spec.Value.Type()).String())
+		}
+	}
+
+	if colIdx < 0 && t.spec.UsePrevious {
+		// usePrevious was used on a column that doesn't exist. In this case, just
+		// act as a passthrough. This functionality says "I was provided a non-existent
+		// value, so the new value also doesn't exist.
+		chunk.Retain()
+		err := d.Process(chunk)
+		return nil, false, err
+	}
+
+	// key
+	key := chunk.Key()
+	if idx := execute.ColIdx(t.spec.Column, key.Cols()); idx >= 0 {
+		if key.IsNull(idx) {
+			var err error
+			gkb := execute.NewGroupKeyBuilder(key)
+			gkb.SetKeyValue(t.spec.Column, t.spec.Value)
+			key, err = gkb.Build()
+			if err != nil {
+				return nil, false, err
+			}
+		} else {
+			chunk.Retain()
+			err := d.Process(chunk)
+			return nil, false, err
+		}
+	}
+
+	// output columns
+	var outputColumns []flux.ColMeta
+	// In case of missing fill column, add it to the existing columns
+	if colIdx < 0 {
+		colsLen := len(chunk.Cols())
+		newCols := make([]flux.ColMeta, colsLen, colsLen+1)
+		copy(newCols, chunk.Cols())
+		c := flux.ColMeta{
+			Label: t.spec.Column,
+			Type:  flux.ColumnType(t.spec.Value.Type()),
+		}
+		outputColumns = append(newCols, c)
+		colIdx = len(outputColumns) - 1
+	} else {
+		outputColumns = chunk.Cols()
+	}
+
 	buffer := arrow.TableBuffer{
-		GroupKey: dstate.groupKey,
-		Columns:  dstate.outputColumns,
+		GroupKey: key,
+		Columns:  outputColumns,
 		Values:   make([]array.Interface, len(chunk.Cols())),
 	}
 
-	if err := t.fillChunk(&buffer, chunk, dstate.colIdx, &dstate.fillValue, mem); err != nil {
+	if err := t.fillChunk(&buffer, chunk, colIdx, &dstate.fillValue, mem); err != nil {
 		return nil, false, err
 	}
 
