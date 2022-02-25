@@ -3,6 +3,7 @@ package universe
 import (
 	"context"
 
+	arrowmem "github.com/apache/arrow/go/arrow/memory"
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/array"
 	"github.com/influxdata/flux/arrow"
@@ -10,6 +11,7 @@ import (
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/internal/execute/table"
+	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/runtime"
 )
@@ -93,11 +95,18 @@ func (s *LimitProcedureSpec) TriggerSpec() plan.TriggerSpec {
 	return plan.NarrowTransformationTriggerSpec{}
 }
 
+const FEATURE = true // FIXME
+
 func createLimitTransformation(id execute.DatasetID, mode execute.AccumulationMode, spec plan.ProcedureSpec, a execute.Administration) (execute.Transformation, execute.Dataset, error) {
 	s, ok := spec.(*LimitProcedureSpec)
 	if !ok {
 		return nil, nil, errors.Newf(codes.Internal, "invalid spec type %T", spec)
 	}
+
+	if FEATURE { // FIXME
+		return newNarrowLimitTransformation(s, id, a.Allocator())
+	}
+
 	t, d := NewLimitTransformation(s, id)
 	return t, d, nil
 }
@@ -237,4 +246,95 @@ func (t *limitTransformation) UpdateProcessingTime(id execute.DatasetID, pt exec
 }
 func (t *limitTransformation) Finish(id execute.DatasetID, err error) {
 	t.d.Finish(err)
+}
+
+type limitState struct {
+	n      int
+	offset int
+}
+type limitTransformationAdapter struct {
+	limitTransformation *limitTransformation
+}
+
+func (*limitTransformationAdapter) Close() error {
+	return nil
+}
+
+func (t *limitTransformationAdapter) Process(
+	chunk table.Chunk,
+	state interface{},
+	dataset *execute.TransportDataset,
+	_ arrowmem.Allocator,
+) (interface{}, bool, error) {
+
+	var state_ *limitState
+	if state == nil {
+		state_ = &limitState{n: t.limitTransformation.n, offset: t.limitTransformation.offset}
+	} else {
+		state_ = state.(*limitState)
+	}
+	return t.processChunk(chunk, state_, dataset)
+}
+
+// TODO(onelson): Jonathan mentioned an edge case about passing along empty data. Look at `filter`.
+func (t *limitTransformationAdapter) processChunk(
+	chunk table.Chunk,
+	state *limitState,
+	dataset *execute.TransportDataset,
+) (*limitState, bool, error) {
+	// FIXME: extract all the resize/early return logic to share with the regular transformation
+	if state.n <= 0 {
+		return state, true, nil
+	}
+	chunkLen := chunk.Len()
+	if chunkLen <= state.offset {
+		state.offset -= 1
+		return state, true, nil
+
+	}
+	start := state.offset
+	stop := chunkLen
+	count := stop - start
+	if count > state.n {
+		count = state.n
+		stop = start + count
+	}
+
+	buf := chunk.Buffer()
+	// XXX(onelson): seems like we're building a 2D array where the outer is by
+	// column, and the inners are the column values per row?
+	buf.Values = make([]array.Interface, chunk.NCols())
+	for idx := range buf.Values {
+		values := chunk.Values(idx)
+		// XXX(onelson):
+		// if there's no cruft at the end, just keep the original array,
+		// otherwise we need to truncate it to ensure all inners have the
+		// expected size.
+		// Could there be a 3rd case where we have less than the count?
+		if values.Len() == count {
+			values.Retain()
+		} else {
+			values = arrow.Slice(values, int64(start), int64(stop))
+		}
+		buf.Values[idx] = values
+	}
+	out := table.ChunkFromBuffer(buf)
+	if err := dataset.Process(out); err != nil {
+		return nil, false, err
+	}
+	return state, true, nil
+}
+
+func newNarrowLimitTransformation(
+	spec *LimitProcedureSpec,
+	id execute.DatasetID,
+	mem *memory.Allocator,
+) (execute.Transformation, execute.Dataset, error) {
+	t := &limitTransformationAdapter{
+		limitTransformation: &limitTransformation{
+			n:      int(spec.N),
+			offset: int(spec.Offset),
+		},
+	}
+	return execute.NewNarrowStateTransformation(id, t, mem)
 }
