@@ -291,7 +291,7 @@ builtin from : (
 // The example below does the following:
 //
 // 1. Writes data to `bucket1` and returns the data as it is written.
-// 2. Ungroups the returned data.
+// 2. Applies an empty group key to group all rows into a single table.
 // 3. Counts the number of rows.
 // 4. Maps columns required to write to InfluxDB.
 // 5. Writes the modified data to `bucket2`.
