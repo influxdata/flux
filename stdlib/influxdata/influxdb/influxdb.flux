@@ -170,7 +170,7 @@ builtin from : (
         ?token: string,
     ) => stream[{B with _measurement: string, _field: string, _time: time, _value: A}]
 
-// to writes data to an InfluxDB Cloud or 2.x bucket.
+// to writes data to an InfluxDB Cloud or 2.x bucket and returns the written data.
 //
 // ### Output data requirements
 // `to()` writes data structured using the standard InfluxDB Cloud and v2.x data
@@ -184,7 +184,7 @@ builtin from : (
 // All other columns are written to InfluxDB as
 // [tags](https://docs.influxdata.com/influxdb/cloud/reference/key-concepts/data-elements/#tags).
 //
-// **Note**: to() ignores rows with null `_time` values and does not write them
+// **Note**: `to()` drops rows with null `_time` values and does not write them
 // to InfluxDB.
 //
 // #### to() does not require a package import
@@ -285,6 +285,24 @@ builtin from : (
 // a,tag2=b hum=53.4,temp=99.8 1609459260000000000
 // a,tag2=b hum=53.6,temp=99.1 1609459320000000000
 // a,tag2=b hum=53.5,temp=98.6 1609459380000000000
+// ```
+//
+// ### Write to multiple InfluxDB buckets
+// The example below does the following:
+//
+// 1. Writes data to `bucket1` and returns the data as it is written.
+// 2. Applies an empty group key to group all rows into a single table.
+// 3. Counts the number of rows.
+// 4. Maps columns required to write to InfluxDB.
+// 5. Writes the modified data to `bucket2`.
+//
+// ```no_run
+// data
+//     |> to(bucket: "bucket1")
+//     |> group()
+//     |> count()
+//     |> map(fn: (r) => ({r with _time: now(), _measurement: "writeStats", _field: "numPointsWritten"}))
+//     |> to(bucket: "bucket2")
 // ```
 //
 // tags: outputs
