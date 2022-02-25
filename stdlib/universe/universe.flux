@@ -2118,13 +2118,272 @@ builtin rename : (<-tables: stream[A], ?fn: (column: string) => string, ?columns
     A: Record,
     B: Record,
     C: Record
+
+// sample selects a subset of the rows from each input table.
+//
+// **Note:** `sample()` drops empty tables.
+//
+// ## Parameters
+// - n: Sample every Nth element.
+// - pos: Position offset from the start of results where sampling begins.
+//   Default is -1 (random offset).
+//
+//   `pos` must be less than `n`. If pos is less than 0, a random offset is used.
+//
+// - tables: Input data. Default is piped-forward data (`<-`).
+//
+// ## Examples
+//
+// ### Sample every other result
+// ```
+// import "sampledata"
+//
+// < sampledata.int()
+// >     |> sample(n: 2, pos: 1)
+// ```
+//
+// introduced: 0.7.0
+// tags: transformations, selectors
+//
 builtin sample : (<-tables: stream[A], n: int, ?pos: int, ?column: string) => stream[A] where A: Record
+
+// set assigns a static column value to each row in the input tables.
+//
+// `set()` may modify an existing column or add a new column.
+// If the modified column is part of the group key, output tables are regrouped as needed.
+// `set()` can only set string values.
+//
+// ## Parameters
+// - key: Label of the column to modify or set.
+// - value: String value to set.
+// - tables: Input data. Default is piped-forward data (`<-`).
+//
+// ## Examples
+//
+// ### Set a column to a specific string value
+// ```
+// import "sampledata"
+//
+// < sampledata.int()
+// >     |> set(key: "host", value: "prod1")
+// ```
+//
+// introduced: 0.7.0
+// tags: transformations
+//
 builtin set : (<-tables: stream[A], key: string, value: string) => stream[A] where A: Record
+
+// tail limits each output table to the last `n` rows.
+//
+// `tail()` produces one output table for each input table.
+// Each output table contains the last `n` records before the `offset`.
+// If the input table has less than `offset + n` records, `tail()` outputs all
+// records before the `offset`.
+//
+// ## Parameters
+// - n: Maximum number of rows to output.
+// - offset: Number of records to skip at the end of a table table before
+//   limiting to `n`. Default is 0.
+// - tables: Input data. Default is piped-forward data (`<-`).
+//
+// ## Examples
+//
+// ### Output the last three rows in each input table
+// ```
+// import "sampledata"
+//
+// < sampledata.int()
+// >     |> tail(n: 3)
+// ```
+//
+// ### Output the last three rows before the last row in each input table
+// ```
+// import "sampledata"
+//
+// < sampledata.int()
+// >     |> tail(n: 3, offset: 1)
+// ```
+//
+// introduced: 0.39.0
+// tags: transformations
+//
 builtin tail : (<-tables: stream[A], n: int, ?offset: int) => stream[A]
+
+// timeShift adds a fixed duration to time columns.
+//
+// The output table schema is the same as the input table schema.
+// `null` time values remain `null`.
+//
+// ## Parameters
+// - duration: Amount of time to add to each time value. May be a negative duration.
+// - columns: List of time columns to operate on. Default is `["_start", "_stop", "_time"]`.
+// - tables: Input data. Default is piped-forward data (`<-`).
+//
+// ## Examples
+//
+// ### Shift timestamps forward in time
+// ```
+// import "sampledata"
+//
+// < sampledata.int()
+// >     |> timeShift(duration: 12h)
+// ```
+//
+// ### Shift timestamps backward in time
+// ```
+// import "sampledata"
+//
+// < sampledata.int()
+// >     |> timeShift(duration: -12h)
+// ```
+//
+// introduced: 0.7.0
+// tags: transformations, date/time
+//
 builtin timeShift : (<-tables: stream[A], duration: duration, ?columns: [string]) => stream[A]
+
+// skew returns the skew of non-null records in each input table as a float.
+//
+// ## Parameters
+// - column: Column to operate on. Default is `_value`.
+// - tables: Input data. Default is piped-forward data (`<-`).
+//
+// ## Examples
+//
+// ### Return the skew of values
+// ```
+// import "sampledata"
+//
+// < sampledata.int()
+// >     |> skew()
+// ```
+//
+// introduced: 0.7.0
+// tags: transformations, aggregates
+//
 builtin skew : (<-tables: stream[A], ?column: string) => stream[B] where A: Record, B: Record
+
+// spread returns the difference between the minimum and maximum values in a
+// specified column.
+//
+// ## Parameters
+// - column: Column to operate on. Default is `_value`.
+// - tables: Input data. Default is piped-forward data (`<-`).
+//
+// ## Examples
+//
+// ### Return the spread of values
+// ```
+// import "sampledata"
+//
+// < sampledata.int()
+// >     |> spread()
+// ```
+//
+// introduced: 0.7.0
+// tags: transformations, aggregates
+//
 builtin spread : (<-tables: stream[A], ?column: string) => stream[B] where A: Record, B: Record
+
+// sort orders rows in each intput table based on values in specified columns.
+//
+// #### Output data
+// One output table is produced for each input table.
+// Output tables have the same schema as their corresponding input tables.
+//
+// #### Sorting with null values
+// When `desc: false`, null values are last in the sort order.
+// When `desc: true`, null values are first in the sort order.
+//
+// ## Parameters
+// - columns: List of columns to sort by. Default is ["_value"].
+//
+//   Sort precedence is determined by list order (left to right).
+//
+// - desc: Sort results in descending order. Default is `false`.
+// - tables: Input data. Default is piped-forward data (`<-`).
+//
+// ## Examples
+//
+// ### Sort values in ascending order
+// ```
+// import "sampledata"
+//
+// < sampledata.int()
+// >     |> sort()
+// ```
+//
+// introduced: 0.7.0
+// tags: transformations
+//
 builtin sort : (<-tables: stream[A], ?columns: [string], ?desc: bool) => stream[A] where A: Record
+
+// stateTracking returns the cumulative count and duration of consecutive
+// rows that match a predicate function that defines a state.
+//
+// To return the cumulative count of consecutive rows that match the predicate,
+// include the `countColumn` parameter.
+// To return the cumulative duration of consecutive rows that match the predicate,
+// include the `durationColumn` parameter.
+// Rows that do not match the predicate function `fn` return `-1` in the count
+// and duration columns.
+//
+// ## Parameters
+// - fn: Predicate function to determine state.
+// - countColumn: Column to store state count in.
+//
+//   If not defined, `stateTracking()` does not return the state count.
+//
+// - durationColumn: Column to store state duration in.
+//
+//   If not defined, `stateTracking()` does not return the state duration.
+//
+// - durationUnit: Unit of time to report state duration in. Default is `1s`.
+// - timeColumn: Column with time values used to calculate state duration.
+//   Default is `_time`.
+// - tables: Input data. Default is piped-forward data (`<-`).
+//
+// ## Examples
+//
+// ### Return a cumulative state count
+// ```
+// # import "sampledata"
+// #
+// # data =
+// #     sampledata.int()
+// #         |> map(fn: (r) => ({r with state: if r._value > 5 then "crit" else "ok"}))
+// #
+// < data
+// >     |> stateTracking(fn: (r) => r.state == "crit", countColumn: "count")
+// ```
+//
+// ### Return a cumulative state duration in milliseconds
+// ```
+// # import "sampledata"
+// #
+// # data =
+// #     sampledata.int()
+// #         |> map(fn: (r) => ({r with state: if r._value > 5 then "crit" else "ok"}))
+// #
+// < data
+// >     |> stateTracking(fn: (r) => r.state == "crit", durationColumn: "duration", durationUnit: 1ms)
+// ```
+//
+// ### Return a cumulative state count and duration
+// ```
+// # import "sampledata"
+// #
+// # data =
+// #     sampledata.int()
+// #         |> map(fn: (r) => ({r with state: if r._value > 5 then "crit" else "ok"}))
+// #
+// < data
+// >     |> stateTracking(fn: (r) => r.state == "crit", countColumn: "count", durationColumn: "duration")
+// ```
+//
+// introduced: 0.7.0
+// tags: transformations
+//
 builtin stateTracking : (
         <-tables: stream[A],
         fn: (r: A) => bool,
@@ -2137,15 +2396,189 @@ builtin stateTracking : (
     A: Record,
     B: Record
 
+// stddev returns the standard deviation of non-null values in a specified column.
+//
+// ## Parameters
+// - column: Column to operate on. Default is `_value`.
+// - mode: Standard deviation mode or type of standard deviation to calculate.
+//   Default is `sample`.
+//
+//   **Availble modes:**
+//
+//   - **sample**: Calculate the sample standard deviation where the data is
+//     considered part of a larger population.
+//   - **population**: Calculate the population standard deviation where the
+//     data is considered a population of its own.
+//
+// - tables: Input data. Default is piped-forward data (`<-`).
+//
+// ## Examples
+//
+// ### Return the standard deviation of values in each table
+// ```
+// import "sampledata"
+//
+// < sampledata.int()
+// >     |> stddev()
+// ```
+//
+// introduced: 0.7.0
+// tags: transformations, aggregates
+//
 builtin stddev : (<-tables: stream[A], ?column: string, ?mode: string) => stream[B] where A: Record, B: Record
+
+// sum returns the sum of non-null values in a specified column.
+//
+// ## Parameters
+// - column: Column to operate on. Default is `_value`.
+// - tables: Input data. Default is piped-forward data (`<-`).
+//
+// ## Examples
+//
+// ### Return the sum of values in each table
+// ```
+// import "sampledata"
+//
+// < sampledata.int()
+// >     |> stddev()
+// ```
+//
+// introduced: 0.7.0
+// tags: transformations, aggregates
+//
 builtin sum : (<-tables: stream[A], ?column: string) => stream[B] where A: Record, B: Record
+
+// tripleExponentialDerivative returns the triple exponential derivative (TRIX)
+// values using `n` points.
+//
+// Triple exponential derivative, commonly referred to as “[TRIX](https://en.wikipedia.org/wiki/Trix_(technical_analysis)),”
+// is a momentum indicator and oscillator. A triple exponential derivative uses
+// the natural logarithm (log) of input data to calculate a triple exponential
+// moving average over the period of time. The calculation prevents cycles
+// shorter than the defined period from being considered by the indicator.
+// `tripleExponentialDerivative()` uses the time between `n` points to define
+// the period.
+//
+// Triple exponential derivative oscillates around a zero line.
+// A positive momentum **oscillator** value indicates an overbought market;
+// a negative value indicates an oversold market.
+// A positive momentum **indicator** value indicates increasing momentum;
+// a negative value indicates decreasing momentum.
+//
+// #### Triple exponential moving average rules
+// - A triple exponential derivative is defined as:
+//     - `TRIX[i] = ((EMA3[i] / EMA3[i - 1]) - 1) * 100`
+//     - `EMA3 = EMA(EMA(EMA(data)))`
+// - If there are not enough values to calculate a triple exponential derivative,
+//   the output `_value` is `NaN`; all other columns are the same as the last
+//   record of the input table.
+// - The function behaves the same way as the `exponentialMovingAverage()` function:
+//     - The function ignores `null` values.
+//     - The function operates only on the `_value` column.
+//
+// ## Parameters
+// - n: Number of points to use in the calculation.
+// - tables: Input data. Default is piped-forward data (`<-`).
+//
+// ## Examples
+//
+// ### Calculate a two-point triple exponential derivative
+// ```
+// import "sampledata"
+//
+// sampledata.float()
+//     |> tripleExponentialDerivative(n: 2)
+// ```
+//
+// introduced: 0.40.0
+// tags: transformations
+//
 builtin tripleExponentialDerivative : (<-tables: stream[{B with _value: A}], n: int) => stream[{B with _value: float}]
     where
     A: Numeric,
     B: Record
+
+// union merges two or more input streams into a single output stream.
+//
+// The output schemas of `union()` is the union of all input schemas.
+// `union()` does not preserve the sort order of the rows within tables.
+// Use `sort()` if you need a specific sort order.
+//
+// ### Union vs join
+// `union()` does not modify data in rows, but unions separate streams of tables
+// into a single stream of tables and groups rows of data based on existing group keys.
+// `join()` creates new rows based on common values in one or more specified columns.
+// Output rows also contain the differing values from each of the joined streams.
+//
+// ## Parameters
+// - tables: List of two or more streams of tables to union together.
+//
+// ## Examples
+//
+// ### Union two streams of tables with unique group keys
+// ```
+// import "generate"
+//
+// t1 =
+//     generate.from(count: 4, fn: (n) => n + 1, start: 2022-01-01T00:00:00Z, stop: 2022-01-05T00:00:00Z)
+//         |> set(key: "tag", value: "foo")
+//         |> group(columns: ["tag"])
+//
+// t2 =
+//     generate.from(count: 4, fn: (n) => n * (-1), start: 2022-01-01T00:00:00Z, stop: 2022-01-05T00:00:00Z)
+//         |> set(key: "tag", value: "bar")
+//         |> group(columns: ["tag"])
+//
+// > union(tables: [t1, t2])
+// ```
+//
+// ### Union two streams of tables with empty group keys
+// ```
+// import "generate"
+//
+// t1 =
+//     generate.from(count: 4, fn: (n) => n + 1, start: 2021-01-01T00:00:00Z, stop: 2021-01-05T00:00:00Z)
+//         |> set(key: "tag", value: "foo")
+//         |> group()
+//
+// t2 =
+//     generate.from(count: 4, fn: (n) => n * (-1), start: 2021-01-01T00:00:00Z, stop: 2021-01-05T00:00:00Z)
+//         |> set(key: "tag", value: "bar")
+//         |> group()
+//
+// > union(tables: [t1, t2])
+// ```
+//
+// introduced: 0.7.0
+// tags: transformations
+//
 builtin union : (tables: [stream[A]]) => stream[A] where A: Record
+
+// unique returns all records containing unique values in a specified column.
+//
+// Group keys, columns, and values are not modified.
+// `unique()` drops empty tables.
+//
+// ## Parameters
+// - column: Column to search for unique values. Default is `_value`.
+// - tables: Input data. Default is piped-forward data (`<-`).
+//
+// ## Examples
+//
+// ### Return unique values from input tables
+// ```
+// import "sampledata"
+//
+// < sampledata.int()
+// >     |> unique()
+// ```
+//
+// introduced: 0.7.0
+// tags: transformations, selectors
+//
 builtin unique : (<-tables: stream[A], ?column: string) => stream[A] where A: Record
 
+// _window is a helper function for windowing data by time.
 builtin _window : (
         <-tables: stream[A],
         every: duration,
@@ -2161,6 +2594,84 @@ builtin _window : (
     A: Record,
     B: Record
 
+// window groups records using regular time intervals.
+//
+// The function calculates time windows and stores window bounds in the
+// `_start` and `_stop` columns. `_start` and `_stop` values are assigned to
+// rows based on the row's `_time` value.
+//
+// A single input row may be placed into zero or more output tables depending on
+// the parameters passed into `window()`.
+//
+// #### Window by calendar months and years
+// `every`, `period`, and `offset` parameters support all valid duration units,
+// including calendar months (`1mo`) and years (`1y`).
+//
+// #### Window by week
+// When windowing by week (`1w`), weeks are determined using the Unix epoch
+// (1970-01-01T00:00:00Z UTC). The Unix epoch was on a Thursday, so all
+// calculated weeks begin on Thursday.
+//
+// ## Parameters
+// - every: Duration of time between windows.
+// - period: Duration of windows. Default is the `every` value.
+//
+//   `period` can be negative, indicating the start and stop boundaries are reversed.
+//
+// - offset: Duration to shift the window boundaries by. Defualt is `0s`.
+//
+//   `offset` can be negative, indicating that the offset goes backwards in time.
+//
+// - location: Location used to determine timezone. Default is the `location` option.
+// - timeColumn: Column that contains time values. Default is `_time`.
+// - startColumn: Column to store the window start time in. Default is `_start`.
+// - stopColumn: Column to store the window stop time in. Default is `_stop`.
+// - createEmpty: Create empty tables for empty window. Default is `false`.
+// - tables: Input data. Default is piped-forward data (`<-`).
+//
+// ## Examples
+//
+// ### Window data into 30 second intervals
+// ```
+// # import "sampledata"
+// #
+// # data =
+// #     sampledata.int()
+// #         |> range(start: sampledata.start, stop: sampledata.stop)
+// #
+// < data
+// >     |> window(every: 30s)
+// ```
+//
+// ### Window every 20 seconds covering 40 second periods
+// ```
+// # import "sampledata"
+// #
+// # data =
+// #     sampledata.int()
+// #         |> range(start: sampledata.start, stop: sampledata.stop)
+// #
+// < data
+// >     |> window(every: 20s, period: 40s)
+// ```
+//
+// ### Window by calendar month
+// ```
+// # import "generate"
+// #
+// # timeRange = {start: 2021-01-01T00:00:00Z, stop: 2021-04-01T00:00:00Z}
+// #
+// # data =
+// #     generate.from(count: 6, fn: (n) => n + n, start: timeRange.start, stop: timeRange.stop)
+// #         |> range(start: timeRange.start, stop: timeRange.stop)
+// #
+// < data
+// >     |> window(every: 1mo)
+// ```
+//
+// introduced: 0.7.0
+// tags: transformations
+//
 window = (
     tables=<-,
     every=0s,
@@ -2184,23 +2695,498 @@ window = (
             createEmpty,
         )
 
+// yield delivers input data as a result of the query.
+//
+// A query may have multiple yields, each identified by unique name specified in
+// the `name` parameter.
+//
+// **Note:** `yield()` is implicit for queries that output a single stream of
+// tables and is only necessary when yielding multiple results from a query.
+//
+// ## Parameters
+// - name: Unique name for the yielded results. Default is `_results`.
+// - tables: Input data. Default is piped-forward data (`<-`).
+//
+// ## Examples
+//
+// ### Yield multiple results from a query
+// ```
+// import "sampledata"
+//
+// sampledata.int()
+//     |> yield(name: "unmodified")
+//     |> map(fn: (r) => ({r with _value: r._value * r._value}))
+//     |> yield(name: "squared")
+// ```
+//
+// introduced: 0.7.0
+// tags: outputs
+//
 builtin yield : (<-tables: stream[A], ?name: string) => stream[A] where A: Record
 
-// stream/table index functions
+// tableFind extracts the first table in a stream with group key values that
+// match a specified predicate.
+//
+// ## Parameters
+// - fn: Predicate function to evaluate input table group keys.
+//
+//   `tableFind()` returns the first table that resolves as `true`.
+//   The predicate function requires a `key` argument that represents each input
+//   table's group key as a record.
+//
+// - tables: Input data. Default is piped-forward data (`<-`).
+//
+// ## Examples
+//
+// ### Extract a table from a stream of tables
+// ```no_run
+// import "sampledata"
+//
+// t = sampledata.int() |> tableFind(fn: (key) => key.tag == "t2")
+//
+// // t represents the first table in a stream whose group key
+// // contains "tag" with a value of "t2".
+// ```
+//
+// introduced: 0.29.0
+// tags: dynamic queries
+//
 builtin tableFind : (<-tables: stream[A], fn: (key: B) => bool) => stream[A] where A: Record, B: Record
+
+// getColumn extracts a specified column from a table as an array.
+//
+// If the specified column is not present in the table, the function returns an error.
+//
+// ## Parameters
+// - column: Column to extract
+// - table: Input table. Default is piped-forward data (`<-`).
+//
+// ## Examples
+//
+// ### Extract a column from a table
+// ```no_run
+// import "sampledata"
+//
+// sampledata.int()
+//     |> tableFind(fn: (key) => key.tag == "t1")
+//     |> getColumn(column: "_value")
+//
+// // Returns [-2, 10, 7, 17, 15, 4]
+// ```
+//
+// introduced: 0.29.0
+// tags: dynamic queries
+//
 builtin getColumn : (<-table: stream[A], column: string) => [B] where A: Record
+
+// getRecord extracts a row at a specified index from a table as a record.
+//
+// If the specified index is out of bounds, the function returns an error.
+//
+// ## Parameters
+// - idx: Index of the record to extract.
+// - table: Input table. Default is piped-forward data (`<-`).
+//
+// ## Examples
+//
+// ### Extract the first row from a table as a record
+// ```no_run
+// import "sampledata"
+//
+// sampledata.int()
+//   |> tableFind(fn: (key) => key.tag == "t1")
+//   |> getRecord(idx: 0)
+//
+// // Returns {_time: 2021-01-01T00:00:00.000000000Z, _value: -2, tag: t1}
+// ```
+//
+// introduced: 0.29.0
+// tags: dynamic queries
+//
 builtin getRecord : (<-table: stream[A], idx: int) => A where A: Record
+
+// findColumn returns an array of values in a specified column from the first
+// table in a stream of tables that matches the specified predicate function.
+//
+// The function returns an empty array if no table is found or if the column
+// label is not present in the set of columns.
+//
+// ## Parameters
+// - column: Column to extract.
+// - fn: Predicate function to evaluate input table group keys.
+//
+//   `findColumn()` uses the first table that resolves as `true`.
+//   The predicate function requires a `key` argument that represents each input
+//   table's group key as a record.
+//
+// - tables: Input data. Default is piped-forward data (`<-`).
+//
+// ## Examples
+//
+// ### Extract a column as an array
+// ```no_run
+// import "sampledata"
+//
+// sampledata.int()
+//     |> findColumn(fn: (key) => key.tag == "t1", column: "_value")
+//
+// // Returns [-2, 10, 7, 17, 15, 4]
+// ```
+//
+// introduced: 0.68.0
+// tags: dynamic queries
+//
 builtin findColumn : (<-tables: stream[A], fn: (key: B) => bool, column: string) => [C] where A: Record, B: Record
+
+// findRecord returns a row at a specified index as a record from the first
+// table in a stream of tables that matches the specified predicate function.
+//
+// The function returns an empty record if no table is found or if the index is
+// out of bounds.
+//
+// ## Parameters
+// - idx: Index of the record to extract.
+// - fn: Predicate function to evaluate input table group keys.
+//
+//   `findColumn()` uses the first table that resolves as `true`.
+//   The predicate function requires a `key` argument that represents each input
+//   table's group key as a record.
+//
+// - tables: Input data. Default is piped-forward data (`<-`).
+//
+// ## Examples
+//
+// ### Extract a row as a record
+// ```no_run
+// import "sampledata"
+//
+// sampledata.int()
+//     |> findRecord(fn: (key) => key.tag == "t1", idx: 0)
+//
+// // Returns {_time: 2021-01-01T00:00:00.000000000Z, _value: -2, tag: t1}
+// ```
+//
+// introduced: 0.68.0
+// tags: dynamic queries
+//
 builtin findRecord : (<-tables: stream[A], fn: (key: B) => bool, idx: int) => A where A: Record, B: Record
 
-// type conversion functions
+// bool converts a value to a boolean type.
+//
+// ## Parameters
+// - v: Value to convert.
+//
+// ## Examples
+//
+// ### Convert strings to booleans
+// ```no_run
+// bool(v: "true") // Returns true
+// bool(v: "false") // Returns false
+// ```
+//
+// ### Convert numeric values to booleans
+// ```no_run
+// bool(v: 1.0) // Returns true
+// bool(v: 0.0) // Returns false
+// bool(v: 1) // Returns true
+// bool(v: 0) // Returns false
+// bool(v: uint(v: 1)) // Returns true
+// bool(v: uint(v: 0)) // Returns false
+// ```
+//
+// ### Convert all values in a column to booleans
+// If converting the `_value` column to boolean types, use `toBool()`.
+// If converting columns other than `_value`, use `map()` to iterate over each
+// row and `bool()` to covert a column value to a boolean type.
+//
+// ```
+// # import "sampledata"
+// #
+// # data =
+// #     sampledata.numericBool()
+// #         |> rename(columns: {_value: "powerOn"})
+// #
+// < data
+// >     |> map(fn: (r) => ({r with powerOn: bool(v: r.powerOn)}))
+// ```
+//
+// introduced: 0.7.0
+// tags: type-conversions
+//
 builtin bool : (v: A) => bool
+
+// bytes converts a string value to a bytes type.
+//
+// ## Parameters
+// - v: Value to convert.
+//
+// ## Examples
+//
+// ### Convert a string to bytes
+// ```no_run
+// bytes(v: "Example string") // Returns 0x4578616d706c6520737472696e67
+// ```
+//
+// introduced: 0.40.0
+// tags: type-conversions
+//
 builtin bytes : (v: A) => bytes
+
+// duration converts a value to a duration type.
+//
+// `duration()` treats integers and unsigned integers as nanoseconds.
+// For a string to be converted to a duration type, the string must use
+// duration literal representation.
+//
+// ## Parameters
+// - v: Value to convert.
+//
+// ## Examples
+//
+// ### Convert a string to a duration
+// ```no_run
+// duration(v: "1h20m") // Returns 1h20m
+// ```
+//
+// ### Convert numeric types to durations
+// ```no_run
+// duration(v: 4800000000000) // Returns 1h20m
+// duration(v: uint(v: 9600000000000)) // Returns 2h40m
+// ```
+//
+// ### Convert values in a column to durations
+// Flux does not support duration column types.
+// To store durations in a column, convert duration types to strings.
+//
+// ```
+// # import "generate"
+// #
+// # data =
+// #     generate.from(count: 5, fn: (n) => (n + 1) * 3600000000000, start: 2021-01-01T00:00:00Z, stop: 2021-01-01T05:00:00Z)
+// #
+// < data
+// >     |> map(fn: (r) => ({r with _value: string(v: duration(v: r._value))}))
+// ```
+//
+// introduced: 0.7.0
+// tags: type-conversions
+//
 builtin duration : (v: A) => duration
+
+// float converts a value to a float type.
+//
+// ## Parameters
+// - v: Value to convert.
+//
+// ## Examples
+//
+// ### Convert a string to a float
+// ```no_run
+// float(v: "3.14") // Returns 3.14
+// ```
+//
+// ### Convert a scientific notation string to a float
+// ```no_run
+// float(v: "1.23e+20") // Returns 1.23e+20 (float)
+// ```
+//
+// ### Convert an integer to a float
+// ```no_run
+// float(v: "10") // Returns 10.0
+// ```
+//
+// ### Convert all values in a column to floats
+// If converting the `_value` column to float types, use `toFloat()`.
+// If converting columns other than `_value`, use `map()` to iterate over each
+// row and `float()` to covert a column value to a float type.
+//
+// ```
+// # import "sampledata"
+// #
+// # data =
+// #     sampledata.int()
+// #         |> rename(columns: {_value: "exampleCol"})
+// #
+// < data
+// >     |> map(fn: (r) => ({r with exampleCol: float(v: r.exampleCol)}))
+// ```
+//
+// introduced: 0.7.0
+// tags: type-conversions
+//
 builtin float : (v: A) => float
+
+// int converts a value to an integer type.
+//
+// `int()` behavior depends on the input data type:
+//
+// | Input type | Returned value                                  |
+// | :--------- | :---------------------------------------------- |
+// | string     | Integer equivalent of the numeric string        |
+// | bool       | 1 (true) or 0 (false)                           |
+// | duration   | Number of nanoseconds in the specified duration |
+// | time       | Equivalent nanosecond epoch timestamp           |
+// | float      | Value truncated at the decimal                  |
+// | uint       | Integer equivalent of the unsigned integer      |
+//
+// ## Parameters
+// v: Value to convert.
+//
+// ## Examples
+//
+// ### Convert basic types to integers
+// ```no_run
+// int(v: 10.12) // Returns 10
+// int(v: "3") // Returns 3
+// int(v: true) // Returns 1
+// int(v: 1m) // Returns 160000000000
+// int(v: 2022-01-01T00:00:00Z) // Returns 1640995200000000000
+// ```
+//
+// ### Convert all values in a column to integers
+// If converting the `_value` column to integer types, use `toInt()`.
+// If converting columns other than `_value`, use `map()` to iterate over each
+// row and `int()` to covert a column value to a integer type.
+//
+// ```
+// # import "sampledata"
+// #
+// # data =
+// #     sampledata.float()
+// #         |> rename(columns: {_value: "exampleCol"})
+// #
+// < data
+// >     |> map(fn: (r) => ({r with exampleCol: int(v: r.exampleCol)}))
+// ```
+//
+// introduced: 0.7.0
+// tags: type-conversions
+//
 builtin int : (v: A) => int
+
+// string converts a value to a string type.
+//
+// ## Parameters
+// - v: Value to convert.
+//
+// ## Examples
+//
+// ### Convert basic types to strings
+// ```no_run
+// string(v: true) // Returns "true"
+// string(v: 1m) // Returns "1m"
+// string(v: 2021-01-01T00:00:00Z) // Returns "2021-01-01T00:00:00Z"
+// string(v: 10.12) // Returns "10.12"
+// ```
+//
+// ### Convert all values in a column to strings
+// If converting the `_value` column to string types, use `toString()`.
+// If converting columns other than `_value`, use `map()` to iterate over each
+// row and `string()` to covert a column value to a string type.
+//
+// ```
+// # import "sampledata"
+// #
+// # data =
+// #     sampledata.float()
+// #         |> rename(columns: {_value: "exampleCol"})
+// #
+// < data
+// >     |> map(fn: (r) => ({r with exampleCol: string(v: r.exampleCol)}))
+// ```
+//
+// introduced: 0.7.0
+// tags: type-conversions
+//
 builtin string : (v: A) => string
+
+// time converts a value to a time type.
+//
+// ## Parameters
+// - v: Value to convert.
+//
+//   Strings must be valid [RFC3339 timestamps](https://docs.influxdata.com/influxdb/cloud/reference/glossary/#rfc3339-timestamp).
+//   Integer and unsigned integer values are parsed as nanosecond epoch timestamps.
+//
+// ## Examples
+//
+// ### Convert a string to a time value
+// ```no_run
+// time(v: "2021-01-01T00:00:00Z") // Returns 2021-01-01T00:00:00Z (time)
+// ```
+//
+// ### Convert an integer to a time value
+// ```no_run
+// time(v: 1640995200000000000) // Returns 2022-01-01T00:00:00Z
+// ```
+//
+// ### Convert all values in a column to time
+// If converting the `_value` column to time types, use `toTime()`.
+// If converting columns other than `_value`, use `map()` to iterate over each
+// row and `time()` to covert a column value to a time type.
+//
+// ```
+// # import "sampledata"
+// #
+// # data =
+// #     sampledata.int()
+// #         |> map(fn: (r) => ({ r with exampleCol: r._value * 1000000000 }))
+// #
+// < data
+// >     |> map(fn: (r) => ({r with exampleCol: time(v: r.exampleCol)}))
+// ```
+//
+// introduced: 0.7.0
+// tags: type-conversions
+//
 builtin time : (v: A) => time
+
+// uint converts a value to an unsigned integer type.
+//
+// `uint()` behavior depends on the input data type:
+//
+// | Input type | Returned value                                                  |
+// | :--------- | :-------------------------------------------------------------- |
+// | bool       | 1 (true) or 0 (false)                                           |
+// | duration   | Number of nanoseconds in the specified duration                 |
+// | float      | UInteger equivalent of the float value truncated at the decimal |
+// | int        | UInteger equivalent of the integer                              |
+// | string     | UInteger equivalent of the numeric string                       |
+// | time       | Equivalent nanosecond epoch timestamp                           |
+//
+// ## Parameters
+// - v: Value to convert.
+//
+// ## Examples
+//
+// ### Convert basic types to unsigned integers
+// ```
+// uint(v: "3") // Returns 3
+// uint(v: 1m) // Returns 160000000000
+// uint(v: 2022-01-01T00:00:00Z) // Returns 1640995200000000000
+// uint(v: 10.12) // Returns 10
+// uint(v: -100) // Returns 18446744073709551516
+// ```
+//
+// ### Convert all values in a column to unsigned integers
+// If converting the `_value` column to uint types, use `toUInt()`.
+// If converting columns other than `_value`, use `map()` to iterate over each
+// row and `uint()` to covert a column value to a uint type.
+//
+// ```
+// # import "sampledata"
+// #
+// # data =
+// #     sampledata.int()
+// #         |> rename(columns: {_value: "exampleCol"})
+// #
+// < data
+// >     |> map(fn: (r) => ({r with exampleCol: uint(v: r.exampleCol)}))
+// ```
+//
+// introduced: 0.7.0
+// tags: type-conversions
+//
 builtin uint : (v: A) => uint
 
 // display returns the Flux literal representation of any value as a string.
@@ -2292,6 +3278,9 @@ builtin uint : (v: A) => uint
 //  //    string: str
 //  // }
 //  ```
+//
+// introduced: 0.154.0
+//
 builtin display : (v: A) => string
 
 // contains function
@@ -2560,11 +3549,40 @@ kaufmansER = (n, tables=<-) =>
         |> chandeMomentumOscillator(n: n)
         |> map(fn: (r) => ({r with _value: math.abs(x: r._value) / 100.0}))
 
-// Triple Exponential Moving Average computes the triple exponential moving averages of the `_value` column.
-// eg: A 5 point triple exponential moving average would be called as such:
-// from(bucket: "telegraf/autogen"):
-//    |> range(start: -7d)
-//    |> tripleEMA(n: 5)
+// tripleEMA returns the triple exponential moving average (TEMA) of values in
+// the `_value` column.
+//
+// `tripleEMA` uses `n` number of points to calculate the TEMA, giving more
+// weight to recent data with less lag than `exponentialMovingAverage()` and
+// `doubleEMA()`.
+//
+// #### Triple exponential moving average rules
+// - A triple exponential moving average is defined as `tripleEMA = (3 * EMA_1) - (3 * EMA_2) + EMA_3`.
+//     - `EMA_1` is the exponential moving average of the original data.
+//     - `EMA_2` is the exponential moving average of `EMA_1`.
+//     - `EMA_3` is the exponential moving average of `EMA_2`.
+// - A true triple exponential moving average requires at least requires at least
+//   `3 * n - 2` values. If not enough values exist to calculate the TEMA, it
+//   returns a `NaN` value.
+// - `tripleEMA()` inherits all `exponentialMovingAverage()` rules.
+//
+// ## Parameters
+// - n: Number of points to use in the calculation.
+// - tables: Input data. Default is piped-forward data (`<-`).
+//
+// ## Examples
+//
+// ### Calculate a three point triple exponential moving average
+// ```
+// import "sampledata"
+//
+// < sampledata.int()
+// >     |> tripleEMA(n: 3)
+// ```
+//
+// introduced: 0.38.0
+// tags: transformations
+//
 tripleEMA = (n, tables=<-) =>
     tables
         |> exponentialMovingAverage(n: n)
