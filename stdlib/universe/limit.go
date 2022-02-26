@@ -11,6 +11,7 @@ import (
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/internal/execute/table"
+	"github.com/influxdata/flux/internal/feature"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/runtime"
@@ -95,16 +96,15 @@ func (s *LimitProcedureSpec) TriggerSpec() plan.TriggerSpec {
 	return plan.NarrowTransformationTriggerSpec{}
 }
 
-const FEATURE = true // FIXME
-
 func createLimitTransformation(id execute.DatasetID, mode execute.AccumulationMode, spec plan.ProcedureSpec, a execute.Administration) (execute.Transformation, execute.Dataset, error) {
 	s, ok := spec.(*LimitProcedureSpec)
 	if !ok {
 		return nil, nil, errors.Newf(codes.Internal, "invalid spec type %T", spec)
 	}
 
-	if FEATURE { // FIXME
+	if feature.NarrowTransformationLimit().Enabled(a.Context()) {
 		return newNarrowLimitTransformation(s, id, a.Allocator())
+
 	}
 
 	t, d := NewLimitTransformation(s, id)
