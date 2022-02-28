@@ -269,7 +269,7 @@ impl<'a> Node<'a> {
 /// See example with `FuncVisitor` below in this file.
 pub trait Visitor<'a>: Sized {
     /// Visit is called for a node.
-    /// When the `Visitor` is used in [`walk`], the boolean value returned
+    /// When the `Visitor` is used in [`walk()`], the boolean value returned
     /// is used to continue walking (`true`) or stop (`false`).
     fn visit(&mut self, node: Node<'a>) -> bool;
     /// Done is called for a node once it has been visited along with all of its children.
