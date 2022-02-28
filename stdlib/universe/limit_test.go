@@ -35,7 +35,7 @@ func TestLimit_Process(t *testing.T) {
 	testCases := []struct {
 		name string
 		spec *universe.LimitProcedureSpec
-		data []flux.Table
+		data func() []flux.Table
 		want []*executetest.Table
 	}{
 		{
@@ -43,15 +43,17 @@ func TestLimit_Process(t *testing.T) {
 			spec: &universe.LimitProcedureSpec{
 				N: 1,
 			},
-			data: []flux.Table{&executetest.Table{
-				ColMeta: []flux.ColMeta{
-					{Label: "_time", Type: flux.TTime},
-					{Label: "_start", Type: flux.TTime},
-					{Label: "_stop", Type: flux.TTime},
-					{Label: "_value", Type: flux.TFloat},
-				},
-				Data: [][]interface{}{},
-			}},
+			data: func() []flux.Table {
+				return []flux.Table{&executetest.Table{
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_start", Type: flux.TTime},
+						{Label: "_stop", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+					},
+					Data: [][]interface{}{},
+				}}
+			},
 			want: []*executetest.Table{{
 				ColMeta: []flux.ColMeta{
 					{Label: "_time", Type: flux.TTime},
@@ -67,16 +69,18 @@ func TestLimit_Process(t *testing.T) {
 			spec: &universe.LimitProcedureSpec{
 				N: 1,
 			},
-			data: []flux.Table{&executetest.Table{
-				ColMeta: []flux.ColMeta{
-					{Label: "_time", Type: flux.TTime},
-					{Label: "_value", Type: flux.TFloat},
-				},
-				Data: [][]interface{}{
-					{execute.Time(1), 2.0},
-					{execute.Time(2), 1.0},
-				},
-			}},
+			data: func() []flux.Table {
+				return []flux.Table{&executetest.Table{
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+					},
+					Data: [][]interface{}{
+						{execute.Time(1), 2.0},
+						{execute.Time(2), 1.0},
+					},
+				}}
+			},
 			want: []*executetest.Table{{
 				ColMeta: []flux.ColMeta{
 					{Label: "_time", Type: flux.TTime},
@@ -93,18 +97,20 @@ func TestLimit_Process(t *testing.T) {
 				N:      2,
 				Offset: 1,
 			},
-			data: []flux.Table{&executetest.Table{
-				ColMeta: []flux.ColMeta{
-					{Label: "_time", Type: flux.TTime},
-					{Label: "_value", Type: flux.TFloat},
-				},
-				Data: [][]interface{}{
-					{execute.Time(1), nil},
-					{execute.Time(2), nil},
-					{execute.Time(2), 1.0},
-					{execute.Time(2), 1.0},
-				},
-			}},
+			data: func() []flux.Table {
+				return []flux.Table{&executetest.Table{
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+					},
+					Data: [][]interface{}{
+						{execute.Time(1), nil},
+						{execute.Time(2), nil},
+						{execute.Time(2), 1.0},
+						{execute.Time(2), 1.0},
+					},
+				}}
+			},
 			want: []*executetest.Table{{
 				ColMeta: []flux.ColMeta{
 					{Label: "_time", Type: flux.TTime},
@@ -122,17 +128,19 @@ func TestLimit_Process(t *testing.T) {
 				N:      1,
 				Offset: 1,
 			},
-			data: []flux.Table{executetest.MustCopyTable(&executetest.Table{
-				ColMeta: []flux.ColMeta{
-					{Label: "_time", Type: flux.TTime},
-					{Label: "_value", Type: flux.TFloat},
-				},
-				Data: [][]interface{}{
-					{execute.Time(1), 2.0},
-					{execute.Time(2), 1.0},
-					{execute.Time(3), 0.0},
-				},
-			})},
+			data: func() []flux.Table {
+				return []flux.Table{executetest.MustCopyTable(&executetest.Table{
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+					},
+					Data: [][]interface{}{
+						{execute.Time(1), 2.0},
+						{execute.Time(2), 1.0},
+						{execute.Time(3), 0.0},
+					},
+				})}
+			},
 			want: []*executetest.Table{{
 				ColMeta: []flux.ColMeta{
 					{Label: "_time", Type: flux.TTime},
@@ -149,17 +157,19 @@ func TestLimit_Process(t *testing.T) {
 				N:      1,
 				Offset: 1,
 			},
-			data: []flux.Table{&executetest.Table{
-				ColMeta: []flux.ColMeta{
-					{Label: "_time", Type: flux.TTime},
-					{Label: "_value", Type: flux.TFloat},
-				},
-				Data: [][]interface{}{
-					{execute.Time(1), 2.0},
-					{execute.Time(2), 1.0},
-					{execute.Time(3), 0.0},
-				},
-			}},
+			data: func() []flux.Table {
+				return []flux.Table{&executetest.Table{
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+					},
+					Data: [][]interface{}{
+						{execute.Time(1), 2.0},
+						{execute.Time(2), 1.0},
+						{execute.Time(3), 0.0},
+					},
+				}}
+			},
 			want: []*executetest.Table{{
 				ColMeta: []flux.ColMeta{
 					{Label: "_time", Type: flux.TTime},
@@ -175,33 +185,35 @@ func TestLimit_Process(t *testing.T) {
 			spec: &universe.LimitProcedureSpec{
 				N: 2,
 			},
-			data: []flux.Table{
-				&executetest.Table{
-					KeyCols: []string{"t1"},
-					ColMeta: []flux.ColMeta{
-						{Label: "t1", Type: flux.TString},
-						{Label: "_time", Type: flux.TTime},
-						{Label: "_value", Type: flux.TFloat},
+			data: func() []flux.Table {
+				return []flux.Table{
+					&executetest.Table{
+						KeyCols: []string{"t1"},
+						ColMeta: []flux.ColMeta{
+							{Label: "t1", Type: flux.TString},
+							{Label: "_time", Type: flux.TTime},
+							{Label: "_value", Type: flux.TFloat},
+						},
+						Data: [][]interface{}{
+							{"a", execute.Time(1), 3.0},
+							{"a", execute.Time(2), 2.0},
+							{"a", execute.Time(2), 1.0},
+						},
 					},
-					Data: [][]interface{}{
-						{"a", execute.Time(1), 3.0},
-						{"a", execute.Time(2), 2.0},
-						{"a", execute.Time(2), 1.0},
+					&executetest.Table{
+						KeyCols: []string{"t1"},
+						ColMeta: []flux.ColMeta{
+							{Label: "t1", Type: flux.TString},
+							{Label: "_time", Type: flux.TTime},
+							{Label: "_value", Type: flux.TFloat},
+						},
+						Data: [][]interface{}{
+							{"b", execute.Time(3), 3.0},
+							{"b", execute.Time(3), 2.0},
+							{"b", execute.Time(4), 1.0},
+						},
 					},
-				},
-				&executetest.Table{
-					KeyCols: []string{"t1"},
-					ColMeta: []flux.ColMeta{
-						{Label: "t1", Type: flux.TString},
-						{Label: "_time", Type: flux.TTime},
-						{Label: "_value", Type: flux.TFloat},
-					},
-					Data: [][]interface{}{
-						{"b", execute.Time(3), 3.0},
-						{"b", execute.Time(3), 2.0},
-						{"b", execute.Time(4), 1.0},
-					},
-				},
+				}
 			},
 			want: []*executetest.Table{
 				{
@@ -232,10 +244,11 @@ func TestLimit_Process(t *testing.T) {
 		},
 	}
 	for _, tc := range testCases {
+		// Regular limit...
 		t.Run(tc.name, func(t *testing.T) {
 			executetest.ProcessTestHelper2(
 				t,
-				tc.data,
+				tc.data(),
 				tc.want,
 				nil,
 				func(id execute.DatasetID, alloc *memory.Allocator) (execute.Transformation, execute.Dataset) {
@@ -243,6 +256,23 @@ func TestLimit_Process(t *testing.T) {
 				},
 			)
 		})
+		// Narrow limit
+		t.Run(tc.name, func(t *testing.T) {
+			executetest.ProcessTestHelper2(
+				t,
+				tc.data(),
+				tc.want,
+				nil,
+				func(id execute.DatasetID, alloc *memory.Allocator) (execute.Transformation, execute.Dataset) {
+					xform, ds, err := universe.NewNarrowLimitTransformation(tc.spec, id, alloc)
+					if err != nil {
+						t.Error(err)
+					}
+					return xform, ds
+				},
+			)
+		})
+
 	}
 }
 
@@ -358,6 +388,14 @@ func BenchmarkLimit_100N_1000(b *testing.B) {
 	benchmarkLimit(b, 100, 1000)
 }
 
+func BenchmarkNarrowLimit_1N_1000(b *testing.B) {
+	benchmarkNarrowLimit(b, 1, 1000)
+}
+
+func BenchmarkNarrowLimit_100N_1000(b *testing.B) {
+	benchmarkNarrowLimit(b, 100, 1000)
+}
+
 func benchmarkLimit(b *testing.B, n, l int) {
 	spec := &universe.LimitProcedureSpec{
 		N: int64(n),
@@ -378,6 +416,35 @@ func benchmarkLimit(b *testing.B, n, l int) {
 		},
 		func(id execute.DatasetID, alloc *memory.Allocator) (execute.Transformation, execute.Dataset) {
 			return universe.NewLimitTransformation(spec, id)
+		},
+	)
+}
+
+func benchmarkNarrowLimit(b *testing.B, n, l int) {
+	spec := &universe.LimitProcedureSpec{
+		N: int64(n),
+	}
+	executetest.ProcessBenchmarkHelper(b,
+		func(alloc *memory.Allocator) (flux.TableIterator, error) {
+			schema := gen.Schema{
+				NumPoints: l,
+				Alloc:     alloc,
+				Tags: []gen.Tag{
+					{Name: "_measurement", Cardinality: 1},
+					{Name: "_field", Cardinality: 6},
+					{Name: "t0", Cardinality: 100},
+					{Name: "t1", Cardinality: 50},
+				},
+			}
+			return gen.Input(context.Background(), schema)
+		},
+
+		func(id execute.DatasetID, alloc *memory.Allocator) (execute.Transformation, execute.Dataset) {
+			xform, ds, err := universe.NewNarrowLimitTransformation(spec, id, alloc)
+			if err != nil {
+				b.Error(err)
+			}
+			return xform, ds
 		},
 	)
 }
