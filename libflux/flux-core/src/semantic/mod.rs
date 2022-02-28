@@ -194,7 +194,7 @@ impl PackageExports {
         self.values.get(k).map(|(symbol, _)| symbol)
     }
 
-    /// Copy all the variable bindings from another [`ExportEnvironment`] to the current environment.
+    /// Copy all the variable bindings from another environment to the current environment.
     /// This does not change the current environment's `parent` or `readwrite` flag.
     pub fn copy_bindings_from(&mut self, other: &Self) {
         for (name, t) in other.values.iter() {
