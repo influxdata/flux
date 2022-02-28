@@ -275,18 +275,18 @@ func (t *limitTransformationAdapter) Process(
 	return t.processChunk(chunk, state_, dataset)
 }
 
-// TODO(onelson): Jonathan mentioned an edge case about passing along empty data. Look at `filter`.
 func (t *limitTransformationAdapter) processChunk(
 	chunk table.Chunk,
 	state *limitState,
 	dataset *execute.TransportDataset,
 ) (*limitState, bool, error) {
-	// FIXME: extract all the resize/early return logic to share with the regular transformation
+	// TODO(onelson): extract all the resize/early return logic to share with the regular transformation?
+	//  Might not be needed if "regular" is removed in favor of the narrow version.
 	if state.n <= 0 {
 		return state, true, nil
 	}
 	chunkLen := chunk.Len()
-	if chunkLen <= state.offset {
+	if chunkLen < state.offset {
 		state.offset -= 1
 		return state, true, nil
 
@@ -305,11 +305,10 @@ func (t *limitTransformationAdapter) processChunk(
 	buf.Values = make([]array.Interface, chunk.NCols())
 	for idx := range buf.Values {
 		values := chunk.Values(idx)
-		// XXX(onelson):
-		// if there's no cruft at the end, just keep the original array,
+		// If there's no cruft at the end, just keep the original array,
 		// otherwise we need to truncate it to ensure all inners have the
 		// expected size.
-		// Could there be a 3rd case where we have less than the count?
+		// XXX(onelson): Could there be a 3rd case where we have less than the count?
 		if values.Len() == count {
 			values.Retain()
 		} else {
