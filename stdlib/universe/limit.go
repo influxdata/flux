@@ -103,8 +103,7 @@ func createLimitTransformation(id execute.DatasetID, mode execute.AccumulationMo
 	}
 
 	if feature.NarrowTransformationLimit().Enabled(a.Context()) {
-		return newNarrowLimitTransformation(s, id, a.Allocator())
-
+		return NewNarrowLimitTransformation(s, id, a.Allocator())
 	}
 
 	t, d := NewLimitTransformation(s, id)
@@ -325,7 +324,7 @@ func (t *limitTransformationAdapter) processChunk(
 	return state, true, nil
 }
 
-func newNarrowLimitTransformation(
+func NewNarrowLimitTransformation(
 	spec *LimitProcedureSpec,
 	id execute.DatasetID,
 	mem *memory.Allocator,
