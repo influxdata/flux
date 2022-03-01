@@ -299,6 +299,10 @@ func (t *limitTransformationAdapter) processChunk(
 		stop = start + count
 	}
 
+	// Update state for the next iteration
+	state.n -= count
+	state.offset = 0
+
 	buf := chunk.Buffer()
 	// XXX(onelson): seems like we're building a 2D array where the outer is by
 	// column, and the inners are the column values per row?
