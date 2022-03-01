@@ -128,6 +128,7 @@ test-go: libflux-go
 
 test-rust:
 	cd libflux && $(CARGO) test $(CARGO_ARGS) --all-features && \
+	$(CARGO) doc --no-deps && \
 	$(CARGO) test --doc && \
 	$(CARGO) clippy $(CARGO_ARGS) -- -Dclippy::all -Dclippy::undocumented_unsafe_blocks
 
