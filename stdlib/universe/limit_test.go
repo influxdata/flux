@@ -2,6 +2,7 @@ package universe_test
 
 import (
 	"context"
+	"fmt"
 	"sort"
 	"testing"
 
@@ -256,23 +257,27 @@ func TestLimit_Process(t *testing.T) {
 				},
 			)
 		})
-		// Narrow limit
-		t.Run(tc.name, func(t *testing.T) {
-			executetest.ProcessTestHelper2(
-				t,
-				tc.data(),
-				tc.want,
-				nil,
-				func(id execute.DatasetID, alloc *memory.Allocator) (execute.Transformation, execute.Dataset) {
-					xform, ds, err := universe.NewNarrowLimitTransformation(tc.spec, id, alloc)
-					if err != nil {
-						t.Error(err)
-					}
-					return xform, ds
-				},
-			)
-		})
 
+		// Narrow limit...
+		t.Run(
+			// N.b. need to ensure the testcase names are distinct to avoid test
+			// results colliding between these two runs.
+			fmt.Sprintf("%s narrow", tc.name),
+			func(t *testing.T) {
+				executetest.ProcessTestHelper2(
+					t,
+					tc.data(),
+					tc.want,
+					nil,
+					func(id execute.DatasetID, alloc *memory.Allocator) (execute.Transformation, execute.Dataset) {
+						xform, ds, err := universe.NewNarrowLimitTransformation(tc.spec, id, alloc)
+						if err != nil {
+							t.Error(err)
+						}
+						return xform, ds
+					},
+				)
+			})
 	}
 }
 
