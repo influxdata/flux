@@ -400,28 +400,19 @@ func (t *fillTransformation) fillChunk(buffer *arrow.TableBuffer, chunk table.Ch
 				vs[i].Retain()
 				continue
 			}
-			vs[i] = t.fillColumnNT(col.Type, arr, fillValue, mem)
+			vs[i] = t.fillColumn(col.Type, arr, fillValue, mem)
 		}
 	}
 
 	// If the fill column is new, create a completely null column and call fillColumn on it
 	if vs[colIdx] == nil {
 		colType := flux.ColumnType(t.spec.Value.Type())
-		arr := t.addNullColumnNT(colType, chunk.Len(), mem)
+		arr := t.addNullColumn(colType, chunk.Len(), mem)
 		defer arr.Release()
-		vs[colIdx] = t.fillColumnNT(colType, arr, fillValue, mem)
+		vs[colIdx] = t.fillColumn(colType, arr, fillValue, mem)
 	}
 	buffer.Values = vs
 	return nil
-}
-
-func (t *fillTransformation) addNullColumnNT(typ flux.ColType, l int, mem arrowmem.Allocator) array.Interface {
-	builder := arrow.NewBuilder(typ, mem)
-	builder.Resize(l)
-	for i := 0; i < l; i++ {
-		builder.AppendNull()
-	}
-	return builder.NewArray()
 }
 
 func (t *fillTransformation) fillTable(w *table.StreamWriter, cr flux.ColReader, colIdx int, fillValue *interface{}) error {
@@ -439,21 +430,21 @@ func (t *fillTransformation) fillTable(w *table.StreamWriter, cr flux.ColReader,
 			vs[i].Retain()
 			continue
 		}
-		vs[i] = t.fillColumn(col.Type, arr, fillValue)
+		vs[i] = t.fillColumn(col.Type, arr, fillValue, t.alloc)
 	}
 
 	// If the fill column is new, create a completely null column and call fillColumn on it
 	if vs[colIdx] == nil {
 		colType := flux.ColumnType(t.spec.Value.Type())
-		arr := t.addNullColumn(colType, crLen)
+		arr := t.addNullColumn(colType, crLen, t.alloc)
 		defer arr.Release()
-		vs[colIdx] = t.fillColumn(colType, arr, fillValue)
+		vs[colIdx] = t.fillColumn(colType, arr, fillValue, t.alloc)
 	}
 	return w.Write(vs)
 }
 
-func (t *fillTransformation) addNullColumn(typ flux.ColType, l int) array.Interface {
-	builder := arrow.NewBuilder(typ, t.alloc)
+func (t *fillTransformation) addNullColumn(typ flux.ColType, l int, mem arrowmem.Allocator) array.Interface {
+	builder := arrow.NewBuilder(typ, mem)
 	builder.Resize(l)
 	for i := 0; i < l; i++ {
 		builder.AppendNull()
