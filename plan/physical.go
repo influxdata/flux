@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"math"
 
+	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/internal/feature"
 	"github.com/influxdata/flux/interpreter"
 )
@@ -81,7 +83,7 @@ func (pp *physicalPlanner) Plan(ctx context.Context, spec *Spec) (*Spec, error) 
 			return nil, err
 		}
 
-		err = validatePhysicalPlan(transformedSpec)
+		err = ValidatePhysicalPlan(transformedSpec)
 		if err != nil {
 			return nil, err
 		}
@@ -123,17 +125,71 @@ func (pp *physicalPlanner) Plan(ctx context.Context, spec *Spec) (*Spec, error) 
 	return transformedSpec, nil
 }
 
-func validatePhysicalPlan(plan *Spec) error {
+func ValidatePhysicalPlan(plan *Spec) error {
 	err := plan.BottomUpWalk(func(pn Node) error {
 		if validator, ok := pn.ProcedureSpec().(PostPhysicalValidator); ok {
 			return validator.PostPhysicalValidate(pn.ID())
 		}
 		ppn, ok := pn.(*PhysicalPlanNode)
 		if !ok {
-			return fmt.Errorf("invalid physical query plan; found logical operation \"%v\"", pn.ID())
+			return &flux.Error{
+				Code: codes.Internal,
+				Msg:  fmt.Sprintf("invalid physical query plan; found logical operation \"%v\"", pn.ID()),
+			}
 		}
 		if ppn.TriggerSpec == nil {
-			return fmt.Errorf("invalid physical query plan; trigger spec not set on \"%v\"", ppn.id)
+			return &flux.Error{
+				Code: codes.Internal,
+				Msg:  fmt.Sprintf("invalid physical query plan; trigger spec not set on \"%v\"", ppn.id),
+			}
+		}
+
+		// Check if required attributes are present in the output of
+		// predecessors and their values match.
+		for key, attr := range ppn.RequiredAttrs {
+			for _, pred := range ppn.Predecessors() {
+				ppred := pred.(*PhysicalPlanNode)
+				predAttr, ok := ppred.OutputAttrs[key]
+				if !ok {
+					return &flux.Error{
+						Code: codes.Internal,
+						Msg: fmt.Sprintf("invalid physical query plan; attribute \"%v\" required by "+
+							"\"%v\" is missing from predecessor \"%v\"", key, ppn.id, ppred.id),
+					}
+				}
+				if attr != predAttr {
+					return &flux.Error{
+						Code: codes.Internal,
+						Msg: fmt.Sprintf("invalid physical query plan; attribute \"%v\" required by "+
+							"\"%v\" does not match attribute in predecessor \"%v\"", key, ppn.id, ppred.id),
+					}
+				}
+			}
+		}
+
+		// Check if attributes that must be required in successors are indeed
+		// required there.
+		for key, attr := range ppn.OutputAttrs {
+			if attr.SuccessorsMustRequire() {
+				for _, succ := range ppn.Successors() {
+					has := false
+					psucc := succ.(*PhysicalPlanNode)
+					for skey := range succ.(*PhysicalPlanNode).RequiredAttrs {
+						if key == skey {
+							has = true
+							break
+						}
+					}
+					if !has {
+						return &flux.Error{
+							Code: codes.Internal,
+							Msg: fmt.Sprintf("invalid physical query plan; attribute \"%v\" on "+
+								"\"%v\" must be required by all successors, but isn't on \"%v\"",
+								key, ppn.id, psucc.id),
+						}
+					}
+				}
+			}
 		}
 
 		return nil
@@ -277,7 +333,10 @@ func (ppn *PhysicalPlanNode) ProcedureSpec() ProcedureSpec {
 func (ppn *PhysicalPlanNode) ReplaceSpec(newSpec ProcedureSpec) error {
 	physSpec, ok := newSpec.(PhysicalProcedureSpec)
 	if !ok {
-		return fmt.Errorf("couldn't replace ProcedureSpec for physical plan node \"%v\"", ppn.ID())
+		return &flux.Error{
+			Code: codes.Internal,
+			Msg:  fmt.Sprintf("couldn't replace ProcedureSpec for physical plan node \"%v\"", ppn.ID()),
+		}
 	}
 
 	ppn.Spec = physSpec
@@ -308,9 +367,26 @@ func (ppn *PhysicalPlanNode) Cost(inStats []Statistics) (cost Cost, outStats Sta
 	return ppn.Spec.Cost(inStats)
 }
 
-// PhysicalAttributes encapsulates sny physical attributes of the result produced
+type PhysicalAttr interface {
+	SuccessorsMustRequire() bool
+}
+
+// PhysicalAttributes encapsulates any physical attributes of the result produced
 // by a physical plan node, such as collation, etc.
-type PhysicalAttributes struct {
+type PhysicalAttributes map[string]PhysicalAttr
+
+func (ppn *PhysicalPlanNode) SetOutputAttr(name string, v PhysicalAttr) {
+	if ppn.OutputAttrs == nil {
+		ppn.OutputAttrs = make(PhysicalAttributes)
+	}
+	ppn.OutputAttrs[name] = v
+}
+
+func (ppn *PhysicalPlanNode) SetRequiredAttr(name string, v PhysicalAttr) {
+	if ppn.RequiredAttrs == nil {
+		ppn.RequiredAttrs = make(PhysicalAttributes)
+	}
+	ppn.RequiredAttrs[name] = v
 }
 
 // CreatePhysicalNode creates a single physical plan node from a procedure spec.

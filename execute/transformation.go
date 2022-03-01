@@ -95,6 +95,7 @@ type Administration interface {
 	StreamContext() StreamContext
 	Allocator() *memory.Allocator
 	Parents() []DatasetID
+	ParallelOpts() ParallelOpts
 }
 
 type CreateTransformation func(id DatasetID, mode AccumulationMode, spec plan.ProcedureSpec, a Administration) (Transformation, Dataset, error)

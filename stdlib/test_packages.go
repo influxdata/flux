@@ -25,6 +25,7 @@ import (
 	prometheus "github.com/influxdata/flux/stdlib/experimental/prometheus"
 	record "github.com/influxdata/flux/stdlib/experimental/record"
 	table "github.com/influxdata/flux/stdlib/experimental/table"
+	generate "github.com/influxdata/flux/stdlib/generate"
 	http "github.com/influxdata/flux/stdlib/http"
 	influxdb "github.com/influxdata/flux/stdlib/influxdata/influxdb"
 	monitor "github.com/influxdata/flux/stdlib/influxdata/influxdb/monitor"
@@ -76,6 +77,7 @@ var FluxTestPackages = func() []*ast.Package {
 	pkgs = append(pkgs, prometheus.FluxTestPackages...)
 	pkgs = append(pkgs, record.FluxTestPackages...)
 	pkgs = append(pkgs, table.FluxTestPackages...)
+	pkgs = append(pkgs, generate.FluxTestPackages...)
 	pkgs = append(pkgs, http.FluxTestPackages...)
 	pkgs = append(pkgs, influxdb.FluxTestPackages...)
 	pkgs = append(pkgs, monitor.FluxTestPackages...)
