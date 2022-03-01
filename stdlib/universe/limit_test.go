@@ -270,11 +270,11 @@ func TestLimit_Process(t *testing.T) {
 					tc.want,
 					nil,
 					func(id execute.DatasetID, alloc *memory.Allocator) (execute.Transformation, execute.Dataset) {
-						xform, ds, err := universe.NewNarrowLimitTransformation(tc.spec, id, alloc)
+						tr, ds, err := universe.NewNarrowLimitTransformation(tc.spec, id, alloc)
 						if err != nil {
 							t.Fatal(err)
 						}
-						return xform, ds
+						return tr, ds
 					},
 				)
 			})
@@ -552,11 +552,11 @@ func benchmarkNarrowLimit(b *testing.B, n, l int) {
 		},
 
 		func(id execute.DatasetID, alloc *memory.Allocator) (execute.Transformation, execute.Dataset) {
-			xform, ds, err := universe.NewNarrowLimitTransformation(spec, id, alloc)
+			tr, ds, err := universe.NewNarrowLimitTransformation(spec, id, alloc)
 			if err != nil {
-				b.Error(err)
+				b.Fatal(err)
 			}
-			return xform, ds
+			return tr, ds
 		},
 	)
 }
