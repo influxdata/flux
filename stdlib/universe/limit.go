@@ -267,8 +267,22 @@ func (t *limitTransformationAdapter) Process(
 ) (interface{}, bool, error) {
 
 	var state_ *limitState
+	// `.Process` is reentrant, so to speak. The first invocation will not
+	// include a value for `state`. Initialization happens here then is passed
+	// in/out for the subsequent calls.
 	if state == nil {
 		state_ = &limitState{n: t.limitTransformation.n, offset: t.limitTransformation.offset}
+		// When state initialization is happening, we know this is the first
+		// invocation of `.Process` for this transformation.
+		// In a case where the length of the chunk is zero we can short-circuit,
+		// passing along the empty and skipping further processing.
+		if chunk.Len() == 0 {
+			chunk.Retain()
+			if err := dataset.Process(chunk); err != nil {
+				return nil, false, err
+			}
+			return nil, true, nil
+		}
 	} else {
 		state_ = state.(*limitState)
 	}
@@ -286,10 +300,9 @@ func (t *limitTransformationAdapter) processChunk(
 		return state, true, nil
 	}
 	chunkLen := chunk.Len()
-	if chunkLen < state.offset {
+	if chunkLen <= state.offset {
 		state.offset -= 1
 		return state, true, nil
-
 	}
 	start := state.offset
 	stop := chunkLen
