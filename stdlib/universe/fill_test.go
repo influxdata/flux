@@ -2,6 +2,7 @@ package universe_test
 
 import (
 	"context"
+	"fmt"
 	"testing"
 	"time"
 
@@ -814,7 +815,8 @@ func TestFill_Process(t *testing.T) {
 		})
 
 		// fill narrow transformations tests
-		t.Run(tc.name, func(t *testing.T) {
+		// need to ensure the testcase names are distinct to avoid test results colliding between these two runs.
+		t.Run(fmt.Sprintf("%s narrow", tc.name), func(t *testing.T) {
 			executetest.ProcessTestHelper2(
 				t,
 				tc.data(),
