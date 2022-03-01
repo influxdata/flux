@@ -274,8 +274,8 @@ func (t *limitTransformationAdapter) Process(
 		state_ = &limitState{n: t.limitTransformation.n, offset: t.limitTransformation.offset}
 		// When state initialization is happening, we know this is the first
 		// invocation of `.Process` for this transformation.
-		// In a case where the length of the chunk is zero we can short-circuit,
-		// passing along the empty and skipping further processing.
+		// When the incoming chunk is empty we can short-circuit,
+		// passing along the empty, skipping further processing.
 		if chunk.Len() == 0 {
 			chunk.Retain()
 			if err := dataset.Process(chunk); err != nil {
