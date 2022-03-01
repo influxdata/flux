@@ -137,6 +137,18 @@ func NarrowTransformationLimit() BoolFlag {
 	return narrowTransformationLimit
 }
 
+var optimizeStateTracking = feature.MakeBoolFlag(
+	"Optimize State Tracking",
+	"optimizeStateTracking",
+	"Sean Brickley",
+	false,
+)
+
+// OptimizeStateTracking - Enable implementation of NarrowStateTransformation of stateTracking
+func OptimizeStateTracking() BoolFlag {
+	return optimizeStateTracking
+}
+
 // Inject will inject the Flagger into the context.
 func Inject(ctx context.Context, flagger Flagger) context.Context {
 	return feature.Inject(ctx, flagger)
@@ -153,6 +165,7 @@ var all = []Flag{
 	narrowTransformationFill,
 	optimizeAggregateWindow,
 	narrowTransformationLimit,
+	optimizeStateTracking,
 }
 
 var byKey = map[string]Flag{
@@ -166,6 +179,7 @@ var byKey = map[string]Flag{
 	"narrowTransformationFill":         narrowTransformationFill,
 	"optimizeAggregateWindow":          optimizeAggregateWindow,
 	"narrowTransformationLimit":        narrowTransformationLimit,
+	"optimizeStateTracking":            optimizeStateTracking,
 }
 
 // Flags returns all feature flags.

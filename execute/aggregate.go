@@ -438,7 +438,7 @@ func (t *simpleAggregateTransformation2) Aggregate(chunk table.Chunk, state inte
 		case flux.TInt:
 			agg.(DoIntAgg).DoInt(chunk.Ints(idx))
 		case flux.TUInt:
-			agg.(DoUIntAgg).DoUInt(chunk.Uints(idx))
+			agg.(DoUIntAgg).DoUInt(chunk.UInts(idx))
 		case flux.TFloat:
 			agg.(DoFloatAgg).DoFloat(chunk.Floats(idx))
 		case flux.TString:

@@ -483,7 +483,7 @@ func (t *differenceTransformation) processChunk(differences []*difference, first
 				values := chunk.Ints(j)
 				out = processInts(d, l, values, firstIdx, mem)
 			case flux.TUInt:
-				values := chunk.Uints(j)
+				values := chunk.UInts(j)
 				out = processUints(d, l, values, firstIdx, mem)
 			case flux.TFloat:
 				values := chunk.Floats(j)
