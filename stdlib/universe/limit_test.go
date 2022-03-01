@@ -272,7 +272,7 @@ func TestLimit_Process(t *testing.T) {
 					func(id execute.DatasetID, alloc *memory.Allocator) (execute.Transformation, execute.Dataset) {
 						xform, ds, err := universe.NewNarrowLimitTransformation(tc.spec, id, alloc)
 						if err != nil {
-							t.Error(err)
+							t.Fatal(err)
 						}
 						return xform, ds
 					},
@@ -347,6 +347,113 @@ func TestProcess_Limit_MultiBuffer(t *testing.T) {
 		Offset: 2,
 	}
 	tr, d := universe.NewLimitTransformation(spec, executetest.RandomDatasetID())
+	store := executetest.NewDataStore()
+	d.AddTransformation(store)
+
+	parentID := executetest.RandomDatasetID()
+	if err := tr.Process(parentID, in); err != nil {
+		t.Fatal(err)
+	}
+	tr.Finish(parentID, nil)
+
+	got, err := executetest.TablesFromCache(store)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	want := []*executetest.Table{
+		{
+			ColMeta: []flux.ColMeta{
+				{Label: "_time", Type: flux.TTime},
+				{Label: "_value", Type: flux.TInt},
+			},
+			Data: [][]interface{}{
+				{values.Time(20), int64(2)},
+				{values.Time(30), int64(3)},
+				{values.Time(40), int64(4)},
+				{values.Time(50), int64(5)},
+			},
+		},
+	}
+	executetest.NormalizeTables(want)
+
+	sort.Sort(executetest.SortedTables(got))
+	sort.Sort(executetest.SortedTables(want))
+
+	if !cmp.Equal(want, got) {
+		t.Errorf("unexpected tables -want/+got\n%s", cmp.Diff(want, got))
+	}
+}
+
+func TestProcess_NarrowLimit_MultiBuffer(t *testing.T) {
+	key := execute.NewGroupKey(nil, nil)
+	mem := &memory.Allocator{}
+	b := table.NewBufferedBuilder(key, mem)
+	{
+		buf := arrow.TableBuffer{
+			GroupKey: key,
+			Columns: []flux.ColMeta{
+				{Label: "_time", Type: flux.TTime},
+				{Label: "_value", Type: flux.TInt},
+			},
+			Values: make([]array.Interface, 2),
+		}
+
+		times := array.NewIntBuilder(mem)
+		for ts := int64(0); ts < 40; ts += 10 {
+			times.Append(ts)
+		}
+		buf.Values[0] = times.NewArray()
+
+		values := array.NewIntBuilder(mem)
+		for v := int64(0); v < 4; v++ {
+			values.Append(v)
+		}
+		buf.Values[1] = values.NewArray()
+		if err := b.AppendBuffer(&buf); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	{
+		buf := arrow.TableBuffer{
+			GroupKey: key,
+			Columns: []flux.ColMeta{
+				{Label: "_time", Type: flux.TTime},
+				{Label: "_value", Type: flux.TInt},
+			},
+			Values: make([]array.Interface, 2),
+		}
+
+		times := array.NewIntBuilder(mem)
+		for ts := int64(40); ts < 80; ts += 10 {
+			times.Append(ts)
+		}
+		buf.Values[0] = times.NewArray()
+
+		values := array.NewIntBuilder(mem)
+		for v := int64(4); v < 8; v++ {
+			values.Append(v)
+		}
+		buf.Values[1] = values.NewArray()
+		if err := b.AppendBuffer(&buf); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	in, err := b.Table()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	spec := &universe.LimitProcedureSpec{
+		N:      4,
+		Offset: 2,
+	}
+	tr, d, err := universe.NewNarrowLimitTransformation(spec, executetest.RandomDatasetID(), mem)
+	if err != nil {
+		t.Fatal(err)
+	}
 	store := executetest.NewDataStore()
 	d.AddTransformation(store)
 
