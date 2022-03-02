@@ -61,14 +61,18 @@ func (a *narrowStateTrackingTransformationAdapter) Process(chunk table.Chunk, st
 	// Get the index for the time column
 	timeIdx := execute.ColIdx(a.t.timeCol, cols)
 	if timeIdx < 0 {
+		// Do we need to retain and process the unmodified chunk
+		// before an early return?
+		//
+		// chunk.Retain()
+		// d.Process(chunk)
 		return s, mod, errors.Newf(codes.FailedPrecondition, "column %q does not exist", a.t.timeCol)
 	}
-
-	nrows := chunk.Len()
 
 	stateCounts := array.NewIntBuilder(mem)
 	stateDurations := array.NewIntBuilder(mem)
 
+	nrows := chunk.Len()
 	stateCounts.Resize(nrows)
 	stateDurations.Resize(nrows)
 
@@ -123,20 +127,21 @@ func (a *narrowStateTrackingTransformationAdapter) Process(chunk table.Chunk, st
 		stateDurations.Append(s.duration)
 	}
 
-	vs := make([]array.Interface, 0, chunk.NCols()+2)
-	for i := 0; i < chunk.NCols(); i++ {
+	ncols := chunk.NCols()
+	newCols := make([]flux.ColMeta, 0, ncols+2)
+	newCols = append(newCols, cols...)
+
+	vs := make([]array.Interface, 0, ncols+2)
+	for i := 0; i < ncols; i++ {
 		vs = append(vs, chunk.Values(i))
 	}
 
-	newCols := make([]flux.ColMeta, 0, chunk.NCols()+2)
-	newCols = append(newCols, cols...)
-
 	if a.t.countColumn != "" {
-		newCols = append(cols, flux.ColMeta{Label: a.t.countColumn, Type: flux.TInt})
+		newCols = append(newCols, flux.ColMeta{Label: a.t.countColumn, Type: flux.TInt})
 		vs = append(vs, stateCounts.NewArray())
 	}
 	if a.t.durationColumn != "" {
-		newCols = append(cols, flux.ColMeta{Label: a.t.durationColumn, Type: flux.TInt})
+		newCols = append(newCols, flux.ColMeta{Label: a.t.durationColumn, Type: flux.TInt})
 		vs = append(vs, stateDurations.NewArray())
 	}
 

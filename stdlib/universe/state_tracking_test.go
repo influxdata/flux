@@ -140,7 +140,6 @@ func TestStateTracking_Process(t *testing.T) {
 		wantErr error
 	}{
 		{
-			// FAILS
 			name: "only duration",
 			spec: &universe.StateTrackingProcedureSpec{
 				DurationColumn: "duration",
@@ -233,7 +232,6 @@ func TestStateTracking_Process(t *testing.T) {
 			wantErr: errors.New("got an out-of-order timestamp"),
 		},
 		{
-			// FAILS
 			name: "only count",
 			spec: &universe.StateTrackingProcedureSpec{
 				CountColumn: "count",
@@ -273,7 +271,6 @@ func TestStateTracking_Process(t *testing.T) {
 			}},
 		},
 		{
-			// FAILS
 			name: "only count, out of order and null timestamps",
 			spec: &universe.StateTrackingProcedureSpec{
 				CountColumn: "count",
@@ -313,7 +310,6 @@ func TestStateTracking_Process(t *testing.T) {
 			}},
 		},
 		{
-			// FAILS
 			name: "one table",
 			spec: &universe.StateTrackingProcedureSpec{
 				CountColumn:    "count",
@@ -377,22 +373,25 @@ func TestStateTracking_Process(t *testing.T) {
 		t.Run(
 			fmt.Sprintf("%s narrow", tc.name),
 			func(t *testing.T) {
-				executetest.ProcessTestHelper(
+				executetest.ProcessTestHelper2(
 					t,
 					tc.data(),
 					tc.want,
 					tc.wantErr,
-					func(d execute.Dataset, c execute.TableBuilderCache) execute.Transformation {
+					func(id execute.DatasetID, alloc *memory.Allocator) (execute.Transformation, execute.Dataset) {
 						ctx := dependenciestest.Default().Inject(context.Background())
+						c := execute.NewTableBuilderCache(&memory.Allocator{})
+						d := execute.NewDataset(executetest.RandomDatasetID(), 0, c)
 						tx, err := universe.NewStateTrackingTransformation(ctx, tc.spec, d, c)
 						if err != nil {
 							t.Fatal(err)
 						}
-						ntx, _, err := universe.NewNarrowStateTrackingTransformation(tx, executetest.RandomDatasetID(), memory.DefaultAllocator)
+
+						ntx, nd, err := universe.NewNarrowStateTrackingTransformation(tx, executetest.RandomDatasetID(), memory.DefaultAllocator)
 						if err != nil {
 							t.Fatal(err)
 						}
-						return ntx
+						return ntx, nd
 					},
 				)
 			},
