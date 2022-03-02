@@ -35,7 +35,6 @@ GENERATED_TARGETS = \
 	ast/asttest/cmpopts.go \
 	stdlib/packages.go \
 	internal/fbsemantic/semantic_generated.go \
-	internal/fbsemantic/semantic_generated.go \
 	internal/feature/flags.go \
 	libflux/go/libflux/buildinfo.gen.go \
 	$(LIBFLUX_GENERATED_TARGETS)
