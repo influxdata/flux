@@ -65,7 +65,11 @@ func (f *vectorFn) Eval(ctx context.Context, chunk table.Chunk) ([]array.Interfa
 	// When the compiler gets refactored so it returns records in the same order
 	// as type inference, we can remove this and just do a copy by index.
 	retType := f.returnType()
-	n := res.Object().Len()
+	n, err := retType.NumProperties()
+	if err != nil {
+		return nil, err
+	}
+
 	vs := make([]array.Interface, n)
 	for i := 0; i < n; i++ {
 		prop, err := retType.RecordProperty(i)
@@ -74,8 +78,9 @@ func (f *vectorFn) Eval(ctx context.Context, chunk table.Chunk) ([]array.Interfa
 		}
 
 		vec, ok := res.Object().Get(prop.Name())
-		if !ok {
-			return nil, errors.Newf(codes.Internal, "column %s is not valid", prop.Name())
+		if !ok || vec.IsNull() {
+			// Property does not exist because it is null.
+			continue
 		}
 		vs[i] = vec.(values.Vector).Arr()
 		vs[i].Retain()
