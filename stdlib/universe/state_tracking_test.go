@@ -140,6 +140,7 @@ func TestStateTracking_Process(t *testing.T) {
 		wantErr error
 	}{
 		{
+			// FAILS
 			name: "only duration",
 			spec: &universe.StateTrackingProcedureSpec{
 				DurationColumn: "duration",
@@ -232,6 +233,7 @@ func TestStateTracking_Process(t *testing.T) {
 			wantErr: errors.New("got an out-of-order timestamp"),
 		},
 		{
+			// FAILS
 			name: "only count",
 			spec: &universe.StateTrackingProcedureSpec{
 				CountColumn: "count",
@@ -271,6 +273,7 @@ func TestStateTracking_Process(t *testing.T) {
 			}},
 		},
 		{
+			// FAILS
 			name: "only count, out of order and null timestamps",
 			spec: &universe.StateTrackingProcedureSpec{
 				CountColumn: "count",
@@ -310,6 +313,7 @@ func TestStateTracking_Process(t *testing.T) {
 			}},
 		},
 		{
+			// FAILS
 			name: "one table",
 			spec: &universe.StateTrackingProcedureSpec{
 				CountColumn:    "count",

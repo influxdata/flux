@@ -79,9 +79,9 @@ func (a *narrowStateTrackingTransformationAdapter) Process(chunk table.Chunk, st
 			return s, mod, err
 		}
 
+		// Get the timestamp for the current row
 		var ts values.Time
 		if a.t.durationColumn != "" {
-			// Get the timestamp for the current row
 			times := chunk.Times(timeIdx)
 			if times.IsNull(i) {
 				return s, mod, errors.New(codes.FailedPrecondition, "got a null timestamp")
@@ -104,11 +104,13 @@ func (a *narrowStateTrackingTransformationAdapter) Process(chunk table.Chunk, st
 					inState:  true,
 				}
 			} else {
-				s.count++
-				s.duration = int64(ts - s.start)
-				if a.t.durationUnit > 0 {
-					s.duration = s.duration / a.t.durationUnit
+				if a.t.durationColumn != "" {
+					s.duration = int64(ts - s.start)
+					if a.t.durationUnit > 0 {
+						s.duration = s.duration / a.t.durationUnit
+					}
 				}
+				s.count++
 			}
 		} else {
 			s.inState = false
@@ -144,8 +146,9 @@ func (a *narrowStateTrackingTransformationAdapter) Process(chunk table.Chunk, st
 		Values:   vs,
 	}
 	c := table.ChunkFromBuffer(buffer)
-	d.Process(c)
-	return s, mod, nil
+	c.Retain()
+	err = d.Process(c)
+	return s, mod, err
 }
 
 func (a *narrowStateTrackingTransformationAdapter) Close() error { return nil }
