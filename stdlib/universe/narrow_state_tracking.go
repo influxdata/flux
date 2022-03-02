@@ -29,7 +29,8 @@ type trackedState struct {
 	start,
 	prevTime values.Time
 
-	inState bool
+	countInState,
+	durationInState bool
 
 	count,
 	duration int64
@@ -73,6 +74,7 @@ func (a *narrowStateTrackingTransformationAdapter) Process(chunk table.Chunk, st
 	stateDurations := array.NewIntBuilder(mem)
 
 	nrows := chunk.Len()
+
 	stateCounts.Resize(nrows)
 	stateDurations.Resize(nrows)
 
@@ -83,48 +85,53 @@ func (a *narrowStateTrackingTransformationAdapter) Process(chunk table.Chunk, st
 			return s, mod, err
 		}
 
-		// Get the timestamp for the current row
-		var ts values.Time
+		// Update state duration
 		if a.t.durationColumn != "" {
 			times := chunk.Times(timeIdx)
 			if times.IsNull(i) {
 				return s, mod, errors.New(codes.FailedPrecondition, "got a null timestamp")
 			}
-			ts = values.Time(times.Value(i))
+			ts := values.Time(times.Value(i))
 			if s.prevTime > ts {
 				return s, mod, errors.New(codes.FailedPrecondition, "got an out-of-order timestamp")
 			}
 			s.prevTime = ts
 			mod = true
-		}
 
-		// Update the state
-		if match {
-			if !s.inState {
-				s = trackedState{
-					start:    ts,
-					count:    1,
-					duration: 0,
-					inState:  true,
-				}
-			} else {
-				if a.t.durationColumn != "" {
+			if match {
+				if !s.durationInState {
+					s.durationInState = true
+					s.start = ts
+					s.duration = 0
+				} else {
 					s.duration = int64(ts - s.start)
 					if a.t.durationUnit > 0 {
 						s.duration = s.duration / a.t.durationUnit
 					}
 				}
-				s.count++
+			} else {
+				s.durationInState = false
+				s.duration = -1
 			}
-		} else {
-			s.inState = false
-			s.duration = -1
-			s.count = -1
+			stateDurations.Append(s.duration)
 		}
-		mod = true
 
-		stateCounts.Append(s.count)
-		stateDurations.Append(s.duration)
+		// Update state count
+		if a.t.countColumn != "" {
+			if match {
+				if !s.countInState {
+					s.countInState = true
+					s.count = 1
+				} else {
+					s.count++
+				}
+			} else {
+				s.countInState = false
+				s.count = -1
+			}
+			mod = true
+			stateCounts.Append(s.count)
+		}
 	}
 
 	ncols := chunk.NCols()
@@ -139,10 +146,15 @@ func (a *narrowStateTrackingTransformationAdapter) Process(chunk table.Chunk, st
 	if a.t.countColumn != "" {
 		newCols = append(newCols, flux.ColMeta{Label: a.t.countColumn, Type: flux.TInt})
 		vs = append(vs, stateCounts.NewArray())
+	} else {
+		stateCounts.Release()
 	}
+
 	if a.t.durationColumn != "" {
 		newCols = append(newCols, flux.ColMeta{Label: a.t.durationColumn, Type: flux.TInt})
 		vs = append(vs, stateDurations.NewArray())
+	} else {
+		stateDurations.Release()
 	}
 
 	buffer := arrow.TableBuffer{

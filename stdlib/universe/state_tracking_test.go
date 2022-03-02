@@ -382,12 +382,13 @@ func TestStateTracking_Process(t *testing.T) {
 						ctx := dependenciestest.Default().Inject(context.Background())
 						c := execute.NewTableBuilderCache(&memory.Allocator{})
 						d := execute.NewDataset(executetest.RandomDatasetID(), 0, c)
+
 						tx, err := universe.NewStateTrackingTransformation(ctx, tc.spec, d, c)
 						if err != nil {
 							t.Fatal(err)
 						}
 
-						ntx, nd, err := universe.NewNarrowStateTrackingTransformation(tx, executetest.RandomDatasetID(), memory.DefaultAllocator)
+						ntx, nd, err := universe.NewNarrowStateTrackingTransformation(tx, id, alloc)
 						if err != nil {
 							t.Fatal(err)
 						}
