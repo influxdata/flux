@@ -417,7 +417,7 @@ var sourceHashes = map[string]string{
 	"stdlib/testing/usage/writes_test.flux":                                                       "88ddcba45de796c2794e93483f1dbc425873df979f9881c92dc6339a5dad07ac",
 	"stdlib/timezone/timezone.flux":                                                               "919658b838c85aa71991f2062d6b0815dcd10dd12f61b17dbb37bc105eb0e09f",
 	"stdlib/types/is_type_test.flux":                                                              "66daa27dea82fff1325bd6823274a2946ce75e4e27c9b6068c2f2c82677f7257",
-	"stdlib/types/types.flux":                                                                     "8a00287eb69c97ab09af84a4e0ea435047a7b9373199a875312cd1c57812d50c",
+	"stdlib/types/types.flux":                                                                     "d4658ced4c7660c5fe4d38157967d7108a483d8fc17bc6fc06a80f33ab087d6a",
 	"stdlib/universe/aggregate_empty_window_count_test.flux":                                      "39ac3741edab42fc471bcee92c70db37ad62c23ed3cb5574c238235d9bd9f9a0",
 	"stdlib/universe/aggregate_empty_window_first_test.flux":                                      "9aead8a23604ed2337dfffbd49e2429c80a5f6ba92ae71f96ad7fe6d91f1a23f",
 	"stdlib/universe/aggregate_empty_window_last_test.flux":                                       "f2f3b6c72ce466fa91f4c6ebf6c2862bf2c20f0e24fde113882fb51fc46c7be8",
