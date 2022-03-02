@@ -4,7 +4,7 @@ import (
 	"context"
 	"strconv"
 
-	arrowmem "github.com/apache/arrow/go/arrow/memory"
+	arrowmem "github.com/apache/arrow/go/v7/arrow/memory"
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/array"
 	"github.com/influxdata/flux/arrow"
