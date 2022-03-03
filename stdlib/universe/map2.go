@@ -410,8 +410,20 @@ func (m *mapVectorPreparedFunc) Eval(ctx context.Context, chunk table.Chunk, mem
 		return nil, nil, err
 	}
 
+	arr, err := m.fn.Eval(ctx, chunk)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	nulls := 0
 	cols := make([]flux.ColMeta, n)
 	for i := range cols {
+		// This array was null so we will filter it out later.
+		if arr[i] == nil {
+			nulls++
+			continue
+		}
+
 		prop, err := ret.RecordProperty(i)
 		if err != nil {
 			return nil, nil, err
@@ -440,9 +452,16 @@ func (m *mapVectorPreparedFunc) Eval(ctx context.Context, chunk table.Chunk, mem
 		}
 	}
 
-	arr, err := m.fn.Eval(ctx, chunk)
-	if err != nil {
-		return nil, nil, err
+	if nulls > 0 {
+		newArrs := make([]array.Interface, 0, len(arr)-nulls)
+		newCols := make([]flux.ColMeta, 0, cap(newArrs))
+		for i := range arr {
+			if arr[i] != nil {
+				newArrs = append(newArrs, arr[i])
+				newCols = append(newCols, cols[i])
+			}
+		}
+		cols, arr = newCols, newArrs
 	}
 	return cols, arr, nil
 }
