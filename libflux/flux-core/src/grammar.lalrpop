@@ -29,6 +29,9 @@ extern {
 
         "=" => Token { tok: TokenType::Assign, .. },
 
+        "+" => Token { tok: TokenType::Add, .. },
+        "-" => Token { tok: TokenType::Sub, .. },
+        "*" => Token { tok: TokenType::Mul, .. },
         "/" => Token { tok: TokenType::Div, .. },
 
         "==" => Token { tok: TokenType::Eq, .. },
@@ -99,9 +102,13 @@ Statement: Statement = {
 }
 
 StringLit: StringLit = {
-    <t: "string literal"> => StringLit {
-        base: Default::default(),
-        value: t.lit,
+    <t: "string literal"> =>? {
+        let value = strconv::parse_string(t.lit.as_str())
+            .map_err(|err| err.to_string())?;
+        Ok(StringLit {
+            base: Default::default(),
+            value,
+        })
     }
 }
 
@@ -111,6 +118,14 @@ Atom: Expression = {
 
 AtomIdent<T>: Expression = {
     <Identifier> if T == "identifier" => Expression::Identifier(<>),
+
+    <object: Atom> "." <property: Identifier> => Expression::Member(Box::new(MemberExpr {
+        base: Default::default(),
+        lbrack: Default::default(),
+        object,
+        property: PropertyKey::Identifier(property),
+        rbrack: Default::default(),
+    })),
 
     <t: "int literal"> =>? Ok(Expression::Integer(IntegerLit {
         base: Default::default(),
@@ -197,6 +212,15 @@ ExpressionIdent<T>: Expression = {
         }))
     },
 
+
+    <left: Atom> "+" <right: Expression> => {
+        Expression::Binary(Box::new(BinaryExpr {
+            base: Default::default(),
+            operator: Operator::AdditionOperator,
+            left,
+            right,
+        }))
+    },
 
     <left: Atom> "/" <right: Expression> => {
         Expression::Binary(Box::new(BinaryExpr {

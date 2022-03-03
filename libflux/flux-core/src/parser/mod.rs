@@ -33,7 +33,19 @@ pub(crate) fn parse_string_lalrpop(name: String, s: &str) -> File {
             eof |= token.tok == TokenType::Eof;
             Some((token.start_offset, token, end_offset))
         }))
-        .unwrap_or_else(|err| panic!("{}\n{:#?}", err, err));
+        .unwrap_or_else(|err| File {
+            base: BaseNode {
+                location: Default::default(),
+                comments: Default::default(),
+                errors: vec![err.to_string()],
+            },
+            name: Default::default(),
+            metadata: Default::default(),
+            package: Default::default(),
+            imports: Default::default(),
+            body: Default::default(),
+            eof: Default::default(),
+        });
 
     file.name = name;
 
