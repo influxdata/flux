@@ -26,7 +26,7 @@ func (d *derivativeInt) Type() flux.ColType {
 	return flux.TFloat
 }
 
-func (d *derivativeInt) Do(ts *array.Int, in array.Interface, mem memory.Allocator) array.Interface {
+func (d *derivativeInt) Do(ts *array.Int, in array.Array, mem memory.Allocator) array.Array {
 	// Empty column chunk returns an empty array
 	// and does not initialize the derivative.
 	if in.Len() == 0 {
@@ -109,7 +109,7 @@ func (d *derivativeUint) Type() flux.ColType {
 	return flux.TFloat
 }
 
-func (d *derivativeUint) Do(ts *array.Int, in array.Interface, mem memory.Allocator) array.Interface {
+func (d *derivativeUint) Do(ts *array.Int, in array.Array, mem memory.Allocator) array.Array {
 	// Empty column chunk returns an empty array
 	// and does not initialize the derivative.
 	if in.Len() == 0 {
@@ -192,7 +192,7 @@ func (d *derivativeFloat) Type() flux.ColType {
 	return flux.TFloat
 }
 
-func (d *derivativeFloat) Do(ts *array.Int, in array.Interface, mem memory.Allocator) array.Interface {
+func (d *derivativeFloat) Do(ts *array.Int, in array.Array, mem memory.Allocator) array.Array {
 	// Empty column chunk returns an empty array
 	// and does not initialize the derivative.
 	if in.Len() == 0 {

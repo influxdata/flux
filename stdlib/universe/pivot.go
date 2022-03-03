@@ -640,7 +640,7 @@ func (t *sortedPivotTransformation) contains(v string, ss []string) bool {
 	return false
 }
 
-func (t *sortedPivotTransformation) getColumn(cr flux.ColReader, j int) array.Interface {
+func (t *sortedPivotTransformation) getColumn(cr flux.ColReader, j int) array.Array {
 	switch col := cr.Cols()[j]; col.Type {
 	case flux.TInt:
 		return cr.Ints(j)
@@ -701,12 +701,12 @@ func (t *sortedPivotTransformation) Finish(id execute.DatasetID, err error) {
 }
 
 type pivotTableBuffer struct {
-	keys      []array.Interface
+	keys      []array.Array
 	valueType flux.ColType
-	values    []array.Interface
+	values    []array.Array
 }
 
-func (b *pivotTableBuffer) Insert(k, v array.Interface) {
+func (b *pivotTableBuffer) Insert(k, v array.Array) {
 	k.Retain()
 	b.keys = append(b.keys, k)
 	v.Retain()
@@ -736,7 +736,7 @@ func (gr *pivotTableGroup) doPivot(key flux.GroupKey, mem arrowmemory.Allocator)
 	tb := &arrow.TableBuffer{
 		GroupKey: key,
 		Columns:  make([]flux.ColMeta, 0, ncols),
-		Values:   make([]array.Interface, 0, ncols),
+		Values:   make([]array.Array, 0, ncols),
 	}
 	tb.Columns = append(tb.Columns, gr.rowCol)
 	tb.Values = append(tb.Values, keys)

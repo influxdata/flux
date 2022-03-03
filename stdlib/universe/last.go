@@ -130,7 +130,7 @@ func (s *LastSelector) Rows() []execute.Row {
 	return s.rows
 }
 
-func (s *LastSelector) selectLast(vs array.Interface, cr flux.ColReader) {
+func (s *LastSelector) selectLast(vs array.Array, cr flux.ColReader) {
 	for i := vs.Len() - 1; i >= 0; i-- {
 		if !vs.IsNull(i) {
 			s.rows = []execute.Row{execute.ReadRow(i, cr)}

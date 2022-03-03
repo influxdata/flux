@@ -393,7 +393,7 @@ func (dg *dataGenerator) Do(f func(tbl flux.Table) error) error {
 				// The first table should always be the biggest because of
 				// the size constraint.
 				// These are constructed lazily below.
-				keyValues := make([]array.Interface, len(w.Cols()))
+				keyValues := make([]array.Array, len(w.Cols()))
 				defer func() {
 					for _, vs := range keyValues {
 						if vs != nil {
@@ -404,7 +404,7 @@ func (dg *dataGenerator) Do(f func(tbl flux.Table) error) error {
 
 				start, n := dg.Start, dg.NumPoints
 				for n > 0 {
-					tvalues := make([]array.Interface, len(w.Cols()))
+					tvalues := make([]array.Array, len(w.Cols()))
 
 					var ts *array.Int
 					ts, start, n = dg.generateBufferTimes(start, n)
@@ -459,7 +459,7 @@ func (dg *dataGenerator) generateBufferTimes(start values.Time, n int) (ts *arra
 	return b.NewIntArray(), stop, n - size
 }
 
-func (dg *dataGenerator) generateBufferValues(r *rand.Rand, typ flux.ColType, n int) array.Interface {
+func (dg *dataGenerator) generateBufferValues(r *rand.Rand, typ flux.ColType, n int) array.Array {
 	switch typ {
 	case flux.TFloat:
 		b := arrow.NewFloatBuilder(dg.Allocator)

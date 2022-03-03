@@ -159,7 +159,7 @@ func (a *groupTransformationAdapter) Process(chunk table.Chunk, d *execute.Trans
 		buffer := arrow.TableBuffer{
 			GroupKey: key,
 			Columns:  chunk.Cols(),
-			Values:   make([]array.Interface, chunk.NCols()),
+			Values:   make([]array.Array, chunk.NCols()),
 		}
 		for j := range buffer.Values {
 			buffer.Values[j] = chunk.Values(j)

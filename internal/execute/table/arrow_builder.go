@@ -118,7 +118,7 @@ func (a *ArrowBuilder) CheckCol(c flux.ColMeta) (int, error) {
 
 // Buffer constructs an arrow.TableBuffer from the current builders.
 func (a *ArrowBuilder) Buffer() (arrow.TableBuffer, error) {
-	values := make([]array.Interface, len(a.Builders))
+	values := make([]array.Array, len(a.Builders))
 	for j, b := range a.Builders {
 		values[j] = b.NewArray()
 	}

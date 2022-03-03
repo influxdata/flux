@@ -13,7 +13,7 @@ import (
 
 {{ $types := . }}
 
-func (gr *pivotTableGroup) mergeKeys(mem memory.Allocator) array.Interface {
+func (gr *pivotTableGroup) mergeKeys(mem memory.Allocator) array.Array {
 	switch gr.rowCol.Type {
 	{{range .}}
 	{{if .IsComparable}}
@@ -26,7 +26,7 @@ func (gr *pivotTableGroup) mergeKeys(mem memory.Allocator) array.Interface {
 	}
 }
 
-func (gr *pivotTableGroup) buildColumn(keys array.Interface, buf *pivotTableBuffer, mem memory.Allocator) array.Interface {
+func (gr *pivotTableGroup) buildColumn(keys array.Array, buf *pivotTableBuffer, mem memory.Allocator) array.Array {
 	switch gr.rowCol.Type {
 	{{range .}}
 	{{if .IsComparable}}
@@ -41,8 +41,8 @@ func (gr *pivotTableGroup) buildColumn(keys array.Interface, buf *pivotTableBuff
 
 {{range .}}
 {{if .IsComparable}}
-func (gr *pivotTableGroup) merge{{.Name}}Keys(mem memory.Allocator) array.Interface {
-	buffers := make([][]array.Interface, 0, len(gr.buffers))
+func (gr *pivotTableGroup) merge{{.Name}}Keys(mem memory.Allocator) array.Array {
+	buffers := make([][]array.Array, 0, len(gr.buffers))
 	for _, buf := range gr.buffers {
 		buffers = append(buffers, buf.keys)
 	}
@@ -58,7 +58,7 @@ func (gr *pivotTableGroup) merge{{.Name}}Keys(mem memory.Allocator) array.Interf
 	return b.NewArray()
 }
 
-func (gr *pivotTableGroup) forEach{{.Name}}(buffers [][]array.Interface, fn func(v {{.Type}})) {
+func (gr *pivotTableGroup) forEach{{.Name}}(buffers [][]array.Array, fn func(v {{.Type}})) {
 	iterators := make([]*arrowutil.{{.ArrowName}}Iterator, 0, len(buffers))
 	for _, vs := range buffers {
 		itr := arrowutil.Iterate{{.ArrowName}}s(vs)
@@ -109,7 +109,7 @@ func (gr *pivotTableGroup) forEach{{.Name}}(buffers [][]array.Interface, fn func
 	}
 }
 
-func (gr *pivotTableGroup) buildColumnFrom{{.PluralName}}(keys *{{.ArrowType}}, buf *pivotTableBuffer, mem memory.Allocator) array.Interface {
+func (gr *pivotTableGroup) buildColumnFrom{{.PluralName}}(keys *{{.ArrowType}}, buf *pivotTableBuffer, mem memory.Allocator) array.Array {
 	{{with $key := .}}
 	switch buf.valueType {
 	{{range $types}}
@@ -125,7 +125,7 @@ func (gr *pivotTableGroup) buildColumnFrom{{.PluralName}}(keys *{{.ArrowType}}, 
 
 {{with $key := .}}
 {{range $types}}
-func (gr *pivotTableGroup) build{{.Name}}ColumnFrom{{$key.PluralName}}(keys *{{$key.ArrowType}}, buf *pivotTableBuffer, mem memory.Allocator) array.Interface {
+func (gr *pivotTableGroup) build{{.Name}}ColumnFrom{{$key.PluralName}}(keys *{{$key.ArrowType}}, buf *pivotTableBuffer, mem memory.Allocator) array.Array {
 	b := arrowutil.New{{.ArrowName}}Builder(mem)
 	b.Resize(keys.Len())
 

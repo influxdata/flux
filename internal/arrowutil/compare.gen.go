@@ -15,12 +15,12 @@ import (
 // CompareFunc defines the interface for a comparison function.
 // The comparison function should return 0 for equivalent values,
 // -1 if x[i] is before y[j], and +1 if x[i] is after y[j].
-type CompareFunc func(x, y array.Interface, i, j int) int
+type CompareFunc func(x, y array.Array, i, j int) int
 
 // Compare will compare two values in the various arrays.
 // The result will be 0 if x[i] == y[j], -1 if x[i] < y[j], and +1 if x[i] > y[j].
 // A null value is always less than every non-null value.
-func Compare(x, y array.Interface, i, j int) int {
+func Compare(x, y array.Array, i, j int) int {
 	switch x := x.(type) {
 
 	case *array.Int:
@@ -46,7 +46,7 @@ func Compare(x, y array.Interface, i, j int) int {
 // CompareDesc will compare two values in the various arrays.
 // The result will be 0 if x[i] == y[j], -1 if x[i] > y[j], and +1 if x[i] < y[j].
 // A null value is always greater than every non-null value.
-func CompareDesc(x, y array.Interface, i, j int) int {
+func CompareDesc(x, y array.Array, i, j int) int {
 	switch x := x.(type) {
 
 	case *array.Int:

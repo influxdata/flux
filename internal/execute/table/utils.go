@@ -6,6 +6,6 @@ import (
 	"github.com/influxdata/flux/execute/table"
 )
 
-func Values(cr flux.ColReader, j int) array.Interface {
+func Values(cr flux.ColReader, j int) array.Array {
 	return table.Values(cr, j)
 }

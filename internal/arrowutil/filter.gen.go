@@ -14,7 +14,7 @@ import (
 	"github.com/influxdata/flux/array"
 )
 
-func Filter(arr array.Interface, bitset []byte, mem memory.Allocator) array.Interface {
+func Filter(arr array.Array, bitset []byte, mem memory.Allocator) array.Array {
 	switch arr := arr.(type) {
 
 	case *array.Int:

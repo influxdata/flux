@@ -15,7 +15,7 @@ import (
 	"github.com/influxdata/flux/values"
 )
 
-func (t *fillTransformation) fillColumn(typ flux.ColType, arr array.Interface, fillValue *interface{}, mem arrowmem.Allocator) array.Interface {
+func (t *fillTransformation) fillColumn(typ flux.ColType, arr array.Array, fillValue *interface{}, mem arrowmem.Allocator) array.Array {
 	switch typ {
 	case flux.TInt:
 		return t.fillIntColumn(arr.(*array.Int), fillValue, mem)
@@ -35,7 +35,7 @@ func (t *fillTransformation) fillColumn(typ flux.ColType, arr array.Interface, f
 	}
 }
 
-func (t *fillTransformation) fillIntColumn(arr *array.Int, fillValue *interface{}, mem arrowmem.Allocator) array.Interface {
+func (t *fillTransformation) fillIntColumn(arr *array.Int, fillValue *interface{}, mem arrowmem.Allocator) array.Array {
 	fillValueNull := *fillValue == nil
 	var fillValueInt int64
 	if !fillValueNull {
@@ -65,7 +65,7 @@ func (t *fillTransformation) fillIntColumn(arr *array.Int, fillValue *interface{
 	return b.NewArray()
 }
 
-func (t *fillTransformation) fillUintColumn(arr *array.Uint, fillValue *interface{}, mem arrowmem.Allocator) array.Interface {
+func (t *fillTransformation) fillUintColumn(arr *array.Uint, fillValue *interface{}, mem arrowmem.Allocator) array.Array {
 	fillValueNull := *fillValue == nil
 	var fillValueUint uint64
 	if !fillValueNull {
@@ -95,7 +95,7 @@ func (t *fillTransformation) fillUintColumn(arr *array.Uint, fillValue *interfac
 	return b.NewArray()
 }
 
-func (t *fillTransformation) fillFloatColumn(arr *array.Float, fillValue *interface{}, mem arrowmem.Allocator) array.Interface {
+func (t *fillTransformation) fillFloatColumn(arr *array.Float, fillValue *interface{}, mem arrowmem.Allocator) array.Array {
 	fillValueNull := *fillValue == nil
 	var fillValueFloat float64
 	if !fillValueNull {
@@ -125,7 +125,7 @@ func (t *fillTransformation) fillFloatColumn(arr *array.Float, fillValue *interf
 	return b.NewArray()
 }
 
-func (t *fillTransformation) fillBooleanColumn(arr *array.Boolean, fillValue *interface{}, mem arrowmem.Allocator) array.Interface {
+func (t *fillTransformation) fillBooleanColumn(arr *array.Boolean, fillValue *interface{}, mem arrowmem.Allocator) array.Array {
 	fillValueNull := *fillValue == nil
 	var fillValueBoolean bool
 	if !fillValueNull {
@@ -155,7 +155,7 @@ func (t *fillTransformation) fillBooleanColumn(arr *array.Boolean, fillValue *in
 	return b.NewArray()
 }
 
-func (t *fillTransformation) fillStringColumn(arr *array.String, fillValue *interface{}, mem arrowmem.Allocator) array.Interface {
+func (t *fillTransformation) fillStringColumn(arr *array.String, fillValue *interface{}, mem arrowmem.Allocator) array.Array {
 	fillValueNull := *fillValue == nil
 	var fillValueString string
 	if !fillValueNull {
@@ -185,7 +185,7 @@ func (t *fillTransformation) fillStringColumn(arr *array.String, fillValue *inte
 	return b.NewArray()
 }
 
-func (t *fillTransformation) fillTimeColumn(arr *array.Int, fillValue *interface{}, mem arrowmem.Allocator) array.Interface {
+func (t *fillTransformation) fillTimeColumn(arr *array.Int, fillValue *interface{}, mem arrowmem.Allocator) array.Array {
 	fillValueNull := *fillValue == nil
 	var fillValueTime int64
 	if !fillValueNull {

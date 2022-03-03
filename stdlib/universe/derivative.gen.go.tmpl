@@ -22,7 +22,7 @@ func (d *derivative{{.Name}}) Type() flux.ColType {
 	return flux.TFloat
 }
 
-func (d *derivative{{.Name}}) Do(ts *array.Int, in array.Interface, mem memory.Allocator) array.Interface {
+func (d *derivative{{.Name}}) Do(ts *array.Int, in array.Array, mem memory.Allocator) array.Array {
 	// Empty column chunk returns an empty array
 	// and does not initialize the derivative.
 	if in.Len() == 0 {

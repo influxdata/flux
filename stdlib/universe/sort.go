@@ -358,7 +358,7 @@ func (s *sortTableMergeHeap) Table(limit int, mem memory.Allocator) (flux.Table,
 	// Initialize space for the key values.
 	// We will initialize these on the first buffer and then reuse
 	// them after that to conserve space.
-	keys := make([]array.Interface, len(s.key.Cols()))
+	keys := make([]array.Array, len(s.key.Cols()))
 	defer func() {
 		for _, key := range keys {
 			if key != nil {
@@ -392,7 +392,7 @@ func (s *sortTableMergeHeap) Table(limit int, mem memory.Allocator) (flux.Table,
 	return builder.Table()
 }
 
-func (s *sortTableMergeHeap) NextBuffer(builders []array.Builder, keys []array.Interface, n int, mem memory.Allocator) arrow.TableBuffer {
+func (s *sortTableMergeHeap) NextBuffer(builders []array.Builder, keys []array.Array, n int, mem memory.Allocator) arrow.TableBuffer {
 	// Ensure there is enough space in each builder
 	for _, b := range builders {
 		if b == nil {
@@ -434,7 +434,7 @@ func (s *sortTableMergeHeap) NextBuffer(builders []array.Builder, keys []array.I
 	buffer := arrow.TableBuffer{
 		GroupKey: s.key,
 		Columns:  s.cols,
-		Values:   make([]array.Interface, len(s.cols)),
+		Values:   make([]array.Array, len(s.cols)),
 	}
 	for i, col := range s.cols {
 		if builders[i] == nil {

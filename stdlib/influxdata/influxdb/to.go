@@ -320,7 +320,7 @@ func (t *toTransformation) filterNulls(chunk table.Chunk, mem memory.Allocator) 
 	}
 
 	buffer := chunk.Buffer()
-	buffer.Values = make([]array.Interface, chunk.NCols())
+	buffer.Values = make([]array.Array, chunk.NCols())
 	for j := range buffer.Values {
 		arr := chunk.Values(j)
 		buffer.Values[j] = arrowutil.Filter(arr, bitset.Bytes(), mem)

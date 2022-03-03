@@ -92,7 +92,7 @@ func (t *fillTransformation) Process(id execute.DatasetID, tbl flux.Table) error
 	buf := arrow.TableBuffer{
 		GroupKey: tbl.Key(),
 		Columns:  tbl.Cols(),
-		Values:   make([]array.Interface, len(tbl.Cols())),
+		Values:   make([]array.Array, len(tbl.Cols())),
 	}
 	for i, col := range buf.Columns {
 		b := arrow.NewBuilder(col.Type, t.mem)

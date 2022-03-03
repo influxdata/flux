@@ -142,7 +142,7 @@ func (b *StringBuilder) Resize(n int) {
 	// length of the built array.
 	b.capacity = n
 }
-func (b *StringBuilder) NewArray() Interface {
+func (b *StringBuilder) NewArray() Array {
 	return b.NewStringArray()
 }
 func (b *StringBuilder) NewStringArray() *String {

@@ -7,10 +7,10 @@ import (
 )
 
 type ArrayContainer struct {
-	array array.Interface
+	array array.Array
 }
 
-func NewArrayContainer(a array.Interface) *ArrayContainer {
+func NewArrayContainer(a array.Array) *ArrayContainer {
 	return &ArrayContainer{a}
 }
 
@@ -79,7 +79,7 @@ func (a *ArrayContainer) Slice(i int, j int) *ArrayContainer {
 	return slice
 }
 
-func (a *ArrayContainer) Array() array.Interface {
+func (a *ArrayContainer) Array() array.Array {
 	return a.array
 }
 

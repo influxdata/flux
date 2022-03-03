@@ -158,7 +158,7 @@ func (s *shiftTransformation) Process(chunk table.Chunk, d *execute.TransportDat
 	buffer := arrow.TableBuffer{
 		GroupKey: key,
 		Columns:  chunk.Cols(),
-		Values:   make([]array.Interface, chunk.NCols()),
+		Values:   make([]array.Array, chunk.NCols()),
 	}
 	for j, c := range chunk.Cols() {
 		vs := chunk.Values(j)

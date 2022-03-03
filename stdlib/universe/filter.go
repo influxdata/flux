@@ -200,7 +200,7 @@ func (t *filterTransformation) filterChunk(fn *execute.RowPredicatePreparedFn, c
 	}
 
 	// Produce arrays for each column.
-	vs := make([]array.Interface, len(chunk.Cols()))
+	vs := make([]array.Array, len(chunk.Cols()))
 	for j, col := range chunk.Cols() {
 		arr := chunk.Values(j)
 		if chunk.Key().HasCol(col.Label) {

@@ -56,7 +56,7 @@ func (b *{{.Name}}Builder) Reserve(n int) {
 func (b *{{.Name}}Builder) Resize(n int) {
     b.b.Resize(n)
 }
-func (b *{{.Name}}Builder) NewArray() Interface {
+func (b *{{.Name}}Builder) NewArray() Array {
     return b.New{{.Name}}Array()
 }
 func (b *{{.Name}}Builder) New{{.Name}}Array() *{{.Name}} {

@@ -11,7 +11,7 @@ import (
 
 // Repeat will construct an arrow array that repeats
 // the value n times.
-func Repeat(colType flux.ColType, v values.Value, n int, mem memory.Allocator) array.Interface {
+func Repeat(colType flux.ColType, v values.Value, n int, mem memory.Allocator) array.Array {
 	switch colType {
 	case flux.TInt:
 		var ival int64

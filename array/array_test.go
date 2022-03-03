@@ -186,13 +186,13 @@ func TestStringBuilder_NewArray(t *testing.T) {
 func TestSlice(t *testing.T) {
 	for _, tc := range []struct {
 		name  string
-		build func(mem memory.Allocator) array.Interface
+		build func(mem memory.Allocator) array.Array
 		i, j  int
 		want  []interface{}
 	}{
 		{
 			name: "Int",
-			build: func(mem memory.Allocator) array.Interface {
+			build: func(mem memory.Allocator) array.Array {
 				b := array.NewIntBuilder(mem)
 				for i := 0; i < 10; i++ {
 					if i == 6 {
@@ -211,7 +211,7 @@ func TestSlice(t *testing.T) {
 		},
 		{
 			name: "Uint",
-			build: func(mem memory.Allocator) array.Interface {
+			build: func(mem memory.Allocator) array.Array {
 				b := array.NewUintBuilder(mem)
 				for i := 0; i < 10; i++ {
 					if i == 6 {
@@ -230,7 +230,7 @@ func TestSlice(t *testing.T) {
 		},
 		{
 			name: "Float",
-			build: func(mem memory.Allocator) array.Interface {
+			build: func(mem memory.Allocator) array.Array {
 				b := array.NewFloatBuilder(mem)
 				for i := 0; i < 10; i++ {
 					if i == 6 {
@@ -249,7 +249,7 @@ func TestSlice(t *testing.T) {
 		},
 		{
 			name: "String_Constant",
-			build: func(mem memory.Allocator) array.Interface {
+			build: func(mem memory.Allocator) array.Array {
 				b := array.NewStringBuilder(mem)
 				for i := 0; i < 10; i++ {
 					b.Append("a")
@@ -264,7 +264,7 @@ func TestSlice(t *testing.T) {
 		},
 		{
 			name: "String_RLE",
-			build: func(mem memory.Allocator) array.Interface {
+			build: func(mem memory.Allocator) array.Array {
 				b := array.NewStringBuilder(mem)
 				for i := 0; i < 5; i++ {
 					b.Append("a")
@@ -282,7 +282,7 @@ func TestSlice(t *testing.T) {
 		},
 		{
 			name: "String_Random",
-			build: func(mem memory.Allocator) array.Interface {
+			build: func(mem memory.Allocator) array.Array {
 				b := array.NewStringBuilder(mem)
 				for _, v := range []string{"a", "b", "c", "d", "e"} {
 					b.Append(v)
@@ -301,7 +301,7 @@ func TestSlice(t *testing.T) {
 		},
 		{
 			name: "Boolean",
-			build: func(mem memory.Allocator) array.Interface {
+			build: func(mem memory.Allocator) array.Array {
 				b := array.NewBooleanBuilder(mem)
 				for i := 0; i < 10; i++ {
 					if i == 6 {
@@ -342,7 +342,7 @@ func TestSlice(t *testing.T) {
 	}
 }
 
-func getValue(arr array.Interface, i int) interface{} {
+func getValue(arr array.Array, i int) interface{} {
 	if arr.IsNull(i) {
 		return nil
 	}

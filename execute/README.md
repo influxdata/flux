@@ -350,7 +350,7 @@ We construct a [table.Chunk](https://pkg.go.dev/github.com/influxdata/flux/execu
     buffer := arrow.TableBuffer{
         GroupKey: execute.NewGroupKey(...),
         Columns: []flux.ColMeta{...},
-        Values: []array.Interface{...},
+        Values: []array.Array{...},
     }
     chunk := table.ChunkFromBuffer(buffer)
 

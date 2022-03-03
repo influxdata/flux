@@ -17,7 +17,7 @@ import (
 
 //lint:file-ignore U1000 Ignore all unused code, it's generated
 
-func (gr *pivotTableGroup) mergeKeys(mem memory.Allocator) array.Interface {
+func (gr *pivotTableGroup) mergeKeys(mem memory.Allocator) array.Array {
 	switch gr.rowCol.Type {
 
 	case flux.TInt:
@@ -40,7 +40,7 @@ func (gr *pivotTableGroup) mergeKeys(mem memory.Allocator) array.Interface {
 	}
 }
 
-func (gr *pivotTableGroup) buildColumn(keys array.Interface, buf *pivotTableBuffer, mem memory.Allocator) array.Interface {
+func (gr *pivotTableGroup) buildColumn(keys array.Array, buf *pivotTableBuffer, mem memory.Allocator) array.Array {
 	switch gr.rowCol.Type {
 
 	case flux.TInt:
@@ -63,8 +63,8 @@ func (gr *pivotTableGroup) buildColumn(keys array.Interface, buf *pivotTableBuff
 	}
 }
 
-func (gr *pivotTableGroup) mergeIntKeys(mem memory.Allocator) array.Interface {
-	buffers := make([][]array.Interface, 0, len(gr.buffers))
+func (gr *pivotTableGroup) mergeIntKeys(mem memory.Allocator) array.Array {
+	buffers := make([][]array.Array, 0, len(gr.buffers))
 	for _, buf := range gr.buffers {
 		buffers = append(buffers, buf.keys)
 	}
@@ -80,7 +80,7 @@ func (gr *pivotTableGroup) mergeIntKeys(mem memory.Allocator) array.Interface {
 	return b.NewArray()
 }
 
-func (gr *pivotTableGroup) forEachInt(buffers [][]array.Interface, fn func(v int64)) {
+func (gr *pivotTableGroup) forEachInt(buffers [][]array.Array, fn func(v int64)) {
 	iterators := make([]*arrowutil.IntIterator, 0, len(buffers))
 	for _, vs := range buffers {
 		itr := arrowutil.IterateInts(vs)
@@ -131,7 +131,7 @@ func (gr *pivotTableGroup) forEachInt(buffers [][]array.Interface, fn func(v int
 	}
 }
 
-func (gr *pivotTableGroup) buildColumnFromInts(keys *array.Int, buf *pivotTableBuffer, mem memory.Allocator) array.Interface {
+func (gr *pivotTableGroup) buildColumnFromInts(keys *array.Int, buf *pivotTableBuffer, mem memory.Allocator) array.Array {
 
 	switch buf.valueType {
 
@@ -159,7 +159,7 @@ func (gr *pivotTableGroup) buildColumnFromInts(keys *array.Int, buf *pivotTableB
 
 }
 
-func (gr *pivotTableGroup) buildIntColumnFromInts(keys *array.Int, buf *pivotTableBuffer, mem memory.Allocator) array.Interface {
+func (gr *pivotTableGroup) buildIntColumnFromInts(keys *array.Int, buf *pivotTableBuffer, mem memory.Allocator) array.Array {
 	b := arrowutil.NewIntBuilder(mem)
 	b.Resize(keys.Len())
 
@@ -185,7 +185,7 @@ func (gr *pivotTableGroup) buildIntColumnFromInts(keys *array.Int, buf *pivotTab
 	return b.NewArray()
 }
 
-func (gr *pivotTableGroup) buildUintColumnFromInts(keys *array.Int, buf *pivotTableBuffer, mem memory.Allocator) array.Interface {
+func (gr *pivotTableGroup) buildUintColumnFromInts(keys *array.Int, buf *pivotTableBuffer, mem memory.Allocator) array.Array {
 	b := arrowutil.NewUintBuilder(mem)
 	b.Resize(keys.Len())
 
@@ -211,7 +211,7 @@ func (gr *pivotTableGroup) buildUintColumnFromInts(keys *array.Int, buf *pivotTa
 	return b.NewArray()
 }
 
-func (gr *pivotTableGroup) buildFloatColumnFromInts(keys *array.Int, buf *pivotTableBuffer, mem memory.Allocator) array.Interface {
+func (gr *pivotTableGroup) buildFloatColumnFromInts(keys *array.Int, buf *pivotTableBuffer, mem memory.Allocator) array.Array {
 	b := arrowutil.NewFloatBuilder(mem)
 	b.Resize(keys.Len())
 
@@ -237,7 +237,7 @@ func (gr *pivotTableGroup) buildFloatColumnFromInts(keys *array.Int, buf *pivotT
 	return b.NewArray()
 }
 
-func (gr *pivotTableGroup) buildBooleanColumnFromInts(keys *array.Int, buf *pivotTableBuffer, mem memory.Allocator) array.Interface {
+func (gr *pivotTableGroup) buildBooleanColumnFromInts(keys *array.Int, buf *pivotTableBuffer, mem memory.Allocator) array.Array {
 	b := arrowutil.NewBooleanBuilder(mem)
 	b.Resize(keys.Len())
 
@@ -263,7 +263,7 @@ func (gr *pivotTableGroup) buildBooleanColumnFromInts(keys *array.Int, buf *pivo
 	return b.NewArray()
 }
 
-func (gr *pivotTableGroup) buildStringColumnFromInts(keys *array.Int, buf *pivotTableBuffer, mem memory.Allocator) array.Interface {
+func (gr *pivotTableGroup) buildStringColumnFromInts(keys *array.Int, buf *pivotTableBuffer, mem memory.Allocator) array.Array {
 	b := arrowutil.NewStringBuilder(mem)
 	b.Resize(keys.Len())
 
@@ -289,7 +289,7 @@ func (gr *pivotTableGroup) buildStringColumnFromInts(keys *array.Int, buf *pivot
 	return b.NewArray()
 }
 
-func (gr *pivotTableGroup) buildTimeColumnFromInts(keys *array.Int, buf *pivotTableBuffer, mem memory.Allocator) array.Interface {
+func (gr *pivotTableGroup) buildTimeColumnFromInts(keys *array.Int, buf *pivotTableBuffer, mem memory.Allocator) array.Array {
 	b := arrowutil.NewIntBuilder(mem)
 	b.Resize(keys.Len())
 
@@ -315,8 +315,8 @@ func (gr *pivotTableGroup) buildTimeColumnFromInts(keys *array.Int, buf *pivotTa
 	return b.NewArray()
 }
 
-func (gr *pivotTableGroup) mergeUintKeys(mem memory.Allocator) array.Interface {
-	buffers := make([][]array.Interface, 0, len(gr.buffers))
+func (gr *pivotTableGroup) mergeUintKeys(mem memory.Allocator) array.Array {
+	buffers := make([][]array.Array, 0, len(gr.buffers))
 	for _, buf := range gr.buffers {
 		buffers = append(buffers, buf.keys)
 	}
@@ -332,7 +332,7 @@ func (gr *pivotTableGroup) mergeUintKeys(mem memory.Allocator) array.Interface {
 	return b.NewArray()
 }
 
-func (gr *pivotTableGroup) forEachUint(buffers [][]array.Interface, fn func(v uint64)) {
+func (gr *pivotTableGroup) forEachUint(buffers [][]array.Array, fn func(v uint64)) {
 	iterators := make([]*arrowutil.UintIterator, 0, len(buffers))
 	for _, vs := range buffers {
 		itr := arrowutil.IterateUints(vs)
@@ -383,7 +383,7 @@ func (gr *pivotTableGroup) forEachUint(buffers [][]array.Interface, fn func(v ui
 	}
 }
 
-func (gr *pivotTableGroup) buildColumnFromUints(keys *array.Uint, buf *pivotTableBuffer, mem memory.Allocator) array.Interface {
+func (gr *pivotTableGroup) buildColumnFromUints(keys *array.Uint, buf *pivotTableBuffer, mem memory.Allocator) array.Array {
 
 	switch buf.valueType {
 
@@ -411,7 +411,7 @@ func (gr *pivotTableGroup) buildColumnFromUints(keys *array.Uint, buf *pivotTabl
 
 }
 
-func (gr *pivotTableGroup) buildIntColumnFromUints(keys *array.Uint, buf *pivotTableBuffer, mem memory.Allocator) array.Interface {
+func (gr *pivotTableGroup) buildIntColumnFromUints(keys *array.Uint, buf *pivotTableBuffer, mem memory.Allocator) array.Array {
 	b := arrowutil.NewIntBuilder(mem)
 	b.Resize(keys.Len())
 
@@ -437,7 +437,7 @@ func (gr *pivotTableGroup) buildIntColumnFromUints(keys *array.Uint, buf *pivotT
 	return b.NewArray()
 }
 
-func (gr *pivotTableGroup) buildUintColumnFromUints(keys *array.Uint, buf *pivotTableBuffer, mem memory.Allocator) array.Interface {
+func (gr *pivotTableGroup) buildUintColumnFromUints(keys *array.Uint, buf *pivotTableBuffer, mem memory.Allocator) array.Array {
 	b := arrowutil.NewUintBuilder(mem)
 	b.Resize(keys.Len())
 
@@ -463,7 +463,7 @@ func (gr *pivotTableGroup) buildUintColumnFromUints(keys *array.Uint, buf *pivot
 	return b.NewArray()
 }
 
-func (gr *pivotTableGroup) buildFloatColumnFromUints(keys *array.Uint, buf *pivotTableBuffer, mem memory.Allocator) array.Interface {
+func (gr *pivotTableGroup) buildFloatColumnFromUints(keys *array.Uint, buf *pivotTableBuffer, mem memory.Allocator) array.Array {
 	b := arrowutil.NewFloatBuilder(mem)
 	b.Resize(keys.Len())
 
@@ -489,7 +489,7 @@ func (gr *pivotTableGroup) buildFloatColumnFromUints(keys *array.Uint, buf *pivo
 	return b.NewArray()
 }
 
-func (gr *pivotTableGroup) buildBooleanColumnFromUints(keys *array.Uint, buf *pivotTableBuffer, mem memory.Allocator) array.Interface {
+func (gr *pivotTableGroup) buildBooleanColumnFromUints(keys *array.Uint, buf *pivotTableBuffer, mem memory.Allocator) array.Array {
 	b := arrowutil.NewBooleanBuilder(mem)
 	b.Resize(keys.Len())
 
@@ -515,7 +515,7 @@ func (gr *pivotTableGroup) buildBooleanColumnFromUints(keys *array.Uint, buf *pi
 	return b.NewArray()
 }
 
-func (gr *pivotTableGroup) buildStringColumnFromUints(keys *array.Uint, buf *pivotTableBuffer, mem memory.Allocator) array.Interface {
+func (gr *pivotTableGroup) buildStringColumnFromUints(keys *array.Uint, buf *pivotTableBuffer, mem memory.Allocator) array.Array {
 	b := arrowutil.NewStringBuilder(mem)
 	b.Resize(keys.Len())
 
@@ -541,7 +541,7 @@ func (gr *pivotTableGroup) buildStringColumnFromUints(keys *array.Uint, buf *piv
 	return b.NewArray()
 }
 
-func (gr *pivotTableGroup) buildTimeColumnFromUints(keys *array.Uint, buf *pivotTableBuffer, mem memory.Allocator) array.Interface {
+func (gr *pivotTableGroup) buildTimeColumnFromUints(keys *array.Uint, buf *pivotTableBuffer, mem memory.Allocator) array.Array {
 	b := arrowutil.NewIntBuilder(mem)
 	b.Resize(keys.Len())
 
@@ -567,8 +567,8 @@ func (gr *pivotTableGroup) buildTimeColumnFromUints(keys *array.Uint, buf *pivot
 	return b.NewArray()
 }
 
-func (gr *pivotTableGroup) mergeFloatKeys(mem memory.Allocator) array.Interface {
-	buffers := make([][]array.Interface, 0, len(gr.buffers))
+func (gr *pivotTableGroup) mergeFloatKeys(mem memory.Allocator) array.Array {
+	buffers := make([][]array.Array, 0, len(gr.buffers))
 	for _, buf := range gr.buffers {
 		buffers = append(buffers, buf.keys)
 	}
@@ -584,7 +584,7 @@ func (gr *pivotTableGroup) mergeFloatKeys(mem memory.Allocator) array.Interface 
 	return b.NewArray()
 }
 
-func (gr *pivotTableGroup) forEachFloat(buffers [][]array.Interface, fn func(v float64)) {
+func (gr *pivotTableGroup) forEachFloat(buffers [][]array.Array, fn func(v float64)) {
 	iterators := make([]*arrowutil.FloatIterator, 0, len(buffers))
 	for _, vs := range buffers {
 		itr := arrowutil.IterateFloats(vs)
@@ -635,7 +635,7 @@ func (gr *pivotTableGroup) forEachFloat(buffers [][]array.Interface, fn func(v f
 	}
 }
 
-func (gr *pivotTableGroup) buildColumnFromFloats(keys *array.Float, buf *pivotTableBuffer, mem memory.Allocator) array.Interface {
+func (gr *pivotTableGroup) buildColumnFromFloats(keys *array.Float, buf *pivotTableBuffer, mem memory.Allocator) array.Array {
 
 	switch buf.valueType {
 
@@ -663,7 +663,7 @@ func (gr *pivotTableGroup) buildColumnFromFloats(keys *array.Float, buf *pivotTa
 
 }
 
-func (gr *pivotTableGroup) buildIntColumnFromFloats(keys *array.Float, buf *pivotTableBuffer, mem memory.Allocator) array.Interface {
+func (gr *pivotTableGroup) buildIntColumnFromFloats(keys *array.Float, buf *pivotTableBuffer, mem memory.Allocator) array.Array {
 	b := arrowutil.NewIntBuilder(mem)
 	b.Resize(keys.Len())
 
@@ -689,7 +689,7 @@ func (gr *pivotTableGroup) buildIntColumnFromFloats(keys *array.Float, buf *pivo
 	return b.NewArray()
 }
 
-func (gr *pivotTableGroup) buildUintColumnFromFloats(keys *array.Float, buf *pivotTableBuffer, mem memory.Allocator) array.Interface {
+func (gr *pivotTableGroup) buildUintColumnFromFloats(keys *array.Float, buf *pivotTableBuffer, mem memory.Allocator) array.Array {
 	b := arrowutil.NewUintBuilder(mem)
 	b.Resize(keys.Len())
 
@@ -715,7 +715,7 @@ func (gr *pivotTableGroup) buildUintColumnFromFloats(keys *array.Float, buf *piv
 	return b.NewArray()
 }
 
-func (gr *pivotTableGroup) buildFloatColumnFromFloats(keys *array.Float, buf *pivotTableBuffer, mem memory.Allocator) array.Interface {
+func (gr *pivotTableGroup) buildFloatColumnFromFloats(keys *array.Float, buf *pivotTableBuffer, mem memory.Allocator) array.Array {
 	b := arrowutil.NewFloatBuilder(mem)
 	b.Resize(keys.Len())
 
@@ -741,7 +741,7 @@ func (gr *pivotTableGroup) buildFloatColumnFromFloats(keys *array.Float, buf *pi
 	return b.NewArray()
 }
 
-func (gr *pivotTableGroup) buildBooleanColumnFromFloats(keys *array.Float, buf *pivotTableBuffer, mem memory.Allocator) array.Interface {
+func (gr *pivotTableGroup) buildBooleanColumnFromFloats(keys *array.Float, buf *pivotTableBuffer, mem memory.Allocator) array.Array {
 	b := arrowutil.NewBooleanBuilder(mem)
 	b.Resize(keys.Len())
 
@@ -767,7 +767,7 @@ func (gr *pivotTableGroup) buildBooleanColumnFromFloats(keys *array.Float, buf *
 	return b.NewArray()
 }
 
-func (gr *pivotTableGroup) buildStringColumnFromFloats(keys *array.Float, buf *pivotTableBuffer, mem memory.Allocator) array.Interface {
+func (gr *pivotTableGroup) buildStringColumnFromFloats(keys *array.Float, buf *pivotTableBuffer, mem memory.Allocator) array.Array {
 	b := arrowutil.NewStringBuilder(mem)
 	b.Resize(keys.Len())
 
@@ -793,7 +793,7 @@ func (gr *pivotTableGroup) buildStringColumnFromFloats(keys *array.Float, buf *p
 	return b.NewArray()
 }
 
-func (gr *pivotTableGroup) buildTimeColumnFromFloats(keys *array.Float, buf *pivotTableBuffer, mem memory.Allocator) array.Interface {
+func (gr *pivotTableGroup) buildTimeColumnFromFloats(keys *array.Float, buf *pivotTableBuffer, mem memory.Allocator) array.Array {
 	b := arrowutil.NewIntBuilder(mem)
 	b.Resize(keys.Len())
 
@@ -819,7 +819,7 @@ func (gr *pivotTableGroup) buildTimeColumnFromFloats(keys *array.Float, buf *piv
 	return b.NewArray()
 }
 
-func (gr *pivotTableGroup) buildIntColumnFromBooleans(keys *array.Boolean, buf *pivotTableBuffer, mem memory.Allocator) array.Interface {
+func (gr *pivotTableGroup) buildIntColumnFromBooleans(keys *array.Boolean, buf *pivotTableBuffer, mem memory.Allocator) array.Array {
 	b := arrowutil.NewIntBuilder(mem)
 	b.Resize(keys.Len())
 
@@ -845,7 +845,7 @@ func (gr *pivotTableGroup) buildIntColumnFromBooleans(keys *array.Boolean, buf *
 	return b.NewArray()
 }
 
-func (gr *pivotTableGroup) buildUintColumnFromBooleans(keys *array.Boolean, buf *pivotTableBuffer, mem memory.Allocator) array.Interface {
+func (gr *pivotTableGroup) buildUintColumnFromBooleans(keys *array.Boolean, buf *pivotTableBuffer, mem memory.Allocator) array.Array {
 	b := arrowutil.NewUintBuilder(mem)
 	b.Resize(keys.Len())
 
@@ -871,7 +871,7 @@ func (gr *pivotTableGroup) buildUintColumnFromBooleans(keys *array.Boolean, buf 
 	return b.NewArray()
 }
 
-func (gr *pivotTableGroup) buildFloatColumnFromBooleans(keys *array.Boolean, buf *pivotTableBuffer, mem memory.Allocator) array.Interface {
+func (gr *pivotTableGroup) buildFloatColumnFromBooleans(keys *array.Boolean, buf *pivotTableBuffer, mem memory.Allocator) array.Array {
 	b := arrowutil.NewFloatBuilder(mem)
 	b.Resize(keys.Len())
 
@@ -897,7 +897,7 @@ func (gr *pivotTableGroup) buildFloatColumnFromBooleans(keys *array.Boolean, buf
 	return b.NewArray()
 }
 
-func (gr *pivotTableGroup) buildBooleanColumnFromBooleans(keys *array.Boolean, buf *pivotTableBuffer, mem memory.Allocator) array.Interface {
+func (gr *pivotTableGroup) buildBooleanColumnFromBooleans(keys *array.Boolean, buf *pivotTableBuffer, mem memory.Allocator) array.Array {
 	b := arrowutil.NewBooleanBuilder(mem)
 	b.Resize(keys.Len())
 
@@ -923,7 +923,7 @@ func (gr *pivotTableGroup) buildBooleanColumnFromBooleans(keys *array.Boolean, b
 	return b.NewArray()
 }
 
-func (gr *pivotTableGroup) buildStringColumnFromBooleans(keys *array.Boolean, buf *pivotTableBuffer, mem memory.Allocator) array.Interface {
+func (gr *pivotTableGroup) buildStringColumnFromBooleans(keys *array.Boolean, buf *pivotTableBuffer, mem memory.Allocator) array.Array {
 	b := arrowutil.NewStringBuilder(mem)
 	b.Resize(keys.Len())
 
@@ -949,7 +949,7 @@ func (gr *pivotTableGroup) buildStringColumnFromBooleans(keys *array.Boolean, bu
 	return b.NewArray()
 }
 
-func (gr *pivotTableGroup) buildTimeColumnFromBooleans(keys *array.Boolean, buf *pivotTableBuffer, mem memory.Allocator) array.Interface {
+func (gr *pivotTableGroup) buildTimeColumnFromBooleans(keys *array.Boolean, buf *pivotTableBuffer, mem memory.Allocator) array.Array {
 	b := arrowutil.NewIntBuilder(mem)
 	b.Resize(keys.Len())
 
@@ -975,8 +975,8 @@ func (gr *pivotTableGroup) buildTimeColumnFromBooleans(keys *array.Boolean, buf 
 	return b.NewArray()
 }
 
-func (gr *pivotTableGroup) mergeStringKeys(mem memory.Allocator) array.Interface {
-	buffers := make([][]array.Interface, 0, len(gr.buffers))
+func (gr *pivotTableGroup) mergeStringKeys(mem memory.Allocator) array.Array {
+	buffers := make([][]array.Array, 0, len(gr.buffers))
 	for _, buf := range gr.buffers {
 		buffers = append(buffers, buf.keys)
 	}
@@ -992,7 +992,7 @@ func (gr *pivotTableGroup) mergeStringKeys(mem memory.Allocator) array.Interface
 	return b.NewArray()
 }
 
-func (gr *pivotTableGroup) forEachString(buffers [][]array.Interface, fn func(v string)) {
+func (gr *pivotTableGroup) forEachString(buffers [][]array.Array, fn func(v string)) {
 	iterators := make([]*arrowutil.StringIterator, 0, len(buffers))
 	for _, vs := range buffers {
 		itr := arrowutil.IterateStrings(vs)
@@ -1043,7 +1043,7 @@ func (gr *pivotTableGroup) forEachString(buffers [][]array.Interface, fn func(v 
 	}
 }
 
-func (gr *pivotTableGroup) buildColumnFrom(keys *array.String, buf *pivotTableBuffer, mem memory.Allocator) array.Interface {
+func (gr *pivotTableGroup) buildColumnFrom(keys *array.String, buf *pivotTableBuffer, mem memory.Allocator) array.Array {
 
 	switch buf.valueType {
 
@@ -1071,7 +1071,7 @@ func (gr *pivotTableGroup) buildColumnFrom(keys *array.String, buf *pivotTableBu
 
 }
 
-func (gr *pivotTableGroup) buildIntColumnFrom(keys *array.String, buf *pivotTableBuffer, mem memory.Allocator) array.Interface {
+func (gr *pivotTableGroup) buildIntColumnFrom(keys *array.String, buf *pivotTableBuffer, mem memory.Allocator) array.Array {
 	b := arrowutil.NewIntBuilder(mem)
 	b.Resize(keys.Len())
 
@@ -1097,7 +1097,7 @@ func (gr *pivotTableGroup) buildIntColumnFrom(keys *array.String, buf *pivotTabl
 	return b.NewArray()
 }
 
-func (gr *pivotTableGroup) buildUintColumnFrom(keys *array.String, buf *pivotTableBuffer, mem memory.Allocator) array.Interface {
+func (gr *pivotTableGroup) buildUintColumnFrom(keys *array.String, buf *pivotTableBuffer, mem memory.Allocator) array.Array {
 	b := arrowutil.NewUintBuilder(mem)
 	b.Resize(keys.Len())
 
@@ -1123,7 +1123,7 @@ func (gr *pivotTableGroup) buildUintColumnFrom(keys *array.String, buf *pivotTab
 	return b.NewArray()
 }
 
-func (gr *pivotTableGroup) buildFloatColumnFrom(keys *array.String, buf *pivotTableBuffer, mem memory.Allocator) array.Interface {
+func (gr *pivotTableGroup) buildFloatColumnFrom(keys *array.String, buf *pivotTableBuffer, mem memory.Allocator) array.Array {
 	b := arrowutil.NewFloatBuilder(mem)
 	b.Resize(keys.Len())
 
@@ -1149,7 +1149,7 @@ func (gr *pivotTableGroup) buildFloatColumnFrom(keys *array.String, buf *pivotTa
 	return b.NewArray()
 }
 
-func (gr *pivotTableGroup) buildBooleanColumnFrom(keys *array.String, buf *pivotTableBuffer, mem memory.Allocator) array.Interface {
+func (gr *pivotTableGroup) buildBooleanColumnFrom(keys *array.String, buf *pivotTableBuffer, mem memory.Allocator) array.Array {
 	b := arrowutil.NewBooleanBuilder(mem)
 	b.Resize(keys.Len())
 
@@ -1175,7 +1175,7 @@ func (gr *pivotTableGroup) buildBooleanColumnFrom(keys *array.String, buf *pivot
 	return b.NewArray()
 }
 
-func (gr *pivotTableGroup) buildStringColumnFrom(keys *array.String, buf *pivotTableBuffer, mem memory.Allocator) array.Interface {
+func (gr *pivotTableGroup) buildStringColumnFrom(keys *array.String, buf *pivotTableBuffer, mem memory.Allocator) array.Array {
 	b := arrowutil.NewStringBuilder(mem)
 	b.Resize(keys.Len())
 
@@ -1201,7 +1201,7 @@ func (gr *pivotTableGroup) buildStringColumnFrom(keys *array.String, buf *pivotT
 	return b.NewArray()
 }
 
-func (gr *pivotTableGroup) buildTimeColumnFrom(keys *array.String, buf *pivotTableBuffer, mem memory.Allocator) array.Interface {
+func (gr *pivotTableGroup) buildTimeColumnFrom(keys *array.String, buf *pivotTableBuffer, mem memory.Allocator) array.Array {
 	b := arrowutil.NewIntBuilder(mem)
 	b.Resize(keys.Len())
 
@@ -1227,8 +1227,8 @@ func (gr *pivotTableGroup) buildTimeColumnFrom(keys *array.String, buf *pivotTab
 	return b.NewArray()
 }
 
-func (gr *pivotTableGroup) mergeTimeKeys(mem memory.Allocator) array.Interface {
-	buffers := make([][]array.Interface, 0, len(gr.buffers))
+func (gr *pivotTableGroup) mergeTimeKeys(mem memory.Allocator) array.Array {
+	buffers := make([][]array.Array, 0, len(gr.buffers))
 	for _, buf := range gr.buffers {
 		buffers = append(buffers, buf.keys)
 	}
@@ -1244,7 +1244,7 @@ func (gr *pivotTableGroup) mergeTimeKeys(mem memory.Allocator) array.Interface {
 	return b.NewArray()
 }
 
-func (gr *pivotTableGroup) forEachTime(buffers [][]array.Interface, fn func(v int64)) {
+func (gr *pivotTableGroup) forEachTime(buffers [][]array.Array, fn func(v int64)) {
 	iterators := make([]*arrowutil.IntIterator, 0, len(buffers))
 	for _, vs := range buffers {
 		itr := arrowutil.IterateInts(vs)
@@ -1295,7 +1295,7 @@ func (gr *pivotTableGroup) forEachTime(buffers [][]array.Interface, fn func(v in
 	}
 }
 
-func (gr *pivotTableGroup) buildColumnFromTimes(keys *array.Int, buf *pivotTableBuffer, mem memory.Allocator) array.Interface {
+func (gr *pivotTableGroup) buildColumnFromTimes(keys *array.Int, buf *pivotTableBuffer, mem memory.Allocator) array.Array {
 
 	switch buf.valueType {
 
@@ -1323,7 +1323,7 @@ func (gr *pivotTableGroup) buildColumnFromTimes(keys *array.Int, buf *pivotTable
 
 }
 
-func (gr *pivotTableGroup) buildIntColumnFromTimes(keys *array.Int, buf *pivotTableBuffer, mem memory.Allocator) array.Interface {
+func (gr *pivotTableGroup) buildIntColumnFromTimes(keys *array.Int, buf *pivotTableBuffer, mem memory.Allocator) array.Array {
 	b := arrowutil.NewIntBuilder(mem)
 	b.Resize(keys.Len())
 
@@ -1349,7 +1349,7 @@ func (gr *pivotTableGroup) buildIntColumnFromTimes(keys *array.Int, buf *pivotTa
 	return b.NewArray()
 }
 
-func (gr *pivotTableGroup) buildUintColumnFromTimes(keys *array.Int, buf *pivotTableBuffer, mem memory.Allocator) array.Interface {
+func (gr *pivotTableGroup) buildUintColumnFromTimes(keys *array.Int, buf *pivotTableBuffer, mem memory.Allocator) array.Array {
 	b := arrowutil.NewUintBuilder(mem)
 	b.Resize(keys.Len())
 
@@ -1375,7 +1375,7 @@ func (gr *pivotTableGroup) buildUintColumnFromTimes(keys *array.Int, buf *pivotT
 	return b.NewArray()
 }
 
-func (gr *pivotTableGroup) buildFloatColumnFromTimes(keys *array.Int, buf *pivotTableBuffer, mem memory.Allocator) array.Interface {
+func (gr *pivotTableGroup) buildFloatColumnFromTimes(keys *array.Int, buf *pivotTableBuffer, mem memory.Allocator) array.Array {
 	b := arrowutil.NewFloatBuilder(mem)
 	b.Resize(keys.Len())
 
@@ -1401,7 +1401,7 @@ func (gr *pivotTableGroup) buildFloatColumnFromTimes(keys *array.Int, buf *pivot
 	return b.NewArray()
 }
 
-func (gr *pivotTableGroup) buildBooleanColumnFromTimes(keys *array.Int, buf *pivotTableBuffer, mem memory.Allocator) array.Interface {
+func (gr *pivotTableGroup) buildBooleanColumnFromTimes(keys *array.Int, buf *pivotTableBuffer, mem memory.Allocator) array.Array {
 	b := arrowutil.NewBooleanBuilder(mem)
 	b.Resize(keys.Len())
 
@@ -1427,7 +1427,7 @@ func (gr *pivotTableGroup) buildBooleanColumnFromTimes(keys *array.Int, buf *piv
 	return b.NewArray()
 }
 
-func (gr *pivotTableGroup) buildStringColumnFromTimes(keys *array.Int, buf *pivotTableBuffer, mem memory.Allocator) array.Interface {
+func (gr *pivotTableGroup) buildStringColumnFromTimes(keys *array.Int, buf *pivotTableBuffer, mem memory.Allocator) array.Array {
 	b := arrowutil.NewStringBuilder(mem)
 	b.Resize(keys.Len())
 
@@ -1453,7 +1453,7 @@ func (gr *pivotTableGroup) buildStringColumnFromTimes(keys *array.Int, buf *pivo
 	return b.NewArray()
 }
 
-func (gr *pivotTableGroup) buildTimeColumnFromTimes(keys *array.Int, buf *pivotTableBuffer, mem memory.Allocator) array.Interface {
+func (gr *pivotTableGroup) buildTimeColumnFromTimes(keys *array.Int, buf *pivotTableBuffer, mem memory.Allocator) array.Array {
 	b := arrowutil.NewIntBuilder(mem)
 	b.Resize(keys.Len())
 

@@ -75,7 +75,7 @@ func (m *mapTransformation2) Process(chunk table.Chunk, d *execute.TransportData
 
 // regroup will take the mapped output columns and regroup them into new group keys
 // depending on the content of the columns.
-func (m *mapTransformation2) regroup(cols []flux.ColMeta, key flux.GroupKey, arrs []array.Interface, d *execute.TransportDataset, mem memory.Allocator) error {
+func (m *mapTransformation2) regroup(cols []flux.ColMeta, key flux.GroupKey, arrs []array.Array, d *execute.TransportDataset, mem memory.Allocator) error {
 	// Determine which columns are part of the group key.
 	keyIndices, keyCols := m.determineKeyColumns(cols, key)
 
@@ -112,7 +112,7 @@ func (m *mapTransformation2) regroup(cols []flux.ColMeta, key flux.GroupKey, arr
 // sort will use the given columns to create an index of sorted rows using the input arrays.
 // This returns a set of indices mapping the ordered values to their original location
 // in the array.
-func (m *mapTransformation2) sort(arrs []array.Interface, n int, cols []int, mem memory.Allocator) *array.Int {
+func (m *mapTransformation2) sort(arrs []array.Array, n int, cols []int, mem memory.Allocator) *array.Int {
 	// Construct the indices.
 	indices := mutable.NewInt64Array(mem)
 	indices.Resize(n)
@@ -140,7 +140,7 @@ func (m *mapTransformation2) sort(arrs []array.Interface, n int, cols []int, mem
 }
 
 // regroupSorted takes the sorted indices and regroups the columns into separate group keys.
-func (m *mapTransformation2) regroupSorted(d *execute.TransportDataset, regroupCols, keyIndices []int, keyCols, cols []flux.ColMeta, rowIndices *array.Int, arrs []array.Interface, mem memory.Allocator) error {
+func (m *mapTransformation2) regroupSorted(d *execute.TransportDataset, regroupCols, keyIndices []int, keyCols, cols []flux.ColMeta, rowIndices *array.Int, arrs []array.Array, mem memory.Allocator) error {
 	first, n := 0, arrs[0].Len()
 	for first < n {
 		// Use the first row to construct a key.
@@ -164,7 +164,7 @@ func (m *mapTransformation2) regroupSorted(d *execute.TransportDataset, regroupC
 
 		// Copy over the values by index.
 		indices := arrow.IntSlice(rowIndices, first, last)
-		vals := make([]array.Interface, len(cols))
+		vals := make([]array.Array, len(cols))
 		for j, col := range cols {
 			b := arrow.NewBuilder(col.Type, mem)
 			b.Resize(last - first)
@@ -206,7 +206,7 @@ func (m *mapTransformation2) determineKeyColumns(cols []flux.ColMeta, key flux.G
 // If the group key columns are all constants, then they would all end up in
 // the same group key and we don't need to regroup. That is represented by returning
 // an empty slice.
-func (m *mapTransformation2) regroupWith(keyIndices []int, arrs []array.Interface) []int {
+func (m *mapTransformation2) regroupWith(keyIndices []int, arrs []array.Array) []int {
 	regroup := make([]int, 0, len(keyIndices))
 	for _, idx := range keyIndices {
 		if !arrowutil.IsConstant(arrs[idx]) {
@@ -217,7 +217,7 @@ func (m *mapTransformation2) regroupWith(keyIndices []int, arrs []array.Interfac
 }
 
 // makeKey will construct a group key using the given values in the row.
-func (m *mapTransformation2) makeKey(keyIndices []int, keyCols []flux.ColMeta, cols []flux.ColMeta, arrs []array.Interface, row int) flux.GroupKey {
+func (m *mapTransformation2) makeKey(keyIndices []int, keyCols []flux.ColMeta, cols []flux.ColMeta, arrs []array.Array, row int) flux.GroupKey {
 	buffer := arrow.TableBuffer{
 		Columns: cols,
 		Values:  arrs,
@@ -230,7 +230,7 @@ func (m *mapTransformation2) makeKey(keyIndices []int, keyCols []flux.ColMeta, c
 }
 
 // processTable is a utility function for creating a table chunk and sending it through the transport.
-func (m *mapTransformation2) processTable(d *execute.TransportDataset, key flux.GroupKey, cols []flux.ColMeta, arrs []array.Interface) error {
+func (m *mapTransformation2) processTable(d *execute.TransportDataset, key flux.GroupKey, cols []flux.ColMeta, arrs []array.Array) error {
 	buffer := arrow.TableBuffer{
 		GroupKey: key,
 		Columns:  cols,
@@ -249,7 +249,7 @@ type mapFunc interface {
 }
 
 type mapPreparedFunc interface {
-	Eval(ctx context.Context, chunk table.Chunk, mem memory.Allocator) ([]flux.ColMeta, []array.Interface, error)
+	Eval(ctx context.Context, chunk table.Chunk, mem memory.Allocator) ([]flux.ColMeta, []array.Array, error)
 }
 
 type mapRowFunc struct {
@@ -345,7 +345,7 @@ func (m *mapRowPreparedFunc) createSchema(record values.Object) ([]flux.ColMeta,
 	return cols, nil
 }
 
-func (m *mapRowPreparedFunc) Eval(ctx context.Context, chunk table.Chunk, mem memory.Allocator) ([]flux.ColMeta, []array.Interface, error) {
+func (m *mapRowPreparedFunc) Eval(ctx context.Context, chunk table.Chunk, mem memory.Allocator) ([]flux.ColMeta, []array.Array, error) {
 	var (
 		cols     []flux.ColMeta
 		builders []array.Builder
@@ -378,7 +378,7 @@ func (m *mapRowPreparedFunc) Eval(ctx context.Context, chunk table.Chunk, mem me
 		}
 	}
 
-	arrs := make([]array.Interface, len(builders))
+	arrs := make([]array.Array, len(builders))
 	for i, b := range builders {
 		arrs[i] = b.NewArray()
 	}
@@ -403,7 +403,7 @@ type mapVectorPreparedFunc struct {
 	fn *execute.VectorMapPreparedFn
 }
 
-func (m *mapVectorPreparedFunc) Eval(ctx context.Context, chunk table.Chunk, mem memory.Allocator) ([]flux.ColMeta, []array.Interface, error) {
+func (m *mapVectorPreparedFunc) Eval(ctx context.Context, chunk table.Chunk, mem memory.Allocator) ([]flux.ColMeta, []array.Array, error) {
 	ret := m.fn.Type()
 	n, err := ret.NumProperties()
 	if err != nil {

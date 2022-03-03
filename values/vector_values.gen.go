@@ -15,7 +15,7 @@ import (
 	"github.com/influxdata/flux/semantic"
 )
 
-func NewVectorValue(arr arrow.Interface, typ semantic.MonoType) Vector {
+func NewVectorValue(arr arrow.Array, typ semantic.MonoType) Vector {
 	switch typ {
 
 	case semantic.BasicInt:
@@ -133,7 +133,7 @@ func newVectorFromSlice(values []Value, typ semantic.MonoType, mem *memory.Alloc
 
 var _ Value = &IntVectorValue{}
 var _ Vector = &IntVectorValue{}
-var _ arrow.Interface = &arrow.Int{}
+var _ arrow.Array = &arrow.Int{}
 
 type IntVectorValue struct {
 	arr *arrow.Int
@@ -154,7 +154,7 @@ func (v *IntVectorValue) ElementType() semantic.MonoType {
 	}
 	return t
 }
-func (v *IntVectorValue) Arr() arrow.Interface { return v.arr }
+func (v *IntVectorValue) Arr() arrow.Array { return v.arr }
 func (v *IntVectorValue) Retain() {
 	v.arr.Retain()
 }
@@ -195,7 +195,7 @@ func (v *IntVectorValue) Equal(other Value) bool {
 
 var _ Value = &UintVectorValue{}
 var _ Vector = &UintVectorValue{}
-var _ arrow.Interface = &arrow.Uint{}
+var _ arrow.Array = &arrow.Uint{}
 
 type UintVectorValue struct {
 	arr *arrow.Uint
@@ -216,7 +216,7 @@ func (v *UintVectorValue) ElementType() semantic.MonoType {
 	}
 	return t
 }
-func (v *UintVectorValue) Arr() arrow.Interface { return v.arr }
+func (v *UintVectorValue) Arr() arrow.Array { return v.arr }
 func (v *UintVectorValue) Retain() {
 	v.arr.Retain()
 }
@@ -257,7 +257,7 @@ func (v *UintVectorValue) Equal(other Value) bool {
 
 var _ Value = &FloatVectorValue{}
 var _ Vector = &FloatVectorValue{}
-var _ arrow.Interface = &arrow.Float{}
+var _ arrow.Array = &arrow.Float{}
 
 type FloatVectorValue struct {
 	arr *arrow.Float
@@ -278,7 +278,7 @@ func (v *FloatVectorValue) ElementType() semantic.MonoType {
 	}
 	return t
 }
-func (v *FloatVectorValue) Arr() arrow.Interface { return v.arr }
+func (v *FloatVectorValue) Arr() arrow.Array { return v.arr }
 func (v *FloatVectorValue) Retain() {
 	v.arr.Retain()
 }
@@ -319,7 +319,7 @@ func (v *FloatVectorValue) Equal(other Value) bool {
 
 var _ Value = &BooleanVectorValue{}
 var _ Vector = &BooleanVectorValue{}
-var _ arrow.Interface = &arrow.Boolean{}
+var _ arrow.Array = &arrow.Boolean{}
 
 type BooleanVectorValue struct {
 	arr *arrow.Boolean
@@ -340,7 +340,7 @@ func (v *BooleanVectorValue) ElementType() semantic.MonoType {
 	}
 	return t
 }
-func (v *BooleanVectorValue) Arr() arrow.Interface { return v.arr }
+func (v *BooleanVectorValue) Arr() arrow.Array { return v.arr }
 func (v *BooleanVectorValue) Retain() {
 	v.arr.Retain()
 }
@@ -381,7 +381,7 @@ func (v *BooleanVectorValue) Equal(other Value) bool {
 
 var _ Value = &StringVectorValue{}
 var _ Vector = &StringVectorValue{}
-var _ arrow.Interface = &arrow.String{}
+var _ arrow.Array = &arrow.String{}
 
 type StringVectorValue struct {
 	arr *arrow.String
@@ -402,7 +402,7 @@ func (v *StringVectorValue) ElementType() semantic.MonoType {
 	}
 	return t
 }
-func (v *StringVectorValue) Arr() arrow.Interface { return v.arr }
+func (v *StringVectorValue) Arr() arrow.Array { return v.arr }
 func (v *StringVectorValue) Retain() {
 	v.arr.Retain()
 }
@@ -443,7 +443,7 @@ func (v *StringVectorValue) Equal(other Value) bool {
 
 var _ Value = &TimeVectorValue{}
 var _ Vector = &TimeVectorValue{}
-var _ arrow.Interface = &arrow.Int{}
+var _ arrow.Array = &arrow.Int{}
 
 type TimeVectorValue struct {
 	arr *arrow.Int
@@ -464,7 +464,7 @@ func (v *TimeVectorValue) ElementType() semantic.MonoType {
 	}
 	return t
 }
-func (v *TimeVectorValue) Arr() arrow.Interface { return v.arr }
+func (v *TimeVectorValue) Arr() arrow.Array { return v.arr }
 func (v *TimeVectorValue) Retain() {
 	v.arr.Retain()
 }

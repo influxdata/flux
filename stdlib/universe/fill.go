@@ -369,7 +369,7 @@ func (t *fillTransformation) adaptedProcess(chunk table.Chunk, state interface{}
 	buffer := arrow.TableBuffer{
 		GroupKey: key,
 		Columns:  outputColumns,
-		Values:   make([]array.Interface, len(chunk.Cols())),
+		Values:   make([]array.Array, len(chunk.Cols())),
 	}
 
 	if err := t.fillChunk(&buffer, chunk, colIdx, &dstate.fillValue, mem); err != nil {
@@ -387,7 +387,7 @@ func (t *fillTransformationAdapter) Close() error { return nil }
 
 func (t *fillTransformation) fillChunk(buffer *arrow.TableBuffer, chunk table.Chunk, colIdx int, fillValue *interface{}, mem arrowmem.Allocator) error {
 	l := chunk.Len()
-	vs := make([]array.Interface, len(buffer.Cols()))
+	vs := make([]array.Array, len(buffer.Cols()))
 
 	// Iterate over the existing columns and if column already exist(colIdx matches with i) call fillColumn on it
 	for i, col := range chunk.Cols() {
@@ -420,7 +420,7 @@ func (t *fillTransformation) fillTable(w *table.StreamWriter, cr flux.ColReader,
 	if crLen == 0 {
 		return nil
 	}
-	vs := make([]array.Interface, len(w.Cols()))
+	vs := make([]array.Array, len(w.Cols()))
 
 	// Iterate over the existing columns and if column already exist(colIdx matches with i) call fillColumn on it
 	for i, col := range cr.Cols() {
@@ -443,7 +443,7 @@ func (t *fillTransformation) fillTable(w *table.StreamWriter, cr flux.ColReader,
 	return w.Write(vs)
 }
 
-func (t *fillTransformation) addNullColumn(typ flux.ColType, l int, mem arrowmem.Allocator) array.Interface {
+func (t *fillTransformation) addNullColumn(typ flux.ColType, l int, mem arrowmem.Allocator) array.Array {
 	builder := arrow.NewBuilder(typ, mem)
 	builder.Resize(l)
 	for i := 0; i < l; i++ {

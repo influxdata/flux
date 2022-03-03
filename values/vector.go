@@ -8,5 +8,5 @@ import (
 type Vector interface {
 	Value
 	ElementType() semantic.MonoType
-	Arr() arrow.Interface
+	Arr() arrow.Array
 }

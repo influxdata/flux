@@ -166,7 +166,7 @@ func (t *limitTransformation) limitTable(ctx context.Context, w *table.StreamWri
 		n -= count
 		offset = 0
 
-		vs := make([]array.Interface, len(cr.Cols()))
+		vs := make([]array.Array, len(cr.Cols()))
 		for j := range vs {
 			arr := table.Values(cr, j)
 			if arr.Len() == count {

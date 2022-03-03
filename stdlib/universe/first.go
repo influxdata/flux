@@ -118,7 +118,7 @@ func (s *FirstSelector) NewStringSelector() execute.DoStringIndexSelector {
 	return s
 }
 
-func (s *FirstSelector) selectFirst(vs array.Interface) []int {
+func (s *FirstSelector) selectFirst(vs array.Array) []int {
 	if !s.selected {
 		sz := vs.Len()
 		for i := 0; i < sz; i++ {

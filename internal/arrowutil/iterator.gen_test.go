@@ -17,7 +17,7 @@ import (
 )
 
 func TestIterateInts(t *testing.T) {
-	arrs := make([]array.Interface, 0, 3)
+	arrs := make([]array.Array, 0, 3)
 	for i := 0; i < 3; i++ {
 		b := arrowutil.NewIntBuilder(memory.DefaultAllocator)
 		for j := 0; j < 100; j++ {
@@ -52,7 +52,7 @@ func TestIterateInts(t *testing.T) {
 }
 
 func TestIterateUints(t *testing.T) {
-	arrs := make([]array.Interface, 0, 3)
+	arrs := make([]array.Array, 0, 3)
 	for i := 0; i < 3; i++ {
 		b := arrowutil.NewUintBuilder(memory.DefaultAllocator)
 		for j := 0; j < 100; j++ {
@@ -87,7 +87,7 @@ func TestIterateUints(t *testing.T) {
 }
 
 func TestIterateFloats(t *testing.T) {
-	arrs := make([]array.Interface, 0, 3)
+	arrs := make([]array.Array, 0, 3)
 	for i := 0; i < 3; i++ {
 		b := arrowutil.NewFloatBuilder(memory.DefaultAllocator)
 		for j := 0; j < 100; j++ {
@@ -122,7 +122,7 @@ func TestIterateFloats(t *testing.T) {
 }
 
 func TestIterateBooleans(t *testing.T) {
-	arrs := make([]array.Interface, 0, 3)
+	arrs := make([]array.Array, 0, 3)
 	for i := 0; i < 3; i++ {
 		b := arrowutil.NewBooleanBuilder(memory.DefaultAllocator)
 		for j := 0; j < 100; j++ {
@@ -157,7 +157,7 @@ func TestIterateBooleans(t *testing.T) {
 }
 
 func TestIterateStrings(t *testing.T) {
-	arrs := make([]array.Interface, 0, 3)
+	arrs := make([]array.Array, 0, 3)
 	for i := 0; i < 3; i++ {
 		b := arrowutil.NewStringBuilder(memory.DefaultAllocator)
 		for j := 0; j < 100; j++ {

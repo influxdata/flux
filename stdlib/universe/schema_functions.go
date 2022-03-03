@@ -523,7 +523,7 @@ func (m *mutateTable) Do(f func(flux.ColReader) error) error {
 		buffer := &arrow.TableBuffer{
 			GroupKey: m.ctx.Key(),
 			Columns:  m.ctx.Cols(),
-			Values:   make([]array.Interface, len(indices)),
+			Values:   make([]array.Array, len(indices)),
 		}
 		for j, idx := range indices {
 			buffer.Values[j] = table.Values(cr, idx)

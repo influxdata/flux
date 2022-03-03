@@ -214,7 +214,7 @@ func (w *windowTransformation) Process(id execute.DatasetID, tbl flux.Table) err
 		{Label: "start", Type: flux.TTime},
 		{Label: "stop", Type: flux.TTime},
 	}
-	arrs := []array.Interface{startB.NewArray(), stopB.NewArray()}
+	arrs := []array.Array{startB.NewArray(), stopB.NewArray()}
 	outTable, err := w.buildTable(tbl.Key(), cols, arrs, columns)
 	if err != nil {
 		return err
@@ -425,7 +425,7 @@ func (w *windowTableState) Write(ws *windowState) error {
 func (w *windowTableState) createWindow(cr flux.ColReader, start, stop int) (b arrow.TableBuffer) {
 	b.GroupKey = cr.Key()
 	b.Columns = cr.Cols()
-	b.Values = make([]array.Interface, len(b.Columns))
+	b.Values = make([]array.Array, len(b.Columns))
 	for j := range b.Values {
 		arr := table.Values(cr, j)
 		b.Values[j] = arrow.Slice(arr, int64(start), int64(stop))

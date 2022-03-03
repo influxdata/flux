@@ -467,13 +467,13 @@ func (t *simpleAggregateTransformation2) Compute(key flux.GroupKey, state interf
 		})
 	}
 
-	buffer.Values = make([]array.Interface, len(key.Cols()), len(buffer.Columns))
+	buffer.Values = make([]array.Array, len(key.Cols()), len(buffer.Columns))
 	for j := range key.Cols() {
 		buffer.Values[j] = arrow.Repeat(key.Cols()[j].Type, key.Value(j), 1, mem)
 	}
 
 	for _, s := range aggregates {
-		var arr array.Interface
+		var arr array.Array
 		isNull := s.agg.IsNull()
 		switch s.agg.Type() {
 		case flux.TBool:

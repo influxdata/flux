@@ -268,7 +268,7 @@ func (t *mapTable) mapValues(w *arrow.TableBuffer, cr flux.ColReader, fn *execut
 		}
 	}
 
-	w.Values = make([]array.Interface, len(cols))
+	w.Values = make([]array.Array, len(cols))
 	for i, c := range cols {
 		if builders[i] == nil {
 			idx := execute.ColIdx(c.Label, cr.Cols())
