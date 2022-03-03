@@ -32,6 +32,7 @@ var testFlags = map[string]interface{}{
 	"optimizeUnionTransformation":      true,
 	"vectorizedMap":                    true,
 	"optimizeAggregateWindow":          true,
+	"narrowTransformationLimit":        true,
 }
 
 type TestFlagger map[string]interface{}
