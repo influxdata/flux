@@ -283,12 +283,25 @@ func (t *limitTransformationAdapter) processChunk(
 	state *limitState,
 	dataset *execute.TransportDataset,
 ) (*limitState, bool, error) {
+
 	chunkLen := chunk.Len()
 
-	// Pass empty chunks along to downstream transformations.
-	if chunkLen == 0 {
-		chunk.Retain()
-		if err := dataset.Process(chunk); err != nil {
+	// Pass empty chunks along to downstream transformations for these cases.
+	if state.n <= 0 || chunkLen == 0 {
+		// TODO(onelson): seems like there should be a more simple way to produce an empty chunk
+		buf := chunk.Buffer()
+		buf.Values = make([]array.Interface, chunk.NCols())
+		for idx := range buf.Values {
+			values := chunk.Values(idx)
+			if values.Len() == 0 {
+				values.Retain()
+			} else {
+				values = arrow.Slice(values, int64(0), int64(0))
+			}
+			buf.Values[idx] = values
+		}
+		out := table.ChunkFromBuffer(buf)
+		if err := dataset.Process(out); err != nil {
 			return nil, false, err
 		}
 		return state, true, nil
@@ -305,13 +318,6 @@ func (t *limitTransformationAdapter) processChunk(
 	if count > state.n {
 		count = state.n
 		stop = start + count
-	}
-
-	// When n=0, clamp the offsets such that we emit an empty chunk.
-	if state.n <= 0 {
-		start = 0
-		stop = 0
-		count = 0
 	}
 
 	// Update state for the next iteration
