@@ -93,6 +93,31 @@ func TestLimit_Process(t *testing.T) {
 			}},
 		},
 		{
+			name: "one table n=0",
+			spec: &universe.LimitProcedureSpec{
+				N: 0,
+			},
+			data: func() []flux.Table {
+				return []flux.Table{&executetest.Table{
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+					},
+					Data: [][]interface{}{
+						{execute.Time(1), 2.0},
+						{execute.Time(2), 1.0},
+					},
+				}}
+			},
+			want: []*executetest.Table{{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
+				},
+				Data: nil,
+			}},
+		},
+		{
 			name: "with null",
 			spec: &universe.LimitProcedureSpec{
 				N:      2,

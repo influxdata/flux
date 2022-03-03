@@ -272,17 +272,6 @@ func (t *limitTransformationAdapter) Process(
 	// in/out for the subsequent calls.
 	if state == nil {
 		state_ = &limitState{n: t.limitTransformation.n, offset: t.limitTransformation.offset}
-		// When state initialization is happening, we know this is the first
-		// invocation of `.Process` for this transformation.
-		// When the incoming chunk is empty we can short-circuit,
-		// passing along the empty, skipping further processing.
-		if chunk.Len() == 0 {
-			chunk.Retain()
-			if err := dataset.Process(chunk); err != nil {
-				return nil, false, err
-			}
-			return nil, true, nil
-		}
 	} else {
 		state_ = state.(*limitState)
 	}
@@ -294,22 +283,35 @@ func (t *limitTransformationAdapter) processChunk(
 	state *limitState,
 	dataset *execute.TransportDataset,
 ) (*limitState, bool, error) {
-	// TODO(onelson): extract all the resize/early return logic to share with the regular transformation?
-	//  Might not be needed if "regular" is removed in favor of the narrow version.
-	if state.n <= 0 {
-		return state, true, nil
-	}
 	chunkLen := chunk.Len()
-	if chunkLen <= state.offset {
-		state.offset -= 1
+
+	// Pass empty chunks along to downstream transformations.
+	if chunkLen == 0 {
+		chunk.Retain()
+		if err := dataset.Process(chunk); err != nil {
+			return nil, false, err
+		}
 		return state, true, nil
 	}
+
+	if chunkLen <= state.offset {
+		state.offset -= chunkLen
+		return state, true, nil
+	}
+
 	start := state.offset
 	stop := chunkLen
 	count := stop - start
 	if count > state.n {
 		count = state.n
 		stop = start + count
+	}
+
+	// When n=0, clamp the offsets such that we emit an empty chunk.
+	if state.n <= 0 {
+		start = 0
+		stop = 0
+		count = 0
 	}
 
 	// Update state for the next iteration
