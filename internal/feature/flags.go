@@ -101,6 +101,18 @@ func NarrowTransformationDifference() BoolFlag {
 	return narrowTransformationDifference
 }
 
+var narrowTransformationFill = feature.MakeBoolFlag(
+	"Narrow Transformation Fill",
+	"narrowTransformationFill",
+	"Sunil Kartikey",
+	false,
+)
+
+// NarrowTransformationFill - Enable the NarrowTransformation implementation of Fill
+func NarrowTransformationFill() BoolFlag {
+	return narrowTransformationFill
+}
+
 var optimizeAggregateWindow = feature.MakeBoolFlag(
 	"Optimize Aggregate Window",
 	"optimizeAggregateWindow",
@@ -126,6 +138,7 @@ var all = []Flag{
 	mqttPoolDialer,
 	vectorizedMap,
 	narrowTransformationDifference,
+	narrowTransformationFill,
 	optimizeAggregateWindow,
 }
 
@@ -137,6 +150,7 @@ var byKey = map[string]Flag{
 	"mqttPoolDialer":                   mqttPoolDialer,
 	"vectorizedMap":                    vectorizedMap,
 	"narrowTransformationDifference":   narrowTransformationDifference,
+	"narrowTransformationFill":         narrowTransformationFill,
 	"optimizeAggregateWindow":          optimizeAggregateWindow,
 }
 

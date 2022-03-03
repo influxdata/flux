@@ -2,6 +2,7 @@ package universe_test
 
 import (
 	"context"
+	"fmt"
 	"testing"
 	"time"
 
@@ -130,7 +131,7 @@ func TestFill_Process(t *testing.T) {
 	testCases := []struct {
 		name string
 		spec *universe.FillProcedureSpec
-		data []flux.Table
+		data func() []flux.Table
 		want []*executetest.Table
 	}{
 		{
@@ -139,16 +140,18 @@ func TestFill_Process(t *testing.T) {
 				Column: "_value",
 				Value:  values.New(0.0),
 			},
-			data: []flux.Table{&executetest.Table{
-				ColMeta: []flux.ColMeta{
-					{Label: "_time", Type: flux.TTime},
-					{Label: "_value", Type: flux.TFloat},
-				},
-				Data: [][]interface{}{
-					{execute.Time(1), 2.0},
-					{execute.Time(2), 1.0},
-				},
-			}},
+			data: func() []flux.Table {
+				return []flux.Table{&executetest.Table{
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+					},
+					Data: [][]interface{}{
+						{execute.Time(1), 2.0},
+						{execute.Time(2), 1.0},
+					},
+				}}
+			},
 			want: []*executetest.Table{{
 				ColMeta: []flux.ColMeta{
 					{Label: "_time", Type: flux.TTime},
@@ -166,18 +169,20 @@ func TestFill_Process(t *testing.T) {
 				Column: "_value",
 				Value:  values.New(false),
 			},
-			data: []flux.Table{&executetest.Table{
-				ColMeta: []flux.ColMeta{
-					{Label: "_time", Type: flux.TTime},
-					{Label: "_value", Type: flux.TBool},
-				},
-				Data: [][]interface{}{
-					{execute.Time(1), true},
-					{execute.Time(2), nil},
-					{execute.Time(3), false},
-					{execute.Time(4), nil},
-				},
-			}},
+			data: func() []flux.Table {
+				return []flux.Table{&executetest.Table{
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TBool},
+					},
+					Data: [][]interface{}{
+						{execute.Time(1), true},
+						{execute.Time(2), nil},
+						{execute.Time(3), false},
+						{execute.Time(4), nil},
+					},
+				}}
+			},
 			want: []*executetest.Table{{
 				ColMeta: []flux.ColMeta{
 					{Label: "_time", Type: flux.TTime},
@@ -197,17 +202,19 @@ func TestFill_Process(t *testing.T) {
 				Column: "_value",
 				Value:  values.New(false),
 			},
-			data: []flux.Table{&executetest.Table{
-				ColMeta: []flux.ColMeta{
-					{Label: "_time", Type: flux.TTime},
-				},
-				Data: [][]interface{}{
-					{execute.Time(1)},
-					{execute.Time(2)},
-					{execute.Time(3)},
-					{execute.Time(4)},
-				},
-			}},
+			data: func() []flux.Table {
+				return []flux.Table{&executetest.Table{
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+					},
+					Data: [][]interface{}{
+						{execute.Time(1)},
+						{execute.Time(2)},
+						{execute.Time(3)},
+						{execute.Time(4)},
+					},
+				}}
+			},
 			want: []*executetest.Table{{
 				ColMeta: []flux.ColMeta{
 					{Label: "_time", Type: flux.TTime},
@@ -227,18 +234,20 @@ func TestFill_Process(t *testing.T) {
 				Column: "_value",
 				Value:  values.New(int64(-1)),
 			},
-			data: []flux.Table{&executetest.Table{
-				ColMeta: []flux.ColMeta{
-					{Label: "_time", Type: flux.TTime},
-					{Label: "_value", Type: flux.TInt},
-				},
-				Data: [][]interface{}{
-					{execute.Time(1), int64(2)},
-					{execute.Time(2), nil},
-					{execute.Time(3), int64(4)},
-					{execute.Time(4), nil},
-				},
-			}},
+			data: func() []flux.Table {
+				return []flux.Table{&executetest.Table{
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TInt},
+					},
+					Data: [][]interface{}{
+						{execute.Time(1), int64(2)},
+						{execute.Time(2), nil},
+						{execute.Time(3), int64(4)},
+						{execute.Time(4), nil},
+					},
+				}}
+			},
 			want: []*executetest.Table{{
 				ColMeta: []flux.ColMeta{
 					{Label: "_time", Type: flux.TTime},
@@ -258,17 +267,19 @@ func TestFill_Process(t *testing.T) {
 				Column: "_value",
 				Value:  values.New(int64(-1)),
 			},
-			data: []flux.Table{&executetest.Table{
-				ColMeta: []flux.ColMeta{
-					{Label: "_time", Type: flux.TTime},
-				},
-				Data: [][]interface{}{
-					{execute.Time(1)},
-					{execute.Time(2)},
-					{execute.Time(3)},
-					{execute.Time(4)},
-				},
-			}},
+			data: func() []flux.Table {
+				return []flux.Table{&executetest.Table{
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+					},
+					Data: [][]interface{}{
+						{execute.Time(1)},
+						{execute.Time(2)},
+						{execute.Time(3)},
+						{execute.Time(4)},
+					},
+				}}
+			},
 			want: []*executetest.Table{{
 				ColMeta: []flux.ColMeta{
 					{Label: "_time", Type: flux.TTime},
@@ -288,18 +299,20 @@ func TestFill_Process(t *testing.T) {
 				Column: "_value",
 				Value:  values.New(uint64(0)),
 			},
-			data: []flux.Table{&executetest.Table{
-				ColMeta: []flux.ColMeta{
-					{Label: "_time", Type: flux.TTime},
-					{Label: "_value", Type: flux.TUInt},
-				},
-				Data: [][]interface{}{
-					{execute.Time(1), uint64(2)},
-					{execute.Time(2), nil},
-					{execute.Time(3), uint64(4)},
-					{execute.Time(4), nil},
-				},
-			}},
+			data: func() []flux.Table {
+				return []flux.Table{&executetest.Table{
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TUInt},
+					},
+					Data: [][]interface{}{
+						{execute.Time(1), uint64(2)},
+						{execute.Time(2), nil},
+						{execute.Time(3), uint64(4)},
+						{execute.Time(4), nil},
+					},
+				}}
+			},
 			want: []*executetest.Table{{
 				ColMeta: []flux.ColMeta{
 					{Label: "_time", Type: flux.TTime},
@@ -319,17 +332,19 @@ func TestFill_Process(t *testing.T) {
 				Column: "_value",
 				Value:  values.New(uint64(0)),
 			},
-			data: []flux.Table{&executetest.Table{
-				ColMeta: []flux.ColMeta{
-					{Label: "_time", Type: flux.TTime},
-				},
-				Data: [][]interface{}{
-					{execute.Time(1)},
-					{execute.Time(2)},
-					{execute.Time(3)},
-					{execute.Time(4)},
-				},
-			}},
+			data: func() []flux.Table {
+				return []flux.Table{&executetest.Table{
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+					},
+					Data: [][]interface{}{
+						{execute.Time(1)},
+						{execute.Time(2)},
+						{execute.Time(3)},
+						{execute.Time(4)},
+					},
+				}}
+			},
 			want: []*executetest.Table{{
 				ColMeta: []flux.ColMeta{
 					{Label: "_time", Type: flux.TTime},
@@ -349,18 +364,20 @@ func TestFill_Process(t *testing.T) {
 				Column: "_value",
 				Value:  values.New(0.0),
 			},
-			data: []flux.Table{&executetest.Table{
-				ColMeta: []flux.ColMeta{
-					{Label: "_time", Type: flux.TTime},
-					{Label: "_value", Type: flux.TFloat},
-				},
-				Data: [][]interface{}{
-					{execute.Time(1), 2.0},
-					{execute.Time(2), nil},
-					{execute.Time(3), 4.0},
-					{execute.Time(4), nil},
-				},
-			}},
+			data: func() []flux.Table {
+				return []flux.Table{&executetest.Table{
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+					},
+					Data: [][]interface{}{
+						{execute.Time(1), 2.0},
+						{execute.Time(2), nil},
+						{execute.Time(3), 4.0},
+						{execute.Time(4), nil},
+					},
+				}}
+			},
 			want: []*executetest.Table{{
 				ColMeta: []flux.ColMeta{
 					{Label: "_time", Type: flux.TTime},
@@ -380,17 +397,19 @@ func TestFill_Process(t *testing.T) {
 				Column: "_value",
 				Value:  values.New(0.0),
 			},
-			data: []flux.Table{&executetest.Table{
-				ColMeta: []flux.ColMeta{
-					{Label: "_time", Type: flux.TTime},
-				},
-				Data: [][]interface{}{
-					{execute.Time(1)},
-					{execute.Time(2)},
-					{execute.Time(3)},
-					{execute.Time(4)},
-				},
-			}},
+			data: func() []flux.Table {
+				return []flux.Table{&executetest.Table{
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+					},
+					Data: [][]interface{}{
+						{execute.Time(1)},
+						{execute.Time(2)},
+						{execute.Time(3)},
+						{execute.Time(4)},
+					},
+				}}
+			},
 			want: []*executetest.Table{{
 				ColMeta: []flux.ColMeta{
 					{Label: "_time", Type: flux.TTime},
@@ -410,18 +429,20 @@ func TestFill_Process(t *testing.T) {
 				Column: "_value",
 				Value:  values.New("UNK"),
 			},
-			data: []flux.Table{&executetest.Table{
-				ColMeta: []flux.ColMeta{
-					{Label: "_time", Type: flux.TTime},
-					{Label: "_value", Type: flux.TString},
-				},
-				Data: [][]interface{}{
-					{execute.Time(1), "A"},
-					{execute.Time(2), nil},
-					{execute.Time(3), "B"},
-					{execute.Time(4), nil},
-				},
-			}},
+			data: func() []flux.Table {
+				return []flux.Table{&executetest.Table{
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TString},
+					},
+					Data: [][]interface{}{
+						{execute.Time(1), "A"},
+						{execute.Time(2), nil},
+						{execute.Time(3), "B"},
+						{execute.Time(4), nil},
+					},
+				}}
+			},
 			want: []*executetest.Table{{
 				ColMeta: []flux.ColMeta{
 					{Label: "_time", Type: flux.TTime},
@@ -441,17 +462,19 @@ func TestFill_Process(t *testing.T) {
 				Column: "_value",
 				Value:  values.New("UNK"),
 			},
-			data: []flux.Table{&executetest.Table{
-				ColMeta: []flux.ColMeta{
-					{Label: "_time", Type: flux.TTime},
-				},
-				Data: [][]interface{}{
-					{execute.Time(1)},
-					{execute.Time(2)},
-					{execute.Time(3)},
-					{execute.Time(4)},
-				},
-			}},
+			data: func() []flux.Table {
+				return []flux.Table{&executetest.Table{
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+					},
+					Data: [][]interface{}{
+						{execute.Time(1)},
+						{execute.Time(2)},
+						{execute.Time(3)},
+						{execute.Time(4)},
+					},
+				}}
+			},
 			want: []*executetest.Table{{
 				ColMeta: []flux.ColMeta{
 					{Label: "_time", Type: flux.TTime},
@@ -471,18 +494,20 @@ func TestFill_Process(t *testing.T) {
 				Column: "_time",
 				Value:  values.New(execute.Time(0)),
 			},
-			data: []flux.Table{&executetest.Table{
-				ColMeta: []flux.ColMeta{
-					{Label: "_time", Type: flux.TTime},
-					{Label: "_value", Type: flux.TString},
-				},
-				Data: [][]interface{}{
-					{execute.Time(1), "A"},
-					{nil, "B"},
-					{execute.Time(3), "B"},
-					{nil, "C"},
-				},
-			}},
+			data: func() []flux.Table {
+				return []flux.Table{&executetest.Table{
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TString},
+					},
+					Data: [][]interface{}{
+						{execute.Time(1), "A"},
+						{nil, "B"},
+						{execute.Time(3), "B"},
+						{nil, "C"},
+					},
+				}}
+			},
 			want: []*executetest.Table{{
 				ColMeta: []flux.ColMeta{
 					{Label: "_time", Type: flux.TTime},
@@ -502,17 +527,19 @@ func TestFill_Process(t *testing.T) {
 				Column: "_time",
 				Value:  values.New(execute.Time(0)),
 			},
-			data: []flux.Table{&executetest.Table{
-				ColMeta: []flux.ColMeta{
-					{Label: "_value", Type: flux.TString},
-				},
-				Data: [][]interface{}{
-					{"A"},
-					{"B"},
-					{"B"},
-					{"C"},
-				},
-			}},
+			data: func() []flux.Table {
+				return []flux.Table{&executetest.Table{
+					ColMeta: []flux.ColMeta{
+						{Label: "_value", Type: flux.TString},
+					},
+					Data: [][]interface{}{
+						{"A"},
+						{"B"},
+						{"B"},
+						{"C"},
+					},
+				}}
+			},
 			want: []*executetest.Table{{
 				ColMeta: []flux.ColMeta{
 					{Label: "_time", Type: flux.TTime},
@@ -533,18 +560,20 @@ func TestFill_Process(t *testing.T) {
 				Column:      "_value",
 				UsePrevious: true,
 			},
-			data: []flux.Table{&executetest.Table{
-				ColMeta: []flux.ColMeta{
-					{Label: "_time", Type: flux.TTime},
-					{Label: "_value", Type: flux.TString},
-				},
-				Data: [][]interface{}{
-					{execute.Time(1), "A"},
-					{execute.Time(2), nil},
-					{execute.Time(3), "B"},
-					{execute.Time(4), nil},
-				},
-			}},
+			data: func() []flux.Table {
+				return []flux.Table{&executetest.Table{
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TString},
+					},
+					Data: [][]interface{}{
+						{execute.Time(1), "A"},
+						{execute.Time(2), nil},
+						{execute.Time(3), "B"},
+						{execute.Time(4), nil},
+					},
+				}}
+			},
 			want: []*executetest.Table{{
 				ColMeta: []flux.ColMeta{
 					{Label: "_time", Type: flux.TTime},
@@ -559,24 +588,56 @@ func TestFill_Process(t *testing.T) {
 			}},
 		},
 		{
+			name: "fill previous unknown column",
+			spec: &universe.FillProcedureSpec{
+				DefaultCost: plan.DefaultCost{},
+				Column:      "nonexistent",
+				UsePrevious: true,
+			},
+			data: func() []flux.Table {
+				return []flux.Table{&executetest.Table{
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TString},
+					},
+					Data: [][]interface{}{
+						{execute.Time(1), "A"},
+						{execute.Time(2), "B"},
+					},
+				}}
+			},
+			want: []*executetest.Table{{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TString},
+				},
+				Data: [][]interface{}{
+					{execute.Time(1), "A"},
+					{execute.Time(2), "B"},
+				},
+			}},
+		},
+		{
 			name: "fill previous first nil",
 			spec: &universe.FillProcedureSpec{
 				DefaultCost: plan.DefaultCost{},
 				Column:      "_value",
 				UsePrevious: true,
 			},
-			data: []flux.Table{&executetest.Table{
-				ColMeta: []flux.ColMeta{
-					{Label: "_time", Type: flux.TTime},
-					{Label: "_value", Type: flux.TString},
-				},
-				Data: [][]interface{}{
-					{execute.Time(1), nil},
-					{execute.Time(2), "A"},
-					{execute.Time(3), "B"},
-					{execute.Time(4), nil},
-				},
-			}},
+			data: func() []flux.Table {
+				return []flux.Table{&executetest.Table{
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TString},
+					},
+					Data: [][]interface{}{
+						{execute.Time(1), nil},
+						{execute.Time(2), "A"},
+						{execute.Time(3), "B"},
+						{execute.Time(4), nil},
+					},
+				}}
+			},
 			want: []*executetest.Table{{
 				ColMeta: []flux.ColMeta{
 					{Label: "_time", Type: flux.TTime},
@@ -597,20 +658,22 @@ func TestFill_Process(t *testing.T) {
 				Column:      "_value",
 				UsePrevious: true,
 			},
-			data: []flux.Table{&executetest.RowWiseTable{
-				Table: &executetest.Table{
-					ColMeta: []flux.ColMeta{
-						{Label: "_time", Type: flux.TTime},
-						{Label: "_value", Type: flux.TString},
+			data: func() []flux.Table {
+				return []flux.Table{&executetest.RowWiseTable{
+					Table: &executetest.Table{
+						ColMeta: []flux.ColMeta{
+							{Label: "_time", Type: flux.TTime},
+							{Label: "_value", Type: flux.TString},
+						},
+						Data: [][]interface{}{
+							{execute.Time(1), nil},
+							{execute.Time(2), "A"},
+							{execute.Time(3), nil},
+							{execute.Time(4), "B"},
+						},
 					},
-					Data: [][]interface{}{
-						{execute.Time(1), nil},
-						{execute.Time(2), "A"},
-						{execute.Time(3), nil},
-						{execute.Time(4), "B"},
-					},
-				},
-			}},
+				}}
+			},
 			want: []*executetest.Table{{
 				ColMeta: []flux.ColMeta{
 					{Label: "_time", Type: flux.TTime},
@@ -631,13 +694,15 @@ func TestFill_Process(t *testing.T) {
 				Column:      "_value",
 				UsePrevious: true,
 			},
-			data: []flux.Table{&executetest.Table{
-				ColMeta: []flux.ColMeta{
-					{Label: "_time", Type: flux.TTime},
-					{Label: "_value", Type: flux.TString},
-				},
-				Data: [][]interface{}{},
-			}},
+			data: func() []flux.Table {
+				return []flux.Table{&executetest.Table{
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TString},
+					},
+					Data: [][]interface{}{},
+				}}
+			},
 			want: []*executetest.Table{{
 				ColMeta: []flux.ColMeta{
 					{Label: "_time", Type: flux.TTime},
@@ -652,25 +717,27 @@ func TestFill_Process(t *testing.T) {
 				Column: "tag0",
 				Value:  values.New(0.0),
 			},
-			data: []flux.Table{&executetest.Table{
-				ColMeta: []flux.ColMeta{
-					{Label: "_time", Type: flux.TTime},
-					{Label: "tag0", Type: flux.TFloat},
-					{Label: "_value", Type: flux.TFloat},
-				},
-				Data: [][]interface{}{
-					{execute.Time(1), nil, 2.0},
-					{execute.Time(2), nil, nil},
-					{execute.Time(3), nil, 4.0},
-					{execute.Time(4), nil, nil},
-				},
-				GroupKey: execute.NewGroupKey(
-					[]flux.ColMeta{
+			data: func() []flux.Table {
+				return []flux.Table{&executetest.Table{
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
 						{Label: "tag0", Type: flux.TFloat},
+						{Label: "_value", Type: flux.TFloat},
 					},
-					[]values.Value{values.NewNull(semantic.BasicFloat)},
-				),
-			}},
+					Data: [][]interface{}{
+						{execute.Time(1), nil, 2.0},
+						{execute.Time(2), nil, nil},
+						{execute.Time(3), nil, 4.0},
+						{execute.Time(4), nil, nil},
+					},
+					GroupKey: execute.NewGroupKey(
+						[]flux.ColMeta{
+							{Label: "tag0", Type: flux.TFloat},
+						},
+						[]values.Value{values.NewNull(semantic.BasicFloat)},
+					),
+				}}
+			},
 			want: []*executetest.Table{{
 				ColMeta: []flux.ColMeta{
 					{Label: "_time", Type: flux.TTime},
@@ -693,25 +760,27 @@ func TestFill_Process(t *testing.T) {
 				Column: "tag0",
 				Value:  values.New(0.0),
 			},
-			data: []flux.Table{&executetest.Table{
-				ColMeta: []flux.ColMeta{
-					{Label: "_time", Type: flux.TTime},
-					{Label: "tag0", Type: flux.TFloat},
-					{Label: "_value", Type: flux.TFloat},
-				},
-				Data: [][]interface{}{
-					{execute.Time(1), 1.0, 2.0},
-					{execute.Time(2), 1.0, nil},
-					{execute.Time(3), 1.0, 4.0},
-					{execute.Time(4), 1.0, nil},
-				},
-				GroupKey: execute.NewGroupKey(
-					[]flux.ColMeta{
+			data: func() []flux.Table {
+				return []flux.Table{&executetest.Table{
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
 						{Label: "tag0", Type: flux.TFloat},
+						{Label: "_value", Type: flux.TFloat},
 					},
-					[]values.Value{values.NewFloat(1.0)},
-				),
-			}},
+					Data: [][]interface{}{
+						{execute.Time(1), 1.0, 2.0},
+						{execute.Time(2), 1.0, nil},
+						{execute.Time(3), 1.0, 4.0},
+						{execute.Time(4), 1.0, nil},
+					},
+					GroupKey: execute.NewGroupKey(
+						[]flux.ColMeta{
+							{Label: "tag0", Type: flux.TFloat},
+						},
+						[]values.Value{values.NewFloat(1.0)},
+					),
+				}}
+			},
 			want: []*executetest.Table{{
 				ColMeta: []flux.ColMeta{
 					{Label: "_time", Type: flux.TTime},
@@ -731,15 +800,35 @@ func TestFill_Process(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		tc := tc
+		// fill tests
 		t.Run(tc.name, func(t *testing.T) {
 			executetest.ProcessTestHelper2(
 				t,
-				tc.data,
+				tc.data(),
 				tc.want,
 				nil,
 				func(id execute.DatasetID, alloc *memory.Allocator) (execute.Transformation, execute.Dataset) {
 					ctx := dependenciestest.Default().Inject(context.Background())
 					return universe.NewFillTransformation(ctx, tc.spec, id, alloc)
+				},
+			)
+		})
+
+		// fill narrow transformations tests
+		// need to ensure the testcase names are distinct to avoid test results colliding between these two runs.
+		t.Run(fmt.Sprintf("%s narrow", tc.name), func(t *testing.T) {
+			executetest.ProcessTestHelper2(
+				t,
+				tc.data(),
+				tc.want,
+				nil,
+				func(id execute.DatasetID, alloc *memory.Allocator) (execute.Transformation, execute.Dataset) {
+					ctx := dependenciestest.Default().Inject(context.Background())
+					tr, d, err := universe.NewNarrowFillTransformation(ctx, tc.spec, id, alloc)
+					if err != nil {
+						t.Fatal(err)
+					}
+					return tr, d
 				},
 			)
 		})
