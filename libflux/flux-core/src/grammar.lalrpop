@@ -90,17 +90,33 @@ Import: ast::ImportDeclaration = {
 }
 
 Body: Vec<Statement> = {
-    <Statement*>
+    <mut body: Body_<"expr">> => { body.reverse(); body }
 }
 
-Statement: Statement = {
+Body_<EXPR>: Vec<Statement> = {
+    <s: Statement<"">> <b: Body_<"expr">> => {
+        b.push(s);
+        b
+    },
+
+    <s: ExprStatement> <mut b: Body_<"">> if EXPR == "expr" => {
+        b.push(s);
+        b
+    }
+}
+
+Statement<EXPR>: Statement = {
     <id: Identifier> "=" <init: Expression> => Statement::Variable(Box::new(VariableAssgn {
         base: Default::default(),
         id,
         init,
     })),
 
-    <expression: Expression> => Statement::Expr(Box::new(ExprStmt {
+    <ExprStatement> if EXPR == "expr" => <>
+}
+
+ExprStatement: Statement = {
+    <expression: ExpressionNoParen> => Statement::Expr(Box::new(ExprStmt {
         base: Default::default(),
         expression,
     })),
@@ -118,11 +134,11 @@ StringLit: StringLit = {
 }
 
 Atom: Expression = {
-    AtomIdent<"identifier">
+    AtomOpt<"identifier", "paren">
 }
 
-AtomIdent<T>: Expression = {
-    <Identifier> if T == "identifier" => Expression::Identifier(<>),
+AtomOpt<ID, PAREN>: Expression = {
+    <Identifier> if ID == "identifier" => Expression::Identifier(<>),
 
     <object: Atom> "." <property: Identifier> => Expression::Member(Box::new(MemberExpr {
         base: Default::default(),
@@ -171,7 +187,7 @@ AtomIdent<T>: Expression = {
         }))
     },
 
-    <lparen: Comments<"(">> <expression: Expression> <rparen: Comments<")">> => Expression::Paren(Box::new(ParenExpr {
+    <lparen: Comments<"(">> <expression: Expression> <rparen: Comments<")">> if PAREN == "paren" => Expression::Paren(Box::new(ParenExpr {
         base: Default::default(),
         lparen,
         expression,
@@ -201,24 +217,28 @@ AtomIdent<T>: Expression = {
 // }
 
 Expression: Expression = {
-    ExpressionIdent<"identifier">
+    ExpressionOpt<"identifier", "paren">
 }
 
-ExpressionIdent<T>: Expression = {
-    AtomIdent<T>,
+ExpressionNoParen: Expression = {
+    ExpressionOpt<"identifier", "">
+}
 
-//    <callee: Atom> <lparen: Comments<"(">> <arguments: CommaSep<Expression>> <rparen: Comments<")">> => {
-//        Expression::Call(Box::new(CallExpr {
-//            base: Default::default(),
-//            callee,
-//            lparen,
-//            arguments,
-//            rparen,
-//        }))
-//    },
+ExpressionOpt<ID, PAREN>: Expression = {
+    AtomOpt<ID, PAREN>,
+
+    <callee: AtomOpt<ID, PAREN>> <lparen: Comments<"(">>  <rparen: Comments<")">> if PAREN == "paren" => {
+        Expression::Call(Box::new(CallExpr {
+            base: Default::default(),
+            callee,
+            lparen,
+            arguments,
+            rparen,
+        }))
+    },
 
 
-    <left: Atom> "+" <right: Expression> => {
+    <left: AtomOpt<ID, PAREN>> "+" <right: Expression> => {
         Expression::Binary(Box::new(BinaryExpr {
             base: Default::default(),
             operator: Operator::AdditionOperator,
@@ -227,7 +247,7 @@ ExpressionIdent<T>: Expression = {
         }))
     },
 
-    <left: Atom> "/" <right: Expression> => {
+    <left: AtomOpt<ID, PAREN>> "/" <right: Expression> => {
         Expression::Binary(Box::new(BinaryExpr {
             base: Default::default(),
             operator: Operator::DivisionOperator,
