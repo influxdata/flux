@@ -99,6 +99,11 @@ Statement: Statement = {
         id,
         init,
     })),
+
+    <expression: Expression> => Statement::Expr(Box::new(ExprStmt {
+        base: Default::default(),
+        expression,
+    })),
 }
 
 StringLit: StringLit = {
@@ -202,15 +207,15 @@ Expression: Expression = {
 ExpressionIdent<T>: Expression = {
     AtomIdent<T>,
 
-    <callee: Atom> <lparen: Comments<"(">> <arguments: CommaSep<Expression>> <rparen: Comments<")">> => {
-        Expression::Call(Box::new(CallExpr {
-            base: Default::default(),
-            callee,
-            lparen,
-            arguments,
-            rparen,
-        }))
-    },
+//    <callee: Atom> <lparen: Comments<"(">> <arguments: CommaSep<Expression>> <rparen: Comments<")">> => {
+//        Expression::Call(Box::new(CallExpr {
+//            base: Default::default(),
+//            callee,
+//            lparen,
+//            arguments,
+//            rparen,
+//        }))
+//    },
 
 
     <left: Atom> "+" <right: Expression> => {
