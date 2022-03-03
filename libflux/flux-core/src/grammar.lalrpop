@@ -20,6 +20,7 @@ extern {
         "then" => Token { tok: TokenType::Then, .. },
         "builtin" => Token { tok: TokenType::Builtin, .. },
         "package" => Token { tok: TokenType::Package, .. },
+        "import" => Token { tok: TokenType::Import, .. },
 
         ":" => Token { tok: TokenType::Colon, .. },
         "," => Token { tok: TokenType::Comma, .. },
@@ -78,6 +79,11 @@ Package: ast::PackageClause = {
 }
 
 Import: ast::ImportDeclaration = {
+    "import" <alias: Identifier?> <path: StringLit> => ast::ImportDeclaration {
+        base: Default::default(),
+        alias,
+        path,
+    }
 }
 
 Body: Vec<Statement> = {
@@ -145,14 +151,7 @@ AtomIdent<T>: Expression = {
         }))
     },
 
-    <lparen: Comments<"(">> <expression: Identifier> <tail: ParenTail> => Expression::Paren(Box::new(ParenExpr {
-        base: Default::default(),
-        lparen,
-        expression,
-        rparen,
-    })),
-
-    <lparen: Comments<"(">> <expression: ExpressionIdent<"">> <rparen: Comments<")">> => Expression::Paren(Box::new(ParenExpr {
+    <lparen: Comments<"(">> <expression: Expression> <rparen: Comments<")">> => Expression::Paren(Box::new(ParenExpr {
         base: Default::default(),
         lparen,
         expression,
@@ -175,11 +174,11 @@ AtomIdent<T>: Expression = {
     })),
 }
 
-ParenTail: () = {
-    <rparen: Comments<")">> => rparen,
-
-    <rparen: Comments<")">> "=>" => rparen,
-}
+// ParenTail: () = {
+//     <rparen: Comments<")">> => (),
+//
+//     <rparen: Comments<")">> "=>" => (),
+// }
 
 Expression: Expression = {
     ExpressionIdent<"identifier">
