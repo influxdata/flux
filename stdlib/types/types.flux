@@ -60,7 +60,7 @@ package types
 // # import "csv"
 // # import "sampledata"
 // import "types"
-// # 
+// #
 // # data = csv.from(
 // #     csv: "
 // # #group,false,false,false,true,false
@@ -73,7 +73,7 @@ package types
 // # ,,0,2021-01-01T00:00:30Z,float,17.53
 // # ,,0,2021-01-01T00:00:40Z,float,15.23
 // # ,,0,2021-01-01T00:00:50Z,float,4.43
-// # 
+// #
 // # #group,false,false,false,true,false
 // # #datatype,string,long,dateTime:RFC3339,string,boolean
 // # #default,_result,,,,
@@ -84,7 +84,7 @@ package types
 // # ,,0,2021-01-01T00:00:30Z,bool,true
 // # ,,0,2021-01-01T00:00:40Z,bool,false
 // # ,,0,2021-01-01T00:00:50Z,bool,false
-// # 
+// #
 // # #group,false,false,false,true,false
 // # #datatype,string,long,dateTime:RFC3339,string,string
 // # #default,_result,,,,
@@ -95,7 +95,7 @@ package types
 // # ,,0,2021-01-01T00:00:30Z,string,smpl_guvzy4
 // # ,,0,2021-01-01T00:00:40Z,string,smpl_5v3cce
 // # ,,0,2021-01-01T00:00:50Z,string,smpl_s9fmgy
-// # 
+// #
 // # #group,false,false,false,false,true
 // # #datatype,string,long,dateTime:RFC3339,long,string
 // # #default,_result,,,,
@@ -109,15 +109,15 @@ package types
 // # ",
 // # )
 // #     |> range(start: sampledata.start, stop: sampledata.stop)
-// 
+//
 // < nonNumericData = data
 //     |> filter(fn: (r) => types.isType(v: r._value, type: "string") or types.isType(v: r._value, type: "bool"))
 //     |> aggregateWindow(every: 30s, fn: last)
-// 
+//
 // numericData = data
 //     |> filter(fn: (r) => types.isType(v: r._value, type: "int") or types.isType(v: r._value, type: "float"))
 //     |> aggregateWindow(every: 30s, fn: mean)
-// 
+//
 // > union(tables: [nonNumericData, numericData])
 // ```
 //
