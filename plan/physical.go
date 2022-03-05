@@ -108,7 +108,12 @@ func (pp *physicalPlanner) Plan(ctx context.Context, spec *Spec) (*Spec, error) 
 				// Do not include source nodes in the node list as
 				// they do not use the dispatcher.
 				if len(node.Predecessors()) > 0 {
-					concurrencyQuota++
+					addend := 1
+					ppn := node.(*PhysicalPlanNode)
+					if attr, ok := ppn.OutputAttrs[ParallelRunKey]; ok {
+						addend = attr.(ParallelRunAttribute).Factor
+					}
+					concurrencyQuota += addend
 				}
 				return nil
 			})
