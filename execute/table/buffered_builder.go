@@ -1,7 +1,7 @@
 package table
 
 import (
-	"github.com/apache/arrow/go/arrow/memory"
+	"github.com/apache/arrow/go/v7/arrow/memory"
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/array"
 	"github.com/influxdata/flux/arrow"
@@ -64,7 +64,7 @@ func (b *BufferedBuilder) appendBuffer(cr flux.ColReader, mem memory.Allocator) 
 	buffer := &arrow.TableBuffer{
 		GroupKey: b.GroupKey,
 		Columns:  b.Columns,
-		Values:   make([]array.Interface, len(b.Columns)),
+		Values:   make([]array.Array, len(b.Columns)),
 	}
 	for j, c := range b.Columns {
 		idx := colIdx(c.Label, cr.Cols())
@@ -118,7 +118,7 @@ func (b *BufferedBuilder) normalizeTableSchema(cols []flux.ColMeta, mem memory.A
 // newNullColumn will construct a new column with only null values
 // for the entire size. The resulting array will match the column
 // type that is passed in.
-func (b *BufferedBuilder) newNullColumn(typ flux.ColType, l int, mem memory.Allocator) array.Interface {
+func (b *BufferedBuilder) newNullColumn(typ flux.ColType, l int, mem memory.Allocator) array.Array {
 	builder := arrow.NewBuilder(typ, mem)
 	builder.Resize(l)
 	for i := 0; i < l; i++ {

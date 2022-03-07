@@ -13,7 +13,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/apache/arrow/go/arrow/memory"
+	"github.com/apache/arrow/go/v7/arrow/memory"
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/array"
 	"github.com/influxdata/flux/arrow"
@@ -79,7 +79,7 @@ func (s Table) Table(mem memory.Allocator) flux.Table {
 	}
 
 	// Construct each of the buffers.
-	buffer.Values = make([]array.Interface, len(buffer.Columns))
+	buffer.Values = make([]array.Array, len(buffer.Columns))
 	for i, c := range s {
 		buffer.Values[i] = c.Make(n, mem)
 	}
@@ -118,7 +118,7 @@ type Column interface {
 
 	// Make will construct an array with the given length
 	// if it is possible.
-	Make(n int, mem memory.Allocator) array.Interface
+	Make(n int, mem memory.Allocator) array.Array
 
 	// Len will return the length of this column.
 	// If no length is known, this will return -1.
@@ -195,7 +195,7 @@ type KeyColumn struct {
 	t flux.ColType
 }
 
-func (s KeyColumn) Make(n int, mem memory.Allocator) array.Interface {
+func (s KeyColumn) Make(n int, mem memory.Allocator) array.Array {
 	return arrow.Repeat(s.Type(), s.KeyValue(), n, mem)
 }
 
@@ -246,7 +246,7 @@ type intColumn struct {
 	v []int64
 }
 
-func (s intColumn) Make(n int, mem memory.Allocator) array.Interface {
+func (s intColumn) Make(n int, mem memory.Allocator) array.Array {
 	b := array.NewIntBuilder(mem)
 	b.Resize(len(s.v))
 	b.AppendValues(s.v, s.valid)
@@ -305,7 +305,7 @@ type uintColumn struct {
 	v []uint64
 }
 
-func (s uintColumn) Make(n int, mem memory.Allocator) array.Interface {
+func (s uintColumn) Make(n int, mem memory.Allocator) array.Array {
 	b := array.NewUintBuilder(mem)
 	b.Resize(len(s.v))
 	b.AppendValues(s.v, s.valid)
@@ -368,7 +368,7 @@ type floatColumn struct {
 	v []float64
 }
 
-func (s floatColumn) Make(n int, mem memory.Allocator) array.Interface {
+func (s floatColumn) Make(n int, mem memory.Allocator) array.Array {
 	b := array.NewFloatBuilder(mem)
 	b.Resize(len(s.v))
 	b.AppendValues(s.v, s.valid)
@@ -429,7 +429,7 @@ type stringColumn struct {
 	v []string
 }
 
-func (s stringColumn) Make(n int, mem memory.Allocator) array.Interface {
+func (s stringColumn) Make(n int, mem memory.Allocator) array.Array {
 	b := array.NewStringBuilder(mem)
 	b.Resize(len(s.v))
 	b.AppendValues(s.v, s.valid)
@@ -486,7 +486,7 @@ type booleanColumn struct {
 	v []bool
 }
 
-func (s booleanColumn) Make(n int, mem memory.Allocator) array.Interface {
+func (s booleanColumn) Make(n int, mem memory.Allocator) array.Array {
 	b := array.NewBooleanBuilder(mem)
 	b.Resize(len(s.v))
 	b.AppendValues(s.v, s.valid)
@@ -550,7 +550,7 @@ type timeColumn struct {
 	v []int64
 }
 
-func (s timeColumn) Make(n int, mem memory.Allocator) array.Interface {
+func (s timeColumn) Make(n int, mem memory.Allocator) array.Array {
 	b := array.NewIntBuilder(mem)
 	b.Resize(len(s.v))
 	b.AppendValues(s.v, s.valid)

@@ -28,18 +28,18 @@ func (s *StreamWriter) Cols() []flux.ColMeta { return s.cols }
 
 // Write will write a new buffer to the stream using the given values.
 // The group key and columns will be used for the emitted column reader.
-func (s *StreamWriter) Write(vs []array.Interface) error {
+func (s *StreamWriter) Write(vs []array.Array) error {
 	return s.write(vs, true)
 }
 
 // UnsafeWrite will write the new buffer to the stream without validating
 // that the resulting table is valid. This can be used to avoid the small
 // performance hit that comes from validating the resulting table.
-func (s *StreamWriter) UnsafeWrite(vs []array.Interface) error {
+func (s *StreamWriter) UnsafeWrite(vs []array.Array) error {
 	return s.write(vs, false)
 }
 
-func (s *StreamWriter) write(vs []array.Interface, validate bool) error {
+func (s *StreamWriter) write(vs []array.Array, validate bool) error {
 	cr := &arrow.TableBuffer{
 		GroupKey: s.key,
 		Columns:  s.cols,

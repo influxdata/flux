@@ -4,10 +4,11 @@ import (
 	"sync"
 	"testing"
 
-	arrowmemory "github.com/apache/arrow/go/arrow/memory"
+	arrowmemory "github.com/apache/arrow/go/v7/arrow/memory"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/memory"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestAllocator_Allocate(t *testing.T) {
@@ -17,7 +18,7 @@ func TestAllocator_Allocate(t *testing.T) {
 	allocator := &memory.Allocator{Allocator: mem}
 	b := allocator.Allocate(64)
 
-	mem.AssertSize(t, 64)
+	assert.Equal(t, 64, mem.CurrentAlloc(), "unexpected memory allocation.")
 	if want, got := int64(64), allocator.Allocated(); want != got {
 		t.Fatalf("unexpected allocated count -want/+got\n\t- %d\n\t+ %d", want, got)
 	}
@@ -43,7 +44,7 @@ func TestAllocator_Reallocate(t *testing.T) {
 	allocator := &memory.Allocator{Allocator: mem}
 	b := allocator.Allocate(64)
 
-	mem.AssertSize(t, 64)
+	assert.Equal(t, 64, mem.CurrentAlloc(), "unexpected memory allocation.")
 	if want, got := int64(64), allocator.Allocated(); want != got {
 		t.Fatalf("unexpected allocated count -want/+got\n\t- %d\n\t+ %d", want, got)
 	}
@@ -53,7 +54,7 @@ func TestAllocator_Reallocate(t *testing.T) {
 
 	b = allocator.Reallocate(128, b)
 
-	mem.AssertSize(t, 128)
+	assert.Equal(t, 128, mem.CurrentAlloc(), "unexpected memory allocation.")
 	if want, got := int64(128), allocator.Allocated(); want != got {
 		t.Fatalf("unexpected allocated count -want/+got\n\t- %d\n\t+ %d", want, got)
 	}

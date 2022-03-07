@@ -12,7 +12,7 @@ import (
 	"github.com/influxdata/flux/array"
 )
 
-func IsConstant(arr array.Interface) bool {
+func IsConstant(arr array.Array) bool {
 	switch arr := arr.(type) {
 	case *array.Int:
 		return IsIntConstant(arr)

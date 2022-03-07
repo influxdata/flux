@@ -47,7 +47,7 @@ type vectorFn struct {
 	preparedFn
 }
 
-func (f *vectorFn) Eval(ctx context.Context, chunk table.Chunk) ([]array.Interface, error) {
+func (f *vectorFn) Eval(ctx context.Context, chunk table.Chunk) ([]array.Array, error) {
 	for j, col := range chunk.Cols() {
 		arr := chunk.Values(j)
 		arr.Retain()
@@ -70,7 +70,7 @@ func (f *vectorFn) Eval(ctx context.Context, chunk table.Chunk) ([]array.Interfa
 		return nil, err
 	}
 
-	vs := make([]array.Interface, n)
+	vs := make([]array.Array, n)
 	for i := 0; i < n; i++ {
 		prop, err := retType.RecordProperty(i)
 		if err != nil {

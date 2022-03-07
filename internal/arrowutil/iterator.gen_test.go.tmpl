@@ -5,14 +5,14 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/apache/arrow/go/arrow/memory"
+	"github.com/apache/arrow/go/v7/arrow/memory"
 	"github.com/influxdata/flux/array"
 	"github.com/influxdata/flux/internal/arrowutil"
 )
 
 {{range .}}
 func TestIterate{{.Name}}s(t *testing.T) {
-	arrs := make([]array.Interface, 0, 3)
+	arrs := make([]array.Array, 0, 3)
 	for i := 0; i < 3; i++ {
 		b := arrowutil.New{{.Name}}Builder(memory.DefaultAllocator)
 		for j := 0; j < 100; j++ {

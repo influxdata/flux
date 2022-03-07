@@ -35,7 +35,7 @@ func TestBufferedTable(t *testing.T) {
 							flux.ColMeta{Label: "_time", Type: flux.TTime},
 							flux.ColMeta{Label: "_value", Type: flux.TFloat},
 						)
-						vs := make([]array.Interface, len(cols))
+						vs := make([]array.Array, len(cols))
 						vs[0] = arrow.Repeat(key.Cols()[0].Type, key.Value(0), 3, alloc)
 						vs[1] = arrow.Repeat(key.Cols()[1].Type, key.Value(1), 3, alloc)
 						vs[2] = arrow.NewInt([]int64{0, 1, 2}, alloc)
@@ -68,7 +68,7 @@ func TestBufferedTable(t *testing.T) {
 						GroupKey: key,
 						Columns:  cols,
 					}
-					vs := make([]array.Interface, len(cols))
+					vs := make([]array.Array, len(cols))
 					vs[0] = arrow.Repeat(key.Cols()[0].Type, key.Value(0), 3, alloc)
 					vs[1] = arrow.Repeat(key.Cols()[1].Type, key.Value(1), 3, alloc)
 					vs[2] = arrow.NewInt([]int64{0, 1, 2}, alloc)
@@ -79,7 +79,7 @@ func TestBufferedTable(t *testing.T) {
 						Values:   vs,
 					})
 
-					vs = make([]array.Interface, len(cols))
+					vs = make([]array.Array, len(cols))
 					vs[0] = arrow.Repeat(key.Cols()[0].Type, key.Value(0), 5, alloc)
 					vs[1] = arrow.Repeat(key.Cols()[1].Type, key.Value(1), 5, alloc)
 					vs[2] = arrow.NewInt([]int64{3, 4, 5, 6, 7}, alloc)

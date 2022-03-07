@@ -373,13 +373,13 @@ func TestColListTableBuilder_AppendValues(t *testing.T) {
 	for _, tt := range []struct {
 		name   string
 		typ    flux.ColType
-		values array.Interface
+		values array.Array
 		want   *executetest.Table
 	}{
 		{
 			name: "Ints",
 			typ:  flux.TInt,
-			values: func() array.Interface {
+			values: func() array.Array {
 				b := array.NewIntBuilder(memory.DefaultAllocator)
 				b.Append(2)
 				b.Append(3)
@@ -402,7 +402,7 @@ func TestColListTableBuilder_AppendValues(t *testing.T) {
 		{
 			name: "UInts",
 			typ:  flux.TUInt,
-			values: func() array.Interface {
+			values: func() array.Array {
 				b := array.NewUintBuilder(memory.DefaultAllocator)
 				b.Append(2)
 				b.Append(3)
@@ -425,7 +425,7 @@ func TestColListTableBuilder_AppendValues(t *testing.T) {
 		{
 			name: "Floats",
 			typ:  flux.TFloat,
-			values: func() array.Interface {
+			values: func() array.Array {
 				b := array.NewFloatBuilder(memory.DefaultAllocator)
 				b.Append(2)
 				b.Append(3)
@@ -448,7 +448,7 @@ func TestColListTableBuilder_AppendValues(t *testing.T) {
 		{
 			name: "Strings",
 			typ:  flux.TString,
-			values: func() array.Interface {
+			values: func() array.Array {
 				b := arrow.NewStringBuilder(&memory.Allocator{})
 				b.Append("a")
 				b.Append("d")
@@ -471,7 +471,7 @@ func TestColListTableBuilder_AppendValues(t *testing.T) {
 		{
 			name: "Bools",
 			typ:  flux.TBool,
-			values: func() array.Interface {
+			values: func() array.Array {
 				b := array.NewBooleanBuilder(memory.DefaultAllocator)
 				b.Append(true)
 				b.Append(false)
@@ -494,7 +494,7 @@ func TestColListTableBuilder_AppendValues(t *testing.T) {
 		{
 			name: "Times",
 			typ:  flux.TTime,
-			values: func() array.Interface {
+			values: func() array.Array {
 				b := array.NewIntBuilder(memory.DefaultAllocator)
 				b.Append(2)
 				b.Append(3)

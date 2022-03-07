@@ -13,7 +13,7 @@ import (
 	"time"
 	"unicode/utf8"
 
-	"github.com/apache/arrow/go/arrow/memory"
+	"github.com/apache/arrow/go/v7/arrow/memory"
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/array"
 	"github.com/influxdata/flux/arrow"
@@ -755,7 +755,7 @@ func (d *tableDecoder) Emit(f func(flux.ColReader) error) error {
 	cr := arrow.TableBuffer{
 		GroupKey: d.key,
 		Columns:  d.colMeta,
-		Values:   make([]array.Interface, len(d.cols)),
+		Values:   make([]array.Array, len(d.cols)),
 	}
 	for i, c := range d.cols {
 		// Creating a new array resets the builder so

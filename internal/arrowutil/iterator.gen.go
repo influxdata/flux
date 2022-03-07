@@ -14,7 +14,7 @@ type IntIterator struct {
 	init   bool
 }
 
-func IterateInts(arrs []array.Interface) IntIterator {
+func IterateInts(arrs []array.Array) IntIterator {
 	if len(arrs) == 0 {
 		return IntIterator{}
 	}
@@ -80,7 +80,7 @@ type UintIterator struct {
 	init   bool
 }
 
-func IterateUints(arrs []array.Interface) UintIterator {
+func IterateUints(arrs []array.Array) UintIterator {
 	if len(arrs) == 0 {
 		return UintIterator{}
 	}
@@ -146,7 +146,7 @@ type FloatIterator struct {
 	init   bool
 }
 
-func IterateFloats(arrs []array.Interface) FloatIterator {
+func IterateFloats(arrs []array.Array) FloatIterator {
 	if len(arrs) == 0 {
 		return FloatIterator{}
 	}
@@ -212,7 +212,7 @@ type BooleanIterator struct {
 	init   bool
 }
 
-func IterateBooleans(arrs []array.Interface) BooleanIterator {
+func IterateBooleans(arrs []array.Array) BooleanIterator {
 	if len(arrs) == 0 {
 		return BooleanIterator{}
 	}
@@ -278,7 +278,7 @@ type StringIterator struct {
 	init   bool
 }
 
-func IterateStrings(arrs []array.Interface) StringIterator {
+func IterateStrings(arrs []array.Array) StringIterator {
 	if len(arrs) == 0 {
 		return StringIterator{}
 	}

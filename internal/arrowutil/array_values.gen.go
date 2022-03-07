@@ -16,7 +16,7 @@ import (
 	"github.com/influxdata/flux/values"
 )
 
-func NewArrayValue(arr array.Interface, typ flux.ColType) values.Array {
+func NewArrayValue(arr array.Array, typ flux.ColType) values.Array {
 	switch elemType := flux.SemanticType(typ); elemType {
 
 	case semantic.BasicInt:

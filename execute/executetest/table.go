@@ -101,7 +101,7 @@ func (t *Table) Do(f func(flux.ColReader) error) error {
 	}
 	t.IsDone = true
 
-	cols := make([]array.Interface, len(t.ColMeta))
+	cols := make([]array.Array, len(t.ColMeta))
 	for j, col := range t.ColMeta {
 		switch col.Type {
 		case flux.TBool:
@@ -189,7 +189,7 @@ func (t *Table) Done() {
 type ColReader struct {
 	key  flux.GroupKey
 	meta []flux.ColMeta
-	cols []array.Interface
+	cols []array.Array
 }
 
 func (cr *ColReader) Key() flux.GroupKey {
@@ -251,7 +251,7 @@ type RowWiseTable struct {
 
 // Do calls f once for each row in the table
 func (t *RowWiseTable) Do(f func(flux.ColReader) error) error {
-	cols := make([]array.Interface, len(t.ColMeta))
+	cols := make([]array.Array, len(t.ColMeta))
 	for j, col := range t.ColMeta {
 		switch col.Type {
 		case flux.TBool:
@@ -323,7 +323,7 @@ func (t *RowWiseTable) Do(f func(flux.ColReader) error) error {
 		}
 	}
 
-	release := func(cols []array.Interface) {
+	release := func(cols []array.Array) {
 		for _, arr := range cols {
 			arr.Release()
 		}
@@ -332,7 +332,7 @@ func (t *RowWiseTable) Do(f func(flux.ColReader) error) error {
 
 	l := cols[0].Len()
 	for i := 0; i < l; i++ {
-		row := make([]array.Interface, len(t.ColMeta))
+		row := make([]array.Array, len(t.ColMeta))
 		for j, col := range t.ColMeta {
 			switch col.Type {
 			case flux.TBool:
@@ -380,7 +380,7 @@ func (t *ParallelTable) Do(f func(flux.ColReader) error) error {
 	}
 	t.IsDone = true
 
-	cols := make([]array.Interface, len(t.ColMeta))
+	cols := make([]array.Array, len(t.ColMeta))
 	for j, col := range t.ColMeta {
 		switch col.Type {
 		case flux.TBool:

@@ -1,7 +1,7 @@
 package arrow
 
 import (
-	"github.com/apache/arrow/go/arrow/memory"
+	"github.com/apache/arrow/go/v7/arrow/memory"
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/array"
 	"github.com/influxdata/flux/codes"
@@ -11,7 +11,7 @@ import (
 
 // Repeat will construct an arrow array that repeats
 // the value n times.
-func Repeat(colType flux.ColType, v values.Value, n int, mem memory.Allocator) array.Interface {
+func Repeat(colType flux.ColType, v values.Value, n int, mem memory.Allocator) array.Array {
 	switch colType {
 	case flux.TInt:
 		var ival int64

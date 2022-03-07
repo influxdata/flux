@@ -1,7 +1,7 @@
 package table
 
 import (
-	"github.com/apache/arrow/go/arrow/memory"
+	"github.com/apache/arrow/go/v7/arrow/memory"
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/array"
 	"github.com/influxdata/flux/arrow"
@@ -118,7 +118,7 @@ func (a *ArrowBuilder) CheckCol(c flux.ColMeta) (int, error) {
 
 // Buffer constructs an arrow.TableBuffer from the current builders.
 func (a *ArrowBuilder) Buffer() (arrow.TableBuffer, error) {
-	values := make([]array.Interface, len(a.Builders))
+	values := make([]array.Array, len(a.Builders))
 	for j, b := range a.Builders {
 		values[j] = b.NewArray()
 	}

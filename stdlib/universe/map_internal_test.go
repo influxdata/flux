@@ -3,7 +3,7 @@ package universe
 import (
 	"context"
 
-	"github.com/apache/arrow/go/arrow/memory"
+	"github.com/apache/arrow/go/v7/arrow/memory"
 	"github.com/influxdata/flux/execute"
 )
 
