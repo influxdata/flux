@@ -125,6 +125,18 @@ func OptimizeAggregateWindow() BoolFlag {
 	return optimizeAggregateWindow
 }
 
+var narrowTransformationLimit = feature.MakeBoolFlag(
+	"Narrow Transformation Limit",
+	"narrowTransformationLimit",
+	"Owen Nelson",
+	false,
+)
+
+// NarrowTransformationLimit - Enable the NarrowStateTransformation implementation of limit
+func NarrowTransformationLimit() BoolFlag {
+	return narrowTransformationLimit
+}
+
 // Inject will inject the Flagger into the context.
 func Inject(ctx context.Context, flagger Flagger) context.Context {
 	return feature.Inject(ctx, flagger)
@@ -140,6 +152,7 @@ var all = []Flag{
 	narrowTransformationDifference,
 	narrowTransformationFill,
 	optimizeAggregateWindow,
+	narrowTransformationLimit,
 }
 
 var byKey = map[string]Flag{
@@ -152,6 +165,7 @@ var byKey = map[string]Flag{
 	"narrowTransformationDifference":   narrowTransformationDifference,
 	"narrowTransformationFill":         narrowTransformationFill,
 	"optimizeAggregateWindow":          optimizeAggregateWindow,
+	"narrowTransformationLimit":        narrowTransformationLimit,
 }
 
 // Flags returns all feature flags.

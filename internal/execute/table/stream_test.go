@@ -34,7 +34,7 @@ func TestStream(t *testing.T) {
 					flux.ColMeta{Label: "_value", Type: flux.TFloat},
 				)
 				tbl1 := MustStreamContext(ctx, key1, cols1, func(ctx context.Context, w *table.StreamWriter) error {
-					vs := make([]array.Interface, len(w.Cols()))
+					vs := make([]array.Array, len(w.Cols()))
 					vs[0] = arrow.Repeat(w.Key().Cols()[0].Type, w.Key().Value(0), 3, alloc)
 					vs[1] = arrow.Repeat(w.Key().Cols()[1].Type, w.Key().Value(1), 3, alloc)
 					vs[2] = arrow.NewInt([]int64{0, 1, 2}, alloc)
@@ -57,7 +57,7 @@ func TestStream(t *testing.T) {
 					flux.ColMeta{Label: "_value", Type: flux.TFloat},
 				)
 				tbl2 := MustStreamContext(ctx, key2, cols2, func(ctx context.Context, w *table.StreamWriter) error {
-					vs := make([]array.Interface, len(w.Cols()))
+					vs := make([]array.Array, len(w.Cols()))
 					vs[0] = arrow.Repeat(w.Key().Cols()[0].Type, w.Key().Value(0), 3, alloc)
 					vs[1] = arrow.Repeat(w.Key().Cols()[1].Type, w.Key().Value(1), 3, alloc)
 					vs[2] = arrow.NewInt([]int64{0, 1, 2}, alloc)
@@ -66,7 +66,7 @@ func TestStream(t *testing.T) {
 						return err
 					}
 
-					vs = make([]array.Interface, len(w.Cols()))
+					vs = make([]array.Array, len(w.Cols()))
 					vs[0] = arrow.Repeat(w.Key().Cols()[0].Type, w.Key().Value(0), 5, alloc)
 					vs[1] = arrow.Repeat(w.Key().Cols()[1].Type, w.Key().Value(1), 5, alloc)
 					vs[2] = arrow.NewInt([]int64{3, 4, 5, 6, 7}, alloc)
@@ -89,7 +89,7 @@ func TestStream(t *testing.T) {
 					flux.ColMeta{Label: "_value", Type: flux.TFloat},
 				)
 				tbl3 := MustStreamContext(ctx, key3, cols3, func(ctx context.Context, w *table.StreamWriter) error {
-					vs := make([]array.Interface, len(w.Cols()))
+					vs := make([]array.Array, len(w.Cols()))
 					for i, col := range w.Cols() {
 						vs[i] = arrow.NewBuilder(col.Type, alloc).NewArray()
 					}

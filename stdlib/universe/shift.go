@@ -3,7 +3,7 @@ package universe
 import (
 	"time"
 
-	"github.com/apache/arrow/go/arrow/memory"
+	"github.com/apache/arrow/go/v7/arrow/memory"
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/array"
 	"github.com/influxdata/flux/arrow"
@@ -158,7 +158,7 @@ func (s *shiftTransformation) Process(chunk table.Chunk, d *execute.TransportDat
 	buffer := arrow.TableBuffer{
 		GroupKey: key,
 		Columns:  chunk.Cols(),
-		Values:   make([]array.Interface, chunk.NCols()),
+		Values:   make([]array.Array, chunk.NCols()),
 	}
 	for j, c := range chunk.Cols() {
 		vs := chunk.Values(j)

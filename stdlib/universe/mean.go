@@ -3,7 +3,7 @@ package universe
 import (
 	"math"
 
-	arrowmath "github.com/apache/arrow/go/arrow/math"
+	arrowmath "github.com/apache/arrow/go/v7/arrow/math"
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/array"
 	"github.com/influxdata/flux/codes"

@@ -4,7 +4,7 @@ import (
 	"context"
 	"sort"
 
-	arrowmem "github.com/apache/arrow/go/arrow/memory"
+	arrowmem "github.com/apache/arrow/go/v7/arrow/memory"
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/array"
 	"github.com/influxdata/flux/arrow"
@@ -159,7 +159,7 @@ func (a *groupTransformationAdapter) Process(chunk table.Chunk, d *execute.Trans
 		buffer := arrow.TableBuffer{
 			GroupKey: key,
 			Columns:  chunk.Cols(),
-			Values:   make([]array.Interface, chunk.NCols()),
+			Values:   make([]array.Array, chunk.NCols()),
 		}
 		for j := range buffer.Values {
 			buffer.Values[j] = chunk.Values(j)

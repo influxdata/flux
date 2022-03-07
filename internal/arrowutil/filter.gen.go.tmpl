@@ -3,12 +3,12 @@ package arrowutil
 import (
 	"fmt"
 
-	"github.com/apache/arrow/go/arrow/bitutil"
-	"github.com/apache/arrow/go/arrow/memory"
+	"github.com/apache/arrow/go/v7/arrow/bitutil"
+	"github.com/apache/arrow/go/v7/arrow/memory"
 	"github.com/influxdata/flux/array"
 )
 
-func Filter(arr array.Interface, bitset []byte, mem memory.Allocator) array.Interface {
+func Filter(arr array.Array, bitset []byte, mem memory.Allocator) array.Array {
 	switch arr := arr.(type) {
 	{{range .}}
 	case *{{.Type}}:

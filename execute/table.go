@@ -2134,7 +2134,7 @@ func (t *emptyTable) Do(f func(flux.ColReader) error) error {
 	}
 
 	// Construct empty arrays for each column.
-	arrs := make([]array.Interface, len(t.cols))
+	arrs := make([]array.Array, len(t.cols))
 	for i, col := range t.cols {
 		b := arrow.NewBuilder(col.Type, memory.DefaultAllocator)
 		arrs[i] = b.NewArray()

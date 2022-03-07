@@ -7,8 +7,8 @@ import (
 	"github.com/influxdata/flux/internal/errors"
 )
 
-// Values returns the array from the column reader as an array.Interface.
-func Values(cr flux.ColReader, j int) array.Interface {
+// Values returns the array from the column reader as an array.Array.
+func Values(cr flux.ColReader, j int) array.Array {
 	switch typ := cr.Cols()[j].Type; typ {
 	case flux.TInt:
 		return cr.Ints(j)

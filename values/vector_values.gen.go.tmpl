@@ -9,7 +9,7 @@ import (
 	"github.com/influxdata/flux/semantic"
 )
 
-func NewVectorValue(arr arrow.Interface, typ semantic.MonoType) Vector {
+func NewVectorValue(arr arrow.Array, typ semantic.MonoType) Vector {
 	switch typ {
 	{{range .}}
 	case {{.MonoType}}:
@@ -58,7 +58,7 @@ func newVectorFromSlice(values []Value, typ semantic.MonoType, mem *memory.Alloc
 {{range .}}
 var _ Value = &{{.Name}}VectorValue{}
 var _ Vector = &{{.Name}}VectorValue{}
-var _ arrow.Interface = &{{.Type}}{}
+var _ arrow.Array = &{{.Type}}{}
 
 type {{.Name}}VectorValue struct {
 	arr *{{.Type}}
@@ -80,7 +80,7 @@ func (v *{{.Name}}VectorValue) ElementType() semantic.MonoType {
 	}
 	return t
 }
-func (v *{{.Name}}VectorValue) Arr() arrow.Interface { return v.arr }
+func (v *{{.Name}}VectorValue) Arr() arrow.Array { return v.arr }
 func (v *{{.Name}}VectorValue) Retain() {
 	v.arr.Retain()
 }

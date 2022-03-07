@@ -7,8 +7,8 @@
 package array
 
 import (
-	"github.com/apache/arrow/go/arrow/array"
-	"github.com/apache/arrow/go/arrow/memory"
+	"github.com/apache/arrow/go/v7/arrow/array"
+	"github.com/apache/arrow/go/v7/arrow/memory"
 )
 
 type (
@@ -63,7 +63,7 @@ func (b *IntBuilder) Reserve(n int) {
 func (b *IntBuilder) Resize(n int) {
 	b.b.Resize(n)
 }
-func (b *IntBuilder) NewArray() Interface {
+func (b *IntBuilder) NewArray() Array {
 	return b.NewIntArray()
 }
 func (b *IntBuilder) NewIntArray() *Int {
@@ -115,7 +115,7 @@ func (b *UintBuilder) Reserve(n int) {
 func (b *UintBuilder) Resize(n int) {
 	b.b.Resize(n)
 }
-func (b *UintBuilder) NewArray() Interface {
+func (b *UintBuilder) NewArray() Array {
 	return b.NewUintArray()
 }
 func (b *UintBuilder) NewUintArray() *Uint {
@@ -167,7 +167,7 @@ func (b *FloatBuilder) Reserve(n int) {
 func (b *FloatBuilder) Resize(n int) {
 	b.b.Resize(n)
 }
-func (b *FloatBuilder) NewArray() Interface {
+func (b *FloatBuilder) NewArray() Array {
 	return b.NewFloatArray()
 }
 func (b *FloatBuilder) NewFloatArray() *Float {
@@ -219,7 +219,7 @@ func (b *BooleanBuilder) Reserve(n int) {
 func (b *BooleanBuilder) Resize(n int) {
 	b.b.Resize(n)
 }
-func (b *BooleanBuilder) NewArray() Interface {
+func (b *BooleanBuilder) NewArray() Array {
 	return b.NewBooleanArray()
 }
 func (b *BooleanBuilder) NewBooleanArray() *Boolean {

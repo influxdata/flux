@@ -3,7 +3,7 @@ package universe
 import (
 	"context"
 
-	"github.com/apache/arrow/go/arrow/memory"
+	"github.com/apache/arrow/go/v7/arrow/memory"
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/array"
 	"github.com/influxdata/flux/arrow"
@@ -129,7 +129,7 @@ func (s *sortLimitTransformation) reconcileSchema(mh *sortTableMergeHeap, buffer
 		}
 	}
 
-	vals := make([]array.Interface, len(mh.cols))
+	vals := make([]array.Array, len(mh.cols))
 	for i, col := range buffer.Columns {
 		idx := execute.ColIdx(col.Label, mh.cols)
 		if idx < 0 {
@@ -163,7 +163,7 @@ func (s *sortLimitTransformation) backfillColumn(mh *sortTableMergeHeap, i int, 
 		cpy := &arrow.TableBuffer{
 			GroupKey: item.cr.Key(),
 			Columns:  mh.cols,
-			Values:   make([]array.Interface, len(mh.cols)),
+			Values:   make([]array.Array, len(mh.cols)),
 		}
 		for j := range item.cr.Cols() {
 			cpy.Values[j] = table.Values(item.cr, j)

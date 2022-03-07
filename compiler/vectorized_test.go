@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	arrow "github.com/apache/arrow/go/arrow/memory"
+	arrow "github.com/apache/arrow/go/v7/arrow/memory"
 	"github.com/google/go-cmp/cmp"
 	"github.com/influxdata/flux/compiler"
 	"github.com/influxdata/flux/memory"

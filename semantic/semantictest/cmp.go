@@ -204,7 +204,7 @@ func TransformValue(v values.Value) map[string]interface{} {
 	}
 }
 
-func getValue(arr array.Interface, i int) values.Value {
+func getValue(arr array.Array, i int) values.Value {
 	if arr.IsNull(i) {
 		return nil
 	}

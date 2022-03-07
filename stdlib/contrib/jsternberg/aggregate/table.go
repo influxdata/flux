@@ -3,7 +3,7 @@ package aggregate
 import (
 	"context"
 
-	"github.com/apache/arrow/go/arrow/memory"
+	"github.com/apache/arrow/go/v7/arrow/memory"
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/array"
 	"github.com/influxdata/flux/arrow"
@@ -301,13 +301,13 @@ func (t *tableTransformation) prepare(cols []flux.ColMeta, n int) ([]*columnStat
 	return columns, nil
 }
 
-func (t *tableTransformation) buildTable(key flux.GroupKey, cols []flux.ColMeta, arrs []array.Interface, columns []*columnState) (flux.Table, error) {
+func (t *tableTransformation) buildTable(key flux.GroupKey, cols []flux.ColMeta, arrs []array.Array, columns []*columnState) (flux.Table, error) {
 	// Construct the table schema.
 	buffer := &arrow.TableBuffer{
 		GroupKey: key,
 		Columns:  make([]flux.ColMeta, len(key.Cols())+len(cols)+len(columns)),
 	}
-	buffer.Values = make([]array.Interface, len(buffer.Columns))
+	buffer.Values = make([]array.Array, len(buffer.Columns))
 
 	// Add the additional columns if present.
 	offset := len(key.Cols())

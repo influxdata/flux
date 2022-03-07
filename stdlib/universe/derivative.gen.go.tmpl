@@ -1,7 +1,7 @@
 package universe
 
 import (
-	"github.com/apache/arrow/go/arrow/memory"
+	"github.com/apache/arrow/go/v7/arrow/memory"
 	"github.com/influxdata/flux"
     "github.com/influxdata/flux/array"
 	"github.com/influxdata/flux/arrow"
@@ -22,7 +22,7 @@ func (d *derivative{{.Name}}) Type() flux.ColType {
 	return flux.TFloat
 }
 
-func (d *derivative{{.Name}}) Do(ts *array.Int, in array.Interface, mem memory.Allocator) array.Interface {
+func (d *derivative{{.Name}}) Do(ts *array.Int, in array.Array, mem memory.Allocator) array.Array {
 	// Empty column chunk returns an empty array
 	// and does not initialize the derivative.
 	if in.Len() == 0 {

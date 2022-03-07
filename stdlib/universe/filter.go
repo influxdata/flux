@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/apache/arrow/go/arrow/bitutil"
-	arrowmem "github.com/apache/arrow/go/arrow/memory"
+	"github.com/apache/arrow/go/v7/arrow/bitutil"
+	arrowmem "github.com/apache/arrow/go/v7/arrow/memory"
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/array"
 	"github.com/influxdata/flux/arrow"
@@ -200,7 +200,7 @@ func (t *filterTransformation) filterChunk(fn *execute.RowPredicatePreparedFn, c
 	}
 
 	// Produce arrays for each column.
-	vs := make([]array.Interface, len(chunk.Cols()))
+	vs := make([]array.Array, len(chunk.Cols()))
 	for j, col := range chunk.Cols() {
 		arr := chunk.Values(j)
 		if chunk.Key().HasCol(col.Label) {

@@ -1,7 +1,7 @@
 package universe
 
 import (
-	"github.com/apache/arrow/go/arrow/memory"
+	"github.com/apache/arrow/go/v7/arrow/memory"
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/array"
@@ -449,7 +449,7 @@ func (t *differenceTransformation) adaptedProcess(chunk table.Chunk, state inter
 	buffer := arrow.TableBuffer{
 		GroupKey: chunk.Key(),
 		Columns:  dstate.outputColumns,
-		Values:   make([]array.Interface, len(dstate.outputColumns)),
+		Values:   make([]array.Array, len(dstate.outputColumns)),
 	}
 
 	if err := t.processChunk(dstate.differences, dstate.firstIdx, mem, &buffer, chunk); err != nil {
@@ -474,7 +474,7 @@ func (t *differenceTransformation) processChunk(differences []*difference, first
 	l := chunk.Len()
 	for j, c := range chunk.Cols() {
 		d := differences[j]
-		var out array.Interface
+		var out array.Array
 		if l == 0 {
 			out = arrow.Empty(c.Type)
 		} else {
@@ -522,7 +522,7 @@ func processInts(d *difference, l int, values *array.Int, firstIdx int, mem memo
 	return b.NewIntArray()
 }
 
-func processUints(d *difference, l int, values *array.Uint, firstIdx int, mem memory.Allocator) array.Interface {
+func processUints(d *difference, l int, values *array.Uint, firstIdx int, mem memory.Allocator) array.Array {
 	if d == nil {
 		return arrow.UintSlice(values, firstIdx, l)
 	}

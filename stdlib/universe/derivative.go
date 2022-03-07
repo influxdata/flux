@@ -4,8 +4,8 @@ import (
 	"context"
 	"time"
 
-	"github.com/apache/arrow/go/arrow/bitutil"
-	"github.com/apache/arrow/go/arrow/memory"
+	"github.com/apache/arrow/go/v7/arrow/bitutil"
+	"github.com/apache/arrow/go/v7/arrow/memory"
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/array"
 	"github.com/influxdata/flux/arrow"
@@ -217,11 +217,11 @@ func (t *derivativeTransformation) processChunk(chunk table.Chunk, state *deriva
 	buffer := arrow.TableBuffer{
 		GroupKey: chunk.Key(),
 		Columns:  state.cols,
-		Values:   make([]array.Interface, len(state.cols)),
+		Values:   make([]array.Array, len(state.cols)),
 	}
 	for i, col := range buffer.Columns {
 		// Retrieve the input column for this column.
-		var vs array.Interface
+		var vs array.Array
 		if idx := chunk.Index(col.Label); idx >= 0 {
 			// Retrieve the input column and apply a mask if required.
 			vs = chunk.Values(i)
@@ -433,7 +433,7 @@ type derivativeColumn struct {
 
 type derivativeColumnState interface {
 	Type() flux.ColType
-	Do(ts *array.Int, vs array.Interface, mem memory.Allocator) array.Interface
+	Do(ts *array.Int, vs array.Array, mem memory.Allocator) array.Array
 }
 
 type derivativePassthrough struct {
@@ -445,7 +445,7 @@ func (d *derivativePassthrough) Type() flux.ColType {
 	return d.typ
 }
 
-func (d *derivativePassthrough) Do(ts *array.Int, vs array.Interface, mem memory.Allocator) array.Interface {
+func (d *derivativePassthrough) Do(ts *array.Int, vs array.Array, mem memory.Allocator) array.Array {
 	// Empty column chunk returns an empty array
 	// and does not initialize the derivative.
 	if vs.Len() == 0 {

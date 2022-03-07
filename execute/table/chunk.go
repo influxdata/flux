@@ -33,7 +33,7 @@ func ChunkFromReader(cr flux.ColReader) Chunk {
 	buf := arrow.TableBuffer{
 		GroupKey: cr.Key(),
 		Columns:  cr.Cols(),
-		Values:   make([]array.Interface, len(cr.Cols())),
+		Values:   make([]array.Array, len(cr.Cols())),
 	}
 	for j := range buf.Values {
 		buf.Values[j] = Values(cr, j)
@@ -92,7 +92,7 @@ func (v Chunk) HasCol(label string) bool {
 // The returned array is a borrowed reference and the caller can
 // call Retain on the returned array to retain its own reference
 // to the array.
-func (v Chunk) Values(j int) array.Interface {
+func (v Chunk) Values(j int) array.Array {
 	return v.buf.Values[j]
 }
 

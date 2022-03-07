@@ -63,3 +63,9 @@
   key: optimizeAggregateWindow
   default: false
   contact: Jonathan Sternberg
+
+- name: Narrow Transformation Limit
+  description: Enable the NarrowStateTransformation implementation of limit
+  key: narrowTransformationLimit
+  default: false
+  contact: Owen Nelson

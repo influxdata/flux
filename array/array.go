@@ -1,8 +1,8 @@
 package array
 
 import (
-	"github.com/apache/arrow/go/arrow"
-	"github.com/apache/arrow/go/arrow/array"
+	"github.com/apache/arrow/go/v7/arrow"
+	"github.com/apache/arrow/go/v7/arrow/array"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/internal/errors"
 )
@@ -23,8 +23,8 @@ var (
 
 // Interface represents an immutable sequence of values.
 //
-// This type is derived from the arrow array.Interface interface.
-type Interface interface {
+// This type is derived from the arrow array.Array interface.
+type Array interface {
 	// DataType returns the type metadata for this instance.
 	DataType() DataType
 
@@ -90,7 +90,7 @@ type Builder interface {
 	// NewArray creates a new array from the memory buffers used
 	// by the builder and resets the Builder so it can be used to build
 	// a new array.
-	NewArray() Interface
+	NewArray() Array
 }
 
 type String struct {
@@ -155,7 +155,7 @@ func (a *String) Release() {
 		a.data.Release()
 	}
 }
-func (a *String) Slice(i, j int) Interface {
+func (a *String) Slice(i, j int) Array {
 	if a.data != nil {
 		data := array.NewSliceData(a.data.Data(), int64(i), int64(j))
 		defer data.Release()
@@ -185,7 +185,7 @@ func (a *String) IsConstant() bool {
 }
 
 type sliceable interface {
-	Slice(i, j int) Interface
+	Slice(i, j int) Array
 }
 
 // Slice will construct a new slice of the array using the given
@@ -194,11 +194,11 @@ type sliceable interface {
 // This is functionally equivalent to using array.NewSlice,
 // but array.NewSlice will construct an array.String when
 // the data type is a string rather than an array.Binary.
-func Slice(arr Interface, i, j int) Interface {
+func Slice(arr Array, i, j int) Array {
 	if arr, ok := arr.(sliceable); ok {
 		return arr.Slice(i, j)
 	}
-	if arr, ok := arr.(array.Interface); ok {
+	if arr, ok := arr.(arrow.Array); ok {
 		return array.NewSlice(arr, int64(i), int64(j))
 	}
 	err := errors.Newf(codes.Internal, "cannot slice array of type %T", arr)

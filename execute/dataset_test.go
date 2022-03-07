@@ -3,7 +3,7 @@ package execute_test
 import (
 	"testing"
 
-	arrowmem "github.com/apache/arrow/go/arrow/memory"
+	arrowmem "github.com/apache/arrow/go/v7/arrow/memory"
 	"github.com/google/go-cmp/cmp"
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/array"
@@ -61,7 +61,7 @@ func TestTransportDataset_Process(t *testing.T) {
 			{Label: "_time", Type: flux.TTime},
 			{Label: "_value", Type: flux.TFloat},
 		},
-		Values: []array.Interface{
+		Values: []array.Array{
 			arrow.NewInt([]int64{0, 10, 20}, alloc),
 			arrow.NewFloat([]float64{1, 2, 3}, alloc),
 		},
@@ -105,7 +105,7 @@ func TestTransportDataset_AddTransformation(t *testing.T) {
 			{Label: "_time", Type: flux.TTime},
 			{Label: "_value", Type: flux.TFloat},
 		},
-		Values: []array.Interface{
+		Values: []array.Array{
 			arrow.NewInt([]int64{0, 10, 20}, alloc),
 			arrow.NewFloat([]float64{1, 2, 3}, alloc),
 		},
@@ -204,7 +204,7 @@ func TestTransportDataset_MultipleDownstream(t *testing.T) {
 			{Label: "_time", Type: flux.TTime},
 			{Label: "_value", Type: flux.TFloat},
 		},
-		Values: []array.Interface{
+		Values: []array.Array{
 			arrow.NewInt([]int64{0, 10, 20}, alloc),
 			arrow.NewFloat([]float64{1, 2, 3}, alloc),
 		},

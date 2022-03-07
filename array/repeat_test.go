@@ -3,10 +3,11 @@ package array_test
 import (
 	"testing"
 
-	"github.com/apache/arrow/go/arrow/memory"
+	"github.com/apache/arrow/go/v7/arrow/memory"
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/arrow"
 	"github.com/influxdata/flux/values"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestRepeat(t *testing.T) {
@@ -52,7 +53,7 @@ func TestRepeat(t *testing.T) {
 			defer mem.AssertSize(t, 0)
 
 			arr := arrow.Repeat(tc.t, tc.v, 10, mem)
-			mem.AssertSize(t, tc.sz)
+			assert.Equal(t, tc.sz, mem.CurrentAlloc(), "unexpected memory allocation.")
 			arr.Release()
 		})
 	}

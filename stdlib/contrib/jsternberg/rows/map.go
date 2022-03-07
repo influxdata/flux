@@ -3,7 +3,7 @@ package rows
 import (
 	"context"
 
-	"github.com/apache/arrow/go/arrow/memory"
+	"github.com/apache/arrow/go/v7/arrow/memory"
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/array"
 	"github.com/influxdata/flux/arrow"
@@ -268,7 +268,7 @@ func (t *mapTable) mapValues(w *arrow.TableBuffer, cr flux.ColReader, fn *execut
 		}
 	}
 
-	w.Values = make([]array.Interface, len(cols))
+	w.Values = make([]array.Array, len(cols))
 	for i, c := range cols {
 		if builders[i] == nil {
 			idx := execute.ColIdx(c.Label, cr.Cols())

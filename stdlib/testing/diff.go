@@ -147,7 +147,7 @@ func (tb *tableBuffer) Release() {
 
 type tableColumn struct {
 	Type   flux.ColType
-	Values array.Interface
+	Values array.Array
 }
 
 func copyTable(id execute.DatasetID, tbl flux.Table, alloc *memory.Allocator) (*tableBuffer, error) {

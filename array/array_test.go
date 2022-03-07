@@ -3,10 +3,11 @@ package array_test
 import (
 	"testing"
 
-	apachearray "github.com/apache/arrow/go/arrow/array"
-	"github.com/apache/arrow/go/arrow/memory"
+	apachearray "github.com/apache/arrow/go/v7/arrow/array"
+	"github.com/apache/arrow/go/v7/arrow/memory"
 	"github.com/influxdata/flux/array"
 	fluxmemory "github.com/influxdata/flux/memory"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestString(t *testing.T) {
@@ -88,11 +89,11 @@ func TestString(t *testing.T) {
 			if want, got := len(tc.want)+2, b.Cap(); want != got {
 				t.Errorf("unexpected builder cap -want/+got:\n\t- %d\n\t+ %d", want, got)
 			}
-			mem.AssertSize(t, tc.sz)
+			assert.Equal(t, tc.sz, mem.CurrentAlloc(), "unexpected memory allocation.")
 
 			arr := b.NewStringArray()
 			defer arr.Release()
-			mem.AssertSize(t, tc.sz)
+			assert.Equal(t, tc.sz, mem.CurrentAlloc(), "unexpected memory allocation.")
 
 			if want, got := len(tc.want), arr.Len(); want != got {
 				t.Fatalf("unexpected length -want/+got:\n\t- %d\n\t+ %d", want, got)
@@ -176,7 +177,7 @@ func TestStringBuilder_NewArray(t *testing.T) {
 			}
 		}
 		arr = b.NewArray()
-		mem.AssertSize(t, 192)
+		assert.Equal(t, 192, mem.CurrentAlloc(), "unexpected memory allocation.")
 		arr.Release()
 		mem.AssertSize(t, 0)
 	}
@@ -185,13 +186,13 @@ func TestStringBuilder_NewArray(t *testing.T) {
 func TestSlice(t *testing.T) {
 	for _, tc := range []struct {
 		name  string
-		build func(mem memory.Allocator) array.Interface
+		build func(mem memory.Allocator) array.Array
 		i, j  int
 		want  []interface{}
 	}{
 		{
 			name: "Int",
-			build: func(mem memory.Allocator) array.Interface {
+			build: func(mem memory.Allocator) array.Array {
 				b := array.NewIntBuilder(mem)
 				for i := 0; i < 10; i++ {
 					if i == 6 {
@@ -210,7 +211,7 @@ func TestSlice(t *testing.T) {
 		},
 		{
 			name: "Uint",
-			build: func(mem memory.Allocator) array.Interface {
+			build: func(mem memory.Allocator) array.Array {
 				b := array.NewUintBuilder(mem)
 				for i := 0; i < 10; i++ {
 					if i == 6 {
@@ -229,7 +230,7 @@ func TestSlice(t *testing.T) {
 		},
 		{
 			name: "Float",
-			build: func(mem memory.Allocator) array.Interface {
+			build: func(mem memory.Allocator) array.Array {
 				b := array.NewFloatBuilder(mem)
 				for i := 0; i < 10; i++ {
 					if i == 6 {
@@ -248,7 +249,7 @@ func TestSlice(t *testing.T) {
 		},
 		{
 			name: "String_Constant",
-			build: func(mem memory.Allocator) array.Interface {
+			build: func(mem memory.Allocator) array.Array {
 				b := array.NewStringBuilder(mem)
 				for i := 0; i < 10; i++ {
 					b.Append("a")
@@ -263,7 +264,7 @@ func TestSlice(t *testing.T) {
 		},
 		{
 			name: "String_RLE",
-			build: func(mem memory.Allocator) array.Interface {
+			build: func(mem memory.Allocator) array.Array {
 				b := array.NewStringBuilder(mem)
 				for i := 0; i < 5; i++ {
 					b.Append("a")
@@ -281,7 +282,7 @@ func TestSlice(t *testing.T) {
 		},
 		{
 			name: "String_Random",
-			build: func(mem memory.Allocator) array.Interface {
+			build: func(mem memory.Allocator) array.Array {
 				b := array.NewStringBuilder(mem)
 				for _, v := range []string{"a", "b", "c", "d", "e"} {
 					b.Append(v)
@@ -300,7 +301,7 @@ func TestSlice(t *testing.T) {
 		},
 		{
 			name: "Boolean",
-			build: func(mem memory.Allocator) array.Interface {
+			build: func(mem memory.Allocator) array.Array {
 				b := array.NewBooleanBuilder(mem)
 				for i := 0; i < 10; i++ {
 					if i == 6 {
@@ -341,7 +342,7 @@ func TestSlice(t *testing.T) {
 	}
 }
 
-func getValue(arr array.Interface, i int) interface{} {
+func getValue(arr array.Array, i int) interface{} {
 	if arr.IsNull(i) {
 		return nil
 	}

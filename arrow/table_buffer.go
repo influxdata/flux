@@ -20,7 +20,7 @@ import (
 type TableBuffer struct {
 	GroupKey flux.GroupKey
 	Columns  []flux.ColMeta
-	Values   []array.Interface
+	Values   []array.Array
 }
 
 var _ flux.ColReader = (*TableBuffer)(nil)
@@ -113,7 +113,7 @@ func (t *TableBuffer) Validate() error {
 	return nil
 }
 
-func (t *TableBuffer) checkCol(typ flux.ColType, arr array.Interface) bool {
+func (t *TableBuffer) checkCol(typ flux.ColType, arr array.Array) bool {
 	switch typ {
 	case flux.TInt, flux.TTime:
 		_, ok := arr.(*array.Int)

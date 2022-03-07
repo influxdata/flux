@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"sort"
 
-	"github.com/apache/arrow/go/arrow/bitutil"
-	"github.com/apache/arrow/go/arrow/memory"
+	"github.com/apache/arrow/go/v7/arrow/bitutil"
+	"github.com/apache/arrow/go/v7/arrow/memory"
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/array"
 	"github.com/influxdata/flux/codes"
@@ -320,7 +320,7 @@ func (t *toTransformation) filterNulls(chunk table.Chunk, mem memory.Allocator) 
 	}
 
 	buffer := chunk.Buffer()
-	buffer.Values = make([]array.Interface, chunk.NCols())
+	buffer.Values = make([]array.Array, chunk.NCols())
 	for j := range buffer.Values {
 		arr := chunk.Values(j)
 		buffer.Values[j] = arrowutil.Filter(arr, bitset.Bytes(), mem)
