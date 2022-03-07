@@ -1760,11 +1760,11 @@ builtin movingAverage : (<-tables: stream[{B with _value: A}], n: int) => stream
 // specified `method`.
 //
 // - **Aggregate**: When using the `estimate_tdigest` or `exact_mean` methods,
-// `quantile()` acts as an aggregate transformation and outputs non-null records
-// with values that fall within the specified quantile.
+//   `quantile()` acts as an aggregate transformation and outputs the average of
+//   non-null records with values that fall within the specified quantile.
 // - **Selector**: When using the `exact_selector` method, `quantile()` acts as
-// a selector selector transformation and outputs the non-null record with the
-// value that represents the specified quantile.
+//   a selector selector transformation and outputs the non-null record with the
+//   value that represents the specified quantile.
 //
 // ## Parameters
 // - column: Column to use to compute the quantile. Default is `_value`.
@@ -3283,16 +3283,125 @@ builtin uint : (v: A) => uint
 //
 builtin display : (v: A) => string
 
-// contains function
+// contains tests if an array contains a specified value and returns `true` or `false`.
+//
+// ## Parameters
+// - value: Value to search for.
+// - set: Array to search.
+//
+// ## Examples
+//
+// ### Filter on a set of specific fields
+// ```
+// # import "sampledata"
+// #
+// # data = sampledata.int()
+// #     |> map(fn: (r) => ({r with _measurement: "m", _field: if r._value < 6 then "f1" else if r._value < 11 then "f2" else "f3"}))
+// #     |> group(columns: ["tag", "_field"])
+// #
+// fields = ["f1", "f2"]
+//
+// < data
+// >     |> filter(fn: (r) => contains(value: r._field, set: fields))
+// ```
+//
+// introduced: 0.19.0
+//
 builtin contains : (value: A, set: [A]) => bool where A: Nullable
 
-// other builtins
+// inf represents an infinte float value.
 builtin inf : duration
+
+// length returns the number of elements in an array.
+//
+// ## Parameters
+// - arr: Array to evaluate. Default is the piped-forward array (`<-`).
+//
+// ## Examples
+//
+// ### Return the length of an array
+// ```no_run
+// people = ["John", "Jane", "Abed"]
+//
+// people |> length()
+// // Returns 3
+// ```
+//
+// introduced: 0.7.0
+//
 builtin length : (<-arr: [A]) => int
+
+// linearBins generates a list of linearly separated float values.
+//
+// Use `linearBins()` to generate bin bounds for `histogram()`.
+//
+// ## Parameters
+// - start: First value to return in the list.
+// - width: Distance between subsequent values.
+// - count: Number of values to return.
+// - infinity: Include an infinite value at the end of the list. Default is `true`.
+//
+// ## Examples
+//
+// ### Generate a list of linearly increasing values
+// ```no_run
+// linearBins(start: 0.0, width: 10.0, count: 10)
+// // Returns [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, +Inf]
+// ```
+//
+// introduced: 0.19.0
+//
 builtin linearBins : (start: float, width: float, count: int, ?infinity: bool) => [float]
+
+// logarithmicBins generates a list of exponentially separated float values.
+//
+// Use `linearBins()` to generate bin bounds for `histogram()`.
+//
+// ## Parameters
+// - start: First value to return in the list.
+// - factor: Multiplier to apply to subsequent values.
+// - count: Number of values to return.
+// - infinity: Include an infinite value at the end of the list. Default is `true`.
+//
+// ## Examples
+//
+// ### Generate a list of exponentially increasing values
+// ```no_run
+// logarithmicBins(start: 1.0, factor: 2.0, count: 10, infinity: true)
+// // Returns [1, 2, 4, 8, 16, 32, 64, 128, 256, 512, +Inf]
+// ```
+//
+// introduced: 0.19.0
+//
 builtin logarithmicBins : (start: float, factor: float, count: int, ?infinity: bool) => [float]
 
-// Time weighted average where values at the beginning and end of the range are linearly interpolated.
+// timeWeightedAvg returns the time-weighted average of non-null values in
+// `_value` column as a float for each input table.
+//
+// Time is weighted using the linearly interpolated integral of values in the table.
+//
+// ## Parameters
+// - unit: Unit of time to use to compute the time-weighted average.
+// - tables: Input data. Default is piped-forward data (`<-`).
+//
+// ## Examples
+//
+// ### Calculate the time-weighted average of values
+// ```
+// # import "sampledata"
+// #
+// # data = sampledata.int(includeNull: true)
+// #     |> range(start: sampledata.start, stop: sampledata.stop)
+// #     |> fill(usePrevious: true)
+// #     |> unique()
+// #
+// < data
+// >     |> timeWeightedAvg(unit: 1s)
+// ```
+//
+// introduced: 0.83.0
+// tags: transformations, aggregates
+//
 timeWeightedAvg = (tables=<-, unit) =>
     tables
         |> integral(unit: unit, interpolate: "linear")
@@ -3301,12 +3410,38 @@ timeWeightedAvg = (tables=<-, unit) =>
                 ({r with _value: r._value * float(v: uint(v: unit)) / float(v: int(v: r._stop) - int(v: r._start))}),
         )
 
-// covariance function with automatic join
+// covariance computes the covariance between two streams of tables.
+//
+// ## Parameters
+// - x: First input stream.
+// - y: Second input stream.
+// - on: List of columns to join on.
+// - pearsonr: Normalize results to the Pearson R coefficient. Default is `false`.
+//
+// ## Examples
+//
+// ### Return the covariance between two streams of tables
+// ```
+// import "generate"
+//
+// stream1 = generate.from(count: 5, fn: (n) => n * n, start: 2021-01-01T00:00:00Z, stop: 2021-01-01T00:01:00Z)
+//     |> toFloat()
+//
+// stream2 = generate.from(count: 5, fn: (n) => n * n * n / 2, start: 2021-01-01T00:00:00Z, stop: 2021-01-01T00:01:00Z)
+//     |> toFloat()
+//
+// > cov(x: stream1, y: stream2, on: ["_time"])
+// ```
+//
+// introduced: 0.7.0
+// tags: transformations, aggregates
+//
 cov = (x, y, on, pearsonr=false) =>
     join(tables: {x: x, y: y}, on: on)
         |> covariance(pearsonr: pearsonr, columns: ["_value_x", "_value_y"])
 pearsonr = (x, y, on) => cov(x: x, y: y, on: on, pearsonr: true)
 
+// _fillEmpty is a helper function that creates and fills empty tables.
 _fillEmpty = (tables=<-, createEmpty) =>
     if createEmpty then
         tables
@@ -3314,9 +3449,96 @@ _fillEmpty = (tables=<-, createEmpty) =>
     else
         tables
 
-// aggregateWindow applies an aggregate function to fixed windows of time.
-// The procedure is to window the data, perform an aggregate operation,
-// and then undo the windowing to produce an output table for every input table.
+// aggregateWindow groups data into fixed windows of time and applies an
+// aggregate or selector function to each window.
+//
+// All columns not in the group key other than the specified `column` are dropped
+// from output tables. This includes `_time`. `aggregateWindow()` uses the
+// `timeSrc` and `timeDst` parameters to assign a time to the aggregate value.
+//
+// `aggregateWindow()` requires `_start` and `_stop` columns in input data.
+// Use `range()` to assign `_start` and `_stop` values.
+//
+// #### Window by calendar months and years
+// `every`, `period`, and `offset` parameters support all valid duration units,
+// including calendar months (`1mo`) and years (`1y`).
+//
+// #### Window by week
+// When windowing by week (`1w`), weeks are determined using the Unix epoch
+// (1970-01-01T00:00:00Z UTC). The Unix epoch was on a Thursday, so all
+// calculated weeks begin on Thursday.
+//
+// ## Parameters
+// - every: Duration of time between windows.
+// - period: Duration of windows. Default is the `every` value.
+//
+//   `period` can be negative, indicating the start and stop boundaries are reversed.
+//
+// - offset: Duration to shift the window boundaries by. Defualt is `0s`.
+//
+//   `offset` can be negative, indicating that the offset goes backwards in time.
+//
+// - fn: Aggreate or selector function to apply to each time window.
+// - location: Location used to determine timezone. Default is the `location` option.
+// - column: Column to operate on.
+// - timeSrc: Column to use as the source of the new time value for aggregate values.
+//   Default is `_stop`.
+// - timeDst: Column to store time values for aggregate values in.
+//   Default is `_time`.
+// - createEmpty: Create empty tables for empty window. Default is `false`.
+//
+//   **Note:** When using `createEmpty: true`, aggregate functions return empty
+//   tables, but selector functions do not. By design, selectors drop empty tables.
+//
+// - tables: Input data. Default is piped-forward data (`<-`).
+//
+// ## Examples
+//
+// ### Use an aggregate function with default parameters
+// ```
+// # import "sampledata"
+// #
+// # data = sampledata.float()
+// #     |> range(start: sampledata.start, stop: sampledata.stop)
+// #
+// < data
+// >     |> aggregateWindow(every: 20s, fn: mean)
+// ```
+//
+// ### Specify parameters of the aggregate function
+// To use functions that don’t provide defaults for required parameters with
+// `aggregateWindow()`, define an anonymous function with `column` and `tables`
+// parameters that pipes-forward tables into the aggregate or selector function
+// with all required parameters defined:
+//
+// ```
+// # import "sampledata"
+// #
+// # data = sampledata.float()
+// #     |> range(start: sampledata.start, stop: sampledata.stop)
+// #
+// < data
+//     |> aggregateWindow(
+//         column: "_value",
+//         every: 20s,
+//         fn: (column, tables=<-) => tables |> quantile(q: 0.99, column: column),
+// >     )
+// ```
+//
+// ### Window and aggregate by calendar month
+// ```
+// # import "sampledata"
+// #
+// # data = sampledata.float()
+// #     |> range(start: sampledata.start, stop: sampledata.stop)
+// #
+// < data
+// >     |> aggregateWindow(every: 1mo, fn: mean)
+// ```
+//
+// introduced: 0.7.0
+// tags: transformations, aggregates, selectors
+//
 aggregateWindow = (
     every,
     period=0s,
@@ -3342,48 +3564,173 @@ aggregateWindow = (
         |> duplicate(column: timeSrc, as: timeDst)
         |> window(every: inf, timeColumn: timeDst)
 
-// Increase returns the total non-negative difference between values in a table.
-// A main usage case is tracking changes in counter values which may wrap over time when they hit
-// a threshold or are reset. In the case of a wrap/reset,
-// we can assume that the absolute delta between two points will be at least their non-negative difference.
+// increase returns the cumulative sum of non-negative differences between subsequent values.
+//
+// The primary use case for `increase()` is tracking changes in counter values
+// which may wrap overtime when they hit a threshold or are reset. In the case
+// of a wrap/reset, `increase()` assumes that the absolute delta between two
+// points is at least their non-negative difference.
+//
+// ## Parameters
+// - columns: List of columns to operate on. Default is `["_value"]`.
+// - tables: Input data. Default is piped-forward data (`<-`).
+//
+// ## Examples
+//
+// ### Normalize resets in counter metrics
+// ```
+// import "sampledata"
+//
+// < sampledata.int()
+// >     |> increase()
+// ```
+//
+// introduced: 0.71.0
+// tags: transformations
+//
 increase = (tables=<-, columns=["_value"]) =>
     tables
         |> difference(nonNegative: true, columns: columns, keepFirst: true, initialZero: true)
         |> cumulativeSum(columns: columns)
 
-// median returns the 50th percentile.
+// median returns the median `_value` of an input table or all non-null records
+// in the input table with values that fall within the 0.5 quantile (50th percentile).
+//
+// ### Function behavior
+// `median()` acts as an aggregate or selector transformation depending on the
+// specified `method`.
+//
+// - **Aggregate**: When using the `estimate_tdigest` or `exact_mean` methods,
+//   `median()` acts as an aggregate transformation and outputs the average of
+//   non-null records with values that fall within the 0.5 quantile (50th percentile).
+// - **Selector**: When using the `exact_selector` method, `meidan()` acts as
+//   a selector selector transformation and outputs the non-null record with the
+//   value that represents the 0.5 quantile (50th percentile).
+//
+// ## Parameters
+// - column: Column to use to compute the median. Default is `_value`.
+// - method: Computation method. Default is `estimate_tdigest`.
+//
+//     **Avaialable methods**:
+//
+//     - **estimate_tdigest**: Aggregate method that uses a
+//       [t-digest data structure](https://github.com/tdunning/t-digest) to
+//       compute an accurate median estimate on large data sources.
+//     - **exact_mean**: Aggregate method that takes the average of the two
+//       points closest to the median value.
+//     - **exact_selector**: Selector method that returns the row with the value
+//       for which at least 50% of points are less than.
+//
+// - compression: Number of centroids to use when compressing the dataset.
+//   Default is `0.0`.
+//
+//   A larger number produces a more accurate result at the cost of increased
+//   memory requirements.
+//
+// - tables: Input data. Default is piped-forward data (`<-`).
+//
+// ## Examples
+//
+// ### Use median as an aggregate transformation
+// ```
+// import "sampledata"
+//
+// < sampledata.float()
+// >     |> median()
+// ```
+//
+// ### Use median as a selector transformation
+// ```
+// import "sampledata"
+//
+// < sampledata.float()
+// >     |> median(method: "exact_selector")
+// ```
+//
+// introduced: 0.7.0
+// tags: transformations, aggregates, selectors
+//
 median = (method="estimate_tdigest", compression=0.0, column="_value", tables=<-) =>
     tables
         |> quantile(q: 0.5, method: method, compression: compression, column: column)
 
-// stateCount computes the number of consecutive records in a given state.
-// The state is defined via the function fn. For each consecutive point for
-// which the expression evaluates as true, the state count will be incremented
-// When a point evaluates as false, the state count is reset.
+// stateCount returns the number of consecutive rows in a given state.
 //
-// The state count will be added as an additional column to each record. If the
-// expression evaluates as false, the value will be -1. If the expression
-// generates an error during evaluation, the point is discarded, and does not
-// affect the state count.
+// The state is defined by the `fn` predicate function. For each consecutive
+// record that evaluates to `true`, the state count is incremented. When a record
+// evaluates to `false`, the value is set to `-1` and the state count is reset.
+// If the record generates an error during evaluation, the point is discarded,
+// and does not affect the state count.
+// The state count is added as an additional column to each record.
+//
+// ## Parameters
+// - fn: Predicate function that identifies the state of a record.
+// - column: Column to store the state count in. Default is `stateCount`.
+// - tables: Input data. Default is piped-forward data (`<-`).
+//
+// ## Examples
+//
+// ### Count the number rows in a specific state
+// ```
+// import "sampledata"
+//
+// < sampledata.int()
+// >     |> stateCount(fn: (r) => r._value < 10)
+// ```
+//
+// introduced: 0.7.0
+// tags: transformations
+//
 stateCount = (fn, column="stateCount", tables=<-) =>
     tables
         |> stateTracking(countColumn: column, fn: fn)
 
-// stateDuration computes the duration of a given state.
-// The state is defined via the function fn. For each consecutive point for
-// which the expression evaluates as true, the state duration will be
-// incremented by the duration between points. When a point evaluates as false,
-// the state duration is reset.
+// stateDuration returns the cumulative duration of a given state.
 //
-// The state duration will be added as an additional column to each record. If the
-// expression evaluates as false, the value will be -1. If the expression
-// generates an error during evaluation, the point is discarded, and does not
-// affect the state duration.
+// The state is defined by the `fn` predicate function. For each consecutive
+// record that evaluates to `true`, the state duration is incremented by the
+// duration of time between records using the specified `unit`. When a record
+// evaluates to `false`, the value is set to `-1` and the state duration is reset.
+// If the record generates an error during evaluation, the point is discarded,
+// and does not affect the state duration.
 //
-// Note that as the first point in the given state has no previous point, its
+// The state duration is added as an additional column to each record.
+// The duration is represented as an integer in the units specified.
+//
+// **Note:** As the first point in the given state has no previous point, its
 // state duration will be 0.
 //
-// The duration is represented as an integer in the units specified.
+// ## Parameters
+// - fn: Predicate function that identifies the state of a record.
+// - column: Column to store the state duration in. Default is `stateDuration`.
+// - timeColumn: Time column to use to calculate elapsed time between rows.
+//   Default is `_time`.
+// - unit: Unit of time to use to increment state duration. Default is `1s` (seconds).
+//
+//   **Example units:**
+//   - 1ns (nanoseconds)
+//   - 1us (microseconds)
+//   - 1ms (milliseconds)
+//   - 1s (seconds)
+//   - 1m (minutes)
+//   - 1h (hours)
+//   - 1d (days)
+//
+// - tables: Input data. Default is piped-forward data (`<-`).
+//
+// ## Examples
+//
+// ### Return the time spent in a specified state
+// ```
+// import "sampledata"
+//
+// < sampledata.int()
+// >     |> stateDuration(fn: (r) => r._value < 15)
+// ```
+//
+// introduced: 0.7.0
+// tags: transformations
+//
 stateDuration = (
     fn,
     column="stateDuration",
@@ -3400,19 +3747,71 @@ _sortLimit = (n, desc, columns=["_value"], tables=<-) =>
         |> sort(columns: columns, desc: desc)
         |> limit(n: n)
 
-// top sorts a table by columns and keeps only the top n records.
+// top sorts each input table by specified columns and keeps the top `n` records
+// in each table.
+//
+// **Note:** `top()` drops empty tables.
+//
+// ## Parameters
+// - n: Number of rows to return from each input table.
+// - columns: List of columns to sort by. Default is `["_value"]`.
+//
+//   Sort precedence is determined by list order (left to right).
+//
+// - tables: Input data. Default is piped-forward data (`<-`).
+//
+// ## Examples
+//
+// ### Return rows with the three highest values in each input table
+// ```
+// import "sampledata"
+//
+// < sampledata.int()
+// >    |> top(n: 3)
+// ```
+//
+// introduced: 0.7.0
+// tags: transformations, selectors
+//
 top = (n, columns=["_value"], tables=<-) =>
     tables
         |> _sortLimit(n: n, columns: columns, desc: true)
 
-// top sorts a table by columns and keeps only the bottom n records.
+// bottom sorts each input table by specified columns and keeps the bottom `n`
+// records in each table.
+//
+// **Note:** `bottom()` drops empty tables.
+//
+// ## Parameters
+// - n: Number of rows to return from each input table.
+// - columns: List of columns to sort by. Default is `["_value"]`.
+//
+//   Sort precedence is determined by list order (left to right).
+//
+// - tables: Input data. Default is piped-forward data (`<-`).
+//
+// ## Examples
+//
+// ### Return rows with the two lowest values in each input table
+// ```
+// import "sampledata"
+//
+// < sampledata.int()
+// >     |> bottom(n:2)
+// ```
+//
+// introduced: 0.7.0
+// tags: transformations, selectors
+//
 bottom = (n, columns=["_value"], tables=<-) =>
     tables
         |> _sortLimit(n: n, columns: columns, desc: false)
 
-// _highestOrLowest is a helper function, which reduces all groups into a single group by specific tags and a reducer function,
-// then it selects the highest or lowest records based on the column and the _sortLimit function.
-// The default reducer assumes no reducing needs to be performed.
+// _highestOrLowest is a helper function that reduces all groups into a single
+// group by specific tags and a `reducer` function.
+// It then selects the highest or lowest records based on the `column` and the
+// `_sortLimit` function. The default `reducer` assumes no reducing needs to be
+// performed.
 _highestOrLowest = (
     n,
     _sortLimit,
@@ -3427,7 +3826,30 @@ _highestOrLowest = (
         |> group(columns: [])
         |> _sortLimit(n: n, columns: [column])
 
-// highestMax returns the top N records from all groups using the maximum of each group.
+// highestMax selects the record with the highest value in the specified `column`
+// from each input table and returns the highest `n` records.
+//
+// **Note:** `highestMax()` drops empty tables.
+//
+// ## Parameters
+// - n: Number of records to return.
+// - column: Column to evaluate. Default is `_value`.
+// - groupColumns: List of columns to group by. Default is `[]`.
+// - tables: Input data. Default is piped-forward data (`<-`).
+//
+// ## Examples
+//
+// ### Return the highest two values from a stream of tables
+// ```
+// import "sampledata"
+//
+// < sampledata.int()
+// >     |> highestMax(n: 2, groupColumns: ["tag"])
+// ```
+//
+// introduced: 0.7.0
+// tags: transformations, selectors
+//
 highestMax =
     (n, column="_value", groupColumns=[], tables=<-) =>
         tables
@@ -3440,7 +3862,30 @@ highestMax =
                 _sortLimit: top,
             )
 
-// highestAverage returns the top N records from all groups using the average of each group.
+// highestAverage calculates the average of each input table and returns the
+// highest `n` averages.
+//
+// **Note:** `highestAverage()` drops empty tables.
+//
+// ## Parameters
+// - n: Number of records to return.
+// - column: Column to evaluate. Default is `_value`.
+// - groupColumns: List of columns to group by. Default is `[]`.
+// - tables: Input data. Default is piped-forward data (`<-`).
+//
+// ## Examples
+//
+// ### Return the highest table average from a stream of tables
+// ```
+// import "sampledata"
+//
+// < sampledata.int()
+// >     |> highestAverage(n: 1, groupColumns: ["tag"])
+// ```
+//
+// introduced: 0.7.0
+// tags: transformations, selectors
+//
 highestAverage = (n, column="_value", groupColumns=[], tables=<-) =>
     tables
         |> _highestOrLowest(
@@ -3451,7 +3896,30 @@ highestAverage = (n, column="_value", groupColumns=[], tables=<-) =>
             _sortLimit: top,
         )
 
-// highestCurrent returns the top N records from all groups using the last value of each group.
+// highestCurrent selects the last record from each input table and returns the
+// highest `n` records.
+//
+// **Note:** `highestCurrent()` drops empty tables.
+//
+// ## Parameters
+// - n: Number of records to return.
+// - column: Column to evaluate. Default is `_value`.
+// - groupColumns: List of columns to group by. Default is `[]`.
+// - tables: Input data. Default is piped-forward data (`<-`).
+//
+// ## Examples
+//
+// ### Return the highest current value from a stream of tables
+// ```
+// import "sampledata"
+//
+// < sampledata.int()
+// >     |> highestCurrent(n: 1, groupColumns: ["tag"])
+// ```
+//
+// introduced: 0.7.0
+// tags: transformations, selectors
+//
 highestCurrent = (n, column="_value", groupColumns=[], tables=<-) =>
     tables
         |> _highestOrLowest(
@@ -3462,7 +3930,30 @@ highestCurrent = (n, column="_value", groupColumns=[], tables=<-) =>
             _sortLimit: top,
         )
 
-// lowestMin returns the bottom N records from all groups using the minimum of each group.
+// lowestMin selects the record with the lowest value in the specified `column`
+// from each input table and returns the bottom `n` records.
+//
+// **Note:** `lowestMin()` drops empty tables.
+//
+// ## Parameters
+// - n: Number of records to return.
+// - column: Column to evaluate. Default is `_value`.
+// - groupColumns: List of columns to group by. Default is `[]`.
+// - tables: Input data. Default is piped-forward data (`<-`).
+//
+// ## Examples
+//
+// ### Return the lowest two values from a stream of tables
+// ```
+// import "sampledata"
+//
+// < sampledata.int()
+// >     |> lowestMin(n: 2, groupColumns: ["tag"])
+// ```
+//
+// introduced: 0.7.0
+// tags: transformations, selectors
+//
 lowestMin =
     (n, column="_value", groupColumns=[], tables=<-) =>
         tables
@@ -3475,7 +3966,30 @@ lowestMin =
                 _sortLimit: bottom,
             )
 
-// lowestAverage returns the bottom N records from all groups using the average of each group.
+// lowestAverage calculates the average of each input table and returns the lowest
+// `n` averages.
+//
+// **Note:** `lowestAverage()` drops empty tables.
+//
+// ## Parameters
+// - n: Number of records to return.
+// - column: Column to evaluate. Default is `_value`.
+// - groupColumns: List of columns to group by. Default is `[]`.
+// - tables: Input data. Default is piped-forward data (`<-`).
+//
+// ## Examples
+//
+// ### Return the lowest table average from a stream of tables
+// ```
+// import "sampledata"
+//
+// < sampledata.int()
+// >     |> lowestAverage(n: 1, groupColumns: ["tag"])
+// ```
+//
+// introduced: 0.7.0
+// tags: transformations, selectors
+//
 lowestAverage = (n, column="_value", groupColumns=[], tables=<-) =>
     tables
         |> _highestOrLowest(
@@ -3486,7 +4000,30 @@ lowestAverage = (n, column="_value", groupColumns=[], tables=<-) =>
             _sortLimit: bottom,
         )
 
-// lowestCurrent returns the bottom N records from all groups using the last value of each group.
+// lowestCurrent selects the last record from each input table and returns the
+// lowest `n` records.
+//
+// **Note:** `lowestCurrent()` drops empty tables.
+//
+// ## Parameters
+// - n: Number of records to return.
+// - column: Column to evaluate. Default is `_value`.
+// - groupColumns: List of columns to group by. Default is `[]`.
+// - tables: Input data. Default is piped-forward data (`<-`).
+//
+// ## Examples
+//
+// ### Return the lowest current value from a stream of tables
+// ```
+// import "sampledata"
+//
+// < sampledata.int()
+// >     |> lowestCurrent(n: 1, groupColumns: ["tag"])
+// ```
+//
+// introduced: 0.7.0
+// tags: transformations, selectors
+//
 lowestCurrent = (n, column="_value", groupColumns=[], tables=<-) =>
     tables
         |> _highestOrLowest(
@@ -3497,9 +4034,48 @@ lowestCurrent = (n, column="_value", groupColumns=[], tables=<-) =>
             _sortLimit: bottom,
         )
 
-// timedMovingAverage constructs a simple moving average over windows of 'period' duration
-// eg: A 5 year moving average would be called as such:
-//    movingAverage(1y, 5y)
+// timedMovingAverage returns the mean of values in a defined time range at a
+// specified frequency.
+//
+// For each row in a table, `timedMovingAverage()` returns the average of the
+// current value and all row values in the previous `period` (duration).
+// It returns moving averages at a frequency defined by the `every` parameter.
+//
+// #### Aggregate by calendar months and years
+// `every` and `period` parameters support all valid duration units, including
+// calendar months (`1mo`) and years (`1y`).
+//
+// #### Aggregate by week
+// When aggregating by week (`1w`), weeks are determined using the Unix epoch
+// (1970-01-01T00:00:00Z UTC). The Unix epoch was on a Thursday, so all
+// calculated weeks begin on Thursday.
+//
+// ## Parameters
+// - every: Frequency of time window.
+// - period: Length of each averaged time window.
+//
+//   A negative duration indicates start and stop boundaries are reversed.
+//
+// - column: Column to operate on. Default is `_value`.
+// - tables: Input data. Default is piped-forward data (`<-`).
+//
+// ## Examples
+//
+// ### Calculate a five year moving average every year
+// ```
+// # import "generate"
+// #
+// # timeRange = {start: 2015-01-01T00:00:00Z, stop: 2021-01-01T00:00:00Z}
+// # data = generate.from(count: 6, fn: (n) => n * n, start: timeRange.start, stop: timeRange.stop)
+// #     |> range(start: timeRange.start, stop: timeRange.stop)
+// #
+// < data
+// >     |> timedMovingAverage(every: 1y, period: 5y)
+// ```
+//
+// introduced: 0.36.0
+// tags: transformations
+//
 timedMovingAverage = (every, period, column="_value", tables=<-) =>
     tables
         |> window(every: every, period: period)
@@ -3507,11 +4083,35 @@ timedMovingAverage = (every, period, column="_value", tables=<-) =>
         |> duplicate(column: "_stop", as: "_time")
         |> window(every: inf)
 
-// Double Exponential Moving Average computes the double exponential moving averages of the `_value` column.
-// eg: A 5 point double exponential moving average would be called as such:
-// from(bucket: "telegraf/autogen"):
-//    |> range(start: -7d)
-//    |> doubleEMA(n: 5)
+// doubleEMA returns the double exponential moving average (DEMA) of values in
+// the `_value` column grouped into `n` number of points, giving more weight to
+// recent data.
+//
+// #### Double exponential moving average rules
+// - A double exponential moving average is defined as `doubleEMA = 2 * EMA_N - EMA of EMA_N`.
+//     - `EMA` is an exponential moving average.
+//     - `N = n` is the period used to calculate the `EMA`.
+// - A true double exponential moving average requires at least `2 * n - 1` values.
+//   If not enough values exist to calculate the double `EMA`, it returns a `NaN` value.
+// - `doubleEMA()` inherits all `exponentialMovingAverage()` rules.
+//
+// ## Parameters
+// - n: Number of points to average.
+// - tables: Input data. Default is piped-forward data (`<-`).
+//
+// ## Examples
+//
+// ### Calculate a three point double exponential moving average
+// ```
+// import "sampledata"
+//
+// < sampledata.int()
+// >     |> doubleEMA(n: 3)
+// ```
+//
+// introduced: 0.38.0
+// tags: transformations
+//
 doubleEMA = (n, tables=<-) =>
     tables
         |> exponentialMovingAverage(n: n)
@@ -3593,17 +4193,278 @@ tripleEMA = (n, tables=<-) =>
         |> map(fn: (r) => ({r with _value: 3.0 * r.__ema1 - 3.0 * r.__ema2 + r._value}))
         |> drop(columns: ["__ema1", "__ema2"])
 
-// truncateTimeColumn takes in a time column t and a Duration unit and truncates each value of t to the given unit via map
-// Change from _time to timeColumn once Flux Issue 1122 is resolved
+// truncateTimeColumn truncates all input time values in the `_time` to a
+// specified unit.
+//
+// #### Truncate to weeks
+// When truncating a time value to the week (`1w`), weeks are determined using the
+// **Unix epoch (1970-01-01T00:00:00Z UTC)**. The Unix epoch was on a Thursday,
+// so all calculated weeks begin on Thursday.
+//
+// ## Parameters
+// - unit: Unit of time to truncate to.
+//
+//   **Example units:**
+//   - 1ns (nanosecond)
+//   - 1us (microsecond)
+//   - 1ms (millisecond)
+//   - 1s (second)
+//   - 1m (minute)
+//   - 1h (hour)
+//   - 1d (day)
+//   - 1w (week)
+//   - 1mo (month)
+//   - 1y (year)
+//
+// - timeColumn: Time column to truncate. Default is `_time`.
+//
+//   **Note:** Currently, assigning a custom value to this parameter will have
+//   no effect.
+//
+// - tables: Input data. Default is piped-forward data (`<-`).
+//
+// ## Examples
+//
+// ### Truncate all time values to the minute
+// ```
+// import "sampledata"
+//
+// < sampledata.int()
+// >     |> truncateTimeColumn(unit: 1m)
+// ```
+//
+// introduced: 0.37.0
+// tags: transformations, date/time
+//
 truncateTimeColumn = (timeColumn="_time", unit, tables=<-) =>
     tables
         |> map(fn: (r) => ({r with _time: date.truncate(t: r._time, unit: unit)}))
+
+// toString converts all values in the `_value` column to string types.
+//
+// ## Parameters
+// - tables: Input data. Default is piped-forward data (`<-`).
+//
+// ## Examples
+//
+// ### Convert the _value column to strings
+// ```
+// import "sampledata"
+//
+// < sampledata.float()
+// >     |> toString()
+// ```
+//
+// introduced: 0.7.0
+// tags: transformations, type-conversions
+//
 toString = (tables=<-) => tables |> map(fn: (r) => ({r with _value: string(v: r._value)}))
+
+// toInt converts all values in the `_value` column to integer types.
+//
+// #### Supported types and behaviors
+// `toInt()` behavior depends on the `_value` column type:
+//
+// | _value type | Returned value                                  |
+// | :---------- | :---------------------------------------------- |
+// | string      | Integer equivalent of the numeric string        |
+// | bool        | 1 (true) or 0 (false)                           |
+// | duration    | Number of nanoseconds in the specified duration |
+// | time        | Equivalent nanosecond epoch timestamp           |
+// | float       | Value truncated at the decimal                  |
+// | uint        | Integer equivalent of the unsigned integer      |
+//
+// ## Parameters
+// - tables: Input data. Default is piped-forward data (`<-`).
+//
+// ## Examples
+//
+// ### Convert a float _value column to integers
+// ```
+// import "sampledata"
+//
+// < sampledata.float()
+// >     |> toInt()
+// ```
+//
+// ### Convert a boolean _value column to integers
+// ```
+// import "sampledata"
+//
+// < sampledata.bool()
+// >     |> toInt()
+// ```
+//
+// ### Convert a uinteger _value column to an integers
+// ```
+// import "sampledata"
+//
+// < sampledata.uint()
+// >     |> toInt()
+// ```
+//
+// introduced: 0.7.0
+// tags: transformations, type-conversions
+//
 toInt = (tables=<-) => tables |> map(fn: (r) => ({r with _value: int(v: r._value)}))
+
+// toUInt converts all values in the `_value` column to unsigned integer types.
+//
+// #### Supported types and behaviors
+// `toUInt()` behavior depends on the `_value` column type:
+//
+// | _value type | Returned value                                  |
+// | :---------- | :---------------------------------------------- |
+// | string      | UInteger equivalent of the numeric string       |
+// | bool        | 1 (true) or 0 (false)                           |
+// | duration    | Number of nanoseconds in the specified duration |
+// | time        | Equivalent nanosecond epoch timestamp           |
+// | float       | Value truncated at the decimal                  |
+// | int         | UInteger equivalent of the integer              |
+//
+// ## Parameters
+// - tables: Input data. Default is piped-forward data (`<-`).
+//
+// ## Examples
+//
+// ### Convert a float _value column to uintegers
+// ```
+// import "sampledata"
+//
+// < sampledata.float()
+// >     |> toUInt()
+// ```
+//
+// ### Convert a boolean _value column to uintegers
+// ```
+// import "sampledata"
+//
+// < sampledata.bool()
+// >     |> toUInt()
+// ```
+//
+// ### Convert a uinteger _value column to an uintegers
+// ```
+// import "sampledata"
+//
+// < sampledata.uint()
+// >     |> toUInt()
+// ```
+//
+// introduced: 0.7.0
+// tags: transformations, type-conversions
+//
 toUInt = (tables=<-) => tables |> map(fn: (r) => ({r with _value: uint(v: r._value)}))
+
+// toFloat converts all values in the `_value` column to float types.
+//
+// #### Supported data types
+// - string (numeric, scientific notation, ±Inf, or NaN)
+// - boolean
+// - int
+// - uint
+//
+// ## Parameters
+// - tables: Input data. Default is piped-forward data (`<-`).
+//
+// ## Examples
+//
+// ### Convert an integer _value column to floats
+// ```
+// import "sampledata"
+//
+// < sampledata.int()
+// >     |> toFloat()
+// ```
+//
+// ### Convert a boolean _value column to floats
+// ```
+// import "sampledata"
+//
+// < sampledata.bool()
+// >     |> toFloat()
+// ```
+//
+// introduced: 0.7.0
+// tags: transformations, type-conversions
+//
 toFloat = (tables=<-) => tables |> map(fn: (r) => ({r with _value: float(v: r._value)}))
+
+// toBool converts all values in the `_value` column to boolean types.
+//
+// #### Supported data types
+// - **string**: `true` or `false`
+// - **int**: `1` or `0`
+// - **uint**: `1` or `0`
+// - **float**: `1.0` or `0.0`
+//
+// ## Parameters
+// - tables: Input data. Default is piped-forward data (`<-`).
+//
+// ## Examples
+//
+// ### Convert an integer _value column to booleans
+// ```
+// import "sampledata"
+//
+// < sampledata.numericBool()
+// >     |> toBool()
+// ```
+//
+// introduced: 0.7.0
+// tags: transformations, type-conversions
+//
 toBool = (tables=<-) => tables |> map(fn: (r) => ({r with _value: bool(v: r._value)}))
+
+// toTime converts all values in the `_value` column to time types.
+//
+// #### Supported data types
+// - string (RFC3339 timestamp)
+// - int
+// - uint
+//
+// `toTime()` treats all numeric input values as nanosecond epoch timestamps.
+//
+// ## Parameters
+// - tables: Input data. Default is piped-forward data (`<-`).
+//
+// ## Examples
+//
+// ### Convert an integer _value column to times
+// ```
+// # import "sampledata"
+// #
+// # data = sampledata.int()
+// #     |> map(fn: (r) => ({r with _value: r._value * 10000000000000000}))
+// #
+// < data
+// >     |> toTime()
+// ```
+//
+// introduced: 0.7.0
+// tags: transformations, type-conversions
+//
 toTime = (tables=<-) => tables |> map(fn: (r) => ({r with _value: time(v: r._value)}))
 
-// today returns the now() timestamp truncated to the day unit
+// today returns the now() timestamp truncated to the day unit.
+//
+// ## Examples
+//
+// ### Return a timestamp representing today
+// ```no_run
+// option now = () => 2022-01-01T13:45:28Z
+//
+// today()
+// // Returns 2022-01-01T00:00:00.000000000Z
+// ```
+//
+// ### Query data from today
+// ```no_run
+// from(bucket: "example-bucket")
+//     |> range(start: today())
+// ```
+//
+// introduced: 0.116.0
+// tags: date/time
+//
 today = () => date.truncate(t: now(), unit: 1d)
