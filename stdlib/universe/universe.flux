@@ -3315,7 +3315,7 @@ builtin inf : duration
 // length returns the number of elements in an array.
 //
 // ## Parameters
-// - arr: Array to evaluate.
+// - arr: Array to evaluate. Default is the piped-forward array (`<-`).
 //
 // ## Examples
 //
@@ -3323,7 +3323,7 @@ builtin inf : duration
 // ```no_run
 // people = ["John", "Jane", "Abed"]
 //
-// length(arr: people)
+// people |> length()
 // // Returns 3
 // ```
 //
@@ -3378,7 +3378,7 @@ builtin logarithmicBins : (start: float, factor: float, count: int, ?infinity: b
 // timeWeightedAvg returns the time-weighted average of non-null values in
 // `_value` column as a float for each input table.
 //
-// Time is weighted using the linearly-interpolated integral of values in the table.
+// Time is weighted using the linearly interpolated integral of values in the table.
 //
 // ## Parameters
 // - unit: Unit of time to use to compute the time-weighted average.
