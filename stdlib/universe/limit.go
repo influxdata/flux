@@ -3,7 +3,7 @@ package universe
 import (
 	"context"
 
-	arrowmem "github.com/apache/arrow/go/arrow/memory"
+	arrowmem "github.com/apache/arrow/go/v7/arrow/memory"
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/array"
 	"github.com/influxdata/flux/arrow"
@@ -290,7 +290,7 @@ func (t *limitTransformationAdapter) processChunk(
 	if state.n <= 0 || chunkLen == 0 {
 		// TODO(onelson): seems like there should be a more simple way to produce an empty chunk
 		buf := chunk.Buffer()
-		buf.Values = make([]array.Interface, chunk.NCols())
+		buf.Values = make([]array.Array, chunk.NCols())
 		for idx := range buf.Values {
 			values := chunk.Values(idx)
 			if values.Len() == 0 {
@@ -327,7 +327,7 @@ func (t *limitTransformationAdapter) processChunk(
 	buf := chunk.Buffer()
 	// XXX(onelson): seems like we're building a 2D array where the outer is by
 	// column, and the inners are the column values per row?
-	buf.Values = make([]array.Interface, chunk.NCols())
+	buf.Values = make([]array.Array, chunk.NCols())
 	for idx := range buf.Values {
 		values := chunk.Values(idx)
 		// If there's no cruft at the end, just keep the original array,

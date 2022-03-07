@@ -453,7 +453,7 @@ func (m *mapVectorPreparedFunc) Eval(ctx context.Context, chunk table.Chunk, mem
 	}
 
 	if nulls > 0 {
-		newArrs := make([]array.Interface, 0, len(arr)-nulls)
+		newArrs := make([]array.Array, 0, len(arr)-nulls)
 		newCols := make([]flux.ColMeta, 0, cap(newArrs))
 		for i := range arr {
 			if arr[i] != nil {

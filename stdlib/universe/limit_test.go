@@ -421,7 +421,7 @@ func TestProcess_NarrowLimit_MultiBuffer(t *testing.T) {
 				{Label: "_time", Type: flux.TTime},
 				{Label: "_value", Type: flux.TInt},
 			},
-			Values: make([]array.Interface, 2),
+			Values: make([]array.Array, 2),
 		}
 
 		times := array.NewIntBuilder(mem)
@@ -447,7 +447,7 @@ func TestProcess_NarrowLimit_MultiBuffer(t *testing.T) {
 				{Label: "_time", Type: flux.TTime},
 				{Label: "_value", Type: flux.TInt},
 			},
-			Values: make([]array.Interface, 2),
+			Values: make([]array.Array, 2),
 		}
 
 		times := array.NewIntBuilder(mem)
