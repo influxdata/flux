@@ -30,8 +30,8 @@ testcase basic {
 
         got =
             csv.from(csv: inData)
-                |> range(start: 2018-05-22T19:53:26Z)
                 |> testing.load()
+                |> range(start: 2018-05-22T19:53:26Z)
                 |> map(fn: (r) => ({newValue: float(v: r._value)}))
         want = csv.from(csv: outData)
 
@@ -180,6 +180,7 @@ testcase shadow_var {
         myVal = "wrong"
         got =
             csv.from(csv: inData)
+                |> testing.load()
                 |> range(start: 2018-05-22T19:53:26Z)
                 |> map(
                     fn: (r) => {
