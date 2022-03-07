@@ -43,15 +43,17 @@ option now = system.time
 // chandeMomentumOscillator applies the technical momentum indicator developed
 // by Tushar Chande to input data.
 //
-// The Chande Momentum Oscillator (CMO) indicator calculates the difference
-// between the sum of all recent data points with values greater than the median
-// value of the data set and the sum of all recent data points with values lower
-// than the median value of the data set, then divides the result by the sum of
-// all data movement over a given time period.
-// It then multiplies the result by 100 and returns a value between -100 and +100.
+// The Chande Momentum Oscillator (CMO) indicator does the following:
+//
+// 1. Determines the median value of the each input table and calculates the
+//    difference between the sum of rows with values greater than the median
+//    and the sum of rows with values lower than the median.
+// 2. Divides the result of step 1 by the sum of all data movement over a given
+//    time period.
+// 3. Multiplies the result of step 2 by 100 and returns a value between -100 and +100.
 //
 // #### Output tables
-// For each input table with x rows, `chandeMomentumOscillator()` outputs a
+// For each input table with `x` rows, `chandeMomentumOscillator()` outputs a
 // table with `x - n` rows.
 //
 // ## Parameters
