@@ -3204,16 +3204,16 @@ builtin uint : (v: A) => uint
 //`display()` differs from `string()` in that `display()` recursively converts values inside
 // composite types to strings. `string()` does not operate on composite types.
 //
-//  ## Parameters
-//  - v: Value to convert for display.
+// ## Parameters
+// - v: Value to convert for display.
 //
-//  ## Examples
+// ## Examples
 //
-//  ### Display a value as part of a table
+// ### Display a value as part of a table
 //
-//  Use `array.from()` and `display()` to quickly observe any value.
+// Use `array.from()` and `display()` to quickly observe any value.
 //
-//  ```no_run
+// ```no_run
 // import "array"
 //
 // array.from(
@@ -3221,7 +3221,7 @@ builtin uint : (v: A) => uint
 //         {dict: display(v: ["a": 1, "b": 2]),record: display(v: {x: 1, y: 2}),array: display(v: [5, 6, 7])},
 //     ]
 // > )
-//  ```
+// ```
 //
 // ### Display a record
 //
