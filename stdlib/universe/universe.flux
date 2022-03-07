@@ -3160,7 +3160,7 @@ builtin time : (v: A) => time
 // ## Examples
 //
 // ### Convert basic types to unsigned integers
-// ```
+// ```no_run
 // uint(v: "3") // Returns 3
 // uint(v: 1m) // Returns 160000000000
 // uint(v: 2022-01-01T00:00:00Z) // Returns 1640995200000000000
@@ -3214,70 +3214,71 @@ builtin uint : (v: A) => uint
 //  Use `array.from()` and `display()` to quickly observe any value.
 //
 //  ```no_run
-//  import "array"
+// import "array"
 //
-//  array.from(rows:[{
-//      dict: display(v: ["a":1, "b": 2])
-//      record: display(v:{x: 1, y: 2}),
-//      array: display(v: [5,6,7])
-//  > }])
+// array.from(
+//     rows: [
+//         {dict: display(v: ["a": 1, "b": 2]),record: display(v: {x: 1, y: 2}),array: display(v: [5, 6, 7])},
+//     ]
+// > )
 //  ```
 //
-//  ### Display a record
+// ### Display a record
 //
-//  ```no_run
-//  x = {a: 1, b: 2, c: 3}
-//  display(v: x)
+// ```no_run
+// x = {a: 1, b: 2, c: 3}
+// display(v: x)
 //
-//  // Returns {a: 1, b: 2, c: 3}
-//  ```
+// // Returns {a: 1, b: 2, c: 3}
+// ```
 //
-//  ### Display an array
+// ### Display an array
 //
-//  ```no_run
-//  x = [1, 2, 3]
-//  display(v: x)
+// ```no_run
+// x = [1, 2, 3]
+// display(v: x)
 //
-//  // Returns [1, 2, 3]
-//  ```
+// // Returns [1, 2, 3]
+// ```
 //
-//  ### Display a dictionary
+// ### Display a dictionary
 //
-//  ```no_run
-//  x = ["a": 1, "b": 2, "c": 3]
-//  display(v: x)
+// ```no_run
+// x = ["a": 1, "b": 2, "c": 3]
+// display(v: x)
 //
-//  // Returns [a: 1, b: 2, c: 3]
-//  ```
+// // Returns [a: 1, b: 2, c: 3]
+// ```
 //
-//  ### Display bytes
+// ### Display bytes
 //
-//  ```no_run
-//  x = bytes(v:"abc")
-//  display(v: x)
+// ```no_run
+// x = bytes(v:"abc")
+// display(v: x)
 //
-//  // Returns 0x616263
-//  ```
+// // Returns 0x616263
+// ```
 //
-//  ### Display a composite value
+// ### Display a composite value
 //
-//  ```no_run
-//  x = {
-//      bytes: bytes(v: "abc"),
-//      string: "str",
-//      array: [1,2,3],
-//      dict: ["a": 1, "b": 2, "c": 3],
-//  }
-//  display(v: x)
+// ```no_run
+// x = {
+//     bytes: bytes(v: "abc"),
+//     string: "str",
+//     array: [1,2,3],
+//     dict: ["a": 1, "b": 2, "c": 3],
+// }
 //
-//  // Returns
-//  // {
-//  //    array: [1, 2, 3],
-//  //    bytes: 0x616263,
-//  //    dict: [a: 1, b: 2, c: 3],
-//  //    string: str
-//  // }
-//  ```
+// display(v: x)
+//
+// // Returns
+// // {
+// //    array: [1, 2, 3],
+// //    bytes: 0x616263,
+// //    dict: [a: 1, b: 2, c: 3],
+// //    string: str
+// // }
+// ```
 //
 // introduced: 0.154.0
 //
