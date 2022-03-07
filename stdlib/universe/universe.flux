@@ -1577,6 +1577,7 @@ builtin limit : (<-tables: stream[A], n: int, ?offset: int) => stream[A]
 // ## Parameters
 // - fn: Single argument function to apply to each record.
 //   The return value must be a record.
+// - mergeKey: _(Deprecated)_ Merge group keys of mapped records. Default is `false`.
 // - tables: Input data. Default is piped-forward data (`<-`).
 //
 // ## Examples
@@ -2130,6 +2131,7 @@ builtin rename : (<-tables: stream[A], ?fn: (column: string) => string, ?columns
 //
 //   `pos` must be less than `n`. If pos is less than 0, a random offset is used.
 //
+// - column: Column to operate on.
 // - tables: Input data. Default is piped-forward data (`<-`).
 //
 // ## Examples
@@ -3030,7 +3032,7 @@ builtin float : (v: A) => float
 // | uint       | Integer equivalent of the unsigned integer      |
 //
 // ## Parameters
-// v: Value to convert.
+// - v: Value to convert.
 //
 // ## Examples
 //
@@ -3411,7 +3413,7 @@ timeWeightedAvg = (tables=<-, unit) =>
                 ({r with _value: r._value * float(v: uint(v: unit)) / float(v: int(v: r._stop) - int(v: r._start))}),
         )
 
-// covariance computes the covariance between two streams of tables.
+// cov computes the covariance between two streams of tables.
 //
 // ## Parameters
 // - x: First input stream.
@@ -3440,6 +3442,33 @@ timeWeightedAvg = (tables=<-, unit) =>
 cov = (x, y, on, pearsonr=false) =>
     join(tables: {x: x, y: y}, on: on)
         |> covariance(pearsonr: pearsonr, columns: ["_value_x", "_value_y"])
+
+// pearsonr returns the covariance of two streams of tables normalized to the
+// Pearson R coefficient.
+//
+// ## Parameters
+// - x: First input stream.
+// - y: Second input stream.
+// - on: List of columns to join on.
+//
+// ## Examples
+//
+// ### Return the covariance between two streams of tables
+// ```
+// import "generate"
+//
+// stream1 = generate.from(count: 5, fn: (n) => n * n, start: 2021-01-01T00:00:00Z, stop: 2021-01-01T00:01:00Z)
+//     |> toFloat()
+//
+// stream2 = generate.from(count: 5, fn: (n) => n * n * n / 2, start: 2021-01-01T00:00:00Z, stop: 2021-01-01T00:01:00Z)
+//     |> toFloat()
+//
+// > pearsonr(x: stream1, y: stream2, on: ["_time"])
+// ```
+//
+// introduced: 0.7.0
+// tags: transformations, aggregates
+//
 pearsonr = (x, y, on) => cov(x: x, y: y, on: on, pearsonr: true)
 
 // _fillEmpty is a helper function that creates and fills empty tables.
