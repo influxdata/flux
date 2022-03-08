@@ -389,6 +389,5 @@ const EXCEPTIONS: &[&str] = &[
     "testing/prometheus",
     "testing/promql",
     "testing/usage",
-    "universe",
     "universe/holt_winters",
 ];
