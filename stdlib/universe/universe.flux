@@ -926,7 +926,7 @@ builtin holtWinters : (
 // ### Filter by business hours
 // ```
 // # import "array"
-// # 
+// #
 // # data = array.from(
 // #     rows: [
 // #         {_time: 2022-01-01T05:00:00Z, tag: "t1", _value: -2},
@@ -937,7 +937,7 @@ builtin holtWinters : (
 // #         {_time: 2022-01-01T20:00:50Z, tag: "t1", _value: 4},
 // #     ],
 // # )
-// # 
+// #
 // < data
 // >     |> hourSelection(start: 9, stop: 17)
 // ```
