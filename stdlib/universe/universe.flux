@@ -913,7 +913,7 @@ builtin holtWinters : (
     A: Record,
     B: Record
 
-// hourSelection retains all rows with time values in a specified hour range.
+// hourSelection filters rows by time values in a specified hour range.
 //
 // ## Parameters
 // - start: First hour of the hour range (inclusive). Hours range from `[0-23]`.
@@ -925,10 +925,19 @@ builtin holtWinters : (
 //
 // ### Filter by business hours
 // ```
-// # import "generate"
-// #
-// # data = generate.from(count: 8, fn: (n) => n * n, start: 2021-01-01T00:00:00Z, stop: 2021-01-02T00:00:00Z)
-// #
+// # import "array"
+// # 
+// # data = array.from(
+// #     rows: [
+// #         {_time: 2022-01-01T05:00:00Z, tag: "t1", _value: -2},
+// #         {_time: 2022-01-01T09:00:10Z, tag: "t1", _value: 10},
+// #         {_time: 2022-01-01T11:00:20Z, tag: "t1", _value: 7},
+// #         {_time: 2022-01-01T16:00:30Z, tag: "t1", _value: 17},
+// #         {_time: 2022-01-01T19:00:40Z, tag: "t1", _value: 15},
+// #         {_time: 2022-01-01T20:00:50Z, tag: "t1", _value: 4},
+// #     ],
+// # )
+// # 
 // < data
 // >     |> hourSelection(start: 9, stop: 17)
 // ```
