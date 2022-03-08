@@ -110,7 +110,7 @@ pub struct Symbol {
 
 impl fmt::Debug for Symbol {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{:?}#{}", self.name.as_ptr(), &self[..])
+        write!(f, "{:?}#{}", self.name.as_ptr(), &self.name)
     }
 }
 
