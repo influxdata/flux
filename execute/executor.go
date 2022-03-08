@@ -191,8 +191,10 @@ func (v *createExecutionNodeVisitor) Visit(node plan.Node) error {
 		copies = attr.(plan.ParallelRunAttribute).Factor
 	}
 
+	isParallelMerge := false
 	predCopies := 1
 	if attr, ok := ppn.OutputAttrs[plan.ParallelMergeKey]; ok {
+		isParallelMerge = true
 		predCopies = attr.(plan.ParallelMergeAttribute).Factor
 	}
 
@@ -285,7 +287,7 @@ func (v *createExecutionNodeVisitor) Visit(node plan.Node) error {
 				}
 			}
 
-			if plan.HasSideEffect(spec) && len(node.Successors()) == 0 {
+			if (plan.HasSideEffect(spec) || isParallelMerge) && len(node.Successors()) == 0 {
 				name := string(node.ID())
 				r := newResult(name)
 				v.es.results[name] = r
