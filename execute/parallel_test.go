@@ -273,6 +273,102 @@ func TestParallel_Execute(t *testing.T) {
 			},
 		},
 		{
+			name: `parallel-from-merge-no-successor`,
+			spec: &plantest.PlanSpec{
+				Nodes: []plan.Node{
+					createPhysicalNode("parallel-from-test",
+						executetest.NewParallelFromProcedureSpec(
+							[]*executetest.ParallelTable{
+								{
+									Table: &executetest.Table{
+										KeyCols: []string{"_start", "_stop"},
+										ColMeta: []flux.ColMeta{
+											{Label: "_start", Type: flux.TTime},
+											{Label: "_stop", Type: flux.TTime},
+											{Label: "_time", Type: flux.TTime},
+											{Label: "_value", Type: flux.TFloat},
+											{Label: executetest.ParallelGroupColName, Type: flux.TInt},
+										},
+										Data: [][]interface{}{
+											{execute.Time(0), execute.Time(5), execute.Time(0), 1.0, -1},
+											{execute.Time(0), execute.Time(5), execute.Time(1), 2.0, -1},
+											{execute.Time(0), execute.Time(5), execute.Time(2), 3.0, -1},
+											{execute.Time(0), execute.Time(5), execute.Time(3), 4.0, -1},
+											{execute.Time(0), execute.Time(5), execute.Time(4), 5.0, -1},
+										},
+									},
+									ResidesOnPartition: 0,
+								},
+								{
+									Table: &executetest.Table{
+										KeyCols: []string{"_start", "_stop"},
+										ColMeta: []flux.ColMeta{
+											{Label: "_start", Type: flux.TTime},
+											{Label: "_stop", Type: flux.TTime},
+											{Label: "_time", Type: flux.TTime},
+											{Label: "_value", Type: flux.TFloat},
+											{Label: executetest.ParallelGroupColName, Type: flux.TInt},
+										},
+										Data: [][]interface{}{
+											{execute.Time(5), execute.Time(10), execute.Time(5), 5.0, -1},
+											{execute.Time(5), execute.Time(10), execute.Time(6), 6.0, -1},
+											{execute.Time(5), execute.Time(10), execute.Time(7), 7.0, -1},
+											{execute.Time(5), execute.Time(10), execute.Time(8), 8.0, -1},
+											{execute.Time(5), execute.Time(10), execute.Time(9), 9.0, -1},
+										},
+									},
+									ResidesOnPartition: 1,
+								},
+							}),
+						withOutputAttr(plan.ParallelRunKey, plan.ParallelRunAttribute{Factor: 2})),
+					createPhysicalNode("merge", &universe.PartitionMergeProcedureSpec{},
+						withRequiredAttr(plan.ParallelRunKey, plan.ParallelRunAttribute{Factor: 2}),
+						withOutputAttr(plan.ParallelMergeKey, plan.ParallelMergeAttribute{Factor: 2})),
+				},
+				Edges: [][2]int{
+					{0, 1},
+				},
+			},
+			want: map[string][]*executetest.Table{
+				"merge": []*executetest.Table{
+					{
+						KeyCols: []string{"_start", "_stop"},
+						ColMeta: []flux.ColMeta{
+							{Label: "_start", Type: flux.TTime},
+							{Label: "_stop", Type: flux.TTime},
+							{Label: "_time", Type: flux.TTime},
+							{Label: "_value", Type: flux.TFloat},
+							{Label: executetest.ParallelGroupColName, Type: flux.TInt},
+						},
+						Data: [][]interface{}{
+							{execute.Time(0), execute.Time(5), execute.Time(0), 1.0, int64(0)},
+							{execute.Time(0), execute.Time(5), execute.Time(1), 2.0, int64(0)},
+							{execute.Time(0), execute.Time(5), execute.Time(2), 3.0, int64(0)},
+							{execute.Time(0), execute.Time(5), execute.Time(3), 4.0, int64(0)},
+							{execute.Time(0), execute.Time(5), execute.Time(4), 5.0, int64(0)},
+						},
+					},
+					{
+						KeyCols: []string{"_start", "_stop"},
+						ColMeta: []flux.ColMeta{
+							{Label: "_start", Type: flux.TTime},
+							{Label: "_stop", Type: flux.TTime},
+							{Label: "_time", Type: flux.TTime},
+							{Label: "_value", Type: flux.TFloat},
+							{Label: executetest.ParallelGroupColName, Type: flux.TInt},
+						},
+						Data: [][]interface{}{
+							{execute.Time(5), execute.Time(10), execute.Time(5), 5.0, int64(1)},
+							{execute.Time(5), execute.Time(10), execute.Time(6), 6.0, int64(1)},
+							{execute.Time(5), execute.Time(10), execute.Time(7), 7.0, int64(1)},
+							{execute.Time(5), execute.Time(10), execute.Time(8), 8.0, int64(1)},
+							{execute.Time(5), execute.Time(10), execute.Time(9), 9.0, int64(1)},
+						},
+					},
+				},
+			},
+		},
+		{
 			// Error: the from node does not specify the parallel-run
 			// attribute. It is required its successor, filter.
 			name: `from-missing-output`,
