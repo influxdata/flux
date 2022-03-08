@@ -2972,10 +2972,18 @@ builtin bytes : (v: A) => bytes
 // To store durations in a column, convert duration types to strings.
 //
 // ```
-// # import "generate"
+// # import "array"
 // #
-// # data =
-// #     generate.from(count: 5, fn: (n) => (n + 1) * 3600000000000, start: 2021-01-01T00:00:00Z, stop: 2021-01-01T05:00:00Z)
+// # data = array.from(
+// #     rows: [
+// #         {_time: 2022-01-01T05:00:00Z, tag: "t1", _value: -27000000},
+// #         {_time: 2022-01-01T09:00:10Z, tag: "t1", _value: 12000000},
+// #         {_time: 2022-01-01T11:00:20Z, tag: "t1", _value: 78000000},
+// #         {_time: 2022-01-01T16:00:30Z, tag: "t1", _value: 17000000},
+// #         {_time: 2022-01-01T19:00:40Z, tag: "t1", _value: 15000000},
+// #         {_time: 2022-01-01T20:00:50Z, tag: "t1", _value: -42000000},
+// #     ],
+// # )
 // #
 // < data
 // >     |> map(fn: (r) => ({r with _value: string(v: duration(v: r._value))}))
