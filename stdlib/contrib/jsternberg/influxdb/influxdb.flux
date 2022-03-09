@@ -65,7 +65,7 @@ builtin _mask : (<-tables: stream[A], columns: [string]) => stream[B] where A: R
 // import "contrib/jsternberg/influxdb"
 // import "influxdata/influxdb/secrets"
 //
-// influxdb.token = secrets.get(key: "INFLUXDB_CLOUD_TOKEN")
+// token = secrets.get(key: "INFLUXDB_CLOUD_TOKEN")
 //
 // from(
 //     bucket: "example-bucket",
