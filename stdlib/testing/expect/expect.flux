@@ -13,4 +13,7 @@ package expect
 // exactly as many times as the number given.
 //
 // The key is the name of the planner rule.
+//
+// ## Parameters
+// - rules: Mapping of rules names to expected counts.
 builtin planner : (rules: [string:int]) => {}
