@@ -3,7 +3,6 @@ package universe_test
 import (
 	"context"
 	"errors"
-	"fmt"
 	"testing"
 	"time"
 
@@ -135,7 +134,7 @@ func TestStateTracking_Process(t *testing.T) {
 	testCases := []struct {
 		name    string
 		spec    *universe.StateTrackingProcedureSpec
-		data    func() []flux.Table
+		data    []flux.Table
 		want    []*executetest.Table
 		wantErr error
 	}{
@@ -147,22 +146,20 @@ func TestStateTracking_Process(t *testing.T) {
 				Fn:             gt5,
 				TimeCol:        "_time",
 			},
-			data: func() []flux.Table {
-				return []flux.Table{&executetest.Table{
-					ColMeta: []flux.ColMeta{
-						{Label: "_time", Type: flux.TTime},
-						{Label: "_value", Type: flux.TFloat},
-					},
-					Data: [][]interface{}{
-						{execute.Time(1), 2.0},
-						{execute.Time(2), 1.0},
-						{execute.Time(3), 6.0},
-						{execute.Time(4), 7.0},
-						{execute.Time(5), 8.0},
-						{execute.Time(6), 1.0},
-					},
-				}}
-			},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
+				},
+				Data: [][]interface{}{
+					{execute.Time(1), 2.0},
+					{execute.Time(2), 1.0},
+					{execute.Time(3), 6.0},
+					{execute.Time(4), 7.0},
+					{execute.Time(5), 8.0},
+					{execute.Time(6), 1.0},
+				},
+			}},
 			want: []*executetest.Table{{
 				ColMeta: []flux.ColMeta{
 					{Label: "_time", Type: flux.TTime},
@@ -187,22 +184,20 @@ func TestStateTracking_Process(t *testing.T) {
 				Fn:             gt5,
 				TimeCol:        "_time",
 			},
-			data: func() []flux.Table {
-				return []flux.Table{&executetest.Table{
-					ColMeta: []flux.ColMeta{
-						{Label: "_time", Type: flux.TTime},
-						{Label: "_value", Type: flux.TFloat},
-					},
-					Data: [][]interface{}{
-						{execute.Time(1), 2.0},
-						{execute.Time(2), 1.0},
-						{execute.Time(3), 6.0},
-						{nil, 7.0},
-						{execute.Time(5), 8.0},
-						{nil, 1.0},
-					},
-				}}
-			},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
+				},
+				Data: [][]interface{}{
+					{execute.Time(1), 2.0},
+					{execute.Time(2), 1.0},
+					{execute.Time(3), 6.0},
+					{nil, 7.0},
+					{execute.Time(5), 8.0},
+					{nil, 1.0},
+				},
+			}},
 			wantErr: errors.New("got a null timestamp"),
 		},
 		{
@@ -213,22 +208,20 @@ func TestStateTracking_Process(t *testing.T) {
 				Fn:             gt5,
 				TimeCol:        "_time",
 			},
-			data: func() []flux.Table {
-				return []flux.Table{&executetest.Table{
-					ColMeta: []flux.ColMeta{
-						{Label: "_time", Type: flux.TTime},
-						{Label: "_value", Type: flux.TFloat},
-					},
-					Data: [][]interface{}{
-						{execute.Time(2), 1.0},
-						{execute.Time(4), 7.0},
-						{execute.Time(1), 2.0},
-						{execute.Time(5), 8.0},
-						{execute.Time(6), 1.0},
-						{execute.Time(3), 6.0},
-					},
-				}}
-			},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
+				},
+				Data: [][]interface{}{
+					{execute.Time(2), 1.0},
+					{execute.Time(4), 7.0},
+					{execute.Time(1), 2.0},
+					{execute.Time(5), 8.0},
+					{execute.Time(6), 1.0},
+					{execute.Time(3), 6.0},
+				},
+			}},
 			wantErr: errors.New("got an out-of-order timestamp"),
 		},
 		{
@@ -238,22 +231,20 @@ func TestStateTracking_Process(t *testing.T) {
 				Fn:          gt5,
 				TimeCol:     "_time",
 			},
-			data: func() []flux.Table {
-				return []flux.Table{&executetest.Table{
-					ColMeta: []flux.ColMeta{
-						{Label: "_time", Type: flux.TTime},
-						{Label: "_value", Type: flux.TFloat},
-					},
-					Data: [][]interface{}{
-						{execute.Time(1), 2.0},
-						{execute.Time(2), 1.0},
-						{execute.Time(3), 6.0},
-						{execute.Time(4), 7.0},
-						{execute.Time(5), 8.0},
-						{execute.Time(6), 1.0},
-					},
-				}}
-			},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
+				},
+				Data: [][]interface{}{
+					{execute.Time(1), 2.0},
+					{execute.Time(2), 1.0},
+					{execute.Time(3), 6.0},
+					{execute.Time(4), 7.0},
+					{execute.Time(5), 8.0},
+					{execute.Time(6), 1.0},
+				},
+			}},
 			want: []*executetest.Table{{
 				ColMeta: []flux.ColMeta{
 					{Label: "_time", Type: flux.TTime},
@@ -277,22 +268,20 @@ func TestStateTracking_Process(t *testing.T) {
 				Fn:          gt5,
 				TimeCol:     "_time",
 			},
-			data: func() []flux.Table {
-				return []flux.Table{&executetest.Table{
-					ColMeta: []flux.ColMeta{
-						{Label: "_time", Type: flux.TTime},
-						{Label: "_value", Type: flux.TFloat},
-					},
-					Data: [][]interface{}{
-						{execute.Time(3), 6.0},
-						{nil, 2.0},
-						{execute.Time(5), 8.0},
-						{nil, 1.0},
-						{execute.Time(2), 7.0},
-						{execute.Time(4), 10.0},
-					},
-				}}
-			},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
+				},
+				Data: [][]interface{}{
+					{execute.Time(3), 6.0},
+					{nil, 2.0},
+					{execute.Time(5), 8.0},
+					{nil, 1.0},
+					{execute.Time(2), 7.0},
+					{execute.Time(4), 10.0},
+				},
+			}},
 			want: []*executetest.Table{{
 				ColMeta: []flux.ColMeta{
 					{Label: "_time", Type: flux.TTime},
@@ -318,22 +307,20 @@ func TestStateTracking_Process(t *testing.T) {
 				Fn:             gt5,
 				TimeCol:        "_time",
 			},
-			data: func() []flux.Table {
-				return []flux.Table{&executetest.Table{
-					ColMeta: []flux.ColMeta{
-						{Label: "_time", Type: flux.TTime},
-						{Label: "_value", Type: flux.TFloat},
-					},
-					Data: [][]interface{}{
-						{execute.Time(1), 2.0},
-						{execute.Time(2), 1.0},
-						{execute.Time(3), 6.0},
-						{execute.Time(4), 7.0},
-						{execute.Time(5), 8.0},
-						{execute.Time(6), 1.0},
-					},
-				}}
-			},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
+				},
+				Data: [][]interface{}{
+					{execute.Time(1), 2.0},
+					{execute.Time(2), 1.0},
+					{execute.Time(3), 6.0},
+					{execute.Time(4), 7.0},
+					{execute.Time(5), 8.0},
+					{execute.Time(6), 1.0},
+				},
+			}},
 			want: []*executetest.Table{{
 				ColMeta: []flux.ColMeta{
 					{Label: "_time", Type: flux.TTime},
@@ -351,51 +338,53 @@ func TestStateTracking_Process(t *testing.T) {
 				},
 			}},
 		},
+		{
+			name: "empty table",
+			spec: &universe.StateTrackingProcedureSpec{
+				CountColumn:    "count",
+				DurationColumn: "duration",
+				DurationUnit:   flux.ConvertDuration(1),
+				Fn:             gt5,
+				TimeCol:        "_time",
+			},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_start", Type: flux.TTime},
+					{Label: "_stop", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
+				},
+				Data: [][]interface{}{},
+			}},
+			want: []*executetest.Table{{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_start", Type: flux.TTime},
+					{Label: "_stop", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
+				},
+				Data: nil,
+			}},
+		},
 	}
 	for _, tc := range testCases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			executetest.ProcessTestHelper(
+			executetest.ProcessTestHelper2(
 				t,
-				tc.data(),
+				tc.data,
 				tc.want,
 				tc.wantErr,
-				func(d execute.Dataset, c execute.TableBuilderCache) execute.Transformation {
+				func(id execute.DatasetID, alloc *memory.Allocator) (execute.Transformation, execute.Dataset) {
 					ctx := dependenciestest.Default().Inject(context.Background())
-					tx, err := universe.NewStateTrackingTransformation(ctx, tc.spec, d, c)
+
+					ntx, nd, err := universe.NewNarrowStateTrackingTransformation(ctx, tc.spec, id, alloc)
 					if err != nil {
 						t.Fatal(err)
 					}
-					return tx
+					return ntx, nd
 				},
 			)
 		})
-		t.Run(
-			fmt.Sprintf("%s narrow", tc.name),
-			func(t *testing.T) {
-				executetest.ProcessTestHelper2(
-					t,
-					tc.data(),
-					tc.want,
-					tc.wantErr,
-					func(id execute.DatasetID, alloc *memory.Allocator) (execute.Transformation, execute.Dataset) {
-						ctx := dependenciestest.Default().Inject(context.Background())
-						c := execute.NewTableBuilderCache(&memory.Allocator{})
-						d := execute.NewDataset(executetest.RandomDatasetID(), 0, c)
-
-						tx, err := universe.NewStateTrackingTransformation(ctx, tc.spec, d, c)
-						if err != nil {
-							t.Fatal(err)
-						}
-
-						ntx, nd, err := universe.NewNarrowStateTrackingTransformation(tx, id, alloc)
-						if err != nil {
-							t.Fatal(err)
-						}
-						return ntx, nd
-					},
-				)
-			},
-		)
 	}
 }

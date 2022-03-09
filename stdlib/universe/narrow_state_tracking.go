@@ -1,28 +1,46 @@
 package universe
 
 import (
+	"context"
+
 	"github.com/apache/arrow/go/arrow/memory"
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/array"
 	"github.com/influxdata/flux/arrow"
 	"github.com/influxdata/flux/codes"
+	"github.com/influxdata/flux/compiler"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/table"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/values"
 )
 
-func NewNarrowStateTrackingTransformation(t *stateTrackingTransformation, id execute.DatasetID, mem memory.Allocator) (execute.Transformation, execute.Dataset, error) {
-	a := &narrowStateTrackingTransformationAdapter{t: t}
-	nt, d, err := execute.NewNarrowStateTransformation(id, a, mem)
+func NewNarrowStateTrackingTransformation(ctx context.Context, spec *StateTrackingProcedureSpec, id execute.DatasetID, mem memory.Allocator) (execute.Transformation, execute.Dataset, error) {
+	fn := execute.NewRowPredicateFn(spec.Fn.Fn, compiler.ToScope(spec.Fn.Scope))
+	t := &narrowStateTrackingTransformation{
+		ctx:      ctx,
+		fn:       fn,
+		timeCol:  spec.TimeCol,
+		countCol: spec.CountColumn,
+		durCol:   spec.DurationColumn,
+		unit:     int64(spec.DurationUnit.Duration()),
+	}
+	nt, d, err := execute.NewNarrowStateTransformation(id, t, mem)
 	if err != nil {
 		return nil, nil, err
 	}
 	return nt, d, nil
 }
 
-type narrowStateTrackingTransformationAdapter struct {
-	t *stateTrackingTransformation
+type narrowStateTrackingTransformation struct {
+	ctx context.Context
+	fn  *execute.RowPredicateFn
+
+	timeCol,
+	countCol,
+	durCol string
+
+	unit int64
 }
 
 type trackedState struct {
@@ -36,14 +54,18 @@ type trackedState struct {
 	duration int64
 }
 
-func (a *narrowStateTrackingTransformationAdapter) Process(chunk table.Chunk, state interface{}, d *execute.TransportDataset, mem memory.Allocator) (interface{}, bool, error) {
+func (n *narrowStateTrackingTransformation) Process(chunk table.Chunk, state interface{}, d *execute.TransportDataset, mem memory.Allocator) (interface{}, bool, error) {
 	// Track whether or not the state has been modified
 	mod := false
 
+	// Check for empty table chunk
 	if chunk.Len() == 0 {
-		return state, mod, nil
+		chunk.Retain()
+		err := d.Process(chunk)
+		return state, mod, err
 	}
 
+	// Initialize state
 	if state == nil {
 		state = trackedState{
 			count:    -1,
@@ -52,109 +74,132 @@ func (a *narrowStateTrackingTransformationAdapter) Process(chunk table.Chunk, st
 		mod = true
 	}
 	s := state.(trackedState)
+	mod, err := n.processChunk(chunk, &s, d, mem, mod)
+	return s, mod, err
+}
 
-	cols := chunk.Cols()
-	fn, err := a.t.fn.Prepare(cols)
+func (n *narrowStateTrackingTransformation) Close() error { return nil }
+
+// Updates the state object for each row in the chunk, creates a new chunk with
+// columns tracking counts and/or durations, and passes that chunk to the next
+// transport node.
+func (n *narrowStateTrackingTransformation) processChunk(chunk table.Chunk, state *trackedState, d *execute.TransportDataset, mem memory.Allocator, mod bool) (bool, error) {
+	fn, err := n.fn.Prepare(chunk.Cols())
 	if err != nil {
-		return s, mod, err
+		return mod, err
 	}
 
-	// Get the index for the time column
-	timeIdx := execute.ColIdx(a.t.timeCol, cols)
+	timeIdx := chunk.Index(n.timeCol)
 	if timeIdx < 0 {
-		// Do we need to retain and process the unmodified chunk
-		// before an early return?
-		//
-		// chunk.Retain()
-		// d.Process(chunk)
-		return s, mod, errors.Newf(codes.FailedPrecondition, "column %q does not exist", a.t.timeCol)
+		return mod, errors.Newf(codes.FailedPrecondition, "column %q does not exist", n.timeCol)
 	}
 
-	stateCounts := array.NewIntBuilder(mem)
-	stateDurations := array.NewIntBuilder(mem)
+	buf := chunk.Buffer()
+	times := buf.Times(timeIdx)
+	if n.durCol != "" {
+		if times.NullN() > 0 {
+			return mod, errors.New(codes.FailedPrecondition, "got a null timestamp")
+		}
+	}
 
-	nrows := chunk.Len()
+	// Create the new columns
+	counts := array.NewIntBuilder(mem)
+	counts.Resize(chunk.Len())
 
-	stateCounts.Resize(nrows)
-	stateDurations.Resize(nrows)
+	durations := array.NewIntBuilder(mem)
+	durations.Resize(chunk.Len())
 
-	for i := 0; i < nrows; i++ {
+	for i := 0; i < chunk.Len(); i++ {
 		// Evaluate the predicate for the current row
-		match, err := fn.EvalRow(a.t.ctx, i, chunk)
+		match, err := fn.EvalRow(n.ctx, i, &buf)
 		if err != nil {
-			return s, mod, err
+			return mod, err
 		}
 
-		// Update state duration
-		if a.t.durationColumn != "" {
-			times := chunk.Times(timeIdx)
-			if times.IsNull(i) {
-				return s, mod, errors.New(codes.FailedPrecondition, "got a null timestamp")
-			}
-			ts := values.Time(times.Value(i))
-			if s.prevTime > ts {
-				return s, mod, errors.New(codes.FailedPrecondition, "got an out-of-order timestamp")
-			}
-			s.prevTime = ts
-			mod = true
-
-			if match {
-				if !s.durationInState {
-					s.durationInState = true
-					s.start = ts
-					s.duration = 0
-				} else {
-					s.duration = int64(ts - s.start)
-					if a.t.durationUnit > 0 {
-						s.duration = s.duration / a.t.durationUnit
-					}
-				}
-			} else {
-				s.durationInState = false
-				s.duration = -1
-			}
-			stateDurations.Append(s.duration)
+		if mod, err = n.updateState(state, times, match, i, mod); err != nil {
+			return mod, err
 		}
 
-		// Update state count
-		if a.t.countColumn != "" {
-			if match {
-				if !s.countInState {
-					s.countInState = true
-					s.count = 1
-				} else {
-					s.count++
-				}
-			} else {
-				s.countInState = false
-				s.count = -1
-			}
-			mod = true
-			stateCounts.Append(s.count)
-		}
+		counts.Append(state.count)
+		durations.Append(state.duration)
 	}
 
+	return mod, d.Process(n.createChunk(chunk, counts, durations))
+}
+
+// Updates the state and returns `true` if the state has been modfied.
+func (n *narrowStateTrackingTransformation) updateState(state *trackedState, times *array.Int, match bool, i int, mod bool) (bool, error) {
+	if n.durCol != "" {
+		ts := values.Time(times.Value(i))
+		if state.prevTime > ts {
+			return mod, errors.New(codes.FailedPrecondition, "got an out-of-order timestamp")
+		}
+		state.prevTime = ts
+		mod = true
+
+		if match {
+			if !state.durationInState {
+				state.durationInState = true
+				state.start = ts
+				state.duration = 0
+			} else {
+				state.duration = int64(ts - state.start)
+				if n.unit > 0 {
+					state.duration = state.duration / n.unit
+				}
+			}
+		} else {
+			state.durationInState = false
+			state.duration = -1
+		}
+		mod = true
+	}
+
+	// Update state count
+	if n.countCol != "" {
+		if match {
+			if !state.countInState {
+				state.countInState = true
+				state.count = 1
+			} else {
+				state.count++
+			}
+		} else {
+			state.countInState = false
+			state.count = -1
+		}
+		mod = true
+	}
+	return mod, nil
+}
+
+// Returns a copy of an existing chunk with the new columns appended to it.
+// `counts` is released if there isn't a column name for it; ditto for `durations`.
+func (n *narrowStateTrackingTransformation) createChunk(chunk table.Chunk, counts, durations *array.IntBuilder) table.Chunk {
 	ncols := chunk.NCols()
-	newCols := make([]flux.ColMeta, 0, ncols+2)
-	newCols = append(newCols, cols...)
+	newCols := append(make([]flux.ColMeta, 0, ncols+2), chunk.Cols()...)
 
 	vs := make([]array.Interface, 0, ncols+2)
 	for i := 0; i < ncols; i++ {
-		vs = append(vs, chunk.Values(i))
+		col := chunk.Values(i)
+		col.Retain()
+		vs = append(vs, col)
 	}
 
-	if a.t.countColumn != "" {
-		newCols = append(newCols, flux.ColMeta{Label: a.t.countColumn, Type: flux.TInt})
-		vs = append(vs, stateCounts.NewArray())
+	if n.countCol != "" {
+		newCols = append(newCols, flux.ColMeta{Label: n.countCol, Type: flux.TInt})
+		vs = append(vs, counts.NewArray())
 	} else {
-		stateCounts.Release()
+		counts.Release()
+		counts = nil
 	}
 
-	if a.t.durationColumn != "" {
-		newCols = append(newCols, flux.ColMeta{Label: a.t.durationColumn, Type: flux.TInt})
-		vs = append(vs, stateDurations.NewArray())
+	if n.durCol != "" {
+		newCols = append(newCols, flux.ColMeta{Label: n.durCol, Type: flux.TInt})
+		vs = append(vs, durations.NewArray())
 	} else {
-		stateDurations.Release()
+		durations.Release()
+		durations = nil
 	}
 
 	buffer := arrow.TableBuffer{
@@ -162,10 +207,5 @@ func (a *narrowStateTrackingTransformationAdapter) Process(chunk table.Chunk, st
 		Columns:  newCols,
 		Values:   vs,
 	}
-	c := table.ChunkFromBuffer(buffer)
-	c.Retain()
-	err = d.Process(c)
-	return s, mod, err
+	return table.ChunkFromBuffer(buffer)
 }
-
-func (a *narrowStateTrackingTransformationAdapter) Close() error { return nil }

@@ -140,17 +140,16 @@ func createStateTrackingTransformation(id execute.DatasetID, mode execute.Accumu
 		return nil, nil, errors.Newf(codes.Internal, "invalid spec type %T", spec)
 	}
 	mem := a.Allocator()
+	if feature.OptimizeStateTracking().Enabled(a.Context()) {
+		return NewNarrowStateTrackingTransformation(a.Context(), s, id, mem)
+	}
+
 	cache := execute.NewTableBuilderCache(mem)
 	d := execute.NewDataset(id, mode, cache)
 	t, err := NewStateTrackingTransformation(a.Context(), s, d, cache)
 	if err != nil {
 		return nil, nil, err
 	}
-
-	if feature.OptimizeStateTracking().Enabled(a.Context()) {
-		return NewNarrowStateTrackingTransformation(t, id, mem)
-	}
-
 	return t, d, nil
 }
 
