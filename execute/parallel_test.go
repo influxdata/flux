@@ -27,28 +27,6 @@ func init() {
 	execute.RegisterSource(executetest.ParallelFromTestKind, executetest.CreateParallelFromSource)
 }
 
-type physicalNodeOption func(*plan.PhysicalPlanNode)
-
-func withOutputAttr(name string, attr plan.PhysicalAttr) physicalNodeOption {
-	return func(node *plan.PhysicalPlanNode) {
-		node.SetOutputAttr(name, attr)
-	}
-}
-
-func withRequiredAttr(name string, attr plan.PhysicalAttr) physicalNodeOption {
-	return func(node *plan.PhysicalPlanNode) {
-		node.SetRequiredAttr(name, attr)
-	}
-}
-
-func createPhysicalNode(id plan.NodeID, spec plan.PhysicalProcedureSpec, opts ...physicalNodeOption) *plan.PhysicalPlanNode {
-	node := plan.CreatePhysicalNode(id, spec)
-	for _, opt := range opts {
-		opt(node)
-	}
-	return node
-}
-
 func TestParallel_Execute(t *testing.T) {
 
 	testcases := []struct {
@@ -65,7 +43,7 @@ func TestParallel_Execute(t *testing.T) {
 			name: `parallel-from-merge-filter`,
 			spec: &plantest.PlanSpec{
 				Nodes: []plan.Node{
-					createPhysicalNode("parallel-from-test",
+					plantest.CreatePhysicalNode("parallel-from-test",
 						executetest.NewParallelFromProcedureSpec(
 							[]*executetest.ParallelTable{
 								{
@@ -109,17 +87,17 @@ func TestParallel_Execute(t *testing.T) {
 									ResidesOnPartition: 1,
 								},
 							}),
-						withOutputAttr(plan.ParallelRunKey, plan.ParallelRunAttribute{Factor: 2})),
-					createPhysicalNode("merge", &universe.PartitionMergeProcedureSpec{},
-						withRequiredAttr(plan.ParallelRunKey, plan.ParallelRunAttribute{Factor: 2}),
-						withOutputAttr(plan.ParallelMergeKey, plan.ParallelMergeAttribute{Factor: 2})),
-					createPhysicalNode("filter", &universe.FilterProcedureSpec{
+						plantest.WithOutputAttr(plan.ParallelRunKey, plan.ParallelRunAttribute{Factor: 2})),
+					plantest.CreatePhysicalNode("merge", &universe.PartitionMergeProcedureSpec{},
+						plantest.WithRequiredAttr(plan.ParallelRunKey, plan.ParallelRunAttribute{Factor: 2}),
+						plantest.WithOutputAttr(plan.ParallelMergeKey, plan.ParallelMergeAttribute{Factor: 2})),
+					plantest.CreatePhysicalNode("filter", &universe.FilterProcedureSpec{
 						Fn: interpreter.ResolvedFunction{
 							Scope: runtime.Prelude(),
 							Fn:    executetest.FunctionExpression(t, "(r) => r._value < 7.5"),
 						},
 					}),
-					createPhysicalNode("yield", executetest.NewYieldProcedureSpec("_result")),
+					plantest.CreatePhysicalNode("yield", executetest.NewYieldProcedureSpec("_result")),
 				},
 				Edges: [][2]int{
 					{0, 1},
@@ -170,7 +148,7 @@ func TestParallel_Execute(t *testing.T) {
 			name: `parallel-from-filter-merge`,
 			spec: &plantest.PlanSpec{
 				Nodes: []plan.Node{
-					createPhysicalNode("parallel-from-test",
+					plantest.CreatePhysicalNode("parallel-from-test",
 						executetest.NewParallelFromProcedureSpec(
 							[]*executetest.ParallelTable{
 								{
@@ -214,20 +192,20 @@ func TestParallel_Execute(t *testing.T) {
 									ResidesOnPartition: 1,
 								},
 							}),
-						withOutputAttr(plan.ParallelRunKey, plan.ParallelRunAttribute{Factor: 2})),
-					createPhysicalNode("filter",
+						plantest.WithOutputAttr(plan.ParallelRunKey, plan.ParallelRunAttribute{Factor: 2})),
+					plantest.CreatePhysicalNode("filter",
 						&universe.FilterProcedureSpec{
 							Fn: interpreter.ResolvedFunction{
 								Scope: runtime.Prelude(),
 								Fn:    executetest.FunctionExpression(t, "(r) => r._value < 7.5"),
 							},
 						},
-						withRequiredAttr(plan.ParallelRunKey, plan.ParallelRunAttribute{Factor: 2}),
-						withOutputAttr(plan.ParallelRunKey, plan.ParallelRunAttribute{Factor: 2})),
-					createPhysicalNode("merge", &universe.PartitionMergeProcedureSpec{},
-						withRequiredAttr(plan.ParallelRunKey, plan.ParallelRunAttribute{Factor: 2}),
-						withOutputAttr(plan.ParallelMergeKey, plan.ParallelMergeAttribute{Factor: 2})),
-					createPhysicalNode("yield", executetest.NewYieldProcedureSpec("_result")),
+						plantest.WithRequiredAttr(plan.ParallelRunKey, plan.ParallelRunAttribute{Factor: 2}),
+						plantest.WithOutputAttr(plan.ParallelRunKey, plan.ParallelRunAttribute{Factor: 2})),
+					plantest.CreatePhysicalNode("merge", &universe.PartitionMergeProcedureSpec{},
+						plantest.WithRequiredAttr(plan.ParallelRunKey, plan.ParallelRunAttribute{Factor: 2}),
+						plantest.WithOutputAttr(plan.ParallelMergeKey, plan.ParallelMergeAttribute{Factor: 2})),
+					plantest.CreatePhysicalNode("yield", executetest.NewYieldProcedureSpec("_result")),
 				},
 				Edges: [][2]int{
 					{0, 1},
@@ -276,7 +254,7 @@ func TestParallel_Execute(t *testing.T) {
 			name: `parallel-from-merge-no-successor`,
 			spec: &plantest.PlanSpec{
 				Nodes: []plan.Node{
-					createPhysicalNode("parallel-from-test",
+					plantest.CreatePhysicalNode("parallel-from-test",
 						executetest.NewParallelFromProcedureSpec(
 							[]*executetest.ParallelTable{
 								{
@@ -320,10 +298,10 @@ func TestParallel_Execute(t *testing.T) {
 									ResidesOnPartition: 1,
 								},
 							}),
-						withOutputAttr(plan.ParallelRunKey, plan.ParallelRunAttribute{Factor: 2})),
-					createPhysicalNode("merge", &universe.PartitionMergeProcedureSpec{},
-						withRequiredAttr(plan.ParallelRunKey, plan.ParallelRunAttribute{Factor: 2}),
-						withOutputAttr(plan.ParallelMergeKey, plan.ParallelMergeAttribute{Factor: 2})),
+						plantest.WithOutputAttr(plan.ParallelRunKey, plan.ParallelRunAttribute{Factor: 2})),
+					plantest.CreatePhysicalNode("merge", &universe.PartitionMergeProcedureSpec{},
+						plantest.WithRequiredAttr(plan.ParallelRunKey, plan.ParallelRunAttribute{Factor: 2}),
+						plantest.WithOutputAttr(plan.ParallelMergeKey, plan.ParallelMergeAttribute{Factor: 2})),
 				},
 				Edges: [][2]int{
 					{0, 1},
@@ -374,21 +352,21 @@ func TestParallel_Execute(t *testing.T) {
 			name: `from-missing-output`,
 			spec: &plantest.PlanSpec{
 				Nodes: []plan.Node{
-					createPhysicalNode("parallel-from-test",
+					plantest.CreatePhysicalNode("parallel-from-test",
 						executetest.NewParallelFromProcedureSpec([]*executetest.ParallelTable{})),
-					createPhysicalNode("filter",
+					plantest.CreatePhysicalNode("filter",
 						&universe.FilterProcedureSpec{
 							Fn: interpreter.ResolvedFunction{
 								Scope: runtime.Prelude(),
 								Fn:    executetest.FunctionExpression(t, "(r) => r._value < 7.5"),
 							},
 						},
-						withRequiredAttr(plan.ParallelRunKey, plan.ParallelRunAttribute{Factor: 2}),
-						withOutputAttr(plan.ParallelRunKey, plan.ParallelRunAttribute{Factor: 2})),
-					createPhysicalNode("merge", &universe.PartitionMergeProcedureSpec{},
-						withRequiredAttr(plan.ParallelRunKey, plan.ParallelRunAttribute{Factor: 2}),
-						withOutputAttr(plan.ParallelMergeKey, plan.ParallelMergeAttribute{Factor: 2})),
-					createPhysicalNode("yield", executetest.NewYieldProcedureSpec("_result")),
+						plantest.WithRequiredAttr(plan.ParallelRunKey, plan.ParallelRunAttribute{Factor: 2}),
+						plantest.WithOutputAttr(plan.ParallelRunKey, plan.ParallelRunAttribute{Factor: 2})),
+					plantest.CreatePhysicalNode("merge", &universe.PartitionMergeProcedureSpec{},
+						plantest.WithRequiredAttr(plan.ParallelRunKey, plan.ParallelRunAttribute{Factor: 2}),
+						plantest.WithOutputAttr(plan.ParallelMergeKey, plan.ParallelMergeAttribute{Factor: 2})),
+					plantest.CreatePhysicalNode("yield", executetest.NewYieldProcedureSpec("_result")),
 				},
 				Edges: [][2]int{
 					{0, 1},
@@ -409,21 +387,21 @@ func TestParallel_Execute(t *testing.T) {
 			name: `from-missing-required`,
 			spec: &plantest.PlanSpec{
 				Nodes: []plan.Node{
-					createPhysicalNode("parallel-from-test",
+					plantest.CreatePhysicalNode("parallel-from-test",
 						executetest.NewParallelFromProcedureSpec([]*executetest.ParallelTable{}),
-						withOutputAttr(plan.ParallelRunKey, plan.ParallelRunAttribute{Factor: 2})),
-					createPhysicalNode("filter",
+						plantest.WithOutputAttr(plan.ParallelRunKey, plan.ParallelRunAttribute{Factor: 2})),
+					plantest.CreatePhysicalNode("filter",
 						&universe.FilterProcedureSpec{
 							Fn: interpreter.ResolvedFunction{
 								Scope: runtime.Prelude(),
 								Fn:    executetest.FunctionExpression(t, "(r) => r._value < 7.5"),
 							},
 						},
-						withOutputAttr(plan.ParallelRunKey, plan.ParallelRunAttribute{Factor: 2})),
-					createPhysicalNode("merge", &universe.PartitionMergeProcedureSpec{},
-						withRequiredAttr(plan.ParallelRunKey, plan.ParallelRunAttribute{Factor: 2}),
-						withOutputAttr(plan.ParallelMergeKey, plan.ParallelMergeAttribute{Factor: 2})),
-					createPhysicalNode("yield", executetest.NewYieldProcedureSpec("_result")),
+						plantest.WithOutputAttr(plan.ParallelRunKey, plan.ParallelRunAttribute{Factor: 2})),
+					plantest.CreatePhysicalNode("merge", &universe.PartitionMergeProcedureSpec{},
+						plantest.WithRequiredAttr(plan.ParallelRunKey, plan.ParallelRunAttribute{Factor: 2}),
+						plantest.WithOutputAttr(plan.ParallelMergeKey, plan.ParallelMergeAttribute{Factor: 2})),
+					plantest.CreatePhysicalNode("yield", executetest.NewYieldProcedureSpec("_result")),
 				},
 				Edges: [][2]int{
 					{0, 1},
@@ -443,22 +421,22 @@ func TestParallel_Execute(t *testing.T) {
 			name: `from-factor-mismatch`,
 			spec: &plantest.PlanSpec{
 				Nodes: []plan.Node{
-					createPhysicalNode("parallel-from-test",
+					plantest.CreatePhysicalNode("parallel-from-test",
 						executetest.NewParallelFromProcedureSpec([]*executetest.ParallelTable{}),
-						withOutputAttr(plan.ParallelRunKey, plan.ParallelRunAttribute{Factor: 2})),
-					createPhysicalNode("filter",
+						plantest.WithOutputAttr(plan.ParallelRunKey, plan.ParallelRunAttribute{Factor: 2})),
+					plantest.CreatePhysicalNode("filter",
 						&universe.FilterProcedureSpec{
 							Fn: interpreter.ResolvedFunction{
 								Scope: runtime.Prelude(),
 								Fn:    executetest.FunctionExpression(t, "(r) => r._value < 7.5"),
 							},
 						},
-						withRequiredAttr(plan.ParallelRunKey, plan.ParallelRunAttribute{Factor: 1}),
-						withOutputAttr(plan.ParallelRunKey, plan.ParallelRunAttribute{Factor: 1})),
-					createPhysicalNode("merge", &universe.PartitionMergeProcedureSpec{},
-						withRequiredAttr(plan.ParallelRunKey, plan.ParallelRunAttribute{Factor: 1}),
-						withOutputAttr(plan.ParallelMergeKey, plan.ParallelMergeAttribute{Factor: 1})),
-					createPhysicalNode("yield", executetest.NewYieldProcedureSpec("_result")),
+						plantest.WithRequiredAttr(plan.ParallelRunKey, plan.ParallelRunAttribute{Factor: 1}),
+						plantest.WithOutputAttr(plan.ParallelRunKey, plan.ParallelRunAttribute{Factor: 1})),
+					plantest.CreatePhysicalNode("merge", &universe.PartitionMergeProcedureSpec{},
+						plantest.WithRequiredAttr(plan.ParallelRunKey, plan.ParallelRunAttribute{Factor: 1}),
+						plantest.WithOutputAttr(plan.ParallelMergeKey, plan.ParallelMergeAttribute{Factor: 1})),
+					plantest.CreatePhysicalNode("yield", executetest.NewYieldProcedureSpec("_result")),
 				},
 				Edges: [][2]int{
 					{0, 1},
