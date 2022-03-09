@@ -76,3 +76,18 @@ testcase get_option_in_map {
     testing.diff(got: got, want: array.from(rows: [{v: want}]))
         |> yield()
 }
+
+testcase unpivot_pivot_roundtrip {
+    want =
+        testing.loadStorage(csv: inData)
+            |> range(start: 2018-12-18T20:00:00Z, stop: 2018-12-18T21:00:00Z)
+
+    got =
+        testing.loadStorage(csv: inData)
+            |> range(start: 2018-12-18T20:00:00Z, stop: 2018-12-18T21:00:00Z)
+            |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
+            |> debug.unpivot()
+
+    testing.diff(got: got, want: want)
+        |> yield()
+}
