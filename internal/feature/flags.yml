@@ -69,3 +69,9 @@
   key: narrowTransformationLimit
   default: false
   contact: Owen Nelson
+
+- name: Optimize State Tracking
+  description: Enable implementation of NarrowStateTransformation of stateTracking
+  key: optimizeStateTracking
+  default: false
+  contact: Sean Brickley

@@ -10,6 +10,7 @@ import (
 	"github.com/influxdata/flux/compiler"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
+	"github.com/influxdata/flux/internal/feature"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/runtime"
@@ -138,7 +139,12 @@ func createStateTrackingTransformation(id execute.DatasetID, mode execute.Accumu
 	if !ok {
 		return nil, nil, errors.Newf(codes.Internal, "invalid spec type %T", spec)
 	}
-	cache := execute.NewTableBuilderCache(a.Allocator())
+	mem := a.Allocator()
+	if feature.OptimizeStateTracking().Enabled(a.Context()) {
+		return NewNarrowStateTrackingTransformation(a.Context(), s, id, mem)
+	}
+
+	cache := execute.NewTableBuilderCache(mem)
 	d := execute.NewDataset(id, mode, cache)
 	t, err := NewStateTrackingTransformation(a.Context(), s, d, cache)
 	if err != nil {
