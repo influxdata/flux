@@ -362,6 +362,8 @@ func TestStateTracking_Process(t *testing.T) {
 					{Label: "_start", Type: flux.TTime},
 					{Label: "_stop", Type: flux.TTime},
 					{Label: "_value", Type: flux.TFloat},
+					{Label: "count", Type: flux.TInt},
+					{Label: "duration", Type: flux.TInt},
 				},
 				Data: nil,
 			}},

@@ -58,13 +58,6 @@ func (n *narrowStateTrackingTransformation) Process(chunk table.Chunk, state int
 	// Track whether or not the state has been modified
 	mod := false
 
-	// Check for empty table chunk
-	if chunk.Len() == 0 {
-		chunk.Retain()
-		err := d.Process(chunk)
-		return state, mod, err
-	}
-
 	// Initialize state
 	if state == nil {
 		state = trackedState{
@@ -155,7 +148,6 @@ func (n *narrowStateTrackingTransformation) updateState(state *trackedState, tim
 		mod = true
 	}
 
-	// Update state count
 	if n.countCol != "" {
 		if match {
 			if !state.countInState {
