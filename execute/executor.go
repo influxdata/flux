@@ -287,8 +287,22 @@ func (v *createExecutionNodeVisitor) Visit(node plan.Node) error {
 				}
 			}
 
-			if (plan.HasSideEffect(spec) || isParallelMerge) && len(node.Successors()) == 0 {
-				name := string(node.ID())
+			if len(node.Successors()) == 0 {
+				// Formerly we were automatically inserting yields in the
+				// planner for root nodes that were _not yields_ and _didn't have side-effects_.
+				// For this case, they got the default result name of `_result`.
+				//
+				// XXX(onelson): it's debatable if this behavior is really desirable.
+				//
+				// N.b. the _actual yield nodes_ are converted to results up at
+				// the top of this method.
+				name := plan.DefaultYieldName
+
+				// For the more specific case of having side effects, specialize
+				// the result name based on the node generating it.
+				if plan.HasSideEffect(spec) || isParallelMerge {
+					name = string(node.ID())
+				}
 				r := newResult(name)
 				v.es.results[name] = r
 				v.nodes[skipYields(node)][i].AddTransformation(r)

@@ -263,18 +263,17 @@ func (v *fluxSpecVisitor) visitOperation(o *flux.Operation) error {
 
 	// no children => no successors => root node
 	if len(v.spec.Children(o.ID)) == 0 {
-		if isYield || HasSideEffect(procedureSpec) {
-			v.plan.Roots[logicalNode] = struct{}{}
-		} else {
-			// Generate a yield node
-			generateYieldNode := generateYieldNode(logicalNode)
-			err = v.addYieldName(generateYieldNode)
-			if err != nil {
-				return err
-			}
-			v.plan.Roots[generateYieldNode] = struct{}{}
-
-		}
+		// Formerly we marked nodes as roots if:
+		// - are a yield
+		// - have side effects
+		// For any other case inside this "zero children" block, we added a new
+		// yield to the end of the chain and marked *the new yield* as a root.
+		// Now, nstead of inserting a yield here we are adding a result directly
+		// in the executor for this case.
+		//
+		// N.b. the number of entries in the `Roots` map factor into the
+		// concurrency quota for the query.
+		v.plan.Roots[logicalNode] = struct{}{}
 	}
 
 	return nil
