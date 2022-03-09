@@ -201,23 +201,44 @@ func PhysicalRuleTestHelper(t *testing.T, tc *RuleTestCase, options ...cmp.Optio
 	}
 
 	type testAttrs struct {
-		ID   plan.NodeID
-		Spec plan.PhysicalProcedureSpec
+		ID            plan.NodeID
+		Spec          plan.PhysicalProcedureSpec
+		RequiredAttrs plan.PhysicalAttributes
+		OutputAttrs   plan.PhysicalAttributes
 	}
 	want := make([]testAttrs, 0)
 	after.BottomUpWalk(func(node plan.Node) error {
+		var outputAttrs plan.PhysicalAttributes
+		var requiredAttrs plan.PhysicalAttributes
+
+		if ppn, ok := node.(*plan.PhysicalPlanNode); ok {
+			outputAttrs = ppn.OutputAttrs
+			requiredAttrs = ppn.RequiredAttrs
+		}
 		want = append(want, testAttrs{
-			ID:   node.ID(),
-			Spec: node.ProcedureSpec().(plan.PhysicalProcedureSpec),
+			ID:            node.ID(),
+			Spec:          node.ProcedureSpec().(plan.PhysicalProcedureSpec),
+			RequiredAttrs: requiredAttrs,
+			OutputAttrs:   outputAttrs,
 		})
 		return nil
 	})
 
 	got := make([]testAttrs, 0)
 	pp.BottomUpWalk(func(node plan.Node) error {
+		var outputAttrs plan.PhysicalAttributes
+		var requiredAttrs plan.PhysicalAttributes
+
+		if ppn, ok := node.(*plan.PhysicalPlanNode); ok {
+			outputAttrs = ppn.OutputAttrs
+			requiredAttrs = ppn.RequiredAttrs
+		}
+
 		got = append(got, testAttrs{
-			ID:   node.ID(),
-			Spec: node.ProcedureSpec().(plan.PhysicalProcedureSpec),
+			ID:            node.ID(),
+			Spec:          node.ProcedureSpec().(plan.PhysicalProcedureSpec),
+			RequiredAttrs: requiredAttrs,
+			OutputAttrs:   outputAttrs,
 		})
 		return nil
 	})
@@ -286,4 +307,26 @@ func LogicalRuleTestHelper(t *testing.T, tc *RuleTestCase, options ...cmp.Option
 		t.Errorf("transformed plan not as expected, -want/+got:\n%v",
 			cmp.Diff(want, got, tempOptions...))
 	}
+}
+
+type PhysicalNodeOption func(*plan.PhysicalPlanNode)
+
+func WithOutputAttr(name string, attr plan.PhysicalAttr) PhysicalNodeOption {
+	return func(node *plan.PhysicalPlanNode) {
+		node.SetOutputAttr(name, attr)
+	}
+}
+
+func WithRequiredAttr(name string, attr plan.PhysicalAttr) PhysicalNodeOption {
+	return func(node *plan.PhysicalPlanNode) {
+		node.SetRequiredAttr(name, attr)
+	}
+}
+
+func CreatePhysicalNode(id plan.NodeID, spec plan.PhysicalProcedureSpec, opts ...PhysicalNodeOption) *plan.PhysicalPlanNode {
+	node := plan.CreatePhysicalNode(id, spec)
+	for _, opt := range opts {
+		opt(node)
+	}
+	return node
 }
