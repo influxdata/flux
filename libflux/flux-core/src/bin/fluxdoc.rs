@@ -366,8 +366,4 @@ impl<'a> example::Executor for CLIExecutor<'a> {
 // high standard going forward.
 //
 // See https://github.com/influxdata/flux/issues/4141 for tacking removing of this list.
-const EXCEPTIONS: &[&str] = &[
-    "contrib/jsternberg/aggregate",
-    "contrib/jsternberg/influxdb",
-    "contrib/jsternberg/math",
-];
+const EXCEPTIONS: &[&str] = &[ ];
