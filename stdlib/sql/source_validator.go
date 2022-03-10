@@ -9,7 +9,7 @@ import (
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/dependencies/url"
 	"github.com/influxdata/flux/internal/errors"
-	"github.com/snowflakedb/gosnowflake"
+	"github.com/influxdata/gosnowflake"
 )
 
 // helper function to validate the data source url (postgres, sqlmock) / dsn (mysql, snowflake) using the URLValidator.
