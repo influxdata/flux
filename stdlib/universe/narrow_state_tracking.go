@@ -3,7 +3,7 @@ package universe
 import (
 	"context"
 
-	"github.com/apache/arrow/go/arrow/memory"
+	"github.com/apache/arrow/go/v7/arrow/memory"
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/array"
 	"github.com/influxdata/flux/arrow"
@@ -171,7 +171,7 @@ func (n *narrowStateTrackingTransformation) createChunk(chunk table.Chunk, count
 	ncols := chunk.NCols()
 	newCols := append(make([]flux.ColMeta, 0, ncols+2), chunk.Cols()...)
 
-	vs := make([]array.Interface, 0, ncols+2)
+	vs := make([]array.Array, 0, ncols+2)
 	for i := 0; i < ncols; i++ {
 		col := chunk.Values(i)
 		col.Retain()
