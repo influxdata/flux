@@ -31,9 +31,6 @@ func TestPlan_LogicalPlanFromSpec(t *testing.T) {
 	standardYield := func(name string) *universe.YieldProcedureSpec {
 		return &universe.YieldProcedureSpec{Name: name}
 	}
-	generatedYield := func(name string) *plan.GeneratedYieldProcedureSpec {
-		return &plan.GeneratedYieldProcedureSpec{Name: name}
-	}
 
 	now := time.Now().UTC()
 
@@ -140,11 +137,9 @@ func TestPlan_LogicalPlanFromSpec(t *testing.T) {
 				Nodes: []plan.Node{
 					plan.CreateLogicalNode("from0", fromSpec),
 					plan.CreateLogicalNode("range1", rangeSpec),
-					plan.CreateLogicalNode("generated_yield", generatedYield("_result")),
 				},
 				Edges: [][2]int{
 					{0, 1},
-					{1, 2},
 				},
 				Now: now,
 			},
@@ -157,12 +152,10 @@ func TestPlan_LogicalPlanFromSpec(t *testing.T) {
 					plan.CreateLogicalNode("from0", fromSpec),
 					plan.CreateLogicalNode("range1", rangeSpec),
 					plan.CreateLogicalNode("filter2", filterSpec),
-					plan.CreateLogicalNode("generated_yield", generatedYield("_result")),
 				},
 				Edges: [][2]int{
 					{0, 1},
 					{1, 2},
-					{2, 3},
 				},
 				Now: now,
 			},
@@ -212,7 +205,7 @@ func TestPlan_LogicalPlanFromSpec(t *testing.T) {
 			},
 		},
 		{
-			name: `side effect and a generated yield`,
+			name: `side effect and NOT a generated yield`,
 			query: `
 				import "kafka"
 				from(bucket: "my-bucket") |> range(start:-1h) |> kafka.to(brokers: ["broker"], topic: "topic")
@@ -226,7 +219,6 @@ func TestPlan_LogicalPlanFromSpec(t *testing.T) {
 					// Second plan
 					plan.CreateLogicalNode("from3", fromSpec),
 					plan.CreateLogicalNode("range4", rangeSpec),
-					plan.CreateLogicalNode("generated_yield", generatedYield("_result")),
 				},
 				Edges: [][2]int{
 					// First plan
@@ -234,7 +226,6 @@ func TestPlan_LogicalPlanFromSpec(t *testing.T) {
 					{1, 2},
 					// Second plan
 					{3, 4},
-					{4, 5},
 				},
 				Now: now,
 			},

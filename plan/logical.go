@@ -211,14 +211,6 @@ func (v *fluxSpecVisitor) addYieldName(pn Node) error {
 	return nil
 }
 
-func generateYieldNode(pred Node) Node {
-	yieldSpec := &GeneratedYieldProcedureSpec{Name: DefaultYieldName}
-	yieldNode := CreateLogicalNode(NodeID("generated_yield"), yieldSpec)
-	pred.AddSuccessors(yieldNode)
-	yieldNode.AddPredecessors(pred)
-	return yieldNode
-}
-
 // visitOperation takes a flux spec operation, converts it to its equivalent
 // logical procedure spec, and adds it to the current logical plan DAG.
 func (v *fluxSpecVisitor) visitOperation(o *flux.Operation) error {

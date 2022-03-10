@@ -328,22 +328,18 @@ experimental.chain(first: id, second: guild)
   range1
   filter2
   // r._field == "id"
-  generated_yield
 
   array.from0 -> range1
   range1 -> filter2
-  filter2 -> generated_yield
 }
  digraph {
   array.from3
   range4
   filter5
   // r._field == "guild"
-  generated_yield
 
   array.from3 -> range4
   range4 -> filter5
-  filter5 -> generated_yield
 }
 ]`,
 		},
@@ -369,23 +365,19 @@ data
   filter2
   // r._field == "id"
   sort3
-  generated_yield
 
   array.from0 -> range1
   range1 -> filter2
   filter2 -> sort3
-  sort3 -> generated_yield
 }
  digraph {
   array.from4
   range5
   filter6
   // r._field == "id"
-  generated_yield
 
   array.from4 -> range5
   range5 -> filter6
-  filter6 -> generated_yield
 }
 ]`,
 		},
