@@ -38,9 +38,6 @@ enum FluxDoc {
         /// Whether to omit full descriptions and keep only the short form docs.
         #[structopt(long)]
         short: bool,
-        /// Honor the exception list.
-        #[structopt(long)]
-        allow_exceptions: bool,
     },
     /// Check Flux source code for documentation linting errors
     Lint {
@@ -56,9 +53,6 @@ enum FluxDoc {
         /// Limit the number of diagnostics to report. Default 10. 0 means no limit.
         #[structopt(short, long)]
         limit: Option<i64>,
-        /// Honor the exception list.
-        #[structopt(long)]
-        allow_exceptions: bool,
     },
 }
 
@@ -74,7 +68,6 @@ fn main() -> Result<()> {
             output,
             nested,
             short,
-            allow_exceptions,
         } => dump(
             stdlib_dir.as_deref(),
             flux_cmd_path.as_deref(),
@@ -82,21 +75,13 @@ fn main() -> Result<()> {
             output.as_deref(),
             nested,
             short,
-            allow_exceptions,
         )?,
         FluxDoc::Lint {
             stdlib_dir,
             flux_cmd_path,
             dir,
             limit,
-            allow_exceptions,
-        } => lint(
-            stdlib_dir.as_deref(),
-            flux_cmd_path.as_deref(),
-            &dir,
-            limit,
-            allow_exceptions,
-        )?,
+        } => lint(stdlib_dir.as_deref(), flux_cmd_path.as_deref(), &dir, limit)?,
     };
     Ok(())
 }
@@ -126,7 +111,6 @@ fn dump(
     output: Option<&Path>,
     nested: bool,
     short: bool,
-    allow_exceptions: bool,
 ) -> Result<()> {
     let (stdlib_dir, flux_cmd_path) = resolve_default_paths(stdlib_dir, flux_cmd_path);
     let f = match output {
@@ -135,13 +119,7 @@ fn dump(
         None => Box::new(io::stdout()),
     };
 
-    let exceptions = if allow_exceptions {
-        &EXCEPTIONS[..]
-    } else {
-        &[]
-    };
-    let (mut docs, diagnostics) =
-        parse_docs(stdlib_dir, dir, exceptions).context("parsing source code")?;
+    let (mut docs, diagnostics) = parse_docs(stdlib_dir, dir).context("parsing source code")?;
     if !diagnostics.is_empty() {
         bail!(
             "found {} diagnostics when building documentation:\n{}",
@@ -163,10 +141,8 @@ fn dump(
             path: flux_cmd_path,
         };
         for d in docs.iter_mut() {
-            if !exceptions.contains(&d.path.as_str()) {
-                for result in example::evaluate_package_examples(d, &executor) {
-                    result?;
-                }
+            for result in example::evaluate_package_examples(d, &executor) {
+                result?;
             }
         }
     }
@@ -185,7 +161,6 @@ fn lint(
     flux_cmd_path: Option<&Path>,
     dir: &Path,
     limit: Option<i64>,
-    allow_exceptions: bool,
 ) -> Result<()> {
     let (stdlib_dir, flux_cmd_path) = resolve_default_paths(stdlib_dir, flux_cmd_path);
     let limit = match limit {
@@ -193,12 +168,7 @@ fn lint(
         Some(limit) => limit,
         None => 10,
     };
-    let exceptions = if allow_exceptions {
-        &EXCEPTIONS[..]
-    } else {
-        &[]
-    };
-    let (mut docs, mut diagnostics) = parse_docs(stdlib_dir, dir, exceptions)?;
+    let (mut docs, mut diagnostics) = parse_docs(stdlib_dir, dir)?;
     let mut pass = true;
     if !diagnostics.is_empty() {
         let rest = diagnostics.len() as i64 - limit;
@@ -217,13 +187,10 @@ fn lint(
         path: flux_cmd_path,
     };
 
-    let tests = docs.par_iter_mut().enumerate().map(|(i, d)| {
-        if !exceptions.contains(&d.path.as_str()) {
-            (i, example::evaluate_package_examples(d, &executor))
-        } else {
-            (i, Vec::new())
-        }
-    });
+    let tests = docs
+        .par_iter_mut()
+        .enumerate()
+        .map(|(i, d)| (i, example::evaluate_package_examples(d, &executor)));
 
     let mut test_count = 0;
     consume_sequentially(tests, |results| {
@@ -303,12 +270,7 @@ fn consume_sequentially<T>(
 }
 
 /// Parse documentation for the specified directory.
-fn parse_docs(
-    stdlib_dir: &Path,
-    dir: &Path,
-    //TODO(nathanielc): Remove exceptions once the EXCEPTIONS list is empty
-    exceptions: &[&str],
-) -> Result<(Vec<doc::PackageDoc>, doc::Diagnostics)> {
+fn parse_docs(stdlib_dir: &Path, dir: &Path) -> Result<(Vec<doc::PackageDoc>, doc::Diagnostics)> {
     let (prelude, stdlib_importer) = bootstrap::stdlib(stdlib_dir)?;
 
     let mut analyzer = Analyzer::new_with_defaults(Environment::from(&prelude), stdlib_importer);
@@ -319,9 +281,7 @@ fn parse_docs(
         let (pkgtypes, _) = analyzer.analyze_ast(&ast_pkg).map_err(|err| err.error)?;
         let (doc, mut diags) = doc::parse_package_doc_comments(&ast_pkg, &pkgpath, &pkgtypes)
             .context(format!("generating docs for \"{}\"", &pkgpath))?;
-        if !exceptions.contains(&pkgpath.as_str()) {
-            diagnostics.append(&mut diags);
-        }
+        diagnostics.append(&mut diags);
         docs.push(doc);
     }
     Ok((docs, diagnostics))
@@ -358,12 +318,3 @@ impl<'a> example::Executor for CLIExecutor<'a> {
         }
     }
 }
-
-// HACK: Any package in this list will not report any errors from documentation diagnostics
-// The intent is that as we get each package passing the documentation diagnostics check
-// that we remove them from the list and do not add any packages to this list.
-// This way we can incrementally improve the documentation while also ensuring we are keeping a
-// high standard going forward.
-//
-// See https://github.com/influxdata/flux/issues/4141 for tacking removing of this list.
-const EXCEPTIONS: &[&str] = &[ ];
