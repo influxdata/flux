@@ -1,6 +1,13 @@
+// Package gen provides methods for generating data.
 package gen
 
 
+// tables generates a stream of table data.
+//
+// ## Parameters
+// - n: Number of rows to generate.
+// - nulls: Percentage chance that a null value will be used in the input. Valid value range is `[0.0 - 1.0]`.
+// - tags: Set of tags with their cardinality to generate.
 builtin tables : (
         n: int,
         ?nulls: float,

@@ -49,7 +49,7 @@ type Schema struct {
 	// for each series. This defaults to 6.
 	NumPoints int
 
-	// Nulls sets the percentage changes that a null value will
+	// Nulls sets the percentage chance that a null value will
 	// be used in the input. This should be a number between 0 and 1.
 	Nulls float64
 
