@@ -23,7 +23,7 @@ var sourceHashes = map[string]string{
 	"libflux/flux-core/src/ast/walk/mod.rs":                                                       "a49efe67d796351d29af7b4d1ad5b400b21dd0ddfff5f0d7af6d915294d3edcb",
 	"libflux/flux-core/src/bin/README.md":                                                         "c1245a4938c923d065647b4dc4f7e19486e85c93d868ef2f7f47ddff62ec81df",
 	"libflux/flux-core/src/bin/fluxc.rs":                                                          "bf275289e690236988049fc0a07cf832dbac25bb5739c02135b069dcdfab4d0f",
-	"libflux/flux-core/src/bin/fluxdoc.rs":                                                        "b38d986840138e6272f94bdcc920034b3dccc9a5714cfb3010737d3e69dee4c1",
+	"libflux/flux-core/src/bin/fluxdoc.rs":                                                        "bad4b12bcf4a8bc1a94cb37cda004bf7fb593abf3f0c6c3a2af6fabc60337c5d",
 	"libflux/flux-core/src/doc/example.rs":                                                        "6414756b3c74df1b58fdb739592e74ded3f89d85d647809333f72a3f6aad146f",
 	"libflux/flux-core/src/doc/mod.rs":                                                            "282ea0baa20d1e43230d9c4914eebd19251b8397ffe4a4e3a3bc5be3178fb930",
 	"libflux/flux-core/src/errors.rs":                                                             "7eb977a67a5f26801ab4622f54722bac1e11945690891a7f98c11337e6b86fde",

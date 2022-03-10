@@ -14,7 +14,6 @@ mkdir -p $stdlib_compiled
 $fluxc stdlib --srcdir "${stdlib}" --outdir "${stdlib_compiled}"
 
 # Lint the docs to ensure they are valid
-# TODO(nathanielc): Remove allow_exceptions option once all exceptions have been removed
-$fluxdoc lint --dir ${stdlib} --stdlib-dir "${stdlib_compiled}" --allow-exceptions
+$fluxdoc lint --dir ${stdlib} --stdlib-dir "${stdlib_compiled}"
 
 rm -rf "$dir"

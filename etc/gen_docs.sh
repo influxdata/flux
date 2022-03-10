@@ -18,7 +18,7 @@ $fluxc stdlib --srcdir "${stdlib}" --outdir "${stdlib_compiled}"
 
 # Generate docs JSON files
 mkdir -p "${gendir}"
-$fluxdoc dump --dir ${stdlib} --stdlib-dir "${stdlib_compiled}" --allow-exceptions --output ${full_docs} --nested
-$fluxdoc dump --dir ${stdlib} --stdlib-dir "${stdlib_compiled}" --allow-exceptions --output ${short_docs} --short
+$fluxdoc dump --dir ${stdlib} --stdlib-dir "${stdlib_compiled}" --output ${full_docs} --nested
+$fluxdoc dump --dir ${stdlib} --stdlib-dir "${stdlib_compiled}" --output ${short_docs} --short
 
 rm -rf "${dir}"
