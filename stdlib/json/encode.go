@@ -3,6 +3,7 @@ package json
 import (
 	"context"
 	"encoding/json"
+	"strings"
 	"time"
 
 	"github.com/influxdata/flux/codes"
@@ -105,17 +106,23 @@ func convertValue(v values.Value) (interface{}, error) {
 		return nil, errors.New(codes.Invalid, "cannot encode a function value")
 	case semantic.Dictionary:
 		dict := v.Dict()
-		d := make(map[interface{}]interface{}, dict.Len())
+		// Go JSON encoder requires that map key type is either a primitive type or implements encoding.TextMarshaler interface.
+		// Since Go maps are encoded as JSON objects with string keys (https://www.json.org/json-en.html), and dictionary keys
+		// are primitive Flux types, we can safely convert Flux dictionary to Go map with string keys.
+		d := make(map[string]interface{}, dict.Len())
 		var rangeErr error
+		var b strings.Builder
 		dict.Range(func(k, v values.Value) {
 			if rangeErr != nil {
 				return // short circuit if we already hit an error
 			}
-			key, err := convertValue(k)
+			b.Reset()
+			err := values.Display(&b, k)
 			if err != nil {
 				rangeErr = err
 				return
 			}
+			key := b.String()
 			val, err := convertValue(v)
 			if err != nil {
 				rangeErr = err
