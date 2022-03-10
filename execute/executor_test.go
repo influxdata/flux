@@ -12,6 +12,7 @@ import (
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
 	_ "github.com/influxdata/flux/fluxinit/static"
+	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/plan"
@@ -686,6 +687,49 @@ func TestExecutor_Execute(t *testing.T) {
 					Wanted: 65,
 				},
 			},
+		},
+		{
+			name: `multiple unnamed yields`,
+			spec: &plantest.PlanSpec{
+				Nodes: []plan.Node{
+					plan.CreatePhysicalNode("from-test", executetest.NewFromProcedureSpec(
+						[]*executetest.Table{&executetest.Table{
+							KeyCols: []string{"_start", "_stop"},
+							ColMeta: []flux.ColMeta{
+								{Label: "_start", Type: flux.TTime},
+								{Label: "_stop", Type: flux.TTime},
+								{Label: "_time", Type: flux.TTime},
+								{Label: "_value", Type: flux.TFloat},
+							},
+							Data: [][]interface{}{
+								{execute.Time(0), execute.Time(5), execute.Time(0), 1.0},
+								{execute.Time(0), execute.Time(5), execute.Time(1), 2.0},
+								{execute.Time(0), execute.Time(5), execute.Time(2), 3.0},
+								{execute.Time(0), execute.Time(5), execute.Time(3), 4.0},
+								{execute.Time(0), execute.Time(5), execute.Time(4), 5.0},
+							},
+						}},
+					)),
+					plan.CreatePhysicalNode("sum", &universe.SumProcedureSpec{
+						SimpleAggregateConfig: execute.DefaultSimpleAggregateConfig,
+					}),
+					plan.CreatePhysicalNode("yield0", executetest.NewYieldProcedureSpec("_result")),
+					plan.CreatePhysicalNode("yield1", executetest.NewYieldProcedureSpec("_result")),
+				},
+				Edges: [][2]int{
+					{0, 1},
+					{1, 2},
+					{2, 3},
+				},
+			},
+			// XXX(onelson): unsure if the wrapped (inner) error is ever made
+			// visible to the user.
+			// Seems like in this case we'd want the user to get this feedback...
+			wantErr: errors.Wrap(
+				errors.New(codes.Invalid, "tried to produce more than one result with the name \"_result\""),
+				codes.Inherit,
+				"failed to initialize execute state",
+			),
 		},
 	}
 

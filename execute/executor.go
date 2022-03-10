@@ -159,7 +159,9 @@ func (v *createExecutionNodeVisitor) Visit(node plan.Node) error {
 	// N.b. yields become results here, but terminal nodes are handled via
 	// `generateResult` further below.
 	if yieldSpec, ok := spec.(plan.YieldProcedureSpec); ok {
-		v.generateResult(yieldSpec.YieldName(), node, 0)
+		if err := v.generateResult(yieldSpec.YieldName(), node, 0); err != nil {
+			return err
+		}
 		return nil
 	}
 
@@ -243,7 +245,9 @@ func (v *createExecutionNodeVisitor) Visit(node plan.Node) error {
 			// "if leaf" check.
 			if len(node.Successors()) == 0 {
 				resultName := getResultName(node, spec, isParallelMerge)
-				v.generateResult(resultName, node, i)
+				if err := v.generateResult(resultName, node, i); err != nil {
+					return err
+				}
 			}
 		}
 	} else {
@@ -302,7 +306,9 @@ func (v *createExecutionNodeVisitor) Visit(node plan.Node) error {
 			// "if leaf" check.
 			if len(node.Successors()) == 0 {
 				resultName := getResultName(node, spec, isParallelMerge)
-				v.generateResult(resultName, node, i)
+				if err := v.generateResult(resultName, node, i); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -310,10 +316,18 @@ func (v *createExecutionNodeVisitor) Visit(node plan.Node) error {
 }
 
 // generateResult will attach a result to the query for the specified node.
-func (v *createExecutionNodeVisitor) generateResult(resultName string, node plan.Node, idx int) {
+func (v *createExecutionNodeVisitor) generateResult(resultName string, node plan.Node, idx int) error {
+	// if the result name is already present in the result set, that's an error.
+	if _, ok := v.es.results[resultName]; ok {
+		// XXX: we produce an error like this in the planner for duplicate yield
+		// names, but since we're generating results that aren't necessarily from
+		// yields, we need a similar check here.
+		return errors.Newf(codes.Invalid, "tried to produce more than one result with the name %q", resultName)
+	}
 	r := newResult(resultName)
 	v.es.results[resultName] = r
 	v.nodes[skipYields(node)][idx].AddTransformation(r)
+	return nil
 }
 
 // getResultName will offer a "best guess" name for a given node's result.
