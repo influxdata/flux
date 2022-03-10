@@ -156,10 +156,10 @@ func (v *createExecutionNodeVisitor) Visit(node plan.Node) error {
 	spec := node.ProcedureSpec()
 	kind := spec.Kind()
 
+	// N.b. yields become results here, but terminal nodes are handled via
+	// `generateResult` further below.
 	if yieldSpec, ok := spec.(plan.YieldProcedureSpec); ok {
-		r := newResult(yieldSpec.YieldName())
-		v.es.results[yieldSpec.YieldName()] = r
-		v.nodes[skipYields(node)][0].AddTransformation(r)
+		v.generateResult(yieldSpec.YieldName(), node, 0)
 		return nil
 	}
 
@@ -236,6 +236,15 @@ func (v *createExecutionNodeVisitor) Visit(node plan.Node) error {
 			source.SetLabel(string(node.ID()))
 			v.es.sources = append(v.es.sources, source)
 			v.nodes[node][i] = source
+
+			// XXX: results should be generated for terminal nodes, regardless
+			// of whether or not it is also a leaf. This is why there's an
+			// identical block at the end of each loop in each case for the
+			// "if leaf" check.
+			if len(node.Successors()) == 0 {
+				resultName := getResultName(node, spec, isParallelMerge)
+				v.generateResult(resultName, node, i)
+			}
 		}
 	} else {
 		// If node is internal, create a transformation. For each
@@ -287,29 +296,37 @@ func (v *createExecutionNodeVisitor) Visit(node plan.Node) error {
 				}
 			}
 
+			// XXX: results should be generated for terminal nodes, regardless
+			// of whether or not it is also a leaf. This is why there's an
+			// identical block at the end of each loop in each case for the
+			// "if leaf" check.
 			if len(node.Successors()) == 0 {
-				// Formerly we were automatically inserting yields in the
-				// planner for root nodes that were _not yields_ and _didn't have side-effects_.
-				// For this case, they got the default result name of `_result`.
-				//
-				// XXX(onelson): it's debatable if this behavior is really desirable.
-				//
-				// N.b. the _actual yield nodes_ are converted to results up at
-				// the top of this method.
-				name := plan.DefaultYieldName
-
-				// For the more specific case of having side effects, specialize
-				// the result name based on the node generating it.
-				if plan.HasSideEffect(spec) || isParallelMerge {
-					name = string(node.ID())
-				}
-				r := newResult(name)
-				v.es.results[name] = r
-				v.nodes[skipYields(node)][i].AddTransformation(r)
+				resultName := getResultName(node, spec, isParallelMerge)
+				v.generateResult(resultName, node, i)
 			}
 		}
 	}
 	return nil
+}
+
+// generateResult will attach a result to the query for the specified node.
+func (v *createExecutionNodeVisitor) generateResult(resultName string, node plan.Node, idx int) {
+	r := newResult(resultName)
+	v.es.results[resultName] = r
+	v.nodes[skipYields(node)][idx].AddTransformation(r)
+}
+
+// getResultName will offer a "best guess" name for a given node's result.
+//
+// For nodes that have side-effects or happen to be a Parallel Merge, the result
+// will be based on the node ID. For other cases, the default yield name of
+// `_result` is used.
+func getResultName(node plan.Node, spec plan.ProcedureSpec, isParallelMerge bool) string {
+	name := plan.DefaultYieldName
+	if plan.HasSideEffect(spec) || isParallelMerge {
+		name = string(node.ID())
+	}
+	return name
 }
 
 func (es *executionState) abort(err error) {
