@@ -140,7 +140,7 @@ test-flux:
 	$(GO_RUN) ./cmd/flux test -v --skip $(INTEGRATION_TESTS)
 
 test-flux-integration:
-	./etc/spawn-dbs.sh
+	./etc/spawn-containers.sh
 	$(GO_RUN) ./cmd/flux test -v --test $(INTEGRATION_INJECTION_TESTS)
 	$(GO_RUN) ./cmd/flux test -v --test $(INTEGRATION_WRITE_TESTS)
 	$(GO_RUN) ./cmd/flux test -v --test $(INTEGRATION_READ_TESTS)

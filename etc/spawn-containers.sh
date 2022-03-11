@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# This script will try to spin up a docker container for a series of database
-# engines which select flux tests will run against.
+# This script will try to spin up a docker container for a series of services
+# (mostly database engines) which select flux tests will run against.
 #
 # Typically you will not invoke this script yourself.
 # Instead use: `make test-flux-integration` from the repo root since the Make
@@ -34,6 +34,9 @@ MARIADB_NAME="${PREFIX}-mariadb"
 MARIADB_TAG="mariadb:10"
 MS_NAME="${PREFIX}-mssql"
 MS_TAG="mcr.microsoft.com/mssql/server:2019-latest"
+MQTT_TAG="eclipse-mosquitto:2.0.14"
+MQTT_NAME="${PREFIX}-mqtt"
+MQTT_CONFIG_FILE="/tmp/${PREFIX}-mosquitto.conf"
 VERTICA_NAME="${PREFIX}-vertica"
 VERTICA_TAG="vertica/vertica-ce:11.0.0-0"
 SQLITE_DB_PATH="/tmp/${PREFIX}-sqlite.db"
@@ -158,8 +161,8 @@ rm -f "$SQLITE_DB_PATH"
 # volumes that would otherwise be left orphaned.
 # Each container we run _should be_ launched with the `--rm` flag to help cleanup
 # these spent containers as we go.
-docker stop "${HDB_NAME}" "${PG_NAME}" "${MYSQL_NAME}" "${MARIADB_NAME}" "${MS_NAME}" "${VERTICA_NAME}" \
-|| docker rm -f "${HDB_NAME}" "${PG_NAME}" "${MYSQL_NAME}" "${MARIADB_NAME}" "${MS_NAME}" "${VERTICA_NAME}"
+docker stop "${HDB_NAME}" "${PG_NAME}" "${MYSQL_NAME}" "${MARIADB_NAME}" "${MS_NAME}" "${VERTICA_NAME}" "${MQTT_NAME}" \
+|| docker rm -f "${HDB_NAME}" "${PG_NAME}" "${MYSQL_NAME}" "${MARIADB_NAME}" "${MS_NAME}" "${VERTICA_NAME}" "${MQTT_NAME}"
 
 function wait_for () {
   name="${1}"
@@ -259,6 +262,25 @@ function run_pg {
   docker exec "${PG_NAME}" psql -U postgres -c "${PG_SEED}"
 }
 
+function run_mqtt {
+  cat <<'EOF' > "${MQTT_CONFIG_FILE}"
+listener 1883
+allow_anonymous true
+EOF
+
+  docker run --rm --detach \
+    --name "${MQTT_NAME}" \
+    --publish 1883:1883 \
+    -v "${MQTT_CONFIG_FILE}:/mosquitto/config/mosquitto.conf:ro" \
+    "${MQTT_TAG}" \
+     mosquitto -v -c /mosquitto/config/mosquitto.conf
+
+  wait_for "MQTT" "docker exec ${MQTT_NAME} mosquitto_pub -t 'liveness' -n"
+  # XXX: the flux mqtt support currently only exposes write operations.
+  # If we also supported reads, we could seed the queue here with some retained
+  # messages or by setting the QoS value.
+}
+
 function should_start {
     # Start a databases if no the script is invoked without any arguments, or if the database is
     # among the arguments
@@ -298,6 +320,11 @@ fi
 if should_start "sqlite" "$@" ; then
     echo "Starting Sqlite"
     sqlite3 "${SQLITE_DB_PATH}" "${SQLITE_SEED}" &
+fi
+
+if should_start "mqtt" "$@" ; then
+    echo "Starting MQTT"
+    run_mqtt &
 fi
 
 wait
