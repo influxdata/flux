@@ -10,13 +10,18 @@ import (
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/values"
+	_ "github.com/influxdata/gosnowflake"
 )
 
 // Snowflake DB support.
 // Notes:
 // * type mapping
 //     - see https://pkg.go.dev/github.com/snowflakedb/gosnowflake
-//     - current mappings are valid for v1.3.4
+//     - current mappings are valid for v1.6.7
+// * uses fork of the client library
+//     - we use our own fork of the client library to completely disable
+//       the file transfer functionality. this functionality is a security
+//       vulnerability in a cloud environment.
 
 type SnowflakeRowReader struct {
 	Cursor      *sql.Rows
