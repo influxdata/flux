@@ -63,6 +63,7 @@ type PartitionMergeTransformation struct {
 
 	mu               sync.Mutex
 	predecessorState map[execute.DatasetID]*parallelPredecessorState
+	finished         bool
 }
 
 type parallelPredecessorState struct {
@@ -108,12 +109,23 @@ func (t *PartitionMergeTransformation) Process(id execute.DatasetID, tbl flux.Ta
 		return err
 	}
 
+	t.mu.Lock()
+	defer t.mu.Unlock()
+
+	if t.finished {
+		return nil
+	}
+
 	return t.dataset.Process(out)
 }
 
 func (t *PartitionMergeTransformation) UpdateWatermark(id execute.DatasetID, mark execute.Time) error {
 	t.mu.Lock()
 	defer t.mu.Unlock()
+
+	if t.finished {
+		return nil
+	}
 
 	t.predecessorState[id].mark = mark
 
@@ -130,6 +142,10 @@ func (t *PartitionMergeTransformation) UpdateWatermark(id execute.DatasetID, mar
 func (t *PartitionMergeTransformation) UpdateProcessingTime(id execute.DatasetID, pt execute.Time) error {
 	t.mu.Lock()
 	defer t.mu.Unlock()
+
+	if t.finished {
+		return nil
+	}
 
 	t.predecessorState[id].processing = pt
 
@@ -149,19 +165,24 @@ func (t *PartitionMergeTransformation) Finish(id execute.DatasetID, err error) {
 	t.mu.Lock()
 	defer t.mu.Unlock()
 
+	if t.finished {
+		return
+	}
+
 	t.predecessorState[id].finished = true
 
 	if err != nil {
-		// FIXME: this doesn't seem right.
+		// When we get an error, pass it on immediately. All other messages are
+		// stopped.
+		t.finished = true
+	} else {
+		t.finished = true
+		for _, state := range t.predecessorState {
+			t.finished = t.finished && state.finished
+		}
+	}
+
+	if t.finished {
 		t.dataset.Finish(err)
-	}
-
-	finished := true
-	for _, state := range t.predecessorState {
-		finished = finished && state.finished
-	}
-
-	if finished {
-		t.dataset.Finish(nil)
 	}
 }
