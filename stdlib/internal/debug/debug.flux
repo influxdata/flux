@@ -56,5 +56,7 @@ option vectorize = false
 // unpivot will remove any columns not in the group key or _time and output a new table with _field and _value columns pairs
 // B will basically be A - the non group columns
 // Specialized to transform the pivoted output from `iox` into the unpivoted format
-builtin unpivot : (<-tables: stream[{ A with time: time }]) => stream[{ B with _field: string, _value: C }]
-    where A: Record, B: Record
+builtin unpivot : (<-tables: stream[{A with _time: time}]) => stream[{B with _field: string, _value: C}]
+    where
+    A: Record,
+    B: Record
