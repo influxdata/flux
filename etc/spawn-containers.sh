@@ -236,6 +236,10 @@ function run_vertica {
   docker exec "${VERTICA_NAME}" /opt/vertica/bin/vsql -d flux -v AUTOCOMMIT=on -c "${VERTICA_SEED}"
 }
 
+# FIXME: something with running the docker commands from inside a function
+#  instead of the root of the script, or by backgrounding the function, breaks
+#  tty binding required for the `-it` flags. This causes the service to report
+#  "ready" too early, the seed to fail, and probably the tests.
 function run_sap_hana {
   docker run --rm --detach \
     --name "${HDB_NAME}" \
@@ -281,10 +285,12 @@ EOF
   # messages or by setting the QoS value.
 }
 
+# trailing args to the script can be service names, checked by `should_start`
+TAIL="$*"
 function should_start {
-    # Start a databases if no the script is invoked without any arguments, or if the database is
-    # among the arguments
-    [ "$1" == "" ] || (echo "${@:2}" | grep "$1")
+    # Start a container if no the script is invoked without any arguments, or if
+    # the service is among the arguments
+    [ "${TAIL}" == "" ] || (echo "$TAIL" | grep "$1")
 }
 
 if should_start "mariadb" "$@" ; then
@@ -307,10 +313,11 @@ if should_start "vertica" "$@" ; then
     run_vertica &
 fi
 
-if should_start "saphana" "$@" ; then
-    echo "Starting SAP Hana"
-    run_sap_hana &
-fi
+# FIXME: the sap hana service fails to launch properly at the moment
+#if should_start "saphana" "$@" ; then
+#    echo "Starting SAP Hana"
+#    run_sap_hana &
+#fi
 
 if should_start "postgres" "$@" ; then
     echo "Starting Postgres"
