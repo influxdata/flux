@@ -30,8 +30,7 @@ use crate::scanner::*;
 
     identifier = ( ualpha | "_" ) ( ualnum | "_" )*;
 
-    decimal_lit = (digit - "0") digit*;
-    int_lit = "0" | decimal_lit;
+    int_lit = digit+;
 
     float_lit = (digit+ "." digit*) | ("." digit+);
 

@@ -191,6 +191,90 @@ fn duration_literal_all_units() {
     )
 }
 
+
+
+#[test]
+fn duration_literal_leading_zero() {
+    let mut p = Parser::new(r#"dur = 01y02mo03w04d05h06m07s08ms09µs010ns"#);
+    let parsed = p.parse_file("".to_string());
+    let loc = Locator::new(&p.source[..]);
+    assert_eq!(
+        parsed,
+        File {
+            base: BaseNode {
+                location: loc.get(1, 1, 1, 43),
+                ..BaseNode::default()
+            },
+            name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
+            package: None,
+            imports: vec![],
+            body: vec![Statement::Variable(Box::new(VariableAssgn {
+                base: BaseNode {
+                    location: loc.get(1, 1, 1, 43),
+                    ..BaseNode::default()
+                },
+                id: Identifier {
+                    base: BaseNode {
+                        location: loc.get(1, 1, 1, 4),
+                        ..BaseNode::default()
+                    },
+                    name: "dur".to_string()
+                },
+                init: Expression::Duration(DurationLit {
+                    base: BaseNode {
+                        location: loc.get(1, 7, 1, 43),
+                        ..BaseNode::default()
+                    },
+                    values: vec![
+                        Duration {
+                            magnitude: 1,
+                            unit: "y".to_string()
+                        },
+                        Duration {
+                            magnitude: 2,
+                            unit: "mo".to_string()
+                        },
+                        Duration {
+                            magnitude: 3,
+                            unit: "w".to_string()
+                        },
+                        Duration {
+                            magnitude: 4,
+                            unit: "d".to_string()
+                        },
+                        Duration {
+                            magnitude: 5,
+                            unit: "h".to_string()
+                        },
+                        Duration {
+                            magnitude: 6,
+                            unit: "m".to_string()
+                        },
+                        Duration {
+                            magnitude: 7,
+                            unit: "s".to_string()
+                        },
+                        Duration {
+                            magnitude: 8,
+                            unit: "ms".to_string()
+                        },
+                        Duration {
+                            magnitude: 9,
+                            unit: "us".to_string()
+                        },
+                        Duration {
+                            magnitude: 10,
+                            unit: "ns".to_string()
+                        }
+                    ]
+                })
+            }))],
+            eof: vec![],
+        },
+    )
+}
+
 #[test]
 fn duration_literal_months() {
     let mut p = Parser::new(r#"dur = 6mo"#);

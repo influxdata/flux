@@ -2037,7 +2037,7 @@ fn test_illegal() {
 
 #[test]
 fn test_scan_duration() {
-    let text = r#"dur = 1y3mo2w1d4h1m30s1ms2µs70ns"#;
+    let text = r#"dur = 01y3mo2w1d4h1m30s1ms2µs70ns"#;
     let mut s = Scanner::new(text);
     assert_eq!(
         s.scan(),
@@ -2067,13 +2067,13 @@ fn test_scan_duration() {
         s.scan(),
         Token {
             tok: TokenType::Duration,
-            lit: String::from("1y3mo2w1d4h1m30s1ms2µs70ns"),
+            lit: String::from("01y3mo2w1d4h1m30s1ms2µs70ns"),
             start_offset: 6,
-            end_offset: 33,
+            end_offset: 34,
             start_pos: Position { line: 1, column: 7 },
             end_pos: Position {
                 line: 1,
-                column: 34
+                column: 35
             },
             comments: vec![],
         }
@@ -2083,15 +2083,15 @@ fn test_scan_duration() {
         Token {
             tok: TokenType::Eof,
             lit: String::from(""),
-            start_offset: 33,
-            end_offset: 33,
+            start_offset: 34,
+            end_offset: 34,
             start_pos: Position {
                 line: 1,
-                column: 34
+                column: 35
             },
             end_pos: Position {
                 line: 1,
-                column: 34
+                column: 35
             },
             comments: vec![],
         }
