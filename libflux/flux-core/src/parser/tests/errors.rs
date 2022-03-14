@@ -884,6 +884,42 @@ fn index_with_unexpected_rparen() {
 }
 
 #[test]
+fn int_literal_zero_prefix() {
+    let mut p = Parser::new(r#"0123"#);
+    let parsed = p.parse_file("".to_string());
+    let loc = Locator::new(&p.source[..]);
+    assert_eq!(
+        parsed,
+        File {
+            base: BaseNode {
+                location: loc.get(1, 1, 1, 5),
+                ..BaseNode::default()
+            },
+            name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
+            package: None,
+            imports: vec![],
+            body: vec![Statement::Expr(Box::new(ExprStmt {
+                base: BaseNode {
+                    location: loc.get(1, 1, 1, 5),
+                    ..BaseNode::default()
+                },
+                expression: Expression::Bad(Box::new(BadExpr {
+                    base: BaseNode {
+                        location: loc.get(1, 1, 1,5),
+                        ..BaseNode::default()
+                    },
+                    text: "invalid token for primary expression: INT".to_string(),
+                    expression: None,
+                }))
+            }))],
+            eof: vec![],
+        },
+    )
+}
+
+
+#[test]
 fn issue_4231() {
     let mut p = Parser::new(
         r#"

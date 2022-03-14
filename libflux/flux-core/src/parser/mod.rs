@@ -1380,7 +1380,13 @@ impl<'input> Parser<'input> {
         let t = self.peek_with_regex();
         match t.tok {
             TokenType::Ident => Expression::Identifier(self.parse_identifier()),
-            TokenType::Int => Expression::Integer(self.parse_int_literal()),
+            TokenType::Int => {
+                let lit = self.parse_int_literal();
+                match lit {
+                    Ok(lit) => Expression::Integer(lit),
+                    Err(terr) => self.create_bad_expression(terr.token),
+                }
+            }
             TokenType::Float => {
                 let lit = self.parse_float_literal();
                 match lit {
@@ -1488,23 +1494,28 @@ impl<'input> Parser<'input> {
             name: t.lit,
         }
     }
-    fn parse_int_literal(&mut self) -> IntegerLit {
+    fn parse_int_literal(&mut self) -> Result<IntegerLit, TokenError> {
         let t = self.expect(TokenType::Int);
+
+        if t.lit.starts_with('0') && t.lit.len() > 1 {
+            return Err(TokenError { token: t })
+        }
+
         match (&t.lit).parse::<i64>() {
             Err(_e) => {
                 self.errs.push(format!(
                     "invalid integer literal \"{}\": value out of range",
                     t.lit
                 ));
-                IntegerLit {
+                Ok(IntegerLit {
                     base: self.base_node_from_token(&t),
                     value: 0,
-                }
+                })
             }
-            Ok(v) => IntegerLit {
+            Ok(v) => Ok(IntegerLit {
                 base: self.base_node_from_token(&t),
                 value: v,
-            },
+            }),
         }
     }
     fn parse_float_literal(&mut self) -> Result<FloatLit, TokenError> {
