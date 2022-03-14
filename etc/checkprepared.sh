@@ -13,13 +13,13 @@ cd $DIR
 EXIT=0
 while read f
 do
-    # Check for any introduced: NEXT comments that still exist
-    grep "^//[[:space:]]*introduced:[[:space:]]\+NEXT[[:space:]]*$" $f > /dev/null
+    # Check for any 'introduced: NEXT' or 'deprecated: NEXT' comments that still exist
+    grep '^//[[:space:]]*\(introduced\|deprecated\):[[:space:]]\+NEXT[[:space:]]*$' $f > /dev/null
     ret=$?
     if [ $ret -eq 0 ]
     then
         EXIT=1
-        echo "$f contains 'introduced: NEXT'"
+        echo "$f contains 'introduced: NEXT' or 'deprecated: NEXT'"
     fi
 done < <(find ./stdlib -name '*.flux')
 

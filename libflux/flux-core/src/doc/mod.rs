@@ -1795,6 +1795,40 @@ foo.a
         );
     }
     #[test]
+    fn test_metadata_no_desc_pkg() {
+        let src = "
+        // Package foo does a thing.
+        //
+        // ## Metadata
+        // key: valueA
+        // key: valueB
+        // key1: value with spaces
+        // key_with_underscores: value
+        package foo
+        ";
+        let loc = Locator::new(&src[..]);
+        assert_docs_full(
+            src,
+            PackageDoc {
+                path: "path".to_string(),
+                name: "foo".to_string(),
+                headline: "Package foo does a thing.".to_string(),
+                description: None,
+                members: BTreeMap::default(),
+                examples: Vec::new(),
+                metadata: Some(map![
+                    "key" => "valueB".to_string(),
+                    "key1" => "value with spaces".to_string(),
+                    "key_with_underscores" => "value".to_string(),
+                ]),
+            },
+            vec![Diagnostic {
+                msg: "found duplicate metadata key \"key\"".to_string(),
+                loc: loc.get(9, 9, 9, 20),
+            }],
+        );
+    }
+    #[test]
     fn test_function_doc() {
         let src = "
         // Package foo does a thing.
