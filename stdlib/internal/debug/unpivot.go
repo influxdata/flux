@@ -100,8 +100,6 @@ func (t *unpivotTransformation) Process(chunk table.Chunk, d *execute.TransportD
 	}
 
 	for i, c := range chunk.Cols() {
-		// for i := len(chunk.Cols()) - 1; i >= 0; i-- {
-		//	c := chunk.Cols()[i]
 		if chunk.Key().HasCol(c.Label) || c.Label == "_time" {
 			continue
 		}
