@@ -161,8 +161,11 @@ rm -f "$SQLITE_DB_PATH"
 # volumes that would otherwise be left orphaned.
 # Each container we run _should be_ launched with the `--rm` flag to help cleanup
 # these spent containers as we go.
-docker stop "${HDB_NAME}" "${PG_NAME}" "${MYSQL_NAME}" "${MARIADB_NAME}" "${MS_NAME}" "${VERTICA_NAME}" "${MQTT_NAME}" \
-|| docker rm -f "${HDB_NAME}" "${PG_NAME}" "${MYSQL_NAME}" "${MARIADB_NAME}" "${MS_NAME}" "${VERTICA_NAME}" "${MQTT_NAME}"
+docker stop \
+  "${HDB_NAME}" "${PG_NAME}" "${MYSQL_NAME}" "${MARIADB_NAME}" "${MS_NAME}" "${VERTICA_NAME}" "${MQTT_NAME}" \
+|| docker rm -f \
+  "${HDB_NAME}" "${PG_NAME}" "${MYSQL_NAME}" "${MARIADB_NAME}" "${MS_NAME}" "${VERTICA_NAME}" "${MQTT_NAME}" \
+|| true
 
 function wait_for () {
   name="${1}"
