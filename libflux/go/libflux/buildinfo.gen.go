@@ -257,7 +257,7 @@ var sourceHashes = map[string]string{
 	"stdlib/influxdata/influxdb/to_test.flux":                                                     "8cafc9db1b6eb5386f574f13f37e380edf6a8e052ab98018d13a3a21987daf8e",
 	"stdlib/influxdata/influxdb/v1/v1.flux":                                                       "ddf2a2af1b5631bd0483b337c3455c4015e436e9668dd290abacae89e34811cf",
 	"stdlib/internal/boolean/boolean.flux":                                                        "1c0a1564911dd5f4c35c17efb32158ab31c51b20ac0f25175545e50aadc87c94",
-	"stdlib/internal/debug/debug.flux":                                                            "cb0ef9058e292edd514340300884e342a6ecd3e1726ff88020cb2df99523e44c",
+	"stdlib/internal/debug/debug.flux":                                                            "104485f6a8d6e1cd2fc8111367687fed4cef2a63b5a7657124571b89b0e2420c",
 	"stdlib/internal/debug/debug_test.flux":                                                       "6be892fbf0e58a67508c241c283009d893a4856093b73f77dc5e3c31f260d7be",
 	"stdlib/internal/gen/gen.flux":                                                                "320c005cffe97f28324a21054089cf78a2e6c511c639c4c0d1df727e46072c05",
 	"stdlib/internal/influxql/influxql.flux":                                                      "51739e7d9026cae356fdef79a4340d2bda7fc10d1daa1a7adeae06014f85049c",
