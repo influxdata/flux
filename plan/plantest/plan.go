@@ -49,7 +49,14 @@ func copyNode(n plan.Node) plan.Node {
 	case *plan.LogicalNode:
 		cn = plan.CreateLogicalNode(n.ID(), n.ProcedureSpec().Copy())
 	case *plan.PhysicalPlanNode:
-		cn = plan.CreatePhysicalNode(n.ID(), n.ProcedureSpec().Copy().(plan.PhysicalProcedureSpec))
+		pn := plan.CreatePhysicalNode(n.ID(), n.ProcedureSpec().Copy().(plan.PhysicalProcedureSpec))
+		for key, attr := range n.OutputAttrs {
+			pn.SetOutputAttr(key, attr)
+		}
+		for key, attr := range n.RequiredAttrs {
+			pn.SetRequiredAttr(key, attr)
+		}
+		cn = pn
 	}
 	return cn
 }
