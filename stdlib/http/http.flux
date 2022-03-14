@@ -1,5 +1,6 @@
 // Package http provides functions for transferring data using the HTTP protocol.
 //
+// ## Metadata
 // introduced: 0.39.0
 package http
 
@@ -42,6 +43,7 @@ import "experimental"
 // )
 // ```
 //
+// ## Metadata
 // introduced: 0.40.0
 //
 builtin post : (url: string, ?headers: A, ?data: bytes) => int where A: Record
@@ -70,6 +72,7 @@ builtin post : (url: string, ?headers: A, ?data: bytes) => int where A: Record
 // )
 // ```
 //
+// ## Metadata
 // introduced: 0.44.0
 // tags: single notification
 //
@@ -105,6 +108,7 @@ builtin basicAuth : (u: string, p: string) => string
 // >     )
 // ```
 //
+// ## Metadata
 // introduced: 0.71.0
 //
 builtin pathEscape : (inputString: string) => string
@@ -145,6 +149,7 @@ builtin pathEscape : (inputString: string) => string
 //     |> endpoint()
 // ```
 //
+// ## Metadata
 // tags: notification endpoints
 //
 endpoint = (url) =>

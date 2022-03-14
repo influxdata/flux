@@ -1,5 +1,6 @@
 // Package json provides tools for working with JSON.
 //
+// ## Metadata
 // introduced: 0.69.0
 // tags: json
 //
@@ -128,6 +129,8 @@ package json
 //          })
 // > )
 // ```
+//
+// ## Metadata
 // tags: type-conversions
 //
 builtin parse : (data: bytes) => A

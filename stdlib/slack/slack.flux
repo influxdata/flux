@@ -1,5 +1,6 @@
 // Package slack provides functions for sending messages to [Slack](https://slack.com/).
 //
+// ## Metadata
 // introduced: 0.41.0
 //
 package slack
@@ -80,6 +81,7 @@ option defaultURL = "https://slack.com/api/chat.postMessage"
 // )
 // ```
 //
+// ## Metadata
 // tags: single notification
 //
 message = (
@@ -142,7 +144,8 @@ message = (
 //     |> slack.endpoint(token: "mY5uP3rSeCr37T0kEN")(mapFn: (r) => ({channel: "Alerts", text: r._message, color: "danger"}))()
 // ```
 //
-// tags: notification endpoints
+// ## Metadata
+// tags: notification endpoints, transformations
 //
 endpoint = (url=defaultURL, token="") =>
     (mapFn) =>

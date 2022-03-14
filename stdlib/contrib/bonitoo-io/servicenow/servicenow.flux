@@ -1,5 +1,6 @@
 // Package servicenow  provides functions for sending events to [ServiceNow](https://www.servicenow.com/).
 //
+// ## Metadata
 // introduced: 0.136.0
 package servicenow
 
@@ -74,6 +75,7 @@ import "json"
 // )
 // ```
 //
+// ## Metadata
 // tags: single notification
 event = (
     url,
@@ -186,6 +188,7 @@ event = (
 //     )()
 // ```
 //
+// ## Metadata
 // tags: notification endpoints
 endpoint = (url, username, password, source="Flux") =>
     (mapFn) =>

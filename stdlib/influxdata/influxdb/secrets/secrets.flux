@@ -1,5 +1,6 @@
 // Package secrets functions for working with sensitive secrets managed by InfluxDB.
 //
+// ## Metadata
 // introduced: 0.41.0
 // tags: secrets,security
 //

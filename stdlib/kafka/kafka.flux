@@ -1,5 +1,6 @@
 // Package kafka provides tools for working with [Apache Kafka](https://kafka.apache.org/).
 //
+// ## Metadata
 // introduced: 0.14.0
 // tags: kafka
 //
@@ -42,6 +43,7 @@ package kafka
 //     |> kafka.to(brokers: ["http://127.0.0.1:9092"], topic: "example-topic", name: "example-metric-name", tagColumns: ["tag"])
 // ```
 //
+// ## Metadata
 // tags: outputs
 //
 builtin to : (

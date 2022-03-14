@@ -1,6 +1,7 @@
 // Package webexteams provides functions that send messages
 // to [Webex Teams](https://www.webex.com/team-collaboration.html).
 //
+// ## Metadata
 // introduced: 0.125.0
 package webexteams
 
@@ -42,6 +43,7 @@ import "json"
 // )
 // ```
 //
+// ## Metadata
 // tags: single notification
 //
 message = (
@@ -105,6 +107,7 @@ message = (
 //     )()
 // ```
 //
+// ## Metadata
 // tags: notification endpoints,transformations
 endpoint = (url="https://webexapis.com", token) =>
     (mapFn) =>

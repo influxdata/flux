@@ -132,6 +132,7 @@ statusFromLevel = (level) => {
 // )
 // ```
 //
+// ## Metadata
 // tags: single notification
 sendAlert = (
     url,
@@ -200,7 +201,8 @@ sendAlert = (
 //     )()
 // ```
 //
-// tags: notification endpoint
+// ## Metadata
+// tags: notification endpoints, transformations
 endpoint = (url=defaultUrl, token, appKey) =>
     (mapFn) =>
         (tables=<-) =>

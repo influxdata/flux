@@ -1,5 +1,6 @@
 // Package table provides tools working with Flux tables.
 //
+// ## Metadata
 // introduced: 0.115.0
 //
 package table
@@ -26,6 +27,7 @@ package table
 // >     |> table.fill()
 // ```
 //
+// ## Metadata
 // tags: transformations,table
 //
 builtin fill : (<-tables: stream[A]) => stream[A] where A: Record

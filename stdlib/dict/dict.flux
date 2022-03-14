@@ -1,5 +1,6 @@
 // Package dict provides functions for interacting with dictionary types.
 //
+// ## Metadata
 // introduced: 0.97.0
 package dict
 

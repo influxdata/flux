@@ -1,6 +1,7 @@
 // Package influxdb provides functions designed for working with InfluxDB and
 // analyzing InfluxDB metadata.
 //
+// ## Metadata
 // introduced: 0.7.0
 package influxdb
 
@@ -67,6 +68,7 @@ package influxdb
 // )
 // ```
 //
+// ## Metadata
 // introduced: 0.92.0
 // tags: metadata
 //
@@ -159,6 +161,7 @@ builtin cardinality : (
 // )
 // ```
 //
+// ## Metadata
 // tags: inputs
 //
 builtin from : (
@@ -305,6 +308,7 @@ builtin from : (
 //     |> to(bucket: "bucket2")
 // ```
 //
+// ## Metadata
 // tags: outputs
 //
 builtin to : (
@@ -357,6 +361,7 @@ builtin to : (
 // )
 // ```
 //
+// ## Metadata
 // introduced: 0.16.0
 // tags: metadata
 //

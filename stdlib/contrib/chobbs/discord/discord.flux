@@ -1,5 +1,6 @@
 // Package discord provides functions for sending messages to [Discord](https://discord.com/).
 //
+// ## Metadata
 // introduced: 0.69.0
 package discord
 
@@ -44,6 +45,7 @@ option discordURL = "https://discordapp.com/api/webhooks/"
 // )
 // ```
 //
+// ## Metadata
 // tags: single notification
 //
 send = (
@@ -110,6 +112,7 @@ send = (
 //     )()
 // ```
 //
+// ## Metadata
 // tags: notifcation endpoints,transformations
 //
 endpoint = (webhookToken, webhookID, username, avatar_url="") =>

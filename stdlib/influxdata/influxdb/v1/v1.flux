@@ -16,6 +16,7 @@
 // - `v1.tagKeys()`
 // - `v1.tagValues()`
 //
+// ## Metadata
 // introduced: 0.16.0
 //
 package v1
@@ -86,6 +87,7 @@ import "influxdata/influxdb/schema"
 // v1.json(file: "/path/to/results.json")
 // ```
 //
+// ## Metadata
 // tags: inputs
 //
 builtin json : (?json: string, ?file: string) => stream[A] where A: Record
@@ -114,6 +116,7 @@ builtin json : (?json: string, ?file: string) => stream[A] where A: Record
 // v1.databases()
 // ```
 //
+// ## Metadata
 // tags: metadata
 //
 builtin databases : (
@@ -162,6 +165,7 @@ builtin databases : (
 // >     |> v1.fieldsAsCols()
 // ```
 //
+// ## Metadata
 // deprecated: 0.88.0
 // tags: transformations
 //
@@ -197,6 +201,7 @@ fieldsAsCols = schema.fieldsAsCols
 // )
 // ```
 //
+// ## Metadata
 // deprecated: 0.88.0
 // tags: metadata
 //
@@ -228,6 +233,7 @@ tagValues = schema.tagValues
 // )
 // ```
 //
+// ## Metadata
 // tags: metadata
 // deprecated: 0.88.0
 //
@@ -259,6 +265,7 @@ measurementTagValues = schema.measurementTagValues
 // v1.tagKeys(bucket: "example-bucket")
 // ```
 //
+// ## Metadata
 // tags: metadata
 // deprecated: 0.88.0
 //
@@ -288,6 +295,7 @@ tagKeys = schema.tagKeys
 // )
 // ```
 //
+// ## Metadata
 // tags: metadata
 // deprecated: 0.88.0
 //
@@ -322,6 +330,7 @@ measurementTagKeys = schema.measurementTagKeys
 // schema.fieldKeys(bucket: "example-bucket")
 // ```
 //
+// ## Metadata
 // tags: metadata
 // deprecated: 0.88.0
 //
@@ -355,6 +364,7 @@ fieldKeys = schema.fieldKeys
 // )
 // ```
 //
+// ## Metadata
 // tags: metadata
 // deprecated: 0.88.0
 //
@@ -380,6 +390,7 @@ measurementFieldKeys = schema.measurementFieldKeys
 // schema.measurements(bucket: "example-bucket")
 // ```
 //
+// ## Metadata
 // tags: metadata
 // deprecated: 0.88.0
 //

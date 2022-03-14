@@ -169,6 +169,7 @@
 // option geo.units = {distance: "mile"}
 // ```
 //
+// ## Metadata
 // introduced: 0.63.0
 // tags: geotemporal
 //
@@ -180,6 +181,7 @@ import "influxdata/influxdb/v1"
 
 // units defines the unit of measurment used in geotemporal operations.
 //
+// ## Metadata
 // introduced: 0.78.0
 //
 option units = {distance: "km"}
@@ -193,6 +195,7 @@ option units = {distance: "km"}
 // - geometry: GIS geometry to test. Can be either point or linestring geometry.
 // - units: Record that defines the unit of measurement for distance.
 //
+// ## Metadata
 // introduced: 0.78.0
 // tags: geotemporal
 //
@@ -207,6 +210,7 @@ builtin stContains : (region: A, geometry: B, units: {distance: string}) => bool
 // - geometry: GIS geometry to test. Can be either point or linestring geometry.
 // - units: Record that defines the unit of measurement for distance.
 //
+// ## Metadata
 // introduced: 0.78.0
 // tags: geotemporal
 //
@@ -222,6 +226,7 @@ builtin stDistance : (region: A, geometry: B, units: {distance: string}) => floa
 //   Point geometry will always return `0.0`.
 // - units: Record that defines the unit of measurement for distance.
 //
+// ## Metadata
 // introduced: 0.78.0
 // tags: geotemporal
 //
@@ -236,6 +241,7 @@ builtin stLength : (geometry: A, units: {distance: string}) => float where A: Re
 // - units: Record that defines the unit of measurement for distance.
 //   Default is the `geo.units` option.
 //
+// ## Metadata
 // introduced: 0.78.0
 // tags: geotemporal
 //
@@ -249,6 +255,7 @@ ST_Contains = (region, geometry, units=units) => stContains(region: region, geom
 // - units: Record that defines the unit of measurement for distance.
 //   Default is the `geo.units` option.
 //
+// ## Metadata
 // introduced: 0.78.0
 // tags: geotemporal
 //
@@ -265,6 +272,7 @@ ST_Distance = (region, geometry, units=units) => stDistance(region: region, geom
 // - units: Record that defines the unit of measurement for distance.
 //   Default is the `geo.units` option.
 //
+// ## Metadata
 // introduced: 0.78.0
 // tags: geotemporal
 //
@@ -280,6 +288,7 @@ ST_DWithin = (region, geometry, distance, units=units) =>
 // - units: Record that defines the unit of measurement for distance.
 //   Default is the `geo.units` option.
 //
+// ## Metadata
 // introduced: 0.78.0
 // tags: geotemporal
 //
@@ -293,6 +302,7 @@ ST_Intersects = (region, geometry, units=units) => stDistance(region: region, ge
 //   Point geometry will always return `0.0`.
 // - units: Record that defines the unit of measurement for distance.
 //
+// ## Metadata
 // introduced: 0.78.0
 // tags: geotemporal
 //
@@ -330,6 +340,7 @@ ST_Length = (geometry, units=units) => stLength(geometry: geometry, units: units
 // >     |> geo.ST_LineString()
 // ```
 //
+// ## Metadata
 // introduced: 0.78.0
 // tags: geotemporal,transformations,aggregates
 //
@@ -389,6 +400,7 @@ builtin getGrid : (
 // // Returns 10
 // ```
 //
+// ## Metadata
 // tags: geotemporal
 //
 builtin getLevel : (token: string) => int
@@ -449,6 +461,7 @@ builtin getLevel : (token: string) => int
 // >    |> map(fn: (r) => ({r with s2_cell_id: geo.s2CellIDToken(token: r.s2_cell_id, level: 5)}))
 // ```
 //
+// ## Metadata
 // introduced: 0.64.0
 // tags: geotemporal
 //
@@ -469,6 +482,7 @@ builtin s2CellIDToken : (?token: string, ?point: {lat: float, lon: float}, level
 // // Returns {lat: 40.812535546624574, lon: -73.55941282728273}
 // ```
 //
+// ## Metadata
 // introduced: 0.78.0
 // tags: geotemporal
 //
@@ -519,6 +533,7 @@ _detectLevel = (tables=<-) => {
 // >     |> geo.toRows()
 // ```
 //
+// ## Metadata
 // tags: transformations,geotemporal
 //
 toRows = (tables=<-) =>
@@ -568,6 +583,7 @@ toRows = (tables=<-) =>
 // >     |> geo.shapeData(latField: "latitude", lonField: "longitude", level: 10)
 // ```
 //
+// ## Metadata
 // tags: transformations,geotemporal
 // introduced: 0.65.0
 //
@@ -643,6 +659,7 @@ shapeData = (tables=<-, latField, lonField, level) =>
 // >     |> geo.gridFilter(region: {lat: 40.69335938, lon: -73.30078125, radius: 20.0})
 // ```
 //
+// ## Metadata
 // tags: transformations,filters,geotemporal
 //
 gridFilter = (
@@ -718,6 +735,7 @@ gridFilter = (
 // >     |> geo.strictFilter(region: {lat: 40.69335938, lon: -73.30078125, radius: 50.0})
 // ```
 //
+// ## Metadata
 // tags: transformations,filters,geotemporal
 //
 strictFilter = (tables=<-, region) =>
@@ -800,6 +818,7 @@ strictFilter = (tables=<-, region) =>
 // >    |> geo.filterRows(region: {lat: 40.69335938, lon: -73.30078125, radius: 100.0}, strict: false)
 // ```
 //
+// ## Metadata
 // tags: transformations,filters,geotemporal
 //
 filterRows = (
@@ -884,6 +903,7 @@ filterRows = (
 // >     |> geo.groupByArea(newColumn: "foo", level: 4)
 // ```
 //
+// ## Metadata
 // tags: transformations,geotemporal
 //
 groupByArea = (tables=<-, newColumn, level, s2cellIDLevel=-1) => {
@@ -938,6 +958,7 @@ groupByArea = (tables=<-, newColumn, level, s2cellIDLevel=-1) => {
 // >     |> geo.asTracks()
 // ```
 //
+// ## Metadata
 // tags: transformations,geotemporal
 //
 asTracks = (tables=<-, groupBy=["id", "tid"], orderBy=["_time"]) =>

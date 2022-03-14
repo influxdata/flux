@@ -1,5 +1,6 @@
 // Package csv provides functions for retrieving annotated CSV.
 //
+// ## Metadata
 // introduced: 0.64.0
 // tags: csv
 //

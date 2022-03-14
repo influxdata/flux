@@ -1,5 +1,6 @@
 // Package requests provides functions for transferring data using the HTTP protocol.
 //
+// ## Metadata
 // introduced: 0.152.0
 // tags: http
 package requests
@@ -130,7 +131,7 @@ builtin _do : (
 // requests.peek(response: response)
 // ```
 //
-//
+// ## Metadata
 // tags: http,inputs
 do = (
     method,
@@ -182,6 +183,7 @@ do = (
 // > array.from(rows: [data])
 // ```
 //
+// ## Metadata
 // tags: http,inputs
 post = (
     url,
@@ -253,6 +255,7 @@ post = (
 // > }])
 // ```
 //
+// ## Metadata
 // tags: http,inputs
 get = (
     url,

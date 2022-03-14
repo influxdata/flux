@@ -1,5 +1,6 @@
 // Package zenoss provides functions that send events to [Zenoss](https://www.zenoss.com/).
 //
+// ## Metadata
 // introduced: 0.108.0
 package zenoss
 
@@ -80,6 +81,7 @@ import "json"
 // )
 // ```
 //
+// ## Metadata
 // tags: single notification
 event = (
     url,
@@ -194,6 +196,7 @@ event = (
 //     )()
 // ```
 //
+// ## Metadata
 // tags: notification endpoints,transformations
 //
 endpoint = (

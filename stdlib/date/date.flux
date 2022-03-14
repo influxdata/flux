@@ -1,5 +1,6 @@
 // Package date provides date and time constants and functions.
 //
+// ## Metadata
 // introduced: 0.37.0
 // tags: date/time
 package date

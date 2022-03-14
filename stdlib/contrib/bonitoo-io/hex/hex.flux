@@ -1,6 +1,7 @@
 // Package hex provides functions that perform hexadecimal conversion
 // of `int`, `uint` or `bytes` values to and from `string` values.
 //
+// ## Metadata
 // introduced: 0.131.0
 package hex
 
@@ -20,6 +21,8 @@ package hex
 //
 // // Returns 1234
 // ```
+//
+// ## Metadata
 // tag: type-conversion
 builtin int : (v: string) => int
 
@@ -120,6 +123,8 @@ builtin int : (v: string) => int
 // < data
 // >     |> map(fn:(r) => ({ r with _value: hex.string(v: r.foo) }))
 // ```
+//
+// ## Metadata
 // tag: type-conversion
 builtin string : (v: A) => string
 
@@ -138,6 +143,8 @@ builtin string : (v: A) => string
 //
 // // Returns 1234
 // ```
+//
+// ## Metadata
 // tag: type-conversion
 builtin uint : (v: string) => uint
 
@@ -156,5 +163,7 @@ builtin uint : (v: string) => uint
 //
 // // Returns [255 87 51] (bytes)
 // ```
+//
+// ## Metadata
 // tag: type-conversion
 builtin bytes : (v: string) => bytes

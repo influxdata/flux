@@ -2,6 +2,7 @@
 // [Atlassian Opsgenie](https://www.atlassian.com/software/opsgenie)
 // using the [Opsgenie v2 API](https://docs.opsgenie.com/docs/alert-api#create-alert).
 //
+// ## Metadata
 // introduced: 0.84.0
 package opsgenie
 
@@ -68,6 +69,9 @@ builtin respondersToJSON : (v: [string]) => string
 //       responders: ["user:john@example.com", "team:itcrowd"]
 //     )
 // ```
+//
+// ## Metadata
+// tags: single notification
 sendAlert = (
     url="https://api.opsgenie.com/v2/alerts",
     apiKey,
@@ -165,6 +169,9 @@ sendAlert = (
 //     })
 //   )()
 // ```
+//
+// ## Metadata
+// tags: notification endpoints, transformations
 endpoint = (url="https://api.opsgenie.com/v2/alerts", apiKey, entity="") =>
     (mapFn) =>
         (tables=<-) =>

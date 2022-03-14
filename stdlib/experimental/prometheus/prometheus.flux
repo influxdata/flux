@@ -1,6 +1,7 @@
 // Package prometheus provides tools for working with
 // [Prometheus-formatted metrics](https://prometheus.io/docs/instrumenting/exposition_formats/).
 //
+// ## Metadata
 // introduced: 0.50.0
 // tags: prometheus
 //
@@ -26,6 +27,7 @@ import "experimental"
 //  prometheus.scrape(url: "http://localhost:8086/metrics")
 // ```
 //
+// ## Metadata
 // tags: inputs,prometheus
 //
 builtin scrape : (url: string) => [A] where A: Record
@@ -67,6 +69,7 @@ builtin scrape : (url: string) => [A] where A: Record
 //     |> prometheus.histogramQuantile(quantile: 0.99, metricVersion: 1)
 // ```
 //
+// ## Metadata
 // tags: transformations,aggregates,prometheus
 //
 histogramQuantile = (tables=<-, quantile, metricVersion=2) => {

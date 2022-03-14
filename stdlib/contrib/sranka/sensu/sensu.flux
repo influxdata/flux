@@ -6,6 +6,7 @@
 // All `sensu` functions require an `apiKey` parameter to successfully authenticate with your Sensu service.
 // For information about managing Sensu API keys, see the [Sensu APIKeys API documentation](https://docs.sensu.io/sensu-go/latest/api/apikeys/).
 //
+// ## Metadata
 // introduced: 0.90.0
 package sensu
 
@@ -100,6 +101,7 @@ builtin toSensuName : (v: string) => string
 // )
 // ```
 //
+// ## Metadata
 // tags: single notification
 //
 event = (
@@ -192,6 +194,7 @@ event = (
 //     )()
 // ```
 //
+// ## Metadata
 // tags: notification endpoints,transformations
 endpoint = (
     url,

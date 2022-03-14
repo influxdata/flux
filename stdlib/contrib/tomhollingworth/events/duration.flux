@@ -1,5 +1,6 @@
 // Package events provides tools for analyzing event-based data.
 //
+// ## Metadata
 // introduced: 0.91.0
 package events
 
@@ -92,6 +93,7 @@ package events
 // >     |> pivot(rowKey: ["_time", "state"], columnKey: ["function"], valueColumn: "value")
 // ```
 //
+// ## Metadata
 // tags: transformations,events
 //
 builtin duration : (

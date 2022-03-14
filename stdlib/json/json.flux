@@ -1,5 +1,6 @@
 // Package json provides tools for working with JSON.
 //
+// ## Metadata
 // introduced: 0.40.0
 //
 package json
@@ -31,6 +32,7 @@ package json
 // // Returns [123 34 98 97 122 34 58 49 50 51 44 34 102 111 111 34 58 34 98 97 114 34 44 34 113 117 122 34 58 91 52 44 53 44 54 93 125]
 // ```
 //
+// ## Metadata
 // tags: type-conversions
 //
 builtin encode : (v: A) => bytes

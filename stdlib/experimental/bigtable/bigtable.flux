@@ -1,6 +1,7 @@
 // Package bigtable provides tools for working with data in
 // [Google Cloud Bigtable](https://cloud.google.com/bigtable/) databases.
 //
+// ## Metadata
 // introduced: 0.45.0
 //
 package bigtable
@@ -35,6 +36,7 @@ package bigtable
 // )
 // ```
 //
+// ## Metadata
 // tags: inputs
 //
 builtin from : (token: string, project: string, instance: string, table: string) => stream[T] where T: Record

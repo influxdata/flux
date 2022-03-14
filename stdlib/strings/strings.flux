@@ -1,5 +1,6 @@
 // Package strings provides functions to operate on UTF-8 encoded strings.
 //
+// ## Metadata
 // introduced: 0.18.0
 //
 package strings

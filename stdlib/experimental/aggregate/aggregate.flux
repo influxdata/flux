@@ -1,5 +1,6 @@
 // Package aggregate provides functions to simplify common aggregate operations.
 //
+// ## Metadata
 // introduced: 0.61.0
 //
 package aggregate
@@ -34,6 +35,7 @@ import "experimental"
 // >     |> aggregate.rate(every: 30s, unit: 1s, groupColumns: ["tag"])
 // ```
 //
+// ## Metadata
 // tags: transformations,aggregates
 //
 rate = (tables=<-, every, groupColumns=[], unit=1s) =>

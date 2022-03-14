@@ -1,5 +1,6 @@
 // Package monitor provides tools for monitoring and alerting with InfluxDB.
 //
+// ## Metadata
 // introduced: 0.39.0
 // tag: monitor, alerts
 //
@@ -60,6 +61,7 @@ option log = (tables=<-) => tables |> experimental.to(bucket: bucket)
 // )
 // ```
 //
+// ## Metadata
 // tags: inputs
 //
 logs = (start, stop=now(), fn) =>
@@ -254,6 +256,7 @@ notify = (tables=<-, endpoint, data) =>
 // >     |> monitor.stateChangesOnly()
 // ```
 //
+// ## Metadata
 // tags: transformations
 // introduced: 0.65.0
 //
@@ -313,6 +316,7 @@ stateChangesOnly = (tables=<-) => {
 // >     |> monitor.stateChanges(toLevel: "crit")
 // ```
 //
+// ## Metadata
 // introduced: 0.42.0
 // tags: transformations
 //
@@ -370,6 +374,7 @@ stateChanges = (fromLevel="any", toLevel="any", tables=<-) => {
 //     |> monitor.deadman(t: experimental.addDuration(d: -5m, from: now()))
 // ```
 //
+// ## Metadata
 // tags: transformations
 //
 deadman = (t, tables=<-) =>
@@ -442,6 +447,7 @@ deadman = (t, tables=<-) =>
 //     )
 // ```
 //
+// ## Metadata
 // tags: transformations
 //
 check = (

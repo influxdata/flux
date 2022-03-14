@@ -5,6 +5,7 @@
 // will either be removed after this issue is resolved or promoted out of the
 // experimental package if other uses are found.
 //
+// ## Metadata
 // introduced; 0.131.0
 //
 package record
@@ -40,6 +41,7 @@ builtin any : A where A: Record
 // // Returns 1.0
 // ```
 //
+// ## Metadata
 // introduced: 0.134.0
 //
 builtin get : (r: A, key: string, default: B) => B where A: Record

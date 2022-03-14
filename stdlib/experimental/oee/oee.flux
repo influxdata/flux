@@ -1,5 +1,6 @@
 // Package oee provides functions for calculating overall equipment effectiveness (OEE).
 //
+// ## Metadata
 // introduced: 0.112.0
 //
 package oee
@@ -87,6 +88,7 @@ import "experimental"
 // >     |> drop(columns: ["_start", "_stop"])
 // ```
 //
+// ## Metadata
 // tags: transformations,aggregates
 //
 computeAPQ = (
@@ -194,6 +196,7 @@ computeAPQ = (
 // >     |> drop(columns: ["_start", "_stop"])
 // ```
 //
+// ## Metadata
 // tags: trasnformations,aggregates
 //
 APQ = (tables=<-, runningState, plannedTime, idealCycleTime) =>

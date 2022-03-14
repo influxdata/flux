@@ -1,5 +1,6 @@
 // Package socket provides tools for returning data from socket connections.
 //
+// ## Metadata
 // introduced: 0.21.0
 //
 package socket
@@ -40,6 +41,7 @@ package socket
 // socket.from(url: "tcp://127.0.0.1:1234", decoder: "line")
 // ```
 //
+// ## Metadata
 // tags: inputs
 //
 builtin from : (url: string, ?decoder: string) => stream[A]
