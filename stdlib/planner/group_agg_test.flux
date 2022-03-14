@@ -218,7 +218,7 @@ testcase group_one_tag_count {
             |> count()
             |> drop(columns: ["_start", "_stop"])
 
-    testing.diff(got, want) |> yield()
+    testing.diff(got, want)
 }
 
 testcase group_all_filter_field_count {

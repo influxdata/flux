@@ -95,8 +95,8 @@ testcase a {
 `,
 			"b/b_test.flux": `package b_test
 import "testing/assert"
-testcase b extends "flux/a/a_test" {
-	a_test.a()
+testcase b extends "flux/a/a_test.a" {
+	super()
 	assert.equal(want: 6, got: 3 + 3)
 }
 `,
@@ -140,23 +140,9 @@ testcase b extends "flux/a/a_test" {
 
 import "testing/assert"
 
-a_test =
-    (() => {
-        want = 4
-        a = () => {
-            assert.equal(want: want, got: 2 + 2)
+want = 4
 
-            return {}
-        }
-
-        return {want, a}
-    })()`,
-		`package main
-
-
-import "testing/assert"
-
-a_test.a()
+assert.equal(want: want, got: 2 + 2)
 assert.equal(want: 6, got: 3 + 3)`,
 	}
 	if got := files; !cmp.Equal(want, got) {
