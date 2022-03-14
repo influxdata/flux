@@ -291,6 +291,19 @@ func (v *createExecutionNodeVisitor) Visit(node plan.Node) error {
 		}
 	}
 	// Results should be generated for terminal nodes.
+	//
+	// If user entered `from |> range |> filter` but forgot to add the yield, we
+	// generate a result for them. In this case, the terminal node has no
+	// side-effects and the result name uses the default of `_result` (per the
+	// body of `getResultName()`).
+	//
+	// This is in contrast to other specific cases, like terminal nodes
+	// _with side-effects_ which generate results named for the node itself.
+	//
+	// All queries must have an associated result transformation, otherwise
+	// the query context will be cancelled immediately and execution
+	// will be cancelled before any work for the query has been done.
+	// TODO: understand if this (preventing cancellation) could be addressed by another means.
 	if len(node.Successors()) == 0 {
 		resultName := getResultName(node, spec, isParallelMerge)
 		if err := v.generateResult(resultName, node, 0); err != nil {
