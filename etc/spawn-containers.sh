@@ -19,7 +19,12 @@
 # To shutdown all the containers (after you're done running
 # integration tests), you should be able to do something like:
 # ```
-# docker ps --format '{{.Names}}' | grep flux-integ-tests | xargs docker rm -f
+# docker ps --format '{{.Names}}' | grep flux-integ-tests | xargs docker stop
+# ```
+# If you only happen to be using docker _for these integration tests_ you can
+# more succinctly stop everything all at once with:
+# ```
+# docker stop $(docker ps -q)
 # ```
 
 set -e
