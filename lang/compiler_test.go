@@ -239,11 +239,9 @@ csv.from(csv: "foo,bar") |> range(start: 2017-10-10T00:00:00Z)
 				Nodes: []plan.Node{
 					&plan.PhysicalPlanNode{Spec: &csv.FromCSVProcedureSpec{}},
 					&plan.PhysicalPlanNode{Spec: &universe.RangeProcedureSpec{}},
-					&plan.PhysicalPlanNode{Spec: &universe.YieldProcedureSpec{}},
 				},
 				Edges: [][2]int{
 					{0, 1},
-					{1, 2},
 				},
 				Resources: flux.ResourceManagement{ConcurrencyQuota: 1, MemoryBytesQuota: math.MaxInt64},
 				Now:       parser.MustParseTime("2017-10-10T00:01:00Z").Value,
@@ -260,11 +258,9 @@ csv.from(csv: "foo,bar") |> range(start: 2017-10-10T00:00:00Z)
 				Nodes: []plan.Node{
 					&plan.PhysicalPlanNode{Spec: &csv.FromCSVProcedureSpec{}},
 					&plan.PhysicalPlanNode{Spec: &universe.RangeProcedureSpec{}},
-					&plan.PhysicalPlanNode{Spec: &universe.YieldProcedureSpec{}},
 				},
 				Edges: [][2]int{
 					{0, 1},
-					{1, 2},
 				},
 				Resources: flux.ResourceManagement{ConcurrencyQuota: 1, MemoryBytesQuota: math.MaxInt64},
 				Now:       parser.MustParseTime("2018-10-10T00:00:00Z").Value,
@@ -294,11 +290,9 @@ csv.from(csv: "foo,bar") |> range(start: 2017-10-10T00:00:00Z)
 				Nodes: []plan.Node{
 					&plan.PhysicalPlanNode{Spec: &csv.FromCSVProcedureSpec{}},
 					&plan.PhysicalPlanNode{Spec: &universe.RangeProcedureSpec{}},
-					&plan.PhysicalPlanNode{Spec: &universe.YieldProcedureSpec{}},
 				},
 				Edges: [][2]int{
 					{0, 1},
-					{1, 2},
 				},
 				Resources: flux.ResourceManagement{ConcurrencyQuota: 1, MemoryBytesQuota: math.MaxInt64},
 				Now:       parser.MustParseTime("2018-10-10T00:00:00Z").Value,
@@ -511,11 +505,9 @@ func TestCompileOptions(t *testing.T) {
 		Nodes: []plan.Node{
 			&plan.PhysicalPlanNode{Spec: &csv.FromCSVProcedureSpec{}},
 			&plan.PhysicalPlanNode{Spec: &universe.RangeProcedureSpec{}},
-			&plan.PhysicalPlanNode{Spec: &universe.YieldProcedureSpec{}},
 		},
 		Edges: [][2]int{
 			{0, 1},
-			{1, 2},
 		},
 		Resources: flux.ResourceManagement{ConcurrencyQuota: 1, MemoryBytesQuota: math.MaxInt64},
 		Now:       parser.MustParseTime("2018-10-10T00:00:00Z").Value,
@@ -559,11 +551,8 @@ from(bucket: "bkt") |> range(start: 0) |> filter(fn: (r) => r._value > 0) |> cou
 			want: plantest.CreatePlanSpec(&plantest.PlanSpec{
 				Nodes: []plan.Node{
 					&plan.PhysicalPlanNode{Spec: &influxdb.FromRemoteProcedureSpec{}},
-					&plan.PhysicalPlanNode{Spec: &universe.YieldProcedureSpec{}},
 				},
-				Edges: [][2]int{
-					{0, 1},
-				},
+				Edges:     [][2]int{},
 				Resources: flux.ResourceManagement{ConcurrencyQuota: 1, MemoryBytesQuota: math.MaxInt64},
 				Now:       nowFn(),
 			}),
@@ -580,11 +569,9 @@ from(bucket: "bkt") |> range(start: 0) |> filter(fn: (r) => r._value > 0) |> cou
 				Nodes: []plan.Node{
 					&plan.PhysicalPlanNode{Spec: &influxdb.FromRemoteProcedureSpec{}},
 					&plan.PhysicalPlanNode{Spec: &universe.FilterProcedureSpec{}},
-					&plan.PhysicalPlanNode{Spec: &universe.YieldProcedureSpec{}},
 				},
 				Edges: [][2]int{
 					{0, 1},
-					{1, 2},
 				},
 				Resources: flux.ResourceManagement{ConcurrencyQuota: 1, MemoryBytesQuota: math.MaxInt64},
 				Now:       nowFn(),
@@ -604,12 +591,10 @@ from(bucket: "bkt") |> range(start: 0) |> filter(fn: (r) => r._value > 0) |> cou
 					&plan.PhysicalPlanNode{Spec: &influxdb.FromRemoteProcedureSpec{}},
 					&plan.PhysicalPlanNode{Spec: &universe.FilterProcedureSpec{}},
 					&plan.PhysicalPlanNode{Spec: &universe.CountProcedureSpec{}},
-					&plan.PhysicalPlanNode{Spec: &universe.YieldProcedureSpec{}},
 				},
 				Edges: [][2]int{
 					{0, 1},
 					{1, 2},
-					{2, 3},
 				},
 				Resources: flux.ResourceManagement{ConcurrencyQuota: 1, MemoryBytesQuota: math.MaxInt64},
 				Now:       nowFn(),
@@ -629,12 +614,10 @@ from(bucket: "bkt") |> range(start: 0) |> filter(fn: (r) => r._value > 0) |> cou
 					&plan.PhysicalPlanNode{Spec: &influxdb.FromRemoteProcedureSpec{}},
 					&plan.PhysicalPlanNode{Spec: &universe.FilterProcedureSpec{}},
 					&plan.PhysicalPlanNode{Spec: &universe.CountProcedureSpec{}},
-					&plan.PhysicalPlanNode{Spec: &universe.YieldProcedureSpec{}},
 				},
 				Edges: [][2]int{
 					{0, 1},
 					{1, 2},
-					{2, 3},
 				},
 				Resources: flux.ResourceManagement{ConcurrencyQuota: 1, MemoryBytesQuota: math.MaxInt64},
 				Now:       nowFn(),
@@ -652,11 +635,8 @@ from(bucket: "bkt") |> range(start: 0) |> filter(fn: (r) => r._value > 0) |> cou
 			want: plantest.CreatePlanSpec(&plantest.PlanSpec{
 				Nodes: []plan.Node{
 					&plan.PhysicalPlanNode{Spec: &influxdb.FromRemoteProcedureSpec{}},
-					&plan.PhysicalPlanNode{Spec: &universe.YieldProcedureSpec{}},
 				},
-				Edges: [][2]int{
-					{0, 1},
-				},
+				Edges:     [][2]int{},
 				Resources: flux.ResourceManagement{ConcurrencyQuota: 1, MemoryBytesQuota: math.MaxInt64},
 				Now:       nowFn(),
 			}),
@@ -673,11 +653,8 @@ from(bucket: "bkt") |> range(start: 0) |> filter(fn: (r) => r._value > 0) |> cou
 			want: plantest.CreatePlanSpec(&plantest.PlanSpec{
 				Nodes: []plan.Node{
 					&plan.PhysicalPlanNode{Spec: &influxdb.FromRemoteProcedureSpec{}},
-					&plan.PhysicalPlanNode{Spec: &universe.YieldProcedureSpec{}},
 				},
-				Edges: [][2]int{
-					{0, 1},
-				},
+				Edges:     [][2]int{},
 				Resources: flux.ResourceManagement{ConcurrencyQuota: 1, MemoryBytesQuota: math.MaxInt64},
 				Now:       nowFn(),
 			}),
@@ -739,11 +716,8 @@ from(bucket: "bkt") |> range(start: 0) |> filter(fn: (r) => r._value > 0) |> cou
 			want: plantest.CreatePlanSpec(&plantest.PlanSpec{
 				Nodes: []plan.Node{
 					&plan.PhysicalPlanNode{Spec: &influxdb.FromRemoteProcedureSpec{}},
-					&plan.PhysicalPlanNode{Spec: &universe.YieldProcedureSpec{}},
 				},
-				Edges: [][2]int{
-					{0, 1},
-				},
+				Edges:     [][2]int{},
 				Resources: flux.ResourceManagement{ConcurrencyQuota: 1, MemoryBytesQuota: math.MaxInt64},
 				Now:       nowFn(),
 			}),
@@ -762,12 +736,10 @@ from(bucket: "bkt") |> range(start: 0) |> filter(fn: (r) => r._value > 0) |> cou
 					&plan.PhysicalPlanNode{Spec: &influxdb.FromRemoteProcedureSpec{}},
 					&plan.PhysicalPlanNode{Spec: &universe.FilterProcedureSpec{}},
 					&plan.PhysicalPlanNode{Spec: &universe.CountProcedureSpec{}},
-					&plan.PhysicalPlanNode{Spec: &universe.YieldProcedureSpec{}},
 				},
 				Edges: [][2]int{
 					{0, 1},
 					{1, 2},
-					{2, 3},
 				},
 				Resources: flux.ResourceManagement{ConcurrencyQuota: 1, MemoryBytesQuota: math.MaxInt64},
 				Now:       nowFn(),
@@ -791,12 +763,10 @@ option planner.disableLogicalRules = ["removeCountRule"]`},
 					&plan.PhysicalPlanNode{Spec: &influxdb.FromRemoteProcedureSpec{}},
 					&plan.PhysicalPlanNode{Spec: &universe.FilterProcedureSpec{}},
 					&plan.PhysicalPlanNode{Spec: &universe.CountProcedureSpec{}},
-					&plan.PhysicalPlanNode{Spec: &universe.YieldProcedureSpec{}},
 				},
 				Edges: [][2]int{
 					{0, 1},
 					{1, 2},
-					{2, 3},
 				},
 				Resources: flux.ResourceManagement{ConcurrencyQuota: 1, MemoryBytesQuota: math.MaxInt64},
 				Now:       nowFn(),

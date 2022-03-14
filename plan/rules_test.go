@@ -53,7 +53,7 @@ func TestRuleRegistration(t *testing.T) {
 		t.Fatalf("could not do logical planning: %v", err)
 	}
 
-	wantSeenNodes := []plan.NodeID{"generated_yield", "range1", "from0"}
+	wantSeenNodes := []plan.NodeID{"range1", "from0"}
 	if !cmp.Equal(wantSeenNodes, simpleRule.SeenNodes) {
 		t.Errorf("did not find expected seen nodes, -want/+got:\n%v", cmp.Diff(wantSeenNodes, simpleRule.SeenNodes))
 	}

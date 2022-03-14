@@ -211,14 +211,6 @@ func (v *fluxSpecVisitor) addYieldName(pn Node) error {
 	return nil
 }
 
-func generateYieldNode(pred Node) Node {
-	yieldSpec := &GeneratedYieldProcedureSpec{Name: DefaultYieldName}
-	yieldNode := CreateLogicalNode(NodeID("generated_yield"), yieldSpec)
-	pred.AddSuccessors(yieldNode)
-	yieldNode.AddPredecessors(pred)
-	return yieldNode
-}
-
 // visitOperation takes a flux spec operation, converts it to its equivalent
 // logical procedure spec, and adds it to the current logical plan DAG.
 func (v *fluxSpecVisitor) visitOperation(o *flux.Operation) error {
@@ -263,18 +255,10 @@ func (v *fluxSpecVisitor) visitOperation(o *flux.Operation) error {
 
 	// no children => no successors => root node
 	if len(v.spec.Children(o.ID)) == 0 {
-		if isYield || HasSideEffect(procedureSpec) {
-			v.plan.Roots[logicalNode] = struct{}{}
-		} else {
-			// Generate a yield node
-			generateYieldNode := generateYieldNode(logicalNode)
-			err = v.addYieldName(generateYieldNode)
-			if err != nil {
-				return err
-			}
-			v.plan.Roots[generateYieldNode] = struct{}{}
-
-		}
+		// N.b. the number of entries in `Roots` is factored into the starting
+		// concurrency quota for the query. As such we must mark all terminal
+		// nodes as roots here.
+		v.plan.Roots[logicalNode] = struct{}{}
 	}
 
 	return nil

@@ -156,10 +156,12 @@ func (v *createExecutionNodeVisitor) Visit(node plan.Node) error {
 	spec := node.ProcedureSpec()
 	kind := spec.Kind()
 
+	// N.b. yields become results here, but other terminal nodes are handled
+	// further below.
 	if yieldSpec, ok := spec.(plan.YieldProcedureSpec); ok {
-		r := newResult(yieldSpec.YieldName())
-		v.es.results[yieldSpec.YieldName()] = r
-		v.nodes[skipYields(node)][0].AddTransformation(r)
+		if err := v.generateResult(yieldSpec.YieldName(), node, 0); err != nil {
+			return err
+		}
 		return nil
 	}
 
@@ -286,16 +288,57 @@ func (v *createExecutionNodeVisitor) Visit(node plan.Node) error {
 					executionNode.AddTransformation(transport)
 				}
 			}
-
-			if (plan.HasSideEffect(spec) || isParallelMerge) && len(node.Successors()) == 0 {
-				name := string(node.ID())
-				r := newResult(name)
-				v.es.results[name] = r
-				v.nodes[skipYields(node)][i].AddTransformation(r)
-			}
+		}
+	}
+	// Results should be generated for terminal nodes.
+	//
+	// If user entered `from |> range |> filter` but forgot to add the yield, we
+	// generate a result for them. In this case, the terminal node has no
+	// side-effects and the result name uses the default of `_result` (per the
+	// body of `getResultName()`).
+	//
+	// This is in contrast to other specific cases, like terminal nodes
+	// _with side-effects_ which generate results named for the node itself.
+	//
+	// All queries must have an associated result transformation, otherwise
+	// the query context will be cancelled immediately and execution
+	// will be cancelled before any work for the query has been done.
+	// TODO: understand if this (preventing cancellation) could be addressed by another means.
+	if len(node.Successors()) == 0 {
+		resultName := getResultName(node, spec, isParallelMerge)
+		if err := v.generateResult(resultName, node, 0); err != nil {
+			return err
 		}
 	}
 	return nil
+}
+
+// generateResult will attach a result to the query for the specified node.
+func (v *createExecutionNodeVisitor) generateResult(resultName string, node plan.Node, idx int) error {
+	// if the result name is already present in the result set, that's an error.
+	if _, ok := v.es.results[resultName]; ok {
+		// XXX: we produce an error like this in the planner for duplicate yield
+		// names, but since we're generating results that aren't necessarily from
+		// yields, we need a similar check here.
+		return errors.Newf(codes.Invalid, "tried to produce more than one result with the name %q", resultName)
+	}
+	r := newResult(resultName)
+	v.es.results[resultName] = r
+	v.nodes[skipYields(node)][idx].AddTransformation(r)
+	return nil
+}
+
+// getResultName will offer a "best guess" name for a given node's result.
+//
+// For nodes that have side-effects or happen to be a Parallel Merge, the result
+// will be based on the node ID. For other cases, the default yield name of
+// `_result` is used.
+func getResultName(node plan.Node, spec plan.ProcedureSpec, isParallelMerge bool) string {
+	name := plan.DefaultYieldName
+	if plan.HasSideEffect(spec) || isParallelMerge {
+		name = string(node.ID())
+	}
+	return name
 }
 
 func (es *executionState) abort(err error) {
