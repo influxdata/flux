@@ -1,5 +1,6 @@
 // Package testing provides functions for testing Flux operations.
 //
+// ## Metadata
 // introduced: 0.14.0
 //
 package testing
@@ -45,6 +46,7 @@ import c "csv"
 //     |> testing.assertEquals(want: want)
 // ```
 //
+// ## Metadata
 // tags: tests
 //
 builtin assertEquals : (name: string, <-got: stream[A], want: stream[A]) => stream[A]
@@ -74,6 +76,7 @@ builtin assertEquals : (name: string, <-got: stream[A], want: stream[A]) => stre
 //     |> testing.assertEmpty()
 // ```
 //
+// ## Metadata
 // introduced: 0.18.0
 // tags: tests
 //
@@ -125,6 +128,7 @@ builtin assertEmpty : (<-tables: stream[A]) => stream[A]
 //     |> testing.diff(want: want)
 // ```
 //
+// ## Metadata
 // introduced: 0.18.0
 // tags: tests
 //
@@ -165,6 +169,7 @@ builtin diff : (
 // testing.loadStorage(csv: csvData)
 // ```
 //
+// ## Metadata
 // introduced: 0.20.0
 //
 option loadStorage = (csv) =>
@@ -220,6 +225,7 @@ option loadStorage = (csv) =>
 //     |> testing.diff(want: want)
 // ```
 //
+// ## Metadata
 // introduced: 0.112.0
 //
 option load = (tables=<-) => tables
@@ -250,6 +256,7 @@ option load = (tables=<-) => tables
 // testing.loadMem(csv: csvData)
 // ```
 //
+// ## Metadata
 // introduced: 0.20.0
 //
 option loadMem = (csv) => c.from(csv: csv)
@@ -303,6 +310,7 @@ option loadMem = (csv) => c.from(csv: csv)
 // // }
 // ```
 //
+// ## Metadata
 // introduced: 0.18.0
 //
 inspect = (case) => {
@@ -360,6 +368,7 @@ inspect = (case) => {
 // testing.run(case: _sum)
 // ```
 //
+// ## Metadata
 // introduced: 0.20.0
 //
 run = (case) => {
@@ -415,6 +424,7 @@ run = (case) => {
 // testing.benchmark(case: _sum)
 // ```
 //
+// ## Metadata
 // introduced: 0.49.0
 //
 benchmark = (case) => {
@@ -438,6 +448,7 @@ benchmark = (case) => {
 // < testing.assertEqualValues(got: 5, want: 12)
 // ```
 //
+// ## Metadata
 // introduced: 0.141.0
 // tags: tests
 //

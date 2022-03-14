@@ -1,5 +1,6 @@
 // Package alerta provides functions that send alerts to [Alerta](https://alerta.io/).
 //
+// ## Metadata
 // introduced: 0.115.0
 package alerta
 
@@ -67,6 +68,7 @@ import "strings"
 // )
 // ```
 //
+// ## Metadata
 // tags: single notification
 //
 alert = (
@@ -181,6 +183,7 @@ alert = (
 //     )()
 // ```
 //
+// ## Metadata
 // tags: notification endpoints,transformations
 //
 endpoint = (url, apiKey, environment="", origin="") =>

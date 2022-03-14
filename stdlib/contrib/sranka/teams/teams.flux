@@ -2,6 +2,7 @@
 // for sending messages to a [Microsoft Teams](https://www.microsoft.com/microsoft-365/microsoft-teams/group-chat-software)
 // channel using an [incoming webhook](https://docs.microsoft.com/microsoftteams/platform/webhooks-and-connectors/how-to/add-incoming-webhook).
 //
+// ## Metadata
 // introduced: 0.70.0
 package teams
 
@@ -46,6 +47,7 @@ option summaryCutoff = 70
 // )
 // ```
 //
+// ## Metadata
 // tags: single notification
 //
 message = (url, title, text, summary="") => {
@@ -116,6 +118,7 @@ message = (url, title, text, summary="") => {
 //     )()
 // ```
 //
+// ## Metadata
 // tags: notification endpoints,transformations
 //
 endpoint = (url) =>

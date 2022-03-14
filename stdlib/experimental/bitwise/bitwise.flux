@@ -5,6 +5,7 @@
 // Functions prefixed with s operate on signed integers (int).
 // Functions prefixed with u operate on unsigned integers (uint).
 //
+// ## Metadata
 // introduced: 0.138.0
 // tags: bitwise
 //

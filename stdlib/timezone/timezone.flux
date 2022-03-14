@@ -1,6 +1,7 @@
 // Package timezone defines functions for setting timezones
 // on the location option in package universe.
 //
+// ## Metadata
 // introduced: 0.134.0
 //
 package timezone
@@ -35,6 +36,7 @@ utc = {zone: "UTC", offset: 0h}
 // option location = timezone.fixed(offset: -8h)
 // ```
 //
+// ## Metadata
 // tags: date/time,location
 //
 fixed = (offset) => ({zone: utc.zone, offset: offset})
@@ -62,6 +64,7 @@ fixed = (offset) => ({zone: utc.zone, offset: offset})
 // option location = timezone.location(name: "America/Los_Angeles")
 // ```
 //
+// ## Metadata
 // tags: date/time,location
 //
 builtin location : (name: string) => {zone: string, offset: duration}

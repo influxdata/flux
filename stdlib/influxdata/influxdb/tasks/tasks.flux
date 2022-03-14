@@ -1,5 +1,6 @@
 // Package tasks provides tools for working with InfluxDB tasks.
 //
+// ## Metadata
 // introduced: 0.84.0
 //
 package tasks
@@ -45,6 +46,7 @@ builtin _lastSuccess : (orTime: T, lastSuccessTime: time) => time where T: Timea
 //     |> range(start: tasks.lastSuccess(orTime: -task.every))
 // ```
 //
+// ## Metadata
 // tags: metadata
 //
 lastSuccess = (orTime) => _lastSuccess(orTime, lastSuccessTime)

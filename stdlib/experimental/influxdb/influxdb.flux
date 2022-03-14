@@ -1,5 +1,6 @@
 // Package influxdb provides tools for working with the InfluxDB API.
 //
+// ## Metadata
 // introduced: 0.114.0
 //
 package influxdb

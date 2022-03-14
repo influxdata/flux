@@ -1,5 +1,6 @@
 // Package influxdb provides additional functions for querying data from InfluxDB.
 //
+// ## Metadata
 // introduced: 0.77.0
 package influxdb
 
@@ -75,6 +76,7 @@ builtin _mask : (<-tables: stream[A], columns: [string]) => stream[B] where A: R
 // )
 // ```
 //
+// ## Metadata
 // tags: inputs
 from = (
     bucket,
@@ -205,6 +207,7 @@ _from = from
 // )
 // ```
 //
+// ## Metadata
 // tags: inputs
 //
 select = (

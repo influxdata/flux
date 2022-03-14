@@ -10,6 +10,7 @@
 // 2. [Create a REST integration routing key](https://help.victorops.com/knowledge-base/routing-keys/).
 // 3. [Create a VictorOps API key](https://help.victorops.com/knowledge-base/api/).
 //
+// ## Metadata
 // introduced: 0.108.0
 package victorops
 
@@ -68,6 +69,7 @@ import "json"
 // )
 // ```
 //
+// ## Metadata
 // tags: single notification
 //
 alert = (
@@ -153,6 +155,7 @@ alert = (
 //     )()
 // ```
 //
+// ## Metadata
 // tags: notification endpoints,transformations
 //
 endpoint = (url, monitoringTool="InfluxDB") =>

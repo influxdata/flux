@@ -1,5 +1,6 @@
 // Package pagerduty provides functions for sending data to PagerDuty.
 //
+// ## Metadata
 // introduced: 0.43.0
 //
 package pagerduty
@@ -188,6 +189,7 @@ actionFromLevel = (level) => if strings.toLower(v: level) == "ok" then "resolve"
 // )
 // ```
 //
+// ## Metadata
 // tags: single notification
 //
 sendEvent = (
@@ -298,7 +300,8 @@ sendEvent = (
 //     )()
 // ```
 //
-// tags: notification endpoints
+// ## Metadata
+// tags: notification endpoints, transformations
 //
 endpoint = (url=defaultURL) =>
     (mapFn) =>

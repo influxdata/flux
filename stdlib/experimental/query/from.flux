@@ -3,6 +3,7 @@
 // The primary function in this package is `query.inBucket()`, which uses all
 // other functions in this package.
 //
+// ## Metadata
 // introduced: 0.60.0
 //
 package query
@@ -33,6 +34,7 @@ package query
 // query.fromRange(bucket: "example-bucket", start: -1h)
 // ```
 //
+// ## Metadata
 // tags: transformations,filters
 //
 fromRange = (bucket, start, stop=now()) =>
@@ -54,6 +56,7 @@ fromRange = (bucket, start, stop=now()) =>
 //     |> query.filterMeasurement(measurement: "example-measurement")
 // ```
 //
+// ## Metadata
 // tags: transformations,filters
 //
 filterMeasurement = (table=<-, measurement) => table |> filter(fn: (r) => r._measurement == measurement)
@@ -73,6 +76,7 @@ filterMeasurement = (table=<-, measurement) => table |> filter(fn: (r) => r._mea
 //     |> query.filterFields(fields: ["used_percent", "available_percent"])
 // ```
 //
+// ## Metadata
 // tags: transformations,filters
 //
 filterFields = (table=<-, fields=[]) =>
@@ -122,6 +126,7 @@ filterFields = (table=<-, fields=[]) =>
 // )
 // ```
 //
+// ## Metadata
 // tags: inputs
 //
 inBucket = (

@@ -2,6 +2,7 @@
 // loaded into the Flux runtime by default and do not require an
 // import statement.
 //
+// ## Metadata
 // introduced: 0.14.0
 //
 package universe
@@ -35,6 +36,7 @@ import "experimental/table"
 // option now = () => 2022-01-01T00:00:00Z
 // ```
 //
+// ## Metadata
 // introduced: 0.7.0
 // tags: date/time
 //
@@ -71,6 +73,7 @@ option now = system.time
 //     |> chandeMomentumOscillator(n: 2)
 // ```
 //
+// ## Metadata
 // introduced: 0.39.0
 // tags: transformations
 //
@@ -103,6 +106,7 @@ builtin chandeMomentumOscillator : (<-tables: stream[A], n: int, ?columns: [stri
 //     |> columns(column: "labels")
 // ```
 //
+// ## Metadata
 // introduced: 0.14.0
 // tags: transformations
 //
@@ -137,6 +141,7 @@ builtin columns : (<-tables: stream[A], ?column: string) => stream[B] where A: R
 //     |> count()
 // ```
 //
+// ## Metadata
 // introduced: 0.7.0
 // tags: transformations,aggregates
 //
@@ -165,6 +170,7 @@ builtin count : (<-tables: stream[A], ?column: string) => stream[B] where A: Rec
 // >     |> covariance(columns: ["x", "y"])
 // ```
 //
+// ## Metadata
 // introduced: 0.7.0
 // tags: transformations,aggregates
 //
@@ -191,6 +197,7 @@ builtin covariance : (<-tables: stream[A], ?pearsonr: bool, ?valueDst: string, c
 // >     |> cumulativeSum()
 // ```
 //
+// ## Metadata
 // introduced: 0.7.0
 // tags: transformations
 //
@@ -236,6 +243,7 @@ builtin cumulativeSum : (<-tables: stream[A], ?columns: [string]) => stream[B] w
 // >     |> derivative()
 // ```
 //
+// ## Metadata
 // introduced: 0.7.0
 // tags: transformations
 //
@@ -262,6 +270,7 @@ builtin derivative : (
 // die(msg: "This is an error message")
 // ```
 //
+// ## Metadata
 // introduced: 0.82.0
 //
 builtin die : (msg: string) => A
@@ -332,6 +341,7 @@ builtin die : (msg: string) => A
 // >     |> difference(keepFirst: true)
 // ```
 //
+// ## Metadata
 // introduced: 0.7.1
 // tags: transformations
 //
@@ -381,6 +391,7 @@ builtin difference : (
 // >     |> distinct()
 // ```
 //
+// ## Metadata
 // introduced: 0.7.0
 // tags: transformations, selectors
 //
@@ -417,6 +428,7 @@ builtin distinct : (<-tables: stream[A], ?column: string) => stream[B] where A: 
 // >     |> drop(fn: (column) => column =~ /^t/)
 // ```
 //
+// ## Metadata
 // introduced: 0.7.0
 // tags: transformations
 //
@@ -448,6 +460,7 @@ builtin drop : (<-tables: stream[A], ?fn: (column: string) => bool, ?columns: [s
 // >     |> duplicate(column: "tag", as: "tag_dup")
 // ```
 //
+// ## Metadata
 // introduced: 0.7.0
 // tags: transformations
 //
@@ -475,6 +488,7 @@ builtin duplicate : (<-tables: stream[A], column: string, as: string) => stream[
 // >     |> elapsed(unit: 1s)
 // ```
 //
+// ## Metadata
 // introduced: 0.36.0
 // tags: transformations
 //
@@ -518,6 +532,7 @@ builtin elapsed : (<-tables: stream[A], ?unit: duration, ?timeColumn: string, ?c
 // >     |> exponentialMovingAverage(n: 3)
 // ```
 //
+// ## Metadata
 // introduced: 0.37.0
 // tags: transformations
 //
@@ -559,6 +574,7 @@ builtin exponentialMovingAverage : (<-tables: stream[{B with _value: A}], n: int
 // >     |> fill(usePrevious: true)
 // ```
 //
+// ## Metadata
 // introduced: 0.14.0
 // tags: transformations
 //
@@ -612,6 +628,7 @@ builtin fill : (<-tables: stream[A], ?column: string, ?value: B, ?usePrevious: b
 // >     |> filter(fn: (r) => r._value > 0 and r._value < 10 )
 // ```
 //
+// ## Metadata
 // introduced: 0.7.0
 // tags: transformations,filters
 //
@@ -635,6 +652,7 @@ builtin filter : (<-tables: stream[A], fn: (r: A) => bool, ?onEmpty: string) => 
 // >     |> first()
 // ```
 //
+// ## Metadata
 // introduced: 0.7.0
 // tags: transformations,selectors
 //
@@ -687,6 +705,7 @@ builtin first : (<-tables: stream[A], ?column: string) => stream[A] where A: Rec
 // >     |> group()
 // ```
 //
+// ## Metadata
 // introduced: 0.7.0
 // tags: transformations
 //
@@ -744,6 +763,7 @@ builtin group : (<-tables: stream[A], ?mode: string, ?columns: [string]) => stre
 // >     |> histogram(bins: linearBins(start: 0.0, width: 4.0, count: 3))
 // ```
 //
+// ## Metadata
 // introduced: 0.7.0
 // tags: transformations
 //
@@ -808,6 +828,9 @@ builtin histogram : (
 // < data
 // >     |> histogramQuantile(quantile: 0.9)
 // ```
+//
+// ## Metadata
+// tags: transformations
 builtin histogramQuantile : (
         <-tables: stream[A],
         ?quantile: float,
@@ -897,6 +920,7 @@ builtin histogramQuantile : (
 // >     |> holtWinters(n: 3, interval: 10s, withFit: true)
 // ```
 //
+// ## Metadata
 // introduced: 0.38.0
 // tags: transformations
 //
@@ -942,6 +966,7 @@ builtin holtWinters : (
 // >     |> hourSelection(start: 9, stop: 17)
 // ```
 //
+// ## Metadata
 // introduced: 0.39.0
 // tags: transformations, date/time, filters
 //
@@ -991,6 +1016,7 @@ builtin hourSelection : (<-tables: stream[A], start: int, stop: int, ?timeColumn
 // >     |> integral(unit: 10s, interpolate: "linear")
 // ```
 //
+// ## Metadata
 // introduced: 0.7.0
 // tags: transformations, aggregates
 //
@@ -1068,6 +1094,7 @@ builtin integral : (
 // join(tables: {sql: sqlData, ts: tsData}, on: ["_time", "sensorID"])
 // ```
 //
+// ## Metadata
 // introduced: 0.7.0
 // tags: transformations
 //
@@ -1094,6 +1121,7 @@ builtin join : (<-tables: A, ?method: string, ?on: [string]) => stream[B] where 
 // >     |> kaufmansAMA(n: 3)
 // ```
 //
+// ## Metadata
 // introduced: 0.40.0
 // tags: transformations
 //
@@ -1130,6 +1158,7 @@ builtin kaufmansAMA : (<-tables: stream[A], n: int, ?column: string) => stream[B
 // >     |> keep(fn: (column) => column =~ /^_?t/)
 // ```
 //
+// ## Metadata
 // introduced: 0.7.0
 // tags: transformations
 //
@@ -1250,6 +1279,7 @@ builtin keep : (<-tables: stream[A], ?columns: [string], ?fn: (column: string) =
 // >     |> keyValues(keyColumns: ["sensorID", "_field"])
 // ```
 //
+// ## Metadata
 // introduced: 0.13.0
 // tags: transformations
 //
@@ -1484,6 +1514,7 @@ builtin keyValues : (<-tables: stream[A], ?keyColumns: [string]) => stream[{C wi
 // // Returns [tag]
 // ```
 //
+// ## Metadata
 // introduced: 0.13.0
 // tags: transformations
 //
@@ -1512,6 +1543,7 @@ builtin keys : (<-tables: stream[A], ?column: string) => stream[B] where A: Reco
 // >     |> last()
 // ```
 //
+// ## Metadata
 // introduced: 0.7.0
 // tags: transformations,selectors
 //
@@ -1546,6 +1578,7 @@ builtin last : (<-tables: stream[A], ?column: string) => stream[A] where A: Reco
 //     |> limit(n: 3, offset: 2)
 // ```
 //
+// ## Metadata
 // introduced: 0.7.0
 // tags: transformations, selectors
 //
@@ -1620,6 +1653,7 @@ builtin limit : (<-tables: stream[A], n: int, ?offset: int) => stream[A]
 // >     |> map(fn: (r) => ({r with server: "server-${r.tag}", valueFloat: float(v: r._value)}))
 // ```
 //
+// ## Metadata
 // introduced: 0.7.0
 // tags: transformations
 //
@@ -1644,6 +1678,7 @@ builtin map : (<-tables: stream[A], fn: (r: A) => B, ?mergeKey: bool) => stream[
 // >     |> max()
 // ```
 //
+// ## Metadata
 // introduced: 0.7.0
 // tags: transformations, selectors
 //
@@ -1666,6 +1701,7 @@ builtin max : (<-tables: stream[A], ?column: string) => stream[A] where A: Recor
 // >     |> mean()
 // ```
 //
+// ## Metadata
 // introduced: 0.7.0
 // tags: transformations, aggregates
 //
@@ -1690,6 +1726,7 @@ builtin mean : (<-tables: stream[A], ?column: string) => stream[B] where A: Reco
 // >     |> min()
 // ```
 //
+// ## Metadata
 // introduced: 0.7.0
 // tags: transformations, selectors
 //
@@ -1717,6 +1754,7 @@ builtin min : (<-tables: stream[A], ?column: string) => stream[A] where A: Recor
 // >     |> mode()
 // ```
 //
+// ## Metadata
 // introduced: 0.36.0
 // tags: transformtions, aggregates
 //
@@ -1754,6 +1792,7 @@ builtin mode : (<-tables: stream[A], ?column: string) => stream[{C with _value: 
 // >     |> movingAverage(n: 3)
 // ```
 //
+// ## Metadata
 // introduced: 0.35.0
 // tags: transformations
 //
@@ -1819,6 +1858,7 @@ builtin movingAverage : (<-tables: stream[{B with _value: A}], n: int) => stream
 // >     |> quantile(q: 0.5, method: "exact_selector")
 // ```
 //
+// ## Metadata
 // introduced: 0.24.0
 // tags: transformations, aggregates, selectors
 //
@@ -1905,6 +1945,7 @@ builtin quantile : (
 // >     |> pivot(rowKey: ["_time"], columnKey: ["tag"], valueColumn: "_value")
 // ```
 //
+// ## Metadata
 // introduced: 0.7.0
 // tags: transformations
 //
@@ -1960,6 +2001,7 @@ builtin pivot : (<-tables: stream[A], rowKey: [string], columnKey: [string], val
 //     |> range(start: 1621726200000000000, stop: 1621728000000000000)
 // ```
 //
+// ## Metadata
 // introduced: 0.7.0
 // tags: transformations, filters
 //
@@ -2047,6 +2089,7 @@ builtin range : (
 // >     )
 // ```
 //
+// ## Metadata
 // introduced: 0.23.0
 // tags: transformations, aggregates
 //
@@ -2086,6 +2129,7 @@ builtin reduce : (<-tables: stream[A], fn: (r: A, accumulator: B) => B, identity
 // >     |> relativeStrengthIndex(n: 3)
 // ```
 //
+// ## Metadata
 // introduced: 0.38.0
 // tags: transformations
 //
@@ -2122,6 +2166,7 @@ builtin relativeStrengthIndex : (<-tables: stream[A], n: int, ?columns: [string]
 // >     |> rename(fn: (column) => "${column}_new")
 // ```
 //
+// ## Metadata
 // introduced: 0.7.0
 // tags: transformations
 //
@@ -2155,6 +2200,7 @@ builtin rename : (<-tables: stream[A], ?fn: (column: string) => string, ?columns
 // >     |> sample(n: 2, pos: 1)
 // ```
 //
+// ## Metadata
 // introduced: 0.7.0
 // tags: transformations, selectors
 //
@@ -2181,6 +2227,7 @@ builtin sample : (<-tables: stream[A], n: int, ?pos: int, ?column: string) => st
 // >     |> set(key: "host", value: "prod1")
 // ```
 //
+// ## Metadata
 // introduced: 0.7.0
 // tags: transformations
 //
@@ -2217,6 +2264,7 @@ builtin set : (<-tables: stream[A], key: string, value: string) => stream[A] whe
 // >     |> tail(n: 3, offset: 1)
 // ```
 //
+// ## Metadata
 // introduced: 0.39.0
 // tags: transformations
 //
@@ -2250,6 +2298,7 @@ builtin tail : (<-tables: stream[A], n: int, ?offset: int) => stream[A]
 // >     |> timeShift(duration: -12h)
 // ```
 //
+// ## Metadata
 // introduced: 0.7.0
 // tags: transformations, date/time
 //
@@ -2271,6 +2320,7 @@ builtin timeShift : (<-tables: stream[A], duration: duration, ?columns: [string]
 // >     |> skew()
 // ```
 //
+// ## Metadata
 // introduced: 0.7.0
 // tags: transformations, aggregates
 //
@@ -2293,6 +2343,7 @@ builtin skew : (<-tables: stream[A], ?column: string) => stream[B] where A: Reco
 // >     |> spread()
 // ```
 //
+// ## Metadata
 // introduced: 0.7.0
 // tags: transformations, aggregates
 //
@@ -2326,6 +2377,7 @@ builtin spread : (<-tables: stream[A], ?column: string) => stream[B] where A: Re
 // >     |> sort()
 // ```
 //
+// ## Metadata
 // introduced: 0.7.0
 // tags: transformations
 //
@@ -2394,6 +2446,7 @@ builtin sort : (<-tables: stream[A], ?columns: [string], ?desc: bool) => stream[
 // >     |> stateTracking(fn: (r) => r.state == "crit", countColumn: "count", durationColumn: "duration")
 // ```
 //
+// ## Metadata
 // introduced: 0.7.0
 // tags: transformations
 //
@@ -2435,6 +2488,7 @@ builtin stateTracking : (
 // >     |> stddev()
 // ```
 //
+// ## Metadata
 // introduced: 0.7.0
 // tags: transformations, aggregates
 //
@@ -2456,6 +2510,7 @@ builtin stddev : (<-tables: stream[A], ?column: string, ?mode: string) => stream
 // >     |> stddev()
 // ```
 //
+// ## Metadata
 // introduced: 0.7.0
 // tags: transformations, aggregates
 //
@@ -2503,6 +2558,7 @@ builtin sum : (<-tables: stream[A], ?column: string) => stream[B] where A: Recor
 //     |> tripleExponentialDerivative(n: 2)
 // ```
 //
+// ## Metadata
 // introduced: 0.40.0
 // tags: transformations
 //
@@ -2562,6 +2618,7 @@ builtin tripleExponentialDerivative : (<-tables: stream[{B with _value: A}], n: 
 // > union(tables: [t1, t2])
 // ```
 //
+// ## Metadata
 // introduced: 0.7.0
 // tags: transformations
 //
@@ -2586,6 +2643,7 @@ builtin union : (tables: [stream[A]]) => stream[A] where A: Record
 // >     |> unique()
 // ```
 //
+// ## Metadata
 // introduced: 0.7.0
 // tags: transformations, selectors
 //
@@ -2682,6 +2740,7 @@ builtin _window : (
 // >     |> window(every: 1mo)
 // ```
 //
+// ## Metadata
 // introduced: 0.7.0
 // tags: transformations
 //
@@ -2732,6 +2791,7 @@ window = (
 //     |> yield(name: "squared")
 // ```
 //
+// ## Metadata
 // introduced: 0.7.0
 // tags: outputs
 //
@@ -2761,6 +2821,7 @@ builtin yield : (<-tables: stream[A], ?name: string) => stream[A] where A: Recor
 // // contains "tag" with a value of "t2".
 // ```
 //
+// ## Metadata
 // introduced: 0.29.0
 // tags: dynamic queries
 //
@@ -2787,6 +2848,7 @@ builtin tableFind : (<-tables: stream[A], fn: (key: B) => bool) => stream[A] whe
 // // Returns [-2, 10, 7, 17, 15, 4]
 // ```
 //
+// ## Metadata
 // introduced: 0.29.0
 // tags: dynamic queries
 //
@@ -2813,6 +2875,7 @@ builtin getColumn : (<-table: stream[A], column: string) => [B] where A: Record
 // // Returns {_time: 2021-01-01T00:00:00.000000000Z, _value: -2, tag: t1}
 // ```
 //
+// ## Metadata
 // introduced: 0.29.0
 // tags: dynamic queries
 //
@@ -2846,6 +2909,7 @@ builtin getRecord : (<-table: stream[A], idx: int) => A where A: Record
 // // Returns [-2, 10, 7, 17, 15, 4]
 // ```
 //
+// ## Metadata
 // introduced: 0.68.0
 // tags: dynamic queries
 //
@@ -2879,6 +2943,7 @@ builtin findColumn : (<-tables: stream[A], fn: (key: B) => bool, column: string)
 // // Returns {_time: 2021-01-01T00:00:00.000000000Z, _value: -2, tag: t1}
 // ```
 //
+// ## Metadata
 // introduced: 0.68.0
 // tags: dynamic queries
 //
@@ -2923,6 +2988,7 @@ builtin findRecord : (<-tables: stream[A], fn: (key: B) => bool, idx: int) => A 
 // >     |> map(fn: (r) => ({r with powerOn: bool(v: r.powerOn)}))
 // ```
 //
+// ## Metadata
 // introduced: 0.7.0
 // tags: type-conversions
 //
@@ -2940,6 +3006,7 @@ builtin bool : (v: A) => bool
 // bytes(v: "Example string") // Returns 0x4578616d706c6520737472696e67
 // ```
 //
+// ## Metadata
 // introduced: 0.40.0
 // tags: type-conversions
 //
@@ -2989,6 +3056,7 @@ builtin bytes : (v: A) => bytes
 // >     |> map(fn: (r) => ({r with _value: string(v: duration(v: r._value))}))
 // ```
 //
+// ## Metadata
 // introduced: 0.7.0
 // tags: type-conversions
 //
@@ -3032,6 +3100,7 @@ builtin duration : (v: A) => duration
 // >     |> map(fn: (r) => ({r with exampleCol: float(v: r.exampleCol)}))
 // ```
 //
+// ## Metadata
 // introduced: 0.7.0
 // tags: type-conversions
 //
@@ -3080,6 +3149,7 @@ builtin float : (v: A) => float
 // >     |> map(fn: (r) => ({r with exampleCol: int(v: r.exampleCol)}))
 // ```
 //
+// ## Metadata
 // introduced: 0.7.0
 // tags: type-conversions
 //
@@ -3116,6 +3186,7 @@ builtin int : (v: A) => int
 // >     |> map(fn: (r) => ({r with exampleCol: string(v: r.exampleCol)}))
 // ```
 //
+// ## Metadata
 // introduced: 0.7.0
 // tags: type-conversions
 //
@@ -3157,6 +3228,7 @@ builtin string : (v: A) => string
 // >     |> map(fn: (r) => ({r with exampleCol: time(v: r.exampleCol)}))
 // ```
 //
+// ## Metadata
 // introduced: 0.7.0
 // tags: type-conversions
 //
@@ -3205,6 +3277,7 @@ builtin time : (v: A) => time
 // >     |> map(fn: (r) => ({r with exampleCol: uint(v: r.exampleCol)}))
 // ```
 //
+// ## Metadata
 // introduced: 0.7.0
 // tags: type-conversions
 //
@@ -3301,6 +3374,7 @@ builtin uint : (v: A) => uint
 // // }
 // ```
 //
+// ## Metadata
 // introduced: 0.154.0
 //
 builtin display : (v: A) => string
@@ -3327,6 +3401,7 @@ builtin display : (v: A) => string
 // >     |> filter(fn: (r) => contains(value: r._field, set: fields))
 // ```
 //
+// ## Metadata
 // introduced: 0.19.0
 //
 builtin contains : (value: A, set: [A]) => bool where A: Nullable
@@ -3349,6 +3424,7 @@ builtin inf : duration
 // // Returns 3
 // ```
 //
+// ## Metadata
 // introduced: 0.7.0
 //
 builtin length : (<-arr: [A]) => int
@@ -3371,6 +3447,7 @@ builtin length : (<-arr: [A]) => int
 // // Returns [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, +Inf]
 // ```
 //
+// ## Metadata
 // introduced: 0.19.0
 //
 builtin linearBins : (start: float, width: float, count: int, ?infinity: bool) => [float]
@@ -3393,6 +3470,7 @@ builtin linearBins : (start: float, width: float, count: int, ?infinity: bool) =
 // // Returns [1, 2, 4, 8, 16, 32, 64, 128, 256, 512, +Inf]
 // ```
 //
+// ## Metadata
 // introduced: 0.19.0
 //
 builtin logarithmicBins : (start: float, factor: float, count: int, ?infinity: bool) => [float]
@@ -3421,6 +3499,7 @@ builtin logarithmicBins : (start: float, factor: float, count: int, ?infinity: b
 // >     |> timeWeightedAvg(unit: 1s)
 // ```
 //
+// ## Metadata
 // introduced: 0.83.0
 // tags: transformations, aggregates
 //
@@ -3455,6 +3534,7 @@ timeWeightedAvg = (tables=<-, unit) =>
 // > cov(x: stream1, y: stream2, on: ["_time"])
 // ```
 //
+// ## Metadata
 // introduced: 0.7.0
 // tags: transformations, aggregates
 //
@@ -3485,6 +3565,7 @@ cov = (x, y, on, pearsonr=false) =>
 // > pearsonr(x: stream1, y: stream2, on: ["_time"])
 // ```
 //
+// ## Metadata
 // introduced: 0.7.0
 // tags: transformations, aggregates
 //
@@ -3585,6 +3666,7 @@ _fillEmpty = (tables=<-, createEmpty) =>
 // >     |> aggregateWindow(every: 1mo, fn: mean)
 // ```
 //
+// ## Metadata
 // introduced: 0.7.0
 // tags: transformations, aggregates, selectors
 //
@@ -3634,6 +3716,7 @@ aggregateWindow = (
 // >     |> increase()
 // ```
 //
+// ## Metadata
 // introduced: 0.71.0
 // tags: transformations
 //
@@ -3696,6 +3779,7 @@ increase = (tables=<-, columns=["_value"]) =>
 // >     |> median(method: "exact_selector")
 // ```
 //
+// ## Metadata
 // introduced: 0.7.0
 // tags: transformations, aggregates, selectors
 //
@@ -3727,6 +3811,7 @@ median = (method="estimate_tdigest", compression=0.0, column="_value", tables=<-
 // >     |> stateCount(fn: (r) => r._value < 10)
 // ```
 //
+// ## Metadata
 // introduced: 0.7.0
 // tags: transformations
 //
@@ -3777,6 +3862,7 @@ stateCount = (fn, column="stateCount", tables=<-) =>
 // >     |> stateDuration(fn: (r) => r._value < 15)
 // ```
 //
+// ## Metadata
 // introduced: 0.7.0
 // tags: transformations
 //
@@ -3819,6 +3905,7 @@ _sortLimit = (n, desc, columns=["_value"], tables=<-) =>
 // >    |> top(n: 3)
 // ```
 //
+// ## Metadata
 // introduced: 0.7.0
 // tags: transformations, selectors
 //
@@ -3849,6 +3936,7 @@ top = (n, columns=["_value"], tables=<-) =>
 // >     |> bottom(n:2)
 // ```
 //
+// ## Metadata
 // introduced: 0.7.0
 // tags: transformations, selectors
 //
@@ -3896,6 +3984,7 @@ _highestOrLowest = (
 // >     |> highestMax(n: 2, groupColumns: ["tag"])
 // ```
 //
+// ## Metadata
 // introduced: 0.7.0
 // tags: transformations, selectors
 //
@@ -3932,6 +4021,7 @@ highestMax =
 // >     |> highestAverage(n: 1, groupColumns: ["tag"])
 // ```
 //
+// ## Metadata
 // introduced: 0.7.0
 // tags: transformations, selectors
 //
@@ -3966,6 +4056,7 @@ highestAverage = (n, column="_value", groupColumns=[], tables=<-) =>
 // >     |> highestCurrent(n: 1, groupColumns: ["tag"])
 // ```
 //
+// ## Metadata
 // introduced: 0.7.0
 // tags: transformations, selectors
 //
@@ -4000,6 +4091,7 @@ highestCurrent = (n, column="_value", groupColumns=[], tables=<-) =>
 // >     |> lowestMin(n: 2, groupColumns: ["tag"])
 // ```
 //
+// ## Metadata
 // introduced: 0.7.0
 // tags: transformations, selectors
 //
@@ -4036,6 +4128,7 @@ lowestMin =
 // >     |> lowestAverage(n: 1, groupColumns: ["tag"])
 // ```
 //
+// ## Metadata
 // introduced: 0.7.0
 // tags: transformations, selectors
 //
@@ -4070,6 +4163,7 @@ lowestAverage = (n, column="_value", groupColumns=[], tables=<-) =>
 // >     |> lowestCurrent(n: 1, groupColumns: ["tag"])
 // ```
 //
+// ## Metadata
 // introduced: 0.7.0
 // tags: transformations, selectors
 //
@@ -4122,6 +4216,7 @@ lowestCurrent = (n, column="_value", groupColumns=[], tables=<-) =>
 // >     |> timedMovingAverage(every: 1y, period: 5y)
 // ```
 //
+// ## Metadata
 // introduced: 0.36.0
 // tags: transformations
 //
@@ -4158,6 +4253,7 @@ timedMovingAverage = (every, period, column="_value", tables=<-) =>
 // >     |> doubleEMA(n: 3)
 // ```
 //
+// ## Metadata
 // introduced: 0.38.0
 // tags: transformations
 //
@@ -4190,6 +4286,7 @@ doubleEMA = (n, tables=<-) =>
 // >     |> kaufmansER(n: 3)
 // ```
 //
+// ## Metadata
 // introduced: 0.40.0
 // tags: transformations
 //
@@ -4229,6 +4326,7 @@ kaufmansER = (n, tables=<-) =>
 // >     |> tripleEMA(n: 3)
 // ```
 //
+// ## Metadata
 // introduced: 0.38.0
 // tags: transformations
 //
@@ -4282,6 +4380,7 @@ tripleEMA = (n, tables=<-) =>
 // >     |> truncateTimeColumn(unit: 1m)
 // ```
 //
+// ## Metadata
 // introduced: 0.37.0
 // tags: transformations, date/time
 //
@@ -4304,6 +4403,7 @@ truncateTimeColumn = (timeColumn="_time", unit, tables=<-) =>
 // >     |> toString()
 // ```
 //
+// ## Metadata
 // introduced: 0.7.0
 // tags: transformations, type-conversions
 //
@@ -4352,6 +4452,7 @@ toString = (tables=<-) => tables |> map(fn: (r) => ({r with _value: string(v: r.
 // >     |> toInt()
 // ```
 //
+// ## Metadata
 // introduced: 0.7.0
 // tags: transformations, type-conversions
 //
@@ -4400,6 +4501,7 @@ toInt = (tables=<-) => tables |> map(fn: (r) => ({r with _value: int(v: r._value
 // >     |> toUInt()
 // ```
 //
+// ## Metadata
 // introduced: 0.7.0
 // tags: transformations, type-conversions
 //
@@ -4434,6 +4536,7 @@ toUInt = (tables=<-) => tables |> map(fn: (r) => ({r with _value: uint(v: r._val
 // >     |> toFloat()
 // ```
 //
+// ## Metadata
 // introduced: 0.7.0
 // tags: transformations, type-conversions
 //
@@ -4460,6 +4563,7 @@ toFloat = (tables=<-) => tables |> map(fn: (r) => ({r with _value: float(v: r._v
 // >     |> toBool()
 // ```
 //
+// ## Metadata
 // introduced: 0.7.0
 // tags: transformations, type-conversions
 //
@@ -4490,6 +4594,7 @@ toBool = (tables=<-) => tables |> map(fn: (r) => ({r with _value: bool(v: r._val
 // >     |> toTime()
 // ```
 //
+// ## Metadata
 // introduced: 0.7.0
 // tags: transformations, type-conversions
 //
@@ -4513,6 +4618,7 @@ toTime = (tables=<-) => tables |> map(fn: (r) => ({r with _value: time(v: r._val
 //     |> range(start: today())
 // ```
 //
+// ## Metadata
 // introduced: 0.116.0
 // tags: date/time
 //

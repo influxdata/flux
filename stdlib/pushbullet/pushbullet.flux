@@ -1,5 +1,6 @@
 // Package pushbullet provides functions for sending data to Pushbullet.
 //
+// ## Metadata
 // introduced: 0.66.0
 //
 package pushbullet
@@ -30,6 +31,7 @@ option defaultURL = "https://api.pushbullet.com/v2/pushes"
 // pushbullet.pushData(token: "mY5up3Rs3Cre7T0k3n", data: {"type": "link", "title": "Example title", "body": "Example nofication body", "url": "http://example-url.com"})
 // ```
 //
+// ## Metadata
 // tags: single notification
 //
 pushData = (url=defaultURL, token="", data) => {
@@ -57,6 +59,7 @@ pushData = (url=defaultURL, token="", data) => {
 // pushbullet.pushNote(token: "mY5up3Rs3Cre7T0k3n", data: {"type": "link", "title": "Example title", "text": "Example note text"})
 // ```
 //
+// ## Metadata
 // tags: single notification
 //
 pushNote = (url=defaultURL, token="", title, text) => {
@@ -103,6 +106,8 @@ pushNote = (url=defaultURL, token="", title, text) => {
 //     |> pushbullet.endpoint(token: token)(mapFn: (r) => ({title: "${r.component} is critical", text: "${r.component} is critical. {$r._field} is {r._value}."}))()
 // ```
 //
+// ## Metadata
+// tags: notification endpoints, transformations
 endpoint = (url=defaultURL, token="") =>
     (mapFn) =>
         (tables=<-) =>

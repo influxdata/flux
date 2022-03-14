@@ -1,5 +1,6 @@
 // Package rows provides additional functions for remapping values in rows.
 //
+// ## Metadata
 // introduced: 0.77.0
 package rows
 
@@ -66,6 +67,7 @@ package rows
 // **Important**: Remapping the `tag` column to `"t3"` is ignored because `tag` is part of the group key.
 // The `with` operator preserves columns not in the group key (`_time` and `_value`).
 //
+// ## Metadata
 // tags: transformations
 //
 builtin map : (<-tables: stream[A], fn: (r: A) => B) => stream[B] where A: Record, B: Record

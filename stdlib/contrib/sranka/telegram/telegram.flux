@@ -21,6 +21,7 @@
 //
 //     Find your **channel ID** in the `id` field of the response.
 //
+// ## Metadata
 // introduced: 0.70.0
 package telegram
 
@@ -81,6 +82,7 @@ option defaultSilent = true
 // )
 // ```
 //
+// ## Metadata
 // tags: single notification
 //
 message = (
@@ -167,6 +169,7 @@ message = (
 //     )()
 // ```
 //
+// ## Metadata
 // tag: notification endpoints, transformations
 endpoint = (url=defaultURL, token, parseMode=defaultParseMode, disableWebPagePreview=defaultDisableWebPagePreview) =>
     (mapFn) =>

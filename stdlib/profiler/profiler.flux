@@ -2,6 +2,7 @@
 //
 // Profile results are returned as an extra result in the response named according to the profiles which are enabled.
 //
+// ## Metadata
 // introduced: 0.82.0
 // tags: optimize
 //

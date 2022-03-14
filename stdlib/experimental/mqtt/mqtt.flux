@@ -1,5 +1,6 @@
 // Package mqtt provides tools for working with Message Queuing Telemetry Transport (MQTT) protocol.
 //
+// ## Metadata
 // introduced: 0.40.0
 // tags: mqtt
 //
@@ -49,6 +50,7 @@ package mqtt
 //     )
 // ```
 //
+// ## Metadata
 // tags: mqtt,outputs
 //
 builtin to : (
@@ -115,6 +117,7 @@ builtin to : (
 //     |> map(fn: (r) => ({r with sent: mqtt.publish(broker: "tcp://localhost:8883", topic: "sampledata/${r.id}", message: string(v: r._value), clientid: "sensor-12a4")}))
 // ```
 //
+// ## Metadata
 // introduced: 0.133.0
 // tags: mqtt
 //

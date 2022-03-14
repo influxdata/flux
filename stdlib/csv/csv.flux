@@ -1,5 +1,6 @@
 // Package csv provides tools for working with data in annotated CSV format.
 //
+// ## Metadata
 // introduced: 0.14.0
 // tags: csv
 package csv
@@ -88,5 +89,6 @@ package csv
 // > )
 // ```
 //
+// ## Metadata
 // tags: csv,inputs
 builtin from : (?csv: string, ?file: string, ?mode: string) => stream[A] where A: Record

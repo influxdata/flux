@@ -1,5 +1,6 @@
 // Package schema provides functions for exploring your InfluxDB data schema.
 //
+// ## Metadata
 // introduced: 0.88.0
 package schema
 
@@ -40,6 +41,7 @@ _stopDefault = now()
 // >     |> schema.fieldsAsCols()
 // ```
 //
+// ## Metadata
 // tags: transformations
 //
 fieldsAsCols = (tables=<-) =>
@@ -76,6 +78,7 @@ fieldsAsCols = (tables=<-) =>
 // )
 // ```
 //
+// ## Metadata
 // tags: metadata
 //
 tagValues = (
@@ -118,6 +121,7 @@ tagValues = (
 // schema.tagKeys(bucket: "example-bucket")
 // ```
 //
+// ## Metadata
 // tags: metadata
 //
 tagKeys = (bucket, predicate=(r) => true, start=_startDefault, stop=_stopDefault) =>
@@ -154,6 +158,7 @@ tagKeys = (bucket, predicate=(r) => true, start=_startDefault, stop=_stopDefault
 // )
 // ```
 //
+// ## Metadata
 // tags: metadata
 //
 measurementTagValues = (
@@ -195,6 +200,7 @@ measurementTagValues = (
 // )
 // ```
 //
+// ## Metadata
 // tags: metadata
 //
 measurementTagKeys = (bucket, measurement, start=_startDefault, stop=_stopDefault) =>
@@ -229,6 +235,7 @@ measurementTagKeys = (bucket, measurement, start=_startDefault, stop=_stopDefaul
 // schema.fieldKeys(bucket: "example-bucket")
 // ```
 //
+// ## Metadata
 // tags: metadata
 //
 fieldKeys = (bucket, predicate=(r) => true, start=_startDefault, stop=_stopDefault) =>
@@ -268,6 +275,7 @@ fieldKeys = (bucket, predicate=(r) => true, start=_startDefault, stop=_stopDefau
 // )
 // ```
 //
+// ## Metadata
 // tags: metadata
 //
 measurementFieldKeys = (bucket, measurement, start=_startDefault, stop=_stopDefault) =>
@@ -293,6 +301,7 @@ measurementFieldKeys = (bucket, measurement, start=_startDefault, stop=_stopDefa
 // schema.measurements(bucket: "example-bucket")
 // ```
 //
+// ## Metadata
 // tags: metadata
 //
 measurements = (bucket, start=_startDefault, stop=_stopDefault) =>

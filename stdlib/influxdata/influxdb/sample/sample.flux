@@ -1,5 +1,6 @@
 // Package sample provides functions for downloading and ouputting InfluxDB sample datasets.
 //
+// ## Metadata
 // introduced: 0.123.0
 // tags: sample data
 //
@@ -102,6 +103,7 @@ _setInfo = (set) => {
 // sample.data(set: "airSensor")
 // ```
 //
+// ## Metadata
 // tags: inputs,sample data
 //
 data = (set) => {
@@ -160,6 +162,9 @@ list = () =>
 // sample.data(set: "birdMigration")
 //    |> sample.alignToNow()
 // ```
+//
+// ## Metadata
+// tags: transformations
 alignToNow = (tables=<-) => {
     _lastTime =
         (tables

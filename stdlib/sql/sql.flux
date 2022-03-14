@@ -106,6 +106,7 @@
 // azure auth=MSI
 // ```
 //
+// ## Metadata
 // introduced: 0.34.0
 //
 package sql
@@ -135,6 +136,7 @@ package sql
 // For examples and more information about each supported SQL database, see
 // [Query SQL databases](https://docs.influxdata.com/flux/v0.x/query-data/sql/).
 //
+// ## Metadata
 // tags: inputs,sql
 //
 builtin from : (driverName: string, dataSourceName: string, query: string) => stream[A]
@@ -168,6 +170,7 @@ builtin from : (driverName: string, dataSourceName: string, query: string) => st
 // For examples and more information about each supported SQL database, see
 // [Write to SQL databases](https://docs.influxdata.com/flux/v0.x/write-data/sql/).
 //
+// ## Metadata
 // tags: outputs,sql
 //
 builtin to : (

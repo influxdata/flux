@@ -8,6 +8,7 @@
 // - stop working with no planned fixes
 // - be removed without warning or explanation
 //
+// ## Metadata
 // introduced: 0.39.0
 package experimental
 
@@ -66,6 +67,7 @@ builtin _addDuration : (d: duration, to: T, location: {zone: string, offset: dur
 // // Returns 2022-01-01T21:00:00.000000000Z
 // ```
 //
+// ## Metadata
 // tags: date/time
 //
 addDuration = (d, to, location=location) => _addDuration(d, to, location)
@@ -125,6 +127,7 @@ builtin _subDuration : (from: T, d: duration, location: {zone: string, offset: d
 // // Returns 2021-12-08T15:27:40Z
 // ```
 //
+// ## Metadata
 // tags: date/time
 //
 subDuration = (d, from, location=location) => _subDuration(d, from, location)
@@ -165,6 +168,7 @@ subDuration = (d, from, location=location) => _subDuration(d, from, location)
 // >     |> experimental.group(columns: ["region"], mode: "extend")
 // ```
 //
+// ## Metadata
 // tags: transformations
 //
 builtin group : (<-tables: stream[A], mode: string, columns: [string]) => stream[A] where A: Record
@@ -189,6 +193,7 @@ builtin group : (<-tables: stream[A], mode: string, columns: [string]) => stream
 // // Returns [firstName, lastName, age]
 // ```
 //
+// ## Metadata
 // introduced: 0.40.0
 //
 builtin objectKeys : (o: A) => [string] where A: Record
@@ -231,6 +236,7 @@ builtin objectKeys : (o: A) => [string] where A: Record
 // >     )
 // ```
 //
+// ## Metadata
 // introduced: 0.40.0
 // tags: transformations
 //
@@ -292,6 +298,7 @@ builtin set : (<-tables: stream[A], o: B) => stream[C] where A: Record, B: Recor
 //     |> experimental.to(bucket: "example-target-bucket")
 // ```
 //
+// ## Metadata
 // introduced: 0.40.0
 // tags: outputs
 //
@@ -314,10 +321,6 @@ builtin to : (
 // **Note**: To join streams of tables with different fields or measurements,
 // use `group()` or `drop()` to remove `_field` and `_measurement` from the
 // group key before joining.
-//
-//
-// introduced 0.65.0
-// tags: transformations
 //
 // ## Parameters
 // - left: First of two streams of tables to join.
@@ -384,6 +387,7 @@ builtin to : (
 // )
 // ```
 //
+// ## Metadata
 // introduced: 0.65.0
 // tags: transformations
 //
@@ -430,6 +434,7 @@ builtin join : (left: stream[A], right: stream[B], fn: (left: A, right: B) => C)
 // )
 // ```
 //
+// ## Metadata
 // introduced: 0.68.0
 //
 builtin chain : (first: stream[A], second: stream[B]) => stream[B] where A: Record, B: Record
@@ -473,6 +478,7 @@ builtin chain : (first: stream[A], second: stream[B]) => stream[B] where A: Reco
 // >     |> experimental.alignTime(alignTo: 2021-01-01T00:00:00Z)
 // ```
 //
+// ## Metadata
 // introduced: 0.66.0
 // tags: transformations,data/time
 //
@@ -557,6 +563,7 @@ builtin _window : (
 // >     |> experimental.window(every: 1mo)
 // ```
 //
+// ## Metadata
 // introduced: 0.106.0
 // tags: transformations,date/time
 //
@@ -624,6 +631,7 @@ window = (
 // >     )
 // ```
 //
+// ## Metadata
 // introduced: 0.106.0
 // tags: transformations, aggregates
 //
@@ -661,6 +669,7 @@ builtin integral : (
 // >     |> experimental.count()
 // ```
 //
+// ## Metadata
 // introduced: 0.107.0
 // tags: transformations,aggregates
 //
@@ -724,6 +733,7 @@ builtin count : (<-tables: stream[{T with _value: A}]) => stream[{T with _value:
 // >    |> experimental.histogramQuantile(quantile: 0.9)
 // ```
 //
+// ## Metadata
 // introduced: 0.107.0
 // tags: transformations,aggregates
 //
@@ -751,6 +761,7 @@ builtin histogramQuantile : (
 // >     |> experimental.mean()
 // ```
 //
+// ## Metadata
 // introduced: 0.107.0
 // tags: transformations,aggregates
 //
@@ -784,6 +795,7 @@ builtin mean : (<-tables: stream[{T with _value: float}]) => stream[{T with _val
 // >     |> experimental.mode()
 // ```
 //
+// ## Metadata
 // introduces: 0.107.0
 // tags: transformations,aggregates
 //
@@ -855,6 +867,7 @@ builtin mode : (<-tables: stream[{T with _value: A}]) => stream[{T with _value: 
 // >     )
 // ```
 //
+// ## Metadata
 // introduced: 0.107.0
 // tags: transformations,aggregates,selectors
 //
@@ -881,6 +894,7 @@ builtin quantile : (
 // >     |> experimental.skew()
 // ```
 //
+// ## Metadata
 // introduced: 0.107.0
 // tags: transformations,aggregates
 //
@@ -902,6 +916,7 @@ builtin skew : (<-tables: stream[{T with _value: float}]) => stream[{T with _val
 // >     |> experimental.spread()
 // ```
 //
+// ## Metadata
 // introduced: 0.107.0
 // tags: transformations,aggregates
 //
@@ -941,6 +956,7 @@ builtin spread : (<-tables: stream[{T with _value: A}]) => stream[{T with _value
 // >     |> experimental.stddev()
 // ```
 //
+// ## Metadata
 // introduced: 0.107.0
 // tags: transformations,aggregates
 //
@@ -961,6 +977,7 @@ builtin stddev : (<-tables: stream[{T with _value: float}], ?mode: string) => st
 // >     |> experimental.sum()
 // ```
 //
+// ## Metadata
 // introduced: 0.107.0
 // tags: transformations,aggregates
 //
@@ -986,6 +1003,7 @@ builtin sum : (<-tables: stream[{T with _value: A}]) => stream[{T with _value: A
 // >     |> experimental.kaufmansAMA(n: 3)
 // ```
 //
+// ## Metadata
 // introduced: 0.107.0
 // tags: transformations
 //
@@ -1012,6 +1030,7 @@ builtin kaufmansAMA : (<-tables: stream[{T with _value: A}], n: int) => stream[{
 // >     |> experimental.distinct()
 // ```
 //
+// ## Metadata
 // introduced: 0.112.0
 // tags: transformations,selectors
 //
@@ -1045,6 +1064,7 @@ builtin distinct : (<-tables: stream[{T with _value: A}]) => stream[{T with _val
 // >     |> experimental.fill(usePrevious: true)
 // ```
 //
+// ## Metadata
 // introduced: 0.112.0
 // tags: transformations
 //
@@ -1068,6 +1088,7 @@ builtin fill : (<-tables: stream[{T with _value: A}], ?value: A, ?usePrevious: b
 // >     |> experimental.first()
 // ```
 //
+// ## Metadata
 // introduced: 0.112.0
 // tags: transformations,selectors
 //
@@ -1091,6 +1112,7 @@ builtin first : (<-tables: stream[{T with _value: A}]) => stream[{T with _value:
 // >     |> experimental.last()
 // ```
 //
+// ## Metadata
 // introduced: 0.112.0
 // tags: transformations,selectors
 //
@@ -1114,6 +1136,7 @@ builtin last : (<-tables: stream[{T with _value: A}]) => stream[{T with _value: 
 // >     |> experimental.max()
 // ```
 //
+// ## Metadata
 // introduced: 0.112.0
 // tags: transformations,selectors
 //
@@ -1137,6 +1160,7 @@ builtin max : (<-tables: stream[{T with _value: A}]) => stream[{T with _value: A
 // >     |> experimental.min()
 // ```
 //
+// ## Metadata
 // introduced: 0.112.0
 // tags: transformations,selectors
 //
@@ -1165,6 +1189,7 @@ builtin min : (<-tables: stream[{T with _value: A}]) => stream[{T with _value: A
 // >     |> experimental.unique()
 // ```
 //
+// ## Metadata
 // introduced: 0.112.0
 // tags: transformations,selectors
 //
@@ -1220,6 +1245,7 @@ builtin unique : (<-tables: stream[{T with _value: A}]) => stream[{T with _value
 // >     ])
 // ```
 //
+// ## Metadata
 // introduced: 0.112.0
 // tags: transformations
 //

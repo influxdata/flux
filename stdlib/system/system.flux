@@ -1,5 +1,6 @@
 // Package system provides functions for reading values from the system.
 //
+// ## Metadata
 // introduced: 0.18.0
 //
 package system
@@ -17,6 +18,7 @@ package system
 // array.from(rows:[{time: system.time()}])
 // ```
 //
+// ## Metadata
 // tags: date/time
 //
 builtin time : () => time

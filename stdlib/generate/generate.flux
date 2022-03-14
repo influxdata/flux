@@ -1,5 +1,6 @@
 // Package generate provides functions for generating data.
 //
+// ## Metadata
 // introduced: 0.17.0
 // tags: generate
 package generate
@@ -31,6 +32,7 @@ package generate
 // )
 // ```
 //
+// ## Metadata
 // tags: inputs
 builtin from : (
         start: A,

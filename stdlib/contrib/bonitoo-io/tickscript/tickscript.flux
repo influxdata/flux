@@ -1,6 +1,7 @@
 // Package tickscript provides functions to help migrate
 // Kapacitor [TICKscripts](https://docs.influxdata.com/kapacitor/latest/tick/) to Flux tasks.
 //
+// ## Metadata
 // introduced: 0.111.0
 package tickscript
 
@@ -97,6 +98,7 @@ defineCheck = (id, name, type="custom") => {
 //     )
 // ```
 //
+// ## Metadata
 // tags: transformations,outputs
 alert = (
     check,
@@ -178,6 +180,7 @@ alert = (
 //     )
 //```
 //
+// ## Metadata
 // tags: transformations
 //
 deadman =
@@ -295,6 +298,7 @@ deadman =
 // >     )
 // ```
 //
+// ## Metadata
 // tags: transformations
 //
 select = (column="_value", fn=(column, tables=<-) => tables, as, tables=<-) => {
@@ -347,6 +351,7 @@ select = (column="_value", fn=(column, tables=<-) => tables, as, tables=<-) => {
 // >     )
 // ```
 //
+// ## Metadata
 // tags: transformations
 selectWindow = (
     column="_value",
@@ -377,6 +382,7 @@ selectWindow = (
 // - fn: Aggregate or selector function to apply.
 // - tables: Input data. Default is piped-forward data (`<-`).
 //
+// ## Metadata
 // tags: transformations
 compute = select
 
@@ -414,6 +420,7 @@ compute = select
 // >     |> tickscript.groupBy(columns: ["host", "region"])
 // ```
 //
+// ## Metadata
 // tags: transformations
 groupBy = (columns, tables=<-) =>
     tables
@@ -470,6 +477,7 @@ groupBy = (columns, tables=<-) =>
 // > )
 //```
 //
+// ## Metadata
 // tags: transformations
 join = (tables, on=["_time"], measurement) =>
     universe.join(tables: tables, on: on)

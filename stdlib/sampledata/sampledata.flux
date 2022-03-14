@@ -1,5 +1,6 @@
 // Package sampledata provides functions that return basic sample datasets.
 //
+// ## Metadata
 // introduced: 0.128.0
 // tags: sample data
 //

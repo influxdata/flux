@@ -1,5 +1,6 @@
 // Package regexp provides tools for working with regular expressions.
 //
+// ## Metadata
 // introduced: 0.33.0
 //
 package regexp
@@ -21,6 +22,7 @@ package regexp
 // // Returns the regexp object /abcd/
 // ```
 //
+// ## Metadata
 // tags: type-conversions
 //
 builtin compile : (v: string) => regexp
@@ -182,6 +184,7 @@ builtin splitRegexp : (r: regexp, v: string, i: int) => [string]
 // // Returns "[a-zA-Z]"
 // ```
 //
+// ## Metadata
 // tags: type-conversions
 //
 builtin getString : (r: regexp) => string

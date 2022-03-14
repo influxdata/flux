@@ -1,5 +1,6 @@
 // Package math provides basic constants and mathematical functions
 //
+// ## Metadata
 // introduced: 0.22.0
 package math
 

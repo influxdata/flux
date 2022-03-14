@@ -1,6 +1,7 @@
 // Package interpolate provides functions that insert rows for missing data
 // at regular intervals and estimate values using different interpolation methods.
 //
+// ## Metadata
 // introduced: 0.87.0
 //
 package interpolate
@@ -38,6 +39,7 @@ package interpolate
 // >     |> interpolate.linear(every: 1d)
 // ```
 //
+// ## Metadata
 // tags: transformations
 //
 builtin linear : (

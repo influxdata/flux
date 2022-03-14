@@ -1,5 +1,6 @@
 // Package http provides functions for transferring data using HTTP protocol.
 //
+// ## Metadata
 // introduced: 0.39.0
 // tags: http
 //
@@ -29,6 +30,7 @@ package http
 // http.get(url: "http://localhost:8086/health", headers: {Authorization: "Token mY5up3RS3crE7t0k3N", Accept: "application/json"})
 // ```
 //
+// ## Metadata
 // tags: http,inputs
 //
 builtin get : (url: string, ?headers: A, ?timeout: duration) => {statusCode: int, body: bytes, headers: B}

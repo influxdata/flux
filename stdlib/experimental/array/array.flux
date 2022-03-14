@@ -1,5 +1,6 @@
 // Package array provides functions for manipulating arrays and for building tables from Flux arrays.
 //
+// ## Metadata
 // introduced: 0.79.0
 // tags: array,tables
 //
@@ -50,6 +51,7 @@ import "array"
 // union(tables: [tags, wildcard_tag])
 // ```
 //
+// ## Metadata
 // deprecated: 0.103.0
 from = array.from
 
@@ -77,6 +79,7 @@ from = array.from
 // > array.from(rows: c |> array.map(fn: (x) => ({_value: x})))
 // ```
 //
+// ## Metadata
 // introduced: 0.155.0
 builtin concat : (<-arr: [A], v: [A]) => [A]
 
@@ -101,6 +104,7 @@ builtin concat : (<-arr: [A], v: [A]) => [A]
 // > array.from(rows: b)
 // ```
 //
+// ## Metadata
 // introduced: 0.155.0
 builtin map : (<-arr: [A], fn: (x: A) => B) => [B]
 
@@ -126,5 +130,7 @@ builtin map : (<-arr: [A], fn: (x: A) => B) => [B]
 // // Output the filtered array as a table
 // > array.from(rows: b |> array.map(fn: (x) => ({_value: x})))
 // ```
+//
+// ## Metadata
 // introduced: 0.155.0
 builtin filter : (<-arr: [A], fn: (x: A) => bool) => [A]

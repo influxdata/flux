@@ -1,6 +1,7 @@
 // Package usage provides tools for collecting usage and usage limit data from
 // **InfluxDB Cloud**.
 //
+// ## Metadata
 // introduced: 0.114.0
 //
 package usage
@@ -95,6 +96,7 @@ import "http"
 // )
 // ```
 //
+// ## Metadata
 // tags: inputs
 //
 from = (
