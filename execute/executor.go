@@ -156,8 +156,8 @@ func (v *createExecutionNodeVisitor) Visit(node plan.Node) error {
 	spec := node.ProcedureSpec()
 	kind := spec.Kind()
 
-	// N.b. yields become results here, but terminal nodes are handled via
-	// `generateResult` further below.
+	// N.b. yields become results here, but other terminal nodes are handled
+	// further below.
 	if yieldSpec, ok := spec.(plan.YieldProcedureSpec); ok {
 		if err := v.generateResult(yieldSpec.YieldName(), node, 0); err != nil {
 			return err
@@ -238,17 +238,6 @@ func (v *createExecutionNodeVisitor) Visit(node plan.Node) error {
 			source.SetLabel(string(node.ID()))
 			v.es.sources = append(v.es.sources, source)
 			v.nodes[node][i] = source
-
-			// XXX: results should be generated for terminal nodes, regardless
-			// of whether or not it is also a leaf. This is why there's an
-			// identical block at the end of each loop in each case for the
-			// "if leaf" check.
-			if len(node.Successors()) == 0 {
-				resultName := getResultName(node, spec, isParallelMerge)
-				if err := v.generateResult(resultName, node, i); err != nil {
-					return err
-				}
-			}
 		}
 	} else {
 		// If node is internal, create a transformation. For each
@@ -299,17 +288,13 @@ func (v *createExecutionNodeVisitor) Visit(node plan.Node) error {
 					executionNode.AddTransformation(transport)
 				}
 			}
-
-			// XXX: results should be generated for terminal nodes, regardless
-			// of whether or not it is also a leaf. This is why there's an
-			// identical block at the end of each loop in each case for the
-			// "if leaf" check.
-			if len(node.Successors()) == 0 {
-				resultName := getResultName(node, spec, isParallelMerge)
-				if err := v.generateResult(resultName, node, i); err != nil {
-					return err
-				}
-			}
+		}
+	}
+	// Results should be generated for terminal nodes.
+	if len(node.Successors()) == 0 {
+		resultName := getResultName(node, spec, isParallelMerge)
+		if err := v.generateResult(resultName, node, 0); err != nil {
+			return err
 		}
 	}
 	return nil
