@@ -273,14 +273,6 @@ func TestPlan_LogicalPlanFromSpec(t *testing.T) {
 			},
 		},
 		{
-			// N.b. Formerly this test verified the behavior of yields that were
-			// injected for root nodes during planning, but we are no longer
-			// doing this!
-			// Instead terminal nodes have results produced without yields which
-			// don't show up in the plan.
-			// To force the error case we want to test, explicit yields without
-			// specifying names have been added. These should cause 2 yields
-			// using the default name of `_result` to get caught by the planner.
 			name: "multi unnamed yields",
 			query: `
 				from(bucket: "my-bucket") |> sum() |> yield()

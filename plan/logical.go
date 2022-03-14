@@ -255,23 +255,9 @@ func (v *fluxSpecVisitor) visitOperation(o *flux.Operation) error {
 
 	// no children => no successors => root node
 	if len(v.spec.Children(o.ID)) == 0 {
-		// Formerly we marked nodes as roots if:
-		// - are a yield
-		// - have side effects
-		//
-		// For all other cases inside this "zero children" block, we previously
-		// added a new yield to the end of the chain and marked *the new yield*
-		// as a root.
-		// To summarize: all terminal nodes would be marked as a root and
-		// produce a result by the time the executor is done.
-		//
-		// Now, instead of inserting a yields here we are adding a result
-		// directly in the executor for all terminal nodes. Look for usages of
-		// `generateResult()` in `executor.go` to find where this happens.
-		//
-		// N.b. the number of entries in the `Roots` map factor into the
-		// concurrency quota for the query and as such we must continue to mark
-		// these all as roots here.
+		// N.b. the number of entries in `Roots` is factored into the starting
+		// concurrency quota for the query. As such we must mark all terminal
+		// nodes as roots here.
 		v.plan.Roots[logicalNode] = struct{}{}
 	}
 

@@ -722,9 +722,6 @@ func TestExecutor_Execute(t *testing.T) {
 					{2, 3},
 				},
 			},
-			// XXX(onelson): unsure if the wrapped (inner) error is ever made
-			// visible to the user.
-			// Seems like in this case we'd want the user to get this feedback...
 			wantErr: errors.Wrap(
 				errors.New(codes.Invalid, "tried to produce more than one result with the name \"_result\""),
 				codes.Inherit,
