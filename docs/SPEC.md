@@ -205,13 +205,7 @@ Examples:
     5w
     1mo5d  // 1 month and 5 days
     -1mo5d // negative 1 month and 5 days
-
-Errors:
-
-    5w * 2 // Invalid int multiplication
-    2w + 1d // Not addable
-    1m - 1s // Not subtractable
-
+    5w * 2 // 10 weeks
 
 Durations can be added to date times to produce a new date time.
 
