@@ -34,6 +34,8 @@ Package summary documentation consists of a **headline**, **description**,
   the package. _See [Package metadata](#package-metadata)_.
 
 #### Package metadata
+
+Identify the beginning of the metadata section with a `## Metadata` header.
 Package metadata are string key-value pairs separated by `:`.
 Each key-value pair must be on a single line.
 
@@ -43,7 +45,7 @@ Each key-value pair must be on a single line.
   and categorize packages. _See [Metadata tags](#metadata-tags)._
 - **contributors**: Contributor GitHub usernames or other contact information.
 
-When adding a new export to a Flux package the `introduced: NEXT` metadata can be added to the value's docs.
+When adding a new export to a Flux package the `introduced: NEXT` or `deprecated: NEXT` metadata can be added to the value's docs.
 The release process will automatically replace the `NEXT` with the version of the Flux release.
 
 ```js
