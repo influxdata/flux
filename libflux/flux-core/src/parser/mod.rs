@@ -1380,13 +1380,7 @@ impl<'input> Parser<'input> {
         let t = self.peek_with_regex();
         match t.tok {
             TokenType::Ident => Expression::Identifier(self.parse_identifier()),
-            TokenType::Int => {
-                let lit = self.parse_int_literal();
-                match lit {
-                    Ok(lit) => Expression::Integer(lit),
-                    Err(terr) => self.create_bad_expression(terr.token),
-                }
-            }
+            TokenType::Int => Expression::Integer(self.parse_int_literal()),
             TokenType::Float => {
                 let lit = self.parse_float_literal();
                 match lit {
@@ -1494,11 +1488,18 @@ impl<'input> Parser<'input> {
             name: t.lit,
         }
     }
-    fn parse_int_literal(&mut self) -> Result<IntegerLit, TokenError> {
+    fn parse_int_literal(&mut self) -> IntegerLit {
         let t = self.expect(TokenType::Int);
 
         if t.lit.starts_with('0') && t.lit.len() > 1 {
-            return Err(TokenError { token: t })
+            self.errs.push(format!(
+                "invalid integer literal \"{}\": nonzero value cannot start with 0",
+                t.lit
+            ));
+            return IntegerLit {
+                base: self.base_node_from_token(&t),
+                value: 0,
+            }
         }
 
         match (&t.lit).parse::<i64>() {
@@ -1507,15 +1508,15 @@ impl<'input> Parser<'input> {
                     "invalid integer literal \"{}\": value out of range",
                     t.lit
                 ));
-                Ok(IntegerLit {
+                IntegerLit {
                     base: self.base_node_from_token(&t),
                     value: 0,
-                })
+                }
             }
-            Ok(v) => Ok(IntegerLit {
+            Ok(v) => IntegerLit {
                 base: self.base_node_from_token(&t),
                 value: v,
-            }),
+            }
         }
     }
     fn parse_float_literal(&mut self) -> Result<FloatLit, TokenError> {

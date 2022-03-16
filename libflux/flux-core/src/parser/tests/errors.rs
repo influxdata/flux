@@ -904,14 +904,18 @@ fn int_literal_zero_prefix() {
                     location: loc.get(1, 1, 1, 5),
                     ..BaseNode::default()
                 },
-                expression: Expression::Bad(Box::new(BadExpr {
-                    base: BaseNode {
-                        location: loc.get(1, 1, 1,5),
-                        ..BaseNode::default()
-                    },
-                    text: "invalid token for primary expression: INT".to_string(),
-                    expression: None,
-                }))
+                expression: Expression::Integer(
+                    IntegerLit{
+                        base: BaseNode {
+                            location: loc.get(1, 1, 1, 5),
+                            errors: vec![
+                                "invalid integer literal \"0123\": nonzero value cannot start with 0".to_string()
+                            ],
+                            ..BaseNode::default()
+                        },
+                        value: 0,
+                    }
+                )
             }))],
             eof: vec![],
         },
