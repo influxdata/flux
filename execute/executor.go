@@ -305,7 +305,10 @@ func (v *createExecutionNodeVisitor) Visit(node plan.Node) error {
 	// will be cancelled before any work for the query has been done.
 	// TODO: understand if this (preventing cancellation) could be addressed by another means.
 	if len(node.Successors()) == 0 {
-		resultName := getResultName(node, spec, isParallelMerge)
+		resultName, err := getResultName(node, spec, isParallelMerge)
+		if err != nil {
+			return err
+		}
 		if err := v.generateResult(resultName, node, 0); err != nil {
 			return err
 		}
@@ -330,15 +333,28 @@ func (v *createExecutionNodeVisitor) generateResult(resultName string, node plan
 
 // getResultName will offer a "best guess" name for a given node's result.
 //
-// For nodes that have side-effects or happen to be a Parallel Merge, the result
-// will be based on the node ID. For other cases, the default yield name of
-// `_result` is used.
-func getResultName(node plan.Node, spec plan.ProcedureSpec, isParallelMerge bool) string {
+// For nodes that have side-effects, the result will be based on the node ID.
+// If the node is a parallel merge node, then it was added by the planner; in
+// this case check the side-effect status of the node's predecessor. For other
+// cases, the default yield name of `_result` is used.
+func getResultName(node plan.Node, spec plan.ProcedureSpec, isParallelMerge bool) (string, error) {
 	name := plan.DefaultYieldName
-	if plan.HasSideEffect(spec) || isParallelMerge {
+
+	// Parallel merge nodes are added by the planner and can mask the presence
+	// of a side-effect result; skip them.
+	if isParallelMerge {
+		if len(node.Predecessors()) != 1 {
+			return "", errors.New(codes.Internal, "parallel merge must have a single predecessor")
+		}
+
+		node := node.Predecessors()[0]
+		spec = node.ProcedureSpec()
+	}
+
+	if plan.HasSideEffect(spec) {
 		name = string(node.ID())
 	}
-	return name
+	return name, nil
 }
 
 func (es *executionState) abort(err error) {
