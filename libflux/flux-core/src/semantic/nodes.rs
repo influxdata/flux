@@ -637,15 +637,28 @@ impl TestStmt {
 pub struct TestCaseStmt {
     pub loc: ast::SourceLocation,
     pub id: Identifier,
-    pub block: Block,
+    pub extends: Option<StringLit>,
+    pub body: Vec<Statement>,
 }
 
 impl TestCaseStmt {
     fn infer(&mut self, infer: &mut InferState<'_, '_>) -> Result {
-        self.block.infer(infer)
+        for node in &mut self.body {
+            match node {
+                Statement::Builtin(stmt) => stmt.infer(infer)?,
+                Statement::Variable(stmt) => stmt.infer(infer)?,
+                Statement::Option(stmt) => stmt.infer(infer)?,
+                Statement::Expr(stmt) => stmt.infer(infer)?,
+                Statement::Test(stmt) => stmt.infer(infer)?,
+                Statement::TestCase(stmt) => stmt.infer(infer)?,
+                Statement::Return(stmt) => infer.error(stmt.loc.clone(), ErrorKind::InvalidReturn),
+                Statement::Error(_) => (),
+            }
+        }
+        Ok(())
     }
     fn apply(mut self, sub: &Substitution) -> Self {
-        self.block = self.block.apply(sub);
+        self.body = self.body.into_iter().map(|stmt| stmt.apply(sub)).collect();
         self
     }
 }

@@ -225,7 +225,12 @@ where
             }
             Node::TestCaseStmt(n) => {
                 walk(v, Node::Identifier(&n.id));
-                walk(v, Node::Block(&n.block));
+                if let Some(e) = &n.extends {
+                    walk(v, Node::StringLit(e));
+                }
+                for stmt in n.body.iter() {
+                    walk(v, Node::from_stmt(stmt));
+                }
             }
             Node::BuiltinStmt(n) => {
                 walk(v, Node::Identifier(&n.id));

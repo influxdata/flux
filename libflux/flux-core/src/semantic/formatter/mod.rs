@@ -411,7 +411,8 @@ impl Formatter {
         self.write_string("testcase ");
         self.format_node(&walk::Node::Identifier(&n.id));
         self.write_rune(' ');
-        self.format_node(&walk::Node::Block(&n.block));
+        // format the testcase statements
+        self.format_statement_list(&n.body);
     }
 
     fn format_assignment(&mut self, n: &semantic::nodes::Assignment) {

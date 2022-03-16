@@ -25,8 +25,6 @@ pub type Error = Located<ErrorKind>;
 #[derive(Error, Debug, PartialEq)]
 #[allow(missing_docs)]
 pub enum ErrorKind {
-    #[error("TestCase is not supported in semantic analysis")]
-    TestCase,
     #[error("invalid named type {0}")]
     InvalidNamedType(String),
     #[error("function types can have at most one pipe parameter")]
@@ -423,9 +421,7 @@ impl<'a> Converter<'a> {
             }
             ast::Statement::Test(s) => Statement::Test(Box::new(self.convert_test_statement(s))),
             ast::Statement::TestCase(s) => {
-                self.errors
-                    .push(located(s.base.location.clone(), ErrorKind::TestCase));
-                Statement::Error(s.base.location.clone())
+                Statement::TestCase(Box::new(self.convert_testcase(package, s)))
             }
             ast::Statement::Expr(s) => Statement::Expr(self.convert_expression_statement(s)),
             ast::Statement::Return(s) => Statement::Return(self.convert_return_statement(s)),
@@ -461,6 +457,22 @@ impl<'a> Converter<'a> {
             loc: stmt.base.location.clone(),
             id: self.define_identifier(Some(package), &stmt.id),
             typ_expr: self.convert_polytype(&stmt.ty),
+        }
+    }
+    fn convert_testcase(&mut self, package: &str, stmt: &ast::TestCaseStmt) -> TestCaseStmt {
+        TestCaseStmt {
+            loc: stmt.base.location.clone(),
+            id: self.convert_identifier(&stmt.id),
+            extends: stmt
+                .extends
+                .as_ref()
+                .map(|e| self.convert_string_literal(e)),
+            body: stmt
+                .block
+                .body
+                .iter()
+                .map(|s| self.convert_statement(package, s))
+                .collect(),
         }
     }
 
