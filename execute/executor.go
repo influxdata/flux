@@ -4,6 +4,7 @@ package execute
 import (
 	"context"
 	"fmt"
+	"math"
 	"reflect"
 	"sync"
 	"time"
@@ -77,18 +78,7 @@ func (e *executor) Execute(ctx context.Context, p *plan.Spec, a *memory.Allocato
 	return es.results, es.metaCh, nil
 }
 
-func validatePlan(p *plan.Spec) error {
-	if p.Resources.ConcurrencyQuota == 0 {
-		return errors.New(codes.Invalid, "plan must have a non-zero concurrency quota")
-	}
-	return nil
-}
-
 func (e *executor) createExecutionState(ctx context.Context, p *plan.Spec, a *memory.Allocator) (*executionState, error) {
-	if err := validatePlan(p); err != nil {
-		return nil, errors.Wrap(err, codes.Invalid, "invalid plan")
-	}
-
 	ctx, cancel := context.WithCancel(ctx)
 	es := &executionState{
 		p:         p,
@@ -114,6 +104,13 @@ func (e *executor) createExecutionState(ctx context.Context, p *plan.Spec, a *me
 	// space for all of them to report metadata. Not all of them will necessarily
 	// report metadata.
 	es.metaCh = make(chan metadata.Metadata, len(es.sources))
+
+	// Choose some default resource limits based on execution options, if necessary.
+	es.chooseDefaultResources(ctx, p)
+
+	if err := es.validate(); err != nil {
+		return nil, errors.Wrap(err, codes.Invalid, "execution state")
+	}
 
 	return v.es, nil
 }
@@ -355,6 +352,67 @@ func getResultName(node plan.Node, spec plan.ProcedureSpec, isParallelMerge bool
 		name = string(node.ID())
 	}
 	return name, nil
+}
+
+func (es *executionState) validate() error {
+	if es.resources.ConcurrencyQuota == 0 {
+		return errors.New(codes.Invalid, "execution state must have a non-zero concurrency quota")
+	}
+	return nil
+}
+
+// getResourceExecOptions returns the DefaultMemoryLimit and ConcurrencyLimit
+// from exec options, if present.
+func getResourceLimits(ctx context.Context) (int64, int) {
+	// Initialize resources from the execution dependencies and/or properties of the plan.
+	if !HaveExecutionDependencies(ctx) {
+		return 0, math.MaxInt64
+	}
+
+	execOptions := GetExecutionDependencies(ctx).ExecutionOptions
+	return execOptions.DefaultMemoryLimit, execOptions.ConcurrencyLimit
+}
+
+func (es *executionState) chooseDefaultResources(ctx context.Context, p *plan.Spec) {
+	defaultMemoryLimit, concurrencyLimit := getResourceLimits(ctx)
+
+	// Update memory quota
+	if es.resources.MemoryBytesQuota == 0 {
+		es.resources.MemoryBytesQuota = defaultMemoryLimit
+	}
+
+	// Update concurrency quota
+	if es.resources.ConcurrencyQuota == 0 {
+		es.resources.ConcurrencyQuota = len(p.Roots)
+
+		// If the query concurrency limit is greater than zero,
+		// we will use the new behavior that sets the concurrency
+		// quota equal to the number of transformations and limits
+		// it to the value specified.
+		if concurrencyLimit > 0 {
+			concurrencyQuota := 0
+			_ = p.TopDownWalk(func(node plan.Node) error {
+				// Do not include source nodes in the node list as
+				// they do not use the dispatcher.
+				if len(node.Predecessors()) > 0 {
+					addend := 1
+					ppn := node.(*plan.PhysicalPlanNode)
+					if attr, ok := ppn.OutputAttrs[plan.ParallelRunKey]; ok {
+						addend = attr.(plan.ParallelRunAttribute).Factor
+					}
+					concurrencyQuota += addend
+				}
+				return nil
+			})
+
+			if concurrencyQuota > int(concurrencyLimit) {
+				concurrencyQuota = int(concurrencyLimit)
+			} else if concurrencyQuota == 0 {
+				concurrencyQuota = 1
+			}
+			es.resources.ConcurrencyQuota = concurrencyQuota
+		}
+	}
 }
 
 func (es *executionState) abort(err error) {

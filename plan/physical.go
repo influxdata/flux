@@ -7,7 +7,6 @@ import (
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/codes"
-	"github.com/influxdata/flux/internal/feature"
 	"github.com/influxdata/flux/interpreter"
 )
 
@@ -86,44 +85,6 @@ func (pp *physicalPlanner) Plan(ctx context.Context, spec *Spec) (*Spec, error) 
 		err = ValidatePhysicalPlan(transformedSpec)
 		if err != nil {
 			return nil, err
-		}
-	}
-
-	// Update memory quota
-	if transformedSpec.Resources.MemoryBytesQuota == 0 {
-		transformedSpec.Resources.MemoryBytesQuota = pp.defaultMemoryLimit
-	}
-
-	// Update concurrency quota
-	if transformedSpec.Resources.ConcurrencyQuota == 0 {
-		transformedSpec.Resources.ConcurrencyQuota = len(transformedSpec.Roots)
-
-		// If the query concurrency limit is greater than zero,
-		// we will use the new behavior that sets the concurrency
-		// quota equal to the number of transformations and limits
-		// it to the value specified.
-		if concurrencyLimit := feature.QueryConcurrencyLimit().Int(ctx); concurrencyLimit > 0 {
-			concurrencyQuota := 0
-			_ = transformedSpec.TopDownWalk(func(node Node) error {
-				// Do not include source nodes in the node list as
-				// they do not use the dispatcher.
-				if len(node.Predecessors()) > 0 {
-					addend := 1
-					ppn := node.(*PhysicalPlanNode)
-					if attr, ok := ppn.OutputAttrs[ParallelRunKey]; ok {
-						addend = attr.(ParallelRunAttribute).Factor
-					}
-					concurrencyQuota += addend
-				}
-				return nil
-			})
-
-			if concurrencyQuota > int(concurrencyLimit) {
-				concurrencyQuota = int(concurrencyLimit)
-			} else if concurrencyQuota == 0 {
-				concurrencyQuota = 1
-			}
-			transformedSpec.Resources.ConcurrencyQuota = concurrencyQuota
 		}
 	}
 
