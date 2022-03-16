@@ -308,7 +308,7 @@ func TestParallel_Execute(t *testing.T) {
 				},
 			},
 			want: map[string][]*executetest.Table{
-				"merge": []*executetest.Table{
+				"_result": []*executetest.Table{
 					{
 						KeyCols: []string{"_start", "_stop"},
 						ColMeta: []flux.ColMeta{
