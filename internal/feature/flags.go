@@ -65,18 +65,6 @@ func OptimizeUnionTransformation() BoolFlag {
 	return optimizeUnionTransformation
 }
 
-var mqttPoolDialer = feature.MakeBoolFlag(
-	"MQTT Pool Dialer",
-	"mqttPoolDialer",
-	"Jonathan Sternberg",
-	false,
-)
-
-// MqttPoolDialer - MQTT pool dialer
-func MqttPoolDialer() BoolFlag {
-	return mqttPoolDialer
-}
-
 var vectorizedMap = feature.MakeBoolFlag(
 	"Vectorized Map",
 	"vectorizedMap",
@@ -159,7 +147,6 @@ var all = []Flag{
 	groupTransformationGroup,
 	queryConcurrencyLimit,
 	optimizeUnionTransformation,
-	mqttPoolDialer,
 	vectorizedMap,
 	narrowTransformationDifference,
 	narrowTransformationFill,
@@ -173,7 +160,6 @@ var byKey = map[string]Flag{
 	"groupTransformationGroup":         groupTransformationGroup,
 	"queryConcurrencyLimit":            queryConcurrencyLimit,
 	"optimizeUnionTransformation":      optimizeUnionTransformation,
-	"mqttPoolDialer":                   mqttPoolDialer,
 	"vectorizedMap":                    vectorizedMap,
 	"narrowTransformationDifference":   narrowTransformationDifference,
 	"narrowTransformationFill":         narrowTransformationFill,
