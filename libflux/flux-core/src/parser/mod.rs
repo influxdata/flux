@@ -1490,6 +1490,18 @@ impl<'input> Parser<'input> {
     }
     fn parse_int_literal(&mut self) -> IntegerLit {
         let t = self.expect(TokenType::Int);
+
+        if t.lit.starts_with('0') && t.lit.len() > 1 {
+            self.errs.push(format!(
+                "invalid integer literal \"{}\": nonzero value cannot start with 0",
+                t.lit
+            ));
+            return IntegerLit {
+                base: self.base_node_from_token(&t),
+                value: 0,
+            }
+        }
+
         match (&t.lit).parse::<i64>() {
             Err(_e) => {
                 self.errs.push(format!(
@@ -1504,7 +1516,7 @@ impl<'input> Parser<'input> {
             Ok(v) => IntegerLit {
                 base: self.base_node_from_token(&t),
                 value: v,
-            },
+            }
         }
     }
     fn parse_float_literal(&mut self) -> Result<FloatLit, TokenError> {

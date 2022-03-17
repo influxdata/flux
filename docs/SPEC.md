@@ -136,6 +136,10 @@ Examples:
     42
     317316873
 
+Errors:
+
+    0123 // invalid leading 0
+
 ##### Floating-point literals
 
 A floating-point literal is a decimal representation of a floating-point value.
@@ -164,7 +168,8 @@ It has an integer part and a duration unit part.
 Multiple durations may be specified together and the resulting duration is the sum of each smaller part.
 When several durations are specified together, larger units must appear before smaller ones, and there can be no repeated units.
 
-    duration_lit  = { int_lit duration_unit } .
+    duration_lit  = { duration_magnitude duration_unit } .
+    duration_magnitude = decimal_digit { decimal_digit }
     duration_unit = "y" | "mo" | "w" | "d" | "h" | "m" | "s" | "ms" | "us" | "µs" | "ns" .
 
 | Units    | Meaning                                 | Base |
