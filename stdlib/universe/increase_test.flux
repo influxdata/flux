@@ -70,8 +70,7 @@ testcase increase_basic {
 // The difference between two non-null values is their algebraic difference;
 // OR current value, if the result is negative and the current value is greater than equal to zero and nonNegative: true
 // OR zero, if the result is negative and the current value is less than zero and nonNegative: true
-testcase increase_with_negative_difference
-{
+testcase increase_with_negative_difference {
         got =
             csv.from(
                 csv:

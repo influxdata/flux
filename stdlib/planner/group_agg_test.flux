@@ -207,20 +207,19 @@ inData =
 
 // Group + count test
 // Group on one tag across fields
-testcase group_one_tag_count
-{
-        want =
-            array.from(rows: [{"t0": "t0v0", "_value": 12}, {"t0": "t0v1", "_value": 12}])
-                |> group(columns: ["t0"])
-        got =
-            testing.load(tables: inData)
-                |> range(start: -100y)
-                |> group(columns: ["t0"])
-                |> count()
-                |> drop(columns: ["_start", "_stop"])
+testcase group_one_tag_count {
+    want =
+        array.from(rows: [{"t0": "t0v0", "_value": 12}, {"t0": "t0v1", "_value": 12}])
+            |> group(columns: ["t0"])
+    got =
+        testing.load(tables: inData)
+            |> range(start: -100y)
+            |> group(columns: ["t0"])
+            |> count()
+            |> drop(columns: ["_start", "_stop"])
 
-        testing.diff(got, want) |> yield()
-    }
+    testing.diff(got, want) |> yield()
+}
 
 testcase group_all_filter_field_count {
     want = array.from(rows: [{"_value": 12}])
@@ -273,20 +272,19 @@ testcase group_two_tag_filter_field_count {
 }
 
 // Group + sum tests
-testcase group_one_tag_sum
-{
-        want =
-            array.from(rows: [{"t0": "t0v0", "_value": 19}, {"t0": "t0v1", "_value": 22}])
-                |> group(columns: ["t0"])
-        got =
-            testing.load(tables: inData)
-                |> range(start: -100y)
-                |> group(columns: ["t0"])
-                |> sum()
-                |> drop(columns: ["_start", "_stop"])
+testcase group_one_tag_sum {
+    want =
+        array.from(rows: [{"t0": "t0v0", "_value": 19}, {"t0": "t0v1", "_value": 22}])
+            |> group(columns: ["t0"])
+    got =
+        testing.load(tables: inData)
+            |> range(start: -100y)
+            |> group(columns: ["t0"])
+            |> sum()
+            |> drop(columns: ["_start", "_stop"])
 
-        testing.diff(got, want) |> yield()
-    }
+    testing.diff(got, want) |> yield()
+}
 
 testcase group_all_filter_field_sum {
     want = array.from(rows: [{"_value": 25}])

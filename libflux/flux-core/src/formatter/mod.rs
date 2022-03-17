@@ -677,9 +677,9 @@ impl<'doc> Formatter<'doc> {
                 ]
             }
             Statement::TestCase(n) => {
+                let comment = self.format_comments(&n.base.comments);
                 let prefix = docs![
                     arena,
-                    self.format_comments(&n.base.comments),
                     "testcase ",
                     self.format_identifier(&n.id),
                     if let Some(extends) = &n.extends {
@@ -692,7 +692,13 @@ impl<'doc> Formatter<'doc> {
 
                 let mut hang_doc = self.format_block(&n.block);
                 hang_doc.affixes.push(affixes(prefix, arena.nil()).nest());
-                hang_doc.format()
+                docs![
+                    arena,
+                    // Do not put the leading comment into the hang_doc so that
+                    // the comment size doesn't affect the hang layout.
+                    comment,
+                    hang_doc.format(),
+                ]
             }
             Statement::Builtin(n) => docs![
                 arena,

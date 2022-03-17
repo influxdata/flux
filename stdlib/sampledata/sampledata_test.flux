@@ -6,8 +6,7 @@ import "sampledata"
 import "testing"
 
 // return sample data with float values
-testcase sampledata_float
-{
+testcase sampledata_float {
         want =
             csv.from(
                 csv:
@@ -37,8 +36,7 @@ testcase sampledata_float
     }
 
 // return sample data with integer and null values
-testcase sampledata_int_null
-{
+testcase sampledata_int_null {
         want =
             csv.from(
                 csv:
@@ -68,8 +66,7 @@ testcase sampledata_int_null
     }
 
 // return sample data with string values
-testcase sampledata_string
-{
+testcase sampledata_string {
         want =
             csv.from(
                 csv:
@@ -99,8 +96,7 @@ testcase sampledata_string
     }
 
 // return sample data with boolean values
-testcase sampledata_bool
-{
+testcase sampledata_bool {
         want =
             csv.from(
                 csv:
@@ -130,8 +126,7 @@ testcase sampledata_bool
     }
 
 // return sample data with numeric boolean values
-testcase sampledata_numeric_bool
-{
+testcase sampledata_numeric_bool {
         want =
             csv.from(
                 csv:

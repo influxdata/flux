@@ -41,13 +41,12 @@ merge_filter_fn = () =>
 //    result = merge_filter_fn()
 //    testing.diff(got: result, want: testing.loadMem(csv: output))
 //}
-testcase merge_filter_flag_off
-{
-        option planner.disableLogicalRules = ["MergeFiltersRule"]
+testcase merge_filter_flag_off {
+    option planner.disableLogicalRules = ["MergeFiltersRule"]
 
-        expect.planner(rules: ["MergeFiltersRule": 0])
+    expect.planner(rules: ["MergeFiltersRule": 0])
 
-        result = merge_filter_fn()
+    result = merge_filter_fn()
 
-        testing.diff(got: result, want: testing.loadMem(csv: output))
-    }
+    testing.diff(got: result, want: testing.loadMem(csv: output))
+}
