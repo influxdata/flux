@@ -10,6 +10,7 @@ import (
 	"github.com/influxdata/flux/dependencies/influxdb"
 	"github.com/influxdata/flux/dependencies/mqtt"
 	"github.com/influxdata/flux/dependencies/url"
+	"github.com/influxdata/flux/dependency"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/mock"
 )
@@ -46,6 +47,7 @@ type Deps struct {
 func (d Deps) Inject(ctx context.Context) context.Context {
 	ctx = d.Deps.Inject(ctx)
 	ctx = d.influxdb.Inject(ctx)
+	ctx, _ = dependency.Inject(ctx)
 	return d.mqtt.Inject(ctx)
 }
 
