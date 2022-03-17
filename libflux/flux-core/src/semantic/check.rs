@@ -305,7 +305,7 @@ impl<'a> walk::Visitor<'a> for OptionDepVisitor<'a> {
 }
 
 /// `check_testcase()` checks that no TestCaseStmt still exist in the semantic graph.
-fn check_testcase(pkg: & nodes::Package) -> Result<()> {
+fn check_testcase(pkg: &nodes::Package) -> Result<()> {
     let mut v = TestCaseVisitor { err: None };
     walk::walk(&mut v, walk::Node::Package(pkg));
     match v.err {

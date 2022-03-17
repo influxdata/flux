@@ -904,24 +904,22 @@ fn int_literal_zero_prefix() {
                     location: loc.get(1, 1, 1, 5),
                     ..BaseNode::default()
                 },
-                expression: Expression::Integer(
-                    IntegerLit{
-                        base: BaseNode {
-                            location: loc.get(1, 1, 1, 5),
-                            errors: vec![
-                                "invalid integer literal \"0123\": nonzero value cannot start with 0".to_string()
-                            ],
-                            ..BaseNode::default()
-                        },
-                        value: 0,
-                    }
-                )
+                expression: Expression::Integer(IntegerLit {
+                    base: BaseNode {
+                        location: loc.get(1, 1, 1, 5),
+                        errors: vec![
+                            "invalid integer literal \"0123\": nonzero value cannot start with 0"
+                                .to_string()
+                        ],
+                        ..BaseNode::default()
+                    },
+                    value: 0,
+                })
             }))],
             eof: vec![],
         },
     )
 }
-
 
 #[test]
 fn issue_4231() {
