@@ -21,6 +21,7 @@ import (
 	bitwise "github.com/influxdata/flux/stdlib/experimental/bitwise"
 	geo "github.com/influxdata/flux/stdlib/experimental/geo"
 	json "github.com/influxdata/flux/stdlib/experimental/json"
+	mqtt "github.com/influxdata/flux/stdlib/experimental/mqtt"
 	oee "github.com/influxdata/flux/stdlib/experimental/oee"
 	prometheus "github.com/influxdata/flux/stdlib/experimental/prometheus"
 	record "github.com/influxdata/flux/stdlib/experimental/record"
@@ -73,6 +74,7 @@ var FluxTestPackages = func() []*ast.Package {
 	pkgs = append(pkgs, bitwise.FluxTestPackages...)
 	pkgs = append(pkgs, geo.FluxTestPackages...)
 	pkgs = append(pkgs, json.FluxTestPackages...)
+	pkgs = append(pkgs, mqtt.FluxTestPackages...)
 	pkgs = append(pkgs, oee.FluxTestPackages...)
 	pkgs = append(pkgs, prometheus.FluxTestPackages...)
 	pkgs = append(pkgs, record.FluxTestPackages...)

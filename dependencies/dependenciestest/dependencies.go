@@ -8,7 +8,9 @@ import (
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/dependencies/filesystem"
 	"github.com/influxdata/flux/dependencies/influxdb"
+	"github.com/influxdata/flux/dependencies/mqtt"
 	"github.com/influxdata/flux/dependencies/url"
+	"github.com/influxdata/flux/dependency"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/mock"
 )
@@ -39,10 +41,14 @@ func defaultTestFunction(req *http.Request) *http.Response {
 type Deps struct {
 	flux.Deps
 	influxdb influxdb.Dependency
+	mqtt     mqtt.Dependency
 }
 
 func (d Deps) Inject(ctx context.Context) context.Context {
-	return d.influxdb.Inject(d.Deps.Inject(ctx))
+	ctx = d.Deps.Inject(ctx)
+	ctx = d.influxdb.Inject(ctx)
+	ctx, _ = dependency.Inject(ctx)
+	return d.mqtt.Inject(ctx)
 }
 
 func Default() Deps {
@@ -61,6 +67,9 @@ func Default() Deps {
 		Deps: deps,
 		influxdb: influxdb.Dependency{
 			Provider: influxdb.HttpProvider{},
+		},
+		mqtt: mqtt.Dependency{
+			Dialer: mqtt.DefaultDialer{},
 		},
 	}
 }
