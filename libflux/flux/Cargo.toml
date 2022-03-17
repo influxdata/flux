@@ -45,9 +45,6 @@ flatbuffers = "2.0.0"
 anyhow ="1"
 walkdir = "2"
 
-[[bench]]
-name = "builtins"
-harness = false
 
 [[bench]]
 name = "basic"
