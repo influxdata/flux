@@ -235,7 +235,12 @@ where
             }
             NodeMut::TestCaseStmt(ref mut n) => {
                 walk_mut(v, &mut NodeMut::Identifier(&mut n.id));
-                walk_mut(v, &mut NodeMut::Block(&mut n.block));
+                if let Some(e) = n.extends.as_mut() {
+                    walk_mut(v, &mut NodeMut::StringLit(e));
+                }
+                for stmt in n.body.iter_mut() {
+                    walk_mut(v, &mut NodeMut::from_stmt(stmt));
+                }
             }
             NodeMut::BuiltinStmt(ref mut n) => {
                 walk_mut(v, &mut NodeMut::Identifier(&mut n.id));

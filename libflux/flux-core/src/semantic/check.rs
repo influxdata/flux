@@ -37,6 +37,8 @@ pub enum ErrorKind {
     VarReassignOption(String),
     /// An option depends on another option declared in the same package.
     DependentOptions(String, String),
+    /// TestCase still remains in semantic graph.
+    TestCase,
 }
 
 impl std::fmt::Display for ErrorKind {
@@ -60,6 +62,7 @@ impl std::fmt::Display for ErrorKind {
                 r#"option "{}" depends on option "{}", which is defined in the same package"#,
                 depender, dependee
             )),
+            Self::TestCase => f.write_str("TestCase statement exists in semantic graph"),
         }
     }
 }
@@ -88,7 +91,8 @@ impl AsDiagnostic for ErrorKind {
 pub fn check(pkg: &nodes::Package) -> Result<()> {
     let opts = check_option_stmts(pkg)?;
     check_vars(pkg, &opts)?;
-    check_option_dependencies(&opts)
+    check_option_dependencies(&opts)?;
+    check_testcase(pkg)
 }
 
 /// `check_option_stmts` checks that options are not reassigned within a package.
@@ -296,6 +300,37 @@ impl<'a> walk::Visitor<'a> for OptionDepVisitor<'a> {
     fn done(&mut self, node: Node<'a>) {
         if let Node::FunctionExpr(_) = node {
             self.vars_stack.pop();
+        }
+    }
+}
+
+/// `check_testcase()` checks that no TestCaseStmt still exist in the semantic graph.
+fn check_testcase(pkg: & nodes::Package) -> Result<()> {
+    let mut v = TestCaseVisitor { err: None };
+    walk::walk(&mut v, walk::Node::Package(pkg));
+    match v.err {
+        Some(e) => Err(e),
+        None => Ok(()),
+    }
+}
+
+struct TestCaseVisitor {
+    err: Option<Error>,
+}
+
+impl<'a> walk::Visitor<'a> for TestCaseVisitor {
+    fn visit(&mut self, node: Node<'a>) -> bool {
+        if self.err.is_some() {
+            return false;
+        }
+        match node {
+            walk::Node::TestCaseStmt(s) => {
+                self.err = Some(located(s.loc.clone(), ErrorKind::TestCase));
+                false
+            }
+            walk::Node::Package(_) => true,
+            walk::Node::File(_) => true,
+            _ => false,
         }
     }
 }
@@ -857,5 +892,21 @@ mod tests {
                 option monitor.log = (tables=<-) => tables
             "#,
         ]);
+    }
+    #[test]
+    fn test_testcase() {
+        // testcase statement
+        check_fail(
+            vec![
+                r#"
+                    package foo
+
+                    testcase x {
+                        y = 1
+                    }
+                "#,
+            ],
+            "file_0.flux@4:21-6:22: TestCase statement exists in semantic graph",
+        );
     }
 }
