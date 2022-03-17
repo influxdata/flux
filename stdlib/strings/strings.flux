@@ -818,6 +818,9 @@ builtin strlen : (v: string) => int
 // - start: Starting inclusive index of the substring.
 // - end: Ending exclusive index of the substring.
 //
+// When start or end are past the bounds of the string, respecitvely the start or end of the string
+// is assumed. When end is less than or equal to start an empty string is returned.
+//
 // ## Examples
 //
 // ### Return part of a string based on character index

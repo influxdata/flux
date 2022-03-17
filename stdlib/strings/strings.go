@@ -361,6 +361,9 @@ var substring = values.NewFunction(
 			if b > int64(len(v)) {
 				b = int64(len(v))
 			}
+			if b < a {
+				b = a
+			}
 			return values.NewString(string(s[a:b])), nil
 		}, ctx, args)
 	}, false,

@@ -1,7 +1,8 @@
 package strings_test
 
 
-import "array"
+import "internal/debug"
+import "experimental/array"
 import "strings"
 import "testing"
 
@@ -51,44 +52,27 @@ testcase string_title
         testing.diff(got: got, want: want)
     }
 
-// A substring is returned
-testcase string_substring
-{
-        input =
-            array.from(
-                rows: [
-                    {
-                        _time: 2018-05-22T19:53:26Z,
-                        _value: "What's the Story, Morning Glory",
-                        _field: "_field",
-                        _measurement: "_measurement",
-                    },
-                ],
-            )
+testcase string_substring {
+    str = "What's the Story, Morning Glory ab£"
+    bounds = [
+        {start: 18, end: 31, str: "What's the Story, Morning Glory", want: "Morning Glory"},
+        {start: 6, end: 11, str: "hello world", want: "world"},
+        {start: 8, end: 14, str: "convert £ to €", want: "£ to €"},
+        {start: 8, end: 13, str: "convert £ to €", want: "£ to "},
+        {start: -1, end: 5, str: "start out of bounds", want: "start"},
+        {start: 11, end: 100, str: "end out of bounds", want: "bounds"},
+        {start: 5, end: -1, str: "end <= start", want: ""},
+        // note end <= start here because start is past the actual end of the string
+        {start: 12, end: 100, str: "end <= start", want: ""},
+    ]
+    want = array.from(rows: bounds |> array.map(fn: (x) => ({_value: x.want})))
+    got =
+        array.from(
+            rows: bounds |> array.map(fn: (x) => ({_value: strings.substring(v: x.str, start: x.start, end: x.end)})),
+        )
 
-        // XXX: rockstar (31 Mar 2021) - Adding `map` here, otherwise `testing.diff`
-        // gets a type error because it thinks it's missing a _value label.
-        // See https://github.com/influxdata/flux/issues/3443
-        want =
-            array.from(
-                rows: [
-                    {
-                        _time: 2018-05-22T19:53:26Z,
-                        _value: "Morning Glory",
-                        _field: "_field",
-                        _measurement: "_measurement",
-                    },
-                ],
-            )
-                |> map(fn: (r) => ({r with _value: r._value}))
-        got =
-            input
-                |> range(start: 2018-05-22T19:53:26Z)
-                |> drop(columns: ["_start", "_stop"])
-                |> map(fn: (r) => ({r with _value: strings.substring(v: r._value, start: 18, end: 31)}))
-
-        testing.diff(got: got, want: want)
-    }
+    testing.diff(got: got, want: want)
+}
 
 // All instances of one string are replaced with another
 testcase string_replaceAll
