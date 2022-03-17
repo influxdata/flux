@@ -1499,7 +1499,7 @@ impl<'input> Parser<'input> {
             return IntegerLit {
                 base: self.base_node_from_token(&t),
                 value: 0,
-            }
+            };
         }
 
         match (&t.lit).parse::<i64>() {
@@ -1516,7 +1516,7 @@ impl<'input> Parser<'input> {
             Ok(v) => IntegerLit {
                 base: self.base_node_from_token(&t),
                 value: v,
-            }
+            },
         }
     }
     fn parse_float_literal(&mut self) -> Result<FloatLit, TokenError> {

@@ -191,8 +191,6 @@ fn duration_literal_all_units() {
     )
 }
 
-
-
 #[test]
 fn duration_literal_leading_zero() {
     let mut p = Parser::new(r#"dur = 01y02mo03w04d05h06m07s08ms09µs010ns"#);
