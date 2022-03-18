@@ -12,6 +12,7 @@ import (
 	"github.com/influxdata/flux/dependency"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
+	"github.com/influxdata/flux/internal/feature"
 	"github.com/influxdata/flux/internal/jaeger"
 	"github.com/influxdata/flux/internal/spec"
 	"github.com/influxdata/flux/interpreter"
@@ -475,6 +476,12 @@ func (p *AstProgram) Start(ctx context.Context, alloc *memory.Allocator) (flux.Q
 	// The program must inject execution dependencies to make it available to
 	// function calls during the evaluation phase (see `tableFind`).
 	deps := execute.NewExecutionDependencies(alloc, &p.Now, p.Logger)
+
+	// The query concurrency limit is taken from the feature flag, then lives
+	// in the depenencies. This gives us an opportunity to modify it before
+	// execution begins.
+	deps.ExecutionOptions.ConcurrencyLimit = feature.QueryConcurrencyLimit().Int(ctx)
+
 	ctx, span := dependency.Inject(ctx, deps)
 	nextPlanNodeID := new(int)
 	ctx = context.WithValue(ctx, plan.NextPlanNodeIDKey, nextPlanNodeID)

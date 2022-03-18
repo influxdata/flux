@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"math"
 	"regexp"
 	"strings"
 	"testing"
@@ -243,8 +242,7 @@ csv.from(csv: "foo,bar") |> range(start: 2017-10-10T00:00:00Z)
 				Edges: [][2]int{
 					{0, 1},
 				},
-				Resources: flux.ResourceManagement{ConcurrencyQuota: 1, MemoryBytesQuota: math.MaxInt64},
-				Now:       parser.MustParseTime("2017-10-10T00:01:00Z").Value,
+				Now: parser.MustParseTime("2017-10-10T00:01:00Z").Value,
 			},
 		},
 		{
@@ -262,8 +260,7 @@ csv.from(csv: "foo,bar") |> range(start: 2017-10-10T00:00:00Z)
 				Edges: [][2]int{
 					{0, 1},
 				},
-				Resources: flux.ResourceManagement{ConcurrencyQuota: 1, MemoryBytesQuota: math.MaxInt64},
-				Now:       parser.MustParseTime("2018-10-10T00:00:00Z").Value,
+				Now: parser.MustParseTime("2018-10-10T00:00:00Z").Value,
 			},
 		},
 		{
@@ -294,8 +291,7 @@ csv.from(csv: "foo,bar") |> range(start: 2017-10-10T00:00:00Z)
 				Edges: [][2]int{
 					{0, 1},
 				},
-				Resources: flux.ResourceManagement{ConcurrencyQuota: 1, MemoryBytesQuota: math.MaxInt64},
-				Now:       parser.MustParseTime("2018-10-10T00:00:00Z").Value,
+				Now: parser.MustParseTime("2018-10-10T00:00:00Z").Value,
 			},
 		},
 		{
@@ -509,8 +505,7 @@ func TestCompileOptions(t *testing.T) {
 		Edges: [][2]int{
 			{0, 1},
 		},
-		Resources: flux.ResourceManagement{ConcurrencyQuota: 1, MemoryBytesQuota: math.MaxInt64},
-		Now:       parser.MustParseTime("2018-10-10T00:00:00Z").Value,
+		Now: parser.MustParseTime("2018-10-10T00:00:00Z").Value,
 	})
 
 	if err := plantest.ComparePlansShallow(want, program.PlanSpec); err != nil {
@@ -552,9 +547,8 @@ from(bucket: "bkt") |> range(start: 0) |> filter(fn: (r) => r._value > 0) |> cou
 				Nodes: []plan.Node{
 					&plan.PhysicalPlanNode{Spec: &influxdb.FromRemoteProcedureSpec{}},
 				},
-				Edges:     [][2]int{},
-				Resources: flux.ResourceManagement{ConcurrencyQuota: 1, MemoryBytesQuota: math.MaxInt64},
-				Now:       nowFn(),
+				Edges: [][2]int{},
+				Now:   nowFn(),
 			}),
 		},
 		{
@@ -573,8 +567,7 @@ from(bucket: "bkt") |> range(start: 0) |> filter(fn: (r) => r._value > 0) |> cou
 				Edges: [][2]int{
 					{0, 1},
 				},
-				Resources: flux.ResourceManagement{ConcurrencyQuota: 1, MemoryBytesQuota: math.MaxInt64},
-				Now:       nowFn(),
+				Now: nowFn(),
 			}),
 		},
 		{
@@ -596,8 +589,7 @@ from(bucket: "bkt") |> range(start: 0) |> filter(fn: (r) => r._value > 0) |> cou
 					{0, 1},
 					{1, 2},
 				},
-				Resources: flux.ResourceManagement{ConcurrencyQuota: 1, MemoryBytesQuota: math.MaxInt64},
-				Now:       nowFn(),
+				Now: nowFn(),
 			}),
 		},
 		{
@@ -619,8 +611,7 @@ from(bucket: "bkt") |> range(start: 0) |> filter(fn: (r) => r._value > 0) |> cou
 					{0, 1},
 					{1, 2},
 				},
-				Resources: flux.ResourceManagement{ConcurrencyQuota: 1, MemoryBytesQuota: math.MaxInt64},
-				Now:       nowFn(),
+				Now: nowFn(),
 			}),
 		},
 		{
@@ -636,9 +627,8 @@ from(bucket: "bkt") |> range(start: 0) |> filter(fn: (r) => r._value > 0) |> cou
 				Nodes: []plan.Node{
 					&plan.PhysicalPlanNode{Spec: &influxdb.FromRemoteProcedureSpec{}},
 				},
-				Edges:     [][2]int{},
-				Resources: flux.ResourceManagement{ConcurrencyQuota: 1, MemoryBytesQuota: math.MaxInt64},
-				Now:       nowFn(),
+				Edges: [][2]int{},
+				Now:   nowFn(),
 			}),
 		},
 		{
@@ -654,9 +644,8 @@ from(bucket: "bkt") |> range(start: 0) |> filter(fn: (r) => r._value > 0) |> cou
 				Nodes: []plan.Node{
 					&plan.PhysicalPlanNode{Spec: &influxdb.FromRemoteProcedureSpec{}},
 				},
-				Edges:     [][2]int{},
-				Resources: flux.ResourceManagement{ConcurrencyQuota: 1, MemoryBytesQuota: math.MaxInt64},
-				Now:       nowFn(),
+				Edges: [][2]int{},
+				Now:   nowFn(),
 			}),
 		},
 		{
@@ -717,9 +706,8 @@ from(bucket: "bkt") |> range(start: 0) |> filter(fn: (r) => r._value > 0) |> cou
 				Nodes: []plan.Node{
 					&plan.PhysicalPlanNode{Spec: &influxdb.FromRemoteProcedureSpec{}},
 				},
-				Edges:     [][2]int{},
-				Resources: flux.ResourceManagement{ConcurrencyQuota: 1, MemoryBytesQuota: math.MaxInt64},
-				Now:       nowFn(),
+				Edges: [][2]int{},
+				Now:   nowFn(),
 			}),
 		},
 		{
@@ -741,8 +729,7 @@ from(bucket: "bkt") |> range(start: 0) |> filter(fn: (r) => r._value > 0) |> cou
 					{0, 1},
 					{1, 2},
 				},
-				Resources: flux.ResourceManagement{ConcurrencyQuota: 1, MemoryBytesQuota: math.MaxInt64},
-				Now:       nowFn(),
+				Now: nowFn(),
 			}),
 		},
 		{
@@ -768,8 +755,7 @@ option planner.disableLogicalRules = ["removeCountRule"]`},
 					{0, 1},
 					{1, 2},
 				},
-				Resources: flux.ResourceManagement{ConcurrencyQuota: 1, MemoryBytesQuota: math.MaxInt64},
-				Now:       nowFn(),
+				Now: nowFn(),
 			}),
 		},
 	}

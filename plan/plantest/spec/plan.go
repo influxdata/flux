@@ -1,4 +1,4 @@
-package plantest
+package spec
 
 import (
 	"fmt"
