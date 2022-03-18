@@ -884,6 +884,17 @@ fn testcase() {
     assert.equal(want: 4, got: 2 + 2)
 }"#,
     );
+    assert_format(
+        r#"// comment
+testcase x
+{
+    x = 1
+    }"#,
+        r#"// comment
+testcase x {
+    x = 1
+}"#,
+    )
 }
 
 #[test]

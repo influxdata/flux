@@ -207,39 +207,38 @@ inData =
 
 // Group + first test
 // Group on one tag across fields
-testcase group_one_tag_first
-{
-        want =
-            array.from(
-                rows: [
-                    {
-                        _measurement: "m0",
-                        _field: "f0",
-                        "t0": "t0v0",
-                        "t1": "t1v0",
-                        "_value": 3,
-                        _time: 2021-07-06T23:06:30Z,
-                    },
-                    {
-                        _measurement: "m0",
-                        _field: "f0",
-                        "t0": "t0v1",
-                        "t1": "t1v0",
-                        "_value": 1,
-                        _time: 2021-07-06T23:06:30Z,
-                    },
-                ],
-            )
-                |> group(columns: ["t0"])
-        got =
-            testing.load(tables: inData)
-                |> range(start: -100y)
-                |> group(columns: ["t0"])
-                |> first()
-                |> drop(columns: ["_start", "_stop"])
+testcase group_one_tag_first {
+    want =
+        array.from(
+            rows: [
+                {
+                    _measurement: "m0",
+                    _field: "f0",
+                    "t0": "t0v0",
+                    "t1": "t1v0",
+                    "_value": 3,
+                    _time: 2021-07-06T23:06:30Z,
+                },
+                {
+                    _measurement: "m0",
+                    _field: "f0",
+                    "t0": "t0v1",
+                    "t1": "t1v0",
+                    "_value": 1,
+                    _time: 2021-07-06T23:06:30Z,
+                },
+            ],
+        )
+            |> group(columns: ["t0"])
+    got =
+        testing.load(tables: inData)
+            |> range(start: -100y)
+            |> group(columns: ["t0"])
+            |> first()
+            |> drop(columns: ["_start", "_stop"])
 
-        testing.diff(got, want) |> yield()
-    }
+    testing.diff(got, want) |> yield()
+}
 
 testcase group_all_filter_field_first {
     want =
@@ -351,39 +350,38 @@ testcase group_two_tag_filter_field_first {
 }
 
 // Group + last tests
-testcase group_one_tag_last
-{
-        want =
-            array.from(
-                rows: [
-                    {
-                        _measurement: "m0",
-                        _field: "f1",
-                        "t0": "t0v0",
-                        "t1": "t1v1",
-                        _time: 2021-07-06T23:06:50Z,
-                        _value: 3,
-                    },
-                    {
-                        _measurement: "m0",
-                        _field: "f1",
-                        "t0": "t0v1",
-                        "t1": "t1v1",
-                        _time: 2021-07-06T23:06:50Z,
-                        _value: 2,
-                    },
-                ],
-            )
-                |> group(columns: ["t0"])
-        got =
-            testing.load(tables: inData)
-                |> range(start: -100y)
-                |> group(columns: ["t0"])
-                |> last()
-                |> drop(columns: ["_start", "_stop"])
+testcase group_one_tag_last {
+    want =
+        array.from(
+            rows: [
+                {
+                    _measurement: "m0",
+                    _field: "f1",
+                    "t0": "t0v0",
+                    "t1": "t1v1",
+                    _time: 2021-07-06T23:06:50Z,
+                    _value: 3,
+                },
+                {
+                    _measurement: "m0",
+                    _field: "f1",
+                    "t0": "t0v1",
+                    "t1": "t1v1",
+                    _time: 2021-07-06T23:06:50Z,
+                    _value: 2,
+                },
+            ],
+        )
+            |> group(columns: ["t0"])
+    got =
+        testing.load(tables: inData)
+            |> range(start: -100y)
+            |> group(columns: ["t0"])
+            |> last()
+            |> drop(columns: ["_start", "_stop"])
 
-        testing.diff(got, want) |> yield()
-    }
+    testing.diff(got, want) |> yield()
+}
 
 testcase group_all_filter_field_last {
     want =

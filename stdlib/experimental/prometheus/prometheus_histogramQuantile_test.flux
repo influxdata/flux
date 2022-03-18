@@ -7,8 +7,7 @@ import "testing"
 
 // Test prometheus.histogramQuantile with Prometheus histograms written using
 // the Prometheus metric parser format version 2
-testcase prometheus_histogramQuantile_v2
-{
+testcase prometheus_histogramQuantile_v2 {
         inData =
             "#group,false,false,true,true,false,false,true,true
 #datatype,string,long,string,string,dateTime:RFC3339,double,string,string
@@ -140,8 +139,7 @@ testcase prometheus_histogramQuantile_v2
 
 // Test prometheus.histogramQuantile with Prometheus histograms written using
 // the Prometheus metric parser format version 1
-testcase prometheus_histogramQuantile_v1
-{
+testcase prometheus_histogramQuantile_v1 {
         inData =
             "#group,false,false,true,true,false,false,true
 #datatype,string,long,string,string,dateTime:RFC3339,double,string
