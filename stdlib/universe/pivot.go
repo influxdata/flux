@@ -302,7 +302,12 @@ func (t *pivotTransformation) Process(id execute.DatasetID, tbl flux.Table) erro
 				}
 				nextCol, err := builder.AddCol(newCol)
 				if err != nil {
-					return err
+					// column already exists
+					return errors.Newf(
+						codes.Invalid,
+						"value %q appears in a column key column, but a column named %q already exists; consider renaming %q to something else before pivoting",
+						colKey, colKey, colKey,
+					)
 				}
 				t.colKeyMaps[groupKeyString][colKey] = nextCol
 			}

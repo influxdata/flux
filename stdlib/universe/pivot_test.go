@@ -769,6 +769,36 @@ func TestPivot_Process(t *testing.T) {
 			},
 			wantErr: errors.New(codes.Invalid, "specified value column does not exist in table: _value"),
 		},
+		{
+			name: "column name conflict",
+			spec: &universe.PivotProcedureSpec{
+				RowKey:      []string{"_time"},
+				ColumnKey:   []string{"_field"},
+				ValueColumn: "_value",
+			},
+			data: []flux.Table{
+				&executetest.Table{
+					KeyCols: []string{"_measurement", "_field", "f1"},
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+						{Label: "_measurement", Type: flux.TString},
+						{Label: "_field", Type: flux.TString},
+						{Label: "f1", Type: flux.TString},
+					},
+					Data: [][]interface{}{
+						{execute.Time(1), 1.0, "m1", "f1", "foo"},
+						{execute.Time(1), 2.0, "m1", "f2", "foo"},
+						{execute.Time(2), 3.0, "m1", "f1", "foo"},
+						{execute.Time(2), 4.0, "m1", "f2", "foo"},
+					},
+				},
+			},
+			wantErr: errors.New(
+				codes.Invalid,
+				`value "f1" appears in a column key column, but a column named "f1" already exists; consider renaming "f1" to something else before pivoting`,
+			),
+		},
 	}
 	for _, tc := range testCases {
 		tc := tc
