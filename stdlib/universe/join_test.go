@@ -786,13 +786,12 @@ func TestMergeJoin_Process(t *testing.T) {
 						{Label: "_time", Type: flux.TTime},
 						{Label: "_value_a", Type: flux.TFloat},
 						{Label: "_value_b", Type: flux.TFloat},
-						{Label: "key_a", Type: flux.TString},
-						{Label: "key_b", Type: flux.TString},
+						{Label: "key", Type: flux.TString},
 					},
-					KeyCols: []string{"key_b"},
+					KeyCols: []string{"key"},
 					Data: [][]interface{}{
-						{execute.Time(1), 1.5, 10.0, nil, "bar"},
-						{execute.Time(2), 2.5, 20.0, nil, "bar"},
+						{execute.Time(1), 1.5, 10.0, "bar"},
+						{execute.Time(2), 2.5, 20.0, "bar"},
 					},
 				},
 			},
@@ -862,13 +861,12 @@ func TestMergeJoin_Process(t *testing.T) {
 						{Label: "_time", Type: flux.TTime},
 						{Label: "_value_a", Type: flux.TFloat},
 						{Label: "_value_b", Type: flux.TFloat},
-						{Label: "key_a", Type: flux.TString},
-						{Label: "key_b", Type: flux.TString},
+						{Label: "key", Type: flux.TString},
 					},
-					KeyCols: []string{"key_b"},
+					KeyCols: []string{"key"},
 					Data: [][]interface{}{
-						{execute.Time(1), 1.5, 10.0, nil, nil},
-						{execute.Time(2), 2.5, 20.0, nil, nil},
+						{execute.Time(1), 1.5, 10.0, nil},
+						{execute.Time(2), 2.5, 20.0, nil},
 					},
 				},
 			},
@@ -1651,13 +1649,6 @@ func TestMergeJoin_Process(t *testing.T) {
 			},
 		},
 		{
-			// Give one table in data0 an extra column.
-			// When join tries to look up that column name in the column index map,
-			// it will get a value of 0.
-			//
-			// Prior to #4310, this would cause the join transformation to try to
-			// append whatever value was in the extra column to the column at index 0.
-			// If they did not have the same type, join would panic.
 			name: "extra column",
 			spec: &universe.MergeJoinProcedureSpec{
 				On:         []string{"_time", "Alias", "Device", "SerialNumber"},
@@ -1738,8 +1729,23 @@ func TestMergeJoin_Process(t *testing.T) {
 						{"SIM-SAM-M169", int64(1), "12345", execute.Time(1), 8.4, 8.4, 1.2},
 					},
 				},
+				{
+					KeyCols: []string{"Alias", "Device", "SerialNumber", "_time"},
+					ColMeta: []flux.ColMeta{
+						{Label: "Alias", Type: flux.TString},
+						{Label: "Device", Type: flux.TInt},
+						{Label: "SerialNumber", Type: flux.TString},
+						{Label: "_time", Type: flux.TTime},
+						{Label: "Gauge", Type: flux.TFloat},
+						{Label: "Pitch_a", Type: flux.TFloat},
+						{Label: "Pitch_b", Type: flux.TFloat},
+						{Label: "Angle", Type: flux.TFloat},
+					},
+					Data: [][]interface{}{
+						{"SIM-SAM-M169", int64(2), "13579", execute.Time(1), 9.3, 9.3, 9.3, 5.6},
+					},
+				},
 			},
-			wantErr: errors.New("column 'Gauge' not found in join schema"),
 		},
 	}
 	for _, tc := range testCases {
