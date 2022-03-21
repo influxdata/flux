@@ -33,7 +33,7 @@ func TestParallel_Execute(t *testing.T) {
 		name              string
 		spec              *plantest.PlanSpec
 		want              map[string][]*executetest.Table
-		allocator         *memory.Allocator
+		allocator         memory.Allocator
 		wantErr           error
 		wantValidationErr error
 	}{

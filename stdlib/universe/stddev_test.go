@@ -117,7 +117,7 @@ func TestStddev_Process(t *testing.T) {
 }
 
 func BenchmarkStddev(b *testing.B) {
-	data := arrow.NewFloat(NormalData, &memory.Allocator{})
+	data := arrow.NewFloat(NormalData, &memory.ResourceAllocator{})
 	executetest.AggFuncBenchmarkHelper(
 		b,
 		&universe.StddevAgg{Mode: "sample"},

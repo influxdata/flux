@@ -18,7 +18,7 @@ func (q *Querier) Query(ctx context.Context, w io.Writer, c flux.Compiler, d flu
 		return 0, err
 	}
 	ctx = executetest.NewTestExecuteDependencies().Inject(ctx)
-	alloc := &memory.Allocator{}
+	alloc := &memory.ResourceAllocator{}
 	query, err := program.Start(ctx, alloc)
 	if err != nil {
 		return 0, err

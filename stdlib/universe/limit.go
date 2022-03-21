@@ -351,7 +351,7 @@ func (t *limitTransformationAdapter) processChunk(
 func NewNarrowLimitTransformation(
 	spec *LimitProcedureSpec,
 	id execute.DatasetID,
-	mem *memory.Allocator,
+	mem memory.Allocator,
 ) (execute.Transformation, execute.Dataset, error) {
 	t := &limitTransformationAdapter{
 		limitTransformation: &limitTransformation{

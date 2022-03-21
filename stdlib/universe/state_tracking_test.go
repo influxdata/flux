@@ -377,7 +377,7 @@ func TestStateTracking_Process(t *testing.T) {
 				tc.data,
 				tc.want,
 				tc.wantErr,
-				func(id execute.DatasetID, alloc *memory.Allocator) (execute.Transformation, execute.Dataset) {
+				func(id execute.DatasetID, alloc memory.Allocator) (execute.Transformation, execute.Dataset) {
 					ctx := dependenciestest.Default().Inject(context.Background())
 
 					ntx, nd, err := universe.NewNarrowStateTrackingTransformation(ctx, tc.spec, id, alloc)

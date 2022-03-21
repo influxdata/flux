@@ -729,7 +729,7 @@ func TestTo_Process(t *testing.T) {
 				inTables,
 				wantTables,
 				tc.wantErr,
-				func(id execute.DatasetID, alloc *memory.Allocator) (execute.Transformation, execute.Dataset) {
+				func(id execute.DatasetID, alloc memory.Allocator) (execute.Transformation, execute.Dataset) {
 					tr, d, err := influxdb.NewToTransformation(context.TODO(), id, tc.spec, provider, alloc)
 					if err != nil {
 						t.Fatal(err)

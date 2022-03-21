@@ -277,7 +277,7 @@ func TestLimit_Process(t *testing.T) {
 				tc.data(),
 				tc.want,
 				nil,
-				func(id execute.DatasetID, alloc *memory.Allocator) (execute.Transformation, execute.Dataset) {
+				func(id execute.DatasetID, alloc memory.Allocator) (execute.Transformation, execute.Dataset) {
 					return universe.NewLimitTransformation(tc.spec, id)
 				},
 			)
@@ -294,7 +294,7 @@ func TestLimit_Process(t *testing.T) {
 					tc.data(),
 					tc.want,
 					nil,
-					func(id execute.DatasetID, alloc *memory.Allocator) (execute.Transformation, execute.Dataset) {
+					func(id execute.DatasetID, alloc memory.Allocator) (execute.Transformation, execute.Dataset) {
 						tr, ds, err := universe.NewNarrowLimitTransformation(tc.spec, id, alloc)
 						if err != nil {
 							t.Fatal(err)
@@ -308,7 +308,7 @@ func TestLimit_Process(t *testing.T) {
 
 func TestProcess_Limit_MultiBuffer(t *testing.T) {
 	key := execute.NewGroupKey(nil, nil)
-	mem := &memory.Allocator{}
+	mem := &memory.ResourceAllocator{}
 	b := table.NewBufferedBuilder(key, mem)
 	{
 		buf := arrow.TableBuffer{
@@ -412,7 +412,7 @@ func TestProcess_Limit_MultiBuffer(t *testing.T) {
 
 func TestProcess_NarrowLimit_MultiBuffer(t *testing.T) {
 	key := execute.NewGroupKey(nil, nil)
-	mem := &memory.Allocator{}
+	mem := &memory.ResourceAllocator{}
 	b := table.NewBufferedBuilder(key, mem)
 	{
 		buf := arrow.TableBuffer{
@@ -538,7 +538,7 @@ func benchmarkLimit(b *testing.B, n, l int) {
 		N: int64(n),
 	}
 	executetest.ProcessBenchmarkHelper(b,
-		func(alloc *memory.Allocator) (flux.TableIterator, error) {
+		func(alloc memory.Allocator) (flux.TableIterator, error) {
 			schema := gen.Schema{
 				NumPoints: l,
 				Alloc:     alloc,
@@ -551,7 +551,7 @@ func benchmarkLimit(b *testing.B, n, l int) {
 			}
 			return gen.Input(context.Background(), schema)
 		},
-		func(id execute.DatasetID, alloc *memory.Allocator) (execute.Transformation, execute.Dataset) {
+		func(id execute.DatasetID, alloc memory.Allocator) (execute.Transformation, execute.Dataset) {
 			return universe.NewLimitTransformation(spec, id)
 		},
 	)
@@ -562,7 +562,7 @@ func benchmarkNarrowLimit(b *testing.B, n, l int) {
 		N: int64(n),
 	}
 	executetest.ProcessBenchmarkHelper(b,
-		func(alloc *memory.Allocator) (flux.TableIterator, error) {
+		func(alloc memory.Allocator) (flux.TableIterator, error) {
 			schema := gen.Schema{
 				NumPoints: l,
 				Alloc:     alloc,
@@ -576,7 +576,7 @@ func benchmarkNarrowLimit(b *testing.B, n, l int) {
 			return gen.Input(context.Background(), schema)
 		},
 
-		func(id execute.DatasetID, alloc *memory.Allocator) (execute.Transformation, execute.Dataset) {
+		func(id execute.DatasetID, alloc memory.Allocator) (execute.Transformation, execute.Dataset) {
 			tr, ds, err := universe.NewNarrowLimitTransformation(spec, id, alloc)
 			if err != nil {
 				b.Fatal(err)

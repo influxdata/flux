@@ -119,7 +119,7 @@ type DiffTransformation struct {
 
 	d     execute.Dataset
 	cache execute.TableBuilderCache
-	alloc *memory.Allocator
+	alloc memory.Allocator
 
 	inputCache *execute.RandomAccessGroupLookup
 
@@ -150,7 +150,7 @@ type tableColumn struct {
 	Values array.Array
 }
 
-func copyTable(id execute.DatasetID, tbl flux.Table, alloc *memory.Allocator) (*tableBuffer, error) {
+func copyTable(id execute.DatasetID, tbl flux.Table, alloc memory.Allocator) (*tableBuffer, error) {
 	// Find the value columns for the table and save them.
 	// We do not care about the group key.
 	type tableBuilderColumn struct {
@@ -306,7 +306,7 @@ func createDiffTransformation(id execute.DatasetID, mode execute.AccumulationMod
 	return transform, dataset, nil
 }
 
-func NewDiffTransformation(d execute.Dataset, cache execute.TableBuilderCache, spec *DiffProcedureSpec, wantID, gotID execute.DatasetID, a *memory.Allocator) *DiffTransformation {
+func NewDiffTransformation(d execute.Dataset, cache execute.TableBuilderCache, spec *DiffProcedureSpec, wantID, gotID execute.DatasetID, a memory.Allocator) *DiffTransformation {
 	parentState := make(map[execute.DatasetID]*diffParentState)
 	parentState[wantID] = new(diffParentState)
 	parentState[gotID] = new(diffParentState)

@@ -43,7 +43,7 @@ type Table struct {
 	Err error
 	// Alloc is the allocator used to create the column readers.
 	// Memory is not tracked unless this is set.
-	Alloc *memory.Allocator
+	Alloc memory.Allocator
 	// IsDone indicates if this table has been used.
 	IsDone bool
 }
@@ -647,7 +647,7 @@ type TableTest struct {
 	// tables of different shapes and sizes to get coverage of
 	// as much of the code as possible. The TableIterator will
 	// be created once for each subtest.
-	NewFn func(ctx context.Context, alloc *memory.Allocator) flux.TableIterator
+	NewFn func(ctx context.Context, alloc memory.Allocator) flux.TableIterator
 
 	// IsDone will report if the table is considered done for reading.
 	// The call to Done should force this to be true, but it is possible
@@ -666,7 +666,7 @@ func (tt TableTest) run(t *testing.T, name string, f func(tt *tableTest)) {
 			TableTest: tt,
 			t:         t,
 			logger:    zaptest.NewLogger(t),
-			alloc:     &memory.Allocator{},
+			alloc:     &memory.ResourceAllocator{},
 		})
 	})
 }
@@ -675,7 +675,7 @@ type tableTest struct {
 	TableTest
 	t      *testing.T
 	logger *zap.Logger
-	alloc  *memory.Allocator
+	alloc  *memory.ResourceAllocator
 }
 
 func (tt *tableTest) do(f func(tbl flux.Table) error) {

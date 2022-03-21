@@ -130,7 +130,7 @@ func doTestRun(t testing.TB, c flux.Compiler) flux.Statistics {
 	}
 
 	ctx := executetest.NewTestExecuteDependencies().Inject(context.Background())
-	alloc := &memory.Allocator{}
+	alloc := &memory.ResourceAllocator{}
 	r, err := program.Start(ctx, alloc)
 	if err != nil {
 		t.Fatalf("unexpected error while executing testing.run: %v", err)
@@ -159,7 +159,7 @@ func doTestInspect(t testing.TB, c flux.Compiler) flux.Statistics {
 		t.Fatalf("unexpected error while compiling query: %v", err)
 	}
 	ctx := executetest.NewTestExecuteDependencies().Inject(context.Background())
-	alloc := &memory.Allocator{}
+	alloc := &memory.ResourceAllocator{}
 	r, err := program.Start(ctx, alloc)
 	if err != nil {
 		t.Fatalf("unexpected error while executing testing.inspect: %v", err)

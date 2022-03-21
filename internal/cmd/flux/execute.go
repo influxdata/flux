@@ -22,7 +22,7 @@ func executeE(ctx context.Context, script, format string) error {
 		return err
 	}
 
-	mem := &memory.Allocator{}
+	mem := &memory.ResourceAllocator{}
 	q, err := prog.Start(ctx, mem)
 	if err != nil {
 		return err

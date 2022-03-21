@@ -1795,7 +1795,7 @@ func TestDifference_Process_Narrow(t *testing.T) {
 				tc.data,
 				tc.want,
 				tc.wantErr,
-				func(id execute.DatasetID, alloc *memory.Allocator) (execute.Transformation, execute.Dataset) {
+				func(id execute.DatasetID, alloc memory.Allocator) (execute.Transformation, execute.Dataset) {
 					tr, d, err := universe.NewNarrowDifferenceTransformation(tc.spec, id, alloc)
 					if err != nil {
 						t.Fatal(err)
@@ -2038,7 +2038,7 @@ func TestDifference_Process_Narrow_With_NonNegative_KeepFirst_InitialZero(t *tes
 				tc.data,
 				tc.want,
 				tc.wantErr,
-				func(id execute.DatasetID, alloc *memory.Allocator) (execute.Transformation, execute.Dataset) {
+				func(id execute.DatasetID, alloc memory.Allocator) (execute.Transformation, execute.Dataset) {
 					tr, d, err := universe.NewNarrowDifferenceTransformation(tc.spec, id, alloc)
 					if err != nil {
 						t.Fatal(err)

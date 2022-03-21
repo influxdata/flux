@@ -451,7 +451,7 @@ type sortedPivotTransformation struct {
 	execute.ExecutionNode
 	d     *execute.PassthroughDataset
 	ctx   context.Context
-	alloc *memory.Allocator
+	alloc memory.Allocator
 	spec  SortedPivotProcedureSpec
 
 	watermark  execute.Time
@@ -461,7 +461,7 @@ type sortedPivotTransformation struct {
 	group         *pivotTableGroup
 }
 
-func newSortedPivotTransformation(ctx context.Context, spec SortedPivotProcedureSpec, id execute.DatasetID, alloc *memory.Allocator) (execute.Transformation, execute.Dataset, error) {
+func newSortedPivotTransformation(ctx context.Context, spec SortedPivotProcedureSpec, id execute.DatasetID, alloc memory.Allocator) (execute.Transformation, execute.Dataset, error) {
 	t := &sortedPivotTransformation{
 		d:     execute.NewPassthroughDataset(id),
 		ctx:   ctx,

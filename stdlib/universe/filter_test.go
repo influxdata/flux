@@ -721,7 +721,7 @@ func TestFilter_Process(t *testing.T) {
 				tc.data,
 				tc.want,
 				nil,
-				func(id execute.DatasetID, alloc *memory.Allocator) (execute.Transformation, execute.Dataset) {
+				func(id execute.DatasetID, alloc memory.Allocator) (execute.Transformation, execute.Dataset) {
 					ctx := dependenciestest.Default().Inject(context.Background())
 					tx, d, err := universe.NewFilterTransformation(ctx, tc.spec, id, alloc)
 					if err != nil {
@@ -761,7 +761,7 @@ gen.tables(n: 2048, tags: [{name: "a", cardinality: 10}])
 		t.Fatal(err)
 	}
 
-	alloc := &memory.Allocator{}
+	alloc := &memory.ResourceAllocator{}
 	q, err := program.Start(context.Background(), alloc)
 	if err != nil {
 		t.Fatal(err)
@@ -942,7 +942,7 @@ func benchmarkFilter(b *testing.B, n int, fn *semantic.FunctionExpression) {
 		},
 	}
 	executetest.ProcessBenchmarkHelper(b,
-		func(alloc *memory.Allocator) (flux.TableIterator, error) {
+		func(alloc memory.Allocator) (flux.TableIterator, error) {
 			schema := gen.Schema{
 				NumPoints: n,
 				Alloc:     alloc,
@@ -955,7 +955,7 @@ func benchmarkFilter(b *testing.B, n int, fn *semantic.FunctionExpression) {
 			}
 			return gen.Input(context.Background(), schema)
 		},
-		func(id execute.DatasetID, alloc *memory.Allocator) (execute.Transformation, execute.Dataset) {
+		func(id execute.DatasetID, alloc memory.Allocator) (execute.Transformation, execute.Dataset) {
 			t, d, err := universe.NewFilterTransformation(context.Background(), spec, id, alloc)
 			if err != nil {
 				b.Fatal(err)

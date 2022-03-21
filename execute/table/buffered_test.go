@@ -17,7 +17,7 @@ import (
 func TestBufferedTable(t *testing.T) {
 	executetest.RunTableTests(t,
 		executetest.TableTest{
-			NewFn: func(ctx context.Context, alloc *memory.Allocator) flux.TableIterator {
+			NewFn: func(ctx context.Context, alloc memory.Allocator) flux.TableIterator {
 				// Only a single buffer.
 				tbl1 := table.FromBuffer(
 					func() flux.ColReader {

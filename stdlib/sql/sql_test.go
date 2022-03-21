@@ -75,7 +75,7 @@ func TestFromRowReader(t *testing.T) {
 
 		var rr execute.RowReader = &MockRowReader{row: 0}
 		rr.(*MockRowReader).InitColumnTypes(nil)
-		alloc := &memory.Allocator{}
+		alloc := &memory.ResourceAllocator{}
 		table, err := read(context.Background(), rr, alloc)
 		if err != nil {
 			t.Fatal(err)

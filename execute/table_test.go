@@ -179,7 +179,7 @@ func TestTablesEqual(t *testing.T) {
 
 func TestColListTable(t *testing.T) {
 	executetest.RunTableTests(t, executetest.TableTest{
-		NewFn: func(ctx context.Context, alloc *memory.Allocator) flux.TableIterator {
+		NewFn: func(ctx context.Context, alloc memory.Allocator) flux.TableIterator {
 			b1 := execute.NewColListTableBuilder(execute.NewGroupKey(
 				[]flux.ColMeta{
 					{Label: "host", Type: flux.TString},
@@ -229,7 +229,7 @@ func TestColListTable(t *testing.T) {
 
 func TestColListTable_AppendNil(t *testing.T) {
 	key := execute.NewGroupKey(nil, nil)
-	tb := execute.NewColListTableBuilder(key, &memory.Allocator{})
+	tb := execute.NewColListTableBuilder(key, &memory.ResourceAllocator{})
 
 	// Add a column for the value.
 	idx, _ := tb.AddCol(flux.ColMeta{
@@ -268,7 +268,7 @@ func TestColListTable_AppendNil(t *testing.T) {
 
 func TestColListTable_SetNil(t *testing.T) {
 	key := execute.NewGroupKey(nil, nil)
-	tb := execute.NewColListTableBuilder(key, &memory.Allocator{})
+	tb := execute.NewColListTableBuilder(key, &memory.ResourceAllocator{})
 
 	// Add a column for the value.
 	idx, _ := tb.AddCol(flux.ColMeta{
@@ -307,7 +307,7 @@ func TestColListTable_SetNil(t *testing.T) {
 }
 
 func TestCopyTable(t *testing.T) {
-	alloc := &memory.Allocator{}
+	alloc := &memory.ResourceAllocator{}
 
 	input, err := gen.Input(context.Background(), gen.Schema{
 		Tags: []gen.Tag{
@@ -449,7 +449,7 @@ func TestColListTableBuilder_AppendValues(t *testing.T) {
 			name: "Strings",
 			typ:  flux.TString,
 			values: func() array.Array {
-				b := arrow.NewStringBuilder(&memory.Allocator{})
+				b := arrow.NewStringBuilder(&memory.ResourceAllocator{})
 				b.Append("a")
 				b.Append("d")
 				b.AppendNull()
@@ -517,7 +517,7 @@ func TestColListTableBuilder_AppendValues(t *testing.T) {
 	} {
 		t.Run(tt.name, func(t *testing.T) {
 			key := execute.NewGroupKey(nil, nil)
-			b := execute.NewColListTableBuilder(key, &memory.Allocator{})
+			b := execute.NewColListTableBuilder(key, &memory.ResourceAllocator{})
 			if _, err := b.AddCol(flux.ColMeta{Label: "_value", Type: tt.typ}); err != nil {
 				t.Fatal(err)
 			}
@@ -598,7 +598,7 @@ func TestCopyTable_Empty(t *testing.T) {
 
 func TestEmptyWindowTable(t *testing.T) {
 	executetest.RunTableTests(t, executetest.TableTest{
-		NewFn: func(ctx context.Context, alloc *memory.Allocator) flux.TableIterator {
+		NewFn: func(ctx context.Context, alloc memory.Allocator) flux.TableIterator {
 			// Prime the allocator with an allocation to avoid
 			// an error happening for no allocations.
 			// No allocations is expected but the table tests check that

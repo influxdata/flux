@@ -81,7 +81,7 @@ func TestOperatorProfiler_GetResult(t *testing.T) {
 		go fn(typ, label, ctx, 100*i+i)
 	}
 	wg.Wait()
-	tbl, err := p.GetSortedResult(nil, &memory.Allocator{}, false, "MeanDuration")
+	tbl, err := p.GetSortedResult(nil, &memory.ResourceAllocator{}, false, "MeanDuration")
 	if err != nil {
 		t.Error(err)
 	}
@@ -127,7 +127,7 @@ func TestQueryProfiler_GetResult(t *testing.T) {
 ",10,11
 `
 	q.Done()
-	tbl, err := p.GetResult(q, &memory.Allocator{})
+	tbl, err := p.GetResult(q, &memory.ResourceAllocator{})
 	if err != nil {
 		t.Error(err)
 	}

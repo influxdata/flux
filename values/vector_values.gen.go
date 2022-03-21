@@ -42,7 +42,7 @@ func NewVectorValue(arr arrow.Array, typ semantic.MonoType) Vector {
 }
 
 // A convenience method for unit testing
-func NewVectorFromElements(mem *memory.Allocator, es ...interface{}) Vector {
+func NewVectorFromElements(mem memory.Allocator, es ...interface{}) Vector {
 	var typ semantic.MonoType
 	switch es[0].(type) {
 
@@ -75,7 +75,7 @@ func NewVectorFromElements(mem *memory.Allocator, es ...interface{}) Vector {
 	return newVectorFromSlice(vs, typ, mem)
 }
 
-func newVectorFromSlice(values []Value, typ semantic.MonoType, mem *memory.Allocator) Vector {
+func newVectorFromSlice(values []Value, typ semantic.MonoType, mem memory.Allocator) Vector {
 	switch typ {
 
 	case semantic.BasicInt:

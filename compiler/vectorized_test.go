@@ -13,7 +13,7 @@ import (
 	"github.com/influxdata/flux/values"
 )
 
-func vectorizedObjectFromMap(mp map[string]interface{}, mem *memory.Allocator) values.Object {
+func vectorizedObjectFromMap(mp map[string]interface{}, mem memory.Allocator) values.Object {
 	obj := make(map[string]values.Value)
 	for k, v := range mp {
 		switch s := v.(type) {
@@ -106,7 +106,7 @@ func TestVectorizedFns(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			checked := arrow.NewCheckedAllocator(memory.DefaultAllocator)
-			mem := &memory.Allocator{Allocator: checked}
+			mem := &memory.ResourceAllocator{Allocator: checked}
 
 			pkg, err := runtime.AnalyzeSource(tc.fn)
 			if err != nil {
@@ -140,7 +140,7 @@ func TestVectorizedFns(t *testing.T) {
 				t.Fatalf("unexpected error: %s", err)
 			}
 
-			want := vectorizedObjectFromMap(tc.want, &memory.Allocator{})
+			want := vectorizedObjectFromMap(tc.want, &memory.ResourceAllocator{})
 			if !cmp.Equal(want, got, CmpOptions...) {
 				t.Errorf("unexpected value -want/+got\n%s", cmp.Diff(want, got, CmpOptions...))
 			}

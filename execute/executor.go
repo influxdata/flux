@@ -25,7 +25,7 @@ type Executor interface {
 	// may return zero or more values. The returned channel must not require itself to
 	// be read so the executor must allocate enough space in the channel so if the channel
 	// is unread that it will not block.
-	Execute(ctx context.Context, p *plan.Spec, a *memory.Allocator) (map[string]flux.Result, <-chan metadata.Metadata, error)
+	Execute(ctx context.Context, p *plan.Spec, a memory.Allocator) (map[string]flux.Result, <-chan metadata.Metadata, error)
 }
 
 type executor struct {
@@ -55,7 +55,7 @@ type executionState struct {
 
 	ctx    context.Context
 	cancel func()
-	alloc  *memory.Allocator
+	alloc  memory.Allocator
 
 	resources flux.ResourceManagement
 
@@ -69,7 +69,7 @@ type executionState struct {
 	logger     *zap.Logger
 }
 
-func (e *executor) Execute(ctx context.Context, p *plan.Spec, a *memory.Allocator) (map[string]flux.Result, <-chan metadata.Metadata, error) {
+func (e *executor) Execute(ctx context.Context, p *plan.Spec, a memory.Allocator) (map[string]flux.Result, <-chan metadata.Metadata, error) {
 	es, err := e.createExecutionState(ctx, p, a)
 	if err != nil {
 		return nil, nil, errors.Wrap(err, codes.Inherit, "failed to initialize execute state")
@@ -78,7 +78,7 @@ func (e *executor) Execute(ctx context.Context, p *plan.Spec, a *memory.Allocato
 	return es.results, es.metaCh, nil
 }
 
-func (e *executor) createExecutionState(ctx context.Context, p *plan.Spec, a *memory.Allocator) (*executionState, error) {
+func (e *executor) createExecutionState(ctx context.Context, p *plan.Spec, a memory.Allocator) (*executionState, error) {
 	ctx, cancel := context.WithCancel(ctx)
 	es := &executionState{
 		p:         p,
@@ -503,7 +503,7 @@ func (ec executionContext) StreamContext() StreamContext {
 	return ec.streamContext
 }
 
-func (ec executionContext) Allocator() *memory.Allocator {
+func (ec executionContext) Allocator() memory.Allocator {
 	return ec.es.alloc
 }
 

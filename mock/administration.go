@@ -30,8 +30,8 @@ func (a *Administration) StreamContext() execute.StreamContext {
 	return nil
 }
 
-func (a *Administration) Allocator() *memory.Allocator {
-	return &memory.Allocator{}
+func (a *Administration) Allocator() memory.Allocator {
+	return &memory.ResourceAllocator{}
 }
 
 func (a *Administration) Parents() []execute.DatasetID {

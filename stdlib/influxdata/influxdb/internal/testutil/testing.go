@@ -317,7 +317,7 @@ func ExecuteSourceTestHelper(t *testing.T, ctx context.Context, spec plan.Physic
 		},
 	})
 
-	mem := &memory.Allocator{}
+	mem := &memory.ResourceAllocator{}
 	executor := execute.NewExecutor(logger)
 	results, _, err := executor.Execute(ctx, ps, mem)
 	if err != nil {

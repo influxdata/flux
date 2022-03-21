@@ -4,4 +4,4 @@ import (
 	"github.com/influxdata/flux/memory"
 )
 
-var UnlimitedAllocator = &memory.Allocator{}
+var UnlimitedAllocator = &memory.ResourceAllocator{}

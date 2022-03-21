@@ -14,8 +14,8 @@ import (
 
 type Profiler interface {
 	Name() string
-	GetResult(q flux.Query, alloc *memory.Allocator) (flux.Table, error)
-	GetSortedResult(q flux.Query, alloc *memory.Allocator, desc bool, sortKeys ...string) (flux.Table, error)
+	GetResult(q flux.Query, alloc memory.Allocator) (flux.Table, error)
+	GetSortedResult(q flux.Query, alloc memory.Allocator, desc bool, sortKeys ...string) (flux.Table, error)
 }
 
 type CreateProfilerFunc func() Profiler
@@ -155,7 +155,7 @@ func (o *OperatorProfiler) closeIncomingChannel() {
 	}
 }
 
-func (o *OperatorProfiler) GetResult(q flux.Query, alloc *memory.Allocator) (flux.Table, error) {
+func (o *OperatorProfiler) GetResult(q flux.Query, alloc memory.Allocator) (flux.Table, error) {
 	o.closeIncomingChannel()
 	b, err := o.getTableBuilder(alloc)
 	if err != nil {
@@ -171,7 +171,7 @@ func (o *OperatorProfiler) GetResult(q flux.Query, alloc *memory.Allocator) (flu
 // GetSortedResult is identical to GetResult, except it calls Sort()
 // on the ColListTableBuilder to make testing easier.
 // sortKeys and desc are passed directly into the Sort() call
-func (o *OperatorProfiler) GetSortedResult(q flux.Query, alloc *memory.Allocator, desc bool, sortKeys ...string) (flux.Table, error) {
+func (o *OperatorProfiler) GetSortedResult(q flux.Query, alloc memory.Allocator, desc bool, sortKeys ...string) (flux.Table, error) {
 	o.closeIncomingChannel()
 	b, err := o.getTableBuilder(alloc)
 	if err != nil {
@@ -185,7 +185,7 @@ func (o *OperatorProfiler) GetSortedResult(q flux.Query, alloc *memory.Allocator
 	return tbl, nil
 }
 
-func (o *OperatorProfiler) getTableBuilder(alloc *memory.Allocator) (*ColListTableBuilder, error) {
+func (o *OperatorProfiler) getTableBuilder(alloc memory.Allocator) (*ColListTableBuilder, error) {
 	groupKey := NewGroupKey(
 		[]flux.ColMeta{
 			{
@@ -297,7 +297,7 @@ func (s *QueryProfiler) Name() string {
 	return "query"
 }
 
-func (s *QueryProfiler) GetResult(q flux.Query, alloc *memory.Allocator) (flux.Table, error) {
+func (s *QueryProfiler) GetResult(q flux.Query, alloc memory.Allocator) (flux.Table, error) {
 	b, err := s.getTableBuilder(q, alloc)
 	if err != nil {
 		return nil, err
@@ -312,7 +312,7 @@ func (s *QueryProfiler) GetResult(q flux.Query, alloc *memory.Allocator) (flux.T
 // GetSortedResult is identical to GetResult, except it calls Sort()
 // on the ColListTableBuilder to make testing easier.
 // sortKeys and desc are passed directly into the Sort() call
-func (s *QueryProfiler) GetSortedResult(q flux.Query, alloc *memory.Allocator, desc bool, sortKeys ...string) (flux.Table, error) {
+func (s *QueryProfiler) GetSortedResult(q flux.Query, alloc memory.Allocator, desc bool, sortKeys ...string) (flux.Table, error) {
 	b, err := s.getTableBuilder(q, alloc)
 	if err != nil {
 		return nil, err
@@ -325,7 +325,7 @@ func (s *QueryProfiler) GetSortedResult(q flux.Query, alloc *memory.Allocator, d
 	return tbl, nil
 }
 
-func (s *QueryProfiler) getTableBuilder(q flux.Query, alloc *memory.Allocator) (*ColListTableBuilder, error) {
+func (s *QueryProfiler) getTableBuilder(q flux.Query, alloc memory.Allocator) (*ColListTableBuilder, error) {
 	groupKey := NewGroupKey(
 		[]flux.ColMeta{
 			{

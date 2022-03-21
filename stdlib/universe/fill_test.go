@@ -807,7 +807,7 @@ func TestFill_Process(t *testing.T) {
 				tc.data(),
 				tc.want,
 				nil,
-				func(id execute.DatasetID, alloc *memory.Allocator) (execute.Transformation, execute.Dataset) {
+				func(id execute.DatasetID, alloc memory.Allocator) (execute.Transformation, execute.Dataset) {
 					ctx := dependenciestest.Default().Inject(context.Background())
 					return universe.NewFillTransformation(ctx, tc.spec, id, alloc)
 				},
@@ -822,7 +822,7 @@ func TestFill_Process(t *testing.T) {
 				tc.data(),
 				tc.want,
 				nil,
-				func(id execute.DatasetID, alloc *memory.Allocator) (execute.Transformation, execute.Dataset) {
+				func(id execute.DatasetID, alloc memory.Allocator) (execute.Transformation, execute.Dataset) {
 					ctx := dependenciestest.Default().Inject(context.Background())
 					tr, d, err := universe.NewNarrowFillTransformation(ctx, tc.spec, id, alloc)
 					if err != nil {
@@ -848,7 +848,7 @@ func benchmarkFill(b *testing.B, n int) {
 		Value:  values.NewFloat(0),
 	}
 	executetest.ProcessBenchmarkHelper(b,
-		func(alloc *memory.Allocator) (flux.TableIterator, error) {
+		func(alloc memory.Allocator) (flux.TableIterator, error) {
 			schema := gen.Schema{
 				NumPoints: n,
 				Alloc:     alloc,
@@ -866,7 +866,7 @@ func benchmarkFill(b *testing.B, n int) {
 			}
 			return gen.Input(context.Background(), schema)
 		},
-		func(id execute.DatasetID, alloc *memory.Allocator) (execute.Transformation, execute.Dataset) {
+		func(id execute.DatasetID, alloc memory.Allocator) (execute.Transformation, execute.Dataset) {
 			return universe.NewFillTransformation(context.Background(), spec, id, alloc)
 		},
 	)

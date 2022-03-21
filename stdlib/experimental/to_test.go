@@ -110,7 +110,7 @@ func TestToTransformation(t *testing.T) {
 		}),
 	}
 
-	cache := execute.NewTableBuilderCache(&memory.Allocator{})
+	cache := execute.NewTableBuilderCache(&memory.ResourceAllocator{})
 	d := execute.NewDataset(executetest.RandomDatasetID(), execute.DiscardingMode, cache)
 	d.SetTriggerSpec(plan.DefaultTriggerSpec)
 
@@ -238,7 +238,7 @@ func TestToTransformation_Errors(t *testing.T) {
 				}),
 			}
 
-			cache := execute.NewTableBuilderCache(&memory.Allocator{})
+			cache := execute.NewTableBuilderCache(&memory.ResourceAllocator{})
 			d := execute.NewDataset(executetest.RandomDatasetID(), execute.DiscardingMode, cache)
 			d.SetTriggerSpec(plan.DefaultTriggerSpec)
 
@@ -286,7 +286,7 @@ func TestToTransformation_CloseOnError(t *testing.T) {
 		},
 	}
 
-	cache := execute.NewTableBuilderCache(&memory.Allocator{})
+	cache := execute.NewTableBuilderCache(&memory.ResourceAllocator{})
 	d := execute.NewDataset(executetest.RandomDatasetID(), execute.DiscardingMode, cache)
 	d.SetTriggerSpec(plan.DefaultTriggerSpec)
 

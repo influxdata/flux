@@ -920,7 +920,7 @@ func TestSortedPivot_ProcessWithTags(t *testing.T) {
 				tc.data,
 				tc.want,
 				nil,
-				func(id execute.DatasetID, alloc *memory.Allocator) (execute.Transformation, execute.Dataset) {
+				func(id execute.DatasetID, alloc memory.Allocator) (execute.Transformation, execute.Dataset) {
 					spec := *tc.spec
 					tr, d, err := universe.NewSortedPivotTransformation(context.Background(), spec, id, alloc)
 					if err != nil {
@@ -1509,7 +1509,7 @@ func TestSortedPivot_Process(t *testing.T) {
 				tc.data,
 				tc.want,
 				nil,
-				func(id execute.DatasetID, alloc *memory.Allocator) (execute.Transformation, execute.Dataset) {
+				func(id execute.DatasetID, alloc memory.Allocator) (execute.Transformation, execute.Dataset) {
 					spec := *tc.spec
 					tr, d, err := universe.NewSortedPivotTransformation(context.Background(), spec, id, alloc)
 					if err != nil {
@@ -1527,7 +1527,7 @@ func TestSortedPivot_Process_VariousSchemas(t *testing.T) {
 		ColumnKey:   []string{"_field"},
 		ValueColumn: "_value",
 	}
-	mem := &memory.Allocator{}
+	mem := &memory.ResourceAllocator{}
 	id := executetest.RandomDatasetID()
 	tr, d, err := universe.NewSortedPivotTransformation(context.Background(), spec, id, mem)
 	if err != nil {
@@ -1586,7 +1586,7 @@ func benchmarkPivot(b *testing.B, n int) {
 		ValueColumn: execute.DefaultValueColLabel,
 	}
 	executetest.ProcessBenchmarkHelper(b,
-		func(alloc *memory.Allocator) (flux.TableIterator, error) {
+		func(alloc memory.Allocator) (flux.TableIterator, error) {
 			schema := gen.Schema{
 				NumPoints: n,
 				Alloc:     alloc,
@@ -1599,7 +1599,7 @@ func benchmarkPivot(b *testing.B, n int) {
 			}
 			return gen.Input(context.Background(), schema)
 		},
-		func(id execute.DatasetID, alloc *memory.Allocator) (execute.Transformation, execute.Dataset) {
+		func(id execute.DatasetID, alloc memory.Allocator) (execute.Transformation, execute.Dataset) {
 			// cache := execute.NewTableBuilderCache(alloc)
 			// d := execute.NewDataset(id, execute.DiscardingMode, cache)
 			// t := NewPivotTransformation(d, cache, spec)

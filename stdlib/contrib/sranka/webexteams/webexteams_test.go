@@ -94,7 +94,7 @@ csv.from(csv:data) |> endpoint()
 			}
 			ctx := flux.NewDefaultDependencies().Inject(context.Background())
 			fmt.Println("*** ", tc.name)
-			query, err := prog.Start(ctx, &memory.Allocator{})
+			query, err := prog.Start(ctx, &memory.ResourceAllocator{})
 
 			if err != nil {
 				t.Fatal(err)

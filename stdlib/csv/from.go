@@ -151,7 +151,7 @@ type CSVSource struct {
 	id            execute.DatasetID
 	getDataStream func() (io.ReadCloser, error)
 	ts            []execute.Transformation
-	alloc         *memory.Allocator
+	alloc         memory.Allocator
 	mode          string
 }
 

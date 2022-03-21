@@ -21,9 +21,9 @@ var (
 	BooleanType = arrow.FixedWidthTypes.Boolean
 )
 
-// Interface represents an immutable sequence of values.
+// Array represents an immutable sequence of values.
 //
-// This type is derived from the arrow array.Array interface.
+// This type is derived from the arrow.Array interface.
 type Array interface {
 	// DataType returns the type metadata for this instance.
 	DataType() DataType

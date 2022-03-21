@@ -59,7 +59,7 @@ type PartitionMergeTransformation struct {
 	ctx     context.Context
 	dataset *execute.PassthroughDataset
 	span    opentracing.Span
-	alloc   *memory.Allocator
+	alloc   memory.Allocator
 
 	mu               sync.Mutex
 	predecessorState map[execute.DatasetID]*parallelPredecessorState
@@ -76,7 +76,7 @@ func (t *PartitionMergeTransformation) RetractTable(id execute.DatasetID, key fl
 	return t.dataset.RetractTable(key)
 }
 
-func NewPartitionMergeTransformation(ctx context.Context, dataset *execute.PassthroughDataset, alloc *memory.Allocator, spec *PartitionMergeProcedureSpec, predecessors []execute.DatasetID) (*PartitionMergeTransformation, error) {
+func NewPartitionMergeTransformation(ctx context.Context, dataset *execute.PassthroughDataset, alloc memory.Allocator, spec *PartitionMergeProcedureSpec, predecessors []execute.DatasetID) (*PartitionMergeTransformation, error) {
 	var span opentracing.Span
 	span, ctx = opentracing.StartSpanFromContext(ctx, "PartitionMergeTransformation.Process")
 

@@ -99,7 +99,7 @@ type AssertEqualsTransformation struct {
 
 	d     execute.Dataset
 	cache execute.TableBuilderCache
-	a     *memory.Allocator
+	a     memory.Allocator
 
 	name string
 }
@@ -141,7 +141,7 @@ func createAssertEqualsTransformation(id execute.DatasetID, mode execute.Accumul
 	return transform, dataset, nil
 }
 
-func NewAssertEqualsTransformation(d execute.Dataset, cache execute.TableBuilderCache, spec *AssertEqualsProcedureSpec, gotID, wantID execute.DatasetID, a *memory.Allocator) *AssertEqualsTransformation {
+func NewAssertEqualsTransformation(d execute.Dataset, cache execute.TableBuilderCache, spec *AssertEqualsProcedureSpec, gotID, wantID execute.DatasetID, a memory.Allocator) *AssertEqualsTransformation {
 	return &AssertEqualsTransformation{
 		gotParent:   &assertEqualsParentState{id: gotID},
 		wantParent:  &assertEqualsParentState{id: wantID},
