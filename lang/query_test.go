@@ -23,7 +23,7 @@ func runQuery(ctx context.Context, script string) (flux.Query, error) {
 		return nil, err
 	}
 	ctx = executetest.NewTestExecuteDependencies().Inject(ctx)
-	q, err := program.Start(ctx, &memory.Allocator{})
+	q, err := program.Start(ctx, &memory.ResourceAllocator{})
 	if err != nil {
 		return nil, err
 	}

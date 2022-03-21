@@ -139,11 +139,11 @@ type GeneratorSource struct {
 	Start time.Time
 	Stop  time.Time
 	Count int64
-	alloc *memory.Allocator
+	alloc memory.Allocator
 	Fn    compiler.Func
 }
 
-func NewGeneratorSource(a *memory.Allocator) *GeneratorSource {
+func NewGeneratorSource(a memory.Allocator) *GeneratorSource {
 	return &GeneratorSource{alloc: a}
 }
 

@@ -52,7 +52,7 @@ func TestTransportDataset_Process(t *testing.T) {
 
 	mem := arrowmem.NewCheckedAllocator(memory.DefaultAllocator)
 	defer mem.AssertSize(t, 0)
-	alloc := &memory.Allocator{
+	alloc := &memory.ResourceAllocator{
 		Allocator: mem,
 	}
 	buffer := arrow.TableBuffer{
@@ -96,7 +96,7 @@ func TestTransportDataset_AddTransformation(t *testing.T) {
 
 	mem := arrowmem.NewCheckedAllocator(memory.DefaultAllocator)
 	defer mem.AssertSize(t, 0)
-	alloc := &memory.Allocator{
+	alloc := &memory.ResourceAllocator{
 		Allocator: mem,
 	}
 	buffer := arrow.TableBuffer{
@@ -195,7 +195,7 @@ func TestTransportDataset_MultipleDownstream(t *testing.T) {
 
 	mem := arrowmem.NewCheckedAllocator(memory.DefaultAllocator)
 	defer mem.AssertSize(t, 0)
-	alloc := &memory.Allocator{
+	alloc := &memory.ResourceAllocator{
 		Allocator: mem,
 	}
 	buffer := arrow.TableBuffer{

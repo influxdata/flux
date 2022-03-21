@@ -13,12 +13,31 @@ import (
 // DefaultAllocator is the default memory allocator for Flux.
 //
 // This implements the memory.Allocator interface from arrow.
-var DefaultAllocator = memory.DefaultAllocator
+var DefaultAllocator = &GoAllocator{}
 
-var _ memory.Allocator = (*Allocator)(nil)
+// Allocator defines how memory is allocated and released within
+// the flux engine.
+type Allocator interface {
+	memory.Allocator
 
-// Allocator tracks the amount of memory being consumed by a query.
-type Allocator struct {
+	// Account provides direct access to record to the allocator
+	// that the given memory was allocated outside the Allocator.
+	// In order to release the memory, a negative size can be used.
+	Account(size int) error
+}
+
+// GoAllocator implements a version of the allocator that uses native Go
+// slices. It does not track or limit the amount of memory that is used.
+type GoAllocator struct {
+	memory.GoAllocator
+}
+
+func (*GoAllocator) Account(size int) error { return nil }
+
+var _ Allocator = (*ResourceAllocator)(nil)
+
+// ResourceAllocator tracks the amount of memory being consumed by a query.
+type ResourceAllocator struct {
 	// Variables accessed with atomic operations should be at
 	// the beginning of the struct to ensure byte alignment is correct.
 	// https://golang.org/pkg/sync/atomic/#pkg-note-BUG
@@ -46,7 +65,7 @@ type Allocator struct {
 
 // Allocate will ensure that the requested memory is available and
 // record that it is in use.
-func (a *Allocator) Allocate(size int) []byte {
+func (a *ResourceAllocator) Allocate(size int) []byte {
 	if a == nil {
 		return DefaultAllocator.Allocate(size)
 	}
@@ -70,7 +89,7 @@ func (a *Allocator) Allocate(size int) []byte {
 	return alloc.Allocate(size)
 }
 
-func (a *Allocator) Reallocate(size int, b []byte) []byte {
+func (a *ResourceAllocator) Reallocate(size int, b []byte) []byte {
 	if a == nil {
 		return DefaultAllocator.Reallocate(size, b)
 	}
@@ -87,7 +106,7 @@ func (a *Allocator) Reallocate(size int, b []byte) []byte {
 // Account will manually account for the amount of memory being used.
 // This is typically used for memory that is allocated outside of the
 // Allocator that must be recorded in some way.
-func (a *Allocator) Account(size int) error {
+func (a *ResourceAllocator) Account(size int) error {
 	if size == 0 {
 		return nil
 	}
@@ -95,19 +114,19 @@ func (a *Allocator) Account(size int) error {
 }
 
 // Allocated returns the amount of currently allocated memory.
-func (a *Allocator) Allocated() int64 {
+func (a *ResourceAllocator) Allocated() int64 {
 	return atomic.LoadInt64(&a.bytesAllocated)
 }
 
 // MaxAllocated reports the maximum amount of allocated memory at any point in the query.
-func (a *Allocator) MaxAllocated() int64 {
+func (a *ResourceAllocator) MaxAllocated() int64 {
 	return atomic.LoadInt64(&a.maxAllocated)
 }
 
 // TotalAllocated reports the total amount of memory allocated.
 // It counts all memory that was allocated at any time even if it
 // was released.
-func (a *Allocator) TotalAllocated() int64 {
+func (a *ResourceAllocator) TotalAllocated() int64 {
 	return atomic.LoadInt64(&a.totalAllocated)
 }
 
@@ -117,7 +136,7 @@ func (a *Allocator) TotalAllocated() int64 {
 // method provides a low-level way of releasing the memory without
 // using a Reference.
 // Free will release the memory associated with the byte slice.
-func (a *Allocator) Free(b []byte) {
+func (a *ResourceAllocator) Free(b []byte) {
 	if a == nil {
 		DefaultAllocator.Free(b)
 		return
@@ -133,7 +152,7 @@ func (a *Allocator) Free(b []byte) {
 	atomic.AddInt64(&a.bytesAllocated, int64(-size))
 }
 
-func (a *Allocator) count(size int) error {
+func (a *ResourceAllocator) count(size int) error {
 	var c int64
 	if a.Limit != nil {
 		// We need to load the current bytes allocated, add to it, and
@@ -174,7 +193,7 @@ func (a *Allocator) count(size int) error {
 	return nil
 }
 
-func (a *Allocator) requestMemory(allocated, want int64) error {
+func (a *ResourceAllocator) requestMemory(allocated, want int64) error {
 	a.mu.Lock()
 	defer a.mu.Unlock()
 
@@ -209,7 +228,7 @@ func (a *Allocator) requestMemory(allocated, want int64) error {
 }
 
 // allocator returns the underlying memory.Allocator that should be used.
-func (a *Allocator) allocator() memory.Allocator {
+func (a *ResourceAllocator) allocator() memory.Allocator {
 	if a.Allocator == nil {
 		return DefaultAllocator
 	}

@@ -118,7 +118,7 @@ type AllocatingFromProcedureSpec struct {
 	ByteCount int
 
 	id    execute.DatasetID
-	alloc *memory.Allocator
+	alloc memory.Allocator
 	ts    []execute.Transformation
 }
 

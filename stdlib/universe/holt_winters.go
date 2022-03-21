@@ -9,7 +9,7 @@ import (
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
-	fluxmemory "github.com/influxdata/flux/memory"
+	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/stdlib/universe/holt_winters"
@@ -141,7 +141,7 @@ type holtWintersTransformation struct {
 	execute.ExecutionNode
 	d     execute.Dataset
 	cache execute.TableBuilderCache
-	alloc *fluxmemory.Allocator
+	alloc memory.Allocator
 
 	withFit    bool
 	column     string
@@ -151,7 +151,7 @@ type holtWintersTransformation struct {
 	interval   values.Duration
 }
 
-func NewHoltWintersTransformation(d execute.Dataset, cache execute.TableBuilderCache, alloc *fluxmemory.Allocator, spec *HoltWintersProcedureSpec) *holtWintersTransformation {
+func NewHoltWintersTransformation(d execute.Dataset, cache execute.TableBuilderCache, alloc memory.Allocator, spec *HoltWintersProcedureSpec) *holtWintersTransformation {
 	return &holtWintersTransformation{
 		d:          d,
 		cache:      cache,

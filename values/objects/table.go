@@ -160,7 +160,7 @@ func (t *Table) Equal(other values.Value) bool {
 	if !ok || !t.schema.Equal(ot.schema) {
 		return false
 	}
-	eq, err := execute.TablesEqual(t.BufferedTable, ot.BufferedTable, &memory.Allocator{})
+	eq, err := execute.TablesEqual(t.BufferedTable, ot.BufferedTable, &memory.ResourceAllocator{})
 	if err != nil || !eq {
 		return false
 	}

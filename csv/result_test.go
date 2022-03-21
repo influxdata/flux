@@ -2534,7 +2534,7 @@ func TestMultiResultDecoder(t *testing.T) {
 
 func TestTable(t *testing.T) {
 	executetest.RunTableTests(t, executetest.TableTest{
-		NewFn: func(ctx context.Context, alloc *memory.Allocator) flux.TableIterator {
+		NewFn: func(ctx context.Context, alloc memory.Allocator) flux.TableIterator {
 			decoder := csv.NewResultDecoder(csv.ResultDecoderConfig{
 				// Set this to a low value so we can have a table with
 				// multiple buffers.

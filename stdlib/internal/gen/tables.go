@@ -158,7 +158,7 @@ type Source struct {
 	ts execute.TransformationSet
 
 	schema gen.Schema
-	alloc  *memory.Allocator
+	alloc  memory.Allocator
 }
 
 func (s *Source) AddTransformation(t execute.Transformation) {

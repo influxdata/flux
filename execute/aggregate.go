@@ -168,9 +168,9 @@ func NewSimpleAggregateTransformation(ctx context.Context, id DatasetID, agg Sim
 		return NewAggregateTransformation(id, tr, mem)
 	}
 
-	alloc, ok := mem.(*fluxmemory.Allocator)
+	alloc, ok := mem.(*fluxmemory.ResourceAllocator)
 	if !ok {
-		alloc = &fluxmemory.Allocator{
+		alloc = &fluxmemory.ResourceAllocator{
 			Allocator: mem,
 		}
 	}

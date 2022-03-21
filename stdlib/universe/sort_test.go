@@ -386,7 +386,7 @@ func TestSort_Process(t *testing.T) {
 				tc.data,
 				tc.want,
 				nil,
-				func(id execute.DatasetID, alloc *memory.Allocator) (execute.Transformation, execute.Dataset) {
+				func(id execute.DatasetID, alloc memory.Allocator) (execute.Transformation, execute.Dataset) {
 					tr, d, err := universe.NewSortTransformation(id, tc.spec, alloc)
 					if err != nil {
 						t.Fatal(err)

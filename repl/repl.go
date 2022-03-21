@@ -234,7 +234,7 @@ func (r *REPL) doQuery(ctx context.Context, spec *flux.Spec) error {
 	if err != nil {
 		return err
 	}
-	alloc := &memory.Allocator{}
+	alloc := &memory.ResourceAllocator{}
 
 	qry, err := program.Start(ctx, alloc)
 	if err != nil {

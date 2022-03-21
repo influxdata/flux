@@ -33,5 +33,5 @@ type Program interface {
 	// Start begins execution of the program and returns immediately.
 	// As results are produced they arrive on the channel.
 	// The program is finished once the result channel is closed and all results have been consumed.
-	Start(context.Context, *memory.Allocator) (Query, error)
+	Start(context.Context, memory.Allocator) (Query, error)
 }

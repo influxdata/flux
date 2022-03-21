@@ -1504,7 +1504,7 @@ func TestDropRenameKeep_Process(t *testing.T) {
 				tc.data,
 				tc.want,
 				tc.wantErr,
-				func(id execute.DatasetID, mem *memory.Allocator) (execute.Transformation, execute.Dataset) {
+				func(id execute.DatasetID, mem memory.Allocator) (execute.Transformation, execute.Dataset) {
 					spec := tc.spec.(*universe.SchemaMutationProcedureSpec)
 					tr, d, err := universe.NewSchemaMutationTransformation(context.Background(), spec, id, mem)
 					if err != nil {
@@ -1593,7 +1593,7 @@ func benchmarkSchemaMutator(b *testing.B, n int, m universe.SchemaMutation) {
 		Mutations: []universe.SchemaMutation{m},
 	}
 	executetest.ProcessBenchmarkHelper(b,
-		func(alloc *memory.Allocator) (flux.TableIterator, error) {
+		func(alloc memory.Allocator) (flux.TableIterator, error) {
 			schema := gen.Schema{
 				NumPoints: n,
 				Alloc:     alloc,
@@ -1607,7 +1607,7 @@ func benchmarkSchemaMutator(b *testing.B, n int, m universe.SchemaMutation) {
 			}
 			return gen.Input(context.Background(), schema)
 		},
-		func(id execute.DatasetID, alloc *memory.Allocator) (execute.Transformation, execute.Dataset) {
+		func(id execute.DatasetID, alloc memory.Allocator) (execute.Transformation, execute.Dataset) {
 			t, d, err := universe.NewSchemaMutationTransformation(context.Background(), spec, id, alloc)
 			if err != nil {
 				b.Fatal(err)

@@ -137,7 +137,7 @@ func TestHoltWinters_PassThrough(t *testing.T) {
 		s := universe.NewHoltWintersTransformation(
 			d,
 			c,
-			&memory.Allocator{},
+			&memory.ResourceAllocator{},
 			&universe.HoltWintersProcedureSpec{},
 		)
 		return s
@@ -873,7 +873,7 @@ func TestHoltWinters_Process(t *testing.T) {
 	for _, tc := range testCases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			alloc := &memory.Allocator{}
+			alloc := &memory.ResourceAllocator{}
 			executetest.ProcessTestHelper(
 				t,
 				tc.data,

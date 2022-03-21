@@ -91,7 +91,7 @@ func createFromSource(ps plan.ProcedureSpec, id execute.DatasetID, a execute.Adm
 type tableSource struct {
 	execute.ExecutionNode
 	id   execute.DatasetID
-	mem  *memory.Allocator
+	mem  memory.Allocator
 	rows values.Array
 	ts   execute.TransformationSet
 }
@@ -109,7 +109,7 @@ func (s *tableSource) Run(ctx context.Context) {
 	s.ts.Finish(s.id, err)
 }
 
-func buildTable(rows values.Array, mem *memory.Allocator) (flux.Table, error) {
+func buildTable(rows values.Array, mem memory.Allocator) (flux.Table, error) {
 	typ, err := rows.Type().ElemType()
 	if err != nil {
 		return nil, err

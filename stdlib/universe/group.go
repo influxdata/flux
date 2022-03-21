@@ -181,13 +181,13 @@ type groupTransformation struct {
 	execute.ExecutionNode
 	d     execute.Dataset
 	cache table.BuilderCache
-	mem   *memory.Allocator
+	mem   memory.Allocator
 
 	mode flux.GroupMode
 	keys []string
 }
 
-func NewGroupTransformation(ctx context.Context, spec *GroupProcedureSpec, id execute.DatasetID, mem *memory.Allocator) (execute.Transformation, execute.Dataset, error) {
+func NewGroupTransformation(ctx context.Context, spec *GroupProcedureSpec, id execute.DatasetID, mem memory.Allocator) (execute.Transformation, execute.Dataset, error) {
 	t := &groupTransformation{
 		cache: table.BuilderCache{
 			New: func(key flux.GroupKey) table.Builder {

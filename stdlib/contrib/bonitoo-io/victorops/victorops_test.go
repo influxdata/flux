@@ -126,7 +126,7 @@ csv.from(csv:data) |> endpoint()`
 			}
 
 			ctx := flux.NewDefaultDependencies().Inject(context.Background())
-			query, err := prog.Start(ctx, &memory.Allocator{})
+			query, err := prog.Start(ctx, &memory.ResourceAllocator{})
 			if err != nil {
 				t.Fatal(err)
 			}

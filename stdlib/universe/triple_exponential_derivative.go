@@ -105,7 +105,7 @@ type tripleExponentialDerivativeTransformation struct {
 	execute.ExecutionNode
 	d     execute.Dataset
 	cache execute.TableBuilderCache
-	alloc *memory.Allocator
+	alloc memory.Allocator
 
 	i                []int
 	lastVal          []interface{}
@@ -114,7 +114,7 @@ type tripleExponentialDerivativeTransformation struct {
 	n int64
 }
 
-func NewTripleExponentialDerivativeTransformation(d execute.Dataset, cache execute.TableBuilderCache, alloc *memory.Allocator, spec *TripleExponentialDerivativeProcedureSpec) *tripleExponentialDerivativeTransformation {
+func NewTripleExponentialDerivativeTransformation(d execute.Dataset, cache execute.TableBuilderCache, alloc memory.Allocator, spec *TripleExponentialDerivativeProcedureSpec) *tripleExponentialDerivativeTransformation {
 	return &tripleExponentialDerivativeTransformation{
 		d:     d,
 		cache: cache,
@@ -336,7 +336,7 @@ func (t *tripleExponentialDerivativeTransformation) Finish(id execute.DatasetID,
 	t.d.Finish(err)
 }
 
-func arrayToFloatArrow(a []interface{}, alloc *memory.Allocator) *array.Float {
+func arrayToFloatArrow(a []interface{}, alloc memory.Allocator) *array.Float {
 	bld := arrow.NewFloatBuilder(alloc)
 	defer bld.Release()
 

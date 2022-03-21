@@ -1022,7 +1022,7 @@ f
 }
 
 func BenchmarkMap_Process(b *testing.B) {
-	genSource := func(alloc *memory.Allocator) (flux.TableIterator, error) {
+	genSource := func(alloc memory.Allocator) (flux.TableIterator, error) {
 		return gen.Input(context.Background(), gen.Schema{
 			Tags: []gen.Tag{
 				{Name: "t0", Cardinality: 1},
@@ -1033,8 +1033,8 @@ func BenchmarkMap_Process(b *testing.B) {
 		})
 	}
 
-	genTransformation := func(fn func(b *testing.B) *semantic.FunctionExpression) func(id execute.DatasetID, alloc *memory.Allocator) (execute.Transformation, execute.Dataset) {
-		return func(id execute.DatasetID, alloc *memory.Allocator) (execute.Transformation, execute.Dataset) {
+	genTransformation := func(fn func(b *testing.B) *semantic.FunctionExpression) func(id execute.DatasetID, alloc memory.Allocator) (execute.Transformation, execute.Dataset) {
+		return func(id execute.DatasetID, alloc memory.Allocator) (execute.Transformation, execute.Dataset) {
 			spec := &universe.MapProcedureSpec{
 				Fn: interpreter.ResolvedFunction{
 					Fn:    fn(b),

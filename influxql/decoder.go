@@ -15,12 +15,12 @@ import (
 )
 
 // NewResultDecoder will construct a new result decoder for an influxql response.
-func NewResultDecoder(a *memory.Allocator) flux.MultiResultDecoder {
+func NewResultDecoder(a memory.Allocator) flux.MultiResultDecoder {
 	return &resultDecoder{a: a}
 }
 
 type resultDecoder struct {
-	a *memory.Allocator
+	a memory.Allocator
 }
 
 func (dec *resultDecoder) Decode(r io.ReadCloser) (flux.ResultIterator, error) {
@@ -33,7 +33,7 @@ func (dec *resultDecoder) Decode(r io.ReadCloser) (flux.ResultIterator, error) {
 
 type resultIterator struct {
 	resp *Response
-	a    *memory.Allocator
+	a    memory.Allocator
 }
 
 func (ri *resultIterator) More() bool {
@@ -65,7 +65,7 @@ func (ri *resultIterator) Statistics() flux.Statistics {
 
 type result struct {
 	res *Result
-	a   *memory.Allocator
+	a   memory.Allocator
 }
 
 func (r *result) Name() string {

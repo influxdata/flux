@@ -98,7 +98,7 @@ func (s *EmptyTableSource) Run(ctx context.Context) {
 		},
 	)
 
-	builder := execute.NewColListTableBuilder(key, &memory.Allocator{})
+	builder := execute.NewColListTableBuilder(key, &memory.ResourceAllocator{})
 
 	for _, c := range []flux.ColMeta{startCol, stopCol, timeCol, valueCol} {
 		if _, err = builder.AddCol(c); err != nil {

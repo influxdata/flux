@@ -199,7 +199,7 @@ func (t *mergeJoinTransformation) Finish(id execute.DatasetID, err error) {
 	t.done = true
 }
 
-func NewMergeJoinCache(ctx context.Context, alloc *memory.Allocator, fn interpreter.ResolvedFunction, left, right execute.DatasetID) *mergeJoinCache {
+func NewMergeJoinCache(ctx context.Context, alloc memory.Allocator, fn interpreter.ResolvedFunction, left, right execute.DatasetID) *mergeJoinCache {
 	return &mergeJoinCache{
 		left:  left,
 		right: right,
@@ -218,7 +218,7 @@ type mergeJoinCache struct {
 	spec plan.TriggerSpec
 
 	ctx   context.Context
-	alloc *memory.Allocator
+	alloc memory.Allocator
 }
 
 type cacheEntry struct {

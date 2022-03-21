@@ -658,7 +658,7 @@ func (testExecutor) Run(pkg *ast.Package) error {
 		return errors.Wrap(err, codes.Invalid, "failed to compile")
 	}
 
-	alloc := &memory.Allocator{}
+	alloc := &memory.ResourceAllocator{}
 	query, err := program.Start(ctx, alloc)
 	if err != nil {
 		return errors.Wrap(err, codes.Inherit, "error while executing program")

@@ -169,7 +169,7 @@ func TestShift_Process(t *testing.T) {
 				tc.data,
 				tc.want,
 				nil,
-				func(id execute.DatasetID, alloc *memory.Allocator) (execute.Transformation, execute.Dataset) {
+				func(id execute.DatasetID, alloc memory.Allocator) (execute.Transformation, execute.Dataset) {
 					tr, d, err := universe.NewShiftTransformation(id, tc.spec, alloc)
 					if err != nil {
 						t.Fatal(err)

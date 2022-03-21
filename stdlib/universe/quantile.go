@@ -200,10 +200,10 @@ type QuantileAgg struct {
 	Quantile,
 	Compression float64
 	freeDigests []*tdigest.TDigest
-	mem         *memory.Allocator
+	mem         memory.Allocator
 }
 
-func NewQuantileAgg(q, comp float64, mem *memory.Allocator, size int) *QuantileAgg {
+func NewQuantileAgg(q, comp float64, mem memory.Allocator, size int) *QuantileAgg {
 	digests := make([]*tdigest.TDigest, 0, size)
 	return &QuantileAgg{
 		Quantile:    q,
@@ -446,10 +446,10 @@ type ExactQuantileSelectorTransformation struct {
 	d     execute.Dataset
 	cache execute.TableBuilderCache
 	spec  ExactQuantileSelectProcedureSpec
-	a     *memory.Allocator
+	a     memory.Allocator
 }
 
-func NewExactQuantileSelectorTransformation(d execute.Dataset, cache execute.TableBuilderCache, spec *ExactQuantileSelectProcedureSpec, a *memory.Allocator) *ExactQuantileSelectorTransformation {
+func NewExactQuantileSelectorTransformation(d execute.Dataset, cache execute.TableBuilderCache, spec *ExactQuantileSelectProcedureSpec, a memory.Allocator) *ExactQuantileSelectorTransformation {
 	if spec.SelectorConfig.Column == "" {
 		spec.SelectorConfig.Column = execute.DefaultValueColLabel
 	}

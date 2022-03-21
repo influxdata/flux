@@ -15,7 +15,7 @@ type query struct {
 	ctx     context.Context
 	results chan flux.Result
 	stats   flux.Statistics
-	alloc   *memory.Allocator
+	alloc   *memory.ResourceAllocator
 	span    opentracing.Span
 	cancel  func()
 	err     error

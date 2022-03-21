@@ -773,7 +773,7 @@ func TestGroup_Process(t *testing.T) {
 				tc.data,
 				tc.want,
 				tc.wantErr,
-				func(id execute.DatasetID, alloc *memory.Allocator) (execute.Transformation, execute.Dataset) {
+				func(id execute.DatasetID, alloc memory.Allocator) (execute.Transformation, execute.Dataset) {
 					t, d, _ := universe.NewGroupTransformation(context.Background(), tc.spec, id, alloc)
 					return t, d
 				},
@@ -996,7 +996,7 @@ func benchmarkGroupByKey(b *testing.B, n int) {
 func benchmarkGroup(b *testing.B, n int, spec *universe.GroupProcedureSpec) {
 	b.ReportAllocs()
 	executetest.ProcessBenchmarkHelper(b,
-		func(alloc *memory.Allocator) (flux.TableIterator, error) {
+		func(alloc memory.Allocator) (flux.TableIterator, error) {
 			schema := gen.Schema{
 				NumPoints: n,
 				Alloc:     alloc,
@@ -1009,7 +1009,7 @@ func benchmarkGroup(b *testing.B, n int, spec *universe.GroupProcedureSpec) {
 			}
 			return gen.Input(context.Background(), schema)
 		},
-		func(id execute.DatasetID, alloc *memory.Allocator) (execute.Transformation, execute.Dataset) {
+		func(id execute.DatasetID, alloc memory.Allocator) (execute.Transformation, execute.Dataset) {
 			t, d, _ := universe.NewGroupTransformation(context.Background(), spec, id, alloc)
 			return t, d
 		},

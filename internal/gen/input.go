@@ -77,7 +77,7 @@ type Schema struct {
 	// Alloc assigns an allocator to use when generating the
 	// tables. If this is not set, an unlimited allocator is
 	// used.
-	Alloc *memory.Allocator
+	Alloc memory.Allocator
 }
 
 // Input constructs a TableIterator with randomly generated
@@ -142,7 +142,7 @@ func Input(ctx context.Context, schema Schema) (flux.TableIterator, error) {
 
 	alloc := schema.Alloc
 	if alloc == nil {
-		alloc = &memory.Allocator{}
+		alloc = &memory.ResourceAllocator{}
 	}
 
 	g := &dataGenerator{
@@ -355,7 +355,7 @@ type dataGenerator struct {
 	Period    values.Duration
 	Nulls     float64
 	NumPoints int
-	Allocator *memory.Allocator
+	Allocator memory.Allocator
 
 	Rand     *rand.Rand
 	Groups   seriesGroups

@@ -43,7 +43,7 @@ func (rd *ResultDecoder) Do(f func(flux.Table) error) error {
 	timeCol := flux.ColMeta{Label: "_time", Type: flux.TTime}
 	valueCol := flux.ColMeta{Label: "_value", Type: flux.TString}
 	key := execute.NewGroupKey(nil, nil)
-	builder := execute.NewColListTableBuilder(key, &memory.Allocator{})
+	builder := execute.NewColListTableBuilder(key, &memory.ResourceAllocator{})
 	timeIdx, err := builder.AddCol(timeCol)
 	if err != nil {
 		return err

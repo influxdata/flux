@@ -30,7 +30,7 @@ type ExecutionOptions struct {
 // executed by the Interpreter needs in order to trigger the execution of a flux.Program
 type ExecutionDependencies struct {
 	// Must be set
-	Allocator *memory.Allocator
+	Allocator memory.Allocator
 	Now       *time.Time
 
 	// Allowed to be nil
@@ -76,9 +76,9 @@ func GetExecutionDependencies(ctx context.Context) ExecutionDependencies {
 
 // Create some execution dependencies. Any arg may be nil, this will choose
 // some suitable defaults.
-func NewExecutionDependencies(allocator *memory.Allocator, now *time.Time, logger *zap.Logger) ExecutionDependencies {
+func NewExecutionDependencies(allocator memory.Allocator, now *time.Time, logger *zap.Logger) ExecutionDependencies {
 	if allocator == nil {
-		allocator = new(memory.Allocator)
+		allocator = new(memory.ResourceAllocator)
 	}
 
 	if now == nil {

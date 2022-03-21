@@ -34,7 +34,7 @@ func TestExecutor_Execute(t *testing.T) {
 		name      string
 		spec      *plantest.PlanSpec
 		want      map[string][]*executetest.Table
-		allocator *memory.Allocator
+		allocator memory.Allocator
 		wantErr   error
 	}{
 		{
@@ -677,7 +677,7 @@ func TestExecutor_Execute(t *testing.T) {
 					{0, 1},
 				},
 			},
-			allocator: &memory.Allocator{
+			allocator: &memory.ResourceAllocator{
 				Limit: func(v int64) *int64 { return &v }(64),
 			},
 			wantErr: &flux.Error{

@@ -255,7 +255,7 @@ func BuilderColsMatchReader(builder TableBuilder, cr flux.ColReader) bool {
 // columns, or if the data in any column does not match.  Returns true otherwise.  This function will consume the
 // ColumnReader so if you are calling this from the a Process method, you may need to copy the table if you need to
 // iterate over the data for other calculations.
-func TablesEqual(left, right flux.Table, alloc *memory.Allocator) (bool, error) {
+func TablesEqual(left, right flux.Table, alloc memory.Allocator) (bool, error) {
 	if colsMatch(left.Key().Cols(), right.Key().Cols()) && colsMatch(left.Cols(), right.Cols()) {
 		eq := true
 		// rbuffer will buffer out rows from the right table, always holding just enough to do a comparison with the left
@@ -521,7 +521,7 @@ type ColListTableBuilder struct {
 	alloc   *Allocator
 }
 
-func NewColListTableBuilder(key flux.GroupKey, a *memory.Allocator) *ColListTableBuilder {
+func NewColListTableBuilder(key flux.GroupKey, a memory.Allocator) *ColListTableBuilder {
 	return &ColListTableBuilder{
 		key:   key,
 		alloc: &Allocator{Allocator: a},
@@ -2016,12 +2016,12 @@ type TableBuilderCache interface {
 
 type tableBuilderCache struct {
 	tables *GroupLookup
-	alloc  *memory.Allocator
+	alloc  memory.Allocator
 
 	triggerSpec plan.TriggerSpec
 }
 
-func NewTableBuilderCache(a *memory.Allocator) *tableBuilderCache {
+func NewTableBuilderCache(a memory.Allocator) *tableBuilderCache {
 	return &tableBuilderCache{
 		tables: NewGroupLookup(),
 		alloc:  a,

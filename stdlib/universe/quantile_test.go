@@ -458,7 +458,7 @@ func TestQuantile_Process(t *testing.T) {
 			if tc.exact {
 				agg = &universe.ExactQuantileAgg{Quantile: tc.quantile}
 			} else {
-				agg = universe.NewQuantileAgg(tc.quantile, 1000.0, &memory.Allocator{}, 1)
+				agg = universe.NewQuantileAgg(tc.quantile, 1000.0, &memory.ResourceAllocator{}, 1)
 			}
 			executetest.AggFuncTestHelper(
 				t,
@@ -784,10 +784,10 @@ func TestQuantileSelector_Process(t *testing.T) {
 }
 
 func BenchmarkQuantile(b *testing.B) {
-	data := arrow.NewFloat(NormalData, &memory.Allocator{})
+	data := arrow.NewFloat(NormalData, &memory.ResourceAllocator{})
 	executetest.AggFuncBenchmarkHelper(
 		b,
-		universe.NewQuantileAgg(0.9, 1000.0, &memory.Allocator{}, 1),
+		universe.NewQuantileAgg(0.9, 1000.0, &memory.ResourceAllocator{}, 1),
 		data,
 		13.842132136909889,
 	)

@@ -191,10 +191,10 @@ type fillTransformation struct {
 	d     *execute.PassthroughDataset
 	ctx   context.Context
 	spec  *FillProcedureSpec
-	alloc *memory.Allocator
+	alloc memory.Allocator
 }
 
-func NewFillTransformation(ctx context.Context, spec *FillProcedureSpec, id execute.DatasetID, alloc *memory.Allocator) (execute.Transformation, execute.Dataset) {
+func NewFillTransformation(ctx context.Context, spec *FillProcedureSpec, id execute.DatasetID, alloc memory.Allocator) (execute.Transformation, execute.Dataset) {
 	t := &fillTransformation{
 		d:     execute.NewPassthroughDataset(id),
 		ctx:   ctx,
@@ -277,7 +277,7 @@ type fillTransformationAdapter struct {
 	fillTransformation fillTransformation
 }
 
-func NewNarrowFillTransformation(ctx context.Context, spec *FillProcedureSpec, id execute.DatasetID, alloc *memory.Allocator) (execute.Transformation, execute.Dataset, error) {
+func NewNarrowFillTransformation(ctx context.Context, spec *FillProcedureSpec, id execute.DatasetID, alloc memory.Allocator) (execute.Transformation, execute.Dataset, error) {
 	fillTransformation := fillTransformation{
 		ctx:  ctx,
 		spec: spec,

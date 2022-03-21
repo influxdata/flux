@@ -274,7 +274,7 @@ func (p *Program) SetLogger(logger *zap.Logger) {
 	p.Logger = logger
 }
 
-func (p *Program) Start(ctx context.Context, alloc *memory.Allocator) (flux.Query, error) {
+func (p *Program) Start(ctx context.Context, alloc memory.Allocator) (flux.Query, error) {
 	ctx, cancel := context.WithCancel(ctx)
 
 	// This span gets closed by the query when it is done.
@@ -283,9 +283,11 @@ func (p *Program) Start(ctx context.Context, alloc *memory.Allocator) (flux.Quer
 	q := &query{
 		ctx:     cctx,
 		results: results,
-		alloc:   alloc,
-		span:    s,
-		cancel:  cancel,
+		alloc: &memory.ResourceAllocator{
+			Allocator: alloc,
+		},
+		span:   s,
+		cancel: cancel,
 		stats: flux.Statistics{
 			Metadata: make(metadata.Metadata),
 		},
@@ -427,7 +429,7 @@ func (eoc *ExecOptsConfig) ConfigureNow(ctx context.Context, now time.Time) {
 	*deps.Now = now
 }
 
-func (p *AstProgram) getSpec(ctx context.Context, alloc *memory.Allocator) (*flux.Spec, values.Scope, error) {
+func (p *AstProgram) getSpec(ctx context.Context, alloc memory.Allocator) (*flux.Spec, values.Scope, error) {
 	ast, astErr := p.GetAst()
 	if astErr != nil {
 		return nil, nil, astErr
@@ -472,7 +474,7 @@ func (p *AstProgram) getSpec(ctx context.Context, alloc *memory.Allocator) (*flu
 	return sp, scope, nil
 }
 
-func (p *AstProgram) Start(ctx context.Context, alloc *memory.Allocator) (flux.Query, error) {
+func (p *AstProgram) Start(ctx context.Context, alloc memory.Allocator) (flux.Query, error) {
 	// The program must inject execution dependencies to make it available to
 	// function calls during the evaluation phase (see `tableFind`).
 	deps := execute.NewExecutionDependencies(alloc, &p.Now, p.Logger)

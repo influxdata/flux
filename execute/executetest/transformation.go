@@ -119,7 +119,7 @@ func ProcessTestHelper2(
 	data []flux.Table,
 	want []*Table,
 	wantErr error,
-	create func(id execute.DatasetID, alloc *memory.Allocator) (execute.Transformation, execute.Dataset),
+	create func(id execute.DatasetID, alloc memory.Allocator) (execute.Transformation, execute.Dataset),
 ) {
 	t.Helper()
 
@@ -130,7 +130,7 @@ func ProcessTestHelper2(
 		}
 	}()
 
-	alloc := &memory.Allocator{}
+	alloc := &memory.ResourceAllocator{}
 	store := NewDataStore()
 	tx, d := create(RandomDatasetID(), alloc)
 	d.SetTriggerSpec(plan.DefaultTriggerSpec)
@@ -256,12 +256,12 @@ func (d *DataStore) SetTriggerSpec(t plan.TriggerSpec) {
 
 func ProcessBenchmarkHelper(
 	b *testing.B,
-	genInput func(alloc *memory.Allocator) (flux.TableIterator, error),
-	create func(id execute.DatasetID, alloc *memory.Allocator) (execute.Transformation, execute.Dataset),
+	genInput func(alloc memory.Allocator) (flux.TableIterator, error),
+	create func(id execute.DatasetID, alloc memory.Allocator) (execute.Transformation, execute.Dataset),
 ) {
 	b.Helper()
 
-	alloc := &memory.Allocator{}
+	alloc := &memory.ResourceAllocator{}
 	input, err := genInput(alloc)
 	if err != nil {
 		b.Fatalf("error generating input: %s", err)
@@ -289,8 +289,8 @@ func ProcessBenchmarkHelper(
 func RunBenchmark(
 	b *testing.B,
 	tables []flux.BufferedTable,
-	create func(id execute.DatasetID, alloc *memory.Allocator) (execute.Transformation, execute.Dataset),
-	alloc *memory.Allocator,
+	create func(id execute.DatasetID, alloc memory.Allocator) (execute.Transformation, execute.Dataset),
+	alloc memory.Allocator,
 ) {
 	b.Helper()
 

@@ -93,7 +93,7 @@ type Administration interface {
 
 	ResolveTime(qt flux.Time) Time
 	StreamContext() StreamContext
-	Allocator() *memory.Allocator
+	Allocator() memory.Allocator
 	Parents() []DatasetID
 	ParallelOpts() ParallelOpts
 }

@@ -13,7 +13,7 @@ import (
 
 func TestTable(t *testing.T) {
 	RunTableTests(t, TableTest{
-		NewFn: func(ctx context.Context, alloc *memory.Allocator) flux.TableIterator {
+		NewFn: func(ctx context.Context, alloc memory.Allocator) flux.TableIterator {
 			return &TableIterator{
 				Tables: []*Table{
 					{

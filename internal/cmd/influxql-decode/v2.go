@@ -16,7 +16,7 @@ func v2(cmd *cobra.Command, args []string) error {
 			return err
 		}
 
-		dec := influxql.NewResultDecoder(&memory.Allocator{})
+		dec := influxql.NewResultDecoder(&memory.ResourceAllocator{})
 		results, err := dec.Decode(f)
 		if err != nil {
 			return err

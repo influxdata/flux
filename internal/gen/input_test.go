@@ -12,7 +12,7 @@ import (
 
 func TestInput_TableTest(t *testing.T) {
 	executetest.RunTableTests(t, executetest.TableTest{
-		NewFn: func(ctx context.Context, alloc *memory.Allocator) flux.TableIterator {
+		NewFn: func(ctx context.Context, alloc memory.Allocator) flux.TableIterator {
 			schema := gen.Schema{
 				Tags: []gen.Tag{
 					{Name: "_measurement", Cardinality: 1},

@@ -434,7 +434,7 @@ func createSchemaMutationTransformation(id execute.DatasetID, mode execute.Accum
 	return NewSchemaMutationTransformation(a.Context(), s, id, a.Allocator())
 }
 
-func NewSchemaMutationTransformation(ctx context.Context, spec *SchemaMutationProcedureSpec, id execute.DatasetID, mem *memory.Allocator) (execute.Transformation, execute.Dataset, error) {
+func NewSchemaMutationTransformation(ctx context.Context, spec *SchemaMutationProcedureSpec, id execute.DatasetID, mem memory.Allocator) (execute.Transformation, execute.Dataset, error) {
 	mutators := make([]SchemaMutator, len(spec.Mutations))
 	for i, mutation := range spec.Mutations {
 		m, err := mutation.Mutator()

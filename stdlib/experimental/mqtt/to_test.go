@@ -124,7 +124,7 @@ func runScriptWithPipeline(script string) error {
 		return err
 	}
 	ctx := flux.NewDefaultDependencies().Inject(context.Background())
-	query, err := prog.Start(ctx, &memory.Allocator{})
+	query, err := prog.Start(ctx, &memory.ResourceAllocator{})
 	if err != nil {
 		return err
 	}

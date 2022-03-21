@@ -13,11 +13,12 @@ const (
 	timeSize    = 8
 )
 
-// Allocator tracks the amount of memory being consumed by a query.
-// The allocator provides methods similar to make and append, to allocate large slices of data.
-// The allocator also provides a Free method to account for when memory will be freed.
+// Allocator is used to track memory allocations for directly allocated structs.
+// Normally, you should use arrow builders and the memory.Allocator by itself to
+// create arrays, but the Allocator is used by older builders that were pre-arrow
+// and directly allocated Go slices rather than relying on arrow's builders.
 type Allocator struct {
-	*memory.Allocator
+	memory.Allocator
 }
 
 // Free informs the allocator that memory has been freed.
@@ -165,7 +166,7 @@ func (a *Allocator) Strings(l, c int) []string {
 // AppendStrings appends strings to a slice.
 // Only the string headers are accounted for.
 func (a *Allocator) AppendStrings(slice []string, vs ...string) []string {
-	//TODO(nathanielc): Account for actual size of strings
+	// TODO(nathanielc): Account for actual size of strings
 	if cap(slice)-len(slice) >= len(vs) {
 		return append(slice, vs...)
 	}

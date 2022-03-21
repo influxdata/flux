@@ -42,7 +42,7 @@ type source struct {
 	id   execute.DatasetID
 	spec RemoteProcedureSpec
 	deps flux.Dependencies
-	mem  *memory.Allocator
+	mem  memory.Allocator
 	ts   execute.TransformationSet
 }
 
@@ -207,7 +207,7 @@ func (s *source) parseError(p []byte) error {
 
 type sourceIterator struct {
 	reader influxdb.Reader
-	mem    *memory.Allocator
+	mem    memory.Allocator
 }
 
 func (s *sourceIterator) Do(ctx context.Context, f func(flux.Table) error) error {
