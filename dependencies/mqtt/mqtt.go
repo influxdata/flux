@@ -12,7 +12,6 @@ import (
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/dependency"
 	"github.com/influxdata/flux/internal/errors"
-	"github.com/influxdata/flux/internal/feature"
 )
 
 const (
@@ -26,11 +25,9 @@ const clientKey key = iota
 
 // Inject will inject this Dialer into the dependency chain.
 func Inject(ctx context.Context, dialer Dialer) context.Context {
-	if feature.MqttPoolDialer().Enabled(ctx) {
-		pool := newPoolDialer(dialer)
-		dependency.OnFinish(ctx, pool)
-		dialer = pool
-	}
+	pool := newPoolDialer(dialer)
+	dependency.OnFinish(ctx, pool)
+	dialer = pool
 	return context.WithValue(ctx, clientKey, dialer)
 }
 
