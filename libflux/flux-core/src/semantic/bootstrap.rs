@@ -294,38 +294,32 @@ fn add_record_to_map(
     free_vars: &[Tvar],
     cons: &TvarKinds,
 ) -> Result<()> {
-    match r {
-        Record::Empty => Ok(()),
-        Record::Extension { head, tail } => {
-            let new_vars = {
-                let new_vars = CollectBoundVars(RefCell::new(Vec::new()));
-                head.v.apply_ref(&new_vars);
-                new_vars.0.into_inner()
-            };
+    for field in r.fields() {
+        let new_vars = {
+            let new_vars = CollectBoundVars(RefCell::new(Vec::new()));
+            field.v.apply_ref(&new_vars);
+            new_vars.0.into_inner()
+        };
 
-            let mut new_cons = TvarKinds::new();
-            for var in &new_vars {
-                if !free_vars.iter().any(|v| v == var) {
-                    bail!("monotype contains free var not in poly type free vars");
-                }
-                if let Some(con) = cons.get(var) {
-                    new_cons.insert(*var, con.clone());
-                }
+        let mut new_cons = TvarKinds::new();
+        for var in &new_vars {
+            if !free_vars.iter().any(|v| v == var) {
+                bail!("monotype contains free var not in poly type free vars");
             }
-            env.insert(
-                head.k.clone().into(),
-                PolyType {
-                    vars: new_vars,
-                    cons: new_cons,
-                    expr: head.v.clone(),
-                },
-            );
-            match tail {
-                MonoType::Record(r) => add_record_to_map(env, r, free_vars, cons),
-                _ => Ok(()),
+            if let Some(con) = cons.get(var) {
+                new_cons.insert(*var, con.clone());
             }
         }
+        env.insert(
+            field.k.clone().into(),
+            PolyType {
+                vars: new_vars,
+                cons: new_cons,
+                expr: field.v.clone(),
+            },
+        );
     }
+    Ok(())
 }
 
 /// Stdlib returns the prelude and importer for the Flux standard library given a path to a

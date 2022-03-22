@@ -1255,25 +1255,14 @@ impl fmt::Display for Record {
     }
 }
 
-fn collect_record(mut record: &Record) -> (RefMonoTypeVecMap<'_, Label>, Option<&MonoType>) {
+fn collect_record(record: &Record) -> (RefMonoTypeVecMap<'_, Label>, Option<&MonoType>) {
     let mut a = RefMonoTypeVecMap::new();
-    let t = loop {
-        match record {
-            Record::Empty => break None,
-            Record::Extension {
-                head,
-                tail: MonoType::Record(o),
-            } => {
-                a.entry(&head.k).or_insert_with(Vec::new).push(&head.v);
-                record = o;
-            }
-            Record::Extension { head, tail } => {
-                a.entry(&head.k).or_insert_with(Vec::new).push(&head.v);
-                break Some(tail);
-            }
-        }
-    };
-    (a, t)
+
+    let mut fields = record.fields();
+    for field in &mut fields {
+        a.entry(&field.k).or_insert_with(Vec::new).push(&field.v);
+    }
+    (a, fields.tail())
 }
 
 impl cmp::PartialEq for Record {
@@ -1468,13 +1457,16 @@ impl Record {
     fn constrain(&self, with: Kind, cons: &mut TvarKinds) -> Result<(), Error> {
         match with {
             Kind::Record => Ok(()),
-            Kind::Equatable => match self {
-                Record::Empty => Ok(()),
-                Record::Extension { head, tail } => {
+            Kind::Equatable => {
+                let mut fields = self.fields();
+                for head in &mut fields {
                     head.v.constrain(with, cons)?;
-                    Ok(tail.constrain(with, cons)?)
                 }
-            },
+                match fields.tail() {
+                    Some(t) => t.constrain(with, cons),
+                    None => Ok(()),
+                }
+            }
             _ => Err(Error::CannotConstrain {
                 act: MonoType::from(self.clone()),
                 exp: with,
@@ -1490,35 +1482,54 @@ impl Record {
     }
 
     fn format(&self, f: &mut String) -> Result<Option<Tvar>, fmt::Error> {
-        match self {
-            Record::Empty => Ok(None),
-            Record::Extension { head, tail } => match tail {
-                MonoType::BoundVar(tv) | MonoType::Var(tv) => {
-                    write!(f, "{}, ", head)?;
-                    Ok(Some(*tv))
-                }
-                MonoType::Record(obj) => {
-                    write!(f, "{}, ", head)?;
-                    obj.format(f)
-                }
-                _ => Err(fmt::Error),
-            },
+        let mut fields = self.fields();
+        for head in &mut fields {
+            write!(f, "{}, ", head)?;
         }
+        Ok(match fields.tail() {
+            Some(MonoType::BoundVar(tv)) | Some(MonoType::Var(tv)) => Some(*tv),
+            _ => None,
+        })
     }
 
     /// Returns an iterator over the fields in the record
-    pub fn fields(&self) -> impl Iterator<Item = &Property> {
-        let mut record = Some(self);
-        std::iter::from_fn(move || match record {
-            Some(Record::Extension { head, tail }) => {
+    pub fn fields(&self) -> FieldIter<'_> {
+        FieldIter::Record(self)
+    }
+}
+
+/// An iterator over a records fields
+#[allow(missing_docs)]
+pub enum FieldIter<'a> {
+    Record(&'a Record),
+    Tail(&'a MonoType),
+}
+
+impl<'a> FieldIter<'a> {
+    /// Returns the tail of a `Record` once the iterator is exhausted or `None` if the record was
+    /// bounded.
+    pub fn tail(&self) -> Option<&'a MonoType> {
+        match *self {
+            FieldIter::Record(_) => None,
+            FieldIter::Tail(tail) => Some(tail),
+        }
+    }
+}
+
+impl<'a> Iterator for FieldIter<'a> {
+    type Item = &'a Property;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        match self {
+            FieldIter::Record(Record::Extension { head, tail }) => {
                 match tail {
-                    MonoType::Record(tail) => record = Some(tail),
-                    _ => record = None,
+                    MonoType::Record(tail) => *self = FieldIter::Record(tail),
+                    _ => *self = FieldIter::Tail(tail),
                 }
                 Some(head)
             }
             _ => None,
-        })
+        }
     }
 }
 

@@ -575,34 +575,16 @@ fn build_record<'a>(
     mut record: &Record,
 ) -> flatbuffers::WIPOffset<fb::Record<'a>> {
     let mut props = Vec::new();
-    let extends = loop {
-        match record {
-            Record::Empty => {
-                break None;
-            }
-            Record::Extension {
-                head,
-                tail: MonoType::Record(o),
-            } => {
-                props.push(head);
-                record = o;
-            }
-            Record::Extension {
-                head,
-                tail: MonoType::Var(t),
-            }
-            | Record::Extension {
-                head,
-                tail: MonoType::BoundVar(t),
-            } => {
-                props.push(head);
-                break Some(t);
-            }
-            Record::Extension { head, tail } => {
-                break None;
-            }
-        }
-    };
+
+    let mut fields = record.fields();
+    for field in &mut fields {
+        props.push(field);
+    }
+    let extends = fields.tail().and_then(|typ| match typ {
+        MonoType::Var(t) | MonoType::BoundVar(t) => Some(t),
+        _ => None,
+    });
+
     let props = build_vec(props, builder, build_prop);
     let props = builder.create_vector(props.as_slice());
     let extends = extends.map(|typevar| build_var(builder, *typevar));

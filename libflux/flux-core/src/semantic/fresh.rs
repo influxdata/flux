@@ -190,31 +190,15 @@ impl Fresh for Record {
     }
     fn fresh_ref(&self, f: &mut Fresher, sub: &mut TvarMap) -> Option<Self> {
         let mut props = MonoTypeVecMap::new();
-        let mut cur = self;
-        let tail = loop {
-            match cur {
-                Record::Empty => {
-                    break None;
-                }
-                Record::Extension {
-                    head,
-                    tail: MonoType::Record(b),
-                } => {
-                    props
-                        .entry(head.k.clone())
-                        .or_insert_with(Vec::new)
-                        .push(head.v.clone());
-                    cur = b;
-                }
-                Record::Extension { head, tail } => {
-                    props
-                        .entry(head.k.clone())
-                        .or_insert_with(Vec::new)
-                        .push(head.v.clone());
-                    break Some(tail);
-                }
-            }
-        };
+
+        let mut fields = self.fields();
+        for field in &mut fields {
+            props
+                .entry(field.k.clone())
+                .or_insert_with(Vec::new)
+                .push(field.v.clone());
+        }
+        let tail = fields.tail();
         // If record extends a tvar, freshen it.
         // Otherwise record must extend empty record.
         let mut r: MonoType = if let Some(tail) = tail {
