@@ -10,7 +10,10 @@ mk_node!(
     /// It also enables mutability of the wrapped semantic node.
     #[derive(Debug)]
     #[allow(missing_docs)]
-    NodeMut mut
+    NodeMut,
+    VisitorMut,
+    walk_mut,
+    mut
 );
 
 impl NodeMut<'_> {
@@ -77,7 +80,7 @@ impl NodeMut<'_> {
 /// struct TypeMutator {}
 ///
 /// impl VisitorMut for TypeMutator {
-///     fn visit(&mut self, node: &mut NodeMut) -> bool {
+///     fn visit(&mut self, node: &mut NodeMut<'_>) -> bool {
 ///         match node {
 ///             NodeMut::IdentifierExpr(ref mut n) => n.typ = MonoType::Var(Tvar(1234)),
 ///             NodeMut::ArrayExpr(ref mut n) => n.typ = MonoType::Var(Tvar(1234)),
@@ -104,179 +107,10 @@ pub trait VisitorMut: Sized {
     /// `visit` is called for a node.
     /// When the `VisitorMut` is used in [`walk_mut`], the boolean value returned
     /// is used to continue walking (`true`) or stop (`false`).
-    fn visit(&mut self, node: &mut NodeMut) -> bool;
+    fn visit(&mut self, node: &mut NodeMut<'_>) -> bool;
     /// `done` is called for a node once it has been visited along with all of its children.
     /// The default is to do nothing.
-    fn done(&mut self, _: &mut NodeMut) {}
-}
-
-/// Recursively visits children of a node given a [`VisitorMut`].
-/// Nodes are visited in depth-first order.
-pub fn walk_mut<T>(v: &mut T, node: &mut NodeMut)
-where
-    T: VisitorMut,
-{
-    if v.visit(node) {
-        match node {
-            NodeMut::Package(ref mut n) => {
-                for file in n.files.iter_mut() {
-                    walk_mut(v, &mut NodeMut::File(file));
-                }
-            }
-            NodeMut::File(ref mut n) => {
-                if let Some(pkg) = n.package.as_mut() {
-                    walk_mut(v, &mut NodeMut::PackageClause(pkg));
-                }
-                for imp in n.imports.iter_mut() {
-                    walk_mut(v, &mut NodeMut::ImportDeclaration(imp));
-                }
-                for stmt in n.body.iter_mut() {
-                    walk_mut(v, &mut NodeMut::from_stmt(stmt));
-                }
-            }
-            NodeMut::PackageClause(ref mut n) => {
-                walk_mut(v, &mut NodeMut::Identifier(&mut n.name));
-            }
-            NodeMut::ImportDeclaration(ref mut n) => {
-                if let Some(alias) = n.alias.as_mut() {
-                    walk_mut(v, &mut NodeMut::Identifier(alias));
-                }
-                walk_mut(v, &mut NodeMut::StringLit(&mut n.path));
-            }
-            NodeMut::Identifier(_) => {}
-            NodeMut::IdentifierExpr(_) => {}
-            NodeMut::ArrayExpr(ref mut n) => {
-                for element in n.elements.iter_mut() {
-                    walk_mut(v, &mut NodeMut::from_expr(element));
-                }
-            }
-            NodeMut::DictExpr(ref mut n) => {
-                for item in n.elements.iter_mut() {
-                    walk_mut(v, &mut NodeMut::from_expr(&mut item.0));
-                    walk_mut(v, &mut NodeMut::from_expr(&mut item.1));
-                }
-            }
-            NodeMut::FunctionExpr(ref mut n) => {
-                for param in n.params.iter_mut() {
-                    walk_mut(v, &mut NodeMut::FunctionParameter(param));
-                }
-                walk_mut(v, &mut NodeMut::Block(&mut n.body));
-            }
-            NodeMut::FunctionParameter(ref mut n) => {
-                walk_mut(v, &mut NodeMut::Identifier(&mut n.key));
-                if let Some(def) = n.default.as_mut() {
-                    walk_mut(v, &mut NodeMut::from_expr(def));
-                }
-            }
-            NodeMut::LogicalExpr(ref mut n) => {
-                walk_mut(v, &mut NodeMut::from_expr(&mut n.left));
-                walk_mut(v, &mut NodeMut::from_expr(&mut n.right));
-            }
-            NodeMut::ObjectExpr(ref mut n) => {
-                if let Some(i) = n.with.as_mut() {
-                    walk_mut(v, &mut NodeMut::IdentifierExpr(i));
-                }
-                for prop in n.properties.iter_mut() {
-                    walk_mut(v, &mut NodeMut::Property(prop));
-                }
-            }
-            NodeMut::MemberExpr(ref mut n) => {
-                walk_mut(v, &mut NodeMut::from_expr(&mut n.object));
-            }
-            NodeMut::IndexExpr(ref mut n) => {
-                walk_mut(v, &mut NodeMut::from_expr(&mut n.array));
-                walk_mut(v, &mut NodeMut::from_expr(&mut n.index));
-            }
-            NodeMut::BinaryExpr(ref mut n) => {
-                walk_mut(v, &mut NodeMut::from_expr(&mut n.left));
-                walk_mut(v, &mut NodeMut::from_expr(&mut n.right));
-            }
-            NodeMut::UnaryExpr(ref mut n) => {
-                walk_mut(v, &mut NodeMut::from_expr(&mut n.argument));
-            }
-            NodeMut::CallExpr(ref mut n) => {
-                walk_mut(v, &mut NodeMut::from_expr(&mut n.callee));
-                if let Some(p) = n.pipe.as_mut() {
-                    walk_mut(v, &mut NodeMut::from_expr(p));
-                }
-                for arg in n.arguments.iter_mut() {
-                    walk_mut(v, &mut NodeMut::Property(arg));
-                }
-            }
-            NodeMut::ConditionalExpr(ref mut n) => {
-                walk_mut(v, &mut NodeMut::from_expr(&mut n.test));
-                walk_mut(v, &mut NodeMut::from_expr(&mut n.consequent));
-                walk_mut(v, &mut NodeMut::from_expr(&mut n.alternate));
-            }
-            NodeMut::StringExpr(ref mut n) => {
-                for part in n.parts.iter_mut() {
-                    walk_mut(v, &mut NodeMut::from_string_expr_part(part));
-                }
-            }
-            NodeMut::IntegerLit(_) => {}
-            NodeMut::FloatLit(_) => {}
-            NodeMut::StringLit(_) => {}
-            NodeMut::DurationLit(_) => {}
-            NodeMut::UintLit(_) => {}
-            NodeMut::BooleanLit(_) => {}
-            NodeMut::DateTimeLit(_) => {}
-            NodeMut::RegexpLit(_) => {}
-            NodeMut::ExprStmt(ref mut n) => {
-                walk_mut(v, &mut NodeMut::from_expr(&mut n.expression));
-            }
-            NodeMut::OptionStmt(ref mut n) => {
-                walk_mut(v, &mut NodeMut::from_assignment(&mut n.assignment));
-            }
-            NodeMut::ReturnStmt(ref mut n) => {
-                walk_mut(v, &mut NodeMut::from_expr(&mut n.argument));
-            }
-            NodeMut::TestStmt(ref mut n) => {
-                walk_mut(v, &mut NodeMut::VariableAssgn(&mut n.assignment));
-            }
-            NodeMut::TestCaseStmt(ref mut n) => {
-                walk_mut(v, &mut NodeMut::Identifier(&mut n.id));
-                if let Some(e) = n.extends.as_mut() {
-                    walk_mut(v, &mut NodeMut::StringLit(e));
-                }
-                for stmt in n.body.iter_mut() {
-                    walk_mut(v, &mut NodeMut::from_stmt(stmt));
-                }
-            }
-            NodeMut::BuiltinStmt(ref mut n) => {
-                walk_mut(v, &mut NodeMut::Identifier(&mut n.id));
-            }
-            NodeMut::ErrorStmt(_) => {}
-            NodeMut::Block(ref mut n) => match n {
-                Block::Variable(ref mut assgn, ref mut next) => {
-                    walk_mut(v, &mut NodeMut::VariableAssgn(assgn));
-                    walk_mut(v, &mut NodeMut::Block(&mut *next));
-                }
-                Block::Expr(ref mut estmt, ref mut next) => {
-                    walk_mut(v, &mut NodeMut::ExprStmt(estmt));
-                    walk_mut(v, &mut NodeMut::Block(&mut *next))
-                }
-                Block::Return(ref mut ret_stmt) => walk_mut(v, &mut NodeMut::ReturnStmt(ret_stmt)),
-            },
-            NodeMut::Property(ref mut n) => {
-                walk_mut(v, &mut NodeMut::Identifier(&mut n.key));
-                walk_mut(v, &mut NodeMut::from_expr(&mut n.value));
-            }
-            NodeMut::TextPart(_) => {}
-            NodeMut::InterpolatedPart(ref mut n) => {
-                walk_mut(v, &mut NodeMut::from_expr(&mut n.expression));
-            }
-            NodeMut::VariableAssgn(ref mut n) => {
-                walk_mut(v, &mut NodeMut::Identifier(&mut n.id));
-                walk_mut(v, &mut NodeMut::from_expr(&mut n.init));
-            }
-            NodeMut::MemberAssgn(ref mut n) => {
-                walk_mut(v, &mut NodeMut::MemberExpr(&mut n.member));
-                walk_mut(v, &mut NodeMut::from_expr(&mut n.init));
-            }
-            NodeMut::ErrorExpr(_) => (),
-        };
-    }
-    v.done(node);
+    fn done(&mut self, _: &mut NodeMut<'_>) {}
 }
 
 /// Implementation of VisitorMut for a mutable closure.
@@ -284,9 +118,9 @@ where
 /// See <https://doc.rust-lang.org/nomicon/hrtb.html>.
 impl<F> VisitorMut for F
 where
-    F: for<'a> FnMut(&mut NodeMut<'a>),
+    F: for<'b> FnMut(&mut NodeMut<'_>),
 {
-    fn visit(&mut self, node: &mut NodeMut) -> bool {
+    fn visit(&mut self, node: &mut NodeMut<'_>) -> bool {
         self(node);
         true
     }
@@ -296,369 +130,6 @@ where
 mod tests {
     use super::*;
     use crate::{ast, semantic::walk::test_utils::compile};
-
-    mod node_ids {
-        use super::*;
-
-        fn test_walk(source: &str, want: Vec<&str>) {
-            let mut sem_pkg = compile(source);
-            let mut nodes = Vec::new();
-            walk_mut(
-                &mut |n: &mut NodeMut| nodes.push(format!("{}", n)),
-                &mut NodeMut::File(&mut sem_pkg.files[0]),
-            );
-            assert_eq!(want, nodes);
-        }
-
-        #[test]
-        fn test_file() {
-            test_walk("", vec!["File"])
-        }
-        #[test]
-        fn test_package_clause() {
-            test_walk("package a", vec!["File", "PackageClause", "Identifier"])
-        }
-        #[test]
-        fn test_import_declaration() {
-            test_walk(
-                "import \"a\"",
-                vec!["File", "ImportDeclaration", "StringLit"],
-            )
-        }
-        #[test]
-        fn test_ident() {
-            test_walk("a", vec!["File", "ExprStmt", "IdentifierExpr"])
-        }
-        #[test]
-        fn test_array_expr() {
-            test_walk(
-                "[1,2,3]",
-                vec![
-                    "File",
-                    "ExprStmt",
-                    "ArrayExpr",
-                    "IntegerLit",
-                    "IntegerLit",
-                    "IntegerLit",
-                ],
-            )
-        }
-        #[test]
-        fn test_function_expr() {
-            test_walk(
-                "() => 1",
-                vec![
-                    "File",
-                    "ExprStmt",
-                    "FunctionExpr",
-                    "Block::Return",
-                    "ReturnStmt",
-                    "IntegerLit",
-                ],
-            )
-        }
-        #[test]
-        fn test_function_expr_multiline_block() {
-            test_walk(
-                "() => {
-                    a = 1
-                    b = 3 + 2
-                    a + b
-                    return a
-                }",
-                vec![
-                    "File",
-                    "ExprStmt",
-                    "FunctionExpr",
-                    "Block::Variable",
-                    "VariableAssgn",
-                    "Identifier",
-                    "IntegerLit",
-                    "Block::Variable",
-                    "VariableAssgn",
-                    "Identifier",
-                    "BinaryExpr",
-                    "IntegerLit",
-                    "IntegerLit",
-                    "Block::Expr",
-                    "ExprStmt",
-                    "BinaryExpr",
-                    "IdentifierExpr",
-                    "IdentifierExpr",
-                    "Block::Return",
-                    "ReturnStmt",
-                    "IdentifierExpr",
-                ],
-            )
-        }
-        #[test]
-        fn test_function_with_args() {
-            test_walk(
-                "(a=1) => a",
-                vec![
-                    "File",
-                    "ExprStmt",
-                    "FunctionExpr",
-                    "FunctionParameter",
-                    "Identifier",
-                    "IntegerLit",
-                    "Block::Return",
-                    "ReturnStmt",
-                    "IdentifierExpr",
-                ],
-            )
-        }
-        #[test]
-        fn test_logical_expr() {
-            test_walk(
-                "true or false",
-                vec![
-                    "File",
-                    "ExprStmt",
-                    "LogicalExpr",
-                    "IdentifierExpr",
-                    "IdentifierExpr",
-                ],
-            )
-        }
-        #[test]
-        fn test_object_expr() {
-            test_walk(
-                "{a:1,\"b\":false}",
-                vec![
-                    "File",
-                    "ExprStmt",
-                    "ObjectExpr",
-                    "Property",
-                    "Identifier",
-                    "IntegerLit",
-                    "Property",
-                    "Identifier",
-                    "IdentifierExpr",
-                ],
-            )
-        }
-        #[test]
-        fn test_member_expr() {
-            test_walk(
-                "a.b",
-                vec!["File", "ExprStmt", "MemberExpr", "IdentifierExpr"],
-            )
-        }
-        #[test]
-        fn test_index_expr() {
-            test_walk(
-                "a[b]",
-                vec![
-                    "File",
-                    "ExprStmt",
-                    "IndexExpr",
-                    "IdentifierExpr",
-                    "IdentifierExpr",
-                ],
-            )
-        }
-        #[test]
-        fn test_binary_expr() {
-            test_walk(
-                "a+b",
-                vec![
-                    "File",
-                    "ExprStmt",
-                    "BinaryExpr",
-                    "IdentifierExpr",
-                    "IdentifierExpr",
-                ],
-            )
-        }
-        #[test]
-        fn test_unary_expr() {
-            test_walk(
-                "-b",
-                vec!["File", "ExprStmt", "UnaryExpr", "IdentifierExpr"],
-            )
-        }
-        #[test]
-        fn test_pipe_expr() {
-            test_walk(
-                "a|>b()",
-                vec![
-                    "File",
-                    "ExprStmt",
-                    "CallExpr",
-                    "IdentifierExpr",
-                    "IdentifierExpr",
-                ],
-            )
-        }
-        #[test]
-        fn test_call_expr() {
-            test_walk(
-                "b(a:1)",
-                vec![
-                    "File",
-                    "ExprStmt",
-                    "CallExpr",
-                    "IdentifierExpr",
-                    "Property",
-                    "Identifier",
-                    "IntegerLit",
-                ],
-            )
-        }
-        #[test]
-        fn test_conditional_expr() {
-            test_walk(
-                "if x then y else z",
-                vec![
-                    "File",
-                    "ExprStmt",
-                    "ConditionalExpr",
-                    "IdentifierExpr",
-                    "IdentifierExpr",
-                    "IdentifierExpr",
-                ],
-            )
-        }
-        #[test]
-        fn test_string_expr() {
-            test_walk(
-                "\"hello ${world}\"",
-                vec![
-                    "File",
-                    "ExprStmt",
-                    "StringExpr",
-                    "TextPart",
-                    "InterpolatedPart",
-                    "IdentifierExpr",
-                ],
-            )
-        }
-        #[test]
-        fn test_paren_expr() {
-            test_walk(
-                "(a + b)",
-                vec![
-                    "File",
-                    "ExprStmt",
-                    "BinaryExpr",
-                    "IdentifierExpr",
-                    "IdentifierExpr",
-                ],
-            )
-        }
-        #[test]
-        fn test_integer_lit() {
-            test_walk("1", vec!["File", "ExprStmt", "IntegerLit"])
-        }
-        #[test]
-        fn test_float_lit() {
-            test_walk("1.0", vec!["File", "ExprStmt", "FloatLit"])
-        }
-        #[test]
-        fn test_string_lit() {
-            test_walk("\"a\"", vec!["File", "ExprStmt", "StringLit"])
-        }
-        #[test]
-        fn test_duration_lit() {
-            test_walk("1m", vec!["File", "ExprStmt", "DurationLit"])
-        }
-        #[test]
-        fn test_datetime_lit() {
-            test_walk(
-                "2019-01-01T00:00:00Z",
-                vec!["File", "ExprStmt", "DateTimeLit"],
-            )
-        }
-        #[test]
-        fn test_regexp_lit() {
-            test_walk("/./", vec!["File", "ExprStmt", "RegexpLit"])
-        }
-        #[test]
-        fn test_pipe_lit() {
-            test_walk(
-                "(a=<-)=>a",
-                vec![
-                    "File",
-                    "ExprStmt",
-                    "FunctionExpr",
-                    "FunctionParameter",
-                    "Identifier",
-                    "Block::Return",
-                    "ReturnStmt",
-                    "IdentifierExpr",
-                ],
-            )
-        }
-
-        #[test]
-        fn test_option_stmt() {
-            test_walk(
-                "option a = b",
-                vec![
-                    "File",
-                    "OptionStmt",
-                    "VariableAssgn",
-                    "Identifier",
-                    "IdentifierExpr",
-                ],
-            )
-        }
-        #[test]
-        fn test_return_stmt() {
-            // This is quite tricky, even if there is an explicit ReturnStmt,
-            // `analyze` returns a `Block::Return` when inside of a function body.
-            test_walk(
-                "() => {return 1}",
-                vec![
-                    "File",
-                    "ExprStmt",
-                    "FunctionExpr",
-                    "Block::Return",
-                    "ReturnStmt",
-                    "IntegerLit",
-                ],
-            )
-        }
-        #[test]
-        fn test_test_stmt() {
-            test_walk(
-                "test a = 1",
-                vec![
-                    "File",
-                    "TestStmt",
-                    "VariableAssgn",
-                    "Identifier",
-                    "IntegerLit",
-                ],
-            )
-        }
-        #[test]
-        fn test_builtin_stmt() {
-            test_walk("builtin a : int", vec!["File", "BuiltinStmt", "Identifier"])
-        }
-        #[test]
-        fn test_variable_assgn() {
-            test_walk(
-                "a = b",
-                vec!["File", "VariableAssgn", "Identifier", "IdentifierExpr"],
-            )
-        }
-        #[test]
-        fn test_member_assgn() {
-            test_walk(
-                "option a.b = c",
-                vec![
-                    "File",
-                    "OptionStmt",
-                    "MemberAssgn",
-                    "MemberExpr",
-                    "IdentifierExpr",
-                    "IdentifierExpr",
-                ],
-            )
-        }
-    }
 
     mod mutate_nodes {
 
@@ -766,7 +237,7 @@ b = from(bucket:"Flux/autogen")
 join(tables:[a,b], on:["t1"], fn: (a,b) => (a["_field"] - b["_field"]) / b["_field"])"#,
             );
             let mut v = LocationCollector::new();
-            walk_mut(&mut v, &mut NodeMut::Package(&mut pkg));
+            walk_mut(&mut v, NodeMut::Package(&mut pkg));
             let locs = v.locs;
             assert!(locs.len() > 0);
             for loc in locs {
@@ -775,11 +246,11 @@ join(tables:[a,b], on:["t1"], fn: (a,b) => (a["_field"] - b["_field"]) / b["_fie
             // now mutate the locations
             walk_mut(
                 &mut |n: &mut NodeMut| n.set_loc(base_loc.clone()),
-                &mut NodeMut::Package(&mut pkg),
+                NodeMut::Package(&mut pkg),
             );
             // now assert that every location is the base one
             let mut v = LocationCollector::new();
-            walk_mut(&mut v, &mut NodeMut::Package(&mut pkg));
+            walk_mut(&mut v, NodeMut::Package(&mut pkg));
             let locs = v.locs;
             assert!(locs.len() > 0);
             for loc in locs {
@@ -802,7 +273,7 @@ b = from(bucket:"Flux/autogen")
 join(tables:[a,b], on:["t1"], fn: (a,b) => (a["_field"] - b["_field"]) / b["_field"])"#,
             );
             let mut v = TypeCollector::new();
-            walk_mut(&mut v, &mut NodeMut::Package(&mut pkg));
+            walk_mut(&mut v, NodeMut::Package(&mut pkg));
             let types = v.types;
             assert!(types.len() > 0);
             // no type is a type variable
@@ -823,11 +294,11 @@ join(tables:[a,b], on:["t1"], fn: (a,b) => (a["_field"] - b["_field"]) / b["_fie
                         _ => (),
                     };
                 },
-                &mut NodeMut::Package(&mut pkg),
+                NodeMut::Package(&mut pkg),
             );
             // now assert that every type is the invalid one
             let mut v = TypeCollector::new();
-            walk_mut(&mut v, &mut NodeMut::Package(&mut pkg));
+            walk_mut(&mut v, NodeMut::Package(&mut pkg));
             let types = v.types;
             assert!(types.len() > 0);
             for tvar in types {
@@ -884,7 +355,7 @@ g()
 "#,
             );
             let mut v = NestingCounter { count: 0 };
-            walk_mut(&mut v, &mut NodeMut::Package(&mut pkg));
+            walk_mut(&mut v, NodeMut::Package(&mut pkg));
             assert_eq!(v.count, 5);
         }
 
@@ -950,7 +421,7 @@ f = () => {
 "#,
             );
             let mut v = RepeatedPlusChecker::new();
-            walk_mut(&mut v, &mut NodeMut::Package(&mut ok));
+            walk_mut(&mut v, NodeMut::Package(&mut ok));
             assert_eq!(v.err.as_str(), "");
             let mut not_ok1 = compile(
                 r#"
@@ -967,7 +438,7 @@ f = () => {
 "#,
             );
             let mut v = RepeatedPlusChecker::new();
-            walk_mut(&mut v, &mut NodeMut::Package(&mut not_ok1));
+            walk_mut(&mut v, NodeMut::Package(&mut not_ok1));
             assert_eq!(v.err.as_str(), "repeated + on line 11");
             let mut not_ok2 = compile(
                 r#"
@@ -984,7 +455,7 @@ f = () => {
 "#,
             );
             let mut v = RepeatedPlusChecker::new();
-            walk_mut(&mut v, &mut NodeMut::Package(&mut not_ok2));
+            walk_mut(&mut v, NodeMut::Package(&mut not_ok2));
             assert_eq!(v.err.as_str(), "repeated + on line 7");
             let mut not_ok3 = compile(
                 r#"
@@ -1000,7 +471,7 @@ f = () => {
 "#,
             );
             let mut v = RepeatedPlusChecker::new();
-            walk_mut(&mut v, &mut NodeMut::Package(&mut not_ok3));
+            walk_mut(&mut v, NodeMut::Package(&mut not_ok3));
             assert_eq!(v.err.as_str(), "repeated + on line 6");
         }
     }

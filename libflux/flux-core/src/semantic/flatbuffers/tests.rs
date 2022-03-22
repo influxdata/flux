@@ -128,7 +128,7 @@ re !~ /foo/
             };
             *typ = MonoType::Var(Tvar(0));
         },
-        &mut NodeMut::Package(&mut pkg),
+        NodeMut::Package(&mut pkg),
     );
 
     let (vec, offset) = match super::serialize_pkg(&mut pkg) {

@@ -201,7 +201,7 @@ f(a: s)
     // We don't want to test the locations, so we override those with the base one.
     walk_mut(
         &mut |n: &mut NodeMut| n.set_loc(ast::BaseNode::default().location),
-        &mut NodeMut::Package(&mut got),
+        NodeMut::Package(&mut got),
     );
     assert_eq!(want, got);
 }
