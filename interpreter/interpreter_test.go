@@ -10,6 +10,7 @@ import (
 	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/dependencies/dependenciestest"
+	"github.com/influxdata/flux/dependency"
 	"github.com/influxdata/flux/execute/executetest"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/repl"
@@ -438,7 +439,9 @@ func TestEval(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			src := prelude + tc.query
 
-			ctx := dependenciestest.Default().Inject(context.Background())
+			ctx, deps := dependency.Inject(context.Background(), dependenciestest.Default())
+			defer deps.Finish()
+
 			sideEffects, _, err := runtime.Eval(ctx, src)
 			if err != nil {
 				if tc.wantErr == "" {
@@ -579,7 +582,9 @@ func TestEval_Operator_Precedence(t *testing.T) {
 	for _, tc := range testCases {
 		tc := tc
 		t.Run(tc.src, func(t *testing.T) {
-			ctx := dependenciestest.Default().Inject(context.Background())
+			ctx, deps := dependency.Inject(context.Background(), dependenciestest.Default())
+			defer deps.Finish()
+
 			sideEffects, _, err := runtime.Eval(ctx, tc.src)
 			if err != nil {
 				t.Fatalf("unexpected error: %s", err)
@@ -650,7 +655,9 @@ func TestInterpreter_MultiPhaseInterpretation(t *testing.T) {
 	for _, tc := range testCases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			ctx := dependenciestest.Default().Inject(context.Background())
+			ctx, deps := dependency.Inject(context.Background(), dependenciestest.Default())
+			defer deps.Finish()
+
 			r := repl.New(ctx)
 			if _, err := r.Eval(prelude); err != nil {
 				t.Fatalf("unable to evaluate prelude: %s", err)
@@ -762,7 +769,9 @@ func TestInterpreter_MultipleEval(t *testing.T) {
 	for _, tc := range testCases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			ctx := dependenciestest.Default().Inject(context.Background())
+			ctx, deps := dependency.Inject(context.Background(), dependenciestest.Default())
+			defer deps.Finish()
+
 			r := repl.New(ctx)
 
 			if _, err := r.Eval(prelude); err != nil {
@@ -810,7 +819,9 @@ func TestResolver(t *testing.T) {
 			src := tc.env + "\n" + tc.fn
 
 			// Evaluate script with a function definition.
-			ctx := dependenciestest.Default().Inject(context.Background())
+			ctx, deps := dependency.Inject(context.Background(), dependenciestest.Default())
+			defer deps.Finish()
+
 			_, scope, err := runtime.Eval(ctx, src)
 			if err != nil {
 				t.Fatalf("unexpected error: %s", err)
@@ -849,7 +860,9 @@ func getSideEffectsValues(ses []interpreter.SideEffect) []values.Value {
 
 func TestStack(t *testing.T) {
 	src := `from(bucket: "telegraf") |> range(start: -5m) |> aggregateWindow(every: 1m, fn: mean)`
-	ctx := dependenciestest.Default().Inject(context.Background())
+	ctx, deps := dependency.Inject(context.Background(), dependenciestest.Default())
+	defer deps.Finish()
+
 	sideEffects, _, err := runtime.Eval(ctx, src)
 	if err != nil {
 		t.Fatal(err)

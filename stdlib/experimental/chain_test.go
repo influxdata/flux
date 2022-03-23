@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/influxdata/flux/dependencies/dependenciestest"
+	"github.com/influxdata/flux/dependency"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/stdlib/experimental"
@@ -59,9 +60,14 @@ func makeArgs(first values.Value, second values.Value) values.Object {
 }
 
 func TestChain(t *testing.T) {
-	context := dependenciestest.Default().Inject(context.Background())
-	context = execute.DefaultExecutionDependencies().Inject(context)
-	_, scope, err := runtime.Eval(context, table1)
+	ctx, deps := dependency.Inject(
+		context.Background(),
+		dependenciestest.Default(),
+		execute.DefaultExecutionDependencies(),
+	)
+	defer deps.Finish()
+
+	_, scope, err := runtime.Eval(ctx, table1)
 	if err != nil {
 		t.Fatalf("unexpected error: %s", err)
 	}
@@ -71,7 +77,7 @@ func TestChain(t *testing.T) {
 		t.Fatal("unable to find input in table1 script")
 	}
 
-	_, scope, err = runtime.Eval(context, table2)
+	_, scope, err = runtime.Eval(ctx, table2)
 	if err != nil {
 		t.Fatalf("unexpected error: %s", err)
 	}
@@ -97,7 +103,7 @@ func TestChain(t *testing.T) {
 
 		chain := experimental.MakeChainFunction()
 		result, err := chain.Call(
-			context,
+			ctx,
 			testcase.args,
 		)
 

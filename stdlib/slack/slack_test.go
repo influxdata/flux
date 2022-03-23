@@ -14,6 +14,7 @@ import (
 	"github.com/influxdata/flux"
 	_ "github.com/influxdata/flux/csv"
 	"github.com/influxdata/flux/dependencies/dependenciestest"
+	"github.com/influxdata/flux/dependency"
 	_ "github.com/influxdata/flux/fluxinit/static"
 	"github.com/influxdata/flux/lang"
 	"github.com/influxdata/flux/memory"
@@ -21,7 +22,9 @@ import (
 )
 
 func TestSlack(t *testing.T) {
-	ctx := dependenciestest.Default().Inject(context.Background())
+	ctx, deps := dependency.Inject(context.Background(), dependenciestest.Default())
+	defer deps.Finish()
+
 	_, scope, err := runtime.Eval(ctx, `
 import "csv"
 import "slack"

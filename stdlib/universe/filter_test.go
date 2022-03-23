@@ -7,6 +7,7 @@ import (
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/dependencies/dependenciestest"
+	"github.com/influxdata/flux/dependency"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
 	"github.com/influxdata/flux/internal/gen"
@@ -722,7 +723,8 @@ func TestFilter_Process(t *testing.T) {
 				tc.want,
 				nil,
 				func(id execute.DatasetID, alloc memory.Allocator) (execute.Transformation, execute.Dataset) {
-					ctx := dependenciestest.Default().Inject(context.Background())
+					ctx, deps := dependency.Inject(context.Background(), dependenciestest.Default())
+					defer deps.Finish()
 					tx, d, err := universe.NewFilterTransformation(ctx, tc.spec, id, alloc)
 					if err != nil {
 						t.Fatal(err)

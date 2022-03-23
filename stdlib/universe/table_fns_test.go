@@ -8,6 +8,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/dependencies/dependenciestest"
+	"github.com/influxdata/flux/dependency"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
 	"github.com/influxdata/flux/runtime"
@@ -55,8 +56,12 @@ func mustLookup(s values.Scope, valueID string) values.Value {
 func evalOrFail(t *testing.T, script string) values.Scope {
 	t.Helper()
 
-	ctx := dependenciestest.Default().Inject(context.Background())
-	ctx = execute.DefaultExecutionDependencies().Inject(ctx)
+	ctx, deps := dependency.Inject(
+		context.Background(),
+		dependenciestest.Default(),
+		execute.DefaultExecutionDependencies(),
+	)
+	defer deps.Finish()
 	_, s, err := runtime.Eval(ctx, script)
 	if err != nil {
 		t.Fatal(err)
@@ -172,7 +177,8 @@ func TestTableFind_Call(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			ctx := dependenciestest.Default().Inject(context.Background())
+			ctx, deps := dependency.Inject(context.Background(), dependenciestest.Default())
+			defer deps.Finish()
 			if !tc.omitExecDeps {
 				ctx = execute.DefaultExecutionDependencies().Inject(ctx)
 			}
@@ -233,8 +239,12 @@ t = inj |> tableFind(fn: (key) => key.user == "user1")`
 	tbl := mustLookup(s, "t")
 
 	f := universe.NewGetColumnFunction()
-	ctx := dependenciestest.Default().Inject(context.Background())
-	ctx = execute.DefaultExecutionDependencies().Inject(ctx)
+	ctx, deps := dependency.Inject(
+		context.Background(),
+		dependenciestest.Default(),
+		execute.DefaultExecutionDependencies(),
+	)
+	defer deps.Finish()
 	res, err := f.Function().Call(ctx,
 		values.NewObjectWithValues(map[string]values.Value{
 			"table":  tbl.(*objects.Table),
@@ -276,8 +286,12 @@ t = inj |> tableFind(fn: (key) => key.user == "user1")`
 	tbl := mustLookup(s, "t")
 
 	f := universe.NewGetRecordFunction()
-	ctx := dependenciestest.Default().Inject(context.Background())
-	ctx = execute.DefaultExecutionDependencies().Inject(ctx)
+	ctx, deps := dependency.Inject(
+		context.Background(),
+		dependenciestest.Default(),
+		execute.DefaultExecutionDependencies(),
+	)
+	defer deps.Finish()
 	res, err := f.Function().Call(ctx,
 		values.NewObjectWithValues(map[string]values.Value{
 			"table": tbl.(*objects.Table),

@@ -8,6 +8,7 @@ import (
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/dependencies/dependenciestest"
+	"github.com/influxdata/flux/dependency"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
 	"github.com/influxdata/flux/interpreter"
@@ -378,7 +379,8 @@ func TestStateTracking_Process(t *testing.T) {
 				tc.want,
 				tc.wantErr,
 				func(id execute.DatasetID, alloc memory.Allocator) (execute.Transformation, execute.Dataset) {
-					ctx := dependenciestest.Default().Inject(context.Background())
+					ctx, deps := dependency.Inject(context.Background(), dependenciestest.Default())
+					defer deps.Finish()
 
 					ntx, nd, err := universe.NewNarrowStateTrackingTransformation(ctx, tc.spec, id, alloc)
 					if err != nil {

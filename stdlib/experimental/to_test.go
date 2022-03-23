@@ -14,6 +14,7 @@ import (
 	"github.com/andreyvit/diff"
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/dependencies/dependenciestest"
+	"github.com/influxdata/flux/dependency"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
 	"github.com/influxdata/flux/execute/table/static"
@@ -114,7 +115,8 @@ func TestToTransformation(t *testing.T) {
 	d := execute.NewDataset(executetest.RandomDatasetID(), execute.DiscardingMode, cache)
 	d.SetTriggerSpec(plan.DefaultTriggerSpec)
 
-	ctx := deps.Inject(context.Background())
+	ctx, span := dependency.Inject(context.Background(), deps)
+	defer span.Finish()
 	spec := &experimental.ToProcedureSpec{
 		Config: influxdb.Config{
 			Bucket: influxdb.NameOrID{Name: "mybucket"},
@@ -242,7 +244,8 @@ func TestToTransformation_Errors(t *testing.T) {
 			d := execute.NewDataset(executetest.RandomDatasetID(), execute.DiscardingMode, cache)
 			d.SetTriggerSpec(plan.DefaultTriggerSpec)
 
-			ctx := deps.Inject(context.Background())
+			ctx, span := dependency.Inject(context.Background(), deps)
+			defer span.Finish()
 			spec := &experimental.ToProcedureSpec{
 				Config: influxdb.Config{
 					Bucket: influxdb.NameOrID{Name: "mybucket"},
@@ -290,8 +293,12 @@ func TestToTransformation_CloseOnError(t *testing.T) {
 	d := execute.NewDataset(executetest.RandomDatasetID(), execute.DiscardingMode, cache)
 	d.SetTriggerSpec(plan.DefaultTriggerSpec)
 
-	ctx := deps.Inject(context.Background())
-	ctx = provider.Inject(ctx)
+	ctx, span := dependency.Inject(
+		context.Background(),
+		deps,
+		provider,
+	)
+	defer span.Finish()
 	spec := &experimental.ToProcedureSpec{
 		Config: influxdb.Config{
 			Bucket: influxdb.NameOrID{Name: "mybucket"},

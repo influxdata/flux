@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/influxdata/flux/dependencies/dependenciestest"
+	"github.com/influxdata/flux/dependency"
 	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/stdlib/universe"
@@ -109,7 +110,9 @@ func TestContains_NewQuery(t *testing.T) {
 func containsTestHelper(t *testing.T, tc containsCase) {
 	t.Helper()
 	contains := universe.MakeContainsFunc()
-	result, err := contains.Call(dependenciestest.Default().Inject(context.Background()),
+	ctx, deps := dependency.Inject(context.Background(), dependenciestest.Default())
+	defer deps.Finish()
+	result, err := contains.Call(ctx,
 		values.NewObjectWithValues(map[string]values.Value{
 			"value": tc.value,
 			"set":   values.NewArrayWithBacking(semantic.NewArrayType(tc.value.Type()), tc.set),

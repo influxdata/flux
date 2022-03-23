@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/influxdata/flux/dependencies/dependenciestest"
+	"github.com/influxdata/flux/dependency"
 	_ "github.com/influxdata/flux/fluxinit/static"
 	"github.com/influxdata/flux/querytest"
 	"github.com/influxdata/flux/runtime"
@@ -117,7 +118,9 @@ func TestConcat_Process(t *testing.T) {
 				"v":   values.NewArrayWithBacking(semantic.NewArrayType(tc.typ), tovalarr(tc.typ, tc.v)),
 			})
 			want := values.NewArrayWithBacking(semantic.NewArrayType(tc.typ), tovalarr(tc.typ, tc.want))
-			result, err := concatFn.Call(dependenciestest.Default().Inject(context.Background()), fluxArg)
+			ctx, deps := dependency.Inject(context.Background(), dependenciestest.Default())
+			defer deps.Finish()
+			result, err := concatFn.Call(ctx, fluxArg)
 			if err != nil {
 				t.Error(err.Error())
 			}
@@ -209,7 +212,8 @@ func TestMap_Process(t *testing.T) {
 	for _, tc := range testCases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			ctx := dependenciestest.Default().Inject(context.Background())
+			ctx, deps := dependency.Inject(context.Background(), dependenciestest.Default())
+			defer deps.Finish()
 			_, scope, err := runtime.Eval(ctx, tc.fn)
 			if err != nil {
 				t.Error(err.Error())

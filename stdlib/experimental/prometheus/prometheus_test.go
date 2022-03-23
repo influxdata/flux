@@ -10,6 +10,7 @@ import (
 
 	flux "github.com/influxdata/flux"
 	"github.com/influxdata/flux/dependencies/dependenciestest"
+	"github.com/influxdata/flux/dependency"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
 	"github.com/influxdata/flux/mock"
@@ -229,7 +230,9 @@ func testSourceDecoder(p *PrometheusIterator, t *testing.T) *executetest.Result 
 	results := &executetest.Result{}
 	runOnce := true
 
-	ctx := dependenciestest.Default().Inject(context.Background())
+	ctx, deps := dependency.Inject(context.Background(), dependenciestest.Default())
+	defer deps.Finish()
+
 	err := p.Connect(ctx)
 	if err != nil {
 		t.Fatal(err)

@@ -7,6 +7,7 @@ import (
 
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/dependencies/dependenciestest"
+	"github.com/influxdata/flux/dependency"
 	_ "github.com/influxdata/flux/fluxinit/static"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/interpreter"
@@ -88,7 +89,8 @@ func TestAccessNestedImport(t *testing.T) {
 	}
 
 	expectedError := fmt.Errorf(`cannot access imported package "a" of imported package "b"`)
-	ctx := dependenciestest.Default().Inject(context.Background())
+	ctx, deps := dependency.Inject(context.Background(), dependenciestest.Default())
+	defer deps.Finish()
 	_, err := interpreter.NewInterpreter(interpreter.NewPackage(""), nil).Eval(ctx, node, values.NewScope(), &importer)
 
 	if err == nil {
@@ -366,7 +368,8 @@ func TestInterpreter_EvalPackage(t *testing.T) {
 
 func TestInterpreter_MutateOption(t *testing.T) {
 	pkg := interpreter.NewPackage("alert")
-	ctx := dependenciestest.Default().Inject(context.Background())
+	ctx, deps := dependency.Inject(context.Background(), dependenciestest.Default())
+	defer deps.Finish()
 	itrp := interpreter.NewInterpreter(pkg, nil)
 	script := `
 		package alert
@@ -392,7 +395,8 @@ func TestInterpreter_SetQualifiedOption(t *testing.T) {
 			"alert": externalPackage,
 		},
 	}
-	ctx := dependenciestest.Default().Inject(context.Background())
+	ctx, deps := dependency.Inject(context.Background(), dependenciestest.Default())
+	defer deps.Finish()
 	itrp := interpreter.NewInterpreter(interpreter.NewPackage(""), nil)
 	pkg := `
 		package foo

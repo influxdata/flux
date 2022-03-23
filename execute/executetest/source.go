@@ -12,6 +12,7 @@ import (
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/dependencies/dependenciestest"
 	"github.com/influxdata/flux/dependencies/url"
+	"github.com/influxdata/flux/dependency"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/mock"
@@ -173,14 +174,16 @@ type SourceUrlValidationTestCases []struct {
 
 func (testCases *SourceUrlValidationTestCases) Run(t *testing.T, fn execute.CreateSource) {
 	for _, tc := range *testCases {
-		deps := dependenciestest.Default()
-		if tc.V != nil {
-			deps.Deps.Deps.URLValidator = tc.V
-		}
-		ctx := deps.Inject(context.Background())
-		a := mock.AdministrationWithContext(ctx)
 		t.Run(tc.Name, func(t *testing.T) {
+			deps := dependenciestest.Default()
+			if tc.V != nil {
+				deps.Deps.Deps.URLValidator = tc.V
+			}
+			ctx, span := dependency.Inject(context.Background(), deps)
+			defer span.Finish()
+			a := mock.AdministrationWithContext(ctx)
 			id := RandomDatasetID()
+
 			_, err := fn(tc.Spec, id, a)
 			if tc.ErrMsg != "" {
 				if err == nil {

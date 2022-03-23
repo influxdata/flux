@@ -6,17 +6,13 @@ import (
 
 	"github.com/influxdata/flux/dependencies/dependenciestest"
 	"github.com/influxdata/flux/dependencies/secret"
+	"github.com/influxdata/flux/dependency"
 	"github.com/influxdata/flux/mock"
 	"github.com/influxdata/flux/stdlib/influxdata/influxdb/secrets"
 	"github.com/influxdata/flux/values"
 )
 
 func TestGet(t *testing.T) {
-	deps := dependenciestest.Default()
-	deps.Deps.Deps.SecretService = &mock.SecretService{
-		"mykey": "myvalue",
-	}
-
 	for _, tt := range []struct {
 		name    string
 		secrets secret.Service
@@ -61,7 +57,8 @@ func TestGet(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			deps := dependenciestest.Default()
 			deps.Deps.Deps.SecretService = tt.secrets
-			ctx := deps.Inject(context.Background())
+			ctx, span := dependency.Inject(context.Background(), deps)
+			defer span.Finish()
 
 			args := values.NewObjectWithValues(tt.args)
 			got, err := secrets.Get(ctx, args)

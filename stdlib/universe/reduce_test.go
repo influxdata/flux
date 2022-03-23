@@ -7,6 +7,7 @@ import (
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/dependencies/dependenciestest"
+	"github.com/influxdata/flux/dependency"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
 	"github.com/influxdata/flux/internal/errors"
@@ -120,7 +121,8 @@ func TestReduce_Process(t *testing.T) {
 				tc.want,
 				tc.wantErr,
 				func(d execute.Dataset, c execute.TableBuilderCache) execute.Transformation {
-					ctx := dependenciestest.Default().Inject(context.Background())
+					ctx, deps := dependency.Inject(context.Background(), dependenciestest.Default())
+					defer deps.Finish()
 					f, err := universe.NewReduceTransformation(ctx, tc.spec, d, c)
 					if err != nil {
 						t.Fatal(err)

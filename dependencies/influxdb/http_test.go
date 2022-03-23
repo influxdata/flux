@@ -16,6 +16,7 @@ import (
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/dependencies/dependenciestest"
 	"github.com/influxdata/flux/dependencies/influxdb"
+	"github.com/influxdata/flux/dependency"
 	protocol "github.com/influxdata/line-protocol"
 )
 
@@ -143,7 +144,8 @@ disk,id=/dev/sdb usage_disk=45,log="disk message" 1510876800000000004
 			deps.Deps.Deps.HTTPClient = &http.Client{
 				Transport: roundTripper,
 			}
-			ctx := deps.Inject(context.Background())
+			ctx, span := dependency.Inject(context.Background(), deps)
+			defer span.Finish()
 			writer, err := h.WriterFor(ctx, influxdb.Config{
 				Org:    influxdb.NameOrID{Name: "myorg"},
 				Bucket: influxdb.NameOrID{Name: "mybucket"},
@@ -196,7 +198,8 @@ func TestHttpWriter_Write_Error(t *testing.T) {
 	deps.Deps.Deps.HTTPClient = &http.Client{
 		Transport: roundTripper,
 	}
-	ctx := deps.Inject(context.Background())
+	ctx, span := dependency.Inject(context.Background(), deps)
+	defer span.Finish()
 	writer, err := h.WriterFor(ctx, influxdb.Config{
 		Org:    influxdb.NameOrID{Name: "myorg"},
 		Bucket: influxdb.NameOrID{Name: "mybucket"},

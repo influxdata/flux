@@ -15,6 +15,7 @@ import (
 	"github.com/influxdata/flux"
 	_ "github.com/influxdata/flux/csv"
 	"github.com/influxdata/flux/dependencies/dependenciestest"
+	"github.com/influxdata/flux/dependency"
 	_ "github.com/influxdata/flux/fluxinit/static"
 	"github.com/influxdata/flux/lang"
 	"github.com/influxdata/flux/memory"
@@ -24,7 +25,9 @@ import (
 func TestSensu(t *testing.T) {
 	s := NewServer(t)
 	defer s.Close()
-	ctx := dependenciestest.Default().Inject(context.Background())
+	ctx, deps := dependency.Inject(context.Background(), dependenciestest.Default())
+	defer deps.Finish()
+
 	_, _, err := runtime.Eval(ctx, `
 import "csv"
 import "contrib/sranka/sensu"

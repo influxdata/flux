@@ -38,6 +38,16 @@ func OnFinish(ctx context.Context, c io.Closer) {
 	span.onFinish(c)
 }
 
+type closeFunc func() error
+
+func (fn closeFunc) Close() error {
+	return fn()
+}
+
+func OnFinishFunc(ctx context.Context, fn func() error) {
+	OnFinish(ctx, closeFunc(fn))
+}
+
 type contextKey int
 
 const (

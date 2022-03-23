@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/influxdata/flux/dependencies/dependenciestest"
+	"github.com/influxdata/flux/dependency"
 	_ "github.com/influxdata/flux/fluxinit/static"
 	"github.com/influxdata/flux/internal/spec"
 	"github.com/influxdata/flux/runtime"
@@ -33,7 +34,9 @@ check = from(bucket: "telegraf")
 check |> yield(name: "checkResult")
 check |> yield(name: "mean")
 `
-	ctx := dependenciestest.Default().Inject(context.Background())
+	ctx, deps := dependency.Inject(context.Background(), dependenciestest.Default())
+	defer deps.Finish()
+
 	b.ReportAllocs()
 	for i := 0; i < b.N; i++ {
 		if _, err := spec.FromScript(ctx, runtime.Default, time.Now(), query); err != nil {

@@ -47,7 +47,6 @@ type Deps struct {
 func (d Deps) Inject(ctx context.Context) context.Context {
 	ctx = d.Deps.Inject(ctx)
 	ctx = d.influxdb.Inject(ctx)
-	ctx, _ = dependency.Inject(ctx)
 	return d.mqtt.Inject(ctx)
 }
 
@@ -79,10 +78,8 @@ func ExecutionDefault() execute.ExecutionDependencies {
 }
 
 // Injects all default dependencies into the context
-func InjectAllDeps(ctx context.Context) context.Context {
+func InjectAllDeps(ctx context.Context) (context.Context, *dependency.Span) {
 	deps := Default()
 	execDeps := ExecutionDefault()
-
-	ctx = deps.Inject(ctx)
-	return execDeps.Inject(ctx)
+	return dependency.Inject(ctx, deps, execDeps)
 }
