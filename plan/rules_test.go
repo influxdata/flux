@@ -9,6 +9,7 @@ import (
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/dependencies/dependenciestest"
 	dtesting "github.com/influxdata/flux/dependencies/testing"
+	"github.com/influxdata/flux/dependency"
 	"github.com/influxdata/flux/internal/spec"
 	"github.com/influxdata/flux/lang"
 	"github.com/influxdata/flux/plan"
@@ -37,7 +38,9 @@ func TestRuleRegistration(t *testing.T) {
 	plan.RegisterLogicalRules(&simpleRule)
 
 	now := time.Now().UTC()
-	fluxSpec, err := spec.FromScript(dependenciestest.Default().Inject(context.Background()), runtime.Default, now,
+	ctx, deps := dependency.Inject(context.Background(), dependenciestest.Default())
+	defer deps.Finish()
+	fluxSpec, err := spec.FromScript(ctx, runtime.Default, now,
 		`from(host: "http://localhost:8086", bucket: "telegraf") |> range(start: -5m)`)
 	if err != nil {
 		t.Fatalf("could not compile very simple Flux query: %v", err)
@@ -100,7 +103,9 @@ func TestRewriteWithContext(t *testing.T) {
 	plan.RegisterLogicalRules(&functionRule)
 
 	now := time.Now().UTC()
-	fluxSpec, err := spec.FromScript(dependenciestest.Default().Inject(ctx), runtime.Default, now,
+	ctx, deps := dependency.Inject(ctx, dependenciestest.Default())
+	defer deps.Finish()
+	fluxSpec, err := spec.FromScript(ctx, runtime.Default, now,
 		`from(host: "http://localhost:8086", bucket: "telegraf") |> range(start: -5m)`)
 	if err != nil {
 		t.Fatalf("could not compile very simple Flux query: %v", err)
@@ -196,7 +201,9 @@ func TestMultiRootMatch(t *testing.T) {
 	plan.RegisterLogicalRules(&multiRootRule)
 
 	now := time.Now().UTC()
-	fluxSpec, err := spec.FromScript(dependenciestest.Default().Inject(context.Background()), runtime.Default, now,
+	ctx, deps := dependency.Inject(context.Background(), dependenciestest.Default())
+	defer deps.Finish()
+	fluxSpec, err := spec.FromScript(ctx, runtime.Default, now,
 		`from(host: "http://localhost:8086", bucket: "telegraf") |> range(start: -5m) |> min() |> max() |> mean()`)
 	if err != nil {
 		t.Fatalf("could not compile very simple Flux query: %v", err)
@@ -234,7 +241,9 @@ func TestExpectPlannerRule(t *testing.T) {
 	})
 
 	now := time.Now().UTC()
-	fluxSpec, err := spec.FromScript(dependenciestest.Default().Inject(context.Background()), runtime.Default, now,
+	ctx, deps := dependency.Inject(context.Background(), dependenciestest.Default())
+	defer deps.Finish()
+	fluxSpec, err := spec.FromScript(ctx, runtime.Default, now,
 		`from(host: "http://localhost:8086", bucket: "telegraf") |> range(start: -5m) |> min() |> max() |> mean()`)
 	if err != nil {
 		t.Fatalf("could not compile very simple Flux query: %v", err)
@@ -246,7 +255,7 @@ func TestExpectPlannerRule(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	ctx := dtesting.Inject(context.Background())
+	ctx = dtesting.Inject(context.Background())
 	if err := dtesting.ExpectPlannerRule(ctx, "function", 1); err != nil {
 		t.Fatalf("unexpected error: %s", err)
 	}

@@ -12,6 +12,7 @@ import (
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/dependencies/dependenciestest"
+	"github.com/influxdata/flux/dependency"
 	"github.com/influxdata/flux/internal/spec"
 	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic/semantictest"
@@ -40,7 +41,9 @@ func NewQueryTestHelper(t *testing.T, tc NewQueryTestCase) {
 	t.Helper()
 
 	now := time.Now().UTC()
-	got, err := spec.FromScript(dependenciestest.Default().Inject(context.Background()), runtime.Default, now, tc.Raw)
+	ctx, deps := dependency.Inject(context.Background(), dependenciestest.Default())
+	defer deps.Finish()
+	got, err := spec.FromScript(ctx, runtime.Default, now, tc.Raw)
 	if (err != nil) != tc.WantErr {
 		t.Errorf("error compiling spec error = %v, wantErr %v", err, tc.WantErr)
 		return

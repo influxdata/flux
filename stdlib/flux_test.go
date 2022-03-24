@@ -9,6 +9,7 @@ import (
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/ast"
+	"github.com/influxdata/flux/dependency"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
 	"github.com/influxdata/flux/lang"
@@ -129,9 +130,10 @@ func doTestRun(t testing.TB, c flux.Compiler) flux.Statistics {
 		t.Fatalf("unexpected error while compiling query: %v", err)
 	}
 
-	ctx := executetest.NewTestExecuteDependencies().Inject(context.Background())
-	alloc := &memory.ResourceAllocator{}
-	r, err := program.Start(ctx, alloc)
+	ctx, deps := dependency.Inject(context.Background(), executetest.NewTestExecuteDependencies())
+	defer deps.Finish()
+
+	r, err := program.Start(ctx, memory.DefaultAllocator)
 	if err != nil {
 		t.Fatalf("unexpected error while executing testing.run: %v", err)
 	}
@@ -158,9 +160,10 @@ func doTestInspect(t testing.TB, c flux.Compiler) flux.Statistics {
 	if err != nil {
 		t.Fatalf("unexpected error while compiling query: %v", err)
 	}
-	ctx := executetest.NewTestExecuteDependencies().Inject(context.Background())
-	alloc := &memory.ResourceAllocator{}
-	r, err := program.Start(ctx, alloc)
+	ctx, deps := dependency.Inject(context.Background(), executetest.NewTestExecuteDependencies())
+	defer deps.Finish()
+
+	r, err := program.Start(ctx, memory.DefaultAllocator)
 	if err != nil {
 		t.Fatalf("unexpected error while executing testing.inspect: %v", err)
 	}

@@ -6,6 +6,7 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/influxdata/flux/dependencies/dependenciestest"
+	"github.com/influxdata/flux/dependency"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/stdlib/types"
 	"github.com/influxdata/flux/values"
@@ -60,8 +61,10 @@ func isTypeTestHelper(t *testing.T, tc isTypeCase) {
 			"type": values.NewString(tc.type_),
 		})
 
-		got, err := isTypeFn.Call(dependenciestest.Default().Inject(context.Background()), fluxArg)
+		ctx, deps := dependency.Inject(context.Background(), dependenciestest.Default())
+		defer deps.Finish()
 
+		got, err := isTypeFn.Call(ctx, fluxArg)
 		if err != nil {
 			t.Error(err.Error())
 			return

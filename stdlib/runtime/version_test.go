@@ -11,6 +11,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/dependencies/dependenciestest"
+	"github.com/influxdata/flux/dependency"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/stdlib/runtime"
 	"github.com/influxdata/flux/values"
@@ -94,7 +95,9 @@ func TestVersion(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			runtime.SetBuildInfo(tt.bi)
 
-			got, err := runtime.Version(dependenciestest.Default().Inject(context.Background()), nil)
+			ctx, deps := dependency.Inject(context.Background(), dependenciestest.Default())
+			defer deps.Finish()
+			got, err := runtime.Version(ctx, nil)
 			if err != nil {
 				if tt.wantErr != nil {
 					if !cmp.Equal(tt.wantErr, err) {

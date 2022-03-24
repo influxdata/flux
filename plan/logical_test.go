@@ -8,6 +8,7 @@ import (
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/dependencies/dependenciestest"
+	"github.com/influxdata/flux/dependency"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
 	"github.com/influxdata/flux/internal/spec"
@@ -24,7 +25,9 @@ import (
 )
 
 func compile(fluxText string, now time.Time) (*flux.Spec, error) {
-	return spec.FromScript(dependenciestest.Default().Inject(context.Background()), runtime.Default, now, fluxText)
+	ctx, deps := dependency.Inject(context.Background(), dependenciestest.Default())
+	defer deps.Finish()
+	return spec.FromScript(ctx, runtime.Default, now, fluxText)
 }
 
 func TestPlan_LogicalPlanFromSpec(t *testing.T) {

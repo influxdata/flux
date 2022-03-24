@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/influxdata/flux/dependencies/dependenciestest"
+	"github.com/influxdata/flux/dependency"
 	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/stdlib/universe"
@@ -68,8 +69,10 @@ func TestLength_NewQuery(t *testing.T) {
 func lengthTestHelper(t *testing.T, tc lengthCase) {
 	t.Helper()
 	length := universe.MakeLengthFunc()
+	ctx, deps := dependency.Inject(context.Background(), dependenciestest.Default())
+	defer deps.Finish()
 	result, err := length.Call(
-		dependenciestest.Default().Inject(context.Background()),
+		ctx,
 		values.NewObjectWithValues(map[string]values.Value{
 			"arr": values.NewArrayWithBacking(semantic.NewArrayType(tc.typ), tc.arr),
 		}),

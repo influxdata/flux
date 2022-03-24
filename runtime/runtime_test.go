@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/influxdata/flux/dependencies/dependenciestest"
+	"github.com/influxdata/flux/dependency"
 	_ "github.com/influxdata/flux/fluxinit/static"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/parser"
@@ -84,7 +85,9 @@ func Example_option() {
 	// The now option is a function value whose default behavior is to return
 	// the current system time when called. The function now() doesn't take
 	// any arguments so can be called with nil.
-	nowTime, _ := nowFunc.Function().Call(dependenciestest.Default().Inject(context.TODO()), nil)
+	ctx, deps := dependency.Inject(context.Background(), dependenciestest.Default())
+	defer deps.Finish()
+	nowTime, _ := nowFunc.Function().Call(ctx, nil)
 	fmt.Fprintf(os.Stderr, "The current system time (UTC) is: %v\n", nowTime)
 	// Output:
 }
@@ -96,7 +99,9 @@ func Example_overrideDefaultOptionExternally() {
 		option now = () => 2018-07-13T00:00:00Z
 		what_time_is_it = now()`
 
-	ctx := dependenciestest.Default().Inject(context.Background())
+	ctx, deps := dependency.Inject(context.Background(), dependenciestest.Default())
+	defer deps.Finish()
+
 	_, scope, err := runtime.Eval(ctx, queryString)
 	if err != nil {
 		fmt.Println(err)

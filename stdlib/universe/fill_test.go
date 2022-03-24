@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/influxdata/flux/dependencies/dependenciestest"
+	"github.com/influxdata/flux/dependency"
 	"github.com/influxdata/flux/internal/gen"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/semantic"
@@ -808,7 +809,8 @@ func TestFill_Process(t *testing.T) {
 				tc.want,
 				nil,
 				func(id execute.DatasetID, alloc memory.Allocator) (execute.Transformation, execute.Dataset) {
-					ctx := dependenciestest.Default().Inject(context.Background())
+					ctx, deps := dependency.Inject(context.Background(), dependenciestest.Default())
+					defer deps.Finish()
 					return universe.NewFillTransformation(ctx, tc.spec, id, alloc)
 				},
 			)
@@ -823,7 +825,8 @@ func TestFill_Process(t *testing.T) {
 				tc.want,
 				nil,
 				func(id execute.DatasetID, alloc memory.Allocator) (execute.Transformation, execute.Dataset) {
-					ctx := dependenciestest.Default().Inject(context.Background())
+					ctx, deps := dependency.Inject(context.Background(), dependenciestest.Default())
+					defer deps.Finish()
 					tr, d, err := universe.NewNarrowFillTransformation(ctx, tc.spec, id, alloc)
 					if err != nil {
 						t.Fatal(err)

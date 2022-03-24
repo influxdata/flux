@@ -21,6 +21,7 @@ import (
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/dependencies/filesystem"
 	"github.com/influxdata/flux/dependencies/testing"
+	"github.com/influxdata/flux/dependency"
 	"github.com/influxdata/flux/execute/executetest"
 	"github.com/influxdata/flux/execute/table"
 	"github.com/influxdata/flux/fluxinit"
@@ -651,8 +652,11 @@ func (testExecutor) Run(pkg *ast.Package) error {
 	}
 	c := lang.ASTCompiler{AST: jsonAST}
 
-	ctx := executetest.NewTestExecuteDependencies().Inject(context.Background())
-	ctx = testing.Inject(ctx)
+	ctx, span := dependency.Inject(context.Background(),
+		executetest.NewTestExecuteDependencies(),
+		testing.FrameworkConfig{},
+	)
+	defer span.Finish()
 	program, err := c.Compile(ctx, runtime.Default)
 	if err != nil {
 		return errors.Wrap(err, codes.Invalid, "failed to compile")

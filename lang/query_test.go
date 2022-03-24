@@ -10,6 +10,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/influxdata/flux"
 	ftesting "github.com/influxdata/flux/dependencies/testing"
+	"github.com/influxdata/flux/dependency"
 	"github.com/influxdata/flux/execute/executetest"
 	_ "github.com/influxdata/flux/fluxinit/static"
 	"github.com/influxdata/flux/lang"
@@ -17,17 +18,18 @@ import (
 	"github.com/influxdata/flux/runtime"
 )
 
-func runQuery(ctx context.Context, script string) (flux.Query, error) {
+func runQuery(ctx context.Context, script string) (flux.Query, func(), error) {
 	program, err := lang.Compile(script, runtime.Default, time.Unix(0, 0))
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	ctx = executetest.NewTestExecuteDependencies().Inject(ctx)
-	q, err := program.Start(ctx, &memory.ResourceAllocator{})
+	ctx, deps := dependency.Inject(ctx, executetest.NewTestExecuteDependencies())
+	q, err := program.Start(ctx, memory.DefaultAllocator)
 	if err != nil {
-		return nil, err
+		deps.Finish()
+		return nil, nil, err
 	}
-	return q, nil
+	return q, deps.Finish, nil
 }
 
 var validScript = `
@@ -51,10 +53,11 @@ data = "
 csv.from(csv: data) |> yield(name: "res")`
 
 func TestQuery_Results(t *testing.T) {
-	q, err := runQuery(context.Background(), validScript)
+	q, close, err := runQuery(context.Background(), validScript)
 	if err != nil {
 		t.Fatalf("unexpected error while creating query: %s", err)
 	}
+	defer close()
 
 	// gather counts
 	var resCount, tableCount, totRows int
@@ -96,10 +99,11 @@ func TestQuery_Results(t *testing.T) {
 func TestQuery_TestingCheck(t *testing.T) {
 	ctx := ftesting.Inject(context.Background())
 	ftesting.ExpectPlannerRule(ctx, "NonExistantRule", 1)
-	q, err := runQuery(ctx, validScript)
+	q, close, err := runQuery(ctx, validScript)
 	if err != nil {
 		t.Fatalf("unexpected error while creating query: %s", err)
 	}
+	defer close()
 
 	// gather counts
 	var resCount, tableCount, totRows int
@@ -144,10 +148,11 @@ func TestQuery_TestingCheck(t *testing.T) {
 func TestQuery_Stats(t *testing.T) {
 	t.Skip("stats are updated by the controller, running a standalone query won't update them")
 
-	q, err := runQuery(context.Background(), validScript)
+	q, close, err := runQuery(context.Background(), validScript)
 	if err != nil {
 		t.Fatalf("unexpected error while creating query: %s", err)
 	}
+	defer close()
 
 	// consume results
 	for res := range q.Results() {
@@ -198,10 +203,11 @@ data = "
 
 csv.from(csv: data) |> map(fn: (r) => r.nonexistent)`
 
-	q, err := runQuery(context.Background(), invalidScript)
+	q, close, err := runQuery(context.Background(), invalidScript)
 	if err != nil {
 		t.Fatalf("unexpected error while creating query: %s", err)
 	}
+	defer close()
 
 	// consume and check for error
 	for res := range q.Results() {
@@ -242,10 +248,11 @@ array.from(rows: [{_value:1}])
 	// This test ensures we do not have a race on q.err when both conditions occur.
 	// However it is not deterministic which error is reported, because it is possible
 	// the query completes without noticing the context was canceled.
-	q, err := runQuery(cctx, script)
+	q, close, err := runQuery(cctx, script)
 	if err != nil {
 		t.Fatalf("unexpected error while creating query: %s", err)
 	}
+	defer close()
 
 	// consume and check for errors
 	for res := range q.Results() {
@@ -385,13 +392,14 @@ data
 
 	for _, tc := range tcs {
 		t.Run(tc.name, func(t *testing.T) {
-			if q, err := runQuery(context.Background(), prelude+tc.script); err != nil {
+			if q, close, err := runQuery(context.Background(), prelude+tc.script); err != nil {
 				t.Error(err)
 			} else {
 				got := fmt.Sprintf("%v", q.Statistics().Metadata["flux/query-plan"])
 				if !cmp.Equal(tc.want, got) {
 					t.Errorf("unexpected value -want/+got\n%s", cmp.Diff(tc.want, got))
 				}
+				close()
 			}
 		})
 	}

@@ -9,6 +9,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/codes"
+	"github.com/influxdata/flux/dependency"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
 	_ "github.com/influxdata/flux/fluxinit/static"
@@ -752,7 +753,9 @@ func TestExecutor_Execute(t *testing.T) {
 			}
 
 			// Execute the query and preserve any error returned
-			ctx := executetest.NewTestExecuteDependencies().Inject(context.Background())
+			ctx, deps := dependency.Inject(context.Background(), executetest.NewTestExecuteDependencies())
+			defer deps.Finish()
+
 			results, _, err := exe.Execute(ctx, plan, alloc)
 			var got map[string][]*executetest.Table
 			if err == nil {

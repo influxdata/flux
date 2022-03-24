@@ -14,6 +14,7 @@ import (
 	"github.com/influxdata/flux"
 	_ "github.com/influxdata/flux/csv"
 	"github.com/influxdata/flux/dependencies/dependenciestest"
+	"github.com/influxdata/flux/dependency"
 	_ "github.com/influxdata/flux/fluxinit/static"
 	"github.com/influxdata/flux/lang"
 	"github.com/influxdata/flux/memory"
@@ -95,7 +96,8 @@ csv.from(csv:data) |> process()
 	for _, tc := range testCases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			ctx := dependenciestest.Default().Inject(context.Background())
+			ctx, deps := dependency.Inject(context.Background(), dependenciestest.Default())
+			defer deps.Finish()
 			_, _, err := runtime.Eval(ctx, tc.script)
 			if err != nil {
 				t.Error(err)
