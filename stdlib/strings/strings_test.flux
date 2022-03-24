@@ -59,7 +59,7 @@ testcase string_substring {
         {start: 11, end: 100, str: "end out of bounds", want: "bounds"},
         {start: 5, end: -1, str: "end <= start", want: ""},
         // note end <= start here because start is past the actual end of the string
-        {start: 12, end: 100, str: "end <= start", want: ""},
+        {start: 30, end: 100, str: "end <= start", want: ""},
     ]
     want = array.from(rows: bounds |> array.map(fn: (x) => ({_value: x.want})))
     got =

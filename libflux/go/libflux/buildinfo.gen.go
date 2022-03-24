@@ -330,7 +330,7 @@ var sourceHashes = map[string]string{
 	"stdlib/sql/sql.flux":                                                                         "b1d5ed22a2db2046b98d8fb43b8b84e32a613681943260b8990564f12998c7a6",
 	"stdlib/sql/sql_test.flux":                                                                    "a19a2a8d6b75d777e6568768529b811766a2d04ff79fc66c1da4e2babf14a841",
 	"stdlib/strings/strings.flux":                                                                 "101e223716ce769f51d8592d94f752dfe4a05e666f6acb8d333fabb4fb79b253",
-	"stdlib/strings/strings_test.flux":                                                            "e9cf434cf36a6301e3169289050dae2fcf48190e8ff0f7d501431fb79d08851e",
+	"stdlib/strings/strings_test.flux":                                                            "38bfdd79945c5371441c09a59528482a46731762b4ea33b933360fbce6ef4d0a",
 	"stdlib/system/system.flux":                                                                   "cb8b11a1be522b20a3988398c01160f36f442ab90b328181c25c237a731f7372",
 	"stdlib/testing/chronograf/aggregate_window_count_test.flux":                                  "d3d61831ff7a5a8c2bbdbfea515a1b2fe3b0fb72ef6e63101e2b6972b3c52816",
 	"stdlib/testing/chronograf/aggregate_window_mean_test.flux":                                   "ec81285a56699a104e13db8dbef4b75a465aaa591357749c17a1ac43329b3a09",

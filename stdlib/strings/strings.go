@@ -357,11 +357,12 @@ var substring = values.NewFunction(
 			s := []rune(v)
 			if a < 0 {
 				a = 0
+			} else if a > int64(len(v)) {
+				a = int64(len(v))
 			}
 			if b > int64(len(v)) {
 				b = int64(len(v))
-			}
-			if b < a {
+			} else if b < a {
 				b = a
 			}
 			return values.NewString(string(s[a:b])), nil
