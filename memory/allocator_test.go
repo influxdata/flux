@@ -28,6 +28,7 @@ func TestAllocator_Allocate(t *testing.T) {
 
 	allocator.Free(b)
 
+	allocator.GC()
 	mem.AssertSize(t, 0)
 	if want, got := int64(0), allocator.Allocated(); want != got {
 		t.Fatalf("unexpected allocated count -want/+got\n\t- %d\n\t+ %d", want, got)
@@ -64,6 +65,7 @@ func TestAllocator_Reallocate(t *testing.T) {
 
 	allocator.Free(b)
 
+	allocator.GC()
 	mem.AssertSize(t, 0)
 	if want, got := int64(0), allocator.Allocated(); want != got {
 		t.Fatalf("unexpected allocated count -want/+got\n\t- %d\n\t+ %d", want, got)

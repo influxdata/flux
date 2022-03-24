@@ -144,6 +144,9 @@ func TestNewStringFromBinaryArray(t *testing.T) {
 
 	a.Release()
 	s.Release()
+
+	alloc.GC()
+
 	if want, got := int64(0), alloc.Allocated(); want != got {
 		t.Errorf("epxected allocated to be %v, was %v", want, got)
 	}

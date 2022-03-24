@@ -48,6 +48,9 @@ func TestVectorTypes(t *testing.T) {
 		}
 
 		got.Release()
+
+		mem.GC()
+
 		if mem.Allocated() != 0 {
 			t.Errorf("expected bytes allocated to be 0, got %d", mem.Allocated())
 		}

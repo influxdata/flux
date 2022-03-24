@@ -2,8 +2,10 @@ package memory
 
 import (
 	"fmt"
+	"runtime"
 	"sync"
 	"sync/atomic"
+	"unsafe"
 
 	"github.com/apache/arrow/go/v7/arrow/memory"
 	"github.com/influxdata/flux/codes"
@@ -86,7 +88,19 @@ func (a *ResourceAllocator) Allocate(size int) []byte {
 	// more memory than we requested. How do we deal with that since we
 	// likely want to use that feature?
 	alloc := a.allocator()
-	return alloc.Allocate(size)
+
+	bs := alloc.Allocate(size)
+	if len(bs) > 0 {
+		l := len(bs)
+		runtime.SetFinalizer(&bs[0], func(b *byte) {
+			if l != 0 {
+				bs2 := unsafe.Slice(b, l)
+				a.free(bs2)
+				l = 0
+			}
+		})
+	}
+	return bs
 }
 
 func (a *ResourceAllocator) Reallocate(size int, b []byte) []byte {
@@ -100,7 +114,20 @@ func (a *ResourceAllocator) Reallocate(size int, b []byte) []byte {
 	}
 
 	alloc := a.allocator()
-	return alloc.Reallocate(size, b)
+	bs := alloc.Reallocate(size, b)
+	// If the reallocation extended `b` the previous finalizer are still attached
+	if len(bs) > 0 {
+		l := len(bs)
+		runtime.SetFinalizer(&b[0], nil)
+		runtime.SetFinalizer(&bs[0], func(b *byte) {
+			if l != 0 {
+				bs2 := unsafe.Slice(b, l)
+				a.free(bs2)
+				l = 0
+			}
+		})
+	}
+	return bs
 }
 
 // Account will manually account for the amount of memory being used.
@@ -141,7 +168,9 @@ func (a *ResourceAllocator) Free(b []byte) {
 		DefaultAllocator.Free(b)
 		return
 	}
+}
 
+func (a *ResourceAllocator) free(b []byte) {
 	size := len(b)
 
 	// Release the memory to the allocator first.
@@ -233,6 +262,20 @@ func (a *ResourceAllocator) allocator() memory.Allocator {
 		return DefaultAllocator
 	}
 	return a.Allocator
+}
+
+// Forces "all" unreachable memory to be garbage collected
+func (mem *ResourceAllocator) GC() {
+	prev := int64(0)
+	for i := 0; i < 30; i++ {
+		// This does not clear all unreachable memory so we need to loop until everything unreachable
+		// has been cleared out
+		runtime.GC()
+		if mem.Allocated() == prev {
+			break
+		}
+		prev = mem.Allocated()
+	}
 }
 
 // Manager will manage the memory allowed for the Allocator.

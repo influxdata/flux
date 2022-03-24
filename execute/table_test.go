@@ -363,6 +363,7 @@ func TestCopyTable(t *testing.T) {
 		buf.Done()
 	}
 
+	alloc.GC()
 	// Ensure there has been no memory leak.
 	if got, want := alloc.Allocated(), int64(0); got != want {
 		t.Errorf("memory leak -want/+got:\n\t- %d\n\t+ %d", want, got)

@@ -147,6 +147,8 @@ func TestVectorizedFns(t *testing.T) {
 
 			got.Release()
 			input.Release()
+
+			mem.GC()
 			checked.AssertSize(t, 0)
 		})
 	}

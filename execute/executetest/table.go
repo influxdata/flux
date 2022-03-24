@@ -710,6 +710,8 @@ func (tt *tableTest) finish(allocatorUsed bool) {
 		}
 	}
 
+	tt.alloc.GC()
+
 	// Verify that all memory is correctly released if we use the table properly.
 	if got := tt.alloc.Allocated(); got != 0 {
 		tt.t.Errorf("caught memory leak: %d bytes were not released", got)
