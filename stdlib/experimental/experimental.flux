@@ -13,8 +13,7 @@
 package experimental
 
 
-// builtin _addDuration used by addDuration
-builtin _addDuration : (d: duration, to: T, location: {zone: string, offset: duration}) => time where T: Timeable
+import "date"
 
 // addDuration adds a duration to a time value and returns the resulting time value.
 //
@@ -68,12 +67,10 @@ builtin _addDuration : (d: duration, to: T, location: {zone: string, offset: dur
 // ```
 //
 // ## Metadata
+// deprecated: NEXT
 // tags: date/time
 //
-addDuration = (d, to, location=location) => _addDuration(d, to, location)
-
-// builtin _subDuration used by subDuration
-builtin _subDuration : (from: T, d: duration, location: {zone: string, offset: duration}) => time where T: Timeable
+addDuration = (d, to, location=location) => date.add(d, to, location)
 
 // subDuration subtracts a duration from a time value and returns the resulting time value.
 //
@@ -128,9 +125,10 @@ builtin _subDuration : (from: T, d: duration, location: {zone: string, offset: d
 // ```
 //
 // ## Metadata
+// deprecated: NEXT
 // tags: date/time
 //
-subDuration = (d, from, location=location) => _subDuration(d, from, location)
+subDuration = (d, from, location=location) => date.sub(d, from, location)
 
 // group introduces an `extend` mode to the existing `group()` function.
 //

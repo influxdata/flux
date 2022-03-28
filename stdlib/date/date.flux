@@ -495,6 +495,125 @@ builtin microsecond : (t: T) => int where T: Timeable
 // ```
 builtin nanosecond : (t: T) => int where T: Timeable
 
+// builtin _add used by add
+builtin _add : (d: duration, to: T, location: {zone: string, offset: duration}) => time where T: Timeable
+
+// add adds a duration to a time value and returns the resulting time value.
+//
+// ## Parameters
+// - d: Duration to add.
+// - to: Time to add the duration to.
+// - location: Location to use for the time value.
+//
+//   Use an absolute time or a relative duration.
+//   Durations are relative to `now()`.
+//
+// ## Examples
+//
+// ### Add six hours to a timestamp
+// ```no_run
+// import "date"
+//
+// date.add(
+//     d: 6h,
+//     to: 2019-09-16T12:00:00Z,
+// )
+//
+// // Returns 2019-09-16T18:00:00.000000000Z
+// ```
+//
+// ### Add one month to yesterday
+//
+// A time may be represented as either an explicit timestamp
+// or as a relative time from the current `now` time. add can
+// support either type of value.
+//
+// ```no_run
+// import "date"
+//
+// option now = () => 2021-12-10T16:27:40Z
+//
+// date.add(d: 1mo, to: -1d)
+//
+// // Returns 2022-01-09T16:27:40Z
+// ```
+//
+// ### Add six hours to a relative duration
+// ```no_run
+// import "date"
+//
+// option now = () => 2022-01-01T12:00:00Z
+//
+// date.add(d: 6h, to: 3h)
+//
+// // Returns 2022-01-01T21:00:00.000000000Z
+// ```
+//
+// ## Metadata
+// tags: date/time
+//
+add = (d, to, location=location) => _add(d, to, location)
+
+// builtin _sub used by sub
+builtin _sub : (from: T, d: duration, location: {zone: string, offset: duration}) => time where T: Timeable
+
+// sub subtracts a duration from a time value and returns the resulting time value.
+//
+// ## Parameters
+// - from: Time to subtract the duration from.
+//
+//   Use an absolute time or a relative duration.
+//   Durations are relative to `now()`.
+//
+// - d: Duration to subtract.
+// - location: Location to use for the time value.
+//
+// ## Examples
+//
+// ### Subtract six hours from a timestamp
+// ```no_run
+// import "date"
+//
+// date.sub(from: 2019-09-16T12:00:00Z, d: 6h)
+//
+// // Returns 2019-09-16T06:00:00.000000000Z
+// ```
+//
+// ### Subtract six hours from a relative duration
+// ```no_run
+// import "date"
+//
+// option now = () => 2022-01-01T12:00:00Z
+//
+// date.sub(d: 6h, from: -3h)
+//
+// // Returns 2022-01-01T03:00:00.000000000Z
+// ```
+//
+// ### Subtract two days from one hour ago
+//
+// A time may be represented as either an explicit timestamp
+// or as a relative time from the current `now` time. sub can
+// support either type of value.
+//
+// ```no_run
+// import "date"
+//
+// option now = () => 2021-12-10T16:27:40Z
+//
+// date.sub(
+//     from: -1h,
+//     d: 2d,
+// )
+//
+// // Returns 2021-12-08T15:27:40Z
+// ```
+//
+// ## Metadata
+// tags: date/time
+//
+sub = (d, from, location=location) => _sub(d, from, location)
+
 // truncate returns a time truncated to the specified duration unit.
 //
 // ## Parameters
