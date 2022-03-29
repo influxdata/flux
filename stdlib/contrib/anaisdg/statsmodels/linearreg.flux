@@ -2,6 +2,7 @@
 package statsmodels
 
 
+import "experimental"
 import "math"
 import "generate"
 
@@ -85,4 +86,58 @@ linearRegression = (tables=<-) => {
             |> map(fn: rse)
 
     return output
+}
+
+linearRegressionGrouped = (tables=<-) => {
+    points =
+        tables
+            |> rename(columns: {_value: "y"})
+            // TODO what if they already have _time?
+            |> map(fn: (r) => ({r with x: 1.0, _time: now()}))
+            |> cumulativeSum(columns: ["x"])
+
+    lines =
+        points
+            |> reduce(
+                fn: (r, accumulator) =>
+                    ({
+                        sx: r.x + accumulator.sx,
+                        sy: r.y + accumulator.sy,
+                        N: accumulator.N + 1.0,
+                        sxy: r.x * r.y + accumulator.sxy,
+                        sxx: r.x * r.x + accumulator.sxx,
+                    }),
+                identity: {
+                    sxy: 0.0,
+                    sx: 0.0,
+                    sy: 0.0,
+                    sxx: 0.0,
+                    N: 0.0,
+                },
+            )
+            |> map(
+                fn: (r) => {
+                    xbar = r.sx / r.N
+                    ybar = r.sy / r.N
+                    slope = (r.sxy - xbar * ybar * r.N) / (r.sxx - r.N * xbar * xbar)
+                    intercept = ybar - slope * xbar
+
+                    return {r with _time: now(), slope: slope, intercept: intercept}
+                },
+            )
+
+    return
+        experimental.join(
+            left: lines,
+            right: points,
+            fn: (left, right) => ({right with slope: left.slope, intercept: left.intercept}),
+        )
+            |> map(
+                fn: (r) => {
+                    y_hat = r.slope * r.x + r.intercept
+                    errors = (r.y - y_hat) ^ 2.0
+
+                    return {r with y_hat: y_hat, errors: errors}
+                },
+            )
 }
