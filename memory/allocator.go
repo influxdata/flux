@@ -2,8 +2,10 @@ package memory
 
 import (
 	"fmt"
+	"runtime"
 	"sync"
 	"sync/atomic"
+	"unsafe"
 
 	"github.com/apache/arrow/go/v7/arrow/memory"
 	"github.com/influxdata/flux/codes"
@@ -24,6 +26,13 @@ type Allocator interface {
 	// that the given memory was allocated outside the Allocator.
 	// In order to release the memory, a negative size can be used.
 	Account(size int) error
+}
+
+type StatsAllocator interface {
+	Allocator
+
+	MaxAllocated() int64
+	TotalAllocated() int64
 }
 
 // GoAllocator implements a version of the allocator that uses native Go
@@ -86,7 +95,9 @@ func (a *ResourceAllocator) Allocate(size int) []byte {
 	// more memory than we requested. How do we deal with that since we
 	// likely want to use that feature?
 	alloc := a.allocator()
-	return alloc.Allocate(size)
+
+	bs := alloc.Allocate(size)
+	return bs
 }
 
 func (a *ResourceAllocator) Reallocate(size int, b []byte) []byte {
@@ -100,7 +111,8 @@ func (a *ResourceAllocator) Reallocate(size int, b []byte) []byte {
 	}
 
 	alloc := a.allocator()
-	return alloc.Reallocate(size, b)
+	bs := alloc.Reallocate(size, b)
+	return bs
 }
 
 // Account will manually account for the amount of memory being used.
@@ -233,6 +245,76 @@ func (a *ResourceAllocator) allocator() memory.Allocator {
 		return DefaultAllocator
 	}
 	return a.Allocator
+}
+
+type GcAllocator struct {
+	*ResourceAllocator
+}
+
+func (a *GcAllocator) Allocate(size int) []byte {
+	bs := a.ResourceAllocator.Allocate(size)
+	if len(bs) > 0 {
+		l := len(bs)
+		runtime.SetFinalizer(&bs[0], func(b *byte) {
+			if l != 0 {
+				// Allows us to reconstruct the slice without creating a circular dependency between
+				// the finalizer and the slice
+				bs2 := unsafe.Slice(b, l)
+				a.ResourceAllocator.Free(bs2)
+				l = 0
+			}
+		})
+	}
+	return bs
+}
+
+func (a *GcAllocator) Reallocate(size int, b []byte) []byte {
+	bs := a.ResourceAllocator.Reallocate(size, b)
+
+	// If the reallocation extended `b` the previous finalizer are still attached
+	if len(bs) > 0 {
+		l := len(bs)
+		runtime.SetFinalizer(&b[0], nil)
+		runtime.SetFinalizer(&bs[0], func(b *byte) {
+			if l != 0 {
+				// Allows us to reconstruct the slice without creating a circular dependency between
+				// the finalizer and the slice
+				bs2 := unsafe.Slice(b, l)
+				a.ResourceAllocator.Free(bs2)
+				l = 0
+			}
+		})
+	}
+
+	return bs
+}
+
+func (a *GcAllocator) Free(b []byte) {
+
+}
+
+func (a *GcAllocator) Account(size int) error { return a.ResourceAllocator.Account(size) }
+
+func (a *GcAllocator) MaxAllocated() int64 {
+	return a.ResourceAllocator.MaxAllocated()
+}
+
+func (a *GcAllocator) TotalAllocated() int64 {
+	return a.ResourceAllocator.TotalAllocated()
+}
+
+// Forces "all" unreachable memory to be garbage collected
+func (mem *GcAllocator) GC() {
+	prev := int64(0)
+	for i := 0; i < 30; i++ {
+		// This does not clear all unreachable memory so we need to loop until everything unreachable
+		// has been cleared out
+		runtime.GC()
+		if mem.Allocated() == prev {
+			break
+		}
+		prev = mem.Allocated()
+	}
 }
 
 // Manager will manage the memory allowed for the Allocator.

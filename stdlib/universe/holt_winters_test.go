@@ -1,6 +1,7 @@
 package universe_test
 
 import (
+	"runtime"
 	"testing"
 	"time"
 
@@ -883,6 +884,13 @@ func TestHoltWinters_Process(t *testing.T) {
 					return universe.NewHoltWintersTransformation(d, c, alloc, tc.spec)
 				},
 			)
+
+			for i := 0; i < 30; i++ {
+				runtime.GC()
+				if alloc.Allocated() <= 0 {
+					break
+				}
+			}
 
 			if m := alloc.Allocated(); m != 0 {
 				t.Errorf("HoltWinters is using memory after finishing: %d", m)

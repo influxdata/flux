@@ -137,6 +137,18 @@ func OptimizeStateTracking() BoolFlag {
 	return optimizeStateTracking
 }
 
+var setFinalizerMemoryTracking = feature.MakeBoolFlag(
+	"SetFinalizer Memory Tracking",
+	"setFinalizerMemoryTracking",
+	"Markus Westerlind",
+	false,
+)
+
+// SetfinalizerMemoryTracking - Enable SetFinalizer based memory tracking (as opposed to explicit Retain/Release)
+func SetfinalizerMemoryTracking() BoolFlag {
+	return setFinalizerMemoryTracking
+}
+
 // Inject will inject the Flagger into the context.
 func Inject(ctx context.Context, flagger Flagger) context.Context {
 	return feature.Inject(ctx, flagger)
@@ -153,6 +165,7 @@ var all = []Flag{
 	optimizeAggregateWindow,
 	narrowTransformationLimit,
 	optimizeStateTracking,
+	setFinalizerMemoryTracking,
 }
 
 var byKey = map[string]Flag{
@@ -166,6 +179,7 @@ var byKey = map[string]Flag{
 	"optimizeAggregateWindow":          optimizeAggregateWindow,
 	"narrowTransformationLimit":        narrowTransformationLimit,
 	"optimizeStateTracking":            optimizeStateTracking,
+	"setFinalizerMemoryTracking":       setFinalizerMemoryTracking,
 }
 
 // Flags returns all feature flags.

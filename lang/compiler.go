@@ -280,14 +280,27 @@ func (p *Program) Start(ctx context.Context, alloc memory.Allocator) (flux.Query
 	// This span gets closed by the query when it is done.
 	s, cctx := opentracing.StartSpanFromContext(ctx, "execute")
 	results := make(chan flux.Result)
+
+	resourceAlloc, ok := alloc.(*memory.ResourceAllocator)
+	if !ok {
+		resourceAlloc = &memory.ResourceAllocator{
+			Allocator: alloc,
+		}
+	}
+
+	var statsAlloc memory.StatsAllocator
+	if feature.SetfinalizerMemoryTracking().Enabled(ctx) {
+		statsAlloc = &memory.GcAllocator{ResourceAllocator: resourceAlloc}
+	} else {
+		statsAlloc = resourceAlloc
+	}
+
 	q := &query{
 		ctx:     cctx,
 		results: results,
-		alloc: &memory.ResourceAllocator{
-			Allocator: alloc,
-		},
-		span:   s,
-		cancel: cancel,
+		alloc:   statsAlloc,
+		span:    s,
+		cancel:  cancel,
 		stats: flux.Statistics{
 			Metadata: make(metadata.Metadata),
 		},

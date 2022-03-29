@@ -51,10 +51,15 @@ func TestTransportDataset_Process(t *testing.T) {
 	dataset.AddTransformation(transport)
 
 	mem := arrowmem.NewCheckedAllocator(memory.DefaultAllocator)
-	defer mem.AssertSize(t, 0)
-	alloc := &memory.ResourceAllocator{
+	alloc := &memory.GcAllocator{ResourceAllocator: &memory.ResourceAllocator{
 		Allocator: mem,
-	}
+	}}
+
+	defer func() {
+		alloc.GC()
+		mem.AssertSize(t, 0)
+	}()
+
 	buffer := arrow.TableBuffer{
 		GroupKey: execute.NewGroupKey(nil, nil),
 		Columns: []flux.ColMeta{
@@ -96,9 +101,15 @@ func TestTransportDataset_AddTransformation(t *testing.T) {
 
 	mem := arrowmem.NewCheckedAllocator(memory.DefaultAllocator)
 	defer mem.AssertSize(t, 0)
-	alloc := &memory.ResourceAllocator{
+	alloc := &memory.GcAllocator{ResourceAllocator: &memory.ResourceAllocator{
 		Allocator: mem,
-	}
+	}}
+
+	defer func() {
+		alloc.GC()
+		mem.AssertSize(t, 0)
+	}()
+
 	buffer := arrow.TableBuffer{
 		GroupKey: execute.NewGroupKey(nil, nil),
 		Columns: []flux.ColMeta{
@@ -195,9 +206,15 @@ func TestTransportDataset_MultipleDownstream(t *testing.T) {
 
 	mem := arrowmem.NewCheckedAllocator(memory.DefaultAllocator)
 	defer mem.AssertSize(t, 0)
-	alloc := &memory.ResourceAllocator{
+	alloc := &memory.GcAllocator{ResourceAllocator: &memory.ResourceAllocator{
 		Allocator: mem,
-	}
+	}}
+
+	defer func() {
+		alloc.GC()
+		mem.AssertSize(t, 0)
+	}()
+
 	buffer := arrow.TableBuffer{
 		GroupKey: execute.NewGroupKey(nil, nil),
 		Columns: []flux.ColMeta{

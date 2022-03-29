@@ -121,8 +121,27 @@ func TestString(t *testing.T) {
 	}
 }
 
+type A struct {
+}
+
+type B struct {
+	A
+}
+
+type C interface {
+	C() string
+}
+
+func (*A) C() string {
+	return "A"
+}
+
+func (*B) C() string {
+	return "B"
+}
+
 func TestNewStringFromBinaryArray(t *testing.T) {
-	alloc := &fluxmemory.ResourceAllocator{}
+	alloc := &fluxmemory.GcAllocator{ResourceAllocator: &fluxmemory.ResourceAllocator{}}
 	// Need to use the Apache binary builder to be able to create an actual
 	// Arrow Binary array.
 	sb := apachearray.NewBinaryBuilder(alloc, array.StringType)
@@ -144,6 +163,9 @@ func TestNewStringFromBinaryArray(t *testing.T) {
 
 	a.Release()
 	s.Release()
+
+	alloc.GC()
+
 	if want, got := int64(0), alloc.Allocated(); want != got {
 		t.Errorf("epxected allocated to be %v, was %v", want, got)
 	}
