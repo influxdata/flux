@@ -288,10 +288,17 @@ func (p *Program) Start(ctx context.Context, alloc memory.Allocator) (flux.Query
 		}
 	}
 
+	var statsAlloc memory.StatsAllocator
+	if feature.SetfinalizerMemoryTracking().Enabled(ctx) {
+		statsAlloc = &memory.GcAllocator{ResourceAllocator: resourceAlloc}
+	} else {
+		statsAlloc = resourceAlloc
+	}
+
 	q := &query{
 		ctx:     cctx,
 		results: results,
-		alloc:   resourceAlloc,
+		alloc:   statsAlloc,
 		span:    s,
 		cancel:  cancel,
 		stats: flux.Statistics{

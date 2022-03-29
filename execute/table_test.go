@@ -229,7 +229,7 @@ func TestColListTable(t *testing.T) {
 
 func TestColListTable_AppendNil(t *testing.T) {
 	key := execute.NewGroupKey(nil, nil)
-	tb := execute.NewColListTableBuilder(key, &memory.ResourceAllocator{})
+	tb := execute.NewColListTableBuilder(key, &memory.GcAllocator{ResourceAllocator: &memory.ResourceAllocator{}})
 
 	// Add a column for the value.
 	idx, _ := tb.AddCol(flux.ColMeta{
@@ -268,7 +268,7 @@ func TestColListTable_AppendNil(t *testing.T) {
 
 func TestColListTable_SetNil(t *testing.T) {
 	key := execute.NewGroupKey(nil, nil)
-	tb := execute.NewColListTableBuilder(key, &memory.ResourceAllocator{})
+	tb := execute.NewColListTableBuilder(key, &memory.GcAllocator{ResourceAllocator: &memory.ResourceAllocator{}})
 
 	// Add a column for the value.
 	idx, _ := tb.AddCol(flux.ColMeta{
@@ -307,7 +307,7 @@ func TestColListTable_SetNil(t *testing.T) {
 }
 
 func TestCopyTable(t *testing.T) {
-	alloc := &memory.ResourceAllocator{}
+	alloc := &memory.GcAllocator{ResourceAllocator: &memory.ResourceAllocator{}}
 
 	input, err := gen.Input(context.Background(), gen.Schema{
 		Tags: []gen.Tag{
@@ -450,7 +450,7 @@ func TestColListTableBuilder_AppendValues(t *testing.T) {
 			name: "Strings",
 			typ:  flux.TString,
 			values: func() array.Array {
-				b := arrow.NewStringBuilder(&memory.ResourceAllocator{})
+				b := arrow.NewStringBuilder(&memory.GcAllocator{ResourceAllocator: &memory.ResourceAllocator{}})
 				b.Append("a")
 				b.Append("d")
 				b.AppendNull()
@@ -518,7 +518,7 @@ func TestColListTableBuilder_AppendValues(t *testing.T) {
 	} {
 		t.Run(tt.name, func(t *testing.T) {
 			key := execute.NewGroupKey(nil, nil)
-			b := execute.NewColListTableBuilder(key, &memory.ResourceAllocator{})
+			b := execute.NewColListTableBuilder(key, &memory.GcAllocator{ResourceAllocator: &memory.ResourceAllocator{}})
 			if _, err := b.AddCol(flux.ColMeta{Label: "_value", Type: tt.typ}); err != nil {
 				t.Fatal(err)
 			}

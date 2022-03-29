@@ -28,6 +28,13 @@ type Allocator interface {
 	Account(size int) error
 }
 
+type StatsAllocator interface {
+	Allocator
+
+	MaxAllocated() int64
+	TotalAllocated() int64
+}
+
 // GoAllocator implements a version of the allocator that uses native Go
 // slices. It does not track or limit the amount of memory that is used.
 type GoAllocator struct {
@@ -90,16 +97,6 @@ func (a *ResourceAllocator) Allocate(size int) []byte {
 	alloc := a.allocator()
 
 	bs := alloc.Allocate(size)
-	if len(bs) > 0 {
-		l := len(bs)
-		runtime.SetFinalizer(&bs[0], func(b *byte) {
-			if l != 0 {
-				bs2 := unsafe.Slice(b, l)
-				a.free(bs2)
-				l = 0
-			}
-		})
-	}
 	return bs
 }
 
@@ -115,18 +112,6 @@ func (a *ResourceAllocator) Reallocate(size int, b []byte) []byte {
 
 	alloc := a.allocator()
 	bs := alloc.Reallocate(size, b)
-	// If the reallocation extended `b` the previous finalizer are still attached
-	if len(bs) > 0 {
-		l := len(bs)
-		runtime.SetFinalizer(&b[0], nil)
-		runtime.SetFinalizer(&bs[0], func(b *byte) {
-			if l != 0 {
-				bs2 := unsafe.Slice(b, l)
-				a.free(bs2)
-				l = 0
-			}
-		})
-	}
 	return bs
 }
 
@@ -168,9 +153,7 @@ func (a *ResourceAllocator) Free(b []byte) {
 		DefaultAllocator.Free(b)
 		return
 	}
-}
 
-func (a *ResourceAllocator) free(b []byte) {
 	size := len(b)
 
 	// Release the memory to the allocator first.
@@ -264,8 +247,64 @@ func (a *ResourceAllocator) allocator() memory.Allocator {
 	return a.Allocator
 }
 
+type GcAllocator struct {
+	*ResourceAllocator
+}
+
+func (a *GcAllocator) Allocate(size int) []byte {
+	bs := a.ResourceAllocator.Allocate(size)
+	if len(bs) > 0 {
+		l := len(bs)
+		runtime.SetFinalizer(&bs[0], func(b *byte) {
+			if l != 0 {
+				// Allows us to reconstruct the slice without creating a circular dependency between
+				// the finalizer and the slice
+				bs2 := unsafe.Slice(b, l)
+				a.ResourceAllocator.Free(bs2)
+				l = 0
+			}
+		})
+	}
+	return bs
+}
+
+func (a *GcAllocator) Reallocate(size int, b []byte) []byte {
+	bs := a.ResourceAllocator.Reallocate(size, b)
+
+	// If the reallocation extended `b` the previous finalizer are still attached
+	if len(bs) > 0 {
+		l := len(bs)
+		runtime.SetFinalizer(&b[0], nil)
+		runtime.SetFinalizer(&bs[0], func(b *byte) {
+			if l != 0 {
+				// Allows us to reconstruct the slice without creating a circular dependency between
+				// the finalizer and the slice
+				bs2 := unsafe.Slice(b, l)
+				a.ResourceAllocator.Free(bs2)
+				l = 0
+			}
+		})
+	}
+
+	return bs
+}
+
+func (a *GcAllocator) Free(b []byte) {
+
+}
+
+func (a *GcAllocator) Account(size int) error { return a.ResourceAllocator.Account(size) }
+
+func (a *GcAllocator) MaxAllocated() int64 {
+	return a.ResourceAllocator.MaxAllocated()
+}
+
+func (a *GcAllocator) TotalAllocated() int64 {
+	return a.ResourceAllocator.TotalAllocated()
+}
+
 // Forces "all" unreachable memory to be garbage collected
-func (mem *ResourceAllocator) GC() {
+func (mem *GcAllocator) GC() {
 	prev := int64(0)
 	for i := 0; i < 30; i++ {
 		// This does not clear all unreachable memory so we need to loop until everything unreachable

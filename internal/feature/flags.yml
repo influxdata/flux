@@ -75,3 +75,9 @@
   key: optimizeStateTracking
   default: false
   contact: Sean Brickley
+
+- name: SetFinalizer Memory Tracking
+  description: Enable SetFinalizer based memory tracking (as opposed to explicit Retain/Release)
+  key: setFinalizerMemoryTracking
+  default: false
+  contact: Markus Westerlind

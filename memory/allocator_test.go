@@ -15,7 +15,7 @@ func TestAllocator_Allocate(t *testing.T) {
 	mem := arrowmemory.NewCheckedAllocator(memory.DefaultAllocator)
 	defer mem.AssertSize(t, 0)
 
-	allocator := &memory.ResourceAllocator{Allocator: mem}
+	allocator := &memory.GcAllocator{&memory.ResourceAllocator{Allocator: mem}}
 	b := allocator.Allocate(64)
 
 	assert.Equal(t, 64, mem.CurrentAlloc(), "unexpected memory allocation.")
@@ -42,7 +42,7 @@ func TestAllocator_Reallocate(t *testing.T) {
 	mem := arrowmemory.NewCheckedAllocator(memory.DefaultAllocator)
 	defer mem.AssertSize(t, 0)
 
-	allocator := &memory.ResourceAllocator{Allocator: mem}
+	allocator := &memory.GcAllocator{&memory.ResourceAllocator{Allocator: mem}}
 	b := allocator.Allocate(64)
 
 	assert.Equal(t, 64, mem.CurrentAlloc(), "unexpected memory allocation.")
@@ -76,7 +76,7 @@ func TestAllocator_Reallocate(t *testing.T) {
 }
 
 func TestAllocator_MaxAfterFree(t *testing.T) {
-	allocator := &memory.ResourceAllocator{}
+	allocator := &memory.GcAllocator{&memory.ResourceAllocator{}}
 	if err := allocator.Account(64); err != nil {
 		t.Fatalf("unexpected error: %s", err)
 	}
@@ -113,7 +113,7 @@ func TestAllocator_MaxAfterFree(t *testing.T) {
 
 func TestAllocator_Limit(t *testing.T) {
 	maxLimit := int64(64)
-	allocator := &memory.ResourceAllocator{Limit: &maxLimit}
+	allocator := &memory.GcAllocator{&memory.ResourceAllocator{Limit: &maxLimit}}
 	if err := allocator.Account(64); err != nil {
 		t.Fatalf("unexpected error: %s", err)
 	}
@@ -186,7 +186,7 @@ func TestAllocator_Limit(t *testing.T) {
 }
 
 func TestAllocator_Free(t *testing.T) {
-	allocator := &memory.ResourceAllocator{}
+	allocator := &memory.GcAllocator{&memory.ResourceAllocator{}}
 	if err := allocator.Account(64); err != nil {
 		t.Fatalf("unexpected error: %s", err)
 	}
@@ -238,10 +238,10 @@ func TestAllocator_RequestMemory(t *testing.T) {
 
 	// Set the Limit to 64 and allocate 32 bytes of it.
 	// This should not request more memory from the manager.
-	allocator := &memory.ResourceAllocator{
+	allocator := &memory.GcAllocator{&memory.ResourceAllocator{
 		Limit:   func(v int64) *int64 { return &v }(64),
 		Manager: manager,
-	}
+	}}
 	if err := allocator.Account(32); err != nil {
 		t.Fatalf("unexpected error: %s", err)
 	}
@@ -313,10 +313,10 @@ func TestAllocator_RequestMemory_Concurrently(t *testing.T) {
 
 	// Set the Limit to 64 and allocate 32 bytes of it.
 	// This should not request more memory from the manager.
-	allocator := &memory.ResourceAllocator{
+	allocator := &memory.GcAllocator{&memory.ResourceAllocator{
 		Limit:   func(v int64) *int64 { return &v }(0),
 		Manager: manager,
-	}
+	}}
 	var wg sync.WaitGroup
 	for i := 0; i < 128; i++ {
 		wg.Add(1)
