@@ -4,7 +4,7 @@ use std::{fmt, mem};
 use crate::semantic::{
     nodes::Symbol,
     sub::{apply2, Substitutable, Substituter},
-    types::{PolyType, PolyTypeHashMap, PolyTypeMap, Tvar},
+    types::{PolyType, PolyTypeHashMap, PolyTypeMap},
     PackageExports,
 };
 
@@ -34,7 +34,7 @@ impl fmt::Display for Environment<'_> {
 }
 
 impl Substitutable for Environment<'_> {
-    fn apply_ref(&self, sub: &dyn Substituter) -> Option<Self> {
+    fn walk(&self, sub: &dyn Substituter) -> Option<Self> {
         match (self.readwrite, &self.parent) {
             // This is a performance optimization where false implies
             // this is the top-level of the type environment and apply
@@ -43,7 +43,7 @@ impl Substitutable for Environment<'_> {
             // Even though this is the top-level of the type environment
             // and apply should be a no-op, readwrite is set to true so
             // we apply anyway.
-            (true, None) => self.values.apply_ref(sub).map(|values| Environment {
+            (true, None) => self.values.visit(sub).map(|values| Environment {
                 external: self.external,
                 parent: None,
                 values,
@@ -56,16 +56,6 @@ impl Substitutable for Environment<'_> {
                     values,
                     readwrite: true,
                 })
-            }
-        }
-    }
-    fn free_vars(&self, vars: &mut Vec<Tvar>) {
-        match (self.readwrite, &self.parent) {
-            (false, None) | (false, _) => (),
-            (true, None) => self.values.free_vars(vars),
-            (true, Some(env)) => {
-                env.free_vars(vars);
-                self.values.free_vars(vars);
             }
         }
     }

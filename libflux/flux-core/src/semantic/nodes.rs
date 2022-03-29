@@ -80,9 +80,9 @@ impl AsDiagnostic for ErrorKind {
 }
 
 impl Substitutable for ErrorKind {
-    fn apply_ref(&self, sub: &dyn Substituter) -> Option<Self> {
+    fn walk(&self, sub: &dyn Substituter) -> Option<Self> {
         match self {
-            Self::Inference(err) => err.apply_ref(sub).map(Self::Inference),
+            Self::Inference(err) => err.visit(sub).map(Self::Inference),
             Self::UndefinedBuiltin(_)
             | Self::UndefinedIdentifier(_)
             | Self::InvalidBinOp(_)
@@ -91,19 +91,6 @@ impl Substitutable for ErrorKind {
             | Self::UnableToVectorize(_)
             | Self::InvalidReturn
             | Self::Bug(_) => None,
-        }
-    }
-    fn free_vars(&self, vars: &mut Vec<Tvar>) {
-        match self {
-            Self::Inference(err) => err.free_vars(vars),
-            Self::UndefinedBuiltin(_)
-            | Self::UndefinedIdentifier(_)
-            | Self::InvalidBinOp(_)
-            | Self::InvalidUnaryOp(_)
-            | Self::InvalidImportPath(_)
-            | Self::UnableToVectorize(_)
-            | Self::InvalidReturn
-            | Self::Bug(_) => (),
         }
     }
 }

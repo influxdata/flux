@@ -1,6 +1,7 @@
 //! Semantic representations of types.
 
 use std::{
+    cell::Cell,
     cmp,
     collections::{BTreeMap, BTreeSet},
     fmt::{self, Write},
@@ -113,44 +114,18 @@ impl PartialEq for PolyType {
 }
 
 impl Substitutable for PolyType {
-    fn apply_ref(&self, sub: &dyn Substituter) -> Option<Self> {
+    fn visit(&self, sub: &dyn Substituter) -> Option<Self> {
+        sub.visit_poly_type(self)
+    }
+
+    fn walk(&self, sub: &dyn Substituter) -> Option<Self> {
         // `vars` defines new distinct variables for `expr` so any substitutions applied on a
         // variable named the same must not be applied in `expr`
-        self.expr
-            .apply_ref(&|var| {
-                if self.vars.contains(&var) {
-                    None
-                } else {
-                    sub.try_apply(var)
-                }
-            })
-            .map(|expr| PolyType {
-                vars: self.vars.clone(),
-                cons: self.cons.clone(),
-                expr,
-            })
-    }
-    fn free_vars(&self, vars: &mut Vec<Tvar>) {
-        self.expr.free_vars(vars);
-        vars.retain(|v| !self.vars.contains(v));
-    }
-}
-
-impl MaxTvar for [Tvar] {
-    fn max_tvar(&self) -> Option<Tvar> {
-        self.iter().max().cloned()
-    }
-}
-
-impl MaxTvar for [Option<Tvar>] {
-    fn max_tvar(&self) -> Option<Tvar> {
-        self.iter().max().and_then(|t| *t)
-    }
-}
-
-impl MaxTvar for PolyType {
-    fn max_tvar(&self) -> Option<Tvar> {
-        [self.vars.max_tvar(), self.expr.max_tvar()].max_tvar()
+        self.expr.visit(sub).map(|expr| PolyType {
+            vars: self.vars.clone(),
+            cons: self.cons.clone(),
+            expr,
+        })
     }
 }
 
@@ -298,15 +273,15 @@ impl fmt::Display for Error {
 }
 
 impl Substitutable for Error {
-    fn apply_ref(&self, sub: &dyn Substituter) -> Option<Self> {
+    fn walk(&self, sub: &dyn Substituter) -> Option<Self> {
         match self {
             Error::CannotUnify { exp, act } => {
                 apply2(exp, act, sub).map(|(exp, act)| Error::CannotUnify { exp, act })
             }
             Error::CannotConstrain { exp, act } => act
-                .apply_ref(sub)
+                .visit(sub)
                 .map(|act| Error::CannotConstrain { exp: *exp, act }),
-            Error::OccursCheck(tv, ty) => ty.apply_ref(sub).map(|ty| Error::OccursCheck(*tv, ty)),
+            Error::OccursCheck(tv, ty) => ty.visit(sub).map(|ty| Error::OccursCheck(*tv, ty)),
             Error::CannotUnifyLabel {
                 lab,
                 exp,
@@ -319,7 +294,7 @@ impl Substitutable for Error {
                 cause,
             }),
             Error::CannotUnifyArgument(x, e) => e
-                .apply_ref(sub)
+                .visit(sub)
                 .map(|e| Error::CannotUnifyArgument(x.clone(), e)),
             Error::CannotUnifyReturn { exp, act, cause } => apply3(exp, act, cause, sub)
                 .map(|(exp, act, cause)| Error::CannotUnifyReturn { exp, act, cause }),
@@ -329,37 +304,6 @@ impl Substitutable for Error {
             | Error::ExtraArgument(_)
             | Error::MissingPipeArgument
             | Error::MultiplePipeArguments { .. } => None,
-        }
-    }
-    fn free_vars(&self, vars: &mut Vec<Tvar>) {
-        match self {
-            Error::CannotUnify { exp, act } => {
-                exp.free_vars(vars);
-                act.free_vars(vars);
-            }
-            Error::CannotConstrain { exp: _, act } => act.free_vars(vars),
-            Error::OccursCheck(tv, ty) => {
-                ty.free_vars(vars);
-                if let Err(i) = vars.binary_search(tv) {
-                    vars.insert(i, *tv);
-                }
-            }
-            Error::CannotUnifyLabel { exp, act, .. } => {
-                exp.free_vars(vars);
-                act.free_vars(vars);
-            }
-            Error::CannotUnifyArgument(_, e) => e.free_vars(vars),
-            Error::CannotUnifyReturn { exp, act, cause } => {
-                exp.free_vars(vars);
-                act.free_vars(vars);
-                cause.free_vars(vars);
-            }
-            Error::MissingLabel(_)
-            | Error::ExtraLabel(_)
-            | Error::MissingArgument(_)
-            | Error::ExtraArgument(_)
-            | Error::MissingPipeArgument
-            | Error::MultiplePipeArguments { .. } => (),
         }
     }
 }
@@ -415,11 +359,8 @@ impl FromStr for Kind {
 pub type Ptr<T> = std::sync::Arc<T>;
 
 impl<T: Substitutable> Substitutable for Ptr<T> {
-    fn apply_ref(&self, sub: &dyn Substituter) -> Option<Self> {
-        T::apply_ref(self, sub).map(Ptr::new)
-    }
-    fn free_vars(&self, vars: &mut Vec<Tvar>) {
-        T::free_vars(self, vars)
+    fn walk(&self, sub: &dyn Substituter) -> Option<Self> {
+        T::visit(self, sub).map(Ptr::new)
     }
 }
 
@@ -697,72 +638,22 @@ impl BuiltinType {
 }
 
 impl Substitutable for MonoType {
-    fn apply_ref(&self, sub: &dyn Substituter) -> Option<Self> {
-        match self {
-            MonoType::Error | MonoType::Builtin(_) => None,
-            MonoType::BoundVar(tvr) => sub.try_apply_bound(*tvr).map(|new| {
-                // If a variable is the replacement we do not recurse further
-                // as `instantiate` breaks in cases where it generates a substitution map
-                // like `{ A => B, B => C }` which would replace `A` with the (fresh) variable `B`
-                // which would then be replaced again due to `B => C` which is very wrong (`B` != `fresh B`).
-                // Bit of a hack, but it works.
-                //
-                // For other replacements we need to recurse into them as well so that we may fully
-                // replace any variables that occur in that as well.
-                if let MonoType::Var(_) = new {
-                    new
-                } else {
-                    new.apply(sub)
-                }
-            }),
-            MonoType::Var(tvr) => sub.try_apply(*tvr).map(|new| {
-                // If a variable is the replacement we do not recurse further
-                // as `instantiate` breaks in cases where it generates a substitution map
-                // like `{ A => B, B => C }` which would replace `A` with the (fresh) variable `B`
-                // which would then be replaced again due to `B => C` which is very wrong (`B` != `fresh B`).
-                // Bit of a hack, but it works.
-                //
-                // For other replacements we need to recurse into them as well so that we may fully
-                // replace any variables that occur in that as well.
-                if let MonoType::Var(_) = new {
-                    new
-                } else {
-                    new.apply(sub)
-                }
-            }),
-            MonoType::Collection(app) => app.apply_ref(sub).map(MonoType::app),
-            MonoType::Dict(dict) => dict.apply_ref(sub).map(MonoType::dict),
-            MonoType::Record(obj) => obj.apply_ref(sub).map(MonoType::record),
-            MonoType::Fun(fun) => fun.apply_ref(sub).map(MonoType::fun),
+    fn visit(&self, sub: &dyn Substituter) -> Option<Self> {
+        match sub.visit_type(self) {
+            Some(typ) => Some(typ.walk(sub).unwrap_or(typ)),
+            None => self.walk(sub),
         }
     }
-    fn free_vars(&self, vars: &mut Vec<Tvar>) {
-        match self {
-            MonoType::Error | MonoType::Builtin(_) => (),
-            // By definition a variable that is bound isn't free
-            MonoType::BoundVar(_) => (),
-            MonoType::Var(tvr) => {
-                if let Err(i) = vars.binary_search(tvr) {
-                    vars.insert(i, *tvr);
-                }
-            }
-            MonoType::Collection(app) => app.free_vars(vars),
-            MonoType::Dict(dict) => dict.free_vars(vars),
-            MonoType::Record(obj) => obj.free_vars(vars),
-            MonoType::Fun(fun) => fun.free_vars(vars),
-        }
-    }
-}
 
-impl MaxTvar for MonoType {
-    fn max_tvar(&self) -> Option<Tvar> {
+    fn walk(&self, sub: &dyn Substituter) -> Option<Self> {
         match self {
-            MonoType::Error | MonoType::Builtin(_) => None,
-            MonoType::BoundVar(tvr) | MonoType::Var(tvr) => tvr.max_tvar(),
-            MonoType::Collection(app) => app.max_tvar(),
-            MonoType::Dict(dict) => dict.max_tvar(),
-            MonoType::Record(obj) => obj.max_tvar(),
-            MonoType::Fun(fun) => fun.max_tvar(),
+            MonoType::Error | MonoType::Builtin(_) | MonoType::BoundVar(_) | MonoType::Var(_) => {
+                None
+            }
+            MonoType::Collection(app) => app.visit(sub).map(MonoType::app),
+            MonoType::Dict(dict) => dict.visit(sub).map(MonoType::dict),
+            MonoType::Record(obj) => obj.visit(sub).map(MonoType::record),
+            MonoType::Fun(fun) => fun.visit(sub).map(MonoType::fun),
         }
     }
 }
@@ -1054,12 +945,6 @@ impl fmt::Display for Tvar {
     }
 }
 
-impl MaxTvar for Tvar {
-    fn max_tvar(&self) -> Option<Tvar> {
-        Some(*self)
-    }
-}
-
 impl Tvar {
     fn unify(self, with: &MonoType, unifier: &mut Unifier<'_>) {
         match *with {
@@ -1116,20 +1001,11 @@ impl Tvar {
 }
 
 impl Substitutable for Collection {
-    fn apply_ref(&self, sub: &dyn Substituter) -> Option<Self> {
-        self.arg.apply_ref(sub).map(|arg| Collection {
+    fn walk(&self, sub: &dyn Substituter) -> Option<Self> {
+        self.arg.visit(sub).map(|arg| Collection {
             collection: self.collection,
             arg,
         })
-    }
-    fn free_vars(&self, vars: &mut Vec<Tvar>) {
-        self.arg.free_vars(vars)
-    }
-}
-
-impl MaxTvar for Collection {
-    fn max_tvar(&self) -> Option<Tvar> {
-        self.arg.max_tvar()
     }
 }
 
@@ -1174,18 +1050,8 @@ pub struct Dictionary {
 }
 
 impl Substitutable for Dictionary {
-    fn apply_ref(&self, sub: &dyn Substituter) -> Option<Self> {
+    fn walk(&self, sub: &dyn Substituter) -> Option<Self> {
         apply2(&self.key, &self.val, sub).map(|(key, val)| Dictionary { key, val })
-    }
-    fn free_vars(&self, vars: &mut Vec<Tvar>) {
-        self.key.free_vars(vars);
-        self.val.free_vars(vars);
-    }
-}
-
-impl MaxTvar for Dictionary {
-    fn max_tvar(&self) -> Option<Tvar> {
-        [self.key.max_tvar(), self.val.max_tvar()].max_tvar()
     }
 }
 
@@ -1274,30 +1140,12 @@ impl cmp::PartialEq for Record {
 }
 
 impl Substitutable for Record {
-    fn apply_ref(&self, sub: &dyn Substituter) -> Option<Self> {
+    fn walk(&self, sub: &dyn Substituter) -> Option<Self> {
         match self {
             Record::Empty => None,
             Record::Extension { head, tail } => {
                 apply2(head, tail, sub).map(|(head, tail)| Record::Extension { head, tail })
             }
-        }
-    }
-    fn free_vars(&self, vars: &mut Vec<Tvar>) {
-        match self {
-            Record::Empty => (),
-            Record::Extension { head, tail } => {
-                tail.free_vars(vars);
-                head.v.free_vars(vars);
-            }
-        }
-    }
-}
-
-impl MaxTvar for Record {
-    fn max_tvar(&self) -> Option<Tvar> {
-        match self {
-            Record::Empty => None,
-            Record::Extension { head, tail } => [head.max_tvar(), tail.max_tvar()].max_tvar(),
         }
     }
 }
@@ -1672,20 +1520,11 @@ where
     K: Clone,
     V: Substitutable,
 {
-    fn apply_ref(&self, sub: &dyn Substituter) -> Option<Self> {
-        self.v.apply_ref(sub).map(|v| Property {
+    fn walk(&self, sub: &dyn Substituter) -> Option<Self> {
+        self.v.visit(sub).map(|v| Property {
             k: self.k.clone(),
             v,
         })
-    }
-    fn free_vars(&self, vars: &mut Vec<Tvar>) {
-        self.v.free_vars(vars)
-    }
-}
-
-impl<T> MaxTvar for Property<T> {
-    fn max_tvar(&self) -> Option<Tvar> {
-        self.v.max_tvar()
     }
 }
 
@@ -1760,54 +1599,38 @@ impl fmt::Display for Function {
 }
 
 impl<K: Eq + Hash + Clone> Substitutable for PolyTypeHashMap<K> {
-    fn apply_ref(&self, sub: &dyn Substituter) -> Option<Self> {
+    fn walk(&self, sub: &dyn Substituter) -> Option<Self> {
         merge_collect(
             &mut (),
             self.unordered_iter(),
-            |_, (k, v)| v.apply_ref(sub).map(|v| (k.clone(), v)),
+            |_, (k, v)| v.visit(sub).map(|v| (k.clone(), v)),
             |_, (k, v)| (k.clone(), v.clone()),
         )
-    }
-    fn free_vars(&self, vars: &mut Vec<Tvar>) {
-        for t in self.unordered_values() {
-            t.free_vars(vars);
-        }
     }
 }
 
 impl<K: Ord + Clone, T: Substitutable + Clone> Substitutable for SemanticMap<K, T> {
-    fn apply_ref(&self, sub: &dyn Substituter) -> Option<Self> {
+    fn walk(&self, sub: &dyn Substituter) -> Option<Self> {
         merge_collect(
             &mut (),
             self,
-            |_, (k, v)| v.apply_ref(sub).map(|v| (k.clone(), v)),
+            |_, (k, v)| v.visit(sub).map(|v| (k.clone(), v)),
             |_, (k, v)| (k.clone(), v.clone()),
         )
-    }
-    fn free_vars(&self, vars: &mut Vec<Tvar>) {
-        for t in self.values() {
-            t.free_vars(vars);
-        }
     }
 }
 
 impl<T: Substitutable> Substitutable for Option<T> {
-    fn apply_ref(&self, sub: &dyn Substituter) -> Option<Self> {
+    fn walk(&self, sub: &dyn Substituter) -> Option<Self> {
         match self {
             None => None,
-            Some(t) => t.apply_ref(sub).map(Some),
-        }
-    }
-    fn free_vars(&self, vars: &mut Vec<Tvar>) {
-        match self {
-            Some(t) => t.free_vars(vars),
-            None => (),
+            Some(t) => t.visit(sub).map(Some),
         }
     }
 }
 
 impl Substitutable for Function {
-    fn apply_ref(&self, sub: &dyn Substituter) -> Option<Self> {
+    fn walk(&self, sub: &dyn Substituter) -> Option<Self> {
         let Function {
             req,
             opt,
@@ -1820,41 +1643,6 @@ impl Substitutable for Function {
             pipe,
             retn,
         })
-    }
-    fn free_vars(&self, vars: &mut Vec<Tvar>) {
-        self.req.free_vars(vars);
-        self.opt.free_vars(vars);
-        self.pipe.free_vars(vars);
-        self.retn.free_vars(vars);
-    }
-}
-
-impl<U, T: MaxTvar> MaxTvar for SemanticMap<U, T> {
-    fn max_tvar(&self) -> Option<Tvar> {
-        self.iter()
-            .map(|(_, t)| t.max_tvar())
-            .fold(None, |max, tv| if tv > max { tv } else { max })
-    }
-}
-
-impl<T: MaxTvar> MaxTvar for Option<T> {
-    fn max_tvar(&self) -> Option<Tvar> {
-        match self {
-            None => None,
-            Some(t) => t.max_tvar(),
-        }
-    }
-}
-
-impl MaxTvar for Function {
-    fn max_tvar(&self) -> Option<Tvar> {
-        [
-            self.req.max_tvar(),
-            self.opt.max_tvar(),
-            self.pipe.max_tvar(),
-            self.retn.max_tvar(),
-        ]
-        .max_tvar()
     }
 }
 
@@ -2072,6 +1860,29 @@ impl TypeLike for (MonoType, &'_ crate::ast::SourceLocation) {
 pub trait MaxTvar {
     /// Return the maximum type variable of a type.
     fn max_tvar(&self) -> Option<Tvar>;
+}
+
+impl<T> MaxTvar for T
+where
+    T: Substitutable,
+{
+    fn max_tvar(&self) -> Option<Tvar> {
+        #[derive(Default)]
+        struct MaxTvars {
+            max: Cell<Option<Tvar>>,
+        }
+
+        impl Substituter for MaxTvars {
+            fn try_apply(&self, var: Tvar) -> Option<MonoType> {
+                self.max.set(self.max.get().max(Some(var)));
+                None
+            }
+        }
+
+        let max = MaxTvars::default();
+        self.visit(&max);
+        max.max.into_inner()
+    }
 }
 
 #[cfg(test)]
