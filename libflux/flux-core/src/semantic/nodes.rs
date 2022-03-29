@@ -692,7 +692,7 @@ impl VariableAssgn {
         infer.env.apply_mut(infer.sub);
 
         let t = self.init.type_of().apply(infer.sub);
-        let p = infer::generalize(infer.env, infer.sub, t);
+        let p = infer::generalize(infer.env, infer.sub, t.clone());
 
         // Update variable assignment nodes with the free vars
         // and kind constraints obtained from generalization.
@@ -1320,7 +1320,7 @@ impl CallExpr {
 
         match &*self.callee.type_of().apply_cow(infer.sub) {
             MonoType::Fun(func) => {
-                if let Err(err) = func.try_unify_with(&act, infer.sub, |error| Located {
+                if let Err(err) = func.try_subsume_with(&act, infer.sub, |error| Located {
                     location: self.loc.clone(),
                     error,
                 }) {

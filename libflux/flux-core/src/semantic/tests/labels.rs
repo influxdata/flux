@@ -38,7 +38,7 @@ fn labels_unbound() {
 
 #[test]
 fn labels_dynamic_string() {
-    test_infer! {
+    test_error_msg! {
         env: map![
             "fill" => "(<-tables: [{ A with B: C }], ?column: B, ?value: D) => [{ A with B: D }]
                 where B: Label
@@ -48,10 +48,14 @@ fn labels_dynamic_string() {
             column = "" + "a"
             x = [{ a: 1 }] |> fill(column: column, value: "x")
         "#,
-        exp: map![
-            "x" => "string",
-            "x" => "[{ a: string }]",
-        ],
+        expect: expect![[r#"
+            error: string is not a label
+              ┌─ main:3:31
+              │
+            3 │             x = [{ a: 1 }] |> fill(column: column, value: "x")
+              │                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+        "#]],
     }
 }
 
@@ -89,6 +93,23 @@ fn merge_labels_to_string() {
             "x" => "string",
             "y" => "string",
             "z" => "[string]",
+        ],
+    }
+}
+
+#[test]
+fn merge_labels_to_string_in_function() {
+    test_infer! {
+        env: map![
+            "same" => "(x: A, y: A) => A"
+        ],
+        src: r#"
+            x = same(x: "a", y: "b")
+            y = same(x: ["a"], y: ["b"])
+        "#,
+        exp: map![
+            "x" => "string",
+            "y" => "[string]",
         ],
     }
 }
