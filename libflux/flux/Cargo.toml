@@ -9,8 +9,9 @@ name = "flux"
 crate-type = ["rlib", "staticlib", "cdylib"]
 
 [features]
-default = ["strict"]
+default = ["strict", "cffi"]
 strict = []
+cffi = []
 lsp = ["flux-core/lsp"]
 
 [dependencies]
