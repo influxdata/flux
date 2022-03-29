@@ -126,7 +126,7 @@ func (p *heuristicPlanner) Plan(ctx context.Context, inputPlan *Spec) (*Spec, er
 					nodeStack = append(nodeStack, newNode.Predecessors()[i-1])
 				}
 
-				visited[newNode] = struct{}{}
+				visited[node] = struct{}{}
 			}
 		}
 	}

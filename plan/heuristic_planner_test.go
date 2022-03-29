@@ -118,6 +118,48 @@ func TestPlanTraversal(t *testing.T) {
 			},
 			nodeIDs: []plan.NodeID{"7", "6", "4", "1", "0", "3", "2", "5"},
 		},
+		{
+			name: "half diamond physical",
+			//            2
+			//           / \
+			//          |   1
+			//           \ /
+			//            0
+			plan: plantest.PlanSpec{
+				Nodes: []plan.Node{
+					plantest.CreatePhysicalMockNode("0"),
+					plantest.CreatePhysicalMockNode("1"),
+					plantest.CreatePhysicalMockNode("2"),
+				},
+				Edges: [][2]int{
+					{0, 1},
+					{1, 2},
+					{0, 2},
+				},
+			},
+			nodeIDs: []plan.NodeID{"2", "1", "0"},
+		},
+		{
+			name: "half diamond logical",
+			//            2
+			//           / \
+			//          |   1
+			//           \ /
+			//            0
+			plan: plantest.PlanSpec{
+				Nodes: []plan.Node{
+					plantest.CreateLogicalMockNode("0"),
+					plantest.CreateLogicalMockNode("1"),
+					plantest.CreateLogicalMockNode("2"),
+				},
+				Edges: [][2]int{
+					{0, 1},
+					{1, 2},
+					{0, 2},
+				},
+			},
+			nodeIDs: []plan.NodeID{"2", "1", "0"},
+		},
 	}
 
 	for _, tc := range testCases {
