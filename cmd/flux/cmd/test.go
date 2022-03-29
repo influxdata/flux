@@ -6,7 +6,6 @@ import (
 	"bytes"
 	"compress/gzip"
 	"context"
-	"encoding/json"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -14,26 +13,18 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/ast/astutil"
 	"github.com/influxdata/flux/ast/testcase"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/dependencies/filesystem"
-	"github.com/influxdata/flux/dependencies/testing"
-	"github.com/influxdata/flux/dependency"
-	"github.com/influxdata/flux/execute/executetest"
-	"github.com/influxdata/flux/execute/table"
 	"github.com/influxdata/flux/fluxinit"
 	"github.com/influxdata/flux/internal/errors"
-	"github.com/influxdata/flux/lang"
-	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/parser"
-	"github.com/influxdata/flux/runtime"
 	"github.com/spf13/cobra"
 )
 
-type testFlags struct {
+type TestFlags struct {
 	testNames     []string
 	paths         []string
 	skipTestCases []string
@@ -41,7 +32,7 @@ type testFlags struct {
 }
 
 func TestCommand(setup TestSetupFunc) *cobra.Command {
-	var flags testFlags
+	var flags TestFlags
 	testCommand := &cobra.Command{
 		Use:   "test",
 		Short: "Run flux tests",
@@ -61,13 +52,8 @@ func TestCommand(setup TestSetupFunc) *cobra.Command {
 	return testCommand
 }
 
-func init() {
-	testCommand := TestCommand(NewTestExecutor)
-	rootCmd.AddCommand(testCommand)
-}
-
 // runFluxTests invokes the test runner.
-func runFluxTests(setup TestSetupFunc, flags testFlags) error {
+func runFluxTests(setup TestSetupFunc, flags TestFlags) error {
 	if len(flags.paths) == 0 {
 		flags.paths = []string{"."}
 	}
@@ -638,63 +624,6 @@ type TestExecutor interface {
 	Run(pkg *ast.Package) error
 	io.Closer
 }
-
-func NewTestExecutor(ctx context.Context) (TestExecutor, error) {
-	return testExecutor{}, nil
-}
-
-type testExecutor struct{}
-
-func (testExecutor) Run(pkg *ast.Package) error {
-	jsonAST, err := json.Marshal(pkg)
-	if err != nil {
-		return err
-	}
-	c := lang.ASTCompiler{AST: jsonAST}
-
-	ctx, span := dependency.Inject(context.Background(),
-		executetest.NewTestExecuteDependencies(),
-		testing.FrameworkConfig{},
-	)
-	defer span.Finish()
-	program, err := c.Compile(ctx, runtime.Default)
-	if err != nil {
-		return errors.Wrap(err, codes.Invalid, "failed to compile")
-	}
-
-	alloc := &memory.ResourceAllocator{}
-	query, err := program.Start(ctx, alloc)
-	if err != nil {
-		return errors.Wrap(err, codes.Inherit, "error while executing program")
-	}
-	defer query.Done()
-
-	var output strings.Builder
-	results := flux.NewResultIteratorFromQuery(query)
-	for results.More() {
-		result := results.Next()
-		err := result.Tables().Do(func(tbl flux.Table) error {
-			// The data returned here is the result of `testing.diff`, so any result means that
-			// a comparison of two tables showed inequality. Capture that inequality as part of the error.
-			// XXX: rockstar (08 Dec 2020) - This could use some ergonomic work, as the diff output
-			// is not exactly "human readable."
-			_, _ = fmt.Fprint(&output, table.Stringify(tbl))
-			return nil
-		})
-		if err != nil {
-			return err
-		}
-	}
-	results.Release()
-
-	err = results.Err()
-	if err == nil && output.Len() > 0 {
-		err = errors.New(codes.FailedPrecondition, output.String())
-	}
-	return err
-}
-
-func (testExecutor) Close() error { return nil }
 
 type fs interface {
 	filesystem.Service

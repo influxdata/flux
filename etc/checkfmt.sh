@@ -38,7 +38,7 @@ function check_rust_fmt() {
 
 function check_flux_fmt() {
     echo "Checking Flux source files..."
-    env GO111MODULE=on go run -tags '' ./cmd/flux/main.go fmt -c stdlib
+    env GO111MODULE=on go run -tags '' ./cmd/flux fmt -c stdlib
     ret=$?
     if [[ $ret -ne 0 ]]; then
         echo 'Commit includes flux files that are not fluxfmt-ed' && \

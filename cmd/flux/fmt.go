@@ -1,4 +1,4 @@
-package cmd
+package main
 
 import (
 	"errors"
@@ -12,24 +12,9 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// fmtCmd represents the fmt command
-var fmtCmd = &cobra.Command{
-	Use:   "fmt",
-	Short: "Format a Flux script",
-	Long:  "Format a Flux script (flux fmt [-w] <directory | file>)",
-	Args:  cobra.MinimumNArgs(1),
-	RunE:  formatFile,
-}
-
-var writeResultToSource bool
-var analyzeCurrentDirectory bool
-
-func init() {
-	rootCmd.AddCommand(fmtCmd)
-	fmtCmd.SilenceUsage = true
-	fmtCmd.SilenceErrors = true
-	fmtCmd.Flags().BoolVarP(&writeResultToSource, "write-result-to-source", "w", false, "write result to (source) file instead of stdout")
-	fmtCmd.Flags().BoolVarP(&analyzeCurrentDirectory, "analyze-current-directory", "c", false, "analyze the current <directory | file> and report if file(s) are not formatted")
+var fmtFlags struct {
+	WriteResultToSource     bool
+	AnalyzeCurrentDirectory bool
 }
 
 func formatFile(cmd *cobra.Command, args []string) error {
@@ -57,7 +42,7 @@ func formatFile(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	if analyzeCurrentDirectory && len(bad) != 0 {
+	if fmtFlags.AnalyzeCurrentDirectory && len(bad) != 0 {
 		for _, p := range bad {
 			fmt.Println(p)
 		}
@@ -68,7 +53,6 @@ func formatFile(cmd *cobra.Command, args []string) error {
 }
 
 func format(script string) (bool, error) {
-
 	fromFile, err := ioutil.ReadFile(script)
 	if err != nil {
 		return false, err
@@ -87,11 +71,11 @@ func format(script string) (bool, error) {
 	}
 
 	formatted := curFileStr == formattedStr
-	if analyzeCurrentDirectory {
+	if fmtFlags.AnalyzeCurrentDirectory {
 		return formatted, nil
 	}
 
-	if writeResultToSource {
+	if fmtFlags.WriteResultToSource {
 		if curFileStr != formattedStr {
 			return formatted, updateScript(script, formattedStr)
 		}
