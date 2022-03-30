@@ -17,6 +17,7 @@ import (
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/plan"
 	"github.com/opentracing/opentracing-go"
+	"github.com/opentracing/opentracing-go/log"
 	"go.uber.org/zap"
 )
 
@@ -52,6 +53,10 @@ type consecutiveTransport struct {
 
 	schedulerState int32
 	inflight       int32
+	totalMsgs      int32
+
+	initSpanOnce sync.Once
+	span         opentracing.Span
 }
 
 func newConsecutiveTransport(ctx context.Context, dispatcher Dispatcher, t Transformation, n plan.Node, logger *zap.Logger, mem memory.Allocator) *consecutiveTransport {
@@ -210,11 +215,26 @@ func (t *consecutiveTransport) transition(new int32) {
 	atomic.StoreInt32(&t.schedulerState, new)
 }
 
+func (t *consecutiveTransport) contextWithSpan(ctx context.Context) context.Context {
+	t.initSpanOnce.Do(func() {
+		t.span = opentracing.StartSpan(t.op)
+		t.span.LogFields(log.String("label", t.label))
+	})
+	return opentracing.ContextWithSpan(ctx, t.span)
+}
+
+func (t *consecutiveTransport) finishSpan() {
+	t.span.LogFields(log.Int("messages_processed", int(atomic.LoadInt32(&t.totalMsgs))))
+	t.span.Finish()
+}
+
 func (t *consecutiveTransport) processMessages(ctx context.Context, throughput int) {
+	ctx = t.contextWithSpan(ctx)
 PROCESS:
 	i := 0
 	for m := t.messages.Pop(); m != nil; m = t.messages.Pop() {
 		atomic.AddInt32(&t.inflight, -1)
+		atomic.AddInt32(&t.totalMsgs, 1)
 		if f, err := t.processMessage(ctx, m); err != nil || f {
 			// Set the error if there was any
 			t.setErr(err)
@@ -231,6 +251,7 @@ PROCESS:
 				}
 				// We are finished
 				close(t.finished)
+				t.finishSpan()
 				return
 			}
 		}

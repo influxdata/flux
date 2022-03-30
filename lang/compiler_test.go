@@ -29,6 +29,8 @@ import (
 	"github.com/influxdata/flux/stdlib/csv"
 	"github.com/influxdata/flux/stdlib/influxdata/influxdb"
 	"github.com/influxdata/flux/stdlib/universe"
+	"github.com/opentracing/opentracing-go"
+	"github.com/opentracing/opentracing-go/mocktracer"
 )
 
 func init() {
@@ -814,6 +816,64 @@ option planner.disableLogicalRules = ["removeCountRule"]`},
 				t.Errorf("unexpected plans: %v", err)
 			}
 		})
+	}
+}
+
+func TestQueryTracing(t *testing.T) {
+	// temporarily install a mock tracer to see which spans are created.
+	oldTracer := opentracing.GlobalTracer()
+	defer opentracing.SetGlobalTracer(oldTracer)
+	mockTracer := mocktracer.New()
+	opentracing.SetGlobalTracer(mockTracer)
+
+	ctx := context.Background()
+
+	// Run a query
+	c := lang.FluxCompiler{
+		Query: `
+			import "array"
+			array.from(rows: [{key: 1, value: 2}, {key: 3, value: 4}])
+			  |> filter(fn: (r) => r.value == 2)
+			  |> map(fn: (r) => ({r with foo: "hi"}))`,
+	}
+
+	prog, err := c.Compile(ctx, runtime.Default)
+	if err != nil {
+		t.Fatal(err)
+	}
+	q, err := prog.Start(ctx, memory.DefaultAllocator)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer q.Done()
+	for r := range q.Results() {
+		if err := r.Tables().Do(func(flux.Table) error {
+			return nil
+		}); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if err := q.Err(); err != nil {
+		t.Fatal(err)
+	}
+
+	// If tracing was enabled, then we should see spans for each
+	// source and transformation. If tracing is not enabled, we should
+	// not have those spans.
+	gotOps := make(map[string]struct{})
+	for _, span := range mockTracer.FinishedSpans() {
+		gotOps[span.OperationName] = struct{}{}
+	}
+	wantOps := []string{
+		"*universe.filterTransformation",
+		"*universe.mapTransformation",
+	}
+	for _, wantOp := range wantOps {
+		_, ok := gotOps[wantOp]
+		if !ok {
+			t.Errorf("expected to find span %q but it wasn't there", wantOp)
+		}
+
 	}
 }
 
