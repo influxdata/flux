@@ -223,8 +223,9 @@ func (t *consecutiveTransport) contextWithSpan(ctx context.Context) context.Cont
 	return opentracing.ContextWithSpan(ctx, t.span)
 }
 
-func (t *consecutiveTransport) finishSpan() {
+func (t *consecutiveTransport) finishSpan(err error) {
 	t.span.LogFields(log.Int("messages_processed", int(atomic.LoadInt32(&t.totalMsgs))))
+	t.span.LogFields(log.Error(err))
 	t.span.Finish()
 }
 
@@ -251,7 +252,7 @@ PROCESS:
 				}
 				// We are finished
 				close(t.finished)
-				t.finishSpan()
+				t.finishSpan(err)
 				return
 			}
 		}
