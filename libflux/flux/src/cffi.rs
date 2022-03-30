@@ -16,52 +16,10 @@ use fluxcore::{
         Analyzer, AnalyzerConfig, PackageExports,
     },
 };
-use once_cell::sync::Lazy;
-use thiserror::Error;
-
-/// Result type for flux
-pub type Result<T, E = Error> = std::result::Result<T, E>;
-
-/// Error type for flux
-#[derive(Error, Debug)]
-pub enum Error {
-    /// Semantic error
-    #[error(transparent)]
-    Semantic(#[from] semantic::FileErrors),
-
-    /// Other errors that do not have a dedicated variant
-    #[error(transparent)]
-    Other(#[from] anyhow::Error),
-}
 
 use crate::semantic::flatbuffers::semantic_generated::fbsemantic::MonoTypeHolderArgs;
 
-/// Prelude are the names and types of values that are inscope in all Flux scripts.
-pub fn prelude() -> Option<PackageExports> {
-    let buf = include_bytes!(concat!(env!("OUT_DIR"), "/prelude.data"));
-    flatbuffers::root::<fb::TypeEnvironment>(buf)
-        .unwrap()
-        .into()
-}
-
-static PRELUDE: Lazy<Option<PackageExports>> = Lazy::new(prelude);
-
-/// Imports is a map of import path to types of packages.
-pub fn imports() -> Option<Packages> {
-    let buf = include_bytes!(concat!(env!("OUT_DIR"), "/stdlib.data"));
-    flatbuffers::root::<fb::Packages>(buf).unwrap().into()
-}
-
-/// Creates a new analyzer that can semantically analyze Flux source code.
-///
-/// The analyzer is aware of the stdlib and prelude.
-pub fn new_semantic_analyzer(config: AnalyzerConfig) -> Result<Analyzer<'static, Packages>> {
-    let env = PRELUDE.as_ref().ok_or_else(|| anyhow!("missing prelude"))?;
-
-    let importer = imports().ok_or_else(|| anyhow!("missing stdlib inports"))?;
-
-    Ok(Analyzer::new(Environment::from(env), importer, config))
-}
+use super::{imports, new_semantic_analyzer, prelude, Error, Result, PRELUDE};
 
 /// An error handle designed to allow passing `Error` instances to library
 /// consumers across language boundaries.
@@ -134,7 +92,7 @@ pub unsafe extern "C" fn flux_parse(
 }
 
 /// Parse the contents of a string.
-pub fn parse(fname: String, src: &str) -> ast::Package {
+fn parse(fname: String, src: &str) -> ast::Package {
     let mut p = Parser::new(src);
     p.parse_file(fname).into()
 }
@@ -530,7 +488,7 @@ pub unsafe extern "C" fn flux_analyze_with(
 /// analyze consumes the given AST package and returns a semantic package
 /// that has been type-inferred.  This function is aware of the standard library
 /// and prelude.
-pub fn analyze(ast_pkg: &ast::Package) -> Result<Package> {
+fn analyze(ast_pkg: &ast::Package) -> Result<Package> {
     let mut analyzer = new_semantic_analyzer(AnalyzerConfig::default())?;
     let (_, sem_pkg) = analyzer.analyze_ast(ast_pkg).map_err(|err| err.error)?;
     Ok(sem_pkg)
@@ -540,7 +498,7 @@ pub fn analyze(ast_pkg: &ast::Package) -> Result<Package> {
 /// type environment, and returns a semantic package that has not been type-injected and an
 /// inferred type environment and substitution.
 /// This function is aware of the standard library and prelude.
-pub fn infer_with_env(
+fn infer_with_env(
     ast_pkg: &ast::Package,
     mut sub: Substitution,
     env: Option<Environment<'static>>,
@@ -572,7 +530,7 @@ pub fn infer_with_env(
 /// will be used in semantic analysis. The Flux source code itself should not contain any definition
 /// for that variable.
 /// This version of find_var_type is aware of the prelude and builtins.
-pub fn find_var_type(ast_pkg: &ast::Package, var_name: String) -> Result<MonoType> {
+fn find_var_type(ast_pkg: &ast::Package, var_name: String) -> Result<MonoType> {
     let sub = Substitution::default();
     let tvar = sub.fresh();
     let mut env = Environment::empty(true);
@@ -628,8 +586,9 @@ mod tests {
         },
     };
 
-    use super::{new_semantic_analyzer, AnalyzerConfig};
-    use crate::{analyze, find_var_type, flux_ast_get_error, parser};
+    use super::*;
+
+    use crate::parser;
 
     pub struct MonoTypeNormalizer {
         tv_map: TvarMap,
