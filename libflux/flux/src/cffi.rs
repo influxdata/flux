@@ -1,4 +1,10 @@
-use std::{ffi::*, mem, os::raw::c_char};
+use std::{
+    any::Any,
+    ffi::*,
+    mem,
+    os::raw::c_char,
+    panic::{catch_unwind, resume_unwind},
+};
 
 use anyhow::anyhow;
 use fluxcore::semantic::flatbuffers::types::{build_env, build_type};
@@ -35,6 +41,23 @@ impl From<Error> for Box<ErrorHandle> {
     fn from(err: Error) -> Self {
         Box::new(ErrorHandle {
             message: CString::new(format!("{}", err)).unwrap(),
+            err,
+        })
+    }
+}
+
+impl From<Box<dyn Any + Send>> for Box<ErrorHandle> {
+    fn from(err: Box<dyn Any + Send>) -> Self {
+        // `panic!` will make `err` a `&str` or `String` so we try to extract those
+        // If there is something else we resume the unwinding and let the caller deal with it
+        let msg = err
+            .downcast::<&str>()
+            .map(|s| s.to_string())
+            .or_else(|err| err.downcast::<String>().map(|s| *s))
+            .unwrap_or_else(|err| resume_unwind(err));
+        let err = Error::Other(anyhow!("{}", msg));
+        Box::new(ErrorHandle {
+            message: CString::new(msg).unwrap(),
             err,
         })
     }
@@ -131,11 +154,14 @@ pub extern "C" fn flux_ast_format(
 pub unsafe extern "C" fn flux_ast_get_error(
     ast_pkg: *const ast::Package,
 ) -> Option<Box<ErrorHandle>> {
-    let ast_pkg = ast::walk::Node::Package(&*ast_pkg);
-    match ast::check::check(ast_pkg) {
-        Err(e) => Some(Error::from(anyhow::Error::from(e)).into()),
-        Ok(_) => None,
-    }
+    catch_unwind(|| {
+        let ast_pkg = ast::walk::Node::Package(&*ast_pkg);
+        match ast::check::check(ast_pkg) {
+            Err(e) => Some(Error::from(anyhow::Error::from(e)).into()),
+            Ok(_) => None,
+        }
+    })
+    .unwrap_or_else(|err| Some(err.into()))
 }
 
 /// Frees an AST package.
@@ -160,15 +186,18 @@ pub unsafe extern "C" fn flux_parse_json(
     cstr: *mut c_char,
     out_pkg: *mut Option<Box<ast::Package>>,
 ) -> Option<Box<ErrorHandle>> {
-    let buf = CStr::from_ptr(cstr).to_bytes(); // Unsafe
-    let res: Result<ast::Package, serde_json::error::Error> = serde_json::from_slice(buf);
-    match res {
-        Ok(pkg) => {
-            *out_pkg = Some(Box::new(pkg));
-            None
+    catch_unwind(|| {
+        let buf = CStr::from_ptr(cstr).to_bytes(); // Unsafe
+        let res: Result<ast::Package, serde_json::error::Error> = serde_json::from_slice(buf);
+        match res {
+            Ok(pkg) => {
+                *out_pkg = Some(Box::new(pkg));
+                None
+            }
+            Err(err) => Some(Error::from(anyhow::Error::from(err)).into()),
         }
-        Err(err) => Some(Error::from(anyhow::Error::from(err)).into()),
-    }
+    })
+    .unwrap_or_else(|err| Some(err.into()))
 }
 
 /// # Safety
@@ -181,17 +210,20 @@ pub unsafe extern "C" fn flux_ast_marshal_json(
     ast_pkg: *const ast::Package,
     buf: *mut flux_buffer_t,
 ) -> Option<Box<ErrorHandle>> {
-    let ast_pkg = &*ast_pkg;
-    let data = match serde_json::to_vec(ast_pkg) {
-        Ok(v) => v,
-        Err(err) => {
-            return Some(Error::from(anyhow::Error::from(err)).into());
-        }
-    };
+    catch_unwind(|| {
+        let ast_pkg = &*ast_pkg;
+        let data = match serde_json::to_vec(ast_pkg) {
+            Ok(v) => v,
+            Err(err) => {
+                return Some(Error::from(anyhow::Error::from(err)).into());
+            }
+        };
 
-    (*buf).len = data.len();
-    (*buf).data = Box::into_raw(data.into_boxed_slice()) as *mut u8;
-    None
+        (*buf).len = data.len();
+        (*buf).data = Box::into_raw(data.into_boxed_slice()) as *mut u8;
+        None
+    })
+    .unwrap_or_else(|err| Some(err.into()))
 }
 
 /// flux_ast_marshal_fb serializes the given AST package to a flatbuffer.
@@ -206,19 +238,22 @@ pub unsafe extern "C" fn flux_ast_marshal_fb(
     ast_pkg: *const ast::Package,
     buf: *mut flux_buffer_t,
 ) -> Option<Box<ErrorHandle>> {
-    let ast_pkg = &*ast_pkg;
-    let (mut vec, offset) = match ast::flatbuffers::serialize(ast_pkg) {
-        Ok(vec_offset) => vec_offset,
-        Err(err) => {
-            return Some(Error::from(err).into());
-        }
-    };
+    catch_unwind(|| {
+        let ast_pkg = &*ast_pkg;
+        let (mut vec, offset) = match ast::flatbuffers::serialize(ast_pkg) {
+            Ok(vec_offset) => vec_offset,
+            Err(err) => {
+                return Some(Error::from(err).into());
+            }
+        };
 
-    // Note, split_off() does a copy: https://github.com/influxdata/flux/issues/2194
-    let data = vec.split_off(offset);
-    (*buf).len = data.len();
-    (*buf).data = Box::into_raw(data.into_boxed_slice()) as *mut u8;
-    None
+        // Note, split_off() does a copy: https://github.com/influxdata/flux/issues/2194
+        let data = vec.split_off(offset);
+        (*buf).len = data.len();
+        (*buf).data = Box::into_raw(data.into_boxed_slice()) as *mut u8;
+        None
+    })
+    .unwrap_or_else(|err| Some(err.into()))
 }
 
 /// Frees a semantic package.
@@ -238,19 +273,22 @@ pub unsafe extern "C" fn flux_semantic_marshal_fb(
     sem_pkg: *const semantic::nodes::Package,
     buf: *mut flux_buffer_t,
 ) -> Option<Box<ErrorHandle>> {
-    let sem_pkg = &*sem_pkg;
-    let (mut vec, offset) = match semantic::flatbuffers::serialize_pkg(sem_pkg) {
-        Ok(vec_offset) => vec_offset,
-        Err(err) => {
-            return Some(Error::from(err).into());
-        }
-    };
+    catch_unwind(|| {
+        let sem_pkg = &*sem_pkg;
+        let (mut vec, offset) = match semantic::flatbuffers::serialize_pkg(sem_pkg) {
+            Ok(vec_offset) => vec_offset,
+            Err(err) => {
+                return Some(Error::from(err).into());
+            }
+        };
 
-    // Note, split_off() does a copy: https://github.com/influxdata/flux/issues/2194
-    let data = vec.split_off(offset);
-    (*buf).len = data.len();
-    (*buf).data = Box::into_raw(data.into_boxed_slice()) as *mut u8;
-    None
+        // Note, split_off() does a copy: https://github.com/influxdata/flux/issues/2194
+        let data = vec.split_off(offset);
+        (*buf).len = data.len();
+        (*buf).data = Box::into_raw(data.into_boxed_slice()) as *mut u8;
+        None
+    })
+    .unwrap_or_else(|err| Some(err.into()))
 }
 
 /// flux_error_str returns the error message associated with the given error.
@@ -290,14 +328,17 @@ pub unsafe extern "C" fn flux_merge_ast_pkgs(
     out_pkg: *mut ast::Package,
     in_pkg: *mut ast::Package,
 ) -> Option<Box<ErrorHandle>> {
-    // Do not change ownership here so that Go maintains ownership of packages
-    let out_pkg = &mut *out_pkg;
-    let in_pkg = &mut *in_pkg;
+    catch_unwind(|| {
+        // Do not change ownership here so that Go maintains ownership of packages
+        let out_pkg = &mut *out_pkg;
+        let in_pkg = &mut *in_pkg;
 
-    match merge_packages(out_pkg, in_pkg) {
-        Ok(_) => None,
-        Err(e) => Some(Error::from(e).into()),
-    }
+        match merge_packages(out_pkg, in_pkg) {
+            Ok(_) => None,
+            Err(e) => Some(Error::from(e).into()),
+        }
+    })
+    .unwrap_or_else(|err| Some(err.into()))
 }
 
 /// flux_analyze is a C-compatible wrapper around the analyze() function below
@@ -314,13 +355,14 @@ pub unsafe extern "C" fn flux_analyze(
     ast_pkg: Box<ast::Package>,
     out_sem_pkg: *mut Option<Box<semantic::nodes::Package>>,
 ) -> Option<Box<ErrorHandle>> {
-    match analyze(&ast_pkg) {
+    catch_unwind(|| match analyze(&ast_pkg) {
         Ok(sem_pkg) => {
             *out_sem_pkg = Some(Box::new(sem_pkg));
             None
         }
         Err(err) => Some(err.into()),
-    }
+    })
+    .unwrap_or_else(|err| Some(err.into()))
 }
 
 /// flux_find_var_type() is a C-compatible wrapper around the find_var_type() function below.
@@ -337,30 +379,33 @@ pub unsafe extern "C" fn flux_find_var_type(
     var_name: *const c_char,
     out_type: *mut flux_buffer_t,
 ) -> Option<Box<ErrorHandle>> {
-    let buf = CStr::from_ptr(var_name).to_bytes(); // Unsafe
-    let name = String::from_utf8(buf.to_vec()).unwrap();
-    find_var_type(&ast_pkg, name).map_or_else(
-        |e| Some(Box::from(e)),
-        |t| {
-            let mut builder = flatbuffers::FlatBufferBuilder::new();
-            let (fb_mono_type, typ_type) = build_type(&mut builder, &t);
-            let fb_mono_type_holder = fb::MonoTypeHolder::create(
-                &mut builder,
-                &MonoTypeHolderArgs {
-                    typ_type,
-                    typ: Some(fb_mono_type),
-                },
-            );
-            builder.finish(fb_mono_type_holder, None);
-            let (mut vec, offset) = builder.collapse();
-            // Note, split_off() does a copy: https://github.com/influxdata/flux/issues/2194
-            let data = vec.split_off(offset);
-            let out_type = &mut *out_type; // Unsafe
-            out_type.len = data.len();
-            out_type.data = Box::into_raw(data.into_boxed_slice()) as *mut u8;
-            None
-        },
-    )
+    catch_unwind(|| {
+        let buf = CStr::from_ptr(var_name).to_bytes(); // Unsafe
+        let name = String::from_utf8(buf.to_vec()).unwrap();
+        find_var_type(&ast_pkg, name).map_or_else(
+            |e| Some(Box::from(e)),
+            |t| {
+                let mut builder = flatbuffers::FlatBufferBuilder::new();
+                let (fb_mono_type, typ_type) = build_type(&mut builder, &t);
+                let fb_mono_type_holder = fb::MonoTypeHolder::create(
+                    &mut builder,
+                    &MonoTypeHolderArgs {
+                        typ_type,
+                        typ: Some(fb_mono_type),
+                    },
+                );
+                builder.finish(fb_mono_type_holder, None);
+                let (mut vec, offset) = builder.collapse();
+                // Note, split_off() does a copy: https://github.com/influxdata/flux/issues/2194
+                let data = vec.split_off(offset);
+                let out_type = &mut *out_type; // Unsafe
+                out_type.len = data.len();
+                out_type.data = Box::into_raw(data.into_boxed_slice()) as *mut u8;
+                None
+            },
+        )
+    })
+    .unwrap_or_else(|err| Some(err.into()))
 }
 
 fn new_stateful_analyzer() -> Result<StatefulAnalyzer> {
@@ -446,43 +491,46 @@ pub unsafe extern "C" fn flux_analyze_with(
     ast_pkg: Box<ast::Package>,
     out_sem_pkg: *mut Option<Box<semantic::nodes::Package>>,
 ) -> Option<Box<ErrorHandle>> {
-    let ast_pkg = &ast_pkg;
-    let analyzer = &mut *analyzer;
-    let analyzer = match analyzer {
-        Ok(a) => a,
-        Err(_) => {
-            match mem::replace(
-                analyzer,
-                Err(Error::from(anyhow!("The error has already been return!"))),
-            ) {
-                Err(err) => {
-                    return Some(err.into());
+    catch_unwind(|| {
+        let ast_pkg = &ast_pkg;
+        let analyzer = &mut *analyzer;
+        let analyzer = match analyzer {
+            Ok(a) => a,
+            Err(_) => {
+                match mem::replace(
+                    analyzer,
+                    Err(Error::from(anyhow!("The error has already been return!"))),
+                ) {
+                    Err(err) => {
+                        return Some(err.into());
+                    }
+                    Ok(_) => unreachable!(),
                 }
-                Ok(_) => unreachable!(),
             }
-        }
-    };
+        };
 
-    let src = if csrc.is_null() {
+        let src = if csrc.is_null() {
+            None
+        } else {
+            Some(std::str::from_utf8(CStr::from_ptr(csrc).to_bytes()).unwrap())
+        };
+
+        let sem_pkg = Box::new(match analyzer.analyze(ast_pkg) {
+            Ok(sem_pkg) => sem_pkg,
+            Err(mut err) => {
+                if let Some(src) = src {
+                    if let Error::Semantic(err) = &mut err {
+                        err.source = Some(src.into());
+                    }
+                }
+                return Some(err.into());
+            }
+        });
+
+        *out_sem_pkg = Some(sem_pkg);
         None
-    } else {
-        Some(std::str::from_utf8(CStr::from_ptr(csrc).to_bytes()).unwrap())
-    };
-
-    let sem_pkg = Box::new(match analyzer.analyze(ast_pkg) {
-        Ok(sem_pkg) => sem_pkg,
-        Err(mut err) => {
-            if let Some(src) = src {
-                if let Error::Semantic(err) = &mut err {
-                    err.source = Some(src.into());
-                }
-            }
-            return Some(err.into());
-        }
-    });
-
-    *out_sem_pkg = Some(sem_pkg);
-    None
+    })
+    .unwrap_or_else(|err| Some(err.into()))
 }
 
 /// analyze consumes the given AST package and returns a semantic package
