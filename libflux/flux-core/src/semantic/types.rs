@@ -1763,7 +1763,6 @@ impl From<Label> for Symbol {
 
 impl From<&str> for Label {
     fn from(name: &str) -> Self {
-        assert!(!name.contains('@'));
         Self(Symbol::from(name))
     }
 }
