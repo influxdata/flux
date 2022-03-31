@@ -856,6 +856,7 @@ func TestQueryTracing(t *testing.T) {
 	if err := q.Err(); err != nil {
 		t.Fatal(err)
 	}
+	q.Done()
 
 	// If tracing was enabled, then we should see spans for each
 	// source and transformation. If tracing is not enabled, we should

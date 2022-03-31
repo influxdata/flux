@@ -224,8 +224,7 @@ func (t *consecutiveTransport) contextWithSpan(ctx context.Context) context.Cont
 }
 
 func (t *consecutiveTransport) finishSpan(err error) {
-	t.span.LogFields(log.Int("messages_processed", int(atomic.LoadInt32(&t.totalMsgs))))
-	t.span.LogFields(log.Error(err))
+	t.span.LogFields(log.Int("messages_processed", int(atomic.LoadInt32(&t.totalMsgs))), log.Error(err))
 	t.span.Finish()
 }
 
