@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"regexp"
 	"strings"
 	"testing"
@@ -832,8 +833,9 @@ func TestQueryTracing(t *testing.T) {
 	c := lang.FluxCompiler{
 		Query: `
 			import "array"
-			array.from(rows: [{key: 1, value: 2}, {key: 3, value: 4}])
+			array.from(rows: [{key: 1, value: 2}, {key: 3, value: 2}])
 			  |> filter(fn: (r) => r.value == 2)
+			  |> group(columns: ["key"])
 			  |> map(fn: (r) => ({r with foo: "hi"}))`,
 	}
 
@@ -859,22 +861,62 @@ func TestQueryTracing(t *testing.T) {
 	q.Done()
 
 	// If tracing was enabled, then we should see spans for each
-	// source and transformation. If tracing is not enabled, we should
-	// not have those spans.
-	gotOps := make(map[string]struct{})
+	// transformation.
+	var executeSpanId int
 	for _, span := range mockTracer.FinishedSpans() {
-		gotOps[span.OperationName] = struct{}{}
+		if span.OperationName == "execute" {
+			if executeSpanId != 0 {
+				t.Errorf("found multiple spans for operation %q", "execute")
+			}
+			executeSpanId = span.SpanContext.SpanID
+		}
 	}
-	wantOps := []string{
-		"*universe.filterTransformation",
-		"*universe.mapTransformation",
+	if executeSpanId == 0 {
+		t.Errorf("did not find %q span", "execute")
 	}
-	for _, wantOp := range wantOps {
-		_, ok := gotOps[wantOp]
-		if !ok {
-			t.Errorf("expected to find span %q but it wasn't there", wantOp)
+
+	wantSpans := []struct {
+		opName   string
+		msgCount int
+	}{
+		{opName: "*universe.filterTransformation", msgCount: 2},
+		{opName: "*universe.groupTransformation", msgCount: 3},
+		{opName: "*universe.mapTransformation", msgCount: 3},
+	}
+	for _, wantSpan := range wantSpans {
+		var gotSpan *mocktracer.MockSpan
+		for _, sp := range mockTracer.FinishedSpans() {
+			if wantSpan.opName == sp.OperationName {
+				gotSpan = sp
+				break
+			}
+		}
+		if gotSpan == nil {
+			t.Fatalf("did not find span for operation %v", wantSpan.opName)
+		}
+		// Make sure the parent ID is the execute span
+		if gotSpan.ParentID != executeSpanId {
+			t.Errorf("expected span for %q to have execute parent ID of %v but it was %v", wantSpan.opName, executeSpanId, gotSpan.ParentID)
 		}
 
+		var msgCount *mocktracer.MockKeyValue
+		for _, lr := range gotSpan.Logs() {
+			for _, kv := range lr.Fields {
+				if kv.Key == "messages_processed" {
+					msgCount = &kv
+					break
+				}
+			}
+			if msgCount != nil {
+				break
+			}
+		}
+		if msgCount == nil {
+			t.Fatalf("did not find %q log for operation %q", "messages_processed", wantSpan.opName)
+		}
+		if want, got := fmt.Sprintf("%d", wantSpan.msgCount), msgCount.ValueString; want != got {
+			t.Errorf("got unexpected message count for operation %q; -want/+got: %v/%v ", wantSpan.opName, want, got)
+		}
 	}
 }
 
