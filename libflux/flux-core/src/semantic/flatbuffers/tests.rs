@@ -180,7 +180,7 @@ fn test_serialize_vectorization() {
         }
     };
     // call vectorize function explicitly
-    match semantic::nodes::vectorize(&mut pkg) {
+    match semantic::vectorize::vectorize(&mut pkg) {
         Err(e) => assert!(false, "{}", e),
         _ => (),
     }

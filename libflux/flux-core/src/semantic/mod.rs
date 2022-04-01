@@ -4,6 +4,7 @@ pub mod convert;
 
 mod fs;
 mod infer;
+mod vectorize;
 
 #[macro_use]
 pub mod types;
@@ -509,7 +510,7 @@ impl<'env, I: import::Importer> Analyzer<'env, I> {
         // return an error if it finds a function can't be vectorized, but we
         // don't expect all functions to be vectorizable. So we just let it
         // vectorize what it can, and fail silently for all other cases.
-        let _ = nodes::vectorize(&mut sem_pkg);
+        let _ = vectorize::vectorize(&mut sem_pkg);
         Ok((env, sem_pkg))
     }
 
