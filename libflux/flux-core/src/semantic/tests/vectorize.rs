@@ -70,3 +70,39 @@ fn vectorize_with_construction() -> anyhow::Result<()> {
 
     Ok(())
 }
+
+#[test]
+fn vectorize_non_map_like_function() {
+    let err = vectorize(r#"(s) => ({ x: s.a })"#).unwrap_err();
+
+    expect_test::expect![[
+        r#"error @1:1-1:20: can't vectorize function: Does not match the `map` signature"#
+    ]]
+    .assert_eq(&err.to_string());
+}
+
+#[test]
+fn vectorize_addition_operator() -> anyhow::Result<()> {
+    let pkg = vectorize(r#"(r) => ({ x: r.a + r.b })"#)?;
+
+    let function = get_vectorized_function(&pkg);
+
+    expect_test::expect![[r##"
+        (r) => {
+            return {x: r:{F with a:v[#D], b:v[#D]}.a:v[#D] +:v[#D] r:{F with a:v[#D], b:v[#D]}.b:v[#D]}:{x:v[#D]}
+        }:(r:{F with a:v[#D], b:v[#D]}) => {x:v[#D]}"##]].assert_eq(&crate::semantic::formatter::format_node(
+        Node::FunctionExpr(function),
+    )?);
+
+    Ok(())
+}
+
+#[test]
+fn vectorize_subtraction_operator() {
+    let err = vectorize(r#"(r) => ({ x: r.a - r.b })"#).unwrap_err();
+
+    expect_test::expect![[
+        r#"error @1:14-1:23: can't vectorize function: Unable to vectorize non-addition operators"#
+    ]]
+    .assert_eq(&err.to_string());
+}

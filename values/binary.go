@@ -3,13 +3,16 @@ package values
 import (
 	"math"
 
+	fluxarray "github.com/influxdata/flux/array"
 	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/internal/errors"
+	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/semantic"
 )
 
 type BinaryFunction func(l, r Value) (Value, error)
+type BinaryVectorFunction func(l, r Value, mem memory.Allocator) (Value, error)
 
 type BinaryFuncSignature struct {
 	Operator    ast.OperatorKind
@@ -26,6 +29,14 @@ func LookupBinaryFunction(sig BinaryFuncSignature) (BinaryFunction, error) {
 	return binaryFuncNullCheck(f), nil
 }
 
+func LookupBinaryVectorFunction(sig BinaryFuncSignature) (BinaryVectorFunction, error) {
+	g, ok := binaryVectorFuncLookup[sig]
+	if !ok {
+		return nil, errors.Newf(codes.Invalid, "unsupported binary expression %v %v %v", sig.Left, sig.Operator, sig.Right)
+	}
+	return binaryVectorFuncNullCheck(g), nil
+}
+
 // binaryFuncNullCheck will wrap any BinaryFunction and
 // check that both of the arguments are non-nil.
 //
@@ -37,6 +48,27 @@ func binaryFuncNullCheck(fn BinaryFunction) BinaryFunction {
 			return Null, nil
 		}
 		return fn(lv, rv)
+	}
+}
+func binaryVectorFuncNullCheck(fn BinaryVectorFunction) BinaryVectorFunction {
+	return func(lv, rv Value, mem memory.Allocator) (Value, error) {
+		if lv.IsNull() || rv.IsNull() {
+			return Null, nil
+		}
+		return fn(lv, rv, mem)
+	}
+}
+
+func vectorAdd(l, r Vector, mem memory.Allocator) (Value, error) {
+	switch l.ElementType().Nature() {
+	case semantic.Int:
+		x, err := fluxarray.IntAdd(l.Arr().(*fluxarray.Int), r.Arr().(*fluxarray.Int), mem)
+		if err != nil {
+			return nil, err
+		}
+		return NewVectorValue(x, semantic.BasicInt), nil
+	default:
+		return nil, errors.Newf(codes.Invalid, "unsupported type for vector addition: %v", l.ElementType())
 	}
 }
 
@@ -80,6 +112,7 @@ var binaryFuncLookup = map[BinaryFuncSignature]BinaryFunction{
 		d := ConvertDurationNsecs(l.Duration() + r.Duration())
 		return NewDuration(d), nil
 	},
+
 	{Operator: ast.SubtractionOperator, Left: semantic.Int, Right: semantic.Int}: func(lv, rv Value) (Value, error) {
 		l := lv.Int()
 		r := rv.Int()
@@ -589,5 +622,13 @@ var binaryFuncLookup = map[BinaryFuncSignature]BinaryFunction{
 		l := lv.Str()
 		r := rv.Regexp()
 		return NewBool(!r.MatchString(l)), nil
+	},
+}
+
+var binaryVectorFuncLookup = map[BinaryFuncSignature]BinaryVectorFunction{
+	{Operator: ast.AdditionOperator, Left: semantic.Vector, Right: semantic.Vector}: func(lv, rv Value, mem memory.Allocator) (Value, error) {
+		l := lv.Vector()
+		r := rv.Vector()
+		return vectorAdd(l, r, mem)
 	},
 }

@@ -663,14 +663,28 @@ func compile(n semantic.Node, subst semantic.Substitutor) (Evaluator, error) {
 			Left:     lt,
 			Right:    rt,
 		})
+		if err == nil {
+			return &binaryEvaluator{
+				t:     apply(subst, nil, n.TypeOf()),
+				left:  l,
+				right: r,
+				f:     f,
+			}, nil
+		}
+
+		g, err := values.LookupBinaryVectorFunction(values.BinaryFuncSignature{
+			Operator: n.Operator,
+			Left:     lt,
+			Right:    rt,
+		})
 		if err != nil {
 			return nil, err
 		}
-		return &binaryEvaluator{
+		return &binaryVectorEvaluator{
 			t:     apply(subst, nil, n.TypeOf()),
 			left:  l,
 			right: r,
-			f:     f,
+			f:     g,
 		}, nil
 	case *semantic.CallExpression:
 		args, err := compile(n.Arguments, subst)

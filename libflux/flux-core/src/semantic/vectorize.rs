@@ -1,11 +1,12 @@
 use std::collections::HashMap;
 
 use crate::{
+    ast,
     errors::located,
     semantic::{
         nodes::{
-            Block, ErrorKind, Expression, FunctionExpr, IdentifierExpr, MemberExpr, ObjectExpr,
-            Package, Property, Result, ReturnStmt,
+            BinaryExpr, Block, ErrorKind, Expression, FunctionExpr, IdentifierExpr, MemberExpr,
+            ObjectExpr, Package, Property, Result, ReturnStmt,
         },
         types::{self, Function, Label, MonoType},
         Symbol,
@@ -68,11 +69,30 @@ impl Expression {
                     property: member.property.clone(),
                 }))
             }
+            Expression::Binary(binary) => {
+                if binary.operator != ast::Operator::AdditionOperator {
+                    return Err(located(
+                        self.loc().clone(),
+                        ErrorKind::UnableToVectorize(
+                            "Unable to vectorize non-addition operators".into(),
+                        ),
+                    ));
+                }
+                let left = binary.left.vectorize(env)?;
+                let right = binary.right.vectorize(env)?;
+                Expression::Binary(Box::new(BinaryExpr {
+                    loc: binary.loc.clone(),
+                    typ: MonoType::vector(binary.typ.clone()),
+                    operator: binary.operator.clone(),
+                    left,
+                    right,
+                }))
+            }
             _ => {
                 return Err(located(
                     self.loc().clone(),
                     ErrorKind::UnableToVectorize("Unable to vectorize expression".into()),
-                ))
+                ));
             }
         })
     }
@@ -140,34 +160,11 @@ impl FunctionExpr {
                                 .properties
                                 .iter()
                                 .map(|p| {
-                                    let mem = match &p.value {
-                                        Expression::Member(m) => m.clone(),
-                                        _ => {
-                                            return Err(located(
-                                                self.body.loc().clone(),
-                                                ErrorKind::UnableToVectorize(
-                                                    "expression type cannot be vectorized".into(),
-                                                ),
-                                            ))
-                                        }
-                                    };
-                                    match mem.object {
-                                        Expression::Identifier(i) if i.name == "r" => {
-                                            Ok(Property {
-                                                loc: p.loc.clone(),
-                                                key: p.key.clone(),
-                                                value: p.value.vectorize(&env)?,
-                                            })
-                                        }
-                                        _ => {
-                                            return Err(located(
-                                                self.body.loc().clone(),
-                                                ErrorKind::UnableToVectorize(
-                                                    "expression type cannot be vectorized".into(),
-                                                ),
-                                            ))
-                                        }
-                                    }
+                                    Ok(Property {
+                                        loc: p.loc.clone(),
+                                        key: p.key.clone(),
+                                        value: p.value.vectorize(&env)?,
+                                    })
                                 })
                                 .collect::<Result<Vec<_>>>()?;
 

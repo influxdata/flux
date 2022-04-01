@@ -2,6 +2,7 @@ package compiler_test
 
 import (
 	"context"
+	"fmt"
 	"testing"
 
 	arrow "github.com/apache/arrow/go/v7/arrow/memory"
@@ -41,7 +42,7 @@ func vectorizedObjectFromMap(mp map[string]interface{}, mem memory.Allocator) va
 //        functions (i.e., those in the form of `(r) => ({a: r.a})`, or something
 //        similar)
 func TestVectorizedFns(t *testing.T) {
-	testCases := []struct {
+	type TestCase struct {
 		name         string
 		fn           string
 		vectorizable bool
@@ -51,7 +52,9 @@ func TestVectorizedFns(t *testing.T) {
 		input        map[string]interface{}
 		want         map[string]interface{}
 		skipComp     bool
-	}{
+	}
+
+	testCases := []TestCase{
 		{
 			name:         "field access",
 			fn:           `(r) => ({c: r.a, d: r.b})`,
@@ -93,17 +96,70 @@ func TestVectorizedFns(t *testing.T) {
 			},
 		},
 		{
-			name:         "no binary expressions",
-			fn:           `(r) => ({c: r.a + r.b})`,
-			vectorizable: false,
-			skipComp:     true,
-		},
-		{
 			name:         "no literals",
 			fn:           `(r) => ({r with c: "count"})`,
 			vectorizable: false,
 			skipComp:     true,
 		},
+	}
+
+	operatorTests := []struct {
+		inType semantic.MonoType
+		input  map[string]interface{}
+		want   map[string]interface{}
+	}{
+		{
+			inType: semantic.BasicInt,
+			input: map[string]interface{}{
+				"r": map[string]interface{}{
+					"a": []interface{}{int64(1)},
+					"b": []interface{}{int64(2)},
+				},
+			},
+			want: map[string]interface{}{
+				"c": []interface{}{int64(3)},
+			},
+		},
+		{
+			inType: semantic.BasicFloat,
+			input: map[string]interface{}{
+				"r": map[string]interface{}{
+					"a": []interface{}{1.0},
+					"b": []interface{}{2.0},
+				},
+			},
+			want: map[string]interface{}{
+				"c": []interface{}{3.0},
+			},
+		},
+		{
+			inType: semantic.BasicString,
+			input: map[string]interface{}{
+				"r": map[string]interface{}{
+					"a": []interface{}{"a"},
+					"b": []interface{}{"b"},
+				},
+			},
+			want: map[string]interface{}{
+				"c": []interface{}{"ab"},
+			},
+		},
+	}
+
+	for _, test := range operatorTests {
+		testCases = append(testCases, TestCase{
+			name:         fmt.Sprintf("addition expression %s", test.inType.String()),
+			fn:           `(r) => ({c: r.a + r.b})`,
+			vectorizable: true,
+			inType: semantic.NewObjectType([]semantic.PropertyType{
+				{Key: []byte("r"), Value: semantic.NewObjectType([]semantic.PropertyType{
+					{Key: []byte("a"), Value: semantic.NewVectorType(test.inType)},
+					{Key: []byte("b"), Value: semantic.NewVectorType(test.inType)},
+				})},
+			}),
+			input: test.input,
+			want:  test.want,
+		})
 	}
 
 	for _, tc := range testCases {
@@ -118,6 +174,7 @@ func TestVectorizedFns(t *testing.T) {
 					fluxfeature.VectorizedMap().Key(): true,
 				},
 			)
+			ctx = compiler.RuntimeDependencies{Allocator: mem}.Inject(ctx)
 
 			pkg, err := runtime.AnalyzeSource(ctx, tc.fn)
 			if err != nil {
