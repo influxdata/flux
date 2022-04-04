@@ -11,7 +11,7 @@ fn vectorize(src: &str) -> anyhow::Result<Package> {
         .analyze_source("main".into(), "".into(), src)
         .map_err(|err| err.error)?;
 
-    semantic::nodes::vectorize(&mut pkg)?;
+    semantic::vectorize::vectorize(&mut pkg)?;
     Ok(pkg)
 }
 
