@@ -100,7 +100,7 @@ struct flux_stateful_analyzer_t;
 
 // flux_new_stateful_analyzer creates a new semantic analyzer for the given package path.
 // The returned analyzer must be freed with flux_free_stateful_analyzer().
-struct flux_stateful_analyzer_t *flux_new_stateful_analyzer();
+struct flux_stateful_analyzer_t *flux_new_stateful_analyzer(const char * options);
 
 // flux_free_stateful_analyzer frees a previously allocated semantic analyzer.
 void flux_free_stateful_analyzer(struct flux_stateful_analyzer_t *);
@@ -118,7 +118,7 @@ struct flux_error_t *flux_analyze_with(struct flux_stateful_analyzer_t *, const 
 // Any non-null error must be freed by calling flux_free_error.
 // Regardless of whether an error is returned, this function will consume and free its
 // flux_ast_pkg_t* argument, so it should not be reused after calling this function.
-struct flux_error_t *flux_analyze(struct flux_ast_pkg_t *, struct flux_semantic_pkg_t **);
+struct flux_error_t *flux_analyze(struct flux_ast_pkg_t *, const char * options, struct flux_semantic_pkg_t **);
 
 // Find out the type of a variable referenced in the given Flux AST and return a MonoType flat buffer for it.
 // The Flux AST should not contain any definition for the referenced variable.

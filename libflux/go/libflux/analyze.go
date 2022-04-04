@@ -5,6 +5,7 @@ package libflux
 import "C"
 
 import (
+	"encoding/json"
 	"runtime"
 	"unsafe"
 
@@ -14,6 +15,9 @@ import (
 	"github.com/influxdata/flux/internal/fbsemantic"
 	"github.com/influxdata/flux/semantic"
 )
+
+type Options struct {
+}
 
 // SemanticPkg is a Rust pointer to a semantic package.
 type SemanticPkg struct {
@@ -56,6 +60,10 @@ func (p *SemanticPkg) Free() {
 // Note that Analyze will consume the AST, so astPkg.ptr will be set to nil,
 // even if there's an error in analysis.
 func Analyze(astPkg *ASTPkg) (*SemanticPkg, error) {
+	return AnalyzeWithOptions(astPkg, Options{})
+}
+
+func AnalyzeWithOptions(astPkg *ASTPkg, options Options) (*SemanticPkg, error) {
 	var semPkg *C.struct_flux_semantic_pkg_t
 	defer func() {
 		// This is necessary because the ASTPkg returned from the libflux API calls has its finalizer
@@ -64,7 +72,15 @@ func Analyze(astPkg *ASTPkg) (*SemanticPkg, error) {
 		// Setting this ptr to nil will prevent a double-free error.
 		astPkg.ptr = nil
 	}()
-	if err := C.flux_analyze(astPkg.ptr, &semPkg); err != nil {
+
+	byteOptions, err := json.Marshal(options)
+	if err != nil {
+		return nil, err
+	}
+	cOptions := C.CString(string(byteOptions))
+	defer C.free(unsafe.Pointer(cOptions))
+
+	if err := C.flux_analyze(astPkg.ptr, cOptions, &semPkg); err != nil {
 		defer C.flux_free_error(err)
 		cstr := C.flux_error_str(err)
 		str := C.GoString(cstr)
@@ -109,10 +125,22 @@ type Analyzer struct {
 }
 
 func NewAnalyzer() *Analyzer {
-	ptr := C.flux_new_stateful_analyzer()
+	analyzer, _ := NewAnalyzerWithOptions(Options{})
+	return analyzer
+}
+
+func NewAnalyzerWithOptions(options Options) (*Analyzer, error) {
+	byteOptions, err := json.Marshal(options)
+	if err != nil {
+		return nil, err
+	}
+	cOptions := C.CString(string(byteOptions))
+	defer C.free(unsafe.Pointer(cOptions))
+
+	ptr := C.flux_new_stateful_analyzer(cOptions)
 	p := &Analyzer{ptr: ptr}
 	runtime.SetFinalizer(p, free)
-	return p
+	return p, nil
 }
 
 func (p *Analyzer) AnalyzeString(src string) (*SemanticPkg, *FluxError) {
@@ -131,6 +159,7 @@ func (p *Analyzer) Analyze(src string, astPkg *ASTPkg) (*SemanticPkg, *FluxError
 		// Setting this ptr to nil will prevent a double-free error.
 		astPkg.ptr = nil
 	}()
+
 	if err := C.flux_analyze_with(p.ptr, csrc, astPkg.ptr, &semPkg); err != nil {
 		err := &FluxError{ptr: err}
 		runtime.SetFinalizer(err, free)

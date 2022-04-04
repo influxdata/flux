@@ -379,6 +379,7 @@ dependencies = [
  "maplit",
  "once_cell",
  "pretty_assertions",
+ "serde",
  "serde_json",
  "thiserror",
  "walkdir",

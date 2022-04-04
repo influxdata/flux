@@ -25,6 +25,10 @@ pub enum Error {
     #[error(transparent)]
     Semantic(#[from] semantic::FileErrors),
 
+    /// Options error
+    #[error("Invalid compilation options: {0}")]
+    InvalidOptions(String),
+
     /// Other errors that do not have a dedicated variant
     #[error(transparent)]
     Other(#[from] anyhow::Error),
