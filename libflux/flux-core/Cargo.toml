@@ -26,45 +26,44 @@ lsp = ["lsp-types"]
 doc = ["rayon"]
 
 [dependencies]
-anyhow = "1"
+anyhow = "1.0.56"
 ena = "0.14"
 env_logger = "0.9"
 thiserror = "1"
 codespan-reporting = "0.11"
-comrak = "0.10.1"
+comrak = "0.12.1"
 fnv = "1.0.7"
-derive_more = { version = "0.99.11", default-features = false, features = [
+derive_more = { version = "0.99.17", default-features = false, features = [
     "display"
 ] }
 pretty = "0.11.2"
 rayon = { version = "1", optional = true }
-serde = { version = "^1.0.59", features = ["rc"] }
-serde_derive = "^1.0.59"
-serde_json = "1.0"
-serde-aux = "0.6.1"
-wasm-bindgen = { version = "0.2.62", features = ["serde-serialize"] }
+serde = { version = "^1.0.136", features = ["rc"] }
+serde_derive = "^1.0.136"
+serde_json = "1.0.79"
+serde-aux = "3.0.1"
 chrono = { version = "0.4", features = ["serde"] }
-regex = "1"
+regex = "1.5.5"
 maplit = "1.0.2"
-flatbuffers = "2.0.0"
+flatbuffers = "2.1.1"
 derivative = "2.1.1"
 walkdir = "2.2.9"
-log = "0.4"
+log = "0.4.16"
 lsp-types = { version = "0.92", optional = true }
-pulldown-cmark = { version = "0.8", default-features = false }
-structopt = "0.3"
-libflate = "1"
-once_cell = "1"
+pulldown-cmark = { version = "0.9.1", default-features = false }
+structopt = "0.3.26"
+libflate = "1.2.0"
+once_cell = "1.10.0"
 csv = "1.1"
 pad = "0.1.6"
-tempfile = "3"
+tempfile = "3.3.0"
 
 [dev-dependencies]
 env_logger = "0.9"
-colored = "1.8"
-pretty_assertions = "1"
+colored = "2.0"
+pretty_assertions = "1.2.1"
 criterion = "0.3.3"
-expect-test = "1.1.0"
+expect-test = "1.2.2"
 
 [[bench]]
 name = "scanner"
