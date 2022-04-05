@@ -7,51 +7,55 @@ use std::{
 };
 
 use anyhow::{bail, Context, Result};
+use clap::Parser;
 use rayon::prelude::*;
-use structopt::StructOpt;
 
 use fluxcore::{
     doc::{self, example},
     semantic::{bootstrap, env::Environment, Analyzer},
 };
 
-#[derive(Debug, StructOpt)]
-#[structopt(about = "generate and validate Flux source code documentation")]
+#[derive(Debug, Parser)]
+#[clap(
+    author,
+    version,
+    about = "generate and validate Flux source code documentation"
+)]
 enum FluxDoc {
     /// Dump JSON encoding of documentation from Flux source code.
     Dump {
         /// Directory containing Flux source code.
-        #[structopt(short, long, parse(from_os_str))]
+        #[clap(short, long, parse(from_os_str))]
         stdlib_dir: Option<PathBuf>,
         /// Path to flux command, must be the cmd from internal/cmd/flux
-        #[structopt(long, parse(from_os_str))]
+        #[clap(long, parse(from_os_str))]
         flux_cmd_path: Option<PathBuf>,
         /// Directory containing Flux source code.
-        #[structopt(short, long, parse(from_os_str))]
+        #[clap(short, long, parse(from_os_str))]
         dir: PathBuf,
         /// Output file, stdout if not present.
-        #[structopt(short, long, parse(from_os_str))]
+        #[clap(short, long, parse(from_os_str))]
         output: Option<PathBuf>,
         /// Whether to structure the documentation as nested pacakges.
-        #[structopt(short, long)]
+        #[clap(short, long)]
         nested: bool,
         /// Whether to omit full descriptions and keep only the short form docs.
-        #[structopt(long)]
+        #[clap(long)]
         short: bool,
     },
     /// Check Flux source code for documentation linting errors
     Lint {
         /// Directory containing Flux source code.
-        #[structopt(short, long, parse(from_os_str))]
+        #[clap(short, long, parse(from_os_str))]
         stdlib_dir: Option<PathBuf>,
         /// Path to flux command, must be the cmd from internal/cmd/flux
-        #[structopt(long, parse(from_os_str))]
+        #[clap(long, parse(from_os_str))]
         flux_cmd_path: Option<PathBuf>,
         /// Directory containing Flux source code.
-        #[structopt(short, long, parse(from_os_str))]
+        #[clap(short, long, parse(from_os_str))]
         dir: PathBuf,
         /// Limit the number of diagnostics to report. Default 10. 0 means no limit.
-        #[structopt(short, long)]
+        #[clap(short, long)]
         limit: Option<i64>,
     },
 }
@@ -59,7 +63,7 @@ enum FluxDoc {
 fn main() -> Result<()> {
     env_logger::init();
 
-    let app = FluxDoc::from_args();
+    let app = FluxDoc::parse();
     match app {
         FluxDoc::Dump {
             stdlib_dir,
