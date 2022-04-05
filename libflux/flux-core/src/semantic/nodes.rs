@@ -7,9 +7,6 @@
 //  Uncommented node types are a direct port of the AST ones.
 #![allow(clippy::match_single_binding)]
 
-extern crate chrono;
-extern crate derivative;
-
 use std::{fmt::Debug, vec::Vec};
 
 use anyhow::{anyhow, bail, Result as AnyhowResult};

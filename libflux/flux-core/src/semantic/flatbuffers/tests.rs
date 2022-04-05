@@ -1,6 +1,3 @@
-extern crate flatbuffers;
-extern crate walkdir;
-
 use anyhow::{anyhow, Result};
 use chrono::FixedOffset;
 
