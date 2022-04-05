@@ -215,7 +215,7 @@ builtin cumulativeSum : (<-tables: stream[A], ?columns: [string]) => stream[B] w
 //
 // ## Parameters
 // - unit: Time duration used to calculate the derivative. Default is `1s`.
-// - nonNegative: Disallow negative derivative values. Default is `true`.
+// - nonNegative: Disallow negative derivative values. Default is `false`.
 //
 //   When `true`, if a value is less than the previous value, the function
 //   assumes the previous value should have been a zero.
