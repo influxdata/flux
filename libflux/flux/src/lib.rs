@@ -3,15 +3,6 @@
 //! This module provides the public facing API for Flux's Go runtime, including formatting,
 //! parsing, and standard library analysis.
 
-extern crate fluxcore;
-extern crate serde_aux;
-
-extern crate serde_derive;
-
-#[cfg(test)]
-#[macro_use]
-extern crate pretty_assertions;
-
 use anyhow::anyhow;
 use fluxcore::semantic::env::Environment;
 use fluxcore::semantic::flatbuffers::semantic_generated::fbsemantic as fb;
