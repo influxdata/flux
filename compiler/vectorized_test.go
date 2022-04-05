@@ -121,6 +121,18 @@ func TestVectorizedFns(t *testing.T) {
 			},
 		},
 		{
+			inType: semantic.BasicUint,
+			input: map[string]interface{}{
+				"r": map[string]interface{}{
+					"a": []interface{}{uint64(1)},
+					"b": []interface{}{uint64(2)},
+				},
+			},
+			want: map[string]interface{}{
+				"c": []interface{}{uint64(3)},
+			},
+		},
+		{
 			inType: semantic.BasicFloat,
 			input: map[string]interface{}{
 				"r": map[string]interface{}{

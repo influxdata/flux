@@ -67,6 +67,24 @@ func vectorAdd(l, r Vector, mem memory.Allocator) (Value, error) {
 			return nil, err
 		}
 		return NewVectorValue(x, semantic.BasicInt), nil
+	case semantic.UInt:
+		x, err := fluxarray.UintAdd(l.Arr().(*fluxarray.Uint), r.Arr().(*fluxarray.Uint), mem)
+		if err != nil {
+			return nil, err
+		}
+		return NewVectorValue(x, semantic.BasicUint), nil
+	case semantic.Float:
+		x, err := fluxarray.FloatAdd(l.Arr().(*fluxarray.Float), r.Arr().(*fluxarray.Float), mem)
+		if err != nil {
+			return nil, err
+		}
+		return NewVectorValue(x, semantic.BasicFloat), nil
+	case semantic.String:
+		x, err := fluxarray.StringAdd(l.Arr().(*fluxarray.String), r.Arr().(*fluxarray.String), mem)
+		if err != nil {
+			return nil, err
+		}
+		return NewVectorValue(x, semantic.BasicString), nil
 	default:
 		return nil, errors.Newf(codes.Invalid, "unsupported type for vector addition: %v", l.ElementType())
 	}
