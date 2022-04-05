@@ -600,7 +600,7 @@ var sourceHashes = map[string]string{
 	"stdlib/universe/union_heterogeneous_test.flux":                                               "5158d9efdf88ec10945e84f72cb7ed9669b25f967b7b4f778d2456d52ecd34da",
 	"stdlib/universe/union_test.flux":                                                             "8529f2f609d9876f975ad648dec24eb60b569e8ac1c38e4f980e2234e68149a9",
 	"stdlib/universe/unique_test.flux":                                                            "02180f651906f48cc57cc777d443a64bd2155394ac0ade68888f47f5900e5408",
-	"stdlib/universe/universe.flux":                                                               "6d4389d837f6eb5af9afef59d21b232be726211e3c06205f7af651a300e061a2",
+	"stdlib/universe/universe.flux":                                                               "49bf9e5b082b45dd2deec2a3281b24a068bc340797b7d466bc2a048a88d13cb6",
 	"stdlib/universe/universe_truncateTimeColumn_test.flux":                                       "7ca30c57336b22ae430a082d33589fa919f4558c3ed6dbe37ecde367d602435c",
 	"stdlib/universe/window_aggregate_test.flux":                                                  "e2dba18647b2a180cafe81dd00a43077eb489421d229785e63b270eb79ddb2b1",
 	"stdlib/universe/window_default_start_align_test.flux":                                        "162f9d452fed411edfdcb11ef1b8ae0c565d87bbc351596d277c7db55fe67e8f",
