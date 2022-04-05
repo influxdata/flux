@@ -541,6 +541,8 @@ func TestCompileOptions_FromFluxOptions(t *testing.T) {
 	nowFn := func() time.Time {
 		return parser.MustParseTime("2018-10-10T00:00:00Z").Value
 	}
+	// If this test is run with a count of greater than one, we panic here
+	// because removeCount is already registered.
 	plan.RegisterLogicalRules(&removeCount{})
 
 	tcs := []struct {
@@ -802,15 +804,18 @@ option planner.disableLogicalRules = ["removeCountRule"]`},
 			ctx, deps := dependency.Inject(context.Background(), executetest.NewTestExecuteDependencies())
 			defer deps.Finish()
 
-			if _, err := program.Start(ctx, &memory.ResourceAllocator{}); err != nil {
+			if q, err := program.Start(ctx, &memory.ResourceAllocator{}); err != nil {
 				if tc.wantErr == "" {
 					t.Fatalf("failed to start program: %v", err)
 				} else if got := getRootErr(err); tc.wantErr != got.Error() {
 					t.Fatalf("expected wrong error -want/+got:\n\t- %s\n\t+ %s", tc.wantErr, got)
 				}
 				return
-			} else if tc.wantErr != "" {
-				t.Fatalf("expected error, got none")
+			} else {
+				q.Done()
+				if tc.wantErr != "" {
+					t.Fatalf("expected error, got none")
+				}
 			}
 
 			if err := plantest.ComparePlansShallow(tc.want, program.PlanSpec); err != nil {
