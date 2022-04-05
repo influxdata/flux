@@ -46,8 +46,6 @@ func TestVectorizedFns(t *testing.T) {
 		name         string
 		fn           string
 		vectorizable bool
-		allocated    int64
-		maxAllocated int64
 		inType       semantic.MonoType
 		input        map[string]interface{}
 		want         map[string]interface{}
