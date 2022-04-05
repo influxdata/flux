@@ -7,24 +7,25 @@ import (
     "github.com/apache/arrow/go/v7/arrow/memory"
 )
 
-{{range $Type := .}}
-{{range $Operator := .Operators}}
-func {{$Type.Name}}Add(l, r *{{$Type.Name}}, mem memory.Allocator) (*{{$Type.Name}}, error) {
+{{range .}}
+{{if ne .Name "Boolean"}}
+
+func {{.Name}}Add(l, r *{{.Name}}, mem memory.Allocator) (*{{.Name}}, error) {
 	n := l.Len()
 	if n != r.Len() {
 		return nil, errors.Newf(codes.Invalid, "Vectors must have equal length for binary operations")
 	}
 
-	b := New{{$Type.Name}}Builder(mem)
+	b := New{{.Name}}Builder(mem)
 	b.Resize(n)
 	for i := 0; i < n; i++ {
 		if l.IsValid(i) && r.IsValid(i) {
-			b.Append(l.Value(i) {{ $Operator }} r.Value(i))
+			b.Append(l.Value(i) + r.Value(i))
 		} else {
 			b.AppendNull()
 		}
 	}
-	return b.New{{$Type.Name}}Array(), nil
+	return b.New{{.Name}}Array(), nil
 }
 {{end}}
 {{end}}

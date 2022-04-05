@@ -2,25 +2,21 @@
   {
     "Name": "Int",
     "ArrowType": "Int64",
-    "PrimitiveType": "int64",
-    "Operators": ["+"]
+    "PrimitiveType": "int64"
   },
   {
     "Name": "Uint",
     "ArrowType": "Uint64",
-    "PrimitiveType": "uint64",
-    "Operators": ["+"]
+    "PrimitiveType": "uint64"
   },
   {
     "Name": "Float",
     "ArrowType": "Float64",
-    "PrimitiveType": "float64",
-    "Operators": ["+"]
+    "PrimitiveType": "float64"
   },
   {
     "Name": "String",
-    "PrimitiveType": "string",
-    "Operators": ["+"]
+    "PrimitiveType": "string"
   },
   {
     "Name": "Boolean",
