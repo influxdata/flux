@@ -8,13 +8,11 @@ pub mod types;
 use std::{cell::RefCell, rc::Rc};
 
 use anyhow::{anyhow, bail, Error, Result};
+use chrono::Duration as ChronoDuration;
 use flatbuffers::{UnionWIPOffset, WIPOffset};
 use semantic_generated::fbsemantic;
 
 use crate::{ast, semantic, semantic::walk};
-
-extern crate chrono;
-use chrono::Duration as ChronoDuration;
 
 const UNKNOWNVARIANTNAME: &str = "UNKNOWNSEMANTIC";
 
