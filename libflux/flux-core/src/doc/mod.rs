@@ -970,28 +970,33 @@ impl<'a> Parser<'a> {
     }
     fn parse_parameter_headline(&mut self) -> Result<()> {
         let mut range = Range::<usize> { start: 0, end: 0 };
-        // We will either have a paragraph or a single text node
+        // We will either have a paragraph or content within the entire item.
         match self.iter.next() {
             Some((Event::Start(Tag::Paragraph), r)) => {
                 range.start = r.start;
             }
-            Some((Event::Text(_), r)) => {
-                self.tokens.push(Token::ParamHeadline(self.slice(r)));
-                return self.parse_parameter_description();
-            }
-            _ => {
-                // We didn't find a good headline
-                // Find the end of the item and start over
+            Some((_, start)) => {
+                // We do not have an explicit paragraph so assume the entire item is the headline.
                 loop {
                     match self.iter.next() {
-                        Some((Event::End(Tag::Item), _)) => {
-                            return self.parse_any_heading_or_description()
+                        Some((Event::End(Tag::Item), end)) => {
+                            self.tokens.push(Token::ParamHeadline(self.slice(Range {
+                                start: start.start,
+                                end: end.end,
+                            })));
+                            // Parse the next parameter
+                            return self.parse_parameter();
+                        }
+                        Some((Event::Start(Tag::Item), _)) => {
+                            // We found a new list within the headline we should bail with a helpful message.
+                            bail!("found a new list within a parameter headline. Use a new paragraph to separate the list from the headline.")
                         }
                         Some(_) => {}
                         None => bail!("reached end of markdown without reaching end of item"),
                     };
                 }
             }
+            None => bail!("reached end of markdown without reaching end of item"),
         };
         // We have a paragraph so gather all events until the end of the paragraph.
         loop {
@@ -1279,6 +1284,77 @@ mod test {
                     "a" => Doc::Value(Box::new(ValueDoc{
                         name: "a".to_string(),
                         headline: "a is a constant.".to_string(),
+                        description: None,
+                        flux_type: "int".to_string(),
+                        is_option: false,
+                        source_location: loc.get(6,9,6,14),
+                        examples: vec![],
+                        metadata: None,
+                    })),
+                ],
+                examples: Vec::new(),
+                metadata: None,
+            },
+            vec![],
+        );
+    }
+    #[test]
+    fn test_value_doc_multiline_headline_no_desc() {
+        let src = "
+        // Package foo does a thing.
+        package foo
+
+        // a is a constant. This headline has `code`
+        // and multiple lines.
+        a = 1
+        ";
+        let loc = Locator::new(&src[..]);
+        assert_docs_full(
+            src,
+            PackageDoc {
+                path: "path".to_string(),
+                name: "foo".to_string(),
+                headline: "Package foo does a thing.".to_string(),
+                description: None,
+                members: map![
+                    "a" => Doc::Value(Box::new(ValueDoc{
+                        name: "a".to_string(),
+                        headline: "a is a constant. This headline has `code`\nand multiple lines.".to_string(),
+                        description: None,
+                        flux_type: "int".to_string(),
+                        is_option: false,
+                        source_location: loc.get(7,9,7,14),
+                        examples: vec![],
+                        metadata: None,
+                    })),
+                ],
+                examples: Vec::new(),
+                metadata: None,
+            },
+            vec![],
+        );
+    }
+    #[test]
+    fn test_value_doc_code_headline_no_desc() {
+        let src = "
+        // Package foo does a thing.
+        package foo
+
+        // a is a constant. This headline has `code`.
+        a = 1
+        ";
+        let loc = Locator::new(&src[..]);
+        assert_docs_full(
+            src,
+            PackageDoc {
+                path: "path".to_string(),
+                name: "foo".to_string(),
+                headline: "Package foo does a thing.".to_string(),
+                description: None,
+                members: map![
+                    "a" => Doc::Value(Box::new(ValueDoc{
+                        name: "a".to_string(),
+                        headline: "a is a constant. This headline has `code`.".to_string(),
                         description: None,
                         flux_type: "int".to_string(),
                         is_option: false,
@@ -1876,6 +1952,73 @@ foo.a
                         flux_type: "(<-p:A, x:A) => A where A: Addable".to_string(),
                         is_option: false,
                         source_location: loc.get(15,9,15,30),
+                        examples: vec![],
+                        metadata: None,
+                    })),
+                ],
+                examples: Vec::new(),
+                metadata: None,
+            },
+            vec![],
+        );
+    }
+    #[test]
+    fn test_function_doc_multiline() {
+        // It is possible in markdown for a list item to contain mutliple lines without
+        // having an explicit paragraph tag, this test case validates that such soft paragraphs are
+        // correctly captured into the headline.
+
+        let src = "
+        // Package foo does a thing.
+        package foo
+
+        // f is a function
+        //
+        // ## Parameters
+        // - a: parameter with a multiline
+        //     headline without a paragraph.
+        // - b: parameter with `code` and a multiline
+        //     headline without a paragraph.
+        // - c: parameter with a multiline
+        //     headline without a paragraph but with `code`.
+        f = (a, b, c) => 1
+        ";
+        let loc = Locator::new(&src[..]);
+        assert_docs_full(
+            src,
+            PackageDoc {
+                path: "path".to_string(),
+                name: "foo".to_string(),
+                headline: "Package foo does a thing.".to_string(),
+                description: None,
+                members: map![
+                    "f" => Doc::Function(Box::new(FunctionDoc{
+                        name: "f".to_string(),
+                        headline: "f is a function".to_string(),
+                        description: None,
+                        parameters: vec![
+                            ParameterDoc{
+                                name: "a".to_string(),
+                                headline: "a: parameter with a multiline\n    headline without a paragraph.".to_string(),
+                                description: None,
+                                required: true,
+                            },
+                            ParameterDoc{
+                                name: "b".to_string(),
+                                headline: "b: parameter with `code` and a multiline\n    headline without a paragraph.".to_string(),
+                                description: None,
+                                required: true,
+                            },
+                            ParameterDoc{
+                                name: "c".to_string(),
+                                headline: "c: parameter with a multiline\n    headline without a paragraph but with `code`.".to_string(),
+                                description: None,
+                                required: true,
+                            },
+                        ],
+                        flux_type: "(a:A, b:B, c:C) => int".to_string(),
+                        is_option: false,
+                        source_location: loc.get(14,9,14,27),
                         examples: vec![],
                         metadata: None,
                     })),

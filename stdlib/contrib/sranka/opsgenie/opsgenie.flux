@@ -33,6 +33,7 @@ builtin respondersToJSON : (v: [string]) => string
 //   Defaults to [message](https://docs.influxdata.com/flux/v0.x/stdlib/contrib/sranka/opsgenie/sendalert/#message).
 // - description: Alert description. 15000 characters or less.
 // - priority: Opsgenie alert priority.
+//
 //   Valid values include:
 //   - `P1`
 //   - `P2`
