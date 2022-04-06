@@ -95,6 +95,57 @@ func TestVectorizedFns(t *testing.T) {
 			},
 		},
 		{
+			name:         "addition expression nested",
+			fn:           `(r) => ({c: r.a + r.b + r.a})`,
+			vectorizable: true,
+			inType: semantic.NewObjectType([]semantic.PropertyType{
+				{Key: []byte("r"), Value: semantic.NewObjectType([]semantic.PropertyType{
+					{Key: []byte("a"), Value: semantic.NewVectorType(semantic.BasicInt)},
+					{Key: []byte("b"), Value: semantic.NewVectorType(semantic.BasicInt)},
+				})},
+			}),
+			input: map[string]interface{}{
+				"r": map[string]interface{}{
+					"a": []interface{}{int64(1)},
+					"b": []interface{}{int64(2)},
+				},
+			},
+			want: map[string]interface{}{
+				"c": []interface{}{int64(4)},
+			},
+			flagger: executetest.TestFlagger{
+				fluxfeature.VectorizeAddition().Key(): true,
+			},
+		},
+		{
+			name:         "addition expression multiple",
+			fn:           `(r) => ({x: r.a + r.b, y: r.c + r.d})`,
+			vectorizable: true,
+			inType: semantic.NewObjectType([]semantic.PropertyType{
+				{Key: []byte("r"), Value: semantic.NewObjectType([]semantic.PropertyType{
+					{Key: []byte("a"), Value: semantic.NewVectorType(semantic.BasicInt)},
+					{Key: []byte("b"), Value: semantic.NewVectorType(semantic.BasicInt)},
+					{Key: []byte("c"), Value: semantic.NewVectorType(semantic.BasicFloat)},
+					{Key: []byte("d"), Value: semantic.NewVectorType(semantic.BasicFloat)},
+				})},
+			}),
+			input: map[string]interface{}{
+				"r": map[string]interface{}{
+					"a": []interface{}{int64(1)},
+					"b": []interface{}{int64(2)},
+					"c": []interface{}{49.0},
+					"d": []interface{}{51.0},
+				},
+			},
+			want: map[string]interface{}{
+				"x": []interface{}{int64(3)},
+				"y": []interface{}{100.0},
+			},
+			flagger: executetest.TestFlagger{
+				fluxfeature.VectorizeAddition().Key(): true,
+			},
+		},
+		{
 			name:         "no binary expressions without feature flag",
 			fn:           `(r) => ({c: r.a + r.b})`,
 			vectorizable: false,
@@ -117,48 +168,48 @@ func TestVectorizedFns(t *testing.T) {
 			inType: semantic.BasicInt,
 			input: map[string]interface{}{
 				"r": map[string]interface{}{
-					"a": []interface{}{int64(1)},
-					"b": []interface{}{int64(2)},
+					"a": []interface{}{int64(1), int64(3)},
+					"b": []interface{}{int64(2), int64(4)},
 				},
 			},
 			want: map[string]interface{}{
-				"c": []interface{}{int64(3)},
+				"c": []interface{}{int64(3), int64(7)},
 			},
 		},
 		{
 			inType: semantic.BasicUint,
 			input: map[string]interface{}{
 				"r": map[string]interface{}{
-					"a": []interface{}{uint64(1)},
-					"b": []interface{}{uint64(2)},
+					"a": []interface{}{uint64(1), uint64(3)},
+					"b": []interface{}{uint64(2), uint64(4)},
 				},
 			},
 			want: map[string]interface{}{
-				"c": []interface{}{uint64(3)},
+				"c": []interface{}{uint64(3), uint64(7)},
 			},
 		},
 		{
 			inType: semantic.BasicFloat,
 			input: map[string]interface{}{
 				"r": map[string]interface{}{
-					"a": []interface{}{1.0},
-					"b": []interface{}{2.0},
+					"a": []interface{}{1.0, 3.0},
+					"b": []interface{}{2.0, 4.0},
 				},
 			},
 			want: map[string]interface{}{
-				"c": []interface{}{3.0},
+				"c": []interface{}{3.0, 7.0},
 			},
 		},
 		{
 			inType: semantic.BasicString,
 			input: map[string]interface{}{
 				"r": map[string]interface{}{
-					"a": []interface{}{"a"},
-					"b": []interface{}{"b"},
+					"a": []interface{}{"a", "c"},
+					"b": []interface{}{"b", "d"},
 				},
 			},
 			want: map[string]interface{}{
-				"c": []interface{}{"ab"},
+				"c": []interface{}{"ab", "cd"},
 			},
 		},
 	}
