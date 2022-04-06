@@ -19,7 +19,7 @@ use fluxcore::{
         nodes::{Package, Symbol},
         sub::Substitution,
         types::{MonoType, PolyType, TvarKinds},
-        Analyzer, AnalyzerConfig, PackageExports,
+        Analyzer, AnalyzerConfig, Feature, PackageExports,
     },
 };
 
@@ -415,7 +415,7 @@ pub unsafe extern "C" fn flux_find_var_type(
     .unwrap_or_else(|err| Some(err.into()))
 }
 
-fn new_stateful_analyzer(_options: Options) -> Result<StatefulAnalyzer> {
+fn new_stateful_analyzer(options: Options) -> Result<StatefulAnalyzer> {
     let env = match prelude() {
         Some(prelude) => prelude,
         None => return Err(anyhow!("missing prelude").into()),
@@ -424,7 +424,11 @@ fn new_stateful_analyzer(_options: Options) -> Result<StatefulAnalyzer> {
         Some(imports) => imports,
         None => return Err(anyhow!("missing stdlib imports").into()),
     };
-    Ok(StatefulAnalyzer { env, imports })
+    Ok(StatefulAnalyzer {
+        env,
+        imports,
+        options,
+    })
 }
 
 /// StatefulAnalyzer updates its environment with the contents of any previously analyzed package.
@@ -432,11 +436,20 @@ fn new_stateful_analyzer(_options: Options) -> Result<StatefulAnalyzer> {
 pub struct StatefulAnalyzer {
     env: PackageExports,
     imports: &'static Packages,
+    options: Options,
 }
 
 impl StatefulAnalyzer {
     fn analyze(&mut self, ast_pkg: &ast::Package) -> Result<fluxcore::semantic::nodes::Package> {
-        let mut analyzer = Analyzer::new_with_defaults(Environment::from(&self.env), self.imports);
+        let Options { features } = self.options.clone();
+        let mut analyzer = Analyzer::new(
+            Environment::from(&self.env),
+            self.imports,
+            AnalyzerConfig {
+                features,
+                ..AnalyzerConfig::default()
+            },
+        );
         let (mut env, sem_pkg) = match analyzer.analyze_ast(ast_pkg) {
             Ok(r) => r,
             Err(e) => {
@@ -545,15 +558,8 @@ pub unsafe extern "C" fn flux_analyze_with(
     .unwrap_or_else(|err| Some(err.into()))
 }
 
-/// Features used in the flux compiler
-#[cfg_attr(feature = "serde", derive(serde::Deserialize))]
-pub enum Feature {
-    /// Enables vectorization of addition expressions
-    VectorizeAddition,
-}
-
 /// Compilation options. Deserialized from json when called via the C API
-#[derive(Default)]
+#[derive(Clone, Default, Debug)]
 #[cfg_attr(feature = "serde", derive(serde::Deserialize))]
 pub struct Options {
     /// Features used in the flux compiler
@@ -586,8 +592,12 @@ impl Options {
 /// analyze consumes the given AST package and returns a semantic package
 /// that has been type-inferred.  This function is aware of the standard library
 /// and prelude.
-pub fn analyze(ast_pkg: &ast::Package, _options: Options) -> Result<Package> {
-    let mut analyzer = new_semantic_analyzer(AnalyzerConfig::default())?;
+pub fn analyze(ast_pkg: &ast::Package, options: Options) -> Result<Package> {
+    let Options { features } = options;
+    let mut analyzer = new_semantic_analyzer(AnalyzerConfig {
+        features,
+        ..AnalyzerConfig::default()
+    })?;
     let (_, sem_pkg) = analyzer.analyze_ast(ast_pkg).map_err(|err| err.error)?;
     Ok(sem_pkg)
 }

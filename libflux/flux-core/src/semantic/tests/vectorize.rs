@@ -3,15 +3,23 @@ use crate::semantic::{
     import::Packages,
     nodes::{FunctionExpr, Package},
     walk::{walk, Node},
+    AnalyzerConfig,
 };
 
 fn vectorize(src: &str) -> anyhow::Result<Package> {
-    let mut analyzer = Analyzer::new(Default::default(), Packages::default(), Default::default());
+    let mut analyzer = Analyzer::new(
+        Default::default(),
+        Packages::default(),
+        AnalyzerConfig {
+            features: vec![Feature::VectorizeAddition],
+            ..AnalyzerConfig::default()
+        },
+    );
     let (_, mut pkg) = analyzer
         .analyze_source("main".into(), "".into(), src)
         .map_err(|err| err.error)?;
 
-    semantic::vectorize::vectorize(&mut pkg)?;
+    semantic::vectorize::vectorize(&AnalyzerConfig::default(), &mut pkg)?;
     Ok(pkg)
 }
 

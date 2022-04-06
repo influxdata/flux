@@ -19,15 +19,20 @@ import (
 )
 
 type Options struct {
-	features []string
+	Features []string `json:"features,omitempty"`
 }
 
 func NewOptions(ctx context.Context) Options {
 	features := []string{}
-	if feature.VectorizedMap().Enabled(ctx) {
-		features = append(features, feature.VectorizedMap().Key())
+	features = addFlag(ctx, features, feature.VectorizedMap())
+	return Options{Features: features}
+}
+
+func addFlag(ctx context.Context, features []string, flag feature.BoolFlag) []string {
+	if flag.Enabled(ctx) {
+		features = append(features, flag.Key())
 	}
-	return Options{features: features}
+	return features
 }
 
 // SemanticPkg is a Rust pointer to a semantic package.

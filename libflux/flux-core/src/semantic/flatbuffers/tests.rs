@@ -177,7 +177,7 @@ fn test_serialize_vectorization() {
         }
     };
     // call vectorize function explicitly
-    match semantic::vectorize::vectorize(&mut pkg) {
+    match semantic::vectorize::vectorize(&semantic::AnalyzerConfig::default(), &mut pkg) {
         Err(e) => assert!(false, "{}", e),
         _ => (),
     }
