@@ -45,3 +45,14 @@ impl Importer for Packages {
             .cloned()
     }
 }
+
+impl Importer for &'_ Packages {
+    fn import(&mut self, path: &str) -> Option<PolyType> {
+        self.get(path).map(|exports| exports.typ())
+    }
+    fn symbol(&mut self, package_path: &str, symbol_name: &str) -> Option<Symbol> {
+        self.get(package_path)
+            .and_then(|exports| exports.lookup_symbol(symbol_name))
+            .cloned()
+    }
+}

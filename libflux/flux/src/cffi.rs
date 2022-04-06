@@ -25,7 +25,7 @@ use fluxcore::{
 
 use crate::semantic::flatbuffers::semantic_generated::fbsemantic::MonoTypeHolderArgs;
 
-use super::{imports, new_semantic_analyzer, prelude, Error, Result, PRELUDE};
+use super::{imports, new_semantic_analyzer, prelude, Error, Result, IMPORTS, PRELUDE};
 
 /// An error handle designed to allow passing `Error` instances to library
 /// consumers across language boundaries.
@@ -115,7 +115,7 @@ pub unsafe extern "C" fn flux_parse(
 }
 
 /// Parse the contents of a string.
-fn parse(fname: String, src: &str) -> ast::Package {
+pub fn parse(fname: String, src: &str) -> ast::Package {
     let mut p = Parser::new(src);
     p.parse_file(fname).into()
 }
@@ -415,7 +415,7 @@ fn new_stateful_analyzer() -> Result<StatefulAnalyzer> {
     };
     let imports = match imports() {
         Some(imports) => imports,
-        None => return Err(anyhow!("missing stdlib inports").into()),
+        None => return Err(anyhow!("missing stdlib imports").into()),
     };
     Ok(StatefulAnalyzer { env, imports })
 }
@@ -536,7 +536,7 @@ pub unsafe extern "C" fn flux_analyze_with(
 /// analyze consumes the given AST package and returns a semantic package
 /// that has been type-inferred.  This function is aware of the standard library
 /// and prelude.
-fn analyze(ast_pkg: &ast::Package) -> Result<Package> {
+pub fn analyze(ast_pkg: &ast::Package) -> Result<Package> {
     let mut analyzer = new_semantic_analyzer(AnalyzerConfig::default())?;
     let (_, sem_pkg) = analyzer.analyze_ast(ast_pkg).map_err(|err| err.error)?;
     Ok(sem_pkg)
@@ -561,9 +561,9 @@ fn infer_with_env(
     } else {
         Environment::from(prelude)
     };
-    let importer = match imports() {
+    let importer = match &*IMPORTS {
         Some(imports) => imports,
-        None => return Err(anyhow!("missing stdlib inports").into()),
+        None => return Err(anyhow!("missing stdlib imports").into()),
     };
     let mut analyzer = Analyzer::new_with_defaults(env, importer);
     let (_, pkg) = analyzer
