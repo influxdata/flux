@@ -75,11 +75,12 @@ func runFluxTests(setup TestSetupFunc, flags TestFlags) error {
 }
 
 // Test wraps the functionality of a single testcase statement,
-// to handle its execution and its pass/fail state.
+// to handle its execution and its skip/pass/fail state.
 type Test struct {
 	name string
 	ast  *ast.Package
 	err  error
+	skip bool
 }
 
 // NewTest creates a new Test instance from an ast.Package.
@@ -540,9 +541,10 @@ func (t *TestRunner) Run(executor TestExecutor, verbosity int, skipTestCases []s
 	}
 	for _, test := range t.tests {
 		if _, ok := skipMap[test.name]; ok {
-			continue
+			test.skip = true
+		} else {
+			test.Run(executor)
 		}
-		test.Run(executor)
 		t.reporter.ReportTestRun(test)
 	}
 }
@@ -573,13 +575,17 @@ func NewTestReporter(verbosity int) TestReporter {
 // each test is run.
 func (t *TestReporter) ReportTestRun(test *Test) {
 	if t.verbosity == 0 {
-		if test.Error() != nil {
+		if test.skip {
+			fmt.Print("s")
+		} else if test.Error() != nil {
 			fmt.Print("x")
 		} else {
 			fmt.Print(".")
 		}
 	} else if t.verbosity == 1 {
-		if err := test.Error(); err != nil {
+		if test.skip {
+			fmt.Printf("%s...skip\n", test.Name())
+		} else if err := test.Error(); err != nil {
 			fmt.Printf("%s...fail: %s\n", test.Name(), err)
 		} else {
 			fmt.Printf("%s...success\n", test.Name())
@@ -591,7 +597,9 @@ func (t *TestReporter) ReportTestRun(test *Test) {
 		} else {
 			fmt.Printf("Full source for test case %q\n%s", test.Name(), source)
 		}
-		if err := test.Error(); err != nil {
+		if test.skip {
+			fmt.Printf("%s...skip\n", test.Name())
+		} else if err := test.Error(); err != nil {
 			fmt.Printf("%s...fail: %s\n", test.Name(), err)
 		} else {
 			fmt.Printf("%s...success\n", test.Name())
@@ -602,8 +610,11 @@ func (t *TestReporter) ReportTestRun(test *Test) {
 // Summarize summarizes the test run.
 func (t *TestReporter) Summarize(tests []*Test) {
 	failures := 0
+	skips := 0
 	for _, test := range tests {
-		if test.Error() != nil {
+		if test.skip {
+			skips = skips + 1
+		} else if test.Error() != nil {
 			failures = failures + 1
 		}
 	}
@@ -615,7 +626,9 @@ func (t *TestReporter) Summarize(tests []*Test) {
 			}
 		}
 	}
-	fmt.Printf("\n---\nRan %d tests with %d failure(s)\n", len(tests), failures)
+
+	passed := len(tests) - skips - failures
+	fmt.Printf("\n---\nFound %d tests: passed %d, failed %d, skipped %d\n", len(tests), passed, failures, skips)
 }
 
 type TestSetupFunc func(ctx context.Context) (TestExecutor, error)
