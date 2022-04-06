@@ -21,6 +21,7 @@ import "json"
 // - password: ServiceNow password to use for HTTP BASIC authentication.
 // - description: Event description.
 // - severity: Severity of the event.
+//
 //   Supported values:
 //   - `critical`
 //   - `major`
