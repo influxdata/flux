@@ -31,11 +31,11 @@ default: build
 STDLIB_SOURCES = $(shell find . -name '*.flux')
 
 GENERATED_TARGETS = \
+	internal/feature/flags.go \
 	ast/internal/fbast/ast_generated.go \
 	ast/asttest/cmpopts.go \
 	stdlib/packages.go \
 	internal/fbsemantic/semantic_generated.go \
-	internal/feature/flags.go \
 	libflux/go/libflux/buildinfo.gen.go \
 	$(LIBFLUX_GENERATED_TARGETS)
 
