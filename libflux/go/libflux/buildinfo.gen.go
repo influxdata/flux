@@ -12,9 +12,9 @@ package libflux
 // are not tracked by Go's build system.'
 //lint:ignore U1000 generated code
 var sourceHashes = map[string]string{
-	"libflux/Cargo.lock":                                                                          "283887171af621b35433dee0059a0f7baa97e14e7f250b626bf247b9787449eb",
+	"libflux/Cargo.lock":                                                                          "e8ad826f7d95d0022586d2f07c8def0cad8b97c00cd6db5a0b7db9605695acd1",
 	"libflux/Cargo.toml":                                                                          "91ac4e8b467440c6e8a9438011de0e7b78c2732403bb067d4dd31539ac8a90c1",
-	"libflux/flux-core/Cargo.toml":                                                                "77e7e2407a6efccd4008a352ee90fd5d53ad557599112e378d4e46ce1795169c",
+	"libflux/flux-core/Cargo.toml":                                                                "60aa9723cf20ff627268e456962da005d7ebe3e40c89d9a9f7d5725f59b835d9",
 	"libflux/flux-core/src/ast/check/mod.rs":                                                      "47e06631f249715a44c9c8fa897faf142ad0fa26f67f8cfd5cd201e82cb1afc8",
 	"libflux/flux-core/src/ast/flatbuffers/ast_generated.rs":                                      "832e5d140b5eacd8c0c79c625e538a268a48e89a613cec84c9f22a7f93040352",
 	"libflux/flux-core/src/ast/flatbuffers/mod.rs":                                                "4e2d11d442ba3985024d5102c22c007dd9686f54cf942e79e5911c367fac7586",
@@ -50,7 +50,7 @@ var sourceHashes = map[string]string{
 	"libflux/flux-core/src/semantic/fs.rs":                                                        "f7f609bc8149769d99b737150e184a2d54029c0b768365dbcf08ff193b0e1f6f",
 	"libflux/flux-core/src/semantic/import.rs":                                                    "184e955211db1ceb1be782b4daf75584b86907b1428e50015497909cfc2dd89a",
 	"libflux/flux-core/src/semantic/infer.rs":                                                     "4f51f0d551ea2ef7e26c3447e18f36de3ecdcc4bf0dffa7da724178bc00c7e5c",
-	"libflux/flux-core/src/semantic/mod.rs":                                                       "bffa695c1f78464e705281054993775f96708b582de57136c8dde6d257f0bdde",
+	"libflux/flux-core/src/semantic/mod.rs":                                                       "74274292bbe821fa3c00a8475123acb986f692db5c454ca2549bf1c9b081d406",
 	"libflux/flux-core/src/semantic/nodes.rs":                                                     "7b2bde881bf36b10fd2e094c654d1c182eb9cda30e22074e0993334092ead1f0",
 	"libflux/flux-core/src/semantic/sub.rs":                                                       "362460a981f4dbcf73e1fd740301d5dd07b9f476604ca9c841259da2b03f8606",
 	"libflux/flux-core/src/semantic/types.rs":                                                     "e1072fe9acf33a957ed50952d25c5b532f75dcda739e3571fc0f020cfc119110",
@@ -68,7 +68,7 @@ var sourceHashes = map[string]string{
 	"libflux/flux/templates/home.html":                                                            "f9927514dd42ca7271b4817ad1ca33ec79c03a77a783581b4dcafabd246ebf3f",
 	"libflux/flux/templates/package.html":                                                         "635e1d638ad1a430f3894ff0a458572ca3c4dc6b9cec2c57fe771443849e1402",
 	"libflux/flux/templates/value.html":                                                           "2af699af2535f83635acbc75c92d2ee941c2335350fc7e82ceb2dccf479360bf",
-	"libflux/include/influxdata/flux.h":                                                           "b21e4a934e84df449d2819ef03c737a5574ebf11adf8c73012248ddc0b569a76",
+	"libflux/include/influxdata/flux.h":                                                           "4de388ba796cae4f7f9a8fcaea21a6815db992a8c46cbebbecdd9517ecea46a0",
 	"stdlib/array/array.flux":                                                                     "178f1a855ac08069a24bb563be808ef4555e3f5f324f1cf7640090488c74d7c2",
 	"stdlib/array/array_test.flux":                                                                "649c3e017bca32c1cdbfef81288f84226dc5cac73be9975cb6b1286cd3637775",
 	"stdlib/array/from_group_test.flux":                                                           "dc83ea6557e19efafe141ee93ab0a71c7488efc9b60ef9c8b31063655a17ae6c",
