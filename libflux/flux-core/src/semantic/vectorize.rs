@@ -9,24 +9,25 @@ use crate::{
             ObjectExpr, Package, Property, Result, ReturnStmt,
         },
         types::{self, Function, Label, MonoType},
-        Symbol,
+        AnalyzerConfig, Feature, Symbol,
     },
 };
 
 /// Vectorizes a pkg
-pub fn vectorize(pkg: &mut Package) -> Result<()> {
+pub fn vectorize(config: &AnalyzerConfig, pkg: &mut Package) -> Result<()> {
     use crate::semantic::walk::{walk_mut, NodeMut, VisitorMut};
-    struct Vectorizer {
+    struct Vectorizer<'a> {
+        config: &'a AnalyzerConfig,
         result: Result<()>,
     }
-    impl VisitorMut for Vectorizer {
+    impl VisitorMut for Vectorizer<'_> {
         fn visit(&mut self, _node: &mut NodeMut) -> bool {
             self.result.is_ok()
         }
 
         fn done(&mut self, node: &mut NodeMut) {
             if let NodeMut::FunctionExpr(function) = node {
-                match function.vectorize() {
+                match function.vectorize(self.config) {
                     Ok(vectorized) => function.vectorized = Some(Box::new(vectorized)),
                     Err(err) => self.result = Err(err),
                 }
@@ -34,15 +35,21 @@ pub fn vectorize(pkg: &mut Package) -> Result<()> {
         }
     }
 
-    let mut visitor = Vectorizer { result: Ok(()) };
+    let mut visitor = Vectorizer {
+        config,
+        result: Ok(()),
+    };
     walk_mut(&mut visitor, NodeMut::Package(pkg));
     visitor.result
 }
 
-type VectorizeEnv = HashMap<Symbol, MonoType>;
+struct VectorizeEnv<'a> {
+    config: &'a AnalyzerConfig,
+    symbols: HashMap<Symbol, MonoType>,
+}
 
 impl Expression {
-    fn vectorize(&self, env: &VectorizeEnv) -> Result<Self> {
+    fn vectorize(&self, env: &VectorizeEnv<'_>) -> Result<Self> {
         Ok(match self {
             Expression::Identifier(identifier) => {
                 Expression::Identifier(identifier.vectorize(env)?)
@@ -78,6 +85,16 @@ impl Expression {
                         ),
                     ));
                 }
+
+                if !env.config.features.contains(&Feature::VectorizeAddition) {
+                    return Err(located(
+                        self.loc().clone(),
+                        ErrorKind::UnableToVectorize(
+                            "Vectorization of addition expression is not enabled".into(),
+                        ),
+                    ));
+                }
+
                 let left = binary.left.vectorize(env)?;
                 let right = binary.right.vectorize(env)?;
                 Expression::Binary(Box::new(BinaryExpr {
@@ -99,8 +116,8 @@ impl Expression {
 }
 
 impl IdentifierExpr {
-    fn vectorize(&self, env: &VectorizeEnv) -> Result<Self> {
-        let typ = env.get(&self.name).unwrap_or(&self.typ).clone();
+    fn vectorize(&self, env: &VectorizeEnv<'_>) -> Result<Self> {
+        let typ = env.symbols.get(&self.name).unwrap_or(&self.typ).clone();
 
         Ok(IdentifierExpr {
             loc: self.loc.clone(),
@@ -111,7 +128,7 @@ impl IdentifierExpr {
 }
 
 impl FunctionExpr {
-    fn vectorize(&self) -> Result<Self> {
+    fn vectorize(&self, config: &AnalyzerConfig) -> Result<Self> {
         if self.params.len() == 1 && self.params[0].key.name == "r" {
             fn vectorize_fields(record: &MonoType) -> MonoType {
                 use crate::semantic::types::Record;
@@ -138,7 +155,10 @@ impl FunctionExpr {
                     (param.key.name.clone(), parameter_type)
                 })
                 .collect();
-            let env: VectorizeEnv = params.iter().cloned().collect();
+            let env = VectorizeEnv {
+                config,
+                symbols: params.iter().cloned().collect(),
+            };
 
             let body = match &self.body {
                 Block::Variable(..) | Block::Expr(..) => {

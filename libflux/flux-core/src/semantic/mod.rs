@@ -400,6 +400,8 @@ pub struct Analyzer<'env, I: import::Importer> {
 #[derive(Clone, Eq, PartialEq, Debug, serde::Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub enum Feature {
+    /// Enables vectorization of addition expressions
+    VectorizeAddition,
     /// Enables vectorization
     VectorizedMap,
 }
@@ -522,7 +524,7 @@ impl<'env, I: import::Importer> Analyzer<'env, I> {
             // return an error if it finds a function can't be vectorized, but we
             // don't expect all functions to be vectorizable. So we just let it
             // vectorize what it can, and fail silently for all other cases.
-            let _ = vectorize::vectorize(&mut sem_pkg);
+            let _ = vectorize::vectorize(&self.config, &mut sem_pkg);
         }
         Ok((env, sem_pkg))
     }

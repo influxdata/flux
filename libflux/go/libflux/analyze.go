@@ -24,6 +24,7 @@ type Options struct {
 
 func NewOptions(ctx context.Context) Options {
 	features := []string{}
+	features = addFlag(ctx, features, feature.VectorizeAddition())
 	features = addFlag(ctx, features, feature.VectorizedMap())
 	return Options{Features: features}
 }

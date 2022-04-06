@@ -182,6 +182,7 @@ func TestVectorizedFns(t *testing.T) {
 				ctx,
 				executetest.TestFlagger{
 					fluxfeature.VectorizedMap().Key(): true,
+					fluxfeature.VectorizeAddition().Key(): true,
 				},
 			)
 			ctx = compiler.RuntimeDependencies{Allocator: mem}.Inject(ctx)
