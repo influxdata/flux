@@ -97,7 +97,7 @@ func (r *runtime) Prelude() values.Scope {
 }
 
 func (r *runtime) Eval(ctx context.Context, astPkg flux.ASTHandle, es interpreter.ExecOptsConfig, opts ...flux.ScopeMutator) ([]interpreter.SideEffect, values.Scope, error) {
-	semPkg, err := AnalyzePackage(astPkg)
+	semPkg, err := AnalyzePackage(ctx, astPkg)
 	if err != nil {
 		return nil, nil, err
 	}

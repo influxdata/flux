@@ -1,6 +1,7 @@
 package semantic_test
 
 import (
+	"context"
 	"testing"
 
 	"github.com/influxdata/flux/runtime"
@@ -24,7 +25,8 @@ func TestSymbol(t *testing.T) {
 	for _, tc := range tcs {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			pkg, err := runtime.AnalyzeSource(tc.fluxSrc)
+			ctx := context.Background()
+			pkg, err := runtime.AnalyzeSource(ctx, tc.fluxSrc)
 			if err != nil {
 				t.Fatal(err)
 			}

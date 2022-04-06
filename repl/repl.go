@@ -49,11 +49,17 @@ func New(ctx context.Context) *REPL {
 		}
 		pkg.Range(scope.Set)
 	}
+
+	analyzer, err := libflux.NewAnalyzerWithOptions(libflux.NewOptions(ctx))
+	if err != nil {
+		panic(err)
+	}
+
 	return &REPL{
 		ctx:      ctx,
 		scope:    scope,
 		itrp:     interpreter.NewInterpreter(nil, &lang.ExecOptsConfig{}),
-		analyzer: libflux.NewAnalyzer(),
+		analyzer: analyzer,
 		importer: importer,
 	}
 }

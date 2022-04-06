@@ -11,7 +11,7 @@ import (
 )
 
 func Eval(ctx context.Context, itrp *interpreter.Interpreter, scope values.Scope, importer interpreter.Importer, src string) ([]interpreter.SideEffect, error) {
-	node, err := runtime.AnalyzeSource(src)
+	node, err := runtime.AnalyzeSource(ctx, src)
 	if err != nil {
 		return nil, errors.Wrap(err, codes.Inherit, "could not analyze program")
 	}

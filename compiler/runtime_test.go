@@ -32,17 +32,20 @@ func TestFunctionValue_Resolve(t *testing.T) {
 	// First create a scope with definitions of x and y
 	scope := values.NewScope()
 	{
-		semPkg, err := runtime.AnalyzeSource(src1)
+		ctx := context.Background()
+		semPkg, err := runtime.AnalyzeSource(ctx, src1)
 		if err != nil {
 			t.Fatal(err)
 		}
 
 		itrp := interpreter.NewInterpreter(nil, nil)
-		_, err = itrp.Eval(context.Background(), semPkg, scope, mockImporter{})
+		_, err = itrp.Eval(ctx, semPkg, scope, mockImporter{})
 		if err != nil {
 			t.Fatal(err)
 		}
 	}
+
+	ctx := context.Background()
 
 	// Create a functionValue from that uses the scope we just created
 	var fnVal functionValue
@@ -53,7 +56,7 @@ func TestFunctionValue_Resolve(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		semPkg, err := runtime.AnalyzePackage(pkg)
+		semPkg, err := runtime.AnalyzePackage(ctx, pkg)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -68,7 +71,7 @@ func TestFunctionValue_Resolve(t *testing.T) {
 
 	var want *semantic.FunctionExpression
 	{
-		pkg, err := runtime.AnalyzeSource(`() => 42 + 100`)
+		pkg, err := runtime.AnalyzeSource(ctx, `() => 42 + 100`)
 		if err != nil {
 			t.Fatal(err)
 		}

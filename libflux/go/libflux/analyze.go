@@ -5,6 +5,7 @@ package libflux
 import "C"
 
 import (
+	"context"
 	"encoding/json"
 	"runtime"
 	"unsafe"
@@ -13,10 +14,20 @@ import (
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/internal/fbsemantic"
+	"github.com/influxdata/flux/internal/feature"
 	"github.com/influxdata/flux/semantic"
 )
 
 type Options struct {
+	features []string
+}
+
+func NewOptions(ctx context.Context) Options {
+	features := []string{}
+	if feature.VectorizedMap().Enabled(ctx) {
+		features = append(features, feature.VectorizedMap().Key())
+	}
+	return Options{features: features}
 }
 
 // SemanticPkg is a Rust pointer to a semantic package.
@@ -52,6 +63,14 @@ func (p *SemanticPkg) Free() {
 	runtime.KeepAlive(p)
 }
 
+func marshalOptions(options Options) (string, error) {
+	byteOptions, err := json.Marshal(options)
+	if err != nil {
+		return "", err
+	}
+	return string(byteOptions), nil
+}
+
 // Analyze parses the given Flux source, performs type inference
 // (taking into account types from prelude and stdlib) and returns
 // an a SemanticPkg containing an opaque pointer to the semantic graph.
@@ -73,11 +92,11 @@ func AnalyzeWithOptions(astPkg *ASTPkg, options Options) (*SemanticPkg, error) {
 		astPkg.ptr = nil
 	}()
 
-	byteOptions, err := json.Marshal(options)
+	stringOptions, err := marshalOptions(options)
 	if err != nil {
 		return nil, err
 	}
-	cOptions := C.CString(string(byteOptions))
+	cOptions := C.CString(stringOptions)
 	defer C.free(unsafe.Pointer(cOptions))
 
 	if err := C.flux_analyze(astPkg.ptr, cOptions, &semPkg); err != nil {
@@ -130,11 +149,11 @@ func NewAnalyzer() *Analyzer {
 }
 
 func NewAnalyzerWithOptions(options Options) (*Analyzer, error) {
-	byteOptions, err := json.Marshal(options)
+	stringOptions, err := marshalOptions(options)
 	if err != nil {
 		return nil, err
 	}
-	cOptions := C.CString(string(byteOptions))
+	cOptions := C.CString(stringOptions)
 	defer C.free(unsafe.Pointer(cOptions))
 
 	ptr := C.flux_new_stateful_analyzer(cOptions)

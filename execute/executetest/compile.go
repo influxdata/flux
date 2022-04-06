@@ -41,7 +41,8 @@ func FunctionExpression(t testing.TB, source string, args ...interface{}) *seman
 		}
 	}
 
-	pkg, err := runtime.AnalyzeSource(source)
+	ctx := context.Background()
+	pkg, err := runtime.AnalyzeSource(ctx, source)
 	if err != nil {
 		t.Fatalf("unexpected error: %s", err)
 	}
@@ -50,7 +51,7 @@ func FunctionExpression(t testing.TB, source string, args ...interface{}) *seman
 	// variables with their values (notably identifiers "true"
 	// and "false" will be replaced with boolean literals)
 	itrp := interpreter.NewInterpreter(nil, nil)
-	se, err := itrp.Eval(context.Background(), pkg, prelude, stdlib)
+	se, err := itrp.Eval(ctx, pkg, prelude, stdlib)
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -51,7 +51,7 @@ func TestExecutionOptions(t *testing.T) {
 	// execution environment.
 	itrp := interpreter.NewInterpreter(nil, &ExecOptsConfig{})
 
-	semPkg, err := runtime.AnalyzePackage(h)
+	semPkg, err := runtime.AnalyzePackage(ctx, h)
 	if err != nil {
 		t.Fatalf("failed to evaluate test case: %v", err)
 	}
