@@ -528,6 +528,13 @@ pub unsafe extern "C" fn flux_analyze_with(
     .unwrap_or_else(|err| Some(err.into()))
 }
 
+/// Features used in the flux compiler
+#[cfg_attr(feature = "serde", derive(serde::Deserialize))]
+pub enum Feature {
+    /// Enables vectorization of addition expressions
+    VectorizeAddition,
+}
+
 /// Compilation options. Deserialized from json when called via the C API
 #[derive(Clone, Default, Debug)]
 #[cfg_attr(feature = "serde", derive(serde::Deserialize))]
