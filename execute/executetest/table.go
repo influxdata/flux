@@ -666,7 +666,7 @@ func (tt TableTest) run(t *testing.T, name string, f func(tt *tableTest)) {
 			TableTest: tt,
 			t:         t,
 			logger:    zaptest.NewLogger(t),
-			alloc:     &memory.GcAllocator{ResourceAllocator: &memory.ResourceAllocator{}},
+			alloc:     memory.NewFluxAllocator(nil),
 		})
 	})
 }
@@ -675,7 +675,7 @@ type tableTest struct {
 	TableTest
 	t      *testing.T
 	logger *zap.Logger
-	alloc  *memory.GcAllocator
+	alloc  memory.FluxAllocator
 }
 
 func (tt *tableTest) do(f func(tbl flux.Table) error) {

@@ -288,7 +288,7 @@ func (p *Program) Start(ctx context.Context, alloc memory.Allocator) (flux.Query
 		}
 	}
 
-	var statsAlloc memory.StatsAllocator
+	var statsAlloc memory.FluxAllocator
 	if feature.SetfinalizerMemoryTracking().Enabled(ctx) {
 		statsAlloc = &memory.GcAllocator{ResourceAllocator: resourceAlloc}
 	} else {

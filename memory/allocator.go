@@ -28,11 +28,14 @@ type Allocator interface {
 	Account(size int) error
 }
 
-type StatsAllocator interface {
+type FluxAllocator interface {
 	Allocator
 
+	Allocated() int64
 	MaxAllocated() int64
 	TotalAllocated() int64
+
+	GC()
 }
 
 // GoAllocator implements a version of the allocator that uses native Go
@@ -70,6 +73,17 @@ type ResourceAllocator struct {
 	// allocate and free memory.
 	// If this is unset, the DefaultAllocator is used.
 	Allocator memory.Allocator
+}
+
+func NewFluxAllocator(allocator memory.Allocator) FluxAllocator {
+	// Avoid nesting multiple ResourceAllocator
+	resourceAlloc, ok := allocator.(*ResourceAllocator)
+	if !ok {
+		resourceAlloc = &ResourceAllocator{
+			Allocator: allocator,
+		}
+	}
+	return resourceAlloc
 }
 
 // Allocate will ensure that the requested memory is available and
@@ -237,6 +251,9 @@ func (a *ResourceAllocator) requestMemory(allocated, want int64) error {
 		Allocated: allocated,
 		Wanted:    want - allocated,
 	}, codes.ResourceExhausted)
+}
+
+func (mem *ResourceAllocator) GC() {
 }
 
 // allocator returns the underlying memory.Allocator that should be used.

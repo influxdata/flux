@@ -106,7 +106,7 @@ func TestVectorizedFns(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			checked := arrow.NewCheckedAllocator(memory.DefaultAllocator)
-			mem := &memory.GcAllocator{ResourceAllocator: &memory.ResourceAllocator{Allocator: checked}}
+			mem := memory.NewFluxAllocator(checked)
 
 			pkg, err := runtime.AnalyzeSource(tc.fn)
 			if err != nil {
@@ -140,7 +140,7 @@ func TestVectorizedFns(t *testing.T) {
 				t.Fatalf("unexpected error: %s", err)
 			}
 
-			want := vectorizedObjectFromMap(tc.want, &memory.GcAllocator{ResourceAllocator: &memory.ResourceAllocator{}})
+			want := vectorizedObjectFromMap(tc.want, memory.NewFluxAllocator(nil))
 			if !cmp.Equal(want, got, CmpOptions...) {
 				t.Errorf("unexpected value -want/+got\n%s", cmp.Diff(want, got, CmpOptions...))
 			}

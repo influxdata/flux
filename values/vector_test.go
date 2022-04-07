@@ -40,7 +40,7 @@ func TestVectorTypes(t *testing.T) {
 		},
 	}
 	for _, tc := range testCases {
-		mem := &memory.GcAllocator{ResourceAllocator: &memory.ResourceAllocator{}}
+		mem := memory.NewFluxAllocator(nil)
 		got := NewVectorFromElements(mem, tc.input...)
 
 		if !got.ElementType().Equal(tc.wantType) {

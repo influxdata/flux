@@ -122,7 +122,7 @@ func TestString(t *testing.T) {
 }
 
 func TestNewStringFromBinaryArray(t *testing.T) {
-	alloc := &fluxmemory.GcAllocator{ResourceAllocator: &fluxmemory.ResourceAllocator{}}
+	alloc := fluxmemory.NewFluxAllocator(nil)
 	// Need to use the Apache binary builder to be able to create an actual
 	// Arrow Binary array.
 	sb := apachearray.NewBinaryBuilder(alloc, array.StringType)
