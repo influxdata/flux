@@ -652,18 +652,20 @@ func (t *transformationTransportAdapter) ProcessMessage(m Message) error {
 	case FinishType:
 		m := m.(FinishMsg)
 
-		// If there are pending buffers that were never flushed,
-		// do that here.
-		if err := t.cache.ForEach(func(key flux.GroupKey, builder table.Builder) error {
-			table, err := builder.Table()
-			if err != nil {
-				return err
-			}
-			return t.t.Process(m.SrcDatasetID(), table)
-		}); err != nil {
-			return err
+		// If there was an error, keep it.
+		err := m.Error()
+		if err == nil {
+			// If there are pending buffers that were never flushed,
+			// do that here. Do this only when an error didn't happen.
+			err = t.cache.ForEach(func(key flux.GroupKey, builder table.Builder) error {
+				table, err := builder.Table()
+				if err != nil {
+					return err
+				}
+				return t.t.Process(m.SrcDatasetID(), table)
+			})
 		}
-		t.t.Finish(m.SrcDatasetID(), m.Error())
+		t.t.Finish(m.SrcDatasetID(), err)
 		return nil
 	case ProcessChunkType:
 		defer m.Ack()
