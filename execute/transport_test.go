@@ -5,9 +5,11 @@ import (
 
 	"github.com/apache/arrow/go/v7/arrow/memory"
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/table"
 	"github.com/influxdata/flux/execute/table/static"
+	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/mock"
 	"github.com/influxdata/flux/values"
 )
@@ -335,6 +337,50 @@ func TestWrapTransformationInTransport(t *testing.T) {
 		// Compare the output to ensure tables were processed correctly.
 		if diff := table.Diff(want, got); diff != "" {
 			t.Errorf("unexpected table data -want/+got:\n%s", diff)
+		}
+	})
+
+	t.Run("ProcessError", func(t *testing.T) {
+		var finished bool
+
+		// Create transformation that errors when it processes a table,
+		// but also tracks if finish is called.
+		tr := execute.WrapTransformationInTransport(&mock.Transformation{
+			ProcessFn: func(id execute.DatasetID, tbl flux.Table) error {
+				return errors.New(codes.Invalid, "expected")
+			},
+			FinishFn: func(id execute.DatasetID, err error) {
+				if err == nil {
+					t.Error("expected error")
+				} else if want, got := "expected", err.Error(); want != got {
+					t.Errorf("unexpected error -want/+got:\n\t- %s\n\t+ %s", want, got)
+				}
+				finished = true
+			},
+		}, memory.DefaultAllocator)
+
+		// Send table chunks which should be buffered.
+		// This should not error as it isn't sent to the transformation yet.
+		if err := want.Do(func(tbl flux.Table) error {
+			return tbl.Do(func(cr flux.ColReader) error {
+				chunk := table.ChunkFromReader(cr)
+				chunk.Retain()
+				m := execute.NewProcessChunkMsg(chunk)
+				return tr.ProcessMessage(m)
+			})
+		}); err != nil {
+			t.Fatalf("unexpected error: %s", err)
+		}
+
+		// Invoke finish on the transport.
+		// The transport should be finished with an error.
+		m := execute.NewFinishMsg(nil)
+		if err := tr.ProcessMessage(m); err != nil {
+			t.Fatalf("unexpected error: %s", err)
+		}
+
+		if !finished {
+			t.Error("expected finish to be invoked with an error")
 		}
 	})
 }
