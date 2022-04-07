@@ -121,25 +121,6 @@ func TestString(t *testing.T) {
 	}
 }
 
-type A struct {
-}
-
-type B struct {
-	A
-}
-
-type C interface {
-	C() string
-}
-
-func (*A) C() string {
-	return "A"
-}
-
-func (*B) C() string {
-	return "B"
-}
-
 func TestNewStringFromBinaryArray(t *testing.T) {
 	alloc := &fluxmemory.GcAllocator{ResourceAllocator: &fluxmemory.ResourceAllocator{}}
 	// Need to use the Apache binary builder to be able to create an actual
