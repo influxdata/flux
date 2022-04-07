@@ -431,3 +431,69 @@ testcase field_type_change {
 
         testing.diff(want: want, got: got) |> yield()
     }
+
+
+testcase vectorize_addition_operator {
+    inData =
+        "
+#datatype,string,long,string,string,dateTime:RFC3339,double
+#group,false,false,true,true,false,false
+#default,_result,,,,,
+,result,table,_measurement,_field,_time,_value
+,,0,m,a,2018-01-01T00:00:00Z,1
+,,0,m,a,2018-01-02T00:00:00Z,2
+,,0,m,a,2018-01-03T00:00:00Z,3
+
+#datatype,string,long,string,string,dateTime:RFC3339,double
+#group,false,false,true,true,false,false
+#default,_result,,,,,
+,result,table,_measurement,_field,_time,_value
+,,0,m,b,2018-01-01T00:00:00Z,3
+,,0,m,b,2018-01-02T00:00:00Z,4
+,,0,m,b,2018-01-03T00:00:00Z,5
+
+
+#datatype,string,long,string,string,dateTime:RFC3339,double
+#group,false,false,true,true,false,false
+#default,_result,,,,,
+,result,table,_measurement,_field,_time,_value
+,,0,n,a,2018-01-04T00:00:00Z,10
+,,0,n,a,2018-01-05T00:00:00Z,20
+,,0,n,a,2018-01-06T00:00:00Z,30
+
+#datatype,string,long,string,string,dateTime:RFC3339,double
+#group,false,false,true,true,false,false
+#default,_result,,,,,
+,result,table,_measurement,_field,_time,_value
+,,0,n,b,2018-01-04T00:00:00Z,30
+,,0,n,b,2018-01-05T00:00:00Z,40
+,,0,n,b,2018-01-06T00:00:00Z,50
+"
+    outData =
+        "
+#datatype,string,long,string,dateTime:RFC3339,double,double,double
+#group,false,false,true,false,false,false,false
+#default,_result,,,,,,
+,result,table,_measurement,_time,a,b,x
+,,0,m,2018-01-01T00:00:00Z,1,3,4
+,,0,m,2018-01-02T00:00:00Z,2,4,6
+,,0,m,2018-01-03T00:00:00Z,3,5,8
+
+#datatype,string,long,string,dateTime:RFC3339,double,double,double
+#group,false,false,true,false,false,false,false
+#default,_result,,,,,,
+,result,table,_measurement,_time,a,b,x
+,,0,n,2018-01-04T00:00:00Z,10,30,40
+,,0,n,2018-01-05T00:00:00Z,20,40,60
+,,0,n,2018-01-06T00:00:00Z,30,50,80
+"
+
+    got =
+        csv.from(csv: inData)
+            |> testing.load()
+            |> pivot(rowKey: ["_time"], columnKey: ["_field"], valueColumn: "_value")
+            |> map(fn: (r) => ({r with x: r.a + r.b}))
+    want = csv.from(csv: outData)
+
+    testing.diff(want: want, got: got) |> yield()
+}
