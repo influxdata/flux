@@ -229,7 +229,7 @@ func TestColListTable(t *testing.T) {
 
 func TestColListTable_AppendNil(t *testing.T) {
 	key := execute.NewGroupKey(nil, nil)
-	tb := execute.NewColListTableBuilder(key, memory.NewFluxAllocator(nil))
+	tb := execute.NewColListTableBuilder(key, memory.NewResourceAllocator(nil))
 
 	// Add a column for the value.
 	idx, _ := tb.AddCol(flux.ColMeta{
@@ -268,7 +268,7 @@ func TestColListTable_AppendNil(t *testing.T) {
 
 func TestColListTable_SetNil(t *testing.T) {
 	key := execute.NewGroupKey(nil, nil)
-	tb := execute.NewColListTableBuilder(key, memory.NewFluxAllocator(nil))
+	tb := execute.NewColListTableBuilder(key, memory.NewResourceAllocator(nil))
 
 	// Add a column for the value.
 	idx, _ := tb.AddCol(flux.ColMeta{
@@ -307,7 +307,7 @@ func TestColListTable_SetNil(t *testing.T) {
 }
 
 func TestCopyTable(t *testing.T) {
-	alloc := memory.NewFluxAllocator(nil)
+	alloc := memory.NewResourceAllocator(nil)
 
 	input, err := gen.Input(context.Background(), gen.Schema{
 		Tags: []gen.Tag{
@@ -363,7 +363,6 @@ func TestCopyTable(t *testing.T) {
 		buf.Done()
 	}
 
-	alloc.GC()
 	// Ensure there has been no memory leak.
 	if got, want := alloc.Allocated(), int64(0); got != want {
 		t.Errorf("memory leak -want/+got:\n\t- %d\n\t+ %d", want, got)
@@ -450,7 +449,7 @@ func TestColListTableBuilder_AppendValues(t *testing.T) {
 			name: "Strings",
 			typ:  flux.TString,
 			values: func() array.Array {
-				b := arrow.NewStringBuilder(memory.NewFluxAllocator(nil))
+				b := arrow.NewStringBuilder(memory.NewResourceAllocator(nil))
 				b.Append("a")
 				b.Append("d")
 				b.AppendNull()
@@ -518,7 +517,7 @@ func TestColListTableBuilder_AppendValues(t *testing.T) {
 	} {
 		t.Run(tt.name, func(t *testing.T) {
 			key := execute.NewGroupKey(nil, nil)
-			b := execute.NewColListTableBuilder(key, memory.NewFluxAllocator(nil))
+			b := execute.NewColListTableBuilder(key, memory.NewResourceAllocator(nil))
 			if _, err := b.AddCol(flux.ColMeta{Label: "_value", Type: tt.typ}); err != nil {
 				t.Fatal(err)
 			}

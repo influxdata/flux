@@ -666,7 +666,7 @@ func (tt TableTest) run(t *testing.T, name string, f func(tt *tableTest)) {
 			TableTest: tt,
 			t:         t,
 			logger:    zaptest.NewLogger(t),
-			alloc:     memory.NewFluxAllocator(nil),
+			alloc:     memory.NewResourceAllocator(nil),
 		})
 	})
 }
@@ -675,7 +675,7 @@ type tableTest struct {
 	TableTest
 	t      *testing.T
 	logger *zap.Logger
-	alloc  memory.FluxAllocator
+	alloc  *memory.ResourceAllocator
 }
 
 func (tt *tableTest) do(f func(tbl flux.Table) error) {
@@ -709,8 +709,6 @@ func (tt *tableTest) finish(allocatorUsed bool) {
 			tt.t.Error("memory allocator was not used")
 		}
 	}
-
-	tt.alloc.GC()
 
 	// Verify that all memory is correctly released if we use the table properly.
 	if got := tt.alloc.Allocated(); got != 0 {
