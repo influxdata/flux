@@ -84,7 +84,7 @@ void test_semantic() {
 
     printf("Analyzing (expect success)\n");
     struct flux_semantic_pkg_t* sem_pkg = NULL;
-    struct flux_error_t* err = flux_analyze(ast_pkg_foo, &sem_pkg);
+    struct flux_error_t* err = flux_analyze(ast_pkg_foo, "", &sem_pkg);
     assert(err == NULL);
 
     printf("Marshaling to FlatBuffer\n");
@@ -104,7 +104,7 @@ void test_semantic() {
 
     printf("Analyzing (expect failure)\n");
     struct flux_semantic_pkg_t* sem_pkg = NULL;
-    struct flux_error_t* err = flux_analyze(ast_pkg_foo, &sem_pkg);
+    struct flux_error_t* err = flux_analyze(ast_pkg_foo, "", &sem_pkg);
     assert(err != NULL);
     assert(sem_pkg == NULL);
     const char* err_str = flux_error_str(err);
@@ -145,7 +145,7 @@ void test_semantic() {
 void test_stateful_analyzer() {
   printf("Testing semantic analyzer...\n");
 
-  struct flux_stateful_analyzer_t *analyzer = flux_new_stateful_analyzer();
+  struct flux_stateful_analyzer_t *analyzer = flux_new_stateful_analyzer("");
 
   struct flux_ast_pkg_t *ast_pkg = NULL;
   struct flux_semantic_pkg_t *sem_pkg = NULL;

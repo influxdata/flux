@@ -118,7 +118,10 @@ func TestRowMapFn_Eval(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
-			pkg, err := runtime.AnalyzeSource(tc.f)
+			// ctx := dependenciestest.Default().Inject(context.Background())
+			ctx := context.TODO()
+
+			pkg, err := runtime.AnalyzeSource(ctx, tc.f)
 			if err != nil {
 				t.Fatalf("unexpected error: %s", err)
 			}
@@ -147,8 +150,6 @@ func TestRowMapFn_Eval(t *testing.T) {
 				want = append(want, obj)
 			}
 
-			// ctx := dependenciestest.Default().Inject(context.Background())
-			ctx := context.TODO()
 			got := make([]values.Object, 0, len(tc.data.Data))
 			if err := tc.data.Do(func(cr flux.ColReader) error {
 				for i := 0; i < cr.Len(); i++ {
@@ -172,7 +173,8 @@ func TestRowMapFn_Eval(t *testing.T) {
 
 func testRowPredicateFn_EvalRow(t *testing.T, scope compiler.Scope) {
 	gt2F := func() *execute.RowPredicateFn {
-		pkg, err := runtime.AnalyzeSource(`(r) => r._value > 2.0`)
+		ctx := context.Background()
+		pkg, err := runtime.AnalyzeSource(ctx, `(r) => r._value > 2.0`)
 		if err != nil {
 			t.Fatalf("unexpected error: %s", err)
 		}

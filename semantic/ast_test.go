@@ -1,6 +1,7 @@
 package semantic_test
 
 import (
+	"context"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -139,7 +140,8 @@ exists r.b
 		},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
-			want, err := runtime.AnalyzeSource(prelude + tt.s)
+			ctx := context.Background()
+			want, err := runtime.AnalyzeSource(ctx, prelude+tt.s)
 			if err != nil {
 				t.Fatalf("unexpected error analyzing source: %s", err)
 			}
@@ -150,7 +152,7 @@ exists r.b
 				t.Fatalf("unexpected error from formatter: %s", err)
 			}
 
-			got, err := runtime.AnalyzeSource(fmtdAst)
+			got, err := runtime.AnalyzeSource(ctx, fmtdAst)
 			if err != nil {
 				t.Fatalf("unexpected error analyzing generated AST: %s", err)
 			}

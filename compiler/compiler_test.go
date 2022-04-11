@@ -578,7 +578,8 @@ func TestCompileAndEval(t *testing.T) {
 	for _, tc := range testCases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			pkg, err := runtime.AnalyzeSource(tc.fn)
+			ctx := context.Background()
+			pkg, err := runtime.AnalyzeSource(ctx, tc.fn)
 			if err != nil {
 				t.Fatalf("unexpected error: %s", err)
 			}
@@ -775,7 +776,8 @@ func TestRuntimeTypeErrors(t *testing.T) {
 	for _, tc := range testCases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			pkg, err := runtime.AnalyzeSource(tc.fn)
+			ctx := context.Background()
+			pkg, err := runtime.AnalyzeSource(ctx, tc.fn)
 			if err != nil {
 				t.Fatalf("unexpected error during analysis: %s", err)
 			}
@@ -834,7 +836,8 @@ func TestCompiler_ReturnType(t *testing.T) {
 	for _, tc := range testCases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			pkg, err := runtime.AnalyzeSource(tc.fn)
+			ctx := context.Background()
+			pkg, err := runtime.AnalyzeSource(ctx, tc.fn)
 			if err != nil {
 				t.Fatalf("unexpected error: %s", err)
 			}

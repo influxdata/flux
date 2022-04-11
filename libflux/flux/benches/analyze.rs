@@ -14,7 +14,7 @@ from(bucket:"test")
 |> mean()"#;
         let pkg = flux::parse("".into(), source);
         b.iter(black_box(|| {
-            flux::analyze(&pkg).unwrap();
+            flux::analyze(&pkg, Default::default()).unwrap();
         }));
     });
     group.finish();

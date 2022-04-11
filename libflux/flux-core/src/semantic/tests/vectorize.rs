@@ -3,10 +3,18 @@ use crate::semantic::{
     import::Packages,
     nodes::{FunctionExpr, Package},
     walk::{walk, Node},
+    AnalyzerConfig, Feature,
 };
 
 fn vectorize(src: &str) -> anyhow::Result<Package> {
-    let mut analyzer = Analyzer::new(Default::default(), Packages::default(), Default::default());
+    let mut analyzer = Analyzer::new(
+        Default::default(),
+        Packages::default(),
+        AnalyzerConfig {
+            features: vec![Feature::VectorizedMap],
+            ..AnalyzerConfig::default()
+        },
+    );
     let (_, mut pkg) = analyzer
         .analyze_source("main".into(), "".into(), src)
         .map_err(|err| err.error)?;

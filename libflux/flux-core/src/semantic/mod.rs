@@ -396,12 +396,23 @@ pub struct Analyzer<'env, I: import::Importer> {
     config: AnalyzerConfig,
 }
 
+/// Features used in the flux compiler
+#[derive(Clone, Eq, PartialEq, Debug, serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub enum Feature {
+    /// Enables vectorization
+    VectorizedMap,
+}
+
 /// A set of configuration options for the behavior of an Analyzer.
 #[derive(Default)]
 pub struct AnalyzerConfig {
     /// If true no AST or Semantic checks are performed.
     /// Default is false.
     pub skip_checks: bool,
+
+    /// Features used in the flux compiler
+    pub features: Vec<Feature>,
 }
 
 impl<'env, I: import::Importer> Analyzer<'env, I> {
@@ -506,11 +517,13 @@ impl<'env, I: import::Importer> Analyzer<'env, I> {
             });
         }
 
-        // Try to vectorize all the function expressions in a package. This will
-        // return an error if it finds a function can't be vectorized, but we
-        // don't expect all functions to be vectorizable. So we just let it
-        // vectorize what it can, and fail silently for all other cases.
-        let _ = vectorize::vectorize(&mut sem_pkg);
+        if self.config.features.contains(&Feature::VectorizedMap) {
+            // Try to vectorize all the function expressions in a package. This will
+            // return an error if it finds a function can't be vectorized, but we
+            // don't expect all functions to be vectorizable. So we just let it
+            // vectorize what it can, and fail silently for all other cases.
+            let _ = vectorize::vectorize(&mut sem_pkg);
+        }
         Ok((env, sem_pkg))
     }
 

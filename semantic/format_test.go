@@ -1,6 +1,7 @@
 package semantic_test
 
 import (
+	"context"
 	"fmt"
 	"strings"
 	"testing"
@@ -41,7 +42,8 @@ func TestFormatted(t *testing.T) {
 	for _, tc := range tcs {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			semPkg, err := runtime.AnalyzeSource(strings.Join(defs, "\n") + tc.flux)
+			ctx := context.Background()
+			semPkg, err := runtime.AnalyzeSource(ctx, strings.Join(defs, "\n")+tc.flux)
 			if err != nil {
 				t.Fatal(err)
 			}

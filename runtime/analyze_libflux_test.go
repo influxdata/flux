@@ -1,6 +1,7 @@
 package runtime_test
 
 import (
+	"context"
 	"errors"
 	"testing"
 
@@ -26,7 +27,8 @@ func TestAnalyzeSource(t *testing.T) {
 	for _, tc := range tcs {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			_, err := runtime.AnalyzeSource(tc.flx)
+			ctx := context.Background()
+			_, err := runtime.AnalyzeSource(ctx, tc.flx)
 			if err != nil {
 				if tc.err == nil {
 					t.Fatalf("expected no error, got %v", err)
