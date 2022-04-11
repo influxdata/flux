@@ -247,10 +247,10 @@ func (a *ResourceAllocator) allocator() memory.Allocator {
 }
 
 type GcAllocator struct {
-	mem *ResourceAllocator
+	mem Allocator
 }
 
-func NewGcAllocator(mem *ResourceAllocator) *GcAllocator {
+func NewGcAllocator(mem Allocator) *GcAllocator {
 	return &GcAllocator{
 		mem: mem,
 	}
@@ -299,14 +299,6 @@ func (a *GcAllocator) Free(b []byte) {
 }
 
 func (a *GcAllocator) Account(size int) error { return a.mem.Account(size) }
-
-func (a *GcAllocator) Allocated() int64 {
-	return a.mem.Allocated()
-}
-
-func (a *GcAllocator) MaxAllocated() int64 {
-	return a.mem.MaxAllocated()
-}
 
 // Manager will manage the memory allowed for the Allocator.
 // The Allocator may use the Manager to request additional memory or to
