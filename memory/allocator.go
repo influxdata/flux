@@ -66,14 +66,9 @@ type ResourceAllocator struct {
 }
 
 func NewResourceAllocator(allocator memory.Allocator) *ResourceAllocator {
-	// Avoid nesting multiple ResourceAllocator
-	resourceAlloc, ok := allocator.(*ResourceAllocator)
-	if !ok {
-		resourceAlloc = &ResourceAllocator{
-			Allocator: allocator,
-		}
+	return &ResourceAllocator{
+		Allocator: allocator,
 	}
-	return resourceAlloc
 }
 
 // Allocate will ensure that the requested memory is available and
@@ -255,8 +250,8 @@ type GcAllocator struct {
 	mem *ResourceAllocator
 }
 
-func NewGcAllocator(mem *ResourceAllocator) GcAllocator {
-	return GcAllocator{
+func NewGcAllocator(mem *ResourceAllocator) *GcAllocator {
+	return &GcAllocator{
 		mem: mem,
 	}
 }
