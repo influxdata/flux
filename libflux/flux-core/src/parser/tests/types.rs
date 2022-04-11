@@ -624,9 +624,7 @@ fn test_parse_record_type_string_literal_property() {
             RecordType {
                 base: BaseNode {
                     location: SourceLocation {
-                        file: Some(
-                            "",
-                        ),
+                        file: None,
                         start: Position {
                             line: 1,
                             column: 1,
@@ -647,9 +645,7 @@ fn test_parse_record_type_string_literal_property() {
                     PropertyType {
                         base: BaseNode {
                             location: SourceLocation {
-                                file: Some(
-                                    "",
-                                ),
+                                file: None,
                                 start: Position {
                                     line: 1,
                                     column: 2,
@@ -669,9 +665,7 @@ fn test_parse_record_type_string_literal_property() {
                             StringLit {
                                 base: BaseNode {
                                     location: SourceLocation {
-                                        file: Some(
-                                            "",
-                                        ),
+                                        file: None,
                                         start: Position {
                                             line: 1,
                                             column: 2,
@@ -694,9 +688,7 @@ fn test_parse_record_type_string_literal_property() {
                             NamedType {
                                 base: BaseNode {
                                     location: SourceLocation {
-                                        file: Some(
-                                            "",
-                                        ),
+                                        file: None,
                                         start: Position {
                                             line: 1,
                                             column: 6,
@@ -715,9 +707,7 @@ fn test_parse_record_type_string_literal_property() {
                                 name: Identifier {
                                     base: BaseNode {
                                         location: SourceLocation {
-                                            file: Some(
-                                                "",
-                                            ),
+                                            file: None,
                                             start: Position {
                                                 line: 1,
                                                 column: 6,
@@ -741,9 +731,7 @@ fn test_parse_record_type_string_literal_property() {
                     PropertyType {
                         base: BaseNode {
                             location: SourceLocation {
-                                file: Some(
-                                    "",
-                                ),
+                                file: None,
                                 start: Position {
                                     line: 1,
                                     column: 11,
@@ -763,9 +751,7 @@ fn test_parse_record_type_string_literal_property() {
                             Identifier {
                                 base: BaseNode {
                                     location: SourceLocation {
-                                        file: Some(
-                                            "",
-                                        ),
+                                        file: None,
                                         start: Position {
                                             line: 1,
                                             column: 11,
@@ -788,9 +774,7 @@ fn test_parse_record_type_string_literal_property() {
                             NamedType {
                                 base: BaseNode {
                                     location: SourceLocation {
-                                        file: Some(
-                                            "",
-                                        ),
+                                        file: None,
                                         start: Position {
                                             line: 1,
                                             column: 13,
@@ -809,9 +793,7 @@ fn test_parse_record_type_string_literal_property() {
                                 name: Identifier {
                                     base: BaseNode {
                                         location: SourceLocation {
-                                            file: Some(
-                                                "",
-                                            ),
+                                            file: None,
                                             start: Position {
                                                 line: 1,
                                                 column: 13,
@@ -835,7 +817,8 @@ fn test_parse_record_type_string_literal_property() {
                 ],
             },
         )
-    "#]].assert_debug_eq(&parsed);
+    "#]]
+    .assert_debug_eq(&parsed);
 }
 
 #[test]
