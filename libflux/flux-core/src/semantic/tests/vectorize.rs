@@ -3,7 +3,7 @@ use crate::semantic::{
     import::Packages,
     nodes::{FunctionExpr, Package},
     walk::{walk, Node},
-    AnalyzerConfig,
+    AnalyzerConfig, Feature,
 };
 
 fn vectorize(src: &str) -> anyhow::Result<Package> {
@@ -11,7 +11,7 @@ fn vectorize(src: &str) -> anyhow::Result<Package> {
         Default::default(),
         Packages::default(),
         AnalyzerConfig {
-            features: vec![Feature::VectorizeAddition],
+            features: vec![Feature::VectorizedMap],
             ..AnalyzerConfig::default()
         },
     );
@@ -19,7 +19,7 @@ fn vectorize(src: &str) -> anyhow::Result<Package> {
         .analyze_source("main".into(), "".into(), src)
         .map_err(|err| err.error)?;
 
-    semantic::vectorize::vectorize(&AnalyzerConfig::default(), &mut pkg)?;
+    semantic::vectorize::vectorize(&mut pkg)?;
     Ok(pkg)
 }
 
