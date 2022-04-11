@@ -49,13 +49,19 @@ pub fn imports() -> Option<Packages> {
     flatbuffers::root::<fb::Packages>(buf).unwrap().into()
 }
 
+static IMPORTS: Lazy<Option<Packages>> = Lazy::new(imports);
+
 /// Creates a new analyzer that can semantically analyze Flux source code.
 ///
 /// The analyzer is aware of the stdlib and prelude.
-pub fn new_semantic_analyzer(config: AnalyzerConfig) -> Result<Analyzer<'static, Packages>> {
+pub fn new_semantic_analyzer(
+    config: AnalyzerConfig,
+) -> Result<Analyzer<'static, &'static Packages>> {
     let env = PRELUDE.as_ref().ok_or_else(|| anyhow!("missing prelude"))?;
 
-    let importer = imports().ok_or_else(|| anyhow!("missing stdlib inports"))?;
+    let importer = IMPORTS
+        .as_ref()
+        .ok_or_else(|| anyhow!("missing stdlib imports"))?;
 
     Ok(Analyzer::new(Environment::from(env), importer, config))
 }
