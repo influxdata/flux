@@ -30,7 +30,7 @@ import "experimental"
 // ## Metadata
 // tags: inputs,prometheus
 //
-builtin scrape : (url: string) => [A] where A: Record
+builtin scrape : (url: string) => stream[A] where A: Record
 
 // histogramQuantile calculates a quantile on a set of Prometheus histogram values.
 //
