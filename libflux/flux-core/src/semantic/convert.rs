@@ -578,8 +578,12 @@ impl<'a> Converter<'a> {
                     }
                 };
                 for prop in &rec.properties {
+                    let name = match &prop.name {
+                        ast::PropertyKey::Identifier(id) => &id.name,
+                        ast::PropertyKey::StringLit(lit) => &lit.value,
+                    };
                     let property = types::Property {
-                        k: types::Label::from(self.symbols.lookup(&prop.name.name)),
+                        k: types::Label::from(self.symbols.lookup(name)),
                         v: self.convert_monotype(&prop.monotype, tvars),
                     };
                     r = MonoType::from(types::Record::Extension {

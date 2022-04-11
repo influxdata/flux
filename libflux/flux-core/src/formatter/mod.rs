@@ -449,7 +449,7 @@ impl<'doc> Formatter<'doc> {
                             n.properties.iter().map(|p| {
                                 docs![
                                     arena,
-                                    self.format_identifier(&p.name),
+                                    self.format_property_key(&p.name),
                                     ": ",
                                     self.format_monotype(&p.monotype),
                                 ]

@@ -586,7 +586,8 @@ fn test_json_record() {
             name: Identifier {
                 base: BaseNode::default(),
                 name: "A".to_string(),
-            },
+            }
+            .into(),
             monotype: MonoType::Basic(NamedType {
                 base: BaseNode::default(),
                 name: Identifier {
@@ -626,7 +627,8 @@ fn test_json_record_no_tvar() {
             name: Identifier {
                 base: BaseNode::default(),
                 name: "A".to_string(),
-            },
+            }
+            .into(),
             monotype: MonoType::Basic(NamedType {
                 base: BaseNode::default(),
                 name: Identifier {

@@ -323,6 +323,18 @@ pub enum PropertyKey {
     StringLit(StringLit),
 }
 
+impl From<Identifier> for PropertyKey {
+    fn from(id: Identifier) -> Self {
+        Self::Identifier(id)
+    }
+}
+
+impl From<StringLit> for PropertyKey {
+    fn from(lit: StringLit) -> Self {
+        Self::StringLit(lit)
+    }
+}
+
 impl PropertyKey {
     /// Returns the [`BaseNode`] for a [`PropertyKey`].
     pub fn base(&self) -> &BaseNode {
@@ -762,7 +774,7 @@ pub struct PropertyType {
     #[serde(default)]
     #[serde(flatten)]
     pub base: BaseNode,
-    pub name: Identifier,
+    pub name: PropertyKey,
     pub monotype: MonoType,
 }
 
