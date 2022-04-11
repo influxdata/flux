@@ -1,10 +1,9 @@
 package array
 
 import (
+    "github.com/apache/arrow/go/v7/arrow/memory"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/internal/errors"
-
-    "github.com/apache/arrow/go/v7/arrow/memory"
 )
 
 {{range .}}
@@ -13,7 +12,7 @@ import (
 func {{.Name}}Add(l, r *{{.Name}}, mem memory.Allocator) (*{{.Name}}, error) {
 	n := l.Len()
 	if n != r.Len() {
-		return nil, errors.Newf(codes.Invalid, "Vectors must have equal length for binary operations")
+		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
 	}
 
 	b := New{{.Name}}Builder(mem)

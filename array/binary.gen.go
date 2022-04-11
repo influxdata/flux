@@ -7,16 +7,15 @@
 package array
 
 import (
+	"github.com/apache/arrow/go/v7/arrow/memory"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/internal/errors"
-
-	"github.com/apache/arrow/go/v7/arrow/memory"
 )
 
 func IntAdd(l, r *Int, mem memory.Allocator) (*Int, error) {
 	n := l.Len()
 	if n != r.Len() {
-		return nil, errors.Newf(codes.Invalid, "Vectors must have equal length for binary operations")
+		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
 	}
 
 	b := NewIntBuilder(mem)
@@ -34,7 +33,7 @@ func IntAdd(l, r *Int, mem memory.Allocator) (*Int, error) {
 func UintAdd(l, r *Uint, mem memory.Allocator) (*Uint, error) {
 	n := l.Len()
 	if n != r.Len() {
-		return nil, errors.Newf(codes.Invalid, "Vectors must have equal length for binary operations")
+		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
 	}
 
 	b := NewUintBuilder(mem)
@@ -52,7 +51,7 @@ func UintAdd(l, r *Uint, mem memory.Allocator) (*Uint, error) {
 func FloatAdd(l, r *Float, mem memory.Allocator) (*Float, error) {
 	n := l.Len()
 	if n != r.Len() {
-		return nil, errors.Newf(codes.Invalid, "Vectors must have equal length for binary operations")
+		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
 	}
 
 	b := NewFloatBuilder(mem)
@@ -70,7 +69,7 @@ func FloatAdd(l, r *Float, mem memory.Allocator) (*Float, error) {
 func StringAdd(l, r *String, mem memory.Allocator) (*String, error) {
 	n := l.Len()
 	if n != r.Len() {
-		return nil, errors.Newf(codes.Invalid, "Vectors must have equal length for binary operations")
+		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
 	}
 
 	b := NewStringBuilder(mem)
