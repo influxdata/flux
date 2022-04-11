@@ -1,7 +1,6 @@
 //! Abstract syntax tree (AST).
 
 pub mod check;
-pub mod flatbuffers;
 pub mod walk;
 
 use std::{collections::HashMap, fmt, str::FromStr, vec::Vec};
