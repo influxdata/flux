@@ -32,7 +32,6 @@ STDLIB_SOURCES = $(shell find . -name '*.flux')
 
 GENERATED_TARGETS = \
 	internal/feature/flags.go \
-	ast/internal/fbast/ast_generated.go \
 	ast/asttest/cmpopts.go \
 	stdlib/packages.go \
 	internal/fbsemantic/semantic_generated.go \
@@ -40,15 +39,9 @@ GENERATED_TARGETS = \
 	$(LIBFLUX_GENERATED_TARGETS)
 
 LIBFLUX_GENERATED_TARGETS = \
-	libflux/flux-core/src/ast/flatbuffers/ast_generated.rs \
 	libflux/flux-core/src/semantic/flatbuffers/semantic_generated.rs
 
 generate: $(GENERATED_TARGETS)
-
-ast/internal/fbast/ast_generated.go: ast/ast.fbs
-	$(GO_GENERATE) ./ast
-libflux/flux-core/src/ast/flatbuffers/ast_generated.rs: ast/ast.fbs
-	flatc --rust -o libflux/flux-core/src/ast/flatbuffers ast/ast.fbs && rustfmt $@
 
 internal/fbsemantic/semantic_generated.go: internal/fbsemantic/semantic.fbs
 	$(GO_GENERATE) ./internal/fbsemantic
