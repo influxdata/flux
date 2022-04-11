@@ -226,36 +226,6 @@ pub unsafe extern "C" fn flux_ast_marshal_json(
     .unwrap_or_else(|err| Some(err.into()))
 }
 
-/// flux_ast_marshal_fb serializes the given AST package to a flatbuffer.
-///
-/// # Safety
-///
-/// This function is unsafe because it takes a dereferences a raw pointer passed
-/// in as a parameter. For example, if that pointer is NULL, undefined behavior
-/// could occur.
-#[no_mangle]
-pub unsafe extern "C" fn flux_ast_marshal_fb(
-    ast_pkg: *const ast::Package,
-    buf: *mut flux_buffer_t,
-) -> Option<Box<ErrorHandle>> {
-    catch_unwind(|| {
-        let ast_pkg = &*ast_pkg;
-        let (mut vec, offset) = match ast::flatbuffers::serialize(ast_pkg) {
-            Ok(vec_offset) => vec_offset,
-            Err(err) => {
-                return Some(Error::from(err).into());
-            }
-        };
-
-        // Note, split_off() does a copy: https://github.com/influxdata/flux/issues/2194
-        let data = vec.split_off(offset);
-        (*buf).len = data.len();
-        (*buf).data = Box::into_raw(data.into_boxed_slice()) as *mut u8;
-        None
-    })
-    .unwrap_or_else(|err| Some(err.into()))
-}
-
 /// Frees a semantic package.
 #[no_mangle]
 pub extern "C" fn flux_free_semantic_pkg(_: Option<Box<semantic::nodes::Package>>) {}

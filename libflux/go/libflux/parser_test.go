@@ -9,7 +9,6 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/influxdata/flux/ast"
-	"github.com/influxdata/flux/ast/asttest"
 	"github.com/influxdata/flux/libflux/go/libflux"
 )
 
@@ -31,12 +30,6 @@ from(bucket: "telegraf")
 		panic(err)
 	}
 	fmt.Printf("json has %v bytes:\n%v\n", len(jsonBuf), string(jsonBuf))
-
-	fbBuf, err := ast.MarshalFB()
-	if err != nil {
-		panic(err)
-	}
-	fmt.Printf("flatbuffer has %v bytes\n", len(fbBuf))
 
 	ast.Free()
 }
@@ -90,51 +83,6 @@ b = 1`)
 	err := libflux.MergePackages(outPkg, inPkg)
 	if err != nil {
 		t.Fatal(err)
-	}
-
-	gotFB, err := outPkg.MarshalFB()
-	if err != nil {
-		t.Fatal(err)
-	}
-	got := ast.DeserializeFromFlatBuffer(gotFB)
-
-	want := &ast.Package{
-		Package: "foo",
-		Files: []*ast.File{
-			{
-				Name:     "",
-				Metadata: "parser-type=rust",
-				Package: &ast.PackageClause{
-					Name: &ast.Identifier{Name: "foo"},
-				},
-				Body: []ast.Statement{
-					&ast.VariableAssignment{
-						ID:   &ast.Identifier{Name: "a"},
-						Init: &ast.IntegerLiteral{Value: 1},
-					},
-				},
-			},
-			{
-				Name:     "",
-				Metadata: "parser-type=rust",
-				Package: &ast.PackageClause{
-					Name: &ast.Identifier{Name: "foo"},
-				},
-				Body: []ast.Statement{
-					&ast.VariableAssignment{
-						ID:   &ast.Identifier{Name: "b"},
-						Init: &ast.IntegerLiteral{Value: 1},
-					},
-				},
-			},
-		},
-	}
-
-	if !cmp.Equal(got, want, asttest.IgnoreBaseNodeOptions...) {
-		t.Errorf(
-			"MergePackages unexpected packages -want/+got:\n %v",
-			cmp.Diff(want, got, asttest.IgnoreBaseNodeOptions...),
-		)
 	}
 }
 

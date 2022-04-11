@@ -36,12 +36,6 @@ void test_ast() {
     printf("  json buffer is length %ld\n", buf.len);
     flux_free_bytes(buf.data);
 
-    printf("Marshaling to FlatBuffer\n");
-    err = flux_ast_marshal_fb(ast_pkg_foo, &buf);
-    assert(err == NULL);
-    printf("  FlatBuffer is length %ld\n", buf.len);
-    flux_free_bytes(buf.data);
-
     flux_free_ast_pkg(ast_pkg_foo);
   }
   {

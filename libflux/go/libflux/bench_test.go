@@ -44,14 +44,6 @@ func BenchmarkRustParse(b *testing.B) {
 			name: "rust parse and deserialize JSON",
 			fn:   ParseAndDeserializeJSON,
 		},
-		{
-			name: "rust parse and return flatbuffer",
-			fn:   ParseAndReturnFB,
-		},
-		{
-			name: "rust parse and deserialize flatbuffer",
-			fn:   ParseAndDeserializeFB,
-		},
 	}
 	for _, bc := range bcs {
 		bc := bc
@@ -95,29 +87,5 @@ func ParseAndDeserializeJSON(fluxFile string) error {
 	if err := d.Decode(pkg); err != nil {
 		return err
 	}
-	return nil
-}
-
-func ParseAndReturnFB(fluxFile string) error {
-	p := libflux.ParseString(fluxFile)
-	defer p.Free()
-	if _, err := p.MarshalFB(); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func ParseAndDeserializeFB(fluxFile string) error {
-	p := libflux.ParseString(fluxFile)
-	defer p.Free()
-	bs, err := p.MarshalFB()
-	if err != nil {
-		return err
-	}
-	if _ = ast.DeserializeFromFlatBuffer(bs); err != nil {
-		return err
-	}
-
 	return nil
 }
