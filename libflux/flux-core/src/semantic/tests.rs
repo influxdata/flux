@@ -298,7 +298,7 @@ macro_rules! test_infer_err {
 /// ```
 ///
 macro_rules! test_error_msg {
-    ( $(test: $test: ident,)? $(imp: $imp:expr,)? $(env: $env:expr,)? src: $src:expr $(,)?, expect: $expect:expr $(,)? ) => {
+    ( $(config: $config:expr,)?  $(test: $test: ident,)? $(imp: $imp:expr,)? $(env: $env:expr,)? src: $src:expr $(,)?, expect: $expect:expr $(,)? ) => {
         $(#[test] fn $test() )? {
 
         #[allow(unused_mut, unused_assignments)]
@@ -311,12 +311,17 @@ macro_rules! test_error_msg {
         $(
             env = $env;
         )?
+        #[allow(unused_mut, unused_assignments)]
+        let mut config = AnalyzerConfig::default();
+        $(
+            config = $config;
+        )?
         match infer_types(
             $src,
             env,
             imp,
             None,
-            AnalyzerConfig::default(),
+            config,
         ) {
             Err(e) => {
                 let got = e.pretty($src);

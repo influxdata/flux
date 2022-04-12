@@ -409,6 +409,9 @@ pub enum Feature {
     VectorizeOperators,
     /// Enables vectorization
     VectorizedMap,
+
+    /// Enables label polymorphism
+    LabelPolymorphism,
 }
 
 /// A set of configuration options for the behavior of an Analyzer.
@@ -496,7 +499,13 @@ impl<'env, I: import::Importer> Analyzer<'env, I> {
         }
 
         self.env.enter_scope();
-        let env = match nodes::infer_package(&mut sem_pkg, &mut self.env, sub, &mut self.importer) {
+        let env = match nodes::infer_package(
+            &mut sem_pkg,
+            &mut self.env,
+            sub,
+            &mut self.importer,
+            &self.config,
+        ) {
             Ok(()) => {
                 let env = self.env.exit_scope();
                 PackageExports::try_from(env.values).unwrap_or_else(|err| {

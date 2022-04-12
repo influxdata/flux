@@ -1,8 +1,14 @@
 use super::*;
 
+use crate::semantic::Feature;
+
 #[test]
 fn labels_simple() {
     test_infer! {
+        config: AnalyzerConfig{
+            features: vec![Feature::LabelPolymorphism],
+            ..AnalyzerConfig::default()
+        },
         env: map![
             "fill" => "(<-tables: [{ A with B: C }], ?column: B, ?value: D) => [{ A with B: D }]
                 where B: Label
@@ -22,6 +28,10 @@ fn labels_simple() {
 #[test]
 fn labels_unbound() {
     test_infer! {
+        config: AnalyzerConfig{
+            features: vec![Feature::LabelPolymorphism],
+            ..AnalyzerConfig::default()
+        },
         env: map![
             "f" => "(<-tables: [{ A with B: C }], ?value: D) => [{ A with B: D }]
                 where B: Label
@@ -39,6 +49,10 @@ fn labels_unbound() {
 #[test]
 fn labels_dynamic_string() {
     test_error_msg! {
+        config: AnalyzerConfig{
+            features: vec![Feature::LabelPolymorphism],
+            ..AnalyzerConfig::default()
+        },
         env: map![
             "fill" => "(<-tables: [{ A with B: C }], ?column: B, ?value: D) => [{ A with B: D }]
                 where B: Label
@@ -62,6 +76,10 @@ fn labels_dynamic_string() {
 #[test]
 fn undefined_field() {
     test_error_msg! {
+        config: AnalyzerConfig{
+            features: vec![Feature::LabelPolymorphism],
+            ..AnalyzerConfig::default()
+        },
         env: map![
             "fill" => "(<-tables: [{ A with B: C }], ?column: B, ?value: D) => [{ A with B: D }]
                 where B: Label
@@ -84,6 +102,10 @@ fn undefined_field() {
 #[test]
 fn merge_labels_to_string() {
     test_infer! {
+        config: AnalyzerConfig{
+            features: vec![Feature::LabelPolymorphism],
+            ..AnalyzerConfig::default()
+        },
         src: r#"
             x = if 1 == 1 then "a" else "b"
             y = if 1 == 1 then "a" else "b" + "b"
@@ -100,6 +122,10 @@ fn merge_labels_to_string() {
 #[test]
 fn merge_labels_to_string_in_function() {
     test_infer! {
+        config: AnalyzerConfig{
+            features: vec![Feature::LabelPolymorphism],
+            ..AnalyzerConfig::default()
+        },
         env: map![
             "same" => "(x: A, y: A) => A"
         ],

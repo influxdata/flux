@@ -87,3 +87,9 @@
   key: vectorizeOperators
   default: false
   contact: Markus Westerlind
+
+- name: Label polymorphism
+  description: Enables label polymorphism in the type system
+  key: labelPolymorphism
+  default: false
+  contact: Markus Westerlind

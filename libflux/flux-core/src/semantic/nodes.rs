@@ -28,6 +28,7 @@ use crate::{
             self, Dictionary, Function, Kind, Label, MonoType, MonoTypeMap, PolyType, RecordLabel,
             Tvar, TvarKinds,
         },
+        AnalyzerConfig, Feature,
     },
 };
 
@@ -126,6 +127,7 @@ struct InferState<'a, 'env> {
     imports: HashMap<Symbol, String>,
     env: &'a mut Environment<'env>,
     errors: Errors<Error>,
+    config: &'a AnalyzerConfig,
 }
 
 impl InferState<'_, '_> {
@@ -262,7 +264,7 @@ impl Expression {
             Expression::StringExpr(_) => MonoType::STRING,
             Expression::Integer(_) => MonoType::INT,
             Expression::Float(_) => MonoType::FLOAT,
-            Expression::StringLit(lit) => MonoType::Label(Label::from(lit.value.as_str())),
+            Expression::StringLit(lit) => lit.typ.clone().unwrap_or(MonoType::STRING),
             Expression::Duration(_) => MonoType::DURATION,
             Expression::Uint(_) => MonoType::UINT,
             Expression::Boolean(_) => MonoType::BOOL,
@@ -315,7 +317,7 @@ impl Expression {
             Expression::StringExpr(e) => e.infer(infer),
             Expression::Integer(lit) => lit.infer(),
             Expression::Float(lit) => lit.infer(),
-            Expression::StringLit(lit) => lit.infer(),
+            Expression::StringLit(lit) => lit.infer(infer),
             Expression::Duration(lit) => lit.infer(),
             Expression::Uint(lit) => lit.infer(),
             Expression::Boolean(lit) => lit.infer(),
@@ -359,6 +361,7 @@ pub fn infer_package<T>(
     env: &mut Environment<'_>,
     sub: &mut Substitution,
     importer: &mut T,
+    config: &AnalyzerConfig,
 ) -> std::result::Result<(), Errors<Error>>
 where
     T: Importer,
@@ -369,6 +372,7 @@ where
         imports: Default::default(),
         env,
         errors: Errors::new(),
+        config,
     };
     pkg.infer(&mut infer).map_err(|err| err.apply(infer.sub))?;
 
@@ -1750,10 +1754,16 @@ impl RegexpLit {
 pub struct StringLit {
     pub loc: ast::SourceLocation,
     pub value: String,
+    /// The (label) type if label types are enabled. Should be removed once label polymorphism are
+    /// stabilized
+    pub typ: Option<MonoType>,
 }
 
 impl StringLit {
-    fn infer(&mut self) -> Result {
+    fn infer(&mut self, infer: &mut InferState<'_, '_>) -> Result {
+        if infer.config.features.contains(&Feature::LabelPolymorphism) {
+            self.typ = Some(MonoType::Label(Label::from(self.value.as_str())));
+        }
         Ok(())
     }
     fn apply(self, _: &dyn Substituter) -> Self {
