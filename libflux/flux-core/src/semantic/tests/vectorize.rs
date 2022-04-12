@@ -6,20 +6,19 @@ use crate::semantic::{
     AnalyzerConfig, Feature,
 };
 
+fn analyzer_config() -> AnalyzerConfig {
+    AnalyzerConfig {
+        features: vec![Feature::VectorizedMap, Feature::VectorizeAddition],
+        ..AnalyzerConfig::default()
+    }
+}
+
 fn vectorize(src: &str) -> anyhow::Result<Package> {
-    let mut analyzer = Analyzer::new(
-        Default::default(),
-        Packages::default(),
-        AnalyzerConfig {
-            features: vec![Feature::VectorizedMap],
-            ..AnalyzerConfig::default()
-        },
-    );
-    let (_, mut pkg) = analyzer
+    let mut analyzer = Analyzer::new(Default::default(), Packages::default(), analyzer_config());
+    let (_, pkg) = analyzer
         .analyze_source("main".into(), "".into(), src)
         .map_err(|err| err.error)?;
 
-    semantic::vectorize::vectorize(&analyzer.config, &mut pkg)?;
     Ok(pkg)
 }
 
@@ -72,10 +71,10 @@ fn vectorize_with_construction() -> anyhow::Result<()> {
 }
 
 #[test]
-fn vectorize_with_construction_and_addition() -> anyhow::Result<()> {
+fn vectorize_even_when_another_function_fails_to_vectorize() -> anyhow::Result<()> {
     let pkg = vectorize(
         r#"
-        builtin map: (fn: A) => A
+        map = (fn) => fn
         map(fn: (r) => ({r with x: r.a + r.b}))
     "#,
     )?;
@@ -95,7 +94,9 @@ fn vectorize_with_construction_and_addition() -> anyhow::Result<()> {
 
 #[test]
 fn vectorize_non_map_like_function() {
-    let err = vectorize(r#"(s) => ({ x: s.a })"#).unwrap_err();
+    let mut pkg = vectorize(r#"(s) => ({ x: s.a })"#).unwrap();
+
+    let err = semantic::vectorize::vectorize(&analyzer_config(), &mut pkg).unwrap_err();
 
     expect_test::expect![[
         r#"error @1:1-1:20: can't vectorize function: Does not match the `map` signature"#
@@ -121,7 +122,9 @@ fn vectorize_addition_operator() -> anyhow::Result<()> {
 
 #[test]
 fn vectorize_subtraction_operator() {
-    let err = vectorize(r#"(r) => ({ x: r.a - r.b })"#).unwrap_err();
+    let mut pkg = vectorize(r#"(r) => ({ x: r.a - r.b })"#).unwrap();
+
+    let err = semantic::vectorize::vectorize(&analyzer_config(), &mut pkg).unwrap_err();
 
     expect_test::expect![[
         r#"error @1:14-1:23: can't vectorize function: Unable to vectorize non-addition operators"#
