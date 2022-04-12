@@ -294,6 +294,8 @@ func (p *Program) Start(ctx context.Context, alloc memory.Allocator) (flux.Query
 		alloc = resourceAlloc
 	}
 
+	ctx = memory.WithAllocator(ctx, statsAlloc)
+
 	q := &query{
 		ctx:            cctx,
 		results:        results,

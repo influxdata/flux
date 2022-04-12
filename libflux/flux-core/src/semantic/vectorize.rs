@@ -2,11 +2,11 @@ use std::collections::HashMap;
 
 use crate::{
     ast,
-    errors::located,
+    errors::{located, Errors},
     semantic::{
         nodes::{
-            BinaryExpr, Block, ErrorKind, Expression, FunctionExpr, IdentifierExpr, MemberExpr,
-            ObjectExpr, Package, Property, Result, ReturnStmt,
+            BinaryExpr, Block, Error, ErrorKind, Expression, FunctionExpr, IdentifierExpr,
+            MemberExpr, ObjectExpr, Package, Property, Result, ReturnStmt,
         },
         types::{self, Function, Label, MonoType},
         AnalyzerConfig, Feature, Symbol,
@@ -14,22 +14,25 @@ use crate::{
 };
 
 /// Vectorizes a pkg
-pub fn vectorize(config: &AnalyzerConfig, pkg: &mut Package) -> Result<()> {
+pub fn vectorize(
+    config: &AnalyzerConfig,
+    pkg: &mut Package,
+) -> std::result::Result<(), Errors<Error>> {
     use crate::semantic::walk::{walk_mut, NodeMut, VisitorMut};
     struct Vectorizer<'a> {
         config: &'a AnalyzerConfig,
-        result: Result<()>,
+        errors: Errors<Error>,
     }
     impl VisitorMut for Vectorizer<'_> {
         fn visit(&mut self, _node: &mut NodeMut) -> bool {
-            self.result.is_ok()
+            true
         }
 
         fn done(&mut self, node: &mut NodeMut) {
             if let NodeMut::FunctionExpr(function) = node {
                 match function.vectorize(self.config) {
                     Ok(vectorized) => function.vectorized = Some(Box::new(vectorized)),
-                    Err(err) => self.result = Err(err),
+                    Err(err) => self.errors.push(err),
                 }
             }
         }
@@ -37,10 +40,14 @@ pub fn vectorize(config: &AnalyzerConfig, pkg: &mut Package) -> Result<()> {
 
     let mut visitor = Vectorizer {
         config,
-        result: Ok(()),
+        errors: Errors::new(),
     };
     walk_mut(&mut visitor, NodeMut::Package(pkg));
-    visitor.result
+    if visitor.errors.has_errors() {
+        Err(visitor.errors)
+    } else {
+        Ok(())
+    }
 }
 
 struct VectorizeEnv<'a> {
