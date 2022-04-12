@@ -19,7 +19,7 @@ fn vectorize(src: &str) -> anyhow::Result<Package> {
         .analyze_source("main".into(), "".into(), src)
         .map_err(|err| err.error)?;
 
-    semantic::vectorize::vectorize(&mut pkg)?;
+    semantic::vectorize::vectorize(&analyzer.config, &mut pkg)?;
     Ok(pkg)
 }
 
@@ -64,6 +64,28 @@ fn vectorize_with_construction() -> anyhow::Result<()> {
         (r) => {
             return {r:{C with a:v[#B]} with b: r:{C with a:v[#B]}.a:v[#B]}:{C with b:v[#B], a:v[#B]}
         }:(r:{C with a:v[#B]}) => {C with b:v[#B], a:v[#B]}"##]]
+    .assert_eq(&crate::semantic::formatter::format_node(
+        Node::FunctionExpr(function),
+    )?);
+
+    Ok(())
+}
+
+#[test]
+fn vectorize_with_construction_and_addition() -> anyhow::Result<()> {
+    let pkg = vectorize(
+        r#"
+        builtin map: (fn: A) => A
+        map(fn: (r) => ({r with x: r.a + r.b}))
+    "#,
+    )?;
+
+    let function = get_vectorized_function(&pkg);
+
+    expect_test::expect![[r##"
+        (r) => {
+            return {r:{I with a:v[#G], b:v[#G]} with x: r:{I with a:v[#G], b:v[#G]}.a:v[#G] +:v[#G] r:{I with a:v[#G], b:v[#G]}.b:v[#G]}:{I with x:v[#G], a:v[#G], b:v[#G]}
+        }:(r:{I with a:v[#G], b:v[#G]}) => {I with x:v[#G], a:v[#G], b:v[#G]}"##]]
     .assert_eq(&crate::semantic::formatter::format_node(
         Node::FunctionExpr(function),
     )?);
