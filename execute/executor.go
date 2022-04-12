@@ -366,7 +366,7 @@ func (es *executionState) validate() error {
 func getResourceLimits(ctx context.Context) (int64, int) {
 	// Initialize resources from the execution dependencies and/or properties of the plan.
 	if !HaveExecutionDependencies(ctx) {
-		return 0, math.MaxInt64
+		return 0, math.MaxInt
 	}
 
 	execOptions := GetExecutionDependencies(ctx).ExecutionOptions
