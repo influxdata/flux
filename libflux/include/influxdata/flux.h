@@ -79,13 +79,6 @@ struct flux_error_t *flux_merge_ast_pkgs(struct flux_ast_pkg_t *, struct flux_as
 // using flux_free_error if it is non-null.
 struct flux_error_t *flux_ast_marshal_json(struct flux_ast_pkg_t *, struct flux_buffer_t *);
 
-// flux_ast_marshal_fb will marshal the given AST as a flatbuffer into
-// the given buffer. If successful, memory will be allocated for the data
-// within the buffer and it is the caller's responsibility to free this
-// data. If an error happens it will be returned. The error must be freed
-// using flux_free_error if it is non-null.
-struct flux_error_t *flux_ast_marshal_fb(struct flux_ast_pkg_t *, struct flux_buffer_t *);
-
 // flux_get_env_stdlib instantiates a flatbuffers TypeEnvironment and creates a pointer
 // to it to use when performing lookups on the stdlib
 void flux_get_env_stdlib(struct flux_buffer_t *);

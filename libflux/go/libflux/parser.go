@@ -77,25 +77,6 @@ func (p *ASTPkg) MarshalJSON() ([]byte, error) {
 	return data, nil
 }
 
-func (p *ASTPkg) MarshalFB() ([]byte, error) {
-	var buf C.struct_flux_buffer_t
-	if err := C.flux_ast_marshal_fb(p.ptr, &buf); err != nil {
-		defer C.flux_free_error(err)
-		cstr := C.flux_error_str(err)
-		str := C.GoString(cstr)
-		return nil, errors.Newf(codes.Internal, "could not marshal AST to FlatBuffer: %v", str)
-	}
-	// Ensure that we don't free the pointer during the call to
-	// marshal fb. This is only needed on one path because
-	// the compiler recognizes the possibility that p might
-	// be used again and prevents it from being garbage collected.
-	runtime.KeepAlive(p)
-	defer C.flux_free_bytes(buf.data)
-
-	data := C.GoBytes(unsafe.Pointer(buf.data), C.int(buf.len))
-	return data, nil
-}
-
 func (p *ASTPkg) Free() {
 	if p.ptr != nil {
 		C.flux_free_ast_pkg(p.ptr)
