@@ -249,7 +249,7 @@ func TestVectorizedFns(t *testing.T) {
 				ctx,
 				flagger,
 			)
-			ctx = compiler.RuntimeDependencies{Allocator: mem}.Inject(ctx)
+			ctx = memory.WithAllocator(ctx, mem)
 
 			pkg, err := runtime.AnalyzeSource(ctx, tc.fn)
 			if err != nil {

@@ -26,22 +26,6 @@ type Evaluator interface {
 	Eval(ctx context.Context, scope Scope) (values.Value, error)
 }
 
-type key int
-
-const runtimeDependenciesKey key = iota
-
-type RuntimeDependencies struct {
-	Allocator memory.Allocator
-}
-
-func (d RuntimeDependencies) Inject(ctx context.Context) context.Context {
-	return context.WithValue(ctx, runtimeDependenciesKey, d)
-}
-
-func GetRuntimeDependencies(ctx context.Context) RuntimeDependencies {
-	return ctx.Value(runtimeDependenciesKey).(RuntimeDependencies)
-}
-
 type compiledFn struct {
 	root        Evaluator
 	parentScope Scope
@@ -418,7 +402,11 @@ func (e *binaryVectorEvaluator) Eval(ctx context.Context, scope Scope) (values.V
 	}
 	defer r.Release()
 
-	mem := GetRuntimeDependencies(ctx).Allocator
+	mem := memory.GetAllocator(ctx)
+
+	if mem == nil {
+		return nil, errors.Newf(codes.Invalid, "missing allocator, cannot use vectorized operators")
+	}
 
 	return e.f(l, r, mem)
 }
