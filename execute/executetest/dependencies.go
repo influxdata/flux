@@ -31,6 +31,7 @@ var testFlags = map[string]interface{}{
 	// "groupTransformationGroup":         true,
 	// "optimizeUnionTransformation": true,
 	"vectorizedMap":             true,
+	"vectorizeAddition":         true,
 	"optimizeAggregateWindow":   true,
 	"narrowTransformationLimit": true,
 	"optimizeStateTracking":     true,
