@@ -1,7 +1,7 @@
 // Package helpers provides shortcut functions for small common tasks
 //
 // ## Metadata
-// introduced: ??
+// introduced: NEXT
 package helpers
 
 import "array"
