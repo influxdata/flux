@@ -18,6 +18,7 @@ import (
 	_ "github.com/influxdata/flux/stdlib/contrib/jsternberg/influxdb"
 	_ "github.com/influxdata/flux/stdlib/contrib/jsternberg/math"
 	_ "github.com/influxdata/flux/stdlib/contrib/jsternberg/rows"
+	_ "github.com/influxdata/flux/stdlib/contrib/mhall119/helpers"
 	_ "github.com/influxdata/flux/stdlib/contrib/rhajek/bigpanda"
 	_ "github.com/influxdata/flux/stdlib/contrib/sranka/opsgenie"
 	_ "github.com/influxdata/flux/stdlib/contrib/sranka/sensu"
