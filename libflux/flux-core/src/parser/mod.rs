@@ -1533,7 +1533,10 @@ impl<'input> Parser<'input> {
                 name: t.lit,
             }),
             TokenType::String => PropertyKey::StringLit(self.new_string_literal(t)),
-            _ => unreachable!(),
+            _ => PropertyKey::Identifier(Identifier {
+                base: self.base_node_from_token(&t),
+                name: t.lit,
+            }),
         }
     }
     fn parse_identifier(&mut self) -> Identifier {
