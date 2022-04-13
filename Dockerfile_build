@@ -6,7 +6,7 @@
 # also include minor releases, so 1.2 includes 1.2.1 and so on, for bugfix releases.
 FROM rust:1.58 as RUSTBUILD
 
-FROM golang:1.17
+FROM golang:1.18
 
 # Install common packages
 RUN apt-get update && \
