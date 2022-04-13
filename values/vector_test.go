@@ -40,7 +40,7 @@ func TestVectorTypes(t *testing.T) {
 		},
 	}
 	for _, tc := range testCases {
-		mem := &memory.GcAllocator{ResourceAllocator: &memory.ResourceAllocator{}}
+		mem := memory.NewResourceAllocator(nil)
 		got := NewVectorFromElements(mem, tc.input...)
 
 		if !got.ElementType().Equal(tc.wantType) {
@@ -48,8 +48,6 @@ func TestVectorTypes(t *testing.T) {
 		}
 
 		got.Release()
-
-		mem.GC()
 
 		if mem.Allocated() != 0 {
 			t.Errorf("expected bytes allocated to be 0, got %d", mem.Allocated())

@@ -1,6 +1,7 @@
 package memory_test
 
 import (
+	"runtime"
 	"sync"
 	"testing"
 
@@ -11,11 +12,91 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+// Forces "all" unreachable memory to be garbage collected
+func RunGC(mem *memory.ResourceAllocator) {
+	prev := int64(0)
+	for i := 0; i < 30; i++ {
+		// This does not clear all unreachable memory so we need to loop until everything unreachable
+		// has been cleared out
+		runtime.GC()
+		if mem.Allocated() == prev {
+			break
+		}
+		prev = mem.Allocated()
+	}
+}
+
+func TestAllocator_GC_Allocate(t *testing.T) {
+	mem := arrowmemory.NewCheckedAllocator(memory.DefaultAllocator)
+	defer mem.AssertSize(t, 0)
+
+	allocator := memory.NewResourceAllocator(mem)
+	gc := memory.NewGcAllocator(allocator)
+	b := gc.Allocate(64)
+
+	assert.Equal(t, 64, mem.CurrentAlloc(), "unexpected memory allocation.")
+	if want, got := int64(64), allocator.Allocated(); want != got {
+		t.Fatalf("unexpected allocated count -want/+got\n\t- %d\n\t+ %d", want, got)
+	}
+	if want, got := int64(64), allocator.MaxAllocated(); want != got {
+		t.Fatalf("unexpected max allocated count -want/+got\n\t- %d\n\t+ %d", want, got)
+	}
+
+	gc.Free(b)
+
+	RunGC(allocator)
+	mem.AssertSize(t, 0)
+	if want, got := int64(0), allocator.Allocated(); want != got {
+		t.Fatalf("unexpected allocated count -want/+got\n\t- %d\n\t+ %d", want, got)
+	}
+	if want, got := int64(64), allocator.MaxAllocated(); want != got {
+		t.Fatalf("unexpected max allocated count -want/+got\n\t- %d\n\t+ %d", want, got)
+	}
+}
+
+func TestAllocator_GC_Reallocate(t *testing.T) {
+	mem := arrowmemory.NewCheckedAllocator(memory.DefaultAllocator)
+	defer mem.AssertSize(t, 0)
+
+	allocator := memory.NewResourceAllocator(mem)
+	gc := memory.NewGcAllocator(allocator)
+	b := gc.Allocate(64)
+
+	assert.Equal(t, 64, mem.CurrentAlloc(), "unexpected memory allocation.")
+	if want, got := int64(64), allocator.Allocated(); want != got {
+		t.Fatalf("unexpected allocated count -want/+got\n\t- %d\n\t+ %d", want, got)
+	}
+	if want, got := int64(64), allocator.MaxAllocated(); want != got {
+		t.Fatalf("unexpected max allocated count -want/+got\n\t- %d\n\t+ %d", want, got)
+	}
+
+	b = gc.Reallocate(128, b)
+
+	assert.Equal(t, 128, mem.CurrentAlloc(), "unexpected memory allocation.")
+	if want, got := int64(128), allocator.Allocated(); want != got {
+		t.Fatalf("unexpected allocated count -want/+got\n\t- %d\n\t+ %d", want, got)
+	}
+	if want, got := int64(128), allocator.MaxAllocated(); want != got {
+		t.Fatalf("unexpected max allocated count -want/+got\n\t- %d\n\t+ %d", want, got)
+	}
+
+	gc.Free(b)
+
+	RunGC(allocator)
+	mem.AssertSize(t, 0)
+	if want, got := int64(0), allocator.Allocated(); want != got {
+		t.Fatalf("unexpected allocated count -want/+got\n\t- %d\n\t+ %d", want, got)
+	}
+	if want, got := int64(128), allocator.MaxAllocated(); want != got {
+		t.Fatalf("unexpected max allocated count -want/+got\n\t- %d\n\t+ %d", want, got)
+	}
+}
+
 func TestAllocator_Allocate(t *testing.T) {
 	mem := arrowmemory.NewCheckedAllocator(memory.DefaultAllocator)
 	defer mem.AssertSize(t, 0)
 
-	allocator := &memory.GcAllocator{&memory.ResourceAllocator{Allocator: mem}}
+	allocator := memory.NewResourceAllocator(mem)
 	b := allocator.Allocate(64)
 
 	assert.Equal(t, 64, mem.CurrentAlloc(), "unexpected memory allocation.")
@@ -28,7 +109,6 @@ func TestAllocator_Allocate(t *testing.T) {
 
 	allocator.Free(b)
 
-	allocator.GC()
 	mem.AssertSize(t, 0)
 	if want, got := int64(0), allocator.Allocated(); want != got {
 		t.Fatalf("unexpected allocated count -want/+got\n\t- %d\n\t+ %d", want, got)
@@ -42,7 +122,7 @@ func TestAllocator_Reallocate(t *testing.T) {
 	mem := arrowmemory.NewCheckedAllocator(memory.DefaultAllocator)
 	defer mem.AssertSize(t, 0)
 
-	allocator := &memory.GcAllocator{&memory.ResourceAllocator{Allocator: mem}}
+	allocator := memory.NewResourceAllocator(mem)
 	b := allocator.Allocate(64)
 
 	assert.Equal(t, 64, mem.CurrentAlloc(), "unexpected memory allocation.")
@@ -65,7 +145,6 @@ func TestAllocator_Reallocate(t *testing.T) {
 
 	allocator.Free(b)
 
-	allocator.GC()
 	mem.AssertSize(t, 0)
 	if want, got := int64(0), allocator.Allocated(); want != got {
 		t.Fatalf("unexpected allocated count -want/+got\n\t- %d\n\t+ %d", want, got)
@@ -76,7 +155,7 @@ func TestAllocator_Reallocate(t *testing.T) {
 }
 
 func TestAllocator_MaxAfterFree(t *testing.T) {
-	allocator := &memory.GcAllocator{&memory.ResourceAllocator{}}
+	allocator := memory.NewResourceAllocator(nil)
 	if err := allocator.Account(64); err != nil {
 		t.Fatalf("unexpected error: %s", err)
 	}
@@ -113,7 +192,7 @@ func TestAllocator_MaxAfterFree(t *testing.T) {
 
 func TestAllocator_Limit(t *testing.T) {
 	maxLimit := int64(64)
-	allocator := &memory.GcAllocator{&memory.ResourceAllocator{Limit: &maxLimit}}
+	allocator := &memory.ResourceAllocator{Limit: &maxLimit}
 	if err := allocator.Account(64); err != nil {
 		t.Fatalf("unexpected error: %s", err)
 	}
@@ -186,7 +265,7 @@ func TestAllocator_Limit(t *testing.T) {
 }
 
 func TestAllocator_Free(t *testing.T) {
-	allocator := &memory.GcAllocator{&memory.ResourceAllocator{}}
+	allocator := memory.NewResourceAllocator(nil)
 	if err := allocator.Account(64); err != nil {
 		t.Fatalf("unexpected error: %s", err)
 	}
@@ -238,10 +317,10 @@ func TestAllocator_RequestMemory(t *testing.T) {
 
 	// Set the Limit to 64 and allocate 32 bytes of it.
 	// This should not request more memory from the manager.
-	allocator := &memory.GcAllocator{&memory.ResourceAllocator{
+	allocator := &memory.ResourceAllocator{
 		Limit:   func(v int64) *int64 { return &v }(64),
 		Manager: manager,
-	}}
+	}
 	if err := allocator.Account(32); err != nil {
 		t.Fatalf("unexpected error: %s", err)
 	}
@@ -313,10 +392,10 @@ func TestAllocator_RequestMemory_Concurrently(t *testing.T) {
 
 	// Set the Limit to 64 and allocate 32 bytes of it.
 	// This should not request more memory from the manager.
-	allocator := &memory.GcAllocator{&memory.ResourceAllocator{
+	allocator := &memory.ResourceAllocator{
 		Limit:   func(v int64) *int64 { return &v }(0),
 		Manager: manager,
-	}}
+	}
 	var wg sync.WaitGroup
 	for i := 0; i < 128; i++ {
 		wg.Add(1)
