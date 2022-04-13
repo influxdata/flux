@@ -16,11 +16,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			Errors:   nil,
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
-					Column: 62,
-					Line:   13,
+					Column: 51,
+					Line:   25,
 				},
 				File:   "helpers_test.flux",
-				Source: "package helpers_test\n\n\nimport \"testing\"\nimport \"contrib/mhall119/helpers\"\n\noption testData = {testValue: 125}\n\nt_yieldValue = (v) =>\n    helpers.yieldValue(v:v)\n\ntest _yieldValue = () =>\n    ({input: testData.testValue, want: \"\", fn: t_yieldValue})",
+				Source: "package helpers_test\n\n\nimport \"testing\"\nimport \"contrib/mhall119/helpers\"\n\noption testData = {testValue: 125}\n\nt_yieldValue = (v) =>\n    helpers.yieldValue(v:v)\n\ntest _yieldValue = () =>\n    ({input: testData.testValue, want: \"\", fn: t_yieldValue})\n\nt_yieldObject = (o) =>\n    helpers.yieldObject(o:o)\n\ntest _yieldObject = () =>\n    ({input: testData, want: \"\", fn: t_yieldObject})\n\nt_yieldJSON = (o) =>\n    helpers.yieldJSON(o:o)\n\ntest _yieldJSON = () =>\n    ({input: testData, want: \"\", fn: t_yieldJSON})",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -739,6 +739,1092 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Start: ast.Position{
 						Column: 1,
 						Line:   12,
+					},
+				},
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Comments: nil,
+				Errors:   nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 29,
+						Line:   16,
+					},
+					File:   "helpers_test.flux",
+					Source: "t_yieldObject = (o) =>\n    helpers.yieldObject(o:o)",
+					Start: ast.Position{
+						Column: 1,
+						Line:   15,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Comments: nil,
+					Errors:   nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 14,
+							Line:   15,
+						},
+						File:   "helpers_test.flux",
+						Source: "t_yieldObject",
+						Start: ast.Position{
+							Column: 1,
+							Line:   15,
+						},
+					},
+				},
+				Name: "t_yieldObject",
+			},
+			Init: &ast.FunctionExpression{
+				Arrow: nil,
+				BaseNode: ast.BaseNode{
+					Comments: nil,
+					Errors:   nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 29,
+							Line:   16,
+						},
+						File:   "helpers_test.flux",
+						Source: "(o) =>\n    helpers.yieldObject(o:o)",
+						Start: ast.Position{
+							Column: 17,
+							Line:   15,
+						},
+					},
+				},
+				Body: &ast.CallExpression{
+					Arguments: []ast.Expression{&ast.ObjectExpression{
+						BaseNode: ast.BaseNode{
+							Comments: nil,
+							Errors:   nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 28,
+									Line:   16,
+								},
+								File:   "helpers_test.flux",
+								Source: "o:o",
+								Start: ast.Position{
+									Column: 25,
+									Line:   16,
+								},
+							},
+						},
+						Lbrace: nil,
+						Properties: []*ast.Property{&ast.Property{
+							BaseNode: ast.BaseNode{
+								Comments: nil,
+								Errors:   nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 28,
+										Line:   16,
+									},
+									File:   "helpers_test.flux",
+									Source: "o:o",
+									Start: ast.Position{
+										Column: 25,
+										Line:   16,
+									},
+								},
+							},
+							Comma: nil,
+							Key: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 26,
+											Line:   16,
+										},
+										File:   "helpers_test.flux",
+										Source: "o",
+										Start: ast.Position{
+											Column: 25,
+											Line:   16,
+										},
+									},
+								},
+								Name: "o",
+							},
+							Separator: nil,
+							Value: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 28,
+											Line:   16,
+										},
+										File:   "helpers_test.flux",
+										Source: "o",
+										Start: ast.Position{
+											Column: 27,
+											Line:   16,
+										},
+									},
+								},
+								Name: "o",
+							},
+						}},
+						Rbrace: nil,
+						With:   nil,
+					}},
+					BaseNode: ast.BaseNode{
+						Comments: nil,
+						Errors:   nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 29,
+								Line:   16,
+							},
+							File:   "helpers_test.flux",
+							Source: "helpers.yieldObject(o:o)",
+							Start: ast.Position{
+								Column: 5,
+								Line:   16,
+							},
+						},
+					},
+					Callee: &ast.MemberExpression{
+						BaseNode: ast.BaseNode{
+							Comments: nil,
+							Errors:   nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 24,
+									Line:   16,
+								},
+								File:   "helpers_test.flux",
+								Source: "helpers.yieldObject",
+								Start: ast.Position{
+									Column: 5,
+									Line:   16,
+								},
+							},
+						},
+						Lbrack: nil,
+						Object: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Comments: nil,
+								Errors:   nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 12,
+										Line:   16,
+									},
+									File:   "helpers_test.flux",
+									Source: "helpers",
+									Start: ast.Position{
+										Column: 5,
+										Line:   16,
+									},
+								},
+							},
+							Name: "helpers",
+						},
+						Property: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Comments: nil,
+								Errors:   nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 24,
+										Line:   16,
+									},
+									File:   "helpers_test.flux",
+									Source: "yieldObject",
+									Start: ast.Position{
+										Column: 13,
+										Line:   16,
+									},
+								},
+							},
+							Name: "yieldObject",
+						},
+						Rbrack: nil,
+					},
+					Lparen: nil,
+					Rparen: nil,
+				},
+				Lparen: nil,
+				Params: []*ast.Property{&ast.Property{
+					BaseNode: ast.BaseNode{
+						Comments: nil,
+						Errors:   nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 19,
+								Line:   15,
+							},
+							File:   "helpers_test.flux",
+							Source: "o",
+							Start: ast.Position{
+								Column: 18,
+								Line:   15,
+							},
+						},
+					},
+					Comma: nil,
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Comments: nil,
+							Errors:   nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 19,
+									Line:   15,
+								},
+								File:   "helpers_test.flux",
+								Source: "o",
+								Start: ast.Position{
+									Column: 18,
+									Line:   15,
+								},
+							},
+						},
+						Name: "o",
+					},
+					Separator: nil,
+					Value:     nil,
+				}},
+				Rparan: nil,
+			},
+		}, &ast.TestStatement{
+			Assignment: &ast.VariableAssignment{
+				BaseNode: ast.BaseNode{
+					Comments: nil,
+					Errors:   nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 53,
+							Line:   19,
+						},
+						File:   "helpers_test.flux",
+						Source: "_yieldObject = () =>\n    ({input: testData, want: \"\", fn: t_yieldObject})",
+						Start: ast.Position{
+							Column: 6,
+							Line:   18,
+						},
+					},
+				},
+				ID: &ast.Identifier{
+					BaseNode: ast.BaseNode{
+						Comments: nil,
+						Errors:   nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 18,
+								Line:   18,
+							},
+							File:   "helpers_test.flux",
+							Source: "_yieldObject",
+							Start: ast.Position{
+								Column: 6,
+								Line:   18,
+							},
+						},
+					},
+					Name: "_yieldObject",
+				},
+				Init: &ast.FunctionExpression{
+					Arrow: nil,
+					BaseNode: ast.BaseNode{
+						Comments: nil,
+						Errors:   nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 53,
+								Line:   19,
+							},
+							File:   "helpers_test.flux",
+							Source: "() =>\n    ({input: testData, want: \"\", fn: t_yieldObject})",
+							Start: ast.Position{
+								Column: 21,
+								Line:   18,
+							},
+						},
+					},
+					Body: &ast.ParenExpression{
+						BaseNode: ast.BaseNode{
+							Comments: nil,
+							Errors:   nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 53,
+									Line:   19,
+								},
+								File:   "helpers_test.flux",
+								Source: "({input: testData, want: \"\", fn: t_yieldObject})",
+								Start: ast.Position{
+									Column: 5,
+									Line:   19,
+								},
+							},
+						},
+						Expression: &ast.ObjectExpression{
+							BaseNode: ast.BaseNode{
+								Comments: nil,
+								Errors:   nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 52,
+										Line:   19,
+									},
+									File:   "helpers_test.flux",
+									Source: "{input: testData, want: \"\", fn: t_yieldObject}",
+									Start: ast.Position{
+										Column: 6,
+										Line:   19,
+									},
+								},
+							},
+							Lbrace: nil,
+							Properties: []*ast.Property{&ast.Property{
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 22,
+											Line:   19,
+										},
+										File:   "helpers_test.flux",
+										Source: "input: testData",
+										Start: ast.Position{
+											Column: 7,
+											Line:   19,
+										},
+									},
+								},
+								Comma: nil,
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Comments: nil,
+										Errors:   nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 12,
+												Line:   19,
+											},
+											File:   "helpers_test.flux",
+											Source: "input",
+											Start: ast.Position{
+												Column: 7,
+												Line:   19,
+											},
+										},
+									},
+									Name: "input",
+								},
+								Separator: nil,
+								Value: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Comments: nil,
+										Errors:   nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 22,
+												Line:   19,
+											},
+											File:   "helpers_test.flux",
+											Source: "testData",
+											Start: ast.Position{
+												Column: 14,
+												Line:   19,
+											},
+										},
+									},
+									Name: "testData",
+								},
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 32,
+											Line:   19,
+										},
+										File:   "helpers_test.flux",
+										Source: "want: \"\"",
+										Start: ast.Position{
+											Column: 24,
+											Line:   19,
+										},
+									},
+								},
+								Comma: nil,
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Comments: nil,
+										Errors:   nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 28,
+												Line:   19,
+											},
+											File:   "helpers_test.flux",
+											Source: "want",
+											Start: ast.Position{
+												Column: 24,
+												Line:   19,
+											},
+										},
+									},
+									Name: "want",
+								},
+								Separator: nil,
+								Value: &ast.StringLiteral{
+									BaseNode: ast.BaseNode{
+										Comments: nil,
+										Errors:   nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 32,
+												Line:   19,
+											},
+											File:   "helpers_test.flux",
+											Source: "\"\"",
+											Start: ast.Position{
+												Column: 30,
+												Line:   19,
+											},
+										},
+									},
+									Value: "",
+								},
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 51,
+											Line:   19,
+										},
+										File:   "helpers_test.flux",
+										Source: "fn: t_yieldObject",
+										Start: ast.Position{
+											Column: 34,
+											Line:   19,
+										},
+									},
+								},
+								Comma: nil,
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Comments: nil,
+										Errors:   nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 36,
+												Line:   19,
+											},
+											File:   "helpers_test.flux",
+											Source: "fn",
+											Start: ast.Position{
+												Column: 34,
+												Line:   19,
+											},
+										},
+									},
+									Name: "fn",
+								},
+								Separator: nil,
+								Value: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Comments: nil,
+										Errors:   nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 51,
+												Line:   19,
+											},
+											File:   "helpers_test.flux",
+											Source: "t_yieldObject",
+											Start: ast.Position{
+												Column: 38,
+												Line:   19,
+											},
+										},
+									},
+									Name: "t_yieldObject",
+								},
+							}},
+							Rbrace: nil,
+							With:   nil,
+						},
+						Lparen: nil,
+						Rparen: nil,
+					},
+					Lparen: nil,
+					Params: []*ast.Property{},
+					Rparan: nil,
+				},
+			},
+			BaseNode: ast.BaseNode{
+				Comments: nil,
+				Errors:   nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 53,
+						Line:   19,
+					},
+					File:   "helpers_test.flux",
+					Source: "test _yieldObject = () =>\n    ({input: testData, want: \"\", fn: t_yieldObject})",
+					Start: ast.Position{
+						Column: 1,
+						Line:   18,
+					},
+				},
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Comments: nil,
+				Errors:   nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 27,
+						Line:   22,
+					},
+					File:   "helpers_test.flux",
+					Source: "t_yieldJSON = (o) =>\n    helpers.yieldJSON(o:o)",
+					Start: ast.Position{
+						Column: 1,
+						Line:   21,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Comments: nil,
+					Errors:   nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 12,
+							Line:   21,
+						},
+						File:   "helpers_test.flux",
+						Source: "t_yieldJSON",
+						Start: ast.Position{
+							Column: 1,
+							Line:   21,
+						},
+					},
+				},
+				Name: "t_yieldJSON",
+			},
+			Init: &ast.FunctionExpression{
+				Arrow: nil,
+				BaseNode: ast.BaseNode{
+					Comments: nil,
+					Errors:   nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 27,
+							Line:   22,
+						},
+						File:   "helpers_test.flux",
+						Source: "(o) =>\n    helpers.yieldJSON(o:o)",
+						Start: ast.Position{
+							Column: 15,
+							Line:   21,
+						},
+					},
+				},
+				Body: &ast.CallExpression{
+					Arguments: []ast.Expression{&ast.ObjectExpression{
+						BaseNode: ast.BaseNode{
+							Comments: nil,
+							Errors:   nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 26,
+									Line:   22,
+								},
+								File:   "helpers_test.flux",
+								Source: "o:o",
+								Start: ast.Position{
+									Column: 23,
+									Line:   22,
+								},
+							},
+						},
+						Lbrace: nil,
+						Properties: []*ast.Property{&ast.Property{
+							BaseNode: ast.BaseNode{
+								Comments: nil,
+								Errors:   nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 26,
+										Line:   22,
+									},
+									File:   "helpers_test.flux",
+									Source: "o:o",
+									Start: ast.Position{
+										Column: 23,
+										Line:   22,
+									},
+								},
+							},
+							Comma: nil,
+							Key: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 24,
+											Line:   22,
+										},
+										File:   "helpers_test.flux",
+										Source: "o",
+										Start: ast.Position{
+											Column: 23,
+											Line:   22,
+										},
+									},
+								},
+								Name: "o",
+							},
+							Separator: nil,
+							Value: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 26,
+											Line:   22,
+										},
+										File:   "helpers_test.flux",
+										Source: "o",
+										Start: ast.Position{
+											Column: 25,
+											Line:   22,
+										},
+									},
+								},
+								Name: "o",
+							},
+						}},
+						Rbrace: nil,
+						With:   nil,
+					}},
+					BaseNode: ast.BaseNode{
+						Comments: nil,
+						Errors:   nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 27,
+								Line:   22,
+							},
+							File:   "helpers_test.flux",
+							Source: "helpers.yieldJSON(o:o)",
+							Start: ast.Position{
+								Column: 5,
+								Line:   22,
+							},
+						},
+					},
+					Callee: &ast.MemberExpression{
+						BaseNode: ast.BaseNode{
+							Comments: nil,
+							Errors:   nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 22,
+									Line:   22,
+								},
+								File:   "helpers_test.flux",
+								Source: "helpers.yieldJSON",
+								Start: ast.Position{
+									Column: 5,
+									Line:   22,
+								},
+							},
+						},
+						Lbrack: nil,
+						Object: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Comments: nil,
+								Errors:   nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 12,
+										Line:   22,
+									},
+									File:   "helpers_test.flux",
+									Source: "helpers",
+									Start: ast.Position{
+										Column: 5,
+										Line:   22,
+									},
+								},
+							},
+							Name: "helpers",
+						},
+						Property: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Comments: nil,
+								Errors:   nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 22,
+										Line:   22,
+									},
+									File:   "helpers_test.flux",
+									Source: "yieldJSON",
+									Start: ast.Position{
+										Column: 13,
+										Line:   22,
+									},
+								},
+							},
+							Name: "yieldJSON",
+						},
+						Rbrack: nil,
+					},
+					Lparen: nil,
+					Rparen: nil,
+				},
+				Lparen: nil,
+				Params: []*ast.Property{&ast.Property{
+					BaseNode: ast.BaseNode{
+						Comments: nil,
+						Errors:   nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 17,
+								Line:   21,
+							},
+							File:   "helpers_test.flux",
+							Source: "o",
+							Start: ast.Position{
+								Column: 16,
+								Line:   21,
+							},
+						},
+					},
+					Comma: nil,
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Comments: nil,
+							Errors:   nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 17,
+									Line:   21,
+								},
+								File:   "helpers_test.flux",
+								Source: "o",
+								Start: ast.Position{
+									Column: 16,
+									Line:   21,
+								},
+							},
+						},
+						Name: "o",
+					},
+					Separator: nil,
+					Value:     nil,
+				}},
+				Rparan: nil,
+			},
+		}, &ast.TestStatement{
+			Assignment: &ast.VariableAssignment{
+				BaseNode: ast.BaseNode{
+					Comments: nil,
+					Errors:   nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 51,
+							Line:   25,
+						},
+						File:   "helpers_test.flux",
+						Source: "_yieldJSON = () =>\n    ({input: testData, want: \"\", fn: t_yieldJSON})",
+						Start: ast.Position{
+							Column: 6,
+							Line:   24,
+						},
+					},
+				},
+				ID: &ast.Identifier{
+					BaseNode: ast.BaseNode{
+						Comments: nil,
+						Errors:   nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 16,
+								Line:   24,
+							},
+							File:   "helpers_test.flux",
+							Source: "_yieldJSON",
+							Start: ast.Position{
+								Column: 6,
+								Line:   24,
+							},
+						},
+					},
+					Name: "_yieldJSON",
+				},
+				Init: &ast.FunctionExpression{
+					Arrow: nil,
+					BaseNode: ast.BaseNode{
+						Comments: nil,
+						Errors:   nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 51,
+								Line:   25,
+							},
+							File:   "helpers_test.flux",
+							Source: "() =>\n    ({input: testData, want: \"\", fn: t_yieldJSON})",
+							Start: ast.Position{
+								Column: 19,
+								Line:   24,
+							},
+						},
+					},
+					Body: &ast.ParenExpression{
+						BaseNode: ast.BaseNode{
+							Comments: nil,
+							Errors:   nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 51,
+									Line:   25,
+								},
+								File:   "helpers_test.flux",
+								Source: "({input: testData, want: \"\", fn: t_yieldJSON})",
+								Start: ast.Position{
+									Column: 5,
+									Line:   25,
+								},
+							},
+						},
+						Expression: &ast.ObjectExpression{
+							BaseNode: ast.BaseNode{
+								Comments: nil,
+								Errors:   nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 50,
+										Line:   25,
+									},
+									File:   "helpers_test.flux",
+									Source: "{input: testData, want: \"\", fn: t_yieldJSON}",
+									Start: ast.Position{
+										Column: 6,
+										Line:   25,
+									},
+								},
+							},
+							Lbrace: nil,
+							Properties: []*ast.Property{&ast.Property{
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 22,
+											Line:   25,
+										},
+										File:   "helpers_test.flux",
+										Source: "input: testData",
+										Start: ast.Position{
+											Column: 7,
+											Line:   25,
+										},
+									},
+								},
+								Comma: nil,
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Comments: nil,
+										Errors:   nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 12,
+												Line:   25,
+											},
+											File:   "helpers_test.flux",
+											Source: "input",
+											Start: ast.Position{
+												Column: 7,
+												Line:   25,
+											},
+										},
+									},
+									Name: "input",
+								},
+								Separator: nil,
+								Value: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Comments: nil,
+										Errors:   nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 22,
+												Line:   25,
+											},
+											File:   "helpers_test.flux",
+											Source: "testData",
+											Start: ast.Position{
+												Column: 14,
+												Line:   25,
+											},
+										},
+									},
+									Name: "testData",
+								},
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 32,
+											Line:   25,
+										},
+										File:   "helpers_test.flux",
+										Source: "want: \"\"",
+										Start: ast.Position{
+											Column: 24,
+											Line:   25,
+										},
+									},
+								},
+								Comma: nil,
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Comments: nil,
+										Errors:   nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 28,
+												Line:   25,
+											},
+											File:   "helpers_test.flux",
+											Source: "want",
+											Start: ast.Position{
+												Column: 24,
+												Line:   25,
+											},
+										},
+									},
+									Name: "want",
+								},
+								Separator: nil,
+								Value: &ast.StringLiteral{
+									BaseNode: ast.BaseNode{
+										Comments: nil,
+										Errors:   nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 32,
+												Line:   25,
+											},
+											File:   "helpers_test.flux",
+											Source: "\"\"",
+											Start: ast.Position{
+												Column: 30,
+												Line:   25,
+											},
+										},
+									},
+									Value: "",
+								},
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 49,
+											Line:   25,
+										},
+										File:   "helpers_test.flux",
+										Source: "fn: t_yieldJSON",
+										Start: ast.Position{
+											Column: 34,
+											Line:   25,
+										},
+									},
+								},
+								Comma: nil,
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Comments: nil,
+										Errors:   nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 36,
+												Line:   25,
+											},
+											File:   "helpers_test.flux",
+											Source: "fn",
+											Start: ast.Position{
+												Column: 34,
+												Line:   25,
+											},
+										},
+									},
+									Name: "fn",
+								},
+								Separator: nil,
+								Value: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Comments: nil,
+										Errors:   nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 49,
+												Line:   25,
+											},
+											File:   "helpers_test.flux",
+											Source: "t_yieldJSON",
+											Start: ast.Position{
+												Column: 38,
+												Line:   25,
+											},
+										},
+									},
+									Name: "t_yieldJSON",
+								},
+							}},
+							Rbrace: nil,
+							With:   nil,
+						},
+						Lparen: nil,
+						Rparen: nil,
+					},
+					Lparen: nil,
+					Params: []*ast.Property{},
+					Rparan: nil,
+				},
+			},
+			BaseNode: ast.BaseNode{
+				Comments: nil,
+				Errors:   nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 51,
+						Line:   25,
+					},
+					File:   "helpers_test.flux",
+					Source: "test _yieldJSON = () =>\n    ({input: testData, want: \"\", fn: t_yieldJSON})",
+					Start: ast.Position{
+						Column: 1,
+						Line:   24,
 					},
 				},
 			},

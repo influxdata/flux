@@ -99,7 +99,7 @@ var sourceHashes = map[string]string{
 	"stdlib/contrib/jsternberg/rows/map_with_test.flux":                                           "645ae1e18339a0cd70159a377cc7ac15b2f8629563b3155ef549308ac7eab4ee",
 	"stdlib/contrib/jsternberg/rows/rows.flux":                                                    "3bb81b01b391de76d50e41423b5987ffe9a67cd61a9618484559a0c3738b4edf",
 	"stdlib/contrib/mhall119/helpers/helpers.flux":                                                "5423398aeebc9cfe58178d4bb6b0076c7de1e07eaf94a264a02a90736cb4bb6c",
-	"stdlib/contrib/mhall119/helpers/helpers_test.flux":                                           "538566fafea1650433b20a24e6329716b9cd026426b580ce4a80bd9521765f5b",
+	"stdlib/contrib/mhall119/helpers/helpers_test.flux":                                           "dfc22e81cb2ac982974356928c7720ef02f3021c7721187cf0d52189132a51e3",
 	"stdlib/contrib/rhajek/bigpanda/bigpanda.flux":                                                "baf43d9f0d6565377bde00be7b024f952767b83239ed30a0d20c88f5522f03d6",
 	"stdlib/contrib/sranka/opsgenie/opsgenie.flux":                                                "768a8393075be8b091a86eb17fc8a28c0d4b9a2b100bbabe208fa9b0a3baa0b5",
 	"stdlib/contrib/sranka/sensu/sensu.flux":                                                      "bd9c2513b70d5f9d4dde93b453c384557220595ad9ce4b219ab997d3c849ce55",
