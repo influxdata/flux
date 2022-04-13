@@ -2,7 +2,7 @@
 
 use std::{
     borrow::Cow,
-    cell::Cell,
+    cell::{Cell, RefCell},
     cmp,
     collections::{BTreeMap, BTreeSet},
     fmt::{self, Write},
@@ -147,7 +147,11 @@ impl<'a, E> Unifier<'a, E> {
         }
     }
 
-    fn finish<T>(mut self, value: T, mk_error: impl Fn(Error) -> E) -> Result<T, Errors<E>> {
+    fn finish(
+        mut self,
+        value: MonoType,
+        mk_error: impl Fn(Error) -> E,
+    ) -> Result<MonoType, Errors<E>> {
         if !self.delayed_records.is_empty() {
             let mut sub_unifier = Unifier::new(self.sub);
             while let Some((expected, actual)) = self.delayed_records.pop() {
@@ -159,6 +163,51 @@ impl<'a, E> Unifier<'a, E> {
             self.errors
                 .extend(sub_unifier.errors.into_iter().map(&mk_error));
         }
+
+        struct FindUnboundLabels<'a> {
+            found: RefCell<Option<MonoType>>,
+            sub: &'a dyn Substituter,
+        }
+        impl Substituter for FindUnboundLabels<'_> {
+            fn try_apply(&self, _: Tvar) -> Option<MonoType> {
+                None
+            }
+            fn visit_type(&self, typ: &MonoType) -> Option<MonoType> {
+                if let MonoType::Record(rec) = typ {
+                    if let Record::Extension {
+                        head:
+                            Property {
+                                k: RecordLabel::Variable(var),
+                                ..
+                            },
+                        ..
+                    } = &**rec
+                    {
+                        match self.sub.try_apply(*var) {
+                            Some(MonoType::Var(_)) | None => {
+                                *self.found.borrow_mut() = Some(MonoType::Var(*var))
+                            }
+                            _ => (),
+                        }
+                    }
+                }
+                None
+            }
+        }
+
+        let mut error_on_unbound_record_labels = |typ: &MonoType| {
+            let visitor = FindUnboundLabels {
+                found: RefCell::new(None),
+                sub: self.sub,
+            };
+            let typ = typ.apply_cow(self.sub);
+            typ.visit(&visitor);
+            if let Some(non_label) = visitor.found.into_inner() {
+                self.errors.push(mk_error(Error::NotALabel(non_label)));
+            }
+        };
+
+        error_on_unbound_record_labels(&value);
 
         if self.errors.has_errors() {
             Err(self.errors)
@@ -1484,6 +1533,7 @@ impl Record {
                 RecordLabel::Concrete(_) => unifier.errors.push(Error::MissingLabel(a.to_string())),
                 RecordLabel::BoundVariable(v) | RecordLabel::Variable(v) => {
                     let t = unifier.sub.apply(v);
+                    t.unify(&MonoType::Error, unifier);
                     unifier.errors.push(Error::NotALabel(t));
                 }
             },
@@ -1999,7 +2049,8 @@ impl Function {
 
         self.unify(actual, &mut unifier);
 
-        unifier.finish((), mk_error)
+        unifier.finish(MonoType::from(self.clone()), mk_error)?;
+        Ok(())
     }
 
     pub(crate) fn try_subsume_with<T>(
@@ -2015,7 +2066,8 @@ impl Function {
 
         self.unify(actual, &mut unifier);
 
-        unifier.finish((), mk_error)
+        unifier.finish(MonoType::from(self.clone()), mk_error)?;
+        Ok(())
     }
 
     /// Given two function types f and g, the process for unifying their arguments is as follows:

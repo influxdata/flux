@@ -139,3 +139,29 @@ fn merge_labels_to_string_in_function() {
         ],
     }
 }
+
+#[test]
+fn optional_label() {
+    test_error_msg! {
+        config: AnalyzerConfig{
+            features: vec![Feature::LabelPolymorphism],
+            ..AnalyzerConfig::default()
+        },
+        env: map![
+            "columns" => "(table: A, ?column: C) => { C: string } where A: Record",
+        ],
+        src: r#"
+            x = columns(table: { a: 1, b: "b" })
+            y = x.abc
+        "#,
+        // TODO Improve this error
+        expect: expect![[r#"
+            error: A is not a label
+              ┌─ main:2:17
+              │
+            2 │             x = columns(table: { a: 1, b: "b" })
+              │                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+        "#]],
+    }
+}
