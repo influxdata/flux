@@ -18,13 +18,13 @@ type ColumnsOpSpec struct {
 
 func init() {
 	columnsSignature := runtime.MustLookupBuiltinType("universe", "columns")
-	runtime.RegisterPackageValue("universe", ColumnsKind, flux.MustValue(flux.FunctionValue(ColumnsKind, createColumnsOpSpec, columnsSignature)))
+	runtime.RegisterPackageValue("universe", ColumnsKind, flux.MustValue(flux.FunctionValue(ColumnsKind, CreateColumnsOpSpec, columnsSignature)))
 	flux.RegisterOpSpec(ColumnsKind, newColumnsOp)
 	plan.RegisterProcedureSpec(ColumnsKind, newColumnsProcedure, ColumnsKind)
 	execute.RegisterTransformation(ColumnsKind, createColumnsTransformation)
 }
 
-func createColumnsOpSpec(args flux.Arguments, a *flux.Administration) (flux.OperationSpec, error) {
+func CreateColumnsOpSpec(args flux.Arguments, a *flux.Administration) (flux.OperationSpec, error) {
 	if err := a.AddParentFromArgs(args); err != nil {
 		return nil, err
 	}
