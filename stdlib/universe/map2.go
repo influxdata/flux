@@ -19,9 +19,6 @@ import (
 	"github.com/influxdata/flux/values"
 )
 
-//go:generate -command tmpl ../../gotool.sh github.com/benbjohnson/tmpl
-//go:generate tmpl -data=@../../array/types.tmpldata -o map2.gen.go map2.gen.go.tmpl
-
 type mapTransformation2 struct {
 	ctx context.Context
 	fn  mapFunc
