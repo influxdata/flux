@@ -1,17 +1,19 @@
-// Package helpers provides shortcut functions for small common tasks
+// Package helpers provides shortcut functions for common operations.
 //
 // ## Metadata
 // introduced: NEXT
 package helpers
 
+
 import "array"
 import "json"
-// yieldValue lets you display a scalar in the InfluxDB UI by
-// wrapping it in an Array
+
+// yieldValue returns a stream of tables containing a specified scalar value.
+// This makes it possible to display a scalar value in an InfluxDB visualization.
 //
 // ## Parameters
-// - v: Input data.
-// - name: Name to pass to the subsequent yield() call.  Default is 'value'.
+// - v: Input value.
+// - name: Yield name. Default is `value`.
 //
 // ## Examples
 //
@@ -24,10 +26,9 @@ import "json"
 // ```
 //
 // ## Metadata
-// tags: 
+// tags: outputs
 //
-defaultYieldValName="value"
-yieldValue = (v, name=defaultYieldValName) =>
+yieldValue = (v, name="value") =>
     array.from(
       rows: [
           {_time: now(), _value: v},
@@ -35,8 +36,8 @@ yieldValue = (v, name=defaultYieldValName) =>
     )
     |> yield(name: name)
 
-// yieldObject lets you display an object in the InfluxDB UI by
-// encoding it as String
+// yieldRecord returns a stream of tables containing a specified record encoded as a string.
+// This makes it possible to display records in an InfluxDB visualization.
 //
 // ## Parameters
 // - o: Object to yield
@@ -53,7 +54,7 @@ yieldValue = (v, name=defaultYieldValName) =>
 // ```
 //
 // ## Metadata
-// tags: 
+// tags: outputs
 //
 defaultYieldObjName="object"
 yieldObject = (o, name=defaultYieldObjName) =>
@@ -82,7 +83,7 @@ yieldObject = (o, name=defaultYieldObjName) =>
 // ```
 //
 // ## Metadata
-// tags: 
+// tags: outputs
 //
 defaultYieldJSONName="json"
 yieldJSON = (o, name=defaultYieldJSONName) =>
