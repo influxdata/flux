@@ -106,9 +106,10 @@ func injectDependencies(ctx context.Context) (context.Context, *dependency.Span)
 
 func main() {
 	fluxCmd := &cobra.Command{
-		Use:  "flux",
-		Args: cobra.MaximumNArgs(1),
-		RunE: runE,
+		Use:          "flux",
+		Args:         cobra.MaximumNArgs(1),
+		RunE:         runE,
+		SilenceUsage: true,
 	}
 	fluxCmd.Flags().BoolVarP(&flags.ExecScript, "exec", "e", false, "Interpret file argument as a raw flux script")
 	fluxCmd.Flags().StringVar(&flags.Trace, "trace", "", "Trace query execution")
