@@ -9,7 +9,9 @@ import (
 	"github.com/influxdata/flux/cmd/flux/cmd"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/dependencies"
+	"github.com/influxdata/flux/dependencies/feature"
 	"github.com/influxdata/flux/dependency"
+	"github.com/influxdata/flux/execute/executetest"
 	"github.com/influxdata/flux/fluxinit"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/opentracing/opentracing-go"
@@ -21,6 +23,7 @@ var flags struct {
 	ExecScript bool
 	Trace      string
 	Format     string
+	Features   []string
 }
 
 func runE(cmd *cobra.Command, args []string) error {
@@ -49,6 +52,12 @@ func runE(cmd *cobra.Command, args []string) error {
 	fluxinit.FluxInit()
 	ctx, span := injectDependencies(ctx)
 	defer span.Finish()
+
+	flagger := executetest.TestFlagger{}
+	for _, feature := range flags.Features {
+		flagger[feature] = true
+	}
+	ctx = feature.Dependency{Flagger: flagger}.Inject(ctx)
 
 	if len(args) == 0 {
 		return replE(ctx)
@@ -105,6 +114,7 @@ func main() {
 	fluxCmd.Flags().StringVar(&flags.Trace, "trace", "", "Trace query execution")
 	fluxCmd.Flags().StringVarP(&flags.Format, "format", "", "cli", "Output format one of: cli,csv. Defaults to cli")
 	fluxCmd.Flag("trace").NoOptDefVal = "jaeger"
+	fluxCmd.Flags().StringSliceVar(&flags.Features, "feature", nil, "Adds a boolean feature flag. See internal/feature/flags.yml for a list of the current features")
 
 	fmtCmd := &cobra.Command{
 		Use:           "fmt",
