@@ -1323,9 +1323,33 @@ func (t *ColListTable) Do(f func(flux.ColReader) error) error {
 	if !atomic.CompareAndSwapInt32(&t.used, 0, 1) {
 		return errors.New(codes.Internal, "table already read")
 	}
+
 	var err error
 	if t.nrows > 0 {
-		err = f(t)
+		buffer := &arrow.TableBuffer{
+			GroupKey: t.key,
+			Columns:  t.colMeta,
+			Values:   make([]array.Array, len(t.cols)),
+		}
+		for i, col := range t.cols {
+			switch col := col.(type) {
+			case *boolColumn:
+				buffer.Values[i] = col.data
+			case *intColumn:
+				buffer.Values[i] = col.data
+			case *uintColumn:
+				buffer.Values[i] = col.data
+			case *floatColumn:
+				buffer.Values[i] = col.data
+			case *stringColumn:
+				buffer.Values[i] = col.data
+			case *timeColumn:
+				buffer.Values[i] = col.data
+			default:
+				return errors.Newf(codes.Internal, "unknown column type: %T", col)
+			}
+		}
+		err = f(buffer)
 		t.Release()
 	}
 	return err
@@ -1361,32 +1385,6 @@ func (t *ColListTable) Strings(j int) *array.String {
 func (t *ColListTable) Times(j int) *array.Int {
 	CheckColType(t.colMeta[j], flux.TTime)
 	return t.cols[j].(*timeColumn).data
-}
-
-// GetRow takes a row index and returns the record located at that index in the cache
-func (t *ColListTable) GetRow(row int) values.Object {
-	record, _ := values.BuildObjectWithSize(len(t.colMeta), func(set values.ObjectSetter) error {
-		var val values.Value
-		for j, col := range t.colMeta {
-			switch col.Type {
-			case flux.TBool:
-				val = values.NewBool(t.cols[j].(*boolColumnBuilder).data[row])
-			case flux.TInt:
-				val = values.NewInt(t.cols[j].(*intColumnBuilder).data[row])
-			case flux.TUInt:
-				val = values.NewUInt(t.cols[j].(*uintColumnBuilder).data[row])
-			case flux.TFloat:
-				val = values.NewFloat(t.cols[j].(*floatColumnBuilder).data[row])
-			case flux.TString:
-				val = values.NewString(t.cols[j].(*stringColumnBuilder).data[row])
-			case flux.TTime:
-				val = values.NewTime(t.cols[j].(*timeColumnBuilder).data[row])
-			}
-			set(col.Label, val)
-		}
-		return nil
-	})
-	return record
 }
 
 type colListTableSorter struct {

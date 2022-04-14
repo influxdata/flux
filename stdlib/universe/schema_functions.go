@@ -526,8 +526,9 @@ func (m *mutateTable) Do(f func(flux.ColReader) error) error {
 			Values:   make([]array.Array, len(indices)),
 		}
 		for j, idx := range indices {
+			// This buffer doesn't live longer than the current scope
+			// so we don't need to retain anything.
 			buffer.Values[j] = table.Values(cr, idx)
-			buffer.Values[j].Retain()
 		}
 		return f(buffer)
 	})
