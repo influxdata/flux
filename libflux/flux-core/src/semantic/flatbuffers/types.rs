@@ -139,6 +139,7 @@ impl From<fb::Kind> for Kind {
             fb::Kind::Numeric => Kind::Numeric,
             fb::Kind::Comparable => Kind::Comparable,
             fb::Kind::Equatable => Kind::Equatable,
+            fb::Kind::Label => Kind::Label,
             fb::Kind::Nullable => Kind::Nullable,
             fb::Kind::Record => Kind::Record,
             fb::Kind::Negatable => Kind::Negatable,
@@ -159,13 +160,13 @@ impl From<Kind> for fb::Kind {
             Kind::Numeric => fb::Kind::Numeric,
             Kind::Comparable => fb::Kind::Comparable,
             Kind::Equatable => fb::Kind::Equatable,
+            Kind::Label => fb::Kind::Label,
             Kind::Nullable => fb::Kind::Nullable,
             Kind::Record => fb::Kind::Record,
             Kind::Negatable => fb::Kind::Negatable,
             Kind::Timeable => fb::Kind::Timeable,
             Kind::Stringable => fb::Kind::Stringable,
             Kind::Basic => fb::Kind::Basic,
-            _ => unreachable!("Unknown Kind"),
         }
     }
 }

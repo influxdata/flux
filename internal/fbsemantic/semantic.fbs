@@ -118,6 +118,7 @@ enum Kind : ubyte {
   Numeric,
   Comparable,
   Equatable,
+  Label,
   Nullable,
   Record,
   Negatable,

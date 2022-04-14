@@ -129,11 +129,12 @@ const (
 	KindNumeric      Kind = 4
 	KindComparable   Kind = 5
 	KindEquatable    Kind = 6
-	KindNullable     Kind = 7
-	KindRecord       Kind = 8
-	KindNegatable    Kind = 9
-	KindTimeable     Kind = 10
-	KindStringable   Kind = 11
+	KindLabel        Kind = 7
+	KindNullable     Kind = 8
+	KindRecord       Kind = 9
+	KindNegatable    Kind = 10
+	KindTimeable     Kind = 11
+	KindStringable   Kind = 12
 )
 
 var EnumNamesKind = map[Kind]string{
@@ -144,6 +145,7 @@ var EnumNamesKind = map[Kind]string{
 	KindNumeric:      "Numeric",
 	KindComparable:   "Comparable",
 	KindEquatable:    "Equatable",
+	KindLabel:        "Label",
 	KindNullable:     "Nullable",
 	KindRecord:       "Record",
 	KindNegatable:    "Negatable",
@@ -159,6 +161,7 @@ var EnumValuesKind = map[string]Kind{
 	"Numeric":      KindNumeric,
 	"Comparable":   KindComparable,
 	"Equatable":    KindEquatable,
+	"Label":        KindLabel,
 	"Nullable":     KindNullable,
 	"Record":       KindRecord,
 	"Negatable":    KindNegatable,

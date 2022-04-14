@@ -365,13 +365,13 @@ pub mod fbsemantic {
         since = "2.0.0",
         note = "Use associated constants instead. This will no longer be generated in 2021."
     )]
-    pub const ENUM_MAX_KIND: u8 = 11;
+    pub const ENUM_MAX_KIND: u8 = 12;
     #[deprecated(
         since = "2.0.0",
         note = "Use associated constants instead. This will no longer be generated in 2021."
     )]
     #[allow(non_camel_case_types)]
-    pub const ENUM_VALUES_KIND: [Kind; 12] = [
+    pub const ENUM_VALUES_KIND: [Kind; 13] = [
         Kind::Addable,
         Kind::Basic,
         Kind::Subtractable,
@@ -379,6 +379,7 @@ pub mod fbsemantic {
         Kind::Numeric,
         Kind::Comparable,
         Kind::Equatable,
+        Kind::Label,
         Kind::Nullable,
         Kind::Record,
         Kind::Negatable,
@@ -398,14 +399,15 @@ pub mod fbsemantic {
         pub const Numeric: Self = Self(4);
         pub const Comparable: Self = Self(5);
         pub const Equatable: Self = Self(6);
-        pub const Nullable: Self = Self(7);
-        pub const Record: Self = Self(8);
-        pub const Negatable: Self = Self(9);
-        pub const Timeable: Self = Self(10);
-        pub const Stringable: Self = Self(11);
+        pub const Label: Self = Self(7);
+        pub const Nullable: Self = Self(8);
+        pub const Record: Self = Self(9);
+        pub const Negatable: Self = Self(10);
+        pub const Timeable: Self = Self(11);
+        pub const Stringable: Self = Self(12);
 
         pub const ENUM_MIN: u8 = 0;
-        pub const ENUM_MAX: u8 = 11;
+        pub const ENUM_MAX: u8 = 12;
         pub const ENUM_VALUES: &'static [Self] = &[
             Self::Addable,
             Self::Basic,
@@ -414,6 +416,7 @@ pub mod fbsemantic {
             Self::Numeric,
             Self::Comparable,
             Self::Equatable,
+            Self::Label,
             Self::Nullable,
             Self::Record,
             Self::Negatable,
@@ -430,6 +433,7 @@ pub mod fbsemantic {
                 Self::Numeric => Some("Numeric"),
                 Self::Comparable => Some("Comparable"),
                 Self::Equatable => Some("Equatable"),
+                Self::Label => Some("Label"),
                 Self::Nullable => Some("Nullable"),
                 Self::Record => Some("Record"),
                 Self::Negatable => Some("Negatable"),
