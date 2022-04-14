@@ -63,6 +63,12 @@ fn labels_dynamic_string() {
             x = [{ a: 1 }] |> fill(column: column, value: "x")
         "#,
         expect: expect![[r#"
+            error: string is not Label (argument column)
+              ┌─ main:3:44
+              │
+            3 │             x = [{ a: 1 }] |> fill(column: column, value: "x")
+              │                                            ^^^^^^
+
             error: string is not a label
               ┌─ main:3:31
               │
@@ -141,6 +147,53 @@ fn merge_labels_to_string_in_function() {
 }
 
 #[test]
+fn attempt_to_use_label_polymorphism_without_feature() {
+    test_error_msg! {
+        env: map![
+            "columns" => "(table: A, ?column: C) => { C: string } where A: Record, C: Label",
+        ],
+        src: r#"
+            x = columns(table: { a: 1, b: "b" }, column: "abc")
+            y = x.abc
+        "#,
+        expect: expect![[r#"
+            error: string is not Label (argument column)
+              ┌─ main:2:58
+              │
+            2 │             x = columns(table: { a: 1, b: "b" }, column: "abc")
+              │                                                          ^^^^^
+
+            error: record is missing label abc
+              ┌─ main:3:17
+              │
+            3 │             y = x.abc
+              │                 ^
+
+        "#]],
+    }
+}
+#[test]
+fn columns() {
+    test_infer! {
+        config: AnalyzerConfig{
+            features: vec![Feature::LabelPolymorphism],
+            ..AnalyzerConfig::default()
+        },
+        env: map![
+            "columns" => "(table: A, ?column: C) => { C: string } where A: Record, C: Label",
+        ],
+        src: r#"
+            x = columns(table: { a: 1, b: "b" }, column: "abc")
+            y = x.abc
+        "#,
+        exp: map![
+            "x" => "{ abc: string }",
+            "y" => "string",
+        ],
+    }
+}
+
+#[test]
 fn optional_label() {
     test_error_msg! {
         config: AnalyzerConfig{
@@ -148,7 +201,7 @@ fn optional_label() {
             ..AnalyzerConfig::default()
         },
         env: map![
-            "columns" => "(table: A, ?column: C) => { C: string } where A: Record",
+            "columns" => "(table: A, ?column: C) => { C: string } where A: Record, C: Label",
         ],
         src: r#"
             x = columns(table: { a: 1, b: "b" })

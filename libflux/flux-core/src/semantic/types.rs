@@ -195,19 +195,15 @@ impl<'a, E> Unifier<'a, E> {
             }
         }
 
-        let mut error_on_unbound_record_labels = |typ: &MonoType| {
-            let visitor = FindUnboundLabels {
-                found: RefCell::new(None),
-                sub: self.sub,
-            };
-            let typ = typ.apply_cow(self.sub);
-            typ.visit(&visitor);
-            if let Some(non_label) = visitor.found.into_inner() {
-                self.errors.push(mk_error(Error::NotALabel(non_label)));
-            }
+        let visitor = FindUnboundLabels {
+            found: RefCell::new(None),
+            sub: self.sub,
         };
-
-        error_on_unbound_record_labels(&value);
+        let typ = value.apply_cow(self.sub);
+        typ.visit(&visitor);
+        if let Some(non_label) = visitor.found.into_inner() {
+            self.errors.push(mk_error(Error::NotALabel(non_label)));
+        }
 
         if self.errors.has_errors() {
             Err(self.errors)
@@ -764,7 +760,6 @@ impl BuiltinType {
                 Kind::Addable
                 | Kind::Comparable
                 | Kind::Equatable
-                | Kind::Label
                 | Kind::Nullable
                 | Kind::Basic
                 | Kind::Stringable => Ok(()),
@@ -1040,7 +1035,19 @@ impl MonoType {
             // TODO Should constrain bound vars as well, but we can't just store it in `cons` as
             // they would override constraints of free variables
             MonoType::BoundVar(_) => Ok(()),
-            MonoType::Label(_) => BuiltinType::String.constrain(with),
+            MonoType::Label(_) => match with {
+                Kind::Addable
+                | Kind::Comparable
+                | Kind::Equatable
+                | Kind::Label
+                | Kind::Nullable
+                | Kind::Basic
+                | Kind::Stringable => Ok(()),
+                _ => Err(Error::CannotConstrain {
+                    act: self.clone(),
+                    exp: with,
+                }),
+            },
             MonoType::Var(tvr) => {
                 tvr.constrain(with, cons);
                 Ok(())
