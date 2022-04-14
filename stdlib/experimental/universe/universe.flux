@@ -1,5 +1,6 @@
 package universe
 
+
 // columns returns the column labels in each input table.
 //
 // For each input table, `columns` outputs a table with the same group key
@@ -28,7 +29,7 @@ package universe
 // introduced: 0.14.0
 // tags: transformations
 //
-builtin columns : (<-tables: stream[A], ?column: C) => stream[{ C: string }] where A: Record
+builtin columns : (<-tables: stream[A], ?column: C) => stream[{C: string}] where A: Record
 
 // fill replaces all null values in input tables with a non-null value.
 //
@@ -68,9 +69,9 @@ builtin columns : (<-tables: stream[A], ?column: C) => stream[{ C: string }] whe
 // introduced: 0.14.0
 // tags: transformations
 //
-builtin fill : (<-tables: stream[{ A with C: B }], ?column: C, ?value: B, ?usePrevious: bool) =>
-stream[{ A
-with C: B }] where A: Record
+builtin fill : (<-tables: stream[{A with C: B}], ?column: C, ?value: B, ?usePrevious: bool) => stream[{A with C: B}]
+    where
+    A: Record
 
 // mean returns the average of non-null values in a specified column from each
 // input table.
@@ -93,5 +94,4 @@ with C: B }] where A: Record
 // introduced: 0.7.0
 // tags: transformations, aggregates
 //
-builtin mean : (<-tables: stream[{ A with C: B }], ?column: C) => stream[{ C: B }]
-    where A: Record, B: Numeric
+builtin mean : (<-tables: stream[{A with C: B}], ?column: C) => stream[{C: B}] where A: Record, B: Numeric
