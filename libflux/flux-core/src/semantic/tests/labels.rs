@@ -180,15 +180,17 @@ fn columns() {
             ..AnalyzerConfig::default()
         },
         env: map![
-            "columns" => "(table: A, ?column: C) => { C: string } where A: Record, C: Label",
+            "stream" => "stream[{ a: int }]",
+            "columns" => "(<-tables: stream[A], ?column: C) => stream[{ C: string }] where A: Record, C: Label",
+            "map" => "(<-tables: stream[A], fn: (r: A) => B) => stream[B]"
         ],
         src: r#"
-            x = columns(table: { a: 1, b: "b" }, column: "abc")
-            y = x.abc
+            x = stream
+                |> columns(column: "abc")
+                |> map(fn: (r) => ({ x: r.abc }))
         "#,
         exp: map![
-            "x" => "{ abc: string }",
-            "y" => "string",
+            "x" => "stream[{ x: string }]",
         ],
     }
 }
