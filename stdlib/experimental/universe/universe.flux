@@ -1,3 +1,9 @@
+// Package universe provides equivalent functions to the standard universe package
+// but with more precise type signatures.
+//
+// ## Metadata
+// introduced: NEXT
+//
 package universe
 
 
@@ -26,7 +32,7 @@ package universe
 // ```
 //
 // ## Metadata
-// introduced: 0.14.0
+// introduced: NEXT
 // tags: transformations
 //
 builtin columns : (<-tables: stream[A], ?column: C) => stream[{C: string}] where A: Record, C: Label
@@ -66,7 +72,7 @@ builtin columns : (<-tables: stream[A], ?column: C) => stream[{C: string}] where
 // ```
 //
 // ## Metadata
-// introduced: 0.14.0
+// introduced: NEXT
 // tags: transformations
 //
 builtin fill : (<-tables: stream[{A with C: B}], ?column: C, ?value: B, ?usePrevious: bool) => stream[{A with C: B}]
@@ -92,7 +98,7 @@ builtin fill : (<-tables: stream[{A with C: B}], ?column: C, ?value: B, ?usePrev
 // ```
 //
 // ## Metadata
-// introduced: 0.7.0
+// introduced: NEXT
 // tags: transformations, aggregates
 //
 builtin mean : (<-tables: stream[{A with C: B}], ?column: C) => stream[{C: B}] where A: Record, B: Numeric, C: Label
