@@ -13,10 +13,10 @@ import (
 )
 
 type groupKey struct {
+	hash   uint64 // hash of the key for easy comparison
 	cols   []flux.ColMeta
 	values []values.Value
-	sorted []int  // maintains a list of the sorted indexes
-	hash   uint64 // hash of the key for easy comparison
+	sorted []int // maintains a list of the sorted indexes
 }
 
 func New(cols []flux.ColMeta, values []values.Value) flux.GroupKey {
