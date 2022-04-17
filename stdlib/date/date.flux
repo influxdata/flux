@@ -639,6 +639,9 @@ builtin _truncate : (t: T, unit: duration, location: {zone: string, offset: dura
 //
 // ```no_run
 // import "date"
+// import "timezone"
+//
+// option location = timezone.location(name: "Europe/Madrid")
 //
 // date.truncate(t: 2019-06-03T13:59:01.000000000Z, unit: 1s)
 // // Returns 2019-06-03T13:59:01.000000000Z
@@ -650,28 +653,12 @@ builtin _truncate : (t: T, unit: duration, location: {zone: string, offset: dura
 // // Returns 2019-06-03T13:00:00.000000000Z
 //
 // date.truncate(t: 2019-06-03T13:59:01.000000000Z, unit: 1d)
-// // Returns 2019-06-03T00:00:00.000000000Z
-//
-// date.truncate(t: 2019-06-03T13:59:01.000000000Z, unit: 1mo)
-// // Returns 2019-06-01T00:00:00.000000000Z
-//
-// date.truncate(t: 2019-06-03T13:59:01.000000000Z, unit: 1y)
-// // Returns 2019-01-01T00:00:00.000000000Z
-// ```
-//
-// ```no_run
-// import "date"
-// import "location"
-//
-// option location = timezone.location(name: "Europe/Madrid")
-//
-// date.truncate(t: 2019-06-03T13:59:01.000000000Z, unit: 1s)
 // // Returns 2019-06-02T22:00:00.000000000Z
 //
-// date.truncate(t: 2019-06-03T13:59:01.000000000Z, unit: 1m)
+// date.truncate(t: 2019-06-03T13:59:01.000000000Z, unit: 1mo)
 // // Returns 2019-05-31T22:00:00.000000000Z
 //
-// date.truncate(t: 2019-06-03T13:59:01.000000000Z, unit: 1h)
+// date.truncate(t: 2019-06-03T13:59:01.000000000Z, unit: 1y)
 // // Returns 2018-12-31T23:00:00.000000000Z
 // ```
 //
