@@ -1,8 +1,8 @@
-// Package join
+// Package join is under active development and is not yet ready for public consumption.
 package join
 
 
-// join
+// join is under active development and is not yet ready for public consumption.
 //
 // ## Parameters
 // - left:
