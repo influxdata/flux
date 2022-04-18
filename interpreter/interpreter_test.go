@@ -902,3 +902,32 @@ func TestStack(t *testing.T) {
 		t.Fatalf("unexpected stack -want/+got:\n%s", cmp.Diff(want, got))
 	}
 }
+
+func TestExistsNull(t *testing.T) {
+	node := semantic.File{
+		Body: []semantic.Statement{
+			&semantic.ExpressionStatement{
+				Expression: &semantic.UnaryExpression{
+					Operator: ast.ExistsOperator,
+					Argument: &semantic.IdentifierExpression{
+						Name: semantic.Symbol{
+							LocalName: "r",
+						},
+					},
+				},
+			},
+		},
+	}
+
+	scope := values.NewScope()
+	scope.Set("r", values.Null)
+
+	intrp := interpreter.NewInterpreter(nil, nil)
+	sideEffects, _ := intrp.Eval(context.Background(), &node, scope, nil)
+	want := values.NewBool(false)
+	got := sideEffects[0].Value
+
+	if diff := cmp.Diff(want, got); diff != "" {
+		t.Fatal(diff)
+	}
+}
