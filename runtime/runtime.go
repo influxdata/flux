@@ -97,6 +97,11 @@ func (r *runtime) Prelude() values.Scope {
 }
 
 func (r *runtime) Eval(ctx context.Context, astPkg flux.ASTHandle, es interpreter.ExecOptsConfig, opts ...flux.ScopeMutator) ([]interpreter.SideEffect, values.Scope, error) {
+	// Give a helpful error message for developers who are trying
+	// to evaluate flux scripts in go unit tests
+	if !r.finalized {
+		panic("runtime is not finalized - consider importing package fluxinit or fluxinit/static")
+	}
 	semPkg, err := AnalyzePackage(ctx, astPkg)
 	if err != nil {
 		return nil, nil, err
