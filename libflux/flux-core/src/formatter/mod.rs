@@ -1559,7 +1559,7 @@ impl<'doc> Formatter<'doc> {
             arena,
             self.format_comments(&n.base.comments),
             "/",
-            n.value.replace("/", "\\/"),
+            n.value.replace('/', "\\/"),
             "/",
         ]
     }
@@ -1598,35 +1598,33 @@ const INDENT_BYTES: &str = "    ";
 const INDENT: isize = INDENT_BYTES.len() as isize;
 
 fn get_precedences(parent: &Node, child: &Node) -> (u32, u32) {
-    let pvp: u32;
-    let pvc: u32;
-    match parent {
-        Node::BinaryExpr(p) => pvp = Operator::new(&p.operator).get_precedence(),
-        Node::LogicalExpr(p) => pvp = Operator::new_logical(&p.operator).get_precedence(),
-        Node::UnaryExpr(p) => pvp = Operator::new(&p.operator).get_precedence(),
-        Node::FunctionExpr(_) => pvp = 3,
-        Node::PipeExpr(_) => pvp = 2,
-        Node::CallExpr(_) => pvp = 1,
-        Node::MemberExpr(_) => pvp = 1,
-        Node::IndexExpr(_) => pvp = 1,
+    let pvp: u32 = match parent {
+        Node::BinaryExpr(p) => Operator::new(&p.operator).get_precedence(),
+        Node::LogicalExpr(p) => Operator::new_logical(&p.operator).get_precedence(),
+        Node::UnaryExpr(p) => Operator::new(&p.operator).get_precedence(),
+        Node::FunctionExpr(_) => 3,
+        Node::PipeExpr(_) => 2,
+        Node::CallExpr(_) => 1,
+        Node::MemberExpr(_) => 1,
+        Node::IndexExpr(_) => 1,
         Node::ParenExpr(p) => return get_precedences(&(Node::from_expr(&p.expression)), child),
-        Node::ConditionalExpr(_) => pvp = 11,
-        _ => pvp = 0,
-    }
+        Node::ConditionalExpr(_) => 11,
+        _ => 0,
+    };
 
-    match child {
-        Node::BinaryExpr(p) => pvc = Operator::new(&p.operator).get_precedence(),
-        Node::LogicalExpr(p) => pvc = Operator::new_logical(&p.operator).get_precedence(),
-        Node::UnaryExpr(p) => pvc = Operator::new(&p.operator).get_precedence(),
-        Node::FunctionExpr(_) => pvc = 3,
-        Node::PipeExpr(_) => pvc = 2,
-        Node::CallExpr(_) => pvc = 1,
-        Node::MemberExpr(_) => pvc = 1,
-        Node::IndexExpr(_) => pvc = 1,
+    let pvc: u32 = match child {
+        Node::BinaryExpr(p) => Operator::new(&p.operator).get_precedence(),
+        Node::LogicalExpr(p) => Operator::new_logical(&p.operator).get_precedence(),
+        Node::UnaryExpr(p) => Operator::new(&p.operator).get_precedence(),
+        Node::FunctionExpr(_) => 3,
+        Node::PipeExpr(_) => 2,
+        Node::CallExpr(_) => 1,
+        Node::MemberExpr(_) => 1,
+        Node::IndexExpr(_) => 1,
         Node::ParenExpr(p) => return get_precedences(parent, &(Node::from_expr(&p.expression))),
-        Node::ConditionalExpr(_) => pvc = 11,
-        _ => pvc = 0,
-    }
+        Node::ConditionalExpr(_) => 11,
+        _ => 0,
+    };
 
     (pvp, pvc)
 }

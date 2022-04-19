@@ -71,7 +71,7 @@ pub fn parse_dir(dir: &Path) -> io::Result<ASTPackageMap> {
                     // the separators to always be `/` here than it is to change the
                     // rest of this buildscript & the flux runtime initialization logic
                     // to work with either separator.
-                    normalized_path = normalized_path.replace("\\", "/");
+                    normalized_path = normalized_path.replace('\\', "/");
                 }
                 files.push(parser::parse_string(
                     normalized_path
