@@ -555,6 +555,17 @@ func TestCompileAndEval(t *testing.T) {
 			}),
 			wantEvalErr: true,
 		},
+		{
+			name: "null record exists",
+			fn:   `(r) => exists r`,
+			inType: semantic.NewObjectType([]semantic.PropertyType{
+				{Key: []byte("r"), Value: semantic.NewObjectType([]semantic.PropertyType{})},
+			}),
+			input: values.NewObjectWithValues(map[string]values.Value{
+				"r": values.Null,
+			}),
+			want: values.New(false),
+		},
 		// TODO(jsternberg): We presently have not implemented dictionary support for
 		// runtime functions. There aren't any builtins that use this functionality,
 		// but when we do, this test will need to be uncommented to ensure that
