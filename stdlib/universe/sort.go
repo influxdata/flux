@@ -388,6 +388,13 @@ func (s *sortTableMergeHeap) Table(limit int, mem memory.Allocator) (flux.Table,
 		buffer.Release()
 	}
 
+	// Release the remaining items and clear the items.
+	// There are either none left or the remaining ones were filtered.
+	for _, item := range s.items {
+		item.Release()
+	}
+	s.items = s.items[:0]
+
 	// Determine the next buffer size.
 	return builder.Table()
 }

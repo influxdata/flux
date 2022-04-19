@@ -25,7 +25,7 @@ func init() {
 	joinSignature := runtime.MustLookupBuiltinType("universe", "join")
 	runtime.RegisterPackageValue("universe", JoinKind, flux.MustValue(flux.FunctionValue(JoinKind, createJoinOpSpec, joinSignature)))
 	flux.RegisterOpSpec(JoinKind, newJoinOp)
-	//TODO(nathanielc): Allow for other types of join implementations
+	// TODO(nathanielc): Allow for other types of join implementations
 	plan.RegisterProcedureSpec(MergeJoinKind, newMergeJoinProcedure, JoinKind)
 	execute.RegisterTransformation(MergeJoinKind, createMergeJoinTransformation)
 }
@@ -211,7 +211,7 @@ func createMergeJoinTransformation(id execute.DatasetID, mode execute.Accumulati
 	}
 	parents := a.Parents()
 	if len(parents) != 2 {
-		//TODO(nathanielc): Support n-way joins
+		// TODO(nathanielc): Support n-way joins
 		return nil, nil, errors.New(codes.Unimplemented, "joins currently must only have two parents")
 	}
 
@@ -973,6 +973,7 @@ func (c *MergeJoinCache) postJoinGroupKey(keys map[execute.DatasetID]flux.GroupK
 func (c *MergeJoinCache) advance(offset int, table *execute.ColListTableBuilder) (subset, flux.GroupKey) {
 	tbl, _ := table.Table()
 	cr := tbl.(flux.ColReader)
+	defer cr.Release()
 	if n := cr.Len(); n == offset {
 		return subset{Start: n, Stop: n}, nil
 	}

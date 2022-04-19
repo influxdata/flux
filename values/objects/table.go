@@ -41,7 +41,8 @@ var (
 // (Unlike flux.TableObject which represents a stream of tables.)
 type Table struct {
 	flux.BufferedTable
-	schema values.Array
+	schema   values.Array
+	refCount int
 }
 
 func NewTable(tbl flux.Table) (*Table, error) {
@@ -58,6 +59,7 @@ func NewTable(tbl flux.Table) (*Table, error) {
 			"type":    values.New(c.Type.String()),
 		}))
 	}
+	t.refCount = 1
 	return t, nil
 }
 
@@ -171,12 +173,17 @@ func (t *Table) Retain() {
 	t.schema.Range(func(i int, v values.Value) {
 		v.Retain()
 	})
+	t.refCount++
 }
 
 func (t *Table) Release() {
 	t.schema.Range(func(i int, v values.Value) {
 		v.Release()
 	})
+	t.refCount--
+	if t.refCount == 0 {
+		t.BufferedTable.Done()
+	}
 }
 
 func (t *Table) String() string {

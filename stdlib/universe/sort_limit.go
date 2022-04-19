@@ -89,7 +89,6 @@ func (s *sortLimitTransformation) Aggregate(chunk table.Chunk, state interface{}
 		return nil, false, err
 	}
 
-	mh.items = mh.items[:0]
 	if err := tbl.Do(func(cr flux.ColReader) error {
 		cr.Retain()
 		mh.items = append(mh.items, &sortTableMergeHeapItem{cr: cr})

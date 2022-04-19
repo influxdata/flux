@@ -4,9 +4,11 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"strings"
 	"testing"
 
+	arrowmem "github.com/apache/arrow/go/v7/arrow/memory"
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/dependency"
@@ -59,6 +61,24 @@ var skip = map[string]map[string]string{
 	},
 }
 
+var skipMemoryChecks = []string{
+	"contrib/RohanSreerama5/naiveBayesClassifier/bayes",
+	"contrib/anaisdg/statsmodels/linearreg",
+	"experimental/geo",
+	"experimental/geo/filterRowsPivoted",
+	"experimental/geo/filterRowsStrict",
+	"experimental/geo/filterRowsNotStrict",
+	"experimental/geo/gridFilterLevel",
+	"experimental/geo/gridFilter",
+	"experimental/geo/groupByArea",
+	"experimental/geo/shapeDataWithFilter",
+	"influxdata/influxdb/sample/alignToNow",
+	"universe/dynamic_query",
+	"universe/table_fns",
+	"universe/table_fns_findcolumn_map",
+	"universe/table_fns_findrecord_map",
+}
+
 func TestFluxEndToEnd(t *testing.T) {
 	runEndToEnd(t, stdlib.FluxTestPackages)
 }
@@ -81,7 +101,8 @@ func runEndToEnd(t *testing.T, pkgs []*ast.Package) {
 					if reason, ok := skip[pkg.Path][name]; ok {
 						t.Skip(reason)
 					}
-					testFlux(t, file)
+					fullname := fmt.Sprintf("%s/%s", pkg.Path, name)
+					testFlux(t, fullname, file)
 				})
 			}
 		})
@@ -98,7 +119,7 @@ func makeTestPackage(file *ast.File) *ast.Package {
 	return pkg
 }
 
-func testFlux(t testing.TB, file *ast.File) flux.Statistics {
+func testFlux(t testing.TB, name string, file *ast.File) flux.Statistics {
 	pkg := makeTestPackage(file)
 	pkg.Files = append(pkg.Files, stdlib.TestingRunCalls(pkg))
 	bs, err := json.Marshal(pkg)
@@ -108,7 +129,7 @@ func testFlux(t testing.TB, file *ast.File) flux.Statistics {
 	c := lang.ASTCompiler{AST: bs}
 
 	// testing.run
-	stats := doTestRun(t, c)
+	stats := doTestRun(t, name, c)
 
 	// testing.inspect
 	if t.Failed() {
@@ -124,7 +145,7 @@ func testFlux(t testing.TB, file *ast.File) flux.Statistics {
 	return stats
 }
 
-func doTestRun(t testing.TB, c flux.Compiler) flux.Statistics {
+func doTestRun(t testing.TB, name string, c flux.Compiler) flux.Statistics {
 	program, err := c.Compile(context.Background(), runtime.Default)
 	if err != nil {
 		t.Fatalf("unexpected error while compiling query: %v", err)
@@ -133,7 +154,16 @@ func doTestRun(t testing.TB, c flux.Compiler) flux.Statistics {
 	ctx, deps := dependency.Inject(context.Background(), executetest.NewTestExecuteDependencies())
 	defer deps.Finish()
 
-	r, err := program.Start(ctx, memory.DefaultAllocator)
+	var alloc memory.Allocator
+	if execute.ContainsStr(skipMemoryChecks, name) {
+		alloc = memory.DefaultAllocator
+	} else {
+		mem := arrowmem.NewCheckedAllocator(memory.DefaultAllocator)
+		defer mem.AssertSize(t, 0)
+		alloc = memory.NewResourceAllocator(mem)
+	}
+
+	r, err := program.Start(ctx, alloc)
 	if err != nil {
 		t.Fatalf("unexpected error while executing testing.run: %v", err)
 	}
@@ -141,7 +171,8 @@ func doTestRun(t testing.TB, c flux.Compiler) flux.Statistics {
 
 	// Read all results checking for errors
 	for res := range r.Results() {
-		err := res.Tables().Do(func(flux.Table) error {
+		err := res.Tables().Do(func(tbl flux.Table) error {
+			tbl.Done()
 			return nil
 		})
 		if err != nil {
