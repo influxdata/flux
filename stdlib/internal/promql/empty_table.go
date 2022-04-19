@@ -71,7 +71,7 @@ func createEmptyTableSource(prSpec plan.ProcedureSpec, dsid execute.DatasetID, a
 type EmptyTableSource struct {
 	execute.ExecutionNode
 	id execute.DatasetID
-	ts []execute.Transformation
+	ts execute.TransformationSet
 }
 
 func (s *EmptyTableSource) AddTransformation(t execute.Transformation) {
@@ -111,9 +111,7 @@ func (s *EmptyTableSource) Run(ctx context.Context) {
 		goto FINISH
 	}
 
-	for _, t := range s.ts {
-		t.Process(s.id, tbl)
-	}
+	s.ts.Process(s.id, tbl)
 
 FINISH:
 	for _, t := range s.ts {

@@ -12,6 +12,7 @@ import (
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/table"
+	"github.com/influxdata/flux/internal/arrowutil"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/internal/feature"
 	"github.com/influxdata/flux/internal/mutable"
@@ -20,6 +21,9 @@ import (
 	experimentaltable "github.com/influxdata/flux/stdlib/experimental/table"
 	"github.com/influxdata/flux/values"
 )
+
+//go:generate -command tmpl ../../gotool.sh github.com/benbjohnson/tmpl
+//go:generate tmpl -data=@../../internal/types.tmpldata -o aggregate_window.gen.go aggregate_window.gen.go.tmpl
 
 func init() {
 	plan.RegisterPhysicalRules(
@@ -33,10 +37,10 @@ const AggregateWindowKind = "aggregateWindow"
 
 type AggregateWindowProcedureSpec struct {
 	plan.DefaultCost
-	spec      *WindowProcedureSpec
-	aggregate aggregateWindow
-	valueCol  string
-	useStart  bool
+	spec       *WindowProcedureSpec
+	initialize aggregateWindowInitializer
+	valueCol   string
+	useStart   bool
 }
 
 func (s *AggregateWindowProcedureSpec) Kind() plan.ProcedureKind {
@@ -49,17 +53,21 @@ func (s *AggregateWindowProcedureSpec) Copy() plan.ProcedureSpec {
 	return &ns
 }
 
+type aggregateWindowInitializer func(a *aggregateWindowTransformation, valueType flux.ColType) (aggregateWindow, error)
+
 type aggregateWindowState struct {
-	ts      *array.Int
-	buffers []array.Array
+	inType flux.ColType
+	state  aggregateWindow
 }
 
 type aggregateWindow interface {
-	Initialize(valueType flux.ColType, mem memory.Allocator) ([]array.Builder, error)
-	Aggregate(ts, indices, start, stop *array.Int, values array.Array, builders []array.Builder)
-	Merge(prevT, nextT *array.Int, prev, next []array.Array, mem memory.Allocator) (*array.Int, []array.Array)
-	Compute(buffers []array.Array, mem memory.Allocator) (flux.ColType, array.Array)
-	AppendEmpty(b array.Builder)
+	// Aggregate will aggregate the values into the buckets denoted by the start/stop
+	// arrays. The ts and vs arrays must be the same size while start/stop
+	// are the buckets the values will be grouped into.
+	Aggregate(ts *array.Int, vs array.Array, start, stop *array.Int, mem memory.Allocator)
+
+	// Compute will compute the final values for the aggregated windows.
+	Compute(mem memory.Allocator) (*array.Int, flux.ColType, array.Array)
 }
 
 type aggregateWindowTransformation struct {
@@ -69,7 +77,7 @@ type aggregateWindowTransformation struct {
 	timeCol     string
 	valueCol    string
 	useStart    bool
-	aggregate   aggregateWindow
+	initialize  aggregateWindowInitializer
 }
 
 func createAggregateWindowTransformation(id execute.DatasetID, mode execute.AccumulationMode, spec plan.ProcedureSpec, a execute.Administration) (execute.Transformation, execute.Dataset, error) {
@@ -84,7 +92,10 @@ func createAggregateWindowTransformation(id execute.DatasetID, mode execute.Accu
 		return nil, nil, errors.New(codes.Invalid, "nil bounds passed to window; use range to set the window range").
 			WithDocURL(docURL)
 	}
+	return newAggregateWindowTransformation(id, s, bounds, a.Allocator())
+}
 
+func newAggregateWindowTransformation(id execute.DatasetID, s *AggregateWindowProcedureSpec, bounds *execute.Bounds, mem memory.Allocator) (execute.Transformation, execute.Dataset, error) {
 	loc, err := s.spec.Window.LoadLocation()
 	if err != nil {
 		return nil, nil, err
@@ -107,23 +118,18 @@ func createAggregateWindowTransformation(id execute.DatasetID, mode execute.Accu
 		timeCol:     s.spec.TimeColumn,
 		valueCol:    s.valueCol,
 		useStart:    s.useStart,
-		aggregate:   s.aggregate,
+		initialize:  s.initialize,
 	}
-	return execute.NewAggregateTransformation(id, tr, a.Allocator())
+	return execute.NewAggregateTransformation(id, tr, mem)
 }
 
 func (a *aggregateWindowTransformation) Aggregate(chunk table.Chunk, state interface{}, mem memory.Allocator) (interface{}, bool, error) {
 	ws, _ := state.(*aggregateWindowState)
-	newState, err := a.processChunk(chunk, mem)
+	newState, err := a.processChunk(chunk, ws, mem)
 	if err != nil {
 		return nil, false, err
 	}
-
-	s, err := a.mergeWindows(ws, newState, mem)
-	if err != nil {
-		return nil, false, err
-	}
-	return s, true, nil
+	return newState, true, nil
 }
 
 func (a *aggregateWindowTransformation) Compute(key flux.GroupKey, state interface{}, d *execute.TransportDataset, mem memory.Allocator) error {
@@ -138,7 +144,7 @@ func (a *aggregateWindowTransformation) Compute(key flux.GroupKey, state interfa
 	return d.Process(chunk)
 }
 
-func (a *aggregateWindowTransformation) processChunk(chunk table.Chunk, mem memory.Allocator) (*aggregateWindowState, error) {
+func (a *aggregateWindowTransformation) processChunk(chunk table.Chunk, ws *aggregateWindowState, mem memory.Allocator) (*aggregateWindowState, error) {
 	// Find the time column for this table chunk.
 	ts, err := a.getTimeColumn(chunk)
 	if err != nil {
@@ -151,30 +157,36 @@ func (a *aggregateWindowTransformation) processChunk(chunk table.Chunk, mem memo
 		return nil, err
 	}
 
+	// Verify the input column is still the same.
+	if ws != nil {
+		if ws.inType != vt {
+			return nil, errors.Newf(codes.FailedPrecondition, "schema collision detected: column %q is both of type %s and %s", a.valueCol, ws.inType, vt)
+		}
+	} else {
+		state, err := a.initialize(a, vt)
+		if err != nil {
+			return nil, err
+		}
+		ws = &aggregateWindowState{
+			inType: vt,
+			state:  state,
+		}
+	}
+
 	// Sort the timestamps and return the
 	// offsets of the sorted timestamps.
-	indices := a.sort(ts, mem)
-	defer indices.Release()
+	ts, vs = a.sort(ts, vs, mem)
+	defer ts.Release()
+	defer vs.Release()
 
 	// Scan the timestamps and construct the window boundaries.
-	start, stop := a.scanWindows(ts, indices, mem)
-	buffers, err := a.computeWindows(ts, indices, start, stop, vt, vs, mem)
-	if err != nil {
-		start.Release()
-		stop.Release()
-		return nil, err
-	}
+	start, stop := a.scanWindows(ts, mem)
+	defer start.Release()
+	defer stop.Release()
 
-	if a.useStart {
-		stop.Release()
-		stop = start
-	} else {
-		start.Release()
-	}
-	return &aggregateWindowState{
-		ts:      stop,
-		buffers: buffers,
-	}, nil
+	// Send these to the aggregation method.
+	ws.state.Aggregate(ts, vs, start, stop, mem)
+	return ws, nil
 }
 
 func (a *aggregateWindowTransformation) getTimeColumn(chunk table.Chunk) (*array.Int, error) {
@@ -201,17 +213,31 @@ func (a *aggregateWindowTransformation) getValueColumn(chunk table.Chunk) (flux.
 	return chunk.Col(idx).Type, chunk.Values(idx), nil
 }
 
+func (a *aggregateWindowTransformation) isSorted(ts *array.Int) bool {
+	arr := ts.Int64Values()
+	return sort.SliceIsSorted(arr, func(i, j int) bool {
+		return arr[i] < arr[j]
+	})
+}
+
 // sort will return the indexes of the array as if it were sorted.
 // It does not modify the array and the array returned are the indexes of the
 // sorted values.
-func (a *aggregateWindowTransformation) sort(ts *array.Int, mem memory.Allocator) *array.Int {
+func (a *aggregateWindowTransformation) sort(ts *array.Int, vs array.Array, mem memory.Allocator) (*array.Int, array.Array) {
+	// Check if the timestamps are already sorted.
+	if a.isSorted(ts) {
+		ts.Retain()
+		vs.Retain()
+		return ts, vs
+	}
+
 	// Construct a mutable array builder so that we can modify the buffer in-place
 	// while still using memory accounting.
-	indexes := mutable.NewInt64Array(mem)
-	indexes.Resize(ts.Len())
+	indices := mutable.NewInt64Array(mem)
+	indices.Resize(ts.Len())
 
 	// Retrieve the raw slice.
-	offsets := indexes.Int64Values()
+	offsets := indices.Int64Values()
 	for i := range offsets {
 		offsets[i] = int64(i)
 	}
@@ -230,27 +256,55 @@ func (a *aggregateWindowTransformation) sort(ts *array.Int, mem memory.Allocator
 		return ts.Value(i) < ts.Value(j)
 	})
 
+	// Construct the indices so we can use them.
+	arr := indices.NewInt64Array()
+	defer arr.Release()
+
 	// Slice of null values from the index.
-	arr := indexes.NewInt64Array()
 	if nulls := ts.NullN(); nulls > 0 {
 		narr := arrow.IntSlice(arr, 0, ts.Len()-nulls)
 		arr.Release()
 		arr = narr
 	}
-	return arr
+
+	// Copy the arrays using the computed indices.
+	ts = arrowutil.CopyIntsByIndex(ts, arr, mem)
+	vs = arrowutil.CopyByIndex(vs, arr, mem)
+	return ts, vs
 }
 
 // scanWindows scans the timestamps and returns the appropriate boundaries.
 // Not all timestamps may be associated with a boundary and some timestamps may
 // be associated with multiple boundaries.
-func (a *aggregateWindowTransformation) scanWindows(ts, indices *array.Int, mem memory.Allocator) (start, stop *array.Int) {
+func (a *aggregateWindowTransformation) scanWindows(ts *array.Int, mem memory.Allocator) (start, stop *array.Int) {
 	startB := array.NewIntBuilder(mem)
 	stopB := array.NewIntBuilder(mem)
 	latest := int64(math.MinInt64)
 
+	// Determine a size hint based on the minimum and maximum times.
+	size := 0
+	if ts.Len() > 0 {
+		startT := ts.Value(0)
+		stopT := ts.Value(ts.Len() - 1)
+		size = a.sizeHint(startT, stopT)
+	}
+
+	// If the size hint was greater than the number of points
+	// in this array, then we probably have a sparse array
+	// and should just expect one point per window.
+	if size > ts.Len() {
+		size = ts.Len()
+	}
+
+	// Preallocate the array size.
+	if size > 0 {
+		startB.Resize(size)
+		stopB.Resize(size)
+	}
+
 	var bounds []execute.Bounds
-	for i, n := 0, indices.Len(); i < n; i++ {
-		t := ts.Value(int(indices.Value(i)))
+	for i, n := 0, ts.Len(); i < n; i++ {
+		t := ts.Value(i)
 
 		bounds = bounds[:0]
 
@@ -282,37 +336,6 @@ func (a *aggregateWindowTransformation) scanWindows(ts, indices *array.Int, mem 
 		latest = int64(bounds[0].Start)
 	}
 	return startB.NewIntArray(), stopB.NewIntArray()
-}
-
-func (a *aggregateWindowTransformation) computeWindows(ts, indices, start, stop *array.Int, valueType flux.ColType, values array.Array, mem memory.Allocator) ([]array.Array, error) {
-	builders, err := a.aggregate.Initialize(valueType, mem)
-	if err != nil {
-		return nil, err
-	}
-	for _, b := range builders {
-		b.Resize(start.Len())
-	}
-	a.aggregate.Aggregate(ts, indices, start, stop, values, builders)
-
-	// Compute the windows for the current chunk.
-	// This isn't the final computation that produces the column,
-	// but an interim result that will be merged and computed later.
-	results := make([]array.Array, len(builders))
-	for i, b := range builders {
-		results[i] = b.NewArray()
-	}
-	return results, nil
-}
-
-func (a *aggregateWindowTransformation) mergeWindows(s, ns *aggregateWindowState, mem memory.Allocator) (*aggregateWindowState, error) {
-	if s == nil {
-		return ns, nil
-	}
-	ts, buffers := a.aggregate.Merge(s.ts, ns.ts, s.buffers, ns.buffers, mem)
-	s.ts.Release()
-	ns.ts.Release()
-	ns.ts, ns.buffers = ts, buffers
-	return ns, nil
 }
 
 func (a *aggregateWindowTransformation) keyMatches(key flux.GroupKey) bool {
@@ -382,13 +405,8 @@ func (a *aggregateWindowTransformation) recomputeKey(key flux.GroupKey) flux.Gro
 	return execute.NewGroupKey(cols, vs)
 }
 
-func (a *aggregateWindowTransformation) computeFromState(key flux.GroupKey, s *aggregateWindowState, mem memory.Allocator) arrow.TableBuffer {
-	ts := s.ts
-	vt, vs := a.aggregate.Compute(s.buffers, mem)
-
-	if a.createEmpty {
-		ts, vs = a.createEmptyWindows(ts, vs, mem)
-	}
+func (a *aggregateWindowTransformation) computeFromState(key flux.GroupKey, ws *aggregateWindowState, mem memory.Allocator) arrow.TableBuffer {
+	ts, vt, vs := ws.state.Compute(mem)
 	n := ts.Len()
 
 	buffer := arrow.TableBuffer{
@@ -416,87 +434,59 @@ func (a *aggregateWindowTransformation) computeFromState(key flux.GroupKey, s *a
 	return buffer
 }
 
-func (a *aggregateWindowTransformation) createEmptyWindows(ts *array.Int, vs array.Array, mem memory.Allocator) (*array.Int, array.Array) {
-	switch vs := vs.(type) {
-	case *array.Int:
-		vb := array.NewIntBuilder(mem)
-		ts = a.createEmptyWindowsFunc(ts, vb, mem, func(i int) {
-			vb.Append(vs.Value(i))
-		})
-		vs.Release()
-		return ts, vb.NewArray()
-	case *array.Float:
-		vb := array.NewFloatBuilder(mem)
-		ts = a.createEmptyWindowsFunc(ts, vb, mem, func(i int) {
-			vb.Append(vs.Value(i))
-		})
-		vs.Release()
-		return ts, vb.NewArray()
-	case *array.Uint:
-		vb := array.NewUintBuilder(mem)
-		ts = a.createEmptyWindowsFunc(ts, vb, mem, func(i int) {
-			vb.Append(vs.Value(i))
-		})
-		vs.Release()
-		return ts, vb.NewArray()
-	default:
-		panic("unimplemented")
+// sizeHint will return a hint for the number of intervals given the start and stop times.
+// Both start and stop are inclusive. This is important as this method is used in multiple
+// locations. When used in a context with the start and stop boundaries, we have to adjust
+// the exclusive stop time to match the inclusive stop time for this method. When we are
+// getting a size hint with actual data, then the time is already inclusive and no adjustment
+// is necessary.
+//
+// The value here is a maximum and not necessarily the value that arrays should be resized to.
+// For example, a sparse data set with only 10 points may be spread out over potentially hundreds
+// of intervals. For this, it's enough to know that the data is probably sparse and we can just
+// allocate for the 10 intervals as determined by the number of points.
+func (a *aggregateWindowTransformation) sizeHint(start, stop int64) int {
+	every := a.w.Every()
+	window := every.Nanoseconds()
+	if every.MonthsOnly() {
+		// Determine the year/month for the stop and start.
+		// Then the math is mostly the same as below.
+		startYear, startMonth, _ := values.Time(start).Time().Date()
+		start = int64(startYear*12 + int(startMonth) - 1)
+
+		stopYear, stopMonth, _ := values.Time(start).Time().Date()
+		stop = int64(stopYear*12 + int(stopMonth) - 1)
+
+		// The window is now 1 because start and stop are now months
+		// instead of nanoseconds.
+		window = 1
 	}
-}
-
-func (a *aggregateWindowTransformation) createEmptyWindowsFunc(ts *array.Int, vb array.Builder, mem memory.Allocator, fn func(i int)) *array.Int {
-	// We will now use the bounds to iterate over each window.
-	// We'll match the windows to the input and append nulls when no match is found.
-	bound := a.w.GetLatestBounds(a.bounds.Start)
-	for ; bound.Stop() > a.bounds.Start; bound = a.w.PrevBounds(bound) {
-		// Do nothing.
-	}
-
-	// We found the boundary right before the first window.
-	// Move to the first window.
-	bound = a.w.NextBounds(bound)
-
-	// Iterate through each window. If the boundary matches the current
-	// timestamp, invoke the function. Otherwise, use the builder to append null.
-	i, n := 0, ts.Len()
-	tb := array.NewIntBuilder(mem)
-	for ; bound.Start() < a.bounds.Stop; bound = a.w.NextBounds(bound) {
-		b := a.bounds.Intersect(execute.Bounds{
-			Start: bound.Start(),
-			Stop:  bound.Stop(),
-		})
-
-		tv := int64(b.Stop)
-		if a.useStart {
-			tv = int64(b.Start)
-		}
-
-		tb.Append(tv)
-		if i < n && tv == ts.Value(i) {
-			fn(i)
-			i++
-			continue
-		}
-		a.aggregate.AppendEmpty(vb)
-	}
-
-	ts.Release()
-	return tb.NewIntArray()
+	// We determine the maximum number of intervals by finding
+	// the difference between the stop and start times, dividing it
+	// by the number of nanoseconds in the interval, then adjusting
+	// to include the extra interval.
+	//
+	// A quick proof of this is a time range of [0, 29] with an interval
+	// of 10. This should produce 3. (29-0)/10 = 2 because of integer division
+	// and we add 1 to include the extra interval. For [0, 30], we should produce
+	// 4 as we have one point in the [30, 40) interval. (30-0)/10 = 3 and adding 1
+	// produces the fourth interval.
+	return int((stop-start)/window) + 1
 }
 
 func (a *aggregateWindowTransformation) Close() error {
 	return nil
 }
 
-func aggregateWindows(ts, indices, start, stop *array.Int, fn func(i, j int)) {
-	l := indices.Len()
+func aggregateWindows(ts, start, stop *array.Int, fn func(i, j int)) {
+	l := ts.Len()
 	for i, n := 0, start.Len(); i < n; i++ {
 		startT := start.Value(i)
 		stopT := stop.Value(i)
 
 		startI := 0
 		for ; startI < l; startI++ {
-			t := ts.Value(int(indices.Value(startI)))
+			t := ts.Value(startI)
 			if t >= startT {
 				break
 			}
@@ -504,7 +494,7 @@ func aggregateWindows(ts, indices, start, stop *array.Int, fn func(i, j int)) {
 
 		stopI := startI
 		for ; stopI < l; stopI++ {
-			t := ts.Value(int(indices.Value(stopI)))
+			t := ts.Value(stopI)
 			if t >= stopT {
 				break
 			}
@@ -513,7 +503,12 @@ func aggregateWindows(ts, indices, start, stop *array.Int, fn func(i, j int)) {
 	}
 }
 
-func mergeWindows(prevT, nextT *array.Int, mem memory.Allocator, fn func(i, j int)) *array.Int {
+func mergeWindowTimes(prevT, nextT *array.Int, mem memory.Allocator) *array.Int {
+	if prevT == nil {
+		nextT.Retain()
+		return nextT
+	}
+
 	b := array.NewIntBuilder(mem)
 	b.Resize(prevT.Len())
 
@@ -522,16 +517,13 @@ func mergeWindows(prevT, nextT *array.Int, mem memory.Allocator, fn func(i, j in
 		l, r := prevT.Value(i), nextT.Value(j)
 		if l == r {
 			b.Append(l)
-			fn(i, j)
 			i++
 			j++
 		} else if l < r {
 			b.Append(l)
-			fn(i, -1)
 			i++
 		} else {
 			b.Append(r)
-			fn(-1, j)
 			j++
 		}
 	}
@@ -539,237 +531,218 @@ func mergeWindows(prevT, nextT *array.Int, mem memory.Allocator, fn func(i, j in
 	if i < prevT.Len() {
 		for ; i < prevT.Len(); i++ {
 			b.Append(prevT.Value(i))
-			fn(i, -1)
 		}
 	}
 
 	if j < nextT.Len() {
 		for ; j < nextT.Len(); j++ {
 			b.Append(nextT.Value(j))
-			fn(-1, j)
 		}
 	}
 	return b.NewIntArray()
 }
 
-type aggregateWindowCount struct{}
-
-func (a aggregateWindowCount) Initialize(valueType flux.ColType, mem memory.Allocator) ([]array.Builder, error) {
-	return []array.Builder{array.NewIntBuilder(mem)}, nil
+func mergeWindowValues(ts, prevT, nextT *array.Int, fn func(i, j int)) {
+	prev, next := 0, 0
+	for i, n := 0, ts.Len(); i < n; i++ {
+		prevM := prev < prevT.Len() && ts.Value(i) == prevT.Value(prev)
+		nextM := next < nextT.Len() && ts.Value(i) == nextT.Value(next)
+		if prevM && nextM {
+			fn(prev, next)
+			prev++
+			next++
+		} else if prevM {
+			fn(prev, -1)
+			prev++
+		} else if nextM {
+			fn(-1, next)
+			next++
+		}
+	}
 }
 
-func (a aggregateWindowCount) Aggregate(ts, indices, start, stop *array.Int, values array.Array, builders []array.Builder) {
-	b := builders[0].(*array.IntBuilder)
-	aggregateWindows(ts, indices, start, stop, func(i, j int) {
+type aggregateWindowBase struct {
+	a  *aggregateWindowTransformation
+	ts *array.Int
+}
+
+func (a *aggregateWindowBase) mergeWindows(start, stop *array.Int, mem memory.Allocator, fn func(ts, prev, next *array.Int)) {
+	prev := a.ts
+	if a.a.useStart {
+		stop = start
+	}
+	a.ts = mergeWindowTimes(prev, stop, mem)
+	fn(a.ts, prev, stop)
+	if prev != nil {
+		prev.Release()
+	}
+}
+
+func (a *aggregateWindowBase) createEmptyWindows(mem memory.Allocator, fn func(n int) (append func(i int), done func())) {
+	if !a.a.createEmpty {
+		return
+	}
+
+	// We will now use the bounds to iterate over each window.
+	// We'll match the windows to the input and append nulls when no match is found.
+	bound := a.a.w.GetLatestBounds(a.a.bounds.Start)
+	for ; bound.Stop() > a.a.bounds.Start; bound = a.a.w.PrevBounds(bound) {
+		// Do nothing.
+	}
+
+	// We found the boundary right before the first window.
+	// Move to the first window.
+	bound = a.a.w.NextBounds(bound)
+
+	// Determine an approximate size for the array.
+	// We adjust the stop time because the boundary has an exclusive stop time
+	// and sizeHint takes an inclusive stop time.
+	size := a.a.sizeHint(int64(a.a.bounds.Start), int64(a.a.bounds.Stop)-1)
+
+	// Iterate through each window and construct the time column.
+	tb := array.NewIntBuilder(mem)
+	tb.Resize(size)
+	for ; bound.Start() < a.a.bounds.Stop; bound = a.a.w.NextBounds(bound) {
+		b := a.a.bounds.Intersect(execute.Bounds{
+			Start: bound.Start(),
+			Stop:  bound.Stop(),
+		})
+
+		tv := int64(b.Stop)
+		if a.a.useStart {
+			tv = int64(b.Start)
+		}
+		tb.Append(tv)
+	}
+
+	// Construct the time column.
+	ts := tb.NewIntArray()
+
+	// Use the function to get an append and done function we will use
+	// for merging the values.
+	append, done := fn(ts.Len())
+	i, n := 0, a.ts.Len()
+
+	// Iterate through the timestamps. If there is a match, append the
+	// value at that index. If there is no match, pass -1 to signal that
+	// the null value for that specific aggregate should be used.
+	for _, tv := range ts.Int64Values() {
+		if i < n && tv == a.ts.Value(i) {
+			append(i)
+			i++
+		} else {
+			append(-1)
+		}
+	}
+
+	// Mark our iteration as done.
+	done()
+	a.ts.Release()
+	a.ts = ts
+}
+
+type aggregateWindowCount struct {
+	aggregateWindowBase
+	vs *array.Int
+}
+
+func newAggregateWindowCount(a *aggregateWindowTransformation, valueType flux.ColType) (aggregateWindow, error) {
+	return &aggregateWindowCount{
+		aggregateWindowBase: aggregateWindowBase{a: a},
+	}, nil
+}
+
+func (a *aggregateWindowCount) Aggregate(ts *array.Int, vs array.Array, start, stop *array.Int, mem memory.Allocator) {
+	b := array.NewIntBuilder(mem)
+	b.Resize(stop.Len())
+	aggregateWindows(ts, start, stop, func(i, j int) {
 		b.Append(int64(j - i))
 	})
-}
 
-func (a aggregateWindowCount) Merge(prevT, nextT *array.Int, prev, next []array.Array, mem memory.Allocator) (*array.Int, []array.Array) {
-	first := prev[0].(*array.Int)
-	second := next[0].(*array.Int)
-	b := array.NewIntBuilder(mem)
-	ts := mergeWindows(prevT, nextT, mem, func(i, j int) {
-		if i >= 0 && j >= 0 {
-			b.Append(first.Value(i) + second.Value(j))
-		} else if i >= 0 {
-			b.Append(first.Value(i))
-		} else {
-			b.Append(second.Value(j))
+	result := b.NewIntArray()
+	a.mergeWindows(start, stop, mem, func(ts, prev, next *array.Int) {
+		if a.vs == nil {
+			a.vs = result
+			return
 		}
+		defer result.Release()
+
+		merged := array.NewIntBuilder(mem)
+		merged.Resize(ts.Len())
+		mergeWindowValues(ts, prev, next, func(i, j int) {
+			if i >= 0 && j >= 0 {
+				merged.Append(a.vs.Value(i) + result.Value(j))
+			} else if i >= 0 {
+				merged.Append(a.vs.Value(i))
+			} else {
+				merged.Append(result.Value(j))
+			}
+		})
+		a.vs.Release()
+		a.vs = merged.NewIntArray()
 	})
-	return ts, []array.Array{b.NewArray()}
 }
 
-func (a aggregateWindowCount) Compute(buffers []array.Array, mem memory.Allocator) (flux.ColType, array.Array) {
-	return flux.TInt, buffers[0]
+func (a *aggregateWindowCount) Compute(mem memory.Allocator) (*array.Int, flux.ColType, array.Array) {
+	a.createEmptyWindows(mem, func(n int) (append func(i int), done func()) {
+		b := array.NewIntBuilder(mem)
+		b.Resize(n)
+
+		append = func(i int) {
+			if i < 0 {
+				b.Append(0)
+			} else {
+				b.Append(a.vs.Value(i))
+			}
+		}
+
+		done = func() {
+			a.vs.Release()
+			a.vs = b.NewIntArray()
+		}
+		return append, done
+	})
+	return a.ts, flux.TInt, a.vs
 }
 
-func (a aggregateWindowCount) AppendEmpty(b array.Builder) {
-	b.(*array.IntBuilder).Append(0)
-}
-
-type aggregateWindowSum struct{}
-
-func (a aggregateWindowSum) Initialize(valueType flux.ColType, mem memory.Allocator) ([]array.Builder, error) {
-	var b array.Builder
+func newAggregateWindowSum(a *aggregateWindowTransformation, valueType flux.ColType) (aggregateWindow, error) {
+	base := aggregateWindowBase{a: a}
 	switch valueType {
-	case flux.TFloat:
-		b = array.NewFloatBuilder(mem)
 	case flux.TInt:
-		b = array.NewIntBuilder(mem)
+		return &aggregateWindowSumInt{
+			aggregateWindowBase: base,
+		}, nil
 	case flux.TUInt:
-		b = array.NewUintBuilder(mem)
+		return &aggregateWindowSumUint{
+			aggregateWindowBase: base,
+		}, nil
+	case flux.TFloat:
+		return &aggregateWindowSumFloat{
+			aggregateWindowBase: base,
+		}, nil
 	default:
 		return nil, errors.Newf(codes.FailedPrecondition, "unsupported aggregate column type %v", valueType)
 	}
-	return []array.Builder{b}, nil
 }
 
-func (a aggregateWindowSum) Aggregate(ts, indices, start, stop *array.Int, values array.Array, builders []array.Builder) {
-	switch b := builders[0].(type) {
-	case *array.FloatBuilder:
-		vs := values.(*array.Float)
-		aggregateWindows(ts, indices, start, stop, func(i, j int) {
-			var sum float64
-			for ; i < j; i++ {
-				sum += vs.Value(int(indices.Value(i)))
-			}
-			b.Append(sum)
-		})
-	case *array.IntBuilder:
-		vs := values.(*array.Int)
-		aggregateWindows(ts, indices, start, stop, func(i, j int) {
-			var sum int64
-			for ; i < j; i++ {
-				sum += vs.Value(int(indices.Value(i)))
-			}
-			b.Append(sum)
-		})
-	case *array.UintBuilder:
-		vs := values.(*array.Uint)
-		aggregateWindows(ts, indices, start, stop, func(i, j int) {
-			var sum uint64
-			for ; i < j; i++ {
-				sum += vs.Value(int(indices.Value(i)))
-			}
-			b.Append(sum)
-		})
+func newAggregateWindowMean(a *aggregateWindowTransformation, valueType flux.ColType) (aggregateWindow, error) {
+	base := aggregateWindowBase{a: a}
+	switch valueType {
+	case flux.TInt:
+		return &aggregateWindowMeanInt{
+			aggregateWindowBase: base,
+		}, nil
+	case flux.TUInt:
+		return &aggregateWindowMeanUint{
+			aggregateWindowBase: base,
+		}, nil
+	case flux.TFloat:
+		return &aggregateWindowMeanFloat{
+			aggregateWindowBase: base,
+		}, nil
 	default:
-		panic("unreachable")
+		return nil, errors.Newf(codes.FailedPrecondition, "unsupported aggregate column type %v", valueType)
 	}
-}
-
-func (a aggregateWindowSum) Merge(prevT, nextT *array.Int, prev, next []array.Array, mem memory.Allocator) (*array.Int, []array.Array) {
-	switch prev := prev[0].(type) {
-	case *array.Float:
-		next := next[0].(*array.Float)
-		b := array.NewFloatBuilder(mem)
-		ts := mergeWindows(prevT, nextT, mem, func(i, j int) {
-			if i >= 0 && j >= 0 {
-				b.Append(prev.Value(i) + next.Value(j))
-			} else if i >= 0 {
-				b.Append(prev.Value(i))
-			} else {
-				b.Append(next.Value(j))
-			}
-		})
-		return ts, []array.Array{b.NewArray()}
-	case *array.Int:
-		next := next[0].(*array.Int)
-		b := array.NewIntBuilder(mem)
-		ts := mergeWindows(prevT, nextT, mem, func(i, j int) {
-			if i >= 0 && j >= 0 {
-				b.Append(prev.Value(i) + next.Value(j))
-			} else if i >= 0 {
-				b.Append(prev.Value(i))
-			} else {
-				b.Append(next.Value(j))
-			}
-		})
-		return ts, []array.Array{b.NewArray()}
-	case *array.Uint:
-		next := next[0].(*array.Uint)
-		b := array.NewUintBuilder(mem)
-		ts := mergeWindows(prevT, nextT, mem, func(i, j int) {
-			if i >= 0 && j >= 0 {
-				b.Append(prev.Value(i) + next.Value(j))
-			} else if i >= 0 {
-				b.Append(prev.Value(i))
-			} else {
-				b.Append(next.Value(j))
-			}
-		})
-		return ts, []array.Array{b.NewArray()}
-	default:
-		panic("unreachable")
-	}
-}
-
-func (a aggregateWindowSum) Compute(buffers []array.Array, mem memory.Allocator) (flux.ColType, array.Array) {
-	var valueType flux.ColType
-	switch buffers[0].(type) {
-	case *array.Float:
-		valueType = flux.TFloat
-	case *array.Int:
-		valueType = flux.TInt
-	case *array.Uint:
-		valueType = flux.TUInt
-	default:
-		panic("unreachable")
-	}
-	return valueType, buffers[0]
-}
-
-func (a aggregateWindowSum) AppendEmpty(b array.Builder) {
-	b.AppendNull()
-}
-
-type aggregateWindowMean struct {
-	sum   aggregateWindowSum
-	count aggregateWindowCount
-}
-
-func (a aggregateWindowMean) Initialize(valueType flux.ColType, mem memory.Allocator) ([]array.Builder, error) {
-	sum, err := a.sum.Initialize(valueType, mem)
-	if err != nil {
-		return nil, err
-	}
-
-	count, err := a.count.Initialize(valueType, mem)
-	if err != nil {
-		return nil, err
-	}
-
-	builders := make([]array.Builder, 0, 2)
-	builders = append(builders, sum...)
-	builders = append(builders, count...)
-	return builders, nil
-}
-
-func (a aggregateWindowMean) Aggregate(ts, indices, start, stop *array.Int, values array.Array, builders []array.Builder) {
-	a.sum.Aggregate(ts, indices, start, stop, values, builders[:1])
-	a.count.Aggregate(ts, indices, start, stop, values, builders[1:])
-}
-
-func (a aggregateWindowMean) Merge(prevT, nextT *array.Int, prev, next []array.Array, mem memory.Allocator) (*array.Int, []array.Array) {
-	ts1, sum := a.sum.Merge(prevT, nextT, prev[:1], next[:1], mem)
-	ts2, count := a.count.Merge(prevT, nextT, prev[1:], next[1:], mem)
-	ts2.Release()
-	return ts1, []array.Array{sum[0], count[0]}
-}
-
-func (a aggregateWindowMean) Compute(buffers []array.Array, mem memory.Allocator) (flux.ColType, array.Array) {
-	count := buffers[1].(*array.Int)
-	b := array.NewFloatBuilder(mem)
-	b.Resize(count.Len())
-
-	switch sum := buffers[0].(type) {
-	case *array.Float:
-		for i, n := 0, sum.Len(); i < n; i++ {
-			v := sum.Value(i) / float64(count.Value(i))
-			b.Append(v)
-		}
-	case *array.Int:
-		for i, n := 0, sum.Len(); i < n; i++ {
-			v := float64(sum.Value(i)) / float64(count.Value(i))
-			b.Append(v)
-		}
-	case *array.Uint:
-		for i, n := 0, sum.Len(); i < n; i++ {
-			v := float64(sum.Value(i)) / float64(count.Value(i))
-			b.Append(v)
-		}
-	default:
-		panic("unreachable")
-	}
-	count.Release()
-	buffers[0].Release()
-	return flux.TFloat, b.NewArray()
-}
-
-func (a aggregateWindowMean) AppendEmpty(b array.Builder) {
-	b.AppendNull()
 }
 
 type AggregateWindowRule struct{}
@@ -818,10 +791,10 @@ func (a AggregateWindowRule) Rewrite(ctx context.Context, node plan.Node) (plan.
 
 	parentNode.ClearSuccessors()
 	newNode := plan.CreateUniquePhysicalNode(ctx, "aggregateWindow", &AggregateWindowProcedureSpec{
-		spec:      windowSpec,
-		aggregate: aggregate,
-		valueCol:  valueCol,
-		useStart:  useStart,
+		spec:       windowSpec,
+		initialize: aggregate,
+		valueCol:   valueCol,
+		useStart:   useStart,
 	})
 	parentNode.AddSuccessors(newNode)
 	newNode.AddPredecessors(parentNode)
@@ -858,26 +831,26 @@ func (a AggregateWindowRule) isValidDuplicateSpec(spec *SchemaMutationProcedureS
 	return useStart, true
 }
 
-func (a AggregateWindowRule) isValidAggregateSpec(spec plan.ProcedureSpec) (aggregateWindow, string, bool) {
+func (a AggregateWindowRule) isValidAggregateSpec(spec plan.ProcedureSpec) (aggregateWindowInitializer, string, bool) {
 	switch spec.Kind() {
 	case CountKind:
 		aggregateSpec := spec.(*CountProcedureSpec)
 		if len(aggregateSpec.Columns) != 1 {
 			return nil, "", false
 		}
-		return aggregateWindowCount{}, aggregateSpec.Columns[0], true
+		return newAggregateWindowCount, aggregateSpec.Columns[0], true
 	case SumKind:
 		aggregateSpec := spec.(*SumProcedureSpec)
 		if len(aggregateSpec.Columns) != 1 {
 			return nil, "", false
 		}
-		return aggregateWindowSum{}, aggregateSpec.Columns[0], true
+		return newAggregateWindowSum, aggregateSpec.Columns[0], true
 	case MeanKind:
 		aggregateSpec := spec.(*MeanProcedureSpec)
 		if len(aggregateSpec.Columns) != 1 {
 			return nil, "", false
 		}
-		return aggregateWindowMean{}, aggregateSpec.Columns[0], true
+		return newAggregateWindowMean, aggregateSpec.Columns[0], true
 	default:
 		return nil, "", false
 	}
@@ -940,10 +913,10 @@ func (a AggregateWindowCreateEmptyRule) Rewrite(ctx context.Context, node plan.N
 
 	parentNode.ClearSuccessors()
 	newNode := plan.CreateUniquePhysicalNode(ctx, "aggregateWindow", &AggregateWindowProcedureSpec{
-		spec:      windowSpec,
-		aggregate: aggregate,
-		valueCol:  valueCol,
-		useStart:  useStart,
+		spec:       windowSpec,
+		initialize: aggregate,
+		valueCol:   valueCol,
+		useStart:   useStart,
 	})
 	parentNode.AddSuccessors(newNode)
 	newNode.AddPredecessors(parentNode)
