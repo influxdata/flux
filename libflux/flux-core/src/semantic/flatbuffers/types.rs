@@ -171,6 +171,22 @@ impl From<Kind> for fb::Kind {
     }
 }
 
+fn record_label_from_table(table: flatbuffers::Table, t: fb::RecordLabel) -> Option<RecordLabel> {
+    match t {
+        fb::RecordLabel::Var => {
+            let var = fb::Var::init_from_table(table);
+            Some(RecordLabel::BoundVariable(Tvar::from(var)))
+        }
+        fb::RecordLabel::Concrete => {
+            let concrete = fb::Concrete::init_from_table(table);
+            let id = concrete.id()?;
+            Some(RecordLabel::from(id))
+        }
+        fb::RecordLabel::NONE => None,
+        _ => unreachable!("Unknown type from table"),
+    }
+}
+
 fn from_table(table: flatbuffers::Table, t: fb::MonoType) -> Option<MonoType> {
     match t {
         fb::MonoType::Basic => {
@@ -266,7 +282,7 @@ impl From<fb::Record<'_>> for Option<MonoType> {
 impl From<fb::Prop<'_>> for Option<Property> {
     fn from(t: fb::Prop) -> Option<Property> {
         Some(Property {
-            k: RecordLabel::from(t.k()?),
+            k: record_label_from_table(t.k()?, t.k_type())?,
             v: from_table(t.v()?, t.v_type())?,
         })
     }
@@ -603,13 +619,24 @@ fn build_prop<'a>(
     builder: &mut flatbuffers::FlatBufferBuilder<'a>,
     prop: &Property,
 ) -> flatbuffers::WIPOffset<fb::Prop<'a>> {
-    let (off, typ) = build_type(builder, &prop.v);
-    let k = builder.create_string(&prop.k.to_string());
+    let (off, v_type) = build_type(builder, &prop.v);
+    let (k, k_type) = match &prop.k {
+        RecordLabel::Variable(var) | RecordLabel::BoundVariable(var) => {
+            let concrete = build_var(builder, *var);
+            (concrete.as_union_value(), fb::RecordLabel::Var)
+        }
+        RecordLabel::Concrete(name) => {
+            let id = builder.create_string(&name);
+            let concrete = fb::Concrete::create(builder, &fb::ConcreteArgs { id: Some(id) });
+            (concrete.as_union_value(), fb::RecordLabel::Concrete)
+        }
+    };
     fb::Prop::create(
         builder,
         &fb::PropArgs {
+            k_type,
             k: Some(k),
-            v_type: typ,
+            v_type,
             v: Some(off),
         },
     )
