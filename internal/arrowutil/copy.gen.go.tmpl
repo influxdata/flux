@@ -3,99 +3,118 @@ package arrowutil
 import (
 	"fmt"
 
+	"github.com/apache/arrow/go/v7/arrow/memory"
 	"github.com/influxdata/flux/array"
 )
 
 // CopyTo will copy the contents of the array into a new array builder.
 func CopyTo(b array.Builder, arr array.Array) {
-    switch arr := arr.(type) {
-    {{range .}}
-    case *{{.Type}}:
-        Copy{{.Name}}sTo(b.(*{{.Type}}Builder), arr)
-    {{end}}
+	switch arr := arr.(type) {
+	{{range .}}
+	case *{{.Type}}:
+		Copy{{.Name}}sTo(b.(*{{.Type}}Builder), arr)
+	{{end}}
 	default:
 		panic(fmt.Errorf("unsupported array data type: %s", arr.DataType()))
-    }
+	}
+}
+
+// CopyByIndex will copy the contents of the array at the given indices into a new array.
+func CopyByIndex(arr array.Array, indices *array.Int, mem memory.Allocator) array.Array {
+	switch arr := arr.(type) {
+	{{range .}}
+	case *{{.Type}}:
+		return Copy{{.Name}}sByIndex(arr, indices, mem)
+	{{end}}
+	default:
+		panic(fmt.Errorf("unsupported array data type: %s", arr.DataType()))
+	}
 }
 
 // CopyByIndexTo will copy the contents of the array at the given indices into a new array builder.
 func CopyByIndexTo(b array.Builder, arr array.Array, indices *array.Int) {
-    switch arr := arr.(type) {
-    {{range .}}
-    case *{{.Type}}:
-        Copy{{.Name}}sByIndexTo(b.(*{{.Type}}Builder), arr, indices)
-    {{end}}
+	switch arr := arr.(type) {
+	{{range .}}
+	case *{{.Type}}:
+		Copy{{.Name}}sByIndexTo(b.(*{{.Type}}Builder), arr, indices)
+	{{end}}
 	default:
 		panic(fmt.Errorf("unsupported array data type: %s", arr.DataType()))
-    }
+	}
 }
 
 // CopyValue will copy an individual value from the array into the builder.
 func CopyValue(b array.Builder, arr array.Array, i int) {
-    switch arr := arr.(type) {
-    {{range .}}
-    case *{{.Type}}:
-        Copy{{.Name}}Value(b.(*{{.Type}}Builder), arr, i)
-    {{end}}
+	switch arr := arr.(type) {
+	{{range .}}
+	case *{{.Type}}:
+		Copy{{.Name}}Value(b.(*{{.Type}}Builder), arr, i)
+	{{end}}
 	default:
 		panic(fmt.Errorf("unsupported array data type: %s", arr.DataType()))
-    }
+	}
 }
 
 {{range .}}
 func Copy{{.Name}}sTo(b *{{.Type}}Builder, arr *{{.Type}}) {
-    b.Reserve(arr.Len())
-    {{if eq .Name "String"}}
-    {
-        sz := 0
-        for i, n := 0, arr.Len(); i < n; i++ {
-            if arr.IsNull(i) {
-                continue
-            }
-            sz += arr.ValueLen(i)
-        }
-        b.ReserveData(sz)
-    }
-    {{end}}
-    for i, n := 0, arr.Len(); i < n; i++ {
-        if arr.IsNull(i) {
-            b.AppendNull()
-            continue
-        }
-        b.{{.Append}}(arr.{{.Value}}(i))
-    }
+	b.Reserve(arr.Len())
+	{{if eq .Name "String"}}
+	{
+		sz := 0
+		for i, n := 0, arr.Len(); i < n; i++ {
+			if arr.IsNull(i) {
+				continue
+			}
+			sz += arr.ValueLen(i)
+		}
+		b.ReserveData(sz)
+	}
+	{{end}}
+	for i, n := 0, arr.Len(); i < n; i++ {
+		if arr.IsNull(i) {
+			b.AppendNull()
+			continue
+		}
+		b.{{.Append}}(arr.{{.Value}}(i))
+	}
+}
+
+func Copy{{.Name}}sByIndex(arr *{{.Type}}, indices *array.Int, mem memory.Allocator) *{{.Type}} {
+	b := New{{.Name}}Builder(mem)
+	Copy{{.Name}}sByIndexTo(b, arr, indices)
+	return b.{{.NewArray}}()
 }
 
 func Copy{{.Name}}sByIndexTo(b *{{.Type}}Builder, arr *{{.Type}}, indices *array.Int) {
-    b.Reserve(indices.Len())
-    {{if eq .Name "String"}}
-    {
-        sz := 0
-        for i, n := 0, indices.Len(); i < n; i++ {
-            offset := int(indices.Value(i))
-            if arr.IsNull(offset) {
-                continue
-            }
-            sz += arr.ValueLen(offset)
-        }
-        b.ReserveData(sz)
-    }
-    {{end}}
-    for i, n := 0, indices.Len(); i < n; i++ {
-        offset := int(indices.Value(i))
-        if arr.IsNull(offset) {
-            b.AppendNull()
-            continue
-        }
-        b.{{.Append}}(arr.{{.Value}}(offset))
-    }
+	b.Resize(indices.Len())
+	{{if eq .Name "String"}}
+	{
+		sz := 0
+		for i, n := 0, indices.Len(); i < n; i++ {
+			offset := int(indices.Value(i))
+			if arr.IsNull(offset) {
+				continue
+			}
+			sz += arr.ValueLen(offset)
+		}
+		b.ReserveData(sz)
+	}
+	{{end}}
+	for i, n := 0, indices.Len(); i < n; i++ {
+		offset := int(indices.Value(i))
+		if arr.IsNull(offset) {
+			b.AppendNull()
+			continue
+		}
+		b.{{.Append}}(arr.{{.Value}}(offset))
+	}
 }
 
 func Copy{{.Name}}Value(b *{{.Type}}Builder, arr *{{.Type}}, i int) {
-    if arr.IsNull(i) {
-        b.AppendNull()
-        return
-    }
-    b.{{.Append}}(arr.{{.Value}}(i))
+	if arr.IsNull(i) {
+		b.AppendNull()
+		return
+	}
+	b.{{.Append}}(arr.{{.Value}}(i))
 }
 {{end}}

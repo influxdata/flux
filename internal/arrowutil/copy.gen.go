@@ -9,6 +9,7 @@ package arrowutil
 import (
 	"fmt"
 
+	"github.com/apache/arrow/go/v7/arrow/memory"
 	"github.com/influxdata/flux/array"
 )
 
@@ -30,6 +31,30 @@ func CopyTo(b array.Builder, arr array.Array) {
 
 	case *array.String:
 		CopyStringsTo(b.(*array.StringBuilder), arr)
+
+	default:
+		panic(fmt.Errorf("unsupported array data type: %s", arr.DataType()))
+	}
+}
+
+// CopyByIndex will copy the contents of the array at the given indices into a new array.
+func CopyByIndex(arr array.Array, indices *array.Int, mem memory.Allocator) array.Array {
+	switch arr := arr.(type) {
+
+	case *array.Int:
+		return CopyIntsByIndex(arr, indices, mem)
+
+	case *array.Uint:
+		return CopyUintsByIndex(arr, indices, mem)
+
+	case *array.Float:
+		return CopyFloatsByIndex(arr, indices, mem)
+
+	case *array.Boolean:
+		return CopyBooleansByIndex(arr, indices, mem)
+
+	case *array.String:
+		return CopyStringsByIndex(arr, indices, mem)
 
 	default:
 		panic(fmt.Errorf("unsupported array data type: %s", arr.DataType()))
@@ -96,8 +121,14 @@ func CopyIntsTo(b *array.IntBuilder, arr *array.Int) {
 	}
 }
 
+func CopyIntsByIndex(arr *array.Int, indices *array.Int, mem memory.Allocator) *array.Int {
+	b := NewIntBuilder(mem)
+	CopyIntsByIndexTo(b, arr, indices)
+	return b.NewIntArray()
+}
+
 func CopyIntsByIndexTo(b *array.IntBuilder, arr *array.Int, indices *array.Int) {
-	b.Reserve(indices.Len())
+	b.Resize(indices.Len())
 
 	for i, n := 0, indices.Len(); i < n; i++ {
 		offset := int(indices.Value(i))
@@ -129,8 +160,14 @@ func CopyUintsTo(b *array.UintBuilder, arr *array.Uint) {
 	}
 }
 
+func CopyUintsByIndex(arr *array.Uint, indices *array.Int, mem memory.Allocator) *array.Uint {
+	b := NewUintBuilder(mem)
+	CopyUintsByIndexTo(b, arr, indices)
+	return b.NewUintArray()
+}
+
 func CopyUintsByIndexTo(b *array.UintBuilder, arr *array.Uint, indices *array.Int) {
-	b.Reserve(indices.Len())
+	b.Resize(indices.Len())
 
 	for i, n := 0, indices.Len(); i < n; i++ {
 		offset := int(indices.Value(i))
@@ -162,8 +199,14 @@ func CopyFloatsTo(b *array.FloatBuilder, arr *array.Float) {
 	}
 }
 
+func CopyFloatsByIndex(arr *array.Float, indices *array.Int, mem memory.Allocator) *array.Float {
+	b := NewFloatBuilder(mem)
+	CopyFloatsByIndexTo(b, arr, indices)
+	return b.NewFloatArray()
+}
+
 func CopyFloatsByIndexTo(b *array.FloatBuilder, arr *array.Float, indices *array.Int) {
-	b.Reserve(indices.Len())
+	b.Resize(indices.Len())
 
 	for i, n := 0, indices.Len(); i < n; i++ {
 		offset := int(indices.Value(i))
@@ -195,8 +238,14 @@ func CopyBooleansTo(b *array.BooleanBuilder, arr *array.Boolean) {
 	}
 }
 
+func CopyBooleansByIndex(arr *array.Boolean, indices *array.Int, mem memory.Allocator) *array.Boolean {
+	b := NewBooleanBuilder(mem)
+	CopyBooleansByIndexTo(b, arr, indices)
+	return b.NewBooleanArray()
+}
+
 func CopyBooleansByIndexTo(b *array.BooleanBuilder, arr *array.Boolean, indices *array.Int) {
-	b.Reserve(indices.Len())
+	b.Resize(indices.Len())
 
 	for i, n := 0, indices.Len(); i < n; i++ {
 		offset := int(indices.Value(i))
@@ -239,8 +288,14 @@ func CopyStringsTo(b *array.StringBuilder, arr *array.String) {
 	}
 }
 
+func CopyStringsByIndex(arr *array.String, indices *array.Int, mem memory.Allocator) *array.String {
+	b := NewStringBuilder(mem)
+	CopyStringsByIndexTo(b, arr, indices)
+	return b.NewStringArray()
+}
+
 func CopyStringsByIndexTo(b *array.StringBuilder, arr *array.String, indices *array.Int) {
-	b.Reserve(indices.Len())
+	b.Resize(indices.Len())
 
 	{
 		sz := 0
