@@ -432,10 +432,9 @@ testcase field_type_change {
         testing.diff(want: want, got: got) |> yield()
     }
 
-
 testcase vectorize_addition_operator {
-    inData =
-        "
+        inData =
+            "
 #datatype,string,long,string,string,dateTime:RFC3339,double
 #group,false,false,true,true,false,false
 #default,_result,,,,,
@@ -469,8 +468,8 @@ testcase vectorize_addition_operator {
 ,,0,n,b,2018-01-05T00:00:00Z,40
 ,,0,n,b,2018-01-06T00:00:00Z,50
 "
-    outData =
-        "
+        outData =
+            "
 #datatype,string,long,string,dateTime:RFC3339,double,double,double
 #group,false,false,true,false,false,false,false
 #default,_result,,,,,,
@@ -488,12 +487,12 @@ testcase vectorize_addition_operator {
 ,,0,n,2018-01-06T00:00:00Z,30,50,80
 "
 
-    got =
-        csv.from(csv: inData)
-            |> testing.load()
-            |> pivot(rowKey: ["_time"], columnKey: ["_field"], valueColumn: "_value")
-            |> map(fn: (r) => ({r with x: r.a + r.b}))
-    want = csv.from(csv: outData)
+        got =
+            csv.from(csv: inData)
+                |> testing.load()
+                |> pivot(rowKey: ["_time"], columnKey: ["_field"], valueColumn: "_value")
+                |> map(fn: (r) => ({r with x: r.a + r.b}))
+        want = csv.from(csv: outData)
 
-    testing.diff(want: want, got: got) |> yield()
-}
+        testing.diff(want: want, got: got) |> yield()
+    }
