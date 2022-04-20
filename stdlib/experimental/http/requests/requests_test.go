@@ -175,7 +175,7 @@ requests.do(method: "GET", url:"%s/path/a/b/c", config: config)
 	if err == nil {
 		t.Fatal("expected timeout failure")
 	}
-	if !strings.Contains(err.Error(), "Client.Timeout exceeded") {
+	if !strings.Contains(err.Error(), "Client.Timeout exceeded") && !strings.Contains(err.Error(), "context deadline exceeded") {
 		t.Errorf("unexpected cause of failure, got err: %v", err)
 	}
 }
