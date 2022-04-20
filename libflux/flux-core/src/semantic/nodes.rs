@@ -1895,13 +1895,7 @@ pub fn convert_duration(ast_dur: &[ast::Duration]) -> AnyhowResult<Duration> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{
-        ast,
-        semantic::{
-            types::{MonoType, Tvar},
-            walk::{walk, Node},
-        },
-    };
+    use crate::ast;
 
     #[test]
     fn duration_conversion_ok() {
@@ -2034,122 +2028,5 @@ mod tests {
         let exp = "AST duration vector must contain at least one duration value";
         let got = convert_duration(&t).err().expect("should be an error");
         assert_eq!(exp, got.to_string());
-    }
-
-    #[test]
-    fn test_inject_types() {
-        let b = ast::BaseNode::default();
-        let pkg = Package {
-            loc: b.location.clone(),
-            package: "main".to_string(),
-            files: vec![File {
-                loc: b.location.clone(),
-                package: None,
-                imports: Vec::new(),
-                body: vec![
-                    Statement::Variable(Box::new(VariableAssgn::new(
-                        Identifier {
-                            loc: b.location.clone(),
-                            name: Symbol::from("f"),
-                        },
-                        Expression::Function(Box::new(FunctionExpr {
-                            loc: b.location.clone(),
-                            typ: MonoType::Var(Tvar(0)),
-                            params: vec![
-                                FunctionParameter {
-                                    loc: b.location.clone(),
-                                    is_pipe: true,
-                                    key: Identifier {
-                                        loc: b.location.clone(),
-                                        name: Symbol::from("piped"),
-                                    },
-                                    default: None,
-                                },
-                                FunctionParameter {
-                                    loc: b.location.clone(),
-                                    is_pipe: false,
-                                    key: Identifier {
-                                        loc: b.location.clone(),
-                                        name: Symbol::from("a"),
-                                    },
-                                    default: None,
-                                },
-                            ],
-                            body: Block::Return(ReturnStmt {
-                                loc: b.location.clone(),
-                                argument: Expression::Binary(Box::new(BinaryExpr {
-                                    loc: b.location.clone(),
-                                    typ: MonoType::Var(Tvar(1)),
-                                    operator: ast::Operator::AdditionOperator,
-                                    left: Expression::Identifier(IdentifierExpr {
-                                        loc: b.location.clone(),
-                                        typ: MonoType::Var(Tvar(2)),
-                                        name: Symbol::from("a"),
-                                    }),
-                                    right: Expression::Identifier(IdentifierExpr {
-                                        loc: b.location.clone(),
-                                        typ: MonoType::Var(Tvar(3)),
-                                        name: Symbol::from("piped"),
-                                    }),
-                                })),
-                            }),
-                            vectorized: None,
-                        })),
-                        b.location.clone(),
-                    ))),
-                    Statement::Expr(ExprStmt {
-                        loc: b.location.clone(),
-                        expression: Expression::Call(Box::new(CallExpr {
-                            loc: b.location.clone(),
-                            typ: MonoType::Var(Tvar(4)),
-                            pipe: Some(Expression::Integer(IntegerLit {
-                                loc: b.location.clone(),
-                                value: 3,
-                            })),
-                            callee: Expression::Identifier(IdentifierExpr {
-                                loc: b.location.clone(),
-                                typ: MonoType::Var(Tvar(6)),
-                                name: Symbol::from("f"),
-                            }),
-                            arguments: vec![Property {
-                                loc: b.location.clone(),
-                                key: Identifier {
-                                    loc: b.location.clone(),
-                                    name: Symbol::from("a"),
-                                },
-                                value: Expression::Integer(IntegerLit {
-                                    loc: b.location.clone(),
-                                    value: 2,
-                                }),
-                            }],
-                        })),
-                    }),
-                ],
-            }],
-        };
-        let sub: Substitution = semantic_map! {
-            Tvar(0) => MonoType::INT,
-            Tvar(1) => MonoType::INT,
-            Tvar(2) => MonoType::INT,
-            Tvar(3) => MonoType::INT,
-            Tvar(4) => MonoType::INT,
-            Tvar(5) => MonoType::INT,
-            Tvar(6) => MonoType::INT,
-            Tvar(7) => MonoType::INT,
-        }
-        .into();
-        let pkg = inject_pkg_types(pkg, &sub);
-        let mut no_types_checked = 0;
-        walk(
-            &mut |node: Node| {
-                let typ = node.type_of();
-                if let Some(typ) = typ {
-                    assert_eq!(typ, MonoType::INT);
-                    no_types_checked += 1;
-                }
-            },
-            Node::Package(&pkg),
-        );
-        assert_eq!(no_types_checked, 8);
     }
 }
