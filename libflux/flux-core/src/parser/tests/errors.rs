@@ -453,9 +453,7 @@ fn missing_arrow_in_function_expression() {
         File {
             base: BaseNode {
                 location: SourceLocation {
-                    file: Some(
-                        "",
-                    ),
+                    file: None,
                     start: Position {
                         line: 1,
                         column: 1,
@@ -480,9 +478,7 @@ fn missing_arrow_in_function_expression() {
                     ExprStmt {
                         base: BaseNode {
                             location: SourceLocation {
-                                file: Some(
-                                    "",
-                                ),
+                                file: None,
                                 start: Position {
                                     line: 1,
                                     column: 1,
@@ -502,9 +498,7 @@ fn missing_arrow_in_function_expression() {
                             FunctionExpr {
                                 base: BaseNode {
                                     location: SourceLocation {
-                                        file: Some(
-                                            "",
-                                        ),
+                                        file: None,
                                         start: Position {
                                             line: 1,
                                             column: 1,
@@ -525,9 +519,7 @@ fn missing_arrow_in_function_expression() {
                                     Property {
                                         base: BaseNode {
                                             location: SourceLocation {
-                                                file: Some(
-                                                    "",
-                                                ),
+                                                file: None,
                                                 start: Position {
                                                     line: 1,
                                                     column: 2,
@@ -547,9 +539,7 @@ fn missing_arrow_in_function_expression() {
                                             Identifier {
                                                 base: BaseNode {
                                                     location: SourceLocation {
-                                                        file: Some(
-                                                            "",
-                                                        ),
+                                                        file: None,
                                                         start: Position {
                                                             line: 1,
                                                             column: 2,
@@ -575,9 +565,7 @@ fn missing_arrow_in_function_expression() {
                                     Property {
                                         base: BaseNode {
                                             location: SourceLocation {
-                                                file: Some(
-                                                    "",
-                                                ),
+                                                file: None,
                                                 start: Position {
                                                     line: 1,
                                                     column: 5,
@@ -597,9 +585,7 @@ fn missing_arrow_in_function_expression() {
                                             Identifier {
                                                 base: BaseNode {
                                                     location: SourceLocation {
-                                                        file: Some(
-                                                            "",
-                                                        ),
+                                                        file: None,
                                                         start: Position {
                                                             line: 1,
                                                             column: 5,
@@ -630,9 +616,7 @@ fn missing_arrow_in_function_expression() {
                                         BinaryExpr {
                                             base: BaseNode {
                                                 location: SourceLocation {
-                                                    file: Some(
-                                                        "",
-                                                    ),
+                                                    file: None,
                                                     start: Position {
                                                         line: 1,
                                                         column: 8,
@@ -653,9 +637,7 @@ fn missing_arrow_in_function_expression() {
                                                 Identifier {
                                                     base: BaseNode {
                                                         location: SourceLocation {
-                                                            file: Some(
-                                                                "",
-                                                            ),
+                                                            file: None,
                                                             start: Position {
                                                                 line: 1,
                                                                 column: 8,
@@ -680,9 +662,7 @@ fn missing_arrow_in_function_expression() {
                                                 Identifier {
                                                     base: BaseNode {
                                                         location: SourceLocation {
-                                                            file: Some(
-                                                                "",
-                                                            ),
+                                                            file: None,
                                                             start: Position {
                                                                 line: 1,
                                                                 column: 12,
