@@ -751,8 +751,7 @@ impl Formatter {
         if !(s.contains('\"') || s.contains('\\')) {
             return s.to_string();
         }
-        let mut escaped: String;
-        escaped = String::with_capacity(s.len() * 2);
+        let mut escaped = String::with_capacity(s.len() * 2);
         for r in s.chars() {
             if r == '"' || r == '\\' {
                 escaped.push('\\')
@@ -763,12 +762,7 @@ impl Formatter {
     }
 
     fn format_boolean_literal(&mut self, n: &semantic::nodes::BooleanLit) {
-        let s: &str;
-        if n.value {
-            s = "true"
-        } else {
-            s = "false"
-        }
+        let s: &str = if n.value { "true" } else { "false" };
         self.write_string(s);
         // self.write_string(&format!(":{}", MonoType::Bool.to_string()));
     }
@@ -887,38 +881,36 @@ impl Formatter {
 
     fn format_regexp_literal(&mut self, n: &semantic::nodes::RegexpLit) {
         self.write_rune('/');
-        self.write_string(&n.value.replace("/", "\\/"));
+        self.write_string(&n.value.replace('/', "\\/"));
         self.write_rune('/');
         // self.write_string(&format!(":{}", MonoType::Regexp.to_string()));
     }
 }
 
 fn get_precedences(parent: &walk::Node, child: &walk::Node) -> (u32, u32) {
-    let pvp: u32;
-    let pvc: u32;
-    match parent {
-        walk::Node::BinaryExpr(p) => pvp = Operator::new(&p.operator).get_precedence(),
-        walk::Node::LogicalExpr(p) => pvp = Operator::new_logical(&p.operator).get_precedence(),
-        walk::Node::UnaryExpr(p) => pvp = Operator::new(&p.operator).get_precedence(),
-        walk::Node::FunctionExpr(_) => pvp = 3,
-        walk::Node::CallExpr(_) => pvp = 1,
-        walk::Node::MemberExpr(_) => pvp = 1,
-        walk::Node::IndexExpr(_) => pvp = 1,
-        walk::Node::ConditionalExpr(_) => pvp = 11,
-        _ => pvp = 0,
-    }
+    let pvp: u32 = match parent {
+        walk::Node::BinaryExpr(p) => Operator::new(&p.operator).get_precedence(),
+        walk::Node::LogicalExpr(p) => Operator::new_logical(&p.operator).get_precedence(),
+        walk::Node::UnaryExpr(p) => Operator::new(&p.operator).get_precedence(),
+        walk::Node::FunctionExpr(_) => 3,
+        walk::Node::CallExpr(_) => 1,
+        walk::Node::MemberExpr(_) => 1,
+        walk::Node::IndexExpr(_) => 1,
+        walk::Node::ConditionalExpr(_) => 11,
+        _ => 0,
+    };
 
-    match child {
-        walk::Node::BinaryExpr(p) => pvc = Operator::new(&p.operator).get_precedence(),
-        walk::Node::LogicalExpr(p) => pvc = Operator::new_logical(&p.operator).get_precedence(),
-        walk::Node::UnaryExpr(p) => pvc = Operator::new(&p.operator).get_precedence(),
-        walk::Node::FunctionExpr(_) => pvc = 3,
-        walk::Node::CallExpr(_) => pvc = 1,
-        walk::Node::MemberExpr(_) => pvc = 1,
-        walk::Node::IndexExpr(_) => pvc = 1,
-        walk::Node::ConditionalExpr(_) => pvc = 11,
-        _ => pvc = 0,
-    }
+    let pvc: u32 = match child {
+        walk::Node::BinaryExpr(p) => Operator::new(&p.operator).get_precedence(),
+        walk::Node::LogicalExpr(p) => Operator::new_logical(&p.operator).get_precedence(),
+        walk::Node::UnaryExpr(p) => Operator::new(&p.operator).get_precedence(),
+        walk::Node::FunctionExpr(_) => 3,
+        walk::Node::CallExpr(_) => 1,
+        walk::Node::MemberExpr(_) => 1,
+        walk::Node::IndexExpr(_) => 1,
+        walk::Node::ConditionalExpr(_) => 11,
+        _ => 0,
+    };
 
     (pvp, pvc)
 }

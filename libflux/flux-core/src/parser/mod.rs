@@ -1972,13 +1972,12 @@ impl<'input> Parser<'input> {
         let mut params = Vec::new();
         let mut errs = Vec::new();
         while self.more() {
-            let mut p: Property;
             let t = self.peek();
-            match t.tok {
-                TokenType::Ident => p = self.parse_ident_property(),
-                TokenType::String => p = self.parse_string_property(),
-                _ => p = self.parse_invalid_property(),
-            }
+            let mut p: Property = match t.tok {
+                TokenType::Ident => self.parse_ident_property(),
+                TokenType::String => self.parse_string_property(),
+                _ => self.parse_invalid_property(),
+            };
             if self.more() {
                 let t = self.peek();
                 if t.tok != TokenType::Comma {

@@ -96,7 +96,7 @@ pub fn parse_regex(lit: &str) -> Result<String, String> {
         Err(e) => match e {
             regex::Error::Syntax(msg) => {
                 // removes newlines, 4 spaces tabs, and the pointer to the error in the regexp.
-                Err(msg.replace("\n", "").replace("    ", " ").replace("^", ""))
+                Err(msg.replace('\n', "").replace("    ", " ").replace('^', ""))
             }
             regex::Error::CompiledTooBig(_) => Err("compiled too big".to_string()),
             _ => Err("bad regexp".to_string()),
@@ -133,14 +133,12 @@ pub fn parse_duration(lit: &str) -> Result<Vec<ast::Duration>, String> {
     let mut values = Vec::new();
     let mut chars = lit.chars().peekable();
     while chars.peek().is_some() {
-        let magnitude: i64;
-        match parse_magnitude(&mut chars) {
-            Ok(m) => magnitude = m,
+        let magnitude: i64 = match parse_magnitude(&mut chars) {
+            Ok(m) => m,
             Err(e) => return Err(e),
         };
-        let unit: String;
-        match parse_unit(&mut chars) {
-            Ok(u) => unit = u,
+        let unit: String = match parse_unit(&mut chars) {
+            Ok(u) => u,
             Err(e) => return Err(e),
         };
         values.push(ast::Duration { magnitude, unit });
