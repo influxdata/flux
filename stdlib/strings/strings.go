@@ -451,10 +451,17 @@ func init() {
 					return nil, fmt.Errorf("missing argument %q", "arr")
 				}
 				arr := val.Array()
-				if arr.Len() >= 0 {
+				arrlen := arr.Len()
+				if arrlen >= 0 {
 					et, _ := arr.Type().ElemType()
 					if et.Nature() != semantic.String {
 						return nil, fmt.Errorf("expected elements of argument %q to be of type %v, got type %v", "arr", semantic.String, arr.Get(0).Type().Nature())
+					}
+					// check if any of the array elements from the input param's 'arr' is null
+					for i := 0; i < arrlen; i++ {
+						if arr.Get(i).IsNull() {
+							return nil, fmt.Errorf("expected elements of argument %q to be of type %v, got type string value <nil>", "arr", semantic.String)
+						}
 					}
 				}
 				argVals[0] = val
