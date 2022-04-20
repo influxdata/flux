@@ -283,7 +283,11 @@ impl<'input> Parser<'input> {
         let e_off = self.s.offset(&scanner::Position::from(end)) as usize;
 
         SourceLocation {
-            file: Some(self.fname.clone()),
+            file: if self.fname.is_empty() {
+                None
+            } else {
+                Some(self.fname.clone())
+            },
             start: *start,
             end: *end,
             source: Some(self.source[s_off..e_off].to_string()),

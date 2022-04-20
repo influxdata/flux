@@ -2158,7 +2158,7 @@ impl<'a> Locator<'a> {
     /// column.
     pub fn get(&self, sl: u32, sc: u32, el: u32, ec: u32) -> SourceLocation {
         SourceLocation {
-            file: Some("".to_string()),
+            file: None,
             source: Some(self.get_src(sl, sc, el, ec).to_string()),
             start: Position {
                 line: sl,

@@ -16,6 +16,20 @@ mod operator_precedence;
 mod strings;
 mod types;
 
+/// Parsed ast roundtrips across the serde boundary and generates the same ast.
+#[test]
+fn parse_ast_roundtrip() {
+    let mut p = Parser::new(
+        r#"from(bucket: "an-bucket") |> range(start: -15m) |> filter(fn: (r) => r.field == "value")"#,
+    );
+    let ast = p.parse_file("".to_string());
+
+    let serialized = serde_json::to_string(&ast).unwrap();
+    let new_ast = serde_json::from_str(&serialized).unwrap();
+
+    assert_eq!(ast, new_ast);
+}
+
 #[test]
 fn parse_array_expr_no_rbrack() {
     let mut p = Parser::new(r#"group(columns: ["_time", "_field]", mode: "by")"#);
