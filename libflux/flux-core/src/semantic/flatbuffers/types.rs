@@ -626,7 +626,7 @@ fn build_prop<'a>(
             (concrete.as_union_value(), fb::RecordLabel::Var)
         }
         RecordLabel::Concrete(name) => {
-            let id = builder.create_string(&name);
+            let id = builder.create_string(name);
             let concrete = fb::Concrete::create(builder, &fb::ConcreteArgs { id: Some(id) });
             (concrete.as_union_value(), fb::RecordLabel::Concrete)
         }

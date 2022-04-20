@@ -582,10 +582,9 @@ impl<'a> Converter<'a> {
                         k: match &prop.name {
                             ast::PropertyKey::Identifier(id) => {
                                 if id.name.len() == 1 && id.name.starts_with(char::is_uppercase) {
-                                    let tvar = tvars
+                                    let tvar = *tvars
                                         .entry(id.name.clone())
-                                        .or_insert_with(|| self.sub.fresh())
-                                        .clone();
+                                        .or_insert_with(|| self.sub.fresh());
                                     types::RecordLabel::BoundVariable(tvar)
                                 } else {
                                     types::Label::from(self.symbols.lookup(&id.name)).into()

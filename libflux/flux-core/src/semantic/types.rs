@@ -47,6 +47,8 @@ impl Matcher<Error> for Unify {
         expected: &MonoType,
         actual: &MonoType,
     ) -> MonoType {
+        // Normally we just treat any label as a string. This effectively ensures that all
+        // string literals are still treated as strings.
         let expected = match expected {
             MonoType::Label(_) => &MonoType::STRING,
             _ => expected,
@@ -68,6 +70,8 @@ impl Matcher<Error> for Subsume {
         expected: &MonoType,
         actual: &MonoType,
     ) -> MonoType {
+        // When a label is unified to a type variable that has the `Label` kind we preserve the
+        // label. Otherwise we translate the label to `string`, same as during normal unification.
         fn translate_label<'a>(
             unifier: &mut Unifier<'_, Error>,
             maybe_label: &'a MonoType,
@@ -104,9 +108,8 @@ impl Matcher<Error> for Subsume {
         let actual = translate_label(unifier, actual, expected);
         let expected = translate_label(unifier, expected, &actual);
         match (&*expected, &*actual) {
-            (MonoType::Builtin(BuiltinType::String), MonoType::Label(_)) => {
-                return MonoType::STRING
-            }
+            // Labels should be accepted anywhere that we expect a string
+            (MonoType::Builtin(BuiltinType::String), MonoType::Label(_)) => MonoType::STRING,
             _ => expected.unify_inner(&actual, unifier),
         }
     }

@@ -696,7 +696,7 @@ impl VariableAssgn {
         infer.env.apply_mut(infer.sub);
 
         let t = self.init.type_of().apply(infer.sub);
-        let p = infer::generalize(infer.env, infer.sub, t.clone());
+        let p = infer::generalize(infer.env, infer.sub, t);
 
         // Update variable assignment nodes with the free vars
         // and kind constraints obtained from generalization.
@@ -1661,7 +1661,7 @@ impl IdentifierExpr {
     fn infer(&mut self, infer: &mut InferState<'_, '_>) -> Result {
         let poly = infer.lookup(&self.loc, &self.name);
 
-        let (t, cons) = infer::instantiate(poly.clone(), infer.sub, self.loc.clone());
+        let (t, cons) = infer::instantiate(poly, infer.sub, self.loc.clone());
         infer.solve(&cons);
         self.typ = t;
         Ok(())
