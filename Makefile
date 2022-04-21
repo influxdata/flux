@@ -82,7 +82,7 @@ fmt-rust:
 	cd libflux; $(CARGO) fmt
 
 fmt-flux:
-	$(GO_RUN) ./cmd/flux/main.go fmt -w ./stdlib
+	$(GO_RUN) ./cmd/flux fmt -w ./stdlib
 
 fmt: $(SOURCES_NO_VENDOR) fmt-go fmt-rust fmt-flux
 

@@ -2,7 +2,9 @@ package runtime
 
 import (
 	"context"
+	"fmt"
 	"io/fs"
+	"path/filepath"
 	"strings"
 
 	"github.com/influxdata/flux"
@@ -169,7 +171,7 @@ func (r *runtime) compilePackages() error {
 	if err := fs.WalkDir(embed.FS, "stdlib", func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
 			return err
-		} else if d.IsDir() {
+		} else if d.IsDir() || filepath.Ext(path) != ".fc" {
 			return nil
 		}
 		data, err := fs.ReadFile(embed.FS, path)
@@ -179,7 +181,7 @@ func (r *runtime) compilePackages() error {
 
 		spkg, err := semantic.DeserializeFromFlatBuffer(data)
 		if err != nil {
-			return err
+			return fmt.Errorf("unable to parse %s: %s", path, err)
 		}
 		name := strings.TrimPrefix(
 			strings.TrimSuffix(path, ".fc"),
