@@ -3,13 +3,14 @@ package values
 import (
 	"math"
 
-	fluxarray "github.com/influxdata/flux/array"
 	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/semantic"
 )
+
+//go:generate tmpl -data=@../array/binary.tmpldata -o binary.gen.go binary.gen.go.tmpl
 
 type BinaryFunction func(l, r Value) (Value, error)
 type BinaryVectorFunction func(l, r Value, mem memory.Allocator) (Value, error)
@@ -56,37 +57,6 @@ func binaryVectorFuncNullCheck(fn BinaryVectorFunction) BinaryVectorFunction {
 			return Null, nil
 		}
 		return fn(lv, rv, mem)
-	}
-}
-
-func vectorAdd(l, r Vector, mem memory.Allocator) (Value, error) {
-	switch l.ElementType().Nature() {
-	case semantic.Int:
-		x, err := fluxarray.IntAdd(l.Arr().(*fluxarray.Int), r.Arr().(*fluxarray.Int), mem)
-		if err != nil {
-			return nil, err
-		}
-		return NewVectorValue(x, semantic.BasicInt), nil
-	case semantic.UInt:
-		x, err := fluxarray.UintAdd(l.Arr().(*fluxarray.Uint), r.Arr().(*fluxarray.Uint), mem)
-		if err != nil {
-			return nil, err
-		}
-		return NewVectorValue(x, semantic.BasicUint), nil
-	case semantic.Float:
-		x, err := fluxarray.FloatAdd(l.Arr().(*fluxarray.Float), r.Arr().(*fluxarray.Float), mem)
-		if err != nil {
-			return nil, err
-		}
-		return NewVectorValue(x, semantic.BasicFloat), nil
-	case semantic.String:
-		x, err := fluxarray.StringAdd(l.Arr().(*fluxarray.String), r.Arr().(*fluxarray.String), mem)
-		if err != nil {
-			return nil, err
-		}
-		return NewVectorValue(x, semantic.BasicString), nil
-	default:
-		return nil, errors.Newf(codes.Invalid, "unsupported type for vector addition: %v", l.ElementType())
 	}
 }
 
@@ -648,5 +618,10 @@ var binaryVectorFuncLookup = map[BinaryFuncSignature]BinaryVectorFunction{
 		l := lv.Vector()
 		r := rv.Vector()
 		return vectorAdd(l, r, mem)
+	},
+	{Operator: ast.SubtractionOperator, Left: semantic.Vector, Right: semantic.Vector}: func(lv, rv Value, mem memory.Allocator) (Value, error) {
+		l := lv.Vector()
+		r := rv.Vector()
+		return vectorSub(l, r, mem)
 	},
 }

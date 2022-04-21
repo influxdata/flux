@@ -1,0 +1,37 @@
+package values
+
+import (
+
+	fluxarray "github.com/influxdata/flux/array"
+    "github.com/apache/arrow/go/v7/arrow/memory"
+	"github.com/influxdata/flux/codes"
+	"github.com/influxdata/flux/internal/errors"
+	"github.com/influxdata/flux/semantic"
+)
+
+{{range $index, $op := .}}
+
+func vector{{$op.Name}}(l, r Vector, mem memory.Allocator) (Value, error) {
+	switch l.ElementType().Nature() {
+
+    {{range $index, $type := .Types}}
+
+    {{if eq $type "Uint"}}
+	case semantic.UInt:
+    {{else}}
+	case semantic.{{$type}}:
+    {{end}}
+		x, err := fluxarray.{{$type}}{{$op.Name}}(l.Arr().(*fluxarray.{{$type}}), r.Arr().(*fluxarray.{{$type}}), mem)
+		if err != nil {
+			return nil, err
+		}
+		return NewVectorValue(x, semantic.Basic{{$type}}), nil
+
+    {{end}}
+
+	default:
+		return nil, errors.Newf(codes.Invalid, "unsupported type for vector {{$op.Name}}: %v", l.ElementType())
+	}
+}
+
+{{end}}
