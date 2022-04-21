@@ -81,3 +81,9 @@
   key: vectorizeAddition
   default: false
   contact: Markus Westerlind
+
+- name: Vectorize operators
+  description: Vectorizes all operator expressions inside map
+  key: vectorizeOperators
+  default: false
+  contact: Markus Westerlind

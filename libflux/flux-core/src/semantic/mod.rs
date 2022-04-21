@@ -402,6 +402,8 @@ pub struct Analyzer<'env, I: import::Importer> {
 pub enum Feature {
     /// Enables vectorization of addition expressions
     VectorizeAddition,
+    /// Enables vectorization of all operators
+    VectorizeOperators,
     /// Enables vectorization
     VectorizedMap,
 }

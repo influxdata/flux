@@ -26,6 +26,7 @@ func NewOptions(ctx context.Context) Options {
 	features := []string{}
 	features = addFlag(ctx, features, feature.VectorizeAddition())
 	features = addFlag(ctx, features, feature.VectorizedMap())
+	features = addFlag(ctx, features, feature.VectorizeOperators())
 	return Options{Features: features}
 }
 
