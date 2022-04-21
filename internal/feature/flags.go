@@ -209,6 +209,18 @@ func OptimizeCumulativeSum() BoolFlag {
 	return optimizeCumulativeSum
 }
 
+var optimizeSetTransformation = feature.MakeBoolFlag(
+	"Optimize Set Transformation",
+	"optimizeSetTransformation",
+	"Jonathan Sternberg",
+	false,
+)
+
+// OptimizeSetTransformation - Enables a version of set that is optimized
+func OptimizeSetTransformation() BoolFlag {
+	return optimizeSetTransformation
+}
+
 // Inject will inject the Flagger into the context.
 func Inject(ctx context.Context, flagger Flagger) context.Context {
 	return feature.Inject(ctx, flagger)
@@ -231,6 +243,7 @@ var all = []Flag{
 	labelPolymorphism,
 	optimizeMovingAverage,
 	optimizeCumulativeSum,
+	optimizeSetTransformation,
 }
 
 var byKey = map[string]Flag{
@@ -250,6 +263,7 @@ var byKey = map[string]Flag{
 	"labelPolymorphism":                labelPolymorphism,
 	"optimizeMovingAverage":            optimizeMovingAverage,
 	"optimizeCumulativeSum":            optimizeCumulativeSum,
+	"optimizeSetTransformation":        optimizeSetTransformation,
 }
 
 // Flags returns all feature flags.
