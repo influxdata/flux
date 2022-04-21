@@ -1261,9 +1261,10 @@ mod tests {
         ast,
         parser::Parser,
         semantic::{
+            formatter::format_untyped_node,
             sub,
             types::{MonoType, Tvar},
-            walk::{walk_mut, NodeMut},
+            walk::{walk_mut, Node, NodeMut},
         },
     };
 
@@ -2421,47 +2422,14 @@ mod tests {
 
     #[test]
     fn test_convert_nested_index_expression() {
-        let b = ast::BaseNode::default();
         let pkg =
             Parser::new("a[3][5]").parse_single_package("path".to_string(), "foo.flux".to_string());
 
         let got = test_convert(pkg).unwrap();
-        let symbols = collect_symbols(&got);
 
-        let want = Package {
-            loc: b.location.clone(),
-            package: "main".to_string(),
-            files: vec![File {
-                loc: b.location.clone(),
-                package: None,
-                imports: Vec::new(),
-                body: vec![Statement::Expr(ExprStmt {
-                    loc: b.location.clone(),
-                    expression: Expression::Index(Box::new(IndexExpr {
-                        loc: b.location.clone(),
-                        typ: type_info(),
-                        array: Expression::Index(Box::new(IndexExpr {
-                            loc: b.location.clone(),
-                            typ: type_info(),
-                            array: Expression::Identifier(IdentifierExpr {
-                                loc: b.location.clone(),
-                                typ: type_info(),
-                                name: symbols["a"].clone(),
-                            }),
-                            index: Expression::Integer(IntegerLit {
-                                loc: b.location.clone(),
-                                value: 3,
-                            }),
-                        })),
-                        index: Expression::Integer(IntegerLit {
-                            loc: b.location.clone(),
-                            value: 5,
-                        }),
-                    })),
-                })],
-            }],
-        };
-        assert_eq!(want, got);
+        expect![[r#"
+            package main
+            a[3][5]"#]].assert_eq(&format_untyped_node(Node::Package(&got)).unwrap());
     }
 
     #[test]
