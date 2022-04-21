@@ -34,14 +34,34 @@ pub fn format_node(node: walk::Node) -> Result<String, Error> {
     formatter.output()
 }
 
+/// Format a `Node` while omitting type annotations
+pub fn format_untyped_node(node: walk::Node) -> Result<String, Error> {
+    let mut formatter = Formatter::default();
+    formatter.annotate_type = false;
+    formatter.format_node(&node);
+    formatter.output()
+}
+
 /// Struct to hold data related to formatting such as formatted code,
 /// options, and errors.
 /// Provides methods for formatting files and strings of source code.
-#[derive(Default)]
 pub struct Formatter {
     builder: String,
     indentation: u32,
     err: Option<Error>,
+    /// Specifies if type annotations (`:MyType`) should be emitted in the output
+    annotate_type: bool,
+}
+
+impl Default for Formatter {
+    fn default() -> Self {
+        Formatter {
+            builder: String::new(),
+            indentation: 0,
+            err: None,
+            annotate_type: true,
+        }
+    }
 }
 
 // INDENT_BYTES is 4 spaces as a constant byte slice
@@ -329,7 +349,7 @@ impl Formatter {
             self.write_indent();
         }
         self.write_rune(']');
-        self.write_string(&format!(":{}", &n.typ));
+        self.format_type_annotation(&n.typ);
     }
 
     fn format_dict_expression(&mut self, n: &semantic::nodes::DictExpr) {
@@ -366,7 +386,7 @@ impl Formatter {
             self.write_indent();
         }
         self.write_rune(']');
-        self.write_string(&format!(":{}", &n.typ));
+        self.format_type_annotation(&n.typ);
     }
 
     fn format_index_expression(&mut self, n: &semantic::nodes::IndexExpr) {
@@ -374,12 +394,12 @@ impl Formatter {
         self.write_rune('[');
         self.format_node(&walk::Node::from_expr(&n.index));
         self.write_rune(']');
-        self.write_string(&format!(":{}", &n.typ));
+        self.format_type_annotation(&n.typ);
     }
 
     fn format_identifier_expression(&mut self, n: &semantic::nodes::IdentifierExpr) {
         self.write_string(&n.name);
-        self.write_string(&format!(":{}", &n.typ));
+        self.format_type_annotation(&n.typ);
     }
 
     fn format_statement_list(&mut self, n: &[semantic::nodes::Statement]) {
@@ -465,7 +485,7 @@ impl Formatter {
         self.format_child_with_parens(walk::Node::MemberExpr(n), walk::Node::from_expr(&n.object));
         self.write_rune('.');
         self.write_string(&n.property);
-        self.write_string(&format!(":{}", &n.typ));
+        self.format_type_annotation(&n.typ);
     }
 
     fn format_record_expression_as_function_argument(&mut self, n: &semantic::nodes::ObjectExpr) {
@@ -512,7 +532,7 @@ impl Formatter {
         if braces {
             self.write_rune('}');
         }
-        self.write_string(&format!(":{}", &n.typ));
+        self.format_type_annotation(&n.typ);
     }
 
     fn format_function_expression(&mut self, n: &semantic::nodes::FunctionExpr) {
@@ -547,7 +567,7 @@ impl Formatter {
         self.write_string("=>");
         self.write_rune(' ');
         self.format_block(&n.body);
-        self.write_string(&format!(":{}", &n.typ));
+        self.format_type_annotation(&n.typ);
     }
 
     fn format_function_argument(&mut self, n: &semantic::nodes::FunctionParameter) {
@@ -617,7 +637,7 @@ impl Formatter {
             self.format_property(c);
         }
         self.write_rune(')');
-        self.write_string(&format!(":{}", &n.typ));
+        self.format_type_annotation(&n.typ);
     }
 
     fn format_conditional_expression(&mut self, n: &semantic::nodes::ConditionalExpr) {
@@ -655,7 +675,7 @@ impl Formatter {
             self.unindent();
         }
         self.write_rune(')');
-        self.write_string(&format!(":{}", &n.typ));
+        self.format_type_annotation(&n.typ);
     }
 
     fn format_member_assignment(&mut self, n: &semantic::nodes::MemberAssgn) {
@@ -674,7 +694,7 @@ impl Formatter {
             }
         }
         self.format_child_with_parens(walk::Node::UnaryExpr(n), walk::Node::from_expr(&n.argument));
-        self.write_string(&format!(":{}", &n.typ));
+        self.format_type_annotation(&n.typ);
     }
 
     fn format_binary_expression(&mut self, n: &semantic::nodes::BinaryExpr) {
@@ -887,6 +907,12 @@ impl Formatter {
         self.write_string(&n.value.replace('/', "\\/"));
         self.write_rune('/');
         // self.write_string(&format!(":{}", MonoType::Regexp.to_string()));
+    }
+
+    fn format_type_annotation(&mut self, typ: &MonoType) {
+        if self.annotate_type {
+            self.write_string(&format!(":{}", typ));
+        }
     }
 }
 
