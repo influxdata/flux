@@ -16,7 +16,7 @@
     },
     {
         "Name": "Div",
-        "Op": "-",
+        "Op": "/",
         "Types": ["Int", "Uint", "Float"]
     },
     {

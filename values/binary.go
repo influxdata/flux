@@ -624,4 +624,19 @@ var binaryVectorFuncLookup = map[BinaryFuncSignature]BinaryVectorFunction{
 		r := rv.Vector()
 		return vectorSub(l, r, mem)
 	},
+	{Operator: ast.MultiplicationOperator, Left: semantic.Vector, Right: semantic.Vector}: func(lv, rv Value, mem memory.Allocator) (Value, error) {
+		l := lv.Vector()
+		r := rv.Vector()
+		return vectorMul(l, r, mem)
+	},
+	{Operator: ast.DivisionOperator, Left: semantic.Vector, Right: semantic.Vector}: func(lv, rv Value, mem memory.Allocator) (Value, error) {
+		l := lv.Vector()
+		r := rv.Vector()
+		return vectorDiv(l, r, mem)
+	},
+	{Operator: ast.ModuloOperator, Left: semantic.Vector, Right: semantic.Vector}: func(lv, rv Value, mem memory.Allocator) (Value, error) {
+		l := lv.Vector()
+		r := rv.Vector()
+		return vectorMod(l, r, mem)
+	},
 }

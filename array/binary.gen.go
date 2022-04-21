@@ -233,7 +233,7 @@ func IntDiv(l, r *Int, mem memory.Allocator) (*Int, error) {
 	for i := 0; i < n; i++ {
 		if l.IsValid(i) && r.IsValid(i) {
 
-			b.Append(l.Value(i) - r.Value(i))
+			b.Append(l.Value(i) / r.Value(i))
 
 		} else {
 			b.AppendNull()
@@ -253,7 +253,7 @@ func UintDiv(l, r *Uint, mem memory.Allocator) (*Uint, error) {
 	for i := 0; i < n; i++ {
 		if l.IsValid(i) && r.IsValid(i) {
 
-			b.Append(l.Value(i) - r.Value(i))
+			b.Append(l.Value(i) / r.Value(i))
 
 		} else {
 			b.AppendNull()
@@ -273,7 +273,7 @@ func FloatDiv(l, r *Float, mem memory.Allocator) (*Float, error) {
 	for i := 0; i < n; i++ {
 		if l.IsValid(i) && r.IsValid(i) {
 
-			b.Append(l.Value(i) - r.Value(i))
+			b.Append(l.Value(i) / r.Value(i))
 
 		} else {
 			b.AppendNull()

@@ -191,6 +191,7 @@ var all = []Flag{
 	optimizeStateTracking,
 	setFinalizerMemoryTracking,
 	vectorizeAddition,
+	vectorizeOperators,
 }
 
 var byKey = map[string]Flag{
@@ -206,6 +207,7 @@ var byKey = map[string]Flag{
 	"optimizeStateTracking":            optimizeStateTracking,
 	"setFinalizerMemoryTracking":       setFinalizerMemoryTracking,
 	"vectorizeAddition":                vectorizeAddition,
+	"vectorizeOperators":               vectorizeOperators,
 }
 
 // Flags returns all feature flags.
