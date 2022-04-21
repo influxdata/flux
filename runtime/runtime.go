@@ -181,7 +181,7 @@ func (r *runtime) compilePackages() error {
 
 		spkg, err := semantic.DeserializeFromFlatBuffer(data)
 		if err != nil {
-			return fmt.Errorf("Unable to parse %s: %s", path, err)
+			return fmt.Errorf("unable to parse %s: %s", path, err)
 		}
 		name := strings.TrimPrefix(
 			strings.TrimSuffix(path, ".fc"),
