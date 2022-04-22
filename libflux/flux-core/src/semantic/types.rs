@@ -18,9 +18,11 @@ use crate::{
     errors::{Errors, Located},
     map::HashMap,
     semantic::{
-        fresh::{Fresh, Fresher},
+        fresh::Fresher,
         nodes::Symbol,
-        sub::{apply2, apply3, apply4, merge_collect, Substitutable, Substituter, Substitution},
+        sub::{
+            apply2, apply3, apply4, merge3, merge_collect, Substitutable, Substituter, Substitution,
+        },
     },
 };
 
@@ -223,8 +225,8 @@ impl PartialEq for PolyType {
         let mut f = Fresher::from(max + 1);
         let mut g = Fresher::from(max + 1);
 
-        let mut a = self.clone().fresh(&mut f, &mut TvarMap::new());
-        let mut b = poly.clone().fresh(&mut g, &mut TvarMap::new());
+        let mut a = self.fresh(&mut f);
+        let mut b = poly.fresh(&mut g);
 
         a.vars.sort();
         b.vars.sort();
@@ -236,6 +238,10 @@ impl PartialEq for PolyType {
             kinds.sort();
         }
 
+        assert_eq!(a.vars, b.vars);
+        assert_eq!(a.cons, b.cons);
+        assert_eq!(a.expr, b.expr);
+
         a.vars == b.vars && a.cons == b.cons && a.expr == b.expr
     }
 }
@@ -246,11 +252,39 @@ impl Substitutable for PolyType {
     }
 
     fn walk(&self, sub: &mut (impl ?Sized + Substituter)) -> Option<Self> {
+        let Self { vars, cons, expr } = self;
+
+        let new_expr = expr.visit(sub);
+
+        let new_cons = merge_collect(
+            &mut (),
+            cons,
+            |_, (k, v)| {
+                sub.try_apply_bound(*k).and_then(|k| match k {
+                    MonoType::BoundVar(k) | MonoType::Var(k) => Some((k, v.clone())),
+                    _ => None,
+                })
+            },
+            |_, (k, v)| (k.clone(), v.clone()),
+        );
+
+        let new_vars = merge_collect(
+            &mut (),
+            vars,
+            |_, v| {
+                sub.try_apply_bound(*v).and_then(|v| match v {
+                    MonoType::BoundVar(v) | MonoType::Var(v) => Some(v),
+                    _ => None,
+                })
+            },
+            |_, v| v.clone(),
+        );
+
         // `vars` defines new distinct variables for `expr` so any substitutions applied on a
         // variable named the same must not be applied in `expr`
-        self.expr.visit(sub).map(|expr| PolyType {
-            vars: self.vars.clone(),
-            cons: self.cons.clone(),
+        merge3(vars, new_vars, cons, new_cons, expr, new_expr).map(|(vars, cons, expr)| PolyType {
+            vars,
+            cons,
             expr,
         })
     }
@@ -290,8 +324,7 @@ impl PolyType {
     ///
     /// Useful for pretty printing the type in error messages.
     pub fn normal(&self) -> PolyType {
-        self.clone()
-            .fresh(&mut Fresher::from(0), &mut TvarMap::new())
+        self.clone().fresh(&mut Fresher::default())
     }
 }
 
@@ -343,20 +376,20 @@ pub enum Error {
 
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let mut fresh = Fresher::from(0);
+        let mut fresh = Fresher::default();
         match self {
             Error::CannotUnify { exp, act } => write!(
                 f,
                 "expected {exp}{exp_info} but found {act}{act_info}",
-                exp = exp.clone().fresh(&mut fresh, &mut TvarMap::new()),
+                exp = exp.clone().fresh(&mut fresh),
                 exp_info = exp.type_info(),
-                act = act.clone().fresh(&mut fresh, &mut TvarMap::new()),
+                act = act.clone().fresh(&mut fresh),
                 act_info = act.type_info(),
             ),
             Error::CannotConstrain { exp, act } => write!(
                 f,
                 "{act}{act_info} is not {exp}",
-                act = act.clone().fresh(&mut fresh, &mut TvarMap::new()),
+                act = act.clone().fresh(&mut fresh),
                 act_info = act.type_info(),
                 exp = exp,
             ),
@@ -373,9 +406,9 @@ impl fmt::Display for Error {
             } => write!(
                 f,
                 "expected {exp}{exp_info} but found {act}{act_info} for label {lab} caused by {cause}",
-                exp = exp.clone().fresh(&mut fresh, &mut TvarMap::new()),
+                exp = exp.clone().fresh(&mut fresh),
                 exp_info = exp.type_info(),
-                act = act.clone().fresh(&mut fresh, &mut TvarMap::new()),
+                act = act.clone().fresh(&mut fresh),
                 act_info = act.type_info(),
                 lab = lab,
                 cause = cause
@@ -386,9 +419,9 @@ impl fmt::Display for Error {
             Error::CannotUnifyReturn { exp, act, cause } => write!(
                 f,
                 "expected {exp}{exp_info} but found {act}{act_info} for return type caused by {cause}",
-                exp = exp.clone().fresh(&mut fresh, &mut TvarMap::new()),
+                exp = exp.clone().fresh(&mut fresh),
                 exp_info = exp.type_info(),
-                act = act.clone().fresh(&mut fresh, &mut TvarMap::new()),
+                act = act.clone().fresh(&mut fresh),
                 act_info = act.type_info(),
                 cause = cause
             ),

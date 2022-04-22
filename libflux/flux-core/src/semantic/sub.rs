@@ -1,7 +1,10 @@
 //! Substitutions during type inference.
 use std::{borrow::Cow, cell::RefCell, collections::BTreeMap, fmt, iter::FusedIterator};
 
-use crate::semantic::types::{union, Error, MonoType, PolyType, SubstitutionMap, Tvar, TvarKinds};
+use crate::semantic::{
+    fresh::Fresher,
+    types::{union, Error, MonoType, PolyType, SubstitutionMap, Tvar, TvarKinds},
+};
 
 use ena::unify::UnifyKey;
 
@@ -258,6 +261,14 @@ pub trait Substitutable {
 
         free_vars.vars.into_inner()
     }
+
+    /// Returns `Self` but with "fresh" type variables
+    fn fresh(&self, fresher: &mut Fresher) -> Self
+    where
+        Self: Sized + Clone,
+    {
+        self.visit(fresher).unwrap_or_else(|| self.clone())
+    }
 }
 
 impl Substitutable for String {
@@ -272,6 +283,15 @@ where
 {
     fn walk(&self, sub: &mut (impl ?Sized + Substituter)) -> Option<Self> {
         T::visit(self, sub).map(Box::new)
+    }
+}
+
+impl<T> Substitutable for Vec<T>
+where
+    T: Substitutable + Clone,
+{
+    fn walk(&self, sub: &mut (impl ?Sized + Substituter)) -> Option<Self> {
+        merge_collect(&mut (), self, |_, v| v.visit(sub), |_, v| v.clone())
     }
 }
 
