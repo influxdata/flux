@@ -27,7 +27,9 @@ func IntAdd(l, r *Int, mem memory.Allocator) (*Int, error) {
 			b.AppendNull()
 		}
 	}
-	return b.NewIntArray(), nil
+	a := b.NewIntArray()
+	b.Release()
+	return a, nil
 }
 
 func UintAdd(l, r *Uint, mem memory.Allocator) (*Uint, error) {
@@ -45,7 +47,9 @@ func UintAdd(l, r *Uint, mem memory.Allocator) (*Uint, error) {
 			b.AppendNull()
 		}
 	}
-	return b.NewUintArray(), nil
+	a := b.NewUintArray()
+	b.Release()
+	return a, nil
 }
 
 func FloatAdd(l, r *Float, mem memory.Allocator) (*Float, error) {
@@ -63,7 +67,9 @@ func FloatAdd(l, r *Float, mem memory.Allocator) (*Float, error) {
 			b.AppendNull()
 		}
 	}
-	return b.NewFloatArray(), nil
+	a := b.NewFloatArray()
+	b.Release()
+	return a, nil
 }
 
 func StringAdd(l, r *String, mem memory.Allocator) (*String, error) {
@@ -81,5 +87,7 @@ func StringAdd(l, r *String, mem memory.Allocator) (*String, error) {
 			b.AppendNull()
 		}
 	}
-	return b.NewStringArray(), nil
+	a := b.NewStringArray()
+	b.Release()
+	return a, nil
 }

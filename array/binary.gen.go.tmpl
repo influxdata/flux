@@ -24,7 +24,9 @@ func {{.Name}}Add(l, r *{{.Name}}, mem memory.Allocator) (*{{.Name}}, error) {
 			b.AppendNull()
 		}
 	}
-	return b.New{{.Name}}Array(), nil
+    a := b.New{{.Name}}Array()
+    b.Release()
+	return a, nil
 }
 {{end}}
 {{end}}

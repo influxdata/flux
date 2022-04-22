@@ -524,10 +524,8 @@ impl<'env, I: import::Importer> Analyzer<'env, I> {
             // return an error if it finds a function can't be vectorized, but we
             // don't expect all functions to be vectorizable. So we just let it
             // vectorize what it can, and fail silently for all other cases.
-            if let Err(errors) = vectorize::vectorize(&self.config, &mut sem_pkg) {
-                for err in errors {
-                    log::debug!("{}", err);
-                }
+            if let Err(err) = vectorize::vectorize(&self.config, &mut sem_pkg) {
+                log::debug!("{}", err);
             }
         }
         Ok((env, sem_pkg))
