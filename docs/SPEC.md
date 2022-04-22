@@ -96,7 +96,7 @@ The following keywords are reserved and may not be used as identifiers:
     and    import  not  return   option   test
     empty  in      or   package  builtin
 
-[IMPL#256](https://github.com/influxdata/platform/issues/256) Add in and empty operator support   
+[IMPL#256](https://github.com/influxdata/platform/issues/256) Add in and empty operator support
 
 #### Operators
 
@@ -666,7 +666,7 @@ Duration and Time types are Timeable.
 ##### Stringable Constraint
 
 Stringable types can be evaluated and expressed in string interpolation.
-String, Int, Uint, Float, Bool, Time, and Duration types are Stringable. 
+String, Int, Uint, Float, Bool, Time, and Duration types are Stringable.
 
 ### Blocks
 
@@ -764,7 +764,7 @@ A primary expressions may be a literal, an identifier denoting a variable, or a 
 
 #### Logical Operators
 
-Flux provides the logical operators `and` and `or`.  
+Flux provides the logical operators `and` and `or`.
 Flux's logical operators observe the short-circuiting behavior seen in other programming languages, meaning that the right-hand side (RHS) operand is conditionally evaluated depending on the result of evaluating the left-hand side (LHS) operand.
 
 When the operator is `and`:
@@ -1147,7 +1147,8 @@ All such values must have a corresponding builtin statement to declare the exist
     Function = "(" [Parameters] ")" "=>" MonoType .
 
     Properties = Property { "," Property } .
-    Property   = identifier ":" MonoType .
+    Property   = Label ":" MonoType .
+    Label      = identifier | string_lit
 
     Parameters = Parameter { "," Parameter } .
     Parameter  = [ "<-" | "?" ] identifier ":" MonoType .
@@ -1291,8 +1292,8 @@ All calls to `systemTime` within a single evaluation of a Flux script return the
 `today()` returns the `now()` timestamp truncated to the day unit.
 
 Example:
-   
-    option now = 2021-01-01T12:43:21Z    
+
+    option now = 2021-01-01T12:43:21Z
     today() // Returns 2021-01-01T00:00:00Z
 
 ### FixedZone
@@ -1510,7 +1511,7 @@ Example:
 
 #### Buckets
 
-Buckets is a type of data source that retrieves a list of buckets that the caller is authorized to access.  
+Buckets is a type of data source that retrieves a list of buckets that the caller is authorized to access.
 It takes no input parameters and produces an output table with the following columns:
 
 | Name            | Type     | Description                                                 |
@@ -1546,9 +1547,9 @@ Example:
 
 #### Fill
 
-Fill will scan a stream for null values and replace them with a non-null value.  
+Fill will scan a stream for null values and replace them with a non-null value.
 
-The output stream will be the same as the input stream, with all null values in the column replaced.  
+The output stream will be the same as the input stream, with all null values in the column replaced.
 
 Fill has the following properties:
 
@@ -2501,9 +2502,9 @@ Duplicate duplicates a specified column in a table.
 If the specified column is not present in a table an error will be thrown.
 If the specified column is part of the group key, it will be duplicated, but it will not be part of the group key of the output table.
 If the column indicated by `as` does not exist, a column will be added to the table.
-If the column does exist, that column will be overwritten with the values specified by `column`.  
+If the column does exist, that column will be overwritten with the values specified by `column`.
 If the `as` column is in the group key, there are two possible outcomes:
-If the column indicated by `column` is in the group key, then `as` will remain in the group key and have the same group key value as `column`.  
+If the column indicated by `column` is in the group key, then `as` will remain in the group key and have the same group key value as `column`.
 If `column` is not part of the group key, then `as` is removed from the group key.
 Duplicate has the following properties:
 
@@ -2619,10 +2620,10 @@ Or:
     |> group(columns: ["host", "_measurement"], mode: "by")
 ```
 
-Records are grouped by the `"host"` and `"_measurement"` columns.  
+Records are grouped by the `"host"` and `"_measurement"` columns.
 The resulting group key is `["host", "_measurement"]`, so a new table for every different `["host", "_measurement"]`
-value is created.  
-Every table in the result contains every record for some `["host", "_measurement"]` value.  
+value is created.
+Every table in the result contains every record for some `["host", "_measurement"]` value.
 Every record in some resulting table has the same value for the columns `"host"` and `"_measurement"`.
 
 _Except_
@@ -2633,7 +2634,7 @@ from(bucket: "telegraf/autogen")
     |> group(columns: ["_time"], mode: "except")
 ```
 
-Records are grouped by the set of all columns in the table, excluding `"_time"`.  
+Records are grouped by the set of all columns in the table, excluding `"_time"`.
 For example, if the table has columns `["_time", "host", "_measurement", "_field", "_value"]` then the group key would be
 `["host", "_measurement", "_field", "_value"]`.
 
@@ -2645,7 +2646,7 @@ from(bucket: "telegraf/autogen")
     |> group()
 ```
 
-Records are grouped into a single table.  
+Records are grouped into a single table.
 The group key of the resulting table is empty.
 
 #### Columns
@@ -2814,7 +2815,7 @@ window(intervals: intervals(every:1d, period:8h, offset:9h)) // window the data 
 
 #### Pivot
 
-Pivot collects values stored vertically (column-wise) in a table and aligns them horizontally (row-wise) into logical sets.  
+Pivot collects values stored vertically (column-wise) in a table and aligns them horizontally (row-wise) into logical sets.
 
 Pivot has the following properties:
 
@@ -2875,7 +2876,7 @@ Output:
 | 1970-01-01T00:00:00.000000003Z |     "m1"     | null | null | null |  7.0 |
 | 1970-01-01T00:00:00.000000004Z |     "m1"     | null | null |  8.0 | null |
 
-Example 2, align fields and measurements that have the same timestamp.  
+Example 2, align fields and measurements that have the same timestamp.
 Note the effect of:
  - having null values in some `columnKey` value;
  - having more values for the same `rowKey` and `columnKey` value (the 11th row overrides the 10th, and so does the 15th with the 14th).
@@ -2933,8 +2934,8 @@ Both `tables` and `on` are required parameters.
 The `on` parameter and the `cross` method are mutually exclusive.
 Join currently only supports two input streams.
 
-[IMPL#83](https://github.com/influxdata/flux/issues/83) Add support for joining more than 2 streams  
-[IMPL#84](https://github.com/influxdata/flux/issues/84) Add support for different join types  
+[IMPL#83](https://github.com/influxdata/flux/issues/83) Add support for joining more than 2 streams
+[IMPL#84](https://github.com/influxdata/flux/issues/84) Add support for different join types
 
 Example:
 
@@ -3131,7 +3132,7 @@ from(bucket: "telegraf/autogen")
 
 #### Difference
 
-Difference computes the difference between subsequent records.  
+Difference computes the difference between subsequent records.
 Every user-specified column of numeric type is subtracted while others are kept intact.
 
 Difference has the following properties:
@@ -3254,7 +3255,7 @@ Moving Average has the following properties:
 
 | Name        | Type     | Description
 | ----        | ----     | -----------
-| n           | int      | N specifies the number of points to mean.       
+| n           | int      | N specifies the number of points to mean.
 
 Rules for taking the moving average for numeric types:
  - the average over a period populated by `n` values is equal to their algebraic mean
@@ -3301,8 +3302,8 @@ Timed Moving Average has the following properties:
 | Name        | Type     | Description
 | ----        | ----     | -----------
 | every       | duration | Every specifies the frequency of windows.
-| period      | duration | Period specifies the window size to mean.       
-| column      | string   | Column specifies a column to aggregate. Defaults to `"_value"`            
+| period      | duration | Period specifies the window size to mean.
+| column      | string   | Column specifies a column to aggregate. Defaults to `"_value"`
 
 Example:
 ```
@@ -3319,7 +3320,7 @@ It is a weighted moving average that gives more weighting to recent data as oppo
 
 | Name        | Type     | Description
 | ----        | ----     | -----------
-| n           | int      | N specifies the number of points to mean.       
+| n           | int      | N specifies the number of points to mean.
 
 Rules for taking the exponential moving average for numeric types:
  - the first value of an exponential moving average over `n` values is the algebraic mean of the first `n` values
@@ -3510,7 +3511,7 @@ It acts on the `_value` column.
 
  Name        | Type     | Description
 | ----        | ----     | -----------
-| n           | int      | N specifies the sample size of the algorithm.  
+| n           | int      | N specifies the sample size of the algorithm.
 
 A triple exponential derivative is defined as `TRIX[i] = ((EMA3[i] / EMA3[i - 1]) - 1) * 100`, where
 - `EMA_3` is `EMA(EMA(EMA(data)))`
@@ -3569,7 +3570,7 @@ over a specified time period to measure speed and change of data movements. It a
 
  Name        | Type     | Description
 | ----        | ----     | -----------
-| n           | int      | N specifies the sample size of the algorithm.       
+| n           | int      | N specifies the sample size of the algorithm.
 
 Rules for calculating the relative strength index for numeric types:
  - The general process of calculating is `RSI = 100 - (100 / (1 + (AVG GAIN / AVG LOSS)))`
@@ -4031,7 +4032,7 @@ Example:
 
 #### Contains
 
-Tests whether a value is a member of a set.  
+Tests whether a value is a member of a set.
 
 Contains has the following parameters:
 
@@ -4046,7 +4047,7 @@ Example:
 #### Stream/table functions
 
 These functions allow to extract a table from a stream of tables (`tableFind`) and access its
-columns (`getColumn`) and records (`getRecord`).  
+columns (`getColumn`) and records (`getRecord`).
 The example below provides an overview of these functions, further information can be found in the paragraphs below.
 
 ```
