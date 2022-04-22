@@ -9,6 +9,8 @@ package universe
 
 // columns returns the column labels in each input table.
 //
+// **Note:** `universe.columns()` is an experimental function with a more precise type signature.
+//
 // For each input table, `columns` outputs a table with the same group key
 // columns and a new column containing the column labels in the input table.
 // Each row in an output table contains the group key value and the label of one
@@ -25,10 +27,11 @@ package universe
 //
 // ### List all columns per input table
 // ```
+// import "experimental/universe"
 // import "sampledata"
 //
 // sampledata.string()
-//     |> columns(column: "labels")
+//     |> universe.columns(column: "labels")
 // ```
 //
 // ## Metadata
@@ -38,6 +41,8 @@ package universe
 builtin columns : (<-tables: stream[A], ?column: C) => stream[{C: string}] where A: Record, C: Label
 
 // fill replaces all null values in input tables with a non-null value.
+//
+// **Note:** `universe.fill()` is an experimental function with a more precise type signature.
 //
 // Output tables are the same as the input tables with all null values replaced
 // in the specified column.
@@ -57,18 +62,20 @@ builtin columns : (<-tables: stream[A], ?column: C) => stream[{C: string}] where
 //
 // ### Fill null values with a specified non-null value
 // ```
+// import "experimental/universe"
 // import "sampledata"
 //
 // < sampledata.int(includeNull: true)
-// >     |> fill(value: 0)
+// >     |> universe.fill(value: 0)
 // ```
 //
 // ### Fill null values with the previous non-null value
 // ```
+// import "experimental/universe"
 // import "sampledata"
 //
 // < sampledata.int(includeNull: true)
-// >     |> fill(usePrevious: true)
+// >     |> experimental.fill(usePrevious: true)
 // ```
 //
 // ## Metadata
@@ -83,6 +90,8 @@ builtin fill : (<-tables: stream[{A with C: B}], ?column: C, ?value: B, ?usePrev
 // mean returns the average of non-null values in a specified column from each
 // input table.
 //
+// **Note:** `universe.mean()` is an experimental function with a more precise type signature.
+//
 // ## Parameters
 // - column: Column to use to compute means. Default is `_value`.
 // - tables: Input data. Default is piped-forward data (`<-`).
@@ -91,10 +100,11 @@ builtin fill : (<-tables: stream[{A with C: B}], ?column: C, ?value: B, ?usePrev
 //
 // ### Return the average of values in each input table
 // ```
+// import "experimental/universe"
 // import "sampledata"
 //
 // < sampledata.int()
-// >     |> mean()
+// >     |> universe.mean()
 // ```
 //
 // ## Metadata
