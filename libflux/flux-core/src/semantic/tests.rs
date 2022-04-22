@@ -220,7 +220,7 @@ macro_rules! test_infer {
             config = $config;
         )?
         if let Err(e) = infer_types($src, env, imp, Some($exp), config) {
-            panic!("{}", e);
+            panic!("{}", e.pretty($src));
         }
     }}
 }

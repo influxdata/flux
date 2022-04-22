@@ -117,6 +117,8 @@ impl Matcher<Error> for Subsume {
 
 struct Unifier<'a, E = Error> {
     sub: &'a mut Substitution,
+    // We must delay the inference of records with label variables until we have inferred
+    // the remaining context.
     delayed_records: Vec<(Record, Record)>,
     errors: Errors<E>,
     matcher: &'a dyn Matcher<Error>,
@@ -168,7 +170,7 @@ impl<'a, E> Unifier<'a, E> {
         }
 
         struct FindUnboundLabels<'a> {
-            found: RefCell<Option<MonoType>>,
+            found: RefCell<Option<Tvar>>,
             sub: &'a dyn Substituter,
         }
         impl Substituter for FindUnboundLabels<'_> {
@@ -187,9 +189,7 @@ impl<'a, E> Unifier<'a, E> {
                     } = &**rec
                     {
                         match self.sub.try_apply(*var) {
-                            Some(MonoType::Var(_)) | None => {
-                                *self.found.borrow_mut() = Some(MonoType::Var(*var))
-                            }
+                            Some(MonoType::Var(_)) | None => *self.found.borrow_mut() = Some(*var),
                             _ => (),
                         }
                     }
@@ -205,7 +205,12 @@ impl<'a, E> Unifier<'a, E> {
         let typ = value.apply_cow(self.sub);
         typ.visit(&visitor);
         if let Some(non_label) = visitor.found.into_inner() {
-            self.errors.push(mk_error(Error::NotALabel(non_label)));
+            // Prevent this error from being emitted again for this type
+            if let Err(err) = self.sub.union_type(non_label, MonoType::Error) {
+                self.errors.push(mk_error(err));
+            }
+            self.errors
+                .push(mk_error(Error::NotALabel(MonoType::Var(non_label))));
         }
 
         if self.errors.has_errors() {
@@ -1429,7 +1434,9 @@ impl Record {
         let has_variable_label = |r: &Record| {
             r.fields().any(|prop| match prop.k {
                 RecordLabel::Variable(v) => unifier.sub.try_apply(v).is_none(),
-                RecordLabel::BoundVariable(_) | RecordLabel::Concrete(_) => false,
+                RecordLabel::BoundVariable(_) | RecordLabel::Concrete(_) | RecordLabel::Error => {
+                    false
+                }
             })
         };
         if has_variable_label(self) || has_variable_label(actual) {
@@ -1495,25 +1502,6 @@ impl Record {
                     tail: r,
                 },
             ) if a != b => {
-                match (a, b) {
-                    (RecordLabel::Variable(a), RecordLabel::Concrete(b)) => {
-                        if unifier.sub.try_apply(*a).is_none() {
-                            a.unify(&MonoType::Label(b.clone()), unifier);
-                            t.unify(u, unifier);
-                            l.unify(r, unifier);
-                            return;
-                        }
-                    }
-                    (RecordLabel::Concrete(a), RecordLabel::Variable(b)) => {
-                        if unifier.sub.try_apply(*b).is_none() {
-                            b.unify(&MonoType::Label(a.clone()), unifier);
-                            t.unify(u, unifier);
-                            l.unify(r, unifier);
-                            return;
-                        }
-                    }
-                    _ => (),
-                }
                 let var = unifier.sub.fresh();
                 let exp = MonoType::from(Record::Extension {
                     head: Property {
@@ -1546,6 +1534,7 @@ impl Record {
                     t.unify(&MonoType::Error, unifier);
                     unifier.errors.push(Error::NotALabel(t));
                 }
+                RecordLabel::Error => (),
             },
             // If we are expecting {} but find {a: u | r}, label `a` is extra.
             (
@@ -1700,6 +1689,8 @@ pub enum RecordLabel {
     BoundVariable(Tvar),
     /// A concrete label
     Concrete(Label),
+    /// A type error occurred during type inference
+    Error,
 }
 
 impl From<Label> for RecordLabel {
@@ -1715,6 +1706,7 @@ impl Substitutable for RecordLabel {
                 MonoType::Label(l) => Some(Self::Concrete(l)),
                 MonoType::BoundVar(l) => Some(Self::BoundVariable(l)),
                 MonoType::Var(l) => Some(Self::Variable(l)),
+                MonoType::Error => Some(Self::Error),
                 _ => None,
             }),
 
@@ -1722,10 +1714,11 @@ impl Substitutable for RecordLabel {
                 MonoType::Label(l) => Some(Self::Concrete(l)),
                 MonoType::BoundVar(l) => Some(Self::BoundVariable(l)),
                 MonoType::Var(l) => Some(Self::Variable(l)),
+                MonoType::Error => Some(Self::Error),
                 _ => None,
             }),
 
-            Self::Concrete(_) => None,
+            Self::Concrete(_) | Self::Error => None,
         }
     }
 }
@@ -1736,6 +1729,7 @@ impl fmt::Display for RecordLabel {
             Self::BoundVariable(v) => v.fmt(f),
             Self::Variable(v) => write!(f, "#{}", v),
             Self::Concrete(v) => v.fmt(f),
+            Self::Error => f.write_str("<error>"),
         }
     }
 }
@@ -1743,7 +1737,7 @@ impl fmt::Display for RecordLabel {
 impl PartialEq<str> for RecordLabel {
     fn eq(&self, other: &str) -> bool {
         match self {
-            Self::BoundVariable(_) | Self::Variable(_) => false,
+            Self::BoundVariable(_) | Self::Variable(_) | Self::Error => false,
             Self::Concrete(l) => l == other,
         }
     }

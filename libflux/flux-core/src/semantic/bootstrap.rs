@@ -318,6 +318,9 @@ fn add_record_to_map(
                 RecordLabel::BoundVariable(_) | RecordLabel::Variable(_) => {
                     bail!("Record contains variable labels")
                 }
+                RecordLabel::Error => {
+                    bail!("Record contains type error")
+                }
             },
             PolyType {
                 vars: new_vars,

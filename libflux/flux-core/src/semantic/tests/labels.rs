@@ -31,7 +31,7 @@ fn labels_simple() {
 
 #[test]
 fn labels_unbound() {
-    test_infer! {
+    test_error_msg! {
         config: AnalyzerConfig{
             features: vec![Feature::LabelPolymorphism],
             ..AnalyzerConfig::default()
@@ -44,9 +44,14 @@ fn labels_unbound() {
         src: r#"
             x = [{ a: 1, b: 2.0 }] |> f(value: "x")
         "#,
-        exp: map![
-            "x" => "[{ a: string, b: float }]",
-        ],
+        expect: expect![[r#"
+            error: <error> is not a label
+              ┌─ main:2:39
+              │
+            2 │             x = [{ a: 1, b: 2.0 }] |> f(value: "x")
+              │                                       ^^^^^^^^^^^^^
+
+        "#]],
     }
 }
 
@@ -213,13 +218,19 @@ fn optional_label() {
             x = columns(table: { a: 1, b: "b" })
             y = x.abc
         "#,
-        // TODO Improve this error
+        // TODO This fails because `column` is not specified but it ought to provide a better error
         expect: expect![[r#"
-            error: A is not a label
+            error: <error> is not a label
               ┌─ main:2:17
               │
             2 │             x = columns(table: { a: 1, b: "b" })
               │                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+            error: record is missing label abc
+              ┌─ main:3:17
+              │
+            3 │             y = x.abc
+              │                 ^
 
         "#]],
     }

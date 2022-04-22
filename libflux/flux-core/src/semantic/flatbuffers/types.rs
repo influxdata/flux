@@ -630,6 +630,7 @@ fn build_prop<'a>(
             let concrete = fb::Concrete::create(builder, &fb::ConcreteArgs { id: Some(id) });
             (concrete.as_union_value(), fb::RecordLabel::Concrete)
         }
+        RecordLabel::Error => unreachable!(),
     };
     fb::Prop::create(
         builder,
