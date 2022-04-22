@@ -10,6 +10,7 @@ import (
 	"github.com/influxdata/flux/internal/date"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/interpreter"
+	"github.com/influxdata/flux/interval"
 	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
@@ -240,7 +241,7 @@ func init() {
 		),
 		"truncate": values.NewFunction(
 			"truncate",
-			runtime.MustLookupBuiltinType("date", "truncate"),
+			runtime.MustLookupBuiltinType("date", "_truncate"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
 				v, ok := args.Get("t")
 				if !ok {
@@ -261,12 +262,20 @@ func init() {
 				if err != nil {
 					return nil, err
 				}
-				w, err := execute.NewWindow(u.Duration(), u.Duration(), execute.Duration{})
+				location, _, err := getLocation(args)
 				if err != nil {
 					return nil, err
 				}
-				b := w.GetEarliestBounds(t)
-				return values.NewTime(b.Start), nil
+				intervalLocation, err := interval.LoadLocation(location)
+				if err != nil {
+					return nil, err
+				}
+				w, err := interval.NewWindowInLocation(u.Duration(), u.Duration(), values.Duration{}, intervalLocation)
+				if err != nil {
+					return nil, err
+				}
+				b := w.GetLatestBounds(t)
+				return values.NewTime(b.Start()), nil
 			}, false,
 		),
 	}
@@ -284,7 +293,7 @@ func init() {
 	runtime.RegisterPackageValue("date", "millisecond", SpecialFns["millisecond"])
 	runtime.RegisterPackageValue("date", "microsecond", SpecialFns["microsecond"])
 	runtime.RegisterPackageValue("date", "nanosecond", SpecialFns["nanosecond"])
-	runtime.RegisterPackageValue("date", "truncate", SpecialFns["truncate"])
+	runtime.RegisterPackageValue("date", "_truncate", SpecialFns["truncate"])
 }
 
 func getTime(args values.Object) (values.Value, error) {

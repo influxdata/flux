@@ -52,7 +52,7 @@ func TestLookupComplexTypes(t *testing.T) {
 			path: "date",
 			id:   "truncate",
 			name: "lookup date.truncate",
-			want: "(t: A, unit: duration) => time",
+			want: "(?location: {offset: duration, zone: string}, t: A, unit: duration) => time",
 		},
 		{
 			path: "experimental/bigtable",

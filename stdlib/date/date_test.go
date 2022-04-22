@@ -325,28 +325,74 @@ func TestNilErrors(t *testing.T) {
 
 func TestTruncate_Time(t *testing.T) {
 	testCases := []struct {
-		name string
-		time string
-		unit string
-		want string
+		name     string
+		time     string
+		unit     string
+		location string
+		want     string
 	}{
 		{
-			name: "second",
-			time: "2019-06-03T13:59:01.000000000Z",
-			unit: "1s",
-			want: "2019-06-03T13:59:01.000000000Z",
+			name:     "second",
+			time:     "2019-06-03T13:59:01.000000000Z",
+			unit:     "1s",
+			location: "UTC",
+			want:     "2019-06-03T13:59:01.000000000Z",
 		},
 		{
-			name: "minute",
-			time: "2019-06-03T13:59:01.000000000Z",
-			unit: "1m",
-			want: "2019-06-03T13:59:00.000000000Z",
+			name:     "minute",
+			time:     "2019-06-03T13:59:01.000000000Z",
+			unit:     "1m",
+			location: "UTC",
+			want:     "2019-06-03T13:59:00.000000000Z",
 		},
 		{
-			name: "hour",
-			time: "2019-06-03T13:59:01.000000000Z",
-			unit: "1h",
-			want: "2019-06-03T13:00:00.000000000Z",
+			name:     "hour",
+			time:     "2019-06-03T13:59:01.000000000Z",
+			unit:     "1h",
+			location: "UTC",
+			want:     "2019-06-03T13:00:00.000000000Z",
+		},
+		{
+			name:     "day",
+			time:     "2019-06-03T13:59:01.000000000Z",
+			unit:     "1d",
+			location: "UTC",
+			want:     "2019-06-03T00:00:00.000000000Z",
+		},
+		{
+			name:     "month",
+			time:     "2019-06-03T13:59:01.000000000Z",
+			unit:     "1mo",
+			location: "UTC",
+			want:     "2019-06-01T00:00:00.000000000Z",
+		},
+		{
+			name:     "year",
+			time:     "2019-06-03T13:59:01.000000000Z",
+			unit:     "1y",
+			location: "UTC",
+			want:     "2019-01-01T00:00:00.000000000Z",
+		},
+		{
+			name:     "day (Madrid)",
+			time:     "2019-06-03T13:59:01.000000000Z",
+			unit:     "1d",
+			location: "Europe/Madrid",
+			want:     "2019-06-02T22:00:00.000000000Z",
+		},
+		{
+			name:     "month (Madrid)",
+			time:     "2019-06-03T13:59:01.000000000Z",
+			unit:     "1mo",
+			location: "Europe/Madrid",
+			want:     "2019-05-31T22:00:00.000000000Z",
+		},
+		{
+			name:     "year (Madrid)",
+			time:     "2019-06-03T13:59:01.000000000Z",
+			unit:     "1y",
+			location: "Europe/Madrid",
+			want:     "2018-12-31T23:00:00.000000000Z",
 		},
 	}
 	for _, tc := range testCases {
@@ -365,7 +411,7 @@ func TestTruncate_Time(t *testing.T) {
 				"t":    values.NewTime(time),
 				"unit": values.NewDuration(unit),
 				"location": values.NewObjectWithValues(map[string]values.Value{
-					"zone":   values.NewString("UTC"),
+					"zone":   values.NewString(tc.location),
 					"offset": values.NewDuration(values.Duration{}),
 				}),
 			})
@@ -392,28 +438,74 @@ func TestTruncate_Duration(t *testing.T) {
 		t.Fatal(err)
 	}
 	testCases := []struct {
-		name string
-		time string
-		unit string
-		want string
+		name     string
+		time     string
+		unit     string
+		location string
+		want     string
 	}{
 		{
-			name: "second",
-			time: "-5mo",
-			unit: "1s",
-			want: "2019-01-03T13:59:01.000000000Z",
+			name:     "second",
+			time:     "-5mo",
+			unit:     "1s",
+			location: "UTC",
+			want:     "2019-01-03T13:59:01.000000000Z",
 		},
 		{
-			name: "minute",
-			time: "-5mo",
-			unit: "1m",
-			want: "2019-01-03T13:59:00.000000000Z",
+			name:     "minute",
+			time:     "-5mo",
+			unit:     "1m",
+			location: "UTC",
+			want:     "2019-01-03T13:59:00.000000000Z",
 		},
 		{
-			name: "hour",
-			time: "-5mo",
-			unit: "1h",
-			want: "2019-01-03T13:00:00.000000000Z",
+			name:     "hour",
+			time:     "-5mo",
+			unit:     "1h",
+			location: "UTC",
+			want:     "2019-01-03T13:00:00.000000000Z",
+		},
+		{
+			name:     "day",
+			time:     "-5mo",
+			unit:     "1d",
+			location: "UTC",
+			want:     "2019-01-03T00:00:00.000000000Z",
+		},
+		{
+			name:     "month",
+			time:     "-5mo",
+			unit:     "1mo",
+			location: "UTC",
+			want:     "2019-01-01T00:00:00.000000000Z",
+		},
+		{
+			name:     "year",
+			time:     "-5mo",
+			unit:     "1y",
+			location: "UTC",
+			want:     "2019-01-01T00:00:00.000000000Z",
+		},
+		{
+			name:     "day (Madrid)",
+			time:     "-5mo",
+			unit:     "1d",
+			location: "Europe/Madrid",
+			want:     "2019-01-02T23:00:00.000000000Z",
+		},
+		{
+			name:     "month (Madrid)",
+			time:     "-5mo",
+			unit:     "1mo",
+			location: "Europe/Madrid",
+			want:     "2018-12-31T23:00:00.000000000Z",
+		},
+		{
+			name:     "year (Madrid)",
+			time:     "-5mo",
+			unit:     "1y",
+			location: "Europe/Madrid",
+			want:     "2018-12-31T23:00:00.000000000Z",
 		},
 	}
 	for _, tc := range testCases {
@@ -432,7 +524,7 @@ func TestTruncate_Duration(t *testing.T) {
 				"t":    values.NewDuration(time),
 				"unit": values.NewDuration(unit),
 				"location": values.NewObjectWithValues(map[string]values.Value{
-					"zone":   values.NewString("UTC"),
+					"zone":   values.NewString(tc.location),
 					"offset": values.NewDuration(values.Duration{}),
 				}),
 			})

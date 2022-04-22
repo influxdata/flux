@@ -614,6 +614,9 @@ builtin _sub : (from: T, d: duration, location: {zone: string, offset: duration}
 //
 sub = (d, from, location=location) => _sub(d, from, location)
 
+// builtin _truncate used by truncate
+builtin _truncate : (t: T, unit: duration, location: {zone: string, offset: duration}) => time where T: Timeable
+
 // truncate returns a time truncated to the specified duration unit.
 //
 // ## Parameters
@@ -627,12 +630,18 @@ sub = (d, from, location=location) => _sub(d, from, location)
 //   Only use 1 and the unit of time to specify the unit.
 //   For example: `1s`, `1m`, `1h`.
 //
+// - location: Location used to determine timezone.
+//   Default is the `location` option.
+//
 // ## Examples
 //
 // ### Truncate time values
 //
 // ```no_run
 // import "date"
+// import "timezone"
+//
+// option location = timezone.location(name: "Europe/Madrid")
 //
 // date.truncate(t: 2019-06-03T13:59:01.000000000Z, unit: 1s)
 // // Returns 2019-06-03T13:59:01.000000000Z
@@ -642,6 +651,15 @@ sub = (d, from, location=location) => _sub(d, from, location)
 //
 // date.truncate(t: 2019-06-03T13:59:01.000000000Z, unit: 1h)
 // // Returns 2019-06-03T13:00:00.000000000Z
+//
+// date.truncate(t: 2019-06-03T13:59:01.000000000Z, unit: 1d)
+// // Returns 2019-06-02T22:00:00.000000000Z
+//
+// date.truncate(t: 2019-06-03T13:59:01.000000000Z, unit: 1mo)
+// // Returns 2019-05-31T22:00:00.000000000Z
+//
+// date.truncate(t: 2019-06-03T13:59:01.000000000Z, unit: 1y)
+// // Returns 2018-12-31T23:00:00.000000000Z
 // ```
 //
 // ### Truncate time values using relative durations
@@ -660,7 +678,7 @@ sub = (d, from, location=location) => _sub(d, from, location)
 // date.truncate(t: -1h, unit: 1h)
 // // Returns 2019-12-31T23:00:00.000000000Z
 // ```
-builtin truncate : (t: T, unit: duration) => time where T: Timeable
+truncate = (t, unit, location=location) => _truncate(t, unit, location)
 
 // Sunday is a constant that represents Sunday as a day of the week
 Sunday = 0
