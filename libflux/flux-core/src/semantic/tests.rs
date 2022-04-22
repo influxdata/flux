@@ -2818,6 +2818,21 @@ fn record_with_scoped_labels() {
 }
 
 #[test]
+fn record_with_literal_fields() {
+    test_infer! {
+        env: map![
+            "r" => r##"{ "with spaces": int, "#$%": string }"##,
+        ],
+        src: r##"
+            o = {x: r["with spaces"], y: r["#$%"]}
+        "##,
+        exp: map![
+            "o" => "{x: int , y: string}",
+        ],
+    }
+}
+
+#[test]
 fn pseudo_complete_query() {
     // TODO(algow): re-introduce equality constraints for binary comparison operators
     // https://github.com/influxdata/flux/issues/2466

@@ -468,7 +468,7 @@ where
                 }
             },
             Node::PropertyType(n) => {
-                walk(v, Node::Identifier(&n.name));
+                walk(v, Node::from_property_key(&n.name));
                 walk(v, Node::MonoType(&n.monotype));
             }
             Node::ParameterType(n) => match n {

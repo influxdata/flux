@@ -104,17 +104,49 @@ impl<'input> Parser<'input> {
     // expect will check if the next token is `exp` and error if it is not in either case the token
     // is consumed and returned
     fn expect(&mut self, exp: TokenType) -> Token {
+        self.expect_one_of(&[exp])
+    }
+
+    fn expect_one_of(&mut self, exp: &[TokenType]) -> Token {
+        fn one_of(expected_tokens: &[TokenType]) -> String {
+            match expected_tokens.len() {
+                0 => "".to_string(),
+                1 => expected_tokens[0].to_string(),
+                _ => {
+                    use std::fmt::Write;
+
+                    let mut buf = String::new();
+
+                    for (i, exp) in expected_tokens.iter().enumerate() {
+                        let s = match i {
+                            0 => "",
+                            _ if i < expected_tokens.len() - 1 => ",",
+                            // Last expected message to be written
+                            _ => " or",
+                        };
+                        write!(buf, "{} `{}`", s, exp).unwrap();
+                    }
+
+                    buf
+                }
+            }
+        }
+
         let t = self.scan();
         match t.tok {
-            tok if tok == exp => (),
+            tok if exp.contains(&tok) => (),
             TokenType::Eof => {
-                self.errs.push(format!("expected {}, got EOF", exp));
+                self.errs.push(format!("expected {}, got EOF", one_of(exp)));
             }
             _ => {
                 let pos = ast::Position::from(&t.start_pos);
                 self.errs.push(format!(
                     "expected {}, got {} ({}) at {}:{}",
-                    exp, t.tok, t.lit, pos.line, pos.column,
+                    one_of(exp),
+                    t.tok,
+                    t.lit,
+                    pos.line,
+                    pos.column,
                 ));
             }
         }
@@ -690,19 +722,27 @@ impl<'input> Parser<'input> {
 
         let t = self.peek();
         let properties = match t.tok {
-            TokenType::Ident => {
-                let identifier = self.parse_identifier();
-                let t = self.peek();
-                match t.tok {
-                    TokenType::Colon => self.parse_property_type_list_suffix(identifier),
-                    TokenType::Ident if t.lit == "with" => {
-                        id = Some(identifier);
-                        self.expect(TokenType::Ident);
-                        self.parse_property_type_list()
+            TokenType::Ident | TokenType::String => {
+                let property_key = self.parse_property_key();
+
+                match property_key {
+                    PropertyKey::Identifier(identifier) => {
+                        let t = self.peek();
+                        match t.tok {
+                            TokenType::Colon => self.parse_property_type_list_suffix(
+                                PropertyKey::Identifier(identifier),
+                            ),
+                            TokenType::Ident if t.lit == "with" => {
+                                id = Some(identifier);
+                                self.expect(TokenType::Ident);
+                                self.parse_property_type_list()
+                            }
+                            // This is an error, but the token is not consumed so the error gets
+                            // caught below with self.close(TokenType::RBrace)
+                            _ => vec![],
+                        }
                     }
-                    // This is an error, but the token is not consumed so the error gets
-                    // caught below with self.close(TokenType::RBrace)
-                    _ => vec![],
+                    PropertyKey::StringLit(_) => self.parse_property_type_list_suffix(property_key),
                 }
             }
             // The record is empty
@@ -718,10 +758,10 @@ impl<'input> Parser<'input> {
         })
     }
     fn parse_property_type_list(&mut self) -> Vec<PropertyType> {
-        let id = self.parse_identifier();
+        let id = self.parse_property_key();
         self.parse_property_type_list_suffix(id)
     }
-    fn parse_property_type_list_suffix(&mut self, id: Identifier) -> Vec<PropertyType> {
+    fn parse_property_type_list_suffix(&mut self, id: PropertyKey) -> Vec<PropertyType> {
         let mut properties = Vec::<PropertyType>::with_capacity(5);
         let p = self.parse_property_type_suffix(id);
         properties.push(p);
@@ -738,15 +778,15 @@ impl<'input> Parser<'input> {
         properties
     }
     fn parse_property_type(&mut self) -> PropertyType {
-        let identifier = self.parse_identifier(); // identifier
-        self.parse_property_type_suffix(identifier)
+        let key = self.parse_property_key();
+        self.parse_property_type_suffix(key)
     }
-    fn parse_property_type_suffix(&mut self, id: Identifier) -> PropertyType {
+    fn parse_property_type_suffix(&mut self, name: PropertyKey) -> PropertyType {
         self.expect(TokenType::Colon); // :
         let monotype = self.parse_monotype();
         PropertyType {
-            base: self.base_node_from_others(&id.base, monotype.base()),
-            name: id,
+            base: self.base_node_from_others(name.base(), monotype.base()),
+            name,
             monotype,
         }
     }
@@ -1485,6 +1525,17 @@ impl<'input> Parser<'input> {
             }
         }
     }
+    fn parse_property_key(&mut self) -> PropertyKey {
+        let t = self.expect_one_of(&[TokenType::Ident, TokenType::String]);
+        match t.tok {
+            TokenType::Ident => PropertyKey::Identifier(Identifier {
+                base: self.base_node_from_token(&t),
+                name: t.lit,
+            }),
+            TokenType::String => PropertyKey::StringLit(self.new_string_literal(t)),
+            _ => unreachable!(),
+        }
+    }
     fn parse_identifier(&mut self) -> Identifier {
         let t = self.expect(TokenType::Ident);
         Identifier {
@@ -1538,6 +1589,9 @@ impl<'input> Parser<'input> {
     }
     fn parse_string_literal(&mut self) -> StringLit {
         let t = self.expect(TokenType::String);
+        self.new_string_literal(t)
+    }
+    fn new_string_literal(&mut self, t: Token) -> StringLit {
         match strconv::parse_string(t.lit.as_str()) {
             Ok(value) => StringLit {
                 base: self.base_node_from_token(&t),
