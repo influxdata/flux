@@ -490,6 +490,8 @@ testcase vectorize_addition_operator {
         got =
             csv.from(csv: inData)
                 |> testing.load()
+                |> range(start: 2018-01-01T00:00:00Z, stop: 2018-01-07T00:00:00Z)
+                |> drop(columns: ["_start", "_stop"])
                 |> pivot(rowKey: ["_time"], columnKey: ["_field"], valueColumn: "_value")
                 |> map(fn: (r) => ({r with x: r.a + r.b}))
         want = csv.from(csv: outData)

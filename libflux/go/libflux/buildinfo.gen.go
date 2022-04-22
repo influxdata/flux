@@ -517,7 +517,7 @@ var sourceHashes = map[string]string{
 	"stdlib/universe/lowestAverage_test.flux":                                                     "3debee2f9c626a637b8842cf23d32f88ba1bf2bf98b53744e7c699a0c8f833cf",
 	"stdlib/universe/lowestCurrent_test.flux":                                                     "f9575bdb7e2ee3a37153b296d9e59fa69334e675f2de4f4023c0e7aec541aba2",
 	"stdlib/universe/lowestMin_test.flux":                                                         "389fa9ceb38d066ad18a8b21220d4b554d8c31d83d80f1694bc703a14f86a0b2",
-	"stdlib/universe/map_test.flux":                                                               "0ab061848d2053ce43ddda1ca706de20f321adb349a84d9249a730483946ee6f",
+	"stdlib/universe/map_test.flux":                                                               "3665c5c8b67cec2372a96a508933cb3651c622e9af66e6015b7af055c77ed997",
 	"stdlib/universe/math_fn_constant_test.flux":                                                  "24091df7a982240ac5fdc4f6495d32a4a6078af1206d6d6cf51d2feb35abb7f7",
 	"stdlib/universe/math_m_max_test.flux":                                                        "9cc0aacc9a66209827b6ba83922fd6a291aa88205d86c5fa79fdce78be7599e0",
 	"stdlib/universe/max_test.flux":                                                               "3057f4d30f8c404af13b2f27ce13527c97ea77bf198c0f1a627f3b48673d4db8",
