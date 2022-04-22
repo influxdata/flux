@@ -124,7 +124,19 @@ impl Expression {
 
 impl IdentifierExpr {
     fn vectorize(&self, env: &VectorizeEnv<'_>) -> Result<Self> {
-        let typ = env.symbols.get(&self.name).unwrap_or(&self.typ).clone();
+        let typ = env
+            .symbols
+            .get(&self.name)
+            .ok_or_else(|| {
+                located(
+                    self.loc.clone(),
+                    ErrorKind::UnableToVectorize(format!(
+                        "Unable to vectorize non-vector symbol `{}`",
+                        self.name
+                    )),
+                )
+            })?
+            .clone();
 
         Ok(IdentifierExpr {
             loc: self.loc.clone(),

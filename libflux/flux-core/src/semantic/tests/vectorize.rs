@@ -131,3 +131,21 @@ fn vectorize_subtraction_operator() {
     ]]
     .assert_eq(&err.to_string());
 }
+
+#[test]
+fn vectorizing_non_vector_variables_are_not_implemented() {
+    let mut pkg = vectorize(
+        r#"
+        var = 1
+        f = (r) => ({ x: var })
+    "#,
+    )
+    .unwrap();
+
+    let err = semantic::vectorize::vectorize(&analyzer_config(), &mut pkg).unwrap_err();
+
+    expect_test::expect![[
+        r#"error @3:26-3:29: can't vectorize function: Unable to vectorize non-vector symbol `var`"#
+    ]]
+    .assert_eq(&err.to_string());
+}
