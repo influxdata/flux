@@ -20,7 +20,7 @@ var sourceHashes = map[string]string{
 	"libflux/flux-core/src/ast/walk/mod.rs":                                                       "aa75319f33938c43db4b907249bc67508f00fba02e45ae175e939e96e178298b",
 	"libflux/flux-core/src/bin/README.md":                                                         "c1245a4938c923d065647b4dc4f7e19486e85c93d868ef2f7f47ddff62ec81df",
 	"libflux/flux-core/src/bin/fluxc.rs":                                                          "bf275289e690236988049fc0a07cf832dbac25bb5739c02135b069dcdfab4d0f",
-	"libflux/flux-core/src/bin/fluxdoc.rs":                                                        "bad4b12bcf4a8bc1a94cb37cda004bf7fb593abf3f0c6c3a2af6fabc60337c5d",
+	"libflux/flux-core/src/bin/fluxdoc.rs":                                                        "c0066611bb47c0fc83b9fcae195c7c0567c3a6c43d91e99dc4beeb5c457aebb7",
 	"libflux/flux-core/src/doc/example.rs":                                                        "6414756b3c74df1b58fdb739592e74ded3f89d85d647809333f72a3f6aad146f",
 	"libflux/flux-core/src/doc/mod.rs":                                                            "e8aae31bc4a60836d7258a03f6827b76e9fad44c889db6a21d6679c26818f2d2",
 	"libflux/flux-core/src/errors.rs":                                                             "10e131532c3d40062dd3e2445e58d0c05370b64383892a80a056dfac5fcd49b9",
@@ -35,23 +35,38 @@ var sourceHashes = map[string]string{
 	"libflux/flux-core/src/scanner/token.rs":                                                      "5090c2ac4b341566a85f7d9ed9b48746dd2084ec2f3effdb4a7dc16cf34d44b9",
 	"libflux/flux-core/src/scanner/unicode.rl":                                                    "f923f3b385ddfa65c74427b11971785fc25ea806ca03d547045de808e16ef9a1",
 	"libflux/flux-core/src/scanner/unicode.rl.COPYING":                                            "6cf2d5d26d52772ded8a5f0813f49f83dfa76006c5f398713be3854fe7bc4c7e",
+<<<<<<< HEAD
 	"libflux/flux-core/src/semantic/bootstrap.rs":                                                 "767c9d31e9df8d311f6a7a8b008d54169cf5da230671575aa2dd33467a63f366",
+=======
+	"libflux/flux-core/src/semantic/bootstrap.rs":                                                 "eb20fe09fdfb50c81e4bb9f864fc9d73fe905d0ad5a83a860228ced3ccab0730",
+>>>>>>> 87b91739 (chore: make generate)
 	"libflux/flux-core/src/semantic/check.rs":                                                     "d0228a0a8176a5360d88cfe48acb1ffd036817b6aaadfadb94af446492603305",
 	"libflux/flux-core/src/semantic/convert.rs":                                                   "6d3d40461f5727cbb725ac36807f0ba61535daae16c6d7cf44aa949483f11c2e",
 	"libflux/flux-core/src/semantic/env.rs":                                                       "db424704eece030a76dee968c3d1959e94d21b7f7400c35f8e233cb3089218a4",
 	"libflux/flux-core/src/semantic/flatbuffers/mod.rs":                                           "a259b3c3b80cb6c19a38877df27d999f82e286629c132fd8abed5f95da5ee95f",
 	"libflux/flux-core/src/semantic/flatbuffers/semantic_generated.rs":                            "f9f7b95a972dbef59ee7a37691eaf7d4c0b8bc901e966292c69fa95a8b4e15e6",
+<<<<<<< HEAD
 	"libflux/flux-core/src/semantic/flatbuffers/types.rs":                                         "4d1f41bd9e7203a7f920a65047c06aac008039557a74f94c0311e81f6d5f2bab",
 	"libflux/flux-core/src/semantic/formatter/mod.rs":                                             "69e37f2ca7fc8356c92ff9b0c09523b42d143a24635379d53c4292d06510304b",
 	"libflux/flux-core/src/semantic/fresh.rs":                                                     "2f7daddded494b3fa3b99b63b3a49276cd420c51c3b256ea81f56de84e549d6f",
+=======
+	"libflux/flux-core/src/semantic/flatbuffers/types.rs":                                         "b854a92138582e485b489d636f1af1b7ca6bed0e23b5c5dd2984221f27d7d722",
+	"libflux/flux-core/src/semantic/formatter/mod.rs":                                             "74f216c2708902cc7ec676a35e5e0a7681dac850093883b6a553cc314c670188",
+	"libflux/flux-core/src/semantic/fresh.rs":                                                     "fb0826d1731f5557b1f09421a8fcfba0073c9fd957edfc436e57ce5b58e4f608",
+>>>>>>> 87b91739 (chore: make generate)
 	"libflux/flux-core/src/semantic/fs.rs":                                                        "f7f609bc8149769d99b737150e184a2d54029c0b768365dbcf08ff193b0e1f6f",
 	"libflux/flux-core/src/semantic/import.rs":                                                    "184e955211db1ceb1be782b4daf75584b86907b1428e50015497909cfc2dd89a",
 	"libflux/flux-core/src/semantic/infer.rs":                                                     "47aa3cc7f1702443ddfb57611eadd9e886924863f15c81743298ea82cf741205",
 	"libflux/flux-core/src/semantic/mod.rs":                                                       "a0014dcd4279a3f43139dd824e08fc96626dc6aadcf635f2cbe509c2fc441f2b",
 	"libflux/flux-core/src/semantic/nodes.rs":                                                     "5ed85c68dbc6d30f4b01a025568dfda3765f65c64c4d47233cd81ab4ac8c5f64",
 	"libflux/flux-core/src/semantic/sub.rs":                                                       "9cef31fac7e084362ca69319ae23a6811bff32c146669321e519578b4ed2e4c4",
+<<<<<<< HEAD
 	"libflux/flux-core/src/semantic/types.rs":                                                     "cc9bb3640d5e47d52aa113898112896a41596f3d5ff86b05a9cec8882455f625",
 	"libflux/flux-core/src/semantic/vectorize.rs":                                                 "418942d3e761a2cea1a4528e20f72d8e3f6c7e73f55a1b634e39bbe21402db58",
+=======
+	"libflux/flux-core/src/semantic/types.rs":                                                     "3591ab6555b44aa656dc2ef1ed8c69e121ada41f5c7466952f6a694679cc6e95",
+	"libflux/flux-core/src/semantic/vectorize.rs":                                                 "b9bc4bfcea32b409c3d14bed514325547173b9c22512243a1632748f7603cd66",
+>>>>>>> 87b91739 (chore: make generate)
 	"libflux/flux-core/src/semantic/walk/_walk.rs":                                                "198e6c546f73f78b1de4b963084033a06a6d71e72b0294b16c5e4de874f97a38",
 	"libflux/flux-core/src/semantic/walk/mod.rs":                                                  "8f6bcfc7d309ad821016d6622b49cfde3de5de4d7d0315e55c5cd7cfed279eb8",
 	"libflux/flux-core/src/semantic/walk/test_utils.rs":                                           "b980587707038c420d16b99f99587e69b71f02c32277db37c7e4a094d32f2b38",
@@ -214,7 +229,7 @@ var sourceHashes = map[string]string{
 	"stdlib/experimental/table/fill_test.flux":                                                    "60813f53da61e0be3cc62bd24705de7ce66001269c583cda0e4d22edeb7671ce",
 	"stdlib/experimental/table/table.flux":                                                        "ec101a99eb148c5112217c622395d5915fb055219cb4b814a1e18df602c25524",
 	"stdlib/experimental/unique_test.flux":                                                        "8c30000f13f635aceff0692d55654008a097b5dfce4ce94a36a6ec8866b00b5b",
-	"stdlib/experimental/universe/universe.flux":                                                  "e2c5f734507e566e836f5e16d9dbc276bb3aa30f5c80e24fe986956b1158a2f9",
+	"stdlib/experimental/universe/universe.flux":                                                  "84a8c3805b23ebf801d9b47dae9d1f283aa3736d0fe2366d9336a138def6e449",
 	"stdlib/experimental/usage/usage.flux":                                                        "a77be13147c5e09d448eeb04d28ccad89147b07a1b4a55497c707ed97f097bc8",
 	"stdlib/experimental/window_test.flux":                                                        "c2387f880f8ac6e6cba1d9ac5f585af12d2ff0a2c85bc7c381fa38ce295c3973",
 	"stdlib/generate/from_test.flux":                                                              "843eb6cc6a2b78815e0bbfa3a35e8c8262cb8a7731d57659510eef08be50aa27",
