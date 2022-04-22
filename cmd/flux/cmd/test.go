@@ -593,7 +593,7 @@ func (t *TestReporter) ReportTestRun(test *Test) {
 	} else {
 		source, err := test.SourceCode()
 		if err != nil {
-			fmt.Printf("failed to get source for test %s\n", test.Name())
+			fmt.Printf("failed to get source for test %s: %s\n", test.Name(), err)
 		} else {
 			fmt.Printf("Full source for test case %q\n%s", test.Name(), source)
 		}

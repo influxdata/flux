@@ -38,30 +38,26 @@ import (
 // The syntax for extending is as such:
 //
 //     import "math"
-//     testcase addition_v2 extends "math_test" {
+//     testcase addition_v2 extends "math_test.addition" {
 //         option math.enable_v2 = true
-//         math_test.test_addition()
+//         super()
 //     }
 //
-// This transforms the `math_test` file with the addition testcase into:
+// The extending test case is then transformed into a single file combining both the parent
+// statements and the current statements.
 //
 //     import "testing/assert"
-//     math_test = () => {
-//         myVar = 4
-//         test_addition = () => {
-//             assert.equal(want: 2 + 2, got: myVar)
-//             return {}
-//         }
-//         return {myVar, test_addition}
-//     }()
+//     import "math"
 //
-// The extended test file will be prepended to the list of files in the package as its own file.
+//     option math.enable_v2 = true
 //
-// If a testcase extends another testcase, it will be replaced with the given body.
+//     myVar = 4
+//     assert.equal(want: 2 + 2, got: myVar)
 //
-//     test_invalid_import = () => {
-//         die(msg: "cannot extend an extended testcase")
-//     }
+//
+// The call to `super()` is replaced with the body of the parent test case.
+//
+// It is an error to extend an extended testcase.
 //
 // It is allowed for an imported testcase to have an option, but no attempt is made
 // to remove duplicate options. If there is a duplicate option, this will likely
@@ -73,15 +69,15 @@ func Transform(ctx context.Context, pkg *ast.Package, modules TestModules) ([]st
 	file := pkg.Files[0]
 
 	var (
-		predicate []ast.Statement
-		n         int
+		preamble []ast.Statement
+		n        int
 	)
 	for _, item := range file.Body {
 		if _, ok := item.(*ast.TestCaseStatement); ok {
 			n++
 			continue
 		}
-		predicate = append(predicate, item)
+		preamble = append(preamble, item)
 	}
 
 	var (
@@ -94,7 +90,7 @@ func Transform(ctx context.Context, pkg *ast.Package, modules TestModules) ([]st
 			continue
 		}
 
-		testpkg, err := newTestPackage(ctx, pkg, predicate, testcase, modules)
+		testpkg, err := newTestPackage(ctx, pkg, preamble, testcase, modules)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -105,7 +101,7 @@ func Transform(ctx context.Context, pkg *ast.Package, modules TestModules) ([]st
 	return names, pkgs, nil
 }
 
-func newTestPackage(ctx context.Context, basePkg *ast.Package, predicate []ast.Statement, tc *ast.TestCaseStatement, modules TestModules) (*ast.Package, error) {
+func newTestPackage(ctx context.Context, basePkg *ast.Package, preamble []ast.Statement, tc *ast.TestCaseStatement, modules TestModules) (*ast.Package, error) {
 	pkg := basePkg.Copy().(*ast.Package)
 	pkg.Package = "main"
 	pkg.Files = nil
@@ -113,142 +109,107 @@ func newTestPackage(ctx context.Context, basePkg *ast.Package, predicate []ast.S
 	file := basePkg.Files[0].Copy().(*ast.File)
 	file.Package.Name.Name = "main"
 
-	file.Body = make([]ast.Statement, 0, len(predicate)+len(tc.Block.Body))
-	file.Body = append(file.Body, predicate...)
+	file.Body = make([]ast.Statement, 0, len(preamble)+len(tc.Block.Body))
+	file.Body = append(file.Body, preamble...)
 	if tc.Extends != nil {
-		f, err := extendTest(file, tc.Extends.Value, modules)
+		parentImports, parentPreamble, parentTC, err := extendTest(file, tc.Extends.Value, modules)
 		if err != nil {
 			return nil, err
 		}
-		pkg.Files = append(pkg.Files, f)
+		file.Imports = mergeImports(file.Imports, parentImports)
+		file.Body = append(file.Body, parentPreamble...)
+		// Copy test case statements into body replacing the super statement
+		// with the parent test case statements
+		found := false
+		for _, s := range tc.Block.Body {
+			if !found {
+				if es, ok := s.(*ast.ExpressionStatement); ok {
+					if call, ok := es.Expression.(*ast.CallExpression); ok {
+						if id, ok := call.Callee.(*ast.Identifier); ok && len(call.Arguments) == 0 {
+							if id.Name == "super" {
+								file.Body = append(file.Body, parentTC...)
+								found = true
+								continue
+							}
+						}
+					}
+				}
+			}
+			file.Body = append(file.Body, s)
+		}
+	} else {
+		// Simply copy test case body into file
+		file.Body = append(file.Body, tc.Block.Body...)
 	}
-	file.Body = append(file.Body, tc.Block.Body...)
 	pkg.Files = append(pkg.Files, file)
 	return pkg, nil
 }
 
-func extendTest(file *ast.File, extends string, modules TestModules) (*ast.File, error) {
+func extendTest(file *ast.File, extends string, modules TestModules) ([]*ast.ImportDeclaration, []ast.Statement, []ast.Statement, error) {
 	components := strings.Split(extends, "/")
 	if len(components) <= 1 {
-		return nil, errors.New(codes.Invalid, "testcase extension requires a test module name and at least one other path component")
+		return nil, nil, nil, errors.New(codes.Invalid, "testcase extension requires a test module name and at least one other path component")
 	}
 
 	moduleName := components[0]
 	module, ok := modules[moduleName]
 	if !ok {
-		return nil, errors.Newf(codes.FailedPrecondition, "test module %q not found", moduleName)
+		return nil, nil, nil, errors.Newf(codes.FailedPrecondition, "test module %q not found", moduleName)
 	}
+
+	ext := filepath.Ext(extends)
+	testcaseName := strings.TrimPrefix(ext, ".")
+	last := len(components) - 1
+	components[last] = strings.TrimSuffix(components[last], ext)
 
 	fpath := filepath.Join(components[1:]...) + ".flux"
 	f, err := module.Open(fpath)
 	if err != nil {
-		return nil, err
+		return nil, nil, nil, err
 	}
 	contents, err := ioutil.ReadAll(f)
 	_ = f.Close()
 	if err != nil {
-		return nil, err
+		return nil, nil, nil, err
 	}
 
-	pkgpath := filepath.Base(extends)
 	impAst := parser.ParseSource(string(contents))
 	if ast.Check(impAst) > 0 {
-		return nil, ast.GetError(impAst)
+		return nil, nil, nil, ast.GetError(impAst)
 	}
 
-	// Construct the new file where we will place the imported package.
-	newFile := impAst.Files[0].Copy().(*ast.File)
-	newFile.Package = file.Package
-
-	// We must construct a new body for the parsed ast.
-	// The body must be placed into a function and then that function
-	// must have a return argument.
-	// Any testcase statements must be transformed similarly into a function.
+	// Find the preamble statements and the test case statements
 	var (
-		body    = impAst.Files[0].Body
-		newBody = make([]ast.Statement, 0, len(body))
-		vars    []*ast.Property
+		preamble           = make([]ast.Statement, 0, len(impAst.Files[0].Body))
+		testCaseStatements []ast.Statement
 	)
-	for _, stmt := range body {
-		switch stmt := stmt.(type) {
-		case *ast.OptionStatement:
-			// Extract into the top level of the file.
-			newFile.Body = append(newFile.Body, stmt)
-		case *ast.TestCaseStatement:
-			body := stmt.Block.Body
-			if valid, reason := isValidTestcase(stmt); !valid {
-				body = []ast.Statement{
-					&ast.ExpressionStatement{
-						Expression: &ast.CallExpression{
-							Callee: &ast.Identifier{Name: "die"},
-							Arguments: []ast.Expression{
-								&ast.ObjectExpression{
-									Properties: []*ast.Property{{
-										Key:   &ast.Identifier{Name: "msg"},
-										Value: ast.StringLiteralFromValue(reason),
-									}},
-								},
-							},
-						},
-					},
-				}
+	for _, item := range impAst.Files[0].Body {
+		if tc, ok := item.(*ast.TestCaseStatement); ok {
+			if tc.ID.Name == testcaseName {
+				testCaseStatements = tc.Block.Body
 			}
-			body = append(body, &ast.ReturnStatement{
-				Argument: &ast.ObjectExpression{},
-			})
-			varname := stmt.ID
-			vars = append(vars, &ast.Property{Key: varname})
-			newBody = append(newBody, &ast.VariableAssignment{
-				ID: varname,
-				Init: &ast.FunctionExpression{
-					Body: &ast.Block{
-						Body: body,
-					},
-				},
-			})
-		case *ast.VariableAssignment:
-			vars = append(vars, &ast.Property{Key: stmt.ID})
-			newBody = append(newBody, stmt)
-		default:
-			newBody = append(newBody, stmt)
+			continue
 		}
+		preamble = append(preamble, item)
 	}
 
-	// Add a final statement to the body with a return statement
-	// holding the variables.
-	newBody = append(newBody, &ast.ReturnStatement{
-		Argument: &ast.ObjectExpression{
-			Properties: vars,
-		},
-	})
-
-	// Assign the new file body to the single variable assignment.
-	newFile.Body = []ast.Statement{
-		&ast.VariableAssignment{
-			ID: &ast.Identifier{Name: pkgpath},
-			Init: &ast.CallExpression{
-				Callee: &ast.FunctionExpression{
-					Body: &ast.Block{
-						Body: newBody,
-					},
-				},
-			},
-		},
-	}
-	return newFile, nil
+	return impAst.Files[0].Imports, preamble, testCaseStatements, nil
 }
 
-func isValidTestcase(tc *ast.TestCaseStatement) (valid bool, reason string) {
-	if tc.Extends != nil {
-		return false, "cannot extend an extended testcase"
-	}
+func mergeImports(a, b []*ast.ImportDeclaration) []*ast.ImportDeclaration {
+	dst := make([]*ast.ImportDeclaration, len(a), len(a)+len(b))
+	copy(dst, a)
 
-	for _, stmt := range tc.Block.Body {
-		if _, ok := stmt.(*ast.OptionStatement); ok {
-			return false, "option statements may not be used in an extended testcase"
+B:
+	for _, imp := range b {
+		for _, existingImp := range a {
+			if imp.Path.Value == existingImp.Path.Value {
+				continue B
+			}
 		}
+		dst = append(dst, imp)
 	}
-	return true, ""
+	return dst
 }
 
 type TestModules map[string]filesystem.Service

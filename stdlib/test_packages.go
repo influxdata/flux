@@ -43,6 +43,7 @@ import (
 	sampledata "github.com/influxdata/flux/stdlib/sampledata"
 	sql "github.com/influxdata/flux/stdlib/sql"
 	strings "github.com/influxdata/flux/stdlib/strings"
+	testing "github.com/influxdata/flux/stdlib/testing"
 	chronograf "github.com/influxdata/flux/stdlib/testing/chronograf"
 	influxql "github.com/influxdata/flux/stdlib/testing/influxql"
 	kapacitor "github.com/influxdata/flux/stdlib/testing/kapacitor"
@@ -95,6 +96,7 @@ var FluxTestPackages = func() []*ast.Package {
 	pkgs = append(pkgs, sampledata.FluxTestPackages...)
 	pkgs = append(pkgs, sql.FluxTestPackages...)
 	pkgs = append(pkgs, strings.FluxTestPackages...)
+	pkgs = append(pkgs, testing.FluxTestPackages...)
 	pkgs = append(pkgs, chronograf.FluxTestPackages...)
 	pkgs = append(pkgs, influxql.FluxTestPackages...)
 	pkgs = append(pkgs, kapacitor.FluxTestPackages...)
