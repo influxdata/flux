@@ -86,5 +86,6 @@ func (f *vectorFn) Eval(ctx context.Context, chunk table.Chunk) ([]array.Array, 
 		vs[i].Retain()
 	}
 	res.Release()
+	f.arg0.Release()
 	return vs, nil
 }

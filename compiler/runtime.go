@@ -11,6 +11,7 @@ import (
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/interpreter"
+	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
@@ -375,7 +376,39 @@ func (e *binaryEvaluator) Eval(ctx context.Context, scope Scope) (values.Value, 
 		return nil, err
 	}
 	defer r.Release()
+
 	return e.f(l, r)
+}
+
+type binaryVectorEvaluator struct {
+	t           semantic.MonoType
+	left, right Evaluator
+	f           values.BinaryVectorFunction
+}
+
+func (e *binaryVectorEvaluator) Type() semantic.MonoType {
+	return e.t
+}
+
+func (e *binaryVectorEvaluator) Eval(ctx context.Context, scope Scope) (values.Value, error) {
+	l, err := eval(ctx, e.left, scope)
+	if err != nil {
+		return nil, err
+	}
+	defer l.Release()
+	r, err := eval(ctx, e.right, scope)
+	if err != nil {
+		return nil, err
+	}
+	defer r.Release()
+
+	mem := memory.GetAllocator(ctx)
+
+	if mem == nil {
+		return nil, errors.Newf(codes.Invalid, "missing allocator, cannot use vectorized operators")
+	}
+
+	return e.f(l, r, mem)
 }
 
 type unaryEvaluator struct {

@@ -1,47 +1,62 @@
 use std::collections::HashMap;
 
 use crate::{
-    errors::located,
+    ast,
+    errors::{located, Errors},
     semantic::{
         nodes::{
-            Block, ErrorKind, Expression, FunctionExpr, IdentifierExpr, MemberExpr, ObjectExpr,
-            Package, Property, Result, ReturnStmt,
+            BinaryExpr, Block, Error, ErrorKind, Expression, FunctionExpr, IdentifierExpr,
+            MemberExpr, ObjectExpr, Package, Property, Result, ReturnStmt,
         },
         types::{self, Function, Label, MonoType},
-        Symbol,
+        AnalyzerConfig, Feature, Symbol,
     },
 };
 
 /// Vectorizes a pkg
-pub fn vectorize(pkg: &mut Package) -> Result<()> {
+pub fn vectorize(
+    config: &AnalyzerConfig,
+    pkg: &mut Package,
+) -> std::result::Result<(), Errors<Error>> {
     use crate::semantic::walk::{walk_mut, NodeMut, VisitorMut};
-    struct Vectorizer {
-        result: Result<()>,
+    struct Vectorizer<'a> {
+        config: &'a AnalyzerConfig,
+        errors: Errors<Error>,
     }
-    impl VisitorMut for Vectorizer {
+    impl VisitorMut for Vectorizer<'_> {
         fn visit(&mut self, _node: &mut NodeMut) -> bool {
-            self.result.is_ok()
+            true
         }
 
         fn done(&mut self, node: &mut NodeMut) {
             if let NodeMut::FunctionExpr(function) = node {
-                match function.vectorize() {
+                match function.vectorize(self.config) {
                     Ok(vectorized) => function.vectorized = Some(Box::new(vectorized)),
-                    Err(err) => self.result = Err(err),
+                    Err(err) => self.errors.push(err),
                 }
             }
         }
     }
 
-    let mut visitor = Vectorizer { result: Ok(()) };
+    let mut visitor = Vectorizer {
+        config,
+        errors: Errors::new(),
+    };
     walk_mut(&mut visitor, NodeMut::Package(pkg));
-    visitor.result
+    if visitor.errors.has_errors() {
+        Err(visitor.errors)
+    } else {
+        Ok(())
+    }
 }
 
-type VectorizeEnv = HashMap<Symbol, MonoType>;
+struct VectorizeEnv<'a> {
+    config: &'a AnalyzerConfig,
+    symbols: HashMap<Symbol, MonoType>,
+}
 
 impl Expression {
-    fn vectorize(&self, env: &VectorizeEnv) -> Result<Self> {
+    fn vectorize(&self, env: &VectorizeEnv<'_>) -> Result<Self> {
         Ok(match self {
             Expression::Identifier(identifier) => {
                 Expression::Identifier(identifier.vectorize(env)?)
@@ -68,19 +83,60 @@ impl Expression {
                     property: member.property.clone(),
                 }))
             }
+            Expression::Binary(binary) => {
+                if binary.operator != ast::Operator::AdditionOperator {
+                    return Err(located(
+                        self.loc().clone(),
+                        ErrorKind::UnableToVectorize(
+                            "Unable to vectorize non-addition operators".into(),
+                        ),
+                    ));
+                }
+
+                if !env.config.features.contains(&Feature::VectorizeAddition) {
+                    return Err(located(
+                        self.loc().clone(),
+                        ErrorKind::UnableToVectorize(
+                            "Vectorization of addition expression is not enabled".into(),
+                        ),
+                    ));
+                }
+
+                let left = binary.left.vectorize(env)?;
+                let right = binary.right.vectorize(env)?;
+                Expression::Binary(Box::new(BinaryExpr {
+                    loc: binary.loc.clone(),
+                    typ: MonoType::vector(binary.typ.clone()),
+                    operator: binary.operator.clone(),
+                    left,
+                    right,
+                }))
+            }
             _ => {
                 return Err(located(
                     self.loc().clone(),
                     ErrorKind::UnableToVectorize("Unable to vectorize expression".into()),
-                ))
+                ));
             }
         })
     }
 }
 
 impl IdentifierExpr {
-    fn vectorize(&self, env: &VectorizeEnv) -> Result<Self> {
-        let typ = env.get(&self.name).unwrap_or(&self.typ).clone();
+    fn vectorize(&self, env: &VectorizeEnv<'_>) -> Result<Self> {
+        let typ = env
+            .symbols
+            .get(&self.name)
+            .ok_or_else(|| {
+                located(
+                    self.loc.clone(),
+                    ErrorKind::UnableToVectorize(format!(
+                        "Unable to vectorize non-vector symbol `{}`",
+                        self.name
+                    )),
+                )
+            })?
+            .clone();
 
         Ok(IdentifierExpr {
             loc: self.loc.clone(),
@@ -91,7 +147,7 @@ impl IdentifierExpr {
 }
 
 impl FunctionExpr {
-    fn vectorize(&self) -> Result<Self> {
+    fn vectorize(&self, config: &AnalyzerConfig) -> Result<Self> {
         if self.params.len() == 1 && self.params[0].key.name == "r" {
             fn vectorize_fields(record: &MonoType) -> MonoType {
                 use crate::semantic::types::Record;
@@ -118,7 +174,10 @@ impl FunctionExpr {
                     (param.key.name.clone(), parameter_type)
                 })
                 .collect();
-            let env: VectorizeEnv = params.iter().cloned().collect();
+            let env = VectorizeEnv {
+                config,
+                symbols: params.iter().cloned().collect(),
+            };
 
             let body = match &self.body {
                 Block::Variable(..) | Block::Expr(..) => {
@@ -140,34 +199,11 @@ impl FunctionExpr {
                                 .properties
                                 .iter()
                                 .map(|p| {
-                                    let mem = match &p.value {
-                                        Expression::Member(m) => m.clone(),
-                                        _ => {
-                                            return Err(located(
-                                                self.body.loc().clone(),
-                                                ErrorKind::UnableToVectorize(
-                                                    "expression type cannot be vectorized".into(),
-                                                ),
-                                            ))
-                                        }
-                                    };
-                                    match mem.object {
-                                        Expression::Identifier(i) if i.name == "r" => {
-                                            Ok(Property {
-                                                loc: p.loc.clone(),
-                                                key: p.key.clone(),
-                                                value: p.value.vectorize(&env)?,
-                                            })
-                                        }
-                                        _ => {
-                                            return Err(located(
-                                                self.body.loc().clone(),
-                                                ErrorKind::UnableToVectorize(
-                                                    "expression type cannot be vectorized".into(),
-                                                ),
-                                            ))
-                                        }
-                                    }
+                                    Ok(Property {
+                                        loc: p.loc.clone(),
+                                        key: p.key.clone(),
+                                        value: p.value.vectorize(&env)?,
+                                    })
                                 })
                                 .collect::<Result<Vec<_>>>()?;
 

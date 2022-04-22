@@ -278,7 +278,8 @@ func (p *Program) Start(ctx context.Context, alloc memory.Allocator) (flux.Query
 	ctx, cancel := context.WithCancel(ctx)
 
 	// This span gets closed by the query when it is done.
-	s, cctx := opentracing.StartSpanFromContext(ctx, "execute")
+	var s opentracing.Span
+	s, ctx = opentracing.StartSpanFromContext(ctx, "execute")
 	results := make(chan flux.Result)
 
 	resourceAlloc, ok := alloc.(*memory.ResourceAllocator)
@@ -294,8 +295,10 @@ func (p *Program) Start(ctx context.Context, alloc memory.Allocator) (flux.Query
 		alloc = resourceAlloc
 	}
 
+	ctx = memory.WithAllocator(ctx, alloc)
+
 	q := &query{
-		ctx:            cctx,
+		ctx:            ctx,
 		results:        results,
 		allocatorStats: resourceAlloc,
 		alloc:          alloc,
@@ -320,7 +323,7 @@ func (p *Program) Start(ctx context.Context, alloc memory.Allocator) (flux.Query
 		fmt.Sprintf("%v", plan.Formatted(p.PlanSpec, plan.WithDetails())))
 
 	e := execute.NewExecutor(p.Logger)
-	resultMap, md, err := e.Execute(cctx, p.PlanSpec, q.alloc)
+	resultMap, md, err := e.Execute(ctx, p.PlanSpec, q.alloc)
 	if err != nil {
 		s.Finish()
 		return nil, err
@@ -328,7 +331,7 @@ func (p *Program) Start(ctx context.Context, alloc memory.Allocator) (flux.Query
 
 	// There was no error so send the results downstream.
 	q.wg.Add(1)
-	go p.processResults(cctx, q, resultMap)
+	go p.processResults(ctx, q, resultMap)
 
 	// Begin reading from the metadata channel.
 	q.wg.Add(1)

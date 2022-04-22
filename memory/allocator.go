@@ -1,6 +1,7 @@
 package memory
 
 import (
+	"context"
 	"fmt"
 	"runtime"
 	"sync"
@@ -26,6 +27,19 @@ type Allocator interface {
 	// that the given memory was allocated outside the Allocator.
 	// In order to release the memory, a negative size can be used.
 	Account(size int) error
+}
+
+type key int
+
+const allocatorKey key = iota
+
+func WithAllocator(ctx context.Context, mem Allocator) context.Context {
+	return context.WithValue(ctx, allocatorKey, mem)
+}
+
+func GetAllocator(ctx context.Context) Allocator {
+	mem, _ := ctx.Value(allocatorKey).(Allocator)
+	return mem
 }
 
 // GoAllocator implements a version of the allocator that uses native Go

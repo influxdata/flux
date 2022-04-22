@@ -149,6 +149,18 @@ func SetfinalizerMemoryTracking() BoolFlag {
 	return setFinalizerMemoryTracking
 }
 
+var vectorizeAddition = feature.MakeBoolFlag(
+	"Vectorize addition",
+	"vectorizeAddition",
+	"Markus Westerlind",
+	false,
+)
+
+// VectorizeAddition - Vectorizes addition expressions inside map
+func VectorizeAddition() BoolFlag {
+	return vectorizeAddition
+}
+
 // Inject will inject the Flagger into the context.
 func Inject(ctx context.Context, flagger Flagger) context.Context {
 	return feature.Inject(ctx, flagger)
@@ -166,6 +178,7 @@ var all = []Flag{
 	narrowTransformationLimit,
 	optimizeStateTracking,
 	setFinalizerMemoryTracking,
+	vectorizeAddition,
 }
 
 var byKey = map[string]Flag{
@@ -180,6 +193,7 @@ var byKey = map[string]Flag{
 	"narrowTransformationLimit":        narrowTransformationLimit,
 	"optimizeStateTracking":            optimizeStateTracking,
 	"setFinalizerMemoryTracking":       setFinalizerMemoryTracking,
+	"vectorizeAddition":                vectorizeAddition,
 }
 
 // Flags returns all feature flags.

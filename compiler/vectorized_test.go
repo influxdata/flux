@@ -2,6 +2,7 @@ package compiler_test
 
 import (
 	"context"
+	"fmt"
 	"testing"
 
 	arrow "github.com/apache/arrow/go/v7/arrow/memory"
@@ -41,17 +42,18 @@ func vectorizedObjectFromMap(mp map[string]interface{}, mem memory.Allocator) va
 //        functions (i.e., those in the form of `(r) => ({a: r.a})`, or something
 //        similar)
 func TestVectorizedFns(t *testing.T) {
-	testCases := []struct {
+	type TestCase struct {
 		name         string
 		fn           string
 		vectorizable bool
-		allocated    int64
-		maxAllocated int64
 		inType       semantic.MonoType
 		input        map[string]interface{}
 		want         map[string]interface{}
 		skipComp     bool
-	}{
+		flagger      executetest.TestFlagger
+	}
+
+	testCases := []TestCase{
 		{
 			name:         "field access",
 			fn:           `(r) => ({c: r.a, d: r.b})`,
@@ -93,7 +95,58 @@ func TestVectorizedFns(t *testing.T) {
 			},
 		},
 		{
-			name:         "no binary expressions",
+			name:         "addition expression nested",
+			fn:           `(r) => ({c: r.a + r.b + r.a})`,
+			vectorizable: true,
+			inType: semantic.NewObjectType([]semantic.PropertyType{
+				{Key: []byte("r"), Value: semantic.NewObjectType([]semantic.PropertyType{
+					{Key: []byte("a"), Value: semantic.NewVectorType(semantic.BasicInt)},
+					{Key: []byte("b"), Value: semantic.NewVectorType(semantic.BasicInt)},
+				})},
+			}),
+			input: map[string]interface{}{
+				"r": map[string]interface{}{
+					"a": []interface{}{int64(1)},
+					"b": []interface{}{int64(2)},
+				},
+			},
+			want: map[string]interface{}{
+				"c": []interface{}{int64(4)},
+			},
+			flagger: executetest.TestFlagger{
+				fluxfeature.VectorizeAddition().Key(): true,
+			},
+		},
+		{
+			name:         "addition expression multiple",
+			fn:           `(r) => ({x: r.a + r.b, y: r.c + r.d})`,
+			vectorizable: true,
+			inType: semantic.NewObjectType([]semantic.PropertyType{
+				{Key: []byte("r"), Value: semantic.NewObjectType([]semantic.PropertyType{
+					{Key: []byte("a"), Value: semantic.NewVectorType(semantic.BasicInt)},
+					{Key: []byte("b"), Value: semantic.NewVectorType(semantic.BasicInt)},
+					{Key: []byte("c"), Value: semantic.NewVectorType(semantic.BasicFloat)},
+					{Key: []byte("d"), Value: semantic.NewVectorType(semantic.BasicFloat)},
+				})},
+			}),
+			input: map[string]interface{}{
+				"r": map[string]interface{}{
+					"a": []interface{}{int64(1)},
+					"b": []interface{}{int64(2)},
+					"c": []interface{}{49.0},
+					"d": []interface{}{51.0},
+				},
+			},
+			want: map[string]interface{}{
+				"x": []interface{}{int64(3)},
+				"y": []interface{}{100.0},
+			},
+			flagger: executetest.TestFlagger{
+				fluxfeature.VectorizeAddition().Key(): true,
+			},
+		},
+		{
+			name:         "no binary expressions without feature flag",
 			fn:           `(r) => ({c: r.a + r.b})`,
 			vectorizable: false,
 			skipComp:     true,
@@ -106,18 +159,97 @@ func TestVectorizedFns(t *testing.T) {
 		},
 	}
 
+	operatorTests := []struct {
+		inType semantic.MonoType
+		input  map[string]interface{}
+		want   map[string]interface{}
+	}{
+		{
+			inType: semantic.BasicInt,
+			input: map[string]interface{}{
+				"r": map[string]interface{}{
+					"a": []interface{}{int64(1), int64(3)},
+					"b": []interface{}{int64(2), int64(4)},
+				},
+			},
+			want: map[string]interface{}{
+				"c": []interface{}{int64(3), int64(7)},
+			},
+		},
+		{
+			inType: semantic.BasicUint,
+			input: map[string]interface{}{
+				"r": map[string]interface{}{
+					"a": []interface{}{uint64(1), uint64(3)},
+					"b": []interface{}{uint64(2), uint64(4)},
+				},
+			},
+			want: map[string]interface{}{
+				"c": []interface{}{uint64(3), uint64(7)},
+			},
+		},
+		{
+			inType: semantic.BasicFloat,
+			input: map[string]interface{}{
+				"r": map[string]interface{}{
+					"a": []interface{}{1.0, 3.0},
+					"b": []interface{}{2.0, 4.0},
+				},
+			},
+			want: map[string]interface{}{
+				"c": []interface{}{3.0, 7.0},
+			},
+		},
+		{
+			inType: semantic.BasicString,
+			input: map[string]interface{}{
+				"r": map[string]interface{}{
+					"a": []interface{}{"a", "c"},
+					"b": []interface{}{"b", "d"},
+				},
+			},
+			want: map[string]interface{}{
+				"c": []interface{}{"ab", "cd"},
+			},
+		},
+	}
+
+	for _, test := range operatorTests {
+		testCases = append(testCases, TestCase{
+			name:         fmt.Sprintf("addition expression %s", test.inType.String()),
+			fn:           `(r) => ({c: r.a + r.b})`,
+			vectorizable: true,
+			inType: semantic.NewObjectType([]semantic.PropertyType{
+				{Key: []byte("r"), Value: semantic.NewObjectType([]semantic.PropertyType{
+					{Key: []byte("a"), Value: semantic.NewVectorType(test.inType)},
+					{Key: []byte("b"), Value: semantic.NewVectorType(test.inType)},
+				})},
+			}),
+			input: test.input,
+			want:  test.want,
+
+			flagger: executetest.TestFlagger{
+				fluxfeature.VectorizeAddition().Key(): true,
+			},
+		})
+	}
+
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			checked := arrow.NewCheckedAllocator(memory.DefaultAllocator)
 			mem := memory.NewResourceAllocator(checked)
 
+			flagger := tc.flagger
+			if flagger == nil {
+				flagger = executetest.TestFlagger{}
+			}
+			flagger[fluxfeature.VectorizedMap().Key()] = true
 			ctx := context.Background()
 			ctx = feature.Inject(
 				ctx,
-				executetest.TestFlagger{
-					fluxfeature.VectorizedMap().Key(): true,
-				},
+				flagger,
 			)
+			ctx = memory.WithAllocator(ctx, mem)
 
 			pkg, err := runtime.AnalyzeSource(ctx, tc.fn)
 			if err != nil {
