@@ -1,6 +1,7 @@
 package universe_test
 
 
+import "array"
 import "testing"
 
 option now = () => 2030-01-01T00:00:00Z
@@ -41,21 +42,59 @@ outData =
 ,,1,RAM,2018-05-22T19:53:46Z,3,4,user1,user2,b
 ,,1,RAM,2018-05-22T19:53:56Z,5,0,user1,user2,b
 "
-t_join = (table=<-) => {
+
+testcase join_base {
+    input = testing.loadStorage(csv: inData)
+    want = testing.loadMem(csv: outData)
     left =
-        table
+        input
             |> range(start: 2018-05-22T19:53:00Z, stop: 2018-05-22T19:55:00Z)
             |> drop(columns: ["_start", "_stop"])
             |> filter(fn: (r) => r.user == "user1")
             |> group(columns: ["user"])
     right =
-        table
+        input
             |> range(start: 2018-05-22T19:53:00Z, stop: 2018-05-22T19:55:00Z)
             |> drop(columns: ["_start", "_stop"])
             |> filter(fn: (r) => r.user == "user2")
             |> group(columns: ["_measurement", "_field"])
 
-    return join(tables: {left: left, right: right}, on: ["_time", "_measurement", "_field"])
+    got = join(tables: {left: left, right: right}, on: ["_time", "_measurement", "_field"])
+
+    testing.diff(want: want, got: got)
 }
 
-test _join = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_join})
+testcase join_repro_4692 {
+    // Running `findRecord` repeatedly on the same stream can clone the
+    // inputs to a join, mutating the original spec each time to refer to more
+    // and more input streams each time. This leads to a panic.
+    //
+    // This tests verifies that repeated runs of `findRecord` on a `join` is
+    // "safe" to do in terms of "it no longer panics."
+    // Refs: <https://github.com/influxdata/flux/issues/4692>
+    xs = array.from(rows: [{id: 1, x: 1}, {id: 2, x: 2}, {id: 3, x: 3}])
+    ys = array.from(rows: [{id: 1, y: 1}, {id: 2, y: 2}, {id: 3, y: 3}])
+    zs = join(tables: {xs: xs, ys: ys}, on: ["id"])
+
+    getById = (id) => {
+        r = zs |> filter(fn: (r) => r.id == id) |> findRecord(fn: (key) => true, idx: 0)
+
+        return {x: r.x, y: r.y}
+    }
+
+    got =
+        array.from(
+            rows: [
+                {_value: 1},
+                {_value: 2},
+                // repeated lookups for id=2 should be okay...
+                {_value: 2},
+                {_value: 3},
+            ],
+        )
+            |> map(fn: (r) => getById(id: r._value))
+
+    want = array.from(rows: [{x: 1, y: 1}, {x: 2, y: 2}, {x: 2, y: 2}, {x: 3, y: 3}])
+
+    testing.diff(want: want, got: got)
+}

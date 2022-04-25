@@ -145,9 +145,19 @@ func createJoinOpSpec(args flux.Arguments, a *flux.Administration) (flux.Operati
 }
 
 func (t *JoinOpSpec) IDer(ider flux.IDer) {
-	for i, name := range t.params.names {
-		operation := t.params.operations[i]
-		t.TableNames[ider.ID(operation)] = name
+	// When join is used inside a `tableFind`, the input tables are cloned
+	// granting them new ids.
+	// This can cause a panic to occur in `createMergeJoinTransformation` when
+	// trying to associate table names with their related datasets.
+	// Refs: <https://github.com/influxdata/flux/issues/4692>
+
+	// Treat `TableNames` as "immutable" - don't modify them after initialization.
+	// FIXME: find a "better fix" than only initializing this once.
+	if len(t.TableNames) == 0 {
+		for i, name := range t.params.names {
+			operation := t.params.operations[i]
+			t.TableNames[ider.ID(operation)] = name
+		}
 	}
 }
 
@@ -213,6 +223,22 @@ func createMergeJoinTransformation(id execute.DatasetID, mode execute.Accumulati
 	if len(parents) != 2 {
 		// TODO(nathanielc): Support n-way joins
 		return nil, nil, errors.New(codes.Unimplemented, "joins currently must only have two parents")
+	}
+
+	// In <https://github.com/influxdata/flux/issues/4692>, it was found that in
+	// certain cases `s.TableNames` could grow beyond the size of the parents
+	// _incorrectly_.
+	// This would lead to a panic in the for/range to follow.
+	// To illustrate the requirement in a more explicit way, this check ensures
+	// that the names of the tables, and their associated datasets are of equal counts.
+	if len(parents) != len(s.TableNames) {
+		panic(
+			fmt.Sprintf(
+				"expected parent and table name counts to be equal: %d != %d",
+				len(parents),
+				len(s.TableNames),
+			),
+		)
 	}
 
 	tableNames := make(map[execute.DatasetID]string, len(s.TableNames))
