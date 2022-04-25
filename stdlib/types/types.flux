@@ -1,7 +1,7 @@
 // Package types provides functions for working with Flux's types.
 //
 // ## Metadata
-// introduced: 0.140.0
+// introduced: 0.141.0
 // tags: types
 //
 package types
