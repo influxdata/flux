@@ -119,7 +119,9 @@ func IntSub(l, r *Int, mem memory.Allocator) (*Int, error) {
 			b.AppendNull()
 		}
 	}
-	return b.NewIntArray(), nil
+	a := b.NewIntArray()
+	b.Release()
+	return a, nil
 }
 
 func UintSub(l, r *Uint, mem memory.Allocator) (*Uint, error) {
@@ -139,7 +141,9 @@ func UintSub(l, r *Uint, mem memory.Allocator) (*Uint, error) {
 			b.AppendNull()
 		}
 	}
-	return b.NewUintArray(), nil
+	a := b.NewUintArray()
+	b.Release()
+	return a, nil
 }
 
 func FloatSub(l, r *Float, mem memory.Allocator) (*Float, error) {
@@ -159,7 +163,9 @@ func FloatSub(l, r *Float, mem memory.Allocator) (*Float, error) {
 			b.AppendNull()
 		}
 	}
-	return b.NewFloatArray(), nil
+	a := b.NewFloatArray()
+	b.Release()
+	return a, nil
 }
 
 func IntMul(l, r *Int, mem memory.Allocator) (*Int, error) {
@@ -179,7 +185,9 @@ func IntMul(l, r *Int, mem memory.Allocator) (*Int, error) {
 			b.AppendNull()
 		}
 	}
-	return b.NewIntArray(), nil
+	a := b.NewIntArray()
+	b.Release()
+	return a, nil
 }
 
 func UintMul(l, r *Uint, mem memory.Allocator) (*Uint, error) {
@@ -199,7 +207,9 @@ func UintMul(l, r *Uint, mem memory.Allocator) (*Uint, error) {
 			b.AppendNull()
 		}
 	}
-	return b.NewUintArray(), nil
+	a := b.NewUintArray()
+	b.Release()
+	return a, nil
 }
 
 func FloatMul(l, r *Float, mem memory.Allocator) (*Float, error) {
@@ -219,7 +229,9 @@ func FloatMul(l, r *Float, mem memory.Allocator) (*Float, error) {
 			b.AppendNull()
 		}
 	}
-	return b.NewFloatArray(), nil
+	a := b.NewFloatArray()
+	b.Release()
+	return a, nil
 }
 
 func IntDiv(l, r *Int, mem memory.Allocator) (*Int, error) {
@@ -239,7 +251,9 @@ func IntDiv(l, r *Int, mem memory.Allocator) (*Int, error) {
 			b.AppendNull()
 		}
 	}
-	return b.NewIntArray(), nil
+	a := b.NewIntArray()
+	b.Release()
+	return a, nil
 }
 
 func UintDiv(l, r *Uint, mem memory.Allocator) (*Uint, error) {
@@ -259,7 +273,9 @@ func UintDiv(l, r *Uint, mem memory.Allocator) (*Uint, error) {
 			b.AppendNull()
 		}
 	}
-	return b.NewUintArray(), nil
+	a := b.NewUintArray()
+	b.Release()
+	return a, nil
 }
 
 func FloatDiv(l, r *Float, mem memory.Allocator) (*Float, error) {
@@ -279,7 +295,9 @@ func FloatDiv(l, r *Float, mem memory.Allocator) (*Float, error) {
 			b.AppendNull()
 		}
 	}
-	return b.NewFloatArray(), nil
+	a := b.NewFloatArray()
+	b.Release()
+	return a, nil
 }
 
 func IntMod(l, r *Int, mem memory.Allocator) (*Int, error) {
@@ -299,7 +317,9 @@ func IntMod(l, r *Int, mem memory.Allocator) (*Int, error) {
 			b.AppendNull()
 		}
 	}
-	return b.NewIntArray(), nil
+	a := b.NewIntArray()
+	b.Release()
+	return a, nil
 }
 
 func UintMod(l, r *Uint, mem memory.Allocator) (*Uint, error) {
@@ -319,7 +339,9 @@ func UintMod(l, r *Uint, mem memory.Allocator) (*Uint, error) {
 			b.AppendNull()
 		}
 	}
-	return b.NewUintArray(), nil
+	a := b.NewUintArray()
+	b.Release()
+	return a, nil
 }
 
 func FloatMod(l, r *Float, mem memory.Allocator) (*Float, error) {
@@ -339,5 +361,67 @@ func FloatMod(l, r *Float, mem memory.Allocator) (*Float, error) {
 			b.AppendNull()
 		}
 	}
-	return b.NewFloatArray(), nil
+	a := b.NewFloatArray()
+	b.Release()
+	return a, nil
+}
+
+func IntPow(l, r *Int, mem memory.Allocator) (*Float, error) {
+	n := l.Len()
+	if n != r.Len() {
+		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
+	}
+
+	b := NewFloatBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+		if l.IsValid(i) && r.IsValid(i) {
+			b.Append(math.Pow(float64(l.Value(i)), float64(r.Value(i))))
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewFloatArray()
+	b.Release()
+	return a, nil
+}
+
+func UintPow(l, r *Uint, mem memory.Allocator) (*Float, error) {
+	n := l.Len()
+	if n != r.Len() {
+		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
+	}
+
+	b := NewFloatBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+		if l.IsValid(i) && r.IsValid(i) {
+			b.Append(math.Pow(float64(l.Value(i)), float64(r.Value(i))))
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewFloatArray()
+	b.Release()
+	return a, nil
+}
+
+func FloatPow(l, r *Float, mem memory.Allocator) (*Float, error) {
+	n := l.Len()
+	if n != r.Len() {
+		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
+	}
+
+	b := NewFloatBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+		if l.IsValid(i) && r.IsValid(i) {
+			b.Append(math.Pow(float64(l.Value(i)), float64(r.Value(i))))
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewFloatArray()
+	b.Release()
+	return a, nil
 }

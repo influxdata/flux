@@ -23,5 +23,10 @@
         "Name": "Mod",
         "Op": "%",
         "Types": ["Int", "Uint", "Float"]
+    },
+    {
+        "Name": "Pow",
+        "Op": "^",
+        "Types": ["Int", "Uint", "Float"]
     }
 ]

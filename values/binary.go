@@ -639,4 +639,9 @@ var binaryVectorFuncLookup = map[BinaryFuncSignature]BinaryVectorFunction{
 		r := rv.Vector()
 		return vectorMod(l, r, mem)
 	},
+	{Operator: ast.PowerOperator, Left: semantic.Vector, Right: semantic.Vector}: func(lv, rv Value, mem memory.Allocator) (Value, error) {
+		l := lv.Vector()
+		r := rv.Vector()
+		return vectorPow(l, r, mem)
+	},
 }

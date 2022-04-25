@@ -11,11 +11,37 @@ import (
 {{range $index, $op := .}}
 {{range $index, $type := .Types}}
 
-func {{$type}}{{$op.Name}}(l, r *{{$type}}, mem memory.Allocator) (*{{$type}}, error) {
+{{if eq $op.Op "^"}}
+
+func {{$type}}{{$op.Name}}(l, r *{{$type}}, mem memory.Allocator) (*Float, error) {
 	n := l.Len()
 	if n != r.Len() {
 		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
 	}
+
+
+	b := NewFloatBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+		if l.IsValid(i) && r.IsValid(i) {
+			b.Append(math.Pow(float64(l.Value(i)), float64(r.Value(i))))
+		} else {
+			b.AppendNull()
+		}
+	}
+    a := b.NewFloatArray()
+    b.Release()
+	return a, nil
+}
+
+{{else}}
+
+
+func {{$type}}{{$op.Name}}(l, r *{{$type}}, mem memory.Allocator) (*{{$type}}, error) { n := l.Len()
+	if n != r.Len() {
+		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
+	}
+
 
 	b := New{{$type}}Builder(mem)
 	b.Resize(n)
@@ -38,6 +64,8 @@ func {{$type}}{{$op.Name}}(l, r *{{$type}}, mem memory.Allocator) (*{{$type}}, e
     b.Release()
 	return a, nil
 }
+
+{{end}}
 
 {{end}}
 {{end}}

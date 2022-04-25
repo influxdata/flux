@@ -25,7 +25,11 @@ func vector{{$op.Name}}(l, r Vector, mem memory.Allocator) (Value, error) {
 		if err != nil {
 			return nil, err
 		}
+    {{if eq $op.Op "^"}}
+		return NewVectorValue(x, semantic.BasicFloat), nil
+    {{else}}
 		return NewVectorValue(x, semantic.Basic{{$type}}), nil
+    {{end}}
 
     {{end}}
 

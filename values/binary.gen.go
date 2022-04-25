@@ -22,6 +22,7 @@ func vectorAdd(l, r Vector, mem memory.Allocator) (Value, error) {
 		if err != nil {
 			return nil, err
 		}
+
 		return NewVectorValue(x, semantic.BasicInt), nil
 
 	case semantic.UInt:
@@ -30,6 +31,7 @@ func vectorAdd(l, r Vector, mem memory.Allocator) (Value, error) {
 		if err != nil {
 			return nil, err
 		}
+
 		return NewVectorValue(x, semantic.BasicUint), nil
 
 	case semantic.Float:
@@ -38,6 +40,7 @@ func vectorAdd(l, r Vector, mem memory.Allocator) (Value, error) {
 		if err != nil {
 			return nil, err
 		}
+
 		return NewVectorValue(x, semantic.BasicFloat), nil
 
 	case semantic.String:
@@ -46,6 +49,7 @@ func vectorAdd(l, r Vector, mem memory.Allocator) (Value, error) {
 		if err != nil {
 			return nil, err
 		}
+
 		return NewVectorValue(x, semantic.BasicString), nil
 
 	default:
@@ -62,6 +66,7 @@ func vectorSub(l, r Vector, mem memory.Allocator) (Value, error) {
 		if err != nil {
 			return nil, err
 		}
+
 		return NewVectorValue(x, semantic.BasicInt), nil
 
 	case semantic.UInt:
@@ -70,6 +75,7 @@ func vectorSub(l, r Vector, mem memory.Allocator) (Value, error) {
 		if err != nil {
 			return nil, err
 		}
+
 		return NewVectorValue(x, semantic.BasicUint), nil
 
 	case semantic.Float:
@@ -78,6 +84,7 @@ func vectorSub(l, r Vector, mem memory.Allocator) (Value, error) {
 		if err != nil {
 			return nil, err
 		}
+
 		return NewVectorValue(x, semantic.BasicFloat), nil
 
 	default:
@@ -94,6 +101,7 @@ func vectorMul(l, r Vector, mem memory.Allocator) (Value, error) {
 		if err != nil {
 			return nil, err
 		}
+
 		return NewVectorValue(x, semantic.BasicInt), nil
 
 	case semantic.UInt:
@@ -102,6 +110,7 @@ func vectorMul(l, r Vector, mem memory.Allocator) (Value, error) {
 		if err != nil {
 			return nil, err
 		}
+
 		return NewVectorValue(x, semantic.BasicUint), nil
 
 	case semantic.Float:
@@ -110,6 +119,7 @@ func vectorMul(l, r Vector, mem memory.Allocator) (Value, error) {
 		if err != nil {
 			return nil, err
 		}
+
 		return NewVectorValue(x, semantic.BasicFloat), nil
 
 	default:
@@ -126,6 +136,7 @@ func vectorDiv(l, r Vector, mem memory.Allocator) (Value, error) {
 		if err != nil {
 			return nil, err
 		}
+
 		return NewVectorValue(x, semantic.BasicInt), nil
 
 	case semantic.UInt:
@@ -134,6 +145,7 @@ func vectorDiv(l, r Vector, mem memory.Allocator) (Value, error) {
 		if err != nil {
 			return nil, err
 		}
+
 		return NewVectorValue(x, semantic.BasicUint), nil
 
 	case semantic.Float:
@@ -142,6 +154,7 @@ func vectorDiv(l, r Vector, mem memory.Allocator) (Value, error) {
 		if err != nil {
 			return nil, err
 		}
+
 		return NewVectorValue(x, semantic.BasicFloat), nil
 
 	default:
@@ -158,6 +171,7 @@ func vectorMod(l, r Vector, mem memory.Allocator) (Value, error) {
 		if err != nil {
 			return nil, err
 		}
+
 		return NewVectorValue(x, semantic.BasicInt), nil
 
 	case semantic.UInt:
@@ -166,6 +180,7 @@ func vectorMod(l, r Vector, mem memory.Allocator) (Value, error) {
 		if err != nil {
 			return nil, err
 		}
+
 		return NewVectorValue(x, semantic.BasicUint), nil
 
 	case semantic.Float:
@@ -174,9 +189,45 @@ func vectorMod(l, r Vector, mem memory.Allocator) (Value, error) {
 		if err != nil {
 			return nil, err
 		}
+
 		return NewVectorValue(x, semantic.BasicFloat), nil
 
 	default:
 		return nil, errors.Newf(codes.Invalid, "unsupported type for vector Mod: %v", l.ElementType())
+	}
+}
+
+func vectorPow(l, r Vector, mem memory.Allocator) (Value, error) {
+	switch l.ElementType().Nature() {
+
+	case semantic.Int:
+
+		x, err := fluxarray.IntPow(l.Arr().(*fluxarray.Int), r.Arr().(*fluxarray.Int), mem)
+		if err != nil {
+			return nil, err
+		}
+
+		return NewVectorValue(x, semantic.BasicFloat), nil
+
+	case semantic.UInt:
+
+		x, err := fluxarray.UintPow(l.Arr().(*fluxarray.Uint), r.Arr().(*fluxarray.Uint), mem)
+		if err != nil {
+			return nil, err
+		}
+
+		return NewVectorValue(x, semantic.BasicFloat), nil
+
+	case semantic.Float:
+
+		x, err := fluxarray.FloatPow(l.Arr().(*fluxarray.Float), r.Arr().(*fluxarray.Float), mem)
+		if err != nil {
+			return nil, err
+		}
+
+		return NewVectorValue(x, semantic.BasicFloat), nil
+
+	default:
+		return nil, errors.Newf(codes.Invalid, "unsupported type for vector Pow: %v", l.ElementType())
 	}
 }

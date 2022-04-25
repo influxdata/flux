@@ -3,6 +3,7 @@ package compiler_test
 import (
 	"context"
 	"fmt"
+	"math"
 	"testing"
 
 	arrow "github.com/apache/arrow/go/v7/arrow/memory"
@@ -237,7 +238,7 @@ func TestVectorizedFns(t *testing.T) {
 	operatorTests := []struct {
 		operator  string
 		input     [][2]int64
-		transform func(int64, int64) int64
+		transform func(int64, int64) interface{}
 	}{
 		{
 			operator: "-",
@@ -246,7 +247,7 @@ func TestVectorizedFns(t *testing.T) {
 				{10, 5},
 				{112487, 66547},
 			},
-			transform: func(l, r int64) int64 {
+			transform: func(l, r int64) interface{} {
 				return l - r
 			},
 		},
@@ -257,7 +258,7 @@ func TestVectorizedFns(t *testing.T) {
 				{10, 5},
 				{112487, 66547},
 			},
-			transform: func(l, r int64) int64 {
+			transform: func(l, r int64) interface{} {
 				return l * r
 			},
 		},
@@ -268,7 +269,7 @@ func TestVectorizedFns(t *testing.T) {
 				{10, 5},
 				{112487, 66547},
 			},
-			transform: func(l, r int64) int64 {
+			transform: func(l, r int64) interface{} {
 				return l / r
 			},
 		},
@@ -279,8 +280,19 @@ func TestVectorizedFns(t *testing.T) {
 				{10, 5},
 				{112487, 66547},
 			},
-			transform: func(l, r int64) int64 {
+			transform: func(l, r int64) interface{} {
 				return l % r
+			},
+		},
+		{
+			operator: "^",
+			input: [][2]int64{
+				{1, 2},
+				{10, 5},
+				{112487, 66547},
+			},
+			transform: func(l, r int64) interface{} {
+				return math.Pow(float64(l), float64(r))
 			},
 		},
 	}
