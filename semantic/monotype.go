@@ -373,23 +373,37 @@ func (mt MonoType) RecordProperty(i int) (*RecordProperty, error) {
 }
 
 func GetPropertyName(p *fbsemantic.Prop) (string, error) {
+	x, err := GetPropertyAny(p)
+	if err != nil {
+		return "", err
+	}
+
+	s, ok := x.(string)
+	if !ok {
+		return "", errors.Newf(codes.Internal, "Record label is not concrete")
+	}
+	return s, nil
+}
+
+func GetPropertyAny(p *fbsemantic.Prop) (interface{}, error) {
 	var tbl flatbuffers.Table
 	if !p.K(&tbl) {
-		return "", errors.Newf(codes.Internal, "Record label is a label variable")
+		return nil, errors.Newf(codes.Internal, "Invalid property")
 	}
 	// We should not construct `RecordProperty` values without the concrete type
 	// (see MonoType.RecordProperty)
-	var tbler fbsemantic.Concrete
 	switch p.KType() {
 	case fbsemantic.RecordLabelConcrete:
-		tbler = fbsemantic.Concrete{}
+		var tbler = fbsemantic.Concrete{}
+		tbler.Init(tbl.Bytes, tbl.Pos)
+		return string(tbler.Id()), nil
 	case fbsemantic.RecordLabelVar:
-		return "", errors.Newf(codes.Internal, "Record label is a label variable")
+		var tbler = fbsemantic.Var{}
+		tbler.Init(tbl.Bytes, tbl.Pos)
+		return tbler.I(), nil
 	default:
 		return "", errors.Newf(codes.Internal, "Record label has an unknown type: %v", p.KType())
 	}
-	tbler.Init(tbl.Bytes, tbl.Pos)
-	return string(tbler.Id()), nil
 }
 
 // SortedProperties returns the properties for a Record monotype, sorted by
@@ -835,6 +849,11 @@ func NewFunctionType(retn MonoType, args []ArgumentType) MonoType {
 	return mt
 }
 
+type VarPropertyType struct {
+	Key   interface{}
+	Value MonoType
+}
+
 type PropertyType struct {
 	Key   []byte
 	Value MonoType
@@ -851,7 +870,14 @@ func NewObjectType(properties []PropertyType) MonoType {
 
 func ExtendObjectType(properties []PropertyType, extends *uint64) MonoType {
 	builder := flatbuffers.NewBuilder(64)
-	offset := buildObjectType(builder, properties, extends)
+	varProperties := make([]VarPropertyType, 0, len(properties))
+	for _, p := range properties {
+		varProperties = append(varProperties, VarPropertyType{
+			Key:   p.Key,
+			Value: p.Value,
+		})
+	}
+	offset := buildObjectType(builder, varProperties, extends)
 	builder.Finish(offset)
 
 	buf := builder.FinishedBytes()
@@ -915,16 +941,16 @@ func copyMonoType(builder *flatbuffers.Builder, t MonoType) flatbuffers.UOffsetT
 		var record fbsemantic.Record
 		record.Init(table.Bytes, table.Pos)
 
-		properties := make([]PropertyType, record.PropsLength())
+		properties := make([]VarPropertyType, record.PropsLength())
 		for i := 0; i < len(properties); i++ {
 			var prop fbsemantic.Prop
 			record.Props(&prop, i)
-			key, err := GetPropertyName(&prop)
+			key, err := GetPropertyAny(&prop)
 			if err != nil {
 				panic(err)
 			}
-			properties[i] = PropertyType{
-				Key:   ([]byte)(key),
+			properties[i] = VarPropertyType{
+				Key:   key,
 				Value: monoTypeFromFunc(prop.V, prop.VType()),
 			}
 		}
@@ -1033,13 +1059,28 @@ func buildFunctionType(builder *flatbuffers.Builder, retn MonoType, args []Argum
 
 // buildObjectType will construct a record type in the builder
 // and return the offset for the type.
-func buildObjectType(builder *flatbuffers.Builder, properties []PropertyType, extends *uint64) flatbuffers.UOffsetT {
+func buildObjectType(builder *flatbuffers.Builder, properties []VarPropertyType, extends *uint64) flatbuffers.UOffsetT {
 	propOffsets := make([]flatbuffers.UOffsetT, len(properties))
 	for i, p := range properties {
-		idOffset := builder.CreateByteString(p.Key)
-		fbsemantic.ConcreteStart(builder)
-		fbsemantic.ConcreteAddId(builder, idOffset)
-		kOffset := fbsemantic.ConcreteEnd(builder)
+		var kOffset flatbuffers.UOffsetT
+		switch k := p.Key.(type) {
+		case uint64:
+			fbsemantic.VarStart(builder)
+			fbsemantic.VarAddI(builder, k)
+			kOffset = fbsemantic.VarEnd(builder)
+		case []byte:
+			idOffset := builder.CreateByteString(k)
+			fbsemantic.ConcreteStart(builder)
+			fbsemantic.ConcreteAddId(builder, idOffset)
+			kOffset = fbsemantic.ConcreteEnd(builder)
+		case string:
+			idOffset := builder.CreateByteString(([]byte)(k))
+			fbsemantic.ConcreteStart(builder)
+			fbsemantic.ConcreteAddId(builder, idOffset)
+			kOffset = fbsemantic.ConcreteEnd(builder)
+		default:
+			panic("Invalid record variable")
+		}
 
 		vOffset := copyMonoType(builder, p.Value)
 
