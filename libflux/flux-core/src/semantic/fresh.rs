@@ -47,8 +47,14 @@ pub trait Fresh {
 }
 
 impl Fresh for RecordLabel {
-    fn fresh_ref(&self, _: &mut Fresher, _: &mut TvarMap) -> Option<Self> {
-        None
+    fn fresh_ref(&self, f: &mut Fresher, sub: &mut TvarMap) -> Option<Self> {
+        match self {
+            RecordLabel::Variable(var) => var.fresh_ref(f, sub).map(RecordLabel::Variable),
+            RecordLabel::BoundVariable(var) => {
+                var.fresh_ref(f, sub).map(RecordLabel::BoundVariable)
+            }
+            RecordLabel::Concrete(_) | RecordLabel::Error => None,
+        }
     }
 }
 

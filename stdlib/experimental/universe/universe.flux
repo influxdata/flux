@@ -15,8 +15,7 @@ package universe
 // columns and a new column containing the column labels in the input table.
 // Each row in an output table contains the group key value and the label of one
 //  column of the input table.
-// Each output table has the same number of rows as the number of columns of the
-// input table.
+// Each output table has the same number of rows as the number of columns of the input table.
 //
 // ## Parameters
 // - column: Name of the output column to store column labels in.
@@ -75,7 +74,7 @@ builtin columns : (<-tables: stream[A], ?column: C) => stream[{C: string}] where
 // import "sampledata"
 //
 // < sampledata.int(includeNull: true)
-// >     |> experimental.fill(usePrevious: true)
+// >     |> universe.fill(usePrevious: true)
 // ```
 //
 // ## Metadata

@@ -2,7 +2,7 @@
 
 use std::{
     borrow::Cow,
-    cell::{Cell, RefCell},
+    cell::Cell,
     cmp,
     collections::{BTreeMap, BTreeSet},
     fmt::{self, Write},
@@ -167,50 +167,6 @@ impl<'a, E> Unifier<'a, E> {
 
             self.errors
                 .extend(sub_unifier.errors.into_iter().map(&mk_error));
-        }
-
-        struct FindUnboundLabels<'a> {
-            found: RefCell<Option<Tvar>>,
-            sub: &'a dyn Substituter,
-        }
-        impl Substituter for FindUnboundLabels<'_> {
-            fn try_apply(&self, _: Tvar) -> Option<MonoType> {
-                None
-            }
-            fn visit_type(&self, typ: &MonoType) -> Option<MonoType> {
-                if let MonoType::Record(rec) = typ {
-                    if let Record::Extension {
-                        head:
-                            Property {
-                                k: RecordLabel::Variable(var),
-                                ..
-                            },
-                        ..
-                    } = &**rec
-                    {
-                        match self.sub.try_apply(*var) {
-                            Some(MonoType::Var(_)) | None => *self.found.borrow_mut() = Some(*var),
-                            _ => (),
-                        }
-                    }
-                }
-                None
-            }
-        }
-
-        let visitor = FindUnboundLabels {
-            found: RefCell::new(None),
-            sub: self.sub,
-        };
-        let typ = value.apply_cow(self.sub);
-        typ.visit(&visitor);
-        if let Some(non_label) = visitor.found.into_inner() {
-            // Prevent this error from being emitted again for this type
-            if let Err(err) = self.sub.union_type(non_label, MonoType::Error) {
-                self.errors.push(mk_error(err));
-            }
-            self.errors
-                .push(mk_error(Error::NotALabel(MonoType::Var(non_label))));
         }
 
         if self.errors.has_errors() {

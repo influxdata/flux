@@ -31,7 +31,7 @@ fn labels_simple() {
 
 #[test]
 fn labels_unbound() {
-    test_error_msg! {
+    test_infer! {
         config: AnalyzerConfig{
             features: vec![Feature::LabelPolymorphism],
             ..AnalyzerConfig::default()
@@ -44,14 +44,9 @@ fn labels_unbound() {
         src: r#"
             x = [{ a: 1, b: 2.0 }] |> f(value: "x")
         "#,
-        expect: expect![[r#"
-            error: <error> is not a label
-              ┌─ main:2:39
-              │
-            2 │             x = [{ a: 1, b: 2.0 }] |> f(value: "x")
-              │                                       ^^^^^^^^^^^^^
-
-        "#]],
+        exp: map![
+            "x" => "[{A with a:int, B:string}] where B: Label",
+        ],
     }
 }
 
@@ -190,12 +185,22 @@ fn columns() {
         },
         env: map![
             "stream" => "stream[{ a: int }]",
-            "columns" => "(<-tables: stream[A], ?column: C) => stream[{ C: string }] where A: Record, C: Label",
             "map" => "(<-tables: stream[A], fn: (r: A) => B) => stream[B]"
         ],
+        imp: map![
+            "experimental/universe" => package![
+                "fill" => "(<-tables: stream[{A with C: B}], ?column: C, ?value: B, ?usePrevious: bool) => stream[{A with C: B}]
+        where
+        A: Record,
+        C: Label",
+                "columns" => "(<-tables: stream[A], ?column: C) => stream[{ C: string }] where A: Record, C: Label",
+            ],
+        ],
         src: r#"
+            import "experimental/universe"
+
             x = stream
-                |> columns(column: "abc")
+                |> universe.columns(column: "abc")
                 |> map(fn: (r) => ({ x: r.abc }))
         "#,
         exp: map![
@@ -220,12 +225,6 @@ fn optional_label() {
         "#,
         // TODO This fails because `column` is not specified but it ought to provide a better error
         expect: expect![[r#"
-            error: <error> is not a label
-              ┌─ main:2:17
-              │
-            2 │             x = columns(table: { a: 1, b: "b" })
-              │                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
             error: record is missing label abc
               ┌─ main:3:17
               │
