@@ -503,20 +503,22 @@ Note that an empty string is distinct from a _null_ value.
 
 The length of a string is its size in bytes, not the number of characters, since a single character may be multiple bytes.
 
-##### Label types
+##### Label types (Upcoming/Feature flagged)
 
-When used in a context that accepts a "label", a string literals may be treated as a label type
-instead of a `string`.
+A _label type_ represents the name of a record field.
+String literals may be treated as a label type instead of a `string` when used in a context that
+expects a label type.
 
 ```
-"a": Label("a")
-"xyz": Label("xyz")
+"a" // Can be treated as Label("a")
+"xyz" // Can be treated as  Label("xyz")
 ```
 
 In effect, this allows functions accepting a record and a label to refer to specific properties of
 the record.
 
 ```
+// "mycolumn" is treated as Label("mycolumn") for when passed to `mean`
 mean(column: "mycolumn") // Calculates the mean of `mycolumn`
 ```
 
