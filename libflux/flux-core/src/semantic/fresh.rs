@@ -33,7 +33,7 @@ impl From<u64> for Fresher {
 }
 
 impl Substituter for Fresher {
-    fn try_apply(&self, var: Tvar) -> Option<MonoType> {
+    fn try_apply(&mut self, var: Tvar) -> Option<MonoType> {
         let fresher = &self.fresher;
         Some(MonoType::Var(
             *self.sub.borrow_mut().entry(var).or_insert_with(|| {
@@ -44,7 +44,7 @@ impl Substituter for Fresher {
         ))
     }
 
-    fn try_apply_bound(&self, var: Tvar) -> Option<MonoType> {
+    fn try_apply_bound(&mut self, var: Tvar) -> Option<MonoType> {
         let fresher = &self.fresher;
         Some(MonoType::BoundVar(
             *self.sub.borrow_mut().entry(var).or_insert_with(|| {

@@ -89,7 +89,7 @@ impl Matcher<Error> for Subsume {
                 {
                     struct ReplaceLabels;
                     impl Substituter for ReplaceLabels {
-                        fn try_apply(&self, _: Tvar) -> Option<MonoType> {
+                        fn try_apply(&mut self, _: Tvar) -> Option<MonoType> {
                             None
                         }
                         fn visit_type(&mut self, typ: &MonoType) -> Option<MonoType> {
@@ -1417,7 +1417,7 @@ impl Record {
     // self represents the expected type.
     //
     fn unify(&self, actual: &Self, unifier: &mut Unifier<'_>) {
-        let has_variable_label = |r: &Record| {
+        let mut has_variable_label = |r: &Record| {
             r.fields().any(|prop| match prop.k {
                 RecordLabel::Variable(v) => unifier.sub.try_apply(v).is_none(),
                 RecordLabel::BoundVariable(_) | RecordLabel::Concrete(_) | RecordLabel::Error => {
@@ -2268,7 +2268,7 @@ where
         }
 
         impl Substituter for MaxTvars {
-            fn try_apply(&self, var: Tvar) -> Option<MonoType> {
+            fn try_apply(&mut self, var: Tvar) -> Option<MonoType> {
                 self.max.set(self.max.get().max(Some(var)));
                 None
             }

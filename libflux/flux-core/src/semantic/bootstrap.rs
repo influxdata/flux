@@ -277,11 +277,11 @@ where
 struct CollectBoundVars(RefCell<Vec<Tvar>>);
 
 impl Substituter for CollectBoundVars {
-    fn try_apply(&self, _var: Tvar) -> Option<MonoType> {
+    fn try_apply(&mut self, _var: Tvar) -> Option<MonoType> {
         None
     }
 
-    fn try_apply_bound(&self, var: Tvar) -> Option<MonoType> {
+    fn try_apply_bound(&mut self, var: Tvar) -> Option<MonoType> {
         let mut vars = self.0.borrow_mut();
         if let Err(i) = vars.binary_search(&var) {
             vars.insert(i, var);

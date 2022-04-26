@@ -240,7 +240,7 @@ pub trait Substitutable {
         }
 
         impl Substituter for FreeVars {
-            fn try_apply(&self, var: Tvar) -> Option<MonoType> {
+            fn try_apply(&mut self, var: Tvar) -> Option<MonoType> {
                 let mut vars = self.vars.borrow_mut();
                 if let Err(i) = vars.binary_search(&var) {
                     vars.insert(i, var);
@@ -299,10 +299,10 @@ where
 pub trait Substituter {
     /// Apply a substitution to a type variable, returning None if there is no substitution for the
     /// variable.
-    fn try_apply(&self, var: Tvar) -> Option<MonoType>;
+    fn try_apply(&mut self, var: Tvar) -> Option<MonoType>;
     /// Apply a substitution to a bound type variable, returning None if there is no substitution for the
     /// variable.
-    fn try_apply_bound(&self, var: Tvar) -> Option<MonoType> {
+    fn try_apply_bound(&mut self, var: Tvar) -> Option<MonoType> {
         let _ = var;
         None
     }
@@ -328,15 +328,15 @@ pub trait Substituter {
 
 impl<F> Substituter for F
 where
-    F: ?Sized + Fn(Tvar) -> Option<MonoType>,
+    F: ?Sized + FnMut(Tvar) -> Option<MonoType>,
 {
-    fn try_apply(&self, var: Tvar) -> Option<MonoType> {
+    fn try_apply(&mut self, var: Tvar) -> Option<MonoType> {
         self(var)
     }
 }
 
 impl Substituter for SubstitutionMap {
-    fn try_apply(&self, var: Tvar) -> Option<MonoType> {
+    fn try_apply(&mut self, var: Tvar) -> Option<MonoType> {
         self.get(&var).cloned()
     }
 
@@ -360,7 +360,7 @@ impl Substituter for SubstitutionMap {
 }
 
 impl Substituter for Substitution {
-    fn try_apply(&self, var: Tvar) -> Option<MonoType> {
+    fn try_apply(&mut self, var: Tvar) -> Option<MonoType> {
         Substitution::try_apply(self, var)
     }
 
@@ -384,12 +384,12 @@ impl Substituter for Substitution {
 }
 
 pub(crate) struct BindVars<'a> {
-    sub: &'a dyn Substituter,
+    sub: &'a mut dyn Substituter,
     unbound_vars: RefCell<SubstitutionMap>,
 }
 
 impl<'a> BindVars<'a> {
-    pub fn new(sub: &'a dyn Substituter) -> Self {
+    pub fn new(sub: &'a mut dyn Substituter) -> Self {
         Self {
             sub,
             unbound_vars: Default::default(),
@@ -398,7 +398,7 @@ impl<'a> BindVars<'a> {
 }
 
 impl Substituter for BindVars<'_> {
-    fn try_apply(&self, var: Tvar) -> Option<MonoType> {
+    fn try_apply(&mut self, var: Tvar) -> Option<MonoType> {
         Some(if let Some(typ) = self.sub.try_apply(var) {
             typ
         } else {

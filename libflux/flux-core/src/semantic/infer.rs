@@ -194,14 +194,14 @@ pub(crate) fn temporary_generalize(
     }
 
     impl Substituter for Generalize {
-        fn try_apply_bound(&self, var: Tvar) -> Option<MonoType> {
+        fn try_apply_bound(&mut self, var: Tvar) -> Option<MonoType> {
             let mut vars = self.vars.borrow_mut();
             if vars.iter().all(|(_, v)| *v != var) {
                 vars.push((var, var));
             }
             None
         }
-        fn try_apply(&self, var: Tvar) -> Option<MonoType> {
+        fn try_apply(&mut self, var: Tvar) -> Option<MonoType> {
             if !self.env_free_vars.contains(&var) {
                 let mut vars = self.vars.borrow_mut();
                 match vars.iter().find(|(v, _)| *v == var) {
@@ -255,7 +255,7 @@ pub fn generalize(env: &Environment, sub: &mut Substitution, t: MonoType) -> Pol
     }
 
     impl Substituter for Generalize<'_> {
-        fn try_apply(&self, var: Tvar) -> Option<MonoType> {
+        fn try_apply(&mut self, var: Tvar) -> Option<MonoType> {
             if !self.env_free_vars.contains(&var) {
                 if (var.0 as usize) < self.sub.len() {
                     if let Some(new_var) = self.sub.try_apply(var) {
@@ -337,10 +337,10 @@ pub fn instantiate(
     struct InstantiationMap(SubstitutionMap);
 
     impl Substituter for InstantiationMap {
-        fn try_apply(&self, _var: Tvar) -> Option<MonoType> {
+        fn try_apply(&mut self, _var: Tvar) -> Option<MonoType> {
             None
         }
-        fn try_apply_bound(&self, var: Tvar) -> Option<MonoType> {
+        fn try_apply_bound(&mut self, var: Tvar) -> Option<MonoType> {
             self.0.get(&var).cloned()
         }
     }

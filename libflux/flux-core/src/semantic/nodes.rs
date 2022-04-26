@@ -379,9 +379,9 @@ where
     infer.env.apply_mut(&mut FinalizeTypes { sub: infer.sub });
 
     if infer.errors.has_errors() {
-        let sub = BindVars::new(infer.sub);
+        let mut sub = BindVars::new(infer.sub);
         for err in &mut infer.errors {
-            err.apply_mut(&mut FinalizeTypes { sub: &sub });
+            err.apply_mut(&mut FinalizeTypes { sub: &mut sub });
         }
         Err(infer.errors)
     } else {
@@ -391,16 +391,16 @@ where
 
 /// Applies the substitution to the entire package.
 #[allow(missing_docs)]
-pub fn inject_pkg_types(pkg: Package, sub: &Substitution) -> Package {
+pub fn inject_pkg_types(pkg: Package, sub: &mut Substitution) -> Package {
     pkg.apply(&mut FinalizeTypes { sub })
 }
 
 struct FinalizeTypes<'a> {
-    sub: &'a dyn Substituter,
+    sub: &'a mut dyn Substituter,
 }
 
 impl Substituter for FinalizeTypes<'_> {
-    fn try_apply(&self, tvr: Tvar) -> Option<MonoType> {
+    fn try_apply(&mut self, tvr: Tvar) -> Option<MonoType> {
         self.sub.try_apply(tvr)
     }
     fn visit_type(&mut self, typ: &MonoType) -> Option<MonoType> {
@@ -2127,7 +2127,7 @@ mod tests {
                 ],
             }],
         };
-        let sub: Substitution = semantic_map! {
+        let mut sub: Substitution = semantic_map! {
             Tvar(0) => MonoType::INT,
             Tvar(1) => MonoType::INT,
             Tvar(2) => MonoType::INT,
@@ -2138,7 +2138,7 @@ mod tests {
             Tvar(7) => MonoType::INT,
         }
         .into();
-        let pkg = inject_pkg_types(pkg, &sub);
+        let pkg = inject_pkg_types(pkg, &mut sub);
         let mut no_types_checked = 0;
         walk(
             &mut |node: Node| {
