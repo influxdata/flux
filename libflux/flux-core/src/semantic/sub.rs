@@ -295,11 +295,13 @@ pub trait Substituter {
 
     /// Apply a substitution to a type, returning None if there is no substitution for the
     /// type.
-    fn visit_type(&self, typ: &MonoType) -> Option<MonoType> {
+    fn visit_type(&mut self, typ: &MonoType) -> Option<MonoType> {
         match *typ {
-            MonoType::Var(var) => self.try_apply(var),
-            MonoType::BoundVar(var) => self.try_apply_bound(var),
-            _ => None,
+            MonoType::Var(var) => self.try_apply(var).map(|typ| typ.walk(self).unwrap_or(typ)),
+            MonoType::BoundVar(var) => self
+                .try_apply_bound(var)
+                .map(|typ| typ.walk(self).unwrap_or(typ)),
+            _ => typ.walk(self),
         }
     }
 }

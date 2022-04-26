@@ -403,14 +403,14 @@ impl Substituter for FinalizeTypes<'_> {
     fn try_apply(&self, tvr: Tvar) -> Option<MonoType> {
         self.sub.try_apply(tvr)
     }
-    fn visit_type(&self, typ: &MonoType) -> Option<MonoType> {
+    fn visit_type(&mut self, typ: &MonoType) -> Option<MonoType> {
         match typ {
             MonoType::Var(tvr) => {
                 let typ = self.sub.try_apply(*tvr)?;
                 Some(self.visit_type(&typ).unwrap_or(typ))
             }
             MonoType::Label(_) => Some(MonoType::STRING),
-            _ => None,
+            _ => typ.walk(self),
         }
     }
 }

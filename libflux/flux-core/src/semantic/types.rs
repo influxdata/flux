@@ -90,10 +90,10 @@ impl Matcher<Error> for Subsume {
                         fn try_apply(&self, _: Tvar) -> Option<MonoType> {
                             None
                         }
-                        fn visit_type(&self, typ: &MonoType) -> Option<MonoType> {
+                        fn visit_type(&mut self, typ: &MonoType) -> Option<MonoType> {
                             match typ {
                                 MonoType::Label(_) => Some(MonoType::STRING),
-                                _ => None,
+                                _ => typ.walk(self),
                             }
                         }
                     }
@@ -777,10 +777,7 @@ impl BuiltinType {
 
 impl Substitutable for MonoType {
     fn visit(&self, sub: &mut (impl ?Sized + Substituter)) -> Option<Self> {
-        match sub.visit_type(self) {
-            Some(typ) => Some(typ.walk(sub).unwrap_or(typ)),
-            None => self.walk(sub),
-        }
+        sub.visit_type(self)
     }
 
     fn walk(&self, sub: &mut (impl ?Sized + Substituter)) -> Option<Self> {
