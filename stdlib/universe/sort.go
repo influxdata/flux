@@ -331,6 +331,14 @@ func (s *sortTableMergeHeap) ValueLen() int {
 }
 
 func (s *sortTableMergeHeap) Table(limit int, mem memory.Allocator) (flux.Table, error) {
+	if s.ValueLen() == 0 {
+		// Degenerate case where ther are no rows to merge sort
+		for len(s.items) > 0 {
+			s.Pop()
+		}
+		return execute.NewEmptyTable(s.key, s.cols), nil
+	}
+
 	// Construct the buffered builder that will contain the full table.
 	builder := table.NewBufferedBuilder(s.key, mem)
 

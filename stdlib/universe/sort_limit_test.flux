@@ -3,6 +3,7 @@ package universe_test
 
 import "array"
 import "csv"
+import "internal/debug"
 import "testing"
 
 testcase sort_limit {
@@ -123,4 +124,14 @@ testcase sort_limit_unordered_columns {
             )
 
         testing.diff(got: got, want: want)
-    }
+}
+
+testcase sort_limit_zero_row_table {
+        input = array.from(rows: [{foo: "bar", _value: 10}])
+                |> filter(fn: (r) => r._value > 10, onEmpty: "keep")
+        want = input
+        // the call to pass() here is required due to
+        // https://github.com/influxdata/flux/issues/4699
+        got = input |> debug.pass() |> sort() |> limit(n: 5)
+        testing.diff(got, want)
+}
