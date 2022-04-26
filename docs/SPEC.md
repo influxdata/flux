@@ -543,8 +543,6 @@ An _record type_ represents a set of unordered key and value pairs.
 The key can be a string or a [type variable](<#Type variables>).
 The value may be any other type, and need not be the same as other values within the record.
 
-When a key is a variable type inference may
-
 Type inference will determine the properties that are present on a record.
 If type inference determines all the properties on a record it is said to be bounded.
 Not all keys may be known on the type of a record in which case the record is said to be unbounded.
