@@ -2,7 +2,6 @@
 
 use std::{
     borrow::Cow,
-    cell::Cell,
     cmp,
     collections::{BTreeMap, BTreeSet},
     fmt::{self, Write},
@@ -2264,19 +2263,19 @@ where
     fn max_tvar(&self) -> Option<Tvar> {
         #[derive(Default)]
         struct MaxTvars {
-            max: Cell<Option<Tvar>>,
+            max: Option<Tvar>,
         }
 
         impl Substituter for MaxTvars {
             fn try_apply(&mut self, var: Tvar) -> Option<MonoType> {
-                self.max.set(self.max.get().max(Some(var)));
+                self.max = self.max.max(Some(var));
                 None
             }
         }
 
         let mut max = MaxTvars::default();
         self.visit(&mut max);
-        max.max.into_inner()
+        max.max
     }
 }
 

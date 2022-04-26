@@ -236,21 +236,20 @@ pub trait Substitutable {
     {
         #[derive(Default)]
         struct FreeVars {
-            vars: RefCell<Vec<Tvar>>,
+            vars: Vec<Tvar>,
         }
 
         impl Substituter for FreeVars {
             fn try_apply(&mut self, var: Tvar) -> Option<MonoType> {
-                let mut vars = self.vars.borrow_mut();
-                if let Err(i) = vars.binary_search(&var) {
-                    vars.insert(i, var);
+                if let Err(i) = self.vars.binary_search(&var) {
+                    self.vars.insert(i, var);
                 }
                 None
             }
 
             fn visit_poly_type(&mut self, typ: &PolyType) -> Option<PolyType> {
                 typ.expr.visit(self);
-                self.vars.borrow_mut().retain(|v| !typ.vars.contains(v));
+                self.vars.retain(|v| !typ.vars.contains(v));
                 None
             }
         }
@@ -259,7 +258,7 @@ pub trait Substitutable {
 
         self.visit(&mut free_vars);
 
-        free_vars.vars.into_inner()
+        free_vars.vars
     }
 
     /// Returns `Self` but with "fresh" type variables
@@ -385,7 +384,7 @@ impl Substituter for Substitution {
 
 pub(crate) struct BindVars<'a> {
     sub: &'a mut dyn Substituter,
-    unbound_vars: RefCell<SubstitutionMap>,
+    unbound_vars: SubstitutionMap,
 }
 
 impl<'a> BindVars<'a> {
@@ -402,9 +401,8 @@ impl Substituter for BindVars<'_> {
         Some(if let Some(typ) = self.sub.try_apply(var) {
             typ
         } else {
-            let mut unbound_vars = self.unbound_vars.borrow_mut();
-            let new_var = Tvar(unbound_vars.len() as u64);
-            unbound_vars
+            let new_var = Tvar(self.unbound_vars.len() as u64);
+            self.unbound_vars
                 .entry(var)
                 .or_insert_with(|| MonoType::BoundVar(new_var))
                 .clone()
