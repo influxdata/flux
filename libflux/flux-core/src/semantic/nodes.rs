@@ -1754,8 +1754,7 @@ impl RegexpLit {
 pub struct StringLit {
     pub loc: ast::SourceLocation,
     pub value: String,
-    /// The (label) type if label types are enabled. Should be removed once label polymorphism are
-    /// stabilized
+    /// The (label) type if label types are enabled.
     pub typ: Option<MonoType>,
 }
 
