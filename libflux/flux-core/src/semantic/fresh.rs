@@ -1,7 +1,5 @@
 //! "Fresh" type variable identifiers.
 
-use std::cell::{Cell, RefCell};
-
 use crate::semantic::{
     sub::{Substitutable, Substituter},
     types::{MonoType, Tvar, TvarMap},
@@ -10,15 +8,15 @@ use crate::semantic::{
 /// A struct used for incrementing type variable identifiers.
 #[derive(Default)]
 pub struct Fresher {
-    fresher: Cell<u64>,
-    sub: RefCell<TvarMap>,
+    fresher: u64,
+    sub: TvarMap,
 }
 
 impl Fresher {
     /// Takes a `Fresher` and returns an incremented [`Tvar`].
     pub fn fresh(&mut self) -> Tvar {
-        let u = self.fresher.get();
-        self.fresher.set(u + 1);
+        let u = self.fresher;
+        self.fresher += 1;
         Tvar(u)
     }
 }
@@ -26,7 +24,7 @@ impl Fresher {
 impl From<u64> for Fresher {
     fn from(id: u64) -> Self {
         Fresher {
-            fresher: Cell::new(id),
+            fresher: id,
             sub: Default::default(),
         }
     }
@@ -34,25 +32,23 @@ impl From<u64> for Fresher {
 
 impl Substituter for Fresher {
     fn try_apply(&mut self, var: Tvar) -> Option<MonoType> {
-        let fresher = &self.fresher;
-        Some(MonoType::Var(
-            *self.sub.borrow_mut().entry(var).or_insert_with(|| {
-                let u = fresher.get();
-                fresher.set(u + 1);
-                Tvar(u)
-            }),
-        ))
+        let fresher = &mut self.fresher;
+        Some(MonoType::Var(*self.sub.entry(var).or_insert_with(|| {
+            let u = *fresher;
+            *fresher += 1;
+            Tvar(u)
+        })))
     }
 
     fn try_apply_bound(&mut self, var: Tvar) -> Option<MonoType> {
-        let fresher = &self.fresher;
-        Some(MonoType::BoundVar(
-            *self.sub.borrow_mut().entry(var).or_insert_with(|| {
-                let u = fresher.get();
-                fresher.set(u + 1);
+        let fresher = &mut self.fresher;
+        Some(MonoType::BoundVar(*self.sub.entry(var).or_insert_with(
+            || {
+                let u = *fresher;
+                *fresher += 1;
                 Tvar(u)
-            }),
-        ))
+            },
+        )))
     }
 
     fn visit_type(&mut self, typ: &MonoType) -> Option<MonoType> {
