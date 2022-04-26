@@ -261,11 +261,6 @@ impl<'a> Node<'a> {
 ///       for nodes to persist outside the scope of the walk function and to
 ///       be cleaned up once all owners have let go of the reference.
 ///
-/// Implementors of the Visitor trait will typically wrap themselves in Rc and RefCell
-/// in order to allow for:
-///   - mutable state, accessed from `Rc::borrow_mut()`
-///   - multiple ownership (required so that walking can share ownership with caller)
-///
 /// See example with `FuncVisitor` below in this file.
 pub trait Visitor<'a>: Sized {
     /// Visit is called for a node.
