@@ -34,7 +34,7 @@ impl fmt::Display for Environment<'_> {
 }
 
 impl Substitutable for Environment<'_> {
-    fn walk(&self, sub: &dyn Substituter) -> Option<Self> {
+    fn walk(&self, sub: &mut (impl ?Sized + Substituter)) -> Option<Self> {
         match (self.readwrite, &self.parent) {
             // This is a performance optimization where false implies
             // this is the top-level of the type environment and apply

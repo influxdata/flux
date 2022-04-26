@@ -98,7 +98,7 @@ impl Matcher<Error> for Subsume {
                         }
                     }
                     maybe_label
-                        .visit(&ReplaceLabels)
+                        .visit(&mut ReplaceLabels)
                         .map(Cow::Owned)
                         .unwrap_or_else(|| Cow::Borrowed(maybe_label))
                 }
@@ -241,11 +241,11 @@ impl PartialEq for PolyType {
 }
 
 impl Substitutable for PolyType {
-    fn visit(&self, sub: &dyn Substituter) -> Option<Self> {
+    fn visit(&self, sub: &mut (impl ?Sized + Substituter)) -> Option<Self> {
         sub.visit_poly_type(self)
     }
 
-    fn walk(&self, sub: &dyn Substituter) -> Option<Self> {
+    fn walk(&self, sub: &mut (impl ?Sized + Substituter)) -> Option<Self> {
         // `vars` defines new distinct variables for `expr` so any substitutions applied on a
         // variable named the same must not be applied in `expr`
         self.expr.visit(sub).map(|expr| PolyType {
@@ -404,7 +404,7 @@ impl fmt::Display for Error {
 }
 
 impl Substitutable for Error {
-    fn walk(&self, sub: &dyn Substituter) -> Option<Self> {
+    fn walk(&self, sub: &mut (impl ?Sized + Substituter)) -> Option<Self> {
         match self {
             Error::CannotUnify { exp, act } => {
                 apply2(exp, act, sub).map(|(exp, act)| Error::CannotUnify { exp, act })
@@ -493,7 +493,7 @@ impl FromStr for Kind {
 pub type Ptr<T> = std::sync::Arc<T>;
 
 impl<T: Substitutable> Substitutable for Ptr<T> {
-    fn walk(&self, sub: &dyn Substituter) -> Option<Self> {
+    fn walk(&self, sub: &mut (impl ?Sized + Substituter)) -> Option<Self> {
         T::visit(self, sub).map(Ptr::new)
     }
 }
@@ -776,14 +776,14 @@ impl BuiltinType {
 }
 
 impl Substitutable for MonoType {
-    fn visit(&self, sub: &dyn Substituter) -> Option<Self> {
+    fn visit(&self, sub: &mut (impl ?Sized + Substituter)) -> Option<Self> {
         match sub.visit_type(self) {
             Some(typ) => Some(typ.walk(sub).unwrap_or(typ)),
             None => self.walk(sub),
         }
     }
 
-    fn walk(&self, sub: &dyn Substituter) -> Option<Self> {
+    fn walk(&self, sub: &mut (impl ?Sized + Substituter)) -> Option<Self> {
         match self {
             MonoType::Error
             | MonoType::Builtin(_)
@@ -1188,7 +1188,7 @@ impl Tvar {
 }
 
 impl Substitutable for Collection {
-    fn walk(&self, sub: &dyn Substituter) -> Option<Self> {
+    fn walk(&self, sub: &mut (impl ?Sized + Substituter)) -> Option<Self> {
         self.arg.visit(sub).map(|arg| Collection {
             collection: self.collection,
             arg,
@@ -1237,7 +1237,7 @@ pub struct Dictionary {
 }
 
 impl Substitutable for Dictionary {
-    fn walk(&self, sub: &dyn Substituter) -> Option<Self> {
+    fn walk(&self, sub: &mut (impl ?Sized + Substituter)) -> Option<Self> {
         apply2(&self.key, &self.val, sub).map(|(key, val)| Dictionary { key, val })
     }
 }
@@ -1327,7 +1327,7 @@ impl cmp::PartialEq for Record {
 }
 
 impl Substitutable for Record {
-    fn walk(&self, sub: &dyn Substituter) -> Option<Self> {
+    fn walk(&self, sub: &mut (impl ?Sized + Substituter)) -> Option<Self> {
         match self {
             Record::Empty => None,
             Record::Extension { head, tail } => {
@@ -1656,7 +1656,7 @@ impl From<Label> for RecordLabel {
 }
 
 impl Substitutable for RecordLabel {
-    fn walk(&self, sub: &dyn Substituter) -> Option<Self> {
+    fn walk(&self, sub: &mut (impl ?Sized + Substituter)) -> Option<Self> {
         match self {
             Self::Variable(tvr) => sub.try_apply(*tvr).and_then(|new| match new {
                 MonoType::Label(l) => Some(Self::Concrete(l)),
@@ -1838,7 +1838,7 @@ where
     K: Substitutable + Clone,
     V: Substitutable + Clone,
 {
-    fn walk(&self, sub: &dyn Substituter) -> Option<Self> {
+    fn walk(&self, sub: &mut (impl ?Sized + Substituter)) -> Option<Self> {
         let Self { k, v } = self;
         apply2(k, v, sub).map(|(k, v)| Property { k, v })
     }
@@ -1915,7 +1915,7 @@ impl fmt::Display for Function {
 }
 
 impl<K: Eq + Hash + Clone> Substitutable for PolyTypeHashMap<K> {
-    fn walk(&self, sub: &dyn Substituter) -> Option<Self> {
+    fn walk(&self, sub: &mut (impl ?Sized + Substituter)) -> Option<Self> {
         merge_collect(
             &mut (),
             self.unordered_iter(),
@@ -1926,7 +1926,7 @@ impl<K: Eq + Hash + Clone> Substitutable for PolyTypeHashMap<K> {
 }
 
 impl<K: Ord + Clone, T: Substitutable + Clone> Substitutable for SemanticMap<K, T> {
-    fn walk(&self, sub: &dyn Substituter) -> Option<Self> {
+    fn walk(&self, sub: &mut (impl ?Sized + Substituter)) -> Option<Self> {
         merge_collect(
             &mut (),
             self,
@@ -1937,7 +1937,7 @@ impl<K: Ord + Clone, T: Substitutable + Clone> Substitutable for SemanticMap<K, 
 }
 
 impl<T: Substitutable> Substitutable for Option<T> {
-    fn walk(&self, sub: &dyn Substituter) -> Option<Self> {
+    fn walk(&self, sub: &mut (impl ?Sized + Substituter)) -> Option<Self> {
         match self {
             None => None,
             Some(t) => t.visit(sub).map(Some),
@@ -1946,7 +1946,7 @@ impl<T: Substitutable> Substitutable for Option<T> {
 }
 
 impl Substitutable for Function {
-    fn walk(&self, sub: &dyn Substituter) -> Option<Self> {
+    fn walk(&self, sub: &mut (impl ?Sized + Substituter)) -> Option<Self> {
         let Function {
             req,
             opt,
@@ -2244,8 +2244,8 @@ where
             }
         }
 
-        let max = MaxTvars::default();
-        self.visit(&max);
+        let mut max = MaxTvars::default();
+        self.visit(&mut max);
         max.max.into_inner()
     }
 }

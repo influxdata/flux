@@ -183,7 +183,7 @@ impl Substitution {
 /// A type is `Substitutable` if a substitution can be applied to it.
 pub trait Substitutable {
     /// Apply a substitution to a type variable.
-    fn apply(self, sub: &dyn Substituter) -> Self
+    fn apply(self, sub: &mut (impl ?Sized + Substituter)) -> Self
     where
         Self: Sized,
     {
@@ -191,7 +191,7 @@ pub trait Substitutable {
     }
 
     /// Apply a substitution to a type variable.
-    fn apply_mut(&mut self, sub: &dyn Substituter)
+    fn apply_mut(&mut self, sub: &mut (impl ?Sized + Substituter))
     where
         Self: Sized,
     {
@@ -201,7 +201,7 @@ pub trait Substitutable {
     }
 
     /// Apply a substitution to a type variable.
-    fn apply_cow(&self, sub: &dyn Substituter) -> Cow<'_, Self>
+    fn apply_cow(&self, sub: &mut (impl ?Sized + Substituter)) -> Cow<'_, Self>
     where
         Self: Clone + Sized,
     {
@@ -213,7 +213,7 @@ pub trait Substitutable {
 
     /// Apply a substitution to a type variable. Should return `None` if there was nothing to apply
     /// which allows for optimizations.
-    fn visit(&self, sub: &dyn Substituter) -> Option<Self>
+    fn visit(&self, sub: &mut (impl ?Sized + Substituter)) -> Option<Self>
     where
         Self: Sized,
     {
@@ -222,7 +222,7 @@ pub trait Substitutable {
 
     /// Apply a substitution to a type variable. Should return `None` if there was nothing to apply
     /// which allows for optimizations.
-    fn walk(&self, sub: &dyn Substituter) -> Option<Self>
+    fn walk(&self, sub: &mut (impl ?Sized + Substituter)) -> Option<Self>
     where
         Self: Sized;
 
@@ -245,27 +245,23 @@ pub trait Substitutable {
                 None
             }
 
-            fn visit_poly_type_spec(
-                &self,
-                sub: &dyn Substituter,
-                typ: &PolyType,
-            ) -> Option<PolyType> {
-                typ.expr.visit(sub);
+            fn visit_poly_type(&mut self, typ: &PolyType) -> Option<PolyType> {
+                typ.expr.visit(self);
                 self.vars.borrow_mut().retain(|v| !typ.vars.contains(v));
                 None
             }
         }
 
-        let free_vars = FreeVars::default();
+        let mut free_vars = FreeVars::default();
 
-        self.visit(&free_vars);
+        self.visit(&mut free_vars);
 
         free_vars.vars.into_inner()
     }
 }
 
 impl Substitutable for String {
-    fn walk(&self, _sub: &dyn Substituter) -> Option<Self> {
+    fn walk(&self, _sub: &mut (impl ?Sized + Substituter)) -> Option<Self> {
         None
     }
 }
@@ -274,7 +270,7 @@ impl<T> Substitutable for Box<T>
 where
     T: Substitutable,
 {
-    fn walk(&self, sub: &dyn Substituter) -> Option<Self> {
+    fn walk(&self, sub: &mut (impl ?Sized + Substituter)) -> Option<Self> {
         T::visit(self, sub).map(Box::new)
     }
 }
@@ -291,12 +287,10 @@ pub trait Substituter {
         None
     }
 
-    // Hack to allow `visit_poly_type_spec` to be implemented both here as a default and in `impl`
-    // blocks. `self` and `sub` should refer to the same object, but passing `sub` lets us call
-    // `walk` without needing a `Self: Sized` bound.
-    #[doc(hidden)]
-    fn visit_poly_type_spec(&self, sub: &dyn Substituter, typ: &PolyType) -> Option<PolyType> {
-        typ.walk(sub)
+    /// Apply a substitution to a polytype, returning None if there is no substitution for the
+    /// type.
+    fn visit_poly_type(&mut self, typ: &PolyType) -> Option<PolyType> {
+        typ.walk(self)
     }
 
     /// Apply a substitution to a type, returning None if there is no substitution for the
@@ -307,14 +301,6 @@ pub trait Substituter {
             MonoType::BoundVar(var) => self.try_apply_bound(var),
             _ => None,
         }
-    }
-}
-
-impl<'a> dyn Substituter + 'a {
-    /// Apply a substitution to a polytype, returning None if there is no substitution for the
-    /// type.
-    pub fn visit_poly_type(&self, typ: &PolyType) -> Option<PolyType> {
-        self.visit_poly_type_spec(self, typ)
     }
 }
 
@@ -332,15 +318,15 @@ impl Substituter for SubstitutionMap {
         self.get(&var).cloned()
     }
 
-    fn visit_poly_type_spec(&self, sub: &dyn Substituter, typ: &PolyType) -> Option<PolyType> {
+    fn visit_poly_type(&mut self, typ: &PolyType) -> Option<PolyType> {
         // `vars` defines new distinct variables for `expr` so any substitutions applied on a
         // variable named the same must not be applied in `expr`
         typ.expr
-            .visit(&|var| {
+            .visit(&mut |var| {
                 if typ.vars.contains(&var) {
                     None
                 } else {
-                    sub.try_apply(var)
+                    self.try_apply(var)
                 }
             })
             .map(|expr| PolyType {
@@ -356,15 +342,15 @@ impl Substituter for Substitution {
         Substitution::try_apply(self, var)
     }
 
-    fn visit_poly_type_spec(&self, sub: &dyn Substituter, typ: &PolyType) -> Option<PolyType> {
+    fn visit_poly_type(&mut self, typ: &PolyType) -> Option<PolyType> {
         // `vars` defines new distinct variables for `expr` so any substitutions applied on a
         // variable named the same must not be applied in `expr`
         typ.expr
-            .visit(&|var| {
+            .visit(&mut |var| {
                 if typ.vars.contains(&var) {
                     None
                 } else {
-                    sub.try_apply(var)
+                    self.try_apply(var)
                 }
             })
             .map(|expr| PolyType {
@@ -409,7 +395,7 @@ pub(crate) fn apply4<A, B, C, D>(
     b: &B,
     c: &C,
     d: &D,
-    sub: &dyn Substituter,
+    sub: &mut (impl ?Sized + Substituter),
 ) -> Option<(A, B, C, D)>
 where
     A: Substitutable + Clone,
@@ -429,7 +415,12 @@ where
     )
 }
 
-pub(crate) fn apply3<A, B, C>(a: &A, b: &B, c: &C, sub: &dyn Substituter) -> Option<(A, B, C)>
+pub(crate) fn apply3<A, B, C>(
+    a: &A,
+    b: &B,
+    c: &C,
+    sub: &mut (impl ?Sized + Substituter),
+) -> Option<(A, B, C)>
 where
     A: Substitutable + Clone,
     B: Substitutable + Clone,
@@ -438,7 +429,7 @@ where
     merge3(a, a.visit(sub), b, b.visit(sub), c, c.visit(sub))
 }
 
-pub(crate) fn apply2<A, B>(a: &A, b: &B, sub: &dyn Substituter) -> Option<(A, B)>
+pub(crate) fn apply2<A, B>(a: &A, b: &B, sub: &mut (impl ?Sized + Substituter)) -> Option<(A, B)>
 where
     A: Substitutable + Clone,
     B: Substitutable + Clone,

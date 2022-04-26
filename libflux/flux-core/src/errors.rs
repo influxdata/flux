@@ -211,7 +211,7 @@ impl<E> Substitutable for Located<E>
 where
     E: Substitutable,
 {
-    fn walk(&self, sub: &dyn Substituter) -> Option<Self> {
+    fn walk(&self, sub: &mut (impl ?Sized + Substituter)) -> Option<Self> {
         self.error.visit(sub).map(|error| Located {
             location: self.location.clone(),
             error,

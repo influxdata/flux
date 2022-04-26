@@ -110,7 +110,7 @@ pub struct Error {
 impl std::error::Error for Error {}
 
 impl Substitutable for Error {
-    fn walk(&self, sub: &dyn Substituter) -> Option<Self> {
+    fn walk(&self, sub: &mut (impl ?Sized + Substituter)) -> Option<Self> {
         self.err.visit(sub).map(|err| Error {
             loc: self.loc.clone(),
             err,
@@ -218,11 +218,11 @@ pub(crate) fn temporary_generalize(
         }
     }
 
-    let generalize = Generalize {
+    let mut generalize = Generalize {
         env_free_vars: env.free_vars(),
         vars: Default::default(),
     };
-    let t = t.apply(&generalize);
+    let t = t.apply(&mut generalize);
 
     let vars = generalize.vars.into_inner();
 
@@ -278,12 +278,12 @@ pub fn generalize(env: &Environment, sub: &mut Substitution, t: MonoType) -> Pol
         }
     }
 
-    let generalize = Generalize {
+    let mut generalize = Generalize {
         env_free_vars: env.free_vars(),
         sub,
         vars: Default::default(),
     };
-    let t = t.apply(&generalize);
+    let t = t.apply(&mut generalize);
 
     let vars = generalize.vars.into_inner();
 
@@ -346,5 +346,5 @@ pub fn instantiate(
     }
 
     // Instantiate monotype using new fresh type variables
-    (poly.expr.apply(&InstantiationMap(sub)), constraints)
+    (poly.expr.apply(&mut InstantiationMap(sub)), constraints)
 }
