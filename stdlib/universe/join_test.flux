@@ -98,6 +98,7 @@ testcase join_repro_4692 {
 
     testing.diff(want: want, got: got)
 }
+
 testcase join_repro_4692_2 {
     xs = array.from(rows: [{id: 1, x: 1, v: "hi"}, {id: 2, x: 2, v: "hi"}, {id: 3, x: 3, v: "hi"}])
     ys = array.from(rows: [{id: 1, y: 1}, {id: 2, y: 2}, {id: 3, y: 3}])
@@ -125,6 +126,47 @@ testcase join_repro_4692_2 {
             ],
         )
             |> map(fn: (r) => getById(id: r._value))
+
+    want =
+        array.from(rows: [{x: 1, y: 1, v: "hi"}, {x: 2, y: 2, v: "hey"}, {x: 2, y: 2, v: "hey"}, {x: 3, y: 3, v: "hi"}])
+
+    testing.diff(want: want, got: got)
+}
+
+testcase join_repro_4692_3 {
+    xs = array.from(rows: [{id: 1, x: 1, v: "hi"}, {id: 2, x: 2, v: "hi"}, {id: 3, x: 3, v: "hi"}])
+    ys = array.from(rows: [{id: 1, y: 1}, {id: 2, y: 2}, {id: 3, y: 3}])
+
+    getById = (id, a, b) => {
+        zs =
+            if id == 2 then
+                a
+            else
+                b
+
+        r = zs |> filter(fn: (r) => r.id == id) |> findRecord(fn: (key) => true, idx: 0)
+
+        return {x: r.x, y: r.y, v: r.v}
+    }
+
+    got =
+        array.from(
+            rows: [
+                {_value: 1},
+                {_value: 2},
+                // repeated lookups for id=2 should be okay...
+                {_value: 2},
+                {_value: 3},
+            ],
+        )
+            |> map(
+                fn: (r) => {
+                    a = join(tables: {xs: xs |> map(fn: (r) => ({r with v: "hey"})), ys: ys}, on: ["id"])
+                    b = join(tables: {xs: xs, ys: ys}, on: ["id"])
+
+                    return getById(id: r._value, a: a, b: b)
+                },
+            )
 
     want =
         array.from(rows: [{x: 1, y: 1, v: "hi"}, {x: 2, y: 2, v: "hey"}, {x: 2, y: 2, v: "hey"}, {x: 3, y: 3, v: "hi"}])
