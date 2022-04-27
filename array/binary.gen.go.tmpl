@@ -1,32 +1,71 @@
 package array
 
 import (
+    "math"
+
     "github.com/apache/arrow/go/v7/arrow/memory"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/internal/errors"
 )
 
-{{range .}}
-{{if ne .Name "Boolean"}}
+{{range $index, $op := .}}
+{{range $index, $type := .Types}}
 
-func {{.Name}}Add(l, r *{{.Name}}, mem memory.Allocator) (*{{.Name}}, error) {
+{{if eq $op.Op "^"}}
+
+func {{$type}}{{$op.Name}}(l, r *{{$type}}, mem memory.Allocator) (*Float, error) {
 	n := l.Len()
 	if n != r.Len() {
 		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
 	}
 
-	b := New{{.Name}}Builder(mem)
+
+	b := NewFloatBuilder(mem)
 	b.Resize(n)
 	for i := 0; i < n; i++ {
 		if l.IsValid(i) && r.IsValid(i) {
-			b.Append(l.Value(i) + r.Value(i))
+			b.Append(math.Pow(float64(l.Value(i)), float64(r.Value(i))))
 		} else {
 			b.AppendNull()
 		}
 	}
-    a := b.New{{.Name}}Array()
+    a := b.NewFloatArray()
     b.Release()
 	return a, nil
 }
+
+{{else}}
+
+
+func {{$type}}{{$op.Name}}(l, r *{{$type}}, mem memory.Allocator) (*{{$type}}, error) { n := l.Len()
+	if n != r.Len() {
+		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
+	}
+
+
+	b := New{{$type}}Builder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+		if l.IsValid(i) && r.IsValid(i) {
+            {{if and (eq $op.Op "%") (eq $type "Float")}}
+
+			b.Append(math.Mod(l.Value(i), r.Value(i)))
+
+            {{else}}
+
+			b.Append(l.Value(i) {{$op.Op}} r.Value(i))
+
+            {{end}}
+		} else {
+			b.AppendNull()
+		}
+	}
+    a := b.New{{$type}}Array()
+    b.Release()
+	return a, nil
+}
+
+{{end}}
+
 {{end}}
 {{end}}

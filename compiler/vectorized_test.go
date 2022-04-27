@@ -3,6 +3,7 @@ package compiler_test
 import (
 	"context"
 	"fmt"
+	"math"
 	"testing"
 
 	arrow "github.com/apache/arrow/go/v7/arrow/memory"
@@ -159,7 +160,7 @@ func TestVectorizedFns(t *testing.T) {
 		},
 	}
 
-	operatorTests := []struct {
+	additionTests := []struct {
 		inType semantic.MonoType
 		input  map[string]interface{}
 		want   map[string]interface{}
@@ -214,7 +215,7 @@ func TestVectorizedFns(t *testing.T) {
 		},
 	}
 
-	for _, test := range operatorTests {
+	for _, test := range additionTests {
 		testCases = append(testCases, TestCase{
 			name:         fmt.Sprintf("addition expression %s", test.inType.String()),
 			fn:           `(r) => ({c: r.a + r.b})`,
@@ -230,6 +231,104 @@ func TestVectorizedFns(t *testing.T) {
 
 			flagger: executetest.TestFlagger{
 				fluxfeature.VectorizeAddition().Key(): true,
+			},
+		})
+	}
+
+	operatorTests := []struct {
+		operator  string
+		input     [][2]int64
+		transform func(int64, int64) interface{}
+	}{
+		{
+			operator: "-",
+			input: [][2]int64{
+				{1, 2},
+				{10, 5},
+				{112487, 66547},
+			},
+			transform: func(l, r int64) interface{} {
+				return l - r
+			},
+		},
+		{
+			operator: "*",
+			input: [][2]int64{
+				{1, 2},
+				{10, 5},
+				{112487, 66547},
+			},
+			transform: func(l, r int64) interface{} {
+				return l * r
+			},
+		},
+		{
+			operator: "/",
+			input: [][2]int64{
+				{1, 2},
+				{10, 5},
+				{112487, 66547},
+			},
+			transform: func(l, r int64) interface{} {
+				return l / r
+			},
+		},
+		{
+			operator: "%",
+			input: [][2]int64{
+				{1, 2},
+				{10, 5},
+				{112487, 66547},
+			},
+			transform: func(l, r int64) interface{} {
+				return l % r
+			},
+		},
+		{
+			operator: "^",
+			input: [][2]int64{
+				{1, 2},
+				{10, 5},
+				{112487, 66547},
+			},
+			transform: func(l, r int64) interface{} {
+				return math.Pow(float64(l), float64(r))
+			},
+		},
+	}
+	for _, test := range operatorTests {
+		a := []interface{}{}
+		b := []interface{}{}
+		output := []interface{}{}
+		for _, item := range test.input {
+			a = append(a, item[0])
+			b = append(b, item[1])
+			output = append(output, test.transform(item[0], item[1]))
+		}
+
+		testCases = append(testCases, TestCase{
+			name:         fmt.Sprintf("%s expression %s", test.operator, semantic.BasicInt.String()),
+			fn:           fmt.Sprintf("(r) => ({c: r.a %s r.b})", test.operator),
+			vectorizable: true,
+			inType: semantic.NewObjectType([]semantic.PropertyType{
+				{Key: []byte("r"), Value: semantic.NewObjectType([]semantic.PropertyType{
+					{Key: []byte("a"), Value: semantic.NewVectorType(semantic.BasicInt)},
+					{Key: []byte("b"), Value: semantic.NewVectorType(semantic.BasicInt)},
+				})},
+			}),
+			input: map[string]interface{}{
+				"r": map[string]interface{}{
+					"a": a,
+					"b": b,
+				},
+			},
+			want: map[string]interface{}{
+				"c": output,
+			},
+
+			flagger: executetest.TestFlagger{
+				fluxfeature.VectorizeAddition().Key():  true,
+				fluxfeature.VectorizeOperators().Key(): true,
 			},
 		})
 	}

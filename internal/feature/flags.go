@@ -161,6 +161,18 @@ func VectorizeAddition() BoolFlag {
 	return vectorizeAddition
 }
 
+var vectorizeOperators = feature.MakeBoolFlag(
+	"Vectorize operators",
+	"vectorizeOperators",
+	"Markus Westerlind",
+	false,
+)
+
+// VectorizeOperators - Vectorizes all operator expressions inside map
+func VectorizeOperators() BoolFlag {
+	return vectorizeOperators
+}
+
 // Inject will inject the Flagger into the context.
 func Inject(ctx context.Context, flagger Flagger) context.Context {
 	return feature.Inject(ctx, flagger)
@@ -179,6 +191,7 @@ var all = []Flag{
 	optimizeStateTracking,
 	setFinalizerMemoryTracking,
 	vectorizeAddition,
+	vectorizeOperators,
 }
 
 var byKey = map[string]Flag{
@@ -194,6 +207,7 @@ var byKey = map[string]Flag{
 	"optimizeStateTracking":            optimizeStateTracking,
 	"setFinalizerMemoryTracking":       setFinalizerMemoryTracking,
 	"vectorizeAddition":                vectorizeAddition,
+	"vectorizeOperators":               vectorizeOperators,
 }
 
 // Flags returns all feature flags.

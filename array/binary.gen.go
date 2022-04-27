@@ -7,6 +7,8 @@
 package array
 
 import (
+	"math"
+
 	"github.com/apache/arrow/go/v7/arrow/memory"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/internal/errors"
@@ -22,7 +24,9 @@ func IntAdd(l, r *Int, mem memory.Allocator) (*Int, error) {
 	b.Resize(n)
 	for i := 0; i < n; i++ {
 		if l.IsValid(i) && r.IsValid(i) {
+
 			b.Append(l.Value(i) + r.Value(i))
+
 		} else {
 			b.AppendNull()
 		}
@@ -42,7 +46,9 @@ func UintAdd(l, r *Uint, mem memory.Allocator) (*Uint, error) {
 	b.Resize(n)
 	for i := 0; i < n; i++ {
 		if l.IsValid(i) && r.IsValid(i) {
+
 			b.Append(l.Value(i) + r.Value(i))
+
 		} else {
 			b.AppendNull()
 		}
@@ -62,7 +68,9 @@ func FloatAdd(l, r *Float, mem memory.Allocator) (*Float, error) {
 	b.Resize(n)
 	for i := 0; i < n; i++ {
 		if l.IsValid(i) && r.IsValid(i) {
+
 			b.Append(l.Value(i) + r.Value(i))
+
 		} else {
 			b.AppendNull()
 		}
@@ -82,12 +90,338 @@ func StringAdd(l, r *String, mem memory.Allocator) (*String, error) {
 	b.Resize(n)
 	for i := 0; i < n; i++ {
 		if l.IsValid(i) && r.IsValid(i) {
+
 			b.Append(l.Value(i) + r.Value(i))
+
 		} else {
 			b.AppendNull()
 		}
 	}
 	a := b.NewStringArray()
+	b.Release()
+	return a, nil
+}
+
+func IntSub(l, r *Int, mem memory.Allocator) (*Int, error) {
+	n := l.Len()
+	if n != r.Len() {
+		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
+	}
+
+	b := NewIntBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+		if l.IsValid(i) && r.IsValid(i) {
+
+			b.Append(l.Value(i) - r.Value(i))
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewIntArray()
+	b.Release()
+	return a, nil
+}
+
+func UintSub(l, r *Uint, mem memory.Allocator) (*Uint, error) {
+	n := l.Len()
+	if n != r.Len() {
+		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
+	}
+
+	b := NewUintBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+		if l.IsValid(i) && r.IsValid(i) {
+
+			b.Append(l.Value(i) - r.Value(i))
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewUintArray()
+	b.Release()
+	return a, nil
+}
+
+func FloatSub(l, r *Float, mem memory.Allocator) (*Float, error) {
+	n := l.Len()
+	if n != r.Len() {
+		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
+	}
+
+	b := NewFloatBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+		if l.IsValid(i) && r.IsValid(i) {
+
+			b.Append(l.Value(i) - r.Value(i))
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewFloatArray()
+	b.Release()
+	return a, nil
+}
+
+func IntMul(l, r *Int, mem memory.Allocator) (*Int, error) {
+	n := l.Len()
+	if n != r.Len() {
+		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
+	}
+
+	b := NewIntBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+		if l.IsValid(i) && r.IsValid(i) {
+
+			b.Append(l.Value(i) * r.Value(i))
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewIntArray()
+	b.Release()
+	return a, nil
+}
+
+func UintMul(l, r *Uint, mem memory.Allocator) (*Uint, error) {
+	n := l.Len()
+	if n != r.Len() {
+		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
+	}
+
+	b := NewUintBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+		if l.IsValid(i) && r.IsValid(i) {
+
+			b.Append(l.Value(i) * r.Value(i))
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewUintArray()
+	b.Release()
+	return a, nil
+}
+
+func FloatMul(l, r *Float, mem memory.Allocator) (*Float, error) {
+	n := l.Len()
+	if n != r.Len() {
+		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
+	}
+
+	b := NewFloatBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+		if l.IsValid(i) && r.IsValid(i) {
+
+			b.Append(l.Value(i) * r.Value(i))
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewFloatArray()
+	b.Release()
+	return a, nil
+}
+
+func IntDiv(l, r *Int, mem memory.Allocator) (*Int, error) {
+	n := l.Len()
+	if n != r.Len() {
+		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
+	}
+
+	b := NewIntBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+		if l.IsValid(i) && r.IsValid(i) {
+
+			b.Append(l.Value(i) / r.Value(i))
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewIntArray()
+	b.Release()
+	return a, nil
+}
+
+func UintDiv(l, r *Uint, mem memory.Allocator) (*Uint, error) {
+	n := l.Len()
+	if n != r.Len() {
+		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
+	}
+
+	b := NewUintBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+		if l.IsValid(i) && r.IsValid(i) {
+
+			b.Append(l.Value(i) / r.Value(i))
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewUintArray()
+	b.Release()
+	return a, nil
+}
+
+func FloatDiv(l, r *Float, mem memory.Allocator) (*Float, error) {
+	n := l.Len()
+	if n != r.Len() {
+		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
+	}
+
+	b := NewFloatBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+		if l.IsValid(i) && r.IsValid(i) {
+
+			b.Append(l.Value(i) / r.Value(i))
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewFloatArray()
+	b.Release()
+	return a, nil
+}
+
+func IntMod(l, r *Int, mem memory.Allocator) (*Int, error) {
+	n := l.Len()
+	if n != r.Len() {
+		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
+	}
+
+	b := NewIntBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+		if l.IsValid(i) && r.IsValid(i) {
+
+			b.Append(l.Value(i) % r.Value(i))
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewIntArray()
+	b.Release()
+	return a, nil
+}
+
+func UintMod(l, r *Uint, mem memory.Allocator) (*Uint, error) {
+	n := l.Len()
+	if n != r.Len() {
+		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
+	}
+
+	b := NewUintBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+		if l.IsValid(i) && r.IsValid(i) {
+
+			b.Append(l.Value(i) % r.Value(i))
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewUintArray()
+	b.Release()
+	return a, nil
+}
+
+func FloatMod(l, r *Float, mem memory.Allocator) (*Float, error) {
+	n := l.Len()
+	if n != r.Len() {
+		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
+	}
+
+	b := NewFloatBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+		if l.IsValid(i) && r.IsValid(i) {
+
+			b.Append(math.Mod(l.Value(i), r.Value(i)))
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewFloatArray()
+	b.Release()
+	return a, nil
+}
+
+func IntPow(l, r *Int, mem memory.Allocator) (*Float, error) {
+	n := l.Len()
+	if n != r.Len() {
+		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
+	}
+
+	b := NewFloatBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+		if l.IsValid(i) && r.IsValid(i) {
+			b.Append(math.Pow(float64(l.Value(i)), float64(r.Value(i))))
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewFloatArray()
+	b.Release()
+	return a, nil
+}
+
+func UintPow(l, r *Uint, mem memory.Allocator) (*Float, error) {
+	n := l.Len()
+	if n != r.Len() {
+		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
+	}
+
+	b := NewFloatBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+		if l.IsValid(i) && r.IsValid(i) {
+			b.Append(math.Pow(float64(l.Value(i)), float64(r.Value(i))))
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewFloatArray()
+	b.Release()
+	return a, nil
+}
+
+func FloatPow(l, r *Float, mem memory.Allocator) (*Float, error) {
+	n := l.Len()
+	if n != r.Len() {
+		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
+	}
+
+	b := NewFloatBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+		if l.IsValid(i) && r.IsValid(i) {
+			b.Append(math.Pow(float64(l.Value(i)), float64(r.Value(i))))
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewFloatArray()
 	b.Release()
 	return a, nil
 }

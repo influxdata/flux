@@ -372,6 +372,7 @@ version = "0.154.0"
 dependencies = [
  "anyhow",
  "criterion",
+ "env_logger",
  "expect-test",
  "flatbuffers",
  "flux-core",

@@ -2,21 +2,93 @@
   {
     "Name": "Int",
     "ArrowType": "Int64",
-    "PrimitiveType": "int64"
+    "PrimitiveType": "int64",
+    "Operators": [
+        {
+            "Name": "Add",
+            "Op": "+"
+        },
+        {
+            "Name": "Sub",
+            "Op": "-"
+        },
+        {
+            "Name": "Mul",
+            "Op": "*"
+        },
+        {
+            "Name": "Div",
+            "Op": "-"
+        },
+        {
+            "Name": "Mod",
+            "Op": "%"
+        }
+    ]
   },
   {
     "Name": "Uint",
     "ArrowType": "Uint64",
-    "PrimitiveType": "uint64"
+    "PrimitiveType": "uint64",
+    "Operators": [
+        {
+            "Name": "Add",
+            "Op": "+"
+        },
+        {
+            "Name": "Sub",
+            "Op": "-"
+        },
+        {
+            "Name": "Mul",
+            "Op": "*"
+        },
+        {
+            "Name": "Div",
+            "Op": "-"
+        },
+        {
+            "Name": "Mod",
+            "Op": "%"
+        }
+    ]
   },
   {
     "Name": "Float",
     "ArrowType": "Float64",
-    "PrimitiveType": "float64"
+    "PrimitiveType": "float64",
+    "Operators": [
+        {
+            "Name": "Add",
+            "Op": "+"
+        },
+        {
+            "Name": "Sub",
+            "Op": "-"
+        },
+        {
+            "Name": "Mul",
+            "Op": "*"
+        },
+        {
+            "Name": "Div",
+            "Op": "-"
+        },
+        {
+            "Name": "Mod",
+            "Op": "%"
+        }
+    ]
   },
   {
     "Name": "String",
-    "PrimitiveType": "string"
+    "PrimitiveType": "string",
+    "Operators": [
+        {
+            "Name": "Add",
+            "Op": "+"
+        }
+    ]
   },
   {
     "Name": "Boolean",
