@@ -88,11 +88,7 @@ func TestCovariance_NewQuery(t *testing.T) {
 					{
 						ID: "join2",
 						Spec: &universe.JoinOpSpec{
-							On: []string{"host"},
-							TableNames: map[flux.OperationID]string{
-								"from0": "x",
-								"from1": "y",
-							},
+							On:     []string{"host"},
 							Method: "inner",
 						},
 					},

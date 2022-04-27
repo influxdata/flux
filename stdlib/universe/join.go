@@ -37,9 +37,8 @@ var methods = map[string]bool{
 
 // JoinOpSpec specifies a particular join operation
 type JoinOpSpec struct {
-	TableNames map[flux.OperationID]string `json:"tableNames"`
-	On         []string                    `json:"on"`
-	Method     string                      `json:"method"`
+	On     []string `json:"on"`
+	Method string   `json:"method"`
 
 	// Note: this field below is non-exported and is not part of the public Flux.Spec
 	// interface (used by the transpiler).  It should not be assumed to be populated
@@ -111,7 +110,6 @@ func createJoinOpSpec(args flux.Arguments, a *flux.Administration) (flux.Operati
 		return nil, err
 	}
 
-	spec.TableNames = make(map[flux.OperationID]string, tables.Len())
 	spec.params = newJoinParams(tables.Len())
 	tables.Range(func(name string, operation values.Value) {
 		if err != nil {
@@ -144,22 +142,6 @@ func createJoinOpSpec(args flux.Arguments, a *flux.Administration) (flux.Operati
 	return spec, nil
 }
 
-func (t *JoinOpSpec) IDer(ider flux.IDer) {
-	// When join is used inside a `tableFind`, the input table operations are
-	// "cloned" granting them new ids.
-	// This will cause a panic to occur in `createMergeJoinTransformation` when
-	// trying to associate table names with their related datasets if we don't
-	// first remove old entries from the map.
-	// Refs: <https://github.com/influxdata/flux/issues/4692>
-	for k := range t.TableNames {
-		delete(t.TableNames, k)
-	}
-	for i, name := range t.params.names {
-		operation := t.params.operations[i]
-		t.TableNames[ider.ID(operation)] = name
-	}
-}
-
 func newJoinOp() flux.OperationSpec {
 	return new(JoinOpSpec)
 }
@@ -182,11 +164,9 @@ func newMergeJoinProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.
 		return nil, errors.Newf(codes.Internal, "invalid spec type %T", qs)
 	}
 
-	tableNames := make([]string, len(spec.TableNames))
-	i := 0
-	for _, name := range spec.TableNames {
+	tableNames := make([]string, len(spec.params.names))
+	for i, name := range spec.params.names {
 		tableNames[i] = name
-		i++
 	}
 	sort.Strings(tableNames)
 
