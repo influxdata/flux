@@ -1529,7 +1529,7 @@ impl<'input> Parser<'input> {
         let t = self.expect_one_of(&[TokenType::Ident, TokenType::String]);
         match t.tok {
             TokenType::String => PropertyKey::StringLit(self.new_string_literal(t)),
-            TokenType::Ident | _ => PropertyKey::Identifier(Identifier {
+            _ => PropertyKey::Identifier(Identifier {
                 base: self.base_node_from_token(&t),
                 name: t.lit,
             }),
