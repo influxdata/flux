@@ -145,19 +145,18 @@ func createJoinOpSpec(args flux.Arguments, a *flux.Administration) (flux.Operati
 }
 
 func (t *JoinOpSpec) IDer(ider flux.IDer) {
-	// When join is used inside a `tableFind`, the input tables are cloned
-	// granting them new ids.
-	// This can cause a panic to occur in `createMergeJoinTransformation` when
-	// trying to associate table names with their related datasets.
+	// When join is used inside a `tableFind`, the input table operations are
+	// "cloned" granting them new ids.
+	// This will cause a panic to occur in `createMergeJoinTransformation` when
+	// trying to associate table names with their related datasets if we don't
+	// first remove old entries from the map.
 	// Refs: <https://github.com/influxdata/flux/issues/4692>
-
-	// Treat `TableNames` as "immutable" - don't modify them after initialization.
-	// FIXME: find a "better fix" than only initializing this once.
-	if len(t.TableNames) == 0 {
-		for i, name := range t.params.names {
-			operation := t.params.operations[i]
-			t.TableNames[ider.ID(operation)] = name
-		}
+	for k := range t.TableNames {
+		delete(t.TableNames, k)
+	}
+	for i, name := range t.params.names {
+		operation := t.params.operations[i]
+		t.TableNames[ider.ID(operation)] = name
 	}
 }
 
