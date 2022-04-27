@@ -332,7 +332,7 @@ func (s *sortTableMergeHeap) ValueLen() int {
 
 func (s *sortTableMergeHeap) Table(limit int, mem memory.Allocator) (flux.Table, error) {
 	if s.ValueLen() == 0 {
-		// Degenerate case where ther are no rows to merge sort
+		// Degenerate case where there are no rows to merge sort
 		for len(s.items) > 0 {
 			s.Pop()
 		}
