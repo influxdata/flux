@@ -899,6 +899,9 @@ impl<'a, 'b> semantic::walk::Visitor<'_> for SerializingVisitor<'a, 'b> {
                 ));
             }
 
+            // Handled in Node::IdentifierExpr etc
+            walk::Node::Expr(_) => {}
+
             walk::Node::ErrorStmt(_) | walk::Node::ErrorExpr(_) => {
                 unreachable!("We should never try to serialize error nodes")
             }

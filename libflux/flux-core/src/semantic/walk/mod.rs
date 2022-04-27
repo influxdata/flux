@@ -21,6 +21,8 @@ macro_rules! mk_node {
             Property(&'a $($mut)? Property),
 
             // Expressions.
+            Expr(&'a $($mut)? Expression),
+
             IdentifierExpr(&'a $($mut)? IdentifierExpr),
             ArrayExpr(&'a $($mut)? ArrayExpr),
             DictExpr(&'a $($mut)? DictExpr),
@@ -70,6 +72,7 @@ macro_rules! mk_node {
                     Self::PackageClause(_) => write!(f, "PackageClause"),
                     Self::ImportDeclaration(_) => write!(f, "ImportDeclaration"),
                     Self::Identifier(_) => write!(f, "Identifier"),
+                    Self::Expr(_) => write!(f, "Expr"),
                     Self::IdentifierExpr(_) => write!(f, "IdentifierExpr"),
                     Self::ArrayExpr(_) => write!(f, "ArrayExpr"),
                     Self::DictExpr(_) => write!(f, "DictExpr"),
@@ -127,6 +130,7 @@ macro_rules! mk_node {
                     Self::DictExpr(n) => &n.loc,
                     Self::FunctionExpr(n) => &n.loc,
                     Self::FunctionParameter(n) => &n.loc,
+                    Self::Expr(n) => n.loc(),
                     Self::LogicalExpr(n) => &n.loc,
                     Self::ObjectExpr(n) => &n.loc,
                     Self::MemberExpr(n) => &n.loc,
@@ -207,6 +211,10 @@ macro_rules! mk_node {
         // Utility functions.
         impl<'a> $name<'a> {
             pub(crate) fn from_expr(expr: &'a $($mut)? Expression) -> Self {
+                Self::Expr(expr)
+            }
+
+            pub(crate) fn reduce_expr(expr: &'a $($mut)? Expression) -> Self {
                 match expr {
                     Expression::Identifier(e) => Self::IdentifierExpr(e),
                     Expression::Array(e) => Self::ArrayExpr(e),
@@ -292,6 +300,9 @@ macro_rules! mk_node {
                         $walk(v, $name::StringLit(& $($mut)? n.path));
                     }
                     $name::Identifier(_) => {}
+                    $name::Expr(n) => {
+                        $walk(v, $name::reduce_expr(n));
+                    }
                     $name::IdentifierExpr(_) => {}
                     $name::ArrayExpr(n) => {
                         for element in &$($mut)? n.elements {
@@ -504,6 +515,7 @@ mod test_node_ids {
             [
                 "File",
                 "ExprStmt",
+                "Expr",
                 "IdentifierExpr",
             ]
         "#]])
@@ -514,9 +526,13 @@ mod test_node_ids {
             [
                 "File",
                 "ExprStmt",
+                "Expr",
                 "ArrayExpr",
+                "Expr",
                 "IntegerLit",
+                "Expr",
                 "IntegerLit",
+                "Expr",
                 "IntegerLit",
             ]
         "#]])
@@ -527,9 +543,11 @@ mod test_node_ids {
             [
                 "File",
                 "ExprStmt",
+                "Expr",
                 "FunctionExpr",
                 "Block::Return",
                 "ReturnStmt",
+                "Expr",
                 "IntegerLit",
             ]
         "#]])
@@ -547,24 +565,33 @@ mod test_node_ids {
                 [
                     "File",
                     "ExprStmt",
+                    "Expr",
                     "FunctionExpr",
                     "Block::Variable",
                     "VariableAssgn",
                     "Identifier",
+                    "Expr",
                     "IntegerLit",
                     "Block::Variable",
                     "VariableAssgn",
                     "Identifier",
+                    "Expr",
                     "BinaryExpr",
+                    "Expr",
                     "IntegerLit",
+                    "Expr",
                     "IntegerLit",
                     "Block::Expr",
                     "ExprStmt",
+                    "Expr",
                     "BinaryExpr",
+                    "Expr",
                     "IdentifierExpr",
+                    "Expr",
                     "IdentifierExpr",
                     "Block::Return",
                     "ReturnStmt",
+                    "Expr",
                     "IdentifierExpr",
                 ]
             "#]],
@@ -576,12 +603,15 @@ mod test_node_ids {
             [
                 "File",
                 "ExprStmt",
+                "Expr",
                 "FunctionExpr",
                 "FunctionParameter",
                 "Identifier",
+                "Expr",
                 "IntegerLit",
                 "Block::Return",
                 "ReturnStmt",
+                "Expr",
                 "IdentifierExpr",
             ]
         "#]])
@@ -592,8 +622,11 @@ mod test_node_ids {
             [
                 "File",
                 "ExprStmt",
+                "Expr",
                 "LogicalExpr",
+                "Expr",
                 "IdentifierExpr",
+                "Expr",
                 "IdentifierExpr",
             ]
         "#]])
@@ -604,12 +637,15 @@ mod test_node_ids {
             [
                 "File",
                 "ExprStmt",
+                "Expr",
                 "ObjectExpr",
                 "Property",
                 "Identifier",
+                "Expr",
                 "IntegerLit",
                 "Property",
                 "Identifier",
+                "Expr",
                 "IdentifierExpr",
             ]
         "#]])
@@ -620,7 +656,9 @@ mod test_node_ids {
             [
                 "File",
                 "ExprStmt",
+                "Expr",
                 "MemberExpr",
+                "Expr",
                 "IdentifierExpr",
             ]
         "#]])
@@ -631,8 +669,11 @@ mod test_node_ids {
             [
                 "File",
                 "ExprStmt",
+                "Expr",
                 "IndexExpr",
+                "Expr",
                 "IdentifierExpr",
+                "Expr",
                 "IdentifierExpr",
             ]
         "#]])
@@ -643,8 +684,11 @@ mod test_node_ids {
             [
                 "File",
                 "ExprStmt",
+                "Expr",
                 "BinaryExpr",
+                "Expr",
                 "IdentifierExpr",
+                "Expr",
                 "IdentifierExpr",
             ]
         "#]])
@@ -655,7 +699,9 @@ mod test_node_ids {
             [
                 "File",
                 "ExprStmt",
+                "Expr",
                 "UnaryExpr",
+                "Expr",
                 "IdentifierExpr",
             ]
         "#]])
@@ -666,8 +712,11 @@ mod test_node_ids {
             [
                 "File",
                 "ExprStmt",
+                "Expr",
                 "CallExpr",
+                "Expr",
                 "IdentifierExpr",
+                "Expr",
                 "IdentifierExpr",
             ]
         "#]])
@@ -678,10 +727,13 @@ mod test_node_ids {
             [
                 "File",
                 "ExprStmt",
+                "Expr",
                 "CallExpr",
+                "Expr",
                 "IdentifierExpr",
                 "Property",
                 "Identifier",
+                "Expr",
                 "IntegerLit",
             ]
         "#]])
@@ -692,9 +744,13 @@ mod test_node_ids {
             [
                 "File",
                 "ExprStmt",
+                "Expr",
                 "ConditionalExpr",
+                "Expr",
                 "IdentifierExpr",
+                "Expr",
                 "IdentifierExpr",
+                "Expr",
                 "IdentifierExpr",
             ]
         "#]])
@@ -705,9 +761,11 @@ mod test_node_ids {
             [
                 "File",
                 "ExprStmt",
+                "Expr",
                 "StringExpr",
                 "TextPart",
                 "InterpolatedPart",
+                "Expr",
                 "IdentifierExpr",
             ]
         "#]])
@@ -718,8 +776,11 @@ mod test_node_ids {
             [
                 "File",
                 "ExprStmt",
+                "Expr",
                 "BinaryExpr",
+                "Expr",
                 "IdentifierExpr",
+                "Expr",
                 "IdentifierExpr",
             ]
         "#]])
@@ -730,6 +791,7 @@ mod test_node_ids {
             [
                 "File",
                 "ExprStmt",
+                "Expr",
                 "IntegerLit",
             ]
         "#]])
@@ -740,6 +802,7 @@ mod test_node_ids {
             [
                 "File",
                 "ExprStmt",
+                "Expr",
                 "FloatLit",
             ]
         "#]])
@@ -750,6 +813,7 @@ mod test_node_ids {
             [
                 "File",
                 "ExprStmt",
+                "Expr",
                 "StringLit",
             ]
         "#]])
@@ -760,6 +824,7 @@ mod test_node_ids {
             [
                 "File",
                 "ExprStmt",
+                "Expr",
                 "DurationLit",
             ]
         "#]])
@@ -770,6 +835,7 @@ mod test_node_ids {
             [
                 "File",
                 "ExprStmt",
+                "Expr",
                 "DateTimeLit",
             ]
         "#]])
@@ -780,6 +846,7 @@ mod test_node_ids {
             [
                 "File",
                 "ExprStmt",
+                "Expr",
                 "RegexpLit",
             ]
         "#]])
@@ -790,11 +857,13 @@ mod test_node_ids {
             [
                 "File",
                 "ExprStmt",
+                "Expr",
                 "FunctionExpr",
                 "FunctionParameter",
                 "Identifier",
                 "Block::Return",
                 "ReturnStmt",
+                "Expr",
                 "IdentifierExpr",
             ]
         "#]])
@@ -808,6 +877,7 @@ mod test_node_ids {
                 "OptionStmt",
                 "VariableAssgn",
                 "Identifier",
+                "Expr",
                 "IdentifierExpr",
             ]
         "#]])
@@ -820,9 +890,11 @@ mod test_node_ids {
             [
                 "File",
                 "ExprStmt",
+                "Expr",
                 "FunctionExpr",
                 "Block::Return",
                 "ReturnStmt",
+                "Expr",
                 "IntegerLit",
             ]
         "#]])
@@ -835,6 +907,7 @@ mod test_node_ids {
                 "TestStmt",
                 "VariableAssgn",
                 "Identifier",
+                "Expr",
                 "IntegerLit",
             ]
         "#]])
@@ -856,6 +929,7 @@ mod test_node_ids {
                 "File",
                 "VariableAssgn",
                 "Identifier",
+                "Expr",
                 "IdentifierExpr",
             ]
         "#]])
@@ -868,7 +942,9 @@ mod test_node_ids {
                 "OptionStmt",
                 "MemberAssgn",
                 "MemberExpr",
+                "Expr",
                 "IdentifierExpr",
+                "Expr",
                 "IdentifierExpr",
             ]
         "#]])
