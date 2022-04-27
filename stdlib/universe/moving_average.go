@@ -6,6 +6,7 @@ import (
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
+	"github.com/influxdata/flux/internal/feature"
 	"github.com/influxdata/flux/internal/moving_average"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/runtime"
@@ -87,6 +88,11 @@ func createMovingAverageTransformation(id execute.DatasetID, mode execute.Accumu
 	if !ok {
 		return nil, nil, errors.Newf(codes.Internal, "invalid spec type %T", spec)
 	}
+
+	if feature.OptimizeMovingAverage().Enabled(a.Context()) {
+		return newMovingAverageTransformation2(id, s, a.Allocator())
+	}
+
 	cache := execute.NewTableBuilderCache(a.Allocator())
 	d := execute.NewDataset(id, mode, cache)
 	t := NewMovingAverageTransformation(d, cache, s)

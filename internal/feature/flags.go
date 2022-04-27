@@ -185,6 +185,18 @@ func LabelPolymorphism() BoolFlag {
 	return labelPolymorphism
 }
 
+var optimizeMovingAverage = feature.MakeBoolFlag(
+	"Optimize Moving Average",
+	"optimizeMovingAverage",
+	"Jonathan Sternberg",
+	false,
+)
+
+// OptimizeMovingAverage - Enable an optimized version of moving average
+func OptimizeMovingAverage() BoolFlag {
+	return optimizeMovingAverage
+}
+
 // Inject will inject the Flagger into the context.
 func Inject(ctx context.Context, flagger Flagger) context.Context {
 	return feature.Inject(ctx, flagger)
@@ -205,6 +217,7 @@ var all = []Flag{
 	vectorizeAddition,
 	vectorizeOperators,
 	labelPolymorphism,
+	optimizeMovingAverage,
 }
 
 var byKey = map[string]Flag{
@@ -222,6 +235,7 @@ var byKey = map[string]Flag{
 	"vectorizeAddition":                vectorizeAddition,
 	"vectorizeOperators":               vectorizeOperators,
 	"labelPolymorphism":                labelPolymorphism,
+	"optimizeMovingAverage":            optimizeMovingAverage,
 }
 
 // Flags returns all feature flags.

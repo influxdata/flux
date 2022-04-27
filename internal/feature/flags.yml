@@ -93,3 +93,9 @@
   key: labelPolymorphism
   default: false
   contact: Markus Westerlind
+
+- name: Optimize Moving Average
+  description: Enable an optimized version of moving average
+  key: optimizeMovingAverage
+  default: false
+  contact: Jonathan Sternberg
