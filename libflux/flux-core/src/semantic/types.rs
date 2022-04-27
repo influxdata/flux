@@ -264,7 +264,7 @@ impl Substitutable for PolyType {
                     _ => None,
                 })
             },
-            |_, (k, v)| (k.clone(), v.clone()),
+            |_, (k, v)| (*k, v.clone()),
         );
 
         let new_vars = merge_collect(
@@ -276,7 +276,7 @@ impl Substitutable for PolyType {
                     _ => None,
                 })
             },
-            |_, v| v.clone(),
+            |_, v| *v,
         );
 
         // `vars` defines new distinct variables for `expr` so any substitutions applied on a
