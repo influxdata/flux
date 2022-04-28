@@ -264,7 +264,7 @@ pub trait Substitutable {
     /// Returns `Self` but with "fresh" type variables
     fn fresh(&self, fresher: &mut Fresher) -> Self
     where
-        Self: Sized + Clone,
+        Self: Sized + Clone + std::fmt::Debug,
     {
         self.visit(fresher).unwrap_or_else(|| self.clone())
     }

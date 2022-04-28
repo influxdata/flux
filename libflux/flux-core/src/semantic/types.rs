@@ -237,10 +237,6 @@ impl PartialEq for PolyType {
             kinds.sort();
         }
 
-        assert_eq!(a.vars, b.vars);
-        assert_eq!(a.cons, b.cons);
-        assert_eq!(a.expr, b.expr);
-
         a.vars == b.vars && a.cons == b.cons && a.expr == b.expr
     }
 }
@@ -1954,12 +1950,12 @@ impl<K: Eq + Hash + Clone> Substitutable for PolyTypeHashMap<K> {
     }
 }
 
-impl<K: Ord + Clone, T: Substitutable + Clone> Substitutable for SemanticMap<K, T> {
+impl<K: Ord + Clone + Substitutable, T: Substitutable + Clone> Substitutable for SemanticMap<K, T> {
     fn walk(&self, sub: &mut (impl ?Sized + Substituter)) -> Option<Self> {
         merge_collect(
             &mut (),
             self,
-            |_, (k, v)| v.visit(sub).map(|v| (k.clone(), v)),
+            |_, (k, v)| apply2(k, v, sub),
             |_, (k, v)| (k.clone(), v.clone()),
         )
     }
@@ -2268,6 +2264,10 @@ where
 
         impl Substituter for MaxTvars {
             fn try_apply(&mut self, var: Tvar) -> Option<MonoType> {
+                self.max = self.max.max(Some(var));
+                None
+            }
+            fn try_apply_bound(&mut self, var: Tvar) -> Option<MonoType> {
                 self.max = self.max.max(Some(var));
                 None
             }

@@ -19,6 +19,15 @@ impl Fresher {
         self.fresher += 1;
         Tvar(u)
     }
+
+    fn fresh_var(&mut self, var: Tvar) -> Tvar {
+        let fresher = &mut self.fresher;
+        *self.sub.entry(var).or_insert_with(|| {
+            let u = *fresher;
+            *fresher += 1;
+            Tvar(u)
+        })
+    }
 }
 
 impl From<u64> for Fresher {
@@ -32,23 +41,11 @@ impl From<u64> for Fresher {
 
 impl Substituter for Fresher {
     fn try_apply(&mut self, var: Tvar) -> Option<MonoType> {
-        let fresher = &mut self.fresher;
-        Some(MonoType::Var(*self.sub.entry(var).or_insert_with(|| {
-            let u = *fresher;
-            *fresher += 1;
-            Tvar(u)
-        })))
+        Some(MonoType::Var(self.fresh_var(var)))
     }
 
     fn try_apply_bound(&mut self, var: Tvar) -> Option<MonoType> {
-        let fresher = &mut self.fresher;
-        Some(MonoType::BoundVar(*self.sub.entry(var).or_insert_with(
-            || {
-                let u = *fresher;
-                *fresher += 1;
-                Tvar(u)
-            },
-        )))
+        Some(MonoType::BoundVar(self.fresh_var(var)))
     }
 
     fn visit_type(&mut self, typ: &MonoType) -> Option<MonoType> {
