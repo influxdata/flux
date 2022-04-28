@@ -197,6 +197,18 @@ func OptimizeMovingAverage() BoolFlag {
 	return optimizeMovingAverage
 }
 
+var optimizeCumulativeSum = feature.MakeBoolFlag(
+	"Optimize Cumulative Sum",
+	"optimizeCumulativeSum",
+	"Jonathan Sternberg",
+	false,
+)
+
+// OptimizeCumulativeSum - Enable optimized version of cumulative sum
+func OptimizeCumulativeSum() BoolFlag {
+	return optimizeCumulativeSum
+}
+
 // Inject will inject the Flagger into the context.
 func Inject(ctx context.Context, flagger Flagger) context.Context {
 	return feature.Inject(ctx, flagger)
@@ -218,6 +230,7 @@ var all = []Flag{
 	vectorizeOperators,
 	labelPolymorphism,
 	optimizeMovingAverage,
+	optimizeCumulativeSum,
 }
 
 var byKey = map[string]Flag{
@@ -236,6 +249,7 @@ var byKey = map[string]Flag{
 	"vectorizeOperators":               vectorizeOperators,
 	"labelPolymorphism":                labelPolymorphism,
 	"optimizeMovingAverage":            optimizeMovingAverage,
+	"optimizeCumulativeSum":            optimizeCumulativeSum,
 }
 
 // Flags returns all feature flags.
