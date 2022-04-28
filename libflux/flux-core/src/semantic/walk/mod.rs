@@ -483,46 +483,60 @@ mod test_node_ids {
 
     #[test]
     fn test_file() {
-        test_walk("", expect_test::expect![[r#"
+        test_walk(
+            "",
+            expect_test::expect![[r#"
             [
                 "File",
             ]
-        "#]])
+        "#]],
+        )
     }
     #[test]
     fn test_package_clause() {
-        test_walk("package a", expect_test::expect![[r#"
+        test_walk(
+            "package a",
+            expect_test::expect![[r#"
             [
                 "File",
                 "PackageClause",
                 "Identifier",
             ]
-        "#]])
+        "#]],
+        )
     }
     #[test]
     fn test_import_declaration() {
-        test_walk("import \"a\"", expect_test::expect![[r#"
+        test_walk(
+            "import \"a\"",
+            expect_test::expect![[r#"
             [
                 "File",
                 "ImportDeclaration",
                 "StringLit",
             ]
-        "#]])
+        "#]],
+        )
     }
     #[test]
     fn test_ident() {
-        test_walk("a", expect_test::expect![[r#"
+        test_walk(
+            "a",
+            expect_test::expect![[r#"
             [
                 "File",
                 "ExprStmt",
                 "Expr",
                 "IdentifierExpr",
             ]
-        "#]])
+        "#]],
+        )
     }
     #[test]
     fn test_array_expr() {
-        test_walk("[1,2,3]", expect_test::expect![[r#"
+        test_walk(
+            "[1,2,3]",
+            expect_test::expect![[r#"
             [
                 "File",
                 "ExprStmt",
@@ -535,11 +549,14 @@ mod test_node_ids {
                 "Expr",
                 "IntegerLit",
             ]
-        "#]])
+        "#]],
+        )
     }
     #[test]
     fn test_function_expr() {
-        test_walk("() => 1", expect_test::expect![[r#"
+        test_walk(
+            "() => 1",
+            expect_test::expect![[r#"
             [
                 "File",
                 "ExprStmt",
@@ -550,7 +567,8 @@ mod test_node_ids {
                 "Expr",
                 "IntegerLit",
             ]
-        "#]])
+        "#]],
+        )
     }
     #[test]
     fn test_function_expr_multiline_block() {
@@ -599,7 +617,9 @@ mod test_node_ids {
     }
     #[test]
     fn test_function_with_args() {
-        test_walk("(a=1) => a", expect_test::expect![[r#"
+        test_walk(
+            "(a=1) => a",
+            expect_test::expect![[r#"
             [
                 "File",
                 "ExprStmt",
@@ -614,11 +634,14 @@ mod test_node_ids {
                 "Expr",
                 "IdentifierExpr",
             ]
-        "#]])
+        "#]],
+        )
     }
     #[test]
     fn test_logical_expr() {
-        test_walk("true or false", expect_test::expect![[r#"
+        test_walk(
+            "true or false",
+            expect_test::expect![[r#"
             [
                 "File",
                 "ExprStmt",
@@ -629,11 +652,14 @@ mod test_node_ids {
                 "Expr",
                 "IdentifierExpr",
             ]
-        "#]])
+        "#]],
+        )
     }
     #[test]
     fn test_object_expr() {
-        test_walk("{a:1,\"b\":false}", expect_test::expect![[r#"
+        test_walk(
+            "{a:1,\"b\":false}",
+            expect_test::expect![[r#"
             [
                 "File",
                 "ExprStmt",
@@ -648,11 +674,14 @@ mod test_node_ids {
                 "Expr",
                 "IdentifierExpr",
             ]
-        "#]])
+        "#]],
+        )
     }
     #[test]
     fn test_member_expr() {
-        test_walk("a.b", expect_test::expect![[r#"
+        test_walk(
+            "a.b",
+            expect_test::expect![[r#"
             [
                 "File",
                 "ExprStmt",
@@ -661,11 +690,14 @@ mod test_node_ids {
                 "Expr",
                 "IdentifierExpr",
             ]
-        "#]])
+        "#]],
+        )
     }
     #[test]
     fn test_index_expr() {
-        test_walk("a[b]", expect_test::expect![[r#"
+        test_walk(
+            "a[b]",
+            expect_test::expect![[r#"
             [
                 "File",
                 "ExprStmt",
@@ -676,11 +708,14 @@ mod test_node_ids {
                 "Expr",
                 "IdentifierExpr",
             ]
-        "#]])
+        "#]],
+        )
     }
     #[test]
     fn test_binary_expr() {
-        test_walk("a+b", expect_test::expect![[r#"
+        test_walk(
+            "a+b",
+            expect_test::expect![[r#"
             [
                 "File",
                 "ExprStmt",
@@ -691,11 +726,14 @@ mod test_node_ids {
                 "Expr",
                 "IdentifierExpr",
             ]
-        "#]])
+        "#]],
+        )
     }
     #[test]
     fn test_unary_expr() {
-        test_walk("-b", expect_test::expect![[r#"
+        test_walk(
+            "-b",
+            expect_test::expect![[r#"
             [
                 "File",
                 "ExprStmt",
@@ -704,11 +742,14 @@ mod test_node_ids {
                 "Expr",
                 "IdentifierExpr",
             ]
-        "#]])
+        "#]],
+        )
     }
     #[test]
     fn test_pipe_expr() {
-        test_walk("a|>b()", expect_test::expect![[r#"
+        test_walk(
+            "a|>b()",
+            expect_test::expect![[r#"
             [
                 "File",
                 "ExprStmt",
@@ -719,11 +760,14 @@ mod test_node_ids {
                 "Expr",
                 "IdentifierExpr",
             ]
-        "#]])
+        "#]],
+        )
     }
     #[test]
     fn test_call_expr() {
-        test_walk("b(a:1)", expect_test::expect![[r#"
+        test_walk(
+            "b(a:1)",
+            expect_test::expect![[r#"
             [
                 "File",
                 "ExprStmt",
@@ -736,11 +780,14 @@ mod test_node_ids {
                 "Expr",
                 "IntegerLit",
             ]
-        "#]])
+        "#]],
+        )
     }
     #[test]
     fn test_conditional_expr() {
-        test_walk("if x then y else z", expect_test::expect![[r#"
+        test_walk(
+            "if x then y else z",
+            expect_test::expect![[r#"
             [
                 "File",
                 "ExprStmt",
@@ -753,11 +800,14 @@ mod test_node_ids {
                 "Expr",
                 "IdentifierExpr",
             ]
-        "#]])
+        "#]],
+        )
     }
     #[test]
     fn test_string_expr() {
-        test_walk("\"hello ${world}\"", expect_test::expect![[r#"
+        test_walk(
+            "\"hello ${world}\"",
+            expect_test::expect![[r#"
             [
                 "File",
                 "ExprStmt",
@@ -768,11 +818,14 @@ mod test_node_ids {
                 "Expr",
                 "IdentifierExpr",
             ]
-        "#]])
+        "#]],
+        )
     }
     #[test]
     fn test_paren_expr() {
-        test_walk("(a + b)", expect_test::expect![[r#"
+        test_walk(
+            "(a + b)",
+            expect_test::expect![[r#"
             [
                 "File",
                 "ExprStmt",
@@ -783,77 +836,98 @@ mod test_node_ids {
                 "Expr",
                 "IdentifierExpr",
             ]
-        "#]])
+        "#]],
+        )
     }
     #[test]
     fn test_integer_lit() {
-        test_walk("1", expect_test::expect![[r#"
+        test_walk(
+            "1",
+            expect_test::expect![[r#"
             [
                 "File",
                 "ExprStmt",
                 "Expr",
                 "IntegerLit",
             ]
-        "#]])
+        "#]],
+        )
     }
     #[test]
     fn test_float_lit() {
-        test_walk("1.0", expect_test::expect![[r#"
+        test_walk(
+            "1.0",
+            expect_test::expect![[r#"
             [
                 "File",
                 "ExprStmt",
                 "Expr",
                 "FloatLit",
             ]
-        "#]])
+        "#]],
+        )
     }
     #[test]
     fn test_string_lit() {
-        test_walk("\"a\"", expect_test::expect![[r#"
+        test_walk(
+            "\"a\"",
+            expect_test::expect![[r#"
             [
                 "File",
                 "ExprStmt",
                 "Expr",
                 "StringLit",
             ]
-        "#]])
+        "#]],
+        )
     }
     #[test]
     fn test_duration_lit() {
-        test_walk("1m", expect_test::expect![[r#"
+        test_walk(
+            "1m",
+            expect_test::expect![[r#"
             [
                 "File",
                 "ExprStmt",
                 "Expr",
                 "DurationLit",
             ]
-        "#]])
+        "#]],
+        )
     }
     #[test]
     fn test_datetime_lit() {
-        test_walk("2019-01-01T00:00:00Z", expect_test::expect![[r#"
+        test_walk(
+            "2019-01-01T00:00:00Z",
+            expect_test::expect![[r#"
             [
                 "File",
                 "ExprStmt",
                 "Expr",
                 "DateTimeLit",
             ]
-        "#]])
+        "#]],
+        )
     }
     #[test]
     fn test_regexp_lit() {
-        test_walk("/./", expect_test::expect![[r#"
+        test_walk(
+            "/./",
+            expect_test::expect![[r#"
             [
                 "File",
                 "ExprStmt",
                 "Expr",
                 "RegexpLit",
             ]
-        "#]])
+        "#]],
+        )
     }
     #[test]
     fn test_pipe_lit() {
-        test_walk("(a=<-)=>a", expect_test::expect![[r#"
+        test_walk(
+            "(a=<-)=>a",
+            expect_test::expect![[r#"
             [
                 "File",
                 "ExprStmt",
@@ -866,12 +940,15 @@ mod test_node_ids {
                 "Expr",
                 "IdentifierExpr",
             ]
-        "#]])
+        "#]],
+        )
     }
 
     #[test]
     fn test_option_stmt() {
-        test_walk("option a = b", expect_test::expect![[r#"
+        test_walk(
+            "option a = b",
+            expect_test::expect![[r#"
             [
                 "File",
                 "OptionStmt",
@@ -880,13 +957,16 @@ mod test_node_ids {
                 "Expr",
                 "IdentifierExpr",
             ]
-        "#]])
+        "#]],
+        )
     }
     #[test]
     fn test_return_stmt() {
         // This is quite tricky, even if there is an explicit ReturnStmt,
         // `analyze` returns a `Block::Return` when inside of a function body.
-        test_walk("() => {return 1}", expect_test::expect![[r#"
+        test_walk(
+            "() => {return 1}",
+            expect_test::expect![[r#"
             [
                 "File",
                 "ExprStmt",
@@ -897,11 +977,14 @@ mod test_node_ids {
                 "Expr",
                 "IntegerLit",
             ]
-        "#]])
+        "#]],
+        )
     }
     #[test]
     fn test_test_stmt() {
-        test_walk("test a = 1", expect_test::expect![[r#"
+        test_walk(
+            "test a = 1",
+            expect_test::expect![[r#"
             [
                 "File",
                 "TestStmt",
@@ -910,21 +993,27 @@ mod test_node_ids {
                 "Expr",
                 "IntegerLit",
             ]
-        "#]])
+        "#]],
+        )
     }
     #[test]
     fn test_builtin_stmt() {
-        test_walk("builtin a : int", expect_test::expect![[r#"
+        test_walk(
+            "builtin a : int",
+            expect_test::expect![[r#"
             [
                 "File",
                 "BuiltinStmt",
                 "Identifier",
             ]
-        "#]])
+        "#]],
+        )
     }
     #[test]
     fn test_variable_assgn() {
-        test_walk("a = b", expect_test::expect![[r#"
+        test_walk(
+            "a = b",
+            expect_test::expect![[r#"
             [
                 "File",
                 "VariableAssgn",
@@ -932,11 +1021,14 @@ mod test_node_ids {
                 "Expr",
                 "IdentifierExpr",
             ]
-        "#]])
+        "#]],
+        )
     }
     #[test]
     fn test_member_assgn() {
-        test_walk("option a.b = c", expect_test::expect![[r#"
+        test_walk(
+            "option a.b = c",
+            expect_test::expect![[r#"
             [
                 "File",
                 "OptionStmt",
@@ -947,6 +1039,7 @@ mod test_node_ids {
                 "Expr",
                 "IdentifierExpr",
             ]
-        "#]])
+        "#]],
+        )
     }
 }
