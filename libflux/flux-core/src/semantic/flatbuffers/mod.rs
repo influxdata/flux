@@ -56,6 +56,13 @@ impl<'a, 'b> semantic::walk::Visitor<'_> for SerializingVisitor<'a, 'b> {
         if v.err.is_some() {
             return;
         }
+
+        // The specialized expression node will create the flatbuffer so skip the general
+        // `Node::Expr` (and don't allocate location for it since it will be unused)
+        if let walk::Node::Expr(_) = &node {
+            return;
+        }
+
         let loc = v.create_loc(node.loc());
         match &node {
             walk::Node::IntegerLit(int) => {
@@ -898,6 +905,9 @@ impl<'a, 'b> semantic::walk::Visitor<'_> for SerializingVisitor<'a, 'b> {
                     },
                 ));
             }
+
+            // Handled in Node::IdentifierExpr etc
+            walk::Node::Expr(_) => {}
 
             walk::Node::ErrorStmt(_) | walk::Node::ErrorExpr(_) => {
                 unreachable!("We should never try to serialize error nodes")

@@ -21,6 +21,8 @@ macro_rules! mk_node {
             Property(&'a $($mut)? Property),
 
             // Expressions.
+            Expr(&'a $($mut)? Expression),
+
             IdentifierExpr(&'a $($mut)? IdentifierExpr),
             ArrayExpr(&'a $($mut)? ArrayExpr),
             DictExpr(&'a $($mut)? DictExpr),
@@ -70,6 +72,7 @@ macro_rules! mk_node {
                     Self::PackageClause(_) => write!(f, "PackageClause"),
                     Self::ImportDeclaration(_) => write!(f, "ImportDeclaration"),
                     Self::Identifier(_) => write!(f, "Identifier"),
+                    Self::Expr(_) => write!(f, "Expr"),
                     Self::IdentifierExpr(_) => write!(f, "IdentifierExpr"),
                     Self::ArrayExpr(_) => write!(f, "ArrayExpr"),
                     Self::DictExpr(_) => write!(f, "DictExpr"),
@@ -127,6 +130,7 @@ macro_rules! mk_node {
                     Self::DictExpr(n) => &n.loc,
                     Self::FunctionExpr(n) => &n.loc,
                     Self::FunctionParameter(n) => &n.loc,
+                    Self::Expr(n) => n.loc(),
                     Self::LogicalExpr(n) => &n.loc,
                     Self::ObjectExpr(n) => &n.loc,
                     Self::MemberExpr(n) => &n.loc,
@@ -207,6 +211,10 @@ macro_rules! mk_node {
         // Utility functions.
         impl<'a> $name<'a> {
             pub(crate) fn from_expr(expr: &'a $($mut)? Expression) -> Self {
+                Self::Expr(expr)
+            }
+
+            pub(crate) fn reduce_expr(expr: &'a $($mut)? Expression) -> Self {
                 match expr {
                     Expression::Identifier(e) => Self::IdentifierExpr(e),
                     Expression::Array(e) => Self::ArrayExpr(e),
@@ -292,6 +300,9 @@ macro_rules! mk_node {
                         $walk(v, $name::StringLit(& $($mut)? n.path));
                     }
                     $name::Identifier(_) => {}
+                    $name::Expr(n) => {
+                        $walk(v, $name::reduce_expr(n));
+                    }
                     $name::IdentifierExpr(_) => {}
                     $name::ArrayExpr(n) => {
                         for element in &$($mut)? n.elements {
@@ -429,372 +440,6 @@ macro_rules! mk_node {
             }
             v.done($(&$mut)? node);
         }
-
-        #[cfg(test)]
-        mod test_node_ids {
-            use super::*;
-            use crate::semantic::walk::test_utils::compile;
-
-
-            fn test_walk(source: &str, want: Vec<&str>) {
-                let $($mut)? sem_pkg = compile(source);
-                let mut nodes = Vec::new();
-                $walk(
-                    &mut |n: $(&$mut)? $name| nodes.push(format!("{}", n)),
-                    $name::File(&$($mut)? sem_pkg.files[0]),
-                );
-                assert_eq!(want, nodes);
-            }
-
-            #[test]
-            fn test_file() {
-                test_walk("", vec!["File"])
-            }
-            #[test]
-            fn test_package_clause() {
-                test_walk("package a", vec!["File", "PackageClause", "Identifier"])
-            }
-            #[test]
-            fn test_import_declaration() {
-                test_walk(
-                    "import \"a\"",
-                    vec!["File", "ImportDeclaration", "StringLit"],
-                )
-            }
-            #[test]
-            fn test_ident() {
-                test_walk("a", vec!["File", "ExprStmt", "IdentifierExpr"])
-            }
-            #[test]
-            fn test_array_expr() {
-                test_walk(
-                    "[1,2,3]",
-                    vec![
-                        "File",
-                        "ExprStmt",
-                        "ArrayExpr",
-                        "IntegerLit",
-                        "IntegerLit",
-                        "IntegerLit",
-                    ],
-                )
-            }
-            #[test]
-            fn test_function_expr() {
-                test_walk(
-                    "() => 1",
-                    vec![
-                        "File",
-                        "ExprStmt",
-                        "FunctionExpr",
-                        "Block::Return",
-                        "ReturnStmt",
-                        "IntegerLit",
-                    ],
-                )
-            }
-            #[test]
-            fn test_function_expr_multiline_block() {
-                test_walk(
-                    "() => {
-                        a = 1
-                        b = 3 + 2
-                        a + b
-                        return a
-                    }",
-                    vec![
-                        "File",
-                        "ExprStmt",
-                        "FunctionExpr",
-                        "Block::Variable",
-                        "VariableAssgn",
-                        "Identifier",
-                        "IntegerLit",
-                        "Block::Variable",
-                        "VariableAssgn",
-                        "Identifier",
-                        "BinaryExpr",
-                        "IntegerLit",
-                        "IntegerLit",
-                        "Block::Expr",
-                        "ExprStmt",
-                        "BinaryExpr",
-                        "IdentifierExpr",
-                        "IdentifierExpr",
-                        "Block::Return",
-                        "ReturnStmt",
-                        "IdentifierExpr",
-                    ],
-                )
-            }
-            #[test]
-            fn test_function_with_args() {
-                test_walk(
-                    "(a=1) => a",
-                    vec![
-                        "File",
-                        "ExprStmt",
-                        "FunctionExpr",
-                        "FunctionParameter",
-                        "Identifier",
-                        "IntegerLit",
-                        "Block::Return",
-                        "ReturnStmt",
-                        "IdentifierExpr",
-                    ],
-                )
-            }
-            #[test]
-            fn test_logical_expr() {
-                test_walk(
-                    "true or false",
-                    vec![
-                        "File",
-                        "ExprStmt",
-                        "LogicalExpr",
-                        "IdentifierExpr",
-                        "IdentifierExpr",
-                    ],
-                )
-            }
-            #[test]
-            fn test_object_expr() {
-                test_walk(
-                    "{a:1,\"b\":false}",
-                    vec![
-                        "File",
-                        "ExprStmt",
-                        "ObjectExpr",
-                        "Property",
-                        "Identifier",
-                        "IntegerLit",
-                        "Property",
-                        "Identifier",
-                        "IdentifierExpr",
-                    ],
-                )
-            }
-            #[test]
-            fn test_member_expr() {
-                test_walk(
-                    "a.b",
-                    vec!["File", "ExprStmt", "MemberExpr", "IdentifierExpr"],
-                )
-            }
-            #[test]
-            fn test_index_expr() {
-                test_walk(
-                    "a[b]",
-                    vec![
-                        "File",
-                        "ExprStmt",
-                        "IndexExpr",
-                        "IdentifierExpr",
-                        "IdentifierExpr",
-                    ],
-                )
-            }
-            #[test]
-            fn test_binary_expr() {
-                test_walk(
-                    "a+b",
-                    vec![
-                        "File",
-                        "ExprStmt",
-                        "BinaryExpr",
-                        "IdentifierExpr",
-                        "IdentifierExpr",
-                    ],
-                )
-            }
-            #[test]
-            fn test_unary_expr() {
-                test_walk(
-                    "-b",
-                    vec!["File", "ExprStmt", "UnaryExpr", "IdentifierExpr"],
-                )
-            }
-            #[test]
-            fn test_pipe_expr() {
-                test_walk(
-                    "a|>b()",
-                    vec![
-                        "File",
-                        "ExprStmt",
-                        "CallExpr",
-                        "IdentifierExpr",
-                        "IdentifierExpr",
-                    ],
-                )
-            }
-            #[test]
-            fn test_call_expr() {
-                test_walk(
-                    "b(a:1)",
-                    vec![
-                        "File",
-                        "ExprStmt",
-                        "CallExpr",
-                        "IdentifierExpr",
-                        "Property",
-                        "Identifier",
-                        "IntegerLit",
-                    ],
-                )
-            }
-            #[test]
-            fn test_conditional_expr() {
-                test_walk(
-                    "if x then y else z",
-                    vec![
-                        "File",
-                        "ExprStmt",
-                        "ConditionalExpr",
-                        "IdentifierExpr",
-                        "IdentifierExpr",
-                        "IdentifierExpr",
-                    ],
-                )
-            }
-            #[test]
-            fn test_string_expr() {
-                test_walk(
-                    "\"hello ${world}\"",
-                    vec![
-                        "File",
-                        "ExprStmt",
-                        "StringExpr",
-                        "TextPart",
-                        "InterpolatedPart",
-                        "IdentifierExpr",
-                    ],
-                )
-            }
-            #[test]
-            fn test_paren_expr() {
-                test_walk(
-                    "(a + b)",
-                    vec![
-                        "File",
-                        "ExprStmt",
-                        "BinaryExpr",
-                        "IdentifierExpr",
-                        "IdentifierExpr",
-                    ],
-                )
-            }
-            #[test]
-            fn test_integer_lit() {
-                test_walk("1", vec!["File", "ExprStmt", "IntegerLit"])
-            }
-            #[test]
-            fn test_float_lit() {
-                test_walk("1.0", vec!["File", "ExprStmt", "FloatLit"])
-            }
-            #[test]
-            fn test_string_lit() {
-                test_walk("\"a\"", vec!["File", "ExprStmt", "StringLit"])
-            }
-            #[test]
-            fn test_duration_lit() {
-                test_walk("1m", vec!["File", "ExprStmt", "DurationLit"])
-            }
-            #[test]
-            fn test_datetime_lit() {
-                test_walk(
-                    "2019-01-01T00:00:00Z",
-                    vec!["File", "ExprStmt", "DateTimeLit"],
-                )
-            }
-            #[test]
-            fn test_regexp_lit() {
-                test_walk("/./", vec!["File", "ExprStmt", "RegexpLit"])
-            }
-            #[test]
-            fn test_pipe_lit() {
-                test_walk(
-                    "(a=<-)=>a",
-                    vec![
-                        "File",
-                        "ExprStmt",
-                        "FunctionExpr",
-                        "FunctionParameter",
-                        "Identifier",
-                        "Block::Return",
-                        "ReturnStmt",
-                        "IdentifierExpr",
-                    ],
-                )
-            }
-
-            #[test]
-            fn test_option_stmt() {
-                test_walk(
-                    "option a = b",
-                    vec![
-                        "File",
-                        "OptionStmt",
-                        "VariableAssgn",
-                        "Identifier",
-                        "IdentifierExpr",
-                    ],
-                )
-            }
-            #[test]
-            fn test_return_stmt() {
-                // This is quite tricky, even if there is an explicit ReturnStmt,
-                // `analyze` returns a `Block::Return` when inside of a function body.
-                test_walk(
-                    "() => {return 1}",
-                    vec![
-                        "File",
-                        "ExprStmt",
-                        "FunctionExpr",
-                        "Block::Return",
-                        "ReturnStmt",
-                        "IntegerLit",
-                    ],
-                )
-            }
-            #[test]
-            fn test_test_stmt() {
-                test_walk(
-                    "test a = 1",
-                    vec![
-                        "File",
-                        "TestStmt",
-                        "VariableAssgn",
-                        "Identifier",
-                        "IntegerLit",
-                    ],
-                )
-            }
-            #[test]
-            fn test_builtin_stmt() {
-                test_walk("builtin a : int", vec!["File", "BuiltinStmt", "Identifier"])
-            }
-            #[test]
-            fn test_variable_assgn() {
-                test_walk(
-                    "a = b",
-                    vec!["File", "VariableAssgn", "Identifier", "IdentifierExpr"],
-                )
-            }
-            #[test]
-            fn test_member_assgn() {
-                test_walk(
-                    "option a.b = c",
-                    vec![
-                        "File",
-                        "OptionStmt",
-                        "MemberAssgn",
-                        "MemberExpr",
-                        "IdentifierExpr",
-                        "IdentifierExpr",
-                    ],
-                )
-            }
-        }
     };
 }
 
@@ -805,3 +450,596 @@ pub use walk_mut::*;
 
 #[cfg(test)]
 mod test_utils;
+
+#[cfg(test)]
+mod test_node_ids {
+    use super::*;
+    use crate::semantic::walk::{test_utils::compile, walk, walk_mut};
+
+    fn test_walk(source: &str, want: expect_test::Expect) {
+        let mut sem_pkg = compile(source);
+        let nodes = {
+            let mut nodes = Vec::new();
+            walk(
+                &mut |n: Node<'_>| nodes.push(format!("{}", n)),
+                Node::File(&sem_pkg.files[0]),
+            );
+            nodes
+        };
+
+        want.assert_debug_eq(&nodes);
+
+        let mut_nodes = {
+            let mut nodes = Vec::new();
+            walk_mut(
+                &mut |n: &mut NodeMut<'_>| nodes.push(format!("{}", n)),
+                NodeMut::File(&mut sem_pkg.files[0]),
+            );
+            nodes
+        };
+
+        assert_eq!(nodes, mut_nodes);
+    }
+
+    #[test]
+    fn test_file() {
+        test_walk(
+            "",
+            expect_test::expect![[r#"
+            [
+                "File",
+            ]
+        "#]],
+        )
+    }
+    #[test]
+    fn test_package_clause() {
+        test_walk(
+            "package a",
+            expect_test::expect![[r#"
+            [
+                "File",
+                "PackageClause",
+                "Identifier",
+            ]
+        "#]],
+        )
+    }
+    #[test]
+    fn test_import_declaration() {
+        test_walk(
+            "import \"a\"",
+            expect_test::expect![[r#"
+            [
+                "File",
+                "ImportDeclaration",
+                "StringLit",
+            ]
+        "#]],
+        )
+    }
+    #[test]
+    fn test_ident() {
+        test_walk(
+            "a",
+            expect_test::expect![[r#"
+            [
+                "File",
+                "ExprStmt",
+                "Expr",
+                "IdentifierExpr",
+            ]
+        "#]],
+        )
+    }
+    #[test]
+    fn test_array_expr() {
+        test_walk(
+            "[1,2,3]",
+            expect_test::expect![[r#"
+            [
+                "File",
+                "ExprStmt",
+                "Expr",
+                "ArrayExpr",
+                "Expr",
+                "IntegerLit",
+                "Expr",
+                "IntegerLit",
+                "Expr",
+                "IntegerLit",
+            ]
+        "#]],
+        )
+    }
+    #[test]
+    fn test_function_expr() {
+        test_walk(
+            "() => 1",
+            expect_test::expect![[r#"
+            [
+                "File",
+                "ExprStmt",
+                "Expr",
+                "FunctionExpr",
+                "Block::Return",
+                "ReturnStmt",
+                "Expr",
+                "IntegerLit",
+            ]
+        "#]],
+        )
+    }
+    #[test]
+    fn test_function_expr_multiline_block() {
+        test_walk(
+            "() => {
+                        a = 1
+                        b = 3 + 2
+                        a + b
+                        return a
+                    }",
+            expect_test::expect![[r#"
+                [
+                    "File",
+                    "ExprStmt",
+                    "Expr",
+                    "FunctionExpr",
+                    "Block::Variable",
+                    "VariableAssgn",
+                    "Identifier",
+                    "Expr",
+                    "IntegerLit",
+                    "Block::Variable",
+                    "VariableAssgn",
+                    "Identifier",
+                    "Expr",
+                    "BinaryExpr",
+                    "Expr",
+                    "IntegerLit",
+                    "Expr",
+                    "IntegerLit",
+                    "Block::Expr",
+                    "ExprStmt",
+                    "Expr",
+                    "BinaryExpr",
+                    "Expr",
+                    "IdentifierExpr",
+                    "Expr",
+                    "IdentifierExpr",
+                    "Block::Return",
+                    "ReturnStmt",
+                    "Expr",
+                    "IdentifierExpr",
+                ]
+            "#]],
+        )
+    }
+    #[test]
+    fn test_function_with_args() {
+        test_walk(
+            "(a=1) => a",
+            expect_test::expect![[r#"
+            [
+                "File",
+                "ExprStmt",
+                "Expr",
+                "FunctionExpr",
+                "FunctionParameter",
+                "Identifier",
+                "Expr",
+                "IntegerLit",
+                "Block::Return",
+                "ReturnStmt",
+                "Expr",
+                "IdentifierExpr",
+            ]
+        "#]],
+        )
+    }
+    #[test]
+    fn test_logical_expr() {
+        test_walk(
+            "true or false",
+            expect_test::expect![[r#"
+            [
+                "File",
+                "ExprStmt",
+                "Expr",
+                "LogicalExpr",
+                "Expr",
+                "IdentifierExpr",
+                "Expr",
+                "IdentifierExpr",
+            ]
+        "#]],
+        )
+    }
+    #[test]
+    fn test_object_expr() {
+        test_walk(
+            "{a:1,\"b\":false}",
+            expect_test::expect![[r#"
+            [
+                "File",
+                "ExprStmt",
+                "Expr",
+                "ObjectExpr",
+                "Property",
+                "Identifier",
+                "Expr",
+                "IntegerLit",
+                "Property",
+                "Identifier",
+                "Expr",
+                "IdentifierExpr",
+            ]
+        "#]],
+        )
+    }
+    #[test]
+    fn test_member_expr() {
+        test_walk(
+            "a.b",
+            expect_test::expect![[r#"
+            [
+                "File",
+                "ExprStmt",
+                "Expr",
+                "MemberExpr",
+                "Expr",
+                "IdentifierExpr",
+            ]
+        "#]],
+        )
+    }
+    #[test]
+    fn test_index_expr() {
+        test_walk(
+            "a[b]",
+            expect_test::expect![[r#"
+            [
+                "File",
+                "ExprStmt",
+                "Expr",
+                "IndexExpr",
+                "Expr",
+                "IdentifierExpr",
+                "Expr",
+                "IdentifierExpr",
+            ]
+        "#]],
+        )
+    }
+    #[test]
+    fn test_binary_expr() {
+        test_walk(
+            "a+b",
+            expect_test::expect![[r#"
+            [
+                "File",
+                "ExprStmt",
+                "Expr",
+                "BinaryExpr",
+                "Expr",
+                "IdentifierExpr",
+                "Expr",
+                "IdentifierExpr",
+            ]
+        "#]],
+        )
+    }
+    #[test]
+    fn test_unary_expr() {
+        test_walk(
+            "-b",
+            expect_test::expect![[r#"
+            [
+                "File",
+                "ExprStmt",
+                "Expr",
+                "UnaryExpr",
+                "Expr",
+                "IdentifierExpr",
+            ]
+        "#]],
+        )
+    }
+    #[test]
+    fn test_pipe_expr() {
+        test_walk(
+            "a|>b()",
+            expect_test::expect![[r#"
+            [
+                "File",
+                "ExprStmt",
+                "Expr",
+                "CallExpr",
+                "Expr",
+                "IdentifierExpr",
+                "Expr",
+                "IdentifierExpr",
+            ]
+        "#]],
+        )
+    }
+    #[test]
+    fn test_call_expr() {
+        test_walk(
+            "b(a:1)",
+            expect_test::expect![[r#"
+            [
+                "File",
+                "ExprStmt",
+                "Expr",
+                "CallExpr",
+                "Expr",
+                "IdentifierExpr",
+                "Property",
+                "Identifier",
+                "Expr",
+                "IntegerLit",
+            ]
+        "#]],
+        )
+    }
+    #[test]
+    fn test_conditional_expr() {
+        test_walk(
+            "if x then y else z",
+            expect_test::expect![[r#"
+            [
+                "File",
+                "ExprStmt",
+                "Expr",
+                "ConditionalExpr",
+                "Expr",
+                "IdentifierExpr",
+                "Expr",
+                "IdentifierExpr",
+                "Expr",
+                "IdentifierExpr",
+            ]
+        "#]],
+        )
+    }
+    #[test]
+    fn test_string_expr() {
+        test_walk(
+            "\"hello ${world}\"",
+            expect_test::expect![[r#"
+            [
+                "File",
+                "ExprStmt",
+                "Expr",
+                "StringExpr",
+                "TextPart",
+                "InterpolatedPart",
+                "Expr",
+                "IdentifierExpr",
+            ]
+        "#]],
+        )
+    }
+    #[test]
+    fn test_paren_expr() {
+        test_walk(
+            "(a + b)",
+            expect_test::expect![[r#"
+            [
+                "File",
+                "ExprStmt",
+                "Expr",
+                "BinaryExpr",
+                "Expr",
+                "IdentifierExpr",
+                "Expr",
+                "IdentifierExpr",
+            ]
+        "#]],
+        )
+    }
+    #[test]
+    fn test_integer_lit() {
+        test_walk(
+            "1",
+            expect_test::expect![[r#"
+            [
+                "File",
+                "ExprStmt",
+                "Expr",
+                "IntegerLit",
+            ]
+        "#]],
+        )
+    }
+    #[test]
+    fn test_float_lit() {
+        test_walk(
+            "1.0",
+            expect_test::expect![[r#"
+            [
+                "File",
+                "ExprStmt",
+                "Expr",
+                "FloatLit",
+            ]
+        "#]],
+        )
+    }
+    #[test]
+    fn test_string_lit() {
+        test_walk(
+            "\"a\"",
+            expect_test::expect![[r#"
+            [
+                "File",
+                "ExprStmt",
+                "Expr",
+                "StringLit",
+            ]
+        "#]],
+        )
+    }
+    #[test]
+    fn test_duration_lit() {
+        test_walk(
+            "1m",
+            expect_test::expect![[r#"
+            [
+                "File",
+                "ExprStmt",
+                "Expr",
+                "DurationLit",
+            ]
+        "#]],
+        )
+    }
+    #[test]
+    fn test_datetime_lit() {
+        test_walk(
+            "2019-01-01T00:00:00Z",
+            expect_test::expect![[r#"
+            [
+                "File",
+                "ExprStmt",
+                "Expr",
+                "DateTimeLit",
+            ]
+        "#]],
+        )
+    }
+    #[test]
+    fn test_regexp_lit() {
+        test_walk(
+            "/./",
+            expect_test::expect![[r#"
+            [
+                "File",
+                "ExprStmt",
+                "Expr",
+                "RegexpLit",
+            ]
+        "#]],
+        )
+    }
+    #[test]
+    fn test_pipe_lit() {
+        test_walk(
+            "(a=<-)=>a",
+            expect_test::expect![[r#"
+            [
+                "File",
+                "ExprStmt",
+                "Expr",
+                "FunctionExpr",
+                "FunctionParameter",
+                "Identifier",
+                "Block::Return",
+                "ReturnStmt",
+                "Expr",
+                "IdentifierExpr",
+            ]
+        "#]],
+        )
+    }
+
+    #[test]
+    fn test_option_stmt() {
+        test_walk(
+            "option a = b",
+            expect_test::expect![[r#"
+            [
+                "File",
+                "OptionStmt",
+                "VariableAssgn",
+                "Identifier",
+                "Expr",
+                "IdentifierExpr",
+            ]
+        "#]],
+        )
+    }
+    #[test]
+    fn test_return_stmt() {
+        // This is quite tricky, even if there is an explicit ReturnStmt,
+        // `analyze` returns a `Block::Return` when inside of a function body.
+        test_walk(
+            "() => {return 1}",
+            expect_test::expect![[r#"
+            [
+                "File",
+                "ExprStmt",
+                "Expr",
+                "FunctionExpr",
+                "Block::Return",
+                "ReturnStmt",
+                "Expr",
+                "IntegerLit",
+            ]
+        "#]],
+        )
+    }
+    #[test]
+    fn test_test_stmt() {
+        test_walk(
+            "test a = 1",
+            expect_test::expect![[r#"
+            [
+                "File",
+                "TestStmt",
+                "VariableAssgn",
+                "Identifier",
+                "Expr",
+                "IntegerLit",
+            ]
+        "#]],
+        )
+    }
+    #[test]
+    fn test_builtin_stmt() {
+        test_walk(
+            "builtin a : int",
+            expect_test::expect![[r#"
+            [
+                "File",
+                "BuiltinStmt",
+                "Identifier",
+            ]
+        "#]],
+        )
+    }
+    #[test]
+    fn test_variable_assgn() {
+        test_walk(
+            "a = b",
+            expect_test::expect![[r#"
+            [
+                "File",
+                "VariableAssgn",
+                "Identifier",
+                "Expr",
+                "IdentifierExpr",
+            ]
+        "#]],
+        )
+    }
+    #[test]
+    fn test_member_assgn() {
+        test_walk(
+            "option a.b = c",
+            expect_test::expect![[r#"
+            [
+                "File",
+                "OptionStmt",
+                "MemberAssgn",
+                "MemberExpr",
+                "Expr",
+                "IdentifierExpr",
+                "Expr",
+                "IdentifierExpr",
+            ]
+        "#]],
+        )
+    }
+}

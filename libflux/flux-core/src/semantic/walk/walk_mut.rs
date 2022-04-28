@@ -25,6 +25,7 @@ impl NodeMut<'_> {
             NodeMut::PackageClause(ref mut n) => n.loc = loc,
             NodeMut::ImportDeclaration(ref mut n) => n.loc = loc,
             NodeMut::Identifier(ref mut n) => n.loc = loc,
+            NodeMut::Expr(ref mut n) => NodeMut::reduce_expr(n).set_loc(loc),
             NodeMut::IdentifierExpr(ref mut n) => n.loc = loc,
             NodeMut::ArrayExpr(ref mut n) => n.loc = loc,
             NodeMut::DictExpr(ref mut n) => n.loc = loc,
