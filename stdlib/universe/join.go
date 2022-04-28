@@ -37,9 +37,8 @@ var methods = map[string]bool{
 
 // JoinOpSpec specifies a particular join operation
 type JoinOpSpec struct {
-	TableNames map[flux.OperationID]string `json:"tableNames"`
-	On         []string                    `json:"on"`
-	Method     string                      `json:"method"`
+	On     []string `json:"on"`
+	Method string   `json:"method"`
 
 	// Note: this field below is non-exported and is not part of the public Flux.Spec
 	// interface (used by the transpiler).  It should not be assumed to be populated
@@ -111,7 +110,6 @@ func createJoinOpSpec(args flux.Arguments, a *flux.Administration) (flux.Operati
 		return nil, err
 	}
 
-	spec.TableNames = make(map[flux.OperationID]string, tables.Len())
 	spec.params = newJoinParams(tables.Len())
 	tables.Range(func(name string, operation values.Value) {
 		if err != nil {
@@ -144,13 +142,6 @@ func createJoinOpSpec(args flux.Arguments, a *flux.Administration) (flux.Operati
 	return spec, nil
 }
 
-func (t *JoinOpSpec) IDer(ider flux.IDer) {
-	for i, name := range t.params.names {
-		operation := t.params.operations[i]
-		t.TableNames[ider.ID(operation)] = name
-	}
-}
-
 func newJoinOp() flux.OperationSpec {
 	return new(JoinOpSpec)
 }
@@ -173,11 +164,9 @@ func newMergeJoinProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.
 		return nil, errors.Newf(codes.Internal, "invalid spec type %T", qs)
 	}
 
-	tableNames := make([]string, len(spec.TableNames))
-	i := 0
-	for _, name := range spec.TableNames {
+	tableNames := make([]string, len(spec.params.names))
+	for i, name := range spec.params.names {
 		tableNames[i] = name
-		i++
 	}
 	sort.Strings(tableNames)
 
@@ -213,6 +202,22 @@ func createMergeJoinTransformation(id execute.DatasetID, mode execute.Accumulati
 	if len(parents) != 2 {
 		// TODO(nathanielc): Support n-way joins
 		return nil, nil, errors.New(codes.Unimplemented, "joins currently must only have two parents")
+	}
+
+	// In <https://github.com/influxdata/flux/issues/4692>, it was found that in
+	// certain cases `s.TableNames` could grow beyond the size of the parents
+	// _incorrectly_.
+	// This would lead to a panic in the for/range to follow.
+	// To illustrate the requirement in a more explicit way, this check ensures
+	// that the names of the tables, and their associated datasets are of equal counts.
+	if len(parents) != len(s.TableNames) {
+		panic(
+			fmt.Sprintf(
+				"expected parent and table name counts to be equal: %d != %d",
+				len(parents),
+				len(s.TableNames),
+			),
+		)
 	}
 
 	tableNames := make(map[execute.DatasetID]string, len(s.TableNames))

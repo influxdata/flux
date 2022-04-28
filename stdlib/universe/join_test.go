@@ -71,9 +71,8 @@ func TestJoin_NewQuery(t *testing.T) {
 					{
 						ID: "join4",
 						Spec: &universe.JoinOpSpec{
-							On:         []string{"host"},
-							TableNames: map[flux.OperationID]string{"range1": "a", "range3": "b"},
-							Method:     "inner",
+							On:     []string{"host"},
+							Method: "inner",
 						},
 					},
 				},
@@ -139,9 +138,8 @@ func TestJoin_NewQuery(t *testing.T) {
 					{
 						ID: "join4",
 						Spec: &universe.JoinOpSpec{
-							On:         []string{"t1"},
-							TableNames: map[flux.OperationID]string{"range1": "a", "range3": "b"},
-							Method:     "inner",
+							On:     []string{"t1"},
+							Method: "inner",
 						},
 					},
 				},
@@ -193,8 +191,7 @@ func TestJoinOperation_Marshaling(t *testing.T) {
 	op := &flux.Operation{
 		ID: "join",
 		Spec: &universe.JoinOpSpec{
-			On:         []string{"t1", "t2"},
-			TableNames: map[flux.OperationID]string{"sum1": "a", "count3": "b"},
+			On: []string{"t1", "t2"},
 		},
 	}
 	querytest.OperationMarshalingTestHelper(t, data, op)
