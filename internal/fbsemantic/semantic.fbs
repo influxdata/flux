@@ -99,9 +99,18 @@ table Argument {
   optional:bool;
 }
 
+union RecordLabel {
+  Concrete,
+  Var,
+}
+
+table Concrete {
+  id:string   /*(required)*/;
+}
+
 table Prop {
-  k:string   /*(required)*/;
-  v:MonoType /*(required)*/;
+  k:RecordLabel   /*(required)*/;
+  v:MonoType      /*(required)*/;
 }
 
 table PolyType {
@@ -118,6 +127,7 @@ enum Kind : ubyte {
   Numeric,
   Comparable,
   Equatable,
+  Label,
   Nullable,
   Record,
   Negatable,

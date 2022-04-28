@@ -12,7 +12,7 @@ use crate::semantic::{
     nodes::Symbol,
     import::Packages,
     types::{CollectionType,
-        Label,
+        RecordLabel,
         Collection,
         Dictionary,
         Function,
@@ -139,6 +139,7 @@ impl From<fb::Kind> for Kind {
             fb::Kind::Numeric => Kind::Numeric,
             fb::Kind::Comparable => Kind::Comparable,
             fb::Kind::Equatable => Kind::Equatable,
+            fb::Kind::Label => Kind::Label,
             fb::Kind::Nullable => Kind::Nullable,
             fb::Kind::Record => Kind::Record,
             fb::Kind::Negatable => Kind::Negatable,
@@ -159,14 +160,30 @@ impl From<Kind> for fb::Kind {
             Kind::Numeric => fb::Kind::Numeric,
             Kind::Comparable => fb::Kind::Comparable,
             Kind::Equatable => fb::Kind::Equatable,
+            Kind::Label => fb::Kind::Label,
             Kind::Nullable => fb::Kind::Nullable,
             Kind::Record => fb::Kind::Record,
             Kind::Negatable => fb::Kind::Negatable,
             Kind::Timeable => fb::Kind::Timeable,
             Kind::Stringable => fb::Kind::Stringable,
             Kind::Basic => fb::Kind::Basic,
-            _ => unreachable!("Unknown Kind"),
         }
+    }
+}
+
+fn record_label_from_table(table: flatbuffers::Table, t: fb::RecordLabel) -> Option<RecordLabel> {
+    match t {
+        fb::RecordLabel::Var => {
+            let var = fb::Var::init_from_table(table);
+            Some(RecordLabel::BoundVariable(Tvar::from(var)))
+        }
+        fb::RecordLabel::Concrete => {
+            let concrete = fb::Concrete::init_from_table(table);
+            let id = concrete.id()?;
+            Some(RecordLabel::from(id))
+        }
+        fb::RecordLabel::NONE => None,
+        _ => unreachable!("Unknown type from table"),
     }
 }
 
@@ -186,12 +203,12 @@ fn from_table(table: flatbuffers::Table, t: fb::MonoType) -> Option<MonoType> {
         }
         fb::MonoType::Fun => {
             let opt: Option<Function> = fb::Fun::init_from_table(table).into();
-            Some(MonoType::fun(opt?))
+            Some(MonoType::from(opt?))
         }
         fb::MonoType::Record => fb::Record::init_from_table(table).into(),
         fb::MonoType::Dict => {
             let opt: Option<Dictionary> = fb::Dict::init_from_table(table).into();
-            Some(MonoType::dict(opt?))
+            Some(MonoType::from(opt?))
         }
         fb::MonoType::NONE => None,
         _ => unreachable!("Unknown type from table"),
@@ -265,7 +282,7 @@ impl From<fb::Record<'_>> for Option<MonoType> {
 impl From<fb::Prop<'_>> for Option<Property> {
     fn from(t: fb::Prop) -> Option<Property> {
         Some(Property {
-            k: Label::from(t.k()?),
+            k: record_label_from_table(t.k()?, t.k_type())?,
             v: from_table(t.v()?, t.v_type())?,
         })
     }
@@ -479,6 +496,7 @@ pub fn build_type(
     match t {
         MonoType::Error => unreachable!(),
         MonoType::Builtin(typ) => build_basic_type(builder, typ),
+        MonoType::Label(_) => build_basic_type(builder, &BuiltinType::String),
         MonoType::BoundVar(tvr) | MonoType::Var(tvr) => {
             let offset = build_var(builder, *tvr);
             (offset.as_union_value(), fb::MonoType::Var)
@@ -601,13 +619,25 @@ fn build_prop<'a>(
     builder: &mut flatbuffers::FlatBufferBuilder<'a>,
     prop: &Property,
 ) -> flatbuffers::WIPOffset<fb::Prop<'a>> {
-    let (off, typ) = build_type(builder, &prop.v);
-    let k = builder.create_string(prop.k.as_symbol().full_name());
+    let (off, v_type) = build_type(builder, &prop.v);
+    let (k, k_type) = match &prop.k {
+        RecordLabel::Variable(var) | RecordLabel::BoundVariable(var) => {
+            let concrete = build_var(builder, *var);
+            (concrete.as_union_value(), fb::RecordLabel::Var)
+        }
+        RecordLabel::Concrete(name) => {
+            let id = builder.create_string(name);
+            let concrete = fb::Concrete::create(builder, &fb::ConcreteArgs { id: Some(id) });
+            (concrete.as_union_value(), fb::RecordLabel::Concrete)
+        }
+        RecordLabel::Error => unreachable!(),
+    };
     fb::Prop::create(
         builder,
         &fb::PropArgs {
+            k_type,
             k: Some(k),
-            v_type: typ,
+            v_type,
             v: Some(off),
         },
     )

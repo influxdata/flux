@@ -234,7 +234,7 @@ impl Formatter {
     }
 
     fn format_property_type(&mut self, n: &semantic::types::Property) {
-        self.write_string(&n.k);
+        self.write_string(&n.k.to_string());
         self.write_string(": ");
         self.format_monotype(&n.v);
     }

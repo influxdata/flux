@@ -119,6 +119,33 @@ func (v CollectionType) String() string {
 	return "CollectionType(" + strconv.FormatInt(int64(v), 10) + ")"
 }
 
+type RecordLabel byte
+
+const (
+	RecordLabelNONE     RecordLabel = 0
+	RecordLabelConcrete RecordLabel = 1
+	RecordLabelVar      RecordLabel = 2
+)
+
+var EnumNamesRecordLabel = map[RecordLabel]string{
+	RecordLabelNONE:     "NONE",
+	RecordLabelConcrete: "Concrete",
+	RecordLabelVar:      "Var",
+}
+
+var EnumValuesRecordLabel = map[string]RecordLabel{
+	"NONE":     RecordLabelNONE,
+	"Concrete": RecordLabelConcrete,
+	"Var":      RecordLabelVar,
+}
+
+func (v RecordLabel) String() string {
+	if s, ok := EnumNamesRecordLabel[v]; ok {
+		return s
+	}
+	return "RecordLabel(" + strconv.FormatInt(int64(v), 10) + ")"
+}
+
 type Kind byte
 
 const (
@@ -129,11 +156,12 @@ const (
 	KindNumeric      Kind = 4
 	KindComparable   Kind = 5
 	KindEquatable    Kind = 6
-	KindNullable     Kind = 7
-	KindRecord       Kind = 8
-	KindNegatable    Kind = 9
-	KindTimeable     Kind = 10
-	KindStringable   Kind = 11
+	KindLabel        Kind = 7
+	KindNullable     Kind = 8
+	KindRecord       Kind = 9
+	KindNegatable    Kind = 10
+	KindTimeable     Kind = 11
+	KindStringable   Kind = 12
 )
 
 var EnumNamesKind = map[Kind]string{
@@ -144,6 +172,7 @@ var EnumNamesKind = map[Kind]string{
 	KindNumeric:      "Numeric",
 	KindComparable:   "Comparable",
 	KindEquatable:    "Equatable",
+	KindLabel:        "Label",
 	KindNullable:     "Nullable",
 	KindRecord:       "Record",
 	KindNegatable:    "Negatable",
@@ -159,6 +188,7 @@ var EnumValuesKind = map[string]Kind{
 	"Numeric":      KindNumeric,
 	"Comparable":   KindComparable,
 	"Equatable":    KindEquatable,
+	"Label":        KindLabel,
 	"Nullable":     KindNullable,
 	"Record":       KindRecord,
 	"Negatable":    KindNegatable,
@@ -1371,6 +1401,51 @@ func ArgumentEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
 	return builder.EndObject()
 }
 
+type Concrete struct {
+	_tab flatbuffers.Table
+}
+
+func GetRootAsConcrete(buf []byte, offset flatbuffers.UOffsetT) *Concrete {
+	n := flatbuffers.GetUOffsetT(buf[offset:])
+	x := &Concrete{}
+	x.Init(buf, n+offset)
+	return x
+}
+
+func GetSizePrefixedRootAsConcrete(buf []byte, offset flatbuffers.UOffsetT) *Concrete {
+	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
+	x := &Concrete{}
+	x.Init(buf, n+offset+flatbuffers.SizeUint32)
+	return x
+}
+
+func (rcv *Concrete) Init(buf []byte, i flatbuffers.UOffsetT) {
+	rcv._tab.Bytes = buf
+	rcv._tab.Pos = i
+}
+
+func (rcv *Concrete) Table() flatbuffers.Table {
+	return rcv._tab
+}
+
+func (rcv *Concrete) Id() []byte {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(4))
+	if o != 0 {
+		return rcv._tab.ByteVector(o + rcv._tab.Pos)
+	}
+	return nil
+}
+
+func ConcreteStart(builder *flatbuffers.Builder) {
+	builder.StartObject(1)
+}
+func ConcreteAddId(builder *flatbuffers.Builder, id flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(0, flatbuffers.UOffsetT(id), 0)
+}
+func ConcreteEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
+	return builder.EndObject()
+}
+
 type Prop struct {
 	_tab flatbuffers.Table
 }
@@ -1398,16 +1473,29 @@ func (rcv *Prop) Table() flatbuffers.Table {
 	return rcv._tab
 }
 
-func (rcv *Prop) K() []byte {
+func (rcv *Prop) KType() RecordLabel {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(4))
 	if o != 0 {
-		return rcv._tab.ByteVector(o + rcv._tab.Pos)
+		return RecordLabel(rcv._tab.GetByte(o + rcv._tab.Pos))
 	}
-	return nil
+	return 0
+}
+
+func (rcv *Prop) MutateKType(n RecordLabel) bool {
+	return rcv._tab.MutateByteSlot(4, byte(n))
+}
+
+func (rcv *Prop) K(obj *flatbuffers.Table) bool {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
+	if o != 0 {
+		rcv._tab.Union(obj, o)
+		return true
+	}
+	return false
 }
 
 func (rcv *Prop) VType() MonoType {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(8))
 	if o != 0 {
 		return MonoType(rcv._tab.GetByte(o + rcv._tab.Pos))
 	}
@@ -1415,11 +1503,11 @@ func (rcv *Prop) VType() MonoType {
 }
 
 func (rcv *Prop) MutateVType(n MonoType) bool {
-	return rcv._tab.MutateByteSlot(6, byte(n))
+	return rcv._tab.MutateByteSlot(8, byte(n))
 }
 
 func (rcv *Prop) V(obj *flatbuffers.Table) bool {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(8))
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(10))
 	if o != 0 {
 		rcv._tab.Union(obj, o)
 		return true
@@ -1428,16 +1516,19 @@ func (rcv *Prop) V(obj *flatbuffers.Table) bool {
 }
 
 func PropStart(builder *flatbuffers.Builder) {
-	builder.StartObject(3)
+	builder.StartObject(4)
+}
+func PropAddKType(builder *flatbuffers.Builder, kType RecordLabel) {
+	builder.PrependByteSlot(0, byte(kType), 0)
 }
 func PropAddK(builder *flatbuffers.Builder, k flatbuffers.UOffsetT) {
-	builder.PrependUOffsetTSlot(0, flatbuffers.UOffsetT(k), 0)
+	builder.PrependUOffsetTSlot(1, flatbuffers.UOffsetT(k), 0)
 }
 func PropAddVType(builder *flatbuffers.Builder, vType MonoType) {
-	builder.PrependByteSlot(1, byte(vType), 0)
+	builder.PrependByteSlot(2, byte(vType), 0)
 }
 func PropAddV(builder *flatbuffers.Builder, v flatbuffers.UOffsetT) {
-	builder.PrependUOffsetTSlot(2, flatbuffers.UOffsetT(v), 0)
+	builder.PrependUOffsetTSlot(3, flatbuffers.UOffsetT(v), 0)
 }
 func PropEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
 	return builder.EndObject()

@@ -42,8 +42,9 @@ pub fn prelude() -> Option<PackageExports> {
     let _ = env_logger::try_init();
 
     let buf = include_bytes!(concat!(env!("OUT_DIR"), "/prelude.data"));
+
     flatbuffers::root::<fb::TypeEnvironment>(buf)
-        .unwrap()
+        .unwrap_or_else(|err| panic!("{}", err))
         .into()
 }
 
@@ -54,7 +55,9 @@ pub fn imports() -> Option<Packages> {
     let _ = env_logger::try_init();
 
     let buf = include_bytes!(concat!(env!("OUT_DIR"), "/stdlib.data"));
-    flatbuffers::root::<fb::Packages>(buf).unwrap().into()
+    flatbuffers::root::<fb::Packages>(buf)
+        .unwrap_or_else(|err| panic!("{}", err))
+        .into()
 }
 
 static IMPORTS: Lazy<Option<Packages>> = Lazy::new(imports);

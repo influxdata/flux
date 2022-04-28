@@ -1528,12 +1528,11 @@ impl<'input> Parser<'input> {
     fn parse_property_key(&mut self) -> PropertyKey {
         let t = self.expect_one_of(&[TokenType::Ident, TokenType::String]);
         match t.tok {
-            TokenType::Ident => PropertyKey::Identifier(Identifier {
+            TokenType::String => PropertyKey::StringLit(self.new_string_literal(t)),
+            _ => PropertyKey::Identifier(Identifier {
                 base: self.base_node_from_token(&t),
                 name: t.lit,
             }),
-            TokenType::String => PropertyKey::StringLit(self.new_string_literal(t)),
-            _ => unreachable!(),
         }
     }
     fn parse_identifier(&mut self) -> Identifier {

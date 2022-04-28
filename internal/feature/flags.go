@@ -173,6 +173,18 @@ func VectorizeOperators() BoolFlag {
 	return vectorizeOperators
 }
 
+var labelPolymorphism = feature.MakeBoolFlag(
+	"Label polymorphism",
+	"labelPolymorphism",
+	"Markus Westerlind",
+	false,
+)
+
+// LabelPolymorphism - Enables label polymorphism in the type system
+func LabelPolymorphism() BoolFlag {
+	return labelPolymorphism
+}
+
 // Inject will inject the Flagger into the context.
 func Inject(ctx context.Context, flagger Flagger) context.Context {
 	return feature.Inject(ctx, flagger)
@@ -192,6 +204,7 @@ var all = []Flag{
 	setFinalizerMemoryTracking,
 	vectorizeAddition,
 	vectorizeOperators,
+	labelPolymorphism,
 }
 
 var byKey = map[string]Flag{
@@ -208,6 +221,7 @@ var byKey = map[string]Flag{
 	"setFinalizerMemoryTracking":       setFinalizerMemoryTracking,
 	"vectorizeAddition":                vectorizeAddition,
 	"vectorizeOperators":               vectorizeOperators,
+	"labelPolymorphism":                labelPolymorphism,
 }
 
 // Flags returns all feature flags.
