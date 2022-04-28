@@ -708,8 +708,11 @@ mod tests {
                     for (_, mut v) in f.req.iter_mut() {
                         self.normalize(&mut v);
                     }
-                    for (_, mut v) in f.opt.iter_mut() {
-                        self.normalize(&mut v);
+                    for (_, v) in f.opt.iter_mut() {
+                        self.normalize(&mut v.typ);
+                        if let Some(default) = &mut v.default {
+                            self.normalize(default);
+                        }
                     }
                     if let Some(p) = &mut f.pipe {
                         self.normalize(&mut p.v);

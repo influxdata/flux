@@ -1165,6 +1165,7 @@ fn test_parse_type_expression_function_optional_params() {
                             name: "int".to_string(),
                         },
                     }),
+                    default: None,
                 }],
                 monotype: MonoType::Basic(NamedType {
                     base: BaseNode {

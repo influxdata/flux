@@ -535,8 +535,21 @@ impl<'a> Converter<'a> {
                         ast::ParameterType::Required { name, monotype, .. } => {
                             req.insert(name.name.clone(), self.convert_monotype(monotype, tvars));
                         }
-                        ast::ParameterType::Optional { name, monotype, .. } => {
-                            opt.insert(name.name.clone(), self.convert_monotype(monotype, tvars));
+                        ast::ParameterType::Optional {
+                            name,
+                            monotype,
+                            default,
+                            ..
+                        } => {
+                            opt.insert(
+                                name.name.clone(),
+                                types::Argument {
+                                    typ: self.convert_monotype(monotype, tvars),
+                                    default: default.as_ref().map(|default| {
+                                        MonoType::Label(types::Label::from(default.value.as_str()))
+                                    }),
+                                },
+                            );
                         }
                         ast::ParameterType::Pipe {
                             name,
@@ -2710,7 +2723,7 @@ mod tests {
         let got =
             convert_monotype(&monotype_ex, &mut m, &mut sub::Substitution::default()).unwrap();
         let mut opt = MonoTypeMap::new();
-        opt.insert(String::from("A"), MonoType::INT);
+        opt.insert(String::from("A"), MonoType::INT.into());
         let want = MonoType::from(types::Function {
             req: MonoTypeMap::new(),
             opt,

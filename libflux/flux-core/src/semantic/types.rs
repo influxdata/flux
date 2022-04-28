@@ -526,6 +526,16 @@ impl<T: Substitutable> Substitutable for Ptr<T> {
     }
 }
 
+impl<T> Substitutable for Argument<T>
+where
+    T: Substitutable + Clone,
+{
+    fn walk(&self, sub: &mut (impl ?Sized + Substituter)) -> Option<Self> {
+        let Self { default, typ } = self;
+        apply2(default, typ, sub).map(|(default, typ)| Argument { default, typ })
+    }
+}
+
 /// An ordered map of string identifiers to monotypes.
 
 /// Represents a Flux primitive primitive type such as int or string.
@@ -1006,7 +1016,7 @@ impl MonoType {
 
             (MonoType::Record(t), MonoType::Record(s)) => t.unify(s, unifier),
 
-            (MonoType::Fun(t), MonoType::Fun(s)) => t.unify(s, unifier),
+            (MonoType::Fun(t), MonoType::Fun(s)) => t.unify(s, unifier, MonoType::clone),
 
             (exp, act) => unifier.errors.push(Error::CannotUnify {
                 exp: exp.clone(),
@@ -1064,11 +1074,15 @@ impl MonoType {
     /// Returns the type of `param` if `self` is a function type
     pub fn parameter(&self, param: &str) -> Option<&MonoType> {
         match self {
-            MonoType::Fun(f) => f.req.get(param).or_else(|| f.opt.get(param)).or_else(|| {
-                f.pipe
-                    .as_ref()
-                    .and_then(|pipe| if pipe.k == param { Some(&pipe.v) } else { None })
-            }),
+            MonoType::Fun(f) => f
+                .req
+                .get(param)
+                .or_else(|| f.opt.get(param).map(|arg| &arg.typ))
+                .or_else(|| {
+                    f.pipe
+                        .as_ref()
+                        .and_then(|pipe| if pipe.k == param { Some(&pipe.v) } else { None })
+                }),
             _ => None,
         }
     }
@@ -1869,6 +1883,44 @@ where
     }
 }
 
+/// Represents an (optional) argument to a function
+#[derive(Debug, Clone, PartialEq, Serialize)]
+pub struct Argument<T> {
+    /// The default argument to the function (if one exists)
+    pub default: Option<T>,
+    /// The type of the argument
+    pub typ: T,
+}
+
+impl<T> fmt::Display for Argument<T>
+where
+    T: fmt::Display,
+{
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.typ)?;
+        if let Some(default) = &self.default {
+            write!(f, " = {}", default)?;
+        }
+        Ok(())
+    }
+}
+
+impl<T> From<T> for Argument<T> {
+    fn from(typ: T) -> Self {
+        Self { default: None, typ }
+    }
+}
+
+impl Argument<MonoType> {
+    fn contains(&self, tv: Tvar) -> bool {
+        let Self { default, typ } = self;
+        default
+            .as_ref()
+            .map_or(false, |default| default.contains(tv))
+            || typ.contains(tv)
+    }
+}
+
 /// Represents a function type.
 ///
 /// A function type is defined by a set of required arguments,
@@ -1879,7 +1931,7 @@ pub struct Function<T = MonoType> {
     /// Required arguments to a function.
     pub req: MonoTypeMap<String, T>,
     /// Optional arguments to a function.
-    pub opt: MonoTypeMap<String, T>,
+    pub opt: MonoTypeMap<String, Argument<T>>,
     /// An optional pipe argument.
     pub pipe: Option<Property<String, T>>,
     /// Required return type.
@@ -1930,8 +1982,9 @@ impl fmt::Display for Function {
             f,
             "({}) => {}",
             pipe.iter()
-                .chain(required.iter().chain(optional.iter()))
                 .map(|x| x.to_string())
+                .chain(required.iter().map(|x| x.to_string()))
+                .chain(optional.iter().map(|x| x.to_string()))
                 .collect::<Vec<_>>()
                 .join(", "),
             self.retn
@@ -1996,7 +2049,18 @@ impl<T> Function<T> {
             retn,
         } = self;
         Function {
-            opt: opt.into_iter().map(|(k, v)| (k, f(v))).collect(),
+            opt: opt
+                .into_iter()
+                .map(|(k, v)| {
+                    (
+                        k,
+                        Argument {
+                            default: v.default.map(&mut f),
+                            typ: f(v.typ),
+                        },
+                    )
+                })
+                .collect(),
             req: req.into_iter().map(|(k, v)| (k, f(v))).collect(),
             pipe: pipe.map(|prop| Property {
                 k: prop.k,
@@ -2009,15 +2073,8 @@ impl<T> Function<T> {
 
 impl Function {
     #[cfg(test)]
-    fn try_unify<T>(
-        &self,
-        actual: &Function<T>,
-        sub: &mut Substitution,
-    ) -> Result<(), Errors<Error>>
-    where
-        T: TypeLike<Error = Error> + Clone,
-    {
-        self.try_unify_with(actual, sub, From::from)
+    fn try_unify(&self, actual: &Function, sub: &mut Substitution) -> Result<(), Errors<Error>> {
+        self.try_unify_with(actual, sub, Clone::clone, From::from)
     }
 
     #[cfg(test)]
@@ -2025,6 +2082,7 @@ impl Function {
         &self,
         actual: &Function<T>,
         sub: &mut Substitution,
+        mk_type: impl Fn(&MonoType) -> T,
         mk_error: impl Fn(Error) -> T::Error,
     ) -> Result<(), Errors<T::Error>>
     where
@@ -2032,7 +2090,7 @@ impl Function {
     {
         let mut unifier = Unifier::new(sub);
 
-        self.unify(actual, &mut unifier);
+        self.unify(actual, &mut unifier, mk_type);
 
         unifier.finish(MonoType::from(self.clone()), mk_error)?;
         Ok(())
@@ -2042,6 +2100,7 @@ impl Function {
         &self,
         actual: &Function<T>,
         sub: &mut Substitution,
+        mk_type: impl Fn(&MonoType) -> T,
         mk_error: impl Fn(Error) -> T::Error,
     ) -> Result<(), Errors<T::Error>>
     where
@@ -2049,7 +2108,7 @@ impl Function {
     {
         let mut unifier = Unifier::new_subsume(sub);
 
-        self.unify(actual, &mut unifier);
+        self.unify(actual, &mut unifier, mk_type);
 
         unifier.finish(MonoType::from(self.clone()), mk_error)?;
         Ok(())
@@ -2090,8 +2149,12 @@ impl Function {
     /// Unify 3 and 4: should fail because `a` is not in the arguments of 4.
     ///
     /// self represents the expected type.
-    fn unify<T>(&self, actual: &Function<T>, unifier: &mut Unifier<'_, T::Error>)
-    where
+    fn unify<T>(
+        &self,
+        actual: &Function<T>,
+        unifier: &mut Unifier<'_, T::Error>,
+        mk_type: impl Fn(&MonoType) -> T,
+    ) where
         T: TypeLike + Clone,
     {
         // Some aliasing for coherence with the doc.
@@ -2157,7 +2220,11 @@ impl Function {
 
         let g_opt = &mut g.opt;
         for (name, exp) in f.req.into_iter() {
-            if let Some(act) = g.req.remove(&name).or_else(|| g_opt.remove(&name)) {
+            if let Some(act) = g
+                .req
+                .remove(&name)
+                .or_else(|| g_opt.remove(&name).map(|arg| arg.typ))
+            {
                 // The required argument is in g's required arguments.
                 merge_in_context(&exp, &act, unifier, |e| {
                     Error::CannotUnifyArgument(name.clone(), Box::new(e))
@@ -2170,8 +2237,18 @@ impl Function {
         }
         // Unify f's optional arguments.
         for (name, exp) in f.opt.into_iter() {
-            if let Some(act) = g.req.remove(&name).or_else(|| g_opt.remove(&name)) {
-                merge_in_context(&exp, &act, unifier, |e| {
+            if let Some(act) = g
+                .req
+                .remove(&name)
+                .or_else(|| g_opt.remove(&name).map(|arg| arg.typ))
+            {
+                merge_in_context(&exp.typ, &act, unifier, |e| {
+                    Error::CannotUnifyArgument(name.clone(), Box::new(e))
+                });
+            } else if let Some(default) = &exp.default {
+                // No argument were provided by `g`, however `f` has a default type which
+                // we can use instead
+                merge_in_context(&exp.typ, &mk_type(default), unifier, |e| {
                     Error::CannotUnifyArgument(name.clone(), Box::new(e))
                 });
             }
@@ -2498,8 +2575,8 @@ mod tests {
             Function {
                 req: MonoTypeMap::new(),
                 opt: semantic_map! {
-                    String::from("a") => MonoType::INT,
-                    String::from("b") => MonoType::INT,
+                    String::from("a") => MonoType::INT.into(),
+                    String::from("b") => MonoType::INT.into(),
                 },
                 pipe: Some(Property {
                     k: String::from("<-"),
@@ -2517,8 +2594,8 @@ mod tests {
                     String::from("b") => MonoType::INT,
                 },
                 opt: semantic_map! {
-                    String::from("c") => MonoType::INT,
-                    String::from("d") => MonoType::INT,
+                    String::from("c") => MonoType::INT.into(),
+                    String::from("d") => MonoType::INT.into(),
                 },
                 pipe: Some(Property {
                     k: String::from("<-"),
@@ -2535,7 +2612,7 @@ mod tests {
                     String::from("a") => MonoType::INT,
                 },
                 opt: semantic_map! {
-                    String::from("b") => MonoType::BOOL,
+                    String::from("b") => MonoType::BOOL.into(),
                 },
                 pipe: None,
                 retn: MonoType::INT,
@@ -2550,7 +2627,7 @@ mod tests {
                     String::from("c") => MonoType::INT,
                 },
                 opt: semantic_map! {
-                    String::from("d") => MonoType::BOOL,
+                    String::from("d") => MonoType::BOOL.into(),
                 },
                 pipe: Some(Property {
                     k: String::from("a"),

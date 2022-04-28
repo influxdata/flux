@@ -925,7 +925,7 @@ impl FunctionExpr {
                         expr: param_type.clone(),
                     };
                     infer.env.add(id.clone(), typ);
-                    opt.insert(id.to_string(), param_type);
+                    opt.insert(id.to_string(), param_type.into());
                 }
                 None => {
                     // We are here: `infer = (a) => {...}`.
@@ -993,7 +993,7 @@ impl FunctionExpr {
                 Some(ref mut e) => {
                     e.infer(infer)?;
                     let id = param.key.name.clone();
-                    opt.insert(id.to_string(), e.type_of());
+                    opt.insert(id.to_string(), e.type_of().into());
                 }
                 None => {
                     let id = param.key.name.clone();
@@ -1324,10 +1324,15 @@ impl CallExpr {
 
         match &*self.callee.type_of().apply_cow(infer.sub) {
             MonoType::Fun(func) => {
-                if let Err(err) = func.try_subsume_with(&act, infer.sub, |error| Located {
-                    location: self.loc.clone(),
-                    error,
-                }) {
+                if let Err(err) = func.try_subsume_with(
+                    &act,
+                    infer.sub,
+                    |typ| (typ.clone(), self.callee.loc()),
+                    |error| Located {
+                        location: self.loc.clone(),
+                        error,
+                    },
+                ) {
                     log::debug!(
                         "Unify error: {} <=> {} : {}",
                         func,
@@ -1338,8 +1343,9 @@ impl CallExpr {
                 }
             }
             callee => {
+                let act = act.map(|(typ, _)| typ);
                 // Constrain the callee to be a Function.
-                infer.equal(callee, &MonoType::from(act.map(|(typ, _)| typ)), &self.loc);
+                infer.equal(callee, &MonoType::from(act), &self.loc);
             }
         }
 

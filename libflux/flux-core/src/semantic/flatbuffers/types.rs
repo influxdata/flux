@@ -297,7 +297,7 @@ impl From<fb::Fun<'_>> for Option<Function> {
                     pipe = Some(Property { k, v });
                 }
                 Some((name, t, _, true)) => {
-                    opt.insert(name, t);
+                    opt.insert(name, t.into());
                 }
                 Some((name, t, false, false)) => {
                     req.insert(name, t);
@@ -649,7 +649,7 @@ fn build_fun<'a>(
         args.push((k, v, false, false));
     }
     for (k, v) in &fun.opt {
-        args.push((k, v, false, true));
+        args.push((k, &v.typ, false, true));
     }
     let args = build_vec(args, builder, build_arg);
     let args = builder.create_vector(args.as_slice());

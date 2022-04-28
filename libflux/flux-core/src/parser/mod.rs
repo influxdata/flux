@@ -633,7 +633,7 @@ impl<'input> Parser<'input> {
         params
     }
 
-    // (identifier | "?" identifier | "<-" identifier | "<-") ":" MonoType
+    // (identifier | "?" identifier ("=" string)? | "<-" identifier | "<-") ":" MonoType
     fn parse_parameter_type(&mut self) -> ParameterType {
         match self.peek().tok {
             TokenType::QuestionMark => {
@@ -643,10 +643,19 @@ impl<'input> Parser<'input> {
                 self.expect(TokenType::Colon);
                 let mt = self.parse_monotype();
                 let _base = self.base_node_from_token(&symbol);
+
+                let default = if self.peek().tok == TokenType::Assign {
+                    self.expect(TokenType::Assign);
+                    Some(self.parse_string_literal())
+                } else {
+                    None
+                };
+
                 ParameterType::Optional {
                     base: self.base_node_from_others(&_base, mt.base()),
                     name: id,
                     monotype: mt,
+                    default,
                 }
             }
             TokenType::PipeReceive => {
