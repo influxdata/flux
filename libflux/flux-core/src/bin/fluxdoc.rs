@@ -297,7 +297,11 @@ impl<'a> example::Executor for CLIExecutor<'a> {
         write!(tmpfile.reopen()?, "{}", code)?;
 
         let mut cmd = Command::new(self.path);
-        cmd.arg("--format").arg("csv").arg(tmpfile.path());
+        cmd.arg("--format")
+            .arg("csv")
+            .arg(tmpfile.path())
+            .arg("--feature")
+            .arg(r#"{"labelPolymorphism": true}"#);
         log::debug!("Executing {:?}", cmd);
         let output = cmd
             .output()

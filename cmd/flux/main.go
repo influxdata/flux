@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -23,7 +24,7 @@ var flags struct {
 	ExecScript bool
 	Trace      string
 	Format     string
-	Features   []string
+	Features   string
 }
 
 func runE(cmd *cobra.Command, args []string) error {
@@ -54,8 +55,10 @@ func runE(cmd *cobra.Command, args []string) error {
 	defer span.Finish()
 
 	flagger := executetest.TestFlagger{}
-	for _, feature := range flags.Features {
-		flagger[feature] = true
+	if len(flags.Features) != 0 {
+		if err := json.Unmarshal([]byte(flags.Features), &flagger); err != nil {
+			return errors.Newf(codes.Invalid, "Unable to unmarshal features as json: %s", err)
+		}
 	}
 	ctx = feature.Dependency{Flagger: flagger}.Inject(ctx)
 
@@ -115,7 +118,7 @@ func main() {
 	fluxCmd.Flags().StringVar(&flags.Trace, "trace", "", "Trace query execution")
 	fluxCmd.Flags().StringVarP(&flags.Format, "format", "", "cli", "Output format one of: cli,csv. Defaults to cli")
 	fluxCmd.Flag("trace").NoOptDefVal = "jaeger"
-	fluxCmd.Flags().StringSliceVar(&flags.Features, "feature", nil, "Adds a boolean feature flag. See internal/feature/flags.yml for a list of the current features")
+	fluxCmd.Flags().StringVar(&flags.Features, "feature", "", "JSON object specifying the features to execute with. See internal/feature/flags.yml for a list of the current features")
 
 	fmtCmd := &cobra.Command{
 		Use:           "fmt",

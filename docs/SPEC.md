@@ -503,6 +503,25 @@ Note that an empty string is distinct from a _null_ value.
 
 The length of a string is its size in bytes, not the number of characters, since a single character may be multiple bytes.
 
+##### Label types (Upcoming/Feature flagged)
+
+A _label type_ represents the name of a record field.
+String literals may be treated as a label type instead of a `string` when used in a context that
+expects a label type.
+
+```
+"a" // Can be treated as Label("a")
+"xyz" // Can be treated as  Label("xyz")
+```
+
+In effect, this allows functions accepting a record and a label to refer to specific properties of
+the record.
+
+```
+// "mycolumn" is treated as Label("mycolumn") for when passed to `mean`
+mean(column: "mycolumn") // Calculates the mean of `mycolumn`
+```
+
 ##### Regular expression types
 
 A _regular expression type_ represents the set of all patterns for regular expressions.
@@ -523,10 +542,8 @@ The length of an array is the number of elements in the array.
 ##### Record types
 
 An _record type_ represents a set of unordered key and value pairs.
-The key must always be a string.
+The key can be a string or a [type variable](<#Type variables>).
 The value may be any other type, and need not be the same as other values within the record.
-
-Keys on a record may only be referenced statically.
 
 Type inference will determine the properties that are present on a record.
 If type inference determines all the properties on a record it is said to be bounded.
@@ -554,6 +571,11 @@ The generated values may be of any other type but must all be the same type.
 
 Flux functions can be polymorphic, meaning they can be applied to arguments of different types.
 Flux supports parametric, record, and ad hoc polymorphism.
+
+##### Type variables
+
+Polymorphism are represented via "type variables" which are specified with a single uppercase
+letter (`A`, `B`, etc).
 
 ##### Parametric Polymorphism
 

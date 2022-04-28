@@ -360,18 +360,114 @@ pub mod fbsemantic {
         since = "2.0.0",
         note = "Use associated constants instead. This will no longer be generated in 2021."
     )]
-    pub const ENUM_MIN_KIND: u8 = 0;
+    pub const ENUM_MIN_RECORD_LABEL: u8 = 0;
     #[deprecated(
         since = "2.0.0",
         note = "Use associated constants instead. This will no longer be generated in 2021."
     )]
-    pub const ENUM_MAX_KIND: u8 = 11;
+    pub const ENUM_MAX_RECORD_LABEL: u8 = 2;
     #[deprecated(
         since = "2.0.0",
         note = "Use associated constants instead. This will no longer be generated in 2021."
     )]
     #[allow(non_camel_case_types)]
-    pub const ENUM_VALUES_KIND: [Kind; 12] = [
+    pub const ENUM_VALUES_RECORD_LABEL: [RecordLabel; 3] =
+        [RecordLabel::NONE, RecordLabel::Concrete, RecordLabel::Var];
+
+    #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]
+    #[repr(transparent)]
+    pub struct RecordLabel(pub u8);
+    #[allow(non_upper_case_globals)]
+    impl RecordLabel {
+        pub const NONE: Self = Self(0);
+        pub const Concrete: Self = Self(1);
+        pub const Var: Self = Self(2);
+
+        pub const ENUM_MIN: u8 = 0;
+        pub const ENUM_MAX: u8 = 2;
+        pub const ENUM_VALUES: &'static [Self] = &[Self::NONE, Self::Concrete, Self::Var];
+        /// Returns the variant's name or "" if unknown.
+        pub fn variant_name(self) -> Option<&'static str> {
+            match self {
+                Self::NONE => Some("NONE"),
+                Self::Concrete => Some("Concrete"),
+                Self::Var => Some("Var"),
+                _ => None,
+            }
+        }
+    }
+    impl std::fmt::Debug for RecordLabel {
+        fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+            if let Some(name) = self.variant_name() {
+                f.write_str(name)
+            } else {
+                f.write_fmt(format_args!("<UNKNOWN {:?}>", self.0))
+            }
+        }
+    }
+    impl<'a> flatbuffers::Follow<'a> for RecordLabel {
+        type Inner = Self;
+        #[inline]
+        fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
+            let b = unsafe { flatbuffers::read_scalar_at::<u8>(buf, loc) };
+            Self(b)
+        }
+    }
+
+    impl flatbuffers::Push for RecordLabel {
+        type Output = RecordLabel;
+        #[inline]
+        fn push(&self, dst: &mut [u8], _rest: &[u8]) {
+            unsafe {
+                flatbuffers::emplace_scalar::<u8>(dst, self.0);
+            }
+        }
+    }
+
+    impl flatbuffers::EndianScalar for RecordLabel {
+        #[inline]
+        fn to_little_endian(self) -> Self {
+            let b = u8::to_le(self.0);
+            Self(b)
+        }
+        #[inline]
+        #[allow(clippy::wrong_self_convention)]
+        fn from_little_endian(self) -> Self {
+            let b = u8::from_le(self.0);
+            Self(b)
+        }
+    }
+
+    impl<'a> flatbuffers::Verifiable for RecordLabel {
+        #[inline]
+        fn run_verifier(
+            v: &mut flatbuffers::Verifier,
+            pos: usize,
+        ) -> Result<(), flatbuffers::InvalidFlatbuffer> {
+            use self::flatbuffers::Verifiable;
+            u8::run_verifier(v, pos)
+        }
+    }
+
+    impl flatbuffers::SimpleToVerifyInSlice for RecordLabel {}
+    pub struct RecordLabelUnionTableOffset {}
+
+    #[deprecated(
+        since = "2.0.0",
+        note = "Use associated constants instead. This will no longer be generated in 2021."
+    )]
+    pub const ENUM_MIN_KIND: u8 = 0;
+    #[deprecated(
+        since = "2.0.0",
+        note = "Use associated constants instead. This will no longer be generated in 2021."
+    )]
+    pub const ENUM_MAX_KIND: u8 = 12;
+    #[deprecated(
+        since = "2.0.0",
+        note = "Use associated constants instead. This will no longer be generated in 2021."
+    )]
+    #[allow(non_camel_case_types)]
+    pub const ENUM_VALUES_KIND: [Kind; 13] = [
         Kind::Addable,
         Kind::Basic,
         Kind::Subtractable,
@@ -379,6 +475,7 @@ pub mod fbsemantic {
         Kind::Numeric,
         Kind::Comparable,
         Kind::Equatable,
+        Kind::Label,
         Kind::Nullable,
         Kind::Record,
         Kind::Negatable,
@@ -398,14 +495,15 @@ pub mod fbsemantic {
         pub const Numeric: Self = Self(4);
         pub const Comparable: Self = Self(5);
         pub const Equatable: Self = Self(6);
-        pub const Nullable: Self = Self(7);
-        pub const Record: Self = Self(8);
-        pub const Negatable: Self = Self(9);
-        pub const Timeable: Self = Self(10);
-        pub const Stringable: Self = Self(11);
+        pub const Label: Self = Self(7);
+        pub const Nullable: Self = Self(8);
+        pub const Record: Self = Self(9);
+        pub const Negatable: Self = Self(10);
+        pub const Timeable: Self = Self(11);
+        pub const Stringable: Self = Self(12);
 
         pub const ENUM_MIN: u8 = 0;
-        pub const ENUM_MAX: u8 = 11;
+        pub const ENUM_MAX: u8 = 12;
         pub const ENUM_VALUES: &'static [Self] = &[
             Self::Addable,
             Self::Basic,
@@ -414,6 +512,7 @@ pub mod fbsemantic {
             Self::Numeric,
             Self::Comparable,
             Self::Equatable,
+            Self::Label,
             Self::Nullable,
             Self::Record,
             Self::Negatable,
@@ -430,6 +529,7 @@ pub mod fbsemantic {
                 Self::Numeric => Some("Numeric"),
                 Self::Comparable => Some("Comparable"),
                 Self::Equatable => Some("Equatable"),
+                Self::Label => Some("Label"),
                 Self::Nullable => Some("Nullable"),
                 Self::Record => Some("Record"),
                 Self::Negatable => Some("Negatable"),
@@ -4151,6 +4251,103 @@ pub mod fbsemantic {
             ds.finish()
         }
     }
+    pub enum ConcreteOffset {}
+    #[derive(Copy, Clone, PartialEq)]
+
+    pub struct Concrete<'a> {
+        pub _tab: flatbuffers::Table<'a>,
+    }
+
+    impl<'a> flatbuffers::Follow<'a> for Concrete<'a> {
+        type Inner = Concrete<'a>;
+        #[inline]
+        fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
+            Self {
+                _tab: flatbuffers::Table { buf, loc },
+            }
+        }
+    }
+
+    impl<'a> Concrete<'a> {
+        #[inline]
+        pub fn init_from_table(table: flatbuffers::Table<'a>) -> Self {
+            Concrete { _tab: table }
+        }
+        #[allow(unused_mut)]
+        pub fn create<'bldr: 'args, 'args: 'mut_bldr, 'mut_bldr>(
+            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr>,
+            args: &'args ConcreteArgs<'args>,
+        ) -> flatbuffers::WIPOffset<Concrete<'bldr>> {
+            let mut builder = ConcreteBuilder::new(_fbb);
+            if let Some(x) = args.id {
+                builder.add_id(x);
+            }
+            builder.finish()
+        }
+
+        pub const VT_ID: flatbuffers::VOffsetT = 4;
+
+        #[inline]
+        pub fn id(&self) -> Option<&'a str> {
+            self._tab
+                .get::<flatbuffers::ForwardsUOffset<&str>>(Concrete::VT_ID, None)
+        }
+    }
+
+    impl flatbuffers::Verifiable for Concrete<'_> {
+        #[inline]
+        fn run_verifier(
+            v: &mut flatbuffers::Verifier,
+            pos: usize,
+        ) -> Result<(), flatbuffers::InvalidFlatbuffer> {
+            use self::flatbuffers::Verifiable;
+            v.visit_table(pos)?
+                .visit_field::<flatbuffers::ForwardsUOffset<&str>>(&"id", Self::VT_ID, false)?
+                .finish();
+            Ok(())
+        }
+    }
+    pub struct ConcreteArgs<'a> {
+        pub id: Option<flatbuffers::WIPOffset<&'a str>>,
+    }
+    impl<'a> Default for ConcreteArgs<'a> {
+        #[inline]
+        fn default() -> Self {
+            ConcreteArgs { id: None }
+        }
+    }
+    pub struct ConcreteBuilder<'a: 'b, 'b> {
+        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a>,
+        start_: flatbuffers::WIPOffset<flatbuffers::TableUnfinishedWIPOffset>,
+    }
+    impl<'a: 'b, 'b> ConcreteBuilder<'a, 'b> {
+        #[inline]
+        pub fn add_id(&mut self, id: flatbuffers::WIPOffset<&'b str>) {
+            self.fbb_
+                .push_slot_always::<flatbuffers::WIPOffset<_>>(Concrete::VT_ID, id);
+        }
+        #[inline]
+        pub fn new(_fbb: &'b mut flatbuffers::FlatBufferBuilder<'a>) -> ConcreteBuilder<'a, 'b> {
+            let start = _fbb.start_table();
+            ConcreteBuilder {
+                fbb_: _fbb,
+                start_: start,
+            }
+        }
+        #[inline]
+        pub fn finish(self) -> flatbuffers::WIPOffset<Concrete<'a>> {
+            let o = self.fbb_.end_table(self.start_);
+            flatbuffers::WIPOffset::new(o.value())
+        }
+    }
+
+    impl std::fmt::Debug for Concrete<'_> {
+        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+            let mut ds = f.debug_struct("Concrete");
+            ds.field("id", &self.id());
+            ds.finish()
+        }
+    }
     pub enum PropOffset {}
     #[derive(Copy, Clone, PartialEq)]
 
@@ -4176,7 +4373,7 @@ pub mod fbsemantic {
         #[allow(unused_mut)]
         pub fn create<'bldr: 'args, 'args: 'mut_bldr, 'mut_bldr>(
             _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr>,
-            args: &'args PropArgs<'args>,
+            args: &'args PropArgs,
         ) -> flatbuffers::WIPOffset<Prop<'bldr>> {
             let mut builder = PropBuilder::new(_fbb);
             if let Some(x) = args.v {
@@ -4186,17 +4383,25 @@ pub mod fbsemantic {
                 builder.add_k(x);
             }
             builder.add_v_type(args.v_type);
+            builder.add_k_type(args.k_type);
             builder.finish()
         }
 
-        pub const VT_K: flatbuffers::VOffsetT = 4;
-        pub const VT_V_TYPE: flatbuffers::VOffsetT = 6;
-        pub const VT_V: flatbuffers::VOffsetT = 8;
+        pub const VT_K_TYPE: flatbuffers::VOffsetT = 4;
+        pub const VT_K: flatbuffers::VOffsetT = 6;
+        pub const VT_V_TYPE: flatbuffers::VOffsetT = 8;
+        pub const VT_V: flatbuffers::VOffsetT = 10;
 
         #[inline]
-        pub fn k(&self) -> Option<&'a str> {
+        pub fn k_type(&self) -> RecordLabel {
             self._tab
-                .get::<flatbuffers::ForwardsUOffset<&str>>(Prop::VT_K, None)
+                .get::<RecordLabel>(Prop::VT_K_TYPE, Some(RecordLabel::NONE))
+                .unwrap()
+        }
+        #[inline]
+        pub fn k(&self) -> Option<flatbuffers::Table<'a>> {
+            self._tab
+                .get::<flatbuffers::ForwardsUOffset<flatbuffers::Table<'a>>>(Prop::VT_K, None)
         }
         #[inline]
         pub fn v_type(&self) -> MonoType {
@@ -4209,6 +4414,26 @@ pub mod fbsemantic {
             self._tab
                 .get::<flatbuffers::ForwardsUOffset<flatbuffers::Table<'a>>>(Prop::VT_V, None)
         }
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn k_as_concrete(&self) -> Option<Concrete<'a>> {
+            if self.k_type() == RecordLabel::Concrete {
+                self.k().map(Concrete::init_from_table)
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn k_as_var(&self) -> Option<Var<'a>> {
+            if self.k_type() == RecordLabel::Var {
+                self.k().map(Var::init_from_table)
+            } else {
+                None
+            }
+        }
+
         #[inline]
         #[allow(non_snake_case)]
         pub fn v_as_basic(&self) -> Option<Basic<'a>> {
@@ -4278,7 +4503,26 @@ pub mod fbsemantic {
         ) -> Result<(), flatbuffers::InvalidFlatbuffer> {
             use self::flatbuffers::Verifiable;
             v.visit_table(pos)?
-                .visit_field::<flatbuffers::ForwardsUOffset<&str>>(&"k", Self::VT_K, false)?
+                .visit_union::<RecordLabel, _>(
+                    &"k_type",
+                    Self::VT_K_TYPE,
+                    &"k",
+                    Self::VT_K,
+                    false,
+                    |key, v, pos| match key {
+                        RecordLabel::Concrete => v
+                            .verify_union_variant::<flatbuffers::ForwardsUOffset<Concrete>>(
+                                "RecordLabel::Concrete",
+                                pos,
+                            ),
+                        RecordLabel::Var => v
+                            .verify_union_variant::<flatbuffers::ForwardsUOffset<Var>>(
+                                "RecordLabel::Var",
+                                pos,
+                            ),
+                        _ => Ok(()),
+                    },
+                )?
                 .visit_union::<MonoType, _>(
                     &"v_type",
                     Self::VT_V_TYPE,
@@ -4323,15 +4567,17 @@ pub mod fbsemantic {
             Ok(())
         }
     }
-    pub struct PropArgs<'a> {
-        pub k: Option<flatbuffers::WIPOffset<&'a str>>,
+    pub struct PropArgs {
+        pub k_type: RecordLabel,
+        pub k: Option<flatbuffers::WIPOffset<flatbuffers::UnionWIPOffset>>,
         pub v_type: MonoType,
         pub v: Option<flatbuffers::WIPOffset<flatbuffers::UnionWIPOffset>>,
     }
-    impl<'a> Default for PropArgs<'a> {
+    impl<'a> Default for PropArgs {
         #[inline]
         fn default() -> Self {
             PropArgs {
+                k_type: RecordLabel::NONE,
                 k: None,
                 v_type: MonoType::NONE,
                 v: None,
@@ -4344,7 +4590,12 @@ pub mod fbsemantic {
     }
     impl<'a: 'b, 'b> PropBuilder<'a, 'b> {
         #[inline]
-        pub fn add_k(&mut self, k: flatbuffers::WIPOffset<&'b str>) {
+        pub fn add_k_type(&mut self, k_type: RecordLabel) {
+            self.fbb_
+                .push_slot::<RecordLabel>(Prop::VT_K_TYPE, k_type, RecordLabel::NONE);
+        }
+        #[inline]
+        pub fn add_k(&mut self, k: flatbuffers::WIPOffset<flatbuffers::UnionWIPOffset>) {
             self.fbb_
                 .push_slot_always::<flatbuffers::WIPOffset<_>>(Prop::VT_K, k);
         }
@@ -4376,7 +4627,33 @@ pub mod fbsemantic {
     impl std::fmt::Debug for Prop<'_> {
         fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
             let mut ds = f.debug_struct("Prop");
-            ds.field("k", &self.k());
+            ds.field("k_type", &self.k_type());
+            match self.k_type() {
+                RecordLabel::Concrete => {
+                    if let Some(x) = self.k_as_concrete() {
+                        ds.field("k", &x)
+                    } else {
+                        ds.field(
+                            "k",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                RecordLabel::Var => {
+                    if let Some(x) = self.k_as_var() {
+                        ds.field("k", &x)
+                    } else {
+                        ds.field(
+                            "k",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                _ => {
+                    let x: Option<()> = None;
+                    ds.field("k", &x)
+                }
+            };
             ds.field("v_type", &self.v_type());
             match self.v_type() {
                 MonoType::Basic => {

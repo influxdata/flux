@@ -152,6 +152,7 @@ impl Formatter {
             walk::Node::ObjectExpr(m) => self.format_record_expression_braces(m, true),
             walk::Node::Package(m) => self.format_package(m),
             walk::Node::BuiltinStmt(m) => self.format_builtin(m),
+            walk::Node::Expr(m) => self.format_node(&walk::Node::reduce_expr(m)),
             _ => self.err = Some(anyhow!(format!("bad expression: {:?}", n))),
         }
         self.set_indent(curr_ind)
@@ -234,7 +235,7 @@ impl Formatter {
     }
 
     fn format_property_type(&mut self, n: &semantic::types::Property) {
-        self.write_string(&n.k);
+        self.write_string(&n.k.to_string());
         self.write_string(": ");
         self.format_monotype(&n.v);
     }
@@ -433,7 +434,8 @@ impl Formatter {
 
     // format_right_child_with_parens applies the generic rule for parenthesis to the right child of a binary expression.
     fn format_right_child_with_parens(&mut self, parent: &walk::Node, child: &walk::Node) {
-        let (pvp, pvc) = get_precedences(parent, child);
+        let pvp = get_precedence(parent);
+        let pvc = get_precedence(child);
         if needs_parenthesis(pvp, pvc, true) {
             self.format_node_with_parens(child);
         } else {
@@ -443,7 +445,8 @@ impl Formatter {
 
     // format_left_child_with_parens applies the generic rule for parenthesis to the left child of a binary expression.
     fn format_left_child_with_parens(&mut self, parent: &walk::Node, child: &walk::Node) {
-        let (pvp, pvc) = get_precedences(parent, child);
+        let pvp = get_precedence(parent);
+        let pvc = get_precedence(child);
         if needs_parenthesis(pvp, pvc, false) {
             self.format_node_with_parens(child);
         } else {
@@ -887,8 +890,8 @@ impl Formatter {
     }
 }
 
-fn get_precedences(parent: &walk::Node, child: &walk::Node) -> (u32, u32) {
-    let pvp: u32 = match parent {
+fn get_precedence(node: &walk::Node) -> u32 {
+    match node {
         walk::Node::BinaryExpr(p) => Operator::new(&p.operator).get_precedence(),
         walk::Node::LogicalExpr(p) => Operator::new_logical(&p.operator).get_precedence(),
         walk::Node::UnaryExpr(p) => Operator::new(&p.operator).get_precedence(),
@@ -897,22 +900,9 @@ fn get_precedences(parent: &walk::Node, child: &walk::Node) -> (u32, u32) {
         walk::Node::MemberExpr(_) => 1,
         walk::Node::IndexExpr(_) => 1,
         walk::Node::ConditionalExpr(_) => 11,
+        walk::Node::Expr(e) => get_precedence(&walk::Node::reduce_expr(e)),
         _ => 0,
-    };
-
-    let pvc: u32 = match child {
-        walk::Node::BinaryExpr(p) => Operator::new(&p.operator).get_precedence(),
-        walk::Node::LogicalExpr(p) => Operator::new_logical(&p.operator).get_precedence(),
-        walk::Node::UnaryExpr(p) => Operator::new(&p.operator).get_precedence(),
-        walk::Node::FunctionExpr(_) => 3,
-        walk::Node::CallExpr(_) => 1,
-        walk::Node::MemberExpr(_) => 1,
-        walk::Node::IndexExpr(_) => 1,
-        walk::Node::ConditionalExpr(_) => 11,
-        _ => 0,
-    };
-
-    (pvp, pvc)
+    }
 }
 
 struct Operator<'a> {

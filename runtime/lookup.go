@@ -84,7 +84,10 @@ func TypeEnvMap(env *fbsemantic.TypeEnvironment) map[envKey]*fbsemantic.Prop {
 		for j := 0; j < propLen; j++ {
 			newProp := new(fbsemantic.Prop)
 			_ = record.Props(newProp, j) // this call assigns value to newProp
-			propKey := string(newProp.K())
+			propKey, err := semantic.GetPropertyName(newProp)
+			if err != nil {
+				panic(fmt.Errorf("unexpected variable label in type environment: %s", err))
+			}
 			symbol := semantic.NewSymbol(propKey)
 			key := envKey{
 				Package: assignId,

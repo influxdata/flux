@@ -8,7 +8,11 @@ use crate::semantic::{
 
 fn analyzer_config() -> AnalyzerConfig {
     AnalyzerConfig {
-        features: vec![Feature::VectorizedMap, Feature::VectorizeAddition],
+        features: vec![
+            Feature::VectorizedMap,
+            Feature::VectorizeAddition,
+            Feature::VectorizeOperators,
+        ],
         ..AnalyzerConfig::default()
     }
 }
@@ -121,15 +125,19 @@ fn vectorize_addition_operator() -> anyhow::Result<()> {
 }
 
 #[test]
-fn vectorize_subtraction_operator() {
-    let mut pkg = vectorize(r#"(r) => ({ x: r.a - r.b })"#).unwrap();
+fn vectorize_subtraction_operator() -> anyhow::Result<()> {
+    let pkg = vectorize(r#"(r) => ({ x: r.a - r.b })"#).unwrap();
 
-    let err = semantic::vectorize::vectorize(&analyzer_config(), &mut pkg).unwrap_err();
+    let function = get_vectorized_function(&pkg);
 
-    expect_test::expect![[
-        r#"error @1:14-1:23: can't vectorize function: Unable to vectorize non-addition operators"#
-    ]]
-    .assert_eq(&err.to_string());
+    expect_test::expect![[r##"
+        (r) => {
+            return {x: r:{F with a:v[#D], b:v[#D]}.a:v[#D] -:v[#D] r:{F with a:v[#D], b:v[#D]}.b:v[#D]}:{x:v[#D]}
+        }:(r:{F with a:v[#D], b:v[#D]}) => {x:v[#D]}"##]].assert_eq(&crate::semantic::formatter::format_node(
+        Node::FunctionExpr(function),
+    )?);
+
+    Ok(())
 }
 
 #[test]

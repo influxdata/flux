@@ -578,12 +578,22 @@ impl<'a> Converter<'a> {
                     }
                 };
                 for prop in &rec.properties {
-                    let name = match &prop.name {
-                        ast::PropertyKey::Identifier(id) => &id.name,
-                        ast::PropertyKey::StringLit(lit) => &lit.value,
-                    };
                     let property = types::Property {
-                        k: types::Label::from(self.symbols.lookup(name)),
+                        k: match &prop.name {
+                            ast::PropertyKey::Identifier(id) => {
+                                if id.name.len() == 1 && id.name.starts_with(char::is_uppercase) {
+                                    let tvar = *tvars
+                                        .entry(id.name.clone())
+                                        .or_insert_with(|| self.sub.fresh());
+                                    types::RecordLabel::BoundVariable(tvar)
+                                } else {
+                                    types::Label::from(self.symbols.lookup(&id.name)).into()
+                                }
+                            }
+                            ast::PropertyKey::StringLit(lit) => {
+                                types::Label::from(self.symbols.lookup(&lit.value)).into()
+                            }
+                        },
                         v: self.convert_monotype(&prop.monotype, tvars),
                     };
                     r = MonoType::from(types::Record::Extension {
@@ -1179,6 +1189,7 @@ impl<'a> Converter<'a> {
         StringLit {
             loc: lit.base.location.clone(),
             value: lit.value.clone(),
+            typ: None,
         }
     }
 
@@ -1384,6 +1395,7 @@ mod tests {
                         path: StringLit {
                             loc: b.location.clone(),
                             value: "path/foo".to_string(),
+                            typ: None,
                         },
                         alias: None,
                         import_symbol: symbols["foo"].clone(),
@@ -1393,6 +1405,7 @@ mod tests {
                         path: StringLit {
                             loc: b.location.clone(),
                             value: "path/bar".to_string(),
+                            typ: None,
                         },
                         alias: Some(Identifier {
                             loc: b.location.clone(),
@@ -1702,6 +1715,7 @@ mod tests {
                                     value: Expression::StringLit(StringLit {
                                         loc: b.location.clone(),
                                         value: "foo".to_string(),
+                                        typ: None,
                                     }),
                                 },
                                 Property {
@@ -1743,6 +1757,7 @@ mod tests {
                                     value: Expression::StringLit(StringLit {
                                         loc: b.location.clone(),
                                         value: "0 2 * * *".to_string(),
+                                        typ: None,
                                     }),
                                 },
                                 Property {
@@ -1798,6 +1813,7 @@ mod tests {
                         init: Expression::StringLit(StringLit {
                             loc: b.location.clone(),
                             value: "Warning".to_string(),
+                            typ: None,
                         }),
                     }),
                 }))],
@@ -2672,13 +2688,13 @@ mod tests {
 
     #[test]
     fn test_convert_monotype_record() {
-        let monotype = Parser::new("{ A with B: int }").parse_monotype();
+        let monotype = Parser::new("{ A with b: int }").parse_monotype();
 
         let mut m = BTreeMap::<String, types::Tvar>::new();
         let got = convert_monotype(&monotype, &mut m, &mut sub::Substitution::default()).unwrap();
         let want = MonoType::from(types::Record::Extension {
             head: types::Property {
-                k: types::Label::from("B"),
+                k: types::RecordLabel::from("b"),
                 v: MonoType::INT,
             },
             tail: MonoType::BoundVar(Tvar(0)),

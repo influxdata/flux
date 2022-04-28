@@ -45,7 +45,7 @@ use crate::{
         infer::Constraints,
         nodes::Symbol,
         sub::Substitution,
-        types::{Label, MonoType, PolyType, PolyTypeHashMap, Property, Record},
+        types::{MonoType, PolyType, PolyTypeHashMap, Property, Record, RecordLabel},
     },
 };
 
@@ -260,7 +260,7 @@ fn build_record(
         );
         r = Record::Extension {
             head: Property {
-                k: Label::from(name.clone()),
+                k: RecordLabel::from(name.clone()),
                 v: ty,
             },
             tail: MonoType::record(r),
@@ -298,14 +298,17 @@ impl Source for codespan_reporting::files::SimpleFile<&str, &str> {
     fn codespan_range(&self, location: &ast::SourceLocation) -> Range<usize> {
         (|| {
             let start = self
-                .line_range((), location.start.line as usize - 1)
+                .line_range((), (location.start.line as usize).saturating_sub(1))
                 .ok()?
                 .start;
             let end = self
-                .line_range((), location.end.line as usize - 1)
+                .line_range((), (location.end.line as usize).saturating_sub(1))
                 .ok()?
                 .start;
-            Some(start + location.start.column as usize - 1..end + location.end.column as usize - 1)
+            Some(
+                start + (location.start.column as usize).saturating_sub(1)
+                    ..end + (location.end.column as usize).saturating_sub(1),
+            )
         })()
         .unwrap_or_default()
     }
@@ -402,8 +405,13 @@ pub struct Analyzer<'env, I: import::Importer> {
 pub enum Feature {
     /// Enables vectorization of addition expressions
     VectorizeAddition,
+    /// Enables vectorization of all operators
+    VectorizeOperators,
     /// Enables vectorization
     VectorizedMap,
+
+    /// Enables label polymorphism
+    LabelPolymorphism,
 }
 
 /// A set of configuration options for the behavior of an Analyzer.
@@ -491,7 +499,13 @@ impl<'env, I: import::Importer> Analyzer<'env, I> {
         }
 
         self.env.enter_scope();
-        let env = match nodes::infer_package(&mut sem_pkg, &mut self.env, sub, &mut self.importer) {
+        let env = match nodes::infer_package(
+            &mut sem_pkg,
+            &mut self.env,
+            sub,
+            &mut self.importer,
+            &self.config,
+        ) {
             Ok(()) => {
                 let env = self.env.exit_scope();
                 PackageExports::try_from(env.values).unwrap_or_else(|err| {
