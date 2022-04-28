@@ -520,7 +520,7 @@ impl<'doc> Formatter<'doc> {
                     ": ",
                     self.format_monotype(monotype),
                     match default {
-                        Some(default) => docs![arena, " = ", self.format_monotype(monotype)],
+                        Some(default) => docs![arena, " = ", self.format_string_literal(default)],
                         None => arena.nil(),
                     }
                 ]
