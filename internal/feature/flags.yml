@@ -99,3 +99,9 @@
   key: optimizeMovingAverage
   default: false
   contact: Jonathan Sternberg
+
+- name: Optimize Cumulative Sum
+  description: Enable optimized version of cumulative sum
+  key: optimizeCumulativeSum
+  default: false
+  contact: Jonathan Sternberg
