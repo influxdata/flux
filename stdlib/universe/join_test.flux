@@ -44,18 +44,17 @@ outData =
 "
 
 testcase join_base {
-    input = testing.loadStorage(csv: inData)
+    input =
+        testing.loadStorage(csv: inData)
+            |> range(start: 2018-05-22T19:53:00Z, stop: 2018-05-22T19:55:00Z)
+            |> drop(columns: ["_start", "_stop"])
     want = testing.loadMem(csv: outData)
     left =
         input
-            |> range(start: 2018-05-22T19:53:00Z, stop: 2018-05-22T19:55:00Z)
-            |> drop(columns: ["_start", "_stop"])
             |> filter(fn: (r) => r.user == "user1")
             |> group(columns: ["user"])
     right =
         input
-            |> range(start: 2018-05-22T19:53:00Z, stop: 2018-05-22T19:55:00Z)
-            |> drop(columns: ["_start", "_stop"])
             |> filter(fn: (r) => r.user == "user2")
             |> group(columns: ["_measurement", "_field"])
 
