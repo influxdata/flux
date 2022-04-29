@@ -887,6 +887,7 @@ func TestQueryTracing(t *testing.T) {
 		{opName: "*universe.filterTransformation", msgCount: 2},
 		{opName: "*universe.groupTransformation", msgCount: 3},
 		{opName: "*universe.mapTransformation", msgCount: 3},
+		{opName: "*array.tableSource"},
 	}
 	for _, wantSpan := range wantSpans {
 		var gotSpan *mocktracer.MockSpan
@@ -916,11 +917,13 @@ func TestQueryTracing(t *testing.T) {
 				break
 			}
 		}
-		if msgCount == nil {
-			t.Fatalf("did not find %q log for operation %q", "messages_processed", wantSpan.opName)
-		}
-		if want, got := fmt.Sprintf("%d", wantSpan.msgCount), msgCount.ValueString; want != got {
-			t.Errorf("got unexpected message count for operation %q; -want/+got: %v/%v ", wantSpan.opName, want, got)
+		if wantSpan.msgCount != 0 {
+			if msgCount == nil {
+				t.Fatalf("did not find %q log for operation %q", "messages_processed", wantSpan.opName)
+			}
+			if want, got := fmt.Sprintf("%d", wantSpan.msgCount), msgCount.ValueString; want != got {
+				t.Errorf("got unexpected message count for operation %q; -want/+got: %v/%v ", wantSpan.opName, want, got)
+			}
 		}
 	}
 }

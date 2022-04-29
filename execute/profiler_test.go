@@ -19,7 +19,6 @@ import (
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/metadata"
 	"github.com/influxdata/flux/mock"
-	"github.com/opentracing/opentracing-go"
 )
 
 // Simulates setting the profilers option in flux to "operator"
@@ -66,13 +65,10 @@ func TestOperatorProfiler_GetResult(t *testing.T) {
 	wg.Add(count)
 	fn := func(opType string, label string, ctx context.Context, offset int) {
 		st := time.Date(2020, 10, 14, 12, 30, 0, 0, time.UTC)
-		_, span := execute.StartSpanFromContext(ctx, opType, label, opentracing.StartTime(st))
-		profilerSpan := span.(*execute.OperatorProfilingSpan)
+		state := execute.NewOperatorProfilingState(ctx, opType, label, st)
 		// Finish() will write the data to the profiler
 		// In Flux runtime, this is called when an execution node finishes execution
-		profilerSpan.FinishWithOptions(opentracing.FinishOptions{
-			FinishTime: time.Date(2020, 10, 14, 12, 30, 0, 1000+offset, time.UTC),
-		})
+		state.FinishWithTime(time.Date(2020, 10, 14, 12, 30, 0, 1000+offset, time.UTC))
 		wg.Done()
 	}
 	for i := 0; i < count; i++ {

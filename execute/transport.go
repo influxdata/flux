@@ -218,8 +218,7 @@ func (t *consecutiveTransport) transition(new int32) {
 func (t *consecutiveTransport) contextWithSpan(ctx context.Context) context.Context {
 	didInit := false
 	t.initSpanOnce.Do(func() {
-		t.span, ctx = opentracing.StartSpanFromContext(ctx, t.op)
-		t.span.LogFields(log.String("label", t.label))
+		t.span, ctx = opentracing.StartSpanFromContext(ctx, t.op, opentracing.Tag{Key: "label", Value: t.label})
 		didInit = true
 	})
 	if didInit {
@@ -284,8 +283,8 @@ PROCESS:
 // processMessage processes the message on t.
 // The return value is true if the message was a FinishMsg.
 func (t *consecutiveTransport) processMessage(ctx context.Context, m Message) (finished bool, err error) {
-	if _, span := StartSpanFromContext(ctx, t.op, t.label); span != nil {
-		defer span.Finish()
+	if opState := NewOperatorProfilingState(ctx, t.op, t.label); opState != nil {
+		defer opState.Finish()
 	}
 	if err := t.t.ProcessMessage(m); err != nil {
 		return false, err
