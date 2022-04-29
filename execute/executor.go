@@ -15,6 +15,7 @@ import (
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/metadata"
 	"github.com/influxdata/flux/plan"
+	"github.com/opentracing/opentracing-go"
 	"go.uber.org/zap"
 )
 
@@ -428,9 +429,18 @@ func (es *executionState) do() {
 		wg.Add(1)
 		go func(src Source) {
 			ctx := es.ctx
-			if opState := NewOperatorProfilingState(ctx, reflect.TypeOf(src).String(), src.Label()); opState != nil {
+			opName := reflect.TypeOf(src).String()
+
+			// If operator profiling is enabled for this execution, begin profiling
+			if opState := NewOperatorProfilingState(ctx, opName, src.Label()); opState != nil {
 				defer opState.Finish()
 			}
+
+			if span, spanCtx := opentracing.StartSpanFromContext(ctx, opName, opentracing.Tag{Key: "label", Value: src.Label()}); span != nil {
+				ctx = spanCtx
+				defer span.Finish()
+			}
+
 			defer wg.Done()
 
 			// Setup panic handling on the source goroutines

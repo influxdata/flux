@@ -218,8 +218,7 @@ func (t *consecutiveTransport) transition(new int32) {
 func (t *consecutiveTransport) contextWithSpan(ctx context.Context) context.Context {
 	didInit := false
 	t.initSpanOnce.Do(func() {
-		t.span, ctx = opentracing.StartSpanFromContext(ctx, t.op)
-		t.span.LogFields(log.String("label", t.label))
+		t.span, ctx = opentracing.StartSpanFromContext(ctx, t.op, opentracing.Tag{Key: "label", Value: t.label})
 		didInit = true
 	})
 	if didInit {
