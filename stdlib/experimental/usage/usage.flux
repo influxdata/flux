@@ -96,6 +96,82 @@ import "http"
 // )
 // ```
 //
+// ### Query number of bytes in requests to the /api/v2/write endpoint
+// ```no_run
+// import "experimental/usage"
+//
+// usage.from(start: -30d, stop: now())
+//     |> filter(fn: (r) => r._measurement == "http_request")
+//     |> filter(fn: (r) => r._field == "req_bytes")
+//     |> filter(fn: (r) => r.endpoint == "/api/v2/write")
+//     |> group(columns: ["_time"])
+//     |> sum()
+//     |> group()
+// ```
+//
+// ### Query number of bytes returned from the /api/v2/query endpoint
+// ```no_run
+// import "experimental/usage"
+//
+// usage.from(start: -30d, stop: now())
+//     |> filter(fn: (r) => r._measurement == "http_request")
+//     |> filter(fn: (r) => r._field == "resp_bytes")
+//     |> filter(fn: (r) => r.endpoint == "/api/v2/query")
+//     |> group(columns: ["_time"])
+//     |> sum()
+//     |> group()
+// ```
+//
+// ### Query the query count for InfluxDB Cloud query endpoints
+// The following query returns query counts for the following query endpoints:
+//
+// - **/api/v2/query**: Flux queries
+// - **/query**: InfluxQL queries
+//
+// ```no_run
+// import "experimental/usage"
+//
+// usage.from(start: -30d, stop: now())
+//     |> filter(fn: (r) => r._measurement == "query_count")
+//     |> sort(columns: ["_time"])
+// ```
+//
+// ### Compare usage metrics to organization usage limits
+// The following query compares the amount of data written to and queried from your
+// InfluxDB Cloud organization to your organization's rate limits.
+// It appends a `limitReached` column to each row that indicates if your rate
+// limit was exceeded.
+//
+// ```no_run
+// import "experimental/usage"
+//
+// limits = usage.limits()
+//
+// checkLimit = (tables=<-, limit) => tables
+//     |> map(fn: (r) => ({r with _value: r._value / 1000, limit: int(v: limit) * 60 * 5}))
+//     |> map(fn: (r) => ({r with limitReached: r._value > r.limit}))
+//
+// read = usage.from(start: -30d, stop: now())
+//     |> filter(fn: (r) => r._measurement == "http_request")
+//     |> filter(fn: (r) => r._field == "resp_bytes")
+//     |> filter(fn: (r) => r.endpoint == "/api/v2/query")
+//     |> group(columns: ["_time"])
+//     |> sum()
+//     |> group()
+//     |> checkLimit(limit: limits.rate.readKBs)
+//
+// write = usage.from(start: -30d, stop: now())
+//     |> filter(fn: (r) => r._measurement == "http_request")
+//     |> filter(fn: (r) => r._field == "req_bytes")
+//     |> filter(fn: (r) => r.endpoint == "/api/v2/write")
+//     |> group(columns: ["_time"])
+//     |> sum()
+//     |> group()
+//     |> checkLimit(limit: limits.rate.writeKBs)
+//
+// union(tables: [read, write])
+// ```
+//
 // ## Metadata
 // tags: inputs
 //
@@ -168,7 +244,15 @@ from = (
 //   _(Required if executed outside of your InfluxDB Cloud organization or region)_.
 //
 // ## Examples
-// ### Get rate limits for an InfluxDB Cloud organization
+//
+// ### Get rate limits for your InfluxDB Cloud organization
+// ```no_run
+// import "experimental/usage"
+//
+// usage.limits()
+// ```
+//
+// ### Get rate limits for a different InfluxDB Cloud organization
 // ```no_run
 // import "experimental/usage"
 // import "influxdata/influxdb/secrets"
@@ -176,6 +260,46 @@ from = (
 // token = secrets.get(key: "INFLUX_TOKEN")
 //
 // usage.limits(host: "https://us-west-2-1.aws.cloud2.influxdata.com", orgID: "x000X0x0xx0X00x0", token: token)
+// ```
+//
+// ### Output organization limits in a table
+// ```no_run
+// import "array"
+// import "experimental/usage"
+//
+// limits = usage.limits()
+//
+// array.from(
+//     rows: [
+//         {orgID: limits.orgID, limitGroup: "rate", limitName: "Read (kb/s)", limit: limits.rate.readKBs},
+//         {orgID: limits.orgID, limitGroup: "rate", limitName: "Concurrent Read Requests", limit: limits.rate.concurrentReadRequests},
+//         {orgID: limits.orgID, limitGroup: "rate", limitName: "Write (kb/s)", limit: limits.rate.writeKBs},
+//         {orgID: limits.orgID, limitGroup: "rate", limitName: "Concurrent Write Requests", limit: limits.rate.concurrentWriteRequests},
+//         {orgID: limits.orgID, limitGroup: "rate", limitName: "Cardinality", limit: limits.rate.cardinality},
+//         {orgID: limits.orgID, limitGroup: "bucket", limitName: "Max Buckets", limit: limits.bucket.maxBuckets},
+//         {orgID: limits.orgID, limitGroup: "bucket", limitName: "Max Retention Period (ns)", limit: limits.bucket.maxRetentionDuration},
+//         {orgID: limits.orgID, limitGroup: "task", limitName: "Max Tasks", limit: limits.task.maxTasks},
+//         {orgID: limits.orgID, limitGroup: "dashboard", limitName: "Max Dashboards", limit: limits.dashboard.maxDashboards},
+//         {orgID: limits.orgID, limitGroup: "check", limitName: "Max Checks", limit: limits.check.maxChecks},
+//         {orgID: limits.orgID, limitGroup: "notificationRule", limitName: "Max Notification Rules", limit: limits.notificationRule.maxNotifications},
+//     ],
+// )
+// ```
+//
+// ### Output current cardinality with your cardinality limit
+// ```no_run
+// import "experimental/usage"
+// import "influxdata/influxdb"
+//
+// limits = usage.limits()
+// bucketCardinality = (bucket) => (influxdb.cardinality(bucket: bucket, start: time(v: 0))
+//     |> findColumn(fn: (key) => true, column: "_value"))[0]
+//
+// buckets()
+//     |> filter(fn: (r) => not r.name =~ /^_/)
+//     |> map(fn: (r) => ({bucket: r.name, Cardinality: bucketCardinality(bucket: r.name)}))
+//     |> sum(column: "Cardinality")
+//     |> map(fn: (r) => ({r with "Cardinality Limit": limits.rate.cardinality}))
 // ```
 //
 limits = (host="", orgID="", token="") => {
