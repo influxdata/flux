@@ -428,9 +428,8 @@ func (es *executionState) do() {
 		wg.Add(1)
 		go func(src Source) {
 			ctx := es.ctx
-			if ctxWithSpan, span := StartSpanFromContext(ctx, reflect.TypeOf(src).String(), src.Label()); span != nil {
-				ctx = ctxWithSpan
-				defer span.Finish()
+			if opState := NewOperatorProfilingState(ctx, reflect.TypeOf(src).String(), src.Label()); opState != nil {
+				defer opState.Finish()
 			}
 			defer wg.Done()
 

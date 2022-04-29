@@ -284,8 +284,8 @@ PROCESS:
 // processMessage processes the message on t.
 // The return value is true if the message was a FinishMsg.
 func (t *consecutiveTransport) processMessage(ctx context.Context, m Message) (finished bool, err error) {
-	if _, span := StartSpanFromContext(ctx, t.op, t.label); span != nil {
-		defer span.Finish()
+	if opState := NewOperatorProfilingState(ctx, t.op, t.label); opState != nil {
+		defer opState.Finish()
 	}
 	if err := t.t.ProcessMessage(m); err != nil {
 		return false, err

@@ -9,7 +9,6 @@ import (
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/values"
-	"github.com/opentracing/opentracing-go"
 )
 
 type Profiler interface {
@@ -46,38 +45,21 @@ type OperatorProfilingResult struct {
 	Stop  time.Time
 }
 
-type OperatorProfilingSpan struct {
-	opentracing.Span
+type OperatorProfilingState struct {
 	profiler *OperatorProfiler
 	Result   OperatorProfilingResult
 }
 
-func (t *OperatorProfilingSpan) finish(finishTime time.Time) time.Time {
+func (t *OperatorProfilingState) Finish() {
+	t.FinishWithTime(time.Now())
+}
+
+func (t *OperatorProfilingState) FinishWithTime(finishTime time.Time) {
 	t.Result.Stop = finishTime
 	if t.profiler != nil && t.profiler.chIn != nil {
 		t.profiler.chIn <- t.Result
 	}
-	return t.Result.Stop
 }
-
-func (t *OperatorProfilingSpan) Finish() {
-	finishTime := t.finish(time.Now())
-	if t.Span != nil {
-		t.Span.FinishWithOptions(opentracing.FinishOptions{
-			FinishTime: finishTime,
-		})
-	}
-}
-
-func (t *OperatorProfilingSpan) FinishWithOptions(opts opentracing.FinishOptions) {
-	finishTime := t.finish(opts.FinishTime)
-	opts.FinishTime = finishTime
-	if t.Span != nil {
-		t.Span.FinishWithOptions(opts)
-	}
-}
-
-const OperatorProfilerContextKey = "operator-profiler"
 
 type operatorProfilingResultAggregate struct {
 	operationType string
@@ -93,7 +75,7 @@ type operatorProfilerLabelGroup = map[string]*operatorProfilingResultAggregate
 type operatorProfilerTypeGroup = map[string]operatorProfilerLabelGroup
 
 type OperatorProfiler struct {
-	// Receive the profiling results from the spans.
+	// Receive the profiling results from the operator states.
 	chIn  chan OperatorProfilingResult
 	chOut chan operatorProfilingResultAggregate
 }
@@ -251,40 +233,30 @@ func (o *OperatorProfiler) getTableBuilder(alloc memory.Allocator) (*ColListTabl
 	return b, nil
 }
 
-// Create a tracing span.
-// Depending on whether the Jaeger tracing and/or the operator profiling are enabled,
-// the Span produced by this function can be very different.
-// It could be a no-op span, a Jaeger span, a no-op span wrapped by a profiling span, or
-// a Jaeger span wrapped by a profiling span.
-func StartSpanFromContext(ctx context.Context, operationName string, label string, opts ...opentracing.StartSpanOption) (context.Context, opentracing.Span) {
-	var span opentracing.Span
-	var start time.Time
-	for _, opt := range opts {
-		if st, ok := opt.(opentracing.StartTime); ok {
-			start = time.Time(st)
-			break
-		}
+// NewOperatorProfilingState creates a new state instance for the given operation name
+// and label, provided an operator profiler exists in the execution options.
+// If there is no operator profiler, this function returns nil.
+func NewOperatorProfilingState(ctx context.Context, operationName string, label string, start ...time.Time) *OperatorProfilingState {
+	opStart := time.Now()
+	if len(start) > 0 {
+		opStart = start[0]
 	}
-	if start.IsZero() {
-		start = time.Now()
-	}
-
+	var state *OperatorProfilingState
 	if HaveExecutionDependencies(ctx) {
 		deps := GetExecutionDependencies(ctx)
 		if deps.ExecutionOptions.OperatorProfiler != nil {
 			tfp := deps.ExecutionOptions.OperatorProfiler
-			span = &OperatorProfilingSpan{
-				Span:     span,
+			state = &OperatorProfilingState{
 				profiler: tfp,
 				Result: OperatorProfilingResult{
 					Type:  operationName,
 					Label: label,
-					Start: start,
+					Start: opStart,
 				},
 			}
 		}
 	}
-	return ctx, span
+	return state
 }
 
 type QueryProfiler struct{}
