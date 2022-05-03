@@ -417,10 +417,6 @@ pub enum Feature {
 /// A set of configuration options for the behavior of an Analyzer.
 #[derive(Default)]
 pub struct AnalyzerConfig {
-    /// If true no AST or Semantic checks are performed.
-    /// Default is false.
-    pub skip_checks: bool,
-
     /// Features used in the flux compiler
     pub features: Vec<Feature>,
 }
@@ -477,10 +473,9 @@ impl<'env, I: import::Importer> Analyzer<'env, I> {
         sub: &mut sub::Substitution,
     ) -> SalvageResult<(PackageExports, nodes::Package), FileErrors> {
         let mut errors = Errors::new();
-        if !self.config.skip_checks {
-            if let Err(err) = ast::check::check(ast::walk::Node::Package(ast_pkg)) {
-                errors.extend(err.into_iter().map(Error::from));
-            }
+
+        if let Err(err) = ast::check::check(ast::walk::Node::Package(ast_pkg)) {
+            errors.extend(err.into_iter().map(Error::from));
         }
 
         let mut sem_pkg = {
@@ -492,10 +487,8 @@ impl<'env, I: import::Importer> Analyzer<'env, I> {
             sem_pkg
         };
 
-        if !self.config.skip_checks {
-            if let Err(err) = check::check(&sem_pkg) {
-                errors.push(err.into());
-            }
+        if let Err(err) = check::check(&sem_pkg) {
+            errors.push(err.into());
         }
 
         self.env.enter_scope();

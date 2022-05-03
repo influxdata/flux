@@ -415,10 +415,7 @@ impl StatefulAnalyzer {
         let mut analyzer = Analyzer::new(
             Environment::from(&self.env),
             self.imports,
-            AnalyzerConfig {
-                features,
-                ..AnalyzerConfig::default()
-            },
+            AnalyzerConfig { features },
         );
         let (mut env, sem_pkg) = match analyzer.analyze_ast(ast_pkg) {
             Ok(r) => r,
@@ -564,10 +561,7 @@ impl Options {
 /// and prelude.
 pub fn analyze(ast_pkg: &ast::Package, options: Options) -> Result<Package> {
     let Options { features } = options;
-    let mut analyzer = new_semantic_analyzer(AnalyzerConfig {
-        features,
-        ..AnalyzerConfig::default()
-    })?;
+    let mut analyzer = new_semantic_analyzer(AnalyzerConfig { features })?;
     let (_, sem_pkg) = analyzer.analyze_ast(ast_pkg).map_err(|err| err.error)?;
     Ok(sem_pkg)
 }

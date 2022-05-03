@@ -3859,22 +3859,41 @@ test_error_msg! {
 }
 
 #[test]
-fn test_analyzer_skip_checks() {
-    // Test that if we skips checks we do not get an error and that we can analyze
-    // the partial source code.
-    test_infer! {
-        config: AnalyzerConfig{
-            skip_checks: true,
-            ..AnalyzerConfig::default()
-        },
-        src: r#"
+fn test_analyzer_returns_package_after_errors() {
+    // Test that we can get a package result even if the source has errors.
+
+    let mut analyzer = Analyzer::new(
+        Environment::default(),
+        Packages::default(),
+        Default::default(),
+    );
+    match analyzer.analyze_source(
+        "main".into(),
+        "".into(),
+        r#"
             x = () => 1
             y = x(
         "#,
-        exp: map![
-            "x" => "() => int",
-            "y" => "int",
-        ],
+    ) {
+        Ok(_) => panic!("Unexpected success"),
+        Err(err) => {
+            let want = map![
+                "x" => "() => int",
+                "y" => "int",
+            ];
+            let got: SemanticMap<String, PolyType> = err
+                .value
+                .unwrap()
+                .0
+                .into_bindings()
+                .map(|(k, v)| (k.to_string(), v))
+                .collect();
+            let want: SemanticMap<String, PolyType> = parse_map(Some("main"), want)
+                .into_iter_by(|l, r| l.name().cmp(r.name()))
+                .map(|(k, v)| (k.to_string(), v))
+                .collect();
+            assert_eq!(want, got);
+        }
     }
 }
 
