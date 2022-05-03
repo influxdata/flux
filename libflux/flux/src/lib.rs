@@ -62,6 +62,8 @@ pub fn imports() -> Option<Packages> {
 
 static IMPORTS: Lazy<Option<Packages>> = Lazy::new(imports);
 
+static SEMANTIC_PACKAGES: &[u8] = include_bytes!(concat!(env!("OUT_DIR"), "/packages.data"));
+
 /// Creates a new analyzer that can semantically analyze Flux source code.
 ///
 /// The analyzer is aware of the stdlib and prelude.

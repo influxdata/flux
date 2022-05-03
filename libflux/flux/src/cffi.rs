@@ -63,6 +63,13 @@ impl From<Box<dyn Any + Send>> for Box<ErrorHandle> {
     }
 }
 
+///
+#[no_mangle]
+pub extern "C" fn flux_semantic_packages(out: &mut flux_buffer_t) {
+    out.data = crate::SEMANTIC_PACKAGES.as_ptr();
+    out.len = crate::SEMANTIC_PACKAGES.len();
+}
+
 /// Frees a previously allocated error.
 ///
 /// ## Memory layout

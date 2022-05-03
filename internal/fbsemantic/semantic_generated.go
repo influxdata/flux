@@ -1712,6 +1712,66 @@ func ConstraintEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
 	return builder.EndObject()
 }
 
+type PackageList struct {
+	_tab flatbuffers.Table
+}
+
+func GetRootAsPackageList(buf []byte, offset flatbuffers.UOffsetT) *PackageList {
+	n := flatbuffers.GetUOffsetT(buf[offset:])
+	x := &PackageList{}
+	x.Init(buf, n+offset)
+	return x
+}
+
+func GetSizePrefixedRootAsPackageList(buf []byte, offset flatbuffers.UOffsetT) *PackageList {
+	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
+	x := &PackageList{}
+	x.Init(buf, n+offset+flatbuffers.SizeUint32)
+	return x
+}
+
+func (rcv *PackageList) Init(buf []byte, i flatbuffers.UOffsetT) {
+	rcv._tab.Bytes = buf
+	rcv._tab.Pos = i
+}
+
+func (rcv *PackageList) Table() flatbuffers.Table {
+	return rcv._tab
+}
+
+func (rcv *PackageList) Packages(obj *Package, j int) bool {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(4))
+	if o != 0 {
+		x := rcv._tab.Vector(o)
+		x += flatbuffers.UOffsetT(j) * 4
+		x = rcv._tab.Indirect(x)
+		obj.Init(rcv._tab.Bytes, x)
+		return true
+	}
+	return false
+}
+
+func (rcv *PackageList) PackagesLength() int {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(4))
+	if o != 0 {
+		return rcv._tab.VectorLen(o)
+	}
+	return 0
+}
+
+func PackageListStart(builder *flatbuffers.Builder) {
+	builder.StartObject(1)
+}
+func PackageListAddPackages(builder *flatbuffers.Builder, packages flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(0, flatbuffers.UOffsetT(packages), 0)
+}
+func PackageListStartPackagesVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
+	return builder.StartVector(4, numElems, 4)
+}
+func PackageListEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
+	return builder.EndObject()
+}
+
 type Package struct {
 	_tab flatbuffers.Table
 }
