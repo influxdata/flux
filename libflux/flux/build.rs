@@ -78,12 +78,19 @@ fn main() -> Result<()> {
     let path = dir.join("stdlib.data");
     serialize(imports, fb::build_packages, &path)?;
 
-    let path = dir.join("packages.data");
-    serialize(
-        sem_pkgs,
-        fluxcore::semantic::flatbuffers::build_sem_packages,
-        &path,
-    )?;
+    #[cfg(feature = "cffi")]
+    {
+        let path = dir.join("packages.data");
+        serialize(
+            sem_pkgs,
+            fluxcore::semantic::flatbuffers::build_sem_packages,
+            &path,
+        )?;
+    }
+
+    // Suppresses the unused variable warning
+    #[cfg(not(feature = "cffi"))]
+    drop(sem_pkgs);
 
     Ok(())
 }

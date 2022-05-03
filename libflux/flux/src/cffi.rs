@@ -63,11 +63,13 @@ impl From<Box<dyn Any + Send>> for Box<ErrorHandle> {
     }
 }
 
-///
+static SEMANTIC_PACKAGES: &[u8] = include_bytes!(concat!(env!("OUT_DIR"), "/packages.data"));
+
+/// Returns the flatbuffer of the semantic packages for the standard library
 #[no_mangle]
 pub extern "C" fn flux_semantic_packages(out: &mut flux_buffer_t) {
-    out.data = crate::SEMANTIC_PACKAGES.as_ptr();
-    out.len = crate::SEMANTIC_PACKAGES.len();
+    out.data = SEMANTIC_PACKAGES.as_ptr();
+    out.len = SEMANTIC_PACKAGES.len();
 }
 
 /// Frees a previously allocated error.
