@@ -57,7 +57,7 @@ fn main() -> Result<()> {
         println!("cargo:rerun-if-changed={}", f);
     }
 
-    let (prelude, imports, _) = bootstrap::infer_stdlib_dir(stdlib_path)?;
+    let (prelude, imports, sem_pkgs) = bootstrap::infer_stdlib_dir(stdlib_path)?;
 
     // Validate there aren't any free type variables in the environment
     for (name, ty) in prelude.iter() {
@@ -77,6 +77,20 @@ fn main() -> Result<()> {
 
     let path = dir.join("stdlib.data");
     serialize(imports, fb::build_packages, &path)?;
+
+    #[cfg(feature = "cffi")]
+    {
+        let path = dir.join("packages.data");
+        serialize(
+            sem_pkgs,
+            fluxcore::semantic::flatbuffers::build_sem_packages,
+            &path,
+        )?;
+    }
+
+    // Suppresses the unused variable warning
+    #[cfg(not(feature = "cffi"))]
+    drop(sem_pkgs);
 
     Ok(())
 }

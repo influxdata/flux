@@ -7,6 +7,7 @@ import "C"
 import (
 	"context"
 	"encoding/json"
+	"path"
 	"runtime"
 	"unsafe"
 
@@ -17,6 +18,33 @@ import (
 	"github.com/influxdata/flux/internal/feature"
 	"github.com/influxdata/flux/semantic"
 )
+
+func SemanticPackages() (map[string]*semantic.Package, error) {
+	var buf C.struct_flux_buffer_t
+	C.flux_semantic_packages(&buf)
+
+	data := C.GoBytes(unsafe.Pointer(buf.data), C.int(buf.len))
+
+	packages := fbsemantic.GetRootAsPackageList(data, 0)
+
+	m := make(map[string]*semantic.Package)
+
+	for i := 0; i < packages.PackagesLength(); i++ {
+		var fbpkg fbsemantic.Package
+		var pkg semantic.Package
+		if !packages.Packages(&fbpkg, i) {
+			return nil, errors.Newf(codes.Internal, "Unable to extract semantic packages")
+		}
+
+		if err := pkg.FromBuf(&fbpkg); err != nil {
+			return nil, err
+		}
+
+		m[path.Dir(pkg.Files[0].File)] = &pkg
+	}
+
+	return m, nil
+}
 
 type Options struct {
 	Features []string `json:"features,omitempty"`

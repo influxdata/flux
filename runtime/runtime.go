@@ -2,14 +2,9 @@ package runtime
 
 import (
 	"context"
-	"fmt"
-	"io/fs"
-	"path/filepath"
-	"strings"
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/codes"
-	"github.com/influxdata/flux/embed"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/libflux/go/libflux"
@@ -167,29 +162,8 @@ func (r *runtime) Stdlib() interpreter.Importer {
 }
 
 func (r *runtime) compilePackages() error {
-	pkgs := make(map[string]*semantic.Package)
-	if err := fs.WalkDir(embed.FS, "stdlib", func(path string, d fs.DirEntry, err error) error {
-		if err != nil {
-			return err
-		} else if d.IsDir() || filepath.Ext(path) != ".fc" {
-			return nil
-		}
-		data, err := fs.ReadFile(embed.FS, path)
-		if err != nil {
-			return err
-		}
-
-		spkg, err := semantic.DeserializeFromFlatBuffer(data)
-		if err != nil {
-			return fmt.Errorf("unable to parse %s: %s", path, err)
-		}
-		name := strings.TrimPrefix(
-			strings.TrimSuffix(path, ".fc"),
-			"stdlib/",
-		)
-		pkgs[name] = spkg
-		return nil
-	}); err != nil {
+	pkgs, err := libflux.SemanticPackages()
+	if err != nil {
 		return err
 	}
 	r.pkgs = pkgs

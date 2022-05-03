@@ -19,6 +19,9 @@ struct flux_buffer_t {
 // flux_error_t represents a flux error.
 struct flux_error_t;
 
+// flux_semantic_packages will return a flatbuffer vector of the packages
+void flux_semantic_packages(struct flux_buffer_t *);
+
 // flux_free_error will release memory associated with an error.
 void flux_free_error(struct flux_error_t *);
 

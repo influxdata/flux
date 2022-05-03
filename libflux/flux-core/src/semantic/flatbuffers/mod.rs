@@ -16,6 +16,25 @@ use crate::{ast, semantic, semantic::walk};
 
 const UNKNOWNVARIANTNAME: &str = "UNKNOWNSEMANTIC";
 
+/// Serializes a [`semantic::bootstrap::SemanticPackageMap`].
+pub fn build_sem_packages<'a>(
+    builder: &mut flatbuffers::FlatBufferBuilder<'a>,
+    sem_pkgs: crate::semantic::bootstrap::SemanticPackageMap,
+) -> flatbuffers::WIPOffset<fbsemantic::PackageList<'a>> {
+    let packages: Vec<_> = sem_pkgs
+        .into_iter()
+        .map(|(_, pkg)| serialize_pkg_into(&pkg, builder).unwrap())
+        .collect::<Vec<_>>();
+    let packages = builder.create_vector(packages.as_slice());
+
+    fbsemantic::PackageList::create(
+        builder,
+        &fbsemantic::PackageListArgs {
+            packages: Some(packages),
+        },
+    )
+}
+
 /// Serializes a [`semantic::nodes::Package`].
 pub fn serialize_pkg(semantic_pkg: &semantic::nodes::Package) -> Result<(Vec<u8>, usize)> {
     let mut builder = flatbuffers::FlatBufferBuilder::with_capacity(1024);

@@ -124,10 +124,6 @@ func generate(cmd *cobra.Command, args []string) error {
 			if err := generateFluxASTFile(dir, fluxPkg); err != nil {
 				return err
 			}
-			// Compile the flux package and put the result into the out directory.
-			if err := compilePackage(outDir, fluxPath, fluxPkg); err != nil {
-				return err
-			}
 		}
 		if testPkg != nil {
 			// Strip out test files with the testcase statement.
