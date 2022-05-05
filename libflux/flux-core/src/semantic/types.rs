@@ -1009,9 +1009,11 @@ impl MonoType {
 
             (MonoType::Fun(t), MonoType::Fun(s)) => t.unify(s, unifier),
 
-            (MonoType::Optional(t), MonoType::Optional(s)) => t.unify(s, sub),
+            (MonoType::Optional(t), MonoType::Optional(s)) => t.unify(s, unifier),
 
-            (MonoType::Optional(t), s) => t.0.unify(s, sub),
+            (MonoType::Optional(t), s) => {
+                t.0.unify(s, unifier);
+            }
 
             (exp, act) => unifier.errors.push(Error::CannotUnify {
                 exp: exp.clone(),
@@ -1264,24 +1266,15 @@ impl Collection {
 pub struct Optional(pub MonoType);
 
 impl Substitutable for Optional {
-    fn apply_ref(&self, sub: &dyn Substituter) -> Option<Self> {
-        self.0.apply_ref(sub).map(Self)
-    }
-    fn free_vars(&self) -> Vec<Tvar> {
-        self.0.free_vars()
-    }
-}
-
-impl MaxTvar for Optional {
-    fn max_tvar(&self) -> Option<Tvar> {
-        self.0.max_tvar()
+    fn walk(&self, sub: &dyn Substituter) -> Option<Self> {
+        self.0.visit(sub).map(Self)
     }
 }
 
 impl Optional {
     // self represents the expected type.
-    fn unify(&self, with: &Self, f: &mut Substitution) -> Result<(), Error> {
-        self.0.unify(&with.0, f)
+    fn unify(&self, with: &Self, f: &mut Unifier<'_>) {
+        self.0.unify(&with.0, f);
     }
 
     fn constrain(&self, with: Kind, cons: &mut TvarKinds) -> Result<(), Error> {
@@ -1553,7 +1546,7 @@ impl Record {
             ) => match *a.apply_cow(unifier.sub) {
                 RecordLabel::Concrete(_) => {
                     if let MonoType::Optional(_) = &*t.apply_cow(unifier.sub) {
-                        tail.unify(&MonoType::from(Record::Empty), unifier)
+                        tail.unify(&MonoType::from(Record::Empty), unifier);
                     } else {
                         unifier.errors.push(Error::MissingLabel(a.to_string()));
                     }

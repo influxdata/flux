@@ -6,8 +6,8 @@ use crate::semantic::{
     nodes::Symbol,
     sub::{merge, merge3, merge4, merge_collect},
     types::{
-        Collection, Dictionary, Function, Kind, Label, MonoType, MonoTypeVecMap, PolyType,
-        Property, Record, RecordLabel, SemanticMap, Tvar, TvarMap,
+        Collection, Dictionary, Function, Kind, Label, MonoType, MonoTypeVecMap, Optional,
+        PolyType, Property, Record, RecordLabel, SemanticMap, Tvar, TvarMap,
     },
 };
 
@@ -162,6 +162,7 @@ impl Fresh for MonoType {
             MonoType::Record(obj) => obj.fresh_ref(f, sub).map(MonoType::record),
             MonoType::Fun(fun) => fun.fresh_ref(f, sub).map(MonoType::fun),
             MonoType::Dict(dict) => dict.fresh_ref(f, sub).map(MonoType::dict),
+            MonoType::Optional(dict) => dict.fresh_ref(f, sub).map(MonoType::optional),
         }
     }
 }
@@ -172,6 +173,12 @@ impl Fresh for Tvar {
     }
     fn fresh_ref(&self, f: &mut Fresher, sub: &mut TvarMap) -> Option<Self> {
         Some(*sub.entry(*self).or_insert_with(|| f.fresh()))
+    }
+}
+
+impl Fresh for Optional {
+    fn fresh_ref(&self, f: &mut Fresher, sub: &mut TvarMap) -> Option<Self> {
+        self.0.fresh_ref(f, sub).map(Self)
     }
 }
 

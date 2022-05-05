@@ -467,7 +467,7 @@ where
                     walk(v, Node::MonoType(&f.monotype));
                 }
                 MonoType::Optional(o) => {
-                    walk(&w, Node::MonoType(&o.monotype));
+                    walk(v, Node::MonoType(&o.monotype));
                 }
             },
             Node::PropertyType(n) => {

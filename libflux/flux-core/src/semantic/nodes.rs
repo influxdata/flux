@@ -1398,7 +1398,7 @@ impl ConditionalExpr {
                     infer.equal(
                         &MonoType::from(types::Record::new(
                             [types::Property {
-                                k: Label::from(member.property.clone()),
+                                k: Label::from(member.property.clone()).into(),
                                 v: MonoType::from(types::Optional(member.typ.clone())),
                             }],
                             Some(MonoType::Var(infer.sub.fresh())),
@@ -1417,7 +1417,7 @@ impl ConditionalExpr {
                         record_ident.name.clone(),
                         MonoType::from(types::Record::new(
                             [types::Property {
-                                k: Label::from(member.property.clone()),
+                                k: Label::from(member.property.clone()).into(),
                                 v: member.typ.clone(),
                             }],
                             Some(record_rest.clone()),

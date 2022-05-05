@@ -603,9 +603,9 @@ impl<'a> Converter<'a> {
                 }
                 r
             }
-            ast::MonoType::Optional(opt) => Ok(MonoType::from(types::Optional(
-                self.convert_monotype(opt.monotype, tvars)?,
-            ))),
+            ast::MonoType::Optional(opt) => {
+                MonoType::from(types::Optional(self.convert_monotype(&opt.monotype, tvars)))
+            }
         }
     }
 
