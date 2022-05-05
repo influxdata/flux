@@ -161,6 +161,20 @@ impl InferState<'_, '_> {
         }
     }
 
+    fn subsume(&mut self, exp: &MonoType, act: &MonoType, loc: &ast::SourceLocation) -> MonoType {
+        match infer::subsume(exp, act, loc, self.sub) {
+            Ok(typ) => typ,
+            Err(err) => {
+                self.errors
+                    .extend(err.error.into_iter().map(|error| Located {
+                        location: loc.clone(),
+                        error: error.into(),
+                    }));
+                MonoType::Error
+            }
+        }
+    }
+
     fn solve(&mut self, cons: &impl AsRef<[Constraint]>) {
         if let Err(err) = infer::solve(cons.as_ref(), self.sub) {
             self.errors.extend(err.into_iter().map(Error::from));
@@ -1506,6 +1520,29 @@ impl IndexExpr {
         self.index.infer(infer)?;
 
         self.typ = MonoType::Var(infer.sub.fresh());
+
+        if let MonoType::Record(_) = self.array.type_of() {
+            let label_var = infer.sub.fresh();
+            infer.constrain(Kind::Label, &MonoType::Var(label_var), self.index.loc());
+            infer.subsume(
+                &MonoType::Var(label_var),
+                &self.index.type_of(),
+                self.index.loc(),
+            );
+
+            infer.subsume(
+                &self.array.type_of(),
+                &MonoType::from(types::Record::new(
+                    [types::Property {
+                        k: types::RecordLabel::Variable(label_var),
+                        v: self.typ.clone(),
+                    }],
+                    Some(MonoType::Var(infer.sub.fresh())),
+                )),
+                self.index.loc(),
+            );
+            return Ok(());
+        }
 
         infer.solve(&[
             Constraint::Equal {

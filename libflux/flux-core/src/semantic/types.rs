@@ -1458,6 +1458,14 @@ impl Record {
                     tail: r,
                 },
             ) if a != b => {
+                match (a.apply_cow(unifier.sub), b.apply_cow(unifier.sub)) {
+                    (a, b) if a == b => {
+                        t.unify(u, unifier);
+                        l.unify(r, unifier);
+                        return;
+                    }
+                    _ => (),
+                }
                 let var = unifier.sub.fresh();
                 let exp = MonoType::from(Record::Extension {
                     head: Property {

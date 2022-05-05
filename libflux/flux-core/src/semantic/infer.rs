@@ -182,6 +182,28 @@ pub fn equal(
     })
 }
 
+pub fn subsume(
+    exp: &MonoType,
+    act: &MonoType,
+    loc: &SourceLocation,
+    sub: &mut Substitution,
+) -> Result<MonoType, Located<Errors<types::Error>>> {
+    log::debug!(
+        "Constraint::Subsume {:?}: {} <===> {}",
+        loc.source,
+        exp,
+        act
+    );
+    exp.try_subsume(act, sub).map_err(|error| {
+        log::debug!("Unify error: {} <=> {} : {}", exp, act, error);
+
+        Located {
+            location: loc.clone(),
+            error,
+        }
+    })
+}
+
 /// Generalizes `t` without modifying the substitution.
 pub(crate) fn temporary_generalize(
     env: &Environment,

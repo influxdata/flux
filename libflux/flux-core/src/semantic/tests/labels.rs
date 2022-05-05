@@ -234,3 +234,49 @@ fn optional_label() {
         "#]],
     }
 }
+
+#[test]
+fn index_with_label() {
+    test_infer! {
+        config: AnalyzerConfig{
+            features: vec![Feature::LabelPolymorphism],
+            ..AnalyzerConfig::default()
+        },
+        src: r#"
+            a = "a"
+            x = { a: 1 }[a]
+        "#,
+        exp: map![
+            "a" => "string",
+            "x" => "int",
+        ],
+    }
+}
+
+#[test]
+fn cant_index_with_string() {
+    test_error_msg! {
+        config: AnalyzerConfig{
+            features: vec![Feature::LabelPolymorphism],
+            ..AnalyzerConfig::default()
+        },
+        src: r#"
+            a = "a" + ""
+            x = { a: 1 }[a]
+        "#,
+        expect: expect![[r##"
+            error: string is not Label
+              ┌─ main:3:26
+              │
+            3 │             x = { a: 1 }[a]
+              │                          ^
+
+            error: found unexpected label #B
+              ┌─ main:3:26
+              │
+            3 │             x = { a: 1 }[a]
+              │                          ^
+
+        "##]],
+    }
+}
