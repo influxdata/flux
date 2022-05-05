@@ -1435,7 +1435,7 @@ impl ConditionalExpr {
                     // the full record
                     infer.equal(&record_rest, &record_ident.typ, &record_ident.loc);
 
-                    infer.equal(
+                    self.typ = infer.equal(
                         &self.consequent.type_of(),
                         &self.alternate.type_of(),
                         &self.alternate.loc(),
