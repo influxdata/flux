@@ -163,7 +163,7 @@ func (t *hourSelectionTransformation) Process(id execute.DatasetID, tbl flux.Tab
 				continue
 			}
 			curr := execute.Time(cr.Times(colIdx).Value(i)).Time().Hour()
-			if int64(curr) >= t.start && int64(curr) <= t.stop {
+			if (int64(curr) >= t.start && int64(curr) <= t.stop) || (t.start > t.stop && (int64(curr) >= t.start || int64(curr) <= t.stop)) {
 				for k := range cr.Cols() {
 					if err := builder.AppendValue(k, execute.ValueForRow(cr, i, k)); err != nil {
 						return err

@@ -154,6 +154,44 @@ func TestHourSelection_Process(t *testing.T) {
 			}},
 		},
 		{
+			name: "with group key - overnight range selection",
+			spec: &universe.HourSelectionProcedureSpec{Start: 10, Stop: 2, TimeColumn: execute.DefaultTimeColLabel},
+			data: []flux.Table{
+				&executetest.Table{
+					KeyCols: []string{"tag0"},
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+						{Label: "tag0", Type: flux.TString},
+						{Label: "tag1", Type: flux.TString},
+					},
+					Data: [][]interface{}{
+						{execute.Time(hour), 2.0, "a", "b"},
+						{execute.Time(hour * 2), 2.0, "a", "c"},
+						{execute.Time(hour * 4), 2.0, "a", "d"},
+						{execute.Time(hour * 6), 2.0, "a", "e"},
+						{execute.Time(hour * 10), 2.0, "a", "f"},
+						{execute.Time(hour * 11), 2.0, "a", "g"},
+					},
+				},
+			},
+			want: []*executetest.Table{{
+				KeyCols: []string{"tag0"},
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
+					{Label: "tag0", Type: flux.TString},
+					{Label: "tag1", Type: flux.TString},
+				},
+				Data: [][]interface{}{
+					{execute.Time(hour), 2.0, "a", "b"},
+					{execute.Time(hour * 2), 2.0, "a", "c"},
+					{execute.Time(hour * 10), 2.0, "a", "f"},
+					{execute.Time(hour * 11), 2.0, "a", "g"},
+				},
+			}},
+		},
+		{
 			name: "two tables",
 			spec: &universe.HourSelectionProcedureSpec{Start: 4, Stop: 23, TimeColumn: execute.DefaultTimeColLabel},
 			data: []flux.Table{
