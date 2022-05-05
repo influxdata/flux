@@ -1394,7 +1394,9 @@ impl ConditionalExpr {
                 if let Expression::Identifier(record_ident) = &mut member.object {
                     record_ident.infer(infer)?;
 
+                    unary.typ = MonoType::BOOL;
                     member.typ = MonoType::Var(infer.sub.fresh());
+
                     infer.equal(
                         &MonoType::from(types::Record::new(
                             [types::Property {
