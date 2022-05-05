@@ -4170,7 +4170,13 @@ fn exists_operator_errors() {
             x = if exists r.a then r.a else r.a
         "#,
         expect: expect![[r#"
-            error @3:45-3:46: record is missing label a"#]],
+            error: record is missing label a
+              ┌─ main:3:45
+              │
+            3 │             x = if exists r.a then r.a else r.a
+              │                                             ^
+
+        "#]],
     }
 
     // Should be an error as `a` exists, but has the wrong type (or it should fail the exists check
@@ -4180,6 +4186,13 @@ fn exists_operator_errors() {
             f = (r) => if exists r.a then r.a else 0
             x = f(r: { a: "" })
         "#,
-        expect: expect![[r#"error @3:17-3:32: expected int? but found string (argument r)"#]]
+        expect: expect![[r#"
+            error: expected int but found string (argument r)
+              ┌─ main:3:22
+              │
+            3 │             x = f(r: { a: "" })
+              │                      ^^^^^^^^^
+
+        "#]]
     }
 }
