@@ -8,3 +8,4 @@ on:
 jobs:
   semantic:
     uses: influxdata/validate-semantic-github-messages/.github/workflows/semantic.yml@main
+
