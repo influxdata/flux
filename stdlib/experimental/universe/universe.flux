@@ -2,7 +2,7 @@
 // but with more precise type signatures.
 //
 // ## Metadata
-// introduced: NEXT
+// introduced: v0.166.0
 //
 package universe
 
@@ -34,7 +34,7 @@ package universe
 // ```
 //
 // ## Metadata
-// introduced: NEXT
+// introduced: v0.166.0
 // tags: transformations
 //
 builtin columns : (<-tables: stream[A], ?column: C) => stream[{C: string}] where A: Record, C: Label
@@ -78,7 +78,7 @@ builtin columns : (<-tables: stream[A], ?column: C) => stream[{C: string}] where
 // ```
 //
 // ## Metadata
-// introduced: NEXT
+// introduced: v0.166.0
 // tags: transformations
 //
 builtin fill : (<-tables: stream[{A with C: B}], ?column: C, ?value: B, ?usePrevious: bool) => stream[{A with C: B}]
@@ -107,7 +107,7 @@ builtin fill : (<-tables: stream[{A with C: B}], ?column: C, ?value: B, ?usePrev
 // ```
 //
 // ## Metadata
-// introduced: NEXT
+// introduced: v0.166.0
 // tags: transformations, aggregates
 //
 builtin mean : (<-tables: stream[{A with C: B}], ?column: C) => stream[{C: B}] where A: Record, B: Numeric, C: Label
