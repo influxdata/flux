@@ -7,4 +7,4 @@ on:
 
 jobs:
   semantic:
-    uses: influxdata/validate-semantic-github-messages/.github/workflows/semantic.yml@0-commits-and-telegraf
+    uses: influxdata/validate-semantic-github-messages/.github/workflows/semantic.yml@main
