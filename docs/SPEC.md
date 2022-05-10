@@ -1014,7 +1014,7 @@ The operator precedence is encoded directly into the grammar as the following.
                              | AdditiveExpression AdditiveOperator MultiplicativeExpression .
     AdditiveOperator         = "+" | "-" .
     MultiplicativeExpression = ExponentExpression
-                             | ExponentExpression ExponentOperator MultiplicativeExpression .
+                             | ExponentExpression MultiplicativeOperator MultiplicativeExpression .
     MultiplicativeOperator   = "*" | "/" | "%" .
     ExponentExpression       = PipeExpression
                              | ExponentExpression ExponentOperator PipeExpression .
