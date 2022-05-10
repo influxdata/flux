@@ -37,10 +37,10 @@ const AggregateWindowKind = "aggregateWindow"
 
 type AggregateWindowProcedureSpec struct {
 	plan.DefaultCost
-	spec       *WindowProcedureSpec
-	initialize aggregateWindowInitializer
-	valueCol   string
-	useStart   bool
+	WindowSpec    *WindowProcedureSpec
+	AggregateKind plan.ProcedureKind
+	ValueCol      string
+	UseStart      bool
 }
 
 func (s *AggregateWindowProcedureSpec) Kind() plan.ProcedureKind {
@@ -49,7 +49,7 @@ func (s *AggregateWindowProcedureSpec) Kind() plan.ProcedureKind {
 
 func (s *AggregateWindowProcedureSpec) Copy() plan.ProcedureSpec {
 	ns := *s
-	ns.spec = ns.spec.Copy().(*WindowProcedureSpec)
+	ns.WindowSpec = ns.WindowSpec.Copy().(*WindowProcedureSpec)
 	return &ns
 }
 
@@ -96,15 +96,15 @@ func createAggregateWindowTransformation(id execute.DatasetID, mode execute.Accu
 }
 
 func newAggregateWindowTransformation(id execute.DatasetID, s *AggregateWindowProcedureSpec, bounds *execute.Bounds, mem memory.Allocator) (execute.Transformation, execute.Dataset, error) {
-	loc, err := s.spec.Window.LoadLocation()
+	loc, err := s.WindowSpec.Window.LoadLocation()
 	if err != nil {
 		return nil, nil, err
 	}
 
 	w, err := interval.NewWindowInLocation(
-		s.spec.Window.Every,
-		s.spec.Window.Period,
-		s.spec.Window.Offset,
+		s.WindowSpec.Window.Every,
+		s.WindowSpec.Window.Period,
+		s.WindowSpec.Window.Offset,
 		loc,
 	)
 	if err != nil {
@@ -114,11 +114,21 @@ func newAggregateWindowTransformation(id execute.DatasetID, s *AggregateWindowPr
 	tr := &aggregateWindowTransformation{
 		w:           w,
 		bounds:      bounds,
-		createEmpty: s.spec.CreateEmpty,
-		timeCol:     s.spec.TimeColumn,
-		valueCol:    s.valueCol,
-		useStart:    s.useStart,
-		initialize:  s.initialize,
+		createEmpty: s.WindowSpec.CreateEmpty,
+		timeCol:     s.WindowSpec.TimeColumn,
+		valueCol:    s.ValueCol,
+		useStart:    s.UseStart,
+	}
+
+	switch s.AggregateKind {
+	case CountKind:
+		tr.initialize = newAggregateWindowCount
+	case SumKind:
+		tr.initialize = newAggregateWindowSum
+	case MeanKind:
+		tr.initialize = newAggregateWindowMean
+	default:
+		return nil, nil, errors.Newf(codes.Internal, "cannot use %q for aggregate window", s.AggregateKind)
 	}
 	return execute.NewAggregateTransformation(id, tr, mem)
 }
@@ -777,7 +787,7 @@ func (a AggregateWindowRule) Rewrite(ctx context.Context, node plan.Node) (plan.
 	}
 
 	aggregateNode := duplicateNode.Predecessors()[0]
-	aggregate, valueCol, ok := a.isValidAggregateSpec(aggregateNode.ProcedureSpec())
+	valueCol, ok := a.isValidAggregateSpec(aggregateNode.ProcedureSpec())
 	if !ok {
 		return node, false, nil
 	}
@@ -791,10 +801,10 @@ func (a AggregateWindowRule) Rewrite(ctx context.Context, node plan.Node) (plan.
 
 	parentNode.ClearSuccessors()
 	newNode := plan.CreateUniquePhysicalNode(ctx, "aggregateWindow", &AggregateWindowProcedureSpec{
-		spec:       windowSpec,
-		initialize: aggregate,
-		valueCol:   valueCol,
-		useStart:   useStart,
+		WindowSpec:    windowSpec,
+		AggregateKind: aggregateNode.Kind(),
+		ValueCol:      valueCol,
+		UseStart:      useStart,
 	})
 	parentNode.AddSuccessors(newNode)
 	newNode.AddPredecessors(parentNode)
@@ -831,28 +841,28 @@ func (a AggregateWindowRule) isValidDuplicateSpec(spec *SchemaMutationProcedureS
 	return useStart, true
 }
 
-func (a AggregateWindowRule) isValidAggregateSpec(spec plan.ProcedureSpec) (aggregateWindowInitializer, string, bool) {
+func (a AggregateWindowRule) isValidAggregateSpec(spec plan.ProcedureSpec) (string, bool) {
 	switch spec.Kind() {
 	case CountKind:
 		aggregateSpec := spec.(*CountProcedureSpec)
 		if len(aggregateSpec.Columns) != 1 {
-			return nil, "", false
+			return "", false
 		}
-		return newAggregateWindowCount, aggregateSpec.Columns[0], true
+		return aggregateSpec.Columns[0], true
 	case SumKind:
 		aggregateSpec := spec.(*SumProcedureSpec)
 		if len(aggregateSpec.Columns) != 1 {
-			return nil, "", false
+			return "", false
 		}
-		return newAggregateWindowSum, aggregateSpec.Columns[0], true
+		return aggregateSpec.Columns[0], true
 	case MeanKind:
 		aggregateSpec := spec.(*MeanProcedureSpec)
 		if len(aggregateSpec.Columns) != 1 {
-			return nil, "", false
+			return "", false
 		}
-		return newAggregateWindowMean, aggregateSpec.Columns[0], true
+		return aggregateSpec.Columns[0], true
 	default:
-		return nil, "", false
+		return "", false
 	}
 }
 
@@ -899,7 +909,7 @@ func (a AggregateWindowCreateEmptyRule) Rewrite(ctx context.Context, node plan.N
 
 	fillNode := duplicateNode.Predecessors()[0]
 	aggregateNode := fillNode.Predecessors()[0]
-	aggregate, valueCol, ok := a.isValidAggregateSpec(aggregateNode.ProcedureSpec())
+	valueCol, ok := a.isValidAggregateSpec(aggregateNode.ProcedureSpec())
 	if !ok {
 		return node, false, nil
 	}
@@ -913,10 +923,10 @@ func (a AggregateWindowCreateEmptyRule) Rewrite(ctx context.Context, node plan.N
 
 	parentNode.ClearSuccessors()
 	newNode := plan.CreateUniquePhysicalNode(ctx, "aggregateWindow", &AggregateWindowProcedureSpec{
-		spec:       windowSpec,
-		initialize: aggregate,
-		valueCol:   valueCol,
-		useStart:   useStart,
+		WindowSpec:    windowSpec,
+		AggregateKind: aggregateNode.Kind(),
+		ValueCol:      valueCol,
+		UseStart:      useStart,
 	})
 	parentNode.AddSuccessors(newNode)
 	newNode.AddPredecessors(parentNode)
