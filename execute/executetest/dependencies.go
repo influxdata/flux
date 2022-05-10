@@ -37,6 +37,7 @@ var testFlags = map[string]interface{}{
 	"optimizeStateTracking":     true,
 	"optimizeMovingAverage":     true,
 	"optimizeCumulativeSum":     true,
+	"optimizeSetTransformation": true,
 }
 
 type TestFlagger map[string]interface{}
