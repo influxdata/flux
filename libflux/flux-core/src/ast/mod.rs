@@ -6,7 +6,6 @@ pub mod walk;
 use std::{collections::HashMap, fmt, str::FromStr, vec::Vec};
 
 use chrono::FixedOffset;
-use derive_more::Display;
 use serde::{
     de::{Deserialize, Deserializer, Error, Visitor},
     ser::{Serialize, SerializeSeq, Serializer},
@@ -985,53 +984,38 @@ pub struct FunctionExpr {
 /// based on whether the comparison is true.
 /// Arithmetic operators take numerical values (either literals or variables)
 /// as their operands and return a single numerical value.
-#[derive(Debug, Display, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Clone)]
 #[allow(missing_docs)]
 pub enum Operator {
-    #[display(fmt = "*")]
     MultiplicationOperator,
-    #[display(fmt = "/")]
     DivisionOperator,
-    #[display(fmt = "%")]
     ModuloOperator,
-    #[display(fmt = "^")]
     PowerOperator,
-    #[display(fmt = "+")]
     AdditionOperator,
-    #[display(fmt = "-")]
     SubtractionOperator,
-    #[display(fmt = "<=")]
     LessThanEqualOperator,
-    #[display(fmt = "<")]
     LessThanOperator,
-    #[display(fmt = ">=")]
     GreaterThanEqualOperator,
-    #[display(fmt = ">")]
     GreaterThanOperator,
-    #[display(fmt = "startswith")]
     StartsWithOperator,
-    #[display(fmt = "in")]
     InOperator,
-    #[display(fmt = "not")]
     NotOperator,
-    #[display(fmt = "exists")]
     ExistsOperator,
-    #[display(fmt = "not empty")]
     NotEmptyOperator,
-    #[display(fmt = "empty")]
     EmptyOperator,
-    #[display(fmt = "==")]
     EqualOperator,
-    #[display(fmt = "!=")]
     NotEqualOperator,
-    #[display(fmt = "=~")]
     RegexpMatchOperator,
-    #[display(fmt = "!~")]
     NotRegexpMatchOperator,
 
     // this is necessary for bad binary expressions.
-    #[display(fmt = "<INVALID_OP>")]
     InvalidOperator,
+}
+
+impl fmt::Display for Operator {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        f.write_str(self.as_str())
+    }
 }
 
 impl Serialize for Operator {
@@ -1043,35 +1027,56 @@ impl Serialize for Operator {
     }
 }
 
-impl FromStr for Operator {
-    type Err = String;
+macro_rules! from_to_str {
+    ($name: ident, $($str: tt => $op: tt),* $(,)?) => {
+        impl FromStr for $name {
+            type Err = String;
 
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        match s {
-            "*" => Ok(Operator::MultiplicationOperator),
-            "/" => Ok(Operator::DivisionOperator),
-            "%" => Ok(Operator::ModuloOperator),
-            "^" => Ok(Operator::PowerOperator),
-            "+" => Ok(Operator::AdditionOperator),
-            "-" => Ok(Operator::SubtractionOperator),
-            "<=" => Ok(Operator::LessThanEqualOperator),
-            "<" => Ok(Operator::LessThanOperator),
-            ">=" => Ok(Operator::GreaterThanEqualOperator),
-            ">" => Ok(Operator::GreaterThanOperator),
-            "startswith" => Ok(Operator::StartsWithOperator),
-            "in" => Ok(Operator::InOperator),
-            "not" => Ok(Operator::NotOperator),
-            "exists" => Ok(Operator::ExistsOperator),
-            "not empty" => Ok(Operator::NotEmptyOperator),
-            "empty" => Ok(Operator::EmptyOperator),
-            "==" => Ok(Operator::EqualOperator),
-            "!=" => Ok(Operator::NotEqualOperator),
-            "=~" => Ok(Operator::RegexpMatchOperator),
-            "!~" => Ok(Operator::NotRegexpMatchOperator),
-            "<INVALID_OP>" => Ok(Operator::InvalidOperator),
-            _ => Err(format!("unknown operator: {}", s)),
+            fn from_str(s: &str) -> Result<Self, Self::Err> {
+                Ok(match s {
+                    $(
+                        $str => $name :: $op,
+                    )*
+                    _ => return Err(format!("unknown operator: {}", s)),
+                })
+            }
         }
-    }
+
+        impl $name {
+            pub(crate) fn as_str(&self) -> &'static str {
+                match self {
+                    $(
+                    $name :: $op => $str,
+                    )*
+                }
+            }
+        }
+    };
+}
+
+from_to_str! {
+    Operator,
+    "*" => MultiplicationOperator,
+    "/" => DivisionOperator,
+    "%" => ModuloOperator,
+    "^" => PowerOperator,
+    "+" => AdditionOperator,
+    "-" => SubtractionOperator,
+    "<=" => LessThanEqualOperator,
+    "<" => LessThanOperator,
+    ">=" => GreaterThanEqualOperator,
+    ">" => GreaterThanOperator,
+    "startswith" => StartsWithOperator,
+    "in" => InOperator,
+    "not" => NotOperator,
+    "exists" => ExistsOperator,
+    "not empty" => NotEmptyOperator,
+    "empty" => EmptyOperator,
+    "==" => EqualOperator,
+    "!=" => NotEqualOperator,
+    "=~" => RegexpMatchOperator,
+    "!~" => NotRegexpMatchOperator,
+    "<INVALID_OP>" => InvalidOperator,
 }
 
 struct OperatorVisitor;
@@ -1140,12 +1145,15 @@ pub enum LogicalOperator {
     OrOperator,
 }
 
-impl ToString for LogicalOperator {
-    fn to_string(&self) -> String {
-        match self {
-            LogicalOperator::AndOperator => "and".to_string(),
-            LogicalOperator::OrOperator => "or".to_string(),
-        }
+from_to_str! {
+    LogicalOperator,
+    "and" => AndOperator,
+    "or" => OrOperator,
+}
+
+impl fmt::Display for LogicalOperator {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        f.write_str(self.as_str())
     }
 }
 
@@ -1155,18 +1163,6 @@ impl Serialize for LogicalOperator {
         S: Serializer,
     {
         serialize_to_string(self, serializer)
-    }
-}
-
-impl FromStr for LogicalOperator {
-    type Err = String;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        match s {
-            "and" => Ok(LogicalOperator::AndOperator),
-            "or" => Ok(LogicalOperator::OrOperator),
-            _ => Err(format!("unknown logical operator: {}", s)),
-        }
     }
 }
 

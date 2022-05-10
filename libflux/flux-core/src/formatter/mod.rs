@@ -1226,14 +1226,14 @@ impl<'doc> Formatter<'doc> {
             ast::Expression::Logical(expr) => self.format_binary_expression(
                 parent,
                 &expr.left,
-                expr.operator.to_string(),
+                expr.operator.as_str(),
                 &expr.right,
             ),
             ast::Expression::Member(n) => self.format_member_expression(n),
             ast::Expression::Binary(expr) => self.format_binary_expression(
                 parent,
                 &expr.left,
-                expr.operator.to_string(),
+                expr.operator.as_str(),
                 &expr.right,
             ),
             ast::Expression::Unary(n) => {
@@ -1499,7 +1499,7 @@ impl<'doc> Formatter<'doc> {
         &mut self,
         mut parent: &'doc ast::Expression,
         lhs: &'doc ast::Expression,
-        mut operator: String,
+        mut operator: &'doc str,
         mut rhs: &'doc ast::Expression,
     ) -> Doc<'doc> {
         let arena = self.arena;
@@ -1526,7 +1526,7 @@ impl<'doc> Formatter<'doc> {
                     ];
 
                     parent = rhs;
-                    operator = expr.operator.to_string();
+                    operator = expr.operator.as_str();
                     rhs = &expr.right;
                 }
                 _ => {
