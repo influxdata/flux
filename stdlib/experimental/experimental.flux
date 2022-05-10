@@ -1252,3 +1252,33 @@ builtin histogram : (
         bins: [float],
         ?normalize: bool,
     ) => stream[{T with _value: float, le: float}]
+
+// preview limits the number of rows and tables in the stream.
+//
+// Included group keys are not deterministic and depends on the order
+// that the engine sends them.
+//
+// ## Parameters
+// - nrows: Maximum number of rows per table to return. Default is `5`.
+//
+// - ntables: Maximum number of tables to return.
+//   Default is `5`.
+//
+// - tables: Input data. Default is piped-forward data (`<-`).
+//
+// ## Examples
+//
+// ### Preview data output
+// ```
+// import "experimental"
+// import "sampledata"
+//
+// sampledata.int()
+//     |> experimental.preview()
+// ```
+//
+// ## Metadata
+// introduced: NEXT
+// tags: transformations
+//
+builtin preview : (<-tables: stream[A], ?nrows: int, ?ntables: int) => stream[A] where A: Record
