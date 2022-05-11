@@ -1,7 +1,6 @@
 package memory_test
 
 import (
-	"runtime"
 	"sync"
 	"testing"
 
@@ -11,86 +10,6 @@ import (
 	"github.com/influxdata/flux/memory"
 	"github.com/stretchr/testify/assert"
 )
-
-// Forces "all" unreachable memory to be garbage collected
-func RunGC(mem *memory.ResourceAllocator) {
-	prev := int64(0)
-	for i := 0; i < 30; i++ {
-		// This does not clear all unreachable memory so we need to loop until everything unreachable
-		// has been cleared out
-		runtime.GC()
-		if mem.Allocated() == prev {
-			break
-		}
-		prev = mem.Allocated()
-	}
-}
-
-func TestAllocator_GC_Allocate(t *testing.T) {
-	mem := arrowmemory.NewCheckedAllocator(memory.DefaultAllocator)
-	defer mem.AssertSize(t, 0)
-
-	allocator := memory.NewResourceAllocator(mem)
-	gc := memory.NewGcAllocator(allocator)
-	b := gc.Allocate(64)
-
-	assert.Equal(t, 64, mem.CurrentAlloc(), "unexpected memory allocation.")
-	if want, got := int64(64), allocator.Allocated(); want != got {
-		t.Fatalf("unexpected allocated count -want/+got\n\t- %d\n\t+ %d", want, got)
-	}
-	if want, got := int64(64), allocator.MaxAllocated(); want != got {
-		t.Fatalf("unexpected max allocated count -want/+got\n\t- %d\n\t+ %d", want, got)
-	}
-
-	gc.Free(b)
-
-	RunGC(allocator)
-	mem.AssertSize(t, 0)
-	if want, got := int64(0), allocator.Allocated(); want != got {
-		t.Fatalf("unexpected allocated count -want/+got\n\t- %d\n\t+ %d", want, got)
-	}
-	if want, got := int64(64), allocator.MaxAllocated(); want != got {
-		t.Fatalf("unexpected max allocated count -want/+got\n\t- %d\n\t+ %d", want, got)
-	}
-}
-
-func TestAllocator_GC_Reallocate(t *testing.T) {
-	mem := arrowmemory.NewCheckedAllocator(memory.DefaultAllocator)
-	defer mem.AssertSize(t, 0)
-
-	allocator := memory.NewResourceAllocator(mem)
-	gc := memory.NewGcAllocator(allocator)
-	b := gc.Allocate(64)
-
-	assert.Equal(t, 64, mem.CurrentAlloc(), "unexpected memory allocation.")
-	if want, got := int64(64), allocator.Allocated(); want != got {
-		t.Fatalf("unexpected allocated count -want/+got\n\t- %d\n\t+ %d", want, got)
-	}
-	if want, got := int64(64), allocator.MaxAllocated(); want != got {
-		t.Fatalf("unexpected max allocated count -want/+got\n\t- %d\n\t+ %d", want, got)
-	}
-
-	b = gc.Reallocate(128, b)
-
-	assert.Equal(t, 128, mem.CurrentAlloc(), "unexpected memory allocation.")
-	if want, got := int64(128), allocator.Allocated(); want != got {
-		t.Fatalf("unexpected allocated count -want/+got\n\t- %d\n\t+ %d", want, got)
-	}
-	if want, got := int64(128), allocator.MaxAllocated(); want != got {
-		t.Fatalf("unexpected max allocated count -want/+got\n\t- %d\n\t+ %d", want, got)
-	}
-
-	gc.Free(b)
-
-	RunGC(allocator)
-	mem.AssertSize(t, 0)
-	if want, got := int64(0), allocator.Allocated(); want != got {
-		t.Fatalf("unexpected allocated count -want/+got\n\t- %d\n\t+ %d", want, got)
-	}
-	if want, got := int64(128), allocator.MaxAllocated(); want != got {
-		t.Fatalf("unexpected max allocated count -want/+got\n\t- %d\n\t+ %d", want, got)
-	}
-}
 
 func TestAllocator_Allocate(t *testing.T) {
 	mem := arrowmemory.NewCheckedAllocator(memory.DefaultAllocator)
