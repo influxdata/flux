@@ -137,18 +137,6 @@ func OptimizeStateTracking() BoolFlag {
 	return optimizeStateTracking
 }
 
-var setFinalizerMemoryTracking = feature.MakeBoolFlag(
-	"SetFinalizer Memory Tracking",
-	"setFinalizerMemoryTracking",
-	"Markus Westerlind",
-	false,
-)
-
-// SetfinalizerMemoryTracking - Enable SetFinalizer based memory tracking (as opposed to explicit Retain/Release)
-func SetfinalizerMemoryTracking() BoolFlag {
-	return setFinalizerMemoryTracking
-}
-
 var vectorizeAddition = feature.MakeBoolFlag(
 	"Vectorize addition",
 	"vectorizeAddition",
@@ -237,7 +225,6 @@ var all = []Flag{
 	optimizeAggregateWindow,
 	narrowTransformationLimit,
 	optimizeStateTracking,
-	setFinalizerMemoryTracking,
 	vectorizeAddition,
 	vectorizeOperators,
 	labelPolymorphism,
@@ -257,7 +244,6 @@ var byKey = map[string]Flag{
 	"optimizeAggregateWindow":          optimizeAggregateWindow,
 	"narrowTransformationLimit":        narrowTransformationLimit,
 	"optimizeStateTracking":            optimizeStateTracking,
-	"setFinalizerMemoryTracking":       setFinalizerMemoryTracking,
 	"vectorizeAddition":                vectorizeAddition,
 	"vectorizeOperators":               vectorizeOperators,
 	"labelPolymorphism":                labelPolymorphism,

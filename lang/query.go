@@ -12,15 +12,14 @@ import (
 
 // query implements the flux.Query interface.
 type query struct {
-	ctx            context.Context
-	results        chan flux.Result
-	stats          flux.Statistics
-	allocatorStats *memory.ResourceAllocator
-	alloc          memory.Allocator
-	span           opentracing.Span
-	cancel         func()
-	err            error
-	wg             sync.WaitGroup
+	ctx     context.Context
+	results chan flux.Result
+	stats   flux.Statistics
+	alloc   *memory.ResourceAllocator
+	span    opentracing.Span
+	cancel  func()
+	err     error
+	wg      sync.WaitGroup
 }
 
 func (q *query) Results() <-chan flux.Result {
@@ -30,8 +29,8 @@ func (q *query) Results() <-chan flux.Result {
 func (q *query) Done() {
 	q.cancel()
 	q.wg.Wait()
-	q.stats.MaxAllocated = q.allocatorStats.MaxAllocated()
-	q.stats.TotalAllocated = q.allocatorStats.TotalAllocated()
+	q.stats.MaxAllocated = q.alloc.MaxAllocated()
+	q.stats.TotalAllocated = q.alloc.TotalAllocated()
 	if q.span != nil {
 		q.span.Finish()
 		q.span = nil
