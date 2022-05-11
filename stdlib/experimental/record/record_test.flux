@@ -1,6 +1,7 @@
 package record_test
 
 
+import "internal/debug"
 import "testing"
 import "array"
 import "experimental/record"
@@ -57,6 +58,21 @@ testcase record_get_record {
                 {details: string(v: json.encode(v: record.get(r: obj, key: "nosuchfield", default: record.any)))},
             ],
         )
+
+    testing.diff(got: got, want: want)
+}
+
+testcase record_at {
+    option debug.features = {labelPolymorphism: true}
+
+    x = record.any
+    r = {x with foo: 1}
+
+    want = array.from(rows: [{_value: 1}, {_value: 1}])
+
+    lbl = "foo"
+
+    got = array.from(rows: [{_value: record.at(r: r, key: "foo")}, {_value: record.at(r: r, key: lbl)}])
 
     testing.diff(got: got, want: want)
 }

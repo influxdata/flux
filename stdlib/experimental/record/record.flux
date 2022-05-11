@@ -45,3 +45,14 @@ builtin any : A where A: Record
 // introduced: 0.134.0
 //
 builtin get : (r: A, key: string, default: B) => B where A: Record
+
+// at returns the value from a record with the given key.
+// The key must exist on the record which is ensured by the type system.
+//
+// ## Parameters
+// - r: Record to retrieve the value from.
+// - key: Property key to retrieve.
+//
+// ## Metadata
+// introduced: NEXT
+builtin at : (r: {A with C: B}, key: C) => B where A: Record, C: Label

@@ -380,7 +380,7 @@ func GetPropertyName(p *fbsemantic.Prop) (string, error) {
 
 	s, ok := x.(string)
 	if !ok {
-		return "", errors.Newf(codes.Internal, "Record label is not concrete")
+		return "", errors.Newf(codes.Internal, "Record label is not concrete %t", x)
 	}
 	return s, nil
 }
