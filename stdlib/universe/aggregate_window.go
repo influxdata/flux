@@ -37,10 +37,11 @@ const AggregateWindowKind = "aggregateWindow"
 
 type AggregateWindowProcedureSpec struct {
 	plan.DefaultCost
-	WindowSpec    *WindowProcedureSpec
-	AggregateKind plan.ProcedureKind
-	ValueCol      string
-	UseStart      bool
+	WindowSpec     *WindowProcedureSpec
+	AggregateKind  plan.ProcedureKind
+	ValueCol       string
+	UseStart       bool
+	ForceAggregate bool
 }
 
 func (s *AggregateWindowProcedureSpec) Kind() plan.ProcedureKind {
@@ -801,10 +802,11 @@ func (a AggregateWindowRule) Rewrite(ctx context.Context, node plan.Node) (plan.
 
 	parentNode.ClearSuccessors()
 	newNode := plan.CreateUniquePhysicalNode(ctx, "aggregateWindow", &AggregateWindowProcedureSpec{
-		WindowSpec:    windowSpec,
-		AggregateKind: aggregateNode.Kind(),
-		ValueCol:      valueCol,
-		UseStart:      useStart,
+		WindowSpec:     windowSpec,
+		AggregateKind:  aggregateNode.Kind(),
+		ValueCol:       valueCol,
+		UseStart:       useStart,
+		ForceAggregate: false,
 	})
 	parentNode.AddSuccessors(newNode)
 	newNode.AddPredecessors(parentNode)
@@ -815,7 +817,7 @@ func (a AggregateWindowRule) isValidWindowInfSpec(spec *WindowProcedureSpec) boo
 	return spec.TimeColumn == execute.DefaultTimeColLabel &&
 		spec.StartColumn == execute.DefaultStartColLabel &&
 		spec.StopColumn == execute.DefaultStopColLabel &&
-		!spec.CreateEmpty ||
+		!spec.CreateEmpty &&
 		spec.Window.Every == infinityVar.Duration()
 }
 
@@ -923,10 +925,11 @@ func (a AggregateWindowCreateEmptyRule) Rewrite(ctx context.Context, node plan.N
 
 	parentNode.ClearSuccessors()
 	newNode := plan.CreateUniquePhysicalNode(ctx, "aggregateWindow", &AggregateWindowProcedureSpec{
-		WindowSpec:    windowSpec,
-		AggregateKind: aggregateNode.Kind(),
-		ValueCol:      valueCol,
-		UseStart:      useStart,
+		WindowSpec:     windowSpec,
+		AggregateKind:  aggregateNode.Kind(),
+		ValueCol:       valueCol,
+		UseStart:       useStart,
+		ForceAggregate: true,
 	})
 	parentNode.AddSuccessors(newNode)
 	newNode.AddPredecessors(parentNode)
