@@ -14,11 +14,23 @@ func GetOption(file *ast.File, name string) (ast.Expression, error) {
 	for _, st := range file.Body {
 		if val, ok := st.(*ast.OptionStatement); ok {
 			assign := val.Assignment
-			if va, ok := assign.(*ast.VariableAssignment); ok {
-				if va.ID.Name == name {
+			switch a := assign.(type) {
+			case *ast.VariableAssignment:
+				if a.ID.Name == name {
 					if ok {
-						return va.Init, nil
+						return a.Init, nil
 					}
+				}
+			case *ast.MemberAssignment:
+				ident, ok := a.Member.Object.(*ast.Identifier)
+				if !ok {
+					// Cannot match option name to non identifier
+					continue
+				}
+				packageName := ident.Name
+				optionName := a.Member.Property.Key()
+				if packageName+"."+optionName == name {
+					return a.Init, nil
 				}
 			}
 		}

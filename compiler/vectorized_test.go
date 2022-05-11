@@ -9,7 +9,7 @@ import (
 	arrow "github.com/apache/arrow/go/v7/arrow/memory"
 	"github.com/google/go-cmp/cmp"
 	"github.com/influxdata/flux/compiler"
-	"github.com/influxdata/flux/execute/executetest"
+	"github.com/influxdata/flux/dependencies/dependenciestest"
 	fluxfeature "github.com/influxdata/flux/internal/feature"
 	"github.com/influxdata/flux/internal/pkg/feature"
 	"github.com/influxdata/flux/memory"
@@ -51,7 +51,7 @@ func TestVectorizedFns(t *testing.T) {
 		input        map[string]interface{}
 		want         map[string]interface{}
 		skipComp     bool
-		flagger      executetest.TestFlagger
+		flagger      dependenciestest.TestFlagger
 	}
 
 	testCases := []TestCase{
@@ -114,7 +114,7 @@ func TestVectorizedFns(t *testing.T) {
 			want: map[string]interface{}{
 				"c": []interface{}{int64(4)},
 			},
-			flagger: executetest.TestFlagger{
+			flagger: dependenciestest.TestFlagger{
 				fluxfeature.VectorizeAddition().Key(): true,
 			},
 		},
@@ -142,7 +142,7 @@ func TestVectorizedFns(t *testing.T) {
 				"x": []interface{}{int64(3)},
 				"y": []interface{}{100.0},
 			},
-			flagger: executetest.TestFlagger{
+			flagger: dependenciestest.TestFlagger{
 				fluxfeature.VectorizeAddition().Key(): true,
 			},
 		},
@@ -229,7 +229,7 @@ func TestVectorizedFns(t *testing.T) {
 			input: test.input,
 			want:  test.want,
 
-			flagger: executetest.TestFlagger{
+			flagger: dependenciestest.TestFlagger{
 				fluxfeature.VectorizeAddition().Key(): true,
 			},
 		})
@@ -326,7 +326,7 @@ func TestVectorizedFns(t *testing.T) {
 				"c": output,
 			},
 
-			flagger: executetest.TestFlagger{
+			flagger: dependenciestest.TestFlagger{
 				fluxfeature.VectorizeAddition().Key():  true,
 				fluxfeature.VectorizeOperators().Key(): true,
 			},
@@ -340,7 +340,7 @@ func TestVectorizedFns(t *testing.T) {
 
 			flagger := tc.flagger
 			if flagger == nil {
-				flagger = executetest.TestFlagger{}
+				flagger = dependenciestest.TestFlagger{}
 			}
 			flagger[fluxfeature.VectorizedMap().Key()] = true
 			ctx := context.Background()

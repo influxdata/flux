@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/dependencies/feature"
 	"github.com/influxdata/flux/dependencies/filesystem"
 	"github.com/influxdata/flux/dependencies/influxdb"
 	"github.com/influxdata/flux/dependencies/mqtt"
@@ -50,7 +51,8 @@ func (d Deps) Inject(ctx context.Context) context.Context {
 	return d.mqtt.Inject(ctx)
 }
 
-func Default() Deps {
+// Creates the default test dependencies without the hardcoded set of enabled feature flags
+func DefaultWithoutFlags() Deps {
 	var deps flux.Deps
 
 	deps.Deps.HTTPClient = &http.Client{
@@ -71,6 +73,56 @@ func Default() Deps {
 			Dialer: mqtt.DefaultDialer{},
 		},
 	}
+}
+
+type dependencyList []flux.Dependency
+
+func (d dependencyList) Inject(ctx context.Context) context.Context {
+	for _, dep := range d {
+		ctx = dep.Inject(ctx)
+	}
+	return ctx
+}
+
+// Creates the default test dependencies.
+// This includes the hardcoded set of enabled feature flags.
+func Default() flux.Dependency {
+	return dependencyList{
+		DefaultWithoutFlags(),
+		feature.Dependency{
+			Flagger: testFlags,
+		},
+	}
+}
+
+// testFlags is deprecated, do not add new feature flags to this set.
+// Instead use the new `option debug.features = {...}` to set flags for Flux accpetance tests
+// Or for other Go tests:
+//  1. use `dependenciestest.DefaultWithoutFlags()`
+//  2. Create test case specific TestFlagger with the needed testFlags
+//  3. Inject the Flagger dependency directly.
+var testFlags = TestFlagger{
+	// "aggregateTransformationTransport": true,
+	// "groupTransformationGroup":         true,
+	// "optimizeUnionTransformation": true,
+	"vectorizedMap":             true,
+	"vectorizeAddition":         true,
+	"optimizeAggregateWindow":   true,
+	"narrowTransformationLimit": true,
+	"optimizeStateTracking":     true,
+	"optimizeMovingAverage":     true,
+	"optimizeCumulativeSum":     true,
+	"optimizeSetTransformation": true,
+}
+
+type TestFlagger map[string]interface{}
+
+func (t TestFlagger) FlagValue(ctx context.Context, flag feature.Flag) interface{} {
+	v, ok := t[flag.Key()]
+	if !ok {
+		return flag.Default()
+	}
+	return v
 }
 
 func ExecutionDefault() execute.ExecutionDependencies {

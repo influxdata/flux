@@ -24,13 +24,13 @@ func Feature(ctx context.Context, args interpreter.Arguments) (values.Value, err
 	if err != nil {
 		return nil, err
 	}
+	flagger := featurepkg.GetFlagger(ctx)
 
 	flag, ok := feature.ByKey(key)
 	if !ok {
 		return values.Null, nil
 	}
 
-	flagger := featurepkg.GetFlagger(ctx)
 	v := flagger.FlagValue(ctx, flag)
 	if iv, ok := v.(int); ok {
 		v = int64(iv)

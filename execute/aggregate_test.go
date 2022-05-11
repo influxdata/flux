@@ -10,6 +10,7 @@ import (
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/codes"
+	"github.com/influxdata/flux/dependencies/dependenciestest"
 	"github.com/influxdata/flux/dependency"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
@@ -914,7 +915,7 @@ func TestSimpleAggregate_Process(t *testing.T) {
 	for _, tc := range testCases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			ctx, deps := dependency.Inject(context.Background(), executetest.NewTestExecuteDependencies())
+			ctx, deps := dependency.Inject(context.Background(), dependenciestest.Default())
 			defer deps.Finish()
 
 			agg, d, err := execute.NewSimpleAggregateTransformation(ctx, executetest.RandomDatasetID(), tc.agg, tc.config, memory.DefaultAllocator)
@@ -955,7 +956,7 @@ func TestSimpleAggregate_Process(t *testing.T) {
 func TestSimpleAggregate_Process_UnsupportedColumnType(t *testing.T) {
 	sumAgg := new(universe.SumAgg)
 
-	ctx, deps := dependency.Inject(context.Background(), executetest.NewTestExecuteDependencies())
+	ctx, deps := dependency.Inject(context.Background(), dependenciestest.Default())
 	defer deps.Finish()
 
 	agg, d, err := execute.NewSimpleAggregateTransformation(ctx, executetest.RandomDatasetID(), sumAgg, execute.DefaultSimpleAggregateConfig, memory.DefaultAllocator)

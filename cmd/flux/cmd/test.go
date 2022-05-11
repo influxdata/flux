@@ -6,6 +6,7 @@ import (
 	"bytes"
 	"compress/gzip"
 	"context"
+	"encoding/json"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -15,8 +16,11 @@ import (
 
 	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/ast/astutil"
+	"github.com/influxdata/flux/ast/edit"
 	"github.com/influxdata/flux/ast/testcase"
 	"github.com/influxdata/flux/codes"
+	"github.com/influxdata/flux/dependencies/dependenciestest"
+	"github.com/influxdata/flux/dependencies/feature"
 	"github.com/influxdata/flux/dependencies/filesystem"
 	"github.com/influxdata/flux/fluxinit"
 	"github.com/influxdata/flux/internal/errors"
@@ -29,6 +33,7 @@ type TestFlags struct {
 	paths         []string
 	skipTestCases []string
 	verbosity     int
+	Features      string
 }
 
 func TestCommand(setup TestSetupFunc) *cobra.Command {
@@ -49,6 +54,7 @@ func TestCommand(setup TestSetupFunc) *cobra.Command {
 	testCommand.Flags().StringSliceVar(&flags.testNames, "test", []string{}, "The name of a specific test to run.")
 	testCommand.Flags().StringSliceVar(&flags.skipTestCases, "skip", []string{}, "Comma-separated list of test cases to skip.")
 	testCommand.Flags().CountVarP(&flags.verbosity, "verbose", "v", "verbose (-v, -vv, or -vvv)")
+	testCommand.Flags().StringVar(&flags.Features, "feature", "", "JSON object specifying the features to execute with. See internal/feature/flags.yml for a list of the current features")
 	return testCommand
 }
 
@@ -57,6 +63,15 @@ func runFluxTests(setup TestSetupFunc, flags TestFlags) error {
 	if len(flags.paths) == 0 {
 		flags.paths = []string{"."}
 	}
+	// set feature flags on the context from flags
+	var flagger feature.Flagger
+	if len(flags.Features) != 0 {
+		testFlagger := dependenciestest.TestFlagger{}
+		if err := json.Unmarshal([]byte(flags.Features), &testFlagger); err != nil {
+			return errors.Newf(codes.Invalid, "Unable to unmarshal features as json: %s", err)
+		}
+		flagger = testFlagger
+	}
 
 	reporter := NewTestReporter(flags.verbosity)
 	runner := NewTestRunner(reporter)
@@ -64,13 +79,13 @@ func runFluxTests(setup TestSetupFunc, flags TestFlags) error {
 		return err
 	}
 
-	executor, err := setup(context.Background())
+	executor, err := setup()
 	if err != nil {
 		return err
 	}
 	defer func() { _ = executor.Close() }()
 
-	runner.Run(executor, flags.verbosity, flags.skipTestCases)
+	runner.Run(executor, flags.verbosity, flags.skipTestCases, flagger)
 	return runner.Finish()
 }
 
@@ -102,8 +117,38 @@ func (t *Test) Error() error {
 }
 
 // Run the test, saving the error to the err property of the struct.
-func (t *Test) Run(executor TestExecutor) {
-	t.err = executor.Run(t.ast)
+func (t *Test) Run(ctx context.Context, executor TestExecutor, flagger feature.Flagger) {
+	if flagger != nil {
+		// Use CLI feature flags, not the test specified feature flags
+		ctx = feature.Dependency{Flagger: flagger}.Inject(ctx)
+	} else {
+		// Get feature flag values from debug.features option
+		featuresOpt, err := edit.GetOption(t.ast.Files[0], "debug.features")
+		if err != nil && err != edit.OptionNotFoundError {
+			t.err = err
+			return
+		}
+		if err != edit.OptionNotFoundError {
+			// We have an option to override feature flags
+			featuresRecord, ok := featuresOpt.(*ast.ObjectExpression)
+			if !ok {
+				t.err = errors.New(codes.Invalid, "debug.features option must be a record")
+				return
+			}
+
+			flagger := dependenciestest.TestFlagger{}
+			for _, p := range featuresRecord.Properties {
+				if lit, ok := p.Value.(ast.Literal); ok {
+					flagger[p.Key.Key()] = edit.LiteralValue(lit)
+				} else {
+					t.err = errors.Newf(codes.Invalid, "debug.features value for key %q must be a literal, found %T", p.Key.Key(), p.Value)
+					return
+				}
+			}
+			ctx = feature.Dependency{Flagger: flagger}.Inject(ctx)
+		}
+	}
+	t.err = executor.Run(ctx, t.ast)
 }
 
 func (t *Test) SourceCode() (string, error) {
@@ -534,7 +579,7 @@ func findParentTestRoot(path string) (string, filesystem.Service, bool, error) {
 }
 
 // Run runs all tests, reporting their results.
-func (t *TestRunner) Run(executor TestExecutor, verbosity int, skipTestCases []string) {
+func (t *TestRunner) Run(executor TestExecutor, verbosity int, skipTestCases []string, flagger feature.Flagger) {
 	skipMap := make(map[string]struct{})
 	for _, n := range skipTestCases {
 		skipMap[n] = struct{}{}
@@ -543,7 +588,7 @@ func (t *TestRunner) Run(executor TestExecutor, verbosity int, skipTestCases []s
 		if _, ok := skipMap[test.name]; ok {
 			test.skip = true
 		} else {
-			test.Run(executor)
+			test.Run(context.Background(), executor, flagger)
 		}
 		t.reporter.ReportTestRun(test)
 	}
@@ -631,10 +676,10 @@ func (t *TestReporter) Summarize(tests []*Test) {
 	fmt.Printf("\n---\nFound %d tests: passed %d, failed %d, skipped %d\n", len(tests), passed, failures, skips)
 }
 
-type TestSetupFunc func(ctx context.Context) (TestExecutor, error)
+type TestSetupFunc func() (TestExecutor, error)
 
 type TestExecutor interface {
-	Run(pkg *ast.Package) error
+	Run(context.Context, *ast.Package) error
 	io.Closer
 }
 

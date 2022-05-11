@@ -10,9 +10,9 @@ import (
 	"github.com/influxdata/flux/cmd/flux/cmd"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/dependencies"
+	"github.com/influxdata/flux/dependencies/dependenciestest"
 	"github.com/influxdata/flux/dependencies/feature"
 	"github.com/influxdata/flux/dependency"
-	"github.com/influxdata/flux/execute/executetest"
 	"github.com/influxdata/flux/fluxinit"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/opentracing/opentracing-go"
@@ -54,7 +54,7 @@ func runE(cmd *cobra.Command, args []string) error {
 	ctx, span := injectDependencies(ctx)
 	defer span.Finish()
 
-	flagger := executetest.TestFlagger{}
+	flagger := dependenciestest.TestFlagger{}
 	if len(flags.Features) != 0 {
 		if err := json.Unmarshal([]byte(flags.Features), &flagger); err != nil {
 			return errors.Newf(codes.Invalid, "Unable to unmarshal features as json: %s", err)

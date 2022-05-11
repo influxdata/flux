@@ -55,7 +55,7 @@ func TestGet(t *testing.T) {
 		},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
-			deps := dependenciestest.Default()
+			deps := dependenciestest.DefaultWithoutFlags()
 			deps.Deps.Deps.SecretService = tt.secrets
 			ctx, span := dependency.Inject(context.Background(), deps)
 			defer span.Finish()

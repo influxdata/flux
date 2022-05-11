@@ -10,9 +10,9 @@ import (
 	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/cmd/flux/cmd"
 	"github.com/influxdata/flux/codes"
+	"github.com/influxdata/flux/dependencies/dependenciestest"
 	"github.com/influxdata/flux/dependencies/testing"
 	"github.com/influxdata/flux/dependency"
-	"github.com/influxdata/flux/execute/executetest"
 	"github.com/influxdata/flux/execute/table"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/lang"
@@ -20,21 +20,22 @@ import (
 	"github.com/influxdata/flux/runtime"
 )
 
-func NewTestExecutor(ctx context.Context) (cmd.TestExecutor, error) {
+func NewTestExecutor() (cmd.TestExecutor, error) {
 	return testExecutor{}, nil
 }
 
-type testExecutor struct{}
+type testExecutor struct {
+}
 
-func (testExecutor) Run(pkg *ast.Package) error {
+func (t testExecutor) Run(ctx context.Context, pkg *ast.Package) error {
 	jsonAST, err := json.Marshal(pkg)
 	if err != nil {
 		return err
 	}
 	c := lang.ASTCompiler{AST: jsonAST}
 
-	ctx, span := dependency.Inject(context.Background(),
-		executetest.NewTestExecuteDependencies(),
+	ctx, span := dependency.Inject(ctx,
+		dependenciestest.DefaultWithoutFlags(),
 		testing.FrameworkConfig{},
 	)
 	defer span.Finish()

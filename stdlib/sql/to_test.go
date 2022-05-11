@@ -283,7 +283,7 @@ func TestToSQL_Process(t *testing.T) {
 			c := execute.NewTableBuilderCache(executetest.UnlimitedAllocator)
 			c.SetTriggerSpec(plan.DefaultTriggerSpec)
 
-			transformation, err := fsql.NewToSQLTransformation(d, dependenciestest.Default(), c, tc.spec)
+			transformation, err := fsql.NewToSQLTransformation(d, dependenciestest.DefaultWithoutFlags(), c, tc.spec)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -653,7 +653,7 @@ func TestToSQLite3_Process(t *testing.T) {
 			c := execute.NewTableBuilderCache(executetest.UnlimitedAllocator)
 			c.SetTriggerSpec(plan.DefaultTriggerSpec)
 
-			transformation, err := fsql.NewToSQLTransformation(d, dependenciestest.Default(), c, tc.spec)
+			transformation, err := fsql.NewToSQLTransformation(d, dependenciestest.DefaultWithoutFlags(), c, tc.spec)
 			if err != nil {
 				t.Fatal(err)
 			}

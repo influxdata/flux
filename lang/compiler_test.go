@@ -194,7 +194,7 @@ func TestFluxCompiler(t *testing.T) {
 			}
 
 			// we need to start the program to get compile errors derived from AST evaluation
-			ctx, deps := dependency.Inject(context.Background(), executetest.NewTestExecuteDependencies())
+			ctx, deps := dependency.Inject(context.Background(), dependenciestest.Default())
 			defer deps.Finish()
 
 			if _, err = program.Start(ctx, &memory.ResourceAllocator{}); tc.startErr == "" && err != nil {
@@ -215,7 +215,7 @@ func TestCompilationError(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	ctx, deps := dependency.Inject(context.Background(), executetest.NewTestExecuteDependencies())
+	ctx, deps := dependency.Inject(context.Background(), dependenciestest.Default())
 	defer deps.Finish()
 
 	_, err = program.Start(ctx, &memory.ResourceAllocator{})
@@ -407,7 +407,7 @@ csv.from(csv: "foo,bar") |> range(start: 2017-10-10T00:00:00Z)
 			if err != nil {
 				t.Fatalf("failed to compile AST: %v", err)
 			}
-			ctx, deps := dependency.Inject(context.Background(), executetest.NewTestExecuteDependencies())
+			ctx, deps := dependency.Inject(context.Background(), dependenciestest.Default())
 			defer deps.Finish()
 
 			// we need to start the program to get compile errors derived from AST evaluation
@@ -502,7 +502,7 @@ func TestCompileOptions(t *testing.T) {
 	}
 
 	// start program in order to evaluate planner options
-	ctx, deps := dependency.Inject(context.Background(), executetest.NewTestExecuteDependencies())
+	ctx, deps := dependency.Inject(context.Background(), dependenciestest.Default())
 	defer deps.Finish()
 
 	if _, err := program.Start(ctx, &memory.ResourceAllocator{}); err != nil {
@@ -801,7 +801,7 @@ option planner.disableLogicalRules = ["removeCountRule"]`},
 			}
 
 			program := lang.CompileAST(astPkg, runtime.Default, nowFn())
-			ctx, deps := dependency.Inject(context.Background(), executetest.NewTestExecuteDependencies())
+			ctx, deps := dependency.Inject(context.Background(), dependenciestest.Default())
 			defer deps.Finish()
 
 			if q, err := program.Start(ctx, &memory.ResourceAllocator{}); err != nil {
@@ -1073,7 +1073,7 @@ func getTableObjectTablesOrFail(t *testing.T, to *flux.TableObject) []*executete
 		t.Fatal(err)
 	}
 
-	ctx, deps := dependency.Inject(context.Background(), executetest.NewTestExecuteDependencies())
+	ctx, deps := dependency.Inject(context.Background(), dependenciestest.Default())
 	defer deps.Finish()
 
 	q, err := program.Start(ctx, &memory.ResourceAllocator{})

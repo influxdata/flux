@@ -531,7 +531,7 @@ func TestToKafka_Process(t *testing.T) {
 				tc.want.Table,
 				nil,
 				func(d execute.Dataset, c execute.TableBuilderCache) execute.Transformation {
-					t, _ := fkafka.NewToKafkaTransformation(d, dependenciestest.Default(), c, tc.spec)
+					t, _ := fkafka.NewToKafkaTransformation(d, dependenciestest.DefaultWithoutFlags(), c, tc.spec)
 					return t
 				},
 			)

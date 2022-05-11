@@ -1497,6 +1497,10 @@ func (i *Identifier) Copy() Node {
 	return ni
 }
 
+// true/false identifiers can be literals
+// TODO make them parse as literals?
+func (i *Identifier) literal() {}
+
 // Literal is the lexical form for a literal expression which defines
 // boolean, string, integer, number, duration, datetime or field values.
 // Literals must be coerced explicitly.

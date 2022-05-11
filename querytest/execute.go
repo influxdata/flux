@@ -5,8 +5,8 @@ import (
 	"io"
 
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/dependencies/dependenciestest"
 	"github.com/influxdata/flux/dependency"
-	"github.com/influxdata/flux/execute/executetest"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/runtime"
 )
@@ -18,7 +18,7 @@ func (q *Querier) Query(ctx context.Context, w io.Writer, c flux.Compiler, d flu
 	if err != nil {
 		return 0, err
 	}
-	ctx, deps := dependency.Inject(ctx, executetest.NewTestExecuteDependencies())
+	ctx, deps := dependency.Inject(ctx, dependenciestest.Default())
 	defer deps.Finish()
 	query, err := program.Start(ctx, memory.DefaultAllocator)
 	if err != nil {

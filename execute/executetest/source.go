@@ -175,7 +175,7 @@ type SourceUrlValidationTestCases []struct {
 func (testCases *SourceUrlValidationTestCases) Run(t *testing.T, fn execute.CreateSource) {
 	for _, tc := range *testCases {
 		t.Run(tc.Name, func(t *testing.T) {
-			deps := dependenciestest.Default()
+			deps := dependenciestest.DefaultWithoutFlags()
 			if tc.V != nil {
 				deps.Deps.Deps.URLValidator = tc.V
 			}

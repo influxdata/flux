@@ -9,9 +9,9 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/dependencies/dependenciestest"
 	ftesting "github.com/influxdata/flux/dependencies/testing"
 	"github.com/influxdata/flux/dependency"
-	"github.com/influxdata/flux/execute/executetest"
 	_ "github.com/influxdata/flux/fluxinit/static"
 	"github.com/influxdata/flux/lang"
 	"github.com/influxdata/flux/memory"
@@ -23,7 +23,7 @@ func runQuery(ctx context.Context, script string) (flux.Query, func(), error) {
 	if err != nil {
 		return nil, nil, err
 	}
-	ctx, deps := dependency.Inject(ctx, executetest.NewTestExecuteDependencies())
+	ctx, deps := dependency.Inject(ctx, dependenciestest.Default())
 	q, err := program.Start(ctx, memory.DefaultAllocator)
 	if err != nil {
 		deps.Finish()
