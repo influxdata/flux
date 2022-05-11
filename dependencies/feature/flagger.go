@@ -1,3 +1,4 @@
+// Package feature connects feature flags into the Flux dependency system
 package feature
 
 import (

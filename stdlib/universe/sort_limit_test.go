@@ -4,9 +4,9 @@ import (
 	"context"
 	"testing"
 
+	"github.com/influxdata/flux/dependencies/dependenciestest"
 	"github.com/influxdata/flux/dependency"
 	"github.com/influxdata/flux/execute"
-	"github.com/influxdata/flux/execute/executetest"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/plan/plantest"
 	"github.com/influxdata/flux/stdlib/influxdata/influxdb"
@@ -14,7 +14,7 @@ import (
 )
 
 func TestSortLimitRule(t *testing.T) {
-	ctx, deps := dependency.Inject(context.Background(), executetest.NewTestExecuteDependencies())
+	ctx, deps := dependency.Inject(context.Background(), dependenciestest.Default())
 	defer deps.Finish()
 
 	from := &influxdb.FromProcedureSpec{

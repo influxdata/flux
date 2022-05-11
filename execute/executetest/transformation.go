@@ -372,7 +372,7 @@ func (test *TfUrlValidationTest) Run(t *testing.T) {
 			t.Parallel()
 			d := NewDataset(RandomDatasetID())
 			c := execute.NewTableBuilderCache(UnlimitedAllocator)
-			deps := dependenciestest.Default()
+			deps := dependenciestest.DefaultWithoutFlags()
 			if tc.Validator != nil {
 				deps.Deps.Deps.URLValidator = tc.Validator
 			}

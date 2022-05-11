@@ -2,6 +2,8 @@
 package debug
 
 
+import "experimental/record"
+
 // pass will pass any incoming tables directly next to the following transformation.
 // It is best used to interrupt any planner rules that rely on a specific ordering.
 //
@@ -49,6 +51,13 @@ builtin getOption : (pkg: string, name: string) => A
 // - key: Feature flag name.
 //
 builtin feature : (key: string) => A
+
+// setFeature sets a feature flag value.
+//
+// ## Parameters
+// - key: Feature flag name.
+// - value: Value for the feature flag. It's the callers responsibility to ensure this has the correct type.
+builtin setFeature : (key: string, value: B) => A
 
 // vectorize controls whether the compiler attempts to vectorize Flux functions.
 option vectorize = false

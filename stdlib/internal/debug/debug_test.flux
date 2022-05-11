@@ -93,8 +93,9 @@ testcase unpivot_pivot_roundtrip {
         |> yield()
 }
 
-inDataUnpivoted =
-    "
+testcase unpivot_3_columns {
+        inDataUnpivoted =
+            "
 #datatype,string,long,string,string,dateTime:RFC3339,double
 #group,false,false,true,true,false,false
 #default,_result,,,,,
@@ -118,8 +119,8 @@ inDataUnpivoted =
 ,,2,iZquGj,s,2018-12-18T20:52:43Z,123
 "
 
-inDataPivoted =
-    "
+        inDataPivoted =
+            "
 #datatype,string,long,string,dateTime:RFC3339,double,long,string
 #group,false,false,true,false,false,false,false
 #default,_result,,,,,,
@@ -127,17 +128,56 @@ inDataPivoted =
 ,,0,iZquGj,2018-12-18T20:52:33Z,-61.68790887989735,-66,abc
 ,,0,iZquGj,2018-12-18T20:52:43Z,-6.3173755351186465,3,123
 "
+        want =
+            testing.loadStorage(csv: inDataUnpivoted)
+                |> range(start: 2018-12-18T20:00:00Z, stop: 2018-12-18T21:00:00Z)
 
-testcase unpivot_3_columns {
-    want =
-        testing.loadStorage(csv: inDataUnpivoted)
-            |> range(start: 2018-12-18T20:00:00Z, stop: 2018-12-18T21:00:00Z)
+        got =
+            csv.from(csv: inDataPivoted)
+                |> range(start: 2018-12-18T20:00:00Z, stop: 2018-12-18T21:00:00Z)
+                |> debug.unpivot()
+
+        testing.diff(got: got, want: want)
+            |> yield()
+    }
+
+testcase features {
+    // Set some feature flags,
+    // Flags must be defined in the flags.yml so this test case uses real flags defined in that file.
+    // We cannot use mock flags.
+    debug.setFeature(key: "aggregateTransformationTransport", value: true)
+    debug.setFeature(key: "queryConcurrencyLimit", value: 1)
+
+    want = array.from(rows: [{aggregateTransformationTransport: true, queryConcurrencyLimit: 1}])
 
     got =
-        csv.from(csv: inDataPivoted)
-            |> range(start: 2018-12-18T20:00:00Z, stop: 2018-12-18T21:00:00Z)
-            |> debug.unpivot()
+        array.from(
+            rows: [
+                {
+                    aggregateTransformationTransport: debug.feature(key: "aggregateTransformationTransport"),
+                    queryConcurrencyLimit: debug.feature(key: "queryConcurrencyLimit"),
+                },
+            ],
+        )
 
-    testing.diff(got: got, want: want)
-        |> yield()
+    testing.diff(want: want, got: got)
+}
+
+testcase feature_defaults {
+    // Test that feature flags have defaults and that other tests are not changing the value of the defaults.
+    // Flags must be defined in the flags.yml so this test case uses real flags defined in that file.
+    // We cannot use mock flags.
+    want = array.from(rows: [{aggregateTransformationTransport: false, queryConcurrencyLimit: 0}])
+
+    got =
+        array.from(
+            rows: [
+                {
+                    aggregateTransformationTransport: debug.feature(key: "aggregateTransformationTransport"),
+                    queryConcurrencyLimit: debug.feature(key: "queryConcurrencyLimit"),
+                },
+            ],
+        )
+
+    testing.diff(want: want, got: got)
 }

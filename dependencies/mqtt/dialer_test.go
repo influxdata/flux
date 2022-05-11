@@ -4,10 +4,10 @@ import (
 	"context"
 	"testing"
 
+	"github.com/influxdata/flux/dependencies/dependenciestest"
 	"github.com/influxdata/flux/dependencies/feature"
 	"github.com/influxdata/flux/dependencies/mqtt"
 	"github.com/influxdata/flux/dependency"
-	"github.com/influxdata/flux/execute/executetest"
 )
 
 type MockDialer struct {
@@ -44,7 +44,7 @@ func TestPoolDialer(t *testing.T) {
 	closed := 0
 	ctx, span := dependency.Inject(context.Background(),
 		feature.Dependency{
-			Flagger: executetest.TestFlagger{
+			Flagger: dependenciestest.TestFlagger{
 				"mqttPoolDialer": true,
 			},
 		},

@@ -64,7 +64,7 @@ func runFluxTests(setup TestSetupFunc, flags TestFlags) error {
 		return err
 	}
 
-	executor, err := setup(context.Background())
+	executor, err := setup()
 	if err != nil {
 		return err
 	}
@@ -102,8 +102,8 @@ func (t *Test) Error() error {
 }
 
 // Run the test, saving the error to the err property of the struct.
-func (t *Test) Run(executor TestExecutor) {
-	t.err = executor.Run(t.ast)
+func (t *Test) Run(ctx context.Context, executor TestExecutor) {
+	t.err = executor.Run(ctx, t.ast)
 }
 
 func (t *Test) SourceCode() (string, error) {
@@ -543,7 +543,7 @@ func (t *TestRunner) Run(executor TestExecutor, verbosity int, skipTestCases []s
 		if _, ok := skipMap[test.name]; ok {
 			test.skip = true
 		} else {
-			test.Run(executor)
+			test.Run(context.Background(), executor)
 		}
 		t.reporter.ReportTestRun(test)
 	}
@@ -631,10 +631,10 @@ func (t *TestReporter) Summarize(tests []*Test) {
 	fmt.Printf("\n---\nFound %d tests: passed %d, failed %d, skipped %d\n", len(tests), passed, failures, skips)
 }
 
-type TestSetupFunc func(ctx context.Context) (TestExecutor, error)
+type TestSetupFunc func() (TestExecutor, error)
 
 type TestExecutor interface {
-	Run(pkg *ast.Package) error
+	Run(context.Context, *ast.Package) error
 	io.Closer
 }
 

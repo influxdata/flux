@@ -118,7 +118,7 @@ disk,id=/dev/sdb usage_disk=45,log="disk message" 1510876800000000004
 					Token: "mytoken",
 				},
 			}
-			deps := dependenciestest.Default()
+			deps := dependenciestest.DefaultWithoutFlags()
 			roundTripper := &RoundTrip{
 				RequestValidator: func(req *http.Request) error {
 					url := req.URL
@@ -176,7 +176,7 @@ func TestHttpWriter_Write_Error(t *testing.T) {
 			Token: "mytoken",
 		},
 	}
-	deps := dependenciestest.Default()
+	deps := dependenciestest.DefaultWithoutFlags()
 	roundTripper := &RoundTrip{
 		RequestValidator: func(req *http.Request) error {
 			return nil

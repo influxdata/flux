@@ -11,9 +11,9 @@ import (
 	arrowmem "github.com/apache/arrow/go/v7/arrow/memory"
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/ast"
+	"github.com/influxdata/flux/dependencies/dependenciestest"
 	"github.com/influxdata/flux/dependency"
 	"github.com/influxdata/flux/execute"
-	"github.com/influxdata/flux/execute/executetest"
 	"github.com/influxdata/flux/lang"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/runtime"
@@ -146,7 +146,7 @@ func doTestRun(t testing.TB, name string, c flux.Compiler) flux.Statistics {
 		t.Fatalf("unexpected error while compiling query: %v", err)
 	}
 
-	ctx, deps := dependency.Inject(context.Background(), executetest.NewTestExecuteDependencies())
+	ctx, deps := dependency.Inject(context.Background(), dependenciestest.Default())
 	defer deps.Finish()
 
 	var alloc memory.Allocator
@@ -186,7 +186,7 @@ func doTestInspect(t testing.TB, c flux.Compiler) flux.Statistics {
 	if err != nil {
 		t.Fatalf("unexpected error while compiling query: %v", err)
 	}
-	ctx, deps := dependency.Inject(context.Background(), executetest.NewTestExecuteDependencies())
+	ctx, deps := dependency.Inject(context.Background(), dependenciestest.Default())
 	defer deps.Finish()
 
 	r, err := program.Start(ctx, memory.DefaultAllocator)
