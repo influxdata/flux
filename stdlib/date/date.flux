@@ -680,6 +680,43 @@ builtin _truncate : (t: T, unit: duration, location: {zone: string, offset: dura
 // ```
 truncate = (t, unit, location=location) => _truncate(t, unit, location)
 
+// scale will multiply the duration by the given value.
+//
+// ## Parameters
+// - d: Duration to scale.
+// - n: Amount to scale the duration by.
+//
+// ## Examples
+//
+// ### Add n hours to a time
+//
+// ```no_run
+// import "date"
+//
+// n = 5
+// d = date.scale(d: 1h, n: n)
+// date.add(d: d, to: 2022-05-10T00:00:00Z)
+//
+// // Returns 2022-05-10T00:00:00.000000000Z
+// ```
+//
+// ### Add scaled mixed duration to a time
+//
+// ```no_run
+// import "date"
+//
+// n = 5
+// d = date.scale(d: 1mo1h, n: 5)
+// date.add(d: d, to: 2022-01-01T00:00:00Z)
+//
+// // Returns 2022-06-01T05:00:00.000000000Z
+// ```
+//
+// ## Metadata
+// tags: date/time
+//
+builtin scale : (d: duration, n: int) => duration
+
 // Sunday is a constant that represents Sunday as a day of the week
 Sunday = 0
 
