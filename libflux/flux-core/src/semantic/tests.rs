@@ -272,7 +272,7 @@ macro_rules! test_infer_err {
                 panic!("{}", err)
             }
             Err(Error::Semantic(error)) => {
-                for err in error.errors {
+                for err in error.diagnostics.errors {
                     if let semantic::ErrorKind::InvalidAST(_) = err.error {
                         panic!("{}", err);
                     }
