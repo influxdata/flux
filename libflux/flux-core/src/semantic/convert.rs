@@ -2725,28 +2725,31 @@ mod tests {
         let type_exp =
             Parser::new("(A: T, B: S) => T where T: Addable, S: Divisible").parse_type_expression();
         let got = convert_polytype(&type_exp, &mut sub::Substitution::default()).unwrap();
-        let mut vars = Vec::<types::Tvar>::new();
-        vars.push(types::Tvar(0));
-        vars.push(types::Tvar(1));
-        let mut cons = types::TvarKinds::new();
-        let mut kind_vector_1 = Vec::<types::Kind>::new();
-        kind_vector_1.push(types::Kind::Addable);
-        cons.insert(types::Tvar(0), kind_vector_1);
 
-        let mut kind_vector_2 = Vec::<types::Kind>::new();
-        kind_vector_2.push(types::Kind::Divisible);
-        cons.insert(types::Tvar(1), kind_vector_2);
+        let want = {
+            let mut vars = Vec::<types::Tvar>::new();
+            vars.push(types::Tvar(0));
+            vars.push(types::Tvar(1));
+            let mut cons = types::TvarKinds::new();
+            let mut kind_vector_1 = Vec::<types::Kind>::new();
+            kind_vector_1.push(types::Kind::Addable);
+            cons.insert(types::Tvar(0), kind_vector_1);
 
-        let mut req = MonoTypeMap::new();
-        req.insert("A".to_string(), MonoType::BoundVar(Tvar(0)));
-        req.insert("B".to_string(), MonoType::BoundVar(Tvar(1)));
-        let expr = MonoType::from(types::Function {
-            req,
-            opt: MonoTypeMap::new(),
-            pipe: None,
-            retn: MonoType::BoundVar(Tvar(0)),
-        });
-        let want = types::PolyType { vars, cons, expr };
+            let mut kind_vector_2 = Vec::<types::Kind>::new();
+            kind_vector_2.push(types::Kind::Divisible);
+            cons.insert(types::Tvar(1), kind_vector_2);
+
+            let mut req = MonoTypeMap::new();
+            req.insert("A".to_string(), MonoType::BoundVar(Tvar(0)));
+            req.insert("B".to_string(), MonoType::BoundVar(Tvar(1)));
+            let expr = MonoType::from(types::Function {
+                req,
+                opt: MonoTypeMap::new(),
+                pipe: None,
+                retn: MonoType::BoundVar(Tvar(0)),
+            });
+            types::PolyType { vars, cons, expr }
+        };
         assert_eq!(want, got);
     }
 

@@ -13,6 +13,10 @@ use thiserror::Error;
 
 pub use fluxcore::{ast, formatter, semantic, *};
 
+#[macro_use]
+#[cfg(test)]
+extern crate pretty_assertions;
+
 #[cfg(feature = "cffi")]
 mod cffi;
 #[cfg(feature = "cffi")]

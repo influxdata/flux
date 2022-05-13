@@ -3,7 +3,7 @@
 
 use crate::{
     map::HashMap,
-    semantic::{flatbuffers::semantic_generated::fbsemantic as fb, fresh::Fresher, PackageExports},
+    semantic::{flatbuffers::semantic_generated::fbsemantic as fb, PackageExports},
 };
 
 #[rustfmt::skip]
@@ -73,12 +73,6 @@ impl DeserializeFlatBuffer {
             ));
         }
         PackageExports::try_from(types).ok()
-    }
-}
-
-impl From<fb::Fresher<'_>> for Fresher {
-    fn from(f: fb::Fresher) -> Fresher {
-        Fresher::from(f.u())
     }
 }
 

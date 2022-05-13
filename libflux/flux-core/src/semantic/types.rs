@@ -2,7 +2,6 @@
 
 use std::{
     borrow::Cow,
-    cell::Cell,
     cmp,
     collections::{BTreeMap, BTreeSet},
     fmt::{self, Write},
@@ -18,9 +17,11 @@ use crate::{
     errors::{Errors, Located},
     map::HashMap,
     semantic::{
-        fresh::{Fresh, Fresher},
+        fresh::Fresher,
         nodes::Symbol,
-        sub::{apply2, apply3, apply4, merge_collect, Substitutable, Substituter, Substitution},
+        sub::{
+            apply2, apply3, apply4, merge3, merge_collect, Substitutable, Substituter, Substitution,
+        },
     },
 };
 
@@ -87,18 +88,18 @@ impl Matcher<Error> for Subsume {
                 {
                     struct ReplaceLabels;
                     impl Substituter for ReplaceLabels {
-                        fn try_apply(&self, _: Tvar) -> Option<MonoType> {
+                        fn try_apply(&mut self, _: Tvar) -> Option<MonoType> {
                             None
                         }
-                        fn visit_type(&self, typ: &MonoType) -> Option<MonoType> {
+                        fn visit_type(&mut self, typ: &MonoType) -> Option<MonoType> {
                             match typ {
                                 MonoType::Label(_) => Some(MonoType::STRING),
-                                _ => None,
+                                _ => typ.walk(self),
                             }
                         }
                     }
                     maybe_label
-                        .visit(&ReplaceLabels)
+                        .visit(&mut ReplaceLabels)
                         .map(Cow::Owned)
                         .unwrap_or_else(|| Cow::Borrowed(maybe_label))
                 }
@@ -223,8 +224,8 @@ impl PartialEq for PolyType {
         let mut f = Fresher::from(max + 1);
         let mut g = Fresher::from(max + 1);
 
-        let mut a = self.clone().fresh(&mut f, &mut TvarMap::new());
-        let mut b = poly.clone().fresh(&mut g, &mut TvarMap::new());
+        let mut a = self.fresh(&mut f);
+        let mut b = poly.fresh(&mut g);
 
         a.vars.sort();
         b.vars.sort();
@@ -241,16 +242,44 @@ impl PartialEq for PolyType {
 }
 
 impl Substitutable for PolyType {
-    fn visit(&self, sub: &dyn Substituter) -> Option<Self> {
+    fn visit(&self, sub: &mut (impl ?Sized + Substituter)) -> Option<Self> {
         sub.visit_poly_type(self)
     }
 
-    fn walk(&self, sub: &dyn Substituter) -> Option<Self> {
+    fn walk(&self, sub: &mut (impl ?Sized + Substituter)) -> Option<Self> {
+        let Self { vars, cons, expr } = self;
+
+        let new_expr = expr.visit(sub);
+
+        let new_cons = merge_collect(
+            &mut (),
+            cons,
+            |_, (k, v)| {
+                sub.try_apply_bound(*k).and_then(|k| match k {
+                    MonoType::BoundVar(k) | MonoType::Var(k) => Some((k, v.clone())),
+                    _ => None,
+                })
+            },
+            |_, (k, v)| (*k, v.clone()),
+        );
+
+        let new_vars = merge_collect(
+            &mut (),
+            vars,
+            |_, v| {
+                sub.try_apply_bound(*v).and_then(|v| match v {
+                    MonoType::BoundVar(v) | MonoType::Var(v) => Some(v),
+                    _ => None,
+                })
+            },
+            |_, v| *v,
+        );
+
         // `vars` defines new distinct variables for `expr` so any substitutions applied on a
         // variable named the same must not be applied in `expr`
-        self.expr.visit(sub).map(|expr| PolyType {
-            vars: self.vars.clone(),
-            cons: self.cons.clone(),
+        merge3(vars, new_vars, cons, new_cons, expr, new_expr).map(|(vars, cons, expr)| PolyType {
+            vars,
+            cons,
             expr,
         })
     }
@@ -290,8 +319,7 @@ impl PolyType {
     ///
     /// Useful for pretty printing the type in error messages.
     pub fn normal(&self) -> PolyType {
-        self.clone()
-            .fresh(&mut Fresher::from(0), &mut TvarMap::new())
+        self.clone().fresh(&mut Fresher::default())
     }
 }
 
@@ -343,20 +371,20 @@ pub enum Error {
 
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let mut fresh = Fresher::from(0);
+        let mut fresh = Fresher::default();
         match self {
             Error::CannotUnify { exp, act } => write!(
                 f,
                 "expected {exp}{exp_info} but found {act}{act_info}",
-                exp = exp.clone().fresh(&mut fresh, &mut TvarMap::new()),
+                exp = exp.clone().fresh(&mut fresh),
                 exp_info = exp.type_info(),
-                act = act.clone().fresh(&mut fresh, &mut TvarMap::new()),
+                act = act.clone().fresh(&mut fresh),
                 act_info = act.type_info(),
             ),
             Error::CannotConstrain { exp, act } => write!(
                 f,
                 "{act}{act_info} is not {exp}",
-                act = act.clone().fresh(&mut fresh, &mut TvarMap::new()),
+                act = act.clone().fresh(&mut fresh),
                 act_info = act.type_info(),
                 exp = exp,
             ),
@@ -373,9 +401,9 @@ impl fmt::Display for Error {
             } => write!(
                 f,
                 "expected {exp}{exp_info} but found {act}{act_info} for label {lab} caused by {cause}",
-                exp = exp.clone().fresh(&mut fresh, &mut TvarMap::new()),
+                exp = exp.clone().fresh(&mut fresh),
                 exp_info = exp.type_info(),
-                act = act.clone().fresh(&mut fresh, &mut TvarMap::new()),
+                act = act.clone().fresh(&mut fresh),
                 act_info = act.type_info(),
                 lab = lab,
                 cause = cause
@@ -386,9 +414,9 @@ impl fmt::Display for Error {
             Error::CannotUnifyReturn { exp, act, cause } => write!(
                 f,
                 "expected {exp}{exp_info} but found {act}{act_info} for return type caused by {cause}",
-                exp = exp.clone().fresh(&mut fresh, &mut TvarMap::new()),
+                exp = exp.clone().fresh(&mut fresh),
                 exp_info = exp.type_info(),
-                act = act.clone().fresh(&mut fresh, &mut TvarMap::new()),
+                act = act.clone().fresh(&mut fresh),
                 act_info = act.type_info(),
                 cause = cause
             ),
@@ -404,7 +432,7 @@ impl fmt::Display for Error {
 }
 
 impl Substitutable for Error {
-    fn walk(&self, sub: &dyn Substituter) -> Option<Self> {
+    fn walk(&self, sub: &mut (impl ?Sized + Substituter)) -> Option<Self> {
         match self {
             Error::CannotUnify { exp, act } => {
                 apply2(exp, act, sub).map(|(exp, act)| Error::CannotUnify { exp, act })
@@ -493,7 +521,7 @@ impl FromStr for Kind {
 pub type Ptr<T> = std::sync::Arc<T>;
 
 impl<T: Substitutable> Substitutable for Ptr<T> {
-    fn walk(&self, sub: &dyn Substituter) -> Option<Self> {
+    fn walk(&self, sub: &mut (impl ?Sized + Substituter)) -> Option<Self> {
         T::visit(self, sub).map(Ptr::new)
     }
 }
@@ -776,14 +804,11 @@ impl BuiltinType {
 }
 
 impl Substitutable for MonoType {
-    fn visit(&self, sub: &dyn Substituter) -> Option<Self> {
-        match sub.visit_type(self) {
-            Some(typ) => Some(typ.walk(sub).unwrap_or(typ)),
-            None => self.walk(sub),
-        }
+    fn visit(&self, sub: &mut (impl ?Sized + Substituter)) -> Option<Self> {
+        sub.visit_type(self)
     }
 
-    fn walk(&self, sub: &dyn Substituter) -> Option<Self> {
+    fn walk(&self, sub: &mut (impl ?Sized + Substituter)) -> Option<Self> {
         match self {
             MonoType::Error
             | MonoType::Builtin(_)
@@ -1188,7 +1213,7 @@ impl Tvar {
 }
 
 impl Substitutable for Collection {
-    fn walk(&self, sub: &dyn Substituter) -> Option<Self> {
+    fn walk(&self, sub: &mut (impl ?Sized + Substituter)) -> Option<Self> {
         self.arg.visit(sub).map(|arg| Collection {
             collection: self.collection,
             arg,
@@ -1237,7 +1262,7 @@ pub struct Dictionary {
 }
 
 impl Substitutable for Dictionary {
-    fn walk(&self, sub: &dyn Substituter) -> Option<Self> {
+    fn walk(&self, sub: &mut (impl ?Sized + Substituter)) -> Option<Self> {
         apply2(&self.key, &self.val, sub).map(|(key, val)| Dictionary { key, val })
     }
 }
@@ -1327,7 +1352,7 @@ impl cmp::PartialEq for Record {
 }
 
 impl Substitutable for Record {
-    fn walk(&self, sub: &dyn Substituter) -> Option<Self> {
+    fn walk(&self, sub: &mut (impl ?Sized + Substituter)) -> Option<Self> {
         match self {
             Record::Empty => None,
             Record::Extension { head, tail } => {
@@ -1387,7 +1412,7 @@ impl Record {
     // self represents the expected type.
     //
     fn unify(&self, actual: &Self, unifier: &mut Unifier<'_>) {
-        let has_variable_label = |r: &Record| {
+        let mut has_variable_label = |r: &Record| {
             r.fields().any(|prop| match prop.k {
                 RecordLabel::Variable(v) => unifier.sub.try_apply(v).is_none(),
                 RecordLabel::BoundVariable(_) | RecordLabel::Concrete(_) | RecordLabel::Error => {
@@ -1656,7 +1681,7 @@ impl From<Label> for RecordLabel {
 }
 
 impl Substitutable for RecordLabel {
-    fn walk(&self, sub: &dyn Substituter) -> Option<Self> {
+    fn walk(&self, sub: &mut (impl ?Sized + Substituter)) -> Option<Self> {
         match self {
             Self::Variable(tvr) => sub.try_apply(*tvr).and_then(|new| match new {
                 MonoType::Label(l) => Some(Self::Concrete(l)),
@@ -1838,7 +1863,7 @@ where
     K: Substitutable + Clone,
     V: Substitutable + Clone,
 {
-    fn walk(&self, sub: &dyn Substituter) -> Option<Self> {
+    fn walk(&self, sub: &mut (impl ?Sized + Substituter)) -> Option<Self> {
         let Self { k, v } = self;
         apply2(k, v, sub).map(|(k, v)| Property { k, v })
     }
@@ -1915,7 +1940,7 @@ impl fmt::Display for Function {
 }
 
 impl<K: Eq + Hash + Clone> Substitutable for PolyTypeHashMap<K> {
-    fn walk(&self, sub: &dyn Substituter) -> Option<Self> {
+    fn walk(&self, sub: &mut (impl ?Sized + Substituter)) -> Option<Self> {
         merge_collect(
             &mut (),
             self.unordered_iter(),
@@ -1925,19 +1950,19 @@ impl<K: Eq + Hash + Clone> Substitutable for PolyTypeHashMap<K> {
     }
 }
 
-impl<K: Ord + Clone, T: Substitutable + Clone> Substitutable for SemanticMap<K, T> {
-    fn walk(&self, sub: &dyn Substituter) -> Option<Self> {
+impl<K: Ord + Clone + Substitutable, T: Substitutable + Clone> Substitutable for SemanticMap<K, T> {
+    fn walk(&self, sub: &mut (impl ?Sized + Substituter)) -> Option<Self> {
         merge_collect(
             &mut (),
             self,
-            |_, (k, v)| v.visit(sub).map(|v| (k.clone(), v)),
+            |_, (k, v)| apply2(k, v, sub),
             |_, (k, v)| (k.clone(), v.clone()),
         )
     }
 }
 
 impl<T: Substitutable> Substitutable for Option<T> {
-    fn walk(&self, sub: &dyn Substituter) -> Option<Self> {
+    fn walk(&self, sub: &mut (impl ?Sized + Substituter)) -> Option<Self> {
         match self {
             None => None,
             Some(t) => t.visit(sub).map(Some),
@@ -1946,7 +1971,7 @@ impl<T: Substitutable> Substitutable for Option<T> {
 }
 
 impl Substitutable for Function {
-    fn walk(&self, sub: &dyn Substituter) -> Option<Self> {
+    fn walk(&self, sub: &mut (impl ?Sized + Substituter)) -> Option<Self> {
         let Function {
             req,
             opt,
@@ -2234,19 +2259,23 @@ where
     fn max_tvar(&self) -> Option<Tvar> {
         #[derive(Default)]
         struct MaxTvars {
-            max: Cell<Option<Tvar>>,
+            max: Option<Tvar>,
         }
 
         impl Substituter for MaxTvars {
-            fn try_apply(&self, var: Tvar) -> Option<MonoType> {
-                self.max.set(self.max.get().max(Some(var)));
+            fn try_apply(&mut self, var: Tvar) -> Option<MonoType> {
+                self.max = self.max.max(Some(var));
+                None
+            }
+            fn try_apply_bound(&mut self, var: Tvar) -> Option<MonoType> {
+                self.max = self.max.max(Some(var));
                 None
             }
         }
 
-        let max = MaxTvars::default();
-        self.visit(&max);
-        max.max.into_inner()
+        let mut max = MaxTvars::default();
+        self.visit(&mut max);
+        max.max
     }
 }
 

@@ -1,4 +1,4 @@
-use std::{cell::RefCell, ops};
+use std::ops;
 
 use derive_more::Display;
 
@@ -110,7 +110,7 @@ pub struct Error {
 impl std::error::Error for Error {}
 
 impl Substitutable for Error {
-    fn walk(&self, sub: &dyn Substituter) -> Option<Self> {
+    fn walk(&self, sub: &mut (impl ?Sized + Substituter)) -> Option<Self> {
         self.err.visit(sub).map(|err| Error {
             loc: self.loc.clone(),
             err,
@@ -190,25 +190,23 @@ pub(crate) fn temporary_generalize(
 ) -> PolyType {
     struct Generalize {
         env_free_vars: Vec<Tvar>,
-        vars: RefCell<Vec<(Tvar, Tvar)>>,
+        vars: Vec<(Tvar, Tvar)>,
     }
 
     impl Substituter for Generalize {
-        fn try_apply_bound(&self, var: Tvar) -> Option<MonoType> {
-            let mut vars = self.vars.borrow_mut();
-            if vars.iter().all(|(_, v)| *v != var) {
-                vars.push((var, var));
+        fn try_apply_bound(&mut self, var: Tvar) -> Option<MonoType> {
+            if self.vars.iter().all(|(_, v)| *v != var) {
+                self.vars.push((var, var));
             }
             None
         }
-        fn try_apply(&self, var: Tvar) -> Option<MonoType> {
+        fn try_apply(&mut self, var: Tvar) -> Option<MonoType> {
             if !self.env_free_vars.contains(&var) {
-                let mut vars = self.vars.borrow_mut();
-                match vars.iter().find(|(v, _)| *v == var) {
+                match self.vars.iter().find(|(v, _)| *v == var) {
                     Some((_, new_var)) => Some(MonoType::BoundVar(*new_var)),
                     None => {
-                        let new_var = Tvar(vars.len() as u64);
-                        vars.push((var, new_var));
+                        let new_var = Tvar(self.vars.len() as u64);
+                        self.vars.push((var, new_var));
                         Some(MonoType::BoundVar(new_var))
                     }
                 }
@@ -218,13 +216,13 @@ pub(crate) fn temporary_generalize(
         }
     }
 
-    let generalize = Generalize {
+    let mut generalize = Generalize {
         env_free_vars: env.free_vars(),
         vars: Default::default(),
     };
-    let t = t.apply(&generalize);
+    let t = t.apply(&mut generalize);
 
-    let vars = generalize.vars.into_inner();
+    let vars = generalize.vars;
 
     let mut cons = TvarKinds::new();
     for (tv, bound_tv) in &vars {
@@ -251,11 +249,11 @@ pub fn generalize(env: &Environment, sub: &mut Substitution, t: MonoType) -> Pol
     struct Generalize<'a> {
         env_free_vars: Vec<Tvar>,
         sub: &'a Substitution,
-        vars: RefCell<Vec<(Tvar, Tvar)>>,
+        vars: Vec<(Tvar, Tvar)>,
     }
 
     impl Substituter for Generalize<'_> {
-        fn try_apply(&self, var: Tvar) -> Option<MonoType> {
+        fn try_apply(&mut self, var: Tvar) -> Option<MonoType> {
             if !self.env_free_vars.contains(&var) {
                 if (var.0 as usize) < self.sub.len() {
                     if let Some(new_var) = self.sub.try_apply(var) {
@@ -263,9 +261,8 @@ pub fn generalize(env: &Environment, sub: &mut Substitution, t: MonoType) -> Pol
                     }
                 }
 
-                let mut vars = self.vars.borrow_mut();
-                let new_var = Tvar(vars.len() as u64);
-                vars.push((var, new_var));
+                let new_var = Tvar(self.vars.len() as u64);
+                self.vars.push((var, new_var));
                 let new_type = MonoType::BoundVar(new_var);
                 if var.0 as usize > self.sub.len() {
                     self.sub.mk_fresh(var.0 as usize - self.sub.len() + 1);
@@ -278,14 +275,14 @@ pub fn generalize(env: &Environment, sub: &mut Substitution, t: MonoType) -> Pol
         }
     }
 
-    let generalize = Generalize {
+    let mut generalize = Generalize {
         env_free_vars: env.free_vars(),
         sub,
         vars: Default::default(),
     };
-    let t = t.apply(&generalize);
+    let t = t.apply(&mut generalize);
 
-    let vars = generalize.vars.into_inner();
+    let vars = generalize.vars;
 
     let mut cons = TvarKinds::new();
     for (tv, bound_tv) in &vars {
@@ -337,14 +334,14 @@ pub fn instantiate(
     struct InstantiationMap(SubstitutionMap);
 
     impl Substituter for InstantiationMap {
-        fn try_apply(&self, _var: Tvar) -> Option<MonoType> {
+        fn try_apply(&mut self, _var: Tvar) -> Option<MonoType> {
             None
         }
-        fn try_apply_bound(&self, var: Tvar) -> Option<MonoType> {
+        fn try_apply_bound(&mut self, var: Tvar) -> Option<MonoType> {
             self.0.get(&var).cloned()
         }
     }
 
     // Instantiate monotype using new fresh type variables
-    (poly.expr.apply(&InstantiationMap(sub)), constraints)
+    (poly.expr.apply(&mut InstantiationMap(sub)), constraints)
 }

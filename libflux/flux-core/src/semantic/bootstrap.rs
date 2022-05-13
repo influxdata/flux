@@ -3,7 +3,7 @@
 //! This package does not assume a location of the source code but does assume which packages are
 //! part of the prelude.
 
-use std::{cell::RefCell, env::consts, fs, io, io::Write, path::Path};
+use std::{env::consts, fs, io, io::Write, path::Path};
 
 use anyhow::{anyhow, bail, Result};
 use libflate::gzip::Encoder;
@@ -274,15 +274,15 @@ where
 }
 
 // Collects any `MonoType::BoundVar`s in the type
-struct CollectBoundVars(RefCell<Vec<Tvar>>);
+struct CollectBoundVars(Vec<Tvar>);
 
 impl Substituter for CollectBoundVars {
-    fn try_apply(&self, _var: Tvar) -> Option<MonoType> {
+    fn try_apply(&mut self, _var: Tvar) -> Option<MonoType> {
         None
     }
 
-    fn try_apply_bound(&self, var: Tvar) -> Option<MonoType> {
-        let mut vars = self.0.borrow_mut();
+    fn try_apply_bound(&mut self, var: Tvar) -> Option<MonoType> {
+        let vars = &mut self.0;
         if let Err(i) = vars.binary_search(&var) {
             vars.insert(i, var);
         }
@@ -298,9 +298,9 @@ fn add_record_to_map(
 ) -> Result<()> {
     for field in r.fields() {
         let new_vars = {
-            let new_vars = CollectBoundVars(RefCell::new(Vec::new()));
-            field.v.visit(&new_vars);
-            new_vars.0.into_inner()
+            let mut new_vars = CollectBoundVars(Vec::new());
+            field.v.visit(&mut new_vars);
+            new_vars.0
         };
 
         let mut new_cons = TvarKinds::new();
