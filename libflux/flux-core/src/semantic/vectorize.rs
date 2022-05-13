@@ -84,16 +84,9 @@ impl Expression {
                 }))
             }
             Expression::Binary(binary) => {
-                if binary.operator == ast::Operator::AdditionOperator {
-                    if !env.config.features.contains(&Feature::VectorizeAddition) {
-                        return Err(located(
-                            self.loc().clone(),
-                            ErrorKind::UnableToVectorize(
-                                "Vectorization of addition expression is not enabled".into(),
-                            ),
-                        ));
-                    }
-                } else if !env.config.features.contains(&Feature::VectorizeOperators) {
+                if binary.operator != ast::Operator::AdditionOperator
+                    && !env.config.features.contains(&Feature::VectorizeOperators)
+                {
                     return Err(located(
                         self.loc().clone(),
                         ErrorKind::UnableToVectorize(

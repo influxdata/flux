@@ -114,9 +114,7 @@ func TestVectorizedFns(t *testing.T) {
 			want: map[string]interface{}{
 				"c": []interface{}{int64(4)},
 			},
-			flagger: executetest.TestFlagger{
-				fluxfeature.VectorizeAddition().Key(): true,
-			},
+			flagger: executetest.TestFlagger{},
 		},
 		{
 			name:         "addition expression multiple",
@@ -142,13 +140,11 @@ func TestVectorizedFns(t *testing.T) {
 				"x": []interface{}{int64(3)},
 				"y": []interface{}{100.0},
 			},
-			flagger: executetest.TestFlagger{
-				fluxfeature.VectorizeAddition().Key(): true,
-			},
+			flagger: executetest.TestFlagger{},
 		},
 		{
 			name:         "no binary expressions without feature flag",
-			fn:           `(r) => ({c: r.a + r.b})`,
+			fn:           `(r) => ({c: r.a / r.b})`,
 			vectorizable: false,
 			skipComp:     true,
 		},
@@ -229,9 +225,7 @@ func TestVectorizedFns(t *testing.T) {
 			input: test.input,
 			want:  test.want,
 
-			flagger: executetest.TestFlagger{
-				fluxfeature.VectorizeAddition().Key(): true,
-			},
+			flagger: executetest.TestFlagger{},
 		})
 	}
 
@@ -327,7 +321,6 @@ func TestVectorizedFns(t *testing.T) {
 			},
 
 			flagger: executetest.TestFlagger{
-				fluxfeature.VectorizeAddition().Key():  true,
 				fluxfeature.VectorizeOperators().Key(): true,
 			},
 		})
