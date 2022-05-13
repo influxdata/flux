@@ -471,9 +471,17 @@ where
                     walk(v, Node::Identifier(name));
                     walk(v, Node::MonoType(monotype));
                 }
-                ParameterType::Optional { name, monotype, .. } => {
+                ParameterType::Optional {
+                    name,
+                    monotype,
+                    default,
+                    ..
+                } => {
                     walk(v, Node::Identifier(name));
                     walk(v, Node::MonoType(monotype));
+                    if let Some(default) = default {
+                        walk(v, Node::StringLit(default));
+                    }
                 }
                 ParameterType::Pipe { name, monotype, .. } => {
                     if let Some(name) = name {

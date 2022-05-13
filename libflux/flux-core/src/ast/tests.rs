@@ -720,6 +720,7 @@ fn test_json_functiontype_optional() {
                     name: "int".to_string(),
                 },
             }),
+            default: None,
         }],
         monotype: MonoType::Basic(NamedType {
             base: BaseNode::default(),
@@ -732,7 +733,7 @@ fn test_json_functiontype_optional() {
     let serialized = serde_json::to_string(&n).unwrap();
     assert_eq!(
         serialized,
-        r#"{"type":"FunctionType","parameters":[{"type":"Optional","name":{"name":"A"},"monotype":{"type":"NamedType","name":{"name":"int"}}}],"monotype":{"type":"NamedType","name":{"name":"int"}}}"#
+        r#"{"type":"FunctionType","parameters":[{"type":"Optional","name":{"name":"A"},"monotype":{"type":"NamedType","name":{"name":"int"}},"default":null}],"monotype":{"type":"NamedType","name":{"name":"int"}}}"#
     );
     let deserialized: MonoType = serde_json::from_str(serialized.as_str()).unwrap();
     assert_eq!(deserialized, n)

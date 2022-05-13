@@ -511,6 +511,7 @@ impl<'doc> Formatter<'doc> {
                 base: _,
                 name,
                 monotype,
+                default,
             } => {
                 docs![
                     arena,
@@ -518,6 +519,10 @@ impl<'doc> Formatter<'doc> {
                     self.format_identifier(name),
                     ": ",
                     self.format_monotype(monotype),
+                    match default {
+                        Some(default) => docs![arena, " = ", self.format_string_literal(default)],
+                        None => arena.nil(),
+                    }
                 ]
             }
             ast::ParameterType::Pipe {

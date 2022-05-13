@@ -210,7 +210,28 @@ fn columns() {
 }
 
 #[test]
-fn optional_label() {
+fn optional_label_defined() {
+    test_infer! {
+        config: AnalyzerConfig{
+            features: vec![Feature::LabelPolymorphism],
+            ..AnalyzerConfig::default()
+        },
+        env: map![
+            "columns" => r#"(table: A, ?column: C = "abc") => { C: string } where A: Record, C: Label"#,
+        ],
+        src: r#"
+            x = columns(table: { a: 1, b: "b" })
+            y = x.abc
+        "#,
+        exp: map![
+            "x" => "{ abc: string }",
+            "y" => "string",
+        ],
+    }
+}
+
+#[test]
+fn optional_label_undefined() {
     test_error_msg! {
         config: AnalyzerConfig{
             features: vec![Feature::LabelPolymorphism],

@@ -707,6 +707,9 @@ pub enum ParameterType {
         base: BaseNode,
         name: Identifier,
         monotype: MonoType,
+        // Default value for this parameter. Currently only string literals are supported
+        // (to allow default labels to be specified)
+        default: Option<StringLit>,
     },
     Pipe {
         #[serde(skip_serializing_if = "BaseNode::is_empty")]

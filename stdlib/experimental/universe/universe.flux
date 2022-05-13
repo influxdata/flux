@@ -37,7 +37,7 @@ package universe
 // introduced: v0.166.0
 // tags: transformations
 //
-builtin columns : (<-tables: stream[A], ?column: C) => stream[{C: string}] where A: Record, C: Label
+builtin columns : (<-tables: stream[A], ?column: C = "_value") => stream[{C: string}] where A: Record, C: Label
 
 // fill replaces all null values in input tables with a non-null value.
 //
@@ -81,7 +81,12 @@ builtin columns : (<-tables: stream[A], ?column: C) => stream[{C: string}] where
 // introduced: v0.166.0
 // tags: transformations
 //
-builtin fill : (<-tables: stream[{A with C: B}], ?column: C, ?value: B, ?usePrevious: bool) => stream[{A with C: B}]
+builtin fill : (
+        <-tables: stream[{A with C: B}],
+        ?column: C = "_value",
+        ?value: B,
+        ?usePrevious: bool,
+    ) => stream[{A with C: B}]
     where
     A: Record,
     C: Label
@@ -110,4 +115,8 @@ builtin fill : (<-tables: stream[{A with C: B}], ?column: C, ?value: B, ?usePrev
 // introduced: v0.166.0
 // tags: transformations, aggregates
 //
-builtin mean : (<-tables: stream[{A with C: B}], ?column: C) => stream[{C: B}] where A: Record, B: Numeric, C: Label
+builtin mean : (<-tables: stream[{A with C: B}], ?column: C = "_value") => stream[{C: B}]
+    where
+    A: Record,
+    B: Numeric,
+    C: Label
