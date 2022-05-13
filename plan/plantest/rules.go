@@ -12,7 +12,9 @@ import (
 // SimpleRule is a simple rule whose pattern matches any plan node and
 // just stores the NodeIDs of nodes it has visited in SeenNodes.
 type SimpleRule struct {
-	SeenNodes []plan.NodeID
+	ReturnNilNode bool
+	ReturnChanged bool
+	SeenNodes     []plan.NodeID
 }
 
 func (sr *SimpleRule) Pattern() plan.Pattern {
@@ -26,7 +28,10 @@ func (sr *SimpleRule) Rewrite(ctx context.Context, node plan.Node) (plan.Node, b
 		}
 	}
 	sr.SeenNodes = append(sr.SeenNodes, node.ID())
-	return node, false, nil
+	if sr.ReturnNilNode {
+		return nil, sr.ReturnChanged, nil
+	}
+	return node, sr.ReturnChanged, nil
 }
 
 func (sr *SimpleRule) Name() string {

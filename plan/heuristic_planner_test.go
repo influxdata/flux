@@ -2,6 +2,7 @@ package plan_test
 
 import (
 	"context"
+	"strings"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -14,7 +15,9 @@ func TestPlanTraversal(t *testing.T) {
 	testCases := []struct {
 		name    string
 		plan    plantest.PlanSpec
+		rule    plan.Rule
 		nodeIDs []plan.NodeID
+		err     string
 	}{
 		{
 			name: "simple",
@@ -23,6 +26,33 @@ func TestPlanTraversal(t *testing.T) {
 				Nodes: []plan.Node{plantest.CreatePhysicalMockNode("0")},
 			},
 			nodeIDs: []plan.NodeID{"0"},
+		},
+		{
+			name: "simple rule changed",
+			//        0
+			plan: plantest.PlanSpec{
+				Nodes: []plan.Node{plantest.CreatePhysicalMockNode("0")},
+			},
+			rule:    &plantest.SimpleRule{ReturnChanged: true},
+			nodeIDs: []plan.NodeID{"0"},
+		},
+		{
+			name: "simple rule nil return",
+			//        0
+			plan: plantest.PlanSpec{
+				Nodes: []plan.Node{plantest.CreatePhysicalMockNode("0")},
+			},
+			rule:    &plantest.SimpleRule{ReturnNilNode: true},
+			nodeIDs: []plan.NodeID{"0"},
+		},
+		{
+			name: "simple rule nil return changed",
+			//        0
+			plan: plantest.PlanSpec{
+				Nodes: []plan.Node{plantest.CreatePhysicalMockNode("0")},
+			},
+			rule: &plantest.SimpleRule{ReturnNilNode: true, ReturnChanged: true},
+			err:  "rule \"simple\" returned a nil plan node even though it seems to have changed the plan",
 		},
 		{
 			name: "two nodes",
@@ -127,16 +157,32 @@ func TestPlanTraversal(t *testing.T) {
 
 			planSpec := plantest.CreatePlanSpec(&tc.plan)
 
-			simpleRule := plantest.SimpleRule{}
-			thePlanner := plan.NewPhysicalPlanner(plan.OnlyPhysicalRules(&simpleRule))
+			rule := tc.rule
+			if rule == nil {
+				rule = &plantest.SimpleRule{}
+			}
+			thePlanner := plan.NewPhysicalPlanner(plan.OnlyPhysicalRules(rule))
 			_, err := thePlanner.Plan(context.Background(), planSpec)
 			if err != nil {
+				if tc.err != "" {
+					if strings.Contains(err.Error(), tc.err) {
+						// sucess, got expected error
+						return
+					}
+					t.Fatalf("expected error containing %q, but got %v", tc.err, err)
+				}
 				t.Fatalf("Could not plan: %v", err)
 			}
 
-			if !cmp.Equal(tc.nodeIDs, simpleRule.SeenNodes) {
-				t.Errorf("Traversal didn't match expected, -want/+got:\n%v",
-					cmp.Diff(tc.nodeIDs, simpleRule.SeenNodes))
+			if tc.err != "" {
+				t.Fatalf("expected error containing %q, but got no error", tc.err)
+			}
+
+			if simpleRule, ok := rule.(*plantest.SimpleRule); ok {
+				if !cmp.Equal(tc.nodeIDs, simpleRule.SeenNodes) {
+					t.Errorf("Traversal didn't match expected, -want/+got:\n%v",
+						cmp.Diff(tc.nodeIDs, simpleRule.SeenNodes))
+				}
 			}
 		})
 	}

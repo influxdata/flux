@@ -60,6 +60,7 @@ type NodeID string
 
 // Spec holds the result nodes of a query plan with associated metadata
 type Spec struct {
+	// Roots are the "sink" nodes in the plan, which have no successors.
 	Roots     map[Node]struct{}
 	Resources flux.ResourceManagement
 	Now       time.Time
