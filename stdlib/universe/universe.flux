@@ -953,6 +953,7 @@ builtin _hourSelection : (
 // ## Parameters
 // - start: First hour of the hour range (inclusive). Hours range from `[0-23]`.
 // - stop: Last hour of the hour range (inclusive). Hours range from `[0-23]`.
+// - location: Location used to determine timezone. Default is the `location` option.
 // - timeColumn: Column that contains the time value. Default is `_time`.
 // - tables: Input data. Default is piped-forward data (`<-`).
 //

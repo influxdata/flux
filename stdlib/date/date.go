@@ -39,7 +39,7 @@ func init() {
 				if err != nil {
 					return nil, err
 				}
-				location, offset, err := getLocationFromArgs(args)
+				location, offset, err := getLocationFromObjArgs(args)
 				if err != nil {
 					return nil, err
 				}
@@ -58,7 +58,7 @@ func init() {
 				if err != nil {
 					return nil, err
 				}
-				location, offset, err := getLocationFromArgs(args)
+				location, offset, err := getLocationFromObjArgs(args)
 				if err != nil {
 					return nil, err
 				}
@@ -77,7 +77,7 @@ func init() {
 				if err != nil {
 					return nil, err
 				}
-				location, offset, err := getLocationFromArgs(args)
+				location, offset, err := getLocationFromObjArgs(args)
 				if err != nil {
 					return nil, err
 				}
@@ -96,7 +96,7 @@ func init() {
 				if err != nil {
 					return nil, err
 				}
-				location, offset, err := getLocationFromArgs(args)
+				location, offset, err := getLocationFromObjArgs(args)
 				if err != nil {
 					return nil, err
 				}
@@ -115,7 +115,7 @@ func init() {
 				if err != nil {
 					return nil, err
 				}
-				location, offset, err := getLocationFromArgs(args)
+				location, offset, err := getLocationFromObjArgs(args)
 				if err != nil {
 					return nil, err
 				}
@@ -134,7 +134,7 @@ func init() {
 				if err != nil {
 					return nil, err
 				}
-				location, offset, err := getLocationFromArgs(args)
+				location, offset, err := getLocationFromObjArgs(args)
 				if err != nil {
 					return nil, err
 				}
@@ -153,7 +153,7 @@ func init() {
 				if err != nil {
 					return nil, err
 				}
-				location, offset, err := getLocationFromArgs(args)
+				location, offset, err := getLocationFromObjArgs(args)
 				if err != nil {
 					return nil, err
 				}
@@ -172,7 +172,7 @@ func init() {
 				if err != nil {
 					return nil, err
 				}
-				location, offset, err := getLocationFromArgs(args)
+				location, offset, err := getLocationFromObjArgs(args)
 				if err != nil {
 					return nil, err
 				}
@@ -192,7 +192,7 @@ func init() {
 				if err != nil {
 					return nil, err
 				}
-				location, offset, err := getLocationFromArgs(args)
+				location, offset, err := getLocationFromObjArgs(args)
 				if err != nil {
 					return nil, err
 				}
@@ -262,7 +262,7 @@ func init() {
 				if err != nil {
 					return nil, err
 				}
-				location, _, err := getLocationFromArgs(args)
+				location, _, err := getLocationFromObjArgs(args)
 				if err != nil {
 					return nil, err
 				}
@@ -307,9 +307,13 @@ func getTime(args values.Object) (values.Value, error) {
 	return tArg, nil
 }
 
-func getLocationFromArgs(args values.Object) (string, values.Duration, error) {
+func getLocationFromObjArgs(args values.Object) (string, values.Duration, error) {
 	a := interpreter.NewArguments(args)
-	location, err := a.GetRequiredObject("location")
+	return GetLocationFromFluxArgs(a)
+}
+
+func GetLocationFromFluxArgs(args interpreter.Arguments) (string, values.Duration, error) {
+	location, err := args.GetRequiredObject("location")
 	if err != nil {
 		return "UTC", values.ConvertDurationNsecs(0), err
 	}
