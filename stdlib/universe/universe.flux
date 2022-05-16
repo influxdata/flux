@@ -937,6 +937,17 @@ builtin holtWinters : (
     A: Record,
     B: Record
 
+// builtin _hourSelection used by hourSelection
+builtin _hourSelection : (
+        <-tables: stream[A],
+        start: int,
+        stop: int,
+        location: {zone: string, offset: duration},
+        ?timeColumn: string,
+    ) => stream[A]
+    where
+    A: Record
+
 // hourSelection filters rows by time values in a specified hour range.
 //
 // ## Parameters
@@ -970,7 +981,15 @@ builtin holtWinters : (
 // introduced: 0.39.0
 // tags: transformations, date/time, filters
 //
-builtin hourSelection : (<-tables: stream[A], start: int, stop: int, ?timeColumn: string) => stream[A] where A: Record
+hourSelection = (
+    tables=<-,
+    start,
+    stop,
+    location=location,
+    timeColumn="_time",
+) =>
+    tables
+        |> _hourSelection(start, stop, location, timeColumn)
 
 // integral computes the area under the curve per unit of time of subsequent non-null records.
 //
