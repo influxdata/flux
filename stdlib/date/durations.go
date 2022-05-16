@@ -2,107 +2,119 @@ package date
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
-	"github.com/influxdata/flux/internal/date"
 	"github.com/influxdata/flux/internal/errors"
+	"github.com/influxdata/flux/internal/function"
+	"github.com/influxdata/flux/internal/zoneinfo"
 	"github.com/influxdata/flux/interpreter"
-	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
 
-const (
-	addDurationTo        = "_add"
-	subtractDurationFrom = "_sub"
-)
-
 func init() {
-	runtime.RegisterPackageValue("date", addDurationTo, addDuration(addDurationTo))
-	runtime.RegisterPackageValue("date", subtractDurationFrom, subDuration(subtractDurationFrom))
-	runtime.RegisterPackageValue("date", "scale", scaleDuration())
+	pkg := function.ForPackage("date")
+	pkg.RegisterContext("_add", Add)
+	pkg.RegisterContext("_sub", Sub)
+	pkg.Register("scale", Scale)
 }
 
-func addDuration(name string) values.Value {
-	tp := runtime.MustLookupBuiltinType("date", "add")
-	fn := func(ctx context.Context, args values.Object) (values.Value, error) {
-		d, ok := args.Get("d")
-		if !ok {
-			return nil, errors.Newf(codes.Invalid, "%s requires 'd' parameter", name)
-		}
-		t, ok := args.Get("to")
-		if !ok {
-			return nil, errors.Newf(codes.Invalid, "%s requires 'to' parameter", name)
-		}
-		deps := execute.GetExecutionDependencies(ctx)
-		time, err := deps.ResolveTimeable(t)
-		if err != nil {
-			return nil, err
-		}
-		location, offset, err := getLocation(args)
-		if err != nil {
-			return nil, err
-		}
-		lTime, err := date.GetTimeInLocation(time, location, offset)
-		if err != nil {
-			return nil, err
-		}
-		return values.NewTime(lTime.Time().Add(d.Duration())), nil
+func Add(ctx context.Context, args interpreter.Arguments) (values.Value, error) {
+	d, err := args.GetRequired("d")
+	if err != nil {
+		return nil, err
 	}
-	return values.NewFunction(name, tp, fn, false)
-}
 
-func subDuration(name string) values.Value {
-	tp := runtime.MustLookupBuiltinType("date", "sub")
-	fn := func(ctx context.Context, args values.Object) (values.Value, error) {
-		d, ok := args.Get("d")
-		if !ok {
-			return nil, fmt.Errorf("%s requires 'd' parameter", name)
-		}
-		t, ok := args.Get("from")
-		if !ok {
-			return nil, fmt.Errorf("%s requires 'from' parameter", name)
-		}
-		deps := execute.GetExecutionDependencies(ctx)
-		time, err := deps.ResolveTimeable(t)
-		if err != nil {
-			return nil, err
-		}
-		location, offset, err := getLocation(args)
-		if err != nil {
-			return nil, err
-		}
-		lTime, err := date.GetTimeInLocation(time, location, offset)
-		if err != nil {
-			return nil, err
-		}
-		return values.NewTime(lTime.Time().Add(d.Duration().Mul(-1))), nil
+	t, err := args.GetRequired("to")
+	if err != nil {
+		return nil, err
 	}
-	return values.NewFunction(name, tp, fn, false)
+
+	loc, err := args.GetRequiredObject("location")
+	if err != nil {
+		return nil, err
+	}
+	return addDuration(ctx, t, d.Duration(), 1, loc)
 }
 
-func scaleDuration() values.Value {
-	tp := runtime.MustLookupBuiltinType("date", "scale")
-	return values.NewFunction("scale", tp, func(ctx context.Context, args values.Object) (values.Value, error) {
-		return interpreter.DoFunctionCall(func(args interpreter.Arguments) (values.Value, error) {
-			d, err := args.GetRequired("d")
-			if err != nil {
-				return nil, err
-			} else if d.Type().Nature() != semantic.Duration {
-				return nil, errors.Newf(codes.Invalid, "keyword argument %q should be of kind %v, but got %v", "scale", semantic.Duration, d.Type().Nature())
-			}
+func Sub(ctx context.Context, args interpreter.Arguments) (values.Value, error) {
+	d, err := args.GetRequired("d")
+	if err != nil {
+		return nil, err
+	}
 
-			n, err := args.GetRequiredInt("n")
-			if err != nil {
-				return nil, err
-			}
+	t, err := args.GetRequired("from")
+	if err != nil {
+		return nil, err
+	}
 
-			if n == 1 {
-				return d, nil
-			}
-			return values.NewDuration(d.Duration().Mul(int(n))), nil
-		}, args)
-	}, false)
+	loc, err := args.GetRequiredObject("location")
+	if err != nil {
+		return nil, err
+	}
+	return addDuration(ctx, t, d.Duration(), -1, loc)
+}
+
+func addDuration(ctx context.Context, t values.Value, d values.Duration, scale int, loc values.Object) (values.Value, error) {
+	deps := execute.GetExecutionDependencies(ctx)
+	time, err := deps.ResolveTimeable(t)
+	if err != nil {
+		return nil, err
+	}
+
+	name, offset, err := getLocation(loc)
+	if err != nil {
+		return nil, err
+	}
+
+	if !offset.IsZero() {
+		// The offset for a timezone is the duration difference
+		// between the local time and utc at the same clock time.
+		// To convert to utc from our local clock, we apply this offset.
+		time = time.Add(offset)
+	}
+
+	if scale != 1 {
+		d = d.Mul(scale)
+	}
+
+	if name != "UTC" {
+		loc, err := zoneinfo.LoadLocation(name)
+		if err != nil {
+			return nil, err
+		}
+
+		utc := values.Time(loc.FromLocalClock(int64(time)))
+		utc = utc.Add(d)
+		time = values.Time(loc.ToLocalClock(int64(utc)))
+	} else {
+		time = time.Add(d)
+	}
+
+	if !offset.IsZero() {
+		// Need to reverse the location offset to
+		// go back to the local clock.
+		time = time.Add(offset.Mul(-1))
+	}
+	return values.NewTime(time), nil
+}
+
+func Scale(args interpreter.Arguments) (values.Value, error) {
+	d, err := args.GetRequired("d")
+	if err != nil {
+		return nil, err
+	} else if d.Type().Nature() != semantic.Duration {
+		return nil, errors.Newf(codes.Invalid, "keyword argument %q should be of kind %v, but got %v", "scale", semantic.Duration, d.Type().Nature())
+	}
+
+	n, err := args.GetRequiredInt("n")
+	if err != nil {
+		return nil, err
+	}
+
+	if n == 1 {
+		return d, nil
+	}
+	return values.NewDuration(d.Duration().Mul(int(n))), nil
 }
