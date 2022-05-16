@@ -5,6 +5,7 @@ import (
 
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/internal/date"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/internal/function"
 	"github.com/influxdata/flux/internal/zoneinfo"
@@ -63,7 +64,7 @@ func addDuration(ctx context.Context, t values.Value, d values.Duration, scale i
 		return nil, err
 	}
 
-	name, offset, err := getLocation(loc)
+	name, offset, err := date.GetLocation(loc)
 	if err != nil {
 		return nil, err
 	}

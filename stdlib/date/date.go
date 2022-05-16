@@ -9,10 +9,8 @@ import (
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/date"
 	"github.com/influxdata/flux/internal/errors"
-	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/interval"
 	"github.com/influxdata/flux/runtime"
-	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
 
@@ -39,7 +37,7 @@ func init() {
 				if err != nil {
 					return nil, err
 				}
-				location, offset, err := getLocationFromArgs(args)
+				location, offset, err := date.GetLocationFromObjArgs(args)
 				if err != nil {
 					return nil, err
 				}
@@ -58,7 +56,7 @@ func init() {
 				if err != nil {
 					return nil, err
 				}
-				location, offset, err := getLocationFromArgs(args)
+				location, offset, err := date.GetLocationFromObjArgs(args)
 				if err != nil {
 					return nil, err
 				}
@@ -77,7 +75,7 @@ func init() {
 				if err != nil {
 					return nil, err
 				}
-				location, offset, err := getLocationFromArgs(args)
+				location, offset, err := date.GetLocationFromObjArgs(args)
 				if err != nil {
 					return nil, err
 				}
@@ -96,7 +94,7 @@ func init() {
 				if err != nil {
 					return nil, err
 				}
-				location, offset, err := getLocationFromArgs(args)
+				location, offset, err := date.GetLocationFromObjArgs(args)
 				if err != nil {
 					return nil, err
 				}
@@ -115,7 +113,7 @@ func init() {
 				if err != nil {
 					return nil, err
 				}
-				location, offset, err := getLocationFromArgs(args)
+				location, offset, err := date.GetLocationFromObjArgs(args)
 				if err != nil {
 					return nil, err
 				}
@@ -134,7 +132,7 @@ func init() {
 				if err != nil {
 					return nil, err
 				}
-				location, offset, err := getLocationFromArgs(args)
+				location, offset, err := date.GetLocationFromObjArgs(args)
 				if err != nil {
 					return nil, err
 				}
@@ -153,7 +151,7 @@ func init() {
 				if err != nil {
 					return nil, err
 				}
-				location, offset, err := getLocationFromArgs(args)
+				location, offset, err := date.GetLocationFromObjArgs(args)
 				if err != nil {
 					return nil, err
 				}
@@ -172,7 +170,7 @@ func init() {
 				if err != nil {
 					return nil, err
 				}
-				location, offset, err := getLocationFromArgs(args)
+				location, offset, err := date.GetLocationFromObjArgs(args)
 				if err != nil {
 					return nil, err
 				}
@@ -192,7 +190,7 @@ func init() {
 				if err != nil {
 					return nil, err
 				}
-				location, offset, err := getLocationFromArgs(args)
+				location, offset, err := date.GetLocationFromObjArgs(args)
 				if err != nil {
 					return nil, err
 				}
@@ -262,7 +260,7 @@ func init() {
 				if err != nil {
 					return nil, err
 				}
-				location, _, err := getLocationFromArgs(args)
+				location, _, err := date.GetLocationFromObjArgs(args)
 				if err != nil {
 					return nil, err
 				}
@@ -305,40 +303,6 @@ func getTime(args values.Object) (values.Value, error) {
 		return nil, errors.New(codes.FailedPrecondition, "argument t was nil")
 	}
 	return tArg, nil
-}
-
-func getLocationFromArgs(args values.Object) (string, values.Duration, error) {
-	a := interpreter.NewArguments(args)
-	location, err := a.GetRequiredObject("location")
-	if err != nil {
-		return "UTC", values.ConvertDurationNsecs(0), err
-	}
-	return getLocation(location)
-}
-
-func getLocation(location values.Object) (string, values.Duration, error) {
-	var (
-		name, offset values.Value
-		ok           bool
-	)
-
-	name, ok = location.Get("zone")
-	if !ok {
-		return "UTC", values.ConvertDurationNsecs(0), errors.New(codes.Invalid, "zone property missing from location record")
-	} else if got := name.Type().Nature(); got != semantic.String {
-		return "UTC", values.ConvertDurationNsecs(0), errors.Newf(codes.Invalid, "zone property for location must be of type %s, got %s", semantic.String, got)
-	}
-
-	if offset, ok = location.Get("offset"); ok {
-		if got := offset.Type().Nature(); got != semantic.Duration {
-			return "UTC", values.ConvertDurationNsecs(0), errors.Newf(codes.Invalid, "offset property for location must be of type %s, got %s", semantic.Duration, got)
-		}
-	}
-
-	if name.IsNull() {
-		return "UTC", offset.Duration(), nil
-	}
-	return name.Str(), offset.Duration(), nil
 }
 
 func getTimeableTime(ctx context.Context, args values.Object) (values.Time, error) {

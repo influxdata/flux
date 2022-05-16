@@ -4,21 +4,25 @@ import (
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/internal/date"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/runtime"
+	"github.com/influxdata/flux/values"
 )
 
-const HourSelectionKind = "hourSelection"
+const HourSelectionKind = "_hourSelection"
 
 type HourSelectionOpSpec struct {
-	Start      int64  `json:"start"`
-	Stop       int64  `json:"stop"`
-	TimeColumn string `json:"timeColumn"`
+	Start      int64           `json:"start"`
+	Stop       int64           `json:"stop"`
+	Location   string          `json:"location"`
+	Offset     values.Duration `json:"offset"`
+	TimeColumn string          `json:"timeColumn"`
 }
 
 func init() {
-	hourSelectionSignature := runtime.MustLookupBuiltinType("universe", "hourSelection")
+	hourSelectionSignature := runtime.MustLookupBuiltinType("universe", "_hourSelection")
 
 	runtime.RegisterPackageValue("universe", HourSelectionKind, flux.MustValue(flux.FunctionValue(HourSelectionKind, createHourSelectionOpSpec, hourSelectionSignature)))
 	flux.RegisterOpSpec(HourSelectionKind, newHourSelectionOp)
@@ -45,6 +49,13 @@ func createHourSelectionOpSpec(args flux.Arguments, a *flux.Administration) (flu
 	}
 	spec.Stop = stop
 
+	location, offset, err := date.GetLocationFromFluxArgs(args)
+	if err != nil {
+		return nil, err
+	}
+	spec.Location = location
+	spec.Offset = offset
+
 	if label, ok, err := args.GetString("timeColumn"); err != nil {
 		return nil, err
 	} else if ok {
@@ -66,9 +77,11 @@ func (s *HourSelectionOpSpec) Kind() flux.OperationKind {
 
 type HourSelectionProcedureSpec struct {
 	plan.DefaultCost
-	Start      int64  `json:"start"`
-	Stop       int64  `json:"stop"`
-	TimeColumn string `json:"timeColumn"`
+	Start      int64           `json:"start"`
+	Stop       int64           `json:"stop"`
+	Location   string          `json:"location"`
+	Offset     values.Duration `json:"offset"`
+	TimeColumn string          `json:"timeColumn"`
 }
 
 func newHourSelectionProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
@@ -80,6 +93,8 @@ func newHourSelectionProcedure(qs flux.OperationSpec, pa plan.Administration) (p
 	return &HourSelectionProcedureSpec{
 		Start:      spec.Start,
 		Stop:       spec.Stop,
+		Location:   spec.Location,
+		Offset:     spec.Offset,
 		TimeColumn: spec.TimeColumn,
 	}, nil
 }
@@ -116,18 +131,22 @@ type hourSelectionTransformation struct {
 	d     execute.Dataset
 	cache execute.TableBuilderCache
 
-	start   int64
-	stop    int64
-	timeCol string
+	start    int64
+	stop     int64
+	location string
+	offset   values.Duration
+	timeCol  string
 }
 
 func NewHourSelectionTransformation(d execute.Dataset, cache execute.TableBuilderCache, spec *HourSelectionProcedureSpec) *hourSelectionTransformation {
 	return &hourSelectionTransformation{
-		d:       d,
-		cache:   cache,
-		start:   spec.Start,
-		stop:    spec.Stop,
-		timeCol: spec.TimeColumn,
+		d:        d,
+		cache:    cache,
+		start:    spec.Start,
+		stop:     spec.Stop,
+		location: spec.Location,
+		offset:   spec.Offset,
+		timeCol:  spec.TimeColumn,
 	}
 }
 
@@ -162,8 +181,12 @@ func (t *hourSelectionTransformation) Process(id execute.DatasetID, tbl flux.Tab
 			if nullCheck := cr.Times(colIdx); nullCheck.IsNull(i) {
 				continue
 			}
-			curr := execute.Time(cr.Times(colIdx).Value(i)).Time().Hour()
-			if (int64(curr) >= t.start && int64(curr) <= t.stop) || (t.start > t.stop && (int64(curr) >= t.start || int64(curr) <= t.stop)) {
+			lTime, err := date.GetTimeInLocation(execute.Time(cr.Times(colIdx).Value(i)), t.location, t.offset)
+			if err != nil {
+				return nil
+			}
+			lHour := int64(lTime.Time().Time().Hour())
+			if (lHour >= t.start && lHour <= t.stop) || (t.start > t.stop && (lHour >= t.start || lHour <= t.stop)) {
 				for k := range cr.Cols() {
 					if err := builder.AppendValue(k, execute.ValueForRow(cr, i, k)); err != nil {
 						return err
