@@ -1278,7 +1278,7 @@ builtin histogram : (
 // ```
 //
 // ## Metadata
-// introduced: NEXT
+// introduced: 0.167.0
 // tags: transformations
 //
 builtin preview : (<-tables: stream[A], ?nrows: int, ?ntables: int) => stream[A] where A: Record
