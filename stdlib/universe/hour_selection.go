@@ -8,7 +8,6 @@ import (
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/runtime"
-	datepackage "github.com/influxdata/flux/stdlib/date"
 	"github.com/influxdata/flux/values"
 )
 
@@ -50,7 +49,7 @@ func createHourSelectionOpSpec(args flux.Arguments, a *flux.Administration) (flu
 	}
 	spec.Stop = stop
 
-	location, offset, err := datepackage.GetLocationFromFluxArgs(args)
+	location, offset, err := date.GetLocationFromFluxArgs(args)
 	if err != nil {
 		return nil, err
 	}
