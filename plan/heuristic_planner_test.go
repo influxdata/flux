@@ -8,16 +8,40 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/plan/plantest"
+	"github.com/stretchr/testify/require"
 )
 
-func TestPlanTraversal(t *testing.T) {
+func TestHeuristicPlanner_Plan(t *testing.T) {
+
+	checkVisitedNodes := func(wantNodes []plan.NodeID, rules ...plan.Rule) func(*testing.T, *plan.Spec) {
+		return func(t *testing.T, inputSpec *plan.Spec) {
+			if len(rules) == 0 {
+				rules = append(rules, &plantest.SimpleRule{})
+			}
+			thePlanner := plan.NewPhysicalPlanner(plan.OnlyPhysicalRules(rules...))
+			spec, err := thePlanner.Plan(context.Background(), inputSpec)
+			require.NoError(t, err)
+			require.NoError(t, spec.CheckIntegrity())
+			if simpleRule, ok := rules[0].(*plantest.SimpleRule); ok {
+				require.True(t, cmp.Equal(wantNodes, simpleRule.SeenNodes),
+					"Traversal didn't match expected, -want/+got:\n%v", cmp.Diff(wantNodes, simpleRule.SeenNodes))
+			}
+		}
+	}
+
+	checkError := func(rule plan.Rule, wantErr string) func(*testing.T, *plan.Spec) {
+		return func(t *testing.T, inputSpec *plan.Spec) {
+			thePlanner := plan.NewPhysicalPlanner(plan.OnlyPhysicalRules(rule))
+			_, err := thePlanner.Plan(context.Background(), inputSpec)
+			require.Error(t, err)
+			require.True(t, strings.Contains(err.Error(), wantErr))
+		}
+	}
 
 	testCases := []struct {
-		name    string
-		plan    plantest.PlanSpec
-		rule    plan.Rule
-		nodeIDs []plan.NodeID
-		err     string
+		name       string
+		plan       plantest.PlanSpec
+		validateFn func(*testing.T, *plan.Spec)
 	}{
 		{
 			name: "simple",
@@ -25,7 +49,7 @@ func TestPlanTraversal(t *testing.T) {
 			plan: plantest.PlanSpec{
 				Nodes: []plan.Node{plantest.CreatePhysicalMockNode("0")},
 			},
-			nodeIDs: []plan.NodeID{"0"},
+			validateFn: checkVisitedNodes([]plan.NodeID{"0"}),
 		},
 		{
 			name: "simple rule changed",
@@ -33,8 +57,7 @@ func TestPlanTraversal(t *testing.T) {
 			plan: plantest.PlanSpec{
 				Nodes: []plan.Node{plantest.CreatePhysicalMockNode("0")},
 			},
-			rule:    &plantest.SimpleRule{ReturnChanged: true},
-			nodeIDs: []plan.NodeID{"0"},
+			validateFn: checkVisitedNodes([]plan.NodeID{"0"}, &plantest.SimpleRule{ReturnChanged: true}),
 		},
 		{
 			name: "simple rule nil return",
@@ -42,8 +65,7 @@ func TestPlanTraversal(t *testing.T) {
 			plan: plantest.PlanSpec{
 				Nodes: []plan.Node{plantest.CreatePhysicalMockNode("0")},
 			},
-			rule:    &plantest.SimpleRule{ReturnNilNode: true},
-			nodeIDs: []plan.NodeID{"0"},
+			validateFn: checkVisitedNodes([]plan.NodeID{"0"}, &plantest.SimpleRule{ReturnNilNode: true}),
 		},
 		{
 			name: "simple rule nil return changed",
@@ -51,8 +73,10 @@ func TestPlanTraversal(t *testing.T) {
 			plan: plantest.PlanSpec{
 				Nodes: []plan.Node{plantest.CreatePhysicalMockNode("0")},
 			},
-			rule: &plantest.SimpleRule{ReturnNilNode: true, ReturnChanged: true},
-			err:  "rule \"simple\" returned a nil plan node even though it seems to have changed the plan",
+			validateFn: checkError(
+				&plantest.SimpleRule{ReturnNilNode: true, ReturnChanged: true},
+				"rule \"simple\" returned a nil plan node even though it seems to have changed the plan",
+			),
 		},
 		{
 			name: "two nodes",
@@ -68,7 +92,7 @@ func TestPlanTraversal(t *testing.T) {
 					{0, 1},
 				},
 			},
-			nodeIDs: []plan.NodeID{"1", "0"},
+			validateFn: checkVisitedNodes([]plan.NodeID{"1", "0"}),
 		},
 		{
 			name: "multi-root",
@@ -87,7 +111,7 @@ func TestPlanTraversal(t *testing.T) {
 					{2, 3},
 				},
 			},
-			nodeIDs: []plan.NodeID{"1", "0", "3", "2"},
+			validateFn: checkVisitedNodes([]plan.NodeID{"1", "0", "3", "2"}),
 		},
 		{
 			name: "join",
@@ -111,7 +135,7 @@ func TestPlanTraversal(t *testing.T) {
 					{3, 4},
 				},
 			},
-			nodeIDs: []plan.NodeID{"4", "1", "0", "3", "2"},
+			validateFn: checkVisitedNodes([]plan.NodeID{"4", "1", "0", "3", "2"}),
 		},
 		{
 			name: "diamond",
@@ -146,7 +170,65 @@ func TestPlanTraversal(t *testing.T) {
 					{5, 7},
 				},
 			},
-			nodeIDs: []plan.NodeID{"7", "6", "4", "1", "0", "3", "2", "5"},
+			validateFn: checkVisitedNodes([]plan.NodeID{"7", "6", "4", "1", "0", "3", "2", "5"}),
+		},
+		{
+			name: "diamond with rewrite",
+			//            7
+			//           / \
+			//          6   5
+			//           \ /
+			//            4
+			//           / \
+			//          1   3
+			//          |   |
+			//          0   2
+			plan: plantest.PlanSpec{
+				Nodes: []plan.Node{
+					plantest.CreatePhysicalMockNode("0"),
+					plantest.CreatePhysicalMockNode("1"),
+					plantest.CreatePhysicalMockNode("2"),
+					plantest.CreatePhysicalMockNode("3"),
+					plantest.CreatePhysicalMockNode("4"),
+					plantest.CreatePhysicalMockNode("5"),
+					plantest.CreatePhysicalMockNode("6"),
+					plantest.CreatePhysicalMockNode("7"),
+				},
+				Edges: [][2]int{
+					{0, 1},
+					{2, 3},
+					{1, 4},
+					{3, 4},
+					{4, 6},
+					{4, 5},
+					{6, 7},
+					{5, 7},
+				},
+			},
+			validateFn: func(t *testing.T, inputSpec *plan.Spec) {
+				var seenNodes []plan.NodeID
+				rule := &plantest.FunctionRule{RewriteFn: func(ctx context.Context, node plan.Node) (plan.Node, bool, error) {
+					seenNodes = append(seenNodes, node.ID())
+					// Replace the central node with a new one
+					if len(node.Predecessors()) == 2 && len(node.Successors()) == 2 && node.ID() != "new" {
+						// Create a new plan node that will get linked into the plan
+						newNode := plantest.CreatePhysicalMockNode("new")
+						plan.ReplaceNode(node, newNode)
+						return newNode, true, nil
+					}
+					return node, false, nil
+				}}
+				thePlanner := plan.NewPhysicalPlanner(plan.OnlyPhysicalRules(rule))
+				spec, err := thePlanner.Plan(context.Background(), inputSpec)
+				require.NoError(t, err)
+				require.NoError(t, spec.CheckIntegrity())
+				wantSeenNodes := []plan.NodeID{
+					"7", "6", "4", "1", "0", "3", "2", "5", // first pass
+					"7", "6", "new", "1", "0", "3", "2", "5", // second pass
+				}
+				diff := cmp.Diff(wantSeenNodes, seenNodes)
+				require.True(t, diff == "", "found difference between -want/+got nodes:\n%v", diff)
+			},
 		},
 	}
 
@@ -156,34 +238,7 @@ func TestPlanTraversal(t *testing.T) {
 			t.Parallel()
 
 			planSpec := plantest.CreatePlanSpec(&tc.plan)
-
-			rule := tc.rule
-			if rule == nil {
-				rule = &plantest.SimpleRule{}
-			}
-			thePlanner := plan.NewPhysicalPlanner(plan.OnlyPhysicalRules(rule))
-			_, err := thePlanner.Plan(context.Background(), planSpec)
-			if err != nil {
-				if tc.err != "" {
-					if strings.Contains(err.Error(), tc.err) {
-						// sucess, got expected error
-						return
-					}
-					t.Fatalf("expected error containing %q, but got %v", tc.err, err)
-				}
-				t.Fatalf("Could not plan: %v", err)
-			}
-
-			if tc.err != "" {
-				t.Fatalf("expected error containing %q, but got no error", tc.err)
-			}
-
-			if simpleRule, ok := rule.(*plantest.SimpleRule); ok {
-				if !cmp.Equal(tc.nodeIDs, simpleRule.SeenNodes) {
-					t.Errorf("Traversal didn't match expected, -want/+got:\n%v",
-						cmp.Diff(tc.nodeIDs, simpleRule.SeenNodes))
-				}
-			}
+			tc.validateFn(t, planSpec)
 		})
 	}
 }

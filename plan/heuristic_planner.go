@@ -51,6 +51,7 @@ func applyRule(ctx context.Context, rule Rule, node Node) (Node, bool, error) {
 			return nil, false, errors.Newf(codes.Internal, "rule %q returned a nil plan node even though it seems to have changed the plan", rule.Name())
 		}
 		testing.MarkInvokedPlannerRule(ctx, rule.Name())
+		return newNode, true, nil
 	}
 
 	return node, changed, nil
