@@ -23,14 +23,14 @@ extern crate serde_derive;
 #[cfg(feature = "doc")]
 pub mod doc;
 
+mod errors;
+mod map;
+mod scanner;
+
 pub mod ast;
 pub mod formatter;
 pub mod parser;
-pub mod scanner;
 pub mod semantic;
-
-mod errors;
-mod map;
 
 use std::hash::BuildHasherDefault;
 

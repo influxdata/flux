@@ -64,7 +64,3 @@ criterion = "0.3.3"
 env_logger = "0.9"
 expect-test = "1.2.2"
 pretty_assertions = "1.2.1"
-
-[[bench]]
-name = "scanner"
-harness = false
