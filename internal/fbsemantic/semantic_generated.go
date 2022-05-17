@@ -18,6 +18,7 @@ const (
 	MonoTypeRecord     MonoType = 4
 	MonoTypeFun        MonoType = 5
 	MonoTypeDict       MonoType = 6
+	MonoTypeDynamic    MonoType = 7
 )
 
 var EnumNamesMonoType = map[MonoType]string{
@@ -28,6 +29,7 @@ var EnumNamesMonoType = map[MonoType]string{
 	MonoTypeRecord:     "Record",
 	MonoTypeFun:        "Fun",
 	MonoTypeDict:       "Dict",
+	MonoTypeDynamic:    "Dynamic",
 }
 
 var EnumValuesMonoType = map[string]MonoType{
@@ -38,6 +40,7 @@ var EnumValuesMonoType = map[string]MonoType{
 	"Record":     MonoTypeRecord,
 	"Fun":        MonoTypeFun,
 	"Dict":       MonoTypeDict,
+	"Dynamic":    MonoTypeDynamic,
 }
 
 func (v MonoType) String() string {
@@ -1296,6 +1299,40 @@ func DictAddV(builder *flatbuffers.Builder, v flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(3, flatbuffers.UOffsetT(v), 0)
 }
 func DictEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
+	return builder.EndObject()
+}
+
+type Dynamic struct {
+	_tab flatbuffers.Table
+}
+
+func GetRootAsDynamic(buf []byte, offset flatbuffers.UOffsetT) *Dynamic {
+	n := flatbuffers.GetUOffsetT(buf[offset:])
+	x := &Dynamic{}
+	x.Init(buf, n+offset)
+	return x
+}
+
+func GetSizePrefixedRootAsDynamic(buf []byte, offset flatbuffers.UOffsetT) *Dynamic {
+	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
+	x := &Dynamic{}
+	x.Init(buf, n+offset+flatbuffers.SizeUint32)
+	return x
+}
+
+func (rcv *Dynamic) Init(buf []byte, i flatbuffers.UOffsetT) {
+	rcv._tab.Bytes = buf
+	rcv._tab.Pos = i
+}
+
+func (rcv *Dynamic) Table() flatbuffers.Table {
+	return rcv._tab
+}
+
+func DynamicStart(builder *flatbuffers.Builder) {
+	builder.StartObject(0)
+}
+func DynamicEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
 	return builder.EndObject()
 }
 
