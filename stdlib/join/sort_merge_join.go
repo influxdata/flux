@@ -78,24 +78,26 @@ func (SortMergeJoinPredicateRule) Pattern() plan.Pattern {
 
 func (SortMergeJoinPredicateRule) Rewrite(ctx context.Context, n plan.Node) (plan.Node, bool, error) {
 	s := n.ProcedureSpec()
-	spec, ok := s.(*JoinProcedureSpec)
+	_, ok := s.(*JoinProcedureSpec)
 	if !ok {
 		return nil, false, errors.New(codes.Internal, "invalid spec type on join node")
 	}
 
-	for _, parentNode := range n.Predecessors() {
-		sortProc := universe.SortProcedureSpec{}
-		sortNode := plan.CreateUniquePhysicalNode(ctx, "sortMergeJoin", &sortProc)
-		for i, successorNode := range n.Successors() {
+	predecessors := n.Predecessors()
+	n.ClearPredecessors()
+	for _, parentNode := range predecessors {
+		for i, successorNode := range parentNode.Successors() {
 			if successorNode.ID() == n.ID() {
-				n.Successors()[i] = sortNode
+				sortProc := universe.SortProcedureSpec{}
+				sortNode := plan.CreateUniquePhysicalNode(ctx, "sortMergeJoin", &sortProc)
+
+				parentNode.Successors()[i] = sortNode
+				sortNode.AddPredecessors(parentNode)
+				sortNode.AddSuccessors(n)
+				n.AddPredecessors(sortNode)
 			}
 		}
-		sortNode.AddPredecessors(parentNode)
-		sortNode.AddSuccessors(n)
 	}
-
-	n.ReplaceSpec(newSortMergeJoin(spec))
 
 	return n, true, nil
 }
