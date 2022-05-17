@@ -8,11 +8,11 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"regexp"
 	"strings"
 	"testing"
 
 	"github.com/foxcpp/go-mockdns"
-	"github.com/google/go-cmp/cmp"
 	"github.com/influxdata/flux/codes"
 	depsUrl "github.com/influxdata/flux/dependencies/url"
 	"github.com/influxdata/flux/internal/errors"
@@ -45,15 +45,14 @@ func TestLimitedDefaultClient(t *testing.T) {
 		}
 		resp, err := c.Do(req)
 		if err != nil {
-			t.Fatal(err)
+			matched, _ := regexp.MatchString("http response body is too large, reduce the amount of data querying", err.Error())
+			if !matched {
+				t.Fatalf("expected error:\n\t%s", err.Error())
+			}
+		} else {
+			t.Fatalf("got unexpected response body:\n\t%s", resp.Body)
 		}
-		bs, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			t.Fatal(err)
-		}
-		if diff := cmp.Diff(body[:size], string(bs)); diff != "" {
-			t.Fatalf("got unexpected response body:\n\t%s", diff)
-		}
+
 	})
 }
 

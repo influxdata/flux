@@ -53,6 +53,10 @@ func (l roundTripLimiter) RoundTrip(r *http.Request) (*http.Response, error) {
 	if err != nil {
 		return nil, err
 	}
+	// Check that the content length is not too large for us to handle.
+	if response.ContentLength > l.size {
+		return nil, errors.New(codes.FailedPrecondition, "http response body is too large, reduce the amount of data querying")
+	}
 	response.Body = limitReadCloser(response.Body, l.size)
 	return response, nil
 }
