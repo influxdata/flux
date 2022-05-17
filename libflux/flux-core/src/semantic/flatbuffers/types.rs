@@ -908,4 +908,9 @@ mod tests {
         let bytes = builder.finished_data();
         assert_ne!(bytes.len(), 0);
     }
+
+    #[test]
+    fn serde_dynamic_type() {
+        test_serde("dynamic")
+    }
 }

@@ -1330,7 +1330,7 @@ impl Substitutable for Dynamic {
     where
         Self: Sized,
     {
-        todo!("Dyanmic's Substitutable::walk")
+        Some(Dynamic {})
     }
 }
 
