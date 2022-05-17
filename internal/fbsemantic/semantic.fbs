@@ -29,6 +29,7 @@ union MonoType {
   Record,
   Fun,
   Dict,
+  Dynamic,
 }
 
 table MonoTypeHolder {
@@ -91,6 +92,8 @@ table Dict {
   k:MonoType /*(required)*/;
   v:MonoType /*(required)*/;
 }
+
+table Dynamic {}
 
 table Argument {
   name:string /*(required)*/;

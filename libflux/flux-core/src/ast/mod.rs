@@ -605,6 +605,8 @@ pub enum MonoType {
     Stream(Box<StreamType>),
     #[serde(rename = "DictType")]
     Dict(Box<DictType>),
+    #[serde(rename = "DynamicType")]
+    Dynamic(Box<DynamicType>),
     #[serde(rename = "RecordType")]
     Record(RecordType),
     #[serde(rename = "FunctionType")]
@@ -620,6 +622,7 @@ impl MonoType {
             MonoType::Array(t) => &t.base,
             MonoType::Stream(t) => &t.base,
             MonoType::Dict(t) => &t.base,
+            MonoType::Dynamic(t) => &t.base,
             MonoType::Record(t) => &t.base,
             MonoType::Function(t) => &t.base,
         }
@@ -675,6 +678,15 @@ pub struct DictType {
     pub base: BaseNode,
     pub key: MonoType,
     pub val: MonoType,
+}
+
+#[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
+#[allow(missing_docs)]
+pub struct DynamicType {
+    #[serde(skip_serializing_if = "BaseNode::is_empty")]
+    #[serde(default)]
+    #[serde(flatten)]
+    pub base: BaseNode,
 }
 
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]

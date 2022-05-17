@@ -421,6 +421,16 @@ impl<'doc> Formatter<'doc> {
                     "]",
                 ]
             }
+            ast::MonoType::Dynamic(dynamic) => {
+                // XXX: seems like the formatter shouldn't have any concerns
+                // re: dynamic since the symbol should be any of the other items,
+                // we just don't know which at compile time.
+                // I'm thinking this means dynamics will really be an identifier
+                // for almost all cases.
+                // Possibly this arm is therefore only concerned with formatting
+                // signatures/typing?
+                todo!("dynamic formatter")
+            }
             ast::MonoType::Record(n) => {
                 let multiline = n.properties.len() > MULTILINE;
                 let line = self.multiline(multiline);

@@ -12,20 +12,21 @@ use crate::semantic::{
     nodes::Symbol,
     import::Packages,
     types::{CollectionType,
-        RecordLabel,
-        Collection,
-        Dictionary,
-        Function,
-        Kind,
-        MonoType,
-        MonoTypeMap,
-        PolyType,
-        PolyTypeMap,
-        Property,
-        Record,
-        Tvar,
-        TvarKinds,
-        BuiltinType,
+            RecordLabel,
+            Collection,
+            Dictionary,
+            Dynamic,
+            Function,
+            Kind,
+            MonoType,
+            MonoTypeMap,
+            PolyType,
+            PolyTypeMap,
+            Property,
+            Record,
+            Tvar,
+            TvarKinds,
+            BuiltinType,
     },
     flatbuffers::serialize_pkg_into,
 };
@@ -204,6 +205,10 @@ fn from_table(table: flatbuffers::Table, t: fb::MonoType) -> Option<MonoType> {
             let opt: Option<Dictionary> = fb::Dict::init_from_table(table).into();
             Some(MonoType::from(opt?))
         }
+        fb::MonoType::Dynamic => {
+            let opt: Option<Dynamic> = fb::Dynamic::init_from_table(table).into();
+            Some(MonoType::from(opt?))
+        }
         fb::MonoType::NONE => None,
         _ => unreachable!("Unknown type from table"),
     }
@@ -252,6 +257,13 @@ impl From<fb::Dict<'_>> for Option<Dictionary> {
             key: from_table(t.k()?, t.k_type())?,
             val: from_table(t.v()?, t.v_type())?,
         })
+    }
+}
+
+// XXX: what's the point??
+impl From<fb::Dynamic<'_>> for Option<Dynamic> {
+    fn from(t: fb::Dynamic) -> Option<Dynamic> {
+        Some(Dynamic {})
     }
 }
 
@@ -503,6 +515,10 @@ pub fn build_type(
             let offset = build_dict(builder, dict);
             (offset.as_union_value(), fb::MonoType::Dict)
         }
+        MonoType::Dynamic(dynamic) => {
+            let offset = build_dynamic(builder, dynamic);
+            (offset.as_union_value(), fb::MonoType::Dynamic)
+        }
         MonoType::Record(record) => {
             let offset = build_record(builder, record);
             (offset.as_union_value(), fb::MonoType::Record)
@@ -580,6 +596,13 @@ fn build_dict<'a>(
             v,
         },
     )
+}
+
+fn build_dynamic<'a>(
+    builder: &mut flatbuffers::FlatBufferBuilder<'a>,
+    mut _dynamic: &Dynamic,
+) -> flatbuffers::WIPOffset<fb::Dynamic<'a>> {
+    fb::Dynamic::create(builder, &fb::DynamicArgs {})
 }
 
 fn build_record<'a>(

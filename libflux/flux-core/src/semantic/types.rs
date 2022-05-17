@@ -589,6 +589,9 @@ pub enum MonoType {
     Dict(Ptr<Dictionary>),
 
     #[display(fmt = "{}", _0)]
+    Dynamic(Ptr<Dynamic>),
+
+    #[display(fmt = "{}", _0)]
     Record(Ptr<Record>),
 
     #[display(fmt = "{}", _0)]
@@ -617,6 +620,7 @@ impl Serialize for MonoType {
             Label(&'a Label),
             Arr(&'a MonoType),
             Dict(&'a Ptr<Dictionary>),
+            Dynamic(&'a Ptr<Dynamic>),
             Record(&'a Ptr<Record>),
             Fun(&'a Ptr<Function>),
             Vector(&'a MonoType),
@@ -646,6 +650,7 @@ impl Serialize for MonoType {
             },
             Self::Label(p) => MonoTypeSer::Label(p),
             Self::Dict(p) => MonoTypeSer::Dict(p),
+            Self::Dynamic(p) => MonoTypeSer::Dynamic(p),
             Self::Record(p) => MonoTypeSer::Record(p),
             Self::Fun(p) => MonoTypeSer::Fun(p),
         }
@@ -827,6 +832,7 @@ impl Substitutable for MonoType {
             | MonoType::Var(_) => None,
             MonoType::Collection(app) => app.visit(sub).map(MonoType::app),
             MonoType::Dict(dict) => dict.visit(sub).map(MonoType::dict),
+            MonoType::Dynamic(dynamic) => dynamic.visit(sub).map(MonoType::dynamic),
             MonoType::Record(obj) => obj.visit(sub).map(MonoType::record),
             MonoType::Fun(fun) => fun.visit(sub).map(MonoType::fun),
         }
@@ -854,6 +860,12 @@ impl From<Collection> for MonoType {
 impl From<Dictionary> for MonoType {
     fn from(d: Dictionary) -> MonoType {
         MonoType::Dict(Ptr::new(d))
+    }
+}
+
+impl From<Dynamic> for MonoType {
+    fn from(d: Dynamic) -> MonoType {
+        MonoType::Dynamic(Ptr::new(d))
     }
 }
 
@@ -915,6 +927,11 @@ impl MonoType {
     /// Creates a dictionary type
     pub fn dict(d: impl Into<Ptr<Dictionary>>) -> Self {
         Self::Dict(d.into())
+    }
+
+    /// Creates a dynamic type
+    pub fn dynamic(d: impl Into<Ptr<Dynamic>>) -> Self {
+        Self::Dynamic(d.into())
     }
 
     /// Creates a function type
@@ -1053,6 +1070,7 @@ impl MonoType {
             }
             MonoType::Collection(app) => app.constrain(with, cons),
             MonoType::Dict(dict) => dict.constrain(with, cons),
+            MonoType::Dynamic(dynamic) => dynamic.constrain(with, cons),
             MonoType::Record(obj) => obj.constrain(with, cons),
             MonoType::Fun(fun) => fun.constrain(with, cons),
         }
@@ -1066,6 +1084,7 @@ impl MonoType {
             MonoType::Var(tvr) => tv == *tvr,
             MonoType::Collection(app) => app.contains(tv),
             MonoType::Dict(dict) => dict.contains(tv),
+            MonoType::Dynamic(dynamic) => dynamic.contains(tv),
             MonoType::Record(row) => row.contains(tv),
             MonoType::Fun(fun) => fun.contains(tv),
         }
@@ -1295,6 +1314,32 @@ impl Dictionary {
     }
     fn contains(&self, tv: Tvar) -> bool {
         self.key.contains(tv) || self.val.contains(tv)
+    }
+}
+
+/// `Dynamic` values are not subject to static checks, relying instead on
+/// runtime validation to know whether or not a given operation can be performed.
+#[derive(Debug, Display, Clone, PartialEq, Serialize)]
+#[display(fmt = "<dynamic>")] // XXX: what is the Display value used for?
+pub struct Dynamic {
+    // FIXME: seems like we need _something_ held here for/from the flatbuffer. Maybe not?
+}
+
+impl Substitutable for Dynamic {
+    fn walk(&self, _sub: &mut (impl ?Sized + Substituter)) -> Option<Self>
+    where
+        Self: Sized,
+    {
+        todo!("Dyanmic's Substitutable::walk")
+    }
+}
+
+impl Dynamic {
+    fn constrain(&self, _with: Kind, _: &mut TvarKinds) -> Result<(), Error> {
+        todo!("dynamic constrain")
+    }
+    fn contains(&self, _tvar: Tvar) -> bool {
+        todo!("dynamic contains")
     }
 }
 

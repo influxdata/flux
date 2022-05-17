@@ -525,6 +525,7 @@ impl<'a> Converter<'a> {
                 let val = self.convert_monotype(&dict.val, tvars);
                 MonoType::from(types::Dictionary { key, val })
             }
+            ast::MonoType::Dynamic(_dynamic) => todo!("convert dynamic"),
             ast::MonoType::Function(func) => {
                 let mut req = MonoTypeMap::new();
                 let mut opt = MonoTypeMap::new();
