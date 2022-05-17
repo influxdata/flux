@@ -43,7 +43,7 @@ func TestSortMergeJoinPredicateRule(t *testing.T) {
 					plan.CreateLogicalNode("from3", &influxdb.FromProcedureSpec{}),
 					plan.CreateLogicalNode("filter4", &universe.FilterProcedureSpec{}),
 					plan.CreateLogicalNode("sort5", &universe.SortProcedureSpec{}),
-					plan.CreateLogicalNode("join.join6", &join.JoinProcedureSpec{}),
+					plan.CreateLogicalNode("join.join6", &join.SortMergeJoinProcedureSpec{}),
 				},
 				Edges: [][2]int{
 					{0, 1},
@@ -76,7 +76,10 @@ func TestSortMergeJoinPredicateRule(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			physicalPlanner := plan.NewPhysicalPlanner(plan.OnlyPhysicalRules(&join.SortMergeJoinPredicateRule{}))
+			physicalPlanner := plan.NewPhysicalPlanner(plan.OnlyPhysicalRules(
+				&join.EquiJoinPredicateRule{},
+				&join.SortMergeJoinPredicateRule{},
+			))
 			physicalPlan, err := physicalPlanner.Plan(context.Background(), logicalPlan)
 			if err != nil {
 				if tc.wantErr != nil {
