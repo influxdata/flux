@@ -1276,7 +1276,7 @@ mod tests {
         parser::Parser,
         semantic::{
             sub,
-            types::{MonoType, Tvar},
+            types::{Dynamic, MonoType, Tvar},
             walk::{walk_mut, NodeMut},
         },
     };
@@ -2790,6 +2790,22 @@ mod tests {
             retn: MonoType::BoundVar(Tvar(0)),
         });
         let want = types::PolyType { vars, cons, expr };
+        assert_eq!(want, got);
+    }
+
+    #[test]
+    fn test_convert_dynamic_function() {
+        let monotype_ex = Parser::new("() => dynamic").parse_monotype();
+
+        let mut m = BTreeMap::<String, types::Tvar>::new();
+        let got =
+            convert_monotype(&monotype_ex, &mut m, &mut sub::Substitution::default()).unwrap();
+        let want = MonoType::from(types::Function {
+            req: MonoTypeMap::new(),
+            opt: MonoTypeMap::new(),
+            pipe: None,
+            retn: MonoType::from(Dynamic {}),
+        });
         assert_eq!(want, got);
     }
 }

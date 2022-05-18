@@ -1035,6 +1035,7 @@ impl MonoType {
 
             (MonoType::Fun(t), MonoType::Fun(s)) => t.unify(s, unifier, MonoType::clone),
 
+            //FIXME: dynamic would land here without an explicit arm, I think?
             (exp, act) => unifier.errors.push(Error::CannotUnify {
                 exp: exp.clone(),
                 act: act.clone(),
@@ -1131,6 +1132,7 @@ impl MonoType {
             MonoType::Fun(_) => " (function)",
             MonoType::Dict(_) => " (dictionary)",
             MonoType::Record(_) => " (record)",
+            MonoType::Dynamic(_) => " (dynamic)",
             MonoType::Collection(app) => match app.collection {
                 CollectionType::Array => " (array)",
                 CollectionType::Vector => " (vector)",
@@ -1320,7 +1322,7 @@ impl Dictionary {
 /// `Dynamic` values are not subject to static checks, relying instead on
 /// runtime validation to know whether or not a given operation can be performed.
 #[derive(Debug, Display, Clone, PartialEq, Serialize)]
-#[display(fmt = "<dynamic>")] // XXX: what is the Display value used for?
+#[display(fmt = "dynamic")] // XXX: what is the Display value used for?
 pub struct Dynamic {
     // FIXME: seems like we need _something_ held here for/from the flatbuffer. Maybe not?
 }
