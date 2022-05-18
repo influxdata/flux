@@ -42,6 +42,8 @@ func NewMonoType(tbl flatbuffers.Table, t fbsemantic.MonoType) (MonoType, error)
 		tbler = new(fbsemantic.Fun)
 	case fbsemantic.MonoTypeDict:
 		tbler = new(fbsemantic.Dict)
+	case fbsemantic.MonoTypeDynamic:
+		tbler = new(fbsemantic.Dynamic)
 	default:
 		return MonoType{}, errors.Newf(codes.Internal, "unknown type (%v)", t)
 	}
@@ -103,6 +105,8 @@ func nature(tbl flatbuffers.Table, t fbsemantic.MonoType) Nature {
 		return Function
 	case fbsemantic.MonoTypeDict:
 		return Dictionary
+	case fbsemantic.MonoTypeDynamic:
+		return Dynamic
 	case fbsemantic.MonoTypeNONE,
 		fbsemantic.MonoTypeVar:
 		fallthrough
@@ -122,6 +126,7 @@ const (
 	Record     = Kind(fbsemantic.MonoTypeRecord)
 	Fun        = Kind(fbsemantic.MonoTypeFun)
 	Dict       = Kind(fbsemantic.MonoTypeDict)
+	Dyn        = Kind(fbsemantic.MonoTypeDynamic)
 )
 
 // Kind returns what kind of monotype the receiver is.
@@ -615,6 +620,8 @@ func (mt MonoType) getCanonicalMapping(counter *uint64, tvm map[uint64]uint64) e
 		if err := rt.getCanonicalMapping(counter, tvm); err != nil {
 			return err
 		}
+	case Dyn:
+		panic("TODO: canonical mapping for Dynamic")
 	}
 
 	return nil
@@ -762,6 +769,8 @@ func (mt MonoType) string(m map[uint64]uint64) string {
 			return "<" + err.Error() + ">"
 		}
 		return "[" + kt.string(m) + ": " + vt.string(m) + "]"
+	case Dyn:
+		return "dynamic"
 	default:
 		return "<" + fmt.Sprintf("unknown monotype (%v)", tk) + ">"
 	}
@@ -984,6 +993,8 @@ func copyMonoType(builder *flatbuffers.Builder, t MonoType) flatbuffers.UOffsetT
 		key := monoTypeFromFunc(dict.K, dict.KType())
 		value := monoTypeFromFunc(dict.V, dict.VType())
 		return buildDictType(builder, key, value)
+	case fbsemantic.MonoTypeDynamic:
+		panic("TODO: copy monotype for Dynamic")
 	default:
 		panic(fmt.Sprintf("unknown monotype (%v)", t.mt))
 	}
