@@ -131,11 +131,17 @@ pub enum WarningKind {
     UnusedSymbol(String),
 }
 
+#[derive(Debug, Clone, PartialEq)]
+struct PackageEntry {
+    symbol: Symbol,
+    typ: PolyType,
+}
+
 /// An environment of values that are available outside of a package
 #[derive(Debug, Clone, PartialEq)]
 pub struct PackageExports {
     /// Values in the environment.
-    values: types::SemanticMap<String, (Symbol, PolyType)>,
+    values: types::SemanticMap<String, PackageEntry>,
 
     /// The type representing this package
     typ: PolyType,
@@ -165,7 +171,7 @@ impl TryFrom<PolyTypeHashMap<Symbol>> for PackageExports {
             )?,
             values: values
                 .into_iter_by(|l, r| l.name().cmp(r.name()))
-                .map(|(symbol, typ)| (symbol.to_string(), (symbol, typ)))
+                .map(|(symbol, typ)| (symbol.to_string(), PackageEntry { symbol, typ }))
                 .collect(),
         })
     }
@@ -175,10 +181,10 @@ impl TryFrom<Vec<(Symbol, PolyType)>> for PackageExports {
     type Error = Errors<Error>;
     fn try_from(values: Vec<(Symbol, PolyType)>) -> Result<Self, Errors<Error>> {
         Ok(PackageExports {
-            typ: build_polytype(values.iter().map(|(k, v)| (k.clone(), v.clone())))?,
+            typ: build_polytype(values.iter().cloned())?,
             values: values
                 .into_iter()
-                .map(|(symbol, typ)| (symbol.to_string(), (symbol, typ)))
+                .map(|(symbol, typ)| (symbol.to_string(), PackageEntry { symbol, typ }))
                 .collect(),
         })
     }
@@ -197,19 +203,30 @@ impl PackageExports {
 
     /// Add a new variable binding to the current stack frame.
     pub fn add(&mut self, name: Symbol, t: PolyType) {
-        self.values.insert(name.to_string(), (name, t));
-        self.typ = build_polytype(self.values.values().cloned()).unwrap();
+        self.values.insert(
+            name.to_string(),
+            PackageEntry {
+                symbol: name,
+                typ: t,
+            },
+        );
+        self.typ = build_polytype(
+            self.values
+                .values()
+                .map(|v| (v.symbol.clone(), v.typ.clone())),
+        )
+        .unwrap();
     }
 
     /// Check whether a `PolyType` `k` given by a
     /// string identifier is in the environment.
     pub fn lookup(&self, k: &str) -> Option<&PolyType> {
-        self.values.get(k).map(|(_, typ)| typ)
+        self.values.get(k).map(|v| &v.typ)
     }
 
     /// Check whether a `Symbol` `k` identifier is in the environment.
     pub fn lookup_symbol(&self, k: &str) -> Option<&Symbol> {
-        self.values.get(k).map(|(symbol, _)| symbol)
+        self.values.get(k).map(|v| &v.symbol)
     }
 
     /// Copy all the variable bindings from another environment to the current environment.
@@ -218,12 +235,17 @@ impl PackageExports {
         for (name, t) in other.values.iter() {
             self.values.insert(name.clone(), t.clone());
         }
-        self.typ = build_polytype(self.values.values().cloned()).unwrap();
+        self.typ = build_polytype(
+            self.values
+                .values()
+                .map(|v| (v.symbol.clone(), v.typ.clone())),
+        )
+        .unwrap();
     }
 
     /// Returns an iterator over all values
     pub fn iter(&self) -> impl Iterator<Item = (&str, &PolyType)> + '_ {
-        self.values.iter().map(|(k, (_, v))| (k.as_str(), v))
+        self.values.iter().map(|(k, v)| (k.as_str(), &v.typ))
     }
 
     /// Returns how many values exist in the environment
@@ -238,7 +260,7 @@ impl PackageExports {
 
     /// Returns an iterator over exported bindings in this package
     pub fn into_bindings(self) -> impl Iterator<Item = (Symbol, PolyType)> {
-        self.values.into_iter().map(|(_, v)| v)
+        self.values.into_iter().map(|(_, v)| (v.symbol, v.typ))
     }
 }
 
