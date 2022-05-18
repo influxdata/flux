@@ -584,7 +584,7 @@ impl<'input> Parser<'input> {
     }
 
     fn parse_dynamic_type(&mut self) -> MonoType {
-        let t = self.peek().clone();
+        let t = self.expect(TokenType::Ident);
         MonoType::Dynamic(Box::new(DynamicType {
             base: self.base_node_from_token(&t),
         }))
