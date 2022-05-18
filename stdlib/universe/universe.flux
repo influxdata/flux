@@ -4802,3 +4802,174 @@ toTime = (tables=<-) => tables |> map(fn: (r) => ({r with _value: time(v: r._val
 // tags: date/time
 //
 today = () => date.truncate(t: now(), unit: 1d)
+
+// @feature labelPolymorphism
+builtin columns : (<-tables: [A], ?column: L) => [{ L: string }] where A: Record, L: Label
+
+// @feature labelPolymorphism
+builtin count : (<-tables: [A], ?column: string) => [{ _value: int }] where A: Record
+
+// @feature labelPolymorphism
+builtin distinct : (<-tables: [{ A with C: B }], ?column: C) => [{ _value: B }] where A: Record, B: Equatable, C: Label
+
+// @feature labelPolymorphism
+builtin duplicate : (<-tables: [{ A with C: B }], column: C, as: D) => [{ A with C: B, D: B }]
+    where A: Record,
+          D: Label
+
+// @feature labelPolymorphism
+builtin elapsed : (<-tables: [{ A with T: time }], ?unit: duration, ?timeColumn: T, ?columnName: C) => [{ A with T: time, C: duration }]
+    where
+    A: Record,
+    C: Label,
+    T: Label
+
+// @feature labelPolymorphism
+builtin fill : (<-tables: [{ A with C: B }], ?column: C, ?value: B, ?usePrevious: bool) => [{ A with C: B }] where A: Record, C: Label
+
+// @feature labelPolymorphism
+builtin histogram : (
+        <-tables: [{ A with C: float }],
+        ?column: C,
+        ?upperBoundColumn: U,
+        ?countColumn: T,
+        bins: [float],
+        ?normalize: bool,
+    ) => [{ U: float, T: float }]
+    where
+    A: Record,
+    C: Label,
+    T: Label,
+    U: Label
+
+// @feature labelPolymorphism
+builtin histogramQuantile : (
+        <-tables: [{ A with U: float, C: float }],
+        ?quantile: float,
+        ?countColumn: C,
+        ?upperBoundColumn: U,
+        ?valueColumn: V,
+        ?minValue: float,
+    ) => [{ V: float }]
+    where
+    A: Record,
+    C: Label,
+    U: Label,
+    V: Label
+
+// @feature labelPolymorphism
+builtin holtWinters : (
+        <-tables: [{ A with T: time, C: B }],
+        n: int,
+        interval: duration,
+        ?withFit: bool,
+        ?column: C,
+        ?timeColumn: T,
+        ?seasonality: int,
+    ) => [{ _value: B }]
+    where
+    A: Record,
+    B: Numeric,
+    T: Label
+
+// @feature labelPolymorphism
+builtin hourSelection : (<-tables: [{ A with T: time }], start: int, stop: int, ?timeColumn: T) => [{ A with T: time }] where A: Record
+
+// @feature labelPolymorphism
+builtin integral : (
+        <-tables: [{ A with _start: time, _stop: time, C: B }],
+        ?unit: duration,
+        ?timeColumn: T,
+        ?column: C,
+        ?interpolate: string,
+    ) => [{ A with _start: time, _stop: time, C: B }]
+    where
+    A: Record,
+    B: Numeric
+
+// @feature labelPolymorphism
+builtin kaufmansAMA : (<-tables: [{ A with L: B }], n: int, ?column: L) => [{ A with C: float }]
+    where A: Record, B: Numeric
+
+// @feature labelPolymorphism
+builtin keys : (<-tables: [A], ?column: L) => [{ L: string }] where A: Record, B: Record
+
+// @feature labelPolymorphism
+builtin last : (<-tables: [{ A with L: B }], ?column: L) => [{ A with L: B }] where A: Record
+
+// @feature labelPolymorphism
+builtin max : (<-tables: [{ A with L: B }], ?column: L) => [{ A with L: B }]
+    where A: Record,
+          B: Comparable
+
+// @feature labelPolymorphism
+builtin mean : (<-tables: [{ A with C: B }], ?column: C) => [{ C: B }]
+    where A: Record, B: Numeric
+
+// @feature labelPolymorphism
+builtin min : (<-tables: [{ A with L: B }], ?column: L) => [{ A with L: B }]
+    where A: Record,
+          B: Comparable
+
+// Could be extended to work with other types than string?
+// @feature labelPolymorphism
+builtin set : (<-tables: [{ A with K: string }], key: K, value: string) => [{ A with K: string}] where A: Record, K: Label
+
+// @feature labelPolymorphism
+builtin skew : (<-tables: [{ A with C: B }], ?column: C) => [{ A with C: float }]
+    where A: Record,
+          B: Numeric
+
+// Having the output as D is more general than necessary, however the function converts `uint => int` so we can't just use `B` there
+// @feature labelPolymorphism
+builtin spread : (<-tables: [{ A with C: B }], ?column: C) => [{ A with C: D }]
+    where A: Record, B: Numeric
+
+// Seems to lack documentation, so I may be getting this wrong
+// @feature labelPolymorphism
+builtin stateTracking : (
+        <-tables: [{ A with C: B, D: duration, T: time }],
+        fn: (r: A) => bool,
+        ?countColumn: C,
+        ?durationColumn: C,
+        ?durationUnit: duration,
+        ?timeColumn: T,
+    ) => [{ A with C: B, D: duration, T: time }]
+    where
+    A: Record,
+    C: Label,
+    D: Label,
+    T: Label
+
+// @feature labelPolymorphism
+builtin stddev : (<-tables: [{ A with C: B }], ?column: C, ?mode: string) => [{ C: B }] where A: Record, B: Numeric
+
+// @feature labelPolymorphism
+builtin sum : (<-tables: [{ A with C: B }], ?column: C) => [{ C: B }]
+    where A: Record, B: Numeric
+
+// @feature labelPolymorphism
+builtin unique : (<-tables: [{ A with C: B }], ?column: C) => [A]
+    where A: Record, B: Equatable
+
+// @feature labelPolymorphism
+builtin _window : (
+        <-tables: [{ A with T: time }],
+        every: duration,
+        period: duration,
+        offset: duration,
+        location: {zone: string, offset: duration},
+        timeColumn: T,
+        startColumn: U,
+        stopColumn: V,
+        createEmpty: bool,
+    ) => [{ A with U: time, V: time }]
+    where
+    A: Record,
+    B: Record,
+    T: Label,
+    U: Label,
+    V: Label
+
+// @feature labelPolymorphism
+builtin getColumn : (<-table: [{ A with C: B }], column: C) => [B] where A: Record
