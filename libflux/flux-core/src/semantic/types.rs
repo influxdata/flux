@@ -1034,8 +1034,8 @@ impl MonoType {
             (MonoType::Record(t), MonoType::Record(s)) => t.unify(s, unifier),
 
             (MonoType::Fun(t), MonoType::Fun(s)) => t.unify(s, unifier, MonoType::clone),
-
-            //FIXME: dynamic would land here without an explicit arm, I think?
+            // FIXME: still not sure how to reason about this, but it seems like if either side is dynamic we should just "pass"
+            (MonoType::Dynamic(_), _) | (_, MonoType::Dynamic(_)) => (),
             (exp, act) => unifier.errors.push(Error::CannotUnify {
                 exp: exp.clone(),
                 act: act.clone(),
@@ -1338,10 +1338,11 @@ impl Substitutable for Dynamic {
 
 impl Dynamic {
     fn constrain(&self, _with: Kind, _: &mut TvarKinds) -> Result<(), Error> {
-        todo!("dynamic constrain")
+        Ok(())
     }
+
     fn contains(&self, _tvar: Tvar) -> bool {
-        todo!("dynamic contains")
+        false
     }
 }
 
