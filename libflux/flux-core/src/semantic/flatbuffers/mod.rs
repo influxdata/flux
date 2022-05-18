@@ -369,6 +369,9 @@ impl<'a, 'b> semantic::walk::Visitor<'_> for SerializingVisitor<'a, 'b> {
                 let (right, right_type) = v.pop_expr();
                 let (left, left_type) = v.pop_expr();
 
+                let logical_typ = logical.typ.clone();
+                let (typ, typ_type) = types::build_type(v.builder, &logical_typ);
+
                 let logical = fbsemantic::LogicalExpression::create(
                     v.builder,
                     &fbsemantic::LogicalExpressionArgs {
@@ -378,6 +381,8 @@ impl<'a, 'b> semantic::walk::Visitor<'_> for SerializingVisitor<'a, 'b> {
                         left,
                         right_type,
                         right,
+                        typ: Some(typ),
+                        typ_type,
                     },
                 );
                 v.expr_stack.push((

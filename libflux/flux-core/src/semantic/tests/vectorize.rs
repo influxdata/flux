@@ -12,6 +12,7 @@ fn analyzer_config() -> AnalyzerConfig {
             Feature::VectorizedMap,
             Feature::VectorizeAddition,
             Feature::VectorizeOperators,
+            Feature::VectorizeLogicalOperators,
         ],
         ..AnalyzerConfig::default()
     }

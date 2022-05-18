@@ -1,6 +1,7 @@
 package universe_test
 
 
+import "array"
 import "csv"
 import "testing"
 
@@ -498,3 +499,23 @@ testcase vectorize_addition_operator {
 
         testing.diff(want: want, got: got) |> yield()
     }
+
+testcase vectorize_and_operator {
+    want = array.from(rows: [{a: true, b: false, c: false}])
+
+    got =
+        array.from(rows: [{a: true, b: false}])
+            |> map(fn: (r) => ({r with c: r.a and r.b}))
+
+    testing.diff(want: want, got: got) |> yield()
+}
+
+testcase vectorize_or_operator {
+    want = array.from(rows: [{a: true, b: false, c: true}])
+
+    got =
+        array.from(rows: [{a: true, b: false}])
+            |> map(fn: (r) => ({r with c: r.a or r.b}))
+
+    testing.diff(want: want, got: got) |> yield()
+}

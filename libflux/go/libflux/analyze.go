@@ -51,10 +51,11 @@ type Options struct {
 }
 
 func NewOptions(ctx context.Context) Options {
-	features := []string{}
+	var features []string
 	features = addFlag(ctx, features, feature.VectorizeAddition())
 	features = addFlag(ctx, features, feature.VectorizedMap())
 	features = addFlag(ctx, features, feature.VectorizeOperators())
+	features = addFlag(ctx, features, feature.VectorizeLogicalOperators())
 	features = addFlag(ctx, features, feature.LabelPolymorphism())
 	return Options{Features: features}
 }

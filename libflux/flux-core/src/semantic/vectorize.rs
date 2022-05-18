@@ -6,7 +6,7 @@ use crate::{
     semantic::{
         nodes::{
             BinaryExpr, Block, Error, ErrorKind, Expression, FunctionExpr, IdentifierExpr,
-            MemberExpr, ObjectExpr, Package, Property, Result, ReturnStmt,
+            LogicalExpr, MemberExpr, ObjectExpr, Package, Property, Result, ReturnStmt,
         },
         types::{self, Function, Label, MonoType},
         AnalyzerConfig, Feature, Symbol,
@@ -108,6 +108,30 @@ impl Expression {
                     loc: binary.loc.clone(),
                     typ: MonoType::vector(binary.typ.clone()),
                     operator: binary.operator.clone(),
+                    left,
+                    right,
+                }))
+            }
+            Expression::Logical(expr) => {
+                if !env
+                    .config
+                    .features
+                    .contains(&Feature::VectorizeLogicalOperators)
+                {
+                    return Err(located(
+                        self.loc().clone(),
+                        ErrorKind::UnableToVectorize(
+                            "Vectorization of logical expressions is not enabled".into(),
+                        ),
+                    ));
+                }
+
+                let left = expr.left.vectorize(env)?;
+                let right = expr.right.vectorize(env)?;
+                Expression::Logical(Box::new(LogicalExpr {
+                    loc: expr.loc.clone(),
+                    typ: MonoType::vector(expr.typ.clone()),
+                    operator: expr.operator.clone(),
                     left,
                     right,
                 }))

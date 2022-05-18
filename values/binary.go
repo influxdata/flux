@@ -10,6 +10,7 @@ import (
 	"github.com/influxdata/flux/semantic"
 )
 
+//go:generate -command tmpl ../gotool.sh github.com/benbjohnson/tmpl
 //go:generate tmpl -data=@../array/binary.tmpldata -o binary.gen.go binary.gen.go.tmpl
 
 type BinaryFunction func(l, r Value) (Value, error)
@@ -71,9 +72,9 @@ func binaryVectorFuncNullCheck(fn BinaryVectorFunction) BinaryVectorFunction {
 // mark that it is valid to use the operator between those two types,
 // but the function will never be invoked so it can be nil.
 var binaryFuncLookup = map[BinaryFuncSignature]BinaryFunction{
-	//---------------
+	// ---------------
 	// Math Operators
-	//---------------
+	// ---------------
 	{Operator: ast.AdditionOperator, Left: semantic.Int, Right: semantic.Int}: func(lv, rv Value) (Value, error) {
 		l := lv.Int()
 		r := rv.Int()
@@ -194,9 +195,9 @@ var binaryFuncLookup = map[BinaryFuncSignature]BinaryFunction{
 		r := rv.Float()
 		return NewFloat(math.Pow(float64(l), float64(r))), nil
 	},
-	//---------------------
+	// ---------------------
 	// Comparison Operators
-	//---------------------
+	// ---------------------
 
 	// LessThanEqualOperator
 
