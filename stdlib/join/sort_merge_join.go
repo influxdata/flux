@@ -39,6 +39,7 @@ func (p *SortMergeJoinProcedureSpec) Kind() plan.ProcedureKind {
 
 func (p *SortMergeJoinProcedureSpec) Copy() plan.ProcedureSpec {
 	return &SortMergeJoinProcedureSpec{
+		On:     p.On,
 		As:     p.As,
 		Left:   p.Left,
 		Right:  p.Right,
