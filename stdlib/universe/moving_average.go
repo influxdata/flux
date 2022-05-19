@@ -1,16 +1,18 @@
 package universe
 
 import (
+	stdarrow "github.com/apache/arrow/go/v7/arrow"
+	"github.com/apache/arrow/go/v7/arrow/bitutil"
+	"github.com/apache/arrow/go/v7/arrow/memory"
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/array"
+	"github.com/influxdata/flux/arrow"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/execute/table"
 	"github.com/influxdata/flux/internal/errors"
-	"github.com/influxdata/flux/internal/feature"
-	"github.com/influxdata/flux/internal/moving_average"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/runtime"
-	"github.com/influxdata/flux/values"
 )
 
 const MovingAverageKind = "movingAverage"
@@ -37,6 +39,8 @@ func createMovingAverageOpSpec(args flux.Arguments, a *flux.Administration) (flu
 
 	if n, err := args.GetRequiredInt("n"); err != nil {
 		return nil, err
+	} else if n <= 0 {
+		return nil, errors.Newf(codes.Invalid, "cannot take moving average with a period of %v (must be greater than 0)", n)
 	} else {
 		spec.N = n
 	}
@@ -88,302 +92,321 @@ func createMovingAverageTransformation(id execute.DatasetID, mode execute.Accumu
 	if !ok {
 		return nil, nil, errors.Newf(codes.Internal, "invalid spec type %T", spec)
 	}
-
-	if feature.OptimizeMovingAverage().Enabled(a.Context()) {
-		return newMovingAverageTransformation2(id, s, a.Allocator())
-	}
-
-	cache := execute.NewTableBuilderCache(a.Allocator())
-	d := execute.NewDataset(id, mode, cache)
-	t := NewMovingAverageTransformation(d, cache, s)
-	return t, d, nil
+	return NewMovingAverageTransformation(id, s, a.Allocator())
 }
 
 type movingAverageTransformation struct {
-	execute.ExecutionNode
-	d     execute.Dataset
-	cache execute.TableBuilderCache
-
 	n int64
-
-	i             []int
-	sum           []interface{}
-	count         []int
-	window        [][]interface{}
-	periodReached []bool
-	lastVal       []interface{}
-	notEmpty      []bool
 }
 
-func NewMovingAverageTransformation(d execute.Dataset, cache execute.TableBuilderCache, spec *MovingAverageProcedureSpec) *movingAverageTransformation {
-	return &movingAverageTransformation{
-		d:     d,
-		cache: cache,
-		n:     spec.N,
+func NewMovingAverageTransformation(id execute.DatasetID, spec *MovingAverageProcedureSpec, mem memory.Allocator) (execute.Transformation, execute.Dataset, error) {
+	tr := &movingAverageTransformation{
+		n: spec.N,
 	}
+	return execute.NewNarrowStateTransformation(id, tr, mem)
 }
 
-func (t *movingAverageTransformation) RetractTable(id execute.DatasetID, key flux.GroupKey) error {
-	return t.d.RetractTable(key)
-}
-
-func (t *movingAverageTransformation) Process(id execute.DatasetID, tbl flux.Table) error {
-	builder, created := t.cache.TableBuilder(tbl.Key())
-	if !created {
-		return errors.Newf(codes.FailedPrecondition, "moving average found duplicate table with key: %v", tbl.Key())
-	}
-	if t.n <= 0 {
-		return errors.Newf(codes.Invalid, "cannot take moving average with a period of %v (must be greater than 0)", t.n)
-	}
-	cols := tbl.Cols()
-	valueIdx := -1
-	for j, c := range cols {
-		if c.Label == execute.DefaultValueColLabel {
-			if c.Type != flux.TInt && c.Type != flux.TUInt && c.Type != flux.TFloat {
-				return errors.Newf(codes.FailedPrecondition, "cannot take moving average of column %s (type %s)", c.Label, c.Type.String())
-			}
-			valueIdx = j
-			mac := c
-			mac.Type = flux.TFloat
-			_, err := builder.AddCol(mac)
-			if err != nil {
-				return err
-			}
-		} else {
-			_, err := builder.AddCol(c)
-			if err != nil {
-				return err
-			}
-		}
-	}
-	if valueIdx == -1 {
-		return errors.Newf(codes.FailedPrecondition, "cannot find _value column")
-	}
-
-	t.i = make([]int, len(cols))
-	t.sum = make([]interface{}, len(cols))
-	t.count = make([]int, len(cols))
-	t.window = make([][]interface{}, len(cols))
-	t.periodReached = make([]bool, len(cols))
-	t.lastVal = make([]interface{}, len(cols))
-	t.notEmpty = make([]bool, len(cols))
-
-	err := tbl.Do(func(cr flux.ColReader) error {
-		if cr.Len() == 0 {
-			return nil
-		}
-
-		for j, c := range cr.Cols() {
-			isValueCol := false
-			if valueIdx == j {
-				isValueCol = true
-			}
-			var err error
-			switch c.Type {
-			case flux.TBool:
-				err = t.passThrough(moving_average.NewArrayContainer(cr.Bools(j)), builder, j)
-			case flux.TInt:
-				err = t.doNumeric(moving_average.NewArrayContainer(cr.Ints(j)), builder, j, isValueCol)
-			case flux.TUInt:
-				err = t.doNumeric(moving_average.NewArrayContainer(cr.UInts(j)), builder, j, isValueCol)
-			case flux.TFloat:
-				err = t.doNumeric(moving_average.NewArrayContainer(cr.Floats(j)), builder, j, isValueCol)
-			case flux.TString:
-				err = t.passThrough(moving_average.NewArrayContainer(cr.Strings(j)), builder, j)
-			case flux.TTime:
-				err = t.passThroughTime(cr.Times(j), builder, j)
-			}
-
-			if err != nil {
-				return err
-			}
-		}
-		return nil
-	})
-
+func (m *movingAverageTransformation) Process(chunk table.Chunk, state interface{}, d *execute.TransportDataset, mem memory.Allocator) (interface{}, bool, error) {
+	s, _ := state.(*movingAverageState)
+	newState, err := m.processChunk(chunk, s, d, mem)
 	if err != nil {
-		return err
+		return nil, false, err
+	}
+	return newState, true, nil
+}
+
+func (m *movingAverageTransformation) processChunk(chunk table.Chunk, state *movingAverageState, d *execute.TransportDataset, mem memory.Allocator) (*movingAverageState, error) {
+	idx := chunk.Index(execute.DefaultValueColLabel)
+	if idx < 0 {
+		return nil, errors.Newf(codes.FailedPrecondition, "cannot find _value column")
 	}
 
-	for j := range tbl.Cols() {
-		if !t.periodReached[j] && t.notEmpty[j] {
-			if j != valueIdx {
-				if t.lastVal[j] == nil {
-					if err := builder.AppendNil(j); err != nil {
-						return err
-					}
-				} else {
-					if err := builder.AppendValue(j, values.New(t.lastVal[j])); err != nil {
-						return err
-					}
-				}
+	col := chunk.Col(idx)
+	if col.Type != flux.TInt && col.Type != flux.TUInt && col.Type != flux.TFloat {
+		return nil, errors.Newf(codes.FailedPrecondition, "cannot take moving average of column %s (type %s)", col.Label, col.Type.String())
+	} else if m.n <= 0 {
+		// Defensive code. This should already be forbidden by the argument parser.
+		return nil, errors.Newf(codes.Invalid, "cannot take moving average with a period of %v (must be greater than 0)", m.n)
+	}
+
+	if state == nil {
+		state = newMovingAverageState(m.n, col.Type, d, mem)
+	} else {
+		if state.inType != col.Type {
+			return nil, errors.Newf(codes.FailedPrecondition, "schema collision detected: column \"%s\" is both of type %s and %s", col.Label, col.Type, state.inType)
+		}
+	}
+
+	cols := chunk.Cols()
+	if col.Type != flux.TFloat {
+		// The schema is changing so we have to recreate the columns.
+		newCols := make([]flux.ColMeta, len(cols))
+		copy(newCols, cols)
+		newCols[idx].Type = flux.TFloat
+		cols = newCols
+	}
+
+	buffer := arrow.TableBuffer{
+		GroupKey: chunk.Key(),
+		Columns:  cols,
+		Values:   make([]array.Array, len(cols)),
+	}
+
+	n := int64(chunk.Len()) - state.needed
+	for i, col := range cols {
+		if i == idx {
+			continue
+		} else if n < 0 {
+			buffer.Values[i] = arrow.Empty(col.Type)
+			continue
+		}
+
+		arr := chunk.Values(i)
+		if n < int64(arr.Len()) {
+			buffer.Values[i] = arrow.Slice(arr, state.needed, int64(arr.Len()))
+		} else {
+			arr.Retain()
+			buffer.Values[i] = arr
+		}
+	}
+
+	b := array.NewFloatBuilder(mem)
+	b.Resize(int(n))
+	switch arr := chunk.Values(idx).(type) {
+	case *array.Float:
+		state.ProcessFloats(b, arr)
+	case *array.Int:
+		state.ProcessInts(b, arr)
+	case *array.Uint:
+		state.ProcessUints(b, arr)
+	}
+	buffer.Values[idx] = b.NewArray()
+
+	out := table.ChunkFromBuffer(buffer)
+	if err := d.Process(out); err != nil {
+		return nil, err
+	}
+
+	// We have not output a row.
+	// Store the chunk in case we need it.
+	if state.needed > 0 && chunk.Len() > 0 {
+		if state.last != nil {
+			state.last.Release()
+		}
+		chunk.Retain()
+		state.last = &chunk
+	} else if state.needed == 0 && state.last != nil {
+		state.last.Release()
+		state.last = nil
+	}
+	return state, nil
+}
+
+func (m *movingAverageTransformation) Close() error {
+	return nil
+}
+
+type movingAverageState struct {
+	data   []float64
+	mask   []byte
+	index  int
+	needed int64
+	inType flux.ColType
+	last   *table.Chunk
+	d      *execute.TransportDataset
+	mem    memory.Allocator
+}
+
+func newMovingAverageState(n int64, inType flux.ColType, d *execute.TransportDataset, mem memory.Allocator) *movingAverageState {
+	data := mem.Allocate(stdarrow.Float64Traits.BytesRequired(int(n)))
+	mask := mem.Allocate(int(bitutil.BytesForBits(n)))
+	return &movingAverageState{
+		data:   stdarrow.Float64Traits.CastFromBytes(data),
+		mask:   mask,
+		needed: n - 1,
+		inType: inType,
+		d:      d,
+		mem:    mem,
+	}
+}
+
+func (m *movingAverageState) ProcessFloats(b *array.FloatBuilder, arr *array.Float) {
+	for i, n := 0, arr.Len(); i < n; i++ {
+		if arr.IsNull(i) {
+			bitutil.ClearBit(m.mask, m.index)
+		} else {
+			m.data[m.index] = arr.Value(i)
+			bitutil.SetBit(m.mask, m.index)
+		}
+
+		m.index++
+		if m.index >= len(m.data) {
+			m.index = 0
+		}
+		if m.needed == 0 {
+			if v, ok := m.Compute(); ok {
+				b.Append(v)
 			} else {
-				average := *(t.sum[j].(*float64)) / float64(t.count[j])
-				if err := builder.AppendFloat(j, average); err != nil {
-					return err
-				}
+				b.AppendNull()
 			}
+		} else {
+			m.needed--
 		}
 	}
-
-	return nil
 }
 
-func (t *movingAverageTransformation) UpdateWatermark(id execute.DatasetID, mark execute.Time) error {
-	return t.d.UpdateWatermark(mark)
+func (m *movingAverageState) ProcessInts(b *array.FloatBuilder, arr *array.Int) {
+	for i, n := 0, arr.Len(); i < n; i++ {
+		if arr.IsNull(i) {
+			bitutil.ClearBit(m.mask, m.index)
+		} else {
+			m.data[m.index] = float64(arr.Value(i))
+			bitutil.SetBit(m.mask, m.index)
+		}
+
+		m.index++
+		if m.index >= len(m.data) {
+			m.index = 0
+		}
+		if m.needed == 0 {
+			if v, ok := m.Compute(); ok {
+				b.Append(v)
+			} else {
+				b.AppendNull()
+			}
+		} else {
+			m.needed--
+		}
+	}
 }
 
-func (t *movingAverageTransformation) UpdateProcessingTime(id execute.DatasetID, pt execute.Time) error {
-	return t.d.UpdateProcessingTime(pt)
+func (m *movingAverageState) ProcessUints(b *array.FloatBuilder, arr *array.Uint) {
+	for i, n := 0, arr.Len(); i < n; i++ {
+		if arr.IsNull(i) {
+			bitutil.ClearBit(m.mask, m.index)
+		} else {
+			m.data[m.index] = float64(arr.Value(i))
+			bitutil.SetBit(m.mask, m.index)
+		}
+
+		m.index++
+		if m.index >= len(m.data) {
+			m.index = 0
+		}
+		if m.needed == 0 {
+			if v, ok := m.Compute(); ok {
+				b.Append(v)
+			} else {
+				b.AppendNull()
+			}
+		} else {
+			m.needed--
+		}
+	}
 }
 
-func (t *movingAverageTransformation) Finish(id execute.DatasetID, err error) {
-	t.d.Finish(err)
+func (m *movingAverageState) Compute() (float64, bool) {
+	var (
+		sum float64
+		n   int64
+	)
+	for i, f := range m.data {
+		if bitutil.BitIsSet(m.mask, i) {
+			sum += f
+			n++
+		}
+	}
+	if n == 0 {
+		return 0, false
+	}
+	return sum / float64(n), true
 }
 
-func (t *movingAverageTransformation) passThrough(vs *moving_average.ArrayContainer, b execute.TableBuilder, bj int) error {
-	t.notEmpty[bj] = true
-	j := 0
-
-	for ; int64(t.i[bj]) < t.n && j < vs.Len(); t.i[bj]++ {
-		if vs.IsNull(j) {
-			t.lastVal[bj] = nil
-		} else {
-			t.lastVal[bj] = vs.OrigValue(j)
-		}
-		j++
+func (m *movingAverageState) forceValue() error {
+	if m.last == nil {
+		// No points at all so nothing to force.
+		return nil
 	}
 
-	if int64(t.i[bj]) == t.n && !t.periodReached[bj] {
-		if vs.IsNull(j - 1) {
-			if err := b.AppendNil(bj); err != nil {
-				return err
-			}
-		} else {
-			if err := b.AppendValue(bj, values.New(vs.OrigValue(j-1))); err != nil {
-				return err
-			}
-		}
-		t.periodReached[bj] = true
+	chunk := *m.last
+	defer chunk.Release()
+
+	idx := chunk.Index(execute.DefaultValueColLabel)
+	col := chunk.Col(idx)
+
+	cols := chunk.Cols()
+	if col.Type != flux.TFloat {
+		// The schema is changing so we have to recreate the columns.
+		newCols := make([]flux.ColMeta, len(cols))
+		copy(newCols, cols)
+		newCols[idx].Type = flux.TFloat
+		cols = newCols
 	}
 
-	for ; int64(t.i[bj]) >= t.n && j < vs.Len(); t.i[bj]++ {
-		if vs.IsNull(j) {
-			if err := b.AppendNil(bj); err != nil {
-				return err
+	buffer := arrow.TableBuffer{
+		GroupKey: chunk.Key(),
+		Columns:  cols,
+		Values:   make([]array.Array, len(cols)),
+	}
+	for i, col := range cols {
+		if i == idx {
+			b := array.NewFloatBuilder(m.mem)
+			b.Resize(1)
+			if v, ok := m.Compute(); ok {
+				b.Append(v)
+			} else {
+				b.AppendNull()
 			}
+			buffer.Values[i] = b.NewArray()
+			continue
+		}
+
+		b := arrow.NewBuilder(col.Type, m.mem)
+		b.Resize(1)
+		arr := chunk.Values(i)
+		if arr.IsNull(arr.Len() - 1) {
+			b.AppendNull()
 		} else {
-			if err := b.AppendValue(bj, values.New(vs.OrigValue(j))); err != nil {
-				return err
+			switch b := b.(type) {
+			case *array.IntBuilder:
+				arr := arr.(*array.Int)
+				b.Append(arr.Value(arr.Len() - 1))
+			case *array.UintBuilder:
+				arr := arr.(*array.Uint)
+				b.Append(arr.Value(arr.Len() - 1))
+			case *array.FloatBuilder:
+				arr := arr.(*array.Float)
+				b.Append(arr.Value(arr.Len() - 1))
+			case *array.StringBuilder:
+				arr := arr.(*array.String)
+				b.Append(arr.Value(arr.Len() - 1))
+			case *array.BooleanBuilder:
+				arr := arr.(*array.Boolean)
+				b.Append(arr.Value(arr.Len() - 1))
+			default:
+				return errors.Newf(codes.Internal, "unknown builder type: %T", b)
 			}
 		}
-		j++
+		buffer.Values[i] = b.NewArray()
 	}
-	return nil
+
+	out := table.ChunkFromBuffer(buffer)
+	return m.d.Process(out)
 }
 
-func (t *movingAverageTransformation) doNumeric(vs *moving_average.ArrayContainer, b execute.TableBuilder, bj int, doMovingAverage bool) error {
-	if !doMovingAverage {
-		return t.passThrough(vs, b, bj)
+func (m *movingAverageState) Close() (err error) {
+	if m.needed > 0 {
+		err = m.forceValue()
 	}
 
-	t.notEmpty[bj] = true
-
-	if t.window[bj] == nil {
-		t.window[bj] = make([]interface{}, t.n)
+	if m.data != nil {
+		buf := stdarrow.Float64Traits.CastToBytes(m.data)
+		m.mem.Free(buf)
+		m.data = nil
 	}
-	if t.sum[bj] == nil {
-		t.sum[bj] = new(float64)
+	if m.mask != nil {
+		m.mem.Free(m.mask)
+		m.mask = nil
 	}
-	sumPointer := &t.sum[bj]
-	sum := (*sumPointer).(*float64)
-
-	j := 0
-
-	for ; int64(t.i[bj]) < t.n-1 && j < vs.Len(); t.i[bj]++ {
-		if vs.IsValid(j) {
-			*sum += vs.Value(j).Float()
-			t.count[bj]++
-			t.window[bj][int64(t.i[bj])%t.n] = vs.Value(j).Float()
-		} else {
-			t.window[bj][int64(t.i[bj])%t.n] = nil
-		}
-		j++
-	}
-
-	for ; j < vs.Len(); j++ {
-		if vs.IsValid(j) {
-			*sum += vs.Value(j).Float()
-			t.count[bj]++
-			t.window[bj][int64(t.i[bj])%t.n] = vs.Value(j).Float()
-		} else {
-			t.window[bj][int64(t.i[bj])%t.n] = nil
-		}
-		t.i[bj]++
-
-		if int64(t.i[bj]) == t.n && !t.periodReached[bj] {
-			t.periodReached[bj] = true
-		}
-
-		average := 0.0
-		if t.count[bj] != 0 {
-			average = float64(*sum) / float64(t.count[bj])
-			if err := b.AppendFloat(bj, average); err != nil {
-				return err
-			}
-		} else {
-			if err := b.AppendNil(bj); err != nil {
-				return err
-			}
-		}
-
-		next := t.window[bj][int64(t.i[bj])%t.n]
-		if next != nil {
-			*sum -= next.(float64)
-			t.count[bj]--
-		}
-	}
-
-	return nil
-}
-
-func (t *movingAverageTransformation) passThroughTime(vs *array.Int, b execute.TableBuilder, bj int) error {
-	t.notEmpty[bj] = true
-	j := 0
-
-	for ; int64(t.i[bj]) < t.n && j < vs.Len(); t.i[bj]++ {
-		if vs.IsNull(j) {
-			t.lastVal[bj] = nil
-		} else {
-			t.lastVal[bj] = execute.Time(vs.Value(j))
-		}
-		j++
-	}
-
-	if int64(t.i[bj]) == t.n && !t.periodReached[bj] {
-		if vs.IsNull(j - 1) {
-			if err := b.AppendNil(bj); err != nil {
-				return err
-			}
-		} else {
-			if err := b.AppendTime(bj, execute.Time(vs.Value(j-1))); err != nil {
-				return err
-			}
-		}
-		t.periodReached[bj] = true
-	}
-
-	for ; int64(t.i[bj]) >= t.n && j < vs.Len(); t.i[bj]++ {
-		if vs.IsNull(j) {
-			if err := b.AppendNil(bj); err != nil {
-				return err
-			}
-		} else {
-			if err := b.AppendTime(bj, execute.Time(vs.Value(j))); err != nil {
-				return err
-			}
-		}
-		j++
-	}
-	return nil
+	return err
 }

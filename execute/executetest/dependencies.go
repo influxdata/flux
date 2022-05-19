@@ -35,8 +35,6 @@ var testFlags = map[string]interface{}{
 	"optimizeAggregateWindow":   true,
 	"narrowTransformationLimit": true,
 	"optimizeStateTracking":     true,
-	"optimizeMovingAverage":     true,
-	"optimizeCumulativeSum":     true,
 	"optimizeSetTransformation": true,
 }
 

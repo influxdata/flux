@@ -1,11 +1,14 @@
 package universe
 
 import (
+	"github.com/apache/arrow/go/v7/arrow/memory"
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/array"
+	"github.com/influxdata/flux/arrow"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/execute/table"
 	"github.com/influxdata/flux/internal/errors"
-	"github.com/influxdata/flux/internal/feature"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/runtime"
@@ -94,158 +97,150 @@ func createCumulativeSumTransformation(id execute.DatasetID, mode execute.Accumu
 	if !ok {
 		return nil, nil, errors.Newf(codes.Internal, "invalid spec type %T", spec)
 	}
-
-	if feature.OptimizeCumulativeSum().Enabled(a.Context()) {
-		return newCumulativeSumTransformation2(id, s, a.Allocator())
-	}
-
-	cache := execute.NewTableBuilderCache(a.Allocator())
-	d := execute.NewDataset(id, mode, cache)
-	t := NewCumulativeSumTransformation(d, cache, s)
-	return t, d, nil
+	return NewCumulativeSumTransformation(id, s, a.Allocator())
 }
 
 type cumulativeSumTransformation struct {
-	execute.ExecutionNode
-	d     execute.Dataset
-	cache execute.TableBuilderCache
-	spec  CumulativeSumProcedureSpec
+	columns []string
 }
 
-func NewCumulativeSumTransformation(d execute.Dataset, cache execute.TableBuilderCache, spec *CumulativeSumProcedureSpec) *cumulativeSumTransformation {
-	return &cumulativeSumTransformation{
-		d:     d,
-		cache: cache,
-		spec:  *spec,
+func NewCumulativeSumTransformation(id execute.DatasetID, spec *CumulativeSumProcedureSpec, mem memory.Allocator) (execute.Transformation, execute.Dataset, error) {
+	tr := &cumulativeSumTransformation{
+		columns: spec.Columns,
 	}
+	return execute.NewNarrowStateTransformation(id, tr, mem)
 }
 
-func (t *cumulativeSumTransformation) RetractTable(id execute.DatasetID, key flux.GroupKey) error {
-	return t.d.RetractTable(key)
+func (c *cumulativeSumTransformation) Process(chunk table.Chunk, state interface{}, d *execute.TransportDataset, mem memory.Allocator) (interface{}, bool, error) {
+	s, _ := state.(map[string]*cumulativeSumState)
+	if s == nil {
+		s = make(map[string]*cumulativeSumState)
+	}
+
+	if err := c.processChunk(chunk, s, d, mem); err != nil {
+		return nil, false, err
+	}
+	return s, true, nil
 }
 
-func (t *cumulativeSumTransformation) Process(id execute.DatasetID, tbl flux.Table) error {
-	builder, created := t.cache.TableBuilder(tbl.Key())
-	if !created {
-		return errors.Newf(codes.FailedPrecondition, "cumulative sum found duplicate table with key: %v", tbl.Key())
-	}
-	if err := execute.AddTableCols(tbl, builder); err != nil {
-		return err
+func (c *cumulativeSumTransformation) processChunk(chunk table.Chunk, state map[string]*cumulativeSumState, d *execute.TransportDataset, mem memory.Allocator) error {
+	buffer := arrow.TableBuffer{
+		GroupKey: chunk.Key(),
+		Columns:  chunk.Cols(),
+		Values:   make([]array.Array, chunk.NCols()),
 	}
 
-	cols := tbl.Cols()
-	sumers := make([]*cumulativeSum, len(cols))
-	for j, c := range cols {
-		for _, label := range t.spec.Columns {
-			if c.Label == label {
-				sumers[j] = &cumulativeSum{}
-				break
+	for j, col := range chunk.Cols() {
+		arr := chunk.Values(j)
+		if !execute.ContainsStr(c.columns, col.Label) {
+			arr.Retain()
+			buffer.Values[j] = arr
+			continue
+		}
+
+		sumer, ok := state[col.Label]
+		if !ok {
+			sumer = newCumulativeSumState(col.Type)
+			if sumer == nil {
+				arr.Retain()
+				buffer.Values[j] = arr
+				continue
+			}
+			state[col.Label] = sumer
+		} else if sumer.inType != col.Type {
+			return errors.Newf(codes.FailedPrecondition, "schema collision detected: column \"%s\" is both of type %s and %s", col.Label, col.Type, sumer.inType)
+		}
+
+		buffer.Values[j] = sumer.Sum(arr, mem)
+		if execute.ContainsStr(c.columns, col.Label) {
+			if _, ok := state[col.Label]; !ok {
+				state[col.Label] = &cumulativeSumState{}
 			}
 		}
 	}
-	return tbl.Do(func(cr flux.ColReader) error {
-		l := cr.Len()
-		for j, c := range cols {
-			switch c.Type {
-			case flux.TBool:
-				for i := 0; i < l; i++ {
-					if err := builder.AppendBool(j, cr.Bools(j).Value(i)); err != nil {
-						return err
-					}
-				}
-			case flux.TInt:
-				if sumers[j] != nil {
-					for i := 0; i < l; i++ {
-						if vs := cr.Ints(j); vs.IsValid(i) {
-							sumers[j].sumInt(vs.Value(i))
-						}
 
-						if err := builder.AppendInt(j, sumers[j].intVal); err != nil {
-							return err
-						}
-					}
-				} else {
-					if err := builder.AppendInts(j, cr.Ints(j)); err != nil {
-						return err
-					}
-				}
-			case flux.TUInt:
-				if sumers[j] != nil {
-					for i := 0; i < l; i++ {
-						if vs := cr.UInts(j); vs.IsValid(i) {
-							sumers[j].sumUInt(vs.Value(i))
-						}
+	out := table.ChunkFromBuffer(buffer)
+	return d.Process(out)
+}
 
-						if err := builder.AppendUInt(j, sumers[j].uintVal); err != nil {
-							return err
-						}
-					}
-				} else {
-					if err := builder.AppendUInts(j, cr.UInts(j)); err != nil {
-						return err
-					}
-				}
-			case flux.TFloat:
-				if sumers[j] != nil {
-					for i := 0; i < l; i++ {
-						if vs := cr.Floats(j); vs.IsValid(i) {
-							sumers[j].sumFloat(vs.Value(i))
-						}
+func (c *cumulativeSumTransformation) Close() error {
+	return nil
+}
 
-						if err := builder.AppendFloat(j, sumers[j].floatVal); err != nil {
-							return err
-						}
-					}
-				} else {
-					if err := builder.AppendFloats(j, cr.Floats(j)); err != nil {
-						return err
-					}
-				}
-			case flux.TString:
-				for i := 0; i < l; i++ {
-					if err := builder.AppendString(j, cr.Strings(j).Value(i)); err != nil {
-						return err
-					}
-				}
-			case flux.TTime:
-				for i := 0; i < l; i++ {
-					if err := builder.AppendTime(j, execute.Time(cr.Times(j).Value(i))); err != nil {
-						return err
-					}
-				}
-			}
-		}
+type cumulativeSum interface {
+	Sum(arr array.Array, mem memory.Allocator) array.Array
+}
+
+type cumulativeSumState struct {
+	inType flux.ColType
+	cumulativeSum
+}
+
+func newCumulativeSumState(inType flux.ColType) *cumulativeSumState {
+	state := &cumulativeSumState{inType: inType}
+	switch inType {
+	case flux.TFloat:
+		state.cumulativeSum = &cumulativeSumFloat{}
+	case flux.TInt:
+		state.cumulativeSum = &cumulativeSumInt{}
+	case flux.TUInt:
+		state.cumulativeSum = &cumulativeSumUint{}
+	default:
 		return nil
-	})
+	}
+	return state
 }
 
-func (t *cumulativeSumTransformation) UpdateWatermark(id execute.DatasetID, mark execute.Time) error {
-	return t.d.UpdateWatermark(mark)
-}
-func (t *cumulativeSumTransformation) UpdateProcessingTime(id execute.DatasetID, pt execute.Time) error {
-	return t.d.UpdateProcessingTime(pt)
-}
-func (t *cumulativeSumTransformation) Finish(id execute.DatasetID, err error) {
-	t.d.Finish(err)
+type cumulativeSumFloat struct {
+	sum float64
 }
 
-type cumulativeSum struct {
-	intVal   int64
-	uintVal  uint64
-	floatVal float64
+func (c *cumulativeSumFloat) Sum(arr array.Array, mem memory.Allocator) array.Array {
+	b := array.NewFloatBuilder(mem)
+	b.Resize(arr.Len())
+
+	vs := arr.(*array.Float)
+	for i, n := 0, vs.Len(); i < n; i++ {
+		if vs.IsValid(i) {
+			c.sum += vs.Value(i)
+		}
+		b.Append(c.sum)
+	}
+	return b.NewArray()
 }
 
-func (s *cumulativeSum) sumInt(val int64) int64 {
-	s.intVal += val
-	return s.intVal
+type cumulativeSumInt struct {
+	sum int64
 }
 
-func (s *cumulativeSum) sumUInt(val uint64) uint64 {
-	s.uintVal += val
-	return s.uintVal
+func (c *cumulativeSumInt) Sum(arr array.Array, mem memory.Allocator) array.Array {
+	b := array.NewIntBuilder(mem)
+	b.Resize(arr.Len())
+
+	vs := arr.(*array.Int)
+	for i, n := 0, vs.Len(); i < n; i++ {
+		if vs.IsValid(i) {
+			c.sum += vs.Value(i)
+		}
+		b.Append(c.sum)
+	}
+	return b.NewArray()
 }
 
-func (s *cumulativeSum) sumFloat(val float64) float64 {
-	s.floatVal += val
-	return s.floatVal
+type cumulativeSumUint struct {
+	sum uint64
+}
+
+func (c *cumulativeSumUint) Sum(arr array.Array, mem memory.Allocator) array.Array {
+	b := array.NewUintBuilder(mem)
+	b.Resize(arr.Len())
+
+	vs := arr.(*array.Uint)
+	for i, n := 0, vs.Len(); i < n; i++ {
+		if vs.IsValid(i) {
+			c.sum += vs.Value(i)
+		}
+		b.Append(c.sum)
+	}
+	return b.NewArray()
 }
