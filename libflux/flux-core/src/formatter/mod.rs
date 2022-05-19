@@ -429,7 +429,10 @@ impl<'doc> Formatter<'doc> {
                 // for almost all cases.
                 // Possibly this arm is therefore only concerned with formatting
                 // signatures/typing?
-                todo!("dynamic formatter")
+                docs![
+                    arena,
+                    "dynamic", // XXX: can we get this from the DynamicType object?
+                ]
             }
             ast::MonoType::Record(n) => {
                 let multiline = n.properties.len() > MULTILINE;
