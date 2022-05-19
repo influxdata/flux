@@ -133,4 +133,4 @@ package json
 // ## Metadata
 // tags: type-conversions
 //
-builtin parse : (data: bytes) => A
+builtin parse : (data: bytes) => dynamic

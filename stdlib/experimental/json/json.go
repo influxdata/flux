@@ -55,7 +55,7 @@ func toValue(i interface{}) (values.Value, error) {
 		return values.NewFloat(t), nil
 	case []interface{}:
 		vals := make([]values.Value, len(t))
-		var elemTyp semantic.MonoType
+		var elemTyp semantic.MonoType = semantic.NewDynamicType()
 		for i, v := range t {
 			val, err := toValue(v)
 			if err != nil {
@@ -64,9 +64,11 @@ func toValue(i interface{}) (values.Value, error) {
 			if elemTyp.Nature() == semantic.Invalid {
 				elemTyp = val.Type()
 			}
-			if !val.Type().Equal(elemTyp) {
-				return nil, errors.New(codes.Invalid, "array values must all be the same type")
-			}
+			// XXX: could be possible to retain this check, starting the array
+			// more specialized then generalizing as Dynamic if we hit this case.
+			//if !val.Type().Equal(elemTyp) {
+			//	return nil, errors.New(codes.Invalid, "array values must all be the same type")
+			//}
 			vals[i] = val
 		}
 		return values.NewArrayWithBacking(semantic.NewArrayType(elemTyp), vals), nil
