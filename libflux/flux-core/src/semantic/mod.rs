@@ -599,10 +599,12 @@ impl<'env, I: import::Importer> Analyzer<'env, I> {
         ) {
             Ok(()) => {
                 let env = self.env.exit_scope();
-                PackageExports::try_from(env.values).unwrap_or_else(|err| {
-                    errors.extend(err);
-                    PackageExports::default()
-                })
+                PackageExports::try_from(env.values.into_iter().collect::<Vec<_>>()).unwrap_or_else(
+                    |err| {
+                        errors.extend(err);
+                        PackageExports::default()
+                    },
+                )
             }
             Err(err) => {
                 self.env.exit_scope();

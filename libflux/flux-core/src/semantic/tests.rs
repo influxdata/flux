@@ -3559,7 +3559,7 @@ fn copy_bindings_from_other_env() {
             external: None,
             parent: Some(env.clone().into()),
             readwrite: true,
-            values: maplit::hashmap!(
+            values: indexmap::indexmap!(
                 b => PolyType {
                     vars: Vec::new(),
                     cons: TvarKinds::new(),
@@ -3571,7 +3571,6 @@ fn copy_bindings_from_other_env() {
                     expr: MonoType::BOOL,
                 }
             )
-            .into()
         }
     );
 }
