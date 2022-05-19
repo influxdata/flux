@@ -131,10 +131,15 @@ pub enum WarningKind {
     UnusedSymbol(String),
 }
 
+/// `PackageEntry` contains the information for one exported item of a package
 #[derive(Debug, Clone, PartialEq)]
-struct PackageEntry {
-    symbol: Symbol,
-    typ: PolyType,
+pub struct PackageEntry {
+    /// The globally unique `Symbol` representing this item
+    pub symbol: Symbol,
+    /// The type of the item
+    pub typ: PolyType,
+    /// The comments attached to this item
+    pub comments: Vec<String>,
 }
 
 /// An environment of values that are available outside of a package
@@ -163,30 +168,20 @@ impl Default for PackageExports {
 impl TryFrom<PolyTypeHashMap<Symbol>> for PackageExports {
     type Error = Errors<Error>;
     fn try_from(values: PolyTypeHashMap<Symbol>) -> Result<Self, Errors<Error>> {
-        Ok(PackageExports {
-            typ: build_polytype(
-                values
-                    .iter_by(|l, r| l.name().cmp(r.name()))
-                    .map(|(k, v)| (k.clone(), v.clone())),
-            )?,
-            values: values
-                .into_iter_by(|l, r| l.name().cmp(r.name()))
-                .map(|(symbol, typ)| (symbol.to_string(), PackageEntry { symbol, typ }))
-                .collect(),
-        })
+        PackageExports::new_with_iter(
+            values
+                .iter_by(|l, r| l.name().cmp(r.name()))
+                .map(|(k, v)| (k.clone(), v.clone()))
+                .collect::<Vec<_>>(),
+            Default::default(),
+        )
     }
 }
 
 impl TryFrom<Vec<(Symbol, PolyType)>> for PackageExports {
     type Error = Errors<Error>;
     fn try_from(values: Vec<(Symbol, PolyType)>) -> Result<Self, Errors<Error>> {
-        Ok(PackageExports {
-            typ: build_polytype(values.iter().cloned())?,
-            values: values
-                .into_iter()
-                .map(|(symbol, typ)| (symbol.to_string(), PackageEntry { symbol, typ }))
-                .collect(),
-        })
+        PackageExports::new_with_iter(values.iter().cloned(), Default::default())
     }
 }
 
@@ -194,6 +189,31 @@ impl PackageExports {
     /// Returns an empty environment
     pub fn new() -> Self {
         Self::default()
+    }
+
+    fn new_with_iter(
+        values: impl IntoIterator<Item = (Symbol, PolyType)> + Clone,
+        package_info: convert::PackageInfo,
+    ) -> Result<Self, Errors<Error>> {
+        Ok(PackageExports {
+            typ: build_polytype(values.clone())?,
+            values: values
+                .into_iter()
+                .map(|(symbol, typ)| {
+                    (
+                        symbol.to_string(),
+                        PackageEntry {
+                            comments: package_info
+                                .get(&symbol)
+                                .map(|i| i.comments.clone())
+                                .unwrap_or_default(),
+                            symbol,
+                            typ,
+                        },
+                    )
+                })
+                .collect(),
+        })
     }
 
     /// Returns the type representing this package
@@ -208,6 +228,7 @@ impl PackageExports {
             PackageEntry {
                 symbol: name,
                 typ: t,
+                comments: Vec::new(),
             },
         );
         self.typ = build_polytype(
@@ -227,6 +248,11 @@ impl PackageExports {
     /// Check whether a `Symbol` `k` identifier is in the environment.
     pub fn lookup_symbol(&self, k: &str) -> Option<&Symbol> {
         self.values.get(k).map(|v| &v.symbol)
+    }
+
+    /// Retrieves the `PackageEntry` for `k`
+    pub fn get_entry(&self, k: &str) -> Option<&PackageEntry> {
+        self.values.get(k)
     }
 
     /// Copy all the variable bindings from another environment to the current environment.
@@ -576,13 +602,15 @@ impl<'env, I: import::Importer> Analyzer<'env, I> {
             errors.extend(err.into_iter().map(Error::from));
         }
 
-        let mut sem_pkg = {
+        let (mut sem_pkg, package_info) = {
             let mut converter = convert::Converter::with_env(sub, &self.env);
             let sem_pkg = converter.convert_package(ast_pkg);
-            if let Err(err) = converter.finish(()) {
+
+            let package_info = converter.take_package_info();
+            if let Err(err) = converter.finish() {
                 errors.extend(err.into_iter().map(Error::from));
             }
-            sem_pkg
+            (sem_pkg, package_info)
         };
 
         if let Err(err) = check::check(&sem_pkg) {
@@ -599,12 +627,14 @@ impl<'env, I: import::Importer> Analyzer<'env, I> {
         ) {
             Ok(()) => {
                 let env = self.env.exit_scope();
-                PackageExports::try_from(env.values.into_iter().collect::<Vec<_>>()).unwrap_or_else(
-                    |err| {
-                        errors.extend(err);
-                        PackageExports::default()
-                    },
+                PackageExports::new_with_iter(
+                    env.values.into_iter().collect::<Vec<_>>(),
+                    package_info,
                 )
+                .unwrap_or_else(|err| {
+                    errors.extend(err);
+                    PackageExports::default()
+                })
             }
             Err(err) => {
                 self.env.exit_scope();

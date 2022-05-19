@@ -1,7 +1,11 @@
 //! Various conversions from AST nodes to their associated
 //! types in the semantic graph.
 
-use std::{collections::BTreeMap, fmt, sync::Arc};
+use std::{
+    collections::{BTreeMap, HashMap},
+    fmt,
+    sync::Arc,
+};
 
 use codespan_reporting::diagnostic;
 use serde::{Serialize, Serializer};
@@ -75,7 +79,8 @@ pub fn convert_package(
 ) -> Result<Package, Errors<Error>> {
     let mut converter = Converter::with_env(sub, env);
     let r = converter.convert_package(pkg);
-    converter.finish(r)
+    converter.finish()?;
+    Ok(r)
 }
 
 /// Converts a [type expression] in the AST into a [`PolyType`].
@@ -88,7 +93,8 @@ pub fn convert_polytype(
 ) -> Result<types::PolyType, Errors<Error>> {
     let mut converter = Converter::new(sub);
     let r = converter.convert_polytype(type_expression);
-    converter.finish(r)
+    converter.finish()?;
+    Ok(r)
 }
 
 #[cfg(test)]
@@ -99,7 +105,8 @@ pub(crate) fn convert_monotype(
 ) -> Result<MonoType, Errors<Error>> {
     let mut converter = Converter::new(sub);
     let r = converter.convert_monotype(&ty, tvars);
-    converter.finish(r)
+    converter.finish()?;
+    Ok(r)
 }
 
 #[allow(missing_docs)]
@@ -248,9 +255,19 @@ impl SymbolStack {
     }
 }
 
+#[allow(missing_docs)]
+#[derive(Debug)]
+pub struct SymbolInfo {
+    pub comments: Vec<String>,
+}
+
+#[allow(missing_docs)]
+pub type PackageInfo = HashMap<Symbol, SymbolInfo>;
+
 #[derive(Debug, Default)]
 struct Symbols<'a> {
     symbols: SymbolStack,
+    package_info: PackageInfo,
     local_labels: BTreeMap<String, Symbol>,
     env: Option<&'a Environment<'a>>,
 }
@@ -259,13 +276,21 @@ impl<'a> Symbols<'a> {
     fn with_env(env: &'a Environment) -> Self {
         Symbols {
             env: Some(env),
+            package_info: Default::default(),
             local_labels: Default::default(),
             symbols: SymbolStack::default(),
         }
     }
 
-    fn insert(&mut self, package: Option<&str>, name: &str) -> Symbol {
+    fn insert(&mut self, package: Option<&str>, name: &str, comments: &[ast::Comment]) -> Symbol {
         let symbol = self.symbols.insert(package, name);
+
+        let symbol_info = SymbolInfo {
+            comments: comments.iter().map(|c| c.text.clone()).collect(),
+        };
+
+        self.package_info.insert(symbol.clone(), symbol_info);
+
         if package.is_none() && !self.local_labels.contains_key(&symbol[..]) {
             self.local_labels.insert(symbol.to_string(), symbol.clone());
         }
@@ -328,12 +353,28 @@ impl<'a> Converter<'a> {
         }
     }
 
-    pub(crate) fn finish<R>(self, r: R) -> Result<R, Errors<Error>> {
+    pub(crate) fn finish(self) -> Result<(), Errors<Error>> {
         if self.errors.has_errors() {
             Err(self.errors)
         } else {
-            Ok(r)
+            Ok(())
         }
+    }
+
+    pub(crate) fn take_package_info(&mut self) -> PackageInfo {
+        std::mem::take(&mut self.symbols.package_info)
+    }
+
+    fn define_symbol(
+        &mut self,
+        package: Option<&str>,
+        name: &str,
+        comments: &[ast::Comment],
+        _base: &ast::BaseNode,
+    ) -> Symbol {
+        let name = self.symbols.insert(package, name, comments);
+
+        name
     }
 
     pub(crate) fn convert_package(&mut self, pkg: &ast::Package) -> Package {
@@ -394,10 +435,10 @@ impl<'a> Converter<'a> {
         let (import_symbol, alias) = match &imp.alias {
             None => {
                 let name = path.rsplit_once('/').map_or(&path[..], |t| t.1);
-                (self.symbols.insert(None, name), None)
+                (self.define_symbol(None, name, &[], &imp.base), None)
             }
             Some(id) => {
-                let id = self.define_identifier(None, id);
+                let id = self.define_identifier(None, id, &imp.base.comments);
                 (id.name.clone(), Some(id))
             }
         };
@@ -457,7 +498,7 @@ impl<'a> Converter<'a> {
     fn convert_builtin_statement(&mut self, package: &str, stmt: &ast::BuiltinStmt) -> BuiltinStmt {
         BuiltinStmt {
             loc: stmt.base.location.clone(),
-            id: self.define_identifier(Some(package), &stmt.id),
+            id: self.define_identifier(Some(package), &stmt.id, &stmt.base.comments),
             typ_expr: self.convert_polytype(&stmt.ty),
         }
     }
@@ -686,7 +727,7 @@ impl<'a> Converter<'a> {
     ) -> VariableAssgn {
         let expr = self.convert_expression(&stmt.init);
         VariableAssgn::new(
-            self.define_identifier(package, &stmt.id),
+            self.define_identifier(package, &stmt.id, &stmt.id.base.comments),
             expr,
             stmt.base.location.clone(),
         )
@@ -847,7 +888,7 @@ impl<'a> Converter<'a> {
                     continue;
                 }
             };
-            let key = self.define_identifier(None, id);
+            let key = self.define_identifier(None, id, &id.base.comments);
 
             let (is_pipe, default) = match default {
                 Default::Expr(expr) => (false, Some(expr)),
@@ -1159,8 +1200,13 @@ impl<'a> Converter<'a> {
         }
     }
 
-    fn define_identifier(&mut self, package: Option<&str>, id: &ast::Identifier) -> Identifier {
-        let name = self.symbols.insert(package, &id.name);
+    fn define_identifier(
+        &mut self,
+        package: Option<&str>,
+        id: &ast::Identifier,
+        comments: &[ast::Comment],
+    ) -> Identifier {
+        let name = self.define_symbol(package, &id.name, comments, &id.base);
         Identifier {
             loc: id.base.location.clone(),
             name,
@@ -1313,8 +1359,8 @@ mod tests {
     fn test_convert(pkg: ast::Package) -> Result<Package, Errors<Error>> {
         let mut sub = sub::Substitution::default();
         let mut converter = Converter::new(&mut sub);
-        let r = converter.convert_package(&pkg);
-        let mut pkg = converter.finish(r)?;
+        let mut pkg = converter.convert_package(&pkg);
+        converter.finish()?;
 
         // We don't want to specifc the exact locations for each node in the tests
         walk_mut(
