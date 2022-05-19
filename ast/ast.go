@@ -130,6 +130,7 @@ func (*TvarType) node()       {}
 func (*ArrayType) node()      {}
 func (*StreamType) node()     {}
 func (*DictType) node()       {}
+func (*DynamicType) node()    {}
 func (*RecordType) node()     {}
 func (*FunctionType) node()   {}
 func (*PropertyType) node()   {}
@@ -244,6 +245,7 @@ func (TvarType) monotype()     {}
 func (ArrayType) monotype()    {}
 func (StreamType) monotype()   {}
 func (DictType) monotype()     {}
+func (DynamicType) monotype()  {}
 func (RecordType) monotype()   {}
 func (FunctionType) monotype() {}
 
@@ -347,6 +349,17 @@ func (c *DictType) Copy() Node {
 	nc.KeyType = c.KeyType.Copy().(MonoType)
 	nc.ValueType = c.ValueType.Copy().(MonoType)
 	return nc
+}
+
+type DynamicType struct {
+	BaseNode
+}
+
+func (DynamicType) Type() string {
+	return "DynamicType"
+}
+func (c *DynamicType) Copy() Node {
+	panic("TODO: DynamicType.Copy")
 }
 
 type RecordType struct {
