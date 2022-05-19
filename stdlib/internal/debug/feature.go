@@ -61,7 +61,7 @@ func SetFeature(ctx context.Context, args interpreter.Arguments) (values.Value, 
 
 	flag, ok := feature.ByKey(key)
 	if !ok {
-		return values.Null, nil
+		return nil, errors.New(codes.Invalid, "flag does not exist")
 	}
 
 	flagger := featurepkg.GetFlagger(ctx)
