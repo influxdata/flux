@@ -13,5 +13,5 @@ pub fn compile(source: &str) -> nodes::Package {
         package: "main".to_string(),
         files: vec![file],
     };
-    convert::convert_package(&ast_pkg, &Default::default()).unwrap()
+    convert::convert_package(&ast_pkg, &Default::default(), &Default::default()).unwrap()
 }

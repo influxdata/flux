@@ -731,7 +731,7 @@ mod tests {
         if let Err(err) = ast::check::check(ast::walk::Node::TypeExpression(&typ_expr)) {
             panic!("TypeExpression parsing failed for {}. {:?}", expr, err);
         }
-        let want = convert_polytype(&typ_expr).unwrap();
+        let want = convert_polytype(&typ_expr, &Default::default()).unwrap();
 
         let mut builder = flatbuffers::FlatBufferBuilder::new();
         let buf = serialize(&mut builder, want.clone(), build_polytype);
@@ -746,14 +746,14 @@ mod tests {
         if let Err(err) = ast::check::check(ast::walk::Node::TypeExpression(&typ_expr)) {
             panic!("TypeExpression parsing failed for bool. {:?}", err);
         }
-        let a = convert_polytype(&typ_expr).unwrap();
+        let a = convert_polytype(&typ_expr, &Default::default()).unwrap();
 
         let mut p = parser::Parser::new("time");
         let typ_expr = p.parse_type_expression();
         if let Err(err) = ast::check::check(ast::walk::Node::TypeExpression(&typ_expr)) {
             panic!("TypeExpression parsing failed for time. {:?}", err);
         }
-        let b = convert_polytype(&typ_expr).unwrap();
+        let b = convert_polytype(&typ_expr, &Default::default()).unwrap();
 
         let want: PackageExports = vec![
             (Symbol::from("a"), a.clone()),
