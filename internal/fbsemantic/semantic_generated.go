@@ -4239,8 +4239,29 @@ func (rcv *LogicalExpression) Right(obj *flatbuffers.Table) bool {
 	return false
 }
 
+func (rcv *LogicalExpression) TypType() MonoType {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(16))
+	if o != 0 {
+		return MonoType(rcv._tab.GetByte(o + rcv._tab.Pos))
+	}
+	return 0
+}
+
+func (rcv *LogicalExpression) MutateTypType(n MonoType) bool {
+	return rcv._tab.MutateByteSlot(16, byte(n))
+}
+
+func (rcv *LogicalExpression) Typ(obj *flatbuffers.Table) bool {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(18))
+	if o != 0 {
+		rcv._tab.Union(obj, o)
+		return true
+	}
+	return false
+}
+
 func LogicalExpressionStart(builder *flatbuffers.Builder) {
-	builder.StartObject(6)
+	builder.StartObject(8)
 }
 func LogicalExpressionAddLoc(builder *flatbuffers.Builder, loc flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(0, flatbuffers.UOffsetT(loc), 0)
@@ -4259,6 +4280,12 @@ func LogicalExpressionAddRightType(builder *flatbuffers.Builder, rightType Expre
 }
 func LogicalExpressionAddRight(builder *flatbuffers.Builder, right flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(5, flatbuffers.UOffsetT(right), 0)
+}
+func LogicalExpressionAddTypType(builder *flatbuffers.Builder, typType MonoType) {
+	builder.PrependByteSlot(6, byte(typType), 0)
+}
+func LogicalExpressionAddTyp(builder *flatbuffers.Builder, typ flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(7, flatbuffers.UOffsetT(typ), 0)
 }
 func LogicalExpressionEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
 	return builder.EndObject()

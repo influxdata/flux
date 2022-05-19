@@ -619,6 +619,15 @@ func compile(n semantic.Node, subst semantic.Substitutor) (Evaluator, error) {
 		if err != nil {
 			return nil, err
 		}
+
+		if l.Type().Nature() == semantic.Vector && r.Type().Nature() == semantic.Vector {
+			return &logicalVectorEvaluator{
+				operator: n.Operator,
+				left:     l,
+				right:    r,
+			}, nil
+		}
+
 		return &logicalEvaluator{
 			operator: n.Operator,
 			left:     l,

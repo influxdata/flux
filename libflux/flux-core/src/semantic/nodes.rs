@@ -253,7 +253,7 @@ impl Expression {
             Expression::Array(e) => e.typ.clone(),
             Expression::Dict(e) => e.typ.clone(),
             Expression::Function(e) => e.typ.clone(),
-            Expression::Logical(_) => MonoType::BOOL,
+            Expression::Logical(e) => e.typ.clone(),
             Expression::Object(e) => e.typ.clone(),
             Expression::Member(e) => e.typ.clone(),
             Expression::Index(e) => e.typ.clone(),
@@ -1409,6 +1409,8 @@ impl ConditionalExpr {
 #[allow(missing_docs)]
 pub struct LogicalExpr {
     pub loc: ast::SourceLocation,
+    #[derivative(PartialEq = "ignore")]
+    pub typ: MonoType,
     pub operator: ast::LogicalOperator,
     pub left: Expression,
     pub right: Expression,

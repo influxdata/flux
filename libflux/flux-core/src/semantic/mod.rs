@@ -407,6 +407,8 @@ pub enum Feature {
     VectorizeAddition,
     /// Enables vectorization of all operators
     VectorizeOperators,
+    /// Enables vectorization of logical operators
+    VectorizeLogicalOperators,
     /// Enables vectorization
     VectorizedMap,
 

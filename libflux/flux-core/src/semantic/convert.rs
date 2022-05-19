@@ -1046,6 +1046,7 @@ impl<'a> Converter<'a> {
         let right = self.convert_expression(&expr.right);
         LogicalExpr {
             loc: expr.base.location.clone(),
+            typ: MonoType::BOOL,
             operator: expr.operator.clone(),
             left,
             right,

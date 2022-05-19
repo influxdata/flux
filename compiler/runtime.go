@@ -7,6 +7,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/influxdata/flux/array"
 	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/internal/errors"
@@ -301,7 +302,7 @@ func (e *logicalEvaluator) Eval(ctx context.Context, scope Scope) (values.Value,
 	}
 	defer l.Release()
 	if typ := l.Type().Nature(); !l.IsNull() && typ != semantic.Bool {
-		return nil, errors.Newf(codes.Invalid, "cannot use operand of type %s with logical %s; exected boolean", typ, e.operator)
+		return nil, errors.Newf(codes.Invalid, "cannot use operand of type %s with logical %s; expected boolean", typ, e.operator)
 	}
 
 	switch e.operator {
@@ -326,6 +327,61 @@ func (e *logicalEvaluator) Eval(ctx context.Context, scope Scope) (values.Value,
 	}
 
 	return r, nil
+}
+
+type logicalVectorEvaluator struct {
+	operator    ast.LogicalOperatorKind
+	left, right Evaluator
+}
+
+func (e *logicalVectorEvaluator) Type() semantic.MonoType {
+	return semantic.BasicBool
+}
+
+func (e *logicalVectorEvaluator) Eval(ctx context.Context, scope Scope) (values.Value, error) {
+	l, err := e.left.Eval(ctx, scope)
+	if err != nil {
+		return nil, err
+	}
+	defer l.Release()
+
+	if typ := l.Type().Nature(); typ != semantic.Vector {
+		return nil, errors.Newf(codes.Invalid, "cannot use vectorized %s operation on non-vector %s", e.operator, typ)
+	} else if elemType := l.Vector().ElementType().Nature(); elemType != semantic.Bool {
+		return nil, errors.Newf(codes.Invalid, "cannot use operand of type %s with logical %s; expected boolean", elemType, e.operator)
+	}
+	lv := l.Vector().Arr().(*array.Boolean)
+
+	r, err := e.right.Eval(ctx, scope)
+	if err != nil {
+		return nil, err
+	}
+
+	if typ := r.Type().Nature(); typ != semantic.Vector {
+		return nil, errors.Newf(codes.Invalid, "cannot use vectorized %s operation on non-vector %s", e.operator, typ)
+	} else if elemType := r.Vector().ElementType().Nature(); elemType != semantic.Bool {
+		return nil, errors.Newf(codes.Invalid, "cannot use operand of type %s with logical %s; expected boolean", elemType, e.operator)
+	}
+	rv := r.Vector().Arr().(*array.Boolean)
+
+	mem := memory.GetAllocator(ctx)
+
+	switch e.operator {
+	case ast.AndOperator:
+		res, err := array.And(lv, rv, mem)
+		if err != nil {
+			return nil, err
+		}
+		return values.NewVectorValue(res, semantic.BasicBool), nil
+	case ast.OrOperator:
+		res, err := array.Or(lv, rv, mem)
+		if err != nil {
+			return nil, err
+		}
+		return values.NewVectorValue(res, semantic.BasicBool), nil
+	default:
+		panic(errors.Newf(codes.Internal, "unknown logical operator %v", e.operator))
+	}
 }
 
 type conditionalEvaluator struct {

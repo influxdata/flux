@@ -17808,6 +17808,9 @@ pub mod fbsemantic {
             args: &'args LogicalExpressionArgs<'args>,
         ) -> flatbuffers::WIPOffset<LogicalExpression<'bldr>> {
             let mut builder = LogicalExpressionBuilder::new(_fbb);
+            if let Some(x) = args.typ {
+                builder.add_typ(x);
+            }
             if let Some(x) = args.right {
                 builder.add_right(x);
             }
@@ -17817,6 +17820,7 @@ pub mod fbsemantic {
             if let Some(x) = args.loc {
                 builder.add_loc(x);
             }
+            builder.add_typ_type(args.typ_type);
             builder.add_right_type(args.right_type);
             builder.add_left_type(args.left_type);
             builder.add_operator(args.operator);
@@ -17829,6 +17833,8 @@ pub mod fbsemantic {
         pub const VT_LEFT: flatbuffers::VOffsetT = 10;
         pub const VT_RIGHT_TYPE: flatbuffers::VOffsetT = 12;
         pub const VT_RIGHT: flatbuffers::VOffsetT = 14;
+        pub const VT_TYP_TYPE: flatbuffers::VOffsetT = 16;
+        pub const VT_TYP: flatbuffers::VOffsetT = 18;
 
         #[inline]
         pub fn loc(&self) -> Option<SourceLocation<'a>> {
@@ -17872,6 +17878,20 @@ pub mod fbsemantic {
             self._tab
                 .get::<flatbuffers::ForwardsUOffset<flatbuffers::Table<'a>>>(
                     LogicalExpression::VT_RIGHT,
+                    None,
+                )
+        }
+        #[inline]
+        pub fn typ_type(&self) -> MonoType {
+            self._tab
+                .get::<MonoType>(LogicalExpression::VT_TYP_TYPE, Some(MonoType::NONE))
+                .unwrap()
+        }
+        #[inline]
+        pub fn typ(&self) -> Option<flatbuffers::Table<'a>> {
+            self._tab
+                .get::<flatbuffers::ForwardsUOffset<flatbuffers::Table<'a>>>(
+                    LogicalExpression::VT_TYP,
                     None,
                 )
         }
@@ -18294,6 +18314,66 @@ pub mod fbsemantic {
                 None
             }
         }
+
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn typ_as_basic(&self) -> Option<Basic<'a>> {
+            if self.typ_type() == MonoType::Basic {
+                self.typ().map(Basic::init_from_table)
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn typ_as_var(&self) -> Option<Var<'a>> {
+            if self.typ_type() == MonoType::Var {
+                self.typ().map(Var::init_from_table)
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn typ_as_collection(&self) -> Option<Collection<'a>> {
+            if self.typ_type() == MonoType::Collection {
+                self.typ().map(Collection::init_from_table)
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn typ_as_record(&self) -> Option<Record<'a>> {
+            if self.typ_type() == MonoType::Record {
+                self.typ().map(Record::init_from_table)
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn typ_as_fun(&self) -> Option<Fun<'a>> {
+            if self.typ_type() == MonoType::Fun {
+                self.typ().map(Fun::init_from_table)
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn typ_as_dict(&self) -> Option<Dict<'a>> {
+            if self.typ_type() == MonoType::Dict {
+                self.typ().map(Dict::init_from_table)
+            } else {
+                None
+            }
+        }
     }
 
     impl flatbuffers::Verifiable for LogicalExpression<'_> {
@@ -18358,6 +18438,17 @@ pub mod fbsemantic {
           _ => Ok(()),
         }
      })?
+     .visit_union::<MonoType, _>(&"typ_type", Self::VT_TYP_TYPE, &"typ", Self::VT_TYP, false, |key, v, pos| {
+        match key {
+          MonoType::Basic => v.verify_union_variant::<flatbuffers::ForwardsUOffset<Basic>>("MonoType::Basic", pos),
+          MonoType::Var => v.verify_union_variant::<flatbuffers::ForwardsUOffset<Var>>("MonoType::Var", pos),
+          MonoType::Collection => v.verify_union_variant::<flatbuffers::ForwardsUOffset<Collection>>("MonoType::Collection", pos),
+          MonoType::Record => v.verify_union_variant::<flatbuffers::ForwardsUOffset<Record>>("MonoType::Record", pos),
+          MonoType::Fun => v.verify_union_variant::<flatbuffers::ForwardsUOffset<Fun>>("MonoType::Fun", pos),
+          MonoType::Dict => v.verify_union_variant::<flatbuffers::ForwardsUOffset<Dict>>("MonoType::Dict", pos),
+          _ => Ok(()),
+        }
+     })?
      .finish();
             Ok(())
         }
@@ -18369,6 +18460,8 @@ pub mod fbsemantic {
         pub left: Option<flatbuffers::WIPOffset<flatbuffers::UnionWIPOffset>>,
         pub right_type: Expression,
         pub right: Option<flatbuffers::WIPOffset<flatbuffers::UnionWIPOffset>>,
+        pub typ_type: MonoType,
+        pub typ: Option<flatbuffers::WIPOffset<flatbuffers::UnionWIPOffset>>,
     }
     impl<'a> Default for LogicalExpressionArgs<'a> {
         #[inline]
@@ -18380,6 +18473,8 @@ pub mod fbsemantic {
                 left: None,
                 right_type: Expression::NONE,
                 right: None,
+                typ_type: MonoType::NONE,
+                typ: None,
             }
         }
     }
@@ -18429,6 +18524,19 @@ pub mod fbsemantic {
         pub fn add_right(&mut self, right: flatbuffers::WIPOffset<flatbuffers::UnionWIPOffset>) {
             self.fbb_
                 .push_slot_always::<flatbuffers::WIPOffset<_>>(LogicalExpression::VT_RIGHT, right);
+        }
+        #[inline]
+        pub fn add_typ_type(&mut self, typ_type: MonoType) {
+            self.fbb_.push_slot::<MonoType>(
+                LogicalExpression::VT_TYP_TYPE,
+                typ_type,
+                MonoType::NONE,
+            );
+        }
+        #[inline]
+        pub fn add_typ(&mut self, typ: flatbuffers::WIPOffset<flatbuffers::UnionWIPOffset>) {
+            self.fbb_
+                .push_slot_always::<flatbuffers::WIPOffset<_>>(LogicalExpression::VT_TYP, typ);
         }
         #[inline]
         pub fn new(
@@ -18884,6 +18992,73 @@ pub mod fbsemantic {
                 _ => {
                     let x: Option<()> = None;
                     ds.field("right", &x)
+                }
+            };
+            ds.field("typ_type", &self.typ_type());
+            match self.typ_type() {
+                MonoType::Basic => {
+                    if let Some(x) = self.typ_as_basic() {
+                        ds.field("typ", &x)
+                    } else {
+                        ds.field(
+                            "typ",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                MonoType::Var => {
+                    if let Some(x) = self.typ_as_var() {
+                        ds.field("typ", &x)
+                    } else {
+                        ds.field(
+                            "typ",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                MonoType::Collection => {
+                    if let Some(x) = self.typ_as_collection() {
+                        ds.field("typ", &x)
+                    } else {
+                        ds.field(
+                            "typ",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                MonoType::Record => {
+                    if let Some(x) = self.typ_as_record() {
+                        ds.field("typ", &x)
+                    } else {
+                        ds.field(
+                            "typ",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                MonoType::Fun => {
+                    if let Some(x) = self.typ_as_fun() {
+                        ds.field("typ", &x)
+                    } else {
+                        ds.field(
+                            "typ",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                MonoType::Dict => {
+                    if let Some(x) = self.typ_as_dict() {
+                        ds.field("typ", &x)
+                    } else {
+                        ds.field(
+                            "typ",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                _ => {
+                    let x: Option<()> = None;
+                    ds.field("typ", &x)
                 }
             };
             ds.finish()

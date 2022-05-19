@@ -415,6 +415,9 @@ func (rcv *LogicalExpression) FromBuf(fb *fbsemantic.LogicalExpression) error {
 	if rcv.Right, err = fromExpressionTable(fb.Right, fb.RightType()); err != nil {
 		return errors.Wrap(err, codes.Inherit, "LogicalExpression.Right")
 	}
+	if rcv.typ, err = getMonoType(fb); err != nil {
+		return errors.Wrap(err, codes.Inherit, "LogicalExpression.typ")
+	}
 	return nil
 }
 

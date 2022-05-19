@@ -763,6 +763,8 @@ type LogicalExpression struct {
 	Operator ast.LogicalOperatorKind
 	Left     Expression
 	Right    Expression
+
+	typ MonoType
 }
 
 func (*LogicalExpression) NodeType() string { return "LogicalExpression" }
@@ -780,7 +782,7 @@ func (e *LogicalExpression) Copy() Node {
 	return ne
 }
 func (e *LogicalExpression) TypeOf() MonoType {
-	return BasicBool
+	return e.typ
 }
 
 type MemberExpression struct {
