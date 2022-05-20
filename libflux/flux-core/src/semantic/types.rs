@@ -110,7 +110,7 @@ impl Matcher<Error> for Subsume {
         let expected = translate_label(unifier, expected, &actual);
         match (&*expected, &*actual) {
             // Labels should be accepted anywhere that we expect a string
-            (MonoType::Builtin(BuiltinType::String), MonoType::Label(_)) => MonoType::STRING,
+            (&MonoType::STRING, MonoType::Label(_)) => MonoType::STRING,
             _ => expected.unify_inner(&actual, unifier),
         }
     }
@@ -539,7 +539,7 @@ where
 /// An ordered map of string identifiers to monotypes.
 
 /// Represents a Flux primitive primitive type such as int or string.
-#[derive(Debug, Display, Clone, Copy, PartialEq, Serialize)]
+#[derive(Debug, Display, Clone, Copy, Eq, PartialEq, Serialize)]
 #[allow(missing_docs)]
 pub enum BuiltinType {
     #[display(fmt = "bool")]
@@ -564,7 +564,7 @@ pub enum BuiltinType {
 
 /// Represents a Flux type. The type may be unknown, represented as a type variable,
 /// or may be a known concrete type.
-#[derive(Debug, Display, Clone, PartialEq)]
+#[derive(Debug, Display, Clone, Eq, PartialEq)]
 #[allow(missing_docs)]
 pub enum MonoType {
     #[display(fmt = "<error>")]
@@ -653,7 +653,7 @@ impl Serialize for MonoType {
     }
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 #[allow(missing_docs)]
 pub struct Collection {
     pub collection: CollectionType,
@@ -676,7 +676,7 @@ impl fmt::Display for Collection {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, Eq, PartialEq)]
 #[allow(missing_docs)]
 pub enum CollectionType {
     Array,
@@ -1266,7 +1266,7 @@ impl Collection {
 }
 
 /// A key-value data structure.
-#[derive(Debug, Display, Clone, PartialEq, Serialize)]
+#[derive(Debug, Display, Clone, Eq, PartialEq, Serialize)]
 #[display(fmt = "[{}:{}]", key, val)]
 pub struct Dictionary {
     /// Type of key.
@@ -1356,6 +1356,8 @@ fn collect_record(record: &Record) -> (RefMonoTypeVecMap<'_, RecordLabel>, Optio
     }
     (a, fields.tail())
 }
+
+impl cmp::Eq for Record {}
 
 impl cmp::PartialEq for Record {
     fn eq(&self, other: &Self) -> bool {
@@ -1864,7 +1866,7 @@ impl Label {
 }
 
 /// A key-value pair representing a property type in a record.
-#[derive(Debug, Display, Clone, PartialEq, Serialize)]
+#[derive(Debug, Display, Clone, Eq, PartialEq, Serialize)]
 #[display(fmt = "{}:{}", k, v)]
 #[allow(missing_docs)]
 pub struct Property<K = RecordLabel, V = MonoType> {
@@ -1884,7 +1886,7 @@ where
 }
 
 /// Represents an (optional) argument to a function
-#[derive(Debug, Clone, PartialEq, Serialize)]
+#[derive(Debug, Clone, Eq, PartialEq, Serialize)]
 pub struct Argument<T> {
     /// The default argument to the function (if one exists)
     pub default: Option<T>,
@@ -1926,7 +1928,7 @@ impl Argument<MonoType> {
 /// A function type is defined by a set of required arguments,
 /// a set of optional arguments, an optional pipe argument, and
 /// a required return type.
-#[derive(Debug, Clone, PartialEq, Serialize)]
+#[derive(Debug, Clone, Eq, PartialEq, Serialize)]
 pub struct Function<T = MonoType> {
     /// Required arguments to a function.
     pub req: MonoTypeMap<String, T>,
