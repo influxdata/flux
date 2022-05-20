@@ -75,13 +75,15 @@ pub fn parse_dir(dir: &Path) -> io::Result<ASTPackageMap> {
                     // to work with either separator.
                     normalized_path = normalized_path.replace('\\', "/");
                 }
-                files.push(parser::parse_string(
+                let source = fs::read_to_string(entry.path())?;
+                let ast = parser::parse_string(
                     normalized_path
                         .rsplitn(2, "/stdlib/")
                         .collect::<Vec<&str>>()[0]
                         .to_owned(),
-                    &fs::read_to_string(entry.path())?,
-                ));
+                    &source,
+                );
+                files.push((source, ast));
             }
         }
     }
@@ -89,15 +91,19 @@ pub fn parse_dir(dir: &Path) -> io::Result<ASTPackageMap> {
 }
 
 // Associates an import path with each file
-fn ast_map(files: Vec<ast::File>) -> ASTPackageMap {
+fn ast_map(files: Vec<(String, ast::File)>) -> ASTPackageMap {
     files
         .into_iter()
-        .fold(ASTPackageMap::new(), |mut acc, file| {
+        .fold(ASTPackageMap::new(), |mut acc, (source, file)| {
             let path = file.name.rsplitn(2, '/').collect::<Vec<&str>>()[1].to_string();
             acc.insert(
                 path.clone(),
                 ast::Package {
                     base: ast::BaseNode {
+                        location: ast::SourceLocation {
+                            source: Some(source),
+                            ..ast::SourceLocation::default()
+                        },
                         ..ast::BaseNode::default()
                     },
                     path,
@@ -242,9 +248,12 @@ impl InferState {
 
         let env = Environment::new(prelude.into());
         let mut analyzer = Analyzer::new_with_defaults(env, &mut self.imports);
-        let (exports, sem_pkg) = analyzer
-            .analyze_ast(file)
-            .map_err(|err| err.error.pretty_error())?;
+        let (exports, sem_pkg) = analyzer.analyze_ast(file).map_err(|mut err| {
+            if err.error.source.is_none() {
+                err.error.source = file.base.location.source.clone();
+            }
+            err.error.pretty_error()
+        })?;
 
         Ok((exports, sem_pkg))
     }

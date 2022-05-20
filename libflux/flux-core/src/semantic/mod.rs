@@ -272,7 +272,7 @@ fn build_record(
 
 /// Wrapper around `FileErrors` which defaults to using codespan to print the errors
 #[derive(Error, Debug, PartialEq)]
-pub struct PrettyFileErrors(#[source] pub FileErrors);
+pub struct PrettyFileErrors(pub FileErrors);
 
 impl fmt::Display for PrettyFileErrors {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
