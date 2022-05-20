@@ -270,6 +270,19 @@ fn build_record(
     (r, cons)
 }
 
+/// Wrapper around `FileErrors` which defaults to using codespan to print the errors
+#[derive(Error, Debug, PartialEq)]
+pub struct PrettyFileErrors(#[source] pub FileErrors);
+
+impl fmt::Display for PrettyFileErrors {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match &self.0.source {
+            Some(source) => f.write_str(&self.0.pretty(source)),
+            None => self.0.fmt(f),
+        }
+    }
+}
+
 /// Error represents any any error that can occur during any step of the type analysis process.
 #[derive(Error, Debug, PartialEq)]
 pub struct FileErrors {
@@ -318,6 +331,12 @@ impl FileErrors {
     /// Prints the errors
     pub fn pretty(&self, source: &str) -> String {
         self.pretty_config(&term::Config::default(), source)
+    }
+
+    /// Wraps `FileErrors` in type which defaults to the more readable codespan error
+    /// representation
+    pub fn pretty_error(self) -> PrettyFileErrors {
+        PrettyFileErrors(self)
     }
 
     /// Prints the errors in their short form
