@@ -436,7 +436,7 @@ pub enum Feature {
 }
 
 /// A set of configuration options for the behavior of an Analyzer.
-#[derive(Default)]
+#[derive(Clone, Default, Debug)]
 pub struct AnalyzerConfig {
     /// Features used in the flux compiler
     pub features: Vec<Feature>,

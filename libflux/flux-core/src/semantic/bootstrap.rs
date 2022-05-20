@@ -23,7 +23,7 @@ use crate::{
         types::{
             MonoType, PolyType, PolyTypeHashMap, Record, RecordLabel, SemanticMap, Tvar, TvarKinds,
         },
-        Analyzer, PackageExports,
+        Analyzer, AnalyzerConfig, PackageExports,
     },
 };
 
@@ -43,10 +43,16 @@ pub type SemanticPackageMap = SemanticMap<String, Package>;
 /// Infers the Flux standard library given the path to the source code.
 /// The prelude and the imports are returned.
 #[allow(clippy::type_complexity)]
-pub fn infer_stdlib_dir(path: &Path) -> Result<(PackageExports, Packages, SemanticPackageMap)> {
+pub fn infer_stdlib_dir(
+    path: &Path,
+    config: AnalyzerConfig,
+) -> Result<(PackageExports, Packages, SemanticPackageMap)> {
     let ast_packages = parse_dir(path)?;
 
-    let mut infer_state = InferState::default();
+    let mut infer_state = InferState {
+        config,
+        ..InferState::default()
+    };
     let prelude = infer_state.infer_pre(&ast_packages)?;
     infer_state.infer_std(&ast_packages, &prelude)?;
 
@@ -160,6 +166,7 @@ struct InferState {
     // types available for import
     imports: Packages,
     sem_pkg_map: SemanticPackageMap,
+    config: AnalyzerConfig,
 }
 
 impl InferState {
@@ -247,7 +254,7 @@ impl InferState {
             .ok_or_else(|| anyhow!(r#"package import "{}" not found"#, name))?;
 
         let env = Environment::new(prelude.into());
-        let mut analyzer = Analyzer::new_with_defaults(env, &mut self.imports);
+        let mut analyzer = Analyzer::new(env, &mut self.imports, self.config.clone());
         let (exports, sem_pkg) = analyzer.analyze_ast(file).map_err(|mut err| {
             if err.error.source.is_none() {
                 err.error.source = file.base.location.source.clone();
@@ -353,7 +360,7 @@ pub fn stdlib(dir: &Path) -> Result<(PackageExports, FileSystemImporter<StdFS>)>
 
 /// Compiles the stdlib found at the srcdir into the outdir.
 pub fn compile_stdlib(srcdir: &Path, outdir: &Path) -> Result<()> {
-    let (_, imports, mut sem_pkgs) = infer_stdlib_dir(srcdir)?;
+    let (_, imports, mut sem_pkgs) = infer_stdlib_dir(srcdir, AnalyzerConfig::default())?;
     // Write each file as compiled module
     for (path, exports) in &imports {
         if let Some(code) = sem_pkgs.remove(path) {
