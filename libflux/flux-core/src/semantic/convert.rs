@@ -365,18 +365,6 @@ impl<'a> Converter<'a> {
         std::mem::take(&mut self.symbols.package_info)
     }
 
-    fn define_symbol(
-        &mut self,
-        package: Option<&str>,
-        name: &str,
-        comments: &[ast::Comment],
-        _base: &ast::BaseNode,
-    ) -> Symbol {
-        let name = self.symbols.insert(package, name, comments);
-
-        name
-    }
-
     pub(crate) fn convert_package(&mut self, pkg: &ast::Package) -> Package {
         let package = pkg.package.clone();
 
@@ -435,7 +423,7 @@ impl<'a> Converter<'a> {
         let (import_symbol, alias) = match &imp.alias {
             None => {
                 let name = path.rsplit_once('/').map_or(&path[..], |t| t.1);
-                (self.define_symbol(None, name, &[], &imp.base), None)
+                (self.symbols.insert(None, name, &[]), None)
             }
             Some(id) => {
                 let id = self.define_identifier(None, id, &imp.base.comments);
@@ -1206,7 +1194,7 @@ impl<'a> Converter<'a> {
         id: &ast::Identifier,
         comments: &[ast::Comment],
     ) -> Identifier {
-        let name = self.define_symbol(package, &id.name, comments, &id.base);
+        let name = self.symbols.insert(package, &id.name, comments);
         Identifier {
             loc: id.base.location.clone(),
             name,
