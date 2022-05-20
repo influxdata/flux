@@ -350,3 +350,27 @@ fn variables_used_in_label_position_must_have_label_kind() {
         "#]],
     }
 }
+
+#[test]
+fn label_variables_do_not_get_inferred_to_string() {
+    test_infer! {
+        config: AnalyzerConfig{
+            features: vec![Feature::LabelPolymorphism],
+            ..AnalyzerConfig::default()
+        },
+        env: map![
+            "keep" => r#"(<-table: A, column: string) => { _value: string } where A: Record"#,
+            "columns" => r#"(?column: C = "abc") => { C: string } where C: Label"#,
+        ],
+        src: r#"
+            f = (column) =>
+                columns(column: column)
+                    // Inferring `column` as a `string` here should not force
+                    // the type signature of `f` to only accept `string`
+                    |> keep(column: column)
+        "#,
+        exp: map![
+            "f" => "(column: A) => { _value: string } where A: Label",
+        ],
+    }
+}

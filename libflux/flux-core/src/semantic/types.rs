@@ -120,6 +120,15 @@ impl Matcher<Error> for Subsume {
         match (&*expected, &*actual) {
             // Labels should be accepted anywhere that we expect a string
             (&MonoType::STRING, MonoType::Label(_)) => MonoType::STRING,
+            (&MonoType::STRING, MonoType::Var(var))
+                if unifier
+                    .sub
+                    .cons()
+                    .get(var)
+                    .map_or(false, |kinds| kinds.contains(&Kind::Label)) =>
+            {
+                MonoType::STRING
+            }
             _ => expected.unify_inner(&actual, unifier),
         }
     }
