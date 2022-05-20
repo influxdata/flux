@@ -94,18 +94,6 @@
   default: false
   contact: Markus Westerlind
 
-- name: Optimize Moving Average
-  description: Enable an optimized version of moving average
-  key: optimizeMovingAverage
-  default: false
-  contact: Jonathan Sternberg
-
-- name: Optimize Cumulative Sum
-  description: Enable optimized version of cumulative sum
-  key: optimizeCumulativeSum
-  default: false
-  contact: Jonathan Sternberg
-
 - name: Optimize Set Transformation
   description: Enables a version of set that is optimized
   key: optimizeSetTransformation

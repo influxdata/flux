@@ -8,31 +8,9 @@ import (
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
-	"github.com/influxdata/flux/querytest"
+	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/stdlib/universe"
 )
-
-func TestMovingAverageOperation_Marshaling(t *testing.T) {
-	data := []byte(`{"id":"movingAverage","kind":"movingAverage","spec":{"n":1}}`)
-	op := &flux.Operation{
-		ID: "movingAverage",
-		Spec: &universe.MovingAverageOpSpec{
-			N: 1,
-		},
-	}
-	querytest.OperationMarshalingTestHelper(t, data, op)
-}
-
-func TestMovingAverage_PassThrough(t *testing.T) {
-	executetest.TransformationPassThroughTestHelper(t, func(d execute.Dataset, c execute.TableBuilderCache) execute.Transformation {
-		s := universe.NewMovingAverageTransformation(
-			d,
-			c,
-			&universe.MovingAverageProcedureSpec{},
-		)
-		return s
-	})
-}
 
 func TestMovingAverage_Process(t *testing.T) {
 	testCases := []struct {
@@ -842,13 +820,17 @@ func TestMovingAverage_Process(t *testing.T) {
 	for _, tc := range testCases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			executetest.ProcessTestHelper(
+			executetest.ProcessTestHelper2(
 				t,
 				tc.data,
 				tc.want,
 				tc.wantErr,
-				func(d execute.Dataset, c execute.TableBuilderCache) execute.Transformation {
-					return universe.NewMovingAverageTransformation(d, c, tc.spec)
+				func(id execute.DatasetID, alloc memory.Allocator) (execute.Transformation, execute.Dataset) {
+					tr, d, err := universe.NewMovingAverageTransformation(id, tc.spec, alloc)
+					if err != nil {
+						t.Fatal(err)
+					}
+					return tr, d
 				},
 			)
 		})

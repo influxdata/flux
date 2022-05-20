@@ -185,30 +185,6 @@ func LabelPolymorphism() BoolFlag {
 	return labelPolymorphism
 }
 
-var optimizeMovingAverage = feature.MakeBoolFlag(
-	"Optimize Moving Average",
-	"optimizeMovingAverage",
-	"Jonathan Sternberg",
-	false,
-)
-
-// OptimizeMovingAverage - Enable an optimized version of moving average
-func OptimizeMovingAverage() BoolFlag {
-	return optimizeMovingAverage
-}
-
-var optimizeCumulativeSum = feature.MakeBoolFlag(
-	"Optimize Cumulative Sum",
-	"optimizeCumulativeSum",
-	"Jonathan Sternberg",
-	false,
-)
-
-// OptimizeCumulativeSum - Enable optimized version of cumulative sum
-func OptimizeCumulativeSum() BoolFlag {
-	return optimizeCumulativeSum
-}
-
 var optimizeSetTransformation = feature.MakeBoolFlag(
 	"Optimize Set Transformation",
 	"optimizeSetTransformation",
@@ -241,8 +217,6 @@ var all = []Flag{
 	vectorizeOperators,
 	vectorizeLogicalOperators,
 	labelPolymorphism,
-	optimizeMovingAverage,
-	optimizeCumulativeSum,
 	optimizeSetTransformation,
 }
 
@@ -261,8 +235,6 @@ var byKey = map[string]Flag{
 	"vectorizeOperators":               vectorizeOperators,
 	"vectorizeLogicalOperators":        vectorizeLogicalOperators,
 	"labelPolymorphism":                labelPolymorphism,
-	"optimizeMovingAverage":            optimizeMovingAverage,
-	"optimizeCumulativeSum":            optimizeCumulativeSum,
 	"optimizeSetTransformation":        optimizeSetTransformation,
 }
 
