@@ -815,6 +815,11 @@ type function struct {
 	itrp *Interpreter
 }
 
+func (f function) Dynamic() values.Dynamic {
+	//TODO implement me
+	panic("implement me")
+}
+
 func (f function) Type() semantic.MonoType {
 	return f.e.TypeOf()
 }

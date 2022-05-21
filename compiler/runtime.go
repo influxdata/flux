@@ -710,6 +710,11 @@ type functionValue struct {
 	scope  Scope
 }
 
+func (f *functionValue) Dynamic() values.Dynamic {
+	//TODO implement me
+	panic("implement me")
+}
+
 // functionValue implements the interpreter.Resolver interface.
 var _ interpreter.Resolver = (*functionValue)(nil)
 

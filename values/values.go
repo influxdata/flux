@@ -33,6 +33,7 @@ type Value interface {
 	Object() Object
 	Function() Function
 	Dict() Dictionary
+	Dynamic() Dynamic
 	Vector() Vector
 	Equal(Value) bool
 
@@ -43,6 +44,11 @@ type Value interface {
 type value struct {
 	t semantic.MonoType
 	v interface{}
+}
+
+func (v value) Dynamic() Dynamic {
+	//TODO implement me
+	panic("implement me")
 }
 
 func (v value) Type() semantic.MonoType {
@@ -217,6 +223,8 @@ func Unwrap(v Value) interface{} {
 	case semantic.Function:
 		// there is no primitive value for a Function object, just return itself.
 		return v
+	case semantic.Dynamic:
+		return Unwrap(v.Dynamic().Inner())
 	default:
 		panic(errors.Newf(codes.Unknown, "cannot unwrap a %v type value", n))
 	}
@@ -367,6 +375,11 @@ func IsTimeable(v Value) bool {
 }
 
 type null struct{}
+
+func (n null) Dynamic() Dynamic {
+	//TODO implement me
+	panic("implement me")
+}
 
 func (n null) Type() semantic.MonoType { return semantic.MonoType{} }
 func (n null) IsNull() bool            { return true }

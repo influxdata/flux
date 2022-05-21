@@ -64,6 +64,11 @@ type object struct {
 	typ    semantic.MonoType
 }
 
+func (o *object) Dynamic() Dynamic {
+	//TODO implement me
+	panic("implement me")
+}
+
 // NewObject will create a new object with the given type.
 // The type must be of kind Row.
 // The new object will be uninitialized and must be constructed

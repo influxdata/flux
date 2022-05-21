@@ -92,6 +92,11 @@ type TableObject struct {
 	Parents []*TableObject
 }
 
+func (t *TableObject) Dynamic() values.Dynamic {
+	//TODO implement me
+	panic("implement me")
+}
+
 func (t *TableObject) Operation(ider IDer) *Operation {
 	if iderOpSpec, ok := t.Spec.(IDerOpSpec); ok {
 		iderOpSpec.IDer(ider)
@@ -245,6 +250,11 @@ type function struct {
 	t             semantic.MonoType
 	createOpSpec  CreateOperationSpec
 	hasSideEffect bool
+}
+
+func (f *function) Dynamic() values.Dynamic {
+	//TODO implement me
+	panic("implement me")
 }
 
 func (f *function) Type() semantic.MonoType {

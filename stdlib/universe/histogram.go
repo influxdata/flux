@@ -244,6 +244,11 @@ func (t *histogramTransformation) Finish(id execute.DatasetID, err error) {
 // linearBins is a helper function for creating bins spaced linearly
 type linearBins struct{}
 
+func (b linearBins) Dynamic() values.Dynamic {
+	//TODO implement me
+	panic("implement me")
+}
+
 var linearBinsType = runtime.MustLookupBuiltinType("universe", "linearBins")
 
 func (b linearBins) Type() semantic.MonoType {
@@ -376,6 +381,11 @@ func (b linearBins) Call(ctx context.Context, args values.Object) (values.Value,
 
 // logarithmicBins is a helper function for creating bins spaced by an logarithmic factor.
 type logarithmicBins struct{}
+
+func (b logarithmicBins) Dynamic() values.Dynamic {
+	//TODO implement me
+	panic("implement me")
+}
 
 var logarithmicBinsType = runtime.MustLookupBuiltinType("universe", "logarithmicBins")
 

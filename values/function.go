@@ -36,6 +36,11 @@ type function struct {
 	hasSideEffect bool
 }
 
+func (f *function) Dynamic() Dynamic {
+	//TODO implement me
+	panic("implement me")
+}
+
 func (f *function) IsNull() bool {
 	return false
 }

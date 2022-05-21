@@ -186,6 +186,11 @@ func (t *Table) Release() {
 	}
 }
 
+func (t *Table) Dynamic() values.Dynamic {
+	//TODO implement me
+	panic("implement me")
+}
+
 func (t *Table) String() string {
 	w := bytes.NewBuffer([]byte{})
 	if _, err := execute.NewFormatter(t, nil).WriteTo(w); err != nil {

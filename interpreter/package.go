@@ -29,6 +29,11 @@ type Package struct {
 	sideEffects []SideEffect
 }
 
+func (p *Package) Dynamic() values.Dynamic {
+	//TODO implement me
+	panic("implement me")
+}
+
 func NewPackageWithValues(name, path string, obj values.Object) *Package {
 	return &Package{
 		name:   name,

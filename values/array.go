@@ -26,6 +26,11 @@ type array struct {
 	elements []Value
 }
 
+func (a *array) Dynamic() Dynamic {
+	//TODO implement me
+	panic("implement me")
+}
+
 func NewArray(arrType semantic.MonoType) Array {
 	return NewArrayWithBacking(arrType, nil)
 }

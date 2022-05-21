@@ -185,6 +185,10 @@ func (v *IntVectorValue) Function() Function {
 func (v *IntVectorValue) Dict() Dictionary {
 	panic(UnexpectedKind(semantic.Vector, semantic.Dictionary))
 }
+func (v *IntVectorValue) Dynamic() Dynamic {
+	//TODO implement me
+	panic("implement me")
+}
 func (v *IntVectorValue) Vector() Vector {
 	return v
 }
@@ -246,6 +250,10 @@ func (v *UintVectorValue) Function() Function {
 }
 func (v *UintVectorValue) Dict() Dictionary {
 	panic(UnexpectedKind(semantic.Vector, semantic.Dictionary))
+}
+func (v *UintVectorValue) Dynamic() Dynamic {
+	//TODO implement me
+	panic("implement me")
 }
 func (v *UintVectorValue) Vector() Vector {
 	return v
@@ -309,6 +317,10 @@ func (v *FloatVectorValue) Function() Function {
 func (v *FloatVectorValue) Dict() Dictionary {
 	panic(UnexpectedKind(semantic.Vector, semantic.Dictionary))
 }
+func (v *FloatVectorValue) Dynamic() Dynamic {
+	//TODO implement me
+	panic("implement me")
+}
 func (v *FloatVectorValue) Vector() Vector {
 	return v
 }
@@ -370,6 +382,10 @@ func (v *BooleanVectorValue) Function() Function {
 }
 func (v *BooleanVectorValue) Dict() Dictionary {
 	panic(UnexpectedKind(semantic.Vector, semantic.Dictionary))
+}
+func (v *BooleanVectorValue) Dynamic() Dynamic {
+	//TODO implement me
+	panic("implement me")
 }
 func (v *BooleanVectorValue) Vector() Vector {
 	return v
@@ -433,6 +449,10 @@ func (v *StringVectorValue) Function() Function {
 func (v *StringVectorValue) Dict() Dictionary {
 	panic(UnexpectedKind(semantic.Vector, semantic.Dictionary))
 }
+func (v *StringVectorValue) Dynamic() Dynamic {
+	//TODO implement me
+	panic("implement me")
+}
 func (v *StringVectorValue) Vector() Vector {
 	return v
 }
@@ -494,6 +514,10 @@ func (v *TimeVectorValue) Function() Function {
 }
 func (v *TimeVectorValue) Dict() Dictionary {
 	panic(UnexpectedKind(semantic.Vector, semantic.Dictionary))
+}
+func (v *TimeVectorValue) Dynamic() Dynamic {
+	//TODO implement me
+	panic("implement me")
 }
 func (v *TimeVectorValue) Vector() Vector {
 	return v

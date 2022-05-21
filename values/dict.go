@@ -392,3 +392,13 @@ func (d *DictionaryBuilder) Remove(key Value) {
 		d.b.Delete(key)
 	}
 }
+
+func (d emptyDict) Dynamic() Dynamic {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (d dict) Dynamic() Dynamic {
+	//TODO implement me
+	panic("implement me")
+}
