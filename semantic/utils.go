@@ -42,6 +42,7 @@ func ExprsToConjunction(exprs ...Expression) Expression {
 			Left:     expr,
 			Right:    e,
 			Operator: ast.AndOperator,
+			typ:      BasicBool,
 		}
 	}
 
