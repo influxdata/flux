@@ -4,7 +4,9 @@ import (
 	"context"
 	"sort"
 
+	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/dependencies/testing"
+	"github.com/influxdata/flux/internal/errors"
 )
 
 // heuristicPlanner applies a set of rules to the nodes in a Spec
@@ -40,6 +42,21 @@ func (p *heuristicPlanner) clearRules() {
 	p.rules = make(map[ProcedureKind][]Rule)
 }
 
+func applyRule(ctx context.Context, rule Rule, node Node) (Node, bool, error) {
+	newNode, changed, err := rule.Rewrite(ctx, node)
+	if err != nil {
+		return nil, false, err
+	} else if changed {
+		if newNode == nil {
+			return nil, false, errors.Newf(codes.Internal, "rule %q returned a nil plan node even though it seems to have changed the plan", rule.Name())
+		}
+		testing.MarkInvokedPlannerRule(ctx, rule.Name())
+		return newNode, true, nil
+	}
+
+	return node, changed, nil
+}
+
 // matchRules applies any applicable rules to the given plan node,
 // and returns the rewritten plan node and whether or not any rewriting was done.
 func (p *heuristicPlanner) matchRules(ctx context.Context, node Node) (Node, bool, error) {
@@ -50,13 +67,12 @@ func (p *heuristicPlanner) matchRules(ctx context.Context, node Node) (Node, boo
 			continue
 		}
 		if rule.Pattern().Match(node) {
-			newNode, changed, err := rule.Rewrite(ctx, node)
+			newNode, changed, err := applyRule(ctx, rule, node)
 			if err != nil {
 				return nil, false, err
-			} else if changed {
-				testing.MarkInvokedPlannerRule(ctx, rule.Name())
-				anyChanged = true
 			}
+
+			anyChanged = anyChanged || changed
 			node = newNode
 		}
 	}
@@ -66,13 +82,12 @@ func (p *heuristicPlanner) matchRules(ctx context.Context, node Node) (Node, boo
 			continue
 		}
 		if rule.Pattern().Match(node) {
-			newNode, changed, err := rule.Rewrite(ctx, node)
+			newNode, changed, err := applyRule(ctx, rule, node)
 			if err != nil {
 				return nil, false, err
-			} else if changed {
-				testing.MarkInvokedPlannerRule(ctx, rule.Name())
-				anyChanged = true
 			}
+
+			anyChanged = anyChanged || changed
 			node = newNode
 		}
 	}
@@ -90,6 +105,8 @@ func (p *heuristicPlanner) Plan(ctx context.Context, inputPlan *Spec) (*Spec, er
 	for anyChanged := true; anyChanged; {
 		visited := make(map[Node]struct{})
 
+		// the plan is traversed starting from the sinks,
+		// moving toward the sources.
 		nodeStack := make([]Node, 0, len(inputPlan.Roots))
 		for root := range inputPlan.Roots {
 			nodeStack = append(nodeStack, root)
