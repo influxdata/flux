@@ -14,7 +14,7 @@ use ena::unify::UnifyKey;
 ///
 /// Substitutions are idempotent. Given a substitution *s* and an input
 /// type *x*, we have *s*(*s*(*x*)) = *s*(*x*).
-#[derive(Clone, Default)]
+#[derive(Default)]
 pub struct Substitution {
     table: RefCell<UnificationTable>,
     // TODO Add `snapshot`/`rollback_to` for `TvarKinds` (like `ena::UnificationTable`) so that

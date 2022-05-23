@@ -4,9 +4,10 @@ use derive_more::Display;
 
 use crate::{
     ast::SourceLocation,
-    errors::{Errors, Located},
+    errors::{located, Errors, Located},
     semantic::{
         env::Environment,
+        scoped::ScopedVec,
         sub::{Substitutable, Substituter, Substitution},
         types::{self, BoundTvar, BoundTvarKinds, Kind, MonoType, PolyType, SemanticMap, Tvar},
     },
@@ -118,10 +119,35 @@ impl Substitutable for Error {
     }
 }
 
+pub fn solve_all(
+    cons: &[Constraint],
+    sub: &mut Substitution,
+) -> Result<(), Errors<Located<types::Error>>> {
+    let mut delayed_unifications = ScopedVec::new();
+
+    let mut errors = solve(cons, sub, &mut delayed_unifications)
+        .err()
+        .unwrap_or_default();
+
+    for unification in delayed_unifications.exit_scope() {
+        if let Err(err) = unification.resolve(sub) {
+            let loc = err.location;
+            errors.extend(err.error.into_iter().map(|err| located(loc.clone(), err)));
+        }
+    }
+
+    if errors.has_errors() {
+        return Err(errors);
+    }
+
+    Ok(())
+}
+
 // Solve a set of type constraints
 pub fn solve(
     cons: &[Constraint],
     sub: &mut Substitution,
+    delayed_unifications: &mut ScopedVec<types::Unification>,
 ) -> Result<(), Errors<Located<types::Error>>> {
     let mut errors = Errors::new();
     for constraint in cons {
@@ -134,7 +160,7 @@ pub fn solve(
             }
             Constraint::Equal { exp, act, loc } => {
                 // Apply the current substitution to the constraint, then unify
-                if let Err(err) = equal(exp, act, loc, sub) {
+                if let Err(err) = equal(exp, act, loc, sub, delayed_unifications) {
                     errors.extend(err.error.into_iter().map(|error| Located {
                         location: loc.clone(),
                         error,
@@ -170,16 +196,31 @@ pub fn equal(
     act: &MonoType,
     loc: &SourceLocation,
     sub: &mut Substitution,
+    delayed_unifications: &mut ScopedVec<types::Unification>,
 ) -> Result<MonoType, Located<Errors<types::Error>>> {
     log::debug!("Constraint::Equal {:?}: {} <===> {}", loc.source, exp, act);
-    exp.try_unify(act, sub).map_err(|error| {
-        log::debug!("Unify error: {} <=> {} : {}", exp, act, error);
+    let mut delayed_unifications_inner = Vec::new();
+    let result = exp
+        .try_unify(act, sub, Some(&mut delayed_unifications_inner))
+        .map_err(|error| {
+            log::debug!("Unify error: {} <=> {} : {}", exp, act, error);
 
-        Located {
-            location: loc.clone(),
-            error,
-        }
-    })
+            Located {
+                location: loc.clone(),
+                error,
+            }
+        });
+
+    delayed_unifications.extend(
+        delayed_unifications_inner
+            .into_iter()
+            .map(|mut unification| {
+                unification.location = loc.clone();
+                unification
+            }),
+    );
+
+    result
 }
 
 pub fn subsume(
@@ -187,6 +228,7 @@ pub fn subsume(
     act: &MonoType,
     loc: &SourceLocation,
     sub: &mut Substitution,
+    delayed_unifications: &mut ScopedVec<types::Unification>,
 ) -> Result<MonoType, Located<Errors<types::Error>>> {
     log::debug!(
         "Constraint::Subsume {:?}: {} <===> {}",
@@ -194,14 +236,28 @@ pub fn subsume(
         exp,
         act
     );
-    exp.try_subsume(act, sub).map_err(|error| {
-        log::debug!("Unify error: {} <=> {} : {}", exp, act, error);
+    let mut delayed_unifications_inner = Vec::new();
+    let result = exp
+        .try_subsume(act, sub, Some(&mut delayed_unifications_inner))
+        .map_err(|error| {
+            log::debug!("Unify error: {} <=> {} : {}", exp, act, error);
 
-        Located {
-            location: loc.clone(),
-            error,
-        }
-    })
+            Located {
+                location: loc.clone(),
+                error,
+            }
+        });
+
+    delayed_unifications.extend(
+        delayed_unifications_inner
+            .into_iter()
+            .map(|mut unification| {
+                unification.location = loc.clone();
+                unification
+            }),
+    );
+
+    result
 }
 
 /// Generalizes `t` without modifying the substitution.
@@ -328,7 +384,7 @@ pub fn generalize(free_vars: Vec<Tvar>, sub: &mut Substitution, t: MonoType) -> 
 pub fn instantiate(
     poly: PolyType,
     sub: &mut Substitution,
-    loc: SourceLocation,
+    loc: &SourceLocation,
 ) -> (MonoType, Constraints) {
     // Substitute fresh type variables for all quantified variables
     let sub: SemanticMap<_, _> = poly
