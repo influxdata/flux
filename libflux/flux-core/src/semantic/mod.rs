@@ -4,6 +4,8 @@ pub mod convert;
 
 mod fs;
 mod infer;
+mod metadata;
+mod scoped;
 mod symbols;
 mod vectorize;
 
