@@ -172,6 +172,8 @@ func (r *REPL) evalWithFluxError(t string) ([]interpreter.SideEffect, *libflux.F
 	ctx, span := dependency.Inject(r.ctx, execute.DefaultExecutionDependencies())
 	defer span.Finish()
 
+	// TODO: Inject feature flags from options context
+
 	x, err := r.itrp.Eval(ctx, pkg, r.scope, r.importer)
 	return x, nil, err
 }

@@ -14,7 +14,6 @@ import (
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/internal/feature"
 	"github.com/influxdata/flux/internal/jaeger"
-	pkgfeature "github.com/influxdata/flux/internal/pkg/feature"
 	"github.com/influxdata/flux/internal/spec"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/memory"
@@ -494,11 +493,11 @@ func (p *AstProgram) Start(ctx context.Context, alloc memory.Allocator) (flux.Qu
 	// execution begins.
 	deps.ExecutionOptions.ConcurrencyLimit = feature.QueryConcurrencyLimit().Int(ctx)
 
-	// Create a MutableFlagger for this program, ensuring that any changes it
-	// makes to feature flags are scoped to its own execution.
-	flagger := pkgfeature.GetFlagger(ctx)
-	mflagger := pkgfeature.NewMutableFlagger(flagger)
-	ctx = pkgfeature.Inject(ctx, mflagger)
+	feature.InjectFromOption(ctx, p.Ast)
+	// Another road block
+	// Can't inject options from context here since we do not actually have the AST as a Go values
+	// So this will be expensive.
+	// Maybe this is a new call in Libflux.h?
 
 	ctx, span := dependency.Inject(ctx, deps)
 	nextPlanNodeID := new(int)
