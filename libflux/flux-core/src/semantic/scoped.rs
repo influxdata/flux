@@ -18,16 +18,18 @@ impl<T> ScopedVec<T> {
         }
     }
 
-    pub fn push(&mut self, element: T) {
-        self.elements.push(element)
-    }
-
     pub fn enter_scope(&mut self) {
         self.scopes.push(self.elements.len())
     }
 
-    pub fn exit_scope(&mut self) -> std::iter::Rev<std::vec::Drain<'_, T>> {
+    pub fn exit_scope(&mut self) -> std::vec::Drain<'_, T> {
         let start = self.scopes.pop().unwrap_or(0);
-        self.elements.drain(start..).rev()
+        self.elements.drain(start..)
+    }
+}
+
+impl<T> Extend<T> for ScopedVec<T> {
+    fn extend<Iter: IntoIterator<Item = T>>(&mut self, iter: Iter) {
+        self.elements.extend(iter);
     }
 }

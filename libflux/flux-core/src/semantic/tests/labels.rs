@@ -73,12 +73,6 @@ fn labels_dynamic_string() {
             3 │             x = [{ a: 1 }] |> fill(column: column, value: "x")
               │                                            ^^^^^^
 
-            error: string is not a label
-              ┌─ main:3:31
-              │
-            3 │             x = [{ a: 1 }] |> fill(column: column, value: "x")
-              │                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
         "#]],
     }
 }
@@ -371,6 +365,30 @@ fn label_variables_do_not_get_inferred_to_string() {
         "#,
         exp: map![
             "f" => "(column: A) => { _value: string } where A: Label",
+        ],
+    }
+}
+
+#[test]
+fn inferred_to_string_before_label() {
+    test_infer! {
+        config: AnalyzerConfig{
+            features: vec![Feature::LabelPolymorphism],
+            ..AnalyzerConfig::default()
+        },
+        env: map![
+            "keep" => r#"(column: string) => { _value: string }"#,
+            "columns" => r#"(<-table: A, ?column: C = "abc") => { C: string } where A: Record, C: Label"#,
+        ],
+        src: r#"
+            f = (column) =>
+                // Inferring `column` as a `string` here should not force
+                // the type signature of `f` to only accept `string`
+                keep(column: column)
+                    |> columns(column: column)
+        "#,
+        exp: map![
+            "f" => "(column: A) => { A: string } where A: Label",
         ],
     }
 }
