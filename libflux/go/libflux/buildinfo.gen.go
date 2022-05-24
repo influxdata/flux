@@ -186,7 +186,7 @@ var sourceHashes = map[string]string{
 	"stdlib/experimental/iox/iox.flux":                                                            "df0955aea72565da93814141bb172d90c7e0f37a74d27b745b407e905461a9d8",
 	"stdlib/experimental/join_right_side_more_cols_test.flux":                                     "5335d49b402bc1d45158924c62fdb8fc8ae00f6353cdce42f05d980f68780152",
 	"stdlib/experimental/join_test.flux":                                                          "71000d5678d45a879206b156fd004257ea9149288d5eb415e132f065363f6d51",
-	"stdlib/experimental/json/json.flux":                                                          "4b30bdd67e9f90ee3fcb2e980a6fa3139f977d0365cb7798603b0e42479d425d",
+	"stdlib/experimental/json/json.flux":                                                          "42fa0775e2c1ebbd7dd9b66209711c07bb9fcd349005f6da768494b4a44216c4",
 	"stdlib/experimental/json/json_test.flux":                                                     "7645dcffd85987a955b51838144031bce481bd328bae22154981fd387fabe16e",
 	"stdlib/experimental/kama_test.flux":                                                          "9ebca334280612999a8155f38f702416611a2215711ec411004a4b73be737a54",
 	"stdlib/experimental/last_test.flux":                                                          "6b87c43cc0944e8c9a6a47c26575b0431b3c28f02ba92e6d388f05211b9fe1cf",
