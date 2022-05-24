@@ -4904,8 +4904,8 @@ builtin max : (<-tables: stream[{ A with L: B }], ?column: L) => stream[{ A with
           B: Comparable
 
 // @feature labelPolymorphism
-builtin mean : (<-tables: stream[{ A with C: B }], ?column: C) => stream[{ C: B }]
-    where A: Record, B: Numeric
+builtin mean : (<-tables: stream[{ A with C: B }], ?column: C) => stream[{ D with C: B }]
+    where A: Record, B: Numeric, D: Record
 
 // @feature labelPolymorphism
 builtin min : (<-tables: stream[{ A with L: B }], ?column: L) => stream[{ A with L: B }]
