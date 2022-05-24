@@ -11,9 +11,31 @@ use crate::{
 /// Inspects an AST node and returns a list of found AST errors plus
 /// any errors existed before `ast.check()` is performed.
 pub fn check(node: walk::Node) -> Result<(), Errors<Error>> {
-    let mut errors = Errors::new();
-    walk::walk(
-        &mut |n: walk::Node| {
+    const MAX_DEPTH: u32 = 1000;
+
+    #[derive(Default)]
+    struct Check {
+        depth: u32,
+        errors: Errors<Error>,
+    }
+
+    impl<'a> walk::Visitor<'a> for Check {
+        fn visit(&mut self, n: walk::Node<'a>) -> bool {
+            self.depth += 1;
+
+            let errors = &mut self.errors;
+
+            if self.depth > MAX_DEPTH {
+                errors.push(located(
+                    n.base().location.clone(),
+                    ErrorKind {
+                        message: String::from("Program is nested to deep"),
+                    },
+                ));
+
+                return false;
+            }
+
             // collect any errors we found prior to ast.check().
             for err in n.base().errors.iter() {
                 errors.push(located(
@@ -76,9 +98,19 @@ pub fn check(node: walk::Node) -> Result<(), Errors<Error>> {
                 }
                 _ => {}
             }
-        },
-        node,
-    );
+
+            true
+        }
+
+        fn done(&mut self, _: walk::Node<'a>) {
+            self.depth -= 1;
+        }
+    }
+
+    let mut check = Check::default();
+    walk::walk(&mut check, node);
+    let errors = check.errors;
+
     if errors.is_empty() {
         Ok(())
     } else {
@@ -95,6 +127,12 @@ pub type Error = Located<ErrorKind>;
 pub struct ErrorKind {
     /// Error message.
     pub message: String,
+}
+
+impl ErrorKind {
+    pub(crate) fn is_fatal(&self) -> bool {
+        self.message.contains("Program is nested to deep")
+    }
 }
 
 impl AsDiagnostic for ErrorKind {
