@@ -69,7 +69,7 @@ func toValue(i interface{}) (values.Value, error) {
 			//if !val.Type().Equal(elemTyp) {
 			//	return nil, errors.New(codes.Invalid, "array values must all be the same type")
 			//}
-			vals[i] = val
+			vals[i] = values.NewDynamic(val)
 		}
 		return values.NewArrayWithBacking(semantic.NewArrayType(elemTyp), vals), nil
 	case map[string]interface{}:
