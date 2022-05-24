@@ -2,6 +2,7 @@ package anomalydetection_test
 
 
 import "testing"
+import "csv"
 import "contrib/anaisdg/anomalydetection"
 
 inData =
@@ -149,8 +150,17 @@ inData =
 ,,10,2020-04-27T00:00:00Z,2020-05-01T00:00:00Z,2020-04-30T00:40:28.915662592Z,0.34646602596247655,6,example_data
 ,,10,2020-04-27T00:00:00Z,2020-05-01T00:00:00Z,2020-04-30T12:20:14.457831424Z,0.21777998866664877,6,example_data
 "
-outData =
-    "
+
+testcase mad {
+        got =
+            csv.from(csv: inData)
+                |> range(start: 2020-04-27T00:00:00Z, stop: 2020-05-01T00:00:00Z)
+                |> anomalydetection.mad(threshold: 3.0)
+
+        want =
+            csv.from(
+                csv:
+                    "
 #group,false,false,false,false,false,true,false,false,false,false
 #datatype,string,long,double,string,string,dateTime:RFC3339,double,double,double,string
 #default,_result,,,,,,,,,
@@ -243,10 +253,8 @@ outData =
 ,,7,0.20077292063886873,8,example_data,2020-04-30T12:20:14.457831424Z,1.442798896224032,0.19538307587308443,0.13541947972404475,normal
 ,,7,0.20077292063886873,9,example_data,2020-04-30T12:20:14.457831424Z,1,0.13541947972404475,0.13541947972404475,normal
 ,,7,0.20077292063886873,outlier,example_data,2020-04-30T12:20:14.457831424Z,0.6780820622669829,0.09182552008240213,0.13541947972404475,normal
-"
-t_mad = (table=<-) =>
-    table
-        |> range(start: 2020-04-27T00:00:00Z, stop: 2020-05-01T00:00:00Z)
-        |> anomalydetection.mad(threshold: 3.0)
+",
+            )
 
-test _mad = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_mad})
+        testing.diff(got: got, want: want)
+    }
