@@ -4752,8 +4752,9 @@ builtin elapsed : (<-tables: stream[{ A with T: time }], ?unit: duration, ?timeC
     C: Label,
     T: Label
 
+// TODO
 // @feature labelPolymorphism
-builtin fill : (<-tables: stream[{ A with C: B }], ?column: C, ?value: B, ?usePrevious: bool) => stream[{ A with C: B }] where A: Record, C: Label
+// builtin fill : (<-tables: stream[{ A with C: B }], ?column: C, ?value: B, ?usePrevious: bool) => stream[{ A with C: B }] where A: Record, C: Label
 
 // @feature labelPolymorphism
 builtin histogram : (
@@ -4839,9 +4840,10 @@ builtin min : (<-tables: stream[{ A with L: B }], ?column: L) => stream[{ A with
     where A: Record,
           B: Comparable
 
+// TODO
 // Could be extended to work with other types than string?
 // @feature labelPolymorphism
-builtin set : (<-tables: stream[{ A with K: string }], key: K, value: string) => stream[{ A with K: string}] where A: Record, K: Label
+// builtin set : (<-tables: stream[{ A with K: string }], key: K, value: string) => stream[{ A with K: string}] where A: Record, K: Label
 
 // @feature labelPolymorphism
 builtin skew : (<-tables: stream[{ A with C: B }], ?column: C) => stream[{ A with C: float }]
