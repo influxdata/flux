@@ -4743,10 +4743,11 @@ builtin distinct : (<-tables: stream[{ A with C: B }], ?column: C) => stream[{ _
 // @feature labelPolymorphism
 builtin duplicate : (<-tables: stream[{ A with C: B }], column: C, as: D) => stream[{ A with C: B, D: B }]
     where A: Record,
+          C: Label,
           D: Label
 
 // @feature labelPolymorphism
-builtin elapsed : (<-tables: stream[{ A with T: time }], ?unit: duration, ?timeColumn: T, ?columnName: C) => stream[{ A with T: time, C: duration }]
+builtin elapsed : (<-tables: stream[{ A with T: time }], ?unit: duration, ?timeColumn: T = "_time", ?columnName: C = "elapsed") => stream[{ A with T: time, C: int }]
     where
     A: Record,
     C: Label,
@@ -4762,7 +4763,7 @@ builtin histogram : (
         ?column: C,
         ?upperBoundColumn: U,
         ?countColumn: T,
-        bins: stream[float],
+        bins: [float],
         ?normalize: bool,
     ) => stream[{ U: float, T: float }]
     where
@@ -4799,10 +4800,11 @@ builtin holtWinters : (
     where
     A: Record,
     B: Numeric,
+    C: Label,
     T: Label
 
 // @feature labelPolymorphism
-builtin hourSelection : (<-tables: stream[{ A with T: time }], start: int, stop: int, ?timeColumn: T) => stream[{ A with T: time }] where A: Record
+builtin hourSelection : (<-tables: stream[{ A with T: time }], start: int, stop: int, ?timeColumn: T) => stream[{ A with T: time }] where A: Record, T: Label
 
 // @feature labelPolymorphism
 builtin integral : (
@@ -4814,31 +4816,35 @@ builtin integral : (
     ) => stream[{ A with _start: time, _stop: time, C: B }]
     where
     A: Record,
-    B: Numeric
+    B: Numeric,
+    C: Label,
+    T: Label
 
 // @feature labelPolymorphism
-builtin kaufmansAMA : (<-tables: stream[{ A with L: B }], n: int, ?column: L) => stream[{ A with C: float }]
-    where A: Record, B: Numeric
+builtin kaufmansAMA : (<-tables: stream[{ A with L: B }], n: int, ?column: L) => stream[{ A with L: float }]
+    where A: Record, B: Numeric, L: Label
 
 // @feature labelPolymorphism
-builtin keys : (<-tables: stream[A], ?column: L) => stream[{ L: string }] where A: Record, B: Record
+builtin keys : (<-tables: stream[A], ?column: L) => stream[{ L: string }] where A: Record, B: Record, L: Label
 
 // @feature labelPolymorphism
-builtin last : (<-tables: stream[{ A with L: B }], ?column: L) => stream[{ A with L: B }] where A: Record
+builtin last : (<-tables: stream[{ A with L: B }], ?column: L) => stream[{ A with L: B }] where A: Record, L: Label
 
 // @feature labelPolymorphism
 builtin max : (<-tables: stream[{ A with L: B }], ?column: L) => stream[{ A with L: B }]
     where A: Record,
-          B: Comparable
+          B: Comparable,
+          L: Label
 
 // @feature labelPolymorphism
 builtin mean : (<-tables: stream[{ A with C: B }], ?column: C) => stream[{ D with C: B }]
-    where A: Record, B: Numeric, D: Record
+    where A: Record, B: Numeric, D: Record, C: Label
 
 // @feature labelPolymorphism
 builtin min : (<-tables: stream[{ A with L: B }], ?column: L) => stream[{ A with L: B }]
     where A: Record,
-          B: Comparable
+          B: Comparable,
+          L: Label
 
 // TODO
 // Could be extended to work with other types than string?
@@ -4848,12 +4854,13 @@ builtin min : (<-tables: stream[{ A with L: B }], ?column: L) => stream[{ A with
 // @feature labelPolymorphism
 builtin skew : (<-tables: stream[{ A with C: B }], ?column: C) => stream[{ A with C: float }]
     where A: Record,
-          B: Numeric
+          B: Numeric,
+          C: Label
 
 // Having the output as D is more general than necessary, however the function converts `uint => int` so we can't just use `B` there
 // @feature labelPolymorphism
 builtin spread : (<-tables: stream[{ A with C: B }], ?column: C) => stream[{ A with C: D }]
-    where A: Record, B: Numeric
+    where A: Record, B: Numeric, C: Label
 
 // Seems to lack documentation, so I may be getting this wrong
 // @feature labelPolymorphism
@@ -4872,15 +4879,15 @@ builtin stateTracking : (
     T: Label
 
 // @feature labelPolymorphism
-builtin stddev : (<-tables: stream[{ A with C: B }], ?column: C, ?mode: string) => stream[{ C: B }] where A: Record, B: Numeric
+builtin stddev : (<-tables: stream[{ A with C: B }], ?column: C, ?mode: string) => stream[{ C: B }] where A: Record, B: Numeric, C: Label
 
 // @feature labelPolymorphism
 builtin sum : (<-tables: stream[{ A with C: B }], ?column: C) => stream[{ C: B }]
-    where A: Record, B: Numeric
+    where A: Record, B: Numeric, C: Label
 
 // @feature labelPolymorphism
 builtin unique : (<-tables: stream[{ A with C: B }], ?column: C) => stream[A]
-    where A: Record, B: Equatable
+    where A: Record, B: Equatable, C: Label
 
 // @feature labelPolymorphism
 builtin _window : (
@@ -4902,4 +4909,4 @@ builtin _window : (
     V: Label
 
 // @feature labelPolymorphism
-builtin getColumn : (<-table: stream[{ A with C: B }], column: C) => stream[B] where A: Record
+builtin getColumn : (<-table: stream[{ A with C: B }], column: C) => stream[B] where A: Record, C: Label

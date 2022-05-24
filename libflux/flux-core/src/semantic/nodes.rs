@@ -253,10 +253,11 @@ impl InferState<'_, '_> {
     }
 
     fn free_vars(&mut self) -> Vec<Tvar> {
-        let mut vars = self.env.free_vars();
+        let mut vars = self.env.free_vars(self.sub);
 
         for typ in self.undefined_symbols.unordered_values().cloned() {
-            typ.apply_cow(self.sub).extend_free_vars(&mut vars);
+            typ.apply_cow(self.sub)
+                .extend_free_vars(&mut vars, self.sub);
         }
 
         vars
@@ -859,7 +860,7 @@ impl VariableAssgn {
 
         let t = self.init.type_of().apply(infer.sub);
         infer.resolve_unifications();
-        let p = infer::generalize(infer.env.free_vars(), infer.sub, t);
+        let p = infer::generalize(infer.free_vars(), infer.sub, t);
 
         // Update variable assignment nodes with the free vars
         // and kind constraints obtained from generalization.

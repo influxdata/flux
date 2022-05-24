@@ -149,6 +149,7 @@ impl Matcher<Error> for Subsume {
 
             (MonoType::Var(_), &MonoType::STRING) | (&MonoType::STRING, MonoType::Var(_)) => {
                 if let Some(delayed_unifications) = &mut unifier.delayed_unifications {
+                    log::debug!("Delay subsume {} <> {}", expected, actual);
                     delayed_unifications.push(Unification {
                         matcher: &Subsume,
                         location: Default::default(),
