@@ -488,6 +488,7 @@ impl<'doc> Formatter<'doc> {
                     self.format_monotype(&n.monotype),
                 ]
             }
+            ast::MonoType::Label(label) => self.format_string_literal(label),
         }
         .group()
     }
