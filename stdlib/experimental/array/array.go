@@ -114,7 +114,7 @@ func init() {
 						return nil, evalErr
 					}
 
-					return values.NewArrayWithBacking(semantic.NewArrayType(elements[0].Type()), elements), nil
+					return values.NewArrayWithBacking(semantic.NewArrayType(elementType), elements), nil
 				}, ctx, args)
 			}, false,
 		),
@@ -175,7 +175,13 @@ func init() {
 						return nil, evalErr
 					}
 
-					return values.NewArrayWithBacking(semantic.NewArrayType(elementType), elements), nil
+					return values.NewArrayWithBacking(
+						// n.b. using the `elementType` according to the Array's
+						// typing rather than the `Type()` of the first elem.
+						// This is because of the choice (good or bad) to make
+						// `Dynamic` delegate to the inner value for all `Value`
+						// members, including `Type()`.
+						semantic.NewArrayType(elementType), elements), nil
 				}, ctx, args)
 			}, false,
 		),

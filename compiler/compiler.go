@@ -52,6 +52,9 @@ func Compile(scope Scope, f *semantic.FunctionExpression, in semantic.MonoType) 
 			if err != nil {
 				return nil, err
 			}
+			// FIXME: `array.map` goes off the rails here when given `[dynamic]`.
+			//  Ultimately it tries to get a Record flatbuffer so it can reason
+			//  about what properties it has...
 			if err := substituteTypes(subst, argT, mtyp); err != nil {
 				return nil, err
 			}
@@ -75,6 +78,12 @@ func Compile(scope Scope, f *semantic.FunctionExpression, in semantic.MonoType) 
 // If the input type is not a type variable, it will check to ensure
 // that the type in the input matches or it will return an error.
 func substituteTypes(subst *semantic.Substitution, inferredType, actualType semantic.MonoType) error {
+	// FIXME: hack to allow `[dynamic]` to flow through `array.map`.
+	//  Not sure how to really handle substitutions with `Dynamic`.
+	if inferredType.Nature() == semantic.Dynamic || actualType.Nature() == semantic.Dynamic {
+		return nil
+	}
+
 	// If the input isn't a valid type, then don't consider it as
 	// part of substituting types. We will trust type inference has
 	// the correct type and that we are just handling a null value
