@@ -50,8 +50,8 @@ fn vectorize_field_access() -> anyhow::Result<()> {
 
     expect_test::expect![[r##"
         (r) => {
-            return {a: r:{F with b:v[#B], a:v[#D]}.a:v[#D], b: r:{F with b:v[#B], a:v[#D]}.b:v[#B]}:{a:v[#D], b:v[#B]}
-        }:(r:{F with b:v[#B], a:v[#D]}) => {a:v[#D], b:v[#B]}"##]].assert_eq(&crate::semantic::formatter::format_node(
+            return {a: r:{#F with b:v[#B], a:v[#D]}.a:v[#D], b: r:{#F with b:v[#B], a:v[#D]}.b:v[#B]}:{a:v[#D], b:v[#B]}
+        }:(r:{#F with b:v[#B], a:v[#D]}) => {a:v[#D], b:v[#B]}"##]].assert_eq(&crate::semantic::formatter::format_node(
             Node::FunctionExpr(function),
     )?);
 
@@ -66,8 +66,8 @@ fn vectorize_with_construction() -> anyhow::Result<()> {
 
     expect_test::expect![[r##"
         (r) => {
-            return {r:{C with a:v[#B]} with b: r:{C with a:v[#B]}.a:v[#B]}:{C with b:v[#B], a:v[#B]}
-        }:(r:{C with a:v[#B]}) => {C with b:v[#B], a:v[#B]}"##]]
+            return {r:{#C with a:v[#B]} with b: r:{#C with a:v[#B]}.a:v[#B]}:{#C with b:v[#B], a:v[#B]}
+        }:(r:{#C with a:v[#B]}) => {#C with b:v[#B], a:v[#B]}"##]]
     .assert_eq(&crate::semantic::formatter::format_node(
         Node::FunctionExpr(function),
     )?);
@@ -88,8 +88,8 @@ fn vectorize_even_when_another_function_fails_to_vectorize() -> anyhow::Result<(
 
     expect_test::expect![[r##"
         (r) => {
-            return {r:{I with a:v[#G], b:v[#G]} with x: r:{I with a:v[#G], b:v[#G]}.a:v[#G] +:v[#G] r:{I with a:v[#G], b:v[#G]}.b:v[#G]}:{I with x:v[#G], a:v[#G], b:v[#G]}
-        }:(r:{I with a:v[#G], b:v[#G]}) => {I with x:v[#G], a:v[#G], b:v[#G]}"##]]
+            return {r:{#I with a:v[#G], b:v[#G]} with x: r:{#I with a:v[#G], b:v[#G]}.a:v[#G] +:v[#G] r:{#I with a:v[#G], b:v[#G]}.b:v[#G]}:{#I with x:v[#G], a:v[#G], b:v[#G]}
+        }:(r:{#I with a:v[#G], b:v[#G]}) => {#I with x:v[#G], a:v[#G], b:v[#G]}"##]]
     .assert_eq(&crate::semantic::formatter::format_node(
         Node::FunctionExpr(function),
     )?);
@@ -117,8 +117,8 @@ fn vectorize_addition_operator() -> anyhow::Result<()> {
 
     expect_test::expect![[r##"
         (r) => {
-            return {x: r:{F with a:v[#D], b:v[#D]}.a:v[#D] +:v[#D] r:{F with a:v[#D], b:v[#D]}.b:v[#D]}:{x:v[#D]}
-        }:(r:{F with a:v[#D], b:v[#D]}) => {x:v[#D]}"##]].assert_eq(&crate::semantic::formatter::format_node(
+            return {x: r:{#F with a:v[#D], b:v[#D]}.a:v[#D] +:v[#D] r:{#F with a:v[#D], b:v[#D]}.b:v[#D]}:{x:v[#D]}
+        }:(r:{#F with a:v[#D], b:v[#D]}) => {x:v[#D]}"##]].assert_eq(&crate::semantic::formatter::format_node(
         Node::FunctionExpr(function),
     )?);
 
@@ -133,8 +133,8 @@ fn vectorize_subtraction_operator() -> anyhow::Result<()> {
 
     expect_test::expect![[r##"
         (r) => {
-            return {x: r:{F with a:v[#D], b:v[#D]}.a:v[#D] -:v[#D] r:{F with a:v[#D], b:v[#D]}.b:v[#D]}:{x:v[#D]}
-        }:(r:{F with a:v[#D], b:v[#D]}) => {x:v[#D]}"##]].assert_eq(&crate::semantic::formatter::format_node(
+            return {x: r:{#F with a:v[#D], b:v[#D]}.a:v[#D] -:v[#D] r:{#F with a:v[#D], b:v[#D]}.b:v[#D]}:{x:v[#D]}
+        }:(r:{#F with a:v[#D], b:v[#D]}) => {x:v[#D]}"##]].assert_eq(&crate::semantic::formatter::format_node(
         Node::FunctionExpr(function),
     )?);
 

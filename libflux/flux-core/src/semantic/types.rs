@@ -1579,15 +1579,12 @@ impl Record {
         }
     }
 
-    fn format(&self, f: &mut String) -> Result<Option<Tvar>, fmt::Error> {
+    fn format(&self, f: &mut String) -> Result<Option<&MonoType>, fmt::Error> {
         let mut fields = self.fields();
         for head in &mut fields {
             write!(f, "{}, ", head)?;
         }
-        Ok(match fields.tail() {
-            Some(MonoType::BoundVar(tv)) | Some(MonoType::Var(tv)) => Some(*tv),
-            _ => None,
-        })
+        Ok(fields.tail())
     }
 
     /// Returns an iterator over the fields in the record
