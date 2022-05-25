@@ -4738,7 +4738,7 @@ builtin columns : (<-tables: stream[A], ?column: L) => stream[{ L: string }] whe
 builtin count : (<-tables: stream[A], ?column: string) => stream[{ B with _value: int }] where A: Record
 
 // @feature labelPolymorphism
-builtin distinct : (<-tables: stream[{ A with C: B }], ?column: C) => stream[{ _value: B }] where A: Record, B: Equatable, C: Label
+builtin distinct : (<-tables: stream[{ A with C: B }], ?column: C) => stream[{ A with _value: B }] where A: Record, B: Equatable, C: Label
 
 // @feature labelPolymorphism
 builtin duplicate : (<-tables: stream[{ A with C: B }], column: C, as: D) => stream[{ A with C: B, D: B }]
