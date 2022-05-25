@@ -134,11 +134,11 @@ impl Matcher<Error> for Subsume {
             }
         }
 
-        let actual = unifier.sub.real(actual);
-        let expected = unifier.sub.real(expected);
+        let original_actual = unifier.sub.real(actual);
+        let original_expected = unifier.sub.real(expected);
 
-        let actual = translate_label(unifier, &actual, &expected);
-        let expected = translate_label(unifier, &expected, &actual);
+        let actual = translate_label(unifier, &original_actual, &original_expected);
+        let expected = translate_label(unifier, &original_expected, &actual);
 
         match (&*expected, &*actual) {
             // Labels should be accepted anywhere that we expect a string
@@ -149,12 +149,12 @@ impl Matcher<Error> for Subsume {
 
             (MonoType::Var(_), &MonoType::STRING) | (&MonoType::STRING, MonoType::Var(_)) => {
                 if let Some(delayed_unifications) = &mut unifier.delayed_unifications {
-                    log::debug!("Delay subsume {} <> {}", expected, actual);
+                    log::debug!("Delay subsume {} <> {}", original_expected, original_actual);
                     delayed_unifications.push(Unification {
                         matcher: &Subsume,
                         location: Default::default(),
-                        expected: expected.into_owned(),
-                        actual: actual.into_owned(),
+                        expected: original_expected.into_owned(),
+                        actual: original_actual.into_owned(),
                         context: Vec::new(),
                     });
                     MonoType::STRING

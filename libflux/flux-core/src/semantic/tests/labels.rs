@@ -392,3 +392,28 @@ fn inferred_to_string_before_label() {
         ],
     }
 }
+
+#[test]
+fn string_literal_is_treated_as_label_due_to_requirement_by_differnt_function_passed_as_argument() {
+    test_infer! {
+        config: AnalyzerConfig{
+            features: vec![Feature::LabelPolymorphism],
+            ..AnalyzerConfig::default()
+        },
+        env: map![
+            "from" => "(bucket: string) => stream[A] where A: Record",
+            "compute" => "(<-tables:A, as:string, ?column:B, ?fn:(<-:A, column:B) => stream[C]) => stream[D] where B: Equatable, C: Record, D: Record",
+            "max" => r#"(<-tables: stream[{ A with L: B }], ?column: L) => stream[{ A with L: B }]
+                where A: Record,
+                      B: Comparable,
+                      L: Label"#,
+        ],
+        src: r#"
+            x = from(bucket: "ostrich")
+                |> compute(column: "gauge", fn: max, as: "alert_threshold")
+        "#,
+        exp: map![
+            "x" => r#"stream[A] where A: Record"#,
+        ],
+    }
+}
