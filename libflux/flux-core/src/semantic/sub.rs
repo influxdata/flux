@@ -62,7 +62,7 @@ type UnificationTable = ena::unify::InPlaceUnificationTable<Tvar>;
 impl From<SubstitutionMap> for Substitution {
     /// Derive a substitution from a hash map.
     fn from(values: SubstitutionMap) -> Substitution {
-        let sub = Substitution::default();
+        let mut sub = Substitution::default();
         for (var, typ) in values {
             // Create any variables referenced in the input map
             while var.0 >= sub.table.borrow().len() as u64 {
@@ -75,6 +75,11 @@ impl From<SubstitutionMap> for Substitution {
 }
 
 impl Substitution {
+    /// Return a new empty substitution.
+    pub fn new() -> Substitution {
+        Substitution::default()
+    }
+
     /// Return a new empty substitution.
     pub fn empty() -> Substitution {
         Substitution::default()
@@ -150,22 +155,21 @@ impl Substitution {
 
     /// Unifies as a `Tvar` and a `MonoType`, recording the result in the substitution for later
     /// lookup
-    pub fn union_type(&self, var: Tvar, typ: MonoType) -> Result<(), Error> {
+    pub fn union_type(&mut self, var: Tvar, typ: MonoType) -> Result<(), Error> {
         match typ {
             MonoType::Var(r) => self.union(var, r),
             _ => {
                 self.table.borrow_mut().union_value(var, Some(typ.clone()));
 
-                let mut cons = self.cons.borrow_mut();
-                if let Some(kinds) = cons.remove(&var) {
+                if let Some(kinds) = self.cons().remove(&var) {
                     for kind in &kinds {
                         // The monotype that is being unified with the
                         // tvar must be constrained with the same kinds
                         // as that of the tvar.
-                        typ.clone().constrain(*kind, &mut cons)?;
+                        typ.clone().constrain(*kind, self)?;
                     }
                     if matches!(typ, MonoType::BoundVar(_)) {
-                        cons.insert(var, kinds);
+                        self.cons().insert(var, kinds);
                     }
                 }
             }
