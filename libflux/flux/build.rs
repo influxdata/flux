@@ -57,7 +57,8 @@ fn main() -> Result<()> {
         println!("cargo:rerun-if-changed={}", f);
     }
 
-    let (prelude, imports, sem_pkgs) = bootstrap::infer_stdlib_dir(stdlib_path)?;
+    let (prelude, imports, sem_pkgs) =
+        bootstrap::infer_stdlib_dir(stdlib_path, Default::default())?;
 
     // Validate there aren't any free type variables in the environment
     for (name, ty) in prelude.iter() {

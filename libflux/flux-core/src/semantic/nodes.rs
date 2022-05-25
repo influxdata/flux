@@ -409,7 +409,6 @@ impl Substituter for FinalizeTypes<'_> {
                 let typ = self.sub.try_apply(*tvr)?;
                 Some(self.visit_type(&typ).unwrap_or(typ))
             }
-            MonoType::Label(_) => Some(MonoType::STRING),
             _ => typ.walk(self),
         }
     }
@@ -817,14 +816,10 @@ impl ArrayExpr {
         for el in &mut self.elements {
             el.infer(infer)?;
 
-            match &elt {
-                None => {
-                    elt = Some(el.type_of());
-                }
-                Some(elt) => {
-                    infer.equal(elt, &el.type_of(), el.loc());
-                }
-            }
+            elt = Some(match &elt {
+                None => el.type_of(),
+                Some(elt) => infer.equal(elt, &el.type_of(), el.loc()),
+            });
         }
         let elt = elt.unwrap_or_else(|| MonoType::Var(infer.sub.fresh()));
         self.typ = MonoType::arr(elt);

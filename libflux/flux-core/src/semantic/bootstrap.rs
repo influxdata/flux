@@ -23,7 +23,7 @@ use crate::{
         types::{
             MonoType, PolyType, PolyTypeHashMap, Record, RecordLabel, SemanticMap, Tvar, TvarKinds,
         },
-        Analyzer, PackageExports,
+        Analyzer, AnalyzerConfig, PackageExports,
     },
 };
 
@@ -43,10 +43,16 @@ pub type SemanticPackageMap = SemanticMap<String, Package>;
 /// Infers the Flux standard library given the path to the source code.
 /// The prelude and the imports are returned.
 #[allow(clippy::type_complexity)]
-pub fn infer_stdlib_dir(path: &Path) -> Result<(PackageExports, Packages, SemanticPackageMap)> {
+pub fn infer_stdlib_dir(
+    path: &Path,
+    config: AnalyzerConfig,
+) -> Result<(PackageExports, Packages, SemanticPackageMap)> {
     let ast_packages = parse_dir(path)?;
 
-    let mut infer_state = InferState::default();
+    let mut infer_state = InferState {
+        config,
+        ..InferState::default()
+    };
     let prelude = infer_state.infer_pre(&ast_packages)?;
     infer_state.infer_std(&ast_packages, &prelude)?;
 
@@ -75,13 +81,15 @@ pub fn parse_dir(dir: &Path) -> io::Result<ASTPackageMap> {
                     // to work with either separator.
                     normalized_path = normalized_path.replace('\\', "/");
                 }
-                files.push(parser::parse_string(
+                let source = fs::read_to_string(entry.path())?;
+                let ast = parser::parse_string(
                     normalized_path
                         .rsplitn(2, "/stdlib/")
                         .collect::<Vec<&str>>()[0]
                         .to_owned(),
-                    &fs::read_to_string(entry.path())?,
-                ));
+                    &source,
+                );
+                files.push((source, ast));
             }
         }
     }
@@ -89,15 +97,19 @@ pub fn parse_dir(dir: &Path) -> io::Result<ASTPackageMap> {
 }
 
 // Associates an import path with each file
-fn ast_map(files: Vec<ast::File>) -> ASTPackageMap {
+fn ast_map(files: Vec<(String, ast::File)>) -> ASTPackageMap {
     files
         .into_iter()
-        .fold(ASTPackageMap::new(), |mut acc, file| {
+        .fold(ASTPackageMap::new(), |mut acc, (source, file)| {
             let path = file.name.rsplitn(2, '/').collect::<Vec<&str>>()[1].to_string();
             acc.insert(
                 path.clone(),
                 ast::Package {
                     base: ast::BaseNode {
+                        location: ast::SourceLocation {
+                            source: Some(source),
+                            ..ast::SourceLocation::default()
+                        },
                         ..ast::BaseNode::default()
                     },
                     path,
@@ -154,6 +166,7 @@ struct InferState {
     // types available for import
     imports: Packages,
     sem_pkg_map: SemanticPackageMap,
+    config: AnalyzerConfig,
 }
 
 impl InferState {
@@ -241,8 +254,13 @@ impl InferState {
             .ok_or_else(|| anyhow!(r#"package import "{}" not found"#, name))?;
 
         let env = Environment::new(prelude.into());
-        let mut analyzer = Analyzer::new_with_defaults(env, &mut self.imports);
-        let (exports, sem_pkg) = analyzer.analyze_ast(file).map_err(|err| err.error)?;
+        let mut analyzer = Analyzer::new(env, &mut self.imports, self.config.clone());
+        let (exports, sem_pkg) = analyzer.analyze_ast(file).map_err(|mut err| {
+            if err.error.source.is_none() {
+                err.error.source = file.base.location.source.clone();
+            }
+            err.error.pretty_error()
+        })?;
 
         Ok((exports, sem_pkg))
     }
@@ -342,7 +360,7 @@ pub fn stdlib(dir: &Path) -> Result<(PackageExports, FileSystemImporter<StdFS>)>
 
 /// Compiles the stdlib found at the srcdir into the outdir.
 pub fn compile_stdlib(srcdir: &Path, outdir: &Path) -> Result<()> {
-    let (_, imports, mut sem_pkgs) = infer_stdlib_dir(srcdir)?;
+    let (_, imports, mut sem_pkgs) = infer_stdlib_dir(srcdir, AnalyzerConfig::default())?;
     // Write each file as compiled module
     for (path, exports) in &imports {
         if let Some(code) = sem_pkgs.remove(path) {

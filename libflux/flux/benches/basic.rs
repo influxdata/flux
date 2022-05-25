@@ -27,7 +27,8 @@ fn everything(c: &mut Criterion) {
     let mut group = c.benchmark_group("infer");
     group.sample_size(10).bench_function("bootstrap", |b| {
         b.iter(black_box(|| {
-            let (prelude, _, _) = bootstrap::infer_stdlib_dir(Path::new("../../stdlib")).unwrap();
+            let (prelude, _, _) =
+                bootstrap::infer_stdlib_dir(Path::new("../../stdlib"), Default::default()).unwrap();
             assert!(prelude.len() > 0);
         }));
     });

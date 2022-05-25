@@ -616,6 +616,10 @@ impl<'a> Converter<'a> {
                 }
                 r
             }
+
+            ast::MonoType::Label(string_lit) => {
+                MonoType::Label(types::Label::from(string_lit.value.as_str()))
+            }
         }
     }
 

@@ -461,6 +461,7 @@ where
 
                     walk(v, Node::MonoType(&f.monotype));
                 }
+                MonoType::Label(lit) => walk(v, Node::StringLit(lit)),
             },
             Node::PropertyType(n) => {
                 walk(v, Node::from_property_key(&n.name));

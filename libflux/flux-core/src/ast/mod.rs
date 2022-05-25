@@ -609,6 +609,8 @@ pub enum MonoType {
     Record(RecordType),
     #[serde(rename = "FunctionType")]
     Function(Box<FunctionType>),
+    #[serde(rename = "LabelType")]
+    Label(Box<StringLit>),
 }
 
 impl MonoType {
@@ -622,6 +624,7 @@ impl MonoType {
             MonoType::Dict(t) => &t.base,
             MonoType::Record(t) => &t.base,
             MonoType::Function(t) => &t.base,
+            MonoType::Label(t) => &t.base,
         }
     }
 }

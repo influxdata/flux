@@ -21,7 +21,7 @@ fn labels_simple() {
             z = [{ a: 1, b: ""}] |> fill(column: b, value: 1.0)
         "#,
         exp: map![
-            "b" => "string",
+            "b" => "\"b\"",
             "x" => "[{ a: string }]",
             "y" => "[{ a: int, b: float }]",
             "z" => "[{ a: int, b: float }]",
@@ -226,6 +226,25 @@ fn optional_label_defined() {
         exp: map![
             "x" => "{ abc: string }",
             "y" => "string",
+        ],
+    }
+}
+
+#[test]
+fn label_types_are_preserved_in_exports() {
+    test_infer! {
+        config: AnalyzerConfig{
+            features: vec![Feature::LabelPolymorphism],
+            ..AnalyzerConfig::default()
+        },
+        src: r#"
+            builtin elapsed: (?timeColumn: T = "_time") => stream[{ A with T: time }]
+                    where
+                    A: Record,
+                    T: Label
+        "#,
+        exp: map![
+            "elapsed" => r#"(?timeColumn:A = "_time") => stream[{B with A:time}] where A: Label, B: Record"#
         ],
     }
 }
