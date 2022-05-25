@@ -31,6 +31,8 @@ pub type SemanticMap<K, V> = BTreeMap<K, V>;
 pub type SemanticMapIter<'a, K, V> = std::collections::btree_map::Iter<'a, K, V>;
 
 trait Matcher<E> {
+    fn name(&self) -> &'static str;
+
     fn match_types(
         &self,
         unifier: &mut Unifier<'_, E>,
@@ -42,6 +44,10 @@ trait Matcher<E> {
 struct Unify;
 
 impl Matcher<Error> for Unify {
+    fn name(&self) -> &'static str {
+        "Unify"
+    }
+
     fn match_types(
         &self,
         unifier: &mut Unifier<'_, Error>,
@@ -65,6 +71,10 @@ impl Matcher<Error> for Unify {
 struct Subsume;
 
 impl Matcher<Error> for Subsume {
+    fn name(&self) -> &'static str {
+        "Subsume"
+    }
+
     fn match_types(
         &self,
         unifier: &mut Unifier<'_, Error>,
@@ -78,14 +88,8 @@ impl Matcher<Error> for Subsume {
             maybe_label: &'a MonoType,
             maybe_var: &'a MonoType,
         ) -> Cow<'a, MonoType> {
-            match maybe_var {
-                MonoType::Var(v)
-                    if !unifier
-                        .sub
-                        .cons()
-                        .get(v)
-                        .map_or(false, |kinds| kinds.contains(&Kind::Label)) =>
-                {
+            match *maybe_var {
+                MonoType::Var(v) if !unifier.sub.satisfies(v, Kind::Label) => {
                     struct ReplaceLabels;
                     impl Substituter for ReplaceLabels {
                         fn try_apply(&mut self, _: Tvar) -> Option<MonoType> {
@@ -964,7 +968,7 @@ impl MonoType {
         actual: &Self,
         unifier: &mut Unifier<'_>,
     ) -> MonoType {
-        log::debug!("Unify {} <=> {}", self, actual);
+        log::debug!("{} {} <=> {}", unifier.matcher.name(), self, actual);
 
         unifier.matcher.match_types(unifier, self, actual)
     }

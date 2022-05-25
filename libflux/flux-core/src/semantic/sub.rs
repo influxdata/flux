@@ -3,7 +3,7 @@ use std::{borrow::Cow, cell::RefCell, collections::BTreeMap, fmt, iter::FusedIte
 
 use crate::semantic::{
     fresh::Fresher,
-    types::{union, Error, MonoType, PolyType, SubstitutionMap, Tvar, TvarKinds},
+    types::{union, Error, Kind, MonoType, PolyType, SubstitutionMap, Tvar, TvarKinds},
 };
 
 use ena::unify::UnifyKey;
@@ -105,6 +105,13 @@ impl Substitution {
 
     pub(crate) fn cons(&mut self) -> &mut TvarKinds {
         self.cons.get_mut()
+    }
+
+    pub(crate) fn satisfies(&self, v: Tvar, kind: Kind) -> bool {
+        self.cons
+            .borrow()
+            .get(&v)
+            .map_or(false, |kinds| kinds.contains(&kind))
     }
 
     /// Apply a substitution to a type variable.
