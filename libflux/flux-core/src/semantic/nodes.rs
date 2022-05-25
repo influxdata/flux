@@ -167,6 +167,51 @@ impl InferState<'_, '_> {
         }
     }
 
+    fn subsume(&mut self, exp: &MonoType, act: &MonoType, loc: &ast::SourceLocation) -> MonoType {
+        match infer::subsume(exp, act, loc, self.sub) {
+            Ok(typ) => typ,
+            Err(err) => {
+                self.errors
+                    .extend(err.error.into_iter().map(|error| Located {
+                        location: loc.clone(),
+                        error: error.into(),
+                    }));
+                MonoType::Error
+            }
+        }
+    }
+
+    fn subsume_function(
+        &mut self,
+        call_expr: &CallExpr,
+        exp: &Function,
+        act: Function<(MonoType, &ast::SourceLocation)>,
+    ) {
+        log::debug!(
+            "Subsume {:?}: {} <===> {}",
+            call_expr.callee.loc().source,
+            exp,
+            act.clone().map(|(typ, _)| typ),
+        );
+        if let Err(err) = exp.try_subsume_with(
+            &act,
+            self.sub,
+            |typ| (typ.clone(), call_expr.callee.loc()),
+            |error| Located {
+                location: call_expr.loc.clone(),
+                error,
+            },
+        ) {
+            log::debug!(
+                "Unify error: {} <=> {} : {}",
+                exp,
+                act.clone().map(|(typ, _)| typ),
+                err
+            );
+            self.errors.extend(err.into_iter().map(Error::from));
+        }
+    }
+
     fn error(&mut self, loc: ast::SourceLocation, error: ErrorKind) {
         self.errors.push(located(loc, error));
     }
@@ -1019,7 +1064,7 @@ impl FunctionExpr {
 
         infer.solve(&ncons);
 
-        infer.equal(&exp, &default_func, &self.loc);
+        infer.subsume(&exp, &default_func, &self.loc);
 
         Ok(())
     }
@@ -1292,18 +1337,25 @@ impl CallExpr {
         self.callee.infer(infer)?;
         let mut req = MonoTypeMap::new();
         let mut pipe = None;
+        for arg in &mut self.arguments {
+            arg.value.infer(infer)?;
+        }
+
         for Property {
-            key: ref mut id,
-            value: ref mut expr,
+            key: id,
+            value: expr,
             ..
-        } in &mut self.arguments
+        } in &self.arguments
         {
-            expr.infer(infer)?;
             // Every argument is required in a function call.
             req.insert(id.name.to_string(), (expr.type_of(), expr.loc()));
         }
-        if let Some(ref mut p) = &mut self.pipe {
+
+        if let Some(p) = &mut self.pipe {
             p.infer(infer)?;
+        }
+
+        if let Some(p) = &self.pipe {
             pipe = Some(types::Property {
                 k: "<-".to_string(),
                 v: (p.type_of(), p.loc()),
@@ -1319,23 +1371,7 @@ impl CallExpr {
 
         match &*self.callee.type_of().apply_cow(infer.sub) {
             MonoType::Fun(func) => {
-                if let Err(err) = func.try_subsume_with(
-                    &act,
-                    infer.sub,
-                    |typ| (typ.clone(), self.callee.loc()),
-                    |error| Located {
-                        location: self.loc.clone(),
-                        error,
-                    },
-                ) {
-                    log::debug!(
-                        "Unify error: {} <=> {} : {}",
-                        func,
-                        act.map(|(typ, _)| typ),
-                        err
-                    );
-                    infer.errors.extend(err.into_iter().map(Error::from));
-                }
+                infer.subsume_function(self, func, act);
             }
             callee => {
                 let act = act.map(|(typ, _)| typ);
