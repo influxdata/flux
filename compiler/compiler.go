@@ -52,9 +52,6 @@ func Compile(scope Scope, f *semantic.FunctionExpression, in semantic.MonoType) 
 			if err != nil {
 				return nil, err
 			}
-			// FIXME: `array.map` goes off the rails here when given `[dynamic]`.
-			//  Ultimately it tries to get a Record flatbuffer so it can reason
-			//  about what properties it has...
 			if err := substituteTypes(subst, argT, mtyp); err != nil {
 				return nil, err
 			}
