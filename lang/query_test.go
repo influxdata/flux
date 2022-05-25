@@ -164,6 +164,7 @@ func TestQuery_Stats(t *testing.T) {
 			t.Fatalf("unexpected error while iterating over tables: %s", err)
 		}
 	}
+	q.Done()
 
 	stats := q.Statistics()
 	if stats.TotalDuration <= 0 {
@@ -395,6 +396,10 @@ data
 			if q, close, err := runQuery(context.Background(), prelude+tc.script); err != nil {
 				t.Error(err)
 			} else {
+				// Mark the query as done as we won't read it.
+				q.Done()
+
+				// Access the statistics.
 				got := fmt.Sprintf("%v", q.Statistics().Metadata["flux/query-plan"])
 				if !cmp.Equal(tc.want, got) {
 					t.Errorf("unexpected value -want/+got\n%s", cmp.Diff(tc.want, got))

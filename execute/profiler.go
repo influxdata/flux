@@ -1,10 +1,8 @@
 package execute
 
 import (
-	"context"
 	"fmt"
 	"strings"
-	"time"
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/memory"
@@ -35,111 +33,19 @@ func init() {
 	)
 }
 
-type OperatorProfilingResult struct {
-	Type string
-	// Those labels are actually their operation name. See flux/internal/spec.buildSpec.
-	// Some examples are:
-	// merged_fromRemote_range1_filter2_filter3_filter4, window5, window8, generated_yield, etc.
-	Label string
-	Start time.Time
-	Stop  time.Time
-}
-
-type OperatorProfilingState struct {
-	profiler *OperatorProfiler
-	Result   OperatorProfilingResult
-}
-
-func (t *OperatorProfilingState) Finish() {
-	t.FinishWithTime(time.Now())
-}
-
-func (t *OperatorProfilingState) FinishWithTime(finishTime time.Time) {
-	t.Result.Stop = finishTime
-	if t.profiler != nil && t.profiler.chIn != nil {
-		t.profiler.chIn <- t.Result
-	}
-}
-
-type operatorProfilingResultAggregate struct {
-	operationType string
-	label         string
-	resultCount   int64
-	resultMin     int64
-	resultMax     int64
-	resultSum     int64
-	resultMean    float64
-}
-
-type operatorProfilerLabelGroup = map[string]*operatorProfilingResultAggregate
-type operatorProfilerTypeGroup = map[string]operatorProfilerLabelGroup
-
-type OperatorProfiler struct {
-	// Receive the profiling results from the operator states.
-	chIn  chan OperatorProfilingResult
-	chOut chan operatorProfilingResultAggregate
-}
+type OperatorProfiler struct{}
 
 func createOperatorProfiler() Profiler {
-	p := &OperatorProfiler{
-		chIn:  make(chan OperatorProfilingResult),
-		chOut: make(chan operatorProfilingResultAggregate),
-	}
-	go func(p *OperatorProfiler) {
-		aggs := make(operatorProfilerTypeGroup)
-		for result := range p.chIn {
-			_, ok := aggs[result.Type]
-			if !ok {
-				aggs[result.Type] = make(operatorProfilerLabelGroup)
-			}
-			_, ok = aggs[result.Type][result.Label]
-			if !ok {
-				aggs[result.Type][result.Label] = &operatorProfilingResultAggregate{}
-			}
-			a := aggs[result.Type][result.Label]
-
-			// Aggregate the results
-			a.resultCount++
-			duration := result.Stop.Sub(result.Start).Nanoseconds()
-			if duration > a.resultMax {
-				a.resultMax = duration
-			}
-			if duration < a.resultMin || a.resultMin == 0 {
-				a.resultMin = duration
-			}
-			a.resultSum += duration
-		}
-
-		// Write the aggregated results to chOut, where they'll be
-		// converted into rows and appended to the final table
-		for typ, labels := range aggs {
-			for label, agg := range labels {
-				agg.resultMean = float64(agg.resultSum) / float64(agg.resultCount)
-				agg.operationType = typ
-				agg.label = label
-				p.chOut <- *agg
-			}
-		}
-		close(p.chOut)
-	}(p)
-
-	return p
+	return &OperatorProfiler{}
 }
 
 func (o *OperatorProfiler) Name() string {
 	return "operator"
 }
 
-func (o *OperatorProfiler) closeIncomingChannel() {
-	if o.chIn != nil {
-		close(o.chIn)
-		o.chIn = nil
-	}
-}
-
 func (o *OperatorProfiler) GetResult(q flux.Query, alloc memory.Allocator) (flux.Table, error) {
-	o.closeIncomingChannel()
-	b, err := o.getTableBuilder(alloc)
+	stats := q.Statistics()
+	b, err := o.getTableBuilder(stats, alloc)
 	if err != nil {
 		return nil, err
 	}
@@ -154,8 +60,8 @@ func (o *OperatorProfiler) GetResult(q flux.Query, alloc memory.Allocator) (flux
 // on the ColListTableBuilder to make testing easier.
 // sortKeys and desc are passed directly into the Sort() call
 func (o *OperatorProfiler) GetSortedResult(q flux.Query, alloc memory.Allocator, desc bool, sortKeys ...string) (flux.Table, error) {
-	o.closeIncomingChannel()
-	b, err := o.getTableBuilder(alloc)
+	stats := q.Statistics()
+	b, err := o.getTableBuilder(stats, alloc)
 	if err != nil {
 		return nil, err
 	}
@@ -167,7 +73,7 @@ func (o *OperatorProfiler) GetSortedResult(q flux.Query, alloc memory.Allocator,
 	return tbl, nil
 }
 
-func (o *OperatorProfiler) getTableBuilder(alloc memory.Allocator) (*ColListTableBuilder, error) {
+func (o *OperatorProfiler) getTableBuilder(stats flux.Statistics, alloc memory.Allocator) (*ColListTableBuilder, error) {
 	groupKey := NewGroupKey(
 		[]flux.ColMeta{
 			{
@@ -220,43 +126,17 @@ func (o *OperatorProfiler) getTableBuilder(alloc memory.Allocator) (*ColListTabl
 		}
 	}
 
-	for agg := range o.chOut {
+	for _, profile := range stats.Profiles {
 		b.AppendString(0, "profiler/operator")
-		b.AppendString(1, agg.operationType)
-		b.AppendString(2, agg.label)
-		b.AppendInt(3, agg.resultCount)
-		b.AppendInt(4, agg.resultMin)
-		b.AppendInt(5, agg.resultMax)
-		b.AppendInt(6, agg.resultSum)
-		b.AppendFloat(7, agg.resultMean)
+		b.AppendString(1, profile.NodeType)
+		b.AppendString(2, profile.Label)
+		b.AppendInt(3, profile.Count)
+		b.AppendInt(4, profile.Min)
+		b.AppendInt(5, profile.Max)
+		b.AppendInt(6, profile.Sum)
+		b.AppendFloat(7, profile.Mean)
 	}
 	return b, nil
-}
-
-// NewOperatorProfilingState creates a new state instance for the given operation name
-// and label, provided an operator profiler exists in the execution options.
-// If there is no operator profiler, this function returns nil.
-func NewOperatorProfilingState(ctx context.Context, operationName string, label string, start ...time.Time) *OperatorProfilingState {
-	opStart := time.Now()
-	if len(start) > 0 {
-		opStart = start[0]
-	}
-	var state *OperatorProfilingState
-	if HaveExecutionDependencies(ctx) {
-		deps := GetExecutionDependencies(ctx)
-		if deps.ExecutionOptions.OperatorProfiler != nil {
-			tfp := deps.ExecutionOptions.OperatorProfiler
-			state = &OperatorProfilingState{
-				profiler: tfp,
-				Result: OperatorProfilingResult{
-					Type:  operationName,
-					Label: label,
-					Start: opStart,
-				},
-			}
-		}
-	}
-	return state
 }
 
 type QueryProfiler struct{}

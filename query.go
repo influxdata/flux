@@ -56,6 +56,9 @@ type Statistics struct {
 	// The number includes memory that was freed and then used again.
 	TotalAllocated int64 `json:"total_allocated"`
 
+	// Profiles holds the profiles for each transport (source/transformation) in this query.
+	Profiles []TransportProfile
+
 	// RuntimeErrors contains error messages that happened during the execution of the query.
 	RuntimeErrors []string `json:"runtime_errors"`
 
@@ -71,6 +74,9 @@ func (s Statistics) Add(other Statistics) Statistics {
 	md := make(metadata.Metadata)
 	md.AddAll(s.Metadata)
 	md.AddAll(other.Metadata)
+	profiles := make([]TransportProfile, 0, len(s.Profiles)+len(other.Profiles))
+	profiles = append(profiles, s.Profiles...)
+	profiles = append(profiles, other.Profiles...)
 	return Statistics{
 		TotalDuration:   s.TotalDuration + other.TotalDuration,
 		CompileDuration: s.CompileDuration + other.CompileDuration,
@@ -81,7 +87,87 @@ func (s Statistics) Add(other Statistics) Statistics {
 		Concurrency:     s.Concurrency + other.Concurrency,
 		MaxAllocated:    s.MaxAllocated + other.MaxAllocated,
 		TotalAllocated:  s.TotalAllocated + other.TotalAllocated,
+		Profiles:        profiles,
 		RuntimeErrors:   errs,
 		Metadata:        md,
 	}
+}
+
+// Merge copies the values from other into s.
+func (s *Statistics) Merge(other Statistics) {
+	s.TotalDuration += other.TotalDuration
+	s.CompileDuration += other.CompileDuration
+	s.QueueDuration += other.QueueDuration
+	s.PlanDuration += other.PlanDuration
+	s.RequeueDuration += other.RequeueDuration
+	s.ExecuteDuration += other.ExecuteDuration
+	s.Concurrency += other.Concurrency
+	s.MaxAllocated += other.MaxAllocated
+	s.TotalAllocated += other.TotalAllocated
+	s.Profiles = append(s.Profiles, other.Profiles...)
+	s.RuntimeErrors = append(s.RuntimeErrors, other.RuntimeErrors...)
+	s.Metadata.AddAll(other.Metadata)
+}
+
+// TransportProfile holds the profile for transport statistics.
+type TransportProfile struct {
+	// NodeType holds the node type which is a string representation
+	// of the underlying transformation.
+	NodeType string
+
+	// Label holds the plan node label.
+	Label string
+
+	// Count holds the number of spans in this profile.
+	Count int64
+
+	// Min holds the minimum span time of this profile.
+	Min int64
+
+	// Max holds the maximum span time of this profile.
+	Max int64
+
+	// Sum holds the sum of all span times for this profile.
+	Sum int64
+
+	// Mean is the mean span time of this profile.
+	Mean float64
+}
+
+// StartSpan will start a profile span to be recorded.
+func (p *TransportProfile) StartSpan(now ...time.Time) TransportProfileSpan {
+	var start time.Time
+	if len(now) > 0 {
+		start = now[0]
+	} else {
+		start = time.Now()
+	}
+	return TransportProfileSpan{
+		p:     p,
+		start: start,
+	}
+}
+
+// TransportProfileSpan is a span that tracks the lifetime of a transport operation.
+type TransportProfileSpan struct {
+	p     *TransportProfile
+	start time.Time
+}
+
+// Finish finishes the span and records the metrics for that operation.
+func (span *TransportProfileSpan) Finish() {
+	span.FinishWithTime(time.Now())
+}
+
+func (span *TransportProfileSpan) FinishWithTime(now time.Time) {
+	d := now.Sub(span.start).Nanoseconds()
+	if d < span.p.Min || span.p.Count == 0 {
+		span.p.Min = d
+	}
+	if d > span.p.Max {
+		span.p.Max = d
+	}
+	span.p.Count++
+	span.p.Sum += d
+	span.p.Mean = float64(span.p.Sum) / float64(span.p.Count)
 }
