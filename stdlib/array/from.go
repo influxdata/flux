@@ -111,23 +111,15 @@ func (s *tableSource) Run(ctx context.Context) {
 
 func buildTable(rows values.Array, mem memory.Allocator) (flux.Table, error) {
 	typ, err := rows.Type().ElemType()
-
 	if err != nil {
 		return nil, err
-		// XXX: might be nicer if we could ask the value if it matches a given nature.
-		// Rephrasing it as a method call would allow Dynamic to answer "yes" for all cases
-		// while allowing us to avoid adding OR checks like this...
-	} else if !(typ.Nature() == semantic.Dynamic || typ.Nature() == semantic.Object) {
+	} else if typ.Nature() != semantic.Object {
 		return nil, errors.New(codes.Internal, "rows should have been a list of records")
 	}
-	l, err := typ.NumProperties() // FIXME: `array.map` breaks here when given `[dynamic]`. The fb doesn't hold any layout info.
+	l, err := typ.NumProperties()
 	if err != nil {
 		return nil, err
 	}
-
-	// FIXME: is there a way to build this table from whatever dynamic data is
-	//  available instead of relying on flatbuffer info?
-
 	cols := make([]flux.ColMeta, 0, l)
 	for i := 0; i < l; i++ {
 		rp, err := typ.RecordProperty(i)
