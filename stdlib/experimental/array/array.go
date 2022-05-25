@@ -114,7 +114,7 @@ func init() {
 						return nil, evalErr
 					}
 
-					return values.NewArrayWithBacking(semantic.NewArrayType(elementType), elements), nil
+					return values.NewArrayWithBacking(semantic.NewArrayType(elements[0].Type()), elements), nil
 				}, ctx, args)
 			}, false,
 		),
