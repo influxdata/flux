@@ -316,7 +316,7 @@ func (p *Program) Start(ctx context.Context, alloc memory.Allocator) (flux.Query
 		fmt.Sprintf("%v", plan.Formatted(p.PlanSpec, plan.WithDetails())))
 
 	e := execute.NewExecutor(p.Logger)
-	resultMap, md, err := e.Execute(ctx, p.PlanSpec, q.alloc)
+	resultMap, statsCh, err := e.Execute(ctx, p.PlanSpec, q.alloc)
 	if err != nil {
 		s.Finish()
 		return nil, err
@@ -328,7 +328,7 @@ func (p *Program) Start(ctx context.Context, alloc memory.Allocator) (flux.Query
 
 	// Begin reading from the metadata channel.
 	q.wg.Add(1)
-	go p.readMetadata(q, md)
+	go p.readStatistics(q, statsCh)
 
 	return q, nil
 }
@@ -347,10 +347,10 @@ func (p *Program) processResults(ctx context.Context, q *query, resultMap map[st
 	}
 }
 
-func (p *Program) readMetadata(q *query, metaCh <-chan metadata.Metadata) {
+func (p *Program) readStatistics(q *query, statsCh <-chan flux.Statistics) {
 	defer q.wg.Done()
-	for md := range metaCh {
-		q.stats.Metadata.AddAll(md)
+	for stats := range statsCh {
+		q.stats.Merge(stats)
 	}
 }
 

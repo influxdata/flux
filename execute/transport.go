@@ -32,6 +32,9 @@ type AsyncTransport interface {
 	Transport
 	// Finished reports when the AsyncTransport has completed and there is no more work to do.
 	Finished() <-chan struct{}
+	// TransportProfile returns the profile for this transport.
+	// This is only valid after the channel returned by Finished is closed.
+	TransportProfile() flux.TransportProfile
 }
 
 var _ Transformation = (*consecutiveTransport)(nil)
@@ -42,10 +45,10 @@ type consecutiveTransport struct {
 	dispatcher Dispatcher
 	logger     *zap.Logger
 
-	t         Transport
-	messages  MessageQueue
-	op, label string
-	stack     []interpreter.StackEntry
+	t        Transport
+	messages MessageQueue
+	stack    []interpreter.StackEntry
+	profile  flux.TransportProfile
 
 	finished chan struct{}
 	errMu    sync.Mutex
@@ -67,8 +70,10 @@ func newConsecutiveTransport(ctx context.Context, dispatcher Dispatcher, t Trans
 		t:          WrapTransformationInTransport(t, mem),
 		// TODO(nathanielc): Have planner specify message queue initial buffer size.
 		messages: newMessageQueue(64),
-		op:       OperationType(t),
-		label:    string(n.ID()),
+		profile: flux.TransportProfile{
+			NodeType: OperationType(t),
+			Label:    string(n.ID()),
+		},
 		stack:    n.CallStack(),
 		finished: make(chan struct{}),
 	}
@@ -114,6 +119,10 @@ func (t *consecutiveTransport) err() error {
 
 func (t *consecutiveTransport) Finished() <-chan struct{} {
 	return t.finished
+}
+
+func (t *consecutiveTransport) TransportProfile() flux.TransportProfile {
+	return t.profile
 }
 
 func (t *consecutiveTransport) RetractTable(id DatasetID, key flux.GroupKey) error {
@@ -215,17 +224,10 @@ func (t *consecutiveTransport) transition(new int32) {
 	atomic.StoreInt32(&t.schedulerState, new)
 }
 
-func (t *consecutiveTransport) contextWithSpan(ctx context.Context) context.Context {
-	didInit := false
+func (t *consecutiveTransport) initSpan(ctx context.Context) {
 	t.initSpanOnce.Do(func() {
-		t.span, ctx = opentracing.StartSpanFromContext(ctx, t.op, opentracing.Tag{Key: "label", Value: t.label})
-		didInit = true
+		t.span, _ = opentracing.StartSpanFromContext(ctx, t.profile.NodeType, opentracing.Tag{Key: "label", Value: t.profile.Label})
 	})
-	if didInit {
-		return ctx
-	}
-
-	return opentracing.ContextWithSpan(ctx, t.span)
 }
 
 func (t *consecutiveTransport) finishSpan(err error) {
@@ -234,13 +236,14 @@ func (t *consecutiveTransport) finishSpan(err error) {
 }
 
 func (t *consecutiveTransport) processMessages(ctx context.Context, throughput int) {
-	ctx = t.contextWithSpan(ctx)
+	t.initSpan(ctx)
+
 PROCESS:
 	i := 0
 	for m := t.messages.Pop(); m != nil; m = t.messages.Pop() {
 		atomic.AddInt32(&t.inflight, -1)
 		atomic.AddInt32(&t.totalMsgs, 1)
-		if f, err := t.processMessage(ctx, m); err != nil || f {
+		if f, err := t.processMessage(m); err != nil || f {
 			// Set the error if there was any
 			t.setErr(err)
 
@@ -282,10 +285,10 @@ PROCESS:
 
 // processMessage processes the message on t.
 // The return value is true if the message was a FinishMsg.
-func (t *consecutiveTransport) processMessage(ctx context.Context, m Message) (finished bool, err error) {
-	if opState := NewOperatorProfilingState(ctx, t.op, t.label); opState != nil {
-		defer opState.Finish()
-	}
+func (t *consecutiveTransport) processMessage(m Message) (finished bool, err error) {
+	span := t.profile.StartSpan()
+	defer span.Finish()
+
 	if err := t.t.ProcessMessage(m); err != nil {
 		return false, err
 	}

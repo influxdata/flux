@@ -13,7 +13,6 @@ import (
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/memory"
-	"github.com/influxdata/flux/metadata"
 	"github.com/influxdata/flux/plan"
 	"github.com/opentracing/opentracing-go"
 	"go.uber.org/zap"
@@ -26,7 +25,7 @@ type Executor interface {
 	// may return zero or more values. The returned channel must not require itself to
 	// be read so the executor must allocate enough space in the channel so if the channel
 	// is unread that it will not block.
-	Execute(ctx context.Context, p *plan.Spec, a memory.Allocator) (map[string]flux.Result, <-chan metadata.Metadata, error)
+	Execute(ctx context.Context, p *plan.Spec, a memory.Allocator) (map[string]flux.Result, <-chan flux.Statistics, error)
 }
 
 type executor struct {
@@ -62,7 +61,7 @@ type executionState struct {
 
 	results map[string]flux.Result
 	sources []Source
-	metaCh  chan metadata.Metadata
+	statsCh chan flux.Statistics
 
 	transports []AsyncTransport
 
@@ -70,13 +69,13 @@ type executionState struct {
 	logger     *zap.Logger
 }
 
-func (e *executor) Execute(ctx context.Context, p *plan.Spec, a memory.Allocator) (map[string]flux.Result, <-chan metadata.Metadata, error) {
+func (e *executor) Execute(ctx context.Context, p *plan.Spec, a memory.Allocator) (map[string]flux.Result, <-chan flux.Statistics, error) {
 	es, err := e.createExecutionState(ctx, p, a)
 	if err != nil {
 		return nil, nil, errors.Wrap(err, codes.Inherit, "failed to initialize execute state")
 	}
 	es.do()
-	return es.results, es.metaCh, nil
+	return es.results, es.statsCh, nil
 }
 
 func (e *executor) createExecutionState(ctx context.Context, p *plan.Spec, a memory.Allocator) (*executionState, error) {
@@ -101,10 +100,9 @@ func (e *executor) createExecutionState(ctx context.Context, p *plan.Spec, a mem
 		return nil, err
 	}
 
-	// Only sources can be a MetadataNode at the moment so allocate enough
-	// space for all of them to report metadata. Not all of them will necessarily
-	// report metadata.
-	es.metaCh = make(chan metadata.Metadata, len(es.sources))
+	// Only one statistics struct will be sent. Allocate space for it
+	// so we don't block on its creation.
+	es.statsCh = make(chan flux.Statistics, 1)
 
 	// Choose some default resource limits based on execution options, if necessary.
 	es.chooseDefaultResources(ctx, p)
@@ -424,7 +422,18 @@ func (es *executionState) abort(err error) {
 }
 
 func (es *executionState) do() {
-	var wg sync.WaitGroup
+	var (
+		wg      sync.WaitGroup
+		stats   flux.Statistics
+		statsMu sync.Mutex
+	)
+
+	updateStats := func(fn func(stats *flux.Statistics)) {
+		statsMu.Lock()
+		defer statsMu.Unlock()
+		fn(&stats)
+	}
+
 	for _, src := range es.sources {
 		wg.Add(1)
 		go func(src Source) {
@@ -432,9 +441,11 @@ func (es *executionState) do() {
 			opName := reflect.TypeOf(src).String()
 
 			// If operator profiling is enabled for this execution, begin profiling
-			if opState := NewOperatorProfilingState(ctx, opName, src.Label()); opState != nil {
-				defer opState.Finish()
+			profile := flux.TransportProfile{
+				NodeType: opName,
+				Label:    src.Label(),
 			}
+			profileSpan := profile.StartSpan()
 
 			if span, spanCtx := opentracing.StartSpanFromContext(ctx, opName, opentracing.Tag{Key: "label", Value: src.Label()}); span != nil {
 				ctx = spanCtx
@@ -446,15 +457,23 @@ func (es *executionState) do() {
 			// Setup panic handling on the source goroutines
 			defer es.recover()
 			src.Run(ctx)
+			profileSpan.Finish()
 
-			if mdn, ok := src.(MetadataNode); ok {
-				es.metaCh <- mdn.Metadata()
-			}
+			updateStats(func(stats *flux.Statistics) {
+				stats.Profiles = append(stats.Profiles, profile)
+				if mdn, ok := src.(MetadataNode); ok {
+					stats.Metadata.AddAll(mdn.Metadata())
+				}
+			})
 		}(src)
 	}
 
 	wg.Add(1)
 	es.dispatcher.Start(es.resources.ConcurrencyQuota, es.ctx)
+
+	// Keep the transport profiles in a separate array from the source profiles.
+	// This ensures that sources are before transformations.
+	profiles := make([]flux.TransportProfile, 0, len(es.transports))
 	go func() {
 		defer wg.Done()
 
@@ -462,6 +481,8 @@ func (es *executionState) do() {
 		for _, t := range es.transports {
 			select {
 			case <-t.Finished():
+				tp := t.TransportProfile()
+				profiles = append(profiles, tp)
 			case <-es.ctx.Done():
 				es.abort(es.ctx.Err())
 			case err := <-es.dispatcher.Err():
@@ -478,8 +499,14 @@ func (es *executionState) do() {
 	}()
 
 	go func() {
-		defer close(es.metaCh)
+		defer close(es.statsCh)
 		wg.Wait()
+
+		// Merge the transport profiles in with the ones already filled
+		// by the sources.
+		stats.Profiles = append(stats.Profiles, profiles...)
+
+		es.statsCh <- stats
 	}()
 }
 

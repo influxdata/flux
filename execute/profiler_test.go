@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"strings"
-	"sync"
 	"testing"
 	"time"
 
@@ -48,36 +47,49 @@ func TestOperatorProfiler_GetResult(t *testing.T) {
 #default,_profiler,,,,,,,,,
 ,result,table,_measurement,Type,Label,Count,MinDuration,MaxDuration,DurationSum,MeanDuration
 `)
-	wantStr.WriteString(fmt.Sprintf(",,0,profiler/operator,%s,%s,%d,%d,%d,%d,%f\n",
+	fmt.Fprintf(&wantStr, ",,0,profiler/operator,%s,%s,%d,%d,%d,%d,%f\n",
 		"type0", "lab0", 4, 1000, 1606, 5212, 1303.0,
-	))
-	wantStr.WriteString(fmt.Sprintf(",,0,profiler/operator,%s,%s,%d,%d,%d,%d,%f\n",
+	)
+	fmt.Fprintf(&wantStr, ",,0,profiler/operator,%s,%s,%d,%d,%d,%d,%f\n",
 		"type1", "lab0", 4, 1101, 1707, 5616, 1404.0,
-	))
-	wantStr.WriteString(fmt.Sprintf(",,0,profiler/operator,%s,%s,%d,%d,%d,%d,%f\n",
+	)
+	fmt.Fprintf(&wantStr, ",,0,profiler/operator,%s,%s,%d,%d,%d,%d,%f\n",
 		"type0", "lab1", 4, 1808, 2414, 8444, 2111.0,
-	))
-	wantStr.WriteString(fmt.Sprintf(",,0,profiler/operator,%s,%s,%d,%d,%d,%d,%f\n",
+	)
+	fmt.Fprintf(&wantStr, ",,0,profiler/operator,%s,%s,%d,%d,%d,%d,%f\n",
 		"type1", "lab1", 4, 1909, 2515, 8848, 2212.0,
-	))
+	)
 	count := 16
-	wg := sync.WaitGroup{}
-	wg.Add(count)
-	fn := func(opType string, label string, ctx context.Context, offset int) {
+
+	stats := flux.Statistics{
+		Profiles: make([]flux.TransportProfile, 0, 4),
+	}
+	for i := 0; i < 2; i++ {
+		for j := 0; j < 2; j++ {
+			stats.Profiles = append(stats.Profiles, flux.TransportProfile{
+				NodeType: fmt.Sprintf("type%d", i),
+				Label:    fmt.Sprintf("lab%d", j),
+			})
+		}
+	}
+
+	fn := func(profile *flux.TransportProfile, offset int) {
 		st := time.Date(2020, 10, 14, 12, 30, 0, 0, time.UTC)
-		state := execute.NewOperatorProfilingState(ctx, opType, label, st)
-		// Finish() will write the data to the profiler
-		// In Flux runtime, this is called when an execution node finishes execution
-		state.FinishWithTime(time.Date(2020, 10, 14, 12, 30, 0, 1000+offset, time.UTC))
-		wg.Done()
+		span := profile.StartSpan(st)
+		span.FinishWithTime(time.Date(2020, 10, 14, 12, 30, 0, 1000+offset, time.UTC))
 	}
+
+	// Write profiles for the various different transports.
 	for i := 0; i < count; i++ {
-		typ := fmt.Sprintf("type%d", i%2)
-		label := fmt.Sprintf("lab%d", i/8)
-		go fn(typ, label, ctx, 100*i+i)
+		profile := &stats.Profiles[i%2*2+i/8]
+		fn(profile, 100*i+i)
 	}
-	wg.Wait()
-	tbl, err := p.GetSortedResult(nil, &memory.ResourceAllocator{}, false, "MeanDuration")
+
+	q := &mock.Query{}
+	q.SetStatistics(stats)
+	q.Done()
+
+	tbl, err := p.GetSortedResult(q, &memory.ResourceAllocator{}, false, "MeanDuration")
 	if err != nil {
 		t.Error(err)
 	}
