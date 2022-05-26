@@ -312,27 +312,24 @@ endpoint = (url=defaultURL) =>
                     fn: (r) => {
                         obj = mapFn(r: r)
 
-                        return {r with _sent:
-                                string(
-                                    v:
-                                        2 == sendEvent(
-                                                pagerdutyURL: url,
-                                                routingKey: obj.routingKey,
-                                                client: obj.client,
-                                                clientURL: obj.clientURL,
-                                                dedupKey: r._pagerdutyDedupKey,
-                                                class: obj.class,
-                                                group: obj.group,
-                                                severity: obj.severity,
-                                                eventAction: obj.eventAction,
-                                                source: obj.source,
-                                                component: record.get(r: obj, key: "component", default: ""),
-                                                summary: obj.summary,
-                                                timestamp: obj.timestamp,
-                                                customDetails:
-                                                    record.get(r: obj, key: "customDetails", default: record.any),
-                                            ) / 100,
-                                ),
-                        }
+                        status =
+                            sendEvent(
+                                pagerdutyURL: url,
+                                routingKey: obj.routingKey,
+                                client: obj.client,
+                                clientURL: obj.clientURL,
+                                dedupKey: r._pagerdutyDedupKey,
+                                class: obj.class,
+                                group: obj.group,
+                                severity: obj.severity,
+                                eventAction: obj.eventAction,
+                                source: obj.source,
+                                component: record.get(r: obj, key: "component", default: ""),
+                                summary: obj.summary,
+                                timestamp: obj.timestamp,
+                                customDetails: record.get(r: obj, key: "customDetails", default: record.any),
+                            )
+
+                        return {r with _sent: string(v: 2 == status / 100), _status: string(v: status)}
                     },
                 )
