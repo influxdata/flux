@@ -73,6 +73,12 @@ fn labels_dynamic_string() {
             3 │             x = [{ a: 1 }] |> fill(column: column, value: "x")
               │                                            ^^^^^^
 
+            error: string is not a label
+              ┌─ main:3:31
+              │
+            3 │             x = [{ a: 1 }] |> fill(column: column, value: "x")
+              │                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
         "#]],
     }
 }
@@ -414,6 +420,54 @@ fn string_literal_is_treated_as_label_due_to_requirement_by_differnt_function_pa
         "#,
         exp: map![
             "x" => r#"stream[A] where A: Record"#,
+        ],
+    }
+}
+
+#[test]
+fn inferred_label_kind_does_not_pollute_different_type_signature() {
+    test_infer! {
+        config: AnalyzerConfig{
+            features: vec![Feature::LabelPolymorphism],
+            ..AnalyzerConfig::default()
+        },
+        env: map![
+            "contains" => "(value: A, set: [A]) => bool where A: Nullable",
+            "tagValues" => "(bucket: string, tag: A) => stream[{F with _value:G}] where A: Label",
+
+        ],
+        src: r#"
+            x = (value) => {
+                y = tagValues(bucket: "a", tag: value)
+                x = contains(set: ["_stop", "_start"], value: value)
+                return 0
+            }
+        "#,
+        exp: map![
+            "x" => r#"(value: A) => int where A: Label"#,
+        ],
+    }
+
+    // Change the order that the arguments of `contains` are checked
+    test_infer! {
+        config: AnalyzerConfig{
+            features: vec![Feature::LabelPolymorphism],
+            ..AnalyzerConfig::default()
+        },
+        env: map![
+            "contains" => "(value: A, x: [A]) => bool where A: Nullable",
+            "tagValues" => "(bucket: string, tag: A) => stream[{F with _value:G}] where A: Label",
+
+        ],
+        src: r#"
+            x = (value) => {
+                y = tagValues(bucket: "a", tag: value)
+                x = contains(value: value, x: ["_stop", "_start"])
+                return 0
+            }
+        "#,
+        exp: map![
+            "x" => r#"(value: A) => int where A: Label"#,
         ],
     }
 }

@@ -125,6 +125,7 @@ impl Substitution {
     }
 
     pub(crate) fn satisfies(&self, v: Tvar, kind: Kind) -> bool {
+        let v = self.root(v);
         self.cons
             .borrow()
             .get(&v)
