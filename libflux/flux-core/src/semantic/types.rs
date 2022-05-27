@@ -110,8 +110,12 @@ impl Matcher<Error> for Subsume {
                 _ => Cow::Borrowed(maybe_label),
             }
         }
-        let actual = translate_label(unifier, actual, expected);
-        let expected = translate_label(unifier, expected, &actual);
+
+        let actual = unifier.sub.real(actual);
+        let expected = unifier.sub.real(expected);
+
+        let actual = translate_label(unifier, &actual, &expected);
+        let expected = translate_label(unifier, &expected, &actual);
         match (&*expected, &*actual) {
             // Labels should be accepted anywhere that we expect a string
             (&MonoType::STRING, MonoType::Label(_)) => MonoType::STRING,

@@ -112,6 +112,18 @@ impl Substitution {
         self.cons.get_mut()
     }
 
+    /// Returns the real type or the root variable of `typ` if it is an variable.
+    /// Returns `typ` itself if it isn't a variable
+    pub(crate) fn real<'a>(&self, typ: &'a MonoType) -> Cow<'a, MonoType> {
+        match *typ {
+            MonoType::Var(var) => self
+                .try_apply(var)
+                .map(Cow::Owned)
+                .unwrap_or_else(|| Cow::Borrowed(typ)),
+            _ => Cow::Borrowed(typ),
+        }
+    }
+
     pub(crate) fn satisfies(&self, v: Tvar, kind: Kind) -> bool {
         self.cons
             .borrow()

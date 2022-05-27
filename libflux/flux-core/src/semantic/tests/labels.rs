@@ -303,3 +303,29 @@ fn default_arguments_do_not_try_to_treat_literals_as_strings_when_they_must_be_a
         ],
     }
 }
+
+#[test]
+fn constraints_propagate_fully() {
+    test_infer! {
+        config: AnalyzerConfig{
+            features: vec![Feature::LabelPolymorphism],
+            ..AnalyzerConfig::default()
+        },
+        env: map![
+            "aggregateWindow" => r#"(fn:(<-:stream[B], column:C) => stream[D], ?column:C) => stream[E]"#,
+            "max" => r#"(<-tables: stream[{ A with L: B }], ?column: L) => stream[{ A with L: B }]
+                where A: Record,
+                      B: Comparable,
+                      L: Label"#,
+        ],
+        src: r#"
+            x = aggregateWindow(
+                fn: max,
+                column: "_value",
+            )
+        "#,
+        exp: map![
+            "x" => "stream[E]",
+        ],
+    }
+}
