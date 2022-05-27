@@ -341,7 +341,7 @@ fn variables_used_in_label_position_must_have_label_kind() {
             builtin abc: (record: { A with T: time }, ?timeColumn: T = "_time") => int
         "#,
         expect: expect![[r#"
-            error: variable B lacks the Label constraint
+            error: variable T lacks the Label constraint
               ┌─ main:2:13
               │
             2 │             builtin abc: (record: { A with T: time }, ?timeColumn: T = "_time") => int

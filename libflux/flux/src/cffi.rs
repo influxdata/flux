@@ -662,7 +662,6 @@ mod tests {
         semantic::{
             convert::convert_polytype,
             fresh::Fresher,
-            sub::Substitution,
             types::{Label, MonoType, Property, Ptr, Record, Tvar, TvarMap},
         },
     };
@@ -960,7 +959,7 @@ from(bucket: v.bucket)
         if let Err(err) = ast::check::check(ast::walk::Node::TypeExpression(&typ_expr)) {
             panic!("TypeExpression parsing failed. {:?}", err);
         }
-        let want = convert_polytype(&typ_expr, &mut Substitution::default()).unwrap();
+        let want = convert_polytype(&typ_expr).unwrap();
 
         assert_eq!(want, got.lookup("x").expect("'x' not found").clone());
     }
@@ -996,7 +995,7 @@ from(bucket: v.bucket)
         if let Err(err) = ast::check::check(ast::walk::Node::TypeExpression(&typ_expr)) {
             panic!("TypeExpression parsing failed for {:?}", err);
         }
-        let want_a = convert_polytype(&typ_expr, &mut Substitution::default()).unwrap();
+        let want_a = convert_polytype(&typ_expr).unwrap();
 
         let code = "stream[{ D with
                 _value: A
@@ -1012,7 +1011,7 @@ from(bucket: v.bucket)
         if let Err(err) = ast::check::check(ast::walk::Node::TypeExpression(&typ_expr)) {
             panic!("TypeExpression parsing failed for {:?}", err);
         }
-        let want_b = convert_polytype(&typ_expr, &mut Substitution::default()).unwrap();
+        let want_b = convert_polytype(&typ_expr).unwrap();
 
         let code = "stream[{ D with
                 _value: A
@@ -1028,7 +1027,7 @@ from(bucket: v.bucket)
         if let Err(err) = ast::check::check(ast::walk::Node::TypeExpression(&typ_expr)) {
             panic!("TypeExpression parsing failed for {:?}", err);
         }
-        let want_c = convert_polytype(&typ_expr, &mut Substitution::default()).unwrap();
+        let want_c = convert_polytype(&typ_expr).unwrap();
 
         assert_eq!(want_a, got.lookup("a").expect("'a' not found").clone());
         assert_eq!(want_b, got.lookup("b").expect("'b' not found").clone());

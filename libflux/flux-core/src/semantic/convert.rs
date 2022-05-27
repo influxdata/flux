@@ -17,7 +17,6 @@ use crate::{
     semantic::{
         env::Environment,
         nodes::*,
-        sub::Substitution,
         types::{self, BuiltinType, MonoType, MonoTypeMap, SemanticMap},
     },
 };
@@ -72,12 +71,8 @@ pub type Result<T, E = Error> = std::result::Result<T, E>;
 /// overhead involved.
 ///
 /// [AST package]: ast::Package
-pub fn convert_package(
-    pkg: &ast::Package,
-    env: &Environment,
-    sub: &mut Substitution,
-) -> Result<Package, Errors<Error>> {
-    let mut converter = Converter::with_env(sub, env);
+pub fn convert_package(pkg: &ast::Package, env: &Environment) -> Result<Package, Errors<Error>> {
+    let mut converter = Converter::with_env(env);
     let r = converter.convert_package(pkg);
     converter.finish()?;
     Ok(r)
@@ -89,9 +84,8 @@ pub fn convert_package(
 /// [`PolyType`]: types::PolyType
 pub fn convert_polytype(
     type_expression: &ast::TypeExpression,
-    sub: &mut Substitution,
 ) -> Result<types::PolyType, Errors<Error>> {
-    let mut converter = Converter::new(sub);
+    let mut converter = Converter::new();
     let r = converter.convert_polytype(type_expression);
     converter.finish()?;
     Ok(r)
@@ -101,9 +95,8 @@ pub fn convert_polytype(
 pub(crate) fn convert_monotype(
     ty: &ast::MonoType,
     tvars: &mut BTreeMap<String, types::Tvar>,
-    sub: &mut Substitution,
 ) -> Result<MonoType, Errors<Error>> {
-    let mut converter = Converter::new(sub);
+    let mut converter = Converter::new();
     let r = converter.convert_monotype(&ty, tvars);
     converter.finish()?;
     Ok(r)
@@ -331,23 +324,20 @@ impl<'a> Symbols<'a> {
 }
 
 pub(crate) struct Converter<'a> {
-    sub: &'a mut Substitution,
     symbols: Symbols<'a>,
     errors: Errors<Error>,
 }
 
 impl<'a> Converter<'a> {
-    fn new(sub: &'a mut Substitution) -> Self {
+    fn new() -> Self {
         Converter {
-            sub,
             symbols: Symbols::default(),
             errors: Errors::new(),
         }
     }
 
-    pub(crate) fn with_env(sub: &'a mut Substitution, env: &'a Environment) -> Self {
+    pub(crate) fn with_env(env: &'a Environment) -> Self {
         Converter {
-            sub,
             symbols: Symbols::with_env(env),
             errors: Errors::new(),
         }
@@ -527,6 +517,21 @@ impl<'a> Converter<'a> {
         })
     }
 
+    fn convert_tvar(
+        &mut self,
+        tv: &ast::Identifier,
+        tvars: &mut BTreeMap<String, types::Tvar>,
+    ) -> types::Tvar {
+        // Variables `A` to `Z` may be typed in the signatures of builtins and `Tvar(0)` to `Tvar(25)`
+        // are displayed as those letters so we consistently map these names to those variables
+        let next_var = if tv.name.len() == 1 && tv.name.as_str() >= "A" && tv.name.as_str() <= "Z" {
+            types::Tvar(tv.name.chars().next().unwrap() as u64 - 'A' as u64)
+        } else {
+            types::Tvar(tvars.len() as u64 + ('Z' as u64 - 'A' as u64))
+        };
+        *tvars.entry(tv.name.clone()).or_insert_with(|| next_var)
+    }
+
     fn convert_monotype(
         &mut self,
         ty: &ast::MonoType,
@@ -534,10 +539,8 @@ impl<'a> Converter<'a> {
     ) -> MonoType {
         match ty {
             ast::MonoType::Tvar(tv) => {
-                let tvar = tvars
-                    .entry(tv.name.name.clone())
-                    .or_insert_with(|| self.sub.fresh());
-                MonoType::BoundVar(*tvar)
+                let tvar = self.convert_tvar(&tv.name, tvars);
+                MonoType::BoundVar(tvar)
             }
 
             ast::MonoType::Basic(basic) => match self.convert_builtintype(basic) {
@@ -629,9 +632,7 @@ impl<'a> Converter<'a> {
                         k: match &prop.name {
                             ast::PropertyKey::Identifier(id) => {
                                 if id.name.len() == 1 && id.name.starts_with(char::is_uppercase) {
-                                    let tvar = *tvars
-                                        .entry(id.name.clone())
-                                        .or_insert_with(|| self.sub.fresh());
+                                    let tvar = self.convert_tvar(id, tvars);
                                     types::RecordLabel::BoundVariable(tvar)
                                 } else {
                                     types::Label::from(self.symbols.lookup(&id.name)).into()
@@ -1326,7 +1327,6 @@ mod tests {
         ast,
         parser::Parser,
         semantic::{
-            sub,
             types::{MonoType, Tvar},
             walk::{walk_mut, NodeMut},
         },
@@ -1345,8 +1345,7 @@ mod tests {
     }
 
     fn test_convert(pkg: ast::Package) -> Result<Package, Errors<Error>> {
-        let mut sub = sub::Substitution::default();
-        let mut converter = Converter::new(&mut sub);
+        let mut converter = Converter::new();
         let mut pkg = converter.convert_package(&pkg);
         converter.finish()?;
 
@@ -2746,7 +2745,7 @@ mod tests {
     fn test_convert_monotype_int() {
         let monotype = Parser::new("int").parse_monotype();
         let mut m = BTreeMap::<String, types::Tvar>::new();
-        let got = convert_monotype(&monotype, &mut m, &mut sub::Substitution::default()).unwrap();
+        let got = convert_monotype(&monotype, &mut m).unwrap();
         let want = MonoType::INT;
         assert_eq!(want, got);
     }
@@ -2756,7 +2755,7 @@ mod tests {
         let monotype = Parser::new("{ A with b: int }").parse_monotype();
 
         let mut m = BTreeMap::<String, types::Tvar>::new();
-        let got = convert_monotype(&monotype, &mut m, &mut sub::Substitution::default()).unwrap();
+        let got = convert_monotype(&monotype, &mut m).unwrap();
         let want = MonoType::from(types::Record::Extension {
             head: types::Property {
                 k: types::RecordLabel::from("b"),
@@ -2772,8 +2771,7 @@ mod tests {
         let monotype_ex = Parser::new("(?A: int) => int").parse_monotype();
 
         let mut m = BTreeMap::<String, types::Tvar>::new();
-        let got =
-            convert_monotype(&monotype_ex, &mut m, &mut sub::Substitution::default()).unwrap();
+        let got = convert_monotype(&monotype_ex, &mut m).unwrap();
         let mut opt = MonoTypeMap::new();
         opt.insert(String::from("A"), MonoType::INT.into());
         let want = MonoType::from(types::Function {
@@ -2789,7 +2787,7 @@ mod tests {
     fn test_convert_polytype() {
         let type_exp =
             Parser::new("(A: T, B: S) => T where T: Addable, S: Divisible").parse_type_expression();
-        let got = convert_polytype(&type_exp, &mut sub::Substitution::default()).unwrap();
+        let got = convert_polytype(&type_exp).unwrap();
 
         let want = {
             let mut vars = Vec::<types::Tvar>::new();
@@ -2822,7 +2820,7 @@ mod tests {
     fn test_convert_polytype_2() {
         let type_exp = Parser::new("(A: T, B: S) => T where T: Addable").parse_type_expression();
 
-        let got = convert_polytype(&type_exp, &mut sub::Substitution::default()).unwrap();
+        let got = convert_polytype(&type_exp).unwrap();
         let mut vars = Vec::<types::Tvar>::new();
         vars.push(types::Tvar(0));
         vars.push(types::Tvar(1));

@@ -37,7 +37,6 @@ use crate::{
         fresh::Fresher,
         import::Packages,
         nodes::Symbol,
-        sub::Substitution,
         types::{MonoType, PolyType, PolyTypeHashMap, SemanticMap, TvarKinds},
         Analyzer, AnalyzerConfig, Feature, PackageExports,
     },
@@ -55,8 +54,7 @@ fn parse_map(package: Option<&str>, m: HashMap<&str, &str>) -> PolyTypeHashMap<S
             if let Err(err) = ast::check::check(ast::walk::Node::TypeExpression(&typ_expr)) {
                 panic!("TypeExpression parsing failed for {}. {}", name, err);
             }
-            let poly = convert_polytype(&typ_expr, &mut Substitution::default())
-                .unwrap_or_else(|err| panic!("{}", err));
+            let poly = convert_polytype(&typ_expr).unwrap_or_else(|err| panic!("{}", err));
 
             (
                 match package {
@@ -220,6 +218,7 @@ macro_rules! test_infer {
             config = $config;
         )?
         if let Err(e) = infer_types($src, env, imp, Some($exp), config) {
+            eprintln!("{:#?}", e);
             panic!("{}", e.pretty($src));
         }
     }}

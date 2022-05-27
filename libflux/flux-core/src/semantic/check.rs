@@ -341,7 +341,7 @@ mod tests {
 
     use crate::{
         ast, parser,
-        semantic::{check, convert, nodes, sub},
+        semantic::{check, convert, nodes},
     };
 
     fn merge_ast_files(files: Vec<ast::File>) -> ast::Package {
@@ -368,11 +368,7 @@ mod tests {
             ctr = ctr + 1;
         }
         let ast_pkg = merge_ast_files(ast_files);
-        let sem_pkg = convert::convert_package(
-            &ast_pkg,
-            &Default::default(),
-            &mut sub::Substitution::default(),
-        )?;
+        let sem_pkg = convert::convert_package(&ast_pkg, &Default::default())?;
         Ok(sem_pkg)
     }
 
