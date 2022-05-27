@@ -57,7 +57,7 @@ type Statistics struct {
 	TotalAllocated int64 `json:"total_allocated"`
 
 	// Profiles holds the profiles for each transport (source/transformation) in this query.
-	Profiles []TransportProfile
+	Profiles []TransportProfile `json:"profiles"`
 
 	// RuntimeErrors contains error messages that happened during the execution of the query.
 	RuntimeErrors []string `json:"runtime_errors"`
@@ -113,25 +113,25 @@ func (s *Statistics) Merge(other Statistics) {
 type TransportProfile struct {
 	// NodeType holds the node type which is a string representation
 	// of the underlying transformation.
-	NodeType string
+	NodeType string `json:"node_type"`
 
 	// Label holds the plan node label.
-	Label string
+	Label string `json:"label"`
 
 	// Count holds the number of spans in this profile.
-	Count int64
+	Count int64 `json:"count"`
 
 	// Min holds the minimum span time of this profile.
-	Min int64
+	Min int64 `json:"min"`
 
 	// Max holds the maximum span time of this profile.
-	Max int64
+	Max int64 `json:"max"`
 
 	// Sum holds the sum of all span times for this profile.
-	Sum int64
+	Sum int64 `json:"sum"`
 
 	// Mean is the mean span time of this profile.
-	Mean float64
+	Mean float64 `json:"mean"`
 }
 
 // StartSpan will start a profile span to be recorded.
