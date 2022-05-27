@@ -119,7 +119,7 @@ impl Matcher<Error> for Subsume {
                             None
                         }
                         fn visit_type(&mut self, typ: &MonoType) -> Option<MonoType> {
-                            match typ {
+                            match *typ {
                                 MonoType::Label(_) => Some(MonoType::STRING),
                                 _ => typ.walk(self),
                             }
@@ -147,7 +147,7 @@ impl Matcher<Error> for Subsume {
                 MonoType::STRING
             }
 
-            (MonoType::Var(_), &MonoType::STRING) | (&MonoType::STRING, MonoType::Var(_)) => {
+            (&MonoType::STRING, MonoType::Var(_)) => {
                 if let Some(delayed_unifications) = &mut unifier.delayed_unifications {
                     log::debug!("Delay subsume {} <> {}", original_expected, original_actual);
                     delayed_unifications.push(Unification {
