@@ -13,6 +13,7 @@ import (
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/memory"
+	"github.com/influxdata/flux/metadata"
 	"github.com/influxdata/flux/plan"
 	"github.com/opentracing/opentracing-go"
 	"go.uber.org/zap"
@@ -434,6 +435,7 @@ func (es *executionState) do() {
 		fn(&stats)
 	}
 
+	stats.Metadata = make(metadata.Metadata)
 	for _, src := range es.sources {
 		wg.Add(1)
 		go func(src Source) {
