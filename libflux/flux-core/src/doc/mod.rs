@@ -319,7 +319,6 @@ fn description_from_tokens<'a: 'b, 'b, I>(tokens: &mut Peekable<I>) -> Option<St
 where
     I: Iterator<Item = &'b Token<'a>>,
 {
-    let tokens = tokens.into_iter();
     if let Some(Token::Description(h)) = tokens.peek() {
         tokens.next();
         Some(h.to_string())
@@ -365,7 +364,6 @@ fn param_description_from_tokens<'a: 'b, 'b, I>(tokens: &mut Peekable<I>) -> Opt
 where
     I: Iterator<Item = &'b Token<'a>>,
 {
-    let tokens = tokens.into_iter();
     if let Some(Token::ParamDescription(h)) = tokens.peek() {
         tokens.next();
         Some(h.to_string())
@@ -416,22 +414,18 @@ where
     if let Some(Token::Metadata) = tokens.peek() {
         tokens.next();
         let mut metadata = Metadata::new();
-        loop {
-            if let Some(Token::MetadataLine(line)) = tokens.peek() {
-                tokens.next();
-                for cap in KEY_VALUE_PATTERN.captures_iter(line) {
-                    let key = &cap[1];
-                    let value = &cap[2];
-                    if metadata.contains_key(key) {
-                        diagnostics.push(Diagnostic {
-                            msg: format!("found duplicate metadata key \"{}\"", key),
-                            loc: loc.clone(),
-                        });
-                    };
-                    metadata.insert(key.to_string(), value.to_string());
-                }
-            } else {
-                break;
+        while let Some(Token::MetadataLine(line)) = tokens.peek() {
+            tokens.next();
+            for cap in KEY_VALUE_PATTERN.captures_iter(line) {
+                let key = &cap[1];
+                let value = &cap[2];
+                if metadata.contains_key(key) {
+                    diagnostics.push(Diagnostic {
+                        msg: format!("found duplicate metadata key \"{}\"", key),
+                        loc: loc.clone(),
+                    });
+                };
+                metadata.insert(key.to_string(), value.to_string());
             }
         }
         if !metadata.is_empty() {
@@ -480,7 +474,7 @@ fn parse_package_values(
             _ => None,
         } {
             if let Some(typ) = &pkgtypes.lookup(name.as_str()) {
-                if !name.starts_with("_") {
+                if !name.starts_with('_') {
                     let doc = parse_any_value(&name, &comment, typ, loc, diagnostics, is_option)?;
                     members.insert(name.clone(), doc);
                 }
@@ -779,7 +773,7 @@ struct Parser<'a> {
 
 impl<'a> Parser<'a> {
     fn slice(&self, r: Range<usize>) -> &'a str {
-        &self.content[r].trim()
+        self.content[r].trim()
     }
 }
 
@@ -899,20 +893,20 @@ impl<'a> Parser<'a> {
         match self.iter.peek() {
             Some((Event::Start(Tag::Heading(HeadingLevel::H2, _, _)), _)) => {
                 self.iter.next();
-                return self.parse_any_heading_text();
+                self.parse_any_heading_text()
             }
-            Some(_) => return self.parse_description(),
+            Some(_) => self.parse_description(),
             // We reached the end of the markdown content, stop lexing
-            None => return Ok(()),
+            None => Ok(()),
         }
     }
 
     fn parse_any_heading_text(&mut self) -> Result<()> {
         if let Some((Event::Text(t), _)) = self.iter.peek() {
             match t.as_ref() {
-                PARAMETER_HEADING => return self.parse_parameters(),
-                EXAMPLES_HEADING => return self.parse_examples(),
-                METADATA_HEADING => return self.parse_metadata(),
+                PARAMETER_HEADING => self.parse_parameters(),
+                EXAMPLES_HEADING => self.parse_examples(),
+                METADATA_HEADING => self.parse_metadata(),
                 _ => {
                     // We didn't find any delimiting heading
                     // There is no where to go from here so simply end parsing.
@@ -926,27 +920,30 @@ impl<'a> Parser<'a> {
 
     fn parse_parameters(&mut self) -> Result<()> {
         // Discard the "Parameters" text item and heading end
-        if let None = self.iter.next_if(|e| matches!(e, (Event::Text(_), _))) {
+        if self
+            .iter
+            .next_if(|e| matches!(e, (Event::Text(_), _)))
+            .is_none()
+        {
             bail!("missing parameters text")
         }
-        if let None = self
+        if self
             .iter
             .next_if(|e| matches!(e, (Event::End(Tag::Heading(HeadingLevel::H2, _, _)), _)))
+            .is_none()
         {
             bail!("missing end of heading")
         }
-        loop {
-            match self.iter.next() {
-                Some((Event::Start(Tag::List(_)), _)) => {
-                    self.tokens.push(Token::Parameters);
-                    // Note: parse_parameter is recursive calling itself until the end of the
-                    // parameter list is found.
-                    return self.parse_parameter();
-                }
-                _ => {
-                    // We didn't find a list so we start over looking for the next heading.
-                    return self.parse_any_heading_or_description();
-                }
+        match self.iter.next() {
+            Some((Event::Start(Tag::List(_)), _)) => {
+                self.tokens.push(Token::Parameters);
+                // Note: parse_parameter is recursive calling itself until the end of the
+                // parameter list is found.
+                self.parse_parameter()
+            }
+            _ => {
+                // We didn't find a list so we start over looking for the next heading.
+                self.parse_any_heading_or_description()
             }
         }
     }
@@ -955,16 +952,16 @@ impl<'a> Parser<'a> {
         match self.iter.next() {
             Some((Event::Start(Tag::Item), _)) => {
                 self.tokens.push(Token::Parameter);
-                return self.parse_parameter_headline();
+                self.parse_parameter_headline()
             }
             Some((Event::End(Tag::List(_)), _)) => {
                 // We reached the end of the parameters list
                 // Start lexing the next section.
-                return self.parse_any_heading_or_description();
+                self.parse_any_heading_or_description()
             }
             _ => {
                 // We didn't find another item, start over looking for the next heading.
-                return self.parse_any_heading_or_description();
+                self.parse_any_heading_or_description()
             }
         }
     }
@@ -1052,12 +1049,17 @@ impl<'a> Parser<'a> {
 
     fn parse_examples(&mut self) -> Result<()> {
         // Discard the "Examples" text item and heading end
-        if let None = self.iter.next_if(|e| matches!(e, (Event::Text(_), _))) {
+        if self
+            .iter
+            .next_if(|e| matches!(e, (Event::Text(_), _)))
+            .is_none()
+        {
             bail!("missing parameters text")
         }
-        if let None = self
+        if self
             .iter
             .next_if(|e| matches!(e, (Event::End(Tag::Heading(HeadingLevel::H2, _, _)), _)))
+            .is_none()
         {
             bail!("missing end of heading")
         }
@@ -1070,8 +1072,7 @@ impl<'a> Parser<'a> {
                     // Heading 2 means we are done with examples
                     // We found the begining of a new section, emit the content token.
                     range.end = r.start;
-                    self.tokens
-                        .push(Token::ExampleContent(self.slice(range.clone())));
+                    self.tokens.push(Token::ExampleContent(self.slice(range)));
                     return self.parse_any_heading_text();
                 }
                 Some((Event::End(Tag::Heading(HeadingLevel::H3, _, _)), r)) => {
@@ -1098,12 +1099,17 @@ impl<'a> Parser<'a> {
     }
     fn parse_metadata(&mut self) -> Result<()> {
         // Discard the "Metadata" text item and heading end
-        if let None = self.iter.next_if(|e| matches!(e, (Event::Text(_), _))) {
+        if self
+            .iter
+            .next_if(|e| matches!(e, (Event::Text(_), _)))
+            .is_none()
+        {
             bail!("missing parameters text")
         }
-        if let None = self
+        if self
             .iter
             .next_if(|e| matches!(e, (Event::End(Tag::Heading(HeadingLevel::H2, _, _)), _)))
+            .is_none()
         {
             bail!("missing end of heading")
         }
