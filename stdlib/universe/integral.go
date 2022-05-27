@@ -261,11 +261,16 @@ func (t *integralTransformation) Process(id execute.DatasetID, tbl flux.Table) e
 		}
 		switch in.points {
 		case 0:
+			// We had no data therefore the area under the curve is zero.
 			if err := builder.AppendFloat(colMap[j], 0.0); err != nil {
 				return err
 			}
 		case 1:
-			v := in.vs[0] * float64(in.bounds[1]-in.bounds[0])
+			// A single value integral with interplation implies that
+			// the value was the same for the entire time range,
+			// therefore the area under the curve is a rectangle of the
+			// value by the time range, scaled by the unit.
+			v := in.vs[0] * float64(in.bounds[1]-in.bounds[0]) / in.unit
 			if !in.interpolate {
 				v = 0
 			}
@@ -273,6 +278,8 @@ func (t *integralTransformation) Process(id execute.DatasetID, tbl flux.Table) e
 				return err
 			}
 		default:
+			// We have 2+ values interpolate to the end of the window
+			// and use the integral value.
 			in.interpolateStop()
 			if err := builder.AppendFloat(colMap[j], in.value()); err != nil {
 				return err
