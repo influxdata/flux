@@ -108,19 +108,16 @@ fn preprocess_code_blocks(content: &str) -> Result<Vec<CodeBlock>> {
     let mut blocks: Vec<CodeBlock> = Vec::with_capacity(1);
     let parser = Parser::new(content).into_offset_iter();
     for item in parser {
-        match item {
-            (Event::Start(Tag::CodeBlock(kind)), range) => {
-                if let Some(mode) = block_mode(kind) {
-                    let (display, exec) = preprocess(&content[range.clone()])?;
-                    blocks.push(CodeBlock {
-                        range,
-                        display,
-                        exec,
-                        mode,
-                    });
-                }
+        if let (Event::Start(Tag::CodeBlock(kind)), range) = item {
+            if let Some(mode) = block_mode(kind) {
+                let (display, exec) = preprocess(&content[range.clone()])?;
+                blocks.push(CodeBlock {
+                    range,
+                    display,
+                    exec,
+                    mode,
+                });
             }
-            _ => {}
         }
     }
     Ok(blocks)
@@ -194,9 +191,9 @@ fn preprocess(code: &str) -> Result<(String, String)> {
                 _ => {}
             }
         }
-        display.push_str(&line);
+        display.push_str(line);
         display.push('\n');
-        exec.push_str(&line);
+        exec.push_str(line);
         exec.push('\n');
     }
     display = format(display.as_str())?;
@@ -276,6 +273,7 @@ const DEFAULT_LABEL: &str = "#default";
 const GROUP_LABEL: &str = "#group";
 
 // Parses Flux CSV for input and output results into markdown formatted tables.
+#[allow(clippy::type_complexity)]
 fn parse_results(data: &str) -> Result<(Option<Vec<Table>>, Option<Vec<Table>>)> {
     let mut input: Option<Vec<Table>> = None;
     let mut output: Option<Vec<Table>> = None;
@@ -289,7 +287,7 @@ fn parse_results(data: &str) -> Result<(Option<Vec<Table>>, Option<Vec<Table>>)>
     Ok((input, output))
 }
 
-fn get_cell(record: &StringRecord, i: usize, defaults: &Vec<String>) -> Result<String> {
+fn get_cell(record: &StringRecord, i: usize, defaults: &[String]) -> Result<String> {
     match record.get(i) {
         Some(c) => {
             if c.is_empty() {
@@ -301,7 +299,7 @@ fn get_cell(record: &StringRecord, i: usize, defaults: &Vec<String>) -> Result<S
         None => bail!("could not read cell at index {}", i),
     }
 }
-fn get_row(record: &StringRecord, defaults: &Vec<String>) -> Result<Vec<String>> {
+fn get_row(record: &StringRecord, defaults: &[String]) -> Result<Vec<String>> {
     Ok(record
         .iter()
         .enumerate()
