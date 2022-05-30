@@ -4807,7 +4807,10 @@ today = () => date.truncate(t: now(), unit: 1d)
 builtin columns : (<-tables: stream[A], ?column: L) => stream[{ L: string }] where A: Record, L: Label
 
 // @feature labelPolymorphism
-builtin count : (<-tables: stream[A], ?column: string) => stream[{ B with _value: int }] where A: Record
+builtin count : (<-tables: stream[{ A with C: D }], ?column: C = "_value") => stream[{ B with _value: int }]
+    where
+    A: Record,
+    C: Label
 
 // @feature labelPolymorphism
 builtin distinct : (<-tables: stream[{ A with C: B }], ?column: C) => stream[{ A with _value: B }] where A: Record, B: Equatable, C: Label
