@@ -1,7 +1,6 @@
 use std::collections::HashMap;
 
 use crate::{
-    ast,
     errors::{located, Errors},
     semantic::{
         nodes::{
@@ -84,17 +83,6 @@ impl Expression {
                 }))
             }
             Expression::Binary(binary) => {
-                if binary.operator != ast::Operator::AdditionOperator
-                    && !env.config.features.contains(&Feature::VectorizeOperators)
-                {
-                    return Err(located(
-                        self.loc().clone(),
-                        ErrorKind::UnableToVectorize(
-                            "Unable to vectorize non-addition operators".into(),
-                        ),
-                    ));
-                }
-
                 let left = binary.left.vectorize(env)?;
                 let right = binary.right.vectorize(env)?;
                 Expression::Binary(Box::new(BinaryExpr {

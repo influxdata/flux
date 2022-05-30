@@ -143,12 +143,6 @@ func TestVectorizedFns(t *testing.T) {
 			flagger: executetest.TestFlagger{},
 		},
 		{
-			name:         "no binary expressions without feature flag",
-			fn:           `(r) => ({c: r.a / r.b})`,
-			vectorizable: false,
-			skipComp:     true,
-		},
-		{
 			name:         "no literals",
 			fn:           `(r) => ({r with c: "count"})`,
 			vectorizable: false,
@@ -320,9 +314,7 @@ func TestVectorizedFns(t *testing.T) {
 				"c": output,
 			},
 
-			flagger: executetest.TestFlagger{
-				fluxfeature.VectorizeOperators().Key(): true,
-			},
+			flagger: executetest.TestFlagger{},
 		})
 	}
 

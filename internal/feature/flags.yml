@@ -70,12 +70,6 @@
   default: false
   contact: Sean Brickley
 
-- name: Vectorize operators
-  description: Vectorizes all operator expressions inside map
-  key: vectorizeOperators
-  default: false
-  contact: Markus Westerlind
-
 - name: Vectorize Logical Operators
   description: Vectorizes logical operators inside map
   key: vectorizeLogicalOperators
