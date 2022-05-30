@@ -471,3 +471,45 @@ fn inferred_label_kind_does_not_pollute_different_type_signature() {
         ],
     }
 }
+
+#[test]
+fn reusing_same_field_in_record() {
+    test_infer! {
+        config: AnalyzerConfig{
+            features: vec![Feature::LabelPolymorphism],
+            ..AnalyzerConfig::default()
+        },
+        env: map![
+            "from" => "() => stream[A] where A: Record",
+            "map" => "(<-tables: stream[A], fn: (r: A) => B) => stream[B]",
+            "union" => "(tables: [stream[A]]) => stream[A] where A: Record",
+        ],
+        src: r#"
+            raw = from()
+
+            stream_x =
+                raw
+                    |> map(fn: (r) => {
+                        z = r._value + 0.0
+                        return {r with _value: 0.0}
+                    })
+
+            stream_y =
+                raw
+                    |> map(fn: (r) => {
+                        z = r._value + 0
+                        return {r with _value: 0.0}
+                    })
+
+            union(
+                tables: [
+                    stream_x,
+                    stream_y,
+                ],
+            )
+        "#,
+        exp: map![
+            "x" => r#"stream[A] where A: Record"#,
+        ],
+    }
+}

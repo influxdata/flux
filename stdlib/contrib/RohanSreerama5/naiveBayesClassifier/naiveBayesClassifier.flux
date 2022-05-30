@@ -54,7 +54,7 @@ naiveBayes = (tables=<-, myClass, myField, myMeasurement) => {
     total_count = r2._value
     P_Class_k =
         training_data
-            |> group(columns: [myClass, "_field"])
+            |> group(columns: [string(v: myClass), "_field"])
             |> count()
             |> map(fn: (r) => ({r with p_k: float(v: r._value) / float(v: total_count), tc: total_count}))
             |> group()
@@ -69,22 +69,22 @@ naiveBayes = (tables=<-, myClass, myField, myMeasurement) => {
     // one table for each value, where r.p_x == P(value_x)
     P_k_x =
         training_data
-            |> group(columns: ["_field", "_value", myClass])
+            |> group(columns: ["_field", "_value", string(v: myClass)])
             |> reduce(fn: (r, accumulator) => ({sum: 1.0 + accumulator.sum}), identity: {sum: 0.0})
             |> group()
 
     // one table for each value and Class pair, where r.p_k_x == P(value_x | Class_k)
     P_k_x_class =
-        join(tables: {P_k_x: P_k_x, P_Class_k: P_Class_k}, on: [myClass], method: "inner")
-            |> group(columns: [myClass, "_value_P_k_x"])
+        join(tables: {P_k_x: P_k_x, P_Class_k: P_Class_k}, on: [string(v: myClass)], method: "inner")
+            |> group(columns: [string(v: myClass), "_value_P_k_x"])
             |> limit(n: 1)
             |> map(fn: (r) => ({r with P_x_k: r.sum / float(v: r._value_P_Class_k)}))
             |> drop(columns: ["_field_P_Class_k", "_value_P_Class_k"])
             |> rename(columns: {_field_P_k_x: "_field", _value_P_k_x: "_value"})
     P_k_x_class_Drop =
-        join(tables: {P_k_x: P_k_x, P_Class_k: P_Class_k}, on: [myClass], method: "inner")
+        join(tables: {P_k_x: P_k_x, P_Class_k: P_Class_k}, on: [string(v: myClass)], method: "inner")
             |> drop(columns: ["_field_P_Class_k", "_value_P_Class_k", "_field_P_k_x"])
-            |> group(columns: [myClass, "_value_P_k_x"])
+            |> group(columns: [string(v: myClass), "_value_P_k_x"])
             |> limit(n: 1)
             |> map(fn: (r) => ({r with P_x_k: r.sum / float(v: r._value_P_Class_k)}))
 
