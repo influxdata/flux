@@ -31,6 +31,8 @@ pub type SemanticMap<K, V> = BTreeMap<K, V>;
 pub type SemanticMapIter<'a, K, V> = std::collections::btree_map::Iter<'a, K, V>;
 
 trait Matcher<E> {
+    fn name(&self) -> &'static str;
+
     fn match_types(
         &self,
         unifier: &mut Unifier<'_, E>,
@@ -42,6 +44,10 @@ trait Matcher<E> {
 struct Unify;
 
 impl Matcher<Error> for Unify {
+    fn name(&self) -> &'static str {
+        "Unify"
+    }
+
     fn match_types(
         &self,
         unifier: &mut Unifier<'_, Error>,
@@ -65,6 +71,10 @@ impl Matcher<Error> for Unify {
 struct Subsume;
 
 impl Matcher<Error> for Subsume {
+    fn name(&self) -> &'static str {
+        "Subsume"
+    }
+
     fn match_types(
         &self,
         unifier: &mut Unifier<'_, Error>,
@@ -78,14 +88,8 @@ impl Matcher<Error> for Subsume {
             maybe_label: &'a MonoType,
             maybe_var: &'a MonoType,
         ) -> Cow<'a, MonoType> {
-            match maybe_var {
-                MonoType::Var(v)
-                    if !unifier
-                        .sub
-                        .cons()
-                        .get(v)
-                        .map_or(false, |kinds| kinds.contains(&Kind::Label)) =>
-                {
+            match *maybe_var {
+                MonoType::Var(v) if !unifier.sub.satisfies(v, Kind::Label) => {
                     struct ReplaceLabels;
                     impl Substituter for ReplaceLabels {
                         fn try_apply(&mut self, _: Tvar) -> Option<MonoType> {
@@ -106,8 +110,12 @@ impl Matcher<Error> for Subsume {
                 _ => Cow::Borrowed(maybe_label),
             }
         }
-        let actual = translate_label(unifier, actual, expected);
-        let expected = translate_label(unifier, expected, &actual);
+
+        let actual = unifier.sub.real(actual);
+        let expected = unifier.sub.real(expected);
+
+        let actual = translate_label(unifier, &actual, &expected);
+        let expected = translate_label(unifier, &expected, &actual);
         match (&*expected, &*actual) {
             // Labels should be accepted anywhere that we expect a string
             (&MonoType::STRING, MonoType::Label(_)) => MonoType::STRING,
@@ -964,7 +972,7 @@ impl MonoType {
         actual: &Self,
         unifier: &mut Unifier<'_>,
     ) -> MonoType {
-        log::debug!("Unify {} <=> {}", self, actual);
+        log::debug!("{} {} <=> {}", unifier.matcher.name(), self, actual);
 
         unifier.matcher.match_types(unifier, self, actual)
     }
@@ -1027,7 +1035,7 @@ impl MonoType {
     }
 
     /// Validates that the current type meets the constraints of the specified kind.
-    pub fn constrain(&self, with: Kind, cons: &mut TvarKinds) -> Result<(), Error> {
+    pub fn constrain(&self, with: Kind, sub: &mut Substitution) -> Result<(), Error> {
         match self {
             MonoType::Error => Ok(()),
             MonoType::Builtin(typ) => typ.constrain(with),
@@ -1047,14 +1055,11 @@ impl MonoType {
                     exp: with,
                 }),
             },
-            MonoType::Var(tvr) => {
-                tvr.constrain(with, cons);
-                Ok(())
-            }
-            MonoType::Collection(app) => app.constrain(with, cons),
-            MonoType::Dict(dict) => dict.constrain(with, cons),
-            MonoType::Record(obj) => obj.constrain(with, cons),
-            MonoType::Fun(fun) => fun.constrain(with, cons),
+            MonoType::Var(tvr) => tvr.constrain(with, sub),
+            MonoType::Collection(app) => app.constrain(with, sub),
+            MonoType::Dict(dict) => dict.constrain(with, sub),
+            MonoType::Record(obj) => obj.constrain(with, sub),
+            MonoType::Fun(fun) => fun.constrain(with, sub),
         }
     }
 
@@ -1212,15 +1217,21 @@ impl Tvar {
         }
     }
 
-    fn constrain(&self, with: Kind, cons: &mut TvarKinds) {
-        match cons.get_mut(self) {
-            Some(kinds) => {
-                if !kinds.contains(&with) {
-                    kinds.push(with);
-                }
-            }
+    fn constrain(&self, with: Kind, sub: &mut Substitution) -> Result<(), Error> {
+        match sub.try_apply(*self) {
+            Some(typ) => typ.constrain(with, sub),
             None => {
-                cons.insert(*self, vec![with]);
+                match sub.cons().get_mut(self) {
+                    Some(kinds) => {
+                        if !kinds.contains(&with) {
+                            kinds.push(with);
+                        }
+                    }
+                    None => {
+                        sub.cons().insert(*self, vec![with]);
+                    }
+                }
+                Ok(())
             }
         }
     }
@@ -1247,16 +1258,16 @@ impl Collection {
         self.arg.unify(&with.arg, unifier);
     }
 
-    fn constrain(&self, with: Kind, cons: &mut TvarKinds) -> Result<(), Error> {
+    fn constrain(&self, with: Kind, sub: &mut Substitution) -> Result<(), Error> {
         match self.collection {
             CollectionType::Array | CollectionType::Stream => match with {
-                Kind::Equatable => self.arg.constrain(with, cons),
+                Kind::Equatable => self.arg.constrain(with, sub),
                 _ => Err(Error::CannotConstrain {
                     act: MonoType::app(self.clone()),
                     exp: with,
                 }),
             },
-            CollectionType::Vector => self.arg.constrain(with, cons),
+            CollectionType::Vector => self.arg.constrain(with, sub),
         }
     }
 
@@ -1287,7 +1298,7 @@ impl Dictionary {
         self.val.unify(&actual.val, unifier);
     }
 
-    fn constrain(&self, with: Kind, _: &mut TvarKinds) -> Result<(), Error> {
+    fn constrain(&self, with: Kind, _: &mut Substitution) -> Result<(), Error> {
         Err(Error::CannotConstrain {
             act: MonoType::dict(self.clone()),
             exp: with,
@@ -1552,16 +1563,16 @@ impl Record {
         }
     }
 
-    fn constrain(&self, with: Kind, cons: &mut TvarKinds) -> Result<(), Error> {
+    fn constrain(&self, with: Kind, sub: &mut Substitution) -> Result<(), Error> {
         match with {
             Kind::Record => Ok(()),
             Kind::Equatable => {
                 let mut fields = self.fields();
                 for head in &mut fields {
-                    head.v.constrain(with, cons)?;
+                    head.v.constrain(with, sub)?;
                 }
                 match fields.tail() {
-                    Some(t) => t.constrain(with, cons),
+                    Some(t) => t.constrain(with, sub),
                     None => Ok(()),
                 }
             }
@@ -2265,7 +2276,7 @@ impl Function {
         })
     }
 
-    fn constrain(&self, with: Kind, _: &mut TvarKinds) -> Result<(), Error> {
+    fn constrain(&self, with: Kind, _: &mut Substitution) -> Result<(), Error> {
         Err(Error::CannotConstrain {
             act: MonoType::from(self.clone()),
             exp: with,
@@ -2988,11 +2999,13 @@ mod tests {
             Kind::Stringable,
         ];
         for c in allowable_cons {
-            MonoType::INT.constrain(c, &mut TvarKinds::new()).unwrap();
+            MonoType::INT
+                .constrain(c, &mut Substitution::new())
+                .unwrap();
         }
 
         let sub = MonoType::INT
-            .constrain(Kind::Record, &mut TvarKinds::new())
+            .constrain(Kind::Record, &mut Substitution::new())
             .map(|_| ());
         assert_eq!(
             Err(Error::CannotConstrain {
@@ -3005,7 +3018,7 @@ mod tests {
     #[test]
     fn constrain_rows() {
         Record::Empty
-            .constrain(Kind::Record, &mut TvarKinds::new())
+            .constrain(Kind::Record, &mut Substitution::new())
             .unwrap();
 
         let unallowable_cons = vec![
@@ -3018,7 +3031,7 @@ mod tests {
         ];
         for c in unallowable_cons {
             let sub = Record::Empty
-                .constrain(c, &mut TvarKinds::new())
+                .constrain(c, &mut Substitution::new())
                 .map(|_| ());
             assert_eq!(
                 Err(Error::CannotConstrain {
@@ -3045,7 +3058,7 @@ mod tests {
 
         for c in allowable_cons_int {
             let vector_int = MonoType::vector(MonoType::INT);
-            vector_int.constrain(c, &mut TvarKinds::new()).unwrap();
+            vector_int.constrain(c, &mut Substitution::new()).unwrap();
         }
 
         // kind constraints not allowed for Vector(MonoType::STRING)
@@ -3053,7 +3066,7 @@ mod tests {
         for c in unallowable_cons_string {
             let vector_string = MonoType::vector(MonoType::STRING);
             let sub = vector_string
-                .constrain(c, &mut TvarKinds::new())
+                .constrain(c, &mut Substitution::new())
                 .map(|_| ());
             assert_eq!(
                 Err(Error::CannotConstrain {
@@ -3068,7 +3081,9 @@ mod tests {
         let unallowable_cons_time = vec![Kind::Subtractable, Kind::Divisible, Kind::Numeric];
         for c in unallowable_cons_time {
             let vector_time = MonoType::vector(MonoType::TIME);
-            let sub = vector_time.constrain(c, &mut TvarKinds::new()).map(|_| ());
+            let sub = vector_time
+                .constrain(c, &mut Substitution::new())
+                .map(|_| ());
             assert_eq!(
                 Err(Error::CannotConstrain {
                     act: MonoType::TIME,
@@ -3089,7 +3104,7 @@ mod tests {
 
         for c in allowable_cons_time {
             let vector_time = MonoType::vector(MonoType::TIME);
-            vector_time.constrain(c, &mut TvarKinds::new()).unwrap();
+            vector_time.constrain(c, &mut Substitution::new()).unwrap();
         }
     }
     #[test]

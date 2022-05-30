@@ -158,7 +158,7 @@ pub fn constrain(
 ) -> Result<(), Located<types::Error>> {
     log::debug!("Constraint::Kind {:?}: {} => {}", loc.source, exp, act);
     act.apply_cow(sub)
-        .constrain(exp, sub.cons())
+        .constrain(exp, sub)
         .map_err(|error| Located {
             location: loc.clone(),
             error,
@@ -173,6 +173,28 @@ pub fn equal(
 ) -> Result<MonoType, Located<Errors<types::Error>>> {
     log::debug!("Constraint::Equal {:?}: {} <===> {}", loc.source, exp, act);
     exp.try_unify(act, sub).map_err(|error| {
+        log::debug!("Unify error: {} <=> {} : {}", exp, act, error);
+
+        Located {
+            location: loc.clone(),
+            error,
+        }
+    })
+}
+
+pub fn subsume(
+    exp: &MonoType,
+    act: &MonoType,
+    loc: &SourceLocation,
+    sub: &mut Substitution,
+) -> Result<MonoType, Located<Errors<types::Error>>> {
+    log::debug!(
+        "Constraint::Subsume {:?}: {} <===> {}",
+        loc.source,
+        exp,
+        act
+    );
+    exp.try_subsume(act, sub).map_err(|error| {
         log::debug!("Unify error: {} <=> {} : {}", exp, act, error);
 
         Located {
@@ -248,7 +270,7 @@ pub(crate) fn temporary_generalize(
 pub fn generalize(env: &Environment, sub: &mut Substitution, t: MonoType) -> PolyType {
     struct Generalize<'a> {
         env_free_vars: Vec<Tvar>,
-        sub: &'a Substitution,
+        sub: &'a mut Substitution,
         vars: Vec<(Tvar, Tvar)>,
     }
 
