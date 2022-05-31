@@ -34,6 +34,14 @@ pub fn format_node(node: walk::Node) -> Result<String, Error> {
     formatter.output()
 }
 
+/// Format a `MonoType`
+pub fn format_monotype(typ: &MonoType) -> String {
+    let arena = Arena::default();
+    let mut formatter = DocFormatter { arena: &arena };
+    let doc = formatter.format_monotype(typ);
+    doc.pretty(120).to_string()
+}
+
 /// Struct to hold data related to formatting such as formatted code,
 /// options, and errors.
 /// Provides methods for formatting files and strings of source code.
@@ -292,7 +300,7 @@ impl Formatter {
     }
 
     fn format_text_part(&mut self, n: &semantic::nodes::TextPart) {
-        let escaped_string = self.escape_string(&n.value);
+        let escaped_string = escape_string(&n.value);
         self.write_string(&escaped_string);
     }
 
@@ -744,24 +752,10 @@ impl Formatter {
         }
         // Write out escaped string value
         self.write_rune('"');
-        let escaped_string = self.escape_string(&n.value);
+        let escaped_string = escape_string(&n.value);
         self.write_string(&escaped_string);
         self.write_rune('"');
         // self.write_string(&format!(":{}", MonoType::String.to_string()));
-    }
-
-    fn escape_string(&mut self, s: &str) -> String {
-        if !(s.contains('\"') || s.contains('\\')) {
-            return s.to_string();
-        }
-        let mut escaped = String::with_capacity(s.len() * 2);
-        for r in s.chars() {
-            if r == '"' || r == '\\' {
-                escaped.push('\\')
-            }
-            escaped.push(r)
-        }
-        escaped
     }
 
     fn format_boolean_literal(&mut self, n: &semantic::nodes::BooleanLit) {
@@ -888,6 +882,190 @@ impl Formatter {
         self.write_rune('/');
         // self.write_string(&format!(":{}", MonoType::Regexp.to_string()));
     }
+}
+
+use pretty::{docs, DocAllocator};
+
+use crate::formatter::comma_list_with;
+
+type Arena<'doc> = pretty::Arena<'doc>;
+type Doc<'doc> = pretty::DocBuilder<'doc, Arena<'doc>, ()>;
+
+const MULTILINE: usize = 4;
+const INDENT: isize = INDENT_BYTES.len() as isize;
+
+struct DocFormatter<'doc> {
+    arena: &'doc Arena<'doc>,
+}
+
+impl<'doc> DocFormatter<'doc> {
+    fn base_multiline(&self, base: &ast::BaseNode) -> Doc<'doc> {
+        self.multiline(base.is_multiline())
+    }
+
+    fn multiline(&self, multiline: bool) -> Doc<'doc> {
+        if multiline {
+            self.arena.hardline()
+        } else {
+            self.arena.line()
+        }
+    }
+
+    fn base_multiline_(&self, base: &ast::BaseNode) -> Doc<'doc> {
+        self.multiline_(base.is_multiline())
+    }
+
+    fn multiline_(&self, multiline: bool) -> Doc<'doc> {
+        if multiline {
+            self.arena.hardline()
+        } else {
+            self.arena.line_()
+        }
+    }
+
+    fn format_monotype(&self, n: &'doc MonoType) -> Doc<'doc> {
+        let arena = self.arena;
+        match n {
+            MonoType::Error => arena.text("<error>"),
+            MonoType::Var(tv) => docs![arena, "#", tv.to_string()],
+            MonoType::BoundVar(tv) => arena.text(tv.to_string()),
+            MonoType::Builtin(nt) => arena.text(nt.to_string()),
+            MonoType::Collection(col) => match col.collection {
+                CollectionType::Array => {
+                    docs![arena, "[", self.format_monotype(&col.arg), "]",]
+                }
+                CollectionType::Vector => {
+                    docs![arena, "v[", self.format_monotype(&col.arg), "]",]
+                }
+                CollectionType::Stream => {
+                    docs![arena, "stream[", self.format_monotype(&col.arg), "]",]
+                }
+            },
+            MonoType::Dict(dict) => {
+                docs![
+                    arena,
+                    "[",
+                    self.format_monotype(&dict.key),
+                    ":",
+                    self.format_monotype(&dict.val),
+                    "]",
+                ]
+            }
+            MonoType::Record(n) => {
+                let multiline = n.fields().count() > MULTILINE;
+                let line = self.multiline(multiline);
+                let line_ = self.multiline_(multiline);
+
+                let mut fields = n.fields();
+
+                let fields_doc = comma_list_with(
+                    arena,
+                    fields.by_ref().map(|p| {
+                        docs![arena, p.k.to_string(), ": ", self.format_monotype(&p.v),].group()
+                    }),
+                    line,
+                );
+
+                docs![
+                    arena,
+                    "{",
+                    docs![
+                        arena,
+                        line_.clone(),
+                        if let Some(typ) = fields.tail() {
+                            docs![
+                                arena,
+                                docs![arena, self.format_monotype(typ), arena.line(), "with",]
+                                    .group(),
+                                arena.line(),
+                            ]
+                        } else {
+                            arena.nil()
+                        },
+                        fields_doc,
+                    ]
+                    .nest(INDENT),
+                    line_,
+                    "}",
+                ]
+            }
+            MonoType::Fun(n) => {
+                let multiline = n.parameters_len() > MULTILINE;
+                let line = self.multiline(multiline);
+                let line_ = self.multiline_(multiline);
+
+                docs![
+                    arena,
+                    "(",
+                    docs![
+                        arena,
+                        line_.clone(),
+                        comma_list_with(
+                            arena,
+                            n.pipe
+                                .iter()
+                                .map(|p| {
+                                    docs![
+                                        arena,
+                                        if p.k == "<-" {
+                                            docs![arena, &p.k]
+                                        } else {
+                                            docs![arena, "<-", &p.k]
+                                        },
+                                        ": ",
+                                        self.format_monotype(&p.v),
+                                    ]
+                                })
+                                .chain(n.req.iter().map(|(k, v)| {
+                                    docs![arena, k.as_str(), ": ", self.format_monotype(v),]
+                                }))
+                                .chain(n.opt.iter().map(|(name, argument)| {
+                                    docs![
+                                        arena,
+                                        "?",
+                                        name.as_str(),
+                                        ": ",
+                                        self.format_monotype(&argument.typ),
+                                        match &argument.default {
+                                            Some(default) =>
+                                                docs![arena, " = ", self.format_monotype(default)],
+                                            None => arena.nil(),
+                                        }
+                                    ]
+                                })),
+                            line,
+                        ),
+                    ]
+                    .nest(INDENT),
+                    line_.clone(),
+                    ")",
+                    " => ",
+                    self.format_monotype(&n.retn),
+                ]
+            }
+            MonoType::Label(label) => self.format_string_literal(label),
+        }
+        .group()
+    }
+
+    fn format_string_literal(&self, value: &str) -> Doc<'doc> {
+        let arena = self.arena;
+        docs![arena, "\"", escape_string(value), "\""]
+    }
+}
+
+fn escape_string(s: &str) -> String {
+    if !(s.contains('\"') || s.contains('\\')) {
+        return s.to_string();
+    }
+    let mut escaped = String::with_capacity(s.len() * 2);
+    for r in s.chars() {
+        if r == '"' || r == '\\' {
+            escaped.push('\\')
+        }
+        escaped.push(r)
+    }
+    escaped
 }
 
 fn get_precedence(node: &walk::Node) -> u32 {

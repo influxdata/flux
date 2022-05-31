@@ -17,6 +17,7 @@ use crate::{
     errors::{Errors, Located},
     map::HashMap,
     semantic::{
+        formatter,
         fresh::Fresher,
         nodes::Symbol,
         sub::{
@@ -572,35 +573,26 @@ pub enum BuiltinType {
 
 /// Represents a Flux type. The type may be unknown, represented as a type variable,
 /// or may be a known concrete type.
-#[derive(Debug, Display, Clone, Eq, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 #[allow(missing_docs)]
 pub enum MonoType {
-    #[display(fmt = "<error>")]
     Error,
-
-    #[display(fmt = "{}", _0)]
     Builtin(BuiltinType),
-
-    #[display(fmt = "\"{}\"", _0)]
     Label(Label),
-    #[display(fmt = "#{}", _0)]
     Var(Tvar),
-
     /// A type variable that is bound to to a `PolyType` that this variable is contained in.
-    #[display(fmt = "{}", _0)]
     BoundVar(Tvar),
-
-    #[display(fmt = "{}", _0)]
     Collection(Ptr<Collection>),
-
-    #[display(fmt = "{}", _0)]
     Dict(Ptr<Dictionary>),
-
-    #[display(fmt = "{}", _0)]
     Record(Ptr<Record>),
-
-    #[display(fmt = "{}", _0)]
     Fun(Ptr<Function>),
+}
+
+impl fmt::Display for MonoType {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let s = formatter::format_monotype(self);
+        f.write_str(&s)
+    }
 }
 
 impl Serialize for MonoType {
@@ -2051,6 +2043,10 @@ impl Substitutable for Function {
 }
 
 impl<T> Function<T> {
+    pub(crate) fn parameters_len(&self) -> usize {
+        self.opt.len() + self.req.len() + self.pipe.is_some() as usize
+    }
+
     pub(crate) fn map<U>(self, mut f: impl FnMut(T) -> U) -> Function<U> {
         let Self {
             opt,
@@ -2661,7 +2657,7 @@ mod tests {
             .to_string(),
         );
         assert_eq!(
-            "(x:A) => A",
+            "(x: A) => A",
             PolyType {
                 vars: vec![Tvar(0)],
                 cons: TvarKinds::new(),
@@ -2677,7 +2673,7 @@ mod tests {
             .to_string(),
         );
         assert_eq!(
-            "(x:A, y:B) => {x:A, y:B}",
+            "(x: A, y: B) => {x: A, y: B}",
             PolyType {
                 vars: vec![Tvar(0), Tvar(1)],
                 cons: TvarKinds::new(),
@@ -2706,7 +2702,7 @@ mod tests {
             .to_string(),
         );
         assert_eq!(
-            "(a:A, b:A) => A where A: Addable",
+            "(a: A, b: A) => A where A: Addable",
             PolyType {
                 vars: vec![Tvar(0)],
                 cons: semantic_map! {Tvar(0) => vec![Kind::Addable]},
@@ -2723,7 +2719,7 @@ mod tests {
             .to_string(),
         );
         assert_eq!(
-            "(x:A, y:B) => {x:A, y:B} where A: Addable, B: Divisible",
+            "(x: A, y: B) => {x: A, y: B} where A: Addable, B: Divisible",
             PolyType {
                 vars: vec![Tvar(0), Tvar(1)],
                 cons: semantic_map! {
@@ -2755,7 +2751,7 @@ mod tests {
             .to_string(),
         );
         assert_eq!(
-            "(x:A, y:B) => {x:A, y:B} where A: Comparable + Equatable, B: Addable + Divisible",
+            "(x: A, y: B) => {x: A, y: B} where A: Comparable + Equatable, B: Addable + Divisible",
             PolyType {
                 vars: vec![Tvar(0), Tvar(1)],
                 cons: semantic_map! {
