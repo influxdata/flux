@@ -10,6 +10,7 @@ macro_rules! mk_node {
     ) => {
 
         $(#[$attr])*
+        #[derive(derive_more::From)]
         pub enum $name<'a> {
             Package(&'a $($mut)? Package),
             File(&'a $($mut)? File),
@@ -44,7 +45,7 @@ macro_rules! mk_node {
             BooleanLit(&'a $($mut)? BooleanLit),
             DateTimeLit(&'a $($mut)? DateTimeLit),
             RegexpLit(&'a $($mut)? RegexpLit),
-            ErrorExpr(&'a $($mut)? SourceLocation),
+            ErrorExpr(&'a $($mut)? BadExpr),
 
             // Statements.
             ExprStmt(&'a $($mut)? ExprStmt),
@@ -53,7 +54,7 @@ macro_rules! mk_node {
             TestStmt(&'a $($mut)? TestStmt),
             TestCaseStmt(&'a $($mut)? TestCaseStmt),
             BuiltinStmt(&'a $($mut)? BuiltinStmt),
-            ErrorStmt(&'a $($mut)? SourceLocation),
+            ErrorStmt(&'a $($mut)? BadStmt),
 
             // StringExprPart.
             TextPart(&'a $($mut)? TextPart),
@@ -154,14 +155,14 @@ macro_rules! mk_node {
                     Self::TestStmt(n) => &n.loc,
                     Self::TestCaseStmt(n) => &n.loc,
                     Self::BuiltinStmt(n) => &n.loc,
-                    Self::ErrorStmt(loc) => loc,
+                    Self::ErrorStmt(n) => &n.loc,
                     Self::Block(n) => n.loc(),
                     Self::Property(n) => &n.loc,
                     Self::TextPart(n) => &n.loc,
                     Self::InterpolatedPart(n) => &n.loc,
                     Self::VariableAssgn(n) => &n.loc,
                     Self::MemberAssgn(n) => &n.loc,
-                    Self::ErrorExpr(loc) => loc,
+                    Self::ErrorExpr(n) => &n.loc,
                 }
             }
 

@@ -432,7 +432,9 @@ impl<'a> Converter<'a> {
             ast::Statement::Variable(s) => {
                 Statement::Variable(Box::new(self.convert_variable_assignment(Some(package), s)))
             }
-            ast::Statement::Bad(s) => Statement::Error(s.base.location.clone()),
+            ast::Statement::Bad(s) => Statement::Error(BadStmt {
+                loc: s.base.location.clone(),
+            }),
         }
     }
 
@@ -757,7 +759,7 @@ impl<'a> Converter<'a> {
                     Ok(d) => Expression::Duration(d),
                     Err(err) => {
                         self.errors.push(err);
-                        Expression::Error(location)
+                        Expression::Error(BadExpr { loc: location })
                     }
                 }
             }
@@ -770,9 +772,13 @@ impl<'a> Converter<'a> {
                     ErrorKind::InvalidPipeLit,
                 ));
 
-                Expression::Error(lit.base.location.clone())
+                Expression::Error(BadExpr {
+                    loc: lit.base.location.clone(),
+                })
             }
-            ast::Expression::Bad(bad) => Expression::Error(bad.base.location.clone()),
+            ast::Expression::Bad(bad) => Expression::Error(BadExpr {
+                loc: bad.base.location.clone(),
+            }),
         }
     }
 
@@ -919,7 +925,9 @@ impl<'a> Converter<'a> {
                     .push(located(s.loc().clone(), ErrorKind::MissingReturn));
                 Block::Return(ReturnStmt {
                     loc: s.loc().clone(),
-                    argument: Expression::Error(s.loc().clone()),
+                    argument: Expression::Error(BadExpr {
+                        loc: s.loc().clone(),
+                    }),
                 })
             }
             None => {
@@ -929,7 +937,9 @@ impl<'a> Converter<'a> {
                 ));
                 Block::Return(ReturnStmt {
                     loc: block.base.location.clone(),
-                    argument: Expression::Error(block.base.location.clone()),
+                    argument: Expression::Error(BadExpr {
+                        loc: block.base.location.clone(),
+                    }),
                 })
             }
         };

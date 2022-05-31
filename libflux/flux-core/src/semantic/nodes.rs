@@ -235,7 +235,7 @@ pub enum Statement {
     Test(Box<TestStmt>),
     TestCase(Box<TestCaseStmt>),
     Builtin(BuiltinStmt),
-    Error(ast::SourceLocation),
+    Error(BadStmt),
 }
 
 impl Statement {
@@ -295,7 +295,7 @@ pub enum Expression {
     DateTime(DateTimeLit),
     Regexp(RegexpLit),
 
-    Error(ast::SourceLocation),
+    Error(BadExpr),
 }
 
 impl Expression {
@@ -350,7 +350,7 @@ impl Expression {
             Expression::Boolean(lit) => &lit.loc,
             Expression::DateTime(lit) => &lit.loc,
             Expression::Regexp(lit) => &lit.loc,
-            Expression::Error(loc) => loc,
+            Expression::Error(e) => &e.loc,
         }
     }
     fn infer(&mut self, infer: &mut InferState<'_, '_>) -> Result {
@@ -2004,6 +2004,20 @@ pub fn convert_duration(ast_dur: &[ast::Duration]) -> AnyhowResult<Duration> {
         nanoseconds,
         negative,
     })
+}
+
+#[derive(Derivative)]
+#[derivative(Debug, PartialEq, Clone)]
+#[allow(missing_docs)]
+pub struct BadExpr {
+    pub loc: ast::SourceLocation,
+}
+
+#[derive(Derivative)]
+#[derivative(Debug, PartialEq, Clone)]
+#[allow(missing_docs)]
+pub struct BadStmt {
+    pub loc: ast::SourceLocation,
 }
 
 #[cfg(test)]

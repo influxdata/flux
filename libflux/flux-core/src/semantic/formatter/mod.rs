@@ -28,9 +28,9 @@ pub fn format(pkg: &semantic::nodes::Package) -> Result<String, Error> {
 }
 
 /// Format a `Node`
-pub fn format_node(node: walk::Node) -> Result<String, Error> {
+pub fn format_node<'a>(node: impl Into<walk::Node<'a>>) -> Result<String, Error> {
     let mut formatter = Formatter::default();
-    formatter.format_node(&node);
+    formatter.format_node(&node.into());
     formatter.output()
 }
 
