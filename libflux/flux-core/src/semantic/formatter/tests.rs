@@ -63,7 +63,7 @@ fn array_lit() {
             d = [1s, 2m, 3h]:[duration]
             e = [2019-10-31T00:00:00Z]:[time]
             f = [/a/, /b/, /c/]:[regexp]
-            g = [{a: 0, b: 0.0}:{a:int, b:float}, {a: 1, b: 1.1}:{a:int, b:float}]:[{a:int, b:float}]"#]],
+            g = [{a: 0, b: 0.0}:{a: int, b: float}, {a: 1, b: 1.1}:{a: int, b: float}]:[{a: int, b: float}]"#]],
     )
 }
 
@@ -115,15 +115,15 @@ fn format_function_expression() {
             package main
             (a) => {
                 return a:#A
-            }:(a:#A) => #A
+            }:(a: #A) => #A
             f = (a, b=1) => {
                 return a:A +:A b:A
-            }:(a:A, ?b:A) => A
-            x = f:(a:int, ?b:int) => int(a: 2):int
-            y = f:(a:int, ?b:int) => int(a: x:int, b: f:(a:int, ?b:int) => int(a: x:int):int):int
+            }:(a: A, ?b: A) => A
+            x = f:(a: int, ?b: int) => int(a: 2):int
+            y = f:(a: int, ?b: int) => int(a: x:int, b: f:(a: int, ?b: int) => int(a: x:int):int):int
             g = (t) => {
                 return t:A
-            }:(<-t:A) => A"##]],
+            }:(<-t: A) => A"##]],
     )
 }
 
@@ -185,7 +185,7 @@ fn format_object_expression() {
         script,
         expect![[r#"
             package main
-            {a: 1, b: "2"}:{a:int, b:string}"#]],
+            {a: 1, b: "2"}:{a: int, b: string}"#]],
     )
 }
 
@@ -200,8 +200,8 @@ fn format_member_expression() {
         script,
         expect![[r#"
             package main
-            o = {temp: 30.0, loc: "FL"}:{temp:float, loc:string}
-            t = o:{temp:float, loc:string}.temp:float"#]],
+            o = {temp: 30.0, loc: "FL"}:{temp: float, loc: string}
+            t = o:{temp: float, loc: string}.temp:float"#]],
     )
 }
 
@@ -267,6 +267,6 @@ fn format_block_statement() {
             (r) => {
                 v = (if r:#A <:bool 0 then -r:#A:#A else r:#A):#A
                 return v:#A *:#A v:#A
-            }:(r:#A) => #A"##]],
+            }:(r: #A) => #A"##]],
     )
 }

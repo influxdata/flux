@@ -4,7 +4,7 @@ use std::{
     borrow::Cow,
     cmp,
     collections::{BTreeMap, BTreeSet},
-    fmt::{self, Write},
+    fmt,
     hash::Hash,
     str::FromStr,
 };
@@ -17,6 +17,7 @@ use crate::{
     errors::{Errors, Located},
     map::HashMap,
     semantic::{
+        formatter,
         fresh::Fresher,
         nodes::Symbol,
         sub::{
@@ -572,35 +573,26 @@ pub enum BuiltinType {
 
 /// Represents a Flux type. The type may be unknown, represented as a type variable,
 /// or may be a known concrete type.
-#[derive(Debug, Display, Clone, Eq, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 #[allow(missing_docs)]
 pub enum MonoType {
-    #[display(fmt = "<error>")]
     Error,
-
-    #[display(fmt = "{}", _0)]
     Builtin(BuiltinType),
-
-    #[display(fmt = "\"{}\"", _0)]
     Label(Label),
-    #[display(fmt = "#{}", _0)]
     Var(Tvar),
-
     /// A type variable that is bound to to a `PolyType` that this variable is contained in.
-    #[display(fmt = "{}", _0)]
     BoundVar(Tvar),
-
-    #[display(fmt = "{}", _0)]
     Collection(Ptr<Collection>),
-
-    #[display(fmt = "{}", _0)]
     Dict(Ptr<Dictionary>),
-
-    #[display(fmt = "{}", _0)]
     Record(Ptr<Record>),
-
-    #[display(fmt = "{}", _0)]
     Fun(Ptr<Function>),
+}
+
+impl fmt::Display for MonoType {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let s = formatter::format_monotype(self);
+        f.write_str(&s)
+    }
 }
 
 impl Serialize for MonoType {
@@ -666,22 +658,6 @@ impl Serialize for MonoType {
 pub struct Collection {
     pub collection: CollectionType,
     pub arg: MonoType,
-}
-
-impl fmt::Display for Collection {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self.collection {
-            CollectionType::Array => {
-                write!(f, "[{}]", self.arg)
-            }
-            CollectionType::Vector => {
-                write!(f, "v[{}]", self.arg)
-            }
-            CollectionType::Stream => {
-                write!(f, "stream[{}]", self.arg)
-            }
-        }
-    }
 }
 
 #[derive(Debug, Clone, Copy, Eq, PartialEq)]
@@ -1277,8 +1253,7 @@ impl Collection {
 }
 
 /// A key-value data structure.
-#[derive(Debug, Display, Clone, Eq, PartialEq, Serialize)]
-#[display(fmt = "[{}:{}]", key, val)]
+#[derive(Debug, Clone, Eq, PartialEq, Serialize)]
 pub struct Dictionary {
     /// Type of key.
     pub key: MonoType,
@@ -1343,18 +1318,7 @@ impl fmt::Debug for Record {
 
 impl fmt::Display for Record {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        f.write_str("{")?;
-        let mut s = String::new();
-        let tvar = self.format(&mut s)?;
-        if let Some(tv) = tvar {
-            write!(f, "{} with ", tv)?;
-        }
-        if s.len() > 2 {
-            // remove trailing ', ' delimiter
-            s.truncate(s.len() - 2);
-        }
-        f.write_str(s.as_str())?;
-        f.write_str("}")
+        MonoType::from(self.clone()).fmt(f)
     }
 }
 
@@ -1588,14 +1552,6 @@ impl Record {
             Record::Empty => false,
             Record::Extension { head, tail } => head.v.contains(tv) || tail.contains(tv),
         }
-    }
-
-    fn format(&self, f: &mut String) -> Result<Option<&MonoType>, fmt::Error> {
-        let mut fields = self.fields();
-        for head in &mut fields {
-            write!(f, "{}, ", head)?;
-        }
-        Ok(fields.tail())
     }
 
     /// Returns an iterator over the fields in the record
@@ -1874,8 +1830,7 @@ impl Label {
 }
 
 /// A key-value pair representing a property type in a record.
-#[derive(Debug, Display, Clone, Eq, PartialEq, Serialize)]
-#[display(fmt = "{}:{}", k, v)]
+#[derive(Debug, Clone, Eq, PartialEq, Serialize)]
 #[allow(missing_docs)]
 pub struct Property<K = RecordLabel, V = MonoType> {
     pub k: K,
@@ -1900,19 +1855,6 @@ pub struct Argument<T> {
     pub default: Option<T>,
     /// The type of the argument
     pub typ: T,
-}
-
-impl<T> fmt::Display for Argument<T>
-where
-    T: fmt::Display,
-{
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", self.typ)?;
-        if let Some(default) = &self.default {
-            write!(f, " = {}", default)?;
-        }
-        Ok(())
-    }
 }
 
 impl<T> From<T> for Argument<T> {
@@ -1950,55 +1892,7 @@ pub struct Function<T = MonoType> {
 
 impl fmt::Display for Function {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let required = self
-            .req
-            .iter()
-            // Sort args with BTree
-            .collect::<BTreeMap<_, _>>()
-            .iter()
-            .map(|(&k, &v)| Property {
-                k: k.clone(),
-                v: v.clone(),
-            })
-            .collect::<Vec<_>>();
-
-        let optional = self
-            .opt
-            .iter()
-            // Sort args with BTree
-            .collect::<BTreeMap<_, _>>()
-            .iter()
-            .map(|(&k, &v)| Property {
-                k: String::from("?") + k,
-                v: v.clone(),
-            })
-            .collect::<Vec<_>>();
-
-        let pipe = match &self.pipe {
-            Some(pipe) => {
-                if pipe.k == "<-" {
-                    vec![pipe.clone()]
-                } else {
-                    vec![Property {
-                        k: String::from("<-") + &pipe.k,
-                        v: pipe.v.clone(),
-                    }]
-                }
-            }
-            None => vec![],
-        };
-
-        write!(
-            f,
-            "({}) => {}",
-            pipe.iter()
-                .map(|x| x.to_string())
-                .chain(required.iter().map(|x| x.to_string()))
-                .chain(optional.iter().map(|x| x.to_string()))
-                .collect::<Vec<_>>()
-                .join(", "),
-            self.retn
-        )
+        MonoType::from(self.clone()).fmt(f)
     }
 }
 
@@ -2051,6 +1945,10 @@ impl Substitutable for Function {
 }
 
 impl<T> Function<T> {
+    pub(crate) fn parameters_len(&self) -> usize {
+        self.opt.len() + self.req.len() + self.pipe.is_some() as usize
+    }
+
     pub(crate) fn map<U>(self, mut f: impl FnMut(T) -> U) -> Function<U> {
         let Self {
             opt,
@@ -2492,7 +2390,7 @@ mod tests {
     #[test]
     fn display_type_record() {
         assert_eq!(
-            "{A with a:int, b:string}",
+            "{A with a: int, b: string}",
             Record::new(
                 [
                     Property {
@@ -2509,7 +2407,7 @@ mod tests {
             .to_string()
         );
         assert_eq!(
-            "{a:int, b:string}",
+            "{a: int, b: string}",
             Record::new(
                 [
                     Property {
@@ -2539,7 +2437,7 @@ mod tests {
             .to_string()
         );
         assert_eq!(
-            "(<-:int) => int",
+            "(<-: int) => int",
             Function {
                 req: MonoTypeMap::new(),
                 opt: MonoTypeMap::new(),
@@ -2552,7 +2450,7 @@ mod tests {
             .to_string()
         );
         assert_eq!(
-            "(<-a:int) => int",
+            "(<-a: int) => int",
             Function {
                 req: MonoTypeMap::new(),
                 opt: MonoTypeMap::new(),
@@ -2565,7 +2463,7 @@ mod tests {
             .to_string()
         );
         assert_eq!(
-            "(<-:int, a:int, b:int) => int",
+            "(<-: int, a: int, b: int) => int",
             Function {
                 req: semantic_map! {
                     String::from("a") => MonoType::INT,
@@ -2581,7 +2479,7 @@ mod tests {
             .to_string()
         );
         assert_eq!(
-            "(<-:int, ?a:int, ?b:int) => int",
+            "(<-: int, ?a: int, ?b: int) => int",
             Function {
                 req: MonoTypeMap::new(),
                 opt: semantic_map! {
@@ -2597,7 +2495,13 @@ mod tests {
             .to_string()
         );
         assert_eq!(
-            "(<-:int, a:int, b:int, ?c:int, ?d:int) => int",
+            r#"(
+    <-: int,
+    a: int,
+    b: int,
+    ?c: int,
+    ?d: int,
+) => int"#,
             Function {
                 req: semantic_map! {
                     String::from("a") => MonoType::INT,
@@ -2616,7 +2520,7 @@ mod tests {
             .to_string()
         );
         assert_eq!(
-            "(a:int, ?b:bool) => int",
+            "(a: int, ?b: bool) => int",
             Function {
                 req: semantic_map! {
                     String::from("a") => MonoType::INT,
@@ -2630,7 +2534,7 @@ mod tests {
             .to_string()
         );
         assert_eq!(
-            "(<-a:int, b:int, c:int, ?d:bool) => int",
+            "(<-a: int, b: int, c: int, ?d: bool) => int",
             Function {
                 req: semantic_map! {
                     String::from("b") => MonoType::INT,
@@ -2661,7 +2565,7 @@ mod tests {
             .to_string(),
         );
         assert_eq!(
-            "(x:A) => A",
+            "(x: A) => A",
             PolyType {
                 vars: vec![Tvar(0)],
                 cons: TvarKinds::new(),
@@ -2677,7 +2581,7 @@ mod tests {
             .to_string(),
         );
         assert_eq!(
-            "(x:A, y:B) => {x:A, y:B}",
+            "(x: A, y: B) => {x: A, y: B}",
             PolyType {
                 vars: vec![Tvar(0), Tvar(1)],
                 cons: TvarKinds::new(),
@@ -2706,7 +2610,7 @@ mod tests {
             .to_string(),
         );
         assert_eq!(
-            "(a:A, b:A) => A where A: Addable",
+            "(a: A, b: A) => A where A: Addable",
             PolyType {
                 vars: vec![Tvar(0)],
                 cons: semantic_map! {Tvar(0) => vec![Kind::Addable]},
@@ -2723,7 +2627,7 @@ mod tests {
             .to_string(),
         );
         assert_eq!(
-            "(x:A, y:B) => {x:A, y:B} where A: Addable, B: Divisible",
+            "(x: A, y: B) => {x: A, y: B} where A: Addable, B: Divisible",
             PolyType {
                 vars: vec![Tvar(0), Tvar(1)],
                 cons: semantic_map! {
@@ -2755,7 +2659,7 @@ mod tests {
             .to_string(),
         );
         assert_eq!(
-            "(x:A, y:B) => {x:A, y:B} where A: Comparable + Equatable, B: Addable + Divisible",
+            "(x: A, y: B) => {x: A, y: B} where A: Comparable + Equatable, B: Addable + Divisible",
             PolyType {
                 vars: vec![Tvar(0), Tvar(1)],
                 cons: semantic_map! {

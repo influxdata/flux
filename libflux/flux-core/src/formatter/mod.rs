@@ -70,17 +70,16 @@ fn format_item_list<'doc>(
     )
 }
 
-fn comma_list_with<'doc, I>(
+pub(crate) fn comma_list_with<'doc, I>(
     arena: &'doc Arena<'doc>,
     docs: impl IntoIterator<Item = Doc<'doc>, IntoIter = I>,
     line: Doc<'doc>,
 ) -> Doc<'doc>
 where
-    I: ExactSizeIterator<Item = Doc<'doc>>,
+    I: Iterator<Item = Doc<'doc>>,
 {
-    let docs = docs.into_iter();
-    let len = docs.len();
-    let trailing_comma = if len == 0 {
+    let mut docs = docs.into_iter().peekable();
+    let trailing_comma = if docs.peek().is_none() {
         arena.nil()
     } else {
         arena.text(",").flat_alt(arena.nil())

@@ -3631,7 +3631,7 @@ test_error_msg! {
         "#,
     // Location points to second interpolated expression
     expect: expect![[r#"
-        error: {b:float, a:int} (record) is not Stringable
+        error: {b: float, a: int} (record) is not Stringable
           ┌─ main:4:35
           │
         4 │             "Hey ${bob} it's me ${joe}!"
@@ -3740,7 +3740,7 @@ test_error_msg! {
         "#,
     // Location points to the identifier a
     expect: expect![[r#"
-        error: expected {A with x:B} (record) but found [int] (array)
+        error: expected {A with x: B} (record) but found [int] (array)
           ┌─ main:3:13
           │
         3 │             a.x
