@@ -445,7 +445,7 @@ var sourceHashes = map[string]string{
 	"stdlib/universe/double_exponential_moving_average_test.flux":                                 "db88c3d51faa3aeae3b08c80953fea1958670cc41883ebeae8acdce5d4c67dde",
 	"stdlib/universe/drop_after_rename_test.flux":                                                 "4e3a16b4f6f4ca2043f1a39ac1b54c4f0035a146d6c951c02a1ba8fef84f4707",
 	"stdlib/universe/drop_before_rename_test.flux":                                                "7820adab47cc5730bd28d4a67ab60d584e2b1e2336075204e3723515b43d5073",
-	"stdlib/universe/drop_fn_test.flux":                                                           "14680797b0220d9be8794abc852dc9592fde415548277fa764d454d7bdf87c0b",
+	"stdlib/universe/drop_fn_test.flux":                                                           "12d4c0ed6877d4cb2483e1e3a1690fb8a9dbccaf27fd608ae6898cd245768e30",
 	"stdlib/universe/drop_newname_after_test.flux":                                                "7f8d5c5f3d00b164cc373b65fb62c56d1536110c442c050a945b4fa43a3190c2",
 	"stdlib/universe/drop_newname_before_test.flux":                                               "23c0c73e553e956a75e4e290e21125d12370a678b60d612bafbac3a8a0b7060e",
 	"stdlib/universe/drop_non_existent_test.flux":                                                 "d22b86571267f897d0011af1802f9e4df7c9ff85fd958049d5277dfdd2c5677d",
