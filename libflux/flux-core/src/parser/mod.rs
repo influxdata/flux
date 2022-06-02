@@ -420,7 +420,8 @@ impl<'input> Parser<'input> {
         }
     }
 
-    fn parse_statement(&mut self) -> Statement {
+    /// Parses a flux statement
+    pub fn parse_statement(&mut self) -> Statement {
         let t = self.peek();
         match t.tok {
             TokenType::Int
@@ -892,7 +893,9 @@ impl<'input> Parser<'input> {
             rbrace: end.comments,
         }
     }
-    fn parse_expression(&mut self) -> Expression {
+
+    /// Parses a flux expression
+    pub fn parse_expression(&mut self) -> Expression {
         self.parse_conditional_expression()
     }
     // From GoDoc:

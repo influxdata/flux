@@ -1,5 +1,7 @@
 //! Source code formatter.
 
+use std::collections::BTreeMap;
+
 use anyhow::{anyhow, Error, Result};
 use chrono::SecondsFormat;
 use pretty::{docs, DocAllocator};
@@ -11,7 +13,9 @@ use crate::{
 
 /// Format a [`File`].
 pub fn convert_to_string(file: &File) -> Result<String> {
-    format_to_string(file, true)
+    let mut file = file.clone();
+    rewrite_test_statements(&mut file);
+    format_to_string(&file, true)
 }
 
 /// Format a string of Flux code.
@@ -25,10 +29,270 @@ pub fn convert_to_string(file: &File) -> Result<String> {
 /// assert_eq!(formatted, "(r) => r.user == \"user1\"");
 /// ```
 pub fn format(contents: &str) -> Result<String> {
-    let file = parse_string("".to_string(), contents);
+    let mut file = parse_string("".to_string(), contents);
     let node = ast::walk::Node::File(&file);
     ast::check::check(node)?;
+
+    rewrite_test_statements(&mut file);
+
     convert_to_string(&file)
+}
+
+fn rewrite_test_statements(ast_file: &mut ast::File) {
+    #[derive(Default)]
+    struct FindTests {
+        inside_test: Option<String>,
+        tests: BTreeMap<String, ast::ObjectExpr>,
+    }
+
+    impl ast::walk::Visitor<'_> for FindTests {
+        fn visit(&mut self, node: Node<'_>) -> bool {
+            match node {
+                Node::TestStmt(test) => {
+                    self.inside_test = Some(test.assignment.id.name.clone());
+                }
+                Node::ObjectExpr(obj) if self.inside_test.is_some() => {
+                    let f = match obj.properties.iter().find(|f| f.key.key() == "fn") {
+                        Some(f) => f,
+                        None => return true,
+                    };
+                    // dbg!(&obj);
+
+                    let test_name = match &f.value {
+                        Some(ast::Expression::Identifier(id)) => id.name.clone(),
+                        _ => {
+                            log::error!(
+                                "Expected identifier in test statement. Got: {:?}",
+                                f.value.as_ref().map(|x| x.base()),
+                            );
+                            return true;
+                        }
+                    };
+
+                    self.tests.insert(test_name, obj.clone());
+                }
+                _ => (),
+            }
+            true
+        }
+        fn done(&mut self, node: Node<'_>) {
+            match node {
+                Node::TestStmt(_) => {
+                    self.inside_test = None;
+                }
+                _ => (),
+            }
+        }
+    }
+
+    let mut visitor = FindTests::default();
+    ast::walk::walk(&mut visitor, Node::File(ast_file));
+
+    struct RewriteTests<'a> {
+        inside_test_closure: Option<String>,
+        tests: &'a BTreeMap<String, ast::ObjectExpr>,
+        test_functions: BTreeMap<String, ast::FunctionExpr>,
+    }
+
+    impl ast::walk::Visitor<'_> for RewriteTests<'_> {
+        fn visit(&mut self, node: Node<'_>) -> bool {
+            match node {
+                Node::VariableAssgn(assgn) if self.tests.contains_key(&assgn.id.name) => {
+                    self.inside_test_closure = Some(assgn.id.name.clone());
+                }
+                Node::FunctionExpr(func) if self.inside_test_closure.is_some() => {
+                    use std::collections::btree_map;
+
+                    match self
+                        .test_functions
+                        .entry(self.inside_test_closure.clone().unwrap())
+                    {
+                        btree_map::Entry::Vacant(entry) => {
+                            entry.insert(func.clone());
+                        }
+                        btree_map::Entry::Occupied(_) => (),
+                    }
+                }
+                _ => (),
+            }
+            true
+        }
+        fn done(&mut self, node: Node<'_>) {
+            match node {
+                Node::VariableAssgn(assgn) if self.tests.contains_key(&assgn.id.name) => {
+                    self.inside_test_closure = None;
+                }
+                _ => (),
+            }
+        }
+    }
+
+    // dbg!(&visitor.tests);
+    if visitor.tests.is_empty() {
+        return;
+    }
+
+    let mut tests = visitor.tests;
+
+    let mut visitor = RewriteTests {
+        inside_test_closure: None,
+        tests: &tests,
+        test_functions: Default::default(),
+    };
+    ast::walk::walk(&mut visitor, Node::File(ast_file));
+
+    // dbg!(&visitor.test_functions);
+    if visitor.test_functions.is_empty() {
+        return;
+    }
+
+    let mut test_functions = visitor.test_functions;
+
+    for func in test_functions.values() {
+        match &func.body {
+            ast::FunctionBody::Expr(_) => (),
+            _ => {
+                log::error!(
+                    "Expected expression in test function. Got: {:#?}",
+                    func.body.base(),
+                );
+                return;
+            }
+        }
+    }
+
+    ast_file
+        .body
+        .retain(|stmt| !matches!(stmt, ast::Statement::Test(..)));
+
+    let check_missing_imports = ["csv", "testing"];
+    for missing_import in check_missing_imports {
+        if !ast_file
+            .imports
+            .iter()
+            .any(|import| import.alias.is_none() && import.path.value == missing_import)
+        {
+            ast_file.imports.push(ast::ImportDeclaration {
+                base: Default::default(),
+                alias: None,
+                path: ast::StringLit {
+                    base: Default::default(),
+                    value: missing_import.into(),
+                },
+            });
+        }
+    }
+
+    for stmt in &mut ast_file.body {
+        match stmt {
+            ast::Statement::Variable(assgn) if tests.contains_key(&assgn.id.name) => {
+                let found_function = test_functions.remove(&assgn.id.name).unwrap();
+                let found_obj = tests.remove(&assgn.id.name).unwrap();
+
+                let input = found_obj
+                    .properties
+                    .iter()
+                    .find(|p| p.key.key() == "input")
+                    .unwrap()
+                    .clone()
+                    .value
+                    .unwrap();
+                let input = match input {
+                    ast::Expression::Call(mut call) => match call.callee {
+                        ast::Expression::Member(member)
+                            if member.property.key() == "loadStorage" =>
+                        {
+                            call.callee = {
+                                let mut parser = crate::parser::Parser::new("csv.from");
+                                parser.parse_expression()
+                            };
+                            ast::Expression::Call(call)
+                        }
+                        _ => ast::Expression::Call(call),
+                    },
+
+                    input => input,
+                };
+                let want = found_obj
+                    .properties
+                    .iter()
+                    .find(|p| p.key.key() == "want")
+                    .unwrap()
+                    .clone()
+                    .value
+                    .unwrap();
+                let want = match want {
+                    ast::Expression::Call(mut call) => match call.callee {
+                        ast::Expression::Member(member) if member.property.key() == "loadMem" => {
+                            call.callee = {
+                                let mut parser = crate::parser::Parser::new("csv.from");
+                                parser.parse_expression()
+                            };
+                            ast::Expression::Call(call)
+                        }
+                        _ => ast::Expression::Call(call),
+                    },
+
+                    want => want,
+                };
+
+                // dbg!((&found_function, &found_record));
+
+                let param_ident = found_function.params[0].key.key();
+                let expr = match found_function.body {
+                    ast::FunctionBody::Expr(expr) => expr,
+                    _ => unreachable!(),
+                };
+
+                *stmt = ast::Statement::TestCase(Box::new(ast::TestCaseStmt {
+                    base: Default::default(),
+                    id: assgn.id.clone(),
+                    extends: None,
+                    block: ast::Block {
+                        base: Default::default(),
+                        lbrace: Default::default(),
+                        body: vec![
+                            ast::Statement::Variable(Box::new(ast::VariableAssgn {
+                                base: Default::default(),
+                                id: ast::Identifier {
+                                    base: Default::default(),
+                                    name: param_ident.to_owned(),
+                                },
+                                init: input,
+                            })),
+                            ast::Statement::Variable(Box::new(ast::VariableAssgn {
+                                base: Default::default(),
+                                id: ast::Identifier {
+                                    base: Default::default(),
+                                    name: "got".into(),
+                                },
+                                init: expr,
+                            })),
+                            ast::Statement::Variable(Box::new(ast::VariableAssgn {
+                                base: Default::default(),
+                                id: ast::Identifier {
+                                    base: Default::default(),
+                                    name: "want".into(),
+                                },
+                                init: want,
+                            })),
+                            ast::Statement::Expr(Box::new({
+                                let mut parser =
+                                    crate::parser::Parser::new("testing.diff(got, want)");
+                                let expression = parser.parse_expression();
+                                ast::ExprStmt {
+                                    base: Default::default(),
+                                    expression,
+                                }
+                            })),
+                        ],
+                        rbrace: Default::default(),
+                    },
+                }));
+            }
+            _ => (),
+        }
+    }
 }
 
 const MULTILINE: usize = 4;

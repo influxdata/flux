@@ -1370,13 +1370,27 @@ diff =
         |> drop(columns: ["_start", "_stop", "_value_med", "_value_data"])"#,
     );
 
-    assert_unchanged(
+    expect_format(
         r#"t_mad = (table=<-) =>
     table
         |> range(start: 2020-04-27T00:00:00Z, stop: 2020-05-01T00:00:00Z)
         |> anomalydetection.mad(threshold: 3.0)
 
 test _mad = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_mad})"#,
+        expect![[r#"
+            import "csv"
+            import "testing"
+
+            testcase t_mad {
+                table = csv.from(csv: inData)
+                got =
+                    table
+                        |> range(start: 2020-04-27T00:00:00Z, stop: 2020-05-01T00:00:00Z)
+                        |> anomalydetection.mad(threshold: 3.0)
+                want = csv.from(csv: outData)
+
+                testing.diff(got, want)
+            }"#]],
     );
 
     // comments
@@ -1937,5 +1951,35 @@ fn format_long_single_line_pipe_expression() {
             |> filter(fn: (r) => r._field == "usage_user")
             |> aggregateWindow(every: 1m, fn: mean)
             |> yield()"#]],
+    );
+}
+
+#[test]
+fn rewrite_test() {
+    let src = r#"
+t_drop = (table=<-) =>
+    table
+        |> range(start: 2018-05-22T19:53:26Z)
+        |> drop(fn: (column) => column =~ /dropme*/)
+
+test _drop_fn = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_drop})
+"#;
+
+    expect_format(
+        src,
+        expect![[r#"
+            import "csv"
+            import "testing"
+
+            testcase t_drop {
+                table = csv.from(csv: inData)
+                got =
+                    table
+                        |> range(start: 2018-05-22T19:53:26Z)
+                        |> drop(fn: (column) => column =~ /dropme*/)
+                want = csv.from(csv: outData)
+
+                testing.diff(got, want)
+            }"#]],
     );
 }
