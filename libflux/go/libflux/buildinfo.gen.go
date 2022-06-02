@@ -138,7 +138,7 @@ var sourceHashes = map[string]string{
 	"stdlib/dict/dict_insert_remove_test.flux":                                                    "28f4d35f192323a2324334d9ba86378a581be19c381c9c247e53bdac6cb83fc6",
 	"stdlib/dict/dict_lit_lambda_test.flux":                                                       "c62475aafcba35951915e2c8028e398a1e9959e5d4daaf1749339ea4c1e0a9a7",
 	"stdlib/dict/dict_lit_test.flux":                                                              "24031fa9d0a869182f7d75048278aad506b31e63c65c7ce57e11e846ea9014d1",
-	"stdlib/dict/dict_test.flux":                                                                  "afcb221ab0ef13c50ee8982b4a8ea1b0bc7a7b61251d0289b862846e4463a132",
+	"stdlib/dict/dict_test.flux":                                                                  "21abadf431ccafc71ace7722af755715bd8891e23142e63686efc492f40d3834",
 	"stdlib/dict/empty_dict_lambda_test.flux":                                                     "7903e0b923ba8d381b97a18da7c1687f95a5731b1e843b5bc56a2c5a60470d9d",
 	"stdlib/dict/empty_dict_lit_test.flux":                                                        "e87e53a061587eb019682ecea456cc33e8761e829047a16d02e4391e2516c31f",
 	"stdlib/experimental/aggregate/aggregate.flux":                                                "4dd88e3d9f5e548bfc54d7247aa1c27d8c8e5a1e5fab7cc4e9c3a6f6c6b96212",
