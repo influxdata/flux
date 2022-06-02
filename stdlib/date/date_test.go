@@ -445,6 +445,12 @@ func TestTruncate_Duration(t *testing.T) {
 		want     string
 	}{
 		{
+			name:     "time",
+			time:     "-5mo",
+			unit:     "1s",
+			location: "UTC",
+			want:     "2019-01-03T13:59:01.000000000Z",
+		}, {
 			name:     "second",
 			time:     "-5mo",
 			unit:     "1s",
