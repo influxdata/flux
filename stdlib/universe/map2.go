@@ -400,65 +400,112 @@ type mapVectorPreparedFunc struct {
 	fn *execute.VectorMapPreparedFn
 }
 
-func (m *mapVectorPreparedFunc) Eval(ctx context.Context, chunk table.Chunk, mem memory.Allocator) ([]flux.ColMeta, []array.Array, error) {
-	ret := m.fn.Type()
-	n, err := ret.NumProperties()
+func (m *mapVectorPreparedFunc) createSchema(record values.Object) ([]flux.ColMeta, error) {
+	returnType := m.fn.Type()
+
+	numProps, err := returnType.NumProperties()
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 
-	arr, err := m.fn.Eval(ctx, chunk)
-	if err != nil {
-		return nil, nil, err
+	props := make(map[string]semantic.Nature, numProps)
+	// Deduplicate the properties in the return type.
+	// Scan properties in reverse order to ensure we only
+	// add visible properties to the list.
+	for i := numProps - 1; i >= 0; i-- {
+		prop, err := returnType.RecordProperty(i)
+		if err != nil {
+			return nil, err
+		}
+		typ, err := prop.TypeOf()
+		if err != nil {
+			return nil, err
+		}
+		elemTyp, err := typ.ElemType()
+		if err != nil {
+			return nil, err
+		}
+		props[prop.Name()] = elemTyp.Nature()
 	}
 
-	nulls := 0
-	cols := make([]flux.ColMeta, n)
-	for i := range cols {
-		// This array was null so we will filter it out later.
-		if arr[i] == nil {
-			nulls++
+	// Add columns from function in sorted order.
+	n, err := record.Type().NumProperties()
+	if err != nil {
+		return nil, err
+	}
+
+	keys := make([]string, 0, n)
+	for i := 0; i < n; i++ {
+		prop, err := record.Type().RecordProperty(i)
+		if err != nil {
+			return nil, err
+		}
+		keys = append(keys, prop.Name())
+	}
+
+	cols := make([]flux.ColMeta, 0, len(keys))
+	for _, k := range keys {
+		v, ok := record.Get(k)
+		if !ok {
 			continue
 		}
 
-		prop, err := ret.RecordProperty(i)
-		if err != nil {
-			return nil, nil, err
-		}
-
-		typ, err := prop.TypeOf()
-		if err != nil {
-			return nil, nil, err
-		}
-
-		if typ.Nature() != semantic.Vector {
-			return nil, nil, errors.Newf(codes.Internal, "column %s is not a vector", prop.Name())
-		}
-
-		elem, err := typ.ElemType()
-		if err != nil {
-			return nil, nil, err
-		}
-
-		cols[i] = flux.ColMeta{
-			Label: prop.Name(),
-			Type:  flux.ColumnType(elem),
-		}
-		if cols[i].Type == flux.TInvalid {
-			return nil, nil, errors.Newf(codes.FailedPrecondition, "column %s is not a basic type, is of type %s", prop.Name(), elem)
-		}
-	}
-
-	if nulls > 0 {
-		newArrs := make([]array.Array, 0, len(arr)-nulls)
-		newCols := make([]flux.ColMeta, 0, cap(newArrs))
-		for i := range arr {
-			if arr[i] != nil {
-				newArrs = append(newArrs, arr[i])
-				newCols = append(newCols, cols[i])
+		nature := semantic.Invalid
+		if !v.IsNull() {
+			elemType, err := v.Type().ElemType()
+			if err != nil {
+				return nil, err
 			}
+			nature = elemType.Nature()
 		}
-		cols, arr = newCols, newArrs
+
+		if kind, ok := props[k]; ok && kind != semantic.Invalid {
+			nature = kind
+		}
+		if nature == semantic.Invalid {
+			continue
+		}
+		ty := execute.ConvertFromKind(nature)
+		if ty == flux.TInvalid {
+			return nil, errors.Newf(codes.Invalid, `map object property "%s" is %v type which is not supported in a flux table`, k, nature)
+		}
+		cols = append(cols, flux.ColMeta{
+			Label: k,
+			Type:  ty,
+		})
 	}
-	return cols, arr, nil
+	return cols, nil
+}
+
+func (m *mapVectorPreparedFunc) Eval(ctx context.Context, chunk table.Chunk, mem memory.Allocator) ([]flux.ColMeta, []array.Array, error) {
+	res, err := m.fn.Eval(ctx, chunk)
+	if err != nil {
+		return nil, nil, err
+	}
+	defer res.Release()
+
+	cols, err := m.createSchema(res)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	var n int
+	arrs := make([]array.Array, len(cols))
+	for i, col := range cols {
+		if v, ok := res.Get(col.Label); ok && !v.IsNull() {
+			arr := v.Vector().Arr()
+			arr.Retain()
+			if n == 0 {
+				n = arr.Len()
+			}
+			arrs[i] = arr
+		}
+	}
+
+	for i, col := range cols {
+		if arrs[i] == nil {
+			arrs[i] = arrow.Nulls(col.Type, n, mem)
+		}
+	}
+	return cols, arrs, nil
 }

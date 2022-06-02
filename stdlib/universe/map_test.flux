@@ -519,3 +519,14 @@ testcase vectorize_or_operator {
 
     testing.diff(want: want, got: got) |> yield()
 }
+
+testcase vectorize_with_operator_overwrite_attribute {
+    got =
+        array.from(rows: [{x: 1, y: "a"}])
+            |> map(fn: (r) => ({r with x: r.x}))
+            |> drop(columns: ["y"])
+
+    want = array.from(rows: [{x: 1}])
+
+    testing.diff(got, want)
+}
