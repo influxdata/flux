@@ -113,6 +113,10 @@ func BuildObjectWithSize(sz int, fn func(set ObjectSetter) error) (Object, error
 	if err := fn(func(k string, v Value) {
 		for i := 0; i < len(keys); i++ {
 			if keys[i] == k {
+				if values[i] != nil {
+					// Value overwritten. Usually due to a shadowed field.
+					values[i].Release()
+				}
 				values[i] = v
 				return
 			}

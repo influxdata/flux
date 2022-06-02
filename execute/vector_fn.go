@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/array"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/compiler"
 	"github.com/influxdata/flux/execute/table"
@@ -47,45 +46,18 @@ type vectorFn struct {
 	preparedFn
 }
 
-func (f *vectorFn) Eval(ctx context.Context, chunk table.Chunk) ([]array.Array, error) {
+func (f *vectorFn) Eval(ctx context.Context, chunk table.Chunk) (values.Object, error) {
 	for j, col := range chunk.Cols() {
 		arr := chunk.Values(j)
 		arr.Retain()
 		v := values.NewVectorValue(arr, flux.SemanticType(col.Type))
 		f.arg0.Set(col.Label, v)
 	}
+	defer f.arg0.Release()
 
 	res, err := f.fn.Eval(ctx, f.args)
 	if err != nil {
 		return nil, err
 	}
-
-	// Map the return object to the expected order from type inference.
-	// The compiler should have done this by itself, but it doesn't at the moment.
-	// When the compiler gets refactored so it returns records in the same order
-	// as type inference, we can remove this and just do a copy by index.
-	retType := f.returnType()
-	n, err := retType.NumProperties()
-	if err != nil {
-		return nil, err
-	}
-
-	vs := make([]array.Array, n)
-	for i := 0; i < n; i++ {
-		prop, err := retType.RecordProperty(i)
-		if err != nil {
-			return nil, err
-		}
-
-		vec, ok := res.Object().Get(prop.Name())
-		if !ok || vec.IsNull() {
-			// Property does not exist because it is null.
-			continue
-		}
-		vs[i] = vec.(values.Vector).Arr()
-		vs[i].Retain()
-	}
-	res.Release()
-	f.arg0.Release()
-	return vs, nil
+	return res.Object(), nil
 }
