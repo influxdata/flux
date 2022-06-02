@@ -16,7 +16,7 @@ import "github.com/influxdata/flux"
 // this happens and prevent it.
 func Copy(t flux.Table) (flux.BufferedTable, error) {
 	if tbl, ok := t.(flux.BufferedTable); ok {
-		return tbl, nil
+		return tbl.Copy(), nil
 	}
 
 	tbl := tableBuffer{
