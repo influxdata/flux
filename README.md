@@ -51,14 +51,14 @@ To compile and use the REPL, use the following command:
 
 ```
 $ go build ./cmd/flux
-$ ./flux repl
+$ ./flux
 ```
 
 Alternatively, because the `pkg-config` wrapper may not work in all projects you may not want to add the wrapper `pkg-config` to your `PATH`. In this case you can set `PKG_CONFIG` and Go will use it. Eg, to build and install to ${GOPATH}/bin using `PKG_CONFIG`:
 
 ```
 $ PKG_CONFIG=/home/user/go/bin/pkg-config go install ./cmd/flux
-$ ${GOPATH}/bin/flux repl
+$ ${GOPATH}/bin/flux
 ```
 
 From within the REPL, you can run any Flux expression.

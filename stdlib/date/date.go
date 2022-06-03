@@ -17,6 +17,7 @@ import (
 var SpecialFns map[string]values.Function
 
 func init() {
+
 	SpecialFns = map[string]values.Function{
 		"second": values.NewFunction(
 			"second",
@@ -27,6 +28,17 @@ func init() {
 					return nil, err
 				}
 				return values.NewInt(int64(tm.Time().Second())), nil
+			}, false,
+		),
+		"time": values.NewFunction(
+			"time",
+			runtime.MustLookupBuiltinType("date", "time"),
+			func(ctx context.Context, args values.Object) (values.Value, error) {
+				tm, err := getTimeableTime(ctx, args)
+				if err != nil {
+					return nil, err
+				}
+				return values.NewTime(tm), nil
 			}, false,
 		),
 		"minute": values.NewFunction(
@@ -279,6 +291,7 @@ func init() {
 	}
 
 	runtime.RegisterPackageValue("date", "second", SpecialFns["second"])
+	runtime.RegisterPackageValue("date", "time", SpecialFns["time"])
 	runtime.RegisterPackageValue("date", "_minute", SpecialFns["minute"])
 	runtime.RegisterPackageValue("date", "_hour", SpecialFns["hour"])
 	runtime.RegisterPackageValue("date", "_weekDay", SpecialFns["weekDay"])
