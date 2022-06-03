@@ -54,13 +54,18 @@ fn rewrite_test_statements(ast_file: &mut ast::File) {
                     self.inside_test = Some(test.assignment.id.name.clone());
                 }
                 Node::ObjectExpr(obj) if self.inside_test.is_some() => {
+                    let name = self.inside_test.clone().unwrap();
+                    if self.tests.contains_key(&name) {
+                        // Already found the record for this test
+                        return false;
+                    }
+
                     let f = match obj.properties.iter().find(|f| f.key.key() == "fn") {
                         Some(f) => f,
                         None => return true,
                     };
                     // dbg!(&obj);
 
-                    let name = self.inside_test.clone().unwrap();
                     match &f.value {
                         Some(ast::Expression::Identifier(id)) => {
                             self.tests.insert(name.clone(), obj.clone());
@@ -162,7 +167,7 @@ fn rewrite_test_statements(ast_file: &mut ast::File) {
                     .properties
                     .iter()
                     .find(|p| p.key.key() == "input")
-                    .unwrap()
+                    .unwrap_or_else(|| panic!("Missing input field: {:#?}", found_obj.base))
                     .clone()
                     .value
                     .unwrap();
@@ -209,21 +214,60 @@ fn rewrite_test_statements(ast_file: &mut ast::File) {
 
                 let param_ident = found_function.params[0].key.key();
                 let got = match found_function.body {
-                    ast::FunctionBody::Expr(expr) => {
-                        vec![ast::Statement::Variable(Box::new(ast::VariableAssgn {
+                    ast::FunctionBody::Expr(expr) => match expr {
+                        // Inline the table argument
+                        ast::Expression::PipeExpr(mut pipe) => {
+                            let mut root_pipe = &mut *pipe;
+                            loop {
+                                match root_pipe.argument {
+                                    ast::Expression::PipeExpr(ref mut p) => root_pipe = &mut **p,
+                                    _ => break,
+                                }
+                            }
+                            root_pipe.argument = input;
+
+                            vec![ast::Statement::Variable(Box::new(ast::VariableAssgn {
+                                base: Default::default(),
+                                id: ast::Identifier {
+                                    base: Default::default(),
+                                    name: "got".into(),
+                                },
+                                init: ast::Expression::PipeExpr(pipe),
+                            }))]
+                        }
+                        _ => {
+                            vec![
+                                ast::Statement::Variable(Box::new(ast::VariableAssgn {
+                                    base: Default::default(),
+                                    id: ast::Identifier {
+                                        base: Default::default(),
+                                        name: param_ident.to_owned(),
+                                    },
+                                    init: input,
+                                })),
+                                ast::Statement::Variable(Box::new(ast::VariableAssgn {
+                                    base: Default::default(),
+                                    id: ast::Identifier {
+                                        base: Default::default(),
+                                        name: "got".into(),
+                                    },
+                                    init: expr,
+                                })),
+                            ]
+                        }
+                    },
+                    // Splice the statements into the testcase and map the return to `got`
+                    ast::FunctionBody::Block(block) => {
+                        [ast::Statement::Variable(Box::new(ast::VariableAssgn {
                             base: Default::default(),
                             id: ast::Identifier {
                                 base: Default::default(),
-                                name: "got".into(),
+                                name: param_ident.to_owned(),
                             },
-                            init: expr,
+                            init: input,
                         }))]
-                    }
-                    // Splice the statements into the testcase and map the return to `got`
-                    ast::FunctionBody::Block(block) => block
-                        .body
                         .into_iter()
-                        .map(|stmt| match stmt {
+                        .chain(block.body.into_iter().map(|stmt| match stmt {
                             ast::Statement::Return(ret) => {
                                 ast::Statement::Variable(Box::new(ast::VariableAssgn {
                                     base: Default::default(),
@@ -235,8 +279,9 @@ fn rewrite_test_statements(ast_file: &mut ast::File) {
                                 }))
                             }
                             _ => stmt,
-                        })
-                        .collect(),
+                        }))
+                        .collect()
+                    }
                 };
 
                 *stmt = ast::Statement::TestCase(Box::new(ast::TestCaseStmt {
@@ -249,36 +294,28 @@ fn rewrite_test_statements(ast_file: &mut ast::File) {
                     block: ast::Block {
                         base: Default::default(),
                         lbrace: Default::default(),
-                        body: [ast::Statement::Variable(Box::new(ast::VariableAssgn {
-                            base: Default::default(),
-                            id: ast::Identifier {
-                                base: Default::default(),
-                                name: param_ident.to_owned(),
-                            },
-                            init: input,
-                        }))]
-                        .into_iter()
-                        .chain(got)
-                        .chain([
-                            ast::Statement::Variable(Box::new(ast::VariableAssgn {
-                                base: Default::default(),
-                                id: ast::Identifier {
+                        body: got
+                            .into_iter()
+                            .chain([
+                                ast::Statement::Variable(Box::new(ast::VariableAssgn {
                                     base: Default::default(),
-                                    name: "want".into(),
-                                },
-                                init: want,
-                            })),
-                            ast::Statement::Expr(Box::new({
-                                let mut parser =
-                                    crate::parser::Parser::new("testing.diff(got, want)");
-                                let expression = parser.parse_expression();
-                                ast::ExprStmt {
-                                    base: Default::default(),
-                                    expression,
-                                }
-                            })),
-                        ])
-                        .collect(),
+                                    id: ast::Identifier {
+                                        base: Default::default(),
+                                        name: "want".into(),
+                                    },
+                                    init: want,
+                                })),
+                                ast::Statement::Expr(Box::new({
+                                    let mut parser =
+                                        crate::parser::Parser::new("testing.diff(got, want)");
+                                    let expression = parser.parse_expression();
+                                    ast::ExprStmt {
+                                        base: Default::default(),
+                                        expression,
+                                    }
+                                })),
+                            ])
+                            .collect(),
                         rbrace: Default::default(),
                     },
                 }));

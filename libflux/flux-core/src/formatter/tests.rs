@@ -1381,10 +1381,9 @@ test _mad = () => ({input: testing.loadStorage(csv: inData), want: testing.loadM
             import "csv"
             import "testing"
 
-            testcase t_mad {
-                table = csv.from(csv: inData)
+            testcase mad {
                 got =
-                    table
+                    csv.from(csv: inData)
                         |> range(start: 2020-04-27T00:00:00Z, stop: 2020-05-01T00:00:00Z)
                         |> anomalydetection.mad(threshold: 3.0)
                 want = csv.from(csv: outData)
@@ -1971,10 +1970,9 @@ test _drop_fn = () => ({input: testing.loadStorage(csv: inData), want: testing.l
             import "csv"
             import "testing"
 
-            testcase t_drop {
-                table = csv.from(csv: inData)
+            testcase drop_fn {
                 got =
-                    table
+                    csv.from(csv: inData)
                         |> range(start: 2018-05-22T19:53:26Z)
                         |> drop(fn: (column) => column =~ /dropme*/)
                 want = csv.from(csv: outData)
@@ -2010,27 +2008,27 @@ test _union = () => ({input: testing.loadStorage(csv: inData), want: testing.loa
     expect_format(
         src,
         expect![[r#"
-        import "testing"
-        import "csv"
+            import "testing"
+            import "csv"
 
-        testcase t_union {
-            table = csv.from(csv: inData)
+            testcase union {
+                table = csv.from(csv: inData)
 
-            t1 =
-                table
-                    |> range(start: 2018-05-22T19:53:00Z, stop: 2018-05-22T19:53:50Z)
-                    |> filter(fn: (r) => r._field == "usage_guest" or r._field == "usage_guest_nice")
-                    |> drop(columns: ["_start", "_stop"])
-            t2 =
-                table
-                    |> range(start: 2018-05-22T19:53:50Z, stop: 2018-05-22T19:54:20Z)
-                    |> filter(fn: (r) => r._field == "usage_guest" or r._field == "usage_idle")
-                    |> drop(columns: ["_start", "_stop"])
-            got = union(tables: [t1, t2]) |> sort(columns: ["_time"])
-            want = csv.from(csv: outData)
+                t1 =
+                    table
+                        |> range(start: 2018-05-22T19:53:00Z, stop: 2018-05-22T19:53:50Z)
+                        |> filter(fn: (r) => r._field == "usage_guest" or r._field == "usage_guest_nice")
+                        |> drop(columns: ["_start", "_stop"])
+                t2 =
+                    table
+                        |> range(start: 2018-05-22T19:53:50Z, stop: 2018-05-22T19:54:20Z)
+                        |> filter(fn: (r) => r._field == "usage_guest" or r._field == "usage_idle")
+                        |> drop(columns: ["_start", "_stop"])
+                got = union(tables: [t1, t2]) |> sort(columns: ["_time"])
+                want = csv.from(csv: outData)
 
-            testing.diff(got, want)
-        }"#]],
+                testing.diff(got, want)
+            }"#]],
     );
 }
 
@@ -2053,26 +2051,17 @@ test _spread = () =>
     expect_format(
         src,
         expect![[r#"
-        import "testing"
-        import "csv"
+            import "testing"
+            import "csv"
 
-        testcase t_union {
-            table = csv.from(csv: inData)
+            testcase spread {
+                got =
+                    csv.from(csv: inData)
+                        |> range(start: 2018-12-01T00:00:00Z)
+                        |> experimental.spread()
+                want = csv.from(csv: outData)
 
-            t1 =
-                table
-                    |> range(start: 2018-05-22T19:53:00Z, stop: 2018-05-22T19:53:50Z)
-                    |> filter(fn: (r) => r._field == "usage_guest" or r._field == "usage_guest_nice")
-                    |> drop(columns: ["_start", "_stop"])
-            t2 =
-                table
-                    |> range(start: 2018-05-22T19:53:50Z, stop: 2018-05-22T19:54:20Z)
-                    |> filter(fn: (r) => r._field == "usage_guest" or r._field == "usage_idle")
-                    |> drop(columns: ["_start", "_stop"])
-            got = union(tables: [t1, t2]) |> sort(columns: ["_time"])
-            want = csv.from(csv: outData)
-
-            testing.diff(got, want)
-        }"#]],
+                testing.diff(got, want)
+            }"#]],
     );
 }
