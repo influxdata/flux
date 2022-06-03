@@ -39,6 +39,36 @@ package date
 // ```
 builtin second : (t: T) => int where T: Timeable
 
+// time returns the datetime of a specified timeable.
+//
+// ## Parameters
+// - t: Timeable. It can be either time or duration
+//
+//   Use an absolute time or relative duration.
+//   Durations are relative to `now()`.
+//
+// ## Examples
+//
+// ### Return the time for a given time
+//
+// ```no_run
+// import "date"
+//
+// date.time(t: 2020-02-11T12:21:03.293534940Z)
+// // Returns 2020-02-11T12:21:03.293534940Z
+// ```
+// ### Return the time for a given relative duration
+//
+// ```no_run
+// import "date"
+//
+// date.time(t: -1d1h1m1s1us1ns)
+//
+// // Returns 2022-06-02T20:02:19.506570999Z
+// ```
+
+builtin time : (t: T) => time where T: Timeable
+
 // builtin _minute used by minute
 builtin _minute : (t: T, location: {zone: string, offset: duration}) => int where T: Timeable
 
