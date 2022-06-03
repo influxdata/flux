@@ -24,6 +24,43 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var skip = map[string]map[string]string{
+	"universe": {
+		"string_max":                  "error: invalid use of function: *functions.MaxSelector has no implementation for type string (https://github.com/influxdata/platform/issues/224)",
+		"null_as_value":               "null not supported as value in influxql (https://github.com/influxdata/platform/issues/353)",
+		"string_interp":               "string interpolation not working as expected in flux (https://github.com/influxdata/platform/issues/404)",
+		"to":                          "to functions are not supported in the testing framework (https://github.com/influxdata/flux/issues/77)",
+		"covariance_missing_column_1": "need to support known errors in new test framework (https://github.com/influxdata/flux/issues/536)",
+		"covariance_missing_column_2": "need to support known errors in new test framework (https://github.com/influxdata/flux/issues/536)",
+		"drop_before_rename":          "need to support known errors in new test framework (https://github.com/influxdata/flux/issues/536)",
+		"drop_referenced":             "need to support known errors in new test framework (https://github.com/influxdata/flux/issues/536)",
+		"yield":                       "yield requires special test case (https://github.com/iofluxdata/flux/issues/535)",
+		"task_per_line":               "join produces inconsistent/racy results when table schemas do not match (https://github.com/influxdata/flux/issues/855)",
+		"integral_columns":            "aggregates changed to operate on just a single column",
+	},
+	"http": {
+		"http_endpoint": "need ability to test side effects in e2e tests: https://github.com/influxdata/flux/issues/1723)",
+	},
+	"interval": {
+		"interval": "switch these tests cases to produce a non-table stream once that is supported (https://github.com/influxdata/flux/issues/535)",
+	},
+	"testing/chronograf": {
+		"measurement_tag_keys":   "unskip chronograf flux tests once filter is refactored (https://github.com/influxdata/flux/issues/1289)",
+		"aggregate_window_mean":  "unskip chronograf flux tests once filter is refactored (https://github.com/influxdata/flux/issues/1289)",
+		"aggregate_window_count": "unskip chronograf flux tests once filter is refactored (https://github.com/influxdata/flux/issues/1289)",
+	},
+	"testing/pandas": {
+		"extract_regexp_findStringIndex": "pandas. map does not correctly handled returned arrays (https://github.com/influxdata/flux/issues/1387)",
+		"partition_strings_splitN":       "pandas. map does not correctly handled returned arrays (https://github.com/influxdata/flux/issues/1387)",
+	},
+}
+
+// Skips added after converting `test` to `testcase`
+var newSkips = []string{
+	"post",                   // Missing headers field in test (does not compile either way)
+	"join_use_previous_test", //  "unbounded test (https://github.com/influxdata/flux/issues/2996)",
+}
+
 type TestFlags struct {
 	testNames     []string
 	paths         []string
@@ -69,6 +106,13 @@ func runFluxTests(setup TestSetupFunc, flags TestFlags) error {
 		return err
 	}
 	defer func() { _ = executor.Close() }()
+
+	for _, m := range skip {
+		for k := range m {
+			flags.skipTestCases = append(flags.skipTestCases, k)
+		}
+	}
+	flags.skipTestCases = append(flags.skipTestCases, newSkips...)
 
 	runner.Run(executor, flags.verbosity, flags.skipTestCases)
 	return runner.Finish()
