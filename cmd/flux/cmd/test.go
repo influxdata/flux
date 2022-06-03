@@ -57,7 +57,6 @@ var skip = map[string]map[string]string{
 
 // Skips added after converting `test` to `testcase`
 var newSkips = []string{
-	"post",                   // Missing headers field in test (does not compile either way)
 	"join_use_previous_test", //  "unbounded test (https://github.com/influxdata/flux/issues/2996)",
 }
 
