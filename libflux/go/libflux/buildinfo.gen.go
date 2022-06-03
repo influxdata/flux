@@ -17,7 +17,7 @@ var sourceHashes = map[string]string{
 	"libflux/flux-core/Cargo.toml":                                                                "2290ce95d56e0f514b7c8285693a8011cddfc652bf2aad24edfeb43911f57ba9",
 	"libflux/flux-core/src/ast/check/mod.rs":                                                      "47e06631f249715a44c9c8fa897faf142ad0fa26f67f8cfd5cd201e82cb1afc8",
 	"libflux/flux-core/src/ast/mod.rs":                                                            "a410553122854cc383c75b06d553bc4b6a683e637962596ef946c52958b6a168",
-	"libflux/flux-core/src/ast/walk/mod.rs":                                                       "92dd40a0665f60ee1c1b0441580b3f2d3d57e75ea7f6d83fd5a73a759b10289d",
+	"libflux/flux-core/src/ast/walk/mod.rs":                                                       "9c5cc5d03d3fca3dbf8d87a39dcd1a6138b64b444f591074861c694e0b127e19",
 	"libflux/flux-core/src/bin/README.md":                                                         "c1245a4938c923d065647b4dc4f7e19486e85c93d868ef2f7f47ddff62ec81df",
 	"libflux/flux-core/src/bin/fluxc.rs":                                                          "bf275289e690236988049fc0a07cf832dbac25bb5739c02135b069dcdfab4d0f",
 	"libflux/flux-core/src/bin/fluxdoc.rs":                                                        "354a8dfd262f223412ee491a9947962f993e43c5467f8ee37c4f15528dc5b571",
