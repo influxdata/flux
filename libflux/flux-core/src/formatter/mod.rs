@@ -43,6 +43,8 @@ fn rewrite_test_statements(ast_file: &mut ast::File) {
     struct FindTests {
         inside_test: Option<String>,
         tests: BTreeMap<String, ast::ObjectExpr>,
+        test_function_ids: BTreeMap<String, String>,
+        test_functions: BTreeMap<String, ast::FunctionExpr>,
     }
 
     impl ast::walk::Visitor<'_> for FindTests {
@@ -58,18 +60,24 @@ fn rewrite_test_statements(ast_file: &mut ast::File) {
                     };
                     // dbg!(&obj);
 
-                    let test_name = match &f.value {
-                        Some(ast::Expression::Identifier(id)) => id.name.clone(),
+                    let name = self.inside_test.clone().unwrap();
+                    match &f.value {
+                        Some(ast::Expression::Identifier(id)) => {
+                            self.tests.insert(name.clone(), obj.clone());
+                            self.test_function_ids.insert(id.name.clone(), name);
+                        }
+                        Some(ast::Expression::Function(func)) => {
+                            self.tests.insert(name.clone(), obj.clone());
+                            self.test_functions.insert(name.clone(), (**func).clone());
+                        }
                         _ => {
                             log::error!(
-                                "Expected identifier in test statement. Got: {:?}",
+                                "Expected identifier or closure in test statement. Got: {:?}",
                                 f.value.as_ref().map(|x| x.base()),
                             );
                             return true;
                         }
-                    };
-
-                    self.tests.insert(test_name, obj.clone());
+                    }
                 }
                 _ => (),
             }
@@ -88,69 +96,41 @@ fn rewrite_test_statements(ast_file: &mut ast::File) {
     let mut visitor = FindTests::default();
     ast::walk::walk(&mut visitor, Node::File(ast_file));
 
-    struct RewriteTests<'a> {
-        inside_test_closure: Option<String>,
-        tests: &'a BTreeMap<String, ast::ObjectExpr>,
-        test_functions: BTreeMap<String, ast::FunctionExpr>,
-    }
-
-    impl ast::walk::Visitor<'_> for RewriteTests<'_> {
-        fn visit(&mut self, node: Node<'_>) -> bool {
-            match node {
-                Node::VariableAssgn(assgn) if self.tests.contains_key(&assgn.id.name) => {
-                    self.inside_test_closure = Some(assgn.id.name.clone());
-                }
-                Node::FunctionExpr(func) if self.inside_test_closure.is_some() => {
-                    use std::collections::btree_map;
-
-                    match self
-                        .test_functions
-                        .entry(self.inside_test_closure.clone().unwrap())
-                    {
-                        btree_map::Entry::Vacant(entry) => {
-                            entry.insert(func.clone());
-                        }
-                        btree_map::Entry::Occupied(_) => (),
-                    }
-                }
-                _ => (),
-            }
-            true
-        }
-        fn done(&mut self, node: Node<'_>) {
-            match node {
-                Node::VariableAssgn(assgn) if self.tests.contains_key(&assgn.id.name) => {
-                    self.inside_test_closure = None;
-                }
-                _ => (),
-            }
-        }
-    }
-
     // dbg!(&visitor.tests);
     if visitor.tests.is_empty() {
         return;
     }
 
-    let mut tests = visitor.tests;
+    let FindTests {
+        mut tests,
+        test_function_ids,
+        mut test_functions,
+        ..
+    } = visitor;
 
-    let mut visitor = RewriteTests {
-        inside_test_closure: None,
-        tests: &tests,
-        test_functions: Default::default(),
-    };
-    ast::walk::walk(&mut visitor, Node::File(ast_file));
+    // Find any test closure we need to lookup by identifier
+    ast::walk::walk(
+        &mut |node| {
+            if let Node::VariableAssgn(assgn) = node {
+                if let Some(test_id) = test_function_ids.get(&assgn.id.name) {
+                    if let ast::Expression::Function(func) = &assgn.init {
+                        test_functions.insert(test_id.clone(), (**func).clone());
+                    }
+                }
+            }
+        },
+        Node::File(ast_file),
+    );
 
     // dbg!(&visitor.test_functions);
-    if visitor.test_functions.is_empty() {
+    if test_functions.is_empty() {
         return;
     }
 
-    let mut test_functions = visitor.test_functions;
-
-    ast_file
-        .body
-        .retain(|stmt| !matches!(stmt, ast::Statement::Test(..)));
+    ast_file.body.retain(|stmt| match stmt {
+        ast::Statement::Variable(assgn) if test_function_ids.contains_key(&assgn.id.name) => false,
+        _ => true,
+    });
 
     let check_missing_imports = ["csv", "testing"];
     for missing_import in check_missing_imports {
@@ -172,9 +152,11 @@ fn rewrite_test_statements(ast_file: &mut ast::File) {
 
     for stmt in &mut ast_file.body {
         match stmt {
-            ast::Statement::Variable(assgn) if tests.contains_key(&assgn.id.name) => {
-                let found_function = test_functions.remove(&assgn.id.name).unwrap();
-                let found_obj = tests.remove(&assgn.id.name).unwrap();
+            ast::Statement::Test(test) if tests.contains_key(&test.assignment.id.name) => {
+                let test_id = &test.assignment.id;
+                let test_name = &test.assignment.id.name;
+                let found_function = test_functions.remove(test_name).unwrap();
+                let found_obj = tests.remove(test_name).unwrap();
 
                 let input = found_obj
                     .properties
@@ -259,7 +241,10 @@ fn rewrite_test_statements(ast_file: &mut ast::File) {
 
                 *stmt = ast::Statement::TestCase(Box::new(ast::TestCaseStmt {
                     base: Default::default(),
-                    id: assgn.id.clone(),
+                    id: ast::Identifier {
+                        base: test_id.base.clone(),
+                        name: test_id.name.trim_start_matches('_').into(),
+                    },
                     extends: None,
                     block: ast::Block {
                         base: Default::default(),
