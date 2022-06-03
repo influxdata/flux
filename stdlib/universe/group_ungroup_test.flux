@@ -49,7 +49,6 @@ t_group_ungroup = (table=<-) =>
         |> group(columns: ["name"])
         |> group()
         |> map(fn: (r) => ({_time: r._time, io_time: r._value}))
-        |> yield(name: "0")
 
 test _group_ungroup = () =>
     ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_group_ungroup})

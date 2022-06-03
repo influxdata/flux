@@ -43,7 +43,6 @@ drop_before_rename = (table=<-) =>
         |> range(start: 2018-05-22T19:53:26Z)
         |> drop(columns: ["old"])
         |> rename(columns: {old: "new"})
-        |> yield(name: "0")
 
 test _drop_before_rename = () =>
     ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: drop_before_rename})

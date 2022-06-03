@@ -53,6 +53,5 @@ t_pivot = (table=<-) =>
     table
         |> range(start: 2018-05-22T19:53:26Z)
         |> pivot(rowKey: ["_time"], columnKey: ["_field", "_measurement"], valueColumn: "_value")
-        |> yield(name: "0")
 
 test _pivot = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_pivot})

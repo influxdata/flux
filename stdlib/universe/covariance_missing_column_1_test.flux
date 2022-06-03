@@ -28,7 +28,6 @@ covariance_missing_column_1 = (table=<-) =>
     table
         |> range(start: 2018-05-22T19:53:26Z)
         |> covariance(columns: ["x", "r"])
-        |> yield(name: "0")
 
 test _covariance_missing_column_1 = () =>
     ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: covariance_missing_column_1})

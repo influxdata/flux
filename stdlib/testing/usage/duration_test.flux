@@ -6793,6 +6793,5 @@ _f = (table=<-) =>
         |> aggregateWindow(every: 1h, fn: sum)
         |> fill(column: "_value", value: 0)
         |> rename(columns: {_value: "duration_us"})
-        |> yield(name: "duration_us")
 
 test query_duration = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: _f})

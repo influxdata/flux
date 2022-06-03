@@ -3359,6 +3359,5 @@ _f = (table=<-) =>
         |> aggregateWindow(every: 1h, fn: sum)
         |> fill(column: "_value", value: 0)
         |> rename(columns: {_value: "writes_b"})
-        |> yield(name: "writes_b")
 
 test get_writes_usage = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: _f})

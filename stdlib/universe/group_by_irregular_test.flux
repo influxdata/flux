@@ -45,7 +45,6 @@ t_group_by_irregular = (table=<-) =>
         |> filter(fn: (r) => r._measurement == "records" and r.taskID == "02bac3c8f0f37000")
         |> pivot(rowKey: ["_time"], columnKey: ["_field"], valueColumn: "_value")
         |> group(columns: ["runID"])
-        |> yield(name: "r1")
 
 test _group_by_irregular = () =>
     ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_group_by_irregular})

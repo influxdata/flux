@@ -32,7 +32,6 @@ t_pivot_mean = (table=<-) =>
         |> group(columns: ["_stop", "_measurement", "_field", "host"])
         |> mean()
         |> pivot(rowKey: ["_stop"], columnKey: ["host"], valueColumn: "_value")
-        |> yield(name: "0")
 
 test _pivot_mean = () =>
     ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_pivot_mean})

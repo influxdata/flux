@@ -1697,6 +1697,5 @@ _f = (table=<-) =>
         |> aggregateWindow(every: 1h, fn: count)
         |> fill(column: "_value", value: 0)
         |> rename(columns: {_value: "requests_count"})
-        |> yield(name: "requests_count")
 
 test get_api_usage = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: _f})

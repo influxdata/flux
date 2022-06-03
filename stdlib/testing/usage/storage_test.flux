@@ -2207,6 +2207,5 @@ _f = (table=<-) =>
         |> group()
         |> map(fn: (r) => ({r with _value: int(v: math.round(x: r._value))}))
         |> rename(columns: {_value: "storage_b"})
-        |> yield(name: "storage_b")
 
 test get_storage_usage = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: _f})

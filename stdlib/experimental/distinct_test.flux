@@ -43,6 +43,5 @@ t_distinct = (table=<-) =>
     table
         |> range(start: 2018-05-20T19:53:26Z)
         |> experimental.distinct()
-        |> yield(name: "0")
 
 test _distinct = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_distinct})
