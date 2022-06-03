@@ -148,19 +148,6 @@ fn rewrite_test_statements(ast_file: &mut ast::File) {
 
     let mut test_functions = visitor.test_functions;
 
-    for func in test_functions.values() {
-        match &func.body {
-            ast::FunctionBody::Expr(_) => (),
-            _ => {
-                log::error!(
-                    "Expected expression in test function. Got: {:#?}",
-                    func.body.base(),
-                );
-                return;
-            }
-        }
-    }
-
     ast_file
         .body
         .retain(|stmt| !matches!(stmt, ast::Statement::Test(..)));
@@ -239,9 +226,35 @@ fn rewrite_test_statements(ast_file: &mut ast::File) {
                 // dbg!((&found_function, &found_record));
 
                 let param_ident = found_function.params[0].key.key();
-                let expr = match found_function.body {
-                    ast::FunctionBody::Expr(expr) => expr,
-                    _ => unreachable!(),
+                let got = match found_function.body {
+                    ast::FunctionBody::Expr(expr) => {
+                        vec![ast::Statement::Variable(Box::new(ast::VariableAssgn {
+                            base: Default::default(),
+                            id: ast::Identifier {
+                                base: Default::default(),
+                                name: "got".into(),
+                            },
+                            init: expr,
+                        }))]
+                    }
+                    // Splice the statements into the testcase and map the return to `got`
+                    ast::FunctionBody::Block(block) => block
+                        .body
+                        .into_iter()
+                        .map(|stmt| match stmt {
+                            ast::Statement::Return(ret) => {
+                                ast::Statement::Variable(Box::new(ast::VariableAssgn {
+                                    base: Default::default(),
+                                    id: ast::Identifier {
+                                        base: Default::default(),
+                                        name: "got".into(),
+                                    },
+                                    init: ret.argument,
+                                }))
+                            }
+                            _ => stmt,
+                        })
+                        .collect(),
                 };
 
                 *stmt = ast::Statement::TestCase(Box::new(ast::TestCaseStmt {
@@ -251,23 +264,17 @@ fn rewrite_test_statements(ast_file: &mut ast::File) {
                     block: ast::Block {
                         base: Default::default(),
                         lbrace: Default::default(),
-                        body: vec![
-                            ast::Statement::Variable(Box::new(ast::VariableAssgn {
+                        body: [ast::Statement::Variable(Box::new(ast::VariableAssgn {
+                            base: Default::default(),
+                            id: ast::Identifier {
                                 base: Default::default(),
-                                id: ast::Identifier {
-                                    base: Default::default(),
-                                    name: param_ident.to_owned(),
-                                },
-                                init: input,
-                            })),
-                            ast::Statement::Variable(Box::new(ast::VariableAssgn {
-                                base: Default::default(),
-                                id: ast::Identifier {
-                                    base: Default::default(),
-                                    name: "got".into(),
-                                },
-                                init: expr,
-                            })),
+                                name: param_ident.to_owned(),
+                            },
+                            init: input,
+                        }))]
+                        .into_iter()
+                        .chain(got)
+                        .chain([
                             ast::Statement::Variable(Box::new(ast::VariableAssgn {
                                 base: Default::default(),
                                 id: ast::Identifier {
@@ -285,7 +292,8 @@ fn rewrite_test_statements(ast_file: &mut ast::File) {
                                     expression,
                                 }
                             })),
-                        ],
+                        ])
+                        .collect(),
                         rbrace: Default::default(),
                     },
                 }));
