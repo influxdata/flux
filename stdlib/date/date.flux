@@ -39,6 +39,8 @@ package date
 // ```
 builtin second : (t: T) => int where T: Timeable
 
+builtin time : (t: T) => time where T: Timeable
+
 // builtin _minute used by minute
 builtin _minute : (t: T, location: {zone: string, offset: duration}) => int where T: Timeable
 
