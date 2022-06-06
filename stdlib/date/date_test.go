@@ -432,6 +432,138 @@ func TestTruncate_Time(t *testing.T) {
 		})
 	}
 }
+
+func Test_Time_with_Time(t *testing.T) {
+	testCases := []struct {
+		name string
+		time string
+		want string
+	}{
+		{
+			name: "time",
+			time: "2019-06-03T13:59:01.000000000Z",
+			want: "2019-06-03T13:59:01.000000000Z",
+		},
+	}
+	for _, tc := range testCases {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			fluxFn := SpecialFns[tc.name]
+			time, err := values.ParseTime(tc.time)
+			if err != nil {
+				t.Fatal(err)
+			}
+			fluxArg := values.NewObjectWithValues(map[string]values.Value{
+				"t": values.NewTime(time),
+			})
+
+			ctx, deps := dependenciestest.InjectAllDeps(context.Background())
+			defer deps.Finish()
+			got, err := fluxFn.Call(ctx, fluxArg)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			wanted, err := values.ParseTime(tc.want)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if wanted != got.Time() {
+				t.Errorf("input %v: expected %v, got %v", time, wanted, got.Time())
+			}
+		})
+	}
+}
+
+func Test_Time_with_Duration(t *testing.T) {
+	now, err := values.ParseTime("2022-01-01T00:00:00.000000000Z")
+	if err != nil {
+		t.Fatal(err)
+	}
+	testCases := []struct {
+		name string
+		time string
+		want string
+	}{
+		{
+			name: "time",
+			time: "-1h",
+			want: "2021-12-31T23:00:00.000000000Z",
+		},
+		{
+			name: "time",
+			time: "-1s",
+			want: "2021-12-31T23:59:59.000000000Z",
+		},
+		{
+			name: "time",
+			time: "-1y1mo1w",
+			want: "2020-11-24T00:00:00.000000000Z",
+		},
+		{
+			name: "time",
+			time: "-3d12h4m25s",
+			want: "2021-12-28T11:55:35.000000000Z",
+		},
+		{
+			name: "time",
+			time: "1h",
+			want: "2022-01-01T01:00:00.000000000Z",
+		},
+		{
+			name: "time",
+			time: "1y1mo1w",
+			want: "2023-02-08T00:00:00.000000000Z",
+		},
+		{
+			name: "time",
+			time: "1s",
+			want: "2022-01-01T00:00:01.000000000Z",
+		},
+		{
+			name: "time",
+			time: "3d12h4m25s",
+			want: "2022-01-04T12:04:25.000000000Z",
+		},
+	}
+	for _, tc := range testCases {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			fluxFn := SpecialFns[tc.name]
+			time, err := values.ParseDuration(tc.time)
+			if err != nil {
+				t.Fatal(err)
+			}
+			fluxArg := values.NewObjectWithValues(map[string]values.Value{
+				"t": values.NewDuration(time),
+			})
+
+			// Setup deps with specific now time
+			execDeps := dependenciestest.ExecutionDefault()
+			nowVar := now.Time()
+			execDeps.Now = &nowVar
+			ctx, deps := dependency.Inject(
+				context.Background(),
+				dependenciestest.Default(),
+				execDeps,
+			)
+			defer deps.Finish()
+
+			got, err := fluxFn.Call(ctx, fluxArg)
+			if err != nil {
+				t.Fatal(err)
+			}
+			wanted, err := values.ParseTime(tc.want)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if wanted != got.Time() {
+				t.Errorf("input %v: expected %v, got %f", time, tc.want, got)
+			}
+		})
+	}
+}
+
 func TestTruncate_Duration(t *testing.T) {
 	now, err := values.ParseTime("2019-06-03T13:59:01.000000000Z")
 	if err != nil {
