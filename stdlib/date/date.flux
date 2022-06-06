@@ -75,7 +75,6 @@ builtin second : (t: T) => int where T: Timeable
 // ## Metadata
 // introduced: NEXT
 //
-
 builtin time : (t: T) => time where T: Timeable
 
 // builtin _minute used by minute
