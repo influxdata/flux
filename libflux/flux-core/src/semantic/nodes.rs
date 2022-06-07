@@ -62,6 +62,8 @@ pub enum ErrorKind {
     InvalidReturn,
     #[display(fmt = "can't vectorize function: {}", _0)]
     UnableToVectorize(String),
+    #[display(fmt = "variable {} lacks the {} constraint", var, kind)]
+    MissingConstraint { var: Tvar, kind: Kind },
     #[display(fmt = "{}. This is a bug in type inference", _0)]
     Bug(String),
 }
@@ -81,6 +83,12 @@ impl Substitutable for ErrorKind {
     fn walk(&self, sub: &mut (impl ?Sized + Substituter)) -> Option<Self> {
         match self {
             Self::Inference(err) => err.visit(sub).map(Self::Inference),
+            Self::MissingConstraint { var, kind } => {
+                sub.try_apply_bound(*var).and_then(|typ| match typ {
+                    MonoType::Var(var) => Some(Self::MissingConstraint { var, kind: *kind }),
+                    _ => None,
+                })
+            }
             Self::UndefinedBuiltin(_)
             | Self::UndefinedIdentifier(_)
             | Self::InvalidBinOp(_)
@@ -227,7 +235,7 @@ pub enum Statement {
     Test(Box<TestStmt>),
     TestCase(Box<TestCaseStmt>),
     Builtin(BuiltinStmt),
-    Error(ast::SourceLocation),
+    Error(BadStmt),
 }
 
 impl Statement {
@@ -287,7 +295,7 @@ pub enum Expression {
     DateTime(DateTimeLit),
     Regexp(RegexpLit),
 
-    Error(ast::SourceLocation),
+    Error(BadExpr),
 }
 
 impl Expression {
@@ -342,7 +350,7 @@ impl Expression {
             Expression::Boolean(lit) => &lit.loc,
             Expression::DateTime(lit) => &lit.loc,
             Expression::Regexp(lit) => &lit.loc,
-            Expression::Error(loc) => loc,
+            Expression::Error(e) => &e.loc,
         }
     }
     fn infer(&mut self, infer: &mut InferState<'_, '_>) -> Result {
@@ -594,11 +602,78 @@ pub struct BuiltinStmt {
 
 impl BuiltinStmt {
     fn infer(&mut self, infer: &mut InferState<'_, '_>) -> std::result::Result<(), Error> {
+        self.typ_expr.check_signture(&self.loc, infer);
         infer.env.add(self.id.name.clone(), self.typ_expr.clone());
         Ok(())
     }
     fn apply(self, _: &mut dyn Substituter) -> Self {
         self
+    }
+}
+
+impl PolyType {
+    fn check_signture(&self, loc: &ast::SourceLocation, infer: &mut InferState<'_, '_>) {
+        struct CheckSignature<'a, 'b, 'c> {
+            infer: &'a mut InferState<'b, 'c>,
+            loc: &'a ast::SourceLocation,
+            poly: &'a PolyType,
+        }
+
+        impl CheckSignature<'_, '_, '_> {
+            fn require_kind(&mut self, var: Tvar, required_kind: Kind) {
+                if self
+                    .poly
+                    .cons
+                    .get(&var)
+                    .into_iter()
+                    .flatten()
+                    .all(|kind| *kind != required_kind)
+                {
+                    self.infer.error(
+                        self.loc.clone(),
+                        ErrorKind::MissingConstraint {
+                            var,
+                            kind: required_kind,
+                        },
+                    );
+                }
+            }
+        }
+
+        impl Substituter for CheckSignature<'_, '_, '_> {
+            fn try_apply(&mut self, _: Tvar) -> Option<MonoType> {
+                None
+            }
+
+            fn visit_type(&mut self, typ: &MonoType) -> Option<MonoType> {
+                match typ {
+                    MonoType::Record(record) => {
+                        let mut fields = record.fields();
+
+                        for prop in &mut fields {
+                            if let RecordLabel::BoundVariable(var) = prop.k {
+                                self.require_kind(var, Kind::Label);
+                            }
+                            prop.v.visit(self);
+                        }
+
+                        if let Some(tail) = fields.tail() {
+                            tail.visit(self);
+                        }
+                    }
+                    _ => {
+                        typ.walk(self);
+                    }
+                }
+                None
+            }
+        }
+
+        self.expr.visit(&mut CheckSignature {
+            infer,
+            loc,
+            poly: self,
+        });
     }
 }
 
@@ -1929,6 +2004,20 @@ pub fn convert_duration(ast_dur: &[ast::Duration]) -> AnyhowResult<Duration> {
         nanoseconds,
         negative,
     })
+}
+
+#[derive(Derivative)]
+#[derivative(Debug, PartialEq, Clone)]
+#[allow(missing_docs)]
+pub struct BadExpr {
+    pub loc: ast::SourceLocation,
+}
+
+#[derive(Derivative)]
+#[derivative(Debug, PartialEq, Clone)]
+#[allow(missing_docs)]
+pub struct BadStmt {
+    pub loc: ast::SourceLocation,
 }
 
 #[cfg(test)]

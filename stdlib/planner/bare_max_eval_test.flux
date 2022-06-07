@@ -3,6 +3,7 @@ package planner_test
 
 import "testing"
 import "planner"
+import "csv"
 
 option now = () => 2030-01-01T00:00:00Z
 option planner.disablePhysicalRules = ["PushDownBareAggregateRule"]
@@ -44,10 +45,14 @@ output =
 ,,1,2018-05-01T00:00:00Z,2030-01-01T00:00:00Z,2018-05-22T19:54:06Z,system,host.local,load3,1.99
 ,,2,2018-05-01T00:00:00Z,2030-01-01T00:00:00Z,2018-05-22T19:53:26Z,system,host.local,load5,1.95
 "
-bare_max_fn = (tables=<-) =>
-    tables
-        |> range(start: 2018-05-01T00:00:00Z)
-        |> max()
 
-test bare_max_evaluate = () =>
-    ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: bare_max_fn})
+testcase bare_max_evaluate {
+    got =
+        csv.from(csv: input)
+            |> testing.load()
+            |> range(start: 2018-05-01T00:00:00Z)
+            |> max()
+    want = csv.from(csv: output)
+
+    testing.diff(got, want)
+}

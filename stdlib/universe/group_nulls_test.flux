@@ -3,6 +3,7 @@ package universe_test
 
 import "testing"
 import c "csv"
+import "csv"
 
 option now = () => 2030-01-01T00:00:00Z
 
@@ -100,9 +101,14 @@ outData =
 ,,2,2018-05-22T19:54:06Z,15205499,io_time,diskio,host2
 ,,2,2018-05-22T19:54:16Z,,io_time,diskio,host2
 "
-t_group = (table=<-) =>
-    table
-        |> group(columns: ["host"])
-        |> drop(columns: ["_start", "_stop"])
 
-test _group = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_group})
+testcase group {
+    got =
+        csv.from(csv: inData)
+            |> testing.load()
+            |> group(columns: ["host"])
+            |> drop(columns: ["_start", "_stop"])
+    want = csv.from(csv: outData)
+
+    testing.diff(got, want)
+}

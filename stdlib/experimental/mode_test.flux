@@ -3,6 +3,7 @@ package experimental_test
 
 import "testing"
 import "experimental"
+import "csv"
 
 option now = () => 2030-01-01T00:00:00Z
 
@@ -28,9 +29,14 @@ outData =
 ,,0,2018-12-01T00:00:00Z,2030-01-01T00:00:00Z,Sgf,DlXwgrw,48
 ,,0,2018-12-01T00:00:00Z,2030-01-01T00:00:00Z,Sgf,DlXwgrw,63
 "
-t_mode = (table=<-) =>
-    table
-        |> range(start: 2018-12-01T00:00:00Z)
-        |> experimental.mode()
 
-test _mode = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_mode})
+testcase mode {
+    got =
+        csv.from(csv: inData)
+            |> testing.load()
+            |> range(start: 2018-12-01T00:00:00Z)
+            |> experimental.mode()
+    want = csv.from(csv: outData)
+
+    testing.diff(got, want)
+}

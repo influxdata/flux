@@ -2,6 +2,7 @@ package universe_test
 
 
 import "testing"
+import "csv"
 
 option now = () => 2030-01-01T00:00:00Z
 
@@ -29,7 +30,10 @@ outData =
 ,,0,disk0,23860342,68799506
 ,,1,disk2,782,0
 "
-t_joinNoOn = (table=<-) => {
+
+testcase join {
+    table = csv.from(csv: inData) |> testing.load()
+
     left =
         table
             |> range(start: 2018-05-22T19:53:00Z)
@@ -46,8 +50,8 @@ t_joinNoOn = (table=<-) => {
             |> keep(columns: ["name", "_value"])
             |> sum()
             |> rename(columns: {_value: "total_writes"})
+    got = join(tables: {left, right}, on: ["name"])
+    want = csv.from(csv: outData)
 
-    return join(tables: {left, right}, on: ["name"])
+    testing.diff(got, want)
 }
-
-test _join = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_joinNoOn})

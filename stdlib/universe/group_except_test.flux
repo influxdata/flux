@@ -2,6 +2,7 @@ package universe_test
 
 
 import "testing"
+import "csv"
 
 option now = () => 2030-01-01T00:00:00Z
 
@@ -33,11 +34,15 @@ outData =
 ,,0,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,2018-05-22T19:54:16Z,15205755,io_time,diskio2,host.local,disk0
 ,,1,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,2018-05-22T19:53:26Z,648,io_time,diskio2,host.local,disk2
 "
-t_group_except = (table=<-) =>
-    table
-        |> range(start: 2018-05-22T19:53:26Z)
-        |> group(columns: ["_measurement", "_time", "_value"], mode: "except")
-        |> max()
 
-test _group_except = () =>
-    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_group_except})
+testcase group_except {
+    got =
+        csv.from(csv: inData)
+            |> testing.load()
+            |> range(start: 2018-05-22T19:53:26Z)
+            |> group(columns: ["_measurement", "_time", "_value"], mode: "except")
+            |> max()
+    want = csv.from(csv: outData)
+
+    testing.diff(got, want)
+}

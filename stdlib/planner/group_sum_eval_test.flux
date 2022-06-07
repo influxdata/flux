@@ -3,6 +3,7 @@ package planner_test
 
 import "testing"
 import "planner"
+import "csv"
 
 option planner.disablePhysicalRules = ["PushDownGroupAggregateRule"]
 option now = () => 2030-01-01T00:00:00Z
@@ -45,11 +46,15 @@ output =
 ,,1,2018-05-22T19:00:00Z,2030-01-01T00:00:00Z,hostB,11.83
 ,,2,2018-05-22T19:00:00Z,2030-01-01T00:00:00Z,hostC,11.52
 "
-group_sum_fn = (tables=<-) =>
-    tables
-        |> range(start: 2018-05-22T19:00:00Z)
-        |> group(columns: ["_start", "_stop", "host"])
-        |> sum()
 
-test group_sum_evaluate = () =>
-    ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: group_sum_fn})
+testcase group_sum_evaluate {
+    got =
+        csv.from(csv: input)
+            |> testing.load()
+            |> range(start: 2018-05-22T19:00:00Z)
+            |> group(columns: ["_start", "_stop", "host"])
+            |> sum()
+    want = csv.from(csv: output)
+
+    testing.diff(got, want)
+}

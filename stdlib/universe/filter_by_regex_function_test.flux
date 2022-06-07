@@ -2,6 +2,7 @@ package universe_test
 
 
 import "testing"
+import "csv"
 
 option now = () => 2030-01-01T00:00:00Z
 
@@ -41,9 +42,13 @@ regexFunc = (table=<-, regLiteral) =>
         |> range(start: 2018-05-20T19:53:26Z)
         |> filter(fn: (r) => r._field =~ regLiteral)
         |> max()
-t_filter_by_regex_function = (table=<-) =>
-    table
-        |> regexFunc(regLiteral: /io.*/)
 
-test _filter_by_regex_function = () =>
-    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_filter_by_regex_function})
+testcase filter_by_regex_function {
+    got =
+        csv.from(csv: inData)
+            |> testing.load()
+            |> regexFunc(regLiteral: /io.*/)
+    want = csv.from(csv: outData)
+
+    testing.diff(got, want)
+}

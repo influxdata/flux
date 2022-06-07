@@ -2,6 +2,7 @@ package universe_test
 
 
 import "testing"
+import "csv"
 
 option now = () => 2030-01-01T00:00:00Z
 
@@ -68,14 +69,14 @@ outData =
 ,,0,2018-05-22T00:00:00Z,2030-01-01T00:00:00.000000000Z,2018-05-22T00:04:30Z,1.96332557120307,used_percent,disk,disk1s1,apfs,host.local,/
 ,,0,2018-05-22T00:00:00Z,2030-01-01T00:00:00.000000000Z,2018-05-22T00:04:40Z,0.9736696408637426,used_percent,disk,disk1s1,apfs,host.local,/
 "
-triple_exponential_moving_average = (table=<-) =>
-    table
-        |> range(start: 2018-05-22T00:00:00Z)
-        |> tripleEMA(n: 4)
 
-test _triple_exponential_moving_average = () =>
-    ({
-        input: testing.loadStorage(csv: inData),
-        want: testing.loadMem(csv: outData),
-        fn: triple_exponential_moving_average,
-    })
+testcase triple_exponential_moving_average {
+    got =
+        csv.from(csv: inData)
+            |> testing.load()
+            |> range(start: 2018-05-22T00:00:00Z)
+            |> tripleEMA(n: 4)
+    want = csv.from(csv: outData)
+
+    testing.diff(got, want)
+}

@@ -2,6 +2,7 @@ package universe_test
 
 
 import "testing"
+import "csv"
 
 option now = () => 2030-01-01T00:00:00Z
 
@@ -74,9 +75,14 @@ outData =
 ,,3,2018-12-01T00:00:00Z,2030-01-01T00:00:00Z,iZquGj,ei77f8T,6
 ,,4,2018-12-01T00:00:00Z,2030-01-01T00:00:00Z,iZquGj,ucyoZ,6
 "
-t_count = (table=<-) =>
-    table
-        |> range(start: 2018-12-01T00:00:00Z)
-        |> count()
 
-test _count = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_count})
+testcase count {
+    got =
+        csv.from(csv: inData)
+            |> testing.load()
+            |> range(start: 2018-12-01T00:00:00Z)
+            |> count()
+    want = csv.from(csv: outData)
+
+    testing.diff(got, want)
+}

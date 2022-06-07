@@ -2,6 +2,7 @@ package chronograf_test
 
 
 import "testing"
+import "csv"
 
 inData =
     "
@@ -88,12 +89,16 @@ outData =
 ,,0,2018-05-22T00:00:00Z,2018-05-22T00:01:00Z,2018-05-22T00:00:30Z,percentage,mem,host.remote,35
 ,,0,2018-05-22T00:00:00Z,2018-05-22T00:01:00Z,2018-05-22T00:01:00Z,percentage,mem,host.remote,35
 "
-agg_window_mean_fn = (table=<-) =>
-    table
-        |> range(start: 2018-05-22T00:00:00Z, stop: 2018-05-22T00:01:00Z)
-        |> filter(fn: (r) => r._measurement == "disk" or r._measurement == "mem")
-        |> filter(fn: (r) => r.host == "host.remote")
-        |> aggregateWindow(every: 30s, fn: mean)
 
-test agg_window_mean = () =>
-    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: agg_window_mean_fn})
+testcase agg_window_mean {
+    got =
+        csv.from(csv: inData)
+            |> testing.load()
+            |> range(start: 2018-05-22T00:00:00Z, stop: 2018-05-22T00:01:00Z)
+            |> filter(fn: (r) => r._measurement == "disk" or r._measurement == "mem")
+            |> filter(fn: (r) => r.host == "host.remote")
+            |> aggregateWindow(every: 30s, fn: mean)
+    want = csv.from(csv: outData)
+
+    testing.diff(got, want)
+}

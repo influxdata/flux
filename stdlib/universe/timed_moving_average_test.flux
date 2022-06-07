@@ -2,6 +2,7 @@ package universe_test
 
 
 import "testing"
+import "csv"
 
 option now = () => 2030-01-01T00:00:00Z
 
@@ -33,10 +34,14 @@ outData =
 ,,0,2018-05-22T00:00:00Z,2018-05-22T00:01:00Z,used_percent,disk,disk1s1,apfs,host.local,/,40,2018-05-22T00:01:00Z
 ,,0,2018-05-22T00:00:00Z,2018-05-22T00:01:00Z,used_percent,disk,disk1s1,apfs,host.local,/,40,2018-05-22T00:01:00Z
 "
-timed_moving_average = (table=<-) =>
-    table
-        |> range(start: 2018-05-22T00:00:00Z, stop: 2018-05-22T00:01:00Z)
-        |> timedMovingAverage(every: 10s, period: 30s)
 
-test _timed_moving_average = () =>
-    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: timed_moving_average})
+testcase timed_moving_average {
+    got =
+        csv.from(csv: inData)
+            |> testing.load()
+            |> range(start: 2018-05-22T00:00:00Z, stop: 2018-05-22T00:01:00Z)
+            |> timedMovingAverage(every: 10s, period: 30s)
+    want = csv.from(csv: outData)
+
+    testing.diff(got, want)
+}

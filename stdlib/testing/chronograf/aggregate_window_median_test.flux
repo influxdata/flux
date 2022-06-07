@@ -2,6 +2,7 @@ package chronograf_test
 
 
 import "testing"
+import "csv"
 
 inData =
     "
@@ -93,14 +94,18 @@ outData =
 ,,0,2018-05-22T00:00:00Z,2018-05-22T00:00:30Z,percentage,mem,host.remote,35
 ,,0,2018-05-22T00:00:30Z,2018-05-22T00:01:00Z,percentage,mem,host.remote,35
 "
-agg_window_median_fn = (table=<-) =>
-    table
-        |> range(start: 2018-05-22T00:00:00Z, stop: 2018-05-22T00:01:00Z)
-        |> filter(fn: (r) => r._measurement == "disk" or r._measurement == "mem")
-        |> filter(fn: (r) => r.host == "host.remote")
-        |> window(period: 30s)
-        |> median()
-        |> group(columns: ["_value", "_time", "_start", "_stop"], mode: "except")
 
-test agg_window_median = () =>
-    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: agg_window_median_fn})
+testcase agg_window_median {
+    got =
+        csv.from(csv: inData)
+            |> testing.load()
+            |> range(start: 2018-05-22T00:00:00Z, stop: 2018-05-22T00:01:00Z)
+            |> filter(fn: (r) => r._measurement == "disk" or r._measurement == "mem")
+            |> filter(fn: (r) => r.host == "host.remote")
+            |> window(period: 30s)
+            |> median()
+            |> group(columns: ["_value", "_time", "_start", "_stop"], mode: "except")
+    want = csv.from(csv: outData)
+
+    testing.diff(got, want)
+}

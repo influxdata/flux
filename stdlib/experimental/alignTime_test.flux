@@ -3,6 +3,7 @@ package experimental_test
 
 import "testing"
 import "experimental"
+import "csv"
 
 option now = () => 2030-01-01T00:00:00Z
 
@@ -180,9 +181,14 @@ outData =
 ,,2,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-18T00:00:00Z,14250,United States
 ,,2,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-19T00:00:00Z,19624,United States
 "
-t_alignTime = (table=<-) =>
-    table
-        |> range(start: 2020-01-01T00:00:00Z, stop: 2020-04-01T00:00:00Z)
-        |> experimental.alignTime(alignTo: 2020-01-01T00:00:00Z)
 
-test _set = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_alignTime})
+testcase set {
+    got =
+        csv.from(csv: inData)
+            |> testing.load()
+            |> range(start: 2020-01-01T00:00:00Z, stop: 2020-04-01T00:00:00Z)
+            |> experimental.alignTime(alignTo: 2020-01-01T00:00:00Z)
+    want = csv.from(csv: outData)
+
+    testing.diff(got, want)
+}

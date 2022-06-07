@@ -2,6 +2,7 @@ package universe_test
 
 
 import "testing"
+import "csv"
 
 option now = () => 2030-01-01T00:00:00Z
 
@@ -37,7 +38,10 @@ outData =
 ,,0,CPU,8
 ,,1,RAM,-1.8333333333333333
 "
-t_cov = (table=<-) => {
+
+testcase cov {
+    table = csv.from(csv: inData) |> testing.load()
+
     t1 =
         table
             |> range(start: 2018-05-22T19:53:00Z, stop: 2018-05-22T19:55:00Z)
@@ -50,8 +54,8 @@ t_cov = (table=<-) => {
             |> drop(columns: ["_start", "_stop"])
             |> filter(fn: (r) => r.user == "user2")
             |> group(columns: ["_measurement"])
+    got = cov(x: t1, y: t2, on: ["_time", "_measurement"])
+    want = csv.from(csv: outData)
 
-    return cov(x: t1, y: t2, on: ["_time", "_measurement"])
+    testing.diff(got, want)
 }
-
-test _cov = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_cov})

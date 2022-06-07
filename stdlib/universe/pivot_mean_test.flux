@@ -2,6 +2,7 @@ package universe_test
 
 
 import "testing"
+import "csv"
 
 option now = () => 2030-01-01T00:00:00Z
 
@@ -26,13 +27,16 @@ outData =
 ,result,table,_stop,_field,_measurement,host.local,host.remote
 ,,0,2030-01-01T00:00:00Z,used_percent,disk,34.98237980753337,34.98224706603858
 "
-t_pivot_mean = (table=<-) =>
-    table
-        |> range(start: 2018-05-22T19:53:26Z)
-        |> group(columns: ["_stop", "_measurement", "_field", "host"])
-        |> mean()
-        |> pivot(rowKey: ["_stop"], columnKey: ["host"], valueColumn: "_value")
-        |> yield(name: "0")
 
-test _pivot_mean = () =>
-    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_pivot_mean})
+testcase pivot_mean {
+    got =
+        csv.from(csv: inData)
+            |> testing.load()
+            |> range(start: 2018-05-22T19:53:26Z)
+            |> group(columns: ["_stop", "_measurement", "_field", "host"])
+            |> mean()
+            |> pivot(rowKey: ["_stop"], columnKey: ["host"], valueColumn: "_value")
+    want = csv.from(csv: outData)
+
+    testing.diff(got, want)
+}

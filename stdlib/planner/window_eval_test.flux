@@ -3,6 +3,7 @@ package planner_test
 
 import "testing"
 import "planner"
+import "csv"
 
 option planner.disablePhysicalRules = ["PushDownWindowAggregateRule"]
 
@@ -60,10 +61,14 @@ output =
 ,,7,2018-05-22T19:53:40Z,2018-05-22T19:54:00Z,2018-05-22T19:53:56Z,system,host.local,load5,1.89
 ,,8,2018-05-22T19:54:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:16Z,system,host.local,load5,1.93
 "
-window_fn = (tables=<-) =>
-    tables
-        |> range(start: 0)
-        |> window(every: 20s)
 
-test window_evaluate = () =>
-    ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: window_fn})
+testcase window_evaluate {
+    got =
+        csv.from(csv: input)
+            |> testing.load()
+            |> range(start: 0)
+            |> window(every: 20s)
+    want = csv.from(csv: output)
+
+    testing.diff(got, want)
+}

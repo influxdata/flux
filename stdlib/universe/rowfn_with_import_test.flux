@@ -4,6 +4,7 @@ package universe_test
 import "testing"
 import "strings"
 import "math"
+import "csv"
 
 inData =
     "
@@ -24,11 +25,16 @@ outData =
 ,,0,2018-05-22T19:53:36Z,101I,load1,system,host.local
 ,,0,2018-05-22T19:53:46Z,102I,load1,system,host.local
 "
-t_row_fn = (table=<-) =>
-    table
-        |> filter(fn: (r) => float(v: r._value) > math.pow(x: 10.0, y: 2.0))
-        |> map(fn: (r) => ({r with _value: string(v: r._value) + "i"}))
-        |> map(fn: (r) => ({r with _value: strings.toUpper(v: r._value)}))
-        |> drop(columns: ["_start", "_stop"])
 
-test _map = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_row_fn})
+testcase map {
+    got =
+        csv.from(csv: inData)
+            |> testing.load()
+            |> filter(fn: (r) => float(v: r._value) > math.pow(x: 10.0, y: 2.0))
+            |> map(fn: (r) => ({r with _value: string(v: r._value) + "i"}))
+            |> map(fn: (r) => ({r with _value: strings.toUpper(v: r._value)}))
+            |> drop(columns: ["_start", "_stop"])
+    want = csv.from(csv: outData)
+
+    testing.diff(got, want)
+}

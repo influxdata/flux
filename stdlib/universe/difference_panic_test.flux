@@ -2,6 +2,7 @@ package universe_test
 
 
 import "testing"
+import "csv"
 
 option now = () => 2030-01-01T00:00:00Z
 
@@ -31,11 +32,15 @@ outData =
 #default,_result,1,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,,,usage_guest_nice,cpu,cpu-total,host.local
 ,result,table,_start,_stop,_time,_value,_field,_measurement,cpu,host
 "
-t_difference_panic = (table=<-) =>
-    table
-        |> range(start: 2018-05-22T19:53:26Z)
-        |> filter(fn: (r) => r._field == "no_exist")
-        |> difference()
 
-test _difference_panic = () =>
-    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_difference_panic})
+testcase difference_panic {
+    got =
+        csv.from(csv: inData)
+            |> testing.load()
+            |> range(start: 2018-05-22T19:53:26Z)
+            |> filter(fn: (r) => r._field == "no_exist")
+            |> difference()
+    want = csv.from(csv: outData)
+
+    testing.diff(got, want)
+}

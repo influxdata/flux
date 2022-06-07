@@ -28,6 +28,7 @@ pub fn format(contents: &str) -> Result<String> {
     let file = parse_string("".to_string(), contents);
     let node = ast::walk::Node::File(&file);
     ast::check::check(node)?;
+
     convert_to_string(&file)
 }
 

@@ -2,6 +2,7 @@ package chronograf_test
 
 
 import "testing"
+import "csv"
 
 input =
     "
@@ -90,15 +91,19 @@ output =
 ,,0,host
 ,,0,region
 "
-measurement_tag_keys_fn = (tables=<-) =>
-    tables
-        |> range(start: 2018-01-01T00:00:00Z, stop: 2019-01-01T00:00:00Z)
-        |> filter(fn: (r) => r._measurement == "swp")
-        |> filter(fn: (r) => r.host == "host.global")
-        |> keys()
-        |> keep(columns: ["_value"])
-        |> distinct()
-        |> sort()
 
-test measurement_tag_keys = () =>
-    ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: measurement_tag_keys_fn})
+testcase measurement_tag_keys {
+    got =
+        csv.from(csv: input)
+            |> testing.load()
+            |> range(start: 2018-01-01T00:00:00Z, stop: 2019-01-01T00:00:00Z)
+            |> filter(fn: (r) => r._measurement == "swp")
+            |> filter(fn: (r) => r.host == "host.global")
+            |> keys()
+            |> keep(columns: ["_value"])
+            |> distinct()
+            |> sort()
+    want = csv.from(csv: output)
+
+    testing.diff(got, want)
+}

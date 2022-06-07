@@ -3,6 +3,7 @@ package geo_test
 
 import "experimental/geo"
 import "testing"
+import "csv"
 
 option now = () => 2030-01-01T00:00:00Z
 
@@ -211,11 +212,15 @@ outData =
 ,result,table,_time,s2_cell_id,_measurement,_pt,tid,lon,lat
 ,,3,2019-11-01T00:17:38.287113937Z,89c2664,taxi,start,1572567458287113937,-73.776665,40.645245
 "
-t_filterRowsNotStrict = (table=<-) =>
-    table
-        |> range(start: 2019-11-01T00:00:00Z)
-        |> geo.filterRows(region: {lat: 40.7090214, lon: -73.61846, radius: 15.0}, strict: false)
-        |> drop(columns: ["_start", "_stop"])
 
-test _filterRowsNotStrict = () =>
-    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_filterRowsNotStrict})
+testcase filterRowsNotStrict {
+    got =
+        csv.from(csv: inData)
+            |> testing.load()
+            |> range(start: 2019-11-01T00:00:00Z)
+            |> geo.filterRows(region: {lat: 40.7090214, lon: -73.61846, radius: 15.0}, strict: false)
+            |> drop(columns: ["_start", "_stop"])
+    want = csv.from(csv: outData)
+
+    testing.diff(got, want)
+}

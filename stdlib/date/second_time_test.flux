@@ -3,6 +3,7 @@ package date_test
 
 import "testing"
 import "date"
+import "csv"
 
 option now = () => 2030-01-01T00:00:00Z
 
@@ -64,10 +65,14 @@ outData =
 ,,3,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,SR,_m,2018-05-22T19:53:50Z,50
 ,,3,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,SR,_m,2018-05-22T19:54:00Z,0
 "
-t_time_second = (table=<-) =>
-    table
-        |> range(start: 2018-01-01T00:00:00Z)
-        |> map(fn: (r) => ({r with _value: date.second(t: r._time)}))
 
-test _time_second = () =>
-    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_time_second})
+testcase time_second {
+    got =
+        csv.from(csv: inData)
+            |> testing.load()
+            |> range(start: 2018-01-01T00:00:00Z)
+            |> map(fn: (r) => ({r with _value: date.second(t: r._time)}))
+    want = csv.from(csv: outData)
+
+    testing.diff(got, want)
+}

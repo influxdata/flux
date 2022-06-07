@@ -5,6 +5,7 @@ import "influxdata/influxdb/monitor"
 import "influxdata/influxdb/v1"
 import "testing"
 import "experimental"
+import "csv"
 
 option now = () => 2018-05-22T19:54:40Z
 option monitor.log = (tables=<-) => tables |> drop(columns: ["_start", "_stop"])
@@ -53,11 +54,15 @@ notification = {
     _notification_endpoint_id: "00000000000002",
     _notification_endpoint_name: "http-endpoint",
 }
-t_notify = (table=<-) =>
-    table
-        |> range(start: -1m)
-        |> v1.fieldsAsCols()
-        |> monitor.notify(data: notification, endpoint: endpoint())
 
-test monitor_notify = () =>
-    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_notify})
+testcase monitor_notify {
+    got =
+        csv.from(csv: inData)
+            |> testing.load()
+            |> range(start: -1m)
+            |> v1.fieldsAsCols()
+            |> monitor.notify(data: notification, endpoint: endpoint())
+    want = csv.from(csv: outData)
+
+    testing.diff(got, want)
+}

@@ -3,6 +3,7 @@ package usage_test
 
 import "testing"
 import "strings"
+import "csv"
 
 // This dataset has been generated with this query:
 // from(bucket: "system_usage")
@@ -3346,19 +3347,23 @@ outData =
 ,,0,2019-08-01T11:00:00Z,2019-08-01T14:00:00Z,5369845,2019-08-01T13:00:00Z
 ,,0,2019-08-01T11:00:00Z,2019-08-01T14:00:00Z,5343520,2019-08-01T14:00:00Z
 "
-_f = (table=<-) =>
-    table
-        |> range(start: 2019-08-01T11:00:00Z, stop: 2019-08-01T14:00:00Z)
-        |> filter(
-            fn: (r) =>
-                r.org_id == "03d01b74c8e09000" and r._measurement == "http_request" and r._field == "req_bytes"
-                    and
-                    r.endpoint == "/api/v2/write" and r.status == "204" and r.hostname !~ /^gateway-internal/,
-        )
-        |> group()
-        |> aggregateWindow(every: 1h, fn: sum)
-        |> fill(column: "_value", value: 0)
-        |> rename(columns: {_value: "writes_b"})
-        |> yield(name: "writes_b")
 
-test get_writes_usage = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: _f})
+testcase get_writes_usage {
+    got =
+        csv.from(csv: inData)
+            |> testing.load()
+            |> range(start: 2019-08-01T11:00:00Z, stop: 2019-08-01T14:00:00Z)
+            |> filter(
+                fn: (r) =>
+                    r.org_id == "03d01b74c8e09000" and r._measurement == "http_request" and r._field == "req_bytes"
+                        and
+                        r.endpoint == "/api/v2/write" and r.status == "204" and r.hostname !~ /^gateway-internal/,
+            )
+            |> group()
+            |> aggregateWindow(every: 1h, fn: sum)
+            |> fill(column: "_value", value: 0)
+            |> rename(columns: {_value: "writes_b"})
+    want = csv.from(csv: outData)
+
+    testing.diff(got, want)
+}

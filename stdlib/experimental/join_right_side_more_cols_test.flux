@@ -4,6 +4,7 @@ package experimental_test
 import "experimental"
 import "influxdata/influxdb/v1"
 import "testing"
+import "csv"
 
 option now = () => 2030-01-01T00:00:00Z
 
@@ -45,7 +46,10 @@ outData =
 ,result,table,host,_measurement,_start,_stop,_time,cpu,inodes_free,usage_guest,usage_idle,usage_system
 ,,0,ip-192-168-1-16.ec2.internal,cpu,2020-10-01T00:00:00Z,2030-01-01T00:00:00Z,2020-10-09T22:20:00Z,cpu-total,4878333253.4,0,91.15346397579125,2.6547010580713986
 "
-join_test_fn = (table=<-) => {
+
+testcase experimental_join {
+    table = csv.from(csv: inData) |> testing.load()
+
     bounded_stream = table |> range(start: 2020-10-01T00:00:00Z)
     a =
         bounded_stream
@@ -59,9 +63,8 @@ join_test_fn = (table=<-) => {
             |> aggregateWindow(fn: last, every: 5m, createEmpty: false)
             |> v1.fieldsAsCols()
             |> group(columns: ["host"])
+    got = experimental.join(left: a, right: b, fn: (left, right) => ({left with inodes_free: right.inodes_free}))
+    want = csv.from(csv: outData)
 
-    return experimental.join(left: a, right: b, fn: (left, right) => ({left with inodes_free: right.inodes_free}))
+    testing.diff(got, want)
 }
-
-test experimental_join = () =>
-    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: join_test_fn})

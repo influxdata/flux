@@ -2,6 +2,7 @@ package universe_test
 
 
 import "testing"
+import "csv"
 
 option now = () => 2030-01-01T00:00:00Z
 
@@ -34,14 +35,18 @@ outData =
 ,result,table,_start,_stop,_time,_value,_field,_measurement,cpu,host
 ,,0,2018-05-22T19:53:24.421470485Z,2018-05-22T19:54:24.421470485Z,2018-05-22T19:54:16Z,87.88598574821853,usage_idle,cpu,cpu-total,host.local
 "
-t_yield = (table=<-) =>
-    table
-        |> sort()
-        |> limit(n: 3)
-        |> yield(name: "1: lowest 3")
-        |> sample(n: 2, pos: 1)
-        |> yield(name: "2: 2nd row")
-        |> yield(name: "5")
 
-test _yield = () =>
-    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData) |> yield(name: "6"), fn: t_yield})
+testcase yield {
+    got =
+        csv.from(csv: inData)
+            |> testing.load()
+            |> sort()
+            |> limit(n: 3)
+            |> yield(name: "1: lowest 3")
+            |> sample(n: 2, pos: 1)
+            |> yield(name: "2: 2nd row")
+            |> yield(name: "5")
+    want = testing.loadMem(csv: outData) |> yield(name: "6")
+
+    testing.diff(got, want)
+}

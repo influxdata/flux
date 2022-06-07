@@ -342,6 +342,14 @@ impl PropertyKey {
             PropertyKey::StringLit(wrapped) => &wrapped.base,
         }
     }
+
+    /// Returns the key
+    pub fn key(&self) -> &str {
+        match self {
+            PropertyKey::Identifier(wrapped) => &wrapped.name,
+            PropertyKey::StringLit(wrapped) => &wrapped.value,
+        }
+    }
 }
 
 // This matches the grammar, and not ast.go:

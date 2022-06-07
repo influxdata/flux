@@ -3,6 +3,7 @@ package experimental_test
 
 import "experimental"
 import "testing"
+import "csv"
 
 inData =
     "
@@ -87,7 +88,10 @@ outData =
 ,,0,2018-12-19T00:00:00Z,2018-12-20T00:00:00Z,2018-12-19T22:14:10Z,_m,g,6,5
 ,,0,2018-12-19T00:00:00Z,2018-12-20T00:00:00Z,2018-12-19T22:14:20Z,_m,g,7,6
 "
-join_test_fn = (table=<-) => {
+
+testcase experimental_join {
+    table = csv.from(csv: inData) |> testing.load()
+
     a =
         table
             |> range(start: 2018-12-19T00:00:00Z, stop: 2018-12-20T00:00:00Z)
@@ -100,9 +104,8 @@ join_test_fn = (table=<-) => {
             |> filter(fn: (r) => r._field == "b")
             |> drop(columns: ["_field"])
             |> rename(columns: {_value: "value_b"})
+    got = experimental.join(left: a, right: b, fn: (left, right) => ({left with value_b: right.value_b}))
+    want = csv.from(csv: outData)
 
-    return experimental.join(left: a, right: b, fn: (left, right) => ({left with value_b: right.value_b}))
+    testing.diff(got, want)
 }
-
-test experimental_join = () =>
-    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: join_test_fn})

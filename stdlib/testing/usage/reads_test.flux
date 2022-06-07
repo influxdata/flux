@@ -2,6 +2,7 @@ package usage_test
 
 
 import "testing"
+import "csv"
 
 // This dataset has been generated with this query:
 // from(bucket: "system_usage")
@@ -3201,19 +3202,23 @@ outData =
 ,,0,2019-08-01T12:00:00Z,2019-08-01T14:00:00Z,746756,2019-08-01T13:00:00Z
 ,,0,2019-08-01T12:00:00Z,2019-08-01T14:00:00Z,78145,2019-08-01T14:00:00Z
 "
-_f = (table=<-) =>
-    table
-        |> range(start: 2019-08-01T12:00:00Z, stop: 2019-08-01T14:00:00Z)
-        |> filter(
-            fn: (r) =>
-                r.org_id == "03b603ab272a3000" and r._measurement == "http_request" and r._field == "resp_bytes"
-                    and
-                    r.endpoint == "/api/v2/query" and r.status == "200",
-        )
-        |> group()
-        |> aggregateWindow(every: 1h, fn: sum)
-        |> fill(column: "_value", value: 0)
-        |> rename(columns: {_value: "reads_b"})
-        |> yield(name: "reads_b")
 
-test get_reads_usage = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: _f})
+testcase get_reads_usage {
+    got =
+        csv.from(csv: inData)
+            |> testing.load()
+            |> range(start: 2019-08-01T12:00:00Z, stop: 2019-08-01T14:00:00Z)
+            |> filter(
+                fn: (r) =>
+                    r.org_id == "03b603ab272a3000" and r._measurement == "http_request" and r._field == "resp_bytes"
+                        and
+                        r.endpoint == "/api/v2/query" and r.status == "200",
+            )
+            |> group()
+            |> aggregateWindow(every: 1h, fn: sum)
+            |> fill(column: "_value", value: 0)
+            |> rename(columns: {_value: "reads_b"})
+    want = csv.from(csv: outData)
+
+    testing.diff(got, want)
+}

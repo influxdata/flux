@@ -4,6 +4,7 @@ package geo_test
 import "experimental/geo"
 import "influxdata/influxdb/v1"
 import "testing"
+import "csv"
 
 option now = () => 2030-01-01T00:00:00Z
 
@@ -225,14 +226,18 @@ outData =
 
 // polygon in Brooklyn
 bt = {points: [{lat: 40.671659, lon: -73.936631}, {lat: 40.706543, lon: -73.749177}, {lat: 40.791333, lon: -73.880327}]}
-t_stContains = (table=<-) =>
-    table
-        |> range(start: 2020-04-01T00:00:00Z)
-        |> v1.fieldsAsCols()
-        // optional but it helps to see the train crossing defined region
-        |> geo.asTracks(groupBy: ["id", "trip_id"])
-        |> map(fn: (r) => ({r with _st_contains: geo.ST_Contains(region: bt, geometry: {lat: r.lat, lon: r.lon})}))
-        |> drop(columns: ["_start", "_stop"])
 
-test _stContains = () =>
-    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_stContains})
+testcase stContains {
+    got =
+        csv.from(csv: inData)
+            |> testing.load()
+            |> range(start: 2020-04-01T00:00:00Z)
+            |> v1.fieldsAsCols()
+            // optional but it helps to see the train crossing defined region
+            |> geo.asTracks(groupBy: ["id", "trip_id"])
+            |> map(fn: (r) => ({r with _st_contains: geo.ST_Contains(region: bt, geometry: {lat: r.lat, lon: r.lon})}))
+            |> drop(columns: ["_start", "_stop"])
+    want = csv.from(csv: outData)
+
+    testing.diff(got, want)
+}

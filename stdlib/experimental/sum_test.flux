@@ -3,6 +3,7 @@ package experimental_test
 
 import "testing"
 import "experimental"
+import "csv"
 
 option now = () => 2030-01-01T00:00:00Z
 
@@ -59,9 +60,14 @@ outData =
 ,result,table,_start,_stop,_measurement,_field,_value
 ,,2,2018-12-01T00:00:00Z,2030-01-01T00:00:00Z,Sgf,qaOnnQc,65.87456992286917
 "
-t_sum = (table=<-) =>
-    table
-        |> range(start: 2018-12-01T00:00:00Z)
-        |> experimental.sum()
 
-test _sum = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_sum})
+testcase sum {
+    got =
+        csv.from(csv: inData)
+            |> testing.load()
+            |> range(start: 2018-12-01T00:00:00Z)
+            |> experimental.sum()
+    want = csv.from(csv: outData)
+
+    testing.diff(got, want)
+}

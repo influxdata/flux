@@ -2,6 +2,7 @@ package universe_test
 
 
 import "testing"
+import "csv"
 
 option now = () => 2030-01-01T00:00:00Z
 
@@ -55,14 +56,19 @@ outData =
 ,,0,68.304576144036
 ,,0,87.88598574821853
 "
-t_keep_fn = (table=<-) =>
-    table
-        |> range(start: 2018-05-22T19:53:26Z)
-        |> keep(fn: (column) => column == "_field" or column == "_value")
-        |> keep(
-            fn: (column) => {
-                return column == "_value"
-            },
-        )
 
-test _keep_fn = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_keep_fn})
+testcase keep_fn {
+    got =
+        csv.from(csv: inData)
+            |> testing.load()
+            |> range(start: 2018-05-22T19:53:26Z)
+            |> keep(fn: (column) => column == "_field" or column == "_value")
+            |> keep(
+                fn: (column) => {
+                    return column == "_value"
+                },
+            )
+    want = csv.from(csv: outData)
+
+    testing.diff(got, want)
+}

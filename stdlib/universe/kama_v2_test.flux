@@ -3,6 +3,7 @@ package universe_test
 
 import "testing"
 import "math"
+import "csv"
 
 option now = () => 2030-01-01T00:00:00Z
 
@@ -68,11 +69,16 @@ outData =
 ,,0,2018-05-22T00:04:30Z,108.95,used_percent,disk
 ,,0,2018-05-22T00:04:40Z,108.42,used_percent,disk
 "
-kama = (table=<-) =>
-    table
-        |> range(start: 2018-05-22T00:00:00Z)
-        |> drop(columns: ["_start", "_stop"])
-        |> kaufmansAMA(n: 10)
-        |> map(fn: (r) => ({r with _value: math.round(x: r._value * 100.0) / 100.0}))
 
-test _kama = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: kama})
+testcase kama {
+    got =
+        csv.from(csv: inData)
+            |> testing.load()
+            |> range(start: 2018-05-22T00:00:00Z)
+            |> drop(columns: ["_start", "_stop"])
+            |> kaufmansAMA(n: 10)
+            |> map(fn: (r) => ({r with _value: math.round(x: r._value * 100.0) / 100.0}))
+    want = csv.from(csv: outData)
+
+    testing.diff(got, want)
+}

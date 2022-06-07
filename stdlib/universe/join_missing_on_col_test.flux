@@ -2,6 +2,7 @@ package universe_test
 
 
 import "testing"
+import "csv"
 
 option now = () => 2030-01-01T00:00:00Z
 
@@ -40,7 +41,10 @@ outData =
 ,_result,1,9654177,144,039e9eb802d3f000
 ,_result,2,33784154,152,03a2c4456f0f5000
 "
-t_join_missing_on_col = (tables=<-) => {
+
+testcase join_missing_on_col {
+    tables = csv.from(csv: inData) |> testing.load()
+
     lhs =
         tables
             |> range(start: 2019-01-01T00:00:00Z)
@@ -55,9 +59,8 @@ t_join_missing_on_col = (tables=<-) => {
             |> keep(columns: ["_time", "org_id", "_value"])
             |> sum()
             |> rename(columns: {_value: "datain"})
+    got = join(tables: {lhs: lhs, rhs: rhs}, on: ["org_id"])
+    want = csv.from(csv: outData)
 
-    return join(tables: {lhs: lhs, rhs: rhs}, on: ["org_id"])
+    testing.diff(got, want)
 }
-
-test _join_missing_on_col = () =>
-    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_join_missing_on_col})

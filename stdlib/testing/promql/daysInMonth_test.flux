@@ -3,6 +3,7 @@ package promql_test
 
 import "testing"
 import "internal/promql"
+import "csv"
 
 option now = () => 2030-01-01T00:00:00Z
 
@@ -32,12 +33,16 @@ outData =
 ,,0,2018-11-07T20:00:00Z,metric_name,30,prometheus
 ,,0,2018-12-08T20:00:00Z,metric_name,31,prometheus
 "
-t_promqlDaysInMonth = (table=<-) =>
-    table
-        |> range(start: 1980-01-01T00:00:00Z)
-        |> drop(columns: ["_start", "_stop"])
-        |> promql.timestamp()
-        |> map(fn: (r) => ({r with _value: promql.promqlDaysInMonth(timestamp: r._value)}))
 
-test _promqlDaysInMonth = () =>
-    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_promqlDaysInMonth})
+testcase promqlDaysInMonth {
+    got =
+        csv.from(csv: inData)
+            |> testing.load()
+            |> range(start: 1980-01-01T00:00:00Z)
+            |> drop(columns: ["_start", "_stop"])
+            |> promql.timestamp()
+            |> map(fn: (r) => ({r with _value: promql.promqlDaysInMonth(timestamp: r._value)}))
+    want = csv.from(csv: outData)
+
+    testing.diff(got, want)
+}

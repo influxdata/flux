@@ -4,6 +4,7 @@ package promql_test
 import "testing"
 import "internal/promql"
 import c "csv"
+import "csv"
 
 option now = () => 2030-01-01T00:00:00Z
 
@@ -58,10 +59,14 @@ outData =
 ,,1,2018-12-18T20:50:00Z,2018-12-18T20:55:00Z,metric_name2,0.39599999999999996,prometheus
 ,,2,2018-12-18T20:50:00Z,2018-12-18T20:55:00Z,metric_name3,1.2,prometheus
 "
-t_extrapolatedRate = (table=<-) =>
-    table
-        |> range(start: 2018-12-18T20:50:00Z, stop: 2018-12-18T20:55:00Z)
-        |> promql.extrapolatedRate(isCounter: false, isRate: true)
 
-test _extrapolatedRate = () =>
-    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_extrapolatedRate})
+testcase extrapolatedRate {
+    got =
+        csv.from(csv: inData)
+            |> testing.load()
+            |> range(start: 2018-12-18T20:50:00Z, stop: 2018-12-18T20:55:00Z)
+            |> promql.extrapolatedRate(isCounter: false, isRate: true)
+    want = csv.from(csv: outData)
+
+    testing.diff(got, want)
+}

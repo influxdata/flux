@@ -3,6 +3,7 @@ package planner_test
 
 import "testing"
 import "planner"
+import "csv"
 
 option planner.disablePhysicalRules = ["PushDownGroupWindowAggregateRule"]
 
@@ -49,12 +50,16 @@ output =
 ,,7,2018-05-22T19:54:00Z,2018-05-22T19:54:20Z,hostB,2
 ,,8,2018-05-22T19:54:00Z,2018-05-22T19:54:20Z,hostC,1
 "
-group_window_agg_fn = (tables=<-) =>
-    tables
-        |> range(start: 0)
-        |> group(columns: ["host"])
-        |> window(every: 20s)
-        |> count()
 
-test group_window_agg_pushdown = () =>
-    ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: group_window_agg_fn})
+testcase group_window_agg_pushdown {
+    got =
+        csv.from(csv: input)
+            |> testing.load()
+            |> range(start: 0)
+            |> group(columns: ["host"])
+            |> window(every: 20s)
+            |> count()
+    want = csv.from(csv: output)
+
+    testing.diff(got, want)
+}

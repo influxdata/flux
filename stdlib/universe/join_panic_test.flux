@@ -2,6 +2,7 @@ package universe_test
 
 
 import "testing"
+import "csv"
 
 passData =
     "
@@ -43,7 +44,10 @@ outData =
 ,,0,16,2,-700,prod01-us-west-2,429,400
 ,,0,16,16,0,prod01-us-west-2,429,429
 "
-t_join_panic = (table=<-) => {
+
+testcase join_panic {
+    table = csv.from(csv: passData) |> testing.load()
+
     api_requests = table |> difference()
     errors =
         api_requests
@@ -62,8 +66,7 @@ t_join_panic = (table=<-) => {
             |> group(columns: ["env", "response_code"])
             |> sum()
             |> filter(fn: (r) => r._value > 0)
-
-    return
+    got =
         join(tables: {errors: errors, total: total}, on: ["env"])
             |> map(
                 fn: (r) =>
@@ -71,8 +74,7 @@ t_join_panic = (table=<-) => {
             )
             |> sort(columns: ["availability"], desc: true)
             |> group()
-}
+    want = csv.from(csv: outData)
 
-test _join_panic = () =>
-    // to trigger the panic, switch the testing.loadStorage() csv from `passData` to `failData`
-    ({input: testing.loadStorage(csv: passData), want: testing.loadMem(csv: outData), fn: t_join_panic})
+    testing.diff(got, want)
+}

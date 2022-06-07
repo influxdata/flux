@@ -2,6 +2,7 @@ package universe_test
 
 
 import "testing"
+import "csv"
 
 option now = () => 2030-01-01T00:00:00Z
 
@@ -45,10 +46,14 @@ outData =
 ,,0,2018-05-22T00:00:00Z,2030-01-01T00:00:00Z,2018-05-22T00:02:40Z,81,used_percent,disk,disk1s1,apfs,host.local,/
 ,,0,2018-05-22T00:00:00Z,2030-01-01T00:00:00Z,2018-05-22T00:02:50Z,72.9,used_percent,disk,disk1s1,apfs,host.local,/
 "
-relative_strength_index = (table=<-) =>
-    table
-        |> range(start: 2018-05-22T00:00:00Z)
-        |> relativeStrengthIndex(n: 10)
 
-test _relative_strength_index = () =>
-    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: relative_strength_index})
+testcase relative_strength_index {
+    got =
+        csv.from(csv: inData)
+            |> testing.load()
+            |> range(start: 2018-05-22T00:00:00Z)
+            |> relativeStrengthIndex(n: 10)
+    want = csv.from(csv: outData)
+
+    testing.diff(got, want)
+}

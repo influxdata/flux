@@ -3,6 +3,7 @@ package planner_test
 
 import "testing"
 import "planner"
+import "csv"
 
 input =
     "
@@ -21,9 +22,14 @@ output =
 ,result,table,_start,_stop,_time,_value,_field,_measurement
 ,,0,2020-10-30T00:00:01Z,2020-10-30T00:00:09Z,2020-10-30T00:00:01Z,1,f,m
 "
-bare_last_fn = (tables=<-) =>
-    tables
-        |> range(start: 2020-10-30T00:00:01Z, stop: 2020-10-30T00:00:09Z)
-        |> last()
 
-test bare_last = () => ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: bare_last_fn})
+testcase bare_last {
+    got =
+        csv.from(csv: input)
+            |> testing.load()
+            |> range(start: 2020-10-30T00:00:01Z, stop: 2020-10-30T00:00:09Z)
+            |> last()
+    want = csv.from(csv: output)
+
+    testing.diff(got, want)
+}

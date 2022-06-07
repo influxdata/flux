@@ -3,6 +3,7 @@ package sample_test
 
 import "influxdata/influxdb/sample"
 import "testing"
+import "csv"
 
 option now = () => 2030-01-01T00:00:00Z
 
@@ -34,10 +35,13 @@ outData =
 ,,0,2029-12-31T23:59:10Z,2030-01-01T00:00:44Z,2030-01-01T00:00:00Z,50.75,used_percent,mem,host.local
 "
 
-t_sample_alignToNow = (table=<-) =>
-    table
-        |> range(start: 2018-05-22T19:53:26Z, stop: 2018-05-22T19:55:00Z)
-        |> sample.alignToNow()
+testcase sample_alignToNow {
+    got =
+        csv.from(csv: inData)
+            |> testing.load()
+            |> range(start: 2018-05-22T19:53:26Z, stop: 2018-05-22T19:55:00Z)
+            |> sample.alignToNow()
+    want = csv.from(csv: outData)
 
-test _sample_alignToNow = () =>
-    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_sample_alignToNow})
+    testing.diff(got, want)
+}

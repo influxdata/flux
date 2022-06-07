@@ -2,6 +2,7 @@ package universe_test
 
 
 import "csv"
+import "testing"
 
 option now = () => 2020-02-22T18:00:00Z
 
@@ -26,8 +27,12 @@ col =
     data
         |> tableFind(fn: (key) => true)
         |> getColumn(column: "_value")
-t_now = (table=<-) =>
-    table
-        |> filter(fn: (r) => contains(value: r._value, set: col))
 
-test _sum = () => ({input: data, want: data, fn: t_now})
+testcase sum {
+    got =
+        data
+            |> filter(fn: (r) => contains(value: r._value, set: col))
+    want = data
+
+    testing.diff(got, want)
+}

@@ -2,6 +2,7 @@ package universe_test
 
 
 import "testing"
+import "csv"
 
 option now = () => 2030-01-01T00:00:00Z
 
@@ -34,11 +35,15 @@ outData =
 ,,1,2018-05-20T19:53:26Z,2030-01-01T00:00:00Z,2018-05-22T19:53:26Z,9223372036854775807,inodes_total,disk,disk1s1,apfs,host.local,/
 "
 filterRegex = /inodes*/
-t_parse_regex = (table=<-) =>
-    table
-        |> range(start: 2018-05-20T19:53:26Z)
-        |> filter(fn: (r) => r._field =~ filterRegex)
-        |> max()
 
-test _parse_regex = () =>
-    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_parse_regex})
+testcase parse_regex {
+    got =
+        csv.from(csv: inData)
+            |> testing.load()
+            |> range(start: 2018-05-20T19:53:26Z)
+            |> filter(fn: (r) => r._field =~ filterRegex)
+            |> max()
+    want = csv.from(csv: outData)
+
+    testing.diff(got, want)
+}

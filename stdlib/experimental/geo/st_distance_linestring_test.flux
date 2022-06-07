@@ -4,6 +4,7 @@ package geo_test
 import "experimental/geo"
 import "influxdata/influxdb/v1"
 import "testing"
+import "csv"
 
 option now = () => 2030-01-01T00:00:00Z
 
@@ -181,20 +182,26 @@ refPoint = {lat: 40.6892, lon: -74.0445}
 
 // limit float to 3 decimal places
 limitFloat = (value) => float(v: int(v: value * 1000.0)) / 1000.0
-t_stDistanceLinestring = (table=<-) =>
-    table
-        |> range(start: 2020-04-01T00:00:00Z)
-        |> v1.fieldsAsCols()
-        // optional but it helps to see the train closing in
-        |> geo.asTracks(groupBy: ["id", "trip_id"])
-        |> geo.ST_LineString()
-        |> map(
-            fn: (r) =>
-                ({r with _st_distance:
-                        limitFloat(value: geo.ST_Distance(region: refPoint, geometry: {linestring: r.st_linestring})),
-                }),
-        )
-        |> drop(columns: ["_start", "_stop"])
 
-test _stDistanceLinestring = () =>
-    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_stDistanceLinestring})
+testcase stDistanceLinestring {
+    got =
+        csv.from(csv: inData)
+            |> testing.load()
+            |> range(start: 2020-04-01T00:00:00Z)
+            |> v1.fieldsAsCols()
+            // optional but it helps to see the train closing in
+            |> geo.asTracks(groupBy: ["id", "trip_id"])
+            |> geo.ST_LineString()
+            |> map(
+                fn: (r) =>
+                    ({r with _st_distance:
+                            limitFloat(
+                                value: geo.ST_Distance(region: refPoint, geometry: {linestring: r.st_linestring}),
+                            ),
+                    }),
+            )
+            |> drop(columns: ["_start", "_stop"])
+    want = csv.from(csv: outData)
+
+    testing.diff(got, want)
+}

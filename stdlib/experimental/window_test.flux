@@ -3,6 +3,7 @@ package experimental_test
 
 import "testing"
 import "experimental"
+import "csv"
 
 option now = () => 2030-01-01T00:00:00Z
 
@@ -38,13 +39,18 @@ outData =
 ,,0,2018-05-22T19:53:00Z,2018-05-22T19:55:00Z,diskio,2018-05-22T19:54:06Z,7603073.5
 ,,0,2018-05-22T19:53:00Z,2018-05-22T19:55:00Z,diskio,2018-05-22T19:54:16Z,7603201.5
 "
-t_window = (table=<-) =>
-    table
-        |> range(start: 2018-05-22T19:53:00Z, stop: 2018-05-22T19:55:00Z)
-        |> group(columns: ["_measurement"])
-        |> experimental.window(every: 1s)
-        |> mean()
-        |> duplicate(column: "_start", as: "_time")
-        |> experimental.window(every: inf)
 
-test _window = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_window})
+testcase window {
+    got =
+        csv.from(csv: inData)
+            |> testing.load()
+            |> range(start: 2018-05-22T19:53:00Z, stop: 2018-05-22T19:55:00Z)
+            |> group(columns: ["_measurement"])
+            |> experimental.window(every: 1s)
+            |> mean()
+            |> duplicate(column: "_start", as: "_time")
+            |> experimental.window(every: inf)
+    want = csv.from(csv: outData)
+
+    testing.diff(got, want)
+}

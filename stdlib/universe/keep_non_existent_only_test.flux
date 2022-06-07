@@ -2,6 +2,7 @@ package universe_test
 
 
 import "testing"
+import "csv"
 
 option now = () => 2030-01-01T00:00:00Z
 
@@ -36,10 +37,14 @@ outData = "
 #default,_result,0
 ,result,table
 "
-t_keep = (table=<-) =>
-    table
-        |> range(start: 2018-05-22T19:53:26Z)
-        |> keep(columns: ["non_existent"])
 
-test _keep_non_existent = () =>
-    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_keep})
+testcase keep_non_existent {
+    got =
+        csv.from(csv: inData)
+            |> testing.load()
+            |> range(start: 2018-05-22T19:53:26Z)
+            |> keep(columns: ["non_existent"])
+    want = csv.from(csv: outData)
+
+    testing.diff(got, want)
+}

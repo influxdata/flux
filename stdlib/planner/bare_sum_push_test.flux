@@ -2,6 +2,7 @@ package planner_test
 
 
 import "testing"
+import "csv"
 
 option now = () => 2030-01-01T00:00:00Z
 
@@ -42,10 +43,14 @@ output =
 ,,1,2018-05-01T00:00:00Z,2030-01-01T00:00:00Z,system,host.local,load3,11.83
 ,,2,2018-05-01T00:00:00Z,2030-01-01T00:00:00Z,system,host.local,load5,11.52
 "
-bare_sum_fn = (tables=<-) =>
-    tables
-        |> range(start: 2018-05-01T00:00:00Z)
-        |> sum()
 
-test bare_sum_pushdown = () =>
-    ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: bare_sum_fn})
+testcase bare_sum_pushdown {
+    got =
+        csv.from(csv: input)
+            |> testing.load()
+            |> range(start: 2018-05-01T00:00:00Z)
+            |> sum()
+    want = csv.from(csv: output)
+
+    testing.diff(got, want)
+}

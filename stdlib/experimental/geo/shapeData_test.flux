@@ -3,6 +3,7 @@ package geo_test
 
 import "experimental/geo"
 import "testing"
+import "csv"
 
 option now = () => 2030-01-01T00:00:00Z
 
@@ -105,10 +106,14 @@ outData =
 ,,3,migration,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,2019-01-02T07:00:00Z,ctrlField,91916A,21.2935,39.15833,15c3b1
 ,,4,migration,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,2019-01-02T13:00:00Z,ctrlField,91916A,21.3485,39.15083,15c3b9
 "
-t_shapeData = (table=<-) =>
-    table
-        |> range(start: 2019-01-01T00:00:00Z)
-        |> geo.shapeData(latField: "latitude", lonField: "longitude", level: 10)
 
-test _shapeData = () =>
-    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_shapeData})
+testcase shapeData {
+    got =
+        csv.from(csv: inData)
+            |> testing.load()
+            |> range(start: 2019-01-01T00:00:00Z)
+            |> geo.shapeData(latField: "latitude", lonField: "longitude", level: 10)
+    want = csv.from(csv: outData)
+
+    testing.diff(got, want)
+}

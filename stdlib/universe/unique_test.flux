@@ -2,6 +2,7 @@ package universe_test
 
 
 import "testing"
+import "csv"
 
 option now = () => 2030-01-01T00:00:00Z
 
@@ -36,9 +37,14 @@ outData =
 ,,3,2018-05-22T19:53:26Z,23,f1,d,aa
 ,,4,2018-05-22T19:53:46Z,37,f1,e,aa
 "
-t_unique = (table=<-) =>
-    table
-        |> unique(column: "tag0")
-        |> drop(columns: ["_start", "_stop"])
 
-test _unique = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_unique})
+testcase unique {
+    got =
+        csv.from(csv: inData)
+            |> testing.load()
+            |> unique(column: "tag0")
+            |> drop(columns: ["_start", "_stop"])
+    want = csv.from(csv: outData)
+
+    testing.diff(got, want)
+}

@@ -3,6 +3,7 @@ package interpolate_test
 
 import "testing"
 import "interpolate"
+import "csv"
 
 inData =
     "
@@ -52,11 +53,15 @@ outData =
 ,,1,2014-01-01T01:10:00Z,_m,QQ,2
 ,,1,2014-01-01T01:11:00Z,_m,QQ,1
 "
-interpolateFn = (table=<-) =>
-    table
-        |> range(start: 2014-01-01T01:00:00Z, stop: 2014-01-01T02:00:00Z)
-        |> interpolate.linear(every: 1m)
-        |> drop(columns: ["_start", "_stop"])
 
-test interpolate_test = () =>
-    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: interpolateFn})
+testcase interpolate_test {
+    got =
+        csv.from(csv: inData)
+            |> testing.load()
+            |> range(start: 2014-01-01T01:00:00Z, stop: 2014-01-01T02:00:00Z)
+            |> interpolate.linear(every: 1m)
+            |> drop(columns: ["_start", "_stop"])
+    want = csv.from(csv: outData)
+
+    testing.diff(got, want)
+}

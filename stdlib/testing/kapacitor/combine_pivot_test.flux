@@ -2,6 +2,7 @@ package testdata_test
 
 
 import "testing"
+import "csv"
 
 option now = () => 2030-01-01T00:00:00Z
 
@@ -37,18 +38,18 @@ outData =
 ,,0,memory,2018-12-19T22:14:10Z,6,9
 ,,0,memory,2018-12-19T22:14:20Z,3,8
 "
-t_combine_join = (table=<-) =>
-    table
-        |> range(start: 2018-12-15T00:00:00Z)
-        |> drop(columns: ["_start", "_stop"])
-        |> pivot(rowKey: ["_time", "_measurement"], columnKey: ["_field"], valueColumn: "_value")
 
-test _combine_join = () =>
-    ({
-        input: testing.loadStorage(csv: inData),
-        want: testing.loadMem(csv: outData),
-        fn: t_combine_join,
-    })// Equivalent TICKscript query:
+testcase combine_join {
+    got =
+        csv.from(csv: inData)
+            |> testing.load()
+            |> range(start: 2018-12-15T00:00:00Z)
+            |> drop(columns: ["_start", "_stop"])
+            |> pivot(rowKey: ["_time", "_measurement"], columnKey: ["_field"], valueColumn: "_value")
+    want = csv.from(csv: outData)
+
+    testing.diff(got, want)
+}// Equivalent TICKscript query:
 //
 // stream
 //    |from()

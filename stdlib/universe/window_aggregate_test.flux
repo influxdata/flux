@@ -2,6 +2,7 @@ package universe_test
 
 
 import "testing"
+import "csv"
 
 inData =
     "
@@ -37,10 +38,15 @@ outData =
 ,,2,1970-01-01T00:00:07Z,1970-01-01T00:00:12Z,5,f,m0,k0
 ,,3,1970-01-01T00:00:12Z,1970-01-01T00:00:15Z,3,f,m0,k0
 "
-t_window = (table=<-) =>
-    table
-        |> range(start: 1970-01-01T00:00:00Z, stop: 1970-01-01T00:00:15Z)
-        |> window(every: 5s, offset: 2s)
-        |> count()
 
-test _window = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_window})
+testcase window {
+    got =
+        csv.from(csv: inData)
+            |> testing.load()
+            |> range(start: 1970-01-01T00:00:00Z, stop: 1970-01-01T00:00:15Z)
+            |> window(every: 5s, offset: 2s)
+            |> count()
+    want = csv.from(csv: outData)
+
+    testing.diff(got, want)
+}
