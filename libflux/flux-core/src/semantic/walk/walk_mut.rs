@@ -104,7 +104,7 @@ impl NodeMut<'_> {
 ///     }
 /// }
 /// ```
-pub trait VisitorMut: Sized {
+pub trait VisitorMut {
     /// `visit` is called for a node.
     /// When the `VisitorMut` is used in [`walk_mut`], the boolean value returned
     /// is used to continue walking (`true`) or stop (`false`).

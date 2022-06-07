@@ -271,7 +271,7 @@ macro_rules! mk_node {
         /// Nodes are visited in depth-first order.
         pub fn $walk<'a, T>(v: &mut T, $($mut)? node: $name<'a>)
         where
-            T: $visitor $(<$visitor_lt>)?,
+            T: ?Sized + $visitor $(<$visitor_lt>)?,
         {
             if v.visit($(&$mut)? node) {
                 match &$($mut)? node {
