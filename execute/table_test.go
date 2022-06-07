@@ -369,7 +369,7 @@ func TestCopyTable(t *testing.T) {
 	}
 }
 
-func TestDoubleCopyTable(t *testing.T) {
+func TestCopyTable_DoubleCopy(t *testing.T) {
 	// This is a slight twist on the above `TestCopyTable`.
 	// In <https://github.com/influxdata/flux/issues/4780> we saw that when
 	// `yield` and `tableFind` are combined, we can end up calling `Copy`

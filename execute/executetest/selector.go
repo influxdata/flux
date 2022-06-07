@@ -43,8 +43,9 @@ func RowSelectorFuncBenchmarkHelper(b *testing.B, selector execute.RowSelector, 
 
 	b.ResetTimer()
 	for n := 0; n < b.N; n++ {
-		t := data.Copy()
 		s := selector.NewFloatSelector()
+
+		t := data.Copy()
 		if err := t.Do(func(cr flux.ColReader) error {
 			s.DoFloat(cr.Floats(valueIdx), cr)
 			return nil
