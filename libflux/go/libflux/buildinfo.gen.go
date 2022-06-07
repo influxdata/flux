@@ -102,7 +102,7 @@ var sourceHashes = map[string]string{
 	"stdlib/contrib/tomhollingworth/events/duration_with_stop_test.flux":                          "d776dcbc86133bc58cf7eeee79619d2b9797a280cbbeeebff28976a99cfa7acb",
 	"stdlib/csv/csv.flux":                                                                         "94a1d8dd59c0e092617e9c974bad4edaf1a2c6ebb20fd185524b58cb657329b0",
 	"stdlib/csv/csv_test.flux":                                                                    "8aaf56893a1aefb65883ba96ebdb0283670d76ec872bfedfe389d778bdc1bb8f",
-	"stdlib/date/date.flux":                                                                       "19f0b86a72d4c61ff2e16f0d5c4898c5da983efa175456583f39d2de5fc52cc0",
+	"stdlib/date/date.flux":                                                                       "352788909c9416f220ecb698a86ea48dea0f4682237bc92ba441c4ea213aae22",
 	"stdlib/date/date_test.flux":                                                                  "42ea61ee595ab6cfc5631505cf5a757f5a7fa24bd5cc43466099956552b071cf",
 	"stdlib/date/durations_test.flux":                                                             "610f791ede48d7dda9a1f6aaaa38fe7fe81a278339857716120ef56f946bfe33",
 	"stdlib/date/hour_duration_test.flux":                                                         "7da9263cddf0fa443e9dc55b176139d1dd67cb689c0be243d8b595799fc066f4",
