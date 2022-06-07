@@ -4,6 +4,7 @@ pub mod convert;
 
 mod fs;
 mod infer;
+mod symbols;
 mod vectorize;
 
 #[macro_use]
@@ -119,9 +120,16 @@ impl From<Errors<nodes::Error>> for Errors<Error> {
     }
 }
 
+/// `Warning` represents any warning emitted by the flux compiler
+pub type Warning = Located<WarningKind>;
+
 /// `WarningKind` exposes details about where in the type analysis process a warning occurred.
 #[derive(Error, Debug, PartialEq)]
-pub enum WarningKind {}
+pub enum WarningKind {
+    /// An unused symbol was found in the source
+    #[error("symbol {0} is never used")]
+    UnusedSymbol(String),
+}
 
 /// An environment of values that are available outside of a package
 #[derive(Debug, Clone, PartialEq)]
@@ -446,7 +454,7 @@ impl AsDiagnostic for ErrorKind {
 
 impl AsDiagnostic for WarningKind {
     fn as_diagnostic(&self, _source: &dyn Source) -> diagnostic::Diagnostic<()> {
-        match *self {}
+        diagnostic::Diagnostic::warning().with_message(self.to_string())
     }
 }
 
@@ -576,15 +584,16 @@ impl<'env, I: import::Importer> Analyzer<'env, I> {
 
         let mut sem_pkg = nodes::inject_pkg_types(sem_pkg, sub);
 
+        let mut warnings = Errors::new();
+
+        warnings.extend(symbols::unused_symbols(&sem_pkg));
+
         if errors.has_errors() {
             return Err(Salvage {
                 error: FileErrors {
                     file: sem_pkg.package.clone(),
                     source: None,
-                    diagnostics: Diagnostics {
-                        errors,
-                        warnings: Errors::new(),
-                    },
+                    diagnostics: Diagnostics { errors, warnings },
                 },
                 value: Some((env, sem_pkg)),
             });
