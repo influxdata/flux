@@ -1,6 +1,13 @@
 package table
 
-import "github.com/influxdata/flux"
+import (
+	"sync/atomic"
+
+	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/codes"
+	"github.com/influxdata/flux/internal/debug"
+	"github.com/influxdata/flux/internal/errors"
+)
 
 // Copy returns a buffered copy of the table and consumes the
 // input table. If the input table is already buffered, it "consumes"
@@ -15,10 +22,6 @@ import "github.com/influxdata/flux"
 // potentially cause a problem. The allocator is meant to catch when
 // this happens and prevent it.
 func Copy(t flux.Table) (flux.BufferedTable, error) {
-	if tbl, ok := t.(flux.BufferedTable); ok {
-		return tbl, nil
-	}
-
 	tbl := tableBuffer{
 		key:     t.Key(),
 		colMeta: t.Cols(),
@@ -46,8 +49,8 @@ func Copy(t flux.Table) (flux.BufferedTable, error) {
 type tableBuffer struct {
 	key     flux.GroupKey
 	colMeta []flux.ColMeta
-	i       int
 	buffers []flux.ColReader
+	used    int32
 }
 
 func (tb *tableBuffer) Key() flux.GroupKey {
@@ -59,20 +62,30 @@ func (tb *tableBuffer) Cols() []flux.ColMeta {
 }
 
 func (tb *tableBuffer) Do(f func(flux.ColReader) error) error {
-	defer tb.Done()
-	for ; tb.i < len(tb.buffers); tb.i++ {
-		b := tb.buffers[tb.i]
+	if !atomic.CompareAndSwapInt32(&tb.used, 0, 1) {
+		return errors.New(codes.Internal, "table already read")
+	}
+	defer func() {
+		for i := 0; i < len(tb.buffers); i++ {
+			tb.buffers[i].Release()
+		}
+	}()
+
+	for i := 0; i < len(tb.buffers); i++ {
+		b := tb.buffers[i]
 		if err := f(b); err != nil {
 			return err
 		}
-		b.Release()
 	}
+
 	return nil
 }
 
 func (tb *tableBuffer) Done() {
-	for ; tb.i < len(tb.buffers); tb.i++ {
-		tb.buffers[tb.i].Release()
+	if atomic.CompareAndSwapInt32(&tb.used, 0, 1) {
+		for i := 0; i < len(tb.buffers); i++ {
+			tb.buffers[i].Release()
+		}
 	}
 }
 
@@ -89,13 +102,18 @@ func (tb *tableBuffer) BufferN() int {
 }
 
 func (tb *tableBuffer) Copy() flux.BufferedTable {
-	for i := tb.i; i < len(tb.buffers); i++ {
+
+	debug.Assert(
+		atomic.LoadInt32(&tb.used) == 0,
+		"tried to copy an already used tableBuffer",
+	)
+
+	for i := 0; i < len(tb.buffers); i++ {
 		tb.buffers[i].Retain()
 	}
 	return &tableBuffer{
 		key:     tb.key,
 		colMeta: tb.colMeta,
-		i:       tb.i,
 		buffers: tb.buffers,
 	}
 }

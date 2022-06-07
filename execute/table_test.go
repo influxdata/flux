@@ -369,6 +369,138 @@ func TestCopyTable(t *testing.T) {
 	}
 }
 
+func TestCopyTable_DoubleCopy(t *testing.T) {
+	// This is a slight twist on the above `TestCopyTable`.
+	// In <https://github.com/influxdata/flux/issues/4780> we saw that when
+	// `yield` and `tableFind` are combined, we can end up calling `Copy`
+	// on and already copied table.
+	// This test checks that each copy can be consumed independently and that
+	// consuming one copy does not accidentally consume the other, or even
+	// "double free" the underlying arrow arrays.
+
+	alloc := memory.NewResourceAllocator(nil)
+
+	input, err := gen.Input(context.Background(), gen.Schema{
+		Tags: []gen.Tag{
+			{Name: "t0", Cardinality: 1},
+		},
+		NumPoints: 100,
+		Period:    time.Hour,
+		Types: map[flux.ColType]int{
+			flux.TFloat: 1,
+		},
+		Alloc: alloc,
+	})
+	if err != nil {
+		t.Fatalf("unable to generate tables: %s", err)
+	}
+
+	var buffers []flux.BufferedTable
+	if err := input.Do(func(table flux.Table) error {
+		src, err := execute.CopyTable(table)
+		if err != nil {
+			return err
+		}
+
+		// two copies from the original src (buffered) table
+		bt := src.Copy()
+		bt2 := src.Copy()
+		// close out the src
+		src.Done()
+
+		buffers = append(buffers, bt)
+		buffers = append(buffers, bt2)
+		buffers = append(buffers, bt2.Copy()) // copy of a copy
+
+		return nil
+	}); err != nil {
+		t.Fatalf("unexpected error: %s", err)
+	}
+
+	for _, buf := range buffers {
+		did := false
+		if err := buf.Do(func(cr flux.ColReader) error {
+			did = true
+			if cr.Len() == 0 {
+				return nil
+			}
+			v := execute.ValueForRow(cr, 0, 0)
+			if v == nil {
+				t.Errorf("got unexpected nil")
+			}
+			return nil
+		}); err != nil {
+			t.Errorf("unexpected error: %s", err)
+		}
+		if !did {
+			t.Errorf("expected Do() to run for buffer, but it didn't")
+		}
+	}
+
+	// Ensure there has been no memory leak.
+	if got, want := alloc.Allocated(), int64(0); got != want {
+		t.Errorf("memory leak -want/+got:\n\t- %d\n\t+ %d", want, got)
+	}
+}
+func TestTableDoneIdempotent(t *testing.T) {
+	alloc := memory.NewResourceAllocator(nil)
+
+	input, err := gen.Input(context.Background(), gen.Schema{
+		Tags: []gen.Tag{
+			{Name: "t0", Cardinality: 1},
+		},
+		NumPoints: 100,
+		Period:    time.Hour,
+		Types: map[flux.ColType]int{
+			flux.TFloat: 1,
+		},
+		Alloc: alloc,
+	})
+	if err != nil {
+		t.Fatalf("unable to generate tables: %s", err)
+	}
+
+	var buffers [][]flux.BufferedTable
+	if err := input.Do(func(table flux.Table) error {
+		bt, err := execute.CopyTable(table)
+		if err != nil {
+			return err
+		}
+		buffers = append(buffers, []flux.BufferedTable{bt.Copy(), bt})
+		return nil
+	}); err != nil {
+		t.Fatalf("unexpected error: %s", err)
+	}
+
+	for _, pair := range buffers {
+		buf0 := pair[0]
+		buf1 := pair[1]
+
+		// Done before Do should produce an error
+		buf0.Done()
+		buf0.Done()
+		if err := buf0.Do(func(cr flux.ColReader) error {
+			return nil
+		}); err == nil {
+			t.Error("expected error, got nil")
+		}
+
+		// Do before Done should produce no error
+		if err := buf1.Do(func(cr flux.ColReader) error {
+			return nil
+		}); err != nil {
+			t.Errorf("unexpected error: %s", err)
+		}
+		buf1.Done()
+		buf1.Done()
+	}
+
+	// Ensure there has been no memory leak.
+	if got, want := alloc.Allocated(), int64(0); got != want {
+		t.Errorf("memory leak -want/+got:\n\t- %d\n\t+ %d", want, got)
+	}
+}
+
 func TestColListTableBuilder_AppendValues(t *testing.T) {
 	for _, tt := range []struct {
 		name   string
