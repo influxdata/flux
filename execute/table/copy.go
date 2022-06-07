@@ -1,6 +1,7 @@
 package table
 
 import (
+	"log"
 	"sync/atomic"
 
 	"github.com/influxdata/flux"
@@ -101,8 +102,12 @@ func (tb *tableBuffer) BufferN() int {
 }
 
 func (tb *tableBuffer) Copy() flux.BufferedTable {
+
+	// TODO: make this panic instead of just logging when running tests.
+	//  Arrow has a `debug.Assert` thing which will noop unless the assert build
+	//  tag is set. We could do something similar.
 	if atomic.LoadInt32(&tb.used) == 1 {
-		panic("tried to copy an already used tableBuffer")
+		log.Println("tried to copy an already used tableBuffer")
 	}
 
 	for i := 0; i < len(tb.buffers); i++ {
