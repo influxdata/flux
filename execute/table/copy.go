@@ -101,7 +101,7 @@ func (tb *tableBuffer) BufferN() int {
 }
 
 func (tb *tableBuffer) Copy() flux.BufferedTable {
-	if tb.used == 1 {
+	if atomic.LoadInt32(&tb.used) == 1 {
 		panic("tried to copy an already used tableBuffer")
 	}
 
