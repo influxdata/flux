@@ -30,7 +30,7 @@ outData =
 "
 endpoint = http.endpoint(url: "http://localhost:7777")
 
-testcase post {
+testcase http_endpoint {
     got =
         csv.from(csv: inData)
             |> testing.load()
