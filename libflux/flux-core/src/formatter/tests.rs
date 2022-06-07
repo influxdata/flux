@@ -1384,6 +1384,7 @@ test _mad = () => ({input: testing.loadStorage(csv: inData), want: testing.loadM
             testcase mad {
                 got =
                     csv.from(csv: inData)
+                        |> testing.load()
                         |> range(start: 2020-04-27T00:00:00Z, stop: 2020-05-01T00:00:00Z)
                         |> anomalydetection.mad(threshold: 3.0)
                 want = csv.from(csv: outData)
@@ -1973,6 +1974,7 @@ test _drop_fn = () => ({input: testing.loadStorage(csv: inData), want: testing.l
             testcase drop_fn {
                 got =
                     csv.from(csv: inData)
+                        |> testing.load()
                         |> range(start: 2018-05-22T19:53:26Z)
                         |> drop(fn: (column) => column =~ /dropme*/)
                 want = csv.from(csv: outData)
@@ -2012,7 +2014,7 @@ test _union = () => ({input: testing.loadStorage(csv: inData), want: testing.loa
             import "csv"
 
             testcase union {
-                table = csv.from(csv: inData)
+                table = csv.from(csv: inData) |> testing.load()
 
                 t1 =
                     table
@@ -2057,6 +2059,7 @@ test _spread = () =>
             testcase spread {
                 got =
                     csv.from(csv: inData)
+                        |> testing.load()
                         |> range(start: 2018-12-01T00:00:00Z)
                         |> experimental.spread()
                 want = csv.from(csv: outData)

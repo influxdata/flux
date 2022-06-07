@@ -180,7 +180,17 @@ fn rewrite_test_statements(ast_file: &mut ast::File) {
                                 let mut parser = crate::parser::Parser::new("csv.from");
                                 parser.parse_expression()
                             };
-                            ast::Expression::Call(call)
+
+                            ast::Expression::PipeExpr(Box::new(ast::PipeExpr {
+                                base: Default::default(),
+                                argument: ast::Expression::Call(call),
+                                call: match crate::parser::Parser::new("testing.load()")
+                                    .parse_expression()
+                                {
+                                    ast::Expression::Call(c) => *c,
+                                    _ => unreachable!(),
+                                },
+                            }))
                         }
                         _ => ast::Expression::Call(call),
                     },
