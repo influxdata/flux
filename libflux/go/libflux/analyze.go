@@ -57,6 +57,7 @@ func NewOptions(ctx context.Context) Options {
 	features = addFlag(ctx, features, feature.VectorizeOperators())
 	features = addFlag(ctx, features, feature.VectorizeLogicalOperators())
 	features = addFlag(ctx, features, feature.LabelPolymorphism())
+	features = addFlag(ctx, features, feature.UnusedSymbolWarnings())
 	return Options{Features: features}
 }
 

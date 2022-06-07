@@ -481,6 +481,9 @@ pub enum Feature {
 
     /// Enables label polymorphism
     LabelPolymorphism,
+
+    /// Enables warnings for unused symbols
+    UnusedSymbolWarnings,
 }
 
 /// A set of configuration options for the behavior of an Analyzer.
@@ -586,7 +589,13 @@ impl<'env, I: import::Importer> Analyzer<'env, I> {
 
         let mut warnings = Errors::new();
 
-        warnings.extend(symbols::unused_symbols(&sem_pkg));
+        if self
+            .config
+            .features
+            .contains(&Feature::UnusedSymbolWarnings)
+        {
+            warnings.extend(symbols::unused_symbols(&sem_pkg));
+        }
 
         if errors.has_errors() {
             return Err(Salvage {

@@ -39,7 +39,7 @@ use crate::{
         nodes::Symbol,
         sub::Substitution,
         types::{MonoType, PolyType, PolyTypeHashMap, SemanticMap, TvarKinds},
-        Analyzer, AnalyzerConfig, PackageExports,
+        Analyzer, AnalyzerConfig, Feature, PackageExports,
     },
 };
 
@@ -4118,8 +4118,12 @@ fn multiple_errors_in_function_call() {
 }
 
 #[test]
-fn unused_variable_1() {
+fn unused_variable() {
     test_error_msg! {
+        config: AnalyzerConfig{
+            features: vec![Feature::UnusedSymbolWarnings],
+            ..AnalyzerConfig::default()
+        },
         src: r#"
             f = () => {
                 x = "" + 1
@@ -4144,8 +4148,12 @@ fn unused_variable_1() {
 }
 
 #[test]
-fn unused_variable_2() {
+fn no_unused_variable_warning_for_function_parameter() {
     test_error_msg! {
+        config: AnalyzerConfig{
+            features: vec![Feature::UnusedSymbolWarnings],
+            ..AnalyzerConfig::default()
+        },
         src: r#"
             f = (x) => {
                 return 1 + ""
@@ -4165,6 +4173,10 @@ fn unused_variable_2() {
 #[test]
 fn unused_import() {
     test_error_msg! {
+        config: AnalyzerConfig{
+            features: vec![Feature::UnusedSymbolWarnings],
+            ..AnalyzerConfig::default()
+        },
         imp: map![
             "path/to/foo" => package![
                 "f" => " (x: A) => A where A: Addable + Divisible",
