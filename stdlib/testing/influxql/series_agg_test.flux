@@ -3,6 +3,7 @@ package influxql_test
 
 import "testing"
 import "internal/influxql"
+import "csv"
 
 inData =
     "
@@ -689,15 +690,17 @@ outData =
 ,,1,1970-01-07T23:00:00Z,m,1,0.16068490698806603
 "
 
-// SELECT difference(f) FROM m GROUP BY *
-t_difference = (tables=<-) =>
-    tables
-        |> range(start: influxql.minTime, stop: influxql.maxTime)
-        |> filter(fn: (r) => r._measurement == "m")
-        |> filter(fn: (r) => r._field == "f")
-        |> difference()
-        |> drop(columns: ["_start", "_stop", "_field"])
-        |> rename(columns: {_value: "difference"})
+testcase difference {
+    got =
+        csv.from(csv: inData)
+            |> testing.load()
+            |> range(start: influxql.minTime, stop: influxql.maxTime)
+            |> filter(fn: (r) => r._measurement == "m")
+            |> filter(fn: (r) => r._field == "f")
+            |> difference()
+            |> drop(columns: ["_start", "_stop", "_field"])
+            |> rename(columns: {_value: "difference"})
+    want = csv.from(csv: outData)
 
-test _difference = () =>
-    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_difference})
+    testing.diff(got, want)
+}

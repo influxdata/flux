@@ -2,6 +2,7 @@ package universe_test
 
 
 import "testing"
+import "csv"
 
 option now = () => 2030-01-01T00:00:00Z
 
@@ -37,10 +38,14 @@ outData =
 ,,1,2019-01-09T19:44:30Z,2019-01-09T19:46:00Z,Reiva,OAOJWe7,qCnJDC,2019-01-09T19:45:30Z,-6.3173755351186465
 ,,1,2019-01-09T19:44:30Z,2019-01-09T19:46:00Z,Reiva,OAOJWe7,qCnJDC,2019-01-09T19:46:00Z,22.821813505281843
 "
-t_aggregate_window_median = (table=<-) =>
-    table
-        |> range(start: 2019-01-09T19:44:30Z, stop: 2019-01-09T19:46:00Z)
-        |> aggregateWindow(every: 30s, fn: median)
 
-test _aggregate_window_median = () =>
-    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_aggregate_window_median})
+testcase aggregate_window_median {
+    got =
+        csv.from(csv: inData)
+            |> testing.load()
+            |> range(start: 2019-01-09T19:44:30Z, stop: 2019-01-09T19:46:00Z)
+            |> aggregateWindow(every: 30s, fn: median)
+    want = csv.from(csv: outData)
+
+    testing.diff(got, want)
+}

@@ -2,6 +2,7 @@ package universe_test
 
 
 import "testing"
+import "csv"
 
 option now = () => 2030-01-01T00:00:00Z
 
@@ -37,10 +38,14 @@ outData =
 ,,0,2018-11-07T05:00:00Z,33,A,CC,HostB
 ,,0,2018-11-07T02:00:00Z,30,A,BB,HostA
 "
-t_highestMax = (table=<-) =>
-    table
-        |> highestMax(n: 3, groupColumns: ["_measurement", "host"])
-        |> drop(columns: ["_start", "_stop"])
 
-test _highestMax = () =>
-    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_highestMax})
+testcase highestMax {
+    got =
+        csv.from(csv: inData)
+            |> testing.load()
+            |> highestMax(n: 3, groupColumns: ["_measurement", "host"])
+            |> drop(columns: ["_start", "_stop"])
+    want = csv.from(csv: outData)
+
+    testing.diff(got, want)
+}

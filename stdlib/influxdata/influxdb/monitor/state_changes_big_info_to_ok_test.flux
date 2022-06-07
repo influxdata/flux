@@ -5,6 +5,7 @@ import "influxdata/influxdb/monitor"
 import "influxdata/influxdb/v1"
 import "testing"
 import "experimental"
+import "csv"
 
 option now = () => 2018-05-22T19:54:40Z
 option monitor.log = (tables=<-) => tables |> drop(columns: ["_start", "_stop"])
@@ -252,10 +253,14 @@ outData =
 
 
 "
-t_state_changes_big_info_to_ok = (table=<-) =>
-    table
-        |> v1.fieldsAsCols()
-        |> monitor.stateChanges(fromLevel: "info", toLevel: "ok")
 
-test monitor_state_changes_big_info_to_ok = () =>
-    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_state_changes_big_info_to_ok})
+testcase monitor_state_changes_big_info_to_ok {
+    got =
+        csv.from(csv: inData)
+            |> testing.load()
+            |> v1.fieldsAsCols()
+            |> monitor.stateChanges(fromLevel: "info", toLevel: "ok")
+    want = csv.from(csv: outData)
+
+    testing.diff(got, want)
+}

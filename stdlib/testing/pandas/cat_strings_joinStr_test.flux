@@ -3,6 +3,7 @@ package pandas_test
 
 import "testing"
 import "strings"
+import "csv"
 
 option now = () => 2030-01-01T00:00:00Z
 
@@ -32,10 +33,14 @@ outData =
 ,,0,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,2018-05-22T19:54:06Z,cLnSkNMI  PLUS,used_percent,disk,disk1,apfs,host.local,/
 ,,0,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,2018-05-22T19:54:16Z,13F2  PLUS,used_percent,disk,disk1,apfs,host.local,/
 "
-t_string_joinStr = (table=<-) =>
-    table
-        |> range(start: 2018-05-22T19:53:26Z)
-        |> map(fn: (r) => ({r with _value: strings.joinStr(arr: [r._value, "PLUS"], v: "")}))
 
-test _string_joinStr = () =>
-    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_string_joinStr})
+testcase string_joinStr {
+    got =
+        csv.from(csv: inData)
+            |> testing.load()
+            |> range(start: 2018-05-22T19:53:26Z)
+            |> map(fn: (r) => ({r with _value: strings.joinStr(arr: [r._value, "PLUS"], v: "")}))
+    want = csv.from(csv: outData)
+
+    testing.diff(got, want)
+}

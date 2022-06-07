@@ -2,6 +2,7 @@ package universe_test
 
 
 import "testing"
+import "csv"
 
 option now = () => 2030-01-01T00:00:00Z
 
@@ -37,10 +38,14 @@ outData =
 ,,0,2018-11-07T00:00:00Z,2030-01-01T00:00:00Z,2018-11-07T08:00:00Z,15,A,DD,HostC
 ,,0,2018-11-07T00:00:00Z,2030-01-01T00:00:00Z,2018-11-07T04:00:00Z,21,A,CC,HostA
 "
-t_lowestCurrent = (table=<-) =>
-    table
-        |> range(start: 2018-11-07T00:00:00Z)
-        |> lowestCurrent(n: 3, groupColumns: ["_measurement", "host"])
 
-test _lowestCurrent = () =>
-    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_lowestCurrent})
+testcase lowestCurrent {
+    got =
+        csv.from(csv: inData)
+            |> testing.load()
+            |> range(start: 2018-11-07T00:00:00Z)
+            |> lowestCurrent(n: 3, groupColumns: ["_measurement", "host"])
+    want = csv.from(csv: outData)
+
+    testing.diff(got, want)
+}

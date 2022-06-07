@@ -3,6 +3,7 @@ package experimental_test
 
 import "testing"
 import "experimental"
+import "csv"
 
 option now = () => 2030-01-01T00:00:00Z
 
@@ -48,10 +49,15 @@ outData =
 ,,2,2018-05-22T19:53:26Z,1.95,load5,system,host.local
 ,,3,2018-05-22T19:53:26Z,82.9833984375,used_percent,swap,host.local
 "
-t_max = (table=<-) =>
-    table
-        |> range(start: 2018-05-22T00:00:00Z)
-        |> experimental.max()
-        |> drop(columns: ["_start", "_stop"])
 
-test _max = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_max})
+testcase max {
+    got =
+        csv.from(csv: inData)
+            |> testing.load()
+            |> range(start: 2018-05-22T00:00:00Z)
+            |> experimental.max()
+            |> drop(columns: ["_start", "_stop"])
+    want = csv.from(csv: outData)
+
+    testing.diff(got, want)
+}

@@ -3,6 +3,7 @@ package promql_test
 
 import "testing"
 import "internal/promql"
+import "csv"
 
 option now = () => 2030-01-01T00:00:00Z
 
@@ -13,6 +14,11 @@ outData =
 #default,_result,0,1970-01-01T00:00:00Z,1970-01-01T00:00:00Z,,
 ,result,table,_start,_stop,_time,_value
 "
-t_emptyTable = (table=<-) => table
 
-test _emptyTable = () => ({input: promql.emptyTable(), want: testing.loadMem(csv: outData), fn: t_emptyTable})
+testcase emptyTable {
+    table = promql.emptyTable()
+    got = table
+    want = csv.from(csv: outData)
+
+    testing.diff(got, want)
+}

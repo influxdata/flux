@@ -3,6 +3,7 @@ package influxql_test
 
 import "testing"
 import "internal/influxql"
+import "csv"
 
 inData =
     "
@@ -59,16 +60,18 @@ outData =
 ,,19,1970-01-01T00:00:00.000000009Z,m_9,9
 "
 
-// SELECT n FROM /^m/
-t_regex_measurement = (tables=<-) =>
-    tables
-        |> range(start: influxql.minTime, stop: influxql.maxTime)
-        |> filter(fn: (r) => r._measurement =~ /^m/)
-        |> filter(fn: (r) => r._field == "n")
-        |> group(columns: ["_measurement", "_field"])
-        |> sort(columns: ["_time"])
-        |> keep(columns: ["_time", "_value", "_measurement"])
-        |> rename(columns: {_time: "time", _value: "n"})
+testcase regex_measurement {
+    got =
+        csv.from(csv: inData)
+            |> testing.load()
+            |> range(start: influxql.minTime, stop: influxql.maxTime)
+            |> filter(fn: (r) => r._measurement =~ /^m/)
+            |> filter(fn: (r) => r._field == "n")
+            |> group(columns: ["_measurement", "_field"])
+            |> sort(columns: ["_time"])
+            |> keep(columns: ["_time", "_value", "_measurement"])
+            |> rename(columns: {_time: "time", _value: "n"})
+    want = csv.from(csv: outData)
 
-test _regex_measurement = () =>
-    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_regex_measurement})
+    testing.diff(got, want)
+}

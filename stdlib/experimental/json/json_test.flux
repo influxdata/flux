@@ -3,6 +3,7 @@ package json_test
 
 import "experimental/json"
 import "testing"
+import "csv"
 
 option now = () => 2030-01-01T00:00:00Z
 
@@ -26,15 +27,20 @@ outData =
 ,,0,2018-05-22T19:53:36Z,2,4,6
 ,,0,2018-05-22T19:53:46Z,3,5,7
 "
-_json = (table=<-) =>
-    table
-        |> range(start: 2018-05-22T19:53:26Z)
-        |> map(
-            fn: (r) => {
-                data = json.parse(data: bytes(v: r._value))
 
-                return {_time: r._time, a: data.a, b: data.b, c: data.c}
-            },
-        )
+testcase parse {
+    got =
+        csv.from(csv: inData)
+            |> testing.load()
+            |> range(start: 2018-05-22T19:53:26Z)
+            |> map(
+                fn: (r) => {
+                    data = json.parse(data: bytes(v: r._value))
 
-test parse = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: _json})
+                    return {_time: r._time, a: data.a, b: data.b, c: data.c}
+                },
+            )
+    want = csv.from(csv: outData)
+
+    testing.diff(got, want)
+}

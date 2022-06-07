@@ -2,6 +2,7 @@ package universe_test
 
 
 import "testing"
+import "csv"
 
 option now = () => 2030-01-01T00:00:00Z
 
@@ -37,9 +38,13 @@ outData =
 ,,0,CC,HostB,33
 ,,0,BB,HostA,20
 "
-t_highestAverage = (table=<-) =>
-    table
-        |> highestAverage(n: 3, groupColumns: ["_measurement", "host"])
 
-test _highestAverage = () =>
-    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_highestAverage})
+testcase highestAverage {
+    got =
+        csv.from(csv: inData)
+            |> testing.load()
+            |> highestAverage(n: 3, groupColumns: ["_measurement", "host"])
+    want = csv.from(csv: outData)
+
+    testing.diff(got, want)
+}

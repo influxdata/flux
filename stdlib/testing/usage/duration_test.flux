@@ -2,6 +2,7 @@ package usage_test
 
 
 import "testing"
+import "csv"
 
 // This dataset has been generated with this query:
 // from(bucket: "system_usage")
@@ -6780,18 +6781,25 @@ outData =
 ,,0,2019-12-03T10:00:00Z,2019-12-03T12:00:00Z,12507024,2019-12-03T11:00:00Z
 ,,0,2019-12-03T10:00:00Z,2019-12-03T12:00:00Z,16069640,2019-12-03T12:00:00Z
 "
-_f = (table=<-) =>
-    table
-        |> range(start: 2019-12-03T10:00:00Z, stop: 2019-12-03T12:00:00Z)
-        |> filter(
-            fn: (r) =>
-                r.org_id == "03d01b74c8e09000" and r._measurement == "queryd_billing" and (r._field
-                        ==
-                        "compile_duration_us" or r._field == "plan_duration_us" or r._field == "execute_duration_us"),
-        )
-        |> group()
-        |> aggregateWindow(every: 1h, fn: sum)
-        |> fill(column: "_value", value: 0)
-        |> rename(columns: {_value: "duration_us"})
 
-test query_duration = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: _f})
+testcase query_duration {
+    got =
+        csv.from(csv: inData)
+            |> testing.load()
+            |> range(start: 2019-12-03T10:00:00Z, stop: 2019-12-03T12:00:00Z)
+            |> filter(
+                fn: (r) =>
+                    r.org_id == "03d01b74c8e09000" and r._measurement == "queryd_billing" and (r._field
+                            ==
+                            "compile_duration_us" or r._field == "plan_duration_us" or r._field
+                            ==
+                            "execute_duration_us"),
+            )
+            |> group()
+            |> aggregateWindow(every: 1h, fn: sum)
+            |> fill(column: "_value", value: 0)
+            |> rename(columns: {_value: "duration_us"})
+    want = csv.from(csv: outData)
+
+    testing.diff(got, want)
+}

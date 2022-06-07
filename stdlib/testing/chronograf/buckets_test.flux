@@ -2,6 +2,7 @@ package chronograf_test
 
 
 import "testing"
+import "csv"
 
 inData =
     "
@@ -20,9 +21,14 @@ outData = "
 ,,0,A
 ,,0,B
 "
-buckets_fn = (table=<-) =>
-    table
-        |> rename(columns: {name: "_value"})
-        |> keep(columns: ["_value"])
 
-test buckets = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: buckets_fn})
+testcase buckets {
+    got =
+        csv.from(csv: inData)
+            |> testing.load()
+            |> rename(columns: {name: "_value"})
+            |> keep(columns: ["_value"])
+    want = csv.from(csv: outData)
+
+    testing.diff(got, want)
+}

@@ -2,6 +2,7 @@ package universe_test
 
 
 import "testing"
+import "csv"
 
 option now = () => 2030-01-01T00:00:00Z
 
@@ -51,11 +52,15 @@ outData =
 #default,_result,2,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,,,usage_idle,cpu-total,host.local
 ,result,table,_start,_stop,_time,_value,_field,old,host
 "
-drop_unused = (table=<-) =>
-    table
-        |> range(start: 2018-05-22T19:53:26Z)
-        |> drop(columns: ["_measurement"])
-        |> filter(fn: (r) => r._field == "usage_guest")
 
-test _drop_unused = () =>
-    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: drop_unused})
+testcase drop_unused {
+    got =
+        csv.from(csv: inData)
+            |> testing.load()
+            |> range(start: 2018-05-22T19:53:26Z)
+            |> drop(columns: ["_measurement"])
+            |> filter(fn: (r) => r._field == "usage_guest")
+    want = csv.from(csv: outData)
+
+    testing.diff(got, want)
+}

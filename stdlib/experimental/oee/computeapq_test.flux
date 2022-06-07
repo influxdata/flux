@@ -3,6 +3,7 @@ package oee_test
 
 import "experimental/oee"
 import "testing"
+import "csv"
 
 option now = () => 2030-01-01T00:00:00Z
 
@@ -57,8 +58,10 @@ productionEvents =
 partEvents =
     testing.loadMem(csv: partData)
         |> range(start: 2021-03-22T00:00:00Z, stop: 2021-03-22T04:00:00Z)
-t_computeAPQ = (table=<-) => {
-    return
+
+testcase computeAPQ {
+    table = testing.loadMem(csv: inData)
+    got =
         oee.computeAPQ(
             productionEvents: productionEvents,
             partEvents: partEvents,
@@ -67,6 +70,7 @@ t_computeAPQ = (table=<-) => {
             idealCycleTime: 30s,
         )
             |> drop(columns: ["_start", "_stop"])
-}
+    want = csv.from(csv: outData)
 
-test _computeAPQ = () => ({input: testing.loadMem(csv: inData), want: testing.loadMem(csv: outData), fn: t_computeAPQ})
+    testing.diff(got, want)
+}

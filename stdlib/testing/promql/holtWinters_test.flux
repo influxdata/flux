@@ -3,6 +3,7 @@ package promql_test
 
 import "testing"
 import "internal/promql"
+import "csv"
 
 option now = () => 2030-01-01T00:00:00Z
 
@@ -42,10 +43,14 @@ outData =
 ,,1,2018-12-18T20:50:00Z,2018-12-18T20:55:00Z,metric_name2,32.78296,prometheus
 ,,2,2018-12-18T20:50:00Z,2018-12-18T20:55:00Z,metric_name3,535.7920000000001,prometheus
 "
-t_holtWinters = (table=<-) =>
-    table
-        |> range(start: 2018-12-18T20:50:00Z, stop: 2018-12-18T20:55:00Z)
-        |> promql.holtWinters(smoothingFactor: 0.1, trendFactor: 0.2)
 
-test _holtWinters = () =>
-    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_holtWinters})
+testcase holtWinters {
+    got =
+        csv.from(csv: inData)
+            |> testing.load()
+            |> range(start: 2018-12-18T20:50:00Z, stop: 2018-12-18T20:55:00Z)
+            |> promql.holtWinters(smoothingFactor: 0.1, trendFactor: 0.2)
+    want = csv.from(csv: outData)
+
+    testing.diff(got, want)
+}

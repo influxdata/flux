@@ -2,6 +2,7 @@ package universe_test
 
 
 import "testing"
+import "csv"
 
 option now = () => 2030-01-01T00:00:00Z
 
@@ -63,10 +64,14 @@ outData =
 ,,3,2018-05-15T00:00:00Z,2030-01-01T00:00:00Z,2018-05-22T19:54:10Z,_m,SR,2
 ,,3,2018-05-15T00:00:00Z,2030-01-01T00:00:00Z,2018-05-22T19:54:20Z,_m,SR,3
 "
-t_cumulative_sum_default = (table=<-) =>
-    table
-        |> range(start: 2018-05-15T00:00:00Z)
-        |> cumulativeSum()
 
-test _cumulative_sum_default = () =>
-    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_cumulative_sum_default})
+testcase cumulative_sum_default {
+    got =
+        csv.from(csv: inData)
+            |> testing.load()
+            |> range(start: 2018-05-15T00:00:00Z)
+            |> cumulativeSum()
+    want = csv.from(csv: outData)
+
+    testing.diff(got, want)
+}

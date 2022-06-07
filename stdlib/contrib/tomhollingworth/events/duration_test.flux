@@ -3,6 +3,7 @@ package events_test
 
 import "testing"
 import "contrib/tomhollingworth/events"
+import "csv"
 
 option now = () => 2018-05-22T19:54:16Z
 
@@ -44,9 +45,14 @@ outData =
 ,,1,2018-05-22T19:53:26Z,2018-05-22T19:54:36Z,2018-05-22T19:54:06Z,34.98204153981662,used_percent,disk,disk1s2,apfs,host.local,/,10
 ,,1,2018-05-22T19:53:26Z,2018-05-22T19:54:36Z,2018-05-22T19:54:16Z,34.982252364543626,used_percent,disk,disk1s2,apfs,host.local,/,20
 "
-t_duration = (table=<-) =>
-    table
-        |> range(start: 2018-05-22T19:53:26Z, stop: 2018-05-22T19:54:36Z)
-        |> events.duration()
 
-test _duration = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_duration})
+testcase duration {
+    got =
+        csv.from(csv: inData)
+            |> testing.load()
+            |> range(start: 2018-05-22T19:53:26Z, stop: 2018-05-22T19:54:36Z)
+            |> events.duration()
+    want = csv.from(csv: outData)
+
+    testing.diff(got, want)
+}

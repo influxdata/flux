@@ -4,6 +4,7 @@ package promql_test
 import "testing"
 import "internal/promql"
 import c "csv"
+import "csv"
 
 option now = () => 2030-01-01T00:00:00Z
 
@@ -59,10 +60,14 @@ outData =
 ,,1,2018-12-18T20:50:00Z,2018-12-18T20:55:00Z,metric_name2,2.545714285714286,prometheus
 ,,2,2018-12-18T20:50:00Z,2018-12-18T20:55:00Z,metric_name3,4.857142857142857,prometheus
 "
-t_linearRegression = (table=<-) =>
-    table
-        |> range(start: 2018-12-18T20:50:00Z, stop: 2018-12-18T20:55:00Z)
-        |> promql.linearRegression(predict: false, fromNow: 0.0)
 
-test _linearRegression = () =>
-    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_linearRegression})
+testcase linearRegression {
+    got =
+        csv.from(csv: inData)
+            |> testing.load()
+            |> range(start: 2018-12-18T20:50:00Z, stop: 2018-12-18T20:55:00Z)
+            |> promql.linearRegression(predict: false, fromNow: 0.0)
+    want = csv.from(csv: outData)
+
+    testing.diff(got, want)
+}

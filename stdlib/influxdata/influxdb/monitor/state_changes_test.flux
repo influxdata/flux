@@ -5,6 +5,7 @@ import "influxdata/influxdb/monitor"
 import "influxdata/influxdb/v1"
 import "testing"
 import "experimental"
+import "csv"
 
 option now = () => 2018-05-22T19:54:40Z
 option monitor.log = (tables=<-) => tables |> drop(columns: ["_start", "_stop"])
@@ -44,12 +45,16 @@ outData =
 ,result,table,_check_id,_check_name,_level,_measurement,_message,_source_measurement,_source_timestamp,_time,_type,aaa,bbb,cpu,host,usage_idle
 ,,2,000000000000000a,cpu threshold check,warn,statuses,whoa!,cpu,1527018860000000000,2018-05-22T19:54:22Z,threshold,vaaa,vbbb,cpu-total,host.local,7.05
 "
-t_state_changes_any_to_warn = (table=<-) =>
-    table
-        |> range(start: -1m)
-        |> v1.fieldsAsCols()
-        |> monitor.stateChanges(fromLevel: "any", toLevel: "warn")
-        |> drop(columns: ["_start", "_stop"])
 
-test monitor_state_changes_any_to_warn = () =>
-    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_state_changes_any_to_warn})
+testcase monitor_state_changes_any_to_warn {
+    got =
+        csv.from(csv: inData)
+            |> testing.load()
+            |> range(start: -1m)
+            |> v1.fieldsAsCols()
+            |> monitor.stateChanges(fromLevel: "any", toLevel: "warn")
+            |> drop(columns: ["_start", "_stop"])
+    want = csv.from(csv: outData)
+
+    testing.diff(got, want)
+}

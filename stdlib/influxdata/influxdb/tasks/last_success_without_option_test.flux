@@ -4,6 +4,7 @@ package tasks_test
 import "testing"
 import "array"
 import "influxdata/influxdb/tasks"
+import "csv"
 
 option now = () => 2020-09-08T09:00:00Z
 
@@ -17,4 +18,10 @@ outData =
 "
 t_last_success = () => array.from(rows: [{_time: tasks.lastSuccess(orTime: now())}])
 
-test _last_success = () => ({input: t_last_success(), want: testing.loadMem(csv: outData), fn: (tables=<-) => tables})
+testcase last_success {
+    tables = t_last_success()
+    got = tables
+    want = csv.from(csv: outData)
+
+    testing.diff(got, want)
+}

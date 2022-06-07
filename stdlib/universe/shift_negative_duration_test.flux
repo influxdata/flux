@@ -2,6 +2,7 @@ package universe_test
 
 
 import "testing"
+import "csv"
 
 option now = () => 2030-01-01T00:00:00Z
 
@@ -63,10 +64,14 @@ outData =
 ,,3,2018-05-22T19:49:10Z,_m,SR,72
 ,,3,2018-05-22T19:49:20Z,_m,SR,88
 "
-t_shift_negative_duration = (table=<-) =>
-    table
-        |> timeShift(duration: -5m)
-        |> drop(columns: ["_start", "_stop"])
 
-test _shift_negative_duration = () =>
-    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_shift_negative_duration})
+testcase shift_negative_duration {
+    got =
+        csv.from(csv: inData)
+            |> testing.load()
+            |> timeShift(duration: -5m)
+            |> drop(columns: ["_start", "_stop"])
+    want = csv.from(csv: outData)
+
+    testing.diff(got, want)
+}

@@ -3,6 +3,7 @@ package promql_test
 
 import "testing"
 import "internal/promql"
+import "csv"
 
 option now = () => 2030-01-01T00:00:00Z
 
@@ -28,11 +29,15 @@ outData =
 ,,1,metric_name,source-value-20,3,prometheus
 ,,1,metric_name,source-value-20,4,prometheus
 "
-t_labelReplace = (table=<-) =>
-    table
-        |> range(start: 1980-01-01T00:00:00Z)
-        |> drop(columns: ["_start", "_stop"])
-        |> promql.labelReplace(source: "src", destination: "dst", regex: ".*", replacement: "")
 
-test _labelReplace = () =>
-    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_labelReplace})
+testcase labelReplace {
+    got =
+        csv.from(csv: inData)
+            |> testing.load()
+            |> range(start: 1980-01-01T00:00:00Z)
+            |> drop(columns: ["_start", "_stop"])
+            |> promql.labelReplace(source: "src", destination: "dst", regex: ".*", replacement: "")
+    want = csv.from(csv: outData)
+
+    testing.diff(got, want)
+}

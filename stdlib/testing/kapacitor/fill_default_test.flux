@@ -2,6 +2,7 @@ package testdata_test
 
 
 import "testing"
+import "csv"
 
 option now = () => 2030-01-01T00:00:00Z
 
@@ -43,17 +44,17 @@ outData =
 ,,1,2018-12-15T00:00:00Z,2030-01-01T00:00:00Z,m1,f1,server02,2018-12-19T22:14:10Z,orange
 ,,1,2018-12-15T00:00:00Z,2030-01-01T00:00:00Z,m1,f1,server02,2018-12-19T22:14:20Z,tomato
 "
-t_fill_string = (table=<-) =>
-    table
-        |> range(start: 2018-12-15T00:00:00Z)
-        |> fill(value: "tomato")
 
-test _fill = () =>
-    ({
-        input: testing.loadStorage(csv: inData),
-        want: testing.loadMem(csv: outData),
-        fn: t_fill_string,
-    })// Equivalent TICKscript query:
+testcase fill {
+    got =
+        csv.from(csv: inData)
+            |> testing.load()
+            |> range(start: 2018-12-15T00:00:00Z)
+            |> fill(value: "tomato")
+    want = csv.from(csv: outData)
+
+    testing.diff(got, want)
+}// Equivalent TICKscript query:
 // stream
 //   |default()
 //     .field('_value', tomato)

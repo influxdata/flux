@@ -2,6 +2,7 @@ package universe_test
 
 
 import "testing"
+import "csv"
 
 option now = () => 2030-01-01T00:00:00Z
 
@@ -38,11 +39,15 @@ outData =
 ,error,reference
 ,\"rename error: column \"\"old\"\" doesn't exist\",
 "
-drop_before_rename = (table=<-) =>
-    table
-        |> range(start: 2018-05-22T19:53:26Z)
-        |> drop(columns: ["old"])
-        |> rename(columns: {old: "new"})
 
-test _drop_before_rename = () =>
-    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: drop_before_rename})
+testcase drop_before_rename {
+    got =
+        csv.from(csv: inData)
+            |> testing.load()
+            |> range(start: 2018-05-22T19:53:26Z)
+            |> drop(columns: ["old"])
+            |> rename(columns: {old: "new"})
+    want = csv.from(csv: outData)
+
+    testing.diff(got, want)
+}

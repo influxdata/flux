@@ -2,6 +2,7 @@ package universe_test
 
 
 import "testing"
+import "csv"
 
 option now = () => 2030-01-01T00:00:00Z
 
@@ -29,10 +30,14 @@ outData =
 ,,0,2018-05-22T00:00:00Z,2030-01-01T00:00:00.000000000Z,2018-05-22T00:00:40Z,37.5,used_percent,disk,disk1s1,apfs,host.local,/
 ,,0,2018-05-22T00:00:00Z,2030-01-01T00:00:00.000000000Z,2018-05-22T00:00:50Z,38.75,used_percent,disk,disk1s1,apfs,host.local,/
 "
-exponential_moving_average = (table=<-) =>
-    table
-        |> range(start: 2018-05-22T00:00:00Z)
-        |> exponentialMovingAverage(n: 3)
 
-test _exponential_moving_average = () =>
-    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: exponential_moving_average})
+testcase exponential_moving_average {
+    got =
+        csv.from(csv: inData)
+            |> testing.load()
+            |> range(start: 2018-05-22T00:00:00Z)
+            |> exponentialMovingAverage(n: 3)
+    want = csv.from(csv: outData)
+
+    testing.diff(got, want)
+}

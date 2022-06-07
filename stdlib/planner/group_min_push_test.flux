@@ -2,6 +2,7 @@ package planner_test
 
 
 import "testing"
+import "csv"
 
 option now = () => 2030-01-01T00:00:00Z
 
@@ -43,12 +44,16 @@ output =
 ,,1,2018-05-22T19:00:00Z,2030-01-01T00:00:00Z,hostB,load3,1.96
 ,,2,2018-05-22T19:00:00Z,2030-01-01T00:00:00Z,hostC,load1,1.89
 "
-group_min_fn = (tables=<-) =>
-    tables
-        |> range(start: 2018-05-22T19:00:00Z)
-        |> group(columns: ["_start", "_stop", "host"])
-        |> min()
-        |> drop(columns: ["_measurement", "_time"])
 
-test group_min_pushdown = () =>
-    ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: group_min_fn})
+testcase group_min_pushdown {
+    got =
+        csv.from(csv: input)
+            |> testing.load()
+            |> range(start: 2018-05-22T19:00:00Z)
+            |> group(columns: ["_start", "_stop", "host"])
+            |> min()
+            |> drop(columns: ["_measurement", "_time"])
+    want = csv.from(csv: output)
+
+    testing.diff(got, want)
+}

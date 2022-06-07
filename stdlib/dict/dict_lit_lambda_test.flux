@@ -3,6 +3,7 @@ package dict_test
 
 import "testing"
 import "dict"
+import "csv"
 
 inData =
     "
@@ -24,16 +25,21 @@ outData =
 ,,0,2018-05-22T19:53:36Z,_m,_f,1,b
 ,,0,2018-05-22T19:53:46Z,_m,_f,2,c
 "
-t_dict = (table=<-) =>
-    table
-        |> range(start: 2018-05-22T19:53:26Z)
-        |> drop(columns: ["_start", "_stop"])
-        |> map(
-            fn: (r) => {
-                codes = [0: "a", 1: "b"]
 
-                return {r with code: dict.get(dict: codes, key: r._value, default: "c")}
-            },
-        )
+testcase dict {
+    got =
+        csv.from(csv: inData)
+            |> testing.load()
+            |> range(start: 2018-05-22T19:53:26Z)
+            |> drop(columns: ["_start", "_stop"])
+            |> map(
+                fn: (r) => {
+                    codes = [0: "a", 1: "b"]
 
-test _dict = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_dict})
+                    return {r with code: dict.get(dict: codes, key: r._value, default: "c")}
+                },
+            )
+    want = csv.from(csv: outData)
+
+    testing.diff(got, want)
+}

@@ -2,6 +2,7 @@ package universe_test
 
 
 import "testing"
+import "csv"
 
 option now = () => 2030-01-01T00:00:00Z
 
@@ -29,10 +30,14 @@ outData =
 ,,0,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,cpu,-1.6666666666666667,f0
 ,,1,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,mem,-166.66666666666666,f1
 "
-t_covariance = (tables=<-) =>
-    tables
-        |> range(start: 2018-05-22T19:53:26Z)
-        |> covariance(columns: ["x", "y"])
 
-test _t_covariance = () =>
-    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_covariance})
+testcase t_covariance {
+    got =
+        csv.from(csv: inData)
+            |> testing.load()
+            |> range(start: 2018-05-22T19:53:26Z)
+            |> covariance(columns: ["x", "y"])
+    want = csv.from(csv: outData)
+
+    testing.diff(got, want)
+}

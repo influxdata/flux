@@ -4,6 +4,7 @@ package monitor_test
 import "influxdata/influxdb/monitor"
 import "influxdata/influxdb/v1"
 import "testing"
+import "csv"
 
 option now = () => 2018-05-22T19:54:20Z
 option monitor.write = (tables=<-) => tables |> drop(columns: ["_start", "_stop"])
@@ -41,21 +42,26 @@ crit = (r) => r.usage_idle < 5.0
 warn = (r) => r.usage_idle < 10.0
 info = (r) => r.usage_idle < 25.0
 messageFn = (r) => "whoa!"
-t_check = (table=<-) =>
-    table
-        |> range(start: -1m)
-        |> filter(fn: (r) => r._measurement == "cpu")
-        |> filter(fn: (r) => r._field == "usage_idle")
-        |> filter(fn: (r) => r.cpu == "cpu-total")
-        // pivot data so there is a "usage_idle" column
-        |> v1.fieldsAsCols()
-        |> aggregateWindow(every: 20s, fn: mean, column: "usage_idle")
-        |> monitor.check(
-            data: data,
-            messageFn: messageFn,
-            info: info,
-            warn: warn,
-            crit: crit,
-        )
 
-test monitor_check = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_check})
+testcase monitor_check {
+    got =
+        csv.from(csv: inData)
+            |> testing.load()
+            |> range(start: -1m)
+            |> filter(fn: (r) => r._measurement == "cpu")
+            |> filter(fn: (r) => r._field == "usage_idle")
+            |> filter(fn: (r) => r.cpu == "cpu-total")
+            // pivot data so there is a "usage_idle" column
+            |> v1.fieldsAsCols()
+            |> aggregateWindow(every: 20s, fn: mean, column: "usage_idle")
+            |> monitor.check(
+                data: data,
+                messageFn: messageFn,
+                info: info,
+                warn: warn,
+                crit: crit,
+            )
+    want = csv.from(csv: outData)
+
+    testing.diff(got, want)
+}

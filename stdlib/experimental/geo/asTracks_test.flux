@@ -3,6 +3,7 @@ package geo_test
 
 import "experimental/geo"
 import "testing"
+import "csv"
 
 option now = () => 2030-01-01T00:00:00Z
 
@@ -161,11 +162,16 @@ outData =
 ,,2,2019-11-10T21:17:46Z,89c258c,bikes,via,vehicleB,40.762418,1573420560,-73.965579
 ,,2,2019-11-10T21:17:47Z,89c258c,bikes,end,vehicleB,40.762424,1573420560,-73.965583
 "
-t_asTracks = (table=<-) =>
-    table
-        |> range(start: 2019-11-01T00:00:00Z)
-        |> geo.toRows()
-        |> geo.asTracks()
-        |> drop(columns: ["_start", "_stop"])
 
-test _asTracks = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_asTracks})
+testcase asTracks {
+    got =
+        csv.from(csv: inData)
+            |> testing.load()
+            |> range(start: 2019-11-01T00:00:00Z)
+            |> geo.toRows()
+            |> geo.asTracks()
+            |> drop(columns: ["_start", "_stop"])
+    want = csv.from(csv: outData)
+
+    testing.diff(got, want)
+}

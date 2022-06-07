@@ -2,6 +2,7 @@ package universe_test
 
 
 import "testing"
+import "csv"
 
 option now = () => 2030-01-01T00:00:00Z
 
@@ -39,11 +40,15 @@ outData =
 ,,1,2018-10-02T17:55:11.520461Z,2030-01-01T00:00:00Z,2018-10-03T17:55:11.01435Z,02bac3c8f0f37000,02bac3c8d6c5b000,success,records,02bac3c908f37000,2018-10-03T17:55:12Z
 ,,1,2018-10-02T17:55:11.520461Z,2030-01-01T00:00:00Z,2018-10-03T17:55:11.115415Z,02bac3c8f0f37000,02bac3c8d6c5b000,success,records,02bac3c922737000,2018-10-03T17:55:13Z
 "
-t_pivot_task_test = (table=<-) =>
-    table
-        |> range(start: 2018-10-02T17:55:11.520461Z)
-        |> filter(fn: (r) => r._measurement == "records" and r.taskID == "02bac3c8f0f37000")
-        |> pivot(rowKey: ["_time"], columnKey: ["_field"], valueColumn: "_value")
 
-test _pivot_task_test = () =>
-    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_pivot_task_test})
+testcase pivot_task_test {
+    got =
+        csv.from(csv: inData)
+            |> testing.load()
+            |> range(start: 2018-10-02T17:55:11.520461Z)
+            |> filter(fn: (r) => r._measurement == "records" and r.taskID == "02bac3c8f0f37000")
+            |> pivot(rowKey: ["_time"], columnKey: ["_field"], valueColumn: "_value")
+    want = csv.from(csv: outData)
+
+    testing.diff(got, want)
+}

@@ -3,6 +3,7 @@ package geo_test
 
 import "experimental/geo"
 import "testing"
+import "csv"
 
 option now = () => 2030-01-01T00:00:00Z
 
@@ -200,12 +201,16 @@ outData =
 ,,1,89c2624,89c264,taxi,start,2019-11-01T13:32:45.632969758Z,,40.733585,-73.737175,1572615165632969758,
 ,,1,89c2664,89c264,taxi,start,2019-11-01T00:17:38.287113937Z,,40.645245,-73.776665,1572567458287113937,
 "
-t_groupByArea = (table=<-) =>
-    table
-        |> range(start: 2019-11-01T00:00:00Z)
-        |> geo.toRows()
-        |> geo.groupByArea(newColumn: "ci9", level: 9)
-        |> drop(columns: ["_start", "_stop"])
 
-test _groupByArea = () =>
-    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_groupByArea})
+testcase groupByArea {
+    got =
+        csv.from(csv: inData)
+            |> testing.load()
+            |> range(start: 2019-11-01T00:00:00Z)
+            |> geo.toRows()
+            |> geo.groupByArea(newColumn: "ci9", level: 9)
+            |> drop(columns: ["_start", "_stop"])
+    want = csv.from(csv: outData)
+
+    testing.diff(got, want)
+}

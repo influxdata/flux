@@ -3,6 +3,7 @@ package experimental_test
 
 import "testing"
 import "experimental"
+import "csv"
 
 option now = () => 2030-01-01T00:00:00Z
 
@@ -39,10 +40,14 @@ outData =
 ,,0,2018-05-22T19:53:00Z,2030-01-01T00:00:00Z,2018-05-22T19:53:00Z,x_duration_seconds,0.8500000000000001,l
 ,,1,2018-05-22T19:53:00Z,2030-01-01T00:00:00Z,2018-05-22T19:53:00Z,y_duration_seconds,0.91,l
 "
-t_histogram_quantile = (table=<-) =>
-    table
-        |> range(start: 2018-05-22T19:53:00Z)
-        |> experimental.histogramQuantile(quantile: 0.9)
 
-test _histogram_quantile = () =>
-    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_histogram_quantile})
+testcase histogram_quantile {
+    got =
+        csv.from(csv: inData)
+            |> testing.load()
+            |> range(start: 2018-05-22T19:53:00Z)
+            |> experimental.histogramQuantile(quantile: 0.9)
+    want = csv.from(csv: outData)
+
+    testing.diff(got, want)
+}

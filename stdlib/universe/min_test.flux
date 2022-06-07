@@ -2,6 +2,7 @@ package universe_test
 
 
 import "testing"
+import "csv"
 
 option now = () => 2030-01-01T00:00:00Z
 
@@ -47,9 +48,14 @@ outData =
 ,,2,2018-05-22T19:53:56Z,1.89,load5,system,host.local
 ,,3,2018-05-22T19:53:36Z,82.598876953125,used_percent,swap,host.local
 "
-t_min = (table=<-) =>
-    table
-        |> min()
-        |> drop(columns: ["_start", "_stop"])
 
-test _min = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_min})
+testcase min {
+    got =
+        csv.from(csv: inData)
+            |> testing.load()
+            |> min()
+            |> drop(columns: ["_start", "_stop"])
+    want = csv.from(csv: outData)
+
+    testing.diff(got, want)
+}

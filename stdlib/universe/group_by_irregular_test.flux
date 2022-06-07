@@ -2,6 +2,7 @@ package universe_test
 
 
 import "testing"
+import "csv"
 
 option now = () => 2030-01-01T00:00:00Z
 
@@ -39,12 +40,16 @@ outData =
 ,,2,2018-10-02T17:55:11.520461Z,2030-01-01T00:00:00Z,2018-10-03T17:55:11.113222Z,02bac3c8f0f37000,02bac3c8d6c5b000,started,records,,02bac3c922737000,2018-10-03T17:55:13Z
 ,,2,2018-10-02T17:55:11.520461Z,2030-01-01T00:00:00Z,2018-10-03T17:55:11.115415Z,02bac3c8f0f37000,02bac3c8d6c5b000,success,records,,02bac3c922737000,2018-10-03T17:55:13Z
 "
-t_group_by_irregular = (table=<-) =>
-    table
-        |> range(start: 2018-10-02T17:55:11.520461Z)
-        |> filter(fn: (r) => r._measurement == "records" and r.taskID == "02bac3c8f0f37000")
-        |> pivot(rowKey: ["_time"], columnKey: ["_field"], valueColumn: "_value")
-        |> group(columns: ["runID"])
 
-test _group_by_irregular = () =>
-    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_group_by_irregular})
+testcase group_by_irregular {
+    got =
+        csv.from(csv: inData)
+            |> testing.load()
+            |> range(start: 2018-10-02T17:55:11.520461Z)
+            |> filter(fn: (r) => r._measurement == "records" and r.taskID == "02bac3c8f0f37000")
+            |> pivot(rowKey: ["_time"], columnKey: ["_field"], valueColumn: "_value")
+            |> group(columns: ["runID"])
+    want = csv.from(csv: outData)
+
+    testing.diff(got, want)
+}

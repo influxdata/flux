@@ -2,6 +2,7 @@ package universe_test
 
 
 import "testing"
+import "csv"
 
 option now = () => 2030-01-01T00:00:00Z
 
@@ -24,10 +25,14 @@ outData =
 ,error,reference
 ,specified column does not exist in table: x,
 "
-covariance_missing_column_2 = (table=<-) =>
-    table
-        |> range(start: 2018-05-22T19:53:26Z)
-        |> covariance(columns: ["x", "y"])
 
-test _covariance_missing_column_2 = () =>
-    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: covariance_missing_column_2})
+testcase covariance_missing_column_2 {
+    got =
+        csv.from(csv: inData)
+            |> testing.load()
+            |> range(start: 2018-05-22T19:53:26Z)
+            |> covariance(columns: ["x", "y"])
+    want = csv.from(csv: outData)
+
+    testing.diff(got, want)
+}

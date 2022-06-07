@@ -2,6 +2,7 @@ package universe_test
 
 
 import "testing"
+import "csv"
 
 option now = () => 2030-01-01T00:00:00Z
 
@@ -199,7 +200,10 @@ outData =
 ,,0,2018-05-22T19:54:16Z,202997248,read_bytes,diskio,host.local,disk2
 ,,0,2018-05-22T19:54:16Z,228613324800,read_bytes,diskio,host.local,disk0
 "
-t_union = (table=<-) => {
+
+testcase union_heterogeneous {
+    table = csv.from(csv: inData) |> testing.load()
+
     t1 =
         table
             |> range(start: 2018-05-22T19:53:00Z, stop: 2018-05-22T19:53:50Z)
@@ -212,9 +216,8 @@ t_union = (table=<-) => {
             |> filter(fn: (r) => r._measurement == "diskio" and r._field == "read_bytes")
             |> group(columns: ["host"])
             |> drop(columns: ["_start", "_stop"])
+    got = union(tables: [t1, t2]) |> sort(columns: ["_time", "_field", "_value"])
+    want = csv.from(csv: outData)
 
-    return union(tables: [t1, t2]) |> sort(columns: ["_time", "_field", "_value"])
+    testing.diff(got, want)
 }
-
-test _union_heterogeneous = () =>
-    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_union})

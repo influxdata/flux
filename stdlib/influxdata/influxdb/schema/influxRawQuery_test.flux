@@ -3,6 +3,7 @@ package schema_test
 
 import "testing"
 import "influxdata/influxdb/v1"
+import "csv"
 
 option now = () => 2030-01-01T00:00:00Z
 
@@ -64,16 +65,17 @@ rawQuery = (
         |> v1.fieldsAsCols()
         |> window(every: every, period: period)
 
-test influx_raw_query = () =>
-    ({
-        input: testing.loadStorage(csv: inData),
-        want: testing.loadMem(csv: outData),
-        fn: (table=<-) =>
-            table
-                |> rawQuery(
-                    measurement: "system",
-                    fields: ["load1", "load15", "load5"],
-                    start: 2018-05-22T19:53:26Z,
-                    stop: 2018-05-22T19:54:17Z,
-                ),
-    })
+testcase influx_raw_query {
+    got =
+        csv.from(csv: inData)
+            |> testing.load()
+            |> rawQuery(
+                measurement: "system",
+                fields: ["load1", "load15", "load5"],
+                start: 2018-05-22T19:53:26Z,
+                stop: 2018-05-22T19:54:17Z,
+            )
+    want = csv.from(csv: outData)
+
+    testing.diff(got, want)
+}

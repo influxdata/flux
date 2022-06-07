@@ -3,6 +3,7 @@ package pandas_test
 
 import "testing"
 import "regexp"
+import "csv"
 
 option now = () => 2030-01-01T00:00:00Z
 
@@ -39,10 +40,14 @@ outData =
 ,,0,2018-05-20T19:53:26Z,2030-01-01T00:00:00Z,2018-05-22T19:54:16Z,15205755,io_time,diskio,host.local,disk0
 "
 re = regexp.compile(v: ".*0")
-t_filter_by_regex = (table=<-) =>
-    table
-        |> range(start: 2018-05-20T19:53:26Z)
-        |> filter(fn: (r) => regexp.matchRegexpString(r: re, v: r.name))
 
-test _filter_by_regex = () =>
-    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_filter_by_regex})
+testcase filter_by_regex {
+    got =
+        csv.from(csv: inData)
+            |> testing.load()
+            |> range(start: 2018-05-20T19:53:26Z)
+            |> filter(fn: (r) => regexp.matchRegexpString(r: re, v: r.name))
+    want = csv.from(csv: outData)
+
+    testing.diff(got, want)
+}

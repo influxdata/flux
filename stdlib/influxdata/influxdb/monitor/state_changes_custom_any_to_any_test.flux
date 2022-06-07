@@ -5,6 +5,7 @@ import "influxdata/influxdb/monitor"
 import "influxdata/influxdb/v1"
 import "testing"
 import "experimental"
+import "csv"
 
 option monitor.log = (tables=<-) => tables |> drop(columns: ["_start", "_stop"])
 
@@ -138,16 +139,16 @@ outData =
 ,result,table,_check_id,_check_name,_measurement,_message,_source_measurement,_source_timestamp,_time,_type,id,lat,lon,_level
 ,,0,000000000000000a,LLIR,statuses,GO506_20_8813 is out,mta,1585747237000000000,2020-04-01T13:25:01.120620071Z,custom,GO506_20_8813,40.70075,-73.804858,warn
 "
-t_state_changes_custom_any_to_any = (table=<-) =>
-    table
-        |> range(start: 2018-05-22T19:54:40Z)
-        |> v1.fieldsAsCols()
-        |> monitor.stateChanges(fromLevel: "any", toLevel: "any")
-        |> drop(columns: ["_start", "_stop"])
 
-test monitor_state_changes_custom_any_to_any = () =>
-    ({
-        input: testing.loadStorage(csv: inData),
-        want: testing.loadMem(csv: outData),
-        fn: t_state_changes_custom_any_to_any,
-    })
+testcase monitor_state_changes_custom_any_to_any {
+    got =
+        csv.from(csv: inData)
+            |> testing.load()
+            |> range(start: 2018-05-22T19:54:40Z)
+            |> v1.fieldsAsCols()
+            |> monitor.stateChanges(fromLevel: "any", toLevel: "any")
+            |> drop(columns: ["_start", "_stop"])
+    want = csv.from(csv: outData)
+
+    testing.diff(got, want)
+}

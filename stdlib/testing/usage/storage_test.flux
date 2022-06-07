@@ -3,6 +3,7 @@ package usage_test
 
 import "testing"
 import "math"
+import "csv"
 
 // This dataset has been generated with this query:
 // from(bucket: "system_usage")
@@ -2193,19 +2194,26 @@ outData =
 ,,0,2019-08-01T13:00:00Z,68
 ,,0,2019-08-01T14:00:00Z,68
 "
-_f = (table=<-) =>
-    table
-        |> range(start: 2019-08-01T11:00:00Z, stop: 2019-08-01T14:00:00Z)
-        |> filter(
-            fn: (r) =>
-                r.org_id == "038b7a85ca099000" and r._measurement == "storage_usage_org_bytes" and r._field == "gauge",
-        )
-        |> aggregateWindow(every: 1h, fn: mean)
-        |> fill(column: "_value", value: 0.0)
-        |> group(columns: ["_time"])
-        |> sum()
-        |> group()
-        |> map(fn: (r) => ({r with _value: int(v: math.round(x: r._value))}))
-        |> rename(columns: {_value: "storage_b"})
 
-test get_storage_usage = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: _f})
+testcase get_storage_usage {
+    got =
+        csv.from(csv: inData)
+            |> testing.load()
+            |> range(start: 2019-08-01T11:00:00Z, stop: 2019-08-01T14:00:00Z)
+            |> filter(
+                fn: (r) =>
+                    r.org_id == "038b7a85ca099000" and r._measurement == "storage_usage_org_bytes" and r._field
+                        ==
+                        "gauge",
+            )
+            |> aggregateWindow(every: 1h, fn: mean)
+            |> fill(column: "_value", value: 0.0)
+            |> group(columns: ["_time"])
+            |> sum()
+            |> group()
+            |> map(fn: (r) => ({r with _value: int(v: math.round(x: r._value))}))
+            |> rename(columns: {_value: "storage_b"})
+    want = csv.from(csv: outData)
+
+    testing.diff(got, want)
+}

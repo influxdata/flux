@@ -2,6 +2,7 @@ package universe_test
 
 
 import "testing"
+import "csv"
 
 option now = () => 2030-01-01T00:00:00Z
 
@@ -30,10 +31,14 @@ outData =
 ,result,table,_start,_stop,_time,_field,_value,_measurement
 ,,0,2018-05-22T19:53:00Z,2030-01-01T00:00:00Z,2018-05-22T19:53:00Z,x_duration_seconds,-90.5,mm
 "
-t_histogram_quantile = (table=<-) =>
-    table
-        |> range(start: 2018-05-22T19:53:00Z)
-        |> histogramQuantile(quantile: 0.25, minValue: -100.0)
 
-test _histogram_quantile_minvalue = () =>
-    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_histogram_quantile})
+testcase histogram_quantile_minvalue {
+    got =
+        csv.from(csv: inData)
+            |> testing.load()
+            |> range(start: 2018-05-22T19:53:00Z)
+            |> histogramQuantile(quantile: 0.25, minValue: -100.0)
+    want = csv.from(csv: outData)
+
+    testing.diff(got, want)
+}

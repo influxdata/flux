@@ -2,6 +2,7 @@ package universe_test
 
 
 import "testing"
+import "csv"
 
 option now = () => 2030-01-01T00:00:00Z
 
@@ -21,10 +22,13 @@ null
 " does not exist in scope
 "
 
-t_null_as_value = (table=<-) =>
-    table
-        |> range(start: 2018-05-22T19:53:26Z)
-        |> filter(fn: (r) => r._value == null)
+testcase null_as_value {
+    got =
+        csv.from(csv: inData)
+            |> testing.load()
+            |> range(start: 2018-05-22T19:53:26Z)
+            |> filter(fn: (r) => r._value == null)
+    want = csv.from(csv: outData)
 
-test _null_as_value = () =>
-    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_null_as_value})
+    testing.diff(got, want)
+}

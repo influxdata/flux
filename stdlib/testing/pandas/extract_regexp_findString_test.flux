@@ -4,6 +4,7 @@ package pandas_test
 import "testing"
 import "strings"
 import "regexp"
+import "csv"
 
 option now = () => 2030-01-01T00:00:00Z
 
@@ -34,10 +35,14 @@ outData =
 ,,0,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,2018-05-22T19:54:16Z,13F2,used_percent,disk,disk1,apfs,host.local,/,F
 "
 re = regexp.compile(v: "[[:alpha:]]{1}")
-t_string_extract = (table=<-) =>
-    table
-        |> range(start: 2018-05-22T19:53:26Z)
-        |> map(fn: (r) => ({r with extract: regexp.findString(r: re, v: r._value)}))
 
-test _string_extract = () =>
-    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_string_extract})
+testcase string_extract {
+    got =
+        csv.from(csv: inData)
+            |> testing.load()
+            |> range(start: 2018-05-22T19:53:26Z)
+            |> map(fn: (r) => ({r with extract: regexp.findString(r: re, v: r._value)}))
+    want = csv.from(csv: outData)
+
+    testing.diff(got, want)
+}

@@ -3,6 +3,7 @@ package universe_test
 
 import "testing"
 import "array"
+import "csv"
 
 inData =
     array.from(
@@ -25,7 +26,10 @@ outData =
 ,,0,id,guild,command,command,2018-12-19T22:13:30Z,2018-12-19T22:13:30Z,2018-12-19T22:13:50Z,2018-12-19T22:13:50Z,2018-12-19T22:13:31Z,12,12
 ,,0,id,guild,command,command,2018-12-19T22:13:30Z,2018-12-19T22:13:30Z,2018-12-19T22:13:50Z,2018-12-19T22:13:50Z,2018-12-19T22:13:41Z,23,23
 "
-t_join_two_same_sources = (table=<-) => {
+
+testcase join_two_same_sources {
+    table = get_input()
+
     data_1 =
         table
             |> range(start: 2018-12-19T22:13:30Z, stop: 2018-12-19T22:13:50Z)
@@ -36,9 +40,8 @@ t_join_two_same_sources = (table=<-) => {
             |> range(start: 2018-12-19T22:13:30Z, stop: 2018-12-19T22:13:50Z)
             |> filter(fn: (r) => r._measurement == "command" and r._field == "guild")
             |> aggregateWindow(every: 1s, fn: last, createEmpty: false)
+    got = join(tables: {d1: data_1, d2: data_2}, on: ["_time"])
+    want = csv.from(csv: outData)
 
-    return join(tables: {d1: data_1, d2: data_2}, on: ["_time"])
+    testing.diff(got, want)
 }
-
-test _join_two_same_sources = () =>
-    ({input: get_input(), want: testing.loadMem(csv: outData), fn: t_join_two_same_sources})
