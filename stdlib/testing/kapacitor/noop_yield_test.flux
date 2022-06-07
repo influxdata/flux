@@ -2,6 +2,7 @@ package testdata_test
 
 
 import "testing"
+import "csv"
 
 option now = () => 2030-01-01T00:00:00Z
 
@@ -51,15 +52,14 @@ outData =
 ,_results,3,2018-05-22T19:54:06Z,2,RAM,user2
 ,_results,3,2018-05-22T19:54:16Z,10,RAM,user2
 "
-t_noop_yield = (table=<-) =>
-    table
-        |> range(start: 2018-05-15T00:00:00Z)
-        |> drop(columns: ["_start", "_stop"])
 
-// yield() is implicit here
-test _noop_yield = () =>
-    ({
-        input: testing.loadStorage(csv: inData),
-        want: testing.loadMem(csv: outData),
-        fn: t_noop_yield,
-    })// In TICKscript, noOp is implicit (NoOpNode is automatically appended to any node that is a source for a StatsNode)
+testcase noop_yield {
+    got =
+        csv.from(csv: inData)
+            |> testing.load()
+            |> range(start: 2018-05-15T00:00:00Z)
+            |> drop(columns: ["_start", "_stop"])
+    want = csv.from(csv: outData)
+
+    testing.diff(got, want)
+}// In TICKscript, noOp is implicit (NoOpNode is automatically appended to any node that is a source for a StatsNode)

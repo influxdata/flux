@@ -4,6 +4,7 @@ package aggregate_test
 import "experimental"
 import "experimental/aggregate"
 import "testing"
+import "csv"
 
 inData =
     "
@@ -37,10 +38,15 @@ outData =
 ,,1,2020-02-20T23:00:00Z,2020-02-20T23:01:00Z,host.local,utun2,1,2020-02-20T23:00:40Z
 ,,1,2020-02-20T23:00:00Z,2020-02-20T23:01:00Z,host.local,utun2,1,2020-02-20T23:01:00Z
 "
-t_rate = (table=<-) =>
-    table
-        |> range(start: 2020-02-20T23:00:00Z, stop: 2020-02-20T23:01:00Z)
-        |> filter(fn: (r) => r._measurement == "net" and r._field == "bytes_recv")
-        |> aggregate.rate(every: 20s, groupColumns: ["host", "interface"], unit: 1s)
 
-test rate = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_rate})
+testcase rate {
+    got =
+        csv.from(csv: inData)
+            |> testing.load()
+            |> range(start: 2020-02-20T23:00:00Z, stop: 2020-02-20T23:01:00Z)
+            |> filter(fn: (r) => r._measurement == "net" and r._field == "bytes_recv")
+            |> aggregate.rate(every: 20s, groupColumns: ["host", "interface"], unit: 1s)
+    want = csv.from(csv: outData)
+
+    testing.diff(got, want)
+}

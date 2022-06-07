@@ -2,6 +2,7 @@ package universe_test
 
 
 import "testing"
+import "csv"
 
 option now = () => 2030-01-01T00:00:00Z
 
@@ -34,10 +35,15 @@ outData =
 ,,1,_m,QQ,1
 ,,2,_m,RR,0
 "
-twaFn = (table=<-) =>
-    table
-        |> range(start: 2018-05-22T19:53:00Z, stop: 2018-05-22T19:54:00Z)
-        |> timeWeightedAvg(unit: 10s)
-        |> drop(columns: ["_start", "_stop"])
 
-test twa_test = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: twaFn})
+testcase twa_test {
+    got =
+        csv.from(csv: inData)
+            |> testing.load()
+            |> range(start: 2018-05-22T19:53:00Z, stop: 2018-05-22T19:54:00Z)
+            |> timeWeightedAvg(unit: 10s)
+            |> drop(columns: ["_start", "_stop"])
+    want = csv.from(csv: outData)
+
+    testing.diff(got, want)
+}

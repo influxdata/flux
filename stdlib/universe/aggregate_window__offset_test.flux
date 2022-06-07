@@ -47,5 +47,4 @@ testcase aggregate_window_offset {
         want = csv.from(csv: outData)
 
         testing.diff(want: want, got: got)
-            |> yield(name: "diff")
     }

@@ -3,6 +3,7 @@ package planner_test
 
 import "testing"
 import "planner"
+import "csv"
 
 input =
     "
@@ -47,11 +48,15 @@ output =
 ,,7,2018-05-22T19:53:40Z,2018-05-22T19:54:00Z,system,host.local,load5,5.72
 ,,8,2018-05-22T19:54:00Z,2018-05-22T19:54:20Z,system,host.local,load5,1.93
 "
-window_sum_fn = (tables=<-) =>
-    tables
-        |> range(start: 0)
-        |> window(every: 20s)
-        |> sum()
 
-test window_sum_evaluate = () =>
-    ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: window_sum_fn})
+testcase window_sum_evaluate {
+    got =
+        csv.from(csv: input)
+            |> testing.load()
+            |> range(start: 0)
+            |> window(every: 20s)
+            |> sum()
+    want = csv.from(csv: output)
+
+    testing.diff(got, want)
+}

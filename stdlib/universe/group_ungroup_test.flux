@@ -2,6 +2,7 @@ package universe_test
 
 
 import "testing"
+import "csv"
 
 option now = () => 2030-01-01T00:00:00Z
 
@@ -43,13 +44,16 @@ outData =
 ,,0,2018-05-22T19:54:06Z,648
 ,,0,2018-05-22T19:54:16Z,648
 "
-t_group_ungroup = (table=<-) =>
-    table
-        |> range(start: 2018-05-22T19:53:26Z)
-        |> group(columns: ["name"])
-        |> group()
-        |> map(fn: (r) => ({_time: r._time, io_time: r._value}))
-        |> yield(name: "0")
 
-test _group_ungroup = () =>
-    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_group_ungroup})
+testcase group_ungroup {
+    got =
+        csv.from(csv: inData)
+            |> testing.load()
+            |> range(start: 2018-05-22T19:53:26Z)
+            |> group(columns: ["name"])
+            |> group()
+            |> map(fn: (r) => ({_time: r._time, io_time: r._value}))
+    want = csv.from(csv: outData)
+
+    testing.diff(got, want)
+}

@@ -3,6 +3,7 @@ package influxql_test
 
 import "testing"
 import "internal/influxql"
+import "csv"
 
 inData =
     "
@@ -324,16 +325,18 @@ outData =
 ,,0,1970-01-01T20:00:00Z,m,
 "
 
-// SELECT sum(f) FROM m WHERE time >= 0 AND time <= 20h GROUP BY time(5h)
-t_aggregate_group_by_time = (tables=<-) =>
-    tables
-        |> range(start: 1970-01-01T00:00:00Z, stop: 1970-01-01T20:00:00.000000001Z)
-        |> filter(fn: (r) => r._measurement == "m")
-        |> filter(fn: (r) => r._field == "f")
-        |> group(columns: ["_measurement", "_field"])
-        |> aggregateWindow(every: 5h, fn: sum, timeSrc: "_start")
-        |> rename(columns: {_time: "time", _value: "sum"})
-        |> drop(columns: ["_field", "_start", "_stop"])
+testcase aggregate_group_by_time {
+    got =
+        csv.from(csv: inData)
+            |> testing.load()
+            |> range(start: 1970-01-01T00:00:00Z, stop: 1970-01-01T20:00:00.000000001Z)
+            |> filter(fn: (r) => r._measurement == "m")
+            |> filter(fn: (r) => r._field == "f")
+            |> group(columns: ["_measurement", "_field"])
+            |> aggregateWindow(every: 5h, fn: sum, timeSrc: "_start")
+            |> rename(columns: {_time: "time", _value: "sum"})
+            |> drop(columns: ["_field", "_start", "_stop"])
+    want = csv.from(csv: outData)
 
-test _aggregate_group_by_time = () =>
-    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_aggregate_group_by_time})
+    testing.diff(got, want)
+}

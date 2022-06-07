@@ -4,6 +4,7 @@ package monitor_test
 import "influxdata/influxdb/monitor"
 import "testing"
 import "experimental"
+import "csv"
 
 option now = () => 2018-05-22T20:00:00Z
 
@@ -45,10 +46,14 @@ outData =
 ,,2,2018-05-22T15:00:00Z,2018-05-22T20:00:00Z,2018-05-22T18:30:00Z,11,C,cpu,true
 ,,3,2018-05-22T15:00:00Z,2018-05-22T20:00:00Z,2018-05-22T19:30:00Z,11,D,cpu,false
 "
-t_deadman_add = (table=<-) =>
-    table
-        |> range(start: -5h)
-        |> monitor.deadman(t: experimental.addDuration(d: -1h, to: now()))
 
-test deadman_add = () =>
-    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_deadman_add})
+testcase deadman_add {
+    got =
+        csv.from(csv: inData)
+            |> testing.load()
+            |> range(start: -5h)
+            |> monitor.deadman(t: experimental.addDuration(d: -1h, to: now()))
+    want = csv.from(csv: outData)
+
+    testing.diff(got, want)
+}

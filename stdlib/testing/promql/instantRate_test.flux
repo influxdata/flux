@@ -3,6 +3,7 @@ package promql_test
 
 import "testing"
 import "internal/promql"
+import "csv"
 
 option now = () => 2030-01-01T00:00:00Z
 
@@ -42,10 +43,14 @@ outData =
 ,,1,2018-12-18T20:50:00Z,2018-12-18T20:55:00Z,metric_name2,0,prometheus
 ,,2,2018-12-18T20:50:00Z,2018-12-18T20:55:00Z,metric_name3,10,prometheus
 "
-t_instantRate = (table=<-) =>
-    table
-        |> range(start: 2018-12-18T20:50:00Z, stop: 2018-12-18T20:55:00Z)
-        |> promql.instantRate(isRate: true)
 
-test _instantRate = () =>
-    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_instantRate})
+testcase instantRate {
+    got =
+        csv.from(csv: inData)
+            |> testing.load()
+            |> range(start: 2018-12-18T20:50:00Z, stop: 2018-12-18T20:55:00Z)
+            |> promql.instantRate(isRate: true)
+    want = csv.from(csv: outData)
+
+    testing.diff(got, want)
+}

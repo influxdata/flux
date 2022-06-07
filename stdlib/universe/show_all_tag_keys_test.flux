@@ -2,6 +2,7 @@ package universe_test
 
 
 import "testing"
+import "csv"
 
 option now = () => 2030-01-01T00:00:00Z
 
@@ -1132,14 +1133,18 @@ outData =
 ,,0,name
 ,,0,path
 "
-t_show_all_tag_keys = (table=<-) =>
-    table
-        |> range(start: 2018-05-22T19:53:26Z)
-        |> keys()
-        |> group()
-        |> distinct()
-        |> keep(columns: ["_value"])
-        |> sort()
 
-test _show_all_tag_keys = () =>
-    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_show_all_tag_keys})
+testcase show_all_tag_keys {
+    got =
+        csv.from(csv: inData)
+            |> testing.load()
+            |> range(start: 2018-05-22T19:53:26Z)
+            |> keys()
+            |> group()
+            |> distinct()
+            |> keep(columns: ["_value"])
+            |> sort()
+    want = csv.from(csv: outData)
+
+    testing.diff(got, want)
+}

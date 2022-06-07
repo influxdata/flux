@@ -4,6 +4,7 @@ package geo_test
 import "experimental/geo"
 import "influxdata/influxdb/v1"
 import "testing"
+import "csv"
 
 option now = () => 2030-01-01T00:00:00Z
 
@@ -226,19 +227,23 @@ outData =
 
 // reference point (Statue of Liberty)
 refPoint = {lat: 40.6892, lon: -74.0445}
-t_stDWithin = (table=<-) =>
-    table
-        |> range(start: 2020-04-01T00:00:00Z)
-        |> v1.fieldsAsCols()
-        // optional but it helps to see the train closing in
-        |> geo.asTracks(groupBy: ["id", "trip_id"])
-        |> map(
-            fn: (r) =>
-                ({r with _st_dwithin:
-                        geo.ST_DWithin(region: refPoint, geometry: {lat: r.lat, lon: r.lon}, distance: 20.0),
-                }),
-        )
-        |> drop(columns: ["_start", "_stop"])
 
-test _stDWithin = () =>
-    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_stDWithin})
+testcase stDWithin {
+    got =
+        csv.from(csv: inData)
+            |> testing.load()
+            |> range(start: 2020-04-01T00:00:00Z)
+            |> v1.fieldsAsCols()
+            // optional but it helps to see the train closing in
+            |> geo.asTracks(groupBy: ["id", "trip_id"])
+            |> map(
+                fn: (r) =>
+                    ({r with _st_dwithin:
+                            geo.ST_DWithin(region: refPoint, geometry: {lat: r.lat, lon: r.lon}, distance: 20.0),
+                    }),
+            )
+            |> drop(columns: ["_start", "_stop"])
+    want = csv.from(csv: outData)
+
+    testing.diff(got, want)
+}

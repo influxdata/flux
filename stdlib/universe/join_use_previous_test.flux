@@ -2,6 +2,7 @@ package universe_test
 
 
 import "testing"
+import "csv"
 
 option now = () => 2020-05-15T00:00:00Z
 
@@ -51,7 +52,10 @@ outData =
 ,_result,0,2020-05-14T17:46:00Z,false,7,a,a
 ,_result,0,2020-05-14T17:48:00Z,false,8,a,a
 "
-t_join_use_previous_test = (tables=<-) => {
+
+testcase join_use_previous_test {
+    tables = csv.from(csv: inData) |> testing.load()
+
     lhs =
         tables
             |> range(start: 2020-05-01T00:00:00Z)
@@ -62,12 +66,11 @@ t_join_use_previous_test = (tables=<-) => {
             |> range(start: 2020-05-01T00:00:00Z)
             |> filter(fn: (r) => exists r.flag)
             |> drop(columns: ["_start", "_stop"])
-
-    return
+    got =
         join(tables: {left: lhs, right: rhs}, on: ["_time", "_field", "_measurement"], method: "inner")
             |> group(columns: [])
             |> fill(column: "flag", usePrevious: true)
-}
+    want = csv.from(csv: outData)
 
-test _join_use_previous_test = () =>
-    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_join_use_previous_test})
+    testing.diff(got, want)
+}

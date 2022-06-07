@@ -3,6 +3,7 @@ package influxql_test
 
 import "testing"
 import "internal/influxql"
+import "csv"
 
 inData =
     "
@@ -420,15 +421,18 @@ outData =
 ,,0,1970-01-01T00:01:28Z,m,0.9967833661484294
 "
 
-// SELECT max(f) FROM m
-t_selector = (tables=<-) =>
-    tables
-        |> range(start: influxql.minTime, stop: influxql.maxTime)
-        |> filter(fn: (r) => r._measurement == "m")
-        |> filter(fn: (r) => r._field == "f")
-        |> group(columns: ["_measurement", "_field"])
-        |> max()
-        |> keep(columns: ["_time", "_value", "_measurement"])
-        |> rename(columns: {_time: "time", _value: "max"})
+testcase selector {
+    got =
+        csv.from(csv: inData)
+            |> testing.load()
+            |> range(start: influxql.minTime, stop: influxql.maxTime)
+            |> filter(fn: (r) => r._measurement == "m")
+            |> filter(fn: (r) => r._field == "f")
+            |> group(columns: ["_measurement", "_field"])
+            |> max()
+            |> keep(columns: ["_time", "_value", "_measurement"])
+            |> rename(columns: {_time: "time", _value: "max"})
+    want = csv.from(csv: outData)
 
-test _selector = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_selector})
+    testing.diff(got, want)
+}

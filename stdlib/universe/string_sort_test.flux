@@ -2,6 +2,7 @@ package universe_test
 
 
 import "testing"
+import "csv"
 
 option now = () => 2030-01-01T00:00:00Z
 
@@ -31,10 +32,14 @@ outData =
 ,,0,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,2018-05-22T19:54:06Z,cLnSkNMI,used_percent,disk,disk1,apfs,host.local,/
 ,,0,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,2018-05-22T19:53:36Z,k9ngm,used_percent,disk,disk1,apfs,host.local,/
 "
-t_string_sort = (table=<-) =>
-    table
-        |> range(start: 2018-05-22T19:53:26Z)
-        |> sort()
 
-test _string_sort = () =>
-    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_string_sort})
+testcase string_sort {
+    got =
+        csv.from(csv: inData)
+            |> testing.load()
+            |> range(start: 2018-05-22T19:53:26Z)
+            |> sort()
+    want = csv.from(csv: outData)
+
+    testing.diff(got, want)
+}

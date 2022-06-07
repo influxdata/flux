@@ -3,6 +3,7 @@ package promql_test
 
 import "testing"
 import "internal/promql"
+import "csv"
 
 option now = () => 2030-01-01T00:00:00Z
 
@@ -35,10 +36,13 @@ outData =
 ,,3,2019-01-01T00:00:00Z,2030-01-01T00:00:00Z,Reiva,OAOJWe7,qCnJDC,+Inf
 "
 
-// testing above range value
-t_quantile = (tables=<-) =>
-    tables
-        |> range(start: 2019-01-01T00:00:00Z)
-        |> promql.quantile(q: 1.1)
+testcase quantile {
+    got =
+        csv.from(csv: inData)
+            |> testing.load()
+            |> range(start: 2019-01-01T00:00:00Z)
+            |> promql.quantile(q: 1.1)
+    want = csv.from(csv: outData)
 
-test _quantile = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_quantile})
+    testing.diff(got, want)
+}

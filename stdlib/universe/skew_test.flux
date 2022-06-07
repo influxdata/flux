@@ -2,6 +2,7 @@ package universe_test
 
 
 import "testing"
+import "csv"
 
 option now = () => 2030-01-01T00:00:00Z
 
@@ -50,9 +51,14 @@ outData =
 ,,1,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,Sgf,GxUPYq1,0.7564084754909545
 ,,2,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,Sgf,qaOnnQc,0.6793279546139146
 "
-t_skew = (table=<-) =>
-    table
-        |> range(start: 2018-01-01T00:00:00Z)
-        |> skew()
 
-test _skew = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_skew})
+testcase skew {
+    got =
+        csv.from(csv: inData)
+            |> testing.load()
+            |> range(start: 2018-01-01T00:00:00Z)
+            |> skew()
+    want = csv.from(csv: outData)
+
+    testing.diff(got, want)
+}

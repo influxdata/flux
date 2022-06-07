@@ -3,6 +3,7 @@ package experimental_test
 
 import "testing"
 import "experimental"
+import "csv"
 
 option now = () => 2030-01-01T00:00:00Z
 
@@ -46,10 +47,15 @@ outData =
 ,,2,_m,RR,3
 ,,3,_m,SR,2
 "
-t_integral = (table=<-) =>
-    table
-        |> range(start: 2018-05-22T19:53:00Z, stop: 2018-05-22T19:55:00Z)
-        |> experimental.integral(unit: 10s)
-        |> drop(columns: ["_start", "_stop"])
 
-test _integral = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_integral})
+testcase integral {
+    got =
+        csv.from(csv: inData)
+            |> testing.load()
+            |> range(start: 2018-05-22T19:53:00Z, stop: 2018-05-22T19:55:00Z)
+            |> experimental.integral(unit: 10s)
+            |> drop(columns: ["_start", "_stop"])
+    want = csv.from(csv: outData)
+
+    testing.diff(got, want)
+}

@@ -2,6 +2,7 @@ package universe_test
 
 
 import "testing"
+import "csv"
 
 option now = () => 2030-01-01T00:00:00Z
 
@@ -56,12 +57,16 @@ outData =
 ,,0,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,diskio,io_time,host.local,disk0,6
 ,,1,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,diskio,io_time,host.local,disk2,0
 "
-t_filter_mixed_empty = (table=<-) =>
-    table
-        |> range(start: 2018-05-22T19:53:26Z)
-        |> filter(fn: (r) => r._measurement == "diskio")
-        |> filter(fn: (r) => r["_value"] > 1000, onEmpty: "keep")
-        |> count()
 
-test _filter_mixed_empty = () =>
-    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_filter_mixed_empty})
+testcase filter_mixed_empty {
+    got =
+        csv.from(csv: inData)
+            |> testing.load()
+            |> range(start: 2018-05-22T19:53:26Z)
+            |> filter(fn: (r) => r._measurement == "diskio")
+            |> filter(fn: (r) => r["_value"] > 1000, onEmpty: "keep")
+            |> count()
+    want = csv.from(csv: outData)
+
+    testing.diff(got, want)
+}

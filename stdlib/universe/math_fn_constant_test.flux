@@ -3,6 +3,7 @@ package universe_test
 
 import "testing"
 import "math"
+import "csv"
 
 option now = () => 2018-05-23T20:00:00Z
 
@@ -24,13 +25,17 @@ outData =
 ,,0,2018-05-23T19:53:30Z,1.0,3.141592653589793,diameter,turbine
 ,,0,2018-05-23T19:53:40Z,2.0,6.283185307179586,diameter,turbine
 "
-t_math_pi = (table=<-) =>
-    table
-        |> range(start: -10m)
-        |> filter(fn: (r) => r._measurement == "turbine" and r._field == "diameter")
-        |> rename(columns: {_value: "diameter"})
-        |> map(fn: (r) => ({r with circumference: r.diameter * math.pi}))
-        |> drop(columns: ["_value", "_start", "_stop"])
 
-test _math_pi_test = () =>
-    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_math_pi})
+testcase math_pi_test {
+    got =
+        csv.from(csv: inData)
+            |> testing.load()
+            |> range(start: -10m)
+            |> filter(fn: (r) => r._measurement == "turbine" and r._field == "diameter")
+            |> rename(columns: {_value: "diameter"})
+            |> map(fn: (r) => ({r with circumference: r.diameter * math.pi}))
+            |> drop(columns: ["_value", "_start", "_stop"])
+    want = csv.from(csv: outData)
+
+    testing.diff(got, want)
+}

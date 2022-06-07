@@ -2,6 +2,7 @@ package universe_test
 
 
 import "testing"
+import "csv"
 
 option now = () => 2030-01-01T00:00:00Z
 
@@ -55,11 +56,15 @@ outData =
 ,,2,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,2018-05-22T19:54:06Z,68.304576144036,usage_idle,cpu,cpu-total,host.local
 ,,2,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,2018-05-22T19:54:16Z,87.88598574821853,usage_idle,cpu,cpu-total,host.local
 "
-drop_newname_before = (table=<-) =>
-    table
-        |> range(start: 2018-05-22T19:53:26Z)
-        |> drop(columns: ["new"])
-        |> rename(columns: {old: "new"})
 
-test _drop_newname_before = () =>
-    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: drop_newname_before})
+testcase drop_newname_before {
+    got =
+        csv.from(csv: inData)
+            |> testing.load()
+            |> range(start: 2018-05-22T19:53:26Z)
+            |> drop(columns: ["new"])
+            |> rename(columns: {old: "new"})
+    want = csv.from(csv: outData)
+
+    testing.diff(got, want)
+}

@@ -2,6 +2,7 @@ package universe_test
 
 
 import "testing"
+import "csv"
 
 option now = () => 2030-01-01T00:00:00Z
 
@@ -33,11 +34,16 @@ outData =
 ,,0,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,diskio,io_time,host.local,disk0,2018-05-22T19:54:16Z,15205755
 ,,1,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,diskio,io_time,host.local,disk2,2018-05-22T19:53:26Z,648
 "
-t_group = (table=<-) =>
-    table
-        |> range(start: 2018-05-22T19:53:26Z)
-        |> filter(fn: (r) => r._measurement == "diskio" and r._field == "io_time")
-        |> group(columns: ["_measurement", "_start", "name"])
-        |> max()
 
-test _group = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_group})
+testcase group {
+    got =
+        csv.from(csv: inData)
+            |> testing.load()
+            |> range(start: 2018-05-22T19:53:26Z)
+            |> filter(fn: (r) => r._measurement == "diskio" and r._field == "io_time")
+            |> group(columns: ["_measurement", "_start", "name"])
+            |> max()
+    want = csv.from(csv: outData)
+
+    testing.diff(got, want)
+}

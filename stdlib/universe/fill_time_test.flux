@@ -3,6 +3,7 @@ package universe_test
 
 import "testing"
 import c "csv"
+import "csv"
 
 option now = () => 2018-12-19T22:15:00Z
 
@@ -48,8 +49,13 @@ outData =
 ,,1,2018-12-19T22:13:30Z,2018-12-19T22:14:20Z,m1,f1,server02,2018-12-19T22:14:10Z,A
 ,,1,2018-12-19T22:13:30Z,2018-12-19T22:14:20Z,m1,f1,server02,2018-12-19T22:14:20Z,A
 "
-t_fill_time = (table=<-) =>
-    table
-        |> fill(column: "_time", value: 2077-12-19T22:14:00Z)
 
-test _fill = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_fill_time})
+testcase fill {
+    got =
+        csv.from(csv: inData)
+            |> testing.load()
+            |> fill(column: "_time", value: 2077-12-19T22:14:00Z)
+    want = csv.from(csv: outData)
+
+    testing.diff(got, want)
+}

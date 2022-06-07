@@ -70,7 +70,7 @@ func (testExecutor) Run(pkg *ast.Package) error {
 
 	err = results.Err()
 	if err == nil && output.Len() > 0 {
-		err = errors.New(codes.FailedPrecondition, output.String())
+		err = errors.Newf(codes.FailedPrecondition, "Expected test to have no output. Got:\n%s", output.String())
 	}
 	return err
 }

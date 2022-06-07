@@ -2,6 +2,7 @@ package universe_test
 
 
 import "testing"
+import "csv"
 
 option now = () => 2030-01-01T00:00:00Z
 
@@ -28,10 +29,15 @@ outData =
 ,,0,2018-05-22T00:00:40Z,0.33333333333333337,used_percent,disk,disk1s1,apfs,host.local,/
 ,,0,2018-05-22T00:00:50Z,0.33333333333333337,used_percent,disk,disk1s1,apfs,host.local,/
 "
-ker = (table=<-) =>
-    table
-        |> range(start: 2018-05-22T00:00:00Z)
-        |> drop(columns: ["_start", "_stop"])
-        |> kaufmansER(n: 3)
 
-test _ker = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: ker})
+testcase ker {
+    got =
+        csv.from(csv: inData)
+            |> testing.load()
+            |> range(start: 2018-05-22T00:00:00Z)
+            |> drop(columns: ["_start", "_stop"])
+            |> kaufmansER(n: 3)
+    want = csv.from(csv: outData)
+
+    testing.diff(got, want)
+}

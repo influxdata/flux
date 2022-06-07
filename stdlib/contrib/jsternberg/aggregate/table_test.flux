@@ -3,6 +3,7 @@ package aggregate_test
 
 import "testing"
 import "contrib/jsternberg/aggregate"
+import "csv"
 
 option now = () => 2030-01-01T00:00:00Z
 
@@ -34,18 +35,22 @@ outData =
 ,,0,2018-05-22T00:00:00Z,2018-05-22T00:01:00Z,used_percent,disk,disk1s1,apfs,host.local,/,210,35,30,40,6
 ,,1,2018-05-22T00:00:00Z,2018-05-22T00:01:00Z,used_percent,disk,disk1s1,apfs,host.local,/tmp,240,40,35,45,6
 "
-aggregate_table = (table=<-) =>
-    table
-        |> range(start: 2018-05-22T00:00:00Z, stop: 2018-05-22T00:01:00Z)
-        |> aggregate.table(
-            columns: {
-                sum: aggregate.sum(),
-                mean: aggregate.mean(),
-                min: aggregate.min(),
-                max: aggregate.max(),
-                count: aggregate.count(),
-            },
-        )
 
-test _aggregate_table = () =>
-    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: aggregate_table})
+testcase aggregate_table {
+    got =
+        csv.from(csv: inData)
+            |> testing.load()
+            |> range(start: 2018-05-22T00:00:00Z, stop: 2018-05-22T00:01:00Z)
+            |> aggregate.table(
+                columns: {
+                    sum: aggregate.sum(),
+                    mean: aggregate.mean(),
+                    min: aggregate.min(),
+                    max: aggregate.max(),
+                    count: aggregate.count(),
+                },
+            )
+    want = csv.from(csv: outData)
+
+    testing.diff(got, want)
+}

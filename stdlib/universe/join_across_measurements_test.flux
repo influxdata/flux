@@ -2,6 +2,7 @@ package universe_test
 
 
 import "testing"
+import "csv"
 
 option now = () => 2030-01-01T00:00:00Z
 
@@ -183,7 +184,10 @@ outData =
 ,,0,used,total,mem,processes,2018-05-22T19:53:00Z,2018-05-22T19:55:00Z,2018-05-22T19:54:06Z,10785837056,418,host.local
 ,,0,used,total,mem,processes,2018-05-22T19:53:00Z,2018-05-22T19:55:00Z,2018-05-22T19:54:16Z,10731827200,417,host.local
 "
-t_join = (table=<-) => {
+
+testcase join {
+    table = csv.from(csv: inData) |> testing.load()
+
     mem =
         table
             |> range(start: 2018-05-22T19:53:00Z, stop: 2018-05-22T19:55:00Z)
@@ -192,8 +196,8 @@ t_join = (table=<-) => {
         table
             |> range(start: 2018-05-22T19:53:00Z, stop: 2018-05-22T19:55:00Z)
             |> filter(fn: (r) => r._measurement == "processes" and r._field == "total")
+    got = join(tables: {mem: mem, proc: proc}, on: ["_time", "_stop", "_start", "host"])
+    want = csv.from(csv: outData)
 
-    return join(tables: {mem: mem, proc: proc}, on: ["_time", "_stop", "_start", "host"])
+    testing.diff(got, want)
 }
-
-test _join = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_join})

@@ -3,6 +3,7 @@ package influxql_test
 
 import "testing"
 import "internal/influxql"
+import "csv"
 
 inData =
     "
@@ -46,17 +47,19 @@ outData =
 ,,0,1970-01-01T00:00:00.000000014Z,ctr,14
 "
 
-// SELECT n FROM ctr WHERE n >= 8 AND n <= 14
-t_filter_by_values_with_and = (tables=<-) =>
-    tables
-        |> range(start: influxql.minTime, stop: influxql.maxTime)
-        |> filter(fn: (r) => r._measurement == "ctr")
-        |> filter(fn: (r) => r._field == "n")
-        |> filter(fn: (r) => r._value >= 8 and r._value <= 14)
-        |> group(columns: ["_measurement", "_field"])
-        |> sort(columns: ["_time"])
-        |> keep(columns: ["_time", "_value", "_measurement"])
-        |> rename(columns: {_time: "time", _value: "n"})
+testcase filter_by_values_with_and {
+    got =
+        csv.from(csv: inData)
+            |> testing.load()
+            |> range(start: influxql.minTime, stop: influxql.maxTime)
+            |> filter(fn: (r) => r._measurement == "ctr")
+            |> filter(fn: (r) => r._field == "n")
+            |> filter(fn: (r) => r._value >= 8 and r._value <= 14)
+            |> group(columns: ["_measurement", "_field"])
+            |> sort(columns: ["_time"])
+            |> keep(columns: ["_time", "_value", "_measurement"])
+            |> rename(columns: {_time: "time", _value: "n"})
+    want = csv.from(csv: outData)
 
-test _filter_by_values_with_and = () =>
-    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_filter_by_values_with_and})
+    testing.diff(got, want)
+}

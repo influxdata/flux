@@ -3,6 +3,7 @@ package influxql_test
 
 import "testing"
 import "internal/influxql"
+import "csv"
 
 inData =
     "
@@ -689,13 +690,16 @@ outData =
 ,,1,1970-01-07T23:00:00Z,m,1,3600000000000
 "
 
-// SELECT elapsed(f) FROM m GROUP BY *
-t_elapsed = (tables=<-) =>
-    tables
-        |> range(start: influxql.minTime, stop: influxql.maxTime)
-        |> filter(fn: (r) => r._measurement == "m" and r._field == "f")
-        |> elapsed(unit: 1ns)
-        |> drop(columns: ["_start", "_stop", "_field", "_value"])
-        |> rename(columns: {_time: "time"})
+testcase elapsed {
+    got =
+        csv.from(csv: inData)
+            |> testing.load()
+            |> range(start: influxql.minTime, stop: influxql.maxTime)
+            |> filter(fn: (r) => r._measurement == "m" and r._field == "f")
+            |> elapsed(unit: 1ns)
+            |> drop(columns: ["_start", "_stop", "_field", "_value"])
+            |> rename(columns: {_time: "time"})
+    want = csv.from(csv: outData)
 
-test _elapsed = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_elapsed})
+    testing.diff(got, want)
+}

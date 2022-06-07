@@ -2,6 +2,7 @@ package universe_test
 
 
 import "testing"
+import "csv"
 
 option now = () => 2030-01-01T00:00:00Z
 
@@ -125,9 +126,14 @@ outData =
 ,,8,2019-01-01T00:00:00Z,2030-01-01T00:00:00Z,Reiva,rc2iOD1,BnR,2019-01-09T19:45:38Z,96
 ,,9,2019-01-01T00:00:00Z,2030-01-01T00:00:00Z,Reiva,rc2iOD1,qCnJDC,2019-01-09T19:45:48Z,78
 "
-t_quantile = (table=<-) =>
-    table
-        |> range(start: 2019-01-01T00:00:00Z)
-        |> quantile(q: 0.75, method: "exact_selector")
 
-test _quantile = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_quantile})
+testcase quantile {
+    got =
+        csv.from(csv: inData)
+            |> testing.load()
+            |> range(start: 2019-01-01T00:00:00Z)
+            |> quantile(q: 0.75, method: "exact_selector")
+    want = csv.from(csv: outData)
+
+    testing.diff(got, want)
+}

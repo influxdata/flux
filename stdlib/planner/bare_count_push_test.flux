@@ -2,6 +2,7 @@ package planner_test
 
 
 import "testing"
+import "csv"
 
 option now = () => 2030-01-01T00:00:00Z
 
@@ -42,10 +43,14 @@ output =
 ,,1,2018-05-01T00:00:00Z,2030-01-01T00:00:00Z,system,host.local,load3,6
 ,,2,2018-05-01T00:00:00Z,2030-01-01T00:00:00Z,system,host.local,load5,6
 "
-bare_count_fn = (tables=<-) =>
-    tables
-        |> range(start: 2018-05-01T00:00:00Z)
-        |> count()
 
-test bare_count_pushdown = () =>
-    ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: bare_count_fn})
+testcase bare_count_pushdown {
+    got =
+        csv.from(csv: input)
+            |> testing.load()
+            |> range(start: 2018-05-01T00:00:00Z)
+            |> count()
+    want = csv.from(csv: output)
+
+    testing.diff(got, want)
+}

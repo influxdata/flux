@@ -2,6 +2,7 @@ package planner_test
 
 
 import "testing"
+import "csv"
 
 input =
     "
@@ -49,10 +50,14 @@ output =
 ,,2,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:00Z,system,host.local,load5,1.89
 ,,2,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:20Z,system,host.local,load5,1.93
 "
-aggregate_window_min_fn = (tables=<-) =>
-    tables
-        |> range(start: 2018-05-22T19:53:00Z, stop: 2018-05-22T19:54:20Z)
-        |> aggregateWindow(every: 20s, fn: min)
 
-test aggregate_window_min_pushdown = () =>
-    ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: aggregate_window_min_fn})
+testcase aggregate_window_min_pushdown {
+    got =
+        csv.from(csv: input)
+            |> testing.load()
+            |> range(start: 2018-05-22T19:53:00Z, stop: 2018-05-22T19:54:20Z)
+            |> aggregateWindow(every: 20s, fn: min)
+    want = csv.from(csv: output)
+
+    testing.diff(got, want)
+}

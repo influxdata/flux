@@ -3,6 +3,7 @@ package geo_test
 
 import "experimental/geo"
 import "testing"
+import "csv"
 
 option now = () => 2030-01-01T00:00:00Z
 
@@ -212,13 +213,15 @@ outData =
 ,,3,2019-11-01T00:17:38.287113937Z,89c2664,taxi,start,1572567458287113937,-73.776665,40.645245
 "
 
-// grid level 9 is still fine enough not to cover large area so we only get Long Island points
-t_gridFilter = (table=<-) =>
-    table
-        |> range(start: 2019-11-01T00:00:00Z)
-        |> geo.gridFilter(region: {lat: 40.7090214, lon: -73.61846, radius: 15.0}, level: 9)
-        |> pivot(rowKey: ["_time"], columnKey: ["_field"], valueColumn: "_value")
-        |> drop(columns: ["_start", "_stop"])
+testcase gridFilter {
+    got =
+        csv.from(csv: inData)
+            |> testing.load()
+            |> range(start: 2019-11-01T00:00:00Z)
+            |> geo.gridFilter(region: {lat: 40.7090214, lon: -73.61846, radius: 15.0}, level: 9)
+            |> pivot(rowKey: ["_time"], columnKey: ["_field"], valueColumn: "_value")
+            |> drop(columns: ["_start", "_stop"])
+    want = csv.from(csv: outData)
 
-test _gridFilter = () =>
-    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_gridFilter})
+    testing.diff(got, want)
+}

@@ -2,6 +2,7 @@ package universe_test
 
 
 import "testing"
+import "csv"
 
 option now = () => 2030-01-01T00:00:00Z
 
@@ -43,14 +44,18 @@ outData =
 ,,0,2018-05-22T19:54:06Z,2018-05-22T19:54:07Z,disk2,648
 ,,0,2018-05-22T19:54:16Z,2018-05-22T19:54:17Z,disk2,648
 "
-t_window_group_mean_ungroup = (table=<-) =>
-    table
-        |> range(start: 2018-05-22T19:53:00Z, stop: 2018-05-22T19:55:00Z)
-        |> group(columns: ["name"])
-        |> window(every: 1s)
-        |> mean()
-        |> group()
-        |> sort(columns: ["name", "_start"])
 
-test _window_group_mean_ungroup = () =>
-    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_window_group_mean_ungroup})
+testcase window_group_mean_ungroup {
+    got =
+        csv.from(csv: inData)
+            |> testing.load()
+            |> range(start: 2018-05-22T19:53:00Z, stop: 2018-05-22T19:55:00Z)
+            |> group(columns: ["name"])
+            |> window(every: 1s)
+            |> mean()
+            |> group()
+            |> sort(columns: ["name", "_start"])
+    want = csv.from(csv: outData)
+
+    testing.diff(got, want)
+}

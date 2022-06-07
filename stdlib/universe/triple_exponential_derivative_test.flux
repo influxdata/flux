@@ -2,6 +2,7 @@ package universe_test
 
 
 import "testing"
+import "csv"
 
 option now = () => 2030-01-01T00:00:00Z
 
@@ -67,10 +68,14 @@ outData =
 ,,0,2018-05-22T00:00:00Z,2030-01-01T00:00:00.000000000Z,2018-05-22T00:04:30Z,-12.891818138458877,used_percent,disk,disk1s1,apfs,host.local,/
 ,,0,2018-05-22T00:00:00Z,2030-01-01T00:00:00.000000000Z,2018-05-22T00:04:40Z,-15.074463280730022,used_percent,disk,disk1s1,apfs,host.local,/
 "
-triple_exponential_derivative = (table=<-) =>
-    table
-        |> range(start: 2018-05-22T00:00:00Z)
-        |> tripleExponentialDerivative(n: 4)
 
-test _triple_exponential_derivative = () =>
-    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: triple_exponential_derivative})
+testcase triple_exponential_derivative {
+    got =
+        csv.from(csv: inData)
+            |> testing.load()
+            |> range(start: 2018-05-22T00:00:00Z)
+            |> tripleExponentialDerivative(n: 4)
+    want = csv.from(csv: outData)
+
+    testing.diff(got, want)
+}

@@ -2,6 +2,7 @@ package universe_test
 
 
 import "testing"
+import "csv"
 
 option now = () => 2030-01-01T00:00:00Z
 
@@ -55,10 +56,15 @@ outData =
 ,,2,2018-05-22T19:54:06Z,68.304576144036,usage_idle,cpu,cpu-total,host.local
 ,,2,2018-05-22T19:54:16Z,87.88598574821853,usage_idle,cpu,cpu-total,host.local
 "
-t_rename = (table=<-) =>
-    table
-        |> range(start: 2018-05-22T19:53:26Z)
-        |> rename(columns: {host: "server"})
-        |> drop(columns: ["_start", "_stop"])
 
-test _rename = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_rename})
+testcase rename {
+    got =
+        csv.from(csv: inData)
+            |> testing.load()
+            |> range(start: 2018-05-22T19:53:26Z)
+            |> rename(columns: {host: "server"})
+            |> drop(columns: ["_start", "_stop"])
+    want = csv.from(csv: outData)
+
+    testing.diff(got, want)
+}
