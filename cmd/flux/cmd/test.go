@@ -5,6 +5,7 @@ import (
 	"archive/zip"
 	"bytes"
 	"compress/gzip"
+	"container/heap"
 	"context"
 	"fmt"
 	"io"
@@ -12,6 +13,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 
 	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/ast/astutil"
@@ -576,19 +578,71 @@ func findParentTestRoot(path string) (string, filesystem.Service, bool, error) {
 	return "", nil, false, nil
 }
 
+type IntHeap []int
+
+func (h IntHeap) Len() int           { return len(h) }
+func (h IntHeap) Less(i, j int) bool { return h[i] < h[j] }
+func (h IntHeap) Swap(i, j int)      { h[i], h[j] = h[j], h[i] }
+
+func (h *IntHeap) Push(x interface{}) {
+	// Push and Pop use pointer receivers because they modify the slice's length,
+	// not just its contents.
+	*h = append(*h, x.(int))
+}
+
+func (h *IntHeap) Pop() interface{} {
+	old := *h
+	n := len(old)
+	x := old[n-1]
+	*h = old[0 : n-1]
+	return x
+}
+
 // Run runs all tests, reporting their results.
 func (t *TestRunner) Run(executor TestExecutor, verbosity int, skipTestCases []string) {
 	skipMap := make(map[string]struct{})
 	for _, n := range skipTestCases {
 		skipMap[n] = struct{}{}
 	}
-	for _, test := range t.tests {
-		if _, ok := skipMap[test.name]; ok {
-			test.skip = true
-		} else {
-			test.Run(executor)
+
+	results := make(chan int)
+
+	go func() {
+		wg := new(sync.WaitGroup)
+		for i, test := range t.tests {
+			wg.Add(1)
+			go func(i int, test *Test) {
+				defer wg.Done()
+				if _, ok := skipMap[test.name]; ok {
+					test.skip = true
+				} else {
+					test.Run(executor)
+				}
+				// Send the index of this test to show that it is finished
+				results <- i
+			}(i, test)
 		}
-		t.reporter.ReportTestRun(test)
+		wg.Wait()
+		close(results)
+	}()
+
+	// We want to display the outcome of a test in order, so we use a heap to force the reporting
+	// to run in order
+	next := 0
+	h := &IntHeap{}
+	heap.Init(h)
+	for i := range results {
+		heap.Push(h, i)
+		for h.Len() > 0 {
+			current := heap.Pop(h)
+			if current == next {
+				next += 1
+				t.reporter.ReportTestRun(t.tests[current.(int)])
+			} else {
+				heap.Push(h, current)
+				break
+			}
+		}
 	}
 }
 
