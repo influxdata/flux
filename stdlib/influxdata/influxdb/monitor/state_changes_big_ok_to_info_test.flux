@@ -254,7 +254,7 @@ outData =
 
 "
 
-testcase monitor_state_changes_big_ok_to_info {
+testcase state_changes_big_ok_to_info {
     got =
         csv.from(csv: inData)
             |> testing.load()

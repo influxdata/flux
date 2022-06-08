@@ -61,7 +61,7 @@ tickscript_deadman = (table=<-) =>
 
 testcase tickscript_deadman_threshold {
     want = testing.loadMem(csv: outData)
-    got = testing.loadStorage(csv: inData) |> tickscript_deadman()
+    got = csv.from(csv: inData) |> testing.load() |> tickscript_deadman()
 
     testing.diff(want: want, got: got) |> yield()
 }

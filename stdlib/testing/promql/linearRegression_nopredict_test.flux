@@ -61,7 +61,7 @@ outData =
 ,,2,2018-12-18T20:50:00Z,2018-12-18T20:55:00Z,metric_name3,4.857142857142857,prometheus
 "
 
-testcase linearRegression {
+testcase linearRegression_nopredict {
     got =
         csv.from(csv: inData)
             |> testing.load()

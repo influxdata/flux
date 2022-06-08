@@ -1,6 +1,7 @@
 package planner_test
 
 
+import "csv"
 import "testing"
 import "testing/expect"
 import "planner"
@@ -22,7 +23,8 @@ input =
 testcase group_max_bare {
         // todo(faith): remove drop() call once storage doesnt force _start and _stop columns to be in group key
         result =
-            testing.loadStorage(csv: input)
+            csv.from(csv: input)
+                |> testing.load()
                 |> range(start: 2018-05-22T19:53:26Z, stop: 2018-05-24T00:00:00Z)
                 |> filter(fn: (r) => r["_value"] == 1.77)
                 |> group(columns: ["_field"])
@@ -59,7 +61,8 @@ input_host =
 testcase group_max_bare_host {
         // todo(faith): remove drop() call once storage doesnt force _start and _stop columns to be in group key
         result =
-            testing.loadStorage(csv: input_host)
+            csv.from(csv: input_host)
+                |> testing.load()
                 |> range(start: 2018-05-22T19:53:26Z, stop: 2018-05-24T00:00:00Z)
                 |> filter(fn: (r) => r["host"] == "host.local")
                 |> group(columns: ["_field"])
@@ -111,7 +114,8 @@ input_field =
 testcase group_max_bare_field {
         // todo(faith): remove drop() call once storage doesnt force _start and _stop columns to be in group key
         result =
-            testing.loadStorage(csv: input_field)
+            csv.from(csv: input_field)
+                |> testing.load()
                 |> range(start: 2018-05-22T19:00:00Z, stop: 2018-05-24T00:00:00Z)
                 |> group(columns: ["_start", "_stop", "host"])
                 |> max()
@@ -131,7 +135,8 @@ testcase group_max_bare_field {
     }
 testcase group_max_window {
         result =
-            testing.loadStorage(csv: input)
+            csv.from(csv: input)
+                |> testing.load()
                 |> range(start: 2018-05-22T19:53:26Z, stop: 2018-05-24T00:00:00Z)
                 |> filter(fn: (r) => r["_value"] == 1.77)
                 |> group(columns: ["_field"])
@@ -150,7 +155,8 @@ testcase group_max_window {
     }
 testcase group_max_agg_window {
         result =
-            testing.loadStorage(csv: input)
+            csv.from(csv: input)
+                |> testing.load()
                 |> range(start: 2018-05-22T19:53:26Z, stop: 2018-05-24T00:00:00Z)
                 |> group(columns: ["host"])
                 |> aggregateWindow(fn: max, every: 1d, createEmpty: false)
@@ -167,7 +173,8 @@ testcase group_max_agg_window {
     }
 testcase group_max_agg_window_empty {
         result =
-            testing.loadStorage(csv: input)
+            csv.from(csv: input)
+                |> testing.load()
                 |> range(start: 2018-05-22T19:53:26Z, stop: 2018-05-24T00:00:00Z)
                 |> group(columns: ["_field"])
                 |> aggregateWindow(fn: max, every: 1d, createEmpty: true)

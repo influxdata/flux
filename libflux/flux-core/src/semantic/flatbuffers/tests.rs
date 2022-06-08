@@ -31,8 +31,8 @@ option foo.bar = "baz"
 builtin foo : int
 
 test aggregate_window_empty = () => ({
-    input: testing.loadStorage(csv: inData),
-    want: testing.loadMem(csv: outData),
+    input: csv.from(csv: inData) |> testing.load(),
+    want: csv.from(csv: outData),
     fn: (table=<-) =>
         table
             |> range(start: 2018-05-22T19:53:26Z, stop: 2018-05-22T19:55:00Z)

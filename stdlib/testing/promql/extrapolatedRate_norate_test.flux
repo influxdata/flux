@@ -60,7 +60,7 @@ outData =
 ,,2,2018-12-18T20:50:00Z,2018-12-18T20:55:00Z,metric_name3,760,prometheus
 "
 
-testcase extrapolatedRate {
+testcase extrapolatedRate_norate {
     got =
         csv.from(csv: inData)
             |> testing.load()
