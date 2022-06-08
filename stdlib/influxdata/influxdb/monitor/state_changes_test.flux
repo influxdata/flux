@@ -46,7 +46,7 @@ outData =
 ,,2,000000000000000a,cpu threshold check,warn,statuses,whoa!,cpu,1527018860000000000,2018-05-22T19:54:22Z,threshold,vaaa,vbbb,cpu-total,host.local,7.05
 "
 
-testcase monitor_state_changes_any_to_warn {
+testcase state_changes {
     got =
         csv.from(csv: inData)
             |> testing.load()

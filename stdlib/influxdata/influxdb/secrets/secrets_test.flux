@@ -25,7 +25,7 @@ outData =
 "
 token = secrets.get(key: "token")
 
-testcase get_secret {
+testcase secrets {
     got =
         csv.from(csv: inData)
             |> testing.load()

@@ -90,7 +90,7 @@ outData =
 "
 
 testcase prom_join {
-    table = csv.from(csv: inData) |> testing.load()
+    table = csv.from(csv: inData)
 
     a =
         table

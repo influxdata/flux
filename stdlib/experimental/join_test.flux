@@ -89,8 +89,8 @@ outData =
 ,,0,2018-12-19T00:00:00Z,2018-12-20T00:00:00Z,2018-12-19T22:14:20Z,_m,g,7,6
 "
 
-testcase experimental_join {
-    table = csv.from(csv: inData) |> testing.load()
+testcase join {
+    table = csv.from(csv: inData)
 
     a =
         table
