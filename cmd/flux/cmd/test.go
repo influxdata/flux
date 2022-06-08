@@ -610,17 +610,22 @@ func (t *TestRunner) Run(executor TestExecutor, verbosity int, skipTestCases []s
 	go func() {
 		wg := new(sync.WaitGroup)
 		for i, test := range t.tests {
-			wg.Add(1)
-			go func(i int, test *Test) {
-				defer wg.Done()
-				if _, ok := skipMap[test.name]; ok {
-					test.skip = true
-				} else {
-					test.Run(executor)
-				}
+			if _, ok := skipMap[test.name]; ok {
+				test.skip = true
+
 				// Send the index of this test to show that it is finished
 				results <- i
-			}(i, test)
+			} else {
+				wg.Add(1)
+				go func(i int, test *Test) {
+					defer wg.Done()
+
+					test.Run(executor)
+
+					// Send the index of this test to show that it is finished
+					results <- i
+				}(i, test)
+			}
 		}
 		wg.Wait()
 		close(results)
