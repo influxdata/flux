@@ -170,7 +170,7 @@ func TestHeuristicPlanner_Plan(t *testing.T) {
 					{5, 7},
 				},
 			},
-			validateFn: checkVisitedNodes([]plan.NodeID{"7", "6", "4", "1", "0", "3", "2", "5"}),
+			validateFn: checkVisitedNodes([]plan.NodeID{"7", "6", "5", "4", "1", "0", "3", "2"}),
 		},
 		{
 			name: "diamond with rewrite",
@@ -223,12 +223,54 @@ func TestHeuristicPlanner_Plan(t *testing.T) {
 				require.NoError(t, err)
 				require.NoError(t, spec.CheckIntegrity())
 				wantSeenNodes := []plan.NodeID{
-					"7", "6", "4", "1", "0", "3", "2", "5", // first pass
-					"7", "6", "new", "1", "0", "3", "2", "5", // second pass
+					"7", "6", "5", "4", "1", "0", "3", "2", // first pass
+					"7", "6", "5", "new", "1", "0", "3", "2", // second pass
 				}
 				diff := cmp.Diff(wantSeenNodes, seenNodes)
 				require.True(t, diff == "", "found difference between -want/+got nodes:\n%v", diff)
 			},
+		},
+		{
+			name: "half diamond physical",
+			//            2
+			//           / \
+			//          |   1
+			//           \ /
+			//            0
+			plan: plantest.PlanSpec{
+				Nodes: []plan.Node{
+					plantest.CreatePhysicalMockNode("0"),
+					plantest.CreatePhysicalMockNode("1"),
+					plantest.CreatePhysicalMockNode("2"),
+				},
+				Edges: [][2]int{
+					{0, 1},
+					{1, 2},
+					{0, 2},
+				},
+			},
+			validateFn: checkVisitedNodes([]plan.NodeID{"2", "1", "0"}),
+		},
+		{
+			name: "half diamond logical",
+			//            2
+			//           / \
+			//          |   1
+			//           \ /
+			//            0
+			plan: plantest.PlanSpec{
+				Nodes: []plan.Node{
+					plantest.CreateLogicalMockNode("0"),
+					plantest.CreateLogicalMockNode("1"),
+					plantest.CreateLogicalMockNode("2"),
+				},
+				Edges: [][2]int{
+					{0, 1},
+					{1, 2},
+					{0, 2},
+				},
+			},
+			validateFn: checkVisitedNodes([]plan.NodeID{"2", "1", "0"}),
 		},
 	}
 
