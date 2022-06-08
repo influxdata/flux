@@ -1,6 +1,7 @@
 package universe_test
 
 
+import "csv"
 import "testing"
 import "planner"
 
@@ -49,7 +50,8 @@ inData =
 
 testcase pivot_table {
         result =
-            testing.loadStorage(csv: inData)
+            csv.from(csv: inData)
+                |> testing.load()
                 |> range(start: 2018-05-22T19:53:26Z)
                 |> pivot(rowKey: ["_time"], columnKey: ["_field"], valueColumn: "_value")
 

@@ -31,7 +31,8 @@ inData =
 ,,1,iZquGj,ucyoZ,2018-12-18T20:53:23Z,49
 "
 input = () =>
-    testing.loadStorage(csv: inData)
+    csv.from(csv: inData)
+        |> testing.load()
         |> range(start: 2018-12-18T20:00:00Z, stop: 2018-12-18T21:00:00Z)
         |> drop(columns: ["_start", "_stop"])
 
@@ -80,11 +81,13 @@ testcase get_option_in_map {
 
 testcase unpivot_pivot_roundtrip {
     want =
-        testing.loadStorage(csv: inData)
+        csv.from(csv: inData)
+            |> testing.load()
             |> range(start: 2018-12-18T20:00:00Z, stop: 2018-12-18T21:00:00Z)
 
     got =
-        testing.loadStorage(csv: inData)
+        csv.from(csv: inData)
+            |> testing.load()
             |> range(start: 2018-12-18T20:00:00Z, stop: 2018-12-18T21:00:00Z)
             |> pivot(rowKey: ["_time"], columnKey: ["_field"], valueColumn: "_value")
             |> debug.unpivot()
@@ -130,7 +133,8 @@ inDataPivoted =
 
 testcase unpivot_3_columns {
     want =
-        testing.loadStorage(csv: inDataUnpivoted)
+        csv.from(csv: inDataUnpivoted)
+            |> testing.load()
             |> range(start: 2018-12-18T20:00:00Z, stop: 2018-12-18T21:00:00Z)
 
     got =

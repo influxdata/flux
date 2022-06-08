@@ -159,14 +159,15 @@ option now = () => (2030-01-01T00:00:00Z)
 option foo.bar = "baz"
 builtin foo : int
 
-test aggregate_window_empty = () => ({
-    input: testing.loadStorage(csv: inData),
-    want: testing.loadMem(csv: outData),
-    fn: (table=<-) =>
-        table
-            |> range(start: 2018-05-22T19:53:26Z, stop: 2018-05-22T19:55:00Z)
-            |> aggregateWindow(every: 30s, fn: sum),
-})
+testcase aggregate_window_empty {
+    input = csv.from(csv: inData) |> testing.load()
+	got = input
+			|> range(start: 2018-05-22T19:53:26Z, stop: 2018-05-22T19:55:00Z)
+			|> aggregateWindow(every: 30s, fn: sum),
+    want = testing.loadMem(csv: outData)
+
+    testing.diff(want: want, got: got)
+}
 `,
 		},
 		{

@@ -41,7 +41,8 @@ testcase aggregate_window_offset {
 ,,1,2018-05-22T00:00:00Z,2018-05-22T00:01:00Z,2018-05-22T00:01:00Z,used_percent,disk,disk1s1,apfs,host.local,/tmp,45
 "
         got =
-            testing.loadStorage(csv: inData)
+            csv.from(csv: inData)
+                |> testing.load()
                 |> range(start: 2018-05-22T00:00:00Z, stop: 2018-05-22T00:01:00Z)
                 |> aggregateWindow(every: 30s, fn: mean, offset: 5s)
         want = csv.from(csv: outData)

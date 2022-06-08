@@ -50,7 +50,8 @@ outData =
 "
 
 input = () =>
-    testing.loadStorage(csv: inData)
+    csv.from(csv: inData)
+        |> testing.load()
         |> range(start: 2018-05-22T19:00:00Z, stop: 2018-05-22T20:00:00Z)
         |> limit(n: 1)
 

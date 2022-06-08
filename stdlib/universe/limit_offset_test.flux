@@ -1,6 +1,7 @@
 package universe_test
 
 
+import "csv"
 import "testing"
 
 option now = () => 2030-01-01T00:00:00Z
@@ -53,7 +54,8 @@ outData =
 "
 
 input = () =>
-    testing.loadStorage(csv: inData)
+    csv.from(csv: inData)
+        |> testing.load()
         |> range(start: 2018-05-22T19:00:00Z, stop: 2018-05-22T20:00:00Z)
         |> limit(n: 2, offset: 1)
 

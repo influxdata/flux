@@ -2,6 +2,7 @@ package universe_test
 
 
 import "array"
+import "csv"
 import "testing"
 
 option now = () => 2030-01-01T00:00:00Z
@@ -45,7 +46,8 @@ outData =
 
 testcase join_base {
     input =
-        testing.loadStorage(csv: inData)
+        csv.from(csv: inData)
+            |> testing.load()
             |> range(start: 2018-05-22T19:53:00Z, stop: 2018-05-22T19:55:00Z)
             |> drop(columns: ["_start", "_stop"])
     want = testing.loadMem(csv: outData)

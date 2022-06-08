@@ -1,6 +1,7 @@
 package universe_test
 
 
+import "csv"
 import "testing"
 import "testing/expect"
 import "planner"
@@ -30,7 +31,8 @@ output =
 ,,0,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,2018-05-22T19:53:46Z,system,host.local,load4,1.77
 "
 merge_filter_fn = () =>
-    testing.loadStorage(csv: input)
+    csv.from(csv: input)
+        |> testing.load()
         |> range(start: 2018-05-22T19:53:26Z)
         |> filter(fn: (r) => r["_value"] == 1.77)
         |> filter(fn: (r) => r["_field"] == "load4")
