@@ -46,7 +46,7 @@ testcase yield {
             |> sample(n: 2, pos: 1)
             |> yield(name: "2: 2nd row")
             |> yield(name: "5")
-    want = testing.loadMem(csv: outData) |> yield(name: "6")
+    want = csv.from(csv: outData) |> yield(name: "6")
 
     testing.diff(got, want)
 }

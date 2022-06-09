@@ -109,7 +109,7 @@ testcase group_min_table {
 ,,2,2019-11-25T00:00:00Z,m0,f0,a-2,b-0,1.0
 "
 
-        testing.diff(got: result, want: testing.loadMem(csv: out_min_table)) |> yield()
+        testing.diff(got: result, want: csv.from(csv: out_min_table)) |> yield()
     }
 testcase group_max_table {
         result =
@@ -130,7 +130,7 @@ testcase group_max_table {
 ,,2,2019-11-25T00:00:30Z,m0,f0,a-2,b-1,8.0
 "
 
-        testing.diff(got: result, want: testing.loadMem(csv: out_max_table)) |> yield()
+        testing.diff(got: result, want: csv.from(csv: out_max_table)) |> yield()
     }
 testcase group_no_agg_table {
         result =
@@ -220,5 +220,5 @@ testcase group_no_agg_table {
 ,,2,2019-11-25T00:01:50Z,m0,f0,a-2,b-1,8.0
 "
 
-        testing.diff(got: result, want: testing.loadMem(csv: out_no_agg_table)) |> yield()
+        testing.diff(got: result, want: csv.from(csv: out_no_agg_table)) |> yield()
     }

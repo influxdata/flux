@@ -79,5 +79,5 @@ testcase pivot_table {
 ,,1,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,2018-05-22T19:54:16Z,system,host.local,1.84,1.97,93
 "
 
-        testing.diff(got: result, want: testing.loadMem(csv: out_fields)) |> yield()
+        testing.diff(got: result, want: csv.from(csv: out_fields)) |> yield()
     }

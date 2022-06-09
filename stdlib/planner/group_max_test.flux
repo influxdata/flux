@@ -39,7 +39,7 @@ testcase group_max_bare {
 ,,0,2018-05-22T19:53:26Z,system,host.local,load4,1.77
 "
 
-        testing.diff(got: result, want: testing.loadMem(csv: out_max_bare)) |> yield()
+        testing.diff(got: result, want: csv.from(csv: out_max_bare)) |> yield()
     }
 
 input_host =
@@ -79,7 +79,7 @@ testcase group_max_bare_host {
 ,,2,2018-05-22T19:53:36Z,system,host.local,load4,1.78
 "
 
-        testing.diff(got: result, want: testing.loadMem(csv: out_max_bare)) |> yield()
+        testing.diff(got: result, want: csv.from(csv: out_max_bare)) |> yield()
     }
 
 input_field =
@@ -131,7 +131,7 @@ testcase group_max_bare_field {
 ,,2,2018-05-22T19:00:00Z,2018-05-24T00:00:00Z,hostC,load5,1.95
 "
 
-        testing.diff(got: result, want: testing.loadMem(csv: out_max_bare)) |> yield()
+        testing.diff(got: result, want: csv.from(csv: out_max_bare)) |> yield()
     }
 testcase group_max_window {
         result =
@@ -151,7 +151,7 @@ testcase group_max_window {
 ,,0,2018-05-22T19:53:26Z,2018-05-23T00:00:00Z,2018-05-22T19:53:26Z,system,host.local,load4,1.77
 "
 
-        testing.diff(got: result, want: testing.loadMem(csv: out_max_window)) |> yield()
+        testing.diff(got: result, want: csv.from(csv: out_max_window)) |> yield()
     }
 testcase group_max_agg_window {
         result =
@@ -169,7 +169,7 @@ testcase group_max_agg_window {
 ,,0,2018-05-22T19:53:26Z,2018-05-24T00:00:00Z,2018-05-23T00:00:00Z,system,host.local,load1,1.83
 "
 
-        testing.diff(got: result, want: testing.loadMem(csv: out_max_agg_window)) |> yield()
+        testing.diff(got: result, want: csv.from(csv: out_max_agg_window)) |> yield()
     }
 testcase group_max_agg_window_empty {
         result =
@@ -193,5 +193,5 @@ testcase group_max_agg_window_empty {
 ,,2,2018-05-22T19:53:26Z,2018-05-24T00:00:00Z,2018-05-24T00:00:00Z,load4,
 "
 
-        testing.diff(got: result, want: testing.loadMem(csv: out_max_agg_window_empty)) |> yield()
+        testing.diff(got: result, want: csv.from(csv: out_max_agg_window_empty)) |> yield()
     }

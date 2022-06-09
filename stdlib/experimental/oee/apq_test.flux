@@ -30,7 +30,7 @@ outData =
 
 testcase APQ {
     got =
-        testing.loadMem(csv: inData)
+        csv.from(csv: inData)
             |> range(start: 2021-03-22T00:00:00Z, stop: 2021-03-22T04:00:00Z)
             |> oee.APQ(runningState: "running", plannedTime: 8h, idealCycleTime: 30s)
             |> drop(columns: ["_start", "_stop"])

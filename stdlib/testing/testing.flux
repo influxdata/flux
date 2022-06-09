@@ -230,37 +230,6 @@ option loadStorage = (csv) =>
 //
 option load = (tables=<-) => tables
 
-// loadMem loads annotated CSV test data from memory to emulate query results
-// returned by Flux.
-//
-// ## Parameters
-// - csv: Annotated CSV data to load.
-//
-// ## Examples
-//
-// ### Load annotated CSV as if returned by Flux
-// ```
-// import "testing"
-//
-// csvData =
-//     "
-// #datatype,string,long,string,dateTime:RFC3339,string,double
-// #group,false,false,true,false,true,false
-// #default,_result,,,,,
-// ,result,table,_measurement,_time,_field,_value
-// ,,0,m,2021-01-01T00:00:00Z,t,1.2
-// ,,0,m,2021-01-02T00:00:00Z,t,1.4
-// ,,0,m,2021-01-03T00:00:00Z,t,2.2
-// "
-//
-// testing.loadMem(csv: csvData)
-// ```
-//
-// ## Metadata
-// introduced: 0.20.0
-//
-option loadMem = (csv) => c.from(csv: csv)
-
 // inspect returns information about a test case.
 //
 // ## Parameters
