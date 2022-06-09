@@ -4,8 +4,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"os"
 	"strings"
 
+	arrowmem "github.com/apache/arrow/go/v7/arrow/memory"
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/cmd/flux/cmd"
@@ -23,6 +25,17 @@ import (
 func NewTestExecutor(ctx context.Context) (cmd.TestExecutor, error) {
 	return testExecutor{}, nil
 }
+
+type consoleLogger struct {
+	errs int
+}
+
+func (c *consoleLogger) Errorf(format string, args ...interface{}) {
+	_, _ = fmt.Fprintf(os.Stderr, format, args...)
+	c.errs++
+}
+
+func (c *consoleLogger) Helper() {}
 
 type testExecutor struct{}
 
@@ -43,7 +56,8 @@ func (testExecutor) Run(pkg *ast.Package) error {
 		return errors.Wrap(err, codes.Invalid, "failed to compile")
 	}
 
-	alloc := &memory.ResourceAllocator{}
+	mem := arrowmem.NewCheckedAllocator(arrowmem.DefaultAllocator)
+	alloc := &memory.ResourceAllocator{Allocator: mem}
 	query, err := program.Start(ctx, alloc)
 	if err != nil {
 		return errors.Wrap(err, codes.Inherit, "error while executing program")
@@ -71,6 +85,12 @@ func (testExecutor) Run(pkg *ast.Package) error {
 	err = results.Err()
 	if err == nil && output.Len() > 0 {
 		err = errors.Newf(codes.FailedPrecondition, "Expected test to have no output. Got:\n%s", output.String())
+	}
+
+	logger := consoleLogger{}
+	mem.AssertSize(&logger, 0)
+	if logger.errs > 0 {
+		err = errors.New(codes.FailedPrecondition, "Memory leak detected")
 	}
 	return err
 }
