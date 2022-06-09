@@ -266,7 +266,7 @@ option load = (tables=<-) => tables
 //         |> range(start: 2021-01-01T00:00:00Z, stop: 2021-01-03T01:00:00Z)
 //         |> sum()
 //
-// test _sum = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_sum})
+// test _sum = () => ({input: csv.from(csv: inData), want: csv.from(csv: outData), fn: t_sum})
 //
 // testing.inpsect(case: _sum)
 //
@@ -305,6 +305,7 @@ inspect = (case) => {
 //
 // ### Define and execute a test case
 // ```
+// import "csv"
 // import "testing"
 //
 // inData =
@@ -332,7 +333,7 @@ inspect = (case) => {
 //         |> range(start: 2021-01-01T00:00:00Z, stop: 2021-01-03T01:00:00Z)
 //         |> sum()
 //
-// test _sum = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_sum})
+// test _sum = () => ({input: csv.from(csv: inData), want: csv.from(csv: outData), fn: t_sum})
 //
 // testing.run(case: _sum)
 // ```
@@ -358,6 +359,7 @@ run = (case) => {
 // profilers to measure query performance.
 //
 // ```
+// import "csv"
 // import "testing"
 // import "profiler"
 //
@@ -388,7 +390,7 @@ run = (case) => {
 //         |> range(start: 2021-01-01T00:00:00Z, stop: 2021-01-03T01:00:00Z)
 //         |> sum()
 //
-// test _sum = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_sum})
+// test _sum = () => ({input: csv.from(csv: inData), want: csv.from(csv: outData), fn: t_sum})
 //
 // testing.benchmark(case: _sum)
 // ```
