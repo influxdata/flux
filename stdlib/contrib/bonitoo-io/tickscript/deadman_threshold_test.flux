@@ -60,7 +60,7 @@ tickscript_deadman = (table=<-) =>
         |> drop(columns: ["_time"])
 
 testcase tickscript_deadman_threshold {
-    want = testing.loadMem(csv: outData)
+    want = csv.from(csv: outData)
     got = csv.from(csv: inData) |> testing.load() |> tickscript_deadman()
 
     testing.diff(want: want, got: got) |> yield()

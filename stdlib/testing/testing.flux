@@ -230,37 +230,6 @@ option loadStorage = (csv) =>
 //
 option load = (tables=<-) => tables
 
-// loadMem loads annotated CSV test data from memory to emulate query results
-// returned by Flux.
-//
-// ## Parameters
-// - csv: Annotated CSV data to load.
-//
-// ## Examples
-//
-// ### Load annotated CSV as if returned by Flux
-// ```
-// import "testing"
-//
-// csvData =
-//     "
-// #datatype,string,long,string,dateTime:RFC3339,string,double
-// #group,false,false,true,false,true,false
-// #default,_result,,,,,
-// ,result,table,_measurement,_time,_field,_value
-// ,,0,m,2021-01-01T00:00:00Z,t,1.2
-// ,,0,m,2021-01-02T00:00:00Z,t,1.4
-// ,,0,m,2021-01-03T00:00:00Z,t,2.2
-// "
-//
-// testing.loadMem(csv: csvData)
-// ```
-//
-// ## Metadata
-// introduced: 0.20.0
-//
-option loadMem = (csv) => c.from(csv: csv)
-
 // inspect returns information about a test case.
 //
 // ## Parameters
@@ -297,7 +266,7 @@ option loadMem = (csv) => c.from(csv: csv)
 //         |> range(start: 2021-01-01T00:00:00Z, stop: 2021-01-03T01:00:00Z)
 //         |> sum()
 //
-// test _sum = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_sum})
+// test _sum = () => ({input: csv.from(csv: inData), want: csv.from(csv: outData), fn: t_sum})
 //
 // testing.inpsect(case: _sum)
 //
@@ -336,6 +305,7 @@ inspect = (case) => {
 //
 // ### Define and execute a test case
 // ```
+// import "csv"
 // import "testing"
 //
 // inData =
@@ -363,7 +333,7 @@ inspect = (case) => {
 //         |> range(start: 2021-01-01T00:00:00Z, stop: 2021-01-03T01:00:00Z)
 //         |> sum()
 //
-// test _sum = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_sum})
+// test _sum = () => ({input: csv.from(csv: inData), want: csv.from(csv: outData), fn: t_sum})
 //
 // testing.run(case: _sum)
 // ```
@@ -389,6 +359,7 @@ run = (case) => {
 // profilers to measure query performance.
 //
 // ```
+// import "csv"
 // import "testing"
 // import "profiler"
 //
@@ -419,7 +390,7 @@ run = (case) => {
 //         |> range(start: 2021-01-01T00:00:00Z, stop: 2021-01-03T01:00:00Z)
 //         |> sum()
 //
-// test _sum = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_sum})
+// test _sum = () => ({input: csv.from(csv: inData), want: csv.from(csv: outData), fn: t_sum})
 //
 // testing.benchmark(case: _sum)
 // ```

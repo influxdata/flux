@@ -103,7 +103,7 @@ my_value
 			name: "option statement for subpackage",
 			s: `import c "csv"
 import "testing"
-option testing.loadMem = (csv) => c.from(csv: csv)
+option testing.load = (tables) => tables
 `,
 		},
 		{

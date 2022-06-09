@@ -50,7 +50,7 @@ testcase join_base {
             |> testing.load()
             |> range(start: 2018-05-22T19:53:00Z, stop: 2018-05-22T19:55:00Z)
             |> drop(columns: ["_start", "_stop"])
-    want = testing.loadMem(csv: outData)
+    want = csv.from(csv: outData)
     left =
         input
             |> filter(fn: (r) => r.user == "user1")

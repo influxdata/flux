@@ -61,7 +61,7 @@ input = () =>
 
 testcase limit_offset {
     want = input()
-    got = testing.loadMem(csv: outData)
+    got = csv.from(csv: outData)
 
     testing.diff(want: want, got: got) |> yield()
 }

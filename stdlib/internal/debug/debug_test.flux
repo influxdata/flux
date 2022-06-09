@@ -38,13 +38,13 @@ input = () =>
 
 testcase slurp {
     got = input() |> debug.slurp()
-    want = testing.loadMem(csv: inData)
+    want = csv.from(csv: inData)
 
     testing.diff(got, want) |> yield()
 }
 testcase sink {
     got = input() |> debug.sink()
-    want = testing.loadMem(csv: inData) |> filter(fn: (r) => false)
+    want = csv.from(csv: inData) |> filter(fn: (r) => false)
 
     testing.diff(got, want) |> yield()
 }

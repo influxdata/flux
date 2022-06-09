@@ -2,6 +2,7 @@ package table_test
 
 
 import "array"
+import "csv"
 import "planner"
 import "testing"
 import "testing/expect"
@@ -104,7 +105,7 @@ loadData = () =>
 
 testcase window {
         want =
-            testing.loadMem(
+            csv.from(
                 csv:
                     "
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,double,string
@@ -237,7 +238,7 @@ test_idempotent =
     () =>
         {
             want =
-                testing.loadMem(
+                csv.from(
                     csv:
                         "
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,double,string
@@ -282,7 +283,7 @@ testcase idempotent_planner_rule {
 
 testcase fill_unknown_column {
         want =
-            testing.loadMem(
+            csv.from(
                 csv:
                     "
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,double,string

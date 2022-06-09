@@ -53,14 +53,14 @@ outData =
 ,,0,2021-03-22T04:00:00Z,0.375,0.24583333333333332,0.6666666666666666,0.9833333333333333,10800000000000
 "
 productionEvents =
-    testing.loadMem(csv: productionData)
+    csv.from(csv: productionData)
         |> range(start: 2021-03-22T00:00:00Z, stop: 2021-03-22T04:00:00Z)
 partEvents =
-    testing.loadMem(csv: partData)
+    csv.from(csv: partData)
         |> range(start: 2021-03-22T00:00:00Z, stop: 2021-03-22T04:00:00Z)
 
 testcase computeAPQ {
-    table = testing.loadMem(csv: inData)
+    table = csv.from(csv: inData)
     got =
         oee.computeAPQ(
             productionEvents: productionEvents,

@@ -57,7 +57,7 @@ input = () =>
 
 testcase limit_1 {
     want = input()
-    got = testing.loadMem(csv: outData)
+    got = csv.from(csv: outData)
 
     testing.diff(want: want, got: got) |> yield()
 }

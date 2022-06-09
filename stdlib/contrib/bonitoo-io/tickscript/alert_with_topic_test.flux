@@ -70,7 +70,7 @@ tickscript_alert = (table=<-) =>
         |> drop(columns: ["_time"])
 
 testcase tickscript_alert_with_topic {
-    want = testing.loadMem(csv: outData)
+    want = csv.from(csv: outData)
     got = csv.from(csv: inData) |> testing.load() |> tickscript_alert()
 
     testing.diff(want: want, got: got) |> yield()
