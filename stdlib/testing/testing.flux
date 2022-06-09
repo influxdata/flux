@@ -140,54 +140,6 @@ builtin diff : (
         ?nansEqual: bool,
     ) => stream[{A with _diff: string}]
 
-// loadStorage loads annotated CSV test data as if queried from InfluxDB.
-// This function ensures tests behave correctly in both the Flux and InfluxDB test suites.
-//
-// ## Function Requirements
-// - Test data requires `_field`, `_measurement`, and `_time` columns.
-//
-// ## Parameters
-// - csv: Annotated CSV data to load.
-//
-// ## Examples
-//
-// ### Load annoated CSV as if queried from InfluxDB
-// ```
-// import "testing"
-//
-// csvData =
-//     "
-// #datatype,string,long,string,dateTime:RFC3339,string,double
-// #group,false,false,true,false,true,false
-// #default,_result,,,,,
-// ,result,table,_measurement,_time,_field,_value
-// ,,0,m,2021-01-01T00:00:00Z,t,1.2
-// ,,0,m,2021-01-02T00:00:00Z,t,1.4
-// ,,0,m,2021-01-03T00:00:00Z,t,2.2
-// "
-//
-// testing.loadStorage(csv: csvData)
-// ```
-//
-// ## Metadata
-// introduced: 0.20.0
-//
-option loadStorage = (csv) =>
-    c.from(csv: csv)
-        |> range(start: 1800-01-01T00:00:00Z, stop: 2200-12-31T11:59:59Z)
-        |> map(
-            fn: (r) =>
-                ({r with _field:
-                        if exists r._field then r._field else die(msg: "test input table does not have _field column"),
-                    _measurement:
-                        if exists r._measurement then
-                            r._measurement
-                        else
-                            die(msg: "test input table does not have _measurement column"),
-                    _time: if exists r._time then r._time else die(msg: "test input table does not have _time column"),
-                }),
-        )
-
 // load loads test data from a stream of tables.
 //
 // ## Parameters
