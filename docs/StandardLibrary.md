@@ -2,7 +2,7 @@
 
 The Flux standard library will define the set of functions, constants, and other
 values that are available out of the box with Flux, providing the functionality that is
-most frequently used. Everything in the Flux standard library is part of a package.  
+most frequently used. Everything in the Flux standard library is part of a package.
 The top-level package is called "universe."
 
 The Flux compiler provides the concept of a "prelude," which is the set of packages whose members
@@ -86,8 +86,6 @@ Other mathematical operations:
 
 ## Package `testing`
 - `assertEquals`
-- `loadStorage`
-- `loadMem`
 - `test`
 
 Others?
