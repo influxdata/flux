@@ -75,7 +75,18 @@ var skipMemoryChecks = []string{
 }
 
 func TestFluxEndToEnd(t *testing.T) {
-	runEndToEnd(t, stdlib.FluxTestPackages)
+	pkgs, err := stdlib.FindTestPackages(".")
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	if len(pkgs) < 49 {
+		t.Errorf("fewer test packages than expected. Check that there isn't an issue with findTestPackages or updates the expected value\nFound: %d", len(pkgs))
+		return
+	}
+
+	runEndToEnd(t, pkgs)
 }
 
 func runEndToEnd(t *testing.T, pkgs []*ast.Package) {
