@@ -39,7 +39,7 @@ use crate::{
         nodes::Symbol,
         sub::Substitution,
         types::{MonoType, PolyType, PolyTypeHashMap, SemanticMap, TvarKinds},
-        Analyzer, AnalyzerConfig, PackageExports,
+        Analyzer, AnalyzerConfig, Feature, PackageExports,
     },
 };
 
@@ -272,7 +272,7 @@ macro_rules! test_infer_err {
                 panic!("{}", err)
             }
             Err(Error::Semantic(error)) => {
-                for err in error.errors {
+                for err in error.diagnostics.errors {
                     if let semantic::ErrorKind::InvalidAST(_) = err.error {
                         panic!("{}", err);
                     }
@@ -4112,6 +4112,93 @@ fn multiple_errors_in_function_call() {
               │
             2 │             f(a: 1, b: "record", d: {})
               │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+        "#]]
+    }
+}
+
+#[test]
+fn unused_variable() {
+    test_error_msg! {
+        config: AnalyzerConfig{
+            features: vec![Feature::UnusedSymbolWarnings],
+            ..AnalyzerConfig::default()
+        },
+        src: r#"
+            f = () => {
+                x = "" + 1
+                return 1
+            }
+        "#,
+        expect: expect_test::expect![[r#"
+            warning: symbol x is never used
+              ┌─ main:3:17
+              │
+            3 │                 x = "" + 1
+              │                 ^
+
+            error: expected string but found int
+              ┌─ main:3:26
+              │
+            3 │                 x = "" + 1
+              │                          ^
+
+        "#]]
+    }
+}
+
+#[test]
+fn no_unused_variable_warning_for_function_parameter() {
+    test_error_msg! {
+        config: AnalyzerConfig{
+            features: vec![Feature::UnusedSymbolWarnings],
+            ..AnalyzerConfig::default()
+        },
+        src: r#"
+            f = (x) => {
+                return 1 + ""
+            }
+        "#,
+        expect: expect_test::expect![[r#"
+            error: expected int but found string
+              ┌─ main:3:28
+              │
+            3 │                 return 1 + ""
+              │                            ^^
+
+        "#]]
+    }
+}
+
+#[test]
+fn unused_import() {
+    test_error_msg! {
+        config: AnalyzerConfig{
+            features: vec![Feature::UnusedSymbolWarnings],
+            ..AnalyzerConfig::default()
+        },
+        imp: map![
+            "path/to/foo" => package![
+                "f" => " (x: A) => A where A: Addable + Divisible",
+            ],
+        ],
+        src: r#"
+            import "path/to/foo"
+
+            x = 1 + ""
+        "#,
+        expect: expect_test::expect![[r#"
+            warning: symbol foo is never used
+              ┌─ main:2:13
+              │
+            2 │             import "path/to/foo"
+              │             ^^^^^^^^^^^^^^^^^^^^
+
+            error: expected int but found string
+              ┌─ main:4:21
+              │
+            4 │             x = 1 + ""
+              │                     ^^
 
         "#]]
     }

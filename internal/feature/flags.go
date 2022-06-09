@@ -197,6 +197,18 @@ func OptimizeSetTransformation() BoolFlag {
 	return optimizeSetTransformation
 }
 
+var unusedSymbolWarnings = feature.MakeBoolFlag(
+	"Unused Symbol Warnings",
+	"unusedSymbolWarnings",
+	"Markus Westerlind",
+	false,
+)
+
+// UnusedSymbolWarnings - Enables warnings for unused symbols
+func UnusedSymbolWarnings() BoolFlag {
+	return unusedSymbolWarnings
+}
+
 // Inject will inject the Flagger into the context.
 func Inject(ctx context.Context, flagger Flagger) context.Context {
 	return feature.Inject(ctx, flagger)
@@ -218,6 +230,7 @@ var all = []Flag{
 	vectorizeLogicalOperators,
 	labelPolymorphism,
 	optimizeSetTransformation,
+	unusedSymbolWarnings,
 }
 
 var byKey = map[string]Flag{
@@ -236,6 +249,7 @@ var byKey = map[string]Flag{
 	"vectorizeLogicalOperators":        vectorizeLogicalOperators,
 	"labelPolymorphism":                labelPolymorphism,
 	"optimizeSetTransformation":        optimizeSetTransformation,
+	"unusedSymbolWarnings":             unusedSymbolWarnings,
 }
 
 // Flags returns all feature flags.

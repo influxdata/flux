@@ -99,3 +99,9 @@
   key: optimizeSetTransformation
   default: false
   contact: Jonathan Sternberg
+
+- name: Unused Symbol Warnings
+  description: Enables warnings for unused symbols
+  key: unusedSymbolWarnings
+  default: false
+  contact: Markus Westerlind

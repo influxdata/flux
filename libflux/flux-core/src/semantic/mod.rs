@@ -4,6 +4,7 @@ pub mod convert;
 
 mod fs;
 mod infer;
+mod symbols;
 mod vectorize;
 
 #[macro_use]
@@ -76,6 +77,7 @@ pub enum ErrorKind {
     #[error("{0}")]
     Inference(nodes::ErrorKind),
 }
+
 impl From<ast::check::Error> for Error {
     fn from(error: ast::check::Error) -> Self {
         Self {
@@ -84,6 +86,7 @@ impl From<ast::check::Error> for Error {
         }
     }
 }
+
 impl From<convert::Error> for Error {
     fn from(error: convert::Error) -> Self {
         Self {
@@ -92,6 +95,7 @@ impl From<convert::Error> for Error {
         }
     }
 }
+
 impl From<check::Error> for Error {
     fn from(error: check::Error) -> Self {
         Self {
@@ -100,6 +104,7 @@ impl From<check::Error> for Error {
         }
     }
 }
+
 impl From<nodes::Error> for Error {
     fn from(error: nodes::Error) -> Self {
         Self {
@@ -108,10 +113,22 @@ impl From<nodes::Error> for Error {
         }
     }
 }
+
 impl From<Errors<nodes::Error>> for Errors<Error> {
     fn from(error: Errors<nodes::Error>) -> Self {
         error.into_iter().map(Error::from).collect()
     }
+}
+
+/// `Warning` represents any warning emitted by the flux compiler
+pub type Warning = Located<WarningKind>;
+
+/// `WarningKind` exposes details about where in the type analysis process a warning occurred.
+#[derive(Error, Debug, PartialEq)]
+pub enum WarningKind {
+    /// An unused symbol was found in the source
+    #[error("symbol {0} is never used")]
+    UnusedSymbol(String),
 }
 
 /// An environment of values that are available outside of a package
@@ -291,12 +308,33 @@ pub struct FileErrors {
     /// The source for this error, if one exists
     // TODO Change the API such that we must always provide the source?
     pub source: Option<String>,
+
     #[source]
-    /// The errors the occurred in that file
-    pub errors: Errors<Located<ErrorKind>>,
+    /// The collection of diagnostics
+    pub diagnostics: Diagnostics<ErrorKind, WarningKind>,
 }
 
 impl fmt::Display for FileErrors {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        self.diagnostics.fmt(f)
+    }
+}
+
+/// A collection of diagnostics
+#[derive(Error, Debug, PartialEq)]
+pub struct Diagnostics<E, W> {
+    #[source]
+    /// The errors the occurred in that file
+    pub errors: Errors<Located<E>>,
+    /// The warnings the occurred in that file
+    pub warnings: Errors<Located<W>>,
+}
+
+impl<E, W> fmt::Display for Diagnostics<E, W>
+where
+    E: fmt::Display,
+    W: fmt::Display,
+{
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         // TODO Use codespan's formatting for errors
         self.errors.fmt(f)
@@ -358,7 +396,7 @@ impl FileErrors {
                 // Mirror println! by ignoring errors
                 let _ = self.print_config(&term::Config::default(), source, &mut stdout);
             }
-            None => println!("{}", self.errors),
+            None => println!("{}", self.diagnostics),
         }
     }
 
@@ -378,25 +416,29 @@ impl FileErrors {
         writer: &mut dyn WriteColor,
     ) -> Result<(), codespan_reporting::files::Error> {
         let files = codespan_reporting::files::SimpleFile::new(&self.file[..], source);
-        for err in &self.errors {
-            err.pretty_fmt(config, &files, writer)?;
+        for warn in &self.diagnostics.warnings {
+            pretty_fmt(warn, config, &files, writer)?;
+        }
+        for err in &self.diagnostics.errors {
+            pretty_fmt(err, config, &files, writer)?;
         }
         Ok(())
     }
 }
 
-impl Error {
-    fn pretty_fmt(
-        &self,
-        config: &term::Config,
-        files: &codespan_reporting::files::SimpleFile<&str, &str>,
-        writer: &mut dyn WriteColor,
-    ) -> Result<(), codespan_reporting::files::Error> {
-        let diagnostic = self.as_diagnostic(files);
+fn pretty_fmt<E>(
+    err: &Located<E>,
+    config: &term::Config,
+    files: &codespan_reporting::files::SimpleFile<&str, &str>,
+    writer: &mut dyn WriteColor,
+) -> Result<(), codespan_reporting::files::Error>
+where
+    E: AsDiagnostic,
+{
+    let diagnostic = err.as_diagnostic(files);
 
-        term::emit(writer, config, files, &diagnostic)?;
-        Ok(())
-    }
+    term::emit(writer, config, files, &diagnostic)?;
+    Ok(())
 }
 
 impl AsDiagnostic for ErrorKind {
@@ -407,6 +449,12 @@ impl AsDiagnostic for ErrorKind {
             Self::InvalidSemantic(err) => err.as_diagnostic(source),
             Self::Inference(err) => err.as_diagnostic(source),
         }
+    }
+}
+
+impl AsDiagnostic for WarningKind {
+    fn as_diagnostic(&self, _source: &dyn Source) -> diagnostic::Diagnostic<()> {
+        diagnostic::Diagnostic::warning().with_message(self.to_string())
     }
 }
 
@@ -433,6 +481,9 @@ pub enum Feature {
 
     /// Enables label polymorphism
     LabelPolymorphism,
+
+    /// Enables warnings for unused symbols
+    UnusedSymbolWarnings,
 }
 
 /// A set of configuration options for the behavior of an Analyzer.
@@ -536,12 +587,22 @@ impl<'env, I: import::Importer> Analyzer<'env, I> {
 
         let mut sem_pkg = nodes::inject_pkg_types(sem_pkg, sub);
 
+        let mut warnings = Errors::new();
+
+        if self
+            .config
+            .features
+            .contains(&Feature::UnusedSymbolWarnings)
+        {
+            warnings.extend(symbols::unused_symbols(&sem_pkg));
+        }
+
         if errors.has_errors() {
             return Err(Salvage {
                 error: FileErrors {
                     file: sem_pkg.package.clone(),
                     source: None,
-                    errors,
+                    diagnostics: Diagnostics { errors, warnings },
                 },
                 value: Some((env, sem_pkg)),
             });

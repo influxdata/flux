@@ -89,7 +89,7 @@ mk_node!(
 ///     }
 /// }
 /// ```
-pub trait Visitor<'a>: Sized {
+pub trait Visitor<'a> {
     /// `visit` is called for a node.
     /// When the `Visitor` is used in [`walk`], the boolean value returned
     /// is used to continue walking (`true`) or stop (`false`).
