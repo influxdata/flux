@@ -134,6 +134,10 @@ func NewTest(name string, ast *ast.Package) Test {
 	}
 }
 
+func (t *Test) FullName() string {
+	return t.ast.Files[0].Name + ": " + t.name
+}
+
 // Get the name of the Test.
 func (t *Test) Name() string {
 	return t.name
@@ -627,25 +631,25 @@ func (t *TestReporter) ReportTestRun(test *Test) {
 		}
 	} else if t.verbosity == 1 {
 		if test.skip {
-			fmt.Printf("%s...skip\n", test.Name())
+			fmt.Printf("%s...skip\n", test.FullName())
 		} else if err := test.Error(); err != nil {
-			fmt.Printf("%s...fail: %s\n", test.Name(), err)
+			fmt.Printf("%s...fail: %s\n", test.FullName(), err)
 		} else {
-			fmt.Printf("%s...success\n", test.Name())
+			fmt.Printf("%s...success\n", test.FullName())
 		}
 	} else {
 		source, err := test.SourceCode()
 		if err != nil {
-			fmt.Printf("failed to get source for test %s: %s\n", test.Name(), err)
+			fmt.Printf("failed to get source for test %s: %s\n", test.FullName(), err)
 		} else {
-			fmt.Printf("Full source for test case %q\n%s", test.Name(), source)
+			fmt.Printf("Full source for test case %q\n%s", test.FullName(), source)
 		}
 		if test.skip {
-			fmt.Printf("%s...skip\n", test.Name())
+			fmt.Printf("%s...skip\n", test.FullName())
 		} else if err := test.Error(); err != nil {
-			fmt.Printf("%s...fail: %s\n", test.Name(), err)
+			fmt.Printf("%s...fail: %s\n", test.FullName(), err)
 		} else {
-			fmt.Printf("%s...success\n", test.Name())
+			fmt.Printf("%s...success\n", test.FullName())
 		}
 	}
 }
@@ -665,7 +669,7 @@ func (t *TestReporter) Summarize(tests []*Test) {
 		fmt.Printf("\nfailures:\n\n")
 		for _, test := range tests {
 			if err := test.Error(); err != nil {
-				fmt.Printf("\t%s...fail: %s\n", test.Name(), err)
+				fmt.Printf("\t%s...fail: %s\n", test.FullName(), err)
 			}
 		}
 	}
