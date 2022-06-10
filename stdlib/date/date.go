@@ -18,6 +18,41 @@ var SpecialFns map[string]values.Function
 
 func init() {
 	SpecialFns = map[string]values.Function{
+		"nanosecond": values.NewFunction(
+			"nanosecond",
+			runtime.MustLookupBuiltinType("date", "nanosecond"),
+			func(ctx context.Context, args values.Object) (values.Value, error) {
+				tm, err := getTimeableTime(ctx, args)
+				if err != nil {
+					return nil, err
+				}
+				return values.NewInt(int64(tm.Time().Nanosecond())), nil
+			}, false,
+		),
+		"microsecond": values.NewFunction(
+			"microsecond",
+			runtime.MustLookupBuiltinType("date", "microsecond"),
+			func(ctx context.Context, args values.Object) (values.Value, error) {
+				tm, err := getTimeableTime(ctx, args)
+				if err != nil {
+					return nil, err
+				}
+				microsecond := int64(time.Nanosecond) * int64(tm.Time().Nanosecond()) / int64(time.Microsecond)
+				return values.NewInt(microsecond), nil
+			}, false,
+		),
+		"millisecond": values.NewFunction(
+			"millisecond",
+			runtime.MustLookupBuiltinType("date", "millisecond"),
+			func(ctx context.Context, args values.Object) (values.Value, error) {
+				tm, err := getTimeableTime(ctx, args)
+				if err != nil {
+					return nil, err
+				}
+				millisecond := int64(time.Nanosecond) * int64(tm.Time().Nanosecond()) / int64(time.Millisecond)
+				return values.NewInt(millisecond), nil
+			}, false,
+		),
 		"second": values.NewFunction(
 			"second",
 			runtime.MustLookupBuiltinType("date", "second"),
@@ -124,44 +159,6 @@ func init() {
 				return values.NewInt(int64(lTime.Time().Time().YearDay())), nil
 			}, false,
 		),
-		"month": values.NewFunction(
-			"month",
-			runtime.MustLookupBuiltinType("date", "_month"),
-			func(ctx context.Context, args values.Object) (values.Value, error) {
-				tm, err := getTimeableTime(ctx, args)
-				if err != nil {
-					return nil, err
-				}
-				location, offset, err := date.GetLocationFromObjArgs(args)
-				if err != nil {
-					return nil, err
-				}
-				lTime, err := date.GetTimeInLocation(tm, location, offset)
-				if err != nil {
-					return nil, err
-				}
-				return values.NewInt(int64(lTime.Time().Time().Month())), nil
-			}, false,
-		),
-		"year": values.NewFunction(
-			"year",
-			runtime.MustLookupBuiltinType("date", "_year"),
-			func(ctx context.Context, args values.Object) (values.Value, error) {
-				tm, err := getTimeableTime(ctx, args)
-				if err != nil {
-					return nil, err
-				}
-				location, offset, err := date.GetLocationFromObjArgs(args)
-				if err != nil {
-					return nil, err
-				}
-				lTime, err := date.GetTimeInLocation(tm, location, offset)
-				if err != nil {
-					return nil, err
-				}
-				return values.NewInt(int64(lTime.Time().Time().Year())), nil
-			}, false,
-		),
 		"week": values.NewFunction(
 			"week",
 			runtime.MustLookupBuiltinType("date", "_week"),
@@ -180,6 +177,25 @@ func init() {
 				}
 				_, week := lTime.Time().Time().ISOWeek()
 				return values.NewInt(int64(week)), nil
+			}, false,
+		),
+		"month": values.NewFunction(
+			"month",
+			runtime.MustLookupBuiltinType("date", "_month"),
+			func(ctx context.Context, args values.Object) (values.Value, error) {
+				tm, err := getTimeableTime(ctx, args)
+				if err != nil {
+					return nil, err
+				}
+				location, offset, err := date.GetLocationFromObjArgs(args)
+				if err != nil {
+					return nil, err
+				}
+				lTime, err := date.GetTimeInLocation(tm, location, offset)
+				if err != nil {
+					return nil, err
+				}
+				return values.NewInt(int64(lTime.Time().Time().Month())), nil
 			}, false,
 		),
 		"quarter": values.NewFunction(
@@ -202,39 +218,23 @@ func init() {
 				return values.NewInt(int64(math.Ceil(float64(month) / 3.0))), nil
 			}, false,
 		),
-		"millisecond": values.NewFunction(
-			"millisecond",
-			runtime.MustLookupBuiltinType("date", "millisecond"),
+		"year": values.NewFunction(
+			"year",
+			runtime.MustLookupBuiltinType("date", "_year"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
 				tm, err := getTimeableTime(ctx, args)
 				if err != nil {
 					return nil, err
 				}
-				millisecond := int64(time.Nanosecond) * int64(tm.Time().Nanosecond()) / int64(time.Millisecond)
-				return values.NewInt(millisecond), nil
-			}, false,
-		),
-		"microsecond": values.NewFunction(
-			"microsecond",
-			runtime.MustLookupBuiltinType("date", "microsecond"),
-			func(ctx context.Context, args values.Object) (values.Value, error) {
-				tm, err := getTimeableTime(ctx, args)
+				location, offset, err := date.GetLocationFromObjArgs(args)
 				if err != nil {
 					return nil, err
 				}
-				microsecond := int64(time.Nanosecond) * int64(tm.Time().Nanosecond()) / int64(time.Microsecond)
-				return values.NewInt(microsecond), nil
-			}, false,
-		),
-		"nanosecond": values.NewFunction(
-			"nanosecond",
-			runtime.MustLookupBuiltinType("date", "nanosecond"),
-			func(ctx context.Context, args values.Object) (values.Value, error) {
-				tm, err := getTimeableTime(ctx, args)
+				lTime, err := date.GetTimeInLocation(tm, location, offset)
 				if err != nil {
 					return nil, err
 				}
-				return values.NewInt(int64(tm.Time().Nanosecond())), nil
+				return values.NewInt(int64(lTime.Time().Time().Year())), nil
 			}, false,
 		),
 		"truncate": values.NewFunction(
@@ -276,22 +276,43 @@ func init() {
 				return values.NewTime(b.Start()), nil
 			}, false,
 		),
+		"time": values.NewFunction(
+			"time",
+			runtime.MustLookupBuiltinType("date", "_time"),
+			func(ctx context.Context, args values.Object) (values.Value, error) {
+				tm, err := getTimeableTime(ctx, args)
+				if err != nil {
+					return nil, err
+				}
+				location, offset, err := date.GetLocationFromObjArgs(args)
+				if err != nil {
+					return nil, err
+				}
+				lTime, err := date.GetTimeInLocation(tm, location, offset)
+				if err != nil {
+					return nil, err
+				}
+				return values.NewTime(lTime.Time()), nil
+			}, false,
+		),
 	}
 
+	runtime.RegisterPackageValue("date", "nanosecond", SpecialFns["nanosecond"])
+	runtime.RegisterPackageValue("date", "microsecond", SpecialFns["microsecond"])
+	runtime.RegisterPackageValue("date", "millisecond", SpecialFns["millisecond"])
 	runtime.RegisterPackageValue("date", "second", SpecialFns["second"])
 	runtime.RegisterPackageValue("date", "_minute", SpecialFns["minute"])
 	runtime.RegisterPackageValue("date", "_hour", SpecialFns["hour"])
 	runtime.RegisterPackageValue("date", "_weekDay", SpecialFns["weekDay"])
+	runtime.RegisterPackageValue("date", "_week", SpecialFns["week"])
 	runtime.RegisterPackageValue("date", "_monthDay", SpecialFns["monthDay"])
 	runtime.RegisterPackageValue("date", "_yearDay", SpecialFns["yearDay"])
 	runtime.RegisterPackageValue("date", "_month", SpecialFns["month"])
-	runtime.RegisterPackageValue("date", "_year", SpecialFns["year"])
-	runtime.RegisterPackageValue("date", "_week", SpecialFns["week"])
 	runtime.RegisterPackageValue("date", "_quarter", SpecialFns["quarter"])
-	runtime.RegisterPackageValue("date", "millisecond", SpecialFns["millisecond"])
-	runtime.RegisterPackageValue("date", "microsecond", SpecialFns["microsecond"])
-	runtime.RegisterPackageValue("date", "nanosecond", SpecialFns["nanosecond"])
+	runtime.RegisterPackageValue("date", "_year", SpecialFns["year"])
 	runtime.RegisterPackageValue("date", "_truncate", SpecialFns["truncate"])
+	runtime.RegisterPackageValue("date", "_time", SpecialFns["time"])
+
 }
 
 func getTime(args values.Object) (values.Value, error) {
