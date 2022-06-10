@@ -100,3 +100,29 @@ func (a *AggregateTransformation) Close() error {
 	}
 	return nil
 }
+
+type AggregateParallelTransformation struct {
+	AggregateFn func(chunk table.Chunk, state interface{}, mem memory.Allocator) (interface{}, bool, error)
+	MergeFn     func(into, from interface{}, mem memory.Allocator) (interface{}, error)
+	ComputeFn   func(key flux.GroupKey, state interface{}, d *execute.TransportDataset, mem memory.Allocator) error
+	CloseFn     func() error
+}
+
+func (a *AggregateParallelTransformation) Aggregate(chunk table.Chunk, state interface{}, mem memory.Allocator) (interface{}, bool, error) {
+	return a.AggregateFn(chunk, state, mem)
+}
+
+func (a *AggregateParallelTransformation) Merge(into, from interface{}, mem memory.Allocator) (interface{}, error) {
+	return a.MergeFn(into, from, mem)
+}
+
+func (a *AggregateParallelTransformation) Compute(key flux.GroupKey, state interface{}, d *execute.TransportDataset, mem memory.Allocator) error {
+	return a.ComputeFn(key, state, d, mem)
+}
+
+func (a *AggregateParallelTransformation) Close() error {
+	if a.CloseFn != nil {
+		return a.CloseFn()
+	}
+	return nil
+}

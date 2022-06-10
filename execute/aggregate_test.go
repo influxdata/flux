@@ -3,12 +3,15 @@ package execute_test
 import (
 	"context"
 	"sort"
+	"sync"
+	"sync/atomic"
 	"testing"
 
 	"github.com/apache/arrow/go/v7/arrow/memory"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/arrow"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/dependency"
 	"github.com/influxdata/flux/execute"
@@ -19,6 +22,7 @@ import (
 	"github.com/influxdata/flux/mock"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/stdlib/universe"
+	"github.com/influxdata/flux/values"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -373,6 +377,390 @@ func TestAggregateTransformation_Finish(t *testing.T) {
 	// So should the transformation.
 	if !isDisposed {
 		t.Error("transformation was not disposed")
+	}
+}
+
+func TestAggregateParallelTransformation_FlushKey(t *testing.T) {
+	// Ensure we allocate and free all memory correctly.
+	mem := memory.NewCheckedAllocator(memory.DefaultAllocator)
+	defer mem.AssertSize(t, 0)
+
+	parents := make([]execute.DatasetID, 10)
+	for i := range parents {
+		parents[i] = executetest.RandomDatasetID()
+	}
+
+	isComputed := int32(0)
+	tr, _, err := execute.NewAggregateParallelTransformation(
+		executetest.RandomDatasetID(),
+		parents,
+		&mock.AggregateParallelTransformation{
+			AggregateFn: func(chunk table.Chunk, state interface{}, _ memory.Allocator) (interface{}, bool, error) {
+				// This shouldn't require a lock as the transformation does that for us.
+				count, _ := state.(int64)
+				count++
+				return count, true, nil
+			},
+			MergeFn: func(into, from interface{}, mem memory.Allocator) (interface{}, error) {
+				// Again, no locks required as the locking is handled for us.
+				return into.(int64) + from.(int64), nil
+			},
+			ComputeFn: func(key flux.GroupKey, state interface{}, d *execute.TransportDataset, mem memory.Allocator) error {
+				// This should only be invoked once.
+				if state == nil {
+					t.Error("invoked compute without state")
+				} else if want, got := int64(500), state.(int64); want != got {
+					t.Errorf("unexpected state -want/+got:\n\t- %d\n\t+ %d", want, got)
+				}
+				atomic.AddInt32(&isComputed, 1)
+				return nil
+			},
+		},
+		mem,
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	key := execute.NewGroupKey(nil, nil)
+	chunk := table.ChunkFromBuffer(arrow.TableBuffer{
+		GroupKey: key,
+	})
+
+	// We can use a TransportDataset as a mock source
+	// to send messages to the transformation we are testing.
+	var wg sync.WaitGroup
+	wg.Add(len(parents))
+	for _, parent := range parents {
+		go func(id execute.DatasetID) {
+			defer wg.Done()
+
+			source := execute.NewTransportDataset(id, mem)
+			source.AddTransformation(tr)
+
+			// Send an empty chunk 50 times.
+			// This will increment the count 50 times.
+			for i := 0; i < 50; i++ {
+				if err := source.Process(chunk); err != nil {
+					t.Errorf("unexpected error: %s", err)
+					break
+				}
+			}
+
+			// Send the flush key message.
+			if err := source.FlushKey(key); err != nil {
+				t.Error(err)
+			}
+		}(parent)
+	}
+	wg.Wait()
+
+	if calls := atomic.LoadInt32(&isComputed); calls != 1 {
+		t.Fatalf("expected compute to be called exactly once, but was called %d times", calls)
+	}
+}
+
+func TestAggregateParallelTransformation_FlushKey_Partial(t *testing.T) {
+	// Ensure we allocate and free all memory correctly.
+	mem := memory.NewCheckedAllocator(memory.DefaultAllocator)
+	defer mem.AssertSize(t, 0)
+
+	// This parent will send data to every chunk.
+	globalParent := executetest.RandomDatasetID()
+
+	// These parents will only receive data from a single chunk.
+	parents := make([]execute.DatasetID, 10)
+	chunks := make([]table.Chunk, 10)
+	for i := range parents {
+		parents[i] = executetest.RandomDatasetID()
+		chunks[i] = table.ChunkFromBuffer(arrow.TableBuffer{
+			GroupKey: execute.NewGroupKey(
+				[]flux.ColMeta{{
+					Label: "n",
+					Type:  flux.TInt,
+				}},
+				[]values.Value{
+					values.NewInt(int64(i)),
+				},
+			),
+		})
+	}
+
+	isComputed := int32(0)
+	tr, _, err := execute.NewAggregateParallelTransformation(
+		executetest.RandomDatasetID(),
+		append([]execute.DatasetID{globalParent}, parents...),
+		&mock.AggregateParallelTransformation{
+			AggregateFn: func(chunk table.Chunk, state interface{}, _ memory.Allocator) (interface{}, bool, error) {
+				// This shouldn't require a lock as the transformation does that for us.
+				count, _ := state.(int64)
+				count++
+				return count, true, nil
+			},
+			MergeFn: func(into, from interface{}, mem memory.Allocator) (interface{}, error) {
+				// Again, no locks required as the locking is handled for us.
+				return into.(int64) + from.(int64), nil
+			},
+			ComputeFn: func(key flux.GroupKey, state interface{}, d *execute.TransportDataset, mem memory.Allocator) error {
+				// This should only be invoked once.
+				if state == nil {
+					t.Error("invoked compute without state")
+				} else if want, got := int64(100), state.(int64); want != got {
+					t.Errorf("unexpected state -want/+got:\n\t- %d\n\t+ %d", want, got)
+				}
+				atomic.AddInt32(&isComputed, 1)
+				return nil
+			},
+		},
+		mem,
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// We can use a TransportDataset as a mock source
+	// to send messages to the transformation we are testing.
+	var wg sync.WaitGroup
+	wg.Add(len(parents) + 1)
+	go func(id execute.DatasetID) {
+		defer wg.Done()
+
+		source := execute.NewTransportDataset(id, mem)
+		source.AddTransformation(tr)
+
+		// Send an empty chunk 50 times for every group key.
+		// This will increment the count 50 times for each.
+		for i := 0; i < 50; i++ {
+			for _, chunk := range chunks {
+				if err := source.Process(chunk); err != nil {
+					t.Errorf("unexpected error: %s", err)
+					break
+				}
+			}
+		}
+
+		for _, chunk := range chunks {
+			if err := source.FlushKey(chunk.Key()); err != nil {
+				t.Errorf("unexpected error: %s", err)
+				break
+			}
+		}
+		source.Finish(nil)
+	}(globalParent)
+
+	for i, parent := range parents {
+		go func(id execute.DatasetID, chunk table.Chunk) {
+			defer wg.Done()
+
+			source := execute.NewTransportDataset(id, mem)
+			source.AddTransformation(tr)
+
+			// Send an empty chunk 50 times.
+			// This will increment the count 50 times.
+			for i := 0; i < 50; i++ {
+				if err := source.Process(chunk); err != nil {
+					t.Errorf("unexpected error: %s", err)
+					break
+				}
+			}
+
+			// Send the flush key message.
+			if err := source.FlushKey(chunk.Key()); err != nil {
+				t.Error(err)
+			}
+			source.Finish(nil)
+		}(parent, chunks[i])
+	}
+	wg.Wait()
+
+	if calls := atomic.LoadInt32(&isComputed); calls != 10 {
+		t.Fatalf("expected compute to be called ten times, but was called %d times", calls)
+	}
+}
+
+func TestAggregateParallelTransformation_Finish(t *testing.T) {
+	// Ensure we allocate and free all memory correctly.
+	mem := memory.NewCheckedAllocator(memory.DefaultAllocator)
+	defer mem.AssertSize(t, 0)
+
+	parents := make([]execute.DatasetID, 10)
+	for i := range parents {
+		parents[i] = executetest.RandomDatasetID()
+	}
+
+	isComputed := int32(0)
+	tr, _, err := execute.NewAggregateParallelTransformation(
+		executetest.RandomDatasetID(),
+		parents,
+		&mock.AggregateParallelTransformation{
+			AggregateFn: func(chunk table.Chunk, state interface{}, _ memory.Allocator) (interface{}, bool, error) {
+				// This shouldn't require a lock as the transformation does that for us.
+				count, _ := state.(int64)
+				count++
+				return count, true, nil
+			},
+			MergeFn: func(into, from interface{}, mem memory.Allocator) (interface{}, error) {
+				// Again, no locks required as the locking is handled for us.
+				return into.(int64) + from.(int64), nil
+			},
+			ComputeFn: func(key flux.GroupKey, state interface{}, d *execute.TransportDataset, mem memory.Allocator) error {
+				// This should only be invoked once.
+				if state == nil {
+					t.Error("invoked compute without state")
+				} else if want, got := int64(500), state.(int64); want != got {
+					t.Errorf("unexpected state -want/+got:\n\t- %d\n\t+ %d", want, got)
+				}
+				atomic.AddInt32(&isComputed, 1)
+				return nil
+			},
+		},
+		mem,
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	key := execute.NewGroupKey(nil, nil)
+	chunk := table.ChunkFromBuffer(arrow.TableBuffer{
+		GroupKey: key,
+	})
+
+	// We can use a TransportDataset as a mock source
+	// to send messages to the transformation we are testing.
+	var wg sync.WaitGroup
+	wg.Add(len(parents))
+	for _, parent := range parents {
+		go func(id execute.DatasetID) {
+			defer wg.Done()
+
+			source := execute.NewTransportDataset(id, mem)
+			source.AddTransformation(tr)
+
+			// Send an empty chunk 50 times.
+			// This will increment the count 50 times.
+			for i := 0; i < 50; i++ {
+				if err := source.Process(chunk); err != nil {
+					t.Errorf("unexpected error: %s", err)
+					break
+				}
+			}
+
+			// Send the finish message.
+			source.Finish(nil)
+		}(parent)
+	}
+	wg.Wait()
+
+	if calls := atomic.LoadInt32(&isComputed); calls != 1 {
+		t.Fatalf("expected compute to be called exactly once, but was called %d times", calls)
+	}
+}
+
+func TestAggregateParallelTransformation_Partial_Error(t *testing.T) {
+	// Ensure we allocate and free all memory correctly.
+	mem := memory.NewCheckedAllocator(memory.DefaultAllocator)
+	defer mem.AssertSize(t, 0)
+
+	// This parent will send data to every chunk.
+	globalParent := executetest.RandomDatasetID()
+
+	// These parents will only receive data from a single chunk.
+	parents := make([]execute.DatasetID, 10)
+	chunks := make([]table.Chunk, 10)
+	for i := range parents {
+		parents[i] = executetest.RandomDatasetID()
+		chunks[i] = table.ChunkFromBuffer(arrow.TableBuffer{
+			GroupKey: execute.NewGroupKey(
+				[]flux.ColMeta{{
+					Label: "n",
+					Type:  flux.TInt,
+				}},
+				[]values.Value{
+					values.NewInt(int64(i)),
+				},
+			),
+		})
+	}
+
+	tr, d, err := execute.NewAggregateParallelTransformation(
+		executetest.RandomDatasetID(),
+		append([]execute.DatasetID{globalParent}, parents...),
+		&mock.AggregateParallelTransformation{
+			AggregateFn: func(chunk table.Chunk, state interface{}, _ memory.Allocator) (interface{}, bool, error) {
+				// This shouldn't require a lock as the transformation does that for us.
+				count, _ := state.(int64)
+				count++
+				return count, true, nil
+			},
+			MergeFn: func(into, from interface{}, mem memory.Allocator) (interface{}, error) {
+				// Again, no locks required as the locking is handled for us.
+				return into.(int64) + from.(int64), nil
+			},
+			ComputeFn: func(key flux.GroupKey, state interface{}, d *execute.TransportDataset, mem memory.Allocator) error {
+				return nil
+			},
+		},
+		mem,
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	dataStore := executetest.NewDataStore()
+	d.AddTransformation(dataStore)
+
+	// We can use a TransportDataset as a mock source
+	// to send messages to the transformation we are testing.
+	var wg sync.WaitGroup
+	wg.Add(len(parents) + 1)
+	for i, parent := range parents {
+		go func(id execute.DatasetID, chunk table.Chunk) {
+			defer wg.Done()
+
+			source := execute.NewTransportDataset(id, mem)
+			source.AddTransformation(tr)
+
+			// Send an empty chunk 50 times.
+			// This will increment the count 50 times.
+			for i := 0; i < 50; i++ {
+				if err := source.Process(chunk); err != nil {
+					t.Errorf("unexpected error: %s", err)
+					break
+				}
+			}
+
+			// Send the flush key message.
+			if err := source.FlushKey(chunk.Key()); err != nil {
+				t.Error(err)
+			}
+			source.Finish(nil)
+		}(parent, chunks[i])
+	}
+
+	go func(id execute.DatasetID) {
+		defer wg.Done()
+
+		source := execute.NewTransportDataset(id, mem)
+		source.AddTransformation(tr)
+
+		// Report an error. This should extend to all keys.
+		source.Finish(errors.New(codes.Invalid, "expected"))
+	}(globalParent)
+
+	wg.Wait()
+
+	if want, got := errors.New(codes.Invalid, "expected"), dataStore.Err(); !cmp.Equal(want, got) {
+		t.Errorf("unexpected error -want/+got:\n%s", cmp.Diff(want, got))
+	}
+
+	computed := 0
+	_ = dataStore.ForEach(func(key flux.GroupKey) error {
+		computed++
+		return nil
+	})
+
+	if want, got := 0, computed; want != got {
+		t.Errorf("unexpected number of output tables -want/+got:\n\t- %d\n\t+ %d", want, got)
 	}
 }
 
