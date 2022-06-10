@@ -100,6 +100,17 @@ func TestSpec_Walk(t *testing.T) {
 			query: &flux.Spec{
 				Operations: []*flux.Operation{
 					{ID: "a"},
+				},
+				Edges: []flux.Edge{},
+			},
+			walkOrder: []flux.OperationID{
+				"a",
+			},
+		},
+		{
+			query: &flux.Spec{
+				Operations: []*flux.Operation{
+					{ID: "a"},
 					{ID: "b"},
 					{ID: "c"},
 					{ID: "d"},
