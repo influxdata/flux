@@ -52,6 +52,9 @@ builtin _time : (t: T, location: {zone: string, offset: duration}) => time where
 //   Use an absolute time or relative duration.
 //   Durations are relative to `now()`.
 //
+// - location: Location used to determine timezone.
+//   Default is the `location` option.
+//
 // ## Examples
 //
 // ### Return the time for a given time
