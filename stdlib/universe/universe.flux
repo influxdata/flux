@@ -4912,7 +4912,7 @@ builtin _window : (
     V: Label
 
 // @feature labelPolymorphism
-builtin getColumn : (<-table: stream[{ A with C: B }], column: C) => stream[B] where A: Record, C: Label
+builtin getColumn : (<-table: stream[{ A with C: B }], column: C) => [B] where A: Record, C: Label
 
 // @feature labelPolymorphism
 builtin _hourSelection : (
