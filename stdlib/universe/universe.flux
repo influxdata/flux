@@ -4957,7 +4957,7 @@ builtin stateTracking : (
 builtin stddev : (<-tables: stream[{ A with C: B }], ?column: C = "_value", ?mode: string) => stream[{ C: B }] where A: Record, B: Numeric, C: Label
 
 // @feature labelPolymorphism
-builtin sum : (<-tables: stream[{ A with C: B }], ?column: C = "_value") => stream[{ C: B }]
+builtin sum : (<-tables: stream[{ A with C: B }], ?column: C = "_value") => stream[{ A with C: B }]
     where A: Record, B: Numeric, C: Label
 
 // @feature labelPolymorphism
