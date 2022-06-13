@@ -2,6 +2,7 @@ package plan_test
 
 import (
 	"context"
+	"fmt"
 	"strings"
 	"testing"
 
@@ -205,30 +206,15 @@ func TestHeuristicPlanner_Plan(t *testing.T) {
 					{5, 7},
 				},
 			},
-			validateFn: func(t *testing.T, inputSpec *plan.Spec) {
-				var seenNodes []plan.NodeID
-				rule := &plantest.FunctionRule{RewriteFn: func(ctx context.Context, node plan.Node) (plan.Node, bool, error) {
-					seenNodes = append(seenNodes, node.ID())
-					// Replace the central node with a new one
-					if len(node.Predecessors()) == 2 && len(node.Successors()) == 2 && node.ID() != "new" {
-						// Create a new plan node that will get linked into the plan
-						newNode := plantest.CreatePhysicalMockNode("new")
-						plan.ReplaceNode(node, newNode)
-						return newNode, true, nil
-					}
-					return node, false, nil
-				}}
-				thePlanner := plan.NewPhysicalPlanner(plan.OnlyPhysicalRules(rule))
-				spec, err := thePlanner.Plan(context.Background(), inputSpec)
-				require.NoError(t, err)
-				require.NoError(t, spec.CheckIntegrity())
-				wantSeenNodes := []plan.NodeID{
+			validateFn: checkMutation(
+				func(n plan.Node) bool {
+					return len(n.Predecessors()) == 2 && len(n.Successors()) == 2 && !strings.HasPrefix(string(n.ID()), "new")
+				},
+				[]plan.NodeID{
 					"7", "6", "5", "4", "1", "0", "3", "2", // first pass
-					"7", "6", "5", "new", "1", "0", "3", "2", // second pass
-				}
-				diff := cmp.Diff(wantSeenNodes, seenNodes)
-				require.True(t, diff == "", "found difference between -want/+got nodes:\n%v", diff)
-			},
+					"7", "6", "5", "new-4", "1", "0", "3", "2", // second pass
+				},
+			),
 		},
 		{
 			name: "half diamond physical",
@@ -272,6 +258,35 @@ func TestHeuristicPlanner_Plan(t *testing.T) {
 			},
 			validateFn: checkVisitedNodes([]plan.NodeID{"2", "1", "0"}),
 		},
+		{
+			name: "half diamond logical rewrite",
+			//            2
+			//           / \
+			//          |   1
+			//           \ /
+			//            0
+			plan: plantest.PlanSpec{
+				Nodes: []plan.Node{
+					plantest.CreateLogicalMockNode("0"),
+					plantest.CreateLogicalMockNode("1"),
+					plantest.CreateLogicalMockNode("2"),
+				},
+				Edges: [][2]int{
+					{0, 1},
+					{1, 2},
+					{0, 2},
+				},
+			},
+			validateFn: checkMutation(
+				func(n plan.Node) bool {
+					return n.ID() == "1"
+				},
+				[]plan.NodeID{
+					"2", "1", "0", // first pass
+					"2", "new-1", "0", // second pass
+				},
+			),
+		},
 	}
 
 	for _, tc := range testCases {
@@ -282,5 +297,30 @@ func TestHeuristicPlanner_Plan(t *testing.T) {
 			planSpec := plantest.CreatePlanSpec(&tc.plan)
 			tc.validateFn(t, planSpec)
 		})
+	}
+}
+
+func checkMutation(selector func(plan.Node) bool, wantSeenNodes []plan.NodeID) func(*testing.T, *plan.Spec) {
+	return func(t *testing.T, inputSpec *plan.Spec) {
+		var seenNodes []plan.NodeID
+		rule := &plantest.FunctionRule{RewriteFn: func(ctx context.Context, node plan.Node) (plan.Node, bool, error) {
+			seenNodes = append(seenNodes, node.ID())
+			// Replace the central node with a new one
+			if selector(node) {
+				// Create a new plan node that will get linked into the plan
+				nodeID := node.ID()
+				fmt.Printf("%v", nodeID)
+				newNode := plantest.CreatePhysicalMockNode(fmt.Sprintf("new-%v", nodeID))
+				plan.ReplaceNode(node, newNode)
+				return newNode, true, nil
+			}
+			return node, false, nil
+		}}
+		thePlanner := plan.NewPhysicalPlanner(plan.OnlyPhysicalRules(rule))
+		spec, err := thePlanner.Plan(context.Background(), inputSpec)
+		require.NoError(t, err)
+		require.NoError(t, spec.CheckIntegrity())
+		diff := cmp.Diff(wantSeenNodes, seenNodes)
+		require.True(t, diff == "", "found difference between -want/+got nodes:\n%v", diff)
 	}
 }
