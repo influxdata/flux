@@ -2,6 +2,7 @@ package execute
 
 import (
 	"context"
+	"sync"
 
 	"github.com/apache/arrow/go/v7/arrow/memory"
 	"github.com/influxdata/flux"
@@ -92,6 +93,12 @@ func (t *aggregateTransformation) processChunk(chunk table.Chunk) error {
 }
 
 func (t *aggregateTransformation) computeFor(key flux.GroupKey, state interface{}) error {
+	// Special code to allow aggregate parallel to work without copying this code.
+	// Unwrap the state from the aggregate parallel state automatically.
+	if s, ok := state.(*aggregateParallelState); ok {
+		state = s.state
+	}
+
 	if err := t.t.Compute(key, state, t.d, t.d.mem); err != nil {
 		return err
 	}
@@ -122,12 +129,240 @@ func (t *aggregateTransformation) Finish(id DatasetID, err error) {
 			return t.computeFor(key, value)
 		})
 	}
+
+	// If an error occurred, close all items in the global state.
+	// This happens automatically in computeFor for the successful case,
+	// but an error can cause computeFor not to be called on all states.
+	if err != nil {
+		_ = t.d.Range(func(key flux.GroupKey, value interface{}) error {
+			if v, ok := value.(Closer); ok {
+				_ = v.Close()
+			}
+			return nil
+		})
+	}
+
 	err = Close(err, t.t)
 	t.d.Finish(err)
 }
 
 func (t *aggregateTransformation) OperationType() string {
 	return OperationType(t.t)
+}
+
+// AggregateParallelTransformation is an AggregateTransformation that is capable of
+// processing chunks from within the same group key in parallel.
+//
+// The thing that differentiates this from a normal AggregateTransformation is having
+// multiple parents and the capability to merge two existing states into a single one
+// that will be passed to Compute.
+type AggregateParallelTransformation interface {
+	AggregateTransformation
+
+	// Merge will take two existing states produced by the Aggregate method and merge them
+	// into a single state.
+	Merge(into, from interface{}, mem memory.Allocator) (interface{}, error)
+}
+
+type aggregateParallelTransformation struct {
+	aggregateTransformation
+
+	merge    func(into, from interface{}, mem memory.Allocator) (interface{}, error)
+	parents  map[DatasetID]*RandomAccessGroupLookup
+	finished int
+	err      error
+	mu       sync.RWMutex
+}
+
+// NewAggregateParallelTransformation constructs a Transformation and Dataset
+// using the AggregateParallelTransformation implementation.
+func NewAggregateParallelTransformation(id DatasetID, parents []DatasetID, t AggregateParallelTransformation, mem memory.Allocator) (Transformation, Dataset, error) {
+	if len(parents) == 1 {
+		return NewAggregateTransformation(id, t, mem)
+	}
+
+	tr := &aggregateParallelTransformation{
+		aggregateTransformation: aggregateTransformation{
+			t: t,
+			d: NewTransportDataset(id, mem),
+		},
+		merge:   t.Merge,
+		parents: make(map[DatasetID]*RandomAccessGroupLookup, len(parents)),
+	}
+	for _, parent := range parents {
+		tr.parents[parent] = NewRandomAccessGroupLookup()
+	}
+	return NewTransformationFromTransport(tr), tr.d, nil
+}
+
+// ProcessMessage will process the incoming message.
+func (t *aggregateParallelTransformation) ProcessMessage(m Message) error {
+	defer m.Ack()
+
+	// Finish messages always go through.
+	if m, ok := m.(FinishMsg); ok {
+		t.Finish(m.SrcDatasetID(), m.Error())
+		return nil
+	}
+
+	// Do not invoke the other methods if an error has previously happened.
+	if t.hasError() {
+		return nil
+	}
+
+	switch m := m.(type) {
+	case ProcessChunkMsg:
+		return t.processChunk(m.SrcDatasetID(), m.TableChunk())
+	case FlushKeyMsg:
+		return t.flushKey(m.SrcDatasetID(), m.Key())
+	case ProcessMsg:
+		panic("unreachable")
+	}
+	return nil
+}
+
+// hasError returns true if an error has happened from some dataset.
+func (t *aggregateParallelTransformation) hasError() bool {
+	t.mu.Lock()
+	hasErr := t.err != nil
+	t.mu.Unlock()
+	return hasErr
+}
+
+func (t *aggregateParallelTransformation) processChunk(parent DatasetID, chunk table.Chunk) error {
+	d := t.parents[parent]
+
+	state, _ := d.Lookup(chunk.Key())
+	if newState, ok, err := t.t.Aggregate(chunk, state, t.d.mem); err != nil {
+		return err
+	} else if ok {
+		// Associate the newly returned state with the group key
+		// if we were told to do so by Aggregate.
+		d.Set(chunk.Key(), newState)
+	}
+	return nil
+}
+
+func (t *aggregateParallelTransformation) mergeState(key flux.GroupKey, from interface{}) error {
+	merged := t.d.LookupOrCreate(key, func() interface{} {
+		return &aggregateParallelState{}
+	}).(*aggregateParallelState)
+
+	if merged.state == nil {
+		// No existing state for this merge. Just take the passed in
+		// state. This works fine even if both sides are nil.
+		merged.state = from
+	} else if from != nil {
+		// We have merged state and new state.
+		// Merge these together with the merge function.
+		mergedState, err := t.merge(merged.state, from, t.d.mem)
+		if err != nil {
+			return err
+		}
+		merged.state = mergedState
+
+		// If the from state was disposable, close it now.
+		if v, ok := from.(Closer); ok {
+			if err := v.Close(); err != nil {
+				return err
+			}
+		}
+	}
+
+	// Increment the count regardless of what happens.
+	merged.count++
+	// Are we done with this group key? Flush the key if we are.
+	if done := merged.count == len(t.parents); done {
+		return t.aggregateTransformation.flushKey(key)
+	}
+	return nil
+}
+
+func (t *aggregateParallelTransformation) flushKey(parent DatasetID, key flux.GroupKey) error {
+	d := t.parents[parent]
+
+	// Remove the state for this key from the dataset.
+	// If we find state associated with the key, compute the table.
+	if state, ok := d.Delete(key); ok {
+		// We will be interacting with shared state so lock the mutex.
+		t.mu.Lock()
+		defer t.mu.Unlock()
+
+		// Merge this state with the others.
+		return t.mergeState(key, state)
+	}
+	return nil
+}
+
+// Finish is implemented to remain compatible with legacy upstreams.
+func (t *aggregateParallelTransformation) Finish(id DatasetID, err error) {
+	t.mu.Lock()
+	defer t.mu.Unlock()
+
+	// Restore the error if one happened previously.
+	// This allows remaining datasets to know that an error
+	// was already reported.
+	//
+	// This really only applies to multiple parent situations
+	// since this method is only called once with a single
+	// parent so there's nothing to restore.
+	if t.err != nil {
+		err = t.err
+	}
+
+	// Retrieve the parent dataset.
+	d := t.parents[id]
+	if err == nil {
+		// If no error occurred, we need to flush all keys from the parent
+		// dataset into the global one.
+		err = d.Range(func(key flux.GroupKey, value interface{}) error {
+			return t.mergeState(key, value)
+		})
+	}
+
+	// If an error occurred, possibly in the previous section,
+	// we need to clear the state from this parent.
+	// If no error happened, then mergeState should have already done
+	// this for us. Calling close multiple times should be fine.
+	if err != nil {
+		_ = d.Range(func(key flux.GroupKey, value interface{}) error {
+			if v, ok := value.(Closer); ok {
+				_ = v.Close()
+			}
+			return nil
+		})
+	}
+
+	// This parent is finished. Mark it so.
+	t.finished++
+	d.Clear()
+
+	// Store any error for future iterations.
+	t.err = err
+
+	// From this point on, we're handling global state instead
+	// of just state for the specific parent.
+	if t.finished < len(t.parents) {
+		// Do not continue until we get a finish from all parents.
+		return
+	}
+	t.aggregateTransformation.Finish(id, t.err)
+}
+
+func (t *aggregateParallelTransformation) OperationType() string {
+	return OperationType(t.t)
+}
+
+type aggregateParallelState struct {
+	state interface{}
+	count int
+}
+
+func (s *aggregateParallelState) Close() error {
+	if c, ok := s.state.(Closer); ok {
+		return c.Close()
+	}
+	return nil
 }
 
 type SimpleAggregateConfig struct {

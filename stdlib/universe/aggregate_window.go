@@ -67,8 +67,15 @@ type aggregateWindow interface {
 	// are the buckets the values will be grouped into.
 	Aggregate(ts *array.Int, vs array.Array, start, stop *array.Int, mem memory.Allocator)
 
+	// Merge will take an aggregateWindow of the same type and merge the
+	// values from to the into state.
+	Merge(from aggregateWindow, mem memory.Allocator)
+
 	// Compute will compute the final values for the aggregated windows.
 	Compute(mem memory.Allocator) (*array.Int, flux.ColType, array.Array)
+
+	// Close will release resources associated with this aggregate window state.
+	Close() error
 }
 
 type aggregateWindowTransformation struct {
@@ -93,10 +100,10 @@ func createAggregateWindowTransformation(id execute.DatasetID, mode execute.Accu
 		return nil, nil, errors.New(codes.Invalid, "nil bounds passed to window; use range to set the window range").
 			WithDocURL(docURL)
 	}
-	return newAggregateWindowTransformation(id, s, bounds, a.Allocator())
+	return newAggregateWindowTransformation(id, a.Parents(), s, bounds, a.Allocator())
 }
 
-func newAggregateWindowTransformation(id execute.DatasetID, s *AggregateWindowProcedureSpec, bounds *execute.Bounds, mem memory.Allocator) (execute.Transformation, execute.Dataset, error) {
+func newAggregateWindowTransformation(id execute.DatasetID, parents []execute.DatasetID, s *AggregateWindowProcedureSpec, bounds *execute.Bounds, mem memory.Allocator) (execute.Transformation, execute.Dataset, error) {
 	loc, err := s.WindowSpec.Window.LoadLocation()
 	if err != nil {
 		return nil, nil, err
@@ -131,7 +138,7 @@ func newAggregateWindowTransformation(id execute.DatasetID, s *AggregateWindowPr
 	default:
 		return nil, nil, errors.Newf(codes.Internal, "cannot use %q for aggregate window", s.AggregateKind)
 	}
-	return execute.NewAggregateTransformation(id, tr, mem)
+	return execute.NewAggregateParallelTransformation(id, parents, tr, mem)
 }
 
 func (a *aggregateWindowTransformation) Aggregate(chunk table.Chunk, state interface{}, mem memory.Allocator) (interface{}, bool, error) {
@@ -141,6 +148,16 @@ func (a *aggregateWindowTransformation) Aggregate(chunk table.Chunk, state inter
 		return nil, false, err
 	}
 	return newState, true, nil
+}
+
+func (a *aggregateWindowTransformation) Merge(into, from interface{}, mem memory.Allocator) (interface{}, error) {
+	intoState := into.(*aggregateWindowState)
+	fromState := from.(*aggregateWindowState)
+	if intoState.inType != fromState.inType {
+		return nil, errors.Newf(codes.FailedPrecondition, "schema collision detected: column %q is both of type %s and %s", a.valueCol, intoState.inType, fromState.inType)
+	}
+	intoState.state.Merge(fromState.state, mem)
+	return into, nil
 }
 
 func (a *aggregateWindowTransformation) Compute(key flux.GroupKey, state interface{}, d *execute.TransportDataset, mem memory.Allocator) error {
@@ -652,6 +669,13 @@ func (a *aggregateWindowBase) createEmptyWindows(mem memory.Allocator, fn func(n
 	a.ts = ts
 }
 
+func (a *aggregateWindowBase) release() {
+	if a.ts != nil {
+		a.ts.Release()
+		a.ts = nil
+	}
+}
+
 type aggregateWindowCount struct {
 	aggregateWindowBase
 	vs *array.Int
@@ -671,6 +695,10 @@ func (a *aggregateWindowCount) Aggregate(ts *array.Int, vs array.Array, start, s
 	})
 
 	result := b.NewIntArray()
+	a.merge(start, stop, result, mem)
+}
+
+func (a *aggregateWindowCount) merge(start, stop, result *array.Int, mem memory.Allocator) {
 	a.mergeWindows(start, stop, mem, func(ts, prev, next *array.Int) {
 		if a.vs == nil {
 			a.vs = result
@@ -694,6 +722,12 @@ func (a *aggregateWindowCount) Aggregate(ts *array.Int, vs array.Array, start, s
 	})
 }
 
+func (a *aggregateWindowCount) Merge(from aggregateWindow, mem memory.Allocator) {
+	other := from.(*aggregateWindowCount)
+	other.vs.Retain()
+	a.merge(other.ts, other.ts, other.vs, mem)
+}
+
 func (a *aggregateWindowCount) Compute(mem memory.Allocator) (*array.Int, flux.ColType, array.Array) {
 	a.createEmptyWindows(mem, func(n int) (append func(i int), done func()) {
 		b := array.NewIntBuilder(mem)
@@ -713,7 +747,19 @@ func (a *aggregateWindowCount) Compute(mem memory.Allocator) (*array.Int, flux.C
 		}
 		return append, done
 	})
+
+	a.ts.Retain()
+	a.vs.Retain()
 	return a.ts, flux.TInt, a.vs
+}
+
+func (a *aggregateWindowCount) Close() error {
+	a.release()
+	if a.vs != nil {
+		a.vs.Release()
+		a.vs = nil
+	}
+	return nil
 }
 
 func newAggregateWindowSum(a *aggregateWindowTransformation, valueType flux.ColType) (aggregateWindow, error) {

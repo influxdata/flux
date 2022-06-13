@@ -26,6 +26,16 @@ func (a *aggregateWindowSum{{.Name}}) Aggregate(ts *array.Int, vs array.Array, s
 		b.Append(sum)
     })
 	result := b.New{{.Name}}Array()
+	a.merge(start, stop, result, mem)
+}
+
+func (a *aggregateWindowSum{{.Name}}) Merge(from aggregateWindow, mem memory.Allocator) {
+	other := from.(*aggregateWindowSum{{.Name}})
+	other.vs.Retain()
+	a.merge(other.ts, other.ts, other.vs, mem)
+}
+
+func (a *aggregateWindowSum{{.Name}}) merge(start, stop *array.Int, result *array.{{.Name}}, mem memory.Allocator) {
 	a.mergeWindows(start, stop, mem, func(ts, prev, next *array.Int) {
 		if a.vs == nil {
 			a.vs = result
@@ -68,7 +78,18 @@ func (a *aggregateWindowSum{{.Name}}) Compute(mem memory.Allocator) (*array.Int,
 		}
 		return append, done
 	})
+	a.ts.Retain()
+	a.vs.Retain()
 	return a.ts, {{.ColumnType}}, a.vs
+}
+
+func (a *aggregateWindowSum{{.Name}}) Close() error {
+	a.release()
+	if a.vs != nil {
+		a.vs.Release()
+		a.vs = nil
+	}
+	return nil
 }
 
 type aggregateWindowMean{{.Name}} struct {
@@ -95,6 +116,17 @@ func (a *aggregateWindowMean{{.Name}}) Aggregate(ts *array.Int, vs array.Array, 
 	})
 
 	counts, sums := countsB.NewIntArray(), sumsB.New{{.Name}}Array()
+	a.merge(start, stop, counts, sums, mem)
+}
+
+func (a *aggregateWindowMean{{.Name}}) Merge(from aggregateWindow, mem memory.Allocator) {
+	other := from.(*aggregateWindowMean{{.Name}})
+	other.counts.Retain()
+	other.sums.Retain()
+	a.merge(other.ts, other.ts, other.counts, other.sums, mem)
+}
+
+func (a *aggregateWindowMean{{.Name}}) merge(start, stop, counts *array.Int, sums *{{.ArrowType}}, mem memory.Allocator) {
 	a.mergeWindows(start, stop, mem, func(ts, prev, next *array.Int) {
 		if a.sums == nil {
 			a.counts, a.sums = counts, sums
@@ -126,9 +158,6 @@ func (a *aggregateWindowMean{{.Name}}) Aggregate(ts *array.Int, vs array.Array, 
 }
 
 func (a *aggregateWindowMean{{.Name}}) Compute(mem memory.Allocator) (*array.Int, flux.ColType, array.Array) {
-	defer a.counts.Release()
-	defer a.sums.Release()
-
 	b := array.NewFloatBuilder(mem)
 	b.Resize(a.ts.Len())
 	for i, n := 0, a.sums.Len(); i < n; i++ {
@@ -155,7 +184,21 @@ func (a *aggregateWindowMean{{.Name}}) Compute(mem memory.Allocator) (*array.Int
 		}
 		return append, done
 	})
+	a.ts.Retain()
 	return a.ts, flux.TFloat, vs
+}
+
+func (a *aggregateWindowMean{{.Name}}) Close() error {
+	a.release()
+	if a.counts != nil {
+		a.counts.Release()
+		a.counts = nil
+	}
+	if a.sums != nil {
+		a.sums.Release()
+		a.sums = nil
+	}
+	return nil
 }
 {{end}}
 {{end}}
