@@ -513,12 +513,12 @@ impl<'a> Converter<'a> {
     ) -> Option<BuiltinStmt> {
         // Only include builtin statements that have the `feature` attribute if a matching
         // feature is detected
-        if let Some(attr) = get_attribute(
+        let opt_attr = get_attribute(
             stmt.base.comments.iter().map(|c| c.text.as_str()),
             "feature",
         )
-        .and_then(|attr| attr.parse::<Feature>().ok())
-        {
+        .and_then(|attr| attr.parse::<Feature>().ok());
+        if let Some(attr) = opt_attr {
             if self.config.features.iter().all(|feature| *feature != attr) {
                 return None;
             }
