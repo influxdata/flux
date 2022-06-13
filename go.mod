@@ -56,7 +56,7 @@ require (
 	golang.org/x/exp v0.0.0-20211216164055-b2b84827b756
 	golang.org/x/net v0.0.0-20220127200216-cd36cc0744dd
 	golang.org/x/tools v0.1.9
-	gonum.org/v1/gonum v0.9.3
+	gonum.org/v1/gonum v0.11.0
 	google.golang.org/api v0.47.0
 	google.golang.org/grpc v1.44.0
 	gopkg.in/yaml.v2 v2.3.0
