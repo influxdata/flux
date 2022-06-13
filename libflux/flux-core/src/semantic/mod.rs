@@ -26,7 +26,7 @@ mod tests;
 #[allow(unused, non_snake_case)]
 pub mod flatbuffers;
 
-use std::{fmt, ops::Range};
+use std::{fmt, ops::Range, str::FromStr};
 
 use codespan_reporting::{
     diagnostic,
@@ -484,6 +484,14 @@ pub enum Feature {
 
     /// Enables warnings for unused symbols
     UnusedSymbolWarnings,
+}
+
+impl FromStr for Feature {
+    type Err = serde_json::Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        serde_json::from_str(&serde_json::to_string(s)?)
+    }
 }
 
 /// A set of configuration options for the behavior of an Analyzer.
