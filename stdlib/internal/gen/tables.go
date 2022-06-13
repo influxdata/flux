@@ -26,6 +26,7 @@ type TablesOpSpec struct {
 	N     int     `json:"n"`
 	Tags  []Tag   `json:"tags,omitempty"`
 	Nulls float64 `json:"nulls,omitempty"`
+	Seed  *int64  `json:"Seed,omitempty"`
 }
 
 func init() {
@@ -91,6 +92,12 @@ func createTablesOpSpec(args flux.Arguments, a *flux.Administration) (flux.Opera
 		spec.Nulls = nulls
 	}
 
+	if seed, ok, err := args.GetInt("seed"); err != nil {
+		return nil, err
+	} else if ok {
+		spec.Seed = &seed
+	}
+
 	return spec, nil
 }
 
@@ -116,6 +123,7 @@ func newTablesProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.Pro
 	schema := gen.Schema{
 		NumPoints: spec.N,
 		Nulls:     spec.Nulls,
+		Seed:      spec.Seed,
 	}
 
 	if len(spec.Tags) > 0 {
