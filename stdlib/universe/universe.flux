@@ -4891,7 +4891,7 @@ builtin sum : (<-tables: stream[{ A with C: B }], ?column: C = "_value") => stre
     where A: Record, B: Numeric, C: Label
 
 // @feature labelPolymorphism
-builtin unique : (<-tables: stream[{ A with C: B }], ?column: C = "_value") => stream[A]
+builtin unique : (<-tables: stream[{ A with C: B }], ?column: C = "_value") => stream[{ A with C: B }]
     where A: Record, B: Equatable, C: Label
 
 // @feature labelPolymorphism
