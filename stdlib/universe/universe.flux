@@ -4869,7 +4869,7 @@ builtin holtWinters : (
         interval: duration,
         ?withFit: bool,
         ?column: C = "_value",
-        ?timeColumn: T,
+        ?timeColumn: T = "_time",
         ?seasonality: int,
     ) => stream[{ C: B }]
     where
@@ -4885,7 +4885,7 @@ builtin hourSelection : (<-tables: stream[{ A with T: time }], start: int, stop:
 builtin integral : (
         <-tables: stream[{ A with _start: time, _stop: time, C: B }],
         ?unit: duration,
-        ?timeColumn: T,
+        ?timeColumn: T = "_time",
         ?column: C = "_value",
         ?interpolate: string,
     ) => stream[{ A with _start: time, _stop: time, C: B }]
@@ -4973,9 +4973,9 @@ builtin _window : (
         period: duration,
         offset: duration,
         location: {zone: string, offset: duration},
-        timeColumn: T,
-        startColumn: U,
-        stopColumn: V,
+        ?timeColumn: T = "_time",
+        ?startColumn: U = "_start",
+        ?stopColumn: V = "_stop",
         createEmpty: bool,
     ) => stream[{ A with U: time, V: time }]
     where
