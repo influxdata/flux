@@ -15,6 +15,190 @@ import "strings"
 import "regexp"
 import "experimental/table"
 
+
+// @feature labelPolymorphism
+builtin columns : (<-tables: stream[A], ?column: L = "_value") => stream[{ L: string }] where A: Record, L: Label
+
+// @feature labelPolymorphism
+builtin count : (<-tables: stream[{ A with C: D }], ?column: C = "_value") => stream[{ B with _value: int }]
+    where
+    A: Record,
+    C: Label
+
+// @feature labelPolymorphism
+builtin distinct : (<-tables: stream[{ A with C: B }], ?column: C = "_value") => stream[{ A with _value: B }] where A: Record, B: Equatable, C: Label
+
+// @feature labelPolymorphism
+builtin duplicate : (<-tables: stream[{ A with C: B }], column: C, as: D) => stream[{ A with C: B, D: B }]
+    where A: Record,
+          C: Label,
+          D: Label
+
+// @feature labelPolymorphism
+builtin elapsed : (<-tables: stream[{ A with T: time }], ?unit: duration, ?timeColumn: T = "_time", ?columnName: C = "elapsed") => stream[{ A with T: time, C: int }]
+    where
+    A: Record,
+    C: Label,
+    T: Label
+
+// TODO
+// @feature labelPolymorphism
+// builtin fill : (<-tables: stream[{ A with C: B }], ?column: C = "_value", ?value: B, ?usePrevious: bool) => stream[{ A with C: B }] where A: Record, C: Label
+
+// @feature labelPolymorphism
+builtin histogram : (
+        <-tables: stream[{ A with C: float }],
+        ?column: C = "_value",
+        ?upperBoundColumn: U,
+        ?countColumn: T,
+        bins: [float],
+        ?normalize: bool,
+    ) => stream[{ U: float, T: float }]
+    where
+    A: Record,
+    C: Label,
+    T: Label,
+    U: Label
+
+// @feature labelPolymorphism
+builtin histogramQuantile : (
+        <-tables: stream[{ A with U: float, C: float }],
+        ?quantile: float,
+        ?countColumn: C,
+        ?upperBoundColumn: U,
+        ?valueColumn: V,
+        ?minValue: float,
+    ) => stream[{ V: float }]
+    where
+    A: Record,
+    C: Label,
+    U: Label,
+    V: Label
+
+// @feature labelPolymorphism
+builtin holtWinters : (
+        <-tables: stream[{ A with T: time, C: B }],
+        n: int,
+        interval: duration,
+        ?withFit: bool,
+        ?column: C = "_value",
+        ?timeColumn: T,
+        ?seasonality: int,
+    ) => stream[{ _value: B }]
+    where
+    A: Record,
+    B: Numeric,
+    C: Label,
+    T: Label
+
+// @feature labelPolymorphism
+builtin hourSelection : (<-tables: stream[{ A with T: time }], start: int, stop: int, ?timeColumn: T) => stream[{ A with T: time }] where A: Record, T: Label
+
+// @feature labelPolymorphism
+builtin integral : (
+        <-tables: stream[{ A with _start: time, _stop: time, C: B }],
+        ?unit: duration,
+        ?timeColumn: T,
+        ?column: C = "_value",
+        ?interpolate: string,
+    ) => stream[{ A with _start: time, _stop: time, C: B }]
+    where
+    A: Record,
+    B: Numeric,
+    C: Label,
+    T: Label
+
+// @feature labelPolymorphism
+builtin kaufmansAMA : (<-tables: stream[{ A with L: B }], n: int, ?column: L = "_value") => stream[{ A with L: float }]
+    where A: Record, B: Numeric, L: Label
+
+// @feature labelPolymorphism
+builtin keys : (<-tables: stream[A], ?column: L = "_value") => stream[{ L: string }] where A: Record, B: Record, L: Label
+
+// @feature labelPolymorphism
+builtin last : (<-tables: stream[{ A with L: B }], ?column: L = "_value") => stream[{ A with L: B }] where A: Record, L: Label
+
+// @feature labelPolymorphism
+builtin max : (<-tables: stream[{ A with L: B }], ?column: L = "_value") => stream[{ A with L: B }]
+    where A: Record,
+          B: Comparable,
+          L: Label
+
+// @feature labelPolymorphism
+builtin mean : (<-tables: stream[{ A with C: B }], ?column: C = "_value") => stream[{ D with C: B }]
+    where A: Record, B: Numeric, D: Record, C: Label
+
+// @feature labelPolymorphism
+builtin min : (<-tables: stream[{ A with L: B }], ?column: L = "_value") => stream[{ A with L: B }]
+    where A: Record,
+          B: Comparable,
+          L: Label
+
+// TODO
+// Could be extended to work with other types than string?
+// @feature labelPolymorphism
+// builtin set : (<-tables: stream[{ A with K: string }], key: K, value: string) => stream[{ A with K: string}] where A: Record, K: Label
+
+// @feature labelPolymorphism
+builtin skew : (<-tables: stream[{ A with C: B }], ?column: C = "_value") => stream[{ A with C: float }]
+    where A: Record,
+          B: Numeric,
+          C: Label
+
+// Having the output as D is more general than necessary, however the function converts `uint => int` so we can't just use `B` there
+// @feature labelPolymorphism
+builtin spread : (<-tables: stream[{ A with C: B }], ?column: C = "_value") => stream[{ A with C: D }]
+    where A: Record, B: Numeric, C: Label
+
+// Seems to lack documentation, so I may be getting this wrong
+// @feature labelPolymorphism
+builtin stateTracking : (
+        <-tables: stream[{ A with C: B, D: duration, T: time }],
+        fn: (r: A) => bool,
+        ?countColumn: C,
+        ?durationColumn: C,
+        ?durationUnit: duration,
+        ?timeColumn: T = "_time",
+    ) => stream[{ A with C: B, D: duration, T: time }]
+    where
+    A: Record,
+    C: Label,
+    D: Label,
+    T: Label
+
+// @feature labelPolymorphism
+builtin stddev : (<-tables: stream[{ A with C: B }], ?column: C = "_value", ?mode: string) => stream[{ C: B }] where A: Record, B: Numeric, C: Label
+
+// @feature labelPolymorphism
+builtin sum : (<-tables: stream[{ A with C: B }], ?column: C = "_value") => stream[{ C: B }]
+    where A: Record, B: Numeric, C: Label
+
+// @feature labelPolymorphism
+builtin unique : (<-tables: stream[{ A with C: B }], ?column: C = "_value") => stream[A]
+    where A: Record, B: Equatable, C: Label
+
+// @feature labelPolymorphism
+builtin _window : (
+        <-tables: stream[{ A with T: time }],
+        every: duration,
+        period: duration,
+        offset: duration,
+        location: {zone: string, offset: duration},
+        timeColumn: T,
+        startColumn: U,
+        stopColumn: V,
+        createEmpty: bool,
+    ) => stream[{ A with U: time, V: time }]
+    where
+    A: Record,
+    B: Record,
+    T: Label,
+    U: Label,
+    V: Label
+
+// @feature labelPolymorphism
+builtin getColumn : (<-table: stream[{ A with C: B }], column: C) => stream[B] where A: Record, C: Label
+
 // now is a function option that, by default, returns the current system time.
 //
 // #### now() vs system.time()
@@ -4730,186 +4914,3 @@ toTime = (tables=<-) => tables |> map(fn: (r) => ({r with _value: time(v: r._val
 // tags: date/time
 //
 today = () => date.truncate(t: now(), unit: 1d)
-
-// @feature labelPolymorphism
-builtin columns : (<-tables: stream[A], ?column: L = "_value") => stream[{ L: string }] where A: Record, L: Label
-
-// @feature labelPolymorphism
-builtin count : (<-tables: stream[{ A with C: D }], ?column: C = "_value") => stream[{ B with _value: int }]
-    where
-    A: Record,
-    C: Label
-
-// @feature labelPolymorphism
-builtin distinct : (<-tables: stream[{ A with C: B }], ?column: C = "_value") => stream[{ A with _value: B }] where A: Record, B: Equatable, C: Label
-
-// @feature labelPolymorphism
-builtin duplicate : (<-tables: stream[{ A with C: B }], column: C, as: D) => stream[{ A with C: B, D: B }]
-    where A: Record,
-          C: Label,
-          D: Label
-
-// @feature labelPolymorphism
-builtin elapsed : (<-tables: stream[{ A with T: time }], ?unit: duration, ?timeColumn: T = "_time", ?columnName: C = "elapsed") => stream[{ A with T: time, C: int }]
-    where
-    A: Record,
-    C: Label,
-    T: Label
-
-// TODO
-// @feature labelPolymorphism
-// builtin fill : (<-tables: stream[{ A with C: B }], ?column: C = "_value", ?value: B, ?usePrevious: bool) => stream[{ A with C: B }] where A: Record, C: Label
-
-// @feature labelPolymorphism
-builtin histogram : (
-        <-tables: stream[{ A with C: float }],
-        ?column: C = "_value",
-        ?upperBoundColumn: U,
-        ?countColumn: T,
-        bins: [float],
-        ?normalize: bool,
-    ) => stream[{ U: float, T: float }]
-    where
-    A: Record,
-    C: Label,
-    T: Label,
-    U: Label
-
-// @feature labelPolymorphism
-builtin histogramQuantile : (
-        <-tables: stream[{ A with U: float, C: float }],
-        ?quantile: float,
-        ?countColumn: C,
-        ?upperBoundColumn: U,
-        ?valueColumn: V,
-        ?minValue: float,
-    ) => stream[{ V: float }]
-    where
-    A: Record,
-    C: Label,
-    U: Label,
-    V: Label
-
-// @feature labelPolymorphism
-builtin holtWinters : (
-        <-tables: stream[{ A with T: time, C: B }],
-        n: int,
-        interval: duration,
-        ?withFit: bool,
-        ?column: C = "_value",
-        ?timeColumn: T,
-        ?seasonality: int,
-    ) => stream[{ _value: B }]
-    where
-    A: Record,
-    B: Numeric,
-    C: Label,
-    T: Label
-
-// @feature labelPolymorphism
-builtin hourSelection : (<-tables: stream[{ A with T: time }], start: int, stop: int, ?timeColumn: T) => stream[{ A with T: time }] where A: Record, T: Label
-
-// @feature labelPolymorphism
-builtin integral : (
-        <-tables: stream[{ A with _start: time, _stop: time, C: B }],
-        ?unit: duration,
-        ?timeColumn: T,
-        ?column: C = "_value",
-        ?interpolate: string,
-    ) => stream[{ A with _start: time, _stop: time, C: B }]
-    where
-    A: Record,
-    B: Numeric,
-    C: Label,
-    T: Label
-
-// @feature labelPolymorphism
-builtin kaufmansAMA : (<-tables: stream[{ A with L: B }], n: int, ?column: L = "_value") => stream[{ A with L: float }]
-    where A: Record, B: Numeric, L: Label
-
-// @feature labelPolymorphism
-builtin keys : (<-tables: stream[A], ?column: L = "_value") => stream[{ L: string }] where A: Record, B: Record, L: Label
-
-// @feature labelPolymorphism
-builtin last : (<-tables: stream[{ A with L: B }], ?column: L = "_value") => stream[{ A with L: B }] where A: Record, L: Label
-
-// @feature labelPolymorphism
-builtin max : (<-tables: stream[{ A with L: B }], ?column: L = "_value") => stream[{ A with L: B }]
-    where A: Record,
-          B: Comparable,
-          L: Label
-
-// @feature labelPolymorphism
-builtin mean : (<-tables: stream[{ A with C: B }], ?column: C = "_value") => stream[{ D with C: B }]
-    where A: Record, B: Numeric, D: Record, C: Label
-
-// @feature labelPolymorphism
-builtin min : (<-tables: stream[{ A with L: B }], ?column: L = "_value") => stream[{ A with L: B }]
-    where A: Record,
-          B: Comparable,
-          L: Label
-
-// TODO
-// Could be extended to work with other types than string?
-// @feature labelPolymorphism
-// builtin set : (<-tables: stream[{ A with K: string }], key: K, value: string) => stream[{ A with K: string}] where A: Record, K: Label
-
-// @feature labelPolymorphism
-builtin skew : (<-tables: stream[{ A with C: B }], ?column: C = "_value") => stream[{ A with C: float }]
-    where A: Record,
-          B: Numeric,
-          C: Label
-
-// Having the output as D is more general than necessary, however the function converts `uint => int` so we can't just use `B` there
-// @feature labelPolymorphism
-builtin spread : (<-tables: stream[{ A with C: B }], ?column: C = "_value") => stream[{ A with C: D }]
-    where A: Record, B: Numeric, C: Label
-
-// Seems to lack documentation, so I may be getting this wrong
-// @feature labelPolymorphism
-builtin stateTracking : (
-        <-tables: stream[{ A with C: B, D: duration, T: time }],
-        fn: (r: A) => bool,
-        ?countColumn: C,
-        ?durationColumn: C,
-        ?durationUnit: duration,
-        ?timeColumn: T = "_time",
-    ) => stream[{ A with C: B, D: duration, T: time }]
-    where
-    A: Record,
-    C: Label,
-    D: Label,
-    T: Label
-
-// @feature labelPolymorphism
-builtin stddev : (<-tables: stream[{ A with C: B }], ?column: C = "_value", ?mode: string) => stream[{ C: B }] where A: Record, B: Numeric, C: Label
-
-// @feature labelPolymorphism
-builtin sum : (<-tables: stream[{ A with C: B }], ?column: C = "_value") => stream[{ C: B }]
-    where A: Record, B: Numeric, C: Label
-
-// @feature labelPolymorphism
-builtin unique : (<-tables: stream[{ A with C: B }], ?column: C = "_value") => stream[A]
-    where A: Record, B: Equatable, C: Label
-
-// @feature labelPolymorphism
-builtin _window : (
-        <-tables: stream[{ A with T: time }],
-        every: duration,
-        period: duration,
-        offset: duration,
-        location: {zone: string, offset: duration},
-        timeColumn: T,
-        startColumn: U,
-        stopColumn: V,
-        createEmpty: bool,
-    ) => stream[{ A with U: time, V: time }]
-    where
-    A: Record,
-    B: Record,
-    T: Label,
-    U: Label,
-    V: Label
-
-// @feature labelPolymorphism
-builtin getColumn : (<-table: stream[{ A with C: B }], column: C) => stream[B] where A: Record, C: Label
