@@ -4807,13 +4807,13 @@ today = () => date.truncate(t: now(), unit: 1d)
 builtin columns : (<-tables: stream[A], ?column: L = "_value") => stream[{ L: string }] where A: Record, L: Label
 
 // @feature labelPolymorphism
-builtin count : (<-tables: stream[{ A with C: D }], ?column: C = "_value") => stream[{ B with _value: int }]
+builtin count : (<-tables: stream[{ A with C: D }], ?column: C = "_value") => stream[{ B with C: int }]
     where
     A: Record,
     C: Label
 
 // @feature labelPolymorphism
-builtin distinct : (<-tables: stream[{ A with C: B }], ?column: C = "_value") => stream[{ A with _value: B }] where A: Record, B: Equatable, C: Label
+builtin distinct : (<-tables: stream[{ A with C: B }], ?column: C = "_value") => stream[{ A with C: B }] where A: Record, B: Equatable, C: Label
 
 // @feature labelPolymorphism
 builtin duplicate : (<-tables: stream[{ A with C: B }], column: C, as: D) => stream[{ A with C: B, D: B }]
@@ -4871,7 +4871,7 @@ builtin holtWinters : (
         ?column: C = "_value",
         ?timeColumn: T,
         ?seasonality: int,
-    ) => stream[{ _value: B }]
+    ) => stream[{ C: B }]
     where
     A: Record,
     B: Numeric,
