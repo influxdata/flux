@@ -4882,7 +4882,8 @@ builtin stateTracking : (
     T: Label
 
 // @feature labelPolymorphism
-builtin stddev : (<-tables: stream[{ A with C: B }], ?column: C = "_value", ?mode: string) => stream[{ C: B }] where A: Record, B: Numeric, C: Label
+// The returned stream should have the group key of  `A`, but no other fields
+builtin stddev : (<-tables: stream[{ A with C: B }], ?column: C = "_value", ?mode: string) => stream[{ D with C: B }] where A: Record, B: Numeric, C: Label
 
 // @feature labelPolymorphism
 // The returned stream should have the group key of  `A`, but no other fields
