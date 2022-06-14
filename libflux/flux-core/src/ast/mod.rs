@@ -611,6 +611,8 @@ pub enum MonoType {
     Array(Box<ArrayType>),
     #[serde(rename = "StreamType")]
     Stream(Box<StreamType>),
+    #[serde(rename = "VectorType")]
+    Vector(Box<VectorType>),
     #[serde(rename = "DictType")]
     Dict(Box<DictType>),
     #[serde(rename = "RecordType")]
@@ -629,6 +631,7 @@ impl MonoType {
             MonoType::Tvar(t) => &t.base,
             MonoType::Array(t) => &t.base,
             MonoType::Stream(t) => &t.base,
+            MonoType::Vector(t) => &t.base,
             MonoType::Dict(t) => &t.base,
             MonoType::Record(t) => &t.base,
             MonoType::Function(t) => &t.base,
@@ -670,6 +673,16 @@ pub struct ArrayType {
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 #[allow(missing_docs)]
 pub struct StreamType {
+    #[serde(skip_serializing_if = "BaseNode::is_empty")]
+    #[serde(default)]
+    #[serde(flatten)]
+    pub base: BaseNode,
+    pub element: MonoType,
+}
+
+#[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
+#[allow(missing_docs)]
+pub struct VectorType {
     #[serde(skip_serializing_if = "BaseNode::is_empty")]
     #[serde(default)]
     #[serde(flatten)]
