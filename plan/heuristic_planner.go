@@ -104,7 +104,7 @@ func (p *heuristicPlanner) matchRules(ctx context.Context, node Node) (Node, boo
 func (p *heuristicPlanner) Plan(ctx context.Context, inputPlan *Spec) (*Spec, error) {
 	for anyChanged := true; anyChanged; {
 		visited := make(map[Node]struct{})
-
+		visitedSuccessors := make(map[Node]int)
 		// the plan is traversed starting from the sinks,
 		// moving toward the sources.
 		nodeStack := make([]Node, 0, len(inputPlan.Roots))
@@ -124,8 +124,9 @@ func (p *heuristicPlanner) Plan(ctx context.Context, inputPlan *Spec) (*Spec, er
 			nodeStack = nodeStack[0 : len(nodeStack)-1]
 
 			_, alreadyVisited := visited[node]
+			visitable := visitedSuccessors[node] == len(node.Successors())
 
-			if !alreadyVisited {
+			if !alreadyVisited && visitable {
 				newNode, changed, err := p.matchRules(ctx, node)
 				if err != nil {
 					return nil, err
@@ -140,10 +141,11 @@ func (p *heuristicPlanner) Plan(ctx context.Context, inputPlan *Spec) (*Spec, er
 				// append to stack in reverse order so lower-indexed children
 				// are visited first.
 				for i := len(newNode.Predecessors()); i > 0; i-- {
+					visitedSuccessors[newNode.Predecessors()[i-1]] += 1
 					nodeStack = append(nodeStack, newNode.Predecessors()[i-1])
 				}
 
-				visited[newNode] = struct{}{}
+				visited[node] = struct{}{}
 			}
 		}
 	}
