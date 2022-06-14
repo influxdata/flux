@@ -26,12 +26,7 @@ pub fn check(node: walk::Node) -> Result<(), Errors<Error>> {
             let errors = &mut self.errors;
 
             if self.depth > MAX_DEPTH {
-                errors.push(located(
-                    n.base().location.clone(),
-                    ErrorKind {
-                        message: String::from("Program is nested to deep"),
-                    },
-                ));
+                errors.push(located(n.base().location.clone(), ErrorKind::NestedToDeep));
 
                 return false;
             }
@@ -40,7 +35,7 @@ pub fn check(node: walk::Node) -> Result<(), Errors<Error>> {
             for err in n.base().errors.iter() {
                 errors.push(located(
                     n.base().location.clone(),
-                    ErrorKind {
+                    ErrorKind::Message {
                         message: err.clone(),
                     },
                 ));
@@ -49,13 +44,13 @@ pub fn check(node: walk::Node) -> Result<(), Errors<Error>> {
             match n {
                 walk::Node::BadStmt(n) => errors.push(located(
                     n.base.location.clone(),
-                    ErrorKind {
+                    ErrorKind::Message {
                         message: format!("invalid statement: {}", n.text),
                     },
                 )),
                 walk::Node::BadExpr(n) if !n.text.is_empty() => errors.push(located(
                     n.base.location.clone(),
-                    ErrorKind {
+                    ErrorKind::Message {
                         message: format!("invalid expression: {}", n.text),
                     },
                 )),
@@ -70,7 +65,7 @@ pub fn check(node: walk::Node) -> Result<(), Errors<Error>> {
                                     if let PropertyKey::StringLit(s) = &p.key {
                                         errors.push(located(
                                             n.base.location.clone(),
-                                            ErrorKind {
+                                            ErrorKind::Message {
                                                 message: format!(
                                                     "string literal key {} must have a value",
                                                     s.value
@@ -88,7 +83,7 @@ pub fn check(node: walk::Node) -> Result<(), Errors<Error>> {
                     if has_implicit && has_explicit {
                         errors.push(located(
                             n.base.location.clone(),
-                            ErrorKind {
+                            ErrorKind::Message {
                                 message: String::from(
                                     "cannot mix implicit and explicit properties",
                                 ),
@@ -123,15 +118,17 @@ pub type Error = Located<ErrorKind>;
 
 /// An error that can be returned while checking the AST.
 #[derive(Error, Debug, PartialEq)]
-#[error("{}", message)]
-pub struct ErrorKind {
-    /// Error message.
-    pub message: String,
+#[allow(missing_docs)]
+pub enum ErrorKind {
+    #[error("Program is nested to deep")]
+    NestedToDeep,
+    #[error("{message}")]
+    Message { message: String },
 }
 
 impl ErrorKind {
     pub(crate) fn is_fatal(&self) -> bool {
-        self.message.contains("Program is nested to deep")
+        matches!(self, Self::NestedToDeep)
     }
 }
 
