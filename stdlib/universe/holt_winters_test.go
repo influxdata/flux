@@ -902,21 +902,29 @@ func TestHoltWinters_Process(t *testing.T) {
 }
 
 func BenchmarkHoltWintersWithoutFit(b *testing.B) {
-	benchmarkHoltWinters(b, 1000, false)
+	benchmarkHoltWinters(b, 1000, 0, false)
 }
 
 func BenchmarkHoltWintersWithFit(b *testing.B) {
-	benchmarkHoltWinters(b, 1000, true)
+	benchmarkHoltWinters(b, 1000, 0, true)
 }
 
-func benchmarkHoltWinters(b *testing.B, n int, withFit bool) {
+func BenchmarkHoltWintersWithoutFitSeasonality(b *testing.B) {
+	benchmarkHoltWinters(b, 1000, 4, false)
+}
+
+func BenchmarkHoltWintersWithFitSeasonality(b *testing.B) {
+	benchmarkHoltWinters(b, 1000, 4, true)
+}
+
+func benchmarkHoltWinters(b *testing.B, n, seasonality int, withFit bool) {
 	b.ReportAllocs()
 	spec := &universe.HoltWintersProcedureSpec{
 		Column:     "_value",
 		TimeColumn: "_time",
 		WithFit:    withFit,
 		N:          10,
-		S:          0,
+		S:          int64(seasonality),
 		Interval:   flux.ConvertDuration(379 * time.Minute),
 	}
 	executetest.ProcessBenchmarkHelper(b,
