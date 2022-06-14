@@ -323,6 +323,166 @@ func TestNilErrors(t *testing.T) {
 	}
 }
 
+func TestTime_Time(t *testing.T) {
+	testCases := []struct {
+		name     string
+		time     string
+		location string
+		want     string
+	}{
+		{
+			name:     "time",
+			time:     "2019-06-03T13:59:01.000000000Z",
+			location: "UTC",
+			want:     "2019-06-03T13:59:01.000000000Z",
+		},
+		{
+			name:     "time",
+			time:     "2019-06-03T13:59:01.000000000Z",
+			location: "Asia/Kolkata",
+			want:     "2019-06-03T19:29:01.000000000Z",
+		},
+		{
+			name:     "time",
+			time:     "2019-06-03T13:59:01.000000000Z",
+			location: "Europe/Madrid",
+			want:     "2019-06-03T15:59:01.000000000Z",
+		},
+		{
+			name:     "time",
+			time:     "2019-12-31T18:30:01.000000000Z",
+			location: "Asia/Kolkata",
+			want:     "2020-01-01T00:00:01.000000000Z",
+		},
+	}
+	for _, tc := range testCases {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			fluxFn := SpecialFns[tc.name]
+			time, err := values.ParseTime(tc.time)
+			if err != nil {
+				t.Fatal(err)
+			}
+			fluxArg := values.NewObjectWithValues(map[string]values.Value{
+				"t": values.NewTime(time),
+				"location": values.NewObjectWithValues(map[string]values.Value{
+					"zone":   values.NewString(tc.location),
+					"offset": values.NewDuration(values.Duration{}),
+				}),
+			})
+			ctx, deps := dependenciestest.InjectAllDeps(context.Background())
+			defer deps.Finish()
+			got, err := fluxFn.Call(ctx, fluxArg)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			wanted, err := values.ParseTime(tc.want)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if wanted != got.Time() {
+				t.Errorf("input %v: expected %v, got %v", time, wanted, got.Time())
+			}
+		})
+	}
+}
+
+func TestTime_Duration(t *testing.T) {
+	now, err := values.ParseTime("2022-01-01T00:00:00.000000000Z")
+	if err != nil {
+		t.Fatal(err)
+	}
+	testCases := []struct {
+		name     string
+		time     string
+		location string
+		want     string
+	}{
+		{
+			name:     "time",
+			time:     "-1h",
+			location: "UTC",
+			want:     "2021-12-31T23:00:00.000000000Z",
+		},
+		{
+			name:     "time",
+			time:     "-1s",
+			location: "UTC",
+			want:     "2021-12-31T23:59:59.000000000Z",
+		},
+		{
+			name:     "time",
+			time:     "-1y1mo1w",
+			location: "UTC",
+			want:     "2020-11-24T00:00:00.000000000Z",
+		},
+		{
+			name:     "time",
+			time:     "-3d12h4m25s",
+			location: "UTC",
+			want:     "2021-12-28T11:55:35.000000000Z",
+		},
+		{
+			name:     "time",
+			time:     "1h",
+			location: "Asia/Kolkata",
+			want:     "2022-01-01T06:30:00.000000000Z",
+		},
+		{
+			name:     "time",
+			time:     "1y1mo1w",
+			location: "UTC",
+			want:     "2023-02-08T00:00:00.000000000Z",
+		},
+		{
+			name:     "time",
+			time:     "1h",
+			location: "Europe/Madrid",
+			want:     "2022-01-01T02:00:00.000000000Z",
+		},
+	}
+	for _, tc := range testCases {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			fluxFn := SpecialFns[tc.name]
+			time, err := values.ParseDuration(tc.time)
+			if err != nil {
+				t.Fatal(err)
+			}
+			fluxArg := values.NewObjectWithValues(map[string]values.Value{
+				"t": values.NewDuration(time),
+				"location": values.NewObjectWithValues(map[string]values.Value{
+					"zone":   values.NewString(tc.location),
+					"offset": values.NewDuration(values.Duration{}),
+				}),
+			})
+
+			execDeps := dependenciestest.ExecutionDefault()
+			nowVar := now.Time()
+			execDeps.Now = &nowVar
+			ctx, deps := dependency.Inject(
+				context.Background(),
+				dependenciestest.Default(),
+				execDeps,
+			)
+			defer deps.Finish()
+
+			got, err := fluxFn.Call(ctx, fluxArg)
+			if err != nil {
+				t.Fatal(err)
+			}
+			wanted, err := values.ParseTime(tc.want)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if wanted != got.Time() {
+				t.Errorf("input %v: expected %v, got %f", time, tc.want, got)
+			}
+		})
+	}
+}
+
 func TestTruncate_Time(t *testing.T) {
 	testCases := []struct {
 		name     string

@@ -39,6 +39,50 @@ package date
 // ```
 builtin second : (t: T) => int where T: Timeable
 
+// builtin _time used by time
+builtin _time : (t: T, location: {zone: string, offset: duration}) => time where T: Timeable
+
+// time returns the time value of a specified relative duration or time.
+//
+// `date.time` assumes duration values are relative to `now()`.
+//
+// ## Parameters
+// - t: Duration or time value.
+//
+//   Use an absolute time or relative duration.
+//   Durations are relative to `now()`.
+//
+// - location: Location used to determine timezone.
+//   Default is the `location` option.
+//
+// ## Examples
+//
+// ### Return the time for a given time
+//
+// ```no_run
+// import "date"
+//
+// date.time(t: 2020-02-11T12:21:03.293534940Z)
+// // Returns 2020-02-11T12:21:03.293534940Z
+// ```
+//
+// ### Return the time for a given relative duration
+//
+// ```no_run
+// import "date"
+//
+// option now = () => 2022-01-01T00:00:00.000000000Z
+//
+// date.time(t: -1h)
+//
+// // Returns 2021-12-31T23:00:00.000000000Z
+// ```
+//
+// ## Metadata
+// introduced: NEXT
+//
+time = (t, location=location) => _time(t, location)
+
 // builtin _minute used by minute
 builtin _minute : (t: T, location: {zone: string, offset: duration}) => int where T: Timeable
 
