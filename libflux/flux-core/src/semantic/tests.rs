@@ -4203,3 +4203,21 @@ fn unused_import() {
         "#]]
     }
 }
+
+#[test]
+fn vec_type() {
+    test_infer! {
+        env: map![
+            "vec" => "vector[int]",
+        ],
+        src: r#"
+            builtin _vecFloat: (v: vector[T]) => vector[float]
+
+            x = _vecFloat(v: vec)
+        "#,
+        exp: map![
+            "_vecFloat" => "(v: vector[T]) => vector[float]",
+            "x" => "vector[float]",
+        ],
+    }
+}

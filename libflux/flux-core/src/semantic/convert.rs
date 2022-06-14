@@ -522,6 +522,9 @@ impl<'a> Converter<'a> {
             ast::MonoType::Stream(stream) => {
                 MonoType::stream(self.convert_monotype(&stream.element, tvars))
             }
+            ast::MonoType::Vector(vector) => {
+                MonoType::vector(self.convert_monotype(&vector.element, tvars))
+            }
             ast::MonoType::Dict(dict) => {
                 let key = self.convert_monotype(&dict.key, tvars);
                 let val = self.convert_monotype(&dict.val, tvars);

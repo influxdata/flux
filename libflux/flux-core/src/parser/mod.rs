@@ -573,6 +573,16 @@ impl<'input> Parser<'input> {
                     element: ty,
                 }))
             }
+            TokenType::Ident if t.lit == "vector" => {
+                let start = self.expect(TokenType::Ident);
+                self.open(TokenType::LBrack, TokenType::RBrack);
+                let ty = self.parse_monotype();
+                let end = self.close(TokenType::RBrack);
+                MonoType::Vector(Box::new(VectorType {
+                    base: self.base_node_from_tokens(&start, &end),
+                    element: ty,
+                }))
+            }
             TokenType::String => MonoType::Label(Box::new(self.parse_string_literal())),
             _ => {
                 if t.lit.len() == 1 {
