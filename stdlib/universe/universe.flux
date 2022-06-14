@@ -3705,7 +3705,7 @@ _fillEmpty = (tables=<-, createEmpty) =>
 //
 // ```js
 // # import "array"
-// # 
+// #
 // # data =
 // #     array.from(
 // #         rows: [
@@ -3724,7 +3724,7 @@ _fillEmpty = (tables=<-, createEmpty) =>
 // #     )
 // #         |> range(start: 2022-01-01T00:00:00Z, stop: 2022-01-31T23:59:59Z)
 // #         |> group(columns: ["tag"])
-// # 
+// #
 // < data
 // >     |> aggregateWindow(every: 1w, offset: -3d, fn: mean)
 // ```
