@@ -573,8 +573,7 @@ impl<'doc> Formatter<'doc> {
             affixes: vec![affixes(
                 docs![arena, self.format_comments(&n.lbrace), "{"],
                 docs![arena, arena.hardline(), "}"],
-            )
-            .nest()],
+            )],
             body: docs![
                 arena,
                 arena.hardline(),
@@ -689,10 +688,17 @@ impl<'doc> Formatter<'doc> {
                 let comment = self.format_comments(&n.base.comments);
                 let prefix = docs![
                     arena,
-                    "testcase ",
+                    "testcase",
+                    arena.line(),
                     self.format_identifier(&n.id),
                     if let Some(extends) = &n.extends {
-                        docs![arena, " extends ", self.format_string_literal(extends),]
+                        docs![
+                            arena,
+                            arena.line(),
+                            "extends",
+                            arena.line(),
+                            self.format_string_literal(extends),
+                        ]
                     } else {
                         arena.nil()
                     },
@@ -867,9 +873,9 @@ impl<'doc> Formatter<'doc> {
         let line = self.multiline(multiline);
         let line_ = self.multiline_(multiline);
 
-        let prefix1 = self.format_comments(&n.lparen);
+        let lparen_comments = self.format_comments(&n.lparen);
 
-        let prefix2 = docs![
+        let args = docs![
             arena,
             "(",
             docs![
@@ -914,8 +920,8 @@ impl<'doc> Formatter<'doc> {
                 let b = strip_parens(b);
                 HangDoc {
                     affixes: vec![
-                        affixes(prefix2, arena.nil()),
-                        affixes(prefix1, arena.nil()).nest(),
+                        affixes(args, arena.nil()),
+                        affixes(lparen_comments, arena.nil()).nest(),
                     ],
                     body: docs![
                         arena,
@@ -936,8 +942,10 @@ impl<'doc> Formatter<'doc> {
             ast::FunctionBody::Block(b) => {
                 let mut hang_doc = self.format_block(b);
                 hang_doc.add_prefix(arena.line());
-                hang_doc.affixes.push(affixes(prefix2, arena.nil()));
-                hang_doc.affixes.push(affixes(prefix1, arena.nil()).nest());
+                hang_doc.affixes.push(affixes(args, arena.nil()));
+                hang_doc
+                    .affixes
+                    .push(affixes(lparen_comments, arena.nil()).nest());
                 hang_doc
             }
         }
