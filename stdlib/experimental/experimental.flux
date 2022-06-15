@@ -1282,3 +1282,5 @@ builtin histogram : (
 // tags: transformations
 //
 builtin preview : (<-tables: stream[A], ?nrows: int, ?ntables: int) => stream[A] where A: Record
+
+builtin catch : (fn: () => A) => string

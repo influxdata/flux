@@ -8,6 +8,7 @@ package testing
 
 import "array"
 import c "csv"
+import "experimental"
 
 // assertEquals tests whether two streams of tables are identical.
 //
@@ -379,4 +380,28 @@ assertEqualValues = (got, want) => {
     return
         diff(got: array.from(rows: [{v: got}]), want: array.from(rows: [{v: want}]))
             |> yield()
+}
+
+// assertEqualValues tests whether two values are equal.
+//
+// ## Parameters
+// - got: Value to test.
+// - want: Expected value to test against.
+//
+// ## Examples
+//
+// ### Test if two values are equal
+// ```
+// import "testing"
+//
+// < testing.shouldError(fn: () => json.encode(v: array.from(rows: [{}])), want: "got table stream instead of array")
+// ```
+//
+// ## Metadata
+// introduced: NEXT
+// tags: tests
+//
+shouldError = (fn, want) => {
+    got = experimental.catch(fn)
+    return assertEqualValues(got, want)
 }
