@@ -4221,3 +4221,30 @@ fn vec_type() {
         ],
     }
 }
+
+#[test]
+fn pipe_error() {
+    test_error_msg! {
+        config: AnalyzerConfig{
+            features: vec![Feature::UnusedSymbolWarnings],
+            ..AnalyzerConfig::default()
+        },
+        env: map![
+            "findColumn" =>  "() => [A] where A: Record",
+            "yield" => "(<-tables: stream[A]) => stream[A] where A: Record",
+        ],
+        src: r#"
+
+            findColumn()
+                |> yield()
+        "#,
+        expect: expect_test::expect![[r#"
+            error: expected stream[A] but found [A] (array) (argument tables)
+              ┌─ main:4:20
+              │
+            4 │                 |> yield()
+              │                    ^^^^^^^
+
+        "#]]
+    }
+}
