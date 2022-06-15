@@ -3600,7 +3600,7 @@ _fillEmpty = (tables=<-, createEmpty) =>
         tables
 
 // aggregateWindow downsamples data by grouping data into fixed windows of time
-// and appliying an aggregate or selector function to each window.
+// and applying an aggregate or selector function to each window.
 //
 // All columns not in the group key other than the specified `column` are dropped
 // from output tables. This includes `_time`. `aggregateWindow()` uses the
