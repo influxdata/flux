@@ -1,6 +1,7 @@
 package universe_test
 
 
+import "array"
 import "csv"
 import "testing"
 
@@ -33,6 +34,52 @@ testcase sum {
         data
             |> filter(fn: (r) => contains(value: r._value, set: col))
     want = data
+
+    testing.diff(got, want)
+}
+
+testcase findColumnWithGroup {
+    // The result of grouping and then ungrouping
+    // will be for a single table to be spread over
+    // four buffers.
+    // https://github.com/influxdata/flux/issues/4884
+    input =
+        array.from(
+            rows: [
+                {m: "m", k: "north", v: 10, _time: 2020-02-20T00:00:00Z},
+                {m: "m", k: "south", v: 20, _time: 2020-02-20T00:00:00Z},
+                {m: "m", k: "east", v: 30, _time: 2020-02-20T00:00:00Z},
+                {m: "m", k: "west", v: 40, _time: 2020-02-20T00:00:00Z},
+            ],
+        )
+            |> group(columns: ["k"])
+            |> range(start: -100y)
+            |> group()
+
+    arr = input |> findColumn(fn: (key) => true, column: "v")
+
+    // Verifying the output is tricky here:
+    // - The first call to group() will not produce a reliable order of groups
+    // - We cannot sort after the second call to group() since doing so would
+    //   consolidate the separate buffers into one
+    // - Arrays cannot yet be sorted in Flux
+    // Therefore, we need to get creative with how we test for the expected output.
+    gotObj = {
+        len: arr |> length(),
+        has10: contains(set: arr, value: 10),
+        has20: contains(set: arr, value: 20),
+        has30: contains(set: arr, value: 30),
+        has40: contains(set: arr, value: 40),
+    }
+    wantObj = {
+        len: 4,
+        has10: true,
+        has20: true,
+        has30: true,
+        has40: true,
+    }
+    got = array.from(rows: [{value: display(v: gotObj)}])
+    want = array.from(rows: [{value: display(v: wantObj)}])
 
     testing.diff(got, want)
 }

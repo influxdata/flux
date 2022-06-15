@@ -175,62 +175,65 @@ func getColumnCall(ctx context.Context, args values.Object) (values.Value, error
 	if idx < 0 {
 		return nil, errors.Newf(codes.Invalid, "cannot find column %s", col)
 	}
-	var a values.Array
-	if err = tbl.Do(func(cr flux.ColReader) error {
-		a = arrayFromColumn(idx, cr)
-		return nil
-	}); err != nil {
-		return nil, err
-	}
-	return a, nil
+	return arrayFromColumn(idx, tbl)
 }
 
-func arrayFromColumn(idx int, cr flux.ColReader) values.Array {
-	typ := cr.Cols()[idx].Type
-	vsSlice := make([]values.Value, 0, cr.Len())
-	for i := 0; i < cr.Len(); i++ {
-		switch typ {
-		case flux.TString:
-			if vs := cr.Strings(idx); vs.IsValid(i) {
-				vsSlice = append(vsSlice, values.New(vs.Value(i)))
-			} else {
-				vsSlice = append(vsSlice, values.NewNull(semantic.BasicString))
-			}
-		case flux.TInt:
-			if vs := cr.Ints(idx); vs.IsValid(i) {
-				vsSlice = append(vsSlice, values.New(vs.Value(i)))
-			} else {
-				vsSlice = append(vsSlice, values.NewNull(semantic.BasicInt))
-			}
-		case flux.TUInt:
-			if vs := cr.UInts(idx); vs.IsValid(i) {
-				vsSlice = append(vsSlice, values.New(vs.Value(i)))
-			} else {
-				vsSlice = append(vsSlice, values.NewNull(semantic.BasicUint))
-			}
-		case flux.TFloat:
-			if vs := cr.Floats(idx); vs.IsValid(i) {
-				vsSlice = append(vsSlice, values.New(vs.Value(i)))
-			} else {
-				vsSlice = append(vsSlice, values.NewNull(semantic.BasicFloat))
-			}
-		case flux.TBool:
-			if vs := cr.Bools(idx); vs.IsValid(i) {
-				vsSlice = append(vsSlice, values.New(vs.Value(i)))
-			} else {
-				vsSlice = append(vsSlice, values.NewNull(semantic.BasicBool))
-			}
-		case flux.TTime:
-			if vs := cr.Times(idx); vs.IsValid(i) {
-				vsSlice = append(vsSlice, values.New(values.Time(vs.Value(i))))
-			} else {
-				vsSlice = append(vsSlice, values.NewNull(semantic.BasicTime))
-			}
-		default:
-			execute.PanicUnknownType(typ)
+func arrayFromColumn(idx int, tbl flux.Table) (values.Array, error) {
+	typ := tbl.Cols()[idx].Type
+	var vsSlice []values.Value
+	err := tbl.Do(func(cr flux.ColReader) error {
+		if vsSlice == nil {
+			vsSlice = make([]values.Value, 0, cr.Len())
 		}
+		for i := 0; i < cr.Len(); i++ {
+			switch typ {
+			case flux.TString:
+				if vs := cr.Strings(idx); vs.IsValid(i) {
+					vsSlice = append(vsSlice, values.New(vs.Value(i)))
+				} else {
+					vsSlice = append(vsSlice, values.NewNull(semantic.BasicString))
+				}
+			case flux.TInt:
+				if vs := cr.Ints(idx); vs.IsValid(i) {
+					vsSlice = append(vsSlice, values.New(vs.Value(i)))
+				} else {
+					vsSlice = append(vsSlice, values.NewNull(semantic.BasicInt))
+				}
+			case flux.TUInt:
+				if vs := cr.UInts(idx); vs.IsValid(i) {
+					vsSlice = append(vsSlice, values.New(vs.Value(i)))
+				} else {
+					vsSlice = append(vsSlice, values.NewNull(semantic.BasicUint))
+				}
+			case flux.TFloat:
+				if vs := cr.Floats(idx); vs.IsValid(i) {
+					vsSlice = append(vsSlice, values.New(vs.Value(i)))
+				} else {
+					vsSlice = append(vsSlice, values.NewNull(semantic.BasicFloat))
+				}
+			case flux.TBool:
+				if vs := cr.Bools(idx); vs.IsValid(i) {
+					vsSlice = append(vsSlice, values.New(vs.Value(i)))
+				} else {
+					vsSlice = append(vsSlice, values.NewNull(semantic.BasicBool))
+				}
+			case flux.TTime:
+				if vs := cr.Times(idx); vs.IsValid(i) {
+					vsSlice = append(vsSlice, values.New(values.Time(vs.Value(i))))
+				} else {
+					vsSlice = append(vsSlice, values.NewNull(semantic.BasicTime))
+				}
+			default:
+				execute.PanicUnknownType(typ)
+			}
+		}
+		return nil
+	})
+	if err != nil {
+		return nil, errors.Wrap(err, codes.Internal, "error iterating over table to extract column for table function")
 	}
-	return values.NewArrayWithBacking(semantic.NewArrayType(flux.SemanticType(typ)), vsSlice)
+
+	return values.NewArrayWithBacking(semantic.NewArrayType(flux.SemanticType(typ)), vsSlice), nil
 }
 
 func NewGetRecordFunction() values.Value {
@@ -367,14 +370,7 @@ func findColumnCall(ctx context.Context, args values.Object) (values.Value, erro
 	if idx < 0 {
 		return emptyArray(), nil
 	}
-	var a values.Array
-	if err = tbl.Do(func(cr flux.ColReader) error {
-		a = arrayFromColumn(idx, cr)
-		return nil
-	}); err != nil {
-		return nil, err
-	}
-	return a, nil
+	return arrayFromColumn(idx, tbl)
 }
 
 func emptyArray() values.Array {
