@@ -1433,7 +1433,7 @@ impl CallExpr {
         if let Some(p) = &self.pipe {
             pipe = Some(types::Property {
                 k: "<-".to_string(),
-                v: (p.type_of(), p.loc()),
+                v: (p.type_of(), &self.loc),
             });
         }
 
