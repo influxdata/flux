@@ -3599,8 +3599,8 @@ _fillEmpty = (tables=<-, createEmpty) =>
     else
         tables
 
-// aggregateWindow groups data into fixed windows of time and applies an
-// aggregate or selector function to each window.
+// aggregateWindow downsamples data by grouping data into fixed windows of time
+// and applying an aggregate or selector function to each window.
 //
 // All columns not in the group key other than the specified `column` are dropped
 // from output tables. This includes `_time`. `aggregateWindow()` uses the
@@ -3609,11 +3609,11 @@ _fillEmpty = (tables=<-, createEmpty) =>
 // `aggregateWindow()` requires `_start` and `_stop` columns in input data.
 // Use `range()` to assign `_start` and `_stop` values.
 //
-// #### Window by calendar months and years
+// #### Downsample by calendar months and years
 // `every`, `period`, and `offset` parameters support all valid duration units,
 // including calendar months (`1mo`) and years (`1y`).
 //
-// #### Window by week
+// #### Downsample by week
 // When windowing by week (`1w`), weeks are determined using the Unix epoch
 // (1970-01-01T00:00:00Z UTC). The Unix epoch was on a Thursday, so all
 // calculated weeks begin on Thursday.
@@ -3675,7 +3675,7 @@ _fillEmpty = (tables=<-, createEmpty) =>
 // >     )
 // ```
 //
-// ### Window and aggregate by calendar month
+// ### Downsample by calendar month
 // ```
 // # import "sampledata"
 // #
@@ -3684,6 +3684,49 @@ _fillEmpty = (tables=<-, createEmpty) =>
 // #
 // < data
 // >     |> aggregateWindow(every: 1mo, fn: mean)
+// ```
+//
+// ### Downsample by calendar week starting on Monday
+//
+// Flux increments weeks from the Unix epoch, which was a Thursday.
+// Because of this, by default, all `1w` windows begin on Thursday.
+// Use the `offset` parameter to shift the start of weekly windows to the
+// desired day of the week.
+//
+// | Week start | Offset |
+// | :--------- | :----: |
+// | Monday     |  -3d   |
+// | Tuesday    |  -2d   |
+// | Wednesday  |  -1d   |
+// | Thursday   |   0d   |
+// | Friday     |   1d   |
+// | Saturday   |   2d   |
+// | Sunday     |   3d   |
+//
+// ```js
+// # import "array"
+// #
+// # data =
+// #     array.from(
+// #         rows: [
+// #             {_time: 2022-01-01T00:00:00Z, tag: "t1", _value: 2.0},
+// #             {_time: 2022-01-03T00:00:00Z, tag: "t1", _value: 2.2},
+// #             {_time: 2022-01-06T00:00:00Z, tag: "t1", _value: 4.1},
+// #             {_time: 2022-01-09T00:00:00Z, tag: "t1", _value: 3.8},
+// #             {_time: 2022-01-11T00:00:00Z, tag: "t1", _value: 1.7},
+// #             {_time: 2022-01-12T00:00:00Z, tag: "t1", _value: 2.1},
+// #             {_time: 2022-01-15T00:00:00Z, tag: "t1", _value: 3.8},
+// #             {_time: 2022-01-16T00:00:00Z, tag: "t1", _value: 4.2},
+// #             {_time: 2022-01-20T00:00:00Z, tag: "t1", _value: 5.0},
+// #             {_time: 2022-01-24T00:00:00Z, tag: "t1", _value: 5.8},
+// #             {_time: 2022-01-28T00:00:00Z, tag: "t1", _value: 3.9},
+// #         ],
+// #     )
+// #         |> range(start: 2022-01-01T00:00:00Z, stop: 2022-01-31T23:59:59Z)
+// #         |> group(columns: ["tag"])
+// #
+// < data
+// >     |> aggregateWindow(every: 1w, offset: -3d, fn: mean)
 // ```
 //
 // ## Metadata

@@ -883,8 +883,8 @@ func TestStack(t *testing.T) {
 			FunctionName: "window",
 			Location: ast.SourceLocation{
 				File:   "universe/universe.flux",
-				Start:  ast.Position{Line: 3716, Column: 12},
-				End:    ast.Position{Line: 3716, Column: 51},
+				Start:  ast.Position{Line: 3759, Column: 12},
+				End:    ast.Position{Line: 3759, Column: 51},
 				Source: `window(every: inf, timeColumn: timeDst)`,
 			},
 		},
