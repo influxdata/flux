@@ -183,28 +183,28 @@ from = (
     token="",
     raw=false,
 ) =>
-    {
-        id = if orgID == "" then "{orgID}" else http.pathEscape(inputString: orgID)
-        response =
-            influxdb.api(
-                method: "get",
-                path: "/api/v2/orgs/" + id + "/usage",
-                host: host,
-                token: token,
-                query: ["start": string(v: start), "stop": string(v: stop), "raw": string(v: raw)],
-            )
+{
+    id = if orgID == "" then "{orgID}" else http.pathEscape(inputString: orgID)
+    response =
+        influxdb.api(
+            method: "get",
+            path: "/api/v2/orgs/" + id + "/usage",
+            host: host,
+            token: token,
+            query: ["start": string(v: start), "stop": string(v: stop), "raw": string(v: raw)],
+        )
 
-        return
-            if response.statusCode > 299 then
-                die(
-                    msg:
-                        "organization usage request returned status " + string(v: response.statusCode) + ": " + string(
-                                v: response.body,
-                            ),
-                )
-            else
-                csv.from(csv: string(v: response.body))
-    }
+    return
+        if response.statusCode > 299 then
+            die(
+                msg:
+                    "organization usage request returned status " + string(v: response.statusCode) + ": " + string(
+                            v: response.body,
+                        ),
+            )
+        else
+            csv.from(csv: string(v: response.body))
+}
 
 // limits returns a record containing usage limits for an **InfluxDB Cloud** organization.
 //

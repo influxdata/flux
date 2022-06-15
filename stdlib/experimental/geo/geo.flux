@@ -671,33 +671,33 @@ gridFilter = (
     s2cellIDLevel=-1,
     units=units,
 ) =>
-    {
-        _s2cellIDLevel =
-            if s2cellIDLevel == -1 then
-                tables
-                    |> _detectLevel()
-            else
-                s2cellIDLevel
-        _grid =
-            getGrid(
-                region: region,
-                minSize: minSize,
-                maxSize: maxSize,
-                level: level,
-                maxLevel: _s2cellIDLevel,
-                units: units,
-            )
-
-        return
+{
+    _s2cellIDLevel =
+        if s2cellIDLevel == -1 then
             tables
-                |> filter(
-                    fn: (r) =>
-                        if _grid.level == _s2cellIDLevel then
-                            contains(value: r.s2_cell_id, set: _grid.set)
-                        else
-                            contains(value: s2CellIDToken(token: r.s2_cell_id, level: _grid.level), set: _grid.set),
-                )
-    }
+                |> _detectLevel()
+        else
+            s2cellIDLevel
+    _grid =
+        getGrid(
+            region: region,
+            minSize: minSize,
+            maxSize: maxSize,
+            level: level,
+            maxLevel: _s2cellIDLevel,
+            units: units,
+        )
+
+    return
+        tables
+            |> filter(
+                fn: (r) =>
+                    if _grid.level == _s2cellIDLevel then
+                        contains(value: r.s2_cell_id, set: _grid.set)
+                    else
+                        contains(value: s2CellIDToken(token: r.s2_cell_id, level: _grid.level), set: _grid.set),
+            )
+}
 
 // strictFilter filters data by latitude and longitude in a specified region.
 //
@@ -830,40 +830,40 @@ filterRows = (
     s2cellIDLevel=-1,
     strict=true,
 ) =>
-    {
-        _columns =
+{
+    _columns =
+        tables
+            |> columns(column: "columns")
+            |> findColumn(column: "columns", fn: (key) => true)
+    _rows =
+        if contains(value: "lat", set: _columns) then
             tables
-                |> columns(column: "columns")
-                |> findColumn(column: "columns", fn: (key) => true)
-        _rows =
-            if contains(value: "lat", set: _columns) then
-                tables
-                    |> gridFilter(
-                        region: region,
-                        minSize: minSize,
-                        maxSize: maxSize,
-                        level: level,
-                        s2cellIDLevel: s2cellIDLevel,
-                    )
-            else
-                tables
-                    |> gridFilter(
-                        region: region,
-                        minSize: minSize,
-                        maxSize: maxSize,
-                        level: level,
-                        s2cellIDLevel: s2cellIDLevel,
-                    )
-                    |> toRows()
-        _result =
-            if strict then
-                _rows
-                    |> strictFilter(region)
-            else
-                _rows
+                |> gridFilter(
+                    region: region,
+                    minSize: minSize,
+                    maxSize: maxSize,
+                    level: level,
+                    s2cellIDLevel: s2cellIDLevel,
+                )
+        else
+            tables
+                |> gridFilter(
+                    region: region,
+                    minSize: minSize,
+                    maxSize: maxSize,
+                    level: level,
+                    s2cellIDLevel: s2cellIDLevel,
+                )
+                |> toRows()
+    _result =
+        if strict then
+            _rows
+                |> strictFilter(region)
+        else
+            _rows
 
-        return _result
-    }
+    return _result
+}
 
 // groupByArea groups rows by geographic area.
 //

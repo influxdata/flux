@@ -241,24 +241,24 @@ outData =
 "
 
 testcase filter_by_regex_tag {
-        got =
-            csv.from(csv: inData)
-                |> testing.load()
-                |> range(start: influxql.minTime, stop: influxql.maxTime)
-                |> filter(fn: (r) => r._measurement == "hex")
-                |> filter(fn: (r) => r._field == "n")
-                |> filter(
-                    fn:
-                        (r) =>
-                            r.t
-                                =~
-                                /^(0x7b|0x70|0x55|0x19|0x65|0xa3|0x89|0xc1|0x3|0x14|0x29|0x81|0xb7|0xb9|0x82|0x56|0xa0|0xc7|0x5a|0x7d)$/,
-                )
-                |> group(columns: ["_measurement", "_field"])
-                |> sort(columns: ["_time"])
-                |> keep(columns: ["_time", "_value", "_measurement"])
-                |> rename(columns: {_time: "time", _value: "n"})
-        want = csv.from(csv: outData)
+    got =
+        csv.from(csv: inData)
+            |> testing.load()
+            |> range(start: influxql.minTime, stop: influxql.maxTime)
+            |> filter(fn: (r) => r._measurement == "hex")
+            |> filter(fn: (r) => r._field == "n")
+            |> filter(
+                fn:
+                    (r) =>
+                        r.t
+                            =~
+                            /^(0x7b|0x70|0x55|0x19|0x65|0xa3|0x89|0xc1|0x3|0x14|0x29|0x81|0xb7|0xb9|0x82|0x56|0xa0|0xc7|0x5a|0x7d)$/,
+            )
+            |> group(columns: ["_measurement", "_field"])
+            |> sort(columns: ["_time"])
+            |> keep(columns: ["_time", "_value", "_measurement"])
+            |> rename(columns: {_time: "time", _value: "n"})
+    want = csv.from(csv: outData)
 
-        testing.diff(got, want)
-    }
+    testing.diff(got, want)
+}

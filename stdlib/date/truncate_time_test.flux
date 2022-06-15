@@ -28,16 +28,16 @@ inData =
 "
 
 testcase truncate_time {
-        got =
-            csv.from(csv: inData)
-                |> range(start: 2017-12-22T19:53:00Z)
-                |> drop(columns: ["_start", "_stop"])
-                |> map(fn: (r) => ({r with _time: date.truncate(t: r._time, unit: 1h)}))
+    got =
+        csv.from(csv: inData)
+            |> range(start: 2017-12-22T19:53:00Z)
+            |> drop(columns: ["_start", "_stop"])
+            |> map(fn: (r) => ({r with _time: date.truncate(t: r._time, unit: 1h)}))
 
-        want =
-            csv.from(
-                csv:
-                    "
+    want =
+        csv.from(
+            csv:
+                "
 #datatype,string,long,string,string,dateTime:RFC3339,long
 #group,false,false,true,true,false,false
 #default,_result,,,,,
@@ -54,24 +54,24 @@ testcase truncate_time {
 ,,0,FF,_m,2018-01-22T19:00:00.000000000Z,1
 ,,0,FF,_m,2017-12-22T19:00:00.000000000Z,1
 ",
-            )
+        )
 
-        testing.diff(got: got, want: want)
-    }
+    testing.diff(got: got, want: want)
+}
 
 testcase truncate_time_location {
-        option location = timezone.location(name: "Europe/Madrid")
+    option location = timezone.location(name: "Europe/Madrid")
 
-        got =
-            csv.from(csv: inData)
-                |> range(start: 2017-12-22T19:53:00Z)
-                |> drop(columns: ["_start", "_stop"])
-                |> map(fn: (r) => ({r with _time: date.truncate(t: r._time, unit: 1mo)}))
+    got =
+        csv.from(csv: inData)
+            |> range(start: 2017-12-22T19:53:00Z)
+            |> drop(columns: ["_start", "_stop"])
+            |> map(fn: (r) => ({r with _time: date.truncate(t: r._time, unit: 1mo)}))
 
-        want =
-            csv.from(
-                csv:
-                    "
+    want =
+        csv.from(
+            csv:
+                "
 #datatype,string,long,string,string,dateTime:RFC3339,long
 #group,false,false,true,true,false,false
 #default,_result,,,,,
@@ -88,7 +88,7 @@ testcase truncate_time_location {
 ,,0,FF,_m,2017-12-31T23:00:00.000000000Z,1
 ,,0,FF,_m,2017-11-30T23:00:00.000000000Z,1
 ",
-            )
+        )
 
-        testing.diff(got: got, want: want)
-    }
+    testing.diff(got: got, want: want)
+}

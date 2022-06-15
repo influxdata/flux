@@ -7,10 +7,10 @@ import "testing"
 option now = () => 2030-01-01T00:00:00Z
 
 testcase sort_with_null_columns {
-        got =
-            csv.from(
-                csv:
-                    "
+    got =
+        csv.from(
+            csv:
+                "
 #datatype,string,long,dateTime:RFC3339,double,string,string,string
 #group,false,false,false,false,true,true,true
 #default,_result,,,,,,
@@ -22,16 +22,16 @@ testcase sort_with_null_columns {
 ,,0,2018-05-22T19:54:06Z,1.91,load1,system,host.local
 ,,0,2018-05-22T19:54:16Z,1.84,load1,system,host.local
 ",
-            )
-                |> range(start: 2018-05-22T19:53:00Z, stop: 2018-05-22T19:58:00Z)
-                |> aggregateWindow(every: 5m, fn: mean)
-                |> group(mode: "except", columns: ["_time", "_value"])
-                |> sort(columns: ["_value"])
+        )
+            |> range(start: 2018-05-22T19:53:00Z, stop: 2018-05-22T19:58:00Z)
+            |> aggregateWindow(every: 5m, fn: mean)
+            |> group(mode: "except", columns: ["_time", "_value"])
+            |> sort(columns: ["_value"])
 
-        want =
-            csv.from(
-                csv:
-                    "
+    want =
+        csv.from(
+            csv:
+                "
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string
 #group,false,false,true,true,false,false,true,true,true
 #default,_result,,,,,,,,
@@ -39,7 +39,7 @@ testcase sort_with_null_columns {
 ,,0,2018-05-22T19:53:00Z,2018-05-22T19:58:00Z,2018-05-22T19:58:00Z,,load1,system,host.local
 ,,0,2018-05-22T19:53:00Z,2018-05-22T19:58:00Z,2018-05-22T19:55:00Z,1.775,load1,system,host.local
 ",
-            )
+        )
 
-        testing.diff(got: got, want: want)
-    }
+    testing.diff(got: got, want: want)
+}

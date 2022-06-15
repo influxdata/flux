@@ -91,14 +91,14 @@ message = (
     text,
     color,
 ) =>
-    {
-        attachments = [{color: validateColorString(color), text: string(v: text), mrkdwn_in: ["text"]}]
-        data = {channel: channel, attachments: attachments}
-        headers = {"Authorization": "Bearer " + token, "Content-Type": "application/json"}
-        enc = json.encode(v: data)
+{
+    attachments = [{color: validateColorString(color), text: string(v: text), mrkdwn_in: ["text"]}]
+    data = {channel: channel, attachments: attachments}
+    headers = {"Authorization": "Bearer " + token, "Content-Type": "application/json"}
+    enc = json.encode(v: data)
 
-        return http.post(headers: headers, url: url, data: enc)
-    }
+    return http.post(headers: headers, url: url, data: enc)
+}
 
 // endpoint returns a function that can be used to send a message to Slack per input row.
 //

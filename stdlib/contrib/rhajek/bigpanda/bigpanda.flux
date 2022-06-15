@@ -141,12 +141,12 @@ sendAlert = (
     status,
     rec,
 ) =>
-    {
-        headers = {"Content-Type": "application/json; charset=utf-8", "Authorization": defaultTokenPrefix + " " + token}
-        data = {rec with app_key: appKey, status: status}
+{
+    headers = {"Content-Type": "application/json; charset=utf-8", "Authorization": defaultTokenPrefix + " " + token}
+    data = {rec with app_key: appKey, status: status}
 
-        return http.post(headers: headers, url: url, data: json.encode(v: data))
-    }
+    return http.post(headers: headers, url: url, data: json.encode(v: data))
+}
 
 // endpoint sends alerts to BigPanda using data from input rows.
 //

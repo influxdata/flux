@@ -92,39 +92,39 @@ event = (
     severity,
     additionalInfo=record.any,
 ) =>
-    {
-        event = {
-            source: source,
-            node: node,
-            type: metricType,
-            resource: resource,
-            metric_name: metricName,
-            message_key: messageKey,
-            description: description,
-            severity:
-                if severity == "critical" then
-                    "1"
-                else if severity == "major" then
-                    "2"
-                else if severity == "minor" then
-                    "3"
-                else if severity == "warning" then
-                    "4"
-                else if severity == "info" then
-                    "5"
-                else if severity == "clear" then
-                    "0"
-                else
-                    "",
-            // shouldn't happen
-            additional_info: if additionalInfo == record.any then "" else string(v: json.encode(v: additionalInfo)),
-        }
-        payload = {records: [event]}
-        headers = {"Authorization": http.basicAuth(u: username, p: password), "Content-Type": "application/json"}
-        body = json.encode(v: payload)
-
-        return http.post(headers: headers, url: url, data: body)
+{
+    event = {
+        source: source,
+        node: node,
+        type: metricType,
+        resource: resource,
+        metric_name: metricName,
+        message_key: messageKey,
+        description: description,
+        severity:
+            if severity == "critical" then
+                "1"
+            else if severity == "major" then
+                "2"
+            else if severity == "minor" then
+                "3"
+            else if severity == "warning" then
+                "4"
+            else if severity == "info" then
+                "5"
+            else if severity == "clear" then
+                "0"
+            else
+                "",
+        // shouldn't happen
+        additional_info: if additionalInfo == record.any then "" else string(v: json.encode(v: additionalInfo)),
     }
+    payload = {records: [event]}
+    headers = {"Authorization": http.basicAuth(u: username, p: password), "Content-Type": "application/json"}
+    body = json.encode(v: payload)
+
+    return http.post(headers: headers, url: url, data: body)
+}
 
 // endpoint sends events to [ServiceNow](https://servicenow.com/) using data from input rows.
 //

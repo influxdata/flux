@@ -94,19 +94,19 @@ message = (
     disableWebPagePreview=defaultDisableWebPagePreview,
     silent=defaultSilent,
 ) =>
-    {
-        data = {
-            chat_id: channel,
-            text: text,
-            parse_mode: parseMode,
-            disable_web_page_preview: disableWebPagePreview,
-            disable_notification: silent,
-        }
-        headers = {"Content-Type": "application/json; charset=utf-8"}
-        enc = json.encode(v: data)
-
-        return http.post(headers: headers, url: url + token + "/sendMessage", data: enc)
+{
+    data = {
+        chat_id: channel,
+        text: text,
+        parse_mode: parseMode,
+        disable_web_page_preview: disableWebPagePreview,
+        disable_notification: silent,
     }
+    headers = {"Content-Type": "application/json; charset=utf-8"}
+    enc = json.encode(v: data)
+
+    return http.post(headers: headers, url: url + token + "/sendMessage", data: enc)
+}
 
 // endpoint sends a message to a Telegram channel using data from table rows.
 //

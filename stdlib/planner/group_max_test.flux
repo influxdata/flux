@@ -21,17 +21,17 @@ input =
 "
 
 testcase group_max_bare {
-        // todo(faith): remove drop() call once storage doesnt force _start and _stop columns to be in group key
-        result =
-            csv.from(csv: input)
-                |> testing.load()
-                |> range(start: 2018-05-22T19:53:26Z, stop: 2018-05-24T00:00:00Z)
-                |> filter(fn: (r) => r["_value"] == 1.77)
-                |> group(columns: ["_field"])
-                |> max()
-                |> drop(columns: ["_start", "_stop"])
-        out_max_bare =
-            "
+    // todo(faith): remove drop() call once storage doesnt force _start and _stop columns to be in group key
+    result =
+        csv.from(csv: input)
+            |> testing.load()
+            |> range(start: 2018-05-22T19:53:26Z, stop: 2018-05-24T00:00:00Z)
+            |> filter(fn: (r) => r["_value"] == 1.77)
+            |> group(columns: ["_field"])
+            |> max()
+            |> drop(columns: ["_start", "_stop"])
+    out_max_bare =
+        "
 #datatype,string,long,dateTime:RFC3339,string,string,string,double
 #group,false,false,false,false,false,true,false
 #default,_result,,,,,,
@@ -39,8 +39,8 @@ testcase group_max_bare {
 ,,0,2018-05-22T19:53:26Z,system,host.local,load4,1.77
 "
 
-        testing.diff(got: result, want: csv.from(csv: out_max_bare)) |> yield()
-    }
+    testing.diff(got: result, want: csv.from(csv: out_max_bare)) |> yield()
+}
 
 input_host =
     "
@@ -59,17 +59,17 @@ input_host =
 "
 
 testcase group_max_bare_host {
-        // todo(faith): remove drop() call once storage doesnt force _start and _stop columns to be in group key
-        result =
-            csv.from(csv: input_host)
-                |> testing.load()
-                |> range(start: 2018-05-22T19:53:26Z, stop: 2018-05-24T00:00:00Z)
-                |> filter(fn: (r) => r["host"] == "host.local")
-                |> group(columns: ["_field"])
-                |> max()
-                |> drop(columns: ["_start", "_stop"])
-        out_max_bare =
-            "
+    // todo(faith): remove drop() call once storage doesnt force _start and _stop columns to be in group key
+    result =
+        csv.from(csv: input_host)
+            |> testing.load()
+            |> range(start: 2018-05-22T19:53:26Z, stop: 2018-05-24T00:00:00Z)
+            |> filter(fn: (r) => r["host"] == "host.local")
+            |> group(columns: ["_field"])
+            |> max()
+            |> drop(columns: ["_start", "_stop"])
+    out_max_bare =
+        "
 #datatype,string,long,dateTime:RFC3339,string,string,string,double
 #group,false,false,false,false,false,true,false
 #default,_result,,,,,,
@@ -79,8 +79,8 @@ testcase group_max_bare_host {
 ,,2,2018-05-22T19:53:36Z,system,host.local,load4,1.78
 "
 
-        testing.diff(got: result, want: csv.from(csv: out_max_bare)) |> yield()
-    }
+    testing.diff(got: result, want: csv.from(csv: out_max_bare)) |> yield()
+}
 
 input_field =
     "
@@ -112,16 +112,16 @@ input_field =
 "
 
 testcase group_max_bare_field {
-        // todo(faith): remove drop() call once storage doesnt force _start and _stop columns to be in group key
-        result =
-            csv.from(csv: input_field)
-                |> testing.load()
-                |> range(start: 2018-05-22T19:00:00Z, stop: 2018-05-24T00:00:00Z)
-                |> group(columns: ["_start", "_stop", "host"])
-                |> max()
-                |> drop(columns: ["_measurement", "_time"])
-        out_max_bare =
-            "
+    // todo(faith): remove drop() call once storage doesnt force _start and _stop columns to be in group key
+    result =
+        csv.from(csv: input_field)
+            |> testing.load()
+            |> range(start: 2018-05-22T19:00:00Z, stop: 2018-05-24T00:00:00Z)
+            |> group(columns: ["_start", "_stop", "host"])
+            |> max()
+            |> drop(columns: ["_measurement", "_time"])
+    out_max_bare =
+        "
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,double
 #group,false,false,true,true,true,false,false
 #default,_result,,,,,,
@@ -131,19 +131,19 @@ testcase group_max_bare_field {
 ,,2,2018-05-22T19:00:00Z,2018-05-24T00:00:00Z,hostC,load5,1.95
 "
 
-        testing.diff(got: result, want: csv.from(csv: out_max_bare)) |> yield()
-    }
+    testing.diff(got: result, want: csv.from(csv: out_max_bare)) |> yield()
+}
 testcase group_max_window {
-        result =
-            csv.from(csv: input)
-                |> testing.load()
-                |> range(start: 2018-05-22T19:53:26Z, stop: 2018-05-24T00:00:00Z)
-                |> filter(fn: (r) => r["_value"] == 1.77)
-                |> group(columns: ["_field"])
-                |> window(every: 1d)
-                |> max()
-        out_max_window =
-            "
+    result =
+        csv.from(csv: input)
+            |> testing.load()
+            |> range(start: 2018-05-22T19:53:26Z, stop: 2018-05-24T00:00:00Z)
+            |> filter(fn: (r) => r["_value"] == 1.77)
+            |> group(columns: ["_field"])
+            |> window(every: 1d)
+            |> max()
+    out_max_window =
+        "
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,double
 #group,false,false,true,true,false,false,false,true,false
 #default,_result,,,,,,,,
@@ -151,17 +151,17 @@ testcase group_max_window {
 ,,0,2018-05-22T19:53:26Z,2018-05-23T00:00:00Z,2018-05-22T19:53:26Z,system,host.local,load4,1.77
 "
 
-        testing.diff(got: result, want: csv.from(csv: out_max_window)) |> yield()
-    }
+    testing.diff(got: result, want: csv.from(csv: out_max_window)) |> yield()
+}
 testcase group_max_agg_window {
-        result =
-            csv.from(csv: input)
-                |> testing.load()
-                |> range(start: 2018-05-22T19:53:26Z, stop: 2018-05-24T00:00:00Z)
-                |> group(columns: ["host"])
-                |> aggregateWindow(fn: max, every: 1d, createEmpty: false)
-        out_max_agg_window =
-            "
+    result =
+        csv.from(csv: input)
+            |> testing.load()
+            |> range(start: 2018-05-22T19:53:26Z, stop: 2018-05-24T00:00:00Z)
+            |> group(columns: ["host"])
+            |> aggregateWindow(fn: max, every: 1d, createEmpty: false)
+    out_max_agg_window =
+        "
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,double
 #group,false,false,true,true,false,false,true,false,false
 #default,_result,,,,,,,,
@@ -169,18 +169,18 @@ testcase group_max_agg_window {
 ,,0,2018-05-22T19:53:26Z,2018-05-24T00:00:00Z,2018-05-23T00:00:00Z,system,host.local,load1,1.83
 "
 
-        testing.diff(got: result, want: csv.from(csv: out_max_agg_window)) |> yield()
-    }
+    testing.diff(got: result, want: csv.from(csv: out_max_agg_window)) |> yield()
+}
 testcase group_max_agg_window_empty {
-        result =
-            csv.from(csv: input)
-                |> testing.load()
-                |> range(start: 2018-05-22T19:53:26Z, stop: 2018-05-24T00:00:00Z)
-                |> group(columns: ["_field"])
-                |> aggregateWindow(fn: max, every: 1d, createEmpty: true)
-                |> drop(columns: ["_measurement", "host"])
-        out_max_agg_window_empty =
-            "
+    result =
+        csv.from(csv: input)
+            |> testing.load()
+            |> range(start: 2018-05-22T19:53:26Z, stop: 2018-05-24T00:00:00Z)
+            |> group(columns: ["_field"])
+            |> aggregateWindow(fn: max, every: 1d, createEmpty: true)
+            |> drop(columns: ["_measurement", "host"])
+    out_max_agg_window_empty =
+        "
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,double
 #group,false,false,true,true,false,true,false
 #default,_result,,,,,,
@@ -193,5 +193,5 @@ testcase group_max_agg_window_empty {
 ,,2,2018-05-22T19:53:26Z,2018-05-24T00:00:00Z,2018-05-24T00:00:00Z,load4,
 "
 
-        testing.diff(got: result, want: csv.from(csv: out_max_agg_window_empty)) |> yield()
-    }
+    testing.diff(got: result, want: csv.from(csv: out_max_agg_window_empty)) |> yield()
+}

@@ -49,14 +49,14 @@ inData =
 "
 
 testcase pivot_table {
-        result =
-            csv.from(csv: inData)
-                |> testing.load()
-                |> range(start: 2018-05-22T19:53:26Z)
-                |> pivot(rowKey: ["_time"], columnKey: ["_field"], valueColumn: "_value")
+    result =
+        csv.from(csv: inData)
+            |> testing.load()
+            |> range(start: 2018-05-22T19:53:26Z)
+            |> pivot(rowKey: ["_time"], columnKey: ["_field"], valueColumn: "_value")
 
-        out_fields =
-            "
+    out_fields =
+        "
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,long
 #group,false,false,true,true,false,true,true,false
 #default,_result,,,,,,,
@@ -79,5 +79,5 @@ testcase pivot_table {
 ,,1,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,2018-05-22T19:54:16Z,system,host.local,1.84,1.97,93
 "
 
-        testing.diff(got: result, want: csv.from(csv: out_fields)) |> yield()
-    }
+    testing.diff(got: result, want: csv.from(csv: out_fields)) |> yield()
+}

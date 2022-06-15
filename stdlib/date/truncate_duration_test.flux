@@ -24,16 +24,16 @@ inData =
 "
 
 testcase truncate_duration {
-        got =
-            csv.from(csv: inData)
-                |> range(start: 2018-05-22T19:53:00Z)
-                |> drop(columns: ["_start", "_stop"])
-                |> map(fn: (r) => ({r with _value: date.truncate(t: duration(v: r._value), unit: 1s)}))
+    got =
+        csv.from(csv: inData)
+            |> range(start: 2018-05-22T19:53:00Z)
+            |> drop(columns: ["_start", "_stop"])
+            |> map(fn: (r) => ({r with _value: date.truncate(t: duration(v: r._value), unit: 1s)}))
 
-        want =
-            csv.from(
-                csv:
-                    "
+    want =
+        csv.from(
+            csv:
+                "
 #datatype,string,long,string,string,dateTime:RFC3339,dateTime:RFC3339
 #group,false,false,true,true,false,false
 #default,_result,,,,,
@@ -46,24 +46,24 @@ testcase truncate_duration {
 ,,0,FF,_m,2018-05-22T19:53:50.000000000Z,2030-01-01T02:00:00.000000000Z
 ,,0,FF,_m,2018-05-22T19:54:00.000000000Z,2030-01-01T03:00:00.000000000Z
 ",
-            )
+        )
 
-        testing.diff(got: got, want: want)
-    }
+    testing.diff(got: got, want: want)
+}
 
 testcase truncate_duration_location {
-        option location = timezone.location(name: "Europe/Madrid")
+    option location = timezone.location(name: "Europe/Madrid")
 
-        got =
-            csv.from(csv: inData)
-                |> range(start: 2018-05-22T19:53:00Z)
-                |> drop(columns: ["_start", "_stop"])
-                |> map(fn: (r) => ({r with _value: date.truncate(t: duration(v: r._value), unit: 1mo)}))
+    got =
+        csv.from(csv: inData)
+            |> range(start: 2018-05-22T19:53:00Z)
+            |> drop(columns: ["_start", "_stop"])
+            |> map(fn: (r) => ({r with _value: date.truncate(t: duration(v: r._value), unit: 1mo)}))
 
-        want =
-            csv.from(
-                csv:
-                    "
+    want =
+        csv.from(
+            csv:
+                "
 #datatype,string,long,string,string,dateTime:RFC3339,dateTime:RFC3339
 #group,false,false,true,true,false,false
 #default,_result,,,,,
@@ -76,7 +76,7 @@ testcase truncate_duration_location {
 ,,0,FF,_m,2018-05-22T19:53:50.000000000Z,2029-12-31T23:00:00.000000000Z
 ,,0,FF,_m,2018-05-22T19:54:00.000000000Z,2029-12-31T23:00:00.000000000Z
 ",
-            )
+        )
 
-        testing.diff(got: got, want: want)
-    }
+    testing.diff(got: got, want: want)
+}

@@ -5,8 +5,8 @@ import "testing"
 import "csv"
 
 testcase integral {
-        inData =
-            "
+    inData =
+        "
 #datatype,string,long,dateTime:RFC3339,string,string,double
 #group,false,false,false,true,true,false
 #default,_result,,,,,
@@ -34,8 +34,8 @@ testcase integral {
 ,,3,2018-05-22T19:53:50Z,_m,SR,1
 ,,3,2018-05-22T19:54:00Z,_m,SR,1
 "
-        outData =
-            "
+    outData =
+        "
 #datatype,string,long,string,string,double
 #group,false,false,true,true,false
 #default,_result,,,,
@@ -45,20 +45,20 @@ testcase integral {
 ,,2,_m,RR,3
 ,,3,_m,SR,2
 "
-        got =
-            csv.from(csv: inData)
-                |> range(start: 2018-05-22T19:53:00Z, stop: 2018-05-22T19:55:00Z)
-                |> integral(unit: 10s)
-                |> drop(columns: ["_start", "_stop"])
+    got =
+        csv.from(csv: inData)
+            |> range(start: 2018-05-22T19:53:00Z, stop: 2018-05-22T19:55:00Z)
+            |> integral(unit: 10s)
+            |> drop(columns: ["_start", "_stop"])
 
-        want = csv.from(csv: outData)
+    want = csv.from(csv: outData)
 
-        testing.diff(want: want, got: got)
-    }
+    testing.diff(want: want, got: got)
+}
 
 testcase integral_interpolate {
-        inData =
-            "
+    inData =
+        "
 #datatype,string,long,dateTime:RFC3339,string,string,double
 #group,false,false,false,true,true,false
 #default,_result,,,,,
@@ -78,8 +78,8 @@ testcase integral_interpolate {
 ,,2,2018-05-22T19:53:20Z,_m,RR,1
 ,,2,2018-05-22T19:53:30Z,_m,RR,0
 "
-        outData =
-            "
+    outData =
+        "
 #datatype,string,long,string,string,double
 #group,false,false,true,true,false
 #default,_result,,,,
@@ -88,21 +88,21 @@ testcase integral_interpolate {
 ,,1,_m,QQ,6
 ,,2,_m,RR,-2
 "
-        got =
-            csv.from(csv: inData)
-                |> range(start: 2018-05-22T19:53:00Z, stop: 2018-05-22T19:54:00Z)
-                |> integral(unit: 10s, interpolate: "linear")
-                |> drop(columns: ["_start", "_stop"])
+    got =
+        csv.from(csv: inData)
+            |> range(start: 2018-05-22T19:53:00Z, stop: 2018-05-22T19:54:00Z)
+            |> integral(unit: 10s, interpolate: "linear")
+            |> drop(columns: ["_start", "_stop"])
 
-        want = csv.from(csv: outData)
+    want = csv.from(csv: outData)
 
-        testing.diff(want: want, got: got)
-    }
+    testing.diff(want: want, got: got)
+}
 
 // Test integral interpolation when there is only a single value in each group.
 testcase integral_interpolate_single {
-        inData =
-            "
+    inData =
+        "
 #datatype,string,long,dateTime:RFC3339,string,string,double
 #group,false,false,false,true,true,false
 #default,_result,,,,,
@@ -111,8 +111,8 @@ testcase integral_interpolate_single {
 ,,1,2018-05-22T19:53:10Z,_m,QQ,-2
 ,,2,2018-05-22T19:53:00Z,_m,RR,3
 "
-        outData =
-            "
+    outData =
+        "
 #datatype,string,long,string,string,double
 #group,false,false,true,true,false
 #default,_result,,,,
@@ -121,13 +121,13 @@ testcase integral_interpolate_single {
 ,,1,_m,QQ,-12
 ,,2,_m,RR,18
 "
-        got =
-            csv.from(csv: inData)
-                |> range(start: 2018-05-22T19:53:00Z, stop: 2018-05-22T19:54:00Z)
-                |> integral(unit: 10s, interpolate: "linear")
-                |> drop(columns: ["_start", "_stop"])
+    got =
+        csv.from(csv: inData)
+            |> range(start: 2018-05-22T19:53:00Z, stop: 2018-05-22T19:54:00Z)
+            |> integral(unit: 10s, interpolate: "linear")
+            |> drop(columns: ["_start", "_stop"])
 
-        want = csv.from(csv: outData)
+    want = csv.from(csv: outData)
 
-        testing.diff(want: want, got: got)
-    }
+    testing.diff(want: want, got: got)
+}

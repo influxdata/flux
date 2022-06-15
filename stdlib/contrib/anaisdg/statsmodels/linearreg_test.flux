@@ -18,15 +18,15 @@ inData =
 "
 
 testcase linear_regression {
-        got =
-            csv.from(csv: inData)
-                |> range(start: 2020-05-21T21:30:48.901Z, stop: 2020-05-21T21:50:48.9Z)
-                |> statsmodels.linearRegression()
+    got =
+        csv.from(csv: inData)
+            |> range(start: 2020-05-21T21:30:48.901Z, stop: 2020-05-21T21:50:48.9Z)
+            |> statsmodels.linearRegression()
 
-        want =
-            csv.from(
-                csv:
-                    "
+    want =
+        csv.from(
+            csv:
+                "
 #group,false,false,false,true,true,true,true,false,false,true,false,false,false,false,false,true,false,false,false
 #datatype,string,long,double,string,string,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,double,double,double,double,double,string,double,double,double
 #default,_result,,,,,,,,,,,,,,,,,,
@@ -36,7 +36,7 @@ testcase linear_regression {
 ,,0,4,young,cats,2020-05-21T21:30:48.901Z,2020-05-21T21:50:48.9Z,2020-05-21T21:46:25Z,0.009999999999999929,A,-1.3,10,30,41,19,calico,3,4,4.1
 ,,0,4,young,cats,2020-05-21T21:30:48.901Z,2020-05-21T21:50:48.9Z,2020-05-21T21:48:38Z,0.04000000000000007,A,-1.3,10,30,41,19,calico,4,3,2.8
 ",
-            )
+        )
 
-        testing.diff(got: got, want: want)
-    }
+    testing.diff(got: got, want: want)
+}

@@ -29,15 +29,15 @@ inData =
 "
 
 testcase month_time {
-        got =
-            csv.from(csv: inData)
-                |> range(start: 2018-01-01T00:00:00Z)
-                |> map(fn: (r) => ({r with _value: date.month(t: r._time)}))
+    got =
+        csv.from(csv: inData)
+            |> range(start: 2018-01-01T00:00:00Z)
+            |> map(fn: (r) => ({r with _value: date.month(t: r._time)}))
 
-        want =
-            csv.from(
-                csv:
-                    "
+    want =
+        csv.from(
+            csv:
+                "
 #group,false,false,true,true,true,true,false,false
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,dateTime:RFC3339,long
 #default,_result,,,,,,,
@@ -55,23 +55,23 @@ testcase month_time {
 ,,1,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,QQ,_m,2018-11-22T19:53:40Z,11
 ,,1,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,QQ,_m,2018-12-22T19:53:50Z,12
 ",
-            )
+        )
 
-        testing.diff(got: got, want: want)
-    }
+    testing.diff(got: got, want: want)
+}
 
 testcase month_time_location {
-        option location = timezone.location(name: "America/Los_Angeles")
+    option location = timezone.location(name: "America/Los_Angeles")
 
-        got =
-            csv.from(csv: inData)
-                |> range(start: 2018-01-01T00:00:00Z)
-                |> map(fn: (r) => ({r with _value: date.month(t: r._time)}))
+    got =
+        csv.from(csv: inData)
+            |> range(start: 2018-01-01T00:00:00Z)
+            |> map(fn: (r) => ({r with _value: date.month(t: r._time)}))
 
-        want =
-            csv.from(
-                csv:
-                    "
+    want =
+        csv.from(
+            csv:
+                "
 #group,false,false,true,true,true,true,false,false
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,dateTime:RFC3339,long
 #default,_result,,,,,,,
@@ -89,7 +89,7 @@ testcase month_time_location {
 ,,1,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,QQ,_m,2018-11-22T19:53:40Z,11
 ,,1,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,QQ,_m,2018-12-22T19:53:50Z,12
 ",
-            )
+        )
 
-        testing.diff(got: got, want: want)
-    }
+    testing.diff(got: got, want: want)
+}
