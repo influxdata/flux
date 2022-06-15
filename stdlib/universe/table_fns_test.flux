@@ -83,3 +83,25 @@ testcase findColumnWithGroup {
 
     testing.diff(got, want)
 }
+
+testcase findColumnKeepEmpty {
+    input =
+        array.from(rows: [{m: "m", k: "north", v: 10, _time: 2020-02-20T00:00:00Z}])
+            |> filter(fn: (r) => r.m == "n", onEmpty: "keep")
+    arr = input |> findColumn(fn: (key) => true, column: "v")
+    got = array.from(rows: [{value: display(v: arr)}])
+    want = array.from(rows: [{value: "[]"}])
+
+    testing.diff(got, want)
+}
+
+testcase findColumnDropEmpty {
+    input =
+        array.from(rows: [{m: "m", k: "north", v: 10, _time: 2020-02-20T00:00:00Z}])
+            |> filter(fn: (r) => r.m == "n", onEmpty: "drop")
+    arr = input |> findColumn(fn: (key) => true, column: "v")
+    got = array.from(rows: [{value: display(v: arr)}])
+    want = array.from(rows: [{value: "[]"}])
+
+    testing.diff(got, want)
+}

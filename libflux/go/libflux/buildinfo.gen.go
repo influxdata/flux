@@ -582,7 +582,7 @@ var sourceHashes = map[string]string{
 	"stdlib/universe/sum_test.flux":                                                               "63c5078f09cdba7f1c55914431895f1066ffd890d73cb3e9ad20e19375e733cc",
 	"stdlib/universe/table_fns_findcolumn_map_test.flux":                                          "a48985e14997948f9ecd10b94c6efae67f51f2d71508325eb07c77a92eb79748",
 	"stdlib/universe/table_fns_findrecord_map_test.flux":                                          "824b7055f62090954ce31fe33d60e01001e6276045351ae17d813e1bf4803bdf",
-	"stdlib/universe/table_fns_test.flux":                                                         "a70695af1e085803de1ed00d182f8f47b810933caf28f380adcda8ffcc9e80cb",
+	"stdlib/universe/table_fns_test.flux":                                                         "7cafa2949e715a0fcdc2ffbea1d5a377e74bc9ee0307b76f29b4936d2e3b119b",
 	"stdlib/universe/tail_offset_test.flux":                                                       "838ed2329f35f91803707a26161bb5463ca2c3c5a2ff9225630d05ffdca67dee",
 	"stdlib/universe/tail_test.flux":                                                              "755f2cb7f03f8589e7392f0c55bef9c59d8f086c4b29232c5c8f2bf034f340f2",
 	"stdlib/universe/task_per_line_test.flux":                                                     "dfff8f6b969289e7905a214426b27dc03e8b6a017e3a4990db6400545667f4a7",
