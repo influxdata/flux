@@ -30,11 +30,13 @@ To build Flux, first install the GNU `pkg-config` utility on your system, then e
 # First install GNU pkg-config.
 # On Debian/Ubuntu
 $ sudo apt-get install -y clang pkg-config
+
 # Or on Mac OS X with Homebrew
 $ brew install pkg-config
 
 # Next, install the pkg-config wrapper utility
 $ go get github.com/influxdata/pkg-config
+
 # Optionally, add the GOBIN directory to your PATH
 $ export PATH=${GOPATH}/bin:${PATH}
 ```
