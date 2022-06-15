@@ -7,6 +7,8 @@ use expect_test::{expect, Expect};
 
 use super::*;
 
+use crate::parser::Parser;
+
 const TEST_OPTIONS: Options = Options {
     // It is easier to read/write testcases without having to add a trailing newline
     trailing_newline: false,
@@ -2011,4 +2013,16 @@ fn format_with_trailing_newline() {
         )
         .unwrap(),
     );
+}
+
+#[test]
+fn format_node_test() {
+    let mut p = Parser::new(
+        r"1
+    +
+a",
+    );
+    let expr = p.parse_expression();
+
+    expect![["1 + a"]].assert_eq(&format_node(Node::from_expr(&expr)).unwrap());
 }

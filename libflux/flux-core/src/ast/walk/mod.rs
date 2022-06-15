@@ -8,7 +8,7 @@ use derive_more::Display;
 use crate::ast::*;
 
 /// Node represents any structure that can appear in the AST.
-#[derive(Debug, Display, Clone)]
+#[derive(Debug, Display, Copy, Clone, derive_more::From)]
 #[allow(missing_docs)]
 pub enum Node<'a> {
     #[display(fmt = "Package")]
@@ -123,7 +123,7 @@ pub enum Node<'a> {
 
 impl<'a> Node<'a> {
     #[allow(missing_docs)]
-    pub fn base(&self) -> &BaseNode {
+    pub fn base(&self) -> &'a BaseNode {
         match self {
             Node::Package(n) => &n.base,
             Node::File(n) => &n.base,
@@ -273,8 +273,8 @@ pub fn walk<'a, T>(v: &mut T, node: Node<'a>)
 where
     T: Visitor<'a>,
 {
-    if v.visit(node.clone()) {
-        match node.clone() {
+    if v.visit(node) {
+        match node {
             Node::Package(n) => {
                 for file in n.files.iter() {
                     walk(v, Node::File(file));
