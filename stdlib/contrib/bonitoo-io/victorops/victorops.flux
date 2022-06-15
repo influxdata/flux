@@ -73,29 +73,29 @@ import "json"
 // tags: single notification
 //
 alert = (
-    url,
-    messageType,
-    entityID="",
-    entityDisplayName="",
-    stateMessage="",
-    timestamp=now(),
-    monitoringTool="InfluxDB",
-) =>
-{
-    alert = {
-        message_type: messageType,
-        entity_id: entityID,
-        entity_display_name: entityDisplayName,
-        state_message: stateMessage,
-        // required in seconds
-        state_start_time: uint(v: timestamp) / uint(v: 1000000000),
-        monitoring_tool: monitoringTool,
-    }
-    headers = {"Content-Type": "application/json"}
-    body = json.encode(v: alert)
+        url,
+        messageType,
+        entityID="",
+        entityDisplayName="",
+        stateMessage="",
+        timestamp=now(),
+        monitoringTool="InfluxDB",
+    ) =>
+    {
+        alert = {
+            message_type: messageType,
+            entity_id: entityID,
+            entity_display_name: entityDisplayName,
+            state_message: stateMessage,
+            // required in seconds
+            state_start_time: uint(v: timestamp) / uint(v: 1000000000),
+            monitoring_tool: monitoringTool,
+        }
+        headers = {"Content-Type": "application/json"}
+        body = json.encode(v: alert)
 
-    return http.post(headers: headers, url: url, data: body)
-}
+        return http.post(headers: headers, url: url, data: body)
+    }
 
 // endpoint sends events to VictorOps using data from input rows.
 //

@@ -105,34 +105,34 @@ builtin toSensuName : (v: string) => string
 // tags: single notification
 //
 event = (
-    url,
-    apiKey,
-    checkName,
-    text,
-    handlers=[],
-    status=0,
-    state="",
-    namespace="default",
-    entityName="influxdb",
-) =>
-{
-    data = {
-        entity: {entity_class: "proxy", metadata: {name: toSensuName(v: entityName)}},
-        check: {
-            output: text,
-            state: if state != "" then state else if status == 0 then "passing" else "failing",
-            status: status,
-            handlers: handlers,
-            // required
-            interval: 60,
-            metadata: {name: toSensuName(v: checkName)},
-        },
-    }
-    headers = {"Content-Type": "application/json; charset=utf-8", "Authorization": "Key " + apiKey}
-    enc = json.encode(v: data)
+        url,
+        apiKey,
+        checkName,
+        text,
+        handlers=[],
+        status=0,
+        state="",
+        namespace="default",
+        entityName="influxdb",
+    ) =>
+    {
+        data = {
+            entity: {entity_class: "proxy", metadata: {name: toSensuName(v: entityName)}},
+            check: {
+                output: text,
+                state: if state != "" then state else if status == 0 then "passing" else "failing",
+                status: status,
+                handlers: handlers,
+                // required
+                interval: 60,
+                metadata: {name: toSensuName(v: checkName)},
+            },
+        }
+        headers = {"Content-Type": "application/json; charset=utf-8", "Authorization": "Key " + apiKey}
+        enc = json.encode(v: data)
 
-    return http.post(headers: headers, url: url + "/api/core/v2/namespaces/" + namespace + "/events", data: enc)
-}
+        return http.post(headers: headers, url: url + "/api/core/v2/namespaces/" + namespace + "/events", data: enc)
+    }
 
 // endpoint sends an event
 // to the [Sensu Events API](https://docs.sensu.io/sensu-go/latest/api/events/#create-a-new-event)

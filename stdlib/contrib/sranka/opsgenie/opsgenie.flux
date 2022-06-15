@@ -74,31 +74,31 @@ builtin respondersToJSON : (v: [string]) => string
 // ## Metadata
 // tags: single notification
 sendAlert = (
-    url="https://api.opsgenie.com/v2/alerts",
-    apiKey,
-    message,
-    alias="",
-    description="",
-    priority="P3",
-    responders=[],
-    tags=[],
-    entity="",
-    actions=[],
-    visibleTo=[],
-    details="{}",
-) =>
-{
-    headers = {"Content-Type": "application/json; charset=utf-8", "Authorization": "GenieKey " + apiKey}
-    cutEncode = (v, max, defV="") => {
-        v2 = if strings.strlen(v: v) != 0 then v else defV
+        url="https://api.opsgenie.com/v2/alerts",
+        apiKey,
+        message,
+        alias="",
+        description="",
+        priority="P3",
+        responders=[],
+        tags=[],
+        entity="",
+        actions=[],
+        visibleTo=[],
+        details="{}",
+    ) =>
+    {
+        headers = {"Content-Type": "application/json; charset=utf-8", "Authorization": "GenieKey " + apiKey}
+        cutEncode = (v, max, defV="") => {
+            v2 = if strings.strlen(v: v) != 0 then v else defV
 
-        return
-            if strings.strlen(v: v2) > max then
-                string(v: json.encode(v: "${strings.substring(v: v2, start: 0, end: max)}"))
-            else
-                string(v: json.encode(v: v2))
-    }
-    body = "{
+            return
+                if strings.strlen(v: v2) > max then
+                    string(v: json.encode(v: "${strings.substring(v: v2, start: 0, end: max)}"))
+                else
+                    string(v: json.encode(v: v2))
+        }
+        body = "{
 \"message\": ${cutEncode(v: message, max: 130)},
 \"alias\": ${cutEncode(v: alias, max: 512, defV: message)},
 \"description\": ${cutEncode(v: description, max: 15000)},
@@ -111,8 +111,8 @@ sendAlert = (
 \"priority\": ${cutEncode(v: priority, max: 2)}
 }"
 
-    return http.post(headers: headers, url: url, data: bytes(v: body))
-}
+        return http.post(headers: headers, url: url, data: bytes(v: body))
+    }
 
 // endpoint sends an alert message to Opsgenie using data from table rows.
 //

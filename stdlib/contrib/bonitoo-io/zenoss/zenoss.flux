@@ -84,45 +84,45 @@ import "json"
 // ## Metadata
 // tags: single notification
 event = (
-    url,
-    username,
-    password,
-    action="EventsRouter",
-    method="add_event",
-    type="rpc",
-    tid=1,
-    summary="",
-    device="",
-    component="",
-    severity,
-    eventClass="",
-    eventClassKey="",
-    collector="",
-    message="",
-) =>
-{
-    event = {
-        summary: summary,
-        device: device,
-        component: component,
-        severity: severity,
-        evclass: eventClass,
-        evclasskey: eventClassKey,
-        collector: collector,
-        message: message,
-    }
-    payload = {
-        action: action,
-        method: method,
-        data: [event],
-        type: type,
-        tid: tid,
-    }
-    headers = {"Authorization": http.basicAuth(u: username, p: password), "Content-Type": "application/json"}
-    body = json.encode(v: payload)
+        url,
+        username,
+        password,
+        action="EventsRouter",
+        method="add_event",
+        type="rpc",
+        tid=1,
+        summary="",
+        device="",
+        component="",
+        severity,
+        eventClass="",
+        eventClassKey="",
+        collector="",
+        message="",
+    ) =>
+    {
+        event = {
+            summary: summary,
+            device: device,
+            component: component,
+            severity: severity,
+            evclass: eventClass,
+            evclasskey: eventClassKey,
+            collector: collector,
+            message: message,
+        }
+        payload = {
+            action: action,
+            method: method,
+            data: [event],
+            type: type,
+            tid: tid,
+        }
+        headers = {"Authorization": http.basicAuth(u: username, p: password), "Content-Type": "application/json"}
+        body = json.encode(v: payload)
 
-    return http.post(headers: headers, url: url, data: body)
-}
+        return http.post(headers: headers, url: url, data: body)
+    }
 
 // endpoint sends events to Zenoss using data from input rows.
 //

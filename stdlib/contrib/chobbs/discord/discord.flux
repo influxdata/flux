@@ -49,19 +49,19 @@ option discordURL = "https://discordapp.com/api/webhooks/"
 // tags: single notification
 //
 send = (
-    webhookToken,
-    webhookID,
-    username,
-    content,
-    avatar_url="",
-) =>
-{
-    data = {username: username, content: content, avatar_url: avatar_url}
-    headers = {"Content-Type": "application/json"}
-    encode = json.encode(v: data)
+        webhookToken,
+        webhookID,
+        username,
+        content,
+        avatar_url="",
+    ) =>
+    {
+        data = {username: username, content: content, avatar_url: avatar_url}
+        headers = {"Content-Type": "application/json"}
+        encode = json.encode(v: data)
 
-    return http.post(headers: headers, url: discordURL + webhookID + "/" + webhookToken, data: encode)
-}
+        return http.post(headers: headers, url: discordURL + webhookID + "/" + webhookToken, data: encode)
+    }
 
 // endpoint sends a single message to a Discord channel using a
 // [Discord webhook](https://support.discord.com/hc/en-us/articles/228383668-Intro-to-Webhooks&?page=3)

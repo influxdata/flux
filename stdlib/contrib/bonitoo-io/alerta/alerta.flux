@@ -72,45 +72,45 @@ import "strings"
 // tags: single notification
 //
 alert = (
-    url,
-    apiKey,
-    resource,
-    event,
-    environment="",
-    severity,
-    service=[],
-    group="",
-    value="",
-    text="",
-    tags=[],
-    attributes,
-    origin="InfluxDB",
-    type="",
-    timestamp=now(),
-) =>
-{
-    alert = {
-        resource: resource,
-        event: event,
-        environment: environment,
-        severity: severity,
-        service: service,
-        group: group,
-        value: value,
-        text: text,
-        tags: tags,
-        attributes: attributes,
-        origin: origin,
-        type: type,
-        createTime: strings.substring(v: string(v: timestamp), start: 0, end: 23) + "Z",
-            // Alerta supports ISO 8601 date format YYYY-MM-DDThh:mm:ss.sssZ only
+        url,
+        apiKey,
+        resource,
+        event,
+        environment="",
+        severity,
+        service=[],
+        group="",
+        value="",
+        text="",
+        tags=[],
+        attributes,
+        origin="InfluxDB",
+        type="",
+        timestamp=now(),
+    ) =>
+    {
+        alert = {
+            resource: resource,
+            event: event,
+            environment: environment,
+            severity: severity,
+            service: service,
+            group: group,
+            value: value,
+            text: text,
+            tags: tags,
+            attributes: attributes,
+            origin: origin,
+            type: type,
+            createTime: strings.substring(v: string(v: timestamp), start: 0, end: 23) + "Z",
+                // Alerta supports ISO 8601 date format YYYY-MM-DDThh:mm:ss.sssZ only
 
+        }
+        headers = {"Authorization": "Key " + apiKey, "Content-Type": "application/json"}
+        body = json.encode(v: alert)
+
+        return http.post(headers: headers, url: url, data: body)
     }
-    headers = {"Authorization": "Key " + apiKey, "Content-Type": "application/json"}
-    body = json.encode(v: alert)
-
-    return http.post(headers: headers, url: url, data: body)
-}
 
 // endpoint sends alerts to Alerta using data from input rows.
 //

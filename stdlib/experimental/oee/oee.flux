@@ -92,57 +92,59 @@ import "experimental"
 // tags: transformations,aggregates
 //
 computeAPQ = (
-    productionEvents,
-    partEvents,
-    runningState,
-    plannedTime,
-    idealCycleTime,
-) =>
-{
-    availability =
-        productionEvents
-            |> events.duration(unit: 1ns, columnName: "runTime")
-            |> filter(fn: (r) => r.state == runningState)
-            |> sum(column: "runTime")
-            |> map(
-                fn: (r) => ({r with _time: r._stop, availability: float(v: r.runTime) / float(v: int(v: plannedTime))}),
+        productionEvents,
+        partEvents,
+        runningState,
+        plannedTime,
+        idealCycleTime,
+    ) =>
+    {
+        availability =
+            productionEvents
+                |> events.duration(unit: 1ns, columnName: "runTime")
+                |> filter(fn: (r) => r.state == runningState)
+                |> sum(column: "runTime")
+                |> map(
+                    fn: (r) =>
+                        ({r with _time: r._stop, availability: float(v: r.runTime) / float(v: int(v: plannedTime))}),
+                )
+        totalCount =
+            partEvents
+                |> difference(columns: ["partCount"], nonNegative: true)
+                |> sum(column: "partCount")
+                |> duplicate(column: "_stop", as: "_time")
+        badCount =
+            partEvents
+                |> difference(columns: ["badCount"], nonNegative: true)
+                |> sum(column: "badCount")
+                |> duplicate(column: "_stop", as: "_time")
+        performance =
+            experimental.join(
+                left: availability,
+                right: totalCount,
+                fn: (left, right) =>
+                    ({left with performance:
+                            float(v: right.partCount) * float(v: int(v: idealCycleTime)) / float(v: left.runTime),
+                    }),
             )
-    totalCount =
-        partEvents
-            |> difference(columns: ["partCount"], nonNegative: true)
-            |> sum(column: "partCount")
-            |> duplicate(column: "_stop", as: "_time")
-    badCount =
-        partEvents
-            |> difference(columns: ["badCount"], nonNegative: true)
-            |> sum(column: "badCount")
-            |> duplicate(column: "_stop", as: "_time")
-    performance =
-        experimental.join(
-            left: availability,
-            right: totalCount,
-            fn: (left, right) =>
-                ({left with performance:
-                        float(v: right.partCount) * float(v: int(v: idealCycleTime)) / float(v: left.runTime),
-                }),
-        )
-    quality =
-        experimental.join(
-            left: badCount,
-            right: totalCount,
-            fn: (left, right) =>
-                ({left with quality: (float(v: right.partCount) - float(v: left.badCount)) / float(v: right.partCount),
-                }),
-        )
+        quality =
+            experimental.join(
+                left: badCount,
+                right: totalCount,
+                fn: (left, right) =>
+                    ({left with quality:
+                            (float(v: right.partCount) - float(v: left.badCount)) / float(v: right.partCount),
+                    }),
+            )
 
-    return
-        experimental.join(
-            left: performance,
-            right: quality,
-            fn: (left, right) =>
-                ({left with quality: right.quality, oee: left.availability * left.performance * right.quality}),
-        )
-}
+        return
+            experimental.join(
+                left: performance,
+                right: quality,
+                fn: (left, right) =>
+                    ({left with quality: right.quality, oee: left.availability * left.performance * right.quality}),
+            )
+    }
 
 // APQ computes availability, performance, quality (APQ) and overall equipment
 // effectiveness (OEE) in producing parts.

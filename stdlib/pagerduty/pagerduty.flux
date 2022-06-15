@@ -193,48 +193,48 @@ actionFromLevel = (level) => if strings.toLower(v: level) == "ok" then "resolve"
 // tags: single notification
 //
 sendEvent = (
-    pagerdutyURL=defaultURL,
-    routingKey,
-    client,
-    clientURL,
-    dedupKey,
-    class,
-    group,
-    severity,
-    eventAction,
-    source,
-    component="",
-    summary,
-    timestamp,
-    customDetails=record.any,
-) =>
-{
-    payload = {
-        summary: summary,
-        timestamp: timestamp,
-        source: source,
-        component: component,
-        severity: severity,
-        group: group,
-        class: class,
-    }
-    data = {
-        payload: payload,
-        routing_key: routingKey,
-        dedup_key: dedupKey,
-        event_action: eventAction,
-        client: client,
-        client_url: clientURL,
-    }
-    headers = {"Accept": "application/vnd.pagerduty+json;version=2", "Content-Type": "application/json"}
-    enc =
-        if customDetails == record.any then
-            json.encode(v: data)
-        else
-            json.encode(v: {data with payload: {payload with custom_details: customDetails}})
+        pagerdutyURL=defaultURL,
+        routingKey,
+        client,
+        clientURL,
+        dedupKey,
+        class,
+        group,
+        severity,
+        eventAction,
+        source,
+        component="",
+        summary,
+        timestamp,
+        customDetails=record.any,
+    ) =>
+    {
+        payload = {
+            summary: summary,
+            timestamp: timestamp,
+            source: source,
+            component: component,
+            severity: severity,
+            group: group,
+            class: class,
+        }
+        data = {
+            payload: payload,
+            routing_key: routingKey,
+            dedup_key: dedupKey,
+            event_action: eventAction,
+            client: client,
+            client_url: clientURL,
+        }
+        headers = {"Accept": "application/vnd.pagerduty+json;version=2", "Content-Type": "application/json"}
+        enc =
+            if customDetails == record.any then
+                json.encode(v: data)
+            else
+                json.encode(v: {data with payload: {payload with custom_details: customDetails}})
 
-    return http.post(headers: headers, url: pagerdutyURL, data: enc)
-}
+        return http.post(headers: headers, url: pagerdutyURL, data: enc)
+    }
 
 // endpoint returns a function that sends a message to PagerDuty that includes output data.
 //

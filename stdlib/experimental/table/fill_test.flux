@@ -236,11 +236,11 @@ testcase selector_fill {
 
 test_idempotent =
     () =>
-    {
-        want =
-            csv.from(
-                csv:
-                    "
+        {
+            want =
+                csv.from(
+                    csv:
+                        "
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,double,string
 #group,false,false,true,true,false,true,true,false,true
 #default,_result,,,,,,,,
@@ -260,15 +260,15 @@ test_idempotent =
 ,,6,2021-04-13T09:30:00Z,2021-04-13T09:45:00Z,2021-04-13T09:40:00Z,m0,f0,8.0,b
 ,,7,2021-04-13T09:45:00Z,2021-04-13T10:00:00Z,,m0,f0,,b
 ",
-            )
-        got =
-            loadData()
-                |> window(every: 15m, createEmpty: true)
-                |> table.fill()
-                |> table.fill()
+                )
+            got =
+                loadData()
+                    |> window(every: 15m, createEmpty: true)
+                    |> table.fill()
+                    |> table.fill()
 
-        return testing.diff(got, want) |> yield()
-    }
+            return testing.diff(got, want) |> yield()
+        }
 
 testcase idempotent {
     option planner.disableLogicalRules = ["experimental/table.IdempotentTableFill"]

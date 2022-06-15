@@ -141,12 +141,12 @@ builtin _diff : (
 // tags: tests
 //
 diff = (
-    got=<-,
-    want,
-    verbose=false,
-    epsilon=0.000001,
-    nansEqual=false,
-) =>
+        got=<-,
+        want,
+        verbose=false,
+        epsilon=0.000001,
+        nansEqual=false,
+    ) =>
     {
         return
             _diff(

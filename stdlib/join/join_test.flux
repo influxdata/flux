@@ -136,8 +136,8 @@ testcase inner_join {
 }
 
 testcase full_outer_join {
-        wantData =
-            "
+    wantData =
+        "
 #datatype,string,long,string,long,double,dateTime:RFC3339,long
 #group,false,false,false,false,false,false,false
 #default,_result,,,,,,
@@ -167,30 +167,30 @@ testcase full_outer_join {
 ,,0,c,,56.85,2022-06-01T00:00:02Z,2
 ,,0,c,,21.28,2022-06-01T00:00:03Z,2
 "
-        want = csv.from(csv: wantData) |> group(columns: ["key"])
+    want = csv.from(csv: wantData) |> group(columns: ["key"])
 
-        got =
-            join.tables(
-                left: left,
-                right: right,
-                on: (l, r) => l.label == r.id and l._time == r._time,
-                as: (l, r) => {
-                    label = if exists l.label then l.label else r.id
-                    time = if exists l._time then l._time else r._time
+    got =
+        join.tables(
+            left: left,
+            right: right,
+            on: (l, r) => l.label == r.id and l._time == r._time,
+            as: (l, r) => {
+                label = if exists l.label then l.label else r.id
+                time = if exists l._time then l._time else r._time
 
-                    // Strange that this test passes when it's missing the `key` column
-                    // Same issue with the other outer join test cases
-                    return {label: label, intv: r._value, floatv: l._value, _time: time}
-                },
-                method: "full",
-            )
+                // Strange that this test passes when it's missing the `key` column
+                // Same issue with the other outer join test cases
+                return {label: label, intv: r._value, floatv: l._value, _time: time}
+            },
+            method: "full",
+        )
 
-        testing.diff(want: want, got: got)
-    }
+    testing.diff(want: want, got: got)
+}
 
 testcase left_outer_join {
-        wantData =
-            "
+    wantData =
+        "
 #datatype,string,long,string,long,double,dateTime:RFC3339,long
 #group,false,false,false,false,false,false,false
 #default,_result,,,,,,
@@ -212,23 +212,23 @@ testcase left_outer_join {
 ,,0,c,,56.85,2022-06-01T00:00:02Z,2
 ,,0,c,,21.28,2022-06-01T00:00:03Z,2
 "
-        want = csv.from(csv: wantData) |> group(columns: ["key"])
+    want = csv.from(csv: wantData) |> group(columns: ["key"])
 
-        got =
-            join.tables(
-                left: left,
-                right: right,
-                on: (l, r) => l.label == r.id and l._time == r._time,
-                as: (l, r) => ({label: l.label, intv: r._value, floatv: l._value, _time: l._time}),
-                method: "left",
-            )
+    got =
+        join.tables(
+            left: left,
+            right: right,
+            on: (l, r) => l.label == r.id and l._time == r._time,
+            as: (l, r) => ({label: l.label, intv: r._value, floatv: l._value, _time: l._time}),
+            method: "left",
+        )
 
-        testing.diff(want: want, got: got)
-    }
+    testing.diff(want: want, got: got)
+}
 
 testcase right_outer_join {
-        wantData =
-            "
+    wantData =
+        "
 #datatype,string,long,string,long,double,dateTime:RFC3339,long
 #group,false,false,false,false,false,false,false
 #default,_result,,,,,,
@@ -250,18 +250,18 @@ testcase right_outer_join {
 ,,0,b,15,,2022-06-01T00:00:02Z,2
 ,,0,b,16,,2022-06-01T00:00:03Z,2
 "
-        want = csv.from(csv: wantData) |> group(columns: ["key"])
+    want = csv.from(csv: wantData) |> group(columns: ["key"])
 
-        got =
-            join.tables(
-                left: left,
-                right: right,
-                on: (l, r) => l.label == r.id and l._time == r._time,
-                as: (l, r) => {
-                    return {label: r.id, intv: r._value, floatv: l._value, _time: r._time}
-                },
-                method: "right",
-            )
+    got =
+        join.tables(
+            left: left,
+            right: right,
+            on: (l, r) => l.label == r.id and l._time == r._time,
+            as: (l, r) => {
+                return {label: r.id, intv: r._value, floatv: l._value, _time: r._time}
+            },
+            method: "right",
+        )
 
-        testing.diff(want: want, got: got)
-    }
+    testing.diff(want: want, got: got)
+}
