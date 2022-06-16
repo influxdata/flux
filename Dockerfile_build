@@ -6,6 +6,11 @@
 # also include minor releases, so 1.2 includes 1.2.1 and so on, for bugfix releases.
 FROM rust:1.58 as RUSTBUILD
 
+FROM golang:1.18 as PKGCONFIG
+COPY go.mod go.sum /go/src/github.com/influxdata/flux/
+RUN cd /go/src/github.com/influxdata/flux && \
+    go build -o /usr/local/bin/cgo-pkgbuild github.com/influxdata/pkg-config
+
 FROM golang:1.18
 
 # Install common packages
@@ -61,7 +66,8 @@ RUN gpg --import thurston.asc && \
 COPY ./install_flatc.sh .
 RUN ./install_flatc.sh
 
-RUN go get github.com/influxdata/pkg-config
+# Install pkg-config helper
+COPY --from=PKGCONFIG /usr/local/bin/cgo-pkgbuild /usr/local/bin/cgo-pkgbuild
 
 # Add builder user
 ENV UNAME=builder
@@ -72,6 +78,7 @@ RUN useradd -m -u $UID -g $UNAME -s /bin/bash $UNAME
 USER $UNAME
 ENV HOME=/home/$UNAME \
     CARGO_HOME=/home/$UNAME/.cargo \
-    GOPATH=/home/$UNAME/go
+    GOPATH=/home/$UNAME/go \
+    PKG_CONFIG=/usr/local/bin/cgo-pkgbuild
 
 WORKDIR $HOME
