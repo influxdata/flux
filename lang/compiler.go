@@ -476,7 +476,7 @@ func (p *AstProgram) getSpec(ctx context.Context, alloc memory.Allocator) (*flux
 		return nil, nil, errors.Wrap(err, codes.Inherit, "error in evaluating AST while starting program")
 	}
 	p.Now = nowTime.Time().Time()
-	sp, err := spec.FromEvaluation(cctx, sideEffects, p.Now)
+	sp, err := spec.FromEvaluation(cctx, sideEffects, p.Now, false)
 	if err != nil {
 		return nil, nil, errors.Wrap(err, codes.Inherit, "error in query specification while starting program")
 	}
