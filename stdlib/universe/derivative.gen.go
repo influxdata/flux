@@ -20,6 +20,7 @@ type derivativeInt struct {
 	unit        float64
 	nonNegative bool
 	initialized bool
+	initialZero bool
 }
 
 func (d *derivativeInt) Type() flux.ColType {
@@ -76,7 +77,11 @@ func (d *derivativeInt) Do(ts *array.Int, in array.Array, mem memory.Allocator) 
 		if d.nonNegative && pv > cv {
 			// The previous value is greater than the current
 			// value and non-negative was set.
-			b.AppendNull()
+			if d.initialZero {
+				b.Append(0)
+			} else {
+				b.AppendNull()
+			}
 		} else {
 			// Do the derivative.
 			elapsed := float64(t-d.t) / d.unit
@@ -103,6 +108,7 @@ type derivativeUint struct {
 	unit        float64
 	nonNegative bool
 	initialized bool
+	initialZero bool
 }
 
 func (d *derivativeUint) Type() flux.ColType {
@@ -159,7 +165,11 @@ func (d *derivativeUint) Do(ts *array.Int, in array.Array, mem memory.Allocator)
 		if d.nonNegative && pv > cv {
 			// The previous value is greater than the current
 			// value and non-negative was set.
-			b.AppendNull()
+			if d.initialZero {
+				b.Append(0)
+			} else {
+				b.AppendNull()
+			}
 		} else {
 			// Do the derivative.
 			elapsed := float64(t-d.t) / d.unit
@@ -186,6 +196,7 @@ type derivativeFloat struct {
 	unit        float64
 	nonNegative bool
 	initialized bool
+	initialZero bool
 }
 
 func (d *derivativeFloat) Type() flux.ColType {
@@ -242,7 +253,11 @@ func (d *derivativeFloat) Do(ts *array.Int, in array.Array, mem memory.Allocator
 		if d.nonNegative && pv > cv {
 			// The previous value is greater than the current
 			// value and non-negative was set.
-			b.AppendNull()
+			if d.initialZero {
+				b.Append(0)
+			} else {
+				b.AppendNull()
+			}
 		} else {
 			// Do the derivative.
 			elapsed := float64(t-d.t) / d.unit

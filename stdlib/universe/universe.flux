@@ -223,6 +223,9 @@ builtin cumulativeSum : (<-tables: stream[A], ?columns: [string]) => stream[B] w
 // - columns: List of columns to operate on. Default is `["_value"]`.
 // - timeColumn: Column containing time values to use in the calculation.
 //   Default is `_time`.
+// - initialZero: Use zero (0) as the initial value in the derivative calculation
+//   when the subsequent value is less than the previous value and `nonNegative` is
+//   `true`. Default is `false`.
 // - tables: Input data. Default is piped-forward data (`<-`).
 //
 // ## Examples
@@ -253,6 +256,7 @@ builtin derivative : (
         ?nonNegative: bool,
         ?columns: [string],
         ?timeColumn: string,
+        ?initialZero: bool,
     ) => stream[B]
     where
     A: Record,

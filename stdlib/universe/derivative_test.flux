@@ -193,6 +193,80 @@ testcase non_negative {
     testing.diff(want: want, got: got) |> yield()
 }
 
+testcase non_negative_initial_zero {
+    want =
+        array.from(
+            rows: [
+                {
+                    _time: 2018-05-22T20:00:10Z,
+                    _value: 0.336,
+                    _measurement: "m0",
+                    _field: "f0",
+                    t0: "a",
+                },
+                {
+                    _time: 2018-05-22T20:00:20Z,
+                    _value: 0.0,
+                    _measurement: "m0",
+                    _field: "f0",
+                    t0: "a",
+                },
+                {
+                    _time: 2018-05-22T20:00:30Z,
+                    _value: 0.0,
+                    _measurement: "m0",
+                    _field: "f0",
+                    t0: "a",
+                },
+                {
+                    _time: 2018-05-22T20:00:40Z,
+                    _value: 0.0,
+                    _measurement: "m0",
+                    _field: "f0",
+                    t0: "a",
+                },
+                {
+                    _time: 2018-05-22T20:00:10Z,
+                    _value: 0.0,
+                    _measurement: "m0",
+                    _field: "f0",
+                    t0: "b",
+                },
+                {
+                    _time: 2018-05-22T20:00:20Z,
+                    _value: 0.091,
+                    _measurement: "m0",
+                    _field: "f0",
+                    t0: "b",
+                },
+                {
+                    _time: 2018-05-22T20:00:30Z,
+                    _value: 0.0,
+                    _measurement: "m0",
+                    _field: "f0",
+                    t0: "b",
+                },
+                {
+                    _time: 2018-05-22T20:00:40Z,
+                    _value: 0.204,
+                    _measurement: "m0",
+                    _field: "f0",
+                    t0: "b",
+                },
+            ],
+        )
+            |> group(columns: ["_measurement", "_field", "t0"])
+
+    got =
+        inData
+            |> range(start: 2018-05-22T20:00:00Z, stop: 2018-05-22T20:01:00Z)
+            |> derivative(nonNegative: true, initialZero: true)
+            |> filter(fn: (r) => exists r._value)
+            |> drop(columns: ["_start", "_stop"])
+
+    testing.diff(want: want, got: got) |> yield()
+}
+
 testcase duplicate_times {
     want =
         array.from(
