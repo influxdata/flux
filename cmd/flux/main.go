@@ -21,10 +21,11 @@ import (
 )
 
 var flags struct {
-	ExecScript bool
-	Trace      string
-	Format     string
-	Features   string
+	ExecScript        bool
+	Trace             string
+	Format            string
+	Features          string
+	enableSuggestions bool
 }
 
 func runE(cmd *cobra.Command, args []string) error {
@@ -40,7 +41,6 @@ func runE(cmd *cobra.Command, args []string) error {
 			script = string(content)
 		}
 	}
-
 	ctx, close, err := configureTracing(context.Background())
 	if err != nil {
 		return err
@@ -63,7 +63,7 @@ func runE(cmd *cobra.Command, args []string) error {
 	ctx = feature.Dependency{Flagger: flagger}.Inject(ctx)
 
 	if len(args) == 0 {
-		return replE(ctx)
+		return replE(ctx, flags.enableSuggestions)
 	}
 	return executeE(ctx, script, flags.Format)
 }
@@ -114,7 +114,8 @@ func main() {
 		RunE:         runE,
 		SilenceUsage: true,
 	}
-	fluxCmd.Flags().BoolVarP(&flags.ExecScript, "exec", "e", false, "Interpret file argument as a raw flux script")
+	fluxCmd.Flags().BoolVarP(&flags.ExecScript, "exec", "e", true, "Interpret file argument as a raw flux script")
+	fluxCmd.Flags().BoolVarP(&flags.enableSuggestions, "enable-suggestions", "", false, "enable suggestions in the repl")
 	fluxCmd.Flags().StringVar(&flags.Trace, "trace", "", "Trace query execution")
 	fluxCmd.Flags().StringVarP(&flags.Format, "format", "", "cli", "Output format one of: cli,csv. Defaults to cli")
 	fluxCmd.Flag("trace").NoOptDefVal = "jaeger"

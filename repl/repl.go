@@ -28,18 +28,17 @@ import (
 )
 
 type REPL struct {
-	ctx context.Context
-
-	scope    values.Scope
-	itrp     *interpreter.Interpreter
-	analyzer *libflux.Analyzer
-	importer interpreter.Importer
-
-	cancelMu   sync.Mutex
-	cancelFunc context.CancelFunc
+	ctx         context.Context
+	suggestions bool
+	scope       values.Scope
+	itrp        *interpreter.Interpreter
+	analyzer    *libflux.Analyzer
+	importer    interpreter.Importer
+	cancelMu    sync.Mutex
+	cancelFunc  context.CancelFunc
 }
 
-func New(ctx context.Context) *REPL {
+func New(ctx context.Context, suggestions bool) *REPL {
 	scope := values.NewScope()
 	importer := runtime.StdLib()
 	for _, p := range runtime.PreludeList {
@@ -56,11 +55,12 @@ func New(ctx context.Context) *REPL {
 	}
 
 	return &REPL{
-		ctx:      ctx,
-		scope:    scope,
-		itrp:     interpreter.NewInterpreter(nil, &lang.ExecOptsConfig{}),
-		analyzer: analyzer,
-		importer: importer,
+		ctx:         ctx,
+		scope:       scope,
+		itrp:        interpreter.NewInterpreter(nil, &lang.ExecOptsConfig{}),
+		analyzer:    analyzer,
+		importer:    importer,
+		suggestions: suggestions,
 	}
 }
 
@@ -100,35 +100,39 @@ func (r *REPL) clearCancel() {
 }
 
 func (r *REPL) completer(d prompt.Document) []prompt.Suggest {
-	names := make([]string, 0, r.scope.Size())
-	r.scope.Range(func(k string, v values.Value) {
-		names = append(names, k)
-	})
-	sort.Strings(names)
+	if r.suggestions {
+		names := make([]string, 0, r.scope.Size())
+		r.scope.Range(func(k string, v values.Value) {
+			names = append(names, k)
+		})
+		sort.Strings(names)
 
-	s := make([]prompt.Suggest, 0, len(names))
-	for _, n := range names {
-		if n == "_" || !strings.HasPrefix(n, "_") {
-			s = append(s, prompt.Suggest{Text: n})
-		}
-	}
-	if d.Text == "" || strings.HasPrefix(d.Text, "@") {
-		root := "./" + strings.TrimPrefix(d.Text, "@")
-		fluxFiles, err := getFluxFiles(root)
-		if err == nil {
-			for _, fName := range fluxFiles {
-				s = append(s, prompt.Suggest{Text: "@" + fName})
+		s := make([]prompt.Suggest, 0, len(names))
+		for _, n := range names {
+			if n == "_" || !strings.HasPrefix(n, "_") {
+				s = append(s, prompt.Suggest{Text: n})
 			}
 		}
-		dirs, err := getDirs(root)
-		if err == nil {
-			for _, fName := range dirs {
-				s = append(s, prompt.Suggest{Text: "@" + fName + string(os.PathSeparator)})
+		if d.Text == "" || strings.HasPrefix(d.Text, "@") {
+			root := "./" + strings.TrimPrefix(d.Text, "@")
+			fluxFiles, err := getFluxFiles(root)
+			if err == nil {
+				for _, fName := range fluxFiles {
+					s = append(s, prompt.Suggest{Text: "@" + fName})
+				}
+			}
+			dirs, err := getDirs(root)
+			if err == nil {
+				for _, fName := range dirs {
+					s = append(s, prompt.Suggest{Text: "@" + fName + string(os.PathSeparator)})
+				}
 			}
 		}
-	}
 
-	return prompt.FilterHasPrefix(s, d.GetWordBeforeCursor(), true)
+		return prompt.FilterHasPrefix(s, d.GetWordBeforeCursor(), true)
+	}
+	return nil
+
 }
 
 func (r *REPL) Input(t string) (*libflux.FluxError, error) {
