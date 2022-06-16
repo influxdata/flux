@@ -6,8 +6,8 @@ import (
 	"github.com/influxdata/flux/repl"
 )
 
-func replE(ctx context.Context) error {
-	r := repl.New(ctx)
+func replE(ctx context.Context, enableSuggestions bool) error {
+	r := repl.New(ctx, enableSuggestions)
 	r.Run()
 	return nil
 }
