@@ -56,6 +56,7 @@ func TestSortLimitRule(t *testing.T) {
 					{0, 1},
 				},
 			},
+			SkipValidation: true,
 		},
 		{
 			Name:    "WithOffset",
@@ -74,7 +75,8 @@ func TestSortLimitRule(t *testing.T) {
 					{1, 2},
 				},
 			},
-			NoChange: true,
+			NoChange:       true,
+			SkipValidation: true,
 		},
 	}
 
