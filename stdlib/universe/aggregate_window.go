@@ -37,11 +37,37 @@ const AggregateWindowKind = "aggregateWindow"
 
 type AggregateWindowProcedureSpec struct {
 	plan.DefaultCost
-	WindowSpec     *WindowProcedureSpec
-	AggregateKind  plan.ProcedureKind
-	ValueCol       string
-	UseStart       bool
-	ForceAggregate bool
+	WindowSpec          *WindowProcedureSpec
+	AggregateKind       plan.ProcedureKind
+	ValueCol            string
+	UseStart            bool
+	ForceAggregate      bool
+	ParallelMergeFactor int
+}
+
+// RequiredAttributes will reflect that this operation can behave as a parallel merge,
+// and require that predecessors are run in parallel, if the merge factor is greater
+// than one.
+func (s *AggregateWindowProcedureSpec) RequiredAttributes() []plan.PhysicalAttributes {
+	if s.ParallelMergeFactor > 1 {
+		return []plan.PhysicalAttributes{
+			{
+				plan.ParallelRunKey: plan.ParallelRunAttribute{Factor: s.ParallelMergeFactor},
+			},
+		}
+	}
+	return nil
+}
+
+// OutputAttributes will reflect that this operation can behave as a parallel merge,
+// and produce the parallel merge attribute if the merge factor is greater than one.
+func (s *AggregateWindowProcedureSpec) OutputAttributes() plan.PhysicalAttributes {
+	if s.ParallelMergeFactor > 1 {
+		return plan.PhysicalAttributes{
+			plan.ParallelMergeKey: plan.ParallelMergeAttribute{Factor: s.ParallelMergeFactor},
+		}
+	}
+	return nil
 }
 
 func (s *AggregateWindowProcedureSpec) Kind() plan.ProcedureKind {

@@ -441,6 +441,14 @@ type ToProcedureSpec struct {
 	Spec *ToOpSpec
 }
 
+func (o *ToProcedureSpec) PassThroughAttribute(attrKey string) bool {
+	switch attrKey {
+	case plan.ParallelRunKey, plan.CollationKey:
+		return true
+	}
+	return false
+}
+
 // Kind returns the kind for the procedure spec for the `to` flux function.
 func (o *ToProcedureSpec) Kind() plan.ProcedureKind {
 	return ToKind

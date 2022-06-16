@@ -33,6 +33,24 @@ func (p *SortMergeJoinProcedureSpec) Copy() plan.ProcedureSpec {
 	}
 }
 
+// RequiredAttributes says that merge join must have its left input
+// sorted by the left side join keys, and the right input must be sorted
+// by the right side join keys.
+func (p *SortMergeJoinProcedureSpec) RequiredAttributes() []plan.PhysicalAttributes {
+	return []plan.PhysicalAttributes{
+		{
+			plan.CollationKey: &plan.CollationAttr{
+				Columns: getJoinKeyCols(p.On, true),
+			},
+		},
+		{
+			plan.CollationKey: &plan.CollationAttr{
+				Columns: getJoinKeyCols(p.On, false),
+			},
+		},
+	}
+}
+
 func (p *SortMergeJoinProcedureSpec) Cost(inStats []plan.Statistics) (cost plan.Cost, outStats plan.Statistics) {
 	return plan.Cost{}, plan.Statistics{}
 }

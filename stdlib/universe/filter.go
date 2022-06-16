@@ -105,6 +105,14 @@ func newFilterProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.Pro
 	}, nil
 }
 
+func (s *FilterProcedureSpec) PassThroughAttribute(attrKey string) bool {
+	switch attrKey {
+	case plan.ParallelRunKey, plan.CollationKey:
+		return true
+	}
+	return false
+}
+
 func (s *FilterProcedureSpec) Kind() plan.ProcedureKind {
 	return FilterKind
 }

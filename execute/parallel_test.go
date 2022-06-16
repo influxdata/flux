@@ -2,7 +2,6 @@ package execute_test
 
 import (
 	"context"
-	"fmt"
 	"math"
 	"testing"
 	"time"
@@ -14,6 +13,7 @@ import (
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
 	_ "github.com/influxdata/flux/fluxinit/static"
+	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/plan"
@@ -45,7 +45,7 @@ func TestParallel_Execute(t *testing.T) {
 			spec: &plantest.PlanSpec{
 				Nodes: []plan.Node{
 					plantest.CreatePhysicalNode("parallel-from-test",
-						executetest.NewParallelFromProcedureSpec(
+						executetest.NewParallelFromProcedureSpec(2,
 							[]*executetest.ParallelTable{
 								{
 									Table: &executetest.Table{
@@ -88,10 +88,8 @@ func TestParallel_Execute(t *testing.T) {
 									ResidesOnPartition: 1,
 								},
 							}),
-						plantest.WithOutputAttr(plan.ParallelRunKey, plan.ParallelRunAttribute{Factor: 2})),
-					plantest.CreatePhysicalNode("merge", &universe.PartitionMergeProcedureSpec{},
-						plantest.WithRequiredAttr(plan.ParallelRunKey, plan.ParallelRunAttribute{Factor: 2}),
-						plantest.WithOutputAttr(plan.ParallelMergeKey, plan.ParallelMergeAttribute{Factor: 2})),
+					),
+					plantest.CreatePhysicalNode("merge", &universe.PartitionMergeProcedureSpec{Factor: 2}),
 					plantest.CreatePhysicalNode("filter", &universe.FilterProcedureSpec{
 						Fn: interpreter.ResolvedFunction{
 							Scope: runtime.Prelude(),
@@ -107,7 +105,7 @@ func TestParallel_Execute(t *testing.T) {
 				},
 			},
 			want: map[string][]*executetest.Table{
-				"_result": []*executetest.Table{
+				"_result": {
 					{
 						KeyCols: []string{"_start", "_stop"},
 						ColMeta: []flux.ColMeta{
@@ -150,7 +148,7 @@ func TestParallel_Execute(t *testing.T) {
 			spec: &plantest.PlanSpec{
 				Nodes: []plan.Node{
 					plantest.CreatePhysicalNode("parallel-from-test",
-						executetest.NewParallelFromProcedureSpec(
+						executetest.NewParallelFromProcedureSpec(2,
 							[]*executetest.ParallelTable{
 								{
 									Table: &executetest.Table{
@@ -193,7 +191,7 @@ func TestParallel_Execute(t *testing.T) {
 									ResidesOnPartition: 1,
 								},
 							}),
-						plantest.WithOutputAttr(plan.ParallelRunKey, plan.ParallelRunAttribute{Factor: 2})),
+					),
 					plantest.CreatePhysicalNode("filter",
 						&universe.FilterProcedureSpec{
 							Fn: interpreter.ResolvedFunction{
@@ -201,11 +199,8 @@ func TestParallel_Execute(t *testing.T) {
 								Fn:    executetest.FunctionExpression(t, "(r) => r._value < 7.5"),
 							},
 						},
-						plantest.WithRequiredAttr(plan.ParallelRunKey, plan.ParallelRunAttribute{Factor: 2}),
-						plantest.WithOutputAttr(plan.ParallelRunKey, plan.ParallelRunAttribute{Factor: 2})),
-					plantest.CreatePhysicalNode("merge", &universe.PartitionMergeProcedureSpec{},
-						plantest.WithRequiredAttr(plan.ParallelRunKey, plan.ParallelRunAttribute{Factor: 2}),
-						plantest.WithOutputAttr(plan.ParallelMergeKey, plan.ParallelMergeAttribute{Factor: 2})),
+					),
+					plantest.CreatePhysicalNode("merge", &universe.PartitionMergeProcedureSpec{Factor: 2}),
 					plantest.CreatePhysicalNode("yield", executetest.NewYieldProcedureSpec("_result")),
 				},
 				Edges: [][2]int{
@@ -215,7 +210,7 @@ func TestParallel_Execute(t *testing.T) {
 				},
 			},
 			want: map[string][]*executetest.Table{
-				"_result": []*executetest.Table{
+				"_result": {
 					{
 						KeyCols: []string{"_start", "_stop"},
 						ColMeta: []flux.ColMeta{
@@ -256,7 +251,7 @@ func TestParallel_Execute(t *testing.T) {
 			spec: &plantest.PlanSpec{
 				Nodes: []plan.Node{
 					plantest.CreatePhysicalNode("parallel-from-test",
-						executetest.NewParallelFromProcedureSpec(
+						executetest.NewParallelFromProcedureSpec(2,
 							[]*executetest.ParallelTable{
 								{
 									Table: &executetest.Table{
@@ -298,18 +293,17 @@ func TestParallel_Execute(t *testing.T) {
 									},
 									ResidesOnPartition: 1,
 								},
-							}),
-						plantest.WithOutputAttr(plan.ParallelRunKey, plan.ParallelRunAttribute{Factor: 2})),
-					plantest.CreatePhysicalNode("merge", &universe.PartitionMergeProcedureSpec{},
-						plantest.WithRequiredAttr(plan.ParallelRunKey, plan.ParallelRunAttribute{Factor: 2}),
-						plantest.WithOutputAttr(plan.ParallelMergeKey, plan.ParallelMergeAttribute{Factor: 2})),
+							},
+						),
+					),
+					plantest.CreatePhysicalNode("merge", &universe.PartitionMergeProcedureSpec{Factor: 2}),
 				},
 				Edges: [][2]int{
 					{0, 1},
 				},
 			},
 			want: map[string][]*executetest.Table{
-				"_result": []*executetest.Table{
+				"_result": {
 					{
 						KeyCols: []string{"_start", "_stop"},
 						ColMeta: []flux.ColMeta{
@@ -349,12 +343,12 @@ func TestParallel_Execute(t *testing.T) {
 		},
 		{
 			// Error: the from node does not specify the parallel-run
-			// attribute. It is required its successor, filter.
+			// attribute, since it's factor is 1. It is required by the merge node.
 			name: `from-missing-output`,
 			spec: &plantest.PlanSpec{
 				Nodes: []plan.Node{
 					plantest.CreatePhysicalNode("parallel-from-test",
-						executetest.NewParallelFromProcedureSpec([]*executetest.ParallelTable{})),
+						executetest.NewParallelFromProcedureSpec(1, []*executetest.ParallelTable{})),
 					plantest.CreatePhysicalNode("filter",
 						&universe.FilterProcedureSpec{
 							Fn: interpreter.ResolvedFunction{
@@ -362,11 +356,8 @@ func TestParallel_Execute(t *testing.T) {
 								Fn:    executetest.FunctionExpression(t, "(r) => r._value < 7.5"),
 							},
 						},
-						plantest.WithRequiredAttr(plan.ParallelRunKey, plan.ParallelRunAttribute{Factor: 2}),
-						plantest.WithOutputAttr(plan.ParallelRunKey, plan.ParallelRunAttribute{Factor: 2})),
-					plantest.CreatePhysicalNode("merge", &universe.PartitionMergeProcedureSpec{},
-						plantest.WithRequiredAttr(plan.ParallelRunKey, plan.ParallelRunAttribute{Factor: 2}),
-						plantest.WithOutputAttr(plan.ParallelMergeKey, plan.ParallelMergeAttribute{Factor: 2})),
+					),
+					plantest.CreatePhysicalNode("merge", &universe.PartitionMergeProcedureSpec{Factor: 2}),
 					plantest.CreatePhysicalNode("yield", executetest.NewYieldProcedureSpec("_result")),
 				},
 				Edges: [][2]int{
@@ -377,20 +368,20 @@ func TestParallel_Execute(t *testing.T) {
 			},
 			wantValidationErr: &flux.Error{
 				Code: codes.Internal,
-				Msg: fmt.Sprintf("invalid physical query plan; attribute \"parallel-run\" " +
-					"required by \"filter\" is missing from predecessor \"parallel-from-test\""),
+				Msg: `invalid physical query plan: attribute "parallel-run", required by "merge", ` +
+					`is missing from predecessor "parallel-from-test"`,
 			},
 		},
 		{
-			// Error: the filter node does not require the parallel-run
+			// Error: there is no merge node that requires the parallel-run
 			// attribute. The paralle-run attribute dictates that all
 			// successors must require it.
 			name: `from-missing-required`,
 			spec: &plantest.PlanSpec{
 				Nodes: []plan.Node{
 					plantest.CreatePhysicalNode("parallel-from-test",
-						executetest.NewParallelFromProcedureSpec([]*executetest.ParallelTable{}),
-						plantest.WithOutputAttr(plan.ParallelRunKey, plan.ParallelRunAttribute{Factor: 2})),
+						executetest.NewParallelFromProcedureSpec(2, []*executetest.ParallelTable{}),
+					),
 					plantest.CreatePhysicalNode("filter",
 						&universe.FilterProcedureSpec{
 							Fn: interpreter.ResolvedFunction{
@@ -398,22 +389,48 @@ func TestParallel_Execute(t *testing.T) {
 								Fn:    executetest.FunctionExpression(t, "(r) => r._value < 7.5"),
 							},
 						},
-						plantest.WithOutputAttr(plan.ParallelRunKey, plan.ParallelRunAttribute{Factor: 2})),
-					plantest.CreatePhysicalNode("merge", &universe.PartitionMergeProcedureSpec{},
-						plantest.WithRequiredAttr(plan.ParallelRunKey, plan.ParallelRunAttribute{Factor: 2}),
-						plantest.WithOutputAttr(plan.ParallelMergeKey, plan.ParallelMergeAttribute{Factor: 2})),
+					),
 					plantest.CreatePhysicalNode("yield", executetest.NewYieldProcedureSpec("_result")),
 				},
 				Edges: [][2]int{
 					{0, 1},
 					{1, 2},
-					{2, 3},
 				},
 			},
 			wantValidationErr: &flux.Error{
 				Code: codes.Internal,
-				Msg: fmt.Sprintf("invalid physical query plan; attribute \"parallel-run\" " +
-					"on \"parallel-from-test\" must be required by all successors, but isn't on \"filter\""),
+				Msg: `invalid physical query plan: plan node "parallel-from-test" has attribute "parallel-run" that ` +
+					`must be required by successors, but it is not required or propagated by successor "yield"`,
+			},
+		},
+		{
+			// Error: there is no merge node that requires the parallel-run
+			// attribute. The parallel-run attribute dictates that all
+			// successors must require it. In this variation the terminal node
+			// propagates the attribute.
+			name: `from-missing-required-2`,
+			spec: &plantest.PlanSpec{
+				Nodes: []plan.Node{
+					plantest.CreatePhysicalNode("parallel-from-test",
+						executetest.NewParallelFromProcedureSpec(2, []*executetest.ParallelTable{}),
+					),
+					plantest.CreatePhysicalNode("filter",
+						&universe.FilterProcedureSpec{
+							Fn: interpreter.ResolvedFunction{
+								Scope: runtime.Prelude(),
+								Fn:    executetest.FunctionExpression(t, "(r) => r._value < 7.5"),
+							},
+						},
+					),
+				},
+				Edges: [][2]int{
+					{0, 1},
+				},
+			},
+			wantValidationErr: &flux.Error{
+				Code: codes.Internal,
+				Msg: `invalid physical query plan: plan node "parallel-from-test" has attribute "parallel-run" that ` +
+					`must be required by successors, but no successors require it`,
 			},
 		},
 		{
@@ -423,8 +440,8 @@ func TestParallel_Execute(t *testing.T) {
 			spec: &plantest.PlanSpec{
 				Nodes: []plan.Node{
 					plantest.CreatePhysicalNode("parallel-from-test",
-						executetest.NewParallelFromProcedureSpec([]*executetest.ParallelTable{}),
-						plantest.WithOutputAttr(plan.ParallelRunKey, plan.ParallelRunAttribute{Factor: 2})),
+						executetest.NewParallelFromProcedureSpec(2, []*executetest.ParallelTable{}),
+					),
 					plantest.CreatePhysicalNode("filter",
 						&universe.FilterProcedureSpec{
 							Fn: interpreter.ResolvedFunction{
@@ -432,11 +449,8 @@ func TestParallel_Execute(t *testing.T) {
 								Fn:    executetest.FunctionExpression(t, "(r) => r._value < 7.5"),
 							},
 						},
-						plantest.WithRequiredAttr(plan.ParallelRunKey, plan.ParallelRunAttribute{Factor: 1}),
-						plantest.WithOutputAttr(plan.ParallelRunKey, plan.ParallelRunAttribute{Factor: 1})),
-					plantest.CreatePhysicalNode("merge", &universe.PartitionMergeProcedureSpec{},
-						plantest.WithRequiredAttr(plan.ParallelRunKey, plan.ParallelRunAttribute{Factor: 1}),
-						plantest.WithOutputAttr(plan.ParallelMergeKey, plan.ParallelMergeAttribute{Factor: 1})),
+					),
+					plantest.CreatePhysicalNode("merge", &universe.PartitionMergeProcedureSpec{Factor: 1}),
 					plantest.CreatePhysicalNode("yield", executetest.NewYieldProcedureSpec("_result")),
 				},
 				Edges: [][2]int{
@@ -447,8 +461,8 @@ func TestParallel_Execute(t *testing.T) {
 			},
 			wantValidationErr: &flux.Error{
 				Code: codes.Internal,
-				Msg: fmt.Sprintf("invalid physical query plan; attribute \"parallel-run\" " +
-					"required by \"filter\" does not match attribute in predecessor \"parallel-from-test\""),
+				Msg: `invalid physical query plan: node "merge" requires attribute parallel-run{Factor: 1}, ` +
+					`which is not satisfied by predecessor "filter", which has attribute parallel-run{Factor: 2}`,
 			},
 		},
 	}
@@ -481,7 +495,11 @@ func TestParallel_Execute(t *testing.T) {
 					t.Fatalf(`expected an error "%v" but got none`, tc.wantValidationErr)
 				}
 
-				if diff := cmp.Diff(tc.wantValidationErr, err); diff != "" {
+				gotErr := &flux.Error{
+					Code: errors.Code(err),
+					Msg:  err.Error(),
+				}
+				if diff := cmp.Diff(tc.wantValidationErr, gotErr); diff != "" {
 					t.Fatalf("unexpected error: -want/+got: %v", diff)
 				}
 				return
