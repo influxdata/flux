@@ -2193,16 +2193,10 @@ impl Function {
     }
 
     fn contains(&self, tv: Tvar) -> bool {
-        if let Some(pipe) = &self.pipe {
-            self.req.values().any(|t| t.contains(tv))
-                || self.opt.values().any(|t| t.contains(tv))
-                || pipe.v.contains(tv)
-                || self.retn.contains(tv)
-        } else {
-            self.req.values().any(|t| t.contains(tv))
-                || self.opt.values().any(|t| t.contains(tv))
-                || self.retn.contains(tv)
-        }
+        self.req.values().any(|t| t.contains(tv))
+            || self.opt.values().any(|t| t.contains(tv))
+            || self.retn.contains(tv)
+            || self.pipe.as_ref().map_or(false, |pipe| pipe.v.contains(tv))
     }
 }
 
