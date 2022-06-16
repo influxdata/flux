@@ -239,16 +239,16 @@ pub enum Statement {
 }
 
 impl Statement {
-    fn apply(self, sub: &mut dyn Substituter) -> Self {
+    fn apply(&mut self, sub: &mut dyn Substituter) {
         match self {
-            Statement::Expr(stmt) => Statement::Expr(stmt.apply(sub)),
-            Statement::Variable(stmt) => Statement::Variable(Box::new(stmt.apply(sub))),
-            Statement::Option(stmt) => Statement::Option(Box::new(stmt.apply(sub))),
-            Statement::Return(stmt) => Statement::Return(stmt.apply(sub)),
-            Statement::Test(stmt) => Statement::Test(Box::new(stmt.apply(sub))),
-            Statement::TestCase(stmt) => Statement::TestCase(Box::new(stmt.apply(sub))),
-            Statement::Builtin(stmt) => Statement::Builtin(stmt.apply(sub)),
-            Statement::Error(stmt) => Statement::Error(stmt),
+            Statement::Expr(stmt) => stmt.apply(sub),
+            Statement::Variable(stmt) => stmt.apply(sub),
+            Statement::Option(stmt) => stmt.apply(sub),
+            Statement::Return(stmt) => stmt.apply(sub),
+            Statement::Test(stmt) => stmt.apply(sub),
+            Statement::TestCase(stmt) => stmt.apply(sub),
+            Statement::Builtin(stmt) => stmt.apply(sub),
+            Statement::Error(_) => (),
         }
     }
 }
@@ -261,10 +261,10 @@ pub enum Assignment {
 }
 
 impl Assignment {
-    fn apply(self, sub: &mut dyn Substituter) -> Self {
+    fn apply(&mut self, sub: &mut dyn Substituter) {
         match self {
-            Assignment::Variable(assign) => Assignment::Variable(assign.apply(sub)),
-            Assignment::Member(assign) => Assignment::Member(assign.apply(sub)),
+            Assignment::Variable(assign) => assign.apply(sub),
+            Assignment::Member(assign) => assign.apply(sub),
         }
     }
 }
@@ -379,30 +379,30 @@ impl Expression {
             Expression::Error(_) => Ok(()),
         }
     }
-    fn apply(self, sub: &mut dyn Substituter) -> Self {
+    fn apply(&mut self, sub: &mut dyn Substituter) {
         match self {
-            Expression::Identifier(e) => Expression::Identifier(e.apply(sub)),
-            Expression::Array(e) => Expression::Array(Box::new(e.apply(sub))),
-            Expression::Dict(e) => Expression::Dict(Box::new(e.apply(sub))),
-            Expression::Function(e) => Expression::Function(Box::new(e.apply(sub))),
-            Expression::Logical(e) => Expression::Logical(Box::new(e.apply(sub))),
-            Expression::Object(e) => Expression::Object(Box::new(e.apply(sub))),
-            Expression::Member(e) => Expression::Member(Box::new(e.apply(sub))),
-            Expression::Index(e) => Expression::Index(Box::new(e.apply(sub))),
-            Expression::Binary(e) => Expression::Binary(Box::new(e.apply(sub))),
-            Expression::Unary(e) => Expression::Unary(Box::new(e.apply(sub))),
-            Expression::Call(e) => Expression::Call(Box::new(e.apply(sub))),
-            Expression::Conditional(e) => Expression::Conditional(Box::new(e.apply(sub))),
-            Expression::StringExpr(e) => Expression::StringExpr(Box::new(e.apply(sub))),
-            Expression::Integer(lit) => Expression::Integer(lit.apply(sub)),
-            Expression::Float(lit) => Expression::Float(lit.apply(sub)),
-            Expression::StringLit(lit) => Expression::StringLit(lit.apply(sub)),
-            Expression::Duration(lit) => Expression::Duration(lit.apply(sub)),
-            Expression::Uint(lit) => Expression::Uint(lit.apply(sub)),
-            Expression::Boolean(lit) => Expression::Boolean(lit.apply(sub)),
-            Expression::DateTime(lit) => Expression::DateTime(lit.apply(sub)),
-            Expression::Regexp(lit) => Expression::Regexp(lit.apply(sub)),
-            Expression::Error(loc) => Expression::Error(loc),
+            Expression::Identifier(e) => e.apply(sub),
+            Expression::Array(e) => e.apply(sub),
+            Expression::Dict(e) => e.apply(sub),
+            Expression::Function(e) => e.apply(sub),
+            Expression::Logical(e) => e.apply(sub),
+            Expression::Object(e) => e.apply(sub),
+            Expression::Member(e) => e.apply(sub),
+            Expression::Index(e) => e.apply(sub),
+            Expression::Binary(e) => e.apply(sub),
+            Expression::Unary(e) => e.apply(sub),
+            Expression::Call(e) => e.apply(sub),
+            Expression::Conditional(e) => e.apply(sub),
+            Expression::StringExpr(e) => e.apply(sub),
+            Expression::Integer(lit) => lit.apply(sub),
+            Expression::Float(lit) => lit.apply(sub),
+            Expression::StringLit(lit) => lit.apply(sub),
+            Expression::Duration(lit) => lit.apply(sub),
+            Expression::Uint(lit) => lit.apply(sub),
+            Expression::Boolean(lit) => lit.apply(sub),
+            Expression::DateTime(lit) => lit.apply(sub),
+            Expression::Regexp(lit) => lit.apply(sub),
+            Expression::Error(_) => (),
         }
     }
 }
@@ -444,8 +444,9 @@ where
 
 /// Applies the substitution to the entire package.
 #[allow(missing_docs)]
-pub fn inject_pkg_types(pkg: Package, sub: &mut Substitution) -> Package {
-    pkg.apply(&mut FinalizeTypes { sub })
+pub fn inject_pkg_types(mut pkg: Package, sub: &mut Substitution) -> Package {
+    pkg.apply(&mut FinalizeTypes { sub });
+    pkg
 }
 
 struct FinalizeTypes<'a> {
@@ -483,9 +484,10 @@ impl Package {
         }
         Ok(())
     }
-    fn apply(mut self, sub: &mut dyn Substituter) -> Self {
-        self.files = self.files.into_iter().map(|file| file.apply(sub)).collect();
-        self
+    fn apply(&mut self, sub: &mut dyn Substituter) {
+        for file in &mut self.files {
+            file.apply(sub);
+        }
     }
 }
 
@@ -534,9 +536,10 @@ impl File {
         infer.imports.clear();
         Ok(())
     }
-    fn apply(mut self, sub: &mut dyn Substituter) -> Self {
-        self.body = self.body.into_iter().map(|stmt| stmt.apply(sub)).collect();
-        self
+    fn apply(&mut self, sub: &mut dyn Substituter) {
+        for stmt in &mut self.body {
+            stmt.apply(sub)
+        }
     }
 }
 
@@ -586,9 +589,8 @@ impl OptionStmt {
             }
         }
     }
-    fn apply(mut self, sub: &mut dyn Substituter) -> Self {
-        self.assignment = self.assignment.apply(sub);
-        self
+    fn apply(&mut self, sub: &mut dyn Substituter) {
+        self.assignment.apply(sub);
     }
 }
 
@@ -606,9 +608,7 @@ impl BuiltinStmt {
         infer.env.add(self.id.name.clone(), self.typ_expr.clone());
         Ok(())
     }
-    fn apply(self, _: &mut dyn Substituter) -> Self {
-        self
-    }
+    fn apply(&mut self, _: &mut dyn Substituter) {}
 }
 
 impl PolyType {
@@ -689,9 +689,8 @@ impl TestStmt {
     fn infer(&mut self, infer: &mut InferState<'_, '_>) -> Result<()> {
         self.assignment.infer(infer)
     }
-    fn apply(mut self, sub: &mut dyn Substituter) -> Self {
-        self.assignment = self.assignment.apply(sub);
-        self
+    fn apply(&mut self, sub: &mut dyn Substituter) {
+        self.assignment.apply(sub);
     }
 }
 
@@ -720,9 +719,10 @@ impl TestCaseStmt {
         }
         Ok(())
     }
-    fn apply(mut self, sub: &mut dyn Substituter) -> Self {
-        self.body = self.body.into_iter().map(|stmt| stmt.apply(sub)).collect();
-        self
+    fn apply(&mut self, sub: &mut dyn Substituter) {
+        for stmt in &mut self.body {
+            stmt.apply(sub);
+        }
     }
 }
 
@@ -739,9 +739,8 @@ impl ExprStmt {
         self.expression.infer(infer)?;
         Ok(())
     }
-    fn apply(mut self, sub: &mut dyn Substituter) -> Self {
-        self.expression = self.expression.apply(sub);
-        self
+    fn apply(&mut self, sub: &mut dyn Substituter) {
+        self.expression.apply(sub);
     }
 }
 
@@ -758,9 +757,8 @@ impl ReturnStmt {
     fn infer(&mut self, infer: &mut InferState<'_, '_>) -> Result {
         self.argument.infer(infer)
     }
-    fn apply(mut self, sub: &mut dyn Substituter) -> Self {
-        self.argument = self.argument.apply(sub);
-        self
+    fn apply(&mut self, sub: &mut dyn Substituter) {
+        self.argument.apply(sub);
     }
 }
 
@@ -829,9 +827,8 @@ impl VariableAssgn {
         infer.env.add(self.id.name.clone(), p);
         Ok(())
     }
-    fn apply(mut self, sub: &mut dyn Substituter) -> Self {
-        self.init = self.init.apply(sub);
-        self
+    fn apply(&mut self, sub: &mut dyn Substituter) {
+        self.init.apply(sub);
     }
 }
 
@@ -845,10 +842,9 @@ pub struct MemberAssgn {
 }
 
 impl MemberAssgn {
-    fn apply(mut self, sub: &mut dyn Substituter) -> Self {
-        self.member = self.member.apply(sub);
-        self.init = self.init.apply(sub);
-        self
+    fn apply(&mut self, sub: &mut dyn Substituter) {
+        self.member.apply(sub);
+        self.init.apply(sub);
     }
 }
 
@@ -874,9 +870,10 @@ impl StringExpr {
         }
         Ok(())
     }
-    fn apply(mut self, sub: &mut dyn Substituter) -> Self {
-        self.parts = self.parts.into_iter().map(|part| part.apply(sub)).collect();
-        self
+    fn apply(&mut self, sub: &mut dyn Substituter) {
+        for part in &mut self.parts {
+            part.apply(sub);
+        }
     }
 }
 
@@ -888,10 +885,10 @@ pub enum StringExprPart {
 }
 
 impl StringExprPart {
-    fn apply(self, sub: &mut dyn Substituter) -> Self {
+    fn apply(&mut self, sub: &mut dyn Substituter) {
         match self {
-            StringExprPart::Interpolated(part) => StringExprPart::Interpolated(part.apply(sub)),
-            StringExprPart::Text(_) => self,
+            StringExprPart::Interpolated(part) => part.apply(sub),
+            StringExprPart::Text(_) => (),
         }
     }
 }
@@ -913,9 +910,8 @@ pub struct InterpolatedPart {
 }
 
 impl InterpolatedPart {
-    fn apply(mut self, sub: &mut dyn Substituter) -> Self {
-        self.expression = self.expression.apply(sub);
-        self
+    fn apply(&mut self, sub: &mut dyn Substituter) {
+        self.expression.apply(sub);
     }
 }
 
@@ -945,14 +941,12 @@ impl ArrayExpr {
         self.typ = MonoType::arr(elt);
         Ok(())
     }
-    fn apply(mut self, sub: &mut dyn Substituter) -> Self {
-        self.typ = self.typ.apply(sub);
-        self.elements = self
-            .elements
-            .into_iter()
-            .map(|element| element.apply(sub))
-            .collect();
-        self
+
+    fn apply(&mut self, sub: &mut dyn Substituter) {
+        self.typ.apply_mut(sub);
+        for element in &mut self.elements {
+            element.apply(sub);
+        }
     }
 }
 
@@ -991,14 +985,12 @@ impl DictExpr {
 
         Ok(())
     }
-    fn apply(mut self, sub: &mut dyn Substituter) -> Self {
-        self.typ = self.typ.apply(sub);
-        self.elements = self
-            .elements
-            .into_iter()
-            .map(|(key, val)| (key.apply(sub), val.apply(sub)))
-            .collect();
-        self
+    fn apply(&mut self, sub: &mut dyn Substituter) {
+        self.typ.apply_mut(sub);
+        for (key, val) in &mut self.elements {
+            key.apply(sub);
+            val.apply(sub);
+        }
     }
 }
 
@@ -1164,15 +1156,12 @@ impl FunctionExpr {
         ds
     }
     #[allow(missing_docs)]
-    fn apply(mut self, sub: &mut dyn Substituter) -> Self {
-        self.typ = self.typ.apply(sub);
-        self.params = self
-            .params
-            .into_iter()
-            .map(|param| param.apply(sub))
-            .collect();
-        self.body = self.body.apply(sub);
-        self
+    fn apply(&mut self, sub: &mut dyn Substituter) {
+        self.typ.apply_mut(sub);
+        for param in &mut self.params {
+            param.apply(sub);
+        }
+        self.body.apply(sub);
     }
 }
 
@@ -1230,13 +1219,17 @@ impl Block {
             }
         }
     }
-    fn apply(self, sub: &mut dyn Substituter) -> Self {
+    fn apply(&mut self, sub: &mut dyn Substituter) {
         match self {
             Block::Variable(assign, next) => {
-                Block::Variable(Box::new(assign.apply(sub)), Box::new(next.apply(sub)))
+                assign.apply(sub);
+                next.apply(sub);
             }
-            Block::Expr(es, next) => Block::Expr(es.apply(sub), Box::new(next.apply(sub))),
-            Block::Return(e) => Block::Return(e.apply(sub)),
+            Block::Expr(es, next) => {
+                es.apply(sub);
+                next.apply(sub);
+            }
+            Block::Return(e) => e.apply(sub),
         }
     }
 }
@@ -1253,13 +1246,9 @@ pub struct FunctionParameter {
 }
 
 impl FunctionParameter {
-    fn apply(mut self, sub: &mut dyn Substituter) -> Self {
-        match self.default {
-            Some(e) => {
-                self.default = Some(e.apply(sub));
-                self
-            }
-            None => self,
+    fn apply(&mut self, sub: &mut dyn Substituter) {
+        if let Some(e) = &mut self.default {
+            e.apply(sub);
         }
     }
 }
@@ -1382,11 +1371,10 @@ impl BinaryExpr {
 
         Ok(())
     }
-    fn apply(mut self, sub: &mut dyn Substituter) -> Self {
-        self.typ = self.typ.apply(sub);
-        self.left = self.left.apply(sub);
-        self.right = self.right.apply(sub);
-        self
+    fn apply(&mut self, sub: &mut dyn Substituter) {
+        self.typ.apply_mut(sub);
+        self.left.apply(sub);
+        self.right.apply(sub);
     }
 }
 
@@ -1457,20 +1445,14 @@ impl CallExpr {
 
         Ok(())
     }
-    fn apply(mut self, sub: &mut dyn Substituter) -> Self {
-        self.typ = self.typ.apply(sub);
-        self.callee = self.callee.apply(sub);
-        self.arguments = self
-            .arguments
-            .into_iter()
-            .map(|arg| arg.apply(sub))
-            .collect();
-        match self.pipe {
-            Some(e) => {
-                self.pipe = Some(e.apply(sub));
-                self
-            }
-            None => self,
+    fn apply(&mut self, sub: &mut dyn Substituter) {
+        self.typ.apply_mut(sub);
+        self.callee.apply(sub);
+        for arg in &mut self.arguments {
+            arg.apply(sub);
+        }
+        if let Some(e) = &mut self.pipe {
+            e.apply(sub);
         }
     }
 }
@@ -1502,11 +1484,10 @@ impl ConditionalExpr {
 
         Ok(())
     }
-    fn apply(mut self, sub: &mut dyn Substituter) -> Self {
-        self.test = self.test.apply(sub);
-        self.consequent = self.consequent.apply(sub);
-        self.alternate = self.alternate.apply(sub);
-        self
+    fn apply(&mut self, sub: &mut dyn Substituter) {
+        self.test.apply(sub);
+        self.consequent.apply(sub);
+        self.alternate.apply(sub);
     }
 }
 
@@ -1540,10 +1521,9 @@ impl LogicalExpr {
         ]);
         Ok(())
     }
-    fn apply(mut self, sub: &mut dyn Substituter) -> Self {
-        self.left = self.left.apply(sub);
-        self.right = self.right.apply(sub);
-        self
+    fn apply(&mut self, sub: &mut dyn Substituter) {
+        self.left.apply(sub);
+        self.right.apply(sub);
     }
 }
 
@@ -1595,10 +1575,9 @@ impl MemberExpr {
         }]);
         Ok(())
     }
-    fn apply(mut self, sub: &mut dyn Substituter) -> Self {
-        self.typ = self.typ.apply(sub);
-        self.object = self.object.apply(sub);
-        self
+    fn apply(&mut self, sub: &mut dyn Substituter) {
+        self.typ.apply_mut(sub);
+        self.object.apply(sub);
     }
 }
 
@@ -1635,11 +1614,10 @@ impl IndexExpr {
         ]);
         Ok(())
     }
-    fn apply(mut self, sub: &mut dyn Substituter) -> Self {
-        self.typ = self.typ.apply(sub);
-        self.array = self.array.apply(sub);
-        self.index = self.index.apply(sub);
-        self
+    fn apply(&mut self, sub: &mut dyn Substituter) {
+        self.typ.apply_mut(sub);
+        self.array.apply(sub);
+        self.index.apply(sub);
     }
 }
 
@@ -1679,17 +1657,14 @@ impl ObjectExpr {
         self.typ = r;
         Ok(())
     }
-    fn apply(mut self, sub: &mut dyn Substituter) -> Self {
-        self.typ = self.typ.apply(sub);
-        if let Some(e) = self.with {
-            self.with = Some(e.apply(sub));
+    fn apply(&mut self, sub: &mut dyn Substituter) {
+        self.typ.apply_mut(sub);
+        if let Some(e) = &mut self.with {
+            e.apply(sub);
         }
-        self.properties = self
-            .properties
-            .into_iter()
-            .map(|prop| prop.apply(sub))
-            .collect();
-        self
+        for prop in &mut self.properties {
+            prop.apply(sub);
+        }
     }
 }
 
@@ -1737,10 +1712,9 @@ impl UnaryExpr {
         }
         Ok(())
     }
-    fn apply(mut self, sub: &mut dyn Substituter) -> Self {
-        self.typ = self.typ.apply(sub);
-        self.argument = self.argument.apply(sub);
-        self
+    fn apply(&mut self, sub: &mut dyn Substituter) {
+        self.typ.apply_mut(sub);
+        self.argument.apply(sub);
     }
 }
 
@@ -1754,9 +1728,8 @@ pub struct Property {
 }
 
 impl Property {
-    fn apply(mut self, sub: &mut dyn Substituter) -> Self {
-        self.value = self.value.apply(sub);
-        self
+    fn apply(&mut self, sub: &mut dyn Substituter) {
+        self.value.apply(sub);
     }
 }
 
@@ -1780,9 +1753,8 @@ impl IdentifierExpr {
         self.typ = t;
         Ok(())
     }
-    fn apply(mut self, sub: &mut dyn Substituter) -> Self {
-        self.typ = self.typ.apply(sub);
-        self
+    fn apply(&mut self, sub: &mut dyn Substituter) {
+        self.typ.apply_mut(sub);
     }
 }
 
@@ -1806,9 +1778,7 @@ impl BooleanLit {
     fn infer(&mut self) -> Result {
         Ok(())
     }
-    fn apply(self, _: &mut dyn Substituter) -> Self {
-        self
-    }
+    fn apply(&mut self, _: &mut dyn Substituter) {}
 }
 
 #[derive(Derivative)]
@@ -1823,9 +1793,7 @@ impl IntegerLit {
     fn infer(&mut self) -> Result {
         Ok(())
     }
-    fn apply(self, _: &mut dyn Substituter) -> Self {
-        self
-    }
+    fn apply(&mut self, _: &mut dyn Substituter) {}
 }
 
 #[derive(Derivative)]
@@ -1840,9 +1808,7 @@ impl FloatLit {
     fn infer(&mut self) -> Result {
         Ok(())
     }
-    fn apply(self, _: &mut dyn Substituter) -> Self {
-        self
-    }
+    fn apply(&mut self, _: &mut dyn Substituter) {}
 }
 
 #[derive(Derivative)]
@@ -1857,9 +1823,7 @@ impl RegexpLit {
     fn infer(&mut self) -> Result {
         Ok(())
     }
-    fn apply(self, _: &mut dyn Substituter) -> Self {
-        self
-    }
+    fn apply(&mut self, _: &mut dyn Substituter) {}
 }
 
 #[derive(Derivative)]
@@ -1879,9 +1843,7 @@ impl StringLit {
         }
         Ok(())
     }
-    fn apply(self, _: &mut dyn Substituter) -> Self {
-        self
-    }
+    fn apply(&mut self, _: &mut dyn Substituter) {}
 }
 
 #[derive(Derivative)]
@@ -1896,9 +1858,7 @@ impl UintLit {
     fn infer(&mut self) -> Result {
         Ok(())
     }
-    fn apply(self, _: &mut dyn Substituter) -> Self {
-        self
-    }
+    fn apply(&mut self, _: &mut dyn Substituter) {}
 }
 
 #[derive(Derivative)]
@@ -1913,9 +1873,7 @@ impl DateTimeLit {
     fn infer(&mut self) -> Result {
         Ok(())
     }
-    fn apply(self, _: &mut dyn Substituter) -> Self {
-        self
-    }
+    fn apply(&mut self, _: &mut dyn Substituter) {}
 }
 
 /// A struct that keeps track of time in months and nanoseconds.
@@ -1947,9 +1905,7 @@ impl DurationLit {
     fn infer(&mut self) -> Result {
         Ok(())
     }
-    fn apply(self, _: &mut dyn Substituter) -> Self {
-        self
-    }
+    fn apply(&mut self, _: &mut dyn Substituter) {}
 }
 
 // The following durations have nanosecond base units
