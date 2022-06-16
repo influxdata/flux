@@ -113,15 +113,15 @@ func ComparePhysicalPlanNodes(p, q plan.Node) error {
 	}
 
 	// Both nodes must consume the same required attributes
-	if !cmp.Equal(pp.RequiredAttrs, qq.RequiredAttrs) {
+	if !cmp.Equal(pp.RequiredAttrs(), qq.RequiredAttrs()) {
 		return fmt.Errorf("required attributes not equal -want(%s)/+got(%s) %s",
-			pp.ID(), qq.ID(), cmp.Diff(pp.RequiredAttrs, qq.RequiredAttrs))
+			pp.ID(), qq.ID(), cmp.Diff(pp.RequiredAttrs(), qq.RequiredAttrs()))
 	}
 
 	// Both nodes must produce the same physical attributes
-	if !cmp.Equal(pp.OutputAttrs, qq.OutputAttrs) {
+	if !cmp.Equal(pp.OutputAttrs(), qq.OutputAttrs()) {
 		return fmt.Errorf("output attributes not equal -want(%s)/+got(%s) %s",
-			pp.ID(), qq.ID(), cmp.Diff(pp.OutputAttrs, qq.OutputAttrs))
+			pp.ID(), qq.ID(), cmp.Diff(pp.OutputAttrs(), qq.OutputAttrs()))
 	}
 
 	return nil

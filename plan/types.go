@@ -126,14 +126,14 @@ func (plan *Spec) CheckIntegrity() error {
 
 func symmetryCheck(node Node) error {
 	for _, pred := range node.Predecessors() {
-		if !isNodeInNodes(node, pred.Successors()) {
+		if idx := indexOfNode(node, pred.Successors()); idx == -1 {
 			return fmt.Errorf("integrity violated: %s is predecessor of %s, "+
 				"but %s is not successor of %s", pred.ID(), node.ID(), node.ID(), pred.ID())
 		}
 	}
 
 	for _, succ := range node.Successors() {
-		if !isNodeInNodes(node, succ.Predecessors()) {
+		if idx := indexOfNode(node, succ.Predecessors()); idx == -1 {
 			return fmt.Errorf("integrity violated: %s is successor of %s, "+
 				"but %s is not predecessor of %s`", succ.ID(), node.ID(), node.ID(), succ.ID())
 		}
@@ -142,14 +142,14 @@ func symmetryCheck(node Node) error {
 	return nil
 }
 
-func isNodeInNodes(node Node, nodes []Node) bool {
-	for _, n := range nodes {
+func indexOfNode(node Node, nodes []Node) int {
+	for i, n := range nodes {
 		if n == node {
-			return true
+			return i
 		}
 	}
 
-	return false
+	return -1
 }
 
 // ProcedureSpec specifies a query operation

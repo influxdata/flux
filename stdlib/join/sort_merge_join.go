@@ -33,6 +33,21 @@ func (p *SortMergeJoinProcedureSpec) Copy() plan.ProcedureSpec {
 	}
 }
 
+func (p *SortMergeJoinProcedureSpec) RequiredAttributes() []plan.PhysicalAttributes {
+	return []plan.PhysicalAttributes{
+		{
+			plan.CollationKey: &plan.CollationAttr{
+				Columns: getJoinKeyCols(p.On, true),
+			},
+		},
+		{
+			plan.CollationKey: &plan.CollationAttr{
+				Columns: getJoinKeyCols(p.On, false),
+			},
+		},
+	}
+}
+
 func (p *SortMergeJoinProcedureSpec) Cost(inStats []plan.Statistics) (cost plan.Cost, outStats plan.Statistics) {
 	return plan.Cost{}, plan.Statistics{}
 }
@@ -57,11 +72,11 @@ func (SortMergeJoinPredicateRule) Rewrite(ctx context.Context, n plan.Node) (pla
 	predecessors := n.Predecessors()
 	n.ClearPredecessors()
 
-	makeSortNode := func(parentNode plan.Node, columns []string) *plan.PhysicalPlanNode {
+	makeSortNode := func(parentNode plan.Node, columns []string, name string) *plan.PhysicalPlanNode {
 		sortProc := universe.SortProcedureSpec{
 			Columns: columns,
 		}
-		sortNode := plan.CreateUniquePhysicalNode(ctx, "sortMergeJoin", &sortProc)
+		sortNode := plan.CreateUniquePhysicalNode(ctx, name, &sortProc)
 
 		sortNode.AddPredecessors(parentNode)
 		sortNode.AddSuccessors(n)
@@ -72,23 +87,25 @@ func (SortMergeJoinPredicateRule) Rewrite(ctx context.Context, n plan.Node) (pla
 
 	successors := predecessors[0].Successors()
 
-	columns := make([]string, len(spec.On))
+	leftColumns := make([]string, 0, len(spec.On))
 	for _, pair := range spec.On {
-		columns = append(columns, pair.Left)
+		leftColumns = append(leftColumns, pair.Left)
 	}
-	successors[0] = makeSortNode(predecessors[0], columns)
+	successors[0] = makeSortNode(predecessors[0], leftColumns, "sortLeftSideJoinInput")
 
 	successors = predecessors[1].Successors()
 
-	columns = make([]string, len(spec.On))
+	rightColumns := make([]string, 0, len(spec.On))
 	for _, pair := range spec.On {
-		columns = append(columns, pair.Right)
+		rightColumns = append(rightColumns, pair.Right)
 	}
-	successors[0] = makeSortNode(predecessors[1], columns)
+	successors[0] = makeSortNode(predecessors[1], rightColumns, "sortRightSideJoinInput")
 
 	// Replace the spec so we don't end up trying to apply this rewrite forever
 	x := SortMergeJoinProcedureSpec(*spec)
-	n.ReplaceSpec(&x)
+	if err := n.ReplaceSpec(&x); err != nil {
+		return n, false, err
+	}
 
 	return n, true, nil
 }
