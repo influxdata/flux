@@ -451,7 +451,7 @@ month = (month_offset=0) => {
 // from(bucket: "example-bucket")
 //     |> range(start: lastWeek.start, stop: lastWeek.stop)
 // ```
-//
+// 
 // ## Metadata
 // tags: date/time
 //
