@@ -13,6 +13,7 @@ import (
 	events "github.com/influxdata/flux/stdlib/contrib/tomhollingworth/events"
 	csv "github.com/influxdata/flux/stdlib/csv"
 	date "github.com/influxdata/flux/stdlib/date"
+	tests "github.com/influxdata/flux/stdlib/date/boundaries/tests"
 	dict "github.com/influxdata/flux/stdlib/dict"
 	experimental "github.com/influxdata/flux/stdlib/experimental"
 	aggregate1 "github.com/influxdata/flux/stdlib/experimental/aggregate"
@@ -67,6 +68,7 @@ var FluxTestPackages = func() []*ast.Package {
 	pkgs = append(pkgs, events.FluxTestPackages...)
 	pkgs = append(pkgs, csv.FluxTestPackages...)
 	pkgs = append(pkgs, date.FluxTestPackages...)
+	pkgs = append(pkgs, tests.FluxTestPackages...)
 	pkgs = append(pkgs, dict.FluxTestPackages...)
 	pkgs = append(pkgs, experimental.FluxTestPackages...)
 	pkgs = append(pkgs, aggregate1.FluxTestPackages...)
