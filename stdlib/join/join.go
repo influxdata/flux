@@ -10,12 +10,12 @@ import (
 	"github.com/influxdata/flux/runtime"
 )
 
-const Join2Kind = "join.join"
+const Join2Kind = "join.tables"
 
 func init() {
-	signature := runtime.MustLookupBuiltinType("join", "join")
+	signature := runtime.MustLookupBuiltinType("join", "tables")
 	runtime.RegisterPackageValue(
-		"join", "join", flux.MustValue(flux.FunctionValue("join", createJoinOpSpec, signature)),
+		"join", "tables", flux.MustValue(flux.FunctionValue("tables", createJoinOpSpec, signature)),
 	)
 	flux.RegisterOpSpec(Join2Kind, newJoinOp)
 	plan.RegisterProcedureSpec(Join2Kind, newJoinProcedure, Join2Kind)
@@ -82,6 +82,13 @@ func createJoinOpSpec(args flux.Arguments, p *flux.Administration) (flux.Operati
 		return nil, err
 	}
 
+	if method != "inner" && method != "left" && method != "right" && method != "full" {
+		return nil, errors.New(
+			codes.Invalid,
+			"invalid argument for 'method' - must be \"inner\", \"left\", \"right\", or \"full\"",
+		)
+	}
+
 	op := JoinOpSpec{
 		left:   left,
 		right:  right,
@@ -135,5 +142,17 @@ func createJoinTransformation(
 	spec plan.ProcedureSpec,
 	a execute.Administration,
 ) (execute.Transformation, execute.Dataset, error) {
-	return nil, nil, errors.New(codes.Invalid, "the join package is not yet implemented")
+	t, err := NewMergeJoinTransformation(
+		a.Context(),
+		id,
+		spec,
+		a.Parents()[0],
+		a.Parents()[1],
+		a.Allocator(),
+	)
+	if err != nil {
+		return nil, nil, err
+	}
+	tr := execute.NewTransformationFromTransport(t)
+	return tr, t.d, nil
 }

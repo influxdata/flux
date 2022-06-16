@@ -28,7 +28,7 @@ func TestSortMergeJoinPredicateRule(t *testing.T) {
 				|> filter(fn: (r) => r._measurement == "a")
 			right = from(bucket: "b2", host: "http://localhost:8086")
 				|> filter(fn: (r) => r._measurement == "b")
-			join.join(
+			join.tables(
 				left: left,
 				right: right,
 				on: (l, r) => l.a == r.b,
@@ -43,7 +43,7 @@ func TestSortMergeJoinPredicateRule(t *testing.T) {
 					plan.CreateLogicalNode("from3", &influxdb.FromProcedureSpec{}),
 					plan.CreateLogicalNode("filter4", &universe.FilterProcedureSpec{}),
 					plan.CreateLogicalNode("sort5", &universe.SortProcedureSpec{}),
-					plan.CreateLogicalNode("join.join6", &join.SortMergeJoinProcedureSpec{}),
+					plan.CreateLogicalNode("join.tables6", &join.SortMergeJoinProcedureSpec{}),
 				},
 				Edges: [][2]int{
 					{0, 1},

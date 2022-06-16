@@ -7,6 +7,7 @@ import (
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/codes"
+	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/plan"
@@ -17,6 +18,7 @@ const EquiJoinKind = "equijoin"
 
 func init() {
 	plan.RegisterPhysicalRules(EquiJoinPredicateRule{})
+	execute.RegisterTransformation(EquiJoinKind, createJoinTransformation)
 }
 
 type ColumnPair struct {
@@ -49,7 +51,7 @@ func (p *EquiJoinProcedureSpec) Cost(inStats []plan.Statistics) (cost plan.Cost,
 	return plan.Cost{}, plan.Statistics{}
 }
 
-func newEquiJoin(spec *JoinProcedureSpec, cols []ColumnPair) *EquiJoinProcedureSpec {
+func newEquiJoinProcedureSpec(spec *JoinProcedureSpec, cols []ColumnPair) *EquiJoinProcedureSpec {
 	return &EquiJoinProcedureSpec{
 		On:     cols,
 		As:     spec.As,
@@ -170,7 +172,7 @@ func (EquiJoinPredicateRule) Rewrite(ctx context.Context, n plan.Node) (plan.Nod
 	if walkErr != nil {
 		return nil, false, walkErr
 	}
-	n.ReplaceSpec(newEquiJoin(spec, cols))
+	n.ReplaceSpec(newEquiJoinProcedureSpec(spec, cols))
 	return n, true, nil
 }
 

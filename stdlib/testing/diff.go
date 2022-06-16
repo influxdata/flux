@@ -646,6 +646,7 @@ func (t *DiffTransformation) Finish(id execute.DatasetID, err error) {
 
 	if err != nil {
 		t.d.Finish(err)
+		return
 	}
 
 	finished := true
