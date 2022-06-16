@@ -1,7 +1,7 @@
 //! Semantic representations of types.
 
 use std::{
-    borrow::Cow,
+    borrow::{Borrow, Cow},
     cmp,
     collections::{BTreeMap, BTreeSet},
     fmt::{self, Write as _},
@@ -1957,6 +1957,16 @@ impl<T> Function<T> {
         self.opt.len() + self.req.len() + self.pipe.is_some() as usize
     }
 
+    pub(crate) fn parameter<Q: ?Sized>(&self, key: &Q) -> Option<&T>
+    where
+        String: Borrow<Q> + Ord,
+        Q: Ord,
+    {
+        self.req
+            .get(key)
+            .or_else(|| self.opt.get(key).map(|arg| &arg.typ))
+    }
+
     pub(crate) fn map<U>(self, mut f: impl FnMut(T) -> U) -> Function<U> {
         let Self {
             opt,
@@ -2074,11 +2084,11 @@ impl Function {
         T: TypeLike + Clone,
     {
         // Some aliasing for coherence with the doc.
-        let mut f = self.clone();
-        let mut g = actual.clone();
+        let mut f = Cow::Borrowed(self);
+        let mut g = Cow::Borrowed(actual);
         // Fix pipe arguments:
         // Make them required arguments with the correct name.
-        match (f.pipe, g.pipe) {
+        match (&f.pipe, &g.pipe) {
             // Both functions have pipe arguments.
             (Some(fp), Some(gp)) => {
                 if fp.k != "<-" && gp.k != "<-" && fp.k != gp.k {
@@ -2086,15 +2096,17 @@ impl Function {
                     unifier
                         .errors
                         .push(gp.v.error(Error::MultiplePipeArguments {
-                            exp: fp.k,
-                            act: gp.k,
+                            exp: fp.k.clone(),
+                            act: gp.k.clone(),
                         }));
                 } else {
                     // At least one is unnamed or they are both named with the same name.
                     // This means they should match. Enforce this condition by inserting
                     // the pipe argument into the required ones with the same key.
-                    f.req.insert(fp.k.clone(), fp.v);
-                    g.req.insert(fp.k, gp.v);
+                    let fp = fp.clone();
+                    let gp = gp.clone();
+                    f.to_mut().req.insert(fp.k.clone(), fp.v);
+                    g.to_mut().req.insert(fp.k, gp.v);
                 }
             }
             // F has a pipe argument and g does not.
@@ -2107,7 +2119,8 @@ impl Function {
                         .push(g.retn.error(Error::MissingPipeArgument));
                 } else {
                     // This is a named argument, simply put it into the required ones.
-                    f.req.insert(fp.k, fp.v);
+                    let fp = fp.clone();
+                    f.to_mut().req.insert(fp.k, fp.v);
                 }
             }
             // G has a pipe argument and f does not.
@@ -2118,14 +2131,15 @@ impl Function {
                     unifier.errors.push(gp.v.error(Error::MissingPipeArgument));
                 } else {
                     // This is a named argument, simply put it into the required ones.
-                    g.req.insert(gp.k, gp.v);
+                    let gp = gp.clone();
+                    g.to_mut().req.insert(gp.k, gp.v);
                 }
             }
             // Nothing to do.
             (None, None) => (),
         }
         // Now that f has not been consumed yet, check that every required argument in g is in f too.
-        for (name, typ) in g.req.iter() {
+        for (name, typ) in &g.req {
             if !f.req.contains_key(name) && !f.opt.contains_key(name) {
                 unifier
                     .errors
@@ -2134,31 +2148,22 @@ impl Function {
         }
         // Unify f's required arguments.
 
-        let g_opt = &mut g.opt;
-        for (name, exp) in f.req.into_iter() {
-            if let Some(act) = g
-                .req
-                .remove(&name)
-                .or_else(|| g_opt.remove(&name).map(|arg| arg.typ))
-            {
+        for (name, exp) in &f.req {
+            if let Some(act) = g.parameter(name) {
                 // The required argument is in g's required arguments.
-                merge_in_context(&exp, &act, unifier, |e| {
+                merge_in_context(&exp, act, unifier, |e| {
                     Error::CannotUnifyArgument(name.clone(), Box::new(e))
                 });
             } else {
                 unifier
                     .errors
-                    .push(g.retn.error(Error::MissingArgument(name)));
+                    .push(g.retn.error(Error::MissingArgument(name.clone())));
             }
         }
         // Unify f's optional arguments.
-        for (name, exp) in f.opt.into_iter() {
-            if let Some(act) = g
-                .req
-                .remove(&name)
-                .or_else(|| g_opt.remove(&name).map(|arg| arg.typ))
-            {
-                merge_in_context(&exp.typ, &act, unifier, |e| {
+        for (name, exp) in &f.opt {
+            if let Some(act) = g.parameter(name) {
+                merge_in_context(&exp.typ, act, unifier, |e| {
                     Error::CannotUnifyArgument(name.clone(), Box::new(e))
                 });
             } else if let Some(default) = &exp.default {
@@ -2170,13 +2175,11 @@ impl Function {
             }
         }
 
-        let f_retn = &f.retn;
-        let g_retn = &g.retn;
         // Unify return types.
         merge_in_context(&f.retn, &g.retn, unifier, |cause| {
             Error::CannotUnifyReturn {
-                exp: f_retn.clone(),
-                act: g_retn.typ().clone(),
+                exp: f.retn.clone(),
+                act: g.retn.typ().clone(),
                 cause: Box::new(cause),
             }
         })
