@@ -18,9 +18,9 @@ testcase test_option {
 }
 
 testcase succeed_on_non_empty_result {
+    // Just to make sure we yield something to `error`
+    testing.assertEqualValues(got: 0, want: 0)
+
     // non-empty result
-
-    testing.assertEqualValues(got: 0, want: 0) // Just to make sure we yield something to `error`
-
     array.from(rows: [{}])
 }

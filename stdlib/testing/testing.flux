@@ -82,7 +82,6 @@ builtin assertEquals : (name: string, <-got: stream[A], want: stream[A]) => stre
 //
 builtin assertEmpty : (<-tables: stream[A]) => stream[A]
 
-
 builtin _diff : (
         <-got: stream[A],
         want: stream[A],
@@ -90,7 +89,6 @@ builtin _diff : (
         ?epsilon: float,
         ?nansEqual: bool,
     ) => stream[{A with _diff: string}]
-
 
 // diff produces a diff between two streams.
 //
@@ -142,9 +140,24 @@ builtin _diff : (
 // introduced: 0.18.0
 // tags: tests
 //
-diff = (got=<-, want, verbose=false, epsilon=0.000001, nansEqual=false) => {
-    return _diff(got, want, verbose, epsilon, nansEqual) |> yield(name: "error")
-}
+diff = (
+    got=<-,
+    want,
+    verbose=false,
+    epsilon=0.000001,
+    nansEqual=false,
+) =>
+    {
+        return
+            _diff(
+                got,
+                want,
+                verbose,
+                epsilon,
+                nansEqual,
+            )
+                |> yield(name: "error")
+    }
 
 // load loads test data from a stream of tables.
 //
