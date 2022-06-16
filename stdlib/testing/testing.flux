@@ -82,6 +82,16 @@ builtin assertEquals : (name: string, <-got: stream[A], want: stream[A]) => stre
 //
 builtin assertEmpty : (<-tables: stream[A]) => stream[A]
 
+
+builtin _diff : (
+        <-got: stream[A],
+        want: stream[A],
+        ?verbose: bool,
+        ?epsilon: float,
+        ?nansEqual: bool,
+    ) => stream[{A with _diff: string}]
+
+
 // diff produces a diff between two streams.
 //
 // The function matches tables from each stream based on group keys.
@@ -132,13 +142,9 @@ builtin assertEmpty : (<-tables: stream[A]) => stream[A]
 // introduced: 0.18.0
 // tags: tests
 //
-builtin diff : (
-        <-got: stream[A],
-        want: stream[A],
-        ?verbose: bool,
-        ?epsilon: float,
-        ?nansEqual: bool,
-    ) => stream[{A with _diff: string}]
+diff = (got=<-, want, verbose=false, epsilon=0.000001, nansEqual=false) => {
+    return _diff(got, want, verbose, epsilon, nansEqual) |> yield(name: "error")
+}
 
 // load loads test data from a stream of tables.
 //
@@ -376,7 +382,5 @@ benchmark = (case) => {
 // tags: tests
 //
 assertEqualValues = (got, want) => {
-    return
-        diff(got: array.from(rows: [{v: got}]), want: array.from(rows: [{v: want}]))
-            |> yield()
+    return diff(got: array.from(rows: [{v: got}]), want: array.from(rows: [{v: want}]))
 }

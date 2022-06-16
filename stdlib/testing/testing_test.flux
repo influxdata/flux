@@ -16,3 +16,11 @@ testcase test_option {
 
     testing.diff(want: want, got: got)
 }
+
+testcase succeed_on_non_empty_result {
+    // non-empty result
+
+    testing.assertEqualValues(got: 0, want: 0) // Just to make sure we yield something to `error`
+
+    array.from(rows: [{}])
+}

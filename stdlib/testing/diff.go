@@ -30,10 +30,12 @@ func (s *DiffOpSpec) Kind() flux.OperationKind {
 	return DiffKind
 }
 
-func init() {
-	diffSignature := runtime.MustLookupBuiltinType("testing", "diff")
+const diffName = "_diff"
 
-	runtime.RegisterPackageValue("testing", "diff", flux.MustValue(flux.FunctionValue(DiffKind, createDiffOpSpec, diffSignature)))
+func init() {
+	diffSignature := runtime.MustLookupBuiltinType("testing", diffName)
+
+	runtime.RegisterPackageValue("testing", diffName, flux.MustValue(flux.FunctionValue(DiffKind, createDiffOpSpec, diffSignature)))
 	flux.RegisterOpSpec(DiffKind, newDiffOp)
 	plan.RegisterProcedureSpec(DiffKind, newDiffProcedure, DiffKind)
 	execute.RegisterTransformation(DiffKind, createDiffTransformation)

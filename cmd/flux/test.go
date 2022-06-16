@@ -52,9 +52,13 @@ func (testExecutor) Run(pkg *ast.Package) error {
 
 	var output strings.Builder
 	results := flux.NewResultIteratorFromQuery(query)
+
+	foundErrorResult := false
 	for results.More() {
 		result := results.Next()
-		if result.Name() == "_result" {
+		if result.Name() == "error" {
+			foundErrorResult = true
+
 			err := result.Tables().Do(func(tbl flux.Table) error {
 				// The data returned here is the result of `testing.diff`, so any result means that
 				// a comparison of two tables showed inequality. Capture that inequality as part of the error.
@@ -71,9 +75,14 @@ func (testExecutor) Run(pkg *ast.Package) error {
 	results.Release()
 
 	err = results.Err()
-	if err == nil && output.Len() > 0 {
-		err = errors.Newf(codes.FailedPrecondition, "Expected test to have no output. Got:\n%s", output.String())
+	if err == nil {
+		if output.Len() > 0 {
+			err = errors.Newf(codes.FailedPrecondition, "%s", output.String())
+		} else if !foundErrorResult {
+			err = errors.Newf(codes.FailedPrecondition, "`yield(name: \"error\")` was never called. Did you forget to add an assertion to the test?")
+		}
 	}
+
 	return err
 }
 
