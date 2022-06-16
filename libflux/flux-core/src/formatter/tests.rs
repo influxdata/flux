@@ -1102,28 +1102,41 @@ fn preserve_multiline_test() {
 
     assert_unchanged(
         r#"event = (
-    url,
-    username,
-    password,
-    action="EventsRouter",
-    methods="add_event",
-    type="rpc",
-    tid=1,
-    summary="",
-    device="",
-    component="",
-    severity,
-    eventClass="",
-    eventClassKey="",
-    collector="",
-    message="",
-) =>
-{
+        url,
+        username,
+        password,
+        action="EventsRouter",
+        methods="add_event",
+        type="rpc",
+        tid=1,
+        summary="",
+        device="",
+        component="",
+        severity,
+        eventClass="",
+        eventClassKey="",
+        collector="",
+        message="",
+    ) =>
+    {
+        body = json.encode(v: payload)
+
+        return http.post(headers: headers, url: url, data: body)
+    }"#,
+    );
+
+    //Checks that a method with <= 4 params does not get reformatted
+    assert_unchanged(
+        r#"event = (url, message="") => {
     body = json.encode(v: payload)
 
     return http.post(headers: headers, url: url, data: body)
 }"#,
     );
+}
+
+#[test]
+fn preserve_multiline_test_2() {
     //Checks that a method with >4 params gets expanded correctly
     expect_format(
         r#"selectWindow = (column="_value", fn, as, every, defaultValue, tables=<-) => {
@@ -1135,31 +1148,23 @@ fn preserve_multiline_test() {
         |> fill(column: _column, value: defaultValue)
         |> rename(fn: (column) => if column == _column then _as else column)}"#,
         expect![[r#"selectWindow = (
-    column="_value",
-    fn,
-    as,
-    every,
-    defaultValue,
-    tables=<-,
-) =>
-{
-    _column = column
-    _as = as
+        column="_value",
+        fn,
+        as,
+        every,
+        defaultValue,
+        tables=<-,
+    ) =>
+    {
+        _column = column
+        _as = as
 
-    return
-        tables
-            |> aggregateWindow(every: every, fn: fn, column: _column, createEmpty: true)
-            |> fill(column: _column, value: defaultValue)
-            |> rename(fn: (column) => if column == _column then _as else column)
-}"#]],
-    );
-    //Checks that a method with <= 4 params does not get reformatted
-    assert_unchanged(
-        r#"event = (url, message="") => {
-    body = json.encode(v: payload)
-
-    return http.post(headers: headers, url: url, data: body)
-}"#,
+        return
+            tables
+                |> aggregateWindow(every: every, fn: fn, column: _column, createEmpty: true)
+                |> fill(column: _column, value: defaultValue)
+                |> rename(fn: (column) => if column == _column then _as else column)
+    }"#]],
     );
 }
 

@@ -942,7 +942,7 @@ impl<'doc> Formatter<'doc> {
             ast::FunctionBody::Block(b) => {
                 let mut hang_doc = self.format_block(b);
                 hang_doc.add_prefix(arena.line());
-                hang_doc.affixes.push(affixes(args, arena.nil()));
+                hang_doc.affixes.push(affixes(args, arena.nil()).nest());
                 hang_doc
                     .affixes
                     .push(affixes(lparen_comments, arena.nil()).nest());
