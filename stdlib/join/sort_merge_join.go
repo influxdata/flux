@@ -6,7 +6,6 @@ import (
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
-	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/stdlib/universe"
 )
@@ -15,20 +14,7 @@ const SortMergeJoinKind = "sortmergejoin"
 
 func init() {
 	plan.RegisterPhysicalRules(SortMergeJoinPredicateRule{})
-	execute.RegisterTransformation(SortMergeJoinKind, createSortMergeJoinTransformation)
-}
-
-func createSortMergeJoinTransformation(id execute.DatasetID, mode execute.AccumulationMode, spec plan.ProcedureSpec, a execute.Administration) (execute.Transformation, execute.Dataset, error) {
-	s, ok := spec.(*SortMergeJoinProcedureSpec)
-	if !ok {
-		return nil, nil, errors.Newf(codes.Internal, "invalid spec type %T", spec)
-	}
-
-	return newSortMergeJoinTransformation(id, s, a.Allocator())
-}
-
-func newSortMergeJoinTransformation(id execute.DatasetID, s *SortMergeJoinProcedureSpec, mem memory.Allocator) (execute.Transformation, execute.Dataset, error) {
-	return nil, nil, errors.Newf(codes.Internal, "sort merge join transformation is not implemented")
+	execute.RegisterTransformation(SortMergeJoinKind, createJoinTransformation)
 }
 
 type SortMergeJoinProcedureSpec EquiJoinProcedureSpec

@@ -43,7 +43,7 @@ func TestEquiJoinPredicateRule(t *testing.T) {
 				|> filter(fn: (r) => r._measurement == "a")
 			right = from(bucket: "b2", host: "http://localhost:8086")
 				|> filter(fn: (r) => r._measurement == "b")
-			join.join(
+			join.tables(
 				left: left,
 				right: right,
 				on: (l, r) => l.a == r.b,
@@ -59,7 +59,7 @@ func TestEquiJoinPredicateRule(t *testing.T) {
 					plan.CreateLogicalNode("filter1", &universe.FilterProcedureSpec{}),
 					plan.CreateLogicalNode("from2", &influxdb.FromProcedureSpec{}),
 					plan.CreateLogicalNode("filter3", &universe.FilterProcedureSpec{}),
-					plan.CreatePhysicalNode("join.join4", &join.EquiJoinProcedureSpec{}),
+					plan.CreatePhysicalNode("join.tables4", &join.EquiJoinProcedureSpec{}),
 				},
 				Edges: [][2]int{
 					{0, 1},
@@ -77,7 +77,7 @@ func TestEquiJoinPredicateRule(t *testing.T) {
 				|> filter(fn: (r) => r._measurement == "a")
 			right = from(bucket: "b2", host: "http://localhost:8086")
 				|> filter(fn: (r) => r._measurement == "b")
-			join.join(
+			join.tables(
 				left: left,
 				right: right,
 				on: (l, r) => l.a == r.b and l.e == r.f,
@@ -94,7 +94,7 @@ func TestEquiJoinPredicateRule(t *testing.T) {
 					plan.CreateLogicalNode("filter1", &universe.FilterProcedureSpec{}),
 					plan.CreateLogicalNode("from2", &influxdb.FromProcedureSpec{}),
 					plan.CreateLogicalNode("filter3", &universe.FilterProcedureSpec{}),
-					plan.CreatePhysicalNode("join.join4", &join.EquiJoinProcedureSpec{}),
+					plan.CreatePhysicalNode("join.tables", &join.EquiJoinProcedureSpec{}),
 				},
 				Edges: [][2]int{
 					{0, 1},
@@ -112,7 +112,7 @@ func TestEquiJoinPredicateRule(t *testing.T) {
 				|> filter(fn: (r) => r._measurement == "a")
 			right = from(bucket: "b2", host: "http://localhost:8086")
 				|> filter(fn: (r) => r._measurement == "b")
-			join.join(
+			join.tables(
 				left: left,
 				right: right,
 				on: (l, r) => l.a == r.b or l.e == r.f,
@@ -131,7 +131,7 @@ func TestEquiJoinPredicateRule(t *testing.T) {
 				|> filter(fn: (r) => r._measurement == "a")
 			right = from(bucket: "b2", host: "http://localhost:8086")
 				|> filter(fn: (r) => r._measurement == "b")
-			join.join(
+			join.tables(
 				left: left,
 				right: right,
 				on: (l, r) => l.a == l.b,
@@ -150,7 +150,7 @@ func TestEquiJoinPredicateRule(t *testing.T) {
 				|> filter(fn: (r) => r._measurement == "a")
 			right = from(bucket: "b2", host: "http://localhost:8086")
 				|> filter(fn: (r) => r._measurement == "b")
-			join.join(
+			join.tables(
 				left: left,
 				right: right,
 				on: (l, r) => r.a == l.b,
@@ -166,7 +166,7 @@ func TestEquiJoinPredicateRule(t *testing.T) {
 					plan.CreateLogicalNode("filter1", &universe.FilterProcedureSpec{}),
 					plan.CreateLogicalNode("from2", &influxdb.FromProcedureSpec{}),
 					plan.CreateLogicalNode("filter3", &universe.FilterProcedureSpec{}),
-					plan.CreatePhysicalNode("join.join4", &join.EquiJoinProcedureSpec{}),
+					plan.CreatePhysicalNode("join.tables", &join.EquiJoinProcedureSpec{}),
 				},
 				Edges: [][2]int{
 					{0, 1},
@@ -184,7 +184,7 @@ func TestEquiJoinPredicateRule(t *testing.T) {
 				|> filter(fn: (r) => r._measurement == "a")
 			right = from(bucket: "b2", host: "http://localhost:8086")
 				|> filter(fn: (r) => r._measurement == "b")
-			join.join(
+			join.tables(
 				left: left,
 				right: right,
 				on: (l, r) => r.a == l.b and r.d == l.b,
@@ -201,7 +201,7 @@ func TestEquiJoinPredicateRule(t *testing.T) {
 					plan.CreateLogicalNode("filter1", &universe.FilterProcedureSpec{}),
 					plan.CreateLogicalNode("from2", &influxdb.FromProcedureSpec{}),
 					plan.CreateLogicalNode("filter3", &universe.FilterProcedureSpec{}),
-					plan.CreatePhysicalNode("join.join4", &join.EquiJoinProcedureSpec{}),
+					plan.CreatePhysicalNode("join.tables4", &join.EquiJoinProcedureSpec{}),
 				},
 				Edges: [][2]int{
 					{0, 1},
@@ -219,7 +219,7 @@ func TestEquiJoinPredicateRule(t *testing.T) {
 				|> filter(fn: (r) => r._measurement == "a")
 			right = from(bucket: "b2", host: "http://localhost:8086")
 				|> filter(fn: (r) => r._measurement == "b")
-			join.join(
+			join.tables(
 				left: left,
 				right: right,
 				on: (l, r) => true,
@@ -238,7 +238,7 @@ func TestEquiJoinPredicateRule(t *testing.T) {
 				|> filter(fn: (r) => r._measurement == "a")
 			right = from(bucket: "b2", host: "http://localhost:8086")
 				|> filter(fn: (r) => r._measurement == "b")
-			join.join(
+			join.tables(
 				left: left,
 				right: right,
 				on: (l, r) => {
@@ -260,7 +260,7 @@ func TestEquiJoinPredicateRule(t *testing.T) {
 				|> filter(fn: (r) => r._measurement == "a")
 			right = from(bucket: "b2", host: "http://localhost:8086")
 				|> filter(fn: (r) => r._measurement == "b")
-			join.join(
+			join.tables(
 				left: left,
 				right: right,
 				on: (l, r) => l.a == r.b and l.e != r.f,
