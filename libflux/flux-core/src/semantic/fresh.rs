@@ -2,7 +2,7 @@
 
 use crate::semantic::{
     sub::{Substitutable, Substituter},
-    types::{MonoType, Tvar, TvarMap},
+    types::{BoundTvar, MonoType, Tvar, TvarMap},
 };
 
 /// A struct used for incrementing type variable identifiers.
@@ -44,8 +44,8 @@ impl Substituter for Fresher {
         Some(MonoType::Var(self.fresh_var(var)))
     }
 
-    fn try_apply_bound(&mut self, var: Tvar) -> Option<MonoType> {
-        Some(MonoType::BoundVar(self.fresh_var(var)))
+    fn try_apply_bound(&mut self, var: BoundTvar) -> Option<MonoType> {
+        Some(MonoType::BoundVar(BoundTvar(self.fresh_var(Tvar(var.0)).0)))
     }
 
     fn visit_type(&mut self, typ: &MonoType) -> Option<MonoType> {

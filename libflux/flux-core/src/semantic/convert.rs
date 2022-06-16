@@ -94,7 +94,7 @@ pub fn convert_polytype(
 #[cfg(test)]
 pub(crate) fn convert_monotype(
     ty: &ast::MonoType,
-    tvars: &mut BTreeMap<String, types::Tvar>,
+    tvars: &mut BTreeMap<String, types::BoundTvar>,
 ) -> Result<MonoType, Errors<Error>> {
     let mut converter = Converter::new();
     let r = converter.convert_monotype(&ty, tvars);
@@ -520,14 +520,14 @@ impl<'a> Converter<'a> {
     fn convert_tvar(
         &mut self,
         tv: &ast::Identifier,
-        tvars: &mut BTreeMap<String, types::Tvar>,
-    ) -> types::Tvar {
+        tvars: &mut BTreeMap<String, types::BoundTvar>,
+    ) -> types::BoundTvar {
         // Variables `A` to `Z` may be typed in the signatures of builtins and `Tvar(0)` to `Tvar(25)`
         // are displayed as those letters so we consistently map these names to those variables
         let next_var = if tv.name.len() == 1 && tv.name.as_str() >= "A" && tv.name.as_str() <= "Z" {
-            types::Tvar(tv.name.chars().next().unwrap() as u64 - 'A' as u64)
+            types::BoundTvar(tv.name.chars().next().unwrap() as u64 - 'A' as u64)
         } else {
-            types::Tvar(tvars.len() as u64 + ('Z' as u64 - 'A' as u64))
+            types::BoundTvar(tvars.len() as u64 + ('Z' as u64 - 'A' as u64))
         };
         *tvars.entry(tv.name.clone()).or_insert_with(|| next_var)
     }
@@ -535,7 +535,7 @@ impl<'a> Converter<'a> {
     fn convert_monotype(
         &mut self,
         ty: &ast::MonoType,
-        tvars: &mut BTreeMap<String, types::Tvar>,
+        tvars: &mut BTreeMap<String, types::BoundTvar>,
     ) -> MonoType {
         match ty {
             ast::MonoType::Tvar(tv) => {
@@ -660,10 +660,10 @@ impl<'a> Converter<'a> {
 
     // [`PolyType`]: types::PolyType
     fn convert_polytype(&mut self, type_expression: &ast::TypeExpression) -> types::PolyType {
-        let mut tvars = BTreeMap::<String, types::Tvar>::new();
+        let mut tvars = BTreeMap::<String, types::BoundTvar>::new();
         let expr = self.convert_monotype(&type_expression.monotype, &mut tvars);
-        let mut vars = Vec::<types::Tvar>::new();
-        let mut cons = SemanticMap::<types::Tvar, Vec<types::Kind>>::new();
+        let mut vars = Vec::<types::BoundTvar>::new();
+        let mut cons = SemanticMap::<types::BoundTvar, Vec<types::Kind>>::new();
 
         for (name, tvar) in tvars {
             vars.push(tvar);
@@ -1327,7 +1327,7 @@ mod tests {
         ast,
         parser::Parser,
         semantic::{
-            types::{MonoType, Tvar},
+            types::{BoundTvar, MonoType, Tvar},
             walk::{walk_mut, NodeMut},
         },
     };
@@ -2744,7 +2744,7 @@ mod tests {
     #[test]
     fn test_convert_monotype_int() {
         let monotype = Parser::new("int").parse_monotype();
-        let mut m = BTreeMap::<String, types::Tvar>::new();
+        let mut m = BTreeMap::new();
         let got = convert_monotype(&monotype, &mut m).unwrap();
         let want = MonoType::INT;
         assert_eq!(want, got);
@@ -2754,14 +2754,14 @@ mod tests {
     fn test_convert_monotype_record() {
         let monotype = Parser::new("{ A with b: int }").parse_monotype();
 
-        let mut m = BTreeMap::<String, types::Tvar>::new();
+        let mut m = BTreeMap::new();
         let got = convert_monotype(&monotype, &mut m).unwrap();
         let want = MonoType::from(types::Record::Extension {
             head: types::Property {
                 k: types::RecordLabel::from("b"),
                 v: MonoType::INT,
             },
-            tail: MonoType::BoundVar(Tvar(0)),
+            tail: MonoType::BoundVar(BoundTvar(0)),
         });
         assert_eq!(want, got);
     }
@@ -2770,7 +2770,7 @@ mod tests {
     fn test_convert_monotype_function() {
         let monotype_ex = Parser::new("(?A: int) => int").parse_monotype();
 
-        let mut m = BTreeMap::<String, types::Tvar>::new();
+        let mut m = BTreeMap::new();
         let got = convert_monotype(&monotype_ex, &mut m).unwrap();
         let mut opt = MonoTypeMap::new();
         opt.insert(String::from("A"), MonoType::INT.into());
@@ -2790,26 +2790,26 @@ mod tests {
         let got = convert_polytype(&type_exp).unwrap();
 
         let want = {
-            let mut vars = Vec::<types::Tvar>::new();
-            vars.push(types::Tvar(0));
-            vars.push(types::Tvar(1));
-            let mut cons = types::TvarKinds::new();
+            let mut vars = Vec::<types::BoundTvar>::new();
+            vars.push(types::BoundTvar(0));
+            vars.push(types::BoundTvar(1));
+            let mut cons = types::BoundTvarKinds::new();
             let mut kind_vector_1 = Vec::<types::Kind>::new();
             kind_vector_1.push(types::Kind::Addable);
-            cons.insert(types::Tvar(0), kind_vector_1);
+            cons.insert(types::BoundTvar(0), kind_vector_1);
 
             let mut kind_vector_2 = Vec::<types::Kind>::new();
             kind_vector_2.push(types::Kind::Divisible);
-            cons.insert(types::Tvar(1), kind_vector_2);
+            cons.insert(types::BoundTvar(1), kind_vector_2);
 
             let mut req = MonoTypeMap::new();
-            req.insert("A".to_string(), MonoType::BoundVar(Tvar(0)));
-            req.insert("B".to_string(), MonoType::BoundVar(Tvar(1)));
+            req.insert("A".to_string(), MonoType::BoundVar(BoundTvar(0)));
+            req.insert("B".to_string(), MonoType::BoundVar(BoundTvar(1)));
             let expr = MonoType::from(types::Function {
                 req,
                 opt: MonoTypeMap::new(),
                 pipe: None,
-                retn: MonoType::BoundVar(Tvar(0)),
+                retn: MonoType::BoundVar(BoundTvar(0)),
             });
             types::PolyType { vars, cons, expr }
         };
@@ -2821,22 +2821,22 @@ mod tests {
         let type_exp = Parser::new("(A: T, B: S) => T where T: Addable").parse_type_expression();
 
         let got = convert_polytype(&type_exp).unwrap();
-        let mut vars = Vec::<types::Tvar>::new();
-        vars.push(types::Tvar(0));
-        vars.push(types::Tvar(1));
-        let mut cons = types::TvarKinds::new();
+        let mut vars = Vec::<types::BoundTvar>::new();
+        vars.push(types::BoundTvar(0));
+        vars.push(types::BoundTvar(1));
+        let mut cons = types::BoundTvarKinds::new();
         let mut kind_vector_1 = Vec::<types::Kind>::new();
         kind_vector_1.push(types::Kind::Addable);
-        cons.insert(types::Tvar(0), kind_vector_1);
+        cons.insert(types::BoundTvar(0), kind_vector_1);
 
         let mut req = MonoTypeMap::new();
-        req.insert("A".to_string(), MonoType::BoundVar(Tvar(0)));
-        req.insert("B".to_string(), MonoType::BoundVar(Tvar(1)));
+        req.insert("A".to_string(), MonoType::BoundVar(BoundTvar(0)));
+        req.insert("B".to_string(), MonoType::BoundVar(BoundTvar(1)));
         let expr = MonoType::from(types::Function {
             req,
             opt: MonoTypeMap::new(),
             pipe: None,
-            retn: MonoType::BoundVar(Tvar(0)),
+            retn: MonoType::BoundVar(BoundTvar(0)),
         });
         let want = types::PolyType { vars, cons, expr };
         assert_eq!(want, got);

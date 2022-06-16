@@ -6,28 +6,16 @@ use crate::{
     semantic::{flatbuffers::semantic_generated::fbsemantic as fb, PackageExports},
 };
 
-#[rustfmt::skip]
 use crate::semantic::{
     bootstrap::Module,
-    nodes::Symbol,
-    import::Packages,
-    types::{CollectionType,
-        RecordLabel,
-        Collection,
-        Dictionary,
-        Function,
-        Kind,
-        MonoType,
-        MonoTypeMap,
-        PolyType,
-        PolyTypeMap,
-        Property,
-        Record,
-        Tvar,
-        TvarKinds,
-        BuiltinType,
-    },
     flatbuffers::serialize_pkg_into,
+    import::Packages,
+    nodes::Symbol,
+    types::{
+        self, BoundTvar, BoundTvarKinds, BuiltinType, Collection, CollectionType, Dictionary,
+        Function, Kind, MonoType, MonoTypeMap, PolyType, PolyTypeMap, Property, Record,
+        RecordLabel, Tvar, TvarKinds,
+    },
 };
 
 #[derive(Default)]
@@ -104,9 +92,9 @@ impl From<fb::PolyType<'_>> for Option<PolyType> {
             vars.push(value.into());
         }
         let c = t.cons()?;
-        let mut cons = TvarKinds::new();
+        let mut cons = BoundTvarKinds::new();
         for value in c.iter() {
-            let constraint: Option<(Tvar, Kind)> = value.into();
+            let constraint: Option<(BoundTvar, Kind)> = value.into();
             let (tv, kind) = constraint?;
             cons.entry(tv).or_insert_with(Vec::new).push(kind);
         }
@@ -118,8 +106,8 @@ impl From<fb::PolyType<'_>> for Option<PolyType> {
     }
 }
 
-impl From<fb::Constraint<'_>> for Option<(Tvar, Kind)> {
-    fn from(c: fb::Constraint) -> Option<(Tvar, Kind)> {
+impl From<fb::Constraint<'_>> for Option<(BoundTvar, Kind)> {
+    fn from(c: fb::Constraint) -> Self {
         Some((c.tvar()?.into(), c.kind().into()))
     }
 }
@@ -169,7 +157,7 @@ fn record_label_from_table(table: flatbuffers::Table, t: fb::RecordLabel) -> Opt
     match t {
         fb::RecordLabel::Var => {
             let var = fb::Var::init_from_table(table);
-            Some(RecordLabel::BoundVariable(Tvar::from(var)))
+            Some(RecordLabel::BoundVariable(BoundTvar::from(var)))
         }
         fb::RecordLabel::Concrete => {
             let concrete = fb::Concrete::init_from_table(table);
@@ -189,7 +177,7 @@ fn from_table(table: flatbuffers::Table, t: fb::MonoType) -> Option<MonoType> {
         }
         fb::MonoType::Var => {
             let var = fb::Var::init_from_table(table);
-            Some(MonoType::BoundVar(Tvar::from(var)))
+            Some(MonoType::BoundVar(BoundTvar::from(var)))
         }
         fb::MonoType::Collection => {
             let opt: Option<Collection> = fb::Collection::init_from_table(table).into();
@@ -227,8 +215,14 @@ impl From<fb::Basic<'_>> for MonoType {
 }
 
 impl From<fb::Var<'_>> for Tvar {
-    fn from(t: fb::Var) -> Tvar {
-        Tvar(t.i())
+    fn from(t: fb::Var) -> Self {
+        Self(t.i())
+    }
+}
+
+impl From<fb::Var<'_>> for BoundTvar {
+    fn from(t: fb::Var) -> Self {
+        Self(t.i())
     }
 }
 
@@ -442,7 +436,11 @@ pub fn build_polytype<'a>(
     builder: &mut flatbuffers::FlatBufferBuilder<'a>,
     t: PolyType,
 ) -> flatbuffers::WIPOffset<fb::PolyType<'a>> {
-    let vars = build_vec(t.vars, builder, build_var);
+    let vars: Vec<_> = t
+        .vars
+        .iter()
+        .map(|v| build_var(builder, types::Tvar(v.0)))
+        .collect();
     let vars = builder.create_vector(vars.as_slice());
 
     let mut cons = Vec::new();
@@ -451,7 +449,10 @@ pub fn build_polytype<'a>(
             cons.push((tv, k));
         }
     }
-    let cons = build_vec(cons, builder, build_constraint);
+    let cons: Vec<_> = cons
+        .into_iter()
+        .map(|(t, k)| build_constraint(builder, (Tvar(t.0), k)))
+        .collect();
     let cons = builder.create_vector(cons.as_slice());
 
     let (buf_offset, expr) = build_type(builder, &t.expr);
@@ -491,8 +492,12 @@ pub fn build_type(
         MonoType::Error => unreachable!(),
         MonoType::Builtin(typ) => build_basic_type(builder, typ),
         MonoType::Label(_) => build_basic_type(builder, &BuiltinType::String),
-        MonoType::BoundVar(tvr) | MonoType::Var(tvr) => {
+        MonoType::Var(tvr) => {
             let offset = build_var(builder, *tvr);
+            (offset.as_union_value(), fb::MonoType::Var)
+        }
+        MonoType::BoundVar(tvr) => {
+            let offset = build_var(builder, types::Tvar(tvr.0));
             (offset.as_union_value(), fb::MonoType::Var)
         }
         MonoType::Collection(app) => {
@@ -593,13 +598,14 @@ fn build_record<'a>(
         props.push(field);
     }
     let extends = fields.tail().and_then(|typ| match typ {
-        MonoType::Var(t) | MonoType::BoundVar(t) => Some(t),
+        MonoType::Var(t) => Some(*t),
+        MonoType::BoundVar(t) => Some(types::Tvar(t.0)),
         _ => None,
     });
 
     let props = build_vec(props, builder, build_prop);
     let props = builder.create_vector(props.as_slice());
-    let extends = extends.map(|typevar| build_var(builder, *typevar));
+    let extends = extends.map(|typevar| build_var(builder, typevar));
     fb::Record::create(
         builder,
         &fb::RecordArgs {
@@ -615,8 +621,12 @@ fn build_prop<'a>(
 ) -> flatbuffers::WIPOffset<fb::Prop<'a>> {
     let (off, v_type) = build_type(builder, &prop.v);
     let (k, k_type) = match &prop.k {
-        RecordLabel::Variable(var) | RecordLabel::BoundVariable(var) => {
+        RecordLabel::Variable(var) => {
             let concrete = build_var(builder, *var);
+            (concrete.as_union_value(), fb::RecordLabel::Var)
+        }
+        RecordLabel::BoundVariable(var) => {
+            let concrete = build_var(builder, types::Tvar(var.0));
             (concrete.as_union_value(), fb::RecordLabel::Var)
         }
         RecordLabel::Concrete(name) => {
@@ -804,7 +814,7 @@ mod tests {
     fn serde_vector_type() {
         let want = PolyType {
             vars: vec![],
-            cons: TvarKinds::new(),
+            cons: BoundTvarKinds::new(),
             expr: MonoType::vector(MonoType::INT),
         };
 

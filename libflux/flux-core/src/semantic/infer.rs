@@ -8,7 +8,7 @@ use crate::{
     semantic::{
         env::Environment,
         sub::{Substitutable, Substituter, Substitution},
-        types::{self, Kind, MonoType, PolyType, SubstitutionMap, Tvar, TvarKinds},
+        types::{self, BoundTvar, BoundTvarKinds, Kind, MonoType, PolyType, SemanticMap, Tvar},
     },
 };
 
@@ -212,13 +212,13 @@ pub(crate) fn temporary_generalize(
 ) -> PolyType {
     struct Generalize {
         env_free_vars: Vec<Tvar>,
-        vars: Vec<(Tvar, Tvar)>,
+        vars: Vec<(Tvar, BoundTvar)>,
     }
 
     impl Substituter for Generalize {
-        fn try_apply_bound(&mut self, var: Tvar) -> Option<MonoType> {
+        fn try_apply_bound(&mut self, var: BoundTvar) -> Option<MonoType> {
             if self.vars.iter().all(|(_, v)| *v != var) {
-                self.vars.push((var, var));
+                self.vars.push((Tvar(var.0), var));
             }
             None
         }
@@ -227,7 +227,7 @@ pub(crate) fn temporary_generalize(
                 match self.vars.iter().find(|(v, _)| *v == var) {
                     Some((_, new_var)) => Some(MonoType::BoundVar(*new_var)),
                     None => {
-                        let new_var = Tvar(self.vars.len() as u64);
+                        let new_var = BoundTvar(self.vars.len() as u64);
                         self.vars.push((var, new_var));
                         Some(MonoType::BoundVar(new_var))
                     }
@@ -246,7 +246,7 @@ pub(crate) fn temporary_generalize(
 
     let vars = generalize.vars;
 
-    let mut cons = TvarKinds::new();
+    let mut cons = BoundTvarKinds::new();
     for (tv, bound_tv) in &vars {
         if let Some(kinds) = sub.cons().get(tv) {
             cons.insert(*bound_tv, kinds.to_owned());
@@ -271,7 +271,7 @@ pub fn generalize(env: &Environment, sub: &mut Substitution, t: MonoType) -> Pol
     struct Generalize<'a> {
         env_free_vars: Vec<Tvar>,
         sub: &'a mut Substitution,
-        vars: Vec<(Tvar, Tvar)>,
+        vars: Vec<(Tvar, BoundTvar)>,
     }
 
     impl Substituter for Generalize<'_> {
@@ -283,7 +283,7 @@ pub fn generalize(env: &Environment, sub: &mut Substitution, t: MonoType) -> Pol
                     }
                 }
 
-                let new_var = Tvar(self.vars.len() as u64);
+                let new_var = BoundTvar(self.vars.len() as u64);
                 self.vars.push((var, new_var));
                 let new_type = MonoType::BoundVar(new_var);
                 if var.0 as usize > self.sub.len() {
@@ -306,7 +306,7 @@ pub fn generalize(env: &Environment, sub: &mut Substitution, t: MonoType) -> Pol
 
     let vars = generalize.vars;
 
-    let mut cons = TvarKinds::new();
+    let mut cons = BoundTvarKinds::new();
     for (tv, bound_tv) in &vars {
         if let Some(kinds) = sub.cons().get(tv) {
             cons.insert(*bound_tv, kinds.to_owned());
@@ -331,7 +331,7 @@ pub fn instantiate(
     loc: SourceLocation,
 ) -> (MonoType, Constraints) {
     // Substitute fresh type variables for all quantified variables
-    let sub: SubstitutionMap = poly
+    let sub: SemanticMap<_, _> = poly
         .vars
         .into_iter()
         .map(|tv| (tv, MonoType::Var(sub.fresh())))
@@ -353,13 +353,13 @@ pub fn instantiate(
         });
 
     // Equivalent to `SubstitutionMap` but instantiates bound variables instead of free variables
-    struct InstantiationMap(SubstitutionMap);
+    struct InstantiationMap(SemanticMap<BoundTvar, MonoType>);
 
     impl Substituter for InstantiationMap {
         fn try_apply(&mut self, _var: Tvar) -> Option<MonoType> {
             None
         }
-        fn try_apply_bound(&mut self, var: Tvar) -> Option<MonoType> {
+        fn try_apply_bound(&mut self, var: BoundTvar) -> Option<MonoType> {
             self.0.get(&var).cloned()
         }
     }

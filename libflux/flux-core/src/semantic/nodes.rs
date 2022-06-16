@@ -25,8 +25,8 @@ use crate::{
         infer::{self, Constraint},
         sub::{BindVars, Substitutable, Substituter, Substitution},
         types::{
-            self, Dictionary, Function, Kind, Label, MonoType, MonoTypeMap, PolyType, RecordLabel,
-            Tvar, TvarKinds,
+            self, BoundTvar, BoundTvarKinds, Dictionary, Function, Kind, Label, MonoType,
+            MonoTypeMap, PolyType, RecordLabel, Tvar,
         },
         AnalyzerConfig, Feature,
     },
@@ -63,7 +63,7 @@ pub enum ErrorKind {
     #[display(fmt = "can't vectorize function: {}", _0)]
     UnableToVectorize(String),
     #[display(fmt = "variable {} lacks the {} constraint", var, kind)]
-    MissingConstraint { var: Tvar, kind: Kind },
+    MissingConstraint { var: BoundTvar, kind: Kind },
     #[display(fmt = "{}. This is a bug in type inference", _0)]
     Bug(String),
 }
@@ -85,7 +85,7 @@ impl Substitutable for ErrorKind {
             Self::Inference(err) => err.visit(sub).map(Self::Inference),
             Self::MissingConstraint { var, kind } => {
                 sub.try_apply_bound(*var).and_then(|typ| match typ {
-                    MonoType::Var(var) => Some(Self::MissingConstraint { var, kind: *kind }),
+                    MonoType::BoundVar(var) => Some(Self::MissingConstraint { var, kind: *kind }),
                     _ => None,
                 })
             }
@@ -620,7 +620,7 @@ impl PolyType {
         }
 
         impl CheckSignature<'_, '_, '_> {
-            fn require_kind(&mut self, var: Tvar, required_kind: Kind) {
+            fn require_kind(&mut self, var: BoundTvar, required_kind: Kind) {
                 if self
                     .poly
                     .cons
@@ -767,10 +767,10 @@ impl ReturnStmt {
 #[allow(missing_docs)]
 pub struct VariableAssgn {
     #[derivative(PartialEq = "ignore")]
-    vars: Vec<Tvar>,
+    vars: Vec<BoundTvar>,
 
     #[derivative(PartialEq = "ignore")]
-    cons: TvarKinds,
+    cons: BoundTvarKinds,
 
     pub loc: ast::SourceLocation,
 
@@ -783,7 +783,7 @@ impl VariableAssgn {
     pub fn new(id: Identifier, init: Expression, loc: ast::SourceLocation) -> VariableAssgn {
         VariableAssgn {
             vars: Vec::new(),
-            cons: TvarKinds::new(),
+            cons: BoundTvarKinds::new(),
             loc,
             id,
             init,
@@ -1028,7 +1028,7 @@ impl FunctionExpr {
                     let param_type = MonoType::Var(infer.sub.fresh());
                     let typ = PolyType {
                         vars: Vec::new(),
-                        cons: TvarKinds::new(),
+                        cons: BoundTvarKinds::new(),
                         expr: param_type.clone(),
                     };
                     infer.env.add(id.clone(), typ);
@@ -1041,7 +1041,7 @@ impl FunctionExpr {
                     let ftvar = infer.sub.fresh();
                     let typ = PolyType {
                         vars: Vec::new(),
-                        cons: TvarKinds::new(),
+                        cons: BoundTvarKinds::new(),
                         expr: MonoType::Var(ftvar),
                     };
                     infer.env.add(id.clone(), typ.clone());
