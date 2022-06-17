@@ -237,7 +237,7 @@ requests.do(method: "GET", url:"%s/path/a/b/c")
 	if err == nil {
 		t.Fatal("expected TLS failure")
 	}
-	if !strings.Contains(err.Error(), "unknown authority") {
+	if !strings.Contains(err.Error(), "unknown authority") && !strings.Contains(err.Error(), "certificate is not trusted") {
 		t.Errorf("unexpected cause of failure, got err: %v", err)
 	}
 }
