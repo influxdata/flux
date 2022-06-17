@@ -1562,7 +1562,7 @@ impl MemberExpr {
         // we can skip type inference
         match t
             .fields()
-            .find(|f| f.k == &self.property[..])
+            .find(|f| f.k == self.property.as_str())
             .map(|f| f.v.clone())
         {
             Some(projected_type) => {

@@ -2176,7 +2176,7 @@ impl Function {
         for (name, exp) in &f.req {
             if let Some(act) = g.parameter(name) {
                 // The required argument is in g's required arguments.
-                merge_in_context(&exp, act, unifier, |e| {
+                merge_in_context(exp, act, unifier, |e| {
                     Error::CannotUnifyArgument(name.clone(), Box::new(e))
                 });
             } else {
