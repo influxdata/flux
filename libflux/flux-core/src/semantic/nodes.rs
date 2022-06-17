@@ -1558,21 +1558,31 @@ impl MemberExpr {
             }
         }
 
-        let r = {
-            self.typ = MonoType::Var(infer.sub.fresh());
-            let head = types::Property {
-                k: RecordLabel::from(self.property.to_owned()),
-                v: self.typ.to_owned(),
-            };
-            let tail = MonoType::Var(infer.sub.fresh());
-            MonoType::from(types::Record::Extension { head, tail })
-        };
+        // If we can determine that the type of `self.object` already has `self.property`
+        // we can skip type inference
+        match t
+            .fields()
+            .find(|f| f.k == &self.property[..])
+            .map(|f| f.v.clone())
+        {
+            Some(projected_type) => {
+                self.typ = projected_type;
+            }
+            None => {
+                let r = {
+                    self.typ = MonoType::Var(infer.sub.fresh());
+                    let head = types::Property {
+                        k: RecordLabel::from(self.property.to_owned()),
+                        v: self.typ.to_owned(),
+                    };
+                    let tail = MonoType::Var(infer.sub.fresh());
+                    MonoType::from(types::Record::Extension { head, tail })
+                };
 
-        infer.solve(&[Constraint::Equal {
-            exp: r,
-            act: t,
-            loc: self.object.loc().clone(),
-        }]);
+                infer.equal(&r, &t, self.object.loc());
+            }
+        }
+
         Ok(())
     }
     fn apply(&mut self, sub: &mut dyn Substituter) {
