@@ -1608,20 +1608,21 @@ impl IndexExpr {
         self.array.infer(infer)?;
         self.index.infer(infer)?;
 
-        self.typ = MonoType::Var(infer.sub.fresh());
-
-        infer.solve(&[
-            Constraint::Equal {
-                act: self.index.type_of(),
-                exp: MonoType::INT,
-                loc: self.index.loc().clone(),
-            },
-            Constraint::Equal {
-                act: self.array.type_of(),
-                exp: MonoType::arr(self.typ.clone()),
-                loc: self.array.loc().clone(),
-            },
-        ]);
+        infer.equal(&MonoType::INT, &self.index.type_of(), self.index.loc());
+        let array_type = self.array.type_of();
+        match &array_type {
+            MonoType::Collection(col) if col.collection == types::CollectionType::Array => {
+                self.typ = col.arg.clone();
+            }
+            _ => {
+                self.typ = MonoType::Var(infer.sub.fresh());
+                infer.equal(
+                    &MonoType::arr(self.typ.clone()),
+                    &self.array.type_of(),
+                    self.array.loc(),
+                );
+            }
+        }
         Ok(())
     }
     fn apply(&mut self, sub: &mut dyn Substituter) {
