@@ -145,7 +145,7 @@ builtin trimSpace : (v: string) => string
 //
 // ## Parameters
 //
-// - v: String to trim
+// - v: String to trim.
 // - suffix: Suffix to remove.
 //
 // ## Examples
@@ -167,7 +167,7 @@ builtin trimSuffix : (v: string, suffix: string) => string
 //
 // ## Parameters
 //
-// - v: String to to remove characters from
+// - v: String to to remove characters from.
 // - cutset: Trailing characters to trim from the string.
 //
 //   Only characters that match the cutset string exactly are trimmed.
@@ -191,7 +191,7 @@ builtin trimRight : (v: string, cutset: string) => string
 //
 // ## Parameters
 //
-// - v: String to to remove characters from
+// - v: String to to remove characters from.
 // - cutset: Leading characters to trim from the string.
 //
 // ## Examples

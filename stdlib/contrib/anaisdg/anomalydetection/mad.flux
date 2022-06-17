@@ -1,4 +1,9 @@
 // Package anomalydetection detects anomalies in time series data.
+//
+// ## Metadata
+// introduced: 0.90.0
+// contributors: **GitHub**: [@anaisdg](https://github.com/anaisdg) | **InfluxDB Slack**: [@Anais](https://influxdata.com/slack)
+//
 package anomalydetection
 
 

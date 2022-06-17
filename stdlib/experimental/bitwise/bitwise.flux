@@ -205,8 +205,8 @@ builtin urshift : (a: uint, b: uint) => uint
 // sand performs the bitwise operation, `a AND b`, with integers.
 //
 // ## Parameters
-// - a: Left hand operand
-// - b: Right hand operand
+// - a: Left hand operand.
+// - b: Right hand operand.
 //
 // ## Examples
 // ### Perform a bitwise AND operation

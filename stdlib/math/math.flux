@@ -1,4 +1,4 @@
-// Package math provides basic constants and mathematical functions
+// Package math provides basic constants and mathematical functions.
 //
 // ## Metadata
 // introduced: 0.22.0
@@ -788,8 +788,8 @@ builtin exp : (x: float) => float
 //
 builtin exp2 : (x: float) => float
 
-// expm1 returns `e**x - 1`, the base-e exponential of `x` minus
-//  1. It is more accurate than `math.exp(x:x) - 1` when `x` is near zero.
+// expm1 returns `e**x - 1`, the base-e exponential of `x` minus 1.
+// It is more accurate than `math.exp(x:x) - 1` when `x` is near zero.
 //
 // ## Parameters
 // - x: Value to operate on.
@@ -1072,7 +1072,7 @@ builtin hypot : (p: float, q: float) => float
 builtin ilogb : (x: float) => int
 
 // mInf returns positive infinity if `sign >= 0`, negative infinity
-// if `sign < 0`
+// if `sign < 0`.
 //
 // ## Parameters
 // - sign: Value to operate on.
@@ -1655,7 +1655,7 @@ builtin mod : (x: float, y: float) => float
 // Both values have the same sign as `f`.
 //
 // ## Parameters
-// - f: Value to operate on
+// - f: Value to operate on.
 //
 // ## Examples
 //

@@ -1,4 +1,9 @@
 // Package bigpanda provides functions for sending alerts to [BigPanda](https://www.bigpanda.io/).
+//
+// ## Metadata
+// introduced: 0.108.0
+// contributors: **GitHub**: [@rhajek](https://github.com/rhajek) | **InfluxDB Slack**: [@Robert Hajek](https://influxdata.com/slack)
+//
 package bigpanda
 
 

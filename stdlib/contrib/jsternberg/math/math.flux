@@ -1,4 +1,9 @@
 // Package math provides implementations of aggregate functions.
+//
+// ## Metadata
+// introduced: 0.77.0
+// contributors: **GitHub**: [@jsternberg](https://github.com/jsternberg) | **InfluxDB Slack**: [@Jonathan Sternberg](https://influxdata.com/slack)
+//
 package math
 
 

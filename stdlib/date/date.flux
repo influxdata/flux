@@ -761,7 +761,7 @@ truncate = (t, unit, location=location) => _truncate(t, unit, location)
 //
 builtin scale : (d: duration, n: int) => duration
 
-// Sunday is a constant that represents Sunday as a day of the week
+// Sunday is a constant that represents Sunday as a day of the week.
 Sunday = 0
 
 // Monday is a constant that represents Monday as a day of the week.

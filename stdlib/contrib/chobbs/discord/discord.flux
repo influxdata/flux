@@ -2,6 +2,8 @@
 //
 // ## Metadata
 // introduced: 0.69.0
+// contributors: **GitHub**: [@chobbs](https://github.com/chobbs) | **InfluxDB Slack**: [@chobbs](https://influxdata.com/slack)
+//
 package discord
 
 

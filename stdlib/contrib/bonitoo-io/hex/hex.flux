@@ -3,6 +3,8 @@
 //
 // ## Metadata
 // introduced: 0.131.0
+// contributors: **GitHub**: [@sranka](https://github.com/sranka), [@bonitoo-io](https://github.com/bonitoo-io) | **InfluxDB Slack**: [@sranka](https://influxdata.com/slack)
+//
 package hex
 
 
