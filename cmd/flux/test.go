@@ -74,6 +74,7 @@ func (testExecutor) Run(pkg *ast.Package) error {
 			}
 		} else {
 			err := result.Tables().Do(func(tbl flux.Table) error {
+				tbl.Done()
 				return nil
 			})
 			if err != nil {
