@@ -156,7 +156,7 @@ diff = (
                 epsilon,
                 nansEqual,
             )
-                |> yield(name: "error")
+                |> yield(name: "errorOutput")
     }
 
 // load loads test data from a stream of tables.

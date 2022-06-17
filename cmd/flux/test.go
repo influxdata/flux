@@ -26,6 +26,8 @@ func NewTestExecutor(ctx context.Context) (cmd.TestExecutor, error) {
 
 type testExecutor struct{}
 
+const errorYield = "errorOutput"
+
 func (testExecutor) Run(pkg *ast.Package) error {
 	jsonAST, err := json.Marshal(pkg)
 	if err != nil {
@@ -56,7 +58,7 @@ func (testExecutor) Run(pkg *ast.Package) error {
 	foundErrorResult := false
 	for results.More() {
 		result := results.Next()
-		if result.Name() == "error" {
+		if result.Name() == errorYield {
 			foundErrorResult = true
 
 			err := result.Tables().Do(func(tbl flux.Table) error {
@@ -86,7 +88,7 @@ func (testExecutor) Run(pkg *ast.Package) error {
 		if output.Len() > 0 {
 			err = errors.Newf(codes.FailedPrecondition, "%s", output.String())
 		} else if !foundErrorResult {
-			err = errors.Newf(codes.FailedPrecondition, "`yield(name: \"error\")` was never called. Did you forget to add an assertion to the test?")
+			err = errors.Newf(codes.FailedPrecondition, "`yield(name: \"%s\")` was never called. Did you forget to add an assertion to the test?", errorYield)
 		}
 	}
 
