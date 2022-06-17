@@ -471,7 +471,8 @@ func TestMergeFilterAnyRule(t *testing.T) {
 				},
 				Edges: [][2]int{{0, 1}},
 			},
-			NoChange: true,
+			NoChange:       true,
+			SkipValidation: true,
 		},
 		{
 			Name: "filterFalse",
@@ -484,7 +485,8 @@ func TestMergeFilterAnyRule(t *testing.T) {
 				},
 				Edges: [][2]int{{0, 1}},
 			},
-			NoChange: true,
+			NoChange:       true,
+			SkipValidation: true,
 		},
 		{
 			Name: "filterTrue",
@@ -502,6 +504,7 @@ func TestMergeFilterAnyRule(t *testing.T) {
 					plan.CreatePhysicalNode("from", from),
 				},
 			},
+			SkipValidation: true,
 		},
 		{
 			Name: "count filterTrue",
@@ -539,6 +542,7 @@ func TestMergeFilterAnyRule(t *testing.T) {
 				},
 				Edges: [][2]int{{0, 1}},
 			},
+			SkipValidation: true,
 		},
 	}
 
