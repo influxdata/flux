@@ -1896,6 +1896,20 @@ impl fmt::Display for Function {
     }
 }
 
+impl<K: Eq + Hash + Clone, V> Substitutable for indexmap::IndexMap<K, V>
+where
+    V: Substitutable + Clone,
+{
+    fn walk(&self, sub: &mut (impl ?Sized + Substituter)) -> Option<Self> {
+        merge_collect(
+            &mut (),
+            self.iter(),
+            |_, (k, v)| v.visit(sub).map(|v| (k.clone(), v)),
+            |_, (k, v)| (k.clone(), v.clone()),
+        )
+    }
+}
+
 impl<K: Eq + Hash + Clone> Substitutable for PolyTypeHashMap<K> {
     fn walk(&self, sub: &mut (impl ?Sized + Substituter)) -> Option<Self> {
         merge_collect(
