@@ -403,8 +403,8 @@ var sourceHashes = map[string]string{
 	"stdlib/testing/promql/resets_test.flux":                                                      "e01bb24f576f8a2cb69fa1f5d9061cc852431970792ae2c59c3753580058926d",
 	"stdlib/testing/promql/timestamp_test.flux":                                                   "350dc1161f222d2bfc327aee399ed9873e198c9858e845c2ca0b9ca0e2e38ef8",
 	"stdlib/testing/promql/year_test.flux":                                                        "1767fb414d4261075880b0b9e5f6084cc1d9124fcb3759d68d3bea8a7c42977d",
-	"stdlib/testing/testing.flux":                                                                 "7017756cd255f45e19d7c485df52ea3ab9a178dcb1ca1fa23ff5cf36dff938a6",
-	"stdlib/testing/testing_test.flux":                                                            "8b3a959c5987f2217e520d5c42d45a66a7361d23946978a751ea75f337b8eee8",
+	"stdlib/testing/testing.flux":                                                                 "5f50e588cbbd18abbe30f7cd1d28ff0f1728621ccad3ebaee9daae12cb13a76e",
+	"stdlib/testing/testing_test.flux":                                                            "33c69744df7f9c6959a3ba05a273fe67260fca3d34f903210ca2ba7eb74f3a25",
 	"stdlib/testing/usage/api_test.flux":                                                          "2a39412eaf41ccb2436dbbdb250f9761544538252bbc6dd6d63b47d2d16e0136",
 	"stdlib/testing/usage/duration_test.flux":                                                     "f545e7e8f1820bdae0beb935d12f899f1065b7b7df1c05eed454ecfb48fa4225",
 	"stdlib/testing/usage/reads_test.flux":                                                        "094b20f66d8ad6b1b639b59933a0bda051da3898abd46b28369d1f4021ba192f",
@@ -609,5 +609,5 @@ var sourceHashes = map[string]string{
 	"stdlib/universe/window_null_test.flux":                                                       "3797d98035507192a911bd0e716a4f755f9555a46e96445331eb6033eeb837ca",
 	"stdlib/universe/window_start_bound_test.flux":                                                "8d6757e9d32021bd5655549a3601da97aeba74dcf6fe8a2854a70aca3637b7fa",
 	"stdlib/universe/window_test.flux":                                                            "d2d32a8844c08ba920750b545ee0a491040caba58ea9a026379d935a01bf4ebc",
-	"stdlib/universe/yield_test.flux":                                                             "d862e9ea52dbc09adb4995463235f3a51a41fcf7c95f472dac6bd792891de075",
+	"stdlib/universe/yield_test.flux":                                                             "2f3f3e0d3210b4e9ed2a68c354e8b0254f03aeb2bc6bf1e5753cb6c25bc93a98",
 }
