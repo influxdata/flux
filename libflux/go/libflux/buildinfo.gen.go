@@ -14,7 +14,7 @@ package libflux
 var sourceHashes = map[string]string{
 	"libflux/Cargo.lock":                                                                          "ec8537d38afbe08ecf451990b8c0a84ee4b30ee66d440d6525832c769764e44e",
 	"libflux/Cargo.toml":                                                                          "91ac4e8b467440c6e8a9438011de0e7b78c2732403bb067d4dd31539ac8a90c1",
-	"libflux/flux-core/Cargo.toml":                                                                "594c5cc9a8ff9440418b49c37488112faa8e57b82df084b327b8252beded17b1",
+	"libflux/flux-core/Cargo.toml":                                                                "6adab7137e133af232dd9720885bf048c20d790358be1bb1bc908e1e67e93c51",
 	"libflux/flux-core/src/ast/check/mod.rs":                                                      "47e06631f249715a44c9c8fa897faf142ad0fa26f67f8cfd5cd201e82cb1afc8",
 	"libflux/flux-core/src/ast/mod.rs":                                                            "8cfc62120ae574cf028d23bb3f07e25b4b925063fd532ebacad850833e4a6f37",
 	"libflux/flux-core/src/ast/walk/mod.rs":                                                       "a47402a4d8493704f0783cb27a705cc4f66541639427fc43dfefd006cfa6601b",
