@@ -21,7 +21,8 @@ use crate::{
         nodes::{self, Package, Symbol},
         sub::{Substitutable, Substituter},
         types::{
-            MonoType, PolyType, PolyTypeHashMap, Record, RecordLabel, SemanticMap, Tvar, TvarKinds,
+            BoundTvar, BoundTvarKinds, MonoType, PolyType, PolyTypeHashMap, Record, RecordLabel,
+            SemanticMap, Tvar,
         },
         Analyzer, AnalyzerConfig, PackageExports,
     },
@@ -287,14 +288,14 @@ where
 }
 
 // Collects any `MonoType::BoundVar`s in the type
-struct CollectBoundVars(Vec<Tvar>);
+struct CollectBoundVars(Vec<BoundTvar>);
 
 impl Substituter for CollectBoundVars {
     fn try_apply(&mut self, _var: Tvar) -> Option<MonoType> {
         None
     }
 
-    fn try_apply_bound(&mut self, var: Tvar) -> Option<MonoType> {
+    fn try_apply_bound(&mut self, var: BoundTvar) -> Option<MonoType> {
         let vars = &mut self.0;
         if let Err(i) = vars.binary_search(&var) {
             vars.insert(i, var);
@@ -306,8 +307,8 @@ impl Substituter for CollectBoundVars {
 fn add_record_to_map(
     env: &mut PolyTypeHashMap<Symbol>,
     r: &Record,
-    free_vars: &[Tvar],
-    cons: &TvarKinds,
+    free_vars: &[BoundTvar],
+    cons: &BoundTvarKinds,
 ) -> Result<()> {
     for field in r.fields() {
         let new_vars = {
@@ -316,7 +317,7 @@ fn add_record_to_map(
             new_vars.0
         };
 
-        let mut new_cons = TvarKinds::new();
+        let mut new_cons = BoundTvarKinds::new();
         for var in &new_vars {
             if !free_vars.iter().any(|v| v == var) {
                 bail!("monotype contains free var not in poly type free vars");

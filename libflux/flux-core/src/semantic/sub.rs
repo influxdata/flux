@@ -3,7 +3,7 @@ use std::{borrow::Cow, cell::RefCell, collections::BTreeMap, fmt, iter::FusedIte
 
 use crate::semantic::{
     fresh::Fresher,
-    types::{union, Error, Kind, MonoType, PolyType, SubstitutionMap, Tvar, TvarKinds},
+    types::{union, BoundTvar, Error, Kind, MonoType, PolyType, SubstitutionMap, Tvar, TvarKinds},
 };
 
 use ena::unify::UnifyKey;
@@ -269,12 +269,6 @@ pub trait Substitutable {
                 }
                 None
             }
-
-            fn visit_poly_type(&mut self, typ: &PolyType) -> Option<PolyType> {
-                typ.expr.visit(self);
-                self.vars.retain(|v| !typ.vars.contains(v));
-                None
-            }
         }
 
         let mut free_vars = FreeVars::default();
@@ -324,7 +318,7 @@ pub trait Substituter {
     fn try_apply(&mut self, var: Tvar) -> Option<MonoType>;
     /// Apply a substitution to a bound type variable, returning None if there is no substitution for the
     /// variable.
-    fn try_apply_bound(&mut self, var: Tvar) -> Option<MonoType> {
+    fn try_apply_bound(&mut self, var: BoundTvar) -> Option<MonoType> {
         let _ = var;
         None
     }
@@ -361,47 +355,11 @@ impl Substituter for SubstitutionMap {
     fn try_apply(&mut self, var: Tvar) -> Option<MonoType> {
         self.get(&var).cloned()
     }
-
-    fn visit_poly_type(&mut self, typ: &PolyType) -> Option<PolyType> {
-        // `vars` defines new distinct variables for `expr` so any substitutions applied on a
-        // variable named the same must not be applied in `expr`
-        typ.expr
-            .visit(&mut |var| {
-                if typ.vars.contains(&var) {
-                    None
-                } else {
-                    self.try_apply(var)
-                }
-            })
-            .map(|expr| PolyType {
-                vars: typ.vars.clone(),
-                cons: typ.cons.clone(),
-                expr,
-            })
-    }
 }
 
 impl Substituter for Substitution {
     fn try_apply(&mut self, var: Tvar) -> Option<MonoType> {
         Substitution::try_apply(self, var)
-    }
-
-    fn visit_poly_type(&mut self, typ: &PolyType) -> Option<PolyType> {
-        // `vars` defines new distinct variables for `expr` so any substitutions applied on a
-        // variable named the same must not be applied in `expr`
-        typ.expr
-            .visit(&mut |var| {
-                if typ.vars.contains(&var) {
-                    None
-                } else {
-                    self.try_apply(var)
-                }
-            })
-            .map(|expr| PolyType {
-                vars: typ.vars.clone(),
-                cons: typ.cons.clone(),
-                expr,
-            })
     }
 }
 
@@ -424,7 +382,7 @@ impl Substituter for BindVars<'_> {
         Some(if let Some(typ) = self.sub.try_apply(var) {
             typ
         } else {
-            let new_var = Tvar(self.unbound_vars.len() as u64);
+            let new_var = BoundTvar(self.unbound_vars.len() as u64);
             self.unbound_vars
                 .entry(var)
                 .or_insert_with(|| MonoType::BoundVar(new_var))
