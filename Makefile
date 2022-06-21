@@ -130,7 +130,7 @@ INTEGRATION_READ_TESTS=integration_hdb_read_from_seed,integration_hdb_read_from_
 INTEGRATION_TESTS="$(INTEGRATION_INJECTION_TESTS),$(INTEGRATION_WRITE_TESTS),$(INTEGRATION_READ_TESTS)"
 
 test-flux:
-	$(GO_RUN) ./cmd/flux test -v --skip $(INTEGRATION_TESTS)
+	$(GO_RUN) ./cmd/flux test -v --parallel 8 --skip $(INTEGRATION_TESTS)
 
 test-flux-integration:
 	./etc/spawn-containers.sh

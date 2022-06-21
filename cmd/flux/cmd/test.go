@@ -66,6 +66,7 @@ type TestFlags struct {
 	testNames     []string
 	paths         []string
 	skipTestCases []string
+	parallel      bool
 	verbosity     int
 }
 
@@ -86,6 +87,7 @@ func TestCommand(setup TestSetupFunc) *cobra.Command {
 	testCommand.Flags().StringSliceVarP(&flags.paths, "path", "p", nil, "The root level directory for all packages.")
 	testCommand.Flags().StringSliceVar(&flags.testNames, "test", []string{}, "The name of a specific test to run.")
 	testCommand.Flags().StringSliceVar(&flags.skipTestCases, "skip", []string{}, "Comma-separated list of test cases to skip.")
+	testCommand.Flags().BoolVarP(&flags.parallel, "parallel", "", false, "Enables parallel test execution.")
 	testCommand.Flags().CountVarP(&flags.verbosity, "verbose", "v", "verbose (-v, -vv, or -vvv)")
 	return testCommand
 }
@@ -115,7 +117,11 @@ func runFluxTests(setup TestSetupFunc, flags TestFlags) error {
 	}
 	flags.skipTestCases = append(flags.skipTestCases, newSkips...)
 
-	runner.Run(executor, flags.verbosity, flags.skipTestCases)
+	if flags.parallel {
+		runner.RunParallel(executor, flags.verbosity, flags.skipTestCases)
+	} else {
+		runner.Run(executor, flags.verbosity, flags.skipTestCases)
+	}
 	return runner.Finish()
 }
 
@@ -599,7 +605,7 @@ func (h *IntHeap) Pop() interface{} {
 }
 
 // Run runs all tests, reporting their results.
-func (t *TestRunner) Run(executor TestExecutor, verbosity int, skipTestCases []string) {
+func (t *TestRunner) RunParallel(executor TestExecutor, verbosity int, skipTestCases []string) {
 	skipMap := make(map[string]struct{})
 	for _, n := range skipTestCases {
 		skipMap[n] = struct{}{}
@@ -648,6 +654,21 @@ func (t *TestRunner) Run(executor TestExecutor, verbosity int, skipTestCases []s
 				break
 			}
 		}
+	}
+}
+
+func (t *TestRunner) Run(executor TestExecutor, verbosity int, skipTestCases []string) {
+	skipMap := make(map[string]struct{})
+	for _, n := range skipTestCases {
+		skipMap[n] = struct{}{}
+	}
+	for _, test := range t.tests {
+		if _, ok := skipMap[test.name]; ok {
+			test.skip = true
+		} else {
+			test.Run(executor)
+		}
+		t.reporter.ReportTestRun(test)
 	}
 }
 
