@@ -409,7 +409,7 @@ mod tests {
     use crate::{
         ast,
         parser::{self, parse_string},
-        semantic::{convert::convert_polytype, sub::Substitution},
+        semantic::convert::convert_polytype,
     };
 
     #[test]
@@ -444,7 +444,7 @@ mod tests {
             if let Err(err) = ast::check::check(ast::walk::Node::TypeExpression(&typ_expr)) {
                 panic!("TypeExpression parsing failed for int. {:?}", err);
             }
-            convert_polytype(&typ_expr, &mut Substitution::default())?
+            convert_polytype(&typ_expr)?
         })])
         .unwrap();
         if want != types {
@@ -464,7 +464,7 @@ mod tests {
                         "TypeExpression parsing failed for int. {:?}", err
                     );
                 }
-                convert_polytype(&typ_expr, &mut Substitution::default())?
+                convert_polytype(&typ_expr, )?
             },
             String::from("b") => {
                 let mut p = parser::Parser::new("{x: int , y: int}");
@@ -474,7 +474,7 @@ mod tests {
                         "TypeExpression parsing failed for int. {:?}", err
                     );
                 }
-                convert_polytype(&typ_expr, &mut Substitution::default())?
+                convert_polytype(&typ_expr,  )?
             },
         };
         if want

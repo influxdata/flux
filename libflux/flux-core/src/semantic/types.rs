@@ -4,7 +4,7 @@ use std::{
     borrow::Cow,
     cmp,
     collections::{BTreeMap, BTreeSet},
-    fmt,
+    fmt::{self, Write as _},
     hash::Hash,
     str::FromStr,
 };
@@ -1107,6 +1107,7 @@ impl MonoType {
 /// A type variable holds an unknown type, before type inference.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize)]
 pub struct Tvar(pub u64); // TODO u32 to match ena?
+                          //
 
 impl ena::unify::UnifyKey for Tvar {
     type Value = Option<MonoType>;
@@ -1136,19 +1137,12 @@ pub type SubstitutionMap = SemanticMap<Tvar, MonoType>;
 
 impl fmt::Display for Tvar {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self.0 {
-            0 => write!(f, "A"),
-            1 => write!(f, "B"),
-            2 => write!(f, "C"),
-            3 => write!(f, "D"),
-            4 => write!(f, "E"),
-            5 => write!(f, "F"),
-            6 => write!(f, "G"),
-            7 => write!(f, "H"),
-            8 => write!(f, "I"),
-            9 => write!(f, "J"),
-            _ => write!(f, "t{}", self.0),
+        if self.0 <= ('Z' as u64 - 'A' as u64) {
+            if let Some(c) = char::from_u32('A' as u32 + self.0 as u32) {
+                return f.write_char(c);
+            }
         }
+        write!(f, "t{}", self.0)
     }
 }
 
@@ -2299,21 +2293,17 @@ mod tests {
         if let Err(err) = ast::check::check(ast::walk::Node::TypeExpression(&typ_expr)) {
             panic!("TypeExpression parsing failed for {}. {:?}", typ, err);
         }
-        convert_polytype(&typ_expr, &mut Substitution::default()).unwrap()
+        convert_polytype(&typ_expr).unwrap()
     }
 
-    fn parse_type(
-        expr: &str,
-        tvars: &mut BTreeMap<String, Tvar>,
-        sub: &mut Substitution,
-    ) -> MonoType {
+    fn parse_type(expr: &str, tvars: &mut BTreeMap<String, Tvar>) -> MonoType {
         let mut p = parser::Parser::new(expr);
 
         let typ_expr = p.parse_type_expression();
         if let Err(err) = ast::check::check(ast::walk::Node::TypeExpression(&typ_expr)) {
             panic!("TypeExpression parsing failed. {:?}", err);
         }
-        convert_monotype(&typ_expr.monotype, tvars, sub).unwrap()
+        convert_monotype(&typ_expr.monotype, tvars).unwrap()
     }
 
     #[test]
@@ -2391,7 +2381,9 @@ mod tests {
     }
     #[test]
     fn display_type_tvar() {
-        assert_eq!("t10", MonoType::BoundVar(Tvar(10)).to_string());
+        assert_eq!("K", MonoType::BoundVar(Tvar(10)).to_string());
+        assert_eq!("Z", MonoType::BoundVar(Tvar(25)).to_string());
+        assert_eq!("t26", MonoType::BoundVar(Tvar(26)).to_string());
     }
     #[test]
     fn display_type_array() {
@@ -3178,8 +3170,8 @@ mod tests {
         ($expected: expr, $actual: expr $(,)?) => {{
             let mut sub = Substitution::default();
             let mut tvars = BTreeMap::new();
-            parse_type($expected, &mut tvars, &mut sub)
-                .try_unify(&parse_type($actual, &mut tvars, &mut sub), &mut sub)
+            parse_type($expected, &mut tvars)
+                .try_unify(&parse_type($actual, &mut tvars), &mut sub)
                 .unwrap_or_else(|err| panic!("{}", err));
         }};
     }
@@ -3188,8 +3180,8 @@ mod tests {
         ($expected: expr, $actual: expr $(, $pat: pat)? $(,)?) => {{
             let mut sub = Substitution::default();
             let mut tvars = BTreeMap::new();
-            let result = parse_type($expected, &mut tvars, &mut sub).try_unify(
-                &parse_type($actual, &mut tvars, &mut sub),
+            let result = parse_type($expected, &mut tvars).try_unify(
+                &parse_type($actual, &mut tvars),
                 &mut sub,
             );
             match result {

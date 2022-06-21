@@ -603,7 +603,7 @@ impl<'env, I: import::Importer> Analyzer<'env, I> {
         }
 
         let (mut sem_pkg, package_info) = {
-            let mut converter = convert::Converter::with_env(sub, &self.env);
+            let mut converter = convert::Converter::with_env(&self.env);
             let sem_pkg = converter.convert_package(ast_pkg);
 
             let package_info = converter.take_package_info();
