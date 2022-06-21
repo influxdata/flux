@@ -33,10 +33,10 @@ testcase sort_limit {
 }
 
 testcase sort_limit_divergent_schemas {
-        got =
-            csv.from(
-                csv:
-                    "
+    got =
+        csv.from(
+            csv:
+                "
 #datatype,string,long,dateTime:RFC3339,double,long
 #group,false,false,false,false,true
 #default,_result,,,,
@@ -57,15 +57,15 @@ testcase sort_limit_divergent_schemas {
 ,result,table,_time,_value,t2
 ,,2,2022-01-11T00:00:00Z,8.0,2
 ",
-            )
-                |> group()
-                |> sort()
-                |> limit(n: 3)
+        )
+            |> group()
+            |> sort()
+            |> limit(n: 3)
 
-        want =
-            csv.from(
-                csv:
-                    "
+    want =
+        csv.from(
+            csv:
+                "
 #datatype,string,long,dateTime:RFC3339,double,long,long,long
 #group,false,false,false,false,false,false,false
 #default,_result,,,,,,
@@ -74,16 +74,16 @@ testcase sort_limit_divergent_schemas {
 ,,0,2022-01-11T00:00:00Z,8.0,,,2
 ,,0,2022-01-11T00:00:00Z,10.0,0,,
 ",
-            )
+        )
 
-        testing.diff(got: got, want: want)
-    }
+    testing.diff(got: got, want: want)
+}
 
 testcase sort_limit_unordered_columns {
-        got =
-            csv.from(
-                csv:
-                    "
+    got =
+        csv.from(
+            csv:
+                "
 #datatype,string,long,dateTime:RFC3339,double,string
 #group,false,false,false,false,true
 #default,_result,,,,
@@ -104,15 +104,15 @@ testcase sort_limit_unordered_columns {
 ,result,table,t0,_value,_time
 ,,2,c,8.0,2022-01-11T00:00:00Z
 ",
-            )
-                |> group()
-                |> sort()
-                |> limit(n: 3)
+        )
+            |> group()
+            |> sort()
+            |> limit(n: 3)
 
-        want =
-            csv.from(
-                csv:
-                    "
+    want =
+        csv.from(
+            csv:
+                "
 #datatype,string,long,dateTime:RFC3339,double,string
 #group,false,false,false,false,false
 #default,_result,,,,
@@ -121,10 +121,10 @@ testcase sort_limit_unordered_columns {
 ,,0,2022-01-11T00:00:00Z,8.0,c
 ,,0,2022-01-11T00:00:00Z,10.0,a
 ",
-            )
+        )
 
-        testing.diff(got: got, want: want)
-    }
+    testing.diff(got: got, want: want)
+}
 
 testcase sort_limit_zero_row_table {
     input =

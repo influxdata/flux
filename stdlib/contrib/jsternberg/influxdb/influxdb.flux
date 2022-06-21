@@ -79,13 +79,13 @@ builtin _mask : (<-tables: stream[A], columns: [string]) => stream[B] where A: R
 // ## Metadata
 // tags: inputs
 from = (
-    bucket,
-    start,
-    stop=now(),
-    org="",
-    host="",
-    token="",
-) =>
+        bucket,
+        start,
+        stop=now(),
+        org="",
+        host="",
+        token="",
+    ) =>
     {
         source =
             if org != "" and host != "" and token != "" then
@@ -211,16 +211,16 @@ _from = from
 // tags: inputs
 //
 select = (
-    from,
-    start,
-    stop=now(),
-    m,
-    fields=[],
-    org="",
-    host="",
-    token="",
-    where=(r) => true,
-) =>
+        from,
+        start,
+        stop=now(),
+        m,
+        fields=[],
+        org="",
+        host="",
+        token="",
+        where=(r) => true,
+    ) =>
     {
         bucket = from
         tables =

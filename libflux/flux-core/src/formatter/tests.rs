@@ -745,10 +745,10 @@ fn comments2() {
 
     assert_unchanged(
         r"fn = (a) =>
-    //comment
-    {
-        return a
-    }",
+//comment
+{
+    return a
+}",
     );
     // Comments around braces needs some work.
     assert_unchanged(
@@ -894,7 +894,40 @@ testcase x
 testcase x {
     x = 1
 }"#,
-    )
+    );
+}
+
+#[test]
+fn testcase_indentation() {
+    assert_unchanged(
+        r#"testcase basic {
+    inData =
+        "
+#datatype,string,long,dateTime:RFC3339,long,string,string,string
+#group,false,false,false,false,true,true,true
+#default,_result,,,,,,
+,result,table,_time,_value,_field,_measurement,host
+,,0,2018-05-22T19:53:26Z,100,load1,system,host.local
+"
+    outData =
+        "
+#datatype,string,long,double
+#group,false,false,false
+#default,_result,,
+,result,table,newValue
+,,0,100.0
+"
+
+    got =
+        csv.from(csv: inData)
+            |> testing.load()
+            |> range(start: 2018-05-22T19:53:26Z)
+            |> map(fn: (r) => ({newValue: float(v: r._value)}))
+    want = csv.from(csv: outData)
+
+    testing.diff(want: want, got: got) |> yield()
+}"#,
+    );
 }
 
 #[test]
@@ -1069,30 +1102,43 @@ fn preserve_multiline_test() {
 
     assert_unchanged(
         r#"event = (
-    url,
-    username,
-    password,
-    action="EventsRouter",
-    methods="add_event",
-    type="rpc",
-    tid=1,
-    summary="",
-    device="",
-    component="",
-    severity,
-    eventClass="",
-    eventClassKey="",
-    collector="",
-    message="",
-) =>
+        url,
+        username,
+        password,
+        action="EventsRouter",
+        methods="add_event",
+        type="rpc",
+        tid=1,
+        summary="",
+        device="",
+        component="",
+        severity,
+        eventClass="",
+        eventClassKey="",
+        collector="",
+        message="",
+    ) =>
     {
         body = json.encode(v: payload)
 
         return http.post(headers: headers, url: url, data: body)
     }"#,
     );
+
+    //Checks that a method with <= 4 params does not get reformatted
+    assert_unchanged(
+        r#"event = (url, message="") => {
+    body = json.encode(v: payload)
+
+    return http.post(headers: headers, url: url, data: body)
+}"#,
+    );
+}
+
+#[test]
+fn preserve_multiline_test_2() {
     //Checks that a method with >4 params gets expanded correctly
-    assert_format(
+    expect_format(
         r#"selectWindow = (column="_value", fn, as, every, defaultValue, tables=<-) => {
     _column = column
     _as = as
@@ -1101,14 +1147,14 @@ fn preserve_multiline_test() {
         |> aggregateWindow(every: every, fn: fn, column: _column, createEmpty: true)
         |> fill(column: _column, value: defaultValue)
         |> rename(fn: (column) => if column == _column then _as else column)}"#,
-        r#"selectWindow = (
-    column="_value",
-    fn,
-    as,
-    every,
-    defaultValue,
-    tables=<-,
-) =>
+        expect![[r#"selectWindow = (
+        column="_value",
+        fn,
+        as,
+        every,
+        defaultValue,
+        tables=<-,
+    ) =>
     {
         _column = column
         _as = as
@@ -1118,15 +1164,7 @@ fn preserve_multiline_test() {
                 |> aggregateWindow(every: every, fn: fn, column: _column, createEmpty: true)
                 |> fill(column: _column, value: defaultValue)
                 |> rename(fn: (column) => if column == _column then _as else column)
-    }"#,
-    );
-    //Checks that a method with <= 4 params does not get reformatted
-    assert_unchanged(
-        r#"event = (url, message="") => {
-    body = json.encode(v: payload)
-
-    return http.post(headers: headers, url: url, data: body)
-}"#,
+    }"#]],
     );
 }
 

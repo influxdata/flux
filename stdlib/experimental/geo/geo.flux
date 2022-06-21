@@ -663,14 +663,14 @@ shapeData = (tables=<-, latField, lonField, level) =>
 // tags: transformations,filters,geotemporal
 //
 gridFilter = (
-    tables=<-,
-    region,
-    minSize=24,
-    maxSize=-1,
-    level=-1,
-    s2cellIDLevel=-1,
-    units=units,
-) =>
+        tables=<-,
+        region,
+        minSize=24,
+        maxSize=-1,
+        level=-1,
+        s2cellIDLevel=-1,
+        units=units,
+    ) =>
     {
         _s2cellIDLevel =
             if s2cellIDLevel == -1 then
@@ -822,14 +822,14 @@ strictFilter = (tables=<-, region) =>
 // tags: transformations,filters,geotemporal
 //
 filterRows = (
-    tables=<-,
-    region,
-    minSize=24,
-    maxSize=-1,
-    level=-1,
-    s2cellIDLevel=-1,
-    strict=true,
-) =>
+        tables=<-,
+        region,
+        minSize=24,
+        maxSize=-1,
+        level=-1,
+        s2cellIDLevel=-1,
+        strict=true,
+    ) =>
     {
         _columns =
             tables

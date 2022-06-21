@@ -86,14 +86,14 @@ option defaultSilent = true
 // tags: single notification
 //
 message = (
-    url=defaultURL,
-    token,
-    channel,
-    text,
-    parseMode=defaultParseMode,
-    disableWebPagePreview=defaultDisableWebPagePreview,
-    silent=defaultSilent,
-) =>
+        url=defaultURL,
+        token,
+        channel,
+        text,
+        parseMode=defaultParseMode,
+        disableWebPagePreview=defaultDisableWebPagePreview,
+        silent=defaultSilent,
+    ) =>
     {
         data = {
             chat_id: channel,

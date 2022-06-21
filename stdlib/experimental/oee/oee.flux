@@ -92,12 +92,12 @@ import "experimental"
 // tags: transformations,aggregates
 //
 computeAPQ = (
-    productionEvents,
-    partEvents,
-    runningState,
-    plannedTime,
-    idealCycleTime,
-) =>
+        productionEvents,
+        partEvents,
+        runningState,
+        plannedTime,
+        idealCycleTime,
+    ) =>
     {
         availability =
             productionEvents

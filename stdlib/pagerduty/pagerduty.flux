@@ -193,21 +193,21 @@ actionFromLevel = (level) => if strings.toLower(v: level) == "ok" then "resolve"
 // tags: single notification
 //
 sendEvent = (
-    pagerdutyURL=defaultURL,
-    routingKey,
-    client,
-    clientURL,
-    dedupKey,
-    class,
-    group,
-    severity,
-    eventAction,
-    source,
-    component="",
-    summary,
-    timestamp,
-    customDetails=record.any,
-) =>
+        pagerdutyURL=defaultURL,
+        routingKey,
+        client,
+        clientURL,
+        dedupKey,
+        class,
+        group,
+        severity,
+        eventAction,
+        source,
+        component="",
+        summary,
+        timestamp,
+        customDetails=record.any,
+    ) =>
     {
         payload = {
             summary: summary,

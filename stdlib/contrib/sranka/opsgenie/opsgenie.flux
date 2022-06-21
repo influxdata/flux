@@ -74,19 +74,19 @@ builtin respondersToJSON : (v: [string]) => string
 // ## Metadata
 // tags: single notification
 sendAlert = (
-    url="https://api.opsgenie.com/v2/alerts",
-    apiKey,
-    message,
-    alias="",
-    description="",
-    priority="P3",
-    responders=[],
-    tags=[],
-    entity="",
-    actions=[],
-    visibleTo=[],
-    details="{}",
-) =>
+        url="https://api.opsgenie.com/v2/alerts",
+        apiKey,
+        message,
+        alias="",
+        description="",
+        priority="P3",
+        responders=[],
+        tags=[],
+        entity="",
+        actions=[],
+        visibleTo=[],
+        details="{}",
+    ) =>
     {
         headers = {"Content-Type": "application/json; charset=utf-8", "Authorization": "GenieKey " + apiKey}
         cutEncode = (v, max, defV="") => {

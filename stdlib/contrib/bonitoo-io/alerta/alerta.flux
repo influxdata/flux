@@ -72,22 +72,22 @@ import "strings"
 // tags: single notification
 //
 alert = (
-    url,
-    apiKey,
-    resource,
-    event,
-    environment="",
-    severity,
-    service=[],
-    group="",
-    value="",
-    text="",
-    tags=[],
-    attributes,
-    origin="InfluxDB",
-    type="",
-    timestamp=now(),
-) =>
+        url,
+        apiKey,
+        resource,
+        event,
+        environment="",
+        severity,
+        service=[],
+        group="",
+        value="",
+        text="",
+        tags=[],
+        attributes,
+        origin="InfluxDB",
+        type="",
+        timestamp=now(),
+    ) =>
     {
         alert = {
             resource: resource,

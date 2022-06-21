@@ -105,16 +105,16 @@ builtin toSensuName : (v: string) => string
 // tags: single notification
 //
 event = (
-    url,
-    apiKey,
-    checkName,
-    text,
-    handlers=[],
-    status=0,
-    state="",
-    namespace="default",
-    entityName="influxdb",
-) =>
+        url,
+        apiKey,
+        checkName,
+        text,
+        handlers=[],
+        status=0,
+        state="",
+        namespace="default",
+        entityName="influxdb",
+    ) =>
     {
         data = {
             entity: {entity_class: "proxy", metadata: {name: toSensuName(v: entityName)}},

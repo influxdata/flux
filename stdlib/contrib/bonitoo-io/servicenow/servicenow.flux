@@ -79,19 +79,19 @@ import "json"
 // ## Metadata
 // tags: single notification
 event = (
-    url,
-    username,
-    password,
-    source="Flux",
-    node="",
-    metricType="",
-    resource="",
-    metricName="",
-    messageKey="",
-    description,
-    severity,
-    additionalInfo=record.any,
-) =>
+        url,
+        username,
+        password,
+        source="Flux",
+        node="",
+        metricType="",
+        resource="",
+        metricName="",
+        messageKey="",
+        description,
+        severity,
+        additionalInfo=record.any,
+    ) =>
     {
         event = {
             source: source,

@@ -238,10 +238,10 @@ testcase count_with_nulls {
     testing.diff(got, want) |> yield()
 }
 testcase min_with_nulls {
-        want =
-            csv.from(
-                csv:
-                    "#datatype,string,long,dateTime:RFC3339,string,string,string,double
+    want =
+        csv.from(
+            csv:
+                "#datatype,string,long,dateTime:RFC3339,string,string,string,double
 #group,false,false,false,true,true,true,false
 #default,_result,,,,,,
 ,result,table,_time,_measurement,_field,t0,_value
@@ -264,16 +264,16 @@ testcase min_with_nulls {
 ,,2,2019-11-25T00:00:50Z,m0,f0,a-2,4.0
 ,,2,2019-11-25T00:01:00Z,m0,f0,a-2,
 ",
-            )
-        got = do_test(every: 10s, fn: min)
+        )
+    got = do_test(every: 10s, fn: min)
 
-        testing.diff(got, want) |> yield()
-    }
+    testing.diff(got, want) |> yield()
+}
 testcase max_with_nulls {
-        want =
-            csv.from(
-                csv:
-                    "#datatype,string,long,dateTime:RFC3339,string,string,string,double
+    want =
+        csv.from(
+            csv:
+                "#datatype,string,long,dateTime:RFC3339,string,string,string,double
 #group,false,false,false,true,true,true,false
 #default,_result,,,,,,
 ,result,table,_time,_measurement,_field,t0,_value
@@ -296,8 +296,8 @@ testcase max_with_nulls {
 ,,2,2019-11-25T00:00:50Z,m0,f0,a-2,4.0
 ,,2,2019-11-25T00:01:00Z,m0,f0,a-2,
 ",
-            )
-        got = do_test(every: 10s, fn: max)
+        )
+    got = do_test(every: 10s, fn: max)
 
-        testing.diff(got, want) |> yield()
-    }
+    testing.diff(got, want) |> yield()
+}

@@ -104,10 +104,10 @@ loadData = () =>
         |> range(start: 2021-04-13T09:00:00Z, stop: 2021-04-13T10:00:00Z)
 
 testcase window {
-        want =
-            csv.from(
-                csv:
-                    "
+    want =
+        csv.from(
+            csv:
+                "
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,double,string
 #group,false,false,true,true,false,true,true,false,true
 #default,_result,,,,,,,,
@@ -127,14 +127,14 @@ testcase window {
 ,,6,2021-04-13T09:30:00Z,2021-04-13T09:45:00Z,2021-04-13T09:40:00Z,m0,f0,8.0,b
 ,,7,2021-04-13T09:45:00Z,2021-04-13T10:00:00Z,,m0,f0,,b
 ",
-            )
-        got =
-            loadData()
-                |> window(every: 15m, createEmpty: true)
-                |> table.fill()
+        )
+    got =
+        loadData()
+            |> window(every: 15m, createEmpty: true)
+            |> table.fill()
 
-        testing.diff(got, want) |> yield()
-    }
+    testing.diff(got, want) |> yield()
+}
 testcase selector_fill {
     want =
         array.from(
@@ -282,10 +282,10 @@ testcase idempotent_planner_rule {
 }
 
 testcase fill_unknown_column {
-        want =
-            csv.from(
-                csv:
-                    "
+    want =
+        csv.from(
+            csv:
+                "
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,double,string
 #group,false,false,true,true,false,true,true,false,true
 #default,_result,,,,,,,,
@@ -303,11 +303,11 @@ testcase fill_unknown_column {
 ,,5,2021-04-13T09:30:00Z,2021-04-13T09:45:00Z,2021-04-13T09:35:00Z,m0,f0,6.0,b
 ,,5,2021-04-13T09:30:00Z,2021-04-13T09:45:00Z,2021-04-13T09:40:00Z,m0,f0,8.0,b
 ",
-            )
-        got =
-            loadData()
-                |> window(every: 15m)
-                |> fill(column: "nonexistent", usePrevious: true)
+        )
+    got =
+        loadData()
+            |> window(every: 15m)
+            |> fill(column: "nonexistent", usePrevious: true)
 
-        testing.diff(got, want) |> yield()
-    }
+    testing.diff(got, want) |> yield()
+}

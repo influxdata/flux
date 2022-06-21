@@ -101,17 +101,17 @@ defineCheck = (id, name, type="custom") => {
 // ## Metadata
 // tags: transformations,outputs
 alert = (
-    check,
-    id=(r) => "${r._check_id}",
-    details=(r) => "",
-    message=(r) => "Threshold Check: ${r._check_name} is: ${r._level}",
-    crit=(r) => false,
-    warn=(r) => false,
-    info=(r) => false,
-    ok=(r) => true,
-    topic="",
-    tables=<-,
-) =>
+        check,
+        id=(r) => "${r._check_id}",
+        details=(r) => "",
+        message=(r) => "Threshold Check: ${r._check_name} is: ${r._level}",
+        crit=(r) => false,
+        warn=(r) => false,
+        info=(r) => false,
+        ok=(r) => true,
+        topic="",
+        tables=<-,
+    ) =>
     {
         _addTopic =
             if topic != "" then
@@ -185,14 +185,14 @@ alert = (
 //
 deadman =
     (
-        check,
-        measurement,
-        threshold=0,
-        id=(r) => "${r._check_id}",
-        message=(r) => "Deadman Check: ${r._check_name} is: " + (if r.dead then "dead" else "alive"),
-        topic="",
-        tables=<-,
-    ) =>
+            check,
+            measurement,
+            threshold=0,
+            id=(r) => "${r._check_id}",
+            message=(r) => "Deadman Check: ${r._check_name} is: " + (if r.dead then "dead" else "alive"),
+            topic="",
+            tables=<-,
+        ) =>
         {
             // In order to detect empty stream (without tables), we concatenate input with dummy stream and count the result,
             // because count() returns nothing for empty stream. If the input stream is empty, then dummy stream with empty
@@ -354,13 +354,13 @@ select = (column="_value", fn=(column, tables=<-) => tables, as, tables=<-) => {
 // ## Metadata
 // tags: transformations
 selectWindow = (
-    column="_value",
-    fn,
-    as,
-    every,
-    defaultValue,
-    tables=<-,
-) =>
+        column="_value",
+        fn,
+        as,
+        every,
+        defaultValue,
+        tables=<-,
+    ) =>
     {
         _column = column
         _as = as

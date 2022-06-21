@@ -11,10 +11,10 @@ t_distinct = (table=<-) =>
         |> drop(columns: ["_start", "_stop"])
 
 testcase normal {
-        got =
-            csv.from(
-                csv:
-                    "
+    got =
+        csv.from(
+            csv:
+                "
 #datatype,string,long,dateTime:RFC3339,long,string,string,string,string
 #group,false,false,false,false,true,true,true,true
 #default,_result,,,,,,,
@@ -32,13 +32,13 @@ testcase normal {
 ,,1,2018-05-22T19:54:06Z,648,io_time,diskio,host.local,disk2
 ,,1,2018-05-22T19:54:16Z,648,io_time,diskio,host.local,disk2
 ",
-            )
-                |> t_distinct()
+        )
+            |> t_distinct()
 
-        want =
-            csv.from(
-                csv:
-                    "
+    want =
+        csv.from(
+            csv:
+                "
 #datatype,string,long,string,string,string,string,long
 #group,false,false,true,true,true,true,false
 #default,0,,,,,,
@@ -51,16 +51,16 @@ testcase normal {
 ,,0,io_time,diskio,host.local,disk0,15205755
 ,,1,io_time,diskio,host.local,disk2,648
 ",
-            )
+        )
 
-        testing.diff(got, want) |> yield()
-    }
+    testing.diff(got, want) |> yield()
+}
 
 testcase nulls {
-        got =
-            csv.from(
-                csv:
-                    "
+    got =
+        csv.from(
+            csv:
+                "
 #datatype,string,long,dateTime:RFC3339,long,string,string,string,string
 #group,false,false,false,false,true,true,true,true
 #default,_result,,,,,,,
@@ -78,13 +78,13 @@ testcase nulls {
 ,,1,2018-05-22T19:54:06Z,648,io_time,diskio,host.local,disk2
 ,,1,2018-05-22T19:54:16Z,,io_time,diskio,host.local,disk2
 ",
-            )
-                |> t_distinct()
+        )
+            |> t_distinct()
 
-        want =
-            csv.from(
-                csv:
-                    "
+    want =
+        csv.from(
+            csv:
+                "
 #datatype,string,long,string,string,string,string,long
 #group,false,false,true,true,true,true,false
 #default,0,,,,,,
@@ -98,7 +98,7 @@ testcase nulls {
 ,,1,io_time,diskio,host.local,disk2,648
 ,,1,io_time,diskio,host.local,disk2,
 ",
-            )
+        )
 
-        testing.diff(got, want) |> yield()
-    }
+    testing.diff(got, want) |> yield()
+}
