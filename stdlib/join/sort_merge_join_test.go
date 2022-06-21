@@ -2,9 +2,11 @@ package join_test
 
 import (
 	"context"
+	"fmt"
 	"testing"
 	"time"
 
+	"github.com/google/go-cmp/cmp"
 	_ "github.com/influxdata/flux/fluxinit/static"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/plan/plantest"
@@ -39,10 +41,14 @@ func TestSortMergeJoinPredicateRule(t *testing.T) {
 				Nodes: []plan.Node{
 					plan.CreateLogicalNode("from0", &influxdb.FromProcedureSpec{}),
 					plan.CreateLogicalNode("filter1", &universe.FilterProcedureSpec{}),
-					plan.CreateLogicalNode("sort2", &universe.SortProcedureSpec{}),
+					plan.CreateLogicalNode("sort2", &universe.SortProcedureSpec{
+						Columns: []string{"a"},
+					}),
 					plan.CreateLogicalNode("from3", &influxdb.FromProcedureSpec{}),
 					plan.CreateLogicalNode("filter4", &universe.FilterProcedureSpec{}),
-					plan.CreateLogicalNode("sort5", &universe.SortProcedureSpec{}),
+					plan.CreateLogicalNode("sort5", &universe.SortProcedureSpec{
+						Columns: []string{"b"},
+					}),
 					plan.CreateLogicalNode("join.tables6", &join.SortMergeJoinProcedureSpec{}),
 				},
 				Edges: [][2]int{
@@ -98,6 +104,30 @@ func TestSortMergeJoinPredicateRule(t *testing.T) {
 
 			wantPlan := plantest.CreatePlanSpec(tc.wantPlan)
 			if err := plantest.ComparePlansShallow(wantPlan, physicalPlan); err != nil {
+				t.Error(err)
+			}
+			getSortSpec := func(p plan.Node) *universe.SortProcedureSpec {
+				if s, ok := p.ProcedureSpec().(*universe.SortProcedureSpec); ok {
+					return s
+				}
+				return nil
+			}
+			// compare the sort nodes created by the planner rule
+			err = plantest.ComparePlans(wantPlan, physicalPlan, func(p, q plan.Node) error {
+				ps, qs := getSortSpec(p), getSortSpec(q)
+				if (ps == nil)  && (qs == nil) {
+					return nil
+				}
+				if (ps == nil) || (qs == nil) {
+					t.Fatal(fmt.Sprintf("wanted a node of type %T but got a node of type %T", p.ProcedureSpec(), q.ProcedureSpec()))
+				}
+
+				if diff := cmp.Diff(ps, qs); diff != "" {
+					t.Fatal(fmt.Sprintf("unexpected sort node (-want/+got):\n%v", diff))
+				}
+				return nil
+			})
+			if err != nil {
 				t.Error(err)
 			}
 		})

@@ -72,7 +72,7 @@ func (SortMergeJoinPredicateRule) Rewrite(ctx context.Context, n plan.Node) (pla
 
 	successors := predecessors[0].Successors()
 
-	columns := make([]string, len(spec.On))
+	columns := make([]string, 0, len(spec.On))
 	for _, pair := range spec.On {
 		columns = append(columns, pair.Left)
 	}
@@ -80,7 +80,7 @@ func (SortMergeJoinPredicateRule) Rewrite(ctx context.Context, n plan.Node) (pla
 
 	successors = predecessors[1].Successors()
 
-	columns = make([]string, len(spec.On))
+	columns = make([]string, 0, len(spec.On))
 	for _, pair := range spec.On {
 		columns = append(columns, pair.Right)
 	}
@@ -88,7 +88,9 @@ func (SortMergeJoinPredicateRule) Rewrite(ctx context.Context, n plan.Node) (pla
 
 	// Replace the spec so we don't end up trying to apply this rewrite forever
 	x := SortMergeJoinProcedureSpec(*spec)
-	n.ReplaceSpec(&x)
+	if err := n.ReplaceSpec(&x); err != nil {
+		return n, false, err
+	}
 
 	return n, true, nil
 }
