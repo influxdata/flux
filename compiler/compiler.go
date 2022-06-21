@@ -700,6 +700,15 @@ func compile(n semantic.Node, subst semantic.Substitutor) (Evaluator, error) {
 		if err != nil {
 			return nil, err
 		}
+		// Rewrite of "fake function" to vectorize constants.
+		if c, ok := n.Callee.(*semantic.IdentifierExpression); ok && c.Name.LocalName == "~~vecRepeat~~" {
+			v := args.(*objEvaluator).properties["v"]
+			return &constVectorEvaluator{
+				t: semantic.NewVectorType(v.Type()),
+				v: v,
+			}, nil
+		}
+
 		if n.Pipe != nil {
 			pipeArg, err := n.Callee.TypeOf().PipeArgument()
 			if err != nil {

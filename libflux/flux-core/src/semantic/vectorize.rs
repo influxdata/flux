@@ -1,5 +1,7 @@
 use std::collections::HashMap;
 
+use crate::ast::SourceLocation;
+use crate::semantic::nodes::{CallExpr, Identifier};
 use crate::{
     errors::{located, Errors},
     semantic::{
@@ -11,6 +13,10 @@ use crate::{
         AnalyzerConfig, Symbol,
     },
 };
+
+/// The name of a function used to signal to the runtime that the value in the
+/// `v` parameter should be rewritten as a "vector repeat" value.
+const VEC_REPEAT_FN: &'static str = "~~vecRepeat~~";
 
 /// Vectorizes a pkg
 pub fn vectorize(
@@ -87,6 +93,15 @@ impl Expression {
             Expression::Binary(binary) => {
                 let left = binary.left.vectorize(env)?;
                 let right = binary.right.vectorize(env)?;
+
+                if is_vec_repeat(&left) && is_vec_repeat(&right) {
+                    return Err(located(
+                        binary.loc.clone(),
+                        ErrorKind::UnableToVectorize(String::from(
+                            "Constant folding not supported",
+                        )),
+                    ));
+                }
                 Expression::Binary(Box::new(BinaryExpr {
                     loc: binary.loc.clone(),
                     typ: MonoType::vector(binary.typ.clone()),
@@ -106,6 +121,15 @@ impl Expression {
                     right,
                 }))
             }
+            expr @ Expression::Integer(_) => wrap_vec_repeat(expr.clone()),
+            // FIXME: Leaving out the more exotic literals for now...
+            // expr @ Expression::DateTime(_) => wrap_vec_repeat(expr.clone()),
+            // FIXME: Leaving out the more exotic literals for now...
+            // expr @ Expression::Duration(_) => wrap_vec_repeat(expr.clone()),
+            expr @ Expression::Float(_) => wrap_vec_repeat(expr.clone()),
+            expr @ Expression::StringLit(_) => wrap_vec_repeat(expr.clone()),
+            // XXX: Uint can't be written as a literal today. Probably can't hit this arm yet.
+            // expr @ Expression::Uint(_) => wrap_vec_repeat(expr.clone()),
             _ => {
                 return Err(located(
                     self.loc().clone(),
@@ -113,6 +137,44 @@ impl Expression {
                 ));
             }
         })
+    }
+}
+
+fn wrap_vec_repeat(expr: Expression) -> Expression {
+    // The call expression is just a way to trigger a rewrite in Go during evaluation.
+    // The only details that matter are the parameter `v` (the original expression) and
+    // the name of the function.
+    let typ = expr.type_of();
+    let call = CallExpr {
+        loc: expr.loc().clone(),
+        typ: MonoType::vector(typ.clone()),
+        pipe: None,
+        callee: Expression::Identifier(IdentifierExpr {
+            loc: SourceLocation::default(),
+            typ,
+            name: Symbol::from(VEC_REPEAT_FN),
+        }),
+        arguments: vec![Property {
+            loc: SourceLocation::default(),
+            key: Identifier {
+                loc: SourceLocation::default(),
+                name: Symbol::from("v"),
+            },
+            value: expr.clone(),
+        }],
+    };
+    Expression::Call(Box::new(call))
+}
+
+fn is_vec_repeat(expr: &Expression) -> bool {
+    match expr {
+        Expression::Call(call_expr) => match call_expr.callee {
+            Expression::Identifier(IdentifierExpr { ref name, .. }) => {
+                return name == &Symbol::from(VEC_REPEAT_FN);
+            }
+            _ => false,
+        },
+        _ => false,
     }
 }
 
@@ -178,7 +240,7 @@ impl FunctionExpr {
                     return Err(located(
                         self.body.loc().clone(),
                         ErrorKind::UnableToVectorize("Unable to vectorize statements".into()),
-                    ))
+                    ));
                 }
                 // XXX: sean (January 14 2022) - The only type of function expression
                 // currently supported for vectorization is one whose body contains only
@@ -226,7 +288,7 @@ impl FunctionExpr {
                                 ErrorKind::UnableToVectorize(
                                     "Vectorization only supports returning a record".into(),
                                 ),
-                            ))
+                            ));
                         }
                     };
                     Block::Return(ReturnStmt {

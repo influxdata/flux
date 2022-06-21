@@ -19,7 +19,32 @@ func vectorAdd(l, r Vector, mem memory.Allocator) (Value, error) {
 
 	case semantic.Int:
 
-		x, err := fluxarray.IntAdd(l.Arr().(*fluxarray.Int), r.Arr().(*fluxarray.Int), mem)
+		var lal, ral fluxarray.IntArrLike
+		vrCount := 0
+		if vecRepeat, ok := l.(*vectorRepeatValue); ok {
+			lal = vecRepeat.IntArrLike()
+			vrCount += 1
+		} else {
+			lal = l.Arr().(*fluxarray.Int)
+		}
+
+		if vecRepeat, ok := r.(*vectorRepeatValue); ok {
+			ral = vecRepeat.IntArrLike()
+			vrCount += 1
+		} else {
+			ral = r.Arr().(*fluxarray.Int)
+		}
+
+		// When we have 2 vec repeats, we're talking about constant folding which
+		// will lead to a panic in funcs like fluxarray.IntAdd
+		// N.b. Until const folding is implemented, the rust side should take
+		// steps to refuse to vectorize expressions that land us in this code path.
+		if vrCount == 2 {
+			// FIXME: perform the op directly on the 2 constants here and return a new vecRepeat
+			panic("TODO: const folding")
+		}
+
+		x, err := fluxarray.IntAdd(lal, ral, mem)
 		if err != nil {
 			return nil, err
 		}
@@ -28,7 +53,32 @@ func vectorAdd(l, r Vector, mem memory.Allocator) (Value, error) {
 
 	case semantic.UInt:
 
-		x, err := fluxarray.UintAdd(l.Arr().(*fluxarray.Uint), r.Arr().(*fluxarray.Uint), mem)
+		var lal, ral fluxarray.UintArrLike
+		vrCount := 0
+		if vecRepeat, ok := l.(*vectorRepeatValue); ok {
+			lal = vecRepeat.UintArrLike()
+			vrCount += 1
+		} else {
+			lal = l.Arr().(*fluxarray.Uint)
+		}
+
+		if vecRepeat, ok := r.(*vectorRepeatValue); ok {
+			ral = vecRepeat.UintArrLike()
+			vrCount += 1
+		} else {
+			ral = r.Arr().(*fluxarray.Uint)
+		}
+
+		// When we have 2 vec repeats, we're talking about constant folding which
+		// will lead to a panic in funcs like fluxarray.UintAdd
+		// N.b. Until const folding is implemented, the rust side should take
+		// steps to refuse to vectorize expressions that land us in this code path.
+		if vrCount == 2 {
+			// FIXME: perform the op directly on the 2 constants here and return a new vecRepeat
+			panic("TODO: const folding")
+		}
+
+		x, err := fluxarray.UintAdd(lal, ral, mem)
 		if err != nil {
 			return nil, err
 		}
@@ -37,7 +87,32 @@ func vectorAdd(l, r Vector, mem memory.Allocator) (Value, error) {
 
 	case semantic.Float:
 
-		x, err := fluxarray.FloatAdd(l.Arr().(*fluxarray.Float), r.Arr().(*fluxarray.Float), mem)
+		var lal, ral fluxarray.FloatArrLike
+		vrCount := 0
+		if vecRepeat, ok := l.(*vectorRepeatValue); ok {
+			lal = vecRepeat.FloatArrLike()
+			vrCount += 1
+		} else {
+			lal = l.Arr().(*fluxarray.Float)
+		}
+
+		if vecRepeat, ok := r.(*vectorRepeatValue); ok {
+			ral = vecRepeat.FloatArrLike()
+			vrCount += 1
+		} else {
+			ral = r.Arr().(*fluxarray.Float)
+		}
+
+		// When we have 2 vec repeats, we're talking about constant folding which
+		// will lead to a panic in funcs like fluxarray.FloatAdd
+		// N.b. Until const folding is implemented, the rust side should take
+		// steps to refuse to vectorize expressions that land us in this code path.
+		if vrCount == 2 {
+			// FIXME: perform the op directly on the 2 constants here and return a new vecRepeat
+			panic("TODO: const folding")
+		}
+
+		x, err := fluxarray.FloatAdd(lal, ral, mem)
 		if err != nil {
 			return nil, err
 		}
@@ -46,7 +121,32 @@ func vectorAdd(l, r Vector, mem memory.Allocator) (Value, error) {
 
 	case semantic.String:
 
-		x, err := fluxarray.StringAdd(l.Arr().(*fluxarray.String), r.Arr().(*fluxarray.String), mem)
+		var lal, ral fluxarray.StringArrLike
+		vrCount := 0
+		if vecRepeat, ok := l.(*vectorRepeatValue); ok {
+			lal = vecRepeat.StringArrLike()
+			vrCount += 1
+		} else {
+			lal = l.Arr().(*fluxarray.String)
+		}
+
+		if vecRepeat, ok := r.(*vectorRepeatValue); ok {
+			ral = vecRepeat.StringArrLike()
+			vrCount += 1
+		} else {
+			ral = r.Arr().(*fluxarray.String)
+		}
+
+		// When we have 2 vec repeats, we're talking about constant folding which
+		// will lead to a panic in funcs like fluxarray.StringAdd
+		// N.b. Until const folding is implemented, the rust side should take
+		// steps to refuse to vectorize expressions that land us in this code path.
+		if vrCount == 2 {
+			// FIXME: perform the op directly on the 2 constants here and return a new vecRepeat
+			panic("TODO: const folding")
+		}
+
+		x, err := fluxarray.StringAdd(lal, ral, mem)
 		if err != nil {
 			return nil, err
 		}
@@ -63,7 +163,32 @@ func vectorSub(l, r Vector, mem memory.Allocator) (Value, error) {
 
 	case semantic.Int:
 
-		x, err := fluxarray.IntSub(l.Arr().(*fluxarray.Int), r.Arr().(*fluxarray.Int), mem)
+		var lal, ral fluxarray.IntArrLike
+		vrCount := 0
+		if vecRepeat, ok := l.(*vectorRepeatValue); ok {
+			lal = vecRepeat.IntArrLike()
+			vrCount += 1
+		} else {
+			lal = l.Arr().(*fluxarray.Int)
+		}
+
+		if vecRepeat, ok := r.(*vectorRepeatValue); ok {
+			ral = vecRepeat.IntArrLike()
+			vrCount += 1
+		} else {
+			ral = r.Arr().(*fluxarray.Int)
+		}
+
+		// When we have 2 vec repeats, we're talking about constant folding which
+		// will lead to a panic in funcs like fluxarray.IntSub
+		// N.b. Until const folding is implemented, the rust side should take
+		// steps to refuse to vectorize expressions that land us in this code path.
+		if vrCount == 2 {
+			// FIXME: perform the op directly on the 2 constants here and return a new vecRepeat
+			panic("TODO: const folding")
+		}
+
+		x, err := fluxarray.IntSub(lal, ral, mem)
 		if err != nil {
 			return nil, err
 		}
@@ -72,7 +197,32 @@ func vectorSub(l, r Vector, mem memory.Allocator) (Value, error) {
 
 	case semantic.UInt:
 
-		x, err := fluxarray.UintSub(l.Arr().(*fluxarray.Uint), r.Arr().(*fluxarray.Uint), mem)
+		var lal, ral fluxarray.UintArrLike
+		vrCount := 0
+		if vecRepeat, ok := l.(*vectorRepeatValue); ok {
+			lal = vecRepeat.UintArrLike()
+			vrCount += 1
+		} else {
+			lal = l.Arr().(*fluxarray.Uint)
+		}
+
+		if vecRepeat, ok := r.(*vectorRepeatValue); ok {
+			ral = vecRepeat.UintArrLike()
+			vrCount += 1
+		} else {
+			ral = r.Arr().(*fluxarray.Uint)
+		}
+
+		// When we have 2 vec repeats, we're talking about constant folding which
+		// will lead to a panic in funcs like fluxarray.UintSub
+		// N.b. Until const folding is implemented, the rust side should take
+		// steps to refuse to vectorize expressions that land us in this code path.
+		if vrCount == 2 {
+			// FIXME: perform the op directly on the 2 constants here and return a new vecRepeat
+			panic("TODO: const folding")
+		}
+
+		x, err := fluxarray.UintSub(lal, ral, mem)
 		if err != nil {
 			return nil, err
 		}
@@ -81,7 +231,32 @@ func vectorSub(l, r Vector, mem memory.Allocator) (Value, error) {
 
 	case semantic.Float:
 
-		x, err := fluxarray.FloatSub(l.Arr().(*fluxarray.Float), r.Arr().(*fluxarray.Float), mem)
+		var lal, ral fluxarray.FloatArrLike
+		vrCount := 0
+		if vecRepeat, ok := l.(*vectorRepeatValue); ok {
+			lal = vecRepeat.FloatArrLike()
+			vrCount += 1
+		} else {
+			lal = l.Arr().(*fluxarray.Float)
+		}
+
+		if vecRepeat, ok := r.(*vectorRepeatValue); ok {
+			ral = vecRepeat.FloatArrLike()
+			vrCount += 1
+		} else {
+			ral = r.Arr().(*fluxarray.Float)
+		}
+
+		// When we have 2 vec repeats, we're talking about constant folding which
+		// will lead to a panic in funcs like fluxarray.FloatSub
+		// N.b. Until const folding is implemented, the rust side should take
+		// steps to refuse to vectorize expressions that land us in this code path.
+		if vrCount == 2 {
+			// FIXME: perform the op directly on the 2 constants here and return a new vecRepeat
+			panic("TODO: const folding")
+		}
+
+		x, err := fluxarray.FloatSub(lal, ral, mem)
 		if err != nil {
 			return nil, err
 		}
@@ -98,7 +273,32 @@ func vectorMul(l, r Vector, mem memory.Allocator) (Value, error) {
 
 	case semantic.Int:
 
-		x, err := fluxarray.IntMul(l.Arr().(*fluxarray.Int), r.Arr().(*fluxarray.Int), mem)
+		var lal, ral fluxarray.IntArrLike
+		vrCount := 0
+		if vecRepeat, ok := l.(*vectorRepeatValue); ok {
+			lal = vecRepeat.IntArrLike()
+			vrCount += 1
+		} else {
+			lal = l.Arr().(*fluxarray.Int)
+		}
+
+		if vecRepeat, ok := r.(*vectorRepeatValue); ok {
+			ral = vecRepeat.IntArrLike()
+			vrCount += 1
+		} else {
+			ral = r.Arr().(*fluxarray.Int)
+		}
+
+		// When we have 2 vec repeats, we're talking about constant folding which
+		// will lead to a panic in funcs like fluxarray.IntMul
+		// N.b. Until const folding is implemented, the rust side should take
+		// steps to refuse to vectorize expressions that land us in this code path.
+		if vrCount == 2 {
+			// FIXME: perform the op directly on the 2 constants here and return a new vecRepeat
+			panic("TODO: const folding")
+		}
+
+		x, err := fluxarray.IntMul(lal, ral, mem)
 		if err != nil {
 			return nil, err
 		}
@@ -107,7 +307,32 @@ func vectorMul(l, r Vector, mem memory.Allocator) (Value, error) {
 
 	case semantic.UInt:
 
-		x, err := fluxarray.UintMul(l.Arr().(*fluxarray.Uint), r.Arr().(*fluxarray.Uint), mem)
+		var lal, ral fluxarray.UintArrLike
+		vrCount := 0
+		if vecRepeat, ok := l.(*vectorRepeatValue); ok {
+			lal = vecRepeat.UintArrLike()
+			vrCount += 1
+		} else {
+			lal = l.Arr().(*fluxarray.Uint)
+		}
+
+		if vecRepeat, ok := r.(*vectorRepeatValue); ok {
+			ral = vecRepeat.UintArrLike()
+			vrCount += 1
+		} else {
+			ral = r.Arr().(*fluxarray.Uint)
+		}
+
+		// When we have 2 vec repeats, we're talking about constant folding which
+		// will lead to a panic in funcs like fluxarray.UintMul
+		// N.b. Until const folding is implemented, the rust side should take
+		// steps to refuse to vectorize expressions that land us in this code path.
+		if vrCount == 2 {
+			// FIXME: perform the op directly on the 2 constants here and return a new vecRepeat
+			panic("TODO: const folding")
+		}
+
+		x, err := fluxarray.UintMul(lal, ral, mem)
 		if err != nil {
 			return nil, err
 		}
@@ -116,7 +341,32 @@ func vectorMul(l, r Vector, mem memory.Allocator) (Value, error) {
 
 	case semantic.Float:
 
-		x, err := fluxarray.FloatMul(l.Arr().(*fluxarray.Float), r.Arr().(*fluxarray.Float), mem)
+		var lal, ral fluxarray.FloatArrLike
+		vrCount := 0
+		if vecRepeat, ok := l.(*vectorRepeatValue); ok {
+			lal = vecRepeat.FloatArrLike()
+			vrCount += 1
+		} else {
+			lal = l.Arr().(*fluxarray.Float)
+		}
+
+		if vecRepeat, ok := r.(*vectorRepeatValue); ok {
+			ral = vecRepeat.FloatArrLike()
+			vrCount += 1
+		} else {
+			ral = r.Arr().(*fluxarray.Float)
+		}
+
+		// When we have 2 vec repeats, we're talking about constant folding which
+		// will lead to a panic in funcs like fluxarray.FloatMul
+		// N.b. Until const folding is implemented, the rust side should take
+		// steps to refuse to vectorize expressions that land us in this code path.
+		if vrCount == 2 {
+			// FIXME: perform the op directly on the 2 constants here and return a new vecRepeat
+			panic("TODO: const folding")
+		}
+
+		x, err := fluxarray.FloatMul(lal, ral, mem)
 		if err != nil {
 			return nil, err
 		}
@@ -133,7 +383,32 @@ func vectorDiv(l, r Vector, mem memory.Allocator) (Value, error) {
 
 	case semantic.Int:
 
-		x, err := fluxarray.IntDiv(l.Arr().(*fluxarray.Int), r.Arr().(*fluxarray.Int), mem)
+		var lal, ral fluxarray.IntArrLike
+		vrCount := 0
+		if vecRepeat, ok := l.(*vectorRepeatValue); ok {
+			lal = vecRepeat.IntArrLike()
+			vrCount += 1
+		} else {
+			lal = l.Arr().(*fluxarray.Int)
+		}
+
+		if vecRepeat, ok := r.(*vectorRepeatValue); ok {
+			ral = vecRepeat.IntArrLike()
+			vrCount += 1
+		} else {
+			ral = r.Arr().(*fluxarray.Int)
+		}
+
+		// When we have 2 vec repeats, we're talking about constant folding which
+		// will lead to a panic in funcs like fluxarray.IntDiv
+		// N.b. Until const folding is implemented, the rust side should take
+		// steps to refuse to vectorize expressions that land us in this code path.
+		if vrCount == 2 {
+			// FIXME: perform the op directly on the 2 constants here and return a new vecRepeat
+			panic("TODO: const folding")
+		}
+
+		x, err := fluxarray.IntDiv(lal, ral, mem)
 		if err != nil {
 			return nil, err
 		}
@@ -142,7 +417,32 @@ func vectorDiv(l, r Vector, mem memory.Allocator) (Value, error) {
 
 	case semantic.UInt:
 
-		x, err := fluxarray.UintDiv(l.Arr().(*fluxarray.Uint), r.Arr().(*fluxarray.Uint), mem)
+		var lal, ral fluxarray.UintArrLike
+		vrCount := 0
+		if vecRepeat, ok := l.(*vectorRepeatValue); ok {
+			lal = vecRepeat.UintArrLike()
+			vrCount += 1
+		} else {
+			lal = l.Arr().(*fluxarray.Uint)
+		}
+
+		if vecRepeat, ok := r.(*vectorRepeatValue); ok {
+			ral = vecRepeat.UintArrLike()
+			vrCount += 1
+		} else {
+			ral = r.Arr().(*fluxarray.Uint)
+		}
+
+		// When we have 2 vec repeats, we're talking about constant folding which
+		// will lead to a panic in funcs like fluxarray.UintDiv
+		// N.b. Until const folding is implemented, the rust side should take
+		// steps to refuse to vectorize expressions that land us in this code path.
+		if vrCount == 2 {
+			// FIXME: perform the op directly on the 2 constants here and return a new vecRepeat
+			panic("TODO: const folding")
+		}
+
+		x, err := fluxarray.UintDiv(lal, ral, mem)
 		if err != nil {
 			return nil, err
 		}
@@ -151,7 +451,32 @@ func vectorDiv(l, r Vector, mem memory.Allocator) (Value, error) {
 
 	case semantic.Float:
 
-		x, err := fluxarray.FloatDiv(l.Arr().(*fluxarray.Float), r.Arr().(*fluxarray.Float), mem)
+		var lal, ral fluxarray.FloatArrLike
+		vrCount := 0
+		if vecRepeat, ok := l.(*vectorRepeatValue); ok {
+			lal = vecRepeat.FloatArrLike()
+			vrCount += 1
+		} else {
+			lal = l.Arr().(*fluxarray.Float)
+		}
+
+		if vecRepeat, ok := r.(*vectorRepeatValue); ok {
+			ral = vecRepeat.FloatArrLike()
+			vrCount += 1
+		} else {
+			ral = r.Arr().(*fluxarray.Float)
+		}
+
+		// When we have 2 vec repeats, we're talking about constant folding which
+		// will lead to a panic in funcs like fluxarray.FloatDiv
+		// N.b. Until const folding is implemented, the rust side should take
+		// steps to refuse to vectorize expressions that land us in this code path.
+		if vrCount == 2 {
+			// FIXME: perform the op directly on the 2 constants here and return a new vecRepeat
+			panic("TODO: const folding")
+		}
+
+		x, err := fluxarray.FloatDiv(lal, ral, mem)
 		if err != nil {
 			return nil, err
 		}
@@ -168,7 +493,32 @@ func vectorMod(l, r Vector, mem memory.Allocator) (Value, error) {
 
 	case semantic.Int:
 
-		x, err := fluxarray.IntMod(l.Arr().(*fluxarray.Int), r.Arr().(*fluxarray.Int), mem)
+		var lal, ral fluxarray.IntArrLike
+		vrCount := 0
+		if vecRepeat, ok := l.(*vectorRepeatValue); ok {
+			lal = vecRepeat.IntArrLike()
+			vrCount += 1
+		} else {
+			lal = l.Arr().(*fluxarray.Int)
+		}
+
+		if vecRepeat, ok := r.(*vectorRepeatValue); ok {
+			ral = vecRepeat.IntArrLike()
+			vrCount += 1
+		} else {
+			ral = r.Arr().(*fluxarray.Int)
+		}
+
+		// When we have 2 vec repeats, we're talking about constant folding which
+		// will lead to a panic in funcs like fluxarray.IntMod
+		// N.b. Until const folding is implemented, the rust side should take
+		// steps to refuse to vectorize expressions that land us in this code path.
+		if vrCount == 2 {
+			// FIXME: perform the op directly on the 2 constants here and return a new vecRepeat
+			panic("TODO: const folding")
+		}
+
+		x, err := fluxarray.IntMod(lal, ral, mem)
 		if err != nil {
 			return nil, err
 		}
@@ -177,7 +527,32 @@ func vectorMod(l, r Vector, mem memory.Allocator) (Value, error) {
 
 	case semantic.UInt:
 
-		x, err := fluxarray.UintMod(l.Arr().(*fluxarray.Uint), r.Arr().(*fluxarray.Uint), mem)
+		var lal, ral fluxarray.UintArrLike
+		vrCount := 0
+		if vecRepeat, ok := l.(*vectorRepeatValue); ok {
+			lal = vecRepeat.UintArrLike()
+			vrCount += 1
+		} else {
+			lal = l.Arr().(*fluxarray.Uint)
+		}
+
+		if vecRepeat, ok := r.(*vectorRepeatValue); ok {
+			ral = vecRepeat.UintArrLike()
+			vrCount += 1
+		} else {
+			ral = r.Arr().(*fluxarray.Uint)
+		}
+
+		// When we have 2 vec repeats, we're talking about constant folding which
+		// will lead to a panic in funcs like fluxarray.UintMod
+		// N.b. Until const folding is implemented, the rust side should take
+		// steps to refuse to vectorize expressions that land us in this code path.
+		if vrCount == 2 {
+			// FIXME: perform the op directly on the 2 constants here and return a new vecRepeat
+			panic("TODO: const folding")
+		}
+
+		x, err := fluxarray.UintMod(lal, ral, mem)
 		if err != nil {
 			return nil, err
 		}
@@ -186,7 +561,32 @@ func vectorMod(l, r Vector, mem memory.Allocator) (Value, error) {
 
 	case semantic.Float:
 
-		x, err := fluxarray.FloatMod(l.Arr().(*fluxarray.Float), r.Arr().(*fluxarray.Float), mem)
+		var lal, ral fluxarray.FloatArrLike
+		vrCount := 0
+		if vecRepeat, ok := l.(*vectorRepeatValue); ok {
+			lal = vecRepeat.FloatArrLike()
+			vrCount += 1
+		} else {
+			lal = l.Arr().(*fluxarray.Float)
+		}
+
+		if vecRepeat, ok := r.(*vectorRepeatValue); ok {
+			ral = vecRepeat.FloatArrLike()
+			vrCount += 1
+		} else {
+			ral = r.Arr().(*fluxarray.Float)
+		}
+
+		// When we have 2 vec repeats, we're talking about constant folding which
+		// will lead to a panic in funcs like fluxarray.FloatMod
+		// N.b. Until const folding is implemented, the rust side should take
+		// steps to refuse to vectorize expressions that land us in this code path.
+		if vrCount == 2 {
+			// FIXME: perform the op directly on the 2 constants here and return a new vecRepeat
+			panic("TODO: const folding")
+		}
+
+		x, err := fluxarray.FloatMod(lal, ral, mem)
 		if err != nil {
 			return nil, err
 		}
@@ -203,7 +603,32 @@ func vectorPow(l, r Vector, mem memory.Allocator) (Value, error) {
 
 	case semantic.Int:
 
-		x, err := fluxarray.IntPow(l.Arr().(*fluxarray.Int), r.Arr().(*fluxarray.Int), mem)
+		var lal, ral fluxarray.IntArrLike
+		vrCount := 0
+		if vecRepeat, ok := l.(*vectorRepeatValue); ok {
+			lal = vecRepeat.IntArrLike()
+			vrCount += 1
+		} else {
+			lal = l.Arr().(*fluxarray.Int)
+		}
+
+		if vecRepeat, ok := r.(*vectorRepeatValue); ok {
+			ral = vecRepeat.IntArrLike()
+			vrCount += 1
+		} else {
+			ral = r.Arr().(*fluxarray.Int)
+		}
+
+		// When we have 2 vec repeats, we're talking about constant folding which
+		// will lead to a panic in funcs like fluxarray.IntPow
+		// N.b. Until const folding is implemented, the rust side should take
+		// steps to refuse to vectorize expressions that land us in this code path.
+		if vrCount == 2 {
+			// FIXME: perform the op directly on the 2 constants here and return a new vecRepeat
+			panic("TODO: const folding")
+		}
+
+		x, err := fluxarray.IntPow(lal, ral, mem)
 		if err != nil {
 			return nil, err
 		}
@@ -212,7 +637,32 @@ func vectorPow(l, r Vector, mem memory.Allocator) (Value, error) {
 
 	case semantic.UInt:
 
-		x, err := fluxarray.UintPow(l.Arr().(*fluxarray.Uint), r.Arr().(*fluxarray.Uint), mem)
+		var lal, ral fluxarray.UintArrLike
+		vrCount := 0
+		if vecRepeat, ok := l.(*vectorRepeatValue); ok {
+			lal = vecRepeat.UintArrLike()
+			vrCount += 1
+		} else {
+			lal = l.Arr().(*fluxarray.Uint)
+		}
+
+		if vecRepeat, ok := r.(*vectorRepeatValue); ok {
+			ral = vecRepeat.UintArrLike()
+			vrCount += 1
+		} else {
+			ral = r.Arr().(*fluxarray.Uint)
+		}
+
+		// When we have 2 vec repeats, we're talking about constant folding which
+		// will lead to a panic in funcs like fluxarray.UintPow
+		// N.b. Until const folding is implemented, the rust side should take
+		// steps to refuse to vectorize expressions that land us in this code path.
+		if vrCount == 2 {
+			// FIXME: perform the op directly on the 2 constants here and return a new vecRepeat
+			panic("TODO: const folding")
+		}
+
+		x, err := fluxarray.UintPow(lal, ral, mem)
 		if err != nil {
 			return nil, err
 		}
@@ -221,7 +671,32 @@ func vectorPow(l, r Vector, mem memory.Allocator) (Value, error) {
 
 	case semantic.Float:
 
-		x, err := fluxarray.FloatPow(l.Arr().(*fluxarray.Float), r.Arr().(*fluxarray.Float), mem)
+		var lal, ral fluxarray.FloatArrLike
+		vrCount := 0
+		if vecRepeat, ok := l.(*vectorRepeatValue); ok {
+			lal = vecRepeat.FloatArrLike()
+			vrCount += 1
+		} else {
+			lal = l.Arr().(*fluxarray.Float)
+		}
+
+		if vecRepeat, ok := r.(*vectorRepeatValue); ok {
+			ral = vecRepeat.FloatArrLike()
+			vrCount += 1
+		} else {
+			ral = r.Arr().(*fluxarray.Float)
+		}
+
+		// When we have 2 vec repeats, we're talking about constant folding which
+		// will lead to a panic in funcs like fluxarray.FloatPow
+		// N.b. Until const folding is implemented, the rust side should take
+		// steps to refuse to vectorize expressions that land us in this code path.
+		if vrCount == 2 {
+			// FIXME: perform the op directly on the 2 constants here and return a new vecRepeat
+			panic("TODO: const folding")
+		}
+
+		x, err := fluxarray.FloatPow(lal, ral, mem)
 		if err != nil {
 			return nil, err
 		}

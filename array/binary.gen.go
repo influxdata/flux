@@ -14,10 +14,58 @@ import (
 	"github.com/influxdata/flux/internal/errors"
 )
 
-func IntAdd(l, r *Int, mem memory.Allocator) (*Int, error) {
-	n := l.Len()
-	if n != r.Len() {
+type IntArrLike interface {
+	IsValid(i int) bool
+	Value(i int) int64
+	Len() int
+}
+
+type UintArrLike interface {
+	IsValid(i int) bool
+	Value(i int) uint64
+	Len() int
+}
+
+type FloatArrLike interface {
+	IsValid(i int) bool
+	Value(i int) float64
+	Len() int
+}
+
+type StringArrLike interface {
+	IsValid(i int) bool
+	Value(i int) string
+	Len() int
+}
+
+func IntAdd(l, r IntArrLike, mem memory.Allocator) (*Int, error) {
+
+	ln := 0
+	rn := 0
+	arrCount := 0
+	if _, ok := l.(*Int); ok {
+		arrCount += 1
+		ln = l.Len()
+	}
+	if _, ok := r.(*Int); ok {
+		arrCount += 1
+		rn = r.Len()
+	}
+
+	// We can only do a length comparison in the case where neither side is a const.
+	// Vec Repeat has no array backing, and therefore has no size.
+	if arrCount == 2 && ln != rn {
 		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
+	}
+	// FIXME(onelson): need some way to hint the size for the 2 const case.
+	if arrCount == 0 {
+		panic("combining constants cannot be vectorized")
+	}
+	var n int
+	if ln > rn {
+		n = ln
+	} else {
+		n = rn
 	}
 
 	b := NewIntBuilder(mem)
@@ -36,10 +84,34 @@ func IntAdd(l, r *Int, mem memory.Allocator) (*Int, error) {
 	return a, nil
 }
 
-func UintAdd(l, r *Uint, mem memory.Allocator) (*Uint, error) {
-	n := l.Len()
-	if n != r.Len() {
+func UintAdd(l, r UintArrLike, mem memory.Allocator) (*Uint, error) {
+
+	ln := 0
+	rn := 0
+	arrCount := 0
+	if _, ok := l.(*Uint); ok {
+		arrCount += 1
+		ln = l.Len()
+	}
+	if _, ok := r.(*Uint); ok {
+		arrCount += 1
+		rn = r.Len()
+	}
+
+	// We can only do a length comparison in the case where neither side is a const.
+	// Vec Repeat has no array backing, and therefore has no size.
+	if arrCount == 2 && ln != rn {
 		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
+	}
+	// FIXME(onelson): need some way to hint the size for the 2 const case.
+	if arrCount == 0 {
+		panic("combining constants cannot be vectorized")
+	}
+	var n int
+	if ln > rn {
+		n = ln
+	} else {
+		n = rn
 	}
 
 	b := NewUintBuilder(mem)
@@ -58,10 +130,34 @@ func UintAdd(l, r *Uint, mem memory.Allocator) (*Uint, error) {
 	return a, nil
 }
 
-func FloatAdd(l, r *Float, mem memory.Allocator) (*Float, error) {
-	n := l.Len()
-	if n != r.Len() {
+func FloatAdd(l, r FloatArrLike, mem memory.Allocator) (*Float, error) {
+
+	ln := 0
+	rn := 0
+	arrCount := 0
+	if _, ok := l.(*Float); ok {
+		arrCount += 1
+		ln = l.Len()
+	}
+	if _, ok := r.(*Float); ok {
+		arrCount += 1
+		rn = r.Len()
+	}
+
+	// We can only do a length comparison in the case where neither side is a const.
+	// Vec Repeat has no array backing, and therefore has no size.
+	if arrCount == 2 && ln != rn {
 		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
+	}
+	// FIXME(onelson): need some way to hint the size for the 2 const case.
+	if arrCount == 0 {
+		panic("combining constants cannot be vectorized")
+	}
+	var n int
+	if ln > rn {
+		n = ln
+	} else {
+		n = rn
 	}
 
 	b := NewFloatBuilder(mem)
@@ -80,10 +176,34 @@ func FloatAdd(l, r *Float, mem memory.Allocator) (*Float, error) {
 	return a, nil
 }
 
-func StringAdd(l, r *String, mem memory.Allocator) (*String, error) {
-	n := l.Len()
-	if n != r.Len() {
+func StringAdd(l, r StringArrLike, mem memory.Allocator) (*String, error) {
+
+	ln := 0
+	rn := 0
+	arrCount := 0
+	if _, ok := l.(*String); ok {
+		arrCount += 1
+		ln = l.Len()
+	}
+	if _, ok := r.(*String); ok {
+		arrCount += 1
+		rn = r.Len()
+	}
+
+	// We can only do a length comparison in the case where neither side is a const.
+	// Vec Repeat has no array backing, and therefore has no size.
+	if arrCount == 2 && ln != rn {
 		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
+	}
+	// FIXME(onelson): need some way to hint the size for the 2 const case.
+	if arrCount == 0 {
+		panic("combining constants cannot be vectorized")
+	}
+	var n int
+	if ln > rn {
+		n = ln
+	} else {
+		n = rn
 	}
 
 	b := NewStringBuilder(mem)
@@ -102,10 +222,34 @@ func StringAdd(l, r *String, mem memory.Allocator) (*String, error) {
 	return a, nil
 }
 
-func IntSub(l, r *Int, mem memory.Allocator) (*Int, error) {
-	n := l.Len()
-	if n != r.Len() {
+func IntSub(l, r IntArrLike, mem memory.Allocator) (*Int, error) {
+
+	ln := 0
+	rn := 0
+	arrCount := 0
+	if _, ok := l.(*Int); ok {
+		arrCount += 1
+		ln = l.Len()
+	}
+	if _, ok := r.(*Int); ok {
+		arrCount += 1
+		rn = r.Len()
+	}
+
+	// We can only do a length comparison in the case where neither side is a const.
+	// Vec Repeat has no array backing, and therefore has no size.
+	if arrCount == 2 && ln != rn {
 		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
+	}
+	// FIXME(onelson): need some way to hint the size for the 2 const case.
+	if arrCount == 0 {
+		panic("combining constants cannot be vectorized")
+	}
+	var n int
+	if ln > rn {
+		n = ln
+	} else {
+		n = rn
 	}
 
 	b := NewIntBuilder(mem)
@@ -124,10 +268,34 @@ func IntSub(l, r *Int, mem memory.Allocator) (*Int, error) {
 	return a, nil
 }
 
-func UintSub(l, r *Uint, mem memory.Allocator) (*Uint, error) {
-	n := l.Len()
-	if n != r.Len() {
+func UintSub(l, r UintArrLike, mem memory.Allocator) (*Uint, error) {
+
+	ln := 0
+	rn := 0
+	arrCount := 0
+	if _, ok := l.(*Uint); ok {
+		arrCount += 1
+		ln = l.Len()
+	}
+	if _, ok := r.(*Uint); ok {
+		arrCount += 1
+		rn = r.Len()
+	}
+
+	// We can only do a length comparison in the case where neither side is a const.
+	// Vec Repeat has no array backing, and therefore has no size.
+	if arrCount == 2 && ln != rn {
 		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
+	}
+	// FIXME(onelson): need some way to hint the size for the 2 const case.
+	if arrCount == 0 {
+		panic("combining constants cannot be vectorized")
+	}
+	var n int
+	if ln > rn {
+		n = ln
+	} else {
+		n = rn
 	}
 
 	b := NewUintBuilder(mem)
@@ -146,10 +314,34 @@ func UintSub(l, r *Uint, mem memory.Allocator) (*Uint, error) {
 	return a, nil
 }
 
-func FloatSub(l, r *Float, mem memory.Allocator) (*Float, error) {
-	n := l.Len()
-	if n != r.Len() {
+func FloatSub(l, r FloatArrLike, mem memory.Allocator) (*Float, error) {
+
+	ln := 0
+	rn := 0
+	arrCount := 0
+	if _, ok := l.(*Float); ok {
+		arrCount += 1
+		ln = l.Len()
+	}
+	if _, ok := r.(*Float); ok {
+		arrCount += 1
+		rn = r.Len()
+	}
+
+	// We can only do a length comparison in the case where neither side is a const.
+	// Vec Repeat has no array backing, and therefore has no size.
+	if arrCount == 2 && ln != rn {
 		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
+	}
+	// FIXME(onelson): need some way to hint the size for the 2 const case.
+	if arrCount == 0 {
+		panic("combining constants cannot be vectorized")
+	}
+	var n int
+	if ln > rn {
+		n = ln
+	} else {
+		n = rn
 	}
 
 	b := NewFloatBuilder(mem)
@@ -168,10 +360,34 @@ func FloatSub(l, r *Float, mem memory.Allocator) (*Float, error) {
 	return a, nil
 }
 
-func IntMul(l, r *Int, mem memory.Allocator) (*Int, error) {
-	n := l.Len()
-	if n != r.Len() {
+func IntMul(l, r IntArrLike, mem memory.Allocator) (*Int, error) {
+
+	ln := 0
+	rn := 0
+	arrCount := 0
+	if _, ok := l.(*Int); ok {
+		arrCount += 1
+		ln = l.Len()
+	}
+	if _, ok := r.(*Int); ok {
+		arrCount += 1
+		rn = r.Len()
+	}
+
+	// We can only do a length comparison in the case where neither side is a const.
+	// Vec Repeat has no array backing, and therefore has no size.
+	if arrCount == 2 && ln != rn {
 		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
+	}
+	// FIXME(onelson): need some way to hint the size for the 2 const case.
+	if arrCount == 0 {
+		panic("combining constants cannot be vectorized")
+	}
+	var n int
+	if ln > rn {
+		n = ln
+	} else {
+		n = rn
 	}
 
 	b := NewIntBuilder(mem)
@@ -190,10 +406,34 @@ func IntMul(l, r *Int, mem memory.Allocator) (*Int, error) {
 	return a, nil
 }
 
-func UintMul(l, r *Uint, mem memory.Allocator) (*Uint, error) {
-	n := l.Len()
-	if n != r.Len() {
+func UintMul(l, r UintArrLike, mem memory.Allocator) (*Uint, error) {
+
+	ln := 0
+	rn := 0
+	arrCount := 0
+	if _, ok := l.(*Uint); ok {
+		arrCount += 1
+		ln = l.Len()
+	}
+	if _, ok := r.(*Uint); ok {
+		arrCount += 1
+		rn = r.Len()
+	}
+
+	// We can only do a length comparison in the case where neither side is a const.
+	// Vec Repeat has no array backing, and therefore has no size.
+	if arrCount == 2 && ln != rn {
 		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
+	}
+	// FIXME(onelson): need some way to hint the size for the 2 const case.
+	if arrCount == 0 {
+		panic("combining constants cannot be vectorized")
+	}
+	var n int
+	if ln > rn {
+		n = ln
+	} else {
+		n = rn
 	}
 
 	b := NewUintBuilder(mem)
@@ -212,10 +452,34 @@ func UintMul(l, r *Uint, mem memory.Allocator) (*Uint, error) {
 	return a, nil
 }
 
-func FloatMul(l, r *Float, mem memory.Allocator) (*Float, error) {
-	n := l.Len()
-	if n != r.Len() {
+func FloatMul(l, r FloatArrLike, mem memory.Allocator) (*Float, error) {
+
+	ln := 0
+	rn := 0
+	arrCount := 0
+	if _, ok := l.(*Float); ok {
+		arrCount += 1
+		ln = l.Len()
+	}
+	if _, ok := r.(*Float); ok {
+		arrCount += 1
+		rn = r.Len()
+	}
+
+	// We can only do a length comparison in the case where neither side is a const.
+	// Vec Repeat has no array backing, and therefore has no size.
+	if arrCount == 2 && ln != rn {
 		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
+	}
+	// FIXME(onelson): need some way to hint the size for the 2 const case.
+	if arrCount == 0 {
+		panic("combining constants cannot be vectorized")
+	}
+	var n int
+	if ln > rn {
+		n = ln
+	} else {
+		n = rn
 	}
 
 	b := NewFloatBuilder(mem)
@@ -234,10 +498,34 @@ func FloatMul(l, r *Float, mem memory.Allocator) (*Float, error) {
 	return a, nil
 }
 
-func IntDiv(l, r *Int, mem memory.Allocator) (*Int, error) {
-	n := l.Len()
-	if n != r.Len() {
+func IntDiv(l, r IntArrLike, mem memory.Allocator) (*Int, error) {
+
+	ln := 0
+	rn := 0
+	arrCount := 0
+	if _, ok := l.(*Int); ok {
+		arrCount += 1
+		ln = l.Len()
+	}
+	if _, ok := r.(*Int); ok {
+		arrCount += 1
+		rn = r.Len()
+	}
+
+	// We can only do a length comparison in the case where neither side is a const.
+	// Vec Repeat has no array backing, and therefore has no size.
+	if arrCount == 2 && ln != rn {
 		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
+	}
+	// FIXME(onelson): need some way to hint the size for the 2 const case.
+	if arrCount == 0 {
+		panic("combining constants cannot be vectorized")
+	}
+	var n int
+	if ln > rn {
+		n = ln
+	} else {
+		n = rn
 	}
 
 	b := NewIntBuilder(mem)
@@ -256,10 +544,34 @@ func IntDiv(l, r *Int, mem memory.Allocator) (*Int, error) {
 	return a, nil
 }
 
-func UintDiv(l, r *Uint, mem memory.Allocator) (*Uint, error) {
-	n := l.Len()
-	if n != r.Len() {
+func UintDiv(l, r UintArrLike, mem memory.Allocator) (*Uint, error) {
+
+	ln := 0
+	rn := 0
+	arrCount := 0
+	if _, ok := l.(*Uint); ok {
+		arrCount += 1
+		ln = l.Len()
+	}
+	if _, ok := r.(*Uint); ok {
+		arrCount += 1
+		rn = r.Len()
+	}
+
+	// We can only do a length comparison in the case where neither side is a const.
+	// Vec Repeat has no array backing, and therefore has no size.
+	if arrCount == 2 && ln != rn {
 		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
+	}
+	// FIXME(onelson): need some way to hint the size for the 2 const case.
+	if arrCount == 0 {
+		panic("combining constants cannot be vectorized")
+	}
+	var n int
+	if ln > rn {
+		n = ln
+	} else {
+		n = rn
 	}
 
 	b := NewUintBuilder(mem)
@@ -278,10 +590,34 @@ func UintDiv(l, r *Uint, mem memory.Allocator) (*Uint, error) {
 	return a, nil
 }
 
-func FloatDiv(l, r *Float, mem memory.Allocator) (*Float, error) {
-	n := l.Len()
-	if n != r.Len() {
+func FloatDiv(l, r FloatArrLike, mem memory.Allocator) (*Float, error) {
+
+	ln := 0
+	rn := 0
+	arrCount := 0
+	if _, ok := l.(*Float); ok {
+		arrCount += 1
+		ln = l.Len()
+	}
+	if _, ok := r.(*Float); ok {
+		arrCount += 1
+		rn = r.Len()
+	}
+
+	// We can only do a length comparison in the case where neither side is a const.
+	// Vec Repeat has no array backing, and therefore has no size.
+	if arrCount == 2 && ln != rn {
 		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
+	}
+	// FIXME(onelson): need some way to hint the size for the 2 const case.
+	if arrCount == 0 {
+		panic("combining constants cannot be vectorized")
+	}
+	var n int
+	if ln > rn {
+		n = ln
+	} else {
+		n = rn
 	}
 
 	b := NewFloatBuilder(mem)
@@ -300,10 +636,34 @@ func FloatDiv(l, r *Float, mem memory.Allocator) (*Float, error) {
 	return a, nil
 }
 
-func IntMod(l, r *Int, mem memory.Allocator) (*Int, error) {
-	n := l.Len()
-	if n != r.Len() {
+func IntMod(l, r IntArrLike, mem memory.Allocator) (*Int, error) {
+
+	ln := 0
+	rn := 0
+	arrCount := 0
+	if _, ok := l.(*Int); ok {
+		arrCount += 1
+		ln = l.Len()
+	}
+	if _, ok := r.(*Int); ok {
+		arrCount += 1
+		rn = r.Len()
+	}
+
+	// We can only do a length comparison in the case where neither side is a const.
+	// Vec Repeat has no array backing, and therefore has no size.
+	if arrCount == 2 && ln != rn {
 		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
+	}
+	// FIXME(onelson): need some way to hint the size for the 2 const case.
+	if arrCount == 0 {
+		panic("combining constants cannot be vectorized")
+	}
+	var n int
+	if ln > rn {
+		n = ln
+	} else {
+		n = rn
 	}
 
 	b := NewIntBuilder(mem)
@@ -322,10 +682,34 @@ func IntMod(l, r *Int, mem memory.Allocator) (*Int, error) {
 	return a, nil
 }
 
-func UintMod(l, r *Uint, mem memory.Allocator) (*Uint, error) {
-	n := l.Len()
-	if n != r.Len() {
+func UintMod(l, r UintArrLike, mem memory.Allocator) (*Uint, error) {
+
+	ln := 0
+	rn := 0
+	arrCount := 0
+	if _, ok := l.(*Uint); ok {
+		arrCount += 1
+		ln = l.Len()
+	}
+	if _, ok := r.(*Uint); ok {
+		arrCount += 1
+		rn = r.Len()
+	}
+
+	// We can only do a length comparison in the case where neither side is a const.
+	// Vec Repeat has no array backing, and therefore has no size.
+	if arrCount == 2 && ln != rn {
 		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
+	}
+	// FIXME(onelson): need some way to hint the size for the 2 const case.
+	if arrCount == 0 {
+		panic("combining constants cannot be vectorized")
+	}
+	var n int
+	if ln > rn {
+		n = ln
+	} else {
+		n = rn
 	}
 
 	b := NewUintBuilder(mem)
@@ -344,10 +728,34 @@ func UintMod(l, r *Uint, mem memory.Allocator) (*Uint, error) {
 	return a, nil
 }
 
-func FloatMod(l, r *Float, mem memory.Allocator) (*Float, error) {
-	n := l.Len()
-	if n != r.Len() {
+func FloatMod(l, r FloatArrLike, mem memory.Allocator) (*Float, error) {
+
+	ln := 0
+	rn := 0
+	arrCount := 0
+	if _, ok := l.(*Float); ok {
+		arrCount += 1
+		ln = l.Len()
+	}
+	if _, ok := r.(*Float); ok {
+		arrCount += 1
+		rn = r.Len()
+	}
+
+	// We can only do a length comparison in the case where neither side is a const.
+	// Vec Repeat has no array backing, and therefore has no size.
+	if arrCount == 2 && ln != rn {
 		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
+	}
+	// FIXME(onelson): need some way to hint the size for the 2 const case.
+	if arrCount == 0 {
+		panic("combining constants cannot be vectorized")
+	}
+	var n int
+	if ln > rn {
+		n = ln
+	} else {
+		n = rn
 	}
 
 	b := NewFloatBuilder(mem)
@@ -366,10 +774,33 @@ func FloatMod(l, r *Float, mem memory.Allocator) (*Float, error) {
 	return a, nil
 }
 
-func IntPow(l, r *Int, mem memory.Allocator) (*Float, error) {
-	n := l.Len()
-	if n != r.Len() {
+func IntPow(l, r IntArrLike, mem memory.Allocator) (*Float, error) {
+	ln := 0
+	rn := 0
+	arrCount := 0
+	if _, ok := l.(*Int); ok {
+		arrCount += 1
+		ln = l.Len()
+	}
+	if _, ok := l.(*Int); ok {
+		arrCount += 1
+		rn = l.Len()
+	}
+
+	// We can only do a length comparison in the case where neither side is a const.
+	// Vec Repeat has no array backing, and therefore has no size.
+	if arrCount == 2 && ln != rn {
 		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
+	}
+	// FIXME(onelson): need some way to hint the size for the 2 const case.
+	if arrCount == 0 {
+		panic("combining constants cannot be vectorized")
+	}
+	var n int
+	if ln > rn {
+		n = ln
+	} else {
+		n = rn
 	}
 
 	b := NewFloatBuilder(mem)
@@ -386,10 +817,33 @@ func IntPow(l, r *Int, mem memory.Allocator) (*Float, error) {
 	return a, nil
 }
 
-func UintPow(l, r *Uint, mem memory.Allocator) (*Float, error) {
-	n := l.Len()
-	if n != r.Len() {
+func UintPow(l, r UintArrLike, mem memory.Allocator) (*Float, error) {
+	ln := 0
+	rn := 0
+	arrCount := 0
+	if _, ok := l.(*Uint); ok {
+		arrCount += 1
+		ln = l.Len()
+	}
+	if _, ok := l.(*Uint); ok {
+		arrCount += 1
+		rn = l.Len()
+	}
+
+	// We can only do a length comparison in the case where neither side is a const.
+	// Vec Repeat has no array backing, and therefore has no size.
+	if arrCount == 2 && ln != rn {
 		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
+	}
+	// FIXME(onelson): need some way to hint the size for the 2 const case.
+	if arrCount == 0 {
+		panic("combining constants cannot be vectorized")
+	}
+	var n int
+	if ln > rn {
+		n = ln
+	} else {
+		n = rn
 	}
 
 	b := NewFloatBuilder(mem)
@@ -406,10 +860,33 @@ func UintPow(l, r *Uint, mem memory.Allocator) (*Float, error) {
 	return a, nil
 }
 
-func FloatPow(l, r *Float, mem memory.Allocator) (*Float, error) {
-	n := l.Len()
-	if n != r.Len() {
+func FloatPow(l, r FloatArrLike, mem memory.Allocator) (*Float, error) {
+	ln := 0
+	rn := 0
+	arrCount := 0
+	if _, ok := l.(*Float); ok {
+		arrCount += 1
+		ln = l.Len()
+	}
+	if _, ok := l.(*Float); ok {
+		arrCount += 1
+		rn = l.Len()
+	}
+
+	// We can only do a length comparison in the case where neither side is a const.
+	// Vec Repeat has no array backing, and therefore has no size.
+	if arrCount == 2 && ln != rn {
 		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
+	}
+	// FIXME(onelson): need some way to hint the size for the 2 const case.
+	if arrCount == 0 {
+		panic("combining constants cannot be vectorized")
+	}
+	var n int
+	if ln > rn {
+		n = ln
+	} else {
+		n = rn
 	}
 
 	b := NewFloatBuilder(mem)

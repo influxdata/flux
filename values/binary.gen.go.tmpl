@@ -21,7 +21,32 @@ func vector{{$op.Name}}(l, r Vector, mem memory.Allocator) (Value, error) {
     {{else}}
 	case semantic.{{$type}}:
     {{end}}
-		x, err := fluxarray.{{$type}}{{$op.Name}}(l.Arr().(*fluxarray.{{$type}}), r.Arr().(*fluxarray.{{$type}}), mem)
+        var lal, ral fluxarray.{{$type}}ArrLike
+        vrCount := 0
+		if vecRepeat, ok := l.(*vectorRepeatValue); ok {
+			lal = vecRepeat.{{$type}}ArrLike()
+		    vrCount += 1
+		} else {
+		    lal = l.Arr().(*fluxarray.{{$type}})
+		}
+
+		if vecRepeat, ok := r.(*vectorRepeatValue); ok {
+            ral = vecRepeat.{{$type}}ArrLike()
+		    vrCount += 1
+		} else {
+		    ral = r.Arr().(*fluxarray.{{$type}})
+		}
+
+		// When we have 2 vec repeats, we're talking about constant folding which
+		// will lead to a panic in funcs like fluxarray.{{$type}}{{$op.Name}}
+		// N.b. Until const folding is implemented, the rust side should take
+		// steps to refuse to vectorize expressions that land us in this code path.
+		if vrCount == 2 {
+		    // FIXME: perform the op directly on the 2 constants here and return a new vecRepeat
+		    panic("TODO: const folding")
+		}
+
+		x, err := fluxarray.{{$type}}{{$op.Name}}(lal, ral, mem)
 		if err != nil {
 			return nil, err
 		}

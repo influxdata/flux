@@ -143,11 +143,107 @@ func TestVectorizedFns(t *testing.T) {
 			flagger: executetest.TestFlagger{},
 		},
 		{
-			name:         "no literals",
-			fn:           `(r) => ({r with c: "count"})`,
-			vectorizable: false,
-			skipComp:     true,
+			name:         "string literal",
+			fn:           `(r) => ({r with b: "foo"})`,
+			vectorizable: true,
+			inType: semantic.NewObjectType([]semantic.PropertyType{
+				{Key: []byte("r"), Value: semantic.NewObjectType([]semantic.PropertyType{
+					{Key: []byte("a"), Value: semantic.NewVectorType(semantic.BasicFloat)},
+				})},
+			}),
+			input: map[string]interface{}{
+				"r": map[string]interface{}{
+					"a": []interface{}{1.2},
+				},
+			},
+			want: map[string]interface{}{
+				"a": []interface{}{1.2},
+				"b": []interface{}{"foo"},
+			},
+			flagger: executetest.TestFlagger{},
 		},
+		{
+			name:         "int literal",
+			fn:           `(r) => ({r with b: 123})`,
+			vectorizable: true,
+			inType: semantic.NewObjectType([]semantic.PropertyType{
+				{Key: []byte("r"), Value: semantic.NewObjectType([]semantic.PropertyType{
+					{Key: []byte("a"), Value: semantic.NewVectorType(semantic.BasicFloat)},
+				})},
+			}),
+			input: map[string]interface{}{
+				"r": map[string]interface{}{
+					"a": []interface{}{1.2},
+				},
+			},
+			want: map[string]interface{}{
+				"a": []interface{}{1.2},
+				"b": []interface{}{int64(123)},
+			},
+			flagger: executetest.TestFlagger{},
+		},
+		{
+			name:         "float literal",
+			fn:           `(r) => ({r with b: 123.0})`,
+			vectorizable: true,
+			inType: semantic.NewObjectType([]semantic.PropertyType{
+				{Key: []byte("r"), Value: semantic.NewObjectType([]semantic.PropertyType{
+					{Key: []byte("a"), Value: semantic.NewVectorType(semantic.BasicFloat)},
+				})},
+			}),
+			input: map[string]interface{}{
+				"r": map[string]interface{}{
+					"a": []interface{}{1.2},
+				},
+			},
+			want: map[string]interface{}{
+				"a": []interface{}{1.2},
+				"b": []interface{}{123.0},
+			},
+			flagger: executetest.TestFlagger{},
+		},
+		// FIXME: skipping the more exotic literals for now
+		//{
+		//	name:         "duration literal",
+		//	fn:           `(r) => ({r with b: 1d})`,
+		//	vectorizable: true,
+		//	inType: semantic.NewObjectType([]semantic.PropertyType{
+		//		{Key: []byte("r"), Value: semantic.NewObjectType([]semantic.PropertyType{
+		//			{Key: []byte("a"), Value: semantic.NewVectorType(semantic.BasicFloat)},
+		//		})},
+		//	}),
+		//	input: map[string]interface{}{
+		//		"r": map[string]interface{}{
+		//			"a": []interface{}{1.2},
+		//		},
+		//	},
+		//	want: map[string]interface{}{
+		//		"a": []interface{}{1.2},
+		//		"b": []interface{}{nil}, // FIXME: how to put a duration here?
+		//	},
+		//	flagger: executetest.TestFlagger{},
+		//},
+		// FIXME: skipping the more exotic literals for now
+		//{
+		//	name:         "time literal",
+		//	fn:           `(r) => ({r with b: 2021-11-01})`,
+		//	vectorizable: true,
+		//	inType: semantic.NewObjectType([]semantic.PropertyType{
+		//		{Key: []byte("r"), Value: semantic.NewObjectType([]semantic.PropertyType{
+		//			{Key: []byte("a"), Value: semantic.NewVectorType(semantic.BasicFloat)},
+		//		})},
+		//	}),
+		//	input: map[string]interface{}{
+		//		"r": map[string]interface{}{
+		//			"a": []interface{}{1.2},
+		//		},
+		//	},
+		//	want: map[string]interface{}{
+		//		"a": []interface{}{1.2},
+		//		"b": []interface{}{nil}, // FIXME: how to put a time here?
+		//	},
+		//	flagger: executetest.TestFlagger{},
+		//},
 	}
 
 	additionTests := []struct {
@@ -314,6 +410,67 @@ func TestVectorizedFns(t *testing.T) {
 				"c": output,
 			},
 
+			flagger: executetest.TestFlagger{},
+		})
+	}
+
+	// Just the Addable types that can be represented as literals
+	constLiteralAdditionTests := []struct {
+		inType  semantic.MonoType
+		literal string
+		input   map[string]interface{}
+		want    map[string]interface{}
+	}{
+		{
+			inType:  semantic.BasicInt,
+			literal: "5",
+			input: map[string]interface{}{
+				"r": map[string]interface{}{
+					"a": []interface{}{int64(1), int64(3)},
+				},
+			},
+			want: map[string]interface{}{
+				"c": []interface{}{int64(6), int64(8)},
+			},
+		},
+		{
+			inType:  semantic.BasicFloat,
+			literal: "5.0",
+			input: map[string]interface{}{
+				"r": map[string]interface{}{
+					"a": []interface{}{1.0, 3.0},
+				},
+			},
+			want: map[string]interface{}{
+				"c": []interface{}{6.0, 8.0},
+			},
+		},
+		{
+			inType:  semantic.BasicString,
+			literal: `"c"`,
+			input: map[string]interface{}{
+				"r": map[string]interface{}{
+					"a": []interface{}{"a", "d"},
+				},
+			},
+			want: map[string]interface{}{
+				"c": []interface{}{"ac", "dc"}, // Back in black?
+			},
+		},
+	}
+
+	for _, test := range constLiteralAdditionTests {
+		testCases = append(testCases, TestCase{
+			name:         fmt.Sprintf("addition expression with const %s", test.inType.String()),
+			fn:           fmt.Sprintf(`(r) => ({c: r.a + %s})`, test.literal),
+			vectorizable: true,
+			inType: semantic.NewObjectType([]semantic.PropertyType{
+				{Key: []byte("r"), Value: semantic.NewObjectType([]semantic.PropertyType{
+					{Key: []byte("a"), Value: semantic.NewVectorType(test.inType)},
+				})},
+			}),
+			input:   test.input,
+			want:    test.want,
 			flagger: executetest.TestFlagger{},
 		})
 	}
