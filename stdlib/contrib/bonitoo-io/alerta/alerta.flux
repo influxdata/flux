@@ -220,4 +220,3 @@ endpoint = (url, apiKey, environment="", origin="") =>
                         }
                     },
                 )
-                

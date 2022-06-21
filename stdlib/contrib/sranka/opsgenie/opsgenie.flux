@@ -204,4 +204,3 @@ endpoint = (url="https://api.opsgenie.com/v2/alerts", apiKey, entity="") =>
                         }
                     },
                 )
-                

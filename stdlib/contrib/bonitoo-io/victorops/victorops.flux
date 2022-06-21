@@ -184,4 +184,3 @@ endpoint = (url, monitoringTool="InfluxDB") =>
                         }
                     },
                 )
-                
