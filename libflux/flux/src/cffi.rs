@@ -663,6 +663,7 @@ mod tests {
             convert::convert_polytype,
             fresh::Fresher,
             types::{Label, MonoType, Property, Ptr, Record, Tvar, TvarMap},
+            walk,
         },
     };
 
@@ -1046,5 +1047,32 @@ from(bucket: v.bucket)
                     error @1:7-1:7: invalid expression: invalid token for primary expression: EOF"#]].assert_eq(&e.to_string());
             }
         }
+    }
+
+    #[test]
+    fn prelude_symbols_retain_their_package() {
+        let mut analyzer = new_semantic_analyzer(AnalyzerConfig::default()).unwrap();
+
+        let src = r#"
+            derivative
+        "#;
+
+        let (_, pkg) = analyzer
+            .analyze_source("".to_string(), "main.flux".to_string(), src)
+            .unwrap();
+
+        let mut identifier = None;
+        walk::walk(
+            &mut |node| {
+                if let walk::Node::IdentifierExpr(id) = node {
+                    identifier = Some(id);
+                }
+            },
+            walk::Node::Package(&pkg),
+        );
+
+        dbg!(&pkg);
+
+        assert_eq!(identifier.unwrap().name.package(), Some("universe"));
     }
 }

@@ -11,7 +11,7 @@ use walkdir::WalkDir;
 
 use crate::{
     ast,
-    map::{HashMap, HashSet},
+    map::HashSet,
     parser,
     semantic::{
         env::Environment,
@@ -171,20 +171,15 @@ struct InferState {
 
 impl InferState {
     fn infer_pre(&mut self, ast_packages: &ASTPackageMap) -> Result<PackageExports> {
-        let mut prelude_map = HashMap::new();
+        let mut prelude_map = PackageExports::new();
         for name in PRELUDE {
             // Infer each package in the prelude allowing the earlier packages to be used by later
             // packages within the prelude list.
-            let (types, _sem_pkg) = self.infer_pkg(
-                name,
-                ast_packages,
-                &PackageExports::try_from(prelude_map.clone())?,
-            )?;
-            for (k, v) in types.into_bindings() {
-                prelude_map.insert(k, v);
-            }
+            let (types, _sem_pkg) = self.infer_pkg(name, ast_packages, &prelude_map)?;
+
+            prelude_map.copy_bindings_from(&types);
         }
-        Ok(PackageExports::try_from(prelude_map)?)
+        Ok(prelude_map)
     }
 
     #[allow(clippy::type_complexity)]
