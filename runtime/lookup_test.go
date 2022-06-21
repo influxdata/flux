@@ -64,7 +64,7 @@ func TestLookupComplexTypes(t *testing.T) {
 			path: "experimental",
 			id:   "to",
 			name: "lookup experimental.to",
-			want: "(?bucket: string, ?bucketID: string, ?host: string, ?org: string, ?orgID: string, <-tables: stream[A], ?token: string) => stream[A]",
+			want: "(?bucket: string, ?bucketID: string, ?host: string, ?org: string, ?orgID: string, <-tables: stream[{A with _measurement: string, _time: time}], ?token: string) => stream[{A with _measurement: string, _time: time}]",
 		},
 		{
 			path: "http",

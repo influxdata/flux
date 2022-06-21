@@ -301,14 +301,14 @@ builtin set : (<-tables: stream[A], o: B) => stream[C] where A: Record, B: Recor
 // tags: outputs
 //
 builtin to : (
-        <-tables: stream[A],
+        <-tables: stream[{A with _measurement: string, _time: time}],
         ?bucket: string,
         ?bucketID: string,
         ?org: string,
         ?orgID: string,
         ?host: string,
         ?token: string,
-    ) => stream[A]
+    ) => stream[{A with _measurement: string, _time: time}]
     where
     A: Record
 
