@@ -262,3 +262,4 @@ select = (
                 |> v1.fieldsAsCols()
                 |> _mask(columns: ["_measurement", "_start", "_stop"])
     }
+    
