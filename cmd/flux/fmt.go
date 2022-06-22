@@ -87,7 +87,7 @@ func format(script string) (bool, error) {
 }
 
 func updateScript(fname string, script string) error {
-	err := ioutil.WriteFile(fname, []byte(script+"\n"), 0644)
+	err := ioutil.WriteFile(fname, []byte(script), 0644)
 	if err != nil {
 		return err
 	}

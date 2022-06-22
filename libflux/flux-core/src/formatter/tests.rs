@@ -7,10 +7,15 @@ use expect_test::{expect, Expect};
 
 use super::*;
 
+const TEST_OPTIONS: Options = Options {
+    // It is easier to read/write testcases without having to add a trailing newline
+    trailing_newline: false,
+};
+
 #[track_caller]
 fn assert_unchanged(script: &str) {
     let _ = env_logger::try_init();
-    let output = format(script).unwrap();
+    let output = format_with(script, TEST_OPTIONS).unwrap();
     assert_eq!(
         script, output,
         "\n EXPECTED: \n {} \n OUTPUT: \n {} \n",
@@ -21,7 +26,7 @@ fn assert_unchanged(script: &str) {
 #[track_caller]
 fn assert_format(script: &str, expected: &str) {
     let _ = env_logger::try_init();
-    let output = format(script).unwrap();
+    let output = format_with(script, TEST_OPTIONS).unwrap();
     assert_eq!(
         expected, output,
         "\n EXPECTED: \n {} \n OUTPUT: \n {} \n",
@@ -31,7 +36,7 @@ fn assert_format(script: &str, expected: &str) {
 
 #[track_caller]
 fn expect_format(script: &str, expect: Expect) {
-    expect.assert_eq(&format(script).unwrap());
+    expect.assert_eq(&format_with(script, TEST_OPTIONS).unwrap());
 }
 
 #[test]
@@ -1955,7 +1960,8 @@ fn astutil_test_format_with_comments() {
         // list
         // of
         // comments
-        j// not lost"#]]
+        j// not lost
+"#]]
     .assert_eq(&format(src).unwrap());
 }
 
@@ -1970,5 +1976,39 @@ fn format_long_single_line_pipe_expression() {
             |> filter(fn: (r) => r._field == "usage_user")
             |> aggregateWindow(every: 1m, fn: mean)
             |> yield()"#]],
+    );
+}
+
+#[test]
+fn format_with_trailing_newline() {
+    let src = r#"
+    // test
+    id = (x) => x"#;
+
+    expect![[r#"
+    // test
+    id = (x) => x
+"#]]
+    .assert_eq(
+        &format_with(
+            src,
+            Options {
+                trailing_newline: true,
+            },
+        )
+        .unwrap(),
+    );
+
+    expect![[r#"
+    // test
+    id = (x) => x"#]]
+    .assert_eq(
+        &format_with(
+            src,
+            Options {
+                trailing_newline: false,
+            },
+        )
+        .unwrap(),
     );
 }
