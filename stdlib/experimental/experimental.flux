@@ -316,6 +316,10 @@ builtin to : (
 
 // join joins two streams of tables on the **group key and `_time` column**.
 //
+// **Deprecated**: `experimental.join()` is deprecated in favor of [`join.time()`](https://docs.influxdata.com/flux/v0.x/stdlib/join/time/).
+// The [`join` package](https://docs.influxdata.com/flux/v0.x/stdlib/join/) provides support
+// for multiple join methods.
+//
 // Use the `fn` parameter to map new output tables using values from input tables.
 //
 // **Note**: To join streams of tables with different fields or measurements,
@@ -389,6 +393,7 @@ builtin to : (
 //
 // ## Metadata
 // introduced: 0.65.0
+// deprecated: NEXT
 // tags: transformations
 //
 builtin join : (left: stream[A], right: stream[B], fn: (left: A, right: B) => C) => stream[C]
