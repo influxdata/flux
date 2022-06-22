@@ -22,7 +22,7 @@ func TestFormat(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if want := `x = 1 + 2`; want != got {
+	if want := "x = 1 + 2\n"; want != got {
 		t.Errorf("unexpected formatted file -want/+got:\n\t- %q\n\t+ %q", want, got)
 	}
 }
@@ -44,7 +44,8 @@ x=1+2`
 	}
 
 	if want := `// add two numbers
-x = 1 + 2`; want != got {
+x = 1 + 2
+`; want != got {
 		t.Errorf("unexpected formatted file -want/+got:\n\t- %q\n\t+ %q", want, got)
 	}
 }
@@ -71,7 +72,8 @@ func TestFormatWithCommentsDict(t *testing.T) {
     "a": 0,
     //comment
     "b": 1,
-]`; want != got {
+]
+`; want != got {
 		t.Errorf("unexpected formatted file -want/+got:\n\t- %q\n\t+ %q", want, got)
 	}
 }
@@ -90,7 +92,8 @@ func TestFormatWithCommentsParens(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if want := `// comment\n(1 * 1)`; want != got {
+	if want := `// comment\n(1 * 1)
+`; want != got {
 		t.Errorf("unexpected formatted file -want/+got:\n\t- %q\n\t+ %q", want, got)
 	}
 }
@@ -115,7 +118,8 @@ func TestFormatWithCommentsColon(t *testing.T) {
 	if want := `// Comment
 builtin foo
     // colon comment
-    : int`; want != got {
+    : int
+`; want != got {
 		t.Errorf("unexpected formatted file -want/+got:\n\t- %q\n\t+ %q", want, got)
 	}
 }
@@ -146,7 +150,8 @@ a = 5.0
 10.0 * (-a) == -0.5
     // or this
     or
-    a == 6.0`; want != got {
+    a == 6.0
+`; want != got {
 		t.Errorf("unexpected formatted file -want/+got:\n\t- %q\n\t+ %q", want, got)
 	}
 }
@@ -181,7 +186,8 @@ builtin bar : int
 builtin rab : int
 
 // comment
-builtin baz : int`; want != got {
+builtin baz : int
+`; want != got {
 		t.Errorf("unexpected formatted file -want/+got:\n\t- %q\n\t+ %q", want, got)
 	}
 }
@@ -200,7 +206,7 @@ func TestFormatWithTestCaseStmt(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if want := "testcase my_test {\n    a = 1\n}"; want != got {
+	if want := "testcase my_test {\n    a = 1\n}\n"; want != got {
 		t.Errorf("unexpected formatted file -want/+got:\n\t- %q\n\t+ %q", want, got)
 	}
 }

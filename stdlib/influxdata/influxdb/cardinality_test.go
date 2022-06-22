@@ -189,7 +189,8 @@ func TestCardinality_Run(t *testing.T) {
 
 import influxdb "influxdata/influxdb"
 
-influxdb.cardinality(bucket: "telegraf", start: 2020-10-22T09:29:00Z, stop: 2020-10-22T09:30:00Z)`,
+influxdb.cardinality(bucket: "telegraf", start: 2020-10-22T09:29:00Z, stop: 2020-10-22T09:30:00Z)
+`,
 				Tables: defaultTablesFn,
 			},
 		},
@@ -221,7 +222,8 @@ influxdb.cardinality(bucket: "telegraf", start: 2020-10-22T09:29:00Z, stop: 2020
 
 import influxdb "influxdata/influxdb"
 
-influxdb.cardinality(bucketID: "1e01ac57da723035", start: 2020-10-22T09:29:00Z, stop: 2020-10-22T09:30:00Z)`,
+influxdb.cardinality(bucketID: "1e01ac57da723035", start: 2020-10-22T09:29:00Z, stop: 2020-10-22T09:30:00Z)
+`,
 				Tables: defaultTablesFn,
 			},
 		},
@@ -252,7 +254,8 @@ influxdb.cardinality(bucketID: "1e01ac57da723035", start: 2020-10-22T09:29:00Z, 
 
 import influxdb "influxdata/influxdb"
 
-influxdb.cardinality(bucket: "telegraf", start: 2018-05-30T09:00:00Z, stop: 2018-05-30T10:00:00Z)`,
+influxdb.cardinality(bucket: "telegraf", start: 2018-05-30T09:00:00Z, stop: 2018-05-30T10:00:00Z)
+`,
 				Tables: defaultTablesFn,
 			},
 		},
@@ -297,7 +300,8 @@ influxdb.cardinality(
     predicate: (r) => {
         return r["_value"] >= 0.0
     },
-)`,
+)
+`,
 				Tables: defaultTablesFn,
 			},
 		},
@@ -360,7 +364,8 @@ influxdb.cardinality(
     predicate: (r) => {
         return r["_value"] >= math["pi"]
     },
-)`,
+)
+`,
 				Tables: defaultTablesFn,
 			},
 		},

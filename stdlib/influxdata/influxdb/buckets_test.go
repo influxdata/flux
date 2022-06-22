@@ -120,7 +120,8 @@ func TestBuckets_Run(t *testing.T) {
 				Query: `package main
 
 
-buckets()`,
+buckets()
+`,
 				Tables: defaultTablesFn,
 			},
 		},
