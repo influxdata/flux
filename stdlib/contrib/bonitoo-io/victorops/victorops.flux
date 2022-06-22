@@ -75,14 +75,14 @@ import "json"
 // tags: single notification
 //
 alert = (
-    url,
-    messageType,
-    entityID="",
-    entityDisplayName="",
-    stateMessage="",
-    timestamp=now(),
-    monitoringTool="InfluxDB",
-) =>
+        url,
+        messageType,
+        entityID="",
+        entityDisplayName="",
+        stateMessage="",
+        timestamp=now(),
+        monitoringTool="InfluxDB",
+    ) =>
     {
         alert = {
             message_type: messageType,

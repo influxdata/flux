@@ -1536,14 +1536,14 @@ inData =
 "
 
 testcase naive_bayes {
-        got =
-            csv.from(csv: inData)
-                |> naiveBayesClassifier.naiveBayes(myClass: "airborne", myField: "aquatic", myMeasurement: "zoo-data")
+    got =
+        csv.from(csv: inData)
+            |> naiveBayesClassifier.naiveBayes(myClass: "airborne", myField: "aquatic", myMeasurement: "zoo-data")
 
-        want =
-            csv.from(
-                csv:
-                    "#group,false,false,false,false,false,true,false,true,true,false,false,false,false,false,false
+    want =
+        csv.from(
+            csv:
+                "#group,false,false,false,false,false,true,false,true,true,false,false,false,false,false,false
 #datatype,string,long,string,double,double,string,string,long,string,long,double,double,double,long,long
 #default,MAIN,,,,,,,,,,,,,,
 ,result,table,Animal_name,P_x_k,Probability,_field_Probability_table,_field_r,_value,airborne_P_k_x_class,airborne_P_value_x,p_k,p_x,sum,tc_P_k_x_class,tc_P_value_x
@@ -1567,7 +1567,7 @@ testcase naive_bayes {
 ,,3,crab,0.2631578947368421,0.17241379310344826,aquatic,aquatic,1,1,29,0.25675675675675674,0.3918918918918919,5,74,74
 
 ",
-            )
+        )
 
-        testing.diff(got: got, want: want)
-    }
+    testing.diff(got: got, want: want)
+}

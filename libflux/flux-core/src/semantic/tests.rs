@@ -37,8 +37,7 @@ use crate::{
         fresh::Fresher,
         import::Packages,
         nodes::Symbol,
-        sub::Substitution,
-        types::{MonoType, PolyType, PolyTypeHashMap, SemanticMap, TvarKinds},
+        types::{BoundTvarKinds, MonoType, PolyType, PolyTypeHashMap, SemanticMap},
         Analyzer, AnalyzerConfig, Feature, PackageExports,
     },
 };
@@ -55,8 +54,7 @@ fn parse_map(package: Option<&str>, m: HashMap<&str, &str>) -> PolyTypeHashMap<S
             if let Err(err) = ast::check::check(ast::walk::Node::TypeExpression(&typ_expr)) {
                 panic!("TypeExpression parsing failed for {}. {}", name, err);
             }
-            let poly = convert_polytype(&typ_expr, &mut Substitution::default())
-                .unwrap_or_else(|err| panic!("{}", err));
+            let poly = convert_polytype(&typ_expr).unwrap_or_else(|err| panic!("{}", err));
 
             (
                 match package {
@@ -220,6 +218,7 @@ macro_rules! test_infer {
             config = $config;
         )?
         if let Err(e) = infer_types($src, env, imp, Some($exp), config) {
+            eprintln!("{:#?}", e);
             panic!("{}", e.pretty($src));
         }
     }}
@@ -3538,7 +3537,7 @@ fn copy_bindings_from_other_env() {
         a.clone(),
         PolyType {
             vars: Vec::new(),
-            cons: TvarKinds::new(),
+            cons: BoundTvarKinds::new(),
             expr: MonoType::BOOL,
         },
     );
@@ -3548,7 +3547,7 @@ fn copy_bindings_from_other_env() {
         b.clone(),
         PolyType {
             vars: Vec::new(),
-            cons: TvarKinds::new(),
+            cons: BoundTvarKinds::new(),
             expr: MonoType::Var(f.fresh()),
         },
     );
@@ -3559,19 +3558,18 @@ fn copy_bindings_from_other_env() {
             external: None,
             parent: Some(env.clone().into()),
             readwrite: true,
-            values: maplit::hashmap!(
+            values: indexmap::indexmap!(
                 b => PolyType {
                     vars: Vec::new(),
-                    cons: TvarKinds::new(),
+                    cons: BoundTvarKinds::new(),
                     expr: MonoType::Var(f.fresh()),
                 },
                 a => PolyType {
                     vars: Vec::new(),
-                    cons: TvarKinds::new(),
+                    cons: BoundTvarKinds::new(),
                     expr: MonoType::BOOL,
                 }
             )
-            .into()
         }
     );
 }
@@ -4026,8 +4024,10 @@ fn symbol_resolution() {
     ];
     let src = r#"
             import "types"
+            // Comment on x
             x = types.isType(v: 1, type: "int")
 
+            // Comment on foo
             foo = () => (1)
             foo()
 
@@ -4037,8 +4037,9 @@ fn symbol_resolution() {
             t = types
             z = t.isType(v: 1, type: "int")
         "#;
-    let (_, pkg) = infer_types(src, Default::default(), imp, None, Default::default())
-        .unwrap_or_else(|err| panic!("{}", err));
+    let (package_exports, pkg) =
+        infer_types(src, Default::default(), imp, None, Default::default())
+            .unwrap_or_else(|err| panic!("{}", err));
 
     let mut member_expr_1 = None;
     let mut member_expr_2 = None;
@@ -4047,13 +4048,13 @@ fn symbol_resolution() {
     semantic::walk::walk(
         &mut |node| {
             if let semantic::walk::Node::MemberExpr(e) = node {
-                if e.loc.start.line == 3 {
+                if e.loc.start.line == 4 {
                     member_expr_1 = Some(e);
                 }
-                if e.loc.start.line == 9 {
+                if e.loc.start.line == 11 {
                     member_expr_2 = Some(e);
                 }
-                if e.loc.start.line == 12 {
+                if e.loc.start.line == 14 {
                     member_expr_3 = Some(e);
                 }
             }
@@ -4077,6 +4078,16 @@ fn symbol_resolution() {
 
     // Not currently detected as from the `types` package but could be with better analysis
     assert_eq!(member_expr_3.expect("member expression").property, "isType");
+
+    assert_eq!(
+        package_exports.get_entry("x").map(|e| &e.comments[..]),
+        Some(&["// Comment on x\n".to_string()][..]),
+    );
+
+    assert_eq!(
+        package_exports.get_entry("foo").map(|e| &e.comments[..]),
+        Some(&["// Comment on foo\n".to_string()][..]),
+    );
 }
 
 #[test]

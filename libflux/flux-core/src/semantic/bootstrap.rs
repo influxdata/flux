@@ -11,7 +11,7 @@ use walkdir::WalkDir;
 
 use crate::{
     ast,
-    map::{HashMap, HashSet},
+    map::HashSet,
     parser,
     semantic::{
         env::Environment,
@@ -21,7 +21,8 @@ use crate::{
         nodes::{self, Package, Symbol},
         sub::{Substitutable, Substituter},
         types::{
-            MonoType, PolyType, PolyTypeHashMap, Record, RecordLabel, SemanticMap, Tvar, TvarKinds,
+            BoundTvar, BoundTvarKinds, MonoType, PolyType, PolyTypeHashMap, Record, RecordLabel,
+            SemanticMap, Tvar,
         },
         Analyzer, AnalyzerConfig, PackageExports,
     },
@@ -171,20 +172,15 @@ struct InferState {
 
 impl InferState {
     fn infer_pre(&mut self, ast_packages: &ASTPackageMap) -> Result<PackageExports> {
-        let mut prelude_map = HashMap::new();
+        let mut prelude_map = PackageExports::new();
         for name in PRELUDE {
             // Infer each package in the prelude allowing the earlier packages to be used by later
             // packages within the prelude list.
-            let (types, _sem_pkg) = self.infer_pkg(
-                name,
-                ast_packages,
-                &PackageExports::try_from(prelude_map.clone())?,
-            )?;
-            for (k, v) in types.into_bindings() {
-                prelude_map.insert(k, v);
-            }
+            let (types, _sem_pkg) = self.infer_pkg(name, ast_packages, &prelude_map)?;
+
+            prelude_map.copy_bindings_from(&types);
         }
-        Ok(PackageExports::try_from(prelude_map)?)
+        Ok(prelude_map)
     }
 
     #[allow(clippy::type_complexity)]
@@ -292,14 +288,14 @@ where
 }
 
 // Collects any `MonoType::BoundVar`s in the type
-struct CollectBoundVars(Vec<Tvar>);
+struct CollectBoundVars(Vec<BoundTvar>);
 
 impl Substituter for CollectBoundVars {
     fn try_apply(&mut self, _var: Tvar) -> Option<MonoType> {
         None
     }
 
-    fn try_apply_bound(&mut self, var: Tvar) -> Option<MonoType> {
+    fn try_apply_bound(&mut self, var: BoundTvar) -> Option<MonoType> {
         let vars = &mut self.0;
         if let Err(i) = vars.binary_search(&var) {
             vars.insert(i, var);
@@ -311,8 +307,8 @@ impl Substituter for CollectBoundVars {
 fn add_record_to_map(
     env: &mut PolyTypeHashMap<Symbol>,
     r: &Record,
-    free_vars: &[Tvar],
-    cons: &TvarKinds,
+    free_vars: &[BoundTvar],
+    cons: &BoundTvarKinds,
 ) -> Result<()> {
     for field in r.fields() {
         let new_vars = {
@@ -321,7 +317,7 @@ fn add_record_to_map(
             new_vars.0
         };
 
-        let mut new_cons = TvarKinds::new();
+        let mut new_cons = BoundTvarKinds::new();
         for var in &new_vars {
             if !free_vars.iter().any(|v| v == var) {
                 bail!("monotype contains free var not in poly type free vars");
@@ -409,7 +405,7 @@ mod tests {
     use crate::{
         ast,
         parser::{self, parse_string},
-        semantic::{convert::convert_polytype, sub::Substitution},
+        semantic::convert::convert_polytype,
     };
 
     #[test]
@@ -444,7 +440,7 @@ mod tests {
             if let Err(err) = ast::check::check(ast::walk::Node::TypeExpression(&typ_expr)) {
                 panic!("TypeExpression parsing failed for int. {:?}", err);
             }
-            convert_polytype(&typ_expr, &mut Substitution::default())?
+            convert_polytype(&typ_expr)?
         })])
         .unwrap();
         if want != types {
@@ -464,7 +460,7 @@ mod tests {
                         "TypeExpression parsing failed for int. {:?}", err
                     );
                 }
-                convert_polytype(&typ_expr, &mut Substitution::default())?
+                convert_polytype(&typ_expr, )?
             },
             String::from("b") => {
                 let mut p = parser::Parser::new("{x: int , y: int}");
@@ -474,7 +470,7 @@ mod tests {
                         "TypeExpression parsing failed for int. {:?}", err
                     );
                 }
-                convert_polytype(&typ_expr, &mut Substitution::default())?
+                convert_polytype(&typ_expr,  )?
             },
         };
         if want

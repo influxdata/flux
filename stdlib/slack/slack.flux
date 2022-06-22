@@ -85,12 +85,12 @@ option defaultURL = "https://slack.com/api/chat.postMessage"
 // tags: single notification
 //
 message = (
-    url=defaultURL,
-    token="",
-    channel,
-    text,
-    color,
-) =>
+        url=defaultURL,
+        token="",
+        channel,
+        text,
+        color,
+    ) =>
     {
         attachments = [{color: validateColorString(color), text: string(v: text), mrkdwn_in: ["text"]}]
         data = {channel: channel, attachments: attachments}

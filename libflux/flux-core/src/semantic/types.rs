@@ -1,10 +1,10 @@
 //! Semantic representations of types.
 
 use std::{
-    borrow::Cow,
+    borrow::{Borrow, Cow},
     cmp,
     collections::{BTreeMap, BTreeSet},
-    fmt,
+    fmt::{self, Write as _},
     hash::Hash,
     str::FromStr,
 };
@@ -191,9 +191,9 @@ impl<'a, E> Unifier<'a, E> {
 #[derive(Debug, Clone)]
 pub struct PolyType {
     /// List of the free variables within the monotypes.
-    pub vars: Vec<Tvar>,
+    pub vars: Vec<BoundTvar>,
     /// The list of kind constraints on any of the free variables.
-    pub cons: TvarKinds,
+    pub cons: BoundTvarKinds,
     /// The underlying monotype.
     pub expr: MonoType,
 }
@@ -265,7 +265,7 @@ impl Substitutable for PolyType {
             cons,
             |_, (k, v)| {
                 sub.try_apply_bound(*k).and_then(|k| match k {
-                    MonoType::BoundVar(k) | MonoType::Var(k) => Some((k, v.clone())),
+                    MonoType::BoundVar(k) => Some((k, v.clone())),
                     _ => None,
                 })
             },
@@ -277,7 +277,7 @@ impl Substitutable for PolyType {
             vars,
             |_, v| {
                 sub.try_apply_bound(*v).and_then(|v| match v {
-                    MonoType::BoundVar(v) | MonoType::Var(v) => Some(v),
+                    MonoType::BoundVar(v) => Some(v),
                     _ => None,
                 })
             },
@@ -303,7 +303,7 @@ impl PolyType {
         }
     }
 
-    fn display_constraints(cons: &TvarKinds) -> String {
+    fn display_constraints(cons: &BoundTvarKinds) -> String {
         cons.iter()
             // A BTree produces a sorted iterator for
             // deterministic display output
@@ -581,7 +581,7 @@ pub enum MonoType {
     Label(Label),
     Var(Tvar),
     /// A type variable that is bound to to a `PolyType` that this variable is contained in.
-    BoundVar(Tvar),
+    BoundVar(BoundTvar),
     Collection(Ptr<Collection>),
     Dict(Ptr<Dictionary>),
     Record(Ptr<Record>),
@@ -638,7 +638,8 @@ impl Serialize for MonoType {
             },
             // When serializing we tend to expect that all variables are already bound so treat
             // them the same here
-            Self::BoundVar(v) | Self::Var(v) => MonoTypeSer::Var(*v),
+            Self::BoundVar(v) => MonoTypeSer::Var(Tvar(v.0)),
+            Self::Var(v) => MonoTypeSer::Var(*v),
             Self::Collection(p) => match p.collection {
                 CollectionType::Array => MonoTypeSer::Arr(&p.arg),
                 CollectionType::Vector => MonoTypeSer::Vector(&p.arg),
@@ -814,6 +815,12 @@ impl Substitutable for MonoType {
             MonoType::Record(obj) => obj.visit(sub).map(MonoType::record),
             MonoType::Fun(fun) => fun.visit(sub).map(MonoType::fun),
         }
+    }
+}
+
+impl From<BoundTvar> for MonoType {
+    fn from(a: BoundTvar) -> MonoType {
+        MonoType::BoundVar(a)
     }
 }
 
@@ -1103,10 +1110,16 @@ impl MonoType {
     }
 }
 
+/// `BoundTvar` stands for *type variable* that is bound to some enclosing scope.
+/// A type variable holds an unknown type, before type inference.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize)]
+pub struct BoundTvar(pub u64); // TODO u32 to match ena?
+
 /// `Tvar` stands for *type variable*.
 /// A type variable holds an unknown type, before type inference.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize)]
 pub struct Tvar(pub u64); // TODO u32 to match ena?
+                          //
 
 impl ena::unify::UnifyKey for Tvar {
     type Value = Option<MonoType>;
@@ -1129,26 +1142,27 @@ impl ena::unify::UnifyValue for MonoType {
 
 /// A map from type variables to their constraining kinds.
 pub type TvarKinds = SemanticMap<Tvar, Vec<Kind>>;
+/// A map from type variables to their constraining kinds.
+pub type BoundTvarKinds = SemanticMap<BoundTvar, Vec<Kind>>;
 #[allow(missing_docs)]
 pub type TvarMap = SemanticMap<Tvar, Tvar>;
 #[allow(missing_docs)]
 pub type SubstitutionMap = SemanticMap<Tvar, MonoType>;
 
+impl fmt::Display for BoundTvar {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        Tvar(self.0).fmt(f)
+    }
+}
+
 impl fmt::Display for Tvar {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self.0 {
-            0 => write!(f, "A"),
-            1 => write!(f, "B"),
-            2 => write!(f, "C"),
-            3 => write!(f, "D"),
-            4 => write!(f, "E"),
-            5 => write!(f, "F"),
-            6 => write!(f, "G"),
-            7 => write!(f, "H"),
-            8 => write!(f, "I"),
-            9 => write!(f, "J"),
-            _ => write!(f, "t{}", self.0),
+        if self.0 <= ('Z' as u64 - 'A' as u64) {
+            if let Some(c) = char::from_u32('A' as u32 + self.0 as u32) {
+                return f.write_char(c);
+            }
         }
+        write!(f, "t{}", self.0)
     }
 }
 
@@ -1501,7 +1515,12 @@ impl Record {
                 Record::Empty,
             ) => match *a.apply_cow(unifier.sub) {
                 RecordLabel::Concrete(_) => unifier.errors.push(Error::MissingLabel(a.to_string())),
-                RecordLabel::BoundVariable(v) | RecordLabel::Variable(v) => {
+                RecordLabel::BoundVariable(v) => {
+                    let t = MonoType::from(v);
+                    t.unify(&MonoType::Error, unifier);
+                    unifier.errors.push(Error::NotALabel(t));
+                }
+                RecordLabel::Variable(v) => {
                     let t = unifier.sub.apply(v);
                     t.unify(&MonoType::Error, unifier);
                     unifier.errors.push(Error::NotALabel(t));
@@ -1647,7 +1666,7 @@ pub enum RecordLabel {
     /// A variable label
     Variable(Tvar),
     /// A variable label
-    BoundVariable(Tvar),
+    BoundVariable(BoundTvar),
     /// A concrete label
     Concrete(Label),
     /// A type error occurred during type inference
@@ -1896,6 +1915,20 @@ impl fmt::Display for Function {
     }
 }
 
+impl<K: Eq + Hash + Clone, V> Substitutable for indexmap::IndexMap<K, V>
+where
+    V: Substitutable + Clone,
+{
+    fn walk(&self, sub: &mut (impl ?Sized + Substituter)) -> Option<Self> {
+        merge_collect(
+            &mut (),
+            self.iter(),
+            |_, (k, v)| v.visit(sub).map(|v| (k.clone(), v)),
+            |_, (k, v)| (k.clone(), v.clone()),
+        )
+    }
+}
+
 impl<K: Eq + Hash + Clone> Substitutable for PolyTypeHashMap<K> {
     fn walk(&self, sub: &mut (impl ?Sized + Substituter)) -> Option<Self> {
         merge_collect(
@@ -1947,6 +1980,16 @@ impl Substitutable for Function {
 impl<T> Function<T> {
     pub(crate) fn parameters_len(&self) -> usize {
         self.opt.len() + self.req.len() + self.pipe.is_some() as usize
+    }
+
+    pub(crate) fn parameter<Q: ?Sized>(&self, key: &Q) -> Option<&T>
+    where
+        String: Borrow<Q> + Ord,
+        Q: Ord,
+    {
+        self.req
+            .get(key)
+            .or_else(|| self.opt.get(key).map(|arg| &arg.typ))
     }
 
     pub(crate) fn map<U>(self, mut f: impl FnMut(T) -> U) -> Function<U> {
@@ -2066,11 +2109,11 @@ impl Function {
         T: TypeLike + Clone,
     {
         // Some aliasing for coherence with the doc.
-        let mut f = self.clone();
-        let mut g = actual.clone();
+        let mut f = Cow::Borrowed(self);
+        let mut g = Cow::Borrowed(actual);
         // Fix pipe arguments:
         // Make them required arguments with the correct name.
-        match (f.pipe, g.pipe) {
+        match (&f.pipe, &g.pipe) {
             // Both functions have pipe arguments.
             (Some(fp), Some(gp)) => {
                 if fp.k != "<-" && gp.k != "<-" && fp.k != gp.k {
@@ -2078,15 +2121,17 @@ impl Function {
                     unifier
                         .errors
                         .push(gp.v.error(Error::MultiplePipeArguments {
-                            exp: fp.k,
-                            act: gp.k,
+                            exp: fp.k.clone(),
+                            act: gp.k.clone(),
                         }));
                 } else {
                     // At least one is unnamed or they are both named with the same name.
                     // This means they should match. Enforce this condition by inserting
                     // the pipe argument into the required ones with the same key.
-                    f.req.insert(fp.k.clone(), fp.v);
-                    g.req.insert(fp.k, gp.v);
+                    let fp = fp.clone();
+                    let gp = gp.clone();
+                    f.to_mut().req.insert(fp.k.clone(), fp.v);
+                    g.to_mut().req.insert(fp.k, gp.v);
                 }
             }
             // F has a pipe argument and g does not.
@@ -2099,7 +2144,8 @@ impl Function {
                         .push(g.retn.error(Error::MissingPipeArgument));
                 } else {
                     // This is a named argument, simply put it into the required ones.
-                    f.req.insert(fp.k, fp.v);
+                    let fp = fp.clone();
+                    f.to_mut().req.insert(fp.k, fp.v);
                 }
             }
             // G has a pipe argument and f does not.
@@ -2110,14 +2156,15 @@ impl Function {
                     unifier.errors.push(gp.v.error(Error::MissingPipeArgument));
                 } else {
                     // This is a named argument, simply put it into the required ones.
-                    g.req.insert(gp.k, gp.v);
+                    let gp = gp.clone();
+                    g.to_mut().req.insert(gp.k, gp.v);
                 }
             }
             // Nothing to do.
             (None, None) => (),
         }
         // Now that f has not been consumed yet, check that every required argument in g is in f too.
-        for (name, typ) in g.req.iter() {
+        for (name, typ) in &g.req {
             if !f.req.contains_key(name) && !f.opt.contains_key(name) {
                 unifier
                     .errors
@@ -2126,31 +2173,22 @@ impl Function {
         }
         // Unify f's required arguments.
 
-        let g_opt = &mut g.opt;
-        for (name, exp) in f.req.into_iter() {
-            if let Some(act) = g
-                .req
-                .remove(&name)
-                .or_else(|| g_opt.remove(&name).map(|arg| arg.typ))
-            {
+        for (name, exp) in &f.req {
+            if let Some(act) = g.parameter(name) {
                 // The required argument is in g's required arguments.
-                merge_in_context(&exp, &act, unifier, |e| {
+                merge_in_context(exp, act, unifier, |e| {
                     Error::CannotUnifyArgument(name.clone(), Box::new(e))
                 });
             } else {
                 unifier
                     .errors
-                    .push(g.retn.error(Error::MissingArgument(name)));
+                    .push(g.retn.error(Error::MissingArgument(name.clone())));
             }
         }
         // Unify f's optional arguments.
-        for (name, exp) in f.opt.into_iter() {
-            if let Some(act) = g
-                .req
-                .remove(&name)
-                .or_else(|| g_opt.remove(&name).map(|arg| arg.typ))
-            {
-                merge_in_context(&exp.typ, &act, unifier, |e| {
+        for (name, exp) in &f.opt {
+            if let Some(act) = g.parameter(name) {
+                merge_in_context(&exp.typ, act, unifier, |e| {
                     Error::CannotUnifyArgument(name.clone(), Box::new(e))
                 });
             } else if let Some(default) = &exp.default {
@@ -2162,13 +2200,11 @@ impl Function {
             }
         }
 
-        let f_retn = &f.retn;
-        let g_retn = &g.retn;
         // Unify return types.
         merge_in_context(&f.retn, &g.retn, unifier, |cause| {
             Error::CannotUnifyReturn {
-                exp: f_retn.clone(),
-                act: g_retn.typ().clone(),
+                exp: f.retn.clone(),
+                act: g.retn.typ().clone(),
                 cause: Box::new(cause),
             }
         })
@@ -2182,16 +2218,10 @@ impl Function {
     }
 
     fn contains(&self, tv: Tvar) -> bool {
-        if let Some(pipe) = &self.pipe {
-            self.req.values().any(|t| t.contains(tv))
-                || self.opt.values().any(|t| t.contains(tv))
-                || pipe.v.contains(tv)
-                || self.retn.contains(tv)
-        } else {
-            self.req.values().any(|t| t.contains(tv))
-                || self.opt.values().any(|t| t.contains(tv))
-                || self.retn.contains(tv)
-        }
+        self.req.values().any(|t| t.contains(tv))
+            || self.opt.values().any(|t| t.contains(tv))
+            || self.retn.contains(tv)
+            || self.pipe.as_ref().map_or(false, |pipe| pipe.v.contains(tv))
     }
 }
 
@@ -2252,10 +2282,6 @@ where
                 self.max = self.max.max(Some(var));
                 None
             }
-            fn try_apply_bound(&mut self, var: Tvar) -> Option<MonoType> {
-                self.max = self.max.max(Some(var));
-                None
-            }
         }
 
         let mut max = MaxTvars::default();
@@ -2285,21 +2311,17 @@ mod tests {
         if let Err(err) = ast::check::check(ast::walk::Node::TypeExpression(&typ_expr)) {
             panic!("TypeExpression parsing failed for {}. {:?}", typ, err);
         }
-        convert_polytype(&typ_expr, &mut Substitution::default()).unwrap()
+        convert_polytype(&typ_expr).unwrap()
     }
 
-    fn parse_type(
-        expr: &str,
-        tvars: &mut BTreeMap<String, Tvar>,
-        sub: &mut Substitution,
-    ) -> MonoType {
+    fn parse_type(expr: &str, tvars: &mut BTreeMap<String, BoundTvar>) -> MonoType {
         let mut p = parser::Parser::new(expr);
 
         let typ_expr = p.parse_type_expression();
         if let Err(err) = ast::check::check(ast::walk::Node::TypeExpression(&typ_expr)) {
             panic!("TypeExpression parsing failed. {:?}", err);
         }
-        convert_monotype(&typ_expr.monotype, tvars, sub).unwrap()
+        convert_monotype(&typ_expr.monotype, tvars).unwrap()
     }
 
     #[test]
@@ -2377,7 +2399,9 @@ mod tests {
     }
     #[test]
     fn display_type_tvar() {
-        assert_eq!("t10", MonoType::BoundVar(Tvar(10)).to_string());
+        assert_eq!("K", MonoType::BoundVar(BoundTvar(10)).to_string());
+        assert_eq!("Z", MonoType::BoundVar(BoundTvar(25)).to_string());
+        assert_eq!("t26", MonoType::BoundVar(BoundTvar(26)).to_string());
     }
     #[test]
     fn display_type_array() {
@@ -2402,7 +2426,7 @@ mod tests {
                         v: MonoType::STRING,
                     }
                 ],
-                Some(MonoType::BoundVar(Tvar(0))),
+                Some(MonoType::BoundVar(BoundTvar(0))),
             )
             .to_string()
         );
@@ -2559,7 +2583,7 @@ mod tests {
             "int",
             PolyType {
                 vars: Vec::new(),
-                cons: TvarKinds::new(),
+                cons: BoundTvarKinds::new(),
                 expr: MonoType::INT,
             }
             .to_string(),
@@ -2567,15 +2591,15 @@ mod tests {
         assert_eq!(
             "(x: A) => A",
             PolyType {
-                vars: vec![Tvar(0)],
-                cons: TvarKinds::new(),
+                vars: vec![BoundTvar(0)],
+                cons: BoundTvarKinds::new(),
                 expr: MonoType::from(Function {
                     req: semantic_map! {
-                        String::from("x") => MonoType::BoundVar(Tvar(0)),
+                        String::from("x") => MonoType::BoundVar(BoundTvar(0)),
                     },
                     opt: MonoTypeMap::new(),
                     pipe: None,
-                    retn: MonoType::BoundVar(Tvar(0)),
+                    retn: MonoType::BoundVar(BoundTvar(0)),
                 }),
             }
             .to_string(),
@@ -2583,12 +2607,12 @@ mod tests {
         assert_eq!(
             "(x: A, y: B) => {x: A, y: B}",
             PolyType {
-                vars: vec![Tvar(0), Tvar(1)],
-                cons: TvarKinds::new(),
+                vars: vec![BoundTvar(0), BoundTvar(1)],
+                cons: BoundTvarKinds::new(),
                 expr: MonoType::from(Function {
                     req: semantic_map! {
-                        String::from("x") => MonoType::BoundVar(Tvar(0)),
-                        String::from("y") => MonoType::BoundVar(Tvar(1)),
+                        String::from("x") => MonoType::BoundVar(BoundTvar(0)),
+                        String::from("y") => MonoType::BoundVar(BoundTvar(1)),
                     },
                     opt: MonoTypeMap::new(),
                     pipe: None,
@@ -2596,11 +2620,11 @@ mod tests {
                         [
                             Property {
                                 k: RecordLabel::from("x"),
-                                v: MonoType::BoundVar(Tvar(0)),
+                                v: MonoType::BoundVar(BoundTvar(0)),
                             },
                             Property {
                                 k: RecordLabel::from("y"),
-                                v: MonoType::BoundVar(Tvar(1)),
+                                v: MonoType::BoundVar(BoundTvar(1)),
                             }
                         ],
                         Some(MonoType::from(Record::Empty)),
@@ -2612,16 +2636,16 @@ mod tests {
         assert_eq!(
             "(a: A, b: A) => A where A: Addable",
             PolyType {
-                vars: vec![Tvar(0)],
-                cons: semantic_map! {Tvar(0) => vec![Kind::Addable]},
+                vars: vec![BoundTvar(0)],
+                cons: semantic_map! {BoundTvar(0) => vec![Kind::Addable]},
                 expr: MonoType::from(Function {
                     req: semantic_map! {
-                        String::from("a") => MonoType::BoundVar(Tvar(0)),
-                        String::from("b") => MonoType::BoundVar(Tvar(0)),
+                        String::from("a") => MonoType::BoundVar(BoundTvar(0)),
+                        String::from("b") => MonoType::BoundVar(BoundTvar(0)),
                     },
                     opt: MonoTypeMap::new(),
                     pipe: None,
-                    retn: MonoType::BoundVar(Tvar(0)),
+                    retn: MonoType::BoundVar(BoundTvar(0)),
                 }),
             }
             .to_string(),
@@ -2629,15 +2653,15 @@ mod tests {
         assert_eq!(
             "(x: A, y: B) => {x: A, y: B} where A: Addable, B: Divisible",
             PolyType {
-                vars: vec![Tvar(0), Tvar(1)],
+                vars: vec![BoundTvar(0), BoundTvar(1)],
                 cons: semantic_map! {
-                    Tvar(0) => vec![Kind::Addable],
-                    Tvar(1) => vec![Kind::Divisible],
+                    BoundTvar(0) => vec![Kind::Addable],
+                    BoundTvar(1) => vec![Kind::Divisible],
                 },
                 expr: MonoType::from(Function {
                     req: semantic_map! {
-                        String::from("x") => MonoType::BoundVar(Tvar(0)),
-                        String::from("y") => MonoType::BoundVar(Tvar(1)),
+                        String::from("x") => MonoType::BoundVar(BoundTvar(0)),
+                        String::from("y") => MonoType::BoundVar(BoundTvar(1)),
                     },
                     opt: MonoTypeMap::new(),
                     pipe: None,
@@ -2645,11 +2669,11 @@ mod tests {
                         [
                             Property {
                                 k: RecordLabel::from("x"),
-                                v: MonoType::BoundVar(Tvar(0)),
+                                v: MonoType::BoundVar(BoundTvar(0)),
                             },
                             Property {
                                 k: RecordLabel::from("y"),
-                                v: MonoType::BoundVar(Tvar(1)),
+                                v: MonoType::BoundVar(BoundTvar(1)),
                             }
                         ],
                         Some(MonoType::from(Record::Empty)),
@@ -2661,15 +2685,15 @@ mod tests {
         assert_eq!(
             "(x: A, y: B) => {x: A, y: B} where A: Comparable + Equatable, B: Addable + Divisible",
             PolyType {
-                vars: vec![Tvar(0), Tvar(1)],
+                vars: vec![BoundTvar(0), BoundTvar(1)],
                 cons: semantic_map! {
-                    Tvar(0) => vec![Kind::Comparable, Kind::Equatable],
-                    Tvar(1) => vec![Kind::Addable, Kind::Divisible],
+                    BoundTvar(0) => vec![Kind::Comparable, Kind::Equatable],
+                    BoundTvar(1) => vec![Kind::Addable, Kind::Divisible],
                 },
                 expr: MonoType::from(Function {
                     req: semantic_map! {
-                        String::from("x") => MonoType::BoundVar(Tvar(0)),
-                        String::from("y") => MonoType::BoundVar(Tvar(1)),
+                        String::from("x") => MonoType::BoundVar(BoundTvar(0)),
+                        String::from("y") => MonoType::BoundVar(BoundTvar(1)),
                     },
                     opt: MonoTypeMap::new(),
                     pipe: None,
@@ -2677,11 +2701,11 @@ mod tests {
                         [
                             Property {
                                 k: RecordLabel::from("x"),
-                                v: MonoType::BoundVar(Tvar(0)),
+                                v: MonoType::BoundVar(BoundTvar(0)),
                             },
                             Property {
                                 k: RecordLabel::from("y"),
-                                v: MonoType::BoundVar(Tvar(1)),
+                                v: MonoType::BoundVar(BoundTvar(1)),
                             }
                         ],
                         Some(MonoType::from(Record::Empty))
@@ -2707,7 +2731,7 @@ mod tests {
                         v: MonoType::STRING,
                     }
                 ],
-                Some(MonoType::BoundVar(Tvar(0))),
+                Some(MonoType::BoundVar(BoundTvar(0))),
             )),
             // {A with b:string, a:int}
             MonoType::from(Record::new(
@@ -2721,7 +2745,7 @@ mod tests {
                         v: MonoType::INT,
                     }
                 ],
-                Some(MonoType::BoundVar(Tvar(0))),
+                Some(MonoType::BoundVar(BoundTvar(0))),
             )),
         );
         assert_eq!(
@@ -2745,7 +2769,7 @@ mod tests {
                         v: MonoType::FLOAT,
                     }
                 ],
-                Some(MonoType::BoundVar(Tvar(0))),
+                Some(MonoType::BoundVar(BoundTvar(0))),
             )),
             // {A with c:float, b:string, b:int, a:int}
             MonoType::from(Record::new(
@@ -2767,7 +2791,7 @@ mod tests {
                         v: MonoType::INT,
                     }
                 ],
-                Some(MonoType::BoundVar(Tvar(0))),
+                Some(MonoType::BoundVar(BoundTvar(0))),
             ))
         );
         assert_ne!(
@@ -2791,7 +2815,7 @@ mod tests {
                         v: MonoType::FLOAT,
                     }
                 ],
-                Some(MonoType::BoundVar(Tvar(0))),
+                Some(MonoType::BoundVar(BoundTvar(0))),
             )),
             // {A with a:int, b:int, b:string, c:float}
             MonoType::from(Record::new(
@@ -2813,7 +2837,7 @@ mod tests {
                         v: MonoType::FLOAT,
                     }
                 ],
-                Some(MonoType::BoundVar(Tvar(0))),
+                Some(MonoType::BoundVar(BoundTvar(0))),
             ))
         );
         assert_ne!(
@@ -2861,7 +2885,7 @@ mod tests {
                     k: RecordLabel::from("a"),
                     v: MonoType::INT,
                 },
-                tail: MonoType::BoundVar(Tvar(0)),
+                tail: MonoType::BoundVar(BoundTvar(0)),
             }),
         );
         assert_ne!(
@@ -2871,7 +2895,7 @@ mod tests {
                     k: RecordLabel::from("a"),
                     v: MonoType::INT,
                 },
-                tail: MonoType::BoundVar(Tvar(0)),
+                tail: MonoType::BoundVar(BoundTvar(0)),
             }),
             // {B with a:int}
             MonoType::from(Record::Extension {
@@ -2879,7 +2903,7 @@ mod tests {
                     k: RecordLabel::from("a"),
                     v: MonoType::INT,
                 },
-                tail: MonoType::BoundVar(Tvar(1)),
+                tail: MonoType::BoundVar(BoundTvar(1)),
             }),
         );
     }
@@ -3050,23 +3074,14 @@ mod tests {
         // g-required and g-optional arguments do not contain a f-required argument (and viceversa).
         let f = polytype("(a: A, b: A, ?c: B) => A where A: Addable, B: Divisible ");
         let g = polytype("(d: C, ?e: C) => C where C: Addable ");
-        if let (
-            PolyType {
-                vars: _,
-                cons: f_cons,
-                expr: MonoType::Fun(f),
-            },
-            PolyType {
-                vars: _,
-                cons: g_cons,
-                expr: MonoType::Fun(g),
-            },
-        ) = (f, g)
-        {
+        let mut sub = Substitution::default();
+        if let ((MonoType::Fun(f), f_cons), (MonoType::Fun(g), g_cons)) = (
+            infer::instantiate(f, &mut sub, Default::default()),
+            infer::instantiate(g, &mut sub, Default::default()),
+        ) {
+            infer::solve(&f_cons, &mut sub).unwrap();
+            infer::solve(&g_cons, &mut sub).unwrap();
             // this extends the first map with the second by generating a new one.
-            let mut sub = Substitution::default();
-            sub.cons().extend(f_cons.into_iter().chain(g_cons));
-            sub.mk_fresh(2);
             let res = f.clone().try_unify(&g, &mut sub);
             assert!(res.is_err());
             let res = g.clone().try_unify(&f, &mut sub);
@@ -3074,25 +3089,18 @@ mod tests {
         } else {
             panic!("the monotypes under examination are not functions");
         }
+
         // f has a pipe argument, but g does not (and viceversa).
         let f = polytype("(<-pip:A, a: B) => A where A: Addable, B: Divisible ");
         let g = polytype("(a: C) => C where C: Addable ");
-        if let (
-            PolyType {
-                vars: _,
-                cons: f_cons,
-                expr: MonoType::Fun(f),
-            },
-            PolyType {
-                vars: _,
-                cons: g_cons,
-                expr: MonoType::Fun(g),
-            },
-        ) = (f, g)
-        {
-            let mut sub = Substitution::default();
-            sub.cons().extend(f_cons.into_iter().chain(g_cons));
-            sub.mk_fresh(2);
+        let mut sub = Substitution::default();
+        if let ((MonoType::Fun(f), f_cons), (MonoType::Fun(g), g_cons)) = (
+            infer::instantiate(f, &mut sub, Default::default()),
+            infer::instantiate(g, &mut sub, Default::default()),
+        ) {
+            infer::solve(&f_cons, &mut sub).unwrap();
+            infer::solve(&g_cons, &mut sub).unwrap();
+
             let res = f.clone().try_unify(&g, &mut sub);
             assert!(res.is_err());
             let res = g.try_unify(&f, &mut sub);
@@ -3164,8 +3172,8 @@ mod tests {
         ($expected: expr, $actual: expr $(,)?) => {{
             let mut sub = Substitution::default();
             let mut tvars = BTreeMap::new();
-            parse_type($expected, &mut tvars, &mut sub)
-                .try_unify(&parse_type($actual, &mut tvars, &mut sub), &mut sub)
+            parse_type($expected, &mut tvars)
+                .try_unify(&parse_type($actual, &mut tvars), &mut sub)
                 .unwrap_or_else(|err| panic!("{}", err));
         }};
     }
@@ -3174,8 +3182,8 @@ mod tests {
         ($expected: expr, $actual: expr $(, $pat: pat)? $(,)?) => {{
             let mut sub = Substitution::default();
             let mut tvars = BTreeMap::new();
-            let result = parse_type($expected, &mut tvars, &mut sub).try_unify(
-                &parse_type($actual, &mut tvars, &mut sub),
+            let result = parse_type($expected, &mut tvars).try_unify(
+                &parse_type($actual, &mut tvars),
                 &mut sub,
             );
             match result {

@@ -8,8 +8,8 @@ import "testing"
 // Test prometheus.histogramQuantile with Prometheus histograms written using
 // the Prometheus metric parser format version 2
 testcase prometheus_histogramQuantile_v2 {
-        inData =
-            "#group,false,false,true,true,false,false,true,true
+    inData =
+        "#group,false,false,true,true,false,false,true,true
 #datatype,string,long,string,string,dateTime:RFC3339,double,string,string
 #default,_result,,,,,,,
 ,result,table,_field,_measurement,_time,_value,le,org
@@ -110,8 +110,8 @@ testcase prometheus_histogramQuantile_v2 {
 ,,15,qc_all_duration_seconds,prometheus,2021-10-08T00:00:40.377Z,1407,3.125,0002
 ,,15,qc_all_duration_seconds,prometheus,2021-10-08T00:00:50.373893Z,1409,3.125,0002
 "
-        outData =
-            "#group,false,false,true,true,true,true,false,true,false,true
+    outData =
+        "#group,false,false,true,true,true,true,false,true,false,true
 #datatype,string,long,string,string,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,double,string
 #default,_result,,,,,,,,,
 ,result,table,_field,_measurement,_start,_stop,_time,org,_value,quantile
@@ -128,20 +128,20 @@ testcase prometheus_histogramQuantile_v2 {
 ,,1,qc_all_duration_seconds,prometheus,2021-10-08T00:00:00Z,2021-10-08T00:01:00Z,2021-10-08T00:00:40.377Z,0002,2.2223214285714374,0.99
 ,,1,qc_all_duration_seconds,prometheus,2021-10-08T00:00:00Z,2021-10-08T00:01:00Z,2021-10-08T00:00:50.373893Z,0002,2.2205357142857047,0.99
 "
-        want = csv.from(csv: outData)
-        got =
-            csv.from(csv: inData)
-                |> range(start: 2021-10-08T00:00:00Z, stop: 2021-10-08T00:01:00Z)
-                |> prometheus.histogramQuantile(quantile: 0.99, metricVersion: 2)
+    want = csv.from(csv: outData)
+    got =
+        csv.from(csv: inData)
+            |> range(start: 2021-10-08T00:00:00Z, stop: 2021-10-08T00:01:00Z)
+            |> prometheus.histogramQuantile(quantile: 0.99, metricVersion: 2)
 
-        testing.diff(got: got, want: want)
-    }
+    testing.diff(got: got, want: want)
+}
 
 // Test prometheus.histogramQuantile with Prometheus histograms written using
 // the Prometheus metric parser format version 1
 testcase prometheus_histogramQuantile_v1 {
-        inData =
-            "#group,false,false,true,true,false,false,true
+    inData =
+        "#group,false,false,true,true,false,false,true
 #datatype,string,long,string,string,dateTime:RFC3339,double,string
 #default,_result,,,,,,
 ,result,table,_field,_measurement,_time,_value,org
@@ -266,8 +266,8 @@ testcase prometheus_histogramQuantile_v1 {
 ,,19,sum,qc_all_duration_seconds,2021-10-08T00:00:41.871188Z,179.87429533899981,0002
 ,,19,sum,qc_all_duration_seconds,2021-10-08T00:00:51.871403Z,180.2172711799998,0002
 "
-        outData =
-            "#group,false,false,true,true,true,false,true,false,true
+    outData =
+        "#group,false,false,true,true,true,false,true,false,true
 #datatype,string,long,string,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,double,string
 #default,_result,,,,,,,,
 ,result,table,_measurement,_start,_stop,_time,org,_value,quantile
@@ -284,11 +284,11 @@ testcase prometheus_histogramQuantile_v1 {
 ,,1,qc_all_duration_seconds,2021-10-08T00:00:00Z,2021-10-08T00:01:00Z,2021-10-08T00:00:41.871188Z,0002,2.2205357142857047,0.99
 ,,1,qc_all_duration_seconds,2021-10-08T00:00:00Z,2021-10-08T00:01:00Z,2021-10-08T00:00:51.871403Z,0002,2.218749999999992,0.99
 "
-        want = csv.from(csv: outData)
-        got =
-            csv.from(csv: inData)
-                |> range(start: 2021-10-08T00:00:00Z, stop: 2021-10-08T00:01:00Z)
-                |> prometheus.histogramQuantile(quantile: 0.99, metricVersion: 1)
+    want = csv.from(csv: outData)
+    got =
+        csv.from(csv: inData)
+            |> range(start: 2021-10-08T00:00:00Z, stop: 2021-10-08T00:01:00Z)
+            |> prometheus.histogramQuantile(quantile: 0.99, metricVersion: 1)
 
-        testing.diff(got: got, want: want)
-    }
+    testing.diff(got: got, want: want)
+}

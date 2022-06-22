@@ -245,6 +245,12 @@ pub struct Salvage<T, E> {
     pub error: E,
 }
 
+impl<T: fmt::Debug, E: StdError> StdError for Salvage<T, E> {
+    fn source(&self) -> Option<&(dyn StdError + 'static)> {
+        self.error.source()
+    }
+}
+
 impl<T, E> fmt::Display for Salvage<T, E>
 where
     E: fmt::Display,

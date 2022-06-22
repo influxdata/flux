@@ -1,7 +1,7 @@
 use crate::{
     ast,
     parser::parse_string,
-    semantic::{convert, nodes, sub::Substitution},
+    semantic::{convert, nodes},
 };
 
 pub fn compile(source: &str) -> nodes::Package {
@@ -13,5 +13,5 @@ pub fn compile(source: &str) -> nodes::Package {
         package: "main".to_string(),
         files: vec![file],
     };
-    convert::convert_package(&ast_pkg, &Default::default(), &mut Substitution::default()).unwrap()
+    convert::convert_package(&ast_pkg, &Default::default()).unwrap()
 }

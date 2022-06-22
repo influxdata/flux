@@ -85,6 +85,7 @@ func TestRuleCreatedNodeUniqueness(t *testing.T) {
 				},
 				Edges: joinEdges,
 			},
+			SkipValidation: true,
 		},
 	}
 
@@ -138,6 +139,7 @@ func TestFromRemoteRule_WithHost(t *testing.T) {
 			},
 			Edges: [][2]int{{0, 1}},
 		},
+		SkipValidation: true,
 	}
 	plantest.PhysicalRuleTestHelper(t, &tc)
 }
@@ -170,7 +172,8 @@ func TestFromRemoteRule_WithoutHost(t *testing.T) {
 			},
 			Edges: [][2]int{{0, 1}},
 		},
-		NoChange: true,
+		NoChange:       true,
+		SkipValidation: true,
 	}
 	plantest.PhysicalRuleTestHelper(t, &tc)
 }
@@ -433,6 +436,7 @@ func TestDefaultFromAttributes(t *testing.T) {
 					}),
 				},
 			},
+			SkipValidation: true,
 		},
 	} {
 		t.Run(tc.Name, func(t *testing.T) {

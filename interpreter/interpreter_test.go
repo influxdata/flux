@@ -658,7 +658,7 @@ func TestInterpreter_MultiPhaseInterpretation(t *testing.T) {
 			ctx, deps := dependency.Inject(context.Background(), dependenciestest.Default())
 			defer deps.Finish()
 
-			r := repl.New(ctx)
+			r := repl.New(ctx, false)
 			if _, err := r.Eval(prelude); err != nil {
 				t.Fatalf("unable to evaluate prelude: %s", err)
 			}
@@ -756,7 +756,7 @@ func TestInterpreter_MultipleEval(t *testing.T) {
 							Value: values.NewInt(1),
 							Node: &semantic.ExpressionStatement{
 								Expression: &semantic.CallExpression{
-									Callee:    &semantic.IdentifierExpression{Name: semantic.NewSymbol("foo")},
+									Callee:    &semantic.IdentifierExpression{Name: semantic.NewSymbol("foo@main")},
 									Arguments: &semantic.ObjectExpression{Properties: []*semantic.Property{}},
 								},
 							},
@@ -772,7 +772,7 @@ func TestInterpreter_MultipleEval(t *testing.T) {
 			ctx, deps := dependency.Inject(context.Background(), dependenciestest.Default())
 			defer deps.Finish()
 
-			r := repl.New(ctx)
+			r := repl.New(ctx, false)
 
 			if _, err := r.Eval(prelude); err != nil {
 				t.Fatalf("unable to evaluate prelude: %s", err)

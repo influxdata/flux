@@ -41,14 +41,14 @@ b =
 
 // left stream's, second table is missing 'key' columns
 testcase missing_column_on_left_stream {
-        got =
-            join(tables: {a, b}, on: ["_time"])
-                |> debug.slurp()
+    got =
+        join(tables: {a, b}, on: ["_time"])
+            |> debug.slurp()
 
-        want =
-            csv.from(
-                csv:
-                    "
+    want =
+        csv.from(
+            csv:
+                "
 #datatype,string,long,dateTime:RFC3339,double,double,string,string
 #group,false,false,false,false,false,true,true
 #default,_result,,,,,,
@@ -63,10 +63,10 @@ testcase missing_column_on_left_stream {
 ,,1,2021-01-01T00:00:00Z,1.5,10.0,
 ,,1,2021-01-01T00:01:00Z,2.5,20.0,
 ",
-            )
+        )
 
-        testing.diff(got, want) |> yield()
-    }
+    testing.diff(got, want) |> yield()
+}
 
 a1 =
     csv.from(
@@ -102,13 +102,13 @@ b1 =
 // change in the result join schema on the fly as tables in left stream contains different schema
 // left stream's, second table has extra column 'key'
 testcase missing_column_on_left_stream_with_join_schema_change {
-        got =
-            join(tables: {a1, b1}, on: ["_time"])
-                |> debug.slurp()
-        want =
-            csv.from(
-                csv:
-                    "
+    got =
+        join(tables: {a1, b1}, on: ["_time"])
+            |> debug.slurp()
+    want =
+        csv.from(
+            csv:
+                "
 #datatype,string,long,dateTime:RFC3339,double,double,string
 #group,false,false,false,false,false,true
 #default,_result,,,,,
@@ -122,10 +122,10 @@ testcase missing_column_on_left_stream_with_join_schema_change {
 ,,1,2021-01-01T00:00:00Z,1.0,10.0,foo,bar
 ,,1,2021-01-01T00:01:00Z,2.0,20.0,foo,bar
 ",
-            )
+        )
 
-        testing.diff(got, want) |> yield()
-    }
+    testing.diff(got, want) |> yield()
+}
 
 a2 =
     csv.from(
@@ -161,13 +161,13 @@ b2 =
 // when a column exists on both sides but has a different type
 // column 'key' is string on the left stream and double on the right stream
 testcase same_column_on_both_stream_with_different_type {
-        got =
-            join(tables: {a2, b2}, on: ["_time"])
-                |> debug.slurp()
-        want =
-            csv.from(
-                csv:
-                    "
+    got =
+        join(tables: {a2, b2}, on: ["_time"])
+            |> debug.slurp()
+    want =
+        csv.from(
+            csv:
+                "
 #datatype,string,long,dateTime:RFC3339,double,double,string,double
 #group,false,false,false,false,false,true,true
 #default,_result,,,,,,
@@ -181,10 +181,10 @@ testcase same_column_on_both_stream_with_different_type {
 ,,1,2021-01-01T00:00:00Z,1.5,10.0,8.0
 ,,1,2021-01-01T00:01:00Z,2.5,20.0,8.0
 ",
-            )
+        )
 
-        testing.diff(got, want) |> yield()
-    }
+    testing.diff(got, want) |> yield()
+}
 
 a3 =
     csv.from(
@@ -230,13 +230,13 @@ b3 =
 // 2nd table - key, gkey_2
 // Join on _time (non groupKey)
 testcase different_group_key_on_left_and_right_stream_join_on_non_group_key {
-        got =
-            join(tables: {a3, b3}, on: ["_time"])
-                |> debug.slurp()
-        want =
-            csv.from(
-                csv:
-                    "
+    got =
+        join(tables: {a3, b3}, on: ["_time"])
+            |> debug.slurp()
+    want =
+        csv.from(
+            csv:
+                "
 #datatype,string,long,dateTime:RFC3339,double,double,string,string
 #group,false,false,false,false,false,true,true
 #default,_result,,,,,,
@@ -256,10 +256,10 @@ testcase different_group_key_on_left_and_right_stream_join_on_non_group_key {
 ,,2,2021-01-01T00:00:00Z,3.0,10.0,key2,key0,gkey2
 ,,2,2021-01-01T00:01:00Z,3.5,10.5,key2,key0,gkey2
 ",
-            )
+        )
 
-        testing.diff(got, want) |> yield()
-    }
+    testing.diff(got, want) |> yield()
+}
 
 s1 =
     array.from(rows: [{unit: "A", power: 100}, {unit: "B", power: 200}, {unit: "C", power: 300}])

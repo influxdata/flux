@@ -187,7 +187,7 @@ impl Formatter {
     fn format_monotype(&mut self, n: &MonoType) {
         match n {
             MonoType::Var(tv) => self.format_tvar(tv),
-            MonoType::BoundVar(tv) => self.format_tvar(tv),
+            MonoType::BoundVar(tv) => self.format_bound_tvar(tv),
             MonoType::Collection(app) => match app.collection {
                 CollectionType::Array => self.format_array_type(&app.arg),
                 // Collection::Vector => self.format_vector_type(vec),
@@ -236,6 +236,10 @@ impl Formatter {
                 self.unindent();
             }
         }
+    }
+
+    fn format_bound_tvar(&mut self, n: &semantic::types::BoundTvar) {
+        self.write_string(&format!("{}", &n));
     }
 
     fn format_tvar(&mut self, n: &semantic::types::Tvar) {

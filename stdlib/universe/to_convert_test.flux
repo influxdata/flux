@@ -7,8 +7,8 @@ import "csv"
 option now = () => 2030-01-01T00:00:00Z
 
 testcase to_float {
-        inData =
-            "
+    inData =
+        "
 #datatype,string,long,dateTime:RFC3339,boolean,string,string
 #group,false,false,false,false,true,true
 #default,_result,,,,,
@@ -62,8 +62,8 @@ testcase to_float {
 ,,4,2018-05-22T19:53:43Z,4294967296,k4,m
 ,,4,2018-05-22T19:53:44Z,9223372036854775808,k4,m
 "
-        outData =
-            "
+    outData =
+        "
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,double
 #group,false,false,true,true,false,true,true,false
 #default,want,,,,,,,
@@ -101,17 +101,17 @@ testcase to_float {
 ,,4,2018-05-22T19:52:00Z,2030-01-01T00:00:00Z,2018-05-22T19:53:43Z,k4,m,4294967296
 ,,4,2018-05-22T19:52:00Z,2030-01-01T00:00:00Z,2018-05-22T19:53:44Z,k4,m,9223372036854775808
 "
-        got =
-            csv.from(csv: inData)
-                |> range(start: 2018-05-22T19:52:00Z)
-                |> toFloat()
-        want = csv.from(csv: outData)
+    got =
+        csv.from(csv: inData)
+            |> range(start: 2018-05-22T19:52:00Z)
+            |> toFloat()
+    want = csv.from(csv: outData)
 
-        testing.diff(got: got, want: want)
-    }
+    testing.diff(got: got, want: want)
+}
 testcase to_bool {
-        inData =
-            "
+    inData =
+        "
 #datatype,string,long,dateTime:RFC3339,boolean,string,string
 #group,false,false,false,false,true,true
 #default,_result,,,,,
@@ -148,8 +148,8 @@ testcase to_bool {
 ,,4,2018-05-22T19:53:40Z,1,k4,m
 ,,4,2018-05-22T19:53:41Z,0,k4,m
 "
-        outData =
-            "
+    outData =
+        "
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,boolean
 #group,false,false,true,true,false,true,true,false
 #default,want,,,,,,,
@@ -170,17 +170,17 @@ testcase to_bool {
 ,,4,2018-05-22T19:52:00Z,2030-01-01T00:00:00Z,2018-05-22T19:53:40Z,k4,m,true
 ,,4,2018-05-22T19:52:00Z,2030-01-01T00:00:00Z,2018-05-22T19:53:41Z,k4,m,false
 "
-        got =
-            csv.from(csv: inData)
-                |> range(start: 2018-05-22T19:52:00Z)
-                |> toBool()
-        want = csv.from(csv: outData)
+    got =
+        csv.from(csv: inData)
+            |> range(start: 2018-05-22T19:52:00Z)
+            |> toBool()
+    want = csv.from(csv: outData)
 
-        testing.diff(got: got, want: want)
-    }
+    testing.diff(got: got, want: want)
+}
 testcase to_string {
-        inData =
-            "
+    inData =
+        "
 #datatype,string,long,dateTime:RFC3339,boolean,string,string
 #group,false,false,false,false,true,true
 #default,_result,,,,,
@@ -236,8 +236,8 @@ testcase to_string {
 ,,5,2018-05-22T19:53:53Z,4294967296,k5,m
 ,,5,2018-05-22T19:53:54Z,9223372036854775808,k5,m
 "
-        outData =
-            "
+    outData =
+        "
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string
 #group,false,false,true,true,false,true,true,false
 #default,want,,,,,,,
@@ -273,17 +273,17 @@ testcase to_string {
 ,,5,2018-05-22T19:52:00Z,2030-01-01T00:00:00Z,2018-05-22T19:53:53Z,k5,m,4294967296
 ,,5,2018-05-22T19:52:00Z,2030-01-01T00:00:00Z,2018-05-22T19:53:54Z,k5,m,9223372036854775808
 "
-        got =
-            csv.from(csv: inData)
-                |> range(start: 2018-05-22T19:52:00Z)
-                |> toString()
-        want = csv.from(csv: outData)
+    got =
+        csv.from(csv: inData)
+            |> range(start: 2018-05-22T19:52:00Z)
+            |> toString()
+    want = csv.from(csv: outData)
 
-        testing.diff(got: got, want: want)
-    }
+    testing.diff(got: got, want: want)
+}
 testcase to_time {
-        inData =
-            "
+    inData =
+        "
 #datatype,string,long,dateTime:RFC3339,long,string,string
 #group,false,false,false,false,true,true
 #default,_result,,,,,
@@ -319,8 +319,8 @@ testcase to_time {
 ,,3,2018-05-22T19:53:32Z,1527018806033066000,k3,m
 ,,3,2018-05-22T19:53:33Z,1527012000000000000,k3,m
 "
-        outData =
-            "
+    outData =
+        "
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,dateTime:RFC3339
 #group,false,false,true,true,false,true,true,false
 #default,want,,,,,,,
@@ -344,17 +344,17 @@ testcase to_time {
 ,,3,2018-05-22T19:52:00Z,2030-01-01T00:00:00Z,2018-05-22T19:53:32Z,k3,m,2018-05-22T19:53:26.033066Z
 ,,3,2018-05-22T19:52:00Z,2030-01-01T00:00:00Z,2018-05-22T19:53:33Z,k3,m,2018-05-22T18:00:00Z
 "
-        got =
-            csv.from(csv: inData)
-                |> range(start: 2018-05-22T19:52:00Z)
-                |> toTime()
-        want = csv.from(csv: outData)
+    got =
+        csv.from(csv: inData)
+            |> range(start: 2018-05-22T19:52:00Z)
+            |> toTime()
+    want = csv.from(csv: outData)
 
-        testing.diff(got: got, want: want)
-    }
+    testing.diff(got: got, want: want)
+}
 testcase to_int {
-        inData =
-            "
+    inData =
+        "
 #datatype,string,long,dateTime:RFC3339,boolean,string,string
 #group,false,false,false,false,true,true
 #default,_result,,,,,
@@ -413,8 +413,8 @@ testcase to_int {
 ,,5,2018-05-22T19:53:53Z,4294967296,k5,m
 ,,5,2018-05-22T19:53:54Z,9223372036854775807,k5,m
 "
-        outData =
-            "
+    outData =
+        "
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,long
 #group,false,false,true,true,false,true,true,false
 #default,want,,,,,,,
@@ -453,17 +453,17 @@ testcase to_int {
 ,,5,2018-05-22T19:52:00Z,2030-01-01T00:00:00Z,2018-05-22T19:53:53Z,k5,m,4294967296
 ,,5,2018-05-22T19:52:00Z,2030-01-01T00:00:00Z,2018-05-22T19:53:54Z,k5,m,9223372036854775807
 "
-        got =
-            csv.from(csv: inData)
-                |> range(start: 2018-05-22T19:52:00Z)
-                |> toInt()
-        want = csv.from(csv: outData)
+    got =
+        csv.from(csv: inData)
+            |> range(start: 2018-05-22T19:52:00Z)
+            |> toInt()
+    want = csv.from(csv: outData)
 
-        testing.diff(got: got, want: want)
-    }
+    testing.diff(got: got, want: want)
+}
 testcase to_uint {
-        inData =
-            "
+    inData =
+        "
 #datatype,string,long,dateTime:RFC3339,boolean,string,string
 #group,false,false,false,false,true,true
 #default,_result,,,,,
@@ -516,8 +516,8 @@ testcase to_uint {
 ,,5,2018-05-22T19:53:53Z,4294967296,k5,m
 ,,5,2018-05-22T19:53:54Z,9223372036854775808,k5,m
 "
-        outData =
-            "
+    outData =
+        "
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,unsignedLong
 #group,false,false,true,true,false,true,true,false
 #default,want,,,,,,,
@@ -550,11 +550,11 @@ testcase to_uint {
 ,,5,2018-05-22T19:52:00Z,2030-01-01T00:00:00Z,2018-05-22T19:53:53Z,k5,m,4294967296
 ,,5,2018-05-22T19:52:00Z,2030-01-01T00:00:00Z,2018-05-22T19:53:54Z,k5,m,9223372036854775808
 "
-        got =
-            csv.from(csv: inData)
-                |> range(start: 2018-05-22T19:52:00Z)
-                |> toUInt()
-        want = csv.from(csv: outData)
+    got =
+        csv.from(csv: inData)
+            |> range(start: 2018-05-22T19:52:00Z)
+            |> toUInt()
+    want = csv.from(csv: outData)
 
-        testing.diff(got: got, want: want)
-    }
+    testing.diff(got: got, want: want)
+}

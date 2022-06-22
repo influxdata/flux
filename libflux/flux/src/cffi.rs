@@ -18,7 +18,7 @@ use fluxcore::{
         import::Packages,
         nodes::{Package, Symbol},
         sub::Substitution,
-        types::{MonoType, PolyType, TvarKinds},
+        types::{MonoType, PolyType},
         Analyzer, AnalyzerConfig, Feature, PackageExports,
     },
 };
@@ -620,7 +620,7 @@ fn find_var_type(ast_pkg: &ast::Package, var_name: String) -> Result<MonoType> {
         var_name.clone(),
         PolyType {
             vars: Vec::new(),
-            cons: TvarKinds::new(),
+            cons: Default::default(),
             expr: MonoType::Var(tvar),
         },
     );
@@ -662,8 +662,8 @@ mod tests {
         semantic::{
             convert::convert_polytype,
             fresh::Fresher,
-            sub::Substitution,
-            types::{Label, MonoType, Property, Ptr, Record, Tvar, TvarMap},
+            types::{BoundTvar, Label, MonoType, Property, Ptr, Record, Tvar, TvarMap},
+            walk,
         },
     };
 
@@ -686,13 +686,21 @@ mod tests {
 
         pub fn normalize(&mut self, t: &mut MonoType) {
             match t {
-                MonoType::BoundVar(tv) | MonoType::Var(tv) => {
+                MonoType::BoundVar(tv) => {
+                    // This is to avoid using self directly inside a closure,
+                    // otherwise it will be captured by that closure and the compiler
+                    // will complain that closure requires unique access to `self`
+                    let f = &mut self.f;
+                    let v = self.tv_map.entry(Tvar(tv.0)).or_insert_with(|| f.fresh());
+                    *t = MonoType::BoundVar(BoundTvar(v.0));
+                }
+                MonoType::Var(tv) => {
                     // This is to avoid using self directly inside a closure,
                     // otherwise it will be captured by that closure and the compiler
                     // will complain that closure requires unique access to `self`
                     let f = &mut self.f;
                     let v = self.tv_map.entry(*tv).or_insert_with(|| f.fresh());
-                    *t = MonoType::BoundVar(*v);
+                    *t = MonoType::BoundVar(BoundTvar(v.0));
                 }
                 MonoType::Collection(app) => {
                     self.normalize(&mut Ptr::make_mut(app).arg);
@@ -730,26 +738,26 @@ mod tests {
             [
                 Property {
                     k: Label::from("a").into(),
-                    v: MonoType::BoundVar(Tvar(4949)),
+                    v: MonoType::BoundVar(BoundTvar(4949)),
                 },
                 Property {
                     k: Label::from("b").into(),
-                    v: MonoType::BoundVar(Tvar(4949)),
+                    v: MonoType::BoundVar(BoundTvar(4949)),
                 },
                 Property {
                     k: Label::from("e").into(),
-                    v: MonoType::BoundVar(Tvar(4957)),
+                    v: MonoType::BoundVar(BoundTvar(4957)),
                 },
                 Property {
                     k: Label::from("f").into(),
-                    v: MonoType::BoundVar(Tvar(4957)),
+                    v: MonoType::BoundVar(BoundTvar(4957)),
                 },
                 Property {
                     k: Label::from("g").into(),
-                    v: MonoType::BoundVar(Tvar(4957)),
+                    v: MonoType::BoundVar(BoundTvar(4957)),
                 },
             ],
-            Some(MonoType::BoundVar(Tvar(4972))),
+            Some(MonoType::BoundVar(BoundTvar(4972))),
         ));
         assert_eq!(
             format!("{}", ty),
@@ -960,7 +968,7 @@ from(bucket: v.bucket)
         if let Err(err) = ast::check::check(ast::walk::Node::TypeExpression(&typ_expr)) {
             panic!("TypeExpression parsing failed. {:?}", err);
         }
-        let want = convert_polytype(&typ_expr, &mut Substitution::default()).unwrap();
+        let want = convert_polytype(&typ_expr).unwrap();
 
         assert_eq!(want, got.lookup("x").expect("'x' not found").clone());
     }
@@ -996,7 +1004,7 @@ from(bucket: v.bucket)
         if let Err(err) = ast::check::check(ast::walk::Node::TypeExpression(&typ_expr)) {
             panic!("TypeExpression parsing failed for {:?}", err);
         }
-        let want_a = convert_polytype(&typ_expr, &mut Substitution::default()).unwrap();
+        let want_a = convert_polytype(&typ_expr).unwrap();
 
         let code = "stream[{ D with
                 _value: A
@@ -1012,7 +1020,7 @@ from(bucket: v.bucket)
         if let Err(err) = ast::check::check(ast::walk::Node::TypeExpression(&typ_expr)) {
             panic!("TypeExpression parsing failed for {:?}", err);
         }
-        let want_b = convert_polytype(&typ_expr, &mut Substitution::default()).unwrap();
+        let want_b = convert_polytype(&typ_expr).unwrap();
 
         let code = "stream[{ D with
                 _value: A
@@ -1028,7 +1036,7 @@ from(bucket: v.bucket)
         if let Err(err) = ast::check::check(ast::walk::Node::TypeExpression(&typ_expr)) {
             panic!("TypeExpression parsing failed for {:?}", err);
         }
-        let want_c = convert_polytype(&typ_expr, &mut Substitution::default()).unwrap();
+        let want_c = convert_polytype(&typ_expr).unwrap();
 
         assert_eq!(want_a, got.lookup("a").expect("'a' not found").clone());
         assert_eq!(want_b, got.lookup("b").expect("'b' not found").clone());
@@ -1047,5 +1055,32 @@ from(bucket: v.bucket)
                     error @1:7-1:7: invalid expression: invalid token for primary expression: EOF"#]].assert_eq(&e.to_string());
             }
         }
+    }
+
+    #[test]
+    fn prelude_symbols_retain_their_package() {
+        let mut analyzer = new_semantic_analyzer(AnalyzerConfig::default()).unwrap();
+
+        let src = r#"
+            derivative
+        "#;
+
+        let (_, pkg) = analyzer
+            .analyze_source("".to_string(), "main.flux".to_string(), src)
+            .unwrap();
+
+        let mut identifier = None;
+        walk::walk(
+            &mut |node| {
+                if let walk::Node::IdentifierExpr(id) = node {
+                    identifier = Some(id);
+                }
+            },
+            walk::Node::Package(&pkg),
+        );
+
+        dbg!(&pkg);
+
+        assert_eq!(identifier.unwrap().name.package(), Some("universe"));
     }
 }

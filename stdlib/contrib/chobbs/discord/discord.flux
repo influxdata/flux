@@ -51,12 +51,12 @@ option discordURL = "https://discordapp.com/api/webhooks/"
 // tags: single notification
 //
 send = (
-    webhookToken,
-    webhookID,
-    username,
-    content,
-    avatar_url="",
-) =>
+        webhookToken,
+        webhookID,
+        username,
+        content,
+        avatar_url="",
+    ) =>
     {
         data = {username: username, content: content, avatar_url: avatar_url}
         headers = {"Content-Type": "application/json"}

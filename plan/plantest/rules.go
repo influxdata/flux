@@ -157,13 +157,14 @@ func (sr *MultiRootRule) Name() string {
 
 // RuleTestCase allows for concise creation of test cases that exercise rules
 type RuleTestCase struct {
-	Name          string
-	Context       context.Context
-	Rules         []plan.Rule
-	Before        *PlanSpec
-	After         *PlanSpec
-	NoChange      bool
-	ValidateError error
+	Name           string
+	Context        context.Context
+	Rules          []plan.Rule
+	Before         *PlanSpec
+	After          *PlanSpec
+	NoChange       bool
+	SkipValidation bool
+	ValidateError  error
 }
 
 // PhysicalRuleTestHelper will run a rule test case.
@@ -181,7 +182,10 @@ func PhysicalRuleTestHelper(t *testing.T, tc *RuleTestCase, options ...cmp.Optio
 	opts := []plan.PhysicalOption{
 		plan.OnlyPhysicalRules(tc.Rules...),
 	}
-	if tc.ValidateError == nil {
+	if tc.ValidateError != nil && tc.SkipValidation {
+		panic("PhysicalRuleTestHelper requested to verify validation error and also skip validation")
+	}
+	if tc.SkipValidation {
 		// Disable validation so that we can avoid having to push a range into every from
 		opts = append(opts, plan.DisableValidation())
 	}

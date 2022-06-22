@@ -3,6 +3,7 @@ package universe_test
 
 import "testing"
 import "csv"
+import "array"
 
 option now = () => 2030-01-01T00:00:00Z
 
@@ -49,4 +50,15 @@ testcase yield {
     want = csv.from(csv: outData) |> yield(name: "6")
 
     testing.diff(got, want)
+}
+
+testcase yield_does_not_cause_error_due_to_output {
+    got =
+        array.from(rows: [{_value: 100}])
+            |> testing.load()
+            |> map(fn: (r) => ({newValue: float(v: r._value)}))
+            |> yield(name: "extra")
+    want = array.from(rows: [{newValue: 100.0}])
+
+    testing.diff(want: want, got: got)
 }

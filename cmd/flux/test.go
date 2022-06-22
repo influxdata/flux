@@ -26,6 +26,8 @@ func NewTestExecutor(ctx context.Context) (cmd.TestExecutor, error) {
 
 type testExecutor struct{}
 
+const errorYield = "errorOutput"
+
 func (testExecutor) Run(pkg *ast.Package) error {
 	jsonAST, err := json.Marshal(pkg)
 	if err != nil {
@@ -52,26 +54,45 @@ func (testExecutor) Run(pkg *ast.Package) error {
 
 	var output strings.Builder
 	results := flux.NewResultIteratorFromQuery(query)
+
+	foundErrorResult := false
 	for results.More() {
 		result := results.Next()
-		err := result.Tables().Do(func(tbl flux.Table) error {
-			// The data returned here is the result of `testing.diff`, so any result means that
-			// a comparison of two tables showed inequality. Capture that inequality as part of the error.
-			// XXX: rockstar (08 Dec 2020) - This could use some ergonomic work, as the diff output
-			// is not exactly "human readable."
-			_, _ = fmt.Fprint(&output, table.Stringify(tbl))
-			return nil
-		})
-		if err != nil {
-			return err
+		if result.Name() == errorYield {
+			foundErrorResult = true
+
+			err := result.Tables().Do(func(tbl flux.Table) error {
+				// The data returned here is the result of `testing.diff`, so any result means that
+				// a comparison of two tables showed inequality. Capture that inequality as part of the error.
+				// XXX: rockstar (08 Dec 2020) - This could use some ergonomic work, as the diff output
+				// is not exactly "human readable."
+				_, _ = fmt.Fprint(&output, table.Stringify(tbl))
+				return nil
+			})
+			if err != nil {
+				return err
+			}
+		} else {
+			err := result.Tables().Do(func(tbl flux.Table) error {
+				tbl.Done()
+				return nil
+			})
+			if err != nil {
+				return err
+			}
 		}
 	}
 	results.Release()
 
 	err = results.Err()
-	if err == nil && output.Len() > 0 {
-		err = errors.Newf(codes.FailedPrecondition, "Expected test to have no output. Got:\n%s", output.String())
+	if err == nil {
+		if output.Len() > 0 {
+			err = errors.Newf(codes.FailedPrecondition, "%s", output.String())
+		} else if !foundErrorResult {
+			err = errors.Newf(codes.FailedPrecondition, "`yield(name: \"%s\")` was never called. Did you forget to add an assertion to the test?", errorYield)
+		}
 	}
+
 	return err
 }
 

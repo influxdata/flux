@@ -152,15 +152,15 @@ inData =
 "
 
 testcase mad {
-        got =
-            csv.from(csv: inData)
-                |> range(start: 2020-04-27T00:00:00Z, stop: 2020-05-01T00:00:00Z)
-                |> anomalydetection.mad(threshold: 3.0)
+    got =
+        csv.from(csv: inData)
+            |> range(start: 2020-04-27T00:00:00Z, stop: 2020-05-01T00:00:00Z)
+            |> anomalydetection.mad(threshold: 3.0)
 
-        want =
-            csv.from(
-                csv:
-                    "
+    want =
+        csv.from(
+            csv:
+                "
 #group,false,false,false,false,false,true,false,false,false,false
 #datatype,string,long,double,string,string,dateTime:RFC3339,double,double,double,string
 #default,_result,,,,,,,,,
@@ -254,7 +254,7 @@ testcase mad {
 ,,7,0.20077292063886873,9,example_data,2020-04-30T12:20:14.457831424Z,1,0.13541947972404475,0.13541947972404475,normal
 ,,7,0.20077292063886873,outlier,example_data,2020-04-30T12:20:14.457831424Z,0.6780820622669829,0.09182552008240213,0.13541947972404475,normal
 ",
-            )
+        )
 
-        testing.diff(got: got, want: want)
-    }
+    testing.diff(got: got, want: want)
+}

@@ -86,22 +86,22 @@ import "json"
 // ## Metadata
 // tags: single notification
 event = (
-    url,
-    username,
-    password,
-    action="EventsRouter",
-    method="add_event",
-    type="rpc",
-    tid=1,
-    summary="",
-    device="",
-    component="",
-    severity,
-    eventClass="",
-    eventClassKey="",
-    collector="",
-    message="",
-) =>
+        url,
+        username,
+        password,
+        action="EventsRouter",
+        method="add_event",
+        type="rpc",
+        tid=1,
+        summary="",
+        device="",
+        component="",
+        severity,
+        eventClass="",
+        eventClassKey="",
+        collector="",
+        message="",
+    ) =>
     {
         event = {
             summary: summary,

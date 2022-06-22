@@ -140,12 +140,12 @@ statusFromLevel = (level) => {
 // ## Metadata
 // tags: single notification
 sendAlert = (
-    url,
-    token,
-    appKey,
-    status,
-    rec,
-) =>
+        url,
+        token,
+        appKey,
+        status,
+        rec,
+    ) =>
     {
         headers = {"Content-Type": "application/json; charset=utf-8", "Authorization": defaultTokenPrefix + " " + token}
         data = {rec with app_key: appKey, status: status}
