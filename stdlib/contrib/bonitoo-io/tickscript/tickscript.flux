@@ -3,6 +3,8 @@
 //
 // ## Metadata
 // introduced: 0.111.0
+// contributors: **GitHub**: [@alespour](https://github.com/alespour), [@bonitoo-io](https://github.com/bonitoo-io) | **InfluxDB Slack**: [@Ales Pour](https://influxdata.com/slack)
+//
 package tickscript
 
 

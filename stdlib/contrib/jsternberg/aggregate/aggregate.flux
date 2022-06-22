@@ -1,4 +1,9 @@
 // Package aggregate provides an API for computing multiple aggregates over multiple columns within the same table stream.
+//
+// ## Metadata
+// introduced: 0.77.0
+// contributors: **GitHub**: [@jsternberg](https://github.com/jsternberg) | **InfluxDB Slack**: [@Jonathan Sternberg](https://influxdata.com/slack)
+//
 package aggregate
 
 

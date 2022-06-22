@@ -2,6 +2,8 @@
 //
 // ## Metadata
 // introduced: 0.91.0
+// contributors: **GitHub**: [@tomhollingworth](https://github.com/tomhollingworth) | **InfluxDB Slack**: [@Tom Hollingworth](https://influxdata.com/slack)
+//
 package events
 
 
@@ -24,7 +26,7 @@ package events
 //
 // ## Parameters
 // - unit: Duration unit of the calculated state duration.
-//   Default is `1ns`
+//   Default is `1ns`.
 // - columnName: Name of the result column.
 //   Default is `"duration"`.
 // - timeColumn: Name of the time column.

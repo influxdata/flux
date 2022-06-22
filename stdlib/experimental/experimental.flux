@@ -67,6 +67,7 @@ import "date"
 // ```
 //
 // ## Metadata
+// introduced: 0.39.0
 // deprecated: 0.162.0
 // tags: date/time
 //
@@ -125,6 +126,7 @@ addDuration = (d, to, location=location) => date.add(d, to, location)
 // ```
 //
 // ## Metadata
+// introduced: 0.39.0
 // deprecated: 0.162.0
 // tags: date/time
 //

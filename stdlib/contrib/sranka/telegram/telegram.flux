@@ -23,6 +23,8 @@
 //
 // ## Metadata
 // introduced: 0.70.0
+// contributors: **GitHub**: [@sranka](https://github.com/sranka) | **InfluxDB Slack**: [@sranka](https://influxdata.com/slack)
+//
 package telegram
 
 

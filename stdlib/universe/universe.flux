@@ -28,7 +28,7 @@ import "experimental/table"
 // ### Use the current UTC time as a query boundary
 // ```no_run
 // data
-//     |> range(start: -10h, stop: now)
+//     |> range(start: -10h, stop: now())
 // ```
 //
 // ### Define a custom now time
@@ -2852,7 +2852,7 @@ builtin tableFind : (<-tables: stream[A], fn: (key: B) => bool) => stream[A] whe
 // If the specified column is not present in the table, the function returns an error.
 //
 // ## Parameters
-// - column: Column to extract
+// - column: Column to extract.
 // - table: Input table. Default is piped-forward data (`<-`).
 //
 // ## Examples

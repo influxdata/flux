@@ -397,8 +397,9 @@ deadman = (t, tables=<-) =>
 //
 //   The message is stored in the `_message` column.
 //
-// - data: Check data to append to output. used to identify this check.
-//   This data specifies which notification rule and notification endpoint to
+// - data: Check data to append to output used to identify this check.
+//
+//     This data specifies which notification rule and notification endpoint to
 //     associate with the sent notification.
 //     The data record must contain the following properties:
 //

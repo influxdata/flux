@@ -4,6 +4,8 @@
 //
 // ## Metadata
 // introduced: 0.84.0
+// contributors: **GitHub**: [@sranka](https://github.com/sranka) | **InfluxDB Slack**: [@sranka](https://influxdata.com/slack)
+//
 package opsgenie
 
 

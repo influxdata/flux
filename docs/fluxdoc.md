@@ -44,6 +44,7 @@ Each key-value pair must be on a single line.
 - **tags**: Comma-separated list of tags used to associate related documentation
   and categorize packages. _See [Metadata tags](#metadata-tags)._
 - **contributors**: Contributor GitHub usernames or other contact information.
+  Separate each contact medium with a pipe (`|`).
 
 When adding a new export to a Flux package the `introduced: NEXT` or `deprecated: NEXT` metadata can be added to the value's docs.
 The release process will automatically replace the `NEXT` with the version of the Flux release.
@@ -60,9 +61,11 @@ The release process will automatically replace the `NEXT` with the version of th
 // examplePkg.foo()
 // ```
 //
+// ## Metadata
 // introduced: 0.123.0
+// deprecated: 0.456.0
 // tags: tag1,tag2,tag3
-// contributors: [@someuser](https://github.com/someuser) (GitHub)
+// contributors: **GitHub**: [@someuser](https://github.com/someuser) | **InfluxDB Slack**: [@someuser](https://influxdata.com/slack)
 package examplePkg
 ```
 
@@ -202,8 +205,10 @@ Use the following tags to categorize functions based on their usage and function
 // option pkgName.foo == "bar'
 // ```
 //
+// ## Metadata
 // introduced: 0.140.0
-// contributors: [@username](https://github.com/username/) (GitHub)
+// contributors: **Github**: [@username](https://github.com/username/)
+// 
 package pkgName
 
 // myFn multiplies `x` by `y`.
@@ -241,7 +246,9 @@ myFn = (x, y) => x * y
 // >     |> pkgName.anotherFn(columns: [tag])
 // ```
 // 
+// ## Metadata
 // introduced: 0.141.0
 // tags: transformations
+//
 anotherFn = (columns, tables=<-) => tables |> drop(columns: columns)
 ```

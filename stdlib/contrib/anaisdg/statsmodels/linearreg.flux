@@ -1,4 +1,9 @@
 // Package statsmodels provides functions for calculating statistical models.
+//
+// ## Metadata
+// introduced: 0.90.0
+// contributors: **GitHub**: [@anaisdg](https://github.com/anaisdg) | **InfluxDB Slack**: [@Anais](https://influxdata.com/slack)
+//
 package statsmodels
 
 

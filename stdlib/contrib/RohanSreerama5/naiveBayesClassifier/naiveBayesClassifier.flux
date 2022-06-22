@@ -8,6 +8,7 @@
 //
 // ## Metadata
 // introduced: v0.86.0
+// contributors: **GitHub**: [@RohanSreerama5](https://github.com/RohanSreerama5) | **InfluxDB Slack**: [@Rohan Sreerama](https://influxdata.com/slack)
 //
 package naiveBayesClassifier
 

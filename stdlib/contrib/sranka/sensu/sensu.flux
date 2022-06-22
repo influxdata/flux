@@ -8,6 +8,8 @@
 //
 // ## Metadata
 // introduced: 0.90.0
+// contributors: **GitHub**: [@sranka](https://github.com/sranka) | **InfluxDB Slack**: [@sranka](https://influxdata.com/slack)
+//
 package sensu
 
 
