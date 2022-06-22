@@ -79,7 +79,7 @@ builtin _time : (t: T, location: {zone: string, offset: duration}) => time where
 // ```
 //
 // ## Metadata
-// introduced: NEXT
+// introduced: 0.172.0
 //
 time = (t, location=location) => _time(t, location)
 
