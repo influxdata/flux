@@ -919,6 +919,7 @@ func BenchmarkHoltWintersWithFitSeasonality(b *testing.B) {
 
 func benchmarkHoltWinters(b *testing.B, n, seasonality int, withFit bool) {
 	b.ReportAllocs()
+	seed := int64(1234)
 	spec := &universe.HoltWintersProcedureSpec{
 		Column:     "_value",
 		TimeColumn: "_time",
@@ -932,6 +933,7 @@ func benchmarkHoltWinters(b *testing.B, n, seasonality int, withFit bool) {
 			schema := gen.Schema{
 				NumPoints: n,
 				Alloc:     alloc,
+				Seed:      &seed,
 			}
 			return gen.Input(context.Background(), schema)
 		},

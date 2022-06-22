@@ -125,11 +125,14 @@ func (r *HoltWinters) Do(vs *array.Float) *array.Float {
 	var bestParams *mutable.Float64Array
 
 	// Params for gonum optimize
+	f := mutable.NewFloat64Array(r.alloc)
+	f.Resize(size)
+	defer f.Release()
 	problem := optimize.Problem{
 		Func: func(par []float64) float64 {
-			f := mutable.NewFloat64Array(r.alloc)
-			defer f.Release()
-			f.AppendValues(par)
+			for i := 0; i < len(par); i++ {
+				f.Set(i, par[i])
+			}
 			return r.sse(f)
 		},
 	}
