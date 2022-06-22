@@ -268,8 +268,8 @@ fn get_attribute<'a>(comments: impl IntoIterator<Item = &'a str>, attr: &str) ->
     comments.into_iter().find_map(|comment| {
         // Remove the comment and any preceding whitespace
         let comment = comment.trim_start_matches("//").trim_start();
-        if comment.starts_with("@") {
-            let mut iter = comment[1..].splitn(2, char::is_whitespace);
+        if let Some(content) = comment.strip_prefix('@') {
+            let mut iter = content.splitn(2, char::is_whitespace);
             let name = iter.next().unwrap();
             if name == attr {
                 Some(iter.next().unwrap_or("").trim())
