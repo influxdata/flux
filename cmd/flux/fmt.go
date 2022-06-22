@@ -6,7 +6,6 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/influxdata/flux/libflux/go/libflux"
 	"github.com/spf13/cobra"
@@ -57,7 +56,7 @@ func format(script string) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	curFileStr := strings.TrimSpace(string(fromFile))
+	curFileStr := string(fromFile)
 	ast := libflux.ParseString(curFileStr)
 	defer ast.Free()
 	if err := ast.GetError(); err != nil {
