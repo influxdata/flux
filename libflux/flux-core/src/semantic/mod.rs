@@ -518,8 +518,6 @@ pub struct Analyzer<'env, I: import::Importer> {
 #[derive(Clone, Eq, PartialEq, Debug, serde::Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub enum Feature {
-    /// Enables vectorization of logical operators
-    VectorizeLogicalOperators,
     /// Enables vectorization
     VectorizedMap,
 

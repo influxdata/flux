@@ -70,12 +70,6 @@
   default: false
   contact: Sean Brickley
 
-- name: Vectorize Logical Operators
-  description: Vectorizes logical operators inside map
-  key: vectorizeLogicalOperators
-  default: false
-  contact: Jonathan Sternberg
-
 - name: Label polymorphism
   description: Enables label polymorphism in the type system
   key: labelPolymorphism
