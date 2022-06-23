@@ -122,7 +122,7 @@ func (r *HoltWinters) Do(vs *array.Float) *array.Float {
 
 	// Determine best fit for the various parameters
 	minSSE := math.Inf(1)
-	var bestParams *mutable.Float64Array
+	bestParams := make([]float64, size)
 
 	// Params for gonum optimize
 	f := mutable.NewFloat64Array(r.alloc)
@@ -153,22 +153,9 @@ func (r *HoltWinters) Do(vs *array.Float) *array.Float {
 						panic(err)
 					}
 
-					f := mutable.NewFloat64Array(r.alloc)
-					defer f.Release()
-					f.AppendValues(result.X)
-					sse, newParams := result.F, f
-
-					if sse < minSSE || bestParams == nil {
-						if bestParams != nil {
-							// Previous bestParams are not the best anymore. We can release them.
-							bestParams.Release()
-						}
-						minSSE = sse
-						bestParams = newParams
-					}
-					if bestParams != newParams {
-						// NewParams are not the best. They are useless. Release them.
-						newParams.Release()
+					if result.F < minSSE || bestParams == nil {
+						minSSE = result.F
+						bestParams = result.X
 					}
 				}
 			}
@@ -176,10 +163,14 @@ func (r *HoltWinters) Do(vs *array.Float) *array.Float {
 	}
 
 	// Final forecast
+	bestParamsF := mutable.NewFloat64Array(r.alloc)
+	bestParamsF.Resize(size)
+	defer bestParamsF.Release()
+	for i := 0; i < len(bestParams); i++ {
+		bestParamsF.Set(i, bestParams[i])
+	}
 	fcast := func() *mutable.Float64Array {
-		fcast := r.forecast(bestParams, false)
-		// Now that bestParams have been used to generate the final forecast, they can be released.
-		defer bestParams.Release()
+		fcast := r.forecast(bestParamsF, false)
 		return fcast
 	}()
 	return fcast.NewFloat64Array()
