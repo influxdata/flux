@@ -15,16 +15,20 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/ast/astutil"
 	"github.com/influxdata/flux/ast/testcase"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/dependencies/filesystem"
+	"github.com/influxdata/flux/execute/table"
 	"github.com/influxdata/flux/fluxinit"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/parser"
 	"github.com/spf13/cobra"
 )
+
+const errorYield = "errorOutput"
 
 var skip = map[string]map[string]string{
 	"universe": {
@@ -158,7 +162,46 @@ func (t *Test) Error() error {
 
 // Run the test, saving the error to the err property of the struct.
 func (t *Test) Run(executor TestExecutor) {
-	t.err = executor.Run(t.ast)
+	results, err := executor.Run(t.ast)
+	if err != nil {
+		t.err = err
+		return
+	}
+	defer results.Release()
+
+	var output strings.Builder
+	for results.More() {
+		result := results.Next()
+		if result.Name() == errorYield {
+			t.err = result.Tables().Do(func(tbl flux.Table) error {
+				// The data returned here is the result of `testing.diff`, so any result means that
+				// a comparison of two tables showed inequality. Capture that inequality as part of the error.
+				// XXX: rockstar (08 Dec 2020) - This could use some ergonomic work, as the diff output
+				// is not exactly "human readable."
+				_, _ = fmt.Fprint(&output, table.Stringify(tbl))
+				return nil
+			})
+			if t.err != nil {
+				return
+			}
+		} else {
+			t.err = result.Tables().Do(func(tbl flux.Table) error {
+				tbl.Done()
+				return nil
+			})
+			if t.err != nil {
+				return
+			}
+		}
+	}
+	results.Release()
+
+	t.err = results.Err()
+	if t.err == nil {
+		if output.Len() > 0 {
+			t.err = errors.Newf(codes.FailedPrecondition, "%s", output.String())
+		}
+	}
 }
 
 func (t *Test) SourceCode() (string, error) {
@@ -761,7 +804,7 @@ func (t *TestReporter) Summarize(tests []*Test) {
 type TestSetupFunc func(ctx context.Context) (TestExecutor, error)
 
 type TestExecutor interface {
-	Run(pkg *ast.Package) error
+	Run(pkg *ast.Package) (flux.ResultIterator, error)
 	io.Closer
 }
 
