@@ -3,8 +3,6 @@ package main
 import (
 	"context"
 	"encoding/json"
-	"fmt"
-	"strings"
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/ast"
@@ -13,7 +11,6 @@ import (
 	"github.com/influxdata/flux/dependencies/testing"
 	"github.com/influxdata/flux/dependency"
 	"github.com/influxdata/flux/execute/executetest"
-	"github.com/influxdata/flux/execute/table"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/lang"
 	"github.com/influxdata/flux/memory"
@@ -26,12 +23,10 @@ func NewTestExecutor(ctx context.Context) (cmd.TestExecutor, error) {
 
 type testExecutor struct{}
 
-const errorYield = "errorOutput"
-
-func (testExecutor) Run(pkg *ast.Package) error {
+func (testExecutor) Run(pkg *ast.Package) (flux.ResultIterator, error) {
 	jsonAST, err := json.Marshal(pkg)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	c := lang.ASTCompiler{AST: jsonAST}
 
@@ -42,58 +37,17 @@ func (testExecutor) Run(pkg *ast.Package) error {
 	defer span.Finish()
 	program, err := c.Compile(ctx, runtime.Default)
 	if err != nil {
-		return errors.Wrap(err, codes.Invalid, "failed to compile")
+		return nil, errors.Wrap(err, codes.Invalid, "failed to compile")
 	}
 
 	alloc := &memory.ResourceAllocator{}
 	query, err := program.Start(ctx, alloc)
 	if err != nil {
-		return errors.Wrap(err, codes.Inherit, "error while executing program")
+		return nil, errors.Wrap(err, codes.Inherit, "error while executing program")
 	}
-	defer query.Done()
 
-	var output strings.Builder
 	results := flux.NewResultIteratorFromQuery(query)
-
-	foundErrorResult := false
-	for results.More() {
-		result := results.Next()
-		if result.Name() == errorYield {
-			foundErrorResult = true
-
-			err := result.Tables().Do(func(tbl flux.Table) error {
-				// The data returned here is the result of `testing.diff`, so any result means that
-				// a comparison of two tables showed inequality. Capture that inequality as part of the error.
-				// XXX: rockstar (08 Dec 2020) - This could use some ergonomic work, as the diff output
-				// is not exactly "human readable."
-				_, _ = fmt.Fprint(&output, table.Stringify(tbl))
-				return nil
-			})
-			if err != nil {
-				return err
-			}
-		} else {
-			err := result.Tables().Do(func(tbl flux.Table) error {
-				tbl.Done()
-				return nil
-			})
-			if err != nil {
-				return err
-			}
-		}
-	}
-	results.Release()
-
-	err = results.Err()
-	if err == nil {
-		if output.Len() > 0 {
-			err = errors.Newf(codes.FailedPrecondition, "%s", output.String())
-		} else if !foundErrorResult {
-			err = errors.Newf(codes.FailedPrecondition, "`yield(name: \"%s\")` was never called. Did you forget to add an assertion to the test?", errorYield)
-		}
-	}
-
-	return err
+	return results, nil
 }
 
 func (testExecutor) Close() error { return nil }
