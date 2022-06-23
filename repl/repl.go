@@ -41,7 +41,11 @@ type REPL struct {
 	enableSuggestions bool
 }
 
-func New(ctx context.Context, enableSuggestions bool) *REPL {
+type Option interface {
+	applyOption(r *REPL)
+}
+
+func New(ctx context.Context, opts ...Option) *REPL {
 	scope := values.NewScope()
 	importer := runtime.StdLib()
 	for _, p := range runtime.PreludeList {
@@ -57,14 +61,17 @@ func New(ctx context.Context, enableSuggestions bool) *REPL {
 		panic(err)
 	}
 
-	return &REPL{
-		ctx:               ctx,
-		scope:             scope,
-		itrp:              interpreter.NewInterpreter(nil, &lang.ExecOptsConfig{}),
-		analyzer:          analyzer,
-		importer:          importer,
-		enableSuggestions: enableSuggestions,
+	repl := &REPL{
+		ctx:      ctx,
+		scope:    scope,
+		itrp:     interpreter.NewInterpreter(nil, &lang.ExecOptsConfig{}),
+		analyzer: analyzer,
+		importer: importer,
 	}
+	for _, opt := range opts {
+		opt.applyOption(repl)
+	}
+	return repl
 }
 
 func (r *REPL) Run() {
@@ -311,4 +318,16 @@ func LoadQuery(q string) (string, error) {
 	}
 
 	return q, nil
+}
+
+type option func(r *REPL)
+
+func (o option) applyOption(r *REPL) {
+	o(r)
+}
+
+func EnableSuggestions() Option {
+	return option(func(r *REPL) {
+		r.enableSuggestions = true
+	})
 }

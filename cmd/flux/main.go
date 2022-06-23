@@ -15,6 +15,7 @@ import (
 	"github.com/influxdata/flux/execute/executetest"
 	"github.com/influxdata/flux/fluxinit"
 	"github.com/influxdata/flux/internal/errors"
+	"github.com/influxdata/flux/repl"
 	"github.com/opentracing/opentracing-go"
 	"github.com/spf13/cobra"
 	jaegercfg "github.com/uber/jaeger-client-go/config"
@@ -63,8 +64,13 @@ func runE(cmd *cobra.Command, args []string) error {
 	}
 	ctx = feature.Dependency{Flagger: flagger}.Inject(ctx)
 
+	var opts []repl.Option
+	if flags.EnableSuggestions {
+		opts = append(opts, repl.EnableSuggestions())
+	}
+
 	if len(args) == 0 {
-		return replE(ctx, flags.EnableSuggestions)
+		return replE(ctx, opts...)
 	}
 	return executeE(ctx, script, flags.Format)
 }
