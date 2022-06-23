@@ -40,7 +40,6 @@ outData =
 testcase yield {
     got =
         csv.from(csv: inData)
-            |> testing.load()
             |> sort()
             |> limit(n: 3)
             |> yield(name: "1: lowest 3")
@@ -55,7 +54,6 @@ testcase yield {
 testcase yield_does_not_cause_error_due_to_output {
     got =
         array.from(rows: [{_value: 100}])
-            |> testing.load()
             |> map(fn: (r) => ({newValue: float(v: r._value)}))
             |> yield(name: "extra")
     want = array.from(rows: [{newValue: 100.0}])
