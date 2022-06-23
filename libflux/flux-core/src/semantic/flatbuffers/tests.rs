@@ -94,7 +94,7 @@ re !~ /foo/
         package: String::from("test"),
         files: f,
     };
-    let mut pkg = match convert::convert_package(&pkg, &Default::default()) {
+    let mut pkg = match convert::convert_package(&pkg, &Default::default(), &Default::default()) {
         Ok(pkg) => pkg,
         Err(e) => {
             assert!(false, "{}", e);

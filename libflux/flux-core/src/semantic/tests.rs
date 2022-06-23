@@ -54,7 +54,8 @@ fn parse_map(package: Option<&str>, m: HashMap<&str, &str>) -> PolyTypeHashMap<S
             if let Err(err) = ast::check::check(ast::walk::Node::TypeExpression(&typ_expr)) {
                 panic!("TypeExpression parsing failed for {}. {}", name, err);
             }
-            let poly = convert_polytype(&typ_expr).unwrap_or_else(|err| panic!("{}", err));
+            let poly = convert_polytype(&typ_expr, &Default::default())
+                .unwrap_or_else(|err| panic!("{}", err));
 
             (
                 match package {
@@ -4257,5 +4258,36 @@ fn pipe_error() {
               │                    ^^^^^^^
 
         "#]]
+    }
+}
+
+#[test]
+fn multiple_builtins() {
+    test_infer! {
+        src: r#"
+            builtin x : (x: string) => string
+
+            // @feature labelPolymorphism
+            builtin x : (x: A) => string where A: Label
+        "#,
+        exp: map![
+            "x" => "(x: string) => string",
+        ],
+    }
+
+    test_infer! {
+        config: AnalyzerConfig{
+            features: vec![Feature::LabelPolymorphism],
+            ..AnalyzerConfig::default()
+        },
+        src: r#"
+            builtin x : (x: string) => string
+
+            // @feature labelPolymorphism
+            builtin x : (x: A) => string where A: Label
+        "#,
+        exp: map![
+            "x" => "(x: A) => string where A: Label",
+        ],
     }
 }
