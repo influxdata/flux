@@ -111,10 +111,6 @@ option testing.load = (tables) => tables
 			s:    `a = 1`,
 		},
 		{
-			name: "test statement",
-			s:    `test foo = {}`,
-		},
-		{
 			name: "conditional expression",
 			s:    `if 1 == 2 then 5 else 3`,
 		},

@@ -676,14 +676,6 @@ impl<'doc> Formatter<'doc> {
                 self.err = Some(anyhow!("bad statement"));
                 arena.nil()
             }
-            Statement::Test(n) => {
-                docs![
-                    arena,
-                    self.format_comments(&n.base.comments),
-                    "test ",
-                    self.format_variable_assignment(&n.assignment),
-                ]
-            }
             Statement::TestCase(n) => {
                 let comment = self.format_comments(&n.base.comments);
                 let prefix = docs![
@@ -1796,7 +1788,6 @@ fn starts_with_comment(n: Node) -> bool {
         Node::OptionStmt(n) => !n.base.comments.is_empty(),
         Node::ReturnStmt(n) => !n.base.comments.is_empty(),
         Node::BadStmt(_) => false,
-        Node::TestStmt(n) => !n.base.comments.is_empty(),
         Node::TestCaseStmt(n) => !n.base.comments.is_empty(),
         Node::BuiltinStmt(n) => !n.base.comments.is_empty(),
         Node::Block(n) => !n.lbrace.is_empty(),

@@ -263,19 +263,6 @@ fn test_return_stmt() {
     )
 }
 #[test]
-fn test_test_stmt() {
-    test_walk(
-        "test a = 1",
-        vec![
-            "File",
-            "TestStmt",
-            "VariableAssgn",
-            "Identifier",
-            "IntegerLit",
-        ],
-    )
-}
-#[test]
 fn test_builtin_stmt() {
     test_walk(
         "builtin a",

@@ -236,7 +236,6 @@ pub enum Statement {
     Variable(Box<VariableAssgn>),
     Option(Box<OptionStmt>),
     Return(ReturnStmt),
-    Test(Box<TestStmt>),
     TestCase(Box<TestCaseStmt>),
     Builtin(BuiltinStmt),
     Error(BadStmt),
@@ -249,7 +248,6 @@ impl Statement {
             Statement::Variable(stmt) => stmt.apply(sub),
             Statement::Option(stmt) => stmt.apply(sub),
             Statement::Return(stmt) => stmt.apply(sub),
-            Statement::Test(stmt) => stmt.apply(sub),
             Statement::TestCase(stmt) => stmt.apply(sub),
             Statement::Builtin(stmt) => stmt.apply(sub),
             Statement::Error(_) => (),
@@ -527,7 +525,6 @@ impl File {
                 Statement::Variable(stmt) => stmt.infer(infer)?,
                 Statement::Option(stmt) => stmt.infer(infer)?,
                 Statement::Expr(stmt) => stmt.infer(infer)?,
-                Statement::Test(stmt) => stmt.infer(infer)?,
                 Statement::TestCase(stmt) => stmt.infer(infer)?,
                 Statement::Return(stmt) => infer.error(stmt.loc.clone(), ErrorKind::InvalidReturn),
                 Statement::Error(_) => (),
@@ -683,23 +680,6 @@ impl PolyType {
 
 #[derive(Debug, PartialEq, Clone)]
 #[allow(missing_docs)]
-pub struct TestStmt {
-    pub loc: ast::SourceLocation,
-
-    pub assignment: VariableAssgn,
-}
-
-impl TestStmt {
-    fn infer(&mut self, infer: &mut InferState<'_, '_>) -> Result<()> {
-        self.assignment.infer(infer)
-    }
-    fn apply(&mut self, sub: &mut dyn Substituter) {
-        self.assignment.apply(sub);
-    }
-}
-
-#[derive(Debug, PartialEq, Clone)]
-#[allow(missing_docs)]
 pub struct TestCaseStmt {
     pub loc: ast::SourceLocation,
     pub id: Identifier,
@@ -715,7 +695,6 @@ impl TestCaseStmt {
                 Statement::Variable(stmt) => stmt.infer(infer)?,
                 Statement::Option(stmt) => stmt.infer(infer)?,
                 Statement::Expr(stmt) => stmt.infer(infer)?,
-                Statement::Test(stmt) => stmt.infer(infer)?,
                 Statement::TestCase(stmt) => stmt.infer(infer)?,
                 Statement::Return(stmt) => infer.error(stmt.loc.clone(), ErrorKind::InvalidReturn),
                 Statement::Error(_) => (),

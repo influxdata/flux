@@ -51,7 +51,6 @@ macro_rules! mk_node {
             ExprStmt(&'a $($mut)? ExprStmt),
             OptionStmt(&'a $($mut)? OptionStmt),
             ReturnStmt(&'a $($mut)? ReturnStmt),
-            TestStmt(&'a $($mut)? TestStmt),
             TestCaseStmt(&'a $($mut)? TestCaseStmt),
             BuiltinStmt(&'a $($mut)? BuiltinStmt),
             ErrorStmt(&'a $($mut)? BadStmt),
@@ -100,7 +99,6 @@ macro_rules! mk_node {
                     Self::ExprStmt(_) => write!(f, "ExprStmt"),
                     Self::OptionStmt(_) => write!(f, "OptionStmt"),
                     Self::ReturnStmt(_) => write!(f, "ReturnStmt"),
-                    Self::TestStmt(_) => write!(f, "TestStmt"),
                     Self::TestCaseStmt(_) => write!(f, "TestCaseStmt"),
                     Self::BuiltinStmt(_) => write!(f, "BuiltinStmt"),
                     Self::ErrorStmt(_) => write!(f, "ErrorStmt"),
@@ -152,7 +150,6 @@ macro_rules! mk_node {
                     Self::ExprStmt(n) => &n.loc,
                     Self::OptionStmt(n) => &n.loc,
                     Self::ReturnStmt(n) => &n.loc,
-                    Self::TestStmt(n) => &n.loc,
                     Self::TestCaseStmt(n) => &n.loc,
                     Self::BuiltinStmt(n) => &n.loc,
                     Self::ErrorStmt(n) => &n.loc,
@@ -247,7 +244,6 @@ macro_rules! mk_node {
                     Statement::Variable(s) => Self::VariableAssgn(s),
                     Statement::Option(s) => Self::OptionStmt(s),
                     Statement::Return(s) => Self::ReturnStmt(s),
-                    Statement::Test(s) => Self::TestStmt(s),
                     Statement::TestCase(s) => Self::TestCaseStmt(s),
                     Statement::Builtin(s) => Self::BuiltinStmt(s),
                     Statement::Error(s) => Self::ErrorStmt(s),
@@ -392,9 +388,6 @@ macro_rules! mk_node {
                     }
                     $name::ReturnStmt(n) => {
                         $walk(v, $name::from_expr(& $($mut)? n.argument));
-                    }
-                    $name::TestStmt(n) => {
-                        $walk(v, $name::VariableAssgn(& $($mut)? n.assignment));
                     }
                     $name::TestCaseStmt(n) => {
                         $walk(v, $name::Identifier(& $($mut)? n.id));
@@ -975,22 +968,6 @@ mod test_node_ids {
                 "FunctionExpr",
                 "Block::Return",
                 "ReturnStmt",
-                "Expr",
-                "IntegerLit",
-            ]
-        "#]],
-        )
-    }
-    #[test]
-    fn test_test_stmt() {
-        test_walk(
-            "test a = 1",
-            expect_test::expect![[r#"
-            [
-                "File",
-                "TestStmt",
-                "VariableAssgn",
-                "Identifier",
                 "Expr",
                 "IntegerLit",
             ]

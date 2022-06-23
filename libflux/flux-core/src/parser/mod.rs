@@ -443,7 +443,6 @@ impl<'input> Parser<'input> {
             TokenType::Ident => self.parse_ident_statement(),
             TokenType::Option => self.parse_option_assignment(),
             TokenType::Builtin => self.parse_builtin_statement(),
-            TokenType::Test => self.parse_test_statement(),
             TokenType::TestCase => self.parse_testcase_statement(),
             TokenType::Return => self.parse_return_statement(),
             _ => {
@@ -810,21 +809,6 @@ impl<'input> Parser<'input> {
             name,
             monotype,
         }
-    }
-
-    fn parse_test_statement(&mut self) -> Statement {
-        let t = self.expect(TokenType::Test);
-        let id = self.parse_identifier();
-        let assign = self.peek().clone();
-        let assignment = self.parse_assign_statement();
-        Statement::Test(Box::new(TestStmt {
-            base: self.base_node_from_other_end_c(&t, assignment.base(), &t),
-            assignment: VariableAssgn {
-                base: self.base_node_from_others_c(&id.base, assignment.base(), &assign),
-                id,
-                init: assignment,
-            },
-        }))
     }
 
     fn parse_testcase_statement(&mut self) -> Statement {

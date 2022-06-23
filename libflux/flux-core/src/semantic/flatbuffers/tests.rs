@@ -30,7 +30,7 @@ option now = () => (2030-01-01T00:00:00Z)
 option foo.bar = "baz"
 builtin foo : int
 
-test aggregate_window_empty = () => ({
+aggregate_window_empty = () => ({
     input: csv.from(csv: inData) |> testing.load(),
     want: csv.from(csv: outData),
     fn: (table=<-) =>
@@ -322,10 +322,6 @@ fn compare_stmts(
                 fb_stmt.argument_type(),
                 &fb_stmt.argument(),
             )
-        }
-        (semantic::nodes::Statement::Test(semantic_stmt), fbsemantic::Statement::TestStatement) => {
-            let fb_stmt = fbsemantic::TestStatement::init_from_table(*fb_tbl);
-            compare_loc(&semantic_stmt.loc, &fb_stmt.loc())
         }
         (
             semantic::nodes::Statement::Builtin(semantic_stmt),

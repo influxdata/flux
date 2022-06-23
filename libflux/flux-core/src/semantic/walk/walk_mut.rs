@@ -52,7 +52,6 @@ impl NodeMut<'_> {
             NodeMut::ExprStmt(ref mut n) => n.loc = loc,
             NodeMut::OptionStmt(ref mut n) => n.loc = loc,
             NodeMut::ReturnStmt(ref mut n) => n.loc = loc,
-            NodeMut::TestStmt(ref mut n) => n.loc = loc,
             NodeMut::TestCaseStmt(ref mut n) => n.loc = loc,
             NodeMut::BuiltinStmt(ref mut n) => n.loc = loc,
             NodeMut::ErrorStmt(ref mut n) => n.loc = loc,

@@ -993,60 +993,6 @@ fn test_json_builtin_statement_comments() {
     want: `{"type":"TestStatement","assignment":{"type":"VariableAssignment","id":{"type":"Identifier","name":"mean"},"init":{"type":"ObjectExpression","properties":[{"type":"Property","key":{"type":"Identifier","name":"want"},"value":{"type":"IntegerLiteral","value":"0"}},{"type":"Property","key":{"type":"Identifier","name":"got"},"value":{"type":"IntegerLiteral","value":"0"}}]}}}`,
 },
 */
-#[test]
-fn test_json_test_statement() {
-    let n = Statement::Test(Box::new(TestStmt {
-        base: BaseNode::default(),
-        assignment: VariableAssgn {
-            base: BaseNode::default(),
-            id: Identifier {
-                base: BaseNode::default(),
-                name: "mean".to_string(),
-            },
-            init: Expression::Object(Box::new(ObjectExpr {
-                base: BaseNode::default(),
-                lbrace: vec![],
-                with: None,
-                properties: vec![
-                    Property {
-                        base: BaseNode::default(),
-                        key: PropertyKey::Identifier(Identifier {
-                            base: BaseNode::default(),
-                            name: "want".to_string(),
-                        }),
-                        separator: vec![],
-                        value: Some(Expression::Integer(IntegerLit {
-                            base: Default::default(),
-                            value: 0,
-                        })),
-                        comma: vec![],
-                    },
-                    Property {
-                        base: BaseNode::default(),
-                        key: PropertyKey::Identifier(Identifier {
-                            base: BaseNode::default(),
-                            name: "got".to_string(),
-                        }),
-                        separator: vec![],
-                        value: Some(Expression::Integer(IntegerLit {
-                            base: Default::default(),
-                            value: 0,
-                        })),
-                        comma: vec![],
-                    },
-                ],
-                rbrace: vec![],
-            })),
-        },
-    }));
-    let serialized = serde_json::to_string(&n).unwrap();
-    assert_eq!(
-        serialized,
-        r#"{"type":"TestStatement","assignment":{"id":{"name":"mean"},"init":{"type":"ObjectExpression","properties":[{"type":"Property","key":{"type":"Identifier","name":"want"},"value":{"type":"IntegerLiteral","value":"0"}},{"type":"Property","key":{"type":"Identifier","name":"got"},"value":{"type":"IntegerLiteral","value":"0"}}]}}}"#
-    );
-    let deserialized: Statement = serde_json::from_str(serialized.as_str()).unwrap();
-    assert_eq!(deserialized, n)
-}
 
 #[test]
 fn test_json_test_case_statement() {
