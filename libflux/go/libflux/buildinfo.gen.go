@@ -609,5 +609,5 @@ var sourceHashes = map[string]string{
 	"stdlib/universe/window_null_test.flux":                                                       "3797d98035507192a911bd0e716a4f755f9555a46e96445331eb6033eeb837ca",
 	"stdlib/universe/window_start_bound_test.flux":                                                "8d6757e9d32021bd5655549a3601da97aeba74dcf6fe8a2854a70aca3637b7fa",
 	"stdlib/universe/window_test.flux":                                                            "d2d32a8844c08ba920750b545ee0a491040caba58ea9a026379d935a01bf4ebc",
-	"stdlib/universe/yield_test.flux":                                                             "2f3f3e0d3210b4e9ed2a68c354e8b0254f03aeb2bc6bf1e5753cb6c25bc93a98",
+	"stdlib/universe/yield_test.flux":                                                             "a59fd5ad6eb00b8943ca0d8aa7db571d9ddf028d06bdb1efd13478f425520b5b",
 }
