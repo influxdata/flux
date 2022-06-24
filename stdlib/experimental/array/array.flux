@@ -1,5 +1,7 @@
 // Package array provides functions for manipulating arrays and for building tables from Flux arrays.
 //
+// **Deprecated**: This package is deprecated in favor of [`array`](https://docs.influxdata.com/flux/v0.x/stdlib/array/).
+//
 // ## Metadata
 // introduced: 0.79.0
 // tags: array,tables
@@ -11,9 +13,8 @@ import "array"
 
 // from constructs a table from an array of records.
 //
-// The `experimental/array.from()` function was promoted to the `array` package in
-// Flux 0.103.0. This function is available for backwards compatibility, but we
-// recommend using the `array` package instead.
+// **Deprecated**: `from()` is deprecated in favor of [`from()`](https://docs.influxdata.com/flux/v0.x/stdlib/array/from).
+// This function is available for backwards compatibility, but we recommend using the `array` package instead.
 //
 //
 // Each record in the array is converted into an output row or record. All
@@ -57,6 +58,8 @@ from = array.from
 
 // concat appends two arrays and returns a new array.
 //
+// **Deprecated**: `concat()` is deprecated in favor of [`concat()`](https://docs.influxdata.com/flux/v0.x/stdlib/array/concat).
+//
 // ## Parameters
 // - arr: First array. Default is the piped-forward array (`<-`).
 // - v: Array to append to the first array.
@@ -81,10 +84,13 @@ from = array.from
 //
 // ## Metadata
 // introduced: 0.155.0
-builtin concat : (<-arr: [A], v: [A]) => [A]
+// deprecated: NEXT
+concat = array.concat
 
 // map iterates over an array, applies a function to each element to produce a new element,
 // and then returns a new array.
+//
+// **Deprecated**: `map()` is deprecated in favor of [`map()`](https://docs.influxdata.com/flux/v0.x/stdlib/array/map).
 //
 // ## Parameters
 // - arr: Array to operate on. Defaults is the piped-forward array (`<-`).
@@ -106,10 +112,13 @@ builtin concat : (<-arr: [A], v: [A]) => [A]
 //
 // ## Metadata
 // introduced: 0.155.0
-builtin map : (<-arr: [A], fn: (x: A) => B) => [B]
+// deprecated: NEXT
+map = array.map
 
 // filter iterates over an array, evaluates each element with a predicate function, and then returns
 // a new array with only elements that match the predicate.
+//
+// **Deprecated**: `filter()` is deprecated in favor of [`filter()`](https://docs.influxdata.com/flux/v0.x/stdlib/array/filter).
 //
 // ## Parameters
 // - arr: Array to filter. Default is the piped-forward array (`<-`).
@@ -133,4 +142,5 @@ builtin map : (<-arr: [A], fn: (x: A) => B) => [B]
 //
 // ## Metadata
 // introduced: 0.155.0
-builtin filter : (<-arr: [A], fn: (x: A) => bool) => [A]
+// deprecated: NEXT
+filter = array.filter
