@@ -1124,7 +1124,7 @@ builtin integral : (
 //
 // ## Metadata
 // introduced: 0.7.0
-// deprecated: NEXT
+// deprecated: 0.172.0
 // tags: transformations
 //
 builtin join : (<-tables: A, ?method: string, ?on: [string]) => stream[B] where A: Record, B: Record

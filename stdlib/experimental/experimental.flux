@@ -393,7 +393,7 @@ builtin to : (
 //
 // ## Metadata
 // introduced: 0.65.0
-// deprecated: NEXT
+// deprecated: 0.172.0
 // tags: transformations
 //
 builtin join : (left: stream[A], right: stream[B], fn: (left: A, right: B) => C) => stream[C]
