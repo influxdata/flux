@@ -162,18 +162,16 @@ func (t *Test) Error() error {
 
 // Run the test, saving the error to the err property of the struct.
 func (t *Test) Run(executor TestExecutor) {
-	results, err := executor.Run(t.ast)
-	if err != nil {
-		t.err = err
-		return
-	}
-	defer results.Release()
+	t.err = executor.Run(t.ast, t.consume)
 
+}
+
+func (t *Test) consume(ctx context.Context, results flux.ResultIterator) error {
 	var output strings.Builder
 	for results.More() {
 		result := results.Next()
 		if result.Name() == errorYield {
-			t.err = result.Tables().Do(func(tbl flux.Table) error {
+			err := result.Tables().Do(func(tbl flux.Table) error {
 				// The data returned here is the result of `testing.diff`, so any result means that
 				// a comparison of two tables showed inequality. Capture that inequality as part of the error.
 				// XXX: rockstar (08 Dec 2020) - This could use some ergonomic work, as the diff output
@@ -181,27 +179,28 @@ func (t *Test) Run(executor TestExecutor) {
 				_, _ = fmt.Fprint(&output, table.Stringify(tbl))
 				return nil
 			})
-			if t.err != nil {
-				return
+			if err != nil {
+				return err
 			}
 		} else {
-			t.err = result.Tables().Do(func(tbl flux.Table) error {
+			err := result.Tables().Do(func(tbl flux.Table) error {
 				tbl.Done()
 				return nil
 			})
-			if t.err != nil {
-				return
+			if err != nil {
+				return err
 			}
 		}
 	}
 	results.Release()
 
-	t.err = results.Err()
-	if t.err == nil {
+	err := results.Err()
+	if err == nil {
 		if output.Len() > 0 {
-			t.err = errors.Newf(codes.FailedPrecondition, "%s", output.String())
+			err = errors.Newf(codes.FailedPrecondition, "%s", output.String())
 		}
 	}
+	return err
 }
 
 func (t *Test) SourceCode() (string, error) {
@@ -801,10 +800,18 @@ func (t *TestReporter) Summarize(tests []*Test) {
 	fmt.Printf("\n---\nFound %d tests: passed %d, failed %d, skipped %d\n", len(tests), passed, failures, skips)
 }
 
-type TestSetupFunc func(ctx context.Context) (TestExecutor, error)
+type (
+	TestSetupFunc func(ctx context.Context) (TestExecutor, error)
+
+	// TestResultFunc is a function that processes the result of running a test file.
+	// This function must be invoked from the implementation of TestExecutor.
+	TestResultFunc func(ctx context.Context, results flux.ResultIterator) error
+)
 
 type TestExecutor interface {
-	Run(pkg *ast.Package) (flux.ResultIterator, error)
+	// Run will run the given package against the current test harness.
+	// The result must be passed to the read function to be processed.
+	Run(pkg *ast.Package, fn TestResultFunc) error
 	io.Closer
 }
 
