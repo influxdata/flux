@@ -12,11 +12,11 @@ import (
 	"time"
 
 	"github.com/dave/jennifer/jen"
-	"github.com/influxdata/flux/ast"
-	"github.com/influxdata/flux/codes"
-	"github.com/influxdata/flux/internal/errors"
-	"github.com/influxdata/flux/internal/token"
-	"github.com/influxdata/flux/parser"
+	"github.com/mvn-trinhnguyen2-dn/flux/ast"
+	"github.com/mvn-trinhnguyen2-dn/flux/codes"
+	"github.com/mvn-trinhnguyen2-dn/flux/internal/errors"
+	"github.com/mvn-trinhnguyen2-dn/flux/internal/token"
+	"github.com/mvn-trinhnguyen2-dn/flux/parser"
 	"github.com/spf13/cobra"
 )
 
@@ -202,7 +202,7 @@ func generateTestPkgList(imports []string) error {
 		Id("pkgs").
 		Index().
 		Op("*").
-		Qual("github.com/influxdata/flux/ast", "Package")
+		Qual("github.com/mvn-trinhnguyen2-dn/flux/ast", "Package")
 
 	for i, path := range imports {
 		// pkgs = append(pkgs, <imported_package>.FluxTestPackages...)
@@ -227,7 +227,7 @@ func generateTestPkgList(imports []string) error {
 		Params().
 		Index().
 		Op("*").
-		Qual("github.com/influxdata/flux/ast", "Package").
+		Qual("github.com/mvn-trinhnguyen2-dn/flux/ast", "Package").
 		Block(stmts...).
 		Call()
 	return file.Save(filepath.Join(rootDir, "test_packages.go"))
@@ -381,7 +381,7 @@ func constructValue(v reflect.Value) (jen.Code, error) {
 			lit := v.Interface().(ast.DateTimeLiteral)
 			fmtTime := lit.Value.Format(time.RFC3339Nano)
 			return constructStructValue(v, map[string]*jen.Statement{
-				"Value": jen.Qual("github.com/influxdata/flux/internal/parser", "MustParseTime").Call(jen.Lit(fmtTime)),
+				"Value": jen.Qual("github.com/mvn-trinhnguyen2-dn/flux/internal/parser", "MustParseTime").Call(jen.Lit(fmtTime)),
 			})
 		case "RegexpLiteral":
 			lit := v.Interface().(ast.RegexpLiteral)

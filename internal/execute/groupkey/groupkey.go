@@ -8,8 +8,8 @@ import (
 
 	"github.com/apache/arrow/go/v7/arrow"
 	"github.com/cespare/xxhash/v2"
-	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/values"
+	"github.com/mvn-trinhnguyen2-dn/flux"
+	"github.com/mvn-trinhnguyen2-dn/flux/values"
 )
 
 type groupKey struct {

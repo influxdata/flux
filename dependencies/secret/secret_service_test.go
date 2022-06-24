@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/influxdata/flux/mock"
+	"github.com/mvn-trinhnguyen2-dn/flux/mock"
 )
 
 func TestSecret_Service(t *testing.T) {

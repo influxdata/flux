@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"github.com/andreyvit/diff"
-	"github.com/influxdata/flux"
+	"github.com/mvn-trinhnguyen2-dn/flux"
 )
 
 // Diff will perform a diff between two table iterators.

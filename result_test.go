@@ -8,12 +8,12 @@ import (
 	"testing"
 
 	"github.com/andreyvit/diff"
-	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/execute"
-	"github.com/influxdata/flux/execute/executetest"
-	"github.com/influxdata/flux/iocounter"
-	"github.com/influxdata/flux/mock"
-	"github.com/influxdata/flux/semantic"
+	"github.com/mvn-trinhnguyen2-dn/flux"
+	"github.com/mvn-trinhnguyen2-dn/flux/execute"
+	"github.com/mvn-trinhnguyen2-dn/flux/execute/executetest"
+	"github.com/mvn-trinhnguyen2-dn/flux/iocounter"
+	"github.com/mvn-trinhnguyen2-dn/flux/mock"
+	"github.com/mvn-trinhnguyen2-dn/flux/semantic"
 )
 
 // TestColumnType tests that the column type gets returned from a semantic type correctly.

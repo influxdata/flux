@@ -4,12 +4,12 @@ import (
 	"fmt"
 	"regexp"
 
-	"github.com/influxdata/flux/runtime"
-	"github.com/influxdata/flux/values"
+	"github.com/mvn-trinhnguyen2-dn/flux/runtime"
+	"github.com/mvn-trinhnguyen2-dn/flux/values"
 
-	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/execute"
-	"github.com/influxdata/flux/plan"
+	"github.com/mvn-trinhnguyen2-dn/flux"
+	"github.com/mvn-trinhnguyen2-dn/flux/execute"
+	"github.com/mvn-trinhnguyen2-dn/flux/plan"
 )
 
 const (

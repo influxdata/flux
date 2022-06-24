@@ -7,8 +7,8 @@ import (
 	"os"
 	"testing"
 
-	"github.com/influxdata/flux/ast"
-	"github.com/influxdata/flux/libflux/go/libflux"
+	"github.com/mvn-trinhnguyen2-dn/flux/ast"
+	"github.com/mvn-trinhnguyen2-dn/flux/libflux/go/libflux"
 )
 
 func BenchmarkRustParse(b *testing.B) {

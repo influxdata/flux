@@ -8,10 +8,10 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/execute"
-	"github.com/influxdata/flux/memory"
-	"github.com/influxdata/flux/values"
+	"github.com/mvn-trinhnguyen2-dn/flux"
+	"github.com/mvn-trinhnguyen2-dn/flux/execute"
+	"github.com/mvn-trinhnguyen2-dn/flux/memory"
+	"github.com/mvn-trinhnguyen2-dn/flux/values"
 )
 
 // NewResultDecoder will construct a new result decoder for an influxql response.

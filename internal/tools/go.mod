@@ -1,4 +1,4 @@
-module github.com/influxdata/flux/internal/tools
+module github.com/mvn-trinhnguyen2-dn/flux/internal/tools
 
 go 1.12
 

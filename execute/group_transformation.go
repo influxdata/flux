@@ -2,7 +2,7 @@ package execute
 
 import (
 	"github.com/apache/arrow/go/v7/arrow/memory"
-	"github.com/influxdata/flux/execute/table"
+	"github.com/mvn-trinhnguyen2-dn/flux/execute/table"
 )
 
 // GroupTransformation is a transformation that can modify the group key.

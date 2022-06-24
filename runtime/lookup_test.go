@@ -3,7 +3,7 @@ package runtime_test
 import (
 	"testing"
 
-	"github.com/influxdata/flux/runtime"
+	"github.com/mvn-trinhnguyen2-dn/flux/runtime"
 )
 
 func TestLookupSimpleTypes(t *testing.T) {

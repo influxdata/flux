@@ -6,10 +6,10 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/execute"
-	"github.com/influxdata/flux/execute/executetest"
-	"github.com/influxdata/flux/influxql"
+	"github.com/mvn-trinhnguyen2-dn/flux"
+	"github.com/mvn-trinhnguyen2-dn/flux/execute"
+	"github.com/mvn-trinhnguyen2-dn/flux/execute/executetest"
+	"github.com/mvn-trinhnguyen2-dn/flux/influxql"
 )
 
 func TestDecoder(t *testing.T) {

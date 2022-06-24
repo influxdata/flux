@@ -1,9 +1,9 @@
 package runtime
 
 import (
-	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/libflux/go/libflux"
-	"github.com/influxdata/flux/semantic"
+	"github.com/mvn-trinhnguyen2-dn/flux"
+	"github.com/mvn-trinhnguyen2-dn/flux/libflux/go/libflux"
+	"github.com/mvn-trinhnguyen2-dn/flux/semantic"
 )
 
 // AnalyzeSource parses and analyzes the given Flux source,

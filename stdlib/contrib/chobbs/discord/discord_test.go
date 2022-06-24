@@ -9,13 +9,13 @@ import (
 	"testing"
 	"time"
 
-	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/dependencies/dependenciestest"
-	"github.com/influxdata/flux/dependency"
-	_ "github.com/influxdata/flux/fluxinit/static"
-	"github.com/influxdata/flux/lang"
-	"github.com/influxdata/flux/memory"
-	"github.com/influxdata/flux/runtime"
+	"github.com/mvn-trinhnguyen2-dn/flux"
+	"github.com/mvn-trinhnguyen2-dn/flux/dependencies/dependenciestest"
+	"github.com/mvn-trinhnguyen2-dn/flux/dependency"
+	_ "github.com/mvn-trinhnguyen2-dn/flux/fluxinit/static"
+	"github.com/mvn-trinhnguyen2-dn/flux/lang"
+	"github.com/mvn-trinhnguyen2-dn/flux/memory"
+	"github.com/mvn-trinhnguyen2-dn/flux/runtime"
 )
 
 func TestDiscord(t *testing.T) {

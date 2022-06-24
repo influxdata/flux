@@ -12,12 +12,12 @@ import (
 	"time"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/codes"
-	"github.com/influxdata/flux/dependencies/dependenciestest"
-	"github.com/influxdata/flux/dependencies/influxdb"
-	"github.com/influxdata/flux/dependency"
 	protocol "github.com/influxdata/line-protocol"
+	"github.com/mvn-trinhnguyen2-dn/flux"
+	"github.com/mvn-trinhnguyen2-dn/flux/codes"
+	"github.com/mvn-trinhnguyen2-dn/flux/dependencies/dependenciestest"
+	"github.com/mvn-trinhnguyen2-dn/flux/dependencies/influxdb"
+	"github.com/mvn-trinhnguyen2-dn/flux/dependency"
 )
 
 type RoundTrip struct {

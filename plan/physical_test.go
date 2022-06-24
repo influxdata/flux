@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/influxdata/flux/plan"
-	"github.com/influxdata/flux/plan/plantest"
+	"github.com/mvn-trinhnguyen2-dn/flux/plan"
+	"github.com/mvn-trinhnguyen2-dn/flux/plan/plantest"
 )
 
 func TestPhysicalIntegrityCheckOption(t *testing.T) {

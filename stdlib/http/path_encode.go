@@ -4,9 +4,9 @@ import (
 	"context"
 	"net/url"
 
-	"github.com/influxdata/flux/interpreter"
-	"github.com/influxdata/flux/runtime"
-	"github.com/influxdata/flux/values"
+	"github.com/mvn-trinhnguyen2-dn/flux/interpreter"
+	"github.com/mvn-trinhnguyen2-dn/flux/runtime"
+	"github.com/mvn-trinhnguyen2-dn/flux/values"
 )
 
 func init() {

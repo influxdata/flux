@@ -5,8 +5,8 @@ import (
 	"net"
 	"net/url"
 
-	"github.com/influxdata/flux/codes"
-	"github.com/influxdata/flux/internal/errors"
+	"github.com/mvn-trinhnguyen2-dn/flux/codes"
+	"github.com/mvn-trinhnguyen2-dn/flux/internal/errors"
 )
 
 // Validator reports whether a given URL is valid.

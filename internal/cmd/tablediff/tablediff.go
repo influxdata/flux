@@ -7,10 +7,10 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/csv"
-	"github.com/influxdata/flux/execute"
-	"github.com/influxdata/flux/execute/table"
+	"github.com/mvn-trinhnguyen2-dn/flux"
+	"github.com/mvn-trinhnguyen2-dn/flux/csv"
+	"github.com/mvn-trinhnguyen2-dn/flux/execute"
+	"github.com/mvn-trinhnguyen2-dn/flux/execute/table"
 	"github.com/spf13/cobra"
 )
 

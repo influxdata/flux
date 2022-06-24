@@ -4,9 +4,9 @@ import (
 	"math"
 
 	"github.com/apache/arrow/go/v7/arrow/memory"
-	"github.com/influxdata/flux/array"
-	"github.com/influxdata/flux/arrow"
-	"github.com/influxdata/flux/internal/mutable"
+	"github.com/mvn-trinhnguyen2-dn/flux/array"
+	"github.com/mvn-trinhnguyen2-dn/flux/arrow"
+	"github.com/mvn-trinhnguyen2-dn/flux/internal/mutable"
 )
 
 // HoltWinters forecasts a series into the future.

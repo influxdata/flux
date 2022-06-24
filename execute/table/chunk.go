@@ -1,9 +1,9 @@
 package table
 
 import (
-	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/array"
-	"github.com/influxdata/flux/arrow"
+	"github.com/mvn-trinhnguyen2-dn/flux"
+	"github.com/mvn-trinhnguyen2-dn/flux/array"
+	"github.com/mvn-trinhnguyen2-dn/flux/arrow"
 )
 
 // Chunk is a horizontal partition of a Table. It is a subset of rows

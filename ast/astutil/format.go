@@ -3,8 +3,8 @@ package astutil
 import (
 	"encoding/json"
 
-	"github.com/influxdata/flux/ast"
-	"github.com/influxdata/flux/runtime"
+	"github.com/mvn-trinhnguyen2-dn/flux/ast"
+	"github.com/mvn-trinhnguyen2-dn/flux/runtime"
 )
 
 // Format will format the AST to a string.

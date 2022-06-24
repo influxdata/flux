@@ -9,8 +9,8 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/influxdata/flux/dependencies/filesystem"
-	"github.com/influxdata/flux/internal/errors"
+	"github.com/mvn-trinhnguyen2-dn/flux/dependencies/filesystem"
+	"github.com/mvn-trinhnguyen2-dn/flux/internal/errors"
 )
 
 func TestGatherFromTarArchive(t *testing.T) {

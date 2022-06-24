@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/influxdata/flux/semantic"
+	"github.com/mvn-trinhnguyen2-dn/flux/semantic"
 )
 
 func TestBasicType(t *testing.T) {

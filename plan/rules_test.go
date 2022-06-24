@@ -6,17 +6,17 @@ import (
 	"time"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/dependencies/dependenciestest"
-	dtesting "github.com/influxdata/flux/dependencies/testing"
-	"github.com/influxdata/flux/dependency"
-	"github.com/influxdata/flux/internal/spec"
-	"github.com/influxdata/flux/lang"
-	"github.com/influxdata/flux/plan"
-	"github.com/influxdata/flux/plan/plantest"
-	"github.com/influxdata/flux/runtime"
-	"github.com/influxdata/flux/stdlib/influxdata/influxdb"
-	"github.com/influxdata/flux/values"
+	"github.com/mvn-trinhnguyen2-dn/flux"
+	"github.com/mvn-trinhnguyen2-dn/flux/dependencies/dependenciestest"
+	dtesting "github.com/mvn-trinhnguyen2-dn/flux/dependencies/testing"
+	"github.com/mvn-trinhnguyen2-dn/flux/dependency"
+	"github.com/mvn-trinhnguyen2-dn/flux/internal/spec"
+	"github.com/mvn-trinhnguyen2-dn/flux/lang"
+	"github.com/mvn-trinhnguyen2-dn/flux/plan"
+	"github.com/mvn-trinhnguyen2-dn/flux/plan/plantest"
+	"github.com/mvn-trinhnguyen2-dn/flux/runtime"
+	"github.com/mvn-trinhnguyen2-dn/flux/stdlib/influxdata/influxdb"
+	"github.com/mvn-trinhnguyen2-dn/flux/values"
 )
 
 func init() {

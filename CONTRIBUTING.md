@@ -38,7 +38,7 @@ In order to contribute back to Flux, you must sign the
 [InfluxData Contributor License Agreement](https://www.influxdata.com/legal/cla/) (CLA).
 
 ### Find an issue
-The Flux team regularly adds the [community](https://github.com/influxdata/flux/issues?q=is%3Aopen+is%3Aissue+label%3Acommunity) label to issues that we think would be accessible for a community member to take.
+The Flux team regularly adds the [community](https://github.com/mvn-trinhnguyen2-dn/flux/issues?q=is%3Aopen+is%3Aissue+label%3Acommunity) label to issues that we think would be accessible for a community member to take.
 Before starting to work on an issue, please inform us on GitHub about your intention to work on the issue by leaving a comment on the issue.
 This allows us to know that you want to work on the issue, that the issue is updated with the needed information, and to be ready for a pull request when the work is done.
 
@@ -85,7 +85,7 @@ $ make generate
 ### Contribute Flux Packages
 
 If you have some Flux code that you think the wider community would benifit from please consider contributing it to the Flux repo.
-We have layed out specific guidelines in the contrib [README](https://github.com/influxdata/flux/blob/master/stdlib/contrib/README.md).
+We have layed out specific guidelines in the contrib [README](https://github.com/mvn-trinhnguyen2-dn/flux/blob/master/stdlib/contrib/README.md).
 
 ## Pull request guidelines
 
@@ -140,7 +140,7 @@ When writing markdown, please use the following guidelines:
 
 #### Document Flux package source code
 When documenting Flux packages, use fluxdoc-compliant comments in your Flux source code.
-For more information, see [fluxdoc formatting](https://github.com/influxdata/flux/blob/master/docs/fluxdoc.md).
+For more information, see [fluxdoc formatting](https://github.com/mvn-trinhnguyen2-dn/flux/blob/master/docs/fluxdoc.md).
 
 ## Submit a pull request
 To submit a pull request you should fork the Flux repository and make your change on a feature branch of your fork.

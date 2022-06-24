@@ -12,8 +12,8 @@ import (
 
 	"github.com/apache/arrow/go/v7/arrow/memory"
 	"github.com/google/go-cmp/cmp"
-	"github.com/influxdata/flux/array"
-	"github.com/influxdata/flux/internal/arrowutil"
+	"github.com/mvn-trinhnguyen2-dn/flux/array"
+	"github.com/mvn-trinhnguyen2-dn/flux/internal/arrowutil"
 )
 
 func TestIterateInts(t *testing.T) {

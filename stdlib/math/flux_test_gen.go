@@ -2,7 +2,7 @@
 
 package math
 
-import ast "github.com/influxdata/flux/ast"
+import ast "github.com/mvn-trinhnguyen2-dn/flux/ast"
 
 var FluxTestPackages = []*ast.Package{&ast.Package{
 	BaseNode: ast.BaseNode{

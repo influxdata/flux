@@ -11,7 +11,7 @@ Then create another directory for the name of your package.
 For example if I (@nathanielc) wanted to add a Flux package about reading text based ledger files in Flux I would create a directory named `nathanielc/ledger` under the `contrib` directory.
 I would then place all the Go code, Flux code and corresponding test cases into that directory.
 
-Please see the [CONTRIBUTING](https://github.com/influxdata/flux/blob/master/CONTRIBUTING.md) guide for more details on how to make contributions to the Flux repo.
+Please see the [CONTRIBUTING](https://github.com/mvn-trinhnguyen2-dn/flux/blob/master/CONTRIBUTING.md) guide for more details on how to make contributions to the Flux repo.
 
 ## Package Ownership
 

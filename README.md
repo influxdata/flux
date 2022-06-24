@@ -168,7 +168,7 @@ See the complete [documentation](https://v2.docs.influxdata.com/v2.0/query-data/
 
 Flux welcomes contributions to the language and the runtime.
 
-If you are interested in contributing, please read the [contributing guide](https://github.com/influxdata/flux/blob/master/CONTRIBUTING.md) for more information.
+If you are interested in contributing, please read the [contributing guide](https://github.com/mvn-trinhnguyen2-dn/flux/blob/master/CONTRIBUTING.md) for more information.
 
 ### Development basics
 

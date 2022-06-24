@@ -4,9 +4,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/influxdata/flux/interpreter"
-	"github.com/influxdata/flux/stdlib/contrib/sranka/sensu"
-	"github.com/influxdata/flux/values"
+	"github.com/mvn-trinhnguyen2-dn/flux/interpreter"
+	"github.com/mvn-trinhnguyen2-dn/flux/stdlib/contrib/sranka/sensu"
+	"github.com/mvn-trinhnguyen2-dn/flux/values"
 )
 
 func TestToSensuName(t *testing.T) {

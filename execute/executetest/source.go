@@ -9,14 +9,14 @@ import (
 
 	uuid "github.com/gofrs/uuid"
 	"github.com/google/go-cmp/cmp"
-	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/dependencies/dependenciestest"
-	"github.com/influxdata/flux/dependencies/url"
-	"github.com/influxdata/flux/dependency"
-	"github.com/influxdata/flux/execute"
-	"github.com/influxdata/flux/memory"
-	"github.com/influxdata/flux/mock"
-	"github.com/influxdata/flux/plan"
+	"github.com/mvn-trinhnguyen2-dn/flux"
+	"github.com/mvn-trinhnguyen2-dn/flux/dependencies/dependenciestest"
+	"github.com/mvn-trinhnguyen2-dn/flux/dependencies/url"
+	"github.com/mvn-trinhnguyen2-dn/flux/dependency"
+	"github.com/mvn-trinhnguyen2-dn/flux/execute"
+	"github.com/mvn-trinhnguyen2-dn/flux/memory"
+	"github.com/mvn-trinhnguyen2-dn/flux/mock"
+	"github.com/mvn-trinhnguyen2-dn/flux/plan"
 )
 
 const FromTestKind = "from-test"

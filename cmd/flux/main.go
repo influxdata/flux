@@ -1,10 +1,10 @@
 package main
 
 import (
-	"github.com/influxdata/flux/cmd/flux/cmd"
-	"github.com/influxdata/flux/plan"
-	"github.com/influxdata/flux/stdlib/influxdata/influxdb"
-	"github.com/influxdata/flux/stdlib/universe"
+	"github.com/mvn-trinhnguyen2-dn/flux/cmd/flux/cmd"
+	"github.com/mvn-trinhnguyen2-dn/flux/plan"
+	"github.com/mvn-trinhnguyen2-dn/flux/stdlib/influxdata/influxdb"
+	"github.com/mvn-trinhnguyen2-dn/flux/stdlib/universe"
 
 	// Register the sqlite3 database driver.
 	_ "github.com/mattn/go-sqlite3"

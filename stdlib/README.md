@@ -46,4 +46,4 @@ This enables downstream projects that import Flux to run the test suite define i
 ## Third Party Contributions
 
 We collect third part contributions into the `contrib` package.
-See the [README](https://github.com/influxdata/flux/blob/master/stdlib/contrib/README.md) for details on how to contribute a third party package to Flux.
+See the [README](https://github.com/mvn-trinhnguyen2-dn/flux/blob/master/stdlib/contrib/README.md) for details on how to contribute a third party package to Flux.

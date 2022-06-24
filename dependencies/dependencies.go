@@ -3,11 +3,11 @@ package dependencies
 import (
 	"context"
 
-	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/dependencies/bigtable"
-	"github.com/influxdata/flux/dependencies/filesystem"
-	"github.com/influxdata/flux/dependencies/influxdb"
-	"github.com/influxdata/flux/dependencies/mqtt"
+	"github.com/mvn-trinhnguyen2-dn/flux"
+	"github.com/mvn-trinhnguyen2-dn/flux/dependencies/bigtable"
+	"github.com/mvn-trinhnguyen2-dn/flux/dependencies/filesystem"
+	"github.com/mvn-trinhnguyen2-dn/flux/dependencies/influxdb"
+	"github.com/mvn-trinhnguyen2-dn/flux/dependencies/mqtt"
 )
 
 type Dependencies struct {

@@ -1,4 +1,4 @@
-module github.com/influxdata/flux
+module github.com/mvn-trinhnguyen2-dn/flux
 
 go 1.16
 

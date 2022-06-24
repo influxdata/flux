@@ -1,7 +1,7 @@
 package execute
 
 import (
-	"github.com/influxdata/flux/memory"
+	"github.com/mvn-trinhnguyen2-dn/flux/memory"
 )
 
 const (

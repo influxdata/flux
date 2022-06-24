@@ -4,14 +4,14 @@ import (
 	"testing"
 	"time"
 
-	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/execute/executetest"
-	_ "github.com/influxdata/flux/fluxinit/static"
-	"github.com/influxdata/flux/interpreter"
-	"github.com/influxdata/flux/querytest"
-	"github.com/influxdata/flux/runtime"
-	"github.com/influxdata/flux/stdlib/generate"
-	"github.com/influxdata/flux/values/valuestest"
+	"github.com/mvn-trinhnguyen2-dn/flux"
+	"github.com/mvn-trinhnguyen2-dn/flux/execute/executetest"
+	_ "github.com/mvn-trinhnguyen2-dn/flux/fluxinit/static"
+	"github.com/mvn-trinhnguyen2-dn/flux/interpreter"
+	"github.com/mvn-trinhnguyen2-dn/flux/querytest"
+	"github.com/mvn-trinhnguyen2-dn/flux/runtime"
+	"github.com/mvn-trinhnguyen2-dn/flux/stdlib/generate"
+	"github.com/mvn-trinhnguyen2-dn/flux/values/valuestest"
 )
 
 func TestFrom_NewQuery(t *testing.T) {

@@ -1,6 +1,6 @@
 package table
 
-import "github.com/influxdata/flux"
+import "github.com/mvn-trinhnguyen2-dn/flux"
 
 // Copy returns a buffered copy of the table and consumes the
 // input table. If the input table is already buffered, it "consumes"

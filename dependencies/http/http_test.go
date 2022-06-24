@@ -13,9 +13,9 @@ import (
 
 	"github.com/foxcpp/go-mockdns"
 	"github.com/google/go-cmp/cmp"
-	"github.com/influxdata/flux/codes"
-	depsUrl "github.com/influxdata/flux/dependencies/url"
-	"github.com/influxdata/flux/internal/errors"
+	"github.com/mvn-trinhnguyen2-dn/flux/codes"
+	depsUrl "github.com/mvn-trinhnguyen2-dn/flux/dependencies/url"
+	"github.com/mvn-trinhnguyen2-dn/flux/internal/errors"
 )
 
 func TestNewDefaultClient(t *testing.T) {

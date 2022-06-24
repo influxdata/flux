@@ -14,19 +14,19 @@ import (
 	"time"
 
 	"github.com/apache/arrow/go/v7/arrow/memory"
-	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/ast"
-	"github.com/influxdata/flux/ast/astutil"
-	"github.com/influxdata/flux/codes"
-	"github.com/influxdata/flux/csv"
-	"github.com/influxdata/flux/dependencies/http"
-	"github.com/influxdata/flux/internal/errors"
-	"github.com/influxdata/flux/semantic"
-	"github.com/influxdata/flux/values"
 	"github.com/influxdata/influxdb-client-go/v2/api"
 	apihttp "github.com/influxdata/influxdb-client-go/v2/api/http"
 	"github.com/influxdata/influxdb-client-go/v2/api/write"
 	protocol "github.com/influxdata/line-protocol"
+	"github.com/mvn-trinhnguyen2-dn/flux"
+	"github.com/mvn-trinhnguyen2-dn/flux/ast"
+	"github.com/mvn-trinhnguyen2-dn/flux/ast/astutil"
+	"github.com/mvn-trinhnguyen2-dn/flux/codes"
+	"github.com/mvn-trinhnguyen2-dn/flux/csv"
+	"github.com/mvn-trinhnguyen2-dn/flux/dependencies/http"
+	"github.com/mvn-trinhnguyen2-dn/flux/internal/errors"
+	"github.com/mvn-trinhnguyen2-dn/flux/semantic"
+	"github.com/mvn-trinhnguyen2-dn/flux/values"
 )
 
 // HttpProvider is an implementation of the Provider that

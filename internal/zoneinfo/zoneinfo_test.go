@@ -10,7 +10,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/influxdata/flux/internal/zoneinfo"
+	"github.com/mvn-trinhnguyen2-dn/flux/internal/zoneinfo"
 )
 
 func init() {

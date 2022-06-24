@@ -3,10 +3,10 @@ package v1_test
 import (
 	"testing"
 
-	"github.com/influxdata/flux"
-	_ "github.com/influxdata/flux/fluxinit/static" // We need to init flux for the tests to work.
-	"github.com/influxdata/flux/querytest"
-	"github.com/influxdata/flux/stdlib/influxdata/influxdb/v1"
+	"github.com/mvn-trinhnguyen2-dn/flux"
+	_ "github.com/mvn-trinhnguyen2-dn/flux/fluxinit/static" // We need to init flux for the tests to work.
+	"github.com/mvn-trinhnguyen2-dn/flux/querytest"
+	"github.com/mvn-trinhnguyen2-dn/flux/stdlib/influxdata/influxdb/v1"
 )
 
 func TestFromInfluxJSON_NewQuery(t *testing.T) {

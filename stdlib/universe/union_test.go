@@ -6,13 +6,13 @@ import (
 	"time"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/execute"
-	"github.com/influxdata/flux/execute/executetest"
-	"github.com/influxdata/flux/plan"
-	"github.com/influxdata/flux/querytest"
-	"github.com/influxdata/flux/stdlib/influxdata/influxdb"
-	"github.com/influxdata/flux/stdlib/universe"
+	"github.com/mvn-trinhnguyen2-dn/flux"
+	"github.com/mvn-trinhnguyen2-dn/flux/execute"
+	"github.com/mvn-trinhnguyen2-dn/flux/execute/executetest"
+	"github.com/mvn-trinhnguyen2-dn/flux/plan"
+	"github.com/mvn-trinhnguyen2-dn/flux/querytest"
+	"github.com/mvn-trinhnguyen2-dn/flux/stdlib/influxdata/influxdb"
+	"github.com/mvn-trinhnguyen2-dn/flux/stdlib/universe"
 )
 
 func TestUnion_NewQuery(t *testing.T) {

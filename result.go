@@ -3,10 +3,10 @@ package flux
 import (
 	"io"
 
-	"github.com/influxdata/flux/array"
-	"github.com/influxdata/flux/iocounter"
-	"github.com/influxdata/flux/semantic"
-	"github.com/influxdata/flux/values"
+	"github.com/mvn-trinhnguyen2-dn/flux/array"
+	"github.com/mvn-trinhnguyen2-dn/flux/iocounter"
+	"github.com/mvn-trinhnguyen2-dn/flux/semantic"
+	"github.com/mvn-trinhnguyen2-dn/flux/values"
 )
 
 type Result interface {

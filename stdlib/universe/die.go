@@ -3,11 +3,11 @@ package universe
 import (
 	"context"
 
-	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/codes"
-	"github.com/influxdata/flux/interpreter"
-	"github.com/influxdata/flux/runtime"
-	"github.com/influxdata/flux/values"
+	"github.com/mvn-trinhnguyen2-dn/flux"
+	"github.com/mvn-trinhnguyen2-dn/flux/codes"
+	"github.com/mvn-trinhnguyen2-dn/flux/interpreter"
+	"github.com/mvn-trinhnguyen2-dn/flux/runtime"
+	"github.com/mvn-trinhnguyen2-dn/flux/values"
 )
 
 const DieKind = "die"

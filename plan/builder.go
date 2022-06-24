@@ -3,7 +3,7 @@ package plan
 import (
 	"context"
 
-	"github.com/influxdata/flux"
+	"github.com/mvn-trinhnguyen2-dn/flux"
 )
 
 // PlannerBuilder provides clients with an easy way to create planners.

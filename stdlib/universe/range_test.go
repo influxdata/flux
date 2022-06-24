@@ -5,14 +5,14 @@ import (
 	"testing"
 	"time"
 
-	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/execute"
-	"github.com/influxdata/flux/execute/executetest"
-	"github.com/influxdata/flux/querytest"
-	"github.com/influxdata/flux/stdlib/csv"
-	"github.com/influxdata/flux/stdlib/influxdata/influxdb"
-	"github.com/influxdata/flux/stdlib/universe"
-	"github.com/influxdata/flux/values"
+	"github.com/mvn-trinhnguyen2-dn/flux"
+	"github.com/mvn-trinhnguyen2-dn/flux/execute"
+	"github.com/mvn-trinhnguyen2-dn/flux/execute/executetest"
+	"github.com/mvn-trinhnguyen2-dn/flux/querytest"
+	"github.com/mvn-trinhnguyen2-dn/flux/stdlib/csv"
+	"github.com/mvn-trinhnguyen2-dn/flux/stdlib/influxdata/influxdb"
+	"github.com/mvn-trinhnguyen2-dn/flux/stdlib/universe"
+	"github.com/mvn-trinhnguyen2-dn/flux/values"
 )
 
 func TestRange_NewQuery(t *testing.T) {

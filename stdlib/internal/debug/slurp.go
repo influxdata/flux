@@ -4,12 +4,12 @@ import (
 	"fmt"
 
 	"github.com/apache/arrow/go/v7/arrow/memory"
-	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/execute"
-	"github.com/influxdata/flux/internal/arrowutil"
-	"github.com/influxdata/flux/internal/execute/table"
-	"github.com/influxdata/flux/plan"
-	"github.com/influxdata/flux/runtime"
+	"github.com/mvn-trinhnguyen2-dn/flux"
+	"github.com/mvn-trinhnguyen2-dn/flux/execute"
+	"github.com/mvn-trinhnguyen2-dn/flux/internal/arrowutil"
+	"github.com/mvn-trinhnguyen2-dn/flux/internal/execute/table"
+	"github.com/mvn-trinhnguyen2-dn/flux/plan"
+	"github.com/mvn-trinhnguyen2-dn/flux/runtime"
 )
 
 const SlurpKind = "internal/debug.slurp"

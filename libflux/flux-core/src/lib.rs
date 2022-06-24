@@ -13,7 +13,7 @@
 //!
 //! In addition, the [`formatter`] module provides functions for code formatting utilities.
 //!
-//! [Flux language]: https://github.com/influxdata/flux
+//! [Flux language]: https://github.com/mvn-trinhnguyen2-dn/flux
 
 extern crate chrono;
 extern crate derive_more;

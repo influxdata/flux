@@ -9,8 +9,8 @@ import (
 	"github.com/Azure/go-autorest/autorest/azure"
 	"github.com/Azure/go-autorest/autorest/azure/auth"
 	"github.com/denisenkom/go-mssqldb"
-	"github.com/influxdata/flux/codes"
-	"github.com/influxdata/flux/internal/errors"
+	"github.com/mvn-trinhnguyen2-dn/flux/codes"
+	"github.com/mvn-trinhnguyen2-dn/flux/internal/errors"
 )
 
 //

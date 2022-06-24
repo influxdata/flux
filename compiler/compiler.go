@@ -1,10 +1,10 @@
 package compiler
 
 import (
-	"github.com/influxdata/flux/codes"
-	"github.com/influxdata/flux/internal/errors"
-	"github.com/influxdata/flux/semantic"
-	"github.com/influxdata/flux/values"
+	"github.com/mvn-trinhnguyen2-dn/flux/codes"
+	"github.com/mvn-trinhnguyen2-dn/flux/internal/errors"
+	"github.com/mvn-trinhnguyen2-dn/flux/semantic"
+	"github.com/mvn-trinhnguyen2-dn/flux/values"
 )
 
 func Compile(scope Scope, f *semantic.FunctionExpression, in semantic.MonoType) (Func, error) {
@@ -259,7 +259,7 @@ func substituteTypes(subst *semantic.Substitution, inferredType, actualType sema
 		}
 		return nil
 	case semantic.Fun:
-		// TODO: https://github.com/influxdata/flux/issues/2587
+		// TODO: https://github.com/mvn-trinhnguyen2-dn/flux/issues/2587
 		return errors.New(codes.Unimplemented)
 	default:
 		return errors.Newf(codes.Internal, "unknown semantic kind: %s", inferredType)

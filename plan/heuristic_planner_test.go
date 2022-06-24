@@ -5,8 +5,8 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/influxdata/flux/plan"
-	"github.com/influxdata/flux/plan/plantest"
+	"github.com/mvn-trinhnguyen2-dn/flux/plan"
+	"github.com/mvn-trinhnguyen2-dn/flux/plan/plantest"
 )
 
 func TestPlanTraversal(t *testing.T) {

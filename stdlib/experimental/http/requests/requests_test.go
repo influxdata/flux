@@ -12,13 +12,13 @@ import (
 	"time"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/influxdata/flux"
-	fhttp "github.com/influxdata/flux/dependencies/http"
-	"github.com/influxdata/flux/dependencies/url"
-	_ "github.com/influxdata/flux/fluxinit/static"
-	"github.com/influxdata/flux/runtime"
-	"github.com/influxdata/flux/semantic"
-	"github.com/influxdata/flux/values"
+	"github.com/mvn-trinhnguyen2-dn/flux"
+	fhttp "github.com/mvn-trinhnguyen2-dn/flux/dependencies/http"
+	"github.com/mvn-trinhnguyen2-dn/flux/dependencies/url"
+	_ "github.com/mvn-trinhnguyen2-dn/flux/fluxinit/static"
+	"github.com/mvn-trinhnguyen2-dn/flux/runtime"
+	"github.com/mvn-trinhnguyen2-dn/flux/semantic"
+	"github.com/mvn-trinhnguyen2-dn/flux/values"
 )
 
 func TestDo(t *testing.T) {
@@ -164,7 +164,7 @@ func TestDo_Timeout(t *testing.T) {
 import "experimental/http/requests"
 
 // syntax doesn't allow for {http.DefaultConfig with ...} so we rebind it
-// See https://github.com/influxdata/flux/issues/3655
+// See https://github.com/mvn-trinhnguyen2-dn/flux/issues/3655
 c = requests.defaultConfig
 config = {c with timeout: 10ms}
 requests.do(method: "GET", url:"%s/path/a/b/c", config: config)
@@ -192,7 +192,7 @@ func TestDo_VerifyTLS_Pass(t *testing.T) {
 import "experimental/http/requests"
 
 // syntax doesn't allow for {http.DefaultConfig with ...} so we rebind it
-// See https://github.com/influxdata/flux/issues/3655
+// See https://github.com/mvn-trinhnguyen2-dn/flux/issues/3655
 c = requests.defaultConfig
 config = {c with insecureSkipVerify: true}
 requests.do(method: "GET", url:"%s/path/a/b/c", headers: ["x":"a","y":"b","z":"c"], config: config)

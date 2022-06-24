@@ -3,11 +3,11 @@ package debug
 import (
 	"context"
 
-	"github.com/influxdata/flux/internal/feature"
-	featurepkg "github.com/influxdata/flux/internal/pkg/feature"
-	"github.com/influxdata/flux/interpreter"
-	"github.com/influxdata/flux/runtime"
-	"github.com/influxdata/flux/values"
+	"github.com/mvn-trinhnguyen2-dn/flux/internal/feature"
+	featurepkg "github.com/mvn-trinhnguyen2-dn/flux/internal/pkg/feature"
+	"github.com/mvn-trinhnguyen2-dn/flux/interpreter"
+	"github.com/mvn-trinhnguyen2-dn/flux/runtime"
+	"github.com/mvn-trinhnguyen2-dn/flux/values"
 )
 
 func init() {

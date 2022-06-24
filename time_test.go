@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/influxdata/flux"
+	"github.com/mvn-trinhnguyen2-dn/flux"
 )
 
 func TestTime_MarshalText(t *testing.T) {

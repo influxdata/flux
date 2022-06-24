@@ -12,9 +12,9 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 
-	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/semantic"
-	"github.com/influxdata/flux/values"
+	"github.com/mvn-trinhnguyen2-dn/flux"
+	"github.com/mvn-trinhnguyen2-dn/flux/semantic"
+	"github.com/mvn-trinhnguyen2-dn/flux/values"
 )
 
 func Test_api(t *testing.T) {

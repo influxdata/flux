@@ -3,7 +3,7 @@ package edit
 import (
 	"fmt"
 
-	"github.com/influxdata/flux/ast"
+	"github.com/mvn-trinhnguyen2-dn/flux/ast"
 )
 
 // Match takes an AST and a pattern and returns the nodes of the AST that

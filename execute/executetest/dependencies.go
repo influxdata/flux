@@ -3,9 +3,9 @@ package executetest
 import (
 	"context"
 
-	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/dependencies/dependenciestest"
-	"github.com/influxdata/flux/dependencies/feature"
+	"github.com/mvn-trinhnguyen2-dn/flux"
+	"github.com/mvn-trinhnguyen2-dn/flux/dependencies/dependenciestest"
+	"github.com/mvn-trinhnguyen2-dn/flux/dependencies/feature"
 )
 
 type dependencyList []flux.Dependency

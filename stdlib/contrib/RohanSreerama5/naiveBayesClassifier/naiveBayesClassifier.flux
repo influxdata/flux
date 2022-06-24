@@ -4,7 +4,7 @@
 // Currently supports single field classification and binary data sets.
 //
 // For information about demonstrating functions in this package, see the
-// [package README on GitHub](https://github.com/influxdata/flux/blob/master/stdlib/contrib/RohanSreerama5/naiveBayesClassifier/README.md).
+// [package README on GitHub](https://github.com/mvn-trinhnguyen2-dn/flux/blob/master/stdlib/contrib/RohanSreerama5/naiveBayesClassifier/README.md).
 //
 // ## Metadata
 // introduced: v0.86.0

@@ -6,9 +6,9 @@ import (
 	"time"
 
 	"cloud.google.com/go/bigtable"
-	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/codes"
-	"github.com/influxdata/flux/internal/errors"
+	"github.com/mvn-trinhnguyen2-dn/flux"
+	"github.com/mvn-trinhnguyen2-dn/flux/codes"
+	"github.com/mvn-trinhnguyen2-dn/flux/internal/errors"
 	"google.golang.org/api/option"
 	"google.golang.org/grpc"
 )

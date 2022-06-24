@@ -3,11 +3,11 @@ package interptest
 import (
 	"context"
 
-	"github.com/influxdata/flux/codes"
-	"github.com/influxdata/flux/internal/errors"
-	"github.com/influxdata/flux/interpreter"
-	"github.com/influxdata/flux/runtime"
-	"github.com/influxdata/flux/values"
+	"github.com/mvn-trinhnguyen2-dn/flux/codes"
+	"github.com/mvn-trinhnguyen2-dn/flux/internal/errors"
+	"github.com/mvn-trinhnguyen2-dn/flux/interpreter"
+	"github.com/mvn-trinhnguyen2-dn/flux/runtime"
+	"github.com/mvn-trinhnguyen2-dn/flux/values"
 )
 
 func Eval(ctx context.Context, itrp *interpreter.Interpreter, scope values.Scope, importer interpreter.Importer, src string) ([]interpreter.SideEffect, error) {

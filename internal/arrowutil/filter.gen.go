@@ -11,7 +11,7 @@ import (
 
 	"github.com/apache/arrow/go/v7/arrow/bitutil"
 	"github.com/apache/arrow/go/v7/arrow/memory"
-	"github.com/influxdata/flux/array"
+	"github.com/mvn-trinhnguyen2-dn/flux/array"
 )
 
 func Filter(arr array.Array, bitset []byte, mem memory.Allocator) array.Array {

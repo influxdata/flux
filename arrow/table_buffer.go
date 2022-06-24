@@ -1,10 +1,10 @@
 package arrow
 
 import (
-	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/array"
-	"github.com/influxdata/flux/codes"
-	"github.com/influxdata/flux/internal/errors"
+	"github.com/mvn-trinhnguyen2-dn/flux"
+	"github.com/mvn-trinhnguyen2-dn/flux/array"
+	"github.com/mvn-trinhnguyen2-dn/flux/codes"
+	"github.com/mvn-trinhnguyen2-dn/flux/internal/errors"
 )
 
 // TableBuffer represents the buffered component of an arrow table.

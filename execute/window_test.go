@@ -5,11 +5,11 @@ import (
 	"time"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/influxdata/flux/codes"
-	"github.com/influxdata/flux/execute"
-	"github.com/influxdata/flux/internal/errors"
-	"github.com/influxdata/flux/interval"
-	"github.com/influxdata/flux/values"
+	"github.com/mvn-trinhnguyen2-dn/flux/codes"
+	"github.com/mvn-trinhnguyen2-dn/flux/execute"
+	"github.com/mvn-trinhnguyen2-dn/flux/internal/errors"
+	"github.com/mvn-trinhnguyen2-dn/flux/interval"
+	"github.com/mvn-trinhnguyen2-dn/flux/values"
 )
 
 func TestNewWindow(t *testing.T) {

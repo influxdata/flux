@@ -9,9 +9,9 @@ import (
 	"unicode"
 	"unicode/utf8"
 
-	"github.com/influxdata/flux/ast"
-	"github.com/influxdata/flux/codes"
-	"github.com/influxdata/flux/internal/errors"
+	"github.com/mvn-trinhnguyen2-dn/flux/ast"
+	"github.com/mvn-trinhnguyen2-dn/flux/codes"
+	"github.com/mvn-trinhnguyen2-dn/flux/internal/errors"
 )
 
 // ParseTime will parse a time literal from a string.

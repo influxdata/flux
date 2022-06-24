@@ -6,22 +6,22 @@ import (
 	"testing"
 	"time"
 
-	"github.com/influxdata/flux/dependencies/dependenciestest"
-	"github.com/influxdata/flux/dependency"
-	"github.com/influxdata/flux/internal/gen"
-	"github.com/influxdata/flux/memory"
-	"github.com/influxdata/flux/semantic"
-	"github.com/influxdata/flux/values"
+	"github.com/mvn-trinhnguyen2-dn/flux/dependencies/dependenciestest"
+	"github.com/mvn-trinhnguyen2-dn/flux/dependency"
+	"github.com/mvn-trinhnguyen2-dn/flux/internal/gen"
+	"github.com/mvn-trinhnguyen2-dn/flux/memory"
+	"github.com/mvn-trinhnguyen2-dn/flux/semantic"
+	"github.com/mvn-trinhnguyen2-dn/flux/values"
 
-	"github.com/influxdata/flux/stdlib/influxdata/influxdb"
+	"github.com/mvn-trinhnguyen2-dn/flux/stdlib/influxdata/influxdb"
 
-	"github.com/influxdata/flux/plan"
+	"github.com/mvn-trinhnguyen2-dn/flux/plan"
 
-	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/execute"
-	"github.com/influxdata/flux/execute/executetest"
-	"github.com/influxdata/flux/querytest"
-	"github.com/influxdata/flux/stdlib/universe"
+	"github.com/mvn-trinhnguyen2-dn/flux"
+	"github.com/mvn-trinhnguyen2-dn/flux/execute"
+	"github.com/mvn-trinhnguyen2-dn/flux/execute/executetest"
+	"github.com/mvn-trinhnguyen2-dn/flux/querytest"
+	"github.com/mvn-trinhnguyen2-dn/flux/stdlib/universe"
 )
 
 func TestFillOperation_Marshaling(t *testing.T) {

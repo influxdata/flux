@@ -3,8 +3,8 @@
 package regexp
 
 import (
-	ast "github.com/influxdata/flux/ast"
-	parser "github.com/influxdata/flux/internal/parser"
+	ast "github.com/mvn-trinhnguyen2-dn/flux/ast"
+	parser "github.com/mvn-trinhnguyen2-dn/flux/internal/parser"
 	"regexp"
 )
 

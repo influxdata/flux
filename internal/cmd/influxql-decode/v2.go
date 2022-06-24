@@ -3,9 +3,9 @@ package main
 import (
 	"os"
 
-	"github.com/influxdata/flux/csv"
-	"github.com/influxdata/flux/influxql"
-	"github.com/influxdata/flux/memory"
+	"github.com/mvn-trinhnguyen2-dn/flux/csv"
+	"github.com/mvn-trinhnguyen2-dn/flux/influxql"
+	"github.com/mvn-trinhnguyen2-dn/flux/memory"
 	"github.com/spf13/cobra"
 )
 

@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/influxdata/flux/interpreter"
-	"github.com/influxdata/flux/runtime"
-	"github.com/influxdata/flux/semantic"
-	"github.com/influxdata/flux/values"
+	"github.com/mvn-trinhnguyen2-dn/flux/interpreter"
+	"github.com/mvn-trinhnguyen2-dn/flux/runtime"
+	"github.com/mvn-trinhnguyen2-dn/flux/semantic"
+	"github.com/mvn-trinhnguyen2-dn/flux/values"
 )
 
 var (

@@ -3,8 +3,8 @@ package values
 import (
 	"testing"
 
-	"github.com/influxdata/flux/memory"
-	"github.com/influxdata/flux/semantic"
+	"github.com/mvn-trinhnguyen2-dn/flux/memory"
+	"github.com/mvn-trinhnguyen2-dn/flux/semantic"
 )
 
 func TestVectorTypes(t *testing.T) {

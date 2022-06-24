@@ -3,8 +3,8 @@ package execute
 import (
 	"fmt"
 
-	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/values"
+	"github.com/mvn-trinhnguyen2-dn/flux"
+	"github.com/mvn-trinhnguyen2-dn/flux/values"
 )
 
 // GroupKeyBuilder is used to construct a GroupKey by keeping a mutable copy in memory.

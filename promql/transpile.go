@@ -5,8 +5,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/promql/v2"
+	"github.com/mvn-trinhnguyen2-dn/flux/ast"
 )
 
 func buildPipeline(arg ast.Expression, calls ...*ast.CallExpression) *ast.PipeExpression {

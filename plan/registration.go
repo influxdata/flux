@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/influxdata/flux"
+	"github.com/mvn-trinhnguyen2-dn/flux"
 )
 
 type Administration interface {

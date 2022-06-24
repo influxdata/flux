@@ -4,10 +4,10 @@ import (
 	"context"
 	"testing"
 
-	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/execute/executetest"
-	"github.com/influxdata/flux/internal/gen"
-	"github.com/influxdata/flux/memory"
+	"github.com/mvn-trinhnguyen2-dn/flux"
+	"github.com/mvn-trinhnguyen2-dn/flux/execute/executetest"
+	"github.com/mvn-trinhnguyen2-dn/flux/internal/gen"
+	"github.com/mvn-trinhnguyen2-dn/flux/memory"
 )
 
 func TestInput_TableTest(t *testing.T) {

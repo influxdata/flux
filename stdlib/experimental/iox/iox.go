@@ -1,11 +1,11 @@
 package iox
 
 import (
-	"github.com/influxdata/flux/codes"
-	"github.com/influxdata/flux/internal/errors"
-	"github.com/influxdata/flux/internal/function"
-	"github.com/influxdata/flux/interpreter"
-	"github.com/influxdata/flux/values"
+	"github.com/mvn-trinhnguyen2-dn/flux/codes"
+	"github.com/mvn-trinhnguyen2-dn/flux/internal/errors"
+	"github.com/mvn-trinhnguyen2-dn/flux/internal/function"
+	"github.com/mvn-trinhnguyen2-dn/flux/interpreter"
+	"github.com/mvn-trinhnguyen2-dn/flux/values"
 )
 
 const pkgpath = "experimental/iox"

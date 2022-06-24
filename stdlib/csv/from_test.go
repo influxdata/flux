@@ -6,17 +6,17 @@ import (
 	"testing"
 	"time"
 
-	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/codes"
-	"github.com/influxdata/flux/execute"
-	"github.com/influxdata/flux/execute/executetest"
-	_ "github.com/influxdata/flux/fluxinit/static" // We need to init flux for the tests to work.
-	"github.com/influxdata/flux/internal/errors"
-	"github.com/influxdata/flux/mock"
-	"github.com/influxdata/flux/querytest"
-	"github.com/influxdata/flux/stdlib/csv"
-	"github.com/influxdata/flux/stdlib/universe"
-	"github.com/influxdata/flux/values"
+	"github.com/mvn-trinhnguyen2-dn/flux"
+	"github.com/mvn-trinhnguyen2-dn/flux/codes"
+	"github.com/mvn-trinhnguyen2-dn/flux/execute"
+	"github.com/mvn-trinhnguyen2-dn/flux/execute/executetest"
+	_ "github.com/mvn-trinhnguyen2-dn/flux/fluxinit/static" // We need to init flux for the tests to work.
+	"github.com/mvn-trinhnguyen2-dn/flux/internal/errors"
+	"github.com/mvn-trinhnguyen2-dn/flux/mock"
+	"github.com/mvn-trinhnguyen2-dn/flux/querytest"
+	"github.com/mvn-trinhnguyen2-dn/flux/stdlib/csv"
+	"github.com/mvn-trinhnguyen2-dn/flux/stdlib/universe"
+	"github.com/mvn-trinhnguyen2-dn/flux/values"
 )
 
 func TestFromCSV_ReturnSingleResult(t *testing.T) {

@@ -1,9 +1,9 @@
 package table
 
 import (
-	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/arrow"
-	"github.com/influxdata/flux/execute/table"
+	"github.com/mvn-trinhnguyen2-dn/flux"
+	"github.com/mvn-trinhnguyen2-dn/flux/arrow"
+	"github.com/mvn-trinhnguyen2-dn/flux/execute/table"
 )
 
 type Chunk = table.Chunk

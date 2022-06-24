@@ -4,11 +4,11 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/influxdata/flux/ast"
-	"github.com/influxdata/flux/ast/astutil"
-	"github.com/influxdata/flux/runtime"
-	"github.com/influxdata/flux/semantic"
-	"github.com/influxdata/flux/semantic/semantictest"
+	"github.com/mvn-trinhnguyen2-dn/flux/ast"
+	"github.com/mvn-trinhnguyen2-dn/flux/ast/astutil"
+	"github.com/mvn-trinhnguyen2-dn/flux/runtime"
+	"github.com/mvn-trinhnguyen2-dn/flux/semantic"
+	"github.com/mvn-trinhnguyen2-dn/flux/semantic/semantictest"
 )
 
 func TestToAST(t *testing.T) {

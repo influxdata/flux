@@ -14,17 +14,17 @@ import (
 	"syscall"
 
 	"github.com/c-bata/go-prompt"
-	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/dependency"
-	"github.com/influxdata/flux/execute"
-	"github.com/influxdata/flux/internal/spec"
-	"github.com/influxdata/flux/interpreter"
-	"github.com/influxdata/flux/lang"
-	"github.com/influxdata/flux/libflux/go/libflux"
-	"github.com/influxdata/flux/memory"
-	"github.com/influxdata/flux/runtime"
-	"github.com/influxdata/flux/semantic"
-	"github.com/influxdata/flux/values"
+	"github.com/mvn-trinhnguyen2-dn/flux"
+	"github.com/mvn-trinhnguyen2-dn/flux/dependency"
+	"github.com/mvn-trinhnguyen2-dn/flux/execute"
+	"github.com/mvn-trinhnguyen2-dn/flux/internal/spec"
+	"github.com/mvn-trinhnguyen2-dn/flux/interpreter"
+	"github.com/mvn-trinhnguyen2-dn/flux/lang"
+	"github.com/mvn-trinhnguyen2-dn/flux/libflux/go/libflux"
+	"github.com/mvn-trinhnguyen2-dn/flux/memory"
+	"github.com/mvn-trinhnguyen2-dn/flux/runtime"
+	"github.com/mvn-trinhnguyen2-dn/flux/semantic"
+	"github.com/mvn-trinhnguyen2-dn/flux/values"
 )
 
 type REPL struct {

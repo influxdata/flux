@@ -4,10 +4,10 @@ import (
 	"context"
 	"testing"
 
-	"github.com/influxdata/flux/dependencies/feature"
-	"github.com/influxdata/flux/dependencies/mqtt"
-	"github.com/influxdata/flux/dependency"
-	"github.com/influxdata/flux/execute/executetest"
+	"github.com/mvn-trinhnguyen2-dn/flux/dependencies/feature"
+	"github.com/mvn-trinhnguyen2-dn/flux/dependencies/mqtt"
+	"github.com/mvn-trinhnguyen2-dn/flux/dependency"
+	"github.com/mvn-trinhnguyen2-dn/flux/execute/executetest"
 )
 
 type MockDialer struct {

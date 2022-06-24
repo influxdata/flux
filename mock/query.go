@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/influxdata/flux"
+	"github.com/mvn-trinhnguyen2-dn/flux"
 )
 
 // Query provides a customizable query that implements flux.Query.

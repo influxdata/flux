@@ -9,15 +9,15 @@ import (
 	"net/http"
 	"net/url"
 
-	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/ast"
-	"github.com/influxdata/flux/ast/astutil"
-	"github.com/influxdata/flux/codes"
-	"github.com/influxdata/flux/csv"
-	"github.com/influxdata/flux/dependencies/influxdb"
-	"github.com/influxdata/flux/execute"
-	"github.com/influxdata/flux/internal/errors"
-	"github.com/influxdata/flux/memory"
+	"github.com/mvn-trinhnguyen2-dn/flux"
+	"github.com/mvn-trinhnguyen2-dn/flux/ast"
+	"github.com/mvn-trinhnguyen2-dn/flux/ast/astutil"
+	"github.com/mvn-trinhnguyen2-dn/flux/codes"
+	"github.com/mvn-trinhnguyen2-dn/flux/csv"
+	"github.com/mvn-trinhnguyen2-dn/flux/dependencies/influxdb"
+	"github.com/mvn-trinhnguyen2-dn/flux/execute"
+	"github.com/mvn-trinhnguyen2-dn/flux/internal/errors"
+	"github.com/mvn-trinhnguyen2-dn/flux/memory"
 )
 
 type ProcedureSpec interface {

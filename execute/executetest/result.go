@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/influxdata/flux"
+	"github.com/mvn-trinhnguyen2-dn/flux"
 )
 
 type Result struct {

@@ -8,9 +8,9 @@ package universe
 
 import (
 	"github.com/apache/arrow/go/v7/arrow/memory"
-	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/array"
-	"github.com/influxdata/flux/arrow"
+	"github.com/mvn-trinhnguyen2-dn/flux"
+	"github.com/mvn-trinhnguyen2-dn/flux/array"
+	"github.com/mvn-trinhnguyen2-dn/flux/arrow"
 )
 
 type derivativeInt struct {

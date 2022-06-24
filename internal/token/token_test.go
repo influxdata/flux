@@ -3,7 +3,7 @@ package token_test
 import (
 	"testing"
 
-	"github.com/influxdata/flux/internal/token"
+	"github.com/mvn-trinhnguyen2-dn/flux/internal/token"
 )
 
 func TestToken_String(t *testing.T) {

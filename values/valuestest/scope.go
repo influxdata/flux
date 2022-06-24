@@ -2,8 +2,8 @@ package valuestest
 
 import (
 	"github.com/google/go-cmp/cmp"
-	"github.com/influxdata/flux/runtime"
-	"github.com/influxdata/flux/values"
+	"github.com/mvn-trinhnguyen2-dn/flux/runtime"
+	"github.com/mvn-trinhnguyen2-dn/flux/values"
 )
 
 // ComparableScope is a representation of a Scope

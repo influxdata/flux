@@ -3,8 +3,8 @@ package promql
 import (
 	"fmt"
 
-	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/promql/v2"
+	"github.com/mvn-trinhnguyen2-dn/flux/ast"
 )
 
 var arithBinOps = map[promql.ItemType]ast.OperatorKind{

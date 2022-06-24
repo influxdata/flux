@@ -6,7 +6,7 @@ import (
 	"time"
 
 	flatbuffers "github.com/google/flatbuffers/go"
-	"github.com/influxdata/flux/ast/internal/fbast"
+	"github.com/mvn-trinhnguyen2-dn/flux/ast/internal/fbast"
 )
 
 // DeserializeFromFlatBuffer takes the given byte slice

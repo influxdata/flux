@@ -4,9 +4,9 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/influxdata/flux/codes"
-	"github.com/influxdata/flux/internal/errors"
-	"github.com/influxdata/flux/semantic"
+	"github.com/mvn-trinhnguyen2-dn/flux/codes"
+	"github.com/mvn-trinhnguyen2-dn/flux/internal/errors"
+	"github.com/mvn-trinhnguyen2-dn/flux/semantic"
 )
 
 type Object interface {

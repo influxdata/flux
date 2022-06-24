@@ -3,7 +3,7 @@ package groupkey
 import (
 	"sort"
 
-	"github.com/influxdata/flux"
+	"github.com/mvn-trinhnguyen2-dn/flux"
 )
 
 // Lookup is a container that maps group keys to a value.

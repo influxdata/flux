@@ -5,12 +5,12 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/csv"
-	"github.com/influxdata/flux/execute"
-	"github.com/influxdata/flux/lang"
-	"github.com/influxdata/flux/memory"
-	"github.com/influxdata/flux/runtime"
+	"github.com/mvn-trinhnguyen2-dn/flux"
+	"github.com/mvn-trinhnguyen2-dn/flux/csv"
+	"github.com/mvn-trinhnguyen2-dn/flux/execute"
+	"github.com/mvn-trinhnguyen2-dn/flux/lang"
+	"github.com/mvn-trinhnguyen2-dn/flux/memory"
+	"github.com/mvn-trinhnguyen2-dn/flux/runtime"
 )
 
 func executeE(ctx context.Context, script, format string) error {
