@@ -25,6 +25,7 @@ import (
 	_ "github.com/influxdata/flux/stdlib/contrib/sranka/telegram"
 	_ "github.com/influxdata/flux/stdlib/contrib/sranka/webexteams"
 	_ "github.com/influxdata/flux/stdlib/contrib/tomhollingworth/events"
+	_ "github.com/influxdata/flux/stdlib/contrib/trinhnguyen/status"
 	_ "github.com/influxdata/flux/stdlib/csv"
 	_ "github.com/influxdata/flux/stdlib/date"
 	_ "github.com/influxdata/flux/stdlib/dict"
