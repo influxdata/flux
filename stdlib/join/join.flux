@@ -25,7 +25,7 @@
 // need to account for default or unmatched records when performing an inner join.
 //
 // ## Metadata
-// introduced: NEXT
+// introduced: 0.172.0
 // tags: transformations
 package join
 
@@ -211,7 +211,7 @@ package join
 // ```
 //
 // ## Metadata
-// introduced: NEXT
+// introduced: 0.172.0
 // tags: transformations
 builtin tables : (
         <-left: stream[L],
@@ -260,7 +260,7 @@ builtin tables : (
 // > )
 // ```
 // ## Metadata
-// introduced: NEXT
+// introduced: 0.172.0
 // tags: transformations
 time = (left=<-, right, as, method="inner") =>
     tables(
@@ -306,7 +306,7 @@ time = (left=<-, right, as, method="inner") =>
 // ```
 //
 // ## Metadata
-// introduced: NEXT
+// introduced: 0.172.0
 // tags: transformations
 inner = (left=<-, right, on, as) =>
     tables(
@@ -387,7 +387,7 @@ inner = (left=<-, right, on, as) =>
 // ```
 //
 // ## Metadata
-// introduced: NEXT
+// introduced: 0.172.0
 // tags: transformations
 full = (left=<-, right, on, as) =>
     tables(
@@ -455,7 +455,7 @@ full = (left=<-, right, on, as) =>
 // > )
 // ```
 // ## Metadata
-// introduced: NEXT
+// introduced: 0.172.0
 // tags: transformations
 left = (left=<-, right, on, as) =>
     tables(
@@ -523,7 +523,7 @@ left = (left=<-, right, on, as) =>
 // > )
 // ```
 // ## Metadata
-// introduced: NEXT
+// introduced: 0.172.0
 // tags: transformations
 right = (left=<-, right, on, as) =>
     tables(
