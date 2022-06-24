@@ -1,25 +1,18 @@
 // Package bitwise provides functions for performing bitwise operations on integers.
 //
-// **Deprecated**: This package is deprecated in favor of [`bitwise`](https://docs.influxdata.com/flux/v0.x/stdlib/bitwise/).
-//
 // All integers are 64 bit integers.
 //
 // Functions prefixed with s operate on signed integers (int).
 // Functions prefixed with u operate on unsigned integers (uint).
 //
 // ## Metadata
-// introduced: 0.138.0
-// deprecated: NEXT
+// introduced: NEXT
 // tags: bitwise
 //
 package bitwise
 
 
-import "bitwise"
-
 // uand performs the bitwise operation, `a AND b`, with unsigned integers.
-//
-// **Deprecated**: `uand` is deprecated in favor of [`bitwise`](https://docs.influxdata.com/flux/v0.x/stdlib/bitwise/uand/).
 //
 // ## Parameters
 // - a: Left hand operand.
@@ -28,7 +21,7 @@ import "bitwise"
 // ## Examples
 // ### Perform a bitwise AND operation
 // ```no_run
-// import "experimental/bitwise"
+// import "bitwise"
 //
 // bitwise.uand(a: uint(v: 1234), b: uint(v: 4567))
 //
@@ -37,18 +30,16 @@ import "bitwise"
 //
 // ### Perform a bitwise AND operation on a stream of tables
 // ```
-// import "experimental/bitwise"
+// import "bitwise"
 // import "sampledata"
 //
 // < sampledata.uint()
 // >    |> map(fn: (r) => ({ r with _value: bitwise.uand(a: r._value, b: uint(v: 3))}))
 // ```
 //
-uand = bitwise.uand
+builtin uand : (a: uint, b: uint) => uint
 
 // uor performs the bitwise operation, `a OR b`, with unsigned integers.
-//
-// **Deprecated**: `uor` is deprecated in favor of [`bitwise`](https://docs.influxdata.com/flux/v0.x/stdlib/bitwise/uor/).
 //
 // ## Parameters
 // - a: Left hand operand.
@@ -57,7 +48,7 @@ uand = bitwise.uand
 // ## Examples
 // ### Perform a bitwise OR operation
 // ```no_run
-// import "experimental/bitwise"
+// import "bitwise"
 //
 // bitwise.uor(a: uint(v: 1234), b: uint(v: 4567))
 //
@@ -66,18 +57,16 @@ uand = bitwise.uand
 //
 // ### Perform a bitwise OR operation on a stream of tables
 // ```
-// import "experimental/bitwise"
+// import "bitwise"
 // import "sampledata"
 //
 // < sampledata.uint()
 // >    |> map(fn: (r) => ({ r with _value: bitwise.uor(a: r._value, b: uint(v: 3))}))
 // ```
 //
-uor = bitwise.uor
+builtin uor : (a: uint, b: uint) => uint
 
 // unot inverts every bit in `a`, an unsigned integer.
-//
-// **Deprecated**: `unot` is deprecated in favor of [`bitwise`](https://docs.influxdata.com/flux/v0.x/stdlib/bitwise/unot/).
 //
 // ## Parameters
 // - a: Unsigned integer to invert.
@@ -85,7 +74,7 @@ uor = bitwise.uor
 // ## Examples
 // ### Invert bits in an unsigned integer
 // ```no_run
-// import "experimental/bitwise"
+// import "bitwise"
 //
 // bitwise.unot(a: uint(v: 1234))
 //
@@ -94,18 +83,16 @@ uor = bitwise.uor
 //
 // ### Invert bits in unsigned integers in a stream of tables
 // ```
-// import "experimental/bitwise"
+// import "bitwise"
 // import "sampledata"
 //
 // < sampledata.uint()
 // >    |> map(fn: (r) => ({ r with _value: bitwise.unot(a: r._value)}))
 // ```
 //
-unot = bitwise.unot
+builtin unot : (a: uint) => uint
 
 // uxor performs the bitwise operation, `a XOR b`, with unsigned integers.
-//
-// **Deprecated**: `uxor` is deprecated in favor of [`bitwise`](https://docs.influxdata.com/flux/v0.x/stdlib/bitwise/uxor/).
 //
 // ## Parameters
 // - a: Left hand operand.
@@ -114,7 +101,7 @@ unot = bitwise.unot
 // ## Examples
 // ### Perform a bitwise XOR operation
 // ```no_run
-// import "experimental/bitwise"
+// import "bitwise"
 //
 // bitwise.uxor(a: uint(v: 1234), b: uint(v: 4567))
 //
@@ -123,18 +110,16 @@ unot = bitwise.unot
 //
 // ### Perform a bitwise XOR operation on a stream of tables
 // ```
-// import "experimental/bitwise"
+// import "bitwise"
 // import "sampledata"
 //
 // < sampledata.uint()
 // >    |> map(fn: (r) => ({ r with _value: bitwise.uxor(a: r._value, b: uint(v: 3))}))
 // ```
 //
-uxor = bitwise.uxor
+builtin uxor : (a: uint, b: uint) => uint
 
 // uclear performs the bitwise operation `a AND NOT b`, with unsigned integers.
-//
-// **Deprecated**: `uclear` is deprecated in favor of [`bitwise`](https://docs.influxdata.com/flux/v0.x/stdlib/bitwise/uclear/).
 //
 // ## Parameters
 // - a: Left hand operand.
@@ -143,7 +128,7 @@ uxor = bitwise.uxor
 // ## Examples
 // ### Perform a bitwise AND NOT operation
 // ```no_run
-// import "experimental/bitwise"
+// import "bitwise"
 //
 // bitwise.uclear(a: uint(v: 1234), b: uint(v: 4567))
 //
@@ -152,19 +137,17 @@ uxor = bitwise.uxor
 //
 // ### Perform a bitwise AND NOT operation on a stream of tables
 // ```
-// import "experimental/bitwise"
+// import "bitwise"
 // import "sampledata"
 //
 // < sampledata.uint()
 // >    |> map(fn: (r) => ({ r with _value: bitwise.uclear(a: r._value, b: uint(v: 3))}))
 // ```
 //
-uclear = bitwise.uclear
+builtin uclear : (a: uint, b: uint) => uint
 
 // ulshift shifts the bits in `a` left by `b` bits.
 // Both `a` and `b` are unsigned integers.
-//
-// **Deprecated**: `ulshift` is deprecated in favor of [`bitwise`](https://docs.influxdata.com/flux/v0.x/stdlib/bitwise/ulshift/).
 //
 // ## Parameters
 // - a: Left hand operand.
@@ -173,7 +156,7 @@ uclear = bitwise.uclear
 // ## Examples
 // ### Shift bits left in an unsigned integer
 // ```no_run
-// import "experimental/bitwise"
+// import "bitwise"
 //
 // bitwise.ulshift(a: uint(v: 1234), b: uint(v: 2))
 //
@@ -182,19 +165,17 @@ uclear = bitwise.uclear
 //
 // ### Shift bits left in unsigned integers in a stream of tables
 // ```
-// import "experimental/bitwise"
+// import "bitwise"
 // import "sampledata"
 //
 // < sampledata.uint()
 // >    |> map(fn: (r) => ({ r with _value: bitwise.ulshift(a: r._value, b: uint(v: 3))}))
 // ```
 //
-ulshift = bitwise.ulshift
+builtin ulshift : (a: uint, b: uint) => uint
 
 // urshift shifts the bits in `a` right by `b` bits.
 // Both `a` and `b` are unsigned integers.
-//
-// **Deprecated**: `urshift` is deprecated in favor of [`bitwise`](https://docs.influxdata.com/flux/v0.x/stdlib/bitwise/urshift/).
 //
 // ## Parameters
 // - a: Left hand operand.
@@ -203,7 +184,7 @@ ulshift = bitwise.ulshift
 // ## Examples
 // ### Shift bits right in an unsigned integer
 // ```no_run
-// import "experimental/bitwise"
+// import "bitwise"
 //
 // bitwise.urshift(a: uint(v: 1234), b: uint(v: 2))
 //
@@ -212,18 +193,16 @@ ulshift = bitwise.ulshift
 //
 // ### Shift bits right in unsigned integers in a stream of tables
 // ```
-// import "experimental/bitwise"
+// import "bitwise"
 // import "sampledata"
 //
 // < sampledata.uint()
 // >    |> map(fn: (r) => ({ r with _value: bitwise.urshift(a: r._value, b: uint(v: 3))}))
 // ```
 //
-urshift = bitwise.urshift
+builtin urshift : (a: uint, b: uint) => uint
 
 // sand performs the bitwise operation, `a AND b`, with integers.
-//
-// **Deprecated**: `sand` is deprecated in favor of [`bitwise`](https://docs.influxdata.com/flux/v0.x/stdlib/bitwise/sand/).
 //
 // ## Parameters
 // - a: Left hand operand.
@@ -232,7 +211,7 @@ urshift = bitwise.urshift
 // ## Examples
 // ### Perform a bitwise AND operation
 // ```no_run
-// import "experimental/bitwise"
+// import "bitwise"
 //
 // bitwise.sand(a: 1234, b: 4567)
 //
@@ -241,18 +220,16 @@ urshift = bitwise.urshift
 //
 // ### Perform a bitwise AND operation on a stream of tables
 // ```
-// import "experimental/bitwise"
+// import "bitwise"
 // import "sampledata"
 //
 // < sampledata.int()
 // >    |> map(fn: (r) => ({ r with _value: bitwise.sand(a: r._value, b: 3)}))
 // ```
 //
-sand = bitwise.sand
+builtin sand : (a: int, b: int) => int
 
 // sor performs the bitwise operation, `a OR b`, with integers.
-//
-// **Deprecated**: `sor` is deprecated in favor of [`bitwise`](https://docs.influxdata.com/flux/v0.x/stdlib/bitwise/sor/).
 //
 // ## Parameters
 // - a: Left hand operand.
@@ -261,7 +238,7 @@ sand = bitwise.sand
 // ## Examples
 // ### Perform a bitwise OR operation
 // ```no_run
-// import "experimental/bitwise"
+// import "bitwise"
 //
 // bitwise.sor(a: 1234, b: 4567)
 //
@@ -270,18 +247,16 @@ sand = bitwise.sand
 //
 // ### Perform a bitwise OR operation on a stream of tables
 // ```
-// import "experimental/bitwise"
+// import "bitwise"
 // import "sampledata"
 //
 // < sampledata.int()
 // >    |> map(fn: (r) => ({ r with _value: bitwise.sor(a: r._value, b: 3)}))
 // ```
 //
-sor = bitwise.sor
+builtin sor : (a: int, b: int) => int
 
 // snot inverts every bit in `a`, an integer.
-//
-// **Deprecated**: `snot` is deprecated in favor of [`bitwise`](https://docs.influxdata.com/flux/v0.x/stdlib/bitwise/snot/).
 //
 // ## Parameters
 // - a: Integer to invert.
@@ -289,7 +264,7 @@ sor = bitwise.sor
 // ## Examples
 // ### Invert bits in an integer
 // ```no_run
-// import "experimental/bitwise"
+// import "bitwise"
 //
 // bitwise.snot(a: 1234)
 //
@@ -298,18 +273,16 @@ sor = bitwise.sor
 //
 // ### Invert bits in integers in a stream of tables
 // ```
-// import "experimental/bitwise"
+// import "bitwise"
 // import "sampledata"
 //
 // < sampledata.int()
 // >    |> map(fn: (r) => ({ r with _value: bitwise.snot(a: r._value)}))
 // ```
 //
-snot = bitwise.snot
+builtin snot : (a: int) => int
 
 // sxor performs the bitwise operation, `a XOR b`, with integers.
-//
-// **Deprecated**: `sxor` is deprecated in favor of [`bitwise`](https://docs.influxdata.com/flux/v0.x/stdlib/bitwise/sxor/).
 //
 // ## Parameters
 // - a: Left hand operand.
@@ -318,7 +291,7 @@ snot = bitwise.snot
 // ## Examples
 // ### Perform a bitwise XOR operation
 // ```no_run
-// import "experimental/bitwise"
+// import "bitwise"
 //
 // bitwise.sxor(a: 1234, b: 4567)
 //
@@ -327,19 +300,17 @@ snot = bitwise.snot
 //
 // ### Perform a bitwise XOR operation on a stream of tables
 // ```
-// import "experimental/bitwise"
+// import "bitwise"
 // import "sampledata"
 //
 // < sampledata.int()
 // >    |> map(fn: (r) => ({ r with _value: bitwise.sxor(a: r._value, b: 3)}))
 // ```
 //
-sxor = bitwise.sxor
+builtin sxor : (a: int, b: int) => int
 
 // sclear performs the bitwise operation `a AND NOT b`.
 // Both `a` and `b` are integers.
-//
-// **Deprecated**: `sclear` is deprecated in favor of [`bitwise`](https://docs.influxdata.com/flux/v0.x/stdlib/bitwise/sclear/).
 //
 // ## Parameters
 // - a: Left hand operand.
@@ -348,7 +319,7 @@ sxor = bitwise.sxor
 // ## Examples
 // ### Perform a bitwise AND NOT operation
 // ```no_run
-// import "experimental/bitwise"
+// import "bitwise"
 //
 // bitwise.sclear(a: 1234, b: 4567)
 //
@@ -357,19 +328,17 @@ sxor = bitwise.sxor
 //
 // ### Perform a bitwise AND NOT operation on a stream of tables
 // ```
-// import "experimental/bitwise"
+// import "bitwise"
 // import "sampledata"
 //
 // < sampledata.int()
 // >    |> map(fn: (r) => ({ r with _value: bitwise.sclear(a: r._value, b: 3)}))
 // ```
 //
-sclear = bitwise.sclear
+builtin sclear : (a: int, b: int) => int
 
 // slshift shifts the bits in `a` left by `b` bits.
 // Both `a` and `b` are integers.
-//
-// **Deprecated**: `slshift` is deprecated in favor of [`bitwise`](https://docs.influxdata.com/flux/v0.x/stdlib/bitwise/slshift/).
 //
 // ## Parameters
 // - a: Left hand operand.
@@ -378,7 +347,7 @@ sclear = bitwise.sclear
 // ## Examples
 // ### Shift bits left in an integer
 // ```no_run
-// import "experimental/bitwise"
+// import "bitwise"
 //
 // bitwise.slshift(a: 1234, b: 2)
 //
@@ -387,19 +356,17 @@ sclear = bitwise.sclear
 //
 // ### Shift bits left in integers in a stream of tables
 // ```
-// import "experimental/bitwise"
+// import "bitwise"
 // import "sampledata"
 //
 // < sampledata.int()
 // >    |> map(fn: (r) => ({ r with _value: bitwise.slshift(a: r._value, b: 3)}))
 // ```
 //
-slshift = bitwise.slshift
+builtin slshift : (a: int, b: int) => int
 
 // srshift shifts the bits in `a` right by `b` bits.
 // Both `a` and `b` are integers.
-//
-// **Deprecated**: `srshift` is deprecated in favor of [`bitwise`](https://docs.influxdata.com/flux/v0.x/stdlib/bitwise/srshift/).
 //
 // ## Parameters
 // - a: Left hand operand.
@@ -408,7 +375,7 @@ slshift = bitwise.slshift
 // ## Examples
 // ### Shift bits right in an integer
 // ```no_run
-// import "experimental/bitwise"
+// import "bitwise"
 //
 // bitwise.srshift(a: 1234, b: 2)
 //
@@ -417,11 +384,11 @@ slshift = bitwise.slshift
 //
 // ### Shift bits right in integers in a stream of tables
 // ```
-// import "experimental/bitwise"
+// import "bitwise"
 // import "sampledata"
 //
 // < sampledata.int()
 // >    |> map(fn: (r) => ({ r with _value: bitwise.srshift(a: r._value, b: 3)}))
 // ```
 //
-srshift = bitwise.srshift
+builtin srshift : (a: int, b: int) => int
