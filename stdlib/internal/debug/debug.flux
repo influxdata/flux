@@ -52,14 +52,3 @@ builtin feature : (key: string) => A
 
 // vectorize controls whether the compiler attempts to vectorize Flux functions.
 option vectorize = false
-
-// unpivot removes the `_time` column and any other column not in the group key and outputs a new table with `_field` and `_value` columns pairs.
-// The output stream retains the group key and all group key columns of the input stream.
-// Specialized to transform the pivoted output from `iox.from()` into the unpivoted format.
-//
-// ## Parameters
-// - tables: Input data. Default is piped-forward data (`<-`).
-builtin unpivot : (<-tables: stream[{A with _time: time}]) => stream[{B with _field: string, _value: C}]
-    where
-    A: Record,
-    B: Record

@@ -1,9 +1,10 @@
 package experimental_test
 
 
-import "testing"
-import "experimental"
 import "array"
+import "csv"
+import "experimental"
+import "testing"
 
 testcase addDuration_to_time {
     option now = () => 2021-12-09T00:00:00Z
@@ -165,4 +166,96 @@ testcase subDuration_to_duration_mixed {
     got = array.from(rows: [{_value: experimental.subDuration(d: 2y, from: -12h)}])
 
     testing.diff(want: want, got: got)
+}
+
+inData =
+    "
+#datatype,string,long,string,string,dateTime:RFC3339,double
+#group,false,false,true,true,false,false
+#default,_result,,,,,
+,result,table,_measurement,_field,_time,_value
+,,0,iZquGj,ei77f8T,2018-12-18T20:52:33Z,-61.68790887989735
+,,0,iZquGj,ei77f8T,2018-12-18T20:52:43Z,-6.3173755351186465
+,,0,iZquGj,ei77f8T,2018-12-18T20:52:53Z,-26.049728557657513
+,,0,iZquGj,ei77f8T,2018-12-18T20:53:03Z,114.285955884979
+,,0,iZquGj,ei77f8T,2018-12-18T20:53:13Z,16.140262630578995
+,,0,iZquGj,ei77f8T,2018-12-18T20:53:23Z,29.50336437998469
+
+#datatype,string,long,string,string,dateTime:RFC3339,long
+#group,false,false,true,true,false,false
+#default,_result,,,,,
+,result,table,_measurement,_field,_time,_value
+,,1,iZquGj,ucyoZ,2018-12-18T20:52:33Z,-66
+,,1,iZquGj,ucyoZ,2018-12-18T20:52:43Z,59
+,,1,iZquGj,ucyoZ,2018-12-18T20:52:53Z,64
+,,1,iZquGj,ucyoZ,2018-12-18T20:53:03Z,84
+,,1,iZquGj,ucyoZ,2018-12-18T20:53:13Z,68
+,,1,iZquGj,ucyoZ,2018-12-18T20:53:23Z,49
+"
+
+testcase unpivot_pivot_roundtrip {
+    want =
+        csv.from(csv: inData)
+            |> testing.load()
+            |> range(start: 2018-12-18T20:00:00Z, stop: 2018-12-18T21:00:00Z)
+
+    got =
+        csv.from(csv: inData)
+            |> testing.load()
+            |> range(start: 2018-12-18T20:00:00Z, stop: 2018-12-18T21:00:00Z)
+            |> pivot(rowKey: ["_time"], columnKey: ["_field"], valueColumn: "_value")
+            |> experimental.unpivot()
+
+    testing.diff(got: got, want: want)
+        |> yield()
+}
+
+inDataUnpivoted =
+    "
+#datatype,string,long,string,string,dateTime:RFC3339,double
+#group,false,false,true,true,false,false
+#default,_result,,,,,
+,result,table,_measurement,_field,_time,_value
+,,0,iZquGj,f,2018-12-18T20:52:33Z,-61.68790887989735
+,,0,iZquGj,f,2018-12-18T20:52:43Z,-6.3173755351186465
+
+#datatype,string,long,string,string,dateTime:RFC3339,long
+#group,false,false,true,true,false,false
+#default,_result,,,,,
+,result,table,_measurement,_field,_time,_value
+,,1,iZquGj,i,2018-12-18T20:52:33Z,-66
+,,1,iZquGj,i,2018-12-18T20:52:43Z,3
+
+
+#datatype,string,long,string,string,dateTime:RFC3339,string
+#group,false,false,true,true,false,false
+#default,_result,,,,,
+,result,table,_measurement,_field,_time,_value
+,,2,iZquGj,s,2018-12-18T20:52:33Z,abc
+,,2,iZquGj,s,2018-12-18T20:52:43Z,123
+"
+
+inDataPivoted =
+    "
+#datatype,string,long,string,dateTime:RFC3339,double,long,string
+#group,false,false,true,false,false,false,false
+#default,_result,,,,,,
+,result,table,_measurement,_time,f,i,s
+,,0,iZquGj,2018-12-18T20:52:33Z,-61.68790887989735,-66,abc
+,,0,iZquGj,2018-12-18T20:52:43Z,-6.3173755351186465,3,123
+"
+
+testcase unpivot_3_columns {
+    want =
+        csv.from(csv: inDataUnpivoted)
+            |> testing.load()
+            |> range(start: 2018-12-18T20:00:00Z, stop: 2018-12-18T21:00:00Z)
+
+    got =
+        csv.from(csv: inDataPivoted)
+            |> range(start: 2018-12-18T20:00:00Z, stop: 2018-12-18T21:00:00Z)
+            |> experimental.unpivot()
+
+    testing.diff(got: got, want: want)
+        |> yield()
 }

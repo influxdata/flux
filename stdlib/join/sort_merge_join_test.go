@@ -115,7 +115,7 @@ func TestSortMergeJoinPredicateRule(t *testing.T) {
 			// compare the sort nodes created by the planner rule
 			err = plantest.ComparePlans(wantPlan, physicalPlan, func(p, q plan.Node) error {
 				ps, qs := getSortSpec(p), getSortSpec(q)
-				if (ps == nil)  && (qs == nil) {
+				if (ps == nil) && (qs == nil) {
 					return nil
 				}
 				if (ps == nil) || (qs == nil) {
