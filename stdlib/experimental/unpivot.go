@@ -1,4 +1,4 @@
-package debug
+package experimental
 
 import (
 	"github.com/apache/arrow/go/v7/arrow/memory"
@@ -16,17 +16,21 @@ import (
 	"github.com/influxdata/flux/values"
 )
 
-const UnpivotKind = "internal/debug.unpivot"
+const UnpivotKind = "experimental.unpivot"
 
 type UnpivotOpSpec struct{}
 
 func init() {
-	unpivotSig := runtime.MustLookupBuiltinType("internal/debug", "unpivot")
+	unpivotSig := runtime.MustLookupBuiltinType("experimental", "unpivot")
 
-	runtime.RegisterPackageValue("internal/debug", "unpivot", flux.MustValue(flux.FunctionValue(UnpivotKind, createUnpivotOpSpec, unpivotSig)))
-	flux.RegisterOpSpec(UnpivotKind, newOpaqueOp)
+	runtime.RegisterPackageValue("experimental", "unpivot", flux.MustValue(flux.FunctionValue(UnpivotKind, createUnpivotOpSpec, unpivotSig)))
+	flux.RegisterOpSpec(UnpivotKind, newUnpivotOp)
 	plan.RegisterProcedureSpec(UnpivotKind, newUnpivotProcedure, UnpivotKind)
 	execute.RegisterTransformation(UnpivotKind, createUnpivotTransformation)
+}
+
+func newUnpivotOp() flux.OperationSpec {
+	return &UnpivotOpSpec{}
 }
 
 func createUnpivotOpSpec(args flux.Arguments, a *flux.Administration) (flux.OperationSpec, error) {
