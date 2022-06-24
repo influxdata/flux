@@ -13,6 +13,7 @@
 package experimental
 
 
+import "influxdata/influxdb"
 import "date"
 
 // addDuration adds a duration to a time value and returns the resulting time value.
@@ -244,6 +245,9 @@ builtin set : (<-tables: stream[A], o: B) => stream[C] where A: Record, B: Recor
 
 // to writes _pivoted_ data to an InfluxDB 2.x or InfluxDB Cloud bucket.
 //
+// **Deprecated**: `experimental.to()` is deprecated in favor of [`wideTo()`](https://docs.influxdata.com/flux/v0.x/stdlib/influxdata/influxdb/wideTo/),
+// which is an equivalent function.
+//
 // #### Requirements and behavior
 // - Requires both a `_time` and a `_measurement` column.
 // - All columns in the group key (other than `_measurement`) are written as tags
@@ -282,6 +286,7 @@ builtin set : (<-tables: stream[A], o: B) => stream[C] where A: Record, B: Recor
 //
 // - tables: Input data. Default is piped-forward data (`<-`).
 //
+//
 // ## Examples
 //
 // ### Pivot and write data to InfluxDB
@@ -300,19 +305,10 @@ builtin set : (<-tables: stream[A], o: B) => stream[C] where A: Record, B: Recor
 //
 // ## Metadata
 // introduced: 0.40.0
+// deprecated: NEXT
 // tags: outputs
 //
-builtin to : (
-        <-tables: stream[A],
-        ?bucket: string,
-        ?bucketID: string,
-        ?org: string,
-        ?orgID: string,
-        ?host: string,
-        ?token: string,
-    ) => stream[A]
-    where
-    A: Record
+to = influxdb.wideTo
 
 // join joins two streams of tables on the **group key and `_time` column**.
 //

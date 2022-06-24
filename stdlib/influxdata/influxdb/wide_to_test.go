@@ -1,4 +1,4 @@
-package experimental_test
+package influxdb_test
 
 import (
 	"bytes"
@@ -18,25 +18,25 @@ import (
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
 	"github.com/influxdata/flux/execute/table/static"
+	_ "github.com/influxdata/flux/fluxinit/static"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/querytest"
-	"github.com/influxdata/flux/stdlib/experimental"
 	"github.com/influxdata/flux/stdlib/influxdata/influxdb"
 	"github.com/influxdata/flux/stdlib/universe"
 	protocol "github.com/influxdata/line-protocol"
 )
 
-func TestTo_Query(t *testing.T) {
+func TestWideTo_Query(t *testing.T) {
 	tests := []querytest.NewQueryTestCase{
 		{
-			Name: "from range pivot experimental to",
-			Raw: `import "experimental"
+			Name: "from range pivot wideTo",
+			Raw: `import "influxdata/influxdb"
 import "influxdata/influxdb/v1"
 from(bucket:"mydb")
   |> range(start: -1h)
   |> v1.fieldsAsCols()
-  |> experimental.to(bucket:"series1", org:"fred", host:"localhost", token:"auth-token")`,
+  |> wideTo(bucket:"series1", org:"fred", host:"localhost", token:"auth-token")`,
 			Want: &flux.Spec{
 				Operations: []*flux.Operation{
 					{
@@ -63,8 +63,8 @@ from(bucket:"mydb")
 							ValueColumn: "_value"},
 					},
 					{
-						ID: "experimental-to3",
-						Spec: &experimental.ToOpSpec{
+						ID: "wide-to3",
+						Spec: &influxdb.WideToOpSpec{
 							Bucket: influxdb.NameOrID{Name: "series1"},
 							Org:    influxdb.NameOrID{Name: "fred"},
 							Host:   "localhost",
@@ -75,7 +75,7 @@ from(bucket:"mydb")
 				Edges: []flux.Edge{
 					{Parent: "from0", Child: "range1"},
 					{Parent: "range1", Child: "pivot2"},
-					{Parent: "pivot2", Child: "experimental-to3"},
+					{Parent: "pivot2", Child: "wide-to3"},
 				},
 			},
 		},
@@ -88,7 +88,7 @@ from(bucket:"mydb")
 	}
 }
 
-func TestToTransformation(t *testing.T) {
+func TestWideToTransformation(t *testing.T) {
 	var written bytes.Buffer
 	deps := dependenciestest.Default()
 	deps.Deps.Deps.HTTPClient = &http.Client{
@@ -117,13 +117,13 @@ func TestToTransformation(t *testing.T) {
 
 	ctx, span := dependency.Inject(context.Background(), deps)
 	defer span.Finish()
-	spec := &experimental.ToProcedureSpec{
+	spec := &influxdb.WideToProcedureSpec{
 		Config: influxdb.Config{
 			Bucket: influxdb.NameOrID{Name: "mybucket"},
 			Host:   "http://localhost:8086",
 		},
 	}
-	tr, err := experimental.NewToTransformation(ctx, d, cache, spec)
+	tr, err := influxdb.NewWideToTransformation(ctx, d, cache, spec)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -157,7 +157,7 @@ m0,t0=b f0=3,f1=3i 20000000000
 	}
 }
 
-func TestToTransformation_Errors(t *testing.T) {
+func TestWideToTransformation_Errors(t *testing.T) {
 	for _, tc := range []struct {
 		name  string
 		input flux.TableIterator
@@ -171,7 +171,7 @@ func TestToTransformation_Errors(t *testing.T) {
 				static.StringKey("_field", "f0"),
 				static.Floats("_value", 1.0, 2.0, 3.0),
 			},
-			want: `found column "_field" in the group key; experimental.to() expects pivoted data`,
+			want: `found column "_field" in the group key; wideTo() expects pivoted data`,
 		},
 		{
 			name: "MeasurementWrongType",
@@ -246,13 +246,13 @@ func TestToTransformation_Errors(t *testing.T) {
 
 			ctx, span := dependency.Inject(context.Background(), deps)
 			defer span.Finish()
-			spec := &experimental.ToProcedureSpec{
+			spec := &influxdb.WideToProcedureSpec{
 				Config: influxdb.Config{
 					Bucket: influxdb.NameOrID{Name: "mybucket"},
 					Host:   "http://localhost:8086",
 				},
 			}
-			tr, err := experimental.NewToTransformation(ctx, d, cache, spec)
+			tr, err := influxdb.NewWideToTransformation(ctx, d, cache, spec)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -270,7 +270,7 @@ func TestToTransformation_Errors(t *testing.T) {
 	}
 }
 
-func TestToTransformation_CloseOnError(t *testing.T) {
+func TestWideToTransformation_CloseOnError(t *testing.T) {
 	var closed bool
 	deps := dependenciestest.Default()
 	provider := influxdb.Dependency{
@@ -299,13 +299,13 @@ func TestToTransformation_CloseOnError(t *testing.T) {
 		provider,
 	)
 	defer span.Finish()
-	spec := &experimental.ToProcedureSpec{
+	spec := &influxdb.WideToProcedureSpec{
 		Config: influxdb.Config{
 			Bucket: influxdb.NameOrID{Name: "mybucket"},
 			Host:   "http://localhost:8086",
 		},
 	}
-	tr, err := experimental.NewToTransformation(ctx, d, cache, spec)
+	tr, err := influxdb.NewWideToTransformation(ctx, d, cache, spec)
 	if err != nil {
 		t.Fatal(err)
 	}
