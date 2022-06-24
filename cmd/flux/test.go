@@ -23,10 +23,10 @@ func NewTestExecutor(ctx context.Context) (cmd.TestExecutor, error) {
 
 type testExecutor struct{}
 
-func (testExecutor) Run(pkg *ast.Package) (flux.ResultIterator, error) {
+func (testExecutor) Run(pkg *ast.Package, fn cmd.TestResultFunc) error {
 	jsonAST, err := json.Marshal(pkg)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	c := lang.ASTCompiler{AST: jsonAST}
 
@@ -37,17 +37,19 @@ func (testExecutor) Run(pkg *ast.Package) (flux.ResultIterator, error) {
 	defer span.Finish()
 	program, err := c.Compile(ctx, runtime.Default)
 	if err != nil {
-		return nil, errors.Wrap(err, codes.Invalid, "failed to compile")
+		return errors.Wrap(err, codes.Invalid, "failed to compile")
 	}
 
 	alloc := &memory.ResourceAllocator{}
 	query, err := program.Start(ctx, alloc)
 	if err != nil {
-		return nil, errors.Wrap(err, codes.Inherit, "error while executing program")
+		return errors.Wrap(err, codes.Inherit, "error while executing program")
 	}
 
 	results := flux.NewResultIteratorFromQuery(query)
-	return results, nil
+	defer results.Release()
+
+	return fn(ctx, results)
 }
 
 func (testExecutor) Close() error { return nil }
