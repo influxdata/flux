@@ -33,7 +33,7 @@ func TestDo(t *testing.T) {
 	defer ts.Close()
 
 	script := fmt.Sprintf(`
-import "experimental/http/requests"
+import "http/requests"
 
 resp = requests.do(
     method: "GET",
@@ -112,7 +112,7 @@ resp = requests.do(
 
 func TestDo_ValidationFail(t *testing.T) {
 	script := `
-import "experimental/http/requests"
+import "http/requests"
 
 requests.do(method: "GET", url:"http://127.1.1.1:8888/path/a/b/c", headers: ["x":"a","y":"b","z":"c"])
 `
@@ -133,7 +133,7 @@ requests.do(method: "GET", url:"http://127.1.1.1:8888/path/a/b/c", headers: ["x"
 
 func TestDo_DNSFail(t *testing.T) {
 	script := `
-import "experimental/http/requests"
+import "http/requests"
 
 requests.do(method: "GET", url:"http://notarealaddressatall/path/a/b/c", headers: ["x":"a","y":"b","z":"c"])
 `
@@ -161,7 +161,7 @@ func TestDo_Timeout(t *testing.T) {
 	defer ts.Close()
 
 	script := fmt.Sprintf(`
-import "experimental/http/requests"
+import "http/requests"
 
 // syntax doesn't allow for {http.DefaultConfig with ...} so we rebind it
 // See https://github.com/influxdata/flux/issues/3655
@@ -189,7 +189,7 @@ func TestDo_VerifyTLS_Pass(t *testing.T) {
 	defer ts.Close()
 
 	script := fmt.Sprintf(`
-import "experimental/http/requests"
+import "http/requests"
 
 // syntax doesn't allow for {http.DefaultConfig with ...} so we rebind it
 // See https://github.com/influxdata/flux/issues/3655
@@ -227,7 +227,7 @@ func TestDo_VerifyTLS_Fail(t *testing.T) {
 	defer ts.Close()
 
 	script := fmt.Sprintf(`
-import "experimental/http/requests"
+import "http/requests"
 
 requests.do(method: "GET", url:"%s/path/a/b/c")
 `, ts.URL)

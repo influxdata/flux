@@ -25,7 +25,7 @@ import (
 // http get mirrors the http post originally completed for alerts & notifications
 var do = values.NewFunction(
 	"_do",
-	runtime.MustLookupBuiltinType("experimental/http/requests", "_do"),
+	runtime.MustLookupBuiltinType("http/requests", "_do"),
 	func(ctx context.Context, args values.Object) (values.Value, error) {
 		// Get URL
 		uV, ok := args.Get("url")
@@ -229,5 +229,5 @@ func headerToDict(header http.Header) (values.Dictionary, error) {
 }
 
 func init() {
-	runtime.RegisterPackageValue("experimental/http/requests", "_do", do)
+	runtime.RegisterPackageValue("http/requests", "_do", do)
 }
