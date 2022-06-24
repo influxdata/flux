@@ -181,6 +181,39 @@ func TestDerivative_Process(t *testing.T) {
 			}},
 		},
 		{
+			name: "float non negative/initial zero with multiple values",
+			spec: &universe.DerivativeProcedureSpec{
+				Columns:     []string{"x", "y"},
+				TimeColumn:  execute.DefaultTimeColLabel,
+				Unit:        flux.ConvertDuration(1),
+				NonNegative: true,
+				InitialZero: true,
+			},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "x", Type: flux.TFloat},
+					{Label: "y", Type: flux.TFloat},
+				},
+				Data: [][]interface{}{
+					{execute.Time(1), 2.0, 20.0},
+					{execute.Time(2), 1.0, 10.0},
+					{execute.Time(3), 2.0, 0.0},
+				},
+			}},
+			want: []*executetest.Table{{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "x", Type: flux.TFloat},
+					{Label: "y", Type: flux.TFloat},
+				},
+				Data: [][]interface{}{
+					{execute.Time(2), float64(0), float64(0)},
+					{execute.Time(3), 1.0, float64(0)},
+				},
+			}},
+		},
+		{
 			name: "float with null values",
 			spec: &universe.DerivativeProcedureSpec{
 				Columns:    []string{"x", "y"},
@@ -356,6 +389,37 @@ func TestDerivative_Process(t *testing.T) {
 			}},
 		},
 		{
+			name: "int non negative/initial zero",
+			spec: &universe.DerivativeProcedureSpec{
+				Columns:     []string{execute.DefaultValueColLabel},
+				TimeColumn:  execute.DefaultTimeColLabel,
+				Unit:        flux.ConvertDuration(1),
+				NonNegative: true,
+				InitialZero: true,
+			},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TInt},
+				},
+				Data: [][]interface{}{
+					{execute.Time(1), int64(20)},
+					{execute.Time(2), int64(10)},
+					{execute.Time(3), int64(20)},
+				},
+			}},
+			want: []*executetest.Table{{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
+				},
+				Data: [][]interface{}{
+					{execute.Time(2), float64(0)},
+					{execute.Time(3), 10.0},
+				},
+			}},
+		},
+		{
 			name: "int with tags",
 			spec: &universe.DerivativeProcedureSpec{
 				Columns:    []string{execute.DefaultValueColLabel},
@@ -442,6 +506,39 @@ func TestDerivative_Process(t *testing.T) {
 				Data: [][]interface{}{
 					{execute.Time(2), nil, nil},
 					{execute.Time(3), 1.0, nil},
+				},
+			}},
+		},
+		{
+			name: "int non negative/initial zero with multiple values",
+			spec: &universe.DerivativeProcedureSpec{
+				Columns:     []string{"x", "y"},
+				TimeColumn:  execute.DefaultTimeColLabel,
+				Unit:        flux.ConvertDuration(1),
+				NonNegative: true,
+				InitialZero: true,
+			},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "x", Type: flux.TInt},
+					{Label: "y", Type: flux.TInt},
+				},
+				Data: [][]interface{}{
+					{execute.Time(1), int64(2), int64(20)},
+					{execute.Time(2), int64(1), int64(10)},
+					{execute.Time(3), int64(2), int64(0)},
+				},
+			}},
+			want: []*executetest.Table{{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "x", Type: flux.TFloat},
+					{Label: "y", Type: flux.TFloat},
+				},
+				Data: [][]interface{}{
+					{execute.Time(2), float64(0), float64(0)},
+					{execute.Time(3), 1.0, float64(0)},
 				},
 			}},
 		},
@@ -621,6 +718,37 @@ func TestDerivative_Process(t *testing.T) {
 			}},
 		},
 		{
+			name: "uint with non negative/initial zero",
+			spec: &universe.DerivativeProcedureSpec{
+				Columns:     []string{execute.DefaultValueColLabel},
+				TimeColumn:  execute.DefaultTimeColLabel,
+				Unit:        flux.ConvertDuration(1),
+				NonNegative: true,
+				InitialZero: true,
+			},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TUInt},
+				},
+				Data: [][]interface{}{
+					{execute.Time(1), uint64(20)},
+					{execute.Time(2), uint64(10)},
+					{execute.Time(3), uint64(20)},
+				},
+			}},
+			want: []*executetest.Table{{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
+				},
+				Data: [][]interface{}{
+					{execute.Time(2), float64(0)},
+					{execute.Time(3), 10.0},
+				},
+			}},
+		},
+		{
 			name: "uint with units",
 			spec: &universe.DerivativeProcedureSpec{
 				Columns:    []string{execute.DefaultValueColLabel},
@@ -734,6 +862,39 @@ func TestDerivative_Process(t *testing.T) {
 				Data: [][]interface{}{
 					{execute.Time(2), nil, nil},
 					{execute.Time(3), 1.0, nil},
+				},
+			}},
+		},
+		{
+			name: "uint non negative/initial zero with multiple values",
+			spec: &universe.DerivativeProcedureSpec{
+				Columns:     []string{"x", "y"},
+				TimeColumn:  execute.DefaultTimeColLabel,
+				Unit:        flux.ConvertDuration(1),
+				NonNegative: true,
+				InitialZero: true,
+			},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "x", Type: flux.TUInt},
+					{Label: "y", Type: flux.TUInt},
+				},
+				Data: [][]interface{}{
+					{execute.Time(1), uint64(2), uint64(20)},
+					{execute.Time(2), uint64(1), uint64(10)},
+					{execute.Time(3), uint64(2), uint64(0)},
+				},
+			}},
+			want: []*executetest.Table{{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "x", Type: flux.TFloat},
+					{Label: "y", Type: flux.TFloat},
+				},
+				Data: [][]interface{}{
+					{execute.Time(2), float64(0), float64(0)},
+					{execute.Time(3), 1.0, float64(0)},
 				},
 			}},
 		},
@@ -854,6 +1015,37 @@ func TestDerivative_Process(t *testing.T) {
 				},
 				Data: [][]interface{}{
 					{execute.Time(2), nil},
+					{execute.Time(3), 1.0},
+				},
+			}},
+		},
+		{
+			name: "non negative/initial zero one table",
+			spec: &universe.DerivativeProcedureSpec{
+				Columns:     []string{execute.DefaultValueColLabel},
+				TimeColumn:  execute.DefaultTimeColLabel,
+				Unit:        flux.ConvertDuration(1),
+				NonNegative: true,
+				InitialZero: true,
+			},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
+				},
+				Data: [][]interface{}{
+					{execute.Time(1), 2.0},
+					{execute.Time(2), 1.0},
+					{execute.Time(3), 2.0},
+				},
+			}},
+			want: []*executetest.Table{{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
+				},
+				Data: [][]interface{}{
+					{execute.Time(2), float64(0)},
 					{execute.Time(3), 1.0},
 				},
 			}},

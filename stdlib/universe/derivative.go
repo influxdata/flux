@@ -30,6 +30,7 @@ type DerivativeOpSpec struct {
 	NonNegative bool          `json:"nonNegative"`
 	Columns     []string      `json:"columns"`
 	TimeColumn  string        `json:"timeColumn"`
+	InitialZero bool          `json:"initialZero"`
 }
 
 func init() {
@@ -62,12 +63,19 @@ func createDerivativeOpSpec(args flux.Arguments, a *flux.Administration) (flux.O
 	} else if ok {
 		spec.NonNegative = nn
 	}
+
 	if timeCol, ok, err := args.GetString("timeColumn"); err != nil {
 		return nil, err
 	} else if ok {
 		spec.TimeColumn = timeCol
 	} else {
 		spec.TimeColumn = execute.DefaultTimeColLabel
+	}
+
+	if iz, ok, err := args.GetBool("initialZero"); err != nil {
+		return nil, err
+	} else if ok {
+		spec.InitialZero = iz
 	}
 
 	if cols, ok, err := args.GetArray("columns", semantic.String); err != nil {
@@ -98,6 +106,7 @@ type DerivativeProcedureSpec struct {
 	NonNegative bool          `json:"non_negative"`
 	Columns     []string      `json:"columns"`
 	TimeColumn  string        `json:"timeColumn"`
+	InitialZero bool          `json:"initialZero"`
 }
 
 func newDerivativeProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
@@ -111,6 +120,7 @@ func newDerivativeProcedure(qs flux.OperationSpec, pa plan.Administration) (plan
 		NonNegative: spec.NonNegative,
 		Columns:     spec.Columns,
 		TimeColumn:  spec.TimeColumn,
+		InitialZero: spec.InitialZero,
 	}, nil
 }
 
@@ -146,6 +156,7 @@ func NewDerivativeTransformation(ctx context.Context, id execute.DatasetID, spec
 		nonNegative: spec.NonNegative,
 		columns:     spec.Columns,
 		timeCol:     spec.TimeColumn,
+		initialZero: spec.InitialZero,
 	}
 	return execute.NewNarrowStateTransformation(id, tr, mem)
 }
@@ -155,6 +166,7 @@ type derivativeTransformation struct {
 	nonNegative bool
 	columns     []string
 	timeCol     string
+	initialZero bool
 }
 
 func (t *derivativeTransformation) Process(chunk table.Chunk, state interface{}, d *execute.TransportDataset, mem memory.Allocator) (interface{}, bool, error) {
@@ -391,18 +403,21 @@ func (t *derivativeTransformation) derivativeStateFor(col flux.ColMeta, state *d
 				unit:        t.unit,
 				nonNegative: t.nonNegative,
 				initialized: state.initialized,
+				initialZero: t.initialZero,
 			}, nil
 		case flux.TUInt:
 			return &derivativeUint{
 				unit:        t.unit,
 				nonNegative: t.nonNegative,
 				initialized: state.initialized,
+				initialZero: t.initialZero,
 			}, nil
 		case flux.TFloat:
 			return &derivativeFloat{
 				unit:        t.unit,
 				nonNegative: t.nonNegative,
 				initialized: state.initialized,
+				initialZero: t.initialZero,
 			}, nil
 		default:
 			return nil, errors.Newf(codes.FailedPrecondition, "unsupported derivative column type %s:%s", col.Label, col.Type)
