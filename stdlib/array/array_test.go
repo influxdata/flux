@@ -10,7 +10,7 @@ import (
 	"github.com/influxdata/flux/querytest"
 	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic"
-	"github.com/influxdata/flux/stdlib/experimental/array"
+	"github.com/influxdata/flux/stdlib/array"
 	"github.com/influxdata/flux/values"
 )
 

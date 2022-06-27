@@ -12,7 +12,7 @@ import (
 
 var SpecialFns map[string]values.Function
 
-const packagePath = "experimental/array"
+const packagePath = "array"
 
 func init() {
 	SpecialFns = map[string]values.Function{
