@@ -467,7 +467,6 @@ impl<'a> Converter<'a> {
             ast::Statement::Builtin(s) => {
                 Statement::Builtin(self.convert_builtin_statement(package, s)?)
             }
-            ast::Statement::Test(s) => Statement::Test(Box::new(self.convert_test_statement(s))),
             ast::Statement::TestCase(s) => {
                 Statement::TestCase(Box::new(self.convert_testcase(package, s)))
             }
@@ -732,13 +731,6 @@ impl<'a> Converter<'a> {
             }
         }
         types::PolyType { vars, cons, expr }
-    }
-
-    fn convert_test_statement(&mut self, stmt: &ast::TestStmt) -> TestStmt {
-        TestStmt {
-            loc: stmt.base.location.clone(),
-            assignment: self.convert_variable_assignment(None, &stmt.assignment),
-        }
     }
 
     fn convert_expression_statement(&mut self, stmt: &ast::ExprStmt) -> ExprStmt {

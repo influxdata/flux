@@ -238,20 +238,6 @@ fn format_option_statement() {
 }
 
 #[test]
-fn format_test_statement() {
-    let script = r#"
-            test foo = {}
-            "#;
-
-    check(
-        script,
-        expect![[r#"
-            package main
-            test foo = {}:{}"#]],
-    )
-}
-
-#[test]
 fn format_block_statement() {
     let script = r#"
             (r) => {

@@ -84,8 +84,6 @@ pub enum Node<'a> {
     ReturnStmt(&'a ReturnStmt),
     #[display(fmt = "BadStmt")]
     BadStmt(&'a BadStmt),
-    #[display(fmt = "TestStmt")]
-    TestStmt(&'a TestStmt),
     #[display(fmt = "TestCaseStmt")]
     TestCaseStmt(&'a TestCaseStmt),
     #[display(fmt = "BuiltinStmt")]
@@ -160,7 +158,6 @@ impl<'a> Node<'a> {
             Node::OptionStmt(n) => &n.base,
             Node::ReturnStmt(n) => &n.base,
             Node::BadStmt(n) => &n.base,
-            Node::TestStmt(n) => &n.base,
             Node::TestCaseStmt(n) => &n.base,
             Node::BuiltinStmt(n) => &n.base,
             Node::Block(n) => &n.base,
@@ -217,7 +214,6 @@ impl<'a> Node<'a> {
             Statement::Option(s) => Node::OptionStmt(s),
             Statement::Return(s) => Node::ReturnStmt(s),
             Statement::Bad(s) => Node::BadStmt(s),
-            Statement::Test(s) => Node::TestStmt(s),
             Statement::TestCase(s) => Node::TestCaseStmt(s),
             Statement::Builtin(s) => Node::BuiltinStmt(s),
         }
@@ -396,9 +392,6 @@ where
                 walk(v, Node::from_expr(&n.argument));
             }
             Node::BadStmt(_) => {}
-            Node::TestStmt(n) => {
-                walk(v, Node::VariableAssgn(&n.assignment));
-            }
             Node::TestCaseStmt(n) => {
                 walk(v, Node::Identifier(&n.id));
                 walk(v, Node::Block(&n.block));

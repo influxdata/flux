@@ -129,7 +129,6 @@ impl Formatter {
             walk::Node::ImportDeclaration(m) => self.format_import_declaration(m),
             walk::Node::ReturnStmt(m) => self.format_return_statement(m),
             walk::Node::OptionStmt(m) => self.format_option_statement(m),
-            walk::Node::TestStmt(m) => self.format_test_statement(m),
             walk::Node::TestCaseStmt(m) => self.format_testcase_statement(m),
             walk::Node::VariableAssgn(m) => self.format_variable_assignment(m),
             walk::Node::IndexExpr(m) => self.format_index_expression(m),
@@ -413,11 +412,6 @@ impl Formatter {
     fn format_option_statement(&mut self, n: &semantic::nodes::OptionStmt) {
         self.write_string("option ");
         self.format_assignment(&n.assignment);
-    }
-
-    fn format_test_statement(&mut self, n: &semantic::nodes::TestStmt) {
-        self.write_string("test ");
-        self.format_node(&walk::Node::VariableAssgn(&n.assignment));
     }
 
     fn format_testcase_statement(&mut self, n: &semantic::nodes::TestCaseStmt) {

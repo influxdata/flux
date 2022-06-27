@@ -242,8 +242,6 @@ pub enum Statement {
     Return(Box<ReturnStmt>),
     #[serde(rename = "BadStatement")]
     Bad(Box<BadStmt>),
-    #[serde(rename = "TestStatement")]
-    Test(Box<TestStmt>),
     #[serde(rename = "TestCaseStatement")]
     TestCase(Box<TestCaseStmt>),
     #[serde(rename = "BuiltinStatement")]
@@ -259,7 +257,6 @@ impl Statement {
             Statement::Option(wrapped) => &wrapped.base,
             Statement::Return(wrapped) => &wrapped.base,
             Statement::Bad(wrapped) => &wrapped.base,
-            Statement::Test(wrapped) => &wrapped.base,
             Statement::TestCase(wrapped) => &wrapped.base,
             Statement::Builtin(wrapped) => &wrapped.base,
         }
@@ -273,7 +270,6 @@ impl Statement {
             Statement::Option(_) => 2,
             Statement::Return(_) => 3,
             Statement::Bad(_) => 4,
-            Statement::Test(_) => 5,
             Statement::TestCase(_) => 7,
             Statement::Builtin(_) => 6,
         }
@@ -286,7 +282,6 @@ impl Statement {
             Statement::Option(_) => "option",
             Statement::Return(_) => "return",
             Statement::Bad(_) => "bad",
-            Statement::Test(_) => "test",
             Statement::TestCase(_) => "testcase",
             Statement::Builtin(_) => "builtin",
         }
@@ -802,17 +797,6 @@ pub struct PropertyType {
     pub base: BaseNode,
     pub name: PropertyKey,
     pub monotype: MonoType,
-}
-
-/// TestStmt declares a Flux test case.
-#[allow(missing_docs)]
-#[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
-pub struct TestStmt {
-    #[serde(skip_serializing_if = "BaseNode::is_empty")]
-    #[serde(default)]
-    #[serde(flatten)]
-    pub base: BaseNode,
-    pub assignment: VariableAssgn,
 }
 
 /// Declares a Flux test case.

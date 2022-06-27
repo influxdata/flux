@@ -581,11 +581,6 @@ fn comments2() {
     );
     assert_unchanged("f = (a=1, b=2) =>\n    //comment\n    a()");
 
-    assert_unchanged("//comment\ntest a = 1");
-    assert_unchanged("test //comment\na = 1");
-    assert_unchanged("test a\n    //comment\n     = 1");
-    assert_unchanged("test a =\n    //comment\n    1");
-
     assert_unchanged("//comment\nreturn x");
     assert_unchanged("return\n    //comment\n    x");
 
@@ -1092,11 +1087,11 @@ test2 = 2",
 #[test]
 fn preserve_multiline_test() {
     // ensure functions given preserve their structure
-    //assert_unchanged("test _convariance_missing_column_2 = () =>
+    //assert_unchanged("_convariance_missing_column_2 = () =>
     //({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: covariance_missing_column_2})");
 
     assert_unchanged(
-        "test _covariance_missing_column_2 = () =>
+        "_covariance_missing_column_2 = () =>
     ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: covariance_missing_column_2})",
     );
 
@@ -1414,7 +1409,7 @@ diff =
         |> range(start: 2020-04-27T00:00:00Z, stop: 2020-05-01T00:00:00Z)
         |> anomalydetection.mad(threshold: 3.0)
 
-test _mad = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_mad})"#,
+_mad = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_mad})"#,
     );
 
     // comments
@@ -1460,7 +1455,7 @@ diff =
     );
 
     assert_unchanged(
-        r#"test _join_panic = () =>
+        r#"_join_panic = () =>
     // to trigger the panic, switch the testing.loadStorage() csv from `passData` to `failData`
     ({input: testing.loadStorage(csv: passData), want: testing.loadMem(csv: outData), fn: t_join_panic})"#,
     );
