@@ -801,7 +801,7 @@ builtin mean : (<-tables: stream[{T with _value: float}]) => stream[{T with _val
 // ```
 //
 // ## Metadata
-// introduces: 0.107.0
+// introduced: 0.107.0
 // tags: transformations,aggregates
 //
 builtin mode : (<-tables: stream[{T with _value: A}]) => stream[{T with _value: A}]

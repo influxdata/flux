@@ -1,26 +1,19 @@
 // Package requests provides functions for transferring data using the HTTP protocol.
 //
-// **Deprecated**: This package is deprecated in favor of [`requests`](https://docs.influxdata.com/flux/v0.x/stdlib/http/requests/).
-// Do not mix usage of this experimental package with the `requests` package as the `defaultConfig` is not shared between the two packages.
-// This experimental package is completely superceded by the `requests` package so there should be no need to mix them.
-//
 // ## Metadata
-// introduced: 0.152.0
-// deprecated: NEXT
+// introduced: NEXT
 // tags: http
 package requests
 
 
-import "http/requests"
+import "array"
 
-_emptyBody = requests._emptyBody
+_emptyBody = bytes(v: "")
 
 // defaultConfig is the global default for all http requests using the requests package.
 // Changing this config will affect all other packages using the requests package.
 // To change the config for a single request, pass a new config directly into the corresponding function.
 //
-// **Deprecated**: `defautlConfig` is deprecated in favor of [`requests`](https://docs.influxdata.com/flux/v0.x/stdlib/http/requests/#options).
-// Do not mix usage of this experimental package with the `requests` package as the `defaultConfig` is not shared between the two packages.
 //
 // ## Examples
 //
@@ -29,7 +22,7 @@ _emptyBody = requests._emptyBody
 // Modify the defaultConfig option to change all consumers of the request package.
 //
 // ```no_run
-// import "experimental/http/requests"
+// import "http/requests"
 //
 // option requests.defaultConfig = {
 //  // Set a default timeout of 10s for all requests
@@ -44,7 +37,7 @@ _emptyBody = requests._emptyBody
 // you need by extending the default configuration with your changes.
 //
 // ```
-// import "experimental/http/requests"
+// import "http/requests"
 //
 // // NOTE: Flux syntax does not yet let you specify anything but an identifier
 // // as the record to extend. As a workaround, this example rebinds the default configuration to a new name.
@@ -67,11 +60,16 @@ option defaultConfig = {
 }
 
 // Internal method used to perform the actual request
-_do = requests._do
+builtin _do : (
+        method: string,
+        url: string,
+        ?params: [string:[string]],
+        ?headers: [string:string],
+        ?body: bytes,
+        config: {A with timeout: duration, insecureSkipVerify: bool},
+    ) => {statusCode: int, body: bytes, headers: [string:string], duration: duration}
 
 // do makes an http request.
-//
-// **Deprecated**: `do` is deprecated in favor of [`requests`](https://docs.influxdata.com/flux/v0.x/stdlib/http/requests/do/).
 //
 // ## Parameters
 // - method: method of the http request.
@@ -96,7 +94,7 @@ _do = requests._do
 // ### Make a GET request
 //
 // ```
-// import "experimental/http/requests"
+// import "http/requests"
 //
 // response = requests.do(url:"http://example.com", method: "GET")
 // requests.peek(response: response)
@@ -105,7 +103,7 @@ _do = requests._do
 // ### Make a GET request that needs authorization
 //
 // ```no_run
-// import "experimental/http/requests"
+// import "http/requests"
 // import "influxdata/influxdb/secrets"
 //
 // token = secrets.get(key:"TOKEN")
@@ -122,7 +120,7 @@ _do = requests._do
 // ### Make a GET request with query parameters
 //
 // ```no_run
-// import "experimental/http/requests"
+// import "http/requests"
 //
 // response = requests.do(
 //     method: "GET",
@@ -135,29 +133,24 @@ _do = requests._do
 //
 // ## Metadata
 // tags: http,inputs
-do =
-    // Note we do not redefine this function in terms of the promoted requests pacakge
-    // so that the defaultConfig option is unique to this package.
-    (
-        method,
-        url,
-        params=[:],
-        headers=[:],
-        body=_emptyBody,
-        config=defaultConfig,
-    ) =>
-        _do(
-            method: method,
-            url: url,
-            params: params,
-            headers: headers,
-            body: body,
-            config: config,
-        )
+do = (
+    method,
+    url,
+    params=[:],
+    headers=[:],
+    body=_emptyBody,
+    config=defaultConfig,
+) =>
+    _do(
+        method: method,
+        url: url,
+        params: params,
+        headers: headers,
+        body: body,
+        config: config,
+    )
 
 // post makes a http POST request. This identical to calling `request.do(method: "POST", ...)`.
-//
-// **Deprecated**: `post` is deprecated in favor of [`requests`](https://docs.influxdata.com/flux/v0.x/stdlib/http/requests/post/).
 //
 // ## Parameters
 // - url: URL to request. This should not include any query parameters.
@@ -173,7 +166,7 @@ do =
 // ### Make a POST request with a JSON body and decode JSON response
 //
 // ```
-// import "experimental/http/requests"
+// import "http/requests"
 // import ejson "experimental/json"
 // import "json"
 // import "array"
@@ -192,28 +185,23 @@ do =
 //
 // ## Metadata
 // tags: http,inputs
-post =
-    // Note we do not redefine this function in terms of the promoted requests pacakge
-    // so that the defaultConfig option is unique to this package.
-    (
-        url,
-        params=[:],
-        headers=[:],
-        body=_emptyBody,
-        config=defaultConfig,
-    ) =>
-        do(
-            method: "POST",
-            url: url,
-            params: params,
-            headers: headers,
-            body: body,
-            config: config,
-        )
+post = (
+    url,
+    params=[:],
+    headers=[:],
+    body=_emptyBody,
+    config=defaultConfig,
+) =>
+    do(
+        method: "POST",
+        url: url,
+        params: params,
+        headers: headers,
+        body: body,
+        config: config,
+    )
 
 // get makes a http GET request. This identical to calling `request.do(method: "GET", ...)`.
-//
-// **Deprecated**: `get` is deprecated in favor of [`requests`](https://docs.influxdata.com/flux/v0.x/stdlib/http/requests/get/).
 //
 // ## Parameters
 // - url: URL to request. This should not include any query parameters.
@@ -229,7 +217,7 @@ post =
 // ### Make a GET request
 //
 // ```no_run
-// import "experimental/http/requests"
+// import "http/requests"
 //
 // response = requests.get(url:"http://example.com")
 //
@@ -239,7 +227,7 @@ post =
 // ### Make a GET request and decode the JSON response
 //
 // ```
-// import "experimental/http/requests"
+// import "http/requests"
 // import "experimental/json"
 // import "array"
 //
@@ -269,28 +257,23 @@ post =
 //
 // ## Metadata
 // tags: http,inputs
-get =
-    // Note we do not redefine this function in terms of the promoted requests pacakge
-    // so that the defaultConfig option is unique to this package.
-    (
-        url,
-        params=[:],
-        headers=[:],
-        body=_emptyBody,
-        config=defaultConfig,
-    ) =>
-        do(
-            method: "GET",
-            url: url,
-            params: params,
-            headers: headers,
-            body: body,
-            config: config,
-        )
+get = (
+    url,
+    params=[:],
+    headers=[:],
+    body=_emptyBody,
+    config=defaultConfig,
+) =>
+    do(
+        method: "GET",
+        url: url,
+        params: params,
+        headers: headers,
+        body: body,
+        config: config,
+    )
 
 // peek converts an HTTP response into a table for easy inspection.
-//
-// **Deprecated**: `peek` is deprecated in favor of [`requests`](https://docs.influxdata.com/flux/v0.x/stdlib/http/requests/peek/).
 //
 // The output table includes the following columns:
 //  - **body** with the response body as a string
@@ -311,7 +294,7 @@ get =
 // ### Inspect the response of an HTTP request
 //
 // ```
-// import "experimental/http/requests"
+// import "http/requests"
 //
 // requests.peek(response: requests.get(
 //     url: "https://api.agify.io",
@@ -321,4 +304,14 @@ get =
 // #     // each time we run the example so set it to a static value
 // #>    |> map(fn: (r) => ({r with duration: int(v:100ms)}))
 // ```
-peek = requests.peek
+peek = (response) =>
+    array.from(
+        rows: [
+            {
+                statusCode: response.statusCode,
+                body: string(v: response.body),
+                headers: display(v: response.headers),
+                duration: int(v: response.duration),
+            },
+        ],
+    )

@@ -54,6 +54,7 @@ import (
 	_ "github.com/influxdata/flux/stdlib/experimental/usage"
 	_ "github.com/influxdata/flux/stdlib/generate"
 	_ "github.com/influxdata/flux/stdlib/http"
+	_ "github.com/influxdata/flux/stdlib/http/requests"
 	_ "github.com/influxdata/flux/stdlib/influxdata/influxdb"
 	_ "github.com/influxdata/flux/stdlib/influxdata/influxdb/monitor"
 	_ "github.com/influxdata/flux/stdlib/influxdata/influxdb/sample"
