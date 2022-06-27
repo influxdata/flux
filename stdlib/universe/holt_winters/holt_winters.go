@@ -122,7 +122,7 @@ func (r *HoltWinters) Do(vs *array.Float) *array.Float {
 
 	// Determine best fit for the various parameters
 	minSSE := math.Inf(1)
-	bestParams := make([]float64, size)
+	var bestParams []float64
 
 	// Params for gonum optimize
 	f := mutable.NewFloat64Array(r.alloc)
@@ -169,10 +169,8 @@ func (r *HoltWinters) Do(vs *array.Float) *array.Float {
 	for i := 0; i < len(bestParams); i++ {
 		bestParamsF.Set(i, bestParams[i])
 	}
-	fcast := func() *mutable.Float64Array {
-		fcast := r.forecast(bestParamsF, false)
-		return fcast
-	}()
+	fcast := r.forecast(bestParamsF, false)
+
 	return fcast.NewFloat64Array()
 }
 
@@ -279,7 +277,7 @@ func (r *HoltWinters) sse(params *mutable.Float64Array) float64 {
 			// Compute error
 			if math.IsNaN(fcast.Value(i)) {
 				// Penalize fcast NaNs
-				return math.Inf(1)
+				return math.MaxFloat64
 			}
 			diff := fcast.Value(i) - r.vs.Value(i)
 			sse += diff * diff

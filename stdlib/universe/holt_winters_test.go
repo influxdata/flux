@@ -678,72 +678,72 @@ func TestHoltWinters_Process(t *testing.T) {
 		},
 		// This test was crafted by removing some points and adding null ones from the original dataset.
 		// The expected result is calculated by performing the query in InfluxQL.
-		// {
-		// 	name: "NOAA water - with nulls and missing",
-		// 	spec: &universe.HoltWintersProcedureSpec{
-		// 		Column:     "_value",
-		// 		TimeColumn: "_stop",
-		// 		WithFit:    false,
-		// 		N:          10,
-		// 		S:          4,
-		// 		Interval:   flux.ConvertDuration(379 * time.Minute),
-		// 	},
-		// 	data: []flux.Table{
-		// 		&executetest.Table{
-		// 			ColMeta: []flux.ColMeta{
-		// 				{Label: "_stop", Type: flux.TTime},
-		// 				{Label: "_value", Type: flux.TFloat},
-		// 			},
-		// 			Data: [][]interface{}{
-		// 				{execute.Time(1440281520000000000), 4.948},
-		// 				{execute.Time(1440281520000000001), nil},
-		// 				{execute.Time(1440281520000000002), nil},
-		// 				{execute.Time(1440304260000000000), 2.192},
-		// 				// missing point for 1440327000000000000
-		// 				{execute.Time(1440349740000000000), 2.93},
-		// 				{execute.Time(1440372480000000000), 5.121},
-		// 				// missing point for 1440395220000000000
-		// 				{execute.Time(1440395220000000001), nil},
-		// 				// missing point for 1440417960000000000
-		// 				{execute.Time(1440440700000000000), 2.877},
-		// 				{execute.Time(1440463440000000000), 5.449},
-		// 				{execute.Time(1440486180000000000), 0.896},
-		// 				{execute.Time(1440486180000000001), nil},
-		// 				{execute.Time(1440486180000000002), nil},
-		// 				{execute.Time(1440486180000000003), nil},
-		// 				// missing point for 1440508920000000000
-		// 				// missing point for 1440531660000000000
-		// 				// missing point for 1440554400000000000
-		// 				{execute.Time(1440577140000000000), 0.404},
-		// 				{execute.Time(1440599880000000000), 4.357},
-		// 				{execute.Time(1440599880000000001), nil},
-		// 				{execute.Time(1440622620000000000), 2.618},
-		// 				{execute.Time(1440645360000000000), 6.102},
-		// 				// missing point for 1440668100000000000
-		// 				{execute.Time(1440690840000000000), 4.816},
-		// 				// missing point for 1440713580000000000
-		// 			},
-		// 		},
-		// 	},
-		// 	want: []*executetest.Table{{
-		// 		ColMeta: []flux.ColMeta{
-		// 			{Label: "_time", Type: flux.TTime},
-		// 			{Label: "_value", Type: flux.TFloat},
-		// 		},
-		// 		Data: [][]interface{}{
-		// 			{execute.Time(1440713580000000000), 3.243467293744046},
-		// 			{execute.Time(1440736320000000000), 3.2434611181992774},
-		// 			{execute.Time(1440759060000000000), 3.243457659915101},
-		// 			{execute.Time(1440781800000000000), 3.243455723309489},
-		// 			{execute.Time(1440804540000000000), 3.243454638835965},
-		// 			{execute.Time(1440827280000000000), 3.2434540315472833},
-		// 			{execute.Time(1440850020000000000), 3.2434536914755303},
-		// 			{execute.Time(1440872760000000000), 3.2434535010411083},
-		// 			{execute.Time(1440895500000000000), 3.2434533944011235},
-		// 			{execute.Time(1440918240000000000), 3.2434533346845957},
-		// 		},
-		// 	}},
-		// },
+		{
+			name: "NOAA water - with nulls and missing",
+			spec: &universe.HoltWintersProcedureSpec{
+				Column:     "_value",
+				TimeColumn: "_stop",
+				WithFit:    false,
+				N:          10,
+				S:          4,
+				Interval:   flux.ConvertDuration(379 * time.Minute),
+			},
+			data: []flux.Table{
+				&executetest.Table{
+					ColMeta: []flux.ColMeta{
+						{Label: "_stop", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+					},
+					Data: [][]interface{}{
+						{execute.Time(1440281520000000000), 4.948},
+						{execute.Time(1440281520000000001), nil},
+						{execute.Time(1440281520000000002), nil},
+						{execute.Time(1440304260000000000), 2.192},
+						// missing point for 1440327000000000000
+						{execute.Time(1440349740000000000), 2.93},
+						{execute.Time(1440372480000000000), 5.121},
+						// missing point for 1440395220000000000
+						{execute.Time(1440395220000000001), nil},
+						// missing point for 1440417960000000000
+						{execute.Time(1440440700000000000), 2.877},
+						{execute.Time(1440463440000000000), 5.449},
+						{execute.Time(1440486180000000000), 0.896},
+						{execute.Time(1440486180000000001), nil},
+						{execute.Time(1440486180000000002), nil},
+						{execute.Time(1440486180000000003), nil},
+						// missing point for 1440508920000000000
+						// missing point for 1440531660000000000
+						// missing point for 1440554400000000000
+						{execute.Time(1440577140000000000), 0.404},
+						{execute.Time(1440599880000000000), 4.357},
+						{execute.Time(1440599880000000001), nil},
+						{execute.Time(1440622620000000000), 2.618},
+						{execute.Time(1440645360000000000), 6.102},
+						// missing point for 1440668100000000000
+						{execute.Time(1440690840000000000), 4.816},
+						// missing point for 1440713580000000000
+					},
+				},
+			},
+			want: []*executetest.Table{{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
+				},
+				Data: [][]interface{}{
+					{execute.Time(1440713580000000000), 8.060871776244943},
+					{execute.Time(1440736320000000000), 17.347287691732163},
+					{execute.Time(1440759060000000000), 11.601811194225883},
+					{execute.Time(1440781800000000000), 56.77062065062736},
+					{execute.Time(1440804540000000000), 291.3806861459567},
+					{execute.Time(1440827280000000000), 709.9025450745096},
+					{execute.Time(1440850020000000000), 586.9971224242656},
+					{execute.Time(1440872760000000000), 3212.9646577264193},
+					{execute.Time(1440895500000000000), 17562.424047669054},
+					{execute.Time(1440918240000000000), 42944.7111670221},
+				},
+			}},
+		},
 		// The expected result is calculated by executing the query in InfluxQL with no seasonality.
 		{
 			name: "NOAA water - no seasonal",
