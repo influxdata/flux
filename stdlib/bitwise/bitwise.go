@@ -154,7 +154,7 @@ func srshift(args interpreter.Arguments) (values.Value, error) {
 	return values.NewInt(a >> b), nil
 }
 func init() {
-	b := function.ForPackage("experimental/bitwise")
+	b := function.ForPackage("bitwise")
 	b.Register("uand", uand)
 	b.Register("uor", uor)
 	b.Register("unot", unot)
