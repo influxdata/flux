@@ -216,6 +216,7 @@ func (f *JoinFn) createSchema(record values.Object, groupkey flux.GroupKey) ([]f
 		for _, col := range cols {
 			if gcol == col {
 				found = true
+				break
 			}
 		}
 		if !found {
