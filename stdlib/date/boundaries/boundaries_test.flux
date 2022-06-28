@@ -61,7 +61,7 @@ testcase week_start_default_monday_test {
     testing.diff(want: want, got: got)
 }
 
-testcase week_start_default_monday_test {
+testcase week_start_default_monday_two_test {
     option now = () => 2022-06-08T14:20:11Z
 
     ret = boundaries.week(week_offset: -1, start_sunday: false)
@@ -127,7 +127,7 @@ testcase monday_test_timeable {
     testing.diff(want: want, got: got)
 }
 
-testcase monday_test_timeable {
+testcase monday_test_two_timeable {
     option now = () => 2021-12-30T00:40:44Z
 
     ret = boundaries.monday()
@@ -163,7 +163,7 @@ testcase tuesday_test_timeable {
     testing.diff(want: want, got: got)
 }
 
-testcase tuesday_test_timeable {
+testcase tuesday_test_two_timeable {
     option now = () => 2021-12-30T00:40:44Z
 
     ret = boundaries.tuesday()
@@ -174,7 +174,7 @@ testcase tuesday_test_timeable {
     testing.diff(want: want, got: got)
 }
 
-testcase tuesday_test_timeable {
+testcase tuesday_test_two_timeable {
     option now = () => 2021-12-30T00:40:44Z
     option location = timezone.fixed(offset: 6h)
 
@@ -197,7 +197,7 @@ testcase wednesday_test_timeable {
     testing.diff(want: want, got: got)
 }
 
-testcase wednesday_test_timeable {
+testcase wednesday_test_two_timeable {
     option now = () => 2021-12-05T12:10:11Z
 
     ret = boundaries.wednesday()
@@ -233,7 +233,7 @@ testcase thursday_test_timeable {
     testing.diff(want: want, got: got)
 }
 
-testcase thursday_test_timeable {
+testcase thursday_test_two_timeable {
     option now = () => 2022-01-21T12:10:11Z
 
     ret = boundaries.thursday()
@@ -248,7 +248,6 @@ testcase thursday_test_tzt_timeable {
     option now = () => 2022-01-21T12:10:11Z
     option location = timezone.fixed(offset: 1h)
 
-    //Morocco
     ret = boundaries.thursday()
 
     want = array.from(rows: [{_value_a: 2022-01-19T23:00:00Z, _value_b: 2022-01-20T23:00:00Z}])
@@ -257,7 +256,19 @@ testcase thursday_test_tzt_timeable {
     testing.diff(want: want, got: got)
 }
 
-testcase friday_test_timeable {
+testcase thursday_timeable_test_africa {
+    option now = () => 2022-01-21T12:10:11Z
+    option location = timezone.location(name: "Africa/Algiers")
+
+    ret = boundaries.thursday()
+
+    want = array.from(rows: [{_value_a: 2022-01-19T23:00:00Z, _value_b: 2022-01-20T23:00:00Z}])
+    got = array.from(rows: [{_value_a: ret.start, _value_b: ret.stop}])
+
+    testing.diff(want: want, got: got)
+}
+
+testcase friday_test_one_timeable {
     option now = () => 2022-01-23T12:10:11Z
 
     ret = boundaries.friday()
@@ -268,7 +279,7 @@ testcase friday_test_timeable {
     testing.diff(want: want, got: got)
 }
 
-testcase friday_test_timeable {
+testcase friday_test_two_timeable {
     option now = () => 2022-01-03T12:10:11Z
 
     ret = boundaries.friday()
@@ -279,7 +290,7 @@ testcase friday_test_timeable {
     testing.diff(want: want, got: got)
 }
 
-testcase friday_test_timeable {
+testcase friday_test_three_timeable {
     option now = () => 2022-01-25T12:10:11Z
 
     ret = boundaries.friday()
@@ -290,7 +301,7 @@ testcase friday_test_timeable {
     testing.diff(want: want, got: got)
 }
 
-testcase firday_tz_test_timeable {
+testcase friday_tz_test_timeable {
     option now = () => 2022-01-25T12:10:11Z
     option location = timezone.fixed(offset: -10h)
 
@@ -313,7 +324,7 @@ testcase saturday_test_timeable {
     testing.diff(want: want, got: got)
 }
 
-testcase saturday_test_timeable {
+testcase saturday_test_two_timeable {
     option now = () => 2022-01-15T12:10:11Z
 
     ret = boundaries.saturday()
@@ -324,7 +335,20 @@ testcase saturday_test_timeable {
     testing.diff(want: want, got: got)
 }
 
-testcase sunday_test_timeable {
+testcase saturday_savings_test {
+    option now = () => 2022-11-08T12:10:11Z
+    option location = timezone.location(name: "America/Los_Angeles")
+
+    //goes -8 to -7
+    ret = boundaries.sunday()
+
+    want = array.from(rows: [{_value_a: 2022-11-06T07:00:00Z, _value_b: 2022-11-07T08:00:00Z}])
+    got = array.from(rows: [{_value_a: ret.start, _value_b: ret.stop}])
+
+    testing.diff(want: want, got: got)
+}
+
+testcase sunday_test_one_timeable {
     option now = () => 2022-01-22T12:10:11Z
 
     ret = boundaries.sunday()
@@ -335,12 +359,50 @@ testcase sunday_test_timeable {
     testing.diff(want: want, got: got)
 }
 
-testcase sunday_test_timeable {
+testcase sunday_test_two_timeable {
     option now = () => 2022-01-24T12:10:11Z
 
     ret = boundaries.sunday()
 
     want = array.from(rows: [{_value_a: 2022-01-23T00:00:00Z, _value_b: 2022-01-24T00:00:00Z}])
+    got = array.from(rows: [{_value_a: ret.start, _value_b: ret.stop}])
+
+    testing.diff(want: want, got: got)
+}
+
+testcase monday_test_tz_named_st {
+    // DST begins March 14, ends Nov 7.
+    option now = () => 2021-12-30T00:40:44Z
+    option location = timezone.location(name: "America/Los_Angeles")
+
+    ret = boundaries.monday()
+
+    want = array.from(rows: [{_value_a: 2021-12-27T08:00:00Z, _value_b: 2021-12-28T08:00:00Z}])
+    got = array.from(rows: [{_value_a: ret.start, _value_b: ret.stop}])
+
+    testing.diff(want: want, got: got)
+}
+
+testcase monday_test_tz_named_dst {
+    // DST begins March 14, ends Nov 7.
+    option now = () => 2021-10-29T00:40:44Z
+    option location = timezone.location(name: "America/Los_Angeles")
+
+    ret = boundaries.monday()
+
+    want = array.from(rows: [{_value_a: 2021-10-25T07:00:00Z, _value_b: 2021-10-26T07:00:00Z}])
+    got = array.from(rows: [{_value_a: ret.start, _value_b: ret.stop}])
+
+    testing.diff(want: want, got: got)
+}
+
+testcase month_straddling_offset_change {
+    option now = () => 2021-11-21T00:40:44Z
+    option location = timezone.location(name: "America/Los_Angeles")
+
+    ret = boundaries.month()
+
+    want = array.from(rows: [{_value_a: 2021-11-01T07:00:00Z, _value_b: 2021-12-01T08:00:00Z}])
     got = array.from(rows: [{_value_a: ret.start, _value_b: ret.stop}])
 
     testing.diff(want: want, got: got)
