@@ -9,6 +9,14 @@ package testing
 import "array"
 import c "csv"
 
+//  tags is a list of tags that will be applied to a test case.
+//
+//  The test harness allows filtering based on included tags.
+//
+//  Tags are expected to be overridden per test file and test case
+//  using normal option semantics.
+option tags = []
+
 // assertEquals tests whether two streams of tables are identical.
 //
 // If equal, the function outputs the tested data stream unchanged.

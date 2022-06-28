@@ -146,24 +146,7 @@ func newTestPackage(ctx context.Context, basePkg *ast.Package, preamble []ast.St
 }
 
 func extendTest(file *ast.File, extends string, modules TestModules) ([]*ast.ImportDeclaration, []ast.Statement, []ast.Statement, error) {
-	components := strings.Split(extends, "/")
-	if len(components) <= 1 {
-		return nil, nil, nil, errors.New(codes.Invalid, "testcase extension requires a test module name and at least one other path component")
-	}
-
-	moduleName := components[0]
-	module, ok := modules[moduleName]
-	if !ok {
-		return nil, nil, nil, errors.Newf(codes.FailedPrecondition, "test module %q not found", moduleName)
-	}
-
-	ext := filepath.Ext(extends)
-	testcaseName := strings.TrimPrefix(ext, ".")
-	last := len(components) - 1
-	components[last] = strings.TrimSuffix(components[last], ext)
-
-	fpath := filepath.Join(components[1:]...) + ".flux"
-	f, err := module.Open(fpath)
+	testcaseName, f, err := modules.Open(extends)
 	if err != nil {
 		return nil, nil, nil, err
 	}
@@ -212,23 +195,68 @@ B:
 	return dst
 }
 
-type TestModules map[string]filesystem.Service
+type TestModules map[string]TestModule
 
-func (m *TestModules) Add(name string, fs filesystem.Service) error {
+// TestModule represents a single fluxtest root
+type TestModule struct {
+	filesystem.Service
+	// Tags is the set of valid tags tests in this module may contain
+	Tags []string
+}
+
+func (m *TestModules) Tags(name string) []string {
+	if m, ok := (*m)[name]; ok {
+		return m.Tags
+	}
+	return nil
+}
+
+// Open returns a File for the testcase path
+//
+// A test case path has the following format:
+//
+// <module_name>/<filesystem_path>/<testfile_path>.<testcase_name>
+//
+// where `filesystem_path` may contain multiple path elements.
+func (m *TestModules) Open(fpath string) (string, filesystem.File, error) {
+	components := strings.Split(fpath, "/")
+	if len(components) <= 1 {
+		return "", nil, errors.New(codes.Invalid, "testcase path must contain a module name")
+	}
+
+	moduleName := components[0]
+	module, ok := (*m)[moduleName]
+	if !ok {
+		return "", nil, errors.Newf(codes.FailedPrecondition, "test module %q not found", moduleName)
+	}
+
+	// Extenstion is the test case name
+	// Swap for '.flux' extension
+	ext := filepath.Ext(fpath)
+	name := strings.TrimPrefix(ext, ".")
+	last := len(components) - 1
+	components[last] = strings.TrimSuffix(components[last], ext)
+	fp := filepath.Join(components[1:]...) + ".flux"
+
+	f, err := module.Open(fp)
+	return name, f, err
+}
+
+func (m *TestModules) Add(name string, mod TestModule) error {
 	if *m == nil {
-		*m = make(map[string]filesystem.Service)
+		*m = make(map[string]TestModule)
 	}
 
 	if _, ok := (*m)[name]; ok {
 		return errors.Newf(codes.FailedPrecondition, "duplicate test module %q", name)
 	}
-	(*m)[name] = fs
+	(*m)[name] = mod
 	return nil
 }
 
 func (m *TestModules) Merge(other TestModules) error {
-	for name, fs := range other {
-		if err := m.Add(name, fs); err != nil {
+	for name, mod := range other {
+		if err := m.Add(name, mod); err != nil {
 			return err
 		}
 	}

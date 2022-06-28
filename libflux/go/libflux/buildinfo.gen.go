@@ -406,7 +406,7 @@ var sourceHashes = map[string]string{
 	"stdlib/testing/promql/resets_test.flux":                                                      "e01bb24f576f8a2cb69fa1f5d9061cc852431970792ae2c59c3753580058926d",
 	"stdlib/testing/promql/timestamp_test.flux":                                                   "350dc1161f222d2bfc327aee399ed9873e198c9858e845c2ca0b9ca0e2e38ef8",
 	"stdlib/testing/promql/year_test.flux":                                                        "1767fb414d4261075880b0b9e5f6084cc1d9124fcb3759d68d3bea8a7c42977d",
-	"stdlib/testing/testing.flux":                                                                 "80ae93c701c5c7f37078616fb8c5f807629dad9f53a712ff8a1f6a1a2d448ff4",
+	"stdlib/testing/testing.flux":                                                                 "3a946f63d55a621067917f03e190c42e463ede0c8fc6b15a999f0bfff9a9239a",
 	"stdlib/testing/testing_test.flux":                                                            "33c69744df7f9c6959a3ba05a273fe67260fca3d34f903210ca2ba7eb74f3a25",
 	"stdlib/testing/usage/api_test.flux":                                                          "2a39412eaf41ccb2436dbbdb250f9761544538252bbc6dd6d63b47d2d16e0136",
 	"stdlib/testing/usage/duration_test.flux":                                                     "f545e7e8f1820bdae0beb935d12f899f1065b7b7df1c05eed454ecfb48fa4225",
