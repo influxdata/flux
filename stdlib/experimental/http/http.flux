@@ -1,7 +1,10 @@
 // Package http provides functions for transferring data using HTTP protocol.
 //
+// **Deprecated**: This package is deprecated in favor of [`requests`](https://docs.influxdata.com/flux/v0.x/stdlib/http/requests/).
+//
 // ## Metadata
 // introduced: 0.39.0
+// deprecated: NEXT
 // tags: http
 //
 package http
@@ -9,6 +12,8 @@ package http
 
 // get submits an HTTP GET request to the specified URL and returns the HTTP
 // status code, response body, and response headers.
+//
+// **Deprecated**: `http.get()` is deprecated in favor of [`requests.get()`](https://docs.influxdata.com/flux/v0.x/stdlib/http/requests/get/).
 //
 // ## Response format
 // `http.get()` returns a record with the following properties:

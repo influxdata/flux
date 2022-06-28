@@ -183,7 +183,7 @@ var sourceHashes = map[string]string{
 	"stdlib/experimental/group_test.flux":                                                         "eabe72efa7bd5f2eb30a6e6afb19b65157d167b15740afa85d0f0849cd2fab94",
 	"stdlib/experimental/histogram_quantile_test.flux":                                            "b5968dbaf510bdc0c92033d300706c5dd2250c9788a0000fe39aca3189d45cca",
 	"stdlib/experimental/histogram_test.flux":                                                     "3d983cac860f92c05fd697ee447e34499e417653574fa1698a487f119dab7b50",
-	"stdlib/experimental/http/http.flux":                                                          "dda34b0579c8e5eefae9fac4b596dc2d40c432a257b69ce78715ad47e24e2ea4",
+	"stdlib/experimental/http/http.flux":                                                          "96268512928d041d17a9618d98987512589ac1d8e0d47beb87b064ba90caf42b",
 	"stdlib/experimental/http/requests/requests.flux":                                             "3ba3427669bbe11208afaef402da3f9fd74e6192c1aa071963060e611ce42c98",
 	"stdlib/experimental/influxdb/influxdb.flux":                                                  "503f68779c9d8a4c307d371cce8071826d0462a00e486190b3dfa681f9b620dc",
 	"stdlib/experimental/integral_test.flux":                                                      "4c9b6c866884839027946e93793689b8b3d328e2e777f8ee2f8973ffd72be036",
