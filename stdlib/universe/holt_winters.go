@@ -25,6 +25,7 @@ type HoltWintersOpSpec struct {
 	N          int64         `json:"n"`
 	S          int64         `json:"s"`
 	Interval   flux.Duration `json:"interval"`
+	WithMinSSE bool          `json:"with_minsse"`
 }
 
 func init() {
@@ -76,6 +77,11 @@ func createHoltWintersOpSpec(args flux.Arguments, a *flux.Administration) (flux.
 	} else {
 		spec.S = 0
 	}
+	if withMinSSE, ok, err := args.GetBool("withMinSSE"); err != nil {
+		return nil, err
+	} else if ok {
+		spec.WithMinSSE = withMinSSE
+	}
 	return spec, nil
 }
 
@@ -95,6 +101,7 @@ type HoltWintersProcedureSpec struct {
 	N          int64
 	S          int64
 	Interval   flux.Duration
+	WithMinSSE bool
 }
 
 func newHoltWintersProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
@@ -109,6 +116,7 @@ func newHoltWintersProcedure(qs flux.OperationSpec, pa plan.Administration) (pla
 		N:          spec.N,
 		S:          spec.S,
 		Interval:   spec.Interval,
+		WithMinSSE: spec.WithMinSSE,
 	}, nil
 }
 
@@ -149,6 +157,7 @@ type holtWintersTransformation struct {
 	n          int64
 	s          int64
 	interval   values.Duration
+	withMinSSE bool
 }
 
 func NewHoltWintersTransformation(d execute.Dataset, cache execute.TableBuilderCache, alloc memory.Allocator, spec *HoltWintersProcedureSpec) *holtWintersTransformation {
@@ -162,6 +171,7 @@ func NewHoltWintersTransformation(d execute.Dataset, cache execute.TableBuilderC
 		n:          spec.N,
 		s:          spec.S,
 		interval:   values.Duration(spec.Interval),
+		withMinSSE: spec.WithMinSSE,
 	}
 }
 
@@ -205,6 +215,16 @@ func (hwt *holtWintersTransformation) Process(id execute.DatasetID, tbl flux.Tab
 	if err != nil {
 		return err
 	}
+	newMinSSEIdx := -1
+	if hwt.withMinSSE {
+		newMinSSEIdx, err = builder.AddCol(flux.ColMeta{
+			Label: "minSSE",
+			Type:  flux.TFloat,
+		})
+		if err != nil {
+			return err
+		}
+	}
 
 	// Cleaning data for HoltWinters input.
 	vs, start, stop, err := hwt.getCleanData(tbl, colIdx, timeIdx)
@@ -214,7 +234,7 @@ func (hwt *holtWintersTransformation) Process(id execute.DatasetID, tbl flux.Tab
 
 	// Holt Winters.
 	hw := holt_winters.New(int(hwt.n), int(hwt.s), hwt.withFit, fluxarrow.NewAllocator(hwt.alloc))
-	newVs := hw.Do(vs)
+	newVs, minSSE := hw.Do(vs)
 	// don't need vs anymore
 	vs.Release()
 
@@ -241,6 +261,21 @@ func (hwt *holtWintersTransformation) Process(id execute.DatasetID, tbl flux.Tab
 	}
 	if err := builder.AppendFloats(newValueIdx, newVs); err != nil {
 		return err
+	}
+
+	if hwt.withMinSSE {
+		minSSEb := array.NewFloatBuilder(fluxarrow.NewAllocator(hwt.alloc))
+		for i := 0; i < newVs.Len(); i++ {
+			minSSEb.Append(minSSE)
+		}
+		newMinSSE := minSSEb.NewFloatArray()
+		defer func() {
+			newMinSSE.Release()
+		}()
+
+		if err := builder.AppendFloats(newMinSSEIdx, newMinSSE); err != nil {
+			return err
+		}
 	}
 	if err := execute.AppendKeyValuesN(tbl.Key(), builder, newVs.Len()); err != nil {
 		return err

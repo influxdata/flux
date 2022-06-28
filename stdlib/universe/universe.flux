@@ -896,6 +896,7 @@ builtin histogramQuantile : (
 // - timeColumn: Column containing time values to use in the calculating.
 //   Default is `_time`.
 // - seasonality: Number of points in a season. Default is `0`.
+// - withMinSSE: Return minSSE data in results. Default is `false`.
 // - tables: Input data. Default is piped-forward data (`<-`).
 //
 // ## Examples
@@ -936,6 +937,7 @@ builtin holtWinters : (
         ?column: string,
         ?timeColumn: string,
         ?seasonality: int,
+        ?withMinSSE: bool,
     ) => stream[B]
     where
     A: Record,
