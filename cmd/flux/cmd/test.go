@@ -910,11 +910,11 @@ func NewTestReporter(out io.Writer, verbosity int) TestReporter {
 func (t *TestReporter) ReportTestRun(test *Test) {
 	if t.verbosity == 0 {
 		if test.skip {
-			fmt.Fprintf(t.out, color.YellowString("s"))
+			fmt.Fprint(t.out, color.YellowString("s"))
 		} else if test.Error() != nil {
-			fmt.Fprintf(t.out, color.RedString("x"))
+			fmt.Fprint(t.out, color.RedString("x"))
 		} else {
-			fmt.Fprintf(t.out, color.GreenString("."))
+			fmt.Fprint(t.out, color.GreenString("."))
 		}
 	} else {
 		if t.verbosity != 1 {
