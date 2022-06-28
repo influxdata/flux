@@ -131,7 +131,7 @@ func (f *JoinFn) crossProduct(ctx context.Context, p *joinProduct, mem memory.Al
 			}
 
 			if f.schema == nil {
-				cols, err := f.createSchema(joined)
+				cols, err := f.createSchema(joined, p.left[0].Key())
 				if err != nil {
 					return nil, err
 				}
@@ -147,7 +147,7 @@ func (f *JoinFn) crossProduct(ctx context.Context, p *joinProduct, mem memory.Al
 	return &c, nil
 }
 
-func (f *JoinFn) createSchema(record values.Object) ([]flux.ColMeta, error) {
+func (f *JoinFn) createSchema(record values.Object, groupkey flux.GroupKey) ([]flux.ColMeta, error) {
 	returnType := f.ReturnType()
 
 	numProps, err := returnType.NumProperties()
@@ -210,6 +210,23 @@ func (f *JoinFn) createSchema(record values.Object) ([]flux.ColMeta, error) {
 			Label: k,
 			Type:  ty,
 		})
+	}
+	for _, gcol := range groupkey.Cols() {
+		found := false
+		for _, col := range cols {
+			if gcol == col {
+				found = true
+				break
+			}
+		}
+		if !found {
+			return nil, errors.Newf(
+				codes.Invalid,
+				"join cannot modify group key: output record is missing column '%s:%s'",
+				gcol.Label,
+				gcol.Type,
+			)
+		}
 	}
 	return cols, nil
 }

@@ -178,9 +178,13 @@ testcase full_outer_join {
                 label = if exists l.label then l.label else r.id
                 time = if exists l._time then l._time else r._time
 
-                // Strange that this test passes when it's missing the `key` column
-                // Same issue with the other outer join test cases
-                return {label: label, intv: r._value, floatv: l._value, _time: time}
+                return {
+                    label: label,
+                    intv: r._value,
+                    floatv: l._value,
+                    _time: time,
+                    key: r.key,
+                }
             },
             method: "full",
         )
@@ -219,7 +223,14 @@ testcase left_outer_join {
             left: left,
             right: right,
             on: (l, r) => l.label == r.id and l._time == r._time,
-            as: (l, r) => ({label: l.label, intv: r._value, floatv: l._value, _time: l._time}),
+            as: (l, r) =>
+                ({
+                    label: l.label,
+                    intv: r._value,
+                    floatv: l._value,
+                    _time: l._time,
+                    key: r.key,
+                }),
             method: "left",
         )
 
@@ -258,7 +269,13 @@ testcase right_outer_join {
             right: right,
             on: (l, r) => l.label == r.id and l._time == r._time,
             as: (l, r) => {
-                return {label: r.id, intv: r._value, floatv: l._value, _time: r._time}
+                return {
+                    label: r.id,
+                    intv: r._value,
+                    floatv: l._value,
+                    _time: r._time,
+                    key: l.key,
+                }
             },
             method: "right",
         )
