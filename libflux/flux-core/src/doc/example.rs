@@ -484,12 +484,14 @@ Example on using array.from
             metadata: None,
         };
         let mut executor = MockExecutor {
-            code: expect![[r#"import "array"
+            code: expect![[r#"
+                import "array"
 
-array.from(rows: [{_value: "a"}, {_value: "b"}])
-    |> yield(name: "input")
-    |> map(fn: (r) => ({r with _value: "b"}))
-    |> yield(name: "output")"#]],
+                array.from(rows: [{_value: "a"}, {_value: "b"}])
+                    |> yield(name: "input")
+                    |> map(fn: (r) => ({r with _value: "b"}))
+                    |> yield(name: "output")
+            "#]],
             results: r#"#datatype,string,long,string
 #group,false,false,false
 #default,input,,
@@ -521,6 +523,7 @@ array.from(rows: [{_value: "a"}, {_value: "b"}])
             ```flux
             array.from(rows: [{_value: "a"}, {_value: "b"}])
                 |> map(fn: (r) => ({r with _value: "b"}))
+
             ```
         "#]];
         want_content.assert_eq(&example.content);
@@ -558,6 +561,7 @@ array.from(rows: [{_value: "a"}, {_value: "b"}])
             ```flux
             array.from(rows: [{_value: "a"}])
                 |> map(fn: (r) => ({r with _value: "b"}))
+
             ```"#]];
         want_display.assert_eq(display.as_str());
 
@@ -567,7 +571,8 @@ array.from(rows: [{_value: "a"}, {_value: "b"}])
             array.from(rows: [{_value: "a"}])
                 |> yield(name: "input")
                 |> map(fn: (r) => ({r with _value: "b"}))
-                |> yield(name: "output")"#]];
+                |> yield(name: "output")
+        "#]];
         want_exec.assert_eq(exec.as_str());
     }
     #[test]
@@ -637,6 +642,7 @@ array.from(
                 ],
             )
                 |> map(fn: (r) => ({r with _value: "b"}))
+
             ```"#]];
         want_display.assert_eq(display.as_str());
 
@@ -691,7 +697,8 @@ array.from(
             )
                 |> yield(name: "input")
                 |> map(fn: (r) => ({r with _value: "b"}))
-                |> yield(name: "output")"#]];
+                |> yield(name: "output")
+        "#]];
         want_exec.assert_eq(exec.as_str());
     }
     #[test]

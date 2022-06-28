@@ -129,7 +129,8 @@ func TestDatabases_Run(t *testing.T) {
 
 import "influxdata/influxdb/v1"
 
-v1.databases()`,
+v1.databases()
+`,
 				Tables: defaultTablesFn,
 			},
 		},

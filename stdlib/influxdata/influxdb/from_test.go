@@ -180,7 +180,8 @@ func TestFrom_Run(t *testing.T) {
 				Query: `package main
 
 
-from(bucket: "telegraf") |> range(start: 2020-10-22T09:29:00Z, stop: 2020-10-22T09:30:00Z)`,
+from(bucket: "telegraf") |> range(start: 2020-10-22T09:29:00Z, stop: 2020-10-22T09:30:00Z)
+`,
 				Tables: defaultTablesFn,
 			},
 		},
@@ -210,7 +211,8 @@ from(bucket: "telegraf") |> range(start: 2020-10-22T09:29:00Z, stop: 2020-10-22T
 				Query: `package main
 
 
-from(bucketID: "1e01ac57da723035") |> range(start: 2020-10-22T09:29:00Z, stop: 2020-10-22T09:30:00Z)`,
+from(bucketID: "1e01ac57da723035") |> range(start: 2020-10-22T09:29:00Z, stop: 2020-10-22T09:30:00Z)
+`,
 				Tables: defaultTablesFn,
 			},
 		},
@@ -239,7 +241,8 @@ from(bucketID: "1e01ac57da723035") |> range(start: 2020-10-22T09:29:00Z, stop: 2
 				Query: `package main
 
 
-from(bucket: "telegraf") |> range(start: 2018-05-30T09:00:00Z, stop: 2018-05-30T10:00:00Z)`,
+from(bucket: "telegraf") |> range(start: 2018-05-30T09:00:00Z, stop: 2018-05-30T10:00:00Z)
+`,
 				Tables: defaultTablesFn,
 			},
 		},
@@ -281,7 +284,8 @@ from(bucket: "telegraf")
         fn: (r) => {
             return r["_value"] >= 0.0
         },
-    )`,
+    )
+`,
 				Tables: defaultTablesFn,
 			},
 		},
@@ -325,7 +329,8 @@ from(bucket: "telegraf")
             return r["_value"] >= 0.0
         },
         onEmpty: "keep",
-    )`,
+    )
+`,
 				Tables: defaultTablesFn,
 			},
 		},
@@ -388,7 +393,8 @@ from(bucket: "telegraf")
             return r["_value"] >= math["pi"]
         },
         onEmpty: "keep",
-    )`,
+    )
+`,
 				Tables: defaultTablesFn,
 			},
 		},

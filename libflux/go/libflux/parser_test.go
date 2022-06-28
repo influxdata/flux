@@ -39,7 +39,7 @@ func TestASTPkg_Format(t *testing.T) {
 	ast := libflux.ParseString(src)
 	defer ast.Free()
 
-	if want, got := `x = 1 + 2`, MustFormat(t, ast); want != got {
+	if want, got := "x = 1 + 2\n", MustFormat(t, ast); want != got {
 		t.Errorf("unexpected formatted file -want/+got:\n\t- %q\n\t+ %q", want, got)
 	}
 }
@@ -52,7 +52,8 @@ x=1+2`
 	defer ast.Free()
 
 	if want, got := `// add two numbers
-x = 1 + 2`, MustFormat(t, ast); want != got {
+x = 1 + 2
+`, MustFormat(t, ast); want != got {
 		t.Errorf("unexpected formatted file -want/+got:\n\t- %q\n\t+ %q", want, got)
 	}
 }

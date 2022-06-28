@@ -63,3 +63,4 @@ testcase noop_yield {
 
     testing.diff(got, want)
 }// In TICKscript, noOp is implicit (NoOpNode is automatically appended to any node that is a source for a StatsNode)
+

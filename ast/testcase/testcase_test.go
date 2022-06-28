@@ -143,7 +143,8 @@ import "testing/assert"
 want = 4
 
 assert.equal(want: want, got: 2 + 2)
-assert.equal(want: 6, got: 3 + 3)`,
+assert.equal(want: 6, got: 3 + 3)
+`,
 	}
 	if got := files; !cmp.Equal(want, got) {
 		t.Fatalf("unexpected file contents -want/+got:\n%s", cmp.Diff(want, got))

@@ -22,24 +22,27 @@ func TestEditor(t *testing.T) {
 		{
 			name: "no_option",
 			in: `from(bucket: "test")
-    |> range(start: 2018-05-23T13:09:22.885021542Z)`,
+    |> range(start: 2018-05-23T13:09:22.885021542Z)
+`,
 			unchanged: true,
 			edit: func(node ast.Node) (bool, error) {
 				return edit.Option(node, "from", nil)
 			},
 		},
 		{
-			name:      "option_wrong_id",
-			in:        `option foo = 1`,
+			name: "option_wrong_id",
+			in: `option foo = 1
+`,
 			unchanged: true,
 			edit: func(node ast.Node) (bool, error) {
 				return edit.Option(node, "bar", nil)
 			},
 		},
 		{
-			name:   "qualified_option",
-			in:     `option alert.state = 0`,
-			edited: `option alert.state = 1`,
+			name: "qualified_option",
+			in:   `option alert.state = 0`,
+			edited: `option alert.state = 1
+`,
 			edit: func(node ast.Node) (bool, error) {
 				literal := &ast.IntegerLiteral{Value: int64(1)}
 				return edit.Option(node, "alert.state", edit.OptionValueFn(literal))
@@ -50,7 +53,8 @@ func TestEditor(t *testing.T) {
 			in: `option foo = 1
 option bar = 1`,
 			edited: `option foo = 1
-option bar = 42`,
+option bar = 42
+`,
 			edit: func(node ast.Node) (bool, error) {
 				literal := &ast.IntegerLiteral{Value: int64(42)}
 				return edit.Option(node, "bar", edit.OptionValueFn(literal))
@@ -65,7 +69,8 @@ option bar = 42`,
     delay: 1m,
     cron: "20 * * *",
     retry: 5,
-}`,
+}
+`,
 			edited: `option foo = 1
 option task = {
     name: "bar",
@@ -73,7 +78,8 @@ option task = {
     delay: 42m,
     cron: "buz",
     retry: 10,
-}`,
+}
+`,
 			edit: func(node ast.Node) (bool, error) {
 				every, err := parser.ParseDuration("2h3m10s")
 				if err != nil {
@@ -108,7 +114,8 @@ option task = {
     cron: "20 * * *",
     retry: 5,
     foo: "foo",
-}`,
+}
+`,
 			errorWanted: false,
 			edit: func(node ast.Node) (bool, error) {
 				every, err := parser.ParseDuration("2h")
@@ -122,9 +129,10 @@ option task = {
 			},
 		},
 		{
-			name:   "sets_option_to_array",
-			in:     `option foo = "edit me"`,
-			edited: `option foo = [1, 2, 3, 4]`,
+			name: "sets_option_to_array",
+			in:   `option foo = "edit me"`,
+			edited: `option foo = [1, 2, 3, 4]
+`,
 			edit: func(node ast.Node) (bool, error) {
 				literal := &ast.ArrayExpression{Elements: []ast.Expression{
 					&ast.IntegerLiteral{Value: 1},
@@ -136,9 +144,10 @@ option task = {
 			},
 		},
 		{
-			name:   "sets_option_to_object",
-			in:     `option foo = "edit me"`,
-			edited: `option foo = {x: "x", y: "y"}`,
+			name: "sets_option_to_object",
+			in:   `option foo = "edit me"`,
+			edited: `option foo = {x: "x", y: "y"}
+`,
 			edit: func(node ast.Node) (bool, error) {
 				literal := &ast.ObjectExpression{
 					Properties: []*ast.Property{{
@@ -153,9 +162,10 @@ option task = {
 			},
 		},
 		{
-			name:   "sets_option_mixed",
-			in:     `option foo = "edit me"`,
-			edited: `option foo = {x: {a: [1, 2, 3]}, y: [[1], [2, 3]], z: [{a: 1}, {b: 2}]}`,
+			name: "sets_option_mixed",
+			in:   `option foo = "edit me"`,
+			edited: `option foo = {x: {a: [1, 2, 3]}, y: [[1], [2, 3]], z: [{a: 1}, {b: 2}]}
+`,
 			edit: func(node ast.Node) (bool, error) {
 				x := &ast.ObjectExpression{
 					Properties: []*ast.Property{{
@@ -195,9 +205,10 @@ option task = {
 			},
 		},
 		{
-			name:   "sets_option_to_function_call",
-			in:     `option location = "edit me"`,
-			edited: `option location = loadLocation(name: "America/Denver")`,
+			name: "sets_option_to_function_call",
+			in:   `option location = "edit me"`,
+			edited: `option location = loadLocation(name: "America/Denver")
+`,
 			edit: func(node ast.Node) (bool, error) {
 				literal := &ast.CallExpression{
 					Callee: &ast.Identifier{Name: "loadLocation"},
@@ -212,9 +223,10 @@ option task = {
 			},
 		},
 		{
-			name:   "sets_option_to_function",
-			in:     `option now = "edit me"`,
-			edited: `option now = () => 2018-12-03T20:52:48.464942Z`,
+			name: "sets_option_to_function",
+			in:   `option now = "edit me"`,
+			edited: `option now = () => 2018-12-03T20:52:48.464942Z
+`,
 			edit: func(node ast.Node) (bool, error) {
 				t, err := values.ParseTime("2018-12-03T20:52:48.464942000Z")
 				if err != nil {

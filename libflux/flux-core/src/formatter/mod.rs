@@ -11,7 +11,7 @@ use crate::{
 
 /// Format a [`File`].
 pub fn convert_to_string(file: &File) -> Result<String> {
-    format_to_string(file, true)
+    format_to_string(file, true, Options::default())
 }
 
 /// Format a string of Flux code.
@@ -22,14 +22,44 @@ pub fn convert_to_string(file: &File) -> Result<String> {
 /// # use fluxcore::formatter::format;
 /// let source = "(r) => r.user ==              \"user1\"";
 /// let formatted = format(source).unwrap();
-/// assert_eq!(formatted, "(r) => r.user == \"user1\"");
+/// assert_eq!(formatted, "(r) => r.user == \"user1\"\n");
 /// ```
 pub fn format(contents: &str) -> Result<String> {
+    format_with(contents, Options::default())
+}
+
+/// Format a string of Flux code.
+///
+/// # Example
+///
+/// ```rust
+/// # use fluxcore::formatter::{format_with, Options};
+/// let source = "(r) => r.user ==              \"user1\"";
+/// let formatted = format_with(source, Options { trailing_newline: false }).unwrap();
+/// assert_eq!(formatted, "(r) => r.user == \"user1\"");
+/// ```
+pub fn format_with(contents: &str, options: Options) -> Result<String> {
     let file = parse_string("".to_string(), contents);
     let node = ast::walk::Node::File(&file);
     ast::check::check(node)?;
 
-    convert_to_string(&file)
+    format_to_string(&file, true, options)
+}
+
+/// Options used to alter how the flux code is formatted
+pub struct Options {
+    /// Ensures that the formatted output has a trailing newline.
+    ///
+    /// Default: true
+    pub trailing_newline: bool,
+}
+
+impl Default for Options {
+    fn default() -> Self {
+        Self {
+            trailing_newline: true,
+        }
+    }
 }
 
 const MULTILINE: usize = 4;
@@ -247,11 +277,12 @@ impl<'doc> HangDoc<'doc> {
     }
 }
 
-fn format_to_string(file: &File, include_pkg: bool) -> Result<String> {
+fn format_to_string(file: &File, include_pkg: bool, options: Options) -> Result<String> {
     let arena = Arena::new();
     let mut formatter = Formatter {
         arena: &arena,
         err: None,
+        options,
     };
     let doc = formatter.format_file(file, include_pkg).group().1;
     if let Some(err) = formatter.err {
@@ -269,6 +300,7 @@ fn format_to_string(file: &File, include_pkg: bool) -> Result<String> {
 struct Formatter<'doc> {
     arena: &'doc Arena<'doc>,
     err: Option<Error>,
+    options: Options,
 }
 
 #[allow(dead_code, unused_variables)]
@@ -337,6 +369,10 @@ impl<'doc> Formatter<'doc> {
 
         if !file.eof.is_empty() {
             doc = doc.append(self.format_comments(&file.eof));
+        }
+
+        if self.options.trailing_newline {
+            doc = doc.append(arena.hardline());
         }
 
         doc
