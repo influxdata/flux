@@ -6,6 +6,8 @@ import "experimental/mqtt"
 import "testing"
 
 testcase integration_mqtt_pub {
+    option testing.tags = ["integration_write"]
+
     got =
         array.from(
             rows: [
