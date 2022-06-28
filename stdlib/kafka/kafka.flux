@@ -59,3 +59,20 @@ builtin to : (
     ) => stream[A]
     where
     A: Record
+
+// @feature labelPolymorphism
+builtin to : (
+        <-tables: stream[{ A with N: string, T: time }],
+        brokers: [string],
+        topic: string,
+        ?balancer: string,
+        ?name: string,
+        ?nameColumn: N = "_measurement",
+        ?timeColumn: T = "_time",
+        ?tagColumns: [string],
+        ?valueColumns: [string],
+    ) => stream[{ A with N: string, T: time }]
+    where
+    A: Record,
+    N: Label,
+    T: Label

@@ -18,3 +18,6 @@ package iox
 // ## Metadata
 // tags: inputs
 builtin from : (bucket: string, measurement: string) => stream[{A with _time: time}] where A: Record
+
+// @feature labelPolymorphism
+builtin from : (bucket: string, measurement: M) => stream[{A with _time: time}] where A: Record, M: Label

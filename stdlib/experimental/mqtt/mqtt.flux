@@ -72,6 +72,27 @@ builtin to : (
     A: Record,
     B: Record
 
+// @feature labelPolymorphism
+builtin to : (
+        <-tables: stream[{ A with T: time }],
+        broker: string,
+        ?topic: string,
+        ?qos: int,
+        ?retain: bool,
+        ?clientid: string,
+        ?username: string,
+        ?password: string,
+        ?name: string,
+        ?timeout: duration,
+        ?timeColumn: T = "_time",
+        ?tagColumns: [string],
+        ?valueColumns: [string],
+    ) => stream[B]
+    where
+    A: Record,
+    B: Record,
+    T: Label
+
 // publish sends data to an MQTT broker using MQTT protocol.
 //
 // ## Parameters

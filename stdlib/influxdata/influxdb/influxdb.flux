@@ -328,6 +328,26 @@ builtin to : (
     A: Record,
     B: Record
 
+// @feature labelPolymorphism
+builtin to : (
+        <-tables: stream[{ A with T: time, M: string }],
+        ?bucket: string,
+        ?bucketID: string,
+        ?org: string,
+        ?orgID: string,
+        ?host: string,
+        ?token: string,
+        ?timeColumn: T = "_time",
+        ?measurementColumn: M = "_measurement",
+        ?tagColumns: [string],
+        ?fieldFn: (r: A) => B,
+    ) => stream[{ A with T: time, M: string }]
+    where
+    A: Record,
+    B: Record,
+    T: Label,
+    M: Label
+
 // buckets returns a list of buckets in the specified organization.
 //
 // ## Parameters

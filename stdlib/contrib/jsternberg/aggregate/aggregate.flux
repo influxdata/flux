@@ -80,6 +80,20 @@ builtin window : (
     B: Record,
     C: Record
 
+// @feature labelPolymorphism
+builtin window : (
+        <-tables: stream[{ A with T: time }],
+        ?time: T = "_time",
+        every: duration,
+        ?period: duration,
+        columns: C,
+    ) => stream[B]
+    where
+    A: Record,
+    B: Record,
+    C: Record,
+    T: Label
+
 // null is a sentinel value for fill that will fill
 // in a null value if there were no values for an interval.
 builtin null : A
