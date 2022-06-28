@@ -18,6 +18,7 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/fatih/color"
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/ast/astutil"
@@ -54,6 +55,7 @@ func (e failedTests) Silent() {}
 
 func TestCommand(setup TestSetupFunc) *cobra.Command {
 	var flags TestFlags
+
 	testCommand := &cobra.Command{
 		Use:   "test",
 		Short: "Run flux tests",
@@ -80,6 +82,7 @@ error running the tests or at least one test failed.
 			return nil
 		},
 	}
+
 	testCommand.Flags().StringSliceVarP(&flags.paths, "path", "p", nil, "The root level directory for all packages.")
 	testCommand.Flags().StringSliceVar(&flags.testNames, "test", []string{}, "List of test names to run. These tests will run regardless of tags or skips.")
 	testCommand.Flags().StringSliceVar(&flags.testTags, "tags", []string{}, "List of tags. Tests only run if all of their tags are provided.")
@@ -88,6 +91,9 @@ error running the tests or at least one test failed.
 	testCommand.Flags().BoolVarP(&flags.parallel, "parallel", "", false, "Enables parallel test execution.")
 	testCommand.Flags().CountVarP(&flags.verbosity, "verbose", "v", "verbose (-v, -vv, or -vvv)")
 	testCommand.Flags().BoolVarP(&flags.noinit, "noinit", "", false, "Disables Flux initialization, used for testing this command.")
+
+	testCommand.SetOutput(color.Output)
+
 	return testCommand
 }
 
@@ -904,49 +910,27 @@ func NewTestReporter(out io.Writer, verbosity int) TestReporter {
 func (t *TestReporter) ReportTestRun(test *Test) {
 	if t.verbosity == 0 {
 		if test.skip {
-			fmt.Fprint(t.out, "s")
+			fmt.Fprintf(t.out, color.YellowString("s"))
 		} else if test.Error() != nil {
-			fmt.Fprint(t.out, "x")
+			fmt.Fprintf(t.out, color.RedString("x"))
 		} else {
-			fmt.Fprint(t.out, ".")
-		}
-	} else if t.verbosity == 1 {
-		if test.skip {
-			// Do not print skipped tests until the next verbosity level
-		} else if err := test.Error(); err != nil {
-			fmt.Fprintf(t.out, "%s...fail: %s\n", test.FullName(), err)
-		} else {
-			fmt.Fprintf(t.out, "%s...success\n", test.FullName())
-		}
-	} else if t.verbosity == 2 {
-		if test.skip {
-			fmt.Fprintf(t.out, "%s...skip\n", test.FullName())
-		} else if err := test.Error(); err != nil {
-			fmt.Fprintf(t.out, "%s...fail: %s\n", test.FullName(), err)
-		} else {
-			fmt.Fprintf(t.out, "%s...success\n", test.FullName())
+			fmt.Fprintf(t.out, color.GreenString("."))
 		}
 	} else {
-		if test.skip {
-			// Do not print full output of skipped tests
-			// Using verbosity >=3 is about debugging a running test,
-			// we do not need information about skipped tests
-			return
-		}
-		fmt.Fprintf(t.out, "Testcase: %s\n", test.FullName())
-		fmt.Fprintf(t.out, "Tags: %v\n", test.tags)
-		source, err := test.SourceCode()
-		if err != nil {
-			fmt.Fprintln(t.out, "Source: FAILED")
-		} else {
-			fmt.Fprintf(t.out, "Source: \n%s", source)
+		if t.verbosity != 1 {
+			source, err := test.SourceCode()
+			if err != nil {
+				fmt.Printf("failed to get source for test %s: %s\n", test.FullName(), err)
+			} else {
+				fmt.Printf("Full source for test case %q\n%s", test.FullName(), source)
+			}
 		}
 		if test.skip {
-			fmt.Fprintf(t.out, "Result: %s...skip\n", test.Name())
+			fmt.Fprintf(t.out, "%s ... %s\n", test.FullName(), color.YellowString("skip"))
 		} else if err := test.Error(); err != nil {
-			fmt.Fprintf(t.out, "Result: %s...fail: %s\n", test.Name(), err)
+			fmt.Fprintf(t.out, "%s ... %s: %s\n", test.FullName(), color.RedString("fail"), err)
 		} else {
-			fmt.Fprintf(t.out, "Result: %s...success\n", test.Name())
+			fmt.Fprintf(t.out, "%s ... %s\n", test.FullName(), color.GreenString("success"))
 		}
 	}
 }
@@ -966,7 +950,7 @@ func (t *TestReporter) Summarize(tests []*Test) bool {
 		fmt.Fprintf(t.out, "\nfailures:\n\n")
 		for _, test := range tests {
 			if err := test.Error(); err != nil {
-				fmt.Fprintf(t.out, "\t%s...fail: %s\n", test.FullName(), err)
+				fmt.Fprintf(t.out, "\t%s ... %s: %s\n", test.FullName(), color.RedString("fail"), err)
 			}
 		}
 	}
