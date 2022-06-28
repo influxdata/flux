@@ -61,6 +61,8 @@ require (
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 
+require github.com/fatih/color v1.13.0
+
 require (
 	cloud.google.com/go/bigquery v1.8.0 // indirect
 	github.com/Azure/azure-pipeline-go v0.2.3 // indirect
@@ -88,7 +90,6 @@ require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/deepmap/oapi-codegen v1.6.0 // indirect
 	github.com/dimchansky/utfbom v1.1.0 // indirect
-	github.com/fatih/color v1.13.0 // indirect
 	github.com/form3tech-oss/jwt-go v3.2.5+incompatible // indirect
 	github.com/gabriel-vasile/mimetype v1.4.0 // indirect
 	github.com/goccy/go-json v0.7.10 // indirect
