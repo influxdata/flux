@@ -1412,10 +1412,11 @@ fn test_scan_with_regex_unread() {
     "#;
     let mut s = Scanner::new(text);
 
-    let mut toks = vec![];
-    toks.push(s.scan()); // 3
-    toks.push(s.scan()); // *
-    toks.push(s.scan()); // /
+    let mut toks = vec![
+        s.scan(), // 3
+        s.scan(), // *
+        s.scan(), // /
+    ];
     s.unread();
     toks.push(s.scan_with_regex()); // /
     toks.push(s.scan()); // 1
@@ -1503,14 +1504,15 @@ fn test_unclosed_quote() {
         bar
         baz"#;
     let mut s = Scanner::new(text);
-    let mut toks = vec![];
-    toks.push(s.scan()); // x
-    toks.push(s.scan()); // =
-    toks.push(s.scan()); // "
-    toks.push(s.scan()); // foo
-    toks.push(s.scan()); // bar
-    toks.push(s.scan()); // baz
-    toks.push(s.scan()); // eof
+    let toks = vec![
+        s.scan(), // x
+        s.scan(), // =
+        s.scan(), // "
+        s.scan(), // foo
+        s.scan(), // bar
+        s.scan(), // baz
+        s.scan(), // eof
+    ];
     assert_eq!(
         vec![
             Token {

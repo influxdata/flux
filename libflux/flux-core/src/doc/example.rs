@@ -483,7 +483,7 @@ Example on using array.from
             }],
             metadata: None,
         };
-        let mut executor = MockExecutor {
+        let executor = MockExecutor {
             code: expect![[r#"
                 import "array"
 
@@ -508,7 +508,7 @@ Example on using array.from
 "#,
         };
 
-        for result in evaluate_package_examples(&mut doc, &mut executor) {
+        for result in evaluate_package_examples(&mut doc, &executor) {
             result.unwrap();
         }
 

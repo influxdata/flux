@@ -239,7 +239,7 @@ join(tables:[a,b], on:["t1"], fn: (a,b) => (a["_field"] - b["_field"]) / b["_fie
             let mut v = LocationCollector::new();
             walk_mut(&mut v, NodeMut::Package(&mut pkg));
             let locs = v.locs;
-            assert!(locs.len() > 0);
+            assert!(!locs.is_empty());
             for loc in locs {
                 assert_ne!(loc, base_loc);
             }
@@ -252,7 +252,7 @@ join(tables:[a,b], on:["t1"], fn: (a,b) => (a["_field"] - b["_field"]) / b["_fie
             let mut v = LocationCollector::new();
             walk_mut(&mut v, NodeMut::Package(&mut pkg));
             let locs = v.locs;
-            assert!(locs.len() > 0);
+            assert!(!locs.is_empty());
             for loc in locs {
                 assert_eq!(loc, base_loc);
             }
@@ -275,7 +275,7 @@ join(tables:[a,b], on:["t1"], fn: (a,b) => (a["_field"] - b["_field"]) / b["_fie
             let mut v = TypeCollector::new();
             walk_mut(&mut v, NodeMut::Package(&mut pkg));
             let types = v.types;
-            assert!(types.len() > 0);
+            assert!(!types.is_empty());
             // no type is a type variable
             assert!(types.iter().all(|t| !matches!(t, MonoType::Var(_))));
             // now mutate the types
@@ -300,7 +300,7 @@ join(tables:[a,b], on:["t1"], fn: (a,b) => (a["_field"] - b["_field"]) / b["_fie
             let mut v = TypeCollector::new();
             walk_mut(&mut v, NodeMut::Package(&mut pkg));
             let types = v.types;
-            assert!(types.len() > 0);
+            assert!(!types.is_empty());
             for tvar in types {
                 if let MonoType::Var(tvar) = tvar {
                     assert_eq!(tvar, Tvar(1234));
@@ -320,9 +320,8 @@ join(tables:[a,b], on:["t1"], fn: (a,b) => (a["_field"] - b["_field"]) / b["_fie
 
         impl VisitorMut for NestingCounter {
             fn visit(&mut self, node: &mut NodeMut) -> bool {
-                match node {
-                    NodeMut::Block(_) => self.count += 1,
-                    _ => (),
+                if let NodeMut::Block(_) = node {
+                    self.count += 1
                 }
                 true
             }

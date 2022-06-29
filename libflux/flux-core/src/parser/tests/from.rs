@@ -7,7 +7,7 @@ use crate::ast::tests::Locator;
 fn from() {
     let mut p = Parser::new(r#"from()"#);
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(&p.source[..]);
+    let loc = Locator::new(p.source);
     assert_eq!(
         parsed,
         File {
@@ -50,7 +50,7 @@ fn from() {
 fn from_with_database() {
     let mut p = Parser::new(r#"from(bucket:"telegraf/autogen")"#);
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(&p.source[..]);
+    let loc = Locator::new(p.source);
     assert_eq!(
         parsed,
         File {
@@ -125,7 +125,7 @@ fn from_with_filter_with_no_parens() {
         r#"from(bucket:"telegraf/autogen").filter(fn: (r) => r["other"]=="mem" and r["this"]=="that" or r["these"]!="those")"#,
     );
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(&p.source[..]);
+    let loc = Locator::new(p.source);
     assert_eq!(
         parsed,
         File {
@@ -394,7 +394,7 @@ fn from_with_filter_with_no_parens() {
 fn from_with_range() {
     let mut p = Parser::new(r#"from(bucket:"telegraf/autogen")|>range(start:-1h, end:10m)"#);
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(&p.source[..]);
+    let loc = Locator::new(p.source);
     assert_eq!(
         parsed,
         File {
@@ -556,7 +556,7 @@ fn from_with_range() {
 fn from_with_limit() {
     let mut p = Parser::new(r#"from(bucket:"telegraf/autogen")|>limit(limit:100, offset:10)"#);
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(&p.source[..]);
+    let loc = Locator::new(p.source);
     assert_eq!(
         parsed,
         File {
@@ -709,7 +709,7 @@ fn from_with_range_and_count() {
 						|> count()"#,
     );
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(&p.source[..]);
+    let loc = Locator::new(p.source);
     assert_eq!(
         parsed,
         File {
@@ -905,7 +905,7 @@ fn from_with_range_limit_and_count() {
 						|> count()"#,
     );
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(&p.source[..]);
+    let loc = Locator::new(p.source);
     assert_eq!(
         parsed,
         File {
@@ -1153,7 +1153,7 @@ b = from(bucket:"dbB/autogen") |> range(start:-1h)
 join(tables:[a,b], on:["host"], fn: (a,b) => a["_field"] + b["_field"])"#,
     );
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(&p.source[..]);
+    let loc = Locator::new(p.source);
     assert_eq!(
         parsed,
         File {
@@ -1650,7 +1650,7 @@ b = from(bucket:"Flux/autogen")
 join(tables:[a,b], on:["t1"], fn: (a,b) => (a["_field"] - b["_field"]) / b["_field"])"#,
     );
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(&p.source[..]);
+    let loc = Locator::new(p.source);
 
     let stmt_a = Statement::Variable(Box::new(VariableAssgn {
         base: BaseNode {

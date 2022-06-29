@@ -7,7 +7,7 @@ use crate::ast::tests::Locator;
 fn function_call_with_unbalanced_braces() {
     let mut p = Parser::new(r#"from() |> range() |> map(fn: (r) => { return r._value )"#);
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(&p.source[..]);
+    let loc = Locator::new(p.source);
     assert_eq!(
         parsed,
         File {
@@ -180,7 +180,7 @@ fn function_call_with_unbalanced_braces() {
 fn illegal_statement_token() {
     let mut p = Parser::new(r#"@ ident"#);
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(&p.source[..]);
+    let loc = Locator::new(p.source);
     assert_eq!(
         parsed,
         File {
@@ -225,7 +225,7 @@ fn illegal_statement_token() {
 fn multiple_idents_in_parens() {
     let mut p = Parser::new(r#"(a b)"#);
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(&p.source[..]);
+    let loc = Locator::new(p.source);
     assert_eq!(
         parsed,
         File {
@@ -284,7 +284,7 @@ fn multiple_idents_in_parens() {
 fn missing_left_hand_side() {
     let mut p = Parser::new(r#"(*b)"#);
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(&p.source[..]);
+    let loc = Locator::new(p.source);
     assert_eq!(
         parsed,
         File {
@@ -345,7 +345,7 @@ fn missing_left_hand_side() {
 fn missing_right_hand_side() {
     let mut p = Parser::new(r#"(a*)"#);
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(&p.source[..]);
+    let loc = Locator::new(p.source);
     assert_eq!(
         parsed,
         File {
@@ -404,7 +404,7 @@ fn missing_right_hand_side() {
 fn illegal_expression() {
     let mut p = Parser::new(r#"(@)"#);
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(&p.source[..]);
+    let loc = Locator::new(p.source);
     assert_eq!(
         parsed,
         File {
@@ -699,7 +699,7 @@ fn missing_arrow_in_function_expression() {
 fn index_with_unclosed_bracket() {
     let mut p = Parser::new(r#"a[b()"#);
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(&p.source[..]);
+    let loc = Locator::new(p.source);
     assert_eq!(
         parsed,
         File {
@@ -758,7 +758,7 @@ fn index_with_unclosed_bracket() {
 fn index_with_unbalanced_parenthesis() {
     let mut p = Parser::new(r#"a[b(]"#);
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(&p.source[..]);
+    let loc = Locator::new(p.source);
     assert_eq!(
         parsed,
         File {
@@ -817,7 +817,7 @@ fn index_with_unbalanced_parenthesis() {
 fn index_with_unexpected_rparen() {
     let mut p = Parser::new(r#"a[b)]"#);
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(&p.source[..]);
+    let loc = Locator::new(p.source);
     assert_eq!(
         parsed,
         File {
@@ -867,7 +867,7 @@ fn index_with_unexpected_rparen() {
 fn int_literal_zero_prefix() {
     let mut p = Parser::new(r#"0123"#);
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(&p.source[..]);
+    let loc = Locator::new(p.source);
     assert_eq!(
         parsed,
         File {

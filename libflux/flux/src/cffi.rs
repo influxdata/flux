@@ -677,8 +677,8 @@ mod tests {
                 }
                 MonoType::Fun(f) => {
                     let f = Ptr::make_mut(f);
-                    for (_, mut v) in f.req.iter_mut() {
-                        self.normalize(&mut v);
+                    for (_, v) in f.req.iter_mut() {
+                        self.normalize(v);
                     }
                     for (_, v) in f.opt.iter_mut() {
                         self.normalize(&mut v.typ);

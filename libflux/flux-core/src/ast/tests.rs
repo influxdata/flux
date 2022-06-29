@@ -2090,13 +2090,11 @@ pub struct Locator<'a> {
 impl<'a> Locator<'a> {
     /// Create a new Locator for the given source code
     pub fn new(source: &'a str) -> Self {
-        let mut lines = Vec::new();
-        lines.push(0);
+        let mut lines = vec![0];
         let ci = source.char_indices();
         for (i, c) in ci {
-            match c {
-                '\n' => lines.push((i + 1) as u32),
-                _ => (),
+            if c == '\n' {
+                lines.push((i + 1) as u32)
             }
         }
         Self { source, lines }
@@ -2122,6 +2120,6 @@ impl<'a> Locator<'a> {
     fn get_src(&self, sl: u32, sc: u32, el: u32, ec: u32) -> &str {
         let start_offset = self.lines.get(sl as usize - 1).expect("line not found") + sc - 1;
         let end_offset = self.lines.get(el as usize - 1).expect("line not found") + ec - 1;
-        return &self.source[start_offset as usize..end_offset as usize];
+        &self.source[start_offset as usize..end_offset as usize]
     }
 }

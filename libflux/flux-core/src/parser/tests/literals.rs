@@ -7,7 +7,7 @@ use crate::ast::tests::Locator;
 fn regex_literal() {
     let mut p = Parser::new(r#"/.*/"#);
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(&p.source[..]);
+    let loc = Locator::new(p.source);
     assert_eq!(
         parsed,
         File {
@@ -41,7 +41,7 @@ fn regex_literal() {
 fn regex_literal_with_escape_sequence() {
     let mut p = Parser::new(r#"/a\/b\\c\d/"#);
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(&p.source[..]);
+    let loc = Locator::new(p.source);
     assert_eq!(
         parsed,
         File {
@@ -75,7 +75,7 @@ fn regex_literal_with_escape_sequence() {
 fn bad_regex_literal() {
     let mut p = Parser::new(r#"/*/"#);
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(&p.source[..]);
+    let loc = Locator::new(p.source);
     assert_eq!(
         parsed,
         File {
@@ -113,7 +113,7 @@ fn bad_regex_literal() {
 fn duration_literal_all_units() {
     let mut p = Parser::new(r#"dur = 1y3mo2w1d4h1m30s1ms2µs70ns"#);
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(&p.source[..]);
+    let loc = Locator::new(p.source);
     assert_eq!(
         parsed,
         File {
@@ -195,7 +195,7 @@ fn duration_literal_all_units() {
 fn duration_literal_leading_zero() {
     let mut p = Parser::new(r#"dur = 01y02mo03w04d05h06m07s08ms09µs010ns"#);
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(&p.source[..]);
+    let loc = Locator::new(p.source);
     assert_eq!(
         parsed,
         File {
@@ -277,7 +277,7 @@ fn duration_literal_leading_zero() {
 fn duration_literal_months() {
     let mut p = Parser::new(r#"dur = 6mo"#);
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(&p.source[..]);
+    let loc = Locator::new(p.source);
     assert_eq!(
         parsed,
         File {
@@ -321,7 +321,7 @@ fn duration_literal_months() {
 fn duration_literal_milliseconds() {
     let mut p = Parser::new(r#"dur = 500ms"#);
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(&p.source[..]);
+    let loc = Locator::new(p.source);
     assert_eq!(
         parsed,
         File {
@@ -365,7 +365,7 @@ fn duration_literal_milliseconds() {
 fn duration_literal_months_minutes_milliseconds() {
     let mut p = Parser::new(r#"dur = 6mo30m500ms"#);
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(&p.source[..]);
+    let loc = Locator::new(p.source);
     assert_eq!(
         parsed,
         File {
@@ -419,7 +419,7 @@ fn duration_literal_months_minutes_milliseconds() {
 fn date_literal_in_the_default_location() {
     let mut p = Parser::new(r#"now = 2018-11-29"#);
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(&p.source[..]);
+    let loc = Locator::new(p.source);
     assert_eq!(
         parsed,
         File {
@@ -460,7 +460,7 @@ fn date_literal_in_the_default_location() {
 fn data_time_literal_arg() {
     let mut p = Parser::new(r#"range(start: 2018-11-29T09:00:00)"#);
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(&p.source[..]);
+    let loc = Locator::new(p.source);
     assert_eq!(
         parsed,
         File {
@@ -532,7 +532,7 @@ fn data_time_literal_arg() {
 fn date_time_literal() {
     let mut p = Parser::new(r#"now = 2018-11-29T09:00:00Z"#);
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(&p.source[..]);
+    let loc = Locator::new(p.source);
     assert_eq!(
         parsed,
         File {
@@ -573,7 +573,7 @@ fn date_time_literal() {
 fn date_time_literal_with_fractional_seconds() {
     let mut p = Parser::new(r#"now = 2018-11-29T09:00:00.100000000Z"#);
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(&p.source[..]);
+    let loc = Locator::new(p.source);
     assert_eq!(
         parsed,
         File {
@@ -615,7 +615,7 @@ fn date_time_literal_with_fractional_seconds() {
 fn integer_literal_overflow() {
     let mut p = Parser::new(r#"100000000000000000000000000000"#);
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(&p.source[..]);
+    let loc = Locator::new(p.source);
     assert_eq!(
         parsed,
         File {

@@ -7,7 +7,7 @@ use crate::ast::tests::Locator;
 fn binary_operator_precedence() {
     let mut p = Parser::new(r#"a / b - 1.0"#);
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(&p.source[..]);
+    let loc = Locator::new(p.source);
     assert_eq!(
         parsed,
         File {
@@ -69,7 +69,7 @@ fn binary_operator_precedence() {
 fn binary_operator_precedence_literals_only() {
     let mut p = Parser::new(r#"2 / "a" - 1.0"#);
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(&p.source[..]);
+    let loc = Locator::new(p.source);
     assert_eq!(
         parsed,
         File {
@@ -131,7 +131,7 @@ fn binary_operator_precedence_literals_only() {
 fn binary_operator_precedence_double_subtraction() {
     let mut p = Parser::new(r#"1 - 2 - 3"#);
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(&p.source[..]);
+    let loc = Locator::new(p.source);
     assert_eq!(
         parsed,
         File {
@@ -193,7 +193,7 @@ fn binary_operator_precedence_double_subtraction() {
 fn binary_operator_precedence_double_subtraction_with_parens() {
     let mut p = Parser::new(r#"1 - (2 - 3)"#);
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(&p.source[..]);
+    let loc = Locator::new(p.source);
     assert_eq!(
         parsed,
         File {
@@ -263,7 +263,7 @@ fn binary_operator_precedence_double_subtraction_with_parens() {
 fn binary_operator_precedence_double_sum() {
     let mut p = Parser::new(r#"1 + 2 + 3"#);
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(&p.source[..]);
+    let loc = Locator::new(p.source);
     assert_eq!(
         parsed,
         File {
@@ -325,7 +325,7 @@ fn binary_operator_precedence_double_sum() {
 fn binary_operator_precedence_exponent() {
     let mut p = Parser::new(r#"5 * 1 ^ 5"#);
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(&p.source[..]);
+    let loc = Locator::new(p.source);
     assert_eq!(
         parsed,
         File {
@@ -387,7 +387,7 @@ fn binary_operator_precedence_exponent() {
 fn binary_operator_precedence_double_sum_with_parens() {
     let mut p = Parser::new(r#"1 + (2 + 3)"#);
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(&p.source[..]);
+    let loc = Locator::new(p.source);
     assert_eq!(
         parsed,
         File {
@@ -457,7 +457,7 @@ fn binary_operator_precedence_double_sum_with_parens() {
 fn binary_operator_precedence_exponent_with_parens() {
     let mut p = Parser::new(r#"2 ^ (1 + 3)"#);
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(&p.source[..]);
+    let loc = Locator::new(p.source);
     assert_eq!(
         parsed,
         File {
@@ -527,7 +527,7 @@ fn binary_operator_precedence_exponent_with_parens() {
 fn logical_unary_operator_precedence() {
     let mut p = Parser::new(r#"not -1 == a"#);
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(&p.source[..]);
+    let loc = Locator::new(p.source);
     assert_eq!(
         parsed,
         File {
@@ -592,7 +592,7 @@ fn all_operators_precedence() {
 k / l < m + n - o or p() <= q() or r >= s and not t =~ /a/ and u !~ /a/"#,
     );
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(&p.source[..]);
+    let loc = Locator::new(p.source);
     assert_eq!(
         parsed,
         File {
@@ -1021,7 +1021,7 @@ k / l < m + n - o or p() <= q() or r >= s and not t =~ /a/ and u !~ /a/"#,
 fn logical_operators_precedence_1() {
     let mut p = Parser::new(r#"not a or b"#);
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(&p.source[..]);
+    let loc = Locator::new(p.source);
     assert_eq!(
         parsed,
         File {
@@ -1076,7 +1076,7 @@ fn logical_operators_precedence_1() {
 fn logical_operators_precedence_2() {
     let mut p = Parser::new(r#"a or not b"#);
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(&p.source[..]);
+    let loc = Locator::new(p.source);
     assert_eq!(
         parsed,
         File {
@@ -1131,7 +1131,7 @@ fn logical_operators_precedence_2() {
 fn logical_operators_precedence_3() {
     let mut p = Parser::new(r#"not a and b"#);
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(&p.source[..]);
+    let loc = Locator::new(p.source);
     assert_eq!(
         parsed,
         File {
@@ -1186,7 +1186,7 @@ fn logical_operators_precedence_3() {
 fn logical_operators_precedence_4() {
     let mut p = Parser::new(r#"a and not b"#);
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(&p.source[..]);
+    let loc = Locator::new(p.source);
     assert_eq!(
         parsed,
         File {
@@ -1241,7 +1241,7 @@ fn logical_operators_precedence_4() {
 fn logical_operators_precedence_5() {
     let mut p = Parser::new(r#"a and b or c"#);
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(&p.source[..]);
+    let loc = Locator::new(p.source);
     assert_eq!(
         parsed,
         File {
@@ -1303,7 +1303,7 @@ fn logical_operators_precedence_5() {
 fn logical_operators_precedence_6() {
     let mut p = Parser::new(r#"a or b and c"#);
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(&p.source[..]);
+    let loc = Locator::new(p.source);
     assert_eq!(
         parsed,
         File {
@@ -1365,7 +1365,7 @@ fn logical_operators_precedence_6() {
 fn logical_operators_precedence_7() {
     let mut p = Parser::new(r#"not (a or b)"#);
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(&p.source[..]);
+    let loc = Locator::new(p.source);
     assert_eq!(
         parsed,
         File {
@@ -1428,7 +1428,7 @@ fn logical_operators_precedence_7() {
 fn logical_operators_precedence_8() {
     let mut p = Parser::new(r#"not (a and b)"#);
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(&p.source[..]);
+    let loc = Locator::new(p.source);
     assert_eq!(
         parsed,
         File {
@@ -1491,7 +1491,7 @@ fn logical_operators_precedence_8() {
 fn logical_operators_precedence_9() {
     let mut p = Parser::new(r#"(a or b) and c"#);
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(&p.source[..]);
+    let loc = Locator::new(p.source);
     assert_eq!(
         parsed,
         File {
@@ -1561,7 +1561,7 @@ fn logical_operators_precedence_9() {
 fn logical_operators_precedence_10() {
     let mut p = Parser::new(r#"a and (b or c)"#);
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(&p.source[..]);
+    let loc = Locator::new(p.source);
     assert_eq!(
         parsed,
         File {
@@ -1637,7 +1637,7 @@ fn two_logical_operations_with_parens() {
 (a or b) and c"#,
     );
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(&p.source[..]);
+    let loc = Locator::new(p.source);
     assert_eq!(
         parsed,
         File {
@@ -1770,7 +1770,7 @@ fn two_logical_operations_with_parens() {
 fn binary_expression() {
     let mut p = Parser::new(r#"_value < 10.0"#);
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(&p.source[..]);
+    let loc = Locator::new(p.source);
     assert_eq!(
         parsed,
         File {
@@ -1818,7 +1818,7 @@ fn binary_expression() {
 fn member_expression_binary_expression() {
     let mut p = Parser::new(r#"r._value < 10.0"#);
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(&p.source[..]);
+    let loc = Locator::new(p.source);
     assert_eq!(
         parsed,
         File {
@@ -1886,7 +1886,7 @@ fn var_as_binary_expression_of_other_vars() {
             d = a"#,
     );
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(&p.source[..]);
+    let loc = Locator::new(p.source);
     assert_eq!(
         parsed,
         File {
@@ -2006,7 +2006,7 @@ fn var_as_unary_expression_of_other_vars() {
             c = -a"#,
     );
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(&p.source[..]);
+    let loc = Locator::new(p.source);
     assert_eq!(
         parsed,
         File {
@@ -2079,7 +2079,7 @@ fn var_as_both_binary_and_unary_expressions() {
             c = 10 * -a"#,
     );
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(&p.source[..]);
+    let loc = Locator::new(p.source);
     assert_eq!(
         parsed,
         File {
@@ -2166,7 +2166,7 @@ fn unary_expressions_within_logical_expression() {
             10.0 * -a == -0.5 or a == 6.0"#,
     );
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(&p.source[..]);
+    let loc = Locator::new(p.source);
     assert_eq!(
         parsed,
         File {
@@ -2292,7 +2292,7 @@ fn unary_expressions_within_logical_expression() {
 fn unary_expression_with_member_expression() {
     let mut p = Parser::new(r#"not m.b"#);
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(&p.source[..]);
+    let loc = Locator::new(p.source);
     assert_eq!(
         parsed,
         File {
@@ -2355,7 +2355,7 @@ a = 5.0
 	or a == 6.0"#,
     );
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(&p.source[..]);
+    let loc = Locator::new(p.source);
     assert_eq!(
         parsed,
         File {
@@ -2493,7 +2493,7 @@ fn mix_unary_logical_and_binary_expressions() {
             not (f() == 6.0 * x) or fail()"#,
     );
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(&p.source[..]);
+    let loc = Locator::new(p.source);
     assert_eq!(
         parsed,
         File {
@@ -2605,7 +2605,7 @@ fn mix_unary_logical_and_binary_expressions_with_extra_parens() {
             (not (f() == 6.0 * x) or fail())"#,
     );
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(&p.source[..]);
+    let loc = Locator::new(p.source);
     assert_eq!(
         parsed,
         File {
@@ -2722,7 +2722,7 @@ fn mix_unary_logical_and_binary_expressions_with_extra_parens() {
 fn modulo_op_ints() {
     let mut p = Parser::new(r#"3 % 8"#);
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(&p.source[..]);
+    let loc = Locator::new(p.source);
     assert_eq!(
         parsed,
         File {
@@ -2770,7 +2770,7 @@ fn modulo_op_ints() {
 fn modulo_op_floats() {
     let mut p = Parser::new(r#"8.3 % 3.1"#);
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(&p.source[..]);
+    let loc = Locator::new(p.source);
     assert_eq!(
         parsed,
         File {
@@ -2818,7 +2818,7 @@ fn modulo_op_floats() {
 fn power_op() {
     let mut p = Parser::new(r#"2 ^ 4"#);
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(&p.source[..]);
+    let loc = Locator::new(p.source);
     assert_eq!(
         parsed,
         File {

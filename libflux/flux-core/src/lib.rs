@@ -1,4 +1,9 @@
 #![cfg_attr(feature = "strict", deny(warnings, missing_docs))]
+#![allow(
+    clippy::needless_update, //
+    clippy::identity_op, // Warns on `1 * YEARS` which seems clearer than `YEARS`
+    clippy::neg_multiply, // Warns on `-1 * YEARS` which seems clearer than `-YEARS`
+)]
 
 //! This crate performs parsing and semantic analysis of Flux source
 //! code. It forms the core of the compiler for the [Flux language].
@@ -138,7 +143,7 @@ mod tests {
             let mut in_pkg: ast::Package = has_clause_file.clone().into();
             merge_packages(&mut out_pkg, &mut in_pkg).unwrap();
             let got = out_pkg.files;
-            let want = vec![no_clause_file.clone(), has_clause_file.clone()];
+            let want = vec![no_clause_file, has_clause_file];
             assert_eq!(want, got);
         }
     }
@@ -177,19 +182,19 @@ mod tests {
             base: Default::default(),
             path: "./test".to_string(),
             package: "foo".to_string(),
-            files: vec![in_file.clone()],
+            files: vec![in_file],
         };
         let mut out_pkg = ast::Package {
             base: Default::default(),
             path: "./test".to_string(),
             package: "foo".to_string(),
-            files: vec![out_file.clone()],
+            files: vec![out_file],
         };
         let got_err = merge_packages(&mut out_pkg, &mut in_pkg)
             .unwrap_err()
             .to_string();
         let want_err = r#"error at test_in.flux@1:1-1:12: file is in package "foo", but other files are in package "main""#;
-        assert_eq!(got_err.to_string(), want_err);
+        assert_eq!(got_err, want_err);
     }
 
     #[test]
@@ -203,19 +208,19 @@ mod tests {
             base: Default::default(),
             path: "./test".to_string(),
             package: "foo".to_string(),
-            files: vec![in_file.clone()],
+            files: vec![in_file],
         };
         let mut out_pkg = ast::Package {
             base: Default::default(),
             path: "./test".to_string(),
             package: "foo".to_string(),
-            files: vec![out_file.clone()],
+            files: vec![out_file],
         };
         let got_err = merge_packages(&mut out_pkg, &mut in_pkg)
             .unwrap_err()
             .to_string();
         let want_err = r#"error at test_in.flux@1:1-1:9: file is in default package "main", but other files are in package "foo""#;
-        assert_eq!(got_err.to_string(), want_err);
+        assert_eq!(got_err, want_err);
     }
 
     #[test]
@@ -228,13 +233,13 @@ mod tests {
             base: Default::default(),
             path: "./test".to_string(),
             package: "foo".to_string(),
-            files: vec![in_file.clone()],
+            files: vec![in_file],
         };
         let mut out_pkg = ast::Package {
             base: Default::default(),
             path: "./test".to_string(),
             package: "foo".to_string(),
-            files: vec![out_file.clone()],
+            files: vec![out_file],
         };
         merge_packages(&mut out_pkg, &mut in_pkg).unwrap();
         assert_eq!(2, out_pkg.files.len());

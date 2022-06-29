@@ -2034,7 +2034,7 @@ mod tests {
         let got = convert_duration(&t).unwrap();
         assert_eq!(expect_nano, got.nanoseconds);
         assert_eq!(expect_months, got.months);
-        assert_eq!(false, got.negative);
+        assert!(!got.negative);
     }
 
     #[test]
@@ -2059,7 +2059,7 @@ mod tests {
         let got = convert_duration(&t).unwrap();
         assert_eq!(expect_nano, got.nanoseconds);
         assert_eq!(expect_months, got.months);
-        assert_eq!(false, got.negative);
+        assert!(!got.negative);
     }
 
     #[test]
@@ -2084,7 +2084,7 @@ mod tests {
         let got = convert_duration(&t).unwrap();
         assert_eq!(expect_nano, got.nanoseconds);
         assert_eq!(expect_months, got.months);
-        assert_eq!(true, got.negative);
+        assert!(got.negative);
     }
 
     #[test]
@@ -2219,7 +2219,7 @@ mod tests {
                                     name: Symbol::from("a"),
                                 },
                                 value: Expression::Integer(IntegerLit {
-                                    loc: b.location.clone(),
+                                    loc: b.location,
                                     value: 2,
                                 }),
                             }],

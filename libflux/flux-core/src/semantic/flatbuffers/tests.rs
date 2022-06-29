@@ -124,7 +124,7 @@ re !~ /foo/
         NodeMut::Package(&mut pkg),
     );
 
-    let (vec, offset) = match super::serialize_pkg(&mut pkg) {
+    let (vec, offset) = match super::serialize_pkg(&pkg) {
         Ok((v, o)) => (v, o),
         Err(e) => {
             assert!(false, "{}", e);
@@ -132,9 +132,8 @@ re !~ /foo/
         }
     };
     let fb = &vec.as_slice()[offset..];
-    match compare_semantic_fb(&pkg, fb) {
-        Err(e) => assert!(false, "{}", e),
-        _ => (),
+    if let Err(e) = compare_semantic_fb(&pkg, fb) {
+        assert!(false, "{}", e)
     }
 }
 
@@ -173,9 +172,8 @@ fn test_serialize_vectorization() {
         }
     };
     // call vectorize function explicitly
-    match semantic::vectorize::vectorize(&semantic::AnalyzerConfig::default(), &mut pkg) {
-        Err(e) => assert!(false, "{}", e),
-        _ => (),
+    if let Err(e) = semantic::vectorize::vectorize(&semantic::AnalyzerConfig::default(), &mut pkg) {
+        assert!(false, "{}", e)
     }
 
     // check there's something inside vectorized field
@@ -193,7 +191,7 @@ fn test_serialize_vectorization() {
     vectorizedFuncExpr.expect("function");
 
     // serialize semantic package
-    let (vec, offset) = match super::serialize_pkg(&mut pkg) {
+    let (vec, offset) = match super::serialize_pkg(&pkg) {
         Ok((v, o)) => (v, o),
         Err(e) => {
             assert!(false, "{}", e);
@@ -203,9 +201,8 @@ fn test_serialize_vectorization() {
 
     // compare semantic package with flatbuffers
     let fb = &vec.as_slice()[offset..];
-    match compare_semantic_fb(&pkg, fb) {
-        Err(e) => assert!(false, "{}", e),
-        _ => (),
+    if let Err(e) = compare_semantic_fb(&pkg, fb) {
+        assert!(false, "{}", e)
     }
 }
 
@@ -224,7 +221,7 @@ fn compare_pkg_fb(
 
     let fb_files = &fb_pkg.files();
     let fb_files = unwrap_or_fail("package files", fb_files)?;
-    compare_vec_len(&semantic_pkg.files, &fb_files)?;
+    compare_vec_len(&semantic_pkg.files, fb_files)?;
     let mut i: usize = 0;
     loop {
         if i >= semantic_pkg.files.len() {
@@ -234,7 +231,7 @@ fn compare_pkg_fb(
         let semantic_file = &semantic_pkg.files[i];
         let fb_file = &fb_files.get(i);
         compare_files(semantic_file, fb_file)?;
-        i = i + 1;
+        i += 1;
     }
 }
 
@@ -244,7 +241,7 @@ fn compare_files(semantic_file: &semantic::nodes::File, fb_file: &fbsemantic::Fi
     if let Some(package) = sem_file_ref {
         let semantic_file_name = &sem_file_ref.unwrap().name.name;
         let fb_file_name = &fb_file.package().unwrap().name().unwrap().name();
-        compare_symbols("file name", &semantic_file_name, fb_file_name)?;
+        compare_symbols("file name", semantic_file_name, fb_file_name)?;
         compare_package_clause(&semantic_file.package, &fb_file.package())?;
     }
     compare_imports(&semantic_file.imports, &fb_file.imports())?;
@@ -253,7 +250,7 @@ fn compare_files(semantic_file: &semantic::nodes::File, fb_file: &fbsemantic::Fi
 }
 
 fn compare_stmt_vectors(
-    semantic_stmts: &Vec<semantic::nodes::Statement>,
+    semantic_stmts: &[semantic::nodes::Statement],
     fb_stmts: &Option<
         flatbuffers::Vector<flatbuffers::ForwardsUOffset<fbsemantic::WrappedStatement>>,
     >,
@@ -284,7 +281,7 @@ fn compare_stmts(
             fbsemantic::Statement::NativeVariableAssignment,
         ) => {
             let fb_stmt = fbsemantic::NativeVariableAssignment::init_from_table(*fb_tbl);
-            compare_var_assign(&semantic_stmt, &Some(fb_stmt))
+            compare_var_assign(semantic_stmt, &Some(fb_stmt))
         }
         (
             semantic::nodes::Statement::Expr(semantic_stmt),
@@ -453,7 +450,7 @@ fn compare_exprs(
             fbsemantic::Expression::IntegerLiteral,
         ) => {
             let fb_int = fbsemantic::IntegerLiteral::init_from_table(*fb_tbl);
-            compare_loc(&semantic_expr.loc(), &fb_int.loc())?;
+            compare_loc(semantic_expr.loc(), &fb_int.loc())?;
             match semantic_int.value == fb_int.value() {
                 true => Ok(()),
                 false => Err(anyhow!(
@@ -558,7 +555,7 @@ fn compare_exprs(
                 let fb_we = &fb_elems.get(i);
                 let fb_e = &fb_we.expression();
                 compare_exprs(&semantic_ae.elements[i], fb_we.expression_type(), fb_e)?;
-                i = i + 1
+                i += 1
             }
         }
         (
@@ -595,7 +592,7 @@ fn compare_exprs(
             fbsemantic::Expression::MemberExpression,
         ) => {
             let fb_me = fbsemantic::MemberExpression::init_from_table(*fb_tbl);
-            compare_member_expr(&semantic_me, &Some(fb_me))
+            compare_member_expr(semantic_me, &Some(fb_me))
         }
         (
             semantic::nodes::Expression::Index(semantic_ie),
@@ -640,7 +637,7 @@ fn compare_exprs(
             fbsemantic::Expression::CallExpression,
         ) => {
             let fb_ce = fbsemantic::CallExpression::init_from_table(*fb_tbl);
-            compare_call_exprs(&semantic_ce, &Some(fb_ce))
+            compare_call_exprs(semantic_ce, &Some(fb_ce))
         }
         (
             semantic::nodes::Expression::Conditional(semantic_ce),
@@ -712,7 +709,7 @@ fn compare_duration(
 }
 
 fn compare_property_list(
-    semantic_pl: &Vec<semantic::nodes::Property>,
+    semantic_pl: &[semantic::nodes::Property],
     fb_pl: &Option<flatbuffers::Vector<flatbuffers::ForwardsUOffset<fbsemantic::Property>>>,
 ) -> Result<()> {
     let fb_pl = unwrap_or_fail("property list", fb_pl)?;
@@ -724,12 +721,12 @@ fn compare_property_list(
         }
 
         compare_property(&semantic_pl[i], &fb_pl.get(i))?;
-        i = i + 1;
+        i += 1;
     }
 }
 
 fn compare_params(
-    semantic_params: &Vec<semantic::nodes::FunctionParameter>,
+    semantic_params: &[semantic::nodes::FunctionParameter],
     fb_params: &Option<
         flatbuffers::Vector<flatbuffers::ForwardsUOffset<fbsemantic::FunctionParameter>>,
     >,
@@ -743,7 +740,7 @@ fn compare_params(
         }
 
         compare_param(&semantic_params[i], &fb_params.get(i))?;
-        i = i + 1;
+        i += 1;
     }
 }
 
@@ -761,7 +758,7 @@ fn compare_param(
     }
     compare_ids(&semantic_param.key, &fb_param.key());
     if let Some(def) = &semantic_param.default {
-        compare_exprs(&def, fb_param.default_type(), &fb_param.default());
+        compare_exprs(def, fb_param.default_type(), &fb_param.default());
     }
     Ok(())
 }
@@ -773,7 +770,7 @@ fn compare_property(
     compare_loc(&semantic_prop.loc, &fb_prop.loc())?;
     compare_ids(&semantic_prop.key, &fb_prop.key());
     let expr_prop = &semantic_prop.value;
-    compare_exprs(&expr_prop, fb_prop.value_type(), &fb_prop.value())
+    compare_exprs(expr_prop, fb_prop.value_type(), &fb_prop.value())
 }
 
 fn compare_package_clause(
@@ -792,7 +789,7 @@ fn compare_package_clause(
 }
 
 fn compare_imports(
-    semantic_imports: &Vec<semantic::nodes::ImportDeclaration>,
+    semantic_imports: &[semantic::nodes::ImportDeclaration],
     fb_imports: &Option<
         flatbuffers::Vector<flatbuffers::ForwardsUOffset<fbsemantic::ImportDeclaration>>,
     >,
@@ -806,7 +803,7 @@ fn compare_imports(
         }
 
         compare_import_decls(&semantic_imports[i], &fb_imports.get(i))?;
-        i = i + 1;
+        i += 1;
     }
 }
 
@@ -835,7 +832,7 @@ fn compare_loc(
     Ok(())
 }
 
-fn compare_vec_len<T, U>(semantic_vec: &Vec<T>, fb_vec: &flatbuffers::Vector<U>) -> Result<()> {
+fn compare_vec_len<T, U>(semantic_vec: &[T], fb_vec: &flatbuffers::Vector<U>) -> Result<()> {
     match semantic_vec.len() == fb_vec.len() {
         true => Ok(()),
         false => Err(anyhow!(
@@ -881,7 +878,7 @@ fn compare_opt_strings(
     fb_str: &Option<&str>,
 ) -> Result<()> {
     match (semantic_str, fb_str) {
-        (None, None) => return Ok(()),
+        (None, None) => Ok(()),
         (None, Some(s)) => Err(anyhow!(
             "comparing opt string for {}: semantic had none, fb had {}",
             msg,
@@ -958,7 +955,7 @@ fn compare_call_exprs(
 }
 
 fn compare_string_expr_part_list(
-    semantic_parts: &Vec<semantic::nodes::StringExprPart>,
+    semantic_parts: &[semantic::nodes::StringExprPart],
     fb_parts: &Option<
         flatbuffers::Vector<flatbuffers::ForwardsUOffset<fbsemantic::StringExpressionPart>>,
     >,
@@ -972,7 +969,7 @@ fn compare_string_expr_part_list(
         }
 
         compare_string_expr_part(&semantic_parts[i], &fb_parts.get(i))?;
-        i = i + 1
+        i += 1
     }
 }
 
@@ -1015,7 +1012,7 @@ fn compare_function_expr(
     compare_params(&semantic_fe.params, &fb_fe.params())?;
 
     // compare function bodies
-    compare_loc(&semantic_fe.body.loc(), &fb_fe.body().unwrap().loc());
+    compare_loc(semantic_fe.body.loc(), &fb_fe.body().unwrap().loc());
     let mut block_len: usize = 0;
     let mut current_sem = &semantic_fe.body;
     let fb_list = fb_fe.body().unwrap().body().unwrap();

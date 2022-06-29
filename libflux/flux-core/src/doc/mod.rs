@@ -1250,7 +1250,7 @@ mod test {
         // foo does a thing.
         package foo
         ";
-        let loc = Locator::new(&src[..]);
+        let loc = Locator::new(src);
         assert_docs_full(
             src,
             PackageDoc {
@@ -1278,7 +1278,7 @@ mod test {
         // a is a constant.
         a = 1
         ";
-        let loc = Locator::new(&src[..]);
+        let loc = Locator::new(src);
         assert_docs_full(
             src,
             PackageDoc {
@@ -1314,7 +1314,7 @@ mod test {
         // and multiple lines.
         a = 1
         ";
-        let loc = Locator::new(&src[..]);
+        let loc = Locator::new(src);
         assert_docs_full(
             src,
             PackageDoc {
@@ -1349,7 +1349,7 @@ mod test {
         // a is a constant. This headline has `code`.
         a = 1
         ";
-        let loc = Locator::new(&src[..]);
+        let loc = Locator::new(src);
         assert_docs_full(
             src,
             PackageDoc {
@@ -1384,7 +1384,7 @@ mod test {
         // A is a constant.
         a = 1
         ";
-        let loc = Locator::new(&src[..]);
+        let loc = Locator::new(src);
         assert_docs_full(
             src,
             PackageDoc {
@@ -1427,7 +1427,7 @@ mod test {
         // The description contains any remaining markdown content.
         a = 1
         ";
-        let loc = Locator::new(&src[..]);
+        let loc = Locator::new(src);
         assert_docs_full(
             src,
             PackageDoc {
@@ -1519,7 +1519,7 @@ mod test {
         // ```
         option o = 1
         "#;
-        let loc = Locator::new(&src[..]);
+        let loc = Locator::new(src);
         assert_docs_short(
             src,
             PackageDoc {
@@ -1637,7 +1637,7 @@ mod test {
         // ```
         option o = 1
         "#;
-        let loc = Locator::new(&src[..]);
+        let loc = Locator::new(src);
         assert_docs_full(
             src,
             PackageDoc {
@@ -1773,7 +1773,7 @@ foo.a
         // k0: v0
         option o = 1
         ";
-        let loc = Locator::new(&src[..]);
+        let loc = Locator::new(src);
         assert_docs_full(
             src,
             PackageDoc {
@@ -1854,7 +1854,7 @@ foo.a
         // key_with_underscores: value
         package foo
         ";
-        let loc = Locator::new(&src[..]);
+        let loc = Locator::new(src);
         assert_docs_full(
             src,
             PackageDoc {
@@ -1888,7 +1888,7 @@ foo.a
         // key_with_underscores: value
         package foo
         ";
-        let loc = Locator::new(&src[..]);
+        let loc = Locator::new(src);
         assert_docs_full(
             src,
             PackageDoc {
@@ -1928,7 +1928,7 @@ foo.a
         // More description after the parameter list.
         f = (x,p=<-) => p + x
         ";
-        let loc = Locator::new(&src[..]);
+        let loc = Locator::new(src);
         assert_docs_full(
             src,
             PackageDoc {
@@ -1989,7 +1989,7 @@ foo.a
         //     headline without a paragraph but with `code`.
         f = (a, b, c) => 1
         ";
-        let loc = Locator::new(&src[..]);
+        let loc = Locator::new(src);
         assert_docs_full(
             src,
             PackageDoc {
@@ -2044,7 +2044,7 @@ foo.a
         // F is a function.
         f = () => 1
         ";
-        let loc = Locator::new(&src[..]);
+        let loc = Locator::new(src);
         assert_docs_full(
             src,
             PackageDoc {
@@ -2097,7 +2097,7 @@ foo.a
         // More description after the parameter list.
         f = (x,y) => x + y
         ";
-        let loc = Locator::new(&src[..]);
+        let loc = Locator::new(src);
         assert_docs_full(
             src,
             PackageDoc {
@@ -2158,7 +2158,7 @@ foo.a
         // More description after the parameter list.
         f = (x,y) => x + y
         ";
-        let loc = Locator::new(&src[..]);
+        let loc = Locator::new(src);
         assert_docs_full(
             src,
             PackageDoc {
@@ -2222,7 +2222,7 @@ foo.a
         // f is a function.
         f = (x) => x
         ";
-        let loc = Locator::new(&src[..]);
+        let loc = Locator::new(src);
         assert_docs_full(
             src,
             PackageDoc {
@@ -2264,7 +2264,7 @@ foo.a
         // - x: is any value.
         add = (x,y) => x + y
         ";
-        let loc = Locator::new(&src[..]);
+        let loc = Locator::new(src);
         assert_docs_full(
             src,
             PackageDoc {
@@ -2311,7 +2311,7 @@ foo.a
         // - x: is any value.
         add = (x,y=<-) => x + y
         ";
-        let loc = Locator::new(&src[..]);
+        let loc = Locator::new(src);
         assert_docs_full(
             src,
             PackageDoc {
@@ -2358,7 +2358,7 @@ foo.a
         // - x: is any value.
         add = (x,y=1) => x + y
         ";
-        let loc = Locator::new(&src[..]);
+        let loc = Locator::new(src);
         assert_docs_full(
             src,
             PackageDoc {
@@ -2405,7 +2405,7 @@ foo.a
         // - x: is any value.
         one = () => 1
         ";
-        let loc = Locator::new(&src[..]);
+        let loc = Locator::new(src);
         assert_docs_full(
             src,
             PackageDoc {
@@ -2449,7 +2449,7 @@ foo.a
         // one returns the number one.
         one = () => 1
         ";
-        let loc = Locator::new(&src[..]);
+        let loc = Locator::new(src);
         assert_docs_full(
             src,
             PackageDoc {
@@ -2485,7 +2485,7 @@ foo.a
         // one is the number one.
         option one = 1
         ";
-        let loc = Locator::new(&src[..]);
+        let loc = Locator::new(src);
         assert_docs_full(
             src,
             PackageDoc {
@@ -2520,7 +2520,7 @@ foo.a
         // one returns the number one.
         option one = () => 1
         ";
-        let loc = Locator::new(&src[..]);
+        let loc = Locator::new(src);
         assert_docs_full(
             src,
             PackageDoc {
@@ -2567,7 +2567,7 @@ But it is still a single paragraph.
 This is the description.
 "#;
         assert_parser(
-            &src,
+            src,
             vec![
                 Token::Headline("This is the headline."),
                 Token::Description("This is the description."),
@@ -2593,7 +2593,7 @@ More description of function.
 
 "#;
         assert_parser(
-            &src,
+            src,
             vec![
                 Token::Headline("This is the headline."),
                 Token::Description("This is the description."),
@@ -2636,7 +2636,7 @@ Addition:
 
 "#;
         assert_parser(
-            &src,
+            src,
             vec![
                 Token::Headline("This is the headline."),
                 Token::Description("This is the description."),
@@ -2674,7 +2674,7 @@ k2: v2
 k3: v3
 "#;
         assert_parser(
-            &src,
+            src,
             vec![
                 Token::Headline("This is the headline."),
                 Token::Description("This is the description."),
@@ -2728,7 +2728,7 @@ k2: v2
 k3: v3
 "#;
         assert_parser(
-            &src,
+            src,
             vec![
                 Token::Headline("This is the headline."),
                 Token::Description("This is the description."),

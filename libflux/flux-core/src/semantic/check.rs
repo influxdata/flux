@@ -361,11 +361,9 @@ mod tests {
 
     fn parse_and_convert(files: Vec<&str>) -> Result<nodes::Package> {
         let mut ast_files = vec![];
-        let mut ctr = 0;
-        for f in files {
+        for (ctr, f) in files.iter().enumerate() {
             let file = parser::parse_string(format!("file_{}.flux", ctr), f);
             ast_files.push(file);
-            ctr = ctr + 1;
         }
         let ast_pkg = merge_ast_files(ast_files);
         let sem_pkg = convert::convert_package(&ast_pkg, &Default::default(), &Default::default())?;
@@ -389,7 +387,7 @@ mod tests {
                 if !got_msg.to_string().contains(want_msg) {
                     panic!(r#"expected error "{}" but got "{}""#, want_msg, got_msg);
                 } else {
-                    return ();
+                    return;
                 }
             }
         };
