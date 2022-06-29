@@ -84,7 +84,7 @@ from = array.from
 //
 // ## Metadata
 // introduced: 0.155.0
-// deprecated: NEXT
+// deprecated: 0.173.0
 concat = array.concat
 
 // map iterates over an array, applies a function to each element to produce a new element,
@@ -112,7 +112,7 @@ concat = array.concat
 //
 // ## Metadata
 // introduced: 0.155.0
-// deprecated: NEXT
+// deprecated: 0.173.0
 map = array.map
 
 // filter iterates over an array, evaluates each element with a predicate function, and then returns
@@ -142,5 +142,5 @@ map = array.map
 //
 // ## Metadata
 // introduced: 0.155.0
-// deprecated: NEXT
+// deprecated: 0.173.0
 filter = array.filter

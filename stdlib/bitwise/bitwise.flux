@@ -6,7 +6,7 @@
 // Functions prefixed with u operate on unsigned integers (uint).
 //
 // ## Metadata
-// introduced: NEXT
+// introduced: 0.173.0
 // tags: bitwise
 //
 package bitwise

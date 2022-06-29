@@ -20,10 +20,12 @@ version=$(./gotool.sh github.com/influxdata/changelog nextver)
 git checkout -b prep-release/$version
 
 ./etc/fixup_docs_version.sh $version
+make generate
 
 message="build(flux): prepare Flux release for $version"
 
 git commit -am "$message"
+git push
 
 if ! command -v hub &> /dev/null
 then

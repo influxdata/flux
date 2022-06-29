@@ -1,7 +1,7 @@
 // Package requests provides functions for transferring data using the HTTP protocol.
 //
 // ## Metadata
-// introduced: NEXT
+// introduced: 0.173.0
 // tags: http
 package requests
 
