@@ -72,7 +72,7 @@ builtin from : (rows: [A]) => stream[A] where A: Record
 // ```
 //
 // ## Metadata
-// introduced: NEXT
+// introduced: 0.173.0
 builtin concat : (<-arr: [A], v: [A]) => [A]
 
 // map iterates over an array, applies a function to each element to produce a new element,
@@ -97,7 +97,7 @@ builtin concat : (<-arr: [A], v: [A]) => [A]
 // ```
 //
 // ## Metadata
-// introduced: NEXT
+// introduced: 0.173.0
 builtin map : (<-arr: [A], fn: (x: A) => B) => [B]
 
 // filter iterates over an array, evaluates each element with a predicate function, and then returns
@@ -124,5 +124,5 @@ builtin map : (<-arr: [A], fn: (x: A) => B) => [B]
 // ```
 //
 // ## Metadata
-// introduced: NEXT
+// introduced: 0.173.0
 builtin filter : (<-arr: [A], fn: (x: A) => bool) => [A]

@@ -2,7 +2,7 @@
 //
 // ## Metadata
 // introduced: 0.64.0
-// deprecated: NEXT
+// deprecated: 0.173.0
 // tags: csv
 //
 package csv

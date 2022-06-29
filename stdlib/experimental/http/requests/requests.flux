@@ -6,7 +6,7 @@
 //
 // ## Metadata
 // introduced: 0.152.0
-// deprecated: NEXT
+// deprecated: 0.173.0
 // tags: http
 package requests
 

@@ -9,7 +9,7 @@
 //
 // ## Metadata
 // introduced: 0.138.0
-// deprecated: NEXT
+// deprecated: 0.173.0
 // tags: bitwise
 //
 package bitwise

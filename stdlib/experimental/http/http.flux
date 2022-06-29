@@ -4,7 +4,7 @@
 //
 // ## Metadata
 // introduced: 0.39.0
-// deprecated: NEXT
+// deprecated: 0.173.0
 // tags: http
 //
 package http
