@@ -12,13 +12,14 @@ package libflux
 // are not tracked by Go's build system.'
 //lint:ignore U1000 generated code
 var sourceHashes = map[string]string{
-	"libflux/Cargo.lock":                                                                          "9cddafc39c6027b1316ba0ec585730f8960cadab8017cf9f139c7002defc331f",
+	"libflux/Cargo.lock":                                                                          "67373da0755f957cf04d90fb58d9873cfafb5bef382d1535e49a5bf6c23febf0",
 	"libflux/Cargo.toml":                                                                          "91ac4e8b467440c6e8a9438011de0e7b78c2732403bb067d4dd31539ac8a90c1",
-	"libflux/flux-core/Cargo.toml":                                                                "3d2f484f810cb8421a8ea1b73d28cc4c7a13fcb1c94f2eadc02397832317aa91",
+	"libflux/flux-core/Cargo.toml":                                                                "b94689ddd00f579300ef6828696c80e7a29898307e2d27ab4d039ef992c27c38",
 	"libflux/flux-core/src/ast/check/mod.rs":                                                      "47e06631f249715a44c9c8fa897faf142ad0fa26f67f8cfd5cd201e82cb1afc8",
 	"libflux/flux-core/src/ast/mod.rs":                                                            "4db1054af8625721300429b8ce0eacda6f8e6d8f20251874a87bb5bc884885c8",
 	"libflux/flux-core/src/ast/walk/mod.rs":                                                       "a74d90937d4f059800f39ff866976c68ff06c3566293aec65f1539ddc2f1de25",
 	"libflux/flux-core/src/bin/README.md":                                                         "c1245a4938c923d065647b4dc4f7e19486e85c93d868ef2f7f47ddff62ec81df",
+	"libflux/flux-core/src/bin/analyze_query_log.rs":                                              "8cb0aca0eff41b28c0aff07424ae3375364a37bec0ad49fe5460e6c360735a64",
 	"libflux/flux-core/src/bin/fluxc.rs":                                                          "bf275289e690236988049fc0a07cf832dbac25bb5739c02135b069dcdfab4d0f",
 	"libflux/flux-core/src/bin/fluxdoc.rs":                                                        "354a8dfd262f223412ee491a9947962f993e43c5467f8ee37c4f15528dc5b571",
 	"libflux/flux-core/src/doc/example.rs":                                                        "403a682c435c820dd37b768d5f1d5f8e117e490ca0a8c21077e7c6d4d7bccd55",
