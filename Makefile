@@ -130,13 +130,13 @@ INTEGRATION_READ_TESTS=integration_hdb_read_from_seed,integration_hdb_read_from_
 INTEGRATION_TESTS="$(INTEGRATION_INJECTION_TESTS),$(INTEGRATION_WRITE_TESTS),$(INTEGRATION_READ_TESTS)"
 
 test-flux:
-	$(GO_RUN) ./cmd/flux test -v --parallel 8 --skip $(INTEGRATION_TESTS)
+	$(GO_RUN) ./cmd/flux test -p stdlib -v --parallel 8 --skip $(INTEGRATION_TESTS)
 
 test-flux-integration:
 	./etc/spawn-containers.sh
-	$(GO_RUN) ./cmd/flux test -v --test $(INTEGRATION_INJECTION_TESTS)
-	$(GO_RUN) ./cmd/flux test -v --test $(INTEGRATION_WRITE_TESTS)
-	$(GO_RUN) ./cmd/flux test -v --test $(INTEGRATION_READ_TESTS)
+	$(GO_RUN) ./cmd/flux test -p stdlib -v --test $(INTEGRATION_INJECTION_TESTS)
+	$(GO_RUN) ./cmd/flux test -p stdlib -v --test $(INTEGRATION_WRITE_TESTS)
+	$(GO_RUN) ./cmd/flux test -p stdlib -v --test $(INTEGRATION_READ_TESTS)
 
 test-race: libflux-go
 	$(GO_TEST) -race -count=1 ./...
