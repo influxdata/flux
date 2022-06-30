@@ -549,7 +549,7 @@ func (itrp *Interpreter) doArray(ctx context.Context, a *semantic.ArrayExpressio
 		}
 		elements[i] = v
 	}
-	arrayType := semantic.MonoType{}
+	var arrayType semantic.MonoType
 	if len(elements) > 0 {
 		arrayType = semantic.NewArrayType(elements[0].Type())
 	} else {

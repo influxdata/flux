@@ -383,6 +383,7 @@ func init() {
 	runtime.RegisterPackageValue("strings", "trimSuffix",
 		generateDualArgStringFunction("trimSuffix", []string{stringArgV, suffix}, strings.TrimSuffix))
 	runtime.RegisterPackageValue("strings", "title",
+		//lint:ignore SA1019 https://github.com/influxdata/flux/issues/4946
 		generateSingleArgStringFunction("title", strings.Title))
 	runtime.RegisterPackageValue("strings", "toUpper",
 		generateSingleArgStringFunction("toUpper", strings.ToUpper))
