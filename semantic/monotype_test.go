@@ -22,6 +22,7 @@ func TestBasicType(t *testing.T) {
 		{typ: semantic.BasicRegexp, want: "regexp"},
 		{typ: semantic.BasicBytes, want: "bytes"},
 	} {
+		//lint:ignore SA1019 Test code that's not important to update
 		t.Run(strings.Title(tt.want), func(t *testing.T) {
 			if want, got := tt.typ.String(), tt.want; want != got {
 				t.Errorf("unexpected monotype -want/+got:\n\t- %s\n\t+ %s", want, got)

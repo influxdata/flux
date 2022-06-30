@@ -165,9 +165,7 @@ func newMergeJoinProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.
 	}
 
 	tableNames := make([]string, len(spec.params.names))
-	for i, name := range spec.params.names {
-		tableNames[i] = name
-	}
+	copy(tableNames, spec.params.names)
 	sort.Strings(tableNames)
 
 	on := make([]string, len(spec.On))

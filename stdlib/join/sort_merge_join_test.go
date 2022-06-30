@@ -2,7 +2,6 @@ package join_test
 
 import (
 	"context"
-	"fmt"
 	"testing"
 	"time"
 
@@ -119,11 +118,11 @@ func TestSortMergeJoinPredicateRule(t *testing.T) {
 					return nil
 				}
 				if (ps == nil) || (qs == nil) {
-					t.Fatal(fmt.Sprintf("wanted a node of type %T but got a node of type %T", p.ProcedureSpec(), q.ProcedureSpec()))
+					t.Fatalf("wanted a node of type %T but got a node of type %T", p.ProcedureSpec(), q.ProcedureSpec())
 				}
 
 				if diff := cmp.Diff(ps, qs); diff != "" {
-					t.Fatal(fmt.Sprintf("unexpected sort node (-want/+got):\n%v", diff))
+					t.Fatalf("unexpected sort node (-want/+got):\n%v", diff)
 				}
 				return nil
 			})
