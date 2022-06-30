@@ -56,9 +56,23 @@ func (f formatter) Format(fs fmt.State, c rune) {
 	_ = f.p.BottomUpWalk(func(pn Node) error {
 		_, _ = fmt.Fprintf(fs, "  %v\n", pn.ID())
 		if f.withDetails {
+			details := ""
 			if d, ok := pn.ProcedureSpec().(Detailer); ok {
-				lines := strings.Split(strings.TrimSpace(d.PlanDetails()), "\n")
-				for _, line := range lines {
+				details += d.PlanDetails() + "\n"
+			}
+
+			if ppn, ok := pn.(*PhysicalPlanNode); ok {
+				for _, attr := range ppn.OutputAttrs {
+					if d, ok := attr.(Detailer); ok {
+						details += d.PlanDetails() + "\n"
+					}
+				}
+			}
+
+			lines := strings.Split(strings.TrimSpace(details), "\n")
+
+			for _, line := range lines {
+				if len(line) > 0 {
 					_, _ = fmt.Fprintf(fs, "  // %s\n", line)
 				}
 			}
