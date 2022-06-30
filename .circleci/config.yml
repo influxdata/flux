@@ -177,6 +177,18 @@ jobs:
             ./gotool.sh github.com/goreleaser/goreleaser release \
                 --rm-dist -p 1 --release-notes release-notes.txt
 
+  build-ci-image:
+    machine:
+      image: ubuntu-2204:2022.04.1
+    steps:
+      - checkout
+      - run:
+          name: Build docker image
+          command: ./etc/build-ci-image.sh
+      - run:
+          name: Publish docker image
+          command: ./etc/publish-ci-image.sh
+
 workflows:
   version: 2
   build-and-test:
@@ -196,3 +208,12 @@ workflows:
               only: /^v\d\.\d+\.\d+$/
             branches:
               ignore: /.*/
+
+  image:
+    jobs:
+      - build-ci-image:
+          filters:
+            branches:
+              only:
+                - master
+                - /^ci\/.*/
