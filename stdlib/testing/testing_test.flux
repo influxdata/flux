@@ -4,6 +4,7 @@ package testing_test
 import "testing"
 import "array"
 import "csv"
+import "json"
 
 testcase test_option {
     // Option value in parent test case
@@ -23,4 +24,11 @@ testcase succeed_on_non_empty_result {
 
     // non-empty result
     array.from(rows: [{}])
+}
+
+testcase test_should_error {
+    testing.shouldError(
+        fn: () => die(msg: "error message"),
+        want: "error calling function \"die\" @31:19-31:44: error message",
+    )
 }

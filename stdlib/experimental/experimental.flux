@@ -1300,3 +1300,22 @@ builtin unpivot : (<-tables: stream[{A with _time: time}]) => stream[{B with _fi
     where
     A: Record,
     B: Record
+
+// catch calls a function and returns any error as a string value.
+// If the function does not error the returned value is made into a string and returned.
+//
+// ## Parameters
+// - fn: Function to call.
+//
+// ## Examples
+//
+// ### Catch an explicit error
+// ```no_run
+// import "experimental"
+//
+// experimental.catch(fn: () => die(msg:"error message")) // Returns "error message"
+// ```
+//
+// ## Metadata
+// introduced: NEXT
+builtin catch : (fn: () => A) => string

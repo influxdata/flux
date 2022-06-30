@@ -3,6 +3,7 @@
     "tags": [
         "integration_injection",
         "integration_write",
-        "integration_read"
+        "integration_read",
+        "skip"
     ]
 }
