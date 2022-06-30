@@ -267,7 +267,7 @@ pub(crate) fn temporary_generalize(
 // quantified if has not already been quantified another type in the
 // type environment.
 //
-pub fn generalize(env: &Environment, sub: &mut Substitution, t: MonoType) -> PolyType {
+pub fn generalize(free_vars: Vec<Tvar>, sub: &mut Substitution, t: MonoType) -> PolyType {
     struct Generalize<'a> {
         env_free_vars: Vec<Tvar>,
         sub: &'a mut Substitution,
@@ -298,7 +298,7 @@ pub fn generalize(env: &Environment, sub: &mut Substitution, t: MonoType) -> Pol
     }
 
     let mut generalize = Generalize {
-        env_free_vars: env.free_vars(),
+        env_free_vars: free_vars,
         sub,
         vars: Default::default(),
     };
