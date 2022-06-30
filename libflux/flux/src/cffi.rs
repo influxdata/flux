@@ -7,25 +7,27 @@ use std::{
 };
 
 use anyhow::anyhow;
-use fluxcore::semantic::flatbuffers::types::{build_env, build_type};
-use fluxcore::semantic::import::Importer;
-use fluxcore::{ast, formatter, merge_packages, semantic};
 use fluxcore::{
+    ast, formatter, merge_packages,
     parser::Parser,
     semantic::{
+        self,
         env::Environment,
-        flatbuffers::semantic_generated::fbsemantic as fb,
+        flatbuffers::{
+            semantic_generated::fbsemantic as fb,
+            types::{build_env, build_type},
+        },
+        import::Importer,
         import::Packages,
         nodes::{Package, Symbol},
-        sub::Substitution,
-        types::{MonoType, PolyType},
+        types::{BoundTvar, MonoType},
         Analyzer, AnalyzerConfig, Feature, PackageExports,
     },
 };
 
 use crate::semantic::flatbuffers::semantic_generated::fbsemantic::MonoTypeHolderArgs;
 
-use super::{new_semantic_analyzer, prelude, Error, Result, IMPORTS, PRELUDE};
+use super::{new_semantic_analyzer, prelude, Error, Result, IMPORTS};
 
 /// An error handle designed to allow passing `Error` instances to library
 /// consumers across language boundaries.
@@ -575,57 +577,25 @@ pub fn analyze(ast_pkg: &ast::Package, options: Options) -> Result<Package> {
     Ok(sem_pkg)
 }
 
-/// infer_with_env consumes the given AST package, inject the type bindings from the given
-/// type environment, and returns a semantic package that has not been type-injected and an
-/// inferred type environment and substitution.
-/// This function is aware of the standard library and prelude.
-fn infer_with_env(
-    ast_pkg: &ast::Package,
-    mut sub: Substitution,
-    env: Option<Environment<'static>>,
-) -> Result<(Environment<'static>, Package)> {
-    let prelude = match &*PRELUDE {
-        Some(prelude) => prelude,
-        None => return Err(anyhow!("missing prelude").into()),
-    };
-    let env = if let Some(mut e) = env {
-        e.external = Some(prelude);
-        e
-    } else {
-        Environment::from(prelude)
-    };
-    let importer = match &*IMPORTS {
-        Some(imports) => imports,
-        None => return Err(anyhow!("missing stdlib imports").into()),
-    };
-    let mut analyzer = Analyzer::new_with_defaults(env, importer);
-    let (_, pkg) = analyzer
-        .analyze_ast_with_substitution(ast_pkg, &mut sub)
-        .map_err(|err| err.error)?;
-    let (env, _) = analyzer.drop();
-    Ok((env, pkg))
-}
-
 /// Given a Flux source and a variable name, find out the type of that variable in the Flux source code.
 /// A type variable will be automatically generated and injected into the type environment that
 /// will be used in semantic analysis. The Flux source code itself should not contain any definition
 /// for that variable.
 /// This version of find_var_type is aware of the prelude and builtins.
 fn find_var_type(ast_pkg: &ast::Package, var_name: String) -> Result<MonoType> {
-    let sub = Substitution::default();
-    let tvar = sub.fresh();
-    let mut env = Environment::empty(true);
-    let var_name = Symbol::from(var_name);
-    env.add(
-        var_name.clone(),
-        PolyType {
-            vars: Vec::new(),
-            cons: Default::default(),
-            expr: MonoType::Var(tvar),
+    let mut analyzer = new_semantic_analyzer(AnalyzerConfig::default())?;
+    let pkg = match analyzer.analyze_ast(ast_pkg) {
+        Ok((_, pkg)) => pkg,
+        Err(err) => match err.value {
+            Some((_, pkg)) => pkg,
+            None => return Err(err.error.into()),
         },
-    );
-    infer_with_env(ast_pkg, sub, Some(Environment::new(env)))
-        .map(|(env, _)| env.lookup(&var_name).unwrap().expr.clone())
+    };
+
+    Ok(
+        semantic::find_var_type(&pkg, &var_name)
+            .unwrap_or_else(|| MonoType::BoundVar(BoundTvar(0))),
+    )
 }
 
 /// # Safety

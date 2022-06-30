@@ -136,6 +136,9 @@ struct InferState<'a, 'env> {
     env: &'a mut Environment<'env>,
     errors: Errors<Error>,
     config: &'a AnalyzerConfig,
+    // When an undefined symbol is encountered we assume that the same type is used for every
+    // use of that symbol which is stored here
+    undefined_symbols: HashMap<Symbol, MonoType>,
 }
 
 impl InferState<'_, '_> {
@@ -149,7 +152,16 @@ impl InferState<'_, '_> {
                 loc.clone(),
                 ErrorKind::UndefinedIdentifier(name.to_string()),
             );
-            PolyType::error()
+            let typ = self
+                .undefined_symbols
+                .entry(name.clone())
+                .or_insert_with(|| MonoType::from(self.sub.fresh()))
+                .clone();
+            PolyType {
+                vars: Default::default(),
+                cons: Default::default(),
+                expr: typ,
+            }
         })
     }
 
@@ -226,6 +238,16 @@ impl InferState<'_, '_> {
 
     fn error(&mut self, loc: ast::SourceLocation, error: ErrorKind) {
         self.errors.push(located(loc, error));
+    }
+
+    fn free_vars(&mut self) -> Vec<Tvar> {
+        let mut vars = self.env.free_vars();
+
+        for typ in self.undefined_symbols.unordered_values().cloned() {
+            typ.apply_cow(self.sub).extend_free_vars(&mut vars);
+        }
+
+        vars
     }
 }
 
@@ -428,6 +450,7 @@ where
         env,
         errors: Errors::new(),
         config,
+        undefined_symbols: Default::default(),
     };
     pkg.infer(&mut infer).map_err(|err| err.apply(infer.sub))?;
 
@@ -796,7 +819,7 @@ impl VariableAssgn {
         infer.env.apply_mut(infer.sub);
 
         let t = self.init.type_of().apply(infer.sub);
-        let p = infer::generalize(infer.env, infer.sub, t);
+        let p = infer::generalize(infer.free_vars(), infer.sub, t);
 
         // Update variable assignment nodes with the free vars
         // and kind constraints obtained from generalization.
