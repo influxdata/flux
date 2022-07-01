@@ -6,7 +6,7 @@ import "contrib/anaisdg/print"
 
 testcase printIntTest {
     got =
-        print(2, "Int")
+        print.print(val:2, result_name:"Int")
     want =
         array.from(
             rows: [
