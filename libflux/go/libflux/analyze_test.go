@@ -58,12 +58,13 @@ func TestAnalyze(t *testing.T) {
 	}
 }
 
-func TestFindVarType(t *testing.T) {
+func TestFindVarTypes(t *testing.T) {
 	tcs := []struct {
-		name string
-		flx  string
-		ty   string
-		err  error
+		name  string
+		flx   string
+		vars  []string
+		types []string
+		err   error
 	}{
 		{
 			name: "success",
@@ -81,24 +82,29 @@ l = (i) => {
     c = b.num                      // transitive reference
     return v.timeRangeStart
 }
-vstr = v.str + "hello"             // simple reference
+vstr = v.str + "hello" + w         // simple reference
 s = {v with tmp: 1}                // construct a new struct with "object with"
 m = s.tmp                          // not belong to "v"
 p = s.timeRangeStop                // transitive reference
 `,
-			ty: "{E with int: int, num: A, self: B, str: string, sweet: C, timeRangeStop: D}",
+			vars:  []string{"v", "w"},
+			types: []string{"{E with int: int, num: A, self: B, str: string, sweet: C, timeRangeStop: D}", "string"},
 		},
 		{
-			name: "failure",
-			flx:  `x = "foo" + 10`,
-			ty:   "A",
+			name:  "failure",
+			flx:   `x = "foo" + 10`,
+			vars:  []string{"v"},
+			types: []string{"A"},
 		},
 	}
 	for _, tc := range tcs {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
+			if len(tc.types) != len(tc.vars) {
+				t.Fatalf("types and vars must have the same length in the test case")
+			}
 			ast := libflux.ParseString(tc.flx)
-			monotype, err := libflux.FindVarType(ast, "v")
+			monotypes, err := libflux.FindVarTypes(ast, tc.vars)
 			if err != nil {
 				if tc.err == nil {
 					t.Fatalf("expected no error, got: %q", err)
@@ -111,8 +117,10 @@ p = s.timeRangeStop                // transitive reference
 			if tc.err != nil {
 				t.Fatalf("got no error, expected: %q", tc.err)
 			}
-			if diff := cmp.Diff(tc.ty, monotype.CanonicalString()); diff != "" {
-				t.Fatalf("unexpected type: -want/+got: %v", diff)
+			for i, monotype := range monotypes {
+				if diff := cmp.Diff(tc.types[i], monotype.CanonicalString()); diff != "" {
+					t.Fatalf("unexpected type for `%s`: -want/+got: %v", tc.vars[i], diff)
+				}
 			}
 		})
 	}
