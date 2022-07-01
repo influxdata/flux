@@ -1,4 +1,4 @@
-package experimental
+package influxdb
 
 import (
 	"context"
@@ -12,31 +12,30 @@ import (
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/runtime"
-	"github.com/influxdata/flux/stdlib/influxdata/influxdb"
 	"github.com/influxdata/flux/values"
 	lp "github.com/influxdata/line-protocol"
 )
 
-const ToKind = "experimental-to"
+const WideToKind = "wide-to"
 
 func init() {
-	toSignature := runtime.MustLookupBuiltinType("experimental", "to")
-	runtime.RegisterPackageValue("experimental", "to", flux.MustValue(flux.FunctionValueWithSideEffect("to", createToOpSpec, toSignature)))
-	plan.RegisterProcedureSpecWithSideEffect(ToKind, newToProcedure, ToKind)
-	execute.RegisterTransformation(ToKind, createToTransformation)
+	wideToSignature := runtime.MustLookupBuiltinType("influxdata/influxdb", "wideTo")
+	runtime.RegisterPackageValue("influxdata/influxdb", "wideTo", flux.MustValue(flux.FunctionValueWithSideEffect("to", createWideToOpSpec, wideToSignature)))
+	plan.RegisterProcedureSpecWithSideEffect(WideToKind, newWideToProcedure, WideToKind)
+	execute.RegisterTransformation(WideToKind, createWideToTransformation)
 }
 
-// ToOpSpec is the flux.OperationSpec for the `to` flux function.
-type ToOpSpec struct {
-	Org    influxdb.NameOrID
-	Bucket influxdb.NameOrID
+// WideToOpSpec is the flux.OperationSpec for the `to` flux function.
+type WideToOpSpec struct {
+	Org    NameOrID
+	Bucket NameOrID
 	Host   string
 	Token  string
 }
 
 // ReadArgs reads the args from flux.Arguments into the op spec
-func (s *ToOpSpec) ReadArgs(args flux.Arguments) error {
-	if b, ok, err := influxdb.GetNameOrID(args, "bucket", "bucketID"); err != nil {
+func (s *WideToOpSpec) ReadArgs(args flux.Arguments) error {
+	if b, ok, err := GetNameOrID(args, "bucket", "bucketID"); err != nil {
 		return err
 	} else if !ok {
 		return errors.New(codes.Invalid, "must specify bucket or bucketID")
@@ -44,7 +43,7 @@ func (s *ToOpSpec) ReadArgs(args flux.Arguments) error {
 		s.Bucket = b
 	}
 
-	if o, ok, err := influxdb.GetNameOrID(args, "org", "orgID"); err != nil {
+	if o, ok, err := GetNameOrID(args, "org", "orgID"); err != nil {
 		return err
 	} else if ok {
 		s.Org = o
@@ -64,47 +63,47 @@ func (s *ToOpSpec) ReadArgs(args flux.Arguments) error {
 	return nil
 }
 
-func createToOpSpec(args flux.Arguments, a *flux.Administration) (flux.OperationSpec, error) {
+func createWideToOpSpec(args flux.Arguments, a *flux.Administration) (flux.OperationSpec, error) {
 	if err := a.AddParentFromArgs(args); err != nil {
 		return nil, err
 	}
 
-	s := &ToOpSpec{}
+	s := &WideToOpSpec{}
 	if err := s.ReadArgs(args); err != nil {
 		return nil, err
 	}
 	return s, nil
 }
 
-// Kind returns the kind for the ToOpSpec function.
-func (ToOpSpec) Kind() flux.OperationKind {
-	return ToKind
+// Kind returns the kind for the WideToOpSpec function.
+func (WideToOpSpec) Kind() flux.OperationKind {
+	return WideToKind
 }
 
-// ToProcedureSpec is the procedure spec for the `to` flux function.
-type ToProcedureSpec struct {
+// WideToProcedureSpec is the procedure spec for the `to` flux function.
+type WideToProcedureSpec struct {
 	plan.DefaultCost
-	Config influxdb.Config
+	Config Config
 }
 
 // Kind returns the kind for the procedure spec for the `to` flux function.
-func (o *ToProcedureSpec) Kind() plan.ProcedureKind {
-	return ToKind
+func (o *WideToProcedureSpec) Kind() plan.ProcedureKind {
+	return WideToKind
 }
 
 // Copy clones the procedure spec for `to` flux function.
-func (o *ToProcedureSpec) Copy() plan.ProcedureSpec {
+func (o *WideToProcedureSpec) Copy() plan.ProcedureSpec {
 	ns := *o
 	return &ns
 }
 
-func newToProcedure(qs flux.OperationSpec, a plan.Administration) (plan.ProcedureSpec, error) {
-	spec, ok := qs.(*ToOpSpec)
+func newWideToProcedure(qs flux.OperationSpec, a plan.Administration) (plan.ProcedureSpec, error) {
+	spec, ok := qs.(*WideToOpSpec)
 	if !ok {
 		return nil, errors.Newf(codes.Internal, "invalid spec type %T", qs)
 	}
-	return &ToProcedureSpec{
-		Config: influxdb.Config{
+	return &WideToProcedureSpec{
+		Config: Config{
 			Org:    spec.Org,
 			Bucket: spec.Bucket,
 			Host:   spec.Host,
@@ -113,43 +112,43 @@ func newToProcedure(qs flux.OperationSpec, a plan.Administration) (plan.Procedur
 	}, nil
 }
 
-func createToTransformation(id execute.DatasetID, mode execute.AccumulationMode, spec plan.ProcedureSpec, a execute.Administration) (execute.Transformation, execute.Dataset, error) {
-	s, ok := spec.(*ToProcedureSpec)
+func createWideToTransformation(id execute.DatasetID, mode execute.AccumulationMode, spec plan.ProcedureSpec, a execute.Administration) (execute.Transformation, execute.Dataset, error) {
+	s, ok := spec.(*WideToProcedureSpec)
 	if !ok {
 		return nil, nil, fmt.Errorf("invalid spec type %T", spec)
 	}
 	cache := execute.NewTableBuilderCache(a.Allocator())
 	d := execute.NewDataset(id, mode, cache)
 
-	t, err := NewToTransformation(a.Context(), d, cache, s)
+	t, err := NewWideToTransformation(a.Context(), d, cache, s)
 	if err != nil {
 		return nil, nil, err
 	}
 	return t, d, nil
 }
 
-// ToTransformation is the transformation for the `to` flux function.
-type ToTransformation struct {
+// WideToTransformation is the transformation for the `to` flux function.
+type WideToTransformation struct {
 	execute.ExecutionNode
 	ctx    context.Context
 	d      execute.Dataset
 	cache  execute.TableBuilderCache
-	writer influxdb.Writer
+	writer Writer
 }
 
 // RetractTable retracts the table for the transformation for the `to` flux function.
-func (t *ToTransformation) RetractTable(id execute.DatasetID, key flux.GroupKey) error {
+func (t *WideToTransformation) RetractTable(id execute.DatasetID, key flux.GroupKey) error {
 	return t.d.RetractTable(key)
 }
 
-// NewToTransformation returns a new *ToTransformation with the appropriate fields set.
-func NewToTransformation(ctx context.Context, d execute.Dataset, cache execute.TableBuilderCache, s *ToProcedureSpec) (*ToTransformation, error) {
-	provider := influxdb.GetProvider(ctx)
+// NewWideToTransformation returns a new *WideToTransformation with the appropriate fields set.
+func NewWideToTransformation(ctx context.Context, d execute.Dataset, cache execute.TableBuilderCache, s *WideToProcedureSpec) (*WideToTransformation, error) {
+	provider := GetProvider(ctx)
 	writer, err := provider.WriterFor(ctx, s.Config)
 	if err != nil {
 		return nil, err
 	}
-	return &ToTransformation{
+	return &WideToTransformation{
 		ctx:    ctx,
 		d:      d,
 		cache:  cache,
@@ -157,23 +156,23 @@ func NewToTransformation(ctx context.Context, d execute.Dataset, cache execute.T
 	}, nil
 }
 
-// Process does the actual work for the ToTransformation.
-func (t *ToTransformation) Process(id execute.DatasetID, tbl flux.Table) error {
+// Process does the actual work for the WideToTransformation.
+func (t *WideToTransformation) Process(id execute.DatasetID, tbl flux.Table) error {
 	return t.writeTable(tbl)
 }
 
 // UpdateWatermark updates the watermark for the transformation for the `to` flux function.
-func (t *ToTransformation) UpdateWatermark(id execute.DatasetID, pt execute.Time) error {
+func (t *WideToTransformation) UpdateWatermark(id execute.DatasetID, pt execute.Time) error {
 	return t.d.UpdateWatermark(pt)
 }
 
 // UpdateProcessingTime updates the processing time for the transformation for the `to` flux function.
-func (t *ToTransformation) UpdateProcessingTime(id execute.DatasetID, pt execute.Time) error {
+func (t *WideToTransformation) UpdateProcessingTime(id execute.DatasetID, pt execute.Time) error {
 	return t.d.UpdateProcessingTime(pt)
 }
 
 // Finish is called after the `to` flux function's transformation is done processing.
-func (t *ToTransformation) Finish(id execute.DatasetID, err error) {
+func (t *WideToTransformation) Finish(id execute.DatasetID, err error) {
 	writeErr := t.writer.Close()
 	if err == nil {
 		err = writeErr
@@ -182,11 +181,11 @@ func (t *ToTransformation) Finish(id execute.DatasetID, err error) {
 }
 
 const (
-	defaultFieldColLabel       = influxdb.DefaultFieldColLabel
-	defaultMeasurementColLabel = influxdb.DefaultMeasurementColLabel
-	defaultTimeColLabel        = execute.DefaultTimeColLabel
-	defaultStartColLabel       = execute.DefaultStartColLabel
-	defaultStopColLabel        = execute.DefaultStopColLabel
+	defaultWideToFieldColLabel       = DefaultFieldColLabel
+	defaultWideToMeasurementColLabel = DefaultMeasurementColLabel
+	defaultWideToTimeColLabel        = execute.DefaultTimeColLabel
+	defaultWideToStartColLabel       = execute.DefaultStartColLabel
+	defaultWideToStopColLabel        = execute.DefaultStopColLabel
 )
 
 type LabelAndOffset struct {
@@ -213,13 +212,13 @@ func getTablePointsMetadata(tbl flux.Table) (md tablePointsMetadata, err error) 
 	isTag := make(map[string]bool)
 	for j, col := range tbl.Key().Cols() {
 		switch col.Label {
-		case defaultStartColLabel:
+		case defaultWideToStartColLabel:
 			continue
-		case defaultStopColLabel:
+		case defaultWideToStopColLabel:
 			continue
-		case defaultFieldColLabel:
-			return md, errors.Newf(codes.FailedPrecondition, "found column %q in the group key; experimental.to() expects pivoted data", col.Label)
-		case defaultMeasurementColLabel:
+		case defaultWideToFieldColLabel:
+			return md, errors.Newf(codes.FailedPrecondition, "found column %q in the group key; wideTo() expects pivoted data", col.Label)
+		case defaultWideToMeasurementColLabel:
 			foundMeasurement = true
 			if col.Type != flux.TString {
 				return md, errors.Newf(codes.FailedPrecondition, "group key column %q has type %v; type %v is required", col.Label, col.Type, flux.TString)
@@ -240,15 +239,15 @@ func getTablePointsMetadata(tbl flux.Table) (md tablePointsMetadata, err error) 
 		return md.Tags[i].Key < md.Tags[j].Key
 	})
 	if !foundMeasurement {
-		return md, errors.Newf(codes.FailedPrecondition, "required column %q not in group key", defaultMeasurementColLabel)
+		return md, errors.Newf(codes.FailedPrecondition, "required column %q not in group key", defaultWideToMeasurementColLabel)
 	}
 
 	// Find the time column as it is required.
-	md.TimestampOffset = execute.ColIdx(defaultTimeColLabel, tbl.Cols())
+	md.TimestampOffset = execute.ColIdx(defaultWideToTimeColLabel, tbl.Cols())
 	if md.TimestampOffset < 0 {
-		return md, errors.Newf(codes.FailedPrecondition, "input table is missing required column %q", defaultTimeColLabel)
+		return md, errors.Newf(codes.FailedPrecondition, "input table is missing required column %q", defaultWideToTimeColLabel)
 	} else if col := tbl.Cols()[md.TimestampOffset]; col.Type != flux.TTime {
-		return md, errors.Newf(codes.FailedPrecondition, "column %q has type %s; type %s is required", defaultTimeColLabel, col.Type, flux.TTime)
+		return md, errors.Newf(codes.FailedPrecondition, "column %q has type %s; type %s is required", defaultWideToTimeColLabel, col.Type, flux.TTime)
 	}
 
 	// Loop over all of the remaining columns to find the fields.
@@ -257,7 +256,7 @@ func getTablePointsMetadata(tbl flux.Table) (md tablePointsMetadata, err error) 
 	md.Fields = make([]LabelAndOffset, 0, len(tbl.Cols())-len(md.Tags)-1)
 	for j, col := range tbl.Cols() {
 		switch col.Label {
-		case defaultStartColLabel, defaultStopColLabel, defaultMeasurementColLabel, defaultTimeColLabel:
+		case defaultWideToStartColLabel, defaultWideToStopColLabel, defaultWideToMeasurementColLabel, defaultWideToTimeColLabel:
 			continue
 		default:
 			if !isTag[col.Label] {
@@ -271,7 +270,7 @@ func getTablePointsMetadata(tbl flux.Table) (md tablePointsMetadata, err error) 
 	return md, nil
 }
 
-func (t *ToTransformation) writeTable(tbl flux.Table) error {
+func (t *WideToTransformation) writeTable(tbl flux.Table) error {
 	builder, new := t.cache.TableBuilder(tbl.Key())
 	if new {
 		if err := execute.AddTableCols(tbl, builder); err != nil {
@@ -293,7 +292,7 @@ func (t *ToTransformation) writeTable(tbl flux.Table) error {
 		metrics := make([]lp.Metric, 0, cr.Len())
 		for i := 0; i < cr.Len(); i++ {
 			timestamp := cr.Times(tmd.TimestampOffset).Value(i)
-			metric := &influxdb.RowMetric{
+			metric := &RowMetric{
 				NameStr: tmd.Name,
 				TS:      time.Unix(0, timestamp),
 				Tags:    tmd.Tags,
