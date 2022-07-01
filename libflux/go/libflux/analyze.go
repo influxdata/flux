@@ -156,16 +156,20 @@ func AnalyzeWithOptions(astPkg *ASTPkg, options Options) (*SemanticPkg, error) {
 	return p, err
 }
 
-func FindVarType(astPkg *ASTPkg, varName string) (semantic.MonoType, error) {
-	types, err := FindVarTypes(astPkg, []string{varName})
-	if err != nil {
-		return semantic.MonoType{}, err
-	}
-	return types[0], nil
+func AnalyzeString(script string) (*SemanticPkg, error) {
+	return Analyze(ParseString(script))
 }
 
-func FindVarTypes(astPkg *ASTPkg, varNames []string) ([]semantic.MonoType, error) {
+func FindVarType(astPkg *ASTPkg, varName string) (semantic.MonoType, error) {
 	pkg, err := Analyze(astPkg)
+	if pkg == nil {
+		return semantic.MonoType{}, err
+	}
+	return FindVarTypeSemantic(pkg, varName)
+}
+
+func FindVarTypes(script string, varNames []string) ([]semantic.MonoType, error) {
+	pkg, err := AnalyzeString(script)
 	if pkg == nil {
 		return nil, err
 	}
