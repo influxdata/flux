@@ -9,6 +9,7 @@ import (
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/plan/plantest"
+	"github.com/influxdata/flux/plan/plantest/spec"
 	"github.com/influxdata/flux/stdlib/influxdata/influxdb"
 	"github.com/influxdata/flux/stdlib/universe"
 )
@@ -49,6 +50,33 @@ func TestFormatted(t *testing.T) {
   // r._value > 5.000000
 
   from -> filter
+}
+`,
+		},
+		{
+			// This plan indicates merging happens in a filter. That would
+			// never make sense, but we want to see the formatter combine spec
+			// details with attribute details.
+			name: "parallel merge attribute",
+			plan: &plantest.PlanSpec{
+				Nodes: []plan.Node{
+					plantest.CreatePhysicalNode("source", spec.MockProcedureSpec{},
+						plantest.WithOutputAttr(plan.ParallelRunKey, plan.ParallelRunAttribute{Factor: 8})),
+					plantest.CreatePhysicalNode("filter", filterSpec,
+						plantest.WithRequiredAttr(plan.ParallelRunKey, plan.ParallelRunAttribute{Factor: 8}),
+						plantest.WithOutputAttr(plan.ParallelMergeKey, plan.ParallelMergeAttribute{Factor: 8})),
+				},
+				Edges: [][2]int{
+					{0, 1},
+				},
+			},
+			want: `digraph {
+  source
+  filter
+  // r._value > 5.000000
+  // ParallelMergeFactor: 8
+
+  source -> filter
 }
 `,
 		},

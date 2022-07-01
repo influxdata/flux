@@ -1,5 +1,9 @@
 package plan
 
+import (
+	"fmt"
+)
+
 // Physical attributes used in specifying parallelization. The Run attribute
 // means the node executes in parallel. It accepts parallel data (a subset of
 // the source) and produces parallel data. The merge attribute means that the
@@ -24,4 +28,8 @@ type ParallelMergeAttribute struct {
 
 func (ParallelMergeAttribute) SuccessorsMustRequire() bool {
 	return false
+}
+
+func (a ParallelMergeAttribute) PlanDetails() string {
+	return fmt.Sprintf("ParallelMergeFactor: %v", a.Factor)
 }
