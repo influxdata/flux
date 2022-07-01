@@ -135,32 +135,49 @@ func AnalyzeWithOptions(astPkg *ASTPkg, options Options) (*SemanticPkg, error) {
 	cOptions := C.CString(stringOptions)
 	defer C.free(unsafe.Pointer(cOptions))
 
-	if err := C.flux_analyze(astPkg.ptr, cOptions, &semPkg); err != nil {
-		defer C.flux_free_error(err)
-		cstr := C.flux_error_str(err)
-		str := C.GoString(cstr)
-		return nil, errors.New(codes.Invalid, str)
-	}
+	// Analyze may return a semantic package even on errors
+	fluxErr := C.flux_analyze(astPkg.ptr, cOptions, &semPkg)
+
 	runtime.KeepAlive(astPkg)
-	p := &SemanticPkg{ptr: semPkg}
-	runtime.SetFinalizer(p, free)
-	return p, nil
+
+	var p *SemanticPkg
+	if semPkg != nil {
+		p = &SemanticPkg{ptr: semPkg}
+		runtime.SetFinalizer(p, free)
+	}
+
+	if fluxErr != nil {
+		defer C.flux_free_error(fluxErr)
+		cstr := C.flux_error_str(fluxErr)
+		str := C.GoString(cstr)
+		err = errors.New(codes.Invalid, str)
+	}
+
+	return p, err
 }
 
 func FindVarType(astPkg *ASTPkg, varName string) (semantic.MonoType, error) {
+	pkg, err := Analyze(astPkg)
+	if pkg == nil {
+		return semantic.MonoType{}, err
+	}
+	return FindVarTypeSemantic(pkg, varName)
+}
+
+func FindVarTypeSemantic(pkg *SemanticPkg, varName string) (semantic.MonoType, error) {
 	defer func() {
 		// This is necessary because the ASTPkg returned from the libflux API calls has its finalizer
 		// set with the Go runtime. But this API will consume the AST package during
 		// the conversion from the AST package to the semantic package.
 		// Setting this ptr to nil will prevent a double-free error.
-		astPkg.ptr = nil
+		pkg.ptr = nil
 	}()
 	var buf C.struct_flux_buffer_t
 	// C.GoBytes() will make a copy so we need to free the buffer.
 	defer C.flux_free_bytes(buf.data)
 	cVarName := C.CString(varName)
 	defer C.free(unsafe.Pointer(cVarName))
-	if err := C.flux_find_var_type(astPkg.ptr, cVarName, &buf); err != nil {
+	if err := C.flux_find_var_type(pkg.ptr, cVarName, &buf); err != nil {
 		defer C.flux_free_error(err)
 		cstr := C.flux_error_str(err)
 		str := C.GoString(cstr)
