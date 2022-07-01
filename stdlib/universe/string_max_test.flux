@@ -4,8 +4,6 @@ package universe_test
 import "testing"
 import "csv"
 
-option now = () => 2030-01-01T00:00:00Z
-
 inData =
     "
 #datatype,string,long,dateTime:RFC3339,string,string,string,string,string,string,string
@@ -24,11 +22,9 @@ testcase string_max {
     testing.shouldError(
         fn: () =>
             csv.from(csv: inData)
-                |> testing.load()
-                |> range(start: 2018-05-22T19:54:16Z)
                 |> max()
                 |> tableFind(fn: (key) => true),
         want:
-            "error calling function \"tableFind\" @30:20-30:48: runtime error @29:20-29:25: max: invalid use of function: *universe.MaxSelector has no implementation for type string",
+            "error calling function \"tableFind\" @26:20-26:48: runtime error @25:20-25:25: max: invalid use of function: *universe.MaxSelector has no implementation for type string",
     )
 }
