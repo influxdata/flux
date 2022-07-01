@@ -375,7 +375,7 @@ pub unsafe extern "C" fn flux_find_var_type(
     catch_unwind(|| {
         let buf = CStr::from_ptr(var_name).to_bytes(); // Unsafe
         let name = std::str::from_utf8(buf).unwrap();
-        find_var_type(&*sem_pkg, &name).map_or_else(
+        find_var_type(&*sem_pkg, name).map_or_else(
             |e| Some(Box::from(e)),
             |t| {
                 let mut builder = flatbuffers::FlatBufferBuilder::new();
@@ -590,7 +590,7 @@ pub fn analyze(ast_pkg: &ast::Package, options: Options) -> SalvageResult<Packag
 /// for that variable.
 /// This version of find_var_type is aware of the prelude and builtins.
 fn find_var_type(pkg: &Package, var_name: &str) -> Result<MonoType> {
-    Ok(semantic::find_var_type(pkg, var_name).unwrap_or_else(|| MonoType::BoundVar(BoundTvar(0))))
+    Ok(semantic::find_var_type(pkg, var_name).unwrap_or(MonoType::BoundVar(BoundTvar(0))))
 }
 
 /// # Safety
