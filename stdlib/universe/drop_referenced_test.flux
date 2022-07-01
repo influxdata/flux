@@ -31,31 +31,18 @@ inData =
 ,,2,2018-05-22T19:54:06Z,68.304576144036,usage_idle,cpu,cpu-total,host.local
 ,,2,2018-05-22T19:54:16Z,87.88598574821853,usage_idle,cpu,cpu-total,host.local
 "
-outData = "
-#datatype,string,string
-#group,true,true
-#default,,
-,error,reference
-,"
-
-function
-references
-unknown
-column
-""
-_field
-""
-",
-"
 
 testcase drop_referenced {
-    got =
-        csv.from(csv: inData)
-            |> testing.load()
-            |> range(start: 2018-05-22T19:53:26Z)
-            |> drop(columns: ["_field"])
-            |> filter(fn: (r) => r._field == "usage_guest")
-    want = csv.from(csv: outData)
-
-    testing.diff(got, want)
+    // TODO: When we have an improved type signature for `drop` this error can complain about
+    // _field being referenced after dropped
+    testing.shouldError(
+        fn: () =>
+            csv.from(csv: inData)
+                |> testing.load()
+                |> range(start: 2018-05-22T19:53:26Z)
+                |> drop(columns: ["_field"])
+                |> filter(fn: (r) => r._field == "usage_guest")
+                |> tableFind(fn: (key) => true),
+        want: "error calling function \"tableFind\" @45:20-45:48: no table found",
+    )
 }

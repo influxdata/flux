@@ -54,6 +54,9 @@ outData =
 "
 
 testcase join_use_previous_test {
+    // https://github.com/influxdata/flux/issues2996
+    option testing.tags = ["skip"]
+
     tables = csv.from(csv: inData) |> testing.load()
 
     lhs =

@@ -4,8 +4,6 @@ package universe_test
 import "testing"
 import "csv"
 
-option now = () => 2030-01-01T00:00:00Z
-
 inData =
     "
 #datatype,string,long,dateTime:RFC3339,double,string
@@ -17,22 +15,16 @@ inData =
 ,,0,2018-05-22T19:53:46Z,2,cpu
 ,,0,2018-05-22T19:53:56Z,7,cpu
 "
-outData =
-    "
-#datatype,string,string
-#group,true,true
-#default,,
-,error,reference
-,specified column does not exist in table: x,
-"
 
 testcase covariance_missing_column_2 {
-    got =
-        csv.from(csv: inData)
-            |> testing.load()
-            |> range(start: 2018-05-22T19:53:26Z)
-            |> covariance(columns: ["x", "y"])
-    want = csv.from(csv: outData)
-
-    testing.diff(got, want)
+    testing.shouldError(
+        fn: () =>
+            csv.from(csv: inData)
+                |> testing.load()
+                |> range(start: 2018-05-22T19:53:26Z)
+                |> covariance(columns: ["x", "r"])
+                |> tableFind(fn: (key) => true),
+        want:
+            "error calling function \"tableFind\" @26:20-26:48: runtime error @25:20-25:51: covariance: specified column does not exist in table: x",
+    )
 }
