@@ -6,9 +6,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/mvn-trinhnguyen2-dn/flux"
-	"github.com/mvn-trinhnguyen2-dn/flux/memory"
-	"github.com/mvn-trinhnguyen2-dn/flux/values"
+	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/memory"
+	"github.com/influxdata/flux/values"
 	"github.com/opentracing/opentracing-go"
 )
 

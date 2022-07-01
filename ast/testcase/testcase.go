@@ -6,11 +6,11 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/mvn-trinhnguyen2-dn/flux/ast"
-	"github.com/mvn-trinhnguyen2-dn/flux/codes"
-	"github.com/mvn-trinhnguyen2-dn/flux/dependencies/filesystem"
-	"github.com/mvn-trinhnguyen2-dn/flux/internal/errors"
-	"github.com/mvn-trinhnguyen2-dn/flux/parser"
+	"github.com/influxdata/flux/ast"
+	"github.com/influxdata/flux/codes"
+	"github.com/influxdata/flux/dependencies/filesystem"
+	"github.com/influxdata/flux/internal/errors"
+	"github.com/influxdata/flux/parser"
 )
 
 // Transform will transform an *ast.Package into a set of *ast.Package values

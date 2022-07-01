@@ -6,13 +6,13 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/mvn-trinhnguyen2-dn/flux/codes"
-	"github.com/mvn-trinhnguyen2-dn/flux/dependencies/filesystem"
-	"github.com/mvn-trinhnguyen2-dn/flux/dependencies/http"
-	"github.com/mvn-trinhnguyen2-dn/flux/dependencies/secret"
-	"github.com/mvn-trinhnguyen2-dn/flux/dependencies/url"
-	"github.com/mvn-trinhnguyen2-dn/flux/dependency"
-	"github.com/mvn-trinhnguyen2-dn/flux/internal/errors"
+	"github.com/influxdata/flux/codes"
+	"github.com/influxdata/flux/dependencies/filesystem"
+	"github.com/influxdata/flux/dependencies/http"
+	"github.com/influxdata/flux/dependencies/secret"
+	"github.com/influxdata/flux/dependencies/url"
+	"github.com/influxdata/flux/dependency"
+	"github.com/influxdata/flux/internal/errors"
 )
 
 var _ Dependencies = (*Deps)(nil)

@@ -4,11 +4,11 @@ import (
 	"fmt"
 
 	flatbuffers "github.com/google/flatbuffers/go"
-	"github.com/mvn-trinhnguyen2-dn/flux/codes"
-	"github.com/mvn-trinhnguyen2-dn/flux/internal/errors"
-	"github.com/mvn-trinhnguyen2-dn/flux/internal/fbsemantic"
-	"github.com/mvn-trinhnguyen2-dn/flux/libflux/go/libflux"
-	"github.com/mvn-trinhnguyen2-dn/flux/semantic"
+	"github.com/influxdata/flux/codes"
+	"github.com/influxdata/flux/internal/errors"
+	"github.com/influxdata/flux/internal/fbsemantic"
+	"github.com/influxdata/flux/libflux/go/libflux"
+	"github.com/influxdata/flux/semantic"
 )
 
 var stdlibTypeEnvironment = TypeEnvMap(fbsemantic.GetRootAsTypeEnvironment(libflux.EnvStdlib(), 0))

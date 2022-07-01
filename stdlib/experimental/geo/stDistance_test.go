@@ -5,11 +5,11 @@ import (
 	"math"
 	"testing"
 
-	_ "github.com/mvn-trinhnguyen2-dn/flux/fluxinit/static"
-	"github.com/mvn-trinhnguyen2-dn/flux/querytest"
-	"github.com/mvn-trinhnguyen2-dn/flux/semantic"
-	"github.com/mvn-trinhnguyen2-dn/flux/stdlib/experimental/geo"
-	"github.com/mvn-trinhnguyen2-dn/flux/values"
+	_ "github.com/influxdata/flux/fluxinit/static"
+	"github.com/influxdata/flux/querytest"
+	"github.com/influxdata/flux/semantic"
+	"github.com/influxdata/flux/stdlib/experimental/geo"
+	"github.com/influxdata/flux/values"
 )
 
 func TestSTDistance_NewQuery(t *testing.T) {

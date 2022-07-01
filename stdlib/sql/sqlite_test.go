@@ -5,9 +5,9 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
+	flux "github.com/influxdata/flux"
+	"github.com/influxdata/flux/values"
 	_ "github.com/mattn/go-sqlite3"
-	flux "github.com/mvn-trinhnguyen2-dn/flux"
-	"github.com/mvn-trinhnguyen2-dn/flux/values"
 )
 
 func TestBoolTranslation(t *testing.T) {

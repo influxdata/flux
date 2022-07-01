@@ -1693,7 +1693,7 @@ fn binary_expr_comparison() {
             src: &src,
         }
         // TODO(algow): re-introduce equality constraints for binary comparison operators
-        // https://github.com/mvn-trinhnguyen2-dn/flux/issues/2466
+        // https://github.com/influxdata/flux/issues/2466
         test_infer! {
             env: map![
                 "a" => "float",
@@ -1797,7 +1797,7 @@ fn binary_expr_comparison() {
             src: &src,
         }
         // TODO(algow): re-introduce equality constraints for binary comparison operators
-        // https://github.com/mvn-trinhnguyen2-dn/flux/issues/2466
+        // https://github.com/influxdata/flux/issues/2466
         test_infer! {
             env: map![
                 "a" => "float",
@@ -2820,7 +2820,7 @@ fn record_with_scoped_labels() {
 #[test]
 fn pseudo_complete_query() {
     // TODO(algow): re-introduce equality constraints for binary comparison operators
-    // https://github.com/mvn-trinhnguyen2-dn/flux/issues/2466
+    // https://github.com/influxdata/flux/issues/2466
     test_infer! {
         env: map![
             "from"   => "(bucket: string) => [{A with field: string , value: B }]",
@@ -3170,7 +3170,7 @@ fn constrained_generics_divisible() {
 #[test]
 fn constrained_generics_comparable() {
     // TODO(algow): re-introduce equality constraints for binary comparison operators
-    // https://github.com/mvn-trinhnguyen2-dn/flux/issues/2466
+    // https://github.com/influxdata/flux/issues/2466
     test_infer! {
         src: r#"
             f = (a, b) => a < b
@@ -3221,7 +3221,7 @@ fn constrained_generics_comparable() {
 #[test]
 fn constrained_generics_equatable() {
     // TODO(algow): re-introduce equality constraints for binary comparison operators
-    // https://github.com/mvn-trinhnguyen2-dn/flux/issues/2466
+    // https://github.com/influxdata/flux/issues/2466
     test_infer! {
         env: map![
             "true" => "bool",
@@ -3268,7 +3268,7 @@ fn constrained_generics_equatable() {
 #[test]
 fn multiple_constraints() {
     // TODO(algow): re-introduce equality constraints for binary comparison operators
-    // https://github.com/mvn-trinhnguyen2-dn/flux/issues/2466
+    // https://github.com/influxdata/flux/issues/2466
     test_infer! {
         src: r#"
             f = (a, b) => a <= b

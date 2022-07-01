@@ -3,7 +3,7 @@ package mock
 import (
 	"context"
 
-	"github.com/mvn-trinhnguyen2-dn/flux"
+	"github.com/influxdata/flux"
 )
 
 var _ flux.Compiler = Compiler{}

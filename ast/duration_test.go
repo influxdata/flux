@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/mvn-trinhnguyen2-dn/flux/ast"
+	"github.com/influxdata/flux/ast"
 )
 
 func TestDurationLiteralString(t *testing.T) {

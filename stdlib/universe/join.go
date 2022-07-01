@@ -6,16 +6,16 @@ import (
 	"sort"
 	"sync"
 
-	"github.com/mvn-trinhnguyen2-dn/flux"
-	"github.com/mvn-trinhnguyen2-dn/flux/codes"
-	"github.com/mvn-trinhnguyen2-dn/flux/execute"
-	"github.com/mvn-trinhnguyen2-dn/flux/internal/errors"
-	"github.com/mvn-trinhnguyen2-dn/flux/interpreter"
-	"github.com/mvn-trinhnguyen2-dn/flux/memory"
-	"github.com/mvn-trinhnguyen2-dn/flux/plan"
-	"github.com/mvn-trinhnguyen2-dn/flux/runtime"
-	"github.com/mvn-trinhnguyen2-dn/flux/semantic"
-	"github.com/mvn-trinhnguyen2-dn/flux/values"
+	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/codes"
+	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/internal/errors"
+	"github.com/influxdata/flux/interpreter"
+	"github.com/influxdata/flux/memory"
+	"github.com/influxdata/flux/plan"
+	"github.com/influxdata/flux/runtime"
+	"github.com/influxdata/flux/semantic"
+	"github.com/influxdata/flux/values"
 )
 
 const JoinKind = "join"
@@ -727,7 +727,7 @@ func (c *MergeJoinCache) insertIntoBuffer(id execute.DatasetID, tbl flux.Table) 
 			if k.IsNull(j) {
 				// Discard the table and return.  Note: we need to iterate over the
 				// table at least once:
-				// https://github.com/mvn-trinhnguyen2-dn/flux/issues/643
+				// https://github.com/influxdata/flux/issues/643
 				return tbl.Do(func(flux.ColReader) error {
 					return nil
 				})

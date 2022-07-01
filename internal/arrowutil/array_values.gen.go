@@ -10,10 +10,10 @@ import (
 	"fmt"
 	"regexp"
 
-	"github.com/mvn-trinhnguyen2-dn/flux"
-	"github.com/mvn-trinhnguyen2-dn/flux/array"
-	"github.com/mvn-trinhnguyen2-dn/flux/semantic"
-	"github.com/mvn-trinhnguyen2-dn/flux/values"
+	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/array"
+	"github.com/influxdata/flux/semantic"
+	"github.com/influxdata/flux/values"
 )
 
 func NewArrayValue(arr array.Array, typ flux.ColType) values.Array {

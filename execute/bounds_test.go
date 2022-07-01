@@ -3,7 +3,7 @@ package execute_test
 import (
 	"testing"
 
-	"github.com/mvn-trinhnguyen2-dn/flux/execute"
+	"github.com/influxdata/flux/execute"
 )
 
 // Written to verify symmetrical behavior of execute.(Bounds).Overlaps

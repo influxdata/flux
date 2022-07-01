@@ -1,7 +1,7 @@
 package execute
 
 import (
-	"github.com/mvn-trinhnguyen2-dn/flux/internal/execute/groupkey"
+	"github.com/influxdata/flux/internal/execute/groupkey"
 )
 
 type GroupLookup = groupkey.Lookup

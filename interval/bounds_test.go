@@ -3,7 +3,7 @@ package interval
 import (
 	"testing"
 
-	"github.com/mvn-trinhnguyen2-dn/flux/values"
+	"github.com/influxdata/flux/values"
 )
 
 var tests = []struct {

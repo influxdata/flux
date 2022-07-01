@@ -3,9 +3,9 @@ package flux
 import (
 	"encoding/json"
 
-	"github.com/mvn-trinhnguyen2-dn/flux/codes"
-	"github.com/mvn-trinhnguyen2-dn/flux/internal/errors"
-	"github.com/mvn-trinhnguyen2-dn/flux/interpreter"
+	"github.com/influxdata/flux/codes"
+	"github.com/influxdata/flux/internal/errors"
+	"github.com/influxdata/flux/interpreter"
 )
 
 // Operation denotes a single operation in a query.

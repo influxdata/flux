@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/promql/v2"
-	"github.com/mvn-trinhnguyen2-dn/flux/ast"
 	"github.com/prometheus/common/model"
 )
 

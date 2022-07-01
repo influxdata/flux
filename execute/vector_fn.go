@@ -3,14 +3,14 @@ package execute
 import (
 	"context"
 
-	"github.com/mvn-trinhnguyen2-dn/flux"
-	"github.com/mvn-trinhnguyen2-dn/flux/array"
-	"github.com/mvn-trinhnguyen2-dn/flux/codes"
-	"github.com/mvn-trinhnguyen2-dn/flux/compiler"
-	"github.com/mvn-trinhnguyen2-dn/flux/execute/table"
-	"github.com/mvn-trinhnguyen2-dn/flux/internal/errors"
-	"github.com/mvn-trinhnguyen2-dn/flux/semantic"
-	"github.com/mvn-trinhnguyen2-dn/flux/values"
+	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/array"
+	"github.com/influxdata/flux/codes"
+	"github.com/influxdata/flux/compiler"
+	"github.com/influxdata/flux/execute/table"
+	"github.com/influxdata/flux/internal/errors"
+	"github.com/influxdata/flux/semantic"
+	"github.com/influxdata/flux/values"
 )
 
 type VectorMapFn struct {

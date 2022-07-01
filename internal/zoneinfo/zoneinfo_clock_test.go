@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/mvn-trinhnguyen2-dn/flux/internal/zoneinfo"
+	"github.com/influxdata/flux/internal/zoneinfo"
 )
 
 func TestLocation_ToLocalClock(t *testing.T) {

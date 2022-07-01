@@ -1,6 +1,6 @@
 package values
 
-import "github.com/mvn-trinhnguyen2-dn/flux/semantic"
+import "github.com/influxdata/flux/semantic"
 
 var (
 	trueValue Value = value{

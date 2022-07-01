@@ -2,7 +2,7 @@ package execute
 
 import (
 	"github.com/apache/arrow/go/v7/arrow/memory"
-	"github.com/mvn-trinhnguyen2-dn/flux/execute/table"
+	"github.com/influxdata/flux/execute/table"
 )
 
 // NarrowTransformation implements a transformation that processes

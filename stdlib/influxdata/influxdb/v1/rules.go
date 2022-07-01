@@ -3,7 +3,7 @@ package v1
 import (
 	"context"
 
-	"github.com/mvn-trinhnguyen2-dn/flux/plan"
+	"github.com/influxdata/flux/plan"
 )
 
 type DatabasesRemoteRule struct{}

@@ -3,9 +3,9 @@ package astutil_test
 import (
 	"testing"
 
-	"github.com/mvn-trinhnguyen2-dn/flux/ast"
-	"github.com/mvn-trinhnguyen2-dn/flux/ast/astutil"
-	"github.com/mvn-trinhnguyen2-dn/flux/parser"
+	"github.com/influxdata/flux/ast"
+	"github.com/influxdata/flux/ast/astutil"
+	"github.com/influxdata/flux/parser"
 )
 
 func TestFormat(t *testing.T) {

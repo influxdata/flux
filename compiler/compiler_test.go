@@ -7,15 +7,15 @@ import (
 	"time"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/mvn-trinhnguyen2-dn/flux"
-	"github.com/mvn-trinhnguyen2-dn/flux/codes"
-	"github.com/mvn-trinhnguyen2-dn/flux/compiler"
-	_ "github.com/mvn-trinhnguyen2-dn/flux/fluxinit/static"
-	"github.com/mvn-trinhnguyen2-dn/flux/internal/errors"
-	"github.com/mvn-trinhnguyen2-dn/flux/runtime"
-	"github.com/mvn-trinhnguyen2-dn/flux/semantic"
-	"github.com/mvn-trinhnguyen2-dn/flux/semantic/semantictest"
-	"github.com/mvn-trinhnguyen2-dn/flux/values"
+	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/codes"
+	"github.com/influxdata/flux/compiler"
+	_ "github.com/influxdata/flux/fluxinit/static"
+	"github.com/influxdata/flux/internal/errors"
+	"github.com/influxdata/flux/runtime"
+	"github.com/influxdata/flux/semantic"
+	"github.com/influxdata/flux/semantic/semantictest"
+	"github.com/influxdata/flux/values"
 )
 
 var CmpOptions = semantictest.CmpOptions

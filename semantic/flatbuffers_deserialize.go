@@ -1,9 +1,9 @@
 package semantic
 
 import (
-	codes "github.com/mvn-trinhnguyen2-dn/flux/codes"
-	errors "github.com/mvn-trinhnguyen2-dn/flux/internal/errors"
-	fbsemantic "github.com/mvn-trinhnguyen2-dn/flux/internal/fbsemantic"
+	codes "github.com/influxdata/flux/codes"
+	errors "github.com/influxdata/flux/internal/errors"
+	fbsemantic "github.com/influxdata/flux/internal/fbsemantic"
 )
 
 func (rcv *ArrayExpression) FromBuf(fb *fbsemantic.ArrayExpression) error {

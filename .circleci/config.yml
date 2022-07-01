@@ -161,7 +161,7 @@ jobs:
           command: |
             ./gotool.sh github.com/influxdata/changelog generate \
                 --version $CIRCLE_TAG \
-                --commit-url https://github.com/mvn-trinhnguyen2-dn/flux/commit \
+                --commit-url https://github.com/influxdata/flux/commit \
                 -o release-notes.txt
       - run:
           name: Install pkg-config

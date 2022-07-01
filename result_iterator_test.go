@@ -7,9 +7,9 @@ import (
 	"time"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/mvn-trinhnguyen2-dn/flux"
-	"github.com/mvn-trinhnguyen2-dn/flux/execute/executetest"
-	"github.com/mvn-trinhnguyen2-dn/flux/mock"
+	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/execute/executetest"
+	"github.com/influxdata/flux/mock"
 )
 
 // ---- Helpers.

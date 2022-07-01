@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/mvn-trinhnguyen2-dn/flux/dependencies/influxdb"
+	"github.com/influxdata/flux/dependencies/influxdb"
 )
 
 func TestGetProvider(t *testing.T) {

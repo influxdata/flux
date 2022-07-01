@@ -7,16 +7,16 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
-	"github.com/mvn-trinhnguyen2-dn/flux"
-	"github.com/mvn-trinhnguyen2-dn/flux/dependencies/dependenciestest"
-	"github.com/mvn-trinhnguyen2-dn/flux/dependencies/url"
-	"github.com/mvn-trinhnguyen2-dn/flux/execute"
-	"github.com/mvn-trinhnguyen2-dn/flux/execute/executetest"
-	_ "github.com/mvn-trinhnguyen2-dn/flux/fluxinit/static" // We need to init flux for the tests to work.
-	"github.com/mvn-trinhnguyen2-dn/flux/plan"
-	"github.com/mvn-trinhnguyen2-dn/flux/querytest"
-	"github.com/mvn-trinhnguyen2-dn/flux/stdlib/influxdata/influxdb"
-	fkafka "github.com/mvn-trinhnguyen2-dn/flux/stdlib/kafka"
+	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/dependencies/dependenciestest"
+	"github.com/influxdata/flux/dependencies/url"
+	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/execute/executetest"
+	_ "github.com/influxdata/flux/fluxinit/static" // We need to init flux for the tests to work.
+	"github.com/influxdata/flux/plan"
+	"github.com/influxdata/flux/querytest"
+	"github.com/influxdata/flux/stdlib/influxdata/influxdb"
+	fkafka "github.com/influxdata/flux/stdlib/kafka"
 	"github.com/segmentio/kafka-go"
 )
 

@@ -4,9 +4,9 @@ import (
 	"context"
 	"testing"
 
-	"github.com/mvn-trinhnguyen2-dn/flux/dependencies/dependenciestest"
-	"github.com/mvn-trinhnguyen2-dn/flux/dependency"
-	"github.com/mvn-trinhnguyen2-dn/flux/runtime"
+	"github.com/influxdata/flux/dependencies/dependenciestest"
+	"github.com/influxdata/flux/dependency"
+	"github.com/influxdata/flux/runtime"
 )
 
 func TestObjectKeys(t *testing.T) {

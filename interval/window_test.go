@@ -5,9 +5,9 @@ import (
 	"time"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/mvn-trinhnguyen2-dn/flux/execute"
-	"github.com/mvn-trinhnguyen2-dn/flux/interval"
-	"github.com/mvn-trinhnguyen2-dn/flux/values"
+	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/interval"
+	"github.com/influxdata/flux/values"
 )
 
 func TestNewWindow(t *testing.T) {

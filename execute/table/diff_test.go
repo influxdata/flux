@@ -3,8 +3,8 @@ package table_test
 import (
 	"testing"
 
-	"github.com/mvn-trinhnguyen2-dn/flux/execute/table"
-	"github.com/mvn-trinhnguyen2-dn/flux/execute/table/static"
+	"github.com/influxdata/flux/execute/table"
+	"github.com/influxdata/flux/execute/table/static"
 )
 
 func TestDiff(t *testing.T) {

@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/mvn-trinhnguyen2-dn/flux/plan"
+	"github.com/influxdata/flux/plan"
 )
 
 type triggerAwareProcedureSpec struct {

@@ -3,7 +3,7 @@ package sql
 import (
 	"testing"
 
-	"github.com/mvn-trinhnguyen2-dn/flux/dependencies/url"
+	"github.com/influxdata/flux/dependencies/url"
 )
 
 func TestLocalhostIsInvalid(t *testing.T) {

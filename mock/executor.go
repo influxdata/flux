@@ -3,11 +3,11 @@ package mock
 import (
 	"context"
 
-	"github.com/mvn-trinhnguyen2-dn/flux"
-	"github.com/mvn-trinhnguyen2-dn/flux/execute"
-	"github.com/mvn-trinhnguyen2-dn/flux/memory"
-	"github.com/mvn-trinhnguyen2-dn/flux/metadata"
-	"github.com/mvn-trinhnguyen2-dn/flux/plan"
+	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/memory"
+	"github.com/influxdata/flux/metadata"
+	"github.com/influxdata/flux/plan"
 )
 
 var _ execute.Executor = (*Executor)(nil)

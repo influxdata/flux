@@ -10,7 +10,7 @@ import "json"
 // This is normally good except when you want a polymorphic parameter with a default.
 // The record.any value is a polymorphic record value which can be used to allow
 // parameters to have a default empty record value and still remain polymorphic.
-// Once https://github.com/mvn-trinhnguyen2-dn/flux/issues/3461 is fixed this workaround will no longer be needed.
+// Once https://github.com/influxdata/flux/issues/3461 is fixed this workaround will no longer be needed.
 testcase polymorphic_default {
     // define function with polymorphic default value for r
     f = (r=record.any) => ({r with x: true})

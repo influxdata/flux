@@ -5,16 +5,16 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/mvn-trinhnguyen2-dn/flux/codes"
-	"github.com/mvn-trinhnguyen2-dn/flux/dependencies/dependenciestest"
-	"github.com/mvn-trinhnguyen2-dn/flux/dependency"
-	_ "github.com/mvn-trinhnguyen2-dn/flux/fluxinit/static"
-	"github.com/mvn-trinhnguyen2-dn/flux/internal/errors"
-	"github.com/mvn-trinhnguyen2-dn/flux/interpreter"
-	"github.com/mvn-trinhnguyen2-dn/flux/interpreter/interptest"
-	"github.com/mvn-trinhnguyen2-dn/flux/runtime"
-	"github.com/mvn-trinhnguyen2-dn/flux/semantic"
-	"github.com/mvn-trinhnguyen2-dn/flux/values"
+	"github.com/influxdata/flux/codes"
+	"github.com/influxdata/flux/dependencies/dependenciestest"
+	"github.com/influxdata/flux/dependency"
+	_ "github.com/influxdata/flux/fluxinit/static"
+	"github.com/influxdata/flux/internal/errors"
+	"github.com/influxdata/flux/interpreter"
+	"github.com/influxdata/flux/interpreter/interptest"
+	"github.com/influxdata/flux/runtime"
+	"github.com/influxdata/flux/semantic"
+	"github.com/influxdata/flux/values"
 )
 
 // Implementation of interpreter.Importer
@@ -387,7 +387,7 @@ func TestInterpreter_MutateOption(t *testing.T) {
 }
 
 func TestInterpreter_SetQualifiedOption(t *testing.T) {
-	t.Skip("Handle imports for user-defined packages https://github.com/mvn-trinhnguyen2-dn/flux/issues/2343")
+	t.Skip("Handle imports for user-defined packages https://github.com/influxdata/flux/issues/2343")
 	externalPackage := interpreter.NewPackage("alert")
 	values.SetOption(externalPackage, "state", values.NewString("Warning"))
 	importer := &importer{

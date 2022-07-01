@@ -1,10 +1,10 @@
 package table
 
 import (
-	"github.com/mvn-trinhnguyen2-dn/flux"
-	"github.com/mvn-trinhnguyen2-dn/flux/array"
-	"github.com/mvn-trinhnguyen2-dn/flux/internal/execute/groupkey"
-	"github.com/mvn-trinhnguyen2-dn/flux/values"
+	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/array"
+	"github.com/influxdata/flux/internal/execute/groupkey"
+	"github.com/influxdata/flux/values"
 )
 
 // Mask will return a no-copy Table that masks the given

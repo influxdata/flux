@@ -6,11 +6,11 @@ import (
 
 	arrow "github.com/apache/arrow/go/v7/arrow/memory"
 	"github.com/google/go-cmp/cmp"
-	"github.com/mvn-trinhnguyen2-dn/flux/compiler"
-	"github.com/mvn-trinhnguyen2-dn/flux/memory"
-	"github.com/mvn-trinhnguyen2-dn/flux/runtime"
-	"github.com/mvn-trinhnguyen2-dn/flux/semantic"
-	"github.com/mvn-trinhnguyen2-dn/flux/values"
+	"github.com/influxdata/flux/compiler"
+	"github.com/influxdata/flux/memory"
+	"github.com/influxdata/flux/runtime"
+	"github.com/influxdata/flux/semantic"
+	"github.com/influxdata/flux/values"
 )
 
 func vectorizedObjectFromMap(mp map[string]interface{}, mem memory.Allocator) values.Object {

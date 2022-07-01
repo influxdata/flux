@@ -5,10 +5,10 @@ import (
 	"math"
 	"testing"
 
-	"github.com/mvn-trinhnguyen2-dn/flux"
-	"github.com/mvn-trinhnguyen2-dn/flux/execute"
-	"github.com/mvn-trinhnguyen2-dn/flux/execute/executetest"
-	"github.com/mvn-trinhnguyen2-dn/flux/stdlib/universe"
+	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/execute/executetest"
+	"github.com/influxdata/flux/stdlib/universe"
 )
 
 var linearHist = func() []flux.Table {

@@ -3,8 +3,8 @@ package cmd
 import (
 	"context"
 
-	"github.com/mvn-trinhnguyen2-dn/flux/fluxinit"
-	"github.com/mvn-trinhnguyen2-dn/flux/repl"
+	"github.com/influxdata/flux/fluxinit"
+	"github.com/influxdata/flux/repl"
 	"github.com/spf13/cobra"
 )
 

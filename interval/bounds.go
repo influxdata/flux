@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"math"
 
-	"github.com/mvn-trinhnguyen2-dn/flux/internal/zoneinfo"
-	"github.com/mvn-trinhnguyen2-dn/flux/values"
+	"github.com/influxdata/flux/internal/zoneinfo"
+	"github.com/influxdata/flux/values"
 )
 
 const (

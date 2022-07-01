@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/mvn-trinhnguyen2-dn/flux/libflux/go/libflux"
+	"github.com/influxdata/flux/libflux/go/libflux"
 	"github.com/spf13/cobra"
 )
 

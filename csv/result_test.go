@@ -13,11 +13,11 @@ import (
 	"github.com/andreyvit/diff"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
-	"github.com/mvn-trinhnguyen2-dn/flux"
-	"github.com/mvn-trinhnguyen2-dn/flux/csv"
-	"github.com/mvn-trinhnguyen2-dn/flux/execute/executetest"
-	"github.com/mvn-trinhnguyen2-dn/flux/memory"
-	"github.com/mvn-trinhnguyen2-dn/flux/values"
+	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/csv"
+	"github.com/influxdata/flux/execute/executetest"
+	"github.com/influxdata/flux/memory"
+	"github.com/influxdata/flux/values"
 )
 
 type TestCase struct {

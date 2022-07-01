@@ -4,9 +4,9 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/mvn-trinhnguyen2-dn/flux"
-	"github.com/mvn-trinhnguyen2-dn/flux/memory"
-	"github.com/mvn-trinhnguyen2-dn/flux/plan"
+	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/memory"
+	"github.com/influxdata/flux/plan"
 )
 
 // Transformation represents functions that stream a set of tables, performs

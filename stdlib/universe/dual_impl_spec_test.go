@@ -4,11 +4,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/mvn-trinhnguyen2-dn/flux"
-	"github.com/mvn-trinhnguyen2-dn/flux/execute"
-	"github.com/mvn-trinhnguyen2-dn/flux/execute/executetest"
-	"github.com/mvn-trinhnguyen2-dn/flux/mock"
-	"github.com/mvn-trinhnguyen2-dn/flux/plan"
+	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/execute/executetest"
+	"github.com/influxdata/flux/mock"
+	"github.com/influxdata/flux/plan"
 )
 
 type mockOperationSpec struct{}

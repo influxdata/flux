@@ -1,8 +1,8 @@
 package table
 
 import (
-	"github.com/mvn-trinhnguyen2-dn/flux"
-	"github.com/mvn-trinhnguyen2-dn/flux/execute/table"
+	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/execute/table"
 )
 
 // Copy returns a buffered copy of the table and consumes the

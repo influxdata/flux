@@ -4,14 +4,14 @@ import (
 	"context"
 	"testing"
 
-	"github.com/mvn-trinhnguyen2-dn/flux/dependencies/dependenciestest"
-	"github.com/mvn-trinhnguyen2-dn/flux/dependency"
-	_ "github.com/mvn-trinhnguyen2-dn/flux/fluxinit/static"
-	"github.com/mvn-trinhnguyen2-dn/flux/querytest"
-	"github.com/mvn-trinhnguyen2-dn/flux/runtime"
-	"github.com/mvn-trinhnguyen2-dn/flux/semantic"
-	"github.com/mvn-trinhnguyen2-dn/flux/stdlib/experimental/array"
-	"github.com/mvn-trinhnguyen2-dn/flux/values"
+	"github.com/influxdata/flux/dependencies/dependenciestest"
+	"github.com/influxdata/flux/dependency"
+	_ "github.com/influxdata/flux/fluxinit/static"
+	"github.com/influxdata/flux/querytest"
+	"github.com/influxdata/flux/runtime"
+	"github.com/influxdata/flux/semantic"
+	"github.com/influxdata/flux/stdlib/experimental/array"
+	"github.com/influxdata/flux/values"
 )
 
 func TestConcat_NewQuery(t *testing.T) {

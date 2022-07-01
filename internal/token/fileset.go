@@ -1,7 +1,7 @@
 package token
 
 import (
-	"github.com/mvn-trinhnguyen2-dn/flux/ast"
+	"github.com/influxdata/flux/ast"
 )
 
 type FileSet struct {

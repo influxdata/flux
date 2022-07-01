@@ -4,11 +4,11 @@ import (
 	"net/url"
 	"testing"
 
-	"github.com/mvn-trinhnguyen2-dn/flux"
-	"github.com/mvn-trinhnguyen2-dn/flux/execute/executetest"
-	"github.com/mvn-trinhnguyen2-dn/flux/querytest"
-	"github.com/mvn-trinhnguyen2-dn/flux/stdlib/influxdata/influxdb"
-	"github.com/mvn-trinhnguyen2-dn/flux/stdlib/influxdata/influxdb/internal/testutil"
+	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/execute/executetest"
+	"github.com/influxdata/flux/querytest"
+	"github.com/influxdata/flux/stdlib/influxdata/influxdb"
+	"github.com/influxdata/flux/stdlib/influxdata/influxdb/internal/testutil"
 )
 
 func TestBuckets_NewQuery(t *testing.T) {

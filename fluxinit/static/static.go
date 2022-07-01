@@ -3,7 +3,7 @@
 package static
 
 import (
-	"github.com/mvn-trinhnguyen2-dn/flux/fluxinit"
+	"github.com/influxdata/flux/fluxinit"
 )
 
 func init() {

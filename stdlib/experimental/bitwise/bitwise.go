@@ -1,9 +1,9 @@
 package bitwise
 
 import (
-	"github.com/mvn-trinhnguyen2-dn/flux/internal/function"
-	"github.com/mvn-trinhnguyen2-dn/flux/interpreter"
-	"github.com/mvn-trinhnguyen2-dn/flux/values"
+	"github.com/influxdata/flux/internal/function"
+	"github.com/influxdata/flux/interpreter"
+	"github.com/influxdata/flux/values"
 )
 
 func uand(args interpreter.Arguments) (values.Value, error) {

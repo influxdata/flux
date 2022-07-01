@@ -6,18 +6,18 @@ import (
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
+	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/dependencies/dependenciestest"
+	"github.com/influxdata/flux/dependencies/url"
+	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/execute/executetest"
+	_ "github.com/influxdata/flux/fluxinit/static" // We need to init flux for the tests to work.
+	"github.com/influxdata/flux/plan"
+	"github.com/influxdata/flux/querytest"
+	"github.com/influxdata/flux/stdlib/influxdata/influxdb"
+	fsql "github.com/influxdata/flux/stdlib/sql"
+	"github.com/influxdata/flux/values"
 	_ "github.com/mattn/go-sqlite3"
-	"github.com/mvn-trinhnguyen2-dn/flux"
-	"github.com/mvn-trinhnguyen2-dn/flux/dependencies/dependenciestest"
-	"github.com/mvn-trinhnguyen2-dn/flux/dependencies/url"
-	"github.com/mvn-trinhnguyen2-dn/flux/execute"
-	"github.com/mvn-trinhnguyen2-dn/flux/execute/executetest"
-	_ "github.com/mvn-trinhnguyen2-dn/flux/fluxinit/static" // We need to init flux for the tests to work.
-	"github.com/mvn-trinhnguyen2-dn/flux/plan"
-	"github.com/mvn-trinhnguyen2-dn/flux/querytest"
-	"github.com/mvn-trinhnguyen2-dn/flux/stdlib/influxdata/influxdb"
-	fsql "github.com/mvn-trinhnguyen2-dn/flux/stdlib/sql"
-	"github.com/mvn-trinhnguyen2-dn/flux/values"
 )
 
 func TestSqlTo(t *testing.T) {

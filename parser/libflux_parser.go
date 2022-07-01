@@ -1,9 +1,9 @@
 package parser
 
 import (
-	"github.com/mvn-trinhnguyen2-dn/flux/ast"
-	"github.com/mvn-trinhnguyen2-dn/flux/internal/token"
-	"github.com/mvn-trinhnguyen2-dn/flux/libflux/go/libflux"
+	"github.com/influxdata/flux/ast"
+	"github.com/influxdata/flux/internal/token"
+	"github.com/influxdata/flux/libflux/go/libflux"
 )
 
 func parseFile(f *token.File, src []byte) (*ast.File, error) {

@@ -234,7 +234,7 @@ A skeleton implementation is shown below:
         /* transformation-specific logic */
     }
 
-Some examples where this version of the narrow transformation is used: [filter()](https://github.com/mvn-trinhnguyen2-dn/flux/blob/master/stdlib/universe/filter.go) and [fill()](https://github.com/mvn-trinhnguyen2-dn/flux/blob/master/stdlib/universe/fill.go).
+Some examples where this version of the narrow transformation is used: [filter()](https://github.com/influxdata/flux/blob/master/stdlib/universe/filter.go) and [fill()](https://github.com/influxdata/flux/blob/master/stdlib/universe/fill.go).
 
 An alternative is used when we need to maintain state between chunks.
 
@@ -277,7 +277,7 @@ A skeleton implementation is shown below:
         /* transformation-specific logic */
     }
 
-Some examples where this version of the narrow transformation is used: [derivative()](https://github.com/mvn-trinhnguyen2-dn/flux/blob/master/stdlib/universe/derivative.go).
+Some examples where this version of the narrow transformation is used: [derivative()](https://github.com/influxdata/flux/blob/master/stdlib/universe/derivative.go).
 
 ### Group Transformation
 
@@ -298,13 +298,13 @@ The following general steps are used to build every table:
 * Determine the columns and group key of the output table.
 * Determine the length of the table chunk.
 * Construct the array for each column.
-* Construct and send a [table.Chunk](https://pkg.go.dev/github.com/mvn-trinhnguyen2-dn/flux/execute/table#Chunk) using [arrow.TableBuffer](https://pkg.go.dev/github.com/mvn-trinhnguyen2-dn/flux/arrow#TableBuffer).
+* Construct and send a [table.Chunk](https://pkg.go.dev/github.com/influxdata/flux/execute/table#Chunk) using [arrow.TableBuffer](https://pkg.go.dev/github.com/influxdata/flux/arrow#TableBuffer).
 
 ### Determine the columns and group key of the output table
 
 To determine the columns and group key of the output table will depend entirely on the transformation that is being implemented.
 Many transformations will not modify the group key.
-For transformations that do not modify the group key, the [execute.NarrowTransformation](https://pkg.go.dev/github.com/mvn-trinhnguyen2-dn/flux/execute#NarrowTransformation) transport implementation can greatly simplify the creation of those transformations.
+For transformations that do not modify the group key, the [execute.NarrowTransformation](https://pkg.go.dev/github.com/influxdata/flux/execute#NarrowTransformation) transport implementation can greatly simplify the creation of those transformations.
 
 ### Determine the length of the table chunk
 
@@ -313,14 +313,14 @@ Some transformations, like `map()`, will always output the same number of rows t
 These are the easiest.
 Others, like `filter()`, might reduce the length of the array and should determine the new length of the table chunk in advance.
 There are also cases where a transformation might need to rearrange data from different buffers or could produce more data.
-For these circumstances, chunk sizes should be limited to [table.BufferSize](https://pkg.go.dev/github.com/mvn-trinhnguyen2-dn/flux/execute/table#pkg-constants).
+For these circumstances, chunk sizes should be limited to [table.BufferSize](https://pkg.go.dev/github.com/influxdata/flux/execute/table#pkg-constants).
 
 **It is not required that a transformation determine the length of a table chunk before producing one**, but it is highly advised.
 Memory reallocation during table chunk creation is a top contributor to slowdown.
 
 ### Construct the array for each column
 
-We produce an array for each column in the table chunk using the [github.com/mvn-trinhnguyen2-dn/flux/array](https://pkg.go.dev/github.com/mvn-trinhnguyen2-dn/flux/array) package.
+We produce an array for each column in the table chunk using the [github.com/influxdata/flux/array](https://pkg.go.dev/github.com/influxdata/flux/array) package.
 Each flux type corresponds to an array type according to the following table:
 
 |Flux Type|Arrow Type
@@ -345,7 +345,7 @@ Other techniques for building arrays efficiently are contained in the arrow arra
 
 ### Construct and send a table.Chunk using arrow.TableBuffer
 
-We construct a [table.Chunk](https://pkg.go.dev/github.com/mvn-trinhnguyen2-dn/flux/execute/table#Chunk) using [arrow.TableBuffer](https://pkg.go.dev/github.com/mvn-trinhnguyen2-dn/flux/arrow#TableBuffer).
+We construct a [table.Chunk](https://pkg.go.dev/github.com/influxdata/flux/execute/table#Chunk) using [arrow.TableBuffer](https://pkg.go.dev/github.com/influxdata/flux/arrow#TableBuffer).
 
     buffer := arrow.TableBuffer{
         GroupKey: execute.NewGroupKey(...),
@@ -370,7 +370,7 @@ String appends are usually the biggest performance sink for efficiency.
 
 ### Limit Chunk Sizes
 
-Limit chunk sizes to [table.BufferSize](https://pkg.go.dev/github.com/mvn-trinhnguyen2-dn/flux/execute/table#pkg-constants).
+Limit chunk sizes to [table.BufferSize](https://pkg.go.dev/github.com/influxdata/flux/execute/table#pkg-constants).
 The array values in a column are contained in contiguous data.
 When the chunk size gets larger, the memory allocator has to find a spot in memory that fits that large size.
 Larger chunk sizes are generally better for performance, but buffer sizes that are too large put too much pressure on the memory allocator and garbage collector.
@@ -440,19 +440,19 @@ In circumstances like the above, copies can be much more efficient.
 
 ### Copying Data
 
-Data can be copied with the `Copy` utilities in the [github.com/mvn-trinhnguyen2-dn/flux/internal/arrowutil](https://pkg.go.dev/github.com/mvn-trinhnguyen2-dn/flux/internal/arrowutil) package.
-There are many copy utilities in there, but the most useful is likely [CopyByIndexTo](https://pkg.go.dev/github.com/mvn-trinhnguyen2-dn/flux/internal/arrowutil#CopyByIndexTo).
+Data can be copied with the `Copy` utilities in the [github.com/influxdata/flux/internal/arrowutil](https://pkg.go.dev/github.com/influxdata/flux/internal/arrowutil) package.
+There are many copy utilities in there, but the most useful is likely [CopyByIndexTo](https://pkg.go.dev/github.com/influxdata/flux/internal/arrowutil#CopyByIndexTo).
 This method takes a list of indices from the source array and copies them into the destination builder.
 
 ### Dynamic Builders
 
 Sometimes, we cannot avoid row-based algorithms and row-based algorithms are likely going to require dynamically appending values.
-There are two useful methods in the [github.com/mvn-trinhnguyen2-dn/flux/arrow](https://pkg.go.dev/github.com/mvn-trinhnguyen2-dn/flux/arrow) for this.
+There are two useful methods in the [github.com/influxdata/flux/arrow](https://pkg.go.dev/github.com/influxdata/flux/arrow) for this.
 
-The first is [arrow.NewBuilder](https://pkg.go.dev/github.com/mvn-trinhnguyen2-dn/flux/arrow#NewBuilder).
+The first is [arrow.NewBuilder](https://pkg.go.dev/github.com/influxdata/flux/arrow#NewBuilder).
 This takes a column type and produces an appropriate builder for that column type.
 
-The second is [arrow.AppendValue](https://pkg.go.dev/github.com/mvn-trinhnguyen2-dn/flux/arrow#AppendValue).
+The second is [arrow.AppendValue](https://pkg.go.dev/github.com/influxdata/flux/arrow#AppendValue).
 This one takes a builder, usually constructed with `arrow.NewBuilder`, and appends the value to the arrow builder.
 
 The most common usage of these is like this:

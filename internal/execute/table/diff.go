@@ -1,8 +1,8 @@
 package table
 
 import (
-	"github.com/mvn-trinhnguyen2-dn/flux"
-	"github.com/mvn-trinhnguyen2-dn/flux/execute/table"
+	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/execute/table"
 )
 
 // Diff will perform a diff between two table iterators.

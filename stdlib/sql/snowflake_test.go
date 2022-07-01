@@ -8,8 +8,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/influxdata/flux/dependencies/dependenciestest"
 	"github.com/influxdata/gosnowflake"
-	"github.com/mvn-trinhnguyen2-dn/flux/dependencies/dependenciestest"
 )
 
 func TestSnowflake_FileTransfer(t *testing.T) {

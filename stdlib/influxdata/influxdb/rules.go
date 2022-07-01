@@ -3,9 +3,9 @@ package influxdb
 import (
 	"context"
 
-	"github.com/mvn-trinhnguyen2-dn/flux/dependencies/influxdb"
-	"github.com/mvn-trinhnguyen2-dn/flux/plan"
-	"github.com/mvn-trinhnguyen2-dn/flux/stdlib/universe"
+	"github.com/influxdata/flux/dependencies/influxdb"
+	"github.com/influxdata/flux/plan"
+	"github.com/influxdata/flux/stdlib/universe"
 )
 
 type FromRemoteRule struct{}

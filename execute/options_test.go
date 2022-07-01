@@ -5,9 +5,9 @@ import (
 	"math"
 	"testing"
 
-	"github.com/mvn-trinhnguyen2-dn/flux"
-	"github.com/mvn-trinhnguyen2-dn/flux/plan"
-	planspec "github.com/mvn-trinhnguyen2-dn/flux/plan/plantest/spec"
+	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/plan"
+	planspec "github.com/influxdata/flux/plan/plantest/spec"
 	"go.uber.org/zap/zaptest"
 )
 

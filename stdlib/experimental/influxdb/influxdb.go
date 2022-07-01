@@ -10,15 +10,15 @@ import (
 	"strings"
 	"time"
 
-	"github.com/mvn-trinhnguyen2-dn/flux"
-	"github.com/mvn-trinhnguyen2-dn/flux/codes"
-	fluxhttp "github.com/mvn-trinhnguyen2-dn/flux/dependencies/http"
-	fluxurl "github.com/mvn-trinhnguyen2-dn/flux/dependencies/url"
-	fluxerrors "github.com/mvn-trinhnguyen2-dn/flux/internal/errors"
-	"github.com/mvn-trinhnguyen2-dn/flux/interpreter"
-	"github.com/mvn-trinhnguyen2-dn/flux/runtime"
-	"github.com/mvn-trinhnguyen2-dn/flux/semantic"
-	"github.com/mvn-trinhnguyen2-dn/flux/values"
+	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/codes"
+	fluxhttp "github.com/influxdata/flux/dependencies/http"
+	fluxurl "github.com/influxdata/flux/dependencies/url"
+	fluxerrors "github.com/influxdata/flux/internal/errors"
+	"github.com/influxdata/flux/interpreter"
+	"github.com/influxdata/flux/runtime"
+	"github.com/influxdata/flux/semantic"
+	"github.com/influxdata/flux/values"
 )
 
 const (

@@ -3,7 +3,7 @@ package feature
 import (
 	"context"
 
-	"github.com/mvn-trinhnguyen2-dn/flux/internal/feature"
+	"github.com/influxdata/flux/internal/feature"
 )
 
 type (

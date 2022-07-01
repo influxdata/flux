@@ -4,7 +4,7 @@ import (
 	"math"
 	"time"
 
-	"github.com/mvn-trinhnguyen2-dn/flux/values"
+	"github.com/influxdata/flux/values"
 )
 
 var (

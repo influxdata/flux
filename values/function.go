@@ -4,7 +4,7 @@ import (
 	"context"
 	"regexp"
 
-	"github.com/mvn-trinhnguyen2-dn/flux/semantic"
+	"github.com/influxdata/flux/semantic"
 )
 
 // Function represents a callable type

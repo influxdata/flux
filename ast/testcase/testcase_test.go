@@ -9,12 +9,12 @@ import (
 	"time"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/mvn-trinhnguyen2-dn/flux/ast"
-	"github.com/mvn-trinhnguyen2-dn/flux/ast/asttest"
-	"github.com/mvn-trinhnguyen2-dn/flux/ast/astutil"
-	"github.com/mvn-trinhnguyen2-dn/flux/ast/testcase"
-	"github.com/mvn-trinhnguyen2-dn/flux/dependencies/filesystem"
-	"github.com/mvn-trinhnguyen2-dn/flux/parser"
+	"github.com/influxdata/flux/ast"
+	"github.com/influxdata/flux/ast/asttest"
+	"github.com/influxdata/flux/ast/astutil"
+	"github.com/influxdata/flux/ast/testcase"
+	"github.com/influxdata/flux/dependencies/filesystem"
+	"github.com/influxdata/flux/parser"
 )
 
 func TestTransform(t *testing.T) {

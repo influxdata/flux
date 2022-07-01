@@ -3,9 +3,9 @@ package repl
 import (
 	"context"
 
-	"github.com/mvn-trinhnguyen2-dn/flux"
-	"github.com/mvn-trinhnguyen2-dn/flux/lang"
-	"github.com/mvn-trinhnguyen2-dn/flux/plan"
+	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/lang"
+	"github.com/influxdata/flux/plan"
 )
 
 // CompilerType specific to the Flux REPL

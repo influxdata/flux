@@ -1,6 +1,6 @@
 package semantic
 
-import "github.com/mvn-trinhnguyen2-dn/flux/ast"
+import "github.com/influxdata/flux/ast"
 
 // ConjunctionsToExprSlice finds all children of AndOperators that are not themselves AndOperators,
 // and returns them in a slice.  If the root node of expr is not an AndOperator, just returns expr.

@@ -272,7 +272,7 @@ pub unsafe extern "C" fn flux_ast_marshal_fb(
         }
     };
 
-    // Note, split_off() does a copy: https://github.com/mvn-trinhnguyen2-dn/flux/issues/2194
+    // Note, split_off() does a copy: https://github.com/influxdata/flux/issues/2194
     let data = vec.split_off(offset);
     (*buf).len = data.len();
     (*buf).data = Box::into_raw(data.into_boxed_slice()) as *mut u8;
@@ -304,7 +304,7 @@ pub unsafe extern "C" fn flux_semantic_marshal_fb(
         }
     };
 
-    // Note, split_off() does a copy: https://github.com/mvn-trinhnguyen2-dn/flux/issues/2194
+    // Note, split_off() does a copy: https://github.com/influxdata/flux/issues/2194
     let data = vec.split_off(offset);
     (*buf).len = data.len();
     (*buf).data = Box::into_raw(data.into_boxed_slice()) as *mut u8;
@@ -411,7 +411,7 @@ pub unsafe extern "C" fn flux_find_var_type(
             );
             builder.finish(fb_mono_type_holder, None);
             let (mut vec, offset) = builder.collapse();
-            // Note, split_off() does a copy: https://github.com/mvn-trinhnguyen2-dn/flux/issues/2194
+            // Note, split_off() does a copy: https://github.com/influxdata/flux/issues/2194
             let data = vec.split_off(offset);
             let out_type = &mut *out_type; // Unsafe
             out_type.len = data.len();
@@ -624,7 +624,7 @@ pub unsafe extern "C" fn flux_get_env_stdlib(buf: *mut flux_buffer_t) {
     builder.finish(fb_type_env, None);
     let (mut vec, offset) = builder.collapse();
 
-    // Note, split_off() does a copy: https://github.com/mvn-trinhnguyen2-dn/flux/issues/2194
+    // Note, split_off() does a copy: https://github.com/influxdata/flux/issues/2194
     let data = vec.split_off(offset);
     let buf = &mut *buf; // Unsafe
     buf.len = data.len();
@@ -890,7 +890,7 @@ from(bucket: v.bucket)
             .unwrap();
 
         // TODO(algow): re-introduce equality constraints for binary comparison operators
-        // https://github.com/mvn-trinhnguyen2-dn/flux/issues/2466
+        // https://github.com/influxdata/flux/issues/2466
         let code = "stream[{ C with
                 _value: A
                     , _value: A
@@ -927,7 +927,7 @@ from(bucket: v.bucket)
             .unwrap();
 
         // TODO(algow): re-introduce equality constraints for binary comparison operators
-        // https://github.com/mvn-trinhnguyen2-dn/flux/issues/2466
+        // https://github.com/influxdata/flux/issues/2466
         let code = "stream[{ D with
                 _value: A
                     , A: B

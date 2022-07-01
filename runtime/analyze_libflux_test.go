@@ -4,7 +4,7 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/mvn-trinhnguyen2-dn/flux/runtime"
+	"github.com/influxdata/flux/runtime"
 )
 
 func TestAnalyzeSource(t *testing.T) {

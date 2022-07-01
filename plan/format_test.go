@@ -5,12 +5,12 @@ import (
 	"testing"
 
 	"github.com/andreyvit/diff"
-	"github.com/mvn-trinhnguyen2-dn/flux/execute/executetest"
-	"github.com/mvn-trinhnguyen2-dn/flux/interpreter"
-	"github.com/mvn-trinhnguyen2-dn/flux/plan"
-	"github.com/mvn-trinhnguyen2-dn/flux/plan/plantest"
-	"github.com/mvn-trinhnguyen2-dn/flux/stdlib/influxdata/influxdb"
-	"github.com/mvn-trinhnguyen2-dn/flux/stdlib/universe"
+	"github.com/influxdata/flux/execute/executetest"
+	"github.com/influxdata/flux/interpreter"
+	"github.com/influxdata/flux/plan"
+	"github.com/influxdata/flux/plan/plantest"
+	"github.com/influxdata/flux/stdlib/influxdata/influxdb"
+	"github.com/influxdata/flux/stdlib/universe"
 )
 
 func TestFormatted(t *testing.T) {

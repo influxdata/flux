@@ -6,11 +6,11 @@ import (
 
 	"github.com/apache/arrow/go/v7/arrow/memory"
 	uuid "github.com/gofrs/uuid"
-	"github.com/mvn-trinhnguyen2-dn/flux"
-	"github.com/mvn-trinhnguyen2-dn/flux/codes"
-	"github.com/mvn-trinhnguyen2-dn/flux/execute/table"
-	"github.com/mvn-trinhnguyen2-dn/flux/internal/errors"
-	"github.com/mvn-trinhnguyen2-dn/flux/plan"
+	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/codes"
+	"github.com/influxdata/flux/execute/table"
+	"github.com/influxdata/flux/internal/errors"
+	"github.com/influxdata/flux/plan"
 )
 
 // Dataset represents the set of data produced by a transformation.

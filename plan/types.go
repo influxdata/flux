@@ -6,9 +6,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/mvn-trinhnguyen2-dn/flux"
-	"github.com/mvn-trinhnguyen2-dn/flux/interpreter"
-	"github.com/mvn-trinhnguyen2-dn/flux/interval"
+	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/interpreter"
+	"github.com/influxdata/flux/interval"
 )
 
 type Planner interface {

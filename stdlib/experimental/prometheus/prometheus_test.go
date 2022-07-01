@@ -8,13 +8,13 @@ import (
 	"testing"
 	"time"
 
-	flux "github.com/mvn-trinhnguyen2-dn/flux"
-	"github.com/mvn-trinhnguyen2-dn/flux/dependencies/dependenciestest"
-	"github.com/mvn-trinhnguyen2-dn/flux/dependency"
-	"github.com/mvn-trinhnguyen2-dn/flux/execute"
-	"github.com/mvn-trinhnguyen2-dn/flux/execute/executetest"
-	"github.com/mvn-trinhnguyen2-dn/flux/mock"
-	"github.com/mvn-trinhnguyen2-dn/flux/values"
+	flux "github.com/influxdata/flux"
+	"github.com/influxdata/flux/dependencies/dependenciestest"
+	"github.com/influxdata/flux/dependency"
+	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/execute/executetest"
+	"github.com/influxdata/flux/mock"
+	"github.com/influxdata/flux/values"
 )
 
 // TestGauge will make sure that gauge metrics produce accurate flux Tables.

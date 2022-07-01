@@ -3,8 +3,8 @@ package mock
 import (
 	"context"
 
-	"github.com/mvn-trinhnguyen2-dn/flux"
-	"github.com/mvn-trinhnguyen2-dn/flux/memory"
+	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/memory"
 )
 
 // Program is a mock program that can be returned by the mock compiler.

@@ -5,10 +5,10 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
-	"github.com/mvn-trinhnguyen2-dn/flux"
-	"github.com/mvn-trinhnguyen2-dn/flux/array"
-	"github.com/mvn-trinhnguyen2-dn/flux/arrow"
-	"github.com/mvn-trinhnguyen2-dn/flux/execute"
+	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/array"
+	"github.com/influxdata/flux/arrow"
+	"github.com/influxdata/flux/execute"
 )
 
 // AggFuncTestHelper splits the data in half, runs Do over each split and compares

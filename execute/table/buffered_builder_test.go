@@ -3,10 +3,10 @@ package table_test
 import (
 	"testing"
 
-	"github.com/mvn-trinhnguyen2-dn/flux"
-	"github.com/mvn-trinhnguyen2-dn/flux/execute/table"
-	"github.com/mvn-trinhnguyen2-dn/flux/execute/table/static"
-	"github.com/mvn-trinhnguyen2-dn/flux/memory"
+	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/execute/table"
+	"github.com/influxdata/flux/execute/table/static"
+	"github.com/influxdata/flux/memory"
 )
 
 func TestBufferedBuilder_AppendTable(t *testing.T) {

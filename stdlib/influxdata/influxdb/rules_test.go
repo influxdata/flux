@@ -5,17 +5,17 @@ import (
 	"testing"
 	"time"
 
-	"github.com/mvn-trinhnguyen2-dn/flux"
-	"github.com/mvn-trinhnguyen2-dn/flux/codes"
-	influxdeps "github.com/mvn-trinhnguyen2-dn/flux/dependencies/influxdb"
-	"github.com/mvn-trinhnguyen2-dn/flux/execute/executetest"
-	"github.com/mvn-trinhnguyen2-dn/flux/internal/errors"
-	"github.com/mvn-trinhnguyen2-dn/flux/interpreter"
-	"github.com/mvn-trinhnguyen2-dn/flux/plan"
-	"github.com/mvn-trinhnguyen2-dn/flux/plan/plantest"
-	"github.com/mvn-trinhnguyen2-dn/flux/stdlib/influxdata/influxdb"
-	"github.com/mvn-trinhnguyen2-dn/flux/stdlib/universe"
-	"github.com/mvn-trinhnguyen2-dn/flux/values/valuestest"
+	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/codes"
+	influxdeps "github.com/influxdata/flux/dependencies/influxdb"
+	"github.com/influxdata/flux/execute/executetest"
+	"github.com/influxdata/flux/internal/errors"
+	"github.com/influxdata/flux/interpreter"
+	"github.com/influxdata/flux/plan"
+	"github.com/influxdata/flux/plan/plantest"
+	"github.com/influxdata/flux/stdlib/influxdata/influxdb"
+	"github.com/influxdata/flux/stdlib/universe"
+	"github.com/influxdata/flux/values/valuestest"
 )
 
 func TestRuleCreatedNodeUniqueness(t *testing.T) {

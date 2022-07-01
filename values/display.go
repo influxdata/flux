@@ -8,7 +8,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/mvn-trinhnguyen2-dn/flux/semantic"
+	"github.com/influxdata/flux/semantic"
 )
 
 // DisplayString formats the value into a string

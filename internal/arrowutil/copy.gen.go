@@ -9,7 +9,7 @@ package arrowutil
 import (
 	"fmt"
 
-	"github.com/mvn-trinhnguyen2-dn/flux/array"
+	"github.com/influxdata/flux/array"
 )
 
 // CopyTo will copy the contents of the array into a new array builder.

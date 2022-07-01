@@ -8,8 +8,8 @@ package strings_test
 import (
 	"context"
 
-	_ "github.com/mvn-trinhnguyen2-dn/flux/fluxinit/static"
-	"github.com/mvn-trinhnguyen2-dn/flux/runtime"
+	_ "github.com/influxdata/flux/fluxinit/static"
+	"github.com/influxdata/flux/runtime"
 	"testing"
 )
 

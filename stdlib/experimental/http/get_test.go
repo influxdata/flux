@@ -10,10 +10,10 @@ import (
 	"time"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/mvn-trinhnguyen2-dn/flux"
-	"github.com/mvn-trinhnguyen2-dn/flux/dependencies/url"
-	_ "github.com/mvn-trinhnguyen2-dn/flux/fluxinit/static"
-	"github.com/mvn-trinhnguyen2-dn/flux/runtime"
+	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/dependencies/url"
+	_ "github.com/influxdata/flux/fluxinit/static"
+	"github.com/influxdata/flux/runtime"
 )
 
 func TestGet(t *testing.T) {

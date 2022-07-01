@@ -3,8 +3,8 @@ package semantic_test
 import (
 	"testing"
 
-	"github.com/mvn-trinhnguyen2-dn/flux/runtime"
-	"github.com/mvn-trinhnguyen2-dn/flux/semantic"
+	"github.com/influxdata/flux/runtime"
+	"github.com/influxdata/flux/semantic"
 )
 
 func TestSymbol(t *testing.T) {

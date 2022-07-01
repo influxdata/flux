@@ -5,8 +5,8 @@ import (
 	"math"
 	"time"
 
-	"github.com/mvn-trinhnguyen2-dn/flux"
-	"github.com/mvn-trinhnguyen2-dn/flux/values"
+	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/values"
 )
 
 type Time = values.Time

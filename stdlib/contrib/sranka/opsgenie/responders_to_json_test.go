@@ -6,10 +6,10 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/mvn-trinhnguyen2-dn/flux/interpreter"
-	"github.com/mvn-trinhnguyen2-dn/flux/semantic"
-	"github.com/mvn-trinhnguyen2-dn/flux/stdlib/contrib/sranka/opsgenie"
-	"github.com/mvn-trinhnguyen2-dn/flux/values"
+	"github.com/influxdata/flux/interpreter"
+	"github.com/influxdata/flux/semantic"
+	"github.com/influxdata/flux/stdlib/contrib/sranka/opsgenie"
+	"github.com/influxdata/flux/values"
 )
 
 func TestRespondersToJSON(t *testing.T) {

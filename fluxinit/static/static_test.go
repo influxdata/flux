@@ -3,7 +3,7 @@ package static_test
 import (
 	"testing"
 
-	_ "github.com/mvn-trinhnguyen2-dn/flux/fluxinit/static"
+	_ "github.com/influxdata/flux/fluxinit/static"
 )
 
 func TestBuiltins(t *testing.T) {

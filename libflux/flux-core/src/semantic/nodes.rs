@@ -1374,7 +1374,7 @@ impl BinaryExpr {
             |this: &mut BinaryExpr, infer: &mut InferState<'_, '_>, kind| {
                 this.typ = MonoType::BOOL;
                 infer.solve(&[
-                    // https://github.com/mvn-trinhnguyen2-dn/flux/issues/2393
+                    // https://github.com/influxdata/flux/issues/2393
                     // Constraint::Equal{self.left.type_of(), self.right.type_of()),
                     Constraint::Kind {
                         act: this.left.type_of(),
@@ -1411,7 +1411,7 @@ impl BinaryExpr {
             ast::Operator::GreaterThanEqualOperator | ast::Operator::LessThanEqualOperator => {
                 self.typ = MonoType::BOOL;
                 infer.solve(&[
-                    // https://github.com/mvn-trinhnguyen2-dn/flux/issues/2393
+                    // https://github.com/influxdata/flux/issues/2393
                     // Constraint::Equal{self.left.type_of(), self.right.type_of()),
                     Constraint::Kind {
                         act: self.left.type_of(),

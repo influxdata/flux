@@ -175,12 +175,12 @@ System time function:
 
 Functions that deal with time zones:
 - `loadLocation` - accepts a string like `"America/Denver"` and produces a `location`
-[IMPL#157](https://github.com/mvn-trinhnguyen2-dn/flux/issues/157)
+[IMPL#157](https://github.com/influxdata/flux/issues/157)
 - `fixedZone`
-[IMPL#156](https://github.com/mvn-trinhnguyen2-dn/flux/issues/156)
+[IMPL#156](https://github.com/influxdata/flux/issues/156)
 
 The intervals function:
-- `intervals` [IMPL#407](https://github.com/mvn-trinhnguyen2-dn/flux/issues/407)
+- `intervals` [IMPL#407](https://github.com/influxdata/flux/issues/407)
 
 Builtin intervals (from the SPEC):
 ```
@@ -207,10 +207,10 @@ years = intervals(every:1y)
 ```
 
 ## Package `math`
-[IMPL#332](https://github.com/mvn-trinhnguyen2-dn/flux/issues/332)
+[IMPL#332](https://github.com/influxdata/flux/issues/332)
 
 ## Package `strings`
-[IMPL#332](https://github.com/mvn-trinhnguyen2-dn/flux/issues/332)
+[IMPL#332](https://github.com/influxdata/flux/issues/332)
 
 ## Package `experimental`
 

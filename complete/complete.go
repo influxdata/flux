@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"sort"
 
-	"github.com/mvn-trinhnguyen2-dn/flux/semantic"
-	"github.com/mvn-trinhnguyen2-dn/flux/values"
+	"github.com/influxdata/flux/semantic"
+	"github.com/influxdata/flux/values"
 )
 
 // FunctionSuggestion provides suggestion information about a function.

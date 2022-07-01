@@ -1,6 +1,6 @@
 package mock
 
-import "github.com/mvn-trinhnguyen2-dn/flux/values"
+import "github.com/influxdata/flux/values"
 
 // AscendingTimeProvider provides ascending timestamps every nanosecond
 // starting from Start.

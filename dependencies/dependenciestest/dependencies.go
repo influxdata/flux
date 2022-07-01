@@ -5,14 +5,14 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	"github.com/mvn-trinhnguyen2-dn/flux"
-	"github.com/mvn-trinhnguyen2-dn/flux/dependencies/filesystem"
-	"github.com/mvn-trinhnguyen2-dn/flux/dependencies/influxdb"
-	"github.com/mvn-trinhnguyen2-dn/flux/dependencies/mqtt"
-	"github.com/mvn-trinhnguyen2-dn/flux/dependencies/url"
-	"github.com/mvn-trinhnguyen2-dn/flux/dependency"
-	"github.com/mvn-trinhnguyen2-dn/flux/execute"
-	"github.com/mvn-trinhnguyen2-dn/flux/mock"
+	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/dependencies/filesystem"
+	"github.com/influxdata/flux/dependencies/influxdb"
+	"github.com/influxdata/flux/dependencies/mqtt"
+	"github.com/influxdata/flux/dependencies/url"
+	"github.com/influxdata/flux/dependency"
+	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/mock"
 )
 
 type RoundTripFunc func(req *http.Request) *http.Response

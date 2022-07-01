@@ -4,12 +4,12 @@ import (
 	"testing"
 
 	"github.com/apache/arrow/go/v7/arrow/memory"
-	"github.com/mvn-trinhnguyen2-dn/flux"
-	"github.com/mvn-trinhnguyen2-dn/flux/execute"
-	"github.com/mvn-trinhnguyen2-dn/flux/execute/table"
-	"github.com/mvn-trinhnguyen2-dn/flux/execute/table/static"
-	"github.com/mvn-trinhnguyen2-dn/flux/mock"
-	"github.com/mvn-trinhnguyen2-dn/flux/values"
+	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/execute/table"
+	"github.com/influxdata/flux/execute/table/static"
+	"github.com/influxdata/flux/mock"
+	"github.com/influxdata/flux/values"
 )
 
 func TestProcessMsg(t *testing.T) {

@@ -10,9 +10,9 @@ import (
 	"fmt"
 	"regexp"
 
-	arrow "github.com/mvn-trinhnguyen2-dn/flux/array"
-	"github.com/mvn-trinhnguyen2-dn/flux/memory"
-	"github.com/mvn-trinhnguyen2-dn/flux/semantic"
+	arrow "github.com/influxdata/flux/array"
+	"github.com/influxdata/flux/memory"
+	"github.com/influxdata/flux/semantic"
 )
 
 func NewVectorValue(arr arrow.Array, typ semantic.MonoType) Vector {

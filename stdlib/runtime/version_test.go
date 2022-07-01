@@ -9,12 +9,12 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/mvn-trinhnguyen2-dn/flux/codes"
-	"github.com/mvn-trinhnguyen2-dn/flux/dependencies/dependenciestest"
-	"github.com/mvn-trinhnguyen2-dn/flux/dependency"
-	"github.com/mvn-trinhnguyen2-dn/flux/internal/errors"
-	"github.com/mvn-trinhnguyen2-dn/flux/stdlib/runtime"
-	"github.com/mvn-trinhnguyen2-dn/flux/values"
+	"github.com/influxdata/flux/codes"
+	"github.com/influxdata/flux/dependencies/dependenciestest"
+	"github.com/influxdata/flux/dependency"
+	"github.com/influxdata/flux/internal/errors"
+	"github.com/influxdata/flux/stdlib/runtime"
+	"github.com/influxdata/flux/values"
 )
 
 func TestVersion(t *testing.T) {
@@ -27,9 +27,9 @@ func TestVersion(t *testing.T) {
 		{
 			name: "main module",
 			bi: &debug.BuildInfo{
-				Path: "github.com/mvn-trinhnguyen2-dn/flux",
+				Path: "github.com/influxdata/flux",
 				Main: debug.Module{
-					Path:    "github.com/mvn-trinhnguyen2-dn/flux",
+					Path:    "github.com/influxdata/flux",
 					Version: "v0.38.0",
 				},
 			},
@@ -38,12 +38,12 @@ func TestVersion(t *testing.T) {
 		{
 			name: "replaced main module",
 			bi: &debug.BuildInfo{
-				Path: "github.com/mvn-trinhnguyen2-dn/flux",
+				Path: "github.com/influxdata/flux",
 				Main: debug.Module{
-					Path:    "github.com/mvn-trinhnguyen2-dn/flux",
+					Path:    "github.com/influxdata/flux",
 					Version: "v0.38.0",
 					Replace: &debug.Module{
-						Path:    "github.com/mvn-trinhnguyen2-dn/flux",
+						Path:    "github.com/influxdata/flux",
 						Version: "(devel)",
 					},
 				},
@@ -60,7 +60,7 @@ func TestVersion(t *testing.T) {
 				},
 				Deps: []*debug.Module{
 					{
-						Path:    "github.com/mvn-trinhnguyen2-dn/flux",
+						Path:    "github.com/influxdata/flux",
 						Version: "v0.38.0",
 					},
 				},
@@ -77,10 +77,10 @@ func TestVersion(t *testing.T) {
 				},
 				Deps: []*debug.Module{
 					{
-						Path:    "github.com/mvn-trinhnguyen2-dn/flux",
+						Path:    "github.com/influxdata/flux",
 						Version: "v0.38.0",
 						Replace: &debug.Module{
-							Path: "github.com/mvn-trinhnguyen2-dn/flux",
+							Path: "github.com/influxdata/flux",
 						},
 					},
 				},

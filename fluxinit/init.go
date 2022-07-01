@@ -4,8 +4,8 @@
 package fluxinit
 
 import (
-	"github.com/mvn-trinhnguyen2-dn/flux/runtime"
-	_ "github.com/mvn-trinhnguyen2-dn/flux/stdlib"
+	"github.com/influxdata/flux/runtime"
+	_ "github.com/influxdata/flux/stdlib"
 )
 
 // The FluxInit() function prepares the runtime for compilation and execution

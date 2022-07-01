@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"math"
 
-	"github.com/mvn-trinhnguyen2-dn/flux"
-	"github.com/mvn-trinhnguyen2-dn/flux/codes"
-	"github.com/mvn-trinhnguyen2-dn/flux/interpreter"
+	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/codes"
+	"github.com/influxdata/flux/interpreter"
 )
 
 // PhysicalPlanner performs transforms a logical plan to a physical plan,

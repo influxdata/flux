@@ -6,7 +6,7 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 
-	"github.com/mvn-trinhnguyen2-dn/flux/libflux/go/libflux"
+	"github.com/influxdata/flux/libflux/go/libflux"
 )
 
 func TestAnalyze(t *testing.T) {

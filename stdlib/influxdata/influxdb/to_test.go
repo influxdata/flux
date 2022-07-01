@@ -9,16 +9,16 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
+	"github.com/influxdata/flux"
+	influxdb2 "github.com/influxdata/flux/dependencies/influxdb"
+	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/execute/executetest"
+	"github.com/influxdata/flux/interpreter"
+	"github.com/influxdata/flux/memory"
+	"github.com/influxdata/flux/mock"
+	"github.com/influxdata/flux/stdlib/influxdata/influxdb"
+	"github.com/influxdata/flux/values/valuestest"
 	protocol "github.com/influxdata/line-protocol"
-	"github.com/mvn-trinhnguyen2-dn/flux"
-	influxdb2 "github.com/mvn-trinhnguyen2-dn/flux/dependencies/influxdb"
-	"github.com/mvn-trinhnguyen2-dn/flux/execute"
-	"github.com/mvn-trinhnguyen2-dn/flux/execute/executetest"
-	"github.com/mvn-trinhnguyen2-dn/flux/interpreter"
-	"github.com/mvn-trinhnguyen2-dn/flux/memory"
-	"github.com/mvn-trinhnguyen2-dn/flux/mock"
-	"github.com/mvn-trinhnguyen2-dn/flux/stdlib/influxdata/influxdb"
-	"github.com/mvn-trinhnguyen2-dn/flux/values/valuestest"
 )
 
 type pointsWriter struct {

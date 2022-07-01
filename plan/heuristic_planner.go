@@ -4,7 +4,7 @@ import (
 	"context"
 	"sort"
 
-	"github.com/mvn-trinhnguyen2-dn/flux/dependencies/testing"
+	"github.com/influxdata/flux/dependencies/testing"
 )
 
 // heuristicPlanner applies a set of rules to the nodes in a Spec

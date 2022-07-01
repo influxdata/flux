@@ -3,8 +3,8 @@ package universe
 import (
 	"context"
 
-	"github.com/mvn-trinhnguyen2-dn/flux/execute"
-	"github.com/mvn-trinhnguyen2-dn/flux/memory"
+	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/memory"
 )
 
 // TODO(jsternberg): This is exposed so the tests have access

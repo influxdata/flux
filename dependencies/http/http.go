@@ -8,9 +8,9 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/mvn-trinhnguyen2-dn/flux/codes"
-	"github.com/mvn-trinhnguyen2-dn/flux/dependencies/url"
-	"github.com/mvn-trinhnguyen2-dn/flux/internal/errors"
+	"github.com/influxdata/flux/codes"
+	"github.com/influxdata/flux/dependencies/url"
+	"github.com/influxdata/flux/internal/errors"
 )
 
 // maxResponseBody is the maximum response body we will read before just discarding

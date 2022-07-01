@@ -1,6 +1,6 @@
 package plan
 
-import "github.com/mvn-trinhnguyen2-dn/flux"
+import "github.com/influxdata/flux"
 
 type TriggerSpec interface {
 	Kind() TriggerKind

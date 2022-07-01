@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/mvn-trinhnguyen2-dn/flux/codes"
+	"github.com/influxdata/flux/codes"
 )
 
 // Error is the error struct of flux.

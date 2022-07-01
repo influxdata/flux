@@ -5,8 +5,8 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/mvn-trinhnguyen2-dn/flux/plan"
-	"github.com/mvn-trinhnguyen2-dn/flux/stdlib/universe"
+	"github.com/influxdata/flux/plan"
+	"github.com/influxdata/flux/stdlib/universe"
 )
 
 // SimpleRule is a simple rule whose pattern matches any plan node and

@@ -6,7 +6,7 @@ import c "csv"
 
 option now = () => 2018-12-19T22:15:00Z
 
-// todo(faith): remove overload https://github.com/mvn-trinhnguyen2-dn/flux/issues/3155
+// todo(faith): remove overload https://github.com/influxdata/flux/issues/3155
 option testing.loadStorage = (csv) => c.from(csv: csv)
 
 inData =

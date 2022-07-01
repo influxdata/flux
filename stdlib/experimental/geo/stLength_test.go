@@ -4,10 +4,10 @@ import (
 	"context"
 	"testing"
 
-	_ "github.com/mvn-trinhnguyen2-dn/flux/fluxinit/static"
-	"github.com/mvn-trinhnguyen2-dn/flux/querytest"
-	"github.com/mvn-trinhnguyen2-dn/flux/stdlib/experimental/geo"
-	"github.com/mvn-trinhnguyen2-dn/flux/values"
+	_ "github.com/influxdata/flux/fluxinit/static"
+	"github.com/influxdata/flux/querytest"
+	"github.com/influxdata/flux/stdlib/experimental/geo"
+	"github.com/influxdata/flux/values"
 )
 
 func TestSTLength_NewQuery(t *testing.T) {

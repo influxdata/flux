@@ -3,7 +3,8 @@ package promql
 import (
 	"fmt"
 
-	"github.com/mvn-trinhnguyen2-dn/flux/ast"
+	"github.com/influxdata/flux/ast"
+	"github.com/influxdata/promql/v2"
 	"github.com/prometheus/common/model"
 )
 
@@ -53,7 +54,7 @@ func dropNonGroupingColsCall(groupCols []string, without bool) *ast.CallExpressi
 	// We want to keep value and stop columns even if they are not explicitly in the grouping labels.
 	cols := append(groupCols, "_value", "_stop")
 	// TODO: This errors with non-existent columns. In PromQL, this is a no-op.
-	// Blocked on https://github.com/mvn-trinhnguyen2-dn/flux/issues/1118.
+	// Blocked on https://github.com/influxdata/flux/issues/1118.
 	return call("keep", map[string]ast.Expression{"columns": columnList(cols...)})
 }
 

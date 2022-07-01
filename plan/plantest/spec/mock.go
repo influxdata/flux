@@ -1,6 +1,6 @@
 package spec
 
-import "github.com/mvn-trinhnguyen2-dn/flux/plan"
+import "github.com/influxdata/flux/plan"
 
 const MockKind = "mock"
 

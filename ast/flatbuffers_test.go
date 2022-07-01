@@ -6,8 +6,8 @@ import (
 
 	flatbuffers "github.com/google/flatbuffers/go"
 	"github.com/google/go-cmp/cmp"
-	"github.com/mvn-trinhnguyen2-dn/flux/ast"
-	"github.com/mvn-trinhnguyen2-dn/flux/ast/internal/fbast"
+	"github.com/influxdata/flux/ast"
+	"github.com/influxdata/flux/ast/internal/fbast"
 )
 
 var CompareOptions = []cmp.Option{

@@ -5,9 +5,9 @@ import (
 	"regexp"
 	"time"
 
+	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/promql/v2"
 	"github.com/influxdata/promql/v2/pkg/labels"
-	"github.com/mvn-trinhnguyen2-dn/flux/ast"
 )
 
 var labelMatchOps = map[labels.MatchType]ast.OperatorKind{

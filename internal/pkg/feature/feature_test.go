@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/mvn-trinhnguyen2-dn/flux/internal/pkg/feature"
+	"github.com/influxdata/flux/internal/pkg/feature"
 )
 
 func Test_feature(t *testing.T) {

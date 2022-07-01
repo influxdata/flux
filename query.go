@@ -3,7 +3,7 @@ package flux
 import (
 	"time"
 
-	"github.com/mvn-trinhnguyen2-dn/flux/metadata"
+	"github.com/influxdata/flux/metadata"
 )
 
 // Query represents an active query.

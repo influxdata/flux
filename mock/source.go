@@ -2,8 +2,8 @@ package mock
 
 import (
 	"context"
-	"github.com/mvn-trinhnguyen2-dn/flux/execute"
-	"github.com/mvn-trinhnguyen2-dn/flux/plan"
+	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/plan"
 )
 
 // Source is a mock source that performs the given functions.

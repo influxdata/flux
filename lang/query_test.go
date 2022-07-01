@@ -8,14 +8,14 @@ import (
 	"time"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/mvn-trinhnguyen2-dn/flux"
-	ftesting "github.com/mvn-trinhnguyen2-dn/flux/dependencies/testing"
-	"github.com/mvn-trinhnguyen2-dn/flux/dependency"
-	"github.com/mvn-trinhnguyen2-dn/flux/execute/executetest"
-	_ "github.com/mvn-trinhnguyen2-dn/flux/fluxinit/static"
-	"github.com/mvn-trinhnguyen2-dn/flux/lang"
-	"github.com/mvn-trinhnguyen2-dn/flux/memory"
-	"github.com/mvn-trinhnguyen2-dn/flux/runtime"
+	"github.com/influxdata/flux"
+	ftesting "github.com/influxdata/flux/dependencies/testing"
+	"github.com/influxdata/flux/dependency"
+	"github.com/influxdata/flux/execute/executetest"
+	_ "github.com/influxdata/flux/fluxinit/static"
+	"github.com/influxdata/flux/lang"
+	"github.com/influxdata/flux/memory"
+	"github.com/influxdata/flux/runtime"
 )
 
 func runQuery(ctx context.Context, script string) (flux.Query, func(), error) {

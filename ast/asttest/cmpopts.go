@@ -5,7 +5,7 @@ package asttest
 import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
-	"github.com/mvn-trinhnguyen2-dn/flux/ast"
+	"github.com/influxdata/flux/ast"
 )
 
 var IgnoreBaseNodeOptions = []cmp.Option{

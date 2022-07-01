@@ -5,9 +5,9 @@ import (
 	"io/ioutil"
 	"os"
 
-	"github.com/mvn-trinhnguyen2-dn/flux/dependencies"
-	"github.com/mvn-trinhnguyen2-dn/flux/dependency"
-	"github.com/mvn-trinhnguyen2-dn/flux/fluxinit"
+	"github.com/influxdata/flux/dependencies"
+	"github.com/influxdata/flux/dependency"
+	"github.com/influxdata/flux/fluxinit"
 	"github.com/spf13/cobra"
 )
 

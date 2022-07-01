@@ -41,7 +41,7 @@ _emptyBody = bytes(v: "")
 //
 // // NOTE: Flux syntax does not yet let you specify anything but an identifier
 // // as the record to extend. As a workaround, this example rebinds the default configuration to a new name.
-// // See https://github.com/mvn-trinhnguyen2-dn/flux/issues/3655
+// // See https://github.com/influxdata/flux/issues/3655
 // defaultConfig = requests.defaultConfig
 // config = {defaultConfig with
 //      // Change the timeout to 60s for this request

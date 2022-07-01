@@ -5,11 +5,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/mvn-trinhnguyen2-dn/flux/dependencies/dependenciestest"
-	"github.com/mvn-trinhnguyen2-dn/flux/dependency"
-	_ "github.com/mvn-trinhnguyen2-dn/flux/fluxinit/static"
-	"github.com/mvn-trinhnguyen2-dn/flux/internal/spec"
-	"github.com/mvn-trinhnguyen2-dn/flux/runtime"
+	"github.com/influxdata/flux/dependencies/dependenciestest"
+	"github.com/influxdata/flux/dependency"
+	_ "github.com/influxdata/flux/fluxinit/static"
+	"github.com/influxdata/flux/internal/spec"
+	"github.com/influxdata/flux/runtime"
 )
 
 func Benchmark_FromScript(b *testing.B) {
