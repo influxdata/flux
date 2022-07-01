@@ -157,21 +157,31 @@ func AnalyzeWithOptions(astPkg *ASTPkg, options Options) (*SemanticPkg, error) {
 }
 
 func FindVarType(astPkg *ASTPkg, varName string) (semantic.MonoType, error) {
-	pkg, err := Analyze(astPkg)
-	if pkg == nil {
+	types, err := FindVarTypes(astPkg, []string{varName})
+	if err != nil {
 		return semantic.MonoType{}, err
 	}
-	return FindVarTypeSemantic(pkg, varName)
+	return types[0], nil
+}
+
+func FindVarTypes(astPkg *ASTPkg, varNames []string) ([]semantic.MonoType, error) {
+	pkg, err := Analyze(astPkg)
+	if pkg == nil {
+		return nil, err
+	}
+
+	var types []semantic.MonoType
+	for _, varName := range varNames {
+		typ, err := FindVarTypeSemantic(pkg, varName)
+		if err != nil {
+			return nil, err
+		}
+		types = append(types, typ)
+	}
+	return types, nil
 }
 
 func FindVarTypeSemantic(pkg *SemanticPkg, varName string) (semantic.MonoType, error) {
-	defer func() {
-		// This is necessary because the ASTPkg returned from the libflux API calls has its finalizer
-		// set with the Go runtime. But this API will consume the AST package during
-		// the conversion from the AST package to the semantic package.
-		// Setting this ptr to nil will prevent a double-free error.
-		pkg.ptr = nil
-	}()
 	var buf C.struct_flux_buffer_t
 	// C.GoBytes() will make a copy so we need to free the buffer.
 	defer C.flux_free_bytes(buf.data)
