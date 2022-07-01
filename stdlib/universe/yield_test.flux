@@ -38,6 +38,9 @@ outData =
 "
 
 testcase yield {
+    // We cannot assert about multiple yields
+    option testing.tags = ["skip"]
+
     got =
         csv.from(csv: inData)
             |> sort()

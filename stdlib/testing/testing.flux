@@ -8,6 +8,7 @@ package testing
 
 import "array"
 import c "csv"
+import "experimental"
 
 //  tags is a list of tags that will be applied to a test case.
 //
@@ -230,4 +231,30 @@ option load = (tables=<-) => tables
 //
 assertEqualValues = (got, want) => {
     return diff(got: array.from(rows: [{v: got}]), want: array.from(rows: [{v: want}]))
+}
+
+// shouldError calls a function catches any error and checks that the error matches the expected value.
+//
+// ## Parameters
+// - fn: Function to call.
+// - want: Expected error string.
+//
+// ## Examples
+//
+// ### Test die function errors
+//
+// ```no_run
+// import "testing"
+//
+// testing.shouldError(fn: () => die(msg: "error message"), want: "error message")
+// ```
+//
+// ## Metadata
+// introduced: NEXT
+// tags: tests
+//
+shouldError = (fn, want) => {
+    got = experimental.catch(fn)
+
+    return assertEqualValues(got, want)
 }

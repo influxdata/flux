@@ -214,10 +214,10 @@ func runForPath(t *testing.T, path string, wantErr error, args ...string) Summar
 
 func Test_TestCmd(t *testing.T) {
 	want := Summary{
-		Found:   6,
+		Found:   7,
 		Passed:  1,
 		Failed:  0,
-		Skipped: 5,
+		Skipped: 6,
 	}
 	got := runAll(t, nil)
 	for name, got := range got {
@@ -229,10 +229,10 @@ func Test_TestCmd(t *testing.T) {
 
 func Test_TestCmd_TestName(t *testing.T) {
 	want := Summary{
-		Found:   6,
+		Found:   7,
 		Passed:  1,
 		Failed:  0,
-		Skipped: 5,
+		Skipped: 6,
 	}
 	got := runAll(t, nil, "--test", "a")
 	for name, got := range got {
@@ -243,10 +243,10 @@ func Test_TestCmd_TestName(t *testing.T) {
 }
 func Test_TestCmd_Fails(t *testing.T) {
 	want := Summary{
-		Found:   6,
+		Found:   7,
 		Passed:  1,
 		Failed:  1,
-		Skipped: 4,
+		Skipped: 5,
 	}
 	got := runAll(t, errors.New("tests failed"), "--tags", "fail")
 	for name, got := range got {
@@ -268,56 +268,56 @@ func Test_TestCmd_Tags(t *testing.T) {
 		{
 			tags: []string{"a"},
 			want: Summary{
-				Found:   6,
+				Found:   7,
 				Passed:  2,
-				Skipped: 4,
+				Skipped: 5,
 			},
 		},
 		{
 			tags: []string{"a", "b"},
 			want: Summary{
-				Found:   6,
+				Found:   7,
 				Passed:  3,
-				Skipped: 3,
+				Skipped: 4,
 			},
 		},
 		{
 			tags: []string{"a", "b", "c"},
 			want: Summary{
-				Found:   6,
+				Found:   7,
 				Passed:  4,
-				Skipped: 2,
+				Skipped: 3,
 			},
 		},
 		{
 			tags: []string{"b", "c"},
 			want: Summary{
-				Found:   6,
+				Found:   7,
 				Passed:  1,
-				Skipped: 5,
+				Skipped: 6,
 			},
 		},
 		{
 			tags: []string{"c"},
 			want: Summary{
-				Found:   6,
+				Found:   7,
 				Passed:  1,
-				Skipped: 5,
+				Skipped: 6,
 			},
 		},
 		{
 			tags: []string{"b"},
 			want: Summary{
-				Found:   6,
+				Found:   7,
 				Passed:  1,
-				Skipped: 5,
+				Skipped: 6,
 			},
 		},
 		{
 			tags: []string{"foo"},
 			want: Summary{
-				Found:   6,
-				Passed:  2,
+				Found:   7,
+				Passed:  3,
 				Skipped: 4,
 			},
 		},
@@ -337,9 +337,9 @@ func Test_TestCmd_Tags(t *testing.T) {
 }
 func Test_TestCmd_Skip(t *testing.T) {
 	want := Summary{
-		Found:   6,
+		Found:   7,
 		Passed:  0,
-		Skipped: 6,
+		Skipped: 7,
 	}
 	got := runAll(t, nil, "--skip", "untagged")
 	for name, got := range got {
@@ -351,9 +351,9 @@ func Test_TestCmd_Skip(t *testing.T) {
 
 func Test_TestCmd_SkipUntagged(t *testing.T) {
 	want := Summary{
-		Found:   6,
+		Found:   7,
 		Passed:  0,
-		Skipped: 6,
+		Skipped: 7,
 	}
 	got := runAll(t, nil, "--skip-untagged")
 	for name, got := range got {

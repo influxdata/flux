@@ -46,6 +46,8 @@ EVIL = array.from(rows: [{"x\" INT);drop table \"PET INFO\";--": 1}])
 myevil = array.from(rows: [{"x` INT);drop table `pet info`;--": 1}])
 
 testcase integration_hdb_read_from_seed {
+    option testing.tags = ["integration_read"]
+
     got =
         sql.from(
             driverName: "hdb",
@@ -59,6 +61,8 @@ testcase integration_hdb_read_from_seed {
 }
 
 testcase integration_hdb_read_from_nonseed {
+    option testing.tags = ["integration_read"]
+
     got =
         sql.from(
             driverName: "hdb",
@@ -72,6 +76,8 @@ testcase integration_hdb_read_from_nonseed {
 }
 
 testcase integration_hdb_injection {
+    option testing.tags = ["integration_injection"]
+
     EVIL
         |> sql.to(driverName: "hdb", dataSourceName: hdbDsn, table: "injection attempt", batchSize: 1)
         |> filter(fn: (r) => false)
@@ -79,6 +85,8 @@ testcase integration_hdb_injection {
 }
 
 testcase integration_hdb_write_to {
+    option testing.tags = ["integration_write"]
+
     NONSEED_WANT
         // n.b. our handling of identifiers for HDB mean the table name will
         // automatically be upper cased here (matching the UPPER CASEd name in the DDL).
@@ -93,6 +101,8 @@ testcase integration_hdb_write_to {
 }
 
 testcase integration_pg_read_from_seed {
+    option testing.tags = ["integration_read"]
+
     got =
         sql.from(
             driverName: "postgres",
@@ -105,6 +115,8 @@ testcase integration_pg_read_from_seed {
 }
 
 testcase integration_pg_read_from_nonseed {
+    option testing.tags = ["integration_read"]
+
     got =
         sql.from(
             driverName: "postgres",
@@ -117,6 +129,8 @@ testcase integration_pg_read_from_nonseed {
 }
 
 testcase integration_pg_injection {
+    option testing.tags = ["integration_injection"]
+
     evil
         |> sql.to(driverName: "postgres", dataSourceName: pgDsn, table: "injection attempt", batchSize: 1)
         |> filter(fn: (r) => false)
@@ -124,6 +138,8 @@ testcase integration_pg_injection {
 }
 
 testcase integration_pg_write_to {
+    option testing.tags = ["integration_write"]
+
     nonseed_want
         |> sql.to(driverName: "postgres", dataSourceName: pgDsn, table: "pet info", batchSize: 1)
         // The array.from() will be returned and will cause the test to fail.
@@ -136,6 +152,8 @@ testcase integration_pg_write_to {
 }
 
 testcase integration_mysql_read_from_seed {
+    option testing.tags = ["integration_read"]
+
     got =
         sql.from(
             driverName: "mysql",
@@ -148,6 +166,8 @@ testcase integration_mysql_read_from_seed {
 }
 
 testcase integration_mysql_read_from_nonseed {
+    option testing.tags = ["integration_read"]
+
     got =
         sql.from(
             driverName: "mysql",
@@ -160,6 +180,8 @@ testcase integration_mysql_read_from_nonseed {
 }
 
 testcase integration_mysql_injection {
+    option testing.tags = ["integration_injection"]
+
     myevil
         |> sql.to(driverName: "mysql", dataSourceName: mysqlDsn, table: "injection attempt", batchSize: 1)
         |> filter(fn: (r) => false)
@@ -167,6 +189,8 @@ testcase integration_mysql_injection {
 }
 
 testcase integration_mysql_write_to {
+    option testing.tags = ["integration_write"]
+
     nonseed_want
         |> sql.to(driverName: "mysql", dataSourceName: mysqlDsn, table: "pet info", batchSize: 1)
         // The array.from() will be returned and will cause the test to fail.
@@ -179,6 +203,8 @@ testcase integration_mysql_write_to {
 }
 
 testcase integration_mariadb_read_from_seed {
+    option testing.tags = ["integration_read"]
+
     got =
         sql.from(
             driverName: "mysql",
@@ -191,6 +217,8 @@ testcase integration_mariadb_read_from_seed {
 }
 
 testcase integration_mariadb_read_from_nonseed {
+    option testing.tags = ["integration_read"]
+
     got =
         sql.from(
             driverName: "mysql",
@@ -203,6 +231,8 @@ testcase integration_mariadb_read_from_nonseed {
 }
 
 testcase integration_mariadb_injection {
+    option testing.tags = ["integration_injection"]
+
     myevil
         |> sql.to(driverName: "mysql", dataSourceName: mariaDbDsn, table: "injection attempt", batchSize: 1)
         |> filter(fn: (r) => false)
@@ -210,6 +240,8 @@ testcase integration_mariadb_injection {
 }
 
 testcase integration_mariadb_write_to {
+    option testing.tags = ["integration_write"]
+
     nonseed_want
         |> sql.to(driverName: "mysql", dataSourceName: mariaDbDsn, table: "pet info", batchSize: 1)
         // The array.from() will be returned and will cause the test to fail.
@@ -222,6 +254,8 @@ testcase integration_mariadb_write_to {
 }
 
 testcase integration_mssql_read_from_seed {
+    option testing.tags = ["integration_read"]
+
     got =
         sql.from(
             driverName: "sqlserver",
@@ -234,6 +268,8 @@ testcase integration_mssql_read_from_seed {
 }
 
 testcase integration_mssql_read_from_nonseed {
+    option testing.tags = ["integration_read"]
+
     got =
         sql.from(
             driverName: "sqlserver",
@@ -246,6 +282,8 @@ testcase integration_mssql_read_from_nonseed {
 }
 
 testcase integration_mssql_injection {
+    option testing.tags = ["integration_injection"]
+
     evil
         |> sql.to(driverName: "sqlserver", dataSourceName: mssqlDsn, table: "injection attempt", batchSize: 1)
         |> filter(fn: (r) => false)
@@ -253,6 +291,8 @@ testcase integration_mssql_injection {
 }
 
 testcase integration_mssql_write_to {
+    option testing.tags = ["integration_write"]
+
     nonseed_want
         // n.b. selecting "mssql" as the driver name changes the behavior of the
         // driver re: parameter binding, causing our `sql.to()` implementation to break
@@ -269,6 +309,8 @@ testcase integration_mssql_write_to {
 }
 
 testcase integration_vertica_read_from_seed {
+    option testing.tags = ["integration_read"]
+
     got =
         sql.from(
             driverName: "vertica",
@@ -281,6 +323,8 @@ testcase integration_vertica_read_from_seed {
 }
 
 testcase integration_vertica_read_from_nonseed {
+    option testing.tags = ["integration_read"]
+
     got =
         sql.from(
             driverName: "vertica",
@@ -308,12 +352,16 @@ testcase integration_vertica_read_from_nonseed {
 // For now, however, comment out the test so the rest can run...
 //
 //testcase integration_vertica_injection {
+//    option testing.tags = [ "integration_injection"]
+//
 //    evil
 //        |> sql.to(driverName: "vertica", dataSourceName: verticaDsn, table: "injection attempt", batchSize: 1)
 //        |> filter(fn: (r) => false)
 //        |> yield()
 //}
 testcase integration_vertica_write_to {
+    option testing.tags = ["integration_write"]
+
     nonseed_want
         |> sql.to(driverName: "vertica", dataSourceName: verticaDsn, table: "pet info", batchSize: 1)
         // The array.from() will be returned and will cause the test to fail.
@@ -326,6 +374,8 @@ testcase integration_vertica_write_to {
 }
 
 testcase integration_sqlite_read_from_seed {
+    option testing.tags = ["integration_read"]
+
     got =
         sql.from(
             driverName: "sqlite3",
@@ -338,6 +388,8 @@ testcase integration_sqlite_read_from_seed {
 }
 
 testcase integration_sqlite_read_from_nonseed {
+    option testing.tags = ["integration_read"]
+
     got =
         sql.from(
             driverName: "sqlite3",
@@ -350,6 +402,8 @@ testcase integration_sqlite_read_from_nonseed {
 }
 
 testcase integration_sqlite_injection {
+    option testing.tags = ["integration_injection"]
+
     evil
         |> sql.to(driverName: "sqlite3", dataSourceName: sqliteDsn, table: "injection attempt", batchSize: 1)
         |> filter(fn: (r) => false)
@@ -357,6 +411,8 @@ testcase integration_sqlite_injection {
 }
 
 testcase integration_sqlite_write_to {
+    option testing.tags = ["integration_write"]
+
     nonseed_want
         |> sql.to(driverName: "sqlite3", dataSourceName: sqliteDsn, table: "pet info", batchSize: 1)
         // The array.from() will be returned and will cause the test to fail.
