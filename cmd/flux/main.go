@@ -19,6 +19,9 @@ import (
 	"github.com/opentracing/opentracing-go"
 	"github.com/spf13/cobra"
 	jaegercfg "github.com/uber/jaeger-client-go/config"
+
+	// Include the sqlite3 driver for vanilla Flux
+	_ "github.com/mattn/go-sqlite3"
 )
 
 var flags struct {
