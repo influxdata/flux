@@ -971,6 +971,12 @@ func (t *TestReporter) ReportTestRun(test *Test) {
 			fmt.Fprintf(t.out, "%s...success\n", test.FullName())
 		}
 	} else {
+		if test.skip {
+			// Do not print full output of skipped tests
+			// Using verbosity >=3 is about debugging a running test,
+			// we do not need information about skipped tests
+			return
+		}
 		fmt.Fprintf(t.out, "Testcase: %s\n", test.FullName())
 		fmt.Fprintf(t.out, "Tags: %v\n", test.tags)
 		source, err := test.SourceCode()
