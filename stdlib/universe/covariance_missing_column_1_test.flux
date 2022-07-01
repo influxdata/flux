@@ -20,11 +20,9 @@ testcase covariance_missing_column_1 {
     testing.shouldError(
         fn: () =>
             csv.from(csv: inData)
-                |> testing.load()
-                |> range(start: 2018-05-22T19:53:26Z)
                 |> covariance(columns: ["x", "r"])
                 |> tableFind(fn: (key) => true),
         want:
-            "error calling function \"tableFind\" @26:20-26:48: runtime error @25:20-25:51: covariance: specified column does not exist in table: r",
+            "error calling function \"tableFind\" @24:20-24:48: runtime error @23:20-23:51: covariance: specified column does not exist in table: r",
     )
 }
