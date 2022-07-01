@@ -28,12 +28,12 @@ extern crate pretty_assertions;
 pub mod doc;
 
 pub mod ast;
+pub mod errors;
 pub mod formatter;
 pub mod parser;
 pub mod scanner;
 pub mod semantic;
 
-mod errors;
 mod map;
 
 use std::hash::BuildHasherDefault;

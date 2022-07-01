@@ -91,7 +91,7 @@ p = s.timeRangeStop                // transitive reference
 		{
 			name: "failure",
 			flx:  `x = "foo" + 10`,
-			err:  errors.New("error @1:13-1:15: expected string but found int"),
+			ty:   "A",
 		},
 	}
 	for _, tc := range tcs {
