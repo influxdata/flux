@@ -103,8 +103,7 @@ p = s.timeRangeStop                // transitive reference
 			if len(tc.types) != len(tc.vars) {
 				t.Fatalf("types and vars must have the same length in the test case")
 			}
-			ast := libflux.ParseString(tc.flx)
-			monotypes, err := libflux.FindVarTypes(ast, tc.vars)
+			monotypes, err := libflux.FindVarTypes(tc.flx, tc.vars)
 			if err != nil {
 				if tc.err == nil {
 					t.Fatalf("expected no error, got: %q", err)
