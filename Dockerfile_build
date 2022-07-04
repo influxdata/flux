@@ -19,7 +19,7 @@ RUN apt-get update && \
     openssl libtinfo5 ruby \
     ca-certificates curl file gnupg \
     build-essential cmake nodejs npm \
-    libxml2-dev libssl-dev zlib1g-dev \
+    libxml2-dev libssl-dev libsqlite3-dev zlib1g-dev \
     autoconf automake autotools-dev libtool xutils-dev valgrind && \
     rm -rf /var/lib/apt/lists/*
 
