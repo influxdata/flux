@@ -1542,7 +1542,7 @@ impl<'input> Parser<'input> {
         }
     }
     fn parse_identifier(&mut self) -> Identifier {
-        let t = self.expect(TokenType::Ident);
+        let t = self.expect_or_skip(TokenType::Ident);
         Identifier {
             base: self.base_node_from_token(&t),
             name: t.lit,
