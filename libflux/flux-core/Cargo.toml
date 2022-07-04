@@ -9,6 +9,12 @@ name = "fluxcore"
 crate-type = ["rlib"]
 
 [[bin]]
+name = "analyze_query_log"
+test = false
+bench = false
+required-features = ["crossbeam-channel", "csv", "rayon", "rusqlite", "pretty_assertions"]
+
+[[bin]]
 name = "fluxdoc"
 test = false
 bench = false
@@ -29,6 +35,7 @@ doc = ["csv", "once_cell", "pad", "pulldown-cmark", "rayon", "tempfile"]
 anyhow = "1.0.56"
 chrono = { version = "0.4", features = ["serde"] }
 codespan-reporting = "0.11"
+crossbeam-channel = { version = "0.5", optional = true }
 csv = { version = "1.1", optional = true }
 derivative = "2.1.1"
 derive_more = { version = "0.99.17", default-features = false, features = [
@@ -58,6 +65,9 @@ structopt = "0.3.26"
 thiserror = "1"
 tempfile = { version = "3.3.0", optional = true }
 walkdir = "2.2.9"
+
+rusqlite = { version = "0.26", optional = true }
+pretty_assertions = { version = "1", optional = true }
 
 [dev-dependencies]
 colored = "2.0"
