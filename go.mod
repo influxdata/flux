@@ -20,6 +20,7 @@ require (
 	github.com/dave/jennifer v1.2.0
 	github.com/denisenkom/go-mssqldb v0.10.0
 	github.com/eclipse/paho.mqtt.golang v1.2.0
+	github.com/fatih/color v1.13.0
 	github.com/foxcpp/go-mockdns v0.0.0-20201212160233-ede2f9158d15
 	github.com/go-sql-driver/mysql v1.5.0
 	github.com/gofrs/uuid v3.3.0+incompatible
@@ -29,6 +30,7 @@ require (
 	github.com/influxdata/gosnowflake v1.6.9
 	github.com/influxdata/influxdb-client-go/v2 v2.3.1-0.20210518120617-5d1fff431040
 	github.com/influxdata/line-protocol v0.0.0-20200327222509-2487e7298839
+	github.com/influxdata/line-protocol/v2 v2.2.1
 	github.com/influxdata/pkg-config v0.2.11
 	github.com/influxdata/promql/v2 v2.12.0
 	github.com/influxdata/tdigest v0.0.2-0.20210216194612-fc98d27c9e8b
@@ -60,8 +62,6 @@ require (
 	gopkg.in/yaml.v2 v2.3.0
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
-
-require github.com/fatih/color v1.13.0
 
 require (
 	cloud.google.com/go/bigquery v1.8.0 // indirect

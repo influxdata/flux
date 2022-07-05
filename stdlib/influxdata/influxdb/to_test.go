@@ -3,6 +3,7 @@ package influxdb_test
 import (
 	"context"
 	"fmt"
+	"math"
 	"sort"
 	"testing"
 	"time"
@@ -18,18 +19,17 @@ import (
 	"github.com/influxdata/flux/mock"
 	"github.com/influxdata/flux/stdlib/influxdata/influxdb"
 	"github.com/influxdata/flux/values/valuestest"
-	protocol "github.com/influxdata/line-protocol"
 )
 
 type pointsWriter struct {
-	writes []protocol.Metric
+	writes []influxdb.Metric
 }
 
 func (t *pointsWriter) Close() error {
 	return nil
 }
 
-func (t *pointsWriter) Write(metric ...protocol.Metric) error {
+func (t *pointsWriter) Write(metric ...influxdb.Metric) error {
 	t.writes = append(t.writes, metric...)
 	return nil
 }
@@ -37,17 +37,17 @@ func (t *pointsWriter) Write(metric ...protocol.Metric) error {
 func rowMetric(m string, tags [][2]string, fields [][2]interface{}, ts time.Time) *influxdb.RowMetric {
 	metric := &influxdb.RowMetric{
 		NameStr: m,
-		Tags:    make([]*protocol.Tag, 0, len(tags)),
-		Fields:  make([]*protocol.Field, 0, len(fields)),
+		Tags:    make([]*influxdb.Tag, 0, len(tags)),
+		Fields:  make([]*influxdb.Field, 0, len(fields)),
 		TS:      ts.UTC(),
 	}
 
 	for _, tag := range tags {
-		metric.Tags = append(metric.Tags, &protocol.Tag{Key: tag[0], Value: tag[1]})
+		metric.Tags = append(metric.Tags, &influxdb.Tag{Key: tag[0], Value: tag[1]})
 	}
 
 	for _, field := range fields {
-		metric.Fields = append(metric.Fields, &protocol.Field{Key: field[0].(string), Value: field[1]})
+		metric.Fields = append(metric.Fields, &influxdb.Field{Key: field[0].(string), Value: field[1]})
 	}
 
 	return metric
@@ -94,7 +94,7 @@ func TestTo_Process(t *testing.T) {
 			}},
 			want: wanted{
 				result: &pointsWriter{
-					writes: []protocol.Metric{
+					writes: []influxdb.Metric{
 						rowMetric("a", [][2]string{}, [][2]interface{}{{"_value", 2.0}}, time.Unix(0, 11)),
 						rowMetric("a", [][2]string{}, [][2]interface{}{{"_value", 2.0}}, time.Unix(0, 21)),
 						rowMetric("b", [][2]string{}, [][2]interface{}{{"_value", 1.0}}, time.Unix(0, 21)),
@@ -191,7 +191,7 @@ func TestTo_Process(t *testing.T) {
 			}},
 			want: wanted{
 				result: &pointsWriter{
-					writes: []protocol.Metric{
+					writes: []influxdb.Metric{
 						rowMetric("a", [][2]string{{"tag1", "a"}, {"tag2", "aa"}}, [][2]interface{}{{"_value", 2.0}}, time.Unix(0, 11)),
 						rowMetric("a", [][2]string{{"tag1", "a"}, {"tag2", "bb"}}, [][2]interface{}{{"_value", 2.0}}, time.Unix(0, 21)),
 						rowMetric("a", [][2]string{{"tag1", "b"}, {"tag2", "cc"}}, [][2]interface{}{{"_value", 1.0}}, time.Unix(0, 21)),
@@ -251,7 +251,7 @@ func TestTo_Process(t *testing.T) {
 			},
 			want: wanted{
 				result: &pointsWriter{
-					writes: []protocol.Metric{
+					writes: []influxdb.Metric{
 						rowMetric("a", [][2]string{{"tag1", "a"}, {"tag2", "aa"}}, [][2]interface{}{{"_value", 2.0}}, time.Unix(0, 11)),
 						rowMetric("a", [][2]string{{"tag1", "a"}, {"tag2", "bb"}}, [][2]interface{}{{"_value", 2.0}}, time.Unix(0, 21)),
 						rowMetric("a", [][2]string{{"tag1", "b"}, {"tag2", "cc"}}, [][2]interface{}{{"_value", 1.0}}, time.Unix(0, 21)),
@@ -296,7 +296,7 @@ func TestTo_Process(t *testing.T) {
 			}},
 			want: wanted{
 				result: &pointsWriter{
-					writes: []protocol.Metric{
+					writes: []influxdb.Metric{
 						rowMetric("m", [][2]string{{"tag1", "a"}, {"tag2", "aa"}}, [][2]interface{}{{"_value", 2.0}}, time.Unix(0, 11)),
 						rowMetric("m", [][2]string{{"tag1", "a"}, {"tag2", "bb"}}, [][2]interface{}{{"_value", 2.0}}, time.Unix(0, 21)),
 						rowMetric("m", [][2]string{{"tag1", "b"}, {"tag2", "cc"}}, [][2]interface{}{{"_value", 1.0}}, time.Unix(0, 21)),
@@ -336,7 +336,7 @@ func TestTo_Process(t *testing.T) {
 			}},
 			want: wanted{
 				result: &pointsWriter{
-					writes: []protocol.Metric{
+					writes: []influxdb.Metric{
 						rowMetric("a", [][2]string{}, [][2]interface{}{{"temperature", 2.0}}, time.Unix(0, 11)),
 						rowMetric("a", [][2]string{}, [][2]interface{}{{"temperature", 2.0}}, time.Unix(0, 21)),
 						rowMetric("b", [][2]string{}, [][2]interface{}{{"temperature", 1.0}}, time.Unix(0, 21)),
@@ -377,7 +377,7 @@ func TestTo_Process(t *testing.T) {
 			}},
 			want: wanted{
 				result: &pointsWriter{
-					writes: []protocol.Metric{
+					writes: []influxdb.Metric{
 						rowMetric("m0", [][2]string{}, [][2]interface{}{{"temperature", 2.0}}, time.Unix(0, 11)),
 						rowMetric("m0", [][2]string{}, [][2]interface{}{{"temperature", 2.0}}, time.Unix(0, 21)),
 						rowMetric("m1", [][2]string{}, [][2]interface{}{{"temperature", 1.0}}, time.Unix(0, 21)),
@@ -423,7 +423,7 @@ func TestTo_Process(t *testing.T) {
 			}},
 			want: wanted{
 				result: &pointsWriter{
-					writes: []protocol.Metric{
+					writes: []influxdb.Metric{
 						rowMetric("a", [][2]string{
 							{"tag", "a"},
 						}, [][2]interface{}{
@@ -510,7 +510,7 @@ func TestTo_Process(t *testing.T) {
 			}},
 			want: wanted{
 				result: &pointsWriter{
-					writes: []protocol.Metric{
+					writes: []influxdb.Metric{
 						rowMetric("a", [][2]string{
 							{"tag1", "a"},
 							{"tag2", "d"},
@@ -597,7 +597,7 @@ func TestTo_Process(t *testing.T) {
 			},
 			want: wanted{
 				result: &pointsWriter{
-					writes: []protocol.Metric{
+					writes: []influxdb.Metric{
 						rowMetric("a", [][2]string{}, [][2]interface{}{{"temperature", 2.0}}, time.Unix(0, 11)),
 						rowMetric("a", [][2]string{}, [][2]interface{}{{"temperature", 1.0}}, time.Unix(0, 21)),
 						rowMetric("a", [][2]string{}, [][2]interface{}{{"temperature", 3.0}}, time.Unix(0, 31)),
@@ -652,7 +652,7 @@ func TestTo_Process(t *testing.T) {
 			},
 			want: wanted{
 				result: &pointsWriter{
-					writes: []protocol.Metric{
+					writes: []influxdb.Metric{
 						rowMetric("a", [][2]string{}, [][2]interface{}{{"temperature", 2.0}}, time.Unix(0, 11)),
 						rowMetric("a", [][2]string{}, [][2]interface{}{{"temperature", 1.0}}, time.Unix(0, 21)),
 						rowMetric("a", [][2]string{}, [][2]interface{}{{"temperature", 3.0}}, time.Unix(0, 31)),
@@ -691,6 +691,35 @@ func TestTo_Process(t *testing.T) {
 						},
 					},
 				},
+			},
+		},
+		{
+			name: "filter nan and inf",
+			spec: &influxdb.ToProcedureSpec{
+				Spec: &influxdb.ToOpSpec{
+					Org:               "my-org",
+					Bucket:            "my-bucket",
+					TimeColumn:        "_time",
+					MeasurementColumn: "_measurement",
+				},
+			},
+			data: []*executetest.Table{{
+				ColMeta: []flux.ColMeta{
+					{Label: "_start", Type: flux.TTime},
+					{Label: "_stop", Type: flux.TTime},
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_measurement", Type: flux.TString},
+					{Label: "_value", Type: flux.TFloat},
+					{Label: "_field", Type: flux.TString},
+				},
+				Data: [][]interface{}{
+					{execute.Time(0), execute.Time(100), execute.Time(11), "a", math.NaN(), "_value"},
+					{execute.Time(0), execute.Time(100), execute.Time(21), "a", math.Inf(1), "_value"},
+					{execute.Time(0), execute.Time(100), execute.Time(21), "b", math.Inf(-1), "_value"},
+				},
+			}},
+			want: wanted{
+				result: &pointsWriter{},
 			},
 		},
 	}

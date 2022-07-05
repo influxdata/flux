@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"math"
 	"net/http"
 	"strings"
 	"testing"
@@ -17,7 +18,7 @@ import (
 	"github.com/influxdata/flux/dependencies/dependenciestest"
 	"github.com/influxdata/flux/dependencies/influxdb"
 	"github.com/influxdata/flux/dependency"
-	protocol "github.com/influxdata/line-protocol"
+	influxdb2 "github.com/influxdata/flux/stdlib/influxdata/influxdb"
 )
 
 type RoundTrip struct {
@@ -53,61 +54,121 @@ func (f *RoundTrip) RoundTrip(req *http.Request) (*http.Response, error) {
 	}, nil
 }
 
-func cpuMetric(usage float64, ns int) protocol.Metric {
-	tags := map[string]string{"host": "localhost", "id": "cpua"}
+func cpuMetric(usage float64, ns int) influxdb.Metric {
 	tm := time.Date(2017, 11, 17, 0, 0, 0, ns, time.UTC)
-	met, err := protocol.New("cpu", tags, nil, tm)
-	if err != nil {
-		panic(fmt.Sprintf("error creating metric: %s", err))
+	return &influxdb2.RowMetric{
+		NameStr: "cpu",
+		Tags: []*influxdb.Tag{
+			{Key: "host", Value: "localhost"},
+			{Key: "id", Value: "cpua"},
+		},
+		Fields: []*influxdb.Field{
+			{Key: "usage_user", Value: usage},
+			{Key: "log", Value: "message"},
+		},
+		TS: tm,
 	}
-	met.AddField("usage_user", usage)
-	met.AddField("log", "message")
-	return met
 }
 
-func diskMetric(usage float64, ns int) protocol.Metric {
-	tags := map[string]string{"id": "/dev/sdb"}
+func diskMetric(usage float64, ns int) influxdb.Metric {
 	tm := time.Date(2017, 11, 17, 0, 0, 0, ns, time.UTC)
-	met, err := protocol.New("disk", tags, nil, tm)
-	if err != nil {
-		panic(fmt.Sprintf("error creating metric: %s", err))
+	return &influxdb2.RowMetric{
+		NameStr: "disk",
+		Tags: []*influxdb.Tag{
+			{Key: "id", Value: "/dev/sdb"},
+		},
+		Fields: []*influxdb.Field{
+			{Key: "usage_disk", Value: usage},
+			{Key: "log", Value: "disk message"},
+		},
+		TS: tm,
 	}
-	met.AddField("usage_disk", usage)
-	met.AddField("log", "disk message")
-	return met
 }
 
 func TestHttpWriter_Write(t *testing.T) {
 	tests := []struct {
 		name     string
-		metric   [][]protocol.Metric
+		metric   [][]influxdb.Metric
 		wantBody string
+		wantErr  bool
 	}{
 		{
 			name: "basic",
-			metric: [][]protocol.Metric{
+			metric: [][]influxdb.Metric{
 				{
 					cpuMetric(95, 1),
 					cpuMetric(96, 2),
 					cpuMetric(97, 3),
 					cpuMetric(95, 4),
+					// should be skipped
+					cpuMetric(math.Inf(1), 5),
+					cpuMetric(math.Inf(-1), 6),
 				},
 				{
 					diskMetric(45, 1),
 					diskMetric(46, 2),
 					diskMetric(47, 3),
 					diskMetric(45, 4),
+					// should be skipped
+					diskMetric(math.NaN(), 5),
+				},
+				{
+					&influxdb2.RowMetric{
+						NameStr: "skipped",
+						Fields: []*influxdb.Field{
+							{Key: "value", Value: math.NaN()},
+						},
+					},
 				},
 			},
 			wantBody: `cpu,host=localhost,id=cpua usage_user=95,log="message" 1510876800000000001
 cpu,host=localhost,id=cpua usage_user=96,log="message" 1510876800000000002
 cpu,host=localhost,id=cpua usage_user=97,log="message" 1510876800000000003
 cpu,host=localhost,id=cpua usage_user=95,log="message" 1510876800000000004
+cpu,host=localhost,id=cpua log="message" 1510876800000000005
+cpu,host=localhost,id=cpua log="message" 1510876800000000006
 disk,id=/dev/sdb usage_disk=45,log="disk message" 1510876800000000001
 disk,id=/dev/sdb usage_disk=46,log="disk message" 1510876800000000002
 disk,id=/dev/sdb usage_disk=47,log="disk message" 1510876800000000003
 disk,id=/dev/sdb usage_disk=45,log="disk message" 1510876800000000004
+disk,id=/dev/sdb log="disk message" 1510876800000000005
 `,
+		},
+		{
+			name: "invalid empty field key",
+			metric: [][]influxdb.Metric{
+				{
+					&influxdb2.RowMetric{
+						NameStr: "cpu",
+						Fields: []*influxdb.Field{
+							{
+								// Empty field key is invalid.
+								Key:   "",
+								Value: int64(1),
+							},
+						},
+					},
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "invalid escape field key",
+			metric: [][]influxdb.Metric{
+				{
+					&influxdb2.RowMetric{
+						NameStr: "cpu",
+						Fields: []*influxdb.Field{
+							{
+								// Field key with escape at the end is invalid.
+								Key:   "invalid\\",
+								Value: int64(1),
+							},
+						},
+					},
+				},
+			},
+			wantErr: true,
 		},
 	}
 	for _, tt := range tests {
@@ -155,6 +216,9 @@ disk,id=/dev/sdb usage_disk=45,log="disk message" 1510876800000000004
 			}
 			for i := range tt.metric {
 				if err := writer.Write(tt.metric[i]...); err != nil {
+					if tt.wantErr {
+						return
+					}
 					t.Errorf("Write() error = %v", err)
 				}
 			}
@@ -163,7 +227,10 @@ disk,id=/dev/sdb usage_disk=45,log="disk message" 1510876800000000004
 				t.Errorf("Query validation error = %v", roundTripper.RequestValidatorError)
 			}
 			if roundTripper.Bodies.String() != tt.wantBody {
-				t.Errorf(cmp.Diff(roundTripper.Bodies.String(), tt.wantBody))
+				t.Error(cmp.Diff(tt.wantBody, roundTripper.Bodies.String()))
+			}
+			if tt.wantErr {
+				t.Error("expected error but none occurred")
 			}
 		})
 	}
@@ -213,7 +280,7 @@ func TestHttpWriter_Write_Error(t *testing.T) {
 	// an error when only writing one metric, but we'll check anyway.
 	//
 	// An error on Write or Close is what we are looking for.
-	metrics := []protocol.Metric{
+	metrics := []influxdb.Metric{
 		cpuMetric(95, 1),
 	}
 	err = writer.Write(metrics...)
