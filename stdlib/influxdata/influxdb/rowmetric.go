@@ -3,14 +3,14 @@ package influxdb
 import (
 	"time"
 
-	lp "github.com/influxdata/line-protocol"
+	"github.com/influxdata/flux/dependencies/influxdb"
 )
 
 // RowMetric is a Metric
 type RowMetric struct {
 	NameStr string
-	Tags    []*lp.Tag
-	Fields  []*lp.Field
+	Tags    []*influxdb.Tag
+	Fields  []*influxdb.Field
 	TS      time.Time
 }
 
@@ -22,12 +22,12 @@ func (r RowMetric) Name() string {
 	return r.NameStr
 }
 
-func (r RowMetric) TagList() []*lp.Tag {
+func (r RowMetric) TagList() []*influxdb.Tag {
 	return r.Tags
 }
 
-func (r RowMetric) FieldList() []*lp.Field {
+func (r RowMetric) FieldList() []*influxdb.Field {
 	return r.Fields
 }
 
-var _ lp.Metric = &RowMetric{}
+var _ influxdb.Metric = &RowMetric{}

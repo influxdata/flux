@@ -10,7 +10,6 @@ import (
 	"net/url"
 	"sort"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/apache/arrow/go/v7/arrow/memory"
@@ -26,7 +25,7 @@ import (
 	"github.com/influxdata/influxdb-client-go/v2/api"
 	apihttp "github.com/influxdata/influxdb-client-go/v2/api/http"
 	"github.com/influxdata/influxdb-client-go/v2/api/write"
-	protocol "github.com/influxdata/line-protocol"
+	"github.com/influxdata/line-protocol/v2/lineprotocol"
 )
 
 // HttpProvider is an implementation of the Provider that
@@ -497,18 +496,23 @@ var _ Writer = &httpWriter{}
 
 // Write sends points asynchronously to the underlying write api.
 // Errors are returned only on a best-effort basis.
-func (h *httpWriter) Write(metric ...protocol.Metric) error {
-	buf := new(bytes.Buffer)
-	enc := protocol.NewEncoder(buf)
-	enc.SetFieldTypeSupport(protocol.UintSupport)
-	for i := range metric {
-		buf.Truncate(0)
-		_, err := enc.Encode(metric[i])
+func (h *httpWriter) Write(metric ...Metric) error {
+	var enc lineprotocol.Encoder
+	for _, m := range metric {
+		record, err := h.encodeMetric(&enc, m)
 		if err != nil {
 			h.writer.Flush()
-			return err
+
+			// Wrap the error with failed precondition because
+			// the error was caused by user data.
+			return errors.Wrap(err, codes.FailedPrecondition)
 		}
-		h.writer.WriteRecord(strings.TrimRight(buf.String(), "\n"))
+
+		if len(record) > 0 {
+			record = bytes.TrimRight(record, "\n")
+			h.writer.WriteRecord(string(record))
+		}
+		enc.Reset()
 	}
 	select {
 	case err := <-h.latestError:
@@ -516,6 +520,53 @@ func (h *httpWriter) Write(metric ...protocol.Metric) error {
 	default:
 	}
 	return nil
+}
+
+func (h *httpWriter) encodeMetric(enc *lineprotocol.Encoder, m Metric) ([]byte, error) {
+	enc.StartLine(m.Name())
+
+	// The line protocol encoder checks for ordering so we need to ensure that
+	// this is sorted. We did not have that requirement previously so we have
+	// to accept that input may be unordered.
+	//
+	// We sort the original slice which seems like it's not too healthy for the
+	// API, but this probably isn't a big deal and the extra allocations to
+	// allocate a new slice for input that's probably already sorted would kill us.
+	//
+	// We could set the encoder to be lax, but that would also prevent it from
+	// telling us about invalid escape characters that we really do care about.
+	tags := m.TagList()
+	sort.Slice(tags, func(i, j int) bool {
+		return tags[i].Key < tags[j].Key
+	})
+
+	// Encode the tags.
+	for _, tag := range tags {
+		enc.AddTag(tag.Key, tag.Value)
+	}
+
+	// Iterate through the fields and try to construct a value from them.
+	// If the value is not able to be written, such as NaN or Inf in the case
+	// of floats, we skip over the field and don't write anything.
+	fields, hasField := m.FieldList(), false
+	for _, field := range fields {
+		if v, ok := lineprotocol.NewValue(field.Value); ok {
+			enc.AddField(field.Key, v)
+			hasField = true
+		}
+	}
+
+	// Check if we encoded at least one field. If we did not attempt to
+	// encode a field, just return any associated error if one occurred.
+	if !hasField {
+		return nil, enc.Err()
+	}
+
+	// End the line by writing the timestamp.
+	enc.EndLine(m.Time())
+
+	// Return any error that happened while encoding.
+	return enc.Bytes(), enc.Err()
 }
 
 func (h *httpWriter) Close() error {

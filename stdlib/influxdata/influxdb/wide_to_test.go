@@ -24,7 +24,6 @@ import (
 	"github.com/influxdata/flux/querytest"
 	"github.com/influxdata/flux/stdlib/influxdata/influxdb"
 	"github.com/influxdata/flux/stdlib/universe"
-	protocol "github.com/influxdata/line-protocol"
 )
 
 func TestWideTo_Query(t *testing.T) {
@@ -277,7 +276,7 @@ func TestWideToTransformation_CloseOnError(t *testing.T) {
 		Provider: MockProvider{
 			WriterForFn: func(ctx context.Context, conf influxdb.Config) (influxdb.Writer, error) {
 				return &MockWriter{
-					WriteFn: func(metric ...protocol.Metric) error {
+					WriteFn: func(metric ...influxdb.Metric) error {
 						return errors.New("expected")
 					},
 					CloseFn: func() error {
@@ -344,11 +343,11 @@ func (p MockProvider) WriterFor(ctx context.Context, conf influxdb.Config) (infl
 }
 
 type MockWriter struct {
-	WriteFn func(metric ...protocol.Metric) error
+	WriteFn func(metric ...influxdb.Metric) error
 	CloseFn func() error
 }
 
-func (m *MockWriter) Write(metric ...protocol.Metric) error {
+func (m *MockWriter) Write(metric ...influxdb.Metric) error {
 	return m.WriteFn(metric...)
 }
 

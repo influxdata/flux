@@ -107,10 +107,25 @@ type Reader interface {
 	Read(ctx context.Context, f func(flux.Table) error, mem memory.Allocator) error
 }
 
+// Reference the fields we use from the line protocol v1 library.
+// We're going to migrate to v2, but first we need to update references
+// to the external library to our own internal one to avoid breaking changes.
+//
+// For now, we're going to type alias to remain compatible with code that
+// directly references the library instead of our references.
+type (
+	// Tag holds the keys and values for a bunch of Tag k/v pairs.
+	Tag = protocol.Tag
+	// Field holds the keys and values for a bunch of Metric Field k/v pairs where Value can be a uint64, int64, int, float32, float64, string, or bool.
+	Field = protocol.Field
+	// Metric is the interface for marshaling, if you implement this interface you can be marshalled into the line protocol.  Woot!
+	Metric = protocol.Metric
+)
+
 // Writer is a write on which points can be written in batches.
 type Writer interface {
 	io.Closer
-	Write(...protocol.Metric) error
+	Write(...Metric) error
 }
 
 // UnimplementedProvider provides default implementations for a Provider.

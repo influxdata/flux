@@ -3,6 +3,7 @@ package influxdb
 import (
 	"context"
 	"fmt"
+	"math"
 	"sort"
 
 	"github.com/apache/arrow/go/v7/arrow/bitutil"
@@ -21,14 +22,18 @@ import (
 	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
-	lp "github.com/influxdata/line-protocol"
 	"github.com/opentracing/opentracing-go"
 )
 
 // ToKind is the kind for the `to` flux function
 const ToKind = "to"
 
-type Writer = influxdb.Writer
+type (
+	Tag    = influxdb.Tag
+	Field  = influxdb.Field
+	Metric = influxdb.Metric
+	Writer = influxdb.Writer
+)
 
 func init() {
 	toSignature := runtime.MustLookupBuiltinType("influxdata/influxdb", "to")
@@ -199,13 +204,13 @@ func (t *toTransformation) writeTable(chunk table.Chunk) (err error) {
 	}
 
 	var fieldValues values.Object
-	metrics := make([]lp.Metric, 0, chunk.Len())
+	metrics := make([]Metric, 0, chunk.Len())
 	er := chunk.Buffer()
 
 outer:
 	for i := 0; i < chunk.Len(); i++ {
 		metric := &RowMetric{
-			Tags: make([]*lp.Tag, 0, len(t.tagColumns)),
+			Tags: make([]*Tag, 0, len(t.tagColumns)),
 		}
 
 		// gather the timestamp, tags and measurement name
@@ -225,7 +230,7 @@ outer:
 					return errors.New(codes.Invalid, "invalid type for tag column")
 				}
 
-				metric.Tags = append(metric.Tags, &lp.Tag{
+				metric.Tags = append(metric.Tags, &Tag{
 					Key:   col.Label,
 					Value: er.Strings(j).Value(i),
 				})
@@ -244,17 +249,22 @@ outer:
 			return err
 		}
 
-		metric.Fields = make([]*lp.Field, 0, fieldValues.Len())
+		metric.Fields = make([]*Field, 0, fieldValues.Len())
 
 		var err error
 
 		fieldValues.Range(func(k string, v values.Value) {
 			if !v.IsNull() {
-				field := &lp.Field{Key: k}
+				field := &Field{Key: k}
 
 				switch v.Type().Nature() {
 				case semantic.Float:
-					field.Value = v.Float()
+					fv := v.Float()
+					if math.IsNaN(fv) || math.IsInf(fv, 0) {
+						// Cannot write NaN or Inf points.
+						return
+					}
+					field.Value = fv
 				case semantic.Int:
 					field.Value = v.Int()
 				case semantic.UInt:
