@@ -219,23 +219,6 @@ func (f *JoinFn) createSchema(record values.Object, groupkey flux.GroupKey) ([]f
 			Type:  ty,
 		})
 	}
-	for _, gcol := range groupkey.Cols() {
-		found := false
-		for _, col := range cols {
-			if gcol == col {
-				found = true
-				break
-			}
-		}
-		if !found {
-			return nil, errors.Newf(
-				codes.Invalid,
-				"join cannot modify group key: output record is missing column '%s:%s'",
-				gcol.Label,
-				gcol.Type,
-			)
-		}
-	}
 	return cols, nil
 }
 
