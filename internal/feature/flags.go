@@ -137,18 +137,6 @@ func OptimizeStateTracking() BoolFlag {
 	return optimizeStateTracking
 }
 
-var vectorizeLogicalOperators = feature.MakeBoolFlag(
-	"Vectorize Logical Operators",
-	"vectorizeLogicalOperators",
-	"Jonathan Sternberg",
-	false,
-)
-
-// VectorizeLogicalOperators - Vectorizes logical operators inside map
-func VectorizeLogicalOperators() BoolFlag {
-	return vectorizeLogicalOperators
-}
-
 var labelPolymorphism = feature.MakeBoolFlag(
 	"Label polymorphism",
 	"labelPolymorphism",
@@ -201,7 +189,6 @@ var all = []Flag{
 	optimizeAggregateWindow,
 	narrowTransformationLimit,
 	optimizeStateTracking,
-	vectorizeLogicalOperators,
 	labelPolymorphism,
 	optimizeSetTransformation,
 	unusedSymbolWarnings,
@@ -218,7 +205,6 @@ var byKey = map[string]Flag{
 	"optimizeAggregateWindow":          optimizeAggregateWindow,
 	"narrowTransformationLimit":        narrowTransformationLimit,
 	"optimizeStateTracking":            optimizeStateTracking,
-	"vectorizeLogicalOperators":        vectorizeLogicalOperators,
 	"labelPolymorphism":                labelPolymorphism,
 	"optimizeSetTransformation":        optimizeSetTransformation,
 	"unusedSymbolWarnings":             unusedSymbolWarnings,

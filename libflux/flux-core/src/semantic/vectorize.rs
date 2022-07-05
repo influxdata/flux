@@ -8,7 +8,7 @@ use crate::{
             LogicalExpr, MemberExpr, ObjectExpr, Package, Property, Result, ReturnStmt,
         },
         types::{self, Function, Label, MonoType},
-        AnalyzerConfig, Feature, Symbol,
+        AnalyzerConfig, Symbol,
     },
 };
 
@@ -19,6 +19,7 @@ pub fn vectorize(
 ) -> std::result::Result<(), Errors<Error>> {
     use crate::semantic::walk::{walk_mut, NodeMut, VisitorMut};
     struct Vectorizer<'a> {
+        #[allow(dead_code)]
         config: &'a AnalyzerConfig,
         errors: Errors<Error>,
     }
@@ -50,6 +51,7 @@ pub fn vectorize(
 }
 
 struct VectorizeEnv<'a> {
+    #[allow(dead_code)]
     config: &'a AnalyzerConfig,
     symbols: HashMap<Symbol, MonoType>,
 }
@@ -94,19 +96,6 @@ impl Expression {
                 }))
             }
             Expression::Logical(expr) => {
-                if !env
-                    .config
-                    .features
-                    .contains(&Feature::VectorizeLogicalOperators)
-                {
-                    return Err(located(
-                        self.loc().clone(),
-                        ErrorKind::UnableToVectorize(
-                            "Vectorization of logical expressions is not enabled".into(),
-                        ),
-                    ));
-                }
-
                 let left = expr.left.vectorize(env)?;
                 let right = expr.right.vectorize(env)?;
                 Expression::Logical(Box::new(LogicalExpr {
