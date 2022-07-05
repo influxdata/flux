@@ -434,7 +434,7 @@ builtin buckets : (
 // ```
 //
 // ## Metadata
-// introduced: NEXT
+// introduced: 0.174.0
 // tags: outputs
 //
 builtin wideTo : (

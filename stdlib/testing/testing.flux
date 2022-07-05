@@ -250,7 +250,7 @@ assertEqualValues = (got, want) => {
 // ```
 //
 // ## Metadata
-// introduced: NEXT
+// introduced: 0.174.0
 // tags: tests
 //
 shouldError = (fn, want) => {

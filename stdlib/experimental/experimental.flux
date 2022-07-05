@@ -305,7 +305,7 @@ builtin set : (<-tables: stream[A], o: B) => stream[C] where A: Record, B: Recor
 //
 // ## Metadata
 // introduced: 0.40.0
-// deprecated: NEXT
+// deprecated: 0.174.0
 // tags: outputs
 //
 to = influxdb.wideTo
@@ -1313,5 +1313,5 @@ builtin unpivot : (<-tables: stream[{A with _time: time}]) => stream[{B with _fi
 // ```
 //
 // ## Metadata
-// introduced: NEXT
+// introduced: 0.174.0
 builtin catch : (fn: () => A) => string
