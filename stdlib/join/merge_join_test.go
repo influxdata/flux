@@ -42,10 +42,10 @@ func TestMergeJoin(t *testing.T) {
 		wantErrRight error
 	}{
 		{
-			name: "modify groupkey",
+			name: "exclude groupkey column",
 			wantErrRight: errors.New(
 				codes.Invalid,
-				"join cannot modify group key: output record is missing column 'group:uint'",
+				"join cannot modify group key: output record has a missing or invalid value for column 'group:uint'",
 			),
 			method: "inner",
 			on: []join.ColumnPair{
@@ -77,19 +77,6 @@ func TestMergeJoin(t *testing.T) {
 				[]map[string]interface{}{
 					{"_time": execute.Time(1), "_value": int64(1), "id": "a", "group": uint64(1)},
 					{"_time": execute.Time(2), "_value": int64(1), "id": "a", "group": uint64(1)},
-				},
-			),
-			wantTables: constructChunks(
-				[]flux.ColMeta{{Label: "group", Type: flux.TUInt}},
-				[]flux.ColMeta{
-					{Label: "_time", Type: flux.TTime},
-					{Label: "lv", Type: flux.TFloat},
-					{Label: "rv", Type: flux.TInt},
-					{Label: "label", Type: flux.TString},
-					{Label: "group", Type: flux.TUInt},
-				},
-				[]map[string]interface{}{
-					{"_time": execute.Time(1), "lv": 1.2, "rv": int64(1), "label": "a", "group": uint64(1)},
 				},
 			),
 		},
@@ -1551,6 +1538,45 @@ func TestMergeJoin(t *testing.T) {
 					{"_time": execute.Time(1), "lv": 2.1, "rv": int64(8), "label": "a", "group": uint64(1)},
 					{"_time": execute.Time(1), "lv": 2.1, "rv": int64(9), "label": "a", "group": uint64(1)},
 					{"_time": execute.Time(1), "lv": 2.1, "rv": int64(10), "label": "a", "group": uint64(1)},
+				},
+			),
+		},
+		{
+			name: "change group key column",
+			wantErrRight: errors.New(
+				codes.Invalid,
+				"join cannot modify group key: output record has a missing or invalid value for column 'group:uint'",
+			),
+			method: "inner",
+			on: []join.ColumnPair{
+				{Left: "label", Right: "id"},
+				{Left: "_time", Right: "_time"},
+			},
+			as: `(l, r) => ({_time: l._time, lv: l._value, rv: r._value, label: l.label, group: 3})`,
+			left: constructChunks(
+				[]flux.ColMeta{{Label: "group", Type: flux.TUInt}},
+				[]flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
+					{Label: "label", Type: flux.TString},
+					{Label: "group", Type: flux.TUInt},
+				},
+				[]map[string]interface{}{
+					{"_time": execute.Time(1), "_value": 1.2, "label": "a", "group": uint64(1)},
+					{"_time": execute.Time(2), "_value": 1.2, "label": "a", "group": uint64(1)},
+				},
+			),
+			right: constructChunks(
+				[]flux.ColMeta{{Label: "group", Type: flux.TUInt}},
+				[]flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TInt},
+					{Label: "id", Type: flux.TString},
+					{Label: "group", Type: flux.TUInt},
+				},
+				[]map[string]interface{}{
+					{"_time": execute.Time(1), "_value": int64(1), "id": "a", "group": uint64(1)},
+					{"_time": execute.Time(2), "_value": int64(1), "id": "a", "group": uint64(1)},
 				},
 			),
 		},
