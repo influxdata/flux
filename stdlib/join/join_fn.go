@@ -130,6 +130,14 @@ func (f *JoinFn) crossProduct(ctx context.Context, p *joinProduct, mem memory.Al
 				return nil, err
 			}
 
+			// Make sure the group key is not modfied
+			// TODO(sean): Potential optimization - determine whether or not it is
+			// necessary to validate every row. There may be some cases where we can
+			// know for sure if the group key is never going to change.
+			err = validateGroupKey(joined, p.left[0].Key())
+			if err != nil {
+				return nil, err
+			}
 			if f.schema == nil {
 				cols, err := f.createSchema(joined, p.left[0].Key())
 				if err != nil {
@@ -340,4 +348,18 @@ func splitChunk(c table.Chunk) []table.Chunk {
 		chunks = append(chunks, slice)
 	}
 	return chunks
+}
+
+func validateGroupKey(obj values.Object, key flux.GroupKey) error {
+	for _, col := range key.Cols() {
+		if v, ok := obj.Get(col.Label); !ok || !v.Equal(key.LabelValue(col.Label)) {
+			return errors.Newf(
+				codes.Invalid,
+				"join cannot modify group key: output record has a missing or invalid value for column '%s:%s'",
+				col.Label,
+				col.Type,
+			)
+		}
+	}
+	return nil
 }
