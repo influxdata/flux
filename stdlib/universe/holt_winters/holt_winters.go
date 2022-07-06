@@ -115,7 +115,8 @@ func (r *HoltWinters) Do(vs *array.Float) (*array.Float, float64) {
 			if vs.IsValid(i) {
 				initParams.Set(i+6, vs.Value(i)/l0)
 			} else {
-				initParams.Set(i+6, 0)
+				// default to 1 for missing/null values
+				initParams.Set(i+6, 1)
 			}
 		}
 	}
