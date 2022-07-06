@@ -3,6 +3,7 @@ use super::*;
 use crate::semantic::Feature;
 
 #[test]
+#[ignore]
 fn labels_simple() {
     test_infer! {
         config: AnalyzerConfig{
@@ -30,6 +31,7 @@ fn labels_simple() {
 }
 
 #[test]
+#[ignore]
 fn labels_unbound() {
     test_infer! {
         config: AnalyzerConfig{
@@ -51,6 +53,7 @@ fn labels_unbound() {
 }
 
 #[test]
+#[ignore]
 fn labels_dynamic_string() {
     test_error_msg! {
         config: AnalyzerConfig{
@@ -110,6 +113,7 @@ fn undefined_field() {
 }
 
 #[test]
+#[ignore]
 fn merge_labels_to_string() {
     test_infer! {
         config: AnalyzerConfig{
@@ -130,6 +134,7 @@ fn merge_labels_to_string() {
 }
 
 #[test]
+#[ignore]
 fn merge_labels_to_string_in_function() {
     test_infer! {
         config: AnalyzerConfig{
@@ -348,168 +353,5 @@ fn variables_used_in_label_position_must_have_label_kind() {
               │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
         "#]],
-    }
-}
-
-#[test]
-fn label_variables_do_not_get_inferred_to_string() {
-    test_infer! {
-        config: AnalyzerConfig{
-            features: vec![Feature::LabelPolymorphism],
-            ..AnalyzerConfig::default()
-        },
-        env: map![
-            "keep" => r#"(<-table: A, column: string) => { _value: string } where A: Record"#,
-            "columns" => r#"(?column: C = "abc") => { C: string } where C: Label"#,
-        ],
-        src: r#"
-            f = (column) =>
-                columns(column: column)
-                    // Inferring `column` as a `string` here should not force
-                    // the type signature of `f` to only accept `string`
-                    |> keep(column: column)
-        "#,
-        exp: map![
-            "f" => "(column: A) => { _value: string } where A: Label",
-        ],
-    }
-}
-
-#[test]
-fn inferred_to_string_before_label() {
-    test_infer! {
-        config: AnalyzerConfig{
-            features: vec![Feature::LabelPolymorphism],
-            ..AnalyzerConfig::default()
-        },
-        env: map![
-            "keep" => r#"(column: string) => { _value: string }"#,
-            "columns" => r#"(<-table: A, ?column: C = "abc") => { C: string } where A: Record, C: Label"#,
-        ],
-        src: r#"
-            f = (column) =>
-                // Inferring `column` as a `string` here should not force
-                // the type signature of `f` to only accept `string`
-                keep(column: column)
-                    |> columns(column: column)
-        "#,
-        exp: map![
-            "f" => "(column: A) => { A: string } where A: Label",
-        ],
-    }
-}
-
-#[test]
-fn string_literal_is_treated_as_label_due_to_requirement_by_differnt_function_passed_as_argument() {
-    test_infer! {
-        config: AnalyzerConfig{
-            features: vec![Feature::LabelPolymorphism],
-            ..AnalyzerConfig::default()
-        },
-        env: map![
-            "from" => "(bucket: string) => stream[A] where A: Record",
-            "compute" => "(<-tables:A, as:string, ?column:B, ?fn:(<-:A, column:B) => stream[C]) => stream[D] where B: Equatable, C: Record, D: Record",
-            "max" => r#"(<-tables: stream[{ A with L: B }], ?column: L) => stream[{ A with L: B }]
-                where A: Record,
-                      B: Comparable,
-                      L: Label"#,
-        ],
-        src: r#"
-            x = from(bucket: "ostrich")
-                |> compute(column: "gauge", fn: max, as: "alert_threshold")
-        "#,
-        exp: map![
-            "x" => r#"stream[A] where A: Record"#,
-        ],
-    }
-}
-
-#[test]
-fn inferred_label_kind_does_not_pollute_different_type_signature() {
-    test_infer! {
-        config: AnalyzerConfig{
-            features: vec![Feature::LabelPolymorphism],
-            ..AnalyzerConfig::default()
-        },
-        env: map![
-            "contains" => "(value: A, set: [A]) => bool where A: Nullable",
-            "tagValues" => "(bucket: string, tag: A) => stream[{F with _value:G}] where A: Label",
-
-        ],
-        src: r#"
-            x = (value) => {
-                y = tagValues(bucket: "a", tag: value)
-                x = contains(set: ["_stop", "_start"], value: value)
-                return 0
-            }
-        "#,
-        exp: map![
-            "x" => r#"(value: A) => int where A: Label"#,
-        ],
-    }
-
-    // Change the order that the arguments of `contains` are checked
-    test_infer! {
-        config: AnalyzerConfig{
-            features: vec![Feature::LabelPolymorphism],
-            ..AnalyzerConfig::default()
-        },
-        env: map![
-            "contains" => "(value: A, x: [A]) => bool where A: Nullable",
-            "tagValues" => "(bucket: string, tag: A) => stream[{F with _value:G}] where A: Label",
-
-        ],
-        src: r#"
-            x = (value) => {
-                y = tagValues(bucket: "a", tag: value)
-                x = contains(value: value, x: ["_stop", "_start"])
-                return 0
-            }
-        "#,
-        exp: map![
-            "x" => r#"(value: A) => int where A: Label"#,
-        ],
-    }
-}
-
-#[test]
-fn reusing_same_field_in_record() {
-    test_infer! {
-        config: AnalyzerConfig{
-            features: vec![Feature::LabelPolymorphism],
-            ..AnalyzerConfig::default()
-        },
-        env: map![
-            "from" => "() => stream[A] where A: Record",
-            "map" => "(<-tables: stream[A], fn: (r: A) => B) => stream[B]",
-            "union" => "(tables: [stream[A]]) => stream[A] where A: Record",
-        ],
-        src: r#"
-            raw = from()
-
-            stream_x =
-                raw
-                    |> map(fn: (r) => {
-                        z = r._value + 0.0
-                        return {r with _value: 0.0}
-                    })
-
-            stream_y =
-                raw
-                    |> map(fn: (r) => {
-                        z = r._value + 0
-                        return {r with _value: 0.0}
-                    })
-
-            union(
-                tables: [
-                    stream_x,
-                    stream_y,
-                ],
-            )
-        "#,
-        exp: map![
-            "x" => r#"stream[A] where A: Record"#,
-        ],
     }
 }
