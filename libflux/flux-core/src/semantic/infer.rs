@@ -118,19 +118,6 @@ impl Substitutable for Error {
     }
 }
 
-pub fn solve_all(
-    cons: &[Constraint],
-    sub: &mut Substitution,
-) -> Result<(), Errors<Located<types::Error>>> {
-    let errors = solve(cons, sub).err().unwrap_or_default();
-
-    if errors.has_errors() {
-        return Err(errors);
-    }
-
-    Ok(())
-}
-
 // Solve a set of type constraints
 pub fn solve(
     cons: &[Constraint],
