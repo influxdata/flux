@@ -2104,7 +2104,7 @@ mod tests {
             },
         ];
         let exp = "unrecognized magnitude for duration";
-        let got = convert_duration(&t).err().expect("should be an error");
+        let got = convert_duration(&t).expect_err("should be an error");
         assert_eq!(exp, got.to_string());
     }
 
@@ -2125,7 +2125,7 @@ mod tests {
             },
         ];
         let exp = "all values in AST duration vector must have the same sign";
-        let got = convert_duration(&t).err().expect("should be an error");
+        let got = convert_duration(&t).expect_err("should be an error");
         assert_eq!(exp, got.to_string());
     }
 
@@ -2133,7 +2133,7 @@ mod tests {
     fn duration_conversion_empty_error() {
         let t = Vec::new();
         let exp = "AST duration vector must contain at least one duration value";
-        let got = convert_duration(&t).err().expect("should be an error");
+        let got = convert_duration(&t).expect_err("should be an error");
         assert_eq!(exp, got.to_string());
     }
 
