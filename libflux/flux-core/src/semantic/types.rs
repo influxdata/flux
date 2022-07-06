@@ -332,7 +332,7 @@ impl fmt::Display for Error {
             Error::CannotUnifyArgument(x, e) => write!(f, "{} (argument {})", e, x),
             Error::CannotUnifyReturn { exp, act, cause } => write!(
                 f,
-                "expected {exp}{exp_info} but found {act}{act_info} for return type caused by {cause}",
+                "123expected {exp}{exp_info} but found {act}{act_info} for return type caused by {cause}",
                 exp = exp.clone().fresh(&mut fresh),
                 exp_info = exp.type_info(),
                 act = act.clone().fresh(&mut fresh),
