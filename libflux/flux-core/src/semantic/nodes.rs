@@ -23,7 +23,6 @@ use crate::{
         env::Environment,
         import::Importer,
         infer::{self, Constraint},
-        scoped::ScopedVec,
         sub::{BindVars, Substitutable, Substituter, Substitution},
         types::{
             self, BoundTvar, BoundTvarKinds, Dictionary, Function, Kind, Label, MonoType,
@@ -135,7 +134,6 @@ struct InferState<'a, 'env> {
     importer: &'a mut dyn Importer,
     imports: HashMap<Symbol, String>,
     env: &'a mut Environment<'env>,
-    delayed_unifications: ScopedVec<types::Unification>,
     errors: Errors<Error>,
     config: &'a AnalyzerConfig,
     // When an undefined symbol is encountered we assume that the same type is used for every
@@ -174,7 +172,7 @@ impl InferState<'_, '_> {
     }
 
     fn equal(&mut self, exp: &MonoType, act: &MonoType, loc: &ast::SourceLocation) -> MonoType {
-        match infer::equal(exp, act, loc, self.sub, &mut self.delayed_unifications) {
+        match infer::equal(exp, act, loc, self.sub) {
             Ok(typ) => typ,
             Err(err) => {
                 self.errors
@@ -188,42 +186,26 @@ impl InferState<'_, '_> {
     }
 
     fn solve(&mut self, cons: &impl AsRef<[Constraint]>) {
-        if let Err(err) = infer::solve(cons.as_ref(), self.sub, &mut self.delayed_unifications) {
+        if let Err(err) = infer::solve(cons.as_ref(), self.sub) {
             self.errors.extend(err.into_iter().map(Error::from));
         }
     }
 
-    fn subsume(&mut self, exp: &MonoType, act: &MonoType, loc: &ast::SourceLocation) -> MonoType {
-        match infer::subsume(exp, act, loc, self.sub, &mut self.delayed_unifications) {
-            Ok(typ) => typ,
-            Err(err) => {
-                self.errors
-                    .extend(err.error.into_iter().map(|error| Located {
-                        location: loc.clone(),
-                        error: error.into(),
-                    }));
-                MonoType::Error
-            }
-        }
-    }
-
-    fn subsume_function(
+    fn unify_function(
         &mut self,
         call_expr: &CallExpr,
         exp: &Function,
         act: Function<(MonoType, &ast::SourceLocation)>,
     ) {
         log::debug!(
-            "Subsume {:?}: {} <===> {}",
+            "Unify {:?}: {} <===> {}",
             call_expr.callee.loc().source,
             exp,
             act.clone().map(|(typ, _)| typ),
         );
-        let mut delayed_unifications = Vec::new();
-        if let Err(err) = exp.try_subsume_with(
+        if let Err(err) = exp.try_unify_with(
             &act,
             self.sub,
-            &mut delayed_unifications,
             |typ| (typ.clone(), call_expr.callee.loc()),
             |error| Located {
                 location: call_expr.loc.clone(),
@@ -238,14 +220,6 @@ impl InferState<'_, '_> {
             );
             self.errors.extend(err.into_iter().map(Error::from));
         }
-
-        self.delayed_unifications
-            .extend(delayed_unifications.into_iter().map(|mut unification| {
-                if unification.location == ast::SourceLocation::default() {
-                    unification.location = call_expr.loc.clone();
-                }
-                unification
-            }));
     }
 
     fn error(&mut self, loc: ast::SourceLocation, error: ErrorKind) {
@@ -265,25 +239,10 @@ impl InferState<'_, '_> {
 
     fn enter_scope(&mut self) {
         self.env.enter_scope();
-        self.delayed_unifications.enter_scope();
     }
 
     fn exit_scope(&mut self) {
         self.env.exit_scope();
-        self.resolve_unifications();
-    }
-
-    fn resolve_unifications(&mut self) {
-        for unification in self.delayed_unifications.exit_scope() {
-            if let Err(err) = unification.resolve(self.sub) {
-                let loc = err.location;
-                self.errors.extend(err.error.into_iter().map(|err| {
-                    let err = located(loc.clone(), err.into());
-                    log::debug!("Unify error: {}", err);
-                    err
-                }));
-            }
-        }
     }
 }
 
@@ -484,14 +443,11 @@ where
         importer,
         imports: Default::default(),
         env,
-        delayed_unifications: Default::default(),
         errors: Errors::new(),
         config,
         undefined_symbols: Default::default(),
     };
     pkg.infer(&mut infer).map_err(|err| err.apply(infer.sub))?;
-
-    infer.resolve_unifications();
 
     infer.env.apply_mut(&mut FinalizeTypes { sub: infer.sub });
 
@@ -852,14 +808,12 @@ impl VariableAssgn {
     // before inferring the rest of the program.
     //
     fn infer(&mut self, infer: &mut InferState<'_, '_>) -> Result<()> {
-        infer.delayed_unifications.enter_scope();
         self.init.infer(infer)?;
 
         // Apply substitution to the type environment
         infer.env.apply_mut(infer.sub);
 
         let t = self.init.type_of().apply(infer.sub);
-        infer.resolve_unifications();
         let p = infer::generalize(infer.free_vars(), infer.sub, t);
 
         // Update variable assignment nodes with the free vars
@@ -1178,7 +1132,7 @@ impl FunctionExpr {
 
         infer.solve(&ncons);
 
-        infer.subsume(&exp, &default_func, &self.loc);
+        infer.equal(&exp, &default_func, &self.loc);
 
         Ok(())
     }
@@ -1472,7 +1426,7 @@ impl CallExpr {
 
         match &*self.callee.type_of().apply_cow(infer.sub) {
             MonoType::Fun(func) => {
-                infer.subsume_function(self, func, act);
+                infer.unify_function(self, func, act);
             }
             callee => {
                 let act = act.map(|(typ, _)| typ);
