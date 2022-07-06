@@ -2962,8 +2962,8 @@ mod tests {
             infer::instantiate(f, &mut sub, &Default::default()),
             infer::instantiate(g, &mut sub, &Default::default()),
         ) {
-            infer::solve_all(&f_cons, &mut sub).unwrap();
-            infer::solve_all(&g_cons, &mut sub).unwrap();
+            infer::solve(&f_cons, &mut sub).unwrap();
+            infer::solve(&g_cons, &mut sub).unwrap();
             // this extends the first map with the second by generating a new one.
             let res = f.clone().try_unify(&g, &mut sub);
             assert!(res.is_err());
@@ -2981,8 +2981,8 @@ mod tests {
             infer::instantiate(f, &mut sub, &Default::default()),
             infer::instantiate(g, &mut sub, &Default::default()),
         ) {
-            infer::solve_all(&f_cons, &mut sub).unwrap();
-            infer::solve_all(&g_cons, &mut sub).unwrap();
+            infer::solve(&f_cons, &mut sub).unwrap();
+            infer::solve(&g_cons, &mut sub).unwrap();
 
             let res = f.clone().try_unify(&g, &mut sub);
             assert!(res.is_err());
@@ -3009,7 +3009,7 @@ mod tests {
 
         let mut sub = Substitution::default();
         let (fn_type, cons) = infer::instantiate(fn_type, &mut sub, &Default::default());
-        infer::solve_all(&cons, &mut sub).unwrap();
+        infer::solve(&cons, &mut sub).unwrap();
         if let MonoType::Fun(f) = fn_type {
             sub.mk_fresh(2);
             f.try_unify(&call_type, &mut sub).unwrap();
@@ -3033,10 +3033,10 @@ mod tests {
         let g = polytype("(a: int, b: int, c: (a: int) => float) => (d: string) => int");
 
         let (f, cons) = infer::instantiate(f, &mut sub, &Default::default());
-        infer::solve_all(&cons, &mut sub).unwrap();
+        infer::solve(&cons, &mut sub).unwrap();
 
         let (g, cons) = infer::instantiate(g, &mut sub, &Default::default());
-        infer::solve_all(&cons, &mut sub).unwrap();
+        infer::solve(&cons, &mut sub).unwrap();
 
         if let (MonoType::Fun(f), MonoType::Fun(g)) = (f, g) {
             sub.mk_fresh(2);
