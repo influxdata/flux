@@ -82,7 +82,7 @@ builtin window : (
 
 // @feature labelPolymorphism
 builtin window : (
-        <-tables: stream[{ A with T: time }],
+        <-tables: stream[{A with T: time}],
         ?time: T = "_time",
         every: duration,
         ?period: duration,

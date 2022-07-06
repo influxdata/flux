@@ -330,7 +330,7 @@ builtin to : (
 
 // @feature labelPolymorphism
 builtin to : (
-        <-tables: stream[{ A with T: time, M: string }],
+        <-tables: stream[{A with T: time, M: string}],
         ?bucket: string,
         ?bucketID: string,
         ?org: string,
@@ -341,7 +341,7 @@ builtin to : (
         ?measurementColumn: M = "_measurement",
         ?tagColumns: [string],
         ?fieldFn: (r: A) => B,
-    ) => stream[{ A with T: time, M: string }]
+    ) => stream[{A with T: time, M: string}]
     where
     A: Record,
     B: Record,
