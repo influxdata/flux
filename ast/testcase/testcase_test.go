@@ -115,7 +115,9 @@ testcase b extends "flux/a/a_test.a" {
 	pkg.Files[0].Name = "b/b_test.flux"
 
 	names, pkgs, err := testcase.Transform(ctx, pkg, testcase.TestModules{
-		"flux": fs,
+		"flux": testcase.TestModule{
+			Service: fs,
+		},
 	})
 	if err != nil {
 		t.Fatalf("unexpected error: %s", err)

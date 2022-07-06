@@ -7,17 +7,21 @@ import (
 	"compress/gzip"
 	"container/heap"
 	"context"
+	"encoding/json"
 	"fmt"
 	"io"
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"regexp"
+	"sort"
 	"strings"
 	"sync"
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/ast/astutil"
+	"github.com/influxdata/flux/ast/edit"
 	"github.com/influxdata/flux/ast/testcase"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/dependencies/filesystem"
@@ -30,103 +34,94 @@ import (
 
 const errorYield = "errorOutput"
 
-var skip = map[string]map[string]string{
-	"universe": {
-		"string_max":                  "error: invalid use of function: *functions.MaxSelector has no implementation for type string (https://github.com/influxdata/platform/issues/224)",
-		"null_as_value":               "null not supported as value in influxql (https://github.com/influxdata/platform/issues/353)",
-		"string_interp":               "string interpolation not working as expected in flux (https://github.com/influxdata/platform/issues/404)",
-		"to":                          "to functions are not supported in the testing framework (https://github.com/influxdata/flux/issues/77)",
-		"covariance_missing_column_1": "need to support known errors in new test framework (https://github.com/influxdata/flux/issues/536)",
-		"covariance_missing_column_2": "need to support known errors in new test framework (https://github.com/influxdata/flux/issues/536)",
-		"drop_before_rename":          "need to support known errors in new test framework (https://github.com/influxdata/flux/issues/536)",
-		"drop_referenced":             "need to support known errors in new test framework (https://github.com/influxdata/flux/issues/536)",
-		"yield":                       "yield requires special test case (https://github.com/iofluxdata/flux/issues/535)",
-		"task_per_line":               "join produces inconsistent/racy results when table schemas do not match (https://github.com/influxdata/flux/issues/855)",
-		"integral_columns":            "aggregates changed to operate on just a single column",
-	},
-	"http": {
-		"http_endpoint": "need ability to test side effects in e2e tests: https://github.com/influxdata/flux/issues/1723)",
-	},
-	"interval": {
-		"interval": "switch these tests cases to produce a non-table stream once that is supported (https://github.com/influxdata/flux/issues/535)",
-	},
-	"testing/chronograf": {
-		"measurement_tag_keys":   "unskip chronograf flux tests once filter is refactored (https://github.com/influxdata/flux/issues/1289)",
-		"aggregate_window_mean":  "unskip chronograf flux tests once filter is refactored (https://github.com/influxdata/flux/issues/1289)",
-		"aggregate_window_count": "unskip chronograf flux tests once filter is refactored (https://github.com/influxdata/flux/issues/1289)",
-	},
-	"testing/pandas": {
-		"extract_regexp_findStringIndex": "pandas. map does not correctly handled returned arrays (https://github.com/influxdata/flux/issues/1387)",
-		"partition_strings_splitN":       "pandas. map does not correctly handled returned arrays (https://github.com/influxdata/flux/issues/1387)",
-	},
-}
-
-// Skips added after converting `test` to `testcase`
-var newSkips = []string{
-	"join_use_previous_test", //  "unbounded test (https://github.com/influxdata/flux/issues/2996)",
-}
-
 type TestFlags struct {
 	testNames     []string
+	testTags      []string
 	paths         []string
 	skipTestCases []string
+	skipUntagged  bool
 	parallel      bool
 	verbosity     int
+	noinit        bool
 }
+
+type failedTests struct{}
+
+func (e failedTests) Error() string {
+	return "tests failed"
+}
+func (e failedTests) Silent() {}
 
 func TestCommand(setup TestSetupFunc) *cobra.Command {
 	var flags TestFlags
 	testCommand := &cobra.Command{
 		Use:   "test",
 		Short: "Run flux tests",
-		Long:  "Run flux tests",
-		Run: func(cmd *cobra.Command, args []string) {
-			fluxinit.FluxInit()
-			if err := runFluxTests(setup, flags); err != nil {
-				fmt.Println(err)
-				os.Exit(1)
+		Long: `Run flux tests
+
+An exit code of 0 means that no tests failed.
+Any other exit code means that either, there was an
+error running the tests or at least one test failed.
+`,
+		SilenceErrors: true,
+		SilenceUsage:  true,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			if !flags.noinit {
+				fluxinit.FluxInit()
 			}
+			if passed, err := runFluxTests(cmd.OutOrStdout(), setup, flags); err != nil {
+				return err
+			} else if !passed {
+				// Tests failed return a silent error since
+				// we have already reported about the failure according to
+				// the verbosity level.
+				return failedTests{}
+			}
+			return nil
 		},
 	}
 	testCommand.Flags().StringSliceVarP(&flags.paths, "path", "p", nil, "The root level directory for all packages.")
-	testCommand.Flags().StringSliceVar(&flags.testNames, "test", []string{}, "The name of a specific test to run.")
-	testCommand.Flags().StringSliceVar(&flags.skipTestCases, "skip", []string{}, "Comma-separated list of test cases to skip.")
+	testCommand.Flags().StringSliceVar(&flags.testNames, "test", []string{}, "List of test names to run. These tests will run regardless of tags or skips.")
+	testCommand.Flags().StringSliceVar(&flags.testTags, "tags", []string{}, "List of tags. Tests only run if all of their tags are provided.")
+	testCommand.Flags().StringSliceVar(&flags.skipTestCases, "skip", []string{}, "List of test names to skip.")
+	testCommand.Flags().BoolVar(&flags.skipUntagged, "skip-untagged", false, "Skip tests with an empty tag set.")
 	testCommand.Flags().BoolVarP(&flags.parallel, "parallel", "", false, "Enables parallel test execution.")
 	testCommand.Flags().CountVarP(&flags.verbosity, "verbose", "v", "verbose (-v, -vv, or -vvv)")
+	testCommand.Flags().BoolVarP(&flags.noinit, "noinit", "", false, "Disables Flux initialization, used for testing this command.")
 	return testCommand
 }
 
 // runFluxTests invokes the test runner.
-func runFluxTests(setup TestSetupFunc, flags TestFlags) error {
+// Returns true if no tests failed or an error if one was encountered.
+func runFluxTests(out io.Writer, setup TestSetupFunc, flags TestFlags) (bool, error) {
 	if len(flags.paths) == 0 {
 		flags.paths = []string{"."}
 	}
 
-	reporter := NewTestReporter(flags.verbosity)
+	reporter := NewTestReporter(out, flags.verbosity)
 	runner := NewTestRunner(reporter)
-	if err := runner.Gather(flags.paths, flags.testNames); err != nil {
-		return err
+	if err := runner.Gather(flags.paths); err != nil {
+		return false, err
 	}
+
+	if invalid := invalidTags(flags.testTags, runner.validTags); len(invalid) != 0 {
+		return false, errors.Newf(codes.Invalid, "provided tags are invalid: %v, valid tags are %v", invalid, runner.validTags)
+	}
+
+	runner.MarkSkipped(flags.testNames, flags.skipTestCases, flags.testTags, flags.skipUntagged)
 
 	executor, err := setup(context.Background())
 	if err != nil {
-		return err
+		return false, err
 	}
 	defer func() { _ = executor.Close() }()
 
-	for _, m := range skip {
-		for k := range m {
-			flags.skipTestCases = append(flags.skipTestCases, k)
-		}
-	}
-	flags.skipTestCases = append(flags.skipTestCases, newSkips...)
-
 	if flags.parallel {
-		runner.RunParallel(executor, flags.verbosity, flags.skipTestCases)
+		runner.RunParallel(executor, flags.verbosity)
 	} else {
-		runner.Run(executor, flags.verbosity, flags.skipTestCases)
+		runner.Run(executor, flags.verbosity)
 	}
-	return runner.Finish()
+	return runner.Finish(), nil
 }
 
 // Test wraps the functionality of a single testcase statement,
@@ -134,15 +129,19 @@ func runFluxTests(setup TestSetupFunc, flags TestFlags) error {
 type Test struct {
 	name string
 	ast  *ast.Package
-	err  error
+	// set of tags specified for the test case
+	tags []string
+	// indicates if the test should be skipped
 	skip bool
+	err  error
 }
 
 // NewTest creates a new Test instance from an ast.Package.
-func NewTest(name string, ast *ast.Package) Test {
+func NewTest(name string, ast *ast.Package, tags []string) Test {
 	return Test{
 		name: name,
 		ast:  ast,
+		tags: tags,
 	}
 }
 
@@ -231,8 +230,9 @@ func contains(names []string, name string) bool {
 
 // TestRunner gathers and runs all tests.
 type TestRunner struct {
-	tests    []*Test
-	reporter TestReporter
+	tests     []*Test
+	validTags []string
+	reporter  TestReporter
 }
 
 // NewTestRunner returns a new TestRunner.
@@ -243,11 +243,16 @@ func NewTestRunner(reporter TestReporter) TestRunner {
 	}
 }
 
-type gatherFunc func(filename string) ([]string, fs, testcase.TestModules, error)
+type testFile struct {
+	path   string
+	module string
+}
+
+type gatherFunc func(filename string) ([]testFile, fs, testcase.TestModules, error)
 
 // Gather gathers all tests from the filesystem and creates Test instances
 // from that info.
-func (t *TestRunner) Gather(roots []string, names []string) error {
+func (t *TestRunner) Gather(roots []string) error {
 	var modules testcase.TestModules
 	for _, root := range roots {
 		var gatherFrom gatherFunc
@@ -269,6 +274,11 @@ func (t *TestRunner) Gather(roots []string, names []string) error {
 		}
 		defer func() { _ = fs.Close() }()
 
+		// Gather valid tags from modules
+		for _, m := range mods {
+			t.validTags = union(t.validTags, m.Tags)
+		}
+
 		// Merge in any new modules.
 		if err := modules.Merge(mods); err != nil {
 			return err
@@ -276,30 +286,159 @@ func (t *TestRunner) Gather(roots []string, names []string) error {
 
 		ctx := filesystem.Inject(context.Background(), fs)
 		for _, file := range files {
-			q, err := filesystem.ReadFile(ctx, file)
+			q, err := filesystem.ReadFile(ctx, file.path)
 			if err != nil {
 				return errors.Wrapf(err, codes.Invalid, "could not find test file %q", file)
 			}
 			baseAST := parser.ParseSource(string(q))
 			if len(baseAST.Files) > 0 {
-				baseAST.Files[0].Name = file
+				baseAST.Files[0].Name = file.path
 			}
 			tcnames, asts, err := testcase.Transform(ctx, baseAST, modules)
 			if err != nil {
 				return err
 			}
 			for i, astf := range asts {
-				test := NewTest(tcnames[i], astf)
-				if len(names) == 0 || contains(names, test.Name()) {
-					t.tests = append(t.tests, &test)
+				tags, err := readTags(astf)
+				if err != nil {
+					return err
 				}
+				if invalid := invalidTags(tags, mods.Tags(file.module)); len(invalid) != 0 {
+					return errors.Newf(codes.Invalid, "testcase %q, contains invalid tags %v, valid tags are: %v", tcnames[i], invalid, mods.Tags(file.module))
+				}
+				test := NewTest(tcnames[i], astf, tags)
+				t.tests = append(t.tests, &test)
 			}
 		}
 	}
+	sort.Strings(t.validTags)
 	return nil
 }
 
-func gatherFromTarArchive(filename string) ([]string, fs, testcase.TestModules, error) {
+// invalidTags returns all tags that are not in the valid set.
+func invalidTags(tags, valid []string) []string {
+	var invalid []string
+	for _, t := range tags {
+		if !contains(valid, t) {
+			invalid = append(invalid, t)
+		}
+	}
+	return invalid
+}
+
+func union(a, b []string) []string {
+	for _, v := range b {
+		if !contains(a, v) {
+			a = append(a, v)
+		}
+	}
+	return a
+}
+
+// MarkSkipped checks the provided filters and marks each test case as skipped as needed.
+//
+// Skip rules:
+//  - When testNames is not empty any test in the list will be run, all others skipped.
+//  - When a test name is in skips, the test is skipped.
+//  - When a test contains any tags all tags must be specified for the test to run.
+//  - When skipUntagged is true, any test that does not have any tags is skipped.
+//
+// The list of tests takes precedence over all other parameters.
+func (t *TestRunner) MarkSkipped(testNames, skips, tags []string, skipUntagged bool) {
+	skipMap := make(map[string]bool)
+	for _, n := range skips {
+		skipMap[n] = true
+	}
+
+	for i := range t.tests {
+		// If testNames is not empty then check only that list
+		if len(testNames) > 0 {
+			t.tests[i].skip = !contains(testNames, t.tests[i].Name())
+			continue
+		}
+		// Now we assume the test is not skipped and check the rest of the rules
+		skip := false
+
+		if len(t.tests[i].tags) > 0 {
+			// Tags must be present for all test tags
+			isMatch := true
+			for _, tag := range t.tests[i].tags {
+				isMatch = isMatch && contains(tags, tag)
+			}
+			if !isMatch {
+				skip = true
+			}
+		}
+		t.tests[i].skip = skip || skipMap[t.tests[i].Name()] || (skipUntagged && len(t.tests[i].tags) == 0)
+	}
+}
+
+func readTags(pkg *ast.Package) ([]string, error) {
+	var tagOption *ast.ArrayExpression
+	var tags []string
+	for _, file := range pkg.Files {
+		option, err := edit.GetOption(file, "testing.tags")
+		if err != nil {
+			if err != edit.OptionNotFoundError {
+				return nil, err
+			}
+			continue
+		}
+		var ok bool
+		tagOption, ok = option.(*ast.ArrayExpression)
+		if !ok {
+			return nil, errors.New(codes.Invalid, "testing.tags option must be a list of strings")
+		}
+	}
+	if tagOption != nil {
+		tags = make([]string, 0, len(tagOption.Elements))
+		for _, tagExpr := range tagOption.Elements {
+			tag, ok := tagExpr.(*ast.StringLiteral)
+			if !ok {
+				return nil, errors.New(codes.Invalid, "testing.tags option list elements must be string literals")
+			}
+			tags = append(tags, ast.StringFromLiteral(tag))
+		}
+	}
+	return tags, nil
+
+}
+
+type rootCollector struct {
+	roots []root
+}
+type root struct {
+	path string
+	name string
+}
+
+func (r *rootCollector) Add(name, path string) {
+	r.roots = append(r.roots, root{
+		name: name,
+		path: path,
+	})
+}
+
+func (r *rootCollector) Assign(files []testFile) {
+	// Sort roots by longest path
+	sort.Slice(r.roots, func(i, j int) bool {
+		iL := len(strings.Split(r.roots[i].path, "/"))
+		jL := len(strings.Split(r.roots[j].path, "/"))
+		// Note we want longest first
+		return iL > jL
+	})
+	// Set module name for all test files
+	for i, f := range files {
+		for _, r := range r.roots {
+			if strings.HasPrefix(f.path, r.path) {
+				files[i].module = r.name
+				break
+			}
+		}
+	}
+}
+
+func gatherFromTarArchive(filename string) ([]testFile, fs, testcase.TestModules, error) {
 	var f io.ReadCloser
 	f, err := os.Open(filename)
 	if err != nil {
@@ -317,11 +456,12 @@ func gatherFromTarArchive(filename string) ([]string, fs, testcase.TestModules, 
 	}
 
 	var (
-		files []string
+		files []testFile
 		tfs   = &tarfs{
 			files: make(map[string]*tarfile),
 		}
 		modules testcase.TestModules
+		roots   rootCollector
 	)
 	archive := tar.NewReader(f)
 	for {
@@ -335,17 +475,20 @@ func gatherFromTarArchive(filename string) ([]string, fs, testcase.TestModules, 
 		info := hdr.FileInfo()
 		if !isTestFile(info, hdr.Name) {
 			if isTestRoot(hdr.Name) {
-				name, err := readTestRoot(archive, nil)
+				name, tags, err := readTestRoot(archive, nil)
 				if err != nil {
 					return nil, nil, nil, err
 				}
 
-				if err := modules.Add(name, prefixfs{
-					prefix: filepath.Dir(hdr.Name),
-					fs:     tfs,
-				}); err != nil {
+				if err := modules.Add(name, testcase.TestModule{
+					Tags: tags,
+					Service: prefixfs{
+						prefix: filepath.Dir(hdr.Name),
+						fs:     tfs,
+					}}); err != nil {
 					return nil, nil, nil, err
 				}
+				roots.Add(name, filepath.Dir(hdr.Name))
 			}
 			continue
 		}
@@ -358,8 +501,11 @@ func gatherFromTarArchive(filename string) ([]string, fs, testcase.TestModules, 
 			data: source,
 			info: info,
 		}
-		files = append(files, hdr.Name)
+		files = append(files, testFile{
+			path: hdr.Name,
+		})
 	}
+	roots.Assign(files)
 	return files, tfs, modules, nil
 }
 
@@ -400,7 +546,7 @@ func (t *tarfile) Stat() (os.FileInfo, error) {
 	return t.info, nil
 }
 
-func gatherFromZipArchive(filename string) ([]string, fs, testcase.TestModules, error) {
+func gatherFromZipArchive(filename string) ([]testFile, fs, testcase.TestModules, error) {
 	var modules testcase.TestModules
 
 	f, err := os.Open(filename)
@@ -423,28 +569,32 @@ func gatherFromZipArchive(filename string) ([]string, fs, testcase.TestModules, 
 		Closer: f,
 	}
 
-	var files []string
+	var roots rootCollector
+	var files []testFile
 	for _, file := range zipf.File {
 		info := file.FileInfo()
 		if !isTestFile(info, file.Name) {
 			if isTestRoot(file.Name) {
-				name, err := readTestRoot(file.Open())
+				name, tags, err := readTestRoot(file.Open())
 				if err != nil {
 					return nil, nil, nil, err
 				}
 
-				if err := modules.Add(name, prefixfs{
-					prefix: filepath.Dir(file.Name),
-					fs:     fs,
-				}); err != nil {
+				if err := modules.Add(name, testcase.TestModule{
+					Tags: tags,
+					Service: prefixfs{
+						prefix: filepath.Dir(file.Name),
+						fs:     fs,
+					}}); err != nil {
 					return nil, nil, nil, err
 				}
+				roots.Add(name, filepath.Dir(file.Name))
 			}
 			continue
 		}
-		files = append(files, file.Name)
-
+		files = append(files, testFile{path: file.Name})
 	}
+	roots.Assign(files)
 	return files, fs, modules, nil
 }
 
@@ -516,58 +666,66 @@ func (s prefixfs) Open(fpath string) (filesystem.File, error) {
 	return s.fs.Open(fpath)
 }
 
-func gatherFromDir(filename string) ([]string, fs, testcase.TestModules, error) {
+func gatherFromDir(filename string) ([]testFile, fs, testcase.TestModules, error) {
 	var (
-		files   []string
-		modules testcase.TestModules
+		files      []testFile
+		roots      rootCollector
+		modules    testcase.TestModules
+		parentRoot string
 	)
 
 	// Find a test root above the root if it exists.
-	if name, fs, ok, err := findParentTestRoot(filename); err != nil {
+	if name, tags, fs, ok, err := findParentTestRoot(filename); err != nil {
 		return nil, nil, nil, err
 	} else if ok {
-		if err := modules.Add(name, fs); err != nil {
+		if err := modules.Add(name, testcase.TestModule{Tags: tags, Service: fs}); err != nil {
 			return nil, nil, nil, err
 		}
+		parentRoot = name
 	}
 
 	if err := filepath.Walk(
 		filename,
 		func(path string, info os.FileInfo, err error) error {
 			if isTestFile(info, path) {
-				files = append(files, path)
+				files = append(files, testFile{path: path, module: parentRoot})
 			} else if isTestRoot(path) {
-				name, err := readTestRoot(os.Open(path))
+				name, tags, err := readTestRoot(os.Open(path))
 				if err != nil {
 					return err
 				}
 
-				if err := modules.Add(name, prefixfs{
-					prefix: filepath.Dir(path),
-					fs:     systemfs{},
-				}); err != nil {
+				if err := modules.Add(name, testcase.TestModule{
+					Tags: tags,
+					Service: prefixfs{
+						prefix: filepath.Dir(path),
+						fs:     systemfs{},
+					}}); err != nil {
 					return err
 				}
+				roots.Add(name, filepath.Dir(path))
 			}
 			return nil
 		}); err != nil {
 		return nil, nil, nil, err
 	}
+	roots.Assign(files)
 	return files, systemfs{}, modules, nil
 }
 
-func gatherFromFile(filename string) ([]string, fs, testcase.TestModules, error) {
+func gatherFromFile(filename string) ([]testFile, fs, testcase.TestModules, error) {
 	var modules testcase.TestModules
 
 	// Find a test root above the root if it exists.
-	if name, fs, ok, err := findParentTestRoot(filename); err != nil {
+	if name, tags, fs, ok, err := findParentTestRoot(filename); err != nil {
 		return nil, nil, nil, err
 	} else if ok {
-		if err := modules.Add(name, fs); err != nil {
+		if err := modules.Add(name, testcase.TestModule{Tags: tags, Service: fs}); err != nil {
 			return nil, nil, nil, err
 		}
+		return []testFile{{path: filename, module: name}}, systemfs{}, modules, nil
 	}
-	return []string{filename}, systemfs{}, modules, nil
+	return []testFile{{path: filename}}, systemfs{}, modules, nil
 }
 
 func isTestFile(fi os.FileInfo, filename string) bool {
@@ -580,33 +738,50 @@ func isTestRoot(filename string) bool {
 	return filepath.Base(filename) == testRootFilename
 }
 
-func readTestRoot(f io.Reader, err error) (string, error) {
+var rootPattern *regexp.Regexp
+
+func init() {
+	rootPattern = regexp.MustCompile("^[[:alpha:]]+$")
+}
+
+func readTestRoot(f io.Reader, err error) (string, []string, error) {
 	if err != nil {
-		return "", err
+		return "", nil, err
 	}
 
 	if rc, ok := f.(io.ReadCloser); ok {
 		defer func() { _ = rc.Close() }()
 	}
-	name, err := ioutil.ReadAll(f)
+	data, err := ioutil.ReadAll(f)
 	if err != nil {
-		return "", err
+		return "", nil, err
 	}
-
-	s := string(bytes.TrimSpace(name))
-	if len(s) == 0 {
-		return "", errors.New(codes.FailedPrecondition, "test module name must be non-empty")
+	info := struct {
+		Name string
+		Tags []string
+	}{}
+	trimmed := bytes.TrimSpace(data)
+	if rootPattern.Match(trimmed) {
+		info.Name = string(trimmed)
+	} else {
+		err = json.Unmarshal(data, &info)
+		if err != nil {
+			return "", nil, err
+		}
 	}
-	return s, nil
+	if len(info.Name) == 0 {
+		return "", nil, errors.New(codes.FailedPrecondition, "test module name must be non-empty")
+	}
+	return info.Name, info.Tags, nil
 }
 
 // findParentTestRoot searches the parents to find a test root.
 // This function only works for the system filesystem and isn't meant
 // to be used with archive filesystems.
-func findParentTestRoot(path string) (string, filesystem.Service, bool, error) {
+func findParentTestRoot(path string) (string, []string, filesystem.Service, bool, error) {
 	cur, err := filepath.Abs(path)
 	if err != nil {
-		return "", nil, false, err
+		return "", nil, nil, false, err
 	}
 	// Start with the parent directory of the path.
 	// A test root starting at the path will be found
@@ -616,18 +791,18 @@ func findParentTestRoot(path string) (string, filesystem.Service, bool, error) {
 	for cur != "/" {
 		fpath := filepath.Join(cur, testRootFilename)
 		if _, err := os.Stat(fpath); err == nil {
-			name, err := readTestRoot(os.Open(fpath))
+			name, tags, err := readTestRoot(os.Open(fpath))
 			if err != nil {
-				return "", nil, false, err
+				return "", nil, nil, false, err
 			}
-			return name, prefixfs{
+			return name, tags, prefixfs{
 				prefix: cur,
 				fs:     systemfs{},
 			}, true, nil
 		}
 		cur = filepath.Dir(cur)
 	}
-	return "", nil, false, nil
+	return "", nil, nil, false, nil
 }
 
 type IntHeap []int
@@ -651,20 +826,14 @@ func (h *IntHeap) Pop() interface{} {
 }
 
 // Run runs all tests, reporting their results.
-func (t *TestRunner) RunParallel(executor TestExecutor, verbosity int, skipTestCases []string) {
-	skipMap := make(map[string]struct{})
-	for _, n := range skipTestCases {
-		skipMap[n] = struct{}{}
-	}
+func (t *TestRunner) RunParallel(executor TestExecutor, verbosity int) {
 
 	results := make(chan int)
 
 	go func() {
 		wg := new(sync.WaitGroup)
 		for i, test := range t.tests {
-			if _, ok := skipMap[test.name]; ok {
-				test.skip = true
-
+			if test.skip {
 				// Send the index of this test to show that it is finished
 				results <- i
 			} else {
@@ -703,14 +872,9 @@ func (t *TestRunner) RunParallel(executor TestExecutor, verbosity int, skipTestC
 	}
 }
 
-func (t *TestRunner) Run(executor TestExecutor, verbosity int, skipTestCases []string) {
-	skipMap := make(map[string]struct{})
-	for _, n := range skipTestCases {
-		skipMap[n] = struct{}{}
-	}
+func (t *TestRunner) Run(executor TestExecutor, verbosity int) {
 	for _, test := range t.tests {
-		if _, ok := skipMap[test.name]; ok {
-			test.skip = true
+		if test.skip {
 		} else {
 			test.Run(executor)
 		}
@@ -720,24 +884,19 @@ func (t *TestRunner) Run(executor TestExecutor, verbosity int, skipTestCases []s
 
 // Finish summarizes the test run, and returns an
 // error in the event of a failure.
-func (t *TestRunner) Finish() error {
-	t.reporter.Summarize(t.tests)
-	for _, test := range t.tests {
-		if err := test.Error(); err != nil {
-			return err
-		}
-	}
-	return nil
+func (t *TestRunner) Finish() bool {
+	return t.reporter.Summarize(t.tests)
 }
 
 // TestReporter handles reporting of test results.
 type TestReporter struct {
+	out       io.Writer
 	verbosity int
 }
 
 // NewTestReporter creates a new TestReporter with a provided verbosity.
-func NewTestReporter(verbosity int) TestReporter {
-	return TestReporter{verbosity: verbosity}
+func NewTestReporter(out io.Writer, verbosity int) TestReporter {
+	return TestReporter{out: out, verbosity: verbosity}
 }
 
 // ReportTestRun reports the result a single test run, intended to be run as
@@ -745,39 +904,55 @@ func NewTestReporter(verbosity int) TestReporter {
 func (t *TestReporter) ReportTestRun(test *Test) {
 	if t.verbosity == 0 {
 		if test.skip {
-			fmt.Print("s")
+			fmt.Fprint(t.out, "s")
 		} else if test.Error() != nil {
-			fmt.Print("x")
+			fmt.Fprint(t.out, "x")
 		} else {
-			fmt.Print(".")
+			fmt.Fprint(t.out, ".")
 		}
 	} else if t.verbosity == 1 {
 		if test.skip {
-			fmt.Printf("%s...skip\n", test.FullName())
+			// Do not print skipped tests until the next verbosity level
 		} else if err := test.Error(); err != nil {
-			fmt.Printf("%s...fail: %s\n", test.FullName(), err)
+			fmt.Fprintf(t.out, "%s...fail: %s\n", test.FullName(), err)
 		} else {
-			fmt.Printf("%s...success\n", test.FullName())
+			fmt.Fprintf(t.out, "%s...success\n", test.FullName())
+		}
+	} else if t.verbosity == 2 {
+		if test.skip {
+			fmt.Fprintf(t.out, "%s...skip\n", test.FullName())
+		} else if err := test.Error(); err != nil {
+			fmt.Fprintf(t.out, "%s...fail: %s\n", test.FullName(), err)
+		} else {
+			fmt.Fprintf(t.out, "%s...success\n", test.FullName())
 		}
 	} else {
+		if test.skip {
+			// Do not print full output of skipped tests
+			// Using verbosity >=3 is about debugging a running test,
+			// we do not need information about skipped tests
+			return
+		}
+		fmt.Fprintf(t.out, "Testcase: %s\n", test.FullName())
+		fmt.Fprintf(t.out, "Tags: %v\n", test.tags)
 		source, err := test.SourceCode()
 		if err != nil {
-			fmt.Printf("failed to get source for test %s: %s\n", test.FullName(), err)
+			fmt.Fprintln(t.out, "Source: FAILED")
 		} else {
-			fmt.Printf("Full source for test case %q\n%s", test.FullName(), source)
+			fmt.Fprintf(t.out, "Source: \n%s", source)
 		}
 		if test.skip {
-			fmt.Printf("%s...skip\n", test.FullName())
+			fmt.Fprintf(t.out, "Result: %s...skip\n", test.Name())
 		} else if err := test.Error(); err != nil {
-			fmt.Printf("%s...fail: %s\n", test.FullName(), err)
+			fmt.Fprintf(t.out, "Result: %s...fail: %s\n", test.Name(), err)
 		} else {
-			fmt.Printf("%s...success\n", test.FullName())
+			fmt.Fprintf(t.out, "Result: %s...success\n", test.Name())
 		}
 	}
 }
 
 // Summarize summarizes the test run.
-func (t *TestReporter) Summarize(tests []*Test) {
+func (t *TestReporter) Summarize(tests []*Test) bool {
 	failures := 0
 	skips := 0
 	for _, test := range tests {
@@ -788,16 +963,17 @@ func (t *TestReporter) Summarize(tests []*Test) {
 		}
 	}
 	if failures > 0 {
-		fmt.Printf("\nfailures:\n\n")
+		fmt.Fprintf(t.out, "\nfailures:\n\n")
 		for _, test := range tests {
 			if err := test.Error(); err != nil {
-				fmt.Printf("\t%s...fail: %s\n", test.FullName(), err)
+				fmt.Fprintf(t.out, "\t%s...fail: %s\n", test.FullName(), err)
 			}
 		}
 	}
 
 	passed := len(tests) - skips - failures
-	fmt.Printf("\n---\nFound %d tests: passed %d, failed %d, skipped %d\n", len(tests), passed, failures, skips)
+	fmt.Fprintf(t.out, "\n---\nFound %d tests: passed %d, failed %d, skipped %d\n", len(tests), passed, failures, skips)
+	return failures == 0
 }
 
 type (

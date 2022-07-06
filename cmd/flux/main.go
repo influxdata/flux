@@ -19,6 +19,9 @@ import (
 	"github.com/opentracing/opentracing-go"
 	"github.com/spf13/cobra"
 	jaegercfg "github.com/uber/jaeger-client-go/config"
+
+	// Include the sqlite3 driver for vanilla Flux
+	_ "github.com/mattn/go-sqlite3"
 )
 
 var flags struct {
@@ -116,10 +119,11 @@ func injectDependencies(ctx context.Context) (context.Context, *dependency.Span)
 
 func main() {
 	fluxCmd := &cobra.Command{
-		Use:          "flux",
-		Args:         cobra.MaximumNArgs(1),
-		RunE:         runE,
-		SilenceUsage: true,
+		Use:           "flux",
+		Args:          cobra.MaximumNArgs(1),
+		RunE:          runE,
+		SilenceUsage:  true,
+		SilenceErrors: true,
 	}
 	fluxCmd.Flags().BoolVarP(&flags.ExecScript, "exec", "e", false, "Interpret file argument as a raw flux script")
 	fluxCmd.Flags().BoolVarP(&flags.EnableSuggestions, "enable-suggestions", "", false, "enable suggestions in the repl")
@@ -129,13 +133,11 @@ func main() {
 	fluxCmd.Flags().StringVar(&flags.Features, "feature", "", "JSON object specifying the features to execute with. See internal/feature/flags.yml for a list of the current features")
 
 	fmtCmd := &cobra.Command{
-		Use:           "fmt",
-		Short:         "Format a Flux script",
-		Long:          "Format a Flux script (flux fmt [-w] <directory | file>)",
-		Args:          cobra.MinimumNArgs(1),
-		RunE:          formatFile,
-		SilenceErrors: true,
-		SilenceUsage:  true,
+		Use:   "fmt",
+		Short: "Format a Flux script",
+		Long:  "Format a Flux script (flux fmt [-w] <directory | file>)",
+		Args:  cobra.MinimumNArgs(1),
+		RunE:  formatFile,
 	}
 	fmtCmd.Flags().BoolVarP(&fmtFlags.WriteResultToSource, "write-result-to-source", "w", false, "write result to (source) file instead of stdout")
 	fmtCmd.Flags().BoolVarP(&fmtFlags.AnalyzeCurrentDirectory, "analyze-current-directory", "c", false, "analyze the current <directory | file> and report if file(s) are not formatted")
@@ -145,6 +147,14 @@ func main() {
 	fluxCmd.AddCommand(testCmd)
 
 	if err := fluxCmd.Execute(); err != nil {
+		if _, ok := err.(silentError); !ok {
+			fmt.Fprintln(fluxCmd.OutOrStderr(), err)
+		}
 		os.Exit(1)
 	}
+}
+
+// silentError indicates the error should not be printed to stderr.
+type silentError interface {
+	Silent()
 }

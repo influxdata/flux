@@ -3,3 +3,6 @@
 
 # Automatically request review from Flux and Docs teams for stdlib source changes
 *.flux @influxdata/flux-team @influxdata/docs-team
+
+# Do not request Docs teams for changes to Flux test files
+*_test.flux @influxdata/flux-team

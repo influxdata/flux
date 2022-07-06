@@ -124,19 +124,16 @@ test-rust:
 	$(CARGO) test --doc && \
 	$(CARGO) clippy $(CARGO_ARGS) --all-features -- -Dclippy::all -Dclippy::undocumented_unsafe_blocks
 
-INTEGRATION_INJECTION_TESTS=integration_hdb_injection,integration_sqlite_injection,integration_vertica_injection,integration_mssql_injection,integration_mysql_injection,integration_mariadb_injection,integration_pg_injection
-INTEGRATION_WRITE_TESTS=integration_mqtt_pub,integration_hdb_write_to,integration_sqlite_write_to,integration_vertica_write_to,integration_mssql_write_to,integration_mysql_write_to,integration_mariadb_write_to,integration_pg_write_to
-INTEGRATION_READ_TESTS=integration_hdb_read_from_seed,integration_hdb_read_from_nonseed,integration_sqlite_read_from_seed,integration_sqlite_read_from_nonseed,integration_vertica_read_from_seed,integration_vertica_read_from_nonseed,integration_mssql_read_from_seed,integration_mssql_read_from_nonseed,integration_mariadb_read_from_seed,integration_mariadb_read_from_nonseed,integration_mysql_read_from_seed,integration_mysql_read_from_nonseed,integration_pg_read_from_seed,integration_pg_read_from_nonseed
-INTEGRATION_TESTS="$(INTEGRATION_INJECTION_TESTS),$(INTEGRATION_WRITE_TESTS),$(INTEGRATION_READ_TESTS)"
-
 test-flux:
-	$(GO_RUN) ./cmd/flux test -v --parallel 8 --skip $(INTEGRATION_TESTS)
+	$(GO_RUN) ./cmd/flux test -p stdlib -v --parallel 8
 
 test-flux-integration:
 	./etc/spawn-containers.sh
-	$(GO_RUN) ./cmd/flux test -v --test $(INTEGRATION_INJECTION_TESTS)
-	$(GO_RUN) ./cmd/flux test -v --test $(INTEGRATION_WRITE_TESTS)
-	$(GO_RUN) ./cmd/flux test -v --test $(INTEGRATION_READ_TESTS)
+	# Run tests in order: sql injection attack, write, read
+	# This way we can read our writes and validate the sql injection failed
+	$(GO_RUN) ./cmd/flux test -p stdlib -v --skip-untagged --tags integration_injection
+	$(GO_RUN) ./cmd/flux test -p stdlib -v --skip-untagged --tags integration_write
+	$(GO_RUN) ./cmd/flux test -p stdlib -v --skip-untagged --tags integration_read
 
 test-race: libflux-go
 	$(GO_TEST) -race -count=1 ./...

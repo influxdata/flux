@@ -38,10 +38,9 @@ func init() {
 }
 
 const (
-	// TODO(jlapacik) remove this once we have execute.DefaultFieldColLabel
-	defaultFieldColLabel       = "_field"
-	defaultMeasurementColLabel = "_measurement"
-	toOp                       = "influxdata/influxdb/to"
+	defaultToFieldColLabel       = DefaultFieldColLabel
+	defaultToMeasurementColLabel = DefaultMeasurementColLabel
+	toOp                         = "influxdata/influxdb/to"
 )
 
 func createToTransformation(id execute.DatasetID, mode execute.AccumulationMode, spec plan.ProcedureSpec, a execute.Administration) (execute.Transformation, execute.Dataset, error) {
@@ -113,8 +112,8 @@ func (t *toTransformation) Process(chunk table.Chunk, d *execute.TransportDatase
 	if t.implicitTagColumns {
 		excludeColumns := map[string]bool{
 			execute.DefaultValueColLabel: true,
-			defaultFieldColLabel:         true,
-			defaultMeasurementColLabel:   true,
+			defaultToFieldColLabel:       true,
+			defaultToMeasurementColLabel: true,
 		}
 
 		// If a field function is specified then we exclude any column that
@@ -379,7 +378,7 @@ func (v *fieldFunctionVisitor) Visit(node semantic.Node) semantic.Visitor {
 func (v *fieldFunctionVisitor) Done(semantic.Node) {}
 
 func defaultFieldMapping(er flux.ColReader, row int) (values.Object, error) {
-	fieldColumnIdx := execute.ColIdx(defaultFieldColLabel, er.Cols())
+	fieldColumnIdx := execute.ColIdx(defaultToFieldColLabel, er.Cols())
 	valueColumnIdx := execute.ColIdx(execute.DefaultValueColLabel, er.Cols())
 
 	if fieldColumnIdx < 0 {
@@ -500,7 +499,7 @@ func (o *ToOpSpec) ReadArgs(args flux.Arguments) error {
 	}
 
 	if o.MeasurementColumn, ok, _ = args.GetString("measurementColumn"); !ok {
-		o.MeasurementColumn = defaultMeasurementColLabel
+		o.MeasurementColumn = defaultToMeasurementColLabel
 	}
 
 	if tags, ok, _ := args.GetArray("tagColumns", semantic.String); ok {
