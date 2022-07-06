@@ -97,7 +97,7 @@ re !~ /foo/
     let mut pkg = match convert::convert_package(&pkg, &Default::default(), &Default::default()) {
         Ok(pkg) => pkg,
         Err(e) => {
-            assert!(false, "{}", e);
+            panic!("{}", e);
             return;
         }
     };
@@ -127,13 +127,13 @@ re !~ /foo/
     let (vec, offset) = match super::serialize_pkg(&pkg) {
         Ok((v, o)) => (v, o),
         Err(e) => {
-            assert!(false, "{}", e);
+            panic!("{}", e);
             return;
         }
     };
     let fb = &vec.as_slice()[offset..];
     if let Err(e) = compare_semantic_fb(&pkg, fb) {
-        assert!(false, "{}", e)
+        panic!("{}", e)
     }
 }
 
@@ -167,13 +167,13 @@ fn test_serialize_vectorization() {
     let (_, mut pkg) = match analyzer.analyze_ast(&pkg) {
         Ok(pkg) => pkg,
         Err(e) => {
-            assert!(false, "{}", e);
+            panic!("{}", e);
             return;
         }
     };
     // call vectorize function explicitly
     if let Err(e) = semantic::vectorize::vectorize(&semantic::AnalyzerConfig::default(), &mut pkg) {
-        assert!(false, "{}", e)
+        panic!("{}", e)
     }
 
     // check there's something inside vectorized field
@@ -194,7 +194,7 @@ fn test_serialize_vectorization() {
     let (vec, offset) = match super::serialize_pkg(&pkg) {
         Ok((v, o)) => (v, o),
         Err(e) => {
-            assert!(false, "{}", e);
+            panic!("{}", e);
             return;
         }
     };
@@ -202,7 +202,7 @@ fn test_serialize_vectorization() {
     // compare semantic package with flatbuffers
     let fb = &vec.as_slice()[offset..];
     if let Err(e) = compare_semantic_fb(&pkg, fb) {
-        assert!(false, "{}", e)
+        panic!("{}", e)
     }
 }
 
