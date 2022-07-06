@@ -9,9 +9,20 @@ import (
 	"github.com/influxdata/flux/semantic"
 )
 
-{{range $index, $op := .}}
+{{range $index, $op := .Ops}}
 
 func vector{{$op.Name}}(l, r Vector, mem memory.Allocator) (Value, error) {
+	var lvr, rvr *Value
+	if vr, ok := l.(*VectorRepeatValue); ok {
+		lvr = &vr.val
+	}
+	if vr, ok := r.(*VectorRepeatValue); ok {
+		rvr = &vr.val
+	}
+	if lvr != nil && rvr != nil {
+		panic("TODO: const folding")
+	}
+
 	switch l.ElementType().Nature() {
 
     {{range $index, $type := .Types}}
@@ -21,32 +32,22 @@ func vector{{$op.Name}}(l, r Vector, mem memory.Allocator) (Value, error) {
     {{else}}
 	case semantic.{{$type}}:
     {{end}}
-        var lal, ral fluxarray.{{$type}}ArrLike
-        vrCount := 0
-		if vecRepeat, ok := l.(*vectorRepeatValue); ok {
-			lal = vecRepeat.{{$type}}ArrLike()
-		    vrCount += 1
+    	var (
+    		{{if eq $op.Op "^"}}
+    		x *fluxarray.Float
+			{{else}}
+			x *fluxarray.{{$type}}
+			{{end}}
+    		err error
+    	)
+    	if lvr != nil {
+			x, err = fluxarray.{{$type}}{{$op.Name}}LConst((*lvr).{{index $.ValMap $type}}(), r.Arr().(*fluxarray.{{$type}}), mem)
+		} else if rvr != nil {
+			x, err = fluxarray.{{$type}}{{$op.Name}}RConst(l.Arr().(*fluxarray.{{$type}}), (*rvr).{{index $.ValMap $type}}(), mem)
 		} else {
-		    lal = l.Arr().(*fluxarray.{{$type}})
+			x, err = fluxarray.{{$type}}{{$op.Name}}(l.Arr().(*fluxarray.{{$type}}), r.Arr().(*fluxarray.{{$type}}), mem)
 		}
 
-		if vecRepeat, ok := r.(*vectorRepeatValue); ok {
-            ral = vecRepeat.{{$type}}ArrLike()
-		    vrCount += 1
-		} else {
-		    ral = r.Arr().(*fluxarray.{{$type}})
-		}
-
-		// When we have 2 vec repeats, we're talking about constant folding which
-		// will lead to a panic in funcs like fluxarray.{{$type}}{{$op.Name}}
-		// N.b. Until const folding is implemented, the rust side should take
-		// steps to refuse to vectorize expressions that land us in this code path.
-		if vrCount == 2 {
-		    // FIXME: perform the op directly on the 2 constants here and return a new vecRepeat
-		    panic("TODO: const folding")
-		}
-
-		x, err := fluxarray.{{$type}}{{$op.Name}}(lal, ral, mem)
 		if err != nil {
 			return nil, err
 		}

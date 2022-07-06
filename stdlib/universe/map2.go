@@ -491,20 +491,46 @@ func (m *mapVectorPreparedFunc) Eval(ctx context.Context, chunk table.Chunk, mem
 
 	var n int
 	arrs := make([]array.Array, len(cols))
+	repeaters := make([]bool, len(cols))
 	for i, col := range cols {
 		if v, ok := res.Get(col.Label); ok && !v.IsNull() {
-			arr := v.Vector().Arr()
-			arr.Retain()
-			if n == 0 {
-				n = arr.Len()
+			vec := v.Vector()
+			if !vec.IsRepeat() {
+				arr := vec.Arr()
+				arr.Retain()
+				if n == 0 {
+					n = arr.Len()
+				}
+				arrs[i] = arr
+			} else {
+				repeaters[i] = true
 			}
-			arrs[i] = arr
 		}
 	}
 
 	for i, col := range cols {
 		if arrs[i] == nil {
-			arrs[i] = arrow.Nulls(col.Type, n, mem)
+			if repeaters[i] {
+				b := arrow.NewBuilder(col.Type, mem)
+				b.Resize(n)
+				if v, ok := res.Get(col.Label); ok && !v.IsNull() {
+					val := v.Vector().(*values.VectorRepeatValue).Value()
+					for i := 0; i < n; i++ {
+						// FIXME: Add an `arrow.Fill(b, val, n)` to utils?
+						//  Assume this is slower than needed since
+						//  we're type switching for every iteration.
+						//  Arrow might even include a canonical way to fill.
+						err := arrow.AppendValue(b, val)
+						if err != nil {
+							return nil, nil, err
+						}
+					}
+				}
+				arrs[i] = b.NewArray()
+				b.Release()
+			} else {
+				arrs[i] = arrow.Nulls(col.Type, n, mem)
+			}
 		}
 	}
 	return cols, arrs, nil

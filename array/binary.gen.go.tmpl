@@ -8,62 +8,15 @@ import (
 	"github.com/influxdata/flux/internal/errors"
 )
 
-type IntArrLike interface {
-	IsValid(i int) bool
-	Value(i int) int64
-	Len() int
-}
-
-type UintArrLike interface {
-	IsValid(i int) bool
-	Value(i int) uint64
-	Len() int
-}
-
-type FloatArrLike interface {
-	IsValid(i int) bool
-	Value(i int) float64
-	Len() int
-}
-
-type StringArrLike interface {
-	IsValid(i int) bool
-	Value(i int) string
-	Len() int
-}
-
-{{range $index, $op := .}}
+{{range $index, $op := .Ops}}
 {{range $index, $type := .Types}}
 
 {{if eq $op.Op "^"}}
 
-func {{$type}}{{$op.Name}}(l, r {{$type}}ArrLike, mem memory.Allocator) (*Float, error) {
-    ln := 0
-    rn := 0
-    arrCount := 0
-    if _, ok := l.(*{{$type}}); ok {
-        arrCount += 1
-        ln = l.Len()
-    }
-    if _, ok := l.(*{{$type}}); ok {
-        arrCount += 1
-        rn = l.Len()
-    }
-
-    // We can only do a length comparison in the case where neither side is a const.
-    // Vec Repeat has no array backing, and therefore has no size.
-	if arrCount == 2 && ln != rn {
+func {{$type}}{{$op.Name}}(l, r *{{$type}}, mem memory.Allocator) (*Float, error) {
+	n := l.Len()
+	if n != r.Len() {
 		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
-	}
-	// FIXME(onelson): need some way to hint the size for the 2 const case.
-	if arrCount == 0 {
-		panic("combining constants cannot be vectorized")
-	}
-	var n int
-	if ln > rn {
-		n = ln
-	} else {
-		n = rn
 	}
 
 	b := NewFloatBuilder(mem)
@@ -80,39 +33,45 @@ func {{$type}}{{$op.Name}}(l, r {{$type}}ArrLike, mem memory.Allocator) (*Float,
 	return a, nil
 }
 
+func {{$type}}{{$op.Name}}LConst(l {{index $.TypeMap $type}}, r *{{$type}}, mem memory.Allocator) (*Float, error) {
+	n := r.Len()
+	b := NewFloatBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+		if r.IsValid(i) {
+			b.Append(math.Pow(float64(l), float64(r.Value(i))))
+		} else {
+			b.AppendNull()
+		}
+	}
+    a := b.NewFloatArray()
+    b.Release()
+	return a, nil
+}
+
+func {{$type}}{{$op.Name}}RConst(l *{{$type}}, r {{index $.TypeMap $type}}, mem memory.Allocator) (*Float, error) {
+	n := l.Len()
+	b := NewFloatBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+		if l.IsValid(i) {
+			b.Append(math.Pow(float64(l.Value(i)), float64(r)))
+		} else {
+			b.AppendNull()
+		}
+	}
+    a := b.NewFloatArray()
+    b.Release()
+	return a, nil
+}
+
 {{else}}
 
-
-func {{$type}}{{$op.Name}}(l, r {{$type}}ArrLike, mem memory.Allocator) (*{{$type}}, error) {
-
-    ln := 0
-    rn := 0
-    arrCount := 0
-    if _, ok := l.(*{{$type}}); ok {
-        arrCount += 1
-        ln = l.Len()
-    }
-    if _, ok := r.(*{{$type}}); ok {
-        arrCount += 1
-        rn = r.Len()
-    }
-
-    // We can only do a length comparison in the case where neither side is a const.
-    // Vec Repeat has no array backing, and therefore has no size.
-	if arrCount == 2 && ln != rn {
+func {{$type}}{{$op.Name}}(l, r *{{$type}}, mem memory.Allocator) (*{{$type}}, error) {
+	n := l.Len()
+	if n != r.Len() {
 		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
 	}
-	// FIXME(onelson): need some way to hint the size for the 2 const case.
-	if arrCount == 0 {
-		panic("combining constants cannot be vectorized")
-	}
-	var n int
-	if ln > rn {
-		n = ln
-	} else {
-		n = rn
-	}
-
 	b := New{{$type}}Builder(mem)
 	b.Resize(n)
 	for i := 0; i < n; i++ {
@@ -135,6 +94,53 @@ func {{$type}}{{$op.Name}}(l, r {{$type}}ArrLike, mem memory.Allocator) (*{{$typ
 	return a, nil
 }
 
+func {{$type}}{{$op.Name}}LConst(l {{index $.TypeMap $type}}, r *{{$type}}, mem memory.Allocator) (*{{$type}}, error) {
+	n := r.Len()
+	b := New{{$type}}Builder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+		if r.IsValid(i) {
+            {{if and (eq $op.Op "%") (eq $type "Float")}}
+
+			b.Append(math.Mod(l, r.Value(i)))
+
+            {{else}}
+
+			b.Append(l {{$op.Op}} r.Value(i))
+
+            {{end}}
+		} else {
+			b.AppendNull()
+		}
+	}
+    a := b.New{{$type}}Array()
+    b.Release()
+	return a, nil
+}
+
+func {{$type}}{{$op.Name}}RConst(l *{{$type}}, r {{index $.TypeMap $type}}, mem memory.Allocator) (*{{$type}}, error) {
+	n := l.Len()
+	b := New{{$type}}Builder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+		if l.IsValid(i) {
+            {{if and (eq $op.Op "%") (eq $type "Float")}}
+
+			b.Append(math.Mod(l.Value(i), r))
+
+            {{else}}
+
+			b.Append(l.Value(i) {{$op.Op}} r)
+
+            {{end}}
+		} else {
+			b.AppendNull()
+		}
+	}
+    a := b.New{{$type}}Array()
+    b.Release()
+	return a, nil
+}
 {{end}}
 
 {{end}}

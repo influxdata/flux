@@ -9,4 +9,5 @@ type Vector interface {
 	Value
 	ElementType() semantic.MonoType
 	Arr() arrow.Array
+	IsRepeat() bool
 }

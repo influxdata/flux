@@ -1,32 +1,46 @@
-[
-    {
-        "Name": "Add",
-        "Op": "+",
-        "Types": ["Int", "Uint", "Float", "String"]
+{
+    "Ops":[
+        {
+            "Name": "Add",
+            "Op": "+",
+            "Types": ["Int", "Uint", "Float", "String"]
+        },
+        {
+            "Name": "Sub",
+            "Op": "-",
+            "Types": ["Int", "Uint", "Float"]
+        },
+        {
+            "Name": "Mul",
+            "Op": "*",
+            "Types": ["Int", "Uint", "Float"]
+        },
+        {
+            "Name": "Div",
+            "Op": "/",
+            "Types": ["Int", "Uint", "Float"]
+        },
+        {
+            "Name": "Mod",
+            "Op": "%",
+            "Types": ["Int", "Uint", "Float"]
+        },
+        {
+            "Name": "Pow",
+            "Op": "^",
+            "Types": ["Int", "Uint", "Float"]
+        }
+    ],
+    "TypeMap": {
+        "Int": "int64",
+        "Uint": "uint64",
+        "Float": "float64",
+        "String": "string"
     },
-    {
-        "Name": "Sub",
-        "Op": "-",
-        "Types": ["Int", "Uint", "Float"]
-    },
-    {
-        "Name": "Mul",
-        "Op": "*",
-        "Types": ["Int", "Uint", "Float"]
-    },
-    {
-        "Name": "Div",
-        "Op": "/",
-        "Types": ["Int", "Uint", "Float"]
-    },
-    {
-        "Name": "Mod",
-        "Op": "%",
-        "Types": ["Int", "Uint", "Float"]
-    },
-    {
-        "Name": "Pow",
-        "Op": "^",
-        "Types": ["Int", "Uint", "Float"]
+    "ValMap": {
+        "Int": "Int",
+        "Uint": "UInt",
+        "Float": "Float",
+        "String": "Str"
     }
-]
+}
