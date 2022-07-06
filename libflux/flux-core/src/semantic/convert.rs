@@ -461,24 +461,10 @@ impl<'a> Converter<'a> {
     }
 
     fn convert_statements(&mut self, package: &str, stmts: &[ast::Statement]) -> Vec<Statement> {
-        let mut body = stmts
+        stmts
             .iter()
             .filter_map(|s| self.convert_statement(package, s))
-            .collect::<Vec<_>>();
-
-        // HACK Move all builtins first in the file so that any references to them use
-        // any feature overriden builtin definitions
-        body.sort_by(|l, r| {
-            use std::cmp::Ordering;
-            match (l, r) {
-                (Statement::Builtin(_), Statement::Builtin(_)) => Ordering::Equal,
-                (Statement::Builtin(_), _) => Ordering::Less,
-                (_, Statement::Builtin(_)) => Ordering::Greater,
-                _ => Ordering::Equal,
-            }
-        });
-
-        body
+            .collect::<Vec<_>>()
     }
 
     fn convert_statement(&mut self, package: &str, stmt: &ast::Statement) -> Option<Statement> {
