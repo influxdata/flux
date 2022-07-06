@@ -245,7 +245,7 @@ builtin set : (<-tables: stream[A], o: B) => stream[C] where A: Record, B: Recor
 
 // to writes _pivoted_ data to an InfluxDB 2.x or InfluxDB Cloud bucket.
 //
-// **Deprecated**: `experimental.to()` is deprecated in favor of [`wideTo()`](https://docs.influxdata.com/flux/v0.x/stdlib/influxdata/influxdb/wideTo/),
+// **Deprecated**: `experimental.to()` is deprecated in favor of [`wideTo()`](/flux/v0.x/stdlib/influxdata/influxdb/wideto/),
 // which is an equivalent function.
 //
 // #### Requirements and behavior
@@ -255,7 +255,7 @@ builtin set : (<-tables: stream[A], o: B) => stream[C] where A: Record, B: Recor
 // - All columns **not** in the group key (other than `_time`) are written as
 //   fields with the column name as the field key and the column value as the field value.
 //
-// If using the `from()` to query data from InfluxDB, use pivot() to transform
+// If using the `from()` to query data from InfluxDB, use `pivot()`` to transform
 // data into the structure `experimental.to()` expects.
 //
 // ## Parameters
