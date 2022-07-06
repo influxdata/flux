@@ -112,13 +112,13 @@ builtin duration : (
 
 // @feature labelPolymorphism
 builtin duration : (
-        <-tables: stream[{ A with T: time, S: time }],
+        <-tables: stream[{A with T: time, S: time}],
         ?unit: duration,
         ?timeColumn: T,
         ?columnName: C,
         ?stopColumn: S,
         ?stop: time,
-    ) => stream[{ B with C: int }]
+    ) => stream[{B with C: int}]
     where
     A: Record,
     B: Record,

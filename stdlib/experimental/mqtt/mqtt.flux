@@ -74,7 +74,7 @@ builtin to : (
 
 // @feature labelPolymorphism
 builtin to : (
-        <-tables: stream[{ A with T: time }],
+        <-tables: stream[{A with T: time}],
         broker: string,
         ?topic: string,
         ?qos: int,
