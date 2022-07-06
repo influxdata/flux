@@ -31,152 +31,6 @@ pub type SemanticMap<K, V> = BTreeMap<K, V>;
 #[allow(missing_docs)]
 pub type SemanticMapIter<'a, K, V> = std::collections::btree_map::Iter<'a, K, V>;
 
-trait Matcher<E> {
-    fn name(&self) -> &'static str;
-
-    fn match_types(
-        &self,
-        unifier: &mut Unifier<'_, E>,
-        expected: &MonoType,
-        actual: &MonoType,
-    ) -> MonoType;
-}
-
-struct Unify;
-
-impl Matcher<Error> for Unify {
-    fn name(&self) -> &'static str {
-        "Unify"
-    }
-
-    fn match_types(
-        &self,
-        unifier: &mut Unifier<'_, Error>,
-        expected: &MonoType,
-        actual: &MonoType,
-    ) -> MonoType {
-        // Normally we just treat any label as a string. This effectively ensures that all
-        // string literals are still treated as strings.
-
-        let expected = unifier.sub.real(expected);
-        let expected = match &*expected {
-            MonoType::Label(_) => Cow::Borrowed(&MonoType::STRING),
-            _ => expected,
-        };
-
-        let actual = unifier.sub.real(actual);
-        let actual = match &*actual {
-            MonoType::Label(_) => Cow::Borrowed(&MonoType::STRING),
-            _ => actual,
-        };
-
-        match (&*actual, &*expected) {
-            (MonoType::Var(_), &MonoType::STRING) | (&MonoType::STRING, MonoType::Var(_)) => {
-                if let Some(delayed_unifications) = &mut unifier.delayed_unifications {
-                    log::debug!("Delay unify {} <> {}", expected, actual);
-                    delayed_unifications.push(Unification {
-                        matcher: &Unify,
-                        location: Default::default(),
-                        expected: expected.into_owned(),
-                        actual: actual.into_owned(),
-                        context: Vec::new(),
-                    });
-                    MonoType::STRING
-                } else {
-                    expected.unify_inner(&actual, unifier)
-                }
-            }
-            _ => expected.unify_inner(&actual, unifier),
-        }
-    }
-}
-
-struct Subsume;
-
-impl Matcher<Error> for Subsume {
-    fn name(&self) -> &'static str {
-        "Subsume"
-    }
-
-    fn match_types(
-        &self,
-        unifier: &mut Unifier<'_, Error>,
-        expected: &MonoType,
-        actual: &MonoType,
-    ) -> MonoType {
-        // When a label is unified to a type variable that has the `Label` kind we preserve the
-        // label. Otherwise we translate the label to `string`, same as during normal unification.
-        fn translate_label<'a>(
-            unifier: &mut Unifier<'_, Error>,
-            maybe_label: &'a MonoType,
-            maybe_var: &'a MonoType,
-        ) -> Cow<'a, MonoType> {
-            match *maybe_var {
-                MonoType::Var(v) if !unifier.sub.satisfies(v, Kind::Label) => {
-                    struct ReplaceLabels;
-                    impl Substituter for ReplaceLabels {
-                        fn try_apply(&mut self, _: Tvar) -> Option<MonoType> {
-                            None
-                        }
-                        fn visit_type(&mut self, typ: &MonoType) -> Option<MonoType> {
-                            match *typ {
-                                MonoType::Label(_) => Some(MonoType::STRING),
-                                _ => typ.walk(self),
-                            }
-                        }
-                    }
-                    maybe_label
-                        .visit(&mut ReplaceLabels)
-                        .map(Cow::Owned)
-                        .unwrap_or_else(|| Cow::Borrowed(maybe_label))
-                }
-                _ => Cow::Borrowed(maybe_label),
-            }
-        }
-
-        let original_actual = unifier.sub.real(actual);
-        let original_expected = unifier.sub.real(expected);
-
-        let actual = translate_label(unifier, &original_actual, &original_expected);
-        let expected = translate_label(unifier, &original_expected, &actual);
-
-        match (&*expected, &*actual) {
-            // Labels should be accepted anywhere that we expect a string
-            (&MonoType::STRING, MonoType::Label(_)) => MonoType::STRING,
-            (&MonoType::STRING, MonoType::Var(v)) if unifier.sub.satisfies(*v, Kind::Label) => {
-                MonoType::STRING
-            }
-
-            (&MonoType::STRING, MonoType::Var(_)) => {
-                if let Some(delayed_unifications) = &mut unifier.delayed_unifications {
-                    log::debug!("Delay subsume {} <> {}", original_expected, original_actual);
-                    delayed_unifications.push(Unification {
-                        matcher: &Subsume,
-                        location: Default::default(),
-                        expected: original_expected.into_owned(),
-                        actual: original_actual.into_owned(),
-                        context: Vec::new(),
-                    });
-                    MonoType::STRING
-                } else {
-                    expected.unify_inner(&actual, unifier)
-                }
-            }
-
-            _ => expected.unify_inner(&actual, unifier),
-        }
-    }
-}
-
-#[allow(missing_docs)]
-pub struct Unification {
-    matcher: &'static dyn Matcher<Error>,
-    expected: MonoType,
-    actual: MonoType,
-    pub(crate) location: crate::ast::SourceLocation,
-    context: Vec<Context>,
-}
-
 pub(crate) enum Context {
     CannotUnifyArgument(String),
     CannotUnifyReturn { exp: MonoType, act: MonoType },
@@ -197,72 +51,25 @@ impl Context {
     }
 }
 
-impl Unification {
-    pub(crate) fn resolve(self, sub: &mut Substitution) -> Result<(), Located<Errors<Error>>> {
-        let mut unifier = Unifier::new(sub, None, self.matcher);
-
-        let typ = self.expected.unify(&self.actual, &mut unifier);
-
-        unifier.finish(typ, From::from).map_err(|errors| Located {
-            location: self.location,
-            error: errors
-                .into_iter()
-                .map(|err| {
-                    self.context
-                        .iter()
-                        .fold(err, |err, context| context.apply(err))
-                })
-                .collect::<Errors<Error>>(),
-        })?;
-        Ok(())
-    }
-}
-
 struct Unifier<'a, E = Error> {
     sub: &'a mut Substitution,
     // We must delay the inference of records with label variables until we have inferred
     // the remaining context.
     delayed_records: Vec<(Record, Record)>,
-    delayed_unifications: Option<&'a mut Vec<Unification>>,
     errors: Errors<E>,
-    matcher: &'a dyn Matcher<Error>,
 }
 
 impl<'a, E> Unifier<'a, E> {
-    fn new(
-        sub: &'a mut Substitution,
-        delayed_unifications: Option<&'a mut Vec<Unification>>,
-        matcher: &'a dyn Matcher<Error>,
-    ) -> Self {
+    fn new(sub: &'a mut Substitution) -> Self {
         Unifier {
             sub,
             delayed_records: Vec::new(),
-            delayed_unifications,
             errors: Errors::new(),
-            matcher,
         }
     }
 
-    fn new_unify(
-        sub: &'a mut Substitution,
-        delayed_unifications: Option<&'a mut Vec<Unification>>,
-    ) -> Self {
-        Unifier::new(sub, delayed_unifications, &Unify)
-    }
-
-    fn new_subsume(
-        sub: &'a mut Substitution,
-        delayed_unifications: Option<&'a mut Vec<Unification>>,
-    ) -> Self {
-        Unifier::new(sub, delayed_unifications, &Subsume)
-    }
-
     fn sub_unifier<F>(&mut self) -> Unifier<'_, F> {
-        Unifier::new(
-            self.sub,
-            self.delayed_unifications.as_deref_mut(),
-            self.matcher,
-        )
+        Unifier::new(self.sub)
     }
 
     fn finish(
@@ -271,7 +78,7 @@ impl<'a, E> Unifier<'a, E> {
         mk_error: impl Fn(Error) -> E,
     ) -> Result<MonoType, Errors<E>> {
         if !self.delayed_records.is_empty() {
-            let mut sub_unifier = Unifier::new_unify(self.sub, self.delayed_unifications);
+            let mut sub_unifier = Unifier::new(self.sub);
             while let Some((expected, actual)) = self.delayed_records.pop() {
                 let expected = expected.apply(sub_unifier.sub);
                 let actual = actual.apply(sub_unifier.sub);
@@ -1030,7 +837,7 @@ impl MonoType {
         actual: &Self,
         sub: &mut Substitution,
     ) -> Result<MonoType, Errors<Error>> {
-        self.try_unify(actual, sub, None)
+        self.try_unify(actual, sub)
     }
 
     /// Performs unification on the type with another type.
@@ -1041,26 +848,8 @@ impl MonoType {
         &self, // self represents the expected type
         actual: &Self,
         sub: &mut Substitution,
-        delayed_unifications: Option<&mut Vec<Unification>>,
     ) -> Result<MonoType, Errors<Error>> {
-        let mut unifier = Unifier::new_unify(sub, delayed_unifications);
-
-        let typ = self.unify(actual, &mut unifier);
-
-        unifier.finish(typ, From::from)
-    }
-
-    /// Performs subsumption on the type with another type.
-    /// If successful, results in a solution to the unification problem,
-    /// in the form of a substitution. If there is no solution to the
-    /// unification problem then unification fails and an error is reported.
-    pub fn try_subsume(
-        &self, // self represents the expected type
-        actual: &Self,
-        sub: &mut Substitution,
-        delayed_unifications: Option<&mut Vec<Unification>>,
-    ) -> Result<MonoType, Errors<Error>> {
-        let mut unifier = Unifier::new_subsume(sub, delayed_unifications);
+        let mut unifier = Unifier::new(sub);
 
         let typ = self.unify(actual, &mut unifier);
 
@@ -1072,16 +861,8 @@ impl MonoType {
         actual: &Self,
         unifier: &mut Unifier<'_>,
     ) -> MonoType {
-        log::debug!("{} {} <=> {}", unifier.matcher.name(), self, actual);
+        log::debug!("Unify {} <=> {}", self, actual);
 
-        unifier.matcher.match_types(unifier, self, actual)
-    }
-
-    fn unify_inner(
-        &self, // self represents the expected type
-        actual: &Self,
-        unifier: &mut Unifier<'_>,
-    ) -> MonoType {
         match (self, actual) {
             // An error has already occurred so assume everything is ok here so that we do not
             // create additional, spurious errors
@@ -1739,12 +1520,6 @@ fn merge_in_context<T>(
 ) where
     T: TypeLike,
 {
-    let delayed_unifications_start = unifier
-        .delayed_unifications
-        .as_ref()
-        .map(|u| u.len())
-        .unwrap_or_default();
-
     let mut sub_unifier = unifier.sub_unifier();
     exp.unify(act.typ(), &mut sub_unifier);
 
@@ -1758,13 +1533,6 @@ fn merge_in_context<T>(
         .errors
         .extend(errors.into_iter().map(|e| act.error(context().apply(e))));
 
-    if let Some(delayed_unifications) = &mut unifier.delayed_unifications {
-        for unification in &mut delayed_unifications[delayed_unifications_start..] {
-            unification.location = act.location();
-            unification.context.push(context());
-        }
-    }
-
     unifier.delayed_records.extend(delayed_records);
 }
 
@@ -1777,8 +1545,7 @@ fn unify_in_context<T>(
 ) where
     T: TypeLike,
 {
-    let mut sub_unifier =
-        Unifier::new_unify(unifier.sub, unifier.delayed_unifications.as_deref_mut());
+    let mut sub_unifier = Unifier::new(unifier.sub);
     exp.unify(act.typ(), &mut sub_unifier);
 
     unifier.errors.extend(
@@ -2156,41 +1923,20 @@ impl<T> Function<T> {
 impl Function {
     #[cfg(test)]
     fn try_unify(&self, actual: &Function, sub: &mut Substitution) -> Result<(), Errors<Error>> {
-        self.try_unify_with(actual, sub, None, Clone::clone, From::from)
+        self.try_unify_with(actual, sub, Clone::clone, From::from)
     }
 
-    #[cfg(test)]
     pub(crate) fn try_unify_with<T>(
         &self,
         actual: &Function<T>,
         sub: &mut Substitution,
-        delayed_unifications: Option<&mut Vec<Unification>>,
         mk_type: impl Fn(&MonoType) -> T,
         mk_error: impl Fn(Error) -> T::Error,
     ) -> Result<(), Errors<T::Error>>
     where
         T: TypeLike + Clone,
     {
-        let mut unifier = Unifier::new_unify(sub, delayed_unifications);
-
-        self.unify(actual, &mut unifier, mk_type);
-
-        unifier.finish(MonoType::from(self.clone()), mk_error)?;
-        Ok(())
-    }
-
-    pub(crate) fn try_subsume_with<T>(
-        &self,
-        actual: &Function<T>,
-        sub: &mut Substitution,
-        delayed_unifications: &mut Vec<Unification>,
-        mk_type: impl Fn(&MonoType) -> T,
-        mk_error: impl Fn(Error) -> T::Error,
-    ) -> Result<(), Errors<T::Error>>
-    where
-        T: TypeLike + Clone,
-    {
-        let mut unifier = Unifier::new_subsume(sub, Some(delayed_unifications));
+        let mut unifier = Unifier::new(sub);
 
         self.unify(actual, &mut unifier, mk_type);
 

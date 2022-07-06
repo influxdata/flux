@@ -3,7 +3,7 @@ use std::{borrow::Cow, cell::RefCell, collections::BTreeMap, fmt, iter::FusedIte
 
 use crate::semantic::{
     fresh::Fresher,
-    types::{union, BoundTvar, Error, Kind, MonoType, PolyType, SubstitutionMap, Tvar, TvarKinds},
+    types::{union, BoundTvar, Error, MonoType, PolyType, SubstitutionMap, Tvar, TvarKinds},
 };
 
 use ena::unify::UnifyKey;
@@ -110,26 +110,6 @@ impl Substitution {
 
     pub(crate) fn cons(&mut self) -> &mut TvarKinds {
         self.cons.get_mut()
-    }
-
-    /// Returns the real type or the root variable of `typ` if it is an variable.
-    /// Returns `typ` itself if it isn't a variable
-    pub(crate) fn real<'a>(&self, typ: &'a MonoType) -> Cow<'a, MonoType> {
-        match *typ {
-            MonoType::Var(var) => self
-                .try_apply(var)
-                .map(Cow::Owned)
-                .unwrap_or_else(|| Cow::Borrowed(typ)),
-            _ => Cow::Borrowed(typ),
-        }
-    }
-
-    pub(crate) fn satisfies(&self, v: Tvar, kind: Kind) -> bool {
-        let v = self.root(v);
-        self.cons
-            .borrow()
-            .get(&v)
-            .map_or(false, |kinds| kinds.contains(&kind))
     }
 
     /// Apply a substitution to a type variable.

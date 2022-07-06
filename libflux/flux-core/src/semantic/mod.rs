@@ -4,7 +4,6 @@ pub mod convert;
 
 mod fs;
 mod infer;
-mod scoped;
 mod symbols;
 mod vectorize;
 
@@ -26,8 +25,6 @@ mod tests;
 
 #[allow(unused, non_snake_case)]
 pub mod flatbuffers;
-
-pub use self::fs::{FileSystemImporter, StdFS};
 
 use std::{fmt, ops::Range, str::FromStr};
 

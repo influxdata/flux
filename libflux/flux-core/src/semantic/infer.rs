@@ -4,10 +4,9 @@ use derive_more::Display;
 
 use crate::{
     ast::SourceLocation,
-    errors::{located, Errors, Located},
+    errors::{Errors, Located},
     semantic::{
         env::Environment,
-        scoped::ScopedVec,
         sub::{Substitutable, Substituter, Substitution},
         types::{self, BoundTvar, BoundTvarKinds, Kind, MonoType, PolyType, SemanticMap, Tvar},
     },
@@ -123,18 +122,7 @@ pub fn solve_all(
     cons: &[Constraint],
     sub: &mut Substitution,
 ) -> Result<(), Errors<Located<types::Error>>> {
-    let mut delayed_unifications = ScopedVec::new();
-
-    let mut errors = solve(cons, sub, &mut delayed_unifications)
-        .err()
-        .unwrap_or_default();
-
-    for unification in delayed_unifications.exit_scope() {
-        if let Err(err) = unification.resolve(sub) {
-            let loc = err.location;
-            errors.extend(err.error.into_iter().map(|err| located(loc.clone(), err)));
-        }
-    }
+    let errors = solve(cons, sub).err().unwrap_or_default();
 
     if errors.has_errors() {
         return Err(errors);
@@ -147,7 +135,6 @@ pub fn solve_all(
 pub fn solve(
     cons: &[Constraint],
     sub: &mut Substitution,
-    delayed_unifications: &mut ScopedVec<types::Unification>,
 ) -> Result<(), Errors<Located<types::Error>>> {
     let mut errors = Errors::new();
     for constraint in cons {
@@ -160,7 +147,7 @@ pub fn solve(
             }
             Constraint::Equal { exp, act, loc } => {
                 // Apply the current substitution to the constraint, then unify
-                if let Err(err) = equal(exp, act, loc, sub, delayed_unifications) {
+                if let Err(err) = equal(exp, act, loc, sub) {
                     errors.extend(err.error.into_iter().map(|error| Located {
                         location: loc.clone(),
                         error,
@@ -196,68 +183,16 @@ pub fn equal(
     act: &MonoType,
     loc: &SourceLocation,
     sub: &mut Substitution,
-    delayed_unifications: &mut ScopedVec<types::Unification>,
 ) -> Result<MonoType, Located<Errors<types::Error>>> {
     log::debug!("Constraint::Equal {:?}: {} <===> {}", loc.source, exp, act);
-    let mut delayed_unifications_inner = Vec::new();
-    let result = exp
-        .try_unify(act, sub, Some(&mut delayed_unifications_inner))
-        .map_err(|error| {
-            log::debug!("Unify error: {} <=> {} : {}", exp, act, error);
+    exp.try_unify(act, sub).map_err(|error| {
+        log::debug!("Unify error: {} <=> {} : {}", exp, act, error);
 
-            Located {
-                location: loc.clone(),
-                error,
-            }
-        });
-
-    delayed_unifications.extend(
-        delayed_unifications_inner
-            .into_iter()
-            .map(|mut unification| {
-                unification.location = loc.clone();
-                unification
-            }),
-    );
-
-    result
-}
-
-pub fn subsume(
-    exp: &MonoType,
-    act: &MonoType,
-    loc: &SourceLocation,
-    sub: &mut Substitution,
-    delayed_unifications: &mut ScopedVec<types::Unification>,
-) -> Result<MonoType, Located<Errors<types::Error>>> {
-    log::debug!(
-        "Constraint::Subsume {:?}: {} <===> {}",
-        loc.source,
-        exp,
-        act
-    );
-    let mut delayed_unifications_inner = Vec::new();
-    let result = exp
-        .try_subsume(act, sub, Some(&mut delayed_unifications_inner))
-        .map_err(|error| {
-            log::debug!("Unify error: {} <=> {} : {}", exp, act, error);
-
-            Located {
-                location: loc.clone(),
-                error,
-            }
-        });
-
-    delayed_unifications.extend(
-        delayed_unifications_inner
-            .into_iter()
-            .map(|mut unification| {
-                unification.location = loc.clone();
-                unification
-            }),
-    );
-
-    result
+        Located {
+            location: loc.clone(),
+            error,
+        }
+    })
 }
 
 /// Generalizes `t` without modifying the substitution.

@@ -19,16 +19,11 @@ pub trait FileSystem {
 pub struct StdFS<'a> {
     root: &'a path::Path,
 }
-
 impl<'a> StdFS<'a> {
-    /// Constructs a new `StdFS`
-    pub fn new(root: &'a (impl AsRef<path::Path> + ?Sized)) -> StdFS<'a> {
-        StdFS {
-            root: root.as_ref(),
-        }
+    pub fn new(root: &'a path::Path) -> StdFS<'a> {
+        StdFS { root }
     }
 }
-
 impl<'a> FileSystem for StdFS<'a> {
     type File = fs::File;
     fn open(&mut self, path: &str) -> io::Result<Self::File> {
@@ -39,14 +34,11 @@ impl<'a> FileSystem for StdFS<'a> {
     }
 }
 
-/// An `Importer` which queries the local filesystem
 pub struct FileSystemImporter<F: FileSystem> {
     fs: F,
     cache: PolyTypeMap,
 }
-
 impl<F: FileSystem> FileSystemImporter<F> {
-    /// Constructs a new `FileSystemImporter`
     pub fn new(fs: F) -> FileSystemImporter<F> {
         FileSystemImporter {
             fs,
