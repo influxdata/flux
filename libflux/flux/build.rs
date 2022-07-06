@@ -57,18 +57,8 @@ fn main() -> Result<()> {
         println!("cargo:rerun-if-changed={}", f);
     }
 
-    let (prelude, imports, sem_pkgs) = bootstrap::infer_stdlib_dir(
-        stdlib_path,
-        fluxcore::semantic::AnalyzerConfig {
-            features: if cfg!(feature = "label-polymorphism") {
-                Some(fluxcore::semantic::Feature::LabelPolymorphism)
-            } else {
-                None
-            }
-            .into_iter()
-            .collect(),
-        },
-    )?;
+    let (prelude, imports, sem_pkgs) =
+        bootstrap::infer_stdlib_dir(stdlib_path, fluxcore::semantic::AnalyzerConfig::default())?;
 
     // Validate there aren't any free type variables in the environment
     for (name, ty) in prelude.iter() {

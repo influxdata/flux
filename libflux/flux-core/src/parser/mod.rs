@@ -582,7 +582,6 @@ impl<'input> Parser<'input> {
                     element: ty,
                 }))
             }
-            TokenType::String => MonoType::Label(Box::new(self.parse_string_literal())),
             _ => {
                 if t.lit.len() == 1 {
                     self.parse_tvar()

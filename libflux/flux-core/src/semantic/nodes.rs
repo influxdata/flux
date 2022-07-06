@@ -25,10 +25,9 @@ use crate::{
         infer::{self, Constraint},
         sub::{BindVars, Substitutable, Substituter, Substitution},
         types::{
-            self, BoundTvar, BoundTvarKinds, Dictionary, Function, Kind, Label, MonoType,
-            MonoTypeMap, PolyType, RecordLabel, Tvar,
+            self, BoundTvar, BoundTvarKinds, Dictionary, Function, Kind, MonoType, MonoTypeMap,
+            PolyType, RecordLabel, Tvar,
         },
-        AnalyzerConfig, Feature,
     },
 };
 
@@ -135,7 +134,6 @@ struct InferState<'a, 'env> {
     imports: HashMap<Symbol, String>,
     env: &'a mut Environment<'env>,
     errors: Errors<Error>,
-    config: &'a AnalyzerConfig,
     // When an undefined symbol is encountered we assume that the same type is used for every
     // use of that symbol which is stored here
     undefined_symbols: HashMap<Symbol, MonoType>,
@@ -336,7 +334,7 @@ impl Expression {
             Expression::StringExpr(_) => MonoType::STRING,
             Expression::Integer(_) => MonoType::INT,
             Expression::Float(_) => MonoType::FLOAT,
-            Expression::StringLit(lit) => lit.typ.clone().unwrap_or(MonoType::STRING),
+            Expression::StringLit(_) => MonoType::STRING,
             Expression::Duration(_) => MonoType::DURATION,
             Expression::Uint(_) => MonoType::UINT,
             Expression::Boolean(_) => MonoType::BOOL,
@@ -433,7 +431,6 @@ pub fn infer_package<T>(
     env: &mut Environment<'_>,
     sub: &mut Substitution,
     importer: &mut T,
-    config: &AnalyzerConfig,
 ) -> std::result::Result<(), Errors<Error>>
 where
     T: Importer,
@@ -444,7 +441,6 @@ where
         imports: Default::default(),
         env,
         errors: Errors::new(),
-        config,
         undefined_symbols: Default::default(),
     };
     pkg.infer(&mut infer).map_err(|err| err.apply(infer.sub))?;
@@ -1835,15 +1831,10 @@ impl RegexpLit {
 pub struct StringLit {
     pub loc: ast::SourceLocation,
     pub value: String,
-    /// The (label) type if label types are enabled.
-    pub typ: Option<MonoType>,
 }
 
 impl StringLit {
-    fn infer(&mut self, infer: &mut InferState<'_, '_>) -> Result {
-        if infer.config.features.contains(&Feature::LabelPolymorphism) {
-            self.typ = Some(MonoType::Label(Label::from(self.value.as_str())));
-        }
+    fn infer(&mut self, _: &mut InferState<'_, '_>) -> Result {
         Ok(())
     }
     fn apply(&mut self, _: &mut dyn Substituter) {}

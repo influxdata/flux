@@ -103,7 +103,6 @@ f(a: s)
                     Expression::StringLit(StringLit {
                         loc: ast::BaseNode::default().location,
                         value: "string".to_string(),
-                        typ: None,
                     }),
                     ast::BaseNode::default().location,
                 ))),
