@@ -630,9 +630,7 @@ impl<'a> Converter<'a> {
                                 name.name.clone(),
                                 types::Argument {
                                     typ: self.convert_monotype(monotype, tvars),
-                                    default: default.as_ref().map(|default| {
-                                        MonoType::Label(types::Label::from(default.value.as_str()))
-                                    }),
+                                    default: default.as_ref().map(|_| MonoType::STRING),
                                 },
                             );
                         }
@@ -1296,7 +1294,6 @@ impl<'a> Converter<'a> {
         StringLit {
             loc: lit.base.location.clone(),
             value: lit.value.clone(),
-            typ: None,
         }
     }
 
@@ -1501,7 +1498,6 @@ mod tests {
                         path: StringLit {
                             loc: b.location.clone(),
                             value: "path/foo".to_string(),
-                            typ: None,
                         },
                         alias: None,
                         import_symbol: symbols["foo"].clone(),
@@ -1511,7 +1507,6 @@ mod tests {
                         path: StringLit {
                             loc: b.location.clone(),
                             value: "path/bar".to_string(),
-                            typ: None,
                         },
                         alias: Some(Identifier {
                             loc: b.location.clone(),
@@ -1821,7 +1816,6 @@ mod tests {
                                     value: Expression::StringLit(StringLit {
                                         loc: b.location.clone(),
                                         value: "foo".to_string(),
-                                        typ: None,
                                     }),
                                 },
                                 Property {
@@ -1863,7 +1857,6 @@ mod tests {
                                     value: Expression::StringLit(StringLit {
                                         loc: b.location.clone(),
                                         value: "0 2 * * *".to_string(),
-                                        typ: None,
                                     }),
                                 },
                                 Property {
@@ -1919,7 +1912,6 @@ mod tests {
                         init: Expression::StringLit(StringLit {
                             loc: b.location.clone(),
                             value: "Warning".to_string(),
-                            typ: None,
                         }),
                     }),
                 }))],
