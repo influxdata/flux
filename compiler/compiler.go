@@ -694,7 +694,6 @@ func compile(n semantic.Node, subst semantic.Substitutor) (Evaluator, error) {
 			left:  l,
 			right: r,
 			f:     g,
-			op:    n.Operator,
 		}, nil
 	case *semantic.CallExpression:
 		args, err := compile(n.Arguments, subst)

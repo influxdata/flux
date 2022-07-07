@@ -26,7 +26,7 @@ func vectorAdd(l, r Vector, mem memory.Allocator) (Value, error) {
 	if lvr != nil && rvr != nil {
 		// XXX: we can handle this case here if we are willing to plumb the
 		// OperatorKind through here so we can do the lookup for the row-based version of this op.
-		panic("got 2 VectorRepeatValue; 'const folding' should be done in binaryVectorEvaluator.Eval")
+		panic("got 2 VectorRepeatValue; 'const folding' should be done earlier, in the function lookup")
 	}
 
 	switch l.ElementType().Nature() {
@@ -132,7 +132,7 @@ func vectorSub(l, r Vector, mem memory.Allocator) (Value, error) {
 	if lvr != nil && rvr != nil {
 		// XXX: we can handle this case here if we are willing to plumb the
 		// OperatorKind through here so we can do the lookup for the row-based version of this op.
-		panic("got 2 VectorRepeatValue; 'const folding' should be done in binaryVectorEvaluator.Eval")
+		panic("got 2 VectorRepeatValue; 'const folding' should be done earlier, in the function lookup")
 	}
 
 	switch l.ElementType().Nature() {
@@ -217,7 +217,7 @@ func vectorMul(l, r Vector, mem memory.Allocator) (Value, error) {
 	if lvr != nil && rvr != nil {
 		// XXX: we can handle this case here if we are willing to plumb the
 		// OperatorKind through here so we can do the lookup for the row-based version of this op.
-		panic("got 2 VectorRepeatValue; 'const folding' should be done in binaryVectorEvaluator.Eval")
+		panic("got 2 VectorRepeatValue; 'const folding' should be done earlier, in the function lookup")
 	}
 
 	switch l.ElementType().Nature() {
@@ -302,7 +302,7 @@ func vectorDiv(l, r Vector, mem memory.Allocator) (Value, error) {
 	if lvr != nil && rvr != nil {
 		// XXX: we can handle this case here if we are willing to plumb the
 		// OperatorKind through here so we can do the lookup for the row-based version of this op.
-		panic("got 2 VectorRepeatValue; 'const folding' should be done in binaryVectorEvaluator.Eval")
+		panic("got 2 VectorRepeatValue; 'const folding' should be done earlier, in the function lookup")
 	}
 
 	switch l.ElementType().Nature() {
@@ -387,7 +387,7 @@ func vectorMod(l, r Vector, mem memory.Allocator) (Value, error) {
 	if lvr != nil && rvr != nil {
 		// XXX: we can handle this case here if we are willing to plumb the
 		// OperatorKind through here so we can do the lookup for the row-based version of this op.
-		panic("got 2 VectorRepeatValue; 'const folding' should be done in binaryVectorEvaluator.Eval")
+		panic("got 2 VectorRepeatValue; 'const folding' should be done earlier, in the function lookup")
 	}
 
 	switch l.ElementType().Nature() {
@@ -472,7 +472,7 @@ func vectorPow(l, r Vector, mem memory.Allocator) (Value, error) {
 	if lvr != nil && rvr != nil {
 		// XXX: we can handle this case here if we are willing to plumb the
 		// OperatorKind through here so we can do the lookup for the row-based version of this op.
-		panic("got 2 VectorRepeatValue; 'const folding' should be done in binaryVectorEvaluator.Eval")
+		panic("got 2 VectorRepeatValue; 'const folding' should be done earlier, in the function lookup")
 	}
 
 	switch l.ElementType().Nature() {
