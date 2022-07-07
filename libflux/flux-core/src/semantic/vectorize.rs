@@ -3,14 +3,14 @@ use std::collections::HashMap;
 use crate::{
     ast::{Operator, SourceLocation},
     errors::{located, Errors},
-    semantic::nodes::{CallExpr, Identifier},
     semantic::{
         nodes::{
-            BinaryExpr, Block, Error, ErrorKind, Expression, FunctionExpr, IdentifierExpr,
-            LogicalExpr, MemberExpr, ObjectExpr, Package, Property, Result, ReturnStmt,
+            BinaryExpr, Block, CallExpr, Error, ErrorKind, Expression, FunctionExpr, Identifier,
+            IdentifierExpr, LogicalExpr, MemberExpr, ObjectExpr, Package, Property, Result,
+            ReturnStmt,
         },
         types::{self, Function, Label, MonoType},
-        AnalyzerConfig, Symbol,
+        AnalyzerConfig, Feature, Symbol,
     },
 };
 
@@ -123,10 +123,26 @@ impl Expression {
                     right,
                 }))
             }
-            expr @ Expression::Integer(_) => wrap_vec_repeat(expr.clone()),
-            expr @ Expression::DateTime(_) => wrap_vec_repeat(expr.clone()),
-            expr @ Expression::Float(_) => wrap_vec_repeat(expr.clone()),
-            expr @ Expression::StringLit(_) => wrap_vec_repeat(expr.clone()),
+            expr @ Expression::Integer(_)
+                if env.config.features.contains(&Feature::VectorizedConst) =>
+            {
+                wrap_vec_repeat(expr.clone())
+            }
+            expr @ Expression::DateTime(_)
+                if env.config.features.contains(&Feature::VectorizedConst) =>
+            {
+                wrap_vec_repeat(expr.clone())
+            }
+            expr @ Expression::Float(_)
+                if env.config.features.contains(&Feature::VectorizedConst) =>
+            {
+                wrap_vec_repeat(expr.clone())
+            }
+            expr @ Expression::StringLit(_)
+                if env.config.features.contains(&Feature::VectorizedConst) =>
+            {
+                wrap_vec_repeat(expr.clone())
+            }
             _ => {
                 return Err(located(
                     self.loc().clone(),
