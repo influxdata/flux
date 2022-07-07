@@ -16,7 +16,7 @@ use crate::{
 
 /// The name of a function used to signal to the runtime that the value in the
 /// `v` parameter should be rewritten as a "vector repeat" value.
-const VEC_REPEAT_FN: &'static str = "~~vecRepeat~~";
+const VEC_REPEAT_FN: &str = "~~vecRepeat~~";
 
 /// Vectorizes a pkg
 pub fn vectorize(
@@ -113,14 +113,9 @@ impl Expression {
                 }))
             }
             expr @ Expression::Integer(_) => wrap_vec_repeat(expr.clone()),
-            // FIXME: Leaving out the more exotic literals for now...
-            // expr @ Expression::DateTime(_) => wrap_vec_repeat(expr.clone()),
-            // FIXME: Leaving out the more exotic literals for now...
-            // expr @ Expression::Duration(_) => wrap_vec_repeat(expr.clone()),
+            expr @ Expression::DateTime(_) => wrap_vec_repeat(expr.clone()),
             expr @ Expression::Float(_) => wrap_vec_repeat(expr.clone()),
             expr @ Expression::StringLit(_) => wrap_vec_repeat(expr.clone()),
-            // XXX: Uint can't be written as a literal today. Probably can't hit this arm yet.
-            // expr @ Expression::Uint(_) => wrap_vec_repeat(expr.clone()),
             _ => {
                 return Err(located(
                     self.loc().clone(),

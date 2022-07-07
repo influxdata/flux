@@ -181,9 +181,9 @@ fn vectorize_with_construction_using_const_folding() -> anyhow::Result<()> {
         (r) => {
             return {r:#A with a: ~~vecRepeat~~:float(v: 1.0):v[float] +:v[float] ~~vecRepeat~~:float(v: 2.0):v[float]}:{#A with a: v[float]}
         }:(r: #A) => {#A with a: v[float]}"##]]
-    .assert_eq(&crate::semantic::formatter::format_node(
-        Node::FunctionExpr(function),
-    )?);
+        .assert_eq(&crate::semantic::formatter::format_node(
+            Node::FunctionExpr(function),
+        )?);
     Ok(())
 }
 
@@ -239,25 +239,19 @@ fn vectorize_with_construction_using_literal_bool() -> anyhow::Result<()> {
     Ok(())
 }
 
-#[ignore]
 #[test]
-fn vectorize_with_construction_using_literal_duration() -> anyhow::Result<()> {
-    let pkg = vectorize(r#"(r) => ({ r with a: 1h })"#)?;
+fn vectorize_with_construction_using_literal_duration_not_implemented() -> anyhow::Result<()> {
+    let mut pkg = vectorize(r#"(r) => ({ r with a: 1h })"#)?;
 
-    let function = get_vectorized_function(&pkg);
+    let err = semantic::vectorize::vectorize(&analyzer_config(), &mut pkg).unwrap_err();
 
-    expect_test::expect![[r##"
-        (r) => {
-            return {r:#A with a: ~~vecRepeat~~:duration(v: 1h):v[duration]}:{#A with a: v[duration]}
-        }:(r: #A) => {#A with a: v[duration]}"##]]
-    .assert_eq(&crate::semantic::formatter::format_node(
-        Node::FunctionExpr(function),
-    )?);
-
+    expect_test::expect![[
+        r#"error @1:21-1:23: can't vectorize function: Unable to vectorize expression"#
+    ]]
+    .assert_eq(&err.to_string());
     Ok(())
 }
 
-#[ignore]
 #[test]
 fn vectorize_with_construction_using_literal_time() -> anyhow::Result<()> {
     let pkg = vectorize(r#"(r) => ({ r with a: 2021-11-01 })"#)?;
@@ -273,10 +267,4 @@ fn vectorize_with_construction_using_literal_time() -> anyhow::Result<()> {
         )?);
 
     Ok(())
-}
-
-#[ignore]
-#[test]
-fn vectorize_with_construction_using_literal_uint() -> anyhow::Result<()> {
-    todo!("need to either vectorize `uint()` or make it so vars defined outside the fn work")
 }
