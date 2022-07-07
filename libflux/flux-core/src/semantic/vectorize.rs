@@ -153,7 +153,7 @@ impl Expression {
     }
 }
 
-// Check to see if a given operator is vectorizable.
+/// Check to see if a given operator is vectorizable.
 fn op_is_vectorizable(op: &Operator) -> bool {
     // Note that only certain operators can be vectorized today.
     // See `array/binary.tmpldata` for the currently supported ops.
