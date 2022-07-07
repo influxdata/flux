@@ -1,9 +1,9 @@
 use std::collections::HashMap;
 
-use crate::ast::SourceLocation;
-use crate::semantic::nodes::{CallExpr, Identifier};
 use crate::{
+    ast::{Operator, SourceLocation},
     errors::{located, Errors},
+    semantic::nodes::{CallExpr, Identifier},
     semantic::{
         nodes::{
             BinaryExpr, Block, Error, ErrorKind, Expression, FunctionExpr, IdentifierExpr,
@@ -93,6 +93,17 @@ impl Expression {
             Expression::Binary(binary) => {
                 let left = binary.left.vectorize(env)?;
                 let right = binary.right.vectorize(env)?;
+
+                if !op_is_vectorizable(&binary.operator) {
+                    return Err(located(
+                        binary.loc.clone(),
+                        ErrorKind::UnableToVectorize(format!(
+                            "unsupported operator {}",
+                            binary.operator
+                        )),
+                    ));
+                }
+
                 Expression::Binary(Box::new(BinaryExpr {
                     loc: binary.loc.clone(),
                     typ: MonoType::vector(binary.typ.clone()),
@@ -124,6 +135,22 @@ impl Expression {
             }
         })
     }
+}
+
+// Check to see if a given operator is vectorizable.
+fn op_is_vectorizable(op: &Operator) -> bool {
+    // Note that only certain operators can be vectorized today.
+    // See `array/binary.tmpldata` for the currently supported ops.
+    // As new ops are implemented, this match should be updated.
+    matches!(
+        op,
+        Operator::AdditionOperator
+            | Operator::SubtractionOperator
+            | Operator::MultiplicationOperator
+            | Operator::DivisionOperator
+            | Operator::ModuloOperator
+            | Operator::PowerOperator
+    )
 }
 
 fn wrap_vec_repeat(expr: Expression) -> Expression {

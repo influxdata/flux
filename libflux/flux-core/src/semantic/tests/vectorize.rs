@@ -137,6 +137,22 @@ fn vectorize_subtraction_operator() -> anyhow::Result<()> {
 }
 
 #[test]
+fn vectorize_gt_operator_not_implemented() -> anyhow::Result<()> {
+    // N.b. there are many operators that are not currently implemented.
+    // This one just popped up in the acceptance tests when vec repeat was
+    // implemented for #4622.
+    let mut pkg = vectorize(r#"(r) => ({ x: r.a > r.b })"#).unwrap();
+
+    let err = semantic::vectorize::vectorize(&analyzer_config(), &mut pkg).unwrap_err();
+
+    expect_test::expect![[
+        r#"error @1:14-1:23: can't vectorize function: unsupported operator >"#
+    ]]
+    .assert_eq(&err.to_string());
+    Ok(())
+}
+
+#[test]
 fn vectorizing_non_vector_variables_are_not_implemented() {
     let mut pkg = vectorize(
         r#"
