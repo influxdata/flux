@@ -440,6 +440,7 @@ type binaryVectorEvaluator struct {
 	t           semantic.MonoType
 	left, right Evaluator
 	f           values.BinaryVectorFunction
+	op          ast.OperatorKind // Used for looking up row-based fallbacks when folding consts
 }
 
 func (e *binaryVectorEvaluator) Type() semantic.MonoType {
@@ -457,6 +458,26 @@ func (e *binaryVectorEvaluator) Eval(ctx context.Context, scope Scope) (values.V
 		return nil, err
 	}
 	defer r.Release()
+
+	// "Constant Folding" - when neither vector is backed by an array, each
+	// holding only a singleton value (unchanged) for all the rows we'll process.
+	// In this situation we can avoid building arrays at all and perform the
+	// operation a single time.
+	if l.Vector().IsRepeat() && r.Vector().IsRepeat() {
+		lv := l.(*values.VectorRepeatValue).Value()
+		rv := r.(*values.VectorRepeatValue).Value()
+		f, err := values.LookupBinaryFunction(
+			values.BinaryFuncSignature{Operator: e.op, Left: lv.Type().Nature(), Right: rv.Type().Nature()})
+		if err != nil {
+			return nil, err
+		}
+		v, err := f(lv, rv)
+		if err != nil {
+			return nil, err
+
+		}
+		return values.NewVectorRepeatValue(v), nil
+	}
 
 	mem := memory.GetAllocator(ctx)
 

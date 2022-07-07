@@ -172,16 +172,18 @@ fn vectorize_with_construction_using_literal_float() -> anyhow::Result<()> {
 }
 
 #[test]
-fn vectorize_with_construction_using_const_folding_not_implemented() -> anyhow::Result<()> {
-    let mut pkg = vectorize(r#"(r) => ({ r with a: 1.0 + 2.0 })"#).unwrap();
+fn vectorize_with_construction_using_const_folding() -> anyhow::Result<()> {
+    let pkg = vectorize(r#"(r) => ({ r with a: 1.0 + 2.0 })"#).unwrap();
 
-    let err = semantic::vectorize::vectorize(&analyzer_config(), &mut pkg).unwrap_err();
+    let function = get_vectorized_function(&pkg);
 
-    // FIXME(onelson): seems like this should be giving a more specific error noting const folding?
-    expect_test::expect![[
-        r#"error @1:21-1:24: can't vectorize function: Unable to vectorize expression"#
-    ]]
-    .assert_eq(&err.to_string());
+    expect_test::expect![[r##"
+        (r) => {
+            return {r:#A with a: ~~vecRepeat~~:float(v: 1.0):v[float] +:v[float] ~~vecRepeat~~:float(v: 2.0):v[float]}:{#A with a: v[float]}
+        }:(r: #A) => {#A with a: v[float]}"##]]
+    .assert_eq(&crate::semantic::formatter::format_node(
+        Node::FunctionExpr(function),
+    )?);
     Ok(())
 }
 

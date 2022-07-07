@@ -93,15 +93,6 @@ impl Expression {
             Expression::Binary(binary) => {
                 let left = binary.left.vectorize(env)?;
                 let right = binary.right.vectorize(env)?;
-
-                if is_vec_repeat(&left) && is_vec_repeat(&right) {
-                    return Err(located(
-                        binary.loc.clone(),
-                        ErrorKind::UnableToVectorize(String::from(
-                            "Constant folding not supported",
-                        )),
-                    ));
-                }
                 Expression::Binary(Box::new(BinaryExpr {
                     loc: binary.loc.clone(),
                     typ: MonoType::vector(binary.typ.clone()),
@@ -164,18 +155,6 @@ fn wrap_vec_repeat(expr: Expression) -> Expression {
         }],
     };
     Expression::Call(Box::new(call))
-}
-
-fn is_vec_repeat(expr: &Expression) -> bool {
-    match expr {
-        Expression::Call(call_expr) => match call_expr.callee {
-            Expression::Identifier(IdentifierExpr { ref name, .. }) => {
-                return name == &Symbol::from(VEC_REPEAT_FN);
-            }
-            _ => false,
-        },
-        _ => false,
-    }
 }
 
 impl IdentifierExpr {
