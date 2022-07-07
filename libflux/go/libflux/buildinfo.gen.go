@@ -76,6 +76,8 @@ var sourceHashes = map[string]string{
 	"stdlib/contrib/RohanSreerama5/naiveBayesClassifier/naiveBayesClassifier.flux":                "0b1d73ef256ff893840e73604118ac52f13b6cd4d6a3de111270d8e649fa3ddc",
 	"stdlib/contrib/anaisdg/anomalydetection/mad.flux":                                            "e7f6f8e600e3fcb0086a896bb5886d67482b3deba3bafc5be0e30716ae88a4cd",
 	"stdlib/contrib/anaisdg/anomalydetection/mad_test.flux":                                       "ef886757f79114d8b6785f5a3ef718c83cfd020946b10e4ec0c351cdf4153293",
+	"stdlib/contrib/anaisdg/print/print.flux":                                                     "0459673c0e125dde7ab1b7164692c2a70dd801ec5752f334033f4531260744e1",
+	"stdlib/contrib/anaisdg/print/print_test.flux":                                                "ec9ae317b1a953286ba6ad5558a3cd04708630c316b873dcade6d47bae1aeb48",
 	"stdlib/contrib/anaisdg/statsmodels/linearreg.flux":                                           "1e2f62eedbf59b5b66bf3e79f85e86b5f3448b042a3bc2bb0441b327ff5b179a",
 	"stdlib/contrib/anaisdg/statsmodels/linearreg_test.flux":                                      "205a5cb33a5d30d524b4e64374e1c7d5fc711a174a7fd5fee82c331acfd5dbb3",
 	"stdlib/contrib/bonitoo-io/alerta/alerta.flux":                                                "f76f884a849505f5bf6aed32b381b621a1d81e30d6e43ef9d4e4a47dfc1455ed",
