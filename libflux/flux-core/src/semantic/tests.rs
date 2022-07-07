@@ -3897,14 +3897,27 @@ fn test_analyzer_returns_package_after_errors() {
 }
 
 #[test]
-fn errors_do_not_cause_additional_errors() {
+fn undefined_variable_has_the_same_type_across_multiple_uses() {
     test_error_msg! {
         src: r#"
             x = y
             z = x + 1
             z2 = x + "a"
         "#,
-        err: "error @2:17-2:18: undefined identifier y",
+        expect: expect![[r#"
+            error: undefined identifier y
+              ┌─ main:2:17
+              │
+            2 │             x = y
+              │                 ^
+
+            error: expected int but found string
+              ┌─ main:4:22
+              │
+            4 │             z2 = x + "a"
+              │                      ^^^
+
+        "#]],
     }
 }
 

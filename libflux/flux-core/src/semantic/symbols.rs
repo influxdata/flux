@@ -1,9 +1,12 @@
+//! Visitors for
+
 use crate::{
     ast,
     errors::located,
     map::HashSet,
     semantic::{
         nodes::{Package, Statement},
+        types::MonoType,
         walk::{walk, Node, Visitor},
         Symbol, Warning, WarningKind,
     },
@@ -104,4 +107,32 @@ pub fn unused_symbols(node: &Package) -> Vec<Warning> {
     );
 
     warnings
+}
+
+/// Given a Flux source and a variable name, find out the type of that variable in the Flux source code.
+pub fn find_var_type(pkg: &Package, var_name: &str) -> Option<MonoType> {
+    // `var_name` refers to an identifier without a definition so we gather all the symbols that
+    // have definitions to filter those out
+    let mut definitions = HashSet::new();
+
+    walk(
+        &mut DefinitionVisitor::new(|symbol: &Symbol, _, _| {
+            definitions.insert(symbol.clone());
+        }),
+        pkg.into(),
+    );
+
+    let mut typ = None;
+    walk(
+        &mut |node| {
+            if let Node::IdentifierExpr(id) = node {
+                if id.name == var_name && !definitions.contains(&id.name) {
+                    typ = Some(id.typ.clone());
+                }
+            }
+        },
+        pkg.into(),
+    );
+
+    typ
 }

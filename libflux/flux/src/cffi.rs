@@ -7,25 +7,29 @@ use std::{
 };
 
 use anyhow::anyhow;
-use fluxcore::semantic::flatbuffers::types::{build_env, build_type};
-use fluxcore::semantic::import::Importer;
-use fluxcore::{ast, formatter, merge_packages, semantic};
 use fluxcore::{
+    ast,
+    errors::SalvageResult,
+    formatter, merge_packages,
     parser::Parser,
     semantic::{
+        self,
         env::Environment,
-        flatbuffers::semantic_generated::fbsemantic as fb,
+        flatbuffers::{
+            semantic_generated::fbsemantic as fb,
+            types::{build_env, build_type},
+        },
+        import::Importer,
         import::Packages,
         nodes::{Package, Symbol},
-        sub::Substitution,
-        types::{MonoType, PolyType},
+        types::{BoundTvar, MonoType},
         Analyzer, AnalyzerConfig, Feature, PackageExports,
     },
 };
 
 use crate::semantic::flatbuffers::semantic_generated::fbsemantic::MonoTypeHolderArgs;
 
-use super::{new_semantic_analyzer, prelude, Error, Result, IMPORTS, PRELUDE};
+use super::{new_semantic_analyzer, prelude, Error, Result, IMPORTS};
 
 /// An error handle designed to allow passing `Error` instances to library
 /// consumers across language boundaries.
@@ -345,7 +349,10 @@ pub unsafe extern "C" fn flux_analyze(
                 *out_sem_pkg = Some(Box::new(sem_pkg));
                 None
             }
-            Err(err) => Some(err.into()),
+            Err(salvage) => {
+                *out_sem_pkg = salvage.value.map(Box::new);
+                Some(salvage.error.into())
+            }
         }
     })
     .unwrap_or_else(|err| Some(err.into()))
@@ -361,14 +368,14 @@ pub unsafe extern "C" fn flux_analyze(
 #[no_mangle]
 #[allow(clippy::boxed_local)]
 pub unsafe extern "C" fn flux_find_var_type(
-    ast_pkg: Box<ast::Package>,
+    sem_pkg: *const semantic::nodes::Package,
     var_name: *const c_char,
     out_type: *mut flux_buffer_t,
 ) -> Option<Box<ErrorHandle>> {
     catch_unwind(|| {
         let buf = CStr::from_ptr(var_name).to_bytes(); // Unsafe
-        let name = String::from_utf8(buf.to_vec()).unwrap();
-        find_var_type(&ast_pkg, name).map_or_else(
+        let name = std::str::from_utf8(buf).unwrap();
+        find_var_type(&*sem_pkg, name).map_or_else(
             |e| Some(Box::from(e)),
             |t| {
                 let mut builder = flatbuffers::FlatBufferBuilder::new();
@@ -568,42 +575,13 @@ impl Options {
 /// analyze consumes the given AST package and returns a semantic package
 /// that has been type-inferred.  This function is aware of the standard library
 /// and prelude.
-pub fn analyze(ast_pkg: &ast::Package, options: Options) -> Result<Package> {
+pub fn analyze(ast_pkg: &ast::Package, options: Options) -> SalvageResult<Package, Error> {
     let Options { features } = options;
     let mut analyzer = new_semantic_analyzer(AnalyzerConfig { features })?;
-    let (_, sem_pkg) = analyzer.analyze_ast(ast_pkg).map_err(|err| err.error)?;
+    let (_, sem_pkg) = analyzer
+        .analyze_ast(ast_pkg)
+        .map_err(|salvage| salvage.err_into().map(|(_, sem_pkg)| sem_pkg))?;
     Ok(sem_pkg)
-}
-
-/// infer_with_env consumes the given AST package, inject the type bindings from the given
-/// type environment, and returns a semantic package that has not been type-injected and an
-/// inferred type environment and substitution.
-/// This function is aware of the standard library and prelude.
-fn infer_with_env(
-    ast_pkg: &ast::Package,
-    mut sub: Substitution,
-    env: Option<Environment<'static>>,
-) -> Result<(Environment<'static>, Package)> {
-    let prelude = match &*PRELUDE {
-        Some(prelude) => prelude,
-        None => return Err(anyhow!("missing prelude").into()),
-    };
-    let env = if let Some(mut e) = env {
-        e.external = Some(prelude);
-        e
-    } else {
-        Environment::from(prelude)
-    };
-    let importer = match &*IMPORTS {
-        Some(imports) => imports,
-        None => return Err(anyhow!("missing stdlib imports").into()),
-    };
-    let mut analyzer = Analyzer::new_with_defaults(env, importer);
-    let (_, pkg) = analyzer
-        .analyze_ast_with_substitution(ast_pkg, &mut sub)
-        .map_err(|err| err.error)?;
-    let (env, _) = analyzer.drop();
-    Ok((env, pkg))
 }
 
 /// Given a Flux source and a variable name, find out the type of that variable in the Flux source code.
@@ -611,21 +589,8 @@ fn infer_with_env(
 /// will be used in semantic analysis. The Flux source code itself should not contain any definition
 /// for that variable.
 /// This version of find_var_type is aware of the prelude and builtins.
-fn find_var_type(ast_pkg: &ast::Package, var_name: String) -> Result<MonoType> {
-    let sub = Substitution::default();
-    let tvar = sub.fresh();
-    let mut env = Environment::empty(true);
-    let var_name = Symbol::from(var_name);
-    env.add(
-        var_name.clone(),
-        PolyType {
-            vars: Vec::new(),
-            cons: Default::default(),
-            expr: MonoType::Var(tvar),
-        },
-    );
-    infer_with_env(ast_pkg, sub, Some(Environment::new(env)))
-        .map(|(env, _)| env.lookup(&var_name).unwrap().expr.clone())
+fn find_var_type(pkg: &Package, var_name: &str) -> Result<MonoType> {
+    Ok(semantic::find_var_type(pkg, var_name).unwrap_or(MonoType::BoundVar(BoundTvar(0))))
 }
 
 /// # Safety
@@ -658,7 +623,6 @@ pub unsafe extern "C" fn flux_get_env_stdlib(buf: *mut flux_buffer_t) {
 mod tests {
     use fluxcore::{
         ast,
-        parser::Parser,
         semantic::{
             convert::convert_polytype,
             fresh::Fresher,
@@ -785,6 +749,19 @@ mod tests {
         );
     }
 
+    fn find_var_type_from_source(source: &str, var_name: &str) -> Result<MonoType> {
+        let mut analyzer = new_semantic_analyzer(AnalyzerConfig::default())?;
+        let pkg = match analyzer.analyze_source("".into(), "".into(), source) {
+            Ok((_, pkg)) => pkg,
+            Err(err) => match err.value {
+                Some((_, pkg)) => pkg,
+                None => return Err(err.error.into()),
+            },
+        };
+
+        find_var_type(&pkg, var_name)
+    }
+
     #[test]
     fn find_var_ref() {
         let source = r#"
@@ -794,9 +771,8 @@ g = () => v.sweet
 x = g()
 vstr = v.str + "hello"
 "#;
-        let mut p = Parser::new(&source);
-        let pkg: ast::Package = p.parse_file("".to_string()).into();
-        let mut t = find_var_type(&pkg, "v".into()).expect("Should be able to get a MonoType.");
+        let mut t =
+            find_var_type_from_source(source, "v").expect("Should be able to get a MonoType.");
         let mut v = MonoTypeNormalizer::new();
         v.normalize(&mut t);
         assert_eq!(
@@ -851,9 +827,7 @@ vstr = v.str + "hello"
         let source = r#"
 vint = v + 2
 "#;
-        let mut p = Parser::new(&source);
-        let pkg: ast::Package = p.parse_file("".to_string()).into();
-        let t = find_var_type(&pkg, "v".into()).expect("Should be able to get a MonoType.");
+        let t = find_var_type_from_source(source, "v").expect("Should be able to get a MonoType.");
         assert_eq!(t, MonoType::INT);
 
         assert_eq!(serde_json::to_string_pretty(&t).unwrap(), "\"Int\"");
@@ -866,9 +840,8 @@ vint = v.int + 2
 o = {v with x: 256}
 p = o.ethan
 "#;
-        let mut p = Parser::new(&source);
-        let pkg: ast::Package = p.parse_file("".to_string()).into();
-        let mut t = find_var_type(&pkg, "v".into()).expect("Should be able to get a MonoType.");
+        let mut t =
+            find_var_type_from_source(source, "v").expect("Should be able to get a MonoType.");
         let mut v = MonoTypeNormalizer::new();
         v.normalize(&mut t);
         assert_eq!(format!("{}", t), r#"{B with int: int, ethan: A}"#);
@@ -914,9 +887,8 @@ from(bucket: v.bucket)
 |> filter(fn: (r) => r.host == "host.local")
 |> aggregateWindow(every: 30s, fn: count)
 "#;
-        let mut p = Parser::new(&source);
-        let pkg: ast::Package = p.parse_file("".to_string()).into();
-        let mut ty = find_var_type(&pkg, "v".to_string()).expect("should be able to find var type");
+        let mut ty =
+            find_var_type_from_source(source, "v").expect("should be able to find var type");
         let mut v = MonoTypeNormalizer::new();
         v.normalize(&mut ty);
         assert_eq!(
