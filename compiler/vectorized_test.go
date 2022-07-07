@@ -359,6 +359,7 @@ func TestVectorizedFns(t *testing.T) {
 				flagger = executetest.TestFlagger{}
 			}
 			flagger[fluxfeature.VectorizedMap().Key()] = true
+			flagger[fluxfeature.VectorizedConst().Key()] = true
 			ctx := context.Background()
 			ctx = feature.Inject(
 				ctx,

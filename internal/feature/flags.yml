@@ -87,3 +87,9 @@
   key: unusedSymbolWarnings
   default: false
   contact: Markus Westerlind
+
+- name: Vectorized Const
+  description: Calls to map can be vectorized when select literals appear in the function
+  key: vectorizedConst
+  default: false
+  contact: Owen Nelson
