@@ -145,10 +145,8 @@ fn vectorize_gt_operator_not_implemented() -> anyhow::Result<()> {
 
     let err = semantic::vectorize::vectorize(&analyzer_config(), &mut pkg).unwrap_err();
 
-    expect_test::expect![[
-        r#"error @1:14-1:23: can't vectorize function: unsupported operator >"#
-    ]]
-    .assert_eq(&err.to_string());
+    expect_test::expect![[r#"error @1:14-1:23: can't vectorize function: unsupported operator >"#]]
+        .assert_eq(&err.to_string());
     Ok(())
 }
 
