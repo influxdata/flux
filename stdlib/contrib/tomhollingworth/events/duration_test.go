@@ -161,6 +161,7 @@ func TestDuration_NewQuery(t *testing.T) {
 
 	for _, tc := range tests {
 		tc := tc
+		t.Log("aaa")
 		t.Run(tc.Name, func(t *testing.T) {
 			querytest.NewQueryTestHelper(t, tc)
 		})
@@ -634,6 +635,7 @@ func TestDuration_Process(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		tc := tc
+		t.Log("dd")
 		t.Run(tc.name, func(t *testing.T) {
 			executetest.ProcessTestHelper(
 				t,
@@ -642,6 +644,146 @@ func TestDuration_Process(t *testing.T) {
 				nil,
 				func(d execute.Dataset, c execute.TableBuilderCache) execute.Transformation {
 					return events.NewDurationTransformation(d, c, tc.spec)
+				},
+			)
+		})
+	}
+}
+
+func TestDuration_Process_2(t *testing.T) {
+	testCases := []struct {
+		name string
+		spec *events.DurationProcedureSpec
+		data []flux.Table
+		want []*executetest.Table
+	}{
+		{
+			name: "three columns: _stop, _time, _value",
+			spec: &events.DurationProcedureSpec{
+				Unit:       flux.ConvertDuration(time.Nanosecond),
+				TimeColumn: execute.DefaultTimeColLabel,
+				ColumnName: "duration",
+				StopColumn: execute.DefaultStopColLabel,
+			},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "_stop", Type: flux.TTime},
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TInt},
+				},
+				Data: [][]interface{}{
+					{execute.Time(300), execute.Time(10), int64(192)},
+					{execute.Time(300), execute.Time(20), int64(192)},
+					{execute.Time(300), execute.Time(40), int64(240)},
+					{execute.Time(300), execute.Time(44), int64(192)},
+					{execute.Time(300), execute.Time(120), int64(15)},
+					{execute.Time(300), execute.Time(285), int64(10)},
+					{execute.Time(300), execute.Time(290), int64(192)},
+					{execute.Time(300), execute.Time(295), int64(192)},
+				},
+			}},
+			want: []*executetest.Table{{
+				ColMeta: []flux.ColMeta{
+					{Label: "_stop", Type: flux.TTime},
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TInt},
+					{Label: "duration", Type: flux.TInt},
+				},
+				Data: [][]interface{}{
+					//{execute.Time(30), execute.Time(1), int64(2), int64(execute.Time(2) - execute.Time(1))},
+					//{execute.Time(30), execute.Time(2), int64(2), int64(execute.Time(3) - execute.Time(2))},
+					//{execute.Time(30), execute.Time(3), int64(2), int64(execute.Time(4) - execute.Time(3))},
+					//{execute.Time(30), execute.Time(4), int64(2), int64(execute.Time(5) - execute.Time(4))},
+					//{execute.Time(30), execute.Time(5), int64(7), int64(execute.Time(6) - execute.Time(5))},
+					//{execute.Time(30), execute.Time(6), int64(2), int64(execute.Time(7) - execute.Time(6))},
+					//{execute.Time(30), execute.Time(7), int64(2), int64(execute.Time(30) - execute.Time(7))},
+				},
+			}},
+		},
+	}
+	for _, tc := range testCases {
+		tc := tc
+		t.Log("dd")
+		t.Run(tc.name, func(t *testing.T) {
+			executetest.ProcessTestHelper(
+				t,
+				tc.data,
+				tc.want,
+				nil,
+				func(d execute.Dataset, c execute.TableBuilderCache) execute.Transformation {
+					a := events.NewDurationTransformation(d, c, tc.spec)
+					t.Log(a)
+					return a
+				},
+			)
+		})
+	}
+}
+
+func TestDuration_Process_3(t *testing.T) {
+	testCases := []struct {
+		name string
+		spec *events.DurationProcedureSpec
+		data []flux.Table
+		want []*executetest.Table
+	}{
+		{
+			name: "three columns: _stop, _time, _value",
+			spec: &events.DurationProcedureSpec{
+				Unit:       flux.ConvertDuration(time.Nanosecond),
+				TimeColumn: execute.DefaultTimeColLabel,
+				ColumnName: "duration",
+				StopColumn: execute.DefaultStopColLabel,
+			},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "_stop", Type: flux.TTime},
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TInt},
+				},
+				Data: [][]interface{}{
+					{execute.Time(300 * 1000000000), execute.Time(5 * 1000000000), int64(160)},
+					{execute.Time(300 * 1000000000), execute.Time(10 * 1000000000), int64(192)},
+					{execute.Time(300 * 1000000000), execute.Time(20 * 1000000000), int64(0)},
+					{execute.Time(300 * 1000000000), execute.Time(35 * 1000000000), int64(10)},
+					{execute.Time(300 * 1000000000), execute.Time(120 * 1000000000), int64(15)},
+					{execute.Time(300 * 1000000000), execute.Time(140 * 1000000000), int64(10)},
+					{execute.Time(300 * 1000000000), execute.Time(150 * 1000000000), int64(0)},
+					{execute.Time(300 * 1000000000), execute.Time(155 * 1000000000), int64(240)},
+				},
+			}},
+			want: []*executetest.Table{{
+				ColMeta: []flux.ColMeta{
+					{Label: "_stop", Type: flux.TTime},
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TInt},
+					{Label: "duration", Type: flux.TInt},
+				},
+				Data: [][]interface{}{
+					//{execute.Time(30), execute.Time(1), int64(2), int64(execute.Time(2) - execute.Time(1))},
+					//{execute.Time(30), execute.Time(2), int64(2), int64(execute.Time(3) - execute.Time(2))},
+					//{execute.Time(30), execute.Time(3), int64(2), int64(execute.Time(4) - execute.Time(3))},
+					//{execute.Time(30), execute.Time(4), int64(2), int64(execute.Time(5) - execute.Time(4))},
+					//{execute.Time(30), execute.Time(5), int64(7), int64(execute.Time(6) - execute.Time(5))},
+					//{execute.Time(30), execute.Time(6), int64(2), int64(execute.Time(7) - execute.Time(6))},
+					//{execute.Time(30), execute.Time(7), int64(2), int64(execute.Time(30) - execute.Time(7))},
+				},
+			}},
+		},
+	}
+	for _, tc := range testCases {
+		tc := tc
+		t.Log("dd")
+		t.Run(tc.name, func(t *testing.T) {
+			executetest.ProcessTestHelper(
+				t,
+				tc.data,
+				tc.want,
+				nil,
+				func(d execute.Dataset, c execute.TableBuilderCache) execute.Transformation {
+					a := events.NewDurationTransformation(d, c, tc.spec)
+					t.Log(a)
+					return a
 				},
 			)
 		})

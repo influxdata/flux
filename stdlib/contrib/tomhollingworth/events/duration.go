@@ -1,6 +1,7 @@
 package events
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/influxdata/flux"
@@ -206,6 +207,11 @@ func (t *durationTransformation) Process(id execute.DatasetID, tbl flux.Table) e
 		return errors.Newf(codes.FailedPrecondition, "column %q does not exist", t.timeColumn)
 	}
 
+	valueIdx := execute.ColIdx("_value", cols)
+	if valueIdx < 0 {
+		return errors.Newf(codes.FailedPrecondition, "column %q does not exist", "_value")
+	}
+
 	var stopIdx int
 	if !t.isStop {
 		stopIdx = execute.ColIdx(t.stopColumn, cols)
@@ -241,43 +247,132 @@ func (t *durationTransformation) Process(id execute.DatasetID, tbl flux.Table) e
 
 	if err := tbl.Do(func(cr flux.ColReader) error {
 		l := cr.Len()
+		prevIndex := 0
+		lastStatusIndex := 0
+		//tempIndex := -1
+		//tempDuration := float64(0)
 
 		ts := cr.Times(timeIdx)
-		for i := 0; i < l; i++ {
+
+		values := cr.Ints(valueIdx)
+		if !t.isStop {
+			stopTimes := cr.Times(stopIdx)
+			sTime = stopTimes.Value(l - 1)
+		}
+
+		for currIndex := 1; currIndex <= l; currIndex++ {
 			// Read the current time value. If we have a current time to compare
 			// it to, then append the difference between them.
 			//
 			// This section will always append the previous row. During the first
 			// invocation of this section, it is skipped.
-			nTime := ts.Value(i)
-			if cTimeValid {
-				currentTime := float64(cTime)
-				nextTime := float64(nTime)
-				if err := builder.AppendInt(numCol, int64((nextTime-currentTime)/t.unit)); err != nil {
-					return err
-				}
+			//fmt.Println(currIndex)
+			//fmt.Println(prevIndex)
+			fmt.Println(lastStatusIndex)
+
+			prevValue := values.Value(prevIndex)
+			var currValue int64
+			if currIndex < l {
+				currValue = values.Value(currIndex)
+			} else {
+				currValue = -1
 			}
-			cTime, cTimeValid = nTime, true
+
+			if prevValue != currValue {
+				// if current status is 0 and check if change from green to red or red to green and duration < 8, then omit status 0
+				// if d[current_index]['status'] == '0' and ((0 < int(d[prev_index]['status']) <=15 and 15 < int(d[current_index+1]['status']) <=240) or (15 < int(d[prev_index]['status']) <=240 and 0 < int(d[current_index+1]['status']) <=15)) and (d[current_index+1]['time'] - d[current_index]['time']).total_seconds() < 8:
+				if currValue == 0 {
+					var nextValue int64
+					if currIndex < l-1 {
+						nextValue = values.Value(currIndex + 1)
+					} else {
+						nextValue = -1
+					}
+					if ((0 < prevValue && prevValue <= 15) && (15 < nextValue && nextValue <= 240)) || ((15 < prevValue && prevValue <= 240) && (0 < nextValue && nextValue <= 15)) {
+						duration := float64(ts.Value(currIndex+1)) - float64(ts.Value(currIndex))
+						if duration < 8000000000 {
+							//prevIndex = lastStatusIndex
+						} else {
+							duration := float64(ts.Value(currIndex)) - float64(ts.Value(prevIndex))
+							if err := builder.AppendInt(numCol, int64((duration)/t.unit)); err != nil {
+								return err
+							}
+							if err := execute.AppendMappedRecordExplicit(prevIndex, cr, builder, colMap); err != nil {
+								return err
+							}
+							lastStatusIndex = prevIndex
+							prevIndex = currIndex
+						}
+					} else {
+						var duration float64
+						if currIndex < l {
+							duration = float64(ts.Value(currIndex)) - float64(ts.Value(prevIndex))
+						} else {
+							duration = float64(sTime) - float64(ts.Value(prevIndex))
+						}
+						if err := builder.AppendInt(numCol, int64((duration)/t.unit)); err != nil {
+							return err
+						}
+						if err := execute.AppendMappedRecordExplicit(prevIndex, cr, builder, colMap); err != nil {
+							return err
+						}
+						lastStatusIndex = prevIndex
+						prevIndex = currIndex
+					}
+				} else {
+					var duration float64
+					if currIndex < l {
+						duration = float64(ts.Value(currIndex)) - float64(ts.Value(prevIndex))
+					} else {
+						duration = float64(sTime) - float64(ts.Value(prevIndex))
+					}
+					if err := builder.AppendInt(numCol, int64((duration)/t.unit)); err != nil {
+						return err
+					}
+					if err := execute.AppendMappedRecordExplicit(prevIndex, cr, builder, colMap); err != nil {
+						return err
+					}
+					lastStatusIndex = prevIndex
+					prevIndex = currIndex
+				}
+			} else {
+				// go next
+			}
+
+			//
+			//nTime := ts.Value(i)
+			//if cTimeValid {
+			//	currentTime := float64(cTime)
+			//	nextTime := float64(nTime)
+			//	if err := builder.AppendInt(numCol, int64((nextTime-currentTime+float64(values.Value(i)))/t.unit)); err != nil {
+			//		return err
+			//	}
+			//}
+			//cTime, cTimeValid = nTime, true
 
 			// Append the existing columns. We always append the currently
 			// processed row except for the duration between the two.
 			// The reason is we need to copy over these values, but
 			// we don't know the duration comparison until we read the next row
 			// which may exist in a separate buffer.
-			if err := execute.AppendMappedRecordExplicit(i, cr, builder, colMap); err != nil {
-				return err
-			}
+
 		}
+
+		//if true || tempIndex != -1 {
+		//if err := builder.AppendInt(numCol, int64((tempDuration)/t.unit)); err != nil {
+		//	return err
+		//}
+		//if err := execute.AppendMappedRecordExplicit(tempIndex, cr, builder, colMap); err != nil {
+		//	return err
+		//}
+		//}
 
 		// If no stop timestamp is provided, get last value in stopColumn.
 		// We just record this as the actual append happens outside this loop.
 		// We do not know if this is the final buffer until we have already
 		// finished reading the buffers so we just record this in case it is the
 		// proper value.
-		if !t.isStop {
-			stopTimes := cr.Times(stopIdx)
-			sTime = stopTimes.Value(l - 1)
-		}
+
 		return nil
 	}); err != nil {
 		return err
