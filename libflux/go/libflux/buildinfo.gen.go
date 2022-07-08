@@ -429,7 +429,7 @@ var sourceHashes = map[string]string{
 	"stdlib/universe/aggregate_window_max_test.flux":                                              "8ee5d927ef375e7ac3687ea1ea00a0e8add969c31357362d0032ee079c2ac906",
 	"stdlib/universe/aggregate_window_mean_test.flux":                                             "ba33848419748489bc330c67dfaa344fac757f8af782879c71e08b345f0f652f",
 	"stdlib/universe/aggregate_window_median_test.flux":                                           "2791ed98310aae23deab7cb79836e60539cd29810c67910c30e4b891356a2698",
-	"stdlib/universe/aggregate_window_test.flux":                                                  "5fb441b250506eeb65b778ee99d4cb0af2bf7cab1ea93c1eb2cd6d101edae198",
+	"stdlib/universe/aggregate_window_test.flux":                                                  "79ae9443c57f613fa7917b727f80f6a3fc985fcd95006ab2804c1f5d25c9b9d3",
 	"stdlib/universe/cmo_test.flux":                                                               "3793f5cf21ae42879d6789cdc36bbcf29ddb99bf16af8a96775a9415fd8d1c09",
 	"stdlib/universe/columns_test.flux":                                                           "fe641e3e747439a15fb2f4a1e4c56da6ad6a75109db4597f1aab806931f881c7",
 	"stdlib/universe/contains_test.flux":                                                          "a1890287ebc1ad6d8c84561f7e0cb725048a1e287f49f5dceac196866a20ee01",

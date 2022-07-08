@@ -21,13 +21,37 @@ func (a *aggregateWindowSumInt) Aggregate(ts *array.Int, vs array.Array, start, 
 	b := array.NewIntBuilder(mem)
 	b.Resize(stop.Len())
 
+	// Check once if we should look for nulls in the input.
+	hasNulls := vs.NullN() > 0
+
 	values := vs.(*array.Int)
 	aggregateWindows(ts, start, stop, func(i, j int) {
-		var sum int64
-		for ; i < j; i++ {
-			sum += values.Value(i)
+		var (
+			sum    int64
+			isNull = hasNulls
+		)
+		if hasNulls {
+			for ; i < j; i++ {
+				// If there are nulls, check if this is null.
+				if values.IsNull(i) {
+					continue
+				}
+				sum += values.Value(i)
+				isNull = false
+			}
+		} else {
+			// Skip the extra checks if we know there are no nulls.
+			for ; i < j; i++ {
+				sum += values.Value(i)
+			}
 		}
-		b.Append(sum)
+
+		// Append a null value if there were no valid points.
+		if isNull {
+			b.AppendNull()
+		} else {
+			b.Append(sum)
+		}
 	})
 	result := b.NewIntArray()
 	a.merge(start, stop, result, mem)
@@ -50,12 +74,16 @@ func (a *aggregateWindowSumInt) merge(start, stop *array.Int, result *array.Int,
 		merged := array.NewIntBuilder(mem)
 		merged.Resize(ts.Len())
 		mergeWindowValues(ts, prev, next, func(i, j int) {
-			if i >= 0 && j >= 0 {
+			iValid := i >= 0 && a.vs.IsValid(i)
+			jValid := j >= 0 && result.IsValid(j)
+			if iValid && jValid {
 				merged.Append(a.vs.Value(i) + result.Value(j))
-			} else if i >= 0 {
+			} else if iValid {
 				merged.Append(a.vs.Value(i))
-			} else {
+			} else if jValid {
 				merged.Append(result.Value(j))
+			} else {
+				merged.AppendNull()
 			}
 		})
 		a.vs.Release()
@@ -69,7 +97,7 @@ func (a *aggregateWindowSumInt) Compute(mem memory.Allocator) (*array.Int, flux.
 		b.Resize(n)
 
 		append = func(i int) {
-			if i < 0 {
+			if i < 0 || a.vs.IsNull(i) {
 				b.AppendNull()
 			} else {
 				b.Append(a.vs.Value(i))
@@ -99,97 +127,116 @@ func (a *aggregateWindowSumInt) Close() error {
 type aggregateWindowMeanInt struct {
 	aggregateWindowBase
 	counts *array.Int
-	sums   *array.Int
+	means  *array.Float
 }
 
 func (a *aggregateWindowMeanInt) Aggregate(ts *array.Int, vs array.Array, start, stop *array.Int, mem memory.Allocator) {
 	countsB := array.NewIntBuilder(mem)
 	countsB.Resize(stop.Len())
 
-	sumsB := array.NewIntBuilder(mem)
-	sumsB.Resize(stop.Len())
+	meansB := array.NewFloatBuilder(mem)
+	meansB.Resize(stop.Len())
+
+	// Check once if we should look for nulls in the input.
+	hasNulls := vs.NullN() > 0
 
 	values := vs.(*array.Int)
 	aggregateWindows(ts, start, stop, func(i, j int) {
-		countsB.Append(int64(j - i))
-		var sum int64
-		for ; i < j; i++ {
-			sum += values.Value(i)
+		var (
+			sum   int64
+			count = int64(j - i)
+		)
+		if hasNulls {
+			for ; i < j; i++ {
+				if values.IsNull(i) {
+					count--
+					continue
+				}
+				sum += values.Value(i)
+			}
+		} else {
+			for ; i < j; i++ {
+				sum += values.Value(i)
+			}
 		}
-		sumsB.Append(sum)
+		countsB.Append(count)
+		if count > 0 {
+			meansB.Append(float64(sum) / float64(count))
+		} else {
+			meansB.AppendNull()
+		}
 	})
 
-	counts, sums := countsB.NewIntArray(), sumsB.NewIntArray()
-	a.merge(start, stop, counts, sums, mem)
+	counts, means := countsB.NewIntArray(), meansB.NewFloatArray()
+	a.merge(start, stop, counts, means, mem)
 }
 
 func (a *aggregateWindowMeanInt) Merge(from aggregateWindow, mem memory.Allocator) {
 	other := from.(*aggregateWindowMeanInt)
 	other.counts.Retain()
-	other.sums.Retain()
-	a.merge(other.ts, other.ts, other.counts, other.sums, mem)
+	other.means.Retain()
+	a.merge(other.ts, other.ts, other.counts, other.means, mem)
 }
 
-func (a *aggregateWindowMeanInt) merge(start, stop, counts *array.Int, sums *array.Int, mem memory.Allocator) {
+func (a *aggregateWindowMeanInt) merge(start, stop, counts *array.Int, means *array.Float, mem memory.Allocator) {
 	a.mergeWindows(start, stop, mem, func(ts, prev, next *array.Int) {
-		if a.sums == nil {
-			a.counts, a.sums = counts, sums
+		if a.means == nil {
+			a.counts, a.means = counts, means
 			return
 		}
 		defer counts.Release()
-		defer sums.Release()
+		defer means.Release()
 
 		mergedCounts := array.NewIntBuilder(mem)
 		mergedCounts.Resize(ts.Len())
-		mergedSums := array.NewIntBuilder(mem)
-		mergedSums.Resize(ts.Len())
+		mergedMeans := array.NewFloatBuilder(mem)
+		mergedMeans.Resize(ts.Len())
 		mergeWindowValues(ts, prev, next, func(i, j int) {
-			if i >= 0 && j >= 0 {
-				mergedCounts.Append(a.counts.Value(i) + counts.Value(j))
-				mergedSums.Append(a.sums.Value(i) + sums.Value(j))
-			} else if i >= 0 {
+			iValid := i >= 0 && a.means.IsValid(i)
+			jValid := j >= 0 && means.IsValid(j)
+			if iValid && jValid {
+				m, n := a.counts.Value(i), counts.Value(j)
+				mergedCounts.Append(m + n)
+				mergedMeans.Append((a.means.Value(i)*float64(m) + means.Value(j)*float64(n)) / float64(m+n))
+			} else if iValid {
 				mergedCounts.Append(a.counts.Value(i))
-				mergedSums.Append(a.sums.Value(i))
-			} else {
+				mergedMeans.Append(a.means.Value(i))
+			} else if jValid {
 				mergedCounts.Append(counts.Value(j))
-				mergedSums.Append(sums.Value(j))
+				mergedMeans.Append(means.Value(j))
+			} else {
+				mergedCounts.Append(0)
+				mergedMeans.AppendNull()
 			}
 		})
 		a.counts.Release()
-		a.sums.Release()
-		a.counts, a.sums = mergedCounts.NewIntArray(), mergedSums.NewIntArray()
+		a.means.Release()
+		a.counts, a.means = mergedCounts.NewIntArray(), mergedMeans.NewFloatArray()
 	})
 }
 
 func (a *aggregateWindowMeanInt) Compute(mem memory.Allocator) (*array.Int, flux.ColType, array.Array) {
-	b := array.NewFloatBuilder(mem)
-	b.Resize(a.ts.Len())
-	for i, n := 0, a.sums.Len(); i < n; i++ {
-		v := float64(a.sums.Value(i)) / float64(a.counts.Value(i))
-		b.Append(v)
-	}
-	vs := b.NewFloatArray()
-
 	a.createEmptyWindows(mem, func(n int) (append func(i int), done func()) {
 		b := array.NewFloatBuilder(mem)
 		b.Resize(n)
 
 		append = func(i int) {
-			if i < 0 {
+			if i < 0 || a.means.IsNull(i) {
 				b.AppendNull()
 			} else {
-				b.Append(vs.Value(i))
+				b.Append(a.means.Value(i))
 			}
 		}
 
 		done = func() {
-			vs.Release()
-			vs = b.NewFloatArray()
+			a.means.Release()
+			a.means = b.NewFloatArray()
 		}
 		return append, done
 	})
 	a.ts.Retain()
-	return a.ts, flux.TFloat, vs
+	a.means.Retain()
+	return a.ts, flux.TFloat, a.means
 }
 
 func (a *aggregateWindowMeanInt) Close() error {
@@ -198,9 +245,9 @@ func (a *aggregateWindowMeanInt) Close() error {
 		a.counts.Release()
 		a.counts = nil
 	}
-	if a.sums != nil {
-		a.sums.Release()
-		a.sums = nil
+	if a.means != nil {
+		a.means.Release()
+		a.means = nil
 	}
 	return nil
 }
@@ -214,13 +261,37 @@ func (a *aggregateWindowSumUint) Aggregate(ts *array.Int, vs array.Array, start,
 	b := array.NewUintBuilder(mem)
 	b.Resize(stop.Len())
 
+	// Check once if we should look for nulls in the input.
+	hasNulls := vs.NullN() > 0
+
 	values := vs.(*array.Uint)
 	aggregateWindows(ts, start, stop, func(i, j int) {
-		var sum uint64
-		for ; i < j; i++ {
-			sum += values.Value(i)
+		var (
+			sum    uint64
+			isNull = hasNulls
+		)
+		if hasNulls {
+			for ; i < j; i++ {
+				// If there are nulls, check if this is null.
+				if values.IsNull(i) {
+					continue
+				}
+				sum += values.Value(i)
+				isNull = false
+			}
+		} else {
+			// Skip the extra checks if we know there are no nulls.
+			for ; i < j; i++ {
+				sum += values.Value(i)
+			}
 		}
-		b.Append(sum)
+
+		// Append a null value if there were no valid points.
+		if isNull {
+			b.AppendNull()
+		} else {
+			b.Append(sum)
+		}
 	})
 	result := b.NewUintArray()
 	a.merge(start, stop, result, mem)
@@ -243,12 +314,16 @@ func (a *aggregateWindowSumUint) merge(start, stop *array.Int, result *array.Uin
 		merged := array.NewUintBuilder(mem)
 		merged.Resize(ts.Len())
 		mergeWindowValues(ts, prev, next, func(i, j int) {
-			if i >= 0 && j >= 0 {
+			iValid := i >= 0 && a.vs.IsValid(i)
+			jValid := j >= 0 && result.IsValid(j)
+			if iValid && jValid {
 				merged.Append(a.vs.Value(i) + result.Value(j))
-			} else if i >= 0 {
+			} else if iValid {
 				merged.Append(a.vs.Value(i))
-			} else {
+			} else if jValid {
 				merged.Append(result.Value(j))
+			} else {
+				merged.AppendNull()
 			}
 		})
 		a.vs.Release()
@@ -262,7 +337,7 @@ func (a *aggregateWindowSumUint) Compute(mem memory.Allocator) (*array.Int, flux
 		b.Resize(n)
 
 		append = func(i int) {
-			if i < 0 {
+			if i < 0 || a.vs.IsNull(i) {
 				b.AppendNull()
 			} else {
 				b.Append(a.vs.Value(i))
@@ -292,97 +367,116 @@ func (a *aggregateWindowSumUint) Close() error {
 type aggregateWindowMeanUint struct {
 	aggregateWindowBase
 	counts *array.Int
-	sums   *array.Uint
+	means  *array.Float
 }
 
 func (a *aggregateWindowMeanUint) Aggregate(ts *array.Int, vs array.Array, start, stop *array.Int, mem memory.Allocator) {
 	countsB := array.NewIntBuilder(mem)
 	countsB.Resize(stop.Len())
 
-	sumsB := array.NewUintBuilder(mem)
-	sumsB.Resize(stop.Len())
+	meansB := array.NewFloatBuilder(mem)
+	meansB.Resize(stop.Len())
+
+	// Check once if we should look for nulls in the input.
+	hasNulls := vs.NullN() > 0
 
 	values := vs.(*array.Uint)
 	aggregateWindows(ts, start, stop, func(i, j int) {
-		countsB.Append(int64(j - i))
-		var sum uint64
-		for ; i < j; i++ {
-			sum += values.Value(i)
+		var (
+			sum   uint64
+			count = int64(j - i)
+		)
+		if hasNulls {
+			for ; i < j; i++ {
+				if values.IsNull(i) {
+					count--
+					continue
+				}
+				sum += values.Value(i)
+			}
+		} else {
+			for ; i < j; i++ {
+				sum += values.Value(i)
+			}
 		}
-		sumsB.Append(sum)
+		countsB.Append(count)
+		if count > 0 {
+			meansB.Append(float64(sum) / float64(count))
+		} else {
+			meansB.AppendNull()
+		}
 	})
 
-	counts, sums := countsB.NewIntArray(), sumsB.NewUintArray()
-	a.merge(start, stop, counts, sums, mem)
+	counts, means := countsB.NewIntArray(), meansB.NewFloatArray()
+	a.merge(start, stop, counts, means, mem)
 }
 
 func (a *aggregateWindowMeanUint) Merge(from aggregateWindow, mem memory.Allocator) {
 	other := from.(*aggregateWindowMeanUint)
 	other.counts.Retain()
-	other.sums.Retain()
-	a.merge(other.ts, other.ts, other.counts, other.sums, mem)
+	other.means.Retain()
+	a.merge(other.ts, other.ts, other.counts, other.means, mem)
 }
 
-func (a *aggregateWindowMeanUint) merge(start, stop, counts *array.Int, sums *array.Uint, mem memory.Allocator) {
+func (a *aggregateWindowMeanUint) merge(start, stop, counts *array.Int, means *array.Float, mem memory.Allocator) {
 	a.mergeWindows(start, stop, mem, func(ts, prev, next *array.Int) {
-		if a.sums == nil {
-			a.counts, a.sums = counts, sums
+		if a.means == nil {
+			a.counts, a.means = counts, means
 			return
 		}
 		defer counts.Release()
-		defer sums.Release()
+		defer means.Release()
 
 		mergedCounts := array.NewIntBuilder(mem)
 		mergedCounts.Resize(ts.Len())
-		mergedSums := array.NewUintBuilder(mem)
-		mergedSums.Resize(ts.Len())
+		mergedMeans := array.NewFloatBuilder(mem)
+		mergedMeans.Resize(ts.Len())
 		mergeWindowValues(ts, prev, next, func(i, j int) {
-			if i >= 0 && j >= 0 {
-				mergedCounts.Append(a.counts.Value(i) + counts.Value(j))
-				mergedSums.Append(a.sums.Value(i) + sums.Value(j))
-			} else if i >= 0 {
+			iValid := i >= 0 && a.means.IsValid(i)
+			jValid := j >= 0 && means.IsValid(j)
+			if iValid && jValid {
+				m, n := a.counts.Value(i), counts.Value(j)
+				mergedCounts.Append(m + n)
+				mergedMeans.Append((a.means.Value(i)*float64(m) + means.Value(j)*float64(n)) / float64(m+n))
+			} else if iValid {
 				mergedCounts.Append(a.counts.Value(i))
-				mergedSums.Append(a.sums.Value(i))
-			} else {
+				mergedMeans.Append(a.means.Value(i))
+			} else if jValid {
 				mergedCounts.Append(counts.Value(j))
-				mergedSums.Append(sums.Value(j))
+				mergedMeans.Append(means.Value(j))
+			} else {
+				mergedCounts.Append(0)
+				mergedMeans.AppendNull()
 			}
 		})
 		a.counts.Release()
-		a.sums.Release()
-		a.counts, a.sums = mergedCounts.NewIntArray(), mergedSums.NewUintArray()
+		a.means.Release()
+		a.counts, a.means = mergedCounts.NewIntArray(), mergedMeans.NewFloatArray()
 	})
 }
 
 func (a *aggregateWindowMeanUint) Compute(mem memory.Allocator) (*array.Int, flux.ColType, array.Array) {
-	b := array.NewFloatBuilder(mem)
-	b.Resize(a.ts.Len())
-	for i, n := 0, a.sums.Len(); i < n; i++ {
-		v := float64(a.sums.Value(i)) / float64(a.counts.Value(i))
-		b.Append(v)
-	}
-	vs := b.NewFloatArray()
-
 	a.createEmptyWindows(mem, func(n int) (append func(i int), done func()) {
 		b := array.NewFloatBuilder(mem)
 		b.Resize(n)
 
 		append = func(i int) {
-			if i < 0 {
+			if i < 0 || a.means.IsNull(i) {
 				b.AppendNull()
 			} else {
-				b.Append(vs.Value(i))
+				b.Append(a.means.Value(i))
 			}
 		}
 
 		done = func() {
-			vs.Release()
-			vs = b.NewFloatArray()
+			a.means.Release()
+			a.means = b.NewFloatArray()
 		}
 		return append, done
 	})
 	a.ts.Retain()
-	return a.ts, flux.TFloat, vs
+	a.means.Retain()
+	return a.ts, flux.TFloat, a.means
 }
 
 func (a *aggregateWindowMeanUint) Close() error {
@@ -391,9 +485,9 @@ func (a *aggregateWindowMeanUint) Close() error {
 		a.counts.Release()
 		a.counts = nil
 	}
-	if a.sums != nil {
-		a.sums.Release()
-		a.sums = nil
+	if a.means != nil {
+		a.means.Release()
+		a.means = nil
 	}
 	return nil
 }
@@ -407,13 +501,37 @@ func (a *aggregateWindowSumFloat) Aggregate(ts *array.Int, vs array.Array, start
 	b := array.NewFloatBuilder(mem)
 	b.Resize(stop.Len())
 
+	// Check once if we should look for nulls in the input.
+	hasNulls := vs.NullN() > 0
+
 	values := vs.(*array.Float)
 	aggregateWindows(ts, start, stop, func(i, j int) {
-		var sum float64
-		for ; i < j; i++ {
-			sum += values.Value(i)
+		var (
+			sum    float64
+			isNull = hasNulls
+		)
+		if hasNulls {
+			for ; i < j; i++ {
+				// If there are nulls, check if this is null.
+				if values.IsNull(i) {
+					continue
+				}
+				sum += values.Value(i)
+				isNull = false
+			}
+		} else {
+			// Skip the extra checks if we know there are no nulls.
+			for ; i < j; i++ {
+				sum += values.Value(i)
+			}
 		}
-		b.Append(sum)
+
+		// Append a null value if there were no valid points.
+		if isNull {
+			b.AppendNull()
+		} else {
+			b.Append(sum)
+		}
 	})
 	result := b.NewFloatArray()
 	a.merge(start, stop, result, mem)
@@ -436,12 +554,16 @@ func (a *aggregateWindowSumFloat) merge(start, stop *array.Int, result *array.Fl
 		merged := array.NewFloatBuilder(mem)
 		merged.Resize(ts.Len())
 		mergeWindowValues(ts, prev, next, func(i, j int) {
-			if i >= 0 && j >= 0 {
+			iValid := i >= 0 && a.vs.IsValid(i)
+			jValid := j >= 0 && result.IsValid(j)
+			if iValid && jValid {
 				merged.Append(a.vs.Value(i) + result.Value(j))
-			} else if i >= 0 {
+			} else if iValid {
 				merged.Append(a.vs.Value(i))
-			} else {
+			} else if jValid {
 				merged.Append(result.Value(j))
+			} else {
+				merged.AppendNull()
 			}
 		})
 		a.vs.Release()
@@ -455,7 +577,7 @@ func (a *aggregateWindowSumFloat) Compute(mem memory.Allocator) (*array.Int, flu
 		b.Resize(n)
 
 		append = func(i int) {
-			if i < 0 {
+			if i < 0 || a.vs.IsNull(i) {
 				b.AppendNull()
 			} else {
 				b.Append(a.vs.Value(i))
@@ -485,97 +607,116 @@ func (a *aggregateWindowSumFloat) Close() error {
 type aggregateWindowMeanFloat struct {
 	aggregateWindowBase
 	counts *array.Int
-	sums   *array.Float
+	means  *array.Float
 }
 
 func (a *aggregateWindowMeanFloat) Aggregate(ts *array.Int, vs array.Array, start, stop *array.Int, mem memory.Allocator) {
 	countsB := array.NewIntBuilder(mem)
 	countsB.Resize(stop.Len())
 
-	sumsB := array.NewFloatBuilder(mem)
-	sumsB.Resize(stop.Len())
+	meansB := array.NewFloatBuilder(mem)
+	meansB.Resize(stop.Len())
+
+	// Check once if we should look for nulls in the input.
+	hasNulls := vs.NullN() > 0
 
 	values := vs.(*array.Float)
 	aggregateWindows(ts, start, stop, func(i, j int) {
-		countsB.Append(int64(j - i))
-		var sum float64
-		for ; i < j; i++ {
-			sum += values.Value(i)
+		var (
+			sum   float64
+			count = int64(j - i)
+		)
+		if hasNulls {
+			for ; i < j; i++ {
+				if values.IsNull(i) {
+					count--
+					continue
+				}
+				sum += values.Value(i)
+			}
+		} else {
+			for ; i < j; i++ {
+				sum += values.Value(i)
+			}
 		}
-		sumsB.Append(sum)
+		countsB.Append(count)
+		if count > 0 {
+			meansB.Append(float64(sum) / float64(count))
+		} else {
+			meansB.AppendNull()
+		}
 	})
 
-	counts, sums := countsB.NewIntArray(), sumsB.NewFloatArray()
-	a.merge(start, stop, counts, sums, mem)
+	counts, means := countsB.NewIntArray(), meansB.NewFloatArray()
+	a.merge(start, stop, counts, means, mem)
 }
 
 func (a *aggregateWindowMeanFloat) Merge(from aggregateWindow, mem memory.Allocator) {
 	other := from.(*aggregateWindowMeanFloat)
 	other.counts.Retain()
-	other.sums.Retain()
-	a.merge(other.ts, other.ts, other.counts, other.sums, mem)
+	other.means.Retain()
+	a.merge(other.ts, other.ts, other.counts, other.means, mem)
 }
 
-func (a *aggregateWindowMeanFloat) merge(start, stop, counts *array.Int, sums *array.Float, mem memory.Allocator) {
+func (a *aggregateWindowMeanFloat) merge(start, stop, counts *array.Int, means *array.Float, mem memory.Allocator) {
 	a.mergeWindows(start, stop, mem, func(ts, prev, next *array.Int) {
-		if a.sums == nil {
-			a.counts, a.sums = counts, sums
+		if a.means == nil {
+			a.counts, a.means = counts, means
 			return
 		}
 		defer counts.Release()
-		defer sums.Release()
+		defer means.Release()
 
 		mergedCounts := array.NewIntBuilder(mem)
 		mergedCounts.Resize(ts.Len())
-		mergedSums := array.NewFloatBuilder(mem)
-		mergedSums.Resize(ts.Len())
+		mergedMeans := array.NewFloatBuilder(mem)
+		mergedMeans.Resize(ts.Len())
 		mergeWindowValues(ts, prev, next, func(i, j int) {
-			if i >= 0 && j >= 0 {
-				mergedCounts.Append(a.counts.Value(i) + counts.Value(j))
-				mergedSums.Append(a.sums.Value(i) + sums.Value(j))
-			} else if i >= 0 {
+			iValid := i >= 0 && a.means.IsValid(i)
+			jValid := j >= 0 && means.IsValid(j)
+			if iValid && jValid {
+				m, n := a.counts.Value(i), counts.Value(j)
+				mergedCounts.Append(m + n)
+				mergedMeans.Append((a.means.Value(i)*float64(m) + means.Value(j)*float64(n)) / float64(m+n))
+			} else if iValid {
 				mergedCounts.Append(a.counts.Value(i))
-				mergedSums.Append(a.sums.Value(i))
-			} else {
+				mergedMeans.Append(a.means.Value(i))
+			} else if jValid {
 				mergedCounts.Append(counts.Value(j))
-				mergedSums.Append(sums.Value(j))
+				mergedMeans.Append(means.Value(j))
+			} else {
+				mergedCounts.Append(0)
+				mergedMeans.AppendNull()
 			}
 		})
 		a.counts.Release()
-		a.sums.Release()
-		a.counts, a.sums = mergedCounts.NewIntArray(), mergedSums.NewFloatArray()
+		a.means.Release()
+		a.counts, a.means = mergedCounts.NewIntArray(), mergedMeans.NewFloatArray()
 	})
 }
 
 func (a *aggregateWindowMeanFloat) Compute(mem memory.Allocator) (*array.Int, flux.ColType, array.Array) {
-	b := array.NewFloatBuilder(mem)
-	b.Resize(a.ts.Len())
-	for i, n := 0, a.sums.Len(); i < n; i++ {
-		v := float64(a.sums.Value(i)) / float64(a.counts.Value(i))
-		b.Append(v)
-	}
-	vs := b.NewFloatArray()
-
 	a.createEmptyWindows(mem, func(n int) (append func(i int), done func()) {
 		b := array.NewFloatBuilder(mem)
 		b.Resize(n)
 
 		append = func(i int) {
-			if i < 0 {
+			if i < 0 || a.means.IsNull(i) {
 				b.AppendNull()
 			} else {
-				b.Append(vs.Value(i))
+				b.Append(a.means.Value(i))
 			}
 		}
 
 		done = func() {
-			vs.Release()
-			vs = b.NewFloatArray()
+			a.means.Release()
+			a.means = b.NewFloatArray()
 		}
 		return append, done
 	})
 	a.ts.Retain()
-	return a.ts, flux.TFloat, vs
+	a.means.Retain()
+	return a.ts, flux.TFloat, a.means
 }
 
 func (a *aggregateWindowMeanFloat) Close() error {
@@ -584,9 +725,9 @@ func (a *aggregateWindowMeanFloat) Close() error {
 		a.counts.Release()
 		a.counts = nil
 	}
-	if a.sums != nil {
-		a.sums.Release()
-		a.sums = nil
+	if a.means != nil {
+		a.means.Release()
+		a.means = nil
 	}
 	return nil
 }
