@@ -230,9 +230,15 @@ outer:
 					return errors.New(codes.Invalid, "invalid type for tag column")
 				}
 
+				value := er.Strings(j).Value(i)
+				if value == "" {
+					// Skip tag value if it is empty.
+					continue
+				}
+
 				metric.Tags = append(metric.Tags, &Tag{
 					Key:   col.Label,
-					Value: er.Strings(j).Value(i),
+					Value: value,
 				})
 			}
 		}
