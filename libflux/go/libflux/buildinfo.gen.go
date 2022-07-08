@@ -76,7 +76,7 @@ var sourceHashes = map[string]string{
 	"stdlib/contrib/RohanSreerama5/naiveBayesClassifier/naiveBayesClassifier.flux":                "0b1d73ef256ff893840e73604118ac52f13b6cd4d6a3de111270d8e649fa3ddc",
 	"stdlib/contrib/anaisdg/anomalydetection/mad.flux":                                            "e7f6f8e600e3fcb0086a896bb5886d67482b3deba3bafc5be0e30716ae88a4cd",
 	"stdlib/contrib/anaisdg/anomalydetection/mad_test.flux":                                       "ef886757f79114d8b6785f5a3ef718c83cfd020946b10e4ec0c351cdf4153293",
-	"stdlib/contrib/anaisdg/print/print.flux":                                                     "d7dcd2ce5883e5d41ccf6912a210233396d6e8a04e1736d74e6205069924f4e3",
+	"stdlib/contrib/anaisdg/print/print.flux":                                                     "12f948e0ec8b1a58d41d51f97d13061f726766593db03c1b324a594e2bfda1f3",
 	"stdlib/contrib/anaisdg/print/print_test.flux":                                                "acd57d6d48f41a8f3dbe3b92e5ee68d808f38da2a0d2cda5c6c70808fa04c049",
 	"stdlib/contrib/anaisdg/statsmodels/linearreg.flux":                                           "1e2f62eedbf59b5b66bf3e79f85e86b5f3448b042a3bc2bb0441b327ff5b179a",
 	"stdlib/contrib/anaisdg/statsmodels/linearreg_test.flux":                                      "205a5cb33a5d30d524b4e64374e1c7d5fc711a174a7fd5fee82c331acfd5dbb3",
