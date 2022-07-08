@@ -45,3 +45,6 @@ builtin any : A where A: Record
 // introduced: 0.134.0
 //
 builtin get : (r: A, key: string, default: B) => B where A: Record
+
+// @feature labelPolymorphism
+builtin get : (r: A, key: C, default: B) => B where A: Record, C: Label
