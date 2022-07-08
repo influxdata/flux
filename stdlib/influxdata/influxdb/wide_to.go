@@ -230,9 +230,15 @@ func getTablePointsMetadata(tbl flux.Table) (md tablePointsMetadata, err error) 
 				return md, errors.Newf(codes.FailedPrecondition, "group key column %q has type %v; type %v is required", col.Label, col.Type, flux.TString)
 			}
 			isTag[col.Label] = true
+
+			value := tbl.Key().ValueString(j)
+			if value == "" {
+				// Skip tag value if it is empty.
+				continue
+			}
 			md.Tags = append(md.Tags, &influxdb.Tag{
 				Key:   col.Label,
-				Value: tbl.Key().ValueString(j),
+				Value: value,
 			})
 		}
 	}

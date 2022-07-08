@@ -542,6 +542,10 @@ func (h *httpWriter) encodeMetric(enc *lineprotocol.Encoder, m Metric) ([]byte, 
 
 	// Encode the tags.
 	for _, tag := range tags {
+		// Skip tags with an empty value.
+		if tag.Value == "" {
+			continue
+		}
 		enc.AddTag(tag.Key, tag.Value)
 	}
 
