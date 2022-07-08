@@ -113,9 +113,6 @@ builtin chandeMomentumOscillator : (<-tables: stream[A], n: int, ?columns: [stri
 builtin columns : (<-tables: stream[A], ?column: string) => stream[B] where A: Record, B: Record
 
 // count returns the number of records in each input table.
-// @feature labelPolymorphism
-builtin columns : (<-tables: stream[A], ?column: L = "_value") => stream[{L: string}] where A: Record, L: Label
-
 //
 // The function counts both null and non-null records.
 //
@@ -164,12 +161,6 @@ builtin columns : (<-tables: stream[A], ?column: L = "_value") => stream[{L: str
 // tags: transformations,aggregates
 //
 builtin count : (<-tables: stream[A], ?column: string) => stream[B] where A: Record, B: Record
-
-// @feature labelPolymorphism
-builtin count : (<-tables: stream[{A with C: D}], ?column: C = "_value") => stream[{B with C: int}]
-    where
-    A: Record,
-    C: Label
 
 // covariance computes the covariance between two columns.
 //
@@ -433,13 +424,6 @@ builtin difference : (
 //
 builtin distinct : (<-tables: stream[A], ?column: string) => stream[B] where A: Record, B: Record
 
-// @feature labelPolymorphism
-builtin distinct : (<-tables: stream[{A with C: B}], ?column: C = "_value") => stream[{A with C: B}]
-    where
-    A: Record,
-    B: Equatable,
-    C: Label
-
 // drop removes specified columns from a table.
 //
 // Columns are specified either through a list or a predicate function.
@@ -512,13 +496,6 @@ builtin duplicate : (<-tables: stream[A], column: string, as: string) => stream[
     A: Record,
     B: Record
 
-// @feature labelPolymorphism
-builtin duplicate : (<-tables: stream[{A with C: B}], column: C, as: D) => stream[{A with C: B, D: B}]
-    where
-    A: Record,
-    C: Label,
-    D: Label
-
 // elapsed returns the time between subsequent records.
 //
 // For each input table, `elapsed()` returns the same table without the first row
@@ -554,18 +531,6 @@ builtin elapsed : (
     where
     A: Record,
     B: Record
-
-// @feature labelPolymorphism
-builtin elapsed : (
-        <-tables: stream[{A with T: time}],
-        ?unit: duration,
-        ?timeColumn: T = "_time",
-        ?columnName: C = "elapsed",
-    ) => stream[{A with T: time, C: int}]
-    where
-    A: Record,
-    C: Label,
-    T: Label
 
 // exponentialMovingAverage calculates the exponential moving average of `n`
 // number of values in the `_value` column giving more weight to more recent data.
@@ -656,9 +621,6 @@ builtin fill : (<-tables: stream[A], ?column: string, ?value: B, ?usePrevious: b
     A: Record,
     C: Record
 
-// TODO Needs optional types
-// // @feature labelPolymorphism
-// builtin fill : (<-tables: stream[{ A with C: B }], ?column: C = "_value", ?value: B, ?usePrevious: bool) => stream[{ A with C: B }] where A: Record, C: Label
 // filter filters data based on conditions defined in a predicate function (`fn`).
 //
 // Output tables have the same schema as the corresponding input tables.
@@ -859,21 +821,6 @@ builtin histogram : (
     A: Record,
     B: Record
 
-// @feature labelPolymorphism
-builtin histogram : (
-        <-tables: stream[{A with C: float}],
-        ?column: C = "_value",
-        ?upperBoundColumn: U,
-        ?countColumn: T,
-        bins: [float],
-        ?normalize: bool,
-    ) => stream[{U: float, T: float}]
-    where
-    A: Record,
-    C: Label,
-    T: Label,
-    U: Label
-
 // histogramQuantile approximates a quantile given a histogram that approximates
 // the cumulative distribution of the dataset.
 //
@@ -937,21 +884,6 @@ builtin histogramQuantile : (
     where
     A: Record,
     B: Record
-
-// @feature labelPolymorphism
-builtin histogramQuantile : (
-        <-tables: stream[{A with U: float, C: float}],
-        ?quantile: float,
-        ?countColumn: C,
-        ?upperBoundColumn: U,
-        ?valueColumn: V,
-        ?minValue: float,
-    ) => stream[{V: float}]
-    where
-    A: Record,
-    C: Label,
-    U: Label,
-    V: Label
 
 // holtWinters applies the Holt-Winters forecasting method to input tables.
 //
@@ -1054,22 +986,6 @@ builtin holtWinters : (
     A: Record,
     B: Record
 
-// @feature labelPolymorphism
-builtin holtWinters : (
-        <-tables: stream[{A with T: time, C: B}],
-        n: int,
-        interval: duration,
-        ?withFit: bool,
-        ?column: C = "_value",
-        ?timeColumn: T = "_time",
-        ?seasonality: int,
-    ) => stream[{C: B}]
-    where
-    A: Record,
-    B: Numeric,
-    C: Label,
-    T: Label
-
 // builtin _hourSelection used by hourSelection
 builtin _hourSelection : (
         <-tables: stream[A],
@@ -1080,18 +996,6 @@ builtin _hourSelection : (
     ) => stream[A]
     where
     A: Record
-
-// @feature labelPolymorphism
-builtin _hourSelection : (
-        <-tables: stream[A],
-        start: int,
-        stop: int,
-        location: {zone: string, offset: duration},
-        ?timeColumn: T = "_time",
-    ) => stream[{A with T: time}]
-    where
-    A: Record,
-    T: Label
 
 // hourSelection filters rows by time values in a specified hour range.
 //
@@ -1196,20 +1100,6 @@ builtin integral : (
     A: Record,
     B: Record
 
-// @feature labelPolymorphism
-builtin integral : (
-        <-tables: stream[{A with _start: time, _stop: time, C: B}],
-        ?unit: duration,
-        ?timeColumn: T = "_time",
-        ?column: C = "_value",
-        ?interpolate: string,
-    ) => stream[{A with _start: time, _stop: time, C: B}]
-    where
-    A: Record,
-    B: Numeric,
-    C: Label,
-    T: Label
-
 // join merges two streams of tables into a single output stream based on columns with equal values.
 // Null values are not considered equal when comparing column values.
 // The resulting schema is the union of the input schemas.
@@ -1313,13 +1203,6 @@ builtin kaufmansAMA : (<-tables: stream[A], n: int, ?column: string) => stream[B
     where
     A: Record,
     B: Record
-
-// @feature labelPolymorphism
-builtin kaufmansAMA : (<-tables: stream[{A with L: B}], n: int, ?column: L = "_value") => stream[{A with L: float}]
-    where
-    A: Record,
-    B: Numeric,
-    L: Label
 
 // keep returns a stream of tables containing only the specified columns.
 //
@@ -1717,9 +1600,6 @@ builtin keyValues : (
 //
 builtin keys : (<-tables: stream[A], ?column: string) => stream[B] where A: Record, B: Record
 
-// @feature labelPolymorphism
-builtin keys : (<-tables: stream[A], ?column: L = "_value") => stream[{L: string}] where A: Record, B: Record, L: Label
-
 // last returns the last row with a non-null value from each input table.
 //
 // **Note**: `last()` drops empty tables.
@@ -1748,12 +1628,6 @@ builtin keys : (<-tables: stream[A], ?column: L = "_value") => stream[{L: string
 // tags: transformations,selectors
 //
 builtin last : (<-tables: stream[A], ?column: string) => stream[A] where A: Record
-
-// @feature labelPolymorphism
-builtin last : (<-tables: stream[{A with L: B}], ?column: L = "_value") => stream[{A with L: B}]
-    where
-    A: Record,
-    L: Label
 
 // limit returns the first `n` rows after the specified `offset` from each input table.
 //
@@ -1890,13 +1764,6 @@ builtin map : (<-tables: stream[A], fn: (r: A) => B, ?mergeKey: bool) => stream[
 //
 builtin max : (<-tables: stream[A], ?column: string) => stream[A] where A: Record
 
-// @feature labelPolymorphism
-builtin max : (<-tables: stream[{A with L: B}], ?column: L = "_value") => stream[{A with L: B}]
-    where
-    A: Record,
-    B: Comparable,
-    L: Label
-
 // mean returns the average of non-null values in a specified column from each
 // input table.
 //
@@ -1919,14 +1786,6 @@ builtin max : (<-tables: stream[{A with L: B}], ?column: L = "_value") => stream
 // tags: transformations, aggregates
 //
 builtin mean : (<-tables: stream[A], ?column: string) => stream[B] where A: Record, B: Record
-
-// @feature labelPolymorphism
-builtin mean : (<-tables: stream[{A with C: B}], ?column: C = "_value") => stream[{D with C: B}]
-    where
-    A: Record,
-    B: Numeric,
-    D: Record,
-    C: Label
 
 // min returns the row with the minimum value in a specified column from each
 // input table.
@@ -1952,13 +1811,6 @@ builtin mean : (<-tables: stream[{A with C: B}], ?column: C = "_value") => strea
 // tags: transformations, selectors
 //
 builtin min : (<-tables: stream[A], ?column: string) => stream[A] where A: Record
-
-// @feature labelPolymorphism
-builtin min : (<-tables: stream[{A with L: B}], ?column: L = "_value") => stream[{A with L: B}]
-    where
-    A: Record,
-    B: Comparable,
-    L: Label
 
 // mode returns the non-null value or values that occur most often in a
 // specified column in each input table.
@@ -2567,17 +2419,6 @@ builtin timeShift : (<-tables: stream[A], duration: duration, ?columns: [string]
 //
 builtin skew : (<-tables: stream[A], ?column: string) => stream[B] where A: Record, B: Record
 
-// TODO
-// Could be extended to work with other types than string?
-// @feature labelPolymorphism
-// builtin set : (<-tables: stream[{ A with K: string }], key: K, value: string) => stream[{ A with K: string}] where A: Record, K: Label
-// @feature labelPolymorphism
-builtin skew : (<-tables: stream[{A with C: B}], ?column: C = "_value") => stream[{A with C: float}]
-    where
-    A: Record,
-    B: Numeric,
-    C: Label
-
 // spread returns the difference between the minimum and maximum values in a
 // specified column.
 //
@@ -2600,14 +2441,6 @@ builtin skew : (<-tables: stream[{A with C: B}], ?column: C = "_value") => strea
 // tags: transformations, aggregates
 //
 builtin spread : (<-tables: stream[A], ?column: string) => stream[B] where A: Record, B: Record
-
-// Having the output as D is more general than necessary, however the function converts `uint => int` so we can't just use `B` there
-// @feature labelPolymorphism
-builtin spread : (<-tables: stream[{A with C: B}], ?column: C = "_value") => stream[{A with C: D}]
-    where
-    A: Record,
-    B: Numeric,
-    C: Label
 
 // sort orders rows in each intput table based on values in specified columns.
 //
@@ -2722,22 +2555,6 @@ builtin stateTracking : (
     A: Record,
     B: Record
 
-// Seems to lack documentation, so I may be getting this wrong
-// @feature labelPolymorphism
-builtin stateTracking : (
-        <-tables: stream[{A with C: B, D: duration, T: time}],
-        fn: (r: A) => bool,
-        ?countColumn: C,
-        ?durationColumn: C,
-        ?durationUnit: duration,
-        ?timeColumn: T = "_time",
-    ) => stream[{A with C: B, D: duration, T: time}]
-    where
-    A: Record,
-    C: Label,
-    D: Label,
-    T: Label
-
 // stddev returns the standard deviation of non-null values in a specified column.
 //
 // ## Parameters
@@ -2773,14 +2590,6 @@ builtin stddev : (<-tables: stream[A], ?column: string, ?mode: string) => stream
     A: Record,
     B: Record
 
-// @feature labelPolymorphism
-// The returned stream should have the group key of  `A`, but no other fields
-builtin stddev : (<-tables: stream[{A with C: B}], ?column: C = "_value", ?mode: string) => stream[{D with C: B}]
-    where
-    A: Record,
-    B: Numeric,
-    C: Label
-
 // sum returns the sum of non-null values in a specified column.
 //
 // ## Parameters
@@ -2802,14 +2611,6 @@ builtin stddev : (<-tables: stream[{A with C: B}], ?column: C = "_value", ?mode:
 // tags: transformations, aggregates
 //
 builtin sum : (<-tables: stream[A], ?column: string) => stream[B] where A: Record, B: Record
-
-// @feature labelPolymorphism
-// The returned stream should have the group key of  `A`, but no other fields
-builtin sum : (<-tables: stream[{A with C: B}], ?column: C = "_value") => stream[{D with C: B}]
-    where
-    A: Record,
-    B: Numeric,
-    C: Label
 
 // tripleExponentialDerivative returns the triple exponential derivative (TRIX)
 // values using `n` points.
@@ -2947,13 +2748,6 @@ builtin union : (tables: [stream[A]]) => stream[A] where A: Record
 //
 builtin unique : (<-tables: stream[A], ?column: string) => stream[A] where A: Record
 
-// @feature labelPolymorphism
-builtin unique : (<-tables: stream[{A with C: B}], ?column: C = "_value") => stream[{A with C: B}]
-    where
-    A: Record,
-    B: Equatable,
-    C: Label
-
 // _window is a helper function for windowing data by time.
 builtin _window : (
         <-tables: stream[A],
@@ -2969,25 +2763,6 @@ builtin _window : (
     where
     A: Record,
     B: Record
-
-// @feature labelPolymorphism
-builtin _window : (
-        <-tables: stream[{A with T: time}],
-        every: duration,
-        period: duration,
-        offset: duration,
-        location: {zone: string, offset: duration},
-        ?timeColumn: T = "_time",
-        ?startColumn: U = "_start",
-        ?stopColumn: V = "_stop",
-        createEmpty: bool,
-    ) => stream[{A with U: time, V: time}]
-    where
-    A: Record,
-    B: Record,
-    T: Label,
-    U: Label,
-    V: Label
 
 // window groups records using regular time intervals.
 //
@@ -3193,9 +2968,6 @@ builtin tableFind : (<-tables: stream[A], fn: (key: B) => bool) => stream[A]
 // tags: dynamic queries
 //
 builtin getColumn : (<-table: stream[A], column: string) => [B] where A: Record
-
-// @feature labelPolymorphism
-builtin getColumn : (<-table: stream[{A with C: B}], column: C) => [B] where A: Record, C: Label
 
 // getRecord extracts a row at a specified index from a table as a record.
 //
