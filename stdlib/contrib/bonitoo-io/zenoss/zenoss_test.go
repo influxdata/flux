@@ -2,6 +2,7 @@ package zenoss_test
 
 import (
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -66,14 +67,13 @@ func TestZenossPost(t *testing.T) {
 	defer s.Close()
 
 	testCases := []struct {
-		name     string
-		URL      string
-		addEvent AddEvent
-		fn       string
+		name        string
+		fn          string
+		addEvent    AddEvent
+		authHeaders map[string]string
 	}{
 		{
-			name: "alert with defaults",
-			URL:  s.URL,
+			name: "alert with username/password",
 			addEvent: AddEvent{
 				Action: "EventsRouter",
 				Method: "add_event",
@@ -87,11 +87,29 @@ func TestZenossPost(t *testing.T) {
 				Type: "rpc",
 				TID:  1,
 			},
-			fn: "zenoss.endpoint(url: url, username: username, password: password)",
+			fn:          `zenoss.endpoint(url: url, username: "a", password: "1")`,
+			authHeaders: map[string]string{"Authorization": "Basic " + base64.StdEncoding.EncodeToString([]byte("a:1"))},
+		},
+		{
+			name: "alert with apiKey",
+			addEvent: AddEvent{
+				Action: "EventsRouter",
+				Method: "add_event",
+				Data: []Event{
+					{
+						Summary:    "some alert",
+						EventClass: "/App",
+						Severity:   "Warning",
+					},
+				},
+				Type: "rpc",
+				TID:  1,
+			},
+			fn:          `zenoss.endpoint(url: url, apiKey: "my-api-key")`,
+			authHeaders: map[string]string{"z-api-key": "my-api-key"},
 		},
 		{
 			name: "alert with all fields",
-			URL:  s.URL,
 			addEvent: AddEvent{
 				Action: "CustomRouter",
 				Method: "new_event",
@@ -108,7 +126,8 @@ func TestZenossPost(t *testing.T) {
 				Type: "doc",
 				TID:  1,
 			},
-			fn: "zenoss.endpoint(url: url, username: username, password: password, action: action, method: method, type: type, tid: tid)",
+			fn:          `zenoss.endpoint(url: url, username: "b", password: "2", action: action, method: method, type: type, tid: tid)`,
+			authHeaders: map[string]string{"Authorization": "Basic " + base64.StdEncoding.EncodeToString([]byte("b:2"))},
 		},
 	}
 
@@ -121,9 +140,7 @@ func TestZenossPost(t *testing.T) {
 			fluxString := `import "csv"
 import "contrib/bonitoo-io/zenoss"
 
-url = "` + tc.URL + `"
-username = "admin"
-password = "12345"
+url = "` + s.URL + `"
 action = "` + tc.addEvent.Action + `"
 method = "` + tc.addEvent.Method + `"
 type = "` + tc.addEvent.Type + `"
@@ -208,6 +225,9 @@ csv.from(csv:data) |> endpoint()`
 			if diff := cmp.Diff(tc.addEvent, req.AddEvent); diff != "" {
 				t.Fatal(diff)
 			}
+			if diff := cmp.Diff(tc.authHeaders, req.authHeaders); diff != "" {
+				t.Fatal(diff)
+			}
 		})
 	}
 }
@@ -223,9 +243,15 @@ type Server struct {
 func NewServer(t *testing.T) *Server {
 	s := new(Server)
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		authHeaders := make(map[string]string)
+		for _, authHeader := range []string{"Authorization", "z-api-key"} {
+			if value := r.Header.Get(authHeader); value != "" {
+				authHeaders[authHeader] = value
+			}
+		}
 		sr := Request{
-			URL:           r.URL.String(),
-			Authorization: r.Header.Get("Authorization"),
+			URL:         r.URL.String(),
+			authHeaders: authHeaders,
 		}
 		dec := json.NewDecoder(r.Body)
 		err := dec.Decode(&sr.AddEvent)
@@ -264,9 +290,9 @@ func (s *Server) Close() {
 }
 
 type Request struct {
-	URL           string
-	Authorization string
-	AddEvent      AddEvent
+	URL         string
+	AddEvent    AddEvent
+	authHeaders map[string]string
 }
 
 type Event struct {

@@ -13,6 +13,7 @@ Event fields are described in [Event Fields](https://help.zenoss.com/zsd/RM/admi
 | url | string | Zenoss events endpoint URL. | |
 | username  | string | HTTP BASIC authentication username. | "" (no auth) | 
 | password | string | HTTP BASIC authentication username. | "" (no auth) |
+| apiKey  | string | Zenoss cloud API key. | "" (no key) | 
 | action | string | Router name. | "EventsRouter" |
 | method | string | Router method | "add_event" |
 | type | string | Event type | "rpc" |
@@ -68,6 +69,7 @@ to Zenoss for each row.
 | url | string | Zenoss events endpoint URL. | |
 | username  | string | HTTP BASIC authentication username. | | 
 | password | string | HTTP BASIC authentication username. | |
+| apiKey  | string | Zenoss cloud API key. | "" (no key) | 
 | action | string | Router name. | "EventsRouter" |
 | method | string | Router method | "add_event" |
 | type | string | Event type | "rpc" |
