@@ -1,6 +1,4 @@
-//! Error types used in flux
-#![allow(missing_docs)]
-
+/// An error type which can represent multiple errors.
 use std::{
     any::Any,
     error::Error as StdError,
@@ -18,7 +16,6 @@ use crate::{
 };
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
-/// An error type which can represent multiple errors.
 pub struct Errors<T> {
     errors: Vec<T>,
 }

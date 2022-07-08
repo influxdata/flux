@@ -50,8 +50,6 @@ use crate::{
     },
 };
 
-pub use self::symbols::find_var_type;
-
 /// Result type for multiple semantic errors
 pub type Result<T, E = FileErrors> = std::result::Result<T, E>;
 /// Error represents any error that can occur during any step of the type analysis process.
@@ -300,7 +298,11 @@ pub fn build_polytype(
     let (r, cons) = build_record(from, &mut sub);
     infer::solve(&cons, &mut sub).map_err(Errors::<nodes::Error>::from)?;
     let typ = MonoType::record(r);
-    Ok(infer::generalize(Vec::new(), &mut sub, typ))
+    Ok(infer::generalize(
+        &env::Environment::empty(false),
+        &mut sub,
+        typ,
+    ))
 }
 
 fn build_record(
