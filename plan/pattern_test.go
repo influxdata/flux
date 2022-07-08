@@ -29,11 +29,11 @@ func TestPat(t *testing.T) {
 
 	// Matches
 	//     <anything> |> filter(...) |> filter(...)
-	filterFilterPat := plan.Pat(universe.FilterKind, plan.Pat(universe.FilterKind, plan.Any()))
+	filterFilterPat := plan.Multi(universe.FilterKind, plan.Single(universe.FilterKind, plan.Any()))
 
 	// Matches
 	//   from(...) |> filter(...)
-	filterFromPat := plan.Pat(universe.FilterKind, plan.Pat(influxdb.FromKind))
+	filterFromPat := plan.Multi(universe.FilterKind, plan.Single(influxdb.FromKind))
 
 	from := &plan.LogicalNode{
 		Spec: &influxdb.FromProcedureSpec{},

@@ -46,7 +46,7 @@ func ComparePlans(p, q *plan.Spec, f func(p, q plan.Node) error) error {
 	})
 
 	if len(w) != len(v) {
-		return fmt.Errorf("plans have %d and %d nodes respectively", len(w), len(v))
+		return fmt.Errorf("plans have differnt number of nodes. want: %d got: %d", len(w), len(v))
 	}
 
 	for i := 0; i < len(w); i++ {

@@ -331,9 +331,8 @@ func (MergeFiltersRule) Name() string {
 }
 
 func (MergeFiltersRule) Pattern() plan.Pattern {
-	return plan.Pat(universe.FilterKind,
-		plan.Pat(universe.FilterKind,
-			plan.Any()))
+	return plan.Multi(universe.FilterKind,
+		plan.Single(universe.FilterKind))
 }
 
 func (MergeFiltersRule) Rewrite(ctx context.Context, pn plan.Node) (plan.Node, bool, error) {
@@ -390,9 +389,8 @@ func (PushFilterThroughMapRule) Name() string {
 }
 
 func (PushFilterThroughMapRule) Pattern() plan.Pattern {
-	return plan.Pat(universe.FilterKind,
-		plan.Pat(universe.MapKind,
-			plan.Any()))
+	return plan.Multi(universe.FilterKind,
+		plan.Single(universe.MapKind))
 }
 
 func (PushFilterThroughMapRule) Rewrite(ctx context.Context, pn plan.Node) (plan.Node, bool, error) {

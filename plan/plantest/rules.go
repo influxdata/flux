@@ -77,7 +77,7 @@ func (spp SmashPlanRule) Pattern() plan.Pattern {
 		k = spp.Node.Kind()
 	}
 
-	return plan.Pat(k, plan.Any())
+	return plan.Multi(k, plan.Any())
 }
 
 func (spp SmashPlanRule) Rewrite(ctx context.Context, node plan.Node) (plan.Node, bool, error) {
@@ -114,7 +114,7 @@ func (ccr CreateCycleRule) Pattern() plan.Pattern {
 		k = ccr.Node.Kind()
 	}
 
-	return plan.Pat(k, plan.Any())
+	return plan.Multi(k, plan.Any())
 }
 
 func (ccr CreateCycleRule) Rewrite(ctx context.Context, node plan.Node) (plan.Node, bool, error) {
@@ -137,7 +137,7 @@ type MultiRootRule struct {
 }
 
 func (sr *MultiRootRule) Pattern() plan.Pattern {
-	return plan.OneOf(
+	return plan.MultiOneOf(
 		[]plan.ProcedureKind{
 			universe.MinKind,
 			universe.MaxKind,

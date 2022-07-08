@@ -15,7 +15,7 @@ func (p FromRemoteRule) Name() string {
 }
 
 func (p FromRemoteRule) Pattern() plan.Pattern {
-	return plan.Pat(FromKind)
+	return plan.Multi(FromKind)
 }
 
 func (p FromRemoteRule) Rewrite(ctx context.Context, node plan.Node) (plan.Node, bool, error) {
@@ -49,7 +49,7 @@ func (p MergeRemoteRangeRule) Name() string {
 }
 
 func (p MergeRemoteRangeRule) Pattern() plan.Pattern {
-	return plan.Pat(universe.RangeKind, plan.Pat(FromRemoteKind))
+	return plan.Multi(universe.RangeKind, plan.Single(FromRemoteKind))
 }
 
 func (p MergeRemoteRangeRule) Rewrite(ctx context.Context, node plan.Node) (plan.Node, bool, error) {
@@ -76,7 +76,7 @@ func (p MergeRemoteFilterRule) Name() string {
 }
 
 func (p MergeRemoteFilterRule) Pattern() plan.Pattern {
-	return plan.Pat(universe.FilterKind, plan.Pat(FromRemoteKind))
+	return plan.Multi(universe.FilterKind, plan.Single(FromRemoteKind))
 }
 
 func (p MergeRemoteFilterRule) Rewrite(ctx context.Context, node plan.Node) (plan.Node, bool, error) {
@@ -118,7 +118,7 @@ func (p BucketsRemoteRule) Name() string {
 }
 
 func (p BucketsRemoteRule) Pattern() plan.Pattern {
-	return plan.Pat(BucketsKind)
+	return plan.Multi(BucketsKind)
 }
 
 func (p BucketsRemoteRule) Rewrite(ctx context.Context, node plan.Node) (plan.Node, bool, error) {
