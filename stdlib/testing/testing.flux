@@ -233,7 +233,7 @@ assertEqualValues = (got, want) => {
     return diff(got: array.from(rows: [{v: got}]), want: array.from(rows: [{v: want}]))
 }
 
-// shouldError calls a function catches any error and checks that the error matches the expected value.
+// shouldError calls a function that catches any error and checks that the error matches the expected value.
 //
 // ## Parameters
 // - fn: Function to call.
