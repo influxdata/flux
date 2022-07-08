@@ -13,7 +13,7 @@ func (p DatabasesRemoteRule) Name() string {
 }
 
 func (p DatabasesRemoteRule) Pattern() plan.Pattern {
-	return plan.Pat(DatabasesKind)
+	return plan.Multi(DatabasesKind)
 }
 
 func (p DatabasesRemoteRule) Rewrite(ctx context.Context, node plan.Node) (plan.Node, bool, error) {

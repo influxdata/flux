@@ -441,7 +441,7 @@ func (r OptimizeWindowRule) Name() string {
 }
 
 func (r OptimizeWindowRule) Pattern() plan.Pattern {
-	return plan.Pat(WindowKind, plan.Any())
+	return plan.Multi(WindowKind)
 }
 
 func (r OptimizeWindowRule) Rewrite(ctx context.Context, node plan.Node) (plan.Node, bool, error) {

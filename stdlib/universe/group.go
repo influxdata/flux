@@ -477,7 +477,7 @@ func (r MergeGroupRule) Name() string {
 
 // returns the pattern that matches `group |> group`
 func (r MergeGroupRule) Pattern() plan.Pattern {
-	return plan.Pat(GroupKind, plan.Pat(GroupKind, plan.Any()))
+	return plan.Multi(GroupKind, plan.Single(GroupKind, plan.Any()))
 }
 
 func (r MergeGroupRule) Rewrite(ctx context.Context, lastGroup plan.Node) (plan.Node, bool, error) {

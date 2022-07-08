@@ -255,7 +255,7 @@ func (RemoveTrivialFilterRule) Name() string {
 }
 
 func (RemoveTrivialFilterRule) Pattern() plan.Pattern {
-	return plan.Pat(FilterKind, plan.Any())
+	return plan.Multi(FilterKind)
 }
 
 func (RemoveTrivialFilterRule) Rewrite(ctx context.Context, filterNode plan.Node) (plan.Node, bool, error) {
@@ -286,7 +286,7 @@ func (MergeFiltersRule) Name() string {
 }
 
 func (MergeFiltersRule) Pattern() plan.Pattern {
-	return plan.Pat(FilterKind, plan.Pat(FilterKind, plan.Any()))
+	return plan.Multi(FilterKind, plan.Single(FilterKind))
 }
 
 func (MergeFiltersRule) Rewrite(ctx context.Context, filterNode plan.Node) (plan.Node, bool, error) {

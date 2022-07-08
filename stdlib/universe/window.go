@@ -457,7 +457,7 @@ func (WindowTriggerPhysicalRule) Name() string {
 // Pattern matches the physical operator pattern consisting of a window
 // operator with a single predecessor of any kind.
 func (WindowTriggerPhysicalRule) Pattern() plan.Pattern {
-	return plan.PhysPat(WindowKind, plan.Any())
+	return plan.PhysPat(plan.Multi(WindowKind))
 }
 
 // Rewrite modifies a window's trigger spec so long as it doesn't have any

@@ -62,7 +62,7 @@ func (SortMergeJoinPredicateRule) Name() string {
 }
 
 func (SortMergeJoinPredicateRule) Pattern() plan.Pattern {
-	return plan.Pat(EquiJoinKind, plan.Any(), plan.Any())
+	return plan.Multi(EquiJoinKind, plan.Any(), plan.Any())
 }
 
 func (SortMergeJoinPredicateRule) Rewrite(ctx context.Context, n plan.Node) (plan.Node, bool, error) {

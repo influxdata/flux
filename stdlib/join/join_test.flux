@@ -382,3 +382,29 @@ testcase exclusive_group_keys2 {
 
     testing.diff(want: want, got: got)
 }
+
+testcase multi_join {
+    intermediate =
+        join.tables(
+            left: left,
+            right: right,
+            on: (l, r) => l.label == r.id and l._time == r._time,
+            as: (l, r) => {
+                return {label: l.label, _time: r._time, key: l.key, _value: l._value + float(v: r._value)}
+            },
+            method: "inner",
+        )
+    got =
+        join.tables(
+            left: left,
+            right: intermediate,
+            on: (l, r) => l.label == r.label and l._time == r._time,
+            as: (l, r) => {
+                return {label: l.label, _time: r._time, key: l.key, _value: r._value - l._value}
+            },
+            method: "inner",
+        )
+    want = left
+
+    testing.diff(want: want, got: got)
+}
