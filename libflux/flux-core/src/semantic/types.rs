@@ -580,7 +580,7 @@ pub enum MonoType {
     Builtin(BuiltinType),
     Label(Label),
     Var(Tvar),
-    /// A type variable that is bound to to a `PolyType` that this variable is contained in.
+    /// A type variable that is bound to a `PolyType` that this variable is contained in.
     BoundVar(BoundTvar),
     Collection(Ptr<Collection>),
     Dict(Ptr<Dictionary>),
