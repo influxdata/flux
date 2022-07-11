@@ -2,13 +2,16 @@ package universe_test
 
 import (
 	"context"
+	"math"
 	"runtime"
 	"testing"
 	"time"
 
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
+	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/internal/gen"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/querytest"
@@ -902,6 +905,107 @@ func TestHoltWinters_Process(t *testing.T) {
 				tc.data,
 				tc.want,
 				nil,
+				func(d execute.Dataset, c execute.TableBuilderCache) execute.Transformation {
+					return universe.NewHoltWintersTransformation(d, c, alloc, tc.spec)
+				},
+			)
+
+			for i := 0; i < 30; i++ {
+				runtime.GC()
+				if alloc.Allocated() <= 0 {
+					break
+				}
+			}
+
+			if m := alloc.Allocated(); m != 0 {
+				t.Errorf("HoltWinters is using memory after finishing: %d", m)
+			}
+		})
+	}
+}
+
+func TestHoltWinters_Error_Process(t *testing.T) {
+	testCases := []struct {
+		name    string
+		spec    *universe.HoltWintersProcedureSpec
+		data    []flux.Table
+		want    []*executetest.Table
+		wantErr string
+	}{
+		{
+			name: "NaN in the input",
+			spec: &universe.HoltWintersProcedureSpec{
+				Column:     "_value",
+				TimeColumn: "_stop",
+				WithFit:    false,
+				N:          10,
+				S:          4,
+				Interval:   flux.ConvertDuration(379 * time.Minute),
+				WithMinSSE: true,
+			},
+			data: []flux.Table{
+				&executetest.Table{
+					ColMeta: []flux.ColMeta{
+						{Label: "_stop", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+					},
+					Data: [][]interface{}{
+						{execute.Time(1440281520000000000), math.NaN()},
+					},
+				},
+			},
+			want: []*executetest.Table{{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
+					{Label: "minSSE", Type: flux.TFloat},
+				},
+				Data: [][]interface{}{},
+			}},
+		},
+		{
+			name: "Inf in the input",
+			spec: &universe.HoltWintersProcedureSpec{
+				Column:     "_value",
+				TimeColumn: "_stop",
+				WithFit:    false,
+				N:          10,
+				S:          4,
+				Interval:   flux.ConvertDuration(379 * time.Minute),
+				WithMinSSE: true,
+			},
+			data: []flux.Table{
+				&executetest.Table{
+					ColMeta: []flux.ColMeta{
+						{Label: "_stop", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+					},
+					Data: [][]interface{}{
+						{execute.Time(1440281520000000000), math.Inf(1)},
+					},
+				},
+			},
+			want: []*executetest.Table{{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
+					{Label: "minSSE", Type: flux.TFloat},
+				},
+				Data: [][]interface{}{},
+			}},
+		},
+	}
+
+	for _, tc := range testCases {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			wantErr := errors.New(codes.Invalid, "NaN/Inf in input")
+			alloc := &memory.ResourceAllocator{}
+			executetest.ProcessTestHelper(
+				t,
+				tc.data,
+				tc.want,
+				wantErr,
 				func(d execute.Dataset, c execute.TableBuilderCache) execute.Transformation {
 					return universe.NewHoltWintersTransformation(d, c, alloc, tc.spec)
 				},

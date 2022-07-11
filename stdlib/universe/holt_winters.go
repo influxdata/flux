@@ -2,6 +2,7 @@ package universe
 
 import (
 	"fmt"
+	"math"
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/array"
@@ -305,7 +306,7 @@ func (hwt *holtWintersTransformation) getCleanData(tbl flux.Table, colIdx, timeI
 		bucketEnd += int64(hwt.interval.Duration())
 		bucketFilled = false
 	}
-	appendV := func(cr flux.ColReader, i int) {
+	appendV := func(cr flux.ColReader, i int) error {
 		switch typ := tbl.Cols()[colIdx].Type; typ {
 		case flux.TInt:
 			c := cr.Ints(colIdx)
@@ -323,15 +324,20 @@ func (hwt *holtWintersTransformation) getCleanData(tbl flux.Table, colIdx, timeI
 			}
 		case flux.TFloat:
 			c := cr.Floats(colIdx)
-			if c.IsNull(i) {
+			if math.IsNaN(c.Value(i)) || math.IsInf(c.Value(i), 0) {
+				// If there's NaN/Inf in the user input,
+				// gonum will panic with message caught panic: optimize: initial function value is NaN/Inf
+				return errors.Newf(codes.Invalid, "NaN/Inf in input")
+			} else if c.IsNull(i) {
 				vs.AppendNull()
 			} else {
 				vs.Append(float64(c.Value(i)))
 			}
 		default:
-			panic(fmt.Sprintf("cannot append non-numerical type %s", typ.String()))
+			return errors.Newf(codes.Invalid, "cannot append non-numerical type %s", typ.String())
 		}
 		bucketFilled = true
+		return nil
 	}
 	isNull := func(cr flux.ColReader, i int) bool {
 		switch typ := tbl.Cols()[colIdx].Type; typ {
@@ -363,7 +369,10 @@ func (hwt *holtWintersTransformation) getCleanData(tbl flux.Table, colIdx, timeI
 				if isFirst() {
 					start = trueT
 					bucketEnd = roundT
-					appendV(cr, i)
+					err := appendV(cr, i)
+					if err != nil {
+						return err
+					}
 					continue
 				}
 				if roundT <= bucketEnd && bucketFilled {
@@ -378,7 +387,10 @@ func (hwt *holtWintersTransformation) getCleanData(tbl flux.Table, colIdx, timeI
 					nextBucket()
 				}
 				// this is the first value for the bucket
-				appendV(cr, i)
+				err := appendV(cr, i)
+				if err != nil {
+					return err
+				}
 				stop = trueT
 			}
 		}

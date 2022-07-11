@@ -275,11 +275,6 @@ func (r *HoltWinters) sse(params *mutable.Float64Array) float64 {
 	for i := 0; i < fcast.Len(); i++ {
 		// Skip missing values since we cannot use them to compute an error.
 		if r.vs.IsValid(i) {
-			// Compute error
-			if math.IsNaN(fcast.Value(i)) {
-				// Penalize fcast NaNs
-				return math.MaxFloat64
-			}
 			diff := fcast.Value(i) - r.vs.Value(i)
 			sse += diff * diff
 		}
