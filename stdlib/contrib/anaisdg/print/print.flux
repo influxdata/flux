@@ -1,4 +1,5 @@
-// Package print provides function for converting values into tables
+// Package print provides functions for displaying Flux values.
+//
 // ## Metadata
 // introduced: NEXT
 package print
@@ -6,18 +7,21 @@ package print
 
 import "array"
 
-// print function converts other data types to a table
+// print outputs Flux basic and composite data types in a table.
+//
 // ## Parameters
-// - val: The value you want to "print".
-// - result_name: The name you want your table to have.
+// - val: Value to print.
+// - result_name: Result name. Default is `_result`.
+//
 // ## Examples
 //
-// ### Perform a linear regression on a dataset
-// ```no_run
-// import "contrib/anaisdg/print"
-// import "print"
-//
-// < value = (sampledata.float() |> findRecord(fn: (key) => true,idx: 0))._value
-// >  print.print(val: value, result_name: "extracted value")
+// ### Print a value extracted from a stream of tables
 // ```
-print = (val, result_name) => array.from(rows: [{"_value": display(v: val)}]) |> yield(name: display(v: result_name))
+// import "contrib/anaisdg/print"
+//
+// value = (sampledata.float() |> findRecord(fn: (key) => true,idx: 0))._value
+//
+// >  print.print(val: value)
+// ```
+print = (val, result_name="_result") =>
+    array.from(rows: [{"_value": display(v: val)}]) |> yield(name: display(v: result_name))
