@@ -110,7 +110,7 @@ message = (
 // ```
 //
 // ## Metadata
-// tags: notification endpoints,transformations
+// tags: notification endpoints, transformations
 endpoint = (url="https://webexapis.com", token) =>
     (mapFn) =>
         (tables=<-) =>
