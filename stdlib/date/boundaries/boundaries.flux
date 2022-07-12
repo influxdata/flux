@@ -107,9 +107,8 @@ _week_formatter = (s) => {
 // // Returns {start: 2021-12-27T08:00:00Z, stop:2021-12-28T08:00:00Z }
 // ```
 //
-//
-//
 // ### Query data collected last Monday
+//
 // ```no_run
 // import "date/boundaries"
 //
@@ -118,6 +117,7 @@ _week_formatter = (s) => {
 // from(bucket: "example-bucket")
 //     |> range(start: day.start, stop: day.stop)
 // ```
+//
 // ## Metadata
 // tags: date/time
 //
@@ -143,8 +143,8 @@ monday = () => {
 // // Returns {start: 2021-12-28T08:00:00Z, stop:2021-12-29T08:00:00Z }
 // ```
 //
-//
 // ### Query data collected last Tuesday
+//
 // ```no_run
 // import "date/boundaries"
 //
@@ -179,8 +179,8 @@ tuesday = () => {
 // // Returns {start: 2021-12-29T08:00:00Z, stop:2021-12-30T08:00:00Z }
 // ```
 //
-//
 // ### Query data collected last Wednesday
+//
 // ```no_run
 // import "date/boundaries"
 //
@@ -189,8 +189,6 @@ tuesday = () => {
 // from(bucket: "example-bucket")
 //     |> range(start: day.start, stop: day.stop)
 // ```
-//
-// This will return all records from Wednesday this week
 //
 // ## Metadata
 // tags: date/time
@@ -217,6 +215,7 @@ wednesday = () => {
 // ```
 //
 // ### Query data collected last Thursday
+//
 // ```no_run
 // import "date/boundaries"
 //
@@ -236,6 +235,7 @@ thursday = () => {
 // friday returns a record with `start` and `stop` boundary timestamps for last Friday.
 //
 // Last Friday is relative to `now()`. If today is Friday, the function returns boundaries for the previous Friday.
+//
 // ## Examples
 //
 // ### Return start and stop timestamps of last Friday
@@ -251,6 +251,7 @@ thursday = () => {
 // ```
 //
 // ### Query data collected last Friday
+//
 // ```no_run
 // import "date/boundaries"
 //
@@ -286,6 +287,7 @@ friday = () => {
 // ```
 //
 // ### Query data collected last Saturday
+//
 // ```no_run
 // import "date/boundaries"
 //
@@ -321,6 +323,7 @@ saturday = () => {
 // ```
 //
 // ### Query data collected last Sunday
+//
 // ```no_run
 // import "date/boundaries"
 //
@@ -360,8 +363,8 @@ sunday = () => {
 // // Returns {start:2022-05-01T00:00:00.000000000Z, stop:2022-06-01T00:00:00.000000000Z}
 // ```
 //
-//
 // ### Query data from this month
+//
 // ```no_run
 // import "date/boundaries"
 //
@@ -430,7 +433,7 @@ month = (month_offset=0) => {
 // // Returns {start: 2022-05-08T00:00:00.000000000Z, stop: 2022-05-14T00:00:00.000000000Z}
 // ```
 //
-// ### Query data from current week
+// ### Query data from the current week
 //
 // ```no_run
 // import "date/boundaries"
