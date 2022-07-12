@@ -380,3 +380,37 @@ func (f *RowReducePreparedFn) Eval(ctx context.Context, row int, cr flux.ColRead
 	}
 	return v.Object(), nil
 }
+
+type RowJoinFn struct {
+	dynamicFn
+}
+
+func NewRowJoinFn(fn *semantic.FunctionExpression, scope compiler.Scope) *RowJoinFn {
+	return &RowJoinFn{
+		dynamicFn: newDynamicFn(fn, scope),
+	}
+}
+
+func (f *RowJoinFn) Prepare(cols []flux.ColMeta, rightType map[string]semantic.MonoType, vectorized bool) (*RowJoinPreparedFn, error) {
+	fn, err := f.prepare(cols, rightType, vectorized)
+	if err != nil {
+		return nil, err
+	}
+	return &RowJoinPreparedFn{preparedFn: fn}, nil
+}
+
+func (f *RowJoinFn) Type() semantic.MonoType {
+	return f.fn.TypeOf()
+}
+
+func (f *RowJoinFn) ReturnType() semantic.MonoType {
+	return f.fn.Block.ReturnStatement().Argument.TypeOf()
+}
+
+type RowJoinPreparedFn struct {
+	preparedFn
+}
+
+func (f *RowJoinPreparedFn) Eval(ctx context.Context, args values.Object) (values.Value, error) {
+	return f.fn.Eval(ctx, args)
+}

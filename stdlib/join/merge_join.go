@@ -158,10 +158,10 @@ func (t *MergeJoinTransformation) processChunk(chunk table.Chunk, state interfac
 	var isLeft bool
 	if id == t.left {
 		isLeft = true
-		s.left.schema = chunk.Cols()
+		s.left.schema = schemaUnion(s.left.schema, chunk.Cols())
 	} else if id == t.right {
 		isLeft = false
-		s.right.schema = chunk.Cols()
+		s.right.schema = schemaUnion(s.right.schema, chunk.Cols())
 	} else {
 		return s, true, errors.New(codes.Internal, "invalid chunk passed to join - dataset id is neither left nor right")
 	}
@@ -613,5 +613,26 @@ func rowFromChunk(c table.Chunk, i int, mt semantic.MonoType) values.Object {
 		v := execute.ValueForRow(&buf, i, j)
 		obj.Set(col, v)
 	}
+	obj.Range(func(name string, v values.Value) {
+		if v == nil {
+			obj.Set(name, values.Null)
+		}
+	})
 	return obj
+}
+
+func schemaUnion(a, b []flux.ColMeta) []flux.ColMeta {
+	for _, bcol := range b {
+		found := false
+		for _, acol := range a {
+			if bcol == acol {
+				found = true
+				break
+			}
+		}
+		if !found {
+			a = append(a, bcol)
+		}
+	}
+	return a
 }

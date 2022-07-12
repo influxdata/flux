@@ -18,9 +18,8 @@ import (
 
 // JoinFn handles the logic of calling the function in the `as` parameter of join.tables()
 type JoinFn struct {
-	fn       *semantic.FunctionExpression
-	scope    compiler.Scope
-	compiled compiler.Func
+	fn       *execute.RowJoinFn
+	prepared *execute.RowJoinPreparedFn
 	args     values.Object
 	schema   []flux.ColMeta
 	ltyp     *semantic.MonoType
@@ -29,8 +28,7 @@ type JoinFn struct {
 
 func NewJoinFn(fn interpreter.ResolvedFunction) *JoinFn {
 	return &JoinFn{
-		fn:    fn.Fn,
-		scope: compiler.ToScope(fn.Scope),
+		fn: execute.NewRowJoinFn(fn.Fn, compiler.ToScope(fn.Scope)),
 	}
 }
 
@@ -62,11 +60,15 @@ func (f *JoinFn) Prepare(lcols, rcols []flux.ColMeta) error {
 		{Key: []byte("r"), Value: *f.rtyp},
 	})
 	f.args = values.NewObject(in)
-	fn, err := compiler.Compile(f.scope, f.fn, in)
+	prepared, err := f.fn.Prepare(
+		lcols,
+		map[string]semantic.MonoType{"r": *f.rtyp},
+		false,
+	)
+	f.prepared = prepared
 	if err != nil {
 		return err
 	}
-	f.compiled = fn
 	return nil
 }
 
@@ -139,7 +141,7 @@ func (f *JoinFn) crossProduct(ctx context.Context, p *joinProduct, mem memory.Al
 				return nil, err
 			}
 			if f.schema == nil {
-				cols, err := f.createSchema(joined, p.left[0].Key())
+				cols, err := f.createSchema(joined)
 				if err != nil {
 					return nil, err
 				}
@@ -155,7 +157,7 @@ func (f *JoinFn) crossProduct(ctx context.Context, p *joinProduct, mem memory.Al
 	return &c, nil
 }
 
-func (f *JoinFn) createSchema(record values.Object, groupkey flux.GroupKey) ([]flux.ColMeta, error) {
+func (f *JoinFn) createSchema(record values.Object) ([]flux.ColMeta, error) {
 	returnType := f.ReturnType()
 
 	numProps, err := returnType.NumProperties()
@@ -226,7 +228,7 @@ func (f *JoinFn) eval(ctx context.Context, l, r values.Object) (values.Object, e
 	f.args.Set("l", l)
 	f.args.Set("r", r)
 
-	joined, err := f.compiled.Eval(ctx, f.args)
+	joined, err := f.prepared.Eval(ctx, f.args)
 	if err != nil {
 		return nil, err
 	}
@@ -235,11 +237,11 @@ func (f *JoinFn) eval(ctx context.Context, l, r values.Object) (values.Object, e
 }
 
 func (f *JoinFn) Type() semantic.MonoType {
-	return f.fn.TypeOf()
+	return f.fn.Type()
 }
 
 func (f *JoinFn) ReturnType() semantic.MonoType {
-	return f.fn.Block.ReturnStatement().Argument.TypeOf()
+	return f.fn.ReturnType()
 }
 
 func (f *JoinFn) leftType() semantic.MonoType {

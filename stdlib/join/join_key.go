@@ -26,8 +26,11 @@ func joinKeyFromRow(cols []flux.ColMeta, chunk table.Chunk, idx int) joinKey {
 	buf := chunk.Buffer()
 	for _, col := range cols {
 		ci := chunk.Index(col.Label)
+		var v values.Value = values.Null
+		if ci >= 0 {
+			v = execute.ValueForRow(&buf, idx, ci)
+		}
 
-		v := execute.ValueForRow(&buf, idx, ci)
 		v.Retain()
 		vals = append(vals, v)
 	}
@@ -51,6 +54,12 @@ func (k *joinKey) equal(other joinKey) bool {
 func (k *joinKey) less(other joinKey) bool {
 	a, b := k, other
 	for i := 0; i < len(k.values); i++ {
+		if b.values[i].IsNull() {
+			return true
+		} else if a.values[i].IsNull() {
+			return false
+		}
+
 		switch a.columns[i].Type {
 		case flux.TBool:
 			if av, bv := a.values[i].Bool(), b.values[i].Bool(); av != bv {
