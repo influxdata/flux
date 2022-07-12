@@ -911,6 +911,12 @@ builtin histogramQuantile : (
 // - timeColumn: Column containing time values to use in the calculating.
 //   Default is `_time`.
 // - seasonality: Number of points in a season. Default is `0`.
+// - withMinSSE: Return minSSE data in results. Default is `false`.
+//
+//   minSSE is the minimum sum squared error found when optimizing the holt winters fit to the data.
+//   A smaller minSSE means a better fit.
+//   Examining the minSSE value can help understand when the algorithm is getting a good fit versus not.
+//
 // - tables: Input data. Default is piped-forward data (`<-`).
 //
 // ## Examples
@@ -951,6 +957,7 @@ builtin holtWinters : (
         ?column: string,
         ?timeColumn: string,
         ?seasonality: int,
+        ?withMinSSE: bool,
     ) => stream[B]
     where
     A: Record,

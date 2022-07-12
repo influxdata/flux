@@ -404,3 +404,8 @@ func (b *Float64Array) Value(i int) float64 {
 func (b *Float64Array) Set(i int, v float64) {
 	b.rawData[i] = v
 }
+
+// Float64Values returns the underlying float64 slice.
+func (b *Float64Array) Float64Values() []float64 {
+	return b.rawData
+}
