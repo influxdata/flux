@@ -37,9 +37,10 @@ func {{$type}}{{$op.Name}}LConst(l {{index $.TypeMap $type}}, r *{{$type}}, mem 
 	n := r.Len()
 	b := NewFloatBuilder(mem)
 	b.Resize(n)
+	lf := float64(l)
 	for i := 0; i < n; i++ {
 		if r.IsValid(i) {
-			b.Append(math.Pow(float64(l), float64(r.Value(i))))
+			b.Append(math.Pow(lf, float64(r.Value(i))))
 		} else {
 			b.AppendNull()
 		}
@@ -53,9 +54,10 @@ func {{$type}}{{$op.Name}}RConst(l *{{$type}}, r {{index $.TypeMap $type}}, mem 
 	n := l.Len()
 	b := NewFloatBuilder(mem)
 	b.Resize(n)
+	rf := float64(r)
 	for i := 0; i < n; i++ {
 		if l.IsValid(i) {
-			b.Append(math.Pow(float64(l.Value(i)), float64(r)))
+			b.Append(math.Pow(float64(l.Value(i)), rf))
 		} else {
 			b.AppendNull()
 		}

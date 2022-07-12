@@ -950,9 +950,10 @@ func IntPowLConst(l int64, r *Int, mem memory.Allocator) (*Float, error) {
 	n := r.Len()
 	b := NewFloatBuilder(mem)
 	b.Resize(n)
+	lf := float64(l)
 	for i := 0; i < n; i++ {
 		if r.IsValid(i) {
-			b.Append(math.Pow(float64(l), float64(r.Value(i))))
+			b.Append(math.Pow(lf, float64(r.Value(i))))
 		} else {
 			b.AppendNull()
 		}
@@ -966,9 +967,10 @@ func IntPowRConst(l *Int, r int64, mem memory.Allocator) (*Float, error) {
 	n := l.Len()
 	b := NewFloatBuilder(mem)
 	b.Resize(n)
+	rf := float64(r)
 	for i := 0; i < n; i++ {
 		if l.IsValid(i) {
-			b.Append(math.Pow(float64(l.Value(i)), float64(r)))
+			b.Append(math.Pow(float64(l.Value(i)), rf))
 		} else {
 			b.AppendNull()
 		}
@@ -1002,9 +1004,10 @@ func UintPowLConst(l uint64, r *Uint, mem memory.Allocator) (*Float, error) {
 	n := r.Len()
 	b := NewFloatBuilder(mem)
 	b.Resize(n)
+	lf := float64(l)
 	for i := 0; i < n; i++ {
 		if r.IsValid(i) {
-			b.Append(math.Pow(float64(l), float64(r.Value(i))))
+			b.Append(math.Pow(lf, float64(r.Value(i))))
 		} else {
 			b.AppendNull()
 		}
@@ -1018,9 +1021,10 @@ func UintPowRConst(l *Uint, r uint64, mem memory.Allocator) (*Float, error) {
 	n := l.Len()
 	b := NewFloatBuilder(mem)
 	b.Resize(n)
+	rf := float64(r)
 	for i := 0; i < n; i++ {
 		if l.IsValid(i) {
-			b.Append(math.Pow(float64(l.Value(i)), float64(r)))
+			b.Append(math.Pow(float64(l.Value(i)), rf))
 		} else {
 			b.AppendNull()
 		}
@@ -1054,9 +1058,10 @@ func FloatPowLConst(l float64, r *Float, mem memory.Allocator) (*Float, error) {
 	n := r.Len()
 	b := NewFloatBuilder(mem)
 	b.Resize(n)
+	lf := float64(l)
 	for i := 0; i < n; i++ {
 		if r.IsValid(i) {
-			b.Append(math.Pow(float64(l), float64(r.Value(i))))
+			b.Append(math.Pow(lf, float64(r.Value(i))))
 		} else {
 			b.AppendNull()
 		}
@@ -1070,9 +1075,10 @@ func FloatPowRConst(l *Float, r float64, mem memory.Allocator) (*Float, error) {
 	n := l.Len()
 	b := NewFloatBuilder(mem)
 	b.Resize(n)
+	rf := float64(r)
 	for i := 0; i < n; i++ {
 		if l.IsValid(i) {
-			b.Append(math.Pow(float64(l.Value(i)), float64(r)))
+			b.Append(math.Pow(float64(l.Value(i)), rf))
 		} else {
 			b.AppendNull()
 		}
