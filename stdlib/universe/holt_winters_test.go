@@ -1,13 +1,18 @@
 package universe_test
 
 import (
+	"context"
+	"math"
 	"runtime"
 	"testing"
 	"time"
 
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
+	"github.com/influxdata/flux/internal/errors"
+	"github.com/influxdata/flux/internal/gen"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/querytest"
 	"github.com/influxdata/flux/stdlib/influxdata/influxdb"
@@ -117,7 +122,7 @@ func TestHoltWinters_NewQuery(t *testing.T) {
 }
 
 func TestHoltWinters_Marshaling(t *testing.T) {
-	data := []byte(`{"id":"hw","kind":"holtWinters","spec":{"n":84,"s":4,"interval":"42m","time_column":"t","column":"v","with_fit":true}}`)
+	data := []byte(`{"id":"hw","kind":"holtWinters","spec":{"n":84,"s":4,"interval":"42m","time_column":"t","column":"v","with_fit":true,"with_minsse":true}}`)
 	op := &flux.Operation{
 		ID: "hw",
 		Spec: &universe.HoltWintersOpSpec{
@@ -127,6 +132,7 @@ func TestHoltWinters_Marshaling(t *testing.T) {
 			N:          84,
 			S:          4,
 			Interval:   flux.ConvertDuration(42 * time.Minute),
+			WithMinSSE: true,
 		},
 	}
 
@@ -179,6 +185,7 @@ func TestHoltWinters_Process(t *testing.T) {
 				N:          10,
 				S:          4,
 				Interval:   flux.ConvertDuration(379 * time.Minute),
+				WithMinSSE: true,
 			},
 			data: []flux.Table{
 				&executetest.Table{
@@ -214,18 +221,19 @@ func TestHoltWinters_Process(t *testing.T) {
 				ColMeta: []flux.ColMeta{
 					{Label: "_time", Type: flux.TTime},
 					{Label: "_value", Type: flux.TFloat},
+					{Label: "minSSE", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
-					{execute.Time(1440736320000000000), 3.9914180362073646},
-					{execute.Time(1440759060000000000), 0.8307286750677001},
-					{execute.Time(1440781800000000000), 3.6959256712424695},
-					{execute.Time(1440804540000000000), 2.945758601382681},
-					{execute.Time(1440827280000000000), 3.398909006745872},
-					{execute.Time(1440850020000000000), 0.6985261817067938},
-					{execute.Time(1440872760000000000), 3.0650009664543356},
-					{execute.Time(1440895500000000000), 2.4176070926199644},
-					{execute.Time(1440918240000000000), 2.7815982631565688},
-					{execute.Time(1440940980000000000), 0.5664788122687602},
+					{execute.Time(1440736320000000000), 5.823903538794723, 3.963712566228843},
+					{execute.Time(1440759060000000000), 0.8900976907943485, 3.963712566228843},
+					{execute.Time(1440781800000000000), 4.008998317224315, 3.963712566228843},
+					{execute.Time(1440804540000000000), 2.8455264372921047, 3.963712566228843},
+					{execute.Time(1440827280000000000), 5.823904063163267, 3.963712566228843},
+					{execute.Time(1440850020000000000), 0.8900977239911837, 3.963712566228843},
+					{execute.Time(1440872760000000000), 4.008998379158643, 3.963712566228843},
+					{execute.Time(1440895500000000000), 2.8455264555014668, 3.963712566228843},
+					{execute.Time(1440918240000000000), 5.823904078600977, 3.963712566228843},
+					{execute.Time(1440940980000000000), 0.8900977249685175, 3.963712566228843},
 				},
 			}},
 		},
@@ -238,6 +246,7 @@ func TestHoltWinters_Process(t *testing.T) {
 				N:          10,
 				S:          4,
 				Interval:   flux.ConvertDuration(379 * time.Minute),
+				WithMinSSE: true,
 			},
 			data: []flux.Table{
 				&executetest.Table{
@@ -273,38 +282,39 @@ func TestHoltWinters_Process(t *testing.T) {
 				ColMeta: []flux.ColMeta{
 					{Label: "_time", Type: flux.TTime},
 					{Label: "_value", Type: flux.TFloat},
+					{Label: "minSSE", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
-					{execute.Time(1440281520000000000), 4.948},
-					{execute.Time(1440304260000000000), 0.7576983482641251},
-					{execute.Time(1440327000000000000), 3.1381437247133945},
-					{execute.Time(1440349740000000000), 2.5875124253677586},
-					{execute.Time(1440372480000000000), 3.0898163409477224},
-					{execute.Time(1440395220000000000), 0.7162614080885075},
-					{execute.Time(1440417960000000000), 3.699916116400646},
-					{execute.Time(1440440700000000000), 3.2863447391194933},
-					{execute.Time(1440463440000000000), 3.9634098428094706},
-					{execute.Time(1440486180000000000), 0.8997067190366455},
-					{execute.Time(1440508920000000000), 4.430830461312907},
-					{execute.Time(1440531660000000000), 3.785850242591291},
-					{execute.Time(1440554400000000000), 4.479264854422211},
-					{execute.Time(1440577140000000000), 0.9761816083195014},
-					{execute.Time(1440599880000000000), 4.577665330603308},
-					{execute.Time(1440622620000000000), 3.7849630817187445},
-					{execute.Time(1440645360000000000), 4.421113012219597},
-					{execute.Time(1440668100000000000), 0.9371785323971387},
-					{execute.Time(1440690840000000000), 4.2567258021603624},
-					{execute.Time(1440713580000000000), 3.443334270453622},
-					{execute.Time(1440736320000000000), 3.9914180362073646},
-					{execute.Time(1440759060000000000), 0.8307286750677001},
-					{execute.Time(1440781800000000000), 3.6959256712424695},
-					{execute.Time(1440804540000000000), 2.945758601382681},
-					{execute.Time(1440827280000000000), 3.398909006745872},
-					{execute.Time(1440850020000000000), 0.6985261817067938},
-					{execute.Time(1440872760000000000), 3.0650009664543356},
-					{execute.Time(1440895500000000000), 2.4176070926199644},
-					{execute.Time(1440918240000000000), 2.7815982631565688},
-					{execute.Time(1440940980000000000), 0.5664788122687602},
+					{execute.Time(1440281520000000000), 4.948, 3.963712566228843},
+					{execute.Time(1440304260000000000), 1.983675129748691, 3.963712566228843},
+					{execute.Time(1440327000000000000), 3.1640361715606247, 3.963712566228843},
+					{execute.Time(1440349740000000000), 2.2457174796999486, 3.963712566228843},
+					{execute.Time(1440372480000000000), 5.1919956963843426, 3.963712566228843},
+					{execute.Time(1440395220000000000), 0.8468568048222737, 3.963712566228843},
+					{execute.Time(1440417960000000000), 3.9258243579739003, 3.963712566228843},
+					{execute.Time(1440440700000000000), 2.820767836091717, 3.963712566228843},
+					{execute.Time(1440463440000000000), 5.802807022732507, 3.963712566228843},
+					{execute.Time(1440486180000000000), 0.8887593034239336, 3.963712566228843},
+					{execute.Time(1440508920000000000), 4.006499161070992, 3.963712566228843},
+					{execute.Time(1440531660000000000), 2.8447913944020473, 3.963712566228843},
+					{execute.Time(1440554400000000000), 5.8232808086768015, 3.963712566228843},
+					{execute.Time(1440577140000000000), 0.8900582644352708, 3.963712566228843},
+					{execute.Time(1440599880000000000), 4.008924758785957, 3.963712566228843},
+					{execute.Time(1440622620000000000), 2.8455048100875557, 3.963712566228843},
+					{execute.Time(1440645360000000000), 5.823885727761851, 3.963712566228843},
+					{execute.Time(1440668100000000000), 0.8900965632076626, 3.963712566228843},
+					{execute.Time(1440690840000000000), 4.008996213518486, 3.963712566228843},
+					{execute.Time(1440713580000000000), 2.84552581877966, 3.963712566228843},
+					{execute.Time(1440736320000000000), 5.823903538794723, 3.963712566228843},
+					{execute.Time(1440759060000000000), 0.8900976907943485, 3.963712566228843},
+					{execute.Time(1440781800000000000), 4.008998317224315, 3.963712566228843},
+					{execute.Time(1440804540000000000), 2.8455264372921047, 3.963712566228843},
+					{execute.Time(1440827280000000000), 5.823904063163267, 3.963712566228843},
+					{execute.Time(1440850020000000000), 0.8900977239911837, 3.963712566228843},
+					{execute.Time(1440872760000000000), 4.008998379158643, 3.963712566228843},
+					{execute.Time(1440895500000000000), 2.8455264555014668, 3.963712566228843},
+					{execute.Time(1440918240000000000), 5.823904078600977, 3.963712566228843},
+					{execute.Time(1440940980000000000), 0.8900977249685175, 3.963712566228843},
 				},
 			}},
 		},
@@ -317,6 +327,7 @@ func TestHoltWinters_Process(t *testing.T) {
 				N:          10,
 				S:          4,
 				Interval:   flux.ConvertDuration(379 * time.Minute),
+				WithMinSSE: true,
 			},
 			data: []flux.Table{
 				&executetest.Table{
@@ -389,18 +400,19 @@ func TestHoltWinters_Process(t *testing.T) {
 				ColMeta: []flux.ColMeta{
 					{Label: "_time", Type: flux.TTime},
 					{Label: "_value", Type: flux.TFloat},
+					{Label: "minSSE", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
-					{execute.Time(1440736320000000000), 3.9914180362073646},
-					{execute.Time(1440759060000000000), 0.8307286750677001},
-					{execute.Time(1440781800000000000), 3.6959256712424695},
-					{execute.Time(1440804540000000000), 2.945758601382681},
-					{execute.Time(1440827280000000000), 3.398909006745872},
-					{execute.Time(1440850020000000000), 0.6985261817067938},
-					{execute.Time(1440872760000000000), 3.0650009664543356},
-					{execute.Time(1440895500000000000), 2.4176070926199644},
-					{execute.Time(1440918240000000000), 2.7815982631565688},
-					{execute.Time(1440940980000000000), 0.5664788122687602},
+					{execute.Time(1440736320000000000), 5.823903538794723, 3.963712566228843},
+					{execute.Time(1440759060000000000), 0.8900976907943485, 3.963712566228843},
+					{execute.Time(1440781800000000000), 4.008998317224315, 3.963712566228843},
+					{execute.Time(1440804540000000000), 2.8455264372921047, 3.963712566228843},
+					{execute.Time(1440827280000000000), 5.823904063163267, 3.963712566228843},
+					{execute.Time(1440850020000000000), 0.8900977239911837, 3.963712566228843},
+					{execute.Time(1440872760000000000), 4.008998379158643, 3.963712566228843},
+					{execute.Time(1440895500000000000), 2.8455264555014668, 3.963712566228843},
+					{execute.Time(1440918240000000000), 5.823904078600977, 3.963712566228843},
+					{execute.Time(1440940980000000000), 0.8900977249685175, 3.963712566228843},
 				},
 			}},
 		},
@@ -413,6 +425,7 @@ func TestHoltWinters_Process(t *testing.T) {
 				N:          10,
 				S:          4,
 				Interval:   flux.ConvertDuration(379 * time.Minute),
+				WithMinSSE: true,
 			},
 			data: []flux.Table{
 				&executetest.Table{
@@ -451,18 +464,19 @@ func TestHoltWinters_Process(t *testing.T) {
 				ColMeta: []flux.ColMeta{
 					{Label: "_time", Type: flux.TTime},
 					{Label: "_value", Type: flux.TFloat},
+					{Label: "minSSE", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
-					{execute.Time(1440736320000000000), 3.9914180362073646},
-					{execute.Time(1440759060000000000), 0.8307286750677001},
-					{execute.Time(1440781800000000000), 3.6959256712424695},
-					{execute.Time(1440804540000000000), 2.945758601382681},
-					{execute.Time(1440827280000000000), 3.398909006745872},
-					{execute.Time(1440850020000000000), 0.6985261817067938},
-					{execute.Time(1440872760000000000), 3.0650009664543356},
-					{execute.Time(1440895500000000000), 2.4176070926199644},
-					{execute.Time(1440918240000000000), 2.7815982631565688},
-					{execute.Time(1440940980000000000), 0.5664788122687602},
+					{execute.Time(1440736320000000000), 5.823903538794723, 3.963712566228843},
+					{execute.Time(1440759060000000000), 0.8900976907943485, 3.963712566228843},
+					{execute.Time(1440781800000000000), 4.008998317224315, 3.963712566228843},
+					{execute.Time(1440804540000000000), 2.8455264372921047, 3.963712566228843},
+					{execute.Time(1440827280000000000), 5.823904063163267, 3.963712566228843},
+					{execute.Time(1440850020000000000), 0.8900977239911837, 3.963712566228843},
+					{execute.Time(1440872760000000000), 4.008998379158643, 3.963712566228843},
+					{execute.Time(1440895500000000000), 2.8455264555014668, 3.963712566228843},
+					{execute.Time(1440918240000000000), 5.823904078600977, 3.963712566228843},
+					{execute.Time(1440940980000000000), 0.8900977249685175, 3.963712566228843},
 				},
 			}},
 		},
@@ -475,6 +489,7 @@ func TestHoltWinters_Process(t *testing.T) {
 				N:          10,
 				S:          4,
 				Interval:   flux.ConvertDuration(379 * time.Minute),
+				WithMinSSE: true,
 			},
 			data: []flux.Table{
 				&executetest.Table{
@@ -524,18 +539,19 @@ func TestHoltWinters_Process(t *testing.T) {
 				ColMeta: []flux.ColMeta{
 					{Label: "_time", Type: flux.TTime},
 					{Label: "_value", Type: flux.TFloat},
+					{Label: "minSSE", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
-					{execute.Time(1440736320000000000), 3.9914180362073646},
-					{execute.Time(1440759060000000000), 0.8307286750677001},
-					{execute.Time(1440781800000000000), 3.6959256712424695},
-					{execute.Time(1440804540000000000), 2.945758601382681},
-					{execute.Time(1440827280000000000), 3.398909006745872},
-					{execute.Time(1440850020000000000), 0.6985261817067938},
-					{execute.Time(1440872760000000000), 3.0650009664543356},
-					{execute.Time(1440895500000000000), 2.4176070926199644},
-					{execute.Time(1440918240000000000), 2.7815982631565688},
-					{execute.Time(1440940980000000000), 0.5664788122687602},
+					{execute.Time(1440736320000000000), 5.823903538794723, 3.963712566228843},
+					{execute.Time(1440759060000000000), 0.8900976907943485, 3.963712566228843},
+					{execute.Time(1440781800000000000), 4.008998317224315, 3.963712566228843},
+					{execute.Time(1440804540000000000), 2.8455264372921047, 3.963712566228843},
+					{execute.Time(1440827280000000000), 5.823904063163267, 3.963712566228843},
+					{execute.Time(1440850020000000000), 0.8900977239911837, 3.963712566228843},
+					{execute.Time(1440872760000000000), 4.008998379158643, 3.963712566228843},
+					{execute.Time(1440895500000000000), 2.8455264555014668, 3.963712566228843},
+					{execute.Time(1440918240000000000), 5.823904078600977, 3.963712566228843},
+					{execute.Time(1440940980000000000), 0.8900977249685175, 3.963712566228843},
 				},
 			}},
 		},
@@ -548,6 +564,7 @@ func TestHoltWinters_Process(t *testing.T) {
 				N:          10,
 				S:          4,
 				Interval:   flux.ConvertDuration(379 * time.Minute),
+				WithMinSSE: true,
 			},
 			data: []flux.Table{
 				&executetest.Table{
@@ -633,18 +650,19 @@ func TestHoltWinters_Process(t *testing.T) {
 						{Label: "tag_time", Type: flux.TTime},
 						{Label: "_time", Type: flux.TTime},
 						{Label: "_value", Type: flux.TFloat},
+						{Label: "minSSE", Type: flux.TFloat},
 					},
 					Data: [][]interface{}{
-						{"t", int64(0), uint64(0), 0.0, true, execute.Time(0), execute.Time(1440736320000000000), 3.9914180362073646},
-						{"t", int64(0), uint64(0), 0.0, true, execute.Time(0), execute.Time(1440759060000000000), 0.8307286750677001},
-						{"t", int64(0), uint64(0), 0.0, true, execute.Time(0), execute.Time(1440781800000000000), 3.6959256712424695},
-						{"t", int64(0), uint64(0), 0.0, true, execute.Time(0), execute.Time(1440804540000000000), 2.945758601382681},
-						{"t", int64(0), uint64(0), 0.0, true, execute.Time(0), execute.Time(1440827280000000000), 3.398909006745872},
-						{"t", int64(0), uint64(0), 0.0, true, execute.Time(0), execute.Time(1440850020000000000), 0.6985261817067938},
-						{"t", int64(0), uint64(0), 0.0, true, execute.Time(0), execute.Time(1440872760000000000), 3.0650009664543356},
-						{"t", int64(0), uint64(0), 0.0, true, execute.Time(0), execute.Time(1440895500000000000), 2.4176070926199644},
-						{"t", int64(0), uint64(0), 0.0, true, execute.Time(0), execute.Time(1440918240000000000), 2.7815982631565688},
-						{"t", int64(0), uint64(0), 0.0, true, execute.Time(0), execute.Time(1440940980000000000), 0.5664788122687602},
+						{"t", int64(0), uint64(0), 0.0, true, execute.Time(0), execute.Time(1440736320000000000), 5.823903538794723, 3.963712566228843},
+						{"t", int64(0), uint64(0), 0.0, true, execute.Time(0), execute.Time(1440759060000000000), 0.8900976907943485, 3.963712566228843},
+						{"t", int64(0), uint64(0), 0.0, true, execute.Time(0), execute.Time(1440781800000000000), 4.008998317224315, 3.963712566228843},
+						{"t", int64(0), uint64(0), 0.0, true, execute.Time(0), execute.Time(1440804540000000000), 2.8455264372921047, 3.963712566228843},
+						{"t", int64(0), uint64(0), 0.0, true, execute.Time(0), execute.Time(1440827280000000000), 5.823904063163267, 3.963712566228843},
+						{"t", int64(0), uint64(0), 0.0, true, execute.Time(0), execute.Time(1440850020000000000), 0.8900977239911837, 3.963712566228843},
+						{"t", int64(0), uint64(0), 0.0, true, execute.Time(0), execute.Time(1440872760000000000), 4.008998379158643, 3.963712566228843},
+						{"t", int64(0), uint64(0), 0.0, true, execute.Time(0), execute.Time(1440895500000000000), 2.8455264555014668, 3.963712566228843},
+						{"t", int64(0), uint64(0), 0.0, true, execute.Time(0), execute.Time(1440918240000000000), 5.823904078600977, 3.963712566228843},
+						{"t", int64(0), uint64(0), 0.0, true, execute.Time(0), execute.Time(1440940980000000000), 0.8900977249685175, 3.963712566228843},
 					},
 				},
 				{
@@ -658,18 +676,19 @@ func TestHoltWinters_Process(t *testing.T) {
 						{Label: "tag_time", Type: flux.TTime},
 						{Label: "_time", Type: flux.TTime},
 						{Label: "_value", Type: flux.TFloat},
+						{Label: "minSSE", Type: flux.TFloat},
 					},
 					Data: [][]interface{}{
-						{"t", int64(0), uint64(0), 0.0, false, execute.Time(0), execute.Time(1440736320000000000), 3.9914180362073646},
-						{"t", int64(0), uint64(0), 0.0, false, execute.Time(0), execute.Time(1440759060000000000), 0.8307286750677001},
-						{"t", int64(0), uint64(0), 0.0, false, execute.Time(0), execute.Time(1440781800000000000), 3.6959256712424695},
-						{"t", int64(0), uint64(0), 0.0, false, execute.Time(0), execute.Time(1440804540000000000), 2.945758601382681},
-						{"t", int64(0), uint64(0), 0.0, false, execute.Time(0), execute.Time(1440827280000000000), 3.398909006745872},
-						{"t", int64(0), uint64(0), 0.0, false, execute.Time(0), execute.Time(1440850020000000000), 0.6985261817067938},
-						{"t", int64(0), uint64(0), 0.0, false, execute.Time(0), execute.Time(1440872760000000000), 3.0650009664543356},
-						{"t", int64(0), uint64(0), 0.0, false, execute.Time(0), execute.Time(1440895500000000000), 2.4176070926199644},
-						{"t", int64(0), uint64(0), 0.0, false, execute.Time(0), execute.Time(1440918240000000000), 2.7815982631565688},
-						{"t", int64(0), uint64(0), 0.0, false, execute.Time(0), execute.Time(1440940980000000000), 0.5664788122687602},
+						{"t", int64(0), uint64(0), 0.0, false, execute.Time(0), execute.Time(1440736320000000000), 5.823903538794723, 3.963712566228843},
+						{"t", int64(0), uint64(0), 0.0, false, execute.Time(0), execute.Time(1440759060000000000), 0.8900976907943485, 3.963712566228843},
+						{"t", int64(0), uint64(0), 0.0, false, execute.Time(0), execute.Time(1440781800000000000), 4.008998317224315, 3.963712566228843},
+						{"t", int64(0), uint64(0), 0.0, false, execute.Time(0), execute.Time(1440804540000000000), 2.8455264372921047, 3.963712566228843},
+						{"t", int64(0), uint64(0), 0.0, false, execute.Time(0), execute.Time(1440827280000000000), 5.823904063163267, 3.963712566228843},
+						{"t", int64(0), uint64(0), 0.0, false, execute.Time(0), execute.Time(1440850020000000000), 0.8900977239911837, 3.963712566228843},
+						{"t", int64(0), uint64(0), 0.0, false, execute.Time(0), execute.Time(1440872760000000000), 4.008998379158643, 3.963712566228843},
+						{"t", int64(0), uint64(0), 0.0, false, execute.Time(0), execute.Time(1440895500000000000), 2.8455264555014668, 3.963712566228843},
+						{"t", int64(0), uint64(0), 0.0, false, execute.Time(0), execute.Time(1440918240000000000), 5.823904078600977, 3.963712566228843},
+						{"t", int64(0), uint64(0), 0.0, false, execute.Time(0), execute.Time(1440940980000000000), 0.8900977249685175, 3.963712566228843},
 					},
 				},
 			},
@@ -685,6 +704,7 @@ func TestHoltWinters_Process(t *testing.T) {
 				N:          10,
 				S:          4,
 				Interval:   flux.ConvertDuration(379 * time.Minute),
+				WithMinSSE: true,
 			},
 			data: []flux.Table{
 				&executetest.Table{
@@ -727,18 +747,19 @@ func TestHoltWinters_Process(t *testing.T) {
 				ColMeta: []flux.ColMeta{
 					{Label: "_time", Type: flux.TTime},
 					{Label: "_value", Type: flux.TFloat},
+					{Label: "minSSE", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
-					{execute.Time(1440713580000000000), 3.5876419909685495},
-					{execute.Time(1440736320000000000), 3.49153693928191},
-					{execute.Time(1440759060000000000), 3.2698815098513583},
-					{execute.Time(1440781800000000000), 3.19382138573678},
-					{execute.Time(1440804540000000000), 3.6184993955426985},
-					{execute.Time(1440827280000000000), 3.5263702582818666},
-					{execute.Time(1440850020000000000), 3.2973336160921813},
-					{execute.Time(1440872760000000000), 3.2217179076885594},
-					{execute.Time(1440895500000000000), 3.6392336870810817},
-					{execute.Time(1440918240000000000), 3.5473339404590325},
+					{execute.Time(1440713580000000000), 2.856124483626475, 0.4082861407498099},
+					{execute.Time(1440736320000000000), 5.916550094692676, 0.4082861407498099},
+					{execute.Time(1440759060000000000), 0.6320280867314394, 0.4082861407498099},
+					{execute.Time(1440781800000000000), 4.595013173674137, 0.4082861407498099},
+					{execute.Time(1440804540000000000), 2.8568673293847535, 0.4082861407498099},
+					{execute.Time(1440827280000000000), 5.917509976979597, 0.4082861407498099},
+					{execute.Time(1440850020000000000), 0.6320920446246263, 0.4082861407498099},
+					{execute.Time(1440872760000000000), 4.595303202172134, 0.4082861407498099},
+					{execute.Time(1440895500000000000), 2.8569797983044634, 0.4082861407498099},
+					{execute.Time(1440918240000000000), 5.9176552768570785, 0.4082861407498099},
 				},
 			}},
 		},
@@ -752,6 +773,7 @@ func TestHoltWinters_Process(t *testing.T) {
 				N:          10,
 				S:          0,
 				Interval:   flux.ConvertDuration(379 * time.Minute),
+				WithMinSSE: true,
 			},
 			data: []flux.Table{
 				&executetest.Table{
@@ -787,18 +809,19 @@ func TestHoltWinters_Process(t *testing.T) {
 				ColMeta: []flux.ColMeta{
 					{Label: "_time", Type: flux.TTime},
 					{Label: "_value", Type: flux.TFloat},
+					{Label: "minSSE", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
-					{execute.Time(1440736320000000000), 3.254191388070825},
-					{execute.Time(1440759060000000000), 3.2541742264816786},
-					{execute.Time(1440781800000000000), 3.254163964980623},
-					{execute.Time(1440804540000000000), 3.2541578295028817},
-					{execute.Time(1440827280000000000), 3.2541541611055496},
-					{execute.Time(1440850020000000000), 3.254151967802365},
-					{execute.Time(1440872760000000000), 3.254150656455532},
-					{execute.Time(1440895500000000000), 3.2541498724223517},
-					{execute.Time(1440918240000000000), 3.2541494036628342},
-					{execute.Time(1440940980000000000), 3.2541491234003104},
+					{execute.Time(1440736320000000000), 3.243467293744046, 55.00975192379251},
+					{execute.Time(1440759060000000000), 3.2434611181992774, 55.00975192379251},
+					{execute.Time(1440781800000000000), 3.243457659915101, 55.00975192379251},
+					{execute.Time(1440804540000000000), 3.243455723309489, 55.00975192379251},
+					{execute.Time(1440827280000000000), 3.243454638835965, 55.00975192379251},
+					{execute.Time(1440850020000000000), 3.2434540315472833, 55.00975192379251},
+					{execute.Time(1440872760000000000), 3.2434536914755303, 55.00975192379251},
+					{execute.Time(1440895500000000000), 3.2434535010411083, 55.00975192379251},
+					{execute.Time(1440918240000000000), 3.2434533944011235, 55.00975192379251},
+					{execute.Time(1440940980000000000), 3.2434533346845957, 55.00975192379251},
 				},
 			}},
 		},
@@ -812,6 +835,7 @@ func TestHoltWinters_Process(t *testing.T) {
 				N:          10,
 				S:          0,
 				Interval:   flux.ConvertDuration(379 * time.Minute),
+				WithMinSSE: true,
 			},
 			data: []flux.Table{
 				&executetest.Table{
@@ -854,18 +878,19 @@ func TestHoltWinters_Process(t *testing.T) {
 				ColMeta: []flux.ColMeta{
 					{Label: "_time", Type: flux.TTime},
 					{Label: "_value", Type: flux.TFloat},
+					{Label: "minSSE", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
-					{execute.Time(1440713580000000000), 6.514215038632055},
-					{execute.Time(1440736320000000000), 8.497982411207028},
-					{execute.Time(1440759060000000000), 11.634451346818643},
-					{execute.Time(1440781800000000000), 16.593649776280504},
-					{execute.Time(1440804540000000000), 24.43508329162218},
-					{execute.Time(1440827280000000000), 36.834133612921335},
-					{execute.Time(1440850020000000000), 56.440059666607354},
-					{execute.Time(1440872760000000000), 87.44210023894752},
-					{execute.Time(1440895500000000000), 136.46464506566383},
-					{execute.Time(1440918240000000000), 213.98275775223067},
+					{execute.Time(1440713580000000000), 6.517746679116747, 30.52018686151099},
+					{execute.Time(1440736320000000000), 8.44990936365862, 30.52018686151099},
+					{execute.Time(1440759060000000000), 11.450103919073781, 30.52018686151099},
+					{execute.Time(1440781800000000000), 16.108703181906527, 30.52018686151099},
+					{execute.Time(1440804540000000000), 23.342418185768715, 30.52018686151099},
+					{execute.Time(1440827280000000000), 34.57468700800914, 30.52018686151099},
+					{execute.Time(1440850020000000000), 52.01577652114399, 30.52018686151099},
+					{execute.Time(1440872760000000000), 79.09771500282905, 30.52018686151099},
+					{execute.Time(1440895500000000000), 121.14964091593322, 30.52018686151099},
+					{execute.Time(1440918240000000000), 186.4464618626079, 30.52018686151099},
 				},
 			}},
 		},
@@ -897,4 +922,150 @@ func TestHoltWinters_Process(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestHoltWinters_Error_Process(t *testing.T) {
+	testCases := []struct {
+		name    string
+		spec    *universe.HoltWintersProcedureSpec
+		data    []flux.Table
+		want    []*executetest.Table
+		wantErr string
+	}{
+		{
+			name: "NaN in the input",
+			spec: &universe.HoltWintersProcedureSpec{
+				Column:     "_value",
+				TimeColumn: "_stop",
+				WithFit:    false,
+				N:          10,
+				S:          4,
+				Interval:   flux.ConvertDuration(379 * time.Minute),
+				WithMinSSE: true,
+			},
+			data: []flux.Table{
+				&executetest.Table{
+					ColMeta: []flux.ColMeta{
+						{Label: "_stop", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+					},
+					Data: [][]interface{}{
+						{execute.Time(1440281520000000000), math.NaN()},
+					},
+				},
+			},
+			want: []*executetest.Table{{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
+					{Label: "minSSE", Type: flux.TFloat},
+				},
+				Data: [][]interface{}{},
+			}},
+		},
+		{
+			name: "Inf in the input",
+			spec: &universe.HoltWintersProcedureSpec{
+				Column:     "_value",
+				TimeColumn: "_stop",
+				WithFit:    false,
+				N:          10,
+				S:          4,
+				Interval:   flux.ConvertDuration(379 * time.Minute),
+				WithMinSSE: true,
+			},
+			data: []flux.Table{
+				&executetest.Table{
+					ColMeta: []flux.ColMeta{
+						{Label: "_stop", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+					},
+					Data: [][]interface{}{
+						{execute.Time(1440281520000000000), math.Inf(1)},
+					},
+				},
+			},
+			want: []*executetest.Table{{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
+					{Label: "minSSE", Type: flux.TFloat},
+				},
+				Data: [][]interface{}{},
+			}},
+		},
+	}
+
+	for _, tc := range testCases {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			wantErr := errors.New(codes.Invalid, "NaN/Inf in input")
+			alloc := &memory.ResourceAllocator{}
+			executetest.ProcessTestHelper(
+				t,
+				tc.data,
+				tc.want,
+				wantErr,
+				func(d execute.Dataset, c execute.TableBuilderCache) execute.Transformation {
+					return universe.NewHoltWintersTransformation(d, c, alloc, tc.spec)
+				},
+			)
+
+			for i := 0; i < 30; i++ {
+				runtime.GC()
+				if alloc.Allocated() <= 0 {
+					break
+				}
+			}
+
+			if m := alloc.Allocated(); m != 0 {
+				t.Errorf("HoltWinters is using memory after finishing: %d", m)
+			}
+		})
+	}
+}
+
+func BenchmarkHoltWintersWithoutFit(b *testing.B) {
+	benchmarkHoltWinters(b, 1000, 0, false)
+}
+
+func BenchmarkHoltWintersWithFit(b *testing.B) {
+	benchmarkHoltWinters(b, 1000, 0, true)
+}
+
+func BenchmarkHoltWintersWithoutFitSeasonality(b *testing.B) {
+	benchmarkHoltWinters(b, 1000, 4, false)
+}
+
+func BenchmarkHoltWintersWithFitSeasonality(b *testing.B) {
+	benchmarkHoltWinters(b, 1000, 4, true)
+}
+
+func benchmarkHoltWinters(b *testing.B, n, seasonality int, withFit bool) {
+	b.ReportAllocs()
+	seed := int64(1234)
+	spec := &universe.HoltWintersProcedureSpec{
+		Column:     "_value",
+		TimeColumn: "_time",
+		WithFit:    withFit,
+		N:          10,
+		S:          int64(seasonality),
+		Interval:   flux.ConvertDuration(379 * time.Minute),
+	}
+	executetest.ProcessBenchmarkHelper(b,
+		func(alloc memory.Allocator) (flux.TableIterator, error) {
+			schema := gen.Schema{
+				NumPoints: n,
+				Alloc:     alloc,
+				Seed:      &seed,
+			}
+			return gen.Input(context.Background(), schema)
+		},
+		func(id execute.DatasetID, alloc memory.Allocator) (execute.Transformation, execute.Dataset) {
+			cache := execute.NewTableBuilderCache(alloc)
+			d := execute.NewDataset(id, execute.DiscardingMode, cache)
+			t := universe.NewHoltWintersTransformation(d, cache, alloc, spec)
+			return t, d
+		},
+	)
 }
