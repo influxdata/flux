@@ -2543,7 +2543,7 @@ builtin stddev : (<-tables: stream[A], ?column: string, ?mode: string) => stream
 // import "sampledata"
 //
 // < sampledata.int()
-// >     |> stddev()
+// >     |> sum()
 // ```
 //
 // ## Metadata
