@@ -115,7 +115,7 @@ send = (
 // ```
 //
 // ## Metadata
-// tags: notifcation endpoints,transformations
+// tags: notifcation endpoints, transformations
 //
 endpoint = (webhookToken, webhookID, username, avatar_url="") =>
     (mapFn) =>

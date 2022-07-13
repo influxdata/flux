@@ -406,7 +406,12 @@ builtin join : (left: stream[A], right: stream[B], fn: (left: A, right: B) => C)
 // has on the results of the first query are met.
 //
 // ##### Applicable use cases
-// - Write to a bucket and query the written data in a single Flux script.
+// - Write to an InfluxDB bucket and query the written data in a single Flux script.
+//
+//   _**Note:** `experimental.chain()` does not gaurantee that data written to
+//   InfluxDB is immediately queryable. A delay between when data is written and
+//   when it is queryable may cause a query using `experimental.chain()` to fail.
+//
 // - Execute queries sequentially in testing scenarios.
 //
 // ## Parameters

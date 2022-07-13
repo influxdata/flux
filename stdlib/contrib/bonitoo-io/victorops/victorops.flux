@@ -158,7 +158,7 @@ alert = (
 // ```
 //
 // ## Metadata
-// tags: notification endpoints,transformations
+// tags: notification endpoints, transformations
 //
 endpoint = (url, monitoringTool="InfluxDB") =>
     (mapFn) =>

@@ -112,7 +112,7 @@ builtin chandeMomentumOscillator : (<-tables: stream[A], n: int, ?columns: [stri
 //
 builtin columns : (<-tables: stream[A], ?column: string) => stream[B] where A: Record, B: Record
 
-// count returns the number of records in a column.
+// count returns the number of records in each input table.
 //
 // The function counts both null and non-null records.
 //
@@ -129,16 +129,31 @@ builtin columns : (<-tables: stream[A], ?column: string) => stream[B] where A: R
 //
 // ## Parameters
 // - column: Column to count values in and store the total count.
-// - tables: Input data. Default is piped-wforward data (`<-`).
+// - tables: Input data. Default is piped-forward data (`<-`).
 //
 // ## Examples
 //
-// ### Count the number of rows in each input table
+// ### Count the number of records in each input table
 // ```
 // import "sampledata"
 //
 // sampledata.string()
 //     |> count()
+// ```
+//
+// ### Count the number of records with a specific value
+//
+// 1. Use `filter()` to filter data by the specific value you want to count.
+// 2. Use `count()` to count the number of rows in the table.
+//
+// ```
+// import "sampledata"
+//
+// data = sampledata.int()
+//     |> filter(fn: (r) => r._value > 10)
+//
+// < data
+// >     |> count()
 // ```
 //
 // ## Metadata
@@ -2543,7 +2558,7 @@ builtin stddev : (<-tables: stream[A], ?column: string, ?mode: string) => stream
 // import "sampledata"
 //
 // < sampledata.int()
-// >     |> stddev()
+// >     |> sum()
 // ```
 //
 // ## Metadata
@@ -2873,7 +2888,7 @@ builtin tableFind : (<-tables: stream[A], fn: (key: B) => bool) => stream[A] whe
 //
 // ## Examples
 //
-// ### Extract a column from a table
+// ### Extract an array of column values from a table
 // ```no_run
 // import "sampledata"
 //
@@ -2882,6 +2897,19 @@ builtin tableFind : (<-tables: stream[A], fn: (key: B) => bool) => stream[A] whe
 //     |> getColumn(column: "_value")
 //
 // // Returns [-2, 10, 7, 17, 15, 4]
+// ```
+//
+// ### Extract an array of column values and display them in a table
+// ```no_run
+// import "array"
+// import "sampledata"
+//
+// columnData =
+//     sampledata.int()
+//         |> tableFind(fn: (key) => key.tag == "t1")
+//         |> getColumn(column: "_value")
+//
+// array.from(rows: [{_value: display(v: columnData)}])
 // ```
 //
 // ## Metadata

@@ -45,6 +45,7 @@ import "experimental"
 //
 // ## Metadata
 // introduced: 0.40.0
+// tags: single notification
 //
 builtin post : (url: string, ?headers: A, ?data: bytes) => int where A: Record
 
@@ -74,7 +75,6 @@ builtin post : (url: string, ?headers: A, ?data: bytes) => int where A: Record
 //
 // ## Metadata
 // introduced: 0.44.0
-// tags: single notification
 //
 builtin basicAuth : (u: string, p: string) => string
 

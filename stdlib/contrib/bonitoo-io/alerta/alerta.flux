@@ -186,7 +186,7 @@ alert = (
 // ```
 //
 // ## Metadata
-// tags: notification endpoints,transformations
+// tags: notification endpoints, transformations
 //
 endpoint = (url, apiKey, environment="", origin="") =>
     (mapFn) =>
