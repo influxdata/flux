@@ -9,9 +9,23 @@ import (
 	"github.com/influxdata/flux/semantic"
 )
 
-{{range $index, $op := .}}
+{{range $index, $op := .Ops}}
 
 func vector{{$op.Name}}(l, r Vector, mem memory.Allocator) (Value, error) {
+	var lvr, rvr *Value
+	if vr, ok := l.(*VectorRepeatValue); ok {
+		lvr = &vr.val
+	}
+	if vr, ok := r.(*VectorRepeatValue); ok {
+		rvr = &vr.val
+	}
+
+	if lvr != nil && rvr != nil {
+		// XXX: we can handle this case here if we are willing to plumb the
+		// OperatorKind through here so we can do the lookup for the row-based version of this op.
+		panic("got 2 VectorRepeatValue; 'const folding' should be done earlier, in the function lookup")
+	}
+
 	switch l.ElementType().Nature() {
 
     {{range $index, $type := .Types}}
@@ -21,7 +35,22 @@ func vector{{$op.Name}}(l, r Vector, mem memory.Allocator) (Value, error) {
     {{else}}
 	case semantic.{{$type}}:
     {{end}}
-		x, err := fluxarray.{{$type}}{{$op.Name}}(l.Arr().(*fluxarray.{{$type}}), r.Arr().(*fluxarray.{{$type}}), mem)
+    	var (
+    		{{if eq $op.Op "^"}}
+    		x *fluxarray.Float
+			{{else}}
+			x *fluxarray.{{$type}}
+			{{end}}
+    		err error
+    	)
+    	if lvr != nil {
+			x, err = fluxarray.{{$type}}{{$op.Name}}LConst((*lvr).{{index $.ValMap $type}}(), r.Arr().(*fluxarray.{{$type}}), mem)
+		} else if rvr != nil {
+			x, err = fluxarray.{{$type}}{{$op.Name}}RConst(l.Arr().(*fluxarray.{{$type}}), (*rvr).{{index $.ValMap $type}}(), mem)
+		} else {
+			x, err = fluxarray.{{$type}}{{$op.Name}}(l.Arr().(*fluxarray.{{$type}}), r.Arr().(*fluxarray.{{$type}}), mem)
+		}
+
 		if err != nil {
 			return nil, err
 		}

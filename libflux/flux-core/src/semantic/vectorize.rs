@@ -1,16 +1,22 @@
 use std::collections::HashMap;
 
 use crate::{
+    ast::{Operator, SourceLocation},
     errors::{located, Errors},
     semantic::{
         nodes::{
-            BinaryExpr, Block, Error, ErrorKind, Expression, FunctionExpr, IdentifierExpr,
-            LogicalExpr, MemberExpr, ObjectExpr, Package, Property, Result, ReturnStmt,
+            BinaryExpr, Block, CallExpr, Error, ErrorKind, Expression, FunctionExpr, Identifier,
+            IdentifierExpr, LogicalExpr, MemberExpr, ObjectExpr, Package, Property, Result,
+            ReturnStmt,
         },
         types::{self, Function, Label, MonoType},
-        AnalyzerConfig, Symbol,
+        AnalyzerConfig, Feature, Symbol,
     },
 };
+
+/// The name of a function used to signal to the runtime that the value in the
+/// `v` parameter should be rewritten as a "vector repeat" value.
+const VEC_REPEAT_FN: &str = "~~vecRepeat~~";
 
 /// Vectorizes a pkg
 pub fn vectorize(
@@ -87,6 +93,17 @@ impl Expression {
             Expression::Binary(binary) => {
                 let left = binary.left.vectorize(env)?;
                 let right = binary.right.vectorize(env)?;
+
+                if !op_is_vectorizable(&binary.operator) {
+                    return Err(located(
+                        binary.loc.clone(),
+                        ErrorKind::UnableToVectorize(format!(
+                            "unsupported operator {}",
+                            binary.operator
+                        )),
+                    ));
+                }
+
                 Expression::Binary(Box::new(BinaryExpr {
                     loc: binary.loc.clone(),
                     typ: MonoType::vector(binary.typ.clone()),
@@ -106,6 +123,26 @@ impl Expression {
                     right,
                 }))
             }
+            expr @ Expression::Integer(_)
+                if env.config.features.contains(&Feature::VectorizedConst) =>
+            {
+                wrap_vec_repeat(expr.clone())
+            }
+            expr @ Expression::DateTime(_)
+                if env.config.features.contains(&Feature::VectorizedConst) =>
+            {
+                wrap_vec_repeat(expr.clone())
+            }
+            expr @ Expression::Float(_)
+                if env.config.features.contains(&Feature::VectorizedConst) =>
+            {
+                wrap_vec_repeat(expr.clone())
+            }
+            expr @ Expression::StringLit(_)
+                if env.config.features.contains(&Feature::VectorizedConst) =>
+            {
+                wrap_vec_repeat(expr.clone())
+            }
             _ => {
                 return Err(located(
                     self.loc().clone(),
@@ -114,6 +151,48 @@ impl Expression {
             }
         })
     }
+}
+
+/// Check to see if a given operator is vectorizable.
+fn op_is_vectorizable(op: &Operator) -> bool {
+    // Note that only certain operators can be vectorized today.
+    // See `array/binary.tmpldata` for the currently supported ops.
+    // As new ops are implemented, this match should be updated.
+    matches!(
+        op,
+        Operator::AdditionOperator
+            | Operator::SubtractionOperator
+            | Operator::MultiplicationOperator
+            | Operator::DivisionOperator
+            | Operator::ModuloOperator
+            | Operator::PowerOperator
+    )
+}
+
+fn wrap_vec_repeat(expr: Expression) -> Expression {
+    // The call expression is just a way to trigger a rewrite in Go during evaluation.
+    // The only details that matter are the parameter `v` (the original expression) and
+    // the name of the function.
+    let typ = expr.type_of();
+    let call = CallExpr {
+        loc: expr.loc().clone(),
+        typ: MonoType::vector(typ.clone()),
+        pipe: None,
+        callee: Expression::Identifier(IdentifierExpr {
+            loc: SourceLocation::default(),
+            typ,
+            name: Symbol::from(VEC_REPEAT_FN),
+        }),
+        arguments: vec![Property {
+            loc: SourceLocation::default(),
+            key: Identifier {
+                loc: SourceLocation::default(),
+                name: Symbol::from("v"),
+            },
+            value: expr.clone(),
+        }],
+    };
+    Expression::Call(Box::new(call))
 }
 
 impl IdentifierExpr {
@@ -178,7 +257,7 @@ impl FunctionExpr {
                     return Err(located(
                         self.body.loc().clone(),
                         ErrorKind::UnableToVectorize("Unable to vectorize statements".into()),
-                    ))
+                    ));
                 }
                 // XXX: sean (January 14 2022) - The only type of function expression
                 // currently supported for vectorization is one whose body contains only
@@ -226,7 +305,7 @@ impl FunctionExpr {
                                 ErrorKind::UnableToVectorize(
                                     "Vectorization only supports returning a record".into(),
                                 ),
-                            ))
+                            ));
                         }
                     };
                     Block::Return(ReturnStmt {

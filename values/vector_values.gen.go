@@ -131,6 +131,109 @@ func newVectorFromSlice(values []Value, typ semantic.MonoType, mem memory.Alloca
 	}
 }
 
+func NewVectorRepeatValue(v Value) Vector {
+	typ := v.Type()
+	switch typ {
+
+	case semantic.BasicInt:
+		return &VectorRepeatValue{
+			val: v,
+			typ: semantic.NewVectorType(semantic.BasicInt),
+		}
+
+	case semantic.BasicUint:
+		return &VectorRepeatValue{
+			val: v,
+			typ: semantic.NewVectorType(semantic.BasicUint),
+		}
+
+	case semantic.BasicFloat:
+		return &VectorRepeatValue{
+			val: v,
+			typ: semantic.NewVectorType(semantic.BasicFloat),
+		}
+
+	case semantic.BasicBool:
+		return &VectorRepeatValue{
+			val: v,
+			typ: semantic.NewVectorType(semantic.BasicBool),
+		}
+
+	case semantic.BasicString:
+		return &VectorRepeatValue{
+			val: v,
+			typ: semantic.NewVectorType(semantic.BasicString),
+		}
+
+	case semantic.BasicTime:
+		return &VectorRepeatValue{
+			val: v,
+			typ: semantic.NewVectorType(semantic.BasicTime),
+		}
+
+	default:
+		panic(fmt.Errorf("unsupported column data type: %s", typ))
+	}
+}
+
+type VectorRepeatValue struct {
+	val Value
+	typ semantic.MonoType
+}
+
+func (v *VectorRepeatValue) Value() Value { return v.val }
+
+func (v *VectorRepeatValue) ElementType() semantic.MonoType {
+	t, err := v.typ.ElemType()
+	if err != nil {
+		panic("could not get element type of vector value")
+	}
+	return t
+}
+func (v *VectorRepeatValue) Arr() arrow.Array {
+	panic("unsupported - VectorRepeatValue has no array backing")
+}
+
+func (v *VectorRepeatValue) IsRepeat() bool { return true }
+func (v *VectorRepeatValue) Retain() {
+	v.val.Retain()
+}
+func (v *VectorRepeatValue) Release() {
+	v.val.Release()
+}
+func (v *VectorRepeatValue) Type() semantic.MonoType { return v.typ }
+func (v *VectorRepeatValue) IsNull() bool            { return false }
+func (v *VectorRepeatValue) Str() string             { panic(UnexpectedKind(semantic.Vector, semantic.String)) }
+func (v *VectorRepeatValue) Bytes() []byte           { panic(UnexpectedKind(semantic.Vector, semantic.Bytes)) }
+func (v *VectorRepeatValue) Int() int64              { panic(UnexpectedKind(semantic.Vector, semantic.Int)) }
+func (v *VectorRepeatValue) UInt() uint64            { panic(UnexpectedKind(semantic.Vector, semantic.UInt)) }
+func (v *VectorRepeatValue) Float() float64          { panic(UnexpectedKind(semantic.Vector, semantic.Float)) }
+func (v *VectorRepeatValue) Bool() bool              { panic(UnexpectedKind(semantic.Vector, semantic.Bool)) }
+func (v *VectorRepeatValue) Time() Time              { panic(UnexpectedKind(semantic.Vector, semantic.Time)) }
+func (v *VectorRepeatValue) Duration() Duration {
+	panic(UnexpectedKind(semantic.Vector, semantic.Duration))
+}
+func (v *VectorRepeatValue) Regexp() *regexp.Regexp {
+	panic(UnexpectedKind(semantic.Vector, semantic.Regexp))
+}
+func (v *VectorRepeatValue) Array() Array   { panic(UnexpectedKind(semantic.Vector, semantic.Array)) }
+func (v *VectorRepeatValue) Object() Object { panic(UnexpectedKind(semantic.Vector, semantic.Object)) }
+func (v *VectorRepeatValue) Function() Function {
+	panic(UnexpectedKind(semantic.Vector, semantic.Function))
+}
+func (v *VectorRepeatValue) Dict() Dictionary {
+	panic(UnexpectedKind(semantic.Vector, semantic.Dictionary))
+}
+func (v *VectorRepeatValue) Vector() Vector {
+	return v
+}
+func (v *VectorRepeatValue) Equal(other Value) bool {
+	panic("cannot compare two vectors for equality")
+}
+
+var _ Value = &VectorRepeatValue{}
+var _ Vector = &VectorRepeatValue{}
+
 var _ Value = &IntVectorValue{}
 var _ Vector = &IntVectorValue{}
 var _ arrow.Array = &arrow.Int{}
@@ -155,6 +258,7 @@ func (v *IntVectorValue) ElementType() semantic.MonoType {
 	return t
 }
 func (v *IntVectorValue) Arr() arrow.Array { return v.arr }
+func (v *IntVectorValue) IsRepeat() bool   { return false }
 func (v *IntVectorValue) Retain() {
 	v.arr.Retain()
 }
@@ -217,6 +321,7 @@ func (v *UintVectorValue) ElementType() semantic.MonoType {
 	return t
 }
 func (v *UintVectorValue) Arr() arrow.Array { return v.arr }
+func (v *UintVectorValue) IsRepeat() bool   { return false }
 func (v *UintVectorValue) Retain() {
 	v.arr.Retain()
 }
@@ -279,6 +384,7 @@ func (v *FloatVectorValue) ElementType() semantic.MonoType {
 	return t
 }
 func (v *FloatVectorValue) Arr() arrow.Array { return v.arr }
+func (v *FloatVectorValue) IsRepeat() bool   { return false }
 func (v *FloatVectorValue) Retain() {
 	v.arr.Retain()
 }
@@ -341,6 +447,7 @@ func (v *BooleanVectorValue) ElementType() semantic.MonoType {
 	return t
 }
 func (v *BooleanVectorValue) Arr() arrow.Array { return v.arr }
+func (v *BooleanVectorValue) IsRepeat() bool   { return false }
 func (v *BooleanVectorValue) Retain() {
 	v.arr.Retain()
 }
@@ -403,6 +510,7 @@ func (v *StringVectorValue) ElementType() semantic.MonoType {
 	return t
 }
 func (v *StringVectorValue) Arr() arrow.Array { return v.arr }
+func (v *StringVectorValue) IsRepeat() bool   { return false }
 func (v *StringVectorValue) Retain() {
 	v.arr.Retain()
 }
@@ -465,6 +573,7 @@ func (v *TimeVectorValue) ElementType() semantic.MonoType {
 	return t
 }
 func (v *TimeVectorValue) Arr() arrow.Array { return v.arr }
+func (v *TimeVectorValue) IsRepeat() bool   { return false }
 func (v *TimeVectorValue) Retain() {
 	v.arr.Retain()
 }

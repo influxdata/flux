@@ -614,35 +614,94 @@ var binaryFuncLookup = map[BinaryFuncSignature]BinaryFunction{
 	},
 }
 
+// "Constant Folding" - when neither vector is backed by an array, each
+// holding only a singleton value (unchanged) for all the rows we'll process.
+// In this situation we can avoid building arrays at all and perform the
+// operation a single time.
+func tryFoldConstants(l, r Vector, op ast.OperatorKind) (Value, error) {
+	if l.Vector().IsRepeat() && r.Vector().IsRepeat() {
+		lv := l.(*VectorRepeatValue).Value()
+		rv := r.(*VectorRepeatValue).Value()
+		f, err := LookupBinaryFunction(
+			BinaryFuncSignature{Operator: op, Left: lv.Type().Nature(), Right: rv.Type().Nature()})
+		if err != nil {
+			return nil, err
+		}
+		v, err := f(lv, rv)
+		if err != nil {
+			return nil, err
+
+		}
+		return NewVectorRepeatValue(v), nil
+	}
+	return nil, nil
+}
+
 var binaryVectorFuncLookup = map[BinaryFuncSignature]BinaryVectorFunction{
 	{Operator: ast.AdditionOperator, Left: semantic.Vector, Right: semantic.Vector}: func(lv, rv Value, mem memory.Allocator) (Value, error) {
 		l := lv.Vector()
 		r := rv.Vector()
+		v, err := tryFoldConstants(l, r, ast.AdditionOperator)
+		if err != nil {
+			return nil, err
+		} else if v != nil {
+			return v, nil
+		}
 		return vectorAdd(l, r, mem)
 	},
 	{Operator: ast.SubtractionOperator, Left: semantic.Vector, Right: semantic.Vector}: func(lv, rv Value, mem memory.Allocator) (Value, error) {
 		l := lv.Vector()
 		r := rv.Vector()
+		v, err := tryFoldConstants(l, r, ast.SubtractionOperator)
+		if err != nil {
+			return nil, err
+		} else if v != nil {
+			return v, nil
+		}
 		return vectorSub(l, r, mem)
 	},
 	{Operator: ast.MultiplicationOperator, Left: semantic.Vector, Right: semantic.Vector}: func(lv, rv Value, mem memory.Allocator) (Value, error) {
 		l := lv.Vector()
 		r := rv.Vector()
+		v, err := tryFoldConstants(l, r, ast.MultiplicationOperator)
+		if err != nil {
+			return nil, err
+		} else if v != nil {
+			return v, nil
+		}
 		return vectorMul(l, r, mem)
 	},
 	{Operator: ast.DivisionOperator, Left: semantic.Vector, Right: semantic.Vector}: func(lv, rv Value, mem memory.Allocator) (Value, error) {
 		l := lv.Vector()
 		r := rv.Vector()
+		v, err := tryFoldConstants(l, r, ast.DivisionOperator)
+		if err != nil {
+			return nil, err
+		} else if v != nil {
+			return v, nil
+		}
 		return vectorDiv(l, r, mem)
 	},
 	{Operator: ast.ModuloOperator, Left: semantic.Vector, Right: semantic.Vector}: func(lv, rv Value, mem memory.Allocator) (Value, error) {
 		l := lv.Vector()
 		r := rv.Vector()
+		v, err := tryFoldConstants(l, r, ast.ModuloOperator)
+		if err != nil {
+			return nil, err
+		} else if v != nil {
+			return v, nil
+		}
 		return vectorMod(l, r, mem)
 	},
 	{Operator: ast.PowerOperator, Left: semantic.Vector, Right: semantic.Vector}: func(lv, rv Value, mem memory.Allocator) (Value, error) {
 		l := lv.Vector()
 		r := rv.Vector()
+		v, err := tryFoldConstants(l, r, ast.PowerOperator)
+		if err != nil {
+			return nil, err
+		} else if v != nil {
+			return v, nil
+		}
 		return vectorPow(l, r, mem)
 	},
 }

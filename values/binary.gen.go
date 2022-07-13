@@ -15,11 +15,37 @@ import (
 )
 
 func vectorAdd(l, r Vector, mem memory.Allocator) (Value, error) {
+	var lvr, rvr *Value
+	if vr, ok := l.(*VectorRepeatValue); ok {
+		lvr = &vr.val
+	}
+	if vr, ok := r.(*VectorRepeatValue); ok {
+		rvr = &vr.val
+	}
+
+	if lvr != nil && rvr != nil {
+		// XXX: we can handle this case here if we are willing to plumb the
+		// OperatorKind through here so we can do the lookup for the row-based version of this op.
+		panic("got 2 VectorRepeatValue; 'const folding' should be done earlier, in the function lookup")
+	}
+
 	switch l.ElementType().Nature() {
 
 	case semantic.Int:
 
-		x, err := fluxarray.IntAdd(l.Arr().(*fluxarray.Int), r.Arr().(*fluxarray.Int), mem)
+		var (
+			x *fluxarray.Int
+
+			err error
+		)
+		if lvr != nil {
+			x, err = fluxarray.IntAddLConst((*lvr).Int(), r.Arr().(*fluxarray.Int), mem)
+		} else if rvr != nil {
+			x, err = fluxarray.IntAddRConst(l.Arr().(*fluxarray.Int), (*rvr).Int(), mem)
+		} else {
+			x, err = fluxarray.IntAdd(l.Arr().(*fluxarray.Int), r.Arr().(*fluxarray.Int), mem)
+		}
+
 		if err != nil {
 			return nil, err
 		}
@@ -28,7 +54,19 @@ func vectorAdd(l, r Vector, mem memory.Allocator) (Value, error) {
 
 	case semantic.UInt:
 
-		x, err := fluxarray.UintAdd(l.Arr().(*fluxarray.Uint), r.Arr().(*fluxarray.Uint), mem)
+		var (
+			x *fluxarray.Uint
+
+			err error
+		)
+		if lvr != nil {
+			x, err = fluxarray.UintAddLConst((*lvr).UInt(), r.Arr().(*fluxarray.Uint), mem)
+		} else if rvr != nil {
+			x, err = fluxarray.UintAddRConst(l.Arr().(*fluxarray.Uint), (*rvr).UInt(), mem)
+		} else {
+			x, err = fluxarray.UintAdd(l.Arr().(*fluxarray.Uint), r.Arr().(*fluxarray.Uint), mem)
+		}
+
 		if err != nil {
 			return nil, err
 		}
@@ -37,7 +75,19 @@ func vectorAdd(l, r Vector, mem memory.Allocator) (Value, error) {
 
 	case semantic.Float:
 
-		x, err := fluxarray.FloatAdd(l.Arr().(*fluxarray.Float), r.Arr().(*fluxarray.Float), mem)
+		var (
+			x *fluxarray.Float
+
+			err error
+		)
+		if lvr != nil {
+			x, err = fluxarray.FloatAddLConst((*lvr).Float(), r.Arr().(*fluxarray.Float), mem)
+		} else if rvr != nil {
+			x, err = fluxarray.FloatAddRConst(l.Arr().(*fluxarray.Float), (*rvr).Float(), mem)
+		} else {
+			x, err = fluxarray.FloatAdd(l.Arr().(*fluxarray.Float), r.Arr().(*fluxarray.Float), mem)
+		}
+
 		if err != nil {
 			return nil, err
 		}
@@ -46,7 +96,19 @@ func vectorAdd(l, r Vector, mem memory.Allocator) (Value, error) {
 
 	case semantic.String:
 
-		x, err := fluxarray.StringAdd(l.Arr().(*fluxarray.String), r.Arr().(*fluxarray.String), mem)
+		var (
+			x *fluxarray.String
+
+			err error
+		)
+		if lvr != nil {
+			x, err = fluxarray.StringAddLConst((*lvr).Str(), r.Arr().(*fluxarray.String), mem)
+		} else if rvr != nil {
+			x, err = fluxarray.StringAddRConst(l.Arr().(*fluxarray.String), (*rvr).Str(), mem)
+		} else {
+			x, err = fluxarray.StringAdd(l.Arr().(*fluxarray.String), r.Arr().(*fluxarray.String), mem)
+		}
+
 		if err != nil {
 			return nil, err
 		}
@@ -59,11 +121,37 @@ func vectorAdd(l, r Vector, mem memory.Allocator) (Value, error) {
 }
 
 func vectorSub(l, r Vector, mem memory.Allocator) (Value, error) {
+	var lvr, rvr *Value
+	if vr, ok := l.(*VectorRepeatValue); ok {
+		lvr = &vr.val
+	}
+	if vr, ok := r.(*VectorRepeatValue); ok {
+		rvr = &vr.val
+	}
+
+	if lvr != nil && rvr != nil {
+		// XXX: we can handle this case here if we are willing to plumb the
+		// OperatorKind through here so we can do the lookup for the row-based version of this op.
+		panic("got 2 VectorRepeatValue; 'const folding' should be done earlier, in the function lookup")
+	}
+
 	switch l.ElementType().Nature() {
 
 	case semantic.Int:
 
-		x, err := fluxarray.IntSub(l.Arr().(*fluxarray.Int), r.Arr().(*fluxarray.Int), mem)
+		var (
+			x *fluxarray.Int
+
+			err error
+		)
+		if lvr != nil {
+			x, err = fluxarray.IntSubLConst((*lvr).Int(), r.Arr().(*fluxarray.Int), mem)
+		} else if rvr != nil {
+			x, err = fluxarray.IntSubRConst(l.Arr().(*fluxarray.Int), (*rvr).Int(), mem)
+		} else {
+			x, err = fluxarray.IntSub(l.Arr().(*fluxarray.Int), r.Arr().(*fluxarray.Int), mem)
+		}
+
 		if err != nil {
 			return nil, err
 		}
@@ -72,7 +160,19 @@ func vectorSub(l, r Vector, mem memory.Allocator) (Value, error) {
 
 	case semantic.UInt:
 
-		x, err := fluxarray.UintSub(l.Arr().(*fluxarray.Uint), r.Arr().(*fluxarray.Uint), mem)
+		var (
+			x *fluxarray.Uint
+
+			err error
+		)
+		if lvr != nil {
+			x, err = fluxarray.UintSubLConst((*lvr).UInt(), r.Arr().(*fluxarray.Uint), mem)
+		} else if rvr != nil {
+			x, err = fluxarray.UintSubRConst(l.Arr().(*fluxarray.Uint), (*rvr).UInt(), mem)
+		} else {
+			x, err = fluxarray.UintSub(l.Arr().(*fluxarray.Uint), r.Arr().(*fluxarray.Uint), mem)
+		}
+
 		if err != nil {
 			return nil, err
 		}
@@ -81,7 +181,19 @@ func vectorSub(l, r Vector, mem memory.Allocator) (Value, error) {
 
 	case semantic.Float:
 
-		x, err := fluxarray.FloatSub(l.Arr().(*fluxarray.Float), r.Arr().(*fluxarray.Float), mem)
+		var (
+			x *fluxarray.Float
+
+			err error
+		)
+		if lvr != nil {
+			x, err = fluxarray.FloatSubLConst((*lvr).Float(), r.Arr().(*fluxarray.Float), mem)
+		} else if rvr != nil {
+			x, err = fluxarray.FloatSubRConst(l.Arr().(*fluxarray.Float), (*rvr).Float(), mem)
+		} else {
+			x, err = fluxarray.FloatSub(l.Arr().(*fluxarray.Float), r.Arr().(*fluxarray.Float), mem)
+		}
+
 		if err != nil {
 			return nil, err
 		}
@@ -94,11 +206,37 @@ func vectorSub(l, r Vector, mem memory.Allocator) (Value, error) {
 }
 
 func vectorMul(l, r Vector, mem memory.Allocator) (Value, error) {
+	var lvr, rvr *Value
+	if vr, ok := l.(*VectorRepeatValue); ok {
+		lvr = &vr.val
+	}
+	if vr, ok := r.(*VectorRepeatValue); ok {
+		rvr = &vr.val
+	}
+
+	if lvr != nil && rvr != nil {
+		// XXX: we can handle this case here if we are willing to plumb the
+		// OperatorKind through here so we can do the lookup for the row-based version of this op.
+		panic("got 2 VectorRepeatValue; 'const folding' should be done earlier, in the function lookup")
+	}
+
 	switch l.ElementType().Nature() {
 
 	case semantic.Int:
 
-		x, err := fluxarray.IntMul(l.Arr().(*fluxarray.Int), r.Arr().(*fluxarray.Int), mem)
+		var (
+			x *fluxarray.Int
+
+			err error
+		)
+		if lvr != nil {
+			x, err = fluxarray.IntMulLConst((*lvr).Int(), r.Arr().(*fluxarray.Int), mem)
+		} else if rvr != nil {
+			x, err = fluxarray.IntMulRConst(l.Arr().(*fluxarray.Int), (*rvr).Int(), mem)
+		} else {
+			x, err = fluxarray.IntMul(l.Arr().(*fluxarray.Int), r.Arr().(*fluxarray.Int), mem)
+		}
+
 		if err != nil {
 			return nil, err
 		}
@@ -107,7 +245,19 @@ func vectorMul(l, r Vector, mem memory.Allocator) (Value, error) {
 
 	case semantic.UInt:
 
-		x, err := fluxarray.UintMul(l.Arr().(*fluxarray.Uint), r.Arr().(*fluxarray.Uint), mem)
+		var (
+			x *fluxarray.Uint
+
+			err error
+		)
+		if lvr != nil {
+			x, err = fluxarray.UintMulLConst((*lvr).UInt(), r.Arr().(*fluxarray.Uint), mem)
+		} else if rvr != nil {
+			x, err = fluxarray.UintMulRConst(l.Arr().(*fluxarray.Uint), (*rvr).UInt(), mem)
+		} else {
+			x, err = fluxarray.UintMul(l.Arr().(*fluxarray.Uint), r.Arr().(*fluxarray.Uint), mem)
+		}
+
 		if err != nil {
 			return nil, err
 		}
@@ -116,7 +266,19 @@ func vectorMul(l, r Vector, mem memory.Allocator) (Value, error) {
 
 	case semantic.Float:
 
-		x, err := fluxarray.FloatMul(l.Arr().(*fluxarray.Float), r.Arr().(*fluxarray.Float), mem)
+		var (
+			x *fluxarray.Float
+
+			err error
+		)
+		if lvr != nil {
+			x, err = fluxarray.FloatMulLConst((*lvr).Float(), r.Arr().(*fluxarray.Float), mem)
+		} else if rvr != nil {
+			x, err = fluxarray.FloatMulRConst(l.Arr().(*fluxarray.Float), (*rvr).Float(), mem)
+		} else {
+			x, err = fluxarray.FloatMul(l.Arr().(*fluxarray.Float), r.Arr().(*fluxarray.Float), mem)
+		}
+
 		if err != nil {
 			return nil, err
 		}
@@ -129,11 +291,37 @@ func vectorMul(l, r Vector, mem memory.Allocator) (Value, error) {
 }
 
 func vectorDiv(l, r Vector, mem memory.Allocator) (Value, error) {
+	var lvr, rvr *Value
+	if vr, ok := l.(*VectorRepeatValue); ok {
+		lvr = &vr.val
+	}
+	if vr, ok := r.(*VectorRepeatValue); ok {
+		rvr = &vr.val
+	}
+
+	if lvr != nil && rvr != nil {
+		// XXX: we can handle this case here if we are willing to plumb the
+		// OperatorKind through here so we can do the lookup for the row-based version of this op.
+		panic("got 2 VectorRepeatValue; 'const folding' should be done earlier, in the function lookup")
+	}
+
 	switch l.ElementType().Nature() {
 
 	case semantic.Int:
 
-		x, err := fluxarray.IntDiv(l.Arr().(*fluxarray.Int), r.Arr().(*fluxarray.Int), mem)
+		var (
+			x *fluxarray.Int
+
+			err error
+		)
+		if lvr != nil {
+			x, err = fluxarray.IntDivLConst((*lvr).Int(), r.Arr().(*fluxarray.Int), mem)
+		} else if rvr != nil {
+			x, err = fluxarray.IntDivRConst(l.Arr().(*fluxarray.Int), (*rvr).Int(), mem)
+		} else {
+			x, err = fluxarray.IntDiv(l.Arr().(*fluxarray.Int), r.Arr().(*fluxarray.Int), mem)
+		}
+
 		if err != nil {
 			return nil, err
 		}
@@ -142,7 +330,19 @@ func vectorDiv(l, r Vector, mem memory.Allocator) (Value, error) {
 
 	case semantic.UInt:
 
-		x, err := fluxarray.UintDiv(l.Arr().(*fluxarray.Uint), r.Arr().(*fluxarray.Uint), mem)
+		var (
+			x *fluxarray.Uint
+
+			err error
+		)
+		if lvr != nil {
+			x, err = fluxarray.UintDivLConst((*lvr).UInt(), r.Arr().(*fluxarray.Uint), mem)
+		} else if rvr != nil {
+			x, err = fluxarray.UintDivRConst(l.Arr().(*fluxarray.Uint), (*rvr).UInt(), mem)
+		} else {
+			x, err = fluxarray.UintDiv(l.Arr().(*fluxarray.Uint), r.Arr().(*fluxarray.Uint), mem)
+		}
+
 		if err != nil {
 			return nil, err
 		}
@@ -151,7 +351,19 @@ func vectorDiv(l, r Vector, mem memory.Allocator) (Value, error) {
 
 	case semantic.Float:
 
-		x, err := fluxarray.FloatDiv(l.Arr().(*fluxarray.Float), r.Arr().(*fluxarray.Float), mem)
+		var (
+			x *fluxarray.Float
+
+			err error
+		)
+		if lvr != nil {
+			x, err = fluxarray.FloatDivLConst((*lvr).Float(), r.Arr().(*fluxarray.Float), mem)
+		} else if rvr != nil {
+			x, err = fluxarray.FloatDivRConst(l.Arr().(*fluxarray.Float), (*rvr).Float(), mem)
+		} else {
+			x, err = fluxarray.FloatDiv(l.Arr().(*fluxarray.Float), r.Arr().(*fluxarray.Float), mem)
+		}
+
 		if err != nil {
 			return nil, err
 		}
@@ -164,11 +376,37 @@ func vectorDiv(l, r Vector, mem memory.Allocator) (Value, error) {
 }
 
 func vectorMod(l, r Vector, mem memory.Allocator) (Value, error) {
+	var lvr, rvr *Value
+	if vr, ok := l.(*VectorRepeatValue); ok {
+		lvr = &vr.val
+	}
+	if vr, ok := r.(*VectorRepeatValue); ok {
+		rvr = &vr.val
+	}
+
+	if lvr != nil && rvr != nil {
+		// XXX: we can handle this case here if we are willing to plumb the
+		// OperatorKind through here so we can do the lookup for the row-based version of this op.
+		panic("got 2 VectorRepeatValue; 'const folding' should be done earlier, in the function lookup")
+	}
+
 	switch l.ElementType().Nature() {
 
 	case semantic.Int:
 
-		x, err := fluxarray.IntMod(l.Arr().(*fluxarray.Int), r.Arr().(*fluxarray.Int), mem)
+		var (
+			x *fluxarray.Int
+
+			err error
+		)
+		if lvr != nil {
+			x, err = fluxarray.IntModLConst((*lvr).Int(), r.Arr().(*fluxarray.Int), mem)
+		} else if rvr != nil {
+			x, err = fluxarray.IntModRConst(l.Arr().(*fluxarray.Int), (*rvr).Int(), mem)
+		} else {
+			x, err = fluxarray.IntMod(l.Arr().(*fluxarray.Int), r.Arr().(*fluxarray.Int), mem)
+		}
+
 		if err != nil {
 			return nil, err
 		}
@@ -177,7 +415,19 @@ func vectorMod(l, r Vector, mem memory.Allocator) (Value, error) {
 
 	case semantic.UInt:
 
-		x, err := fluxarray.UintMod(l.Arr().(*fluxarray.Uint), r.Arr().(*fluxarray.Uint), mem)
+		var (
+			x *fluxarray.Uint
+
+			err error
+		)
+		if lvr != nil {
+			x, err = fluxarray.UintModLConst((*lvr).UInt(), r.Arr().(*fluxarray.Uint), mem)
+		} else if rvr != nil {
+			x, err = fluxarray.UintModRConst(l.Arr().(*fluxarray.Uint), (*rvr).UInt(), mem)
+		} else {
+			x, err = fluxarray.UintMod(l.Arr().(*fluxarray.Uint), r.Arr().(*fluxarray.Uint), mem)
+		}
+
 		if err != nil {
 			return nil, err
 		}
@@ -186,7 +436,19 @@ func vectorMod(l, r Vector, mem memory.Allocator) (Value, error) {
 
 	case semantic.Float:
 
-		x, err := fluxarray.FloatMod(l.Arr().(*fluxarray.Float), r.Arr().(*fluxarray.Float), mem)
+		var (
+			x *fluxarray.Float
+
+			err error
+		)
+		if lvr != nil {
+			x, err = fluxarray.FloatModLConst((*lvr).Float(), r.Arr().(*fluxarray.Float), mem)
+		} else if rvr != nil {
+			x, err = fluxarray.FloatModRConst(l.Arr().(*fluxarray.Float), (*rvr).Float(), mem)
+		} else {
+			x, err = fluxarray.FloatMod(l.Arr().(*fluxarray.Float), r.Arr().(*fluxarray.Float), mem)
+		}
+
 		if err != nil {
 			return nil, err
 		}
@@ -199,11 +461,37 @@ func vectorMod(l, r Vector, mem memory.Allocator) (Value, error) {
 }
 
 func vectorPow(l, r Vector, mem memory.Allocator) (Value, error) {
+	var lvr, rvr *Value
+	if vr, ok := l.(*VectorRepeatValue); ok {
+		lvr = &vr.val
+	}
+	if vr, ok := r.(*VectorRepeatValue); ok {
+		rvr = &vr.val
+	}
+
+	if lvr != nil && rvr != nil {
+		// XXX: we can handle this case here if we are willing to plumb the
+		// OperatorKind through here so we can do the lookup for the row-based version of this op.
+		panic("got 2 VectorRepeatValue; 'const folding' should be done earlier, in the function lookup")
+	}
+
 	switch l.ElementType().Nature() {
 
 	case semantic.Int:
 
-		x, err := fluxarray.IntPow(l.Arr().(*fluxarray.Int), r.Arr().(*fluxarray.Int), mem)
+		var (
+			x *fluxarray.Float
+
+			err error
+		)
+		if lvr != nil {
+			x, err = fluxarray.IntPowLConst((*lvr).Int(), r.Arr().(*fluxarray.Int), mem)
+		} else if rvr != nil {
+			x, err = fluxarray.IntPowRConst(l.Arr().(*fluxarray.Int), (*rvr).Int(), mem)
+		} else {
+			x, err = fluxarray.IntPow(l.Arr().(*fluxarray.Int), r.Arr().(*fluxarray.Int), mem)
+		}
+
 		if err != nil {
 			return nil, err
 		}
@@ -212,7 +500,19 @@ func vectorPow(l, r Vector, mem memory.Allocator) (Value, error) {
 
 	case semantic.UInt:
 
-		x, err := fluxarray.UintPow(l.Arr().(*fluxarray.Uint), r.Arr().(*fluxarray.Uint), mem)
+		var (
+			x *fluxarray.Float
+
+			err error
+		)
+		if lvr != nil {
+			x, err = fluxarray.UintPowLConst((*lvr).UInt(), r.Arr().(*fluxarray.Uint), mem)
+		} else if rvr != nil {
+			x, err = fluxarray.UintPowRConst(l.Arr().(*fluxarray.Uint), (*rvr).UInt(), mem)
+		} else {
+			x, err = fluxarray.UintPow(l.Arr().(*fluxarray.Uint), r.Arr().(*fluxarray.Uint), mem)
+		}
+
 		if err != nil {
 			return nil, err
 		}
@@ -221,7 +521,19 @@ func vectorPow(l, r Vector, mem memory.Allocator) (Value, error) {
 
 	case semantic.Float:
 
-		x, err := fluxarray.FloatPow(l.Arr().(*fluxarray.Float), r.Arr().(*fluxarray.Float), mem)
+		var (
+			x *fluxarray.Float
+
+			err error
+		)
+		if lvr != nil {
+			x, err = fluxarray.FloatPowLConst((*lvr).Float(), r.Arr().(*fluxarray.Float), mem)
+		} else if rvr != nil {
+			x, err = fluxarray.FloatPowRConst(l.Arr().(*fluxarray.Float), (*rvr).Float(), mem)
+		} else {
+			x, err = fluxarray.FloatPow(l.Arr().(*fluxarray.Float), r.Arr().(*fluxarray.Float), mem)
+		}
+
 		if err != nil {
 			return nil, err
 		}

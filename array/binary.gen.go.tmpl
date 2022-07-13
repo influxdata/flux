@@ -8,7 +8,7 @@ import (
 	"github.com/influxdata/flux/internal/errors"
 )
 
-{{range $index, $op := .}}
+{{range $index, $op := .Ops}}
 {{range $index, $type := .Types}}
 
 {{if eq $op.Op "^"}}
@@ -18,7 +18,6 @@ func {{$type}}{{$op.Name}}(l, r *{{$type}}, mem memory.Allocator) (*Float, error
 	if n != r.Len() {
 		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
 	}
-
 
 	b := NewFloatBuilder(mem)
 	b.Resize(n)
@@ -34,15 +33,47 @@ func {{$type}}{{$op.Name}}(l, r *{{$type}}, mem memory.Allocator) (*Float, error
 	return a, nil
 }
 
+func {{$type}}{{$op.Name}}LConst(l {{index $.TypeMap $type}}, r *{{$type}}, mem memory.Allocator) (*Float, error) {
+	n := r.Len()
+	b := NewFloatBuilder(mem)
+	b.Resize(n)
+	lf := float64(l)
+	for i := 0; i < n; i++ {
+		if r.IsValid(i) {
+			b.Append(math.Pow(lf, float64(r.Value(i))))
+		} else {
+			b.AppendNull()
+		}
+	}
+    a := b.NewFloatArray()
+    b.Release()
+	return a, nil
+}
+
+func {{$type}}{{$op.Name}}RConst(l *{{$type}}, r {{index $.TypeMap $type}}, mem memory.Allocator) (*Float, error) {
+	n := l.Len()
+	b := NewFloatBuilder(mem)
+	b.Resize(n)
+	rf := float64(r)
+	for i := 0; i < n; i++ {
+		if l.IsValid(i) {
+			b.Append(math.Pow(float64(l.Value(i)), rf))
+		} else {
+			b.AppendNull()
+		}
+	}
+    a := b.NewFloatArray()
+    b.Release()
+	return a, nil
+}
+
 {{else}}
 
-
-func {{$type}}{{$op.Name}}(l, r *{{$type}}, mem memory.Allocator) (*{{$type}}, error) { n := l.Len()
+func {{$type}}{{$op.Name}}(l, r *{{$type}}, mem memory.Allocator) (*{{$type}}, error) {
+	n := l.Len()
 	if n != r.Len() {
 		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
 	}
-
-
 	b := New{{$type}}Builder(mem)
 	b.Resize(n)
 	for i := 0; i < n; i++ {
@@ -65,6 +96,53 @@ func {{$type}}{{$op.Name}}(l, r *{{$type}}, mem memory.Allocator) (*{{$type}}, e
 	return a, nil
 }
 
+func {{$type}}{{$op.Name}}LConst(l {{index $.TypeMap $type}}, r *{{$type}}, mem memory.Allocator) (*{{$type}}, error) {
+	n := r.Len()
+	b := New{{$type}}Builder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+		if r.IsValid(i) {
+            {{if and (eq $op.Op "%") (eq $type "Float")}}
+
+			b.Append(math.Mod(l, r.Value(i)))
+
+            {{else}}
+
+			b.Append(l {{$op.Op}} r.Value(i))
+
+            {{end}}
+		} else {
+			b.AppendNull()
+		}
+	}
+    a := b.New{{$type}}Array()
+    b.Release()
+	return a, nil
+}
+
+func {{$type}}{{$op.Name}}RConst(l *{{$type}}, r {{index $.TypeMap $type}}, mem memory.Allocator) (*{{$type}}, error) {
+	n := l.Len()
+	b := New{{$type}}Builder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+		if l.IsValid(i) {
+            {{if and (eq $op.Op "%") (eq $type "Float")}}
+
+			b.Append(math.Mod(l.Value(i), r))
+
+            {{else}}
+
+			b.Append(l.Value(i) {{$op.Op}} r)
+
+            {{end}}
+		} else {
+			b.AppendNull()
+		}
+	}
+    a := b.New{{$type}}Array()
+    b.Release()
+	return a, nil
+}
 {{end}}
 
 {{end}}

@@ -457,7 +457,6 @@ func (e *binaryVectorEvaluator) Eval(ctx context.Context, scope Scope) (values.V
 		return nil, err
 	}
 	defer r.Release()
-
 	mem := memory.GetAllocator(ctx)
 
 	if mem == nil {
@@ -465,6 +464,24 @@ func (e *binaryVectorEvaluator) Eval(ctx context.Context, scope Scope) (values.V
 	}
 
 	return e.f(l, r, mem)
+}
+
+type constVectorEvaluator struct {
+	t semantic.MonoType
+	v Evaluator
+}
+
+func (e *constVectorEvaluator) Type() semantic.MonoType {
+	return e.t
+}
+
+func (e *constVectorEvaluator) Eval(ctx context.Context, scope Scope) (values.Value, error) {
+	v, err := eval(ctx, e.v, scope)
+	if err != nil {
+		return nil, err
+	}
+	v.Retain()
+	return values.NewVectorRepeatValue(v), nil
 }
 
 type unaryEvaluator struct {

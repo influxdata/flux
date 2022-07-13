@@ -143,8 +143,39 @@ func TestVectorizedFns(t *testing.T) {
 			flagger: executetest.TestFlagger{},
 		},
 		{
-			name:         "no literals",
+			name:         "string literals",
 			fn:           `(r) => ({r with c: "count"})`,
+			vectorizable: true,
+			skipComp:     true,
+		},
+		{
+			name:         "int literals",
+			fn:           `(r) => ({r with c: 123})`,
+			vectorizable: true,
+			skipComp:     true,
+		},
+		{
+			name:         "float literals",
+			fn:           `(r) => ({r with c: 1.23})`,
+			vectorizable: true,
+			skipComp:     true,
+		},
+		{
+			name:         "time literals",
+			fn:           `(r) => ({r with c: 2022-07-07})`,
+			vectorizable: true,
+			skipComp:     true,
+		},
+		{
+			name:         "no duration literals",
+			fn:           `(r) => ({r with c: 1h})`,
+			vectorizable: false,
+			skipComp:     true,
+		},
+		{
+			// TODO: https://github.com/influxdata/flux/issues/4608
+			name:         "no equality operators",
+			fn:           `(r) => ({r with c: 2 > 1})`,
 			vectorizable: false,
 			skipComp:     true,
 		},
@@ -328,6 +359,7 @@ func TestVectorizedFns(t *testing.T) {
 				flagger = executetest.TestFlagger{}
 			}
 			flagger[fluxfeature.VectorizedMap().Key()] = true
+			flagger[fluxfeature.VectorizedConst().Key()] = true
 			ctx := context.Background()
 			ctx = feature.Inject(
 				ctx,

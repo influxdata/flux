@@ -173,6 +173,18 @@ func UnusedSymbolWarnings() BoolFlag {
 	return unusedSymbolWarnings
 }
 
+var vectorizedConst = feature.MakeBoolFlag(
+	"Vectorized Const",
+	"vectorizedConst",
+	"Owen Nelson",
+	false,
+)
+
+// VectorizedConst - Calls to map can be vectorized when select literals appear in the function
+func VectorizedConst() BoolFlag {
+	return vectorizedConst
+}
+
 // Inject will inject the Flagger into the context.
 func Inject(ctx context.Context, flagger Flagger) context.Context {
 	return feature.Inject(ctx, flagger)
@@ -192,6 +204,7 @@ var all = []Flag{
 	labelPolymorphism,
 	optimizeSetTransformation,
 	unusedSymbolWarnings,
+	vectorizedConst,
 }
 
 var byKey = map[string]Flag{
@@ -208,6 +221,7 @@ var byKey = map[string]Flag{
 	"labelPolymorphism":                labelPolymorphism,
 	"optimizeSetTransformation":        optimizeSetTransformation,
 	"unusedSymbolWarnings":             unusedSymbolWarnings,
+	"vectorizedConst":                  vectorizedConst,
 }
 
 // Flags returns all feature flags.
