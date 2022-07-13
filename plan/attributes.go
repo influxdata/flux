@@ -148,28 +148,33 @@ func CheckSuccessorsMustRequire(node *PhysicalPlanNode) error {
 					"successors to require it", node.ID(), attr.Key()),
 			}
 		}
+
 		for _, succ := range node.Successors() {
-			if reqd, n := requiredBySuccessor(attr, node, succ.(*PhysicalPlanNode)); !reqd {
-				if n != nil {
-					return &flux.Error{
-						Code: codes.Internal,
-						Msg: fmt.Sprintf("plan node %q has attribute %q that must be required by successors, "+
-							"but it is not required or propagated by successor %q",
-							node.ID(), attr.Key(), n.ID(),
-						),
-					}
-				}
+			reqd, n := requiredBySuccessor(attr, node, succ.(*PhysicalPlanNode))
+			if reqd {
+				continue
+			}
+
+			if n != nil {
 				return &flux.Error{
 					Code: codes.Internal,
 					Msg: fmt.Sprintf("plan node %q has attribute %q that must be required by successors, "+
-						"but no successors require it",
-						node.ID(), attr.Key(),
+						"but it is not required or propagated by successor %q",
+						node.ID(), attr.Key(), n.ID(),
 					),
 				}
 			}
-		}
 
+			return &flux.Error{
+				Code: codes.Internal,
+				Msg: fmt.Sprintf("plan node %q has attribute %q that must be required by successors, "+
+					"but no successors require it",
+					node.ID(), attr.Key(),
+				),
+			}
+		}
 	}
+
 	return nil
 }
 
