@@ -21,6 +21,38 @@ func CreatePhysicalMockNode(id string) *plan.PhysicalPlanNode {
 // unit testing.
 type MockProcedureSpec struct {
 	plan.DefaultCost
+	OutputAttributesFn     func() plan.PhysicalAttributes
+	PassThroughAttributeFn func(attrKey string) bool
+	RequiredAttributesFn   func() []plan.PhysicalAttributes
+	PlanDetailsFn          func() string
+}
+
+func (s MockProcedureSpec) PlanDetails() string {
+	if s.PlanDetailsFn != nil {
+		return s.PlanDetailsFn()
+	}
+	return ""
+}
+
+func (s MockProcedureSpec) OutputAttributes() plan.PhysicalAttributes {
+	if s.OutputAttributesFn != nil {
+		return s.OutputAttributesFn()
+	}
+	return nil
+}
+
+func (s MockProcedureSpec) PassThroughAttribute(attrKey string) bool {
+	if s.PassThroughAttributeFn != nil {
+		return s.PassThroughAttributeFn(attrKey)
+	}
+	return false
+}
+
+func (s MockProcedureSpec) RequiredAttributes() []plan.PhysicalAttributes {
+	if s.RequiredAttributesFn != nil {
+		return s.RequiredAttributesFn()
+	}
+	return nil
 }
 
 func (MockProcedureSpec) Kind() plan.ProcedureKind {

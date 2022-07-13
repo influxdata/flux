@@ -102,6 +102,14 @@ type GroupProcedureSpec struct {
 	GroupKeys []string
 }
 
+func (s *GroupProcedureSpec) PassThroughAttribute(attrKey string) bool {
+	switch attrKey {
+	case plan.ParallelRunKey:
+		return true
+	}
+	return false
+}
+
 func newGroupProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
 	spec, ok := qs.(*GroupOpSpec)
 	if !ok {

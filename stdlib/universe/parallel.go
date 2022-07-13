@@ -20,6 +20,21 @@ const (
 
 type PartitionMergeProcedureSpec struct {
 	plan.DefaultCost
+	Factor int
+}
+
+func (o *PartitionMergeProcedureSpec) OutputAttributes() plan.PhysicalAttributes {
+	return plan.PhysicalAttributes{
+		plan.ParallelMergeKey: plan.ParallelMergeAttribute{Factor: o.Factor},
+	}
+}
+
+func (o *PartitionMergeProcedureSpec) RequiredAttributes() []plan.PhysicalAttributes {
+	return []plan.PhysicalAttributes{
+		{
+			plan.ParallelRunKey: plan.ParallelRunAttribute{Factor: o.Factor},
+		},
+	}
 }
 
 func (o *PartitionMergeProcedureSpec) Kind() plan.ProcedureKind {
@@ -29,6 +44,7 @@ func (o *PartitionMergeProcedureSpec) Kind() plan.ProcedureKind {
 func (o *PartitionMergeProcedureSpec) Copy() plan.ProcedureSpec {
 	return &PartitionMergeProcedureSpec{
 		DefaultCost: o.DefaultCost,
+		Factor:      o.Factor,
 	}
 }
 

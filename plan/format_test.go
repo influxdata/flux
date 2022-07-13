@@ -54,17 +54,29 @@ func TestFormatted(t *testing.T) {
 `,
 		},
 		{
-			// This plan indicates merging happens in a filter. That would
-			// never make sense, but we want to see the formatter combine spec
+			// Check that we see the formatter combine spec
 			// details with attribute details.
 			name: "parallel merge attribute",
 			plan: &plantest.PlanSpec{
 				Nodes: []plan.Node{
-					plantest.CreatePhysicalNode("source", spec.MockProcedureSpec{},
-						plantest.WithOutputAttr(plan.ParallelRunKey, plan.ParallelRunAttribute{Factor: 8})),
-					plantest.CreatePhysicalNode("filter", filterSpec,
-						plantest.WithRequiredAttr(plan.ParallelRunKey, plan.ParallelRunAttribute{Factor: 8}),
-						plantest.WithOutputAttr(plan.ParallelMergeKey, plan.ParallelMergeAttribute{Factor: 8})),
+					plantest.CreatePhysicalNode("source", spec.MockProcedureSpec{
+						OutputAttributesFn: func() plan.PhysicalAttributes {
+							return plan.PhysicalAttributes{plan.ParallelRunKey: plan.ParallelRunAttribute{Factor: 8}}
+						},
+					}),
+					plantest.CreatePhysicalNode("merge", spec.MockProcedureSpec{
+						RequiredAttributesFn: func() []plan.PhysicalAttributes {
+							return []plan.PhysicalAttributes{
+								{plan.ParallelRunKey: plan.ParallelRunAttribute{Factor: 8}},
+							}
+						},
+						OutputAttributesFn: func() plan.PhysicalAttributes {
+							return plan.PhysicalAttributes{plan.ParallelMergeKey: plan.ParallelMergeAttribute{Factor: 8}}
+						},
+						PlanDetailsFn: func() string {
+							return "*** spec details ***"
+						},
+					}),
 				},
 				Edges: [][2]int{
 					{0, 1},
@@ -72,11 +84,11 @@ func TestFormatted(t *testing.T) {
 			},
 			want: `digraph {
   source
-  filter
-  // r._value > 5.000000
+  merge
+  // *** spec details ***
   // ParallelMergeFactor: 8
 
-  source -> filter
+  source -> merge
 }
 `,
 		},

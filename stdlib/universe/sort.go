@@ -100,6 +100,15 @@ func (s *SortProcedureSpec) Copy() plan.ProcedureSpec {
 	return &ns
 }
 
+func (s *SortProcedureSpec) OutputAttributes() plan.PhysicalAttributes {
+	return plan.PhysicalAttributes{
+		plan.CollationKey: &plan.CollationAttr{
+			Columns: s.Columns,
+			Desc:    s.Desc,
+		},
+	}
+}
+
 // TriggerSpec implements plan.TriggerAwareProcedureSpec
 func (s *SortProcedureSpec) TriggerSpec() plan.TriggerSpec {
 	return plan.NarrowTransformationTriggerSpec{}

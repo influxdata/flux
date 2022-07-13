@@ -62,7 +62,7 @@ func (f formatter) Format(fs fmt.State, c rune) {
 			}
 
 			if ppn, ok := pn.(*PhysicalPlanNode); ok {
-				for _, attr := range ppn.OutputAttrs {
+				for _, attr := range ppn.outputAttrs() {
 					if d, ok := attr.(Detailer); ok {
 						details += d.PlanDetails() + "\n"
 					}

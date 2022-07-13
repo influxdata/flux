@@ -204,24 +204,34 @@ func (testCases *SourceUrlValidationTestCases) Run(t *testing.T, fn execute.Crea
 
 const ParallelFromTestKind = "parallel-from-test"
 
-// ParalFromProcedureSpec is a procedure spec AND an execution Node similar to
+// ParallelFromProcedureSpec is a procedure spec AND an execution Node similar to
 // FromProcedureSpec. It differs in that it is aware of the possibility for
 // parallel execution.
 type ParallelFromProcedureSpec struct {
 	execute.ExecutionNode
-	data []*ParallelTable
-	ts   []execute.Transformation
-	a    execute.Administration
-	id   execute.DatasetID
+	factor int
+	data   []*ParallelTable
+	ts     []execute.Transformation
+	a      execute.Administration
+	id     execute.DatasetID
 }
 
-// NewFromProcedureSpec specifies a from-test procedure with source data
-func NewParallelFromProcedureSpec(data []*ParallelTable) *ParallelFromProcedureSpec {
+// NewParallelFromProcedureSpec specifies a from-test procedure with source data
+func NewParallelFromProcedureSpec(factor int, data []*ParallelTable) *ParallelFromProcedureSpec {
 	// Normalize data before anything can read it
 	for _, tbl := range data {
 		tbl.Normalize()
 	}
-	return &ParallelFromProcedureSpec{data: data}
+	return &ParallelFromProcedureSpec{factor: factor, data: data}
+}
+
+func (src *ParallelFromProcedureSpec) OutputAttributes() plan.PhysicalAttributes {
+	if src.factor > 1 {
+		return plan.PhysicalAttributes{
+			plan.ParallelRunKey: plan.ParallelRunAttribute{Factor: src.factor},
+		}
+	}
+	return nil
 }
 
 func (src *ParallelFromProcedureSpec) Kind() plan.ProcedureKind {

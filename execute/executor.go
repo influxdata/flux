@@ -186,13 +186,13 @@ func (v *createExecutionNodeVisitor) Visit(node plan.Node) error {
 	//    predecessors. These copies merge into the node.
 
 	copies := 1
-	if attr, ok := ppn.OutputAttrs[plan.ParallelRunKey]; ok {
+	if attr := plan.GetOutputAttribute(ppn, plan.ParallelRunKey); attr != nil {
 		copies = attr.(plan.ParallelRunAttribute).Factor
 	}
 
 	isParallelMerge := false
 	predCopies := 1
-	if attr, ok := ppn.OutputAttrs[plan.ParallelMergeKey]; ok {
+	if attr := plan.GetOutputAttribute(ppn, plan.ParallelMergeKey); attr != nil {
 		isParallelMerge = true
 		predCopies = attr.(plan.ParallelMergeAttribute).Factor
 	}
@@ -397,7 +397,7 @@ func (es *executionState) chooseDefaultResources(ctx context.Context, p *plan.Sp
 				if len(node.Predecessors()) > 0 {
 					addend := 1
 					ppn := node.(*plan.PhysicalPlanNode)
-					if attr, ok := ppn.OutputAttrs[plan.ParallelRunKey]; ok {
+					if attr := plan.GetOutputAttribute(ppn, plan.ParallelRunKey); attr != nil {
 						addend = attr.(plan.ParallelRunAttribute).Factor
 					}
 					concurrencyQuota += addend

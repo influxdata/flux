@@ -97,31 +97,16 @@ func CompareLogicalPlanNodes(p, q plan.Node) error {
 
 // ComparePhysicalPlanNodes is a comparator function for PhysicalPlanNodes
 func ComparePhysicalPlanNodes(p, q plan.Node) error {
-	var pp, qq *plan.PhysicalPlanNode
-	var ok bool
-
-	if pp, ok = p.(*plan.PhysicalPlanNode); !ok {
+	if _, ok := p.(*plan.PhysicalPlanNode); !ok {
 		return fmt.Errorf("expected %s to be a PhysicalPlanNode", p.ID())
 	}
 
-	if qq, ok = q.(*plan.PhysicalPlanNode); !ok {
+	if _, ok := q.(*plan.PhysicalPlanNode); !ok {
 		return fmt.Errorf("expected %s to be a PhysicalPlanNode", q.ID())
 	}
 
 	if err := cmpPlanNode(p, q); err != nil {
 		return err
-	}
-
-	// Both nodes must consume the same required attributes
-	if !cmp.Equal(pp.RequiredAttrs, qq.RequiredAttrs) {
-		return fmt.Errorf("required attributes not equal -want(%s)/+got(%s) %s",
-			pp.ID(), qq.ID(), cmp.Diff(pp.RequiredAttrs, qq.RequiredAttrs))
-	}
-
-	// Both nodes must produce the same physical attributes
-	if !cmp.Equal(pp.OutputAttrs, qq.OutputAttrs) {
-		return fmt.Errorf("output attributes not equal -want(%s)/+got(%s) %s",
-			pp.ID(), qq.ID(), cmp.Diff(pp.OutputAttrs, qq.OutputAttrs))
 	}
 
 	return nil
