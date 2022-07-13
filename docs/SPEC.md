@@ -1952,7 +1952,7 @@ from(bucket: "telegraf/autogen")
 
 ##### Sum
 
-Stddev is an aggregate operation.
+Sum is an aggregate operation.
 For each aggregated column, it outputs the sum of the non null record.
 The output column type is the same as the input column type.
 
