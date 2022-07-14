@@ -18,10 +18,9 @@ import (
 )
 
 const (
-	DiffKind         = "experimental.diff"
-	DefaultEpsilon   = 1e-6
-	DefaultNaNsEqual = false
-	DiffColumn       = "_diff"
+	DiffKind       = "experimental.diff"
+	DefaultEpsilon = 1e-6
+	DiffColumn     = "_diff"
 )
 
 func init() {
@@ -53,46 +52,25 @@ func createDiffOpSpec(args flux.Arguments, a *flux.Administration) (flux.Operati
 	}
 	a.AddParent(p)
 
-	epsilon, ok, err := args.GetFloat("epsilon")
-	if err != nil {
-		return nil, err
-	} else if !ok {
-		epsilon = DefaultEpsilon
-	}
-	nansEqual, ok, err := args.GetBool("nansEqual")
-	if err != nil {
-		return nil, err
-	} else if !ok {
-		nansEqual = DefaultNaNsEqual
-	}
-
-	return &DiffOpSpec{Epsilon: epsilon, NaNsEqual: nansEqual}, nil
+	return &DiffOpSpec{}, nil
 }
 
-type DiffOpSpec struct {
-	Epsilon   float64 `json:"epsilon"`
-	NaNsEqual bool    `json:"nansEqual,omitempty"`
-}
+type DiffOpSpec struct{}
 
 func (s *DiffOpSpec) Kind() flux.OperationKind {
 	return DiffKind
 }
 
 func newDiffProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
-	spec, ok := qs.(*DiffOpSpec)
+	_, ok := qs.(*DiffOpSpec)
 	if !ok {
 		return nil, errors.Newf(codes.Internal, "invalid spec type %T", qs)
 	}
-	return &DiffProcedureSpec{
-		Epsilon:   spec.Epsilon,
-		NaNsEqual: spec.NaNsEqual,
-	}, nil
+	return &DiffProcedureSpec{}, nil
 }
 
 type DiffProcedureSpec struct {
 	plan.DefaultCost
-	Epsilon   float64
-	NaNsEqual bool
 }
 
 func (s *DiffProcedureSpec) Kind() plan.ProcedureKind {
@@ -127,8 +105,6 @@ type diffTransformation struct {
 
 	inputs        [2]*execute.RandomAccessGroupLookup
 	wantID, gotID execute.DatasetID
-	epsilon       float64
-	nansEqual     bool
 }
 
 func newDiffTransformation(id execute.DatasetID, spec *DiffProcedureSpec, wantID, gotID execute.DatasetID, mem memory.Allocator) (execute.Transformation, execute.Dataset, error) {
@@ -139,10 +115,8 @@ func newDiffTransformation(id execute.DatasetID, spec *DiffProcedureSpec, wantID
 			execute.NewRandomAccessGroupLookup(),
 			execute.NewRandomAccessGroupLookup(),
 		},
-		wantID:    wantID,
-		gotID:     gotID,
-		epsilon:   spec.Epsilon,
-		nansEqual: spec.NaNsEqual,
+		wantID: wantID,
+		gotID:  gotID,
 	}
 	return execute.NewTransformationFromTransport(tr), tr.d, nil
 }
@@ -341,11 +315,11 @@ func (d *diffSchema) equal(t *diffTransformation, i, j int) bool {
 		switch col.Type {
 		case flux.TFloat:
 			want, got := wantCol.(*array.Float).Value(i), gotCol.(*array.Float).Value(j)
-			if t.nansEqual && math.IsNaN(want) && math.IsNaN(got) {
+			if math.IsNaN(want) && math.IsNaN(got) {
 				// treat NaNs as equal so go to next column
 				continue
 			}
-			if math.Abs(want-got) > t.epsilon {
+			if math.Abs(want-got) > DefaultEpsilon {
 				return false
 			}
 		case flux.TInt:

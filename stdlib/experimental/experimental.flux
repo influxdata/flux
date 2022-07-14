@@ -1335,8 +1335,6 @@ builtin catch : (fn: () => A) => string
 // ## Parameters
 // - want: Input stream for the `-` side of the diff.
 // - got: Input stream for the `+` side of the diff.
-// - epsilon: Specify how far apart two float values can be, but still be considered equal. Default is `0.000000001`.
-// - nansEqual: Consider `NaN` float values as equal. Default is `false`.
 //
 // ## Examples
 //
@@ -1365,6 +1363,5 @@ builtin catch : (fn: () => A) => string
 //
 // ## Metadata
 // introduced: NEXT
-// tags: tests
 //
-builtin diff : (<-got: stream[A], want: stream[A], ?epsilon: float, ?nansEqual: bool) => stream[{A with _diff: string}]
+builtin diff : (<-got: stream[A], want: stream[A]) => stream[{A with _diff: string}]
