@@ -18,7 +18,7 @@ import "array"
 // ### Print a value extracted from a stream of tables
 // ```
 // import "contrib/anaisdg/print"
-// import "import "sampledata""
+// import "sampledata"
 //
 // value = (sampledata.float() |> findRecord(fn: (key) => true,idx: 0))._value
 //
