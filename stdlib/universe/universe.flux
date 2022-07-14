@@ -3170,6 +3170,17 @@ builtin duration : (v: A) => duration
 //
 builtin float : (v: A) => float
 
+// _vectorizedFloat converts a vector of values to a vector of floats.
+//
+// ## Parameters
+// - v: Vector to convert.
+//
+// ## Metadata
+// introduced: 0.175.0
+// tags: type-conversions
+//
+builtin _vectorizedFloat : (v: stream[A]) => v[float]
+
 // int converts a value to an integer type.
 //
 // `int()` behavior depends on the input data type:

@@ -7,9 +7,11 @@ import (
 	"time"
 	"unicode/utf8"
 
+	"github.com/influxdata/flux/array"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/internal/parser"
+	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
@@ -24,17 +26,19 @@ func init() {
 	runtime.RegisterPackageValue("universe", "time", timeConv)
 	runtime.RegisterPackageValue("universe", "duration", durationConv)
 	runtime.RegisterPackageValue("universe", "bytes", byteConv)
+	runtime.RegisterPackageValue("universe", "_vectorizedFloat", vectorizedFloatConv)
 }
 
 var (
-	convBoolType     = runtime.MustLookupBuiltinType("universe", "bool")
-	convIntType      = runtime.MustLookupBuiltinType("universe", "int")
-	convUintType     = runtime.MustLookupBuiltinType("universe", "uint")
-	convFloatType    = runtime.MustLookupBuiltinType("universe", "float")
-	convStringType   = runtime.MustLookupBuiltinType("universe", "string")
-	convTimeType     = runtime.MustLookupBuiltinType("universe", "time")
-	convDurationType = runtime.MustLookupBuiltinType("universe", "duration")
-	convBytesType    = runtime.MustLookupBuiltinType("universe", "bytes")
+	convBoolType        = runtime.MustLookupBuiltinType("universe", "bool")
+	convIntType         = runtime.MustLookupBuiltinType("universe", "int")
+	convUintType        = runtime.MustLookupBuiltinType("universe", "uint")
+	convFloatType       = runtime.MustLookupBuiltinType("universe", "float")
+	convStringType      = runtime.MustLookupBuiltinType("universe", "string")
+	convTimeType        = runtime.MustLookupBuiltinType("universe", "time")
+	convDurationType    = runtime.MustLookupBuiltinType("universe", "duration")
+	convBytesType       = runtime.MustLookupBuiltinType("universe", "bytes")
+	convVectorFloatType = runtime.MustLookupBuiltinType("universe", "_vectorizedFloat")
 )
 
 const (
@@ -348,6 +352,154 @@ var byteConv = values.NewFunction(
 		default:
 			return nil, errors.Newf(codes.Invalid, "cannot convert %v to bytes", v.Type())
 		}
+	},
+	false,
+)
+
+var vectorizedFloatConv = values.NewFunction(
+	"_vectorizedFloat",
+	convVectorFloatType,
+	func(ctx context.Context, args values.Object) (values.Value, error) {
+		v, ok := args.Get(conversionArg)
+		if !ok {
+			return nil, errMissingArg
+		}
+		mem := memory.GetAllocator(ctx)
+		conv := array.NewFloatBuilder(mem)
+
+		switch v.Type().Nature() {
+		case semantic.Array:
+			eType, err := v.Type().ElemType()
+			if err != nil {
+				return nil, err
+			}
+			arr := v.Array()
+			size := arr.Len()
+
+			switch eType.Nature() {
+			case semantic.String:
+				conv.Resize(size)
+				for i := 0; i < size; i++ {
+					v := arr.Get(i)
+
+					if v.IsNull() {
+						conv.AppendNull()
+						continue
+					}
+
+					val, err := strconv.ParseFloat(v.Str(), 64)
+					if err != nil {
+						return nil, errors.Newf(codes.Invalid, "cannot convert string %q to float due to invalid syntax", v.Str())
+					}
+					conv.Append(val)
+				}
+			case semantic.Int:
+				conv.Resize(size)
+				for i := 0; i < size; i++ {
+					if arr.Get(i).IsNull() {
+						conv.AppendNull()
+					} else {
+						conv.Append(float64(arr.Get(i).Int()))
+					}
+				}
+			case semantic.UInt:
+				conv.Resize(size)
+				for i := 0; i < size; i++ {
+					if arr.Get(i).IsNull() {
+						conv.AppendNull()
+					} else {
+						conv.Append(float64(arr.Get(i).UInt()))
+					}
+				}
+			case semantic.Float:
+				conv.Resize(size)
+				for i := 0; i < size; i++ {
+					if arr.Get(i).IsNull() {
+						conv.AppendNull()
+					} else {
+						conv.Append(arr.Get(i).Float())
+					}
+				}
+			case semantic.Bool:
+				conv.Resize(size)
+				for i := 0; i < size; i++ {
+					if arr.Get(i).IsNull() {
+						conv.AppendNull()
+					} else if arr.Get(i).Bool() {
+						conv.Append(float64(1))
+					} else {
+						conv.Append(float64(0))
+					}
+				}
+			default:
+				return nil, errors.Newf(codes.Invalid, "cannot convert Array(%v) to Vector(Float)", eType.Nature())
+			}
+		case semantic.Vector:
+			eType, err := v.Type().ElemType()
+			if err != nil {
+				return nil, err
+			}
+			size := v.Vector().Arr().Len()
+			switch eType.Nature() {
+			case semantic.Float:
+				fa := v.Vector().Arr().(*array.Float)
+
+				return values.NewFloatVectorValue(fa), nil
+			case semantic.Int:
+				vec := v.Vector().Arr().(*array.Int)
+				conv.Resize(size)
+				for i := 0; i < size; i++ {
+					if vec.IsNull(i) {
+						conv.AppendNull()
+					} else {
+						conv.Append(float64(vec.Value(i)))
+
+					}
+				}
+			case semantic.String:
+				vec := v.Vector().Arr().(*array.String)
+				conv.Resize(size)
+				for i := 0; i < size; i++ {
+					if vec.IsNull(i) {
+						conv.AppendNull()
+						continue
+					}
+
+					val, err := strconv.ParseFloat(vec.Value(i), 64)
+					if err != nil {
+						return nil, errors.Newf(codes.Invalid, "cannot convert string %q to float due to invalid syntax", vec.Value(i))
+					}
+					conv.Append(val)
+				}
+			case semantic.UInt:
+				vec := v.Vector().Arr().(*array.Uint)
+				conv.Resize(size)
+				for i := 0; i < size; i++ {
+					if vec.IsNull(i) {
+						conv.AppendNull()
+					} else {
+						conv.Append(float64(vec.Value(i)))
+					}
+				}
+			case semantic.Bool:
+				vec := v.Vector().Arr().(*array.Boolean)
+				conv.Resize(size)
+				for i := 0; i < size; i++ {
+					if vec.IsNull(i) {
+						conv.AppendNull()
+					} else if vec.Value(i) {
+						conv.Append(float64(1))
+					} else {
+						conv.Append(float64(0))
+					}
+				}
+			default:
+				return nil, errors.Newf(codes.Invalid, "cannot convert Vector(%v) to Vector(Float)", eType.Nature())
+			}
+		default:
+			return nil, errors.Newf(codes.Invalid, "cannot convert %v to Vector(Float)", v.Type())
+		}
+		return values.NewFloatVectorValue(conv.NewFloatArray()), nil
 	},
 	false,
 )

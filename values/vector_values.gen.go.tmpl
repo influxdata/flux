@@ -40,7 +40,9 @@ func NewVectorFromElements(mem memory.Allocator, es ...interface{}) Vector {
 
 	vs := make([]Value, len(es))
 	for i, e := range es {
-		vs[i] = New(e)
+		if e != nil {
+			vs[i] = New(e)
+		}
 	}
 	return newVectorFromSlice(vs, typ, mem)
 }

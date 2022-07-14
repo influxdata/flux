@@ -6,8 +6,10 @@ import (
 	"math"
 	"testing"
 
+	"github.com/apache/arrow/go/v7/arrow/array"
 	"github.com/influxdata/flux/dependencies/dependenciestest"
 	"github.com/influxdata/flux/dependency"
+	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/values"
 )
 
@@ -363,6 +365,130 @@ func TestTypeconv_Bool(t *testing.T) {
 				want := values.NewBool(tc.want)
 				if !got.Equal(want) {
 					t.Errorf("Wanted: %s, got: %v", want, got)
+				}
+			} else {
+				if !got.IsNull() {
+					t.Errorf("Wanted: %v, got: %v", values.Null, got)
+				}
+			}
+		})
+	}
+}
+
+func TestTypeconv_VectorsToVectorizedFloat(t *testing.T) {
+	alloc := memory.NewResourceAllocator(nil)
+
+	testCases := []struct {
+		name      string
+		vSlice    []interface{}
+		want      []interface{}
+		wantNull  bool
+		expectErr error
+	}{
+		{
+			name: "vectoredFloat to vectoredFloat",
+			vSlice: []interface{}{
+				float64(4615.123),
+				float64(0.1),
+				nil,
+			},
+			want: []interface{}{
+				float64(4615.123),
+				float64(0.1),
+				nil,
+			},
+		},
+		{
+			name: "vectoredInt to vectoredFloat",
+			vSlice: []interface{}{
+				int64(123),
+				int64(0),
+				nil,
+			},
+			want: []interface{}{
+				float64(123.0),
+				float64(0.0),
+				nil,
+			},
+		},
+		{
+			name: "vectoredString to vectoredFloat",
+			vSlice: []interface{}{
+				"123.456",
+				"0.0",
+				"NaN",
+			},
+			want: []interface{}{
+				float64(123.456),
+				float64(0.0),
+				float64(math.NaN()),
+			},
+		},
+		{
+			name: "vectoredUint to vectoredFloat",
+			vSlice: []interface{}{
+				uint64(123),
+				uint64(0),
+				nil,
+			},
+			want: []interface{}{
+				float64(123),
+				float64(0),
+				nil,
+			},
+		},
+		{
+			name: "vectoredBool to vectoredFloat",
+			vSlice: []interface{}{
+				true,
+				false,
+				nil,
+			},
+			want: []interface{}{
+				float64(1),
+				float64(0),
+				nil,
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			var v values.Value
+			if tc.vSlice != nil {
+				v = values.NewVectorFromElements(alloc, tc.vSlice...)
+			}
+
+			myMap := map[string]values.Value{
+				"v": v,
+			}
+
+			args := values.NewObjectWithValues(myMap)
+			c := vectorizedFloatConv
+			ctx, deps := dependency.Inject(context.Background(), dependenciestest.Default())
+			defer deps.Finish()
+			gotVal, err := c.Call(memory.WithAllocator(ctx, alloc), args)
+			if err != nil {
+				if tc.expectErr == nil {
+					t.Errorf("unexpected error - want: <nil>, got: %s", err.Error())
+				} else if want, got := tc.expectErr.Error(), err.Error(); got != want {
+					t.Errorf("unexpected error - want: %s, got: %s", want, got)
+				}
+				return
+			}
+			got := gotVal.Vector()
+			if !tc.wantNull {
+				got := got.Arr().(*array.Float64)
+				want := values.NewVectorFromElements(alloc, tc.want...).Arr().(*array.Float64)
+
+				if got.Len() != want.Len() {
+					t.Errorf("Unexpected error want: count(%v), got: count(%v)", want.Len(), got.Len())
+				}
+
+				for i := 0; i < want.Len(); i++ {
+					if want.Value(i) != got.Value(i) && !(math.IsNaN(want.Value(i)) && math.IsNaN(got.Value(i))) {
+						t.Errorf("Wanted v[%v] => %v, got: %v", i, want.Value(i), got.Value(i))
+					}
 				}
 			} else {
 				if !got.IsNull() {
