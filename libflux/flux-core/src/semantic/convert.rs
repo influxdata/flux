@@ -329,8 +329,13 @@ impl<'a> Symbols<'a> {
     }
 
     fn lookup(&mut self, name: &str) -> Symbol {
-        self.lookup_option(name)
-            .unwrap_or_else(|| Symbol::from(name))
+        self.lookup_option(name).unwrap_or_else(|| {
+            // Use the same symbol for every unbound variable
+            self.local_labels
+                .entry(name.into())
+                .or_insert_with(|| Symbol::from(name))
+                .clone()
+        })
     }
 
     fn lookup_option(&mut self, name: &str) -> Option<Symbol> {
