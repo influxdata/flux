@@ -26,6 +26,38 @@ func And(l, r *Boolean, mem memory.Allocator) (*Boolean, error) {
 	return a, nil
 }
 
+func AndLConst(l bool, r *Boolean, mem memory.Allocator) (*Boolean, error) {
+	n := r.Len()
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+		if r.IsValid(i) {
+			b.Append(l && r.Value(i))
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func AndRConst(l *Boolean, r bool, mem memory.Allocator) (*Boolean, error) {
+	n := l.Len()
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+		if l.IsValid(i) {
+			b.Append(l.Value(i) && r)
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
 func Or(l, r *Boolean, mem memory.Allocator) (*Boolean, error) {
 	n := l.Len()
 	if n != r.Len() {
@@ -37,6 +69,38 @@ func Or(l, r *Boolean, mem memory.Allocator) (*Boolean, error) {
 	for i := 0; i < n; i++ {
 		if l.IsValid(i) && r.IsValid(i) {
 			b.Append(l.Value(i) || r.Value(i))
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func OrLConst(l bool, r *Boolean, mem memory.Allocator) (*Boolean, error) {
+	n := r.Len()
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+		if r.IsValid(i) {
+			b.Append(l || r.Value(i))
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func OrRConst(l *Boolean, r bool, mem memory.Allocator) (*Boolean, error) {
+	n := l.Len()
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+		if l.IsValid(i) {
+			b.Append(l.Value(i) || r)
 		} else {
 			b.AppendNull()
 		}

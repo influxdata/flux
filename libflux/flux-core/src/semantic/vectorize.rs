@@ -158,6 +158,14 @@ impl Expression {
                 wrap_vec_repeat(expr.clone())
             }
             Expression::Call(expr) => Expression::Call(Box::new(expr.vectorize(env)?)),
+            // FIXME: https://github.com/influxdata/flux/issues/4997
+            //  bool literals are not vectorized currently.
+            //  This match arm doesn't seem to be hit when `true`/`false` appear in the function body.
+            // expr @ Expression::Boolean(_)
+            //     if env.config.features.contains(&Feature::VectorizedConst) =>
+            // {
+            //     wrap_vec_repeat(expr.clone())
+            // }
             _ => {
                 return Err(located(
                     self.loc().clone(),

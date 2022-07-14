@@ -330,8 +330,10 @@ fn vectorize_with_construction_using_literal_int() -> anyhow::Result<()> {
     Ok(())
 }
 
+// FIXME: https://github.com/influxdata/flux/issues/4997
+//  bool literals are not vectorized currently. This test gives "undefined identifier true"
 #[test]
-#[ignore] // FIXME: "undefined identifier true"
+#[ignore]
 fn vectorize_with_construction_using_literal_bool() -> anyhow::Result<()> {
     let pkg = vectorize(r#"(r) => ({ r with a: true })"#)?;
 

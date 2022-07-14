@@ -86,3 +86,51 @@ testcase vec_const_kitchen_sink_column_types {
 
     testing.diff(want: want, got: got)
 }
+
+testcase vec_const_bools {
+    option testing.tags = [
+        // FIXME: https://github.com/influxdata/flux/issues/4997
+        //  bool literals are not vectorized currently
+        "skip",
+    ]
+
+    input = array.from(rows: [{a: false, b: false}, {a: false, b: true}, {a: true, b: true}])
+    want =
+        array.from(
+            rows: [
+                {
+                    a: false,
+                    a_and_true: false,
+                    a_or_true: true,
+                    a_and_false: false,
+                    a_or_false: false,
+                },
+                {
+                    a: false,
+                    a_and_true: false,
+                    a_or_true: true,
+                    a_and_false: false,
+                    a_or_false: false,
+                },
+                {
+                    a: true,
+                    a_and_true: true,
+                    a_or_true: true,
+                    a_and_false: false,
+                    a_or_false: true,
+                },
+            ],
+        )
+    got =
+        input
+            |> map(
+                fn: (r) =>
+                    ({r with a_and_true: r.a and true,
+                        a_or_true: r.a or true,
+                        a_and_false: r.a and false,
+                        a_or_false: r.a or false,
+                    }),
+            )
+
+    testing.diff(want: want, got: got)
+}

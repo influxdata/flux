@@ -350,7 +350,6 @@ func (e *logicalVectorEvaluator) Eval(ctx context.Context, scope Scope) (values.
 	} else if elemType := l.Vector().ElementType().Nature(); elemType != semantic.Bool {
 		return nil, errors.Newf(codes.Invalid, "cannot use operand of type %s with logical %s; expected boolean", elemType, e.operator)
 	}
-	lv := l.Vector().Arr().(*array.Boolean)
 
 	r, err := e.right.Eval(ctx, scope)
 	if err != nil {
@@ -362,26 +361,93 @@ func (e *logicalVectorEvaluator) Eval(ctx context.Context, scope Scope) (values.
 	} else if elemType := r.Vector().ElementType().Nature(); elemType != semantic.Bool {
 		return nil, errors.Newf(codes.Invalid, "cannot use operand of type %s with logical %s; expected boolean", elemType, e.operator)
 	}
-	rv := r.Vector().Arr().(*array.Boolean)
 
 	mem := memory.GetAllocator(ctx)
 
 	switch e.operator {
 	case ast.AndOperator:
-		res, err := array.And(lv, rv, mem)
-		if err != nil {
-			return nil, err
-		}
-		return values.NewVectorValue(res, semantic.BasicBool), nil
+		return vectorAnd(l.Vector(), r.Vector(), mem)
 	case ast.OrOperator:
-		res, err := array.Or(lv, rv, mem)
-		if err != nil {
-			return nil, err
-		}
-		return values.NewVectorValue(res, semantic.BasicBool), nil
+		return vectorOr(l.Vector(), r.Vector(), mem)
 	default:
 		panic(errors.Newf(codes.Internal, "unknown logical operator %v", e.operator))
 	}
+
+}
+
+func vectorAnd(l, r values.Vector, mem memory.Allocator) (values.Vector, error) {
+	var lvr, rvr *values.Value
+
+	if vr, ok := l.(*values.VectorRepeatValue); ok {
+		v := vr.Value()
+		lvr = &v
+	}
+	if vr, ok := r.(*values.VectorRepeatValue); ok {
+		v := vr.Value()
+		rvr = &v
+	}
+
+	if lvr != nil && rvr != nil {
+		a := (*lvr).Bool()
+		b := (*rvr).Bool()
+		values.NewVectorRepeatValue(values.NewBool(a && b))
+	} else if lvr != nil {
+		res, err := array.AndLConst((*lvr).Bool(), r.Arr().(*array.Boolean), mem)
+		if err != nil {
+			return nil, err
+		}
+		return values.NewVectorValue(res, semantic.BasicBool), nil
+	} else if rvr != nil {
+		res, err := array.AndRConst(l.Arr().(*array.Boolean), (*rvr).Bool(), mem)
+		if err != nil {
+			return nil, err
+		}
+		return values.NewVectorValue(res, semantic.BasicBool), nil
+	}
+
+	res, err := array.And(l.Arr().(*array.Boolean), r.Arr().(*array.Boolean), mem)
+	if err != nil {
+		return nil, err
+	}
+	return values.NewVectorValue(res, semantic.BasicBool), nil
+
+}
+
+func vectorOr(l, r values.Vector, mem memory.Allocator) (values.Vector, error) {
+	var lvr, rvr *values.Value
+
+	if vr, ok := l.(*values.VectorRepeatValue); ok {
+		v := vr.Value()
+		lvr = &v
+	}
+	if vr, ok := r.(*values.VectorRepeatValue); ok {
+		v := vr.Value()
+		rvr = &v
+	}
+
+	if lvr != nil && rvr != nil {
+		a := (*lvr).Bool()
+		b := (*rvr).Bool()
+		values.NewVectorRepeatValue(values.NewBool(a || b))
+	} else if lvr != nil {
+		res, err := array.OrLConst((*lvr).Bool(), r.Arr().(*array.Boolean), mem)
+		if err != nil {
+			return nil, err
+		}
+		return values.NewVectorValue(res, semantic.BasicBool), nil
+	} else if rvr != nil {
+		res, err := array.OrRConst(l.Arr().(*array.Boolean), (*rvr).Bool(), mem)
+		if err != nil {
+			return nil, err
+		}
+		return values.NewVectorValue(res, semantic.BasicBool), nil
+	}
+
+	res, err := array.Or(l.Arr().(*array.Boolean), r.Arr().(*array.Boolean), mem)
+	if err != nil {
+		return nil, err
+	}
+	return values.NewVectorValue(res, semantic.BasicBool), nil
 }
 
 type conditionalEvaluator struct {
