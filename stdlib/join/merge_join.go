@@ -32,6 +32,15 @@ type MergeJoinTransformation struct {
 	mu          sync.Mutex
 	mem         memory.Allocator
 
+	// leftSchema and rightSchema keep track of a union of all the schemas
+	// the join transformation has seen from each side. These are only used
+	// when a group key on one side of a join does not exist on the other side
+	// of a join. In that case, this information will be substituted in place of the
+	// schema tracked by the `joinState` for that group key on that side, which is
+	// necessary for compilation of the `as` function. (See the call to `Prepare`
+	// inside of `joinState.join()` later in this file).
+	leftSchema, rightSchema []flux.ColMeta
+
 	leftFinished,
 	rightFinished bool
 }
@@ -159,9 +168,11 @@ func (t *MergeJoinTransformation) processChunk(chunk table.Chunk, state interfac
 	if id == t.left {
 		isLeft = true
 		s.left.schema = schemaUnion(s.left.schema, chunk.Cols())
+		t.leftSchema = schemaUnion(t.leftSchema, chunk.Cols())
 	} else if id == t.right {
 		isLeft = false
 		s.right.schema = schemaUnion(s.right.schema, chunk.Cols())
+		t.rightSchema = schemaUnion(t.rightSchema, chunk.Cols())
 	} else {
 		return s, true, errors.New(codes.Internal, "invalid chunk passed to join - dataset id is neither left nor right")
 	}
@@ -208,7 +219,7 @@ func (t *MergeJoinTransformation) mergeJoin(chunk table.Chunk, s *joinState, isL
 		}
 		i, canJoin := s.insert(key, rows, isLeft)
 		if canJoin {
-			joined, err := s.join(t.ctx, t.method, t.as, i, t.mem)
+			joined, err := s.join(t.ctx, t.method, t.as, i, t.mem, t.leftSchema, t.rightSchema)
 			if err != nil {
 				return err
 			}
@@ -242,7 +253,7 @@ func (t *MergeJoinTransformation) flush(s *joinState) error {
 	}
 
 	// Join everything in s.products
-	joined, err := s.join(t.ctx, t.method, t.as, len(s.products)-1, t.mem)
+	joined, err := s.join(t.ctx, t.method, t.as, len(s.products)-1, t.mem, t.leftSchema, t.rightSchema)
 	if err != nil {
 		return err
 	}
@@ -395,8 +406,20 @@ func (s *joinState) join(
 	fn *JoinFn,
 	joinable int,
 	mem memory.Allocator,
+	defaultLeft, defaultRight []flux.ColMeta,
 ) ([]table.Chunk, error) {
-	err := fn.Prepare(s.left.schema, s.right.schema)
+	var lschema, rschema []flux.ColMeta
+	if len(s.left.schema) > 0 {
+		lschema = s.left.schema
+	} else {
+		lschema = defaultLeft
+	}
+	if len(s.right.schema) > 0 {
+		rschema = s.right.schema
+	} else {
+		rschema = defaultRight
+	}
+	err := fn.Prepare(lschema, rschema)
 	if err != nil {
 		return nil, err
 	}

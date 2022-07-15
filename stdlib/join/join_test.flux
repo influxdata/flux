@@ -282,3 +282,103 @@ testcase right_outer_join {
 
     testing.diff(want: want, got: got)
 }
+
+testcase exclusive_group_keys1 {
+    tbl1 =
+        array.from(rows: [{_time: 2022-06-01T00:00:00Z, _value: 1, label: "a", key: 1}])
+            |> group(columns: ["key"])
+    tbl2 =
+        array.from(rows: [{_time: 2022-06-01T00:00:00Z, _value: 0.1, id: "a", key: 2}])
+            |> group(columns: ["key"])
+
+    wantOutput =
+        "
+#datatype,string,long,string,long,double,dateTime:RFC3339,long
+#group,false,false,false,false,false,false,false
+#default,_result,,,,,,
+,result,table,label,v_left,v_right,_time,key
+,,0,a,1,,2022-06-01T00:00:00Z,1
+,,0,a,,0.1,2022-06-01T00:00:00Z,2
+"
+    want = csv.from(csv: wantOutput) |> group(columns: ["key"])
+
+    got =
+        join.tables(
+            method: "full",
+            left: tbl1,
+            right: tbl2,
+            on: (l, r) => l.label == r.id and r._time == l._time,
+            as: (l, r) => {
+                time = if exists l._time then l._time else r._time
+                label = if exists l.label then l.label else r.id
+
+                return {
+                    _time: time,
+                    label: label,
+                    v_left: l._value,
+                    v_right: r._value,
+                    key: r.key,
+                }
+            },
+        )
+
+    testing.diff(want: want, got: got)
+}
+
+testcase exclusive_group_keys2 {
+    tbl1 =
+        array.from(
+            rows: [
+                {
+                    _time: 2022-06-01T00:00:00Z,
+                    _value: 1,
+                    label: "a",
+                    key: 1,
+                    group: "one",
+                },
+            ],
+        )
+            |> group(columns: ["key", "group"])
+    tbl2 =
+        array.from(rows: [{_time: 2022-06-01T00:00:00Z, _value: 0.1, id: "a", key: 2}])
+            |> group(columns: ["key"])
+
+    wantOutput =
+        "
+#datatype,string,long,string,long,double,dateTime:RFC3339,long,string
+#group,false,false,false,false,false,false,true,true
+#default,_result,,,,,,,
+,result,table,label,v_left,v_right,_time,key,group
+,,0,a,1,,2022-06-01T00:00:00Z,1,one
+
+#datatype,string,long,string,long,double,dateTime:RFC3339,long,string
+#group,false,false,false,false,false,false,true,false
+#default,_result,,,,,,,
+,result,table,label,v_left,v_right,_time,key,group
+,,0,a,,0.1,2022-06-01T00:00:00Z,2,
+"
+    want = csv.from(csv: wantOutput)
+
+    got =
+        join.tables(
+            method: "full",
+            left: tbl1,
+            right: tbl2,
+            on: (l, r) => l.label == r.id and r._time == l._time,
+            as: (l, r) => {
+                time = if exists l._time then l._time else r._time
+                label = if exists l.label then l.label else r.id
+
+                return {
+                    _time: time,
+                    label: label,
+                    v_left: l._value,
+                    v_right: r._value,
+                    key: r.key,
+                    group: l.group,
+                }
+            },
+        )
+
+    testing.diff(want: want, got: got)
+}
