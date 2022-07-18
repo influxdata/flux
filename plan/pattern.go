@@ -92,21 +92,25 @@ func (okp UnionKindPattern) Match(node Node) bool {
 		return false
 	}
 
-	if len(okp.predecessors) != len(node.Predecessors()) {
-		return false
-	}
-
-	// Check that each predecessor does not have other successors
-	for _, pred := range node.Predecessors() {
-		if len(pred.Successors()) != 1 {
+	// If we have specified predecessors, ensure that we have
+	// the proper number and that they don't have other successors.
+	if len(okp.predecessors) > 0 {
+		if len(okp.predecessors) != len(node.Predecessors()) {
 			return false
 		}
-	}
 
-	// Recursively match each predecessor
-	for i, pattern := range okp.predecessors {
-		if !pattern.Match(node.Predecessors()[i]) {
-			return false
+		// Check that each predecessor does not have other successors
+		for _, pred := range node.Predecessors() {
+			if len(pred.Successors()) != 1 {
+				return false
+			}
+		}
+
+		// Recursively match each predecessor
+		for i, pattern := range okp.predecessors {
+			if !pattern.Match(node.Predecessors()[i]) {
+				return false
+			}
 		}
 	}
 	return true

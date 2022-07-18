@@ -25,6 +25,11 @@ func TestSortLimitRule(t *testing.T) {
 	}
 	limit0 := &universe.LimitProcedureSpec{N: 5}
 	limit1 := &universe.LimitProcedureSpec{N: 1, Offset: 5}
+	min := &universe.MinProcedureSpec{
+		SelectorConfig: execute.SelectorConfig{
+			Column: execute.DefaultValueColLabel,
+		},
+	}
 
 	tests := []plantest.RuleTestCase{
 		{
@@ -73,6 +78,63 @@ func TestSortLimitRule(t *testing.T) {
 				Edges: [][2]int{
 					{0, 1},
 					{1, 2},
+				},
+			},
+			NoChange:       true,
+			SkipValidation: true,
+		},
+		{
+			Name:    "MultipleSuccessors",
+			Context: ctx,
+			Rules: []plan.Rule{
+				universe.SortLimitRule{},
+			},
+			Before: &plantest.PlanSpec{
+				Nodes: []plan.Node{
+					plan.CreatePhysicalNode("from0", from),
+					plan.CreatePhysicalNode("sort1", sort),
+					plan.CreatePhysicalNode("limit2", limit0),
+					plan.CreatePhysicalNode("min3", min),
+				},
+				Edges: [][2]int{
+					{0, 1},
+					{1, 2},
+					{0, 3},
+				},
+			},
+			After: &plantest.PlanSpec{
+				Nodes: []plan.Node{
+					plan.CreatePhysicalNode("from0", from),
+					plan.CreatePhysicalNode("merged_sort1_limit2", &universe.SortLimitProcedureSpec{
+						SortProcedureSpec: sort,
+						N:                 5,
+					}),
+					plan.CreatePhysicalNode("min3", min),
+				},
+				Edges: [][2]int{
+					{0, 1},
+					{0, 2},
+				},
+			},
+			SkipValidation: true,
+		},
+		{
+			Name:    "SplitPattern",
+			Context: ctx,
+			Rules: []plan.Rule{
+				universe.SortLimitRule{},
+			},
+			Before: &plantest.PlanSpec{
+				Nodes: []plan.Node{
+					plan.CreatePhysicalNode("from0", from),
+					plan.CreatePhysicalNode("sort1", sort),
+					plan.CreatePhysicalNode("limit2", limit0),
+					plan.CreatePhysicalNode("min3", min),
+				},
+				Edges: [][2]int{
+					{0, 1},
+					{1, 2},
+					{1, 3},
 				},
 			},
 			NoChange:       true,
