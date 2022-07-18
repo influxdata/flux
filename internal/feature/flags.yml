@@ -93,3 +93,9 @@
   key: vectorizedConst
   default: false
   contact: Owen Nelson
+
+- name: Experimental Testing Diff
+  description: Switches testing.diff to use experimental.diff
+  key: experimentalTestingDiff
+  default: false
+  contact: Jonathan Sternberg
