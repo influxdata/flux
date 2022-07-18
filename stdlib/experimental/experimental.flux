@@ -1320,3 +1320,48 @@ builtin unpivot : (<-tables: stream[{A with _time: time}]) => stream[{B with _fi
 // ## Metadata
 // introduced: 0.174.0
 builtin catch : (fn: () => A) => string
+
+// diff takes two table streams as input and produces a diff.
+//
+// `experimental.diff()` compares tables with the same group key.
+// If compared tables are different, the function returns a table for that group key with one or more rows.
+// If there are no differences, the function does not return a table for that group key.
+//
+// **Note:** `experimental.diff()` cannot tell the difference between an empty table and a non-existent table.
+//
+// **Important:** The output format of the diff is not considered stable and the algorithm used to produce the diff may change.
+// The only guarantees are those mentioned above.
+//
+// ## Parameters
+// - want: Input stream for the `-` side of the diff.
+// - got: Input stream for the `+` side of the diff.
+//
+// ## Examples
+//
+// ### Output a diff between two streams of tables
+// ```
+// import "sampledata"
+// import "experimental"
+//
+// want = sampledata.int()
+// got = sampledata.int()
+//     |> map(fn: (r) => ({r with _value: if r._value > 15 then r._value + 1 else r._value }))
+//
+// < experimental.diff(got: got, want: want)
+// ```
+//
+// ### Return a diff between a stream of tables and the expected output
+// ```no_run
+// import "experimental"
+//
+// want = from(bucket: "backup-example-bucket") |> range(start: -5m)
+//
+// from(bucket: "example-bucket")
+//     |> range(start: -5m)
+//     |> experimental.diff(want: want)
+// ```
+//
+// ## Metadata
+// introduced: NEXT
+//
+builtin diff : (<-got: stream[A], want: stream[A]) => stream[{A with _diff: string}]
