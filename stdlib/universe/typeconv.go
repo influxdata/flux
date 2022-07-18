@@ -365,75 +365,20 @@ var vectorizedFloatConv = values.NewFunction(
 			return nil, errMissingArg
 		}
 		mem := memory.GetAllocator(ctx)
-		conv := array.NewFloatBuilder(mem)
 
 		switch v.Type().Nature() {
 		case semantic.Vector:
-			eType, err := v.Type().ElemType()
+			arr, err := array.ToFloatConv(mem, v.Vector().Arr())
+
 			if err != nil {
 				return nil, err
 			}
-			size := v.Vector().Arr().Len()
-			switch eType.Nature() {
-			case semantic.Float:
-				fa := v.Vector().Arr().(*array.Float)
 
-				return values.NewFloatVectorValue(fa), nil
-			case semantic.Int:
-				vec := v.Vector().Arr().(*array.Int)
-				conv.Resize(size)
-				for i := 0; i < size; i++ {
-					if vec.IsNull(i) {
-						conv.AppendNull()
-					} else {
-						conv.Append(float64(vec.Value(i)))
-
-					}
-				}
-			case semantic.String:
-				vec := v.Vector().Arr().(*array.String)
-				conv.Resize(size)
-				for i := 0; i < size; i++ {
-					if vec.IsNull(i) {
-						conv.AppendNull()
-						continue
-					}
-
-					val, err := strconv.ParseFloat(vec.Value(i), 64)
-					if err != nil {
-						return nil, errors.Newf(codes.Invalid, "cannot convert string %q to float due to invalid syntax", vec.Value(i))
-					}
-					conv.Append(val)
-				}
-			case semantic.UInt:
-				vec := v.Vector().Arr().(*array.Uint)
-				conv.Resize(size)
-				for i := 0; i < size; i++ {
-					if vec.IsNull(i) {
-						conv.AppendNull()
-					} else {
-						conv.Append(float64(vec.Value(i)))
-					}
-				}
-			case semantic.Bool:
-				vec := v.Vector().Arr().(*array.Boolean)
-				conv.Resize(size)
-				for i := 0; i < size; i++ {
-					if vec.IsNull(i) {
-						conv.AppendNull()
-					} else if vec.Value(i) {
-						conv.Append(float64(1))
-					} else {
-						conv.Append(float64(0))
-					}
-				}
-			default:
-				return nil, errors.Newf(codes.Invalid, "cannot convert Vector(%v) to Vector(Float)", eType.Nature())
-			}
+			return values.NewFloatVectorValue(arr), nil
 		default:
-			return nil, errors.Newf(codes.Invalid, "cannot convert %v to Vector(Float)", v.Type())
+			return nil, errors.Newf(codes.Invalid, "cannot convert %v to v[Float]", v.Type())
 		}
-		return values.NewFloatVectorValue(conv.NewFloatArray()), nil
+
 	},
 	false,
 )

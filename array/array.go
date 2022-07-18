@@ -1,10 +1,13 @@
 package array
 
 import (
+	"strconv"
+
 	"github.com/apache/arrow/go/v7/arrow"
 	"github.com/apache/arrow/go/v7/arrow/array"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/internal/errors"
+	"github.com/influxdata/flux/memory"
 )
 
 //go:generate -command tmpl ../gotool.sh github.com/benbjohnson/tmpl
@@ -205,4 +208,66 @@ func Slice(arr Array, i, j int) Array {
 	}
 	err := errors.Newf(codes.Internal, "cannot slice array of type %T", arr)
 	panic(err)
+}
+
+func ToFloatConv(mem memory.Allocator, arr Array) (*Float, error) {
+	conv := NewFloatBuilder(mem)
+	size := arr.Len()
+
+	switch arr.DataType().ID() {
+	case arrow.STRING:
+		vec := arr.(*String)
+		conv.Resize(size)
+		for i := 0; i < size; i++ {
+			if vec.IsNull(i) {
+				conv.AppendNull()
+				continue
+			}
+
+			val, err := strconv.ParseFloat(vec.Value(i), 64)
+			if err != nil {
+				return nil, errors.Newf(codes.Invalid, "cannot convert string %q to Float due to invalid syntax", vec.Value(i))
+			}
+			conv.Append(val)
+		}
+	case arrow.INT64:
+		vec := arr.(*Int)
+		conv.Resize(size)
+		for i := 0; i < size; i++ {
+			if vec.IsNull(i) {
+				conv.AppendNull()
+			} else {
+				conv.Append(float64(vec.Value(i)))
+			}
+		}
+	case arrow.UINT64:
+		vec := arr.(*Uint)
+		conv.Resize(size)
+		for i := 0; i < size; i++ {
+			if vec.IsNull(i) {
+				conv.AppendNull()
+			} else {
+				conv.Append(float64(vec.Value(i)))
+			}
+		}
+	case arrow.FLOAT64:
+		return arr.(*Float), nil
+	case arrow.BOOL:
+		vec := arr.(*Boolean)
+		conv.Resize(size)
+		for i := 0; i < size; i++ {
+			if vec.IsNull(i) {
+				conv.AppendNull()
+			} else if vec.Value(i) {
+				conv.Append(float64(1))
+			} else {
+				conv.Append(float64(0))
+			}
+		}
+	default:
+		return nil, errors.Newf(codes.Invalid, "cannot convert %v to Float", arr.DataType().Name())
+	}
+
+	defer conv.Release()
+	return conv.NewFloatArray(), nil
 }
