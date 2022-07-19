@@ -2,6 +2,7 @@ package universe
 
 import (
 	"container/heap"
+	"context"
 	"sort"
 
 	"github.com/apache/arrow/go/v7/arrow/memory"
@@ -13,6 +14,7 @@ import (
 	"github.com/influxdata/flux/execute/table"
 	"github.com/influxdata/flux/internal/arrowutil"
 	"github.com/influxdata/flux/internal/errors"
+	"github.com/influxdata/flux/internal/feature"
 	"github.com/influxdata/flux/internal/mutable"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/plan"
@@ -33,6 +35,7 @@ func init() {
 	runtime.RegisterPackageValue("universe", SortKind, flux.MustValue(flux.FunctionValue(SortKind, createSortOpSpec, sortSignature)))
 	flux.RegisterOpSpec(SortKind, newSortOp)
 	plan.RegisterProcedureSpec(SortKind, newSortProcedure, SortKind)
+	plan.RegisterPhysicalRules(RemoveRedundantSort{})
 	execute.RegisterTransformation(SortKind, createSortTransformation)
 }
 
@@ -475,4 +478,45 @@ func (s *sortTableMergeHeap) NextBuffer(builders []array.Builder, keys []array.A
 		buffer.Values[i] = builders[i].NewArray()
 	}
 	return buffer
+}
+
+// RemoveRedundantSort is a planner rule that will remove a sort
+// node from the graph if its input is already sorted.
+type RemoveRedundantSort struct {
+}
+
+var _ plan.Rule = RemoveRedundantSort{}
+
+func (r RemoveRedundantSort) Name() string {
+	return "universe/RemoveRedundantSort"
+}
+
+func (r RemoveRedundantSort) Pattern() plan.Pattern {
+	return plan.Pat(SortKind, plan.Any())
+}
+
+func (r RemoveRedundantSort) Rewrite(ctx context.Context, node plan.Node) (plan.Node, bool, error) {
+	if !feature.RemoveRedundantSortNodes().Enabled(ctx) {
+		return node, false, nil
+	}
+
+	pred, ok := node.Predecessors()[0].(*plan.PhysicalPlanNode)
+	if !ok {
+		// Predecessor is not yet a physical node. It probably will be
+		// after another rule is applied to transform it.
+		return node, false, nil
+	}
+
+	inputCollation := plan.GetOutputAttribute(pred, plan.CollationKey)
+	if inputCollation == nil {
+		return node, false, nil // input to sort is not already sorted
+	}
+
+	sortSpec := node.ProcedureSpec().(*SortProcedureSpec)
+	sortCollation := sortSpec.OutputAttributes()[plan.CollationKey]
+	if sortCollation.SatisfiedBy(inputCollation) {
+		return pred, true, nil
+	}
+
+	return node, false, nil
 }

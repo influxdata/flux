@@ -63,6 +63,13 @@ func (s *PassProcedureSpec) Copy() plan.ProcedureSpec {
 	return new(PassProcedureSpec)
 }
 
+// PassThroughAttribute implements the PassThroughAttributer interface used
+// by the planner. This implementation says that any attributes provided by
+// input to this transformation are also propagated to its output.
+func (s *PassProcedureSpec) PassThroughAttribute(attrKey string) bool {
+	return true
+}
+
 // TriggerSpec implements plan.TriggerAwareProcedureSpec
 func (s *PassProcedureSpec) TriggerSpec() plan.TriggerSpec {
 	return plan.NarrowTransformationTriggerSpec{}

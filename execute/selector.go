@@ -47,6 +47,16 @@ type indexSelectorTransformation struct {
 	selector IndexSelector
 }
 
+// PassThroughAttribute implements the PassThroughAttributer interface used by
+// the planner. Selector functions preserve collation of their input rows.
+func (c SelectorConfig) PassThroughAttribute(attrKey string) bool {
+	switch attrKey {
+	case plan.CollationKey:
+		return true
+	}
+	return false
+}
+
 func NewRowSelectorTransformationAndDataset(id DatasetID, mode AccumulationMode, selector RowSelector, config SelectorConfig, a memory.Allocator) (*rowSelectorTransformation, Dataset) {
 	cache := NewTableBuilderCache(a)
 	d := NewDataset(id, mode, cache)

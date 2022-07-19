@@ -61,13 +61,15 @@ func (s *AggregateWindowProcedureSpec) RequiredAttributes() []plan.PhysicalAttri
 
 // OutputAttributes will reflect that this operation can behave as a parallel merge,
 // and produce the parallel merge attribute if the merge factor is greater than one.
+// This operation produces tables that are sorted on _time.
 func (s *AggregateWindowProcedureSpec) OutputAttributes() plan.PhysicalAttributes {
-	if s.ParallelMergeFactor > 1 {
-		return plan.PhysicalAttributes{
-			plan.ParallelMergeKey: plan.ParallelMergeAttribute{Factor: s.ParallelMergeFactor},
-		}
+	m := plan.PhysicalAttributes{
+		plan.CollationKey: &plan.CollationAttr{Columns: []string{execute.DefaultTimeColLabel}},
 	}
-	return nil
+	if s.ParallelMergeFactor > 1 {
+		m[plan.ParallelMergeKey] = plan.ParallelMergeAttribute{Factor: s.ParallelMergeFactor}
+	}
+	return m
 }
 
 func (s *AggregateWindowProcedureSpec) Kind() plan.ProcedureKind {

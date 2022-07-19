@@ -38,6 +38,7 @@ var testFlags = map[string]interface{}{
 	"optimizeStateTracking":     true,
 	"optimizeSetTransformation": true,
 	"experimentalTestingDiff":   true,
+	"removeRedundantSortNodes":  true,
 }
 
 type TestFlagger map[string]interface{}
