@@ -226,7 +226,7 @@ sendEvent = (
             client: client,
             client_url: clientURL,
         }
-        headers = {"Accept": "application/vnd.pagerduty+json;version=2", "Content-Type": "application/json"}
+        headers = ["Accept": "application/vnd.pagerduty+json;version=2", "Content-Type": "application/json"]
         enc =
             if customDetails == record.any then
                 json.encode(v: data)
