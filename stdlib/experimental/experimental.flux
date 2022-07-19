@@ -1362,6 +1362,6 @@ builtin catch : (fn: () => A) => string
 // ```
 //
 // ## Metadata
-// introduced: NEXT
+// introduced: 0.175.0
 //
 builtin diff : (<-got: stream[A], want: stream[A]) => stream[{A with _diff: string}]

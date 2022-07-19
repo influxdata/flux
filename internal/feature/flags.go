@@ -185,6 +185,18 @@ func VectorizedConst() BoolFlag {
 	return vectorizedConst
 }
 
+var experimentalTestingDiff = feature.MakeBoolFlag(
+	"Experimental Testing Diff",
+	"experimentalTestingDiff",
+	"Jonathan Sternberg",
+	false,
+)
+
+// ExperimentalTestingDiff - Switches testing.diff to use experimental.diff
+func ExperimentalTestingDiff() BoolFlag {
+	return experimentalTestingDiff
+}
+
 // Inject will inject the Flagger into the context.
 func Inject(ctx context.Context, flagger Flagger) context.Context {
 	return feature.Inject(ctx, flagger)
@@ -205,6 +217,7 @@ var all = []Flag{
 	optimizeSetTransformation,
 	unusedSymbolWarnings,
 	vectorizedConst,
+	experimentalTestingDiff,
 }
 
 var byKey = map[string]Flag{
@@ -222,6 +235,7 @@ var byKey = map[string]Flag{
 	"optimizeSetTransformation":        optimizeSetTransformation,
 	"unusedSymbolWarnings":             unusedSymbolWarnings,
 	"vectorizedConst":                  vectorizedConst,
+	"experimentalTestingDiff":          experimentalTestingDiff,
 }
 
 // Flags returns all feature flags.

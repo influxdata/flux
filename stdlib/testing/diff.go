@@ -11,9 +11,11 @@ import (
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
+	"github.com/influxdata/flux/internal/feature"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/runtime"
+	"github.com/influxdata/flux/stdlib/experimental"
 )
 
 const DiffKind = "diff"
@@ -296,6 +298,12 @@ func createDiffTransformation(id execute.DatasetID, mode execute.AccumulationMod
 		return nil, nil, errors.New(codes.Internal, "diff should have exactly 2 parents")
 	}
 
+	wantID, gotID := a.Parents()[0], a.Parents()[1]
+	if feature.ExperimentalTestingDiff().Enabled(a.Context()) {
+		spec := &experimental.DiffProcedureSpec{}
+		return experimental.NewDiffTransformation(id, spec, wantID, gotID, a.Allocator())
+	}
+
 	cache := execute.NewTableBuilderCache(a.Allocator())
 	dataset := execute.NewDataset(id, mode, cache)
 	pspec, ok := spec.(*DiffProcedureSpec)
@@ -303,7 +311,7 @@ func createDiffTransformation(id execute.DatasetID, mode execute.AccumulationMod
 		return nil, nil, errors.Newf(codes.Internal, "invalid spec type %T", pspec)
 	}
 
-	transform := NewDiffTransformation(dataset, cache, pspec, a.Parents()[0], a.Parents()[1], a.Allocator())
+	transform := NewDiffTransformation(dataset, cache, pspec, wantID, gotID, a.Allocator())
 
 	return transform, dataset, nil
 }

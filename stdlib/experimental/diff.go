@@ -93,7 +93,7 @@ func createDiffTransformation(id execute.DatasetID, mode execute.AccumulationMod
 	}
 
 	wantID, gotID := a.Parents()[0], a.Parents()[1]
-	return newDiffTransformation(id, pspec, wantID, gotID, a.Allocator())
+	return NewDiffTransformation(id, pspec, wantID, gotID, a.Allocator())
 }
 
 type diffTransformation struct {
@@ -107,7 +107,7 @@ type diffTransformation struct {
 	wantID, gotID execute.DatasetID
 }
 
-func newDiffTransformation(id execute.DatasetID, spec *DiffProcedureSpec, wantID, gotID execute.DatasetID, mem memory.Allocator) (execute.Transformation, execute.Dataset, error) {
+func NewDiffTransformation(id execute.DatasetID, spec *DiffProcedureSpec, wantID, gotID execute.DatasetID, mem memory.Allocator) (execute.Transformation, execute.Dataset, error) {
 	tr := &diffTransformation{
 		d:   execute.NewTransportDataset(id, mem),
 		mem: mem,
