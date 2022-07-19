@@ -233,12 +233,7 @@ sendEvent = (
             else
                 json.encode(v: {data with payload: {payload with custom_details: customDetails}})
 
-        return requests.do(
-            method: "POST",
-            url: pagerdutyURL,
-            body: enc,
-            headers: headers,
-        )
+        return requests.do(method: "POST", url: pagerdutyURL, body: enc, headers: headers)
     }
 
 // endpoint returns a function that sends a message to PagerDuty that includes output data.
@@ -335,6 +330,9 @@ endpoint = (url=defaultURL) =>
                                 customDetails: record.get(r: obj, key: "customDetails", default: record.any),
                             )
 
-                        return {r with _sent: string(v: 2 == response.statusCode / 100), _status: string(v: response.statusCode), _body: string(v: response.body)}
+                        return {r with _sent: string(v: 2 == response.statusCode / 100),
+                            _status: string(v: response.statusCode),
+                            _body: string(v: response.body),
+                        }
                     },
                 )
