@@ -3179,7 +3179,7 @@ builtin float : (v: A) => float
 // introduced: 0.175.0
 // tags: type-conversions
 //
-builtin _vectorizedFloat : (v: v[A]) => v[float]
+builtin _vectorizedFloat : (v: vector[A]) => vector[float]
 
 // int converts a value to an integer type.
 //
