@@ -210,7 +210,7 @@ sendEvent = (
     ) =>
     {
         payload = {
-            summary: summary,
+            summary: strings.substring(start: 0, end: 425, v: summary),
             timestamp: timestamp,
             source: source,
             component: component,
