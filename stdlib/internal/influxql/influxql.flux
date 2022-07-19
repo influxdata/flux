@@ -1,4 +1,7 @@
 // Package influxql provides constants for working with InfluxQL.
+//
+// ## Metadata
+// introduced: 0.60.0
 package influxql
 
 

@@ -1,4 +1,7 @@
 // Package debug provides methods for debugging the Flux engine.
+//
+// ## Metadata
+// introduced: 0.68.0
 package debug
 
 

@@ -1,4 +1,7 @@
 // Package gen provides methods for generating data.
+//
+// ## Metadata
+// introduced: 0.50.0
 package gen
 
 

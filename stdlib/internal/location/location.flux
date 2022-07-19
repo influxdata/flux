@@ -1,4 +1,7 @@
 // Package location loads a timezone based on a location name.
+//
+// ## Metadata
+// introduced: 0.149.0
 package location
 
 
