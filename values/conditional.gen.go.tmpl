@@ -1,0 +1,52 @@
+package values
+
+import (
+
+	fluxarray "github.com/influxdata/flux/array"
+    "github.com/apache/arrow/go/v7/arrow/memory"
+	"github.com/influxdata/flux/codes"
+	"github.com/influxdata/flux/internal/errors"
+	"github.com/influxdata/flux/semantic"
+)
+
+
+
+func VectorConditional(t, c, a Vector, mem memory.Allocator) (Value, error) {
+	var tvr, cvr, avr *Value
+	if vr, ok := t.(*VectorRepeatValue); ok {
+		tvr = &vr.val
+	}
+	if vr, ok := c.(*VectorRepeatValue); ok {
+		cvr = &vr.val
+	}
+	if vr, ok := a.(*VectorRepeatValue); ok {
+		avr = &vr.val
+	}
+
+	if tvr != nil {
+		panic("t is constant, should be handled higher up, such as in conditionalVectorEvaluator.Eval")
+	}
+
+	switch a.ElementType().Nature() {
+    {{range .}}
+	case semantic.{{if eq .Name "Uint"}}UInt{{else}}{{if eq .Name "Boolean"}}Bool{{else}}{{.Name}}{{end}}{{end}}:
+    	var (
+			x *fluxarray.{{.ValueName}}
+    		err error
+    	)
+    	if cvr != nil {
+			x, err = fluxarray.{{.ValueName}}ConditionalCConst(t.Arr().(*fluxarray.Boolean), (*cvr).{{.ValueType}}(), a.Arr().(*fluxarray.{{.ValueName}}), mem)
+		} else if avr != nil {
+			x, err = fluxarray.{{.ValueName}}ConditionalAConst(t.Arr().(*fluxarray.Boolean), c.Arr().(*fluxarray.{{.ValueName}}), (*avr).{{.ValueType}}(), mem)
+		} else {
+			x, err = fluxarray.{{.ValueName}}Conditional(t.Arr().(*fluxarray.Boolean), c.Arr().(*fluxarray.{{.ValueName}}), a.Arr().(*fluxarray.{{.ValueName}}), mem)
+		}
+		if err != nil {
+			return nil, err
+		}
+		return NewVectorValue(x, {{.MonoType}}), nil
+    {{end}}
+	default:
+		return nil, errors.Newf(codes.Invalid, "unsupported type for vector: %v", a.ElementType())
+	}
+}

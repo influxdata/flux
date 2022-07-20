@@ -646,6 +646,15 @@ func compile(n semantic.Node, subst semantic.Substitutor) (Evaluator, error) {
 		if err != nil {
 			return nil, err
 		}
+
+		if test.Type().Nature() == semantic.Vector && c.Type().Nature() == semantic.Vector && a.Type().Nature() == semantic.Vector {
+			return &conditionalVectorEvaluator{
+				test:       test,
+				consequent: c,
+				alternate:  a,
+			}, nil
+		}
+
 		return &conditionalEvaluator{
 			test:       test,
 			consequent: c,

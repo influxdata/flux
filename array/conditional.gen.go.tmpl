@@ -1,0 +1,96 @@
+package array
+
+import (
+	"github.com/apache/arrow/go/v7/arrow/memory"
+	"github.com/influxdata/flux/codes"
+	"github.com/influxdata/flux/internal/errors"
+)
+
+{{range .}}
+func {{.Name}}Conditional(t *Boolean, c, a *{{.Name}}, mem memory.Allocator) (*{{.Name}}, error) {
+		n := t.Len()
+		b := New{{.Name}}Builder(mem)
+		b.Resize(n)
+
+		if !(c.Len() == n && a.Len() == n) {
+			return nil, errors.Newf(codes.Invalid, "vectors must be equal length") // FIXME: make message consistent with prior art
+		}
+
+		for i := 0; i < n; i++ {
+			if t.IsValid(i) && c.IsValid(i) && a.IsValid(i) {
+				// FIXME: is this?? Not sure when we need to append null.
+				//  The standard conditional treats a null test as a false, but what about null consequent/alternate?
+				if c.IsNull(i) || a.IsNull(i) {
+					b.AppendNull()
+				} else if t.IsNull(i) || !t.Value(i) {
+					b.Append(a.Value(i)) // Falsy
+				} else {
+					b.Append(c.Value(i)) // Truthy
+				}
+			} else {
+				b.AppendNull()
+			}
+		}
+		arr := b.New{{.Name}}Array()
+		b.Release()
+	return arr, nil
+}
+
+func {{.Name}}ConditionalCConst(t *Boolean, c {{.PrimitiveType}}, a *{{.Name}}, mem memory.Allocator) (*{{.Name}}, error) {
+		n := t.Len()
+		b := New{{.Name}}Builder(mem)
+		b.Resize(n)
+
+		if !(a.Len() == n) {
+			return nil, errors.Newf(codes.Invalid, "vectors must be equal length") // FIXME: make message consistent with prior art
+		}
+
+		for i := 0; i < n; i++ {
+			if t.IsValid(i) && a.IsValid(i) {
+				// FIXME: is this?? Not sure when we need to append null.
+				//  The standard conditional treats a null test as a false, but what about a null alternate?
+				if a.IsNull(i) {
+					b.AppendNull()
+				} else if t.IsNull(i) || !t.Value(i) {
+					b.Append(a.Value(i)) // Falsy
+				} else {
+					b.Append(c) // Truthy
+				}
+			} else {
+				b.AppendNull()
+			}
+		}
+		arr := b.New{{.Name}}Array()
+		b.Release()
+	return arr, nil
+}
+
+func {{.Name}}ConditionalAConst(t *Boolean, c *{{.Name}}, a {{.PrimitiveType}}, mem memory.Allocator) (*{{.Name}}, error) {
+		n := t.Len()
+		b := New{{.Name}}Builder(mem)
+		b.Resize(n)
+
+		if !(c.Len() == n) {
+			return nil, errors.Newf(codes.Invalid, "vectors must be equal length") // FIXME: make message consistent with prior art
+		}
+
+		for i := 0; i < n; i++ {
+			if t.IsValid(i) && c.IsValid(i) {
+				// FIXME: is this?? Not sure when we need to append null.
+				//  The standard conditional treats a null test as a false, but what about a null consequent?
+				if c.IsNull(i) {
+					b.AppendNull()
+				} else if t.IsNull(i) || !t.Value(i) {
+					b.Append(a) // Falsy
+				} else {
+					b.Append(c.Value(i)) // Truthy
+				}
+			} else {
+				b.AppendNull()
+			}
+		}
+		arr := b.New{{.Name}}Array()
+		b.Release()
+	return arr, nil
+}
+{{end}}
