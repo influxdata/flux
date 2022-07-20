@@ -436,6 +436,16 @@ func (s *SortedPivotProcedureSpec) Copy() plan.ProcedureSpec {
 	return ns
 }
 
+// OutputAttributes implements the OutputAttributer interface used by the planner
+// to keep track of various data attributes at different points in the plan.
+// For sorted pivot, we know that the input data will be sorted on the row key, and that the
+// output of this operation will preserve that order.
+func (s *SortedPivotProcedureSpec) OutputAttributes() plan.PhysicalAttributes {
+	return plan.PhysicalAttributes{
+		plan.CollationKey: &plan.CollationAttr{Columns: s.RowKey},
+	}
+}
+
 func createSortedPivotTransformation(id execute.DatasetID, mode execute.AccumulationMode, spec plan.ProcedureSpec, a execute.Administration) (execute.Transformation, execute.Dataset, error) {
 	s, ok := spec.(*SortedPivotProcedureSpec)
 	if !ok {

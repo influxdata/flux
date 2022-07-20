@@ -17,6 +17,8 @@ import (
 
 //lint:file-ignore U1000 Ignore all unused code, it's generated
 
+// mergeKeys finds all the unique values of the row key across each buffer,
+// and return them in a single array sorted in ascending order.
 func (gr *pivotTableGroup) mergeKeys(mem memory.Allocator) array.Array {
 	switch gr.rowCol.Type {
 
