@@ -24,6 +24,11 @@ import (
 // Transport is an interface for handling raw messages.
 type Transport interface {
 	// ProcessMessage will process a message in the Transport.
+	//
+	// Messages sent to the Transport may be one of many types.
+	// Known message should be handled as is appropriate, but
+	// unknown messages should be acked but otherwise ignored.
+	// An error should not be returned for unknown messages.
 	ProcessMessage(m Message) error
 }
 
