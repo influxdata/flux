@@ -232,6 +232,22 @@ func TestPagerdutySendEvent(t *testing.T) {
 			level:         "crit",
 		},
 		{
+			name:          "longSummary",
+			otherGroupKey: "foo",
+			pagerdutyURL:  s.URL,
+			routingKey:    "fakeRoutingKey",
+			client:        "fakeClient1",
+			clientURL:     "http://fakepagerduty.com",
+			class:         "deploy",
+			group:         "app-stack",
+			severity:      "critical",
+			source:        "monitoringtool:vendor:region",
+			summary:       strings.Repeat("l", 1048),
+			timestamp:     "2015-07-17T08:42:58.315+0000",
+			eventAction:   "trigger",
+			level:         "crit",
+		},
+		{
 			name:          "resolve",
 			otherGroupKey: "foo2",
 			pagerdutyURL:  s.URL,
@@ -396,7 +412,7 @@ data = "
 				t.Errorf("got client URL %s, expected %s", req.PostData.ClientURL, tc.clientURL)
 			}
 
-			if req.PostData.Payload.Summary != tc.summary {
+			if req.PostData.Payload.Summary != capLen(tc.summary, 1023) {
 				t.Errorf("got summary %s, expected %s", req.PostData.Payload.Summary, tc.summary)
 			}
 
@@ -438,4 +454,11 @@ data = "
 
 		})
 	}
+}
+
+func capLen(s string, i int) string {
+	if len(s) < i {
+		return s
+	}
+	return s[:i]
 }

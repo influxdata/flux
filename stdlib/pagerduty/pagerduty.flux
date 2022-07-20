@@ -7,7 +7,7 @@ package pagerduty
 
 
 import "experimental/record"
-import "http"
+import "http/requests"
 import "json"
 import "strings"
 
@@ -210,7 +210,7 @@ sendEvent = (
     ) =>
     {
         payload = {
-            summary: summary,
+            summary: strings.substring(start: 0, end: 1023, v: summary),
             timestamp: timestamp,
             source: source,
             component: component,
@@ -226,14 +226,14 @@ sendEvent = (
             client: client,
             client_url: clientURL,
         }
-        headers = {"Accept": "application/vnd.pagerduty+json;version=2", "Content-Type": "application/json"}
+        headers = ["Accept": "application/vnd.pagerduty+json;version=2", "Content-Type": "application/json"]
         enc =
             if customDetails == record.any then
                 json.encode(v: data)
             else
                 json.encode(v: {data with payload: {payload with custom_details: customDetails}})
 
-        return http.post(headers: headers, url: pagerdutyURL, data: enc)
+        return requests.do(method: "POST", url: pagerdutyURL, body: enc, headers: headers)
     }
 
 // endpoint returns a function that sends a message to PagerDuty that includes output data.
@@ -312,7 +312,7 @@ endpoint = (url=defaultURL) =>
                     fn: (r) => {
                         obj = mapFn(r: r)
 
-                        status =
+                        response =
                             sendEvent(
                                 pagerdutyURL: url,
                                 routingKey: obj.routingKey,
@@ -330,6 +330,9 @@ endpoint = (url=defaultURL) =>
                                 customDetails: record.get(r: obj, key: "customDetails", default: record.any),
                             )
 
-                        return {r with _sent: string(v: 2 == status / 100), _status: string(v: status)}
+                        return {r with _sent: string(v: 2 == response.statusCode / 100),
+                            _status: string(v: response.statusCode),
+                            _body: string(v: response.body),
+                        }
                     },
                 )
