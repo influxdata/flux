@@ -103,7 +103,7 @@ testcase remove_sort_selector {
     testing.diff(want, got) |> yield()
 }
 
-testcase remove_sort_filter {
+testcase remove_sort_filter_range {
     expect.planner(rules: ["universe/RemoveRedundantSort": 1])
 
     input =
@@ -111,8 +111,10 @@ testcase remove_sort_filter {
             |> sort(columns: ["i"])
     got =
         input
+            |> range(start: -100y)
             |> filter(fn: (r) => r.i < 100)
             |> sort(columns: ["i"])
+            |> drop(columns: ["_start", "_stop"])
     want =
         input
             |> filter(fn: (r) => r.i < 100)

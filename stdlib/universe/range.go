@@ -84,6 +84,14 @@ func (s *RangeProcedureSpec) TimeBounds(predecessorBounds *plan.Bounds) *plan.Bo
 	return bounds
 }
 
+func (s *RangeProcedureSpec) PassThroughAttribute(attrKey string) bool {
+	switch attrKey {
+	case plan.CollationKey:
+		return true
+	}
+	return false
+}
+
 func newRangeProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
 	spec, ok := qs.(*RangeOpSpec)
 
