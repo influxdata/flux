@@ -128,8 +128,6 @@ func (t *MergeJoinTransformation) ProcessMessage(m execute.Message) error {
 			})
 			t.d.Finish(err)
 		}
-	default:
-		return errors.New(codes.Internal, "invalid message")
 	}
 	return nil
 }
