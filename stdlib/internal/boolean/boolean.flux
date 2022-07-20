@@ -1,4 +1,7 @@
 // Package boolean provides constants for true and false values.
+//
+// ## Metadata
+// introduced: 0.129.0
 package boolean
 
 

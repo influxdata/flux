@@ -1,4 +1,7 @@
 // Package testutil provides helper function for writing test cases.
+//
+// ## Metadata
+// introduced: 0.68.0
 package testutil
 
 

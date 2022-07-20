@@ -1,6 +1,9 @@
 // Package promql provides an internal API for implementing PromQL via Flux.
 //
 // THIS PACKAGE IS NOT MEANT FOR EXTERNAL USE.
+//
+// ## Metadata
+// introduced: 0.47.0
 package promql
 
 
