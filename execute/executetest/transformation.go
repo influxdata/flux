@@ -31,7 +31,7 @@ const ulp uint = 2
 // Comparison options for floating point values.
 // NaNs are considered equal, and float64s must
 // be sufficiently close to be considered equal.
-var floatOptions = cmp.Options{
+var defaultFloatOptions = cmp.Options{
 	cmpopts.EquateNaNs(),
 	cmp.FilterValues(func(x, y float64) bool {
 		return !math.IsNaN(x) && !math.IsNaN(y)
@@ -50,12 +50,15 @@ var floatOptions = cmp.Options{
 	})),
 }
 
+// floatOptions is a list of comparison options for floating point values.
+// if not passed by the caller, defaultFloatOptions will be used
 func ProcessTestHelper(
 	t *testing.T,
 	data []flux.Table,
 	want []*Table,
 	wantErr error,
 	create func(d execute.Dataset, c execute.TableBuilderCache) execute.Transformation,
+	floatOptions ...cmp.Option,
 ) {
 	t.Helper()
 
@@ -109,17 +112,26 @@ func ProcessTestHelper(
 	sort.Sort(SortedTables(got))
 	sort.Sort(SortedTables(want))
 
-	if !cmp.Equal(want, got, floatOptions) {
+	opts := make([]cmp.Option, 0, len(defaultFloatOptions)+len(floatOptions))
+	if len(floatOptions) > 0 {
+		opts = append(opts, floatOptions...)
+	} else {
+		opts = append(opts, defaultFloatOptions...)
+	}
+	if !cmp.Equal(want, got, opts...) {
 		t.Errorf("unexpected tables -want/+got\n%s", cmp.Diff(want, got))
 	}
 }
 
+// floatOptions is a list of comparison options for floating point values.
+// if not passed by the caller, defaultFloatOptions will be used
 func ProcessTestHelper2(
 	t *testing.T,
 	data []flux.Table,
 	want []*Table,
 	wantErr error,
 	create func(id execute.DatasetID, alloc memory.Allocator) (execute.Transformation, execute.Dataset),
+	floatOptions ...cmp.Option,
 ) {
 	t.Helper()
 
@@ -173,7 +185,13 @@ func ProcessTestHelper2(
 	sort.Sort(SortedTables(got))
 	sort.Sort(SortedTables(want))
 
-	if !cmp.Equal(want, got, floatOptions) {
+	opts := make([]cmp.Option, 0, len(defaultFloatOptions)+len(floatOptions))
+	if len(floatOptions) > 0 {
+		opts = append(opts, floatOptions...)
+	} else {
+		opts = append(opts, defaultFloatOptions...)
+	}
+	if !cmp.Equal(want, got, opts...) {
 		t.Errorf("unexpected tables -want/+got\n%s", cmp.Diff(want, got))
 	}
 }

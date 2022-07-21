@@ -7,6 +7,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
@@ -18,6 +20,12 @@ import (
 	"github.com/influxdata/flux/stdlib/influxdata/influxdb"
 	"github.com/influxdata/flux/stdlib/universe"
 )
+
+const epsilon float64 = 1e-5
+
+var floatOptions = cmp.Options{
+	cmpopts.EquateApprox(0, epsilon),
+}
 
 func TestHoltWinters_NewQuery(t *testing.T) {
 	tests := []querytest.NewQueryTestCase{
@@ -908,6 +916,7 @@ func TestHoltWinters_Process(t *testing.T) {
 				func(d execute.Dataset, c execute.TableBuilderCache) execute.Transformation {
 					return universe.NewHoltWintersTransformation(d, c, alloc, tc.spec)
 				},
+				floatOptions,
 			)
 
 			for i := 0; i < 30; i++ {
@@ -1009,6 +1018,7 @@ func TestHoltWinters_Error_Process(t *testing.T) {
 				func(d execute.Dataset, c execute.TableBuilderCache) execute.Transformation {
 					return universe.NewHoltWintersTransformation(d, c, alloc, tc.spec)
 				},
+				floatOptions,
 			)
 
 			for i := 0; i < 30; i++ {
