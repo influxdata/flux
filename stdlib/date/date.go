@@ -260,13 +260,13 @@ func init() {
 				if err != nil {
 					return nil, err
 				}
-				//was originally ignoring the offset _ so looked like location ,_,err
 				location, offset, err := date.GetLocationFromObjArgs(args)
 				if err != nil {
 					return nil, err
 				}
 				intervalLocation, err := interval.LoadLocation(location)
-				//temporary fix change the location
+				// TODO: offset previously ignored. Is this enough of a fix?
+				//  Need to check to see if setting it here is a sufficient fix. Follow-up in #5013
 				intervalLocation.Offset = offset
 				if err != nil {
 					return nil, err
