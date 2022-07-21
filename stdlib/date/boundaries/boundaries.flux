@@ -42,24 +42,7 @@ import "experimental/table"
 // introduced: 0.172.0
 // tags: date/time
 yesterday = () => {
-    ret = {start: date.sub(d: 1d, from: today()), stop: today()}
-
-    return ret
-}
-
-_timezone_convert = (s) => {
-    t = int(v: location.offset)
-    as = duration(v: -t)
-    adj =
-        if t == int(v: 0ns) then
-            date.truncate(t: s, unit: 1d)
-        //in the case of else then the offset has been set by `timezone.fixed`
-        else if t > 0 then
-            date.add(d: as, to: s)
-        else
-            date.add(d: duration(v: int(v: as) - int(v: 1d)), to: s)
-
-    return adj
+    return {start: date.sub(d: 1d, from: today()), stop: today()}
 }
 
 _day_finder = (td, func, offset=0h) => {
@@ -83,7 +66,7 @@ _day_finder = (td, func, offset=0h) => {
 
     day_calc = date.sub(d: scaled_offset, from: today_date)
 
-    return func(s: _timezone_convert(s: day_calc))
+    return func(s: date.truncate(t: day_calc, unit: 1d))
 }
 
 _day_formatter = (s) => {

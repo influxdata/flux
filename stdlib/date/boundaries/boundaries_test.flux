@@ -50,7 +50,7 @@ testcase week_start_default_monday_test {
     testing.diff(want: want, got: got)
 }
 
-testcase week_start_default_monday_test {
+testcase week_start_default_monday_offset_test {
     option now = () => 2022-06-08T14:20:11Z
 
     ret = boundaries.week(week_offset: 1, start_sunday: false)
