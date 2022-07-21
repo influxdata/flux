@@ -116,7 +116,7 @@ func CheckRequiredAttributes(node *PhysicalPlanNode) error {
 //   sort |> filter
 // The "filter" node will still provide the collation attribute, even though it's
 // the "sort" node that actually does the collating.
-func GetOutputAttribute(node *PhysicalPlanNode, attrKey string) PhysicalAttr {
+func GetOutputAttribute(node Node, attrKey string) PhysicalAttr {
 	attr, _ := getOutputAttributeWithNode(node, attrKey)
 	return attr
 }

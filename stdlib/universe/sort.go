@@ -500,13 +500,7 @@ func (r RemoveRedundantSort) Rewrite(ctx context.Context, node plan.Node) (plan.
 		return node, false, nil
 	}
 
-	pred, ok := node.Predecessors()[0].(*plan.PhysicalPlanNode)
-	if !ok {
-		// Predecessor is not yet a physical node. It probably will be
-		// after another rule is applied to transform it.
-		return node, false, nil
-	}
-
+	pred := node.Predecessors()[0]
 	inputCollation := plan.GetOutputAttribute(pred, plan.CollationKey)
 	if inputCollation == nil {
 		return node, false, nil // input to sort is not already sorted
