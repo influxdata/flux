@@ -379,11 +379,13 @@ func TestTypeconv_VectorsToVectorizedFloat(t *testing.T) {
 	alloc := memory.NewResourceAllocator(nil)
 
 	testCases := []struct {
-		name      string
-		vSlice    []interface{}
-		want      []interface{}
-		wantNull  bool
-		expectErr error
+		name       string
+		vSlice     []interface{}
+		vRepeat    interface{}
+		want       []interface{}
+		wantNull   bool
+		wantRepeat float64
+		expectErr  error
 	}{
 		{
 			name: "vectoredFloat to vectoredFloat",
@@ -450,13 +452,41 @@ func TestTypeconv_VectorsToVectorizedFloat(t *testing.T) {
 				nil,
 			},
 		},
+		{
+			name:       "RepeatVector(Int) to vectoredFloat",
+			vRepeat:    int64(1234),
+			wantRepeat: float64(1234.0),
+		},
+		{
+			name:       "RepeatVector(Bool) to vectoredFloat",
+			vRepeat:    true,
+			wantRepeat: float64(1.0),
+		},
+		{
+			name:       "RepeatVector(Uint) to vectoredFloat",
+			vRepeat:    uint64(1234),
+			wantRepeat: float64(1234.0),
+		},
+		{
+			name:       "RepeatVector(String) to vectoredFloat",
+			vRepeat:    "1234.567",
+			wantRepeat: float64(1234.567),
+		},
+		{
+			name:       "RepeatVector(Float) to vectoredFloat",
+			vRepeat:    float64(1234.567),
+			wantRepeat: float64(1234.567),
+		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			var v values.Value
-			if tc.vSlice != nil {
+
+			if tc.vRepeat == nil {
 				v = values.NewVectorFromElements(alloc, tc.vSlice...)
+			} else {
+				v = values.NewVectorRepeatValue(values.New(tc.vRepeat))
 			}
 
 			myMap := map[string]values.Value{
@@ -476,8 +506,20 @@ func TestTypeconv_VectorsToVectorizedFloat(t *testing.T) {
 				}
 				return
 			}
+
 			got := gotVal.Vector()
-			if !tc.wantNull {
+			if tc.vRepeat != nil {
+				if !got.IsRepeat() {
+					t.Error("Unexpected error: wanted float vector repeat")
+				}
+
+				gotRepeatVal := got.(*values.VectorRepeatValue).Value()
+				wantValue := values.New(tc.wantRepeat)
+
+				if !gotRepeatVal.Equal(wantValue) {
+					t.Errorf("Wanted: vector repeat: %v, got: %v", wantValue, gotRepeatVal)
+				}
+			} else if !tc.wantNull {
 				got := got.Arr().(*array.Float64)
 				want := values.NewVectorFromElements(alloc, tc.want...).Arr().(*array.Float64)
 

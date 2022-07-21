@@ -178,40 +178,46 @@ var uintConv = values.NewFunction(
 	false,
 )
 
+func toFloatValue(v values.Value) (values.Value, error) {
+	var float float64
+	switch v.Type().Nature() {
+	case semantic.String:
+		n, err := strconv.ParseFloat(v.Str(), 64)
+		if err != nil {
+			return nil, errors.Newf(codes.Invalid, "cannot convert string %q to float due to invalid syntax", v.Str())
+		}
+		float = n
+	case semantic.Int:
+		float = float64(v.Int())
+	case semantic.UInt:
+		float = float64(v.UInt())
+	case semantic.Float:
+		float = v.Float()
+	case semantic.Bool:
+		if v.Bool() {
+			float = 1
+		} else {
+			float = 0
+		}
+	default:
+		return nil, errors.Newf(codes.Invalid, "cannot convert %v to float", v.Type())
+	}
+
+	return values.NewFloat(float), nil
+}
+
 var floatConv = values.NewFunction(
 	"float",
 	convFloatType,
 	func(ctx context.Context, args values.Object) (values.Value, error) {
-		var float float64
 		v, ok := args.Get(conversionArg)
 		if !ok {
 			return nil, errMissingArg
 		} else if v.IsNull() {
 			return values.Null, nil
 		}
-		switch v.Type().Nature() {
-		case semantic.String:
-			n, err := strconv.ParseFloat(v.Str(), 64)
-			if err != nil {
-				return nil, errors.Newf(codes.Invalid, "cannot convert string %q to float due to invalid syntax", v.Str())
-			}
-			float = n
-		case semantic.Int:
-			float = float64(v.Int())
-		case semantic.UInt:
-			float = float64(v.UInt())
-		case semantic.Float:
-			float = v.Float()
-		case semantic.Bool:
-			if v.Bool() {
-				float = 1
-			} else {
-				float = 0
-			}
-		default:
-			return nil, errors.Newf(codes.Invalid, "cannot convert %v to float", v.Type())
-		}
-		return values.NewFloat(float), nil
+
+		return toFloatValue(v)
 	},
 	false,
 )
@@ -368,6 +374,17 @@ var vectorizedFloatConv = values.NewFunction(
 
 		switch v.Type().Nature() {
 		case semantic.Vector:
+			vec := v.Vector()
+
+			if vec.IsRepeat() {
+				float, err := toFloatValue(v.(*values.VectorRepeatValue).Value())
+				if err != nil {
+					return nil, err
+				}
+
+				return values.NewVectorRepeatValue(float), nil
+			}
+
 			arr, err := array.ToFloatConv(mem, v.Vector().Arr())
 
 			if err != nil {
