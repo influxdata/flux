@@ -71,7 +71,7 @@ func (ti *TableIterator) Do(f func(flux.Table) error) error {
 func EqualResults(want, got []flux.Result) error {
 	wantTables := convertResults(want)
 	gotTables := convertResults(got)
-	if diff := cmp.Diff(wantTables, gotTables, floatOptions); diff != "" {
+	if diff := cmp.Diff(wantTables, gotTables, defaultFloatOptions); diff != "" {
 		return fmt.Errorf("unexpected iterator results; -want/+got\n%s", diff)
 	}
 	return nil
@@ -90,7 +90,7 @@ func EqualResultIterators(want, got flux.ResultIterator) error {
 	wantResults, wantErr := readAllIterator(want)
 	gotResults, gotErr := readAllIterator(got)
 
-	if diff := cmp.Diff(wantResults, gotResults, floatOptions); diff != "" {
+	if diff := cmp.Diff(wantResults, gotResults, defaultFloatOptions); diff != "" {
 		return fmt.Errorf("unexpected iterator results; -want/+got\n%s", diff)
 	}
 	if wantErr == nil && gotErr == nil {
@@ -127,7 +127,7 @@ func readAllIterator(iter flux.ResultIterator) ([][]*Table, error) {
 func EqualResult(w, g flux.Result) error {
 	want := ConvertResult(w)
 	got := ConvertResult(g)
-	if diff := cmp.Diff(want, got, floatOptions); diff != "" {
+	if diff := cmp.Diff(want, got, defaultFloatOptions); diff != "" {
 		return fmt.Errorf("unexpected tables -want/+got\n%s", diff)
 	}
 	return nil

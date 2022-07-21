@@ -368,7 +368,7 @@ func RunSourceHelper(
 	sort.Sort(SortedTables(got))
 	sort.Sort(SortedTables(want))
 
-	if !cmp.Equal(want, got, floatOptions) {
+	if !cmp.Equal(want, got, defaultFloatOptions) {
 		t.Errorf("unexpected tables -want/+got\n%s", cmp.Diff(want, got))
 	}
 }
