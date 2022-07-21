@@ -42,20 +42,7 @@ import "experimental/table"
 // introduced: 0.172.0
 // tags: date/time
 yesterday = () => {
-    ret = {start: date.sub(d: 1d, from: today()), stop: today()}
-
-    return ret
-}
-
-_timezone_convert = (s) => {
-    t = int(v: location.offset)
-    as = if t == 0 then 0h else duration(v: -t)
-
-    return
-        if t >= 0 then
-            date.add(d: as, to: s)
-        else
-            date.add(d: duration(v: int(v: as) - int(v: 1d)), to: s)
+    return {start: date.sub(d: 1d, from: today()), stop: today()}
 }
 
 _day_finder = (td, func, offset=0h) => {
@@ -79,7 +66,7 @@ _day_finder = (td, func, offset=0h) => {
 
     day_calc = date.sub(d: scaled_offset, from: today_date)
 
-    return func(s: _timezone_convert(s: day_calc))
+    return func(s: date.truncate(t: day_calc, unit: 1d))
 }
 
 _day_formatter = (s) => {
@@ -389,9 +376,9 @@ sunday = () => {
 // tags: date/time
 //
 month = (month_offset=0) => {
-    s = date.truncate(t: today(), unit: 1mo)
-    as = _timezone_convert(s: s)
-    start = date.add(d: date.scale(d: 1mo, n: month_offset), to: as)
+    a = date.truncate(t: today(), unit: 1mo)
+
+    start = date.add(d: date.scale(d: 1mo, n: month_offset), to: a)
 
     return {start: start, stop: date.add(d: 1mo, to: start)}
 }
