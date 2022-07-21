@@ -150,7 +150,7 @@ do = (
         config: config,
     )
 
-// post makes a http POST request. This identical to calling `request.do(method: "POST", ...)`.
+// post makes a http POST request. This is identical to calling `request.do(method: "POST", ...)`.
 //
 // ## Parameters
 // - url: URL to request. This should not include any query parameters.
@@ -180,7 +180,7 @@ do = (
 //
 // data = ejson.parse(data: response.body)
 //
-// > array.from(rows: [data])
+// > array.from(rows: [data]
 // ```
 //
 // ## Metadata
@@ -201,7 +201,7 @@ post = (
         config: config,
     )
 
-// get makes a http GET request. This identical to calling `request.do(method: "GET", ...)`.
+// get makes a http GET request. This is identical to calling `request.do(method: "GET", ...)`.
 //
 // ## Parameters
 // - url: URL to request. This should not include any query parameters.
