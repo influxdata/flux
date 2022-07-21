@@ -266,7 +266,7 @@ func init() {
 				}
 				intervalLocation, err := interval.LoadLocation(location)
 				// TODO: offset previously ignored. Is this enough of a fix?
-				//  Need to check to see if setting it here is a sufficient fix. Follow-up in #5013
+				// Need to check to see if setting it here is a sufficient fix. Follow-up in #5013
 				intervalLocation.Offset = offset
 				if err != nil {
 					return nil, err
