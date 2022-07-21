@@ -22,11 +22,11 @@
   default: true
   contact: Sean Brickley
 
-- name: Query Concurrency Limit
-  description: Sets the query concurrency limit for the planner
-  key: queryConcurrencyLimit
+- name: Query Concurrency Increase
+  description: Additional dispatcher workers to allocate on top of the minimimum allowable computed by the engine
+  key: queryConcurrencyIncrease
   default: 0
-  contact: Jonathan Sternberg
+  contact: Adrian Thurston
 
 - name: Optimize Union Transformation
   description: Optimize the union transformation

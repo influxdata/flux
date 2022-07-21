@@ -41,16 +41,16 @@ func GroupTransformationGroup() BoolFlag {
 	return groupTransformationGroup
 }
 
-var queryConcurrencyLimit = feature.MakeIntFlag(
-	"Query Concurrency Limit",
-	"queryConcurrencyLimit",
-	"Jonathan Sternberg",
+var queryConcurrencyIncrease = feature.MakeIntFlag(
+	"Query Concurrency Increase",
+	"queryConcurrencyIncrease",
+	"Adrian Thurston",
 	0,
 )
 
-// QueryConcurrencyLimit - Sets the query concurrency limit for the planner
-func QueryConcurrencyLimit() IntFlag {
-	return queryConcurrencyLimit
+// QueryConcurrencyIncrease - Additional dispatcher workers to allocate on top of the minimimum allowable computed by the engine
+func QueryConcurrencyIncrease() IntFlag {
+	return queryConcurrencyIncrease
 }
 
 var optimizeUnionTransformation = feature.MakeBoolFlag(
@@ -193,7 +193,7 @@ func Inject(ctx context.Context, flagger Flagger) context.Context {
 var all = []Flag{
 	aggregateTransformationTransport,
 	groupTransformationGroup,
-	queryConcurrencyLimit,
+	queryConcurrencyIncrease,
 	optimizeUnionTransformation,
 	vectorizedMap,
 	narrowTransformationDifference,
@@ -210,7 +210,7 @@ var all = []Flag{
 var byKey = map[string]Flag{
 	"aggregateTransformationTransport": aggregateTransformationTransport,
 	"groupTransformationGroup":         groupTransformationGroup,
-	"queryConcurrencyLimit":            queryConcurrencyLimit,
+	"queryConcurrencyIncrease":         queryConcurrencyIncrease,
 	"optimizeUnionTransformation":      optimizeUnionTransformation,
 	"vectorizedMap":                    vectorizedMap,
 	"narrowTransformationDifference":   narrowTransformationDifference,
