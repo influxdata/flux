@@ -1208,6 +1208,36 @@ func (nt *ArrayType) UnmarshalJSON(data []byte) error {
 	nt.ElementType = et
 	return nil
 }
+func (vt VectorType) MarshalJSON() ([]byte, error) {
+	type Alias VectorType
+	raw := struct {
+		Type string `json:"type"`
+		Alias
+	}{
+		Type:  vt.Type(),
+		Alias: (Alias)(vt),
+	}
+	return json.Marshal(raw)
+}
+func (vt *VectorType) UnmarshalJSON(data []byte) error {
+	type Alias VectorType
+	raw := struct {
+		*Alias
+		ElementType json.RawMessage `json:"element"`
+	}{}
+	if err := json.Unmarshal(data, &raw); err != nil {
+		return err
+	}
+	if raw.Alias != nil {
+		*vt = *(*VectorType)(raw.Alias)
+	}
+	et, err := unmarshalMonotype(raw.ElementType)
+	if err != nil {
+		return err
+	}
+	vt.ElementType = et
+	return nil
+}
 
 func (arr StreamType) MarshalJSON() ([]byte, error) {
 	type Alias StreamType
@@ -1615,6 +1645,8 @@ func unmarshalNode(msg json.RawMessage) (Node, error) {
 		node = new(ReturnStatement)
 	case "VariableAssignment":
 		node = new(VariableAssignment)
+	case "VectorType":
+		node = new(VectorType)
 	case "MemberAssignment":
 		node = new(MemberAssignment)
 	case "CallExpression":

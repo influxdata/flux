@@ -61,4 +61,5 @@ var IgnoreBaseNodeOptions = []cmp.Option{
 	cmpopts.IgnoreFields(ast.UnaryExpression{}, "BaseNode"),
 	cmpopts.IgnoreFields(ast.UnsignedIntegerLiteral{}, "BaseNode"),
 	cmpopts.IgnoreFields(ast.VariableAssignment{}, "BaseNode"),
+	cmpopts.IgnoreFields(ast.VectorType{}, "BaseNode"),
 }
