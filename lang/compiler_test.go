@@ -885,7 +885,7 @@ func TestQueryTracing(t *testing.T) {
 		msgCount int
 	}{
 		{opName: "*universe.filterTransformation", msgCount: 2},
-		{opName: "*universe.groupTransformation", msgCount: 3},
+		{opName: "*universe.groupTransformationAdapter", msgCount: 3},
 		{opName: "*universe.mapTransformation", msgCount: 3},
 		{opName: "*array.tableSource"},
 	}

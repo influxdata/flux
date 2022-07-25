@@ -33,7 +33,7 @@ var groupTransformationGroup = feature.MakeBoolFlag(
 	"Group Transformation Group",
 	"groupTransformationGroup",
 	"Sean Brickley",
-	false,
+	true,
 )
 
 // GroupTransformationGroup - Enable GroupTransformation interface for the group function
@@ -105,36 +105,12 @@ var optimizeAggregateWindow = feature.MakeBoolFlag(
 	"Optimize Aggregate Window",
 	"optimizeAggregateWindow",
 	"Jonathan Sternberg",
-	false,
+	true,
 )
 
 // OptimizeAggregateWindow - Enables a version of aggregateWindow written in Go
 func OptimizeAggregateWindow() BoolFlag {
 	return optimizeAggregateWindow
-}
-
-var narrowTransformationLimit = feature.MakeBoolFlag(
-	"Narrow Transformation Limit",
-	"narrowTransformationLimit",
-	"Owen Nelson",
-	false,
-)
-
-// NarrowTransformationLimit - Enable the NarrowStateTransformation implementation of limit
-func NarrowTransformationLimit() BoolFlag {
-	return narrowTransformationLimit
-}
-
-var optimizeStateTracking = feature.MakeBoolFlag(
-	"Optimize State Tracking",
-	"optimizeStateTracking",
-	"Sean Brickley",
-	false,
-)
-
-// OptimizeStateTracking - Enable implementation of NarrowStateTransformation of stateTracking
-func OptimizeStateTracking() BoolFlag {
-	return optimizeStateTracking
 }
 
 var labelPolymorphism = feature.MakeBoolFlag(
@@ -211,8 +187,6 @@ var all = []Flag{
 	narrowTransformationDifference,
 	narrowTransformationFill,
 	optimizeAggregateWindow,
-	narrowTransformationLimit,
-	optimizeStateTracking,
 	labelPolymorphism,
 	optimizeSetTransformation,
 	unusedSymbolWarnings,
@@ -229,8 +203,6 @@ var byKey = map[string]Flag{
 	"narrowTransformationDifference":   narrowTransformationDifference,
 	"narrowTransformationFill":         narrowTransformationFill,
 	"optimizeAggregateWindow":          optimizeAggregateWindow,
-	"narrowTransformationLimit":        narrowTransformationLimit,
-	"optimizeStateTracking":            optimizeStateTracking,
 	"labelPolymorphism":                labelPolymorphism,
 	"optimizeSetTransformation":        optimizeSetTransformation,
 	"unusedSymbolWarnings":             unusedSymbolWarnings,

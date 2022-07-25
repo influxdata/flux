@@ -2,6 +2,7 @@ package universe
 
 import (
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/arrow"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
@@ -198,4 +199,61 @@ func (t *tailTransformation) UpdateProcessingTime(id execute.DatasetID, pt execu
 }
 func (t *tailTransformation) Finish(id execute.DatasetID, err error) {
 	t.d.Finish(err)
+}
+
+func appendSlicedCols(reader flux.ColReader, builder execute.TableBuilder, start, stop int) error {
+	for j, c := range reader.Cols() {
+		if j > len(builder.Cols()) {
+			return errors.New(codes.Internal, "builder index out of bounds")
+		}
+
+		switch c.Type {
+		case flux.TBool:
+			s := arrow.BoolSlice(reader.Bools(j), start, stop)
+			if err := builder.AppendBools(j, s); err != nil {
+				s.Release()
+				return err
+			}
+			s.Release()
+		case flux.TInt:
+			s := arrow.IntSlice(reader.Ints(j), start, stop)
+			if err := builder.AppendInts(j, s); err != nil {
+				s.Release()
+				return err
+			}
+			s.Release()
+		case flux.TUInt:
+			s := arrow.UintSlice(reader.UInts(j), start, stop)
+			if err := builder.AppendUInts(j, s); err != nil {
+				s.Release()
+				return err
+			}
+			s.Release()
+		case flux.TFloat:
+			s := arrow.FloatSlice(reader.Floats(j), start, stop)
+			if err := builder.AppendFloats(j, s); err != nil {
+				s.Release()
+				return err
+			}
+			s.Release()
+		case flux.TString:
+			s := arrow.StringSlice(reader.Strings(j), start, stop)
+			if err := builder.AppendStrings(j, s); err != nil {
+				s.Release()
+				return err
+			}
+			s.Release()
+		case flux.TTime:
+			s := arrow.IntSlice(reader.Times(j), start, stop)
+			if err := builder.AppendTimes(j, s); err != nil {
+				s.Release()
+				return err
+			}
+			s.Release()
+		default:
+			execute.PanicUnknownType(c.Type)
+		}
+	}
+
+	return nil
 }
