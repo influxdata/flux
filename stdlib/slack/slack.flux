@@ -38,7 +38,7 @@ option defaultURL = "https://slack.com/api/chat.postMessage"
 // - url: Slack API URL.
 //   Default is `https://slack.com/api/chat.postMessage`.
 //
-//   If using the Slack webhook API, this URL is provided ine Slack webhook setup process.
+//   If using the Slack webhook API, this URL is provided in the Slack webhook setup process.
 //
 // - token: Slack API token. Default is `""`.
 //
@@ -85,12 +85,12 @@ option defaultURL = "https://slack.com/api/chat.postMessage"
 // tags: single notification
 //
 message = (
-        url=defaultURL,
-        token="",
-        channel,
-        text,
-        color,
-    ) =>
+    url=defaultURL,
+    token="",
+    channel,
+    text,
+    color,
+) =>
     {
         attachments = [{color: validateColorString(color), text: string(v: text), mrkdwn_in: ["text"]}]
         data = {channel: channel, attachments: attachments}
