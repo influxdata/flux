@@ -124,7 +124,7 @@ test-rust:
 	$(CARGO) test --doc && \
 	$(CARGO) clippy $(CARGO_ARGS) --all-features -- -Dclippy::all -Dclippy::undocumented_unsafe_blocks
 
-test-flux:
+test-flux: libflux-go
 	$(GO_RUN) ./cmd/flux test -p stdlib -v --parallel 8
 
 test-flux-integration:
