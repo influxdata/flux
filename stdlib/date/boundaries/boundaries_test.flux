@@ -72,6 +72,26 @@ testcase week_start_default_monday_two_test {
     testing.diff(want: want, got: got)
 }
 
+testcase week_current_week_for_monday {
+    option now = () => 2022-07-25T14:20:11Z
+
+    ret = boundaries.week()
+    want = array.from(rows: [{_value_a: 2022-07-25T00:00:00Z, _value_b: 2022-08-01T00:00:00Z}])
+    got = array.from(rows: [{_value_a: ret.start, _value_b: ret.stop}])
+
+    testing.diff(want: want, got: got)
+}
+
+testcase week_current_week_for_sunday {
+    option now = () => 2022-07-24T14:20:11Z
+
+    ret = boundaries.week(start_sunday: true)
+    want = array.from(rows: [{_value_a: 2022-07-24T00:00:00Z, _value_b: 2022-07-31T00:00:00Z}])
+    got = array.from(rows: [{_value_a: ret.start, _value_b: ret.stop}])
+
+    testing.diff(want: want, got: got)
+}
+
 testcase month_start_one_test {
     option now = () => 2021-03-10T22:10:00Z
 
