@@ -116,10 +116,6 @@ func compile(fluxText string, now time.Time) (context.Context, *flux.Spec, error
 }
 
 func TestConcurrencyQuota(t *testing.T) {
-	type runWith struct {
-		concurrencyQuota int
-	}
-
 	now := parser.MustParseTime("2022-01-01T10:00:00Z").Value
 
 	testcases := []struct {
