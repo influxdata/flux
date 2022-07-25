@@ -175,7 +175,7 @@ Instead, the dispatcher will make decisions about which transport to run dependi
 If the concurrency limit is only one, then only one transformation will execute at a time.
 If the concurrency limit is more, we can have more than one transformation running concurrently.
 In all situations, it is impossible for the same node to execute in multiple dispatcher workers at the same time, for the same predecessor dataset.
-Concurrent execution of a transformation process function is possible only across distinct predecessors datasets.
+Concurrent execution of transformation functions is possible only across distinct predecessor datasets.
 
 The dispatcher is initialized with a throughput.
 The throughput is used to determine how many messages will be processed by a single `Transport` before another `Transport` is given the worker thread.

@@ -4,7 +4,6 @@ package execute
 import (
 	"context"
 	"fmt"
-	glog "log"
 	"math"
 	"reflect"
 	"sync"
@@ -438,7 +437,6 @@ func computeQueryConcurrencyQuota(ctx context.Context, p *plan.Spec) int {
 	// roots.
 	_ = p.TopDownWalk(func(node plan.Node) error {
 		if isYield(node) {
-			glog.Printf("-------- found yield via distinct walk")
 			qcc.visit(node)
 		}
 		return nil

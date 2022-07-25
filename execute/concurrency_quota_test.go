@@ -8,11 +8,11 @@ import (
 	"github.com/influxdata/flux/plan"
 	"go.uber.org/zap/zaptest"
 
-	"github.com/influxdata/flux/execute/executetest"
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/dependencies/dependenciestest"
 	"github.com/influxdata/flux/dependency"
 	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/execute/executetest"
 	_ "github.com/influxdata/flux/fluxinit/static"
 	fluxfeature "github.com/influxdata/flux/internal/feature"
 	"github.com/influxdata/flux/internal/pkg/feature"
@@ -24,7 +24,8 @@ import (
 )
 
 //
-// The test cases here verify that concurrencyQuota is computed correctly.
+// These test cases verify that execution engine concurrencyQuota is computed
+// correctly.
 //
 
 // ParallelFromRemoteProcedureSpec implements a parallel from-remote procedure
@@ -114,7 +115,7 @@ func compile(fluxText string, now time.Time) (context.Context, *flux.Spec, error
 	return ctx, spec, err
 }
 
-func TestConcurrency(t *testing.T) {
+func TestConcurrencyQuota(t *testing.T) {
 	type runWith struct {
 		concurrencyQuota int
 	}
@@ -184,7 +185,7 @@ func TestConcurrency(t *testing.T) {
 			`,
 			wantConcurrencyQuota: 2,
 		},
-		// Result with multiple predecessors. There should be a goroutine
+		// A result with multiple predecessors. There should be a goroutine
 		// allocated for each predecessor.
 		{
 			name: "one-union",
@@ -207,6 +208,8 @@ func TestConcurrency(t *testing.T) {
 			`,
 			wantConcurrencyQuota: 6,
 		},
+		// Results with multiple predecessors should be found even if behind
+		// yields.
 		{
 			name: "two-union-behind-yield-1",
 			flux: `
@@ -219,8 +222,6 @@ func TestConcurrency(t *testing.T) {
 			`,
 			wantConcurrencyQuota: 6,
 		},
-		// Results with multiple predecessors should be found even if behind
-		// yields.
 		{
 			name: "two-union-behind-yield-2",
 			flux: `
@@ -296,11 +297,11 @@ func TestConcurrency(t *testing.T) {
 			`,
 			wantConcurrencyQuota: 7,
 		},
-		// Test the increase of concurrency quota using the
-		// QueryConcurrencyIncrease feature flag.
+		// Test using QueryConcurrencyIncrease to increase the concurrency
+		// quota.
 		{
-			name:                     "increase-1",
-			flux:                     `
+			name: "increase-1",
+			flux: `
 				from(bucket: "bucket", host: "host")
 					|> range( start: 0 )
 					|> filter( fn: (r) => r.key == "value" )`,
@@ -460,6 +461,8 @@ func TestConcurrency(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
+			// We are compiling so we can specify large plans with just some
+			// flux code.
 			ctx, fluxSpec, err := compile(tc.flux, now)
 
 			flagger := executetest.TestFlagger{}
@@ -480,14 +483,17 @@ func TestConcurrency(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			var physicalPlanner plan.PhysicalPlanner
+			// We need a physical from in order to complete planning, and we
+			// also need ranges merged in so the physical from is satisfied.
+			rules := []plan.Rule{ &influxdb.FromRemoteRule{}, &influxdb.MergeRemoteRangeRule{}}
+
 			if tc.parallelizeFactor > 0 {
-				physicalPlanner = plan.NewPhysicalPlanner(plan.OnlyPhysicalRules(
-					&influxdb.FromRemoteRule{}, &influxdb.MergeRemoteRangeRule{}, &parallelizeFromTo{Factor: tc.parallelizeFactor}))
-			} else {
-				physicalPlanner = plan.NewPhysicalPlanner(plan.OnlyPhysicalRules(&influxdb.FromRemoteRule{}, &influxdb.MergeRemoteRangeRule{}))
-				//physicalPlanner = plan.NewPhysicalPlanner()
+				rules = append( rules,
+					&influxdb.MergeRemoteRangeRule{}, &parallelizeFromTo{Factor: tc.parallelizeFactor})
 			}
+
+			physicalPlanner := plan.NewPhysicalPlanner(plan.OnlyPhysicalRules(rules...))
+
 			physicalPlan, err := physicalPlanner.Plan(context.Background(), logicalPlan)
 			if err != nil {
 				t.Fatal(err)
@@ -497,7 +503,9 @@ func TestConcurrency(t *testing.T) {
 				physicalPlan.Resources.ConcurrencyQuota = tc.fromPlan
 			}
 
-			// Construct a basic execution state and choose the default resources.
+			// This is a test helper that constructs a basic execution state
+			// and chooses the default resources. It then returns the
+			// concurrency quota.
 			concurrencyQuota := execute.ConcurrencyQuotaFromPlan(ctx, physicalPlan, zaptest.NewLogger(t))
 
 			if concurrencyQuota != tc.wantConcurrencyQuota {
