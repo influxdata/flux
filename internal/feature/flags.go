@@ -41,18 +41,6 @@ func GroupTransformationGroup() BoolFlag {
 	return groupTransformationGroup
 }
 
-var queryConcurrencyIncrease = feature.MakeIntFlag(
-	"Query Concurrency Increase",
-	"queryConcurrencyIncrease",
-	"Adrian Thurston",
-	0,
-)
-
-// QueryConcurrencyIncrease - Additional dispatcher workers to allocate on top of the minimimum allowable computed by the engine
-func QueryConcurrencyIncrease() IntFlag {
-	return queryConcurrencyIncrease
-}
-
 var optimizeUnionTransformation = feature.MakeBoolFlag(
 	"Optimize Union Transformation",
 	"optimizeUnionTransformation",
@@ -185,6 +173,18 @@ func RemoveRedundantSortNodes() BoolFlag {
 	return removeRedundantSortNodes
 }
 
+var queryConcurrencyIncrease = feature.MakeIntFlag(
+	"Query Concurrency Increase",
+	"queryConcurrencyIncrease",
+	"Jonathan Sternberg, Adrian Thurston",
+	0,
+)
+
+// QueryConcurrencyIncrease - Additional dispatcher workers to allocate on top of the minimimum allowable computed by the engine
+func QueryConcurrencyIncrease() IntFlag {
+	return queryConcurrencyIncrease
+}
+
 // Inject will inject the Flagger into the context.
 func Inject(ctx context.Context, flagger Flagger) context.Context {
 	return feature.Inject(ctx, flagger)
@@ -193,7 +193,6 @@ func Inject(ctx context.Context, flagger Flagger) context.Context {
 var all = []Flag{
 	aggregateTransformationTransport,
 	groupTransformationGroup,
-	queryConcurrencyIncrease,
 	optimizeUnionTransformation,
 	vectorizedMap,
 	narrowTransformationDifference,
@@ -205,12 +204,12 @@ var all = []Flag{
 	vectorizedConst,
 	experimentalTestingDiff,
 	removeRedundantSortNodes,
+	queryConcurrencyIncrease,
 }
 
 var byKey = map[string]Flag{
 	"aggregateTransformationTransport": aggregateTransformationTransport,
 	"groupTransformationGroup":         groupTransformationGroup,
-	"queryConcurrencyIncrease":         queryConcurrencyIncrease,
 	"optimizeUnionTransformation":      optimizeUnionTransformation,
 	"vectorizedMap":                    vectorizedMap,
 	"narrowTransformationDifference":   narrowTransformationDifference,
@@ -222,6 +221,7 @@ var byKey = map[string]Flag{
 	"vectorizedConst":                  vectorizedConst,
 	"experimentalTestingDiff":          experimentalTestingDiff,
 	"removeRedundantSortNodes":         removeRedundantSortNodes,
+	"queryConcurrencyIncrease":         queryConcurrencyIncrease,
 }
 
 // Flags returns all feature flags.
