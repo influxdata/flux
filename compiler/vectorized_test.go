@@ -461,6 +461,8 @@ func TestVectorizedFns(t *testing.T) {
 				if fn.Vectorized == nil {
 					t.Fatal("Expected to find vectorized node, but found none")
 				}
+				// XXX: test the vectorized version instead of the row-based one.
+				fn = fn.Vectorized
 			} else {
 				if fn.Vectorized != nil {
 					t.Fatal("Vectorized node is populated when it should be nil")
