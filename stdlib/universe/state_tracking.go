@@ -2,15 +2,17 @@ package universe
 
 import (
 	"context"
-	"log"
 	"time"
 
+	"github.com/apache/arrow/go/v7/arrow/memory"
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/array"
+	"github.com/influxdata/flux/arrow"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/compiler"
 	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/execute/table"
 	"github.com/influxdata/flux/internal/errors"
-	"github.com/influxdata/flux/internal/feature"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/runtime"
@@ -139,187 +141,188 @@ func createStateTrackingTransformation(id execute.DatasetID, mode execute.Accumu
 	if !ok {
 		return nil, nil, errors.Newf(codes.Internal, "invalid spec type %T", spec)
 	}
-	mem := a.Allocator()
-	if feature.OptimizeStateTracking().Enabled(a.Context()) {
-		return NewNarrowStateTrackingTransformation(a.Context(), s, id, mem)
-	}
+	return NewStateTrackingTransformation(a.Context(), s, id, a.Allocator())
+}
 
-	cache := execute.NewTableBuilderCache(mem)
-	d := execute.NewDataset(id, mode, cache)
-	t, err := NewStateTrackingTransformation(a.Context(), s, d, cache)
-	if err != nil {
-		return nil, nil, err
+func NewStateTrackingTransformation(ctx context.Context, spec *StateTrackingProcedureSpec, id execute.DatasetID, mem memory.Allocator) (execute.Transformation, execute.Dataset, error) {
+	fn := execute.NewRowPredicateFn(spec.Fn.Fn, compiler.ToScope(spec.Fn.Scope))
+	t := &stateTrackingTransformation{
+		ctx:      ctx,
+		fn:       fn,
+		timeCol:  spec.TimeCol,
+		countCol: spec.CountColumn,
+		durCol:   spec.DurationColumn,
+		unit:     int64(spec.DurationUnit.Duration()),
 	}
-	return t, d, nil
+	return execute.NewNarrowStateTransformation(id, t, mem)
 }
 
 type stateTrackingTransformation struct {
-	execute.ExecutionNode
-	d     execute.Dataset
-	cache execute.TableBuilderCache
-
-	fn  *execute.RowPredicateFn
 	ctx context.Context
+	fn  *execute.RowPredicateFn
+
 	timeCol,
-	countColumn,
-	durationColumn string
+	countCol,
+	durCol string
 
-	durationUnit int64
+	unit int64
 }
 
-func NewStateTrackingTransformation(ctx context.Context, spec *StateTrackingProcedureSpec, d execute.Dataset, cache execute.TableBuilderCache) (*stateTrackingTransformation, error) {
-	fn := execute.NewRowPredicateFn(spec.Fn.Fn, compiler.ToScope(spec.Fn.Scope))
-	return &stateTrackingTransformation{
-		d:              d,
-		cache:          cache,
-		fn:             fn,
-		countColumn:    spec.CountColumn,
-		durationColumn: spec.DurationColumn,
-		durationUnit:   int64(values.Duration(spec.DurationUnit).Duration()),
-		timeCol:        spec.TimeCol,
-		ctx:            ctx,
-	}, nil
+type trackedState struct {
+	start,
+	prevTime values.Time
+
+	countInState,
+	durationInState bool
+
+	count,
+	duration int64
 }
 
-func (t *stateTrackingTransformation) RetractTable(id execute.DatasetID, key flux.GroupKey) error {
-	return t.d.RetractTable(key)
-}
+func (n *stateTrackingTransformation) Process(chunk table.Chunk, state interface{}, d *execute.TransportDataset, mem memory.Allocator) (interface{}, bool, error) {
+	// Track whether or not the state has been modified
+	mod := false
 
-func (t *stateTrackingTransformation) Process(id execute.DatasetID, tbl flux.Table) error {
-	builder, created := t.cache.TableBuilder(tbl.Key())
-	if !created {
-		return errors.Newf(codes.FailedPrecondition, "found duplicate table with key: %v", tbl.Key())
+	// Initialize state
+	if state == nil {
+		state = trackedState{
+			count:    -1,
+			duration: -1,
+		}
+		mod = true
 	}
-	if err := execute.AddTableCols(tbl, builder); err != nil {
-		return err
-	}
+	s := state.(trackedState)
+	mod, err := n.processChunk(chunk, &s, d, mem, mod)
+	return s, mod, err
+}
 
-	// Prepare the functions for the column types.
-	cols := tbl.Cols()
-	fn, err := t.fn.Prepare(cols)
+func (n *stateTrackingTransformation) Close() error { return nil }
+
+// Updates the state object for each row in the chunk, creates a new chunk with
+// columns tracking counts and/or durations, and passes that chunk to the next
+// transport node.
+func (n *stateTrackingTransformation) processChunk(chunk table.Chunk, state *trackedState, d *execute.TransportDataset, mem memory.Allocator, mod bool) (bool, error) {
+	fn, err := n.fn.Prepare(chunk.Cols())
 	if err != nil {
-		// TODO(nathanielc): Should we not fail the query for failed compilation?
-		return err
+		return mod, err
 	}
 
-	var countCol, durationCol = -1, -1
-
-	// Add new value columns
-	if t.countColumn != "" {
-		countCol, err = builder.AddCol(flux.ColMeta{
-			Label: t.countColumn,
-			Type:  flux.TInt,
-		})
-		if err != nil {
-			return err
-		}
-	}
-	if t.durationColumn != "" {
-		durationCol, err = builder.AddCol(flux.ColMeta{
-			Label: t.durationColumn,
-			Type:  flux.TInt,
-		})
-		if err != nil {
-			return err
-		}
-	}
-
-	var (
-		startTime       values.Time
-		prevTime        values.Time
-		count           int64
-		duration        int64
-		countInState    bool
-		durationInState bool
-	)
-
-	timeIdx := execute.ColIdx(t.timeCol, tbl.Cols())
+	timeIdx := chunk.Index(n.timeCol)
 	if timeIdx < 0 {
-		return errors.Newf(codes.FailedPrecondition, "no column %q exists", t.timeCol)
+		return mod, errors.Newf(codes.FailedPrecondition, "column %q does not exist", n.timeCol)
 	}
-	colMap := make([]int, len(tbl.Cols()))
-	colMap = execute.ColMap(colMap, builder, tbl.Cols())
-	// Append modified rows
-	return tbl.Do(func(cr flux.ColReader) error {
-		l := cr.Len()
-		for i := 0; i < l; i++ {
-			match, err := fn.EvalRow(t.ctx, i, cr)
-			if err != nil {
-				log.Printf("failed to evaluate state tracking expression: %v", err)
-				continue
-			}
 
-			// Duration
-			if durationCol > 0 {
-				if ts := cr.Times(timeIdx); ts.IsNull(i) {
-					return errors.New(codes.FailedPrecondition, "got a null timestamp")
-				}
-
-				tValue := values.Time(cr.Times(timeIdx).Value(i))
-
-				if prevTime > tValue {
-					return errors.New(codes.FailedPrecondition, "got an out-of-order timestamp")
-				}
-				prevTime = tValue
-
-				if !match {
-					duration = -1
-					durationInState = false
-				} else {
-					if !durationInState {
-						startTime = tValue
-						duration = 0
-						durationInState = true
-					}
-
-					if t.durationUnit > 0 {
-						tm := tValue
-						duration = int64(tm-startTime) / t.durationUnit
-					}
-				}
-			}
-
-			// Count
-			if countCol > 0 {
-				if !match {
-					count = -1
-					countInState = false
-				} else {
-					if !countInState {
-						count = 0
-						countInState = true
-					}
-					count++
-				}
-			}
-
-			err = execute.AppendMappedRecordExplicit(i, cr, builder, colMap)
-			if err != nil {
-				return err
-			}
-			if countCol > 0 {
-				err = builder.AppendInt(countCol, count)
-				if err != nil {
-					return err
-				}
-			}
-			if durationCol > 0 {
-				err = builder.AppendInt(durationCol, duration)
-				if err != nil {
-					return err
-				}
-			}
+	buf := chunk.Buffer()
+	times := buf.Times(timeIdx)
+	if n.durCol != "" {
+		if times.NullN() > 0 {
+			return mod, errors.New(codes.FailedPrecondition, "got a null timestamp")
 		}
-		return nil
-	})
+	}
+
+	// Create the new columns
+	counts := array.NewIntBuilder(mem)
+	counts.Resize(chunk.Len())
+
+	durations := array.NewIntBuilder(mem)
+	durations.Resize(chunk.Len())
+
+	for i := 0; i < chunk.Len(); i++ {
+		// Evaluate the predicate for the current row
+		match, err := fn.EvalRow(n.ctx, i, &buf)
+		if err != nil {
+			return mod, err
+		}
+
+		if mod, err = n.updateState(state, times, match, i, mod); err != nil {
+			return mod, err
+		}
+
+		counts.Append(state.count)
+		durations.Append(state.duration)
+	}
+
+	return mod, d.Process(n.createChunk(chunk, counts, durations))
 }
 
-func (t *stateTrackingTransformation) UpdateWatermark(id execute.DatasetID, mark execute.Time) error {
-	return t.d.UpdateWatermark(mark)
+// Updates the state and returns `true` if the state has been modfied.
+func (n *stateTrackingTransformation) updateState(state *trackedState, times *array.Int, match bool, i int, mod bool) (bool, error) {
+	if n.durCol != "" {
+		ts := values.Time(times.Value(i))
+		if state.prevTime > ts {
+			return mod, errors.New(codes.FailedPrecondition, "got an out-of-order timestamp")
+		}
+		state.prevTime = ts
+		mod = true
+
+		if match {
+			if !state.durationInState {
+				state.durationInState = true
+				state.start = ts
+				state.duration = 0
+			} else {
+				state.duration = int64(ts - state.start)
+				if n.unit > 0 {
+					state.duration = state.duration / n.unit
+				}
+			}
+		} else {
+			state.durationInState = false
+			state.duration = -1
+		}
+		mod = true
+	}
+
+	if n.countCol != "" {
+		if match {
+			if !state.countInState {
+				state.countInState = true
+				state.count = 1
+			} else {
+				state.count++
+			}
+		} else {
+			state.countInState = false
+			state.count = -1
+		}
+		mod = true
+	}
+	return mod, nil
 }
-func (t *stateTrackingTransformation) UpdateProcessingTime(id execute.DatasetID, pt execute.Time) error {
-	return t.d.UpdateProcessingTime(pt)
-}
-func (t *stateTrackingTransformation) Finish(id execute.DatasetID, err error) {
-	t.d.Finish(err)
+
+// Returns a copy of an existing chunk with the new columns appended to it.
+// `counts` is released if there isn't a column name for it; ditto for `durations`.
+func (n *stateTrackingTransformation) createChunk(chunk table.Chunk, counts, durations *array.IntBuilder) table.Chunk {
+	ncols := chunk.NCols()
+	newCols := append(make([]flux.ColMeta, 0, ncols+2), chunk.Cols()...)
+
+	vs := make([]array.Array, 0, ncols+2)
+	for i := 0; i < ncols; i++ {
+		col := chunk.Values(i)
+		col.Retain()
+		vs = append(vs, col)
+	}
+
+	if n.countCol != "" {
+		newCols = append(newCols, flux.ColMeta{Label: n.countCol, Type: flux.TInt})
+		vs = append(vs, counts.NewArray())
+	} else {
+		counts.Release()
+		counts = nil
+	}
+
+	if n.durCol != "" {
+		newCols = append(newCols, flux.ColMeta{Label: n.durCol, Type: flux.TInt})
+		vs = append(vs, durations.NewArray())
+	} else {
+		durations.Release()
+		durations = nil
+	}
+
+	buffer := arrow.TableBuffer{
+		GroupKey: chunk.Key(),
+		Columns:  newCols,
+		Values:   vs,
+	}
+	return table.ChunkFromBuffer(buffer)
 }

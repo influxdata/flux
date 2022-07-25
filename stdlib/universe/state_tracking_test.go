@@ -382,7 +382,7 @@ func TestStateTracking_Process(t *testing.T) {
 					ctx, deps := dependency.Inject(context.Background(), dependenciestest.Default())
 					defer deps.Finish()
 
-					ntx, nd, err := universe.NewNarrowStateTrackingTransformation(ctx, tc.spec, id, alloc)
+					ntx, nd, err := universe.NewStateTrackingTransformation(ctx, tc.spec, id, alloc)
 					if err != nil {
 						t.Fatal(err)
 					}
