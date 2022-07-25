@@ -179,6 +179,12 @@ func TestVectorizedFns(t *testing.T) {
 			vectorizable: false,
 			skipComp:     true,
 		},
+		{
+			name:         "conditional expressions",
+			fn:           `(r) => ({ r with c: if r.cond then 1 else 0 })`,
+			vectorizable: true,
+			skipComp:     true,
+		},
 	}
 
 	additionTests := []struct {
@@ -345,6 +351,82 @@ func TestVectorizedFns(t *testing.T) {
 				"c": output,
 			},
 
+			flagger: executetest.TestFlagger{},
+		})
+	}
+	conditionalTests := []struct {
+		inType semantic.MonoType
+		input  map[string]interface{}
+		want   map[string]interface{}
+	}{
+		{
+			inType: semantic.BasicInt,
+			input: map[string]interface{}{
+				"r": map[string]interface{}{
+					"a":    []interface{}{int64(1), int64(3)},
+					"b":    []interface{}{int64(2), int64(4)},
+					"cond": []interface{}{true, false},
+				},
+			},
+			want: map[string]interface{}{
+				"c": []interface{}{int64(1), int64(4)},
+			},
+		},
+		{
+			inType: semantic.BasicUint,
+			input: map[string]interface{}{
+				"r": map[string]interface{}{
+					"a":    []interface{}{uint64(1), uint64(3)},
+					"b":    []interface{}{uint64(2), uint64(4)},
+					"cond": []interface{}{true, false},
+				},
+			},
+			want: map[string]interface{}{
+				"c": []interface{}{uint64(1), uint64(4)},
+			},
+		},
+		{
+			inType: semantic.BasicFloat,
+			input: map[string]interface{}{
+				"r": map[string]interface{}{
+					"a":    []interface{}{1.0, 3.0},
+					"b":    []interface{}{2.0, 4.0},
+					"cond": []interface{}{true, false},
+				},
+			},
+			want: map[string]interface{}{
+				"c": []interface{}{1.0, 4.0},
+			},
+		},
+		{
+			inType: semantic.BasicString,
+			input: map[string]interface{}{
+				"r": map[string]interface{}{
+					"a":    []interface{}{"a", "c"},
+					"b":    []interface{}{"b", "d"},
+					"cond": []interface{}{true, false},
+				},
+			},
+			want: map[string]interface{}{
+				"c": []interface{}{"a", "d"},
+			},
+		},
+	}
+
+	for _, test := range conditionalTests {
+		testCases = append(testCases, TestCase{
+			name:         fmt.Sprintf("conditional expression %s", test.inType.String()),
+			fn:           `(r) => ({c: if r.cond then r.a else r.b})`,
+			vectorizable: true,
+			inType: semantic.NewObjectType([]semantic.PropertyType{
+				{Key: []byte("r"), Value: semantic.NewObjectType([]semantic.PropertyType{
+					{Key: []byte("a"), Value: semantic.NewVectorType(test.inType)},
+					{Key: []byte("b"), Value: semantic.NewVectorType(test.inType)},
+					{Key: []byte("cond"), Value: semantic.NewVectorType(semantic.BasicBool)},
+				})},
+			}),
+			input:   test.input,
+			want:    test.want,
 			flagger: executetest.TestFlagger{},
 		})
 	}
