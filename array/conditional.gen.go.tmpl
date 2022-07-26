@@ -13,7 +13,7 @@ func {{.Name}}Conditional(t *Boolean, c, a *{{.Name}}, mem memory.Allocator) (*{
 		b.Resize(n)
 
 		if !(c.Len() == n && a.Len() == n) {
-			return nil, errors.Newf(codes.Invalid, "vectors must be equal length") // FIXME: make message consistent with prior art
+			return nil, errors.Newf(codes.Invalid, "vectors must be equal length")
 		}
 
 		for i := 0; i < n; i++ {
@@ -42,7 +42,7 @@ func {{.Name}}ConditionalCConst(t *Boolean, c {{.PrimitiveType}}, a *{{.Name}}, 
 		b.Resize(n)
 
 		if !(a.Len() == n) {
-			return nil, errors.Newf(codes.Invalid, "vectors must be equal length") // FIXME: make message consistent with prior art
+			return nil, errors.Newf(codes.Invalid, "vectors must be equal length")
 		}
 
 		for i := 0; i < n; i++ {
@@ -71,7 +71,7 @@ func {{.Name}}ConditionalAConst(t *Boolean, c *{{.Name}}, a {{.PrimitiveType}}, 
 		b.Resize(n)
 
 		if !(c.Len() == n) {
-			return nil, errors.Newf(codes.Invalid, "vectors must be equal length") // FIXME: make message consistent with prior art
+			return nil, errors.Newf(codes.Invalid, "vectors must be equal length")
 		}
 
 		for i := 0; i < n; i++ {
@@ -84,6 +84,27 @@ func {{.Name}}ConditionalAConst(t *Boolean, c *{{.Name}}, a {{.PrimitiveType}}, 
 					b.Append(a) // Falsy
 				} else {
 					b.Append(c.Value(i)) // Truthy
+				}
+			} else {
+				b.AppendNull()
+			}
+		}
+		arr := b.New{{.Name}}Array()
+		b.Release()
+	return arr, nil
+}
+
+func {{.Name}}ConditionalCConstAConst(t *Boolean, c, a {{.PrimitiveType}}, mem memory.Allocator) (*{{.Name}}, error) {
+		n := t.Len()
+		b := New{{.Name}}Builder(mem)
+		b.Resize(n)
+
+		for i := 0; i < n; i++ {
+			if t.IsValid(i) {
+			    if t.IsNull(i) || !t.Value(i) {
+					b.Append(a) // Falsy
+				} else {
+					b.Append(c) // Truthy
 				}
 			} else {
 				b.AppendNull()

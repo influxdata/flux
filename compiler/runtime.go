@@ -475,6 +475,8 @@ func (e *conditionalVectorEvaluator) Eval(ctx context.Context, scope Scope) (val
 		}
 	}
 
+	// For cases where all the tests are true, or all are false, we can skip
+	// evaluating the unused branch.
 	if !varied {
 		if initialOutcome.(bool) {
 			return eval(ctx, e.consequent, scope)
