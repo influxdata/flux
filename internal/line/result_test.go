@@ -8,7 +8,7 @@ import (
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
-	"github.com/influxdata/flux/line"
+	"github.com/influxdata/flux/internal/line"
 	"github.com/influxdata/flux/mock"
 )
 
