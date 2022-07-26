@@ -11,7 +11,7 @@ import (
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
-	"github.com/influxdata/flux/iocounter"
+	"github.com/influxdata/flux/internal/iocounter"
 	"github.com/influxdata/flux/mock"
 	"github.com/influxdata/flux/semantic"
 )

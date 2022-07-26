@@ -20,7 +20,7 @@ import (
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
-	"github.com/influxdata/flux/iocounter"
+	"github.com/influxdata/flux/internal/iocounter"
 	"github.com/influxdata/flux/values"
 )
 
