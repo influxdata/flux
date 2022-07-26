@@ -437,12 +437,10 @@ func (e *conditionalVectorEvaluator) Eval(ctx context.Context, scope Scope) (val
 		return nil, errors.Newf(codes.Invalid, "cannot use test of type %s in vectorized conditional expression; expected vector of boolean", typ)
 	}
 
-	// FIXME: vectorized impl here
-
 	mem := memory.GetAllocator(ctx)
 
 	tv := t.Vector()
-	// If `t` is vec repeat, skip the varied checks and immediately select the
+	// If `t` is vec repeat, skip the varied check and immediately select the
 	// branch to return.
 	// FIXME: currently there's no way to vectorize bool literals.
 	//   This branch will never run until boolean literals work and/or we have
