@@ -141,9 +141,15 @@ func getOutputAttributeWithNode(node Node, attrKey string) (PhysicalAttr, Node) 
 }
 
 // CheckSuccessorsMustRequire will return an error if the node has an output attribute
-// that must be required by a successor, and nil otherwise.. E.g., the parallel-run
-// attribute is like this in that it must be required by a merge node.
+// that must be required by *all* successors, but there exists some node that does not
+// require it.
+//
+// E.g., the parallel-run attribute is like this in that it must be required by a merge node.
 // This function will walk forward through successors to find the requiring node.
+//
+// The desired effect here is that if an attribute must be required by successors,
+// we walk forward through the graph and ensure that it is required on every branch that
+// succeeds the given node, with ohly pass-through nodes in between.
 func CheckSuccessorsMustRequire(node *PhysicalPlanNode) error {
 	for _, attr := range node.outputAttrs() {
 		if !attr.SuccessorsMustRequire() {
@@ -192,9 +198,9 @@ func CheckSuccessorsMustRequire(node *PhysicalPlanNode) error {
 }
 
 // requiredBySuccessor returns true if the given attribute is required by succ or
-// succ passes through the attribute and one of its successors requires the attribute.
-// If the attribute is not required, this function returns false and the node that neither passes
-// along nor requires the attribute.
+// succ passes through the attribute and *all* of its successors require the attribute.
+// If the attribute is not required by some succeeding node, this function returns false
+// and the node that neither passes along nor requires the attribute.
 func requiredBySuccessor(requiredAttr PhysicalAttr, node, succ Node) (bool, Node) {
 	psucc, ok := succ.(*PhysicalPlanNode)
 	if !ok {
