@@ -47,13 +47,49 @@ func VectorConditional(t, c, a Vector, mem memory.Allocator) (Value, error) {
     		err error
     	)
 		if cvr != nil && avr != nil {
-			x, err = fluxarray.{{.ValueName}}ConditionalCConstAConst(t.Arr().(*fluxarray.Boolean), (*cvr).{{.ValueType}}(), (*avr).{{.ValueType}}(), mem)
+			x, err = fluxarray.{{.ValueName}}ConditionalCConstAConst(
+				t.Arr().(*fluxarray.Boolean),
+				{{if eq .Name "Time"}}
+					(*cvr).Time().Time().UnixNano(),
+				{{else}}
+					(*cvr).{{.ValueType}}(),
+				{{end}}
+				{{if eq .Name "Time"}}
+					(*avr).Time().Time().UnixNano(),
+				{{else}}
+					(*avr).{{.ValueType}}(),
+				{{end}}
+				mem,
+			)
 		} else if cvr != nil {
-			x, err = fluxarray.{{.ValueName}}ConditionalCConst(t.Arr().(*fluxarray.Boolean), (*cvr).{{.ValueType}}(), a.Arr().(*fluxarray.{{.ValueName}}), mem)
+			x, err = fluxarray.{{.ValueName}}ConditionalCConst(
+				t.Arr().(*fluxarray.Boolean),
+				{{if eq .Name "Time"}}
+					(*cvr).Time().Time().UnixNano(),
+				{{else}}
+					(*cvr).{{.ValueType}}(),
+				{{end}}
+				a.Arr().(*fluxarray.{{.ValueName}}),
+				mem,
+			)
 		} else if avr != nil {
-			x, err = fluxarray.{{.ValueName}}ConditionalAConst(t.Arr().(*fluxarray.Boolean), c.Arr().(*fluxarray.{{.ValueName}}), (*avr).{{.ValueType}}(), mem)
+			x, err = fluxarray.{{.ValueName}}ConditionalAConst(
+				t.Arr().(*fluxarray.Boolean),
+				c.Arr().(*fluxarray.{{.ValueName}}),
+				{{if eq .Name "Time"}}
+					(*avr).Time().Time().UnixNano(),
+				{{else}}
+					(*avr).{{.ValueType}}(),
+				{{end}}
+				mem,
+			)
 		} else {
-			x, err = fluxarray.{{.ValueName}}Conditional(t.Arr().(*fluxarray.Boolean), c.Arr().(*fluxarray.{{.ValueName}}), a.Arr().(*fluxarray.{{.ValueName}}), mem)
+			x, err = fluxarray.{{.ValueName}}Conditional(
+				t.Arr().(*fluxarray.Boolean),
+					c.Arr().(*fluxarray.{{.ValueName}}),
+					a.Arr().(*fluxarray.{{.ValueName}}),
+					mem,
+				)
 		}
 		if err != nil {
 			return nil, err

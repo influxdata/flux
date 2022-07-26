@@ -51,13 +51,40 @@ func VectorConditional(t, c, a Vector, mem memory.Allocator) (Value, error) {
 			err error
 		)
 		if cvr != nil && avr != nil {
-			x, err = fluxarray.IntConditionalCConstAConst(t.Arr().(*fluxarray.Boolean), (*cvr).Int(), (*avr).Int(), mem)
+			x, err = fluxarray.IntConditionalCConstAConst(
+				t.Arr().(*fluxarray.Boolean),
+
+				(*cvr).Int(),
+
+				(*avr).Int(),
+
+				mem,
+			)
 		} else if cvr != nil {
-			x, err = fluxarray.IntConditionalCConst(t.Arr().(*fluxarray.Boolean), (*cvr).Int(), a.Arr().(*fluxarray.Int), mem)
+			x, err = fluxarray.IntConditionalCConst(
+				t.Arr().(*fluxarray.Boolean),
+
+				(*cvr).Int(),
+
+				a.Arr().(*fluxarray.Int),
+				mem,
+			)
 		} else if avr != nil {
-			x, err = fluxarray.IntConditionalAConst(t.Arr().(*fluxarray.Boolean), c.Arr().(*fluxarray.Int), (*avr).Int(), mem)
+			x, err = fluxarray.IntConditionalAConst(
+				t.Arr().(*fluxarray.Boolean),
+				c.Arr().(*fluxarray.Int),
+
+				(*avr).Int(),
+
+				mem,
+			)
 		} else {
-			x, err = fluxarray.IntConditional(t.Arr().(*fluxarray.Boolean), c.Arr().(*fluxarray.Int), a.Arr().(*fluxarray.Int), mem)
+			x, err = fluxarray.IntConditional(
+				t.Arr().(*fluxarray.Boolean),
+				c.Arr().(*fluxarray.Int),
+				a.Arr().(*fluxarray.Int),
+				mem,
+			)
 		}
 		if err != nil {
 			return nil, err
@@ -70,13 +97,40 @@ func VectorConditional(t, c, a Vector, mem memory.Allocator) (Value, error) {
 			err error
 		)
 		if cvr != nil && avr != nil {
-			x, err = fluxarray.UintConditionalCConstAConst(t.Arr().(*fluxarray.Boolean), (*cvr).UInt(), (*avr).UInt(), mem)
+			x, err = fluxarray.UintConditionalCConstAConst(
+				t.Arr().(*fluxarray.Boolean),
+
+				(*cvr).UInt(),
+
+				(*avr).UInt(),
+
+				mem,
+			)
 		} else if cvr != nil {
-			x, err = fluxarray.UintConditionalCConst(t.Arr().(*fluxarray.Boolean), (*cvr).UInt(), a.Arr().(*fluxarray.Uint), mem)
+			x, err = fluxarray.UintConditionalCConst(
+				t.Arr().(*fluxarray.Boolean),
+
+				(*cvr).UInt(),
+
+				a.Arr().(*fluxarray.Uint),
+				mem,
+			)
 		} else if avr != nil {
-			x, err = fluxarray.UintConditionalAConst(t.Arr().(*fluxarray.Boolean), c.Arr().(*fluxarray.Uint), (*avr).UInt(), mem)
+			x, err = fluxarray.UintConditionalAConst(
+				t.Arr().(*fluxarray.Boolean),
+				c.Arr().(*fluxarray.Uint),
+
+				(*avr).UInt(),
+
+				mem,
+			)
 		} else {
-			x, err = fluxarray.UintConditional(t.Arr().(*fluxarray.Boolean), c.Arr().(*fluxarray.Uint), a.Arr().(*fluxarray.Uint), mem)
+			x, err = fluxarray.UintConditional(
+				t.Arr().(*fluxarray.Boolean),
+				c.Arr().(*fluxarray.Uint),
+				a.Arr().(*fluxarray.Uint),
+				mem,
+			)
 		}
 		if err != nil {
 			return nil, err
@@ -89,13 +143,40 @@ func VectorConditional(t, c, a Vector, mem memory.Allocator) (Value, error) {
 			err error
 		)
 		if cvr != nil && avr != nil {
-			x, err = fluxarray.FloatConditionalCConstAConst(t.Arr().(*fluxarray.Boolean), (*cvr).Float(), (*avr).Float(), mem)
+			x, err = fluxarray.FloatConditionalCConstAConst(
+				t.Arr().(*fluxarray.Boolean),
+
+				(*cvr).Float(),
+
+				(*avr).Float(),
+
+				mem,
+			)
 		} else if cvr != nil {
-			x, err = fluxarray.FloatConditionalCConst(t.Arr().(*fluxarray.Boolean), (*cvr).Float(), a.Arr().(*fluxarray.Float), mem)
+			x, err = fluxarray.FloatConditionalCConst(
+				t.Arr().(*fluxarray.Boolean),
+
+				(*cvr).Float(),
+
+				a.Arr().(*fluxarray.Float),
+				mem,
+			)
 		} else if avr != nil {
-			x, err = fluxarray.FloatConditionalAConst(t.Arr().(*fluxarray.Boolean), c.Arr().(*fluxarray.Float), (*avr).Float(), mem)
+			x, err = fluxarray.FloatConditionalAConst(
+				t.Arr().(*fluxarray.Boolean),
+				c.Arr().(*fluxarray.Float),
+
+				(*avr).Float(),
+
+				mem,
+			)
 		} else {
-			x, err = fluxarray.FloatConditional(t.Arr().(*fluxarray.Boolean), c.Arr().(*fluxarray.Float), a.Arr().(*fluxarray.Float), mem)
+			x, err = fluxarray.FloatConditional(
+				t.Arr().(*fluxarray.Boolean),
+				c.Arr().(*fluxarray.Float),
+				a.Arr().(*fluxarray.Float),
+				mem,
+			)
 		}
 		if err != nil {
 			return nil, err
@@ -108,13 +189,40 @@ func VectorConditional(t, c, a Vector, mem memory.Allocator) (Value, error) {
 			err error
 		)
 		if cvr != nil && avr != nil {
-			x, err = fluxarray.BooleanConditionalCConstAConst(t.Arr().(*fluxarray.Boolean), (*cvr).Bool(), (*avr).Bool(), mem)
+			x, err = fluxarray.BooleanConditionalCConstAConst(
+				t.Arr().(*fluxarray.Boolean),
+
+				(*cvr).Bool(),
+
+				(*avr).Bool(),
+
+				mem,
+			)
 		} else if cvr != nil {
-			x, err = fluxarray.BooleanConditionalCConst(t.Arr().(*fluxarray.Boolean), (*cvr).Bool(), a.Arr().(*fluxarray.Boolean), mem)
+			x, err = fluxarray.BooleanConditionalCConst(
+				t.Arr().(*fluxarray.Boolean),
+
+				(*cvr).Bool(),
+
+				a.Arr().(*fluxarray.Boolean),
+				mem,
+			)
 		} else if avr != nil {
-			x, err = fluxarray.BooleanConditionalAConst(t.Arr().(*fluxarray.Boolean), c.Arr().(*fluxarray.Boolean), (*avr).Bool(), mem)
+			x, err = fluxarray.BooleanConditionalAConst(
+				t.Arr().(*fluxarray.Boolean),
+				c.Arr().(*fluxarray.Boolean),
+
+				(*avr).Bool(),
+
+				mem,
+			)
 		} else {
-			x, err = fluxarray.BooleanConditional(t.Arr().(*fluxarray.Boolean), c.Arr().(*fluxarray.Boolean), a.Arr().(*fluxarray.Boolean), mem)
+			x, err = fluxarray.BooleanConditional(
+				t.Arr().(*fluxarray.Boolean),
+				c.Arr().(*fluxarray.Boolean),
+				a.Arr().(*fluxarray.Boolean),
+				mem,
+			)
 		}
 		if err != nil {
 			return nil, err
@@ -127,13 +235,40 @@ func VectorConditional(t, c, a Vector, mem memory.Allocator) (Value, error) {
 			err error
 		)
 		if cvr != nil && avr != nil {
-			x, err = fluxarray.StringConditionalCConstAConst(t.Arr().(*fluxarray.Boolean), (*cvr).Str(), (*avr).Str(), mem)
+			x, err = fluxarray.StringConditionalCConstAConst(
+				t.Arr().(*fluxarray.Boolean),
+
+				(*cvr).Str(),
+
+				(*avr).Str(),
+
+				mem,
+			)
 		} else if cvr != nil {
-			x, err = fluxarray.StringConditionalCConst(t.Arr().(*fluxarray.Boolean), (*cvr).Str(), a.Arr().(*fluxarray.String), mem)
+			x, err = fluxarray.StringConditionalCConst(
+				t.Arr().(*fluxarray.Boolean),
+
+				(*cvr).Str(),
+
+				a.Arr().(*fluxarray.String),
+				mem,
+			)
 		} else if avr != nil {
-			x, err = fluxarray.StringConditionalAConst(t.Arr().(*fluxarray.Boolean), c.Arr().(*fluxarray.String), (*avr).Str(), mem)
+			x, err = fluxarray.StringConditionalAConst(
+				t.Arr().(*fluxarray.Boolean),
+				c.Arr().(*fluxarray.String),
+
+				(*avr).Str(),
+
+				mem,
+			)
 		} else {
-			x, err = fluxarray.StringConditional(t.Arr().(*fluxarray.Boolean), c.Arr().(*fluxarray.String), a.Arr().(*fluxarray.String), mem)
+			x, err = fluxarray.StringConditional(
+				t.Arr().(*fluxarray.Boolean),
+				c.Arr().(*fluxarray.String),
+				a.Arr().(*fluxarray.String),
+				mem,
+			)
 		}
 		if err != nil {
 			return nil, err
@@ -146,13 +281,40 @@ func VectorConditional(t, c, a Vector, mem memory.Allocator) (Value, error) {
 			err error
 		)
 		if cvr != nil && avr != nil {
-			x, err = fluxarray.IntConditionalCConstAConst(t.Arr().(*fluxarray.Boolean), (*cvr).Int(), (*avr).Int(), mem)
+			x, err = fluxarray.IntConditionalCConstAConst(
+				t.Arr().(*fluxarray.Boolean),
+
+				(*cvr).Time().Time().UnixNano(),
+
+				(*avr).Time().Time().UnixNano(),
+
+				mem,
+			)
 		} else if cvr != nil {
-			x, err = fluxarray.IntConditionalCConst(t.Arr().(*fluxarray.Boolean), (*cvr).Int(), a.Arr().(*fluxarray.Int), mem)
+			x, err = fluxarray.IntConditionalCConst(
+				t.Arr().(*fluxarray.Boolean),
+
+				(*cvr).Time().Time().UnixNano(),
+
+				a.Arr().(*fluxarray.Int),
+				mem,
+			)
 		} else if avr != nil {
-			x, err = fluxarray.IntConditionalAConst(t.Arr().(*fluxarray.Boolean), c.Arr().(*fluxarray.Int), (*avr).Int(), mem)
+			x, err = fluxarray.IntConditionalAConst(
+				t.Arr().(*fluxarray.Boolean),
+				c.Arr().(*fluxarray.Int),
+
+				(*avr).Time().Time().UnixNano(),
+
+				mem,
+			)
 		} else {
-			x, err = fluxarray.IntConditional(t.Arr().(*fluxarray.Boolean), c.Arr().(*fluxarray.Int), a.Arr().(*fluxarray.Int), mem)
+			x, err = fluxarray.IntConditional(
+				t.Arr().(*fluxarray.Boolean),
+				c.Arr().(*fluxarray.Int),
+				a.Arr().(*fluxarray.Int),
+				mem,
+			)
 		}
 		if err != nil {
 			return nil, err
