@@ -528,6 +528,10 @@ pub enum Feature {
     /// Enables calls to map to be vectorized when the function contains select
     /// literal values.
     VectorizedConst,
+
+    /// Enables calls to map to be vectorized when the function contains
+    /// conditional expressions.
+    VectorizedConditionals,
 }
 
 impl FromStr for Feature {

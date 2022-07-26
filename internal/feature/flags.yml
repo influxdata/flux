@@ -93,3 +93,9 @@
   key: queryConcurrencyIncrease
   default: 0
   contact: Jonathan Sternberg, Adrian Thurston
+
+- name: Vectorized Conditionals
+  description: Calls to map can be vectorized when conditional expressions appear in the function
+  key: vectorizedConditionals
+  default: false
+  contact: Owen Nelson

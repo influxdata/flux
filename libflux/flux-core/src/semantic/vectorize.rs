@@ -123,13 +123,20 @@ impl Expression {
                     right,
                 }))
             }
-            Expression::Conditional(expr) => Expression::Conditional(Box::new(ConditionalExpr {
-                loc: expr.loc.clone(),
-                test: expr.test.vectorize(env)?,
-                consequent: expr.consequent.vectorize(env)?,
-                alternate: expr.alternate.vectorize(env)?,
-                typ: MonoType::vector(expr.typ.clone()),
-            })),
+            Expression::Conditional(expr)
+                if env
+                    .config
+                    .features
+                    .contains(&Feature::VectorizedConditionals) =>
+            {
+                Expression::Conditional(Box::new(ConditionalExpr {
+                    loc: expr.loc.clone(),
+                    test: expr.test.vectorize(env)?,
+                    consequent: expr.consequent.vectorize(env)?,
+                    alternate: expr.alternate.vectorize(env)?,
+                    typ: MonoType::vector(expr.typ.clone()),
+                }))
+            }
             expr @ Expression::Integer(_)
                 if env.config.features.contains(&Feature::VectorizedConst) =>
             {
