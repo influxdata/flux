@@ -4,7 +4,7 @@ import (
 	"os"
 
 	"github.com/influxdata/flux/csv"
-	"github.com/influxdata/flux/influxql"
+	"github.com/influxdata/flux/internal/influxql"
 	"github.com/influxdata/flux/memory"
 	"github.com/spf13/cobra"
 )
