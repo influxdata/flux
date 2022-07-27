@@ -75,11 +75,11 @@ func (SortMergeJoinPredicateRule) Rewrite(ctx context.Context, n plan.Node) (pla
 	predecessors := n.Predecessors()
 	n.ClearPredecessors()
 
-	makeSortNode := func(parentNode plan.Node, columns []string) *plan.PhysicalPlanNode {
+	makeSortNode := func(name string, parentNode plan.Node, columns []string) *plan.PhysicalPlanNode {
 		sortProc := universe.SortProcedureSpec{
 			Columns: columns,
 		}
-		sortNode := plan.CreateUniquePhysicalNode(ctx, "sortMergeJoin", &sortProc)
+		sortNode := plan.CreateUniquePhysicalNode(ctx, name, &sortProc)
 
 		sortNode.AddPredecessors(parentNode)
 		sortNode.AddSuccessors(n)
@@ -94,7 +94,7 @@ func (SortMergeJoinPredicateRule) Rewrite(ctx context.Context, n plan.Node) (pla
 	for _, pair := range spec.On {
 		columns = append(columns, pair.Left)
 	}
-	successors[0] = makeSortNode(predecessors[0], columns)
+	successors[0] = makeSortNode("sort_join_lhs", predecessors[0], columns)
 
 	successors = predecessors[1].Successors()
 
@@ -102,7 +102,7 @@ func (SortMergeJoinPredicateRule) Rewrite(ctx context.Context, n plan.Node) (pla
 	for _, pair := range spec.On {
 		columns = append(columns, pair.Right)
 	}
-	successors[0] = makeSortNode(predecessors[1], columns)
+	successors[0] = makeSortNode("sort_join_rhs", predecessors[1], columns)
 
 	// Replace the spec so we don't end up trying to apply this rewrite forever
 	x := SortMergeJoinProcedureSpec(*spec)

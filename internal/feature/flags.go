@@ -173,6 +173,18 @@ func ExperimentalTestingDiff() BoolFlag {
 	return experimentalTestingDiff
 }
 
+var removeRedundantSortNodes = feature.MakeBoolFlag(
+	"Remove Redundant Sort Nodes",
+	"removeRedundantSortNodes",
+	"Chris Wolff",
+	false,
+)
+
+// RemoveRedundantSortNodes - Planner will remove sort nodes when tables are already sorted
+func RemoveRedundantSortNodes() BoolFlag {
+	return removeRedundantSortNodes
+}
+
 // Inject will inject the Flagger into the context.
 func Inject(ctx context.Context, flagger Flagger) context.Context {
 	return feature.Inject(ctx, flagger)
@@ -192,6 +204,7 @@ var all = []Flag{
 	unusedSymbolWarnings,
 	vectorizedConst,
 	experimentalTestingDiff,
+	removeRedundantSortNodes,
 }
 
 var byKey = map[string]Flag{
@@ -208,6 +221,7 @@ var byKey = map[string]Flag{
 	"unusedSymbolWarnings":             unusedSymbolWarnings,
 	"vectorizedConst":                  vectorizedConst,
 	"experimentalTestingDiff":          experimentalTestingDiff,
+	"removeRedundantSortNodes":         removeRedundantSortNodes,
 }
 
 // Flags returns all feature flags.

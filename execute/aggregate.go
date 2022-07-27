@@ -394,6 +394,17 @@ func (c *SimpleAggregateConfig) ReadArgs(args flux.Arguments) error {
 	return nil
 }
 
+// PassThroughAttribute implements the PassThroughAttributer interface used by
+// the planner. Aggregate functions preserve collation of their input rows,
+// albeit trivially, since there can be only one row in each output table.
+func (c SimpleAggregateConfig) PassThroughAttribute(attrKey string) bool {
+	switch attrKey {
+	case plan.CollationKey:
+		return true
+	}
+	return false
+}
+
 func NewSimpleAggregateTransformation(ctx context.Context, id DatasetID, agg SimpleAggregate, config SimpleAggregateConfig, mem memory.Allocator) (Transformation, Dataset, error) {
 	if feature.AggregateTransformationTransport().Enabled(ctx) {
 		tr := &simpleAggregateTransformation2{

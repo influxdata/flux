@@ -84,20 +84,24 @@ func CheckRequiredAttributes(node *PhysicalPlanNode) error {
 
 	for i, reqAttrMap := range reqAttrsSlice {
 		for _, reqAttr := range reqAttrMap {
-			ppred := node.Predecessors()[i].(*PhysicalPlanNode)
-			haveAttr, n := getOutputAttributeWithNode(node.Predecessors()[i].(*PhysicalPlanNode), reqAttr.Key())
+			pred := node.Predecessors()[i]
+			haveAttr, n := getOutputAttributeWithNode(pred, reqAttr.Key())
 			if haveAttr == nil {
-				return errors.Newf(codes.Internal,
-					"attribute %q, required by %q, is missing from predecessor %q",
+				msg := fmt.Sprintf("attribute %q, required by %q, is missing from predecessor %q",
 					reqAttr.Key(), node.ID(), n.ID(),
 				)
+				if _, ok := n.(*LogicalNode); ok {
+					// Logical nodes do not have attributes
+					msg += " which is a logical node"
+				}
+				return errors.New(codes.Internal, msg)
 			}
 
 			if !reqAttr.SatisfiedBy(haveAttr) {
 				return errors.Newf(codes.Internal,
 					"node %q requires attribute %v, which is not satisfied by predecessor %q, "+
 						"which has attribute %v",
-					node.ID(), reqAttr, ppred.ID(), haveAttr,
+					node.ID(), reqAttr, pred.ID(), haveAttr,
 				)
 			}
 		}
@@ -112,29 +116,40 @@ func CheckRequiredAttributes(node *PhysicalPlanNode) error {
 //   sort |> filter
 // The "filter" node will still provide the collation attribute, even though it's
 // the "sort" node that actually does the collating.
-func GetOutputAttribute(node *PhysicalPlanNode, attrKey string) PhysicalAttr {
+func GetOutputAttribute(node Node, attrKey string) PhysicalAttr {
 	attr, _ := getOutputAttributeWithNode(node, attrKey)
 	return attr
 }
 
-func getOutputAttributeWithNode(node *PhysicalPlanNode, attrKey string) (PhysicalAttr, *PhysicalPlanNode) {
-	if attr, ok := node.outputAttrs()[attrKey]; ok {
+func getOutputAttributeWithNode(node Node, attrKey string) (PhysicalAttr, Node) {
+	pn, ok := node.(*PhysicalPlanNode)
+	if !ok {
+		return nil, node
+	}
+
+	if attr, ok := pn.outputAttrs()[attrKey]; ok {
 		return attr, nil
 	}
 
-	if node.passesThroughAttr(attrKey) && len(node.Predecessors()) == 1 {
+	if pn.passesThroughAttr(attrKey) && len(pn.Predecessors()) == 1 {
 		// TODO(cwolff): consider what it means for nodes with multiple predecessors
 		//   (e.g. join or union) to pass on attributes.
-		return getOutputAttributeWithNode(node.Predecessors()[0].(*PhysicalPlanNode), attrKey)
+		return getOutputAttributeWithNode(node.Predecessors()[0], attrKey)
 	}
 
 	return nil, node
 }
 
 // CheckSuccessorsMustRequire will return an error if the node has an output attribute
-// that must be required by a successor, and nil otherwise.. E.g., the parallel-run
-// attribute is like this in that it must be required by a merge node.
+// that must be required by *all* successors, but there exists some node that does not
+// require it.
+//
+// E.g., the parallel-run attribute is like this in that it must be required by a merge node.
 // This function will walk forward through successors to find the requiring node.
+//
+// The desired effect here is that if an attribute must be required by successors,
+// we walk forward through the graph and ensure that it is required on every branch that
+// succeeds the given node, with ohly pass-through nodes in between.
 func CheckSuccessorsMustRequire(node *PhysicalPlanNode) error {
 	for _, attr := range node.outputAttrs() {
 		if !attr.SuccessorsMustRequire() {
@@ -150,18 +165,22 @@ func CheckSuccessorsMustRequire(node *PhysicalPlanNode) error {
 		}
 
 		for _, succ := range node.Successors() {
-			reqd, n := requiredBySuccessor(attr, node, succ.(*PhysicalPlanNode))
+			reqd, n := requiredBySuccessor(attr, node, succ)
 			if reqd {
 				continue
 			}
 
 			if n != nil {
+				msg := fmt.Sprintf("plan node %q has attribute %q that must be required by successors, "+
+					"but it is not required or propagated by successor %q",
+					node.ID(), attr.Key(), n.ID(),
+				)
+				if _, ok := n.(*LogicalNode); ok {
+					msg += " which is a logical node"
+				}
 				return &flux.Error{
 					Code: codes.Internal,
-					Msg: fmt.Sprintf("plan node %q has attribute %q that must be required by successors, "+
-						"but it is not required or propagated by successor %q",
-						node.ID(), attr.Key(), n.ID(),
-					),
+					Msg:  msg,
 				}
 			}
 
@@ -179,22 +198,27 @@ func CheckSuccessorsMustRequire(node *PhysicalPlanNode) error {
 }
 
 // requiredBySuccessor returns true if the given attribute is required by succ or
-// succ passes through the attribute and one of its successors requires the attribute.
-// If the attribute is not required, this function returns false and the node that neither passes
-// along nor requires the attribute.
-func requiredBySuccessor(requiredAttr PhysicalAttr, node, succ *PhysicalPlanNode) (bool, *PhysicalPlanNode) {
-	i := indexOfNode(node, succ.Predecessors())
-	if _, ok := succ.requiredAttrs()[i][requiredAttr.Key()]; ok {
+// succ passes through the attribute and *all* of its successors require the attribute.
+// If the attribute is not required by some succeeding node, this function returns false
+// and the node that neither passes along nor requires the attribute.
+func requiredBySuccessor(requiredAttr PhysicalAttr, node, succ Node) (bool, Node) {
+	psucc, ok := succ.(*PhysicalPlanNode)
+	if !ok {
+		return false, succ
+	}
+
+	i := indexOfNode(node, psucc.Predecessors())
+	if _, ok := psucc.requiredAttrs()[i][requiredAttr.Key()]; ok {
 		return true, succ
 	}
-	if succ.passesThroughAttr(requiredAttr.Key()) {
+	if psucc.passesThroughAttr(requiredAttr.Key()) {
 		if len(succ.Successors()) == 0 {
 			return false, nil
 		}
 		// If this node does not require the attribute itself but passes it along,
 		// see if any successors require it.
-		for _, ssucc := range succ.Successors() {
-			if reqd, n := requiredBySuccessor(requiredAttr, succ, ssucc.(*PhysicalPlanNode)); !reqd {
+		for _, ssucc := range psucc.Successors() {
+			if reqd, n := requiredBySuccessor(requiredAttr, succ, ssucc); !reqd {
 				return false, n
 			}
 		}

@@ -124,6 +124,32 @@ func TestCheckRequiredAttributes(t *testing.T) {
 			err: `attribute "mock-attr", required by "require-attr", is missing from predecessor "no-attr"`,
 		},
 		{
+			name: "logical node does not provide attributes",
+			input: &plantest.PlanSpec{
+				Nodes: []plan.Node{
+					plan.CreateLogicalNode("logical", plantest.MockProcedureSpec{}),
+					plantest.CreatePhysicalNode("passthru", plantest.MockProcedureSpec{
+						PassThroughAttributeFn: func(attrKey string) bool { return attrKey == mockAttrKey },
+					}),
+					plantest.CreatePhysicalNode("require-attr", plantest.MockProcedureSpec{
+						RequiredAttributesFn: func() []plan.PhysicalAttributes {
+							return []plan.PhysicalAttributes{
+								{
+									mockAttrKey: &mockAttr{},
+								},
+							}
+						},
+					}),
+				},
+				Edges: [][2]int{
+					{0, 1},
+					{1, 2},
+				},
+			},
+			err: `attribute "mock-attr", required by "require-attr", ` +
+				`is missing from predecessor "logical" which is a logical node`,
+		},
+		{
 			name: "attribute present but not satisfied",
 			input: &plantest.PlanSpec{
 				Nodes: []plan.Node{
@@ -160,7 +186,10 @@ func TestCheckRequiredAttributes(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			spec := plantest.CreatePlanSpec(tc.input)
 			err := spec.BottomUpWalk(func(node plan.Node) error {
-				return plan.CheckRequiredAttributes(node.(*plan.PhysicalPlanNode))
+				if pn, ok := node.(*plan.PhysicalPlanNode); ok {
+					return plan.CheckRequiredAttributes(pn)
+				}
+				return nil
 			})
 			if tc.err == "" {
 				require.NoError(t, err)
@@ -211,7 +240,7 @@ func TestCheckSuccessorsMustRequire(t *testing.T) {
 			},
 		},
 		{
-			name: "successor does not require",
+			name: "attr not required by successor",
 			input: &plantest.PlanSpec{
 				Nodes: []plan.Node{
 					plantest.CreatePhysicalNode("successor-does-not-require", plantest.MockProcedureSpec{
@@ -224,7 +253,7 @@ func TestCheckSuccessorsMustRequire(t *testing.T) {
 					plantest.CreatePhysicalNode("passthru", plantest.MockProcedureSpec{
 						PassThroughAttributeFn: func(attrKey string) bool { return attrKey == mockAttrKey },
 					}),
-					plantest.CreatePhysicalNode("requires-attr", plantest.MockProcedureSpec{}),
+					plantest.CreatePhysicalNode("does-not-require", plantest.MockProcedureSpec{}),
 				},
 				Edges: [][2]int{
 					{0, 1},
@@ -273,6 +302,27 @@ func TestCheckSuccessorsMustRequire(t *testing.T) {
 				`but it is not required or propagated by successor "does-not-require-attr"`,
 		},
 		{
+			name: "successor is logical node",
+			input: &plantest.PlanSpec{
+				Nodes: []plan.Node{
+					plantest.CreatePhysicalNode("successor-must-require", plantest.MockProcedureSpec{
+						OutputAttributesFn: func() plan.PhysicalAttributes {
+							return plan.PhysicalAttributes{
+								mockAttrKey: &mockAttr{successorMustRequire: true},
+							}
+						},
+					}),
+					plan.CreateLogicalNode("logical", plantest.MockProcedureSpec{}),
+				},
+				Edges: [][2]int{
+					{0, 1},
+				},
+			},
+			err: `plan node "successor-must-require" has attribute "mock-attr" ` +
+				`that must be required by successors, but it is not required or propagated ` +
+				`by successor "logical" which is a logical node`,
+		},
+		{
 			name: "no requiring successor passthru",
 			input: &plantest.PlanSpec{
 				Nodes: []plan.Node{
@@ -299,7 +349,10 @@ func TestCheckSuccessorsMustRequire(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			spec := plantest.CreatePlanSpec(tc.input)
 			err := spec.BottomUpWalk(func(node plan.Node) error {
-				return plan.CheckSuccessorsMustRequire(node.(*plan.PhysicalPlanNode))
+				if pn, ok := node.(*plan.PhysicalPlanNode); ok {
+					return plan.CheckSuccessorsMustRequire(pn)
+				}
+				return nil
 			})
 			if tc.err == "" {
 				require.NoError(t, err)

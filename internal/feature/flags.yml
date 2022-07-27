@@ -87,3 +87,9 @@
   key: experimentalTestingDiff
   default: false
   contact: Jonathan Sternberg
+
+- name: Remove Redundant Sort Nodes
+  description: Planner will remove sort nodes when tables are already sorted
+  key: removeRedundantSortNodes
+  default: false
+  contact: Chris Wolff
