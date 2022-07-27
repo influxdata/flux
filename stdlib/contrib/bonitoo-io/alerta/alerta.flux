@@ -118,7 +118,7 @@ alert = (
 //
 // ### Usage
 // `alerta.endpoint` is a factory function that outputs another function.
-//     The output function requires a `mapFn` parameter.
+// The output function requires a `mapFn` parameter.
 //
 // #### mapFn
 // A function that builds the object used to generate the POST request. Requires an `r` parameter.
@@ -142,7 +142,7 @@ alert = (
 // - url: (Required) Alerta URL.
 // - apiKey: (Required) Alerta API key.
 // - environment: Alert environment. Default is `""`.
-//   Valid values: "Production", "Development" or empty string (default).
+//   Valid values: "Production", "Development", or empty string (default).
 // - origin: Alert origin. Default is `"InfluxDB"`.
 //
 // For more information, see `alerta.alert()` parameters.
