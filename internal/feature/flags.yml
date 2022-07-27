@@ -19,7 +19,7 @@
 - name: Group Transformation Group
   description: Enable GroupTransformation interface for the group function
   key: groupTransformationGroup
-  default: false
+  default: true
   contact: Sean Brickley
 
 - name: Query Concurrency Limit
@@ -55,20 +55,8 @@
 - name: Optimize Aggregate Window
   description: Enables a version of aggregateWindow written in Go
   key: optimizeAggregateWindow
-  default: false
+  default: true
   contact: Jonathan Sternberg
-
-- name: Narrow Transformation Limit
-  description: Enable the NarrowStateTransformation implementation of limit
-  key: narrowTransformationLimit
-  default: false
-  contact: Owen Nelson
-
-- name: Optimize State Tracking
-  description: Enable implementation of NarrowStateTransformation of stateTracking
-  key: optimizeStateTracking
-  default: false
-  contact: Sean Brickley
 
 - name: Label polymorphism
   description: Enables label polymorphism in the type system

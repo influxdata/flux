@@ -2,7 +2,6 @@ package universe_test
 
 import (
 	"context"
-	"fmt"
 	"sort"
 	"testing"
 
@@ -270,7 +269,6 @@ func TestLimit_Process(t *testing.T) {
 		},
 	}
 	for _, tc := range testCases {
-		// Regular limit...
 		t.Run(tc.name, func(t *testing.T) {
 			executetest.ProcessTestHelper2(
 				t,
@@ -278,31 +276,14 @@ func TestLimit_Process(t *testing.T) {
 				tc.want,
 				nil,
 				func(id execute.DatasetID, alloc memory.Allocator) (execute.Transformation, execute.Dataset) {
-					return universe.NewLimitTransformation(tc.spec, id)
+					tr, ds, err := universe.NewLimitTransformation(tc.spec, id, alloc)
+					if err != nil {
+						t.Fatal(err)
+					}
+					return tr, ds
 				},
 			)
 		})
-
-		// Narrow limit...
-		t.Run(
-			// N.b. need to ensure the testcase names are distinct to avoid test
-			// results colliding between these two runs.
-			fmt.Sprintf("%s narrow", tc.name),
-			func(t *testing.T) {
-				executetest.ProcessTestHelper2(
-					t,
-					tc.data(),
-					tc.want,
-					nil,
-					func(id execute.DatasetID, alloc memory.Allocator) (execute.Transformation, execute.Dataset) {
-						tr, ds, err := universe.NewNarrowLimitTransformation(tc.spec, id, alloc)
-						if err != nil {
-							t.Fatal(err)
-						}
-						return tr, ds
-					},
-				)
-			})
 	}
 }
 
@@ -371,111 +352,7 @@ func TestProcess_Limit_MultiBuffer(t *testing.T) {
 		N:      4,
 		Offset: 2,
 	}
-	tr, d := universe.NewLimitTransformation(spec, executetest.RandomDatasetID())
-	store := executetest.NewDataStore()
-	d.AddTransformation(store)
-
-	parentID := executetest.RandomDatasetID()
-	if err := tr.Process(parentID, in); err != nil {
-		t.Fatal(err)
-	}
-	tr.Finish(parentID, nil)
-
-	got, err := executetest.TablesFromCache(store)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	want := []*executetest.Table{
-		{
-			ColMeta: []flux.ColMeta{
-				{Label: "_time", Type: flux.TTime},
-				{Label: "_value", Type: flux.TInt},
-			},
-			Data: [][]interface{}{
-				{values.Time(20), int64(2)},
-				{values.Time(30), int64(3)},
-				{values.Time(40), int64(4)},
-				{values.Time(50), int64(5)},
-			},
-		},
-	}
-	executetest.NormalizeTables(want)
-
-	sort.Sort(executetest.SortedTables(got))
-	sort.Sort(executetest.SortedTables(want))
-
-	if !cmp.Equal(want, got) {
-		t.Errorf("unexpected tables -want/+got\n%s", cmp.Diff(want, got))
-	}
-}
-
-func TestProcess_NarrowLimit_MultiBuffer(t *testing.T) {
-	key := execute.NewGroupKey(nil, nil)
-	mem := &memory.ResourceAllocator{}
-	b := table.NewBufferedBuilder(key, mem)
-	{
-		buf := arrow.TableBuffer{
-			GroupKey: key,
-			Columns: []flux.ColMeta{
-				{Label: "_time", Type: flux.TTime},
-				{Label: "_value", Type: flux.TInt},
-			},
-			Values: make([]array.Array, 2),
-		}
-
-		times := array.NewIntBuilder(mem)
-		for ts := int64(0); ts < 40; ts += 10 {
-			times.Append(ts)
-		}
-		buf.Values[0] = times.NewArray()
-
-		values := array.NewIntBuilder(mem)
-		for v := int64(0); v < 4; v++ {
-			values.Append(v)
-		}
-		buf.Values[1] = values.NewArray()
-		if err := b.AppendBuffer(&buf); err != nil {
-			t.Fatal(err)
-		}
-	}
-
-	{
-		buf := arrow.TableBuffer{
-			GroupKey: key,
-			Columns: []flux.ColMeta{
-				{Label: "_time", Type: flux.TTime},
-				{Label: "_value", Type: flux.TInt},
-			},
-			Values: make([]array.Array, 2),
-		}
-
-		times := array.NewIntBuilder(mem)
-		for ts := int64(40); ts < 80; ts += 10 {
-			times.Append(ts)
-		}
-		buf.Values[0] = times.NewArray()
-
-		values := array.NewIntBuilder(mem)
-		for v := int64(4); v < 8; v++ {
-			values.Append(v)
-		}
-		buf.Values[1] = values.NewArray()
-		if err := b.AppendBuffer(&buf); err != nil {
-			t.Fatal(err)
-		}
-	}
-
-	in, err := b.Table()
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	spec := &universe.LimitProcedureSpec{
-		N:      4,
-		Offset: 2,
-	}
-	tr, d, err := universe.NewNarrowLimitTransformation(spec, executetest.RandomDatasetID(), mem)
+	tr, d, err := universe.NewLimitTransformation(spec, executetest.RandomDatasetID(), memory.DefaultAllocator)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -525,14 +402,6 @@ func BenchmarkLimit_100N_1000(b *testing.B) {
 	benchmarkLimit(b, 100, 1000)
 }
 
-func BenchmarkNarrowLimit_1N_1000(b *testing.B) {
-	benchmarkNarrowLimit(b, 1, 1000)
-}
-
-func BenchmarkNarrowLimit_100N_1000(b *testing.B) {
-	benchmarkNarrowLimit(b, 100, 1000)
-}
-
 func benchmarkLimit(b *testing.B, n, l int) {
 	spec := &universe.LimitProcedureSpec{
 		N: int64(n),
@@ -552,36 +421,11 @@ func benchmarkLimit(b *testing.B, n, l int) {
 			return gen.Input(context.Background(), schema)
 		},
 		func(id execute.DatasetID, alloc memory.Allocator) (execute.Transformation, execute.Dataset) {
-			return universe.NewLimitTransformation(spec, id)
-		},
-	)
-}
-
-func benchmarkNarrowLimit(b *testing.B, n, l int) {
-	spec := &universe.LimitProcedureSpec{
-		N: int64(n),
-	}
-	executetest.ProcessBenchmarkHelper(b,
-		func(alloc memory.Allocator) (flux.TableIterator, error) {
-			schema := gen.Schema{
-				NumPoints: l,
-				Alloc:     alloc,
-				Tags: []gen.Tag{
-					{Name: "_measurement", Cardinality: 1},
-					{Name: "_field", Cardinality: 6},
-					{Name: "t0", Cardinality: 100},
-					{Name: "t1", Cardinality: 50},
-				},
-			}
-			return gen.Input(context.Background(), schema)
-		},
-
-		func(id execute.DatasetID, alloc memory.Allocator) (execute.Transformation, execute.Dataset) {
-			tr, ds, err := universe.NewNarrowLimitTransformation(spec, id, alloc)
+			tr, d, err := universe.NewLimitTransformation(spec, id, alloc)
 			if err != nil {
 				b.Fatal(err)
 			}
-			return tr, ds
+			return tr, d
 		},
 	)
 }
