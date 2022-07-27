@@ -103,12 +103,11 @@ func NewMovingAverageTransformation(id execute.DatasetID, spec *MovingAveragePro
 	tr := &movingAverageTransformation{
 		n: spec.N,
 	}
-	return execute.NewNarrowStateTransformation(id, tr, mem)
+	return execute.NewNarrowStateTransformation[*movingAverageState](id, tr, mem)
 }
 
-func (m *movingAverageTransformation) Process(chunk table.Chunk, state interface{}, d *execute.TransportDataset, mem memory.Allocator) (interface{}, bool, error) {
-	s, _ := state.(*movingAverageState)
-	newState, err := m.processChunk(chunk, s, d, mem)
+func (m *movingAverageTransformation) Process(chunk table.Chunk, state *movingAverageState, d *execute.TransportDataset, mem memory.Allocator) (*movingAverageState, bool, error) {
+	newState, err := m.processChunk(chunk, state, d, mem)
 	if err != nil {
 		return nil, false, err
 	}

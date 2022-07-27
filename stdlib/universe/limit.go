@@ -115,7 +115,7 @@ func NewLimitTransformation(
 		n:      int(spec.N),
 		offset: int(spec.Offset),
 	}
-	return execute.NewNarrowStateTransformation(id, t, mem)
+	return execute.NewNarrowStateTransformation[*limitState](id, t, mem)
 }
 
 type limitTransformation struct {
@@ -124,21 +124,18 @@ type limitTransformation struct {
 
 func (t *limitTransformation) Process(
 	chunk table.Chunk,
-	state interface{},
+	state *limitState,
 	dataset *execute.TransportDataset,
 	_ arrowmem.Allocator,
-) (interface{}, bool, error) {
+) (*limitState, bool, error) {
 
-	var state_ *limitState
 	// `.Process` is reentrant, so to speak. The first invocation will not
 	// include a value for `state`. Initialization happens here then is passed
 	// in/out for the subsequent calls.
 	if state == nil {
-		state_ = &limitState{n: t.n, offset: t.offset}
-	} else {
-		state_ = state.(*limitState)
+		state = &limitState{n: t.n, offset: t.offset}
 	}
-	return t.processChunk(chunk, state_, dataset)
+	return t.processChunk(chunk, state, dataset)
 }
 
 func (t *limitTransformation) processChunk(

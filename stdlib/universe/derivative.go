@@ -158,7 +158,7 @@ func NewDerivativeTransformation(ctx context.Context, id execute.DatasetID, spec
 		timeCol:     spec.TimeColumn,
 		initialZero: spec.InitialZero,
 	}
-	return execute.NewNarrowStateTransformation(id, tr, mem)
+	return execute.NewNarrowStateTransformation[*derivativeState](id, tr, mem)
 }
 
 type derivativeTransformation struct {
@@ -169,13 +169,8 @@ type derivativeTransformation struct {
 	initialZero bool
 }
 
-func (t *derivativeTransformation) Process(chunk table.Chunk, state interface{}, d *execute.TransportDataset, mem memory.Allocator) (interface{}, bool, error) {
-	var dstate *derivativeState
-	if state != nil {
-		dstate = state.(*derivativeState)
-	}
-
-	ns, err := t.processChunk(chunk, dstate, d, mem)
+func (t *derivativeTransformation) Process(chunk table.Chunk, state *derivativeState, d *execute.TransportDataset, mem memory.Allocator) (*derivativeState, bool, error) {
+	ns, err := t.processChunk(chunk, state, d, mem)
 	if err != nil {
 		return nil, false, err
 	}

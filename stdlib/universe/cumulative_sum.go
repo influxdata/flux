@@ -104,26 +104,27 @@ type cumulativeSumTransformation struct {
 	columns []string
 }
 
+type cumulativeSumStateMap map[string]*cumulativeSumState
+
 func NewCumulativeSumTransformation(id execute.DatasetID, spec *CumulativeSumProcedureSpec, mem memory.Allocator) (execute.Transformation, execute.Dataset, error) {
 	tr := &cumulativeSumTransformation{
 		columns: spec.Columns,
 	}
-	return execute.NewNarrowStateTransformation(id, tr, mem)
+	return execute.NewNarrowStateTransformation[cumulativeSumStateMap](id, tr, mem)
 }
 
-func (c *cumulativeSumTransformation) Process(chunk table.Chunk, state interface{}, d *execute.TransportDataset, mem memory.Allocator) (interface{}, bool, error) {
-	s, _ := state.(map[string]*cumulativeSumState)
-	if s == nil {
-		s = make(map[string]*cumulativeSumState)
+func (c *cumulativeSumTransformation) Process(chunk table.Chunk, state cumulativeSumStateMap, d *execute.TransportDataset, mem memory.Allocator) (cumulativeSumStateMap, bool, error) {
+	if state == nil {
+		state = make(cumulativeSumStateMap)
 	}
 
-	if err := c.processChunk(chunk, s, d, mem); err != nil {
+	if err := c.processChunk(chunk, state, d, mem); err != nil {
 		return nil, false, err
 	}
-	return s, true, nil
+	return state, true, nil
 }
 
-func (c *cumulativeSumTransformation) processChunk(chunk table.Chunk, state map[string]*cumulativeSumState, d *execute.TransportDataset, mem memory.Allocator) error {
+func (c *cumulativeSumTransformation) processChunk(chunk table.Chunk, state cumulativeSumStateMap, d *execute.TransportDataset, mem memory.Allocator) error {
 	buffer := arrow.TableBuffer{
 		GroupKey: chunk.Key(),
 		Columns:  chunk.Cols(),

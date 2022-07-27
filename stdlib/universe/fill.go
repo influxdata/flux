@@ -285,24 +285,19 @@ func NewNarrowFillTransformation(ctx context.Context, spec *FillProcedureSpec, i
 	t := &fillTransformationAdapter{
 		fillTransformation,
 	}
-	return execute.NewNarrowStateTransformation(id, t, alloc)
+	return execute.NewNarrowStateTransformation[*fillState](id, t, alloc)
 }
 
 type fillState struct {
 	fillValue interface{}
 }
 
-func (t *fillTransformationAdapter) Process(chunk table.Chunk, state interface{}, d *execute.TransportDataset, mem arrowmem.Allocator) (interface{}, bool, error) {
+func (t *fillTransformationAdapter) Process(chunk table.Chunk, state *fillState, d *execute.TransportDataset, mem arrowmem.Allocator) (*fillState, bool, error) {
 	return t.fillTransformation.adaptedProcess(chunk, state, d, mem)
 }
 
-func (t *fillTransformation) adaptedProcess(chunk table.Chunk, state interface{}, d *execute.TransportDataset, mem arrowmem.Allocator) (interface{}, bool, error) {
-	var dstate *fillState
-	if state != nil {
-		dstate = state.(*fillState)
-	}
-
-	if dstate == nil {
+func (t *fillTransformation) adaptedProcess(chunk table.Chunk, state *fillState, d *execute.TransportDataset, mem arrowmem.Allocator) (*fillState, bool, error) {
+	if state == nil {
 		// fill value
 		var fillValue interface{}
 		if !t.spec.UsePrevious {
@@ -310,7 +305,7 @@ func (t *fillTransformation) adaptedProcess(chunk table.Chunk, state interface{}
 		}
 
 		// populate state
-		dstate = &fillState{
+		state = &fillState{
 			fillValue: fillValue,
 		}
 	}
@@ -372,7 +367,7 @@ func (t *fillTransformation) adaptedProcess(chunk table.Chunk, state interface{}
 		Values:   make([]array.Array, len(chunk.Cols())),
 	}
 
-	if err := t.fillChunk(&buffer, chunk, colIdx, &dstate.fillValue, mem); err != nil {
+	if err := t.fillChunk(&buffer, chunk, colIdx, &state.fillValue, mem); err != nil {
 		return nil, false, err
 	}
 
@@ -380,7 +375,7 @@ func (t *fillTransformation) adaptedProcess(chunk table.Chunk, state interface{}
 	if err := d.Process(out); err != nil {
 		return nil, false, err
 	}
-	return dstate, true, nil
+	return state, true, nil
 }
 
 func (t *fillTransformationAdapter) Close() error { return nil }

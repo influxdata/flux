@@ -356,8 +356,7 @@ func NewNarrowDifferenceTransformation(spec *DifferenceProcedureSpec, id execute
 	t := &differenceTransformationAdapter{
 		differenceTransformation,
 	}
-	return execute.NewNarrowStateTransformation(id, t, alloc)
-
+	return execute.NewNarrowStateTransformation[*differenceState](id, t, alloc)
 }
 
 func (t *differenceTransformation) createDifferences(cols []flux.ColMeta) []*difference {
@@ -418,17 +417,12 @@ type differenceState struct {
 	outputColumns []flux.ColMeta
 }
 
-func (t *differenceTransformationAdapter) Process(chunk table.Chunk, state interface{}, d *execute.TransportDataset, mem memory.Allocator) (interface{}, bool, error) {
+func (t *differenceTransformationAdapter) Process(chunk table.Chunk, state *differenceState, d *execute.TransportDataset, mem memory.Allocator) (*differenceState, bool, error) {
 	return t.differenceTransformation.adaptedProcess(chunk, state, d, mem)
 }
 
-func (t *differenceTransformation) adaptedProcess(chunk table.Chunk, state interface{}, d *execute.TransportDataset, mem memory.Allocator) (interface{}, bool, error) {
-	var dstate *differenceState
-	if state != nil {
-		dstate = state.(*differenceState)
-	}
-
-	if dstate == nil {
+func (t *differenceTransformation) adaptedProcess(chunk table.Chunk, state *differenceState, d *execute.TransportDataset, mem memory.Allocator) (*differenceState, bool, error) {
+	if state == nil {
 		// We need to drop the first row since its difference is undefined
 		firstIdx := 1
 		if t.keepFirst {
@@ -439,7 +433,7 @@ func (t *differenceTransformation) adaptedProcess(chunk table.Chunk, state inter
 		if err != nil {
 			return nil, false, err
 		}
-		dstate = &differenceState{
+		state = &differenceState{
 			differences:   t.createDifferences(chunk.Cols()),
 			firstIdx:      firstIdx,
 			outputColumns: outputColumns,
@@ -448,23 +442,23 @@ func (t *differenceTransformation) adaptedProcess(chunk table.Chunk, state inter
 
 	buffer := arrow.TableBuffer{
 		GroupKey: chunk.Key(),
-		Columns:  dstate.outputColumns,
-		Values:   make([]array.Array, len(dstate.outputColumns)),
+		Columns:  state.outputColumns,
+		Values:   make([]array.Array, len(state.outputColumns)),
 	}
 
-	if err := t.processChunk(dstate.differences, dstate.firstIdx, mem, &buffer, chunk); err != nil {
+	if err := t.processChunk(state.differences, state.firstIdx, mem, &buffer, chunk); err != nil {
 		return nil, false, err
 	}
 
 	// Now that we skipped the first row, start at 0 for the rest of the batches
-	dstate.firstIdx = 0
+	state.firstIdx = 0
 
 	out := table.ChunkFromBuffer(buffer)
 	if err := d.Process(out); err != nil {
 		return nil, false, err
 	}
 
-	return dstate, true, nil
+	return state, true, nil
 }
 
 func (t *differenceTransformationAdapter) Close() error { return nil }

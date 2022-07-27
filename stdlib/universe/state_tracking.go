@@ -154,7 +154,7 @@ func NewStateTrackingTransformation(ctx context.Context, spec *StateTrackingProc
 		durCol:   spec.DurationColumn,
 		unit:     int64(spec.DurationUnit.Duration()),
 	}
-	return execute.NewNarrowStateTransformation(id, t, mem)
+	return execute.NewNarrowStateTransformation[*trackedState](id, t, mem)
 }
 
 type stateTrackingTransformation struct {
@@ -179,21 +179,20 @@ type trackedState struct {
 	duration int64
 }
 
-func (n *stateTrackingTransformation) Process(chunk table.Chunk, state interface{}, d *execute.TransportDataset, mem memory.Allocator) (interface{}, bool, error) {
+func (n *stateTrackingTransformation) Process(chunk table.Chunk, state *trackedState, d *execute.TransportDataset, mem memory.Allocator) (*trackedState, bool, error) {
 	// Track whether or not the state has been modified
 	mod := false
 
 	// Initialize state
 	if state == nil {
-		state = trackedState{
+		state = &trackedState{
 			count:    -1,
 			duration: -1,
 		}
 		mod = true
 	}
-	s := state.(trackedState)
-	mod, err := n.processChunk(chunk, &s, d, mem, mod)
-	return s, mod, err
+	mod, err := n.processChunk(chunk, state, d, mem, mod)
+	return state, mod, err
 }
 
 func (n *stateTrackingTransformation) Close() error { return nil }
