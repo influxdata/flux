@@ -79,7 +79,7 @@ func (SortMergeJoinPredicateRule) Rewrite(ctx context.Context, n plan.Node) (pla
 		sortProc := universe.SortProcedureSpec{
 			Columns: columns,
 		}
-		sortNode := plan.CreateUniquePhysicalNode(ctx, "sortMergeJoin", &sortProc)
+		sortNode := plan.CreateUniquePhysicalNode(ctx, name, &sortProc)
 
 		sortNode.AddPredecessors(parentNode)
 		sortNode.AddSuccessors(n)
