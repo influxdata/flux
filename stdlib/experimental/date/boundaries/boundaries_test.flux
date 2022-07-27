@@ -4,7 +4,7 @@ package boundaries_test
 import "array"
 import "testing"
 import "timezone"
-import "date/boundaries"
+import "experimental/date/boundaries"
 
 testcase yesterday_test {
     option now = () => 2022-06-01T12:20:11Z

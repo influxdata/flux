@@ -1,10 +1,7 @@
 // Package boundaries provides operators for finding the boundaries around certain days, months, and weeks.
 //
-// **Deprecated**: The `boundaries` package is deprecated in favor of [`experimental/date/boundaries`](https://docs.influxdata.com/flux/v0.x/stdlib/experimental/date/boundaries/).
-//
 // ## Metadata
-// introduced: 0.172.0
-// deprecated: NEXT
+// introduced: NEXT
 package boundaries
 
 
@@ -42,12 +39,9 @@ import "experimental/table"
 // ```
 //
 // ## Metadata
-// introduced: 0.172.0
-// deprecated: NEXT
+// introduced: NEXT
 // tags: date/time
 yesterday = () => {
-    die(msg: "the 'date/boundaries' package has been moved to 'experimental/date/boundaries'")
-
     return {start: date.sub(d: 1d, from: today()), stop: today()}
 }
 
@@ -112,12 +106,9 @@ _week_formatter = (s) => {
 // ```
 //
 // ## Metadata
-// deprecated: NEXT
 // tags: date/time
 //
 monday = () => {
-    die(msg: "the 'date/boundaries' package has been moved to 'experimental/date/boundaries'")
-
     return _day_finder(td: date.Monday, func: _day_formatter)
 }
 
@@ -151,12 +142,9 @@ monday = () => {
 // ```
 //
 // ## Metadata
-// deprecated: NEXT
 // tags: date/time
 //
 tuesday = () => {
-    die(msg: "the 'date/boundaries' package has been moved to 'experimental/date/boundaries'")
-
     return _day_finder(td: date.Tuesday, func: _day_formatter)
 }
 
@@ -190,12 +178,9 @@ tuesday = () => {
 // ```
 //
 // ## Metadata
-// deprecated: NEXT
 // tags: date/time
 //
 wednesday = () => {
-    die(msg: "the 'date/boundaries' package has been moved to 'experimental/date/boundaries'")
-
     return _day_finder(td: date.Wednesday, func: _day_formatter)
 }
 
@@ -228,12 +213,9 @@ wednesday = () => {
 // ```
 //
 // ## Metadata
-// deprecated: NEXT
 // tags: date/time
 //
 thursday = () => {
-    die(msg: "the 'date/boundaries' package has been moved to 'experimental/date/boundaries'")
-
     return _day_finder(td: date.Thursday, func: _day_formatter)
 }
 
@@ -267,12 +249,9 @@ thursday = () => {
 // ```
 //
 // ## Metadata
-// deprecated: NEXT
 // tags: date/time
 //
 friday = () => {
-    die(msg: "the 'date/boundaries' package has been moved to 'experimental/date/boundaries'")
-
     return _day_finder(td: date.Friday, func: _day_formatter)
 }
 
@@ -306,12 +285,9 @@ friday = () => {
 // ```
 //
 // ## Metadata
-// deprecated: NEXT
 // tags: date/time
 //
 saturday = () => {
-    die(msg: "the 'date/boundaries' package has been moved to 'experimental/date/boundaries'")
-
     return _day_finder(td: date.Saturday, func: _day_formatter)
 }
 
@@ -345,12 +321,9 @@ saturday = () => {
 // ```
 //
 // ## Metadata
-// deprecated: NEXT
 // tags: date/time
 //
 sunday = () => {
-    die(msg: "the 'date/boundaries' package has been moved to 'experimental/date/boundaries'")
-
     return _day_finder(td: date.Sunday, func: _day_formatter)
 }
 
@@ -400,12 +373,9 @@ sunday = () => {
 // ```
 //
 // ## Metadata
-// deprecated: NEXT
 // tags: date/time
 //
 month = (month_offset=0) => {
-    die(msg: "the 'date/boundaries' package has been moved to 'experimental/date/boundaries'")
-
     a = date.truncate(t: today(), unit: 1mo)
 
     start = date.add(d: date.scale(d: 1mo, n: month_offset), to: a)
@@ -473,12 +443,9 @@ month = (month_offset=0) => {
 // ```
 //
 // ## Metadata
-// deprecated: NEXT
 // tags: date/time
 //
 week = (week_offset=0, start_sunday=false) => {
-    die(msg: "the 'date/boundaries' package has been moved to 'experimental/date/boundaries'")
-
     return
         if start_sunday then
             _day_finder(td: date.Sunday, func: _week_formatter, offset: date.scale(d: 1w, n: week_offset))
