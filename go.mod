@@ -63,8 +63,11 @@ require (
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 
+require gonum.org/v1/plot v0.10.1
+
 require (
 	cloud.google.com/go/bigquery v1.8.0 // indirect
+	git.sr.ht/~sbinet/gg v0.3.1 // indirect
 	github.com/Azure/azure-pipeline-go v0.2.3 // indirect
 	github.com/Azure/azure-storage-blob-go v0.14.0 // indirect
 	github.com/Azure/go-autorest v14.2.0+incompatible // indirect
@@ -73,6 +76,7 @@ require (
 	github.com/Azure/go-autorest/logger v0.2.1 // indirect
 	github.com/Azure/go-autorest/tracing v0.6.0 // indirect
 	github.com/Masterminds/semver v1.4.2 // indirect
+	github.com/ajstarks/svgo v0.0.0-20211024235047-1546f124cd8b // indirect
 	github.com/apache/arrow/go/arrow v0.0.0-20211112161151-bc219186db40 // indirect
 	github.com/aws/aws-sdk-go v1.29.16 // indirect
 	github.com/aws/aws-sdk-go-v2 v1.11.0 // indirect
@@ -92,8 +96,12 @@ require (
 	github.com/dimchansky/utfbom v1.1.0 // indirect
 	github.com/form3tech-oss/jwt-go v3.2.5+incompatible // indirect
 	github.com/gabriel-vasile/mimetype v1.4.0 // indirect
+	github.com/go-fonts/liberation v0.2.0 // indirect
+	github.com/go-latex/latex v0.0.0-20210823091927-c0d11ff05a81 // indirect
+	github.com/go-pdf/fpdf v0.6.0 // indirect
 	github.com/goccy/go-json v0.7.10 // indirect
 	github.com/golang-sql/civil v0.0.0-20190719163853-cb61b32ac6fe // indirect
+	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0 // indirect
 	github.com/golang/groupcache v0.0.0-20200121045136-8c9f03a8e57e // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/google/uuid v1.3.0 // indirect
@@ -117,6 +125,7 @@ require (
 	go.uber.org/atomic v1.7.0 // indirect
 	go.uber.org/multierr v1.6.0 // indirect
 	golang.org/x/crypto v0.0.0-20211117183948-ae814b36b871 // indirect
+	golang.org/x/image v0.0.0-20220302094943-723b81ca9867 // indirect
 	golang.org/x/lint v0.0.0-20210508222113-6edffad5e616 // indirect
 	golang.org/x/mod v0.6.0-dev.0.20211013180041-c96bc1413d57 // indirect
 	golang.org/x/oauth2 v0.0.0-20210514164344-f6687ab2804c // indirect

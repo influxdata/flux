@@ -76,6 +76,7 @@ import (
 	_ "github.com/influxdata/flux/stdlib/math"
 	_ "github.com/influxdata/flux/stdlib/pagerduty"
 	_ "github.com/influxdata/flux/stdlib/planner"
+	_ "github.com/influxdata/flux/stdlib/polylinesimp"
 	_ "github.com/influxdata/flux/stdlib/profiler"
 	_ "github.com/influxdata/flux/stdlib/pushbullet"
 	_ "github.com/influxdata/flux/stdlib/regexp"

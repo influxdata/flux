@@ -324,6 +324,8 @@ var sourceHashes = map[string]string{
 	"stdlib/planner/window_push_test.flux":                                                        "779f83caca79fec5e4129cb6d1b05b2fbcbb45b479acab69e075ad2ad62d9df2",
 	"stdlib/planner/window_sum_eval_test.flux":                                                    "460d45de75419da033d9bdf0b9a8c0d1bbdb57ed0d02f44d5f55d4d4b45086f1",
 	"stdlib/planner/window_sum_push_test.flux":                                                    "eb8a9bb757503a40da2f397acce7fda67cd71419f1eae420fb3c171d2f01d185",
+	"stdlib/polylinesimp/polylinesimp.flux":                                                       "470995818bb614c0da361afef327c4a4297eadcf4868ae411c2cdced132f4583",
+	"stdlib/polylinesimp/polylinesimp_test.flux":                                                  "cb36434d24cec9f159d2c1d301b4ba211bce79fc1fd62734d20846664af4f0b9",
 	"stdlib/profiler/profiler.flux":                                                               "8e5c0ca87f0c5207c05fa1d0748f008767cf2e7e5451f6bd34a4eb3432573f7a",
 	"stdlib/pushbullet/pushbullet.flux":                                                           "b7e23a954549690281d0edef02149523febae6a6d189e491b2405ddad1a43e16",
 	"stdlib/regexp/regexp.flux":                                                                   "5d9d67f486f4496bc367a0d64fe5e2f96d760f039a7c22b5da9cb9186f58c188",
