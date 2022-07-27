@@ -20,7 +20,7 @@ import "experimental/table"
 //
 // ### Return start and stop timestamps of yesterday
 // ```no_run
-// import "date/boundaries"
+// import "experimental/date/boundaries"
 //
 // option now = () => 2022-01-02T13:45:28Z
 //
@@ -30,7 +30,7 @@ import "experimental/table"
 //
 // ### Query data from yesterday
 // ```no_run
-// import "date/boundaries"
+// import "experimental/date/boundaries"
 //
 //  day = boundaries.yesterday()
 //
@@ -85,7 +85,7 @@ _week_formatter = (s) => {
 // ### Return start and stop timestamps of last Monday
 //
 // ```no_run
-// import "date/boundaries"
+// import "experimental/date/boundaries"
 //
 // option location = timezone.fixed(offset: -8h)
 // option now = () => 2021-12-30T00:40:44Z
@@ -97,7 +97,7 @@ _week_formatter = (s) => {
 // ### Query data collected last Monday
 //
 // ```no_run
-// import "date/boundaries"
+// import "experimental/date/boundaries"
 //
 // day = boundaries.monday()
 //
@@ -121,7 +121,7 @@ monday = () => {
 // ### Return start and stop timestamps of last Tuesday
 //
 // ```no_run
-// import "date/boundaries"
+// import "experimental/date/boundaries"
 //
 // option location = timezone.fixed(offset: -8h)
 // option now = () => 2021-12-30T00:40:44Z
@@ -133,7 +133,7 @@ monday = () => {
 // ### Query data collected last Tuesday
 //
 // ```no_run
-// import "date/boundaries"
+// import "experimental/date/boundaries"
 //
 // day = boundaries.tuesday()
 //
@@ -157,7 +157,7 @@ tuesday = () => {
 // // ### Return start and stop timestamps of last Wednesday
 //
 // ```no_run
-// import "date/boundaries"
+// import "experimental/date/boundaries"
 //
 // option location = timezone.fixed(offset: -8h)
 // option now = () => 2021-12-30T00:40:44Z
@@ -169,7 +169,7 @@ tuesday = () => {
 // ### Query data collected last Wednesday
 //
 // ```no_run
-// import "date/boundaries"
+// import "experimental/date/boundaries"
 //
 // day = boundaries.wednesday()
 //
@@ -192,7 +192,7 @@ wednesday = () => {
 // ### Return start and stop timestamps of last Thursday
 //
 // ```no_run
-// import "date/boundaries"
+// import "experimental/date/boundaries"
 //
 // option location = timezone.fixed(offset: -8h)
 // option now = () => 2021-12-30T00:40:44Z
@@ -204,7 +204,7 @@ wednesday = () => {
 // ### Query data collected last Thursday
 //
 // ```no_run
-// import "date/boundaries"
+// import "experimental/date/boundaries"
 //
 // day = boundaries.thursday()
 //
@@ -228,7 +228,7 @@ thursday = () => {
 // ### Return start and stop timestamps of last Friday
 //
 // ```no_run
-// import "date/boundaries"
+// import "experimental/date/boundaries"
 //
 // option location = timezone.fixed(offset: -8h)
 // option now = () => 2021-12-30T00:40:44Z
@@ -240,7 +240,7 @@ thursday = () => {
 // ### Query data collected last Friday
 //
 // ```no_run
-// import "date/boundaries"
+// import "experimental/date/boundaries"
 //
 // day = boundaries.friday()
 //
@@ -264,7 +264,7 @@ friday = () => {
 // ### Return start and stop timestamps of last Saturday
 //
 // ```no_run
-// import "date/boundaries"
+// import "experimental/date/boundaries"
 //
 // option location = timezone.fixed(offset: -8h)
 // option now = () => 2021-12-30T00:40:44Z
@@ -276,7 +276,7 @@ friday = () => {
 // ### Query data collected last Saturday
 //
 // ```no_run
-// import "date/boundaries"
+// import "experimental/date/boundaries"
 //
 // day = boundaries.saturday()
 //
@@ -300,7 +300,7 @@ saturday = () => {
 // ### Return start and stop timestamps of last Sunday
 //
 // ```no_run
-// import "date/boundaries"
+// import "experimental/date/boundaries"
 //
 // option location = timezone.fixed(offset: -8h)
 // option now = () => 2021-12-30T00:40:44Z
@@ -312,7 +312,7 @@ saturday = () => {
 // ### Query data collected last Sunday
 //
 // ```no_run
-// import "date/boundaries"
+// import "experimental/date/boundaries"
 //
 // day = boundaries.sunday()
 //
@@ -342,7 +342,7 @@ sunday = () => {
 // ### Return start and stop timestamps for the current month
 //
 // ```no_run
-// import "date/boundaries"
+// import "experimental/date/boundaries"
 //
 // option now = () => 2022-05-10T10:10:00Z
 //
@@ -353,7 +353,7 @@ sunday = () => {
 // ### Query data from this month
 //
 // ```no_run
-// import "date/boundaries"
+// import "experimental/date/boundaries"
 //
 // thisMonth = boundaries.month()
 //
@@ -364,7 +364,7 @@ sunday = () => {
 // ### Query data from last month
 //
 // ```no_run
-// import "date/boundaries"
+// import "experimental/date/boundaries"
 //
 // lastMonth = boundaries.month(month_offset: -1)
 //
@@ -401,7 +401,7 @@ month = (month_offset=0) => {
 // ### Return start and stop timestamps of the current week starting on Monday
 //
 // ```no_run
-// import "date/boundaries"
+// import "experimental/date/boundaries"
 //
 // option now = () => 2022-05-10T00:00:00.000010000Z
 //
@@ -412,7 +412,7 @@ month = (month_offset=0) => {
 // ### Return start and stop timestamps of the current week starting on Sunday
 //
 // ```no_run
-// import "date/boundaries"
+// import "experimental/date/boundaries"
 //
 // option now = () => 2022-05-10T10:10:00Z
 //
@@ -423,7 +423,7 @@ month = (month_offset=0) => {
 // ### Query data from the current week
 //
 // ```no_run
-// import "date/boundaries"
+// import "experimental/date/boundaries"
 //
 // thisWeek = boundaries.week()
 //
@@ -434,7 +434,7 @@ month = (month_offset=0) => {
 // ### Query data from last week
 //
 // ```no_run
-// import "date/boundaries"
+// import "experimental/date/boundaries"
 //
 // lastWeek = boundaries.week(week_offset: -1)
 //
