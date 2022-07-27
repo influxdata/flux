@@ -49,12 +49,12 @@ import "json"
 // tags: single notification
 //
 message = (
-        url="https://webexapis.com",
-        token,
-        roomId,
-        text,
-        markdown,
-    ) =>
+    url="https://webexapis.com",
+    token,
+    roomId,
+    text,
+    markdown,
+) =>
     {
         data = {text: text, markdown: markdown, roomId: roomId}
         headers = {"Content-Type": "application/json; charset=utf-8", "Authorization": "Bearer " + token}
@@ -66,17 +66,11 @@ message = (
 
 // endpoint returns a function that sends a message that includes data from input rows to a Webex room.
 //
-// ## Parameters
-//
-// - url: Base URL of Webex API endpoint (without a trailing slash).
-//   Default is `https://webexapis.com`.
-// - token: [Webex API access token](https://developer.webex.com/docs/api/getting-started).
-//
-// ## Usage
+// ### Usage
 // `webexteams.endpoint` is a factory function that outputs another function.
 // The output function requires a `mapFn` parameter.
 //
-// ### mapFn
+// #### mapFn
 // A function that builds the object used to generate the POST request. Requires an `r` parameter.
 //
 // `mapFn` accepts a table row (`r`) and returns an object that must include the following fields:
@@ -86,6 +80,12 @@ message = (
 // - `markdown`
 //
 // For more information, see `webexteams.message` parameters.
+//
+// ## Parameters
+//
+// - url: Base URL of Webex API endpoint (without a trailing slash).
+//   Default is `https://webexapis.com`.
+// - token: [Webex API access token](https://developer.webex.com/docs/api/getting-started).
 //
 // ## Examples
 // ### Send the last reported status to Webex Teams

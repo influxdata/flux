@@ -155,18 +155,11 @@ sendAlert = (
 
 // endpoint sends alerts to BigPanda using data from input rows.
 //
-// ## Parameters
-//
-// - url: BigPanda [alerts API URL](https://docs.bigpanda.io/reference#alerts-how-it-works).
-//   Default is the value of the `bigpanda.defaultURL` option.
-// - token: BigPanda [API Authorization token (API key)](https://docs.bigpanda.io/docs/api-key-management).
-// - appKey: BigPanda [App Key](https://docs.bigpanda.io/reference#integrating-monitoring-systems).
-//
-// ## Usage
+// ### Usage
 // `bigpanda.endpoint` is a factory function that outputs another function.
 // The output function requires a `mapFn` parameter.
 //
-// ### mapFn
+// #### mapFn
 // A function that builds the object used to generate the POST request. Requires an `r` parameter.
 //
 // `mapFn` accepts a table row (`r`) and returns an object that must include the following fields:
@@ -175,6 +168,13 @@ sendAlert = (
 // - Additional [alert parameters](https://docs.bigpanda.io/reference#alert-object) to send to the BigPanda alert API.
 //
 // _For more information, see `bigpanda.sendAlert()` parameters._
+//
+// ## Parameters
+//
+// - url: BigPanda [alerts API URL](https://docs.bigpanda.io/reference#alerts-how-it-works).
+//   Default is the value of the `bigpanda.defaultURL` option.
+// - token: BigPanda [API Authorization token (API key)](https://docs.bigpanda.io/docs/api-key-management).
+// - appKey: BigPanda [App Key](https://docs.bigpanda.io/reference#integrating-monitoring-systems).
 //
 // ## Examples
 // ### Send critical alerts to BigPanda

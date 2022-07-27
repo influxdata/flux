@@ -101,20 +101,11 @@ alert = (
 
 // endpoint sends events to VictorOps using data from input rows.
 //
-// ## Parameters
-// - url: VictorOps REST endpoint integration URL.
-//
-//   Example: `https://alert.victorops.com/integrations/generic/00000000/alert/<api_key>/<routing_key>`
-//   Replace `<api_key>` and `<routing_key>` with valid VictorOps API and routing keys.
-//
-// - monitoringTool: Tool to use for monitoring.
-//   Default is `InfluxDB`.
-//
-// ## Usage
+// ### Usage
 // `victorops.endpoint` is a factory function that outputs another function.
 // The output function requires a `mapFn` parameter.
 //
-// ### mapFn
+// #### mapFn
 // A function that builds the object used to generate the POST request. Requires an `r` parameter.
 //
 // `mapFn` accepts a table row (`r`) and returns an object that must include the following fields:
@@ -127,6 +118,15 @@ alert = (
 // - timestamp
 //
 // For more information, see `victorops.event()` parameters.
+//
+// ## Parameters
+// - url: VictorOps REST endpoint integration URL.
+//
+//   Example: `https://alert.victorops.com/integrations/generic/00000000/alert/<api_key>/<routing_key>`
+//   Replace `<api_key>` and `<routing_key>` with valid VictorOps API and routing keys.
+//
+// - monitoringTool: Tool to use for monitoring.
+//   Default is `InfluxDB`.
 //
 // ## Examples
 // ### Send critical events to VictorOps

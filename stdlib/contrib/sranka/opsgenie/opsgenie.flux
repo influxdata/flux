@@ -118,16 +118,11 @@ sendAlert = (
 
 // endpoint sends an alert message to Opsgenie using data from table rows.
 //
-// ## Parameters
-// - url: Opsgenie API URL. Defaults to `https://api.opsgenie.com/v2/alerts`.
-// - apiKey: (Required) Opsgenie API authorization key.
-// - entity: Alert entity used to specify the alert domain.
-//
-// ## Usage
+// ### Usage
 // opsgenie.endpoint is a factory function that outputs another function.
 // The output function requires a `mapFn` parameter.
 //
-// ### mapFn
+// #### mapFn
 // A function that builds the record used to generate the POST request. Requires an `r` parameter.
 //
 // `mapFn` accepts a table row (`r`) and returns a record that must include the following fields:
@@ -143,6 +138,11 @@ sendAlert = (
 // - visibleTo
 //
 // For more information, see `opsgenie.sendAlert`.
+//
+// ## Parameters
+// - url: Opsgenie API URL. Defaults to `https://api.opsgenie.com/v2/alerts`.
+// - apiKey: (Required) Opsgenie API authorization key.
+// - entity: Alert entity used to specify the alert domain.
 //
 // ## Examples
 // ### Send critical statuses to Opsgenie

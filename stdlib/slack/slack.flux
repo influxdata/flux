@@ -85,12 +85,12 @@ option defaultURL = "https://slack.com/api/chat.postMessage"
 // tags: single notification
 //
 message = (
-    url=defaultURL,
-    token="",
-    channel,
-    text,
-    color,
-) =>
+        url=defaultURL,
+        token="",
+        channel,
+        text,
+        color,
+    ) =>
     {
         attachments = [{color: validateColorString(color), text: string(v: text), mrkdwn_in: ["text"]}]
         data = {channel: channel, attachments: attachments}
@@ -105,6 +105,20 @@ message = (
 // Each output row includes a `_sent` column that indicates if the message for
 // that row was sent successfully.
 //
+// ### Usage
+// `slack.endpoint()` is a factory function that outputs another function.
+// The output function requires a `mapFn` parameter.
+//
+// #### mapFn
+// A function that builds the record used to generate the POST request.
+//
+// `mapFn` accepts a table row (`r`) and returns a record that must include the
+// following properties:
+//
+// - channel
+// - color
+// - text
+//
 // ## Parameters
 //
 // - url: Slack API URL. Default is  `https://slack.com/api/chat.postMessage`.
@@ -114,20 +128,6 @@ message = (
 // - token: Slack API token. Default is `""`.
 //
 //   If using the Slack Webhook API, a token is not required.
-//
-// ## Usage
-// `slack.endpoint()` is a factory function that outputs another function.
-// The output function requires a `mapFn` parameter.
-//
-// ### mapFn
-// A function that builds the record used to generate the POST request.
-//
-// `mapFn` accepts a table row (`r`) and returns a record that must include the
-// following properties:
-//
-// - channel
-// - color
-// - text
 //
 // ## Examples
 //

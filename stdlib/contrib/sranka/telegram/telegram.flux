@@ -112,13 +112,12 @@ message = (
 
 // endpoint sends a message to a Telegram channel using data from table rows.
 //
-//
-// ## Usage
+// ### Usage
 //
 // `telegram.endpoint` is a factory function that outputs another function.
 // The output function requires a `mapFn` parameter.
 //
-// ### `mapFn`
+// #### `mapFn`
 // A function that builds the object used to generate the POST request. Requires an `r` parameter.
 //
 // `mapFn` accepts a table row (`r`) and returns an object that must include the following fields:
@@ -138,13 +137,6 @@ message = (
 //   Default is `MarkdownV2`.
 // - disableWebPagePreview: Disable preview of web links in the sent message.
 //   Default is false.
-//
-// The returned factory function accepts a `mapFn` parameter.
-// The `mapFn` must return an record with the following properties:
-//
-// - `channel`
-// - `text`
-// - `silent`
 //
 // See `telegram.message` parameters for more information.
 //
@@ -172,7 +164,7 @@ message = (
 // ```
 //
 // ## Metadata
-// tag: notification endpoints, transformations
+// tags: notification endpoints, transformations
 endpoint = (url=defaultURL, token, parseMode=defaultParseMode, disableWebPagePreview=defaultDisableWebPagePreview) =>
     (mapFn) =>
         (tables=<-) =>

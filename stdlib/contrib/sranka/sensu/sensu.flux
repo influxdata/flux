@@ -140,6 +140,21 @@ event = (
 // to the [Sensu Events API](https://docs.sensu.io/sensu-go/latest/api/events/#create-a-new-event)
 // using data from table rows.
 //
+// ### Usage
+// `sensu.endpoint()` is a factory function that outputs another function.
+// The output function requires a `mapFn` parameter.
+//
+// #### mapFn
+// A function that builds the object used to generate the POST request. Requires an `r` parameter.
+//
+// `mapFn` accepts a table row (`r`) and returns an object that must include the following fields:
+//
+// - `checkName`
+// - `text`
+// - `status`
+//
+// For more information, see `sensu.event()` parameters.
+//
 // ## Parameters
 // - url: Base URL of [Sensu API](https://docs.sensu.io/sensu-go/latest/migrate/#architecture)
 //   *without a trailing slash*.
@@ -154,21 +169,6 @@ event = (
 //
 //   Use alphanumeric characters, underscores (`_`), periods (`.`), and hyphens (`-`).
 //   All other characters are replaced with an underscore.
-//
-// ## Usage
-// `sensu.endpoint()` is a factory function that outputs another function.
-// The output function requires a `mapFn` parameter.
-//
-// `mapFn`
-// A function that builds the object used to generate the POST request. Requires an `r` parameter.
-//
-// `mapFn` accepts a table row (`r`) and returns an object that must include the following fields:
-//
-// - `checkName`
-// - `text`
-// - `status`
-//
-// For more information, see `sensu.event()` parameters.
 //
 // ## Examples
 // ### Send critical status events to Sensu

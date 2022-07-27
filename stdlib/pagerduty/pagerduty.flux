@@ -238,16 +238,11 @@ sendEvent = (
 
 // endpoint returns a function that sends a message to PagerDuty that includes output data.
 //
-// ## Parameters
-// - url: PagerDuty v2 Events API URL.
-//
-//      Default is `https://events.pagerduty.com/v2/enqueue`.
-//
-// ## Usage
+// ### Usage
 // `pagerduty.endpoint()` is a factory function that outputs another function.
 //  The output function requires a `mapFn` parameter.
 //
-// ### mapFn
+// #### mapFn
 // Function that builds the record used to generate the POST request.
 // Requires an `r` parameter.
 //
@@ -266,6 +261,11 @@ sendEvent = (
 // - summary
 // - timestamp
 // - customDetails
+//
+// ## Parameters
+// - url: PagerDuty v2 Events API URL.
+//
+//      Default is `https://events.pagerduty.com/v2/enqueue`.
 //
 // ## Examples
 //
