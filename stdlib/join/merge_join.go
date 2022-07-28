@@ -74,6 +74,8 @@ func (t *MergeJoinTransformation) Dataset() *execute.TransportDataset {
 }
 
 func (t *MergeJoinTransformation) ProcessMessage(m execute.Message) error {
+	t.mu.Lock()
+	defer t.mu.Unlock()
 	defer m.Ack()
 
 	switch m := m.(type) {
@@ -149,9 +151,6 @@ func (t *MergeJoinTransformation) initState(state interface{}) (*joinState, bool
 // After that, it calls mergeJoin() on the passed-in chunk, which will do as much as it can to produce
 // the joined output tables and update the state object accordingly.
 func (t *MergeJoinTransformation) processChunk(chunk table.Chunk, state interface{}, id execute.DatasetID) (*joinState, bool, error) {
-	t.mu.Lock()
-	defer t.mu.Unlock()
-
 	s, ok := t.initState(state)
 	if !ok {
 		return nil, false, errors.New(codes.Internal, "invalid join state")
