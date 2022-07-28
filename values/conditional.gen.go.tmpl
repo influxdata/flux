@@ -1,9 +1,8 @@
 package values
 
 import (
-
 	fluxarray "github.com/influxdata/flux/array"
-    "github.com/apache/arrow/go/v7/arrow/memory"
+	"github.com/apache/arrow/go/v7/arrow/memory"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/semantic"
@@ -40,12 +39,12 @@ func VectorConditional(t, c, a Vector, mem memory.Allocator) (Value, error) {
 	}
 
 	switch a.ElementType().Nature() {
-    {{range .}}
+	{{range .}}
 	case semantic.{{if eq .Name "Uint"}}UInt{{else}}{{if eq .Name "Boolean"}}Bool{{else}}{{.Name}}{{end}}{{end}}:
-    	var (
-			x *fluxarray.{{.ValueName}}
-    		err error
-    	)
+		var (
+		x *fluxarray.{{.ValueName}}
+			err error
+		)
 		if cvr != nil && avr != nil {
 			x, err = fluxarray.{{.ValueName}}ConditionalCConstAConst(
 				t.Arr().(*fluxarray.Boolean),
@@ -95,7 +94,7 @@ func VectorConditional(t, c, a Vector, mem memory.Allocator) (Value, error) {
 			return nil, err
 		}
 		return NewVectorValue(x, {{.MonoType}}), nil
-    {{end}}
+	{{end}}
 	default:
 		return nil, errors.Newf(codes.Invalid, "unsupported type for vector: %v", a.ElementType())
 	}

@@ -101,7 +101,7 @@ func {{.Name}}ConditionalCConstAConst(t *Boolean, c, a {{.PrimitiveType}}, mem m
 
 		for i := 0; i < n; i++ {
 			if t.IsValid(i) {
-			    if t.IsNull(i) || !t.Value(i) {
+				if t.IsNull(i) || !t.Value(i) {
 					b.Append(a) // Falsy
 				} else {
 					b.Append(c) // Truthy
