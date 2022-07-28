@@ -23,7 +23,13 @@ func NewVectorValue(arr arrow.Array, typ semantic.MonoType) Vector {
 // A convenience method for unit testing
 func NewVectorFromElements(mem memory.Allocator, es ...interface{}) Vector {
 	var typ semantic.MonoType
-	switch es[0].(type) {
+	var first interface{}
+
+	for i := 0; i < len(es) && first == nil; i++ {
+		first = es[i]
+	}
+
+	switch first.(type) {
 	{{range .}}
 	case {{.InterfaceType}}:
 		typ = {{.MonoType}}
@@ -45,7 +51,11 @@ func newVectorFromSlice(values []Value, typ semantic.MonoType, mem memory.Alloca
 	case {{.MonoType}}:
 		b := arrow.New{{.ValueName}}Builder(mem)
 		for _, v := range values {
-			b.Append(v.{{.ValueType}}())
+			if v.IsNull() {
+				b.AppendNull()
+			} else {
+				b.Append(v.{{.ValueType}}())
+			}
 		}
 		arr := b.New{{.ValueName}}Array()
 		return New{{.Name}}VectorValue(arr)

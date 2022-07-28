@@ -206,7 +206,9 @@ func TransformValue(v values.Value) map[string]interface{} {
 
 func getValue(arr array.Array, i int) values.Value {
 	if arr.IsNull(i) {
-		return nil
+		// Callers expect to be able to call `.IsNull()` and `.Type()`
+		// so we need to wrap the nil.
+		return values.New(nil)
 	}
 
 	switch arr := arr.(type) {
