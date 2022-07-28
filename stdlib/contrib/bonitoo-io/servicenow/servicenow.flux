@@ -130,19 +130,12 @@ event = (
 
 // endpoint sends events to [ServiceNow](https://servicenow.com/) using data from input rows.
 //
-// ## Parameters
-//
-// - url: ServiceNow web service URL.
-// - username: ServiceNow username to use for HTTP BASIC authentication.
-// - password: ServiceNow password to use for HTTP BASIC authentication.
-// - source: Source name. Default is `"Flux"`.
-//
-// ## Usage
+// ### Usage
 //
 // `servicenow.endpoint` is a factory function that outputs another function.
 // The output function requires a `mapFn` parameter.
 //
-// ### mapFn
+// #### mapFn
 // A function that builds the object used to generate the ServiceNow API request. Requires an `r` parameter.
 //
 // `mapFn` accepts a table row (`r`) and returns an object that must include the following properties:
@@ -157,7 +150,14 @@ event = (
 // - `messageKey`
 // - `additionalInfo`
 //
-// (For more information, see `servicenow.event()` parameters.)
+// For more information, see `servicenow.event()` parameters.
+//
+// ## Parameters
+//
+// - url: ServiceNow web service URL.
+// - username: ServiceNow username to use for HTTP BASIC authentication.
+// - password: ServiceNow password to use for HTTP BASIC authentication.
+// - source: Source name. Default is `"Flux"`.
 //
 // ## Examples
 // ### Send critical events to ServiceNow

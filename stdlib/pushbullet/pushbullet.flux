@@ -70,16 +70,11 @@ pushNote = (url=defaultURL, token="", title, text) => {
 
 // endpoint creates the endpoint for the Pushbullet API and sends a notification of type note.
 //
-// ## Parameters
-//
-// - url: PushBullet API endpoint URL. Default is `"https://api.pushbullet.com/v2/pushes"`.
-// - token: Pushbullet API token string.  Default is `""`.
-//
-// ## Usage
+// ### Usage
 // `pushbullet.endpoint()` is a factory function that outputs another function.
 // The output function requires a mapFn parameter.
 //
-// ### mapFn
+// #### mapFn
 // A function that builds the record used to generate the API request.
 // Requires an `r` parameter.
 //
@@ -88,6 +83,11 @@ pushNote = (url=defaultURL, token="", title, text) => {
 //
 // - title
 // - text
+//
+// ## Parameters
+//
+// - url: PushBullet API endpoint URL. Default is `"https://api.pushbullet.com/v2/pushes"`.
+// - token: Pushbullet API token string.  Default is `""`.
 //
 // ## Examples
 //

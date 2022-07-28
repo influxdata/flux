@@ -69,17 +69,11 @@ send = (
 // [Discord webhook](https://support.discord.com/hc/en-us/articles/228383668-Intro-to-Webhooks&?page=3)
 // and data from table rows.
 //
-// ## Parameters
-// - webhookToken: Discord [webhook token](https://discord.com/developers/docs/resources/webhook).
-// - webhookID: Discord [webhook ID](https://discord.com/developers/docs/resources/webhook).
-// - username: Override the Discord webhook’s default username.
-// - avatar_url: Override the Discord webhook’s default avatar.
-//
-// ## Usage
+// ### Usage
 // `discord.endpoint` is a factory function that outputs another function.
 // The output function requires a `mapFn` parameter.
 //
-// ### mapFn
+// #### mapFn
 // A function that builds the record used to generate the Discord webhook request.
 // Requires an `r` parameter.
 //
@@ -88,6 +82,12 @@ send = (
 // - `content`
 //
 // For more information, see the `discord.send()` `content` parameter.
+//
+// ## Parameters
+// - webhookToken: Discord [webhook token](https://discord.com/developers/docs/resources/webhook).
+// - webhookID: Discord [webhook ID](https://discord.com/developers/docs/resources/webhook).
+// - username: Override the Discord webhook’s default username.
+// - avatar_url: Override the Discord webhook’s default avatar.
 //
 // ## Examples
 // ### Send critical statuses to a Discord channel

@@ -116,19 +116,11 @@ alert = (
 
 // endpoint sends alerts to Alerta using data from input rows.
 //
-// ## Parameters
-//
-// - url: (Required) Alerta URL.
-// - apiKey: (Required) Alerta API key.
-// - environment: Alert environment. Default is `""`.
-//   Valid values: "Production", "Development" or empty string (default).
-// - origin: Alert origin. Default is `"InfluxDB"`.
-//
-// ## Usage
+// ### Usage
 // `alerta.endpoint` is a factory function that outputs another function.
-//     The output function requires a `mapFn` parameter.
+// The output function requires a `mapFn` parameter.
 //
-// ### mapFn
+// #### mapFn
 // A function that builds the object used to generate the POST request. Requires an `r` parameter.
 //
 // `mapFn` accepts a table row (`r`) and returns an object that must include the following fields:
@@ -144,6 +136,14 @@ alert = (
 // - `attributes`
 // - `type`
 // - `timestamp`
+//
+// ## Parameters
+//
+// - url: (Required) Alerta URL.
+// - apiKey: (Required) Alerta API key.
+// - environment: Alert environment. Default is `""`.
+//   Valid values: "Production", "Development", or empty string (default).
+// - origin: Alert origin. Default is `"InfluxDB"`.
 //
 // For more information, see `alerta.alert()` parameters.
 //

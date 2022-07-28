@@ -80,14 +80,11 @@ message = (url, title, text, summary="") => {
 
 // endpoint sends a message to a Microsoft Teams channel using data from table rows.
 //
-// ## Parameters
-// - url: Incoming webhook URL.
-//
-// ## Usage
+// ### Usage
 // `teams.endpoint` is a factory function that outputs another function.
 // The output function requires a `mapFn` parameter.
 //
-// ### mapFn
+// #### mapFn
 // A function that builds the object used to generate the POST request. Requires an `r` parameter.
 //
 // `mapFn` accepts a table row (`r`) and returns an object that must include the following fields:
@@ -97,6 +94,9 @@ message = (url, title, text, summary="") => {
 // - `summary`
 //
 // For more information, see `teams.message` parameters.
+//
+// ## Parameters
+// - url: Incoming webhook URL.
 //
 // ## Examples
 // ### Send critical statuses to a Microsoft Teams channel

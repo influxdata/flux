@@ -128,6 +128,26 @@ event = (
 
 // endpoint sends events to Zenoss using data from input rows.
 //
+// ### Usage
+// `zenoss.endpoint` is a factory function that outputs another function.
+// The output function requires a `mapFn` parameter.
+//
+// #### mapFn
+// A function that builds the object used to generate the POST request. Requires an `r` parameter.
+//
+// `mapFn` accepts a table row (`r`) and returns an object that must include the following fields:
+//
+// - summary
+// - device
+// - component
+// - severity
+// - eventClass
+// - eventClassKey
+// - collector
+// - message
+//
+// For more information, see `zenoss.event()` parameters.
+//
 // ## Parameters
 //
 // - url: Zenoss [router endpoint URL](https://help.zenoss.com/zsd/RM/configuring-resource-manager/enabling-access-to-browser-interfaces/creating-and-changing-public-endpoints).
@@ -142,26 +162,6 @@ event = (
 // - type: Event type. Default is `"rpc"`.
 // - tid: Temporary request transaction ID.
 //   Default is `1`.
-//
-// ## Usage
-// `zenoss.endpoint` is a factory function that outputs another function.
-// The output function requires a `mapFn` parameter.
-//
-// ### mapFn
-// A function that builds the object used to generate the POST request. Requires an `r` parameter.
-//
-// `mapFn` accepts a table row (`r`) and returns an object that must include the following fields:
-//
-// - summary
-// - device
-// - component
-// - severity
-// - eventClass
-// - eventClassKey
-// - collector
-// - message
-//
-// For more information, see zenoss.event() parameters.
 //
 // ## Examples
 // ### Send critical events to Zenoss
