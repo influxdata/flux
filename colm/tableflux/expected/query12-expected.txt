@@ -1,3 +1,0 @@
-table | count_bottom_degrees
-============================
-    0 |                   11

@@ -16,7 +16,7 @@ import (
 	"github.com/influxdata/flux/csv"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
-	"github.com/influxdata/flux/line"
+	"github.com/influxdata/flux/internal/line"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/values"

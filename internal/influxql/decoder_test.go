@@ -9,7 +9,7 @@ import (
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
-	"github.com/influxdata/flux/influxql"
+	"github.com/influxdata/flux/internal/influxql"
 )
 
 func TestDecoder(t *testing.T) {

@@ -13,8 +13,8 @@ import (
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
-	"github.com/influxdata/flux/influxql"
 	"github.com/influxdata/flux/internal/errors"
+	"github.com/influxdata/flux/internal/influxql"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/runtime"
 )

@@ -4,7 +4,7 @@ import (
 	"io"
 
 	"github.com/influxdata/flux/array"
-	"github.com/influxdata/flux/iocounter"
+	"github.com/influxdata/flux/internal/iocounter"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
