@@ -12,12 +12,15 @@ import (
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/internal/errors"
+	"github.com/influxdata/flux/internal/feature"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/metadata"
 	"github.com/influxdata/flux/plan"
 	"github.com/opentracing/opentracing-go"
 	"go.uber.org/zap"
 )
+
+const MaxFeatureFlagQueryConcurrencyIncrease = 256
 
 type Executor interface {
 	// Execute will begin execution of the plan.Spec using the memory allocator.
@@ -361,57 +364,128 @@ func (es *executionState) validate() error {
 	return nil
 }
 
-// getResourceExecOptions returns the DefaultMemoryLimit and ConcurrencyLimit
-// from exec options, if present.
-func getResourceLimits(ctx context.Context) (int64, int) {
-	// Initialize resources from the execution dependencies and/or properties of the plan.
-	if !HaveExecutionDependencies(ctx) {
-		return 0, math.MaxInt
+type queryConcurrencyVisitor struct {
+	seen                        map[plan.Node]bool
+	concurrencyQuota            int
+	parallelizationAccountedFor int
+}
+
+func isYield(pn plan.Node) bool {
+	_, ok := pn.ProcedureSpec().(plan.YieldProcedureSpec)
+	return ok
+}
+
+func (qcc *queryConcurrencyVisitor) visit(node plan.Node) {
+	// The visitor recurses through predecessors when it encounters a yield, so
+	// we need to guard against loops. We are also entering the visit at both
+	// roots and yields, also demanding a 'seen' guard.
+	if _, ok := qcc.seen[node]; ok {
+		return
+	}
+	qcc.seen[node] = true
+
+	ppn := node.(*plan.PhysicalPlanNode)
+
+	if isYield(node) {
+		// Recurse on predecessors of the yield. When building the execution graph, yields
+		// are skipped and yield predecessors become results.
+		for _, pred := range node.Predecessors() {
+			qcc.visit(pred)
+		}
+	} else if len(node.Predecessors()) > 1 {
+		// Results with multiple predecessors MUST cause N goroutines to be
+		// added to the concurrency quota. This is because results may block,
+		// and if there are multiple predecessors, each one can tie up a
+		// goroutine waiting for the results channel to empty, or for the
+		// tranformation lock. More details about this can be found in
+		// influxdata/idpe#15220.
+		qcc.concurrencyQuota += len(node.Predecessors())
+	} else if attr := plan.GetOutputAttribute(ppn, plan.ParallelMergeKey); attr != nil {
+		// The node is a parallel merge. In the plan it will only ever have a
+		// single predecessor, but when the execution graph is made it will
+		// have parallel-factor predecessors. We MUST add parallel-factor to
+		// the concurrency quota for the same reason as the multi-predecessor
+		// node in the previous case.
+		//
+		// We keep track of how many extra nodes we add for this reason because
+		// when it comes time to add goroutines because of the presence of
+		// parallelization, we can add fewer goroutines and still get the
+		// desired speedup.
+		qcc.concurrencyQuota += attr.(plan.ParallelMergeAttribute).Factor
+		qcc.parallelizationAccountedFor += attr.(plan.ParallelMergeAttribute).Factor - 1
+	} else {
+		// Add one goroutine for the single result with zero or one
+		// predecessors and no parallelization.
+		qcc.concurrencyQuota += 1
+	}
+}
+
+func computeQueryConcurrencyQuota(ctx context.Context, p *plan.Spec) int {
+	qcc := queryConcurrencyVisitor{
+		seen:                        make(map[plan.Node]bool),
+		concurrencyQuota:            0,
+		parallelizationAccountedFor: 0,
 	}
 
-	execOptions := GetExecutionDependencies(ctx).ExecutionOptions
-	return execOptions.DefaultMemoryLimit, execOptions.ConcurrencyLimit
+	// Visit all roots, which are implicitly converted into results.
+	for node := range p.Roots {
+		qcc.visit(node)
+	}
+
+	// Visit all yields, which are also converted into results. We rely on the
+	// seen guard to prevent us from double-counting yields that are also
+	// roots.
+	_ = p.TopDownWalk(func(node plan.Node) error {
+		if isYield(node) {
+			qcc.visit(node)
+		}
+		return nil
+	})
+
+	// Find the max parallelization factor present in the graph. We will add 2x
+	// this amount of goroutines to get the desired parallelization speedup,
+	// discounting by the number of extra goroutines we added for parallel
+	// merge nodes that are also results.
+	maxParallelFactor := 0
+	_ = p.TopDownWalk(func(node plan.Node) error {
+		ppn := node.(*plan.PhysicalPlanNode)
+		if attr := plan.GetOutputAttribute(ppn, plan.ParallelRunKey); attr != nil {
+			if attr.(plan.ParallelRunAttribute).Factor > maxParallelFactor {
+				maxParallelFactor = attr.(plan.ParallelRunAttribute).Factor
+			}
+		}
+		return nil
+	})
+
+	// Add a fixed amount of goroutines (maxParallelFactor * 2), minus any
+	// extra goroutines we already added because parallel merge nodes were
+	// present in a result set.
+	parallelizationConributes := maxParallelFactor * 2
+	if parallelizationConributes > qcc.parallelizationAccountedFor {
+		additionalQuota := parallelizationConributes - qcc.parallelizationAccountedFor
+		qcc.concurrencyQuota += additionalQuota
+	}
+
+	// Finally, add any amount specified via the QueryConcurrencyIncrease
+	// feature feature flag, up to a limit. The feature flag can only add
+	// goroutines, never reduce below the minimum required that we compute.
+	queryConcurrencyIncrease := feature.QueryConcurrencyIncrease().Int(ctx)
+	if 0 < queryConcurrencyIncrease && queryConcurrencyIncrease <= MaxFeatureFlagQueryConcurrencyIncrease {
+		qcc.concurrencyQuota += queryConcurrencyIncrease
+	}
+
+	return qcc.concurrencyQuota
 }
 
 func (es *executionState) chooseDefaultResources(ctx context.Context, p *plan.Spec) {
-	defaultMemoryLimit, concurrencyLimit := getResourceLimits(ctx)
-
 	// Update memory quota
 	if es.resources.MemoryBytesQuota == 0 {
-		es.resources.MemoryBytesQuota = defaultMemoryLimit
+		es.resources.MemoryBytesQuota = math.MaxInt64
 	}
 
 	// Update concurrency quota
 	if es.resources.ConcurrencyQuota == 0 {
-		es.resources.ConcurrencyQuota = len(p.Roots)
-
-		// If the query concurrency limit is greater than zero,
-		// we will use the new behavior that sets the concurrency
-		// quota equal to the number of transformations and limits
-		// it to the value specified.
-		if concurrencyLimit > 0 {
-			concurrencyQuota := 0
-			_ = p.TopDownWalk(func(node plan.Node) error {
-				// Do not include source nodes in the node list as
-				// they do not use the dispatcher.
-				if len(node.Predecessors()) > 0 {
-					addend := 1
-					ppn := node.(*plan.PhysicalPlanNode)
-					if attr := plan.GetOutputAttribute(ppn, plan.ParallelRunKey); attr != nil {
-						addend = attr.(plan.ParallelRunAttribute).Factor
-					}
-					concurrencyQuota += addend
-				}
-				return nil
-			})
-
-			if concurrencyQuota > int(concurrencyLimit) {
-				concurrencyQuota = int(concurrencyLimit)
-			} else if concurrencyQuota == 0 {
-				concurrencyQuota = 1
-			}
-			es.resources.ConcurrencyQuota = concurrencyQuota
-		}
+		es.resources.ConcurrencyQuota = computeQueryConcurrencyQuota(ctx, p)
 	}
 }
 

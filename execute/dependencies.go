@@ -2,7 +2,6 @@ package execute
 
 import (
 	"context"
-	"math"
 	"time"
 
 	"github.com/influxdata/flux/codes"
@@ -20,10 +19,8 @@ type key int
 const executionDependenciesKey key = iota
 
 type ExecutionOptions struct {
-	OperatorProfiler   *OperatorProfiler
-	Profilers          []Profiler
-	DefaultMemoryLimit int64
-	ConcurrencyLimit   int
+	OperatorProfiler *OperatorProfiler
+	Profilers        []Profiler
 }
 
 // ExecutionDependencies represents the dependencies that a function call
@@ -86,14 +83,11 @@ func NewExecutionDependencies(allocator memory.Allocator, now *time.Time, logger
 		now = &nowVar
 	}
 	return ExecutionDependencies{
-		Allocator: allocator,
-		Now:       now,
-		Logger:    logger,
-		Metadata:  make(metadata.Metadata),
-		ExecutionOptions: &ExecutionOptions{
-			DefaultMemoryLimit: math.MaxInt64,
-			ConcurrencyLimit:   0,
-		},
+		Allocator:        allocator,
+		Now:              now,
+		Logger:           logger,
+		Metadata:         make(metadata.Metadata),
+		ExecutionOptions: &ExecutionOptions{},
 	}
 }
 
