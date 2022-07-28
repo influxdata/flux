@@ -42,7 +42,7 @@ func (p *heuristicPlanner) clearRules() {
 	p.rules = make(map[ProcedureKind][]Rule)
 }
 
-func applyRule(ctx context.Context, rule Rule, node Node) (Node, bool, error) {
+func applyRule(ctx context.Context, spec *Spec, rule Rule, node Node) (Node, bool, error) {
 	newNode, changed, err := rule.Rewrite(ctx, node)
 	if err != nil {
 		return nil, false, err
@@ -51,6 +51,7 @@ func applyRule(ctx context.Context, rule Rule, node Node) (Node, bool, error) {
 			return nil, false, errors.Newf(codes.Internal, "rule %q returned a nil plan node even though it seems to have changed the plan", rule.Name())
 		}
 		testing.MarkInvokedPlannerRule(ctx, rule.Name())
+		updateSuccessors(spec, node, newNode)
 		return newNode, true, nil
 	}
 
@@ -59,7 +60,7 @@ func applyRule(ctx context.Context, rule Rule, node Node) (Node, bool, error) {
 
 // matchRules applies any applicable rules to the given plan node,
 // and returns the rewritten plan node and whether or not any rewriting was done.
-func (p *heuristicPlanner) matchRules(ctx context.Context, node Node) (Node, bool, error) {
+func (p *heuristicPlanner) matchRules(ctx context.Context, spec *Spec, node Node) (Node, bool, error) {
 	anyChanged := false
 
 	for _, rule := range p.rules[AnyKind] {
@@ -67,7 +68,7 @@ func (p *heuristicPlanner) matchRules(ctx context.Context, node Node) (Node, boo
 			continue
 		}
 		if rule.Pattern().Match(node) {
-			newNode, changed, err := applyRule(ctx, rule, node)
+			newNode, changed, err := applyRule(ctx, spec, rule, node)
 			if err != nil {
 				return nil, false, err
 			}
@@ -82,7 +83,7 @@ func (p *heuristicPlanner) matchRules(ctx context.Context, node Node) (Node, boo
 			continue
 		}
 		if rule.Pattern().Match(node) {
-			newNode, changed, err := applyRule(ctx, rule, node)
+			newNode, changed, err := applyRule(ctx, spec, rule, node)
 			if err != nil {
 				return nil, false, err
 			}
@@ -127,15 +128,10 @@ func (p *heuristicPlanner) Plan(ctx context.Context, inputPlan *Spec) (*Spec, er
 			visitable := visitedSuccessors[node] == len(node.Successors())
 
 			if !alreadyVisited && visitable {
-				newNode, changed, err := p.matchRules(ctx, node)
+				newNode, changed, err := p.matchRules(ctx, inputPlan, node)
 				if err != nil {
 					return nil, err
 				}
-				anyChanged = anyChanged || changed
-				if changed {
-					updateSuccessors(inputPlan, node, newNode)
-				}
-
 				anyChanged = anyChanged || changed
 
 				// append to stack in reverse order so lower-indexed children

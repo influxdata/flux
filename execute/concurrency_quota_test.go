@@ -75,7 +75,7 @@ func (parallelizeFromTo) Name() string {
 }
 
 func (parallelizeFromTo) Pattern() plan.Pattern {
-	return plan.Pat(influxdb.ToKind, plan.Pat(influxdb.FromRemoteKind))
+	return plan.MultiSuccessor(influxdb.ToKind, plan.SingleSuccessor(influxdb.FromRemoteKind))
 }
 
 func (rule parallelizeFromTo) Rewrite(ctx context.Context, pn plan.Node) (plan.Node, bool, error) {
@@ -505,10 +505,10 @@ func TestConcurrencyQuota(t *testing.T) {
 
 			// We need a physical from in order to complete planning, and we
 			// also need ranges merged in so the physical from is satisfied.
-			rules := []plan.Rule{ &influxdb.FromRemoteRule{}, &influxdb.MergeRemoteRangeRule{}}
+			rules := []plan.Rule{&influxdb.FromRemoteRule{}, &influxdb.MergeRemoteRangeRule{}}
 
 			if tc.parallelizeFactor > 0 {
-				rules = append( rules,
+				rules = append(rules,
 					&influxdb.MergeRemoteRangeRule{}, &parallelizeFromTo{Factor: tc.parallelizeFactor})
 			}
 

@@ -207,7 +207,7 @@ func requiredBySuccessor(requiredAttr PhysicalAttr, node, succ Node) (bool, Node
 		return false, succ
 	}
 
-	i := indexOfNode(node, psucc.Predecessors())
+	i := IndexOfNode(node, psucc.Predecessors())
 	if _, ok := psucc.requiredAttrs()[i][requiredAttr.Key()]; ok {
 		return true, succ
 	}

@@ -132,7 +132,7 @@ func (i IdempotentTableFill) Name() string {
 }
 
 func (i IdempotentTableFill) Pattern() plan.Pattern {
-	return plan.Multi(FillKind, plan.Single(FillKind, plan.Any()))
+	return plan.MultiSuccessor(FillKind, plan.SingleSuccessor(FillKind))
 }
 
 func (i IdempotentTableFill) Rewrite(ctx context.Context, node plan.Node) (plan.Node, bool, error) {

@@ -3,53 +3,54 @@ package plan
 const AnyKind = "*** any procedure kind ***"
 
 // Pattern represents an operator tree pattern
-// It can match itself against a query plan
+// It can match itself against a query plan.
 type Pattern interface {
+	// Roots returns the list of procedure kinds that may appear
+	// at the "root" of the pattern. "Root" here means a node with
+	// some predecessors.
 	Roots() []ProcedureKind
+	// Match returns true when the given node and its predecessors match
+	// with this pattern.
 	Match(Node) bool
 }
 
-// Single returns a pattern that can match a plan node with the given ProcedureKind
+// SingleSuccessor returns a pattern that can match a plan node with the given ProcedureKind
 // and whose predecessors match the given predecessor patterns.
 // The matched node must have exactly one successor.
 //
-// For example, to construct a pattern that matches a join followed by a sum:
+// For example, to construct a pattern that matches a sort node that succeeds a join:
 //
-//   sum
+//   sort
 //    |
-//   |X|    <=>  join(A, B) |> sum()  <=>  Pat(SumKind, Pat(JoinKind, Any(), Any()))
+//   join   <=>  join(A, B) |> sum()  <=>  MultiSuccessor(SortKind, SingleSuccessor(JoinKind, AnyMultiSuccessor(), AnyMultiSuccessor()))
 //  /   \
 // A     B
-func Single(kind ProcedureKind, predecessors ...Pattern) Pattern {
-	return SingleOneOf([]ProcedureKind{kind}, predecessors...)
+func SingleSuccessor(kind ProcedureKind, predecessors ...Pattern) Pattern {
+	return SingleSuccessorOneOf([]ProcedureKind{kind}, predecessors...)
 }
 
-// Multi returns a pattern that can match a plan node with the given ProcedureKind
+// MultiSuccessor returns a pattern that can match a plan node with the given ProcedureKind
 // and whose predecessors match the given predecessor patterns.
-// The matched node may have any number including zero of successors.
-//
-// For example, to construct a pattern that matches a join followed by a sum:
-//
-//   sum
-//    |
-//   |X|    <=>  join(A, B) |> sum()  <=>  Pat(SumKind, Pat(JoinKind, Any(), Any()))
-//  /   \
-// A     B
-func Multi(kind ProcedureKind, predecessors ...Pattern) Pattern {
-	return MultiOneOf([]ProcedureKind{kind}, predecessors...)
+// The matched node may have any number of successors, including zero.
+func MultiSuccessor(kind ProcedureKind, predecessors ...Pattern) Pattern {
+	return MultiSuccessorOneOf([]ProcedureKind{kind}, predecessors...)
 }
 
-// SingleOneOf matches any plan node from a given set of ProcedureKind and whose
-// predecessors match the given predecessor patterns. This is identical to Pat,
+// SingleSuccessorOneOf matches any plan node from a given set of ProcedureKind and whose
+// predecessors match the given predecessor patterns. This is identical to SingleSuccessor,
 // except for matching any pattern root from a set of ProcedureKinds.
-func SingleOneOf(kinds []ProcedureKind, predecessors ...Pattern) Pattern {
+func SingleSuccessorOneOf(kinds []ProcedureKind, predecessors ...Pattern) Pattern {
 	return &UnionKindPattern{
 		kinds:        kinds,
 		predecessors: predecessors,
 		single:       true,
 	}
 }
-func MultiOneOf(kinds []ProcedureKind, predecessors ...Pattern) Pattern {
+
+// MultiSuccessorOneOf matches any plan node from a given set of ProcedureKind and whose
+// predecessors match the given predecessor patterns. This is identical to MultiSuccessor,
+// except for matching any pattern root from a set of ProcedureKinds.
+func MultiSuccessorOneOf(kinds []ProcedureKind, predecessors ...Pattern) Pattern {
 	return &UnionKindPattern{
 		kinds:        kinds,
 		predecessors: predecessors,
@@ -79,11 +80,6 @@ func (p PhysicalOneKindPattern) Match(node Node) bool {
 	return ok && p.pattern.Match(node)
 }
 
-// Any returns a pattern that matches anything.
-func Any() Pattern {
-	return &AnyPattern{}
-}
-
 // UnionKindPattern matches any one of a set of procedures that have a
 // specified predecessor pattern.
 //
@@ -110,8 +106,9 @@ func (ukp UnionKindPattern) Match(node Node) bool {
 	}
 	found := false
 	for _, kind := range ukp.kinds {
-		if node.Kind() == kind {
+		if node.Kind() == kind || kind == AnyKind {
 			found = true
+			break
 		}
 	}
 	if !found {
@@ -131,13 +128,20 @@ func (ukp UnionKindPattern) Match(node Node) bool {
 	return true
 }
 
-// AnyPattern describes (and matches) any plan node
-type AnyPattern struct{}
-
-func (AnyPattern) Roots() []ProcedureKind {
-	return []ProcedureKind{AnyKind}
+// AnySingleSuccessor returns a pattern that matches any node
+// that has a single successor.
+func AnySingleSuccessor() Pattern {
+	return &UnionKindPattern{
+		kinds:  []ProcedureKind{AnyKind},
+		single: true,
+	}
 }
 
-func (AnyPattern) Match(node Node) bool {
-	return true
+// AnyMultiSuccessor returns a pattern that matches any node
+// with any number of successors
+func AnyMultiSuccessor() Pattern {
+	return &UnionKindPattern{
+		kinds:  []ProcedureKind{AnyKind},
+		single: false,
+	}
 }

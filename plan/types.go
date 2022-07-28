@@ -126,14 +126,14 @@ func (plan *Spec) CheckIntegrity() error {
 
 func symmetryCheck(node Node) error {
 	for _, pred := range node.Predecessors() {
-		if idx := indexOfNode(node, pred.Successors()); idx == -1 {
+		if idx := IndexOfNode(node, pred.Successors()); idx == -1 {
 			return fmt.Errorf("integrity violated: %s is predecessor of %s, "+
 				"but %s is not successor of %s", pred.ID(), node.ID(), node.ID(), pred.ID())
 		}
 	}
 
 	for _, succ := range node.Successors() {
-		if idx := indexOfNode(node, succ.Predecessors()); idx == -1 {
+		if idx := IndexOfNode(node, succ.Predecessors()); idx == -1 {
 			return fmt.Errorf("integrity violated: %s is successor of %s, "+
 				"but %s is not predecessor of %s`", succ.ID(), node.ID(), node.ID(), succ.ID())
 		}
@@ -142,12 +142,12 @@ func symmetryCheck(node Node) error {
 	return nil
 }
 
-// indexOfNode is a utility function that will return the offset
+// IndexOfNode is a utility function that will return the offset
 // of the given node in the slice of nodes.
 // This is useful to determine whether a node is the 1st or 2nd predecessor
 // of some other node for example.
 // Returns -1 if node not found.
-func indexOfNode(node Node, nodes []Node) int {
+func IndexOfNode(node Node, nodes []Node) int {
 	for i, n := range nodes {
 		if n == node {
 			return i

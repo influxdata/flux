@@ -837,10 +837,10 @@ func (a AggregateWindowRule) Name() string {
 }
 
 func (a AggregateWindowRule) Pattern() plan.Pattern {
-	return plan.Multi(WindowKind,
-		plan.Single(SchemaMutationKind,
-			plan.SingleOneOf([]plan.ProcedureKind{MeanKind, SumKind, CountKind},
-				plan.Single(WindowKind))))
+	return plan.MultiSuccessor(WindowKind,
+		plan.SingleSuccessor(SchemaMutationKind,
+			plan.SingleSuccessorOneOf([]plan.ProcedureKind{MeanKind, SumKind, CountKind},
+				plan.SingleSuccessor(WindowKind))))
 }
 
 func (a AggregateWindowRule) Rewrite(ctx context.Context, node plan.Node) (plan.Node, bool, error) {
@@ -958,11 +958,11 @@ func (a AggregateWindowCreateEmptyRule) Name() string {
 }
 
 func (a AggregateWindowCreateEmptyRule) Pattern() plan.Pattern {
-	return plan.Multi(WindowKind,
-		plan.Single(SchemaMutationKind,
-			plan.Single(experimentaltable.FillKind,
-				plan.SingleOneOf([]plan.ProcedureKind{MeanKind, SumKind, CountKind},
-					plan.Single(WindowKind)))))
+	return plan.MultiSuccessor(WindowKind,
+		plan.SingleSuccessor(SchemaMutationKind,
+			plan.SingleSuccessor(experimentaltable.FillKind,
+				plan.SingleSuccessorOneOf([]plan.ProcedureKind{MeanKind, SumKind, CountKind},
+					plan.SingleSuccessor(WindowKind)))))
 }
 
 func (a AggregateWindowCreateEmptyRule) Rewrite(ctx context.Context, node plan.Node) (plan.Node, bool, error) {

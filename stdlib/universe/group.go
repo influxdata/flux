@@ -468,16 +468,16 @@ func (t *groupTransformation) Finish(id execute.DatasetID, err error) {
 	t.d.Finish(err)
 }
 
-// `MergeGroupRule` merges two group operations and keeps only the last one
+// MergeGroupRule merges two group operations and keeps only the last one
 type MergeGroupRule struct{}
 
 func (r MergeGroupRule) Name() string {
 	return "MergeGroupRule"
 }
 
-// returns the pattern that matches `group |> group`
+// Pattern returns the pattern that matches `group |> group`
 func (r MergeGroupRule) Pattern() plan.Pattern {
-	return plan.Multi(GroupKind, plan.Single(GroupKind, plan.Any()))
+	return plan.MultiSuccessor(GroupKind, plan.SingleSuccessor(GroupKind))
 }
 
 func (r MergeGroupRule) Rewrite(ctx context.Context, lastGroup plan.Node) (plan.Node, bool, error) {

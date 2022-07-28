@@ -68,7 +68,7 @@ func (EquiJoinPredicateRule) Name() string {
 }
 
 func (EquiJoinPredicateRule) Pattern() plan.Pattern {
-	return plan.Multi(Join2Kind, plan.Any(), plan.Any())
+	return plan.MultiSuccessor(Join2Kind, plan.AnyMultiSuccessor(), plan.AnyMultiSuccessor())
 }
 
 func (EquiJoinPredicateRule) Rewrite(ctx context.Context, n plan.Node) (plan.Node, bool, error) {

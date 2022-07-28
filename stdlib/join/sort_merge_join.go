@@ -62,7 +62,7 @@ func (SortMergeJoinPredicateRule) Name() string {
 }
 
 func (SortMergeJoinPredicateRule) Pattern() plan.Pattern {
-	return plan.Multi(EquiJoinKind, plan.Any(), plan.Any())
+	return plan.MultiSuccessor(EquiJoinKind, plan.AnyMultiSuccessor(), plan.AnyMultiSuccessor())
 }
 
 func (SortMergeJoinPredicateRule) Rewrite(ctx context.Context, n plan.Node) (plan.Node, bool, error) {
@@ -88,21 +88,23 @@ func (SortMergeJoinPredicateRule) Rewrite(ctx context.Context, n plan.Node) (pla
 		return sortNode
 	}
 
-	successors := predecessors[0].Successors()
-
+	// Add a sort node to LHS of join
+	lhsSuccessors := predecessors[0].Successors()
 	columns := make([]string, 0, len(spec.On))
 	for _, pair := range spec.On {
 		columns = append(columns, pair.Left)
 	}
-	successors[0] = makeSortNode("sort_join_lhs", predecessors[0], columns)
+	i := plan.IndexOfNode(n, lhsSuccessors)
+	lhsSuccessors[i] = makeSortNode("sort_join_lhs", predecessors[0], columns)
 
-	successors = predecessors[1].Successors()
-
+	// Add a sort node to RHS of join
+	rhsSuccessors := predecessors[1].Successors()
 	columns = make([]string, 0, len(spec.On))
 	for _, pair := range spec.On {
 		columns = append(columns, pair.Right)
 	}
-	successors[0] = makeSortNode("sort_join_rhs", predecessors[1], columns)
+	i = plan.IndexOfNode(n, rhsSuccessors)
+	rhsSuccessors[i] = makeSortNode("sort_join_rhs", predecessors[1], columns)
 
 	// Replace the spec so we don't end up trying to apply this rewrite forever
 	x := SortMergeJoinProcedureSpec(*spec)

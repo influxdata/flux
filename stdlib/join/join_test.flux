@@ -404,7 +404,10 @@ testcase multi_join {
             },
             method: "inner",
         )
-    want = left
+    want =
+        right
+            |> filter(fn: (r) => r.id == "a")
+            |> map(fn: (r) => ({key: r.key, _time: r._time, _value: float(v: r._value), label: r.id}))
 
     testing.diff(want: want, got: got)
 }

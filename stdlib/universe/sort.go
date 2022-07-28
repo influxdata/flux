@@ -492,7 +492,9 @@ func (r RemoveRedundantSort) Name() string {
 }
 
 func (r RemoveRedundantSort) Pattern() plan.Pattern {
-	return plan.Pat(SortKind, plan.Any())
+	// Predecessor to the sort must have only the single successor (the sort node)
+	// to work around https://github.com/influxdata/flux/issues/5044
+	return plan.MultiSuccessor(SortKind, plan.AnySingleSuccessor())
 }
 
 func (r RemoveRedundantSort) Rewrite(ctx context.Context, node plan.Node) (plan.Node, bool, error) {

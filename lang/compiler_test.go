@@ -531,7 +531,7 @@ func (rule removeCount) Name() string {
 	return "removeCountRule"
 }
 func (rule removeCount) Pattern() plan.Pattern {
-	return plan.Multi(universe.CountKind)
+	return plan.MultiSuccessor(universe.CountKind)
 }
 func (rule removeCount) Rewrite(ctx context.Context, node plan.Node) (plan.Node, bool, error) {
 	return node.Predecessors()[0], true, nil
