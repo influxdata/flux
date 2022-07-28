@@ -22,16 +22,12 @@ func IntConditional(t *Boolean, c, a *Int, mem memory.Allocator) (*Int, error) {
 	}
 
 	for i := 0; i < n; i++ {
-		if t.IsValid(i) && c.IsValid(i) && a.IsValid(i) {
-			// FIXME: is this?? Not sure when we need to append null.
-			//  The standard conditional treats a null test as a false, but what about null consequent/alternate?
-			if c.IsNull(i) || a.IsNull(i) {
-				b.AppendNull()
-			} else if t.IsNull(i) || !t.Value(i) {
-				b.Append(a.Value(i)) // Falsy
-			} else {
-				b.Append(c.Value(i)) // Truthy
-			}
+		// nulls are considered as false
+		truthy := t.IsValid(i) && t.Value(i)
+		if truthy && c.IsValid(i) {
+			b.Append(c.Value(i))
+		} else if !truthy && a.IsValid(i) {
+			b.Append(a.Value(i))
 		} else {
 			b.AppendNull()
 		}
@@ -51,16 +47,12 @@ func IntConditionalCConst(t *Boolean, c int64, a *Int, mem memory.Allocator) (*I
 	}
 
 	for i := 0; i < n; i++ {
-		if t.IsValid(i) && a.IsValid(i) {
-			// FIXME: is this?? Not sure when we need to append null.
-			//  The standard conditional treats a null test as a false, but what about a null alternate?
-			if a.IsNull(i) {
-				b.AppendNull()
-			} else if t.IsNull(i) || !t.Value(i) {
-				b.Append(a.Value(i)) // Falsy
-			} else {
-				b.Append(c) // Truthy
-			}
+		// nulls are considered as false
+		truthy := t.IsValid(i) && t.Value(i)
+		if truthy {
+			b.Append(c)
+		} else if !truthy && a.IsValid(i) {
+			b.Append(a.Value(i))
 		} else {
 			b.AppendNull()
 		}
@@ -80,16 +72,12 @@ func IntConditionalAConst(t *Boolean, c *Int, a int64, mem memory.Allocator) (*I
 	}
 
 	for i := 0; i < n; i++ {
-		if t.IsValid(i) && c.IsValid(i) {
-			// FIXME: is this?? Not sure when we need to append null.
-			//  The standard conditional treats a null test as a false, but what about a null consequent?
-			if c.IsNull(i) {
-				b.AppendNull()
-			} else if t.IsNull(i) || !t.Value(i) {
-				b.Append(a) // Falsy
-			} else {
-				b.Append(c.Value(i)) // Truthy
-			}
+		// nulls are considered as false
+		truthy := t.IsValid(i) && t.Value(i)
+		if truthy && c.IsValid(i) {
+			b.Append(c.Value(i))
+		} else if !truthy {
+			b.Append(a)
 		} else {
 			b.AppendNull()
 		}
@@ -105,12 +93,12 @@ func IntConditionalCConstAConst(t *Boolean, c, a int64, mem memory.Allocator) (*
 	b.Resize(n)
 
 	for i := 0; i < n; i++ {
-		if t.IsValid(i) {
-			if t.IsNull(i) || !t.Value(i) {
-				b.Append(a) // Falsy
-			} else {
-				b.Append(c) // Truthy
-			}
+		// nulls are considered as false
+		truthy := t.IsValid(i) && t.Value(i)
+		if truthy {
+			b.Append(c)
+		} else if !truthy {
+			b.Append(a)
 		} else {
 			b.AppendNull()
 		}
@@ -130,16 +118,12 @@ func UintConditional(t *Boolean, c, a *Uint, mem memory.Allocator) (*Uint, error
 	}
 
 	for i := 0; i < n; i++ {
-		if t.IsValid(i) && c.IsValid(i) && a.IsValid(i) {
-			// FIXME: is this?? Not sure when we need to append null.
-			//  The standard conditional treats a null test as a false, but what about null consequent/alternate?
-			if c.IsNull(i) || a.IsNull(i) {
-				b.AppendNull()
-			} else if t.IsNull(i) || !t.Value(i) {
-				b.Append(a.Value(i)) // Falsy
-			} else {
-				b.Append(c.Value(i)) // Truthy
-			}
+		// nulls are considered as false
+		truthy := t.IsValid(i) && t.Value(i)
+		if truthy && c.IsValid(i) {
+			b.Append(c.Value(i))
+		} else if !truthy && a.IsValid(i) {
+			b.Append(a.Value(i))
 		} else {
 			b.AppendNull()
 		}
@@ -159,16 +143,12 @@ func UintConditionalCConst(t *Boolean, c uint64, a *Uint, mem memory.Allocator) 
 	}
 
 	for i := 0; i < n; i++ {
-		if t.IsValid(i) && a.IsValid(i) {
-			// FIXME: is this?? Not sure when we need to append null.
-			//  The standard conditional treats a null test as a false, but what about a null alternate?
-			if a.IsNull(i) {
-				b.AppendNull()
-			} else if t.IsNull(i) || !t.Value(i) {
-				b.Append(a.Value(i)) // Falsy
-			} else {
-				b.Append(c) // Truthy
-			}
+		// nulls are considered as false
+		truthy := t.IsValid(i) && t.Value(i)
+		if truthy {
+			b.Append(c)
+		} else if !truthy && a.IsValid(i) {
+			b.Append(a.Value(i))
 		} else {
 			b.AppendNull()
 		}
@@ -188,16 +168,12 @@ func UintConditionalAConst(t *Boolean, c *Uint, a uint64, mem memory.Allocator) 
 	}
 
 	for i := 0; i < n; i++ {
-		if t.IsValid(i) && c.IsValid(i) {
-			// FIXME: is this?? Not sure when we need to append null.
-			//  The standard conditional treats a null test as a false, but what about a null consequent?
-			if c.IsNull(i) {
-				b.AppendNull()
-			} else if t.IsNull(i) || !t.Value(i) {
-				b.Append(a) // Falsy
-			} else {
-				b.Append(c.Value(i)) // Truthy
-			}
+		// nulls are considered as false
+		truthy := t.IsValid(i) && t.Value(i)
+		if truthy && c.IsValid(i) {
+			b.Append(c.Value(i))
+		} else if !truthy {
+			b.Append(a)
 		} else {
 			b.AppendNull()
 		}
@@ -213,12 +189,12 @@ func UintConditionalCConstAConst(t *Boolean, c, a uint64, mem memory.Allocator) 
 	b.Resize(n)
 
 	for i := 0; i < n; i++ {
-		if t.IsValid(i) {
-			if t.IsNull(i) || !t.Value(i) {
-				b.Append(a) // Falsy
-			} else {
-				b.Append(c) // Truthy
-			}
+		// nulls are considered as false
+		truthy := t.IsValid(i) && t.Value(i)
+		if truthy {
+			b.Append(c)
+		} else if !truthy {
+			b.Append(a)
 		} else {
 			b.AppendNull()
 		}
@@ -238,16 +214,12 @@ func FloatConditional(t *Boolean, c, a *Float, mem memory.Allocator) (*Float, er
 	}
 
 	for i := 0; i < n; i++ {
-		if t.IsValid(i) && c.IsValid(i) && a.IsValid(i) {
-			// FIXME: is this?? Not sure when we need to append null.
-			//  The standard conditional treats a null test as a false, but what about null consequent/alternate?
-			if c.IsNull(i) || a.IsNull(i) {
-				b.AppendNull()
-			} else if t.IsNull(i) || !t.Value(i) {
-				b.Append(a.Value(i)) // Falsy
-			} else {
-				b.Append(c.Value(i)) // Truthy
-			}
+		// nulls are considered as false
+		truthy := t.IsValid(i) && t.Value(i)
+		if truthy && c.IsValid(i) {
+			b.Append(c.Value(i))
+		} else if !truthy && a.IsValid(i) {
+			b.Append(a.Value(i))
 		} else {
 			b.AppendNull()
 		}
@@ -267,16 +239,12 @@ func FloatConditionalCConst(t *Boolean, c float64, a *Float, mem memory.Allocato
 	}
 
 	for i := 0; i < n; i++ {
-		if t.IsValid(i) && a.IsValid(i) {
-			// FIXME: is this?? Not sure when we need to append null.
-			//  The standard conditional treats a null test as a false, but what about a null alternate?
-			if a.IsNull(i) {
-				b.AppendNull()
-			} else if t.IsNull(i) || !t.Value(i) {
-				b.Append(a.Value(i)) // Falsy
-			} else {
-				b.Append(c) // Truthy
-			}
+		// nulls are considered as false
+		truthy := t.IsValid(i) && t.Value(i)
+		if truthy {
+			b.Append(c)
+		} else if !truthy && a.IsValid(i) {
+			b.Append(a.Value(i))
 		} else {
 			b.AppendNull()
 		}
@@ -296,16 +264,12 @@ func FloatConditionalAConst(t *Boolean, c *Float, a float64, mem memory.Allocato
 	}
 
 	for i := 0; i < n; i++ {
-		if t.IsValid(i) && c.IsValid(i) {
-			// FIXME: is this?? Not sure when we need to append null.
-			//  The standard conditional treats a null test as a false, but what about a null consequent?
-			if c.IsNull(i) {
-				b.AppendNull()
-			} else if t.IsNull(i) || !t.Value(i) {
-				b.Append(a) // Falsy
-			} else {
-				b.Append(c.Value(i)) // Truthy
-			}
+		// nulls are considered as false
+		truthy := t.IsValid(i) && t.Value(i)
+		if truthy && c.IsValid(i) {
+			b.Append(c.Value(i))
+		} else if !truthy {
+			b.Append(a)
 		} else {
 			b.AppendNull()
 		}
@@ -321,12 +285,12 @@ func FloatConditionalCConstAConst(t *Boolean, c, a float64, mem memory.Allocator
 	b.Resize(n)
 
 	for i := 0; i < n; i++ {
-		if t.IsValid(i) {
-			if t.IsNull(i) || !t.Value(i) {
-				b.Append(a) // Falsy
-			} else {
-				b.Append(c) // Truthy
-			}
+		// nulls are considered as false
+		truthy := t.IsValid(i) && t.Value(i)
+		if truthy {
+			b.Append(c)
+		} else if !truthy {
+			b.Append(a)
 		} else {
 			b.AppendNull()
 		}
@@ -346,16 +310,12 @@ func StringConditional(t *Boolean, c, a *String, mem memory.Allocator) (*String,
 	}
 
 	for i := 0; i < n; i++ {
-		if t.IsValid(i) && c.IsValid(i) && a.IsValid(i) {
-			// FIXME: is this?? Not sure when we need to append null.
-			//  The standard conditional treats a null test as a false, but what about null consequent/alternate?
-			if c.IsNull(i) || a.IsNull(i) {
-				b.AppendNull()
-			} else if t.IsNull(i) || !t.Value(i) {
-				b.Append(a.Value(i)) // Falsy
-			} else {
-				b.Append(c.Value(i)) // Truthy
-			}
+		// nulls are considered as false
+		truthy := t.IsValid(i) && t.Value(i)
+		if truthy && c.IsValid(i) {
+			b.Append(c.Value(i))
+		} else if !truthy && a.IsValid(i) {
+			b.Append(a.Value(i))
 		} else {
 			b.AppendNull()
 		}
@@ -375,16 +335,12 @@ func StringConditionalCConst(t *Boolean, c string, a *String, mem memory.Allocat
 	}
 
 	for i := 0; i < n; i++ {
-		if t.IsValid(i) && a.IsValid(i) {
-			// FIXME: is this?? Not sure when we need to append null.
-			//  The standard conditional treats a null test as a false, but what about a null alternate?
-			if a.IsNull(i) {
-				b.AppendNull()
-			} else if t.IsNull(i) || !t.Value(i) {
-				b.Append(a.Value(i)) // Falsy
-			} else {
-				b.Append(c) // Truthy
-			}
+		// nulls are considered as false
+		truthy := t.IsValid(i) && t.Value(i)
+		if truthy {
+			b.Append(c)
+		} else if !truthy && a.IsValid(i) {
+			b.Append(a.Value(i))
 		} else {
 			b.AppendNull()
 		}
@@ -404,16 +360,12 @@ func StringConditionalAConst(t *Boolean, c *String, a string, mem memory.Allocat
 	}
 
 	for i := 0; i < n; i++ {
-		if t.IsValid(i) && c.IsValid(i) {
-			// FIXME: is this?? Not sure when we need to append null.
-			//  The standard conditional treats a null test as a false, but what about a null consequent?
-			if c.IsNull(i) {
-				b.AppendNull()
-			} else if t.IsNull(i) || !t.Value(i) {
-				b.Append(a) // Falsy
-			} else {
-				b.Append(c.Value(i)) // Truthy
-			}
+		// nulls are considered as false
+		truthy := t.IsValid(i) && t.Value(i)
+		if truthy && c.IsValid(i) {
+			b.Append(c.Value(i))
+		} else if !truthy {
+			b.Append(a)
 		} else {
 			b.AppendNull()
 		}
@@ -429,12 +381,12 @@ func StringConditionalCConstAConst(t *Boolean, c, a string, mem memory.Allocator
 	b.Resize(n)
 
 	for i := 0; i < n; i++ {
-		if t.IsValid(i) {
-			if t.IsNull(i) || !t.Value(i) {
-				b.Append(a) // Falsy
-			} else {
-				b.Append(c) // Truthy
-			}
+		// nulls are considered as false
+		truthy := t.IsValid(i) && t.Value(i)
+		if truthy {
+			b.Append(c)
+		} else if !truthy {
+			b.Append(a)
 		} else {
 			b.AppendNull()
 		}
@@ -454,16 +406,12 @@ func BooleanConditional(t *Boolean, c, a *Boolean, mem memory.Allocator) (*Boole
 	}
 
 	for i := 0; i < n; i++ {
-		if t.IsValid(i) && c.IsValid(i) && a.IsValid(i) {
-			// FIXME: is this?? Not sure when we need to append null.
-			//  The standard conditional treats a null test as a false, but what about null consequent/alternate?
-			if c.IsNull(i) || a.IsNull(i) {
-				b.AppendNull()
-			} else if t.IsNull(i) || !t.Value(i) {
-				b.Append(a.Value(i)) // Falsy
-			} else {
-				b.Append(c.Value(i)) // Truthy
-			}
+		// nulls are considered as false
+		truthy := t.IsValid(i) && t.Value(i)
+		if truthy && c.IsValid(i) {
+			b.Append(c.Value(i))
+		} else if !truthy && a.IsValid(i) {
+			b.Append(a.Value(i))
 		} else {
 			b.AppendNull()
 		}
@@ -483,16 +431,12 @@ func BooleanConditionalCConst(t *Boolean, c bool, a *Boolean, mem memory.Allocat
 	}
 
 	for i := 0; i < n; i++ {
-		if t.IsValid(i) && a.IsValid(i) {
-			// FIXME: is this?? Not sure when we need to append null.
-			//  The standard conditional treats a null test as a false, but what about a null alternate?
-			if a.IsNull(i) {
-				b.AppendNull()
-			} else if t.IsNull(i) || !t.Value(i) {
-				b.Append(a.Value(i)) // Falsy
-			} else {
-				b.Append(c) // Truthy
-			}
+		// nulls are considered as false
+		truthy := t.IsValid(i) && t.Value(i)
+		if truthy {
+			b.Append(c)
+		} else if !truthy && a.IsValid(i) {
+			b.Append(a.Value(i))
 		} else {
 			b.AppendNull()
 		}
@@ -512,16 +456,12 @@ func BooleanConditionalAConst(t *Boolean, c *Boolean, a bool, mem memory.Allocat
 	}
 
 	for i := 0; i < n; i++ {
-		if t.IsValid(i) && c.IsValid(i) {
-			// FIXME: is this?? Not sure when we need to append null.
-			//  The standard conditional treats a null test as a false, but what about a null consequent?
-			if c.IsNull(i) {
-				b.AppendNull()
-			} else if t.IsNull(i) || !t.Value(i) {
-				b.Append(a) // Falsy
-			} else {
-				b.Append(c.Value(i)) // Truthy
-			}
+		// nulls are considered as false
+		truthy := t.IsValid(i) && t.Value(i)
+		if truthy && c.IsValid(i) {
+			b.Append(c.Value(i))
+		} else if !truthy {
+			b.Append(a)
 		} else {
 			b.AppendNull()
 		}
@@ -537,12 +477,12 @@ func BooleanConditionalCConstAConst(t *Boolean, c, a bool, mem memory.Allocator)
 	b.Resize(n)
 
 	for i := 0; i < n; i++ {
-		if t.IsValid(i) {
-			if t.IsNull(i) || !t.Value(i) {
-				b.Append(a) // Falsy
-			} else {
-				b.Append(c) // Truthy
-			}
+		// nulls are considered as false
+		truthy := t.IsValid(i) && t.Value(i)
+		if truthy {
+			b.Append(c)
+		} else if !truthy {
+			b.Append(a)
 		} else {
 			b.AppendNull()
 		}

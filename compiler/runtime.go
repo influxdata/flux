@@ -458,25 +458,20 @@ func (e *conditionalVectorEvaluator) Eval(ctx context.Context, scope Scope) (val
 	tva := tv.Arr().(*array.Boolean)
 	n := tva.Len()
 
-	// Scan to see if we have all one outcome for the test.
-	var initialOutcome interface{}
+	// Scan to see if we have all one outcome for the conditional tests
+	initialOutcome := tva.IsValid(0) && tva.Value(0)
 	varied := false
 	for i := 0; i < n; i++ {
-		if tva.IsValid(i) {
-			if initialOutcome == nil {
-				initialOutcome = tva.Value(i)
-			}
-			if initialOutcome != tva.Value(i) {
-				varied = true
-				break
-			}
+		if initialOutcome != tva.Value(i) {
+			varied = true
+			break
 		}
 	}
 
-	// For cases where all the tests are true, or all are false, we can skip
-	// evaluating the unused branch.
+	// For cases where all the test outcomes are true, or all are false, we can
+	// skip evaluating the unused branch.
 	if !varied {
-		if initialOutcome.(bool) {
+		if initialOutcome {
 			return eval(ctx, e.consequent, scope)
 		} else {
 			return eval(ctx, e.alternate, scope)

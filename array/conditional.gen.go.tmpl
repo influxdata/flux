@@ -17,16 +17,12 @@ func {{.Name}}Conditional(t *Boolean, c, a *{{.Name}}, mem memory.Allocator) (*{
 		}
 
 		for i := 0; i < n; i++ {
-			if t.IsValid(i) && c.IsValid(i) && a.IsValid(i) {
-				// FIXME: is this?? Not sure when we need to append null.
-				//  The standard conditional treats a null test as a false, but what about null consequent/alternate?
-				if c.IsNull(i) || a.IsNull(i) {
-					b.AppendNull()
-				} else if t.IsNull(i) || !t.Value(i) {
-					b.Append(a.Value(i)) // Falsy
-				} else {
-					b.Append(c.Value(i)) // Truthy
-				}
+			// nulls are considered as false
+			truthy := t.IsValid(i) && t.Value(i)
+			if truthy && c.IsValid(i) {
+				b.Append(c.Value(i))
+			} else if !truthy && a.IsValid(i) {
+				b.Append(a.Value(i))
 			} else {
 				b.AppendNull()
 			}
@@ -46,16 +42,12 @@ func {{.Name}}ConditionalCConst(t *Boolean, c {{.PrimitiveType}}, a *{{.Name}}, 
 		}
 
 		for i := 0; i < n; i++ {
-			if t.IsValid(i) && a.IsValid(i) {
-				// FIXME: is this?? Not sure when we need to append null.
-				//  The standard conditional treats a null test as a false, but what about a null alternate?
-				if a.IsNull(i) {
-					b.AppendNull()
-				} else if t.IsNull(i) || !t.Value(i) {
-					b.Append(a.Value(i)) // Falsy
-				} else {
-					b.Append(c) // Truthy
-				}
+			// nulls are considered as false
+			truthy := t.IsValid(i) && t.Value(i)
+			if truthy {
+				b.Append(c)
+			} else if !truthy && a.IsValid(i) {
+				b.Append(a.Value(i))
 			} else {
 				b.AppendNull()
 			}
@@ -75,16 +67,12 @@ func {{.Name}}ConditionalAConst(t *Boolean, c *{{.Name}}, a {{.PrimitiveType}}, 
 		}
 
 		for i := 0; i < n; i++ {
-			if t.IsValid(i) && c.IsValid(i) {
-				// FIXME: is this?? Not sure when we need to append null.
-				//  The standard conditional treats a null test as a false, but what about a null consequent?
-				if c.IsNull(i) {
-					b.AppendNull()
-				} else if t.IsNull(i) || !t.Value(i) {
-					b.Append(a) // Falsy
-				} else {
-					b.Append(c.Value(i)) // Truthy
-				}
+			// nulls are considered as false
+			truthy := t.IsValid(i) && t.Value(i)
+			if truthy && c.IsValid(i) {
+				b.Append(c.Value(i))
+			} else if !truthy {
+				b.Append(a)
 			} else {
 				b.AppendNull()
 			}
@@ -100,12 +88,12 @@ func {{.Name}}ConditionalCConstAConst(t *Boolean, c, a {{.PrimitiveType}}, mem m
 		b.Resize(n)
 
 		for i := 0; i < n; i++ {
-			if t.IsValid(i) {
-				if t.IsNull(i) || !t.Value(i) {
-					b.Append(a) // Falsy
-				} else {
-					b.Append(c) // Truthy
-				}
+			// nulls are considered as false
+			truthy := t.IsValid(i) && t.Value(i)
+			if truthy {
+				b.Append(c)
+			} else if !truthy {
+				b.Append(a)
 			} else {
 				b.AppendNull()
 			}
