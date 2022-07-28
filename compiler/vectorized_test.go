@@ -355,6 +355,7 @@ func TestVectorizedFns(t *testing.T) {
 		})
 	}
 	conditionalTests := []struct {
+		name   string // a default name will be generated based on the input type, but can optionally be overridden
 		inType semantic.MonoType
 		input  map[string]interface{}
 		want   map[string]interface{}
@@ -411,11 +412,61 @@ func TestVectorizedFns(t *testing.T) {
 				"c": []interface{}{"a", "d"},
 			},
 		},
+		{
+			name:   "conditional expression nil test",
+			inType: semantic.BasicInt,
+			input: map[string]interface{}{
+				"r": map[string]interface{}{
+					"a":    []interface{}{int64(1), int64(3)},
+					"b":    []interface{}{int64(2), int64(4)},
+					"cond": []interface{}{nil, false},
+				},
+			},
+			want: map[string]interface{}{
+				// nil is considered "false" so the 1st item comes from `b`, the alternate
+				"c": []interface{}{int64(2), int64(4)},
+			},
+		},
+		{
+			name:   "conditional expression nil consequent",
+			inType: semantic.BasicInt,
+			input: map[string]interface{}{
+				"r": map[string]interface{}{
+					"a":    []interface{}{nil, int64(3)},
+					"b":    []interface{}{int64(2), int64(4)},
+					"cond": []interface{}{true, false},
+				},
+			},
+			want: map[string]interface{}{
+				// when a nil value is selected, it gets passed through
+				"c": []interface{}{nil, int64(4)},
+			},
+		},
+		{
+			name:   "conditional expression nil alternate",
+			inType: semantic.BasicInt,
+			input: map[string]interface{}{
+				"r": map[string]interface{}{
+					"a":    []interface{}{int64(1), int64(3)},
+					"b":    []interface{}{int64(2), nil},
+					"cond": []interface{}{true, false},
+				},
+			},
+			want: map[string]interface{}{
+				// when a nil value is selected, it gets passed through
+				"c": []interface{}{int64(1), nil},
+			},
+		},
 	}
 
 	for _, test := range conditionalTests {
+		name := test.name
+		if len(name) == 0 {
+			name = fmt.Sprintf("conditional expression %s", test.inType.String())
+		}
+
 		testCases = append(testCases, TestCase{
-			name:         fmt.Sprintf("conditional expression %s", test.inType.String()),
+			name:         name,
 			fn:           `(r) => ({c: if r.cond then r.a else r.b})`,
 			vectorizable: true,
 			inType: semantic.NewObjectType([]semantic.PropertyType{
