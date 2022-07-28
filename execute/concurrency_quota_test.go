@@ -450,6 +450,30 @@ func TestConcurrencyQuota(t *testing.T) {
 			parallelizeFactor:    4,
 			wantConcurrencyQuota: 18,
 		},
+		// Test interplay with tableFind. The input to tableFind has a yield,
+		// which gets scrubbed from the tableFind, and thus does not increase
+		// the concurrency quota of the sub-plan. It stays at 1. We can't test
+		// that computation though. The yield does emerge in the top-level
+		// plan, so the concurrency quota will be 2.
+		{
+			name: "tablefind-1",
+			flux: `
+				import "sampledata"
+
+				x = sampledata.int()
+				  |> toFloat() 
+				  |> yield(name: "n1")
+
+				t = x
+				    |> map(fn: (r) => ({r with left: 0.0, right: 1.0 }))
+				    |> tableFind(fn: (key) => true) |> getRecord(idx: 0)
+
+				xbar = t.left / t.right
+
+				x |> map(fn: (r) => ({r with xbar: xbar}))
+			`,
+			wantConcurrencyQuota: 2,
+		},
 	}
 
 	for _, tc := range testcases {
