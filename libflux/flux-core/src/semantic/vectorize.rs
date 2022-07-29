@@ -5,9 +5,9 @@ use crate::{
     errors::{located, Errors},
     semantic::{
         nodes::{
-            BinaryExpr, Block, CallExpr, Error, ErrorKind, Expression, FunctionExpr, Identifier,
-            IdentifierExpr, LogicalExpr, MemberExpr, ObjectExpr, Package, Property, Result,
-            ReturnStmt,
+            BinaryExpr, Block, CallExpr, ConditionalExpr, Error, ErrorKind, Expression,
+            FunctionExpr, Identifier, IdentifierExpr, LogicalExpr, MemberExpr, ObjectExpr, Package,
+            Property, Result, ReturnStmt,
         },
         types::{self, Function, Label, MonoType},
         AnalyzerConfig, Feature, Symbol,
@@ -121,6 +121,20 @@ impl Expression {
                     operator: expr.operator.clone(),
                     left,
                     right,
+                }))
+            }
+            Expression::Conditional(expr)
+                if env
+                    .config
+                    .features
+                    .contains(&Feature::VectorizedConditionals) =>
+            {
+                Expression::Conditional(Box::new(ConditionalExpr {
+                    loc: expr.loc.clone(),
+                    test: expr.test.vectorize(env)?,
+                    consequent: expr.consequent.vectorize(env)?,
+                    alternate: expr.alternate.vectorize(env)?,
+                    typ: MonoType::vector(expr.typ.clone()),
                 }))
             }
             expr @ Expression::Integer(_)

@@ -44,7 +44,13 @@ func NewVectorValue(arr arrow.Array, typ semantic.MonoType) Vector {
 // A convenience method for unit testing
 func NewVectorFromElements(mem memory.Allocator, es ...interface{}) Vector {
 	var typ semantic.MonoType
-	switch es[0].(type) {
+	var first interface{}
+
+	for i := 0; i < len(es) && first == nil; i++ {
+		first = es[i]
+	}
+
+	switch first.(type) {
 
 	case int64:
 		typ = semantic.BasicInt
@@ -81,7 +87,11 @@ func newVectorFromSlice(values []Value, typ semantic.MonoType, mem memory.Alloca
 	case semantic.BasicInt:
 		b := arrow.NewIntBuilder(mem)
 		for _, v := range values {
-			b.Append(v.Int())
+			if v.IsNull() {
+				b.AppendNull()
+			} else {
+				b.Append(v.Int())
+			}
 		}
 		arr := b.NewIntArray()
 		return NewIntVectorValue(arr)
@@ -89,7 +99,11 @@ func newVectorFromSlice(values []Value, typ semantic.MonoType, mem memory.Alloca
 	case semantic.BasicUint:
 		b := arrow.NewUintBuilder(mem)
 		for _, v := range values {
-			b.Append(v.UInt())
+			if v.IsNull() {
+				b.AppendNull()
+			} else {
+				b.Append(v.UInt())
+			}
 		}
 		arr := b.NewUintArray()
 		return NewUintVectorValue(arr)
@@ -97,7 +111,11 @@ func newVectorFromSlice(values []Value, typ semantic.MonoType, mem memory.Alloca
 	case semantic.BasicFloat:
 		b := arrow.NewFloatBuilder(mem)
 		for _, v := range values {
-			b.Append(v.Float())
+			if v.IsNull() {
+				b.AppendNull()
+			} else {
+				b.Append(v.Float())
+			}
 		}
 		arr := b.NewFloatArray()
 		return NewFloatVectorValue(arr)
@@ -105,7 +123,11 @@ func newVectorFromSlice(values []Value, typ semantic.MonoType, mem memory.Alloca
 	case semantic.BasicBool:
 		b := arrow.NewBooleanBuilder(mem)
 		for _, v := range values {
-			b.Append(v.Bool())
+			if v.IsNull() {
+				b.AppendNull()
+			} else {
+				b.Append(v.Bool())
+			}
 		}
 		arr := b.NewBooleanArray()
 		return NewBooleanVectorValue(arr)
@@ -113,7 +135,11 @@ func newVectorFromSlice(values []Value, typ semantic.MonoType, mem memory.Alloca
 	case semantic.BasicString:
 		b := arrow.NewStringBuilder(mem)
 		for _, v := range values {
-			b.Append(v.Str())
+			if v.IsNull() {
+				b.AppendNull()
+			} else {
+				b.Append(v.Str())
+			}
 		}
 		arr := b.NewStringArray()
 		return NewStringVectorValue(arr)
@@ -121,7 +147,11 @@ func newVectorFromSlice(values []Value, typ semantic.MonoType, mem memory.Alloca
 	case semantic.BasicTime:
 		b := arrow.NewIntBuilder(mem)
 		for _, v := range values {
-			b.Append(v.Int())
+			if v.IsNull() {
+				b.AppendNull()
+			} else {
+				b.Append(v.Int())
+			}
 		}
 		arr := b.NewIntArray()
 		return NewTimeVectorValue(arr)

@@ -411,6 +411,88 @@ func (e *conditionalEvaluator) Eval(ctx context.Context, scope Scope) (values.Va
 	}
 }
 
+type conditionalVectorEvaluator struct {
+	test       Evaluator
+	consequent Evaluator
+	alternate  Evaluator
+}
+
+func (e *conditionalVectorEvaluator) Type() semantic.MonoType {
+	return e.alternate.Type()
+}
+
+func (e *conditionalVectorEvaluator) Eval(ctx context.Context, scope Scope) (values.Value, error) {
+	t, err := eval(ctx, e.test, scope)
+	if err != nil {
+		return nil, err
+	}
+	defer t.Release()
+
+	typ := t.Type()
+	// Will err if typ is not Vector or Array, but that's fine.
+	// We're testing first to make sure this is a Vector.
+	etyp, _ := typ.ElemType()
+
+	if !t.IsNull() && !(typ.Nature() == semantic.Vector && etyp.Nature() == semantic.Bool) {
+		return nil, errors.Newf(codes.Invalid, "cannot use test of type %s in vectorized conditional expression; expected vector of boolean", typ)
+	}
+
+	mem := memory.GetAllocator(ctx)
+
+	tv := t.Vector()
+	// If `t` is vec repeat, skip the varied check and immediately select the
+	// branch to return.
+	// FIXME: currently there's no way to vectorize bool literals.
+	//   This branch will never run until boolean literals work and/or we have
+	//	 const folding working with equality operators.
+	//   <https://github.com/influxdata/flux/issues/4997>
+	//   <https://github.com/influxdata/flux/issues/4608>
+	if vr, ok := tv.(*values.VectorRepeatValue); ok {
+		if vr.Value().Bool() {
+			return eval(ctx, e.consequent, scope)
+		} else {
+			return eval(ctx, e.alternate, scope)
+		}
+	}
+
+	tva := tv.Arr().(*array.Boolean)
+	n := tva.Len()
+
+	// Scan to see if we have all one outcome for the conditional tests
+	initialOutcome := tva.IsValid(0) && tva.Value(0)
+	varied := false
+	for i := 0; i < n; i++ {
+		if initialOutcome != tva.Value(i) {
+			varied = true
+			break
+		}
+	}
+
+	// For cases where all the test outcomes are true, or all are false, we can
+	// skip evaluating the unused branch.
+	if !varied {
+		if initialOutcome {
+			return eval(ctx, e.consequent, scope)
+		} else {
+			return eval(ctx, e.alternate, scope)
+		}
+	}
+
+	c, err := eval(ctx, e.consequent, scope)
+	if err != nil {
+		return nil, err
+	}
+	defer c.Release()
+
+	a, err := eval(ctx, e.alternate, scope)
+	if err != nil {
+		return nil, err
+	}
+	defer a.Release()
+
+	return values.VectorConditional(tv, c.Vector(), a.Vector(), mem)
+}
+
 type binaryEvaluator struct {
 	t           semantic.MonoType
 	left, right Evaluator

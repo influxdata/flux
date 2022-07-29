@@ -185,6 +185,18 @@ func QueryConcurrencyIncrease() IntFlag {
 	return queryConcurrencyIncrease
 }
 
+var vectorizedConditionals = feature.MakeBoolFlag(
+	"Vectorized Conditionals",
+	"vectorizedConditionals",
+	"Owen Nelson",
+	false,
+)
+
+// VectorizedConditionals - Calls to map can be vectorized when conditional expressions appear in the function
+func VectorizedConditionals() BoolFlag {
+	return vectorizedConditionals
+}
+
 // Inject will inject the Flagger into the context.
 func Inject(ctx context.Context, flagger Flagger) context.Context {
 	return feature.Inject(ctx, flagger)
@@ -205,6 +217,7 @@ var all = []Flag{
 	experimentalTestingDiff,
 	removeRedundantSortNodes,
 	queryConcurrencyIncrease,
+	vectorizedConditionals,
 }
 
 var byKey = map[string]Flag{
@@ -222,6 +235,7 @@ var byKey = map[string]Flag{
 	"experimentalTestingDiff":          experimentalTestingDiff,
 	"removeRedundantSortNodes":         removeRedundantSortNodes,
 	"queryConcurrencyIncrease":         queryConcurrencyIncrease,
+	"vectorizedConditionals":           vectorizedConditionals,
 }
 
 // Flags returns all feature flags.

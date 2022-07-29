@@ -1,0 +1,105 @@
+package array
+
+import (
+	"github.com/apache/arrow/go/v7/arrow/memory"
+	"github.com/influxdata/flux/codes"
+	"github.com/influxdata/flux/internal/errors"
+)
+
+{{range .}}
+func {{.Name}}Conditional(t *Boolean, c, a *{{.Name}}, mem memory.Allocator) (*{{.Name}}, error) {
+		n := t.Len()
+		b := New{{.Name}}Builder(mem)
+		b.Resize(n)
+
+		if !(c.Len() == n && a.Len() == n) {
+			return nil, errors.Newf(codes.Invalid, "vectors must be equal length")
+		}
+
+		for i := 0; i < n; i++ {
+			// nulls are considered as false
+			truthy := t.IsValid(i) && t.Value(i)
+			if truthy && c.IsValid(i) {
+				b.Append(c.Value(i))
+			} else if !truthy && a.IsValid(i) {
+				b.Append(a.Value(i))
+			} else {
+				b.AppendNull()
+			}
+		}
+		arr := b.New{{.Name}}Array()
+		b.Release()
+	return arr, nil
+}
+
+func {{.Name}}ConditionalCConst(t *Boolean, c {{.PrimitiveType}}, a *{{.Name}}, mem memory.Allocator) (*{{.Name}}, error) {
+		n := t.Len()
+		b := New{{.Name}}Builder(mem)
+		b.Resize(n)
+
+		if !(a.Len() == n) {
+			return nil, errors.Newf(codes.Invalid, "vectors must be equal length")
+		}
+
+		for i := 0; i < n; i++ {
+			// nulls are considered as false
+			truthy := t.IsValid(i) && t.Value(i)
+			if truthy {
+				b.Append(c)
+			} else if !truthy && a.IsValid(i) {
+				b.Append(a.Value(i))
+			} else {
+				b.AppendNull()
+			}
+		}
+		arr := b.New{{.Name}}Array()
+		b.Release()
+	return arr, nil
+}
+
+func {{.Name}}ConditionalAConst(t *Boolean, c *{{.Name}}, a {{.PrimitiveType}}, mem memory.Allocator) (*{{.Name}}, error) {
+		n := t.Len()
+		b := New{{.Name}}Builder(mem)
+		b.Resize(n)
+
+		if !(c.Len() == n) {
+			return nil, errors.Newf(codes.Invalid, "vectors must be equal length")
+		}
+
+		for i := 0; i < n; i++ {
+			// nulls are considered as false
+			truthy := t.IsValid(i) && t.Value(i)
+			if truthy && c.IsValid(i) {
+				b.Append(c.Value(i))
+			} else if !truthy {
+				b.Append(a)
+			} else {
+				b.AppendNull()
+			}
+		}
+		arr := b.New{{.Name}}Array()
+		b.Release()
+	return arr, nil
+}
+
+func {{.Name}}ConditionalCConstAConst(t *Boolean, c, a {{.PrimitiveType}}, mem memory.Allocator) (*{{.Name}}, error) {
+		n := t.Len()
+		b := New{{.Name}}Builder(mem)
+		b.Resize(n)
+
+		for i := 0; i < n; i++ {
+			// nulls are considered as false
+			truthy := t.IsValid(i) && t.Value(i)
+			if truthy {
+				b.Append(c)
+			} else if !truthy {
+				b.Append(a)
+			} else {
+				b.AppendNull()
+			}
+		}
+		arr := b.New{{.Name}}Array()
+		b.Release()
+	return arr, nil
+}
+{{end}}

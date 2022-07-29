@@ -8,7 +8,11 @@ use crate::semantic::{
 
 fn analyzer_config() -> AnalyzerConfig {
     AnalyzerConfig {
-        features: vec![Feature::VectorizedMap, Feature::VectorizedConst],
+        features: vec![
+            Feature::VectorizedMap,
+            Feature::VectorizedConst,
+            Feature::VectorizedConditionals,
+        ],
         ..AnalyzerConfig::default()
     }
 }
@@ -280,5 +284,21 @@ fn vectorize_with_construction_using_literal_time() -> anyhow::Result<()> {
             Node::FunctionExpr(function),
         )?);
 
+    Ok(())
+}
+
+#[test]
+fn vectorize_with_conditional_expr() -> anyhow::Result<()> {
+    let pkg = vectorize(r#"(r) => ({ r with a: if r.cond then 1 else 0 })"#).unwrap();
+
+    let function = get_vectorized_function(&pkg);
+
+    expect_test::expect![[r##"
+        (r) => {
+            return {r:{#C with cond: v[bool]} with a: (if r:{#C with cond: v[bool]}.cond:v[bool] then ~~vecRepeat~~:int(v: 1):v[int] else ~~vecRepeat~~:int(v: 0):v[int]):v[int]}:{#C with a: v[int], cond: v[bool]}
+        }:(r: {#C with cond: v[bool]}) => {#C with a: v[int], cond: v[bool]}"##]]
+        .assert_eq(&crate::semantic::formatter::format_node(
+            Node::FunctionExpr(function),
+        )?);
     Ok(())
 }
