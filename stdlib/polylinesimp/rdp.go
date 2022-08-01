@@ -134,7 +134,7 @@ type RdpTransformation struct {
 	column           string
 	timeColumn       string
 	epsilon          float64
-	retentionpercent float64
+	retentionPercent float64
 }
 
 func NewRdpTransformation(d execute.Dataset, cache execute.TableBuilderCache, alloc memory.Allocator, spec *RdpProcedureSpec) *RdpTransformation {
@@ -145,7 +145,7 @@ func NewRdpTransformation(d execute.Dataset, cache execute.TableBuilderCache, al
 		column:           spec.Column,
 		timeColumn:       spec.TimeColumn,
 		epsilon:          spec.Epsilon,
-		retentionpercent: spec.Retention,
+		retentionPercent: spec.Retention,
 	}
 }
 
@@ -198,7 +198,7 @@ func (rdpt *RdpTransformation) Process(id execute.DatasetID, tbl flux.Table) err
 	}
 
 	// Ensuring that the algorithm is not passed with irrelevant inputs
-	if rdpt.retentionpercent < 0.0 || rdpt.retentionpercent >= 100.0 {
+	if rdpt.retentionPercent < 0.0 || rdpt.retentionPercent >= 100.0 {
 		panic("Retention percent has to be between 0 and 100")
 	}
 	if rdpt.epsilon < 0.0 {
@@ -207,7 +207,7 @@ func (rdpt *RdpTransformation) Process(id execute.DatasetID, tbl flux.Table) err
 
 	// Passing the cleaned input data to the main RDP function
 
-	rdp_obj := rdp.New(rdpt.timeColumn, rdpt.column, rdpt.epsilon, rdpt.retentionpercent, fluxarrow.NewAllocator(rdpt.alloc))
+	rdp_obj := rdp.New(rdpt.timeColumn, rdpt.column, rdpt.epsilon, rdpt.retentionPercent, fluxarrow.NewAllocator(rdpt.alloc))
 	newTs, newVs := rdp_obj.Do(vs, ts)
 	// don't need vs and ts anymore
 	vs.Release()

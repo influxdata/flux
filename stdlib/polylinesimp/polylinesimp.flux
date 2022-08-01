@@ -1,10 +1,9 @@
 package polylinesimp
 
+
 // Package polylinesimp provides methods for polyline simplication which is an efficient way of downsampling curves and lines without losing much of its variation
 // throughout the path. This enables efficient rendering of graphs and visualizations without having to load the entire corpus of data points into memory.
 // This is done by reducing the number of vertices used in a set of polylines while keeping the overall shape as much as possible.
-
-
 // RDP is an algorithm that decimates a curve composed of line segments to a similar curve with fewer points.
 //
 // ## Parameters
@@ -22,7 +21,7 @@ package polylinesimp
 // #
 // # data =
 // #     csv.from(file : "abcd.csv")
-// #          |> polylinesimp.rdp(column: "_value",timeColumn: "_time", epsilon:1.5) 
+// #          |> polylinesimp.rdp(column: "_value",timeColumn: "_time", epsilon:1.5)
 // #
 // ```
 //
@@ -33,14 +32,13 @@ package polylinesimp
 // #
 // # data =
 // #     csv.from(file : "abcd.csv")
-// #          |> polylinesimp.rdp(column: "_value",timeColumn: "_time", retention:90.0) 
+// #          |> polylinesimp.rdp(column: "_value",timeColumn: "_time", retention:90.0)
 // #
 // ```
 // ## Metadata
 // introduced: 0.7.0
 // tags: transformations
 //
-
 builtin rdp : (
         <-tables: stream[A],
         ?column: string,
