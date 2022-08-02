@@ -4,7 +4,7 @@ package boundaries_test
 import "array"
 import "testing"
 import "timezone"
-import "date/boundaries"
+import "experimental/date/boundaries"
 
 testcase yesterday_test {
     option now = () => 2022-06-01T12:20:11Z
@@ -67,6 +67,26 @@ testcase week_start_default_monday_two_test {
     ret = boundaries.week(week_offset: -1, start_sunday: false)
 
     want = array.from(rows: [{_value_a: 2022-05-30T00:00:00Z, _value_b: 2022-06-06T00:00:00Z}])
+    got = array.from(rows: [{_value_a: ret.start, _value_b: ret.stop}])
+
+    testing.diff(want: want, got: got)
+}
+
+testcase week_current_week_for_monday {
+    option now = () => 2022-07-25T14:20:11Z
+
+    ret = boundaries.week()
+    want = array.from(rows: [{_value_a: 2022-07-25T00:00:00Z, _value_b: 2022-08-01T00:00:00Z}])
+    got = array.from(rows: [{_value_a: ret.start, _value_b: ret.stop}])
+
+    testing.diff(want: want, got: got)
+}
+
+testcase week_current_week_for_sunday {
+    option now = () => 2022-07-24T14:20:11Z
+
+    ret = boundaries.week(start_sunday: true)
+    want = array.from(rows: [{_value_a: 2022-07-24T00:00:00Z, _value_b: 2022-07-31T00:00:00Z}])
     got = array.from(rows: [{_value_a: ret.start, _value_b: ret.stop}])
 
     testing.diff(want: want, got: got)

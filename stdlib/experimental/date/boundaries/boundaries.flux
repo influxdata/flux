@@ -1,10 +1,7 @@
 // Package boundaries provides operators for finding the boundaries around certain days, months, and weeks.
 //
-// **Deprecated**: The `boundaries` package is deprecated in favor of [`experimental/date/boundaries`](https://docs.influxdata.com/flux/v0.x/stdlib/experimental/date/boundaries/).
-//
 // ## Metadata
-// introduced: 0.172.0
-// deprecated: NEXT
+// introduced: NEXT
 package boundaries
 
 
@@ -23,7 +20,7 @@ import "experimental/table"
 //
 // ### Return start and stop timestamps of yesterday
 // ```no_run
-// import "date/boundaries"
+// import "experimental/date/boundaries"
 //
 // option now = () => 2022-01-02T13:45:28Z
 //
@@ -33,7 +30,7 @@ import "experimental/table"
 //
 // ### Query data from yesterday
 // ```no_run
-// import "date/boundaries"
+// import "experimental/date/boundaries"
 //
 //  day = boundaries.yesterday()
 //
@@ -42,12 +39,9 @@ import "experimental/table"
 // ```
 //
 // ## Metadata
-// introduced: 0.172.0
-// deprecated: NEXT
+// introduced: NEXT
 // tags: date/time
 yesterday = () => {
-    die(msg: "the 'date/boundaries' package has been moved to 'experimental/date/boundaries'")
-
     return {start: date.sub(d: 1d, from: today()), stop: today()}
 }
 
@@ -91,7 +85,7 @@ _week_formatter = (s) => {
 // ### Return start and stop timestamps of last Monday
 //
 // ```no_run
-// import "date/boundaries"
+// import "experimental/date/boundaries"
 //
 // option location = timezone.fixed(offset: -8h)
 // option now = () => 2021-12-30T00:40:44Z
@@ -103,7 +97,7 @@ _week_formatter = (s) => {
 // ### Query data collected last Monday
 //
 // ```no_run
-// import "date/boundaries"
+// import "experimental/date/boundaries"
 //
 // day = boundaries.monday()
 //
@@ -112,12 +106,9 @@ _week_formatter = (s) => {
 // ```
 //
 // ## Metadata
-// deprecated: NEXT
 // tags: date/time
 //
 monday = () => {
-    die(msg: "the 'date/boundaries' package has been moved to 'experimental/date/boundaries'")
-
     return _day_finder(td: date.Monday, func: _day_formatter)
 }
 
@@ -130,7 +121,7 @@ monday = () => {
 // ### Return start and stop timestamps of last Tuesday
 //
 // ```no_run
-// import "date/boundaries"
+// import "experimental/date/boundaries"
 //
 // option location = timezone.fixed(offset: -8h)
 // option now = () => 2021-12-30T00:40:44Z
@@ -142,7 +133,7 @@ monday = () => {
 // ### Query data collected last Tuesday
 //
 // ```no_run
-// import "date/boundaries"
+// import "experimental/date/boundaries"
 //
 // day = boundaries.tuesday()
 //
@@ -151,12 +142,9 @@ monday = () => {
 // ```
 //
 // ## Metadata
-// deprecated: NEXT
 // tags: date/time
 //
 tuesday = () => {
-    die(msg: "the 'date/boundaries' package has been moved to 'experimental/date/boundaries'")
-
     return _day_finder(td: date.Tuesday, func: _day_formatter)
 }
 
@@ -169,7 +157,7 @@ tuesday = () => {
 // // ### Return start and stop timestamps of last Wednesday
 //
 // ```no_run
-// import "date/boundaries"
+// import "experimental/date/boundaries"
 //
 // option location = timezone.fixed(offset: -8h)
 // option now = () => 2021-12-30T00:40:44Z
@@ -181,7 +169,7 @@ tuesday = () => {
 // ### Query data collected last Wednesday
 //
 // ```no_run
-// import "date/boundaries"
+// import "experimental/date/boundaries"
 //
 // day = boundaries.wednesday()
 //
@@ -190,12 +178,9 @@ tuesday = () => {
 // ```
 //
 // ## Metadata
-// deprecated: NEXT
 // tags: date/time
 //
 wednesday = () => {
-    die(msg: "the 'date/boundaries' package has been moved to 'experimental/date/boundaries'")
-
     return _day_finder(td: date.Wednesday, func: _day_formatter)
 }
 
@@ -207,7 +192,7 @@ wednesday = () => {
 // ### Return start and stop timestamps of last Thursday
 //
 // ```no_run
-// import "date/boundaries"
+// import "experimental/date/boundaries"
 //
 // option location = timezone.fixed(offset: -8h)
 // option now = () => 2021-12-30T00:40:44Z
@@ -219,7 +204,7 @@ wednesday = () => {
 // ### Query data collected last Thursday
 //
 // ```no_run
-// import "date/boundaries"
+// import "experimental/date/boundaries"
 //
 // day = boundaries.thursday()
 //
@@ -228,12 +213,9 @@ wednesday = () => {
 // ```
 //
 // ## Metadata
-// deprecated: NEXT
 // tags: date/time
 //
 thursday = () => {
-    die(msg: "the 'date/boundaries' package has been moved to 'experimental/date/boundaries'")
-
     return _day_finder(td: date.Thursday, func: _day_formatter)
 }
 
@@ -246,7 +228,7 @@ thursday = () => {
 // ### Return start and stop timestamps of last Friday
 //
 // ```no_run
-// import "date/boundaries"
+// import "experimental/date/boundaries"
 //
 // option location = timezone.fixed(offset: -8h)
 // option now = () => 2021-12-30T00:40:44Z
@@ -258,7 +240,7 @@ thursday = () => {
 // ### Query data collected last Friday
 //
 // ```no_run
-// import "date/boundaries"
+// import "experimental/date/boundaries"
 //
 // day = boundaries.friday()
 //
@@ -267,12 +249,9 @@ thursday = () => {
 // ```
 //
 // ## Metadata
-// deprecated: NEXT
 // tags: date/time
 //
 friday = () => {
-    die(msg: "the 'date/boundaries' package has been moved to 'experimental/date/boundaries'")
-
     return _day_finder(td: date.Friday, func: _day_formatter)
 }
 
@@ -285,7 +264,7 @@ friday = () => {
 // ### Return start and stop timestamps of last Saturday
 //
 // ```no_run
-// import "date/boundaries"
+// import "experimental/date/boundaries"
 //
 // option location = timezone.fixed(offset: -8h)
 // option now = () => 2021-12-30T00:40:44Z
@@ -297,7 +276,7 @@ friday = () => {
 // ### Query data collected last Saturday
 //
 // ```no_run
-// import "date/boundaries"
+// import "experimental/date/boundaries"
 //
 // day = boundaries.saturday()
 //
@@ -306,12 +285,9 @@ friday = () => {
 // ```
 //
 // ## Metadata
-// deprecated: NEXT
 // tags: date/time
 //
 saturday = () => {
-    die(msg: "the 'date/boundaries' package has been moved to 'experimental/date/boundaries'")
-
     return _day_finder(td: date.Saturday, func: _day_formatter)
 }
 
@@ -324,7 +300,7 @@ saturday = () => {
 // ### Return start and stop timestamps of last Sunday
 //
 // ```no_run
-// import "date/boundaries"
+// import "experimental/date/boundaries"
 //
 // option location = timezone.fixed(offset: -8h)
 // option now = () => 2021-12-30T00:40:44Z
@@ -336,7 +312,7 @@ saturday = () => {
 // ### Query data collected last Sunday
 //
 // ```no_run
-// import "date/boundaries"
+// import "experimental/date/boundaries"
 //
 // day = boundaries.sunday()
 //
@@ -345,12 +321,9 @@ saturday = () => {
 // ```
 //
 // ## Metadata
-// deprecated: NEXT
 // tags: date/time
 //
 sunday = () => {
-    die(msg: "the 'date/boundaries' package has been moved to 'experimental/date/boundaries'")
-
     return _day_finder(td: date.Sunday, func: _day_formatter)
 }
 
@@ -369,7 +342,7 @@ sunday = () => {
 // ### Return start and stop timestamps for the current month
 //
 // ```no_run
-// import "date/boundaries"
+// import "experimental/date/boundaries"
 //
 // option now = () => 2022-05-10T10:10:00Z
 //
@@ -380,7 +353,7 @@ sunday = () => {
 // ### Query data from this month
 //
 // ```no_run
-// import "date/boundaries"
+// import "experimental/date/boundaries"
 //
 // thisMonth = boundaries.month()
 //
@@ -391,7 +364,7 @@ sunday = () => {
 // ### Query data from last month
 //
 // ```no_run
-// import "date/boundaries"
+// import "experimental/date/boundaries"
 //
 // lastMonth = boundaries.month(month_offset: -1)
 //
@@ -400,12 +373,9 @@ sunday = () => {
 // ```
 //
 // ## Metadata
-// deprecated: NEXT
 // tags: date/time
 //
 month = (month_offset=0) => {
-    die(msg: "the 'date/boundaries' package has been moved to 'experimental/date/boundaries'")
-
     a = date.truncate(t: today(), unit: 1mo)
 
     start = date.add(d: date.scale(d: 1mo, n: month_offset), to: a)
@@ -431,7 +401,7 @@ month = (month_offset=0) => {
 // ### Return start and stop timestamps of the current week starting on Monday
 //
 // ```no_run
-// import "date/boundaries"
+// import "experimental/date/boundaries"
 //
 // option now = () => 2022-05-10T00:00:00.000010000Z
 //
@@ -442,7 +412,7 @@ month = (month_offset=0) => {
 // ### Return start and stop timestamps of the current week starting on Sunday
 //
 // ```no_run
-// import "date/boundaries"
+// import "experimental/date/boundaries"
 //
 // option now = () => 2022-05-10T10:10:00Z
 //
@@ -453,7 +423,7 @@ month = (month_offset=0) => {
 // ### Query data from the current week
 //
 // ```no_run
-// import "date/boundaries"
+// import "experimental/date/boundaries"
 //
 // thisWeek = boundaries.week()
 //
@@ -464,7 +434,7 @@ month = (month_offset=0) => {
 // ### Query data from last week
 //
 // ```no_run
-// import "date/boundaries"
+// import "experimental/date/boundaries"
 //
 // lastWeek = boundaries.week(week_offset: -1)
 //
@@ -473,15 +443,20 @@ month = (month_offset=0) => {
 // ```
 //
 // ## Metadata
-// deprecated: NEXT
 // tags: date/time
 //
 week = (week_offset=0, start_sunday=false) => {
-    die(msg: "the 'date/boundaries' package has been moved to 'experimental/date/boundaries'")
-
-    return
+    d =
         if start_sunday then
             _day_finder(td: date.Sunday, func: _week_formatter, offset: date.scale(d: 1w, n: week_offset))
         else
             _day_finder(td: date.Monday, func: _week_formatter, offset: date.scale(d: 1w, n: week_offset))
+
+    start =
+        if date.weekDay(t: today()) == date.weekDay(t: d.start) then
+            date.add(d: 1w, to: d.start)
+        else
+            d.start
+
+    return {start: start, stop: date.add(d: 1w, to: start)}
 }
