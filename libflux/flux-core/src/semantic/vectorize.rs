@@ -94,7 +94,7 @@ impl Expression {
                 let left = binary.left.vectorize(env)?;
                 let right = binary.right.vectorize(env)?;
 
-                if !op_is_vectorizable(&binary.operator) {
+                if !op_is_vectorizable(&binary.operator, &env.config.features) {
                     return Err(located(
                         binary.loc.clone(),
                         ErrorKind::UnableToVectorize(format!(
@@ -152,11 +152,11 @@ impl Expression {
 }
 
 /// Check to see if a given operator is vectorizable.
-fn op_is_vectorizable(op: &Operator) -> bool {
+fn op_is_vectorizable(op: &Operator, features: &[Feature]) -> bool {
     // Note that only certain operators can be vectorized today.
     // See `array/binary.tmpldata` for the currently supported ops.
     // As new ops are implemented, this match should be updated.
-    matches!(
+    let arithmetic_ops = matches!(
         op,
         Operator::AdditionOperator
             | Operator::SubtractionOperator
@@ -164,7 +164,18 @@ fn op_is_vectorizable(op: &Operator) -> bool {
             | Operator::DivisionOperator
             | Operator::ModuloOperator
             | Operator::PowerOperator
-    )
+    );
+    let equality_ops = features.contains(&Feature::VectorizedMap)
+        && matches!(
+            op,
+            Operator::EqualOperator
+                | Operator::NotEqualOperator
+                | Operator::LessThanOperator
+                | Operator::LessThanEqualOperator
+                | Operator::GreaterThanOperator
+                | Operator::GreaterThanEqualOperator
+        );
+    arithmetic_ops || equality_ops
 }
 
 fn wrap_vec_repeat(expr: Expression) -> Expression {
