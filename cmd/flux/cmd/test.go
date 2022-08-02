@@ -377,7 +377,7 @@ func (t *TestRunner) Gather(roots []string) error {
 				}
 
 				if _, ok := seen[pkg+tcnames[i]]; ok {
-					return errors.Newf(codes.AlreadyExists, "testcase name %q, already exists in package %q", tcnames[i], baseAST.Package)
+					return errors.Newf(codes.AlreadyExists, "testcase name %q, already exists in package %q", tcnames[i], pkg)
 				}
 				test := NewTest(tcnames[i], astf, tags, pkg)
 				t.tests = append(t.tests, &test)
