@@ -67,6 +67,59 @@ func {{$type}}{{$op.Name}}RConst(l *{{$type}}, r {{index $.TypeMap $type}}, mem 
 	return a, nil
 }
 
+{{else if eq $op.Op "==" "!=" "<" "<=" ">" ">="}}
+{{/* Equality Ops differ from the rest in that they have boolean outputs regardless of the input types */}}
+func {{$type}}{{$op.Name}}(l, r *{{$type}}, mem memory.Allocator) (*Boolean, error) {
+	n := l.Len()
+	if n != r.Len() {
+		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
+	}
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+		if l.IsValid(i) && r.IsValid(i) {
+			b.Append(l.Value(i) {{$op.Op}} r.Value(i))
+		} else {
+			b.AppendNull()
+		}
+	}
+		a := b.NewBooleanArray()
+		b.Release()
+	return a, nil
+}
+
+func {{$type}}{{$op.Name}}LConst(l {{index $.TypeMap $type}}, r *{{$type}}, mem memory.Allocator) (*Boolean, error) {
+	n := r.Len()
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+		if r.IsValid(i) {
+			b.Append(l {{$op.Op}} r.Value(i))
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func {{$type}}{{$op.Name}}RConst(l *{{$type}}, r {{index $.TypeMap $type}}, mem memory.Allocator) (*Boolean, error) {
+	n := l.Len()
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+		if l.IsValid(i) {
+			b.Append(l.Value(i) {{$op.Op}} r)
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
 {{else}}
 
 func {{$type}}{{$op.Name}}(l, r *{{$type}}, mem memory.Allocator) (*{{$type}}, error) {

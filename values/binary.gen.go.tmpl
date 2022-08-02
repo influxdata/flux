@@ -30,14 +30,18 @@ func vector{{$op.Name}}(l, r Vector, mem memory.Allocator) (Value, error) {
 
     {{range $index, $type := .Types}}
 
-    {{if eq $type "Uint"}}
+    {{if eq $type "Boolean"}}
+	case semantic.Bool:
+    {{else if eq $type "Uint"}}
 	case semantic.UInt:
     {{else}}
 	case semantic.{{$type}}:
     {{end}}
     	var (
-    		{{if eq $op.Op "^"}}
-    		x *fluxarray.Float
+			{{if eq $op.Op "^"}}
+			x *fluxarray.Float
+			{{else if eq $op.Op "==" "!=" "<" "<=" ">" ">="}}
+			x *fluxarray.Boolean
 			{{else}}
 			x *fluxarray.{{$type}}
 			{{end}}
@@ -56,6 +60,8 @@ func vector{{$op.Name}}(l, r Vector, mem memory.Allocator) (Value, error) {
 		}
     {{if eq $op.Op "^"}}
 		return NewVectorValue(x, semantic.BasicFloat), nil
+		{{else if eq $op.Op "==" "!=" "<" "<=" ">" ">="}}
+		return NewVectorValue(x, semantic.BasicBool), nil
     {{else}}
 		return NewVectorValue(x, semantic.Basic{{$type}}), nil
     {{end}}

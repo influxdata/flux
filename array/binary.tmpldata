@@ -29,18 +29,50 @@
             "Name": "Pow",
             "Op": "^",
             "Types": ["Int", "Uint", "Float"]
+        },
+        {
+            "Name": "Eq",
+            "Op": "==",
+            "Types": ["Boolean", "Int", "Uint", "Float", "String"]
+        },
+        {
+            "Name": "Neq",
+            "Op": "!=",
+            "Types": ["Boolean", "Int", "Uint", "Float", "String"]
+        },
+        {
+            "Name": "Lt",
+            "Op": "<",
+            "Types": ["Int", "Uint", "Float", "String"]
+        },
+        {
+            "Name": "Lte",
+            "Op": "<=",
+            "Types": ["Int", "Uint", "Float", "String"]
+        },
+        {
+            "Name": "Gt",
+            "Op": ">",
+            "Types": ["Int", "Uint", "Float", "String"]
+        },
+        {
+            "Name": "Gte",
+            "Op": ">=",
+            "Types": ["Int", "Uint", "Float", "String"]
         }
     ],
     "TypeMap": {
         "Int": "int64",
         "Uint": "uint64",
         "Float": "float64",
-        "String": "string"
+        "String": "string",
+        "Boolean": "bool"
     },
     "ValMap": {
         "Int": "Int",
         "Uint": "UInt",
         "Float": "Float",
-        "String": "Str"
+        "String": "Str",
+        "Boolean": "Bool"
     }
 }
