@@ -165,7 +165,7 @@ fn op_is_vectorizable(op: &Operator, features: &[Feature]) -> bool {
             | Operator::ModuloOperator
             | Operator::PowerOperator
     );
-    let equality_ops = features.contains(&Feature::VectorizedMap)
+    let equality_ops = features.contains(&Feature::VectorizedEqualityOps)
         && matches!(
             op,
             Operator::EqualOperator
