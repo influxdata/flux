@@ -56,7 +56,7 @@ output =
 ,,2,2018-05-22T19:00:00Z,2030-01-01T00:00:00Z,hostC,o1,load5,1.95
 "
 
-testcase group_max_pushdown {
+testcase group_agg_uneven_keys_pushdown {
     got =
         csv.from(csv: input)
             |> testing.load()

@@ -51,7 +51,7 @@ output =
 ,,8,2018-05-22T19:54:00Z,2018-05-22T19:54:20Z,hostC,1
 "
 
-testcase group_window_agg_pushdown {
+testcase group_window_agg_eval_pushdown {
     got =
         csv.from(csv: input)
             |> testing.load()

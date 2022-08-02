@@ -18,7 +18,7 @@ outData =
 "
 t_last_success = () => array.from(rows: [{_time: tasks.lastSuccess(orTime: now())}])
 
-testcase last_success {
+testcase last_success_without_option {
     tables = t_last_success()
     got = tables
     want = csv.from(csv: outData)

@@ -10,7 +10,8 @@ type FormatOption func(*formatter)
 
 // Formatted accepts a plan.Spec and options, and returns a Formatter
 // that can be used with the standard fmt package, e.g.,
-//   fmt.Println(Formatted(plan, WithDetails())
+//
+//	fmt.Println(Formatted(plan, WithDetails())
 func Formatted(p *Spec, opts ...FormatOption) fmt.Formatter {
 	f := formatter{
 		p: p,

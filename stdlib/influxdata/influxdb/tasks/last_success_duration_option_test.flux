@@ -19,7 +19,7 @@ outData =
 "
 t_last_success = () => array.from(rows: [{_time: tasks.lastSuccess(orTime: -1d)}])
 
-testcase last_success {
+testcase last_success_duration_option {
     tables = t_last_success()
     got = tables
     want = csv.from(csv: outData)

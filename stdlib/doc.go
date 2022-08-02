@@ -31,13 +31,14 @@ The following registrations are typically executed in the function's init() for 
 Note that to register a function value with a package, the value passed into flux.RegisterPackageValue is computed using the
 followingfunction:
 
-    flux.FunctionValue(name string, c CreateOperationSpec, sig semantic.FunctionPolySignature)
+	flux.FunctionValue(name string, c CreateOperationSpec, sig semantic.FunctionPolySignature)
 
 In the plan phase, an operation spec must be converted to a plan.ProcedureSpec.  A query plan must know what operations to
 carry out, including the function names and parameters.    In the trivial case, the OperationSpec
 and ProcedureSpec have identical fields and the operation spec may be encapsulated as part of the procedure spec. The base
 interface for a plan.ProcedureSpec requires a Kind() function, as well as a Copy() function which should perform a deep copy
 of the object.  Refer to the following interfaces for more information about designing a procedure spec:
+
 	plan.ProcedureSpec
 	plan.PushDownProcedureSpec
 	plan.BoundedProcedureSpec
@@ -46,6 +47,7 @@ of the object.  Refer to the following interfaces for more information about des
 	plan.ParentAwareProcedureSpec
 
 Once you have determined the interface(s) that must be implemented for your function, you register them with
+
 	plan.RegisterProcedureSpec(k ProcedureKind, c CreateProcedureSpec, qks ...flux.OperationKind)
 
 The registration in this phase creates two lookups.  First, it creates a named lookup in a similar fashion as for OperationSpecs
@@ -66,6 +68,7 @@ the rules and methods for executing a pushdown operation.
 A Rewrite rule is used to modify one or more ProcedureSpecs in cases where redundant or complementary operations can be
 combined to get a simpler result.  Similar to a pushdown operation, the rewrite is triggered whenever certain rules apply.
 Rewrite rules are implemented differently and require a separate registration:
+
 	plan.RegisterRewriteRule(r RewriteRule)
 
 Which in turn requires an implementation of plan.RewriteRule.
@@ -74,12 +77,14 @@ Finally, the execute phase is tasked with executing the specific data processing
 implementation registers an implementation of the  execute.Transformation interface that implements functions that
 control how the execution engine will take an input table, apply the function, and produce an output table.  A transformation
 implementation is registered via:
+
 	execute.RegisterTransformation(k plan.ProcedureKind, c execute.CreateTransformation)
 
 The registration will record a mapping of the procedure's kind to the given transformation type.
 
 In addition to implementing the transformation type, a number of helper types and functions are provided that facilitate
 the transformation process:
+
 	execute.Administration
 	execute.Dataset
 	execute.TableBuilderCache
@@ -103,6 +108,7 @@ Finally, there is a special class of functions do not receive an input table fro
 In other words, these transformations do not have a parent process that supplies it with table data.  These transformation
 functions are referred to as sources, and naturally implement a connection to a data source (e.g. influxdb, prometheus, csvFile, etc.).
 They are registered using:
+
 	execute.RegisterSource(k plan.ProcedureKind, c execute.CreateSource)
 
 The substantial part of a source implementation is its Run method, which should connect to the data source,

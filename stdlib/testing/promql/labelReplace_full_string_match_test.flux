@@ -30,7 +30,7 @@ outData =
 ,,1,metric_name,source-value-20,destination-value-20,4,prometheus
 "
 
-testcase labelReplace {
+testcase labelReplace_full_string_match {
     got =
         csv.from(csv: inData)
             |> testing.load()

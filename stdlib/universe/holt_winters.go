@@ -289,9 +289,10 @@ func (hwt *holtWintersTransformation) Process(id execute.DatasetID, tbl flux.Tab
 // Rows that have a null timestamp get discarded.
 // Rows that have a null value are considered invalid, but used by the algorithm.
 // HoltWinters supposes to work with evenly spaced values in time, so:
-//  - the Interval passed to the transformation is used to divide the data in time buckets;
-//  - if many values are in the same bucket, the first one is selected, the others are skipped;
-//  - if no value is present for a bucket, that is considered as an invalid value (treated like null values).
+//   - the Interval passed to the transformation is used to divide the data in time buckets;
+//   - if many values are in the same bucket, the first one is selected, the others are skipped;
+//   - if no value is present for a bucket, that is considered as an invalid value (treated like null values).
+//
 // HoltWinters will only be provided with the values returned.
 // Timestamps can be deduced by summing interval to the first/last valid timestamp.
 func (hwt *holtWintersTransformation) getCleanData(tbl flux.Table, colIdx, timeIdx int) (*array.Float, values.Time, values.Time, error) {

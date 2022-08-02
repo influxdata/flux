@@ -40,7 +40,7 @@ outData =
 ,,0,2018-05-20T19:53:26Z,2030-01-01T00:00:00Z,2018-05-22T19:54:16Z,15205755,io_time,diskio,host.local,disk0
 "
 
-testcase filter_by_regex {
+testcase filter_by_regex_compile {
     got =
         csv.from(csv: inData)
             |> testing.load()

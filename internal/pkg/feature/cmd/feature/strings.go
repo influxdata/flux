@@ -83,11 +83,12 @@ func replace(old, new, src string) string {
 // camelcase is to convert words separated by space, underscore and hyphen to camel case.
 //
 // Some samples.
-//     "some_words"      => "SomeWords"
-//     "http_server"     => "HttpServer"
-//     "no_https"        => "NoHttps"
-//     "_complex__case_" => "_Complex_Case_"
-//     "some words"      => "SomeWords"
+//
+//	"some_words"      => "SomeWords"
+//	"http_server"     => "HttpServer"
+//	"no_https"        => "NoHttps"
+//	"_complex__case_" => "_Complex_Case_"
+//	"some words"      => "SomeWords"
 func camelcase(str string) string {
 	if len(str) == 0 {
 		return ""

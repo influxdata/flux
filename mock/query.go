@@ -58,6 +58,7 @@ func (q *Query) ProfilerResults() (flux.ResultIterator, error) {
 // ProduceResults lets the user provide a function to produce results on the channel returned by `Results`.
 // `resultProvider` should check if `canceled` has been closed before sending results. E.g.:
 // ```
+//
 //	 func (results chan<- flux.Result, canceled <-chan struct{}) {
 //		 for _, r := range resultsSlice {
 //			 select {
@@ -68,6 +69,7 @@ func (q *Query) ProfilerResults() (flux.ResultIterator, error) {
 //			 }
 //		 }
 //	 }
+//
 // ```
 // `resultProvider` is run in a separate goroutine and Results() is closed after function completion.
 // ProduceResults can be called only once per Query.

@@ -26,7 +26,7 @@ runTest = (n) =>
         |> debug.slurp()
         |> drop(columns: ["_start", "_stop"])
 
-testcase normal {
+testcase normal_average {
     got = runTest(n: 6)
     want =
         array.from(

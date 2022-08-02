@@ -165,17 +165,20 @@ type Test struct {
 	ast  *ast.Package
 	// set of tags specified for the test case
 	tags []string
+	// set package name for the test case
+	pkg string
 	// indicates if the test should be skipped
 	skip bool
 	err  error
 }
 
 // NewTest creates a new Test instance from an ast.Package.
-func NewTest(name string, ast *ast.Package, tags []string) Test {
+func NewTest(name string, ast *ast.Package, tags []string, pkg string) Test {
 	return Test{
 		name: name,
 		ast:  ast,
 		tags: tags,
+		pkg:  pkg,
 	}
 }
 
@@ -186,6 +189,10 @@ func (t *Test) FullName() string {
 // Get the name of the Test.
 func (t *Test) Name() string {
 	return t.name
+}
+
+func (t *Test) PackageName() string {
+	return t.pkg
 }
 
 // Get the error from the test, if one exists.
@@ -260,6 +267,33 @@ func contains(names []string, name string) bool {
 	return false
 }
 
+func containsWithPkgName(names []string, test *Test) bool {
+	var aTest, tTestName string
+	for _, name := range names {
+		fTest := splitAny(name, "./")
+		// handle package.TestName or package/TestName case
+		if len(fTest) > 1 {
+			aTest = strings.Join(fTest, "")
+			tTestName = test.PackageName() + test.Name()
+		} else {
+			aTest = name
+			tTestName = test.Name()
+		}
+		if aTest == tTestName {
+			return true
+		}
+	}
+	return false
+}
+
+// split a string by multiple runes
+func splitAny(s string, seps string) []string {
+	splitter := func(r rune) bool {
+		return strings.ContainsRune(seps, r)
+	}
+	return strings.FieldsFunc(s, splitter)
+}
+
 // TestRunner gathers and runs all tests.
 type TestRunner struct {
 	tests     []*Test
@@ -317,6 +351,8 @@ func (t *TestRunner) Gather(roots []string) error {
 		}
 
 		ctx := filesystem.Inject(context.Background(), fs)
+		// check for the duplicate testcase names
+		seen := make(map[string]struct{})
 		for _, file := range files {
 			q, err := filesystem.ReadFile(ctx, file.path)
 			if err != nil {
@@ -330,6 +366,7 @@ func (t *TestRunner) Gather(roots []string) error {
 			if err != nil {
 				return err
 			}
+			pkg := strings.TrimSuffix(baseAST.Package, "_test")
 			for i, astf := range asts {
 				tags, err := readTags(astf)
 				if err != nil {
@@ -338,8 +375,13 @@ func (t *TestRunner) Gather(roots []string) error {
 				if invalid := invalidTags(tags, mods.Tags(file.module)); len(invalid) != 0 {
 					return errors.Newf(codes.Invalid, "testcase %q, contains invalid tags %v, valid tags are: %v", tcnames[i], invalid, mods.Tags(file.module))
 				}
-				test := NewTest(tcnames[i], astf, tags)
+
+				if _, ok := seen[pkg+tcnames[i]]; ok {
+					return errors.Newf(codes.AlreadyExists, "testcase name %q, already exists in package %q", tcnames[i], baseAST.Package)
+				}
+				test := NewTest(tcnames[i], astf, tags, pkg)
 				t.tests = append(t.tests, &test)
+				seen[pkg+tcnames[i]] = struct{}{}
 			}
 		}
 	}
@@ -370,22 +412,17 @@ func union(a, b []string) []string {
 // MarkSkipped checks the provided filters and marks each test case as skipped as needed.
 //
 // Skip rules:
-//  - When testNames is not empty any test in the list will be run, all others skipped.
-//  - When a test name is in skips, the test is skipped.
-//  - When a test contains any tags all tags must be specified for the test to run.
-//  - When skipUntagged is true, any test that does not have any tags is skipped.
+//   - When testNames is not empty any test in the list will be run, all others skipped.
+//   - When a test name is in skips, the test is skipped.
+//   - When a test contains any tags all tags must be specified for the test to run.
+//   - When skipUntagged is true, any test that does not have any tags is skipped.
 //
 // The list of tests takes precedence over all other parameters.
 func (t *TestRunner) MarkSkipped(testNames, skips, tags []string, skipUntagged bool) {
-	skipMap := make(map[string]bool)
-	for _, n := range skips {
-		skipMap[n] = true
-	}
-
 	for i := range t.tests {
 		// If testNames is not empty then check only that list
 		if len(testNames) > 0 {
-			t.tests[i].skip = !contains(testNames, t.tests[i].Name())
+			t.tests[i].skip = !containsWithPkgName(testNames, t.tests[i])
 			continue
 		}
 		// Now we assume the test is not skipped and check the rest of the rules
@@ -401,7 +438,13 @@ func (t *TestRunner) MarkSkipped(testNames, skips, tags []string, skipUntagged b
 				skip = true
 			}
 		}
-		t.tests[i].skip = skip || skipMap[t.tests[i].Name()] || (skipUntagged && len(t.tests[i].tags) == 0)
+		// skip tests
+		skipTest := false
+		if !skip && len(skips) > 0 {
+			skipTest = containsWithPkgName(skips, t.tests[i])
+		}
+
+		t.tests[i].skip = skip || skipTest || (skipUntagged && len(t.tests[i].tags) == 0)
 	}
 }
 

@@ -36,7 +36,7 @@ outData =
 "
 re = regexp.compile(v: "[[:alpha:]]{1}")
 
-testcase string_extract {
+testcase string_extract_index {
     got =
         csv.from(csv: inData)
             |> testing.load()

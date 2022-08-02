@@ -38,7 +38,7 @@ outData = "
 ,result,table
 "
 
-testcase keep_non_existent {
+testcase keep_non_existent_only {
     got =
         csv.from(csv: inData)
             |> testing.load()

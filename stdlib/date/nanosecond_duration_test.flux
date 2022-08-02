@@ -34,7 +34,7 @@ outData =
 ,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-05-22T19:06:00.982342357Z,2
 "
 
-testcase time_nanosecond {
+testcase duration_nanosecond {
     got =
         csv.from(csv: inData)
             |> testing.load()

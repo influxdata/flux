@@ -23,7 +23,9 @@ const (
 // GroupOpSpec in package experimental defines a special group() function
 // that has just one mode called "extend", which adds additional columns to the group key.
 // This is a workaround until schema introspection is implemented:
-//   https://github.com/influxdata/flux/issues/27
+//
+//	https://github.com/influxdata/flux/issues/27
+//
 // Most of this code has simply been copied from stdlib/universe/group.go
 type GroupOpSpec struct {
 	Mode    string   `json:"mode"`

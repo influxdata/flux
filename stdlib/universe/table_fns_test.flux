@@ -29,7 +29,7 @@ col =
         |> tableFind(fn: (key) => true)
         |> getColumn(column: "_value")
 
-testcase sum {
+testcase table_fns {
     got =
         data
             |> filter(fn: (r) => contains(value: r._value, set: col))

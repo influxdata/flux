@@ -184,27 +184,27 @@ func (t *MergeJoinTransformation) processChunk(chunk table.Chunk, state interfac
 // mergeJoin takes a table chunk, and attempts to produce joined output from it
 // if possible. It will follow these steps:
 //
-//   1. Scan the rows in `chunk` for a complete join key. If it finds the end
-//      of a join key, it returns that key, along with all of the rows with that
-//      join key. If it can't find a complete join key (which means it has reached
-//      the end of the chunk), it will store the rows with that join key in the
-//      `chunks` field of `sideState`, and return a nil joinKey, which is the signal
-//      to break the mergeJoin loop.
+//  1. Scan the rows in `chunk` for a complete join key. If it finds the end
+//     of a join key, it returns that key, along with all of the rows with that
+//     join key. If it can't find a complete join key (which means it has reached
+//     the end of the chunk), it will store the rows with that join key in the
+//     `chunks` field of `sideState`, and return a nil joinKey, which is the signal
+//     to break the mergeJoin loop.
 //
-//   2. If scanKey finds a complete join key, we pass it and the returned joinRows
-//      into `insert()`, which will attempt to find the appropriate place for it
-//      in the joinState's `products` field (while maintaining sort order). If
-//      `insert()` detects that some subset of the stored products can be joined,
-//      it will return `true` and a position. The position is the index into
-//      s.products up to which it is safe to join.
+//  2. If scanKey finds a complete join key, we pass it and the returned joinRows
+//     into `insert()`, which will attempt to find the appropriate place for it
+//     in the joinState's `products` field (while maintaining sort order). If
+//     `insert()` detects that some subset of the stored products can be joined,
+//     it will return `true` and a position. The position is the index into
+//     s.products up to which it is safe to join.
 //
-//   3. For every product in s.products[:i] (inclusive on both ends), `join()`
-//      will attempt to produce a set of table chunks that contains the joined
-//      cross-product of the rows on each side of the joinProduct.
+//  3. For every product in s.products[:i] (inclusive on both ends), `join()`
+//     will attempt to produce a set of table chunks that contains the joined
+//     cross-product of the rows on each side of the joinProduct.
 //
-//   4. Pass each joined chunk onto the next node in the transformation.
+//  4. Pass each joined chunk onto the next node in the transformation.
 //
-//   5. Repeat each of the previous steps until every row in `chunk` has been scanned.
+//  5. Repeat each of the previous steps until every row in `chunk` has been scanned.
 func (t *MergeJoinTransformation) mergeJoin(chunk table.Chunk, s *joinState, isLeft bool) error {
 	for {
 		key, rows, err := s.scanKey(chunk, isLeft, t.on)
@@ -315,9 +315,10 @@ func getJoinKeyCols(on []ColumnPair, isLeft bool) []string {
 // the returned position.
 //
 // Returns true under 2 circumstances:
-//   (1) Inserting `rows` completes the left and right pair for a given product
-//   (2) `rows` was inserted at an index greater than 0, and all of the products that
-//        come before it only have entries on the opposite side.
+//
+//	(1) Inserting `rows` completes the left and right pair for a given product
+//	(2) `rows` was inserted at an index greater than 0, and all of the products that
+//	     come before it only have entries on the opposite side.
 //
 // If condition 1 is true, we can join everything up to and including the index where
 // `rows` was inserted.

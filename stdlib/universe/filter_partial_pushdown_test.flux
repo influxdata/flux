@@ -39,7 +39,7 @@ outData =
 ,,0,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,diskio,io_time,host.local,disk0,2018-05-22T19:54:16Z,15205755
 "
 
-testcase filter_by_tags {
+testcase filter_partial_pushdown {
     got =
         csv.from(csv: inData)
             |> testing.load()

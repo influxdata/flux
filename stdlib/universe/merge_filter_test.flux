@@ -43,7 +43,7 @@ merge_filter_fn = () =>
 //    result = merge_filter_fn()
 //    testing.diff(got: result, want: csv.from(csv: output))
 //}
-testcase merge_filter_flag_off {
+testcase merge_filter {
     option planner.disableLogicalRules = ["MergeFiltersRule"]
 
     expect.planner(rules: ["MergeFiltersRule": 0])

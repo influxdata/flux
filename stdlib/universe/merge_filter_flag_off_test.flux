@@ -31,7 +31,7 @@ output =
 ,,0,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,2018-05-22T19:53:46Z,system,host.local,load4,1.77
 "
 
-testcase merge_filter_evaluate {
+testcase merge_filter_flag_off {
     got =
         csv.from(csv: input)
             |> testing.load()

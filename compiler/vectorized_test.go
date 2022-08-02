@@ -34,14 +34,14 @@ func vectorizedObjectFromMap(mp map[string]interface{}, mem memory.Allocator) va
 }
 
 // Check that:
-//     1. Vectorized inputs yield vectorized outputs when compiled and evaluated
-//     2. The number of bytes allocated is 0 once evaluation is complete
-//        and values are released
-//     3. Only certain function expressions are vectorized when invoking the
-//        analyzer from go code. The criteria for supported expressions may
-//        change in the future, but right now we only support trivial identity
-//        functions (i.e., those in the form of `(r) => ({a: r.a})`, or something
-//        similar)
+//  1. Vectorized inputs yield vectorized outputs when compiled and evaluated
+//  2. The number of bytes allocated is 0 once evaluation is complete
+//     and values are released
+//  3. Only certain function expressions are vectorized when invoking the
+//     analyzer from go code. The criteria for supported expressions may
+//     change in the future, but right now we only support trivial identity
+//     functions (i.e., those in the form of `(r) => ({a: r.a})`, or something
+//     similar)
 func TestVectorizedFns(t *testing.T) {
 	type TestCase struct {
 		name         string

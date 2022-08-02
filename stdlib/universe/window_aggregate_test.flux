@@ -39,7 +39,7 @@ outData =
 ,,3,1970-01-01T00:00:12Z,1970-01-01T00:00:15Z,3,f,m0,k0
 "
 
-testcase window {
+testcase window_aggregate {
     got =
         csv.from(csv: inData)
             |> testing.load()

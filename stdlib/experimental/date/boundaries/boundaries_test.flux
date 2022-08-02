@@ -17,7 +17,7 @@ testcase yesterday_test {
     testing.diff(want: want, got: got)
 }
 
-testcase yesterday_test {
+testcase yesterday_test_t {
     option now = () => 2018-10-12T14:20:11Z
 
     ret = boundaries.yesterday()
@@ -125,7 +125,7 @@ testcase month_start_two_offset_test {
     testing.diff(want: want, got: got)
 }
 
-testcase month_start_two_offset_test {
+testcase month_start_two_offset_test_t {
     option now = () => 2020-12-10T22:10:00Z
 
     ret = boundaries.month(month_offset: -2)
@@ -194,7 +194,7 @@ testcase tuesday_test_two_timeable {
     testing.diff(want: want, got: got)
 }
 
-testcase tuesday_test_two_timeable {
+testcase tuesday_test_two_timeable_t {
     option now = () => 2021-12-30T00:40:44Z
     option location = timezone.fixed(offset: 6h)
 

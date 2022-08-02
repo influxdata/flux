@@ -39,7 +39,7 @@ testcase basic {
     testing.diff(want: want, got: got) |> yield()
 }
 
-testcase nulls {
+testcase nulls_map {
     inData =
         "
 #datatype,string,long,dateTime:RFC3339,string,long,string

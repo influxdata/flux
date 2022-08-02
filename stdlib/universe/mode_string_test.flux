@@ -28,7 +28,7 @@ outData =
 ,,0,2018-12-01T00:00:00Z,2030-01-01T00:00:00Z,Sgf,DlXwgrw,glass
 "
 
-testcase mode {
+testcase mode_string {
     got =
         csv.from(csv: inData)
             |> testing.load()

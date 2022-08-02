@@ -18,17 +18,17 @@ import (
 //
 // A testcase is defined with the testcase statement such as below.
 //
-//     import "testing/assert"
-//     myVar = 4
-//     testcase addition {
-//         assert.equal(want: 2 + 2, got: myVar)
-//     }
+//	import "testing/assert"
+//	myVar = 4
+//	testcase addition {
+//	    assert.equal(want: 2 + 2, got: myVar)
+//	}
 //
 // This gets transformed into a package that looks like this:
 //
-//     import "testing/assert"
-//     myVar = 4
-//     assert.equal(want: 2 + 2, got: myVar)
+//	import "testing/assert"
+//	myVar = 4
+//	assert.equal(want: 2 + 2, got: myVar)
 //
 // It is allowed to include options within the testcase block as they will be extracted
 // to the top level.
@@ -37,23 +37,22 @@ import (
 // This will transform the the extended testcase in a slightly different way.
 // The syntax for extending is as such:
 //
-//     import "math"
-//     testcase addition_v2 extends "math_test.addition" {
-//         option math.enable_v2 = true
-//         super()
-//     }
+//	import "math"
+//	testcase addition_v2 extends "math_test.addition" {
+//	    option math.enable_v2 = true
+//	    super()
+//	}
 //
 // The extending test case is then transformed into a single file combining both the parent
 // statements and the current statements.
 //
-//     import "testing/assert"
-//     import "math"
+//	import "testing/assert"
+//	import "math"
 //
-//     option math.enable_v2 = true
+//	option math.enable_v2 = true
 //
-//     myVar = 4
-//     assert.equal(want: 2 + 2, got: myVar)
-//
+//	myVar = 4
+//	assert.equal(want: 2 + 2, got: myVar)
 //
 // The call to `super()` is replaced with the body of the parent test case.
 //

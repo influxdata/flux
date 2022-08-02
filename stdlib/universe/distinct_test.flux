@@ -56,7 +56,7 @@ testcase normal {
     testing.diff(got, want) |> yield()
 }
 
-testcase nulls {
+testcase nulls_distinct {
     got =
         csv.from(
             csv:

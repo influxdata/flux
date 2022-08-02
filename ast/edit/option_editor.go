@@ -76,9 +76,9 @@ func OptionObjectFn(keyMap map[string]ast.Expression) OptionFn {
 	}
 }
 
-//Finds the `OptionStatement` with the specified `identifier` and updates its value.
-//There shouldn't be more then one option statement with the same identifier
-//in a valid query.
+// Finds the `OptionStatement` with the specified `identifier` and updates its value.
+// There shouldn't be more then one option statement with the same identifier
+// in a valid query.
 type optionEditor struct {
 	identifier string
 	optionFn   OptionFn

@@ -45,7 +45,7 @@ output =
 ,,2,2018-05-22T19:00:00Z,2030-01-01T00:00:00Z,hostC,11.52
 "
 
-testcase group_count_pushdown {
+testcase group_sum_pushdown {
     got =
         csv.from(csv: input)
             |> testing.load()

@@ -364,17 +364,20 @@ func (t *mergeJoinTransformation) Finish(id execute.DatasetID, err error) {
 // buffers:         Buffers to hold the tables for each incoming stream.
 //
 // postJoinKeys:    The post-join group keys for all joined tables.
-//                  These group keys are constructed and stored as soon
-//                  as a table is consumed by the join operator, but prior
-//                  to actually joining the data.
+//
+//	These group keys are constructed and stored as soon
+//	as a table is consumed by the join operator, but prior
+//	to actually joining the data.
 //
 // reverseLookup:   Each output group key that is stored is mapped to its
-//                  corresponding pre-join group keys. These pre-join group
-//                  keys are then used to retrieve their corresponding
-//                  tables from the buffers.
+//
+//	corresponding pre-join group keys. These pre-join group
+//	keys are then used to retrieve their corresponding
+//	tables from the buffers.
 //
 // tables:          All output tables are materialized and stored in this
-//                  map before being sent to downstream operators.
+//
+//	map before being sent to downstream operators.
 type MergeJoinCache struct {
 	leftID  execute.DatasetID
 	rightID execute.DatasetID
