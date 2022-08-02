@@ -2,11 +2,14 @@ use std::collections::HashSet;
 use std::sync::{Arc, Mutex, RwLock};
 use std::sync::mpsc::{Receiver, Sender};
 use lsp_types::Command;
+use lsp_types::request::Completion;
 use rustyline::hint::{Hint, Hinter};
 use rustyline::Context;
 use rustyline::{Editor, Result};
 use rustyline::KeyCode::PageUp;
 use rustyline_derive::{Completer, Helper, Highlighter, Validator};
+use crate::processes::process_completion::HintType;
+use crate::processes::process_completion::HintType::{ArgumentType, FunctionType, UnimplementedType};
 
 
 #[derive(Completer, Helper, Validator, Highlighter)]
@@ -20,7 +23,7 @@ pub struct LSPSuggestionHelper {
 pub struct CommandHint {
     pub(crate) display: String,
     complete_up_to: usize,
-    hint_type: u8,
+    hint_type: HintType,
     hint_signature: Option<String>,
     completed: bool,
 }
@@ -41,7 +44,7 @@ impl Hint for CommandHint {
 
 
 impl CommandHint {
-    pub fn new(text: &str, complete_up_to: &str, hint_type: u8, sig: Option<String>) -> CommandHint {
+    pub fn new(text: &str, complete_up_to: &str, hint_type: HintType, sig: Option<String>) -> CommandHint {
         assert!(text.starts_with(complete_up_to));
         CommandHint {
             display: text.into(),
@@ -56,7 +59,7 @@ impl CommandHint {
         CommandHint {
             display: self.display[strip_chars..].to_owned(),
             complete_up_to: self.complete_up_to.saturating_sub(strip_chars),
-            hint_type: self.hint_type,
+            hint_type: self.hint_type.clone(),
             hint_signature: self.hint_signature.clone(),
             completed: false
         }
@@ -71,7 +74,7 @@ impl CommandHint {
         CommandHint{
             display: a.to_string(),
             complete_up_to: a.len().saturating_sub(strip_chars),
-            hint_type: 0,
+            hint_type: UnimplementedType,
             hint_signature: None,
             completed: false
         }
@@ -122,7 +125,7 @@ impl LSPSuggestionHelper{
     //needs fixing
     pub(crate) fn get_best_hint(&self, line: &str) -> Option<CommandHint>{
         let lock = self.hints.read().unwrap();
-        let mut state = (&CommandHint::new("", "", 0, None),i32::MAX, 0 as usize );
+        let mut state = (&CommandHint::new("", "", UnimplementedType, None),i32::MAX, 0 as usize );
         //go through all the hints and find the best hint
         for hint in lock.iter(){
             // println!("current hint! {}", hint.display);
@@ -159,14 +162,12 @@ impl LSPSuggestionHelper{
 
         let mut best = usize::MAX;
         let mut best_overlap: &str = "";
-        let mut best_hint = &CommandHint::new("", "", 0, None);
+        let mut best_hint = &CommandHint::new("", "", UnimplementedType, None);
         for hint in lock.iter(){
             //for each hint find the biggest overlap compared to size
-            if lock.len() == 1 && hint.hint_type == 5{
-                return Some(hint.suffix(0));
-            }
 
-            if hint.hint_type == 3 {
+
+            if hint.hint_type == FunctionType {
                 if line.ends_with("("){
                     let space_split = line.split(" ").collect::<Vec<&str>>();
                     let last = space_split.get(space_split.len()-1).unwrap();
@@ -193,8 +194,19 @@ impl LSPSuggestionHelper{
         }
 
         return match best {
-            usize::MAX =>{None}
-            _=>{Some(best_hint.suffix(best_overlap.len()))}
+            usize::MAX =>{
+                if lock.len() > 0 {
+                    for i in lock.iter(){
+                        //return a hint to a param where there is no overlap
+                        //TODO: Only give the suggestion once there is a comma present
+                        if i.hint_type == ArgumentType{
+                            return Some(i.suffix(0));
+                        }
+                    }
+                }
+                None
+            }
+            _=>{println!("giving this: {} {}", best_hint.display, best_hint.hint_type);Some(best_hint.suffix(best_overlap.len()))}
         };
         None
     }

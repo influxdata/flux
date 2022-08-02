@@ -67,12 +67,6 @@ impl Hinter for MyHelper {
             return None;
         }
 
-
-        let mut pos_two = (&CommandHint::new("", "", 0, None), 0);
-
-
-
-
         // println!("here are the hints length {}", hints.len());
         if let Some(hint) = self.hinter.best_hint_get_new(line){
             // println!("there are hints");

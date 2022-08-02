@@ -1,35 +1,71 @@
 use std::collections::HashSet;
-use std::fmt::format;
-use std::hash::Hash;
+use std::fmt::{Display, format, Formatter, write};
+use std::hash::{Hash, Hasher};
 use std::process::{Child, Command, Stdio};
 use std::sync::mpsc::Sender;
 use rustyline::Helper;
 use serde_json::{json, json_internal, Value};
 use crate::{CommandHint, MyHelper};
 use crate::LSPSuggestionHelper::LSPSuggestionHelper;
-use crate::processes::process_completion::CompletionType::{FunctionType, PackageType, UnimplementedType};
+use crate::processes::process_completion::HintType::{ArgumentType, FunctionType, PackageType, UnimplementedType};
 use regex::Regex;
+use rustyline::hint::Hint;
 
-pub enum CompletionType{
+#[derive(Hash, Debug, PartialEq, Eq)]
+pub enum HintType {
     FunctionType,
     PackageType,
+    ArgumentType,
     UnimplementedType
 }
 
-impl From<u64> for CompletionType{
+impl Display for HintType{
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        match self {
+            FunctionType => {write!(f,"Function Type")}
+            PackageType => {write!(f,"Package Type")}
+            ArgumentType => {write!(f,"Argument Type")}
+            UnimplementedType => {write!(f,"Unimplemented Type")}
+        }
+    }
+}
+
+impl From<u64> for HintType {
     fn from(num: u64) -> Self {
         match num {
             3 =>{FunctionType},
-
-            5 =>{PackageType},
+            5 =>{ArgumentType}
+            9 =>{PackageType},
             _ =>{UnimplementedType}
         }
     }
 }
 
+// impl Hash for HintType{
+//     fn hash<H: Hasher>(&self, state: &mut H) {
+//         todo!()
+//     }
+// }
+
+impl Clone for HintType {
+    fn clone(&self) -> Self {
+        match self {
+            FunctionType => {FunctionType}
+            PackageType => {PackageType}
+            ArgumentType => {ArgumentType}
+            UnimplementedType => {UnimplementedType}
+        }
+    }
+}
+
+
+
+
+
 pub fn process_completions_response(resp: &str) -> Option<HashSet<CommandHint>> {
     //parse the response to a value using serde then enumerate the items adding each to the new set
     let json_bit: Value = serde_json::from_str::<Value>(resp).expect("failed to change");
+
     // println!("here is the jsson version{:?}", json_bit);
 
     return if let Some(completions) = json_bit["result"]["items"].as_array() {
@@ -53,15 +89,15 @@ pub fn process_completions_response(resp: &str) -> Option<HashSet<CommandHint>> 
                     if let Some(detail)= x["detail"].as_str(){
                         // println!("{} here is the detail", detail);
                         let split = detail.split("->").collect::<Vec<&str>>();
-                        // println!("vals {:?} {}",split, val);
-                        set.insert(CommandHint::new(val, val, kind as u8, Some(split[0].to_string())));
+                        // println!("vals {:?} {} {}",split, val, kind);
+                        set.insert(CommandHint::new(val, val, kind.into(), Some(split[0].to_string())));
                     }
                     else{
                         // println!("inserted {}", val);
-                        set.insert(CommandHint::new(val, val, kind as u8, None));
+                        set.insert(CommandHint::new(val, val, kind.into(), None));
                     }
 
-                    set.insert(CommandHint::new(val,val,0,None));
+                    // set.insert(CommandHint::new(val,val,0,None));
 
             });
         Some(set)
