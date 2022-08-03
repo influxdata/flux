@@ -273,8 +273,8 @@ func containsWithPkgName(names []string, test *Test) bool {
 		fTest := splitAny(name, "./")
 		// handle package.TestName or package/TestName case
 		if len(fTest) > 1 {
-			aTest = strings.Join(fTest, "")
-			tTestName = test.PackageName() + test.Name()
+			aTest = strings.Join(fTest, ".")
+			tTestName = test.PackageName() + "." + test.Name()
 		} else {
 			aTest = name
 			tTestName = test.Name()
@@ -375,13 +375,13 @@ func (t *TestRunner) Gather(roots []string) error {
 				if invalid := invalidTags(tags, mods.Tags(file.module)); len(invalid) != 0 {
 					return errors.Newf(codes.Invalid, "testcase %q, contains invalid tags %v, valid tags are: %v", tcnames[i], invalid, mods.Tags(file.module))
 				}
-
-				if _, ok := seen[pkg+tcnames[i]]; ok {
+				pkgTest := pkg + "." + tcnames[i]
+				if _, ok := seen[pkgTest]; ok {
 					return errors.Newf(codes.AlreadyExists, "testcase name %q, already exists in package %q", tcnames[i], pkg)
 				}
 				test := NewTest(tcnames[i], astf, tags, pkg)
 				t.tests = append(t.tests, &test)
-				seen[pkg+tcnames[i]] = struct{}{}
+				seen[pkgTest] = struct{}{}
 			}
 		}
 	}
@@ -426,7 +426,7 @@ func (t *TestRunner) MarkSkipped(testNames, skips, tags []string, skipUntagged b
 			continue
 		}
 		// Now we assume the test is not skipped and check the rest of the rules
-		skip := false
+		skipBecauseTags := false
 
 		if len(t.tests[i].tags) > 0 {
 			// Tags must be present for all test tags
@@ -435,16 +435,16 @@ func (t *TestRunner) MarkSkipped(testNames, skips, tags []string, skipUntagged b
 				isMatch = isMatch && contains(tags, tag)
 			}
 			if !isMatch {
-				skip = true
+				skipBecauseTags = true
 			}
 		}
-		// skip tests
-		skipTest := false
-		if !skip && len(skips) > 0 {
-			skipTest = containsWithPkgName(skips, t.tests[i])
+		// skip tests coming from skip list
+		skipBecauseSkipList := false
+		if !skipBecauseTags && len(skips) > 0 {
+			skipBecauseSkipList = containsWithPkgName(skips, t.tests[i])
 		}
 
-		t.tests[i].skip = skip || skipTest || (skipUntagged && len(t.tests[i].tags) == 0)
+		t.tests[i].skip = skipBecauseTags || skipBecauseSkipList || (skipUntagged && len(t.tests[i].tags) == 0)
 	}
 }
 
