@@ -1088,7 +1088,7 @@ func FloatPowRConst(l *Float, r float64, mem memory.Allocator) (*Float, error) {
 	return a, nil
 }
 
-func BooleanEq(l, r *Boolean, mem memory.Allocator) (*Boolean, error) {
+func BooleanEqual(l, r *Boolean, mem memory.Allocator) (*Boolean, error) {
 	n := l.Len()
 	if n != r.Len() {
 		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
@@ -1107,7 +1107,7 @@ func BooleanEq(l, r *Boolean, mem memory.Allocator) (*Boolean, error) {
 	return a, nil
 }
 
-func BooleanEqLConst(l bool, r *Boolean, mem memory.Allocator) (*Boolean, error) {
+func BooleanEqualLConst(l bool, r *Boolean, mem memory.Allocator) (*Boolean, error) {
 	n := r.Len()
 	b := NewBooleanBuilder(mem)
 	b.Resize(n)
@@ -1123,7 +1123,7 @@ func BooleanEqLConst(l bool, r *Boolean, mem memory.Allocator) (*Boolean, error)
 	return a, nil
 }
 
-func BooleanEqRConst(l *Boolean, r bool, mem memory.Allocator) (*Boolean, error) {
+func BooleanEqualRConst(l *Boolean, r bool, mem memory.Allocator) (*Boolean, error) {
 	n := l.Len()
 	b := NewBooleanBuilder(mem)
 	b.Resize(n)
@@ -1139,7 +1139,7 @@ func BooleanEqRConst(l *Boolean, r bool, mem memory.Allocator) (*Boolean, error)
 	return a, nil
 }
 
-func IntEq(l, r *Int, mem memory.Allocator) (*Boolean, error) {
+func IntEqual(l, r *Int, mem memory.Allocator) (*Boolean, error) {
 	n := l.Len()
 	if n != r.Len() {
 		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
@@ -1158,7 +1158,7 @@ func IntEq(l, r *Int, mem memory.Allocator) (*Boolean, error) {
 	return a, nil
 }
 
-func IntEqLConst(l int64, r *Int, mem memory.Allocator) (*Boolean, error) {
+func IntEqualLConst(l int64, r *Int, mem memory.Allocator) (*Boolean, error) {
 	n := r.Len()
 	b := NewBooleanBuilder(mem)
 	b.Resize(n)
@@ -1174,7 +1174,7 @@ func IntEqLConst(l int64, r *Int, mem memory.Allocator) (*Boolean, error) {
 	return a, nil
 }
 
-func IntEqRConst(l *Int, r int64, mem memory.Allocator) (*Boolean, error) {
+func IntEqualRConst(l *Int, r int64, mem memory.Allocator) (*Boolean, error) {
 	n := l.Len()
 	b := NewBooleanBuilder(mem)
 	b.Resize(n)
@@ -1190,7 +1190,7 @@ func IntEqRConst(l *Int, r int64, mem memory.Allocator) (*Boolean, error) {
 	return a, nil
 }
 
-func UintEq(l, r *Uint, mem memory.Allocator) (*Boolean, error) {
+func UintEqual(l, r *Uint, mem memory.Allocator) (*Boolean, error) {
 	n := l.Len()
 	if n != r.Len() {
 		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
@@ -1209,7 +1209,7 @@ func UintEq(l, r *Uint, mem memory.Allocator) (*Boolean, error) {
 	return a, nil
 }
 
-func UintEqLConst(l uint64, r *Uint, mem memory.Allocator) (*Boolean, error) {
+func UintEqualLConst(l uint64, r *Uint, mem memory.Allocator) (*Boolean, error) {
 	n := r.Len()
 	b := NewBooleanBuilder(mem)
 	b.Resize(n)
@@ -1225,7 +1225,7 @@ func UintEqLConst(l uint64, r *Uint, mem memory.Allocator) (*Boolean, error) {
 	return a, nil
 }
 
-func UintEqRConst(l *Uint, r uint64, mem memory.Allocator) (*Boolean, error) {
+func UintEqualRConst(l *Uint, r uint64, mem memory.Allocator) (*Boolean, error) {
 	n := l.Len()
 	b := NewBooleanBuilder(mem)
 	b.Resize(n)
@@ -1241,7 +1241,7 @@ func UintEqRConst(l *Uint, r uint64, mem memory.Allocator) (*Boolean, error) {
 	return a, nil
 }
 
-func FloatEq(l, r *Float, mem memory.Allocator) (*Boolean, error) {
+func FloatEqual(l, r *Float, mem memory.Allocator) (*Boolean, error) {
 	n := l.Len()
 	if n != r.Len() {
 		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
@@ -1260,7 +1260,7 @@ func FloatEq(l, r *Float, mem memory.Allocator) (*Boolean, error) {
 	return a, nil
 }
 
-func FloatEqLConst(l float64, r *Float, mem memory.Allocator) (*Boolean, error) {
+func FloatEqualLConst(l float64, r *Float, mem memory.Allocator) (*Boolean, error) {
 	n := r.Len()
 	b := NewBooleanBuilder(mem)
 	b.Resize(n)
@@ -1276,7 +1276,7 @@ func FloatEqLConst(l float64, r *Float, mem memory.Allocator) (*Boolean, error) 
 	return a, nil
 }
 
-func FloatEqRConst(l *Float, r float64, mem memory.Allocator) (*Boolean, error) {
+func FloatEqualRConst(l *Float, r float64, mem memory.Allocator) (*Boolean, error) {
 	n := l.Len()
 	b := NewBooleanBuilder(mem)
 	b.Resize(n)
@@ -1292,7 +1292,7 @@ func FloatEqRConst(l *Float, r float64, mem memory.Allocator) (*Boolean, error) 
 	return a, nil
 }
 
-func StringEq(l, r *String, mem memory.Allocator) (*Boolean, error) {
+func StringEqual(l, r *String, mem memory.Allocator) (*Boolean, error) {
 	n := l.Len()
 	if n != r.Len() {
 		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
@@ -1311,7 +1311,7 @@ func StringEq(l, r *String, mem memory.Allocator) (*Boolean, error) {
 	return a, nil
 }
 
-func StringEqLConst(l string, r *String, mem memory.Allocator) (*Boolean, error) {
+func StringEqualLConst(l string, r *String, mem memory.Allocator) (*Boolean, error) {
 	n := r.Len()
 	b := NewBooleanBuilder(mem)
 	b.Resize(n)
@@ -1327,7 +1327,7 @@ func StringEqLConst(l string, r *String, mem memory.Allocator) (*Boolean, error)
 	return a, nil
 }
 
-func StringEqRConst(l *String, r string, mem memory.Allocator) (*Boolean, error) {
+func StringEqualRConst(l *String, r string, mem memory.Allocator) (*Boolean, error) {
 	n := l.Len()
 	b := NewBooleanBuilder(mem)
 	b.Resize(n)
@@ -1343,7 +1343,7 @@ func StringEqRConst(l *String, r string, mem memory.Allocator) (*Boolean, error)
 	return a, nil
 }
 
-func BooleanNeq(l, r *Boolean, mem memory.Allocator) (*Boolean, error) {
+func BooleanNotEqual(l, r *Boolean, mem memory.Allocator) (*Boolean, error) {
 	n := l.Len()
 	if n != r.Len() {
 		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
@@ -1362,7 +1362,7 @@ func BooleanNeq(l, r *Boolean, mem memory.Allocator) (*Boolean, error) {
 	return a, nil
 }
 
-func BooleanNeqLConst(l bool, r *Boolean, mem memory.Allocator) (*Boolean, error) {
+func BooleanNotEqualLConst(l bool, r *Boolean, mem memory.Allocator) (*Boolean, error) {
 	n := r.Len()
 	b := NewBooleanBuilder(mem)
 	b.Resize(n)
@@ -1378,7 +1378,7 @@ func BooleanNeqLConst(l bool, r *Boolean, mem memory.Allocator) (*Boolean, error
 	return a, nil
 }
 
-func BooleanNeqRConst(l *Boolean, r bool, mem memory.Allocator) (*Boolean, error) {
+func BooleanNotEqualRConst(l *Boolean, r bool, mem memory.Allocator) (*Boolean, error) {
 	n := l.Len()
 	b := NewBooleanBuilder(mem)
 	b.Resize(n)
@@ -1394,7 +1394,7 @@ func BooleanNeqRConst(l *Boolean, r bool, mem memory.Allocator) (*Boolean, error
 	return a, nil
 }
 
-func IntNeq(l, r *Int, mem memory.Allocator) (*Boolean, error) {
+func IntNotEqual(l, r *Int, mem memory.Allocator) (*Boolean, error) {
 	n := l.Len()
 	if n != r.Len() {
 		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
@@ -1413,7 +1413,7 @@ func IntNeq(l, r *Int, mem memory.Allocator) (*Boolean, error) {
 	return a, nil
 }
 
-func IntNeqLConst(l int64, r *Int, mem memory.Allocator) (*Boolean, error) {
+func IntNotEqualLConst(l int64, r *Int, mem memory.Allocator) (*Boolean, error) {
 	n := r.Len()
 	b := NewBooleanBuilder(mem)
 	b.Resize(n)
@@ -1429,7 +1429,7 @@ func IntNeqLConst(l int64, r *Int, mem memory.Allocator) (*Boolean, error) {
 	return a, nil
 }
 
-func IntNeqRConst(l *Int, r int64, mem memory.Allocator) (*Boolean, error) {
+func IntNotEqualRConst(l *Int, r int64, mem memory.Allocator) (*Boolean, error) {
 	n := l.Len()
 	b := NewBooleanBuilder(mem)
 	b.Resize(n)
@@ -1445,7 +1445,7 @@ func IntNeqRConst(l *Int, r int64, mem memory.Allocator) (*Boolean, error) {
 	return a, nil
 }
 
-func UintNeq(l, r *Uint, mem memory.Allocator) (*Boolean, error) {
+func UintNotEqual(l, r *Uint, mem memory.Allocator) (*Boolean, error) {
 	n := l.Len()
 	if n != r.Len() {
 		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
@@ -1464,7 +1464,7 @@ func UintNeq(l, r *Uint, mem memory.Allocator) (*Boolean, error) {
 	return a, nil
 }
 
-func UintNeqLConst(l uint64, r *Uint, mem memory.Allocator) (*Boolean, error) {
+func UintNotEqualLConst(l uint64, r *Uint, mem memory.Allocator) (*Boolean, error) {
 	n := r.Len()
 	b := NewBooleanBuilder(mem)
 	b.Resize(n)
@@ -1480,7 +1480,7 @@ func UintNeqLConst(l uint64, r *Uint, mem memory.Allocator) (*Boolean, error) {
 	return a, nil
 }
 
-func UintNeqRConst(l *Uint, r uint64, mem memory.Allocator) (*Boolean, error) {
+func UintNotEqualRConst(l *Uint, r uint64, mem memory.Allocator) (*Boolean, error) {
 	n := l.Len()
 	b := NewBooleanBuilder(mem)
 	b.Resize(n)
@@ -1496,7 +1496,7 @@ func UintNeqRConst(l *Uint, r uint64, mem memory.Allocator) (*Boolean, error) {
 	return a, nil
 }
 
-func FloatNeq(l, r *Float, mem memory.Allocator) (*Boolean, error) {
+func FloatNotEqual(l, r *Float, mem memory.Allocator) (*Boolean, error) {
 	n := l.Len()
 	if n != r.Len() {
 		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
@@ -1515,7 +1515,7 @@ func FloatNeq(l, r *Float, mem memory.Allocator) (*Boolean, error) {
 	return a, nil
 }
 
-func FloatNeqLConst(l float64, r *Float, mem memory.Allocator) (*Boolean, error) {
+func FloatNotEqualLConst(l float64, r *Float, mem memory.Allocator) (*Boolean, error) {
 	n := r.Len()
 	b := NewBooleanBuilder(mem)
 	b.Resize(n)
@@ -1531,7 +1531,7 @@ func FloatNeqLConst(l float64, r *Float, mem memory.Allocator) (*Boolean, error)
 	return a, nil
 }
 
-func FloatNeqRConst(l *Float, r float64, mem memory.Allocator) (*Boolean, error) {
+func FloatNotEqualRConst(l *Float, r float64, mem memory.Allocator) (*Boolean, error) {
 	n := l.Len()
 	b := NewBooleanBuilder(mem)
 	b.Resize(n)
@@ -1547,7 +1547,7 @@ func FloatNeqRConst(l *Float, r float64, mem memory.Allocator) (*Boolean, error)
 	return a, nil
 }
 
-func StringNeq(l, r *String, mem memory.Allocator) (*Boolean, error) {
+func StringNotEqual(l, r *String, mem memory.Allocator) (*Boolean, error) {
 	n := l.Len()
 	if n != r.Len() {
 		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
@@ -1566,7 +1566,7 @@ func StringNeq(l, r *String, mem memory.Allocator) (*Boolean, error) {
 	return a, nil
 }
 
-func StringNeqLConst(l string, r *String, mem memory.Allocator) (*Boolean, error) {
+func StringNotEqualLConst(l string, r *String, mem memory.Allocator) (*Boolean, error) {
 	n := r.Len()
 	b := NewBooleanBuilder(mem)
 	b.Resize(n)
@@ -1582,7 +1582,7 @@ func StringNeqLConst(l string, r *String, mem memory.Allocator) (*Boolean, error
 	return a, nil
 }
 
-func StringNeqRConst(l *String, r string, mem memory.Allocator) (*Boolean, error) {
+func StringNotEqualRConst(l *String, r string, mem memory.Allocator) (*Boolean, error) {
 	n := l.Len()
 	b := NewBooleanBuilder(mem)
 	b.Resize(n)
@@ -1598,7 +1598,7 @@ func StringNeqRConst(l *String, r string, mem memory.Allocator) (*Boolean, error
 	return a, nil
 }
 
-func IntLt(l, r *Int, mem memory.Allocator) (*Boolean, error) {
+func IntLessThan(l, r *Int, mem memory.Allocator) (*Boolean, error) {
 	n := l.Len()
 	if n != r.Len() {
 		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
@@ -1617,7 +1617,7 @@ func IntLt(l, r *Int, mem memory.Allocator) (*Boolean, error) {
 	return a, nil
 }
 
-func IntLtLConst(l int64, r *Int, mem memory.Allocator) (*Boolean, error) {
+func IntLessThanLConst(l int64, r *Int, mem memory.Allocator) (*Boolean, error) {
 	n := r.Len()
 	b := NewBooleanBuilder(mem)
 	b.Resize(n)
@@ -1633,7 +1633,7 @@ func IntLtLConst(l int64, r *Int, mem memory.Allocator) (*Boolean, error) {
 	return a, nil
 }
 
-func IntLtRConst(l *Int, r int64, mem memory.Allocator) (*Boolean, error) {
+func IntLessThanRConst(l *Int, r int64, mem memory.Allocator) (*Boolean, error) {
 	n := l.Len()
 	b := NewBooleanBuilder(mem)
 	b.Resize(n)
@@ -1649,7 +1649,7 @@ func IntLtRConst(l *Int, r int64, mem memory.Allocator) (*Boolean, error) {
 	return a, nil
 }
 
-func UintLt(l, r *Uint, mem memory.Allocator) (*Boolean, error) {
+func UintLessThan(l, r *Uint, mem memory.Allocator) (*Boolean, error) {
 	n := l.Len()
 	if n != r.Len() {
 		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
@@ -1668,7 +1668,7 @@ func UintLt(l, r *Uint, mem memory.Allocator) (*Boolean, error) {
 	return a, nil
 }
 
-func UintLtLConst(l uint64, r *Uint, mem memory.Allocator) (*Boolean, error) {
+func UintLessThanLConst(l uint64, r *Uint, mem memory.Allocator) (*Boolean, error) {
 	n := r.Len()
 	b := NewBooleanBuilder(mem)
 	b.Resize(n)
@@ -1684,7 +1684,7 @@ func UintLtLConst(l uint64, r *Uint, mem memory.Allocator) (*Boolean, error) {
 	return a, nil
 }
 
-func UintLtRConst(l *Uint, r uint64, mem memory.Allocator) (*Boolean, error) {
+func UintLessThanRConst(l *Uint, r uint64, mem memory.Allocator) (*Boolean, error) {
 	n := l.Len()
 	b := NewBooleanBuilder(mem)
 	b.Resize(n)
@@ -1700,7 +1700,7 @@ func UintLtRConst(l *Uint, r uint64, mem memory.Allocator) (*Boolean, error) {
 	return a, nil
 }
 
-func FloatLt(l, r *Float, mem memory.Allocator) (*Boolean, error) {
+func FloatLessThan(l, r *Float, mem memory.Allocator) (*Boolean, error) {
 	n := l.Len()
 	if n != r.Len() {
 		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
@@ -1719,7 +1719,7 @@ func FloatLt(l, r *Float, mem memory.Allocator) (*Boolean, error) {
 	return a, nil
 }
 
-func FloatLtLConst(l float64, r *Float, mem memory.Allocator) (*Boolean, error) {
+func FloatLessThanLConst(l float64, r *Float, mem memory.Allocator) (*Boolean, error) {
 	n := r.Len()
 	b := NewBooleanBuilder(mem)
 	b.Resize(n)
@@ -1735,7 +1735,7 @@ func FloatLtLConst(l float64, r *Float, mem memory.Allocator) (*Boolean, error) 
 	return a, nil
 }
 
-func FloatLtRConst(l *Float, r float64, mem memory.Allocator) (*Boolean, error) {
+func FloatLessThanRConst(l *Float, r float64, mem memory.Allocator) (*Boolean, error) {
 	n := l.Len()
 	b := NewBooleanBuilder(mem)
 	b.Resize(n)
@@ -1751,7 +1751,7 @@ func FloatLtRConst(l *Float, r float64, mem memory.Allocator) (*Boolean, error) 
 	return a, nil
 }
 
-func StringLt(l, r *String, mem memory.Allocator) (*Boolean, error) {
+func StringLessThan(l, r *String, mem memory.Allocator) (*Boolean, error) {
 	n := l.Len()
 	if n != r.Len() {
 		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
@@ -1770,7 +1770,7 @@ func StringLt(l, r *String, mem memory.Allocator) (*Boolean, error) {
 	return a, nil
 }
 
-func StringLtLConst(l string, r *String, mem memory.Allocator) (*Boolean, error) {
+func StringLessThanLConst(l string, r *String, mem memory.Allocator) (*Boolean, error) {
 	n := r.Len()
 	b := NewBooleanBuilder(mem)
 	b.Resize(n)
@@ -1786,7 +1786,7 @@ func StringLtLConst(l string, r *String, mem memory.Allocator) (*Boolean, error)
 	return a, nil
 }
 
-func StringLtRConst(l *String, r string, mem memory.Allocator) (*Boolean, error) {
+func StringLessThanRConst(l *String, r string, mem memory.Allocator) (*Boolean, error) {
 	n := l.Len()
 	b := NewBooleanBuilder(mem)
 	b.Resize(n)
@@ -1802,7 +1802,7 @@ func StringLtRConst(l *String, r string, mem memory.Allocator) (*Boolean, error)
 	return a, nil
 }
 
-func IntLte(l, r *Int, mem memory.Allocator) (*Boolean, error) {
+func IntLessThanEqual(l, r *Int, mem memory.Allocator) (*Boolean, error) {
 	n := l.Len()
 	if n != r.Len() {
 		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
@@ -1821,7 +1821,7 @@ func IntLte(l, r *Int, mem memory.Allocator) (*Boolean, error) {
 	return a, nil
 }
 
-func IntLteLConst(l int64, r *Int, mem memory.Allocator) (*Boolean, error) {
+func IntLessThanEqualLConst(l int64, r *Int, mem memory.Allocator) (*Boolean, error) {
 	n := r.Len()
 	b := NewBooleanBuilder(mem)
 	b.Resize(n)
@@ -1837,7 +1837,7 @@ func IntLteLConst(l int64, r *Int, mem memory.Allocator) (*Boolean, error) {
 	return a, nil
 }
 
-func IntLteRConst(l *Int, r int64, mem memory.Allocator) (*Boolean, error) {
+func IntLessThanEqualRConst(l *Int, r int64, mem memory.Allocator) (*Boolean, error) {
 	n := l.Len()
 	b := NewBooleanBuilder(mem)
 	b.Resize(n)
@@ -1853,7 +1853,7 @@ func IntLteRConst(l *Int, r int64, mem memory.Allocator) (*Boolean, error) {
 	return a, nil
 }
 
-func UintLte(l, r *Uint, mem memory.Allocator) (*Boolean, error) {
+func UintLessThanEqual(l, r *Uint, mem memory.Allocator) (*Boolean, error) {
 	n := l.Len()
 	if n != r.Len() {
 		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
@@ -1872,7 +1872,7 @@ func UintLte(l, r *Uint, mem memory.Allocator) (*Boolean, error) {
 	return a, nil
 }
 
-func UintLteLConst(l uint64, r *Uint, mem memory.Allocator) (*Boolean, error) {
+func UintLessThanEqualLConst(l uint64, r *Uint, mem memory.Allocator) (*Boolean, error) {
 	n := r.Len()
 	b := NewBooleanBuilder(mem)
 	b.Resize(n)
@@ -1888,7 +1888,7 @@ func UintLteLConst(l uint64, r *Uint, mem memory.Allocator) (*Boolean, error) {
 	return a, nil
 }
 
-func UintLteRConst(l *Uint, r uint64, mem memory.Allocator) (*Boolean, error) {
+func UintLessThanEqualRConst(l *Uint, r uint64, mem memory.Allocator) (*Boolean, error) {
 	n := l.Len()
 	b := NewBooleanBuilder(mem)
 	b.Resize(n)
@@ -1904,7 +1904,7 @@ func UintLteRConst(l *Uint, r uint64, mem memory.Allocator) (*Boolean, error) {
 	return a, nil
 }
 
-func FloatLte(l, r *Float, mem memory.Allocator) (*Boolean, error) {
+func FloatLessThanEqual(l, r *Float, mem memory.Allocator) (*Boolean, error) {
 	n := l.Len()
 	if n != r.Len() {
 		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
@@ -1923,7 +1923,7 @@ func FloatLte(l, r *Float, mem memory.Allocator) (*Boolean, error) {
 	return a, nil
 }
 
-func FloatLteLConst(l float64, r *Float, mem memory.Allocator) (*Boolean, error) {
+func FloatLessThanEqualLConst(l float64, r *Float, mem memory.Allocator) (*Boolean, error) {
 	n := r.Len()
 	b := NewBooleanBuilder(mem)
 	b.Resize(n)
@@ -1939,7 +1939,7 @@ func FloatLteLConst(l float64, r *Float, mem memory.Allocator) (*Boolean, error)
 	return a, nil
 }
 
-func FloatLteRConst(l *Float, r float64, mem memory.Allocator) (*Boolean, error) {
+func FloatLessThanEqualRConst(l *Float, r float64, mem memory.Allocator) (*Boolean, error) {
 	n := l.Len()
 	b := NewBooleanBuilder(mem)
 	b.Resize(n)
@@ -1955,7 +1955,7 @@ func FloatLteRConst(l *Float, r float64, mem memory.Allocator) (*Boolean, error)
 	return a, nil
 }
 
-func StringLte(l, r *String, mem memory.Allocator) (*Boolean, error) {
+func StringLessThanEqual(l, r *String, mem memory.Allocator) (*Boolean, error) {
 	n := l.Len()
 	if n != r.Len() {
 		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
@@ -1974,7 +1974,7 @@ func StringLte(l, r *String, mem memory.Allocator) (*Boolean, error) {
 	return a, nil
 }
 
-func StringLteLConst(l string, r *String, mem memory.Allocator) (*Boolean, error) {
+func StringLessThanEqualLConst(l string, r *String, mem memory.Allocator) (*Boolean, error) {
 	n := r.Len()
 	b := NewBooleanBuilder(mem)
 	b.Resize(n)
@@ -1990,7 +1990,7 @@ func StringLteLConst(l string, r *String, mem memory.Allocator) (*Boolean, error
 	return a, nil
 }
 
-func StringLteRConst(l *String, r string, mem memory.Allocator) (*Boolean, error) {
+func StringLessThanEqualRConst(l *String, r string, mem memory.Allocator) (*Boolean, error) {
 	n := l.Len()
 	b := NewBooleanBuilder(mem)
 	b.Resize(n)
@@ -2006,7 +2006,7 @@ func StringLteRConst(l *String, r string, mem memory.Allocator) (*Boolean, error
 	return a, nil
 }
 
-func IntGt(l, r *Int, mem memory.Allocator) (*Boolean, error) {
+func IntGreaterThan(l, r *Int, mem memory.Allocator) (*Boolean, error) {
 	n := l.Len()
 	if n != r.Len() {
 		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
@@ -2025,7 +2025,7 @@ func IntGt(l, r *Int, mem memory.Allocator) (*Boolean, error) {
 	return a, nil
 }
 
-func IntGtLConst(l int64, r *Int, mem memory.Allocator) (*Boolean, error) {
+func IntGreaterThanLConst(l int64, r *Int, mem memory.Allocator) (*Boolean, error) {
 	n := r.Len()
 	b := NewBooleanBuilder(mem)
 	b.Resize(n)
@@ -2041,7 +2041,7 @@ func IntGtLConst(l int64, r *Int, mem memory.Allocator) (*Boolean, error) {
 	return a, nil
 }
 
-func IntGtRConst(l *Int, r int64, mem memory.Allocator) (*Boolean, error) {
+func IntGreaterThanRConst(l *Int, r int64, mem memory.Allocator) (*Boolean, error) {
 	n := l.Len()
 	b := NewBooleanBuilder(mem)
 	b.Resize(n)
@@ -2057,7 +2057,7 @@ func IntGtRConst(l *Int, r int64, mem memory.Allocator) (*Boolean, error) {
 	return a, nil
 }
 
-func UintGt(l, r *Uint, mem memory.Allocator) (*Boolean, error) {
+func UintGreaterThan(l, r *Uint, mem memory.Allocator) (*Boolean, error) {
 	n := l.Len()
 	if n != r.Len() {
 		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
@@ -2076,7 +2076,7 @@ func UintGt(l, r *Uint, mem memory.Allocator) (*Boolean, error) {
 	return a, nil
 }
 
-func UintGtLConst(l uint64, r *Uint, mem memory.Allocator) (*Boolean, error) {
+func UintGreaterThanLConst(l uint64, r *Uint, mem memory.Allocator) (*Boolean, error) {
 	n := r.Len()
 	b := NewBooleanBuilder(mem)
 	b.Resize(n)
@@ -2092,7 +2092,7 @@ func UintGtLConst(l uint64, r *Uint, mem memory.Allocator) (*Boolean, error) {
 	return a, nil
 }
 
-func UintGtRConst(l *Uint, r uint64, mem memory.Allocator) (*Boolean, error) {
+func UintGreaterThanRConst(l *Uint, r uint64, mem memory.Allocator) (*Boolean, error) {
 	n := l.Len()
 	b := NewBooleanBuilder(mem)
 	b.Resize(n)
@@ -2108,7 +2108,7 @@ func UintGtRConst(l *Uint, r uint64, mem memory.Allocator) (*Boolean, error) {
 	return a, nil
 }
 
-func FloatGt(l, r *Float, mem memory.Allocator) (*Boolean, error) {
+func FloatGreaterThan(l, r *Float, mem memory.Allocator) (*Boolean, error) {
 	n := l.Len()
 	if n != r.Len() {
 		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
@@ -2127,7 +2127,7 @@ func FloatGt(l, r *Float, mem memory.Allocator) (*Boolean, error) {
 	return a, nil
 }
 
-func FloatGtLConst(l float64, r *Float, mem memory.Allocator) (*Boolean, error) {
+func FloatGreaterThanLConst(l float64, r *Float, mem memory.Allocator) (*Boolean, error) {
 	n := r.Len()
 	b := NewBooleanBuilder(mem)
 	b.Resize(n)
@@ -2143,7 +2143,7 @@ func FloatGtLConst(l float64, r *Float, mem memory.Allocator) (*Boolean, error) 
 	return a, nil
 }
 
-func FloatGtRConst(l *Float, r float64, mem memory.Allocator) (*Boolean, error) {
+func FloatGreaterThanRConst(l *Float, r float64, mem memory.Allocator) (*Boolean, error) {
 	n := l.Len()
 	b := NewBooleanBuilder(mem)
 	b.Resize(n)
@@ -2159,7 +2159,7 @@ func FloatGtRConst(l *Float, r float64, mem memory.Allocator) (*Boolean, error) 
 	return a, nil
 }
 
-func StringGt(l, r *String, mem memory.Allocator) (*Boolean, error) {
+func StringGreaterThan(l, r *String, mem memory.Allocator) (*Boolean, error) {
 	n := l.Len()
 	if n != r.Len() {
 		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
@@ -2178,7 +2178,7 @@ func StringGt(l, r *String, mem memory.Allocator) (*Boolean, error) {
 	return a, nil
 }
 
-func StringGtLConst(l string, r *String, mem memory.Allocator) (*Boolean, error) {
+func StringGreaterThanLConst(l string, r *String, mem memory.Allocator) (*Boolean, error) {
 	n := r.Len()
 	b := NewBooleanBuilder(mem)
 	b.Resize(n)
@@ -2194,7 +2194,7 @@ func StringGtLConst(l string, r *String, mem memory.Allocator) (*Boolean, error)
 	return a, nil
 }
 
-func StringGtRConst(l *String, r string, mem memory.Allocator) (*Boolean, error) {
+func StringGreaterThanRConst(l *String, r string, mem memory.Allocator) (*Boolean, error) {
 	n := l.Len()
 	b := NewBooleanBuilder(mem)
 	b.Resize(n)
@@ -2210,7 +2210,7 @@ func StringGtRConst(l *String, r string, mem memory.Allocator) (*Boolean, error)
 	return a, nil
 }
 
-func IntGte(l, r *Int, mem memory.Allocator) (*Boolean, error) {
+func IntGreaterThanEqual(l, r *Int, mem memory.Allocator) (*Boolean, error) {
 	n := l.Len()
 	if n != r.Len() {
 		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
@@ -2229,7 +2229,7 @@ func IntGte(l, r *Int, mem memory.Allocator) (*Boolean, error) {
 	return a, nil
 }
 
-func IntGteLConst(l int64, r *Int, mem memory.Allocator) (*Boolean, error) {
+func IntGreaterThanEqualLConst(l int64, r *Int, mem memory.Allocator) (*Boolean, error) {
 	n := r.Len()
 	b := NewBooleanBuilder(mem)
 	b.Resize(n)
@@ -2245,7 +2245,7 @@ func IntGteLConst(l int64, r *Int, mem memory.Allocator) (*Boolean, error) {
 	return a, nil
 }
 
-func IntGteRConst(l *Int, r int64, mem memory.Allocator) (*Boolean, error) {
+func IntGreaterThanEqualRConst(l *Int, r int64, mem memory.Allocator) (*Boolean, error) {
 	n := l.Len()
 	b := NewBooleanBuilder(mem)
 	b.Resize(n)
@@ -2261,7 +2261,7 @@ func IntGteRConst(l *Int, r int64, mem memory.Allocator) (*Boolean, error) {
 	return a, nil
 }
 
-func UintGte(l, r *Uint, mem memory.Allocator) (*Boolean, error) {
+func UintGreaterThanEqual(l, r *Uint, mem memory.Allocator) (*Boolean, error) {
 	n := l.Len()
 	if n != r.Len() {
 		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
@@ -2280,7 +2280,7 @@ func UintGte(l, r *Uint, mem memory.Allocator) (*Boolean, error) {
 	return a, nil
 }
 
-func UintGteLConst(l uint64, r *Uint, mem memory.Allocator) (*Boolean, error) {
+func UintGreaterThanEqualLConst(l uint64, r *Uint, mem memory.Allocator) (*Boolean, error) {
 	n := r.Len()
 	b := NewBooleanBuilder(mem)
 	b.Resize(n)
@@ -2296,7 +2296,7 @@ func UintGteLConst(l uint64, r *Uint, mem memory.Allocator) (*Boolean, error) {
 	return a, nil
 }
 
-func UintGteRConst(l *Uint, r uint64, mem memory.Allocator) (*Boolean, error) {
+func UintGreaterThanEqualRConst(l *Uint, r uint64, mem memory.Allocator) (*Boolean, error) {
 	n := l.Len()
 	b := NewBooleanBuilder(mem)
 	b.Resize(n)
@@ -2312,7 +2312,7 @@ func UintGteRConst(l *Uint, r uint64, mem memory.Allocator) (*Boolean, error) {
 	return a, nil
 }
 
-func FloatGte(l, r *Float, mem memory.Allocator) (*Boolean, error) {
+func FloatGreaterThanEqual(l, r *Float, mem memory.Allocator) (*Boolean, error) {
 	n := l.Len()
 	if n != r.Len() {
 		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
@@ -2331,7 +2331,7 @@ func FloatGte(l, r *Float, mem memory.Allocator) (*Boolean, error) {
 	return a, nil
 }
 
-func FloatGteLConst(l float64, r *Float, mem memory.Allocator) (*Boolean, error) {
+func FloatGreaterThanEqualLConst(l float64, r *Float, mem memory.Allocator) (*Boolean, error) {
 	n := r.Len()
 	b := NewBooleanBuilder(mem)
 	b.Resize(n)
@@ -2347,7 +2347,7 @@ func FloatGteLConst(l float64, r *Float, mem memory.Allocator) (*Boolean, error)
 	return a, nil
 }
 
-func FloatGteRConst(l *Float, r float64, mem memory.Allocator) (*Boolean, error) {
+func FloatGreaterThanEqualRConst(l *Float, r float64, mem memory.Allocator) (*Boolean, error) {
 	n := l.Len()
 	b := NewBooleanBuilder(mem)
 	b.Resize(n)
@@ -2363,7 +2363,7 @@ func FloatGteRConst(l *Float, r float64, mem memory.Allocator) (*Boolean, error)
 	return a, nil
 }
 
-func StringGte(l, r *String, mem memory.Allocator) (*Boolean, error) {
+func StringGreaterThanEqual(l, r *String, mem memory.Allocator) (*Boolean, error) {
 	n := l.Len()
 	if n != r.Len() {
 		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
@@ -2382,7 +2382,7 @@ func StringGte(l, r *String, mem memory.Allocator) (*Boolean, error) {
 	return a, nil
 }
 
-func StringGteLConst(l string, r *String, mem memory.Allocator) (*Boolean, error) {
+func StringGreaterThanEqualLConst(l string, r *String, mem memory.Allocator) (*Boolean, error) {
 	n := r.Len()
 	b := NewBooleanBuilder(mem)
 	b.Resize(n)
@@ -2398,7 +2398,7 @@ func StringGteLConst(l string, r *String, mem memory.Allocator) (*Boolean, error
 	return a, nil
 }
 
-func StringGteRConst(l *String, r string, mem memory.Allocator) (*Boolean, error) {
+func StringGreaterThanEqualRConst(l *String, r string, mem memory.Allocator) (*Boolean, error) {
 	n := l.Len()
 	b := NewBooleanBuilder(mem)
 	b.Resize(n)

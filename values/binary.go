@@ -713,7 +713,7 @@ var binaryVectorFuncLookup = map[BinaryFuncSignature]BinaryVectorFunction{
 		} else if v != nil {
 			return v, nil
 		}
-		return vectorEq(l, r, mem)
+		return vectorEqual(l, r, mem)
 	},
 	{Operator: ast.NotEqualOperator, Left: semantic.Vector, Right: semantic.Vector}: func(lv, rv Value, mem memory.Allocator) (Value, error) {
 		l := lv.Vector()
@@ -724,7 +724,7 @@ var binaryVectorFuncLookup = map[BinaryFuncSignature]BinaryVectorFunction{
 		} else if v != nil {
 			return v, nil
 		}
-		return vectorNeq(l, r, mem)
+		return vectorNotEqual(l, r, mem)
 	},
 	{Operator: ast.LessThanOperator, Left: semantic.Vector, Right: semantic.Vector}: func(lv, rv Value, mem memory.Allocator) (Value, error) {
 		l := lv.Vector()
@@ -735,7 +735,7 @@ var binaryVectorFuncLookup = map[BinaryFuncSignature]BinaryVectorFunction{
 		} else if v != nil {
 			return v, nil
 		}
-		return vectorLt(l, r, mem)
+		return vectorLessThan(l, r, mem)
 	},
 	{Operator: ast.LessThanEqualOperator, Left: semantic.Vector, Right: semantic.Vector}: func(lv, rv Value, mem memory.Allocator) (Value, error) {
 		l := lv.Vector()
@@ -746,7 +746,7 @@ var binaryVectorFuncLookup = map[BinaryFuncSignature]BinaryVectorFunction{
 		} else if v != nil {
 			return v, nil
 		}
-		return vectorLte(l, r, mem)
+		return vectorLessThanEqual(l, r, mem)
 	},
 	{Operator: ast.GreaterThanOperator, Left: semantic.Vector, Right: semantic.Vector}: func(lv, rv Value, mem memory.Allocator) (Value, error) {
 		l := lv.Vector()
@@ -757,7 +757,7 @@ var binaryVectorFuncLookup = map[BinaryFuncSignature]BinaryVectorFunction{
 		} else if v != nil {
 			return v, nil
 		}
-		return vectorGt(l, r, mem)
+		return vectorGreaterThan(l, r, mem)
 	},
 	{Operator: ast.GreaterThanEqualOperator, Left: semantic.Vector, Right: semantic.Vector}: func(lv, rv Value, mem memory.Allocator) (Value, error) {
 		l := lv.Vector()
@@ -768,6 +768,6 @@ var binaryVectorFuncLookup = map[BinaryFuncSignature]BinaryVectorFunction{
 		} else if v != nil {
 			return v, nil
 		}
-		return vectorGte(l, r, mem)
+		return vectorGreaterThanEqual(l, r, mem)
 	},
 }

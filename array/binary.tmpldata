@@ -31,32 +31,32 @@
             "Types": ["Int", "Uint", "Float"]
         },
         {
-            "Name": "Eq",
+            "Name": "Equal",
             "Op": "==",
             "Types": ["Boolean", "Int", "Uint", "Float", "String"]
         },
         {
-            "Name": "Neq",
+            "Name": "NotEqual",
             "Op": "!=",
             "Types": ["Boolean", "Int", "Uint", "Float", "String"]
         },
         {
-            "Name": "Lt",
+            "Name": "LessThan",
             "Op": "<",
             "Types": ["Int", "Uint", "Float", "String"]
         },
         {
-            "Name": "Lte",
+            "Name": "LessThanEqual",
             "Op": "<=",
             "Types": ["Int", "Uint", "Float", "String"]
         },
         {
-            "Name": "Gt",
+            "Name": "GreaterThan",
             "Op": ">",
             "Types": ["Int", "Uint", "Float", "String"]
         },
         {
-            "Name": "Gte",
+            "Name": "GreaterThanEqual",
             "Op": ">=",
             "Types": ["Int", "Uint", "Float", "String"]
         }
