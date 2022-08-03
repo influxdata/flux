@@ -54,3 +54,24 @@ func TestJoinStr_NullInArrParam(t *testing.T) {
 		t.Errorf("input %f: expected %v, gotErr %f", arr, wantErr, gotErr)
 	}
 }
+
+func TestSubstring_NbspOk(t *testing.T) {
+	fluxFunc := fluxstdlibstrings.SpecialFns["substring"]
+	fluxArg := values.NewObjectWithValues(map[string]values.Value{
+		// XXX: Inputs of a certain sizes with trailing nbsp caused a panic
+		// <https://github.com/influxdata/EAR/issues/3494>
+		"v":     values.NewString("Annual Alert Limited Event 12\u00A0\u00A0"),
+		"start": values.NewInt(0),
+		"end":   values.NewInt(1023),
+	})
+	ctx, deps := dependency.Inject(context.Background(), dependenciestest.Default())
+	defer deps.Finish()
+	want := "Annual Alert Limited Event 12\u00A0\u00A0"
+	got, err := fluxFunc.Call(ctx, fluxArg)
+	if err != nil {
+		t.Fatalf("unexpected error: %s", err)
+	}
+	if want != got.Str() {
+		t.Errorf("expected %v, got %v", want, got)
+	}
+}

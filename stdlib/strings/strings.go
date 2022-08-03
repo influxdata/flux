@@ -355,13 +355,14 @@ var substring = values.NewFunction(
 			}
 
 			s := []rune(v)
+			runeCount := int64(len(s))
 			if a < 0 {
 				a = 0
-			} else if a > int64(len(v)) {
-				a = int64(len(v))
+			} else if a > runeCount {
+				a = runeCount
 			}
-			if b > int64(len(v)) {
-				b = int64(len(v))
+			if b > runeCount {
+				b = runeCount
 			} else if b < a {
 				b = a
 			}
@@ -487,6 +488,7 @@ func init() {
 				return values.NewString(strings.Join(newStringArray, argVals[1].Str())), nil
 			}, false,
 		),
+		"substring": substring,
 	}
 
 	runtime.RegisterPackageValue("strings", "joinStr", SpecialFns["joinStr"])
