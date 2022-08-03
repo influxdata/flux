@@ -112,7 +112,7 @@ impl Highlighter for MyHelper {
 #[derive(Clone)]
 struct CompleteHintHandler {
     a: Arc<RwLock<HashSet<CommandHint>>>,
-    cur_hint: Arc<Mutex<Option<String>>>
+    cur_hint: Arc<RwLock<Option<String>>>
 }
 impl ConditionalEventHandler for CompleteHintHandler {
     fn handle(&self, evt: &Event, _: RepeatCount, _: bool, ctx: &EventContext) -> Option<Cmd> {
@@ -126,12 +126,23 @@ impl ConditionalEventHandler for CompleteHintHandler {
                 // self.a.read().unwrap().iter().for_each(|x|println!("hints! after completiopn {} {}", x.display, ctx.hint_text().unwrap(),ctx.));
 
                 //TODO: if you complete the hint then you pop the value off the hashset
-                // let mut lock = self.a.write().unwrap();
-                // let guard = self.cur_hint.lock().unwrap();
-                // if guard.is_some(){
-                //     let hint = guard.unwrap();
-                    // lock.remove(hint);
-                // }
+                //lock the mutex for the current hint
+                let mut cur = self.cur_hint.write().unwrap();
+                if cur.is_some(){
+                    let mut lock = self.a.write().unwrap();
+                    let search = cur.as_ref().unwrap().as_str();
+                    lock
+                        .retain(|x|x.display.as_str() != search);
+                    *cur = None;
+                        // .find(|x|x.display.as_str() == search);
+
+                    // lock.remove(res.expect("failure somewhere"));
+
+
+
+
+                }
+
 
                 Some(Cmd::CompleteHint)
             } else if *k == KeyEvent::alt('f') && ctx.line().len() == ctx.pos() {
@@ -162,6 +173,8 @@ impl ConditionalEventHandler for CompleteHintHandler {
         }
     }
 }
+
+
 
 struct TabEventHandler;
 impl ConditionalEventHandler for TabEventHandler {
@@ -247,7 +260,7 @@ pub fn newMain() -> Result<()> {
 
     let vals = storage.clone();
 
-    let cur_hint: Arc<Mutex<Option<String>>> = Arc::new(Mutex::new(None));
+    let cur_hint: Arc<RwLock<Option<String>>> = Arc::new(RwLock::new(None));
 
     rl.set_helper(Some(MyHelper{ hinter: LSPSuggestionHelper::LSPSuggestionHelper {
         hints: vals,

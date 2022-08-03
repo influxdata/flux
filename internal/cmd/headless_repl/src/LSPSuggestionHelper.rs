@@ -15,7 +15,7 @@ use crate::processes::process_completion::HintType::{ArgumentType, FunctionType,
 #[derive(Completer, Helper, Validator, Highlighter)]
 pub struct LSPSuggestionHelper {
     pub(crate) hints: Arc<RwLock<HashSet<CommandHint>>>,
-    pub (crate) displayed_hint: Arc<Mutex<Option<String>>>,
+    pub (crate) displayed_hint: Arc<RwLock<Option<String>>>,
 }
 
 
@@ -193,7 +193,7 @@ impl LSPSuggestionHelper{
         return match best {
             usize::MAX =>{
                 if lock.len() > 0 {
-                    let mut pop_off = self.displayed_hint.lock().unwrap();
+                    let mut pop_off = self.displayed_hint.write().unwrap();
                     for hint in lock.iter(){
                         //return a hint to a param where there is no overlap
                         //TODO: Only give the suggestion once there is a comma present
