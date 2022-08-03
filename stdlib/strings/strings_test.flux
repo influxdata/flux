@@ -70,6 +70,17 @@ testcase string_substring {
     testing.diff(got: got, want: want)
 }
 
+testcase string_substring_nbsp {
+    // XXX: Inputs of a certain sizes with trailing nbsp caused a panic
+    // <https://github.com/influxdata/EAR/issues/3494>
+    input = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxx  "
+    output = strings.substring(v: input, start: 0, end: 100)
+    want = array.from(rows: [{v: input}])
+    got = array.from(rows: [{v: output}])
+
+    testing.diff(want, got)
+}
+
 // All instances of one string are replaced with another
 testcase string_replaceAll {
     want = array.from(rows: [{_value: "This is fine. Everything is fine."}])

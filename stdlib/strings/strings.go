@@ -488,7 +488,6 @@ func init() {
 				return values.NewString(strings.Join(newStringArray, argVals[1].Str())), nil
 			}, false,
 		),
-		"substring": substring,
 	}
 
 	runtime.RegisterPackageValue("strings", "joinStr", SpecialFns["joinStr"])
