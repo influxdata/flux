@@ -530,7 +530,7 @@ pub enum Feature {
     VectorizedConditionals,
 
     /// Enables calls to map to be vectorized when the function contains
-    /// binary equality operators.
+    /// equality operators.
     VectorizedEqualityOps,
 }
 

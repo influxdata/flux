@@ -95,7 +95,7 @@
   contact: Owen Nelson
 
 - name: Vectorized Equality Ops
-  description: Calls to map can be vectorized when conditional expressions appear in the function
+  description: Calls to map can be vectorized when equality ops appear in the function
   key: vectorizedEqualityOps
   default: false
   contact: Owen Nelson

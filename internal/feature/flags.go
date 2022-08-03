@@ -192,7 +192,7 @@ var vectorizedEqualityOps = feature.MakeBoolFlag(
 	false,
 )
 
-// VectorizedEqualityOps - Calls to map can be vectorized when conditional expressions appear in the function
+// VectorizedEqualityOps - Calls to map can be vectorized when equality ops appear in the function
 func VectorizedEqualityOps() BoolFlag {
 	return vectorizedEqualityOps
 }
