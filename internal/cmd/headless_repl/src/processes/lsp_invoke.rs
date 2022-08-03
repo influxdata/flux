@@ -22,6 +22,7 @@ use std::str;
 use std::string::ParseError;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::mpsc;
+use lsp_types::MarkupKind::PlainText;
 use tower_lsp::jsonrpc::{Method, RequestBuilder};
 
 
@@ -97,9 +98,10 @@ pub fn formulate_request(request_type: &str, text: &str, pos: usize) -> Result<S
                                 completion: Some(CompletionClientCapabilities {
                                     dynamic_registration: None,
                                     completion_item: Some(CompletionItemCapability {
+                                        // ?? Unsure if to say yews or no
                                         snippet_support: Some(true),
                                         commit_characters_support: None,
-                                        documentation_format: None,
+                                        documentation_format: Some(vec![PlainText]),
                                         deprecated_support: None,
                                         preselect_support: None,
                                         tag_support: None,

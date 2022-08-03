@@ -15,7 +15,7 @@ use crate::processes::process_completion::HintType::{ArgumentType, FunctionType,
 #[derive(Completer, Helper, Validator, Highlighter)]
 pub struct LSPSuggestionHelper {
     pub(crate) hints: Arc<RwLock<HashSet<CommandHint>>>,
-    pub (crate) skip_pos: Arc<RwLock<Option<usize>>>
+    pub (crate) displayed_hint: Arc<Mutex<Option<String>>>,
 }
 
 
@@ -25,7 +25,7 @@ pub struct CommandHint {
     complete_up_to: usize,
     hint_type: HintType,
     hint_signature: Option<String>,
-    completed: bool,
+
 }
 
 impl Hint for CommandHint {
@@ -51,7 +51,6 @@ impl CommandHint {
             complete_up_to: complete_up_to.len(),
             hint_type,
             hint_signature: sig,
-            completed: false
         }
     }
 
@@ -61,7 +60,6 @@ impl CommandHint {
             complete_up_to: self.complete_up_to.saturating_sub(strip_chars),
             hint_type: self.hint_type.clone(),
             hint_signature: self.hint_signature.clone(),
-            completed: false
         }
     }
 
@@ -76,7 +74,6 @@ impl CommandHint {
             complete_up_to: a.len().saturating_sub(strip_chars),
             hint_type: UnimplementedType,
             hint_signature: None,
-            completed: false
         }
     }
 
@@ -196,11 +193,14 @@ impl LSPSuggestionHelper{
         return match best {
             usize::MAX =>{
                 if lock.len() > 0 {
-                    for i in lock.iter(){
+                    let mut pop_off = self.displayed_hint.lock().unwrap();
+                    for hint in lock.iter(){
                         //return a hint to a param where there is no overlap
                         //TODO: Only give the suggestion once there is a comma present
-                        if i.hint_type == ArgumentType{
-                            return Some(i.suffix(0));
+                        if hint.hint_type == ArgumentType{
+                            *pop_off = Some(hint.display.to_string());
+
+                            return Some(hint.suffix(0));
                         }
                     }
                 }

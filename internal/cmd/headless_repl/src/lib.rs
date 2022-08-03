@@ -21,7 +21,7 @@ use std::sync::mpsc::{Receiver, Sender};
 use std::sync::{mpsc, Arc, RwLock, Mutex, RwLockReadGuard};
 
 use regex::{Captures, Regex};
-use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
 use std::thread;
 use std::thread::current;
 use std::time::Duration;
@@ -45,7 +45,8 @@ use crate::LSPSuggestionHelper::{CommandHint, current_line_ends_with};
 use rustyline_derive::{Completer, Helper, Hinter, Highlighter, Validator};
 
 
-// struct MyHelper(LSPSuggestionHelper::LSPSuggestionHelper);
+static CUR_LINE_NUM: AtomicUsize = AtomicUsize::new(0);
+
 
 #[derive(Completer, Helper, Validator)]
 struct MyHelper{
@@ -53,7 +54,6 @@ struct MyHelper{
     highlighter: Per_Char_Highlighter::MaskingHighlighter,
     tx_stdin: Sender<(String, usize)>,
 }
-
 
 
 impl Hinter for MyHelper {
@@ -69,16 +69,11 @@ impl Hinter for MyHelper {
 
         // println!("here are the hints length {}", hints.len());
         if let Some(hint) = self.hinter.best_hint_get_new(line){
-            // println!("there are hints");
             return Some(hint);
         }
-        // println!("not doing anything atm ! {}", line);
         //if not in there make a new write request with the current line
-
-        self.tx_stdin.send((line.to_string(), 0)).expect("failure sending when no hitns");
-        // return self.hint(line, pos, _ctx);
+        self.tx_stdin.send((line.to_string(), 0)).expect("failure sending when no hints");
         None
-        // None
         }
 
 }
@@ -101,7 +96,6 @@ impl Highlighter for MyHelper {
         }
     }
     fn highlight_hint<'h>(&self, hint: &'h str) -> Cow<'h, str> {
-        // println!("there is the hint {}", hint);
         Owned(format!("\x1b[1m{}\x1b[m", hint))
     }
 
@@ -117,7 +111,9 @@ impl Highlighter for MyHelper {
 
 #[derive(Clone)]
 struct CompleteHintHandler {
-    a: Arc<RwLock<HashSet<CommandHint>>> }
+    a: Arc<RwLock<HashSet<CommandHint>>>,
+    cur_hint: Arc<Mutex<Option<String>>>
+}
 impl ConditionalEventHandler for CompleteHintHandler {
     fn handle(&self, evt: &Event, _: RepeatCount, _: bool, ctx: &EventContext) -> Option<Cmd> {
         if !ctx.has_hint() {
@@ -128,6 +124,15 @@ impl ConditionalEventHandler for CompleteHintHandler {
             #[allow(clippy::if_same_then_else)]
             if *k == KeyEvent(KeyCode::Tab, Modifiers::NONE){
                 // self.a.read().unwrap().iter().for_each(|x|println!("hints! after completiopn {} {}", x.display, ctx.hint_text().unwrap(),ctx.));
+
+                //TODO: if you complete the hint then you pop the value off the hashset
+                // let mut lock = self.a.write().unwrap();
+                // let guard = self.cur_hint.lock().unwrap();
+                // if guard.is_some(){
+                //     let hint = guard.unwrap();
+                    // lock.remove(hint);
+                // }
+
                 Some(Cmd::CompleteHint)
             } else if *k == KeyEvent::alt('f') && ctx.line().len() == ctx.pos() {
                 let text = ctx.hint_text()?;
@@ -200,11 +205,6 @@ impl ConditionalEventHandler for RequestHelper {
 
 pub fn newMain() -> Result<()> {
 
-    let config = rustyline::Config::builder()
-        .history_ignore_space(true)
-        .completion_type(CompletionType::List)
-        // .edit_mode(EditMode::Emacs)
-        .build();
 
 
     //state buffer
@@ -247,18 +247,20 @@ pub fn newMain() -> Result<()> {
 
     let vals = storage.clone();
 
-    let skip_pos = Arc::new(RwLock::new(None));
+    let cur_hint: Arc<Mutex<Option<String>>> = Arc::new(Mutex::new(None));
+
     rl.set_helper(Some(MyHelper{ hinter: LSPSuggestionHelper::LSPSuggestionHelper {
         hints: vals,
-        skip_pos:skip_pos.clone()},
+        displayed_hint: cur_hint.clone()},
         highlighter: Per_Char_Highlighter::MaskingHighlighter { masking: true },
         tx_stdin
     }));
 
 
-
+    let complete_cur_hint = cur_hint.clone();
     let ceh = Box::new(CompleteHintHandler{
         a: completion_storage,
+        cur_hint: complete_cur_hint
     });
     let nex = ceh.clone();
     let other = ceh.clone();
