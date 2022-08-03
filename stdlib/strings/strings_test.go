@@ -7,7 +7,6 @@ package strings_test
 
 import (
 	"context"
-
 	"testing"
 
 	"github.com/influxdata/flux/dependency"
