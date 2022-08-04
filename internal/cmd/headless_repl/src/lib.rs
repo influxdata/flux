@@ -1,14 +1,16 @@
 #![allow(unused_imports)]
-mod multiLineState;
+mod MultiLineState;
 // mod invoke_go;
 mod LSPSuggestionHelper;
+mod Per_Char_Highlighter;
 mod processes;
 mod utils;
-mod Per_Char_Highlighter;
 use crate::processes::{invoke_go, lsp_invoke, start_go};
-
-use std::borrow::{Borrow, BorrowMut, Cow};
+//find imports whenever you get input
+//use regex gather all the imports and send it as a seperate document
+//those imports will be associated with all the files that are opened
 use std::borrow::Cow::{Borrowed, Owned};
+use std::borrow::{Borrow, BorrowMut, Cow};
 use std::collections::{HashSet, VecDeque};
 use std::fmt::Pointer;
 use std::io::{self, BufRead};
@@ -18,43 +20,42 @@ use std::str;
 use std::string::String;
 use std::sync::mpsc::channel;
 use std::sync::mpsc::{Receiver, Sender};
-use std::sync::{mpsc, Arc, RwLock, Mutex, RwLockReadGuard};
+use std::sync::{mpsc, Arc, Mutex, RwLock, RwLockReadGuard};
 
+use lsp_types::Command;
 use regex::{Captures, Regex};
 use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
 use std::thread;
 use std::thread::current;
 use std::time::Duration;
-use lsp_types::Command;
 
-use rustyline::error::ReadlineError;
-use rustyline::highlight::Highlighter;
-use rustyline::validate::{MatchingBracketValidator, ValidationContext, ValidationResult, Validator};
-use multiLineState::MultiLineState;
 use processes::lsp_invoke::{formulate_request, start_lsp};
 use rustyline::completion::Completer;
+use rustyline::error::ReadlineError;
+use rustyline::highlight::Highlighter;
 use rustyline::hint::{Hint, Hinter, HistoryHinter};
+use rustyline::validate::{
+    MatchingBracketValidator, ValidationContext, ValidationResult, Validator,
+};
 use rustyline::{
     Cmd, CompletionType, ConditionalEventHandler, Config, Context, EditMode, Editor, Event,
     EventContext, EventHandler, KeyCode, KeyEvent, Modifiers, RepeatCount, Result,
 };
-use rustyline::KeyCode::PageUp;
 
+use crate::processes::LSPRequestType::{DidOpen, Initialize, Initialized};
 use crate::utils::{process_response_flux, String_Buffer};
-use crate::LSPSuggestionHelper::{CommandHint, current_line_ends_with};
-use rustyline_derive::{Completer, Helper, Hinter, Highlighter, Validator};
-
+use crate::LSPSuggestionHelper::{current_line_ends_with, CommandHint};
+use crate::MultiLineState::MultiLineStateHolder;
+use rustyline_derive::{Completer, Helper, Highlighter, Hinter, Validator};
 
 static CUR_LINE_NUM: AtomicUsize = AtomicUsize::new(0);
 
-
 #[derive(Completer, Helper, Validator)]
-struct MyHelper{
+struct MyHelper {
     hinter: LSPSuggestionHelper::LSPSuggestionHelper,
     highlighter: Per_Char_Highlighter::MaskingHighlighter,
     tx_stdin: Sender<(String, usize)>,
 }
-
 
 impl Hinter for MyHelper {
     type Hint = CommandHint;
@@ -68,14 +69,15 @@ impl Hinter for MyHelper {
         }
 
         // println!("here are the hints length {}", hints.len());
-        if let Some(hint) = self.hinter.best_hint_get_new(line){
+        if let Some(hint) = self.hinter.best_hint_get_new(line) {
             return Some(hint);
         }
         //if not in there make a new write request with the current line
-        self.tx_stdin.send((line.to_string(), 0)).expect("failure sending when no hints");
+        self.tx_stdin
+            .send((line.to_string(), 0))
+            .expect("failure sending when no hints");
         None
-        }
-
+    }
 }
 
 impl Highlighter for MyHelper {
@@ -88,7 +90,6 @@ impl Highlighter for MyHelper {
         prompt: &'p str,
         default: bool,
     ) -> Cow<'b, str> {
-
         if default {
             Owned(format!("\x1b[1;32m{}\x1b[m", prompt))
         } else {
@@ -102,8 +103,9 @@ impl Highlighter for MyHelper {
     fn highlight_char(&self, line: &str, pos: usize) -> bool {
         let written = (line.parse().unwrap(), pos);
 
-        self.tx_stdin.send(written).expect("failure sending string from user stdin");
-
+        self.tx_stdin
+            .send(written)
+            .expect("failure sending string from user stdin");
 
         true
     }
@@ -112,7 +114,7 @@ impl Highlighter for MyHelper {
 #[derive(Clone)]
 struct CompleteHintHandler {
     a: Arc<RwLock<HashSet<CommandHint>>>,
-    cur_hint: Arc<RwLock<Option<String>>>
+    cur_hint: Arc<RwLock<Option<String>>>,
 }
 impl ConditionalEventHandler for CompleteHintHandler {
     fn handle(&self, evt: &Event, _: RepeatCount, _: bool, ctx: &EventContext) -> Option<Cmd> {
@@ -122,23 +124,14 @@ impl ConditionalEventHandler for CompleteHintHandler {
         if let Some(k) = evt.get(0) {
             println!("key event: {:?}", k);
             #[allow(clippy::if_same_then_else)]
-            if *k == KeyEvent(KeyCode::Tab, Modifiers::NONE){
-                // self.a.read().unwrap().iter().for_each(|x|println!("hints! after completiopn {} {}", x.display, ctx.hint_text().unwrap(),ctx.));
-
-                //TODO: if you complete the hint then you pop the value off the hashset
-                //lock the mutex for the current hint
+            if *k == KeyEvent(KeyCode::Tab, Modifiers::NONE) {
                 let mut cur = self.cur_hint.write().unwrap();
-                if cur.is_some(){
+                if cur.is_some() {
                     let mut lock = self.a.write().unwrap();
                     let search = cur.as_ref().unwrap().as_str();
-                    lock
-                        .retain(|x|x.display.as_str() != search);
+                    lock.retain(|x| x.display.as_str() != search);
                     *cur = None;
-                        // .find(|x|x.display.as_str() == search);
-
-                    // lock.remove(res.expect("failure somewhere"));
                 }
-
 
                 Some(Cmd::CompleteHint)
             } else if *k == KeyEvent::alt('f') && ctx.line().len() == ctx.pos() {
@@ -158,9 +151,8 @@ impl ConditionalEventHandler for CompleteHintHandler {
                     .collect::<String>();
 
                 Some(Cmd::Insert(1, text))
-            } else if *k == KeyEvent::ctrl('K') && ctx.line().len() == ctx.pos(){
+            } else if *k == KeyEvent::ctrl('K') && ctx.line().len() == ctx.pos() {
                 Some(Cmd::ClearScreen)
-
             } else {
                 None
             }
@@ -170,12 +162,8 @@ impl ConditionalEventHandler for CompleteHintHandler {
     }
 }
 
-
-
 struct TabEventHandler;
 impl ConditionalEventHandler for TabEventHandler {
-
-
     fn handle(&self, evt: &Event, n: RepeatCount, _: bool, ctx: &EventContext) -> Option<Cmd> {
         debug_assert_eq!(*evt, Event::from(KeyEvent::from('\t')));
         if ctx.line()[..ctx.pos()]
@@ -198,25 +186,21 @@ struct RequestHelper {
 unsafe impl Sync for RequestHelper {}
 impl ConditionalEventHandler for RequestHelper {
     fn handle(&self, evt: &Event, n: RepeatCount, _: bool, ctx: &EventContext) -> Option<Cmd> {
-
         // println!("interrupt time");
         self.suggestion_sender
             .send(ctx.line().to_string())
             .expect("Failed something lol");
 
         Some(Cmd::Noop)
-
     }
 }
 
-
-
-
 pub fn newMain() -> Result<()> {
-
-
-
     //state buffer
+    let import_reg = r#"import\s+\\"([\w\\/]+)\\""#;
+    //this will hold the imports from the captured regex capture group above captured on each enter key press
+    let imports: Arc<Mutex<Vec<String>>> = Arc::new(Mutex::new(vec![]));
+
     let state_buffer = Arc::new(RwLock::new(String_Buffer::new()));
     //copy for when the user enters a valid line
     let state_buffer_updater = state_buffer.clone();
@@ -226,14 +210,17 @@ pub fn newMain() -> Result<()> {
     //sending from when user presses enter
     let (tx_user, rx_user): (Sender<String>, Receiver<String>) = channel();
     //
-    let (tx_suggestion, rx_suggest): (Sender<(String, usize)>, Receiver<(String, usize)>) = channel();
-
-    //send from the ctrl z handler to the writer thread so that you can get suggestions
-    let (tx_suggestion_process, rx_suggestion_process): (Sender<(String, usize)>, Receiver<(String, usize)>) =
+    let (tx_suggestion, rx_suggest): (Sender<(String, usize)>, Receiver<(String, usize)>) =
         channel();
 
-    let (tx_stdin, rx_stdin): (Sender<(String, usize)>, Receiver<(String, usize)>) = channel();
+    //send from the ctrl z handler to the writer thread so that you can get suggestions
+    let (tx_suggestion_process, rx_suggestion_process): (
+        Sender<(String, usize)>,
+        Receiver<(String, usize)>,
+    ) = channel();
+    let (tx_flux_error, mut rx_flux_error): (Sender<bool>, Receiver<bool>) = channel();
 
+    let (tx_stdin, rx_stdin): (Sender<(String, usize)>, Receiver<(String, usize)>) = channel();
 
     let mut reader_block = Arc::new(AtomicBool::new(false));
     let mut reader_block_w = Arc::clone(&reader_block);
@@ -241,54 +228,50 @@ pub fn newMain() -> Result<()> {
 
     //spawning the editor with paste mode
     let mut paste: bool = false;
-    let mut paste_state = MultiLineState::new();
-
-
+    // let mut paste_state = MultiLineState::new();
 
     let mut rl = Editor::<MyHelper>::new();
 
-
     let storage = Arc::new(RwLock::new(HashSet::new()));
     let completion_storage = storage.clone();
-
-
-
 
     let vals = storage.clone();
 
     let cur_hint: Arc<RwLock<Option<String>>> = Arc::new(RwLock::new(None));
 
-    rl.set_helper(Some(MyHelper{ hinter: LSPSuggestionHelper::LSPSuggestionHelper {
-        hints: vals,
-        displayed_hint: cur_hint.clone()},
+    rl.set_helper(Some(MyHelper {
+        hinter: LSPSuggestionHelper::LSPSuggestionHelper {
+            hints: vals,
+            displayed_hint: cur_hint.clone(),
+        },
         highlighter: Per_Char_Highlighter::MaskingHighlighter { masking: true },
-        tx_stdin
+        tx_stdin,
     }));
 
-
     let complete_cur_hint = cur_hint.clone();
-    let ceh = Box::new(CompleteHintHandler{
+    let ceh = Box::new(CompleteHintHandler {
         a: completion_storage,
-        cur_hint: complete_cur_hint
+        cur_hint: complete_cur_hint,
     });
     let nex = ceh.clone();
     let other = ceh.clone();
     rl.bind_sequence(KeyEvent::ctrl('E'), EventHandler::Conditional(ceh.clone()));
     rl.bind_sequence(KeyEvent::alt('f'), EventHandler::Conditional(ceh));
 
-    rl.bind_sequence(KeyEvent(KeyCode::Tab, Modifiers::NONE), EventHandler::Conditional(nex));
+    rl.bind_sequence(
+        KeyEvent(KeyCode::Tab, Modifiers::NONE),
+        EventHandler::Conditional(nex),
+    );
     rl.bind_sequence(KeyEvent::ctrl('k'), EventHandler::Conditional(other));
-
-
-
 
     //spawn the lsp
     let mut child = start_lsp();
     let mut child_writer = child.stdin.take().unwrap();
     let mut child_reader = child.stdout.take().unwrap();
 
-
     let mut flux_child = start_go();
+
+    //get all imports
 
     //thread handler
     let mut thread_handlers = vec![];
@@ -313,12 +296,11 @@ pub fn newMain() -> Result<()> {
     }));
 
     let tx_a = tx_suggestion.clone();
-    thread_handlers.push(thread::spawn(move ||{
+    thread_handlers.push(thread::spawn(move || {
         loop {
             let (stdin_get, pos) = rx_stdin.recv().expect("failed to get string");
             // println!("got this string {:?}", stdin_get);
             tx_a.send((stdin_get, pos)).expect("failed sending");
-
         }
     }));
 
@@ -348,6 +330,8 @@ pub fn newMain() -> Result<()> {
         .expect("failure getting the stdin of the flux");
     //
     thread_handlers.push(thread::spawn(move || {
+        //adds all lines that are received
+        let mut lines = MultiLineState::MultiLineStateHolder::new();
         loop {
             let resp = rx_user
                 .recv()
@@ -355,10 +339,18 @@ pub fn newMain() -> Result<()> {
             //format what is received
             let message = invoke_go::form_output("Service.DidOutput", &resp)
                 .expect("failure making message for flux");
+            lines.add_string(resp.as_str());
             write!(flux_stdin, "{}", message).expect("failed to write to the flux run time");
+            // println!("testing {}", lines.resultString());
+            //check if error results or not
+            // thread::sleep(Duration::from_millis(100));
+            // let flux_error = rx_flux_error.recv().expect("failed to get flux error");
+            // println!("got the flux error back");
+            // if flux_error{
+            //     lines.remove_last_line();
+            // }
         }
     }));
-
 
     let mut flux_stdout = flux_child
         .stdout
@@ -367,7 +359,15 @@ pub fn newMain() -> Result<()> {
     let reader = BufReader::new(flux_stdout);
     thread_handlers.push(thread::spawn(move || {
         for line in reader.lines() {
-            process_response_flux(&line.unwrap());
+            let val = process_response_flux(&line.unwrap());
+            println!("here is the resilt pf the flux operation {}", val);
+            // tx_flux_error.send(val).expect("failed to send");
+            // if !val{
+            //     tx_flux_error.send(true).expect("failed to send flux error");
+            // }
+            // else{
+            //     tx_flux_error.send(false).expect("failed to send flux error");
+            // }
         }
     }));
 
@@ -392,20 +392,20 @@ pub fn newMain() -> Result<()> {
         }
         //getting data from the user thread read from the reading
         loop {
-            let (input,size) = rx_suggestion_process
+            let (input, size) = rx_suggestion_process
                 .recv()
                 .expect("failure getting from the ctrl z thread");
 
             //send did change then request completion
             tx_processed
                 .send(
-                    lsp_invoke::formulate_request("didChange", &input,size)
+                    lsp_invoke::formulate_request("didChange", &input, size)
                         .expect("invalid request type"),
                 )
                 .expect("fai;ed to send to writer from ctrlz");
             tx_processed
                 .send(
-                    lsp_invoke::formulate_request("completion", &input,size)
+                    lsp_invoke::formulate_request("completion", &input, size)
                         .expect("invalid request type"),
                 )
                 .expect("fai;ed to send to writer from ctrlz");
@@ -413,27 +413,29 @@ pub fn newMain() -> Result<()> {
     }));
 
     let mut clear_storage = storage.clone();
+    let import_adder = imports.clone();
+    let import_pat = Regex::new(import_reg).unwrap();
+    let testing = Regex::new(r#"import\s+"([\w\\/]+)""#).unwrap();
     loop {
         let readline = rl.readline(">> ");
-
-        // rl.helper().unwrap().hinter.print_hints();
-
         match readline {
             Ok(line) => {
-                // rl.add_history_entry(line.as_str());
-                if paste {
-
-                    paste_state.addRecord(line.to_string());
+                rl.add_history_entry(line.as_str());
+                if let Some(caps) = testing.captures(line.as_str()) {
+                    println!("{:?} some really cool captures", caps);
                 }
-
+                // if import_pat.is_match(line.as_str()) {
+                //     println!("there is a match in this string right there");
+                // }
+                let mut lock = import_adder.lock().unwrap();
+                //add the string that was entered
+                lock.push(line.to_string());
 
                 // println!("Line: {}", line);
-                rl.add_history_entry(line.as_str());
-                if !paste {
+                // rl.add_history_entry(line.as_str());
 
-                    tx_user.send(line).expect("Failure getting user input!");
-                    // tx_suggestion.send(&line).expect("failure sending to get suggestions")
-                }
+                //send to flux block until get response back?
+                tx_user.send(line).expect("Failure getting user input!");
             }
             Err(ReadlineError::Interrupted) => {
                 println!("CTRL-C");
@@ -442,17 +444,7 @@ pub fn newMain() -> Result<()> {
             Err(ReadlineError::Eof) => {
                 paste = !paste;
                 println!("CTRL-D: Paste mode is {}", paste);
-
-                if !paste && paste_state.entries() > 0 {
-                    // rl.helper_mut().expect("No helper").masking = true;
-                    // rl.add_history_entry(paste_state.resultString());
-                }
-                //clear the vec
-                if paste == false {
-                    paste_state.cleanse();
-                }
                 continue;
-
             }
             Err(err) => {
                 println!("Error: {:?}", err);
@@ -461,12 +453,9 @@ pub fn newMain() -> Result<()> {
         }
         let mut clear = clear_storage.write().unwrap();
         clear.clear()
-
-
     }
     for h in thread_handlers {
         h.join().expect("joining failed");
     }
     Ok(())
 }
-

@@ -1,19 +1,17 @@
-use std::borrow::Cow;
-use std::borrow::Cow::{Borrowed, Owned};
-use rustyline::highlight::Highlighter;
-use rustyline_derive::{Validator,Hinter,Helper,Completer};
-use rustyline::error::ReadlineError;
-use rustyline::validate::{MatchingBracketValidator, ValidationContext, ValidationResult, Validator};
 use rustyline::completion::Completer;
+use rustyline::error::ReadlineError;
+use rustyline::highlight::Highlighter;
 use rustyline::hint::{Hint, Hinter, HistoryHinter};
+use rustyline::validate::{
+    MatchingBracketValidator, ValidationContext, ValidationResult, Validator,
+};
 use rustyline::{
     Cmd, CompletionType, ConditionalEventHandler, Config, Context, EditMode, Editor, Event,
     EventContext, EventHandler, KeyCode, KeyEvent, Modifiers, RepeatCount, Result,
 };
-
-
-
-
+use rustyline_derive::{Completer, Helper, Hinter, Validator};
+use std::borrow::Cow;
+use std::borrow::Cow::{Borrowed, Owned};
 
 #[derive(Completer, Helper, Hinter, Validator)]
 pub struct MaskingHighlighter {
