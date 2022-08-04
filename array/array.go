@@ -211,13 +211,28 @@ func Slice(arr Array, i, j int) Array {
 }
 
 func ToFloatConv(mem memory.Allocator, arr Array) (*Float, error) {
-	conv := NewFloatBuilder(mem)
-	size := arr.Len()
 
+	// Skip building a new array if the incoming array is already floats
+	if fa, ok := arr.(*Float); ok {
+		// For any other input type case, we create a brand new array.
+		// This implies the caller is responsible for releasing the input array.
+		// Tick up the refcount before handing the array right back to the caller
+		// to avoid a use-after-free situation.
+		fa.Retain()
+		return fa, nil
+	}
+
+	conv := NewFloatBuilder(mem)
+	defer conv.Release()
+
+	size := arr.Len()
+	conv.Resize(size)
+
+	// n.b. we handle the arrow.FLOAT64 case at the top of this func so we don't
+	// have to handle it here in this switch.
 	switch arr.DataType().ID() {
 	case arrow.STRING:
 		vec := arr.(*String)
-		conv.Resize(size)
 		for i := 0; i < size; i++ {
 			if vec.IsNull(i) {
 				conv.AppendNull()
@@ -232,7 +247,6 @@ func ToFloatConv(mem memory.Allocator, arr Array) (*Float, error) {
 		}
 	case arrow.INT64:
 		vec := arr.(*Int)
-		conv.Resize(size)
 		for i := 0; i < size; i++ {
 			if vec.IsNull(i) {
 				conv.AppendNull()
@@ -242,7 +256,6 @@ func ToFloatConv(mem memory.Allocator, arr Array) (*Float, error) {
 		}
 	case arrow.UINT64:
 		vec := arr.(*Uint)
-		conv.Resize(size)
 		for i := 0; i < size; i++ {
 			if vec.IsNull(i) {
 				conv.AppendNull()
@@ -250,11 +263,8 @@ func ToFloatConv(mem memory.Allocator, arr Array) (*Float, error) {
 				conv.Append(float64(vec.Value(i)))
 			}
 		}
-	case arrow.FLOAT64:
-		return arr.(*Float), nil
 	case arrow.BOOL:
 		vec := arr.(*Boolean)
-		conv.Resize(size)
 		for i := 0; i < size; i++ {
 			if vec.IsNull(i) {
 				conv.AppendNull()
@@ -268,6 +278,5 @@ func ToFloatConv(mem memory.Allocator, arr Array) (*Float, error) {
 		return nil, errors.Newf(codes.Invalid, "cannot convert %v to Float", arr.DataType().Name())
 	}
 
-	defer conv.Release()
 	return conv.NewFloatArray(), nil
 }
