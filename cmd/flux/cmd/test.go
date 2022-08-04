@@ -352,7 +352,10 @@ func (t *TestRunner) Gather(roots []string) error {
 
 		ctx := filesystem.Inject(context.Background(), fs)
 		// check for the duplicate testcase names
-		seen := make(map[string]struct{})
+		type testcaseLoc struct {
+			loc *ast.SourceLocation
+		}
+		seen := make(map[string]testcaseLoc)
 		for _, file := range files {
 			q, err := filesystem.ReadFile(ctx, file.path)
 			if err != nil {
@@ -362,7 +365,7 @@ func (t *TestRunner) Gather(roots []string) error {
 			if len(baseAST.Files) > 0 {
 				baseAST.Files[0].Name = file.path
 			}
-			tcnames, asts, err := testcase.Transform(ctx, baseAST, modules)
+			tcidens, asts, err := testcase.Transform(ctx, baseAST, modules)
 			if err != nil {
 				return err
 			}
@@ -373,15 +376,15 @@ func (t *TestRunner) Gather(roots []string) error {
 					return err
 				}
 				if invalid := invalidTags(tags, mods.Tags(file.module)); len(invalid) != 0 {
-					return errors.Newf(codes.Invalid, "testcase %q, contains invalid tags %v, valid tags are: %v", tcnames[i], invalid, mods.Tags(file.module))
+					return errors.Newf(codes.Invalid, "testcase %q, contains invalid tags %v, valid tags are: %v", tcidens[i].Name, invalid, mods.Tags(file.module))
 				}
-				pkgTest := pkg + "." + tcnames[i]
+				pkgTest := pkg + "." + tcidens[i].Name
 				if _, ok := seen[pkgTest]; ok {
-					return errors.Newf(codes.AlreadyExists, "testcase name %q, already exists in package %q", tcnames[i], pkg)
+					return errors.Newf(codes.AlreadyExists, "duplicate testcase name %q, found in package %q, at locations %v and %v", tcidens[i].Name, pkg, seen[pkgTest].loc.String(), tcidens[i].Loc.String())
 				}
-				test := NewTest(tcnames[i], astf, tags, pkg)
+				test := NewTest(tcidens[i].Name, astf, tags, pkg)
 				t.tests = append(t.tests, &test)
-				seen[pkgTest] = struct{}{}
+				seen[pkgTest] = testcaseLoc{tcidens[i].Loc}
 			}
 		}
 	}

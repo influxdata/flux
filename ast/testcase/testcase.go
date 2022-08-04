@@ -61,7 +61,7 @@ import (
 // It is allowed for an imported testcase to have an option, but no attempt is made
 // to remove duplicate options. If there is a duplicate option, this will likely
 // cause an error when the test is actually run.
-func Transform(ctx context.Context, pkg *ast.Package, modules TestModules) ([]string, []*ast.Package, error) {
+func Transform(ctx context.Context, pkg *ast.Package, modules TestModules) ([]*ast.Identifier, []*ast.Package, error) {
 	if len(pkg.Files) != 1 {
 		return nil, nil, errors.Newf(codes.FailedPrecondition, "unsupported number of files in test case package, got %d", len(pkg.Files))
 	}
@@ -80,7 +80,7 @@ func Transform(ctx context.Context, pkg *ast.Package, modules TestModules) ([]st
 	}
 
 	var (
-		names = make([]string, 0, n)
+		idens = make([]*ast.Identifier, 0, n)
 		pkgs  = make([]*ast.Package, 0, n)
 	)
 	for _, item := range file.Body {
@@ -93,11 +93,11 @@ func Transform(ctx context.Context, pkg *ast.Package, modules TestModules) ([]st
 		if err != nil {
 			return nil, nil, err
 		}
-		names = append(names, testcase.ID.Name)
+		idens = append(idens, testcase.ID)
 		pkgs = append(pkgs, testpkg)
 	}
 
-	return names, pkgs, nil
+	return idens, pkgs, nil
 }
 
 func newTestPackage(ctx context.Context, basePkg *ast.Package, preamble []ast.Statement, tc *ast.TestCaseStatement, modules TestModules) (*ast.Package, error) {

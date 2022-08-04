@@ -51,12 +51,16 @@ testcase test_subtraction {
 
 	d := parser.ParseSource(testFile)
 
-	names, transformed, err := testcase.Transform(context.Background(), d, nil)
+	idens, transformed, err := testcase.Transform(context.Background(), d, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
+	testNames := make([]string, len(idens))
+	for i := range idens {
+		testNames[i] = idens[i].Name
+	}
 
-	if want, got := []string{"test_addition", "test_subtraction"}, names; !cmp.Equal(want, got) {
+	if want, got := []string{"test_addition", "test_subtraction"}, testNames; !cmp.Equal(want, got) {
 		t.Errorf("unexpected test names: -want/+got:\n%s", cmp.Diff(want, got))
 	}
 	if !cmp.Equal(expected, transformed, asttest.IgnoreBaseNodeOptions...) {
@@ -114,7 +118,7 @@ testcase b extends "flux/a/a_test.a" {
 	}
 	pkg.Files[0].Name = "b/b_test.flux"
 
-	names, pkgs, err := testcase.Transform(ctx, pkg, testcase.TestModules{
+	idens, pkgs, err := testcase.Transform(ctx, pkg, testcase.TestModules{
 		"flux": testcase.TestModule{
 			Service: fs,
 		},
@@ -122,8 +126,11 @@ testcase b extends "flux/a/a_test.a" {
 	if err != nil {
 		t.Fatalf("unexpected error: %s", err)
 	}
-
-	if want, got := []string{"b"}, names; !cmp.Equal(want, got) {
+	testNames := make([]string, len(idens))
+	for i := range idens {
+		testNames[i] = idens[i].Name
+	}
+	if want, got := []string{"b"}, testNames; !cmp.Equal(want, got) {
 		t.Fatalf("unexpected testcase names -want/+got:\n%s", cmp.Diff(want, got))
 	}
 
