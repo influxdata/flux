@@ -197,7 +197,7 @@ impl LSPSuggestionHelper{
                     for hint in lock.iter(){
                         //return a hint to a param where there is no overlap
                         //TODO: Only give the suggestion once there is a comma present
-                        if hint.hint_type == ArgumentType{
+                        if hint.hint_type == ArgumentType && valid_arg(line){
                             *pop_off = Some(hint.display.to_string());
 
                             return Some(hint.suffix(0));
@@ -238,7 +238,7 @@ pub(crate) fn current_line_ends_with(line: &str, comp: &str) -> Option<(usize, u
 mod tests_overlap {
     use std::collections::HashSet;
     use std::sync::{Arc, RwLock};
-    use crate::LSPSuggestionHelper::{better_overlap, LSPSuggestionHelper, valid_checker};
+    use crate::LSPSuggestionHelper::{better_overlap, LSPSuggestionHelper, valid_arg, valid_checker};
 
     #[test]
     fn overlap_test_one() {
@@ -293,10 +293,36 @@ mod tests_overlap {
         assert_eq!(valid_checker(a,cur,goal), true)
     }
 
+    #[test]
+    fn test_valid_arg_one(){
+        //say if the next arg can be given this one is valid
+        let line = "arg1: \"test\", arg2:\"other\"";
+        assert_eq!(valid_arg(line),false)
+    }
+
+    #[test]
+    fn valid_args(){
+        let line = "x=duration(arg:\"testing\"," ;
+        assert_eq!(valid_arg(line),true)
+    }
+
+
 
 
 
 }
+
+fn valid_arg(line: &str) -> bool{
+    // let reg = r#"([A-Za-z0-9_]+\s*\:\s*[\w()\"]+)((\s*,\s*[A-Za-z0-9_]+\s*\:\s*[\w()\"]+)*,)"#;
+    let reg_two = r#"(\w+\(([A-Za-z0-9_]+\s*\:\s*[\w()\"]+)((\s*,\s*[A-Za-z0-9_]+\s*\:\s*[\w()\"]+)*,))"#;
+    //cut white space off
+    let cleaned = line.trim_end();
+    if cleaned.ends_with(","){
+        return true;
+    }
+    false
+}
+
 
 //use time based threshold and wait till the user stops typing to offer and get completions
 //watch for comma in the figures

@@ -137,10 +137,6 @@ impl ConditionalEventHandler for CompleteHintHandler {
                         // .find(|x|x.display.as_str() == search);
 
                     // lock.remove(res.expect("failure somewhere"));
-
-
-
-
                 }
 
 
