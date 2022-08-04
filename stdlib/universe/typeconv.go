@@ -376,24 +376,22 @@ var vectorizedFloatConv = values.NewFunction(
 		case semantic.Vector:
 			vec := v.Vector()
 
-			if vec.IsRepeat() {
-				float, err := toFloatValue(v.(*values.VectorRepeatValue).Value())
+			// Delegate to row-based version when the value is constant
+			if vr, ok := vec.(*values.VectorRepeatValue); ok {
+				fv, err := toFloatValue(vr.Value())
 				if err != nil {
 					return nil, err
 				}
-
-				return values.NewVectorRepeatValue(float), nil
+				return values.NewVectorRepeatValue(fv), nil
 			}
 
-			arr, err := array.ToFloatConv(mem, v.Vector().Arr())
-
+			arr, err := array.ToFloatConv(mem, vec.Arr())
 			if err != nil {
 				return nil, err
 			}
-
 			return values.NewFloatVectorValue(arr), nil
 		default:
-			return nil, errors.Newf(codes.Invalid, "cannot convert %v to v[Float]", v.Type())
+			return nil, errors.Newf(codes.Invalid, "cannot convert %v to v[float]", v.Type())
 		}
 
 	},
