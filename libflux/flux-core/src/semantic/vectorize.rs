@@ -157,6 +157,7 @@ impl Expression {
             {
                 wrap_vec_repeat(expr.clone())
             }
+            Expression::Call(expr) => Expression::Call(Box::new(expr.vectorize(env)?)),
             _ => {
                 return Err(located(
                     self.loc().clone(),
@@ -164,6 +165,51 @@ impl Expression {
                 ));
             }
         })
+    }
+}
+
+impl CallExpr {
+    fn vectorize(&self, env: &VectorizeEnv) -> Result<Self> {
+        match &self.callee {
+            Expression::Identifier(IdentifierExpr { name, .. }) => {
+                if name == "float" && self.arguments.len() == 1 && self.arguments[0].key.name == "v"
+                {
+                    // FIXME: this will rewrite any call to float, not just those inside functions
+                    //   passed to `map()`.
+                    let v = &self.arguments[0];
+                    let arguments = vec![Property {
+                        loc: v.loc.clone(),
+                        key: v.key.clone(),
+                        value: v.value.vectorize(env)?,
+                    }];
+                    // FIXME: can we lookup the symbol from stdlib without building it by hand?
+                    let callee = Expression::Identifier(IdentifierExpr {
+                        loc: Default::default(),
+                        typ: MonoType::vector(MonoType::FLOAT),
+                        name: Symbol::from("_vectorizedFloat"), // FIXME
+                    });
+                    Ok(CallExpr {
+                        loc: self.loc.clone(),
+                        typ: MonoType::vector(self.typ.clone()),
+                        callee,
+                        arguments,
+                        pipe: self.pipe.clone(),
+                    })
+                } else {
+                    Err(located(
+                        self.loc.clone(),
+                        ErrorKind::UnableToVectorize(format!(
+                            "cannot vectorize call expression: {}",
+                            name
+                        )),
+                    ))
+                }
+            }
+            _ => Err(located(
+                self.loc.clone(),
+                ErrorKind::UnableToVectorize("cannot vectorize call expression".into()),
+            )),
+        }
     }
 }
 

@@ -1,10 +1,11 @@
 use super::*;
 use crate::semantic::{
-    import::Packages,
+    bootstrap,
     nodes::{FunctionExpr, Package},
     walk::{walk, Node},
     AnalyzerConfig, Feature,
 };
+use std::path::PathBuf;
 
 fn analyzer_config() -> AnalyzerConfig {
     AnalyzerConfig {
@@ -19,7 +20,14 @@ fn analyzer_config() -> AnalyzerConfig {
 }
 
 fn vectorize(src: &str) -> anyhow::Result<Package> {
-    let mut analyzer = Analyzer::new(Default::default(), Packages::default(), analyzer_config());
+    let stdlib_path = PathBuf::from(concat!(env!("CARGO_MANIFEST_DIR"), "/../../stdlib"))
+        .canonicalize()
+        .expect("stdlib path");
+
+    let cfg = analyzer_config();
+    let (prelude, imports, _sem_pkgs) = bootstrap::infer_stdlib_dir(&stdlib_path, cfg.clone())?;
+
+    let mut analyzer = Analyzer::new((&prelude).into(), &imports, cfg);
     let (_, pkg) = analyzer
         .analyze_source("main".into(), "".into(), src)
         .map_err(|err| err.error)?;
@@ -383,5 +391,21 @@ fn vectorize_with_conditional_expr() -> anyhow::Result<()> {
         .assert_eq(&crate::semantic::formatter::format_node(
             Node::FunctionExpr(function),
         )?);
+    Ok(())
+}
+
+#[test]
+fn vectorize_with_float_calls() -> anyhow::Result<()> {
+    let pkg = vectorize(r#"(r) => ({ r with a: float(v: r._value) })"#).unwrap();
+
+    let function = get_vectorized_function(&pkg);
+
+    // FIXME: expect still needs updating
+    expect_test::expect![[r##"
+        (r) => {
+            return {r:{#E with _value: v[#D]} with a: _vectorizedFloat:v[float](v: r:{#E with _value: v[#D]}._value:v[#D]):v[float]}:{#E with a: v[float], _value: v[#D]}
+        }:(r: {#E with _value: v[#D]}) => {#E with a: v[float], _value: v[#D]}"##]].assert_eq(&crate::semantic::formatter::format_node(
+        Node::FunctionExpr(function),
+    )?);
     Ok(())
 }
