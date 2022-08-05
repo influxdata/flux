@@ -20,19 +20,11 @@ use std::ptr::write;
 use std::str;
 use std::str::from_utf8;
 use std::string::String;
+use std::sync::atomic::AtomicUsize;
 use std::sync::mpsc::Sender;
 use std::sync::{Arc, Mutex, RwLock};
-use std::sync::atomic::AtomicUsize;
 use tower_lsp::jsonrpc;
 use tower_lsp::jsonrpc::RequestBuilder;
-// use crate::Mutex;
-// use process_completion::;
-
-// use std::simd::usizex2;
-
-// pub struct FluxExecutor {
-//     child: Child,
-// }
 
 pub fn start_go() -> Child {
     let mut child = Command::new("./main")
@@ -70,7 +62,6 @@ pub fn form_output(request_type: &str, text: &str) -> Result<String, OutputError
             let res = serde_json::to_string(&a).unwrap();
 
             println!("{}", res);
-            // {"jsonrpc":"2.0", "method": "Service.DidOutput", "id": "1", "title":"testing","body":"dog", "params":[{"input":"x=1"}]}
             Ok(res)
         }
         _ => Err(InvalidMethod),
@@ -96,7 +87,7 @@ pub fn read_json_rpc(child_stdout: ChildStdout, mut storage: Arc<RwLock<HashSet<
             if read_exact.1 == 0 {
                 //final result
                 let resp = str::from_utf8(&buf).unwrap();
-                // println!("{}", resp);
+                println!("{}", resp);
                 if let Some(val) = process_completions_response(&resp) {
                     //since this is a write operation you need to lock
                     let mut write_lock = storage.write().unwrap();

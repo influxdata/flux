@@ -5,7 +5,7 @@ mod LSPSuggestionHelper;
 mod Per_Char_Highlighter;
 mod processes;
 mod utils;
-use crate::processes::{invoke_go, lsp_invoke, start_go};
+use crate::processes::{invoke_go, join_imports, lsp_invoke, start_go};
 //find imports whenever you get input
 //use regex gather all the imports and send it as a seperate document
 //those imports will be associated with all the files that are opened
@@ -64,7 +64,6 @@ impl Hinter for MyHelper {
         // println!("hint is running ! ");
         let hints = self.hinter.hints.read().unwrap();
         if line.is_empty() || pos < line.len() {
-            println!("line is empty");
             return None;
         }
 
@@ -199,7 +198,7 @@ pub fn newMain() -> Result<()> {
     //state buffer
     let import_reg = r#"import\s+\\"([\w\\/]+)\\""#;
     //this will hold the imports from the captured regex capture group above captured on each enter key press
-    let imports: Arc<Mutex<Vec<String>>> = Arc::new(Mutex::new(vec![]));
+    let imports: Arc<Mutex<HashSet<String>>> = Arc::new(Mutex::new(HashSet::new()));
 
     let state_buffer = Arc::new(RwLock::new(String_Buffer::new()));
     //copy for when the user enters a valid line
@@ -210,13 +209,12 @@ pub fn newMain() -> Result<()> {
     //sending from when user presses enter
     let (tx_user, rx_user): (Sender<String>, Receiver<String>) = channel();
     //
-    let (tx_suggestion, rx_suggest): (Sender<(String, usize)>, Receiver<(String, usize)>) =
-        channel();
+    let (tx_suggestion, rx_suggest): (Sender<(String, bool)>, Receiver<(String, bool)>) = channel();
 
     //send from the ctrl z handler to the writer thread so that you can get suggestions
     let (tx_suggestion_process, rx_suggestion_process): (
-        Sender<(String, usize)>,
-        Receiver<(String, usize)>,
+        Sender<(String, bool)>,
+        Receiver<(String, bool)>,
     ) = channel();
     let (tx_flux_error, mut rx_flux_error): (Sender<bool>, Receiver<bool>) = channel();
 
@@ -290,6 +288,7 @@ pub fn newMain() -> Result<()> {
                 .expect("failure getting from processor thread");
             // println!("getting this {}", &resp);
             // println!("this is to be sent {}", resp);
+            println!("here is what is to be written {}", resp);
             write!(&mut child_writer, "{}", resp).unwrap();
             reader_block_w.swap(true, Ordering::Relaxed);
         }
@@ -300,17 +299,19 @@ pub fn newMain() -> Result<()> {
         loop {
             let (stdin_get, pos) = rx_stdin.recv().expect("failed to get string");
             // println!("got this string {:?}", stdin_get);
-            tx_a.send((stdin_get, pos)).expect("failed sending");
+            tx_a.send((stdin_get, true)).expect("failed sending");
         }
     }));
 
     //when ctrl z is pressed meaning that the user wants suggestions with the current line
+    let tx_importer = tx_suggestion_process.clone();
+
     thread_handlers.push(thread::spawn(move || {
         loop {
-            let line = rx_suggest.recv().expect("failure getting from ctrl z");
+            let (line, x) = rx_suggest.recv().expect("failure getting from ctrl z");
             // println!("got this line from the suggestion bit {}", line);
             tx_suggestion_process
-                .send(line)
+                .send((line, true))
                 .expect("failure sending to processor")
             //send a did update
         }
@@ -341,14 +342,6 @@ pub fn newMain() -> Result<()> {
                 .expect("failure making message for flux");
             lines.add_string(resp.as_str());
             write!(flux_stdin, "{}", message).expect("failed to write to the flux run time");
-            // println!("testing {}", lines.resultString());
-            //check if error results or not
-            // thread::sleep(Duration::from_millis(100));
-            // let flux_error = rx_flux_error.recv().expect("failed to get flux error");
-            // println!("got the flux error back");
-            // if flux_error{
-            //     lines.remove_last_line();
-            // }
         }
     }));
 
@@ -361,19 +354,13 @@ pub fn newMain() -> Result<()> {
         for line in reader.lines() {
             let val = process_response_flux(&line.unwrap());
             println!("here is the resilt pf the flux operation {}", val);
-            // tx_flux_error.send(val).expect("failed to send");
-            // if !val{
-            //     tx_flux_error.send(true).expect("failed to send flux error");
-            // }
-            // else{
-            //     tx_flux_error.send(false).expect("failed to send flux error");
-            // }
         }
     }));
 
     //processing thread that will send to the writer thread after processing into a request
     //init array
-    let init = ["initialize", "initialized", "didOpen"];
+
+    let init = ["initialize", "initialized", "didOpen", "importOpen"];
     let mut res = init
         .iter()
         .map(|x| formulate_request(x, "", 0).unwrap())
@@ -392,49 +379,76 @@ pub fn newMain() -> Result<()> {
         }
         //getting data from the user thread read from the reading
         loop {
-            let (input, size) = rx_suggestion_process
+            let (input, main_file) = rx_suggestion_process
                 .recv()
                 .expect("failure getting from the ctrl z thread");
+            if main_file {
+                tx_processed
+                    .send(
+                        //NOTE: pos arg is deprecated
+                        lsp_invoke::formulate_request("didChange", &input, 0)
+                            .expect("invalid request type"),
+                    )
+                    .expect("fai;ed to send to writer from ctrlz");
+                println!("sent the completion normal {}", &input);
+                tx_processed
+                    .send(
+                        lsp_invoke::formulate_request("completion", &input, 0)
+                            .expect("invalid request type"),
+                    )
+                    .expect("fai;ed to send to writer from ctrlz");
+            } else {
+                //for changing the import doc
+                println!("sending to the other file atm");
+                tx_processed
+                    .send(
+                        //NOTE: pos arg is deprecated
+                        lsp_invoke::formulate_request("importChange", &input, 0)
+                            .expect("invalid request type"),
+                    )
+                    .expect("failed to send to writer from ctrlz");
+                println!("sent first");
+                tx_processed
+                    .send(
+                        lsp_invoke::formulate_request("completion", &input, 0)
+                            .expect("invalid request type"),
+                    )
+                    .expect("fai;ed to send to writer from ctrlz");
+                println!("sent second");
+
+                tx_processed
+                    .send(
+                        lsp_invoke::formulate_request("completion", &input, 0)
+                            .expect("invalid request type"),
+                    )
+                    .expect("fai;ed to send to writer from ctrlz");
+                println!("sent third");
+            }
 
             //send did change then request completion
-            tx_processed
-                .send(
-                    lsp_invoke::formulate_request("didChange", &input, size)
-                        .expect("invalid request type"),
-                )
-                .expect("fai;ed to send to writer from ctrlz");
-            tx_processed
-                .send(
-                    lsp_invoke::formulate_request("completion", &input, size)
-                        .expect("invalid request type"),
-                )
-                .expect("fai;ed to send to writer from ctrlz");
         }
     }));
-
     let mut clear_storage = storage.clone();
     let import_adder = imports.clone();
-    let import_pat = Regex::new(import_reg).unwrap();
-    let testing = Regex::new(r#"import\s+"([\w\\/]+)""#).unwrap();
+    let import_pat = Regex::new(r#"^import\s+"([\w\\/]+)"\s*$"#).unwrap();
     loop {
         let readline = rl.readline(">> ");
         match readline {
             Ok(line) => {
                 rl.add_history_entry(line.as_str());
-                if let Some(caps) = testing.captures(line.as_str()) {
-                    println!("{:?} some really cool captures", caps);
+                if import_pat.is_match(line.as_str()) {
+                    let mut lock = imports.lock().unwrap();
+                    lock.insert(line.clone().to_string());
+
+                    for i in lock.iter() {
+                        println!("v: {}", i);
+                    }
+
+                    let imported_log = join_imports(lock, "\n");
+                    tx_importer
+                        .send((imported_log, false))
+                        .expect("failed to send the import file ");
                 }
-                // if import_pat.is_match(line.as_str()) {
-                //     println!("there is a match in this string right there");
-                // }
-                let mut lock = import_adder.lock().unwrap();
-                //add the string that was entered
-                lock.push(line.to_string());
-
-                // println!("Line: {}", line);
-                // rl.add_history_entry(line.as_str());
-
-                //send to flux block until get response back?
                 tx_user.send(line).expect("Failure getting user input!");
             }
             Err(ReadlineError::Interrupted) => {

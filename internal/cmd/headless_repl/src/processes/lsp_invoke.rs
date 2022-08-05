@@ -14,6 +14,7 @@ use lsp_types::{
 };
 use serde_json::Result as Result_Json;
 use serde_json::{json, json_internal, Value};
+use std::collections::HashSet;
 use std::fmt::{format, Debug};
 use std::io::{BufRead, BufReader, BufWriter, Read, Write};
 use std::net::TcpStream;
@@ -32,7 +33,7 @@ use serde_json::value::Serializer;
 use std::str;
 use std::string::ParseError;
 use std::sync::atomic::{AtomicUsize, Ordering};
-use std::sync::mpsc;
+use std::sync::{mpsc, Arc, Mutex, MutexGuard};
 use tower_lsp::jsonrpc::{Method, RequestBuilder};
 
 pub fn add_headers(a: String) -> String {
@@ -71,6 +72,7 @@ pub fn formulate_request(request_type: &str, text: &str, pos: usize) -> Result<S
     //only want plaintext over snippets
     //completion item kinds
     //kind 5 may be
+    //change request_type to an enum
     match request_type {
         "initialize" => {
             let req: RequestBuilder = jsonrpc::Request::build(Initialize::METHOD)
@@ -283,4 +285,20 @@ pub fn start_lsp() -> Child {
         .spawn()
         .expect("failure to execute");
     child
+}
+
+pub fn join_imports(lock: MutexGuard<HashSet<String>>, delim: &str) -> String {
+    if lock.len() == 0 {
+        return String::from("");
+    }
+
+    let new_size: usize = lock.iter().map(|x| x.len()).sum::<usize>() + (delim.len() * lock.len());
+    let mut res = String::with_capacity(new_size);
+    let mut lock_iter = lock.iter();
+    for i in lock_iter {
+        res.push_str(i.as_str());
+        res.push_str(delim);
+    }
+
+    return res;
 }

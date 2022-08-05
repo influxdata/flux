@@ -51,12 +51,6 @@ impl From<u64> for HintType {
     }
 }
 
-// impl Hash for HintType{
-//     fn hash<H: Hasher>(&self, state: &mut H) {
-//         todo!()
-//     }
-// }
-
 impl Clone for HintType {
     fn clone(&self) -> Self {
         match self {
@@ -86,13 +80,7 @@ pub fn process_completions_response(resp: &str) -> Option<HashSet<CommandHint>> 
             };
 
             let kind = x["kind"].as_u64().unwrap();
-            // println!("val {} kind: {}",val, kind);
             if let Some(detail) = x["detail"].as_str() {
-                if val == "toFloat" {
-                    // println!("here is the jsson version{:?}", json_bit);
-                    // println!("deatils for float {}",detail );
-                }
-                // println!("{} here is the detail", detail);
                 let split = detail.split("->").collect::<Vec<&str>>();
                 if split[0].contains("<-") {
                     set.insert(CommandHint::new(val, val, kind.into(), None));
