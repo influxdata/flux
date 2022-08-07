@@ -13,6 +13,7 @@ use std::borrow::Cow::{Borrowed, Owned};
 use std::borrow::{Borrow, BorrowMut, Cow};
 use std::collections::{HashSet, VecDeque};
 use std::fmt::Pointer;
+use std::hash::Hash;
 use std::io::{self, BufRead};
 use std::io::{BufReader, Read, Write};
 use std::ops::Add;
@@ -101,6 +102,7 @@ impl Highlighter for MyHelper {
 
     fn highlight_char(&self, line: &str, pos: usize) -> bool {
         let written = (line.parse().unwrap(), pos);
+        // println!("sending the written {}", written.0);
 
         self.tx_stdin
             .send(written)
@@ -236,7 +238,7 @@ pub fn newMain() -> Result<()> {
     let vals = storage.clone();
 
     let cur_hint: Arc<RwLock<Option<String>>> = Arc::new(RwLock::new(None));
-
+    let helper_imports = imports.clone();
     rl.set_helper(Some(MyHelper {
         hinter: LSPSuggestionHelper::LSPSuggestionHelper {
             hints: vals,
@@ -310,6 +312,7 @@ pub fn newMain() -> Result<()> {
         loop {
             let (line, x) = rx_suggest.recv().expect("failure getting from ctrl z");
             // println!("got this line from the suggestion bit {}", line);
+
             tx_suggestion_process
                 .send((line, true))
                 .expect("failure sending to processor")
@@ -353,7 +356,6 @@ pub fn newMain() -> Result<()> {
     thread_handlers.push(thread::spawn(move || {
         for line in reader.lines() {
             let val = process_response_flux(&line.unwrap());
-            println!("here is the resilt pf the flux operation {}", val);
         }
     }));
 
@@ -383,17 +385,20 @@ pub fn newMain() -> Result<()> {
                 .recv()
                 .expect("failure getting from the ctrl z thread");
             if main_file {
+                let mut imported_strings = join_imports(helper_imports.lock().unwrap(), "\n");
+                imported_strings.push_str(input.as_str());
+
                 tx_processed
                     .send(
                         //NOTE: pos arg is deprecated
-                        lsp_invoke::formulate_request("didChange", &input, 0)
+                        lsp_invoke::formulate_request("didChange", &imported_strings, 0)
                             .expect("invalid request type"),
                     )
-                    .expect("fai;ed to send to writer from ctrlz");
+                    .expect("failed to send to writer from ctrlz");
                 println!("sent the completion normal {}", &input);
                 tx_processed
                     .send(
-                        lsp_invoke::formulate_request("completion", &input, 0)
+                        lsp_invoke::formulate_request("completion", &imported_strings, 0)
                             .expect("invalid request type"),
                     )
                     .expect("fai;ed to send to writer from ctrlz");
@@ -407,14 +412,14 @@ pub fn newMain() -> Result<()> {
                             .expect("invalid request type"),
                     )
                     .expect("failed to send to writer from ctrlz");
-                println!("sent first");
+                // println!("sent first");
                 tx_processed
                     .send(
                         lsp_invoke::formulate_request("completion", &input, 0)
                             .expect("invalid request type"),
                     )
                     .expect("fai;ed to send to writer from ctrlz");
-                println!("sent second");
+                // println!("sent second");
 
                 tx_processed
                     .send(
@@ -422,7 +427,7 @@ pub fn newMain() -> Result<()> {
                             .expect("invalid request type"),
                     )
                     .expect("fai;ed to send to writer from ctrlz");
-                println!("sent third");
+                // println!("sent third");
             }
 
             //send did change then request completion
@@ -444,10 +449,10 @@ pub fn newMain() -> Result<()> {
                         println!("v: {}", i);
                     }
 
-                    let imported_log = join_imports(lock, "\n");
-                    tx_importer
-                        .send((imported_log, false))
-                        .expect("failed to send the import file ");
+                    // let imported_log = join_imports(lock, "\n");
+                    // tx_importer
+                    //     .send((imported_log, false))
+                    //     .expect("failed to send the import file ");
                 }
                 tx_user.send(line).expect("Failure getting user input!");
             }

@@ -219,6 +219,11 @@ pub fn formulate_request(request_type: &str, text: &str, pos: usize) -> Result<S
             Ok(headed)
         }
         "completion" => {
+            let line_num = text.matches("\n").count();
+            let character = match line_num {
+                0 => text.len() as u32,
+                _ => characters_after_last(text, "\n").unwrap(),
+            };
             let req: RequestBuilder = jsonrpc::Request::build(Completion::METHOD).params(
                 serde_json::to_value(CompletionParams {
                     text_document_position: TextDocumentPositionParams {
@@ -226,8 +231,9 @@ pub fn formulate_request(request_type: &str, text: &str, pos: usize) -> Result<S
                             uri: (Url::parse("file:///foo.flux").unwrap()),
                         },
                         position: Position {
-                            line: 0,
-                            character: text.len() as u32,
+                            line: line_num as u32,
+                            character: character as u32,
+                            // character: text.len() as u32,
                         },
                     },
                     work_done_progress_params: Default::default(),
@@ -301,4 +307,21 @@ pub fn join_imports(lock: MutexGuard<HashSet<String>>, delim: &str) -> String {
     }
 
     return res;
+}
+
+pub fn characters_after_last(input: &str, charac: &str) -> Option<u32> {
+    if input == "" || charac == "" {
+        return None;
+    }
+    let mut last_occur: Option<usize> = None;
+    for (i, c) in input.chars().enumerate() {
+        if c == '\n' {
+            last_occur = Some(i)
+        }
+    }
+
+    if let Some(occur) = last_occur {
+        return Some((occur.abs_diff(input.len()) - 1) as u32);
+    }
+    None
 }

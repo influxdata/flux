@@ -61,7 +61,7 @@ pub fn form_output(request_type: &str, text: &str) -> Result<String, OutputError
             let a = serde_json::to_value(req.finish())?;
             let res = serde_json::to_string(&a).unwrap();
 
-            println!("{}", res);
+            // println!("{}", res);
             Ok(res)
         }
         _ => Err(InvalidMethod),
