@@ -1,7 +1,7 @@
 // Package boundaries provides operators for finding the boundaries around certain days, months, and weeks.
 //
 // ## Metadata
-// introduced: NEXT
+// introduced: 0.177.1
 package boundaries
 
 
@@ -39,7 +39,7 @@ import "experimental/table"
 // ```
 //
 // ## Metadata
-// introduced: NEXT
+// introduced: 0.177.1
 // tags: date/time
 yesterday = () => {
     return {start: date.sub(d: 1d, from: today()), stop: today()}
@@ -107,6 +107,7 @@ _week_formatter = (s) => {
 //
 // ## Metadata
 // tags: date/time
+// introduced: 0.177.1
 //
 monday = () => {
     return _day_finder(td: date.Monday, func: _day_formatter)
@@ -143,6 +144,7 @@ monday = () => {
 //
 // ## Metadata
 // tags: date/time
+// introduced: 0.177.1
 //
 tuesday = () => {
     return _day_finder(td: date.Tuesday, func: _day_formatter)
@@ -179,6 +181,7 @@ tuesday = () => {
 //
 // ## Metadata
 // tags: date/time
+// introduced: 0.177.1
 //
 wednesday = () => {
     return _day_finder(td: date.Wednesday, func: _day_formatter)
@@ -214,6 +217,7 @@ wednesday = () => {
 //
 // ## Metadata
 // tags: date/time
+// introduced: 0.177.1
 //
 thursday = () => {
     return _day_finder(td: date.Thursday, func: _day_formatter)
@@ -250,6 +254,7 @@ thursday = () => {
 //
 // ## Metadata
 // tags: date/time
+// introduced: 0.177.1
 //
 friday = () => {
     return _day_finder(td: date.Friday, func: _day_formatter)
@@ -286,6 +291,7 @@ friday = () => {
 //
 // ## Metadata
 // tags: date/time
+// introduced: 0.177.1
 //
 saturday = () => {
     return _day_finder(td: date.Saturday, func: _day_formatter)
@@ -322,6 +328,7 @@ saturday = () => {
 //
 // ## Metadata
 // tags: date/time
+// introduced: 0.177.1
 //
 sunday = () => {
     return _day_finder(td: date.Sunday, func: _day_formatter)
@@ -374,6 +381,7 @@ sunday = () => {
 //
 // ## Metadata
 // tags: date/time
+// introduced: 0.177.1
 //
 month = (month_offset=0) => {
     a = date.truncate(t: today(), unit: 1mo)
@@ -444,6 +452,7 @@ month = (month_offset=0) => {
 //
 // ## Metadata
 // tags: date/time
+// introduced: 0.177.1
 //
 week = (week_offset=0, start_sunday=false) => {
     d =
