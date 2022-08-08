@@ -137,26 +137,10 @@ impl Expression {
                     typ: MonoType::vector(expr.typ.clone()),
                 }))
             }
-            expr @ Expression::Integer(_)
-                if env.config.features.contains(&Feature::VectorizedConst) =>
-            {
-                wrap_vec_repeat(expr.clone())
-            }
-            expr @ Expression::DateTime(_)
-                if env.config.features.contains(&Feature::VectorizedConst) =>
-            {
-                wrap_vec_repeat(expr.clone())
-            }
-            expr @ Expression::Float(_)
-                if env.config.features.contains(&Feature::VectorizedConst) =>
-            {
-                wrap_vec_repeat(expr.clone())
-            }
-            expr @ Expression::StringLit(_)
-                if env.config.features.contains(&Feature::VectorizedConst) =>
-            {
-                wrap_vec_repeat(expr.clone())
-            }
+            expr @ Expression::Integer(_) => wrap_vec_repeat(expr.clone()),
+            expr @ Expression::DateTime(_) => wrap_vec_repeat(expr.clone()),
+            expr @ Expression::Float(_) => wrap_vec_repeat(expr.clone()),
+            expr @ Expression::StringLit(_) => wrap_vec_repeat(expr.clone()),
             _ => {
                 return Err(located(
                     self.loc().clone(),

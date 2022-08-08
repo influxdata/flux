@@ -137,18 +137,6 @@ func UnusedSymbolWarnings() BoolFlag {
 	return unusedSymbolWarnings
 }
 
-var vectorizedConst = feature.MakeBoolFlag(
-	"Vectorized Const",
-	"vectorizedConst",
-	"Owen Nelson",
-	false,
-)
-
-// VectorizedConst - Calls to map can be vectorized when select literals appear in the function
-func VectorizedConst() BoolFlag {
-	return vectorizedConst
-}
-
 var experimentalTestingDiff = feature.MakeBoolFlag(
 	"Experimental Testing Diff",
 	"experimentalTestingDiff",
@@ -213,7 +201,6 @@ var all = []Flag{
 	labelPolymorphism,
 	optimizeSetTransformation,
 	unusedSymbolWarnings,
-	vectorizedConst,
 	experimentalTestingDiff,
 	removeRedundantSortNodes,
 	queryConcurrencyIncrease,
@@ -231,7 +218,6 @@ var byKey = map[string]Flag{
 	"labelPolymorphism":                labelPolymorphism,
 	"optimizeSetTransformation":        optimizeSetTransformation,
 	"unusedSymbolWarnings":             unusedSymbolWarnings,
-	"vectorizedConst":                  vectorizedConst,
 	"experimentalTestingDiff":          experimentalTestingDiff,
 	"removeRedundantSortNodes":         removeRedundantSortNodes,
 	"queryConcurrencyIncrease":         queryConcurrencyIncrease,
