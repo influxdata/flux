@@ -29,8 +29,7 @@ inData =
 #group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string
 #default,got,,,,,,,,,,,,,,
-,result,table,_start,_stop,_time,_value,_check_id,_check_name,_field,_level,_measurement,_source_measurement,_type,cpu,host
-,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:26:55.569263562Z,11.086267669062991,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost
+,result,table,_start,_stop,_time,_value,_check_id,_check_name,_field,_level,_measurement,_source_measurement,_type,cpu,host ,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:26:55.569263562Z,11.086267669062991,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost
 ,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:32:31.587813488Z,18.937973208474638,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost
 ,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:33:04.805402131Z,11.550031971876997,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost
 ,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:33:31.548725134Z,8.495652148919287,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost
@@ -256,9 +255,12 @@ outData =
 "
 
 testcase state_changes_big_any_to_any {
+    option testing.tags = ["skip"]
+
     got =
         csv.from(csv: inData)
             |> testing.load()
+            |> range(start: 2020-03-25T21:25:00Z, stop: 2020-03-27T00:00:00Z)
             |> v1.fieldsAsCols()
             |> monitor.stateChanges(fromLevel: "any", toLevel: "any")
     want = csv.from(csv: outData)

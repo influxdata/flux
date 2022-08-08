@@ -61,10 +61,15 @@ outData =
 "
 
 testcase task_per_line {
+    option testing.tags = ["skip"]
+
     // https://github.com/influxdata/flux/issues/855
     option testing.tags = ["skip"]
 
-    table = csv.from(csv: inData) |> testing.load()
+    table =
+        csv.from(csv: inData)
+            |> testing.load()
+            |> range(start: 1970-01-01T00:00:00Z)
 
     supl =
         table

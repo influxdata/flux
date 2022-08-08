@@ -40,6 +40,8 @@ outData =
 "
 
 testcase unique {
+    option testing.tags = ["skip"]
+
     got =
         csv.from(csv: inData)
             |> testing.load()

@@ -32,7 +32,10 @@ outData =
 "
 
 testcase join {
-    table = csv.from(csv: inData) |> testing.load()
+    table =
+        csv.from(csv: inData)
+            |> testing.load()
+            |> range(start: 2019-05-10T20:50:00Z, stop: 2019-05-10T20:51:00Z)
 
     left =
         table

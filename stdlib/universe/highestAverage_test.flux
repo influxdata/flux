@@ -43,8 +43,10 @@ testcase highestAverage {
     got =
         csv.from(csv: inData)
             |> testing.load()
+            |> range(start: 2018-11-07T00:00:00Z, stop: 2018-11-07T15:00:00Z)
             |> highestAverage(n: 3, groupColumns: ["_measurement", "host"])
+            |> drop(columns: ["_start", "_stop"])
     want = csv.from(csv: outData)
 
-    testing.diff(got, want)
+    testing.diff(want, got)
 }

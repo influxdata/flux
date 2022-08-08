@@ -255,9 +255,12 @@ outData =
 "
 
 testcase state_changes_big_ok_to_info {
+    option testing.tags = ["skip"]
+
     got =
         csv.from(csv: inData)
             |> testing.load()
+            |> range(start: 2020-03-25T21:25:00Z, stop: 2020-03-27T00:00:00Z)
             |> v1.fieldsAsCols()
             |> monitor.stateChanges(fromLevel: "ok", toLevel: "info")
     want = csv.from(csv: outData)

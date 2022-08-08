@@ -31,6 +31,8 @@ outData =
 "
 
 testcase selector_preserve_time {
+    option testing.tags = ["skip"]
+
     got =
         csv.from(csv: inData)
             |> testing.load()

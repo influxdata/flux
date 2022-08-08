@@ -43,18 +43,19 @@ outData =
 "
 
 testcase join_missing_on_col {
-    tables = csv.from(csv: inData) |> testing.load()
+    tables =
+        csv.from(csv: inData)
+            |> testing.load()
+            |> range(start: 2019-01-01T00:00:00Z)
 
     lhs =
         tables
-            |> range(start: 2019-01-01T00:00:00Z)
             |> filter(fn: (r) => r._field == "resp_bytes")
             |> keep(columns: ["_time", "org_id", "_value"])
             |> sum()
             |> rename(columns: {_value: "dataout"})
     rhs =
         tables
-            |> range(start: 2019-01-01T00:00:00Z)
             |> filter(fn: (r) => r._field == "req_bytes")
             |> keep(columns: ["_time", "org_id", "_value"])
             |> sum()

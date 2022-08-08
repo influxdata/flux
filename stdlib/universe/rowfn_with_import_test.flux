@@ -30,6 +30,7 @@ testcase map {
     got =
         csv.from(csv: inData)
             |> testing.load()
+            |> range(start: 2018-05-22T19:53:26Z)
             |> filter(fn: (r) => float(v: r._value) > math.pow(x: 10.0, y: 2.0))
             |> map(fn: (r) => ({r with _value: string(v: r._value) + "i"}))
             |> map(fn: (r) => ({r with _value: strings.toUpper(v: r._value)}))

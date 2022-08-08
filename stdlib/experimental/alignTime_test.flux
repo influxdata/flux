@@ -183,11 +183,22 @@ outData =
 "
 
 testcase set {
+    option testing.tags = ["skip"]
+
     got =
         csv.from(csv: inData)
             |> testing.load()
             |> range(start: 2020-01-01T00:00:00Z, stop: 2020-04-01T00:00:00Z)
             |> experimental.alignTime(alignTo: 2020-01-01T00:00:00Z)
+            |> group(
+                columns: [
+                    "_field",
+                    "_measurement",
+                    "_start",
+                    "_stop",
+                    "country",
+                ],
+            )
     want = csv.from(csv: outData)
 
     testing.diff(got, want)

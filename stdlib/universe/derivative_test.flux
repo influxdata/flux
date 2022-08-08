@@ -81,7 +81,7 @@ inData =
     )
         |> group(columns: ["_measurement", "_field", "t0"])
 
-testcase default {
+testcase derivative {
     want =
         array.from(
             rows: [

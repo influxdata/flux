@@ -48,9 +48,12 @@ outData =
 "
 
 testcase fill {
+    option testing.tags = ["skip"]
+
     got =
         csv.from(csv: inData)
             |> testing.load()
+            |> range(start: 2018-12-19T22:13:30Z)
             |> fill(column: "_time", value: 2077-12-19T22:14:00Z)
     want = csv.from(csv: outData)
 

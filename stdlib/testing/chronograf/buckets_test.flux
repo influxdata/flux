@@ -23,9 +23,12 @@ outData = "
 "
 
 testcase buckets {
+    option testing.tags = ["skip"]
+
     got =
         csv.from(csv: inData)
             |> testing.load()
+            |> range(start: 1970-01-01T00:00:00Z)
             |> rename(columns: {name: "_value"})
             |> keep(columns: ["_value"])
     want = csv.from(csv: outData)

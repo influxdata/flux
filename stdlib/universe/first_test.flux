@@ -53,6 +53,7 @@ testcase first {
     got =
         csv.from(csv: inData)
             |> testing.load()
+            |> range(start: 2018-05-22T19:53:00Z, stop: 2018-05-22T19:55:00Z)
             |> first()
             |> drop(columns: ["_start", "_stop"])
     want = csv.from(csv: outData)
