@@ -1,7 +1,7 @@
 // Package boundaries provides operators for finding the boundaries around certain days, months, and weeks.
 //
 // ## Metadata
-// introduced: NEXT
+// introduced: 0.177.1
 package boundaries
 
 
@@ -39,7 +39,7 @@ import "experimental/table"
 // ```
 //
 // ## Metadata
-// introduced: NEXT
+// introduced: 0.177.1
 // tags: date/time
 yesterday = () => {
     return {start: date.sub(d: 1d, from: today()), stop: today()}

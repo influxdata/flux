@@ -4,7 +4,7 @@
 //
 // ## Metadata
 // introduced: 0.172.0
-// deprecated: NEXT
+// deprecated: 0.177.1
 package boundaries
 
 
@@ -43,7 +43,7 @@ import "experimental/table"
 //
 // ## Metadata
 // introduced: 0.172.0
-// deprecated: NEXT
+// deprecated: 0.177.1
 // tags: date/time
 yesterday = () => {
     die(msg: "the 'date/boundaries' package has been moved to 'experimental/date/boundaries'")
@@ -112,7 +112,7 @@ _week_formatter = (s) => {
 // ```
 //
 // ## Metadata
-// deprecated: NEXT
+// deprecated: 0.177.1
 // tags: date/time
 //
 monday = () => {
@@ -151,7 +151,7 @@ monday = () => {
 // ```
 //
 // ## Metadata
-// deprecated: NEXT
+// deprecated: 0.177.1
 // tags: date/time
 //
 tuesday = () => {
@@ -190,7 +190,7 @@ tuesday = () => {
 // ```
 //
 // ## Metadata
-// deprecated: NEXT
+// deprecated: 0.177.1
 // tags: date/time
 //
 wednesday = () => {
@@ -228,7 +228,7 @@ wednesday = () => {
 // ```
 //
 // ## Metadata
-// deprecated: NEXT
+// deprecated: 0.177.1
 // tags: date/time
 //
 thursday = () => {
@@ -267,7 +267,7 @@ thursday = () => {
 // ```
 //
 // ## Metadata
-// deprecated: NEXT
+// deprecated: 0.177.1
 // tags: date/time
 //
 friday = () => {
@@ -306,7 +306,7 @@ friday = () => {
 // ```
 //
 // ## Metadata
-// deprecated: NEXT
+// deprecated: 0.177.1
 // tags: date/time
 //
 saturday = () => {
@@ -345,7 +345,7 @@ saturday = () => {
 // ```
 //
 // ## Metadata
-// deprecated: NEXT
+// deprecated: 0.177.1
 // tags: date/time
 //
 sunday = () => {
@@ -400,7 +400,7 @@ sunday = () => {
 // ```
 //
 // ## Metadata
-// deprecated: NEXT
+// deprecated: 0.177.1
 // tags: date/time
 //
 month = (month_offset=0) => {
@@ -473,7 +473,7 @@ month = (month_offset=0) => {
 // ```
 //
 // ## Metadata
-// deprecated: NEXT
+// deprecated: 0.177.1
 // tags: date/time
 //
 week = (week_offset=0, start_sunday=false) => {
