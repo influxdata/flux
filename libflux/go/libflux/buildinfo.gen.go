@@ -459,7 +459,7 @@ var sourceHashes = map[string]string{
 	"stdlib/universe/drop_newname_after_test.flux":                                                "bfb3b8d44ac5e11a9743d68f78005c3c3c6533047361ebe8f06c2afee558d4fe",
 	"stdlib/universe/drop_newname_before_test.flux":                                               "6a5dd825c18e1a5ff074b79b7da7b6327086ba08a4c081dce0df1a755e61360e",
 	"stdlib/universe/drop_non_existent_test.flux":                                                 "36eeac7f90a4ac35d48b7c2d4fc7d5b14cdd8e3abb5a549f715b38fe5e07c6da",
-	"stdlib/universe/drop_referenced_test.flux":                                                   "c4ffb021337f495db094c320b5fbc5b276e4324f3ba90c506755d109955bdf35",
+	"stdlib/universe/drop_referenced_test.flux":                                                   "6fb13a4d184c9e31d1e21d820bd2cdadee8c5234ed1b2e7595e40c34fd57ce8b",
 	"stdlib/universe/drop_unused_test.flux":                                                       "52259c94e834c1a084b297d74e5453103ce714668512a3def0bd917d8d842844",
 	"stdlib/universe/duplicate_overwrite_test.flux":                                               "9cf7bb6ce8a973cfc0296cdeb5ca4ab46a9c0f75346b55fb543dd75ecd2a05fa",
 	"stdlib/universe/duplicate_test.flux":                                                         "cba5a0b21e770ec70b374532331e5521671908241fa4581bc6ca9bd749d89b12",
