@@ -10,7 +10,6 @@ use serde::{
     de::{Deserialize, Deserializer, Error, Visitor},
     ser::{Serialize, SerializeSeq, Serializer},
 };
-use serde_aux::prelude::*;
 
 use super::DefaultHasher;
 use crate::scanner;
@@ -1565,6 +1564,14 @@ pub struct DateTimeLit {
     #[serde(flatten)]
     pub base: BaseNode,
     pub value: chrono::DateTime<FixedOffset>,
+}
+
+fn deserialize_default_from_null<'de, T, D>(d: D) -> Result<T, D::Error>
+where
+    D: Deserializer<'de>,
+    T: Deserialize<'de> + Default,
+{
+    Ok(Option::<T>::deserialize(d)?.unwrap_or_default())
 }
 
 // The tests code exports a few helpers for writing AST related tests.
