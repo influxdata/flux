@@ -139,24 +139,7 @@ event = (
 
 // endpoint sends events to Zenoss using data from input rows.
 //
-// ## Parameters
-//
-// - url: Zenoss [router endpoint URL](https://help.zenoss.com/zsd/RM/configuring-resource-manager/enabling-access-to-browser-interfaces/creating-and-changing-public-endpoints).
-// - username: Zenoss username to use for HTTP BASIC authentication.
-//   Default is `""` (no authentication).
-// - password: Zenoss password to use for HTTP BASIC authentication.
-//   Default is `""` (no authentication).
-// - apiKey: Zenoss cloud API key.
-//   Default is `""` (no API key).
-// - action: Zenoss router name.
-//   Default is `"EventsRouter"`.
-// - method: EventsRouter method.
-//   Default is `"add_event"`.
-// - type: Event type. Default is `"rpc"`.
-// - tid: Temporary request transaction ID.
-//   Default is `1`.
-//
-// ## Usage
+// ### Usage
 // `zenoss.endpoint` is a factory function that outputs another function.
 // The output function requires a `mapFn` parameter.
 //
@@ -174,7 +157,24 @@ event = (
 // - collector
 // - message
 //
-// For more information, see zenoss.event() parameters.
+// For more information, see `zenoss.event()` parameters.
+//
+// ## Parameters
+//
+// - url: Zenoss [router endpoint URL](https://help.zenoss.com/zsd/RM/configuring-resource-manager/enabling-access-to-browser-interfaces/creating-and-changing-public-endpoints).
+// - username: Zenoss username to use for HTTP BASIC authentication.
+//   Default is `""` (no authentication).
+// - password: Zenoss password to use for HTTP BASIC authentication.
+//   Default is `""` (no authentication).
+// - apiKey: Zenoss cloud API key.
+//   Default is `""` (no API key).
+// - action: Zenoss router name.
+//   Default is `"EventsRouter"`.
+// - method: EventsRouter method.
+//   Default is `"add_event"`.
+// - type: Event type. Default is `"rpc"`.
+// - tid: Temporary request transaction ID.
+//   Default is `1`.
 //
 // ## Examples
 // ### Send critical events to Zenoss
