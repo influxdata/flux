@@ -250,7 +250,7 @@ var sourceHashes = map[string]string{
 	"stdlib/influxdata/influxdb/sample/sample.flux":                                               "e214adf194ad726c28d9dfe23aea29fd36ac08ba12bc3610111a11f990fb795d",
 	"stdlib/influxdata/influxdb/schema/influxFieldsAsCols_test.flux":                              "6c0e74904d3c332a138f31f6a475e23f2f621aadbbc51ad7480e9b6a77405aa3",
 	"stdlib/influxdata/influxdb/schema/influxRawQuery_test.flux":                                  "96d20514a81899a8334bc859ac4cf576a4ff6d7710637c0fb1b4fb6a70212c02",
-	"stdlib/influxdata/influxdb/schema/schema.flux":                                               "62955706855e8f4ca777f47fc45fe3707522c8987b5a50a99ddef30d1868c585",
+	"stdlib/influxdata/influxdb/schema/schema.flux":                                               "a312a846c853e72a1ac4301cdc5c0f8d0006a4c145ea1fcdec546b2eb5008acc",
 	"stdlib/influxdata/influxdb/schema/schema_test.flux":                                          "b1e66a39f1544c155f34c073357a1270f9bf8aa52225b144afaa079515cbe2b1",
 	"stdlib/influxdata/influxdb/secrets/secrets.flux":                                             "9adb9658f7e6bbf6c2a8fa9acb5f447cd9ec4c08094cb041e7203eb9db315588",
 	"stdlib/influxdata/influxdb/secrets/secrets_test.flux":                                        "1a405505e607c98c8eda4408b35faba94d4396d4d4f3292a54132316d04e40aa",
