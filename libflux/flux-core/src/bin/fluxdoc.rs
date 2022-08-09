@@ -300,7 +300,7 @@ impl<'a> example::Executor for CLIExecutor<'a> {
         cmd.arg("--format")
             .arg("csv")
             .arg(tmpfile.path())
-            .arg("--feature")
+            .arg("--features")
             .arg(r#"{"labelPolymorphism": true}"#);
         log::debug!("Executing {:?}", cmd);
         let output = cmd

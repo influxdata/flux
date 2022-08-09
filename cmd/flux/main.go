@@ -130,7 +130,7 @@ func main() {
 	fluxCmd.Flags().StringVar(&flags.Trace, "trace", "", "Trace query execution")
 	fluxCmd.Flags().StringVarP(&flags.Format, "format", "", "cli", "Output format one of: cli,csv. Defaults to cli")
 	fluxCmd.Flag("trace").NoOptDefVal = "jaeger"
-	fluxCmd.Flags().StringVar(&flags.Features, "feature", "", "JSON object specifying the features to execute with. See internal/feature/flags.yml for a list of the current features")
+	fluxCmd.Flags().StringVar(&flags.Features, "features", "", "JSON object specifying the features to execute with. See internal/feature/flags.yml for a list of the current features")
 
 	fmtCmd := &cobra.Command{
 		Use:   "fmt",
