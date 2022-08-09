@@ -218,6 +218,7 @@ func {{$type.l}}{{$type.r}}{{$op.Name}}(l *{{$type.l}}, r *{{$type.r}}, mem memo
 	return a, nil
 }
 
+{{/* TODO: move casts for `l` before the loop */}}
 func {{$type.l}}{{$type.r}}{{$op.Name}}LConst(l {{index $.TypeMap $type.l}}, r *{{$type.r}}, mem memory.Allocator) (*Boolean, error) {
 	n := r.Len()
 	b := NewBooleanBuilder(mem)
@@ -264,6 +265,7 @@ func {{$type.l}}{{$type.r}}{{$op.Name}}LConst(l {{index $.TypeMap $type.l}}, r *
 	return a, nil
 }
 
+{{/* TODO: move casts for `r` before the loop */}}
 func {{$type.l}}{{$type.r}}{{$op.Name}}RConst(l *{{$type.l}}, r {{index $.TypeMap $type.r}}, mem memory.Allocator) (*Boolean, error) {
 	n := l.Len()
 	b := NewBooleanBuilder(mem)
