@@ -14,6 +14,10 @@ import (
 	"github.com/influxdata/flux/semantic"
 )
 
+//
+// Arithmetic Ops
+//
+
 func vectorAdd(l, r Vector, mem memory.Allocator) (Value, error) {
 	var lvr, rvr *Value
 	if vr, ok := l.(*VectorRepeatValue); ok {
@@ -545,6 +549,10 @@ func vectorPow(l, r Vector, mem memory.Allocator) (Value, error) {
 	}
 }
 
+//
+// Equality Ops
+//
+
 func vectorEqual(l, r Vector, mem memory.Allocator) (Value, error) {
 	var lvr, rvr *Value
 	if vr, ok := l.(*VectorRepeatValue); ok {
@@ -560,19 +568,22 @@ func vectorEqual(l, r Vector, mem memory.Allocator) (Value, error) {
 		panic("got 2 VectorRepeatValue; 'const folding' should be done earlier, in the function lookup")
 	}
 
-	switch l.ElementType().Nature() {
+	lnat := l.ElementType().Nature()
+	rnat := r.ElementType().Nature()
 
-	case semantic.Time:
+	switch {
+
+	case lnat == semantic.Time && rnat == semantic.Time:
 		var (
 			x   *fluxarray.Boolean
 			err error
 		)
 		if lvr != nil {
-			x, err = fluxarray.IntEqualLConst((*lvr).Time().Time().UnixNano(), r.Arr().(*fluxarray.Int), mem)
+			x, err = fluxarray.IntIntEqualLConst((*lvr).Time().Time().UnixNano(), r.Arr().(*fluxarray.Int), mem)
 		} else if rvr != nil {
-			x, err = fluxarray.IntEqualRConst(l.Arr().(*fluxarray.Int), (*rvr).Time().Time().UnixNano(), mem)
+			x, err = fluxarray.IntIntEqualRConst(l.Arr().(*fluxarray.Int), (*rvr).Time().Time().UnixNano(), mem)
 		} else {
-			x, err = fluxarray.IntEqual(l.Arr().(*fluxarray.Int), r.Arr().(*fluxarray.Int), mem)
+			x, err = fluxarray.IntIntEqual(l.Arr().(*fluxarray.Int), r.Arr().(*fluxarray.Int), mem)
 		}
 
 		if err != nil {
@@ -580,40 +591,31 @@ func vectorEqual(l, r Vector, mem memory.Allocator) (Value, error) {
 		}
 		return NewVectorValue(x, semantic.BasicBool), nil
 
-	case semantic.Bool:
+	case lnat == semantic.Float && rnat == semantic.Float:
 
 		var (
-			x *fluxarray.Boolean
-
+			x   *fluxarray.Boolean
 			err error
 		)
+
 		if lvr != nil {
-			x, err = fluxarray.BooleanEqualLConst((*lvr).Bool(), r.Arr().(*fluxarray.Boolean), mem)
+			x, err = fluxarray.FloatFloatEqualLConst(
+				(*lvr).Float(),
+				r.Arr().(*fluxarray.Float),
+				mem,
+			)
 		} else if rvr != nil {
-			x, err = fluxarray.BooleanEqualRConst(l.Arr().(*fluxarray.Boolean), (*rvr).Bool(), mem)
+			x, err = fluxarray.FloatFloatEqualRConst(
+				l.Arr().(*fluxarray.Float),
+				(*rvr).Float(),
+				mem,
+			)
 		} else {
-			x, err = fluxarray.BooleanEqual(l.Arr().(*fluxarray.Boolean), r.Arr().(*fluxarray.Boolean), mem)
-		}
-
-		if err != nil {
-			return nil, err
-		}
-
-		return NewVectorValue(x, semantic.BasicBool), nil
-
-	case semantic.Int:
-
-		var (
-			x *fluxarray.Boolean
-
-			err error
-		)
-		if lvr != nil {
-			x, err = fluxarray.IntEqualLConst((*lvr).Int(), r.Arr().(*fluxarray.Int), mem)
-		} else if rvr != nil {
-			x, err = fluxarray.IntEqualRConst(l.Arr().(*fluxarray.Int), (*rvr).Int(), mem)
-		} else {
-			x, err = fluxarray.IntEqual(l.Arr().(*fluxarray.Int), r.Arr().(*fluxarray.Int), mem)
+			x, err = fluxarray.FloatFloatEqual(
+				l.Arr().(*fluxarray.Float),
+				r.Arr().(*fluxarray.Float),
+				mem,
+			)
 		}
 
 		if err != nil {
@@ -622,19 +624,31 @@ func vectorEqual(l, r Vector, mem memory.Allocator) (Value, error) {
 
 		return NewVectorValue(x, semantic.BasicBool), nil
 
-	case semantic.UInt:
+	case lnat == semantic.Float && rnat == semantic.Int:
 
 		var (
-			x *fluxarray.Boolean
-
+			x   *fluxarray.Boolean
 			err error
 		)
+
 		if lvr != nil {
-			x, err = fluxarray.UintEqualLConst((*lvr).UInt(), r.Arr().(*fluxarray.Uint), mem)
+			x, err = fluxarray.FloatIntEqualLConst(
+				(*lvr).Float(),
+				r.Arr().(*fluxarray.Int),
+				mem,
+			)
 		} else if rvr != nil {
-			x, err = fluxarray.UintEqualRConst(l.Arr().(*fluxarray.Uint), (*rvr).UInt(), mem)
+			x, err = fluxarray.FloatIntEqualRConst(
+				l.Arr().(*fluxarray.Float),
+				(*rvr).Int(),
+				mem,
+			)
 		} else {
-			x, err = fluxarray.UintEqual(l.Arr().(*fluxarray.Uint), r.Arr().(*fluxarray.Uint), mem)
+			x, err = fluxarray.FloatIntEqual(
+				l.Arr().(*fluxarray.Float),
+				r.Arr().(*fluxarray.Int),
+				mem,
+			)
 		}
 
 		if err != nil {
@@ -643,19 +657,31 @@ func vectorEqual(l, r Vector, mem memory.Allocator) (Value, error) {
 
 		return NewVectorValue(x, semantic.BasicBool), nil
 
-	case semantic.Float:
+	case lnat == semantic.Float && rnat == semantic.UInt:
 
 		var (
-			x *fluxarray.Boolean
-
+			x   *fluxarray.Boolean
 			err error
 		)
+
 		if lvr != nil {
-			x, err = fluxarray.FloatEqualLConst((*lvr).Float(), r.Arr().(*fluxarray.Float), mem)
+			x, err = fluxarray.FloatUintEqualLConst(
+				(*lvr).Float(),
+				r.Arr().(*fluxarray.Uint),
+				mem,
+			)
 		} else if rvr != nil {
-			x, err = fluxarray.FloatEqualRConst(l.Arr().(*fluxarray.Float), (*rvr).Float(), mem)
+			x, err = fluxarray.FloatUintEqualRConst(
+				l.Arr().(*fluxarray.Float),
+				(*rvr).UInt(),
+				mem,
+			)
 		} else {
-			x, err = fluxarray.FloatEqual(l.Arr().(*fluxarray.Float), r.Arr().(*fluxarray.Float), mem)
+			x, err = fluxarray.FloatUintEqual(
+				l.Arr().(*fluxarray.Float),
+				r.Arr().(*fluxarray.Uint),
+				mem,
+			)
 		}
 
 		if err != nil {
@@ -664,19 +690,262 @@ func vectorEqual(l, r Vector, mem memory.Allocator) (Value, error) {
 
 		return NewVectorValue(x, semantic.BasicBool), nil
 
-	case semantic.String:
+	case lnat == semantic.Int && rnat == semantic.Float:
 
 		var (
-			x *fluxarray.Boolean
-
+			x   *fluxarray.Boolean
 			err error
 		)
+
 		if lvr != nil {
-			x, err = fluxarray.StringEqualLConst((*lvr).Str(), r.Arr().(*fluxarray.String), mem)
+			x, err = fluxarray.IntFloatEqualLConst(
+				(*lvr).Int(),
+				r.Arr().(*fluxarray.Float),
+				mem,
+			)
 		} else if rvr != nil {
-			x, err = fluxarray.StringEqualRConst(l.Arr().(*fluxarray.String), (*rvr).Str(), mem)
+			x, err = fluxarray.IntFloatEqualRConst(
+				l.Arr().(*fluxarray.Int),
+				(*rvr).Float(),
+				mem,
+			)
 		} else {
-			x, err = fluxarray.StringEqual(l.Arr().(*fluxarray.String), r.Arr().(*fluxarray.String), mem)
+			x, err = fluxarray.IntFloatEqual(
+				l.Arr().(*fluxarray.Int),
+				r.Arr().(*fluxarray.Float),
+				mem,
+			)
+		}
+
+		if err != nil {
+			return nil, err
+		}
+
+		return NewVectorValue(x, semantic.BasicBool), nil
+
+	case lnat == semantic.Int && rnat == semantic.Int:
+
+		var (
+			x   *fluxarray.Boolean
+			err error
+		)
+
+		if lvr != nil {
+			x, err = fluxarray.IntIntEqualLConst(
+				(*lvr).Int(),
+				r.Arr().(*fluxarray.Int),
+				mem,
+			)
+		} else if rvr != nil {
+			x, err = fluxarray.IntIntEqualRConst(
+				l.Arr().(*fluxarray.Int),
+				(*rvr).Int(),
+				mem,
+			)
+		} else {
+			x, err = fluxarray.IntIntEqual(
+				l.Arr().(*fluxarray.Int),
+				r.Arr().(*fluxarray.Int),
+				mem,
+			)
+		}
+
+		if err != nil {
+			return nil, err
+		}
+
+		return NewVectorValue(x, semantic.BasicBool), nil
+
+	case lnat == semantic.Int && rnat == semantic.UInt:
+
+		var (
+			x   *fluxarray.Boolean
+			err error
+		)
+
+		if lvr != nil {
+			x, err = fluxarray.IntUintEqualLConst(
+				(*lvr).Int(),
+				r.Arr().(*fluxarray.Uint),
+				mem,
+			)
+		} else if rvr != nil {
+			x, err = fluxarray.IntUintEqualRConst(
+				l.Arr().(*fluxarray.Int),
+				(*rvr).UInt(),
+				mem,
+			)
+		} else {
+			x, err = fluxarray.IntUintEqual(
+				l.Arr().(*fluxarray.Int),
+				r.Arr().(*fluxarray.Uint),
+				mem,
+			)
+		}
+
+		if err != nil {
+			return nil, err
+		}
+
+		return NewVectorValue(x, semantic.BasicBool), nil
+
+	case lnat == semantic.UInt && rnat == semantic.Int:
+
+		var (
+			x   *fluxarray.Boolean
+			err error
+		)
+
+		if lvr != nil {
+			x, err = fluxarray.UintIntEqualLConst(
+				(*lvr).UInt(),
+				r.Arr().(*fluxarray.Int),
+				mem,
+			)
+		} else if rvr != nil {
+			x, err = fluxarray.UintIntEqualRConst(
+				l.Arr().(*fluxarray.Uint),
+				(*rvr).Int(),
+				mem,
+			)
+		} else {
+			x, err = fluxarray.UintIntEqual(
+				l.Arr().(*fluxarray.Uint),
+				r.Arr().(*fluxarray.Int),
+				mem,
+			)
+		}
+
+		if err != nil {
+			return nil, err
+		}
+
+		return NewVectorValue(x, semantic.BasicBool), nil
+
+	case lnat == semantic.UInt && rnat == semantic.Float:
+
+		var (
+			x   *fluxarray.Boolean
+			err error
+		)
+
+		if lvr != nil {
+			x, err = fluxarray.UintFloatEqualLConst(
+				(*lvr).UInt(),
+				r.Arr().(*fluxarray.Float),
+				mem,
+			)
+		} else if rvr != nil {
+			x, err = fluxarray.UintFloatEqualRConst(
+				l.Arr().(*fluxarray.Uint),
+				(*rvr).Float(),
+				mem,
+			)
+		} else {
+			x, err = fluxarray.UintFloatEqual(
+				l.Arr().(*fluxarray.Uint),
+				r.Arr().(*fluxarray.Float),
+				mem,
+			)
+		}
+
+		if err != nil {
+			return nil, err
+		}
+
+		return NewVectorValue(x, semantic.BasicBool), nil
+
+	case lnat == semantic.UInt && rnat == semantic.UInt:
+
+		var (
+			x   *fluxarray.Boolean
+			err error
+		)
+
+		if lvr != nil {
+			x, err = fluxarray.UintUintEqualLConst(
+				(*lvr).UInt(),
+				r.Arr().(*fluxarray.Uint),
+				mem,
+			)
+		} else if rvr != nil {
+			x, err = fluxarray.UintUintEqualRConst(
+				l.Arr().(*fluxarray.Uint),
+				(*rvr).UInt(),
+				mem,
+			)
+		} else {
+			x, err = fluxarray.UintUintEqual(
+				l.Arr().(*fluxarray.Uint),
+				r.Arr().(*fluxarray.Uint),
+				mem,
+			)
+		}
+
+		if err != nil {
+			return nil, err
+		}
+
+		return NewVectorValue(x, semantic.BasicBool), nil
+
+	case lnat == semantic.Bool && rnat == semantic.Bool:
+
+		var (
+			x   *fluxarray.Boolean
+			err error
+		)
+
+		if lvr != nil {
+			x, err = fluxarray.BooleanBooleanEqualLConst(
+				(*lvr).Bool(),
+				r.Arr().(*fluxarray.Boolean),
+				mem,
+			)
+		} else if rvr != nil {
+			x, err = fluxarray.BooleanBooleanEqualRConst(
+				l.Arr().(*fluxarray.Boolean),
+				(*rvr).Bool(),
+				mem,
+			)
+		} else {
+			x, err = fluxarray.BooleanBooleanEqual(
+				l.Arr().(*fluxarray.Boolean),
+				r.Arr().(*fluxarray.Boolean),
+				mem,
+			)
+		}
+
+		if err != nil {
+			return nil, err
+		}
+
+		return NewVectorValue(x, semantic.BasicBool), nil
+
+	case lnat == semantic.String && rnat == semantic.String:
+
+		var (
+			x   *fluxarray.Boolean
+			err error
+		)
+
+		if lvr != nil {
+			x, err = fluxarray.StringStringEqualLConst(
+				(*lvr).Str(),
+				r.Arr().(*fluxarray.String),
+				mem,
+			)
+		} else if rvr != nil {
+			x, err = fluxarray.StringStringEqualRConst(
+				l.Arr().(*fluxarray.String),
+				(*rvr).Str(),
+				mem,
+			)
+		} else {
+			x, err = fluxarray.StringStringEqual(
+				l.Arr().(*fluxarray.String),
+				r.Arr().(*fluxarray.String),
+				mem,
+			)
 		}
 
 		if err != nil {
@@ -686,7 +955,12 @@ func vectorEqual(l, r Vector, mem memory.Allocator) (Value, error) {
 		return NewVectorValue(x, semantic.BasicBool), nil
 
 	default:
-		return nil, errors.Newf(codes.Invalid, "unsupported type for vector Equal: %v", l.ElementType())
+		return nil, errors.Newf(
+			codes.Invalid,
+			"unsupported type for vector Equal: %v == %v",
+			l.ElementType(),
+			r.ElementType(),
+		)
 	}
 }
 
@@ -705,19 +979,22 @@ func vectorNotEqual(l, r Vector, mem memory.Allocator) (Value, error) {
 		panic("got 2 VectorRepeatValue; 'const folding' should be done earlier, in the function lookup")
 	}
 
-	switch l.ElementType().Nature() {
+	lnat := l.ElementType().Nature()
+	rnat := r.ElementType().Nature()
 
-	case semantic.Time:
+	switch {
+
+	case lnat == semantic.Time && rnat == semantic.Time:
 		var (
 			x   *fluxarray.Boolean
 			err error
 		)
 		if lvr != nil {
-			x, err = fluxarray.IntNotEqualLConst((*lvr).Time().Time().UnixNano(), r.Arr().(*fluxarray.Int), mem)
+			x, err = fluxarray.IntIntNotEqualLConst((*lvr).Time().Time().UnixNano(), r.Arr().(*fluxarray.Int), mem)
 		} else if rvr != nil {
-			x, err = fluxarray.IntNotEqualRConst(l.Arr().(*fluxarray.Int), (*rvr).Time().Time().UnixNano(), mem)
+			x, err = fluxarray.IntIntNotEqualRConst(l.Arr().(*fluxarray.Int), (*rvr).Time().Time().UnixNano(), mem)
 		} else {
-			x, err = fluxarray.IntNotEqual(l.Arr().(*fluxarray.Int), r.Arr().(*fluxarray.Int), mem)
+			x, err = fluxarray.IntIntNotEqual(l.Arr().(*fluxarray.Int), r.Arr().(*fluxarray.Int), mem)
 		}
 
 		if err != nil {
@@ -725,40 +1002,31 @@ func vectorNotEqual(l, r Vector, mem memory.Allocator) (Value, error) {
 		}
 		return NewVectorValue(x, semantic.BasicBool), nil
 
-	case semantic.Bool:
+	case lnat == semantic.Float && rnat == semantic.Float:
 
 		var (
-			x *fluxarray.Boolean
-
+			x   *fluxarray.Boolean
 			err error
 		)
+
 		if lvr != nil {
-			x, err = fluxarray.BooleanNotEqualLConst((*lvr).Bool(), r.Arr().(*fluxarray.Boolean), mem)
+			x, err = fluxarray.FloatFloatNotEqualLConst(
+				(*lvr).Float(),
+				r.Arr().(*fluxarray.Float),
+				mem,
+			)
 		} else if rvr != nil {
-			x, err = fluxarray.BooleanNotEqualRConst(l.Arr().(*fluxarray.Boolean), (*rvr).Bool(), mem)
+			x, err = fluxarray.FloatFloatNotEqualRConst(
+				l.Arr().(*fluxarray.Float),
+				(*rvr).Float(),
+				mem,
+			)
 		} else {
-			x, err = fluxarray.BooleanNotEqual(l.Arr().(*fluxarray.Boolean), r.Arr().(*fluxarray.Boolean), mem)
-		}
-
-		if err != nil {
-			return nil, err
-		}
-
-		return NewVectorValue(x, semantic.BasicBool), nil
-
-	case semantic.Int:
-
-		var (
-			x *fluxarray.Boolean
-
-			err error
-		)
-		if lvr != nil {
-			x, err = fluxarray.IntNotEqualLConst((*lvr).Int(), r.Arr().(*fluxarray.Int), mem)
-		} else if rvr != nil {
-			x, err = fluxarray.IntNotEqualRConst(l.Arr().(*fluxarray.Int), (*rvr).Int(), mem)
-		} else {
-			x, err = fluxarray.IntNotEqual(l.Arr().(*fluxarray.Int), r.Arr().(*fluxarray.Int), mem)
+			x, err = fluxarray.FloatFloatNotEqual(
+				l.Arr().(*fluxarray.Float),
+				r.Arr().(*fluxarray.Float),
+				mem,
+			)
 		}
 
 		if err != nil {
@@ -767,19 +1035,31 @@ func vectorNotEqual(l, r Vector, mem memory.Allocator) (Value, error) {
 
 		return NewVectorValue(x, semantic.BasicBool), nil
 
-	case semantic.UInt:
+	case lnat == semantic.Float && rnat == semantic.Int:
 
 		var (
-			x *fluxarray.Boolean
-
+			x   *fluxarray.Boolean
 			err error
 		)
+
 		if lvr != nil {
-			x, err = fluxarray.UintNotEqualLConst((*lvr).UInt(), r.Arr().(*fluxarray.Uint), mem)
+			x, err = fluxarray.FloatIntNotEqualLConst(
+				(*lvr).Float(),
+				r.Arr().(*fluxarray.Int),
+				mem,
+			)
 		} else if rvr != nil {
-			x, err = fluxarray.UintNotEqualRConst(l.Arr().(*fluxarray.Uint), (*rvr).UInt(), mem)
+			x, err = fluxarray.FloatIntNotEqualRConst(
+				l.Arr().(*fluxarray.Float),
+				(*rvr).Int(),
+				mem,
+			)
 		} else {
-			x, err = fluxarray.UintNotEqual(l.Arr().(*fluxarray.Uint), r.Arr().(*fluxarray.Uint), mem)
+			x, err = fluxarray.FloatIntNotEqual(
+				l.Arr().(*fluxarray.Float),
+				r.Arr().(*fluxarray.Int),
+				mem,
+			)
 		}
 
 		if err != nil {
@@ -788,19 +1068,31 @@ func vectorNotEqual(l, r Vector, mem memory.Allocator) (Value, error) {
 
 		return NewVectorValue(x, semantic.BasicBool), nil
 
-	case semantic.Float:
+	case lnat == semantic.Float && rnat == semantic.UInt:
 
 		var (
-			x *fluxarray.Boolean
-
+			x   *fluxarray.Boolean
 			err error
 		)
+
 		if lvr != nil {
-			x, err = fluxarray.FloatNotEqualLConst((*lvr).Float(), r.Arr().(*fluxarray.Float), mem)
+			x, err = fluxarray.FloatUintNotEqualLConst(
+				(*lvr).Float(),
+				r.Arr().(*fluxarray.Uint),
+				mem,
+			)
 		} else if rvr != nil {
-			x, err = fluxarray.FloatNotEqualRConst(l.Arr().(*fluxarray.Float), (*rvr).Float(), mem)
+			x, err = fluxarray.FloatUintNotEqualRConst(
+				l.Arr().(*fluxarray.Float),
+				(*rvr).UInt(),
+				mem,
+			)
 		} else {
-			x, err = fluxarray.FloatNotEqual(l.Arr().(*fluxarray.Float), r.Arr().(*fluxarray.Float), mem)
+			x, err = fluxarray.FloatUintNotEqual(
+				l.Arr().(*fluxarray.Float),
+				r.Arr().(*fluxarray.Uint),
+				mem,
+			)
 		}
 
 		if err != nil {
@@ -809,19 +1101,262 @@ func vectorNotEqual(l, r Vector, mem memory.Allocator) (Value, error) {
 
 		return NewVectorValue(x, semantic.BasicBool), nil
 
-	case semantic.String:
+	case lnat == semantic.Int && rnat == semantic.Float:
 
 		var (
-			x *fluxarray.Boolean
-
+			x   *fluxarray.Boolean
 			err error
 		)
+
 		if lvr != nil {
-			x, err = fluxarray.StringNotEqualLConst((*lvr).Str(), r.Arr().(*fluxarray.String), mem)
+			x, err = fluxarray.IntFloatNotEqualLConst(
+				(*lvr).Int(),
+				r.Arr().(*fluxarray.Float),
+				mem,
+			)
 		} else if rvr != nil {
-			x, err = fluxarray.StringNotEqualRConst(l.Arr().(*fluxarray.String), (*rvr).Str(), mem)
+			x, err = fluxarray.IntFloatNotEqualRConst(
+				l.Arr().(*fluxarray.Int),
+				(*rvr).Float(),
+				mem,
+			)
 		} else {
-			x, err = fluxarray.StringNotEqual(l.Arr().(*fluxarray.String), r.Arr().(*fluxarray.String), mem)
+			x, err = fluxarray.IntFloatNotEqual(
+				l.Arr().(*fluxarray.Int),
+				r.Arr().(*fluxarray.Float),
+				mem,
+			)
+		}
+
+		if err != nil {
+			return nil, err
+		}
+
+		return NewVectorValue(x, semantic.BasicBool), nil
+
+	case lnat == semantic.Int && rnat == semantic.Int:
+
+		var (
+			x   *fluxarray.Boolean
+			err error
+		)
+
+		if lvr != nil {
+			x, err = fluxarray.IntIntNotEqualLConst(
+				(*lvr).Int(),
+				r.Arr().(*fluxarray.Int),
+				mem,
+			)
+		} else if rvr != nil {
+			x, err = fluxarray.IntIntNotEqualRConst(
+				l.Arr().(*fluxarray.Int),
+				(*rvr).Int(),
+				mem,
+			)
+		} else {
+			x, err = fluxarray.IntIntNotEqual(
+				l.Arr().(*fluxarray.Int),
+				r.Arr().(*fluxarray.Int),
+				mem,
+			)
+		}
+
+		if err != nil {
+			return nil, err
+		}
+
+		return NewVectorValue(x, semantic.BasicBool), nil
+
+	case lnat == semantic.Int && rnat == semantic.UInt:
+
+		var (
+			x   *fluxarray.Boolean
+			err error
+		)
+
+		if lvr != nil {
+			x, err = fluxarray.IntUintNotEqualLConst(
+				(*lvr).Int(),
+				r.Arr().(*fluxarray.Uint),
+				mem,
+			)
+		} else if rvr != nil {
+			x, err = fluxarray.IntUintNotEqualRConst(
+				l.Arr().(*fluxarray.Int),
+				(*rvr).UInt(),
+				mem,
+			)
+		} else {
+			x, err = fluxarray.IntUintNotEqual(
+				l.Arr().(*fluxarray.Int),
+				r.Arr().(*fluxarray.Uint),
+				mem,
+			)
+		}
+
+		if err != nil {
+			return nil, err
+		}
+
+		return NewVectorValue(x, semantic.BasicBool), nil
+
+	case lnat == semantic.UInt && rnat == semantic.Int:
+
+		var (
+			x   *fluxarray.Boolean
+			err error
+		)
+
+		if lvr != nil {
+			x, err = fluxarray.UintIntNotEqualLConst(
+				(*lvr).UInt(),
+				r.Arr().(*fluxarray.Int),
+				mem,
+			)
+		} else if rvr != nil {
+			x, err = fluxarray.UintIntNotEqualRConst(
+				l.Arr().(*fluxarray.Uint),
+				(*rvr).Int(),
+				mem,
+			)
+		} else {
+			x, err = fluxarray.UintIntNotEqual(
+				l.Arr().(*fluxarray.Uint),
+				r.Arr().(*fluxarray.Int),
+				mem,
+			)
+		}
+
+		if err != nil {
+			return nil, err
+		}
+
+		return NewVectorValue(x, semantic.BasicBool), nil
+
+	case lnat == semantic.UInt && rnat == semantic.Float:
+
+		var (
+			x   *fluxarray.Boolean
+			err error
+		)
+
+		if lvr != nil {
+			x, err = fluxarray.UintFloatNotEqualLConst(
+				(*lvr).UInt(),
+				r.Arr().(*fluxarray.Float),
+				mem,
+			)
+		} else if rvr != nil {
+			x, err = fluxarray.UintFloatNotEqualRConst(
+				l.Arr().(*fluxarray.Uint),
+				(*rvr).Float(),
+				mem,
+			)
+		} else {
+			x, err = fluxarray.UintFloatNotEqual(
+				l.Arr().(*fluxarray.Uint),
+				r.Arr().(*fluxarray.Float),
+				mem,
+			)
+		}
+
+		if err != nil {
+			return nil, err
+		}
+
+		return NewVectorValue(x, semantic.BasicBool), nil
+
+	case lnat == semantic.UInt && rnat == semantic.UInt:
+
+		var (
+			x   *fluxarray.Boolean
+			err error
+		)
+
+		if lvr != nil {
+			x, err = fluxarray.UintUintNotEqualLConst(
+				(*lvr).UInt(),
+				r.Arr().(*fluxarray.Uint),
+				mem,
+			)
+		} else if rvr != nil {
+			x, err = fluxarray.UintUintNotEqualRConst(
+				l.Arr().(*fluxarray.Uint),
+				(*rvr).UInt(),
+				mem,
+			)
+		} else {
+			x, err = fluxarray.UintUintNotEqual(
+				l.Arr().(*fluxarray.Uint),
+				r.Arr().(*fluxarray.Uint),
+				mem,
+			)
+		}
+
+		if err != nil {
+			return nil, err
+		}
+
+		return NewVectorValue(x, semantic.BasicBool), nil
+
+	case lnat == semantic.Bool && rnat == semantic.Bool:
+
+		var (
+			x   *fluxarray.Boolean
+			err error
+		)
+
+		if lvr != nil {
+			x, err = fluxarray.BooleanBooleanNotEqualLConst(
+				(*lvr).Bool(),
+				r.Arr().(*fluxarray.Boolean),
+				mem,
+			)
+		} else if rvr != nil {
+			x, err = fluxarray.BooleanBooleanNotEqualRConst(
+				l.Arr().(*fluxarray.Boolean),
+				(*rvr).Bool(),
+				mem,
+			)
+		} else {
+			x, err = fluxarray.BooleanBooleanNotEqual(
+				l.Arr().(*fluxarray.Boolean),
+				r.Arr().(*fluxarray.Boolean),
+				mem,
+			)
+		}
+
+		if err != nil {
+			return nil, err
+		}
+
+		return NewVectorValue(x, semantic.BasicBool), nil
+
+	case lnat == semantic.String && rnat == semantic.String:
+
+		var (
+			x   *fluxarray.Boolean
+			err error
+		)
+
+		if lvr != nil {
+			x, err = fluxarray.StringStringNotEqualLConst(
+				(*lvr).Str(),
+				r.Arr().(*fluxarray.String),
+				mem,
+			)
+		} else if rvr != nil {
+			x, err = fluxarray.StringStringNotEqualRConst(
+				l.Arr().(*fluxarray.String),
+				(*rvr).Str(),
+				mem,
+			)
+		} else {
+			x, err = fluxarray.StringStringNotEqual(
+				l.Arr().(*fluxarray.String),
+				r.Arr().(*fluxarray.String),
+				mem,
+			)
 		}
 
 		if err != nil {
@@ -831,7 +1366,12 @@ func vectorNotEqual(l, r Vector, mem memory.Allocator) (Value, error) {
 		return NewVectorValue(x, semantic.BasicBool), nil
 
 	default:
-		return nil, errors.Newf(codes.Invalid, "unsupported type for vector NotEqual: %v", l.ElementType())
+		return nil, errors.Newf(
+			codes.Invalid,
+			"unsupported type for vector NotEqual: %v != %v",
+			l.ElementType(),
+			r.ElementType(),
+		)
 	}
 }
 
@@ -850,19 +1390,22 @@ func vectorLessThan(l, r Vector, mem memory.Allocator) (Value, error) {
 		panic("got 2 VectorRepeatValue; 'const folding' should be done earlier, in the function lookup")
 	}
 
-	switch l.ElementType().Nature() {
+	lnat := l.ElementType().Nature()
+	rnat := r.ElementType().Nature()
 
-	case semantic.Time:
+	switch {
+
+	case lnat == semantic.Time && rnat == semantic.Time:
 		var (
 			x   *fluxarray.Boolean
 			err error
 		)
 		if lvr != nil {
-			x, err = fluxarray.IntLessThanLConst((*lvr).Time().Time().UnixNano(), r.Arr().(*fluxarray.Int), mem)
+			x, err = fluxarray.IntIntLessThanLConst((*lvr).Time().Time().UnixNano(), r.Arr().(*fluxarray.Int), mem)
 		} else if rvr != nil {
-			x, err = fluxarray.IntLessThanRConst(l.Arr().(*fluxarray.Int), (*rvr).Time().Time().UnixNano(), mem)
+			x, err = fluxarray.IntIntLessThanRConst(l.Arr().(*fluxarray.Int), (*rvr).Time().Time().UnixNano(), mem)
 		} else {
-			x, err = fluxarray.IntLessThan(l.Arr().(*fluxarray.Int), r.Arr().(*fluxarray.Int), mem)
+			x, err = fluxarray.IntIntLessThan(l.Arr().(*fluxarray.Int), r.Arr().(*fluxarray.Int), mem)
 		}
 
 		if err != nil {
@@ -870,40 +1413,31 @@ func vectorLessThan(l, r Vector, mem memory.Allocator) (Value, error) {
 		}
 		return NewVectorValue(x, semantic.BasicBool), nil
 
-	case semantic.Int:
+	case lnat == semantic.Float && rnat == semantic.Float:
 
 		var (
-			x *fluxarray.Boolean
-
+			x   *fluxarray.Boolean
 			err error
 		)
+
 		if lvr != nil {
-			x, err = fluxarray.IntLessThanLConst((*lvr).Int(), r.Arr().(*fluxarray.Int), mem)
+			x, err = fluxarray.FloatFloatLessThanLConst(
+				(*lvr).Float(),
+				r.Arr().(*fluxarray.Float),
+				mem,
+			)
 		} else if rvr != nil {
-			x, err = fluxarray.IntLessThanRConst(l.Arr().(*fluxarray.Int), (*rvr).Int(), mem)
+			x, err = fluxarray.FloatFloatLessThanRConst(
+				l.Arr().(*fluxarray.Float),
+				(*rvr).Float(),
+				mem,
+			)
 		} else {
-			x, err = fluxarray.IntLessThan(l.Arr().(*fluxarray.Int), r.Arr().(*fluxarray.Int), mem)
-		}
-
-		if err != nil {
-			return nil, err
-		}
-
-		return NewVectorValue(x, semantic.BasicBool), nil
-
-	case semantic.UInt:
-
-		var (
-			x *fluxarray.Boolean
-
-			err error
-		)
-		if lvr != nil {
-			x, err = fluxarray.UintLessThanLConst((*lvr).UInt(), r.Arr().(*fluxarray.Uint), mem)
-		} else if rvr != nil {
-			x, err = fluxarray.UintLessThanRConst(l.Arr().(*fluxarray.Uint), (*rvr).UInt(), mem)
-		} else {
-			x, err = fluxarray.UintLessThan(l.Arr().(*fluxarray.Uint), r.Arr().(*fluxarray.Uint), mem)
+			x, err = fluxarray.FloatFloatLessThan(
+				l.Arr().(*fluxarray.Float),
+				r.Arr().(*fluxarray.Float),
+				mem,
+			)
 		}
 
 		if err != nil {
@@ -912,19 +1446,31 @@ func vectorLessThan(l, r Vector, mem memory.Allocator) (Value, error) {
 
 		return NewVectorValue(x, semantic.BasicBool), nil
 
-	case semantic.Float:
+	case lnat == semantic.Float && rnat == semantic.Int:
 
 		var (
-			x *fluxarray.Boolean
-
+			x   *fluxarray.Boolean
 			err error
 		)
+
 		if lvr != nil {
-			x, err = fluxarray.FloatLessThanLConst((*lvr).Float(), r.Arr().(*fluxarray.Float), mem)
+			x, err = fluxarray.FloatIntLessThanLConst(
+				(*lvr).Float(),
+				r.Arr().(*fluxarray.Int),
+				mem,
+			)
 		} else if rvr != nil {
-			x, err = fluxarray.FloatLessThanRConst(l.Arr().(*fluxarray.Float), (*rvr).Float(), mem)
+			x, err = fluxarray.FloatIntLessThanRConst(
+				l.Arr().(*fluxarray.Float),
+				(*rvr).Int(),
+				mem,
+			)
 		} else {
-			x, err = fluxarray.FloatLessThan(l.Arr().(*fluxarray.Float), r.Arr().(*fluxarray.Float), mem)
+			x, err = fluxarray.FloatIntLessThan(
+				l.Arr().(*fluxarray.Float),
+				r.Arr().(*fluxarray.Int),
+				mem,
+			)
 		}
 
 		if err != nil {
@@ -933,19 +1479,262 @@ func vectorLessThan(l, r Vector, mem memory.Allocator) (Value, error) {
 
 		return NewVectorValue(x, semantic.BasicBool), nil
 
-	case semantic.String:
+	case lnat == semantic.Float && rnat == semantic.UInt:
 
 		var (
-			x *fluxarray.Boolean
-
+			x   *fluxarray.Boolean
 			err error
 		)
+
 		if lvr != nil {
-			x, err = fluxarray.StringLessThanLConst((*lvr).Str(), r.Arr().(*fluxarray.String), mem)
+			x, err = fluxarray.FloatUintLessThanLConst(
+				(*lvr).Float(),
+				r.Arr().(*fluxarray.Uint),
+				mem,
+			)
 		} else if rvr != nil {
-			x, err = fluxarray.StringLessThanRConst(l.Arr().(*fluxarray.String), (*rvr).Str(), mem)
+			x, err = fluxarray.FloatUintLessThanRConst(
+				l.Arr().(*fluxarray.Float),
+				(*rvr).UInt(),
+				mem,
+			)
 		} else {
-			x, err = fluxarray.StringLessThan(l.Arr().(*fluxarray.String), r.Arr().(*fluxarray.String), mem)
+			x, err = fluxarray.FloatUintLessThan(
+				l.Arr().(*fluxarray.Float),
+				r.Arr().(*fluxarray.Uint),
+				mem,
+			)
+		}
+
+		if err != nil {
+			return nil, err
+		}
+
+		return NewVectorValue(x, semantic.BasicBool), nil
+
+	case lnat == semantic.Int && rnat == semantic.Float:
+
+		var (
+			x   *fluxarray.Boolean
+			err error
+		)
+
+		if lvr != nil {
+			x, err = fluxarray.IntFloatLessThanLConst(
+				(*lvr).Int(),
+				r.Arr().(*fluxarray.Float),
+				mem,
+			)
+		} else if rvr != nil {
+			x, err = fluxarray.IntFloatLessThanRConst(
+				l.Arr().(*fluxarray.Int),
+				(*rvr).Float(),
+				mem,
+			)
+		} else {
+			x, err = fluxarray.IntFloatLessThan(
+				l.Arr().(*fluxarray.Int),
+				r.Arr().(*fluxarray.Float),
+				mem,
+			)
+		}
+
+		if err != nil {
+			return nil, err
+		}
+
+		return NewVectorValue(x, semantic.BasicBool), nil
+
+	case lnat == semantic.Int && rnat == semantic.Int:
+
+		var (
+			x   *fluxarray.Boolean
+			err error
+		)
+
+		if lvr != nil {
+			x, err = fluxarray.IntIntLessThanLConst(
+				(*lvr).Int(),
+				r.Arr().(*fluxarray.Int),
+				mem,
+			)
+		} else if rvr != nil {
+			x, err = fluxarray.IntIntLessThanRConst(
+				l.Arr().(*fluxarray.Int),
+				(*rvr).Int(),
+				mem,
+			)
+		} else {
+			x, err = fluxarray.IntIntLessThan(
+				l.Arr().(*fluxarray.Int),
+				r.Arr().(*fluxarray.Int),
+				mem,
+			)
+		}
+
+		if err != nil {
+			return nil, err
+		}
+
+		return NewVectorValue(x, semantic.BasicBool), nil
+
+	case lnat == semantic.Int && rnat == semantic.UInt:
+
+		var (
+			x   *fluxarray.Boolean
+			err error
+		)
+
+		if lvr != nil {
+			x, err = fluxarray.IntUintLessThanLConst(
+				(*lvr).Int(),
+				r.Arr().(*fluxarray.Uint),
+				mem,
+			)
+		} else if rvr != nil {
+			x, err = fluxarray.IntUintLessThanRConst(
+				l.Arr().(*fluxarray.Int),
+				(*rvr).UInt(),
+				mem,
+			)
+		} else {
+			x, err = fluxarray.IntUintLessThan(
+				l.Arr().(*fluxarray.Int),
+				r.Arr().(*fluxarray.Uint),
+				mem,
+			)
+		}
+
+		if err != nil {
+			return nil, err
+		}
+
+		return NewVectorValue(x, semantic.BasicBool), nil
+
+	case lnat == semantic.UInt && rnat == semantic.Int:
+
+		var (
+			x   *fluxarray.Boolean
+			err error
+		)
+
+		if lvr != nil {
+			x, err = fluxarray.UintIntLessThanLConst(
+				(*lvr).UInt(),
+				r.Arr().(*fluxarray.Int),
+				mem,
+			)
+		} else if rvr != nil {
+			x, err = fluxarray.UintIntLessThanRConst(
+				l.Arr().(*fluxarray.Uint),
+				(*rvr).Int(),
+				mem,
+			)
+		} else {
+			x, err = fluxarray.UintIntLessThan(
+				l.Arr().(*fluxarray.Uint),
+				r.Arr().(*fluxarray.Int),
+				mem,
+			)
+		}
+
+		if err != nil {
+			return nil, err
+		}
+
+		return NewVectorValue(x, semantic.BasicBool), nil
+
+	case lnat == semantic.UInt && rnat == semantic.Float:
+
+		var (
+			x   *fluxarray.Boolean
+			err error
+		)
+
+		if lvr != nil {
+			x, err = fluxarray.UintFloatLessThanLConst(
+				(*lvr).UInt(),
+				r.Arr().(*fluxarray.Float),
+				mem,
+			)
+		} else if rvr != nil {
+			x, err = fluxarray.UintFloatLessThanRConst(
+				l.Arr().(*fluxarray.Uint),
+				(*rvr).Float(),
+				mem,
+			)
+		} else {
+			x, err = fluxarray.UintFloatLessThan(
+				l.Arr().(*fluxarray.Uint),
+				r.Arr().(*fluxarray.Float),
+				mem,
+			)
+		}
+
+		if err != nil {
+			return nil, err
+		}
+
+		return NewVectorValue(x, semantic.BasicBool), nil
+
+	case lnat == semantic.UInt && rnat == semantic.UInt:
+
+		var (
+			x   *fluxarray.Boolean
+			err error
+		)
+
+		if lvr != nil {
+			x, err = fluxarray.UintUintLessThanLConst(
+				(*lvr).UInt(),
+				r.Arr().(*fluxarray.Uint),
+				mem,
+			)
+		} else if rvr != nil {
+			x, err = fluxarray.UintUintLessThanRConst(
+				l.Arr().(*fluxarray.Uint),
+				(*rvr).UInt(),
+				mem,
+			)
+		} else {
+			x, err = fluxarray.UintUintLessThan(
+				l.Arr().(*fluxarray.Uint),
+				r.Arr().(*fluxarray.Uint),
+				mem,
+			)
+		}
+
+		if err != nil {
+			return nil, err
+		}
+
+		return NewVectorValue(x, semantic.BasicBool), nil
+
+	case lnat == semantic.String && rnat == semantic.String:
+
+		var (
+			x   *fluxarray.Boolean
+			err error
+		)
+
+		if lvr != nil {
+			x, err = fluxarray.StringStringLessThanLConst(
+				(*lvr).Str(),
+				r.Arr().(*fluxarray.String),
+				mem,
+			)
+		} else if rvr != nil {
+			x, err = fluxarray.StringStringLessThanRConst(
+				l.Arr().(*fluxarray.String),
+				(*rvr).Str(),
+				mem,
+			)
+		} else {
+			x, err = fluxarray.StringStringLessThan(
+				l.Arr().(*fluxarray.String),
+				r.Arr().(*fluxarray.String),
+				mem,
+			)
 		}
 
 		if err != nil {
@@ -955,7 +1744,12 @@ func vectorLessThan(l, r Vector, mem memory.Allocator) (Value, error) {
 		return NewVectorValue(x, semantic.BasicBool), nil
 
 	default:
-		return nil, errors.Newf(codes.Invalid, "unsupported type for vector LessThan: %v", l.ElementType())
+		return nil, errors.Newf(
+			codes.Invalid,
+			"unsupported type for vector LessThan: %v < %v",
+			l.ElementType(),
+			r.ElementType(),
+		)
 	}
 }
 
@@ -974,19 +1768,22 @@ func vectorLessThanEqual(l, r Vector, mem memory.Allocator) (Value, error) {
 		panic("got 2 VectorRepeatValue; 'const folding' should be done earlier, in the function lookup")
 	}
 
-	switch l.ElementType().Nature() {
+	lnat := l.ElementType().Nature()
+	rnat := r.ElementType().Nature()
 
-	case semantic.Time:
+	switch {
+
+	case lnat == semantic.Time && rnat == semantic.Time:
 		var (
 			x   *fluxarray.Boolean
 			err error
 		)
 		if lvr != nil {
-			x, err = fluxarray.IntLessThanEqualLConst((*lvr).Time().Time().UnixNano(), r.Arr().(*fluxarray.Int), mem)
+			x, err = fluxarray.IntIntLessThanEqualLConst((*lvr).Time().Time().UnixNano(), r.Arr().(*fluxarray.Int), mem)
 		} else if rvr != nil {
-			x, err = fluxarray.IntLessThanEqualRConst(l.Arr().(*fluxarray.Int), (*rvr).Time().Time().UnixNano(), mem)
+			x, err = fluxarray.IntIntLessThanEqualRConst(l.Arr().(*fluxarray.Int), (*rvr).Time().Time().UnixNano(), mem)
 		} else {
-			x, err = fluxarray.IntLessThanEqual(l.Arr().(*fluxarray.Int), r.Arr().(*fluxarray.Int), mem)
+			x, err = fluxarray.IntIntLessThanEqual(l.Arr().(*fluxarray.Int), r.Arr().(*fluxarray.Int), mem)
 		}
 
 		if err != nil {
@@ -994,40 +1791,31 @@ func vectorLessThanEqual(l, r Vector, mem memory.Allocator) (Value, error) {
 		}
 		return NewVectorValue(x, semantic.BasicBool), nil
 
-	case semantic.Int:
+	case lnat == semantic.Float && rnat == semantic.Float:
 
 		var (
-			x *fluxarray.Boolean
-
+			x   *fluxarray.Boolean
 			err error
 		)
+
 		if lvr != nil {
-			x, err = fluxarray.IntLessThanEqualLConst((*lvr).Int(), r.Arr().(*fluxarray.Int), mem)
+			x, err = fluxarray.FloatFloatLessThanEqualLConst(
+				(*lvr).Float(),
+				r.Arr().(*fluxarray.Float),
+				mem,
+			)
 		} else if rvr != nil {
-			x, err = fluxarray.IntLessThanEqualRConst(l.Arr().(*fluxarray.Int), (*rvr).Int(), mem)
+			x, err = fluxarray.FloatFloatLessThanEqualRConst(
+				l.Arr().(*fluxarray.Float),
+				(*rvr).Float(),
+				mem,
+			)
 		} else {
-			x, err = fluxarray.IntLessThanEqual(l.Arr().(*fluxarray.Int), r.Arr().(*fluxarray.Int), mem)
-		}
-
-		if err != nil {
-			return nil, err
-		}
-
-		return NewVectorValue(x, semantic.BasicBool), nil
-
-	case semantic.UInt:
-
-		var (
-			x *fluxarray.Boolean
-
-			err error
-		)
-		if lvr != nil {
-			x, err = fluxarray.UintLessThanEqualLConst((*lvr).UInt(), r.Arr().(*fluxarray.Uint), mem)
-		} else if rvr != nil {
-			x, err = fluxarray.UintLessThanEqualRConst(l.Arr().(*fluxarray.Uint), (*rvr).UInt(), mem)
-		} else {
-			x, err = fluxarray.UintLessThanEqual(l.Arr().(*fluxarray.Uint), r.Arr().(*fluxarray.Uint), mem)
+			x, err = fluxarray.FloatFloatLessThanEqual(
+				l.Arr().(*fluxarray.Float),
+				r.Arr().(*fluxarray.Float),
+				mem,
+			)
 		}
 
 		if err != nil {
@@ -1036,19 +1824,31 @@ func vectorLessThanEqual(l, r Vector, mem memory.Allocator) (Value, error) {
 
 		return NewVectorValue(x, semantic.BasicBool), nil
 
-	case semantic.Float:
+	case lnat == semantic.Float && rnat == semantic.Int:
 
 		var (
-			x *fluxarray.Boolean
-
+			x   *fluxarray.Boolean
 			err error
 		)
+
 		if lvr != nil {
-			x, err = fluxarray.FloatLessThanEqualLConst((*lvr).Float(), r.Arr().(*fluxarray.Float), mem)
+			x, err = fluxarray.FloatIntLessThanEqualLConst(
+				(*lvr).Float(),
+				r.Arr().(*fluxarray.Int),
+				mem,
+			)
 		} else if rvr != nil {
-			x, err = fluxarray.FloatLessThanEqualRConst(l.Arr().(*fluxarray.Float), (*rvr).Float(), mem)
+			x, err = fluxarray.FloatIntLessThanEqualRConst(
+				l.Arr().(*fluxarray.Float),
+				(*rvr).Int(),
+				mem,
+			)
 		} else {
-			x, err = fluxarray.FloatLessThanEqual(l.Arr().(*fluxarray.Float), r.Arr().(*fluxarray.Float), mem)
+			x, err = fluxarray.FloatIntLessThanEqual(
+				l.Arr().(*fluxarray.Float),
+				r.Arr().(*fluxarray.Int),
+				mem,
+			)
 		}
 
 		if err != nil {
@@ -1057,19 +1857,262 @@ func vectorLessThanEqual(l, r Vector, mem memory.Allocator) (Value, error) {
 
 		return NewVectorValue(x, semantic.BasicBool), nil
 
-	case semantic.String:
+	case lnat == semantic.Float && rnat == semantic.UInt:
 
 		var (
-			x *fluxarray.Boolean
-
+			x   *fluxarray.Boolean
 			err error
 		)
+
 		if lvr != nil {
-			x, err = fluxarray.StringLessThanEqualLConst((*lvr).Str(), r.Arr().(*fluxarray.String), mem)
+			x, err = fluxarray.FloatUintLessThanEqualLConst(
+				(*lvr).Float(),
+				r.Arr().(*fluxarray.Uint),
+				mem,
+			)
 		} else if rvr != nil {
-			x, err = fluxarray.StringLessThanEqualRConst(l.Arr().(*fluxarray.String), (*rvr).Str(), mem)
+			x, err = fluxarray.FloatUintLessThanEqualRConst(
+				l.Arr().(*fluxarray.Float),
+				(*rvr).UInt(),
+				mem,
+			)
 		} else {
-			x, err = fluxarray.StringLessThanEqual(l.Arr().(*fluxarray.String), r.Arr().(*fluxarray.String), mem)
+			x, err = fluxarray.FloatUintLessThanEqual(
+				l.Arr().(*fluxarray.Float),
+				r.Arr().(*fluxarray.Uint),
+				mem,
+			)
+		}
+
+		if err != nil {
+			return nil, err
+		}
+
+		return NewVectorValue(x, semantic.BasicBool), nil
+
+	case lnat == semantic.Int && rnat == semantic.Float:
+
+		var (
+			x   *fluxarray.Boolean
+			err error
+		)
+
+		if lvr != nil {
+			x, err = fluxarray.IntFloatLessThanEqualLConst(
+				(*lvr).Int(),
+				r.Arr().(*fluxarray.Float),
+				mem,
+			)
+		} else if rvr != nil {
+			x, err = fluxarray.IntFloatLessThanEqualRConst(
+				l.Arr().(*fluxarray.Int),
+				(*rvr).Float(),
+				mem,
+			)
+		} else {
+			x, err = fluxarray.IntFloatLessThanEqual(
+				l.Arr().(*fluxarray.Int),
+				r.Arr().(*fluxarray.Float),
+				mem,
+			)
+		}
+
+		if err != nil {
+			return nil, err
+		}
+
+		return NewVectorValue(x, semantic.BasicBool), nil
+
+	case lnat == semantic.Int && rnat == semantic.Int:
+
+		var (
+			x   *fluxarray.Boolean
+			err error
+		)
+
+		if lvr != nil {
+			x, err = fluxarray.IntIntLessThanEqualLConst(
+				(*lvr).Int(),
+				r.Arr().(*fluxarray.Int),
+				mem,
+			)
+		} else if rvr != nil {
+			x, err = fluxarray.IntIntLessThanEqualRConst(
+				l.Arr().(*fluxarray.Int),
+				(*rvr).Int(),
+				mem,
+			)
+		} else {
+			x, err = fluxarray.IntIntLessThanEqual(
+				l.Arr().(*fluxarray.Int),
+				r.Arr().(*fluxarray.Int),
+				mem,
+			)
+		}
+
+		if err != nil {
+			return nil, err
+		}
+
+		return NewVectorValue(x, semantic.BasicBool), nil
+
+	case lnat == semantic.Int && rnat == semantic.UInt:
+
+		var (
+			x   *fluxarray.Boolean
+			err error
+		)
+
+		if lvr != nil {
+			x, err = fluxarray.IntUintLessThanEqualLConst(
+				(*lvr).Int(),
+				r.Arr().(*fluxarray.Uint),
+				mem,
+			)
+		} else if rvr != nil {
+			x, err = fluxarray.IntUintLessThanEqualRConst(
+				l.Arr().(*fluxarray.Int),
+				(*rvr).UInt(),
+				mem,
+			)
+		} else {
+			x, err = fluxarray.IntUintLessThanEqual(
+				l.Arr().(*fluxarray.Int),
+				r.Arr().(*fluxarray.Uint),
+				mem,
+			)
+		}
+
+		if err != nil {
+			return nil, err
+		}
+
+		return NewVectorValue(x, semantic.BasicBool), nil
+
+	case lnat == semantic.UInt && rnat == semantic.Int:
+
+		var (
+			x   *fluxarray.Boolean
+			err error
+		)
+
+		if lvr != nil {
+			x, err = fluxarray.UintIntLessThanEqualLConst(
+				(*lvr).UInt(),
+				r.Arr().(*fluxarray.Int),
+				mem,
+			)
+		} else if rvr != nil {
+			x, err = fluxarray.UintIntLessThanEqualRConst(
+				l.Arr().(*fluxarray.Uint),
+				(*rvr).Int(),
+				mem,
+			)
+		} else {
+			x, err = fluxarray.UintIntLessThanEqual(
+				l.Arr().(*fluxarray.Uint),
+				r.Arr().(*fluxarray.Int),
+				mem,
+			)
+		}
+
+		if err != nil {
+			return nil, err
+		}
+
+		return NewVectorValue(x, semantic.BasicBool), nil
+
+	case lnat == semantic.UInt && rnat == semantic.Float:
+
+		var (
+			x   *fluxarray.Boolean
+			err error
+		)
+
+		if lvr != nil {
+			x, err = fluxarray.UintFloatLessThanEqualLConst(
+				(*lvr).UInt(),
+				r.Arr().(*fluxarray.Float),
+				mem,
+			)
+		} else if rvr != nil {
+			x, err = fluxarray.UintFloatLessThanEqualRConst(
+				l.Arr().(*fluxarray.Uint),
+				(*rvr).Float(),
+				mem,
+			)
+		} else {
+			x, err = fluxarray.UintFloatLessThanEqual(
+				l.Arr().(*fluxarray.Uint),
+				r.Arr().(*fluxarray.Float),
+				mem,
+			)
+		}
+
+		if err != nil {
+			return nil, err
+		}
+
+		return NewVectorValue(x, semantic.BasicBool), nil
+
+	case lnat == semantic.UInt && rnat == semantic.UInt:
+
+		var (
+			x   *fluxarray.Boolean
+			err error
+		)
+
+		if lvr != nil {
+			x, err = fluxarray.UintUintLessThanEqualLConst(
+				(*lvr).UInt(),
+				r.Arr().(*fluxarray.Uint),
+				mem,
+			)
+		} else if rvr != nil {
+			x, err = fluxarray.UintUintLessThanEqualRConst(
+				l.Arr().(*fluxarray.Uint),
+				(*rvr).UInt(),
+				mem,
+			)
+		} else {
+			x, err = fluxarray.UintUintLessThanEqual(
+				l.Arr().(*fluxarray.Uint),
+				r.Arr().(*fluxarray.Uint),
+				mem,
+			)
+		}
+
+		if err != nil {
+			return nil, err
+		}
+
+		return NewVectorValue(x, semantic.BasicBool), nil
+
+	case lnat == semantic.String && rnat == semantic.String:
+
+		var (
+			x   *fluxarray.Boolean
+			err error
+		)
+
+		if lvr != nil {
+			x, err = fluxarray.StringStringLessThanEqualLConst(
+				(*lvr).Str(),
+				r.Arr().(*fluxarray.String),
+				mem,
+			)
+		} else if rvr != nil {
+			x, err = fluxarray.StringStringLessThanEqualRConst(
+				l.Arr().(*fluxarray.String),
+				(*rvr).Str(),
+				mem,
+			)
+		} else {
+			x, err = fluxarray.StringStringLessThanEqual(
+				l.Arr().(*fluxarray.String),
+				r.Arr().(*fluxarray.String),
+				mem,
+			)
 		}
 
 		if err != nil {
@@ -1079,7 +2122,12 @@ func vectorLessThanEqual(l, r Vector, mem memory.Allocator) (Value, error) {
 		return NewVectorValue(x, semantic.BasicBool), nil
 
 	default:
-		return nil, errors.Newf(codes.Invalid, "unsupported type for vector LessThanEqual: %v", l.ElementType())
+		return nil, errors.Newf(
+			codes.Invalid,
+			"unsupported type for vector LessThanEqual: %v <= %v",
+			l.ElementType(),
+			r.ElementType(),
+		)
 	}
 }
 
@@ -1098,19 +2146,22 @@ func vectorGreaterThan(l, r Vector, mem memory.Allocator) (Value, error) {
 		panic("got 2 VectorRepeatValue; 'const folding' should be done earlier, in the function lookup")
 	}
 
-	switch l.ElementType().Nature() {
+	lnat := l.ElementType().Nature()
+	rnat := r.ElementType().Nature()
 
-	case semantic.Time:
+	switch {
+
+	case lnat == semantic.Time && rnat == semantic.Time:
 		var (
 			x   *fluxarray.Boolean
 			err error
 		)
 		if lvr != nil {
-			x, err = fluxarray.IntGreaterThanLConst((*lvr).Time().Time().UnixNano(), r.Arr().(*fluxarray.Int), mem)
+			x, err = fluxarray.IntIntGreaterThanLConst((*lvr).Time().Time().UnixNano(), r.Arr().(*fluxarray.Int), mem)
 		} else if rvr != nil {
-			x, err = fluxarray.IntGreaterThanRConst(l.Arr().(*fluxarray.Int), (*rvr).Time().Time().UnixNano(), mem)
+			x, err = fluxarray.IntIntGreaterThanRConst(l.Arr().(*fluxarray.Int), (*rvr).Time().Time().UnixNano(), mem)
 		} else {
-			x, err = fluxarray.IntGreaterThan(l.Arr().(*fluxarray.Int), r.Arr().(*fluxarray.Int), mem)
+			x, err = fluxarray.IntIntGreaterThan(l.Arr().(*fluxarray.Int), r.Arr().(*fluxarray.Int), mem)
 		}
 
 		if err != nil {
@@ -1118,40 +2169,31 @@ func vectorGreaterThan(l, r Vector, mem memory.Allocator) (Value, error) {
 		}
 		return NewVectorValue(x, semantic.BasicBool), nil
 
-	case semantic.Int:
+	case lnat == semantic.Float && rnat == semantic.Float:
 
 		var (
-			x *fluxarray.Boolean
-
+			x   *fluxarray.Boolean
 			err error
 		)
+
 		if lvr != nil {
-			x, err = fluxarray.IntGreaterThanLConst((*lvr).Int(), r.Arr().(*fluxarray.Int), mem)
+			x, err = fluxarray.FloatFloatGreaterThanLConst(
+				(*lvr).Float(),
+				r.Arr().(*fluxarray.Float),
+				mem,
+			)
 		} else if rvr != nil {
-			x, err = fluxarray.IntGreaterThanRConst(l.Arr().(*fluxarray.Int), (*rvr).Int(), mem)
+			x, err = fluxarray.FloatFloatGreaterThanRConst(
+				l.Arr().(*fluxarray.Float),
+				(*rvr).Float(),
+				mem,
+			)
 		} else {
-			x, err = fluxarray.IntGreaterThan(l.Arr().(*fluxarray.Int), r.Arr().(*fluxarray.Int), mem)
-		}
-
-		if err != nil {
-			return nil, err
-		}
-
-		return NewVectorValue(x, semantic.BasicBool), nil
-
-	case semantic.UInt:
-
-		var (
-			x *fluxarray.Boolean
-
-			err error
-		)
-		if lvr != nil {
-			x, err = fluxarray.UintGreaterThanLConst((*lvr).UInt(), r.Arr().(*fluxarray.Uint), mem)
-		} else if rvr != nil {
-			x, err = fluxarray.UintGreaterThanRConst(l.Arr().(*fluxarray.Uint), (*rvr).UInt(), mem)
-		} else {
-			x, err = fluxarray.UintGreaterThan(l.Arr().(*fluxarray.Uint), r.Arr().(*fluxarray.Uint), mem)
+			x, err = fluxarray.FloatFloatGreaterThan(
+				l.Arr().(*fluxarray.Float),
+				r.Arr().(*fluxarray.Float),
+				mem,
+			)
 		}
 
 		if err != nil {
@@ -1160,19 +2202,31 @@ func vectorGreaterThan(l, r Vector, mem memory.Allocator) (Value, error) {
 
 		return NewVectorValue(x, semantic.BasicBool), nil
 
-	case semantic.Float:
+	case lnat == semantic.Float && rnat == semantic.Int:
 
 		var (
-			x *fluxarray.Boolean
-
+			x   *fluxarray.Boolean
 			err error
 		)
+
 		if lvr != nil {
-			x, err = fluxarray.FloatGreaterThanLConst((*lvr).Float(), r.Arr().(*fluxarray.Float), mem)
+			x, err = fluxarray.FloatIntGreaterThanLConst(
+				(*lvr).Float(),
+				r.Arr().(*fluxarray.Int),
+				mem,
+			)
 		} else if rvr != nil {
-			x, err = fluxarray.FloatGreaterThanRConst(l.Arr().(*fluxarray.Float), (*rvr).Float(), mem)
+			x, err = fluxarray.FloatIntGreaterThanRConst(
+				l.Arr().(*fluxarray.Float),
+				(*rvr).Int(),
+				mem,
+			)
 		} else {
-			x, err = fluxarray.FloatGreaterThan(l.Arr().(*fluxarray.Float), r.Arr().(*fluxarray.Float), mem)
+			x, err = fluxarray.FloatIntGreaterThan(
+				l.Arr().(*fluxarray.Float),
+				r.Arr().(*fluxarray.Int),
+				mem,
+			)
 		}
 
 		if err != nil {
@@ -1181,19 +2235,262 @@ func vectorGreaterThan(l, r Vector, mem memory.Allocator) (Value, error) {
 
 		return NewVectorValue(x, semantic.BasicBool), nil
 
-	case semantic.String:
+	case lnat == semantic.Float && rnat == semantic.UInt:
 
 		var (
-			x *fluxarray.Boolean
-
+			x   *fluxarray.Boolean
 			err error
 		)
+
 		if lvr != nil {
-			x, err = fluxarray.StringGreaterThanLConst((*lvr).Str(), r.Arr().(*fluxarray.String), mem)
+			x, err = fluxarray.FloatUintGreaterThanLConst(
+				(*lvr).Float(),
+				r.Arr().(*fluxarray.Uint),
+				mem,
+			)
 		} else if rvr != nil {
-			x, err = fluxarray.StringGreaterThanRConst(l.Arr().(*fluxarray.String), (*rvr).Str(), mem)
+			x, err = fluxarray.FloatUintGreaterThanRConst(
+				l.Arr().(*fluxarray.Float),
+				(*rvr).UInt(),
+				mem,
+			)
 		} else {
-			x, err = fluxarray.StringGreaterThan(l.Arr().(*fluxarray.String), r.Arr().(*fluxarray.String), mem)
+			x, err = fluxarray.FloatUintGreaterThan(
+				l.Arr().(*fluxarray.Float),
+				r.Arr().(*fluxarray.Uint),
+				mem,
+			)
+		}
+
+		if err != nil {
+			return nil, err
+		}
+
+		return NewVectorValue(x, semantic.BasicBool), nil
+
+	case lnat == semantic.Int && rnat == semantic.Float:
+
+		var (
+			x   *fluxarray.Boolean
+			err error
+		)
+
+		if lvr != nil {
+			x, err = fluxarray.IntFloatGreaterThanLConst(
+				(*lvr).Int(),
+				r.Arr().(*fluxarray.Float),
+				mem,
+			)
+		} else if rvr != nil {
+			x, err = fluxarray.IntFloatGreaterThanRConst(
+				l.Arr().(*fluxarray.Int),
+				(*rvr).Float(),
+				mem,
+			)
+		} else {
+			x, err = fluxarray.IntFloatGreaterThan(
+				l.Arr().(*fluxarray.Int),
+				r.Arr().(*fluxarray.Float),
+				mem,
+			)
+		}
+
+		if err != nil {
+			return nil, err
+		}
+
+		return NewVectorValue(x, semantic.BasicBool), nil
+
+	case lnat == semantic.Int && rnat == semantic.Int:
+
+		var (
+			x   *fluxarray.Boolean
+			err error
+		)
+
+		if lvr != nil {
+			x, err = fluxarray.IntIntGreaterThanLConst(
+				(*lvr).Int(),
+				r.Arr().(*fluxarray.Int),
+				mem,
+			)
+		} else if rvr != nil {
+			x, err = fluxarray.IntIntGreaterThanRConst(
+				l.Arr().(*fluxarray.Int),
+				(*rvr).Int(),
+				mem,
+			)
+		} else {
+			x, err = fluxarray.IntIntGreaterThan(
+				l.Arr().(*fluxarray.Int),
+				r.Arr().(*fluxarray.Int),
+				mem,
+			)
+		}
+
+		if err != nil {
+			return nil, err
+		}
+
+		return NewVectorValue(x, semantic.BasicBool), nil
+
+	case lnat == semantic.Int && rnat == semantic.UInt:
+
+		var (
+			x   *fluxarray.Boolean
+			err error
+		)
+
+		if lvr != nil {
+			x, err = fluxarray.IntUintGreaterThanLConst(
+				(*lvr).Int(),
+				r.Arr().(*fluxarray.Uint),
+				mem,
+			)
+		} else if rvr != nil {
+			x, err = fluxarray.IntUintGreaterThanRConst(
+				l.Arr().(*fluxarray.Int),
+				(*rvr).UInt(),
+				mem,
+			)
+		} else {
+			x, err = fluxarray.IntUintGreaterThan(
+				l.Arr().(*fluxarray.Int),
+				r.Arr().(*fluxarray.Uint),
+				mem,
+			)
+		}
+
+		if err != nil {
+			return nil, err
+		}
+
+		return NewVectorValue(x, semantic.BasicBool), nil
+
+	case lnat == semantic.UInt && rnat == semantic.Int:
+
+		var (
+			x   *fluxarray.Boolean
+			err error
+		)
+
+		if lvr != nil {
+			x, err = fluxarray.UintIntGreaterThanLConst(
+				(*lvr).UInt(),
+				r.Arr().(*fluxarray.Int),
+				mem,
+			)
+		} else if rvr != nil {
+			x, err = fluxarray.UintIntGreaterThanRConst(
+				l.Arr().(*fluxarray.Uint),
+				(*rvr).Int(),
+				mem,
+			)
+		} else {
+			x, err = fluxarray.UintIntGreaterThan(
+				l.Arr().(*fluxarray.Uint),
+				r.Arr().(*fluxarray.Int),
+				mem,
+			)
+		}
+
+		if err != nil {
+			return nil, err
+		}
+
+		return NewVectorValue(x, semantic.BasicBool), nil
+
+	case lnat == semantic.UInt && rnat == semantic.Float:
+
+		var (
+			x   *fluxarray.Boolean
+			err error
+		)
+
+		if lvr != nil {
+			x, err = fluxarray.UintFloatGreaterThanLConst(
+				(*lvr).UInt(),
+				r.Arr().(*fluxarray.Float),
+				mem,
+			)
+		} else if rvr != nil {
+			x, err = fluxarray.UintFloatGreaterThanRConst(
+				l.Arr().(*fluxarray.Uint),
+				(*rvr).Float(),
+				mem,
+			)
+		} else {
+			x, err = fluxarray.UintFloatGreaterThan(
+				l.Arr().(*fluxarray.Uint),
+				r.Arr().(*fluxarray.Float),
+				mem,
+			)
+		}
+
+		if err != nil {
+			return nil, err
+		}
+
+		return NewVectorValue(x, semantic.BasicBool), nil
+
+	case lnat == semantic.UInt && rnat == semantic.UInt:
+
+		var (
+			x   *fluxarray.Boolean
+			err error
+		)
+
+		if lvr != nil {
+			x, err = fluxarray.UintUintGreaterThanLConst(
+				(*lvr).UInt(),
+				r.Arr().(*fluxarray.Uint),
+				mem,
+			)
+		} else if rvr != nil {
+			x, err = fluxarray.UintUintGreaterThanRConst(
+				l.Arr().(*fluxarray.Uint),
+				(*rvr).UInt(),
+				mem,
+			)
+		} else {
+			x, err = fluxarray.UintUintGreaterThan(
+				l.Arr().(*fluxarray.Uint),
+				r.Arr().(*fluxarray.Uint),
+				mem,
+			)
+		}
+
+		if err != nil {
+			return nil, err
+		}
+
+		return NewVectorValue(x, semantic.BasicBool), nil
+
+	case lnat == semantic.String && rnat == semantic.String:
+
+		var (
+			x   *fluxarray.Boolean
+			err error
+		)
+
+		if lvr != nil {
+			x, err = fluxarray.StringStringGreaterThanLConst(
+				(*lvr).Str(),
+				r.Arr().(*fluxarray.String),
+				mem,
+			)
+		} else if rvr != nil {
+			x, err = fluxarray.StringStringGreaterThanRConst(
+				l.Arr().(*fluxarray.String),
+				(*rvr).Str(),
+				mem,
+			)
+		} else {
+			x, err = fluxarray.StringStringGreaterThan(
+				l.Arr().(*fluxarray.String),
+				r.Arr().(*fluxarray.String),
+				mem,
+			)
 		}
 
 		if err != nil {
@@ -1203,7 +2500,12 @@ func vectorGreaterThan(l, r Vector, mem memory.Allocator) (Value, error) {
 		return NewVectorValue(x, semantic.BasicBool), nil
 
 	default:
-		return nil, errors.Newf(codes.Invalid, "unsupported type for vector GreaterThan: %v", l.ElementType())
+		return nil, errors.Newf(
+			codes.Invalid,
+			"unsupported type for vector GreaterThan: %v > %v",
+			l.ElementType(),
+			r.ElementType(),
+		)
 	}
 }
 
@@ -1222,19 +2524,22 @@ func vectorGreaterThanEqual(l, r Vector, mem memory.Allocator) (Value, error) {
 		panic("got 2 VectorRepeatValue; 'const folding' should be done earlier, in the function lookup")
 	}
 
-	switch l.ElementType().Nature() {
+	lnat := l.ElementType().Nature()
+	rnat := r.ElementType().Nature()
 
-	case semantic.Time:
+	switch {
+
+	case lnat == semantic.Time && rnat == semantic.Time:
 		var (
 			x   *fluxarray.Boolean
 			err error
 		)
 		if lvr != nil {
-			x, err = fluxarray.IntGreaterThanEqualLConst((*lvr).Time().Time().UnixNano(), r.Arr().(*fluxarray.Int), mem)
+			x, err = fluxarray.IntIntGreaterThanEqualLConst((*lvr).Time().Time().UnixNano(), r.Arr().(*fluxarray.Int), mem)
 		} else if rvr != nil {
-			x, err = fluxarray.IntGreaterThanEqualRConst(l.Arr().(*fluxarray.Int), (*rvr).Time().Time().UnixNano(), mem)
+			x, err = fluxarray.IntIntGreaterThanEqualRConst(l.Arr().(*fluxarray.Int), (*rvr).Time().Time().UnixNano(), mem)
 		} else {
-			x, err = fluxarray.IntGreaterThanEqual(l.Arr().(*fluxarray.Int), r.Arr().(*fluxarray.Int), mem)
+			x, err = fluxarray.IntIntGreaterThanEqual(l.Arr().(*fluxarray.Int), r.Arr().(*fluxarray.Int), mem)
 		}
 
 		if err != nil {
@@ -1242,40 +2547,31 @@ func vectorGreaterThanEqual(l, r Vector, mem memory.Allocator) (Value, error) {
 		}
 		return NewVectorValue(x, semantic.BasicBool), nil
 
-	case semantic.Int:
+	case lnat == semantic.Float && rnat == semantic.Float:
 
 		var (
-			x *fluxarray.Boolean
-
+			x   *fluxarray.Boolean
 			err error
 		)
+
 		if lvr != nil {
-			x, err = fluxarray.IntGreaterThanEqualLConst((*lvr).Int(), r.Arr().(*fluxarray.Int), mem)
+			x, err = fluxarray.FloatFloatGreaterThanEqualLConst(
+				(*lvr).Float(),
+				r.Arr().(*fluxarray.Float),
+				mem,
+			)
 		} else if rvr != nil {
-			x, err = fluxarray.IntGreaterThanEqualRConst(l.Arr().(*fluxarray.Int), (*rvr).Int(), mem)
+			x, err = fluxarray.FloatFloatGreaterThanEqualRConst(
+				l.Arr().(*fluxarray.Float),
+				(*rvr).Float(),
+				mem,
+			)
 		} else {
-			x, err = fluxarray.IntGreaterThanEqual(l.Arr().(*fluxarray.Int), r.Arr().(*fluxarray.Int), mem)
-		}
-
-		if err != nil {
-			return nil, err
-		}
-
-		return NewVectorValue(x, semantic.BasicBool), nil
-
-	case semantic.UInt:
-
-		var (
-			x *fluxarray.Boolean
-
-			err error
-		)
-		if lvr != nil {
-			x, err = fluxarray.UintGreaterThanEqualLConst((*lvr).UInt(), r.Arr().(*fluxarray.Uint), mem)
-		} else if rvr != nil {
-			x, err = fluxarray.UintGreaterThanEqualRConst(l.Arr().(*fluxarray.Uint), (*rvr).UInt(), mem)
-		} else {
-			x, err = fluxarray.UintGreaterThanEqual(l.Arr().(*fluxarray.Uint), r.Arr().(*fluxarray.Uint), mem)
+			x, err = fluxarray.FloatFloatGreaterThanEqual(
+				l.Arr().(*fluxarray.Float),
+				r.Arr().(*fluxarray.Float),
+				mem,
+			)
 		}
 
 		if err != nil {
@@ -1284,19 +2580,31 @@ func vectorGreaterThanEqual(l, r Vector, mem memory.Allocator) (Value, error) {
 
 		return NewVectorValue(x, semantic.BasicBool), nil
 
-	case semantic.Float:
+	case lnat == semantic.Float && rnat == semantic.Int:
 
 		var (
-			x *fluxarray.Boolean
-
+			x   *fluxarray.Boolean
 			err error
 		)
+
 		if lvr != nil {
-			x, err = fluxarray.FloatGreaterThanEqualLConst((*lvr).Float(), r.Arr().(*fluxarray.Float), mem)
+			x, err = fluxarray.FloatIntGreaterThanEqualLConst(
+				(*lvr).Float(),
+				r.Arr().(*fluxarray.Int),
+				mem,
+			)
 		} else if rvr != nil {
-			x, err = fluxarray.FloatGreaterThanEqualRConst(l.Arr().(*fluxarray.Float), (*rvr).Float(), mem)
+			x, err = fluxarray.FloatIntGreaterThanEqualRConst(
+				l.Arr().(*fluxarray.Float),
+				(*rvr).Int(),
+				mem,
+			)
 		} else {
-			x, err = fluxarray.FloatGreaterThanEqual(l.Arr().(*fluxarray.Float), r.Arr().(*fluxarray.Float), mem)
+			x, err = fluxarray.FloatIntGreaterThanEqual(
+				l.Arr().(*fluxarray.Float),
+				r.Arr().(*fluxarray.Int),
+				mem,
+			)
 		}
 
 		if err != nil {
@@ -1305,19 +2613,262 @@ func vectorGreaterThanEqual(l, r Vector, mem memory.Allocator) (Value, error) {
 
 		return NewVectorValue(x, semantic.BasicBool), nil
 
-	case semantic.String:
+	case lnat == semantic.Float && rnat == semantic.UInt:
 
 		var (
-			x *fluxarray.Boolean
-
+			x   *fluxarray.Boolean
 			err error
 		)
+
 		if lvr != nil {
-			x, err = fluxarray.StringGreaterThanEqualLConst((*lvr).Str(), r.Arr().(*fluxarray.String), mem)
+			x, err = fluxarray.FloatUintGreaterThanEqualLConst(
+				(*lvr).Float(),
+				r.Arr().(*fluxarray.Uint),
+				mem,
+			)
 		} else if rvr != nil {
-			x, err = fluxarray.StringGreaterThanEqualRConst(l.Arr().(*fluxarray.String), (*rvr).Str(), mem)
+			x, err = fluxarray.FloatUintGreaterThanEqualRConst(
+				l.Arr().(*fluxarray.Float),
+				(*rvr).UInt(),
+				mem,
+			)
 		} else {
-			x, err = fluxarray.StringGreaterThanEqual(l.Arr().(*fluxarray.String), r.Arr().(*fluxarray.String), mem)
+			x, err = fluxarray.FloatUintGreaterThanEqual(
+				l.Arr().(*fluxarray.Float),
+				r.Arr().(*fluxarray.Uint),
+				mem,
+			)
+		}
+
+		if err != nil {
+			return nil, err
+		}
+
+		return NewVectorValue(x, semantic.BasicBool), nil
+
+	case lnat == semantic.Int && rnat == semantic.Float:
+
+		var (
+			x   *fluxarray.Boolean
+			err error
+		)
+
+		if lvr != nil {
+			x, err = fluxarray.IntFloatGreaterThanEqualLConst(
+				(*lvr).Int(),
+				r.Arr().(*fluxarray.Float),
+				mem,
+			)
+		} else if rvr != nil {
+			x, err = fluxarray.IntFloatGreaterThanEqualRConst(
+				l.Arr().(*fluxarray.Int),
+				(*rvr).Float(),
+				mem,
+			)
+		} else {
+			x, err = fluxarray.IntFloatGreaterThanEqual(
+				l.Arr().(*fluxarray.Int),
+				r.Arr().(*fluxarray.Float),
+				mem,
+			)
+		}
+
+		if err != nil {
+			return nil, err
+		}
+
+		return NewVectorValue(x, semantic.BasicBool), nil
+
+	case lnat == semantic.Int && rnat == semantic.Int:
+
+		var (
+			x   *fluxarray.Boolean
+			err error
+		)
+
+		if lvr != nil {
+			x, err = fluxarray.IntIntGreaterThanEqualLConst(
+				(*lvr).Int(),
+				r.Arr().(*fluxarray.Int),
+				mem,
+			)
+		} else if rvr != nil {
+			x, err = fluxarray.IntIntGreaterThanEqualRConst(
+				l.Arr().(*fluxarray.Int),
+				(*rvr).Int(),
+				mem,
+			)
+		} else {
+			x, err = fluxarray.IntIntGreaterThanEqual(
+				l.Arr().(*fluxarray.Int),
+				r.Arr().(*fluxarray.Int),
+				mem,
+			)
+		}
+
+		if err != nil {
+			return nil, err
+		}
+
+		return NewVectorValue(x, semantic.BasicBool), nil
+
+	case lnat == semantic.Int && rnat == semantic.UInt:
+
+		var (
+			x   *fluxarray.Boolean
+			err error
+		)
+
+		if lvr != nil {
+			x, err = fluxarray.IntUintGreaterThanEqualLConst(
+				(*lvr).Int(),
+				r.Arr().(*fluxarray.Uint),
+				mem,
+			)
+		} else if rvr != nil {
+			x, err = fluxarray.IntUintGreaterThanEqualRConst(
+				l.Arr().(*fluxarray.Int),
+				(*rvr).UInt(),
+				mem,
+			)
+		} else {
+			x, err = fluxarray.IntUintGreaterThanEqual(
+				l.Arr().(*fluxarray.Int),
+				r.Arr().(*fluxarray.Uint),
+				mem,
+			)
+		}
+
+		if err != nil {
+			return nil, err
+		}
+
+		return NewVectorValue(x, semantic.BasicBool), nil
+
+	case lnat == semantic.UInt && rnat == semantic.Int:
+
+		var (
+			x   *fluxarray.Boolean
+			err error
+		)
+
+		if lvr != nil {
+			x, err = fluxarray.UintIntGreaterThanEqualLConst(
+				(*lvr).UInt(),
+				r.Arr().(*fluxarray.Int),
+				mem,
+			)
+		} else if rvr != nil {
+			x, err = fluxarray.UintIntGreaterThanEqualRConst(
+				l.Arr().(*fluxarray.Uint),
+				(*rvr).Int(),
+				mem,
+			)
+		} else {
+			x, err = fluxarray.UintIntGreaterThanEqual(
+				l.Arr().(*fluxarray.Uint),
+				r.Arr().(*fluxarray.Int),
+				mem,
+			)
+		}
+
+		if err != nil {
+			return nil, err
+		}
+
+		return NewVectorValue(x, semantic.BasicBool), nil
+
+	case lnat == semantic.UInt && rnat == semantic.Float:
+
+		var (
+			x   *fluxarray.Boolean
+			err error
+		)
+
+		if lvr != nil {
+			x, err = fluxarray.UintFloatGreaterThanEqualLConst(
+				(*lvr).UInt(),
+				r.Arr().(*fluxarray.Float),
+				mem,
+			)
+		} else if rvr != nil {
+			x, err = fluxarray.UintFloatGreaterThanEqualRConst(
+				l.Arr().(*fluxarray.Uint),
+				(*rvr).Float(),
+				mem,
+			)
+		} else {
+			x, err = fluxarray.UintFloatGreaterThanEqual(
+				l.Arr().(*fluxarray.Uint),
+				r.Arr().(*fluxarray.Float),
+				mem,
+			)
+		}
+
+		if err != nil {
+			return nil, err
+		}
+
+		return NewVectorValue(x, semantic.BasicBool), nil
+
+	case lnat == semantic.UInt && rnat == semantic.UInt:
+
+		var (
+			x   *fluxarray.Boolean
+			err error
+		)
+
+		if lvr != nil {
+			x, err = fluxarray.UintUintGreaterThanEqualLConst(
+				(*lvr).UInt(),
+				r.Arr().(*fluxarray.Uint),
+				mem,
+			)
+		} else if rvr != nil {
+			x, err = fluxarray.UintUintGreaterThanEqualRConst(
+				l.Arr().(*fluxarray.Uint),
+				(*rvr).UInt(),
+				mem,
+			)
+		} else {
+			x, err = fluxarray.UintUintGreaterThanEqual(
+				l.Arr().(*fluxarray.Uint),
+				r.Arr().(*fluxarray.Uint),
+				mem,
+			)
+		}
+
+		if err != nil {
+			return nil, err
+		}
+
+		return NewVectorValue(x, semantic.BasicBool), nil
+
+	case lnat == semantic.String && rnat == semantic.String:
+
+		var (
+			x   *fluxarray.Boolean
+			err error
+		)
+
+		if lvr != nil {
+			x, err = fluxarray.StringStringGreaterThanEqualLConst(
+				(*lvr).Str(),
+				r.Arr().(*fluxarray.String),
+				mem,
+			)
+		} else if rvr != nil {
+			x, err = fluxarray.StringStringGreaterThanEqualRConst(
+				l.Arr().(*fluxarray.String),
+				(*rvr).Str(),
+				mem,
+			)
+		} else {
+			x, err = fluxarray.StringStringGreaterThanEqual(
+				l.Arr().(*fluxarray.String),
+				r.Arr().(*fluxarray.String),
+				mem,
+			)
 		}
 
 		if err != nil {
@@ -1327,6 +2878,11 @@ func vectorGreaterThanEqual(l, r Vector, mem memory.Allocator) (Value, error) {
 		return NewVectorValue(x, semantic.BasicBool), nil
 
 	default:
-		return nil, errors.Newf(codes.Invalid, "unsupported type for vector GreaterThanEqual: %v", l.ElementType())
+		return nil, errors.Newf(
+			codes.Invalid,
+			"unsupported type for vector GreaterThanEqual: %v >= %v",
+			l.ElementType(),
+			r.ElementType(),
+		)
 	}
 }

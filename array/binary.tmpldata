@@ -29,36 +29,124 @@
             "Name": "Pow",
             "Op": "^",
             "Types": ["Int", "Uint", "Float"]
-        },
+        }
+    ],
+    "EqualityOps":[
         {
             "Name": "Equal",
             "Op": "==",
-            "Types": ["Boolean", "Int", "Uint", "Float", "String"]
+            "Types": [
+              {"l": "Float", "r": "Float"},
+              {"l": "Float", "r": "Int"},
+              {"l": "Float", "r": "Uint"},
+
+              {"l": "Int", "r": "Float"},
+              {"l": "Int", "r": "Int"},
+              {"l": "Int", "r": "Uint"},
+
+              {"l": "Uint", "r": "Int"},
+              {"l": "Uint", "r": "Float"},
+              {"l": "Uint", "r": "Uint"},
+
+              {"l": "Boolean", "r": "Boolean"},
+              {"l": "String", "r": "String"}
+            ]
         },
         {
             "Name": "NotEqual",
             "Op": "!=",
-            "Types": ["Boolean", "Int", "Uint", "Float", "String"]
+            "Types": [
+              {"l": "Float", "r": "Float"},
+              {"l": "Float", "r": "Int"},
+              {"l": "Float", "r": "Uint"},
+
+              {"l": "Int", "r": "Float"},
+              {"l": "Int", "r": "Int"},
+              {"l": "Int", "r": "Uint"},
+
+              {"l": "Uint", "r": "Int"},
+              {"l": "Uint", "r": "Float"},
+              {"l": "Uint", "r": "Uint"},
+
+              {"l": "Boolean", "r": "Boolean"},
+              {"l": "String", "r": "String"}
+            ]
         },
         {
             "Name": "LessThan",
             "Op": "<",
-            "Types": ["Int", "Uint", "Float", "String"]
+            "Types": [
+              {"l": "Float", "r": "Float"},
+              {"l": "Float", "r": "Int"},
+              {"l": "Float", "r": "Uint"},
+
+              {"l": "Int", "r": "Float"},
+              {"l": "Int", "r": "Int"},
+              {"l": "Int", "r": "Uint"},
+
+              {"l": "Uint", "r": "Int"},
+              {"l": "Uint", "r": "Float"},
+              {"l": "Uint", "r": "Uint"},
+
+              {"l": "String", "r": "String"}
+            ]
         },
         {
             "Name": "LessThanEqual",
             "Op": "<=",
-            "Types": ["Int", "Uint", "Float", "String"]
+            "Types": [
+              {"l": "Float", "r": "Float"},
+              {"l": "Float", "r": "Int"},
+              {"l": "Float", "r": "Uint"},
+
+              {"l": "Int", "r": "Float"},
+              {"l": "Int", "r": "Int"},
+              {"l": "Int", "r": "Uint"},
+
+              {"l": "Uint", "r": "Int"},
+              {"l": "Uint", "r": "Float"},
+              {"l": "Uint", "r": "Uint"},
+
+              {"l": "String", "r": "String"}
+            ]
         },
         {
             "Name": "GreaterThan",
             "Op": ">",
-            "Types": ["Int", "Uint", "Float", "String"]
+            "Types": [
+              {"l": "Float", "r": "Float"},
+              {"l": "Float", "r": "Int"},
+              {"l": "Float", "r": "Uint"},
+
+              {"l": "Int", "r": "Float"},
+              {"l": "Int", "r": "Int"},
+              {"l": "Int", "r": "Uint"},
+
+              {"l": "Uint", "r": "Int"},
+              {"l": "Uint", "r": "Float"},
+              {"l": "Uint", "r": "Uint"},
+
+              {"l": "String", "r": "String"}
+            ]
         },
         {
             "Name": "GreaterThanEqual",
             "Op": ">=",
-            "Types": ["Int", "Uint", "Float", "String"]
+            "Types": [
+              {"l": "Float", "r": "Float"},
+              {"l": "Float", "r": "Int"},
+              {"l": "Float", "r": "Uint"},
+
+              {"l": "Int", "r": "Float"},
+              {"l": "Int", "r": "Int"},
+              {"l": "Int", "r": "Uint"},
+
+              {"l": "Uint", "r": "Int"},
+              {"l": "Uint", "r": "Float"},
+              {"l": "Uint", "r": "Uint"},
+
+              {"l": "String", "r": "String"}
+            ]
         }
     ],
     "TypeMap": {
