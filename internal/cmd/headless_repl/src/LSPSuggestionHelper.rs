@@ -10,6 +10,8 @@ use rustyline::KeyCode::PageUp;
 use rustyline::{Editor, Result};
 use rustyline_derive::{Completer, Helper, Highlighter, Validator};
 use std::collections::HashSet;
+use std::str::{from_utf8, Utf8Error};
+
 use std::sync::mpsc::{Receiver, Sender};
 use std::sync::{Arc, Mutex, RwLock};
 
@@ -65,7 +67,7 @@ impl CommandHint {
             hint_signature: self.hint_signature.clone(),
         }
     }
-
+    //for function signatures
     pub(crate) fn suffix_sig(&self, strip_chars: usize) -> CommandHint {
         let disp = match &self.hint_signature {
             None => "".to_string(),
@@ -113,43 +115,6 @@ impl LSPSuggestionHelper {
         })
     }
 
-    //needs fixing
-    pub(crate) fn get_best_hint(&self, line: &str) -> Option<CommandHint> {
-        let lock = self.hints.read().unwrap();
-        let mut state = (
-            &CommandHint::new("", "", UnimplementedType, None),
-            i32::MAX,
-            0 as usize,
-        );
-        //go through all the hints and find the best hint
-        for hint in lock.iter() {
-            // println!("current hint! {}", hint.display);
-            if let Some((hint_len, overlap)) = current_line_ends_with(line, &hint.display) {
-                let mut abs_val = hint_len as i32 - overlap as i32;
-                // println!("something is ending with this {} {} {} and ", hint.display, abs_val, state.1);
-
-                abs_val = i32::abs(abs_val);
-                if state.1 > abs_val {
-                    // println!("switching {} and {}", hint.display, state.1);
-                    state.1 = abs_val;
-                    state.0 = hint;
-                    state.2 = overlap;
-                }
-            }
-        }
-
-        if state.1 == i32::MAX {
-            // println!("the biggest failure");
-            println!("no change");
-            return None;
-        }
-        if state.0.display == "" {
-            println!("returning a nothing no idea");
-        }
-        // println!("this is what is being returned {}", state.0.display);
-        return Some(state.0.suffix(state.2));
-    }
-
     pub(crate) fn best_hint_get_new(&self, line: &str) -> Option<CommandHint> {
         let lock = self.hints.read().unwrap();
 
@@ -158,19 +123,32 @@ impl LSPSuggestionHelper {
         let mut best_hint = &CommandHint::new("", "", UnimplementedType, None);
         for hint in lock.iter() {
             //for each hint find the biggest overlap compared to size
+            //on open bracket allow for the whole signature to be completed
+            println!("here is a hint type {}", hint.hint_type);
 
+            //allows for autocomplete of the whole function signature when a bracket is opened
             if hint.hint_type == FunctionType {
                 if line.ends_with("(") {
-                    let space_split = line.split(" ").collect::<Vec<&str>>();
+                    //split on the space
+                    let space_split = line
+                        .split(separator_closest_to_end(line).as_str())
+                        .collect::<Vec<&str>>();
+                    //get the last element
+
                     let last = space_split.get(space_split.len() - 1).unwrap();
+                    println!(
+                        "it does end with ( {:?} {} and the display {}",
+                        space_split, last, hint.display
+                    );
+                    self.print_hints();
 
                     if last.replace("(", "") == hint.display {
                         return Some(hint.suffix_sig(1));
                     }
                 }
             }
-
-            if let Some(overlap) = better_overlap(line, &hint.display) {
+            //if there is overlap mark the position and the difference
+            if let Some(overlap) = overlap_two(line, &hint.display) {
                 //if the same exact string has been entered as the hint and there is a paren return the param
 
                 let diff = overlap.len().abs_diff(hint.display.len());
@@ -183,17 +161,22 @@ impl LSPSuggestionHelper {
         }
 
         return match best {
+            //if there were not any matches then look to see if there are function arguments that can be suggested to the user
             usize::MAX => {
+                println!("hitting the max field {}", line);
+
                 if lock.len() > 0 {
                     let mut pop_off = self.displayed_hint.write().unwrap();
                     for hint in lock.iter() {
-                        //return a hint to a param where there is no overlap
-                        //TODO: Only give the suggestion once there is a comma present
+                        println!("listing hints:  {} and the line:  {}", hint.display, line);
                         let cleaned = line.trim_end();
+                        // println!("{} {} {}", cleaned, hint.hint_type, cleaned.ends_with("("));
+                        if hint.hint_type == ArgumentType {
+                            // if hint.hint_type == ArgumentType
+                            //     && (cleaned.ends_with(",") || cleaned.ends_with("("))
+                            // {
 
-                        if hint.hint_type == ArgumentType
-                            && (cleaned.ends_with(",") || cleaned.ends_with("("))
-                        {
+                            // println!("made it inside");
                             *pop_off = Some(hint.display.to_string());
                             println!("here is a kind {}", hint.hint_type);
                             return Some(hint.suffix(0));
@@ -209,6 +192,44 @@ impl LSPSuggestionHelper {
         };
         None
     }
+
+    // #[cfg(test)]
+    // mod find_hints {
+    //
+    // }
+
+    pub(crate) fn best_finder(&self, line: &str) -> Option<CommandHint> {
+        //get lock
+        let lock = self.hints.read().unwrap();
+        let mut best_ratio = i32::MIN;
+        let mut best_hint = &CommandHint::new("", "", HintType::FunctionType, None);
+        let mut best_overlap = 0;
+        for hint in lock.iter() {
+            //if there is some overlap
+            let disp = hint.display.as_str();
+            if let Some(overlap) = overlap_two(line, hint.display()) {
+                //don't show perfect match go to next one
+                if overlap == disp {
+                    continue;
+                }
+
+                // the closer to one the better
+                let ratio: i32 = (overlap.len() as i32 / disp.len() as i32);
+                //if greater than store that hint
+                if ratio > best_ratio {
+                    best_ratio = ratio;
+                    best_overlap = overlap.len();
+                    best_hint = hint;
+                }
+            }
+        }
+        println!("best ratio {}", best_ratio);
+        return match best_ratio {
+            i32::MIN => None,
+            _ => Some(best_hint.suffix(best_overlap)),
+        };
+        unreachable!()
+    }
 }
 
 //needs a lot of fixing
@@ -216,7 +237,6 @@ pub(crate) fn current_line_ends_with(line: &str, comp: &str) -> Option<(usize, u
     let mut i: i8 = (line.len() - 1) as i8;
     while i > -1 {
         let up_to = &line[i as usize..];
-        // println!("{}", up_to);
         if comp.starts_with(up_to) {
             return Some((comp.len(), up_to.len()));
         }
@@ -228,7 +248,7 @@ pub(crate) fn current_line_ends_with(line: &str, comp: &str) -> Option<(usize, u
 #[cfg(test)]
 mod tests_overlap {
     use crate::LSPSuggestionHelper::{
-        better_overlap, valid_arg, valid_checker, LSPSuggestionHelper,
+        better_overlap, overlap_two, separator_closest_to_end, valid_checker, LSPSuggestionHelper,
     };
     use std::collections::HashSet;
     use std::sync::{Arc, RwLock};
@@ -286,36 +306,40 @@ mod tests_overlap {
         assert_eq!(valid_checker(a, cur, goal), true)
     }
 
-    // #[test]
-    // fn test_valid_arg_one(){
-    //     //say if the next arg can be given this one is valid
-    //     let line = "arg1: \"test\", arg2:\"other\"";
-    //     assert_eq!(valid_arg(line),false)
-    // }
-    //
-    // #[test]
-    // fn valid_args(){
-    //     let line = "x=duration(arg:\"testing\"," ;
-    //     assert_eq!(valid_arg(line),true)
-    // }
+    #[test]
+    fn sep_test_one() {
+        let out = separator_closest_to_end("date.t");
+        assert_eq!(out, ".".to_string())
+    }
+
+    #[test]
+    fn sep_test_two() {
+        let out = separator_closest_to_end(" |>x");
+        assert_eq!(out, "|>".to_string())
+    }
+
+    #[test]
+    fn sep_test_three() {
+        let out = separator_closest_to_end("|>date.testin");
+        assert_eq!(out, ".".to_string())
+    }
+
+    #[test]
+    fn overlap_testing_one() {
+        let out = overlap_two("date.testin", "testing");
+        assert_eq!(1, 2)
+    }
+    #[test]
+    fn overlap_testing_two() {
+        let out = overlap_two("testin", "testing");
+        assert_eq!(1, 2)
+    }
 }
 
-// fn valid_arg(line: &str) -> bool{
-//     // let reg = r#"([A-Za-z0-9_]+\s*\:\s*[\w()\"]+)((\s*,\s*[A-Za-z0-9_]+\s*\:\s*[\w()\"]+)*,)"#;
-//     let reg_two = r#"(\w+\(([A-Za-z0-9_]+\s*\:\s*[\w()\"]+)((\s*,\s*[A-Za-z0-9_]+\s*\:\s*[\w()\"]+)*,))"#;
-//     //cut white space off
-//     let cleaned = line.trim_end();
-//     if cleaned.ends_with(","){
-//         return true;
-//     }
-//     false
-// }
-
-//use time based threshold and wait till the user stops typing to offer and get completions
-//watch for comma in the figures
 fn better_overlap<'a>(line: &'a str, comp: &'a str) -> Option<&'a str> {
     for (i, ch) in comp.chars().enumerate() {
         let (l, r) = comp.split_at(i);
+        println!("l: {:?}, r: {:?}", l, r);
         if valid_checker(line, l, comp) {
             return Some(l);
         } else if valid_checker(line, r, comp) {
@@ -325,14 +349,64 @@ fn better_overlap<'a>(line: &'a str, comp: &'a str) -> Option<&'a str> {
     None
 }
 
+fn overlap_two<'a>(line: &'a str, comp: &'a str) -> Option<&'a str> {
+    //go through the line currently inputted
+
+    for (i, ch) in line.chars().rev().enumerate() {
+        let (l, r) = line.split_at(i);
+        // println!("l: {:?}, r: {:?}, {} ", l, r, comp);
+        if comp.starts_with(r) {
+            return Some(r);
+        }
+    }
+
+    None
+}
+
 fn valid_checker(line: &str, overlap: &str, goal: &str) -> bool {
     let first_valid = line.ends_with(overlap) && !overlap.is_empty() && !goal.ends_with(overlap);
-    let line_split = line.split(" ").collect::<Vec<&str>>();
+    let sep = separator_closest_to_end(line);
+
+    let line_split = line.split(sep.as_str()).collect::<Vec<&str>>();
     //get the last item
     let last_ref = line_split[line_split.len() - 1];
+    println!("last ref: {}", last_ref);
     //remove the overlap from the line and add together
     let mut newer = last_ref.to_string();
     let clean_goal = goal.replacen(overlap, "", 1);
     newer.push_str(&clean_goal);
+    println!("the res: {}", first_valid && newer == goal);
     first_valid && newer == goal
+}
+
+//TODO: IMPLEMENT PARSE TREE
+
+//get the separator closest to the end of the str
+fn separator_closest_to_end(line: &str) -> String {
+    //list of things that a statement can be separated on
+    let separators = [" ", "=", "."];
+    let mut check_next = false;
+    let reversed = line.chars().rev().collect::<String>();
+    let bytes = reversed.as_bytes();
+    for i in bytes.iter() {
+        let single = [i.to_owned()];
+
+        let cur = from_utf8(&single).unwrap();
+        let mut cur = "";
+        match from_utf8(&single) {
+            Ok(val) => cur = val,
+            Err(_) => {
+                return " ".to_string();
+            }
+        };
+
+        if separators.contains(&cur) {
+            return cur.to_string();
+        } else if cur == ">" {
+            check_next = true;
+        } else if check_next && cur == "|" {
+            return "|>".to_string();
+        }
+    }
+    " ".to_string()
 }

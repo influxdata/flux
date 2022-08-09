@@ -2,13 +2,9 @@
 mod MultiLineState;
 // mod invoke_go;
 mod LSPSuggestionHelper;
-mod Per_Char_Highlighter;
 mod processes;
 mod utils;
 use crate::processes::{invoke_go, join_imports, lsp_invoke, start_go};
-//find imports whenever you get input
-//use regex gather all the imports and send it as a seperate document
-//those imports will be associated with all the files that are opened
 use std::borrow::Cow::{Borrowed, Owned};
 use std::borrow::{Borrow, BorrowMut, Cow};
 use std::collections::{HashSet, VecDeque};
@@ -27,7 +23,6 @@ use lsp_types::Command;
 use regex::{Captures, Regex};
 use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
 use std::thread;
-use std::thread::current;
 use std::time::Duration;
 
 use processes::lsp_invoke::{formulate_request, start_lsp};
@@ -44,7 +39,7 @@ use rustyline::{
 };
 
 use crate::processes::LSPRequestType::{DidOpen, Initialize, Initialized};
-use crate::utils::{process_response_flux, String_Buffer};
+use crate::utils::process_response_flux;
 use crate::LSPSuggestionHelper::{current_line_ends_with, CommandHint};
 use crate::MultiLineState::MultiLineStateHolder;
 use rustyline_derive::{Completer, Helper, Highlighter, Hinter, Validator};
@@ -54,8 +49,8 @@ static CUR_LINE_NUM: AtomicUsize = AtomicUsize::new(0);
 #[derive(Completer, Helper, Validator)]
 struct MyHelper {
     hinter: LSPSuggestionHelper::LSPSuggestionHelper,
-    highlighter: Per_Char_Highlighter::MaskingHighlighter,
     tx_stdin: Sender<(String, usize)>,
+    is_multiline: Arc<AtomicBool>,
 }
 
 impl Hinter for MyHelper {
@@ -69,10 +64,15 @@ impl Hinter for MyHelper {
         }
 
         // println!("here are the hints length {}", hints.len());
-        if let Some(hint) = self.hinter.best_hint_get_new(line) {
+        if let Some(hint) = self.hinter.best_finder(line) {
             return Some(hint);
         }
+        // if let Some(hint) = self.hinter.best_hint_get_new(line) {
+        //     return Some(hint);
+        // }
         //if not in there make a new write request with the current line
+
+        println!("this is getting to the none and refetch section");
         self.tx_stdin
             .send((line.to_string(), 0))
             .expect("failure sending when no hints");
@@ -90,7 +90,7 @@ impl Highlighter for MyHelper {
         prompt: &'p str,
         default: bool,
     ) -> Cow<'b, str> {
-        if default {
+        if !self.is_multiline.load(Ordering::Relaxed) {
             Owned(format!("\x1b[1;32m{}\x1b[m", prompt))
         } else {
             Borrowed(prompt)
@@ -102,7 +102,6 @@ impl Highlighter for MyHelper {
 
     fn highlight_char(&self, line: &str, pos: usize) -> bool {
         let written = (line.parse().unwrap(), pos);
-        // println!("sending the written {}", written.0);
 
         self.tx_stdin
             .send(written)
@@ -116,6 +115,7 @@ impl Highlighter for MyHelper {
 struct CompleteHintHandler {
     a: Arc<RwLock<HashSet<CommandHint>>>,
     cur_hint: Arc<RwLock<Option<String>>>,
+    is_multiline: Arc<AtomicBool>,
 }
 impl ConditionalEventHandler for CompleteHintHandler {
     fn handle(&self, evt: &Event, _: RepeatCount, _: bool, ctx: &EventContext) -> Option<Cmd> {
@@ -152,8 +152,12 @@ impl ConditionalEventHandler for CompleteHintHandler {
                     .collect::<String>();
 
                 Some(Cmd::Insert(1, text))
-            } else if *k == KeyEvent::ctrl('K') && ctx.line().len() == ctx.pos() {
-                Some(Cmd::ClearScreen)
+            } else if *k == KeyEvent::ctrl('U') && ctx.line().len() == ctx.pos() {
+                let multi = self.is_multiline.load(Ordering::Relaxed);
+                println!("paste mode status: {}", multi);
+                self.is_multiline.swap(!multi, Ordering::Relaxed);
+                //when the multiline is swapped add a check to see if the struct is empty if not concat the bits and add to history
+                Some(Cmd::Noop)
             } else {
                 None
             }
@@ -187,7 +191,6 @@ struct RequestHelper {
 unsafe impl Sync for RequestHelper {}
 impl ConditionalEventHandler for RequestHelper {
     fn handle(&self, evt: &Event, n: RepeatCount, _: bool, ctx: &EventContext) -> Option<Cmd> {
-        // println!("interrupt time");
         self.suggestion_sender
             .send(ctx.line().to_string())
             .expect("Failed something lol");
@@ -202,10 +205,6 @@ pub fn newMain() -> Result<()> {
     //this will hold the imports from the captured regex capture group above captured on each enter key press
     let imports: Arc<Mutex<HashSet<String>>> = Arc::new(Mutex::new(HashSet::new()));
 
-    let state_buffer = Arc::new(RwLock::new(String_Buffer::new()));
-    //copy for when the user enters a valid line
-    let state_buffer_updater = state_buffer.clone();
-
     //sending the processed data onwards
     let (tx_processed, rx_processed): (Sender<String>, Receiver<String>) = channel();
     //sending from when user presses enter
@@ -218,7 +217,6 @@ pub fn newMain() -> Result<()> {
         Sender<(String, bool)>,
         Receiver<(String, bool)>,
     ) = channel();
-    let (tx_flux_error, mut rx_flux_error): (Sender<bool>, Receiver<bool>) = channel();
 
     let (tx_stdin, rx_stdin): (Sender<(String, usize)>, Receiver<(String, usize)>) = channel();
 
@@ -226,9 +224,14 @@ pub fn newMain() -> Result<()> {
     let mut reader_block_w = Arc::clone(&reader_block);
     let mut reader_block_p = Arc::clone(&reader_block);
 
-    //spawning the editor with paste mode
-    let mut paste: bool = false;
-    // let mut paste_state = MultiLineState::new();
+    //code for when the user wants to enable multiline/paste mode
+    let multi_var = Arc::new(AtomicBool::new(false));
+    let multi_struct_bool = multi_var.clone();
+    let multi_handler_bool = multi_var.clone();
+
+    //for the helper to change the prompt color
+    let helper_multi_bool = multi_var.clone();
+    let helper_multi_two = multi_var.clone();
 
     let mut rl = Editor::<MyHelper>::new();
 
@@ -244,26 +247,28 @@ pub fn newMain() -> Result<()> {
             hints: vals,
             displayed_hint: cur_hint.clone(),
         },
-        highlighter: Per_Char_Highlighter::MaskingHighlighter { masking: true },
         tx_stdin,
+        is_multiline: helper_multi_two,
     }));
 
     let complete_cur_hint = cur_hint.clone();
     let ceh = Box::new(CompleteHintHandler {
         a: completion_storage,
         cur_hint: complete_cur_hint,
+        is_multiline: helper_multi_bool,
     });
     let nex = ceh.clone();
     let other = ceh.clone();
+
     rl.bind_sequence(KeyEvent::ctrl('E'), EventHandler::Conditional(ceh.clone()));
     rl.bind_sequence(KeyEvent::alt('f'), EventHandler::Conditional(ceh));
+
+    rl.bind_sequence(KeyEvent::ctrl('B'), EventHandler::Conditional(other));
 
     rl.bind_sequence(
         KeyEvent(KeyCode::Tab, Modifiers::NONE),
         EventHandler::Conditional(nex),
     );
-    rl.bind_sequence(KeyEvent::ctrl('k'), EventHandler::Conditional(other));
-
     //spawn the lsp
     let mut child = start_lsp();
     let mut child_writer = child.stdin.take().unwrap();
@@ -290,28 +295,22 @@ pub fn newMain() -> Result<()> {
                 .expect("failure getting from processor thread");
             // println!("getting this {}", &resp);
             // println!("this is to be sent {}", resp);
-            println!("here is what is to be written {}", resp);
+            // println!("here is what is to be written {}", resp);
             write!(&mut child_writer, "{}", resp).unwrap();
             reader_block_w.swap(true, Ordering::Relaxed);
         }
     }));
 
     let tx_a = tx_suggestion.clone();
-    thread_handlers.push(thread::spawn(move || {
-        loop {
-            let (stdin_get, pos) = rx_stdin.recv().expect("failed to get string");
-            // println!("got this string {:?}", stdin_get);
-            tx_a.send((stdin_get, true)).expect("failed sending");
-        }
+    thread_handlers.push(thread::spawn(move || loop {
+        let (stdin_get, pos) = rx_stdin.recv().expect("failed to get string");
+        tx_a.send((stdin_get, true)).expect("failed sending");
     }));
 
     //when ctrl z is pressed meaning that the user wants suggestions with the current line
-    let tx_importer = tx_suggestion_process.clone();
-
     thread_handlers.push(thread::spawn(move || {
         loop {
             let (line, x) = rx_suggest.recv().expect("failure getting from ctrl z");
-            // println!("got this line from the suggestion bit {}", line);
 
             tx_suggestion_process
                 .send((line, true))
@@ -335,7 +334,7 @@ pub fn newMain() -> Result<()> {
     //
     thread_handlers.push(thread::spawn(move || {
         //adds all lines that are received
-        let mut lines = MultiLineState::MultiLineStateHolder::new();
+
         loop {
             let resp = rx_user
                 .recv()
@@ -343,7 +342,6 @@ pub fn newMain() -> Result<()> {
             //format what is received
             let message = invoke_go::form_output("Service.DidOutput", &resp)
                 .expect("failure making message for flux");
-            lines.add_string(resp.as_str());
             write!(flux_stdin, "{}", message).expect("failed to write to the flux run time");
         }
     }));
@@ -362,7 +360,7 @@ pub fn newMain() -> Result<()> {
     //processing thread that will send to the writer thread after processing into a request
     //init array
 
-    let init = ["initialize", "initialized", "didOpen", "importOpen"];
+    let init = ["initialize", "initialized", "didOpen"];
     let mut res = init
         .iter()
         .map(|x| formulate_request(x, "", 0).unwrap())
@@ -419,7 +417,6 @@ pub fn newMain() -> Result<()> {
                             .expect("invalid request type"),
                     )
                     .expect("fai;ed to send to writer from ctrlz");
-                // println!("sent second");
 
                 tx_processed
                     .send(
@@ -427,19 +424,27 @@ pub fn newMain() -> Result<()> {
                             .expect("invalid request type"),
                     )
                     .expect("fai;ed to send to writer from ctrlz");
-                // println!("sent third");
             }
 
             //send did change then request completion
         }
     }));
     let mut clear_storage = storage.clone();
-    let import_adder = imports.clone();
     let import_pat = Regex::new(r#"^import\s+"([\w\\/]+)"\s*$"#).unwrap();
+    //for maintaining a record on the multiline state
+    let mut multiline_state = MultiLineState::MultiLineStateHolder {
+        list: vec![],
+        paste: multi_struct_bool,
+    };
     loop {
         let readline = rl.readline(">> ");
+
         match readline {
             Ok(line) => {
+                if multiline_state.paste.load(Ordering::Relaxed) {
+                    multiline_state.add_string(line.as_str());
+                    continue;
+                }
                 rl.add_history_entry(line.as_str());
                 if import_pat.is_match(line.as_str()) {
                     let mut lock = imports.lock().unwrap();
@@ -448,11 +453,6 @@ pub fn newMain() -> Result<()> {
                     for i in lock.iter() {
                         println!("v: {}", i);
                     }
-
-                    // let imported_log = join_imports(lock, "\n");
-                    // tx_importer
-                    //     .send((imported_log, false))
-                    //     .expect("failed to send the import file ");
                 }
                 tx_user.send(line).expect("Failure getting user input!");
             }
@@ -461,8 +461,6 @@ pub fn newMain() -> Result<()> {
                 break;
             }
             Err(ReadlineError::Eof) => {
-                paste = !paste;
-                println!("CTRL-D: Paste mode is {}", paste);
                 continue;
             }
             Err(err) => {

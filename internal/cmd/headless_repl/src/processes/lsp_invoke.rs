@@ -17,10 +17,7 @@ use serde_json::{json, json_internal, Value};
 use std::collections::HashSet;
 use std::fmt::{format, Debug};
 use std::io::{BufRead, BufReader, BufWriter, Read, Write};
-use std::net::TcpStream;
 use std::process::{Child, Command, Stdio};
-use std::ptr::write;
-use std::str::FromStr;
 use std::{string, thread};
 use tower_lsp::{jsonrpc, Client};
 
@@ -63,8 +60,10 @@ impl From<serde_json::Error> for LSP_Error {
     }
 }
 static NEXT_REQ_ID: AtomicUsize = AtomicUsize::new(1);
+static NEXT_VERSION: AtomicUsize = AtomicUsize::new(1);
 pub fn formulate_request(request_type: &str, text: &str, pos: usize) -> Result<String, LSP_Error> {
     let req_id = NEXT_REQ_ID.fetch_add(1, Ordering::SeqCst) as i64;
+    let version = NEXT_REQ_ID.fetch_add(1, Ordering::SeqCst) as i64;
 
     //TODO: SPECIFY THINGS YOU ARE INTERESTED IN RECEIVING
     //leading question marks are optional
@@ -120,7 +119,6 @@ pub fn formulate_request(request_type: &str, text: &str, pos: usize) -> Result<S
                                 completion: Some(CompletionClientCapabilities {
                                     dynamic_registration: None,
                                     completion_item: Some(CompletionItemCapability {
-                                        // ?? Unsure if to say yes or no
                                         snippet_support: Some(false),
                                         commit_characters_support: None,
                                         documentation_format: Some(vec![PlainText]),
@@ -191,7 +189,7 @@ pub fn formulate_request(request_type: &str, text: &str, pos: usize) -> Result<S
                     text_document: TextDocumentItem {
                         uri: Url::parse("file:///foo.flux").unwrap(),
                         language_id: "flux".to_string(),
-                        version: 0,
+                        version: version as i32,
                         text: "".to_string(),
                     },
                 })?,
@@ -201,16 +199,18 @@ pub fn formulate_request(request_type: &str, text: &str, pos: usize) -> Result<S
             Ok(headed)
         }
         "didChange" => {
+            let mut something = String::from(text);
+            something.push('\n');
             let basic_change = vec![TextDocumentContentChangeEvent {
                 range: None,
                 range_length: None,
-                text: text.to_string(),
+                text: something,
             }];
             let req: RequestBuilder = jsonrpc::Request::build(DidChangeTextDocument::METHOD)
                 .params(serde_json::to_value(DidChangeTextDocumentParams {
                     text_document: VersionedTextDocumentIdentifier {
                         uri: (Url::parse("file:///foo.flux").unwrap()),
-                        version: 0,
+                        version: version as i32,
                     },
                     content_changes: basic_change,
                 })?);
@@ -251,7 +251,7 @@ pub fn formulate_request(request_type: &str, text: &str, pos: usize) -> Result<S
                     text_document: TextDocumentItem {
                         uri: Url::parse("file:///import.flux").unwrap(),
                         language_id: "flux".to_string(),
-                        version: 0,
+                        version: version as i32,
                         text: "".to_string(),
                     },
                 })?,
@@ -270,7 +270,7 @@ pub fn formulate_request(request_type: &str, text: &str, pos: usize) -> Result<S
                 .params(serde_json::to_value(DidChangeTextDocumentParams {
                     text_document: VersionedTextDocumentIdentifier {
                         uri: (Url::parse("file:///import.flux").unwrap()),
-                        version: 0,
+                        version: version as i32,
                     },
                     content_changes: basic_change,
                 })?);

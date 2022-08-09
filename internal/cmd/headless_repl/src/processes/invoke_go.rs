@@ -87,7 +87,7 @@ pub fn read_json_rpc(child_stdout: ChildStdout, mut storage: Arc<RwLock<HashSet<
             if read_exact.1 == 0 {
                 //final result
                 let resp = str::from_utf8(&buf).unwrap();
-                println!("{}", resp);
+                // println!("{}", resp);
                 if let Some(val) = process_completions_response(&resp) {
                     //since this is a write operation you need to lock
                     let mut write_lock = storage.write().unwrap();

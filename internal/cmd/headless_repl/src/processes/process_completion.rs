@@ -1,5 +1,5 @@
 use crate::processes::process_completion::HintType::{
-    ArgumentType, FunctionType, PackageType, UnimplementedType,
+    ArgumentType, FunctionType, MethodType, PackageType, UnimplementedType,
 };
 use crate::LSPSuggestionHelper::LSPSuggestionHelper;
 use crate::{CommandHint, MyHelper};
@@ -18,6 +18,7 @@ pub enum HintType {
     FunctionType,
     PackageType,
     ArgumentType,
+    MethodType,
     UnimplementedType,
 }
 
@@ -33,6 +34,9 @@ impl Display for HintType {
             ArgumentType => {
                 write!(f, "Argument Type")
             }
+            MethodType => {
+                write!(f, "Argument Type")
+            }
             UnimplementedType => {
                 write!(f, "Unimplemented Type")
             }
@@ -45,6 +49,7 @@ impl From<u64> for HintType {
         match num {
             3 => FunctionType,
             5 => ArgumentType,
+            6 => MethodType,
             9 => PackageType,
             _ => UnimplementedType,
         }
@@ -57,6 +62,7 @@ impl Clone for HintType {
             FunctionType => FunctionType,
             PackageType => PackageType,
             ArgumentType => ArgumentType,
+            MethodType => MethodType,
             UnimplementedType => UnimplementedType,
         }
     }
@@ -80,10 +86,13 @@ pub fn process_completions_response(resp: &str) -> Option<HashSet<CommandHint>> 
             };
 
             let kind = x["kind"].as_u64().unwrap();
+            println!("insert hint: {} {}", val, kind);
+
             if let Some(detail) = x["detail"].as_str() {
                 let split = detail.split("->").collect::<Vec<&str>>();
                 if split[0].contains("<-") {
                     set.insert(CommandHint::new(val, val, kind.into(), None));
+                } else if val.starts_with("_") {
                 } else {
                     set.insert(CommandHint::new(
                         val,
