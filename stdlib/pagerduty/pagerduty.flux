@@ -117,6 +117,52 @@ actionFromSeverity = (severity) =>
 //
 actionFromLevel = (level) => if strings.toLower(v: level) == "ok" then "resolve" else "trigger"
 
+// n.b _sendEvent returns a full http response object, whereas sendEvent returns
+// only a status code.
+_sendEvent = (
+        pagerdutyURL=defaultURL,
+        routingKey,
+        client,
+        clientURL,
+        dedupKey,
+        class,
+        group,
+        severity,
+        eventAction,
+        source,
+        component="",
+        summary,
+        timestamp,
+        customDetails=record.any,
+    ) =>
+    {
+        payload = {
+            summary: strings.substring(start: 0, end: 1023, v: summary),
+            timestamp: timestamp,
+            source: source,
+            component: component,
+            severity: severity,
+            group: group,
+            class: class,
+        }
+        data = {
+            payload: payload,
+            routing_key: routingKey,
+            dedup_key: dedupKey,
+            event_action: eventAction,
+            client: client,
+            client_url: clientURL,
+        }
+        headers = ["Accept": "application/vnd.pagerduty+json;version=2", "Content-Type": "application/json"]
+        enc =
+            if customDetails == record.any then
+                json.encode(v: data)
+            else
+                json.encode(v: {data with payload: {payload with custom_details: customDetails}})
+
+        return requests.do(method: "POST", url: pagerdutyURL, body: enc, headers: headers)
+    }
+
 // sendEvent sends an event to PagerDuty and returns the HTTP response code of the request.
 //
 // ## Parameters
@@ -193,7 +239,23 @@ actionFromLevel = (level) => if strings.toLower(v: level) == "ok" then "resolve"
 // tags: single notification
 //
 sendEvent = (
-        pagerdutyURL=defaultURL,
+    pagerdutyURL=defaultURL,
+    routingKey,
+    client,
+    clientURL,
+    dedupKey,
+    class,
+    group,
+    severity,
+    eventAction,
+    source,
+    component="",
+    summary,
+    timestamp,
+    customDetails=record.any,
+) =>
+    _sendEvent(
+        pagerdutyURL,
         routingKey,
         client,
         clientURL,
@@ -203,38 +265,11 @@ sendEvent = (
         severity,
         eventAction,
         source,
-        component="",
+        component,
         summary,
         timestamp,
-        customDetails=record.any,
-    ) =>
-    {
-        payload = {
-            summary: strings.substring(start: 0, end: 1023, v: summary),
-            timestamp: timestamp,
-            source: source,
-            component: component,
-            severity: severity,
-            group: group,
-            class: class,
-        }
-        data = {
-            payload: payload,
-            routing_key: routingKey,
-            dedup_key: dedupKey,
-            event_action: eventAction,
-            client: client,
-            client_url: clientURL,
-        }
-        headers = ["Accept": "application/vnd.pagerduty+json;version=2", "Content-Type": "application/json"]
-        enc =
-            if customDetails == record.any then
-                json.encode(v: data)
-            else
-                json.encode(v: {data with payload: {payload with custom_details: customDetails}})
-
-        return requests.do(method: "POST", url: pagerdutyURL, body: enc, headers: headers)
-    }
+        customDetails,
+    ).statusCode
 
 // endpoint returns a function that sends a message to PagerDuty that includes output data.
 //
@@ -313,7 +348,7 @@ endpoint = (url=defaultURL) =>
                         obj = mapFn(r: r)
 
                         response =
-                            sendEvent(
+                            _sendEvent(
                                 pagerdutyURL: url,
                                 routingKey: obj.routingKey,
                                 client: obj.client,
