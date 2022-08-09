@@ -529,7 +529,7 @@ var sourceHashes = map[string]string{
 	"stdlib/universe/map_test.flux":                                                               "94f5b544780c77ff483941ac580fce4644de943565330bd36ed9b86205b81489",
 	"stdlib/universe/map_vectorize_conditionals_test.flux":                                        "d03d1e2fd0559188e18f768a908d469c055439bdd34cb72993bd85c0dd77be68",
 	"stdlib/universe/map_vectorize_const_test.flux":                                               "417f2dbb048324eaefd40dddc848685c553730d78c00433166e3bbc0b0e224de",
-	"stdlib/universe/map_vectorize_equality_test.flux":                                            "eb113f285deeab76e4acf22f95de30c40add112d27ef126f636b46c4b6a47c88",
+	"stdlib/universe/map_vectorize_equality_test.flux":                                            "b5af863aa4f327c2247b9a60780d4ca63df045d9c45a92a77d2d756cf1d51cab",
 	"stdlib/universe/math_fn_constant_test.flux":                                                  "8eca1c46dbf36f5f502446545316bbbbe53afedfc7cf4e3b260bcb2e91568830",
 	"stdlib/universe/math_m_max_test.flux":                                                        "b55994b73bb128a6818e78fa125fa58d7356bd933360e83cb75f6775281d4245",
 	"stdlib/universe/max_test.flux":                                                               "f17d9070b1d2e0e02838510eda88a660d00aea7e5c2a34c12ccc52b228528c11",
