@@ -187,17 +187,17 @@ func {{$type.l}}{{$type.r}}{{$op.Name}}(l *{{$type.l}}, r *{{$type.r}}, mem memo
 					b.Append(float64(l.Value(i)) {{$op.Op}} r.Value(i))
 			{{else if and (eq $type.l "Int") (eq $type.r "Uint")}}
 				if l.Value(i) < 0 {
-					{{if eq $op.Op "=="}}
-						b.Append(false)
-					{{else}}
+					{{if eq $op.Op "<" "<=" "!="}}
 						b.Append(true)
+					{{else}}
+						b.Append(false)
 					{{end}}
 				} else {
 					b.Append(uint64(l.Value(i)) {{$op.Op}} r.Value(i))
 				}
 			{{else if and (eq $type.l "Uint") (eq $type.r "Int")}}
 				if r.Value(i) < 0 {
-					{{if eq $op.Op "!="}}
+					{{if eq $op.Op ">" ">=" "!="}}
 						b.Append(true)
 					{{else}}
 						b.Append(false)
@@ -234,17 +234,17 @@ func {{$type.l}}{{$type.r}}{{$op.Name}}LConst(l {{index $.TypeMap $type.l}}, r *
 					b.Append(float64(l) {{$op.Op}} r.Value(i))
 			{{else if and (eq $type.l "Int") (eq $type.r "Uint")}}
 				if l < 0 {
-					{{if eq $op.Op "=="}}
-						b.Append(false)
-					{{else}}
+					{{if eq $op.Op "<" "<=" "!="}}
 						b.Append(true)
+					{{else}}
+						b.Append(false)
 					{{end}}
 				} else {
 					b.Append(uint64(l) {{$op.Op}} r.Value(i))
 				}
 			{{else if and (eq $type.l "Uint") (eq $type.r "Int")}}
 				if r.Value(i) < 0 {
-					{{if eq $op.Op "!="}}
+					{{if eq $op.Op ">" ">=" "!="}}
 						b.Append(true)
 					{{else}}
 						b.Append(false)
@@ -279,17 +279,17 @@ func {{$type.l}}{{$type.r}}{{$op.Name}}RConst(l *{{$type.l}}, r {{index $.TypeMa
 					b.Append(float64(l.Value(i)) {{$op.Op}} r)
 			{{else if and (eq $type.l "Int") (eq $type.r "Uint")}}
 				if l.Value(i) < 0 {
-					{{if eq $op.Op "=="}}
-						b.Append(false)
-					{{else}}
+					{{if eq $op.Op "<" "<=" "!="}}
 						b.Append(true)
+					{{else}}
+						b.Append(false)
 					{{end}}
 				} else {
 					b.Append(uint64(l.Value(i)) {{$op.Op}} r)
 				}
 			{{else if and (eq $type.l "Uint") (eq $type.r "Int")}}
 				if r < 0 {
-					{{if eq $op.Op "!="}}
+					{{if eq $op.Op ">" ">=" "!="}}
 						b.Append(true)
 					{{else}}
 						b.Append(false)

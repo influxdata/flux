@@ -4025,7 +4025,7 @@ func IntUintGreaterThan(l *Int, r *Uint, mem memory.Allocator) (*Boolean, error)
 
 			if l.Value(i) < 0 {
 
-				b.Append(true)
+				b.Append(false)
 
 			} else {
 				b.Append(uint64(l.Value(i)) > r.Value(i))
@@ -4050,7 +4050,7 @@ func IntUintGreaterThanLConst(l int64, r *Uint, mem memory.Allocator) (*Boolean,
 
 			if l < 0 {
 
-				b.Append(true)
+				b.Append(false)
 
 			} else {
 				b.Append(uint64(l) > r.Value(i))
@@ -4075,7 +4075,7 @@ func IntUintGreaterThanRConst(l *Int, r uint64, mem memory.Allocator) (*Boolean,
 
 			if l.Value(i) < 0 {
 
-				b.Append(true)
+				b.Append(false)
 
 			} else {
 				b.Append(uint64(l.Value(i)) > r)
@@ -4102,7 +4102,7 @@ func UintIntGreaterThan(l *Uint, r *Int, mem memory.Allocator) (*Boolean, error)
 
 			if r.Value(i) < 0 {
 
-				b.Append(false)
+				b.Append(true)
 
 			} else {
 				b.Append(l.Value(i) > uint64(r.Value(i)))
@@ -4127,7 +4127,7 @@ func UintIntGreaterThanLConst(l uint64, r *Int, mem memory.Allocator) (*Boolean,
 
 			if r.Value(i) < 0 {
 
-				b.Append(false)
+				b.Append(true)
 
 			} else {
 				b.Append(l > uint64(r.Value(i)))
@@ -4152,7 +4152,7 @@ func UintIntGreaterThanRConst(l *Uint, r int64, mem memory.Allocator) (*Boolean,
 
 			if r < 0 {
 
-				b.Append(false)
+				b.Append(true)
 
 			} else {
 				b.Append(l.Value(i) > uint64(r))
@@ -4651,7 +4651,7 @@ func IntUintGreaterThanEqual(l *Int, r *Uint, mem memory.Allocator) (*Boolean, e
 
 			if l.Value(i) < 0 {
 
-				b.Append(true)
+				b.Append(false)
 
 			} else {
 				b.Append(uint64(l.Value(i)) >= r.Value(i))
@@ -4676,7 +4676,7 @@ func IntUintGreaterThanEqualLConst(l int64, r *Uint, mem memory.Allocator) (*Boo
 
 			if l < 0 {
 
-				b.Append(true)
+				b.Append(false)
 
 			} else {
 				b.Append(uint64(l) >= r.Value(i))
@@ -4701,7 +4701,7 @@ func IntUintGreaterThanEqualRConst(l *Int, r uint64, mem memory.Allocator) (*Boo
 
 			if l.Value(i) < 0 {
 
-				b.Append(true)
+				b.Append(false)
 
 			} else {
 				b.Append(uint64(l.Value(i)) >= r)
@@ -4728,7 +4728,7 @@ func UintIntGreaterThanEqual(l *Uint, r *Int, mem memory.Allocator) (*Boolean, e
 
 			if r.Value(i) < 0 {
 
-				b.Append(false)
+				b.Append(true)
 
 			} else {
 				b.Append(l.Value(i) >= uint64(r.Value(i)))
@@ -4753,7 +4753,7 @@ func UintIntGreaterThanEqualLConst(l uint64, r *Int, mem memory.Allocator) (*Boo
 
 			if r.Value(i) < 0 {
 
-				b.Append(false)
+				b.Append(true)
 
 			} else {
 				b.Append(l >= uint64(r.Value(i)))
@@ -4778,7 +4778,7 @@ func UintIntGreaterThanEqualRConst(l *Uint, r int64, mem memory.Allocator) (*Boo
 
 			if r < 0 {
 
-				b.Append(false)
+				b.Append(true)
 
 			} else {
 				b.Append(l.Value(i) >= uint64(r))

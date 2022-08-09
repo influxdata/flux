@@ -338,7 +338,7 @@ var binaryFuncLookup = map[BinaryFuncSignature]BinaryFunction{
 		l := lv.Int()
 		r := rv.UInt()
 		if l < 0 {
-			return NewBool(true), nil
+			return NewBool(false), nil
 		}
 		return NewBool(uint64(l) >= r), nil
 	},
@@ -351,7 +351,7 @@ var binaryFuncLookup = map[BinaryFuncSignature]BinaryFunction{
 		l := lv.UInt()
 		r := rv.Int()
 		if r < 0 {
-			return NewBool(false), nil
+			return NewBool(true), nil
 		}
 		return NewBool(l >= uint64(r)), nil
 	},
@@ -402,7 +402,7 @@ var binaryFuncLookup = map[BinaryFuncSignature]BinaryFunction{
 		l := lv.Int()
 		r := rv.UInt()
 		if l < 0 {
-			return NewBool(true), nil
+			return NewBool(false), nil
 		}
 		return NewBool(uint64(l) > r), nil
 	},
@@ -415,7 +415,7 @@ var binaryFuncLookup = map[BinaryFuncSignature]BinaryFunction{
 		l := lv.UInt()
 		r := rv.Int()
 		if r < 0 {
-			return NewBool(false), nil
+			return NewBool(true), nil
 		}
 		return NewBool(l > uint64(r)), nil
 	},

@@ -483,6 +483,9 @@ testcase vec_equality_bool {
 }
 
 // Ensure implicit casting between numerics (float, int, uint) is supported.
+// There's special handling for cases where int and uint are compared.
+// In situations where any other number type is compared to a float, the other
+// is cast to float.
 testcase vec_equality_casts {
     want =
         array.from(
@@ -597,19 +600,17 @@ testcase vec_equality_casts {
                     fuLte: true,
                     uiLte: false,
                     ufLte: false,
-                    // FIXME: fails `-123 > 123`. Lt and Gt should not both be true.
                     iuGt: false,
                     ifGt: false,
                     fiGt: true,
                     fuGt: false,
-                    uiGt: false,
+                    uiGt: true,
                     ufGt: true,
-                    // FIXME: fails `-123 >= 123`. Lte and Gte should not both be true.
                     iuGte: false,
                     ifGte: false,
                     fiGte: true,
                     fuGte: false,
-                    uiGte: false,
+                    uiGte: true,
                     ufGte: true,
                 },
             ],
