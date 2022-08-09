@@ -84,6 +84,30 @@ func ParseSource(source string) *ast.Package {
 	return pkg
 }
 
+// ParseSourceWithFileName parses the string as Flux source code and will have fileName in the ast's
+// The parsed package may contain errors, use ast.Check to check for errors.
+func ParseSourceWithFileName(source, fileName string) *ast.Package {
+	src := []byte(source)
+	f := token.NewFile(fileName, len(src))
+	file, err := parseFile(f, src)
+	if err != nil {
+		// Produce a default ast.File with the error
+		// contained in case parsing the file failed.
+		file = &ast.File{
+			BaseNode: ast.BaseNode{
+				Errors: []ast.Error{
+					{Msg: err.Error()},
+				},
+			},
+		}
+	}
+	pkg := &ast.Package{
+		Package: packageName(file),
+		Files:   []*ast.File{file},
+	}
+	return pkg
+}
+
 func HandleToJSON(hdl flux.ASTHandle) ([]byte, error) {
 	libfluxHdl := hdl.(*libflux.ASTPkg)
 	return libfluxHdl.MarshalJSON()

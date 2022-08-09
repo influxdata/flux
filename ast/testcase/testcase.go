@@ -156,7 +156,7 @@ func extendTest(file *ast.File, extends string, modules TestModules) ([]*ast.Imp
 		return nil, nil, nil, err
 	}
 
-	impAst := parser.ParseSource(string(contents))
+	impAst := parser.ParseSourceWithFileName(string(contents), file.Name)
 	if ast.Check(impAst) > 0 {
 		return nil, nil, nil, ast.GetError(impAst)
 	}
