@@ -40,7 +40,13 @@ pub fn format(contents: &str) -> Result<String> {
 /// ```rust
 /// # use fluxcore::formatter::{format_with, Options};
 /// let source = "(r) => r.user ==              \"user1\"";
-/// let formatted = format_with(source, Options { trailing_newline: false }).unwrap();
+/// let formatted = format_with(
+///     source,
+///     Options {
+///         trailing_newline: false,
+///         .. Options::default()
+///     },
+/// ).unwrap();
 /// assert_eq!(formatted, "(r) => r.user == \"user1\"");
 /// ```
 pub fn format_with(contents: &str, options: Options) -> Result<String> {
@@ -57,12 +63,18 @@ pub struct Options {
     ///
     /// Default: true
     pub trailing_newline: bool,
+
+    /// How long a line is allowed to be before newlines are forced
+    ///
+    /// Default: 120
+    pub line_width: usize,
 }
 
 impl Default for Options {
     fn default() -> Self {
         Self {
             trailing_newline: true,
+            line_width: 120,
         }
     }
 }
@@ -293,7 +305,7 @@ fn format_to_string(node: Node<'_>, include_pkg: bool, options: Options) -> Resu
     if let Some(err) = formatter.err {
         return Err(err);
     }
-    let formatted = doc.pretty(120).to_string();
+    let formatted = doc.pretty(formatter.options.line_width).to_string();
     // Remove indentation from whitespace only lines
     Ok(formatted
         .split('\n')
