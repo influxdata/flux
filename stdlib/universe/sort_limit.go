@@ -195,7 +195,7 @@ func (s SortLimitRule) Name() string {
 }
 
 func (s SortLimitRule) Pattern() plan.Pattern {
-	return plan.Pat(LimitKind, plan.Pat(SortKind, plan.Any()))
+	return plan.MultiSuccessor(LimitKind, plan.SingleSuccessor(SortKind))
 }
 
 func (s SortLimitRule) Rewrite(ctx context.Context, node plan.Node) (plan.Node, bool, error) {

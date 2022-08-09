@@ -18,7 +18,7 @@ type SimpleRule struct {
 }
 
 func (sr *SimpleRule) Pattern() plan.Pattern {
-	return plan.Any()
+	return plan.AnyMultiSuccessor()
 }
 
 func (sr *SimpleRule) Rewrite(ctx context.Context, node plan.Node) (plan.Node, bool, error) {
@@ -48,7 +48,7 @@ func (fr *FunctionRule) Name() string {
 }
 
 func (fr *FunctionRule) Pattern() plan.Pattern {
-	return plan.Any()
+	return plan.AnyMultiSuccessor()
 }
 
 func (fr *FunctionRule) Rewrite(ctx context.Context, node plan.Node) (plan.Node, bool, error) {
@@ -77,7 +77,7 @@ func (spp SmashPlanRule) Pattern() plan.Pattern {
 		k = spp.Node.Kind()
 	}
 
-	return plan.Pat(k, plan.Any())
+	return plan.MultiSuccessor(k, plan.AnySingleSuccessor())
 }
 
 func (spp SmashPlanRule) Rewrite(ctx context.Context, node plan.Node) (plan.Node, bool, error) {
@@ -114,7 +114,7 @@ func (ccr CreateCycleRule) Pattern() plan.Pattern {
 		k = ccr.Node.Kind()
 	}
 
-	return plan.Pat(k, plan.Any())
+	return plan.MultiSuccessor(k, plan.AnyMultiSuccessor())
 }
 
 func (ccr CreateCycleRule) Rewrite(ctx context.Context, node plan.Node) (plan.Node, bool, error) {
@@ -130,20 +130,20 @@ func (ccr CreateCycleRule) Rewrite(ctx context.Context, node plan.Node) (plan.No
 	return node.ShallowCopy(), changed, nil
 }
 
-// MultiRoot matches a set of plan nodes at the root and stores the NodeIDs of
+// MultiRootRule matches a set of plan nodes at the root and stores the NodeIDs of
 // nodes it has visited in SeenNodes.
 type MultiRootRule struct {
 	SeenNodes []plan.NodeID
 }
 
 func (sr *MultiRootRule) Pattern() plan.Pattern {
-	return plan.OneOf(
+	return plan.MultiSuccessorOneOf(
 		[]plan.ProcedureKind{
 			universe.MinKind,
 			universe.MaxKind,
 			universe.MeanKind,
 		},
-		plan.Any())
+		plan.AnyMultiSuccessor())
 }
 
 func (sr *MultiRootRule) Rewrite(ctx context.Context, node plan.Node) (plan.Node, bool, error) {

@@ -243,7 +243,7 @@ func (r BigtableFilterRewriteRule) Name() string {
 }
 
 func (r BigtableFilterRewriteRule) Pattern() plan.Pattern {
-	return plan.Pat(universe.FilterKind, plan.Pat(FromBigtableKind))
+	return plan.MultiSuccessor(universe.FilterKind, plan.SingleSuccessor(FromBigtableKind))
 }
 
 func (r BigtableFilterRewriteRule) Rewrite(ctx context.Context, filter plan.Node) (plan.Node, bool, error) {
@@ -260,7 +260,7 @@ func (r BigtableLimitRewriteRule) Name() string {
 }
 
 func (r BigtableLimitRewriteRule) Pattern() plan.Pattern {
-	return plan.Pat(universe.LimitKind, plan.Pat(FromBigtableKind))
+	return plan.MultiSuccessor(universe.LimitKind, plan.SingleSuccessor(FromBigtableKind))
 }
 
 func (r BigtableLimitRewriteRule) Rewrite(ctx context.Context, limit plan.Node) (plan.Node, bool, error) {

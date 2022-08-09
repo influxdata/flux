@@ -438,9 +438,12 @@ func TestFilter_NewQuery(t *testing.T) {
 	}
 }
 
-func TestMergeFilterAnyRule(t *testing.T) {
+func TestFilterRules(t *testing.T) {
 	var (
-		from        = &influxdb.FromProcedureSpec{}
+		host = "https://localhost:8080"
+		from = &influxdb.FromProcedureSpec{
+			Host: &host,
+		}
 		count       = &universe.CountProcedureSpec{}
 		filterOther = &universe.FilterProcedureSpec{
 			Fn: interpreter.ResolvedFunction{
@@ -471,8 +474,7 @@ func TestMergeFilterAnyRule(t *testing.T) {
 				},
 				Edges: [][2]int{{0, 1}},
 			},
-			NoChange:       true,
-			SkipValidation: true,
+			NoChange: true,
 		},
 		{
 			Name: "filterFalse",
@@ -485,8 +487,7 @@ func TestMergeFilterAnyRule(t *testing.T) {
 				},
 				Edges: [][2]int{{0, 1}},
 			},
-			NoChange:       true,
-			SkipValidation: true,
+			NoChange: true,
 		},
 		{
 			Name: "filterTrue",
@@ -504,7 +505,6 @@ func TestMergeFilterAnyRule(t *testing.T) {
 					plan.CreatePhysicalNode("from", from),
 				},
 			},
-			SkipValidation: true,
 		},
 		{
 			Name: "count filterTrue",
@@ -542,7 +542,43 @@ func TestMergeFilterAnyRule(t *testing.T) {
 				},
 				Edges: [][2]int{{0, 1}},
 			},
-			SkipValidation: true,
+		},
+		{
+			Name: "filter-true predecssor with mutli successor",
+			//           from
+			//           /  \
+			// filter-true  filter-other
+			//       |        |
+			//    count0     count1
+			//
+			// should become
+			//
+			//           from
+			//           /  \
+			//      count0  filter-other
+			//               |
+			//              count1
+			//
+			// However the planner cannot handle this situation where
+			// a node is removed rom the plan yet.
+			// https://github.com/influxdata/flux/issues/5044
+			Rules: []plan.Rule{universe.RemoveTrivialFilterRule{}},
+			Before: &plantest.PlanSpec{
+				Nodes: []plan.Node{
+					plan.CreatePhysicalNode("from", from),
+					plan.CreatePhysicalNode("filter-true", filterTrue),
+					plan.CreatePhysicalNode("count0", count),
+					plan.CreatePhysicalNode("filter-other", filterOther),
+					plan.CreatePhysicalNode("count1", count),
+				},
+				Edges: [][2]int{
+					{0, 1},
+					{1, 2},
+					{0, 3},
+					{3, 4},
+				},
+			},
+			NoChange: true,
 		},
 	}
 

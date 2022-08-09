@@ -9,15 +9,38 @@ import (
 )
 
 func TestAny(t *testing.T) {
-	pat := plan.Any()
+	t.Run("AnyMultiSuccessor", func(t *testing.T) {
+		pat := plan.AnyMultiSuccessor()
 
-	node := &plan.LogicalNode{
-		Spec: &influxdb.FromProcedureSpec{},
-	}
+		node := &plan.LogicalNode{
+			Spec: &influxdb.FromProcedureSpec{},
+		}
 
-	if !pat.Match(node) {
-		t.Fail()
-	}
+		if !pat.Match(node) {
+			t.Fail()
+		}
+	})
+	t.Run("AnySingleSuccessor", func(t *testing.T) {
+		pat := plan.AnySingleSuccessor()
+
+		node := &plan.LogicalNode{
+			Spec: &influxdb.FromProcedureSpec{},
+		}
+
+		succ0 := &plan.LogicalNode{
+			Spec: &universe.FilterProcedureSpec{},
+		}
+		succ0.AddPredecessors(node)
+		succ1 := &plan.LogicalNode{
+			Spec: &universe.FilterProcedureSpec{},
+		}
+		succ1.AddPredecessors(node)
+		node.AddSuccessors(succ0, succ1)
+
+		if pat.Match(node) {
+			t.Fail()
+		}
+	})
 }
 
 func addEdge(pred plan.Node, succ plan.Node) {
@@ -25,15 +48,15 @@ func addEdge(pred plan.Node, succ plan.Node) {
 	succ.AddPredecessors(pred)
 }
 
-func TestPat(t *testing.T) {
+func TestUnionKindPattern(t *testing.T) {
 
 	// Matches
 	//     <anything> |> filter(...) |> filter(...)
-	filterFilterPat := plan.Pat(universe.FilterKind, plan.Pat(universe.FilterKind, plan.Any()))
+	filterFilterPat := plan.MultiSuccessor(universe.FilterKind, plan.SingleSuccessor(universe.FilterKind, plan.AnySingleSuccessor()))
 
 	// Matches
 	//   from(...) |> filter(...)
-	filterFromPat := plan.Pat(universe.FilterKind, plan.Pat(influxdb.FromKind))
+	filterFromPat := plan.MultiSuccessor(universe.FilterKind, plan.SingleSuccessor(influxdb.FromKind))
 
 	from := &plan.LogicalNode{
 		Spec: &influxdb.FromProcedureSpec{},

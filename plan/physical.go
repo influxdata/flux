@@ -193,7 +193,7 @@ func (physicalConverterRule) Name() string {
 }
 
 func (physicalConverterRule) Pattern() Pattern {
-	return Any()
+	return AnyMultiSuccessor()
 }
 
 func (physicalConverterRule) Rewrite(ctx context.Context, pn Node) (Node, bool, error) {
