@@ -18,6 +18,8 @@ import "json"
 //   Default is `""` (no authentication).
 // - password: Zenoss password to use for HTTP BASIC authentication.
 //   Default is `""` (no authentication).
+// - apiKey: Zenoss cloud API key.
+//   Default is `""` (no API key).
 // - action: Zenoss router name.
 //   Default is "EventsRouter".
 // - method: [EventsRouter method](https://help.zenoss.com/dev/collection-zone-and-resource-manager-apis/codebase/routers/router-reference/eventsrouter).
@@ -87,8 +89,9 @@ import "json"
 // tags: single notification
 event = (
         url,
-        username,
-        password,
+        username="",
+        password="",
+        apiKey="",
         action="EventsRouter",
         method="add_event",
         type="rpc",
@@ -120,10 +123,18 @@ event = (
             type: type,
             tid: tid,
         }
-        headers = {"Authorization": http.basicAuth(u: username, p: password), "Content-Type": "application/json"}
+        headers = {"Content-Type": "application/json"}
         body = json.encode(v: payload)
 
-        return http.post(headers: headers, url: url, data: body)
+        return
+            if apiKey != "" then
+                http.post(headers: {headers with "z-api-key": apiKey}, url: url, data: body)
+            else
+                http.post(
+                    headers: {headers with "Authorization": http.basicAuth(u: username, p: password)},
+                    url: url,
+                    data: body,
+                )
     }
 
 // endpoint sends events to Zenoss using data from input rows.
@@ -155,6 +166,8 @@ event = (
 //   Default is `""` (no authentication).
 // - password: Zenoss password to use for HTTP BASIC authentication.
 //   Default is `""` (no authentication).
+// - apiKey: Zenoss cloud API key.
+//   Default is `""` (no API key).
 // - action: Zenoss router name.
 //   Default is `"EventsRouter"`.
 // - method: EventsRouter method.
@@ -203,8 +216,9 @@ event = (
 //
 endpoint = (
     url,
-    username,
-    password,
+    username="",
+    password="",
+    apiKey="",
     action="EventsRouter",
     method="add_event",
     type="rpc",
@@ -224,6 +238,7 @@ endpoint = (
                                                 url: url,
                                                 username: username,
                                                 password: password,
+                                                apiKey: apiKey,
                                                 action: action,
                                                 method: method,
                                                 type: type,
