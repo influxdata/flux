@@ -332,22 +332,22 @@ guild = data
 experimental.chain(first: id, second: guild)
 `,
 			want: `[digraph {
-  array.from0
-  range1
-  filter2
+  "array.from0"
+  "range1"
+  "filter2"
   // r._field == "id"
 
-  array.from0 -> range1
-  range1 -> filter2
+  "array.from0" -> "range1"
+  "range1" -> "filter2"
 }
  digraph {
-  array.from3
-  range4
-  filter5
+  "array.from3"
+  "range4"
+  "filter5"
   // r._field == "guild"
 
-  array.from3 -> range4
-  range4 -> filter5
+  "array.from3" -> "range4"
+  "range4" -> "filter5"
 }
 ]`,
 		},
@@ -368,24 +368,24 @@ data
 |> filter(fn: (r) => r["_field"] == id)
 `,
 			want: `[digraph {
-  array.from0
-  range1
-  filter2
+  "array.from0"
+  "range1"
+  "filter2"
   // r._field == "id"
-  sort3
+  "sort3"
 
-  array.from0 -> range1
-  range1 -> filter2
-  filter2 -> sort3
+  "array.from0" -> "range1"
+  "range1" -> "filter2"
+  "filter2" -> "sort3"
 }
  digraph {
-  array.from4
-  range5
-  filter6
+  "array.from4"
+  "range5"
+  "filter6"
   // r._field == "id"
 
-  array.from4 -> range5
-  range5 -> filter6
+  "array.from4" -> "range5"
+  "range5" -> "filter6"
 }
 ]`,
 		},
