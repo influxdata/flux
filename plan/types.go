@@ -343,6 +343,23 @@ func ReplaceNode(oldNode, newNode Node) {
 	oldNode.ClearPredecessors()
 }
 
+// ReplacePhysicalNodes accepts a connected group of nodes that has a single output and
+// a single input, and replaces them with a single node with the predecessors of the old input node.
+// Note that the planner has a convention of connecting successors itself
+// (rather than having the rules doing it) so the old output's successors
+// remain unconnected.
+func ReplacePhysicalNodes(ctx context.Context, oldOutputNode, oldInputNode Node, name string, newSpec PhysicalProcedureSpec) Node {
+	newNode := CreateUniquePhysicalNode(ctx, name, newSpec)
+
+	newNode.AddPredecessors(oldInputNode.Predecessors()...)
+	for _, pred := range oldInputNode.Predecessors() {
+		i := IndexOfNode(oldInputNode, pred.Successors())
+		pred.Successors()[i] = newNode
+	}
+
+	return newNode
+}
+
 type WindowSpec struct {
 	Every    flux.Duration
 	Period   flux.Duration

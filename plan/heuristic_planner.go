@@ -2,6 +2,7 @@ package plan
 
 import (
 	"context"
+	"fmt"
 	"sort"
 
 	"github.com/influxdata/flux/codes"
@@ -48,10 +49,20 @@ func applyRule(ctx context.Context, spec *Spec, rule Rule, node Node) (Node, boo
 		return nil, false, err
 	} else if changed {
 		if newNode == nil {
-			return nil, false, errors.Newf(codes.Internal, "rule %q returned a nil plan node even though it seems to have changed the plan", rule.Name())
+			return nil, false, errors.Newf(
+				codes.Internal,
+				"rule %q returned a nil plan node even though it seems to have changed the plan",
+				rule.Name(),
+			)
 		}
 		testing.MarkInvokedPlannerRule(ctx, rule.Name())
-		updateSuccessors(spec, node, newNode)
+		if err := updateSuccessors(spec, node, newNode); err != nil {
+			return node, false, errors.Wrap(
+				err,
+				codes.Internal,
+				fmt.Sprintf("updating successors after applying rule %q", rule.Name()),
+			)
+		}
 		return newNode, true, nil
 	}
 
@@ -158,33 +169,32 @@ func (p *heuristicPlanner) Plan(ctx context.Context, inputPlan *Spec) (*Spec, er
 //   node  becomes   newNode
 //   / \               / \
 //  D   E             D'  E'    <-- predecessors
-func updateSuccessors(plan *Spec, oldNode, newNode Node) {
+func updateSuccessors(plan *Spec, oldNode, newNode Node) error {
 	// no need to update successors if the node hasn't actually changed
 	if oldNode == newNode {
-		return
+		return nil
 	}
 
 	newNode.ClearSuccessors()
 
 	if len(oldNode.Successors()) == 0 {
-		// This is a new root node.
+		// This is a new root (sink) node.
 		plan.Replace(oldNode, newNode)
-		return
+		return nil
 	}
 
 	for _, succ := range oldNode.Successors() {
-		found := false
-		for i, succPred := range succ.Predecessors() {
-			if succPred == oldNode {
-				found = true
-				succ.Predecessors()[i] = newNode
-			}
+		i := IndexOfNode(oldNode, succ.Predecessors())
+		if i < 0 {
+			return errors.Newf(
+				codes.Internal,
+				"inconsistent plan graph; successor %q does not have edge back to predecessor %q",
+				succ.ID(), oldNode.ID(),
+			)
 		}
-
-		if !found {
-			panic("Inconsistent plan graph: successor does not have edge back to predecessor")
-		}
+		succ.Predecessors()[i] = newNode
 	}
 
 	newNode.AddSuccessors(oldNode.Successors()...)
+	return nil
 }

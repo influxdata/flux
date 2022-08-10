@@ -872,18 +872,14 @@ func (a AggregateWindowRule) Rewrite(ctx context.Context, node plan.Node) (plan.
 	if !a.isValidWindowSpec(windowSpec) {
 		return node, false, nil
 	}
-	parentNode := windowNode.Predecessors()[0]
-
-	parentNode.ClearSuccessors()
-	newNode := plan.CreateUniquePhysicalNode(ctx, "aggregateWindow", &AggregateWindowProcedureSpec{
+	newSpec := &AggregateWindowProcedureSpec{
 		WindowSpec:     windowSpec,
 		AggregateKind:  aggregateNode.Kind(),
 		ValueCol:       valueCol,
 		UseStart:       useStart,
 		ForceAggregate: false,
-	})
-	parentNode.AddSuccessors(newNode)
-	newNode.AddPredecessors(parentNode)
+	}
+	newNode := plan.ReplacePhysicalNodes(ctx, node, windowNode, "aggregateWindow", newSpec)
 	return newNode, true, nil
 }
 
@@ -995,17 +991,14 @@ func (a AggregateWindowCreateEmptyRule) Rewrite(ctx context.Context, node plan.N
 	if !a.isValidWindowSpec(windowSpec) {
 		return node, false, nil
 	}
-	parentNode := windowNode.Predecessors()[0]
 
-	parentNode.ClearSuccessors()
-	newNode := plan.CreateUniquePhysicalNode(ctx, "aggregateWindow", &AggregateWindowProcedureSpec{
+	newSpec := &AggregateWindowProcedureSpec{
 		WindowSpec:     windowSpec,
 		AggregateKind:  aggregateNode.Kind(),
 		ValueCol:       valueCol,
 		UseStart:       useStart,
 		ForceAggregate: true,
-	})
-	parentNode.AddSuccessors(newNode)
-	newNode.AddPredecessors(parentNode)
+	}
+	newNode := plan.ReplacePhysicalNodes(ctx, node, windowNode, "aggregateWindow", newSpec)
 	return newNode, true, nil
 }
