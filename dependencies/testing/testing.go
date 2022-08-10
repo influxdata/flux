@@ -91,7 +91,7 @@ func (want results) Check(got results) error {
 	for name, want := range want.plannerRules {
 		got := got.plannerRules[name]
 		if want != got {
-			return errors.Newf(codes.Invalid, "planner rule invoked an unexpected number of times: %d (want) != %d (got)", want, got)
+			return errors.Newf(codes.Invalid, "planner rule `%s` invoked an unexpected number of times: %d (want) != %d (got)", name, want, got)
 		}
 	}
 	return nil
