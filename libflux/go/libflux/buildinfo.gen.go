@@ -10,7 +10,6 @@ package libflux
 // and forces the cgo library to rebuild and relink
 // the sources. This is because non-C/C++ sources
 // are not tracked by Go's build system.'
-//
 //lint:ignore U1000 generated code
 var sourceHashes = map[string]string{
 	"libflux/Cargo.lock":                                                                          "d22aefaaab124dba2e5bcb521d44610e400d745a36a97b29665ee3db51b4a6ca",
@@ -438,8 +437,8 @@ var sourceHashes = map[string]string{
 	"stdlib/universe/contains_test.flux":                                                          "a1890287ebc1ad6d8c84561f7e0cb725048a1e287f49f5dceac196866a20ee01",
 	"stdlib/universe/count_test.flux":                                                             "81b1efc57f4779470677c9c0378cfcd7ef52b0bc76bebddc85132e08f315d90f",
 	"stdlib/universe/cov_test.flux":                                                               "0d09fbbf7e2fb7e7d1efaadbcec287c977e173f527393f30bc3a8594bd1333b5",
-	"stdlib/universe/covariance_missing_column_1_test.flux":                                       "8d8848782c9a1643630c2251132533c7600fe67e60f231dd0cfe8fcee7d00fad",
-	"stdlib/universe/covariance_missing_column_2_test.flux":                                       "b4b382a14414caeaab8b77ad572208c726b19d77e21d150f656f96c537b3fab6",
+	"stdlib/universe/covariance_missing_column_1_test.flux":                                       "a3ccb5174c7c1fa50b8c506c1d87e7ac56b6cf7bc990dedfc2dd508d0d4b21ed",
+	"stdlib/universe/covariance_missing_column_2_test.flux":                                       "c4b9349f88f0c093d997c6d79aa4b792cbaa865592794f7fd2cdadb44af90876",
 	"stdlib/universe/covariance_test.flux":                                                        "4948a94d1c79ff7616170ae8986e45d63c5bf818236827a493e7e3017f544ebd",
 	"stdlib/universe/cumulative_sum_default_test.flux":                                            "47c80f7677ecb0743322eafb58aecb8ec8942015eb43bbe1675b452a4e1c6252",
 	"stdlib/universe/cumulative_sum_noop_test.flux":                                               "147ff591fa030cd113b5917945e8b9cb20c553e027beca2ea49137896d02e845",
@@ -596,7 +595,7 @@ var sourceHashes = map[string]string{
 	"stdlib/universe/table_fns_test.flux":                                                         "7cafa2949e715a0fcdc2ffbea1d5a377e74bc9ee0307b76f29b4936d2e3b119b",
 	"stdlib/universe/tail_offset_test.flux":                                                       "838ed2329f35f91803707a26161bb5463ca2c3c5a2ff9225630d05ffdca67dee",
 	"stdlib/universe/tail_test.flux":                                                              "755f2cb7f03f8589e7392f0c55bef9c59d8f086c4b29232c5c8f2bf034f340f2",
-	"stdlib/universe/task_per_line_test.flux":                                                     "06acdfad6fe3c940751d1a6b0187733a8a32bf02325cc14728cac02c42f32278",
+	"stdlib/universe/task_per_line_test.flux":                                                     "e01e162708d1b9ce0e4af9f63cff4435ef6ed9d60851a99eb61cae00a1e36401",
 	"stdlib/universe/time_weighted_avg_test.flux":                                                 "1d8553de262de9ab9606f9a1d79a263fbc8fb36c96d94f780974d36258fb0e09",
 	"stdlib/universe/timed_moving_average_test.flux":                                              "5b1f1064f32cff3c83adccc1f9a7d82d28b46121942e4cc210b98c5448c81cf2",
 	"stdlib/universe/to_convert_test.flux":                                                        "d9c9a131cc59468a6f0e4ea19c6457f7f32b1903d25dd1ac1ab8936e4140f9d0",
