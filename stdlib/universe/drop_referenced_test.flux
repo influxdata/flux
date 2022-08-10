@@ -43,6 +43,7 @@ testcase drop_referenced {
                 |> drop(columns: ["_field"])
                 |> filter(fn: (r) => r._field == "usage_guest")
                 |> tableFind(fn: (key) => true),
-        want: "error calling function \"tableFind\" @45:20-45:48: no table found",
+        want:
+            "error calling function \"tableFind\" @stdlib/universe/drop_referenced_test.flux|45:20-45:48: no table found",
     )
 }

@@ -25,6 +25,6 @@ testcase string_max {
                 |> max()
                 |> tableFind(fn: (key) => true),
         want:
-            "error calling function \"tableFind\" @26:20-26:48: runtime error @25:20-25:25: max: invalid use of function: *universe.MaxSelector has no implementation for type string",
+            "error calling function \"tableFind\" @stdlib/universe/string_max_test.flux|26:20-26:48: runtime error @stdlib/universe/string_max_test.flux|25:20-25:25: max: invalid use of function: *universe.MaxSelector has no implementation for type string",
     )
 }

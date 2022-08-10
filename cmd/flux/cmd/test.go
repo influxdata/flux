@@ -317,7 +317,7 @@ func (t *TestRunner) Gather(roots []string) error {
 			if err != nil {
 				return errors.Wrapf(err, codes.Invalid, "could not find test file %q", file)
 			}
-			baseAST := parser.ParseSource(string(q))
+			baseAST := parser.ParseSourceWithFileName(string(q), file.path)
 			if len(baseAST.Files) > 0 {
 				baseAST.Files[0].Name = file.path
 			}

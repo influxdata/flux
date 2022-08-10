@@ -23,6 +23,6 @@ testcase covariance_missing_column_2 {
                 |> covariance(columns: ["x", "r"])
                 |> tableFind(fn: (key) => true),
         want:
-            "error calling function \"tableFind\" @24:20-24:48: runtime error @23:20-23:51: covariance: specified column does not exist in table: x",
+            "error calling function \"tableFind\" @stdlib/universe/covariance_missing_column_2_test.flux|24:20-24:48: runtime error @stdlib/universe/covariance_missing_column_2_test.flux|23:20-23:51: covariance: specified column does not exist in table: x",
     )
 }
