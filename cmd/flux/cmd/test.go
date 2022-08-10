@@ -25,7 +25,9 @@ import (
 	"github.com/influxdata/flux/ast/edit"
 	"github.com/influxdata/flux/ast/testcase"
 	"github.com/influxdata/flux/codes"
+	"github.com/influxdata/flux/dependencies/feature"
 	"github.com/influxdata/flux/dependencies/filesystem"
+	"github.com/influxdata/flux/execute/executetest"
 	"github.com/influxdata/flux/execute/table"
 	"github.com/influxdata/flux/fluxinit"
 	"github.com/influxdata/flux/internal/errors"
@@ -40,6 +42,7 @@ type TestFlags struct {
 	testTags      []string
 	paths         []string
 	skipTestCases []string
+	features      string
 	skipUntagged  bool
 	parallel      bool
 	verbosity     int
@@ -87,6 +90,7 @@ error running the tests or at least one test failed.
 	testCommand.Flags().StringSliceVar(&flags.testNames, "test", []string{}, "List of test names to run. These tests will run regardless of tags or skips.")
 	testCommand.Flags().StringSliceVar(&flags.testTags, "tags", []string{}, "List of tags. Tests only run if all of their tags are provided.")
 	testCommand.Flags().StringSliceVar(&flags.skipTestCases, "skip", []string{}, "List of test names to skip.")
+	testCommand.Flags().StringVar(&flags.features, "features", "", "JSON object specifying the features to execute with. See internal/feature/flags.yml for a list of the current features")
 	testCommand.Flags().BoolVar(&flags.skipUntagged, "skip-untagged", false, "Skip tests with an empty tag set.")
 	testCommand.Flags().BoolVarP(&flags.parallel, "parallel", "", false, "Enables parallel test execution.")
 	testCommand.Flags().CountVarP(&flags.verbosity, "verbose", "v", "verbose (-v, -vv, or -vvv)")
@@ -116,7 +120,14 @@ func runFluxTests(out io.Writer, setup TestSetupFunc, flags TestFlags) (bool, er
 
 	runner.MarkSkipped(flags.testNames, flags.skipTestCases, flags.testTags, flags.skipUntagged)
 
-	executor, err := setup(context.Background())
+	ctx := context.Background()
+
+	ctx, err := WithFeatureFlags(ctx, flags.features)
+	if err != nil {
+		return false, err
+	}
+
+	executor, err := setup(ctx)
 	if err != nil {
 		return false, err
 	}
@@ -128,6 +139,16 @@ func runFluxTests(out io.Writer, setup TestSetupFunc, flags TestFlags) (bool, er
 		runner.Run(executor, flags.verbosity)
 	}
 	return runner.Finish(), nil
+}
+
+func WithFeatureFlags(ctx context.Context, features string) (context.Context, error) {
+	flagger := executetest.TestFlagger{}
+	if len(features) != 0 {
+		if err := json.Unmarshal([]byte(features), &flagger); err != nil {
+			return nil, errors.Newf(codes.Invalid, "Unable to unmarshal features as json: %s", err)
+		}
+	}
+	return feature.Dependency{Flagger: flagger}.Inject(ctx), nil
 }
 
 // Test wraps the functionality of a single testcase statement,

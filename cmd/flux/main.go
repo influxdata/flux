@@ -2,17 +2,14 @@ package main
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"os"
 
-	"github.com/influxdata/flux/cmd/flux/cmd"
+	fluxcmd "github.com/influxdata/flux/cmd/flux/cmd"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/dependencies"
-	"github.com/influxdata/flux/dependencies/feature"
 	"github.com/influxdata/flux/dependency"
-	"github.com/influxdata/flux/execute/executetest"
 	"github.com/influxdata/flux/fluxinit"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/repl"
@@ -59,13 +56,10 @@ func runE(cmd *cobra.Command, args []string) error {
 	ctx, span := injectDependencies(ctx)
 	defer span.Finish()
 
-	flagger := executetest.TestFlagger{}
-	if len(flags.Features) != 0 {
-		if err := json.Unmarshal([]byte(flags.Features), &flagger); err != nil {
-			return errors.Newf(codes.Invalid, "Unable to unmarshal features as json: %s", err)
-		}
+	ctx, err = fluxcmd.WithFeatureFlags(ctx, flags.Features)
+	if err != nil {
+		return err
 	}
-	ctx = feature.Dependency{Flagger: flagger}.Inject(ctx)
 
 	var opts []repl.Option
 	if flags.EnableSuggestions {
@@ -130,7 +124,7 @@ func main() {
 	fluxCmd.Flags().StringVar(&flags.Trace, "trace", "", "Trace query execution")
 	fluxCmd.Flags().StringVarP(&flags.Format, "format", "", "cli", "Output format one of: cli,csv. Defaults to cli")
 	fluxCmd.Flag("trace").NoOptDefVal = "jaeger"
-	fluxCmd.Flags().StringVar(&flags.Features, "feature", "", "JSON object specifying the features to execute with. See internal/feature/flags.yml for a list of the current features")
+	fluxCmd.Flags().StringVar(&flags.Features, "features", "", "JSON object specifying the features to execute with. See internal/feature/flags.yml for a list of the current features")
 
 	fmtCmd := &cobra.Command{
 		Use:   "fmt",
@@ -143,7 +137,7 @@ func main() {
 	fmtCmd.Flags().BoolVarP(&fmtFlags.AnalyzeCurrentDirectory, "analyze-current-directory", "c", false, "analyze the current <directory | file> and report if file(s) are not formatted")
 	fluxCmd.AddCommand(fmtCmd)
 
-	testCmd := cmd.TestCommand(NewTestExecutor)
+	testCmd := fluxcmd.TestCommand(NewTestExecutor)
 	fluxCmd.AddCommand(testCmd)
 
 	if err := fluxCmd.Execute(); err != nil {
