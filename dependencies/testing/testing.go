@@ -3,6 +3,7 @@ package testing
 import (
 	"context"
 
+	"github.com/google/go-cmp/cmp"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/internal/errors"
 )
@@ -88,11 +89,19 @@ type results struct {
 }
 
 func (want results) Check(got results) error {
-	for name, want := range want.plannerRules {
+	// Only diff against the rules listed in `want`
+	filteredGot := make(map[string]int)
+	for name := range want.plannerRules {
 		got := got.plannerRules[name]
-		if want != got {
-			return errors.Newf(codes.Invalid, "planner rule invoked an unexpected number of times: %d (want) != %d (got)", want, got)
-		}
+		filteredGot[name] = got
+	}
+
+	if diff := cmp.Diff(want.plannerRules, filteredGot); diff != "" {
+		return errors.Newf(
+			codes.Invalid,
+			"planner rule invoked an unexpected number of times -want/+got:\n%v",
+			diff,
+		)
 	}
 	return nil
 }
