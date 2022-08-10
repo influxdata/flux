@@ -210,7 +210,7 @@ measurementTagKeys = (bucket, measurement, start=_startDefault, stop=_stopDefaul
 //
 // Results include a single table with a single column, `_value`.
 //
-// **Note**: FieldKeys is a special application of `tagValues that returns field
+// **Note**: FieldKeys is a special application of `tagValues()` that returns field
 // keys in a given bucket.
 //
 // ## Parameters
