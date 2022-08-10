@@ -45,6 +45,7 @@ testcase lowestAverage {
             |> testing.load()
             |> range(start: 2018-11-07T00:00:00Z)
             |> lowestAverage(n: 3, groupColumns: ["_measurement", "host"])
+            |> drop(columns: ["_start", "_stop"])
     want = csv.from(csv: outData)
 
     testing.diff(got, want)

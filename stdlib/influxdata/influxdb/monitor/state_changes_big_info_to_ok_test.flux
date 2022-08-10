@@ -255,6 +255,8 @@ outData =
 "
 
 testcase state_changes_big_info_to_ok {
+    option testing.tags = ["skip"]
+
     got =
         csv.from(csv: inData)
             |> testing.load()

@@ -46,6 +46,7 @@ testcase keys {
         csv.from(csv: inData)
             |> testing.load()
             |> range(start: 2018-05-20T19:53:26Z)
+            |> drop(columns: ["_measurement", "_field"])
             |> keys()
     want = csv.from(csv: outData)
 

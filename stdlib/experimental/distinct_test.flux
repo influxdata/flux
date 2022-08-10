@@ -47,6 +47,7 @@ testcase distinct {
             |> testing.load()
             |> range(start: 2018-05-20T19:53:26Z)
             |> experimental.distinct()
+            |> drop(columns: ["_measurement", "_field"])
     want = csv.from(csv: outData)
 
     testing.diff(got, want)

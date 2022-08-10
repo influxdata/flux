@@ -93,6 +93,8 @@ outData =
 "
 
 testcase shapeDataWithFilter {
+    option testing.tags = ["skip"]
+
     got =
         csv.from(csv: inData)
             |> testing.load()

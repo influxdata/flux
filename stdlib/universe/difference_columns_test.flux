@@ -44,6 +44,8 @@ outData =
 "
 
 testcase difference_columns {
+    option testing.tags = ["skip"]
+
     got =
         csv.from(csv: inData)
             |> testing.load()

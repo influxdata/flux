@@ -33,6 +33,8 @@ outData =
 "
 
 testcase histogram_quantile_minvalue {
+    option testing.tags = ["skip"]
+
     got =
         csv.from(csv: inData)
             |> testing.load()

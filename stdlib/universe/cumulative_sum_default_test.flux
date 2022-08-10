@@ -66,6 +66,8 @@ outData =
 "
 
 testcase cumulative_sum_default {
+    option testing.tags = ["skip"]
+
     got =
         csv.from(csv: inData)
             |> testing.load()

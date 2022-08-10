@@ -35,9 +35,12 @@ outData =
 "
 
 testcase histogram {
+    option testing.tags = ["skip"]
+
     got =
         csv.from(csv: inData)
             |> testing.load()
+            |> range(start: 2018-05-22T19:53:00Z, stop: 2018-05-22T19:53:01Z)
             |> histogram(bins: [-1.0, 0.0, 1.0, 2.0])
             |> drop(columns: ["_start", "_stop"])
     want = csv.from(csv: outData)

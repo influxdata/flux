@@ -46,7 +46,10 @@ outData =
 "
 
 testcase join_panic {
-    table = csv.from(csv: passData) |> testing.load()
+    table =
+        csv.from(csv: passData)
+            |> testing.load()
+            |> range(start: 2020-12-21T17:49:00Z, stop: 2020-12-21T17:51:00Z)
 
     api_requests = table |> difference()
     errors =
