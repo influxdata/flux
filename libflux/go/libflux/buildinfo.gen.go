@@ -13,11 +13,11 @@ package libflux
 //
 //lint:ignore U1000 generated code
 var sourceHashes = map[string]string{
-	"libflux/Cargo.lock":                                                                          "d22aefaaab124dba2e5bcb521d44610e400d745a36a97b29665ee3db51b4a6ca",
+	"libflux/Cargo.lock":                                                                          "5f21e43655bf7ae60d4c59731ab1e5a74567fa9561c090555545cdaa0a09132d",
 	"libflux/Cargo.toml":                                                                          "91ac4e8b467440c6e8a9438011de0e7b78c2732403bb067d4dd31539ac8a90c1",
-	"libflux/flux-core/Cargo.toml":                                                                "979e410d4eef8318364ac9203bd0eedaa49ddd71043ed3402edd70ed5436286e",
+	"libflux/flux-core/Cargo.toml":                                                                "9c49e87c57b0027b7a0f525c55174eea2ddf391dadb7cb38e7f354b5b3b894b1",
 	"libflux/flux-core/src/ast/check/mod.rs":                                                      "47e06631f249715a44c9c8fa897faf142ad0fa26f67f8cfd5cd201e82cb1afc8",
-	"libflux/flux-core/src/ast/mod.rs":                                                            "4db1054af8625721300429b8ce0eacda6f8e6d8f20251874a87bb5bc884885c8",
+	"libflux/flux-core/src/ast/mod.rs":                                                            "1bad512571ccedfefa0c9a15c3b52c42687360817eb1c80fecc0936498e0f2c6",
 	"libflux/flux-core/src/ast/walk/mod.rs":                                                       "0820db1bc097e233cfe0ece58d48e93d82a3b463be88d6937d318dff75d898db",
 	"libflux/flux-core/src/bin/README.md":                                                         "c1245a4938c923d065647b4dc4f7e19486e85c93d868ef2f7f47ddff62ec81df",
 	"libflux/flux-core/src/bin/analyze_query_log.rs":                                              "8cb0aca0eff41b28c0aff07424ae3375364a37bec0ad49fe5460e6c360735a64",

@@ -1566,6 +1566,8 @@ pub struct DateTimeLit {
     pub value: chrono::DateTime<FixedOffset>,
 }
 
+// Re-implementation of https://github.com/vityafx/serde-aux/blob/c6f8482f51da7f187ecea62931c8f38edcf355c9/src/field_attributes.rs#L676
+// so we do not need to pull in an entire crate
 fn deserialize_default_from_null<'de, T, D>(d: D) -> Result<T, D::Error>
 where
     D: Deserializer<'de>,
