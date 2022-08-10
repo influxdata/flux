@@ -27,8 +27,8 @@ import (
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/dependencies/feature"
 	"github.com/influxdata/flux/dependencies/filesystem"
+	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
-	"github.com/influxdata/flux/execute/table"
 	"github.com/influxdata/flux/fluxinit"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/parser"
@@ -207,10 +207,8 @@ func (t *Test) consume(ctx context.Context, results flux.ResultIterator) error {
 			err := result.Tables().Do(func(tbl flux.Table) error {
 				// The data returned here is the result of `testing.diff`, so any result means that
 				// a comparison of two tables showed inequality. Capture that inequality as part of the error.
-				// XXX: rockstar (08 Dec 2020) - This could use some ergonomic work, as the diff output
-				// is not exactly "human readable."
-				_, _ = fmt.Fprint(&output, table.Stringify(tbl))
-				return nil
+				_, err := execute.NewFormatter(tbl, nil).WriteTo(&output)
+				return err
 			})
 			if err != nil {
 				return err
