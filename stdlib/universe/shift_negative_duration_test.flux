@@ -66,9 +66,12 @@ outData =
 "
 
 testcase shift_negative_duration {
+    option testing.tags = ["skip"]
+
     got =
         csv.from(csv: inData)
             |> testing.load()
+            |> range(start: 2018-05-22T19:48:00Z)
             |> timeShift(duration: -5m)
             |> drop(columns: ["_start", "_stop"])
     want = csv.from(csv: outData)

@@ -26,6 +26,8 @@ outData =
 token = secrets.get(key: "token")
 
 testcase secrets {
+    option testing.tags = ["skip"]
+
     got =
         csv.from(csv: inData)
             |> testing.load()

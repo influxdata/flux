@@ -36,6 +36,7 @@ testcase pivot_mean {
             |> group(columns: ["_stop", "_measurement", "_field", "host"])
             |> mean()
             |> pivot(rowKey: ["_stop"], columnKey: ["host"], valueColumn: "_value")
+            |> drop(columns: ["_start"])
     want = csv.from(csv: outData)
 
     testing.diff(got, want)

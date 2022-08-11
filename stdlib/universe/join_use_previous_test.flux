@@ -57,16 +57,17 @@ testcase join_use_previous_test {
     // https://github.com/influxdata/flux/issues2996
     option testing.tags = ["skip"]
 
-    tables = csv.from(csv: inData) |> testing.load()
+    table =
+        csv.from(csv: inData)
+            |> testing.load()
+            |> range(start: 2019-05-10T20:50:00Z, stop: 2019-05-10T20:51:00Z)
 
     lhs =
         tables
-            |> range(start: 2020-05-01T00:00:00Z)
             |> filter(fn: (r) => exists r.value)
             |> drop(columns: ["_start", "_stop"])
     rhs =
         tables
-            |> range(start: 2020-05-01T00:00:00Z)
             |> filter(fn: (r) => exists r.flag)
             |> drop(columns: ["_start", "_stop"])
     got =

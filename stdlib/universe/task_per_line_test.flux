@@ -64,17 +64,18 @@ testcase task_per_line {
     // https://github.com/influxdata/flux/issues/855
     option testing.tags = ["skip"]
 
-    table = csv.from(csv: inData) |> testing.load()
+    table =
+        csv.from(csv: inData)
+            |> testing.load()
+            |> range(start: 2018-10-02T17:55:11.520461Z)
 
     supl =
         table
-            |> range(start: 2018-10-02T17:55:11.520461Z)
             |> filter(fn: (r) => r._measurement == "records" and r.taskID == "02bac3c8f0f37000")
             |> pivot(rowKey: ["_time"], columnKey: ["_field"], valueColumn: "_value")
             |> group(columns: ["runID"])
     main =
         table
-            |> range(start: 2018-10-02T17:55:11.520461Z)
             |> filter(fn: (r) => r._measurement == "records" and r.taskID == "02bac3c8f0f37000")
             |> pivot(rowKey: ["_time"], columnKey: ["_field"], valueColumn: "_value")
             |> pivot(rowKey: ["runID"], columnKey: ["status"], valueColumn: "_time")

@@ -39,9 +39,12 @@ outData =
 "
 
 testcase unique {
+    option testing.tags = ["skip"]
+
     got =
         csv.from(csv: inData)
             |> testing.load()
+            |> range(start: 2018-05-22T19:53:26Z)
             |> unique(column: "tag0")
             |> drop(columns: ["_start", "_stop"])
     want = csv.from(csv: outData)

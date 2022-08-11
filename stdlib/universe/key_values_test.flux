@@ -49,8 +49,9 @@ testcase key_values {
     got =
         csv.from(csv: inData)
             |> testing.load()
+            |> range(start: 2018-05-22T19:53:00Z, stop: 2018-05-22T19:55:00Z)
             |> keyValues(keyColumns: ["_value"])
-            |> drop(columns: ["_start", "_stop"])
+            |> drop(columns: ["_start", "_stop", "_measurement", "_field"])
     want = csv.from(csv: outData)
 
     testing.diff(got, want)
