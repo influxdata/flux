@@ -565,6 +565,7 @@ func TestVectorizedFns(t *testing.T) {
 			flagger[fluxfeature.VectorizedConst().Key()] = true
 			flagger[fluxfeature.VectorizedConditionals().Key()] = true
 			flagger[fluxfeature.VectorizedEqualityOps().Key()] = true
+			flagger[fluxfeature.VectorizedFloat().Key()] = true
 			ctx := context.Background()
 			ctx = feature.Inject(
 				ctx,

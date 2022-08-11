@@ -197,6 +197,18 @@ func VectorizedConst() BoolFlag {
 	return vectorizedConst
 }
 
+var vectorizedFloat = feature.MakeBoolFlag(
+	"Vectorized Float",
+	"vectorizedFloat",
+	"Owen Nelson",
+	false,
+)
+
+// VectorizedFloat - Calls to map can be vectorized when float casts appear in the function
+func VectorizedFloat() BoolFlag {
+	return vectorizedFloat
+}
+
 // Inject will inject the Flagger into the context.
 func Inject(ctx context.Context, flagger Flagger) context.Context {
 	return feature.Inject(ctx, flagger)
@@ -218,6 +230,7 @@ var all = []Flag{
 	vectorizedConditionals,
 	vectorizedEqualityOps,
 	vectorizedConst,
+	vectorizedFloat,
 }
 
 var byKey = map[string]Flag{
@@ -236,6 +249,7 @@ var byKey = map[string]Flag{
 	"vectorizedConditionals":           vectorizedConditionals,
 	"vectorizedEqualityOps":            vectorizedEqualityOps,
 	"vectorizedConst":                  vectorizedConst,
+	"vectorizedFloat":                  vectorizedFloat,
 }
 
 // Flags returns all feature flags.

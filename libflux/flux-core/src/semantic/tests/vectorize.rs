@@ -14,6 +14,7 @@ fn analyzer_config() -> AnalyzerConfig {
             Feature::VectorizedConst,
             Feature::VectorizedConditionals,
             Feature::VectorizedEqualityOps,
+            Feature::VectorizedFloat,
         ],
         ..AnalyzerConfig::default()
     }

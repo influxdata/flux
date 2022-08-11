@@ -171,22 +171,23 @@ impl Expression {
 impl CallExpr {
     fn vectorize(&self, env: &VectorizeEnv) -> Result<Self> {
         match &self.callee {
-            Expression::Identifier(IdentifierExpr { name, .. }) => {
-                if name == "float" && self.arguments.len() == 1 && self.arguments[0].key.name == "v"
+            ident @ Expression::Identifier(IdentifierExpr { name, .. }) => {
+                if env.config.features.contains(&Feature::VectorizedFloat)
+                    && name == "float"
+                    && self.arguments.len() == 1
+                    && self.arguments[0].key.name == "v"
                 {
-                    // FIXME: this will rewrite any call to float, not just those inside functions
-                    //   passed to `map()`.
                     let v = &self.arguments[0];
                     let arguments = vec![Property {
                         loc: v.loc.clone(),
                         key: v.key.clone(),
                         value: v.value.vectorize(env)?,
                     }];
-                    // FIXME: can we lookup the symbol from stdlib without building it by hand?
+
                     let callee = Expression::Identifier(IdentifierExpr {
-                        loc: Default::default(),
+                        loc: ident.loc().clone(),
                         typ: MonoType::vector(MonoType::FLOAT),
-                        name: Symbol::from("_vectorizedFloat"), // FIXME
+                        name: Symbol::from("_vectorizedFloat"),
                     });
                     Ok(CallExpr {
                         loc: self.loc.clone(),
