@@ -270,7 +270,7 @@ func contains(names []string, name string) bool {
 func containsWithPkgName(names []string, test *Test) bool {
 	var aTest, tTestName string
 	for _, name := range names {
-		fTest := splitAny(name, "./")
+		fTest := splitAny(name, ".")
 		// handle package.TestName or package/TestName case
 		if len(fTest) > 1 {
 			aTest = strings.Join(fTest, ".")
