@@ -7,15 +7,20 @@ use expect_test::{expect, Expect};
 
 use super::*;
 
-const TEST_OPTIONS: Options = Options {
-    // It is easier to read/write testcases without having to add a trailing newline
-    trailing_newline: false,
-};
+use crate::parser::Parser;
+
+fn test_options() -> Options {
+    Options {
+        // It is easier to read/write testcases without having to add a trailing newline
+        trailing_newline: false,
+        ..Options::default()
+    }
+}
 
 #[track_caller]
 fn assert_unchanged(script: &str) {
     let _ = env_logger::try_init();
-    let output = format_with(script, TEST_OPTIONS).unwrap();
+    let output = format_with(script, test_options()).unwrap();
     assert_eq!(
         script, output,
         "\n EXPECTED: \n {} \n OUTPUT: \n {} \n",
@@ -26,7 +31,7 @@ fn assert_unchanged(script: &str) {
 #[track_caller]
 fn assert_format(script: &str, expected: &str) {
     let _ = env_logger::try_init();
-    let output = format_with(script, TEST_OPTIONS).unwrap();
+    let output = format_with(script, test_options()).unwrap();
     assert_eq!(
         expected, output,
         "\n EXPECTED: \n {} \n OUTPUT: \n {} \n",
@@ -36,7 +41,7 @@ fn assert_format(script: &str, expected: &str) {
 
 #[track_caller]
 fn expect_format(script: &str, expect: Expect) {
-    expect.assert_eq(&format_with(script, TEST_OPTIONS).unwrap());
+    expect.assert_eq(&format_with(script, test_options()).unwrap());
 }
 
 #[test]
@@ -1994,6 +1999,7 @@ fn format_with_trailing_newline() {
             src,
             Options {
                 trailing_newline: true,
+                ..Default::default()
             },
         )
         .unwrap(),
@@ -2007,8 +2013,21 @@ fn format_with_trailing_newline() {
             src,
             Options {
                 trailing_newline: false,
+                ..Default::default()
             },
         )
         .unwrap(),
     );
+}
+
+#[test]
+fn format_node_test() {
+    let mut p = Parser::new(
+        r"1
+    +
+a",
+    );
+    let expr = p.parse_expression();
+
+    expect![["1 + a"]].assert_eq(&format_node(Node::from_expr(&expr)).unwrap());
 }
