@@ -45,11 +45,11 @@ func TestFormatted(t *testing.T) {
 				},
 			},
 			want: `digraph {
-  from
-  filter
+  "from"
+  "filter"
   // r._value > 5.000000
 
-  from -> filter
+  "from" -> "filter"
 }
 `,
 		},
@@ -83,12 +83,12 @@ func TestFormatted(t *testing.T) {
 				},
 			},
 			want: `digraph {
-  source
-  merge
+  "source"
+  "merge"
   // *** spec details ***
   // ParallelMergeFactor: 8
 
-  source -> merge
+  "source" -> "merge"
 }
 `,
 		},

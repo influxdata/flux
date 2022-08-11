@@ -41,6 +41,12 @@ type formatter struct {
 	p           *Spec
 }
 
+func formatAsDOT(id NodeID) string {
+	// The DOT language does not allow "." or "/" in IDs
+	// so quote the node IDs.
+	return fmt.Sprintf("%q", id)
+}
+
 func (f formatter) Format(fs fmt.State, c rune) {
 	// Panicking while producing debug output is frustrating, so catch any panics and
 	// continue if that happens.
@@ -54,7 +60,7 @@ func (f formatter) Format(fs fmt.State, c rune) {
 	_, _ = fmt.Fprintf(fs, "digraph {\n")
 	var edges []string
 	_ = f.p.BottomUpWalk(func(pn Node) error {
-		_, _ = fmt.Fprintf(fs, "  %v\n", pn.ID())
+		_, _ = fmt.Fprintf(fs, "  %v\n", formatAsDOT(pn.ID()))
 		if f.withDetails {
 			details := ""
 			if d, ok := pn.ProcedureSpec().(Detailer); ok {
@@ -78,7 +84,7 @@ func (f formatter) Format(fs fmt.State, c rune) {
 			}
 		}
 		for _, pred := range pn.Predecessors() {
-			edges = append(edges, fmt.Sprintf("  %v -> %v", pred.ID(), pn.ID()))
+			edges = append(edges, fmt.Sprintf("  %v -> %v", formatAsDOT(pred.ID()), formatAsDOT(pn.ID())))
 		}
 		return nil
 	})

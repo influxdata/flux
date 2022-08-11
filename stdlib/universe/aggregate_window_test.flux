@@ -3,7 +3,9 @@ package universe_test
 
 import "array"
 import "csv"
+import "internal/debug"
 import "testing"
+import "testing/expect"
 import "planner"
 
 sampleData = [
@@ -519,4 +521,66 @@ testcase max_null_windows {
             |> drop(columns: ["_start", "_stop"])
 
     testing.diff(got, want)
+}
+
+testcase aggregate_window_create_empty_predecessor_multi_successor {
+    expect.planner(rules: ["AggregateWindowCreateEmptyRule": 1])
+
+    data =
+        array.from(rows: sampleData)
+            |> range(start: 2019-11-25T00:00:00Z, stop: 2019-11-25T00:01:00Z)
+            |> group(columns: ["t0", "_start", "_stop"])
+
+    // This additional successor to the input to aggregateWindow caused trouble
+    // for the planner, so we are just verifying that the rule is applied
+    // and the query succeeds.
+    data
+        |> debug.sink()
+
+    got =
+        data
+            |> aggregateWindow(fn: count, every: 1m)
+            |> drop(columns: ["_start", "_stop"])
+    want =
+        array.from(
+            rows: [
+                {_time: 2019-11-25T00:01:00Z, t0: "a-0", _value: 5},
+                {_time: 2019-11-25T00:01:00Z, t0: "a-1", _value: 5},
+                {_time: 2019-11-25T00:01:00Z, t0: "a-2", _value: 5},
+            ],
+        )
+            |> group(columns: ["t0", "_start", "_stop"])
+
+    testing.diff(want, got)
+}
+
+testcase aggregate_window_predecessor_multi_successor {
+    expect.planner(rules: ["AggregateWindowRule": 1])
+
+    data =
+        array.from(rows: sampleData)
+            |> range(start: 2019-11-25T00:00:00Z, stop: 2019-11-25T00:01:00Z)
+            |> group(columns: ["t0", "_start", "_stop"])
+
+    // This additional successor to the input to aggregateWindow caused trouble
+    // for the planner, so we are just verifying that the rule is applied
+    // and the query succeeds.
+    data
+        |> debug.sink()
+
+    got =
+        data
+            |> aggregateWindow(fn: count, every: 1m, createEmpty: false)
+            |> drop(columns: ["_start", "_stop"])
+    want =
+        array.from(
+            rows: [
+                {_time: 2019-11-25T00:01:00Z, t0: "a-0", _value: 5},
+                {_time: 2019-11-25T00:01:00Z, t0: "a-1", _value: 5},
+                {_time: 2019-11-25T00:01:00Z, t0: "a-2", _value: 5},
+            ],
+        )
+            |> group(columns: ["t0", "_start", "_stop"])
+
+    testing.diff(want, got)
 }

@@ -431,7 +431,7 @@ var sourceHashes = map[string]string{
 	"stdlib/universe/aggregate_window_max_test.flux":                                              "8ee5d927ef375e7ac3687ea1ea00a0e8add969c31357362d0032ee079c2ac906",
 	"stdlib/universe/aggregate_window_mean_test.flux":                                             "ba33848419748489bc330c67dfaa344fac757f8af782879c71e08b345f0f652f",
 	"stdlib/universe/aggregate_window_median_test.flux":                                           "2791ed98310aae23deab7cb79836e60539cd29810c67910c30e4b891356a2698",
-	"stdlib/universe/aggregate_window_test.flux":                                                  "79ae9443c57f613fa7917b727f80f6a3fc985fcd95006ab2804c1f5d25c9b9d3",
+	"stdlib/universe/aggregate_window_test.flux":                                                  "d415e0613744096fd7f624bdef2faf1fdae480b83feee2298b672385de14a8c8",
 	"stdlib/universe/cmo_test.flux":                                                               "3793f5cf21ae42879d6789cdc36bbcf29ddb99bf16af8a96775a9415fd8d1c09",
 	"stdlib/universe/columns_test.flux":                                                           "7d116d2f875b7bc1d6ec47b61b3166abb91759788dee6032ad6d86874a58abed",
 	"stdlib/universe/contains_test.flux":                                                          "a1890287ebc1ad6d8c84561f7e0cb725048a1e287f49f5dceac196866a20ee01",
