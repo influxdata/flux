@@ -213,7 +213,7 @@ outData =
 ,,3,2019-11-01T00:17:38.287113937Z,89c2664,taxi,start,1572567458287113937,-73.776665,40.645245
 "
 
-testcase gridFilter {
+testcase grid_filter_level {
     got =
         csv.from(csv: inData)
             |> testing.load()

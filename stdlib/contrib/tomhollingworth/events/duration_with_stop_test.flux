@@ -46,7 +46,7 @@ outData =
 ,,1,2018-05-22T19:53:26Z,2018-05-22T19:54:36Z,2018-05-22T19:54:16Z,34.982252364543626,used_percent,disk,disk1s2,apfs,host.local,/,30
 "
 
-testcase duration {
+testcase duration_with_stop {
     got =
         csv.from(csv: inData)
             |> testing.load()

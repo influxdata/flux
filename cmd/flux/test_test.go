@@ -214,8 +214,8 @@ func runForPath(t *testing.T, path string, wantErr error, args ...string) Summar
 
 func Test_TestCmd(t *testing.T) {
 	want := Summary{
-		Found:   7,
-		Passed:  1,
+		Found:   9,
+		Passed:  3,
 		Failed:  0,
 		Skipped: 6,
 	}
@@ -229,10 +229,10 @@ func Test_TestCmd(t *testing.T) {
 
 func Test_TestCmd_TestName(t *testing.T) {
 	want := Summary{
-		Found:   7,
+		Found:   9,
 		Passed:  1,
 		Failed:  0,
-		Skipped: 6,
+		Skipped: 8,
 	}
 	got := runAll(t, nil, "--test", "a")
 	for name, got := range got {
@@ -241,10 +241,41 @@ func Test_TestCmd_TestName(t *testing.T) {
 		}
 	}
 }
+
+func Test_TestCmd_TestName_DuplicateWithPackage(t *testing.T) {
+	want := Summary{
+		Found:   9,
+		Passed:  1,
+		Failed:  0,
+		Skipped: 8,
+	}
+	got := runAll(t, nil, "--test", "pkgb.duplicate")
+	for name, got := range got {
+		if want != got {
+			t.Errorf("%s: unexpected summary got %+v want %+v", name, got, want)
+		}
+	}
+}
+
+func Test_TestCmd_TestName_Duplicate(t *testing.T) {
+	want := Summary{
+		Found:   9,
+		Passed:  2,
+		Failed:  0,
+		Skipped: 7,
+	}
+	got := runAll(t, nil, "--test", "duplicate")
+	for name, got := range got {
+		if want != got {
+			t.Errorf("%s: unexpected summary got %+v want %+v", name, got, want)
+		}
+	}
+}
+
 func Test_TestCmd_Fails(t *testing.T) {
 	want := Summary{
-		Found:   7,
-		Passed:  1,
+		Found:   9,
+		Passed:  3,
 		Failed:  1,
 		Skipped: 5,
 	}
@@ -268,56 +299,56 @@ func Test_TestCmd_Tags(t *testing.T) {
 		{
 			tags: []string{"a"},
 			want: Summary{
-				Found:   7,
-				Passed:  2,
+				Found:   9,
+				Passed:  4,
 				Skipped: 5,
 			},
 		},
 		{
 			tags: []string{"a", "b"},
 			want: Summary{
-				Found:   7,
-				Passed:  3,
+				Found:   9,
+				Passed:  5,
 				Skipped: 4,
 			},
 		},
 		{
 			tags: []string{"a", "b", "c"},
 			want: Summary{
-				Found:   7,
-				Passed:  4,
+				Found:   9,
+				Passed:  6,
 				Skipped: 3,
 			},
 		},
 		{
 			tags: []string{"b", "c"},
 			want: Summary{
-				Found:   7,
-				Passed:  1,
+				Found:   9,
+				Passed:  3,
 				Skipped: 6,
 			},
 		},
 		{
 			tags: []string{"c"},
 			want: Summary{
-				Found:   7,
-				Passed:  1,
+				Found:   9,
+				Passed:  3,
 				Skipped: 6,
 			},
 		},
 		{
 			tags: []string{"b"},
 			want: Summary{
-				Found:   7,
-				Passed:  1,
+				Found:   9,
+				Passed:  3,
 				Skipped: 6,
 			},
 		},
 		{
 			tags: []string{"foo"},
 			want: Summary{
-				Found:   7,
-				Passed:  3,
+				Found:   9,
+				Passed:  5,
 				Skipped: 4,
 			},
 		},
@@ -337,8 +368,8 @@ func Test_TestCmd_Tags(t *testing.T) {
 }
 func Test_TestCmd_Skip(t *testing.T) {
 	want := Summary{
-		Found:   7,
-		Passed:  0,
+		Found:   9,
+		Passed:  2,
 		Skipped: 7,
 	}
 	got := runAll(t, nil, "--skip", "untagged")
@@ -349,11 +380,45 @@ func Test_TestCmd_Skip(t *testing.T) {
 	}
 }
 
+func Test_TestCmd_Skip_DuplicateWithPackage(t *testing.T) {
+	want := Summary{
+		Found:   9,
+		Passed:  2,
+		Skipped: 7,
+	}
+	got := runAll(t, nil, "--skip", "pkga.duplicate")
+	for name, got := range got {
+		if want != got {
+			t.Errorf("%s: unexpected summary got %+v want %+v", name, got, want)
+		}
+	}
+}
+
+func Test_TestCmd_Skip_Duplicate(t *testing.T) {
+	want := Summary{
+		Found:   9,
+		Passed:  1,
+		Skipped: 8,
+	}
+	got := runAll(t, nil, "--skip", "duplicate")
+	for name, got := range got {
+		if want != got {
+			t.Errorf("%s: unexpected summary got %+v want %+v", name, got, want)
+		}
+	}
+}
+
+func Test_TestCmd_Error_Duplicate(t *testing.T) {
+	wantErr := errors.New("duplicate testcase name \"duplicate\", found in package \"test\", at locations testdataduplicate/test_test.flux|7:10-7:19 and testdataduplicate/test_test.flux|14:10-14:19")
+	runForPath(t, "./testdataduplicate", wantErr, "--test", "duplicate")
+
+}
+
 func Test_TestCmd_SkipUntagged(t *testing.T) {
 	want := Summary{
-		Found:   7,
+		Found:   9,
 		Passed:  0,
-		Skipped: 7,
+		Skipped: 9,
 	}
 	got := runAll(t, nil, "--skip-untagged")
 	for name, got := range got {

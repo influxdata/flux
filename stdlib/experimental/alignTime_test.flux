@@ -182,7 +182,7 @@ outData =
 ,,2,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-19T00:00:00Z,19624,United States
 "
 
-testcase set {
+testcase align_time {
     option testing.tags = ["skip"]
 
     got =

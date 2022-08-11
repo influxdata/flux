@@ -73,7 +73,7 @@ func (v testStmtVisitor) Visit(node ast.Node) ast.Visitor {
 
 func (v testStmtVisitor) Done(node ast.Node) {}
 
-/// Scans `rootDir` for all packages that contain `testcase` statements and returns them
+// / Scans `rootDir` for all packages that contain `testcase` statements and returns them
 func FindTestPackages(rootDir string) ([]*ast.Package, error) {
 	var testPackages []*ast.Package
 	pkgName := "github.com/influxdata/flux/stdlib"

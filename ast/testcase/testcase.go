@@ -18,17 +18,17 @@ import (
 //
 // A testcase is defined with the testcase statement such as below.
 //
-//     import "testing/assert"
-//     myVar = 4
-//     testcase addition {
-//         assert.equal(want: 2 + 2, got: myVar)
-//     }
+//	import "testing/assert"
+//	myVar = 4
+//	testcase addition {
+//	    assert.equal(want: 2 + 2, got: myVar)
+//	}
 //
 // This gets transformed into a package that looks like this:
 //
-//     import "testing/assert"
-//     myVar = 4
-//     assert.equal(want: 2 + 2, got: myVar)
+//	import "testing/assert"
+//	myVar = 4
+//	assert.equal(want: 2 + 2, got: myVar)
 //
 // It is allowed to include options within the testcase block as they will be extracted
 // to the top level.
@@ -37,23 +37,22 @@ import (
 // This will transform the the extended testcase in a slightly different way.
 // The syntax for extending is as such:
 //
-//     import "math"
-//     testcase addition_v2 extends "math_test.addition" {
-//         option math.enable_v2 = true
-//         super()
-//     }
+//	import "math"
+//	testcase addition_v2 extends "math_test.addition" {
+//	    option math.enable_v2 = true
+//	    super()
+//	}
 //
 // The extending test case is then transformed into a single file combining both the parent
 // statements and the current statements.
 //
-//     import "testing/assert"
-//     import "math"
+//	import "testing/assert"
+//	import "math"
 //
-//     option math.enable_v2 = true
+//	option math.enable_v2 = true
 //
-//     myVar = 4
-//     assert.equal(want: 2 + 2, got: myVar)
-//
+//	myVar = 4
+//	assert.equal(want: 2 + 2, got: myVar)
 //
 // The call to `super()` is replaced with the body of the parent test case.
 //
@@ -62,7 +61,7 @@ import (
 // It is allowed for an imported testcase to have an option, but no attempt is made
 // to remove duplicate options. If there is a duplicate option, this will likely
 // cause an error when the test is actually run.
-func Transform(ctx context.Context, pkg *ast.Package, modules TestModules) ([]string, []*ast.Package, error) {
+func Transform(ctx context.Context, pkg *ast.Package, modules TestModules) ([]*ast.Identifier, []*ast.Package, error) {
 	if len(pkg.Files) != 1 {
 		return nil, nil, errors.Newf(codes.FailedPrecondition, "unsupported number of files in test case package, got %d", len(pkg.Files))
 	}
@@ -81,7 +80,7 @@ func Transform(ctx context.Context, pkg *ast.Package, modules TestModules) ([]st
 	}
 
 	var (
-		names = make([]string, 0, n)
+		idens = make([]*ast.Identifier, 0, n)
 		pkgs  = make([]*ast.Package, 0, n)
 	)
 	for _, item := range file.Body {
@@ -94,11 +93,11 @@ func Transform(ctx context.Context, pkg *ast.Package, modules TestModules) ([]st
 		if err != nil {
 			return nil, nil, err
 		}
-		names = append(names, testcase.ID.Name)
+		idens = append(idens, testcase.ID)
 		pkgs = append(pkgs, testpkg)
 	}
 
-	return names, pkgs, nil
+	return idens, pkgs, nil
 }
 
 func newTestPackage(ctx context.Context, basePkg *ast.Package, preamble []ast.Statement, tc *ast.TestCaseStatement, modules TestModules) (*ast.Package, error) {

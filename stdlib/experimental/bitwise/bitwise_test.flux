@@ -6,7 +6,7 @@ import "math"
 import "experimental/bitwise"
 import "testing"
 
-testcase uand {
+testcase uand_exp {
     cases =
         array.from(rows: [{a: 1, b: 1, want: 1}, {a: 1, b: 0, want: 0}, {a: 5, b: 1, want: 1}, {a: 5, b: 4, want: 4}])
             |> map(fn: (r) => ({a: uint(v: r.a), b: uint(v: r.b), want: uint(v: r.want)}))
@@ -21,7 +21,7 @@ testcase uand {
 
     testing.diff(want: want, got: got)
 }
-testcase uor {
+testcase uor_exp {
     cases =
         array.from(rows: [{a: 1, b: 1, want: 1}, {a: 1, b: 0, want: 1}, {a: 5, b: 1, want: 5}, {a: 5, b: 4, want: 5}])
             |> map(fn: (r) => ({a: uint(v: r.a), b: uint(v: r.b), want: uint(v: r.want)}))
@@ -37,7 +37,7 @@ testcase uor {
     testing.diff(want: want, got: got)
 }
 
-testcase unot {
+testcase unot_exp {
     cases = array.from(rows: [{a: uint(v: 1), want: math.maxuint - uint(v: 1)}, {a: math.maxuint, want: uint(v: 0)}])
 
     got =
@@ -51,7 +51,7 @@ testcase unot {
     testing.diff(want: want, got: got)
 }
 
-testcase uclear {
+testcase uclear_exp {
     cases =
         array.from(rows: [{a: 1, b: 1, want: 0}, {a: 1, b: 0, want: 1}, {a: 5, b: 1, want: 4}, {a: 5, b: 4, want: 1}])
             |> map(fn: (r) => ({a: uint(v: r.a), b: uint(v: r.b), want: uint(v: r.want)}))
@@ -66,7 +66,7 @@ testcase uclear {
 
     testing.diff(want: want, got: got)
 }
-testcase ulshift {
+testcase ulshift_exp {
     cases =
         array.from(rows: [{a: 1, b: 1, want: 2}, {a: 1, b: 0, want: 1}, {a: 5, b: 1, want: 10}, {a: 5, b: 4, want: 80}])
             |> map(fn: (r) => ({a: uint(v: r.a), b: uint(v: r.b), want: uint(v: r.want)}))
@@ -81,7 +81,7 @@ testcase ulshift {
 
     testing.diff(want: want, got: got)
 }
-testcase urshift {
+testcase urshift_exp {
     cases =
         array.from(rows: [{a: 2, b: 1, want: 1}, {a: 1, b: 0, want: 1}, {a: 10, b: 1, want: 5}, {a: 80, b: 4, want: 5}])
             |> map(fn: (r) => ({a: uint(v: r.a), b: uint(v: r.b), want: uint(v: r.want)}))
@@ -97,7 +97,7 @@ testcase urshift {
     testing.diff(want: want, got: got)
 }
 
-testcase sand {
+testcase sand_exp {
     cases =
         array.from(
             rows: [
@@ -124,7 +124,7 @@ testcase sand {
 
     testing.diff(want: want, got: got)
 }
-testcase sor {
+testcase sor_exp {
     cases =
         array.from(rows: [{a: 1, b: 1, want: 1}, {a: 1, b: 0, want: 1}, {a: 5, b: 1, want: 5}, {a: 5, b: 4, want: 5}])
 
@@ -139,7 +139,7 @@ testcase sor {
     testing.diff(want: want, got: got)
 }
 
-testcase snot {
+testcase snot_exp {
     cases = array.from(rows: [{a: 1, want: -2}, {a: math.maxint, want: math.minint}])
 
     got =
@@ -153,7 +153,7 @@ testcase snot {
     testing.diff(want: want, got: got)
 }
 
-testcase sclear {
+testcase sclear_exp {
     cases =
         array.from(rows: [{a: 1, b: 1, want: 0}, {a: 1, b: 0, want: 1}, {a: 5, b: 1, want: 4}, {a: 5, b: 4, want: 1}])
 
@@ -167,7 +167,7 @@ testcase sclear {
 
     testing.diff(want: want, got: got)
 }
-testcase slshift {
+testcase slshift_exp {
     cases =
         array.from(rows: [{a: 1, b: 1, want: 2}, {a: 1, b: 0, want: 1}, {a: 5, b: 1, want: 10}, {a: 5, b: 4, want: 80}])
 
@@ -181,7 +181,7 @@ testcase slshift {
 
     testing.diff(want: want, got: got)
 }
-testcase srshift {
+testcase srshift_exp {
     cases =
         array.from(rows: [{a: 2, b: 1, want: 1}, {a: 1, b: 0, want: 1}, {a: 10, b: 1, want: 5}, {a: 80, b: 4, want: 5}])
 

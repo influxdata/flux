@@ -45,7 +45,7 @@ outData =
 ,,1,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,2018-05-22T19:54:16Z,0.00021082472700584276,used_percent,disk,disk1s2,apfs,host.local,/
 "
 
-testcase difference {
+testcase difference_keepfirst {
     got =
         csv.from(csv: inData)
             |> testing.load()

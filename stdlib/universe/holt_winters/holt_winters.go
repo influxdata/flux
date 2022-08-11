@@ -12,8 +12,8 @@ import (
 
 // HoltWinters forecasts a series into the future.
 // This is done using the Holt-Winters damped method.
-//    1. The initial values are calculated using a SSE.
-//    2. The series is forecast into the future using the iterative relations.
+//  1. The initial values are calculated using a SSE.
+//  2. The series is forecast into the future using the iterative relations.
 type HoltWinters struct {
 	n              int
 	s              int

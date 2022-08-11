@@ -36,7 +36,7 @@ outData =
 ,,3,2019-01-01T00:00:00Z,2030-01-01T00:00:00Z,Reiva,OAOJWe7,qCnJDC,-Inf
 "
 
-testcase quantile {
+testcase quantile_neg {
     got =
         csv.from(csv: inData)
             |> testing.load()

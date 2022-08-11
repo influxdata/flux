@@ -166,15 +166,19 @@ func TestHoltWinters_PassThrough(t *testing.T) {
 // The initial data used in tests is obtained from the original (large) dataset with this query:
 // ```
 // SELECT FIRST("water_level") into "first"."autogen"."data"
-// 	FROM "water"."autogen"."h2o_feet"
-// 	WHERE "location"='santa_monica' and time >= '2015-08-22 22:12:00' and time <= '2015-08-28 03:00:00'
-// 	GROUP BY time(379m,348m)
+//
+//	FROM "water"."autogen"."h2o_feet"
+//	WHERE "location"='santa_monica' and time >= '2015-08-22 22:12:00' and time <= '2015-08-28 03:00:00'
+//	GROUP BY time(379m,348m)
+//
 // ```
 // HoltWinters is then calculated on the database "first":
 // ```
 // SELECT holt_winters(max("first"), 10, 4)
-// 	from "first"."autogen"."data"
-// 	GROUP BY time(379m,348m)
+//
+//	from "first"."autogen"."data"
+//	GROUP BY time(379m,348m)
+//
 // ```
 // We followed a similar procedure for other tests with missing values.
 func TestHoltWinters_Process(t *testing.T) {

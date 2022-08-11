@@ -28,7 +28,7 @@ outData =
 ,,0,2018-12-01T00:00:00Z,2030-01-01T00:00:00Z,SOYcRk,NC7N,41.666666666666664
 "
 
-testcase median {
+testcase median_compression {
     got =
         csv.from(csv: inData)
             |> testing.load()

@@ -20,10 +20,11 @@ type Pattern interface {
 //
 // For example, to construct a pattern that matches a sort node that succeeds a join:
 //
-//   sort
-//    |
-//   join   <=>  join(A, B) |> sum()  <=>  MultiSuccessor(SortKind, SingleSuccessor(JoinKind, AnyMultiSuccessor(), AnyMultiSuccessor()))
-//  /   \
+//	 sort
+//	  |
+//	 join   <=>  join(A, B) |> sum()  <=>  MultiSuccessor(SortKind, SingleSuccessor(JoinKind, AnyMultiSuccessor(), AnyMultiSuccessor()))
+//	/   \
+//
 // A     B
 func SingleSuccessor(kind ProcedureKind, predecessors ...Pattern) Pattern {
 	return SingleSuccessorOneOf([]ProcedureKind{kind}, predecessors...)
@@ -86,9 +87,9 @@ func (p PhysicalOneKindPattern) Match(node Node) bool {
 // For example, UnionKindPattern( { Proc1Kind, Proc2Kind }, { Pat1, Pat2 } )
 // will match either Proc1Kind { Pat1, Pat2 } or Proc2Kind { Pat1, Pat2 }
 //
-//                 [ ProcedureKind ]
-//                 /       |  ...  \
-//        pattern1     pattern2  ... patternK
+//	         [ ProcedureKind ]
+//	         /       |  ...  \
+//	pattern1     pattern2  ... patternK
 type UnionKindPattern struct {
 	kinds        []ProcedureKind
 	predecessors []Pattern

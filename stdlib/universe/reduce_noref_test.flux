@@ -32,7 +32,7 @@ outData =
 ,,1,2018-05-21T13:09:22.885021542Z,2030-01-01T00:00:00Z,used_percent,swap,host.local2,1.0,3
 "
 
-testcase reduce {
+testcase reduce_noref {
     got =
         csv.from(csv: inData)
             |> testing.load()

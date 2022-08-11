@@ -34,7 +34,7 @@ outData =
 ,,0,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,2018-05-22T19:54:16Z,13F2,used_percent,disk,disk1,apfs,host.local,/
 "
 
-testcase string_partition {
+testcase string_partition_split_n {
     got =
         csv.from(csv: inData)
             |> testing.load()

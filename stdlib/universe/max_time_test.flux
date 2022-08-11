@@ -43,7 +43,7 @@ outData =
 ,,3,2018-05-22T19:52:26Z,2018-05-22T19:55:16Z,2018-05-22T19:53:46Z,82.598876953125,used_percent,swap,host.local
 "
 
-testcase max {
+testcase max_time {
     got =
         csv.from(csv: inData)
             |> testing.load()

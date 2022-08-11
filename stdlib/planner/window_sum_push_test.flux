@@ -49,7 +49,7 @@ output =
 ,,8,2018-05-22T19:54:00Z,2018-05-22T19:54:20Z,system,host.local,load5,1.93
 "
 
-testcase window_sum_evaluate {
+testcase window_sum_push {
     got =
         csv.from(csv: input)
             |> testing.load()

@@ -346,10 +346,10 @@ func coalesceBuckets(buckets []bucket) []bucket {
 // The assumption that bucket counts increase monotonically with increasing
 // upperBound may be violated during:
 //
-//   * Recording rule evaluation of histogram_quantile, especially when rate()
-//      has been applied to the underlying bucket timeseries.
-//   * Evaluation of histogram_quantile computed over federated bucket
-//      timeseries, especially when rate() has been applied.
+//   - Recording rule evaluation of histogram_quantile, especially when rate()
+//     has been applied to the underlying bucket timeseries.
+//   - Evaluation of histogram_quantile computed over federated bucket
+//     timeseries, especially when rate() has been applied.
 //
 // This is because scraped data is not made available to rule evaluation or
 // federation atomically, so some buckets are computed with data from the

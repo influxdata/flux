@@ -359,9 +359,11 @@ func AppendKeyValues(key flux.GroupKey, builder TableBuilder) error {
 // AppendKeyValuesN runs AppendKeyValues `n` times.
 // This is different from
 // ```
-// for i := 0; i < n; i++ {
-//   AppendKeyValues(key, builder)
-// }
+//
+//	for i := 0; i < n; i++ {
+//	  AppendKeyValues(key, builder)
+//	}
+//
 // ```
 // Because it saves the overhead of calculating the column mapping `n` times.
 func AppendKeyValuesN(key flux.GroupKey, builder TableBuilder, n int) error {

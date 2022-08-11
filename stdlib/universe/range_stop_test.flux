@@ -41,7 +41,7 @@ outData =
 ,,1,2018-05-22T19:53:36Z,2018-05-22T19:54:16Z,2018-05-22T19:54:06Z,0,usage_guest_nice,cpu,cpu-total,host.local
 "
 
-testcase range {
+testcase range_stop {
     got =
         csv.from(csv: inData)
             |> testing.load()

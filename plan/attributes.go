@@ -113,7 +113,9 @@ func CheckRequiredAttributes(node *PhysicalPlanNode) error {
 // GetOutputAttribute will return the attribute with the given key
 // provided by the given plan node, traversing backwards through predecessors
 // as needed for attributes that may pass through. E.g.,
-//   sort |> filter
+//
+//	sort |> filter
+//
 // The "filter" node will still provide the collation attribute, even though it's
 // the "sort" node that actually does the collating.
 func GetOutputAttribute(node Node, attrKey string) PhysicalAttr {

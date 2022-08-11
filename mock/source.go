@@ -28,7 +28,8 @@ func (s *Source) Run(ctx context.Context) {
 
 // CreateMockFromSource will register a mock "from" source.  Use it like this in the init()
 // of your test:
-//    execute.RegisterSource(influxdb.FromKind, mock.CreateMockFromSource)
+//
+//	execute.RegisterSource(influxdb.FromKind, mock.CreateMockFromSource)
 func CreateMockFromSource(spec plan.ProcedureSpec, id execute.DatasetID, ctx execute.Administration) (execute.Source, error) {
 	return &Source{}, nil
 }

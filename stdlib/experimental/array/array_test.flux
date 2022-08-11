@@ -4,7 +4,7 @@ package array_test
 import "experimental/array"
 import "testing"
 
-testcase array_concat {
+testcase array_concat_exp {
     got =
         array.from(
             rows:
@@ -27,7 +27,7 @@ testcase array_concat {
 
     testing.diff(got, want)
 }
-testcase array_concat_to_empty {
+testcase array_concat_to_empty_exp {
     got =
         array.from(
             rows:
@@ -40,7 +40,7 @@ testcase array_concat_to_empty {
 
     testing.diff(got, want)
 }
-testcase array_map {
+testcase array_map_exp {
     got =
         array.from(
             rows:
@@ -52,7 +52,7 @@ testcase array_map {
     testing.diff(want: want, got: got)
 }
 
-testcase array_filter {
+testcase array_filter_exp {
     got =
         array.from(
             rows:

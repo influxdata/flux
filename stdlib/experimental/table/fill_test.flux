@@ -103,7 +103,7 @@ loadData = () =>
         |> testing.load()
         |> range(start: 2021-04-13T09:00:00Z, stop: 2021-04-13T10:00:00Z)
 
-testcase window {
+testcase window_fill {
     want =
         csv.from(
             csv:

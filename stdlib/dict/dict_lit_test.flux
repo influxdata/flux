@@ -27,7 +27,7 @@ outData =
 ,,0,2018-05-22T19:53:46Z,_m,_f,2,c
 "
 
-testcase dict {
+testcase dict_lit {
     got =
         csv.from(csv: inData)
             |> testing.load()

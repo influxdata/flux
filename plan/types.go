@@ -80,27 +80,26 @@ func (plan *Spec) Replace(root, with Node) {
 }
 
 // CheckIntegrity checks the integrity of the plan, i.e.:
-//  - node A is predecessor of B iff B is successor of A;
-//  - there is no cycle.
+//   - node A is predecessor of B iff B is successor of A;
+//   - there is no cycle.
 //
 // This check only detects this problem (N2 is predecessor of R, but not viceversa):
 //
-//     N1 <----> R
-//               |
-//     N2 <-------
+//	N1 <----> R
+//	          |
+//	N2 <-------
 //
 // And this one (R is successor of N2, but not viceversa):
 //
-//     N1 <-------
-//     |         |--> R
-//     N2 --------
+//	N1 <-------
+//	|         |--> R
+//	N2 --------
 //
 // But not this one, because N2 is not reachable from R (root):
 //
-//     N1 <-------
-//               |--> R
-//     N2 --------
-//
+//	N1 <-------
+//	          |--> R
+//	N2 --------
 func (plan *Spec) CheckIntegrity() error {
 	sinks := make([]Node, 0, len(plan.Roots))
 	for root := range plan.Roots {
@@ -217,13 +216,13 @@ func (e *edges) shallowCopy() edges {
 // MergeToLogicalNode merges top and bottom plan nodes into a new plan node, with the
 // given procedure spec.
 //
-//     V1     V2       V1            V2       <-- successors
-//       \   /
-//        top             mergedNode
-//         |      ==>         |
-//       bottom               W
-//         |
-//         W
+//	V1     V2       V1            V2       <-- successors
+//	  \   /
+//	   top             mergedNode
+//	    |      ==>         |
+//	  bottom               W
+//	    |
+//	    W
 //
 // The returned node will have its predecessors set to the predecessors
 // of "bottom", however, it's successors will not be set---it will be the responsibility of
@@ -280,13 +279,13 @@ func mergePlanNodes(top, bottom, merged Node) (Node, error) {
 
 // SwapPlanNodes swaps two plan nodes and returns an equivalent sub-plan with the nodes swapped.
 //
-//     V1   V2        V1   V2
-//       \ /
-//        A              B
-//        |     ==>      |
-//        B          copy of A
-//        |              |
-//        W              W
+//	V1   V2        V1   V2
+//	  \ /
+//	   A              B
+//	   |     ==>      |
+//	   B          copy of A
+//	   |              |
+//	   W              W
 //
 // Note that successors of the original top node will not be updated, and the returned
 // plan node will have no successors.  It will be the responsibility of the plan to
@@ -319,11 +318,11 @@ func SwapPlanNodes(top, bottom Node) (Node, error) {
 // ReplaceNode accepts two nodes and attaches
 // all the predecessors of the old node to the new node.
 //
-//     S1   S2        S1   S2
-//       \ /
-//     oldNode   =>   newNode
-//       / \            / \
-//     P1   P2        P1   P2
+//	S1   S2        S1   S2
+//	  \ /
+//	oldNode   =>   newNode
+//	  / \            / \
+//	P1   P2        P1   P2
 //
 // As is convention, newNode will not have any successors attached.
 // The planner will take care of this.

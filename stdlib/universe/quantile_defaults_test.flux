@@ -28,7 +28,7 @@ outData =
 ,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,SOYcRk,NC7N,29.50336437998469
 "
 
-testcase quantile_tdigest {
+testcase quantile_defaults {
     got =
         csv.from(csv: inData)
             |> testing.load()

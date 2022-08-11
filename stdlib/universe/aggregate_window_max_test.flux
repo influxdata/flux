@@ -37,7 +37,7 @@ outData =
 ,,1,2018-05-22T00:00:00Z,2018-05-22T00:01:00Z,2018-05-22T00:01:00Z,used_percent,disk,disk1s1,apfs,host.local,/tmp,45
 "
 
-testcase aggregate_window {
+testcase aggregate_window_max {
     got =
         csv.from(csv: inData)
             |> testing.load()

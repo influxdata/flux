@@ -41,7 +41,7 @@ outData =
 "
 re = regexp.compile(v: ".*0")
 
-testcase filter_by_regex {
+testcase filter_by_regex_match {
     got =
         csv.from(csv: inData)
             |> testing.load()

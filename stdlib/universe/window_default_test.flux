@@ -39,7 +39,7 @@ outData =
 ,,0,2018-05-22T19:53:00Z,2018-05-22T19:55:00Z,diskio,2018-05-22T19:54:16Z,7603201.5
 "
 
-testcase window {
+testcase window_default {
     got =
         csv.from(csv: inData)
             |> testing.load()

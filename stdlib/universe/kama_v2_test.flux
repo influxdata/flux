@@ -70,7 +70,7 @@ outData =
 ,,0,2018-05-22T00:04:40Z,108.42,used_percent,disk
 "
 
-testcase kama {
+testcase kama_v2 {
     got =
         csv.from(csv: inData)
             |> testing.load()

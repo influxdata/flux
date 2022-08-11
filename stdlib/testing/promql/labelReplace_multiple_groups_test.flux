@@ -30,7 +30,7 @@ outData =
 ,,1,metric_name,source-value-20,source-value-20,4,prometheus
 "
 
-testcase labelReplace {
+testcase labelReplace_multiple_groups {
     got =
         csv.from(csv: inData)
             |> testing.load()

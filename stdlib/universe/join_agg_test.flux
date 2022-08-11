@@ -31,7 +31,7 @@ outData =
 ,,1,disk2,782,0
 "
 
-testcase join {
+testcase join_agg {
     table =
         csv.from(csv: inData)
             |> testing.load()

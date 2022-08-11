@@ -7,6 +7,5 @@ The semantic structures are to be designed to facilitate the interpretation and 
 
 For example since Flux uses the javascript AST structures, arguments to a function are represented as a single positional argument that is always an object expression.
 The semantic graph validates that the AST correctly follows these semantics, and use structures that are strongly typed for this expectation.
-
 */
 package semantic

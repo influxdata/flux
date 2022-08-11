@@ -52,7 +52,7 @@ outData =
 ,,0,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,2018-05-22T19:54:16Z,host.local,1.84,1.97,1.93,82.6416015625
 "
 
-testcase pivot {
+testcase pivot_col_order {
     got =
         csv.from(csv: inData)
             |> testing.load()

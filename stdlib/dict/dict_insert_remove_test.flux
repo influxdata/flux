@@ -41,7 +41,7 @@ outData =
 ,,3,2018-05-22T19:53:36Z,requests,error,unknown,network error,3,-1,-1
 "
 
-testcase dict {
+testcase dict_insert_remove {
     got =
         csv.from(csv: inData)
             |> testing.load()

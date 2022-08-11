@@ -47,7 +47,7 @@ outData =
 ,,1,2018-12-19T22:13:30Z,2018-12-19T22:14:20Z,m1,f1,server02,2018-12-19T22:14:20Z,A
 "
 
-testcase fill {
+testcase fill_time {
     option testing.tags = ["skip"]
 
     got =

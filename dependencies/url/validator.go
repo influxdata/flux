@@ -80,7 +80,7 @@ func init() {
 	}
 }
 
-//  isPrivateIP reports whether an IP exists in a known private IP space.
+// isPrivateIP reports whether an IP exists in a known private IP space.
 func isPrivateIP(ip net.IP) bool {
 	for _, block := range privateIPBlocks {
 		if block.Contains(ip) {

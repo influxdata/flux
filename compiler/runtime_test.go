@@ -88,7 +88,8 @@ func TestFunctionValue_Resolve(t *testing.T) {
 }
 
 // XXX: sort of confusing but this error message is actually coming
-//      from runtime.Eval but can also be seen in interpreter...
+//
+//	from runtime.Eval but can also be seen in interpreter...
 func TestIndexExpr_TableObjectIsError(t *testing.T) {
 	src := `
 	import "array"

@@ -74,7 +74,8 @@ func (b Bounds) Length() values.Duration {
 // Intersect returns the intersection of two bounds.
 // It returns empty bounds if one of the input bounds are empty.
 // TODO: there are several places that implement bounds and related utilities.
-//  consider a central place for them?
+//
+//	consider a central place for them?
 func (b Bounds) Intersect(o Bounds) Bounds {
 	if b.IsEmpty() || o.IsEmpty() || !b.Overlaps(o) {
 		return Bounds{
