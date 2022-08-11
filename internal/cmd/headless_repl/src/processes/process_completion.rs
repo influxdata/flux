@@ -86,7 +86,7 @@ pub fn process_completions_response(resp: &str) -> Option<HashSet<CommandHint>> 
             };
 
             let kind = x["kind"].as_u64().unwrap();
-            println!("insert hint: {} {}", val, kind);
+            // println!("insert hint: {} {}", val, kind);
 
             if let Some(detail) = x["detail"].as_str() {
                 let split = detail.split("->").collect::<Vec<&str>>();
@@ -105,9 +105,10 @@ pub fn process_completions_response(resp: &str) -> Option<HashSet<CommandHint>> 
                 // println!("inserted {}", val);
                 set.insert(CommandHint::new(val, val, kind.into(), None));
             }
-
             // set.insert(CommandHint::new(val,val,0,None));
         });
+        // println!("resultant set {}", set.len());
+
         Some(set)
     } else {
         // println!("here is the resp {}", resp);

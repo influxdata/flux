@@ -58,13 +58,14 @@ impl Hinter for MyHelper {
 
     fn hint(&self, line: &str, pos: usize, _ctx: &Context<'_>) -> Option<CommandHint> {
         // println!("hint is running ! ");
-        let hints = self.hinter.hints.read().unwrap();
         if line.is_empty() || pos < line.len() {
             return None;
         }
 
+        println!("\n\ntesting: {}", line);
+        // self.hinter.print_hints();
         // println!("here are the hints length {}", hints.len());
-        if let Some(hint) = self.hinter.best_finder(line) {
+        if let Some(hint) = self.hinter.trigger_finder(line) {
             return Some(hint);
         }
         // if let Some(hint) = self.hinter.best_hint_get_new(line) {
@@ -72,10 +73,11 @@ impl Hinter for MyHelper {
         // }
         //if not in there make a new write request with the current line
 
-        println!("this is getting to the none and refetch section");
+        println!("this is getting to the none and refetch section {}", line);
         self.tx_stdin
             .send((line.to_string(), 0))
             .expect("failure sending when no hints");
+
         None
     }
 }
@@ -114,7 +116,6 @@ impl Highlighter for MyHelper {
 #[derive(Clone)]
 struct CompleteHintHandler {
     a: Arc<RwLock<HashSet<CommandHint>>>,
-    cur_hint: Arc<RwLock<Option<String>>>,
     is_multiline: Arc<AtomicBool>,
 }
 impl ConditionalEventHandler for CompleteHintHandler {
@@ -126,14 +127,6 @@ impl ConditionalEventHandler for CompleteHintHandler {
             println!("key event: {:?}", k);
             #[allow(clippy::if_same_then_else)]
             if *k == KeyEvent(KeyCode::Tab, Modifiers::NONE) {
-                let mut cur = self.cur_hint.write().unwrap();
-                if cur.is_some() {
-                    let mut lock = self.a.write().unwrap();
-                    let search = cur.as_ref().unwrap().as_str();
-                    lock.retain(|x| x.display.as_str() != search);
-                    *cur = None;
-                }
-
                 Some(Cmd::CompleteHint)
             } else if *k == KeyEvent::alt('f') && ctx.line().len() == ctx.pos() {
                 let text = ctx.hint_text()?;
@@ -239,22 +232,18 @@ pub fn newMain() -> Result<()> {
     let completion_storage = storage.clone();
 
     let vals = storage.clone();
-
-    let cur_hint: Arc<RwLock<Option<String>>> = Arc::new(RwLock::new(None));
-    let helper_imports = imports.clone();
+    let hint_sig = Arc::new(RwLock::new(None));
     rl.set_helper(Some(MyHelper {
         hinter: LSPSuggestionHelper::LSPSuggestionHelper {
             hints: vals,
-            displayed_hint: cur_hint.clone(),
+            hint_signature: hint_sig.clone(),
         },
         tx_stdin,
         is_multiline: helper_multi_two,
     }));
 
-    let complete_cur_hint = cur_hint.clone();
     let ceh = Box::new(CompleteHintHandler {
         a: completion_storage,
-        cur_hint: complete_cur_hint,
         is_multiline: helper_multi_bool,
     });
     let nex = ceh.clone();
@@ -294,8 +283,7 @@ pub fn newMain() -> Result<()> {
                 .recv()
                 .expect("failure getting from processor thread");
             // println!("getting this {}", &resp);
-            // println!("this is to be sent {}", resp);
-            // println!("here is what is to be written {}", resp);
+
             write!(&mut child_writer, "{}", resp).unwrap();
             reader_block_w.swap(true, Ordering::Relaxed);
         }
@@ -383,20 +371,17 @@ pub fn newMain() -> Result<()> {
                 .recv()
                 .expect("failure getting from the ctrl z thread");
             if main_file {
-                let mut imported_strings = join_imports(helper_imports.lock().unwrap(), "\n");
-                imported_strings.push_str(input.as_str());
-
                 tx_processed
                     .send(
                         //NOTE: pos arg is deprecated
-                        lsp_invoke::formulate_request("didChange", &imported_strings, 0)
+                        lsp_invoke::formulate_request("didChange", &input, 0)
                             .expect("invalid request type"),
                     )
                     .expect("failed to send to writer from ctrlz");
-                println!("sent the completion normal {}", &input);
+                // println!("sent the completion normal {}", &input);
                 tx_processed
                     .send(
-                        lsp_invoke::formulate_request("completion", &imported_strings, 0)
+                        lsp_invoke::formulate_request("completion", &input, 0)
                             .expect("invalid request type"),
                     )
                     .expect("fai;ed to send to writer from ctrlz");
@@ -430,7 +415,6 @@ pub fn newMain() -> Result<()> {
         }
     }));
     let mut clear_storage = storage.clone();
-    let import_pat = Regex::new(r#"^import\s+"([\w\\/]+)"\s*$"#).unwrap();
     //for maintaining a record on the multiline state
     let mut multiline_state = MultiLineState::MultiLineStateHolder {
         list: vec![],
@@ -446,14 +430,7 @@ pub fn newMain() -> Result<()> {
                     continue;
                 }
                 rl.add_history_entry(line.as_str());
-                if import_pat.is_match(line.as_str()) {
-                    let mut lock = imports.lock().unwrap();
-                    lock.insert(line.clone().to_string());
 
-                    for i in lock.iter() {
-                        println!("v: {}", i);
-                    }
-                }
                 tx_user.send(line).expect("Failure getting user input!");
             }
             Err(ReadlineError::Interrupted) => {
