@@ -1,6 +1,8 @@
 package table
 
 import (
+	"strings"
+
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/array"
 	"github.com/influxdata/flux/arrow"
@@ -108,9 +110,9 @@ func (v Chunk) Ints(j int) *array.Int {
 	return v.Values(j).(*array.Int)
 }
 
-// Uints is a convenience function for retrieving an array
+// UInts is a convenience function for retrieving an array
 // as a uint array.
-func (v Chunk) Uints(j int) *array.Uint {
+func (v Chunk) UInts(j int) *array.Uint {
 	return v.Values(j).(*array.Uint)
 }
 
@@ -126,6 +128,12 @@ func (v Chunk) Strings(j int) *array.String {
 	return v.Values(j).(*array.String)
 }
 
+// Times is a convenience function for retrieving an array
+// as a time array.
+func (v Chunk) Times(j int) *array.Int {
+	return v.Ints(j)
+}
+
 // Retain will retain a reference to this Chunk.
 func (v Chunk) Retain() {
 	v.buf.Retain()
@@ -134,4 +142,11 @@ func (v Chunk) Retain() {
 // Release will release a reference to this buffer.
 func (v Chunk) Release() {
 	v.buf.Release()
+}
+
+func (v Chunk) Stringify() string {
+	var sb strings.Builder
+	stringifyKey(&sb, v.Key(), v.Cols())
+	stringifyRows(&sb, v)
+	return sb.String()
 }

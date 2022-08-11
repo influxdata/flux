@@ -14,7 +14,7 @@ import (
 // Stringify will read a table and turn it into a human-readable string.
 func Stringify(table flux.Table) string {
 	var sb strings.Builder
-	stringifyKey(&sb, table)
+	stringifyKey(&sb, table.Key(), table.Cols())
 	if err := table.Do(func(cr flux.ColReader) error {
 		stringifyRows(&sb, cr)
 		return nil
@@ -41,9 +41,8 @@ func getSortedIndices(key flux.GroupKey, cols []flux.ColMeta) ([]flux.ColMeta, [
 	return cols, indices
 }
 
-func stringifyKey(sb *strings.Builder, table flux.Table) {
-	key := table.Key()
-	cols, indices := getSortedIndices(table.Key(), table.Cols())
+func stringifyKey(sb *strings.Builder, key flux.GroupKey, cols []flux.ColMeta) {
+	cols, indices := getSortedIndices(key, cols)
 
 	sb.WriteString("# ")
 	if len(cols) == 0 {
