@@ -53,5 +53,8 @@ builtin getOption : (pkg: string, name: string) => A
 //
 builtin feature : (key: string) => A
 
+// Null returns the null value with the given type
+builtin null : (?type: string) => A
+
 // vectorize controls whether the compiler attempts to vectorize Flux functions.
 option vectorize = false
