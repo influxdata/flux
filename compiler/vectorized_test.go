@@ -184,6 +184,12 @@ func TestVectorizedFns(t *testing.T) {
 			vectorizable: true,
 			skipComp:     true,
 		},
+		{
+			name:         "call expressions float",
+			fn:           `(r) => ({ r with c: float(v: 1) })`,
+			vectorizable: true,
+			skipComp:     true,
+		},
 	}
 
 	additionTests := []struct {
