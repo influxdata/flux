@@ -1,6 +1,8 @@
 package array
 
 import (
+    "fmt"
+
     "github.com/apache/arrow/go/v7/arrow/array"
     "github.com/apache/arrow/go/v7/arrow/memory"
 )
@@ -62,4 +64,33 @@ func (b *{{.Name}}Builder) NewArray() Array {
 func (b *{{.Name}}Builder) New{{.Name}}Array() *{{.Name}} {
     return b.b.New{{.ArrowType}}Array()
 }
+func (b *{{.Name}}Builder) CopyValidValues(values *{{.Name}}) {
+    b.Reserve(values.Len() - values.NullN())
+    for i := 0; i < values.Len(); i++ {
+        if values.IsValid(i) {
+            b.Append(values.Value(i))
+        }
+    }
+}
 {{end}}{{end}}
+
+// Copies all valid (non-null) values from `values`.
+// If the entire array is valid a new reference to `values` is returned (as an optimization)
+func CopyValidValues(mem memory.Allocator, values Array) Array {
+    if values.NullN() == 0 {
+        values.Retain()
+        return values
+    }
+
+	switch values := values.(type) {
+{{range .}}
+	case *{{.Name}}:
+        b := New{{.Name}}Builder(mem)
+        b.CopyValidValues(values)
+        return b.NewArray()
+{{end}}
+        default:
+            panic(fmt.Sprintf("Unexpected array type: %T", values))
+    }
+
+}

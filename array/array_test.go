@@ -5,6 +5,7 @@ import (
 
 	apachearray "github.com/apache/arrow/go/v7/arrow/array"
 	"github.com/apache/arrow/go/v7/arrow/memory"
+	"github.com/google/go-cmp/cmp"
 	"github.com/influxdata/flux/array"
 	fluxmemory "github.com/influxdata/flux/memory"
 	"github.com/stretchr/testify/assert"
@@ -339,6 +340,66 @@ func TestSlice(t *testing.T) {
 					t.Errorf("unexpected value -want/+got:\n\t- %v\n\t+ %v", want, got)
 				}
 			}
+		})
+	}
+}
+
+func TestCopyValid(t *testing.T) {
+	for _, tc := range []struct {
+		name  string
+		input func(memory.Allocator) *array.Int
+		want  []int64
+	}{
+		{
+			name: "nulls",
+			input: func(mem memory.Allocator) *array.Int {
+				b := array.NewIntBuilder(mem)
+				b.AppendNull()
+				b.Append(2)
+				b.Append(3)
+				b.AppendNull()
+				b.Append(5)
+				b.AppendNull()
+				return b.NewIntArray()
+			},
+			want: []int64{2, 3, 5},
+		},
+		{
+			name: "no nulls",
+			input: func(mem memory.Allocator) *array.Int {
+				b := array.NewIntBuilder(mem)
+				b.Append(1)
+				b.Append(2)
+				b.Append(3)
+				b.Append(4)
+				return b.NewIntArray()
+			},
+			want: []int64{1, 2, 3, 4},
+		},
+		{
+			name: "empty",
+			input: func(mem memory.Allocator) *array.Int {
+				b := array.NewIntBuilder(mem)
+				return b.NewIntArray()
+			},
+			want: nil,
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			mem := memory.NewCheckedAllocator(memory.DefaultAllocator)
+			defer mem.AssertSize(t, 0)
+
+			input := tc.input(mem)
+
+			got := array.CopyValidValues(mem, input).(*array.Int)
+
+			want := tc.want
+			if diff := cmp.Diff(want, got.Int64Values()); diff != "" {
+				t.Errorf("unexpected value -want/+got:\n%v", diff)
+			}
+
+			input.Release()
+			got.Release()
 		})
 	}
 }
