@@ -112,7 +112,7 @@ func (p *heuristicPlanner) matchRules(ctx context.Context, spec *Spec, node Node
 // Traversal is repeated until a pass over the DAG results in no changes with the given rule set.
 //
 // Plan may change its argument and/or return a new instance of Spec, so the correct way to call Plan is:
-//     plan, err = plan.Plan(plan)
+// plan, err = plan.Plan(plan)
 func (p *heuristicPlanner) Plan(ctx context.Context, inputPlan *Spec) (*Spec, error) {
 	for anyChanged := true; anyChanged; {
 		visited := make(map[Node]struct{})
@@ -164,11 +164,11 @@ func (p *heuristicPlanner) Plan(ctx context.Context, inputPlan *Spec) (*Spec, er
 // and rewires them to point them at newNode.
 // Predecessors of oldNode and newNode are not touched.
 //
-//  A   B             A   B     <-- successors
-//   \ /               \ /
-//   node  becomes   newNode
-//   / \               / \
-//  D   E             D'  E'    <-- predecessors
+//	A   B             A   B     <-- successors
+//	 \ /               \ /
+//	 node  becomes   newNode
+//	 / \               / \
+//	D   E             D'  E'    <-- predecessors
 func updateSuccessors(plan *Spec, oldNode, newNode Node) error {
 	// no need to update successors if the node hasn't actually changed
 	if oldNode == newNode {

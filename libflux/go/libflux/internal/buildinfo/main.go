@@ -195,6 +195,7 @@ package libflux
 // and forces the cgo library to rebuild and relink
 // the sources. This is because non-C/C++ sources
 // are not tracked by Go's build system.'
+//
 //lint:ignore U1000 generated code
 var sourceHashes = map[string]string{
 {{range .}}"{{.}}": "{{hexdigest .}}",
