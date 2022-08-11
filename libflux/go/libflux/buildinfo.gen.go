@@ -162,7 +162,7 @@ var sourceHashes = map[string]string{
 	"stdlib/experimental/diff_test.flux":                                                          "9864f41f9c95999a071890f7ec1750b8e01cef082f7bb708443bf4f4bd59af49",
 	"stdlib/experimental/distinct_test.flux":                                                      "c7358d31972d0931aef6735ea94d901827c13fbaaeb9b02ff255391b5f95ea30",
 	"stdlib/experimental/experimental.flux":                                                       "7d902e7d0a142d94a0970ba96317ccd8050f2381551da2f43039da0bb6c90a1b",
-	"stdlib/experimental/experimental_test.flux":                                                  "ae1135fa59e0f3487b8360ccda551e1b1caf881ad71c2d260342dffcdbe829d6",
+	"stdlib/experimental/experimental_test.flux":                                                  "b417f361be23e610b6caffa266c40c421b19dedc3289ce064bb065cb0bcd825c",
 	"stdlib/experimental/fill_test.flux":                                                          "467ac288515415093ef50e70118c651e574d3fd50fbd157cc4795ce1248a54f8",
 	"stdlib/experimental/first_test.flux":                                                         "3bd1ff03bac6a45a3c525abb5ded3377f08195b6a5094caa42c8fb8b96aa6268",
 	"stdlib/experimental/geo/asTracks_test.flux":                                                  "3b33b115eacb39e04177d552cc0180f8969a75832bf457267baceb6d506a6321",

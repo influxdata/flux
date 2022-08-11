@@ -143,6 +143,8 @@ func (t *unpivotTransformation) Process(chunk table.Chunk, d *execute.TransportD
 				values = oldValues
 				values.Retain()
 			} else {
+				// We have nulls for some of the fields which we must exclude from the unpivoted
+				// output, otherwise they show up as extra rows
 				values = array.Slice(oldValues, 0, newChunkLen)
 			}
 			buffer.Values[toColumn] = values
@@ -150,24 +152,11 @@ func (t *unpivotTransformation) Process(chunk table.Chunk, d *execute.TransportD
 
 		buffer.Values[len(buffer.Values)-3] = array.StringRepeat(c.Label, newChunkLen, mem)
 
-		var times array.Array
-		oldTimes := chunk.Ints(timeColumn)
-		if newChunkLen == chunk.Len() {
-			times = oldTimes
-			times.Retain()
-		} else {
-			builder := array.NewIntBuilder(mem)
-			builder.Reserve(newChunkLen)
-			for i := 0; i < chunkValues.Len(); i++ {
-				if chunkValues.IsValid(i) {
-					builder.Append(oldTimes.Value(i))
-				}
-			}
-			times = builder.NewArray()
-		}
+		times := array.CopyValidValues(mem, chunk.Values(timeColumn))
 		buffer.Values[len(buffer.Values)-2] = times
 
-		buffer.Values[len(buffer.Values)-1] = chunkValues
+		values := array.CopyValidValues(mem, chunk.Values(i))
+		buffer.Values[len(buffer.Values)-1] = values
 
 		out := table.ChunkFromBuffer(buffer)
 		if err := d.Process(out); err != nil {
