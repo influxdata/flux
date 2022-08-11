@@ -34,7 +34,7 @@ outData =
 ,,1,2018-05-22T19:53:00Z,y_duration_seconds,2,1,m0
 "
 
-testcase histogram {
+testcase histogram_normalize {
     option testing.tags = ["skip"]
 
     got =

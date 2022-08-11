@@ -99,7 +99,7 @@ outData =
 ,,2,2018-05-22T19:54:16Z,,io_time,diskio,host2
 "
 
-testcase group {
+testcase group_nulls {
     option testing.tags = ["skip"]
 
     got =

@@ -185,7 +185,7 @@ outData =
 ,,0,used,total,mem,processes,2018-05-22T19:53:00Z,2018-05-22T19:55:00Z,2018-05-22T19:54:16Z,10731827200,417,host.local
 "
 
-testcase join {
+testcase join_across_measurements {
     table =
         csv.from(csv: inData)
             |> testing.load()
