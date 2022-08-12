@@ -135,3 +135,14 @@ func (v Chunk) Retain() {
 func (v Chunk) Release() {
 	v.buf.Release()
 }
+
+// Stringify turns the current chunk into a stringified representation for easier debugging.
+func (v Chunk) Stringify() string {
+	buffer := v.Buffer()
+	tbl := BufferedTable{
+		GroupKey: v.Key(),
+		Columns:  v.Cols(),
+		Buffers:  []flux.ColReader{&buffer},
+	}
+	return Stringify(&tbl)
+}
