@@ -295,18 +295,6 @@ func TestQuantile_NewQuery(t *testing.T) {
 	}
 }
 
-func TestQuantileOperation_Marshaling(t *testing.T) {
-	data := []byte(`{"id":"quantile","kind":"quantile","spec":{"quantile":0.9}}`)
-	op := &flux.Operation{
-		ID: "quantile",
-		Spec: &universe.QuantileOpSpec{
-			Quantile: 0.9,
-		},
-	}
-
-	querytest.OperationMarshalingTestHelper(t, data, op)
-}
-
 func TestQuantile_Process(t *testing.T) {
 	testCases := []struct {
 		name     string

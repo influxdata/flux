@@ -6,22 +6,8 @@ import (
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
-	"github.com/influxdata/flux/querytest"
 	"github.com/influxdata/flux/stdlib/universe"
 )
-
-func TestSetOperation_Marshaling(t *testing.T) {
-	data := []byte(`{"id":"set","kind":"set","spec":{"key":"t1","value":"v1"}}`)
-	op := &flux.Operation{
-		ID: "set",
-		Spec: &universe.SetOpSpec{
-			Key:   "t1",
-			Value: "v1",
-		},
-	}
-
-	querytest.OperationMarshalingTestHelper(t, data, op)
-}
 
 func TestSet_Process(t *testing.T) {
 	testCases := []struct {

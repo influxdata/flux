@@ -84,18 +84,6 @@ func TestKeys_NewQuery(t *testing.T) {
 	}
 }
 
-func TestKeysOperation_Marshaling(t *testing.T) {
-	data := []byte(`{"id":"keys","kind":"keys","spec":{"column":"keys"}}`)
-	op := &flux.Operation{
-		ID: "keys",
-		Spec: &universe.KeysOpSpec{
-			Column: "keys",
-		},
-	}
-
-	querytest.OperationMarshalingTestHelper(t, data, op)
-}
-
 func TestKeys_Process(t *testing.T) {
 	testCases := []struct {
 		name string

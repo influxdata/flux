@@ -4,24 +4,12 @@ import (
 	"math"
 	"testing"
 
-	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/array"
 	"github.com/influxdata/flux/arrow"
 	"github.com/influxdata/flux/execute/executetest"
 	"github.com/influxdata/flux/memory"
-	"github.com/influxdata/flux/querytest"
 	"github.com/influxdata/flux/stdlib/universe"
 )
-
-func TestStddevOperation_Marshaling(t *testing.T) {
-	data := []byte(`{"id":"stddev","kind":"stddev","spec":{"mode":"sample"}}`)
-	op := &flux.Operation{
-		ID:   "stddev",
-		Spec: &universe.StddevOpSpec{Mode: "sample"},
-	}
-
-	querytest.OperationMarshalingTestHelper(t, data, op)
-}
 
 func TestStddev_Process(t *testing.T) {
 	testCases := []struct {

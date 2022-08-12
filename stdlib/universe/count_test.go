@@ -67,16 +67,6 @@ func TestCount_NewQuery(t *testing.T) {
 	}
 }
 
-func TestCountOperation_Marshaling(t *testing.T) {
-	data := []byte(`{"id":"count","kind":"count"}`)
-	op := &flux.Operation{
-		ID:   "count",
-		Spec: &universe.CountOpSpec{},
-	}
-
-	querytest.OperationMarshalingTestHelper(t, data, op)
-}
-
 func TestCount_Process(t *testing.T) {
 	testCases := []struct {
 		name string

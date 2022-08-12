@@ -6,21 +6,8 @@ import (
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
-	"github.com/influxdata/flux/querytest"
 	"github.com/influxdata/flux/stdlib/universe"
 )
-
-func TestTailOperation_Marshaling(t *testing.T) {
-	data := []byte(`{"id":"tail","kind":"tail","spec":{"n":10}}`)
-	op := &flux.Operation{
-		ID: "tail",
-		Spec: &universe.TailOpSpec{
-			N: 10,
-		},
-	}
-
-	querytest.OperationMarshalingTestHelper(t, data, op)
-}
 
 func TestTail_Process(t *testing.T) {
 	testCases := []struct {

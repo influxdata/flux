@@ -6,23 +6,8 @@ import (
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
-	"github.com/influxdata/flux/querytest"
 	"github.com/influxdata/flux/stdlib/universe"
 )
-
-func TestLastOperation_Marshaling(t *testing.T) {
-	data := []byte(`{"id":"last","kind":"last","spec":{"column":"bar"}}`)
-	op := &flux.Operation{
-		ID: "last",
-		Spec: &universe.LastOpSpec{
-			SelectorConfig: execute.SelectorConfig{
-				Column: "bar",
-			},
-		},
-	}
-
-	querytest.OperationMarshalingTestHelper(t, data, op)
-}
 
 func TestLast_Process(t *testing.T) {
 	testCases := []struct {

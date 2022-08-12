@@ -3,24 +3,12 @@ package universe_test
 import (
 	"testing"
 
-	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/array"
 	"github.com/influxdata/flux/arrow"
 	"github.com/influxdata/flux/execute/executetest"
 	"github.com/influxdata/flux/memory"
-	"github.com/influxdata/flux/querytest"
 	"github.com/influxdata/flux/stdlib/universe"
 )
-
-func TestSumOperation_Marshaling(t *testing.T) {
-	data := []byte(`{"id":"sum","kind":"sum"}`)
-	op := &flux.Operation{
-		ID:   "sum",
-		Spec: &universe.SumOpSpec{},
-	}
-
-	querytest.OperationMarshalingTestHelper(t, data, op)
-}
 
 func TestSum_Process(t *testing.T) {
 	testCases := []struct {

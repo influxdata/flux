@@ -14,22 +14,9 @@ import (
 	"github.com/influxdata/flux/execute/table"
 	"github.com/influxdata/flux/internal/gen"
 	"github.com/influxdata/flux/memory"
-	"github.com/influxdata/flux/querytest"
 	"github.com/influxdata/flux/stdlib/universe"
 	"github.com/influxdata/flux/values"
 )
-
-func TestLimitOperation_Marshaling(t *testing.T) {
-	data := []byte(`{"id":"limit","kind":"limit","spec":{"n":10}}`)
-	op := &flux.Operation{
-		ID: "limit",
-		Spec: &universe.LimitOpSpec{
-			N: 10,
-		},
-	}
-
-	querytest.OperationMarshalingTestHelper(t, data, op)
-}
 
 func TestLimit_Process(t *testing.T) {
 	testCases := []struct {

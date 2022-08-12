@@ -1,25 +1,13 @@
 package universe_test
 
 import (
+	"testing"
+
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
-	"github.com/influxdata/flux/querytest"
 	"github.com/influxdata/flux/stdlib/universe"
-	"testing"
 )
-
-func TestKamaOperation_Marshaling(t *testing.T) {
-	data := []byte(`{"id":"kaufmansAMA","kind":"kaufmansAMA","spec":{"n":1,"column":"_value"}}`)
-	op := &flux.Operation{
-		ID: "kaufmansAMA",
-		Spec: &universe.KamaOpSpec{
-			N:      1,
-			Column: "_value",
-		},
-	}
-	querytest.OperationMarshalingTestHelper(t, data, op)
-}
 
 func TestKama_PassThrough(t *testing.T) {
 	executetest.TransformationPassThroughTestHelper(t, func(d execute.Dataset, c execute.TableBuilderCache) execute.Transformation {

@@ -129,24 +129,6 @@ func TestHoltWinters_NewQuery(t *testing.T) {
 	}
 }
 
-func TestHoltWinters_Marshaling(t *testing.T) {
-	data := []byte(`{"id":"hw","kind":"holtWinters","spec":{"n":84,"s":4,"interval":"42m","time_column":"t","column":"v","with_fit":true,"with_minsse":true}}`)
-	op := &flux.Operation{
-		ID: "hw",
-		Spec: &universe.HoltWintersOpSpec{
-			WithFit:    true,
-			Column:     "v",
-			TimeColumn: "t",
-			N:          84,
-			S:          4,
-			Interval:   flux.ConvertDuration(42 * time.Minute),
-			WithMinSSE: true,
-		},
-	}
-
-	querytest.OperationMarshalingTestHelper(t, data, op)
-}
-
 func TestHoltWinters_PassThrough(t *testing.T) {
 	executetest.TransformationPassThroughTestHelper(t, func(d execute.Dataset, c execute.TableBuilderCache) execute.Transformation {
 		s := universe.NewHoltWintersTransformation(

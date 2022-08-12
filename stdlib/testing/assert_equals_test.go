@@ -10,21 +10,8 @@ import (
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
 	"github.com/influxdata/flux/plan"
-	"github.com/influxdata/flux/querytest"
 	fluxtesting "github.com/influxdata/flux/stdlib/testing"
 )
-
-func TestAssertEqualsOperation_Marshaling(t *testing.T) {
-	data := []byte(`{"id":"assertEquals","kind":"assertEquals","spec":{"name":"simple"}}`)
-	op := &flux.Operation{
-		ID: "assertEquals",
-		Spec: &fluxtesting.AssertEqualsOpSpec{
-			Name: "simple",
-		},
-	}
-
-	querytest.OperationMarshalingTestHelper(t, data, op)
-}
 
 func TestAssertEquals_Process(t *testing.T) {
 	testCases := []struct {

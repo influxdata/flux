@@ -88,18 +88,6 @@ socket.from(url: "url", decoder: "line") |> range(start:-4h, stop:-2h) |> sum()`
 	}
 }
 
-func TestFromSocketOperation_Marshaling(t *testing.T) {
-	data := []byte(`{"id":"fromSocket","kind":"fromSocket","spec":{"url":"url","decoder":"csv"}}`)
-	op := &flux.Operation{
-		ID: "fromSocket",
-		Spec: &socket.FromSocketOpSpec{
-			URL:     "url",
-			Decoder: "csv",
-		},
-	}
-	querytest.OperationMarshalingTestHelper(t, data, op)
-}
-
 func TestFromSocketSource_Run(t *testing.T) {
 	testCases := []struct {
 		name  string

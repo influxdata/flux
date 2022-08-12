@@ -4,24 +4,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/influxdata/flux/querytest"
-
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
 	"github.com/influxdata/flux/stdlib/universe"
 )
-
-func TestElapsedOperation_Marshaling(t *testing.T) {
-	data := []byte(`{"id":"elapsed","kind":"elapsed","spec":{"timeColumn": "_time"}}`)
-	op := &flux.Operation{
-		ID: "elapsed",
-		Spec: &universe.ElapsedOpSpec{
-			TimeColumn: "_time",
-		},
-	}
-	querytest.OperationMarshalingTestHelper(t, data, op)
-}
 
 func TestElapsed_PassThrough(t *testing.T) {
 	executetest.TransformationPassThroughTestHelper(t, func(d execute.Dataset, c execute.TableBuilderCache) execute.Transformation {

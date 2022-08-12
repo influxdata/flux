@@ -6,22 +6,8 @@ import (
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
-	"github.com/influxdata/flux/querytest"
 	"github.com/influxdata/flux/stdlib/universe"
 )
-
-func TestSampleOperation_Marshaling(t *testing.T) {
-	data := []byte(`{"id":"sample","kind":"sample","spec":{"n":5, "pos":0}}`)
-	op := &flux.Operation{
-		ID: "sample",
-		Spec: &universe.SampleOpSpec{
-			N:   5,
-			Pos: 0,
-		},
-	}
-
-	querytest.OperationMarshalingTestHelper(t, data, op)
-}
 
 func TestSample_Process(t *testing.T) {
 	testCases := []struct {

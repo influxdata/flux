@@ -167,17 +167,6 @@ func TestDuration_NewQuery(t *testing.T) {
 	}
 }
 
-func TestDurationOperation_Marshaling(t *testing.T) {
-	data := []byte(`{"id":"duration","kind":"duration","spec":{"timeColumn": "_time"}}`)
-	op := &flux.Operation{
-		ID: "duration",
-		Spec: &events.DurationOpSpec{
-			TimeColumn: "_time",
-		},
-	}
-	querytest.OperationMarshalingTestHelper(t, data, op)
-}
-
 func TestDuration_PassThrough(t *testing.T) {
 	executetest.TransformationPassThroughTestHelper(t, func(d execute.Dataset, c execute.TableBuilderCache) execute.Transformation {
 		s := events.NewDurationTransformation(

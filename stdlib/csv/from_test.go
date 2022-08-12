@@ -255,18 +255,6 @@ func TestFromCSV_NewQuery(t *testing.T) {
 	}
 }
 
-func TestFromCSVOperation_Marshaling(t *testing.T) {
-	data := []byte(`{"id":"fromCSV","kind":"fromCSV","spec":{"csv":"1,2","mode":"annotations"}}`)
-	op := &flux.Operation{
-		ID: "fromCSV",
-		Spec: &csv.FromCSVOpSpec{
-			CSV:  "1,2",
-			Mode: "annotations",
-		},
-	}
-	querytest.OperationMarshalingTestHelper(t, data, op)
-}
-
 func TestFromCSV_Run(t *testing.T) {
 	spec := &csv.FromCSVProcedureSpec{
 		CSV: `#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,double

@@ -6,23 +6,8 @@ import (
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
-	"github.com/influxdata/flux/querytest"
 	"github.com/influxdata/flux/stdlib/universe"
 )
-
-func TestMaxOperation_Marshaling(t *testing.T) {
-	data := []byte(`{"id":"max","kind":"max","spec":{"column":"baz"}}`)
-	op := &flux.Operation{
-		ID: "max",
-		Spec: &universe.MaxOpSpec{
-			SelectorConfig: execute.SelectorConfig{
-				Column: "baz",
-			},
-		},
-	}
-
-	querytest.OperationMarshalingTestHelper(t, data, op)
-}
 
 func TestMax_Process(t *testing.T) {
 	testCases := []struct {

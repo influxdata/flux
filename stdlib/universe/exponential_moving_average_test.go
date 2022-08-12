@@ -7,20 +7,8 @@ import (
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
-	"github.com/influxdata/flux/querytest"
 	"github.com/influxdata/flux/stdlib/universe"
 )
-
-func TestExponentialMovingAverageOperation_Marshaling(t *testing.T) {
-	data := []byte(`{"id":"exponentialMovingAverage","kind":"exponentialMovingAverage","spec":{"n":1}}`)
-	op := &flux.Operation{
-		ID: "exponentialMovingAverage",
-		Spec: &universe.ExponentialMovingAverageOpSpec{
-			N: 1,
-		},
-	}
-	querytest.OperationMarshalingTestHelper(t, data, op)
-}
 
 func TestExponentialMovingAverage_PassThrough(t *testing.T) {
 	executetest.TransformationPassThroughTestHelper(t, func(d execute.Dataset, c execute.TableBuilderCache) execute.Transformation {

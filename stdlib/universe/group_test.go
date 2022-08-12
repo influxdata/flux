@@ -20,18 +20,6 @@ import (
 	"github.com/influxdata/flux/values"
 )
 
-func TestGroupOperation_Marshaling(t *testing.T) {
-	data := []byte(`{"id":"group","kind":"group","spec":{"mode":"by","columns":["t1","t2"]}}`)
-	op := &flux.Operation{
-		ID: "group",
-		Spec: &universe.GroupOpSpec{
-			Mode:    "by",
-			Columns: []string{"t1", "t2"},
-		},
-	}
-	querytest.OperationMarshalingTestHelper(t, data, op)
-}
-
 func TestGroup_NewQuery(t *testing.T) {
 	tests := []querytest.NewQueryTestCase{
 		{

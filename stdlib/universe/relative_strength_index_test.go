@@ -6,20 +6,8 @@ import (
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
-	"github.com/influxdata/flux/querytest"
 	"github.com/influxdata/flux/stdlib/universe"
 )
-
-func TestRelativeStrengthIndex_Marshaling(t *testing.T) {
-	data := []byte(`{"id":"relativeStrengthIndex","kind":"relativeStrengthIndex","spec":{"n":1}}`)
-	op := &flux.Operation{
-		ID: "relativeStrengthIndex",
-		Spec: &universe.RelativeStrengthIndexOpSpec{
-			N: 1,
-		},
-	}
-	querytest.OperationMarshalingTestHelper(t, data, op)
-}
 
 func TestRelativeStrengthIndex_PassThrough(t *testing.T) {
 	executetest.TransformationPassThroughTestHelper(t, func(d execute.Dataset, c execute.TableBuilderCache) execute.Transformation {

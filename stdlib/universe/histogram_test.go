@@ -7,20 +7,8 @@ import (
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
-	"github.com/influxdata/flux/querytest"
 	"github.com/influxdata/flux/stdlib/universe"
 )
-
-func TestHistogramOperation_Marshaling(t *testing.T) {
-	data := []byte(`{"id":"histogram","kind":"histogram","spec":{"column":"_value"}}`)
-	op := &flux.Operation{
-		ID: "histogram",
-		Spec: &universe.HistogramOpSpec{
-			Column: "_value",
-		},
-	}
-	querytest.OperationMarshalingTestHelper(t, data, op)
-}
 
 func TestHistogram_PassThrough(t *testing.T) {
 	executetest.TransformationPassThroughTestHelper(t, func(d execute.Dataset, c execute.TableBuilderCache) execute.Transformation {
