@@ -31,16 +31,136 @@
             "Types": ["Int", "Uint", "Float"]
         }
     ],
+    "EqualityOps":[
+        {
+            "Name": "Equal",
+            "Op": "==",
+            "Types": [
+              {"l": "Float", "r": "Float"},
+              {"l": "Float", "r": "Int"},
+              {"l": "Float", "r": "Uint"},
+
+              {"l": "Int", "r": "Float"},
+              {"l": "Int", "r": "Int"},
+              {"l": "Int", "r": "Uint"},
+
+              {"l": "Uint", "r": "Int"},
+              {"l": "Uint", "r": "Float"},
+              {"l": "Uint", "r": "Uint"},
+
+              {"l": "Boolean", "r": "Boolean"},
+              {"l": "String", "r": "String"}
+            ]
+        },
+        {
+            "Name": "NotEqual",
+            "Op": "!=",
+            "Types": [
+              {"l": "Float", "r": "Float"},
+              {"l": "Float", "r": "Int"},
+              {"l": "Float", "r": "Uint"},
+
+              {"l": "Int", "r": "Float"},
+              {"l": "Int", "r": "Int"},
+              {"l": "Int", "r": "Uint"},
+
+              {"l": "Uint", "r": "Int"},
+              {"l": "Uint", "r": "Float"},
+              {"l": "Uint", "r": "Uint"},
+
+              {"l": "Boolean", "r": "Boolean"},
+              {"l": "String", "r": "String"}
+            ]
+        },
+        {
+            "Name": "LessThan",
+            "Op": "<",
+            "Types": [
+              {"l": "Float", "r": "Float"},
+              {"l": "Float", "r": "Int"},
+              {"l": "Float", "r": "Uint"},
+
+              {"l": "Int", "r": "Float"},
+              {"l": "Int", "r": "Int"},
+              {"l": "Int", "r": "Uint"},
+
+              {"l": "Uint", "r": "Int"},
+              {"l": "Uint", "r": "Float"},
+              {"l": "Uint", "r": "Uint"},
+
+              {"l": "String", "r": "String"}
+            ]
+        },
+        {
+            "Name": "LessThanEqual",
+            "Op": "<=",
+            "Types": [
+              {"l": "Float", "r": "Float"},
+              {"l": "Float", "r": "Int"},
+              {"l": "Float", "r": "Uint"},
+
+              {"l": "Int", "r": "Float"},
+              {"l": "Int", "r": "Int"},
+              {"l": "Int", "r": "Uint"},
+
+              {"l": "Uint", "r": "Int"},
+              {"l": "Uint", "r": "Float"},
+              {"l": "Uint", "r": "Uint"},
+
+              {"l": "String", "r": "String"}
+            ]
+        },
+        {
+            "Name": "GreaterThan",
+            "Op": ">",
+            "Types": [
+              {"l": "Float", "r": "Float"},
+              {"l": "Float", "r": "Int"},
+              {"l": "Float", "r": "Uint"},
+
+              {"l": "Int", "r": "Float"},
+              {"l": "Int", "r": "Int"},
+              {"l": "Int", "r": "Uint"},
+
+              {"l": "Uint", "r": "Int"},
+              {"l": "Uint", "r": "Float"},
+              {"l": "Uint", "r": "Uint"},
+
+              {"l": "String", "r": "String"}
+            ]
+        },
+        {
+            "Name": "GreaterThanEqual",
+            "Op": ">=",
+            "Types": [
+              {"l": "Float", "r": "Float"},
+              {"l": "Float", "r": "Int"},
+              {"l": "Float", "r": "Uint"},
+
+              {"l": "Int", "r": "Float"},
+              {"l": "Int", "r": "Int"},
+              {"l": "Int", "r": "Uint"},
+
+              {"l": "Uint", "r": "Int"},
+              {"l": "Uint", "r": "Float"},
+              {"l": "Uint", "r": "Uint"},
+
+              {"l": "String", "r": "String"}
+            ]
+        }
+    ],
     "TypeMap": {
         "Int": "int64",
         "Uint": "uint64",
         "Float": "float64",
-        "String": "string"
+        "String": "string",
+        "Boolean": "bool"
     },
     "ValMap": {
         "Int": "Int",
         "Uint": "UInt",
         "Float": "Float",
-        "String": "Str"
+        "String": "Str",
+        "Boolean": "Bool"
     }
 }

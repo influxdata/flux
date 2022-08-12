@@ -173,6 +173,18 @@ func VectorizedConditionals() BoolFlag {
 	return vectorizedConditionals
 }
 
+var vectorizedEqualityOps = feature.MakeBoolFlag(
+	"Vectorized Equality Ops",
+	"vectorizedEqualityOps",
+	"Owen Nelson",
+	false,
+)
+
+// VectorizedEqualityOps - Calls to map can be vectorized when equality ops appear in the function
+func VectorizedEqualityOps() BoolFlag {
+	return vectorizedEqualityOps
+}
+
 // Inject will inject the Flagger into the context.
 func Inject(ctx context.Context, flagger Flagger) context.Context {
 	return feature.Inject(ctx, flagger)
@@ -192,6 +204,7 @@ var all = []Flag{
 	removeRedundantSortNodes,
 	queryConcurrencyIncrease,
 	vectorizedConditionals,
+	vectorizedEqualityOps,
 }
 
 var byKey = map[string]Flag{
@@ -208,6 +221,7 @@ var byKey = map[string]Flag{
 	"removeRedundantSortNodes":         removeRedundantSortNodes,
 	"queryConcurrencyIncrease":         queryConcurrencyIncrease,
 	"vectorizedConditionals":           vectorizedConditionals,
+	"vectorizedEqualityOps":            vectorizedEqualityOps,
 }
 
 // Flags returns all feature flags.

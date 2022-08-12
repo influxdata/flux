@@ -3,12 +3,16 @@ package values
 import (
 
 	fluxarray "github.com/influxdata/flux/array"
-    "github.com/apache/arrow/go/v7/arrow/memory"
+	"github.com/apache/arrow/go/v7/arrow/memory"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/semantic"
 )
 
+
+//
+// Arithmetic Ops
+//
 {{range $index, $op := .Ops}}
 
 func vector{{$op.Name}}(l, r Vector, mem memory.Allocator) (Value, error) {
@@ -28,22 +32,24 @@ func vector{{$op.Name}}(l, r Vector, mem memory.Allocator) (Value, error) {
 
 	switch l.ElementType().Nature() {
 
-    {{range $index, $type := .Types}}
+		{{range $index, $type := .Types}}
 
-    {{if eq $type "Uint"}}
+		{{if eq $type "Boolean"}}
+	case semantic.Bool:
+		{{else if eq $type "Uint"}}
 	case semantic.UInt:
-    {{else}}
+		{{else}}
 	case semantic.{{$type}}:
-    {{end}}
-    	var (
-    		{{if eq $op.Op "^"}}
-    		x *fluxarray.Float
+		{{end}}
+			var (
+			{{if eq $op.Op "^"}}
+			x *fluxarray.Float
 			{{else}}
 			x *fluxarray.{{$type}}
 			{{end}}
-    		err error
-    	)
-    	if lvr != nil {
+				err error
+			)
+		if lvr != nil {
 			x, err = fluxarray.{{$type}}{{$op.Name}}LConst((*lvr).{{index $.ValMap $type}}(), r.Arr().(*fluxarray.{{$type}}), mem)
 		} else if rvr != nil {
 			x, err = fluxarray.{{$type}}{{$op.Name}}RConst(l.Arr().(*fluxarray.{{$type}}), (*rvr).{{index $.ValMap $type}}(), mem)
@@ -54,16 +60,131 @@ func vector{{$op.Name}}(l, r Vector, mem memory.Allocator) (Value, error) {
 		if err != nil {
 			return nil, err
 		}
-    {{if eq $op.Op "^"}}
-		return NewVectorValue(x, semantic.BasicFloat), nil
-    {{else}}
-		return NewVectorValue(x, semantic.Basic{{$type}}), nil
-    {{end}}
 
-    {{end}}
+		{{if eq $op.Op "^"}}
+		return NewVectorValue(x, semantic.BasicFloat), nil
+		{{else}}
+		return NewVectorValue(x, semantic.Basic{{$type}}), nil
+		{{end}}
+
+		{{end}}
 
 	default:
 		return nil, errors.Newf(codes.Invalid, "unsupported type for vector {{$op.Name}}: %v", l.ElementType())
+	}
+}
+
+{{end}}
+
+
+//
+// Equality Ops
+//
+{{range $index, $op := .EqualityOps}}
+
+func vector{{$op.Name}}(l, r Vector, mem memory.Allocator) (Value, error) {
+	var lvr, rvr *Value
+	if vr, ok := l.(*VectorRepeatValue); ok {
+		lvr = &vr.val
+	}
+	if vr, ok := r.(*VectorRepeatValue); ok {
+		rvr = &vr.val
+	}
+
+	if lvr != nil && rvr != nil {
+		// XXX: we can handle this case here if we are willing to plumb the
+		// OperatorKind through here so we can do the lookup for the row-based version of this op.
+		panic("got 2 VectorRepeatValue; 'const folding' should be done earlier, in the function lookup")
+	}
+
+	lnat := l.ElementType().Nature()
+	rnat := r.ElementType().Nature()
+
+	switch {
+		{{/*
+			Time deviates from the normal flow since it requires casting/treating as int64.
+			In order to not disrupt the template/template data structure too much, effectively
+			we're hand-writing the case for Time here.
+
+			XXX: Take care to maintain parity between this block and the more general
+			templated case below when making refactors.
+		*/}}
+		case lnat == semantic.Time && rnat == semantic.Time:
+			var (
+				x *fluxarray.Boolean
+				err error
+			)
+			if lvr != nil {
+				x, err = fluxarray.IntInt{{$op.Name}}LConst((*lvr).Time().Time().UnixNano(), r.Arr().(*fluxarray.Int), mem)
+			} else if rvr != nil {
+				x, err = fluxarray.IntInt{{$op.Name}}RConst(l.Arr().(*fluxarray.Int), (*rvr).Time().Time().UnixNano(), mem)
+			} else {
+				x, err = fluxarray.IntInt{{$op.Name}}(l.Arr().(*fluxarray.Int), r.Arr().(*fluxarray.Int), mem)
+			}
+
+			if err != nil {
+				return nil, err
+			}
+			return NewVectorValue(x, semantic.BasicBool), nil
+
+	{{range $index, $type := .Types}}
+
+	{{$lT := $type.l}}
+	{{if eq $type.l "Boolean"}}
+	{{$lT = "Bool"}}
+	{{else if eq $type.l "Uint"}}
+	{{$lT = "UInt"}}
+	{{end}}
+
+	{{$rT := $type.r}}
+	{{if eq $type.r "Boolean"}}
+	{{$rT = "Bool"}}
+	{{else if eq $type.r "Uint"}}
+	{{$rT = "UInt"}}
+	{{end}}
+
+	case lnat == semantic.{{$lT}} && rnat == semantic.{{$rT}}:
+
+			var (
+			x *fluxarray.Boolean
+				err error
+			)
+
+			if lvr != nil {
+				x, err = fluxarray.{{$type.l}}{{$type.r}}{{$op.Name}}LConst(
+					(*lvr).{{index $.ValMap $type.l}}(),
+					r.Arr().(*fluxarray.{{$type.r}}),
+					mem,
+				)
+			} else if rvr != nil {
+				x, err = fluxarray.{{$type.l}}{{$type.r}}{{$op.Name}}RConst(
+					l.Arr().(*fluxarray.{{$type.l}}),
+					(*rvr).{{index $.ValMap $type.r}}(),
+					mem,
+				)
+			} else {
+				x, err = fluxarray.{{$type.l}}{{$type.r}}{{$op.Name}}(
+					l.Arr().(*fluxarray.{{$type.l}}),
+					r.Arr().(*fluxarray.{{$type.r}}),
+					mem,
+				)
+			}
+
+			if err != nil {
+				return nil, err
+			}
+
+			return NewVectorValue(x, semantic.BasicBool), nil
+
+	{{end}}
+
+	default:
+		return nil, errors.Newf(
+			codes.Invalid,
+			"unsupported type for vector {{$op.Name}}: %v {{$op.Op}} %v",
+			l.ElementType(),
+			r.ElementType(),
+		)
 	}
 }
 

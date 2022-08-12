@@ -14,6 +14,10 @@ import (
 	"github.com/influxdata/flux/internal/errors"
 )
 
+//
+// Arithmetic Ops
+//
+
 func IntAdd(l, r *Int, mem memory.Allocator) (*Int, error) {
 	n := l.Len()
 	if n != r.Len() {
@@ -1084,6 +1088,3884 @@ func FloatPowRConst(l *Float, r float64, mem memory.Allocator) (*Float, error) {
 		}
 	}
 	a := b.NewFloatArray()
+	b.Release()
+	return a, nil
+}
+
+//
+// Equality Ops
+//
+
+func FloatFloatEqual(l *Float, r *Float, mem memory.Allocator) (*Boolean, error) {
+	n := l.Len()
+	if n != r.Len() {
+		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
+	}
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+		if l.IsValid(i) && r.IsValid(i) {
+
+			b.Append(l.Value(i) == r.Value(i))
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func FloatFloatEqualLConst(l float64, r *Float, mem memory.Allocator) (*Boolean, error) {
+	n := r.Len()
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+
+	for i := 0; i < n; i++ {
+		if r.IsValid(i) {
+
+			b.Append(l == r.Value(i))
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func FloatFloatEqualRConst(l *Float, r float64, mem memory.Allocator) (*Boolean, error) {
+	n := l.Len()
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+
+		if l.IsValid(i) {
+
+			b.Append(l.Value(i) == r)
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func FloatIntEqual(l *Float, r *Int, mem memory.Allocator) (*Boolean, error) {
+	n := l.Len()
+	if n != r.Len() {
+		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
+	}
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+		if l.IsValid(i) && r.IsValid(i) {
+
+			b.Append(l.Value(i) == float64(r.Value(i)))
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func FloatIntEqualLConst(l float64, r *Int, mem memory.Allocator) (*Boolean, error) {
+	n := r.Len()
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+
+	for i := 0; i < n; i++ {
+		if r.IsValid(i) {
+
+			b.Append(l == float64(r.Value(i)))
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func FloatIntEqualRConst(l *Float, r int64, mem memory.Allocator) (*Boolean, error) {
+	n := l.Len()
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+
+		if l.IsValid(i) {
+
+			b.Append(l.Value(i) == float64(r))
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func FloatUintEqual(l *Float, r *Uint, mem memory.Allocator) (*Boolean, error) {
+	n := l.Len()
+	if n != r.Len() {
+		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
+	}
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+		if l.IsValid(i) && r.IsValid(i) {
+
+			b.Append(l.Value(i) == float64(r.Value(i)))
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func FloatUintEqualLConst(l float64, r *Uint, mem memory.Allocator) (*Boolean, error) {
+	n := r.Len()
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+
+	for i := 0; i < n; i++ {
+		if r.IsValid(i) {
+
+			b.Append(l == float64(r.Value(i)))
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func FloatUintEqualRConst(l *Float, r uint64, mem memory.Allocator) (*Boolean, error) {
+	n := l.Len()
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+
+		if l.IsValid(i) {
+
+			b.Append(l.Value(i) == float64(r))
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func IntFloatEqual(l *Int, r *Float, mem memory.Allocator) (*Boolean, error) {
+	n := l.Len()
+	if n != r.Len() {
+		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
+	}
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+		if l.IsValid(i) && r.IsValid(i) {
+
+			b.Append(float64(l.Value(i)) == r.Value(i))
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func IntFloatEqualLConst(l int64, r *Float, mem memory.Allocator) (*Boolean, error) {
+	n := r.Len()
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+
+	for i := 0; i < n; i++ {
+		if r.IsValid(i) {
+
+			b.Append(float64(l) == r.Value(i))
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func IntFloatEqualRConst(l *Int, r float64, mem memory.Allocator) (*Boolean, error) {
+	n := l.Len()
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+
+		if l.IsValid(i) {
+
+			b.Append(float64(l.Value(i)) == r)
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func IntIntEqual(l *Int, r *Int, mem memory.Allocator) (*Boolean, error) {
+	n := l.Len()
+	if n != r.Len() {
+		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
+	}
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+		if l.IsValid(i) && r.IsValid(i) {
+
+			b.Append(l.Value(i) == r.Value(i))
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func IntIntEqualLConst(l int64, r *Int, mem memory.Allocator) (*Boolean, error) {
+	n := r.Len()
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+
+	for i := 0; i < n; i++ {
+		if r.IsValid(i) {
+
+			b.Append(l == r.Value(i))
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func IntIntEqualRConst(l *Int, r int64, mem memory.Allocator) (*Boolean, error) {
+	n := l.Len()
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+
+		if l.IsValid(i) {
+
+			b.Append(l.Value(i) == r)
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func IntUintEqual(l *Int, r *Uint, mem memory.Allocator) (*Boolean, error) {
+	n := l.Len()
+	if n != r.Len() {
+		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
+	}
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+		if l.IsValid(i) && r.IsValid(i) {
+
+			if l.Value(i) < 0 {
+
+				b.Append(false)
+
+			} else {
+				b.Append(uint64(l.Value(i)) == r.Value(i))
+			}
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func IntUintEqualLConst(l int64, r *Uint, mem memory.Allocator) (*Boolean, error) {
+	n := r.Len()
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+
+	for i := 0; i < n; i++ {
+		if r.IsValid(i) {
+
+			if l < 0 {
+
+				b.Append(false)
+
+			} else {
+				b.Append(uint64(l) == r.Value(i))
+			}
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func IntUintEqualRConst(l *Int, r uint64, mem memory.Allocator) (*Boolean, error) {
+	n := l.Len()
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+
+		if l.IsValid(i) {
+
+			if l.Value(i) < 0 {
+
+				b.Append(false)
+
+			} else {
+				b.Append(uint64(l.Value(i)) == r)
+			}
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func UintIntEqual(l *Uint, r *Int, mem memory.Allocator) (*Boolean, error) {
+	n := l.Len()
+	if n != r.Len() {
+		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
+	}
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+		if l.IsValid(i) && r.IsValid(i) {
+
+			if r.Value(i) < 0 {
+
+				b.Append(false)
+
+			} else {
+				b.Append(l.Value(i) == uint64(r.Value(i)))
+			}
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func UintIntEqualLConst(l uint64, r *Int, mem memory.Allocator) (*Boolean, error) {
+	n := r.Len()
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+
+	for i := 0; i < n; i++ {
+		if r.IsValid(i) {
+
+			if r.Value(i) < 0 {
+
+				b.Append(false)
+
+			} else {
+				b.Append(l == uint64(r.Value(i)))
+			}
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func UintIntEqualRConst(l *Uint, r int64, mem memory.Allocator) (*Boolean, error) {
+	n := l.Len()
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+
+		if l.IsValid(i) {
+
+			if r < 0 {
+
+				b.Append(false)
+
+			} else {
+				b.Append(l.Value(i) == uint64(r))
+			}
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func UintFloatEqual(l *Uint, r *Float, mem memory.Allocator) (*Boolean, error) {
+	n := l.Len()
+	if n != r.Len() {
+		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
+	}
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+		if l.IsValid(i) && r.IsValid(i) {
+
+			b.Append(float64(l.Value(i)) == r.Value(i))
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func UintFloatEqualLConst(l uint64, r *Float, mem memory.Allocator) (*Boolean, error) {
+	n := r.Len()
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+
+	for i := 0; i < n; i++ {
+		if r.IsValid(i) {
+
+			b.Append(float64(l) == r.Value(i))
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func UintFloatEqualRConst(l *Uint, r float64, mem memory.Allocator) (*Boolean, error) {
+	n := l.Len()
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+
+		if l.IsValid(i) {
+
+			b.Append(float64(l.Value(i)) == r)
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func UintUintEqual(l *Uint, r *Uint, mem memory.Allocator) (*Boolean, error) {
+	n := l.Len()
+	if n != r.Len() {
+		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
+	}
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+		if l.IsValid(i) && r.IsValid(i) {
+
+			b.Append(l.Value(i) == r.Value(i))
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func UintUintEqualLConst(l uint64, r *Uint, mem memory.Allocator) (*Boolean, error) {
+	n := r.Len()
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+
+	for i := 0; i < n; i++ {
+		if r.IsValid(i) {
+
+			b.Append(l == r.Value(i))
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func UintUintEqualRConst(l *Uint, r uint64, mem memory.Allocator) (*Boolean, error) {
+	n := l.Len()
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+
+		if l.IsValid(i) {
+
+			b.Append(l.Value(i) == r)
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func BooleanBooleanEqual(l *Boolean, r *Boolean, mem memory.Allocator) (*Boolean, error) {
+	n := l.Len()
+	if n != r.Len() {
+		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
+	}
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+		if l.IsValid(i) && r.IsValid(i) {
+
+			b.Append(l.Value(i) == r.Value(i))
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func BooleanBooleanEqualLConst(l bool, r *Boolean, mem memory.Allocator) (*Boolean, error) {
+	n := r.Len()
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+
+	for i := 0; i < n; i++ {
+		if r.IsValid(i) {
+
+			b.Append(l == r.Value(i))
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func BooleanBooleanEqualRConst(l *Boolean, r bool, mem memory.Allocator) (*Boolean, error) {
+	n := l.Len()
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+
+		if l.IsValid(i) {
+
+			b.Append(l.Value(i) == r)
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func StringStringEqual(l *String, r *String, mem memory.Allocator) (*Boolean, error) {
+	n := l.Len()
+	if n != r.Len() {
+		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
+	}
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+		if l.IsValid(i) && r.IsValid(i) {
+
+			b.Append(l.Value(i) == r.Value(i))
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func StringStringEqualLConst(l string, r *String, mem memory.Allocator) (*Boolean, error) {
+	n := r.Len()
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+
+	for i := 0; i < n; i++ {
+		if r.IsValid(i) {
+
+			b.Append(l == r.Value(i))
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func StringStringEqualRConst(l *String, r string, mem memory.Allocator) (*Boolean, error) {
+	n := l.Len()
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+
+		if l.IsValid(i) {
+
+			b.Append(l.Value(i) == r)
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func FloatFloatNotEqual(l *Float, r *Float, mem memory.Allocator) (*Boolean, error) {
+	n := l.Len()
+	if n != r.Len() {
+		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
+	}
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+		if l.IsValid(i) && r.IsValid(i) {
+
+			b.Append(l.Value(i) != r.Value(i))
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func FloatFloatNotEqualLConst(l float64, r *Float, mem memory.Allocator) (*Boolean, error) {
+	n := r.Len()
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+
+	for i := 0; i < n; i++ {
+		if r.IsValid(i) {
+
+			b.Append(l != r.Value(i))
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func FloatFloatNotEqualRConst(l *Float, r float64, mem memory.Allocator) (*Boolean, error) {
+	n := l.Len()
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+
+		if l.IsValid(i) {
+
+			b.Append(l.Value(i) != r)
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func FloatIntNotEqual(l *Float, r *Int, mem memory.Allocator) (*Boolean, error) {
+	n := l.Len()
+	if n != r.Len() {
+		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
+	}
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+		if l.IsValid(i) && r.IsValid(i) {
+
+			b.Append(l.Value(i) != float64(r.Value(i)))
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func FloatIntNotEqualLConst(l float64, r *Int, mem memory.Allocator) (*Boolean, error) {
+	n := r.Len()
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+
+	for i := 0; i < n; i++ {
+		if r.IsValid(i) {
+
+			b.Append(l != float64(r.Value(i)))
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func FloatIntNotEqualRConst(l *Float, r int64, mem memory.Allocator) (*Boolean, error) {
+	n := l.Len()
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+
+		if l.IsValid(i) {
+
+			b.Append(l.Value(i) != float64(r))
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func FloatUintNotEqual(l *Float, r *Uint, mem memory.Allocator) (*Boolean, error) {
+	n := l.Len()
+	if n != r.Len() {
+		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
+	}
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+		if l.IsValid(i) && r.IsValid(i) {
+
+			b.Append(l.Value(i) != float64(r.Value(i)))
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func FloatUintNotEqualLConst(l float64, r *Uint, mem memory.Allocator) (*Boolean, error) {
+	n := r.Len()
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+
+	for i := 0; i < n; i++ {
+		if r.IsValid(i) {
+
+			b.Append(l != float64(r.Value(i)))
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func FloatUintNotEqualRConst(l *Float, r uint64, mem memory.Allocator) (*Boolean, error) {
+	n := l.Len()
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+
+		if l.IsValid(i) {
+
+			b.Append(l.Value(i) != float64(r))
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func IntFloatNotEqual(l *Int, r *Float, mem memory.Allocator) (*Boolean, error) {
+	n := l.Len()
+	if n != r.Len() {
+		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
+	}
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+		if l.IsValid(i) && r.IsValid(i) {
+
+			b.Append(float64(l.Value(i)) != r.Value(i))
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func IntFloatNotEqualLConst(l int64, r *Float, mem memory.Allocator) (*Boolean, error) {
+	n := r.Len()
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+
+	for i := 0; i < n; i++ {
+		if r.IsValid(i) {
+
+			b.Append(float64(l) != r.Value(i))
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func IntFloatNotEqualRConst(l *Int, r float64, mem memory.Allocator) (*Boolean, error) {
+	n := l.Len()
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+
+		if l.IsValid(i) {
+
+			b.Append(float64(l.Value(i)) != r)
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func IntIntNotEqual(l *Int, r *Int, mem memory.Allocator) (*Boolean, error) {
+	n := l.Len()
+	if n != r.Len() {
+		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
+	}
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+		if l.IsValid(i) && r.IsValid(i) {
+
+			b.Append(l.Value(i) != r.Value(i))
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func IntIntNotEqualLConst(l int64, r *Int, mem memory.Allocator) (*Boolean, error) {
+	n := r.Len()
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+
+	for i := 0; i < n; i++ {
+		if r.IsValid(i) {
+
+			b.Append(l != r.Value(i))
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func IntIntNotEqualRConst(l *Int, r int64, mem memory.Allocator) (*Boolean, error) {
+	n := l.Len()
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+
+		if l.IsValid(i) {
+
+			b.Append(l.Value(i) != r)
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func IntUintNotEqual(l *Int, r *Uint, mem memory.Allocator) (*Boolean, error) {
+	n := l.Len()
+	if n != r.Len() {
+		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
+	}
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+		if l.IsValid(i) && r.IsValid(i) {
+
+			if l.Value(i) < 0 {
+
+				b.Append(true)
+
+			} else {
+				b.Append(uint64(l.Value(i)) != r.Value(i))
+			}
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func IntUintNotEqualLConst(l int64, r *Uint, mem memory.Allocator) (*Boolean, error) {
+	n := r.Len()
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+
+	for i := 0; i < n; i++ {
+		if r.IsValid(i) {
+
+			if l < 0 {
+
+				b.Append(true)
+
+			} else {
+				b.Append(uint64(l) != r.Value(i))
+			}
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func IntUintNotEqualRConst(l *Int, r uint64, mem memory.Allocator) (*Boolean, error) {
+	n := l.Len()
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+
+		if l.IsValid(i) {
+
+			if l.Value(i) < 0 {
+
+				b.Append(true)
+
+			} else {
+				b.Append(uint64(l.Value(i)) != r)
+			}
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func UintIntNotEqual(l *Uint, r *Int, mem memory.Allocator) (*Boolean, error) {
+	n := l.Len()
+	if n != r.Len() {
+		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
+	}
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+		if l.IsValid(i) && r.IsValid(i) {
+
+			if r.Value(i) < 0 {
+
+				b.Append(true)
+
+			} else {
+				b.Append(l.Value(i) != uint64(r.Value(i)))
+			}
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func UintIntNotEqualLConst(l uint64, r *Int, mem memory.Allocator) (*Boolean, error) {
+	n := r.Len()
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+
+	for i := 0; i < n; i++ {
+		if r.IsValid(i) {
+
+			if r.Value(i) < 0 {
+
+				b.Append(true)
+
+			} else {
+				b.Append(l != uint64(r.Value(i)))
+			}
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func UintIntNotEqualRConst(l *Uint, r int64, mem memory.Allocator) (*Boolean, error) {
+	n := l.Len()
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+
+		if l.IsValid(i) {
+
+			if r < 0 {
+
+				b.Append(true)
+
+			} else {
+				b.Append(l.Value(i) != uint64(r))
+			}
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func UintFloatNotEqual(l *Uint, r *Float, mem memory.Allocator) (*Boolean, error) {
+	n := l.Len()
+	if n != r.Len() {
+		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
+	}
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+		if l.IsValid(i) && r.IsValid(i) {
+
+			b.Append(float64(l.Value(i)) != r.Value(i))
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func UintFloatNotEqualLConst(l uint64, r *Float, mem memory.Allocator) (*Boolean, error) {
+	n := r.Len()
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+
+	for i := 0; i < n; i++ {
+		if r.IsValid(i) {
+
+			b.Append(float64(l) != r.Value(i))
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func UintFloatNotEqualRConst(l *Uint, r float64, mem memory.Allocator) (*Boolean, error) {
+	n := l.Len()
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+
+		if l.IsValid(i) {
+
+			b.Append(float64(l.Value(i)) != r)
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func UintUintNotEqual(l *Uint, r *Uint, mem memory.Allocator) (*Boolean, error) {
+	n := l.Len()
+	if n != r.Len() {
+		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
+	}
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+		if l.IsValid(i) && r.IsValid(i) {
+
+			b.Append(l.Value(i) != r.Value(i))
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func UintUintNotEqualLConst(l uint64, r *Uint, mem memory.Allocator) (*Boolean, error) {
+	n := r.Len()
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+
+	for i := 0; i < n; i++ {
+		if r.IsValid(i) {
+
+			b.Append(l != r.Value(i))
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func UintUintNotEqualRConst(l *Uint, r uint64, mem memory.Allocator) (*Boolean, error) {
+	n := l.Len()
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+
+		if l.IsValid(i) {
+
+			b.Append(l.Value(i) != r)
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func BooleanBooleanNotEqual(l *Boolean, r *Boolean, mem memory.Allocator) (*Boolean, error) {
+	n := l.Len()
+	if n != r.Len() {
+		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
+	}
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+		if l.IsValid(i) && r.IsValid(i) {
+
+			b.Append(l.Value(i) != r.Value(i))
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func BooleanBooleanNotEqualLConst(l bool, r *Boolean, mem memory.Allocator) (*Boolean, error) {
+	n := r.Len()
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+
+	for i := 0; i < n; i++ {
+		if r.IsValid(i) {
+
+			b.Append(l != r.Value(i))
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func BooleanBooleanNotEqualRConst(l *Boolean, r bool, mem memory.Allocator) (*Boolean, error) {
+	n := l.Len()
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+
+		if l.IsValid(i) {
+
+			b.Append(l.Value(i) != r)
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func StringStringNotEqual(l *String, r *String, mem memory.Allocator) (*Boolean, error) {
+	n := l.Len()
+	if n != r.Len() {
+		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
+	}
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+		if l.IsValid(i) && r.IsValid(i) {
+
+			b.Append(l.Value(i) != r.Value(i))
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func StringStringNotEqualLConst(l string, r *String, mem memory.Allocator) (*Boolean, error) {
+	n := r.Len()
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+
+	for i := 0; i < n; i++ {
+		if r.IsValid(i) {
+
+			b.Append(l != r.Value(i))
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func StringStringNotEqualRConst(l *String, r string, mem memory.Allocator) (*Boolean, error) {
+	n := l.Len()
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+
+		if l.IsValid(i) {
+
+			b.Append(l.Value(i) != r)
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func FloatFloatLessThan(l *Float, r *Float, mem memory.Allocator) (*Boolean, error) {
+	n := l.Len()
+	if n != r.Len() {
+		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
+	}
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+		if l.IsValid(i) && r.IsValid(i) {
+
+			b.Append(l.Value(i) < r.Value(i))
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func FloatFloatLessThanLConst(l float64, r *Float, mem memory.Allocator) (*Boolean, error) {
+	n := r.Len()
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+
+	for i := 0; i < n; i++ {
+		if r.IsValid(i) {
+
+			b.Append(l < r.Value(i))
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func FloatFloatLessThanRConst(l *Float, r float64, mem memory.Allocator) (*Boolean, error) {
+	n := l.Len()
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+
+		if l.IsValid(i) {
+
+			b.Append(l.Value(i) < r)
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func FloatIntLessThan(l *Float, r *Int, mem memory.Allocator) (*Boolean, error) {
+	n := l.Len()
+	if n != r.Len() {
+		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
+	}
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+		if l.IsValid(i) && r.IsValid(i) {
+
+			b.Append(l.Value(i) < float64(r.Value(i)))
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func FloatIntLessThanLConst(l float64, r *Int, mem memory.Allocator) (*Boolean, error) {
+	n := r.Len()
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+
+	for i := 0; i < n; i++ {
+		if r.IsValid(i) {
+
+			b.Append(l < float64(r.Value(i)))
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func FloatIntLessThanRConst(l *Float, r int64, mem memory.Allocator) (*Boolean, error) {
+	n := l.Len()
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+
+		if l.IsValid(i) {
+
+			b.Append(l.Value(i) < float64(r))
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func FloatUintLessThan(l *Float, r *Uint, mem memory.Allocator) (*Boolean, error) {
+	n := l.Len()
+	if n != r.Len() {
+		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
+	}
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+		if l.IsValid(i) && r.IsValid(i) {
+
+			b.Append(l.Value(i) < float64(r.Value(i)))
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func FloatUintLessThanLConst(l float64, r *Uint, mem memory.Allocator) (*Boolean, error) {
+	n := r.Len()
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+
+	for i := 0; i < n; i++ {
+		if r.IsValid(i) {
+
+			b.Append(l < float64(r.Value(i)))
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func FloatUintLessThanRConst(l *Float, r uint64, mem memory.Allocator) (*Boolean, error) {
+	n := l.Len()
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+
+		if l.IsValid(i) {
+
+			b.Append(l.Value(i) < float64(r))
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func IntFloatLessThan(l *Int, r *Float, mem memory.Allocator) (*Boolean, error) {
+	n := l.Len()
+	if n != r.Len() {
+		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
+	}
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+		if l.IsValid(i) && r.IsValid(i) {
+
+			b.Append(float64(l.Value(i)) < r.Value(i))
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func IntFloatLessThanLConst(l int64, r *Float, mem memory.Allocator) (*Boolean, error) {
+	n := r.Len()
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+
+	for i := 0; i < n; i++ {
+		if r.IsValid(i) {
+
+			b.Append(float64(l) < r.Value(i))
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func IntFloatLessThanRConst(l *Int, r float64, mem memory.Allocator) (*Boolean, error) {
+	n := l.Len()
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+
+		if l.IsValid(i) {
+
+			b.Append(float64(l.Value(i)) < r)
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func IntIntLessThan(l *Int, r *Int, mem memory.Allocator) (*Boolean, error) {
+	n := l.Len()
+	if n != r.Len() {
+		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
+	}
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+		if l.IsValid(i) && r.IsValid(i) {
+
+			b.Append(l.Value(i) < r.Value(i))
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func IntIntLessThanLConst(l int64, r *Int, mem memory.Allocator) (*Boolean, error) {
+	n := r.Len()
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+
+	for i := 0; i < n; i++ {
+		if r.IsValid(i) {
+
+			b.Append(l < r.Value(i))
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func IntIntLessThanRConst(l *Int, r int64, mem memory.Allocator) (*Boolean, error) {
+	n := l.Len()
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+
+		if l.IsValid(i) {
+
+			b.Append(l.Value(i) < r)
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func IntUintLessThan(l *Int, r *Uint, mem memory.Allocator) (*Boolean, error) {
+	n := l.Len()
+	if n != r.Len() {
+		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
+	}
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+		if l.IsValid(i) && r.IsValid(i) {
+
+			if l.Value(i) < 0 {
+
+				b.Append(true)
+
+			} else {
+				b.Append(uint64(l.Value(i)) < r.Value(i))
+			}
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func IntUintLessThanLConst(l int64, r *Uint, mem memory.Allocator) (*Boolean, error) {
+	n := r.Len()
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+
+	for i := 0; i < n; i++ {
+		if r.IsValid(i) {
+
+			if l < 0 {
+
+				b.Append(true)
+
+			} else {
+				b.Append(uint64(l) < r.Value(i))
+			}
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func IntUintLessThanRConst(l *Int, r uint64, mem memory.Allocator) (*Boolean, error) {
+	n := l.Len()
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+
+		if l.IsValid(i) {
+
+			if l.Value(i) < 0 {
+
+				b.Append(true)
+
+			} else {
+				b.Append(uint64(l.Value(i)) < r)
+			}
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func UintIntLessThan(l *Uint, r *Int, mem memory.Allocator) (*Boolean, error) {
+	n := l.Len()
+	if n != r.Len() {
+		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
+	}
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+		if l.IsValid(i) && r.IsValid(i) {
+
+			if r.Value(i) < 0 {
+
+				b.Append(false)
+
+			} else {
+				b.Append(l.Value(i) < uint64(r.Value(i)))
+			}
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func UintIntLessThanLConst(l uint64, r *Int, mem memory.Allocator) (*Boolean, error) {
+	n := r.Len()
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+
+	for i := 0; i < n; i++ {
+		if r.IsValid(i) {
+
+			if r.Value(i) < 0 {
+
+				b.Append(false)
+
+			} else {
+				b.Append(l < uint64(r.Value(i)))
+			}
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func UintIntLessThanRConst(l *Uint, r int64, mem memory.Allocator) (*Boolean, error) {
+	n := l.Len()
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+
+		if l.IsValid(i) {
+
+			if r < 0 {
+
+				b.Append(false)
+
+			} else {
+				b.Append(l.Value(i) < uint64(r))
+			}
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func UintFloatLessThan(l *Uint, r *Float, mem memory.Allocator) (*Boolean, error) {
+	n := l.Len()
+	if n != r.Len() {
+		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
+	}
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+		if l.IsValid(i) && r.IsValid(i) {
+
+			b.Append(float64(l.Value(i)) < r.Value(i))
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func UintFloatLessThanLConst(l uint64, r *Float, mem memory.Allocator) (*Boolean, error) {
+	n := r.Len()
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+
+	for i := 0; i < n; i++ {
+		if r.IsValid(i) {
+
+			b.Append(float64(l) < r.Value(i))
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func UintFloatLessThanRConst(l *Uint, r float64, mem memory.Allocator) (*Boolean, error) {
+	n := l.Len()
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+
+		if l.IsValid(i) {
+
+			b.Append(float64(l.Value(i)) < r)
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func UintUintLessThan(l *Uint, r *Uint, mem memory.Allocator) (*Boolean, error) {
+	n := l.Len()
+	if n != r.Len() {
+		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
+	}
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+		if l.IsValid(i) && r.IsValid(i) {
+
+			b.Append(l.Value(i) < r.Value(i))
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func UintUintLessThanLConst(l uint64, r *Uint, mem memory.Allocator) (*Boolean, error) {
+	n := r.Len()
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+
+	for i := 0; i < n; i++ {
+		if r.IsValid(i) {
+
+			b.Append(l < r.Value(i))
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func UintUintLessThanRConst(l *Uint, r uint64, mem memory.Allocator) (*Boolean, error) {
+	n := l.Len()
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+
+		if l.IsValid(i) {
+
+			b.Append(l.Value(i) < r)
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func StringStringLessThan(l *String, r *String, mem memory.Allocator) (*Boolean, error) {
+	n := l.Len()
+	if n != r.Len() {
+		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
+	}
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+		if l.IsValid(i) && r.IsValid(i) {
+
+			b.Append(l.Value(i) < r.Value(i))
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func StringStringLessThanLConst(l string, r *String, mem memory.Allocator) (*Boolean, error) {
+	n := r.Len()
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+
+	for i := 0; i < n; i++ {
+		if r.IsValid(i) {
+
+			b.Append(l < r.Value(i))
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func StringStringLessThanRConst(l *String, r string, mem memory.Allocator) (*Boolean, error) {
+	n := l.Len()
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+
+		if l.IsValid(i) {
+
+			b.Append(l.Value(i) < r)
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func FloatFloatLessThanEqual(l *Float, r *Float, mem memory.Allocator) (*Boolean, error) {
+	n := l.Len()
+	if n != r.Len() {
+		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
+	}
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+		if l.IsValid(i) && r.IsValid(i) {
+
+			b.Append(l.Value(i) <= r.Value(i))
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func FloatFloatLessThanEqualLConst(l float64, r *Float, mem memory.Allocator) (*Boolean, error) {
+	n := r.Len()
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+
+	for i := 0; i < n; i++ {
+		if r.IsValid(i) {
+
+			b.Append(l <= r.Value(i))
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func FloatFloatLessThanEqualRConst(l *Float, r float64, mem memory.Allocator) (*Boolean, error) {
+	n := l.Len()
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+
+		if l.IsValid(i) {
+
+			b.Append(l.Value(i) <= r)
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func FloatIntLessThanEqual(l *Float, r *Int, mem memory.Allocator) (*Boolean, error) {
+	n := l.Len()
+	if n != r.Len() {
+		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
+	}
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+		if l.IsValid(i) && r.IsValid(i) {
+
+			b.Append(l.Value(i) <= float64(r.Value(i)))
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func FloatIntLessThanEqualLConst(l float64, r *Int, mem memory.Allocator) (*Boolean, error) {
+	n := r.Len()
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+
+	for i := 0; i < n; i++ {
+		if r.IsValid(i) {
+
+			b.Append(l <= float64(r.Value(i)))
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func FloatIntLessThanEqualRConst(l *Float, r int64, mem memory.Allocator) (*Boolean, error) {
+	n := l.Len()
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+
+		if l.IsValid(i) {
+
+			b.Append(l.Value(i) <= float64(r))
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func FloatUintLessThanEqual(l *Float, r *Uint, mem memory.Allocator) (*Boolean, error) {
+	n := l.Len()
+	if n != r.Len() {
+		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
+	}
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+		if l.IsValid(i) && r.IsValid(i) {
+
+			b.Append(l.Value(i) <= float64(r.Value(i)))
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func FloatUintLessThanEqualLConst(l float64, r *Uint, mem memory.Allocator) (*Boolean, error) {
+	n := r.Len()
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+
+	for i := 0; i < n; i++ {
+		if r.IsValid(i) {
+
+			b.Append(l <= float64(r.Value(i)))
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func FloatUintLessThanEqualRConst(l *Float, r uint64, mem memory.Allocator) (*Boolean, error) {
+	n := l.Len()
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+
+		if l.IsValid(i) {
+
+			b.Append(l.Value(i) <= float64(r))
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func IntFloatLessThanEqual(l *Int, r *Float, mem memory.Allocator) (*Boolean, error) {
+	n := l.Len()
+	if n != r.Len() {
+		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
+	}
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+		if l.IsValid(i) && r.IsValid(i) {
+
+			b.Append(float64(l.Value(i)) <= r.Value(i))
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func IntFloatLessThanEqualLConst(l int64, r *Float, mem memory.Allocator) (*Boolean, error) {
+	n := r.Len()
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+
+	for i := 0; i < n; i++ {
+		if r.IsValid(i) {
+
+			b.Append(float64(l) <= r.Value(i))
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func IntFloatLessThanEqualRConst(l *Int, r float64, mem memory.Allocator) (*Boolean, error) {
+	n := l.Len()
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+
+		if l.IsValid(i) {
+
+			b.Append(float64(l.Value(i)) <= r)
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func IntIntLessThanEqual(l *Int, r *Int, mem memory.Allocator) (*Boolean, error) {
+	n := l.Len()
+	if n != r.Len() {
+		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
+	}
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+		if l.IsValid(i) && r.IsValid(i) {
+
+			b.Append(l.Value(i) <= r.Value(i))
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func IntIntLessThanEqualLConst(l int64, r *Int, mem memory.Allocator) (*Boolean, error) {
+	n := r.Len()
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+
+	for i := 0; i < n; i++ {
+		if r.IsValid(i) {
+
+			b.Append(l <= r.Value(i))
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func IntIntLessThanEqualRConst(l *Int, r int64, mem memory.Allocator) (*Boolean, error) {
+	n := l.Len()
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+
+		if l.IsValid(i) {
+
+			b.Append(l.Value(i) <= r)
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func IntUintLessThanEqual(l *Int, r *Uint, mem memory.Allocator) (*Boolean, error) {
+	n := l.Len()
+	if n != r.Len() {
+		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
+	}
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+		if l.IsValid(i) && r.IsValid(i) {
+
+			if l.Value(i) < 0 {
+
+				b.Append(true)
+
+			} else {
+				b.Append(uint64(l.Value(i)) <= r.Value(i))
+			}
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func IntUintLessThanEqualLConst(l int64, r *Uint, mem memory.Allocator) (*Boolean, error) {
+	n := r.Len()
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+
+	for i := 0; i < n; i++ {
+		if r.IsValid(i) {
+
+			if l < 0 {
+
+				b.Append(true)
+
+			} else {
+				b.Append(uint64(l) <= r.Value(i))
+			}
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func IntUintLessThanEqualRConst(l *Int, r uint64, mem memory.Allocator) (*Boolean, error) {
+	n := l.Len()
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+
+		if l.IsValid(i) {
+
+			if l.Value(i) < 0 {
+
+				b.Append(true)
+
+			} else {
+				b.Append(uint64(l.Value(i)) <= r)
+			}
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func UintIntLessThanEqual(l *Uint, r *Int, mem memory.Allocator) (*Boolean, error) {
+	n := l.Len()
+	if n != r.Len() {
+		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
+	}
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+		if l.IsValid(i) && r.IsValid(i) {
+
+			if r.Value(i) < 0 {
+
+				b.Append(false)
+
+			} else {
+				b.Append(l.Value(i) <= uint64(r.Value(i)))
+			}
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func UintIntLessThanEqualLConst(l uint64, r *Int, mem memory.Allocator) (*Boolean, error) {
+	n := r.Len()
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+
+	for i := 0; i < n; i++ {
+		if r.IsValid(i) {
+
+			if r.Value(i) < 0 {
+
+				b.Append(false)
+
+			} else {
+				b.Append(l <= uint64(r.Value(i)))
+			}
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func UintIntLessThanEqualRConst(l *Uint, r int64, mem memory.Allocator) (*Boolean, error) {
+	n := l.Len()
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+
+		if l.IsValid(i) {
+
+			if r < 0 {
+
+				b.Append(false)
+
+			} else {
+				b.Append(l.Value(i) <= uint64(r))
+			}
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func UintFloatLessThanEqual(l *Uint, r *Float, mem memory.Allocator) (*Boolean, error) {
+	n := l.Len()
+	if n != r.Len() {
+		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
+	}
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+		if l.IsValid(i) && r.IsValid(i) {
+
+			b.Append(float64(l.Value(i)) <= r.Value(i))
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func UintFloatLessThanEqualLConst(l uint64, r *Float, mem memory.Allocator) (*Boolean, error) {
+	n := r.Len()
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+
+	for i := 0; i < n; i++ {
+		if r.IsValid(i) {
+
+			b.Append(float64(l) <= r.Value(i))
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func UintFloatLessThanEqualRConst(l *Uint, r float64, mem memory.Allocator) (*Boolean, error) {
+	n := l.Len()
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+
+		if l.IsValid(i) {
+
+			b.Append(float64(l.Value(i)) <= r)
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func UintUintLessThanEqual(l *Uint, r *Uint, mem memory.Allocator) (*Boolean, error) {
+	n := l.Len()
+	if n != r.Len() {
+		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
+	}
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+		if l.IsValid(i) && r.IsValid(i) {
+
+			b.Append(l.Value(i) <= r.Value(i))
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func UintUintLessThanEqualLConst(l uint64, r *Uint, mem memory.Allocator) (*Boolean, error) {
+	n := r.Len()
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+
+	for i := 0; i < n; i++ {
+		if r.IsValid(i) {
+
+			b.Append(l <= r.Value(i))
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func UintUintLessThanEqualRConst(l *Uint, r uint64, mem memory.Allocator) (*Boolean, error) {
+	n := l.Len()
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+
+		if l.IsValid(i) {
+
+			b.Append(l.Value(i) <= r)
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func StringStringLessThanEqual(l *String, r *String, mem memory.Allocator) (*Boolean, error) {
+	n := l.Len()
+	if n != r.Len() {
+		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
+	}
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+		if l.IsValid(i) && r.IsValid(i) {
+
+			b.Append(l.Value(i) <= r.Value(i))
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func StringStringLessThanEqualLConst(l string, r *String, mem memory.Allocator) (*Boolean, error) {
+	n := r.Len()
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+
+	for i := 0; i < n; i++ {
+		if r.IsValid(i) {
+
+			b.Append(l <= r.Value(i))
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func StringStringLessThanEqualRConst(l *String, r string, mem memory.Allocator) (*Boolean, error) {
+	n := l.Len()
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+
+		if l.IsValid(i) {
+
+			b.Append(l.Value(i) <= r)
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func FloatFloatGreaterThan(l *Float, r *Float, mem memory.Allocator) (*Boolean, error) {
+	n := l.Len()
+	if n != r.Len() {
+		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
+	}
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+		if l.IsValid(i) && r.IsValid(i) {
+
+			b.Append(l.Value(i) > r.Value(i))
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func FloatFloatGreaterThanLConst(l float64, r *Float, mem memory.Allocator) (*Boolean, error) {
+	n := r.Len()
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+
+	for i := 0; i < n; i++ {
+		if r.IsValid(i) {
+
+			b.Append(l > r.Value(i))
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func FloatFloatGreaterThanRConst(l *Float, r float64, mem memory.Allocator) (*Boolean, error) {
+	n := l.Len()
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+
+		if l.IsValid(i) {
+
+			b.Append(l.Value(i) > r)
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func FloatIntGreaterThan(l *Float, r *Int, mem memory.Allocator) (*Boolean, error) {
+	n := l.Len()
+	if n != r.Len() {
+		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
+	}
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+		if l.IsValid(i) && r.IsValid(i) {
+
+			b.Append(l.Value(i) > float64(r.Value(i)))
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func FloatIntGreaterThanLConst(l float64, r *Int, mem memory.Allocator) (*Boolean, error) {
+	n := r.Len()
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+
+	for i := 0; i < n; i++ {
+		if r.IsValid(i) {
+
+			b.Append(l > float64(r.Value(i)))
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func FloatIntGreaterThanRConst(l *Float, r int64, mem memory.Allocator) (*Boolean, error) {
+	n := l.Len()
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+
+		if l.IsValid(i) {
+
+			b.Append(l.Value(i) > float64(r))
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func FloatUintGreaterThan(l *Float, r *Uint, mem memory.Allocator) (*Boolean, error) {
+	n := l.Len()
+	if n != r.Len() {
+		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
+	}
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+		if l.IsValid(i) && r.IsValid(i) {
+
+			b.Append(l.Value(i) > float64(r.Value(i)))
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func FloatUintGreaterThanLConst(l float64, r *Uint, mem memory.Allocator) (*Boolean, error) {
+	n := r.Len()
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+
+	for i := 0; i < n; i++ {
+		if r.IsValid(i) {
+
+			b.Append(l > float64(r.Value(i)))
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func FloatUintGreaterThanRConst(l *Float, r uint64, mem memory.Allocator) (*Boolean, error) {
+	n := l.Len()
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+
+		if l.IsValid(i) {
+
+			b.Append(l.Value(i) > float64(r))
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func IntFloatGreaterThan(l *Int, r *Float, mem memory.Allocator) (*Boolean, error) {
+	n := l.Len()
+	if n != r.Len() {
+		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
+	}
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+		if l.IsValid(i) && r.IsValid(i) {
+
+			b.Append(float64(l.Value(i)) > r.Value(i))
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func IntFloatGreaterThanLConst(l int64, r *Float, mem memory.Allocator) (*Boolean, error) {
+	n := r.Len()
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+
+	for i := 0; i < n; i++ {
+		if r.IsValid(i) {
+
+			b.Append(float64(l) > r.Value(i))
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func IntFloatGreaterThanRConst(l *Int, r float64, mem memory.Allocator) (*Boolean, error) {
+	n := l.Len()
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+
+		if l.IsValid(i) {
+
+			b.Append(float64(l.Value(i)) > r)
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func IntIntGreaterThan(l *Int, r *Int, mem memory.Allocator) (*Boolean, error) {
+	n := l.Len()
+	if n != r.Len() {
+		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
+	}
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+		if l.IsValid(i) && r.IsValid(i) {
+
+			b.Append(l.Value(i) > r.Value(i))
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func IntIntGreaterThanLConst(l int64, r *Int, mem memory.Allocator) (*Boolean, error) {
+	n := r.Len()
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+
+	for i := 0; i < n; i++ {
+		if r.IsValid(i) {
+
+			b.Append(l > r.Value(i))
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func IntIntGreaterThanRConst(l *Int, r int64, mem memory.Allocator) (*Boolean, error) {
+	n := l.Len()
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+
+		if l.IsValid(i) {
+
+			b.Append(l.Value(i) > r)
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func IntUintGreaterThan(l *Int, r *Uint, mem memory.Allocator) (*Boolean, error) {
+	n := l.Len()
+	if n != r.Len() {
+		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
+	}
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+		if l.IsValid(i) && r.IsValid(i) {
+
+			if l.Value(i) < 0 {
+
+				b.Append(false)
+
+			} else {
+				b.Append(uint64(l.Value(i)) > r.Value(i))
+			}
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func IntUintGreaterThanLConst(l int64, r *Uint, mem memory.Allocator) (*Boolean, error) {
+	n := r.Len()
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+
+	for i := 0; i < n; i++ {
+		if r.IsValid(i) {
+
+			if l < 0 {
+
+				b.Append(false)
+
+			} else {
+				b.Append(uint64(l) > r.Value(i))
+			}
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func IntUintGreaterThanRConst(l *Int, r uint64, mem memory.Allocator) (*Boolean, error) {
+	n := l.Len()
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+
+		if l.IsValid(i) {
+
+			if l.Value(i) < 0 {
+
+				b.Append(false)
+
+			} else {
+				b.Append(uint64(l.Value(i)) > r)
+			}
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func UintIntGreaterThan(l *Uint, r *Int, mem memory.Allocator) (*Boolean, error) {
+	n := l.Len()
+	if n != r.Len() {
+		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
+	}
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+		if l.IsValid(i) && r.IsValid(i) {
+
+			if r.Value(i) < 0 {
+
+				b.Append(true)
+
+			} else {
+				b.Append(l.Value(i) > uint64(r.Value(i)))
+			}
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func UintIntGreaterThanLConst(l uint64, r *Int, mem memory.Allocator) (*Boolean, error) {
+	n := r.Len()
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+
+	for i := 0; i < n; i++ {
+		if r.IsValid(i) {
+
+			if r.Value(i) < 0 {
+
+				b.Append(true)
+
+			} else {
+				b.Append(l > uint64(r.Value(i)))
+			}
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func UintIntGreaterThanRConst(l *Uint, r int64, mem memory.Allocator) (*Boolean, error) {
+	n := l.Len()
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+
+		if l.IsValid(i) {
+
+			if r < 0 {
+
+				b.Append(true)
+
+			} else {
+				b.Append(l.Value(i) > uint64(r))
+			}
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func UintFloatGreaterThan(l *Uint, r *Float, mem memory.Allocator) (*Boolean, error) {
+	n := l.Len()
+	if n != r.Len() {
+		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
+	}
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+		if l.IsValid(i) && r.IsValid(i) {
+
+			b.Append(float64(l.Value(i)) > r.Value(i))
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func UintFloatGreaterThanLConst(l uint64, r *Float, mem memory.Allocator) (*Boolean, error) {
+	n := r.Len()
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+
+	for i := 0; i < n; i++ {
+		if r.IsValid(i) {
+
+			b.Append(float64(l) > r.Value(i))
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func UintFloatGreaterThanRConst(l *Uint, r float64, mem memory.Allocator) (*Boolean, error) {
+	n := l.Len()
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+
+		if l.IsValid(i) {
+
+			b.Append(float64(l.Value(i)) > r)
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func UintUintGreaterThan(l *Uint, r *Uint, mem memory.Allocator) (*Boolean, error) {
+	n := l.Len()
+	if n != r.Len() {
+		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
+	}
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+		if l.IsValid(i) && r.IsValid(i) {
+
+			b.Append(l.Value(i) > r.Value(i))
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func UintUintGreaterThanLConst(l uint64, r *Uint, mem memory.Allocator) (*Boolean, error) {
+	n := r.Len()
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+
+	for i := 0; i < n; i++ {
+		if r.IsValid(i) {
+
+			b.Append(l > r.Value(i))
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func UintUintGreaterThanRConst(l *Uint, r uint64, mem memory.Allocator) (*Boolean, error) {
+	n := l.Len()
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+
+		if l.IsValid(i) {
+
+			b.Append(l.Value(i) > r)
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func StringStringGreaterThan(l *String, r *String, mem memory.Allocator) (*Boolean, error) {
+	n := l.Len()
+	if n != r.Len() {
+		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
+	}
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+		if l.IsValid(i) && r.IsValid(i) {
+
+			b.Append(l.Value(i) > r.Value(i))
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func StringStringGreaterThanLConst(l string, r *String, mem memory.Allocator) (*Boolean, error) {
+	n := r.Len()
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+
+	for i := 0; i < n; i++ {
+		if r.IsValid(i) {
+
+			b.Append(l > r.Value(i))
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func StringStringGreaterThanRConst(l *String, r string, mem memory.Allocator) (*Boolean, error) {
+	n := l.Len()
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+
+		if l.IsValid(i) {
+
+			b.Append(l.Value(i) > r)
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func FloatFloatGreaterThanEqual(l *Float, r *Float, mem memory.Allocator) (*Boolean, error) {
+	n := l.Len()
+	if n != r.Len() {
+		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
+	}
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+		if l.IsValid(i) && r.IsValid(i) {
+
+			b.Append(l.Value(i) >= r.Value(i))
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func FloatFloatGreaterThanEqualLConst(l float64, r *Float, mem memory.Allocator) (*Boolean, error) {
+	n := r.Len()
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+
+	for i := 0; i < n; i++ {
+		if r.IsValid(i) {
+
+			b.Append(l >= r.Value(i))
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func FloatFloatGreaterThanEqualRConst(l *Float, r float64, mem memory.Allocator) (*Boolean, error) {
+	n := l.Len()
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+
+		if l.IsValid(i) {
+
+			b.Append(l.Value(i) >= r)
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func FloatIntGreaterThanEqual(l *Float, r *Int, mem memory.Allocator) (*Boolean, error) {
+	n := l.Len()
+	if n != r.Len() {
+		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
+	}
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+		if l.IsValid(i) && r.IsValid(i) {
+
+			b.Append(l.Value(i) >= float64(r.Value(i)))
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func FloatIntGreaterThanEqualLConst(l float64, r *Int, mem memory.Allocator) (*Boolean, error) {
+	n := r.Len()
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+
+	for i := 0; i < n; i++ {
+		if r.IsValid(i) {
+
+			b.Append(l >= float64(r.Value(i)))
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func FloatIntGreaterThanEqualRConst(l *Float, r int64, mem memory.Allocator) (*Boolean, error) {
+	n := l.Len()
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+
+		if l.IsValid(i) {
+
+			b.Append(l.Value(i) >= float64(r))
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func FloatUintGreaterThanEqual(l *Float, r *Uint, mem memory.Allocator) (*Boolean, error) {
+	n := l.Len()
+	if n != r.Len() {
+		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
+	}
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+		if l.IsValid(i) && r.IsValid(i) {
+
+			b.Append(l.Value(i) >= float64(r.Value(i)))
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func FloatUintGreaterThanEqualLConst(l float64, r *Uint, mem memory.Allocator) (*Boolean, error) {
+	n := r.Len()
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+
+	for i := 0; i < n; i++ {
+		if r.IsValid(i) {
+
+			b.Append(l >= float64(r.Value(i)))
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func FloatUintGreaterThanEqualRConst(l *Float, r uint64, mem memory.Allocator) (*Boolean, error) {
+	n := l.Len()
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+
+		if l.IsValid(i) {
+
+			b.Append(l.Value(i) >= float64(r))
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func IntFloatGreaterThanEqual(l *Int, r *Float, mem memory.Allocator) (*Boolean, error) {
+	n := l.Len()
+	if n != r.Len() {
+		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
+	}
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+		if l.IsValid(i) && r.IsValid(i) {
+
+			b.Append(float64(l.Value(i)) >= r.Value(i))
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func IntFloatGreaterThanEqualLConst(l int64, r *Float, mem memory.Allocator) (*Boolean, error) {
+	n := r.Len()
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+
+	for i := 0; i < n; i++ {
+		if r.IsValid(i) {
+
+			b.Append(float64(l) >= r.Value(i))
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func IntFloatGreaterThanEqualRConst(l *Int, r float64, mem memory.Allocator) (*Boolean, error) {
+	n := l.Len()
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+
+		if l.IsValid(i) {
+
+			b.Append(float64(l.Value(i)) >= r)
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func IntIntGreaterThanEqual(l *Int, r *Int, mem memory.Allocator) (*Boolean, error) {
+	n := l.Len()
+	if n != r.Len() {
+		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
+	}
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+		if l.IsValid(i) && r.IsValid(i) {
+
+			b.Append(l.Value(i) >= r.Value(i))
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func IntIntGreaterThanEqualLConst(l int64, r *Int, mem memory.Allocator) (*Boolean, error) {
+	n := r.Len()
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+
+	for i := 0; i < n; i++ {
+		if r.IsValid(i) {
+
+			b.Append(l >= r.Value(i))
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func IntIntGreaterThanEqualRConst(l *Int, r int64, mem memory.Allocator) (*Boolean, error) {
+	n := l.Len()
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+
+		if l.IsValid(i) {
+
+			b.Append(l.Value(i) >= r)
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func IntUintGreaterThanEqual(l *Int, r *Uint, mem memory.Allocator) (*Boolean, error) {
+	n := l.Len()
+	if n != r.Len() {
+		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
+	}
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+		if l.IsValid(i) && r.IsValid(i) {
+
+			if l.Value(i) < 0 {
+
+				b.Append(false)
+
+			} else {
+				b.Append(uint64(l.Value(i)) >= r.Value(i))
+			}
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func IntUintGreaterThanEqualLConst(l int64, r *Uint, mem memory.Allocator) (*Boolean, error) {
+	n := r.Len()
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+
+	for i := 0; i < n; i++ {
+		if r.IsValid(i) {
+
+			if l < 0 {
+
+				b.Append(false)
+
+			} else {
+				b.Append(uint64(l) >= r.Value(i))
+			}
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func IntUintGreaterThanEqualRConst(l *Int, r uint64, mem memory.Allocator) (*Boolean, error) {
+	n := l.Len()
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+
+		if l.IsValid(i) {
+
+			if l.Value(i) < 0 {
+
+				b.Append(false)
+
+			} else {
+				b.Append(uint64(l.Value(i)) >= r)
+			}
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func UintIntGreaterThanEqual(l *Uint, r *Int, mem memory.Allocator) (*Boolean, error) {
+	n := l.Len()
+	if n != r.Len() {
+		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
+	}
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+		if l.IsValid(i) && r.IsValid(i) {
+
+			if r.Value(i) < 0 {
+
+				b.Append(true)
+
+			} else {
+				b.Append(l.Value(i) >= uint64(r.Value(i)))
+			}
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func UintIntGreaterThanEqualLConst(l uint64, r *Int, mem memory.Allocator) (*Boolean, error) {
+	n := r.Len()
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+
+	for i := 0; i < n; i++ {
+		if r.IsValid(i) {
+
+			if r.Value(i) < 0 {
+
+				b.Append(true)
+
+			} else {
+				b.Append(l >= uint64(r.Value(i)))
+			}
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func UintIntGreaterThanEqualRConst(l *Uint, r int64, mem memory.Allocator) (*Boolean, error) {
+	n := l.Len()
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+
+		if l.IsValid(i) {
+
+			if r < 0 {
+
+				b.Append(true)
+
+			} else {
+				b.Append(l.Value(i) >= uint64(r))
+			}
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func UintFloatGreaterThanEqual(l *Uint, r *Float, mem memory.Allocator) (*Boolean, error) {
+	n := l.Len()
+	if n != r.Len() {
+		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
+	}
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+		if l.IsValid(i) && r.IsValid(i) {
+
+			b.Append(float64(l.Value(i)) >= r.Value(i))
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func UintFloatGreaterThanEqualLConst(l uint64, r *Float, mem memory.Allocator) (*Boolean, error) {
+	n := r.Len()
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+
+	for i := 0; i < n; i++ {
+		if r.IsValid(i) {
+
+			b.Append(float64(l) >= r.Value(i))
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func UintFloatGreaterThanEqualRConst(l *Uint, r float64, mem memory.Allocator) (*Boolean, error) {
+	n := l.Len()
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+
+		if l.IsValid(i) {
+
+			b.Append(float64(l.Value(i)) >= r)
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func UintUintGreaterThanEqual(l *Uint, r *Uint, mem memory.Allocator) (*Boolean, error) {
+	n := l.Len()
+	if n != r.Len() {
+		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
+	}
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+		if l.IsValid(i) && r.IsValid(i) {
+
+			b.Append(l.Value(i) >= r.Value(i))
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func UintUintGreaterThanEqualLConst(l uint64, r *Uint, mem memory.Allocator) (*Boolean, error) {
+	n := r.Len()
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+
+	for i := 0; i < n; i++ {
+		if r.IsValid(i) {
+
+			b.Append(l >= r.Value(i))
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func UintUintGreaterThanEqualRConst(l *Uint, r uint64, mem memory.Allocator) (*Boolean, error) {
+	n := l.Len()
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+
+		if l.IsValid(i) {
+
+			b.Append(l.Value(i) >= r)
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func StringStringGreaterThanEqual(l *String, r *String, mem memory.Allocator) (*Boolean, error) {
+	n := l.Len()
+	if n != r.Len() {
+		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
+	}
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+		if l.IsValid(i) && r.IsValid(i) {
+
+			b.Append(l.Value(i) >= r.Value(i))
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func StringStringGreaterThanEqualLConst(l string, r *String, mem memory.Allocator) (*Boolean, error) {
+	n := r.Len()
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+
+	for i := 0; i < n; i++ {
+		if r.IsValid(i) {
+
+			b.Append(l >= r.Value(i))
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+func StringStringGreaterThanEqualRConst(l *String, r string, mem memory.Allocator) (*Boolean, error) {
+	n := l.Len()
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+
+		if l.IsValid(i) {
+
+			b.Append(l.Value(i) >= r)
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
 	b.Release()
 	return a, nil
 }

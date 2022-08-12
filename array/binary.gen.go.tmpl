@@ -3,10 +3,14 @@ package array
 import (
     "math"
 
-    "github.com/apache/arrow/go/v7/arrow/memory"
+	"github.com/apache/arrow/go/v7/arrow/memory"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/internal/errors"
 )
+
+//
+// Arithmetic Ops
+//
 
 {{range $index, $op := .Ops}}
 {{range $index, $type := .Types}}
@@ -144,6 +148,167 @@ func {{$type}}{{$op.Name}}RConst(l *{{$type}}, r {{index $.TypeMap $type}}, mem 
 	return a, nil
 }
 {{end}}
+
+{{end}}
+{{end}}
+
+//
+// Equality Ops
+//
+
+{{range $index, $op := .EqualityOps}}
+{{range $index, $type := .Types}}
+{{/*
+Equality Ops differ from the rest in that they have boolean outputs regardless
+of the input types.
+
+They also need to be able to handle implicit casting of numeric types, so the
+L/R types need to be able to vary.
+
+Implicit casting for equality ops requires special care.
+- When either side (but not both) are float, cast the _other side_ to a float.
+- When int and uint are paired together (either L/R positions) check to
+	see if the int side is less than 0. Short circuit, otherwise cast to uint.
+*/}}
+
+func {{$type.l}}{{$type.r}}{{$op.Name}}(l *{{$type.l}}, r *{{$type.r}}, mem memory.Allocator) (*Boolean, error) {
+	n := l.Len()
+	if n != r.Len() {
+		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
+	}
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+		if l.IsValid(i) && r.IsValid(i) {
+
+			{{if and (eq $type.l "Float") (ne $type.r "Float")}}
+				b.Append(l.Value(i) {{$op.Op}} float64(r.Value(i)))
+			{{else if and (ne $type.l "Float") (eq $type.r "Float")}}
+					b.Append(float64(l.Value(i)) {{$op.Op}} r.Value(i))
+			{{else if and (eq $type.l "Int") (eq $type.r "Uint")}}
+				if l.Value(i) < 0 {
+					{{if eq $op.Op "<" "<=" "!="}}
+						b.Append(true)
+					{{else}}
+						b.Append(false)
+					{{end}}
+				} else {
+					b.Append(uint64(l.Value(i)) {{$op.Op}} r.Value(i))
+				}
+			{{else if and (eq $type.l "Uint") (eq $type.r "Int")}}
+				if r.Value(i) < 0 {
+					{{if eq $op.Op ">" ">=" "!="}}
+						b.Append(true)
+					{{else}}
+						b.Append(false)
+					{{end}}
+				} else {
+					b.Append(l.Value(i) {{$op.Op}} uint64(r.Value(i)))
+				}
+			{{else}}
+					b.Append(l.Value(i) {{$op.Op}} r.Value(i))
+			{{end}}
+
+		} else {
+			b.AppendNull()
+		}
+	}
+		a := b.NewBooleanArray()
+		b.Release()
+	return a, nil
+}
+
+{{/* TODO: move casts for `l` before the loop */}}
+func {{$type.l}}{{$type.r}}{{$op.Name}}LConst(l {{index $.TypeMap $type.l}}, r *{{$type.r}}, mem memory.Allocator) (*Boolean, error) {
+	n := r.Len()
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+
+
+	for i := 0; i < n; i++ {
+		if r.IsValid(i) {
+
+			{{if and (eq $type.l "Float") (ne $type.r "Float")}}
+				b.Append(l {{$op.Op}} float64(r.Value(i)))
+			{{else if and (ne $type.l "Float") (eq $type.r "Float")}}
+					b.Append(float64(l) {{$op.Op}} r.Value(i))
+			{{else if and (eq $type.l "Int") (eq $type.r "Uint")}}
+				if l < 0 {
+					{{if eq $op.Op "<" "<=" "!="}}
+						b.Append(true)
+					{{else}}
+						b.Append(false)
+					{{end}}
+				} else {
+					b.Append(uint64(l) {{$op.Op}} r.Value(i))
+				}
+			{{else if and (eq $type.l "Uint") (eq $type.r "Int")}}
+				if r.Value(i) < 0 {
+					{{if eq $op.Op ">" ">=" "!="}}
+						b.Append(true)
+					{{else}}
+						b.Append(false)
+					{{end}}
+				} else {
+					b.Append(l {{$op.Op}} uint64(r.Value(i)))
+				}
+			{{else}}
+					b.Append(l {{$op.Op}} r.Value(i))
+			{{end}}
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+
+{{/* TODO: move casts for `r` before the loop */}}
+func {{$type.l}}{{$type.r}}{{$op.Name}}RConst(l *{{$type.l}}, r {{index $.TypeMap $type.r}}, mem memory.Allocator) (*Boolean, error) {
+	n := l.Len()
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+
+		if l.IsValid(i) {
+			{{if and (eq $type.l "Float") (ne $type.r "Float")}}
+				b.Append(l.Value(i) {{$op.Op}} float64(r))
+			{{else if and (ne $type.l "Float") (eq $type.r "Float")}}
+					b.Append(float64(l.Value(i)) {{$op.Op}} r)
+			{{else if and (eq $type.l "Int") (eq $type.r "Uint")}}
+				if l.Value(i) < 0 {
+					{{if eq $op.Op "<" "<=" "!="}}
+						b.Append(true)
+					{{else}}
+						b.Append(false)
+					{{end}}
+				} else {
+					b.Append(uint64(l.Value(i)) {{$op.Op}} r)
+				}
+			{{else if and (eq $type.l "Uint") (eq $type.r "Int")}}
+				if r < 0 {
+					{{if eq $op.Op ">" ">=" "!="}}
+						b.Append(true)
+					{{else}}
+						b.Append(false)
+					{{end}}
+				} else {
+					b.Append(l.Value(i) {{$op.Op}} uint64(r))
+				}
+			{{else}}
+					b.Append(l.Value(i) {{$op.Op}} r)
+			{{end}}
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
 
 {{end}}
 {{end}}

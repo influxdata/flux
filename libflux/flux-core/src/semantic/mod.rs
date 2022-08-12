@@ -528,6 +528,10 @@ pub enum Feature {
     /// Enables calls to map to be vectorized when the function contains
     /// conditional expressions.
     VectorizedConditionals,
+
+    /// Enables calls to map to be vectorized when the function contains
+    /// equality operators.
+    VectorizedEqualityOps,
 }
 
 impl FromStr for Feature {

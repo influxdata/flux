@@ -338,7 +338,7 @@ var binaryFuncLookup = map[BinaryFuncSignature]BinaryFunction{
 		l := lv.Int()
 		r := rv.UInt()
 		if l < 0 {
-			return NewBool(true), nil
+			return NewBool(false), nil
 		}
 		return NewBool(uint64(l) >= r), nil
 	},
@@ -351,7 +351,7 @@ var binaryFuncLookup = map[BinaryFuncSignature]BinaryFunction{
 		l := lv.UInt()
 		r := rv.Int()
 		if r < 0 {
-			return NewBool(false), nil
+			return NewBool(true), nil
 		}
 		return NewBool(l >= uint64(r)), nil
 	},
@@ -402,7 +402,7 @@ var binaryFuncLookup = map[BinaryFuncSignature]BinaryFunction{
 		l := lv.Int()
 		r := rv.UInt()
 		if l < 0 {
-			return NewBool(true), nil
+			return NewBool(false), nil
 		}
 		return NewBool(uint64(l) > r), nil
 	},
@@ -415,7 +415,7 @@ var binaryFuncLookup = map[BinaryFuncSignature]BinaryFunction{
 		l := lv.UInt()
 		r := rv.Int()
 		if r < 0 {
-			return NewBool(false), nil
+			return NewBool(true), nil
 		}
 		return NewBool(l > uint64(r)), nil
 	},
@@ -703,5 +703,71 @@ var binaryVectorFuncLookup = map[BinaryFuncSignature]BinaryVectorFunction{
 			return v, nil
 		}
 		return vectorPow(l, r, mem)
+	},
+	{Operator: ast.EqualOperator, Left: semantic.Vector, Right: semantic.Vector}: func(lv, rv Value, mem memory.Allocator) (Value, error) {
+		l := lv.Vector()
+		r := rv.Vector()
+		v, err := tryFoldConstants(l, r, ast.EqualOperator)
+		if err != nil {
+			return nil, err
+		} else if v != nil {
+			return v, nil
+		}
+		return vectorEqual(l, r, mem)
+	},
+	{Operator: ast.NotEqualOperator, Left: semantic.Vector, Right: semantic.Vector}: func(lv, rv Value, mem memory.Allocator) (Value, error) {
+		l := lv.Vector()
+		r := rv.Vector()
+		v, err := tryFoldConstants(l, r, ast.NotEqualOperator)
+		if err != nil {
+			return nil, err
+		} else if v != nil {
+			return v, nil
+		}
+		return vectorNotEqual(l, r, mem)
+	},
+	{Operator: ast.LessThanOperator, Left: semantic.Vector, Right: semantic.Vector}: func(lv, rv Value, mem memory.Allocator) (Value, error) {
+		l := lv.Vector()
+		r := rv.Vector()
+		v, err := tryFoldConstants(l, r, ast.LessThanOperator)
+		if err != nil {
+			return nil, err
+		} else if v != nil {
+			return v, nil
+		}
+		return vectorLessThan(l, r, mem)
+	},
+	{Operator: ast.LessThanEqualOperator, Left: semantic.Vector, Right: semantic.Vector}: func(lv, rv Value, mem memory.Allocator) (Value, error) {
+		l := lv.Vector()
+		r := rv.Vector()
+		v, err := tryFoldConstants(l, r, ast.LessThanEqualOperator)
+		if err != nil {
+			return nil, err
+		} else if v != nil {
+			return v, nil
+		}
+		return vectorLessThanEqual(l, r, mem)
+	},
+	{Operator: ast.GreaterThanOperator, Left: semantic.Vector, Right: semantic.Vector}: func(lv, rv Value, mem memory.Allocator) (Value, error) {
+		l := lv.Vector()
+		r := rv.Vector()
+		v, err := tryFoldConstants(l, r, ast.GreaterThanOperator)
+		if err != nil {
+			return nil, err
+		} else if v != nil {
+			return v, nil
+		}
+		return vectorGreaterThan(l, r, mem)
+	},
+	{Operator: ast.GreaterThanEqualOperator, Left: semantic.Vector, Right: semantic.Vector}: func(lv, rv Value, mem memory.Allocator) (Value, error) {
+		l := lv.Vector()
+		r := rv.Vector()
+		v, err := tryFoldConstants(l, r, ast.GreaterThanEqualOperator)
+		if err != nil {
+			return nil, err
+		} else if v != nil {
+			return v, nil
+		}
+		return vectorGreaterThanEqual(l, r, mem)
 	},
 }

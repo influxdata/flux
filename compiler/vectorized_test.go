@@ -173,10 +173,9 @@ func TestVectorizedFns(t *testing.T) {
 			skipComp:     true,
 		},
 		{
-			// TODO: https://github.com/influxdata/flux/issues/4608
-			name:         "no equality operators",
+			name:         "equality operators",
 			fn:           `(r) => ({r with c: 2 > 1})`,
-			vectorizable: false,
+			vectorizable: true,
 			skipComp:     true,
 		},
 		{
@@ -318,6 +317,71 @@ func TestVectorizedFns(t *testing.T) {
 			},
 			transform: func(l, r int64) interface{} {
 				return math.Pow(float64(l), float64(r))
+			},
+		},
+		{
+			operator: "==",
+			input: [][2]int64{
+				{1, 2},
+				{5, 5},
+				{112487, 66547},
+			},
+			transform: func(l, r int64) interface{} {
+				return l == r
+			},
+		},
+		{
+			operator: "!=",
+			input: [][2]int64{
+				{1, 2},
+				{5, 5},
+				{112487, 66547},
+			},
+			transform: func(l, r int64) interface{} {
+				return l != r
+			},
+		},
+		{
+			operator: "<",
+			input: [][2]int64{
+				{1, 2},
+				{5, 5},
+				{112487, 66547},
+			},
+			transform: func(l, r int64) interface{} {
+				return l < r
+			},
+		},
+		{
+			operator: "<=",
+			input: [][2]int64{
+				{1, 2},
+				{5, 5},
+				{112487, 66547},
+			},
+			transform: func(l, r int64) interface{} {
+				return l <= r
+			},
+		},
+		{
+			operator: ">",
+			input: [][2]int64{
+				{1, 2},
+				{5, 5},
+				{112487, 66547},
+			},
+			transform: func(l, r int64) interface{} {
+				return l > r
+			},
+		}, {
+			operator: ">=",
+			input: [][2]int64{
+				{1, 2},
+				{5, 5},
+				{112487, 66547},
+			},
+			transform: func(l, r int64) interface{} {
+				return l >= r
 			},
 		},
 	}
@@ -493,6 +557,7 @@ func TestVectorizedFns(t *testing.T) {
 			}
 			flagger[fluxfeature.VectorizedMap().Key()] = true
 			flagger[fluxfeature.VectorizedConditionals().Key()] = true
+			flagger[fluxfeature.VectorizedEqualityOps().Key()] = true
 			ctx := context.Background()
 			ctx = feature.Inject(
 				ctx,

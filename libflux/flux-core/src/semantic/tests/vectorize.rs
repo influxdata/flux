@@ -8,7 +8,11 @@ use crate::semantic::{
 
 fn analyzer_config() -> AnalyzerConfig {
     AnalyzerConfig {
-        features: vec![Feature::VectorizedMap, Feature::VectorizedConditionals],
+        features: vec![
+            Feature::VectorizedMap,
+            Feature::VectorizedConditionals,
+            Feature::VectorizedEqualityOps,
+        ],
         ..AnalyzerConfig::default()
     }
 }
@@ -137,16 +141,98 @@ fn vectorize_subtraction_operator() -> anyhow::Result<()> {
 }
 
 #[test]
-fn vectorize_gt_operator_not_implemented() -> anyhow::Result<()> {
-    // N.b. there are many operators that are not currently implemented.
-    // This one just popped up in the acceptance tests when vec repeat was
-    // implemented for #4622.
-    let mut pkg = vectorize(r#"(r) => ({ x: r.a > r.b })"#).unwrap();
+fn vectorize_eq_operator() -> anyhow::Result<()> {
+    let pkg = vectorize(r#"(r) => ({ x: r.a == r.b })"#).unwrap();
 
-    let err = semantic::vectorize::vectorize(&analyzer_config(), &mut pkg).unwrap_err();
+    let function = get_vectorized_function(&pkg);
 
-    expect_test::expect![[r#"error @1:14-1:23: can't vectorize function: unsupported operator >"#]]
-        .assert_eq(&err.to_string());
+    expect_test::expect![[r##"
+        (r) => {
+            return {x: r:{#F with a: v[#B], b: v[#D]}.a:v[#B] ==:v[bool] r:{#F with a: v[#B], b: v[#D]}.b:v[#D]}:{x: v[bool]}
+        }:(r: {#F with a: v[#B], b: v[#D]}) => {x: v[bool]}"##]].assert_eq(&crate::semantic::formatter::format_node(
+        Node::FunctionExpr(function),
+    )?);
+
+    Ok(())
+}
+
+#[test]
+fn vectorize_neq_operator() -> anyhow::Result<()> {
+    let pkg = vectorize(r#"(r) => ({ x: r.a != r.b })"#).unwrap();
+
+    let function = get_vectorized_function(&pkg);
+
+    expect_test::expect![[r##"
+        (r) => {
+            return {x: r:{#F with a: v[#B], b: v[#D]}.a:v[#B] !=:v[bool] r:{#F with a: v[#B], b: v[#D]}.b:v[#D]}:{x: v[bool]}
+        }:(r: {#F with a: v[#B], b: v[#D]}) => {x: v[bool]}"##]].assert_eq(&crate::semantic::formatter::format_node(
+        Node::FunctionExpr(function),
+    )?);
+
+    Ok(())
+}
+
+#[test]
+fn vectorize_lt_operator() -> anyhow::Result<()> {
+    let pkg = vectorize(r#"(r) => ({ x: r.a < r.b })"#).unwrap();
+
+    let function = get_vectorized_function(&pkg);
+
+    expect_test::expect![[r##"
+        (r) => {
+            return {x: r:{#F with a: v[#B], b: v[#D]}.a:v[#B] <:v[bool] r:{#F with a: v[#B], b: v[#D]}.b:v[#D]}:{x: v[bool]}
+        }:(r: {#F with a: v[#B], b: v[#D]}) => {x: v[bool]}"##]].assert_eq(&crate::semantic::formatter::format_node(
+        Node::FunctionExpr(function),
+    )?);
+
+    Ok(())
+}
+
+#[test]
+fn vectorize_lte_operator() -> anyhow::Result<()> {
+    let pkg = vectorize(r#"(r) => ({ x: r.a <= r.b })"#).unwrap();
+
+    let function = get_vectorized_function(&pkg);
+
+    expect_test::expect![[r##"
+        (r) => {
+            return {x: r:{#F with a: v[#B], b: v[#D]}.a:v[#B] <=:v[bool] r:{#F with a: v[#B], b: v[#D]}.b:v[#D]}:{x: v[bool]}
+        }:(r: {#F with a: v[#B], b: v[#D]}) => {x: v[bool]}"##]].assert_eq(&crate::semantic::formatter::format_node(
+        Node::FunctionExpr(function),
+    )?);
+
+    Ok(())
+}
+
+#[test]
+fn vectorize_gt_operator() -> anyhow::Result<()> {
+    let pkg = vectorize(r#"(r) => ({ x: r.a > r.b })"#).unwrap();
+
+    let function = get_vectorized_function(&pkg);
+
+    expect_test::expect![[r##"
+        (r) => {
+            return {x: r:{#F with a: v[#B], b: v[#D]}.a:v[#B] >:v[bool] r:{#F with a: v[#B], b: v[#D]}.b:v[#D]}:{x: v[bool]}
+        }:(r: {#F with a: v[#B], b: v[#D]}) => {x: v[bool]}"##]].assert_eq(&crate::semantic::formatter::format_node(
+        Node::FunctionExpr(function),
+    )?);
+
+    Ok(())
+}
+
+#[test]
+fn vectorize_gte_operator() -> anyhow::Result<()> {
+    let pkg = vectorize(r#"(r) => ({ x: r.a >= r.b })"#).unwrap();
+
+    let function = get_vectorized_function(&pkg);
+
+    expect_test::expect![[r##"
+        (r) => {
+            return {x: r:{#F with a: v[#B], b: v[#D]}.a:v[#B] >=:v[bool] r:{#F with a: v[#B], b: v[#D]}.b:v[#D]}:{x: v[bool]}
+        }:(r: {#F with a: v[#B], b: v[#D]}) => {x: v[bool]}"##]].assert_eq(&crate::semantic::formatter::format_node(
+        Node::FunctionExpr(function),
+    )?);
+
     Ok(())
 }
 
