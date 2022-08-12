@@ -1,7 +1,7 @@
 //! Checking the semantic graph.
 
 use crate::{
-    errors::{located, AsDiagnostic, Errors, Located},
+    errors::{located, AsDiagnostic, Located},
     map::HashMap,
     semantic::{
         nodes,
@@ -20,7 +20,7 @@ type OptionMap<'a> = HashMap<(Option<&'a str>, &'a str), &'a nodes::OptionStmt>;
 type VariableAssignMap<'a> = HashMap<&'a str, Option<&'a nodes::VariableAssgn>>;
 
 /// Result for any potential errors with type [`Error`].
-pub type Result<T, E = Error> = std::result::Result<T, E>;
+pub type Result<T> = std::result::Result<T, Error>;
 
 /// This is the error type for errors returned by the `check()` function.
 pub type Error = Located<ErrorKind>;
@@ -38,8 +38,6 @@ pub enum ErrorKind {
     VarReassignOption(String),
     /// An option depends on another option declared in the same package.
     DependentOptions(String, String),
-    /// TestCase still remains in semantic graph.
-    TestCase,
     /// Emitted when labels are used without the label polymorphism feature
     LabelWithoutFeature,
 }
@@ -65,7 +63,6 @@ impl std::fmt::Display for ErrorKind {
                 r#"option "{}" depends on option "{}", which is defined in the same package"#,
                 depender, dependee
             )),
-            Self::TestCase => f.write_str("TestCase statement exists in semantic graph"),
             Self::LabelWithoutFeature => f.write_str(
                 "Labels are currently experimental. (See the labelPolymorphism feature)",
             ),
@@ -333,35 +330,6 @@ impl<'a> walk::Visitor<'a> for OptionDepVisitor<'a> {
     fn done(&mut self, node: Node<'a>) {
         if let Node::FunctionExpr(_) = node {
             self.vars_stack.pop();
-        }
-    }
-}
-
-/// `check_testcase()` checks that no TestCaseStmt still exist in the semantic graph.
-fn check_testcase(pkg: &nodes::Package) -> Result<(), Errors<Error>> {
-    let mut v = TestCaseVisitor::default();
-    walk::walk(&mut v, walk::Node::Package(pkg));
-    if v.err.has_errors() {
-        Err(v.err)
-    } else {
-        Ok(())
-    }
-}
-
-#[derive(Default)]
-struct TestCaseVisitor {
-    err: Errors<Error>,
-}
-
-impl<'a> walk::Visitor<'a> for TestCaseVisitor {
-    fn visit(&mut self, node: Node<'a>) -> bool {
-        match node {
-            walk::Node::TestCaseStmt(s) => {
-                self.err.push(located(s.loc.clone(), ErrorKind::TestCase));
-                false
-            }
-            walk::Node::Package(_) | walk::Node::File(_) => true,
-            _ => false,
         }
     }
 }
@@ -917,32 +885,5 @@ mod tests {
                 option monitor.log = (tables=<-) => tables
             "#,
         ]);
-    }
-    #[test]
-    fn test_testcase() {
-        // testcase statement
-        let files = vec![
-            r#"
-                    package foo
-
-                    testcase x {
-                        y = 1
-                    }
-                "#,
-        ];
-        let pkg = match parse_and_convert(files) {
-            Err(e) => panic!("{}", e),
-            Ok(pkg) => pkg,
-        };
-        let want_msg = "file_0.flux@4:21-6:22: TestCase statement exists in semantic graph";
-        match check::check_is_valid_flatbuffer(&pkg) {
-            Ok(()) => panic!(r#"expected error "{}", got no error"#, want_msg),
-            Err(e) => {
-                let got_msg = format!("{}", e);
-                if !got_msg.contains(want_msg) {
-                    panic!(r#"expected error "{}", got error "{}""#, want_msg, got_msg)
-                }
-            }
-        }
     }
 }
