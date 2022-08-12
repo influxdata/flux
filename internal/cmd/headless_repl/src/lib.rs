@@ -63,15 +63,9 @@ impl Hinter for MyHelper {
         }
 
         println!("\n\ntesting: {}", line);
-        // self.hinter.print_hints();
-        // println!("here are the hints length {}", hints.len());
         if let Some(hint) = self.hinter.trigger_finder(line) {
             return Some(hint);
         }
-        // if let Some(hint) = self.hinter.best_hint_get_new(line) {
-        //     return Some(hint);
-        // }
-        //if not in there make a new write request with the current line
 
         println!("this is getting to the none and refetch section {}", line);
         self.tx_stdin
@@ -193,11 +187,6 @@ impl ConditionalEventHandler for RequestHelper {
 }
 
 pub fn newMain() -> Result<()> {
-    //state buffer
-    let import_reg = r#"import\s+\\"([\w\\/]+)\\""#;
-    //this will hold the imports from the captured regex capture group above captured on each enter key press
-    let imports: Arc<Mutex<HashSet<String>>> = Arc::new(Mutex::new(HashSet::new()));
-
     //sending the processed data onwards
     let (tx_processed, rx_processed): (Sender<String>, Receiver<String>) = channel();
     //sending from when user presses enter

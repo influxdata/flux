@@ -7,6 +7,7 @@ use regex::Regex;
 use rustyline::hint::Hint;
 use rustyline::Helper;
 use serde_json::{json, json_internal, Value};
+use std::borrow::{Borrow, Cow};
 use std::collections::HashSet;
 use std::fmt::{format, write, Display, Formatter};
 use std::hash::{Hash, Hasher};
@@ -71,6 +72,7 @@ impl Clone for HintType {
 pub fn process_completions_response(resp: &str) -> Option<HashSet<CommandHint>> {
     //parse the response to a value using serde then enumerate the items adding each to the new set
     let json_bit: Value = serde_json::from_str::<Value>(resp).expect("failed to change");
+    let snippet_fix = Regex::new(r#"\$\p{Nd}+"#).unwrap();
 
     // println!("here is the jsson version{:?}", json_bit);
 
@@ -80,11 +82,13 @@ pub fn process_completions_response(resp: &str) -> Option<HashSet<CommandHint>> 
         let mut set: HashSet<CommandHint> = HashSet::new();
 
         completions.iter().for_each(|x| {
-            let val = match x["insertText"].as_str() {
+            let mut arg = match x["insertText"].as_str() {
                 None => x["label"].as_str().unwrap(),
                 Some(val) => val,
             };
-
+            let replaced_snippets = snippet_fix.replace_all(arg, "");
+            let val = Cow::borrow(&replaced_snippets);
+            // val = snippet_fix.replace_all(val, "").borrow();
             let kind = x["kind"].as_u64().unwrap();
             // println!("insert hint: {} {}", val, kind);
 
@@ -105,13 +109,10 @@ pub fn process_completions_response(resp: &str) -> Option<HashSet<CommandHint>> 
                 // println!("inserted {}", val);
                 set.insert(CommandHint::new(val, val, kind.into(), None));
             }
-            // set.insert(CommandHint::new(val,val,0,None));
         });
-        // println!("resultant set {}", set.len());
 
         Some(set)
     } else {
-        // println!("here is the resp {}", resp);
         None
     };
 }

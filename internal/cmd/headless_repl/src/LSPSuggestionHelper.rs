@@ -123,35 +123,6 @@ impl LSPSuggestionHelper {
 
     //ideas
 
-    // let disp_special = self.hint_signature.read().unwrap();
-    //if it is displayed and you type something return nothing and refetch
-    // if SIGNATURE_DISPLAYED.load(Ordering::Relaxed) {
-    //     SIGNATURE_DISPLAYED.swap(true, Ordering::Relaxed);
-    //
-    //     println!("refresh time!");
-    //     return None;
-    // }
-    // if disp_special.is_some() && line.ends_with("(") {
-    //     let a = disp_special.as_ref().unwrap();
-    //     // SIGNATURE_DISPLAYED.swap(true, Ordering::Relaxed);
-    //     println!("{} here is the a \n", a);
-    //     return Some(CommandHint {
-    //         display: a.to_string().replace("(", ""),
-    //         complete_up_to: 0,
-    //         hint_type: HintType::UnimplementedType,
-    //         hint_signature: None,
-    //     });
-    // }
-    // drop(disp_special);
-    // if disp_special.is_some() {
-    //     let a = disp_special.as_ref().unwrap();
-    //     return Some(CommandHint {
-    //         display: a.to_string(),
-    //         complete_up_to: 0,
-    //         hint_type: HintType::UnimplementedType,
-    //         hint_signature: None,
-    //     });
-    // }
     pub(crate) fn trigger_finder(&self, line: &str) -> Option<CommandHint> {
         self.best_finder(line)
     }
@@ -162,26 +133,33 @@ impl LSPSuggestionHelper {
         let mut best_hint = &CommandHint::new("", "", HintType::FunctionType, None);
         let mut best_overlap = 0;
         let mut save_sig = false;
+        let mut testing_bool = false;
         println!("doing here");
 
         for hint in lock.iter() {
             //if there is some overlap
             let disp = hint.display.as_str();
             // println!("here is the dip: {} and the {}", disp, hint.hint_type);
+            if line.ends_with("(") && hint.hint_type == FunctionType {
+                println!("in here {}", &hint.display);
+                let removed = &line[0..line.len() - 1];
+                println!("that is the removed {}", removed);
+                if let Some(tail) = get_last_ident(removed) {
+                    println!("the tail {}", tail);
+                    if tail == hint.display {
+                        return Some(hint.suffix_sig(1));
+                    }
+                }
+            }
 
             if let Some(overlap) = overlap_two(line, hint.display()) {
                 if hint.hint_type == ArgumentType {
                     return Some(hint.suffix(overlap.len()));
                 }
-                // println!(
-                //     "the overlap {} {} {}",
-                //     overlap,
-                //     overlap == disp,
-                //     line.ends_with("(")
-                // );
-                //don't show perfect match go to next one
+
                 if overlap == disp {
                     save_sig = true;
+
                     continue;
                 }
 
@@ -207,6 +185,8 @@ impl LSPSuggestionHelper {
 
         return match best_ratio {
             f32::MIN => {
+                println!("float low");
+                self.print_hints();
                 if save_sig {
                     println!("preventing");
                     return Some(CommandHint {
@@ -218,9 +198,12 @@ impl LSPSuggestionHelper {
                 }
                 *hint_sig_lock = None;
                 //gets here maybe refetch results
+                //instead of returning none it should send the current line get the new hints and then rerun the function
                 return None;
             }
             _ => {
+                println!("other high");
+
                 if best_hint.hint_type == FunctionType && best_hint.hint_signature.is_some() {
                     *hint_sig_lock = best_hint.hint_signature.to_owned();
                     println!("here is the sig: {:?}", hint_sig_lock);
@@ -250,7 +233,7 @@ pub(crate) fn current_line_ends_with(line: &str, comp: &str) -> Option<(usize, u
 
 #[cfg(test)]
 mod tests_overlap {
-    use crate::LSPSuggestionHelper::{is_valid, overlap_two, LSPSuggestionHelper};
+    use crate::LSPSuggestionHelper::{get_last_ident, is_valid, overlap_two, LSPSuggestionHelper};
     use regex::Regex;
     use std::collections::HashSet;
     use std::sync::{Arc, RwLock};
@@ -288,6 +271,12 @@ mod tests_overlap {
         let val = overlap_two("date.truncate(t", "t: $1");
         assert_eq!(val, Some("t"));
     }
+
+    #[test]
+    fn get_last_ident_test_one() {
+        let val = get_last_ident("date.truncate");
+        assert_eq!(val, Some("truncate".to_string()));
+    }
 }
 
 fn overlap_two<'a>(line: &'a str, comp: &'a str) -> Option<&'a str> {
@@ -309,21 +298,42 @@ fn is_valid(line: &str, hint: &str, suggested_addition: &str) -> bool {
     let matcher = Regex::new(reg).unwrap();
     let mut owner = line.to_string();
     owner.push_str(suggested_addition);
-    println!("here is the push {}", owner);
+    // println!("here is the push {}", owner);
     let reversed: String = owner.chars().rev().collect();
     if let Some(val) = matcher.find(reversed.as_str()) {
         let vals = val.range();
 
-        println!("{:?} {}", val, val.range().start);
+        // println!("{:?} {}", val, val.range().start);
         if vals.start == 0 {
             let something = reversed.as_bytes();
             let ranger = &something[vals.start..vals.end];
 
             let res = from_utf8(ranger).unwrap();
             let retu = res.chars().rev().collect::<String>();
-            println!("this is what i got {}", retu);
             return retu == hint;
         }
     }
     false
+}
+
+fn get_last_ident(line: &str) -> Option<String> {
+    let reg = r#"\pL(\pL|\p{Nd}|_)*"#;
+    let matcher = Regex::new(reg).unwrap();
+    let owner = line.to_string();
+    // println!("here is the push {}", owner);
+    let reversed: String = owner.chars().rev().collect();
+    if let Some(val) = matcher.find(reversed.as_str()) {
+        let vals = val.range();
+
+        // println!("{:?} {}", val, val.range().start);
+        if vals.start == 0 {
+            let something = reversed.as_bytes();
+            let ranger = &something[vals.start..vals.end];
+
+            let res = from_utf8(ranger).unwrap();
+            let retu = res.chars().rev().collect::<String>();
+            return Some(retu);
+        }
+    }
+    None
 }
