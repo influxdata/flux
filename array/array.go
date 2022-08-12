@@ -1,10 +1,13 @@
 package array
 
 import (
+	"strconv"
+
 	"github.com/apache/arrow/go/v7/arrow"
 	"github.com/apache/arrow/go/v7/arrow/array"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/internal/errors"
+	"github.com/influxdata/flux/memory"
 )
 
 //go:generate -command tmpl ../gotool.sh github.com/benbjohnson/tmpl
@@ -205,4 +208,75 @@ func Slice(arr Array, i, j int) Array {
 	}
 	err := errors.Newf(codes.Internal, "cannot slice array of type %T", arr)
 	panic(err)
+}
+
+func ToFloatConv(mem memory.Allocator, arr Array) (*Float, error) {
+
+	// Skip building a new array if the incoming array is already floats
+	if fa, ok := arr.(*Float); ok {
+		// For any other input type case, we create a brand new array.
+		// This implies the caller is responsible for releasing the input array.
+		// Tick up the refcount before handing the array right back to the caller
+		// to avoid a use-after-free situation.
+		fa.Retain()
+		return fa, nil
+	}
+
+	conv := NewFloatBuilder(mem)
+	defer conv.Release()
+
+	size := arr.Len()
+	conv.Resize(size)
+
+	// n.b. we handle the arrow.FLOAT64 case at the top of this func so we don't
+	// have to handle it here in this switch.
+	switch arr.DataType().ID() {
+	case arrow.STRING:
+		vec := arr.(*String)
+		for i := 0; i < size; i++ {
+			if vec.IsNull(i) {
+				conv.AppendNull()
+				continue
+			}
+
+			val, err := strconv.ParseFloat(vec.Value(i), 64)
+			if err != nil {
+				return nil, errors.Newf(codes.Invalid, "cannot convert string %q to Float due to invalid syntax", vec.Value(i))
+			}
+			conv.Append(val)
+		}
+	case arrow.INT64:
+		vec := arr.(*Int)
+		for i := 0; i < size; i++ {
+			if vec.IsNull(i) {
+				conv.AppendNull()
+			} else {
+				conv.Append(float64(vec.Value(i)))
+			}
+		}
+	case arrow.UINT64:
+		vec := arr.(*Uint)
+		for i := 0; i < size; i++ {
+			if vec.IsNull(i) {
+				conv.AppendNull()
+			} else {
+				conv.Append(float64(vec.Value(i)))
+			}
+		}
+	case arrow.BOOL:
+		vec := arr.(*Boolean)
+		for i := 0; i < size; i++ {
+			if vec.IsNull(i) {
+				conv.AppendNull()
+			} else if vec.Value(i) {
+				conv.Append(float64(1))
+			} else {
+				conv.Append(float64(0))
+			}
+		}
+	default:
+		return nil, errors.Newf(codes.Invalid, "cannot convert %v to Float", arr.DataType().Name())
+	}
+
+	return conv.NewFloatArray(), nil
 }

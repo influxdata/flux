@@ -128,6 +128,7 @@ func (*UnsignedIntegerLiteral) node() {}
 func (*NamedType) node()      {}
 func (*TvarType) node()       {}
 func (*ArrayType) node()      {}
+func (*VectorType) node()     {}
 func (*StreamType) node()     {}
 func (*DictType) node()       {}
 func (*RecordType) node()     {}
@@ -246,6 +247,7 @@ func (StreamType) monotype()   {}
 func (DictType) monotype()     {}
 func (RecordType) monotype()   {}
 func (FunctionType) monotype() {}
+func (VectorType) monotype()   {}
 
 type NamedType struct {
 	BaseNode
@@ -304,6 +306,27 @@ func (c *ArrayType) Copy() Node {
 	nc.BaseNode = c.BaseNode.Copy()
 
 	nc.ElementType = c.ElementType.Copy().(*ArrayType)
+	return nc
+}
+
+type VectorType struct {
+	BaseNode
+	ElementType MonoType `json:"element"`
+}
+
+func (VectorType) Type() string {
+	return "VectorType"
+}
+
+func (v *VectorType) Copy() Node {
+	if v == nil {
+		return v
+	}
+	nc := new(VectorType)
+	*nc = *v
+	nc.BaseNode = v.BaseNode.Copy()
+
+	nc.ElementType = v.ElementType.Copy().(*VectorType)
 	return nc
 }
 
