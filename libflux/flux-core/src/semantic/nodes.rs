@@ -708,6 +708,8 @@ pub struct TestCaseStmt {
 
 impl TestCaseStmt {
     fn infer(&mut self, infer: &mut InferState<'_, '_>) -> Result {
+        infer.env.enter_scope();
+
         for node in &mut self.body {
             match node {
                 Statement::Builtin(stmt) => stmt.infer(infer)?,
@@ -719,6 +721,9 @@ impl TestCaseStmt {
                 Statement::Error(_) => (),
             }
         }
+
+        infer.env.exit_scope();
+
         Ok(())
     }
     fn apply(&mut self, sub: &mut dyn Substituter) {

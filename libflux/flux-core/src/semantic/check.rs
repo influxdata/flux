@@ -99,11 +99,6 @@ pub fn check(pkg: &nodes::Package, config: &AnalyzerConfig) -> Result<()> {
     Ok(())
 }
 
-/// Checks that the package can be compiled to the flatbuffer format
-pub fn check_is_valid_flatbuffer(pkg: &nodes::Package) -> Result<(), Errors<Error>> {
-    check_testcase(pkg)
-}
-
 fn check_labels(pkg: &nodes::Package, config: &AnalyzerConfig) -> Result<()> {
     let mut error = None;
 
@@ -216,7 +211,9 @@ impl<'a> walk::Visitor<'a> for VarVisitor<'a> {
                 // These can only be inside option statements
                 self.in_option = false;
             }
-            walk::Node::FunctionExpr(_) => self.vars_stack.push(VariableAssignMap::new()),
+            walk::Node::FunctionExpr(_) | walk::Node::TestCaseStmt(_) => {
+                self.vars_stack.push(VariableAssignMap::new())
+            }
             walk::Node::FunctionParameter(fp) => {
                 let name = fp.key.name.as_str();
                 self.vars_stack.last_mut().unwrap().insert(name, None);
@@ -250,7 +247,10 @@ impl<'a> walk::Visitor<'a> for VarVisitor<'a> {
     }
 
     fn done(&mut self, node: Node<'a>) {
-        if let walk::Node::FunctionExpr(_) = node {
+        if matches!(
+            node,
+            walk::Node::FunctionExpr(_) | walk::Node::TestCaseStmt(_)
+        ) {
             self.vars_stack.pop();
         }
     }
