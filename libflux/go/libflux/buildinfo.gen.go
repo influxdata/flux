@@ -10,6 +10,7 @@ package libflux
 // and forces the cgo library to rebuild and relink
 // the sources. This is because non-C/C++ sources
 // are not tracked by Go's build system.'
+//
 //lint:ignore U1000 generated code
 var sourceHashes = map[string]string{
 	"libflux/Cargo.lock":                                                                          "d22aefaaab124dba2e5bcb521d44610e400d745a36a97b29665ee3db51b4a6ca",
