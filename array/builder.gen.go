@@ -7,6 +7,8 @@
 package array
 
 import (
+	"fmt"
+
 	"github.com/apache/arrow/go/v7/arrow/array"
 	"github.com/apache/arrow/go/v7/arrow/memory"
 )
@@ -69,6 +71,14 @@ func (b *IntBuilder) NewArray() Array {
 func (b *IntBuilder) NewIntArray() *Int {
 	return b.b.NewInt64Array()
 }
+func (b *IntBuilder) CopyValidValues(values *Int) {
+	b.Reserve(values.Len() - values.NullN())
+	for i := 0; i < values.Len(); i++ {
+		if values.IsValid(i) {
+			b.Append(values.Value(i))
+		}
+	}
+}
 
 type UintBuilder struct {
 	b *array.Uint64Builder
@@ -120,6 +130,14 @@ func (b *UintBuilder) NewArray() Array {
 }
 func (b *UintBuilder) NewUintArray() *Uint {
 	return b.b.NewUint64Array()
+}
+func (b *UintBuilder) CopyValidValues(values *Uint) {
+	b.Reserve(values.Len() - values.NullN())
+	for i := 0; i < values.Len(); i++ {
+		if values.IsValid(i) {
+			b.Append(values.Value(i))
+		}
+	}
 }
 
 type FloatBuilder struct {
@@ -173,6 +191,14 @@ func (b *FloatBuilder) NewArray() Array {
 func (b *FloatBuilder) NewFloatArray() *Float {
 	return b.b.NewFloat64Array()
 }
+func (b *FloatBuilder) CopyValidValues(values *Float) {
+	b.Reserve(values.Len() - values.NullN())
+	for i := 0; i < values.Len(); i++ {
+		if values.IsValid(i) {
+			b.Append(values.Value(i))
+		}
+	}
+}
 
 type BooleanBuilder struct {
 	b *array.BooleanBuilder
@@ -224,4 +250,53 @@ func (b *BooleanBuilder) NewArray() Array {
 }
 func (b *BooleanBuilder) NewBooleanArray() *Boolean {
 	return b.b.NewBooleanArray()
+}
+func (b *BooleanBuilder) CopyValidValues(values *Boolean) {
+	b.Reserve(values.Len() - values.NullN())
+	for i := 0; i < values.Len(); i++ {
+		if values.IsValid(i) {
+			b.Append(values.Value(i))
+		}
+	}
+}
+
+// Copies all valid (non-null) values from `values`.
+// If the entire array is valid a new reference to `values` is returned (as an optimization)
+func CopyValidValues(mem memory.Allocator, values Array) Array {
+	if values.NullN() == 0 {
+		values.Retain()
+		return values
+	}
+
+	switch values := values.(type) {
+
+	case *Int:
+		b := NewIntBuilder(mem)
+		b.CopyValidValues(values)
+		return b.NewArray()
+
+	case *Uint:
+		b := NewUintBuilder(mem)
+		b.CopyValidValues(values)
+		return b.NewArray()
+
+	case *Float:
+		b := NewFloatBuilder(mem)
+		b.CopyValidValues(values)
+		return b.NewArray()
+
+	case *String:
+		b := NewStringBuilder(mem)
+		b.CopyValidValues(values)
+		return b.NewArray()
+
+	case *Boolean:
+		b := NewBooleanBuilder(mem)
+		b.CopyValidValues(values)
+		return b.NewArray()
+
+	default:
+		panic(fmt.Sprintf("Unexpected array type: %T", values))
+	}
+
 }
