@@ -1,7 +1,7 @@
 //! Checking the semantic graph.
 
 use crate::{
-    errors::{located, AsDiagnostic, Located},
+    errors::{located, AsDiagnostic, Errors, Located},
     map::HashMap,
     semantic::{
         nodes,
@@ -20,7 +20,7 @@ type OptionMap<'a> = HashMap<(Option<&'a str>, &'a str), &'a nodes::OptionStmt>;
 type VariableAssignMap<'a> = HashMap<&'a str, Option<&'a nodes::VariableAssgn>>;
 
 /// Result for any potential errors with type [`Error`].
-pub type Result<T> = std::result::Result<T, Error>;
+pub type Result<T, E = Error> = std::result::Result<T, E>;
 
 /// This is the error type for errors returned by the `check()` function.
 pub type Error = Located<ErrorKind>;
@@ -99,6 +99,11 @@ pub fn check(pkg: &nodes::Package, config: &AnalyzerConfig) -> Result<()> {
     check_vars(pkg, &opts)?;
     check_labels(pkg, config)?;
     check_option_dependencies(&opts)?;
+    Ok(())
+}
+
+/// Checks that the package can be compiled to the flatbuffer format
+pub fn check_is_valid_flatbuffer(pkg: &nodes::Package) -> Result<(), Errors<Error>> {
     check_testcase(pkg)
 }
 
@@ -333,31 +338,29 @@ impl<'a> walk::Visitor<'a> for OptionDepVisitor<'a> {
 }
 
 /// `check_testcase()` checks that no TestCaseStmt still exist in the semantic graph.
-fn check_testcase(pkg: &nodes::Package) -> Result<()> {
-    let mut v = TestCaseVisitor { err: None };
+fn check_testcase(pkg: &nodes::Package) -> Result<(), Errors<Error>> {
+    let mut v = TestCaseVisitor::default();
     walk::walk(&mut v, walk::Node::Package(pkg));
-    match v.err {
-        Some(e) => Err(e),
-        None => Ok(()),
+    if v.err.has_errors() {
+        Err(v.err)
+    } else {
+        Ok(())
     }
 }
 
+#[derive(Default)]
 struct TestCaseVisitor {
-    err: Option<Error>,
+    err: Errors<Error>,
 }
 
 impl<'a> walk::Visitor<'a> for TestCaseVisitor {
     fn visit(&mut self, node: Node<'a>) -> bool {
-        if self.err.is_some() {
-            return false;
-        }
         match node {
             walk::Node::TestCaseStmt(s) => {
-                self.err = Some(located(s.loc.clone(), ErrorKind::TestCase));
+                self.err.push(located(s.loc.clone(), ErrorKind::TestCase));
                 false
             }
-            walk::Node::Package(_) => true,
-            walk::Node::File(_) => true,
+            walk::Node::Package(_) | walk::Node::File(_) => true,
             _ => false,
         }
     }
@@ -918,17 +921,28 @@ mod tests {
     #[test]
     fn test_testcase() {
         // testcase statement
-        check_fail(
-            vec![
-                r#"
+        let files = vec![
+            r#"
                     package foo
 
                     testcase x {
                         y = 1
                     }
                 "#,
-            ],
-            "file_0.flux@4:21-6:22: TestCase statement exists in semantic graph",
-        );
+        ];
+        let pkg = match parse_and_convert(files) {
+            Err(e) => panic!("{}", e),
+            Ok(pkg) => pkg,
+        };
+        let want_msg = "file_0.flux@4:21-6:22: TestCase statement exists in semantic graph";
+        match check::check_is_valid_flatbuffer(&pkg) {
+            Ok(()) => panic!(r#"expected error "{}", got no error"#, want_msg),
+            Err(e) => {
+                let got_msg = format!("{}", e);
+                if !got_msg.contains(want_msg) {
+                    panic!(r#"expected error "{}", got error "{}""#, want_msg, got_msg)
+                }
+            }
+        }
     }
 }
