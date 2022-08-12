@@ -80,7 +80,7 @@ func TestExpectPlannerRule(t *testing.T) {
 			got := Check(ctx)
 			if got != nil {
 				gotErr, wantErr := got.Error(), tt.wantErr
-				if diff := cmp.Diff(gotErr, wantErr); diff != "" {
+				if diff := cmp.Diff(wantErr, gotErr); diff != "" {
 					t.Errorf("unexpected error -want/+got:\n%s", diff)
 				}
 			} else if tt.wantErr != "" {
