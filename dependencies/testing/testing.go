@@ -89,6 +89,10 @@ type results struct {
 }
 
 func (want results) Check(got results) error {
+	// Don't report an error due to `want` being nil and `filteredGot` being {}
+	if len(got.plannerRules) == 0 {
+		return nil
+	}
 	// Only diff against the rules listed in `want`
 	filteredGot := make(map[string]int)
 	for name := range want.plannerRules {

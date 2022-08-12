@@ -67,6 +67,11 @@ func TestExpectPlannerRule(t *testing.T) {
 			},
 			wantErr: "planner rule invoked an unexpected number of times -want/+got:\n  map[string]int{\n- \t\"A\": 3,\n+ \t\"A\": 2,\n  }\n",
 		},
+		{
+			name: "no expectation",
+			fn: func(ctx context.Context) {
+			},
+		},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx := Inject(context.Background())
