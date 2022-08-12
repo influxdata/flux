@@ -24,7 +24,6 @@ const MergeJoinKind = "merge-join"
 func init() {
 	joinSignature := runtime.MustLookupBuiltinType("universe", "join")
 	runtime.RegisterPackageValue("universe", JoinKind, flux.MustValue(flux.FunctionValue(JoinKind, createJoinOpSpec, joinSignature)))
-	flux.RegisterOpSpec(JoinKind, newJoinOp)
 	// TODO(nathanielc): Allow for other types of join implementations
 	plan.RegisterProcedureSpec(MergeJoinKind, newMergeJoinProcedure, JoinKind)
 	execute.RegisterTransformation(MergeJoinKind, createMergeJoinTransformation)
@@ -140,10 +139,6 @@ func createJoinOpSpec(args flux.Arguments, a *flux.Administration) (flux.Operati
 	}
 
 	return spec, nil
-}
-
-func newJoinOp() flux.OperationSpec {
-	return new(JoinOpSpec)
 }
 
 func (s *JoinOpSpec) Kind() flux.OperationKind {

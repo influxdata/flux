@@ -25,7 +25,6 @@ func init() {
 	cumulativeSumSignature := runtime.MustLookupBuiltinType("universe", "cumulativeSum")
 
 	runtime.RegisterPackageValue("universe", CumulativeSumKind, flux.MustValue(flux.FunctionValue(CumulativeSumKind, createCumulativeSumOpSpec, cumulativeSumSignature)))
-	flux.RegisterOpSpec(CumulativeSumKind, newCumulativeSumOp)
 	plan.RegisterProcedureSpec(CumulativeSumKind, newCumulativeSumProcedure, CumulativeSumKind)
 	execute.RegisterTransformation(CumulativeSumKind, createCumulativeSumTransformation)
 }
@@ -48,10 +47,6 @@ func createCumulativeSumOpSpec(args flux.Arguments, a *flux.Administration) (flu
 		spec.Columns = []string{execute.DefaultValueColLabel}
 	}
 	return spec, nil
-}
-
-func newCumulativeSumOp() flux.OperationSpec {
-	return new(CumulativeSumOpSpec)
 }
 
 func (s *CumulativeSumOpSpec) Kind() flux.OperationKind {

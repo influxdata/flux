@@ -35,7 +35,6 @@ func init() {
 	filterSignature := runtime.MustLookupBuiltinType("universe", "filter")
 
 	runtime.RegisterPackageValue("universe", FilterKind, flux.MustValue(flux.FunctionValue(FilterKind, createFilterOpSpec, filterSignature)))
-	flux.RegisterOpSpec(FilterKind, newFilterOp)
 	plan.RegisterProcedureSpec(FilterKind, newFilterProcedure, FilterKind)
 	execute.RegisterTransformation(FilterKind, createFilterTransformation)
 	plan.RegisterPhysicalRules(
@@ -73,9 +72,6 @@ func createFilterOpSpec(args flux.Arguments, a *flux.Administration) (flux.Opera
 		Fn:      fn,
 		OnEmpty: onEmpty,
 	}, nil
-}
-func newFilterOp() flux.OperationSpec {
-	return new(FilterOpSpec)
 }
 
 func (s *FilterOpSpec) Kind() flux.OperationKind {

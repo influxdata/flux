@@ -24,7 +24,6 @@ func init() {
 	sampleSignature := runtime.MustLookupBuiltinType("universe", "sample")
 
 	runtime.RegisterPackageValue("universe", SampleKind, flux.MustValue(flux.FunctionValue(SampleKind, createSampleOpSpec, sampleSignature)))
-	flux.RegisterOpSpec(SampleKind, newSampleOp)
 	plan.RegisterProcedureSpec(SampleKind, newSampleProcedure, SampleKind)
 	execute.RegisterTransformation(SampleKind, createSampleTransformation)
 }
@@ -60,10 +59,6 @@ func createSampleOpSpec(args flux.Arguments, a *flux.Administration) (flux.Opera
 	}
 
 	return spec, nil
-}
-
-func newSampleOp() flux.OperationSpec {
-	return new(SampleOpSpec)
 }
 
 func (s *SampleOpSpec) Kind() flux.OperationKind {

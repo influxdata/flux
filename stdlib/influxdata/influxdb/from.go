@@ -46,7 +46,6 @@ func init() {
 	fromSignature := runtime.MustLookupBuiltinType("influxdata/influxdb", "from")
 
 	runtime.RegisterPackageValue("influxdata/influxdb", FromKind, flux.MustValue(flux.FunctionValue(FromKind, createFromOpSpec, fromSignature)))
-	flux.RegisterOpSpec(FromKind, newFromOp)
 	plan.RegisterProcedureSpec(FromKind, newFromProcedure, FromKind)
 	execute.RegisterSource(FromRemoteKind, createFromSource)
 	plan.RegisterPhysicalRules(
@@ -102,10 +101,6 @@ func GetNameOrID(args flux.Arguments, nameParam, idParam string) (NameOrID, bool
 		return NameOrID{}, false, errors.Newf(codes.Invalid, "must specify only one of %s or %s", nameParam, idParam)
 	}
 	return NameOrID{Name: name, ID: id}, nameOk || idOk, nil
-}
-
-func newFromOp() flux.OperationSpec {
-	return new(FromOpSpec)
 }
 
 func (s *FromOpSpec) Kind() flux.OperationKind {

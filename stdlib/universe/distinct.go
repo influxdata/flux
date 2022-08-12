@@ -20,7 +20,6 @@ func init() {
 	distinctSignature := runtime.MustLookupBuiltinType("universe", "distinct")
 
 	runtime.RegisterPackageValue("universe", DistinctKind, flux.MustValue(flux.FunctionValue(DistinctKind, CreateDistinctOpSpec, distinctSignature)))
-	flux.RegisterOpSpec(DistinctKind, newDistinctOp)
 	plan.RegisterProcedureSpec(DistinctKind, newDistinctProcedure, DistinctKind)
 	execute.RegisterTransformation(DistinctKind, createDistinctTransformation)
 }
@@ -41,10 +40,6 @@ func CreateDistinctOpSpec(args flux.Arguments, a *flux.Administration) (flux.Ope
 	}
 
 	return spec, nil
-}
-
-func newDistinctOp() flux.OperationSpec {
-	return new(DistinctOpSpec)
 }
 
 func (s *DistinctOpSpec) Kind() flux.OperationKind {

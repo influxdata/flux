@@ -13,7 +13,6 @@ func init() {
 	opaqueSig := runtime.MustLookupBuiltinType("internal/debug", "opaque")
 
 	runtime.RegisterPackageValue("internal/debug", "opaque", flux.MustValue(flux.FunctionValue(OpaqueKind, createOpaqueOpSpec, opaqueSig)))
-	flux.RegisterOpSpec(OpaqueKind, newOpaqueOp)
 	// opaque uses the same procedure spec and transformation as pass, so we only need to
 	// create and register the op spec here.
 }
@@ -24,10 +23,6 @@ func createOpaqueOpSpec(args flux.Arguments, a *flux.Administration) (flux.Opera
 	}
 
 	return new(OpaqueOpSpec), nil
-}
-
-func newOpaqueOp() flux.OperationSpec {
-	return new(OpaqueOpSpec)
 }
 
 func (s *OpaqueOpSpec) Kind() flux.OperationKind {

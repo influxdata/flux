@@ -23,7 +23,6 @@ func init() {
 	meanSignature := runtime.MustLookupBuiltinType("universe", "mean")
 
 	runtime.RegisterPackageValue("universe", MeanKind, flux.MustValue(flux.FunctionValue(MeanKind, CreateMeanOpSpec, meanSignature)))
-	flux.RegisterOpSpec(MeanKind, newMeanOp)
 	plan.RegisterProcedureSpec(MeanKind, newMeanProcedure, MeanKind)
 	execute.RegisterTransformation(MeanKind, createMeanTransformation)
 }
@@ -37,10 +36,6 @@ func CreateMeanOpSpec(args flux.Arguments, a *flux.Administration) (flux.Operati
 		return nil, err
 	}
 	return spec, nil
-}
-
-func newMeanOp() flux.OperationSpec {
-	return new(MeanOpSpec)
 }
 
 func (s *MeanOpSpec) Kind() flux.OperationKind {

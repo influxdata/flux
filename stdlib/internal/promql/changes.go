@@ -18,7 +18,6 @@ func init() {
 	changesSignature := runtime.MustLookupBuiltinType("internal/promql", "changes")
 
 	runtime.RegisterPackageValue("internal/promql", ChangesKind, flux.MustValue(flux.FunctionValue(ChangesKind, createChangesOpSpec, changesSignature)))
-	flux.RegisterOpSpec(ChangesKind, newChangesOp)
 	plan.RegisterProcedureSpec(ChangesKind, newChangesProcedure, ChangesKind)
 	execute.RegisterTransformation(ChangesKind, createChangesTransformation)
 }
@@ -29,10 +28,6 @@ func createChangesOpSpec(args flux.Arguments, a *flux.Administration) (flux.Oper
 	}
 
 	return new(ChangesOpSpec), nil
-}
-
-func newChangesOp() flux.OperationSpec {
-	return new(ChangesOpSpec)
 }
 
 func (s *ChangesOpSpec) Kind() flux.OperationKind {

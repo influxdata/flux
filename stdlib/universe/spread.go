@@ -17,7 +17,6 @@ func init() {
 	spreadSignature := runtime.MustLookupBuiltinType("universe", "spread")
 
 	runtime.RegisterPackageValue("universe", SpreadKind, flux.MustValue(flux.FunctionValue(SpreadKind, CreateSpreadOpSpec, spreadSignature)))
-	flux.RegisterOpSpec(SpreadKind, newSpreadOp)
 	plan.RegisterProcedureSpec(SpreadKind, newSpreadProcedure, SpreadKind)
 	execute.RegisterTransformation(SpreadKind, createSpreadTransformation)
 }
@@ -32,10 +31,6 @@ func CreateSpreadOpSpec(args flux.Arguments, a *flux.Administration) (flux.Opera
 		return nil, err
 	}
 	return s, nil
-}
-
-func newSpreadOp() flux.OperationSpec {
-	return new(SpreadOpSpec)
 }
 
 // SpreadOpSpec defines the required arguments for Flux.  Currently,

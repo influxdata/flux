@@ -17,7 +17,6 @@ func init() {
 	sinkSignature := runtime.MustLookupBuiltinType("internal/debug", "sink")
 
 	runtime.RegisterPackageValue("internal/debug", "sink", flux.MustValue(flux.FunctionValue(SinkKind, createSinkOpSpec, sinkSignature)))
-	flux.RegisterOpSpec(SinkKind, newSinkOp)
 	plan.RegisterProcedureSpec(SinkKind, newSinkProcedure, SinkKind)
 	execute.RegisterTransformation(SinkKind, createSinkTransformation)
 }
@@ -28,10 +27,6 @@ func createSinkOpSpec(args flux.Arguments, a *flux.Administration) (flux.Operati
 	}
 
 	return new(SinkOpSpec), nil
-}
-
-func newSinkOp() flux.OperationSpec {
-	return new(SinkOpSpec)
 }
 
 func (s *SinkOpSpec) Kind() flux.OperationKind {

@@ -17,7 +17,6 @@ func init() {
 	runtime.RegisterPackageValue(
 		"join", "tables", flux.MustValue(flux.FunctionValue("tables", createJoinOpSpec, signature)),
 	)
-	flux.RegisterOpSpec(Join2Kind, newJoinOp)
 	plan.RegisterProcedureSpec(Join2Kind, newJoinProcedure, Join2Kind)
 	execute.RegisterTransformation(Join2Kind, createJoinTransformation)
 }
@@ -32,10 +31,6 @@ type JoinOpSpec struct {
 
 func (o *JoinOpSpec) Kind() flux.OperationKind {
 	return flux.OperationKind(Join2Kind)
-}
-
-func newJoinOp() flux.OperationSpec {
-	return new(JoinOpSpec)
 }
 
 func createJoinOpSpec(args flux.Arguments, p *flux.Administration) (flux.OperationSpec, error) {

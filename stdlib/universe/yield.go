@@ -18,7 +18,6 @@ func init() {
 	yieldSignature := runtime.MustLookupBuiltinType("universe", "yield")
 
 	runtime.RegisterPackageValue("universe", YieldKind, flux.MustValue(flux.FunctionValueWithSideEffect(YieldKind, createYieldOpSpec, yieldSignature)))
-	flux.RegisterOpSpec(YieldKind, newYieldOp)
 	plan.RegisterProcedureSpecWithSideEffect(YieldKind, newYieldProcedure, YieldKind)
 }
 
@@ -39,10 +38,6 @@ func createYieldOpSpec(args flux.Arguments, a *flux.Administration) (flux.Operat
 	}
 
 	return spec, nil
-}
-
-func newYieldOp() flux.OperationSpec {
-	return new(YieldOpSpec)
 }
 
 func (s *YieldOpSpec) Kind() flux.OperationKind {

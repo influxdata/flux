@@ -28,7 +28,6 @@ func init() {
 	stddevSignature := runtime.MustLookupBuiltinType("universe", "stddev")
 
 	runtime.RegisterPackageValue("universe", StddevKind, flux.MustValue(flux.FunctionValue(StddevKind, CreateStddevOpSpec, stddevSignature)))
-	flux.RegisterOpSpec(StddevKind, newStddevOp)
 	plan.RegisterProcedureSpec(StddevKind, newStddevProcedure, StddevKind)
 	execute.RegisterTransformation(StddevKind, createStddevTransformation)
 }
@@ -54,10 +53,6 @@ func CreateStddevOpSpec(args flux.Arguments, a *flux.Administration) (flux.Opera
 		return s, err
 	}
 	return s, nil
-}
-
-func newStddevOp() flux.OperationSpec {
-	return new(StddevOpSpec)
 }
 
 func (s *StddevOpSpec) Kind() flux.OperationKind {

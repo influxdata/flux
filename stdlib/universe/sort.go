@@ -33,7 +33,6 @@ func init() {
 	sortSignature := runtime.MustLookupBuiltinType("universe", "sort")
 
 	runtime.RegisterPackageValue("universe", SortKind, flux.MustValue(flux.FunctionValue(SortKind, createSortOpSpec, sortSignature)))
-	flux.RegisterOpSpec(SortKind, newSortOp)
 	plan.RegisterProcedureSpec(SortKind, newSortProcedure, SortKind)
 	plan.RegisterPhysicalRules(RemoveRedundantSort{})
 	execute.RegisterTransformation(SortKind, createSortTransformation)
@@ -65,10 +64,6 @@ func createSortOpSpec(args flux.Arguments, a *flux.Administration) (flux.Operati
 	}
 
 	return spec, nil
-}
-
-func newSortOp() flux.OperationSpec {
-	return new(SortOpSpec)
 }
 
 func (s *SortOpSpec) Kind() flux.OperationKind {

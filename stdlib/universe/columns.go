@@ -19,7 +19,6 @@ type ColumnsOpSpec struct {
 func init() {
 	columnsSignature := runtime.MustLookupBuiltinType("universe", "columns")
 	runtime.RegisterPackageValue("universe", ColumnsKind, flux.MustValue(flux.FunctionValue(ColumnsKind, CreateColumnsOpSpec, columnsSignature)))
-	flux.RegisterOpSpec(ColumnsKind, newColumnsOp)
 	plan.RegisterProcedureSpec(ColumnsKind, newColumnsProcedure, ColumnsKind)
 	execute.RegisterTransformation(ColumnsKind, createColumnsTransformation)
 }
@@ -40,10 +39,6 @@ func CreateColumnsOpSpec(args flux.Arguments, a *flux.Administration) (flux.Oper
 	}
 
 	return spec, nil
-}
-
-func newColumnsOp() flux.OperationSpec {
-	return new(ColumnsOpSpec)
 }
 
 func (s *ColumnsOpSpec) Kind() flux.OperationKind {

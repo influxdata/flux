@@ -26,7 +26,6 @@ type FromBigtableOpSpec struct {
 func init() {
 	fromBigtableSignature := runtime.MustLookupBuiltinType("experimental/bigtable", "from")
 	runtime.RegisterPackageValue("experimental/bigtable", "from", flux.MustValue(flux.FunctionValue(FromBigtableKind, createFromBigtableOpSpec, fromBigtableSignature)))
-	flux.RegisterOpSpec(FromBigtableKind, newFromBigtableOp)
 	plan.RegisterProcedureSpec(FromBigtableKind, newFromBigtableProcedure, FromBigtableKind)
 	plan.RegisterPhysicalRules(BigtableFilterRewriteRule{}, BigtableLimitRewriteRule{})
 	execute.RegisterSource(FromBigtableKind, createFromBigtableSource)
@@ -60,10 +59,6 @@ func createFromBigtableOpSpec(args flux.Arguments, administration *flux.Administ
 	}
 
 	return spec, nil
-}
-
-func newFromBigtableOp() flux.OperationSpec {
-	return new(FromBigtableOpSpec)
 }
 
 func (s *FromBigtableOpSpec) Kind() flux.OperationKind {

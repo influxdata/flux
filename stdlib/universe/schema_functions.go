@@ -61,13 +61,11 @@ type MutationRegistrar struct {
 	Kind   flux.OperationKind
 	Type   semantic.MonoType
 	Create flux.CreateOperationSpec
-	New    flux.NewOperationSpec
 }
 
 func (m MutationRegistrar) Register() {
 	t := runtime.MustLookupBuiltinType("universe", string(m.Kind))
 	runtime.RegisterPackageValue("universe", string(m.Kind), flux.MustValue(flux.FunctionValue(string(m.Kind), m.Create, t)))
-	flux.RegisterOpSpec(m.Kind, m.New)
 
 	// Add to list of SchemaMutations which should map to a
 	// SchemaMutationProcedureSpec
@@ -81,25 +79,21 @@ var Registrars = []MutationRegistrar{
 		Kind:   RenameKind,
 		Type:   runtime.MustLookupBuiltinType("universe", "rename"),
 		Create: createRenameOpSpec,
-		New:    newRenameOp,
 	},
 	{
 		Kind:   DropKind,
 		Type:   runtime.MustLookupBuiltinType("universe", "drop"),
 		Create: createDropOpSpec,
-		New:    newDropOp,
 	},
 	{
 		Kind:   KeepKind,
 		Type:   runtime.MustLookupBuiltinType("universe", "keep"),
 		Create: createKeepOpSpec,
-		New:    newKeepOp,
 	},
 	{
 		Kind:   DuplicateKind,
 		Type:   runtime.MustLookupBuiltinType("universe", "duplicate"),
 		Create: createDuplicateOpSpec,
-		New:    newDuplicateOp,
 	},
 }
 
@@ -284,32 +278,16 @@ func createDuplicateOpSpec(args flux.Arguments, a *flux.Administration) (flux.Op
 	}, nil
 }
 
-func newRenameOp() flux.OperationSpec {
-	return new(RenameOpSpec)
-}
-
 func (s *RenameOpSpec) Kind() flux.OperationKind {
 	return RenameKind
-}
-
-func newDropOp() flux.OperationSpec {
-	return new(DropOpSpec)
 }
 
 func (s *DropOpSpec) Kind() flux.OperationKind {
 	return DropKind
 }
 
-func newKeepOp() flux.OperationSpec {
-	return new(KeepOpSpec)
-}
-
 func (s *KeepOpSpec) Kind() flux.OperationKind {
 	return KeepKind
-}
-
-func newDuplicateOp() flux.OperationSpec {
-	return new(DuplicateOpSpec)
 }
 
 func (s *DuplicateOpSpec) Kind() flux.OperationKind {

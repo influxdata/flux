@@ -26,7 +26,6 @@ func init() {
 	extrapolatedRateSignature := runtime.MustLookupBuiltinType("internal/promql", ExtrapolatedRateKind)
 
 	runtime.RegisterPackageValue("internal/promql", ExtrapolatedRateKind, flux.MustValue(flux.FunctionValue(ExtrapolatedRateKind, createExtrapolatedRateOpSpec, extrapolatedRateSignature)))
-	flux.RegisterOpSpec(ExtrapolatedRateKind, newExtrapolatedRateOp)
 	plan.RegisterProcedureSpec(ExtrapolatedRateKind, newExtrapolatedRateProcedure, ExtrapolatedRateKind)
 	execute.RegisterTransformation(ExtrapolatedRateKind, createExtrapolatedRateTransformation)
 }
@@ -51,10 +50,6 @@ func createExtrapolatedRateOpSpec(args flux.Arguments, a *flux.Administration) (
 	}
 
 	return spec, nil
-}
-
-func newExtrapolatedRateOp() flux.OperationSpec {
-	return new(ExtrapolatedRateOpSpec)
 }
 
 func (s *ExtrapolatedRateOpSpec) Kind() flux.OperationKind {

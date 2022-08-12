@@ -25,7 +25,6 @@ func init() {
 	movingAverageSignature := runtime.MustLookupBuiltinType("universe", "movingAverage")
 
 	runtime.RegisterPackageValue("universe", MovingAverageKind, flux.MustValue(flux.FunctionValue(MovingAverageKind, createMovingAverageOpSpec, movingAverageSignature)))
-	flux.RegisterOpSpec(MovingAverageKind, newMovingAverageOp)
 	plan.RegisterProcedureSpec(MovingAverageKind, newMovingAverageProcedure, MovingAverageKind)
 	execute.RegisterTransformation(MovingAverageKind, createMovingAverageTransformation)
 }
@@ -46,10 +45,6 @@ func createMovingAverageOpSpec(args flux.Arguments, a *flux.Administration) (flu
 	}
 
 	return spec, nil
-}
-
-func newMovingAverageOp() flux.OperationSpec {
-	return new(MovingAverageOpSpec)
 }
 
 func (s *MovingAverageOpSpec) Kind() flux.OperationKind {

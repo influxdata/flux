@@ -20,7 +20,6 @@ func init() {
 	setSignature := runtime.MustLookupBuiltinType("experimental", "set")
 
 	runtime.RegisterPackageValue("experimental", "set", flux.MustValue(flux.FunctionValue(SetKind, createSetOpSpec, setSignature)))
-	flux.RegisterOpSpec(SetKind, newSetOp)
 	plan.RegisterProcedureSpec(SetKind, newSetProcedure, SetKind)
 	execute.RegisterTransformation(SetKind, createSetTransformation)
 }
@@ -37,10 +36,6 @@ func createSetOpSpec(args flux.Arguments, a *flux.Administration) (flux.Operatio
 	}
 	spec.Object = o
 	return spec, nil
-}
-
-func newSetOp() flux.OperationSpec {
-	return new(SetOpSpec)
 }
 
 func (s *SetOpSpec) Kind() flux.OperationKind {

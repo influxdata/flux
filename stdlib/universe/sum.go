@@ -21,7 +21,6 @@ func init() {
 	sumSignature := runtime.MustLookupBuiltinType("universe", "sum")
 
 	runtime.RegisterPackageValue("universe", SumKind, flux.MustValue(flux.FunctionValue(SumKind, CreateSumOpSpec, sumSignature)))
-	flux.RegisterOpSpec(SumKind, newSumOp)
 	plan.RegisterProcedureSpec(SumKind, newSumProcedure, SumKind)
 	execute.RegisterTransformation(SumKind, createSumTransformation)
 }
@@ -35,10 +34,6 @@ func CreateSumOpSpec(args flux.Arguments, a *flux.Administration) (flux.Operatio
 		return s, err
 	}
 	return s, nil
-}
-
-func newSumOp() flux.OperationSpec {
-	return new(SumOpSpec)
 }
 
 func (s *SumOpSpec) Kind() flux.OperationKind {

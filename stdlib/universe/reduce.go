@@ -27,7 +27,6 @@ func init() {
 	reduceSignature := runtime.MustLookupBuiltinType("universe", "reduce")
 
 	runtime.RegisterPackageValue("universe", ReduceKind, flux.MustValue(flux.FunctionValue(ReduceKind, createReduceOpSpec, reduceSignature)))
-	flux.RegisterOpSpec(ReduceKind, newReduceOp)
 	plan.RegisterProcedureSpec(ReduceKind, newReduceProcedure, ReduceKind)
 	execute.RegisterTransformation(ReduceKind, createReduceTransformation)
 }
@@ -56,10 +55,6 @@ func createReduceOpSpec(args flux.Arguments, a *flux.Administration) (flux.Opera
 	}
 
 	return spec, nil
-}
-
-func newReduceOp() flux.OperationSpec {
-	return new(ReduceOpSpec)
 }
 
 func (s *ReduceOpSpec) Kind() flux.OperationKind {

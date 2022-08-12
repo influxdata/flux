@@ -22,7 +22,6 @@ func init() {
 	chandeMomentumOscillatorSignature := runtime.MustLookupBuiltinType("universe", ChandeMomentumOscillatorKind)
 
 	runtime.RegisterPackageValue("universe", ChandeMomentumOscillatorKind, flux.MustValue(flux.FunctionValue(ChandeMomentumOscillatorKind, createChandeMomentumOscillatorOpSpec, chandeMomentumOscillatorSignature)))
-	flux.RegisterOpSpec(ChandeMomentumOscillatorKind, newChandeMomentumOscillatorOp)
 	plan.RegisterProcedureSpec(ChandeMomentumOscillatorKind, newChandeMomentumOscillatorProcedure, ChandeMomentumOscillatorKind)
 	execute.RegisterTransformation(ChandeMomentumOscillatorKind, createChandeMomentumOscillatorTransformation)
 }
@@ -53,10 +52,6 @@ func createChandeMomentumOscillatorOpSpec(args flux.Arguments, a *flux.Administr
 	}
 
 	return spec, nil
-}
-
-func newChandeMomentumOscillatorOp() flux.OperationSpec {
-	return new(ChandeMomentumOscillatorOpSpec)
 }
 
 func (s *ChandeMomentumOscillatorOpSpec) Kind() flux.OperationKind {

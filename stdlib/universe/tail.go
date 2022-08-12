@@ -22,7 +22,6 @@ func init() {
 	tailSignature := runtime.MustLookupBuiltinType("universe", "tail")
 
 	runtime.RegisterPackageValue("universe", TailKind, flux.MustValue(flux.FunctionValue(TailKind, createTailOpSpec, tailSignature)))
-	flux.RegisterOpSpec(TailKind, newTailOp)
 	plan.RegisterProcedureSpec(TailKind, newTailProcedure, TailKind)
 	execute.RegisterTransformation(TailKind, createTailTransformation)
 }
@@ -47,10 +46,6 @@ func createTailOpSpec(args flux.Arguments, a *flux.Administration) (flux.Operati
 	}
 
 	return spec, nil
-}
-
-func newTailOp() flux.OperationSpec {
-	return new(TailOpSpec)
 }
 
 func (s *TailOpSpec) Kind() flux.OperationKind {

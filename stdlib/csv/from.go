@@ -33,7 +33,6 @@ const (
 func init() {
 	fromCSVSignature := runtime.MustLookupBuiltinType("csv", "from")
 	runtime.RegisterPackageValue("csv", "from", flux.MustValue(flux.FunctionValue(FromCSVKind, createFromCSVOpSpec, fromCSVSignature)))
-	flux.RegisterOpSpec(FromCSVKind, newFromCSVOp)
 	plan.RegisterProcedureSpec(FromCSVKind, newFromCSVProcedure, FromCSVKind)
 	execute.RegisterSource(FromCSVKind, createFromCSVSource)
 }
@@ -71,10 +70,6 @@ func createFromCSVOpSpec(args flux.Arguments, a *flux.Administration) (flux.Oper
 	}
 
 	return spec, nil
-}
-
-func newFromCSVOp() flux.OperationSpec {
-	return new(FromCSVOpSpec)
 }
 
 func (s *FromCSVOpSpec) Kind() flux.OperationKind {

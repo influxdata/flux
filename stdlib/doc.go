@@ -26,7 +26,6 @@ If a builtin OperationSpec is not found, then it will check for functions define
 The following registrations are typically executed in the function's init() for the query phase to execute properly:
 
 	flux.RegisterPackageValue(pkgpath, name string, value values.Value)
-	flux.RegisterOpSpec(k flux.OperationKind, c flux.NewOperationSpec)
 
 Note that to register a function value with a package, the value passed into flux.RegisterPackageValue is computed using the
 followingfunction:

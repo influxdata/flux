@@ -32,7 +32,6 @@ type TablesOpSpec struct {
 func init() {
 	tablesSignature := runtime.MustLookupBuiltinType("internal/gen", "tables")
 	runtime.RegisterPackageValue("internal/gen", "tables", flux.MustValue(flux.FunctionValue(TablesKind, createTablesOpSpec, tablesSignature)))
-	flux.RegisterOpSpec(TablesKind, newTablesOp)
 	plan.RegisterProcedureSpec(TablesKind, newTablesProcedure, TablesKind)
 	execute.RegisterSource(TablesKind, createTablesSource)
 }
@@ -99,10 +98,6 @@ func createTablesOpSpec(args flux.Arguments, a *flux.Administration) (flux.Opera
 	}
 
 	return spec, nil
-}
-
-func newTablesOp() flux.OperationSpec {
-	return new(TablesOpSpec)
 }
 
 func (s *TablesOpSpec) Kind() flux.OperationKind {

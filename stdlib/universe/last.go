@@ -20,7 +20,6 @@ func init() {
 	lastSignature := runtime.MustLookupBuiltinType("universe", "last")
 
 	runtime.RegisterPackageValue("universe", LastKind, flux.MustValue(flux.FunctionValue(LastKind, CreateLastOpSpec, lastSignature)))
-	flux.RegisterOpSpec(LastKind, newLastOp)
 	plan.RegisterProcedureSpec(LastKind, newLastProcedure, LastKind)
 	execute.RegisterTransformation(LastKind, createLastTransformation)
 }
@@ -35,10 +34,6 @@ func CreateLastOpSpec(args flux.Arguments, a *flux.Administration) (flux.Operati
 		return nil, err
 	}
 	return spec, nil
-}
-
-func newLastOp() flux.OperationSpec {
-	return new(LastOpSpec)
 }
 
 func (s *LastOpSpec) Kind() flux.OperationKind {

@@ -35,7 +35,6 @@ type GroupOpSpec struct {
 func init() {
 	groupSignature := runtime.MustLookupBuiltinType("experimental", "group")
 	runtime.RegisterPackageValue("experimental", "group", flux.MustValue(flux.FunctionValue("group", createGroupOpSpec, groupSignature)))
-	flux.RegisterOpSpec(ExperimentalGroupKind, newGroupOp)
 	plan.RegisterProcedureSpec(ExperimentalGroupKind, newGroupProcedure, ExperimentalGroupKind)
 	execute.RegisterTransformation(ExperimentalGroupKind, createGroupTransformation)
 }
@@ -70,10 +69,6 @@ func createGroupOpSpec(args flux.Arguments, a *flux.Administration) (flux.Operat
 	}
 
 	return spec, nil
-}
-
-func newGroupOp() flux.OperationSpec {
-	return new(GroupOpSpec)
 }
 
 func (s *GroupOpSpec) Kind() flux.OperationKind {

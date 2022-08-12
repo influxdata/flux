@@ -23,7 +23,6 @@ func init() {
 	holtWintersSignature := runtime.MustLookupBuiltinType("internal/promql", "holtWinters")
 
 	runtime.RegisterPackageValue("internal/promql", "holtWinters", flux.MustValue(flux.FunctionValue(HoltWintersKind, createHoltWintersOpSpec, holtWintersSignature)))
-	flux.RegisterOpSpec(HoltWintersKind, newHoltWintersOp)
 	plan.RegisterProcedureSpec(HoltWintersKind, newHoltWintersProcedure, HoltWintersKind)
 	execute.RegisterTransformation(HoltWintersKind, createHoltWintersTransformation)
 }
@@ -48,10 +47,6 @@ func createHoltWintersOpSpec(args flux.Arguments, a *flux.Administration) (flux.
 	}
 
 	return spec, nil
-}
-
-func newHoltWintersOp() flux.OperationSpec {
-	return new(HoltWintersOpSpec)
 }
 
 func (s *HoltWintersOpSpec) Kind() flux.OperationKind {

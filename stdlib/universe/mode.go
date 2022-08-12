@@ -22,7 +22,6 @@ func init() {
 	modeSignature := runtime.MustLookupBuiltinType("universe", "mode")
 
 	runtime.RegisterPackageValue("universe", ModeKind, flux.MustValue(flux.FunctionValue(ModeKind, CreateModeOpSpec, modeSignature)))
-	flux.RegisterOpSpec(ModeKind, newModeOp)
 	plan.RegisterProcedureSpec(ModeKind, newModeProcedure, ModeKind)
 	execute.RegisterTransformation(ModeKind, createModeTransformation)
 }
@@ -42,10 +41,6 @@ func CreateModeOpSpec(args flux.Arguments, a *flux.Administration) (flux.Operati
 		spec.Column = execute.DefaultValueColLabel
 	}
 	return spec, nil
-}
-
-func newModeOp() flux.OperationSpec {
-	return new(ModeOpSpec)
 }
 
 func (s *ModeOpSpec) Kind() flux.OperationKind {

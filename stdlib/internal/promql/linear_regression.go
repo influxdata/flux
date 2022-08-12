@@ -24,7 +24,6 @@ func init() {
 	linearRegressionSignature := runtime.MustLookupBuiltinType("internal/promql", LinearRegressionKind)
 
 	runtime.RegisterPackageValue("internal/promql", LinearRegressionKind, flux.MustValue(flux.FunctionValue(LinearRegressionKind, createLinearRegressionOpSpec, linearRegressionSignature)))
-	flux.RegisterOpSpec(LinearRegressionKind, newLinearRegressionOp)
 	plan.RegisterProcedureSpec(LinearRegressionKind, newLinearRegressionProcedure, LinearRegressionKind)
 	execute.RegisterTransformation(LinearRegressionKind, createLinearRegressionTransformation)
 }
@@ -48,10 +47,6 @@ func createLinearRegressionOpSpec(args flux.Arguments, a *flux.Administration) (
 		spec.FromNow = d
 	}
 	return spec, nil
-}
-
-func newLinearRegressionOp() flux.OperationSpec {
-	return new(LinearRegressionOpSpec)
 }
 
 func (s *LinearRegressionOpSpec) Kind() flux.OperationKind {

@@ -27,7 +27,6 @@ func init() {
 	mapSignature := runtime.MustLookupBuiltinType("universe", "map")
 
 	runtime.RegisterPackageValue("universe", MapKind, flux.MustValue(flux.FunctionValue(MapKind, createMapOpSpec, mapSignature)))
-	flux.RegisterOpSpec(MapKind, newMapOp)
 	plan.RegisterProcedureSpec(MapKind, newMapProcedure, MapKind)
 	execute.RegisterTransformation(MapKind, createMapTransformation)
 }
@@ -58,10 +57,6 @@ func createMapOpSpec(args flux.Arguments, a *flux.Administration) (flux.Operatio
 		spec.MergeKey = false
 	}
 	return spec, nil
-}
-
-func newMapOp() flux.OperationSpec {
-	return new(MapOpSpec)
 }
 
 func (s *MapOpSpec) Kind() flux.OperationKind {

@@ -33,7 +33,6 @@ func init() {
 	stateTrackingSignature := runtime.MustLookupBuiltinType("universe", "stateTracking")
 
 	runtime.RegisterPackageValue("universe", StateTrackingKind, flux.MustValue(flux.FunctionValue(StateTrackingKind, createStateTrackingOpSpec, stateTrackingSignature)))
-	flux.RegisterOpSpec(StateTrackingKind, newStateTrackingOp)
 	plan.RegisterProcedureSpec(StateTrackingKind, newStateTrackingProcedure, StateTrackingKind)
 	execute.RegisterTransformation(StateTrackingKind, createStateTrackingTransformation)
 }
@@ -85,10 +84,6 @@ func createStateTrackingOpSpec(args flux.Arguments, a *flux.Administration) (flu
 		return nil, errors.New(codes.Invalid, "state tracking duration unit must be greater than zero")
 	}
 	return spec, nil
-}
-
-func newStateTrackingOp() flux.OperationSpec {
-	return new(StateTrackingOpSpec)
 }
 
 func (s *StateTrackingOpSpec) Kind() flux.OperationKind {

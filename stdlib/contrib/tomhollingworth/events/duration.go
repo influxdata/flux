@@ -28,7 +28,6 @@ type DurationOpSpec struct {
 func init() {
 	durationSignature := runtime.MustLookupBuiltinType(pkgPath, DurationKind)
 	runtime.RegisterPackageValue(pkgPath, DurationKind, flux.MustValue(flux.FunctionValue(DurationKind, createDurationOpSpec, durationSignature)))
-	flux.RegisterOpSpec(DurationKind, newDurationOp)
 	plan.RegisterProcedureSpec(DurationKind, newDurationProcedure, DurationKind)
 	execute.RegisterTransformation(DurationKind, createDurationTransformation)
 }
@@ -83,10 +82,6 @@ func createDurationOpSpec(args flux.Arguments, a *flux.Administration) (flux.Ope
 	}
 
 	return spec, nil
-}
-
-func newDurationOp() flux.OperationSpec {
-	return new(DurationOpSpec)
 }
 
 func (s *DurationOpSpec) Kind() flux.OperationKind {

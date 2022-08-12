@@ -33,7 +33,6 @@ func init() {
 	runtime.RegisterPackageValue("universe", HistogramKind, flux.MustValue(flux.FunctionValue(HistogramKind, CreateHistogramOpSpec, histogramSignature)))
 	runtime.RegisterPackageValue("universe", "linearBins", linearBins{})
 	runtime.RegisterPackageValue("universe", "logarithmicBins", logarithmicBins{})
-	flux.RegisterOpSpec(HistogramKind, newHistogramOp)
 	plan.RegisterProcedureSpec(HistogramKind, newHistogramProcedure, HistogramKind)
 	execute.RegisterTransformation(HistogramKind, createHistogramTransformation)
 }
@@ -81,10 +80,6 @@ func CreateHistogramOpSpec(args flux.Arguments, a *flux.Administration) (flux.Op
 	}
 
 	return spec, nil
-}
-
-func newHistogramOp() flux.OperationSpec {
-	return new(HistogramOpSpec)
 }
 
 func (s *HistogramOpSpec) Kind() flux.OperationKind {

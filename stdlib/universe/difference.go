@@ -31,7 +31,6 @@ func init() {
 	differenceSignature := runtime.MustLookupBuiltinType("universe", "difference")
 
 	runtime.RegisterPackageValue("universe", DifferenceKind, flux.MustValue(flux.FunctionValue(DifferenceKind, createDifferenceOpSpec, differenceSignature)))
-	flux.RegisterOpSpec(DifferenceKind, newDifferenceOp)
 	plan.RegisterProcedureSpec(DifferenceKind, newDifferenceProcedure, DifferenceKind)
 	execute.RegisterTransformation(DifferenceKind, createDifferenceTransformation)
 }
@@ -78,10 +77,6 @@ func createDifferenceOpSpec(args flux.Arguments, a *flux.Administration) (flux.O
 	}
 
 	return spec, nil
-}
-
-func newDifferenceOp() flux.OperationSpec {
-	return new(DifferenceOpSpec)
 }
 
 func (s *DifferenceOpSpec) Kind() flux.OperationKind {

@@ -29,7 +29,6 @@ func init() {
 	shiftSignature := runtime.MustLookupBuiltinType("universe", "timeShift")
 
 	runtime.RegisterPackageValue("universe", ShiftKind, flux.MustValue(flux.FunctionValue(ShiftKind, createShiftOpSpec, shiftSignature)))
-	flux.RegisterOpSpec(ShiftKind, newShiftOp)
 	plan.RegisterProcedureSpec(ShiftKind, newShiftProcedure, ShiftKind)
 	execute.RegisterTransformation(ShiftKind, createShiftTransformation)
 }
@@ -63,10 +62,6 @@ func createShiftOpSpec(args flux.Arguments, a *flux.Administration) (flux.Operat
 		}
 	}
 	return spec, nil
-}
-
-func newShiftOp() flux.OperationSpec {
-	return new(ShiftOpSpec)
 }
 
 func (s *ShiftOpSpec) Kind() flux.OperationKind {

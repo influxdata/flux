@@ -21,7 +21,6 @@ func init() {
 	assertEmptySignature := runtime.MustLookupBuiltinType("testing", "assertEmpty")
 
 	runtime.RegisterPackageValue("testing", "assertEmpty", flux.MustValue(flux.FunctionValue(AssertEmptyKind, createAssertEmptyOpSpec, assertEmptySignature)))
-	flux.RegisterOpSpec(AssertEmptyKind, newAssertEmptyOp)
 	plan.RegisterProcedureSpec(AssertEmptyKind, newAssertEmptyProcedure, AssertEmptyKind)
 	execute.RegisterTransformation(AssertEmptyKind, createAssertEmptyTransformation)
 }
@@ -31,10 +30,6 @@ func createAssertEmptyOpSpec(args flux.Arguments, a *flux.Administration) (flux.
 		return nil, err
 	}
 	return &AssertEmptyOpSpec{}, nil
-}
-
-func newAssertEmptyOp() flux.OperationSpec {
-	return new(AssertEmptyOpSpec)
 }
 
 type AssertEmptyProcedureSpec struct {

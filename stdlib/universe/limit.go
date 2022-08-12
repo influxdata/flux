@@ -26,7 +26,6 @@ func init() {
 	limitSignature := runtime.MustLookupBuiltinType("universe", "limit")
 
 	runtime.RegisterPackageValue("universe", LimitKind, flux.MustValue(flux.FunctionValue(LimitKind, createLimitOpSpec, limitSignature)))
-	flux.RegisterOpSpec(LimitKind, newLimitOp)
 	plan.RegisterProcedureSpec(LimitKind, newLimitProcedure, LimitKind)
 	// TODO register a range transformation. Currently range is only supported if it is pushed down into a select procedure.
 	execute.RegisterTransformation(LimitKind, createLimitTransformation)
@@ -52,10 +51,6 @@ func createLimitOpSpec(args flux.Arguments, a *flux.Administration) (flux.Operat
 	}
 
 	return spec, nil
-}
-
-func newLimitOp() flux.OperationSpec {
-	return new(LimitOpSpec)
 }
 
 func (s *LimitOpSpec) Kind() flux.OperationKind {

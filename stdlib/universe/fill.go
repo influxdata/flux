@@ -36,7 +36,6 @@ func init() {
 	fillSignature := runtime.MustLookupBuiltinType("universe", "fill")
 
 	runtime.RegisterPackageValue("universe", FillKind, flux.MustValue(flux.FunctionValue(FillKind, CreateFillOpSpec, fillSignature)))
-	flux.RegisterOpSpec(FillKind, newFillOp)
 	plan.RegisterProcedureSpec(FillKind, newFillProcedure, FillKind)
 	execute.RegisterTransformation(FillKind, createFillTransformation)
 }
@@ -92,10 +91,6 @@ func CreateFillOpSpec(args flux.Arguments, a *flux.Administration) (flux.Operati
 	}
 
 	return spec, nil
-}
-
-func newFillOp() flux.OperationSpec {
-	return new(FillOpSpec)
 }
 
 func (s *FillOpSpec) Kind() flux.OperationKind {
