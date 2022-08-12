@@ -34,10 +34,8 @@ var testFlags = map[string]interface{}{
 	"vectorizedConditionals":    true,
 	"vectorizeLogicalOperators": true,
 	"optimizeAggregateWindow":   true,
-	"narrowTransformationLimit": true,
 	"optimizeStateTracking":     true,
 	"optimizeSetTransformation": true,
-	"experimentalTestingDiff":   true,
 	"removeRedundantSortNodes":  true,
 }
 

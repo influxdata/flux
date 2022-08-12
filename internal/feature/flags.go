@@ -137,18 +137,6 @@ func UnusedSymbolWarnings() BoolFlag {
 	return unusedSymbolWarnings
 }
 
-var experimentalTestingDiff = feature.MakeBoolFlag(
-	"Experimental Testing Diff",
-	"experimentalTestingDiff",
-	"Jonathan Sternberg",
-	false,
-)
-
-// ExperimentalTestingDiff - Switches testing.diff to use experimental.diff
-func ExperimentalTestingDiff() BoolFlag {
-	return experimentalTestingDiff
-}
-
 var removeRedundantSortNodes = feature.MakeBoolFlag(
 	"Remove Redundant Sort Nodes",
 	"removeRedundantSortNodes",
@@ -201,7 +189,6 @@ var all = []Flag{
 	labelPolymorphism,
 	optimizeSetTransformation,
 	unusedSymbolWarnings,
-	experimentalTestingDiff,
 	removeRedundantSortNodes,
 	queryConcurrencyIncrease,
 	vectorizedConditionals,
@@ -218,7 +205,6 @@ var byKey = map[string]Flag{
 	"labelPolymorphism":                labelPolymorphism,
 	"optimizeSetTransformation":        optimizeSetTransformation,
 	"unusedSymbolWarnings":             unusedSymbolWarnings,
-	"experimentalTestingDiff":          experimentalTestingDiff,
 	"removeRedundantSortNodes":         removeRedundantSortNodes,
 	"queryConcurrencyIncrease":         queryConcurrencyIncrease,
 	"vectorizedConditionals":           vectorizedConditionals,
