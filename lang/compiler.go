@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log"
 	"time"
 
 	"github.com/influxdata/flux"
@@ -50,8 +49,6 @@ func AddCompilerMappings(mappings flux.CompilerMappings) error {
 type CompileOption func(*compileOptions)
 
 type compileOptions struct {
-	verbose bool
-
 	extern flux.ASTHandle
 
 	planOptions struct {
@@ -92,12 +89,6 @@ func applyOptions(opts ...CompileOption) *compileOptions {
 // NOTE: compileOptions can be used only when invoking Compile* functions.
 // They can't be used when unmarshaling a Compiler and invoking its Compile method.
 
-func Verbose(v bool) CompileOption {
-	return func(o *compileOptions) {
-		o.verbose = v
-	}
-}
-
 // Compile evaluates a Flux script producing a flux.Program.
 // now parameter must be non-zero, that is the default now time should be set before compiling.
 func Compile(q string, runtime flux.Runtime, now time.Time, opts ...CompileOption) (*AstProgram, error) {
@@ -128,9 +119,6 @@ func CompileTableObject(ctx context.Context, to *flux.TableObject, now time.Time
 	s, err := spec.FromTableObject(ctx, to, now)
 	if err != nil {
 		return nil, err
-	}
-	if o.verbose {
-		log.Println("Query Spec: ", flux.Formatted(s, flux.FmtJSON))
 	}
 	ps, err := buildPlan(ctx, s, o)
 	if err != nil {
@@ -499,9 +487,6 @@ func (p *AstProgram) Start(ctx context.Context, alloc memory.Allocator) (flux.Qu
 
 	// Planning.
 	s, cctx := opentracing.StartSpanFromContext(ctx, "plan")
-	if p.opts.verbose {
-		log.Println("Query Spec: ", flux.Formatted(sp, flux.FmtJSON))
-	}
 	if err := p.updateOpts(scope); err != nil {
 		return nil, errors.Wrap(err, codes.Inherit, "error in reading options while starting program")
 	}
