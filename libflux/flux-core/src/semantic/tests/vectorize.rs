@@ -401,7 +401,6 @@ fn vectorize_with_float_calls() -> anyhow::Result<()> {
 
     let function = get_vectorized_function(&pkg);
 
-    // FIXME: expect still needs updating
     expect_test::expect![[r##"
         (r) => {
             return {r:{#E with _value: v[#D]} with a: _vectorizedFloat:v[float](v: r:{#E with _value: v[#D]}._value:v[#D]):v[float]}:{#E with a: v[float], _value: v[#D]}
