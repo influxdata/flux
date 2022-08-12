@@ -91,14 +91,6 @@ builtin assertEquals : (name: string, <-got: stream[A], want: stream[A]) => stre
 //
 builtin assertEmpty : (<-tables: stream[A]) => stream[A]
 
-builtin _diff : (
-        <-got: stream[A],
-        want: stream[A],
-        ?verbose: bool,
-        ?epsilon: float,
-        ?nansEqual: bool,
-    ) => stream[{A with _diff: string}]
-
 // diff produces a diff between two streams.
 //
 // The function matches tables from each stream based on group keys.
@@ -158,13 +150,7 @@ diff = (
     ) =>
     {
         return
-            _diff(
-                got,
-                want,
-                verbose,
-                epsilon,
-                nansEqual,
-            )
+            experimental.diff(got, want)
                 |> yield(name: "errorOutput")
     }
 
