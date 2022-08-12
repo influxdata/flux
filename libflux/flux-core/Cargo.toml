@@ -25,6 +25,12 @@ name = "fluxc"
 test = false
 bench = false
 
+[[bin]]
+name = "typecmp"
+test = false
+bench = false
+required-features = ["doc"]
+
 [features]
 default = ["strict"]
 strict = []

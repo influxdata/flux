@@ -1336,7 +1336,11 @@ impl fmt::Display for Record {
     }
 }
 
-fn collect_record(record: &Record) -> (RefMonoTypeVecMap<'_, RecordLabel>, Option<&MonoType>) {
+/// Creates map of the records fields and its tail.
+/// Useful for comparing two records as its possible fields repeat.
+pub(crate) fn collect_record(
+    record: &Record,
+) -> (RefMonoTypeVecMap<'_, RecordLabel>, Option<&MonoType>) {
     let mut a = RefMonoTypeVecMap::new();
 
     let mut fields = record.fields();
