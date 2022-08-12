@@ -3,6 +3,8 @@ package testing
 import (
 	"context"
 	"testing"
+
+	"github.com/google/go-cmp/cmp"
 )
 
 func MustExpectPlannerRule(ctx context.Context, name string, n int) {
@@ -63,7 +65,7 @@ func TestExpectPlannerRule(t *testing.T) {
 				MarkInvokedPlannerRule(ctx, "A")
 				MarkInvokedPlannerRule(ctx, "A")
 			},
-			wantErr: "planner rule invoked an unexpected number of times: 3 (want) != 2 (got)",
+			wantErr: "planner rule invoked an unexpected number of times -want/+got:\n  map[string]int{\n- \t\"A\": 3,\n+ \t\"A\": 2,\n  }\n",
 		},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
@@ -72,8 +74,9 @@ func TestExpectPlannerRule(t *testing.T) {
 
 			got := Check(ctx)
 			if got != nil {
-				if gotErr, wantErr := got.Error(), tt.wantErr; gotErr != wantErr {
-					t.Errorf("unexpected error -want/+got:\n\t- %s\n\t+ %s", wantErr, gotErr)
+				gotErr, wantErr := got.Error(), tt.wantErr
+				if diff := cmp.Diff(gotErr, wantErr); diff != "" {
+					t.Errorf("unexpected error -want/+got:\n%s", diff)
 				}
 			} else if tt.wantErr != "" {
 				t.Error("expected error")
