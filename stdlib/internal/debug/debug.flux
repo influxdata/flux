@@ -53,5 +53,15 @@ builtin getOption : (pkg: string, name: string) => A
 //
 builtin feature : (key: string) => A
 
+// null returns the null value with the given type
+//
+// ## Parameters
+// - type: Which type to give the null
+//
+// ```
+// array.from(rows: [{a: 1, b: 2, c: 3}, {a: debug.null("int"), b: 5, c: 6}])
+// ``
+builtin null : (?type: string) => A where A: Basic
+
 // vectorize controls whether the compiler attempts to vectorize Flux functions.
 option vectorize = false
