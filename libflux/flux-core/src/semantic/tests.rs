@@ -4308,3 +4308,20 @@ fn multiple_builtins() {
         ],
     }
 }
+
+#[test]
+fn infer_tescase() {
+    test_infer! {
+        src: r#"
+            y = ""
+
+            testcase mytest {
+                x = 1
+                x == 2
+            }
+        "#,
+        exp: map![
+            "y" => "string",
+        ],
+    }
+}
