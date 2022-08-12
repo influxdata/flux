@@ -53,7 +53,7 @@ builtin getOption : (pkg: string, name: string) => A
 //
 builtin feature : (key: string) => A
 
-// Null returns the null value with the given type
+// null returns the null value with the given type
 //
 // ## Parameters
 // - type: Which type to give the null
