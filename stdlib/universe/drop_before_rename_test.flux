@@ -39,7 +39,6 @@ testcase drop_before_rename {
                 |> drop(columns: ["old"])
                 |> rename(columns: {old: "new"})
                 |> tableFind(fn: (key) => true),
-        want:
-            "error calling function \"tableFind\" @stdlib/universe/drop_before_rename_test.flux|41:20-41:48: runtime error @stdlib/universe/drop_before_rename_test.flux|40:20-40:49: rename: rename error: column \"old\" doesn't exist",
+        want: /rename: rename error: column "old" doesn't exist$/,
     )
 }

@@ -223,7 +223,7 @@ assertEqualValues = (got, want) => {
 //
 // ## Parameters
 // - fn: Function to call.
-// - want: Expected error string.
+// - want: Regular expression to match the expected error.
 //
 // ## Examples
 //
@@ -232,7 +232,7 @@ assertEqualValues = (got, want) => {
 // ```no_run
 // import "testing"
 //
-// testing.shouldError(fn: () => die(msg: "error message"), want: "error message")
+// testing.shouldError(fn: () => die(msg: "error message"), want: /error message/)
 // ```
 //
 // ## Metadata
@@ -242,5 +242,8 @@ assertEqualValues = (got, want) => {
 shouldError = (fn, want) => {
     got = experimental.catch(fn)
 
-    return assertEqualValues(got, want)
+    return
+        array.from(rows: [{v: got}])
+            |> filter(fn: (r) => r.v !~ want)
+            |> yield(name: "errorOutput")
 }

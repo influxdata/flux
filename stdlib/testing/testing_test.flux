@@ -27,8 +27,5 @@ testcase succeed_on_non_empty_result {
 }
 
 testcase test_should_error {
-    testing.shouldError(
-        fn: () => die(msg: "error message"),
-        want: "error calling function \"die\" @stdlib/testing/testing_test.flux|31:19-31:44: error message",
-    )
+    testing.shouldError(fn: () => die(msg: "error message"), want: /error message$/)
 }
