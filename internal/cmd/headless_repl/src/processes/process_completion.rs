@@ -86,10 +86,15 @@ pub fn process_completions_response(resp: &str) -> Option<HashSet<CommandHint>> 
                 None => x["label"].as_str().unwrap(),
                 Some(val) => val,
             };
+
             let replaced_snippets = snippet_fix.replace_all(arg, "");
             let val = Cow::borrow(&replaced_snippets);
             // val = snippet_fix.replace_all(val, "").borrow();
             let kind = x["kind"].as_u64().unwrap();
+
+            if val == "truncate" {
+                trace!("truncate is in here");
+            }
             // println!("insert hint: {} {}", val, kind);
 
             if let Some(detail) = x["detail"].as_str() {
@@ -110,7 +115,8 @@ pub fn process_completions_response(resp: &str) -> Option<HashSet<CommandHint>> 
                 set.insert(CommandHint::new(val, val, kind.into(), None));
             }
         });
-
+        // trace!("{:?}", set);
+        trace!("HINTS UPDATED");
         Some(set)
     } else {
         None

@@ -3,12 +3,13 @@ use lsp_types::notification::{
 };
 use lsp_types::{
     lsp_request, ClientCapabilities, CompletionClientCapabilities, CompletionContext,
-    CompletionItemCapability, CompletionItemKind, CompletionItemKindCapability, CompletionParams,
-    DidChangeConfigurationClientCapabilities, DidChangeTextDocumentParams,
-    DidChangeWatchedFilesClientCapabilities, DidOpenTextDocumentParams, InitializeParams,
-    InitializedParams, Position, PublishDiagnosticsClientCapabilities, Range,
-    TextDocumentClientCapabilities, TextDocumentContentChangeEvent, TextDocumentIdentifier,
-    TextDocumentItem, TextDocumentPositionParams, TextDocumentSyncClientCapabilities, Url,
+    CompletionItemCapability, CompletionItemCapabilityResolveSupport, CompletionItemKind,
+    CompletionItemKindCapability, CompletionParams, DidChangeConfigurationClientCapabilities,
+    DidChangeTextDocumentParams, DidChangeWatchedFilesClientCapabilities,
+    DidOpenTextDocumentParams, InitializeParams, InitializedParams, Position,
+    PublishDiagnosticsClientCapabilities, Range, TextDocumentClientCapabilities,
+    TextDocumentContentChangeEvent, TextDocumentIdentifier, TextDocumentItem,
+    TextDocumentPositionParams, TextDocumentSyncClientCapabilities, Url,
     VersionedTextDocumentIdentifier, WorkDoneProgressParams, WorkspaceClientCapabilities,
     WorkspaceEditClientCapabilities,
 };
@@ -24,8 +25,11 @@ use tower_lsp::{jsonrpc, Client};
 use tower_lsp::jsonrpc::Id::{Null, Number};
 // use tower_lsp::jsonrpc::Request;
 use crate::processes::lsp_invoke::LSP_Error::InvalidRequestType;
-use lsp_types::request::{Completion, Initialize, Request};
+use lsp_types::request::{
+    CodeActionResolveRequest, Completion, Initialize, Request, ResolveCompletionItem,
+};
 use lsp_types::MarkupKind::PlainText;
+use regex::Regex;
 use serde_json::value::Serializer;
 use std::str;
 use std::string::ParseError;
@@ -220,16 +224,30 @@ pub fn formulate_request(request_type: &str, text: &str, pos: usize) -> Result<S
         }
         "completion" => {
             let line_num = text.matches("\n").count();
+            let reg = Regex::new(r#"([^\pL\pN])"#).unwrap();
+            let mut add = None;
+            if reg.is_match(text) {
+                add = Some(true)
+            }
+
             let character = match line_num {
-                0 => text.len() as u32,
+                0 => {
+                    if add.is_some() {
+                        text.len() as u32 + 1
+                    } else {
+                        text.len() as u32
+                    }
+                }
                 _ => characters_after_last(text, "\n").unwrap(),
             };
+
             let req: RequestBuilder = jsonrpc::Request::build(Completion::METHOD).params(
                 serde_json::to_value(CompletionParams {
                     text_document_position: TextDocumentPositionParams {
                         text_document: TextDocumentIdentifier {
                             uri: (Url::parse("file:///foo.flux").unwrap()),
                         },
+
                         position: Position {
                             line: line_num as u32,
                             character: character as u32,
@@ -278,6 +296,10 @@ pub fn formulate_request(request_type: &str, text: &str, pos: usize) -> Result<S
             let headed = add_headers(serde_json::to_string(&a)?);
             Ok(headed)
         }
+        // "resolve_completion" =>{
+        // // let req= jsonrpc::Request::build(ResolveCompletionItem::METHOD)
+        // //     .params()
+        // }
         _ => Err(InvalidRequestType),
     }
 }

@@ -5,6 +5,9 @@ mod LSPSuggestionHelper;
 mod processes;
 mod utils;
 use crate::processes::{invoke_go, join_imports, lsp_invoke, start_go};
+use log::{debug, info, trace};
+use lsp_types::Command;
+use regex::{Captures, Regex};
 use std::borrow::Cow::{Borrowed, Owned};
 use std::borrow::{Borrow, BorrowMut, Cow};
 use std::collections::{HashSet, VecDeque};
@@ -15,16 +18,15 @@ use std::io::{BufReader, Read, Write};
 use std::ops::Add;
 use std::str;
 use std::string::String;
+use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
 use std::sync::mpsc::channel;
 use std::sync::mpsc::{Receiver, Sender};
 use std::sync::{mpsc, Arc, Mutex, RwLock, RwLockReadGuard};
-
-use lsp_types::Command;
-use regex::{Captures, Regex};
-use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
 use std::thread;
 use std::time::Duration;
-
+// extern crate pretty_env_logger;
+// #[macro_use]
+// extern crate log;
 use processes::lsp_invoke::{formulate_request, start_lsp};
 use rustyline::completion::Completer;
 use rustyline::error::ReadlineError;
@@ -43,31 +45,44 @@ use crate::utils::process_response_flux;
 use crate::LSPSuggestionHelper::{current_line_ends_with, CommandHint};
 use crate::MultiLineState::MultiLineStateHolder;
 use rustyline_derive::{Completer, Helper, Highlighter, Hinter, Validator};
-
+extern crate pretty_env_logger;
+#[macro_use]
+extern crate log;
 static CUR_LINE_NUM: AtomicUsize = AtomicUsize::new(0);
-
+static STOP_HINT: AtomicBool = AtomicBool::new(false);
 #[derive(Completer, Helper, Validator)]
 struct MyHelper {
     hinter: LSPSuggestionHelper::LSPSuggestionHelper,
     tx_stdin: Sender<(String, usize)>,
     is_multiline: Arc<AtomicBool>,
+    hinter_wait: Arc<AtomicBool>,
 }
 
 impl Hinter for MyHelper {
     type Hint = CommandHint;
 
     fn hint(&self, line: &str, pos: usize, _ctx: &Context<'_>) -> Option<CommandHint> {
-        // println!("hint is running ! ");
+        //hinter is going before the highlighter
+        // self.hinter_wait.swap(true, Ordering::Relaxed);
+        let written = (line.parse().unwrap(), pos);
+
+        trace!("Sending Message to update hints: {}", line);
+        self.tx_stdin
+            .send((written))
+            .expect("failure sending when no hints");
+
         if line.is_empty() || pos < line.len() {
             return None;
         }
 
-        println!("\n\ntesting: {}", line);
+        // println!("\n\ntesting: {}", line);
+
         if let Some(hint) = self.hinter.trigger_finder(line) {
             return Some(hint);
         }
 
-        println!("this is getting to the none and refetch section {}", line);
+        // println!("this is getting to the none and refetch section {}", line);
+        trace!("get hints returned None refreshing hints");
         self.tx_stdin
             .send((line.to_string(), 0))
             .expect("failure sending when no hints");
@@ -97,15 +112,11 @@ impl Highlighter for MyHelper {
     }
 
     fn highlight_char(&self, line: &str, pos: usize) -> bool {
-        let written = (line.parse().unwrap(), pos);
-
-        self.tx_stdin
-            .send(written)
-            .expect("failure sending string from user stdin");
-
         true
     }
 }
+
+//lots = trace
 
 #[derive(Clone)]
 struct CompleteHintHandler {
@@ -118,7 +129,7 @@ impl ConditionalEventHandler for CompleteHintHandler {
             return None; // default
         }
         if let Some(k) = evt.get(0) {
-            println!("key event: {:?}", k);
+            // println!("key event: {:?}", k);
             #[allow(clippy::if_same_then_else)]
             if *k == KeyEvent(KeyCode::Tab, Modifiers::NONE) {
                 Some(Cmd::CompleteHint)
@@ -141,7 +152,7 @@ impl ConditionalEventHandler for CompleteHintHandler {
                 Some(Cmd::Insert(1, text))
             } else if *k == KeyEvent::ctrl('U') && ctx.line().len() == ctx.pos() {
                 let multi = self.is_multiline.load(Ordering::Relaxed);
-                println!("paste mode status: {}", multi);
+                // println!("paste mode status: {}", multi);
                 self.is_multiline.swap(!multi, Ordering::Relaxed);
                 //when the multiline is swapped add a check to see if the struct is empty if not concat the bits and add to history
                 Some(Cmd::Noop)
@@ -187,6 +198,7 @@ impl ConditionalEventHandler for RequestHelper {
 }
 
 pub fn newMain() -> Result<()> {
+    pretty_env_logger::init();
     //sending the processed data onwards
     let (tx_processed, rx_processed): (Sender<String>, Receiver<String>) = channel();
     //sending from when user presses enter
@@ -209,7 +221,6 @@ pub fn newMain() -> Result<()> {
     //code for when the user wants to enable multiline/paste mode
     let multi_var = Arc::new(AtomicBool::new(false));
     let multi_struct_bool = multi_var.clone();
-    let multi_handler_bool = multi_var.clone();
 
     //for the helper to change the prompt color
     let helper_multi_bool = multi_var.clone();
@@ -222,13 +233,18 @@ pub fn newMain() -> Result<()> {
 
     let vals = storage.clone();
     let hint_sig = Arc::new(RwLock::new(None));
+
+    let hinter_wait = Arc::new(AtomicBool::new(false));
+    let hint_wait = hinter_wait.clone();
+    let lsp_helper = LSPSuggestionHelper::LSPSuggestionHelper {
+        hints: vals,
+        hint_signature: hint_sig.clone(),
+    };
     rl.set_helper(Some(MyHelper {
-        hinter: LSPSuggestionHelper::LSPSuggestionHelper {
-            hints: vals,
-            hint_signature: hint_sig.clone(),
-        },
+        hinter: lsp_helper,
         tx_stdin,
         is_multiline: helper_multi_two,
+        hinter_wait: hint_wait,
     }));
 
     let ceh = Box::new(CompleteHintHandler {
@@ -240,9 +256,6 @@ pub fn newMain() -> Result<()> {
 
     rl.bind_sequence(KeyEvent::ctrl('E'), EventHandler::Conditional(ceh.clone()));
     rl.bind_sequence(KeyEvent::alt('f'), EventHandler::Conditional(ceh));
-
-    rl.bind_sequence(KeyEvent::ctrl('B'), EventHandler::Conditional(other));
-
     rl.bind_sequence(
         KeyEvent(KeyCode::Tab, Modifiers::NONE),
         EventHandler::Conditional(nex),
@@ -272,6 +285,7 @@ pub fn newMain() -> Result<()> {
                 .recv()
                 .expect("failure getting from processor thread");
             // println!("getting this {}", &resp);
+            // trace!("MESSAGE: {}", resp);
 
             write!(&mut child_writer, "{}", resp).unwrap();
             reader_block_w.swap(true, Ordering::Relaxed);
@@ -284,7 +298,6 @@ pub fn newMain() -> Result<()> {
         tx_a.send((stdin_get, true)).expect("failed sending");
     }));
 
-    //when ctrl z is pressed meaning that the user wants suggestions with the current line
     thread_handlers.push(thread::spawn(move || {
         loop {
             let (line, x) = rx_suggest.recv().expect("failure getting from ctrl z");
@@ -376,7 +389,7 @@ pub fn newMain() -> Result<()> {
                     .expect("fai;ed to send to writer from ctrlz");
             } else {
                 //for changing the import doc
-                println!("sending to the other file atm");
+                // println!("sending to the other file atm");
                 tx_processed
                     .send(
                         //NOTE: pos arg is deprecated

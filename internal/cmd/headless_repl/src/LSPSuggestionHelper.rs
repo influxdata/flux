@@ -10,12 +10,16 @@ use rustyline::KeyCode::PageUp;
 use rustyline::{Editor, Result};
 use rustyline_derive::{Completer, Helper, Highlighter, Validator};
 use std::collections::HashSet;
+// use std::fmt::rt::v1::Argument;
 use std::str::{from_utf8, Utf8Error};
 
+use log::trace;
 use regex::Regex;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::mpsc::{Receiver, Sender};
 use std::sync::{Arc, Mutex, RwLock};
+use std::thread;
+use std::time::Duration;
 
 #[derive(Completer, Helper, Validator, Highlighter)]
 pub struct LSPSuggestionHelper {
@@ -47,7 +51,8 @@ impl Hint for CommandHint {
 }
 
 // currently an issue of displaying a hint if the hint is already completed
-static SIGNATURE_DISPLAYED: AtomicBool = AtomicBool::new(false);
+static REFRESH: AtomicBool = AtomicBool::new(false);
+// static FIRST_ARG: Arc<Mutex<Option<String>>> = Arc::new(Mutex::new(None));
 //need to add in the lib file that checks if the overlap between the hint and the input is equal
 impl CommandHint {
     pub fn new(
@@ -126,90 +131,93 @@ impl LSPSuggestionHelper {
     pub(crate) fn trigger_finder(&self, line: &str) -> Option<CommandHint> {
         self.best_finder(line)
     }
+
+    //need to save the args for the function that is being displayed so you can know if it is not there
     fn best_finder(&self, line: &str) -> Option<CommandHint> {
         //get lock
         let lock = self.hints.read().unwrap();
         let mut best_ratio = f32::MIN;
         let mut best_hint = &CommandHint::new("", "", HintType::FunctionType, None);
         let mut best_overlap = 0;
-        let mut save_sig = false;
-        let mut testing_bool = false;
-        println!("doing here");
+        let mut args_present = false;
+        let mut hint_basic: Option<&CommandHint> = None;
+        // println!("doing here");
+
+        if line.ends_with("(") {
+            trace!("{:?}", lock);
+        }
 
         for hint in lock.iter() {
             //if there is some overlap
             let disp = hint.display.as_str();
-            // println!("here is the dip: {} and the {}", disp, hint.hint_type);
-            if line.ends_with("(") && hint.hint_type == FunctionType {
-                println!("in here {}", &hint.display);
-                let removed = &line[0..line.len() - 1];
-                println!("that is the removed {}", removed);
-                if let Some(tail) = get_last_ident(removed) {
-                    println!("the tail {}", tail);
-                    if tail == hint.display {
-                        return Some(hint.suffix_sig(1));
-                    }
+
+            if hint.hint_type == ArgumentType {
+                if let Some(overlap) = overlap_two(line, &hint.display) {
+                    return Some(hint.suffix(overlap.len()));
                 }
             }
 
             if let Some(overlap) = overlap_two(line, hint.display()) {
-                if hint.hint_type == ArgumentType {
-                    return Some(hint.suffix(overlap.len()));
-                }
-
-                if overlap == disp {
-                    save_sig = true;
-
-                    continue;
-                }
-
-                // the closer to one the better
                 let ratio: f32 = (overlap.len() as f32 / disp.len() as f32);
                 //if greater than store that hint
+
+                trace!(
+                    "there is overlap {}   {}  >{}",
+                    hint.display,
+                    ratio,
+                    best_ratio
+                );
+
                 if ratio > best_ratio {
                     let to_be_completed = hint.suffix(overlap.len());
                     if !is_valid(line, hint.display(), &hint.display[overlap.len()..]) {
+                        trace!("now is not valid {}", hint.display);
                         continue;
                     }
-                    save_sig = false;
                     best_ratio = ratio;
                     best_overlap = overlap.len();
                     best_hint = hint;
                 }
             }
         }
-        // println!("best ratio {} {}", best_ratio, best_hint.display);
-        //unlock the hint if you need
-        // let mut hint_sig_lock = self.hint_signature.write().unwrap();
+
         let mut hint_sig_lock = self.hint_signature.write().unwrap();
+
+        //if they are equal save the first arg
 
         return match best_ratio {
             f32::MIN => {
-                println!("float low");
-                self.print_hints();
-                if save_sig {
-                    println!("preventing");
-                    return Some(CommandHint {
-                        display: "".to_string(),
-                        complete_up_to: 0,
-                        hint_type: HintType::FunctionType,
-                        hint_signature: None,
-                    });
+                // println!("float low");
+                trace!(
+                    "Getting to the minimum float value with this input {}",
+                    line
+                );
+
+                if args_present {
+                    if line.ends_with(")") {
+                        return None;
+                    }
+                    if hint_basic.is_some() {
+                        //then remove the hint
+                        return Some(hint_basic.unwrap().suffix(0));
+                    }
                 }
+                // self.print_hints();
+
                 *hint_sig_lock = None;
                 //gets here maybe refetch results
                 //instead of returning none it should send the current line get the new hints and then rerun the function
                 return None;
             }
             _ => {
-                println!("other high");
-
+                // println!("other high");
+                trace!("getting to the highest input on this input {}", line);
                 if best_hint.hint_type == FunctionType && best_hint.hint_signature.is_some() {
-                    *hint_sig_lock = best_hint.hint_signature.to_owned();
-                    println!("here is the sig: {:?}", hint_sig_lock);
+                    // *hint_sig_lock = best_hint.hint_signature.to_owned();
+                    // println!("here is the sig: {:?}", hint_sig_lock);
                     return Some(best_hint.suffix(best_overlap));
                 }
-                *hint_sig_lock = None;
+                // *hint_sig_lock = None;
                 Some(best_hint.suffix(best_overlap))
             }
         };
@@ -244,6 +252,18 @@ mod tests_overlap {
     }
 
     #[test]
+    fn test_valid_one() {
+        let val = is_valid("date.trunct", "t: ", ": ");
+        assert_eq!(val, false)
+    }
+
+    #[test]
+    fn test_valid_two() {
+        let val = is_valid("date.truncate(t", "t: ", ": ");
+        assert_eq!(val, true)
+    }
+
+    #[test]
     fn testing_reg_one() {
         let val = is_valid("date.testç", "testing", "ing");
         assert_eq!(val, false)
@@ -268,9 +288,15 @@ mod tests_overlap {
 
     #[test]
     fn test_overlap_arg_one() {
-        let val = overlap_two("date.truncate(t", "t: $1");
+        let val = overlap_two("date.truncate(t", "t: ");
         assert_eq!(val, Some("t"));
     }
+
+    // #[test]
+    // fn test_overlap_arg_one() {
+    //     let val = overlap_two("date.truncate(t", "t: $1");
+    //     assert_eq!(val, Some("t"));
+    // }
 
     #[test]
     fn get_last_ident_test_one() {
@@ -294,30 +320,36 @@ fn overlap_two<'a>(line: &'a str, comp: &'a str) -> Option<&'a str> {
 }
 
 fn is_valid(line: &str, hint: &str, suggested_addition: &str) -> bool {
-    let reg = r#"\pL(\pL|\p{Nd}|_)*"#;
+    let reg = r#"\pL([\pL|\p{Nd}|_]*)"#;
     let matcher = Regex::new(reg).unwrap();
     let mut owner = line.to_string();
     owner.push_str(suggested_addition);
+
     // println!("here is the push {}", owner);
-    let reversed: String = owner.chars().rev().collect();
-    if let Some(val) = matcher.find(reversed.as_str()) {
-        let vals = val.range();
-
-        // println!("{:?} {}", val, val.range().start);
-        if vals.start == 0 {
-            let something = reversed.as_bytes();
-            let ranger = &something[vals.start..vals.end];
-
-            let res = from_utf8(ranger).unwrap();
-            let retu = res.chars().rev().collect::<String>();
-            return retu == hint;
-        }
+    if let Some(val) = get_last_ident(&owner) {
+        return val == hint;
     }
     false
 }
+//     let reversed: String = owner.chars().rev().collect();
+//     if let Some(val) = matcher.find(reversed.as_str()) {
+//         let vals = val.range();
+//
+//         // println!("{:?} {}", val, val.range().start);
+//         if vals.start == 0 {
+//             let something = reversed.as_bytes();
+//             let ranger = &something[vals.start..vals.end];
+//
+//             let res = from_utf8(ranger).unwrap();
+//             let retu = res.chars().rev().collect::<String>();
+//             return retu == hint;
+//         }
+//     }
+//     false
+// }
 
 fn get_last_ident(line: &str) -> Option<String> {
-    let reg = r#"\pL(\pL|\p{Nd}|_)*"#;
+    let reg = r#"\pL([\pL|\p{Nd}|_]*)"#;
     let matcher = Regex::new(reg).unwrap();
     let owner = line.to_string();
     // println!("here is the push {}", owner);
@@ -337,3 +369,5 @@ fn get_last_ident(line: &str) -> Option<String> {
     }
     None
 }
+
+fn arg_get_valid() {}
