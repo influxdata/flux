@@ -53,14 +53,36 @@ builtin getOption : (pkg: string, name: string) => A
 //
 builtin feature : (key: string) => A
 
-// null returns the null value with the given type
+// null returns the null value with a given type.
 //
 // ## Parameters
-// - type: Which type to give the null
+// - type: Null type.
 //
+//   **Supported types**:
+//
+//   - string
+//   - bytes
+//   - int
+//   - uint
+//   - float
+//   - bool
+//   - time
+//   - duration
+//   - regexp
+//
+// ## Examples
+//
+// ### Include null values in an ad hoc stream of tables
 // ```
-// array.from(rows: [{a: 1, b: 2, c: 3}, {a: debug.null("int"), b: 5, c: 6}])
-// ``
+// import "array"
+// import "internal/debug"
+//
+// > array.from(rows: [{a: 1, b: 2, c: 3}, {a: debug.null("int"), b: 5, c: 6}])
+// ```
+//
+// ## Metadata
+// introduced: 0.179.0
+//
 builtin null : (?type: string) => A where A: Basic
 
 // vectorize controls whether the compiler attempts to vectorize Flux functions.

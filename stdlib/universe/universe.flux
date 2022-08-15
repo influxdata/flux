@@ -102,8 +102,8 @@ builtin chandeMomentumOscillator : (<-tables: stream[A], n: int, ?columns: [stri
 // ```
 // import "sampledata"
 //
-// sampledata.string()
-//     |> columns(column: "labels")
+// < sampledata.string()
+// >     |> columns(column: "labels")
 // ```
 //
 // ## Metadata
