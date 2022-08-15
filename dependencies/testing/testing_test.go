@@ -63,7 +63,7 @@ func TestExpectPlannerRule(t *testing.T) {
 				MarkInvokedPlannerRule(ctx, "A")
 				MarkInvokedPlannerRule(ctx, "A")
 			},
-			wantErr: "planner rule invoked an unexpected number of times: 3 (want) != 2 (got)",
+			wantErr: "planner rule `A` invoked an unexpected number of times: 3 (want) != 2 (got)",
 		},
 	} {
 		t.Run(tt.name, func(t *testing.T) {

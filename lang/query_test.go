@@ -140,7 +140,7 @@ func TestQuery_TestingCheck(t *testing.T) {
 	if q.Err() == nil {
 		t.Fatalf("expected error from query execution about failed testing checks")
 	}
-	if !strings.Contains(q.Err().Error(), "planner rule invoked an unexpected number of times") {
+	if !strings.Contains(q.Err().Error(), "planner rule `NonExistantRule` invoked an unexpected number of times") {
 		t.Errorf("expected error about failed testing checks got error: %v", q.Err())
 	}
 }
