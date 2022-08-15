@@ -71,7 +71,11 @@ testcase join_use_previous_test {
             |> filter(fn: (r) => exists r.flag)
             |> drop(columns: ["_start", "_stop"])
     got =
-        join(tables: {left: lhs, right: rhs}, on: ["_time", "_field", "_measurement"], method: "inner")
+        join(
+            tables: {left: lhs, right: rhs},
+            on: ["_time", "_field", "_measurement"],
+            method: "inner",
+        )
             |> group(columns: [])
             |> fill(column: "flag", usePrevious: true)
     want = csv.from(csv: outData)

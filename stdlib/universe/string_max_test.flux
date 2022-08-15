@@ -24,6 +24,7 @@ testcase string_max {
             csv.from(csv: inData)
                 |> max()
                 |> tableFind(fn: (key) => true),
-        want: /max: invalid use of function: \*universe.MaxSelector has no implementation for type string$/,
+        want:
+            /max: invalid use of function: \*universe.MaxSelector has no implementation for type string$/,
     )
 }

@@ -90,7 +90,10 @@ sendAlert = (
         details="{}",
     ) =>
     {
-        headers = {"Content-Type": "application/json; charset=utf-8", "Authorization": "GenieKey " + apiKey}
+        headers = {
+            "Content-Type": "application/json; charset=utf-8",
+            "Authorization": "GenieKey " + apiKey,
+        }
         cutEncode = (v, max, defV="") => {
             v2 = if strings.strlen(v: v) != 0 then v else defV
 

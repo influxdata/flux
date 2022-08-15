@@ -91,7 +91,12 @@ testcase vec_conditional_uint {
     want = array.from(rows: [{v: uint(v: 0)}, {v: uint(v: 3)}])
 
     got =
-        array.from(rows: [{cond: true, a: uint(v: 0), b: uint(v: 1)}, {cond: false, a: uint(v: 2), b: uint(v: 3)}])
+        array.from(
+            rows: [
+                {cond: true, a: uint(v: 0), b: uint(v: 1)},
+                {cond: false, a: uint(v: 2), b: uint(v: 3)},
+            ],
+        )
             |> map(fn: fn)
 
     testing.diff(want: want, got: got)

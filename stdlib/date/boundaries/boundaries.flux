@@ -481,7 +481,15 @@ week = (week_offset=0, start_sunday=false) => {
 
     return
         if start_sunday then
-            _day_finder(td: date.Sunday, func: _week_formatter, offset: date.scale(d: 1w, n: week_offset))
+            _day_finder(
+                td: date.Sunday,
+                func: _week_formatter,
+                offset: date.scale(d: 1w, n: week_offset),
+            )
         else
-            _day_finder(td: date.Monday, func: _week_formatter, offset: date.scale(d: 1w, n: week_offset))
+            _day_finder(
+                td: date.Monday,
+                func: _week_formatter,
+                offset: date.scale(d: 1w, n: week_offset),
+            )
 }

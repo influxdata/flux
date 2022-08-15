@@ -242,7 +242,13 @@ testcase stDistance {
             |> map(
                 fn: (r) =>
                     ({r with _st_distance:
-                            limitFloat(value: geo.ST_Distance(region: refPoint, geometry: {lat: r.lat, lon: r.lon})),
+                            limitFloat(
+                                value:
+                                    geo.ST_Distance(
+                                        region: refPoint,
+                                        geometry: {lat: r.lat, lon: r.lon},
+                                    ),
+                            ),
                     }),
             )
             |> drop(columns: ["_start", "_stop"])

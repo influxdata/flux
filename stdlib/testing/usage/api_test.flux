@@ -1691,11 +1691,13 @@ testcase get_api_usage {
             |> range(start: 2019-08-01T11:00:00Z, stop: 2019-08-01T14:00:00Z)
             |> filter(
                 fn: (r) =>
-                    r.org_id == "03cbe13cce931000" and r._measurement == "http_request" and (r.endpoint
-                            ==
-                            "/api/v2/write" and r._field == "req_bytes" and r.hostname !~ /^gateway-internal/
-                            or
-                            r.endpoint == "/api/v2/query" and r._field == "resp_bytes"),
+                    r.org_id == "03cbe13cce931000" and r._measurement == "http_request"
+                        and
+                        (r.endpoint == "/api/v2/write" and r._field == "req_bytes" and r.hostname
+                            !~
+                            /^gateway-internal/ or r.endpoint == "/api/v2/query" and r._field
+                                ==
+                                "resp_bytes"),
             )
             |> group()
             |> aggregateWindow(every: 1h, fn: count)

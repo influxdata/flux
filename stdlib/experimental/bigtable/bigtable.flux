@@ -39,4 +39,6 @@ package bigtable
 // ## Metadata
 // tags: inputs
 //
-builtin from : (token: string, project: string, instance: string, table: string) => stream[T] where T: Record
+builtin from : (token: string, project: string, instance: string, table: string) => stream[T]
+    where
+    T: Record

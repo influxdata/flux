@@ -47,7 +47,9 @@ testcase filter_by_regex {
             |> testing.load()
             |> range(start: 2018-05-20T19:53:26Z)
             |> filter(fn: (r) => r["name"] =~ /.*0/)
-            |> map(fn: (r) => ({r with name: regexp.replaceAllString(r: re, v: r.name, t: "disk9")}))
+            |> map(
+                fn: (r) => ({r with name: regexp.replaceAllString(r: re, v: r.name, t: "disk9")}),
+            )
     want = csv.from(csv: outData)
 
     testing.diff(got, want)

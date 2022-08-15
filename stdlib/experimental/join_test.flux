@@ -104,7 +104,12 @@ testcase join {
             |> filter(fn: (r) => r._field == "b")
             |> drop(columns: ["_field"])
             |> rename(columns: {_value: "value_b"})
-    got = experimental.join(left: a, right: b, fn: (left, right) => ({left with value_b: right.value_b}))
+    got =
+        experimental.join(
+            left: a,
+            right: b,
+            fn: (left, right) => ({left with value_b: right.value_b}),
+        )
     want = csv.from(csv: outData)
 
     testing.diff(got, want)

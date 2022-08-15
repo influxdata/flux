@@ -118,7 +118,13 @@ endpoint = (url=defaultURL, token="") =>
 
                         return {r with _sent:
                                 string(
-                                    v: 2 == pushNote(url: url, token: token, title: obj.title, text: obj.text) / 100,
+                                    v:
+                                        2 == pushNote(
+                                                url: url,
+                                                token: token,
+                                                title: obj.title,
+                                                text: obj.text,
+                                            ) / 100,
                                 ),
                         }
                     },

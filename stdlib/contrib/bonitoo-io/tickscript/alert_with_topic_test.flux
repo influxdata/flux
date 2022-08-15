@@ -60,7 +60,8 @@ tickscript_alert = (table=<-) =>
         |> tickscript.groupBy(columns: ["host", "realm"])
         |> tickscript.alert(
             check: check,
-            id: (r) => "Realm: ${r.realm} - Hostname: ${r.host} / Metric: ${metric_type} threshold alert",
+            id: (r) =>
+                "Realm: ${r.realm} - Hostname: ${r.host} / Metric: ${metric_type} threshold alert",
             message: (r) => "${r.id}: ${r._level} - ${string(v: r.KafkaMsgRate)}",
             details: (r) => "some detail: myrealm=${r.realm}",
             crit: (r) => r.KafkaMsgRate > h_threshold or r.KafkaMsgRate < l_threshold,

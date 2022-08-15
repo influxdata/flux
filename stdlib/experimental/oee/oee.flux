@@ -106,7 +106,9 @@ computeAPQ = (
                 |> sum(column: "runTime")
                 |> map(
                     fn: (r) =>
-                        ({r with _time: r._stop, availability: float(v: r.runTime) / float(v: int(v: plannedTime))}),
+                        ({r with _time: r._stop,
+                            availability: float(v: r.runTime) / float(v: int(v: plannedTime)),
+                        }),
                 )
         totalCount =
             partEvents
@@ -124,7 +126,9 @@ computeAPQ = (
                 right: totalCount,
                 fn: (left, right) =>
                     ({left with performance:
-                            float(v: right.partCount) * float(v: int(v: idealCycleTime)) / float(v: left.runTime),
+                            float(v: right.partCount) * float(v: int(v: idealCycleTime)) / float(
+                                    v: left.runTime,
+                                ),
                     }),
             )
         quality =
@@ -133,7 +137,9 @@ computeAPQ = (
                 right: totalCount,
                 fn: (left, right) =>
                     ({left with quality:
-                            (float(v: right.partCount) - float(v: left.badCount)) / float(v: right.partCount),
+                            (float(v: right.partCount) - float(v: left.badCount)) / float(
+                                    v: right.partCount,
+                                ),
                     }),
             )
 
@@ -142,7 +148,9 @@ computeAPQ = (
                 left: performance,
                 right: quality,
                 fn: (left, right) =>
-                    ({left with quality: right.quality, oee: left.availability * left.performance * right.quality}),
+                    ({left with quality: right.quality,
+                        oee: left.availability * left.performance * right.quality,
+                    }),
             )
     }
 

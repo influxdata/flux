@@ -86,7 +86,10 @@ testcase table_fns_findcolumn_map {
                         csv.from(csv: inData)
                             |> range(start, stop)
                             |> filter(
-                                fn: (r) => r._measurement == "city_data" and r._field == "temp" and r.city == city,
+                                fn: (r) =>
+                                    r._measurement == "city_data" and r._field == "temp" and r.city
+                                        ==
+                                        city,
                             )
                             |> mean()
                             |> findColumn(fn: (key) => true, column: "_value")

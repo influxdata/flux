@@ -5,7 +5,8 @@ import "influxdata/influxdb/sample"
 import "csv"
 import "testing"
 
-expected = "
+expected =
+    "
 #group,false,false,false
 #datatype,string,long,boolean
 #default,_result,,

@@ -37,7 +37,10 @@ testcase reduce {
         csv.from(csv: inData)
             |> testing.load()
             |> range(start: 2018-05-21T13:09:22.885021542Z)
-            |> reduce(fn: (r, accumulator) => ({sum: r._value + accumulator.sum}), identity: {sum: 0.0})
+            |> reduce(
+                fn: (r, accumulator) => ({sum: r._value + accumulator.sum}),
+                identity: {sum: 0.0},
+            )
     want = csv.from(csv: outData)
 
     testing.diff(got, want)

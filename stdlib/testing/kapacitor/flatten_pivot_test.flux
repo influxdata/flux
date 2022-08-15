@@ -31,7 +31,11 @@ testcase pivot {
             |> testing.load()
             |> range(start: 2018-05-15T00:00:00Z)
             |> drop(columns: ["_start", "_stop"])
-            |> pivot(rowKey: ["_time", "_measurement"], columnKey: ["_field", "port"], valueColumn: "_value")
+            |> pivot(
+                rowKey: ["_time", "_measurement"],
+                columnKey: ["_field", "port"],
+                valueColumn: "_value",
+            )
     want = csv.from(csv: outData)
 
     testing.diff(got, want)
