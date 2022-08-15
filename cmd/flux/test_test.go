@@ -408,12 +408,6 @@ func Test_TestCmd_Skip_Duplicate(t *testing.T) {
 	}
 }
 
-func Test_TestCmd_Error_Duplicate(t *testing.T) {
-	wantErr := errors.New("duplicate testcase name \"duplicate\", found in package \"test\", at locations testdataduplicate/test_test.flux|7:10-7:19 and testdataduplicate/test_test.flux|14:10-14:19")
-	runForPath(t, "./testdataduplicate", wantErr, "--test", "duplicate")
-
-}
-
 func Test_TestCmd_SkipUntagged(t *testing.T) {
 	want := Summary{
 		Found:   9,
