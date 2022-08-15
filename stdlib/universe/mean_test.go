@@ -3,24 +3,12 @@ package universe_test
 import (
 	"testing"
 
-	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/array"
 	"github.com/influxdata/flux/arrow"
 	"github.com/influxdata/flux/execute/executetest"
 	"github.com/influxdata/flux/memory"
-	"github.com/influxdata/flux/querytest"
 	"github.com/influxdata/flux/stdlib/universe"
 )
-
-func TestMeanOperation_Marshaling(t *testing.T) {
-	data := []byte(`{"id":"mean","kind":"mean"}`)
-	op := &flux.Operation{
-		ID:   "mean",
-		Spec: &universe.MeanOpSpec{},
-	}
-
-	querytest.OperationMarshalingTestHelper(t, data, op)
-}
 
 func TestMean_Process(t *testing.T) {
 	testCases := []struct {

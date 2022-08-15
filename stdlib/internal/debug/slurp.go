@@ -20,7 +20,6 @@ func init() {
 	slurpSignature := runtime.MustLookupBuiltinType("internal/debug", "slurp")
 
 	runtime.RegisterPackageValue("internal/debug", "slurp", flux.MustValue(flux.FunctionValue(SlurpKind, createSlurpOpSpec, slurpSignature)))
-	flux.RegisterOpSpec(SlurpKind, newSlurpOp)
 	plan.RegisterProcedureSpec(SlurpKind, newSlurpProcedure, SlurpKind)
 	execute.RegisterTransformation(SlurpKind, createSlurpTransformation)
 }
@@ -31,10 +30,6 @@ func createSlurpOpSpec(args flux.Arguments, a *flux.Administration) (flux.Operat
 	}
 
 	return new(SlurpOpSpec), nil
-}
-
-func newSlurpOp() flux.OperationSpec {
-	return new(SlurpOpSpec)
 }
 
 func (s *SlurpOpSpec) Kind() flux.OperationKind {

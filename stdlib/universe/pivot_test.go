@@ -75,27 +75,6 @@ func TestPivot_NewQuery(t *testing.T) {
 	}
 }
 
-func TestPivotOperation_Marshaling(t *testing.T) {
-	data := []byte(`{
-		"id":"pivot",
-		"kind":"pivot",
-		"spec":{
-			"rowKey":["_time"],
-			"columnKey":["_measurement", "_field"], 
-			"valueColumn":"_value"
-		}
-	}`)
-	op := &flux.Operation{
-		ID: "pivot",
-		Spec: &universe.PivotOpSpec{
-			RowKey:      []string{"_time"},
-			ColumnKey:   []string{"_measurement", "_field"},
-			ValueColumn: "_value",
-		},
-	}
-	querytest.OperationMarshalingTestHelper(t, data, op)
-}
-
 func TestPivot_Process(t *testing.T) {
 	testCases := []struct {
 		name    string

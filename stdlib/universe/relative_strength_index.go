@@ -25,7 +25,6 @@ type RelativeStrengthIndexOpSpec struct {
 func init() {
 	relativeStrengthIndexSignature := runtime.MustLookupBuiltinType("universe", "relativeStrengthIndex")
 	runtime.RegisterPackageValue("universe", RelativeStrengthIndexKind, flux.MustValue(flux.FunctionValue(RelativeStrengthIndexKind, createRelativeStrengthIndexOpSpec, relativeStrengthIndexSignature)))
-	flux.RegisterOpSpec(RelativeStrengthIndexKind, newRelativeStrengthIndexOp)
 	plan.RegisterProcedureSpec(RelativeStrengthIndexKind, newRelativeStrengthIndexProcedure, RelativeStrengthIndexKind)
 	execute.RegisterTransformation(RelativeStrengthIndexKind, createRelativeStrengthIndexTransformation)
 }
@@ -56,10 +55,6 @@ func createRelativeStrengthIndexOpSpec(args flux.Arguments, a *flux.Administrati
 	}
 
 	return spec, nil
-}
-
-func newRelativeStrengthIndexOp() flux.OperationSpec {
-	return new(RelativeStrengthIndexOpSpec)
 }
 
 func (s *RelativeStrengthIndexOpSpec) Kind() flux.OperationKind {

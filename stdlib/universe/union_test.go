@@ -194,20 +194,6 @@ func TestUnion_NewQuery(t *testing.T) {
 	}
 }
 
-func TestUnionOperation_Marshaling(t *testing.T) {
-	data := []byte(`{
-		"id":"union",
-		"kind":"union",
-		"spec":{
-		}
-	}`)
-	op := &flux.Operation{
-		ID:   "union",
-		Spec: &universe.UnionOpSpec{},
-	}
-	querytest.OperationMarshalingTestHelper(t, data, op)
-}
-
 func TestUnion_Process(t *testing.T) {
 	spec := &universe.UnionProcedureSpec{}
 

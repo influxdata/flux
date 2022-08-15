@@ -112,20 +112,6 @@ func TestStateTracking_NewQuery(t *testing.T) {
 	}
 }
 
-func TestStateTrackingOperation_Marshaling(t *testing.T) {
-	data := []byte(`{"id":"id","kind":"stateTracking","spec":{"countColumn":"c","durationColumn":"d","durationUnit":"1m","timeColumn":"t"}}`)
-	op := &flux.Operation{
-		ID: "id",
-		Spec: &universe.StateTrackingOpSpec{
-			CountColumn:    "c",
-			DurationColumn: "d",
-			DurationUnit:   flux.ConvertDuration(time.Minute),
-			TimeColumn:     "t",
-		},
-	}
-	querytest.OperationMarshalingTestHelper(t, data, op)
-}
-
 func TestStateTracking_Process(t *testing.T) {
 	gt5 := interpreter.ResolvedFunction{
 		Fn:    executetest.FunctionExpression(t, "(r) => r._value > 5.0"),

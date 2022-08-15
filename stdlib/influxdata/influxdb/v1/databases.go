@@ -26,7 +26,6 @@ func init() {
 	databasesSignature := runtime.MustLookupBuiltinType("influxdata/influxdb/v1", "databases")
 
 	runtime.RegisterPackageValue("influxdata/influxdb/v1", DatabasesKind, flux.MustValue(flux.FunctionValue(DatabasesKind, createDatabasesOpSpec, databasesSignature)))
-	flux.RegisterOpSpec(DatabasesKind, newDatabasesOp)
 	plan.RegisterProcedureSpec(DatabasesKind, newDatabasesProcedure, DatabasesKind)
 	execute.RegisterSource(DatabasesRemoteKind, createDatabasesSource)
 	plan.RegisterPhysicalRules(DatabasesRemoteRule{})
@@ -53,10 +52,6 @@ func createDatabasesOpSpec(args flux.Arguments, a *flux.Administration) (flux.Op
 		spec.Token = &token
 	}
 	return spec, nil
-}
-
-func newDatabasesOp() flux.OperationSpec {
-	return new(DatabasesOpSpec)
 }
 
 func (s *DatabasesOpSpec) Kind() flux.OperationKind {

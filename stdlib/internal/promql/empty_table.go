@@ -21,17 +21,12 @@ type EmptyTableOpSpec struct{}
 func init() {
 	emptyTableSignature := runtime.MustLookupBuiltinType("internal/promql", "emptyTable")
 	runtime.RegisterPackageValue("internal/promql", "emptyTable", flux.MustValue(flux.FunctionValue(EmptyTableKind, createEmptyTableOpSpec, emptyTableSignature)))
-	flux.RegisterOpSpec(EmptyTableKind, newEmptyTableOp)
 	plan.RegisterProcedureSpec(EmptyTableKind, newEmptyTableProcedure, EmptyTableKind)
 	execute.RegisterSource(EmptyTableKind, createEmptyTableSource)
 }
 
 func createEmptyTableOpSpec(args flux.Arguments, a *flux.Administration) (flux.OperationSpec, error) {
 	return new(EmptyTableOpSpec), nil
-}
-
-func newEmptyTableOp() flux.OperationSpec {
-	return new(EmptyTableOpSpec)
 }
 
 func (s *EmptyTableOpSpec) Kind() flux.OperationKind {

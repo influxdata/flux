@@ -108,24 +108,6 @@ func TestRange_NewQuery(t *testing.T) {
 	}
 }
 
-func TestRangeOperation_Marshaling(t *testing.T) {
-	data := []byte(`{"id":"range","kind":"range","spec":{"start":"-1h","stop":"2017-10-10T00:00:00Z"}}`)
-	op := &flux.Operation{
-		ID: "range",
-		Spec: &universe.RangeOpSpec{
-			Start: flux.Time{
-				Relative:   -1 * time.Hour,
-				IsRelative: true,
-			},
-			Stop: flux.Time{
-				Absolute: time.Date(2017, 10, 10, 0, 0, 0, 0, time.UTC),
-			},
-		},
-	}
-
-	querytest.OperationMarshalingTestHelper(t, data, op)
-}
-
 func TestRange_Process(t *testing.T) {
 	testCases := []struct {
 		name    string

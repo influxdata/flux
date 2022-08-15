@@ -34,7 +34,6 @@ func init() {
 	windowSignature := runtime.MustLookupBuiltinType("universe", "_window")
 
 	runtime.RegisterPackageValue("universe", "_"+WindowKind, flux.MustValue(flux.FunctionValue(WindowKind, CreateWindowOpSpec, windowSignature)))
-	flux.RegisterOpSpec(WindowKind, newWindowOp)
 	runtime.RegisterPackageValue("universe", "inf", infinityVar)
 	plan.RegisterProcedureSpec(WindowKind, newWindowProcedure, WindowKind)
 	plan.RegisterPhysicalRules(WindowTriggerPhysicalRule{})
@@ -138,10 +137,6 @@ func CreateWindowOpSpec(args flux.Arguments, a *flux.Administration) (flux.Opera
 		spec.Period = spec.Every
 	}
 	return spec, nil
-}
-
-func newWindowOp() flux.OperationSpec {
-	return new(WindowOpSpec)
 }
 
 func (s *WindowOpSpec) Kind() flux.OperationKind {

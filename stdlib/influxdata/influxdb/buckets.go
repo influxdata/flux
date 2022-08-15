@@ -25,7 +25,6 @@ func init() {
 	bucketsSignature := runtime.MustLookupBuiltinType("influxdata/influxdb", "buckets")
 
 	runtime.RegisterPackageValue("influxdata/influxdb", BucketsKind, flux.MustValue(flux.FunctionValue(BucketsKind, createBucketsOpSpec, bucketsSignature)))
-	flux.RegisterOpSpec(BucketsKind, newBucketsOp)
 	plan.RegisterProcedureSpec(BucketsKind, newBucketsProcedure, BucketsKind)
 	execute.RegisterSource(BucketsRemoteKind, createBucketsSource)
 	plan.RegisterPhysicalRules(BucketsRemoteRule{})
@@ -52,10 +51,6 @@ func createBucketsOpSpec(args flux.Arguments, a *flux.Administration) (flux.Oper
 		spec.Token = &token
 	}
 	return spec, nil
-}
-
-func newBucketsOp() flux.OperationSpec {
-	return new(BucketsOpSpec)
 }
 
 func (s *BucketsOpSpec) Kind() flux.OperationKind {

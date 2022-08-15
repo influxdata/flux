@@ -24,56 +24,6 @@ import (
 	"github.com/influxdata/flux/stdlib/universe"
 )
 
-func TestFillOperation_Marshaling(t *testing.T) {
-	data := []byte(`{"id":"fill","kind":"fill","spec":{"column":"t1","type":"float","value":"5.0"}}`)
-	op := &flux.Operation{
-		ID: "fill",
-		Spec: &universe.FillOpSpec{
-			Column: "t1",
-			Type:   "float",
-			Value:  "5.0",
-		},
-	}
-
-	querytest.OperationMarshalingTestHelper(t, data, op)
-
-	data = []byte(`{"id":"fill","kind":"fill","spec":{"column":"t1","type":"bool","value":"true"}}`)
-	op = &flux.Operation{
-		ID: "fill",
-		Spec: &universe.FillOpSpec{
-			Column: "t1",
-			Type:   "bool",
-			Value:  "true",
-		},
-	}
-
-	querytest.OperationMarshalingTestHelper(t, data, op)
-
-	data = []byte(`{"id":"fill","kind":"fill","spec":{"column":"t1","type":"int","value":"1"}}`)
-	op = &flux.Operation{
-		ID: "fill",
-		Spec: &universe.FillOpSpec{
-			Column: "t1",
-			Type:   "int",
-			Value:  "1",
-		},
-	}
-
-	querytest.OperationMarshalingTestHelper(t, data, op)
-
-	data = []byte(`{"id":"fill","kind":"fill","spec":{"column":"t1","type":"uint","value":"-1"}}`)
-	op = &flux.Operation{
-		ID: "fill",
-		Spec: &universe.FillOpSpec{
-			Column: "t1",
-			Type:   "uint",
-			Value:  "-1",
-		},
-	}
-
-	querytest.OperationMarshalingTestHelper(t, data, op)
-}
-
 func TestFill_NewQuery(t *testing.T) {
 	tests := []querytest.NewQueryTestCase{
 		{

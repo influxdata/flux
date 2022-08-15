@@ -22,7 +22,6 @@ func init() {
 	skewSignature := runtime.MustLookupBuiltinType("universe", "skew")
 
 	runtime.RegisterPackageValue("universe", SkewKind, flux.MustValue(flux.FunctionValue(SkewKind, CreateSkewOpSpec, skewSignature)))
-	flux.RegisterOpSpec(SkewKind, newSkewOp)
 	plan.RegisterProcedureSpec(SkewKind, newSkewProcedure, SkewKind)
 	execute.RegisterTransformation(SkewKind, createSkewTransformation)
 }
@@ -37,10 +36,6 @@ func CreateSkewOpSpec(args flux.Arguments, a *flux.Administration) (flux.Operati
 	}
 
 	return s, nil
-}
-
-func newSkewOp() flux.OperationSpec {
-	return new(SkewOpSpec)
 }
 
 func (s *SkewOpSpec) Kind() flux.OperationKind {

@@ -118,23 +118,6 @@ func TestCovariance_NewQuery(t *testing.T) {
 	}
 }
 
-func TestCovarianceOperation_Marshaling(t *testing.T) {
-	data := []byte(`{
-		"id":"covariance",
-		"kind":"covariance",
-		"spec":{
-			"pearsonr":true
-		}
-	}`)
-	op := &flux.Operation{
-		ID: "covariance",
-		Spec: &universe.CovarianceOpSpec{
-			PearsonCorrelation: true,
-		},
-	}
-	querytest.OperationMarshalingTestHelper(t, data, op)
-}
-
 func TestCovariance_Process(t *testing.T) {
 	testCases := []struct {
 		name string

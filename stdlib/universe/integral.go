@@ -25,7 +25,6 @@ func init() {
 	integralSignature := runtime.MustLookupBuiltinType("universe", "integral")
 
 	runtime.RegisterPackageValue("universe", IntegralKind, flux.MustValue(flux.FunctionValue(IntegralKind, CreateIntegralOpSpec, integralSignature)))
-	flux.RegisterOpSpec(IntegralKind, newIntegralOp)
 	plan.RegisterProcedureSpec(IntegralKind, newIntegralProcedure, IntegralKind)
 	execute.RegisterTransformation(IntegralKind, createIntegralTransformation)
 }
@@ -66,10 +65,6 @@ func CreateIntegralOpSpec(args flux.Arguments, a *flux.Administration) (flux.Ope
 		return nil, err
 	}
 	return spec, nil
-}
-
-func newIntegralOp() flux.OperationSpec {
-	return new(IntegralOpSpec)
 }
 
 func (s *IntegralOpSpec) Kind() flux.OperationKind {

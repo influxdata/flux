@@ -24,7 +24,6 @@ func init() {
 	rangeSignature := runtime.MustLookupBuiltinType("universe", "range")
 
 	runtime.RegisterPackageValue("universe", RangeKind, flux.MustValue(flux.FunctionValue(RangeKind, createRangeOpSpec, rangeSignature)))
-	flux.RegisterOpSpec(RangeKind, newRangeOp)
 	plan.RegisterProcedureSpec(RangeKind, newRangeProcedure, RangeKind)
 	// TODO register a range transformation. Currently range is only supported if it is pushed down into a select procedure.
 	execute.RegisterTransformation(RangeKind, createRangeTransformation)
@@ -56,10 +55,6 @@ func createRangeOpSpec(args flux.Arguments, a *flux.Administration) (flux.Operat
 	spec.StopColumn = execute.DefaultStopColLabel
 
 	return spec, nil
-}
-
-func newRangeOp() flux.OperationSpec {
-	return new(RangeOpSpec)
 }
 
 func (s *RangeOpSpec) Kind() flux.OperationKind {

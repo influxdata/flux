@@ -26,7 +26,6 @@ func init() {
 	tripleExponentialDerivativeSignature := runtime.MustLookupBuiltinType("universe", "tripleExponentialDerivative")
 
 	runtime.RegisterPackageValue("universe", TripleExponentialDerivativeKind, flux.MustValue(flux.FunctionValue(TripleExponentialDerivativeKind, createTripleExponentialDerivativeOpSpec, tripleExponentialDerivativeSignature)))
-	flux.RegisterOpSpec(TripleExponentialDerivativeKind, newTripleExponentialDerivativeOp)
 	plan.RegisterProcedureSpec(TripleExponentialDerivativeKind, newTripleExponentialDerivativeProcedure, TripleExponentialDerivativeKind)
 	execute.RegisterTransformation(TripleExponentialDerivativeKind, createTripleExponentialDerivativeTransformation)
 }
@@ -47,10 +46,6 @@ func createTripleExponentialDerivativeOpSpec(args flux.Arguments, a *flux.Admini
 	}
 
 	return spec, nil
-}
-
-func newTripleExponentialDerivativeOp() flux.OperationSpec {
-	return new(TripleExponentialDerivativeOpSpec)
 }
 
 func (s *TripleExponentialDerivativeOpSpec) Kind() flux.OperationKind {

@@ -24,7 +24,6 @@ func init() {
 	elapsedSignature := runtime.MustLookupBuiltinType("universe", "elapsed")
 
 	runtime.RegisterPackageValue("universe", ElapsedKind, flux.MustValue(flux.FunctionValue(ElapsedKind, createElapsedOpSpec, elapsedSignature)))
-	flux.RegisterOpSpec(ElapsedKind, newElapsedOp)
 	plan.RegisterProcedureSpec(ElapsedKind, newElapsedProcedure, ElapsedKind)
 	execute.RegisterTransformation(ElapsedKind, createElapsedTransformation)
 }
@@ -61,10 +60,6 @@ func createElapsedOpSpec(args flux.Arguments, a *flux.Administration) (flux.Oper
 	}
 
 	return spec, nil
-}
-
-func newElapsedOp() flux.OperationSpec {
-	return new(ElapsedOpSpec)
 }
 
 func (s *ElapsedOpSpec) Kind() flux.OperationKind {

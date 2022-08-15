@@ -6,20 +6,8 @@ import (
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
-	"github.com/influxdata/flux/querytest"
 	"github.com/influxdata/flux/stdlib/universe"
 )
-
-func TestUniqueOperation_Marshaling(t *testing.T) {
-	data := []byte(`{"id":"unique","kind":"unique","spec":{"column":"_value"}}`)
-	op := &flux.Operation{
-		ID: "unique",
-		Spec: &universe.UniqueOpSpec{
-			Column: "_value",
-		},
-	}
-	querytest.OperationMarshalingTestHelper(t, data, op)
-}
 
 func TestUnique_PassThrough(t *testing.T) {
 	executetest.TransformationPassThroughTestHelper(t, func(d execute.Dataset, c execute.TableBuilderCache) execute.Transformation {

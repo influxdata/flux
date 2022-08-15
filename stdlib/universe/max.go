@@ -20,7 +20,6 @@ func init() {
 	maxSignature := runtime.MustLookupBuiltinType("universe", "max")
 
 	runtime.RegisterPackageValue("universe", MaxKind, flux.MustValue(flux.FunctionValue(MaxKind, CreateMaxOpSpec, maxSignature)))
-	flux.RegisterOpSpec(MaxKind, newMaxOp)
 	plan.RegisterProcedureSpec(MaxKind, newMaxProcedure, MaxKind)
 	execute.RegisterTransformation(MaxKind, createMaxTransformation)
 }
@@ -36,10 +35,6 @@ func CreateMaxOpSpec(args flux.Arguments, a *flux.Administration) (flux.Operatio
 	}
 
 	return spec, nil
-}
-
-func newMaxOp() flux.OperationSpec {
-	return new(MaxOpSpec)
 }
 
 func (s *MaxOpSpec) Kind() flux.OperationKind {

@@ -3,24 +3,12 @@ package universe_test
 import (
 	"testing"
 
-	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/array"
 	"github.com/influxdata/flux/arrow"
 	"github.com/influxdata/flux/execute/executetest"
 	"github.com/influxdata/flux/memory"
-	"github.com/influxdata/flux/querytest"
 	"github.com/influxdata/flux/stdlib/universe"
 )
-
-func TestSpreadOperation_Marshaling(t *testing.T) {
-	data := []byte(`{"id":"spread","kind":"spread"}`)
-	op := &flux.Operation{
-		ID:   "spread",
-		Spec: &universe.SpreadOpSpec{},
-	}
-
-	querytest.OperationMarshalingTestHelper(t, data, op)
-}
 
 func TestSpread_Process(t *testing.T) {
 	testCases := []struct {

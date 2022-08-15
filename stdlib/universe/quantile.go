@@ -42,7 +42,6 @@ func init() {
 
 	runtime.RegisterPackageValue("universe", QuantileKind, flux.MustValue(flux.FunctionValue(QuantileKind, CreateQuantileOpSpec, quantileSignature)))
 
-	flux.RegisterOpSpec(QuantileKind, newQuantileOp)
 	plan.RegisterProcedureSpec(QuantileKind, newQuantileProcedure, QuantileKind)
 	execute.RegisterTransformation(QuantileKind, createQuantileTransformation)
 	execute.RegisterTransformation(ExactQuantileAggKind, createExactQuantileAggTransformation)
@@ -102,10 +101,6 @@ func CreateQuantileOpSpec(args flux.Arguments, a *flux.Administration) (flux.Ope
 	}
 
 	return spec, nil
-}
-
-func newQuantileOp() flux.OperationSpec {
-	return new(QuantileOpSpec)
 }
 
 func (s *QuantileOpSpec) Kind() flux.OperationKind {

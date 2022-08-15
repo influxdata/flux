@@ -30,7 +30,6 @@ type FromGeneratorOpSpec struct {
 func init() {
 	fromGeneratorSignature := runtime.MustLookupBuiltinType("generate", "from")
 	runtime.RegisterPackageValue("generate", "from", flux.MustValue(flux.FunctionValue(FromGeneratorKind, createFromGeneratorOpSpec, fromGeneratorSignature)))
-	flux.RegisterOpSpec(FromGeneratorKind, newFromGeneratorOp)
 	plan.RegisterProcedureSpec(FromGeneratorKind, newFromGeneratorProcedure, FromGeneratorKind)
 	execute.RegisterSource(FromGeneratorKind, createFromGeneratorSource)
 }
@@ -66,10 +65,6 @@ func createFromGeneratorOpSpec(args flux.Arguments, a *flux.Administration) (flu
 	}
 
 	return spec, nil
-}
-
-func newFromGeneratorOp() flux.OperationSpec {
-	return new(FromGeneratorOpSpec)
 }
 
 func (s *FromGeneratorOpSpec) Kind() flux.OperationKind {

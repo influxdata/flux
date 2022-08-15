@@ -28,7 +28,6 @@ func init() {
 	histogramQuantileSignature := runtime.MustLookupBuiltinType("universe", "histogramQuantile")
 
 	runtime.RegisterPackageValue("universe", HistogramQuantileKind, flux.MustValue(flux.FunctionValue(HistogramQuantileKind, CreateHistogramQuantileOpSpec, histogramQuantileSignature)))
-	flux.RegisterOpSpec(HistogramQuantileKind, newHistogramQuantileOp)
 	plan.RegisterProcedureSpec(HistogramQuantileKind, newHistogramQuantileProcedure, HistogramQuantileKind)
 	execute.RegisterTransformation(HistogramQuantileKind, createHistogramQuantileTransformation)
 }
@@ -75,10 +74,6 @@ func CreateHistogramQuantileOpSpec(args flux.Arguments, a *flux.Administration) 
 	}
 
 	return s, nil
-}
-
-func newHistogramQuantileOp() flux.OperationSpec {
-	return new(HistogramQuantileOpSpec)
 }
 
 func (s *HistogramQuantileOpSpec) Kind() flux.OperationKind {
@@ -191,7 +186,7 @@ func (t histogramQuantileTransformation) Process(id execute.DatasetID, tbl flux.
 	}
 	// Read buckets
 	var cdf []bucket
-	sorted := true //track if the cdf was naturally sorted
+	sorted := true // track if the cdf was naturally sorted
 	if err := tbl.Do(func(cr flux.ColReader) error {
 		offset := len(cdf)
 		// Grow cdf by number of rows

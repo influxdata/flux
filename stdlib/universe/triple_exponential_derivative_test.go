@@ -6,20 +6,8 @@ import (
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
-	"github.com/influxdata/flux/querytest"
 	"github.com/influxdata/flux/stdlib/universe"
 )
-
-func TestTripleExponentialDerivativeOperation_Marshaling(t *testing.T) {
-	data := []byte(`{"id":"tripleExponentialDerivative","kind":"tripleExponentialDerivative","spec":{"n":1}}`)
-	op := &flux.Operation{
-		ID: "tripleExponentialDerivative",
-		Spec: &universe.TripleExponentialDerivativeOpSpec{
-			N: 1,
-		},
-	}
-	querytest.OperationMarshalingTestHelper(t, data, op)
-}
 
 func TestTripleExponentialDerivative_PassThrough(t *testing.T) {
 	executetest.TransformationPassThroughTestHelper(t, func(d execute.Dataset, c execute.TableBuilderCache) execute.Transformation {

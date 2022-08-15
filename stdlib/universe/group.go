@@ -38,7 +38,6 @@ func init() {
 	groupSignature := runtime.MustLookupBuiltinType("universe", "group")
 
 	runtime.RegisterPackageValue("universe", GroupKind, flux.MustValue(flux.FunctionValue(GroupKind, createGroupOpSpec, groupSignature)))
-	flux.RegisterOpSpec(GroupKind, newGroupOp)
 	plan.RegisterProcedureSpec(GroupKind, newGroupProcedure, GroupKind)
 	plan.RegisterLogicalRules(MergeGroupRule{})
 	execute.RegisterTransformation(GroupKind, createGroupTransformation)
@@ -86,10 +85,6 @@ func validateGroupMode(mode string) (flux.GroupMode, error) {
 	default:
 		return flux.GroupModeNone, errors.New(codes.Invalid, `invalid group mode: must be "by" or "except"`)
 	}
-}
-
-func newGroupOp() flux.OperationSpec {
-	return new(GroupOpSpec)
 }
 
 func (s *GroupOpSpec) Kind() flux.OperationKind {

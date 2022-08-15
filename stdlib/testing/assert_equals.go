@@ -27,7 +27,6 @@ func init() {
 	assertEqualsSignature := runtime.MustLookupBuiltinType("testing", "assertEquals")
 
 	runtime.RegisterPackageValue("testing", "assertEquals", flux.MustValue(flux.FunctionValue(AssertEqualsKind, createAssertEqualsOpSpec, assertEqualsSignature)))
-	flux.RegisterOpSpec(AssertEqualsKind, newAssertEqualsOp)
 	plan.RegisterProcedureSpec(AssertEqualsKind, newAssertEqualsProcedure, AssertEqualsKind)
 	execute.RegisterTransformation(AssertEqualsKind, createAssertEqualsTransformation)
 }
@@ -59,10 +58,6 @@ func createAssertEqualsOpSpec(args flux.Arguments, a *flux.Administration) (flux
 	}
 
 	return &AssertEqualsOpSpec{Name: name}, nil
-}
-
-func newAssertEqualsOp() flux.OperationSpec {
-	return new(AssertEqualsOpSpec)
 }
 
 type AssertEqualsProcedureSpec struct {

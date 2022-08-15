@@ -43,7 +43,6 @@ type ToKafkaOpSpec struct {
 func init() {
 	toKafkaSignature := runtime.MustLookupBuiltinType("kafka", "to")
 	runtime.RegisterPackageValue("kafka", "to", flux.MustValue(flux.FunctionValueWithSideEffect(ToKafkaKind, createToKafkaOpSpec, toKafkaSignature)))
-	flux.RegisterOpSpec(ToKafkaKind, func() flux.OperationSpec { return &ToKafkaOpSpec{} })
 	plan.RegisterProcedureSpecWithSideEffect(ToKafkaKind, newToKafkaProcedure, ToKafkaKind)
 	execute.RegisterTransformation(ToKafkaKind, createToKafkaTransformation)
 }
@@ -188,7 +187,7 @@ func (o *ToKafkaProcedureSpec) Copy() plan.ProcedureSpec {
 		},
 	}
 	switch s.Balancer {
-	case "hash", "": //hash is default for compatibility with enterprise
+	case "hash", "": // hash is default for compatibility with enterprise
 		res.balancer = &kafka.Hash{}
 
 	case "round-robin":

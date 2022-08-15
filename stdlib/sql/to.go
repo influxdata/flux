@@ -16,7 +16,7 @@ import (
 
 const (
 	ToSQLKind        = "toSQL"
-	DefaultBatchSize = 10000 //TODO: decide if this should be kept low enough for the lowest (SQLite), or not.
+	DefaultBatchSize = 10000 // TODO: decide if this should be kept low enough for the lowest (SQLite), or not.
 )
 
 type ToSQLOpSpec struct {
@@ -29,7 +29,6 @@ type ToSQLOpSpec struct {
 func init() {
 	toSQLSignature := runtime.MustLookupBuiltinType("sql", "to")
 	runtime.RegisterPackageValue("sql", "to", flux.MustValue(flux.FunctionValueWithSideEffect(ToSQLKind, createToSQLOpSpec, toSQLSignature)))
-	flux.RegisterOpSpec(ToSQLKind, func() flux.OperationSpec { return &ToSQLOpSpec{} })
 	plan.RegisterProcedureSpecWithSideEffect(ToSQLKind, newToSQLProcedure, ToSQLKind)
 	execute.RegisterTransformation(ToSQLKind, createToSQLTransformation)
 }

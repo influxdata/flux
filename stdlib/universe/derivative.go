@@ -37,7 +37,6 @@ func init() {
 	derivativeSignature := runtime.MustLookupBuiltinType("universe", "derivative")
 
 	runtime.RegisterPackageValue("universe", DerivativeKind, flux.MustValue(flux.FunctionValue(DerivativeKind, createDerivativeOpSpec, derivativeSignature)))
-	flux.RegisterOpSpec(DerivativeKind, newDerivativeOp)
 	plan.RegisterProcedureSpec(DerivativeKind, newDerivativeProcedure, DerivativeKind)
 	execute.RegisterTransformation(DerivativeKind, createDerivativeTransformation)
 }
@@ -90,10 +89,6 @@ func createDerivativeOpSpec(args flux.Arguments, a *flux.Administration) (flux.O
 		spec.Columns = []string{execute.DefaultValueColLabel}
 	}
 	return spec, nil
-}
-
-func newDerivativeOp() flux.OperationSpec {
-	return new(DerivativeOpSpec)
 }
 
 func (s *DerivativeOpSpec) Kind() flux.OperationKind {

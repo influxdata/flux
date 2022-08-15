@@ -23,7 +23,6 @@ const joinKind = "experimental.join"
 func init() {
 	signature := runtime.MustLookupBuiltinType("experimental", "join")
 	runtime.RegisterPackageValue("experimental", "join", flux.MustValue(flux.FunctionValue("join", createJoinOpSpec, signature)))
-	flux.RegisterOpSpec(joinKind, newJoinOp)
 	plan.RegisterProcedureSpec(joinKind, newMergeJoinProcedure, joinKind)
 	execute.RegisterTransformation(joinKind, createMergeJoinTransformation)
 }
@@ -86,10 +85,6 @@ func createJoinOpSpec(args flux.Arguments, p *flux.Administration) (flux.Operati
 		l:  left,
 		r:  right,
 	}, nil
-}
-
-func newJoinOp() flux.OperationSpec {
-	return new(JoinOpSpec)
 }
 
 func (s *JoinOpSpec) Kind() flux.OperationKind {

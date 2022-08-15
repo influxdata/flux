@@ -23,11 +23,6 @@ func init() {
 			runtime.MustLookupBuiltinType("interpolate", "linear"),
 		)),
 	)
-	flux.RegisterOpSpec(LinearInterpolateKind,
-		func() flux.OperationSpec {
-			return new(LinearInterpolateOpSpec)
-		},
-	)
 	plan.RegisterProcedureSpec(
 		LinearInterpolateKind,
 		newInterpolateProcedure,

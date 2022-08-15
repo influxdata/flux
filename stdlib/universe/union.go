@@ -28,7 +28,6 @@ func init() {
 	unionSignature := runtime.MustLookupBuiltinType("universe", "union")
 
 	runtime.RegisterPackageValue("universe", UnionKind, flux.MustValue(flux.FunctionValue(UnionKind, createUnionOpSpec, unionSignature)))
-	flux.RegisterOpSpec(UnionKind, newUnionOp)
 	plan.RegisterProcedureSpec(UnionKind, newUnionProcedure, UnionKind)
 	execute.RegisterTransformation(UnionKind, createUnionTransformation)
 }
@@ -58,10 +57,6 @@ func createUnionOpSpec(args flux.Arguments, a *flux.Administration) (flux.Operat
 	}
 
 	return &UnionOpSpec{}, nil
-}
-
-func newUnionOp() flux.OperationSpec {
-	return new(UnionOpSpec)
 }
 
 type UnionProcedureSpec struct {

@@ -29,7 +29,6 @@ type FromSQLOpSpec struct {
 func init() {
 	fromSQLSignature := runtime.MustLookupBuiltinType("sql", "from")
 	runtime.RegisterPackageValue("sql", "from", flux.MustValue(flux.FunctionValue(FromSQLKind, createFromSQLOpSpec, fromSQLSignature)))
-	flux.RegisterOpSpec(FromSQLKind, newFromSQLOp)
 	plan.RegisterProcedureSpec(FromSQLKind, newFromSQLProcedure, FromSQLKind)
 	execute.RegisterSource(FromSQLKind, createFromSQLSource)
 }
@@ -53,10 +52,6 @@ func createFromSQLOpSpec(args flux.Arguments, administration *flux.Administratio
 		spec.Query = query
 	}
 	return spec, nil
-}
-
-func newFromSQLOp() flux.OperationSpec {
-	return new(FromSQLOpSpec)
 }
 
 func (s *FromSQLOpSpec) Kind() flux.OperationKind {

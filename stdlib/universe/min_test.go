@@ -6,23 +6,8 @@ import (
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
-	"github.com/influxdata/flux/querytest"
 	"github.com/influxdata/flux/stdlib/universe"
 )
-
-func TestMinOperation_Marshaling(t *testing.T) {
-	data := []byte(`{"id":"min","kind":"min","spec":{"column":"min"}}`)
-	op := &flux.Operation{
-		ID: "min",
-		Spec: &universe.MinOpSpec{
-			SelectorConfig: execute.SelectorConfig{
-				Column: "min",
-			},
-		},
-	}
-
-	querytest.OperationMarshalingTestHelper(t, data, op)
-}
 
 func TestMin_Process(t *testing.T) {
 	testCases := []struct {

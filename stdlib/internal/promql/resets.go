@@ -17,7 +17,6 @@ func init() {
 	resetsSignature := runtime.MustLookupBuiltinType("internal/promql", ResetsKind)
 
 	runtime.RegisterPackageValue("internal/promql", ResetsKind, flux.MustValue(flux.FunctionValue(ResetsKind, createResetsOpSpec, resetsSignature)))
-	flux.RegisterOpSpec(ResetsKind, newResetsOp)
 	plan.RegisterProcedureSpec(ResetsKind, newResetsProcedure, ResetsKind)
 	execute.RegisterTransformation(ResetsKind, createResetsTransformation)
 }
@@ -28,10 +27,6 @@ func createResetsOpSpec(args flux.Arguments, a *flux.Administration) (flux.Opera
 	}
 
 	return new(ResetsOpSpec), nil
-}
-
-func newResetsOp() flux.OperationSpec {
-	return new(ResetsOpSpec)
 }
 
 func (s *ResetsOpSpec) Kind() flux.OperationKind {

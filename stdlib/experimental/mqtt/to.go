@@ -29,7 +29,6 @@ func init() {
 	toMQTTSignature := runtime.MustLookupBuiltinType("experimental/mqtt", "to")
 
 	runtime.RegisterPackageValue("experimental/mqtt", "to", flux.MustValue(flux.FunctionValueWithSideEffect(ToMQTTKind, createToMQTTOpSpec, toMQTTSignature)))
-	flux.RegisterOpSpec(ToMQTTKind, func() flux.OperationSpec { return &ToMQTTOpSpec{} })
 	plan.RegisterProcedureSpecWithSideEffect(ToMQTTKind, newToMQTTProcedure, ToMQTTKind)
 	execute.RegisterTransformation(ToMQTTKind, createToMQTTTransformation)
 }

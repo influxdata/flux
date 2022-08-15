@@ -20,7 +20,6 @@ func init() {
 	minSignature := runtime.MustLookupBuiltinType("universe", "min")
 
 	runtime.RegisterPackageValue("universe", MinKind, flux.MustValue(flux.FunctionValue(MinKind, CreateMinOpSpec, minSignature)))
-	flux.RegisterOpSpec(MinKind, newMinOp)
 	plan.RegisterProcedureSpec(MinKind, newMinProcedure, MinKind)
 	execute.RegisterTransformation(MinKind, createMinTransformation)
 }
@@ -36,10 +35,6 @@ func CreateMinOpSpec(args flux.Arguments, a *flux.Administration) (flux.Operatio
 	}
 
 	return spec, nil
-}
-
-func newMinOp() flux.OperationSpec {
-	return new(MinOpSpec)
 }
 
 func (s *MinOpSpec) Kind() flux.OperationKind {

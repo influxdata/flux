@@ -7,21 +7,8 @@ import (
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
 	"github.com/influxdata/flux/memory"
-	"github.com/influxdata/flux/querytest"
 	"github.com/influxdata/flux/stdlib/universe"
 )
-
-func TestSortOperation_Marshaling(t *testing.T) {
-	data := []byte(`{"id":"sort","kind":"sort","spec":{"columns":["t1","t2"],"desc":true}}`)
-	op := &flux.Operation{
-		ID: "sort",
-		Spec: &universe.SortOpSpec{
-			Columns: []string{"t1", "t2"},
-			Desc:    true,
-		},
-	}
-	querytest.OperationMarshalingTestHelper(t, data, op)
-}
 
 func TestSort_Process(t *testing.T) {
 	testCases := []struct {

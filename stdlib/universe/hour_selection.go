@@ -25,7 +25,6 @@ func init() {
 	hourSelectionSignature := runtime.MustLookupBuiltinType("universe", "_hourSelection")
 
 	runtime.RegisterPackageValue("universe", HourSelectionKind, flux.MustValue(flux.FunctionValue(HourSelectionKind, createHourSelectionOpSpec, hourSelectionSignature)))
-	flux.RegisterOpSpec(HourSelectionKind, newHourSelectionOp)
 	plan.RegisterProcedureSpec(HourSelectionKind, newHourSelectionProcedure, HourSelectionKind)
 	execute.RegisterTransformation(HourSelectionKind, createHourSelectionTransformation)
 }
@@ -65,10 +64,6 @@ func createHourSelectionOpSpec(args flux.Arguments, a *flux.Administration) (flu
 	}
 
 	return spec, nil
-}
-
-func newHourSelectionOp() flux.OperationSpec {
-	return new(HourSelectionOpSpec)
 }
 
 func (s *HourSelectionOpSpec) Kind() flux.OperationKind {

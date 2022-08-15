@@ -2,26 +2,13 @@ package universe_test
 
 import (
 	"testing"
-	"time"
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
 	"github.com/influxdata/flux/memory"
-	"github.com/influxdata/flux/querytest"
 	"github.com/influxdata/flux/stdlib/universe"
 )
-
-func TestShiftOperation_Marshaling(t *testing.T) {
-	data := []byte(`{"id":"shift","kind":"timeShift","spec":{"duration":"1h"}}`)
-	op := &flux.Operation{
-		ID: "shift",
-		Spec: &universe.ShiftOpSpec{
-			Shift: flux.ConvertDuration(1 * time.Hour),
-		},
-	}
-	querytest.OperationMarshalingTestHelper(t, data, op)
-}
 
 func TestShift_Process(t *testing.T) {
 	cols := []flux.ColMeta{

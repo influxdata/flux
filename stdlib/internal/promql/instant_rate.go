@@ -24,7 +24,6 @@ func init() {
 	instantRateSignature := runtime.MustLookupBuiltinType("internal/promql", InstantRateKind)
 
 	runtime.RegisterPackageValue("internal/promql", InstantRateKind, flux.MustValue(flux.FunctionValue(InstantRateKind, createInstantRateOpSpec, instantRateSignature)))
-	flux.RegisterOpSpec(InstantRateKind, newInstantRateOp)
 	plan.RegisterProcedureSpec(InstantRateKind, newInstantRateProcedure, InstantRateKind)
 	execute.RegisterTransformation(InstantRateKind, createInstantRateTransformation)
 }
@@ -43,10 +42,6 @@ func createInstantRateOpSpec(args flux.Arguments, a *flux.Administration) (flux.
 	}
 
 	return spec, nil
-}
-
-func newInstantRateOp() flux.OperationSpec {
-	return new(InstantRateOpSpec)
 }
 
 func (s *InstantRateOpSpec) Kind() flux.OperationKind {

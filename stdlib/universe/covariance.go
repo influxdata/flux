@@ -25,7 +25,6 @@ type CovarianceOpSpec struct {
 func init() {
 	var covarianceSignature = runtime.MustLookupBuiltinType("universe", "covariance")
 	runtime.RegisterPackageValue("universe", CovarianceKind, flux.MustValue(flux.FunctionValue(CovarianceKind, createCovarianceOpSpec, covarianceSignature)))
-	flux.RegisterOpSpec(CovarianceKind, newCovarianceOp)
 	plan.RegisterProcedureSpec(CovarianceKind, newCovarianceProcedure, CovarianceKind)
 	execute.RegisterTransformation(CovarianceKind, createCovarianceTransformation)
 }
@@ -66,10 +65,6 @@ func createCovarianceOpSpec(args flux.Arguments, a *flux.Administration) (flux.O
 		return nil, errors.New(codes.Invalid, "must provide exactly two columns")
 	}
 	return spec, nil
-}
-
-func newCovarianceOp() flux.OperationSpec {
-	return new(CovarianceOpSpec)
 }
 
 func (s *CovarianceOpSpec) Kind() flux.OperationKind {

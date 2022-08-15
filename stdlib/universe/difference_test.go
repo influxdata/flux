@@ -9,21 +9,9 @@ import (
 	"github.com/influxdata/flux/execute/executetest"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/memory"
-	"github.com/influxdata/flux/querytest"
 	"github.com/influxdata/flux/stdlib/universe"
 	"github.com/influxdata/flux/values"
 )
-
-func TestDifferenceOperation_Marshaling(t *testing.T) {
-	data := []byte(`{"id":"difference","kind":"difference","spec":{"nonNegative":true}}`)
-	op := &flux.Operation{
-		ID: "difference",
-		Spec: &universe.DifferenceOpSpec{
-			NonNegative: true,
-		},
-	}
-	querytest.OperationMarshalingTestHelper(t, data, op)
-}
 
 func TestDifference_PassThrough(t *testing.T) {
 	executetest.TransformationPassThroughTestHelper(t, func(d execute.Dataset, c execute.TableBuilderCache) execute.Transformation {

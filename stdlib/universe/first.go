@@ -20,7 +20,6 @@ func init() {
 	firstSignature := runtime.MustLookupBuiltinType("universe", "first")
 
 	runtime.RegisterPackageValue("universe", FirstKind, flux.MustValue(flux.FunctionValue(FirstKind, CreateFirstOpSpec, firstSignature)))
-	flux.RegisterOpSpec(FirstKind, newFirstOp)
 	plan.RegisterProcedureSpec(FirstKind, newFirstProcedure, FirstKind)
 	execute.RegisterTransformation(FirstKind, createFirstTransformation)
 }
@@ -36,10 +35,6 @@ func CreateFirstOpSpec(args flux.Arguments, a *flux.Administration) (flux.Operat
 	}
 
 	return spec, nil
-}
-
-func newFirstOp() flux.OperationSpec {
-	return new(FirstOpSpec)
 }
 
 func (s *FirstOpSpec) Kind() flux.OperationKind {

@@ -12,21 +12,8 @@ import (
 	"github.com/influxdata/flux/execute/executetest"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/memory"
-	"github.com/influxdata/flux/querytest"
 	"github.com/influxdata/flux/stdlib/universe"
 )
-
-func TestDerivativeOperation_Marshaling(t *testing.T) {
-	data := []byte(`{"id":"derivative","kind":"derivative","spec":{"unit":"1m","nonNegative":true}}`)
-	op := &flux.Operation{
-		ID: "derivative",
-		Spec: &universe.DerivativeOpSpec{
-			Unit:        flux.ConvertDuration(time.Minute),
-			NonNegative: true,
-		},
-	}
-	querytest.OperationMarshalingTestHelper(t, data, op)
-}
 
 func TestDerivative_Process(t *testing.T) {
 	testCases := []struct {

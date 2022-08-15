@@ -179,24 +179,6 @@ func TestJoin_NewQuery(t *testing.T) {
 	}
 }
 
-func TestJoinOperation_Marshaling(t *testing.T) {
-	data := []byte(`{
-		"id":"join",
-		"kind":"join",
-		"spec":{
-			"on":["t1","t2"],
-			"tableNames":{"sum1":"a","count3":"b"}
-		}
-	}`)
-	op := &flux.Operation{
-		ID: "join",
-		Spec: &universe.JoinOpSpec{
-			On: []string{"t1", "t2"},
-		},
-	}
-	querytest.OperationMarshalingTestHelper(t, data, op)
-}
-
 func TestMergeJoin_Process(t *testing.T) {
 	tableNames := []string{"a", "b"}
 

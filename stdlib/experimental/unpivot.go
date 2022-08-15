@@ -24,13 +24,8 @@ func init() {
 	unpivotSig := runtime.MustLookupBuiltinType("experimental", "unpivot")
 
 	runtime.RegisterPackageValue("experimental", "unpivot", flux.MustValue(flux.FunctionValue(UnpivotKind, createUnpivotOpSpec, unpivotSig)))
-	flux.RegisterOpSpec(UnpivotKind, newUnpivotOp)
 	plan.RegisterProcedureSpec(UnpivotKind, newUnpivotProcedure, UnpivotKind)
 	execute.RegisterTransformation(UnpivotKind, createUnpivotTransformation)
-}
-
-func newUnpivotOp() flux.OperationSpec {
-	return &UnpivotOpSpec{}
 }
 
 func createUnpivotOpSpec(args flux.Arguments, a *flux.Administration) (flux.OperationSpec, error) {

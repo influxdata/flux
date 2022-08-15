@@ -25,7 +25,6 @@ const bufferSize = 8192
 func init() {
 	fromInfluxJSONSignature := runtime.MustLookupBuiltinType("influxdata/influxdb/v1", "json")
 	runtime.RegisterPackageValue("influxdata/influxdb/v1", "json", flux.MustValue(flux.FunctionValue(FromInfluxJSONKind, createFromInfluxJSONOpSpec, fromInfluxJSONSignature)))
-	flux.RegisterOpSpec(FromInfluxJSONKind, newFromInfluxJSONOp)
 	plan.RegisterProcedureSpec(FromInfluxJSONKind, newFromInfluxJSONProcedure, FromInfluxJSONKind)
 	execute.RegisterSource(FromInfluxJSONKind, createFromInfluxJSONSource)
 }
@@ -66,10 +65,6 @@ func createFromInfluxJSONOpSpec(args flux.Arguments, a *flux.Administration) (fl
 type FromInfluxJSONOpSpec struct {
 	JSON string `json:"json"`
 	File string `json:"file"`
-}
-
-func newFromInfluxJSONOp() flux.OperationSpec {
-	return new(FromInfluxJSONOpSpec)
 }
 
 func (s *FromInfluxJSONOpSpec) Kind() flux.OperationKind {

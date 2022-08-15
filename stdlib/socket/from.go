@@ -33,7 +33,6 @@ func init() {
 	fromSocketSignature := runtime.MustLookupBuiltinType("socket", "from")
 
 	runtime.RegisterPackageValue("socket", "from", flux.MustValue(flux.FunctionValue(FromSocketKind, createFromSocketOpSpec, fromSocketSignature)))
-	flux.RegisterOpSpec(FromSocketKind, newFromSocketOp)
 	plan.RegisterProcedureSpec(FromSocketKind, newFromSocketProcedure, FromSocketKind)
 	execute.RegisterSource(FromSocketKind, createFromSocketSource)
 }
@@ -81,10 +80,6 @@ func createFromSocketOpSpec(args flux.Arguments, a *flux.Administration) (flux.O
 	}
 
 	return spec, nil
-}
-
-func newFromSocketOp() flux.OperationSpec {
-	return new(FromSocketOpSpec)
 }
 
 func (s *FromSocketOpSpec) Kind() flux.OperationKind {

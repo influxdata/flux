@@ -17,7 +17,6 @@ func init() {
 	passSignature := runtime.MustLookupBuiltinType("internal/debug", "pass")
 
 	runtime.RegisterPackageValue("internal/debug", "pass", flux.MustValue(flux.FunctionValue(PassKind, createPassOpSpec, passSignature)))
-	flux.RegisterOpSpec(PassKind, newPassOp)
 	// both pass and opaque use the procedure spec and transformation; only their type signatures differ.
 	plan.RegisterProcedureSpec(PassKind, newPassProcedure, PassKind, OpaqueKind)
 	execute.RegisterTransformation(PassKind, createPassTransformation)
@@ -29,10 +28,6 @@ func createPassOpSpec(args flux.Arguments, a *flux.Administration) (flux.Operati
 	}
 
 	return new(PassOpSpec), nil
-}
-
-func newPassOp() flux.OperationSpec {
-	return new(PassOpSpec)
 }
 
 func (s *PassOpSpec) Kind() flux.OperationKind {

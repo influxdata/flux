@@ -20,7 +20,6 @@ func init() {
 	keysSignature := runtime.MustLookupBuiltinType("universe", "keys")
 
 	runtime.RegisterPackageValue("universe", KeysKind, flux.MustValue(flux.FunctionValue(KeysKind, createKeysOpSpec, keysSignature)))
-	flux.RegisterOpSpec(KeysKind, newKeysOp)
 	plan.RegisterProcedureSpec(KeysKind, newKeysProcedure, KeysKind)
 	execute.RegisterTransformation(KeysKind, createKeysTransformation)
 }
@@ -41,10 +40,6 @@ func createKeysOpSpec(args flux.Arguments, a *flux.Administration) (flux.Operati
 	}
 
 	return spec, nil
-}
-
-func newKeysOp() flux.OperationSpec {
-	return new(KeysOpSpec)
 }
 
 func (s *KeysOpSpec) Kind() flux.OperationKind {

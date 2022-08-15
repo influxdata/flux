@@ -8,20 +8,8 @@ import (
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
-	"github.com/influxdata/flux/querytest"
 	"github.com/influxdata/flux/stdlib/universe"
 )
-
-func TestIntegralOperation_Marshaling(t *testing.T) {
-	data := []byte(`{"id":"integral","kind":"integral","spec":{"unit":"1m"}}`)
-	op := &flux.Operation{
-		ID: "integral",
-		Spec: &universe.IntegralOpSpec{
-			Unit: flux.ConvertDuration(time.Minute),
-		},
-	}
-	querytest.OperationMarshalingTestHelper(t, data, op)
-}
 
 func TestIntegral_PassThrough(t *testing.T) {
 	executetest.TransformationPassThroughTestHelper(t, func(d execute.Dataset, c execute.TableBuilderCache) execute.Transformation {

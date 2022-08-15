@@ -32,7 +32,6 @@ type HoltWintersOpSpec struct {
 func init() {
 	hwSignature := runtime.MustLookupBuiltinType("universe", "holtWinters")
 	runtime.RegisterPackageValue("universe", HoltWintersKind, flux.MustValue(flux.FunctionValue(HoltWintersKind, createHoltWintersOpSpec, hwSignature)))
-	flux.RegisterOpSpec(HoltWintersKind, newHoltWintersOp)
 	plan.RegisterProcedureSpec(HoltWintersKind, newHoltWintersProcedure, HoltWintersKind)
 	execute.RegisterTransformation(HoltWintersKind, createHoltWintersTransformation)
 }
@@ -84,10 +83,6 @@ func createHoltWintersOpSpec(args flux.Arguments, a *flux.Administration) (flux.
 		spec.WithMinSSE = withMinSSE
 	}
 	return spec, nil
-}
-
-func newHoltWintersOp() flux.OperationSpec {
-	return new(HoltWintersOpSpec)
 }
 
 func (s *HoltWintersOpSpec) Kind() flux.OperationKind {
