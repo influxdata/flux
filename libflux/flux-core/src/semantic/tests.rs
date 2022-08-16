@@ -397,6 +397,8 @@ macro_rules! map {
     }}
 }
 
+pub(crate) use map;
+
 macro_rules! package {
     ($( $key: expr => $val: expr ),*$(,)?) => {{
          let mut map = HashMap::default();

@@ -19,7 +19,15 @@ fn analyzer_config() -> AnalyzerConfig {
 }
 
 fn vectorize(src: &str) -> anyhow::Result<Package> {
-    let mut analyzer = Analyzer::new(Default::default(), Packages::default(), analyzer_config());
+    // Builtins which should be exposed to these tests can be defined here.
+    let env = Environment::from(parse_map(
+        None,
+        map![
+            "float" => "(v: A) => float",
+        ],
+    ));
+
+    let mut analyzer = Analyzer::new(env, Packages::default(), analyzer_config());
     let (_, pkg) = analyzer
         .analyze_source("main".into(), "".into(), src)
         .map_err(|err| err.error)?;
@@ -388,13 +396,7 @@ fn vectorize_with_conditional_expr() -> anyhow::Result<()> {
 
 #[test]
 fn vectorize_with_float_calls() -> anyhow::Result<()> {
-    let pkg = vectorize(
-        r#"
-    builtin float : (v: A) => float
-
-    (r) => ({ r with a: float(v: r._value) })"#,
-    )
-    .unwrap();
+    let pkg = vectorize(r#"(r) => ({ r with a: float(v: r._value) })"#).unwrap();
 
     let function = get_vectorized_function(&pkg);
 
