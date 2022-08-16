@@ -149,7 +149,7 @@ pub fn parse_duration(lit: &str) -> Result<Vec<ast::Duration>, String> {
 fn parse_magnitude(chars: &mut Peekable<Chars>) -> Result<i64, String> {
     let mut m = String::new();
     while let Some(c) = chars.peek() {
-        if !c.is_digit(10) {
+        if !c.is_ascii_digit() {
             break;
         } else {
             m.push(*c);

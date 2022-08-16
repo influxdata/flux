@@ -7,7 +7,7 @@ use crate::ast::{self, tests::Locator};
 fn test_parse_type_expression() {
     let mut p = Parser::new(r#"(a:T, b:T) => T where T: Addable + Divisible"#);
     let parsed = p.parse_type_expression();
-    let loc = Locator::new(&p.source[..]);
+    let loc = Locator::new(p.source);
     assert_eq!(
         parsed,
         TypeExpression {
@@ -125,7 +125,7 @@ fn test_parse_type_expression() {
 fn test_parse_type_expression_tvar() {
     let mut p = Parser::new(r#"A"#);
     let parsed = p.parse_type_expression();
-    let loc = Locator::new(&p.source[..]);
+    let loc = Locator::new(p.source);
     assert_eq!(
         parsed,
         TypeExpression {
@@ -155,7 +155,7 @@ fn test_parse_type_expression_tvar() {
 fn test_parse_type_expression_int() {
     let mut p = Parser::new(r#"int"#);
     let parsed = p.parse_type_expression();
-    let loc = Locator::new(&p.source[..]);
+    let loc = Locator::new(p.source);
     assert_eq!(
         parsed,
         TypeExpression {
@@ -185,7 +185,7 @@ fn test_parse_type_expression_int() {
 fn test_parse_type_expression_uint() {
     let mut p = Parser::new(r#"uint"#);
     let parsed = p.parse_type_expression();
-    let loc = Locator::new(&p.source[..]);
+    let loc = Locator::new(p.source);
     assert_eq!(
         parsed,
         TypeExpression {
@@ -215,7 +215,7 @@ fn test_parse_type_expression_uint() {
 fn test_parse_type_expression_float() {
     let mut p = Parser::new(r#"float"#);
     let parsed = p.parse_type_expression();
-    let loc = Locator::new(&p.source[..]);
+    let loc = Locator::new(p.source);
     assert_eq!(
         parsed,
         TypeExpression {
@@ -245,7 +245,7 @@ fn test_parse_type_expression_float() {
 fn test_parse_type_expression_string() {
     let mut p = Parser::new(r#"string"#);
     let parsed = p.parse_type_expression();
-    let loc = Locator::new(&p.source[..]);
+    let loc = Locator::new(p.source);
     assert_eq!(
         parsed,
         TypeExpression {
@@ -275,7 +275,7 @@ fn test_parse_type_expression_string() {
 fn test_parse_type_expression_bool() {
     let mut p = Parser::new(r#"bool"#);
     let parsed = p.parse_type_expression();
-    let loc = Locator::new(&p.source[..]);
+    let loc = Locator::new(p.source);
     assert_eq!(
         parsed,
         TypeExpression {
@@ -305,7 +305,7 @@ fn test_parse_type_expression_bool() {
 fn test_parse_type_expression_time() {
     let mut p = Parser::new(r#"time"#);
     let parsed = p.parse_type_expression();
-    let loc = Locator::new(&p.source[..]);
+    let loc = Locator::new(p.source);
     assert_eq!(
         parsed,
         TypeExpression {
@@ -335,7 +335,7 @@ fn test_parse_type_expression_time() {
 fn test_parse_type_expression_duration() {
     let mut p = Parser::new(r#"duration"#);
     let parsed = p.parse_type_expression();
-    let loc = Locator::new(&p.source[..]);
+    let loc = Locator::new(p.source);
     assert_eq!(
         parsed,
         TypeExpression {
@@ -365,7 +365,7 @@ fn test_parse_type_expression_duration() {
 fn test_parse_type_expression_bytes() {
     let mut p = Parser::new(r#"bytes"#);
     let parsed = p.parse_type_expression();
-    let loc = Locator::new(&p.source[..]);
+    let loc = Locator::new(p.source);
     assert_eq!(
         parsed,
         TypeExpression {
@@ -395,7 +395,7 @@ fn test_parse_type_expression_bytes() {
 fn test_parse_type_expression_regexp() {
     let mut p = Parser::new(r#"regexp"#);
     let parsed = p.parse_type_expression();
-    let loc = Locator::new(&p.source[..]);
+    let loc = Locator::new(p.source);
     assert_eq!(
         parsed,
         TypeExpression {
@@ -425,7 +425,7 @@ fn test_parse_type_expression_regexp() {
 fn test_parse_type_expression_array_int() {
     let mut p = Parser::new(r#"[int]"#);
     let parsed = p.parse_type_expression();
-    let loc = Locator::new(&p.source[..]);
+    let loc = Locator::new(p.source);
     assert_eq!(
         parsed,
         TypeExpression {
@@ -461,7 +461,7 @@ fn test_parse_type_expression_array_int() {
 fn test_parse_type_expression_array_string() {
     let mut p = Parser::new(r#"[string]"#);
     let parsed = p.parse_type_expression();
-    let loc = Locator::new(&p.source[..]);
+    let loc = Locator::new(p.source);
     assert_eq!(
         parsed,
         TypeExpression {
@@ -497,7 +497,7 @@ fn test_parse_type_expression_array_string() {
 fn test_parse_type_expression_dict() {
     let mut p = Parser::new(r#"[string:int]"#);
     let parsed = p.parse_type_expression();
-    let loc = Locator::new(&p.source[..]);
+    let loc = Locator::new(p.source);
     assert_eq!(
         parsed,
         TypeExpression {
@@ -546,7 +546,7 @@ fn test_parse_type_expression_dict() {
 fn test_parse_record_type_only_properties() {
     let mut p = Parser::new(r#"{a:int, b:uint}"#);
     let parsed = p.parse_record_type();
-    let loc = Locator::new(&p.source[..]);
+    let loc = Locator::new(p.source);
     assert_eq!(
         parsed,
         MonoType::Record(RecordType {
@@ -825,7 +825,7 @@ fn test_parse_record_type_string_literal_property() {
 fn test_parse_record_type_trailing_comma() {
     let mut p = Parser::new(r#"{a:int,}"#);
     let parsed = p.parse_record_type();
-    let loc = Locator::new(&p.source[..]);
+    let loc = Locator::new(p.source);
     assert_eq!(
         parsed,
         MonoType::Record(RecordType {
@@ -869,7 +869,7 @@ fn test_parse_record_type_trailing_comma() {
 fn test_parse_record_type_invalid() {
     let mut p = Parser::new(r#"{a b}"#);
     let parsed = p.parse_record_type();
-    let loc = Locator::new(&p.source[..]);
+    let loc = Locator::new(p.source);
     assert_eq!(
         parsed,
         MonoType::Record(RecordType {
@@ -888,7 +888,7 @@ fn test_parse_record_type_invalid() {
 fn test_parse_constraint_one_ident() {
     let mut p = Parser::new(r#"A : date"#);
     let parsed = p.parse_constraints();
-    let loc = Locator::new(&p.source[..]);
+    let loc = Locator::new(p.source);
     assert_eq!(
         parsed,
         vec![TypeConstraint {
@@ -917,7 +917,7 @@ fn test_parse_constraint_one_ident() {
 fn test_parse_record_type_blank() {
     let mut p = Parser::new(r#"{}"#);
     let parsed = p.parse_record_type();
-    let loc = Locator::new(&p.source[..]);
+    let loc = Locator::new(p.source);
     assert_eq!(
         parsed,
         MonoType::Record(RecordType {
@@ -935,7 +935,7 @@ fn test_parse_record_type_blank() {
 fn test_parse_type_expression_function_with_no_params() {
     let mut p = Parser::new(r#"() => int"#);
     let parsed = p.parse_type_expression();
-    let loc = Locator::new(&p.source[..]);
+    let loc = Locator::new(p.source);
     assert_eq!(
         parsed,
         TypeExpression {
@@ -973,7 +973,7 @@ fn test_parse_type_expression_function_with_no_params() {
 fn test_parse_function_type_trailing_comma() {
     let mut p = Parser::new(r#"(a:int,) => int"#);
     let parsed = p.parse_type_expression();
-    let loc = Locator::new(&p.source[..]);
+    let loc = Locator::new(p.source);
     assert_eq!(
         parsed,
         TypeExpression {
@@ -1036,7 +1036,7 @@ fn test_parse_function_type_trailing_comma() {
 fn test_parse_type_expression_function_with_params() {
     let mut p = Parser::new(r#"(A: int, B: uint) => int"#);
     let parsed = p.parse_type_expression();
-    let loc = Locator::new(&p.source[..]);
+    let loc = Locator::new(p.source);
     assert_eq!(
         parsed,
         TypeExpression {
@@ -1127,7 +1127,7 @@ fn test_parse_type_expression_function_with_params() {
 fn test_parse_type_expression_function_optional_params() {
     let mut p = Parser::new(r#"(?A: int) => int"#);
     let parsed = p.parse_type_expression();
-    let loc = Locator::new(&p.source[..]);
+    let loc = Locator::new(p.source);
     assert_eq!(
         parsed,
         TypeExpression {
@@ -1190,7 +1190,7 @@ fn test_parse_type_expression_function_optional_params() {
 fn test_parse_type_expression_function_named_params() {
     let mut p = Parser::new(r#"(<-A: int) => int"#);
     let parsed = p.parse_type_expression();
-    let loc = Locator::new(&p.source[..]);
+    let loc = Locator::new(p.source);
     assert_eq!(
         parsed,
         TypeExpression {
@@ -1252,7 +1252,7 @@ fn test_parse_type_expression_function_named_params() {
 fn test_parse_type_expression_function_unnamed_params() {
     let mut p = Parser::new(r#"(<- : int) => int"#);
     let parsed = p.parse_type_expression();
-    let loc = Locator::new(&p.source[..]);
+    let loc = Locator::new(p.source);
     assert_eq!(
         parsed,
         TypeExpression {
@@ -1308,7 +1308,7 @@ fn test_parse_type_expression_function_unnamed_params() {
 fn test_parse_constraint_two_ident() {
     let mut p = Parser::new(r#"A: Addable + Subtractable"#);
     let parsed = p.parse_constraints();
-    let loc = Locator::new(&p.source[..]);
+    let loc = Locator::new(p.source);
     assert_eq!(
         parsed,
         vec![TypeConstraint {
@@ -1347,7 +1347,7 @@ fn test_parse_constraint_two_ident() {
 fn test_parse_constraint_two_con() {
     let mut p = Parser::new(r#"A: Addable, B: Subtractable"#);
     let parsed = p.parse_constraints();
-    let loc = Locator::new(&p.source[..]);
+    let loc = Locator::new(p.source);
     assert_eq!(
         parsed,
         vec![
@@ -1399,7 +1399,7 @@ fn test_parse_constraint_two_con() {
 fn test_parse_record_type_tvar_properties() {
     let mut p = Parser::new(r#"{A with a:int, b:uint}"#);
     let parsed = p.parse_record_type();
-    let loc = Locator::new(&p.source[..]);
+    let loc = Locator::new(p.source);
     assert_eq!(
         parsed,
         MonoType::Record(RecordType {
@@ -1425,8 +1425,7 @@ fn test_parse_record_type_tvar_properties() {
                         base: BaseNode {
                             location: loc.get(1, 9, 1, 10),
                             ..BaseNode::default()
-                        }
-                        .into(),
+                        },
                     }
                     .into(),
                     monotype: MonoType::Basic(NamedType {

@@ -29,7 +29,7 @@ fn everything(c: &mut Criterion) {
         b.iter(black_box(|| {
             let (prelude, _, _) =
                 bootstrap::infer_stdlib_dir(Path::new("../../stdlib"), Default::default()).unwrap();
-            assert!(prelude.len() > 0);
+            assert!(!prelude.is_empty());
         }));
     });
     group.finish();

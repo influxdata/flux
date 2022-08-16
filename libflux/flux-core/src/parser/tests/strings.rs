@@ -34,7 +34,7 @@ fn parse_string_literal_invalid_string() {
 fn string_interpolation_simple() {
     let mut p = Parser::new(r#""a + b = ${a + b}""#);
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(&p.source[..]);
+    let loc = Locator::new(p.source);
     assert_eq!(
         parsed,
         File {
@@ -103,7 +103,7 @@ fn string_interpolation_simple() {
 fn string_interpolation_array() {
     let mut p = Parser::new(r#"a = ["influx", "test", "InfluxOfflineTimeAlert", "acu:${r.a}"]"#);
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(&p.source[..]);
+    let loc = Locator::new(p.source);
     assert_eq!(
         parsed,
         File {
@@ -223,7 +223,7 @@ fn string_interpolation_array() {
 fn string_interpolation_multiple() {
     let mut p = Parser::new(r#""a = ${a} and b = ${b}""#);
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(&p.source[..]);
+    let loc = Locator::new(p.source);
     assert_eq!(
         parsed,
         File {
@@ -298,7 +298,7 @@ fn string_interpolation_multiple() {
 fn string_interpolation_nested() {
     let mut p = Parser::new(r#""we ${"can ${"add" + "strings"}"} together""#);
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(&p.source[..]);
+    let loc = Locator::new(p.source);
     assert_eq!(
         parsed,
         File {
@@ -395,7 +395,7 @@ fn string_interpolation_nested() {
 fn string_interp_with_escapes() {
     let mut p = Parser::new(r#""string \"interpolation with ${"escapes"}\"""#);
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(&p.source[..]);
+    let loc = Locator::new(p.source);
     assert_eq!(
         parsed,
         File {
@@ -457,7 +457,7 @@ fn string_interp_with_escapes() {
 fn bad_string_expression() {
     let mut p = Parser::new(r#"fn = (a) => "${a}"#);
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(&p.source[..]);
+    let loc = Locator::new(p.source);
     assert_eq!(
         parsed,
         File {
@@ -527,7 +527,7 @@ fn bad_string_expression() {
 fn string_with_utf_8() {
     let mut p = Parser::new(r#""日本語""#);
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(&p.source[..]);
+    let loc = Locator::new(p.source);
     assert_eq!(
         parsed,
         File {
@@ -561,7 +561,7 @@ fn string_with_utf_8() {
 fn string_with_byte_values() {
     let mut p = Parser::new(r#""\xe6\x97\xa5\xe6\x9c\xac\xe8\xaa\x9e""#);
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(&p.source[..]);
+    let loc = Locator::new(p.source);
     assert_eq!(
         parsed,
         File {
@@ -595,7 +595,7 @@ fn string_with_byte_values() {
 fn string_with_mixed_values() {
     let mut p = Parser::new(r#""hello 日x本 \xe6\x97\xa5\xe6\x9c\xac\xe8\xaa\x9e \xc2\xb5s""#);
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(&p.source[..]);
+    let loc = Locator::new(p.source);
     assert_eq!(
         parsed,
         File {
@@ -636,7 +636,7 @@ backslash \\
 ""#,
     );
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(&p.source[..]);
+    let loc = Locator::new(p.source);
     assert_eq!(
         parsed,
         File {
@@ -667,7 +667,7 @@ string"
 "#,
     );
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(&p.source[..]);
+    let loc = Locator::new(p.source);
     assert_eq!(
         parsed,
         File {

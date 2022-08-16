@@ -10,7 +10,7 @@ fn arrow_function_called() {
    plusOne(r:5)"#,
     );
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(&p.source[..]);
+    let loc = Locator::new(p.source);
     assert_eq!(
         parsed,
         File {
@@ -144,7 +144,7 @@ fn arrow_function_called() {
 fn arrow_function_return_map() {
     let mut p = Parser::new(r#"toMap = (r) =>({r:r})"#);
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(&p.source[..]);
+    let loc = Locator::new(p.source);
     assert_eq!(
         parsed,
         File {
@@ -242,7 +242,7 @@ fn arrow_function_return_map() {
 fn arrow_function() {
     let mut p = Parser::new(r#"(x,y) => x == y"#);
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(&p.source[..]);
+    let loc = Locator::new(p.source);
     assert_eq!(
         parsed,
         File {
@@ -333,7 +333,7 @@ fn arrow_function() {
 fn arrow_function_with_default_arg() {
     let mut p = Parser::new(r#"addN = (r, n=5) => r + n"#);
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(&p.source[..]);
+    let loc = Locator::new(p.source);
     assert_eq!(
         parsed,
         File {
@@ -441,7 +441,7 @@ fn arrow_function_called_in_binary_expression() {
             plusOne(r:5) == 6 or die()"#,
     );
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(&p.source[..]);
+    let loc = Locator::new(p.source);
     assert_eq!(
         parsed,
         File {
@@ -612,7 +612,7 @@ fn arrow_function_called_in_binary_expression() {
 fn arrow_function_as_single_expression() {
     let mut p = Parser::new(r#"f = (r) => r["_measurement"] == "cpu""#);
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(&p.source[..]);
+    let loc = Locator::new(p.source);
     assert_eq!(
         parsed,
         File {
@@ -712,7 +712,7 @@ fn arrow_function_as_block() {
             }"#,
     );
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(&p.source[..]);
+    let loc = Locator::new(p.source);
     assert_eq!(
         parsed,
         File {

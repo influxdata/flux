@@ -243,7 +243,7 @@ impl InferState<'_, '_> {
     fn free_vars(&mut self) -> Vec<Tvar> {
         let mut vars = self.env.free_vars();
 
-        for typ in self.undefined_symbols.unordered_values().cloned() {
+        for typ in self.undefined_symbols.unordered_values() {
             typ.apply_cow(self.sub).extend_free_vars(&mut vars);
         }
 
@@ -2034,7 +2034,7 @@ mod tests {
         let got = convert_duration(&t).unwrap();
         assert_eq!(expect_nano, got.nanoseconds);
         assert_eq!(expect_months, got.months);
-        assert_eq!(false, got.negative);
+        assert!(!got.negative);
     }
 
     #[test]
@@ -2059,7 +2059,7 @@ mod tests {
         let got = convert_duration(&t).unwrap();
         assert_eq!(expect_nano, got.nanoseconds);
         assert_eq!(expect_months, got.months);
-        assert_eq!(false, got.negative);
+        assert!(!got.negative);
     }
 
     #[test]
@@ -2084,7 +2084,7 @@ mod tests {
         let got = convert_duration(&t).unwrap();
         assert_eq!(expect_nano, got.nanoseconds);
         assert_eq!(expect_months, got.months);
-        assert_eq!(true, got.negative);
+        assert!(got.negative);
     }
 
     #[test]
@@ -2104,7 +2104,7 @@ mod tests {
             },
         ];
         let exp = "unrecognized magnitude for duration";
-        let got = convert_duration(&t).err().expect("should be an error");
+        let got = convert_duration(&t).expect_err("should be an error");
         assert_eq!(exp, got.to_string());
     }
 
@@ -2125,7 +2125,7 @@ mod tests {
             },
         ];
         let exp = "all values in AST duration vector must have the same sign";
-        let got = convert_duration(&t).err().expect("should be an error");
+        let got = convert_duration(&t).expect_err("should be an error");
         assert_eq!(exp, got.to_string());
     }
 
@@ -2133,7 +2133,7 @@ mod tests {
     fn duration_conversion_empty_error() {
         let t = Vec::new();
         let exp = "AST duration vector must contain at least one duration value";
-        let got = convert_duration(&t).err().expect("should be an error");
+        let got = convert_duration(&t).expect_err("should be an error");
         assert_eq!(exp, got.to_string());
     }
 
@@ -2219,7 +2219,7 @@ mod tests {
                                     name: Symbol::from("a"),
                                 },
                                 value: Expression::Integer(IntegerLit {
-                                    loc: b.location.clone(),
+                                    loc: b.location,
                                     value: 2,
                                 }),
                             }],
