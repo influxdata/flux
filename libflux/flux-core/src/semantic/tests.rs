@@ -151,7 +151,7 @@ fn infer_types(
             return Err(Error::TypeMismatch { want, got });
         }
     }
-    return Ok((env, pkg));
+    Ok((env, pkg))
 }
 
 /// The test_infer! macro generates test cases for type inference.
@@ -1585,7 +1585,7 @@ fn binary_expr_modulo() {
 }
 #[test]
 fn binary_expr_comparison() {
-    for op in vec!["==", "!="] {
+    for op in &["==", "!="] {
         let src = format!("c = a {} b", op);
 
         test_infer! {
@@ -1712,7 +1712,7 @@ fn binary_expr_comparison() {
             ],
         }
     }
-    for op in vec![">=", "<=", ">", "<"] {
+    for op in &[">=", "<=", ">", "<"] {
         let src = format!("c = a {} b", op);
 
         test_infer! {
@@ -1819,7 +1819,7 @@ fn binary_expr_comparison() {
 }
 #[test]
 fn binary_expr_regex_op() {
-    for op in vec!["=~", "!~"] {
+    for op in &["=~", "!~"] {
         let src = format!("c = a {} b", op);
 
         test_infer! {
@@ -2097,7 +2097,7 @@ fn conditional_expr() {
 }
 #[test]
 fn logical_expr() {
-    for op in vec!["and", "or"] {
+    for op in &["and", "or"] {
         let src = format!("c = a {} b", op);
         test_infer! {
             env: map![

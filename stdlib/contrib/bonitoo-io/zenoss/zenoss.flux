@@ -131,7 +131,9 @@ event = (
                 http.post(headers: {headers with "z-api-key": apiKey}, url: url, data: body)
             else
                 http.post(
-                    headers: {headers with "Authorization": http.basicAuth(u: username, p: password)},
+                    headers: {headers with "Authorization":
+                            http.basicAuth(u: username, p: password),
+                    },
                     url: url,
                     data: body,
                 )

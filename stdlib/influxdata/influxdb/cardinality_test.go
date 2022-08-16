@@ -222,7 +222,11 @@ influxdb.cardinality(bucket: "telegraf", start: 2020-10-22T09:29:00Z, stop: 2020
 
 import influxdb "influxdata/influxdb"
 
-influxdb.cardinality(bucketID: "1e01ac57da723035", start: 2020-10-22T09:29:00Z, stop: 2020-10-22T09:30:00Z)
+influxdb.cardinality(
+    bucketID: "1e01ac57da723035",
+    start: 2020-10-22T09:29:00Z,
+    stop: 2020-10-22T09:30:00Z,
+)
 `,
 				Tables: defaultTablesFn,
 			},

@@ -57,7 +57,10 @@ message = (
     ) =>
     {
         data = {text: text, markdown: markdown, roomId: roomId}
-        headers = {"Content-Type": "application/json; charset=utf-8", "Authorization": "Bearer " + token}
+        headers = {
+            "Content-Type": "application/json; charset=utf-8",
+            "Authorization": "Bearer " + token,
+        }
 
         content = json.encode(v: data)
 

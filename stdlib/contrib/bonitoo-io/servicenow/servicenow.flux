@@ -119,10 +119,17 @@ event = (
                 else
                     "",
             // shouldn't happen
-            additional_info: if additionalInfo == record.any then "" else string(v: json.encode(v: additionalInfo)),
+            additional_info:
+                if additionalInfo == record.any then
+                    ""
+                else
+                    string(v: json.encode(v: additionalInfo)),
         }
         payload = {records: [event]}
-        headers = {"Authorization": http.basicAuth(u: username, p: password), "Content-Type": "application/json"}
+        headers = {
+            "Authorization": http.basicAuth(u: username, p: password),
+            "Content-Type": "application/json",
+        }
         body = json.encode(v: payload)
 
         return http.post(headers: headers, url: url, data: body)
@@ -217,7 +224,11 @@ endpoint = (url, username, password, source="Flux") =>
                                                 description: obj.description,
                                                 severity: obj.severity,
                                                 additionalInfo:
-                                                    record.get(r: obj, key: "additionalInfo", default: record.any),
+                                                    record.get(
+                                                        r: obj,
+                                                        key: "additionalInfo",
+                                                        default: record.any,
+                                                    ),
                                             ) / 100,
                                 ),
                         }

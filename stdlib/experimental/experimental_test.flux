@@ -30,7 +30,8 @@ testcase addDuration_to_time {
             ],
         )
 
-    got = cases |> map(fn: (r) => ({_value: experimental.addDuration(d: duration(v: r.d), to: r.to)}))
+    got =
+        cases |> map(fn: (r) => ({_value: experimental.addDuration(d: duration(v: r.d), to: r.to)}))
 
     testing.diff(want: want, got: got)
 }
@@ -71,7 +72,15 @@ testcase addDuration_to_duration_as_time {
             ],
         )
 
-    got = cases |> map(fn: (r) => ({_value: experimental.addDuration(d: duration(v: r.d), to: duration(v: r.to))}))
+    got =
+        cases
+            |> map(
+                fn: (r) =>
+                    ({
+                        _value:
+                            experimental.addDuration(d: duration(v: r.d), to: duration(v: r.to)),
+                    }),
+            )
 
     testing.diff(want: want, got: got)
 }
@@ -111,7 +120,11 @@ testcase subDuration_to_time {
             ],
         )
 
-    got = cases |> map(fn: (r) => ({_value: experimental.subDuration(d: duration(v: r.d), from: r.from)}))
+    got =
+        cases
+            |> map(
+                fn: (r) => ({_value: experimental.subDuration(d: duration(v: r.d), from: r.from)}),
+            )
 
     testing.diff(want: want, got: got)
 }
@@ -152,7 +165,18 @@ testcase subDuration_to_duration_as_time {
             ],
         )
 
-    got = cases |> map(fn: (r) => ({_value: experimental.subDuration(d: duration(v: r.d), from: duration(v: r.from))}))
+    got =
+        cases
+            |> map(
+                fn: (r) =>
+                    ({
+                        _value:
+                            experimental.subDuration(
+                                d: duration(v: r.d),
+                                from: duration(v: r.from),
+                            ),
+                    }),
+            )
 
     testing.diff(want: want, got: got)
 }

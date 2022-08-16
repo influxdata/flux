@@ -104,7 +104,7 @@ pub(crate) fn convert_monotype(
     config: &AnalyzerConfig,
 ) -> Result<MonoType, Errors<Error>> {
     let mut converter = Converter::new(config);
-    let r = converter.convert_monotype(&ty, tvars);
+    let r = converter.convert_monotype(ty, tvars);
     converter.finish()?;
     Ok(r)
 }
@@ -1437,7 +1437,7 @@ mod tests {
             files: Vec::new(),
         };
         let want = Package {
-            loc: b.location.clone(),
+            loc: b.location,
             package: "main".to_string(),
             files: Vec::new(),
         };
@@ -1461,7 +1461,7 @@ mod tests {
                 package: Some(PackageClause {
                     loc: b.location.clone(),
                     name: Identifier {
-                        loc: b.location.clone(),
+                        loc: b.location,
                         name: symbols["foo"].clone(),
                     },
                 }),
@@ -1516,7 +1516,7 @@ mod tests {
                             typ: None,
                         },
                         alias: Some(Identifier {
-                            loc: b.location.clone(),
+                            loc: b.location,
                             name: symbols["b"].clone(),
                         }),
                         import_symbol: symbols["b"].clone(),
@@ -1590,7 +1590,7 @@ mod tests {
                     Statement::Expr(ExprStmt {
                         loc: b.location.clone(),
                         expression: Expression::Identifier(IdentifierExpr {
-                            loc: b.location.clone(),
+                            loc: b.location,
                             typ: type_info(),
                             name: symbols["a@main"].clone(),
                         }),
@@ -1629,7 +1629,7 @@ mod tests {
                                 name: symbols["a"].clone(),
                             },
                             value: Expression::Integer(IntegerLit {
-                                loc: b.location.clone(),
+                                loc: b.location,
                                 value: 10,
                             }),
                         }],
@@ -1668,7 +1668,7 @@ mod tests {
                                 name: symbols["a"].clone(),
                             },
                             value: Expression::Integer(IntegerLit {
-                                loc: b.location.clone(),
+                                loc: b.location,
                                 value: 10,
                             }),
                         }],
@@ -1719,7 +1719,7 @@ mod tests {
                                     name: symbols["b"].clone(),
                                 },
                                 value: Expression::Integer(IntegerLit {
-                                    loc: b.location.clone(),
+                                    loc: b.location,
                                     value: 11,
                                 }),
                             },
@@ -1772,7 +1772,7 @@ mod tests {
                                     name: symbols["b"].clone(),
                                 },
                                 value: Expression::Identifier(IdentifierExpr {
-                                    loc: b.location.clone(),
+                                    loc: b.location,
                                     typ: type_info(),
                                     name: symbols["b"].clone(),
                                 }),
@@ -1881,7 +1881,7 @@ mod tests {
                                 },
                             ],
                         })),
-                        b.location.clone(),
+                        b.location,
                     )),
                 }))],
             }],
@@ -1919,7 +1919,7 @@ mod tests {
                             property: symbols["state"].clone(),
                         },
                         init: Expression::StringLit(StringLit {
-                            loc: b.location.clone(),
+                            loc: b.location,
                             value: "Warning".to_string(),
                             typ: None,
                         }),
@@ -2029,7 +2029,7 @@ mod tests {
                                         name: symbols["b"].clone(),
                                     },
                                     value: Expression::Integer(IntegerLit {
-                                        loc: b.location.clone(),
+                                        loc: b.location,
                                         value: 3,
                                     }),
                                 },
@@ -2154,7 +2154,7 @@ mod tests {
                                     name: symbols["c"].clone(),
                                 },
                                 value: Expression::Integer(IntegerLit {
-                                    loc: b.location.clone(),
+                                    loc: b.location,
                                     value: 42,
                                 }),
                             }],
@@ -2228,7 +2228,7 @@ mod tests {
                                     }),
                                     separator: vec![],
                                     value: Some(ast::Expression::Integer(ast::IntegerLit {
-                                        base: b.clone(),
+                                        base: b,
                                         value: 1,
                                     })),
                                     comma: vec![],
@@ -2338,7 +2338,7 @@ mod tests {
                                     name: symbols["a"].clone(),
                                 },
                                 value: Expression::Integer(IntegerLit {
-                                    loc: b.location.clone(),
+                                    loc: b.location,
                                     value: 2,
                                 }),
                             }],
@@ -2392,7 +2392,7 @@ mod tests {
                         name: symbols["a"].clone(),
                     }),
                     right: Expression::Identifier(IdentifierExpr {
-                        loc: b.location.clone(),
+                        loc: b.location,
                         typ: type_info(),
                         name: symbols["b"].clone(),
                     }),
@@ -2464,7 +2464,7 @@ mod tests {
                 piped.clone(),
                 default1.clone(),
                 default2.clone(),
-                no_default.clone(),
+                no_default,
             ],
             body: Block::Return(ReturnStmt {
                 loc: b.location.clone(),
@@ -2478,7 +2478,7 @@ mod tests {
                         name: symbols["a"].clone(),
                     }),
                     right: Expression::Identifier(IdentifierExpr {
-                        loc: b.location.clone(),
+                        loc: b.location,
                         typ: type_info(),
                         name: symbols["b"].clone(),
                     }),
@@ -2517,7 +2517,7 @@ mod tests {
                             name: symbols["a"].clone(),
                         }),
                         index: Expression::Integer(IntegerLit {
-                            loc: b.location.clone(),
+                            loc: b.location,
                             value: 3,
                         }),
                     })),
@@ -2562,7 +2562,7 @@ mod tests {
                             }),
                         })),
                         index: Expression::Integer(IntegerLit {
-                            loc: b.location.clone(),
+                            loc: b.location,
                             value: 5,
                         }),
                     })),
@@ -2605,7 +2605,7 @@ mod tests {
                             arguments: Vec::new(),
                         })),
                         index: Expression::Integer(IntegerLit {
-                            loc: b.location.clone(),
+                            loc: b.location,
                             value: 3,
                         }),
                     })),
@@ -2676,7 +2676,7 @@ mod tests {
                             loc: b.location.clone(),
                             typ: type_info(),
                             object: Expression::Identifier(IdentifierExpr {
-                                loc: b.location.clone(),
+                                loc: b.location,
                                 typ: type_info(),
                                 name: symbols["a"].clone(),
                             }),
@@ -2719,7 +2719,7 @@ mod tests {
                                 loc: b.location.clone(),
                                 typ: type_info(),
                                 object: Expression::Identifier(IdentifierExpr {
-                                    loc: b.location.clone(),
+                                    loc: b.location,
                                     typ: type_info(),
                                     name: symbols["a"].clone(),
                                 }),
@@ -2749,7 +2749,7 @@ mod tests {
                 package: None,
                 imports: Vec::new(),
                 body: vec![ast::Statement::Bad(Box::new(ast::BadStmt {
-                    base: b.clone(),
+                    base: b,
                     text: "bad statement".to_string(),
                 }))],
                 eof: vec![],
@@ -2774,7 +2774,7 @@ mod tests {
                 body: vec![ast::Statement::Expr(Box::new(ast::ExprStmt {
                     base: b.clone(),
                     expression: ast::Expression::Bad(Box::new(ast::BadExpr {
-                        base: b.clone(),
+                        base: b,
                         text: "bad expression".to_string(),
                         expression: None,
                     })),
@@ -2841,17 +2841,11 @@ mod tests {
         let got = convert_polytype(&type_exp, &Default::default()).unwrap();
 
         let want = {
-            let mut vars = Vec::<types::BoundTvar>::new();
-            vars.push(types::BoundTvar(0));
-            vars.push(types::BoundTvar(1));
+            let vars = vec![types::BoundTvar(0), types::BoundTvar(1)];
             let mut cons = types::BoundTvarKinds::new();
-            let mut kind_vector_1 = Vec::<types::Kind>::new();
-            kind_vector_1.push(types::Kind::Addable);
-            cons.insert(types::BoundTvar(0), kind_vector_1);
+            cons.insert(types::BoundTvar(0), vec![types::Kind::Addable]);
 
-            let mut kind_vector_2 = Vec::<types::Kind>::new();
-            kind_vector_2.push(types::Kind::Divisible);
-            cons.insert(types::BoundTvar(1), kind_vector_2);
+            cons.insert(types::BoundTvar(1), vec![types::Kind::Divisible]);
 
             let mut req = MonoTypeMap::new();
             req.insert("A".to_string(), MonoType::BoundVar(BoundTvar(0)));
@@ -2872,13 +2866,10 @@ mod tests {
         let type_exp = Parser::new("(A: T, B: S) => T where T: Addable").parse_type_expression();
 
         let got = convert_polytype(&type_exp, &Default::default()).unwrap();
-        let mut vars = Vec::<types::BoundTvar>::new();
-        vars.push(types::BoundTvar(0));
-        vars.push(types::BoundTvar(1));
+        let vars = vec![types::BoundTvar(0), types::BoundTvar(1)];
         let mut cons = types::BoundTvarKinds::new();
-        let mut kind_vector_1 = Vec::<types::Kind>::new();
-        kind_vector_1.push(types::Kind::Addable);
-        cons.insert(types::BoundTvar(0), kind_vector_1);
+
+        cons.insert(types::BoundTvar(0), vec![types::Kind::Addable]);
 
         let mut req = MonoTypeMap::new();
         req.insert("A".to_string(), MonoType::BoundVar(BoundTvar(0)));

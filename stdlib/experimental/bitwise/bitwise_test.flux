@@ -8,7 +8,14 @@ import "testing"
 
 testcase uand_exp {
     cases =
-        array.from(rows: [{a: 1, b: 1, want: 1}, {a: 1, b: 0, want: 0}, {a: 5, b: 1, want: 1}, {a: 5, b: 4, want: 4}])
+        array.from(
+            rows: [
+                {a: 1, b: 1, want: 1},
+                {a: 1, b: 0, want: 0},
+                {a: 5, b: 1, want: 1},
+                {a: 5, b: 4, want: 4},
+            ],
+        )
             |> map(fn: (r) => ({a: uint(v: r.a), b: uint(v: r.b), want: uint(v: r.want)}))
 
     got =
@@ -23,7 +30,14 @@ testcase uand_exp {
 }
 testcase uor_exp {
     cases =
-        array.from(rows: [{a: 1, b: 1, want: 1}, {a: 1, b: 0, want: 1}, {a: 5, b: 1, want: 5}, {a: 5, b: 4, want: 5}])
+        array.from(
+            rows: [
+                {a: 1, b: 1, want: 1},
+                {a: 1, b: 0, want: 1},
+                {a: 5, b: 1, want: 5},
+                {a: 5, b: 4, want: 5},
+            ],
+        )
             |> map(fn: (r) => ({a: uint(v: r.a), b: uint(v: r.b), want: uint(v: r.want)}))
 
     got =
@@ -38,7 +52,13 @@ testcase uor_exp {
 }
 
 testcase unot_exp {
-    cases = array.from(rows: [{a: uint(v: 1), want: math.maxuint - uint(v: 1)}, {a: math.maxuint, want: uint(v: 0)}])
+    cases =
+        array.from(
+            rows: [
+                {a: uint(v: 1), want: math.maxuint - uint(v: 1)},
+                {a: math.maxuint, want: uint(v: 0)},
+            ],
+        )
 
     got =
         cases
@@ -53,7 +73,14 @@ testcase unot_exp {
 
 testcase uclear_exp {
     cases =
-        array.from(rows: [{a: 1, b: 1, want: 0}, {a: 1, b: 0, want: 1}, {a: 5, b: 1, want: 4}, {a: 5, b: 4, want: 1}])
+        array.from(
+            rows: [
+                {a: 1, b: 1, want: 0},
+                {a: 1, b: 0, want: 1},
+                {a: 5, b: 1, want: 4},
+                {a: 5, b: 4, want: 1},
+            ],
+        )
             |> map(fn: (r) => ({a: uint(v: r.a), b: uint(v: r.b), want: uint(v: r.want)}))
 
     got =
@@ -68,7 +95,14 @@ testcase uclear_exp {
 }
 testcase ulshift_exp {
     cases =
-        array.from(rows: [{a: 1, b: 1, want: 2}, {a: 1, b: 0, want: 1}, {a: 5, b: 1, want: 10}, {a: 5, b: 4, want: 80}])
+        array.from(
+            rows: [
+                {a: 1, b: 1, want: 2},
+                {a: 1, b: 0, want: 1},
+                {a: 5, b: 1, want: 10},
+                {a: 5, b: 4, want: 80},
+            ],
+        )
             |> map(fn: (r) => ({a: uint(v: r.a), b: uint(v: r.b), want: uint(v: r.want)}))
 
     got =
@@ -83,7 +117,14 @@ testcase ulshift_exp {
 }
 testcase urshift_exp {
     cases =
-        array.from(rows: [{a: 2, b: 1, want: 1}, {a: 1, b: 0, want: 1}, {a: 10, b: 1, want: 5}, {a: 80, b: 4, want: 5}])
+        array.from(
+            rows: [
+                {a: 2, b: 1, want: 1},
+                {a: 1, b: 0, want: 1},
+                {a: 10, b: 1, want: 5},
+                {a: 80, b: 4, want: 5},
+            ],
+        )
             |> map(fn: (r) => ({a: uint(v: r.a), b: uint(v: r.b), want: uint(v: r.want)}))
 
     got =
@@ -126,7 +167,14 @@ testcase sand_exp {
 }
 testcase sor_exp {
     cases =
-        array.from(rows: [{a: 1, b: 1, want: 1}, {a: 1, b: 0, want: 1}, {a: 5, b: 1, want: 5}, {a: 5, b: 4, want: 5}])
+        array.from(
+            rows: [
+                {a: 1, b: 1, want: 1},
+                {a: 1, b: 0, want: 1},
+                {a: 5, b: 1, want: 5},
+                {a: 5, b: 4, want: 5},
+            ],
+        )
 
     got =
         cases
@@ -155,7 +203,14 @@ testcase snot_exp {
 
 testcase sclear_exp {
     cases =
-        array.from(rows: [{a: 1, b: 1, want: 0}, {a: 1, b: 0, want: 1}, {a: 5, b: 1, want: 4}, {a: 5, b: 4, want: 1}])
+        array.from(
+            rows: [
+                {a: 1, b: 1, want: 0},
+                {a: 1, b: 0, want: 1},
+                {a: 5, b: 1, want: 4},
+                {a: 5, b: 4, want: 1},
+            ],
+        )
 
     got =
         cases
@@ -169,7 +224,14 @@ testcase sclear_exp {
 }
 testcase slshift_exp {
     cases =
-        array.from(rows: [{a: 1, b: 1, want: 2}, {a: 1, b: 0, want: 1}, {a: 5, b: 1, want: 10}, {a: 5, b: 4, want: 80}])
+        array.from(
+            rows: [
+                {a: 1, b: 1, want: 2},
+                {a: 1, b: 0, want: 1},
+                {a: 5, b: 1, want: 10},
+                {a: 5, b: 4, want: 80},
+            ],
+        )
 
     got =
         cases
@@ -183,7 +245,14 @@ testcase slshift_exp {
 }
 testcase srshift_exp {
     cases =
-        array.from(rows: [{a: 2, b: 1, want: 1}, {a: 1, b: 0, want: 1}, {a: 10, b: 1, want: 5}, {a: 80, b: 4, want: 5}])
+        array.from(
+            rows: [
+                {a: 2, b: 1, want: 1},
+                {a: 1, b: 0, want: 1},
+                {a: 10, b: 1, want: 5},
+                {a: 80, b: 4, want: 5},
+            ],
+        )
 
     got =
         cases

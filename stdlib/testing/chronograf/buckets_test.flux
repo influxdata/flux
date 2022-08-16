@@ -13,7 +13,8 @@ inData =
 ,,0,,A,0389eade5b34b000,,0,1970-01-01T00:00:00Z,a,aa
 ,,0,,B,042ed3f42d42e000,,0,1970-01-01T00:00:00Z,b,bb
 "
-outData = "
+outData =
+    "
 #datatype,string,long,string
 #group,false,false,false
 #default,_result,,

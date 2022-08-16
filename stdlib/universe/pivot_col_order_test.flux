@@ -57,7 +57,11 @@ testcase pivot_col_order {
         csv.from(csv: inData)
             |> testing.load()
             |> range(start: 2018-05-22T19:53:26Z)
-            |> pivot(rowKey: ["_time"], columnKey: ["_measurement", "_field"], valueColumn: "_value")
+            |> pivot(
+                rowKey: ["_time"],
+                columnKey: ["_measurement", "_field"],
+                valueColumn: "_value",
+            )
     want = csv.from(csv: outData)
 
     testing.diff(got, want)

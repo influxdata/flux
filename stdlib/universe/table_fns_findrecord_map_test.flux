@@ -86,12 +86,20 @@ testcase table_fns_findrecord_map {
                         csv.from(csv: inData)
                             |> range(start, stop)
                             |> filter(
-                                fn: (r) => r._measurement == "city_data" and r._field == "temp" and r.city == city,
+                                fn: (r) =>
+                                    r._measurement == "city_data" and r._field == "temp" and r.city
+                                        ==
+                                        city,
                             )
                             |> mean()
                             |> findRecord(fn: (key) => true, idx: 0)
 
-                    return {city: r.city, _time: stop, _value: agg._value, _field: "event_temp_mean"}
+                    return {
+                        city: r.city,
+                        _time: stop,
+                        _value: agg._value,
+                        _field: "event_temp_mean",
+                    }
                 },
             )
     want = csv.from(csv: outData)

@@ -725,7 +725,7 @@ mod tests {
 
     fn test_serde(expr: &'static str) {
         // let want = parser::parse(expr).unwrap();
-        let mut p = parser::Parser::new(expr.clone());
+        let mut p = parser::Parser::new(expr);
 
         let typ_expr = p.parse_type_expression();
         if let Err(err) = ast::check::check(ast::walk::Node::TypeExpression(&typ_expr)) {

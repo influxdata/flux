@@ -46,7 +46,9 @@ tier = "ft"
 tickscript_deadman = (table=<-) =>
     table
         |> range(start: 2020-11-25T14:05:15Z)
-        |> filter(fn: (r) => r._measurement == "testm" and r._field == metric_type and r.realm == tier)
+        |> filter(
+            fn: (r) => r._measurement == "testm" and r._field == metric_type and r.realm == tier,
+        )
         |> schema.fieldsAsCols()
         |> tickscript.groupBy(columns: ["host", "realm"])
         |> tickscript.deadman(

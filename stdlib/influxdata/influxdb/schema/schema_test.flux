@@ -569,17 +569,28 @@ testcase tagKeys {
     testing.diff(want: want, got: got) |> yield()
 }
 testcase tagKeys_with_predicate {
-    want = array.from(rows: [{_value: "_field"}, {_value: "_measurement"}, {_value: "cpu"}, {_value: "host"}])
+    want =
+        array.from(
+            rows: [{_value: "_field"}, {_value: "_measurement"}, {_value: "cpu"}, {_value: "host"}],
+        )
 
     got =
-        schema.tagKeys(bucket: "bucket", predicate: (r) => r._measurement == "cpu", start: start, stop: stop)
+        schema.tagKeys(
+            bucket: "bucket",
+            predicate: (r) => r._measurement == "cpu",
+            start: start,
+            stop: stop,
+        )
             |> filter(fn: (r) => r._value != "_start" and r._value != "_stop")
             |> sort()
 
     testing.diff(want: want, got: got) |> yield()
 }
 testcase measurementTagKeys {
-    want = array.from(rows: [{_value: "_field"}, {_value: "_measurement"}, {_value: "cpu"}, {_value: "host"}])
+    want =
+        array.from(
+            rows: [{_value: "_field"}, {_value: "_measurement"}, {_value: "cpu"}, {_value: "host"}],
+        )
 
     got =
         schema.measurementTagKeys(bucket: "bucket", measurement: "cpu", start: start, stop: stop)
@@ -589,7 +600,8 @@ testcase measurementTagKeys {
     testing.diff(want: want, got: got) |> yield()
 }
 testcase fieldKeys {
-    want = array.from(rows: [{_value: "usage_idle"}, {_value: "usage_user"}, {_value: "used_percent"}])
+    want =
+        array.from(rows: [{_value: "usage_idle"}, {_value: "usage_user"}, {_value: "used_percent"}])
 
     got =
         schema.fieldKeys(bucket: "bucket", start: start, stop: stop)

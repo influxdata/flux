@@ -165,7 +165,12 @@ message = (
 //
 // ## Metadata
 // tags: notification endpoints, transformations
-endpoint = (url=defaultURL, token, parseMode=defaultParseMode, disableWebPagePreview=defaultDisableWebPagePreview) =>
+endpoint = (
+    url=defaultURL,
+    token,
+    parseMode=defaultParseMode,
+    disableWebPagePreview=defaultDisableWebPagePreview,
+) =>
     (mapFn) =>
         (tables=<-) =>
             tables

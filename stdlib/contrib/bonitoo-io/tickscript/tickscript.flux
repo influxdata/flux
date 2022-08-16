@@ -127,7 +127,10 @@ alert = (
         return
             tables
                 |> drop(fn: (column) => column =~ /_start.*/ or column =~ /_stop.*/)
-                |> map(fn: (r) => ({r with _check_id: check._check_id, _check_name: check._check_name}))
+                |> map(
+                    fn: (r) =>
+                        ({r with _check_id: check._check_id, _check_name: check._check_name}),
+                )
                 |> map(fn: (r) => ({r with id: id(r: r)}))
                 |> map(fn: (r) => ({r with details: details(r: r)}))
                 |> _addTopic()
@@ -191,7 +194,8 @@ deadman =
             measurement,
             threshold=0,
             id=(r) => "${r._check_id}",
-            message=(r) => "Deadman Check: ${r._check_name} is: " + (if r.dead then "dead" else "alive"),
+            message=(r) =>
+                "Deadman Check: ${r._check_name} is: " + (if r.dead then "dead" else "alive"),
             topic="",
             tables=<-,
         ) =>

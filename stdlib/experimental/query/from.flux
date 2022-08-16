@@ -59,7 +59,8 @@ fromRange = (bucket, start, stop=now()) =>
 // ## Metadata
 // tags: transformations,filters
 //
-filterMeasurement = (table=<-, measurement) => table |> filter(fn: (r) => r._measurement == measurement)
+filterMeasurement = (table=<-, measurement) =>
+    table |> filter(fn: (r) => r._measurement == measurement)
 
 // filterFields filters input data by field.
 //

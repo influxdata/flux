@@ -12,7 +12,7 @@ fn map_member_expressions() {
 			"#,
     );
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(&p.source[..]);
+    let loc = Locator::new(p.source);
     assert_eq!(
         parsed,
         File {
@@ -159,7 +159,7 @@ fn map_member_expressions() {
 fn object_with_string_literal_key() {
     let mut p = Parser::new(r#"x = {"a": 10}"#);
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(&p.source[..]);
+    let loc = Locator::new(p.source);
     assert_eq!(
         parsed,
         File {
@@ -224,7 +224,7 @@ fn object_with_string_literal_key() {
 fn object_with_mixed_keys() {
     let mut p = Parser::new(r#"x = {"a": 10, b: 11}"#);
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(&p.source[..]);
+    let loc = Locator::new(p.source);
     assert_eq!(
         parsed,
         File {
@@ -313,7 +313,7 @@ fn object_with_mixed_keys() {
 fn implicit_key_object_literal() {
     let mut p = Parser::new(r#"x = {a, b}"#);
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(&p.source[..]);
+    let loc = Locator::new(p.source);
     assert_eq!(
         parsed,
         File {
@@ -391,7 +391,7 @@ fn implicit_key_object_literal() {
 fn implicit_key_object_literal_error() {
     let mut p = Parser::new(r#"x = {"a", b}"#);
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(&p.source[..]);
+    let loc = Locator::new(p.source);
     assert_eq!(
         parsed,
         File {
@@ -470,7 +470,7 @@ fn implicit_key_object_literal_error() {
 fn implicit_and_explicit_keys_object_literal_error() {
     let mut p = Parser::new(r#"x = {a, b:c}"#);
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(&p.source[..]);
+    let loc = Locator::new(p.source);
     assert_eq!(
         parsed,
         File {
@@ -554,7 +554,7 @@ fn implicit_and_explicit_keys_object_literal_error() {
 fn object_with() {
     let mut p = Parser::new(r#"{a with b:c, d:e}"#);
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(&p.source[..]);
+    let loc = Locator::new(p.source);
     assert_eq!(
         parsed,
         File {
@@ -645,7 +645,7 @@ fn object_with() {
 fn object_with_implicit_keys() {
     let mut p = Parser::new(r#"{a with b, c}"#);
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(&p.source[..]);
+    let loc = Locator::new(p.source);
     assert_eq!(
         parsed,
         File {

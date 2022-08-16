@@ -128,9 +128,8 @@ mod tests {
 
         impl<'a> Visitor<'a> for NestingCounter {
             fn visit(&mut self, node: Node<'a>) -> bool {
-                match node {
-                    Node::Block(_) => self.count += 1,
-                    _ => (),
+                if let Node::Block(_) = node {
+                    self.count += 1
                 }
                 true
             }
@@ -190,7 +189,7 @@ g()
                     Node::FunctionExpr(_) => {
                         self.plus.push(false);
                     }
-                    Node::BinaryExpr(ref expr) => {
+                    Node::BinaryExpr(expr) => {
                         if expr.operator == AdditionOperator {
                             if *self.plus.last().expect("there must be a last") {
                                 self.err = format!("repeated + on line {}", expr.loc.start.line);

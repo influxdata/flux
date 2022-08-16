@@ -204,7 +204,12 @@ measurementTagValues = (
 // tags: metadata
 //
 measurementTagKeys = (bucket, measurement, start=_startDefault, stop=_stopDefault) =>
-    tagKeys(bucket: bucket, predicate: (r) => r._measurement == measurement, start: start, stop: stop)
+    tagKeys(
+        bucket: bucket,
+        predicate: (r) => r._measurement == measurement,
+        start: start,
+        stop: stop,
+    )
 
 // fieldKeys returns field keys in a bucket.
 //
@@ -279,7 +284,12 @@ fieldKeys = (bucket, predicate=(r) => true, start=_startDefault, stop=_stopDefau
 // tags: metadata
 //
 measurementFieldKeys = (bucket, measurement, start=_startDefault, stop=_stopDefault) =>
-    fieldKeys(bucket: bucket, predicate: (r) => r._measurement == measurement, start: start, stop: stop)
+    fieldKeys(
+        bucket: bucket,
+        predicate: (r) => r._measurement == measurement,
+        start: start,
+        stop: stop,
+    )
 
 // measurements returns a list of measurements in a specific bucket.
 //

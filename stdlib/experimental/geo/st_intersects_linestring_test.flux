@@ -177,7 +177,13 @@ outData =
 "
 
 // polygon in Brooklyn
-bt = {points: [{lat: 40.671659, lon: -73.936631}, {lat: 40.706543, lon: -73.749177}, {lat: 40.791333, lon: -73.880327}]}
+bt = {
+    points: [
+        {lat: 40.671659, lon: -73.936631},
+        {lat: 40.706543, lon: -73.749177},
+        {lat: 40.791333, lon: -73.880327},
+    ],
+}
 
 testcase stIntersectsLinestring {
     got =
@@ -190,7 +196,9 @@ testcase stIntersectsLinestring {
             |> geo.ST_LineString()
             |> map(
                 fn: (r) =>
-                    ({r with _st_intersects: geo.ST_Intersects(region: bt, geometry: {linestring: r.st_linestring})}),
+                    ({r with _st_intersects:
+                            geo.ST_Intersects(region: bt, geometry: {linestring: r.st_linestring}),
+                    }),
             )
             |> drop(columns: ["_start", "_stop"])
     want = csv.from(csv: outData)

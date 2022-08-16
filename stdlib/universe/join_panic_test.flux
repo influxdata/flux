@@ -56,9 +56,11 @@ testcase join_panic {
         api_requests
             |> filter(
                 fn: (r) =>
-                    r.response_code == "400" or r.response_code == "401" or r.response_code == "404" or r.response_code
+                    r.response_code == "400" or r.response_code == "401" or r.response_code == "404"
+                        or
+                        r.response_code == "429" or r.response_code == "500" or r.response_code
                         ==
-                        "429" or r.response_code == "500" or r.response_code == "503",
+                        "503",
             )
             |> group(columns: ["env", "response_code"])
             |> sum()
@@ -73,7 +75,9 @@ testcase join_panic {
         join(tables: {errors: errors, total: total}, on: ["env"])
             |> map(
                 fn: (r) =>
-                    ({r with availability: (1.0 - float(v: r._value_errors) / float(v: r._value_total)) * 100.0}),
+                    ({r with availability:
+                            (1.0 - float(v: r._value_errors) / float(v: r._value_total)) * 100.0,
+                    }),
             )
             |> sort(columns: ["availability"], desc: true)
             |> group()

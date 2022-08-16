@@ -25,7 +25,8 @@ inData =
 ,,1,2018-05-22T19:54:06Z,34.98204153981662,f,m2
 ,,1,2018-05-22T19:54:16Z,34.982252364543626,f,m2
 "
-outData = "
+outData =
+    "
 #datatype,string,long,double
 #group,false,false,false
 #default,_result,,

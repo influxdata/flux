@@ -198,9 +198,9 @@ from = (
             if response.statusCode > 299 then
                 die(
                     msg:
-                        "organization usage request returned status " + string(v: response.statusCode) + ": " + string(
-                                v: response.body,
-                            ),
+                        "organization usage request returned status " + string(
+                                v: response.statusCode,
+                            ) + ": " + string(v: response.body),
                 )
             else
                 csv.from(csv: string(v: response.body))
@@ -304,15 +304,21 @@ from = (
 //
 limits = (host="", orgID="", token="") => {
     id = if orgID == "" then "{orgID}" else http.pathEscape(inputString: orgID)
-    response = influxdb.api(method: "get", path: "/api/v2/orgs/" + id + "/limits", host: host, token: token)
+    response =
+        influxdb.api(
+            method: "get",
+            path: "/api/v2/orgs/" + id + "/limits",
+            host: host,
+            token: token,
+        )
 
     return
         if response.statusCode > 299 then
             die(
                 msg:
-                    "organization limits request returned status " + string(v: response.statusCode) + ": " + string(
-                            v: response.body,
-                        ),
+                    "organization limits request returned status " + string(v: response.statusCode)
+                        +
+                        ": " + string(v: response.body),
             )
         else
             json.parse(data: response.body).limits

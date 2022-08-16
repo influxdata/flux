@@ -130,10 +130,18 @@ event = (
                 metadata: {name: toSensuName(v: checkName)},
             },
         }
-        headers = {"Content-Type": "application/json; charset=utf-8", "Authorization": "Key " + apiKey}
+        headers = {
+            "Content-Type": "application/json; charset=utf-8",
+            "Authorization": "Key " + apiKey,
+        }
         enc = json.encode(v: data)
 
-        return http.post(headers: headers, url: url + "/api/core/v2/namespaces/" + namespace + "/events", data: enc)
+        return
+            http.post(
+                headers: headers,
+                url: url + "/api/core/v2/namespaces/" + namespace + "/events",
+                data: enc,
+            )
     }
 
 // endpoint sends an event

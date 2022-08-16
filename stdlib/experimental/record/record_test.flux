@@ -40,7 +40,12 @@ testcase record_get_primitive {
     want = array.from(rows: [{x: 1}, {x: 0}])
 
     got =
-        array.from(rows: [{x: record.get(r: obj, key: "x", default: 0)}, {x: record.get(r: obj, key: "y", default: 0)}])
+        array.from(
+            rows: [
+                {x: record.get(r: obj, key: "x", default: 0)},
+                {x: record.get(r: obj, key: "y", default: 0)},
+            ],
+        )
 
     testing.diff(got: got, want: want)
 }
@@ -53,8 +58,24 @@ testcase record_get_record {
     got =
         array.from(
             rows: [
-                {details: string(v: json.encode(v: record.get(r: obj, key: "details", default: record.any)))},
-                {details: string(v: json.encode(v: record.get(r: obj, key: "nosuchfield", default: record.any)))},
+                {
+                    details:
+                        string(
+                            v:
+                                json.encode(
+                                    v: record.get(r: obj, key: "details", default: record.any),
+                                ),
+                        ),
+                },
+                {
+                    details:
+                        string(
+                            v:
+                                json.encode(
+                                    v: record.get(r: obj, key: "nosuchfield", default: record.any),
+                                ),
+                        ),
+                },
             ],
         )
 

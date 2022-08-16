@@ -39,7 +39,9 @@ testcase string_replace {
         csv.from(csv: inData)
             |> testing.load()
             |> range(start: 2018-05-22T19:53:26Z)
-            |> map(fn: (r) => ({r with _value: strings.replace(v: r._value, t: "LnSk", u: " ", i: 1)}))
+            |> map(
+                fn: (r) => ({r with _value: strings.replace(v: r._value, t: "LnSk", u: " ", i: 1)}),
+            )
     want = csv.from(csv: outData)
 
     testing.diff(got, want)

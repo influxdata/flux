@@ -122,7 +122,7 @@ test-rust:
 	cd libflux && $(CARGO) test $(CARGO_ARGS) --all-features && \
 	$(CARGO) doc --no-deps && \
 	$(CARGO) test --doc && \
-	$(CARGO) clippy $(CARGO_ARGS) --all-features -- -Dclippy::all -Dclippy::undocumented_unsafe_blocks
+	$(CARGO) clippy $(CARGO_ARGS) --all-features --all-targets -- -Dclippy::all -Dclippy::undocumented_unsafe_blocks
 
 test-flux:
 	$(GO_RUN) ./cmd/flux test -p stdlib -v --parallel 8

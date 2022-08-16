@@ -38,7 +38,11 @@ package http
 // ## Metadata
 // tags: http,inputs
 //
-builtin get : (url: string, ?headers: A, ?timeout: duration) => {statusCode: int, body: bytes, headers: B}
+builtin get : (
+        url: string,
+        ?headers: A,
+        ?timeout: duration,
+    ) => {statusCode: int, body: bytes, headers: B}
     where
     A: Record,
     B: Record

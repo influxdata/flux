@@ -224,7 +224,13 @@ notify = (tables=<-, endpoint, data) =>
     tables
         |> experimental.set(o: data)
         |> experimental.group(mode: "extend", columns: experimental.objectKeys(o: data))
-        |> map(fn: (r) => ({r with _measurement: "notifications", _status_timestamp: int(v: r._time), _time: now()}))
+        |> map(
+            fn: (r) =>
+                ({r with _measurement: "notifications",
+                    _status_timestamp: int(v: r._time),
+                    _time: now(),
+                }),
+        )
         |> endpoint()
         |> experimental.group(mode: "extend", columns: ["_sent"])
         |> log()

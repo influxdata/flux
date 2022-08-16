@@ -56,7 +56,10 @@ naiveBayes = (tables=<-, myClass, myField, myMeasurement) => {
         training_data
             |> group(columns: [myClass, "_field"])
             |> count()
-            |> map(fn: (r) => ({r with p_k: float(v: r._value) / float(v: total_count), tc: total_count}))
+            |> map(
+                fn: (r) =>
+                    ({r with p_k: float(v: r._value) / float(v: total_count), tc: total_count}),
+            )
             |> group()
 
     //one table for each class, where r.p_k == P(Class_k)
@@ -64,7 +67,10 @@ naiveBayes = (tables=<-, myClass, myField, myMeasurement) => {
         training_data
             |> group(columns: ["_value", "_field"])
             |> count(column: myClass)
-            |> map(fn: (r) => ({r with p_x: float(v: r.airborne) / float(v: total_count), tc: total_count}))
+            |> map(
+                fn: (r) =>
+                    ({r with p_x: float(v: r.airborne) / float(v: total_count), tc: total_count}),
+            )
 
     // one table for each value, where r.p_x == P(value_x)
     P_k_x =
@@ -91,7 +97,11 @@ naiveBayes = (tables=<-, myClass, myField, myMeasurement) => {
     //added P(value_x) to table
     //calculated probabilities for training data
     Probability_table =
-        join(tables: {P_k_x_class: P_k_x_class, P_value_x: P_value_x}, on: ["_value", "_field"], method: "inner")
+        join(
+            tables: {P_k_x_class: P_k_x_class, P_value_x: P_value_x},
+            on: ["_value", "_field"],
+            method: "inner",
+        )
             |> map(fn: (r) => ({r with Probability: r.P_x_k * r.p_k / r.p_x}))
 
     //|> yield(name: "final")
@@ -100,7 +110,12 @@ naiveBayes = (tables=<-, myClass, myField, myMeasurement) => {
         r =
             tables
                 |> keep(columns: ["_value", "Animal_name", "_field"])
-        output = join(tables: {Probability_table: Probability_table, r: r}, on: ["_value"], method: "inner")
+        output =
+            join(
+                tables: {Probability_table: Probability_table, r: r},
+                on: ["_value"],
+                method: "inner",
+            )
 
         return output
     }

@@ -926,7 +926,9 @@ builtin skew : (<-tables: stream[{T with _value: float}]) => stream[{T with _val
 // introduced: 0.107.0
 // tags: transformations,aggregates
 //
-builtin spread : (<-tables: stream[{T with _value: A}]) => stream[{T with _value: A}] where A: Numeric
+builtin spread : (<-tables: stream[{T with _value: A}]) => stream[{T with _value: A}]
+    where
+    A: Numeric
 
 // stddev returns the standard deviation of non-null values in the `_value`
 // column for each input table.
@@ -966,7 +968,10 @@ builtin spread : (<-tables: stream[{T with _value: A}]) => stream[{T with _value
 // introduced: 0.107.0
 // tags: transformations,aggregates
 //
-builtin stddev : (<-tables: stream[{T with _value: float}], ?mode: string) => stream[{T with _value: float}]
+builtin stddev : (
+        <-tables: stream[{T with _value: float}],
+        ?mode: string,
+    ) => stream[{T with _value: float}]
 
 // sum returns the sum of non-null values in the `_value` column for each input table.
 //
@@ -1013,7 +1018,12 @@ builtin sum : (<-tables: stream[{T with _value: A}]) => stream[{T with _value: A
 // introduced: 0.107.0
 // tags: transformations
 //
-builtin kaufmansAMA : (<-tables: stream[{T with _value: A}], n: int) => stream[{T with _value: float}] where A: Numeric
+builtin kaufmansAMA : (
+        <-tables: stream[{T with _value: A}],
+        n: int,
+    ) => stream[{T with _value: float}]
+    where
+    A: Numeric
 
 // distinct returns unique values from the `_value` column.
 //
@@ -1074,7 +1084,11 @@ builtin distinct : (<-tables: stream[{T with _value: A}]) => stream[{T with _val
 // introduced: 0.112.0
 // tags: transformations
 //
-builtin fill : (<-tables: stream[{T with _value: A}], ?value: A, ?usePrevious: bool) => stream[{T with _value: A}]
+builtin fill : (
+        <-tables: stream[{T with _value: A}],
+        ?value: A,
+        ?usePrevious: bool,
+    ) => stream[{T with _value: A}]
 
 // first returns the first record with a non-null value in the `_value` column
 // for each input table.
@@ -1297,7 +1311,9 @@ builtin preview : (<-tables: stream[A], ?nrows: int, ?ntables: int) => stream[A]
 //
 // ## Parameters
 // - tables: Input data. Default is piped-forward data (`<-`).
-builtin unpivot : (<-tables: stream[{A with _time: time}]) => stream[{B with _field: string, _value: C}]
+builtin unpivot : (
+        <-tables: stream[{A with _time: time}],
+    ) => stream[{B with _field: string, _value: C}]
     where
     A: Record,
     B: Record

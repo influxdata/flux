@@ -6789,11 +6789,11 @@ testcase query_duration {
             |> range(start: 2019-12-03T10:00:00Z, stop: 2019-12-03T12:00:00Z)
             |> filter(
                 fn: (r) =>
-                    r.org_id == "03d01b74c8e09000" and r._measurement == "queryd_billing" and (r._field
-                            ==
-                            "compile_duration_us" or r._field == "plan_duration_us" or r._field
-                            ==
-                            "execute_duration_us"),
+                    r.org_id == "03d01b74c8e09000" and r._measurement == "queryd_billing"
+                        and
+                        (r._field == "compile_duration_us" or r._field == "plan_duration_us"
+                            or
+                            r._field == "execute_duration_us"),
             )
             |> group()
             |> aggregateWindow(every: 1h, fn: sum)

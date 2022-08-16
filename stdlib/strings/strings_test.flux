@@ -64,7 +64,12 @@ testcase string_substring {
     want = array.from(rows: bounds |> array.map(fn: (x) => ({_value: x.want})))
     got =
         array.from(
-            rows: bounds |> array.map(fn: (x) => ({_value: strings.substring(v: x.str, start: x.start, end: x.end)})),
+            rows:
+                bounds
+                    |> array.map(
+                        fn: (x) =>
+                            ({_value: strings.substring(v: x.str, start: x.start, end: x.end)}),
+                    ),
         )
 
     testing.diff(got: got, want: want)
@@ -96,7 +101,9 @@ testcase string_replace {
     want = array.from(rows: [{_value: "This is fine. Everything sucks."}])
     got =
         array.from(rows: [{_value: "This sucks. Everything sucks."}])
-            |> map(fn: (r) => ({_value: strings.replace(v: r._value, t: "sucks", u: "is fine", i: 1)}))
+            |> map(
+                fn: (r) => ({_value: strings.replace(v: r._value, t: "sucks", u: "is fine", i: 1)}),
+            )
 
     testing.diff(got: got, want: want)
 }
@@ -106,15 +113,23 @@ testcase string_replace_twice {
     want = array.from(rows: [{_value: "This is fine. Everything is a-okay."}])
     got =
         array.from(rows: [{_value: "This sucks. Everything sucks."}])
-            |> map(fn: (r) => ({_value: strings.replace(v: r._value, t: "sucks", u: "is fine", i: 1)}))
-            |> map(fn: (r) => ({_value: strings.replace(v: r._value, t: "sucks", u: "is a-okay", i: 1)}))
+            |> map(
+                fn: (r) => ({_value: strings.replace(v: r._value, t: "sucks", u: "is fine", i: 1)}),
+            )
+            |> map(
+                fn: (r) =>
+                    ({_value: strings.replace(v: r._value, t: "sucks", u: "is a-okay", i: 1)}),
+            )
 
     testing.diff(got: got, want: want)
 }
 
 // A string's length is returned
 testcase string_length {
-    want = array.from(rows: [{_value: "字", len: 1}, {_value: "Supercalifragilisticexpialidocious", len: 34}])
+    want =
+        array.from(
+            rows: [{_value: "字", len: 1}, {_value: "Supercalifragilisticexpialidocious", len: 34}],
+        )
     got =
         array.from(rows: [{_value: "字"}, {_value: "Supercalifragilisticexpialidocious"}])
             |> map(fn: (r) => ({_value: r._value, len: strings.strlen(v: r._value)}))

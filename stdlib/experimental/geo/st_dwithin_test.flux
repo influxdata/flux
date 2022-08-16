@@ -239,7 +239,11 @@ testcase stDWithin {
             |> map(
                 fn: (r) =>
                     ({r with _st_dwithin:
-                            geo.ST_DWithin(region: refPoint, geometry: {lat: r.lat, lon: r.lon}, distance: 20.0),
+                            geo.ST_DWithin(
+                                region: refPoint,
+                                geometry: {lat: r.lat, lon: r.lon},
+                                distance: 20.0,
+                            ),
                     }),
             )
             |> drop(columns: ["_start", "_stop"])
