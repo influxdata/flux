@@ -343,7 +343,7 @@ var sourceHashes = map[string]string{
 	"stdlib/testing/chronograf/aggregate_window_count_test.flux":                                  "34e3b7f10b06926835dfb6f3ee98e17676b50942feafb73d2ac838ed78e49749",
 	"stdlib/testing/chronograf/aggregate_window_mean_test.flux":                                   "950e2c3a7e9181d82304d9d5926913cc2862f4105939c8decaee62ce8b67e42a",
 	"stdlib/testing/chronograf/aggregate_window_median_test.flux":                                 "dadb6c28807f986b294353b657a1cffb615860994eae2b00acc7c21cec525d5b",
-	"stdlib/testing/chronograf/buckets_test.flux":                                                 "f757e9f8fdc847d7a8321976ff7889afb0db11b436c1df206eb833e503c8afb6",
+	"stdlib/testing/chronograf/buckets_test.flux":                                                 "57c483ba0e8cbfa2a482fe25f2f671c3154f18d706b4ec424d0c2b1174e7d4df",
 	"stdlib/testing/chronograf/measurement_tag_keys_test.flux":                                    "afb7a9a71249d7a47bfa63a73d115931dc31ae35d50acab281ab4aa09e667672",
 	"stdlib/testing/expect/expect.flux":                                                           "52559ae7168ca2c54e350cfd334d988a4a012eb2cd1f561a9f6404f9e6bb91bd",
 	"stdlib/testing/extend_test.flux":                                                             "6843266f4a033c86ed7249e73b61ca5d21087d5d26e41b2b615c20adc92f2fbf",
