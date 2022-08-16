@@ -40,12 +40,13 @@ use tower_lsp::jsonrpc::{Method, RequestBuilder};
 pub fn add_headers(a: String) -> String {
     format!("Content-Length: {}\r\n\r\n{}", a.len(), a)
 }
-
+#[derive(Debug, PartialEq)]
 pub enum LSPRequestType {
     DidOpen,
     DidChange,
     Initialize,
     Initialized,
+    Completion,
     ImportOpen,
     ImportChange,
 }
@@ -65,7 +66,11 @@ impl From<serde_json::Error> for LSP_Error {
 }
 static NEXT_REQ_ID: AtomicUsize = AtomicUsize::new(1);
 static NEXT_VERSION: AtomicUsize = AtomicUsize::new(1);
-pub fn formulate_request(request_type: &str, text: &str, pos: usize) -> Result<String, LSP_Error> {
+pub fn formulate_request(
+    request_type: &LSPRequestType,
+    text: &str,
+    pos: usize,
+) -> Result<String, LSP_Error> {
     let req_id = NEXT_REQ_ID.fetch_add(1, Ordering::SeqCst) as i64;
     let version = NEXT_REQ_ID.fetch_add(1, Ordering::SeqCst) as i64;
 
@@ -77,7 +82,7 @@ pub fn formulate_request(request_type: &str, text: &str, pos: usize) -> Result<S
     //kind 5 may be
     //change request_type to an enum
     match request_type {
-        "initialize" => {
+        LSPRequestType::Initialize => {
             let req: RequestBuilder = jsonrpc::Request::build(Initialize::METHOD)
                 .params(
                     serde_json::to_value(InitializeParams {
@@ -181,13 +186,13 @@ pub fn formulate_request(request_type: &str, text: &str, pos: usize) -> Result<S
                 &req.id(req_id).finish(),
             )?))
         }
-        "initialized" => {
+        LSPRequestType::Initialized => {
             let req: RequestBuilder = jsonrpc::Request::build(Initialized::METHOD)
                 .params(serde_json::to_value(InitializedParams {}).unwrap());
             Ok(add_headers(req.id(req_id).finish().to_string()))
         }
 
-        "didOpen" => {
+        LSPRequestType::DidOpen => {
             let req: RequestBuilder = jsonrpc::Request::build(DidOpenTextDocument::METHOD).params(
                 serde_json::to_value(DidOpenTextDocumentParams {
                     text_document: TextDocumentItem {
@@ -202,7 +207,7 @@ pub fn formulate_request(request_type: &str, text: &str, pos: usize) -> Result<S
             let headed = add_headers(serde_json::to_string(&a)?);
             Ok(headed)
         }
-        "didChange" => {
+        LSPRequestType::DidChange => {
             let mut something = String::from(text);
             something.push('\n');
             let basic_change = vec![TextDocumentContentChangeEvent {
@@ -222,7 +227,7 @@ pub fn formulate_request(request_type: &str, text: &str, pos: usize) -> Result<S
             let headed = add_headers(serde_json::to_string(&a)?);
             Ok(headed)
         }
-        "completion" => {
+        LSPRequestType::Completion => {
             let line_num = text.matches("\n").count();
             let reg = Regex::new(r#"([^\pL\pN])"#).unwrap();
             let mut add = None;
@@ -263,43 +268,7 @@ pub fn formulate_request(request_type: &str, text: &str, pos: usize) -> Result<S
             let headed = add_headers(serde_json::to_string(&a)?);
             Ok(headed)
         }
-        "importOpen" => {
-            let req: RequestBuilder = jsonrpc::Request::build(DidOpenTextDocument::METHOD).params(
-                serde_json::to_value(DidOpenTextDocumentParams {
-                    text_document: TextDocumentItem {
-                        uri: Url::parse("file:///import.flux").unwrap(),
-                        language_id: "flux".to_string(),
-                        version: version as i32,
-                        text: "".to_string(),
-                    },
-                })?,
-            );
-            let a = serde_json::to_value(req.id(req_id).finish())?;
-            let headed = add_headers(serde_json::to_string(&a)?);
-            Ok(headed)
-        }
-        "importChange" => {
-            let basic_change = vec![TextDocumentContentChangeEvent {
-                range: None,
-                range_length: None,
-                text: text.to_string(),
-            }];
-            let req: RequestBuilder = jsonrpc::Request::build(DidChangeTextDocument::METHOD)
-                .params(serde_json::to_value(DidChangeTextDocumentParams {
-                    text_document: VersionedTextDocumentIdentifier {
-                        uri: (Url::parse("file:///import.flux").unwrap()),
-                        version: version as i32,
-                    },
-                    content_changes: basic_change,
-                })?);
-            let a = serde_json::to_value(req.id(req_id).finish())?;
-            let headed = add_headers(serde_json::to_string(&a)?);
-            Ok(headed)
-        }
-        // "resolve_completion" =>{
-        // // let req= jsonrpc::Request::build(ResolveCompletionItem::METHOD)
-        // //     .params()
-        // }
+
         _ => Err(InvalidRequestType),
     }
 }

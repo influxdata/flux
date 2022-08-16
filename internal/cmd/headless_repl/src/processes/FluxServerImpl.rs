@@ -14,9 +14,8 @@ use tower_lsp::Server;
 
 pub struct FluxServer {
     server: Child,
-    threads: Vec<JoinHandle<()>>,
 }
-
+#[derive(Debug)]
 pub enum ServerError {
     ErrorStartingServer,
     GenericError,
@@ -25,38 +24,34 @@ pub enum ServerError {
 impl FluxServer {
     pub fn new() -> Self {
         let mut child = start_go();
-        FluxServer {
-            server: child,
-            threads: vec![],
+        FluxServer { server: child }
+    }
+}
+
+pub fn read_flux(stdout: ChildStdout) -> Result<(), ServerError> {
+    let reader = BufReader::new(stdout);
+    thread::spawn(move || {
+        for line in reader.lines() {
+            process_response_flux(&line.unwrap());
         }
-    }
-
-    pub fn listen_read(&mut self) -> Result<(), ServerError> {
-        let flux_stdout = self.server.stdout.take().expect("failed to get the stdout");
-
-        self.threads.push(thread::spawn(move || {
-            let reader = BufReader::new(flux_stdout);
-            for line in reader.lines() {
-                process_response_flux(&line.unwrap());
-            }
-        }));
-        Ok(())
-    }
-
-    fn close_server(&mut self) {
-        //close all the threads and then close the child process
-    }
-
-    fn write_loop(&mut self, rx_inputted_flux: Receiver<String>) -> Result<(), ServerError> {
-        let mut stdin = self.server.stdin.take().expect("failed to get the stdin");
-        self.threads.push(thread::spawn(move || loop {
-            let resp = rx_inputted_flux
+    });
+    Ok(())
+}
+pub fn write_flux(
+    mut stdin: ChildStdin,
+    rx_user_input: Receiver<String>,
+) -> Result<(), ServerError> {
+    thread::spawn(move || {
+        loop {
+            let resp = rx_user_input
                 .recv()
                 .expect("Failure receiving the user's input when sing enter");
+            //format what is received
             let message = invoke_go::form_output("Service.DidOutput", &resp)
                 .expect("failure making message for flux");
-            write!(stdin, "{}", message).expect("Failed to send to flux stdin");
-        }));
-        Ok(())
-    }
+            write!(stdin, "{}", message).expect("failed to write to the flux run time");
+        }
+    });
+
+    Ok(())
 }

@@ -24,7 +24,6 @@ use std::time::Duration;
 #[derive(Completer, Helper, Validator, Highlighter)]
 pub struct LSPSuggestionHelper {
     pub(crate) hints: Arc<RwLock<HashSet<CommandHint>>>,
-    pub(crate) hint_signature: Arc<RwLock<Option<String>>>,
     // pub(crate) tx_new_hints_needed: Sender<String>,
 }
 
@@ -76,20 +75,6 @@ impl CommandHint {
             complete_up_to: self.complete_up_to.saturating_sub(strip_chars),
             hint_type: self.hint_type.clone(),
             hint_signature: self.hint_signature.clone(),
-        }
-    }
-    //for function signatures
-    pub(crate) fn suffix_sig(&self, strip_chars: usize) -> CommandHint {
-        let disp = match &self.hint_signature {
-            None => "".to_string(),
-            Some(val) => val[strip_chars..].to_string(),
-        };
-        let a = disp.as_str();
-        CommandHint {
-            display: a.to_string(),
-            complete_up_to: a.len().saturating_sub(strip_chars),
-            hint_type: UnimplementedType,
-            hint_signature: None,
         }
     }
 }
@@ -181,8 +166,6 @@ impl LSPSuggestionHelper {
             }
         }
 
-        let mut hint_sig_lock = self.hint_signature.write().unwrap();
-
         //if they are equal save the first arg
 
         return match best_ratio {
@@ -204,7 +187,6 @@ impl LSPSuggestionHelper {
                 }
                 // self.print_hints();
 
-                *hint_sig_lock = None;
                 //gets here maybe refetch results
                 //instead of returning none it should send the current line get the new hints and then rerun the function
                 return None;
@@ -213,8 +195,6 @@ impl LSPSuggestionHelper {
                 // println!("other high");
                 trace!("getting to the highest input on this input {}", line);
                 if best_hint.hint_type == FunctionType && best_hint.hint_signature.is_some() {
-                    // *hint_sig_lock = best_hint.hint_signature.to_owned();
-                    // println!("here is the sig: {:?}", hint_sig_lock);
                     return Some(best_hint.suffix(best_overlap));
                 }
                 // *hint_sig_lock = None;

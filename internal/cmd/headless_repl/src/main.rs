@@ -1,3 +1,3 @@
 fn main() {
-    caller::newMain().unwrap();
+    caller::possibleMain().unwrap();
 }

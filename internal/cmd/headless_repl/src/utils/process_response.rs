@@ -3,8 +3,8 @@ use std::sync::mpsc::channel;
 use std::sync::mpsc::{Receiver, Sender};
 use tower_lsp::jsonrpc::Response;
 
-pub fn process_response_flux(response: &str) -> bool {
-    if let Ok(a) = serde_json::from_str::<Value>(response) {
+pub fn process_response_flux(response: &str) {
+    if let Ok(a) = serde_json::from_str::<Value>(&response) {
         //flux result
 
         println!(
@@ -13,13 +13,11 @@ pub fn process_response_flux(response: &str) -> bool {
                 .unwrap()
                 .replace("\"", "")
         );
-        return true;
     } else {
         //error case
         println!("{}", response);
-        return false;
     }
-    unreachable!();
+    // unreachable!();
     // match serde_json::from_str(response)
     // let a: Value = serde_json::from_str(request).is_ok();
 }

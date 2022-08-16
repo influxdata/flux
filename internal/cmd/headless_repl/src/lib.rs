@@ -1,10 +1,9 @@
 #![allow(unused_imports)]
-mod MultiLineState;
 // mod invoke_go;
 mod LSPSuggestionHelper;
 mod processes;
 mod utils;
-use crate::processes::{invoke_go, join_imports, lsp_invoke, start_go};
+use crate::processes::{invoke_go, join_imports, lsp_invoke, run, start_go};
 use log::{debug, info, trace};
 use lsp_types::Command;
 use regex::{Captures, Regex};
@@ -40,11 +39,12 @@ use rustyline::{
     EventContext, EventHandler, KeyCode, KeyEvent, Modifiers, RepeatCount, Result,
 };
 
-use crate::processes::LSPRequestType::{DidOpen, Initialize, Initialized};
+use crate::lsp_invoke::LSPRequestType::DidChange;
+use crate::processes::LSPRequestType::{Completion, DidOpen, Initialize, Initialized};
 use crate::utils::process_response_flux;
 use crate::LSPSuggestionHelper::{current_line_ends_with, CommandHint};
-use crate::MultiLineState::MultiLineStateHolder;
 use rustyline_derive::{Completer, Helper, Highlighter, Hinter, Validator};
+
 extern crate pretty_env_logger;
 #[macro_use]
 extern crate log;
@@ -53,9 +53,7 @@ static STOP_HINT: AtomicBool = AtomicBool::new(false);
 #[derive(Completer, Helper, Validator)]
 struct MyHelper {
     hinter: LSPSuggestionHelper::LSPSuggestionHelper,
-    tx_stdin: Sender<(String, usize)>,
-    is_multiline: Arc<AtomicBool>,
-    hinter_wait: Arc<AtomicBool>,
+    tx_stdin: Sender<String>,
 }
 
 impl Hinter for MyHelper {
@@ -64,11 +62,10 @@ impl Hinter for MyHelper {
     fn hint(&self, line: &str, pos: usize, _ctx: &Context<'_>) -> Option<CommandHint> {
         //hinter is going before the highlighter
         // self.hinter_wait.swap(true, Ordering::Relaxed);
-        let written = (line.parse().unwrap(), pos);
 
         trace!("Sending Message to update hints: {}", line);
         self.tx_stdin
-            .send((written))
+            .send(line.to_string())
             .expect("failure sending when no hints");
 
         if line.is_empty() || pos < line.len() {
@@ -84,7 +81,7 @@ impl Hinter for MyHelper {
         // println!("this is getting to the none and refetch section {}", line);
         trace!("get hints returned None refreshing hints");
         self.tx_stdin
-            .send((line.to_string(), 0))
+            .send(line.to_string())
             .expect("failure sending when no hints");
 
         None
@@ -101,7 +98,7 @@ impl Highlighter for MyHelper {
         prompt: &'p str,
         default: bool,
     ) -> Cow<'b, str> {
-        if !self.is_multiline.load(Ordering::Relaxed) {
+        if default {
             Owned(format!("\x1b[1;32m{}\x1b[m", prompt))
         } else {
             Borrowed(prompt)
@@ -119,10 +116,7 @@ impl Highlighter for MyHelper {
 //lots = trace
 
 #[derive(Clone)]
-struct CompleteHintHandler {
-    a: Arc<RwLock<HashSet<CommandHint>>>,
-    is_multiline: Arc<AtomicBool>,
-}
+struct CompleteHintHandler {}
 impl ConditionalEventHandler for CompleteHintHandler {
     fn handle(&self, evt: &Event, _: RepeatCount, _: bool, ctx: &EventContext) -> Option<Cmd> {
         if !ctx.has_hint() {
@@ -151,10 +145,6 @@ impl ConditionalEventHandler for CompleteHintHandler {
 
                 Some(Cmd::Insert(1, text))
             } else if *k == KeyEvent::ctrl('U') && ctx.line().len() == ctx.pos() {
-                let multi = self.is_multiline.load(Ordering::Relaxed);
-                // println!("paste mode status: {}", multi);
-                self.is_multiline.swap(!multi, Ordering::Relaxed);
-                //when the multiline is swapped add a check to see if the struct is empty if not concat the bits and add to history
                 Some(Cmd::Noop)
             } else {
                 None
@@ -197,243 +187,56 @@ impl ConditionalEventHandler for RequestHelper {
     }
 }
 
-pub fn newMain() -> Result<()> {
-    pretty_env_logger::init();
-    //sending the processed data onwards
-    let (tx_processed, rx_processed): (Sender<String>, Receiver<String>) = channel();
-    //sending from when user presses enter
-    let (tx_user, rx_user): (Sender<String>, Receiver<String>) = channel();
-    //
-    let (tx_suggestion, rx_suggest): (Sender<(String, bool)>, Receiver<(String, bool)>) = channel();
+pub fn possibleMain() -> Result<()> {
+    //START: Channel Setup
+    //channel for the coordinator and the flux writer
+    let (tx_flux, rx_flux): (Sender<String>, Receiver<String>) = channel();
+    //channel for the LSP and the coordinator and flux
+    let (tx_lsp, rx_lsp): (Sender<String>, Receiver<String>) = channel();
+    //channel for the hinter so user input can be sent the coordinator gets the rx
+    let (tx_hinter, rx_hinter): (Sender<String>, Receiver<String>) = channel();
+    //copy of the tx_hinter so that hints can be re-requested this is used in the hekoers
+    let tx_more_hints = tx_hinter.clone();
+    //END: Channel Setup
 
-    //send from the ctrl z handler to the writer thread so that you can get suggestions
-    let (tx_suggestion_process, rx_suggestion_process): (
-        Sender<(String, bool)>,
-        Receiver<(String, bool)>,
-    ) = channel();
-
-    let (tx_stdin, rx_stdin): (Sender<(String, usize)>, Receiver<(String, usize)>) = channel();
-
-    let mut reader_block = Arc::new(AtomicBool::new(false));
-    let mut reader_block_w = Arc::clone(&reader_block);
-    let mut reader_block_p = Arc::clone(&reader_block);
-
-    //code for when the user wants to enable multiline/paste mode
-    let multi_var = Arc::new(AtomicBool::new(false));
-    let multi_struct_bool = multi_var.clone();
-
-    //for the helper to change the prompt color
-    let helper_multi_bool = multi_var.clone();
-    let helper_multi_two = multi_var.clone();
-
+    //START: Helper and readline setup
     let mut rl = Editor::<MyHelper>::new();
-
-    let storage = Arc::new(RwLock::new(HashSet::new()));
-    let completion_storage = storage.clone();
-
-    let vals = storage.clone();
-    let hint_sig = Arc::new(RwLock::new(None));
-
-    let hinter_wait = Arc::new(AtomicBool::new(false));
-    let hint_wait = hinter_wait.clone();
+    //hints for the lsp
+    let mut hints = Arc::new(RwLock::new(HashSet::new()));
+    //hints clone for rustyline to clear
+    let hints_rustyline = hints.clone();
+    //hints clone for the hinter
+    let hints_for_hinter = hints.clone();
+    //hinter setup
     let lsp_helper = LSPSuggestionHelper::LSPSuggestionHelper {
-        hints: vals,
-        hint_signature: hint_sig.clone(),
+        hints: hints_for_hinter,
     };
     rl.set_helper(Some(MyHelper {
         hinter: lsp_helper,
-        tx_stdin,
-        is_multiline: helper_multi_two,
-        hinter_wait: hint_wait,
+        tx_stdin: tx_more_hints,
     }));
-
-    let ceh = Box::new(CompleteHintHandler {
-        a: completion_storage,
-        is_multiline: helper_multi_bool,
-    });
+    //key handler setup
+    let ceh = Box::new(CompleteHintHandler {});
     let nex = ceh.clone();
-    let other = ceh.clone();
-
-    rl.bind_sequence(KeyEvent::ctrl('E'), EventHandler::Conditional(ceh.clone()));
-    rl.bind_sequence(KeyEvent::alt('f'), EventHandler::Conditional(ceh));
     rl.bind_sequence(
         KeyEvent(KeyCode::Tab, Modifiers::NONE),
         EventHandler::Conditional(nex),
     );
-    //spawn the lsp
-    let mut child = start_lsp();
-    let mut child_writer = child.stdin.take().unwrap();
-    let mut child_reader = child.stdout.take().unwrap();
+    //END: helper and readline setup
 
-    let mut flux_child = start_go();
+    //start the coordinator
+    // the coordinator thread uses the rx_hinter for receiving
+    run(hints, rx_hinter, rx_flux, tx_lsp, rx_lsp).unwrap();
 
-    //get all imports
-
-    //thread handler
-    let mut thread_handlers = vec![];
-
-    //first spawn the writing thread nothing else can access the stdin if you take
-    //reads from the processed thread lsp
-    thread_handlers.push(thread::spawn(move || {
-        //read the processed request then write the request to the LSP
-        loop {
-            //block if just sent
-            if reader_block_w.load(Ordering::Relaxed) {
-                thread::sleep(Duration::from_millis(10));
-            }
-            let resp = rx_processed
-                .recv()
-                .expect("failure getting from processor thread");
-            // println!("getting this {}", &resp);
-            // trace!("MESSAGE: {}", resp);
-
-            write!(&mut child_writer, "{}", resp).unwrap();
-            reader_block_w.swap(true, Ordering::Relaxed);
-        }
-    }));
-
-    let tx_a = tx_suggestion.clone();
-    thread_handlers.push(thread::spawn(move || loop {
-        let (stdin_get, pos) = rx_stdin.recv().expect("failed to get string");
-        tx_a.send((stdin_get, true)).expect("failed sending");
-    }));
-
-    thread_handlers.push(thread::spawn(move || {
-        loop {
-            let (line, x) = rx_suggest.recv().expect("failure getting from ctrl z");
-
-            tx_suggestion_process
-                .send((line, true))
-                .expect("failure sending to processor")
-            //send a did update
-        }
-    }));
-
-    //read from the LSP thread that will give the suggestions and then change the helper if need be
-
-    let new_hints = storage.clone();
-    thread_handlers.push(thread::spawn(move || {
-        invoke_go::read_json_rpc(child_reader, new_hints);
-    }));
-
-    // getting when the user presses enter to send to the flux runner
-    let mut flux_stdin = flux_child
-        .stdin
-        .take()
-        .expect("failure getting the stdin of the flux");
-    //
-    thread_handlers.push(thread::spawn(move || {
-        //adds all lines that are received
-
-        loop {
-            let resp = rx_user
-                .recv()
-                .expect("Failure receiving the user's input when sing enter");
-            //format what is received
-            let message = invoke_go::form_output("Service.DidOutput", &resp)
-                .expect("failure making message for flux");
-            write!(flux_stdin, "{}", message).expect("failed to write to the flux run time");
-        }
-    }));
-
-    let mut flux_stdout = flux_child
-        .stdout
-        .take()
-        .expect("failure getting the stoud of the flux");
-    let reader = BufReader::new(flux_stdout);
-    thread_handlers.push(thread::spawn(move || {
-        for line in reader.lines() {
-            let val = process_response_flux(&line.unwrap());
-        }
-    }));
-
-    //processing thread that will send to the writer thread after processing into a request
-    //init array
-
-    let init = ["initialize", "initialized", "didOpen"];
-    let mut res = init
-        .iter()
-        .map(|x| formulate_request(x, "", 0).unwrap())
-        .collect::<VecDeque<String>>();
-    thread_handlers.push(thread::spawn(move || {
-        //initialize
-        while res.len() != 0 {
-            if reader_block_p.load(Ordering::Relaxed) {
-                thread::sleep(Duration::from_millis(1));
-            }
-            let o = res.pop_front().unwrap();
-
-            tx_processed
-                .send(o)
-                .expect("panicked sending processed data to writer thread");
-        }
-        //getting data from the user thread read from the reading
-        loop {
-            let (input, main_file) = rx_suggestion_process
-                .recv()
-                .expect("failure getting from the ctrl z thread");
-            if main_file {
-                tx_processed
-                    .send(
-                        //NOTE: pos arg is deprecated
-                        lsp_invoke::formulate_request("didChange", &input, 0)
-                            .expect("invalid request type"),
-                    )
-                    .expect("failed to send to writer from ctrlz");
-                // println!("sent the completion normal {}", &input);
-                tx_processed
-                    .send(
-                        lsp_invoke::formulate_request("completion", &input, 0)
-                            .expect("invalid request type"),
-                    )
-                    .expect("fai;ed to send to writer from ctrlz");
-            } else {
-                //for changing the import doc
-                // println!("sending to the other file atm");
-                tx_processed
-                    .send(
-                        //NOTE: pos arg is deprecated
-                        lsp_invoke::formulate_request("importChange", &input, 0)
-                            .expect("invalid request type"),
-                    )
-                    .expect("failed to send to writer from ctrlz");
-                // println!("sent first");
-                tx_processed
-                    .send(
-                        lsp_invoke::formulate_request("completion", &input, 0)
-                            .expect("invalid request type"),
-                    )
-                    .expect("fai;ed to send to writer from ctrlz");
-
-                tx_processed
-                    .send(
-                        lsp_invoke::formulate_request("completion", &input, 0)
-                            .expect("invalid request type"),
-                    )
-                    .expect("fai;ed to send to writer from ctrlz");
-            }
-
-            //send did change then request completion
-        }
-    }));
-    let mut clear_storage = storage.clone();
-    //for maintaining a record on the multiline state
-    let mut multiline_state = MultiLineState::MultiLineStateHolder {
-        list: vec![],
-        paste: multi_struct_bool,
-    };
+    //START: Rustyline Setup
     loop {
         let readline = rl.readline(">> ");
 
         match readline {
             Ok(line) => {
-                if multiline_state.paste.load(Ordering::Relaxed) {
-                    multiline_state.add_string(line.as_str());
-                    continue;
-                }
                 rl.add_history_entry(line.as_str());
-
-                tx_user.send(line).expect("Failure getting user input!");
+                //send to flux writer
+                tx_flux.send(line).expect("Failure getting user input!");
             }
             Err(ReadlineError::Interrupted) => {
                 println!("CTRL-C");
@@ -447,11 +250,10 @@ pub fn newMain() -> Result<()> {
                 break;
             }
         }
-        let mut clear = clear_storage.write().unwrap();
+        //clear the hints
+        let mut clear = hints_rustyline.write().unwrap();
         clear.clear()
     }
-    for h in thread_handlers {
-        h.join().expect("joining failed");
-    }
+    //END: Rustyline setupt
     Ok(())
 }

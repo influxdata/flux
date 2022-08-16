@@ -3,6 +3,7 @@ pub use lsp_invoke::{
     add_headers, formulate_request, join_imports, start_lsp, LSPRequestType, LSP_Error,
 };
 pub use process_completion::process_completions_response;
+pub use CoordinatorImpl::run;
 mod CoordinatorImpl;
 pub mod FluxServerImpl;
 mod LSPServerImpl;
