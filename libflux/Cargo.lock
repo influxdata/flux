@@ -441,7 +441,6 @@ dependencies = [
  "regex",
  "rusqlite",
  "serde",
- "serde-aux",
  "serde_derive",
  "serde_json",
  "structopt",
@@ -983,17 +982,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ce31e24b01e1e524df96f1c2fdd054405f8d7376249a5110886fb4b658484789"
 dependencies = [
  "serde_derive",
-]
-
-[[package]]
-name = "serde-aux"
-version = "3.0.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "93abf9799c576f004252b2a05168d58527fb7c54de12e94b4d12fe3475ffad24"
-dependencies = [
- "chrono",
- "serde",
- "serde_json",
 ]
 
 [[package]]
