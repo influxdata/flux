@@ -1,6 +1,5 @@
 use super::*;
 use crate::semantic::{
-    import::Packages,
     nodes::{FunctionExpr, Package},
     walk::{walk, Node},
     AnalyzerConfig, Feature,
@@ -13,13 +12,22 @@ fn analyzer_config() -> AnalyzerConfig {
             Feature::VectorizedConst,
             Feature::VectorizedConditionals,
             Feature::VectorizedEqualityOps,
+            Feature::VectorizedFloat,
         ],
         ..AnalyzerConfig::default()
     }
 }
 
 fn vectorize(src: &str) -> anyhow::Result<Package> {
-    let mut analyzer = Analyzer::new(Default::default(), Packages::default(), analyzer_config());
+    // Builtins which should be exposed to these tests can be defined here.
+    let env = Environment::from(parse_map(
+        None,
+        map![
+            "float" => "(v: A) => float",
+        ],
+    ));
+
+    let mut analyzer = Analyzer::new(env, Packages::default(), analyzer_config());
     let (_, pkg) = analyzer
         .analyze_source("main".into(), "".into(), src)
         .map_err(|err| err.error)?;
@@ -383,5 +391,20 @@ fn vectorize_with_conditional_expr() -> anyhow::Result<()> {
         .assert_eq(&crate::semantic::formatter::format_node(
             Node::FunctionExpr(function),
         )?);
+    Ok(())
+}
+
+#[test]
+fn vectorize_with_float_calls() -> anyhow::Result<()> {
+    let pkg = vectorize(r#"(r) => ({ r with a: float(v: r._value) })"#).unwrap();
+
+    let function = get_vectorized_function(&pkg);
+
+    expect_test::expect![[r##"
+        (r) => {
+            return {r:{#E with _value: v[#D]} with a: _vectorizedFloat:v[float](v: r:{#E with _value: v[#D]}._value:v[#D]):v[float]}:{#E with a: v[float], _value: v[#D]}
+        }:(r: {#E with _value: v[#D]}) => {#E with a: v[float], _value: v[#D]}"##]].assert_eq(&crate::semantic::formatter::format_node(
+        Node::FunctionExpr(function),
+    )?);
     Ok(())
 }

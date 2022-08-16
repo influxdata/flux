@@ -184,6 +184,12 @@ func TestVectorizedFns(t *testing.T) {
 			vectorizable: true,
 			skipComp:     true,
 		},
+		{
+			name:         "call expressions float",
+			fn:           `(r) => ({ r with c: float(v: 1) })`,
+			vectorizable: true,
+			skipComp:     true,
+		},
 	}
 
 	additionTests := []struct {
@@ -559,6 +565,7 @@ func TestVectorizedFns(t *testing.T) {
 			flagger[fluxfeature.VectorizedConst().Key()] = true
 			flagger[fluxfeature.VectorizedConditionals().Key()] = true
 			flagger[fluxfeature.VectorizedEqualityOps().Key()] = true
+			flagger[fluxfeature.VectorizedFloat().Key()] = true
 			ctx := context.Background()
 			ctx = feature.Inject(
 				ctx,

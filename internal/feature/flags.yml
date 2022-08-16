@@ -99,3 +99,9 @@
   key: vectorizedConst
   default: false
   contact: Owen Nelson
+
+- name: Vectorized Float
+  description: Calls to map can be vectorized when float casts appear in the function
+  key: vectorizedFloat
+  default: false
+  contact: Owen Nelson
