@@ -32,9 +32,8 @@ outData =
 ,,0,2018-05-22T19:53:00Z,2030-01-01T00:00:00Z,2018-05-22T19:53:00Z,x_duration_seconds,-90.5,mm
 "
 
+// Passes in flux, fails in C2 and OSS
 testcase histogram_quantile_minvalue {
-    option testing.tags = ["skip"]
-
     got =
         csv.from(csv: inData)
             |> testing.load()

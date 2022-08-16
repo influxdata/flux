@@ -65,9 +65,8 @@ outData =
 ,,0,2018-05-15T00:00:00Z,2030-01-01T00:00:00Z,2018-05-22T19:54:20Z,_m,1,f0
 "
 
+// Passes in flux, fails in C2 and OSS
 testcase cumulative_sum_noop {
-    option testing.tags = ["skip"]
-
     got =
         csv.from(csv: inData)
             |> testing.load()

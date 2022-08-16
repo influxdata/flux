@@ -36,8 +36,6 @@ outData =
 "
 
 testcase group_except {
-    option testing.tags = ["skip"]
-
     got =
         csv.from(csv: inData)
             |> testing.load()

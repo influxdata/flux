@@ -38,9 +38,8 @@ outData =
 ,,4,2018-05-22T19:53:46Z,37,f1,e,aa
 "
 
+// Passes in flux, fails in C2 and OSS
 testcase unique {
-    option testing.tags = ["skip"]
-
     got =
         csv.from(csv: inData)
             |> testing.load()

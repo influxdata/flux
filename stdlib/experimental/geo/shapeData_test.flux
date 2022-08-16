@@ -107,9 +107,8 @@ outData =
 ,,4,migration,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,2019-01-02T13:00:00Z,ctrlField,91916A,21.3485,39.15083,15c3b9
 "
 
+// Passes in flux, fails in C2 and OSS
 testcase shapeData {
-    option testing.tags = ["skip"]
-
     got =
         csv.from(csv: inData)
             |> testing.load()

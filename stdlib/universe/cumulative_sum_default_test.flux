@@ -65,9 +65,8 @@ outData =
 ,,3,2018-05-15T00:00:00Z,2030-01-01T00:00:00Z,2018-05-22T19:54:20Z,_m,SR,3
 "
 
+// Passes in flux, fails in C2 and OSS
 testcase cumulative_sum_default {
-    option testing.tags = ["skip"]
-
     got =
         csv.from(csv: inData)
             |> testing.load()

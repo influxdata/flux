@@ -40,10 +40,7 @@ outData =
 "
 
 testcase cov {
-    table =
-        csv.from(csv: inData)
-            |> testing.load()
-            |> range(start: 2018-05-22T19:53:00Z, stop: 2018-05-22T19:54:00Z)
+    table = csv.from(csv: inData)
 
     t1 =
         table

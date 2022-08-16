@@ -256,11 +256,8 @@ outData =
 "
 
 testcase state_changes_big_any_to_any {
-    option testing.tags = ["skip"]
-
     got =
         csv.from(csv: inData)
-            |> testing.load()
             |> v1.fieldsAsCols()
             |> monitor.stateChanges(fromLevel: "any", toLevel: "any")
     want = csv.from(csv: outData)
