@@ -199,7 +199,10 @@ option units = {distance: "km"}
 // introduced: 0.78.0
 // tags: geotemporal
 //
-builtin stContains : (region: A, geometry: B, units: {distance: string}) => bool where A: Record, B: Record
+builtin stContains : (region: A, geometry: B, units: {distance: string}) => bool
+    where
+    A: Record,
+    B: Record
 
 // stDistance returns the distance from a given region to a specified GIS geometry.
 //
@@ -214,7 +217,10 @@ builtin stContains : (region: A, geometry: B, units: {distance: string}) => bool
 // introduced: 0.78.0
 // tags: geotemporal
 //
-builtin stDistance : (region: A, geometry: B, units: {distance: string}) => float where A: Record, B: Record
+builtin stDistance : (region: A, geometry: B, units: {distance: string}) => float
+    where
+    A: Record,
+    B: Record
 
 // stLength returns the [spherical length or distance](https://mathworld.wolfram.com/SphericalDistance.html)
 // of the specified GIS geometry.
@@ -245,7 +251,8 @@ builtin stLength : (geometry: A, units: {distance: string}) => float where A: Re
 // introduced: 0.78.0
 // tags: geotemporal
 //
-ST_Contains = (region, geometry, units=units) => stContains(region: region, geometry: geometry, units: units)
+ST_Contains = (region, geometry, units=units) =>
+    stContains(region: region, geometry: geometry, units: units)
 
 // ST_Distance returns the distance from a given region to a specified GIS geometry.
 //
@@ -259,7 +266,8 @@ ST_Contains = (region, geometry, units=units) => stContains(region: region, geom
 // introduced: 0.78.0
 // tags: geotemporal
 //
-ST_Distance = (region, geometry, units=units) => stDistance(region: region, geometry: geometry, units: units)
+ST_Distance = (region, geometry, units=units) =>
+    stDistance(region: region, geometry: geometry, units: units)
 
 // ST_DWithin tests if the specified region is within a defined distance from
 // the specified GIS geometry and returns `true` or `false`.
@@ -292,7 +300,8 @@ ST_DWithin = (region, geometry, distance, units=units) =>
 // introduced: 0.78.0
 // tags: geotemporal
 //
-ST_Intersects = (region, geometry, units=units) => stDistance(region: region, geometry: geometry, units: units) <= 0.0
+ST_Intersects = (region, geometry, units=units) =>
+    stDistance(region: region, geometry: geometry, units: units) <= 0.0
 
 // ST_Length returns the [spherical length or distance](https://mathworld.wolfram.com/SphericalDistance.html)
 // of the specified GIS geometry.
@@ -350,9 +359,9 @@ ST_LineString = (tables=<-) =>
             fn: (r, accumulator) =>
                 ({
                     __linestring:
-                        accumulator.__linestring + (if accumulator.__count > 0 then ", " else "") + string(v: r.lon)
+                        accumulator.__linestring + (if accumulator.__count > 0 then ", " else "")
                             +
-                            " " + string(v: r.lat),
+                            string(v: r.lon) + " " + string(v: r.lat),
                     __count: accumulator.__count + 1,
                 }),
             identity: {__linestring: "", __count: 0},
@@ -601,7 +610,10 @@ shapeData = (tables=<-, latField, lonField, level) =>
                 }),
         )
         |> toRows()
-        |> map(fn: (r) => ({r with s2_cell_id: s2CellIDToken(point: {lat: r.lat, lon: r.lon}, level: level)}))
+        |> map(
+            fn: (r) =>
+                ({r with s2_cell_id: s2CellIDToken(point: {lat: r.lat, lon: r.lon}, level: level)}),
+        )
         |> experimental.group(columns: ["s2_cell_id"], mode: "extend")
 
 // gridFilter filters data by a specified geographic region.
@@ -695,7 +707,10 @@ gridFilter = (
                         if _grid.level == _s2cellIDLevel then
                             contains(value: r.s2_cell_id, set: _grid.set)
                         else
-                            contains(value: s2CellIDToken(token: r.s2_cell_id, level: _grid.level), set: _grid.set),
+                            contains(
+                                value: s2CellIDToken(token: r.s2_cell_id, level: _grid.level),
+                                set: _grid.set,
+                            ),
                 )
     }
 
@@ -920,7 +935,10 @@ groupByArea = (tables=<-, newColumn, level, s2cellIDLevel=-1) => {
         else
             tables
                 |> map(
-                    fn: (r) => ({r with _s2_cell_id_xxx: s2CellIDToken(point: {lat: r.lat, lon: r.lon}, level: level)}),
+                    fn: (r) =>
+                        ({r with _s2_cell_id_xxx:
+                                s2CellIDToken(point: {lat: r.lat, lon: r.lon}, level: level),
+                        }),
                 )
                 |> rename(columns: {_s2_cell_id_xxx: newColumn})
 

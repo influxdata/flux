@@ -63,7 +63,12 @@ testcase experimental_join {
             |> aggregateWindow(fn: last, every: 5m, createEmpty: false)
             |> v1.fieldsAsCols()
             |> group(columns: ["host"])
-    got = experimental.join(left: a, right: b, fn: (left, right) => ({left with inodes_free: right.inodes_free}))
+    got =
+        experimental.join(
+            left: a,
+            right: b,
+            fn: (left, right) => ({left with inodes_free: right.inodes_free}),
+        )
     want = csv.from(csv: outData)
 
     testing.diff(got, want)

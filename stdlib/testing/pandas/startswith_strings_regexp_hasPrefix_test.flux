@@ -39,7 +39,9 @@ testcase string_regexp_hasPrefix {
         csv.from(csv: inData)
             |> testing.load()
             |> range(start: 2018-05-22T19:53:26Z)
-            |> filter(fn: (r) => regexp.matchRegexpString(r: re, v: strings.split(v: r._value, t: "")[0]))
+            |> filter(
+                fn: (r) => regexp.matchRegexpString(r: re, v: strings.split(v: r._value, t: "")[0]),
+            )
     want = csv.from(csv: outData)
 
     testing.diff(got, want)

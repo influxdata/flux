@@ -247,12 +247,15 @@ select = (
             else if nfields == 3 then
                 (r) => r._field == fields[0] or r._field == fields[1] or r._field == fields[2]
             else if nfields == 4 then
-                (r) => r._field == fields[0] or r._field == fields[1] or r._field == fields[2] or r._field == fields[3]
+                (r) =>
+                    r._field == fields[0] or r._field == fields[1] or r._field == fields[2]
+                        or
+                        r._field == fields[3]
             else if nfields == 5 then
                 (r) =>
-                    r._field == fields[0] or r._field == fields[1] or r._field == fields[2] or r._field == fields[3]
+                    r._field == fields[0] or r._field == fields[1] or r._field == fields[2]
                         or
-                        r._field == fields[4]
+                        r._field == fields[3] or r._field == fields[4]
             else
                 (r) => contains(value: r._field, set: fields)
 

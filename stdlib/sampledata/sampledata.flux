@@ -34,17 +34,22 @@ _numeric =
 ,,0,2021-01-01T00:00:00Z,t1,-2.18
 ,,0,2021-01-01T00:00:10Z,t1,"
             +
-            (if includeNull then "" else "10.92") + "
-,,0,2021-01-01T00:00:20Z,t1,7.35
-,,0,2021-01-01T00:00:30Z,t1,"
+            (if includeNull then "" else "10.92")
             +
-            (if includeNull then "" else "17.53") + "
+            "
+,,0,2021-01-01T00:00:20Z,t1,7.35
+,,0,2021-01-01T00:00:30Z,t1," + (if includeNull then
+                ""
+            else
+                "17.53") + "
 ,,0,2021-01-01T00:00:40Z,t1," + (if includeNull then
                 ""
             else
                 "15.23") + "
 ,,0,2021-01-01T00:00:50Z,t1,4.43
-,,1,2021-01-01T00:00:00Z,t2," + (if includeNull then
+,,1,2021-01-01T00:00:00Z,t2,"
+            +
+            (if includeNull then
                 ""
             else
                 "19.85")
@@ -74,15 +79,22 @@ _string =
             +
             "
 ,,0,2021-01-01T00:00:20Z,t1,smpl_phw664
-,,0,2021-01-01T00:00:30Z,t1," + (if includeNull then
+,,0,2021-01-01T00:00:30Z,t1,"
+            +
+            (if includeNull then
                 ""
             else
                 "smpl_guvzy4") + "
-,,0,2021-01-01T00:00:40Z,t1," + (if includeNull then "" else "smpl_5v3cce")
+,,0,2021-01-01T00:00:40Z,t1," + (if includeNull then
+                ""
+            else
+                "smpl_5v3cce")
             +
             "
 ,,0,2021-01-01T00:00:50Z,t1,smpl_s9fmgy
-,,1,2021-01-01T00:00:00Z,t2," + (if includeNull then
+,,1,2021-01-01T00:00:00Z,t2,"
+            +
+            (if includeNull then
                 ""
             else
                 "smpl_b5eida")
@@ -93,7 +105,9 @@ _string =
 ,,1,2021-01-01T00:00:30Z,t2,smpl_sox1ut
 ,,1,2021-01-01T00:00:40Z,t2,"
             +
-            (if includeNull then "" else "smpl_wfm757") + "
+            (if includeNull then "" else "smpl_wfm757")
+            +
+            "
 ,,1,2021-01-01T00:00:50Z,t2,smpl_dtn2bv
 "
 
@@ -107,17 +121,22 @@ _bool =
 ,,0,2021-01-01T00:00:00Z,t1,true
 ,,0,2021-01-01T00:00:10Z,t1,"
             +
-            (if includeNull then "" else "true") + "
-,,0,2021-01-01T00:00:20Z,t1,false
-,,0,2021-01-01T00:00:30Z,t1,"
+            (if includeNull then "" else "true")
             +
-            (if includeNull then "" else "true") + "
+            "
+,,0,2021-01-01T00:00:20Z,t1,false
+,,0,2021-01-01T00:00:30Z,t1," + (if includeNull then
+                ""
+            else
+                "true") + "
 ,,0,2021-01-01T00:00:40Z,t1," + (if includeNull then
                 ""
             else
                 "false") + "
 ,,0,2021-01-01T00:00:50Z,t1,false
-,,1,2021-01-01T00:00:00Z,t2," + (if includeNull then
+,,1,2021-01-01T00:00:00Z,t2,"
+            +
+            (if includeNull then
                 ""
             else
                 "false")

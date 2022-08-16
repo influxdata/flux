@@ -60,7 +60,9 @@ rawQuery = (
 ) =>
     stream
         |> range(start: start, stop: stop)
-        |> filter(fn: (r) => r._measurement == measurement and contains(value: r._field, set: fields))
+        |> filter(
+            fn: (r) => r._measurement == measurement and contains(value: r._field, set: fields),
+        )
         |> group(columns: groupBy, mode: groupMode)
         |> v1.fieldsAsCols()
         |> window(every: every, period: period)

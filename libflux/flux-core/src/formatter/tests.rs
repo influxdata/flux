@@ -1102,7 +1102,11 @@ fn preserve_multiline_test() {
 
     assert_unchanged(
         "_covariance_missing_column_2 = () =>
-    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: covariance_missing_column_2})",
+    ({
+        input: testing.loadStorage(csv: inData),
+        want: testing.loadMem(csv: outData),
+        fn: covariance_missing_column_2,
+    })",
     );
 
     assert_unchanged(
@@ -1230,7 +1234,8 @@ fn consistent_multiline_formatting_1() {
 
     // function expressions and call expressions
     assert_unchanged(
-        r#"ST_Contains = (region, geometry, units=units) => stContains(region: region, geometry: geometry, units: units)"#,
+        r#"ST_Contains = (region, geometry, units=units) =>
+    stContains(region: region, geometry: geometry, units: units)"#,
     );
 
     assert_format(
@@ -1419,7 +1424,8 @@ diff =
         |> range(start: 2020-04-27T00:00:00Z, stop: 2020-05-01T00:00:00Z)
         |> anomalydetection.mad(threshold: 3.0)
 
-_mad = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_mad})"#,
+_mad = () =>
+    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_mad})"#,
     );
 
     // comments
@@ -1467,7 +1473,11 @@ diff =
     assert_unchanged(
         r#"_join_panic = () =>
     // to trigger the panic, switch the testing.loadStorage() csv from `passData` to `failData`
-    ({input: testing.loadStorage(csv: passData), want: testing.loadMem(csv: outData), fn: t_join_panic})"#,
+    ({
+        input: testing.loadStorage(csv: passData),
+        want: testing.loadMem(csv: outData),
+        fn: t_join_panic,
+    })"#,
     );
 
     assert_format(

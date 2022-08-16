@@ -218,7 +218,10 @@ testcase filterRowsNotStrict {
         csv.from(csv: inData)
             |> testing.load()
             |> range(start: 2019-11-01T00:00:00Z)
-            |> geo.filterRows(region: {lat: 40.7090214, lon: -73.61846, radius: 15.0}, strict: false)
+            |> geo.filterRows(
+                region: {lat: 40.7090214, lon: -73.61846, radius: 15.0},
+                strict: false,
+            )
             |> drop(columns: ["_start", "_stop"])
     want = csv.from(csv: outData)
 

@@ -196,7 +196,11 @@ testcase stDistanceLinestring {
                 fn: (r) =>
                     ({r with _st_distance:
                             limitFloat(
-                                value: geo.ST_Distance(region: refPoint, geometry: {linestring: r.st_linestring}),
+                                value:
+                                    geo.ST_Distance(
+                                        region: refPoint,
+                                        geometry: {linestring: r.st_linestring},
+                                    ),
                             ),
                     }),
             )

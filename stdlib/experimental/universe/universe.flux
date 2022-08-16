@@ -37,7 +37,10 @@ package universe
 // introduced: v0.166.0
 // tags: transformations
 //
-builtin columns : (<-tables: stream[A], ?column: C = "_value") => stream[{C: string}] where A: Record, C: Label
+builtin columns : (<-tables: stream[A], ?column: C = "_value") => stream[{C: string}]
+    where
+    A: Record,
+    C: Label
 
 // fill replaces all null values in input tables with a non-null value.
 //

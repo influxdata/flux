@@ -41,7 +41,12 @@ testcase string_lstrip {
             |> range(start: 2018-05-22T19:53:26Z)
             |> map(
                 fn: (r) =>
-                    ({r with _value: strings.trimRight(v: strings.trimLeft(v: r._value, cutset: " "), cutset: " ")}),
+                    ({r with _value:
+                            strings.trimRight(
+                                v: strings.trimLeft(v: r._value, cutset: " "),
+                                cutset: " ",
+                            ),
+                    }),
             )
     want = csv.from(csv: outData)
 

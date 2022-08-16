@@ -66,7 +66,7 @@ pub struct Options {
 
     /// How long a line is allowed to be before newlines are forced
     ///
-    /// Default: 120
+    /// Default: 100
     pub line_width: usize,
 }
 
@@ -74,7 +74,7 @@ impl Default for Options {
     fn default() -> Self {
         Self {
             trailing_newline: true,
-            line_width: 120,
+            line_width: 100,
         }
     }
 }

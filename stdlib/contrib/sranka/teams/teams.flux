@@ -52,22 +52,24 @@ option summaryCutoff = 70
 // ## Metadata
 // tags: single notification
 //
-message = (url, title, text, summary="") => {
-    headers = {"Content-Type": "application/json; charset=utf-8"}
+message =
+    (url, title, text, summary="") =>
+        {
+            headers = {"Content-Type": "application/json; charset=utf-8"}
 
-    // see https://docs.microsoft.com/en-us/outlook/actionable-messages/message-card-reference#card-fields
-    // using string body, object cannot be used because '@' is an illegal character in the object property key
-    summary2 =
-        if summary == "" then
-            text
-        else
-            summary
-    shortSummary =
-        if strings.strlen(v: summary2) > summaryCutoff then
-            "${strings.substring(v: summary2, start: 0, end: summaryCutoff)}..."
-        else
-            summary2
-    body = "{
+            // see https://docs.microsoft.com/en-us/outlook/actionable-messages/message-card-reference#card-fields
+            // using string body, object cannot be used because '@' is an illegal character in the object property key
+            summary2 =
+                if summary == "" then
+                    text
+                else
+                    summary
+            shortSummary =
+                if strings.strlen(v: summary2) > summaryCutoff then
+                    "${strings.substring(v: summary2, start: 0, end: summaryCutoff)}..."
+                else
+                    summary2
+            body = "{
 \"@type\": \"MessageCard\",
 \"@context\": \"http://schema.org/extensions\",
 \"title\": ${string(v: json.encode(v: title))},
@@ -75,8 +77,8 @@ message = (url, title, text, summary="") => {
 \"summary\": ${string(v: json.encode(v: shortSummary))}
 }"
 
-    return http.post(headers: headers, url: url, data: bytes(v: body))
-}
+            return http.post(headers: headers, url: url, data: bytes(v: body))
+        }
 
 // endpoint sends a message to a Microsoft Teams channel using data from table rows.
 //
@@ -138,7 +140,8 @@ endpoint = (url) =>
                                                 url: url,
                                                 title: obj.title,
                                                 text: obj.text,
-                                                summary: if exists obj.summary then obj.summary else "",
+                                                summary:
+                                                    if exists obj.summary then obj.summary else "",
                                             ) / 100,
                                 ),
                         }

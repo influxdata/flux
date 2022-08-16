@@ -7,7 +7,14 @@ import "csv"
 
 option now = () => 2030-01-01T00:00:00Z
 
-codes1 = dict.fromList(pairs: [{key: "internal", value: 0}, {key: "invalid", value: 1}, {key: "unknown", value: 3}])
+codes1 =
+    dict.fromList(
+        pairs: [
+            {key: "internal", value: 0},
+            {key: "invalid", value: 1},
+            {key: "unknown", value: 3},
+        ],
+    )
 codes2 = dict.remove(dict: codes1, key: "unknown")
 codes3 = dict.insert(dict: codes2, key: "unimplemented", value: 2)
 inData =
@@ -53,7 +60,10 @@ testcase dict_insert_remove {
                     error_code2 = dict.get(dict: codes2, key: r.error_type, default: -1)
                     error_code3 = dict.get(dict: codes3, key: r.error_type, default: -1)
 
-                    return {r with error_code1: error_code1, error_code2: error_code2, error_code3: error_code3}
+                    return {r with error_code1: error_code1,
+                        error_code2: error_code2,
+                        error_code3: error_code3,
+                    }
                 },
             )
     want = csv.from(csv: outData)

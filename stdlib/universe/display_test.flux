@@ -35,20 +35,29 @@ testcase display_bytes {
 testcase display_composite {
     want =
         array.from(
-            rows: [
-                {
-                    display:
-                        "{
+            rows:
+                [
+                    {
+                        display:
+                            "{
     array: [1, 2, 3],
     bytes: 0x616263,
     dict: [a: 1, b: 2, c: 3],
     string: str
 }",
-                },
-            ],
+                    },
+                ],
         )
 
-    d = display(v: {bytes: bytes(v: "abc"), string: "str", array: [1, 2, 3], dict: ["a": 1, "b": 2, "c": 3]})
+    d =
+        display(
+            v: {
+                bytes: bytes(v: "abc"),
+                string: "str",
+                array: [1, 2, 3],
+                dict: ["a": 1, "b": 2, "c": 3],
+            },
+        )
 
     got = array.from(rows: [{display: d}])
 

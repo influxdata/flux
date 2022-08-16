@@ -39,7 +39,12 @@ testcase string_center {
         csv.from(csv: inData)
             |> testing.load()
             |> range(start: 2018-05-22T19:53:26Z)
-            |> map(fn: (r) => ({r with _value: strings.joinStr(arr: [" ", r._value, " "], v: ""), _time: r._time}))
+            |> map(
+                fn: (r) =>
+                    ({r with _value: strings.joinStr(arr: [" ", r._value, " "], v: ""),
+                        _time: r._time,
+                    }),
+            )
     want = csv.from(csv: outData)
 
     testing.diff(got, want)

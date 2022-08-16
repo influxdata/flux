@@ -112,7 +112,9 @@ testcase vec_equality_time_repeat {
         )
 
     got =
-        array.from(rows: [{a: 2022-01-01T00:00:00Z}, {a: 2022-01-01T01:00:00Z}, {a: 2022-01-01T02:00:00Z}])
+        array.from(
+            rows: [{a: 2022-01-01T00:00:00Z}, {a: 2022-01-01T01:00:00Z}, {a: 2022-01-01T02:00:00Z}],
+        )
             |> map(
                 fn: (r) =>
                     ({r with
@@ -357,7 +359,11 @@ testcase vec_equality_uint {
 
     got =
         array.from(
-            rows: [{a: uint(v: 0), b: uint(v: 0)}, {a: uint(v: 2), b: uint(v: 0)}, {a: uint(v: 0), b: uint(v: 2)}],
+            rows: [
+                {a: uint(v: 0), b: uint(v: 0)},
+                {a: uint(v: 2), b: uint(v: 0)},
+                {a: uint(v: 0), b: uint(v: 2)},
+            ],
         )
             |> map(fn: fn)
 
@@ -472,7 +478,14 @@ testcase vec_equality_bool {
         )
 
     got =
-        array.from(rows: [{a: false, b: false}, {a: true, b: false}, {a: false, b: true}, {a: true, b: true}])
+        array.from(
+            rows: [
+                {a: false, b: false},
+                {a: true, b: false},
+                {a: false, b: true},
+                {a: true, b: true},
+            ],
+        )
             // N.b. bool currently only supports `Equatable` but not `Comparable`
             // so we can only test for eq/neq at this time.
             // In the future bool may become `Comparable` in which case we can

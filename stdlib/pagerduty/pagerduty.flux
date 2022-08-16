@@ -32,7 +32,10 @@ import "strings"
 // >     |> pagerduty.dedupKey()
 // ```
 //
-builtin dedupKey : (<-tables: stream[A], ?exclude: [string]) => stream[{A with _pagerdutyDedupKey: string}]
+builtin dedupKey : (
+        <-tables: stream[A],
+        ?exclude: [string],
+    ) => stream[{A with _pagerdutyDedupKey: string}]
 
 // defaultURL is the default PagerDuty URL used by functions in the `pagerduty` package.
 option defaultURL = "https://events.pagerduty.com/v2/enqueue"
@@ -153,7 +156,11 @@ _sendEvent = (
             client: client,
             client_url: clientURL,
         }
-        headers = ["Accept": "application/vnd.pagerduty+json;version=2", "Content-Type": "application/json"]
+        headers =
+            [
+                "Accept": "application/vnd.pagerduty+json;version=2",
+                "Content-Type": "application/json",
+            ]
         enc =
             if customDetails == record.any then
                 json.encode(v: data)
@@ -362,7 +369,8 @@ endpoint = (url=defaultURL) =>
                                 component: record.get(r: obj, key: "component", default: ""),
                                 summary: obj.summary,
                                 timestamp: obj.timestamp,
-                                customDetails: record.get(r: obj, key: "customDetails", default: record.any),
+                                customDetails:
+                                    record.get(r: obj, key: "customDetails", default: record.any),
                             )
 
                         return {r with _sent: string(v: 2 == response.statusCode / 100),

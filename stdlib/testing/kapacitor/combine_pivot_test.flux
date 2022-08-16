@@ -45,7 +45,11 @@ testcase combine_join {
             |> testing.load()
             |> range(start: 2018-12-15T00:00:00Z)
             |> drop(columns: ["_start", "_stop"])
-            |> pivot(rowKey: ["_time", "_measurement"], columnKey: ["_field"], valueColumn: "_value")
+            |> pivot(
+                rowKey: ["_time", "_measurement"],
+                columnKey: ["_field"],
+                valueColumn: "_value",
+            )
     want = csv.from(csv: outData)
 
     testing.diff(got, want)

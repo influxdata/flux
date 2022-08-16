@@ -540,7 +540,9 @@ builtin microsecond : (t: T) => int where T: Timeable
 builtin nanosecond : (t: T) => int where T: Timeable
 
 // builtin _add used by add
-builtin _add : (d: duration, to: T, location: {zone: string, offset: duration}) => time where T: Timeable
+builtin _add : (d: duration, to: T, location: {zone: string, offset: duration}) => time
+    where
+    T: Timeable
 
 // add adds a duration to a time value and returns the resulting time value.
 //
@@ -599,7 +601,9 @@ builtin _add : (d: duration, to: T, location: {zone: string, offset: duration}) 
 add = (d, to, location=location) => _add(d, to, location)
 
 // builtin _sub used by sub
-builtin _sub : (from: T, d: duration, location: {zone: string, offset: duration}) => time where T: Timeable
+builtin _sub : (from: T, d: duration, location: {zone: string, offset: duration}) => time
+    where
+    T: Timeable
 
 // sub subtracts a duration from a time value and returns the resulting time value.
 //
@@ -659,7 +663,9 @@ builtin _sub : (from: T, d: duration, location: {zone: string, offset: duration}
 sub = (d, from, location=location) => _sub(d, from, location)
 
 // builtin _truncate used by truncate
-builtin _truncate : (t: T, unit: duration, location: {zone: string, offset: duration}) => time where T: Timeable
+builtin _truncate : (t: T, unit: duration, location: {zone: string, offset: duration}) => time
+    where
+    T: Timeable
 
 // truncate returns a time truncated to the specified duration unit.
 //

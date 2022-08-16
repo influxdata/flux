@@ -191,7 +191,11 @@ testcase stLength {
             |> geo.ST_LineString()
             |> map(
                 fn: (r) =>
-                    ({r with _st_length: limitFloat(value: geo.ST_Length(geometry: {linestring: r.st_linestring}))}),
+                    ({r with _st_length:
+                            limitFloat(
+                                value: geo.ST_Length(geometry: {linestring: r.st_linestring}),
+                            ),
+                    }),
             )
             |> drop(columns: ["_start", "_stop"])
     want = csv.from(csv: outData)

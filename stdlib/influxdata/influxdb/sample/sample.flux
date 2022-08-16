@@ -43,7 +43,8 @@ _sets =
             type: "static",
         },
         "noaa": {
-            url: "https://influx-testdata.s3.amazonaws.com/noaa-ndbc-latest-observations-annotated.csv",
+            url:
+                "https://influx-testdata.s3.amazonaws.com/noaa-ndbc-latest-observations-annotated.csv",
             desc:
                 "Latest observations from the NOAA National Data Buoy Center (NDBC). Contains only the most recent observations (no historical data). Data is updated approximately every 15m.",
             size: "~1.3 MB",

@@ -129,7 +129,14 @@ testcase join_repro_4692_2 {
             |> map(fn: (r) => getById(id: r._value))
 
     want =
-        array.from(rows: [{x: 1, y: 1, v: "hi"}, {x: 2, y: 2, v: "hey"}, {x: 2, y: 2, v: "hey"}, {x: 3, y: 3, v: "hi"}])
+        array.from(
+            rows: [
+                {x: 1, y: 1, v: "hi"},
+                {x: 2, y: 2, v: "hey"},
+                {x: 2, y: 2, v: "hey"},
+                {x: 3, y: 3, v: "hi"},
+            ],
+        )
 
     testing.diff(want: want, got: got)
 }
@@ -162,7 +169,11 @@ testcase join_repro_4692_3 {
         )
             |> map(
                 fn: (r) => {
-                    a = join(tables: {xs: xs |> map(fn: (r) => ({r with v: "hey"})), ys: ys}, on: ["id"])
+                    a =
+                        join(
+                            tables: {xs: xs |> map(fn: (r) => ({r with v: "hey"})), ys: ys},
+                            on: ["id"],
+                        )
                     b = join(tables: {xs: xs, ys: ys}, on: ["id"])
 
                     return getById(id: r._value, a: a, b: b)
@@ -170,7 +181,14 @@ testcase join_repro_4692_3 {
             )
 
     want =
-        array.from(rows: [{x: 1, y: 1, v: "hi"}, {x: 2, y: 2, v: "hey"}, {x: 2, y: 2, v: "hey"}, {x: 3, y: 3, v: "hi"}])
+        array.from(
+            rows: [
+                {x: 1, y: 1, v: "hi"},
+                {x: 2, y: 2, v: "hey"},
+                {x: 2, y: 2, v: "hey"},
+                {x: 3, y: 3, v: "hi"},
+            ],
+        )
 
     testing.diff(want: want, got: got)
 }

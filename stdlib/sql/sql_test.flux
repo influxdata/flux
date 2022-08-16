@@ -28,10 +28,20 @@ sophie = {name: "Sophie", age: 15, "fav food": "salmon"}
 SOPHIE = {NAME: "Sophie", AGE: 15, "FAV FOOD": "salmon"}
 
 SEED_WANT =
-    union(tables: [array.from(rows: [STANLEY]) |> debug.opaque(), array.from(rows: [LUCY]) |> debug.opaque()])
+    union(
+        tables: [
+            array.from(rows: [STANLEY]) |> debug.opaque(),
+            array.from(rows: [LUCY]) |> debug.opaque(),
+        ],
+    )
         |> sort(columns: ["AGE"], desc: true)
 seed_want =
-    union(tables: [array.from(rows: [stanley]) |> debug.opaque(), array.from(rows: [lucy]) |> debug.opaque()])
+    union(
+        tables: [
+            array.from(rows: [stanley]) |> debug.opaque(),
+            array.from(rows: [lucy]) |> debug.opaque(),
+        ],
+    )
         |> sort(columns: ["age"], desc: true)
 nonseed_want = array.from(rows: [sophie])
 NONSEED_WANT = array.from(rows: [SOPHIE])
@@ -79,7 +89,12 @@ testcase integration_hdb_injection {
     option testing.tags = ["integration_injection"]
 
     EVIL
-        |> sql.to(driverName: "hdb", dataSourceName: hdbDsn, table: "injection attempt", batchSize: 1)
+        |> sql.to(
+            driverName: "hdb",
+            dataSourceName: hdbDsn,
+            table: "injection attempt",
+            batchSize: 1,
+        )
         |> filter(fn: (r) => false)
         |> yield()
 }
@@ -132,7 +147,12 @@ testcase integration_pg_injection {
     option testing.tags = ["integration_injection"]
 
     evil
-        |> sql.to(driverName: "postgres", dataSourceName: pgDsn, table: "injection attempt", batchSize: 1)
+        |> sql.to(
+            driverName: "postgres",
+            dataSourceName: pgDsn,
+            table: "injection attempt",
+            batchSize: 1,
+        )
         |> filter(fn: (r) => false)
         |> yield()
 }
@@ -183,7 +203,12 @@ testcase integration_mysql_injection {
     option testing.tags = ["integration_injection"]
 
     myevil
-        |> sql.to(driverName: "mysql", dataSourceName: mysqlDsn, table: "injection attempt", batchSize: 1)
+        |> sql.to(
+            driverName: "mysql",
+            dataSourceName: mysqlDsn,
+            table: "injection attempt",
+            batchSize: 1,
+        )
         |> filter(fn: (r) => false)
         |> yield()
 }
@@ -234,7 +259,12 @@ testcase integration_mariadb_injection {
     option testing.tags = ["integration_injection"]
 
     myevil
-        |> sql.to(driverName: "mysql", dataSourceName: mariaDbDsn, table: "injection attempt", batchSize: 1)
+        |> sql.to(
+            driverName: "mysql",
+            dataSourceName: mariaDbDsn,
+            table: "injection attempt",
+            batchSize: 1,
+        )
         |> filter(fn: (r) => false)
         |> yield()
 }
@@ -285,7 +315,12 @@ testcase integration_mssql_injection {
     option testing.tags = ["integration_injection"]
 
     evil
-        |> sql.to(driverName: "sqlserver", dataSourceName: mssqlDsn, table: "injection attempt", batchSize: 1)
+        |> sql.to(
+            driverName: "sqlserver",
+            dataSourceName: mssqlDsn,
+            table: "injection attempt",
+            batchSize: 1,
+        )
         |> filter(fn: (r) => false)
         |> yield()
 }
@@ -300,7 +335,12 @@ testcase integration_mssql_write_to {
         // skate by with "mssql" if you only ever use `sql.from()` (which doesn't
         // attempt to bind parameters!)
         // <https://github.com/denisenkom/go-mssqldb#deprecated>
-        |> sql.to(driverName: "sqlserver", dataSourceName: mssqlDsn, table: "pet info", batchSize: 1)
+        |> sql.to(
+            driverName: "sqlserver",
+            dataSourceName: mssqlDsn,
+            table: "pet info",
+            batchSize: 1,
+        )
         // The array.from() will be returned and will cause the test to fail.
         // Filtering will mean the test can pass. Hopefully `sql.to()` will
         // error if there's a problem.
@@ -363,7 +403,12 @@ testcase integration_vertica_write_to {
     option testing.tags = ["integration_write"]
 
     nonseed_want
-        |> sql.to(driverName: "vertica", dataSourceName: verticaDsn, table: "pet info", batchSize: 1)
+        |> sql.to(
+            driverName: "vertica",
+            dataSourceName: verticaDsn,
+            table: "pet info",
+            batchSize: 1,
+        )
         // The array.from() will be returned and will cause the test to fail.
         // Filtering will mean the test can pass. Hopefully `sql.to()` will
         // error if there's a problem.
@@ -405,7 +450,12 @@ testcase integration_sqlite_injection {
     option testing.tags = ["integration_injection"]
 
     evil
-        |> sql.to(driverName: "sqlite3", dataSourceName: sqliteDsn, table: "injection attempt", batchSize: 1)
+        |> sql.to(
+            driverName: "sqlite3",
+            dataSourceName: sqliteDsn,
+            table: "injection attempt",
+            batchSize: 1,
+        )
         |> filter(fn: (r) => false)
         |> yield()
 }

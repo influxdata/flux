@@ -62,7 +62,12 @@ send = (
         headers = {"Content-Type": "application/json"}
         encode = json.encode(v: data)
 
-        return http.post(headers: headers, url: discordURL + webhookID + "/" + webhookToken, data: encode)
+        return
+            http.post(
+                headers: headers,
+                url: discordURL + webhookID + "/" + webhookToken,
+                data: encode,
+            )
     }
 
 // endpoint sends a single message to a Discord channel using a
