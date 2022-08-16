@@ -77,7 +77,7 @@ builtin feature : (key: string) => A
 // import "array"
 // import "internal/debug"
 //
-// > array.from(rows: [{a: 1, b: 2, c: 3}, {a: debug.null("int"), b: 5, c: 6}])
+// > array.from(rows: [{a: 1, b: 2, c: 3}, {a: debug.null(type: "int"), b: 5, c: 6}])
 // ```
 //
 // ## Metadata
