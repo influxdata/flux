@@ -5,7 +5,7 @@ use crate::{
     errors::{located, Errors},
     semantic::{
         nodes::{
-            BinaryExpr, Block, CallExpr, ConditionalExpr, Error, ErrorKind, Expression,
+            BinaryExpr, Block, BooleanLit, CallExpr, ConditionalExpr, Error, ErrorKind, Expression,
             FunctionExpr, Identifier, IdentifierExpr, LogicalExpr, MemberExpr, ObjectExpr, Package,
             Property, Result, ReturnStmt,
         },
@@ -66,6 +66,16 @@ impl Expression {
     fn vectorize(&self, env: &VectorizeEnv<'_>) -> Result<Self> {
         Ok(match self {
             Expression::Identifier(identifier) => {
+                let name = identifier.name.clone();
+                if env.config.features.contains(&Feature::VectorizedConst)
+                    && (name == "true" || name == "false")
+                {
+                    return Ok(wrap_vec_repeat(Expression::Boolean(BooleanLit {
+                        loc: identifier.loc.clone(),
+                        value: name == "true",
+                    })));
+                }
+
                 Expression::Identifier(identifier.vectorize(env)?)
             }
             Expression::Member(member) => {
@@ -158,14 +168,6 @@ impl Expression {
                 wrap_vec_repeat(expr.clone())
             }
             Expression::Call(expr) => Expression::Call(Box::new(expr.vectorize(env)?)),
-            // FIXME: https://github.com/influxdata/flux/issues/4997
-            //  bool literals are not vectorized currently.
-            //  This match arm doesn't seem to be hit when `true`/`false` appear in the function body.
-            // expr @ Expression::Boolean(_)
-            //     if env.config.features.contains(&Feature::VectorizedConst) =>
-            // {
-            //     wrap_vec_repeat(expr.clone())
-            // }
             _ => {
                 return Err(located(
                     self.loc().clone(),
