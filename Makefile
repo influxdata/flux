@@ -118,11 +118,10 @@ test: test-go test-rust test-flux
 test-go: libflux-go
 	$(GO_TEST) $(GO_TEST_FLAGS) ./...
 
-test-rust:
+test-rust: lint-rust
 	cd libflux && $(CARGO) test $(CARGO_ARGS) --all-features && \
 	$(CARGO) doc --no-deps && \
-	$(CARGO) test --doc && \
-	$(CARGO) clippy $(CARGO_ARGS) --all-features --all-targets -- -Dclippy::all -Dclippy::undocumented_unsafe_blocks
+	$(CARGO) test --doc
 
 test-flux:
 	$(GO_RUN) ./cmd/flux test -p stdlib -v --parallel 8
@@ -144,6 +143,9 @@ test-bench: libflux-go
 
 vet: libflux-go
 	$(GO_VET) ./...
+
+lint-rust:
+	cd libflux && $(CARGO) clippy $(CARGO_ARGS) --all-features --all-targets -- -Dclippy::all -Dclippy::undocumented_unsafe_blocks
 
 bench: libflux-go
 	$(GO_TEST) -bench=. -run=^$$ ./...
@@ -221,6 +223,7 @@ checkdocs: $(STDLIB_SOURCES) libflux/target/release/fluxc libflux/target/release
 	libflux \
 	libflux-go \
 	libflux-wasm \
+	lint-rust \
 	publish-wasm \
 	release \
 	staticcheck \
