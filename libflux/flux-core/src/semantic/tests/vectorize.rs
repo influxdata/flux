@@ -24,6 +24,8 @@ fn vectorize(src: &str) -> anyhow::Result<Package> {
         None,
         map![
             "float" => "(v: A) => float",
+            "true" => "bool",
+            "false" => "bool",
         ],
     ));
 
@@ -330,22 +332,36 @@ fn vectorize_with_construction_using_literal_int() -> anyhow::Result<()> {
     Ok(())
 }
 
-// FIXME: https://github.com/influxdata/flux/issues/4997
-//  bool literals are not vectorized currently. This test gives "undefined identifier true"
 #[test]
-#[ignore]
-fn vectorize_with_construction_using_literal_bool() -> anyhow::Result<()> {
+fn vectorize_with_construction_using_literal_bool_true() -> anyhow::Result<()> {
     let pkg = vectorize(r#"(r) => ({ r with a: true })"#)?;
 
     let function = get_vectorized_function(&pkg);
 
     expect_test::expect![[r##"
         (r) => {
-            return {r:{#C with a: v[#B]} with b: r:{#C with a: v[#B]}.a:v[#B]}:{#C with b: v[#B], a: v[#B]}
-        }:(r: {#C with a: v[#B]}) => {#C with b: v[#B], a: v[#B]}"##]]
-        .assert_eq(&crate::semantic::formatter::format_node(
-            Node::FunctionExpr(function),
-        )?);
+            return {r:#A with a: ~~vecRepeat~~:bool(v: true):v[bool]}:{#A with a: v[bool]}
+        }:(r: #A) => {#A with a: v[bool]}"##]]
+    .assert_eq(&crate::semantic::formatter::format_node(
+        Node::FunctionExpr(function),
+    )?);
+
+    Ok(())
+}
+
+#[test]
+fn vectorize_with_construction_using_literal_bool_false() -> anyhow::Result<()> {
+    let pkg = vectorize(r#"(r) => ({ r with a: false })"#)?;
+
+    let function = get_vectorized_function(&pkg);
+
+    expect_test::expect![[r##"
+        (r) => {
+            return {r:#A with a: ~~vecRepeat~~:bool(v: false):v[bool]}:{#A with a: v[bool]}
+        }:(r: #A) => {#A with a: v[bool]}"##]]
+    .assert_eq(&crate::semantic::formatter::format_node(
+        Node::FunctionExpr(function),
+    )?);
 
     Ok(())
 }

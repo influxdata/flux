@@ -166,14 +166,17 @@ func TestVectorizedFns(t *testing.T) {
 			vectorizable: true,
 			skipComp:     true,
 		},
-		// FIXME: https://github.com/influxdata/flux/issues/4997
-		//  bool literals are not vectorized currently
-		//{
-		//	name:         "bool literals",
-		//	fn:           `(r) => ({r with c: true})`,
-		//	vectorizable: true,
-		//	skipComp:     true,
-		//},
+		{
+			name:         "bool literals true",
+			fn:           `(r) => ({r with c: true})`,
+			vectorizable: true,
+			skipComp:     true,
+		}, {
+			name:         "bool literals false",
+			fn:           `(r) => ({r with c: false})`,
+			vectorizable: true,
+			skipComp:     true,
+		},
 		{
 			name:         "no duration literals",
 			fn:           `(r) => ({r with c: 1h})`,
