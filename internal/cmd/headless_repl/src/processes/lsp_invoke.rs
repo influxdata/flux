@@ -284,33 +284,13 @@ pub fn start_lsp() -> Child {
     child
 }
 
-pub fn join_imports(lock: MutexGuard<HashSet<String>>, delim: &str) -> String {
-    if lock.len() == 0 {
-        return String::from("");
-    }
-
-    let new_size: usize = lock.iter().map(|x| x.len()).sum::<usize>() + (delim.len() * lock.len());
-    let mut res = String::with_capacity(new_size);
-    let mut lock_iter = lock.iter();
-    for i in lock_iter {
-        res.push_str(i.as_str());
-        res.push_str(delim);
-    }
-
-    return res;
-}
-
 pub fn characters_after_last(input: &str, charac: &str) -> Option<u32> {
     if input == "" || charac == "" {
         return None;
     }
-    let mut last_occur: Option<usize> = None;
-    for (i, c) in input.chars().enumerate() {
-        if c == '\n' {
-            last_occur = Some(i)
-        }
-    }
 
+    let mut last_occur: Option<usize> = None;
+    last_occur = input.chars().position(|c| c == '\n');
     if let Some(occur) = last_occur {
         return Some((occur.abs_diff(input.len()) - 1) as u32);
     }

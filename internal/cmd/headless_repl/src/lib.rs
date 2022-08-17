@@ -1,9 +1,9 @@
 #![allow(unused_imports)]
 // mod invoke_go;
-mod LSPSuggestionHelper;
+mod lsp_suggestion_helper;
 mod processes;
 mod utils;
-use crate::processes::{invoke_go, join_imports, lsp_invoke, run, start_go};
+use crate::processes::{invoke_go, lsp_invoke, run, start_go};
 use log::{debug, info, trace};
 use lsp_types::Command;
 use regex::{Captures, Regex};
@@ -40,9 +40,9 @@ use rustyline::{
 };
 
 use crate::lsp_invoke::LSPRequestType::DidChange;
+use crate::lsp_suggestion_helper::{current_line_ends_with, CommandHint};
 use crate::processes::LSPRequestType::{Completion, DidOpen, Initialize, Initialized};
 use crate::utils::process_response_flux;
-use crate::LSPSuggestionHelper::{current_line_ends_with, CommandHint};
 use rustyline_derive::{Completer, Helper, Highlighter, Hinter, Validator};
 
 extern crate pretty_env_logger;
@@ -52,7 +52,7 @@ static CUR_LINE_NUM: AtomicUsize = AtomicUsize::new(0);
 static STOP_HINT: AtomicBool = AtomicBool::new(false);
 #[derive(Completer, Helper, Validator)]
 struct MyHelper {
-    hinter: LSPSuggestionHelper::LSPSuggestionHelper,
+    hinter: lsp_suggestion_helper::LSPSuggestionHelper,
     tx_stdin: Sender<String>,
 }
 
@@ -71,8 +71,6 @@ impl Hinter for MyHelper {
         if line.is_empty() || pos < line.len() {
             return None;
         }
-
-        // println!("\n\ntesting: {}", line);
 
         if let Some(hint) = self.hinter.trigger_finder(line) {
             return Some(hint);
@@ -129,12 +127,7 @@ impl ConditionalEventHandler for CompleteHintHandler {
                 Some(Cmd::CompleteHint)
             } else if *k == KeyEvent::alt('f') && ctx.line().len() == ctx.pos() {
                 let text = ctx.hint_text()?;
-                let mut start = 0;
-                if let Some(first) = text.chars().next() {
-                    if !first.is_alphanumeric() {
-                        start = text.find(|c: char| c.is_alphanumeric()).unwrap_or_default();
-                    }
-                }
+                let start = text.find(|c: char| c.is_alphanumeric()).unwrap_or_default();
 
                 let text = text
                     .chars()
@@ -173,21 +166,10 @@ impl ConditionalEventHandler for TabEventHandler {
     }
 }
 
-struct RequestHelper {
-    suggestion_sender: Sender<String>,
-}
-unsafe impl Sync for RequestHelper {}
-impl ConditionalEventHandler for RequestHelper {
-    fn handle(&self, evt: &Event, n: RepeatCount, _: bool, ctx: &EventContext) -> Option<Cmd> {
-        self.suggestion_sender
-            .send(ctx.line().to_string())
-            .expect("Failed something lol");
-
-        Some(Cmd::Noop)
-    }
-}
-
 pub fn possibleMain() -> Result<()> {
+    //logging
+    pretty_env_logger::init();
+
     //START: Channel Setup
     //channel for the coordinator and the flux writer
     let (tx_flux, rx_flux): (Sender<String>, Receiver<String>) = channel();
@@ -208,7 +190,7 @@ pub fn possibleMain() -> Result<()> {
     //hints clone for the hinter
     let hints_for_hinter = hints.clone();
     //hinter setup
-    let lsp_helper = LSPSuggestionHelper::LSPSuggestionHelper {
+    let lsp_helper = lsp_suggestion_helper::LSPSuggestionHelper {
         hints: hints_for_hinter,
     };
     rl.set_helper(Some(MyHelper {

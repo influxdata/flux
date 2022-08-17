@@ -8,7 +8,7 @@ pub fn process_response_flux(response: &str) {
         //flux result
 
         println!(
-            "{}",
+            "\n{}",
             serde_json::to_string(&a["result"]["Result"])
                 .unwrap()
                 .replace("\"", "")
@@ -17,7 +17,4 @@ pub fn process_response_flux(response: &str) {
         //error case
         println!("{}", response);
     }
-    // unreachable!();
-    // match serde_json::from_str(response)
-    // let a: Value = serde_json::from_str(request).is_ok();
 }

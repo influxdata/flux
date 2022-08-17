@@ -49,10 +49,6 @@ impl Hint for CommandHint {
     }
 }
 
-// currently an issue of displaying a hint if the hint is already completed
-static REFRESH: AtomicBool = AtomicBool::new(false);
-// static FIRST_ARG: Arc<Mutex<Option<String>>> = Arc::new(Mutex::new(None));
-//need to add in the lib file that checks if the overlap between the hint and the input is equal
 impl CommandHint {
     pub fn new(
         text: &str,
@@ -128,19 +124,17 @@ impl LSPSuggestionHelper {
         let mut hint_basic: Option<&CommandHint> = None;
         // println!("doing here");
 
-        if line.ends_with("(") {
-            trace!("{:?}", lock);
-        }
-
         for hint in lock.iter() {
             //if there is some overlap
             let disp = hint.display.as_str();
 
-            if hint.hint_type == ArgumentType {
-                if let Some(overlap) = overlap_two(line, &hint.display) {
-                    return Some(hint.suffix(overlap.len()));
-                }
-            }
+            //TODO: if there is no overlap give room so that user can put functions that can be completed as an arg
+            //check it is a valid arg suggestion
+            // if hint.hint_type == ArgumentType {
+            //     if let Some(overlap) = overlap_two(line, &hint.display) {
+            //         return Some(hint.suffix(overlap.len()));
+            //     }
+            // }
 
             if let Some(overlap) = overlap_two(line, hint.display()) {
                 let ratio: f32 = (overlap.len() as f32 / disp.len() as f32);
@@ -221,7 +215,9 @@ pub(crate) fn current_line_ends_with(line: &str, comp: &str) -> Option<(usize, u
 
 #[cfg(test)]
 mod tests_overlap {
-    use crate::LSPSuggestionHelper::{get_last_ident, is_valid, overlap_two, LSPSuggestionHelper};
+    use crate::lsp_suggestion_helper::{
+        get_last_ident, is_valid, overlap_two, LSPSuggestionHelper,
+    };
     use regex::Regex;
     use std::collections::HashSet;
     use std::sync::{Arc, RwLock};

@@ -1,7 +1,7 @@
+use crate::lsp_suggestion_helper::LSPSuggestionHelper;
 use crate::processes::process_completion::HintType::{
     ArgumentType, FunctionType, MethodType, PackageType, UnimplementedType,
 };
-use crate::LSPSuggestionHelper::LSPSuggestionHelper;
 use crate::{CommandHint, MyHelper};
 use regex::Regex;
 use rustyline::hint::Hint;

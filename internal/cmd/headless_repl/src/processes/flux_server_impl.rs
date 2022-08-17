@@ -29,12 +29,14 @@ impl FluxServer {
 }
 
 pub fn read_flux(stdout: ChildStdout) -> Result<(), ServerError> {
-    let reader = BufReader::new(stdout);
-    thread::spawn(move || {
-        for line in reader.lines() {
-            process_response_flux(&line.unwrap());
-        }
-    });
+    {
+        let reader = BufReader::new(stdout);
+        thread::spawn(move || {
+            for line in reader.lines() {
+                process_response_flux(&line.unwrap());
+            }
+        });
+    }
     Ok(())
 }
 pub fn write_flux(

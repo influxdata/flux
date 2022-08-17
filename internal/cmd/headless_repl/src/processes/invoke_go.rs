@@ -1,7 +1,7 @@
 use crate::invoke_go::OutputError::InvalidMethod;
+use crate::lsp_suggestion_helper::LSPSuggestionHelper;
 use crate::processes::lsp_invoke::add_headers;
 use crate::processes::process_completion::process_completions_response;
-use crate::LSPSuggestionHelper::LSPSuggestionHelper;
 use crate::{CommandHint, MyHelper};
 use lsp_types::{
     DidChangeTextDocumentParams, TextDocumentContentChangeEvent, Url,
@@ -11,7 +11,6 @@ use regex::Regex;
 use rustyline::Helper;
 use serde_json::Value;
 use std::collections::HashSet;
-use std::env::consts::OS;
 use std::fmt::format;
 use std::hash::Hash;
 use std::io::{stdin, Read};
@@ -49,8 +48,8 @@ impl From<serde_json::Error> for OutputError {
 pub fn form_output(request_type: &str, text: &str) -> Result<String, OutputError> {
     match request_type {
         "Service.DidOutput" => {
-            let mut cleaned = text.to_string().replace("\"", "\\\"");
-            let mut param = (r#"[{"input": "#).to_string();
+            let mut cleaned = text.replace("\"", "\\\"");
+            let mut param = r#"[{"input": "#.to_string();
             let mut other_side = format!(r#""{}""#, cleaned);
             other_side.push_str("}]");
             param.push_str(other_side.as_str());

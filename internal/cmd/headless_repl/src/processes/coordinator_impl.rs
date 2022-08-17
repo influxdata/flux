@@ -1,5 +1,5 @@
-use crate::processes::FluxServerImpl::{read_flux, write_flux, FluxServer, ServerError};
-use crate::processes::LSPServerImpl::{read_lsp, write_lsp, LSPServer};
+use crate::processes::flux_server_impl::{read_flux, write_flux, FluxServer, ServerError};
+use crate::processes::lsp_server_impl::{read_lsp, write_lsp, LSPServer};
 use crate::{
     formulate_request, start_go, start_lsp, CommandHint, Completion, DidChange, DidOpen,
     Initialize, Initialized,
