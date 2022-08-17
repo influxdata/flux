@@ -23,9 +23,8 @@ outData =
 ,,0,B
 "
 
+// Passes in flux, fails in C2 and OSS
 testcase buckets {
-    option testing.tags = ["skip"]
-
     got =
         csv.from(csv: inData)
             |> testing.load()

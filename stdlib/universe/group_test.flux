@@ -35,9 +35,8 @@ outData =
 ,,1,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,diskio,io_time,host.local,disk2,2018-05-22T19:53:26Z,648
 "
 
+// Passes in flux, fails in C2 and OSS
 testcase group {
-    option testing.tags = ["skip"]
-
     got =
         csv.from(csv: inData)
             |> testing.load()

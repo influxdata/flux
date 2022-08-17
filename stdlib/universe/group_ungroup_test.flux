@@ -45,9 +45,8 @@ outData =
 ,,0,2018-05-22T19:54:16Z,648
 "
 
+// Passes in flux and OSS, fails in C2
 testcase group_ungroup {
-    option testing.tags = ["skip"]
-
     got =
         csv.from(csv: inData)
             |> testing.load()

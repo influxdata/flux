@@ -1536,8 +1536,6 @@ inData =
 "
 
 testcase naive_bayes {
-    option testing.tags = ["skip"]
-
     got =
         csv.from(csv: inData)
             |> naiveBayesClassifier.naiveBayes(

@@ -25,9 +25,8 @@ outData =
 "
 token = secrets.get(key: "token")
 
+// Passes in flux, fails in C2 and OSS
 testcase secrets {
-    option testing.tags = ["skip"]
-
     got =
         csv.from(csv: inData)
             |> testing.load()

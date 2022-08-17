@@ -92,9 +92,8 @@ outData =
 ,,2,migration,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,2019-01-05T07:00:00Z,ctrlField,91916A,21.16,39.1665,15c3af
 "
 
+// Passes in flux, fails in C2 and OSS
 testcase shapeDataWithFilter {
-    option testing.tags = ["skip"]
-
     got =
         csv.from(csv: inData)
             |> testing.load()

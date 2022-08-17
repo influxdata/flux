@@ -65,9 +65,8 @@ outData =
 ,,3,2018-05-22T19:49:20Z,_m,SR,88
 "
 
+// Passes in flux, fails in C2 and OSS
 testcase shift_negative_duration {
-    option testing.tags = ["skip"]
-
     got =
         csv.from(csv: inData)
             |> testing.load()
