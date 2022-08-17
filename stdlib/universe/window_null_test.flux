@@ -35,9 +35,8 @@ outData =
 
 option now = () => 2019-01-15T21:40:32Z
 
+// Passes in flux, fails in C2 and OSS
 testcase window_null {
-    option testing.tags = ["skip"]
-
     got =
         csv.from(csv: inData)
             |> testing.load()

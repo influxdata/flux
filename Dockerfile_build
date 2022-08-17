@@ -4,6 +4,11 @@
 # and verification, we can list the rust container as a prior build stage, and
 # then pull in the artifacts we need. There is an added benefit that tagged versions
 # also include minor releases, so 1.2 includes 1.2.1 and so on, for bugfix releases.
+#
+# Note: we are stuck on Rust version 1.58 for the time being until
+# this issue is fixed:
+#   https://github.com/rust-lang/rust/issues/97117
+# Since it blocks the ARM64 build of InfluxDB.
 FROM rust:1.58 as RUSTBUILD
 
 FROM golang:1.18 as PKGCONFIG

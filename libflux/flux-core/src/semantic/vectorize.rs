@@ -137,10 +137,27 @@ impl Expression {
                     typ: MonoType::vector(expr.typ.clone()),
                 }))
             }
-            expr @ Expression::Integer(_) => wrap_vec_repeat(expr.clone()),
-            expr @ Expression::DateTime(_) => wrap_vec_repeat(expr.clone()),
-            expr @ Expression::Float(_) => wrap_vec_repeat(expr.clone()),
-            expr @ Expression::StringLit(_) => wrap_vec_repeat(expr.clone()),
+            expr @ Expression::Integer(_)
+                if env.config.features.contains(&Feature::VectorizedConst) =>
+            {
+                wrap_vec_repeat(expr.clone())
+            }
+            expr @ Expression::DateTime(_)
+                if env.config.features.contains(&Feature::VectorizedConst) =>
+            {
+                wrap_vec_repeat(expr.clone())
+            }
+            expr @ Expression::Float(_)
+                if env.config.features.contains(&Feature::VectorizedConst) =>
+            {
+                wrap_vec_repeat(expr.clone())
+            }
+            expr @ Expression::StringLit(_)
+                if env.config.features.contains(&Feature::VectorizedConst) =>
+            {
+                wrap_vec_repeat(expr.clone())
+            }
+            Expression::Call(expr) => Expression::Call(Box::new(expr.vectorize(env)?)),
             _ => {
                 return Err(located(
                     self.loc().clone(),
@@ -148,6 +165,52 @@ impl Expression {
                 ));
             }
         })
+    }
+}
+
+impl CallExpr {
+    fn vectorize(&self, env: &VectorizeEnv) -> Result<Self> {
+        match &self.callee {
+            ident @ Expression::Identifier(IdentifierExpr { name, .. }) => {
+                if env.config.features.contains(&Feature::VectorizedFloat)
+                    && name == "float"
+                    && self.arguments.len() == 1
+                    && self.arguments[0].key.name == "v"
+                {
+                    let v = &self.arguments[0];
+                    let arguments = vec![Property {
+                        loc: v.loc.clone(),
+                        key: v.key.clone(),
+                        value: v.value.vectorize(env)?,
+                    }];
+
+                    let callee = Expression::Identifier(IdentifierExpr {
+                        loc: ident.loc().clone(),
+                        typ: MonoType::vector(MonoType::FLOAT),
+                        name: Symbol::from("_vectorizedFloat"),
+                    });
+                    Ok(CallExpr {
+                        loc: self.loc.clone(),
+                        typ: MonoType::vector(self.typ.clone()),
+                        callee,
+                        arguments,
+                        pipe: self.pipe.clone(),
+                    })
+                } else {
+                    Err(located(
+                        self.loc.clone(),
+                        ErrorKind::UnableToVectorize(format!(
+                            "cannot vectorize call expression: {}",
+                            name
+                        )),
+                    ))
+                }
+            }
+            _ => Err(located(
+                self.loc.clone(),
+                ErrorKind::UnableToVectorize("cannot vectorize call expression".into()),
+            )),
+        }
     }
 }
 

@@ -62,9 +62,8 @@ outData =
 ,,3,_m3,name,n4,ff
 "
 
+// Passes in flux, fails in C2 and OSS
 testcase key_values_host_name {
-    option testing.tags = ["skip"]
-
     got =
         csv.from(csv: inData)
             |> testing.load()

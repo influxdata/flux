@@ -525,6 +525,10 @@ pub enum Feature {
     /// Enables warnings for unused symbols
     UnusedSymbolWarnings,
 
+    /// Enables calls to map to be vectorized when the function contains select
+    /// literal values.
+    VectorizedConst,
+
     /// Enables calls to map to be vectorized when the function contains
     /// conditional expressions.
     VectorizedConditionals,
@@ -532,6 +536,10 @@ pub enum Feature {
     /// Enables calls to map to be vectorized when the function contains
     /// equality operators.
     VectorizedEqualityOps,
+
+    /// Enables calls to map to be vectorized when the function contains
+    /// float casts.
+    VectorizedFloat,
 }
 
 impl FromStr for Feature {

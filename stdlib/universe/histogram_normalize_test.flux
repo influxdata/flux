@@ -34,9 +34,8 @@ outData =
 ,,1,2018-05-22T19:53:00Z,y_duration_seconds,2,1,m0
 "
 
+// Passes in flux, fails in C2 and OSS
 testcase histogram_normalize {
-    option testing.tags = ["skip"]
-
     got =
         csv.from(csv: inData)
             |> testing.load()

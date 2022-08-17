@@ -182,9 +182,8 @@ outData =
 ,,2,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-19T00:00:00Z,19624,United States
 "
 
+// Passes in flux, fails in C2 and OSS
 testcase align_time {
-    option testing.tags = ["skip"]
-
     got =
         csv.from(csv: inData)
             |> testing.load()

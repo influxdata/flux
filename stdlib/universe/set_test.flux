@@ -177,9 +177,8 @@ outData =
 ,,4,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,zmk1YWi,server01,2018-12-19T22:14:20Z,10
 "
 
+// Passes in fluxand OSS, fails in C2
 testcase set {
-    option testing.tags = ["skip"]
-
     got =
         csv.from(csv: inData)
             |> testing.load()

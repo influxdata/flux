@@ -31,9 +31,8 @@ outData =
 ,,1,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,mem,-166.66666666666666,f1
 "
 
+// Passes in flux, fails in C2 and OSS
 testcase covariance {
-    option testing.tags = ["skip"]
-
     got =
         csv.from(csv: inData)
             |> testing.load()
