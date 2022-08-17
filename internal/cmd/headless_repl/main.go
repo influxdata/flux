@@ -73,33 +73,9 @@ func New(ctx context.Context) *ScopeHolder {
 		analyzer: analyzer,
 		importer: importer,
 	}
-	// for _, opt := range opts {
-	// 	opt.applyOption()
-	// }
+
 	return repl
 }
-
-type Request struct {
-	Jsonrpc string `json:"jsonrpc"`
-	Method  string `json:"method"`
-	Params  struct {
-		ContentChanges []struct {
-			Text string `json:"text"`
-		} `json:"contentChanges"`
-		TextDocument struct {
-			URI     string `json:"uri"`
-			Version int    `json:"version"`
-		} `json:"textDocument"`
-	} `json:"params"`
-}
-
-type Result struct {
-	Message string
-}
-
-type End struct{}
-
-// type API int
 
 type rwCloser struct {
 	io.ReadCloser
@@ -118,25 +94,8 @@ type Response struct {
 	Result string
 }
 
-type Testing struct {
+type Request struct {
 	A string `json:"input"`
-}
-
-type Item struct { //return type
-	Title string `json:"title"`
-	Body  string `json:"body"`
-	Param Params `json:"params"`
-}
-
-type Thing struct {
-	Name string `json:"name"`
-}
-
-type Params struct {
-	Input Input `json:"params"`
-}
-type Input []struct {
-	Text string `json:"input"`
 }
 
 type Service struct {
@@ -144,7 +103,7 @@ type Service struct {
 	res chan string
 }
 
-func (s *Service) DidOutput(req Testing, resp *Response) error {
+func (s *Service) DidOutput(req Request, resp *Response) error {
 	s.c <- req.A
 	result := <-s.res
 	*resp = Response{result}
@@ -154,7 +113,6 @@ func (s *Service) DidOutput(req Testing, resp *Response) error {
 type API int
 
 func (r *ScopeHolder) Run() {
-	// var api = new(API)
 	s := rpc.NewServer()
 	c := make(chan string)
 	//for the input result
@@ -174,7 +132,7 @@ func (r *ScopeHolder) Run() {
 	go s.ServeCodec(jsonrpc.NewServerCodec(rwCloser{os.Stdin, os.Stdout})) //somehow need to get the input that is being
 	for {
 		res := <-c
-		r.input(res) //check if something is outputted and send back through the channel
+		r.InputAndPrintError(res)
 	}
 
 }
@@ -207,7 +165,7 @@ func (r *ScopeHolder) Input(t string) (*libflux.FluxError, error) {
 }
 
 // input processes a line of input and prints the result.
-func (r *ScopeHolder) input(t string) {
+func (r *ScopeHolder) InputAndPrintError(t string) {
 	if fluxError, err := r.executeLine(t); err != nil {
 		if fluxError != nil {
 
@@ -275,16 +233,11 @@ func (r *ScopeHolder) executeLine(t string) (*libflux.FluxError, error) {
 					return nil, err
 				}
 			} else {
-				//SEND THE THING HERE
 
-				// s := ""
 				var a []byte
 				buf := bytes.NewBuffer(a)
 				values.Display(buf, se.Value)
-				//send flux result
-
 				r.resChan <- buf.String()
-				// fmt.Println(buf.String(), "testing")
 			}
 		}
 	}
