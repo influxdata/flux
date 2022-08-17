@@ -3,6 +3,7 @@ package groupkey_test
 import (
 	"testing"
 
+	"github.com/google/go-cmp/cmp"
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/semantic"
@@ -338,6 +339,50 @@ func TestGroupKey_Less(t *testing.T) {
 			}
 			if want, got := tt.want[1], tt.right.Less(tt.left); want != got {
 				t.Errorf("unexpected result for right < left: want=%v got=%v", want, got)
+			}
+		})
+	}
+}
+
+func TestGroupKey_String(t *testing.T) {
+	for _, tt := range []struct {
+		name string
+		gk   flux.GroupKey
+		want string
+	}{
+		{
+			name: "simple",
+			gk: execute.NewGroupKey(
+				[]flux.ColMeta{
+					{Label: "a", Type: flux.TString},
+					{Label: "b", Type: flux.TString},
+				},
+				[]values.Value{
+					values.NewString("a0"),
+					values.NewString("b0"),
+				},
+			),
+			want: "{a=a0,b=b0}",
+		},
+		{
+			name: "unordered columns",
+			gk: execute.NewGroupKey(
+				[]flux.ColMeta{
+					{Label: "b", Type: flux.TString},
+					{Label: "a", Type: flux.TString},
+				},
+				[]values.Value{
+					values.NewString("b0"),
+					values.NewString("a0"),
+				},
+			),
+			want: "{a=a0,b=b0}",
+		},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			want, got := tt.want, tt.gk.String()
+			if diff := cmp.Diff(want, got); diff != "" {
+				t.Fatalf("did not get expected value for String(); -want/+got:\n%v", diff)
 			}
 		})
 	}

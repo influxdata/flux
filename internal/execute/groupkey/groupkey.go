@@ -92,11 +92,11 @@ func (k *groupKey) Less(o flux.GroupKey) bool {
 func (k *groupKey) String() string {
 	var b strings.Builder
 	b.WriteRune('{')
-	for j, c := range k.cols {
-		if j != 0 {
+	for i, idx := range k.sorted {
+		if i != 0 {
 			b.WriteRune(',')
 		}
-		fmt.Fprintf(&b, "%s=%v", c.Label, k.values[j])
+		fmt.Fprintf(&b, "%s=%v", k.cols[idx].Label, k.values[idx])
 	}
 	b.WriteRune('}')
 	return b.String()

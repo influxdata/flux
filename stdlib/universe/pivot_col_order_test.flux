@@ -1,9 +1,9 @@
 package universe_test
 
 
-//
-import "testing"
+import "array"
 import "csv"
+import "testing"
 
 option now = () => 2030-01-01T00:00:00Z
 
@@ -63,6 +63,80 @@ testcase pivot_col_order {
                 valueColumn: "_value",
             )
     want = csv.from(csv: outData)
+
+    testing.diff(got, want)
+}
+
+testcase pivot_group_key_order {
+    // verifies fix for https://github.com/influxdata/flux/issues/5104
+    in0 =
+        array.from(
+            rows: [
+                {
+                    _measurement: "m0",
+                    _field: "f0",
+                    tag0: "val0",
+                    _value: 10.0,
+                    _time: 2021-01-01T00:00:00Z,
+                },
+                {
+                    _measurement: "m0",
+                    _field: "f0",
+                    tag0: "val0",
+                    _value: 11.0,
+                    _time: 2021-01-01T00:00:10Z,
+                },
+            ],
+        )
+            |> group(columns: ["_measurement", "_field", "tag0"])
+            |> range(start: 2021-01-01T00:00:00Z, stop: 2021-01-01T00:01:00Z)
+
+    in1 =
+        array.from(
+            rows: [
+                {
+                    _field: "f1",
+                    tag0: "val0",
+                    _value: 10.0,
+                    _time: 2021-01-01T00:00:00Z,
+                    _measurement: "m0",
+                },
+                {
+                    _field: "f1",
+                    tag0: "val0",
+                    _value: 11.0,
+                    _time: 2021-01-01T00:00:10Z,
+                    _measurement: "m0",
+                },
+            ],
+        )
+            |> group(columns: ["_measurement", "_field", "tag0"])
+            |> range(start: 2021-01-01T00:00:00Z, stop: 2021-01-01T00:01:00Z)
+    got =
+        union(tables: [in0, in1])
+            |> pivot(rowKey: ["_time"], columnKey: ["_field"], valueColumn: "_value")
+
+    want =
+        array.from(
+            rows: [
+                {
+                    _measurement: "m0",
+                    tag0: "val0",
+                    _time: 2021-01-01T00:00:00Z,
+                    f0: 10.0,
+                    f1: 10.0,
+                },
+                {
+                    _measurement: "m0",
+                    tag0: "val0",
+                    _time: 2021-01-01T00:00:10Z,
+                    f0: 11.0,
+                    f1: 11.0,
+                },
+            ],
+        )
+            |> group(columns: ["_measurement", "_field", "tag0"])
+            |> range(start: 2021-01-01T00:00:00Z, stop: 2021-01-01T00:01:00Z)
 
     testing.diff(got, want)
 }

@@ -551,7 +551,7 @@ var sourceHashes = map[string]string{
 	"stdlib/universe/moving_average_test.flux":                                                    "a9d6ffe7093521f01d6000bdc09b569c7d3978b8b4ab1b247b6744ab9981dbed",
 	"stdlib/universe/multiple_range_test.flux":                                                    "d01a115a15408039f7eb36fec1f8bfcb0b1a96a6b203ba03e1b0fc42838a7c71",
 	"stdlib/universe/parse_regex_test.flux":                                                       "992b3a1e2885dc844d0b7d3e3040aa61252b1d000cd16ab90659890fdb4765e1",
-	"stdlib/universe/pivot_col_order_test.flux":                                                   "df230a979da15d93390ce897639b79c7c394cc89fc77b436093d3c1c1587e129",
+	"stdlib/universe/pivot_col_order_test.flux":                                                   "c02eff2056c7dff2614a1167bcf56f2be689cfdf1819c35aa05826cc02330af1",
 	"stdlib/universe/pivot_fields_test.flux":                                                      "1a1517c9f7dd624600f3f3c1c9d01073ed24967975245833a18a20f0e506c0ad",
 	"stdlib/universe/pivot_mean_test.flux":                                                        "ecab0e8a5567172b6afefe62ed5900746e60c96d6ac78ab10c3c2cd6b48f1f48",
 	"stdlib/universe/pivot_table_test.flux":                                                       "52947b9aa9e499e9d750b6a5e41c5b67e2a0e7f3307b49103651cae525bb0072",
