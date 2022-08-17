@@ -390,7 +390,7 @@ func vectorAnd(l, r values.Vector, mem memory.Allocator) (values.Vector, error) 
 	if lvr != nil && rvr != nil {
 		a := (*lvr).Bool()
 		b := (*rvr).Bool()
-		values.NewVectorRepeatValue(values.NewBool(a && b))
+		return values.NewVectorRepeatValue(values.NewBool(a && b)), nil
 	} else if lvr != nil {
 		res, err := array.AndLConst((*lvr).Bool(), r.Arr().(*array.Boolean), mem)
 		if err != nil {
@@ -428,7 +428,7 @@ func vectorOr(l, r values.Vector, mem memory.Allocator) (values.Vector, error) {
 	if lvr != nil && rvr != nil {
 		a := (*lvr).Bool()
 		b := (*rvr).Bool()
-		values.NewVectorRepeatValue(values.NewBool(a || b))
+		return values.NewVectorRepeatValue(values.NewBool(a || b)), nil
 	} else if lvr != nil {
 		res, err := array.OrLConst((*lvr).Bool(), r.Arr().(*array.Boolean), mem)
 		if err != nil {
