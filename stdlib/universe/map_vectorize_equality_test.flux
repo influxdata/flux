@@ -465,7 +465,6 @@ testcase vec_equality_string_repeat {
     testing.diff(want: want, got: got)
 }
 
-// FIXME: can't do a vec repeat for bool until bool literals can vectorize
 testcase vec_equality_bool {
     want =
         array.from(
@@ -491,6 +490,91 @@ testcase vec_equality_bool {
             // In the future bool may become `Comparable` in which case we can
             // rewrite this test using the `fn` defined at the top of this file.
             |> map(fn: (r) => ({r with eq: r.a == r.b, neq: r.a != r.b}))
+
+    testing.diff(want: want, got: got)
+}
+
+testcase vec_equality_bool_repeat {
+    want =
+        array.from(
+            rows: [
+                {
+                    a: false,
+                    eq: false,
+                    neq: true,
+                    tteq: true,
+                    ffeq: true,
+                    tfeq: false,
+                    fteq: false,
+                    ttneq: false,
+                    ffneq: false,
+                    tfneq: true,
+                    ftneq: true,
+                },
+                {
+                    a: true,
+                    eq: true,
+                    neq: false,
+                    tteq: true,
+                    ffeq: true,
+                    tfeq: false,
+                    fteq: false,
+                    ttneq: false,
+                    ffneq: false,
+                    tfneq: true,
+                    ftneq: true,
+                },
+                {
+                    a: false,
+                    eq: false,
+                    neq: true,
+                    tteq: true,
+                    ffeq: true,
+                    tfeq: false,
+                    fteq: false,
+                    ttneq: false,
+                    ffneq: false,
+                    tfneq: true,
+                    ftneq: true,
+                },
+                {
+                    a: true,
+                    eq: true,
+                    neq: false,
+                    tteq: true,
+                    ffeq: true,
+                    tfeq: false,
+                    fteq: false,
+                    ttneq: false,
+                    ffneq: false,
+                    tfneq: true,
+                    ftneq: true,
+                },
+            ],
+        )
+
+    got =
+        array.from(rows: [{a: false}, {a: true}, {a: false}, {a: true}])
+            // N.b. bool currently only supports `Equatable` but not `Comparable`
+            // so we can only test for eq/neq at this time.
+            // In the future bool may become `Comparable` in which case we can
+            // rewrite this test using an `fn` more similar to the one defined
+            // at the top of this file.
+            |> map(
+                fn: (r) =>
+                    ({r with
+                        eq: r.a == true,
+                        neq: r.a != true,
+                        tteq: true == true,
+                        ffeq: false == false,
+                        tfeq: true == false,
+                        fteq: false == true,
+                        ttneq: true != true,
+                        ffneq: false != false,
+                        tfneq: true != false,
+                        ftneq: false != true,
+                    }),
+            )
 
     testing.diff(want: want, got: got)
 }
