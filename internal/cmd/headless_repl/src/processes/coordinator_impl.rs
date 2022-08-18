@@ -1,18 +1,13 @@
-use crate::processes::flux_server_impl::{read_flux, write_flux, FluxServer, ServerError};
-use crate::processes::lsp_server_impl::{read_lsp, write_lsp, LSPServer};
+use crate::processes::flux_server_impl::{read_flux, write_flux, ServerError};
+use crate::processes::lsp_server_impl::{read_lsp, write_lsp};
 use crate::{
     formulate_request, start_go, start_lsp, CommandHint, Completion, DidChange, DidOpen,
     Initialize, Initialized,
 };
 use std::collections::{HashSet, VecDeque};
-use std::net::TcpListener;
-use std::sync::atomic::{AtomicBool, Ordering};
-use std::sync::mpsc::{channel, Receiver, Sender};
-use std::sync::{Arc, Mutex, RwLock};
+use std::sync::mpsc::{Receiver, Sender};
+use std::sync::{Arc, RwLock};
 use std::thread;
-use std::thread::JoinHandle;
-use std::time::Duration;
-use tower_lsp::Server;
 
 pub fn run(
     hints: Arc<RwLock<HashSet<CommandHint>>>,

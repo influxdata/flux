@@ -1,31 +1,15 @@
-use super::start_go;
 use crate::{invoke_go, process_response_flux};
-use std::env::consts::ARCH;
 use std::io::Write;
 use std::io::{BufRead, BufReader};
-use std::process::{Child, ChildStdin, ChildStdout};
-use std::sync::atomic::{AtomicBool, Ordering};
-use std::sync::mpsc::{Receiver, Sender};
-use std::sync::Arc;
+use std::process::{ChildStdin, ChildStdout};
+use std::sync::mpsc::Receiver;
 use std::thread;
-use std::thread::JoinHandle;
-use std::time::Duration;
-use tower_lsp::Server;
 
-pub struct FluxServer {
-    server: Child,
-}
+#[allow(dead_code)]
 #[derive(Debug)]
 pub enum ServerError {
     ErrorStartingServer,
     GenericError,
-}
-
-impl FluxServer {
-    pub fn new() -> Self {
-        let mut child = start_go();
-        FluxServer { server: child }
-    }
 }
 
 pub fn read_flux(stdout: ChildStdout) -> Result<(), ServerError> {

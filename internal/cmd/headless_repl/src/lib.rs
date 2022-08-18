@@ -1,55 +1,33 @@
-#![allow(unused_imports)]
 // mod invoke_go;
 mod lsp_suggestion_helper;
 mod processes;
 mod utils;
-use crate::processes::{invoke_go, lsp_invoke, run, start_go};
-use log::{debug, info, trace};
-use lsp_types::Command;
-use regex::{Captures, Regex};
-use std::borrow::Cow::{Borrowed, Owned};
-use std::borrow::{Borrow, BorrowMut, Cow};
-use std::collections::{HashSet, VecDeque};
-use std::fmt::Pointer;
-use std::hash::Hash;
-use std::io::{self, BufRead};
-use std::io::{BufReader, Read, Write};
-use std::ops::Add;
-use std::str;
-use std::string::String;
-use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
-use std::sync::mpsc::channel;
-use std::sync::mpsc::{Receiver, Sender};
-use std::sync::{mpsc, Arc, Mutex, RwLock, RwLockReadGuard};
-use std::thread;
-use std::time::Duration;
-// extern crate pretty_env_logger;
-// #[macro_use]
-// extern crate log;
+use crate::processes::{invoke_go, run, start_go};
+use log::trace;
 use processes::lsp_invoke::{formulate_request, start_lsp};
-use rustyline::completion::Completer;
 use rustyline::error::ReadlineError;
 use rustyline::highlight::Highlighter;
-use rustyline::hint::{Hint, Hinter, HistoryHinter};
-use rustyline::validate::{
-    MatchingBracketValidator, ValidationContext, ValidationResult, Validator,
-};
-use rustyline::{
-    Cmd, CompletionType, ConditionalEventHandler, Config, Context, EditMode, Editor, Event,
-    EventContext, EventHandler, KeyCode, KeyEvent, Modifiers, RepeatCount, Result,
-};
+use rustyline::hint::Hinter;
 
-use crate::lsp_invoke::LSPRequestType::DidChange;
-use crate::lsp_suggestion_helper::{current_line_ends_with, CommandHint};
-use crate::processes::LSPRequestType::{Completion, DidOpen, Initialize, Initialized};
+use rustyline::{
+    Cmd, ConditionalEventHandler, Context, Editor, Event, EventContext, EventHandler, KeyCode,
+    KeyEvent, Modifiers, RepeatCount, Result,
+};
+use std::borrow::Cow;
+use std::borrow::Cow::{Borrowed, Owned};
+use std::collections::HashSet;
+use std::sync::mpsc::channel;
+use std::sync::mpsc::{Receiver, Sender};
+use std::sync::{Arc, RwLock};
+
+use crate::lsp_suggestion_helper::CommandHint;
+use crate::processes::LSPRequestType::{Completion, DidChange, DidOpen, Initialize, Initialized};
 use crate::utils::process_response_flux;
-use rustyline_derive::{Completer, Helper, Highlighter, Hinter, Validator};
+use rustyline_derive::{Completer, Helper, Validator};
 
 extern crate pretty_env_logger;
 #[macro_use]
 extern crate log;
-static CUR_LINE_NUM: AtomicUsize = AtomicUsize::new(0);
-static STOP_HINT: AtomicBool = AtomicBool::new(false);
 #[derive(Completer, Helper, Validator)]
 struct MyHelper {
     hinter: lsp_suggestion_helper::LSPSuggestionHelper,
@@ -87,10 +65,6 @@ impl Hinter for MyHelper {
 }
 
 impl Highlighter for MyHelper {
-    fn highlight<'l>(&self, line: &'l str, pos: usize) -> Cow<'l, str> {
-        Borrowed(line)
-    }
-
     fn highlight_prompt<'b, 's: 'b, 'p: 'b>(
         &'s self,
         prompt: &'p str,
@@ -105,13 +79,14 @@ impl Highlighter for MyHelper {
     fn highlight_hint<'h>(&self, hint: &'h str) -> Cow<'h, str> {
         Owned(format!("\x1b[1m{}\x1b[m", hint))
     }
-
-    fn highlight_char(&self, line: &str, pos: usize) -> bool {
-        true
-    }
 }
 
 //lots = trace
+//rust build script
+//may help to build the lsp into the rustyline
+//may help with IOX integration run flux alongside IOX headless repl could work with IOX
+//using the lsp to get better suggestions
+//one cell crate
 
 #[derive(Clone)]
 struct CompleteHintHandler {}
@@ -166,7 +141,7 @@ impl ConditionalEventHandler for TabEventHandler {
     }
 }
 
-pub fn possibleMain() -> Result<()> {
+pub fn possible_main() -> Result<()> {
     //logging
     pretty_env_logger::init();
 
@@ -184,7 +159,7 @@ pub fn possibleMain() -> Result<()> {
     //START: Helper and readline setup
     let mut rl = Editor::<MyHelper>::new();
     //hints for the lsp
-    let mut hints = Arc::new(RwLock::new(HashSet::new()));
+    let hints = Arc::new(RwLock::new(HashSet::new()));
     //hints clone for rustyline to clear
     let hints_rustyline = hints.clone();
     //hints clone for the hinter

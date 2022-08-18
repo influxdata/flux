@@ -1,18 +1,13 @@
-use crate::lsp_suggestion_helper::LSPSuggestionHelper;
 use crate::processes::process_completion::HintType::{
     ArgumentType, FunctionType, MethodType, PackageType, UnimplementedType,
 };
-use crate::{CommandHint, MyHelper};
+use crate::CommandHint;
 use regex::Regex;
-use rustyline::hint::Hint;
-use rustyline::Helper;
-use serde_json::{json, json_internal, Value};
+use serde_json::Value;
 use std::borrow::{Borrow, Cow};
 use std::collections::HashSet;
-use std::fmt::{format, write, Display, Formatter};
-use std::hash::{Hash, Hasher};
-use std::process::{Child, Command, Stdio};
-use std::sync::mpsc::Sender;
+use std::fmt::{Display, Formatter};
+use std::hash::Hash;
 
 #[derive(Hash, Debug, PartialEq, Eq)]
 pub enum HintType {
@@ -82,7 +77,7 @@ pub fn process_completions_response(resp: &str) -> Option<HashSet<CommandHint>> 
         let mut set: HashSet<CommandHint> = HashSet::new();
 
         completions.iter().for_each(|x| {
-            let mut arg = match x["insertText"].as_str() {
+            let arg = match x["insertText"].as_str() {
                 None => x["label"].as_str().unwrap(),
                 Some(val) => val,
             };

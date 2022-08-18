@@ -1,41 +1,24 @@
 use lsp_types::notification::{
-    DidChangeTextDocument, DidOpenTextDocument, Initialized, Notification, PublishDiagnostics,
+    DidChangeTextDocument, DidOpenTextDocument, Initialized, Notification,
 };
 use lsp_types::{
-    lsp_request, ClientCapabilities, CompletionClientCapabilities, CompletionContext,
-    CompletionItemCapability, CompletionItemCapabilityResolveSupport, CompletionItemKind,
+    ClientCapabilities, CompletionClientCapabilities, CompletionItemCapability, CompletionItemKind,
     CompletionItemKindCapability, CompletionParams, DidChangeConfigurationClientCapabilities,
     DidChangeTextDocumentParams, DidChangeWatchedFilesClientCapabilities,
     DidOpenTextDocumentParams, InitializeParams, InitializedParams, Position,
-    PublishDiagnosticsClientCapabilities, Range, TextDocumentClientCapabilities,
-    TextDocumentContentChangeEvent, TextDocumentIdentifier, TextDocumentItem,
-    TextDocumentPositionParams, TextDocumentSyncClientCapabilities, Url,
-    VersionedTextDocumentIdentifier, WorkDoneProgressParams, WorkspaceClientCapabilities,
-    WorkspaceEditClientCapabilities,
+    TextDocumentClientCapabilities, TextDocumentContentChangeEvent, TextDocumentIdentifier,
+    TextDocumentItem, TextDocumentPositionParams, TextDocumentSyncClientCapabilities, Url,
+    VersionedTextDocumentIdentifier, WorkspaceClientCapabilities, WorkspaceEditClientCapabilities,
 };
-use serde_json::Result as Result_Json;
-use serde_json::{json, json_internal, Value};
-use std::collections::HashSet;
-use std::fmt::{format, Debug};
-use std::io::{BufRead, BufReader, BufWriter, Read, Write};
+use std::fmt::Debug;
 use std::process::{Child, Command, Stdio};
-use std::{string, thread};
-use tower_lsp::{jsonrpc, Client};
+use tower_lsp::jsonrpc;
 
-use tower_lsp::jsonrpc::Id::{Null, Number};
-// use tower_lsp::jsonrpc::Request;
-use crate::processes::lsp_invoke::LSP_Error::InvalidRequestType;
-use lsp_types::request::{
-    CodeActionResolveRequest, Completion, Initialize, Request, ResolveCompletionItem,
-};
+use lsp_types::request::{Completion, Initialize, Request};
 use lsp_types::MarkupKind::PlainText;
 use regex::Regex;
-use serde_json::value::Serializer;
-use std::str;
-use std::string::ParseError;
 use std::sync::atomic::{AtomicUsize, Ordering};
-use std::sync::{mpsc, Arc, Mutex, MutexGuard};
-use tower_lsp::jsonrpc::{Method, RequestBuilder};
+use tower_lsp::jsonrpc::RequestBuilder;
 
 pub fn add_headers(a: String) -> String {
     format!("Content-Length: {}\r\n\r\n{}", a.len(), a)
@@ -47,30 +30,27 @@ pub enum LSPRequestType {
     Initialize,
     Initialized,
     Completion,
-    ImportOpen,
-    ImportChange,
 }
-
+#[allow(dead_code)]
 #[derive(Debug)]
-pub enum LSP_Error {
-    Init_Error,
+pub enum LSPError {
+    InitError,
     InvalidRequestType,
     InvalidFormatting,
     InternalError,
 }
 
-impl From<serde_json::Error> for LSP_Error {
+impl From<serde_json::Error> for LSPError {
     fn from(_: serde_json::Error) -> Self {
         Self::InvalidFormatting
     }
 }
 static NEXT_REQ_ID: AtomicUsize = AtomicUsize::new(1);
-static NEXT_VERSION: AtomicUsize = AtomicUsize::new(1);
 pub fn formulate_request(
     request_type: &LSPRequestType,
     text: &str,
-    pos: usize,
-) -> Result<String, LSP_Error> {
+    _pos: usize,
+) -> Result<String, LSPError> {
     let req_id = NEXT_REQ_ID.fetch_add(1, Ordering::SeqCst) as i64;
     let version = NEXT_REQ_ID.fetch_add(1, Ordering::SeqCst) as i64;
 
@@ -268,14 +248,12 @@ pub fn formulate_request(
             let headed = add_headers(serde_json::to_string(&a)?);
             Ok(headed)
         }
-
-        _ => Err(InvalidRequestType),
     }
 }
 
 pub fn start_lsp() -> Child {
     //step one: start the process
-    let mut child = Command::new("flux-lsp")
+    let child = Command::new("flux-lsp")
         // .arg("")
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
@@ -289,8 +267,7 @@ pub fn characters_after_last(input: &str, charac: &str) -> Option<u32> {
         return None;
     }
 
-    let mut last_occur: Option<usize> = None;
-    last_occur = input.chars().position(|c| c == '\n');
+    let last_occur = input.chars().position(|c| c == '\n');
     if let Some(occur) = last_occur {
         return Some((occur.abs_diff(input.len()) - 1) as u32);
     }

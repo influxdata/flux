@@ -1,32 +1,20 @@
 use crate::invoke_go::OutputError::InvalidMethod;
-use crate::lsp_suggestion_helper::LSPSuggestionHelper;
-use crate::processes::lsp_invoke::add_headers;
 use crate::processes::process_completion::process_completions_response;
-use crate::{CommandHint, MyHelper};
-use lsp_types::{
-    DidChangeTextDocumentParams, TextDocumentContentChangeEvent, Url,
-    VersionedTextDocumentIdentifier,
-};
+use crate::CommandHint;
+
 use regex::Regex;
-use rustyline::Helper;
 use serde_json::Value;
 use std::collections::HashSet;
-use std::fmt::format;
-use std::hash::Hash;
-use std::io::{stdin, Read};
+use std::io::Read;
 use std::process::{Child, ChildStdout, Command, Stdio};
-use std::ptr::write;
 use std::str;
-use std::str::from_utf8;
 use std::string::String;
-use std::sync::atomic::AtomicUsize;
-use std::sync::mpsc::Sender;
-use std::sync::{Arc, Mutex, RwLock};
+use std::sync::{Arc, RwLock};
 use tower_lsp::jsonrpc;
 use tower_lsp::jsonrpc::RequestBuilder;
 
 pub fn start_go() -> Child {
-    let mut child = Command::new("./main")
+    let child = Command::new("./main")
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
         .spawn()
@@ -48,7 +36,7 @@ impl From<serde_json::Error> for OutputError {
 pub fn form_output(request_type: &str, text: &str) -> Result<String, OutputError> {
     match request_type {
         "Service.DidOutput" => {
-            let mut cleaned = text.replace("\"", "\\\"");
+            let cleaned = text.replace("\"", "\\\"");
             let mut param = r#"[{"input": "#.to_string();
             let mut other_side = format!(r#""{}""#, cleaned);
             other_side.push_str("}]");
@@ -67,7 +55,7 @@ pub fn form_output(request_type: &str, text: &str) -> Result<String, OutputError
     }
 }
 
-pub fn read_json_rpc(child_stdout: ChildStdout, mut storage: Arc<RwLock<HashSet<CommandHint>>>) {
+pub fn read_json_rpc(child_stdout: ChildStdout, storage: Arc<RwLock<HashSet<CommandHint>>>) {
     let re = Regex::new(r"Content-Length: ").unwrap();
     let num = Regex::new(r"\d").unwrap();
     let mut buf: Vec<u8> = vec![];
@@ -119,7 +107,6 @@ pub fn read_json_rpc(child_stdout: ChildStdout, mut storage: Arc<RwLock<HashSet<
             buf.insert(buf.len(), val);
         }
         let cur = str::from_utf8(&buf).unwrap();
-        let cl = str::from_utf8(&num_buf).unwrap();
         x = x + 1;
         y = y + 1;
         if !re.captures(cur).is_none() {
