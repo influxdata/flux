@@ -516,9 +516,6 @@ pub struct Analyzer<'env, I: import::Importer> {
 #[derive(Clone, Eq, PartialEq, Debug, serde::Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub enum Feature {
-    /// Enables vectorization
-    VectorizedMap,
-
     /// Enables label polymorphism
     LabelPolymorphism,
 
@@ -672,15 +669,14 @@ impl<'env, I: import::Importer> Analyzer<'env, I> {
             });
         }
 
-        if self.config.features.contains(&Feature::VectorizedMap) {
-            // Try to vectorize all the function expressions in a package. This will
-            // return an error if it finds a function can't be vectorized, but we
-            // don't expect all functions to be vectorizable. So we just let it
-            // vectorize what it can, and fail silently for all other cases.
-            if let Err(err) = vectorize::vectorize(&self.config, &mut sem_pkg) {
-                log::debug!("{}", err);
-            }
+        // Try to vectorize all the function expressions in a package. This will
+        // return an error if it finds a function can't be vectorized, but we
+        // don't expect all functions to be vectorizable. So we just let it
+        // vectorize what it can, and fail silently for all other cases.
+        if let Err(err) = vectorize::vectorize(&self.config, &mut sem_pkg) {
+            log::debug!("{}", err);
         }
+
         Ok((env, sem_pkg))
     }
 

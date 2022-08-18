@@ -567,7 +567,6 @@ func TestVectorizedFns(t *testing.T) {
 			if flagger == nil {
 				flagger = executetest.TestFlagger{}
 			}
-			flagger[fluxfeature.VectorizedMap().Key()] = true
 			flagger[fluxfeature.VectorizedConst().Key()] = true
 			flagger[fluxfeature.VectorizedConditionals().Key()] = true
 			flagger[fluxfeature.VectorizedEqualityOps().Key()] = true

@@ -53,18 +53,6 @@ func OptimizeUnionTransformation() BoolFlag {
 	return optimizeUnionTransformation
 }
 
-var vectorizedMap = feature.MakeBoolFlag(
-	"Vectorized Map",
-	"vectorizedMap",
-	"Jonathan Sternberg",
-	false,
-)
-
-// VectorizedMap - Enables the version of map that supports vectorized functions
-func VectorizedMap() BoolFlag {
-	return vectorizedMap
-}
-
 var narrowTransformationDifference = feature.MakeBoolFlag(
 	"Narrow Transformation Difference",
 	"narrowTransformationDifference",
@@ -218,7 +206,6 @@ var all = []Flag{
 	aggregateTransformationTransport,
 	groupTransformationGroup,
 	optimizeUnionTransformation,
-	vectorizedMap,
 	narrowTransformationDifference,
 	narrowTransformationFill,
 	optimizeAggregateWindow,
@@ -237,7 +224,6 @@ var byKey = map[string]Flag{
 	"aggregateTransformationTransport": aggregateTransformationTransport,
 	"groupTransformationGroup":         groupTransformationGroup,
 	"optimizeUnionTransformation":      optimizeUnionTransformation,
-	"vectorizedMap":                    vectorizedMap,
 	"narrowTransformationDifference":   narrowTransformationDifference,
 	"narrowTransformationFill":         narrowTransformationFill,
 	"optimizeAggregateWindow":          optimizeAggregateWindow,
