@@ -407,6 +407,8 @@ macro_rules! package {
     }}
 }
 
+pub(crate) use package;
+
 mod labels;
 
 #[test]

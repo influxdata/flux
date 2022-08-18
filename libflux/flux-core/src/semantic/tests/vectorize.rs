@@ -19,17 +19,30 @@ fn analyzer_config() -> AnalyzerConfig {
 }
 
 fn vectorize(src: &str) -> anyhow::Result<Package> {
-    // Builtins which should be exposed to these tests can be defined here.
-    let env = Environment::from(parse_map(
-        None,
-        map![
-            "float" => "(v: A) => float",
+    // packages/symbols which should be exposed to these tests can be defined here.
+    let imp = map![
+        "boolean" => package![
             "true" => "bool",
             "false" => "bool",
         ],
-    ));
+        "universe" => package![
+            "float" => "(v: A) => float",
+        ],
+    ];
+    let imports: SemanticMap<&str, _> = imp
+        .into_iter()
+        .map(|(path, pkg)| (path, parse_map(Some(path), pkg)))
+        .collect();
+    let importer: Packages = imports
+        .into_iter()
+        .map(|(path, types)| (path.to_string(), PackageExports::try_from(types).unwrap()))
+        .collect();
+    let mut prelude = PackageExports::new();
+    prelude.copy_bindings_from(importer.get("boolean").unwrap());
+    prelude.copy_bindings_from(importer.get("universe").unwrap());
+    let env = Environment::from(&prelude);
 
-    let mut analyzer = Analyzer::new(env, Packages::default(), analyzer_config());
+    let mut analyzer = Analyzer::new(env, importer, analyzer_config());
     let (_, pkg) = analyzer
         .analyze_source("main".into(), "".into(), src)
         .map_err(|err| err.error)?;

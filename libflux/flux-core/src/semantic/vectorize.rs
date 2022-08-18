@@ -66,13 +66,13 @@ impl Expression {
     fn vectorize(&self, env: &VectorizeEnv<'_>) -> Result<Self> {
         Ok(match self {
             Expression::Identifier(identifier) => {
-                let name = identifier.name.clone();
                 if env.config.features.contains(&Feature::VectorizedConst)
-                    && (name == "true" || name == "false")
+                    && (identifier.name == "true" || identifier.name == "false")
+                    && identifier.name.package() == Some("boolean")
                 {
                     return Ok(wrap_vec_repeat(Expression::Boolean(BooleanLit {
                         loc: identifier.loc.clone(),
-                        value: name == "true",
+                        value: identifier.name == "true",
                     })));
                 }
 
