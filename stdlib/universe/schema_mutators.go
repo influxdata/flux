@@ -191,31 +191,31 @@ type DropKeepMutator struct {
 	FlipPredicate bool
 }
 
-func NewDropKeepMutator(qs flux.OperationSpec) (*DropKeepMutator, error) {
+func NewDropMutator(s *DropOpSpec) (*DropKeepMutator, error) {
+	m := &DropKeepMutator{}
+	if s.Columns != nil {
+		m.DropCols = toStringSet(s.Columns)
+	}
+	if s.Predicate.Fn != nil {
+		if err := m.compile(s.Predicate); err != nil {
+			return nil, err
+		}
+	}
+
+	return m, nil
+}
+
+func NewKeepMutator(s *KeepOpSpec) (*DropKeepMutator, error) {
 	m := &DropKeepMutator{}
 
-	switch s := qs.(type) {
-	case *DropOpSpec:
-		if s.Columns != nil {
-			m.DropCols = toStringSet(s.Columns)
+	if s.Columns != nil {
+		m.KeepCols = toStringSet(s.Columns)
+	}
+	if s.Predicate.Fn != nil {
+		if err := m.compile(s.Predicate); err != nil {
+			return nil, err
 		}
-		if s.Predicate.Fn != nil {
-			if err := m.compile(s.Predicate); err != nil {
-				return nil, err
-			}
-		}
-	case *KeepOpSpec:
-		if s.Columns != nil {
-			m.KeepCols = toStringSet(s.Columns)
-		}
-		if s.Predicate.Fn != nil {
-			if err := m.compile(s.Predicate); err != nil {
-				return nil, err
-			}
-			m.FlipPredicate = true
-		}
-	default:
-		return nil, errors.Newf(codes.Internal, "invalid spec type %T", qs)
+		m.FlipPredicate = true
 	}
 
 	return m, nil

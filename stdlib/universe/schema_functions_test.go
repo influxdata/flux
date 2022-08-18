@@ -1530,11 +1530,11 @@ func TestRenameDrop_PushDown(t *testing.T) {
 		},
 	}
 
-	m2, _ := functions.NewDropKeepMutator(&functions.DropOpSpec{
+	m2, _ := functions.NewDropMutator(&functions.DropOpSpec{
 		Cols: []string{},
 	})
 
-	m3, _ := functions.NewDropKeepMutator(&functions.KeepOpSpec{
+	m3, _ := functions.NewKeepMutator(&functions.KeepOpSpec{
 		Cols: []string{},
 	})
 
