@@ -346,32 +346,15 @@ fn vectorize_with_construction_using_literal_int() -> anyhow::Result<()> {
 }
 
 #[test]
-fn vectorize_with_construction_using_literal_bool_true() -> anyhow::Result<()> {
-    let pkg = vectorize(r#"(r) => ({ r with a: true })"#)?;
+fn vectorize_with_construction_using_literal_bool() -> anyhow::Result<()> {
+    let pkg = vectorize(r#"(r) => ({ r with a: false, b: true })"#)?;
 
     let function = get_vectorized_function(&pkg);
 
     expect_test::expect![[r##"
         (r) => {
-            return {r:#A with a: ~~vecRepeat~~:bool(v: true):v[bool]}:{#A with a: v[bool]}
-        }:(r: #A) => {#A with a: v[bool]}"##]]
-    .assert_eq(&crate::semantic::formatter::format_node(
-        Node::FunctionExpr(function),
-    )?);
-
-    Ok(())
-}
-
-#[test]
-fn vectorize_with_construction_using_literal_bool_false() -> anyhow::Result<()> {
-    let pkg = vectorize(r#"(r) => ({ r with a: false })"#)?;
-
-    let function = get_vectorized_function(&pkg);
-
-    expect_test::expect![[r##"
-        (r) => {
-            return {r:#A with a: ~~vecRepeat~~:bool(v: false):v[bool]}:{#A with a: v[bool]}
-        }:(r: #A) => {#A with a: v[bool]}"##]]
+            return {r:#A with a: ~~vecRepeat~~:bool(v: false):v[bool], b: ~~vecRepeat~~:bool(v: true):v[bool]}:{#A with a: v[bool], b: v[bool]}
+        }:(r: #A) => {#A with a: v[bool], b: v[bool]}"##]]
     .assert_eq(&crate::semantic::formatter::format_node(
         Node::FunctionExpr(function),
     )?);

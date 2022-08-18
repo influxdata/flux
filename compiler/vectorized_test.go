@@ -167,13 +167,8 @@ func TestVectorizedFns(t *testing.T) {
 			skipComp:     true,
 		},
 		{
-			name:         "bool literals true",
-			fn:           `(r) => ({r with c: true})`,
-			vectorizable: true,
-			skipComp:     true,
-		}, {
-			name:         "bool literals false",
-			fn:           `(r) => ({r with c: false})`,
+			name:         "bool literals",
+			fn:           `(r) => ({r with c: true, d: false})`,
 			vectorizable: true,
 			skipComp:     true,
 		},
