@@ -70,6 +70,7 @@ func (v *formattingVisitor) Visit(node Node) Visitor {
 	case *StringLiteral:
 	case *FloatLiteral:
 	case *IntegerLiteral:
+	case *BooleanLiteral:
 	case *IdentifierExpression:
 	default:
 		// Do not recurse into unknown nodes, just push an error string
@@ -101,6 +102,8 @@ func (v *formattingVisitor) Done(node Node) {
 		// the difference between integers and floats in output.
 		v.push(fmt.Sprintf("%f", n.Value))
 	case *IntegerLiteral:
+		v.push(fmt.Sprintf("%v", n.Value))
+	case *BooleanLiteral:
 		v.push(fmt.Sprintf("%v", n.Value))
 	case *IdentifierExpression:
 		v.push(n.Name.Name())
