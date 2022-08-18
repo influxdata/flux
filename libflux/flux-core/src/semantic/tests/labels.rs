@@ -3,6 +3,7 @@ use super::*;
 use crate::semantic::Feature;
 
 #[test]
+#[ignore]
 fn labels_simple() {
     test_infer! {
         config: AnalyzerConfig{
@@ -30,6 +31,7 @@ fn labels_simple() {
 }
 
 #[test]
+#[ignore]
 fn labels_unbound() {
     test_infer! {
         config: AnalyzerConfig{
@@ -51,6 +53,7 @@ fn labels_unbound() {
 }
 
 #[test]
+#[ignore]
 fn labels_dynamic_string() {
     test_error_msg! {
         config: AnalyzerConfig{
@@ -84,6 +87,7 @@ fn labels_dynamic_string() {
 }
 
 #[test]
+#[ignore]
 fn undefined_field() {
     test_error_msg! {
         config: AnalyzerConfig{
@@ -110,6 +114,7 @@ fn undefined_field() {
 }
 
 #[test]
+#[ignore]
 fn merge_labels_to_string() {
     test_infer! {
         config: AnalyzerConfig{
@@ -130,6 +135,7 @@ fn merge_labels_to_string() {
 }
 
 #[test]
+#[ignore]
 fn merge_labels_to_string_in_function() {
     test_infer! {
         config: AnalyzerConfig{
@@ -177,6 +183,7 @@ fn attempt_to_use_label_polymorphism_without_feature() {
     }
 }
 #[test]
+#[ignore]
 fn columns() {
     test_infer! {
         config: AnalyzerConfig{
@@ -210,6 +217,7 @@ fn columns() {
 }
 
 #[test]
+#[ignore]
 fn optional_label_defined() {
     test_infer! {
         config: AnalyzerConfig{
@@ -276,6 +284,7 @@ fn optional_label_undefined() {
 }
 
 #[test]
+#[ignore]
 fn default_arguments_do_not_try_to_treat_literals_as_strings_when_they_must_be_a_label() {
     test_infer! {
         config: AnalyzerConfig{
@@ -305,6 +314,7 @@ fn default_arguments_do_not_try_to_treat_literals_as_strings_when_they_must_be_a
 }
 
 #[test]
+#[ignore]
 fn constraints_propagate_fully() {
     test_infer! {
         config: AnalyzerConfig{

@@ -13,6 +13,7 @@ default = ["strict", "cffi"]
 strict = []
 cffi = ["serde", "serde_json"]
 lsp = ["flux-core/lsp"]
+label-polymorphism = []
 
 [dependencies]
 anyhow = "1"

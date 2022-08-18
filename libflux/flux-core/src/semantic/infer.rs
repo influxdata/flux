@@ -182,28 +182,6 @@ pub fn equal(
     })
 }
 
-pub fn subsume(
-    exp: &MonoType,
-    act: &MonoType,
-    loc: &SourceLocation,
-    sub: &mut Substitution,
-) -> Result<MonoType, Located<Errors<types::Error>>> {
-    log::debug!(
-        "Constraint::Subsume {:?}: {} <===> {}",
-        loc.source,
-        exp,
-        act
-    );
-    exp.try_subsume(act, sub).map_err(|error| {
-        log::debug!("Unify error: {} <=> {} : {}", exp, act, error);
-
-        Located {
-            location: loc.clone(),
-            error,
-        }
-    })
-}
-
 /// Generalizes `t` without modifying the substitution.
 pub(crate) fn temporary_generalize(
     env: &Environment,
@@ -239,7 +217,7 @@ pub(crate) fn temporary_generalize(
     }
 
     let mut generalize = Generalize {
-        env_free_vars: env.free_vars(),
+        env_free_vars: env.free_vars(sub),
         vars: Default::default(),
     };
     let t = t.apply(&mut generalize);
@@ -328,7 +306,7 @@ pub fn generalize(free_vars: Vec<Tvar>, sub: &mut Substitution, t: MonoType) -> 
 pub fn instantiate(
     poly: PolyType,
     sub: &mut Substitution,
-    loc: SourceLocation,
+    loc: &SourceLocation,
 ) -> (MonoType, Constraints) {
     // Substitute fresh type variables for all quantified variables
     let sub: SemanticMap<_, _> = poly

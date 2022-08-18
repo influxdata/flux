@@ -25,10 +25,9 @@ use crate::{
         infer::{self, Constraint},
         sub::{BindVars, Substitutable, Substituter, Substitution},
         types::{
-            self, BoundTvar, BoundTvarKinds, Dictionary, Function, Kind, Label, MonoType,
-            MonoTypeMap, PolyType, RecordLabel, Tvar,
+            self, BoundTvar, BoundTvarKinds, Dictionary, Function, Kind, MonoType, MonoTypeMap,
+            PolyType, RecordLabel, Tvar,
         },
-        AnalyzerConfig, Feature,
     },
 };
 
@@ -135,7 +134,6 @@ struct InferState<'a, 'env> {
     imports: HashMap<Symbol, String>,
     env: &'a mut Environment<'env>,
     errors: Errors<Error>,
-    config: &'a AnalyzerConfig,
     // When an undefined symbol is encountered we assume that the same type is used for every
     // use of that symbol which is stored here
     undefined_symbols: HashMap<Symbol, MonoType>,
@@ -191,33 +189,19 @@ impl InferState<'_, '_> {
         }
     }
 
-    fn subsume(&mut self, exp: &MonoType, act: &MonoType, loc: &ast::SourceLocation) -> MonoType {
-        match infer::subsume(exp, act, loc, self.sub) {
-            Ok(typ) => typ,
-            Err(err) => {
-                self.errors
-                    .extend(err.error.into_iter().map(|error| Located {
-                        location: loc.clone(),
-                        error: error.into(),
-                    }));
-                MonoType::Error
-            }
-        }
-    }
-
-    fn subsume_function(
+    fn unify_function(
         &mut self,
         call_expr: &CallExpr,
         exp: &Function,
         act: Function<(MonoType, &ast::SourceLocation)>,
     ) {
         log::debug!(
-            "Subsume {:?}: {} <===> {}",
+            "Unify {:?}: {} <===> {}",
             call_expr.callee.loc().source,
             exp,
             act.clone().map(|(typ, _)| typ),
         );
-        if let Err(err) = exp.try_subsume_with(
+        if let Err(err) = exp.try_unify_with(
             &act,
             self.sub,
             |typ| (typ.clone(), call_expr.callee.loc()),
@@ -241,13 +225,22 @@ impl InferState<'_, '_> {
     }
 
     fn free_vars(&mut self) -> Vec<Tvar> {
-        let mut vars = self.env.free_vars();
+        let mut vars = self.env.free_vars(self.sub);
 
         for typ in self.undefined_symbols.unordered_values() {
-            typ.apply_cow(self.sub).extend_free_vars(&mut vars);
+            typ.apply_cow(self.sub)
+                .extend_free_vars(&mut vars, self.sub);
         }
 
         vars
+    }
+
+    fn enter_scope(&mut self) {
+        self.env.enter_scope();
+    }
+
+    fn exit_scope(&mut self) {
+        self.env.exit_scope();
     }
 }
 
@@ -341,7 +334,7 @@ impl Expression {
             Expression::StringExpr(_) => MonoType::STRING,
             Expression::Integer(_) => MonoType::INT,
             Expression::Float(_) => MonoType::FLOAT,
-            Expression::StringLit(lit) => lit.typ.clone().unwrap_or(MonoType::STRING),
+            Expression::StringLit(_) => MonoType::STRING,
             Expression::Duration(_) => MonoType::DURATION,
             Expression::Uint(_) => MonoType::UINT,
             Expression::Boolean(_) => MonoType::BOOL,
@@ -438,7 +431,6 @@ pub fn infer_package<T>(
     env: &mut Environment<'_>,
     sub: &mut Substitution,
     importer: &mut T,
-    config: &AnalyzerConfig,
 ) -> std::result::Result<(), Errors<Error>>
 where
     T: Importer,
@@ -449,7 +441,6 @@ where
         imports: Default::default(),
         env,
         errors: Errors::new(),
-        config,
         undefined_symbols: Default::default(),
     };
     pkg.infer(&mut infer).map_err(|err| err.apply(infer.sub))?;
@@ -1022,7 +1013,7 @@ impl FunctionExpr {
         let mut opt = MonoTypeMap::new();
 
         // Add the parameters to some nested environment.
-        infer.env.enter_scope();
+        infer.enter_scope();
 
         for param in &mut self.params {
             match param.default {
@@ -1067,7 +1058,7 @@ impl FunctionExpr {
         // And use it to infer the body.
         self.body.infer(infer)?;
         // Now pop the nested environment, we don't need it anymore.
-        infer.env.exit_scope();
+        infer.exit_scope();
 
         let retn = self.body.type_of();
         let func = MonoType::from(Function {
@@ -1133,11 +1124,11 @@ impl FunctionExpr {
             retn,
         });
 
-        let (exp, ncons) = infer::instantiate(function_type, infer.sub, self.loc.clone());
+        let (exp, ncons) = infer::instantiate(function_type, infer.sub, &self.loc);
 
         infer.solve(&ncons);
 
-        infer.subsume(&exp, &default_func, &self.loc);
+        infer.equal(&exp, &default_func, &self.loc);
 
         Ok(())
     }
@@ -1289,20 +1280,11 @@ impl BinaryExpr {
         let binop_compare_constraints =
             |this: &mut BinaryExpr, infer: &mut InferState<'_, '_>, kind| {
                 this.typ = MonoType::BOOL;
-                infer.solve(&[
-                    // https://github.com/influxdata/flux/issues/2393
-                    // Constraint::Equal{self.left.type_of(), self.right.type_of()),
-                    Constraint::Kind {
-                        act: this.left.type_of(),
-                        exp: kind,
-                        loc: this.left.loc().clone(),
-                    },
-                    Constraint::Kind {
-                        act: this.right.type_of(),
-                        exp: kind,
-                        loc: this.right.loc().clone(),
-                    },
-                ]);
+                // https://github.com/influxdata/flux/issues/2393
+                // Constraint::Equal{self.left.type_of(), self.right.type_of()),
+                infer.constrain(kind, &this.left.type_of(), this.left.loc());
+
+                infer.constrain(kind, &this.right.type_of(), this.right.loc());
             };
         match self.operator {
             // The following operators require both sides to be equal.
@@ -1440,7 +1422,7 @@ impl CallExpr {
 
         match &*self.callee.type_of().apply_cow(infer.sub) {
             MonoType::Fun(func) => {
-                infer.subsume_function(self, func, act);
+                infer.unify_function(self, func, act);
             }
             callee => {
                 let act = act.map(|(typ, _)| typ);
@@ -1765,7 +1747,7 @@ impl IdentifierExpr {
     fn infer(&mut self, infer: &mut InferState<'_, '_>) -> Result {
         let poly = infer.lookup(&self.loc, &self.name);
 
-        let (t, cons) = infer::instantiate(poly, infer.sub, self.loc.clone());
+        let (t, cons) = infer::instantiate(poly, infer.sub, &self.loc);
         infer.solve(&cons);
         self.typ = t;
         Ok(())
@@ -1849,15 +1831,10 @@ impl RegexpLit {
 pub struct StringLit {
     pub loc: ast::SourceLocation,
     pub value: String,
-    /// The (label) type if label types are enabled.
-    pub typ: Option<MonoType>,
 }
 
 impl StringLit {
-    fn infer(&mut self, infer: &mut InferState<'_, '_>) -> Result {
-        if infer.config.features.contains(&Feature::LabelPolymorphism) {
-            self.typ = Some(MonoType::Label(Label::from(self.value.as_str())));
-        }
+    fn infer(&mut self, _: &mut InferState<'_, '_>) -> Result {
         Ok(())
     }
     fn apply(&mut self, _: &mut dyn Substituter) {}

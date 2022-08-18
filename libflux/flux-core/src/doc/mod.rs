@@ -474,7 +474,11 @@ fn parse_package_values(
             _ => None,
         } {
             if let Some(typ) = &pkgtypes.lookup(name.as_str()) {
-                if !name.starts_with('_') {
+                if !name.starts_with('_')
+                    // No need to check bindings with alternative signatures
+                    // that are behind feature flags as there is an original binding as well
+                    && !comment.contains("@feature")
+                {
                     let doc = parse_any_value(&name, &comment, typ, loc, diagnostics, is_option)?;
                     members.insert(name.clone(), doc);
                 }

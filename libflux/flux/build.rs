@@ -58,17 +58,17 @@ fn main() -> Result<()> {
     }
 
     let (prelude, imports, sem_pkgs) =
-        bootstrap::infer_stdlib_dir(stdlib_path, Default::default())?;
+        bootstrap::infer_stdlib_dir(stdlib_path, fluxcore::semantic::AnalyzerConfig::default())?;
 
     // Validate there aren't any free type variables in the environment
     for (name, ty) in prelude.iter() {
-        if !ty.free_vars().is_empty() {
+        if !ty.free_vars(&mut Default::default()).is_empty() {
             bail!("found free variables in type of {}: {}", name, ty);
         }
     }
     for (name, package) in &imports {
         let ty = package.typ();
-        if !ty.free_vars().is_empty() {
+        if !ty.free_vars(&mut Default::default()).is_empty() {
             bail!("found free variables in type of package {}: {}", name, ty);
         }
     }

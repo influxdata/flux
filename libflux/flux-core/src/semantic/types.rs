@@ -31,96 +31,22 @@ pub type SemanticMap<K, V> = BTreeMap<K, V>;
 #[allow(missing_docs)]
 pub type SemanticMapIter<'a, K, V> = std::collections::btree_map::Iter<'a, K, V>;
 
-trait Matcher<E> {
-    fn name(&self) -> &'static str;
-
-    fn match_types(
-        &self,
-        unifier: &mut Unifier<'_, E>,
-        expected: &MonoType,
-        actual: &MonoType,
-    ) -> MonoType;
+pub(crate) enum Context {
+    CannotUnifyArgument(String),
+    CannotUnifyReturn { exp: MonoType, act: MonoType },
 }
 
-struct Unify;
-
-impl Matcher<Error> for Unify {
-    fn name(&self) -> &'static str {
-        "Unify"
-    }
-
-    fn match_types(
-        &self,
-        unifier: &mut Unifier<'_, Error>,
-        expected: &MonoType,
-        actual: &MonoType,
-    ) -> MonoType {
-        // Normally we just treat any label as a string. This effectively ensures that all
-        // string literals are still treated as strings.
-        let expected = match expected {
-            MonoType::Label(_) => &MonoType::STRING,
-            _ => expected,
-        };
-        let actual = match actual {
-            MonoType::Label(_) => &MonoType::STRING,
-            _ => actual,
-        };
-        expected.unify_inner(actual, unifier)
-    }
-}
-
-struct Subsume;
-
-impl Matcher<Error> for Subsume {
-    fn name(&self) -> &'static str {
-        "Subsume"
-    }
-
-    fn match_types(
-        &self,
-        unifier: &mut Unifier<'_, Error>,
-        expected: &MonoType,
-        actual: &MonoType,
-    ) -> MonoType {
-        // When a label is unified to a type variable that has the `Label` kind we preserve the
-        // label. Otherwise we translate the label to `string`, same as during normal unification.
-        fn translate_label<'a>(
-            unifier: &mut Unifier<'_, Error>,
-            maybe_label: &'a MonoType,
-            maybe_var: &'a MonoType,
-        ) -> Cow<'a, MonoType> {
-            match *maybe_var {
-                MonoType::Var(v) if !unifier.sub.satisfies(v, Kind::Label) => {
-                    struct ReplaceLabels;
-                    impl Substituter for ReplaceLabels {
-                        fn try_apply(&mut self, _: Tvar) -> Option<MonoType> {
-                            None
-                        }
-                        fn visit_type(&mut self, typ: &MonoType) -> Option<MonoType> {
-                            match typ {
-                                MonoType::Label(_) => Some(MonoType::STRING),
-                                _ => typ.walk(self),
-                            }
-                        }
-                    }
-                    maybe_label
-                        .visit(&mut ReplaceLabels)
-                        .map(Cow::Owned)
-                        .unwrap_or_else(|| Cow::Borrowed(maybe_label))
-                }
-                _ => Cow::Borrowed(maybe_label),
+impl Context {
+    fn apply(&self, err: Error) -> Error {
+        match self {
+            Self::CannotUnifyArgument(name) => {
+                Error::CannotUnifyArgument(name.clone(), Box::new(err))
             }
-        }
-
-        let actual = unifier.sub.real(actual);
-        let expected = unifier.sub.real(expected);
-
-        let actual = translate_label(unifier, &actual, &expected);
-        let expected = translate_label(unifier, &expected, &actual);
-        match (&*expected, &*actual) {
-            // Labels should be accepted anywhere that we expect a string
-            (&MonoType::STRING, MonoType::Label(_)) => MonoType::STRING,
-            _ => expected.unify_inner(&actual, unifier),
+            Self::CannotUnifyReturn { exp, act } => Error::CannotUnifyReturn {
+                exp: exp.clone(),
+                act: act.clone(),
+                cause: Box::new(err),
+            },
         }
     }
 }
@@ -131,7 +57,6 @@ struct Unifier<'a, E = Error> {
     // the remaining context.
     delayed_records: Vec<(Record, Record)>,
     errors: Errors<E>,
-    matcher: &'a dyn Matcher<Error>,
 }
 
 impl<'a, E> Unifier<'a, E> {
@@ -140,26 +65,11 @@ impl<'a, E> Unifier<'a, E> {
             sub,
             delayed_records: Vec::new(),
             errors: Errors::new(),
-            matcher: &Unify,
-        }
-    }
-
-    fn new_subsume(sub: &'a mut Substitution) -> Self {
-        Unifier {
-            sub,
-            delayed_records: Vec::new(),
-            errors: Errors::new(),
-            matcher: &Subsume,
         }
     }
 
     fn sub_unifier<F>(&mut self) -> Unifier<'_, F> {
-        Unifier {
-            sub: self.sub,
-            delayed_records: Vec::new(),
-            errors: Errors::new(),
-            matcher: self.matcher,
-        }
+        Unifier::new(self.sub)
     }
 
     fn finish(
@@ -422,7 +332,7 @@ impl fmt::Display for Error {
             Error::CannotUnifyArgument(x, e) => write!(f, "{} (argument {})", e, x),
             Error::CannotUnifyReturn { exp, act, cause } => write!(
                 f,
-                "expected {exp}{exp_info} but found {act}{act_info} for return type caused by {cause}",
+                "123expected {exp}{exp_info} but found {act}{act_info} for return type caused by {cause}",
                 exp = exp.clone().fresh(&mut fresh),
                 exp_info = exp.type_info(),
                 act = act.clone().fresh(&mut fresh),
@@ -922,6 +832,18 @@ impl MonoType {
     /// If successful, results in a solution to the unification problem,
     /// in the form of a substitution. If there is no solution to the
     /// unification problem then unification fails and an error is reported.
+    pub fn try_unify_all(
+        &self, // self represents the expected type
+        actual: &Self,
+        sub: &mut Substitution,
+    ) -> Result<MonoType, Errors<Error>> {
+        self.try_unify(actual, sub)
+    }
+
+    /// Performs unification on the type with another type.
+    /// If successful, results in a solution to the unification problem,
+    /// in the form of a substitution. If there is no solution to the
+    /// unification problem then unification fails and an error is reported.
     pub fn try_unify(
         &self, // self represents the expected type
         actual: &Self,
@@ -934,37 +856,13 @@ impl MonoType {
         unifier.finish(typ, From::from)
     }
 
-    /// Performs subsumption on the type with another type.
-    /// If successful, results in a solution to the unification problem,
-    /// in the form of a substitution. If there is no solution to the
-    /// unification problem then unification fails and an error is reported.
-    pub fn try_subsume(
-        &self, // self represents the expected type
-        actual: &Self,
-        sub: &mut Substitution,
-    ) -> Result<MonoType, Errors<Error>> {
-        let mut unifier = Unifier::new_subsume(sub);
-
-        let typ = self.unify(actual, &mut unifier);
-
-        unifier.finish(typ, From::from)
-    }
-
     fn unify(
         &self, // self represents the expected type
         actual: &Self,
         unifier: &mut Unifier<'_>,
     ) -> MonoType {
-        log::debug!("{} {} <=> {}", unifier.matcher.name(), self, actual);
+        log::debug!("Unify {} <=> {}", self, actual);
 
-        unifier.matcher.match_types(unifier, self, actual)
-    }
-
-    fn unify_inner(
-        &self, // self represents the expected type
-        actual: &Self,
-        unifier: &mut Unifier<'_>,
-    ) -> MonoType {
         match (self, actual) {
             // An error has already occurred so assume everything is ok here so that we do not
             // create additional, spurious errors
@@ -1618,7 +1516,7 @@ fn merge_in_context<T>(
     exp: &MonoType,
     act: &T,
     unifier: &mut Unifier<'_, T::Error>,
-    mut context: impl FnMut(Error) -> Error,
+    mut context: impl FnMut() -> Context,
 ) where
     T: TypeLike,
 {
@@ -1633,7 +1531,7 @@ fn merge_in_context<T>(
 
     unifier
         .errors
-        .extend(errors.into_iter().map(|e| act.error(context(e))));
+        .extend(errors.into_iter().map(|e| act.error(context().apply(e))));
 
     unifier.delayed_records.extend(delayed_records);
 }
@@ -2028,7 +1926,6 @@ impl Function {
         self.try_unify_with(actual, sub, Clone::clone, From::from)
     }
 
-    #[cfg(test)]
     pub(crate) fn try_unify_with<T>(
         &self,
         actual: &Function<T>,
@@ -2040,24 +1937,6 @@ impl Function {
         T: TypeLike + Clone,
     {
         let mut unifier = Unifier::new(sub);
-
-        self.unify(actual, &mut unifier, mk_type);
-
-        unifier.finish(MonoType::from(self.clone()), mk_error)?;
-        Ok(())
-    }
-
-    pub(crate) fn try_subsume_with<T>(
-        &self,
-        actual: &Function<T>,
-        sub: &mut Substitution,
-        mk_type: impl Fn(&MonoType) -> T,
-        mk_error: impl Fn(Error) -> T::Error,
-    ) -> Result<(), Errors<T::Error>>
-    where
-        T: TypeLike + Clone,
-    {
-        let mut unifier = Unifier::new_subsume(sub);
 
         self.unify(actual, &mut unifier, mk_type);
 
@@ -2176,8 +2055,8 @@ impl Function {
         for (name, exp) in &f.req {
             if let Some(act) = g.parameter(name) {
                 // The required argument is in g's required arguments.
-                merge_in_context(exp, act, unifier, |e| {
-                    Error::CannotUnifyArgument(name.clone(), Box::new(e))
+                merge_in_context(exp, act, unifier, || {
+                    Context::CannotUnifyArgument(name.clone())
                 });
             } else {
                 unifier
@@ -2188,25 +2067,22 @@ impl Function {
         // Unify f's optional arguments.
         for (name, exp) in &f.opt {
             if let Some(act) = g.parameter(name) {
-                merge_in_context(&exp.typ, act, unifier, |e| {
-                    Error::CannotUnifyArgument(name.clone(), Box::new(e))
+                merge_in_context(&exp.typ, act, unifier, || {
+                    Context::CannotUnifyArgument(name.clone())
                 });
             } else if let Some(default) = &exp.default {
                 // No argument were provided by `g`, however `f` has a default type which
                 // we can use instead
-                merge_in_context(&exp.typ, &mk_type(default), unifier, |e| {
-                    Error::CannotUnifyArgument(name.clone(), Box::new(e))
+                merge_in_context(&exp.typ, &mk_type(default), unifier, || {
+                    Context::CannotUnifyArgument(name.clone())
                 });
             }
         }
 
         // Unify return types.
-        merge_in_context(&f.retn, &g.retn, unifier, |cause| {
-            Error::CannotUnifyReturn {
-                exp: f.retn.clone(),
-                act: g.retn.typ().clone(),
-                cause: Box::new(cause),
-            }
+        merge_in_context(&f.retn, &g.retn, unifier, || Context::CannotUnifyReturn {
+            exp: f.retn.clone(),
+            act: g.retn.typ().clone(),
         })
     }
 
@@ -2230,6 +2106,7 @@ pub(crate) trait TypeLike {
     fn typ(&self) -> &MonoType;
     fn into_type(self) -> MonoType;
     fn error(&self, error: Error) -> Self::Error;
+    fn location(&self) -> crate::ast::SourceLocation;
 }
 
 impl TypeLike for MonoType {
@@ -2242,6 +2119,9 @@ impl TypeLike for MonoType {
     }
     fn error(&self, error: Error) -> Error {
         error
+    }
+    fn location(&self) -> crate::ast::SourceLocation {
+        Default::default()
     }
 }
 
@@ -2258,6 +2138,9 @@ impl TypeLike for (MonoType, &'_ crate::ast::SourceLocation) {
             location: self.1.clone(),
             error,
         }
+    }
+    fn location(&self) -> crate::ast::SourceLocation {
+        self.1.clone()
     }
 }
 
@@ -2911,7 +2794,7 @@ mod tests {
     #[test]
     fn unify_ints() {
         MonoType::INT
-            .try_unify(&MonoType::INT, &mut Substitution::default())
+            .try_unify_all(&MonoType::INT, &mut Substitution::default())
             .unwrap();
     }
     #[test]
@@ -3038,7 +2921,7 @@ mod tests {
     #[test]
     fn unify_error() {
         let err = MonoType::INT
-            .try_unify(&MonoType::STRING, &mut Substitution::default())
+            .try_unify_all(&MonoType::STRING, &mut Substitution::default())
             .unwrap_err();
         assert_eq!(
             err.to_string(),
@@ -3050,7 +2933,7 @@ mod tests {
         let mut sub = Substitution::default();
         sub.mk_fresh(2);
         MonoType::Var(Tvar(0))
-            .try_unify(&MonoType::Var(Tvar(1)), &mut sub)
+            .try_unify_all(&MonoType::Var(Tvar(1)), &mut sub)
             .unwrap();
         assert_eq!(sub.apply(Tvar(0)), sub.apply(Tvar(1)));
     }
@@ -3061,7 +2944,7 @@ mod tests {
             .extend(semantic_map! {Tvar(0) => vec![Kind::Addable, Kind::Divisible]});
         sub.mk_fresh(2);
         MonoType::Var(Tvar(0))
-            .try_unify(&MonoType::Var(Tvar(1)), &mut sub)
+            .try_unify_all(&MonoType::Var(Tvar(1)), &mut sub)
             .unwrap();
         assert_eq!(sub.apply(Tvar(0)), MonoType::Var(Tvar(1)));
         assert_eq!(
@@ -3076,8 +2959,8 @@ mod tests {
         let g = polytype("(d: C, ?e: C) => C where C: Addable ");
         let mut sub = Substitution::default();
         if let ((MonoType::Fun(f), f_cons), (MonoType::Fun(g), g_cons)) = (
-            infer::instantiate(f, &mut sub, Default::default()),
-            infer::instantiate(g, &mut sub, Default::default()),
+            infer::instantiate(f, &mut sub, &Default::default()),
+            infer::instantiate(g, &mut sub, &Default::default()),
         ) {
             infer::solve(&f_cons, &mut sub).unwrap();
             infer::solve(&g_cons, &mut sub).unwrap();
@@ -3095,8 +2978,8 @@ mod tests {
         let g = polytype("(a: C) => C where C: Addable ");
         let mut sub = Substitution::default();
         if let ((MonoType::Fun(f), f_cons), (MonoType::Fun(g), g_cons)) = (
-            infer::instantiate(f, &mut sub, Default::default()),
-            infer::instantiate(g, &mut sub, Default::default()),
+            infer::instantiate(f, &mut sub, &Default::default()),
+            infer::instantiate(g, &mut sub, &Default::default()),
         ) {
             infer::solve(&f_cons, &mut sub).unwrap();
             infer::solve(&g_cons, &mut sub).unwrap();
@@ -3125,7 +3008,7 @@ mod tests {
         };
 
         let mut sub = Substitution::default();
-        let (fn_type, cons) = infer::instantiate(fn_type, &mut sub, Default::default());
+        let (fn_type, cons) = infer::instantiate(fn_type, &mut sub, &Default::default());
         infer::solve(&cons, &mut sub).unwrap();
         if let MonoType::Fun(f) = fn_type {
             sub.mk_fresh(2);
@@ -3149,10 +3032,10 @@ mod tests {
         );
         let g = polytype("(a: int, b: int, c: (a: int) => float) => (d: string) => int");
 
-        let (f, cons) = infer::instantiate(f, &mut sub, Default::default());
+        let (f, cons) = infer::instantiate(f, &mut sub, &Default::default());
         infer::solve(&cons, &mut sub).unwrap();
 
-        let (g, cons) = infer::instantiate(g, &mut sub, Default::default());
+        let (g, cons) = infer::instantiate(g, &mut sub, &Default::default());
         infer::solve(&cons, &mut sub).unwrap();
 
         if let (MonoType::Fun(f), MonoType::Fun(g)) = (f, g) {
@@ -3173,7 +3056,7 @@ mod tests {
             let mut sub = Substitution::default();
             let mut tvars = BTreeMap::new();
             parse_type($expected, &mut tvars)
-                .try_unify(&parse_type($actual, &mut tvars), &mut sub)
+                .try_unify_all(&parse_type($actual, &mut tvars), &mut sub)
                 .unwrap_or_else(|err| panic!("{}", err));
         }};
     }
@@ -3182,7 +3065,7 @@ mod tests {
         ($expected: expr, $actual: expr $(, $pat: pat)? $(,)?) => {{
             let mut sub = Substitution::default();
             let mut tvars = BTreeMap::new();
-            let result = parse_type($expected, &mut tvars).try_unify(
+            let result = parse_type($expected, &mut tvars).try_unify_all(
                 &parse_type($actual, &mut tvars),
                 &mut sub,
             );

@@ -3,7 +3,7 @@ use std::{borrow::Cow, cell::RefCell, collections::BTreeMap, fmt, iter::FusedIte
 
 use crate::semantic::{
     fresh::Fresher,
-    types::{union, BoundTvar, Error, Kind, MonoType, PolyType, SubstitutionMap, Tvar, TvarKinds},
+    types::{union, BoundTvar, Error, MonoType, PolyType, SubstitutionMap, Tvar, TvarKinds},
 };
 
 use ena::unify::UnifyKey;
@@ -14,7 +14,7 @@ use ena::unify::UnifyKey;
 ///
 /// Substitutions are idempotent. Given a substitution *s* and an input
 /// type *x*, we have *s*(*s*(*x*)) = *s*(*x*).
-#[derive(Clone, Default)]
+#[derive(Default)]
 pub struct Substitution {
     table: RefCell<UnificationTable>,
     // TODO Add `snapshot`/`rollback_to` for `TvarKinds` (like `ena::UnificationTable`) so that
@@ -110,25 +110,6 @@ impl Substitution {
 
     pub(crate) fn cons(&mut self) -> &mut TvarKinds {
         self.cons.get_mut()
-    }
-
-    /// Returns the real type or the root variable of `typ` if it is an variable.
-    /// Returns `typ` itself if it isn't a variable
-    pub(crate) fn real<'a>(&self, typ: &'a MonoType) -> Cow<'a, MonoType> {
-        match *typ {
-            MonoType::Var(var) => self
-                .try_apply(var)
-                .map(Cow::Owned)
-                .unwrap_or_else(|| Cow::Borrowed(typ)),
-            _ => Cow::Borrowed(typ),
-        }
-    }
-
-    pub(crate) fn satisfies(&self, v: Tvar, kind: Kind) -> bool {
-        self.cons
-            .borrow()
-            .get(&v)
-            .map_or(false, |kinds| kinds.contains(&kind))
     }
 
     /// Apply a substitution to a type variable.
@@ -253,34 +234,40 @@ pub trait Substitutable {
         Self: Sized;
 
     /// Get all free type variables in a type.
-    fn free_vars(&self) -> Vec<Tvar>
+    fn free_vars(&self, sub: &mut Substitution) -> Vec<Tvar>
     where
         Self: Sized,
     {
         let mut vars = Vec::new();
-        self.extend_free_vars(&mut vars);
+        self.extend_free_vars(&mut vars, sub);
         vars
     }
 
     /// Get all free type variables in a type.
-    fn extend_free_vars(&self, vars: &mut Vec<Tvar>)
+    fn extend_free_vars(&self, vars: &mut Vec<Tvar>, sub: &mut Substitution)
     where
         Self: Sized,
     {
         struct FreeVars<'a> {
             vars: &'a mut Vec<Tvar>,
+            sub: &'a mut Substitution,
         }
 
         impl Substituter for FreeVars<'_> {
             fn try_apply(&mut self, var: Tvar) -> Option<MonoType> {
-                if let Err(i) = self.vars.binary_search(&var) {
-                    self.vars.insert(i, var);
+                match self.sub.try_apply(var) {
+                    Some(typ) => typ.visit(self),
+                    None => {
+                        if let Err(i) = self.vars.binary_search(&var) {
+                            self.vars.insert(i, var);
+                        }
+                        None
+                    }
                 }
-                None
             }
         }
 
-        self.visit(&mut FreeVars { vars });
+        self.visit(&mut FreeVars { vars, sub });
     }
 
     /// Returns `Self` but with "fresh" type variables

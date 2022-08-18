@@ -314,7 +314,7 @@ fn build_record(
         let (ty, constraints) = infer::instantiate(
             poly.clone(),
             sub,
-            ast::SourceLocation {
+            &ast::SourceLocation {
                 file: None,
                 start: ast::Position::default(),
                 end: ast::Position::default(),
@@ -630,13 +630,7 @@ impl<'env, I: import::Importer> Analyzer<'env, I> {
         }
 
         self.env.enter_scope();
-        let env = match nodes::infer_package(
-            &mut sem_pkg,
-            &mut self.env,
-            sub,
-            &mut self.importer,
-            &self.config,
-        ) {
+        let env = match nodes::infer_package(&mut sem_pkg, &mut self.env, sub, &mut self.importer) {
             Ok(()) => {
                 let env = self.env.exit_scope();
                 PackageExports::new_with_iter(

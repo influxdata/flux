@@ -416,11 +416,7 @@ impl<'a> Converter<'a> {
             .iter()
             .map(|i| self.convert_import_declaration(i))
             .collect::<Vec<ImportDeclaration>>();
-        let body = file
-            .body
-            .iter()
-            .filter_map(|s| self.convert_statement(package_name, s))
-            .collect::<Vec<Statement>>();
+        let body = self.convert_statements(package_name, &file.body);
 
         File {
             loc: file.base.location.clone(),
@@ -462,6 +458,13 @@ impl<'a> Converter<'a> {
             path,
             import_symbol,
         }
+    }
+
+    fn convert_statements(&mut self, package: &str, stmts: &[ast::Statement]) -> Vec<Statement> {
+        stmts
+            .iter()
+            .filter_map(|s| self.convert_statement(package, s))
+            .collect::<Vec<_>>()
     }
 
     fn convert_statement(&mut self, package: &str, stmt: &ast::Statement) -> Option<Statement> {
@@ -513,12 +516,12 @@ impl<'a> Converter<'a> {
     ) -> Option<BuiltinStmt> {
         // Only include builtin statements that have the `feature` attribute if a matching
         // feature is detected
-        if let Some(attr) = get_attribute(
+        let opt_attr = get_attribute(
             stmt.base.comments.iter().map(|c| c.text.as_str()),
             "feature",
         )
-        .and_then(|attr| attr.parse::<Feature>().ok())
-        {
+        .and_then(|attr| attr.parse::<Feature>().ok());
+        if let Some(attr) = opt_attr {
             if self.config.features.iter().all(|feature| *feature != attr) {
                 return None;
             }
@@ -538,12 +541,7 @@ impl<'a> Converter<'a> {
                 .extends
                 .as_ref()
                 .map(|e| self.convert_string_literal(e)),
-            body: stmt
-                .block
-                .body
-                .iter()
-                .filter_map(|s| self.convert_statement(package, s))
-                .collect(),
+            body: self.convert_statements(package, &stmt.block.body),
         }
     }
 
@@ -632,9 +630,7 @@ impl<'a> Converter<'a> {
                                 name.name.clone(),
                                 types::Argument {
                                     typ: self.convert_monotype(monotype, tvars),
-                                    default: default.as_ref().map(|default| {
-                                        MonoType::Label(types::Label::from(default.value.as_str()))
-                                    }),
+                                    default: default.as_ref().map(|_| MonoType::STRING),
                                 },
                             );
                         }
@@ -1298,7 +1294,6 @@ impl<'a> Converter<'a> {
         StringLit {
             loc: lit.base.location.clone(),
             value: lit.value.clone(),
-            typ: None,
         }
     }
 
@@ -1503,7 +1498,6 @@ mod tests {
                         path: StringLit {
                             loc: b.location.clone(),
                             value: "path/foo".to_string(),
-                            typ: None,
                         },
                         alias: None,
                         import_symbol: symbols["foo"].clone(),
@@ -1513,7 +1507,6 @@ mod tests {
                         path: StringLit {
                             loc: b.location.clone(),
                             value: "path/bar".to_string(),
-                            typ: None,
                         },
                         alias: Some(Identifier {
                             loc: b.location,
@@ -1823,7 +1816,6 @@ mod tests {
                                     value: Expression::StringLit(StringLit {
                                         loc: b.location.clone(),
                                         value: "foo".to_string(),
-                                        typ: None,
                                     }),
                                 },
                                 Property {
@@ -1865,7 +1857,6 @@ mod tests {
                                     value: Expression::StringLit(StringLit {
                                         loc: b.location.clone(),
                                         value: "0 2 * * *".to_string(),
-                                        typ: None,
                                     }),
                                 },
                                 Property {
@@ -1921,7 +1912,6 @@ mod tests {
                         init: Expression::StringLit(StringLit {
                             loc: b.location,
                             value: "Warning".to_string(),
-                            typ: None,
                         }),
                     }),
                 }))],
