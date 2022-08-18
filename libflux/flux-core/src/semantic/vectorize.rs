@@ -184,6 +184,7 @@ impl CallExpr {
             ident @ Expression::Identifier(IdentifierExpr { name, .. }) => {
                 if env.config.features.contains(&Feature::VectorizedFloat)
                     && name == "float"
+                    && name.package() == Some("universe")
                     && self.arguments.len() == 1
                     && self.arguments[0].key.name == "v"
                 {
