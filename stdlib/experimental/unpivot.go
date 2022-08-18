@@ -88,7 +88,7 @@ func (t *unpivotTransformation) Process(chunk table.Chunk, d *execute.TransportD
 
 	timeColumn := -1
 	for j, c := range chunk.Cols() {
-		if c.Label == "_time" {
+		if c.Label == execute.DefaultTimeColLabel {
 			timeColumn = j
 			break
 		}
@@ -99,16 +99,21 @@ func (t *unpivotTransformation) Process(chunk table.Chunk, d *execute.TransportD
 	}
 
 	for i, c := range chunk.Cols() {
-		if chunk.Key().HasCol(c.Label) || c.Label == "_time" {
+		if chunk.Key().HasCol(c.Label) || c.Label == execute.DefaultTimeColLabel {
 			continue
 		}
+
+		chunkValues := chunk.Values(i)
+		chunkValues.Retain()
+
+		newChunkLen := chunk.Len() - chunkValues.NullN()
 
 		groupKey := chunk.Key()
 		columns := groupKey.Cols()
 		columns = append(columns,
 			flux.ColMeta{Label: "_field", Type: flux.TString},
-			flux.ColMeta{Label: "_time", Type: flux.TTime},
-			flux.ColMeta{Label: "_value", Type: c.Type},
+			flux.ColMeta{Label: execute.DefaultTimeColLabel, Type: flux.TTime},
+			flux.ColMeta{Label: execute.DefaultValueColLabel, Type: c.Type},
 		)
 
 		groupCols := []flux.ColMeta{{Label: "_field", Type: flux.TString}}
@@ -131,19 +136,26 @@ func (t *unpivotTransformation) Process(chunk table.Chunk, d *execute.TransportD
 					break
 				}
 			}
-			values := chunk.Values(fromColumn)
-			values.Retain()
+
+			oldValues := chunk.Values(fromColumn)
+			var values array.Array
+			if newChunkLen == chunk.Len() {
+				values = oldValues
+				values.Retain()
+			} else {
+				// We have nulls for some of the fields which we must exclude from the unpivoted
+				// output, otherwise they show up as extra rows
+				values = array.Slice(oldValues, 0, newChunkLen)
+			}
 			buffer.Values[toColumn] = values
 		}
 
-		buffer.Values[len(buffer.Values)-3] = array.StringRepeat(c.Label, chunk.Len(), mem)
+		buffer.Values[len(buffer.Values)-3] = array.StringRepeat(c.Label, newChunkLen, mem)
 
-		times := chunk.Values(timeColumn)
-		times.Retain()
+		times := array.CopyValidValues(mem, chunk.Values(timeColumn))
 		buffer.Values[len(buffer.Values)-2] = times
 
-		values := chunk.Values(i)
-		values.Retain()
+		values := array.CopyValidValues(mem, chunk.Values(i))
 		buffer.Values[len(buffer.Values)-1] = values
 
 		out := table.ChunkFromBuffer(buffer)

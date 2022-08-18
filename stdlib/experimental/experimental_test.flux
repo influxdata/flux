@@ -4,6 +4,7 @@ package experimental_test
 import "array"
 import "csv"
 import "experimental"
+import "internal/debug"
 import "testing"
 
 testcase addDuration_to_time {
@@ -282,4 +283,46 @@ testcase unpivot_3_columns {
 
     testing.diff(got: got, want: want)
         |> yield()
+}
+
+testcase unpivot_with_nulls {
+    input =
+        array.from(
+            rows: [
+                {_time: 2018-12-18T20:52:33Z, a: 1.0, b: debug.null(type: "string")},
+                {_time: 2018-12-18T20:52:33Z, a: debug.null(type: "float"), b: "abc"},
+            ],
+        )
+
+    want =
+        array.from(rows: [{_time: 2018-12-18T20:52:33Z, _field: "a", _value: 1.0}])
+            |> group(columns: ["_field"])
+
+    got =
+        input
+            |> experimental.unpivot()
+            |> filter(fn: (r) => r._field == "a")
+
+    testing.diff(want, got)
+}
+
+testcase unpivot_with_nulls_2 {
+    input =
+        array.from(
+            rows: [
+                {_time: 2018-12-18T20:52:33Z, a: debug.null(type: "float"), b: "abc"},
+                {_time: 2018-12-18T20:52:33Z, a: 1.0, b: debug.null(type: "string")},
+            ],
+        )
+
+    want =
+        array.from(rows: [{_time: 2018-12-18T20:52:33Z, _field: "a", _value: 1.0}])
+            |> group(columns: ["_field"])
+
+    got =
+        input
+            |> experimental.unpivot()
+            |> filter(fn: (r) => r._field == "a")
+
+    testing.diff(want, got)
 }
