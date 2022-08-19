@@ -64,16 +64,16 @@ func (a *NarrowTransformation) Close() error {
 	return nil
 }
 
-type NarrowStateTransformation struct {
-	ProcessFn func(chunk table.Chunk, state interface{}, d *execute.TransportDataset, mem memory.Allocator) (interface{}, bool, error)
+type NarrowStateTransformation[T any] struct {
+	ProcessFn func(chunk table.Chunk, state T, d *execute.TransportDataset, mem memory.Allocator) (T, bool, error)
 	CloseFn   func() error
 }
 
-func (n *NarrowStateTransformation) Process(chunk table.Chunk, state interface{}, d *execute.TransportDataset, mem memory.Allocator) (interface{}, bool, error) {
+func (n *NarrowStateTransformation[T]) Process(chunk table.Chunk, state T, d *execute.TransportDataset, mem memory.Allocator) (T, bool, error) {
 	return n.ProcessFn(chunk, state, d, mem)
 }
 
-func (a *NarrowStateTransformation) Close() error {
+func (a *NarrowStateTransformation[T]) Close() error {
 	if a.CloseFn != nil {
 		return a.CloseFn()
 	}

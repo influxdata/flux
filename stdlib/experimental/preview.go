@@ -100,7 +100,7 @@ func NewPreviewTransformation(id execute.DatasetID, spec *PreviewProcedureSpec, 
 		nrows:   spec.NRows,
 		ntables: spec.NTables,
 	}
-	return execute.NewNarrowStateTransformation(id, tr, mem)
+	return execute.NewNarrowStateTransformation[any](id, tr, mem)
 }
 
 func (t *previewTransformation) Process(chunk table.Chunk, state interface{}, d *execute.TransportDataset, mem memory.Allocator) (interface{}, bool, error) {

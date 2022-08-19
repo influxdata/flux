@@ -31,9 +31,9 @@ func TestNarrowStateTransformation_ProcessChunk(t *testing.T) {
 	}
 
 	isProcessed, hasState := false, false
-	tr, _, err := execute.NewNarrowStateTransformation(
+	tr, _, err := execute.NewNarrowStateTransformation[any](
 		executetest.RandomDatasetID(),
-		&mock.NarrowStateTransformation{
+		&mock.NarrowStateTransformation[any]{
 			ProcessFn: func(chunk table.Chunk, state interface{}, d *execute.TransportDataset, _ memory.Allocator) (interface{}, bool, error) {
 				if state != nil {
 					if want, got := int64(4), state.(int64); want != got {
@@ -109,9 +109,9 @@ func TestNarrowStateTransformation_FlushKey(t *testing.T) {
 	}
 
 	var disposeCount int
-	tr, d, err := execute.NewNarrowStateTransformation(
+	tr, d, err := execute.NewNarrowStateTransformation[any](
 		executetest.RandomDatasetID(),
-		&mock.NarrowStateTransformation{
+		&mock.NarrowStateTransformation[any]{
 			ProcessFn: func(chunk table.Chunk, state interface{}, d *execute.TransportDataset, mem memory.Allocator) (interface{}, bool, error) {
 				if state != nil {
 					t.Error("process unexpectedly invoked with state")
@@ -193,9 +193,9 @@ func TestNarrowStateTransformation_Process(t *testing.T) {
 	}
 
 	isProcessed := false
-	tr, _, err := execute.NewNarrowStateTransformation(
+	tr, _, err := execute.NewNarrowStateTransformation[any](
 		executetest.RandomDatasetID(),
-		&mock.NarrowStateTransformation{
+		&mock.NarrowStateTransformation[any]{
 			ProcessFn: func(chunk table.Chunk, state interface{}, d *execute.TransportDataset, _ memory.Allocator) (interface{}, bool, error) {
 				// Memory should be allocated and should not have been improperly freed.
 				// This accounts for 64 bytes (data) + 64 bytes (null bitmap) for each column
@@ -263,9 +263,9 @@ func TestNarrowStateTransformation_Finish(t *testing.T) {
 		disposeCount int
 		isDisposed   bool
 	)
-	tr, d, err := execute.NewNarrowStateTransformation(
+	tr, d, err := execute.NewNarrowStateTransformation[any](
 		executetest.RandomDatasetID(),
-		&mock.NarrowStateTransformation{
+		&mock.NarrowStateTransformation[any]{
 			ProcessFn: func(chunk table.Chunk, state interface{}, d *execute.TransportDataset, mem memory.Allocator) (interface{}, bool, error) {
 				return &mockState{
 					disposeCount: &disposeCount,
@@ -358,16 +358,16 @@ func TestNarrowStateTransformation_Finish(t *testing.T) {
 // This is to prevent opentracing from showing narrowTransformation
 // as the operation.
 func TestNarrowStateTransformation_OperationType(t *testing.T) {
-	tr, _, err := execute.NewNarrowStateTransformation(
+	tr, _, err := execute.NewNarrowStateTransformation[any](
 		executetest.RandomDatasetID(),
-		&mock.NarrowStateTransformation{},
+		&mock.NarrowStateTransformation[any]{},
 		memory.DefaultAllocator,
 	)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	if want, got := "*mock.NarrowStateTransformation", execute.OperationType(tr); want != got {
+	if want, got := "*mock.NarrowStateTransformation[interface {}]", execute.OperationType(tr); want != got {
 		t.Errorf("unexpected operation type -want/+got:\n\t- %s\n\t+ %s", want, got)
 	}
 }

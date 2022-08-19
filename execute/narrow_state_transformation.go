@@ -8,24 +8,24 @@ import (
 
 // NarrowStateTransformation is the same as a NarrowTransformation
 // except that it retains state between processing buffers.
-type NarrowStateTransformation interface {
+type NarrowStateTransformation[T any] interface {
 	// Process will process the TableView.
-	Process(chunk table.Chunk, state interface{}, d *TransportDataset, mem memory.Allocator) (interface{}, bool, error)
+	Process(chunk table.Chunk, state T, d *TransportDataset, mem memory.Allocator) (T, bool, error)
 
 	Closer
 }
 
-var _ Transport = (*narrowStateTransformation)(nil)
+var _ Transport = (*narrowStateTransformation[any])(nil)
 
-type narrowStateTransformation struct {
-	t NarrowStateTransformation
+type narrowStateTransformation[T any] struct {
+	t NarrowStateTransformation[T]
 	d *TransportDataset
 }
 
 // NewNarrowStateTransformation constructs a Transformation and Dataset
 // using the NarrowStateTransformation implementation.
-func NewNarrowStateTransformation(id DatasetID, t NarrowStateTransformation, mem memory.Allocator) (Transformation, Dataset, error) {
-	tr := &narrowStateTransformation{
+func NewNarrowStateTransformation[T any](id DatasetID, t NarrowStateTransformation[T], mem memory.Allocator) (Transformation, Dataset, error) {
+	tr := &narrowStateTransformation[T]{
 		t: t,
 		d: NewTransportDataset(id, mem),
 	}
@@ -33,7 +33,7 @@ func NewNarrowStateTransformation(id DatasetID, t NarrowStateTransformation, mem
 }
 
 // ProcessMessage will process the incoming message.
-func (n *narrowStateTransformation) ProcessMessage(m Message) error {
+func (n *narrowStateTransformation[T]) ProcessMessage(m Message) error {
 	defer m.Ack()
 
 	switch m := m.(type) {
@@ -42,7 +42,12 @@ func (n *narrowStateTransformation) ProcessMessage(m Message) error {
 		return nil
 	case ProcessChunkMsg:
 		chunk := m.TableChunk()
-		state, _ := n.d.Lookup(chunk.Key())
+
+		var state T
+		if value, ok := n.d.Lookup(chunk.Key()); ok {
+			state = value.(T)
+		}
+
 		if ns, ok, err := n.t.Process(chunk, state, n.d, n.d.mem); err != nil {
 			return err
 		} else if ok {
@@ -68,7 +73,7 @@ func (n *narrowStateTransformation) ProcessMessage(m Message) error {
 }
 
 // Finish is implemented to remain compatible with legacy upstreams.
-func (n *narrowStateTransformation) Finish(id DatasetID, err error) {
+func (n *narrowStateTransformation[T]) Finish(id DatasetID, err error) {
 	_ = n.d.Range(func(key flux.GroupKey, value interface{}) error {
 		if v, ok := value.(Closer); ok {
 			return v.Close()
@@ -79,6 +84,6 @@ func (n *narrowStateTransformation) Finish(id DatasetID, err error) {
 	n.d.Finish(err)
 }
 
-func (n *narrowStateTransformation) OperationType() string {
+func (n *narrowStateTransformation[T]) OperationType() string {
 	return OperationType(n.t)
 }
