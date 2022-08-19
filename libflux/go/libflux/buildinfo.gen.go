@@ -581,7 +581,7 @@ var sourceHashes = map[string]string{
 	"stdlib/universe/simple_max_test.flux":                                                        "a63b3f530e4d81451e3c71a1abeea50cff02e743c9313ab3ffd5bc3b3ce9ad2e",
 	"stdlib/universe/skew_test.flux":                                                              "7782d41c563c77ba9f4176fa1b5f4f6107e418b7ea301e4896398dbcb514315a",
 	"stdlib/universe/sort2_test.flux":                                                             "1d2043c0d0b38abb8dc61fc1baa6d6052fae63fea55cc6e67fd1600911513bdb",
-	"stdlib/universe/sort_limit_test.flux":                                                        "dc987d52f993ae11c8f0643af17c86471a75c6a9677899996182645fc86a4ee8",
+	"stdlib/universe/sort_limit_test.flux":                                                        "32825b6b789c5b3287ae72967687a63fa3fee783e6626426c9b1cc7f39306dc8",
 	"stdlib/universe/sort_rules_test.flux":                                                        "0770ae42e99b04167ca5bef8340a310b224baf1ba1928997273de9663b64684a",
 	"stdlib/universe/sort_test.flux":                                                              "f69ebb5972762078e759af3c1cd3d852431a569dce74f3c379709c9e174bfa31",
 	"stdlib/universe/spread_test.flux":                                                            "1ddf25e4d86b6365da254229fc8f77bd838c24a79e6a08c9c4c50330ace0a6a3",
