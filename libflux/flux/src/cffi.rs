@@ -476,7 +476,7 @@ impl StatefulAnalyzer {
 
                 // A failure should have already happened if any of these
                 // imports would have failed.
-                if let Some(typ) = self.imports.import(path) {
+                if let Ok(typ) = self.imports.import(path) {
                     env.add(dec.import_symbol.clone(), typ);
                 }
             }

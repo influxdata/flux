@@ -350,6 +350,15 @@ pub struct FileErrors {
     pub pretty_fmt: bool,
 }
 
+impl<W> From<Error> for Diagnostics<ErrorKind, W> {
+    fn from(error: Error) -> Self {
+        Self {
+            errors: error.into(),
+            warnings: Errors::default(),
+        }
+    }
+}
+
 impl fmt::Display for FileErrors {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match &self.source {
@@ -367,6 +376,15 @@ pub struct Diagnostics<E, W> {
     pub errors: Errors<Located<E>>,
     /// The warnings the occurred in that file
     pub warnings: Errors<Located<W>>,
+}
+
+impl<E, W> Default for Diagnostics<E, W> {
+    fn default() -> Self {
+        Self {
+            errors: Default::default(),
+            warnings: Default::default(),
+        }
+    }
 }
 
 impl<E, W> fmt::Display for Diagnostics<E, W>

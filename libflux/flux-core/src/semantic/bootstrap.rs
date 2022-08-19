@@ -3,17 +3,16 @@
 //! This package does not assume a location of the source code but does assume which packages are
 //! part of the prelude.
 
-use std::{env::consts, fs, io, io::Write, path::Path};
+use std::{env::consts, fs, io, io::Write, path::Path, sync::Arc};
 
-use anyhow::{anyhow, bail, Result};
+use anyhow::{bail, Result};
 use libflate::gzip::Encoder;
 use walkdir::WalkDir;
 
 use crate::{
     ast,
-    map::HashSet,
-    parser,
     semantic::{
+        self,
         env::Environment,
         flatbuffers::types::{build_module, finish_serialize},
         fs::{FileSystemImporter, StdFS},
@@ -27,6 +26,8 @@ use crate::{
         Analyzer, AnalyzerConfig, PackageExports,
     },
 };
+
+const INTERNAL_PRELUDE: [&str; 2] = ["internal/boolean", "internal/location"];
 
 // List of packages to include into the Flux prelude
 const PRELUDE: [&str; 4] = [
@@ -45,24 +46,37 @@ pub type SemanticPackageMap = SemanticMap<String, Package>;
 /// The prelude and the imports are returned.
 #[allow(clippy::type_complexity)]
 pub fn infer_stdlib_dir(
+    path: impl AsRef<Path>,
+    config: AnalyzerConfig,
+) -> Result<(PackageExports, Packages, SemanticPackageMap)> {
+    infer_stdlib_dir_(path.as_ref(), config)
+}
+
+#[allow(clippy::type_complexity)]
+fn infer_stdlib_dir_(
     path: &Path,
     config: AnalyzerConfig,
 ) -> Result<(PackageExports, Packages, SemanticPackageMap)> {
-    let ast_packages = parse_dir(path)?;
+    let (mut db, package_list) = parse_dir(path)?;
 
-    let mut infer_state = InferState {
-        config,
-        ..InferState::default()
-    };
-    let prelude = infer_state.infer_pre(&ast_packages)?;
-    infer_state.infer_std(&ast_packages, &prelude)?;
+    db.set_analyzer_config(config);
 
-    Ok((prelude, infer_state.imports, infer_state.sem_pkg_map))
+    let mut imports = Packages::default();
+    let mut sem_pkg_map = SemanticPackageMap::default();
+    for name in &package_list {
+        let (exports, pkg) = db.semantic_package(name.clone())?;
+        imports.insert(name.clone(), PackageExports::clone(&exports)); // TODO Clone Arc
+        sem_pkg_map.insert(name.clone(), Package::clone(&pkg)); // TODO Clone Arc
+    }
+
+    let prelude = db.prelude()?;
+    Ok((PackageExports::clone(&prelude), imports, sem_pkg_map))
 }
 
 /// Recursively parse all flux files within a directory.
-pub fn parse_dir(dir: &Path) -> io::Result<ASTPackageMap> {
-    let mut files = Vec::new();
+pub fn parse_dir(dir: &Path) -> io::Result<(Database, Vec<String>)> {
+    let mut db = Database::default();
+    let mut package_names = Vec::new();
     let entries = WalkDir::new(dir)
         .into_iter()
         .filter_map(|r| r.ok())
@@ -82,184 +96,20 @@ pub fn parse_dir(dir: &Path) -> io::Result<ASTPackageMap> {
                     // to work with either separator.
                     normalized_path = normalized_path.replace('\\', "/");
                 }
-                let source = fs::read_to_string(entry.path())?;
-                let ast = parser::parse_string(
-                    normalized_path
-                        .rsplitn(2, "/stdlib/")
-                        .collect::<Vec<&str>>()[0]
-                        .to_owned(),
-                    &source,
-                );
-                files.push((source, ast));
+                let source = Arc::<str>::from(fs::read_to_string(entry.path())?);
+
+                let file_name = normalized_path
+                    .rsplitn(2, "/stdlib/")
+                    .collect::<Vec<&str>>()[0]
+                    .to_owned();
+                let path = file_name.rsplitn(2, '/').collect::<Vec<&str>>()[1].to_string();
+                package_names.push(path);
+                db.set_source(file_name, source.clone());
             }
         }
     }
-    Ok(ast_map(files))
-}
 
-// Associates an import path with each file
-fn ast_map(files: Vec<(String, ast::File)>) -> ASTPackageMap {
-    files
-        .into_iter()
-        .fold(ASTPackageMap::new(), |mut acc, (source, file)| {
-            let path = file.name.rsplitn(2, '/').collect::<Vec<&str>>()[1].to_string();
-            acc.insert(
-                path.clone(),
-                ast::Package {
-                    base: ast::BaseNode {
-                        location: ast::SourceLocation {
-                            source: Some(source),
-                            ..ast::SourceLocation::default()
-                        },
-                        ..ast::BaseNode::default()
-                    },
-                    path,
-                    package: String::from(file.get_package()),
-                    files: vec![file],
-                },
-            );
-            acc
-        })
-}
-
-fn imports(pkg: &ast::Package) -> impl Iterator<Item = &str> {
-    pkg.files
-        .iter()
-        .flat_map(|file| file.imports.iter().map(|import| &import.path.value[..]))
-}
-
-// Determines the dependencies of a package. That is, all packages
-// that must be evaluated before the package in question. Each
-// dependency is added to the `deps` vector in evaluation order.
-#[allow(clippy::type_complexity)]
-fn dependencies<'a>(
-    name: &'a str,
-    pkgs: &'a ASTPackageMap,
-    mut deps: Vec<&'a str>,
-    mut seen: HashSet<&'a str>,
-    mut done: HashSet<&'a str>,
-) -> Result<(Vec<&'a str>, HashSet<&'a str>, HashSet<&'a str>)> {
-    if seen.contains(name) && !done.contains(name) {
-        Err(anyhow!(r#"package "{}" depends on itself"#, name))
-    } else {
-        seen.insert(name);
-        match pkgs.get(name) {
-            None => Err(anyhow!(r#"package "{}" not found"#, name)),
-            Some(pkg) => {
-                for name in imports(pkg) {
-                    let (x, y, z) = dependencies(name, pkgs, deps, seen, done)?;
-                    deps = x;
-                    seen = y;
-                    done = z;
-                    if !deps.contains(&name) {
-                        deps.push(name);
-                    }
-                }
-                done.insert(name);
-                Ok((deps, seen, done))
-            }
-        }
-    }
-}
-
-#[derive(Default)]
-struct InferState {
-    // types available for import
-    imports: Packages,
-    sem_pkg_map: SemanticPackageMap,
-    config: AnalyzerConfig,
-}
-
-impl InferState {
-    fn infer_pre(&mut self, ast_packages: &ASTPackageMap) -> Result<PackageExports> {
-        let mut prelude_map = PackageExports::new();
-        for name in PRELUDE {
-            // Infer each package in the prelude allowing the earlier packages to be used by later
-            // packages within the prelude list.
-            let (types, _sem_pkg) = self.infer_pkg(name, ast_packages, &prelude_map)?;
-
-            prelude_map.copy_bindings_from(&types);
-        }
-        Ok(prelude_map)
-    }
-
-    #[allow(clippy::type_complexity)]
-    fn infer_std(&mut self, ast_packages: &ASTPackageMap, prelude: &PackageExports) -> Result<()> {
-        for (path, _) in ast_packages.iter() {
-            // No need to infer the package again if it has already been inferred through a
-            // dependency
-            if !self.sem_pkg_map.contains_key(path) {
-                let (types, sem_pkg) = self.infer_pkg(path, ast_packages, prelude)?;
-
-                self.sem_pkg_map.insert(path.to_string(), sem_pkg);
-                if !self.imports.contains_key(path) {
-                    self.imports.insert(path.to_string(), types);
-                }
-            }
-        }
-        Ok(())
-    }
-
-    // Infer the types in a package(file), returning a hash map containing
-    // the inferred types along with a possibly updated map of package imports.
-    //
-    #[allow(clippy::type_complexity)]
-    fn infer_pkg(
-        &mut self,
-        name: &str,                   // name of package to infer
-        ast_packages: &ASTPackageMap, // ast_packages available for inference
-        prelude: &PackageExports,     // prelude types
-    ) -> Result<(
-        PackageExports, // inferred types
-        Package,        // semantic graph
-    )> {
-        // Determine the order in which we must infer dependencies
-        let (deps, _, _) = dependencies(
-            name,
-            ast_packages,
-            Vec::new(),
-            HashSet::new(),
-            HashSet::new(),
-        )?;
-
-        // Infer all dependencies
-        for pkg in deps {
-            if self.imports.import(pkg).is_none() {
-                let (env, sem_pkg) =
-                    self.infer_pkg_with_resolved_deps(pkg, ast_packages, prelude)?;
-
-                self.sem_pkg_map.insert(pkg.to_string(), sem_pkg);
-                self.imports.insert(pkg.to_string(), env);
-            }
-        }
-
-        self.infer_pkg_with_resolved_deps(name, ast_packages, prelude)
-    }
-
-    fn infer_pkg_with_resolved_deps(
-        &mut self,
-        name: &str,                   // name of package to infer
-        ast_packages: &ASTPackageMap, // ast_packages available for inference
-        prelude: &PackageExports,     // prelude types
-    ) -> Result<(
-        PackageExports, // inferred types
-        Package,        // semantic graph
-    )> {
-        let file = ast_packages
-            .get(name)
-            .ok_or_else(|| anyhow!(r#"package import "{}" not found"#, name))?;
-
-        let env = Environment::new(prelude.into());
-        let mut analyzer = Analyzer::new(env, &mut self.imports, self.config.clone());
-        let (exports, sem_pkg) = analyzer.analyze_ast(file).map_err(|mut err| {
-            if err.error.source.is_none() {
-                err.error.source = file.base.location.source.clone();
-            }
-            err.error.pretty_error()
-        })?;
-
-        Ok((exports, sem_pkg))
-    }
+    Ok((db, package_names))
 }
 
 fn stdlib_importer(path: &Path) -> FileSystemImporter<StdFS> {
@@ -273,7 +123,7 @@ where
 {
     let mut env = PolyTypeHashMap::new();
     for pkg in PRELUDE {
-        if let Some(pkg_type) = importer.import(pkg) {
+        if let Ok(pkg_type) = importer.import(pkg) {
             if let MonoType::Record(typ) = pkg_type.expr {
                 add_record_to_map(&mut env, typ.as_ref(), &pkg_type.vars, &pkg_type.cons)?;
             } else {
@@ -399,14 +249,328 @@ pub struct Module {
     pub code: Option<nodes::Package>,
 }
 
+#[allow(missing_docs)] // Warns on the generated FluxStorage type
+mod db {
+    use crate::{
+        errors::{located, SalvageResult},
+        parser,
+        semantic::{nodes, FileErrors, PackageExports},
+    };
+
+    use super::*;
+
+    use std::{
+        collections::HashSet,
+        sync::{Arc, Mutex},
+    };
+
+    pub trait FluxBase {
+        fn has_package(&self, package: &str) -> bool;
+        fn package_files(&self, package: &str) -> Vec<String>;
+        fn set_source(&mut self, path: String, source: Arc<str>);
+        fn source(&self, path: String) -> Arc<str>;
+    }
+
+    /// Defines queries that drives flux compilation
+    #[salsa::query_group(FluxStorage)]
+    pub trait Flux: FluxBase {
+        /// Source code for a particular flux file
+        #[salsa::input]
+        #[doc(hidden)]
+        fn source_inner(&self, path: String) -> Arc<str>;
+
+        #[salsa::input]
+        fn analyzer_config(&self) -> AnalyzerConfig;
+
+        #[salsa::input]
+        fn use_prelude(&self) -> bool;
+
+        fn ast_package_inner(&self, path: String) -> Arc<ast::Package>;
+
+        #[salsa::transparent]
+        fn ast_package(&self, path: String) -> Option<Arc<ast::Package>>;
+
+        fn internal_prelude(&self) -> Result<Arc<PackageExports>, Arc<FileErrors>>;
+
+        fn prelude_inner(&self) -> Result<Arc<PackageExports>, Arc<FileErrors>>;
+
+        #[salsa::transparent]
+        fn prelude(&self) -> Result<Arc<PackageExports>, Arc<FileErrors>>;
+
+        #[salsa::cycle(recover_cycle2)]
+        #[allow(clippy::type_complexity)]
+        fn semantic_package_inner(
+            &self,
+            path: String,
+        ) -> SalvageResult<(Arc<PackageExports>, Arc<nodes::Package>), Arc<FileErrors>>;
+
+        #[salsa::transparent]
+        fn semantic_package(
+            &self,
+            path: String,
+        ) -> SalvageResult<(Arc<PackageExports>, Arc<nodes::Package>), Arc<FileErrors>>;
+
+        #[salsa::cycle(recover_cycle)]
+        fn semantic_package_cycle(
+            &self,
+            path: String,
+        ) -> Result<Arc<PackageExports>, nodes::ErrorKind>;
+    }
+
+    /// Storage for flux programs and their intermediates
+    #[salsa::database(FluxStorage)]
+    pub struct Database {
+        storage: salsa::Storage<Self>,
+        pub(crate) packages: Mutex<HashSet<String>>,
+    }
+
+    impl Default for Database {
+        fn default() -> Self {
+            let mut db = Self {
+                storage: Default::default(),
+                packages: Default::default(),
+            };
+            db.set_analyzer_config(AnalyzerConfig::default());
+            db.set_use_prelude(true);
+            db
+        }
+    }
+
+    impl salsa::Database for Database {}
+
+    impl FluxBase for Database {
+        fn has_package(&self, package: &str) -> bool {
+            self.packages.lock().unwrap().contains(package)
+        }
+
+        fn package_files(&self, package: &str) -> Vec<String> {
+            let packages = self.packages.lock().unwrap();
+            let found_packages = packages
+                .iter()
+                .filter(|p| {
+                    p.starts_with(package)
+                        && p[package.len()..].starts_with('/')
+                        && p[package.len() + 1..].split('/').count() == 1
+                })
+                .cloned()
+                .collect::<Vec<_>>();
+
+            assert!(
+                !packages.is_empty(),
+                "Did not find any package files for `{}`",
+                package,
+            );
+
+            found_packages
+        }
+
+        fn source(&self, path: String) -> Arc<str> {
+            self.source_inner(path)
+        }
+
+        fn set_source(&mut self, path: String, source: Arc<str>) {
+            self.packages.lock().unwrap().insert(path.clone());
+
+            self.set_source_inner(path, source)
+        }
+    }
+
+    fn ast_package_inner(db: &dyn Flux, path: String) -> Arc<ast::Package> {
+        let files = db
+            .package_files(&path)
+            .into_iter()
+            .map(|file_path| {
+                let source = db.source(file_path.clone());
+
+                parser::parse_string(file_path, &source)
+            })
+            .collect::<Vec<_>>();
+
+        Arc::new(ast::Package {
+            base: ast::BaseNode::default(),
+            path,
+            package: String::from(files[0].get_package()),
+            files,
+        })
+    }
+
+    fn ast_package(db: &dyn Flux, path: String) -> Option<Arc<ast::Package>> {
+        if db.has_package(&path) {
+            Some(db.ast_package_inner(path))
+        } else {
+            None
+        }
+    }
+
+    fn internal_prelude(db: &dyn Flux) -> Result<Arc<PackageExports>, Arc<FileErrors>> {
+        let mut prelude_map = PackageExports::new();
+        for name in INTERNAL_PRELUDE {
+            // Infer each package in the prelude allowing the earlier packages to be used by later
+            // packages within the prelude list.
+            let (types, _sem_pkg) = db.semantic_package(name.into()).map_err(|err| err.error)?;
+
+            prelude_map.copy_bindings_from(&types);
+        }
+        Ok(Arc::new(prelude_map))
+    }
+
+    fn prelude_inner(db: &dyn Flux) -> Result<Arc<PackageExports>, Arc<FileErrors>> {
+        let mut prelude_map = PackageExports::new();
+        for name in PRELUDE {
+            // Infer each package in the prelude allowing the earlier packages to be used by later
+            // packages within the prelude list.
+            let (types, _sem_pkg) = db.semantic_package(name.into()).map_err(|err| err.error)?;
+
+            prelude_map.copy_bindings_from(&types);
+        }
+        Ok(Arc::new(prelude_map))
+    }
+
+    fn prelude(db: &dyn Flux) -> Result<Arc<PackageExports>, Arc<FileErrors>> {
+        db.prelude_inner()
+    }
+
+    fn semantic_package_inner(
+        db: &dyn Flux,
+        path: String,
+    ) -> SalvageResult<(Arc<PackageExports>, Arc<nodes::Package>), Arc<FileErrors>> {
+        let prelude = if !db.use_prelude() || INTERNAL_PRELUDE.contains(&&path[..]) {
+            Default::default()
+        } else if [
+            "system",
+            "date",
+            "math",
+            "strings",
+            "regexp",
+            "experimental/table",
+        ]
+        .contains(&&path[..])
+            || PRELUDE.contains(&&path[..])
+        {
+            db.internal_prelude()?
+        } else {
+            db.prelude()?
+        };
+
+        semantic_package_with_prelude(db, path, &prelude)
+    }
+
+    fn semantic_package(
+        db: &dyn Flux,
+        path: String,
+    ) -> SalvageResult<(Arc<PackageExports>, Arc<nodes::Package>), Arc<FileErrors>> {
+        db.semantic_package_inner(path)
+    }
+
+    fn semantic_package_with_prelude(
+        db: &dyn Flux,
+        path: String,
+        prelude: &PackageExports,
+    ) -> SalvageResult<(Arc<PackageExports>, Arc<nodes::Package>), Arc<FileErrors>> {
+        let file = db.ast_package_inner(path);
+
+        let env = Environment::new(prelude.into());
+        let mut importer = &*db;
+        let mut analyzer = Analyzer::new(env, &mut importer, db.analyzer_config());
+        let (exports, sem_pkg) = analyzer.analyze_ast(&file).map_err(|err| {
+            err.map(|(exports, sem_pkg)| (Arc::new(exports), Arc::new(sem_pkg)))
+                .map_err(Arc::new)
+        })?;
+
+        Ok((Arc::new(exports), Arc::new(sem_pkg)))
+    }
+
+    fn semantic_package_cycle(
+        db: &dyn Flux,
+        path: String,
+    ) -> Result<Arc<PackageExports>, nodes::ErrorKind> {
+        db.semantic_package(path.clone())
+            .ok()
+            .map(|(exports, _)| exports)
+            .ok_or_else(|| nodes::ErrorKind::InvalidImportPath(path.clone()))
+    }
+
+    fn recover_cycle2<T>(
+        db: &dyn Flux,
+        cycle: &[String],
+        name: &str,
+    ) -> SalvageResult<T, Arc<FileErrors>> {
+        let mut cycle: Vec<_> = cycle
+            .iter()
+            .filter(|k| k.starts_with("semantic_package_cycle("))
+            .map(|k| {
+                k.trim_matches(|c: char| c != '"')
+                    .trim_matches('"')
+                    .trim_start_matches('@')
+                    .to_string()
+            })
+            .collect();
+        cycle.pop();
+
+        Err(Arc::new(FileErrors {
+            file: name.to_owned(),
+            source: None,
+            diagnostics: From::from(located(
+                Default::default(),
+                semantic::ErrorKind::Inference(nodes::ErrorKind::ImportCycle { cycle }),
+            )),
+            pretty_fmt: db
+                .analyzer_config()
+                .features
+                .contains(&semantic::Feature::PrettyError),
+        })
+        .into())
+    }
+    fn recover_cycle<T>(
+        _db: &dyn Flux,
+        cycle: &[String],
+        _name: &str,
+    ) -> Result<T, nodes::ErrorKind> {
+        // We get a list of strings like "semantic_package_inner(\"b\")",
+        let mut cycle: Vec<_> = cycle
+            .iter()
+            .filter(|k| k.starts_with("semantic_package_inner("))
+            .map(|k| {
+                k.trim_matches(|c: char| c != '"')
+                    .trim_matches('"')
+                    .to_string()
+            })
+            .collect();
+        cycle.pop();
+
+        Err(nodes::ErrorKind::ImportCycle { cycle })
+    }
+
+    impl Importer for Database {
+        fn import(&mut self, path: &str) -> Result<PolyType, nodes::ErrorKind> {
+            self.semantic_package_cycle(path.into())
+                .map(|exports| exports.typ())
+        }
+        fn symbol(&mut self, path: &str, symbol_name: &str) -> Option<Symbol> {
+            self.semantic_package_cycle(path.into())
+                .ok()
+                .and_then(|exports| exports.lookup_symbol(symbol_name).cloned())
+        }
+    }
+
+    impl Importer for &dyn Flux {
+        fn import(&mut self, path: &str) -> Result<PolyType, nodes::ErrorKind> {
+            self.semantic_package_cycle(path.into())
+                .map(|exports| exports.typ())
+        }
+        fn symbol(&mut self, path: &str, symbol_name: &str) -> Option<Symbol> {
+            self.semantic_package_cycle(path.into())
+                .ok()
+                .and_then(|exports| exports.lookup_symbol(symbol_name).cloned())
+        }
+    }
+}
+pub use self::db::{Database, Flux, FluxBase};
+
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{
-        ast,
-        parser::{self, parse_string},
-        semantic::convert::convert_polytype,
-    };
+    use crate::{ast, parser, semantic::convert::convert_polytype};
 
     #[test]
     fn infer_program() -> Result<()> {
@@ -426,13 +590,14 @@ mod tests {
 
             z = b.y
         "#;
-        let ast_packages: ASTPackageMap = semantic_map! {
-            String::from("a") => parse_string("a.flux".to_string(), a).into(),
-            String::from("b") => parse_string("b.flux".to_string(), b).into(),
-            String::from("c") => parse_string("c.flux".to_string(), c).into(),
-        };
-        let mut infer_state = InferState::default();
-        let (types, _) = infer_state.infer_pkg("c", &ast_packages, &PackageExports::new())?;
+
+        let mut db = Database::default();
+        db.set_use_prelude(false);
+
+        for (k, v) in [("a/a.flux", a), ("b/b.flux", b), ("c/c.flux", c)] {
+            db.set_source(k.into(), v.into());
+        }
+        let (types, _) = db.semantic_package("c".into())?;
 
         let want = PackageExports::try_from(vec![(types.lookup_symbol("z").unwrap().clone(), {
             let mut p = parser::Parser::new("int");
@@ -443,7 +608,7 @@ mod tests {
             convert_polytype(&typ_expr, &Default::default())?
         })])
         .unwrap();
-        if want != types {
+        if want != *types {
             bail!(
                 "unexpected inference result:\n\nwant: {:?}\n\ngot: {:?}",
                 want,
@@ -451,41 +616,25 @@ mod tests {
             );
         }
 
-        let want = semantic_map! {
-            String::from("a") => {
-                let mut p = parser::Parser::new("{f: (x: A) => A}");
-                let typ_expr = p.parse_type_expression();
-                if let Err(err) = ast::check::check(ast::walk::Node::TypeExpression(&typ_expr)) {
-                    panic!(
-                        "TypeExpression parsing failed for int. {:?}", err
-                    );
-                }
-                convert_polytype(&typ_expr, &Default::default())?
-            },
-            String::from("b") => {
-                let mut p = parser::Parser::new("{x: int , y: int}");
-                let typ_expr = p.parse_type_expression();
-                if let Err(err) = ast::check::check(ast::walk::Node::TypeExpression(&typ_expr)) {
-                    panic!(
-                        "TypeExpression parsing failed for int. {:?}", err
-                    );
-                }
-                convert_polytype(&typ_expr, &Default::default())?
-            },
+        let a = {
+            let mut p = parser::Parser::new("{f: (x: A) => A}");
+            let typ_expr = p.parse_type_expression();
+            if let Err(err) = ast::check::check(ast::walk::Node::TypeExpression(&typ_expr)) {
+                panic!("TypeExpression parsing failed for int. {:?}", err);
+            }
+            convert_polytype(&typ_expr, &Default::default())?
         };
-        if want
-            != infer_state
-                .imports
-                .into_iter()
-                .map(|(k, v)| (k, v.typ()))
-                .collect::<SemanticMap<_, _>>()
-        {
-            bail!(
-                "unexpected type importer:\n\nwant: {:?}\n\ngot: {:?}",
-                want,
-                types,
-            );
-        }
+        assert_eq!(db.import("a"), Ok(a));
+
+        let b = {
+            let mut p = parser::Parser::new("{x: int , y: int}");
+            let typ_expr = p.parse_type_expression();
+            if let Err(err) = ast::check::check(ast::walk::Node::TypeExpression(&typ_expr)) {
+                panic!("TypeExpression parsing failed for int. {:?}", err);
+            }
+            convert_polytype(&typ_expr, &Default::default())?
+        };
+        assert_eq!(db.import("b"), Ok(b));
 
         Ok(())
     }
@@ -498,22 +647,28 @@ mod tests {
         let b = r#"
             import "a"
         "#;
-        let ast_packages: ASTPackageMap = semantic_map! {
-            String::from("a") => parse_string("a.flux".to_string(), a).into(),
-            String::from("b") => parse_string("b.flux".to_string(), b).into(),
-        };
-        let got_err = dependencies(
-            "b",
-            &ast_packages,
-            Vec::new(),
-            HashSet::new(),
-            HashSet::new(),
-        )
-        .expect_err("expected cyclic dependency error");
+
+        let mut db = Database::default();
+
+        db.set_use_prelude(false);
+
+        for (k, v) in [("a/a.flux", a), ("b/b.flux", b)] {
+            db.set_source(k.into(), v.into());
+        }
+
+        let got_err = db
+            .semantic_package("b".into())
+            .expect_err("expected cyclic dependency error");
 
         assert_eq!(
             r#"package "b" depends on itself"#.to_string(),
             got_err.to_string(),
         );
+    }
+
+    #[test]
+    fn bootstrap() {
+        infer_stdlib_dir("../../stdlib", AnalyzerConfig::default())
+            .unwrap_or_else(|err| panic!("{}", err));
     }
 }

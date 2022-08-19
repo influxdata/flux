@@ -43,27 +43,39 @@ pub type Result<T = ()> = std::result::Result<T, Error>;
 /// module.
 pub type Error = Located<ErrorKind>;
 
-#[derive(Debug, Display, Eq, PartialEq)]
+#[derive(Clone, Debug, Display, Eq, PartialEq)]
 #[allow(missing_docs)]
 pub enum ErrorKind {
     #[display(fmt = "{}", _0)]
     Inference(types::Error),
+
     #[display(fmt = "undefined builtin identifier {}", _0)]
     UndefinedBuiltin(String),
+
     #[display(fmt = "undefined identifier {}", _0)]
     UndefinedIdentifier(String),
+
     #[display(fmt = "invalid binary operator {}", _0)]
     InvalidBinOp(ast::Operator),
+
     #[display(fmt = "invalid unary operator {}", _0)]
     InvalidUnaryOp(ast::Operator),
+
     #[display(fmt = "invalid import path {}", _0)]
     InvalidImportPath(String),
+
+    #[display(fmt = "cycle {:?}", cycle)]
+    ImportCycle { cycle: Vec<String> },
+
     #[display(fmt = "return not valid in file block")]
     InvalidReturn,
+
     #[display(fmt = "can't vectorize function: {}", _0)]
     UnableToVectorize(String),
+
     #[display(fmt = "variable {} lacks the {} constraint", var, kind)]
     MissingConstraint { var: BoundTvar, kind: Kind },
+
     #[display(fmt = "{}. This is a bug in type inference", _0)]
     Bug(String),
 }
@@ -94,6 +106,7 @@ impl Substitutable for ErrorKind {
             | Self::InvalidBinOp(_)
             | Self::InvalidUnaryOp(_)
             | Self::InvalidImportPath(_)
+            | Self::ImportCycle { .. }
             | Self::UnableToVectorize(_)
             | Self::InvalidReturn
             | Self::Bug(_) => None,
@@ -531,8 +544,8 @@ impl File {
 
             infer.imports.insert(name.clone(), path.clone());
 
-            let poly = infer.importer.import(path).unwrap_or_else(|| {
-                infer.error(dec.loc.clone(), ErrorKind::InvalidImportPath(path.clone()));
+            let poly = infer.importer.import(path).unwrap_or_else(|err| {
+                infer.error(dec.loc.clone(), err);
                 PolyType::error()
             });
 

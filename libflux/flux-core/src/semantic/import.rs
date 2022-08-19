@@ -1,7 +1,7 @@
 //! Module import defines the abstractions for importing Flux package types from various sources.
 
 use crate::semantic::{
-    nodes::Symbol,
+    nodes::{ErrorKind, Symbol},
     types::{PolyType, SemanticMap},
     PackageExports,
 };
@@ -10,8 +10,8 @@ use crate::semantic::{
 pub trait Importer {
     /// Import resolves an absolute import path and returns the type for the corresponding Flux
     /// package or None if no such package exists.
-    fn import(&mut self, _path: &str) -> Option<PolyType> {
-        None
+    fn import(&mut self, path: &str) -> Result<PolyType, ErrorKind> {
+        Err(ErrorKind::InvalidImportPath(path.to_owned()))
     }
 
     /// Returns the `Symbol` for a specific exported item from a package
@@ -24,7 +24,7 @@ impl<T> Importer for &'_ mut T
 where
     T: ?Sized + Importer,
 {
-    fn import(&mut self, path: &str) -> Option<PolyType> {
+    fn import(&mut self, path: &str) -> Result<PolyType, ErrorKind> {
         T::import(self, path)
     }
     fn symbol(&mut self, package_path: &str, symbol_name: &str) -> Option<Symbol> {
@@ -36,8 +36,10 @@ where
 pub type Packages = SemanticMap<String, PackageExports>;
 
 impl Importer for Packages {
-    fn import(&mut self, path: &str) -> Option<PolyType> {
-        self.get(path).map(|exports| exports.typ())
+    fn import(&mut self, path: &str) -> Result<PolyType, ErrorKind> {
+        self.get(path)
+            .map(|exports| exports.typ())
+            .ok_or_else(|| ErrorKind::InvalidImportPath(path.to_owned()))
     }
     fn symbol(&mut self, package_path: &str, symbol_name: &str) -> Option<Symbol> {
         self.get(package_path)
@@ -47,8 +49,10 @@ impl Importer for Packages {
 }
 
 impl Importer for &'_ Packages {
-    fn import(&mut self, path: &str) -> Option<PolyType> {
-        self.get(path).map(|exports| exports.typ())
+    fn import(&mut self, path: &str) -> Result<PolyType, ErrorKind> {
+        self.get(path)
+            .map(|exports| exports.typ())
+            .ok_or_else(|| ErrorKind::InvalidImportPath(path.to_owned()))
     }
     fn symbol(&mut self, package_path: &str, symbol_name: &str) -> Option<Symbol> {
         self.get(package_path)

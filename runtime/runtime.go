@@ -2,6 +2,7 @@ package runtime
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/codes"
@@ -163,6 +164,10 @@ func (r *runtime) Stdlib() interpreter.Importer {
 
 func (r *runtime) compilePackages() error {
 	pkgs, err := libflux.SemanticPackages()
+	fmt.Printf("%+v\n", len(pkgs))
+	for k := range pkgs {
+		fmt.Printf("%+v\n", k)
+	}
 	if err != nil {
 		return err
 	}

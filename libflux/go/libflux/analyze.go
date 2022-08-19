@@ -7,6 +7,7 @@ import "C"
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"path"
 	"runtime"
 	"unsafe"
@@ -40,7 +41,9 @@ func SemanticPackages() (map[string]*semantic.Package, error) {
 			return nil, err
 		}
 
-		m[path.Dir(pkg.Files[0].File)] = &pkg
+		k := path.Dir(pkg.Files[0].File)
+		fmt.Printf("AAA %v\n", k)
+		m[k] = &pkg
 	}
 
 	return m, nil
