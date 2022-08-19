@@ -7,6 +7,6 @@ import (
 	"github.com/influxdata/flux/execute"
 )
 
-func NewMapTransformation2(ctx context.Context, id execute.DatasetID, spec *MapProcedureSpec, mem memory.Allocator) (execute.Transformation, execute.Dataset, error) {
-	return newMapTransformation2(ctx, id, spec, mem)
+func NewMapTransformation(ctx context.Context, id execute.DatasetID, spec *MapProcedureSpec, mem memory.Allocator) (execute.Transformation, execute.Dataset, error) {
+	return newMapTransformation(ctx, id, spec, mem)
 }

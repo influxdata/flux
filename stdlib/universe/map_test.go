@@ -166,6 +166,8 @@ func TestMap_Process(t *testing.T) {
 			}},
 		},
 		{
+			// Parameter mergeKey is now deprecated and has no effect.
+			// `map` is evaluated as if it was false.
 			name: `overwrite mergekey`,
 			spec: &universe.MapProcedureSpec{
 				MergeKey: true,
@@ -191,18 +193,17 @@ func TestMap_Process(t *testing.T) {
 				},
 			}},
 			want: []*executetest.Table{{
-				KeyCols: []string{"_start", "_stop"},
+				KeyCols: []string{"_stop"},
 				ColMeta: []flux.ColMeta{
-					{Label: "_start", Type: flux.TTime},
 					{Label: "_stop", Type: flux.TString},
 					{Label: "_value", Type: flux.TString},
 				},
 				Data: [][]interface{}{
-					{execute.Time(0), "a", "b"},
-					{execute.Time(0), "a", "b"},
-					{execute.Time(0), "a", "b"},
-					{execute.Time(0), "a", "b"},
-					{execute.Time(0), "a", "b"},
+					{"a", "b"},
+					{"a", "b"},
+					{"a", "b"},
+					{"a", "b"},
+					{"a", "b"},
 				},
 			}},
 		},
@@ -510,6 +511,8 @@ f
 			}},
 		},
 		{
+			// Parameter mergeKey is now deprecated and has no effect.
+			// `map` is evaluated as if it was false.
 			name: `_value+5 mergeKey=true regroup`,
 			spec: &universe.MapProcedureSpec{
 				MergeKey: true,
@@ -532,20 +535,21 @@ f
 				},
 			}},
 			want: []*executetest.Table{{
-				KeyCols: []string{"_measurement", "host"},
+				KeyCols: []string{"host"},
 				ColMeta: []flux.ColMeta{
-					{Label: "_measurement", Type: flux.TString},
 					{Label: "host", Type: flux.TString},
 					{Label: "_time", Type: flux.TTime},
 					{Label: "_value", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
-					{"m", "A.local", execute.Time(1), 6.0},
-					{"m", "A.local", execute.Time(2), 11.0},
+					{"A.local", execute.Time(1), 6.0},
+					{"A.local", execute.Time(2), 11.0},
 				},
 			}},
 		},
 		{
+			// Parameter mergeKey is now deprecated and has no effect.
+			// `map` is evaluated as if it was false.
 			name: `_value+5 mergeKey=true regroup fan out`,
 			spec: &universe.MapProcedureSpec{
 				MergeKey: true,
@@ -570,32 +574,32 @@ f
 			}},
 			want: []*executetest.Table{
 				{
-					KeyCols: []string{"_measurement", "host"},
+					KeyCols: []string{"host"},
 					ColMeta: []flux.ColMeta{
-						{Label: "_measurement", Type: flux.TString},
 						{Label: "host", Type: flux.TString},
 						{Label: "_time", Type: flux.TTime},
 						{Label: "_value", Type: flux.TFloat},
 					},
 					Data: [][]interface{}{
-						{"m", "A.example.com", execute.Time(1), 6.0},
+						{"A.example.com", execute.Time(1), 6.0},
 					},
 				},
 				{
-					KeyCols: []string{"_measurement", "host"},
+					KeyCols: []string{"host"},
 					ColMeta: []flux.ColMeta{
-						{Label: "_measurement", Type: flux.TString},
 						{Label: "host", Type: flux.TString},
 						{Label: "_time", Type: flux.TTime},
 						{Label: "_value", Type: flux.TFloat},
 					},
 					Data: [][]interface{}{
-						{"m", "A.www.example.com", execute.Time(2), 11.0},
+						{"A.www.example.com", execute.Time(2), 11.0},
 					},
 				},
 			},
 		},
 		{
+			// Parameter mergeKey is now deprecated and has no effect.
+			// `map` is evaluated as if it was false.
 			name: `_value+5 mergeKey=true with nulls`,
 			spec: &universe.MapProcedureSpec{
 				MergeKey: true,
@@ -618,16 +622,13 @@ f
 				},
 			}},
 			want: []*executetest.Table{{
-				KeyCols: []string{"_measurement", "host"},
 				ColMeta: []flux.ColMeta{
-					{Label: "_measurement", Type: flux.TString},
-					{Label: "host", Type: flux.TString},
 					{Label: "_time", Type: flux.TTime},
 					{Label: "_value", Type: flux.TFloat},
 				},
 				Data: [][]interface{}{
-					{"m", nil, execute.Time(1), 6.0},
-					{"m", nil, execute.Time(2), 11.0},
+					{execute.Time(1), 6.0},
+					{execute.Time(2), 11.0},
 				},
 			}},
 		},
@@ -966,7 +967,7 @@ f
 					},
 				},
 			},
-			wantErr: errors.New(`map regroups data such that column "_value" would include values of two different data types: int, float`),
+			wantErr: errors.New(`schema collision detected: column "_value" is both of type float and int`),
 		},
 		{
 			name: `mismatched types with zero value`,
@@ -998,25 +999,25 @@ f
 					},
 				},
 			},
-			wantErr: errors.New(`map regroups data such that column "_value" would include values of two different data types: string, float`),
+			wantErr: errors.New(`schema collision detected: column "_value" is both of type float and string`),
 		},
 	}
 	for _, tc := range testCases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			executetest.ProcessTestHelper(
+			executetest.ProcessTestHelper2(
 				t,
 				tc.data,
 				tc.want,
 				tc.wantErr,
-				func(d execute.Dataset, c execute.TableBuilderCache) execute.Transformation {
+				func(id execute.DatasetID, alloc memory.Allocator) (execute.Transformation, execute.Dataset) {
 					ctx, deps := dependency.Inject(context.Background(), dependenciestest.Default())
 					defer deps.Finish()
-					f, err := universe.NewMapTransformation(ctx, tc.spec, d, c)
+					xform, dataset, err := universe.NewMapTransformation(ctx, id, tc.spec, alloc)
 					if err != nil {
 						t.Fatal(err)
 					}
-					return f
+					return xform, dataset
 				},
 			)
 		})
@@ -1044,7 +1045,7 @@ func BenchmarkMap_Process(b *testing.B) {
 				},
 			}
 
-			tr, d, err := universe.NewMapTransformation2(context.Background(), id, spec, alloc)
+			tr, d, err := universe.NewMapTransformation(context.Background(), id, spec, alloc)
 			if err != nil {
 				b.Fatal(err)
 			}
