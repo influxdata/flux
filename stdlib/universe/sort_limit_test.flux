@@ -138,3 +138,37 @@ testcase sort_limit_zero_row_table {
 
     testing.diff(got, want)
 }
+
+testcase sort_limit_multi_successor {
+    input =
+        array.from(
+            rows: [
+                {_time: 2022-01-11T00:00:00Z, _value: 10.0},
+                {_time: 2022-01-11T01:00:00Z, _value: 12.0},
+                {_time: 2022-01-11T02:00:00Z, _value: 18.0},
+                {_time: 2022-01-11T03:00:00Z, _value: 4.0},
+                {_time: 2022-01-11T04:00:00Z, _value: 8.0},
+            ],
+        )
+    in0 =
+        input
+            |> bottom(n: 2)
+    in1 =
+        input
+            |> top(n: 2)
+    got =
+        union(tables: [in0, in1])
+            |> sort(columns: ["_time"])
+
+    want =
+        array.from(
+            rows: [
+                {_time: 2022-01-11T01:00:00Z, _value: 12.0},
+                {_time: 2022-01-11T02:00:00Z, _value: 18.0},
+                {_time: 2022-01-11T03:00:00Z, _value: 4.0},
+                {_time: 2022-01-11T04:00:00Z, _value: 8.0},
+            ],
+        )
+
+    testing.diff(got: got, want: want)
+}

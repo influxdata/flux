@@ -265,8 +265,8 @@ func mergePlanNodes(top, bottom, merged Node) (Node, error) {
 	}
 
 	merged.AddPredecessors(bottom.Predecessors()...)
-	for i, pred := range merged.Predecessors() {
-		for _, succ := range pred.Successors() {
+	for _, pred := range merged.Predecessors() {
+		for i, succ := range pred.Successors() {
 			if succ == bottom {
 				pred.Successors()[i] = merged
 			}
