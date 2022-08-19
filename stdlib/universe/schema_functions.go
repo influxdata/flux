@@ -342,7 +342,7 @@ func (s *RenameOpSpec) Mutator() (SchemaMutator, error) {
 }
 
 func (s *DropOpSpec) Mutator() (SchemaMutator, error) {
-	m, err := NewDropKeepMutator(s)
+	m, err := NewDropMutator(s)
 	if err != nil {
 		return nil, err
 	}
@@ -350,7 +350,7 @@ func (s *DropOpSpec) Mutator() (SchemaMutator, error) {
 }
 
 func (s *KeepOpSpec) Mutator() (SchemaMutator, error) {
-	m, err := NewDropKeepMutator(s)
+	m, err := NewKeepMutator(s)
 	if err != nil {
 		return nil, err
 	}
