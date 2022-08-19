@@ -11,6 +11,7 @@ import (
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
 	"github.com/influxdata/flux/internal/gen"
+	"github.com/influxdata/flux/internal/operation"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/lang"
 	"github.com/influxdata/flux/memory"
@@ -30,8 +31,8 @@ func TestFilter_NewQuery(t *testing.T) {
 		{
 			Name: "from with database filter and range",
 			Raw:  `from(bucket:"mybucket") |> filter(fn: (r) => r["t1"]=="val1" and r["t2"]=="val2") |> range(start:-4h, stop:-2h) |> count()`,
-			Want: &flux.Spec{
-				Operations: []*flux.Operation{
+			Want: &operation.Spec{
+				Operations: []*operation.Node{
 					{
 						ID: "from0",
 						Spec: &influxdb.FromOpSpec{
@@ -70,7 +71,7 @@ func TestFilter_NewQuery(t *testing.T) {
 						},
 					},
 				},
-				Edges: []flux.Edge{
+				Edges: []operation.Edge{
 					{Parent: "from0", Child: "filter1"},
 					{Parent: "filter1", Child: "range2"},
 					{Parent: "range2", Child: "count3"},
@@ -91,8 +92,8 @@ func TestFilter_NewQuery(t *testing.T) {
 							)
 						|> range(start:-4h, stop:-2h)
 						|> count()`,
-			Want: &flux.Spec{
-				Operations: []*flux.Operation{
+			Want: &operation.Spec{
+				Operations: []*operation.Node{
 					{
 						ID: "from0",
 						Spec: &influxdb.FromOpSpec{
@@ -131,7 +132,7 @@ func TestFilter_NewQuery(t *testing.T) {
 						},
 					},
 				},
-				Edges: []flux.Edge{
+				Edges: []operation.Edge{
 					{Parent: "from0", Child: "filter1"},
 					{Parent: "filter1", Child: "range2"},
 					{Parent: "range2", Child: "count3"},
@@ -148,8 +149,8 @@ func TestFilter_NewQuery(t *testing.T) {
 						)
 						|> range(start:-4h, stop:-2h)
 						|> count()`,
-			Want: &flux.Spec{
-				Operations: []*flux.Operation{
+			Want: &operation.Spec{
+				Operations: []*operation.Node{
 					{
 						ID: "from0",
 						Spec: &influxdb.FromOpSpec{
@@ -188,7 +189,7 @@ func TestFilter_NewQuery(t *testing.T) {
 						},
 					},
 				},
-				Edges: []flux.Edge{
+				Edges: []operation.Edge{
 					{Parent: "from0", Child: "filter1"},
 					{Parent: "filter1", Child: "range2"},
 					{Parent: "range2", Child: "count3"},
@@ -205,8 +206,8 @@ func TestFilter_NewQuery(t *testing.T) {
 						)
 						|> range(start:-4h, stop:-2h)
 						|> count()`,
-			Want: &flux.Spec{
-				Operations: []*flux.Operation{
+			Want: &operation.Spec{
+				Operations: []*operation.Node{
 					{
 						ID: "from0",
 						Spec: &influxdb.FromOpSpec{
@@ -245,7 +246,7 @@ func TestFilter_NewQuery(t *testing.T) {
 						},
 					},
 				},
-				Edges: []flux.Edge{
+				Edges: []operation.Edge{
 					{Parent: "from0", Child: "filter1"},
 					{Parent: "filter1", Child: "range2"},
 					{Parent: "range2", Child: "count3"},
@@ -262,8 +263,8 @@ func TestFilter_NewQuery(t *testing.T) {
 						)
 						|> range(start:-4h, stop:-2h)
 						|> count()`,
-			Want: &flux.Spec{
-				Operations: []*flux.Operation{
+			Want: &operation.Spec{
+				Operations: []*operation.Node{
 					{
 						ID: "from0",
 						Spec: &influxdb.FromOpSpec{
@@ -302,7 +303,7 @@ func TestFilter_NewQuery(t *testing.T) {
 						},
 					},
 				},
-				Edges: []flux.Edge{
+				Edges: []operation.Edge{
 					{Parent: "from0", Child: "filter1"},
 					{Parent: "filter1", Child: "range2"},
 					{Parent: "range2", Child: "count3"},
@@ -315,8 +316,8 @@ func TestFilter_NewQuery(t *testing.T) {
 						|> filter(fn: (r) =>
 							r["t1"]=~/^va\/l1/
 						)`,
-			Want: &flux.Spec{
-				Operations: []*flux.Operation{
+			Want: &operation.Spec{
+				Operations: []*operation.Node{
 					{
 						ID: "from0",
 						Spec: &influxdb.FromOpSpec{
@@ -333,7 +334,7 @@ func TestFilter_NewQuery(t *testing.T) {
 						},
 					},
 				},
-				Edges: []flux.Edge{
+				Edges: []operation.Edge{
 					{Parent: "from0", Child: "filter1"},
 				},
 			},
@@ -346,8 +347,8 @@ func TestFilter_NewQuery(t *testing.T) {
 							and
 							r["t2"] !~ /^val2/
 						)`,
-			Want: &flux.Spec{
-				Operations: []*flux.Operation{
+			Want: &operation.Spec{
+				Operations: []*operation.Node{
 					{
 						ID: "from0",
 						Spec: &influxdb.FromOpSpec{
@@ -364,7 +365,7 @@ func TestFilter_NewQuery(t *testing.T) {
 						},
 					},
 				},
-				Edges: []flux.Edge{
+				Edges: []operation.Edge{
 					{Parent: "from0", Child: "filter1"},
 				},
 			},
@@ -372,8 +373,8 @@ func TestFilter_NewQuery(t *testing.T) {
 		{
 			Name: "from with drop",
 			Raw:  `from(bucket:"mybucket") |> filter(fn: (r) => r._value > 0.0, onEmpty: "drop")`,
-			Want: &flux.Spec{
-				Operations: []*flux.Operation{
+			Want: &operation.Spec{
+				Operations: []*operation.Node{
 					{
 						ID: "from0",
 						Spec: &influxdb.FromOpSpec{
@@ -391,7 +392,7 @@ func TestFilter_NewQuery(t *testing.T) {
 						},
 					},
 				},
-				Edges: []flux.Edge{
+				Edges: []operation.Edge{
 					{Parent: "from0", Child: "filter1"},
 				},
 			},
@@ -399,8 +400,8 @@ func TestFilter_NewQuery(t *testing.T) {
 		{
 			Name: "from with keep",
 			Raw:  `from(bucket:"mybucket") |> filter(fn: (r) => r._value > 0.0, onEmpty: "keep")`,
-			Want: &flux.Spec{
-				Operations: []*flux.Operation{
+			Want: &operation.Spec{
+				Operations: []*operation.Node{
 					{
 						ID: "from0",
 						Spec: &influxdb.FromOpSpec{
@@ -418,7 +419,7 @@ func TestFilter_NewQuery(t *testing.T) {
 						},
 					},
 				},
-				Edges: []flux.Edge{
+				Edges: []operation.Edge{
 					{Parent: "from0", Child: "filter1"},
 				},
 			},

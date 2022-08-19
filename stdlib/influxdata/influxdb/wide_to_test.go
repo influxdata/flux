@@ -19,6 +19,7 @@ import (
 	"github.com/influxdata/flux/execute/executetest"
 	"github.com/influxdata/flux/execute/table/static"
 	_ "github.com/influxdata/flux/fluxinit/static"
+	"github.com/influxdata/flux/internal/operation"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/querytest"
@@ -36,8 +37,8 @@ from(bucket:"mydb")
   |> range(start: -1h)
   |> v1.fieldsAsCols()
   |> wideTo(bucket:"series1", org:"fred", host:"localhost", token:"auth-token")`,
-			Want: &flux.Spec{
-				Operations: []*flux.Operation{
+			Want: &operation.Spec{
+				Operations: []*operation.Node{
 					{
 						ID: "from0",
 						Spec: &influxdb.FromOpSpec{
@@ -71,7 +72,7 @@ from(bucket:"mydb")
 						},
 					},
 				},
-				Edges: []flux.Edge{
+				Edges: []operation.Edge{
 					{Parent: "from0", Child: "range1"},
 					{Parent: "range1", Child: "pivot2"},
 					{Parent: "pivot2", Child: "wide-to3"},

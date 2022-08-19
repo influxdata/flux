@@ -9,6 +9,7 @@ import (
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
 	"github.com/influxdata/flux/internal/gen"
+	"github.com/influxdata/flux/internal/operation"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/plan"
@@ -23,8 +24,8 @@ func TestSchemaMutions_NewQueries(t *testing.T) {
 		{
 			Name: "test rename query",
 			Raw:  `from(bucket:"mybucket") |> rename(columns:{old:"new"}) |> sum()`,
-			Want: &flux.Spec{
-				Operations: []*flux.Operation{
+			Want: &operation.Spec{
+				Operations: []*operation.Node{
 					{
 						ID: "from0",
 						Spec: &influxdb.FromOpSpec{
@@ -46,7 +47,7 @@ func TestSchemaMutions_NewQueries(t *testing.T) {
 						},
 					},
 				},
-				Edges: []flux.Edge{
+				Edges: []operation.Edge{
 					{Parent: "from0", Child: "rename1"},
 					{Parent: "rename1", Child: "sum2"},
 				},
@@ -55,8 +56,8 @@ func TestSchemaMutions_NewQueries(t *testing.T) {
 		{
 			Name: "test drop query",
 			Raw:  `from(bucket:"mybucket") |> drop(columns:["col1", "col2", "col3"]) |> sum()`,
-			Want: &flux.Spec{
-				Operations: []*flux.Operation{
+			Want: &operation.Spec{
+				Operations: []*operation.Node{
 					{
 						ID: "from0",
 						Spec: &influxdb.FromOpSpec{
@@ -76,7 +77,7 @@ func TestSchemaMutions_NewQueries(t *testing.T) {
 						},
 					},
 				},
-				Edges: []flux.Edge{
+				Edges: []operation.Edge{
 					{Parent: "from0", Child: "drop1"},
 					{Parent: "drop1", Child: "sum2"},
 				},
@@ -85,8 +86,8 @@ func TestSchemaMutions_NewQueries(t *testing.T) {
 		{
 			Name: "test keep query",
 			Raw:  `from(bucket:"mybucket") |> keep(columns:["col1", "col2", "col3"]) |> sum()`,
-			Want: &flux.Spec{
-				Operations: []*flux.Operation{
+			Want: &operation.Spec{
+				Operations: []*operation.Node{
 					{
 						ID: "from0",
 						Spec: &influxdb.FromOpSpec{
@@ -106,7 +107,7 @@ func TestSchemaMutions_NewQueries(t *testing.T) {
 						},
 					},
 				},
-				Edges: []flux.Edge{
+				Edges: []operation.Edge{
 					{Parent: "from0", Child: "keep1"},
 					{Parent: "keep1", Child: "sum2"},
 				},
@@ -115,8 +116,8 @@ func TestSchemaMutions_NewQueries(t *testing.T) {
 		{
 			Name: "test duplicate query",
 			Raw:  `from(bucket:"mybucket") |> duplicate(column: "col1", as: "col1_new") |> sum()`,
-			Want: &flux.Spec{
-				Operations: []*flux.Operation{
+			Want: &operation.Spec{
+				Operations: []*operation.Node{
 					{
 						ID: "from0",
 						Spec: &influxdb.FromOpSpec{
@@ -137,7 +138,7 @@ func TestSchemaMutions_NewQueries(t *testing.T) {
 						},
 					},
 				},
-				Edges: []flux.Edge{
+				Edges: []operation.Edge{
 					{Parent: "from0", Child: "duplicate1"},
 					{Parent: "duplicate1", Child: "sum2"},
 				},
@@ -146,8 +147,8 @@ func TestSchemaMutions_NewQueries(t *testing.T) {
 		{
 			Name: "test drop query fn param",
 			Raw:  `from(bucket:"mybucket") |> drop(fn: (column) => column =~ /reg*/) |> sum()`,
-			Want: &flux.Spec{
-				Operations: []*flux.Operation{
+			Want: &operation.Spec{
+				Operations: []*operation.Node{
 					{
 						ID: "from0",
 						Spec: &influxdb.FromOpSpec{
@@ -170,7 +171,7 @@ func TestSchemaMutions_NewQueries(t *testing.T) {
 						},
 					},
 				},
-				Edges: []flux.Edge{
+				Edges: []operation.Edge{
 					{Parent: "from0", Child: "drop1"},
 					{Parent: "drop1", Child: "sum2"},
 				},
@@ -179,8 +180,8 @@ func TestSchemaMutions_NewQueries(t *testing.T) {
 		{
 			Name: "test keep query fn param",
 			Raw:  `from(bucket:"mybucket") |> keep(fn: (column) => column =~ /reg*/) |> sum()`,
-			Want: &flux.Spec{
-				Operations: []*flux.Operation{
+			Want: &operation.Spec{
+				Operations: []*operation.Node{
 					{
 						ID: "from0",
 						Spec: &influxdb.FromOpSpec{
@@ -203,7 +204,7 @@ func TestSchemaMutions_NewQueries(t *testing.T) {
 						},
 					},
 				},
-				Edges: []flux.Edge{
+				Edges: []operation.Edge{
 					{Parent: "from0", Child: "keep1"},
 					{Parent: "keep1", Child: "sum2"},
 				},
@@ -212,8 +213,8 @@ func TestSchemaMutions_NewQueries(t *testing.T) {
 		{
 			Name: "test rename query fn param",
 			Raw:  `from(bucket:"mybucket") |> rename(fn: (column) => "new_name") |> sum()`,
-			Want: &flux.Spec{
-				Operations: []*flux.Operation{
+			Want: &operation.Spec{
+				Operations: []*operation.Node{
 					{
 						ID: "from0",
 						Spec: &influxdb.FromOpSpec{
@@ -236,7 +237,7 @@ func TestSchemaMutions_NewQueries(t *testing.T) {
 						},
 					},
 				},
-				Edges: []flux.Edge{
+				Edges: []operation.Edge{
 					{Parent: "from0", Child: "rename1"},
 					{Parent: "rename1", Child: "sum2"},
 				},

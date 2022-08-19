@@ -6,11 +6,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/dependencies/dependenciestest"
 	"github.com/influxdata/flux/dependency"
 	"github.com/influxdata/flux/execute"
 	_ "github.com/influxdata/flux/fluxinit/static"
+	"github.com/influxdata/flux/internal/operation"
 	"github.com/influxdata/flux/internal/spec"
 	"github.com/influxdata/flux/runtime"
 )
@@ -65,7 +65,7 @@ func TestFromEvaluation(t *testing.T) {
 	tests := []struct {
 		name    string
 		args    args
-		want    *flux.Spec
+		want    *operation.Spec
 		wantErr bool
 	}{
 		{
@@ -79,12 +79,12 @@ func TestFromEvaluation(t *testing.T) {
 				now:        nowDefault,
 				skipYields: false,
 			},
-			want: &flux.Spec{
-				Operations: []*flux.Operation{
+			want: &operation.Spec{
+				Operations: []*operation.Node{
 					{ID: "array.from0"},
 					{ID: "yield1"},
 				},
-				Edges: []flux.Edge{
+				Edges: []operation.Edge{
 					{Parent: "array.from0", Child: "yield1"},
 				},
 			},
@@ -100,8 +100,8 @@ func TestFromEvaluation(t *testing.T) {
 				now:        nowDefault,
 				skipYields: true,
 			},
-			want: &flux.Spec{
-				Operations: []*flux.Operation{
+			want: &operation.Spec{
+				Operations: []*operation.Node{
 					{ID: "array.from0"},
 				},
 				// No edges since there's only a single node left
@@ -120,14 +120,14 @@ func TestFromEvaluation(t *testing.T) {
 				now:        nowDefault,
 				skipYields: false,
 			},
-			want: &flux.Spec{
-				Operations: []*flux.Operation{
+			want: &operation.Spec{
+				Operations: []*operation.Node{
 					{ID: "array.from0"},
 					{ID: "yield1"},
 					{ID: "yield2"},
 					{ID: "yield3"},
 				},
-				Edges: []flux.Edge{
+				Edges: []operation.Edge{
 					{Parent: "array.from0", Child: "yield1"},
 					{Parent: "yield1", Child: "yield2"},
 					{Parent: "yield2", Child: "yield3"},
@@ -146,8 +146,8 @@ func TestFromEvaluation(t *testing.T) {
 				now:        nowDefault,
 				skipYields: true,
 			},
-			want: &flux.Spec{
-				Operations: []*flux.Operation{
+			want: &operation.Spec{
+				Operations: []*operation.Node{
 					{ID: "array.from0"},
 				},
 				// No edges since there's only a single node left
@@ -165,13 +165,13 @@ func TestFromEvaluation(t *testing.T) {
 				now:        nowDefault,
 				skipYields: false,
 			},
-			want: &flux.Spec{
-				Operations: []*flux.Operation{
+			want: &operation.Spec{
+				Operations: []*operation.Node{
 					{ID: "array.from0"},
 					{ID: "yield1"},
 					{ID: "map2"},
 				},
-				Edges: []flux.Edge{
+				Edges: []operation.Edge{
 					{Parent: "array.from0", Child: "yield1"},
 					{Parent: "yield1", Child: "map2"},
 				},
@@ -189,12 +189,12 @@ func TestFromEvaluation(t *testing.T) {
 				now:        nowDefault,
 				skipYields: true,
 			},
-			want: &flux.Spec{
-				Operations: []*flux.Operation{
+			want: &operation.Spec{
+				Operations: []*operation.Node{
 					{ID: "array.from0"},
 					{ID: "map2"},
 				},
-				Edges: []flux.Edge{
+				Edges: []operation.Edge{
 					{Parent: "array.from0", Child: "map2"},
 				},
 			},
@@ -216,12 +216,12 @@ func TestFromEvaluation(t *testing.T) {
 				now:        nowDefault,
 				skipYields: true,
 			},
-			want: &flux.Spec{
-				Operations: []*flux.Operation{
+			want: &operation.Spec{
+				Operations: []*operation.Node{
 					{ID: "array.from0"},
 					{ID: "map7"},
 				},
-				Edges: []flux.Edge{
+				Edges: []operation.Edge{
 					{Parent: "array.from0", Child: "map7"},
 				},
 			},
@@ -242,8 +242,8 @@ func TestFromEvaluation(t *testing.T) {
 				now:        nowDefault,
 				skipYields: false,
 			},
-			want: &flux.Spec{
-				Operations: []*flux.Operation{
+			want: &operation.Spec{
+				Operations: []*operation.Node{
 					{ID: "array.from0"},
 					{ID: "yield1"},
 					{ID: "yield2"},
@@ -252,7 +252,7 @@ func TestFromEvaluation(t *testing.T) {
 					{ID: "yield5"},
 					{ID: "map6"},
 				},
-				Edges: []flux.Edge{
+				Edges: []operation.Edge{
 					{Parent: "array.from0", Child: "yield1"},
 					{Parent: "yield1", Child: "yield2"},
 					{Parent: "yield2", Child: "map3"},
@@ -278,14 +278,14 @@ func TestFromEvaluation(t *testing.T) {
 				now:        nowDefault,
 				skipYields: true,
 			},
-			want: &flux.Spec{
-				Operations: []*flux.Operation{
+			want: &operation.Spec{
+				Operations: []*operation.Node{
 					{ID: "array.from0"},
 					{ID: "map3"},
 					{ID: "map4"},
 					{ID: "map6"},
 				},
-				Edges: []flux.Edge{
+				Edges: []operation.Edge{
 					{Parent: "array.from0", Child: "map3"},
 					{Parent: "map3", Child: "map4"},
 					{Parent: "map4", Child: "map6"},
@@ -305,13 +305,13 @@ func TestFromEvaluation(t *testing.T) {
 				now:        nowDefault,
 				skipYields: false,
 			},
-			want: &flux.Spec{
-				Operations: []*flux.Operation{
+			want: &operation.Spec{
+				Operations: []*operation.Node{
 					{ID: "array.from0"},
 					{ID: "toSQL1"},
 					{ID: "toSQL2"},
 				},
-				Edges: []flux.Edge{
+				Edges: []operation.Edge{
 					{Parent: "array.from0", Child: "toSQL1"},
 					{Parent: "toSQL1", Child: "toSQL2"},
 				},
@@ -362,14 +362,14 @@ func TestFromEvaluation(t *testing.T) {
 				now:        nowDefault,
 				skipYields: false,
 			},
-			want: &flux.Spec{
-				Operations: []*flux.Operation{
+			want: &operation.Spec{
+				Operations: []*operation.Node{
 					{ID: "array.from0"},
 					{ID: "toSQL1"},
 					{ID: "toSQL2"},
 					{ID: "yield3"},
 				},
-				Edges: []flux.Edge{
+				Edges: []operation.Edge{
 					{Parent: "array.from0", Child: "toSQL1"},
 					{Parent: "toSQL1", Child: "toSQL2"},
 					{Parent: "toSQL2", Child: "yield3"},
@@ -394,11 +394,11 @@ func TestFromEvaluation(t *testing.T) {
 				return
 			}
 
-			gotOpIDs := make([]flux.OperationID, len(got.Operations))
+			gotOpIDs := make([]operation.NodeID, len(got.Operations))
 			for _, o := range got.Operations {
 				gotOpIDs = append(gotOpIDs, o.ID)
 			}
-			wantOpIDs := make([]flux.OperationID, len(tt.want.Operations))
+			wantOpIDs := make([]operation.NodeID, len(tt.want.Operations))
 			for _, o := range tt.want.Operations {
 				wantOpIDs = append(wantOpIDs, o.ID)
 			}

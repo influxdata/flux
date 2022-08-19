@@ -12,6 +12,7 @@ import (
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/internal/jaeger"
+	"github.com/influxdata/flux/internal/operation"
 	"github.com/influxdata/flux/internal/spec"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/memory"
@@ -130,7 +131,7 @@ func CompileTableObject(ctx context.Context, to *flux.TableObject, now time.Time
 	}, nil
 }
 
-func buildPlan(ctx context.Context, spec *flux.Spec, opts *compileOptions) (*plan.Spec, error) {
+func buildPlan(ctx context.Context, spec *operation.Spec, opts *compileOptions) (*plan.Spec, error) {
 	s, _ := opentracing.StartSpanFromContext(ctx, "plan")
 	defer s.Finish()
 	pb := plan.PlannerBuilder{}
@@ -425,7 +426,7 @@ func (eoc *ExecOptsConfig) ConfigureNow(ctx context.Context, now time.Time) {
 	*deps.Now = now
 }
 
-func (p *AstProgram) getSpec(ctx context.Context, alloc memory.Allocator) (*flux.Spec, values.Scope, error) {
+func (p *AstProgram) getSpec(ctx context.Context, alloc memory.Allocator) (*operation.Spec, values.Scope, error) {
 	ast, astErr := p.GetAst()
 	if astErr != nil {
 		return nil, nil, astErr

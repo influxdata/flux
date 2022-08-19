@@ -12,6 +12,7 @@ import (
 	"github.com/influxdata/flux/execute/executetest"
 	_ "github.com/influxdata/flux/fluxinit/static" // We need to init flux for the tests to work.
 	"github.com/influxdata/flux/internal/errors"
+	"github.com/influxdata/flux/internal/operation"
 	"github.com/influxdata/flux/mock"
 	"github.com/influxdata/flux/querytest"
 	"github.com/influxdata/flux/stdlib/csv"
@@ -207,8 +208,8 @@ func TestFromCSV_NewQuery(t *testing.T) {
 		{
 			Name: "fromCSV text",
 			Raw:  `import "csv" csv.from(csv: "1,2") |> range(start:-4h, stop:-2h) |> sum()`,
-			Want: &flux.Spec{
-				Operations: []*flux.Operation{
+			Want: &operation.Spec{
+				Operations: []*operation.Node{
 					{
 						ID: "fromCSV0",
 						Spec: &csv.FromCSVOpSpec{
@@ -239,7 +240,7 @@ func TestFromCSV_NewQuery(t *testing.T) {
 						},
 					},
 				},
-				Edges: []flux.Edge{
+				Edges: []operation.Edge{
 					{Parent: "fromCSV0", Child: "range1"},
 					{Parent: "range1", Child: "sum2"},
 				},

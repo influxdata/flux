@@ -3,8 +3,8 @@ package v1_test
 import (
 	"testing"
 
-	"github.com/influxdata/flux"
 	_ "github.com/influxdata/flux/fluxinit/static" // We need to init flux for the tests to work.
+	"github.com/influxdata/flux/internal/operation"
 	"github.com/influxdata/flux/querytest"
 	"github.com/influxdata/flux/stdlib/influxdata/influxdb/v1"
 )
@@ -29,8 +29,8 @@ func TestFromInfluxJSON_NewQuery(t *testing.T) {
 		{
 			Name: "text",
 			Raw:  `import "influxdata/influxdb/v1" v1.json(json: "{results: []}")`,
-			Want: &flux.Spec{
-				Operations: []*flux.Operation{
+			Want: &operation.Spec{
+				Operations: []*operation.Node{
 					{
 						ID: "fromInfluxJSON0",
 						Spec: &v1.FromInfluxJSONOpSpec{

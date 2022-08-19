@@ -12,6 +12,7 @@ import (
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
 	_ "github.com/influxdata/flux/fluxinit/static" // We need to init flux for the tests to work.
+	"github.com/influxdata/flux/internal/operation"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/querytest"
 	"github.com/influxdata/flux/stdlib/influxdata/influxdb"
@@ -25,8 +26,8 @@ func TestSqlTo(t *testing.T) {
 		{
 			Name: "from with database",
 			Raw:  `import "sql" from(bucket: "mybucket") |> sql.to(driverName:"sqlmock", dataSourceName:"root@/db", table:"TestTable")`,
-			Want: &flux.Spec{
-				Operations: []*flux.Operation{
+			Want: &operation.Spec{
+				Operations: []*operation.Node{
 					{
 						ID: "from0",
 						Spec: &influxdb.FromOpSpec{
@@ -43,7 +44,7 @@ func TestSqlTo(t *testing.T) {
 						},
 					},
 				},
-				Edges: []flux.Edge{
+				Edges: []operation.Edge{
 					{Parent: "from0", Child: "toSQL1"},
 				},
 			},
@@ -390,8 +391,8 @@ func TestSqlite3To(t *testing.T) {
 		{
 			Name: "from with database",
 			Raw:  `import "sql" from(bucket: "mybucket") |> sql.to(driverName:"sqlite3", dataSourceName:"file::memory:", table:"TestTable", batchSize:10000)`,
-			Want: &flux.Spec{
-				Operations: []*flux.Operation{
+			Want: &operation.Spec{
+				Operations: []*operation.Node{
 					{
 						ID: "from0",
 						Spec: &influxdb.FromOpSpec{
@@ -408,7 +409,7 @@ func TestSqlite3To(t *testing.T) {
 						},
 					},
 				},
-				Edges: []flux.Edge{
+				Edges: []operation.Edge{
 					{Parent: "from0", Child: "toSQL1"},
 				},
 			},

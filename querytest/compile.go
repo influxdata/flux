@@ -13,6 +13,7 @@ import (
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/dependencies/dependenciestest"
 	"github.com/influxdata/flux/dependency"
+	"github.com/influxdata/flux/internal/operation"
 	"github.com/influxdata/flux/internal/spec"
 	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic/semantictest"
@@ -23,17 +24,17 @@ import (
 type NewQueryTestCase struct {
 	Name    string
 	Raw     string
-	Want    *flux.Spec
+	Want    *operation.Spec
 	WantErr bool
 }
 
 var opts = append(
 	semantictest.CmpOptions,
-	cmp.AllowUnexported(flux.Spec{}),
+	cmp.AllowUnexported(operation.Spec{}),
 	cmp.AllowUnexported(universe.JoinOpSpec{}),
-	cmpopts.IgnoreUnexported(flux.Spec{}),
+	cmpopts.IgnoreUnexported(operation.Spec{}),
 	cmpopts.IgnoreUnexported(universe.JoinOpSpec{}),
-	cmpopts.IgnoreFields(flux.Operation{}, "Source"),
+	cmpopts.IgnoreFields(operation.Node{}, "Source"),
 	valuestest.ScopeTransformer,
 )
 

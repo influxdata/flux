@@ -6,7 +6,7 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
-	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/internal/operation"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/semantic/semantictest"
 	"github.com/influxdata/flux/stdlib/kafka"
@@ -17,9 +17,9 @@ import (
 // CmpOptions are the options needed to compare plan.ProcedureSpecs inside plan.Spec.
 var CmpOptions = append(
 	semantictest.CmpOptions,
-	cmp.AllowUnexported(flux.Spec{}),
+	cmp.AllowUnexported(operation.Spec{}),
 	cmp.AllowUnexported(universe.JoinOpSpec{}),
-	cmpopts.IgnoreUnexported(flux.Spec{}),
+	cmpopts.IgnoreUnexported(operation.Spec{}),
 	cmpopts.IgnoreUnexported(universe.JoinOpSpec{}),
 	cmp.AllowUnexported(kafka.ToKafkaProcedureSpec{}),
 	cmpopts.IgnoreUnexported(kafka.ToKafkaProcedureSpec{}),

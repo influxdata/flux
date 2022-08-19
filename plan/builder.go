@@ -3,7 +3,7 @@ package plan
 import (
 	"context"
 
-	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/internal/operation"
 )
 
 // PlannerBuilder provides clients with an easy way to create planners.
@@ -37,7 +37,7 @@ type planner struct {
 	pp PhysicalPlanner
 }
 
-func (p *planner) Plan(ctx context.Context, fspec *flux.Spec) (*Spec, error) {
+func (p *planner) Plan(ctx context.Context, fspec *operation.Spec) (*Spec, error) {
 	ip, err := p.lp.CreateInitialPlan(fspec)
 	if err != nil {
 		return nil, err

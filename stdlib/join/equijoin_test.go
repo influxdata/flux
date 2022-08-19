@@ -6,12 +6,12 @@ import (
 	"time"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/dependencies/dependenciestest"
 	"github.com/influxdata/flux/dependency"
 	_ "github.com/influxdata/flux/fluxinit/static"
 	"github.com/influxdata/flux/internal/errors"
+	"github.com/influxdata/flux/internal/operation"
 	"github.com/influxdata/flux/internal/spec"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/plan/plantest"
@@ -21,7 +21,7 @@ import (
 	"github.com/influxdata/flux/stdlib/universe"
 )
 
-func compile(fluxText string, now time.Time) (*flux.Spec, error) {
+func compile(fluxText string, now time.Time) (*operation.Spec, error) {
 	ctx, deps := dependency.Inject(context.Background(), dependenciestest.Default())
 	defer deps.Finish()
 	return spec.FromScript(ctx, runtime.Default, now, fluxText)

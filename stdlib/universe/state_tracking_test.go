@@ -11,6 +11,7 @@ import (
 	"github.com/influxdata/flux/dependency"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
+	"github.com/influxdata/flux/internal/operation"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/querytest"
@@ -25,8 +26,8 @@ func TestStateTracking_NewQuery(t *testing.T) {
 		{
 			Name: "from range count",
 			Raw:  `from(bucket:"mydb") |> range(start:-1h) |> stateCount(fn: (r) => true)`,
-			Want: &flux.Spec{
-				Operations: []*flux.Operation{
+			Want: &operation.Spec{
+				Operations: []*operation.Node{
 					{
 						ID: "from0",
 						Spec: &influxdb.FromOpSpec{
@@ -60,7 +61,7 @@ func TestStateTracking_NewQuery(t *testing.T) {
 						},
 					},
 				},
-				Edges: []flux.Edge{
+				Edges: []operation.Edge{
 					{Parent: "from0", Child: "range1"},
 					{Parent: "range1", Child: "stateTracking2"},
 				},
@@ -74,8 +75,8 @@ func TestStateTracking_NewQuery(t *testing.T) {
 		{
 			Name: "from duration",
 			Raw:  `from(bucket:"mydb") |> stateDuration(fn: (r) => true, timeColumn: "ts")`,
-			Want: &flux.Spec{
-				Operations: []*flux.Operation{
+			Want: &operation.Spec{
+				Operations: []*operation.Node{
 					{
 						ID: "from0",
 						Spec: &influxdb.FromOpSpec{
@@ -96,7 +97,7 @@ func TestStateTracking_NewQuery(t *testing.T) {
 						},
 					},
 				},
-				Edges: []flux.Edge{
+				Edges: []operation.Edge{
 					{Parent: "from0", Child: "stateTracking1"},
 				},
 			},

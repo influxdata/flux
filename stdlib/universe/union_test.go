@@ -9,6 +9,7 @@ import (
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
+	"github.com/influxdata/flux/internal/operation"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/querytest"
 	"github.com/influxdata/flux/stdlib/influxdata/influxdb"
@@ -23,7 +24,7 @@ func TestUnion_NewQuery(t *testing.T) {
 				a = from(bucket:"dbA") |> range(start:-1h)
 				b = from(bucket:"dbB") |> range(start:-1h)
 				union(tables: [a, b])`,
-			Want: &flux.Spec{Operations: []*flux.Operation{
+			Want: &operation.Spec{Operations: []*operation.Node{
 				{
 					ID: "from0",
 					Spec: &influxdb.FromOpSpec{
@@ -71,7 +72,7 @@ func TestUnion_NewQuery(t *testing.T) {
 					Spec: &universe.UnionOpSpec{},
 				},
 			},
-				Edges: []flux.Edge{
+				Edges: []operation.Edge{
 					{Parent: "from0", Child: "range1"},
 					{Parent: "from2", Child: "range3"},
 					{Parent: "range1", Child: "union4"},
@@ -86,7 +87,7 @@ func TestUnion_NewQuery(t *testing.T) {
 				b = from(bucket:"dbB") |> range(start:-1h)
 				c = from(bucket:"dbC") |> range(start:-1h)
 				union(tables: [a, b, c])`,
-			Want: &flux.Spec{Operations: []*flux.Operation{
+			Want: &operation.Spec{Operations: []*operation.Node{
 				{
 					ID: "from0",
 					Spec: &influxdb.FromOpSpec{
@@ -155,7 +156,7 @@ func TestUnion_NewQuery(t *testing.T) {
 					Spec: &universe.UnionOpSpec{},
 				},
 			},
-				Edges: []flux.Edge{
+				Edges: []operation.Edge{
 					{Parent: "from0", Child: "range1"},
 					{Parent: "from2", Child: "range3"},
 					{Parent: "from4", Child: "range5"},

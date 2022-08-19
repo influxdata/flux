@@ -28,16 +28,9 @@ func init() {
 }
 
 type JoinOpSpec struct {
-	Left  flux.OperationID             `json:"left"`
-	Right flux.OperationID             `json:"right"`
-	Fn    interpreter.ResolvedFunction `json:"fn"`
+	Fn interpreter.ResolvedFunction
 
 	l, r *flux.TableObject
-}
-
-func (s *JoinOpSpec) IDer(ider flux.IDer) {
-	s.Left = ider.ID(s.l)
-	s.Right = ider.ID(s.r)
 }
 
 func createJoinOpSpec(args flux.Arguments, p *flux.Administration) (flux.OperationSpec, error) {

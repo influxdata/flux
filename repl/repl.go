@@ -17,6 +17,7 @@ import (
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/dependency"
 	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/internal/operation"
 	"github.com/influxdata/flux/internal/spec"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/lang"
@@ -240,7 +241,7 @@ func (r *REPL) analyzeLine(t string) (*semantic.Package, *libflux.FluxError, err
 	return x, nil, err
 }
 
-func (r *REPL) doQuery(ctx context.Context, spec *flux.Spec) error {
+func (r *REPL) doQuery(ctx context.Context, spec *operation.Spec) error {
 	// Setup cancel context
 	nextPlanNodeID := new(int)
 	ctx, cancelFunc := context.WithCancel(context.WithValue(

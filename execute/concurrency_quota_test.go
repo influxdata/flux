@@ -5,10 +5,10 @@ import (
 	"testing"
 	"time"
 
+	"github.com/influxdata/flux/internal/operation"
 	"github.com/influxdata/flux/plan"
 	"go.uber.org/zap/zaptest"
 
-	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/dependencies/dependenciestest"
 	"github.com/influxdata/flux/dependency"
 	"github.com/influxdata/flux/execute"
@@ -108,7 +108,7 @@ func (rule parallelizeFromTo) Rewrite(ctx context.Context, pn plan.Node) (plan.N
 
 type flagger map[string]interface{}
 
-func compile(fluxText string, now time.Time) (context.Context, *flux.Spec, error) {
+func compile(fluxText string, now time.Time) (context.Context, *operation.Spec, error) {
 	ctx, deps := dependency.Inject(context.Background(), dependenciestest.Default())
 	defer deps.Finish()
 	spec, err := spec.FromScript(ctx, runtime.Default, now, fluxText)
