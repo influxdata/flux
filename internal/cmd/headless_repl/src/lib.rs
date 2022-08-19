@@ -32,6 +32,7 @@ extern crate log;
 struct MyHelper {
     hinter: lsp_suggestion_helper::LSPSuggestionHelper,
     tx_stdin: Sender<String>,
+    rx_hints_updated: Receiver<bool>,
 }
 
 impl Hinter for MyHelper {
@@ -40,11 +41,12 @@ impl Hinter for MyHelper {
     fn hint(&self, line: &str, pos: usize, _ctx: &Context<'_>) -> Option<CommandHint> {
         //hinter is going before the highlighter
         // self.hinter_wait.swap(true, Ordering::Relaxed);
-
-        trace!("Sending Message to update hints: {}", line);
+        //block till response
         self.tx_stdin
             .send(line.to_string())
             .expect("failure sending when no hints");
+
+        self.rx_hints_updated.recv().unwrap();
 
         if line.is_empty() || pos < line.len() {
             return None;
@@ -96,7 +98,6 @@ impl ConditionalEventHandler for CompleteHintHandler {
             return None; // default
         }
         if let Some(k) = evt.get(0) {
-            // println!("key event: {:?}", k);
             #[allow(clippy::if_same_then_else)]
             if *k == KeyEvent(KeyCode::Tab, Modifiers::NONE) {
                 Some(Cmd::CompleteHint)
@@ -154,6 +155,9 @@ pub fn possible_main() -> Result<()> {
     let (tx_hinter, rx_hinter): (Sender<String>, Receiver<String>) = channel();
     //copy of the tx_hinter so that hints can be re-requested this is used in the hekoers
     let tx_more_hints = tx_hinter.clone();
+
+    //channel to indicate if the hints have been updated put that in the coordinator thread
+    let (tx_hints_updated, rx_hints_updated): (Sender<bool>, Receiver<bool>) = channel();
     //END: Channel Setup
 
     //START: Helper and readline setup
@@ -171,6 +175,7 @@ pub fn possible_main() -> Result<()> {
     rl.set_helper(Some(MyHelper {
         hinter: lsp_helper,
         tx_stdin: tx_more_hints,
+        rx_hints_updated,
     }));
     //key handler setup
     let ceh = Box::new(CompleteHintHandler {});

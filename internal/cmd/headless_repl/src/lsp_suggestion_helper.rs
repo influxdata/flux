@@ -4,7 +4,6 @@ use rustyline::hint::{Hint, Hinter};
 use rustyline::Context;
 use rustyline_derive::{Completer, Helper, Highlighter, Validator};
 use std::collections::HashSet;
-// use std::fmt::rt::v1::Argument;
 use std::str::from_utf8;
 
 use log::trace;
@@ -107,8 +106,6 @@ impl LSPSuggestionHelper {
             //if there is some overlap
             let disp = hint.display.as_str();
 
-            //TODO: if there is no overlap give room so that user can put functions that can be completed as an arg
-            //check it is a valid arg suggestion
             if hint.hint_type == ArgumentType {
                 if let Some(overlap) = overlap_two(line, &hint.display) {
                     let ratio: f32 = overlap.len() as f32 / disp.len() as f32;
@@ -156,10 +153,6 @@ impl LSPSuggestionHelper {
                     line
                 );
 
-                // self.print_hints();
-
-                //gets here maybe refetch results
-                //instead of returning none it should send the current line get the new hints and then rerun the function
                 return None;
             }
             _ => {
@@ -243,36 +236,47 @@ mod tests_overlap {
         assert_eq!(val, Some("date".to_string()));
     }
 
-    fn overlap_testing_four() {
-        let val = get_last_ident("x = date", r#"\pL([\pL|\p{Nd}|_]*)"#);
+    #[test]
+    fn valid_initialize_value_test() {
+        let val = is_valid("x = da", "date", "te");
+        assert_eq!(val, true);
     }
 
+    #[test]
+    fn initialize_overlap_test() {
+        let val = overlap_two("x = dat", "date");
+        assert_eq!(val, Some("dat"))
+    }
     #[test]
     fn valid_arg_test_one() {
         let val = arg_get_valid("date.truncate(locat", "location: ", "ion: ");
         assert_eq!(val, true)
     }
+
+    #[test]
+    fn testing_all() {
+        let test_string = "x=dat";
+        let val = overlap_two(test_string, "date");
+        assert_eq!(val, Some("dat"));
+        let last = get_last_ident(test_string, r#"\pL([\pL|\p{Nd}|_]*)"#);
+        assert_eq!(last, Some("dat".to_string()));
+        assert_eq!(is_valid(test_string, "date", "e"), true);
+    }
 }
 
 fn overlap_two<'a>(line: &'a str, comp: &'a str) -> Option<&'a str> {
-    //go through the line currently inputted
-
     for (i, _ch) in line.chars().rev().enumerate() {
         let (_, r) = line.split_at(i);
-        // println!("r: {:?}, {} ", r, comp);
         if comp.starts_with(r) {
             return Some(r);
         }
     }
-
     None
 }
 
 fn is_valid(line: &str, hint: &str, suggested_addition: &str) -> bool {
     let mut owner = line.to_string();
     owner.push_str(suggested_addition);
-
-    // println!("here is the push {}", owner);
     let reg = r#"\pL([\pL|\p{Nd}|_]*)"#;
     if let Some(val) = get_last_ident(&owner, reg) {
         return val == hint;
@@ -280,7 +284,7 @@ fn is_valid(line: &str, hint: &str, suggested_addition: &str) -> bool {
     false
 }
 
-fn get_last_ident(line: &str, reg: &str) -> Option<String> {
+pub fn get_last_ident(line: &str, reg: &str) -> Option<String> {
     let matcher = Regex::new(reg).unwrap();
     let owner = line.to_string();
     let reversed: String = owner.chars().rev().collect();
@@ -302,8 +306,6 @@ fn get_last_ident(line: &str, reg: &str) -> Option<String> {
 fn arg_get_valid(line: &str, hint: &str, suggested_addition: &str) -> bool {
     let mut owner = line.to_string();
     owner.push_str(suggested_addition);
-
-    // println!("here is the push {}", owner);
     let reg = r#"\s:\pL([\pL|\p{Nd}|_]*)"#;
     if let Some(val) = get_last_ident(&owner, reg) {
         return val == hint;

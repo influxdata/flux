@@ -14,6 +14,7 @@ use std::fmt::Debug;
 use std::process::{Child, Command, Stdio};
 use tower_lsp::jsonrpc;
 
+use crate::lsp_suggestion_helper::get_last_ident;
 use lsp_types::request::{Completion, Initialize, Request};
 use lsp_types::MarkupKind::PlainText;
 use regex::Regex;
@@ -160,8 +161,6 @@ pub fn formulate_request(
                     .unwrap(),
                 )
                 .id(req_id);
-            // let fin =  req.finish();
-
             Ok(add_headers(serde_json::to_string(
                 &req.id(req_id).finish(),
             )?))
@@ -188,12 +187,12 @@ pub fn formulate_request(
             Ok(headed)
         }
         LSPRequestType::DidChange => {
-            let mut something = String::from(text);
-            something.push('\n');
+            let mut text_with_nl = String::from(text);
+            text_with_nl.push('\n');
             let basic_change = vec![TextDocumentContentChangeEvent {
                 range: None,
                 range_length: None,
-                text: something,
+                text: text_with_nl,
             }];
             let req: RequestBuilder = jsonrpc::Request::build(DidChangeTextDocument::METHOD)
                 .params(serde_json::to_value(DidChangeTextDocumentParams {
@@ -209,22 +208,25 @@ pub fn formulate_request(
         }
         LSPRequestType::Completion => {
             let line_num = text.matches("\n").count();
-            let reg = Regex::new(r#"([^\pL\pN])"#).unwrap();
-            let mut add = None;
-            if reg.is_match(text) {
-                add = Some(true)
+
+            let mut add_one = false;
+            //FIXME: Cases that don't work x = da will not complete to date and will not autocomplete functions that are args
+            if let Some(val) = get_last_ident(text, r#"\pL([\pL|\p{Nd}|_]*)"#) {
+                if val != text {
+                    add_one = true;
+                }
             }
 
-            let character = match line_num {
-                0 => {
-                    if add.is_some() {
-                        text.len() as u32 + 1
-                    } else {
-                        text.len() as u32
-                    }
-                }
-                _ => characters_after_last(text, "\n").unwrap(),
+            //FIXME: Sometimes +1 is needed to get correct suggestions but not always
+            // let character = match text.len() {
+            //     0 => 0,
+            //     _ => text.len() + 1,
+            // };
+            let character = match add_one {
+                true => text.len() as u32 + 1,
+                false => text.len() as u32,
             };
+            // println!("here is the character {}", character);
 
             let req: RequestBuilder = jsonrpc::Request::build(Completion::METHOD).params(
                 serde_json::to_value(CompletionParams {
@@ -236,7 +238,6 @@ pub fn formulate_request(
                         position: Position {
                             line: line_num as u32,
                             character: character as u32,
-                            // character: text.len() as u32,
                         },
                     },
                     work_done_progress_params: Default::default(),
@@ -254,7 +255,8 @@ pub fn formulate_request(
 pub fn start_lsp() -> Child {
     //step one: start the process
     let child = Command::new("flux-lsp")
-        // .arg("")
+        // .arg("-l")
+        // .arg("./real_lsp_log/log.txt")
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
         .spawn()
