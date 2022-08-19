@@ -70,6 +70,8 @@ testcase vec_const_kitchen_sink_column_types {
                     f: 1.23,
                     t: 1985-10-26T00:00:00Z,
                     s: "flux rules",
+                    bt: true,
+                    bf: false,
                 },
                 {
                     x: 2,
@@ -77,12 +79,59 @@ testcase vec_const_kitchen_sink_column_types {
                     f: 1.23,
                     t: 1985-10-26T00:00:00Z,
                     s: "flux rules",
+                    bt: true,
+                    bf: false,
                 },
             ],
         )
     got =
         data
-            |> map(fn: (r) => ({r with i: 99, f: 1.23, t: 1985-10-26T00:00:00Z, s: "flux rules"}))
+            |> map(
+                fn: (r) =>
+                    ({r with
+                        i: 99,
+                        f: 1.23,
+                        t: 1985-10-26T00:00:00Z,
+                        s: "flux rules",
+                        bt: true,
+                        bf: false,
+                    }),
+            )
+
+    testing.diff(want: want, got: got)
+}
+
+testcase vec_const_bools {
+    input = array.from(rows: [{a: false}, {a: true}])
+    want =
+        array.from(
+            rows: [
+                {
+                    a: false,
+                    a_and_true: false,
+                    a_or_true: true,
+                    a_and_false: false,
+                    a_or_false: false,
+                },
+                {
+                    a: true,
+                    a_and_true: true,
+                    a_or_true: true,
+                    a_and_false: false,
+                    a_or_false: true,
+                },
+            ],
+        )
+    got =
+        input
+            |> map(
+                fn: (r) =>
+                    ({r with a_and_true: r.a and true,
+                        a_or_true: r.a or true,
+                        a_and_false: r.a and false,
+                        a_or_false: r.a or false,
+                    }),
+            )
 
     testing.diff(want: want, got: got)
 }

@@ -5,7 +5,7 @@ use crate::{
     errors::{located, Errors},
     semantic::{
         nodes::{
-            BinaryExpr, Block, CallExpr, ConditionalExpr, Error, ErrorKind, Expression,
+            BinaryExpr, Block, BooleanLit, CallExpr, ConditionalExpr, Error, ErrorKind, Expression,
             FunctionExpr, Identifier, IdentifierExpr, LogicalExpr, MemberExpr, ObjectExpr, Package,
             Property, Result, ReturnStmt,
         },
@@ -66,6 +66,16 @@ impl Expression {
     fn vectorize(&self, env: &VectorizeEnv<'_>) -> Result<Self> {
         Ok(match self {
             Expression::Identifier(identifier) => {
+                if env.config.features.contains(&Feature::VectorizedConst)
+                    && (identifier.name == "true" || identifier.name == "false")
+                    && identifier.name.package() == Some("boolean")
+                {
+                    return Ok(wrap_vec_repeat(Expression::Boolean(BooleanLit {
+                        loc: identifier.loc.clone(),
+                        value: identifier.name == "true",
+                    })));
+                }
+
                 Expression::Identifier(identifier.vectorize(env)?)
             }
             Expression::Member(member) => {
@@ -174,6 +184,7 @@ impl CallExpr {
             ident @ Expression::Identifier(IdentifierExpr { name, .. }) => {
                 if env.config.features.contains(&Feature::VectorizedFloat)
                     && name == "float"
+                    && name.package() == Some("universe")
                     && self.arguments.len() == 1
                     && self.arguments[0].key.name == "v"
                 {

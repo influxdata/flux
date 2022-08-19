@@ -167,6 +167,12 @@ func TestVectorizedFns(t *testing.T) {
 			skipComp:     true,
 		},
 		{
+			name:         "bool literals",
+			fn:           `(r) => ({r with c: true, d: false})`,
+			vectorizable: true,
+			skipComp:     true,
+		},
+		{
 			name:         "no duration literals",
 			fn:           `(r) => ({r with c: 1h})`,
 			vectorizable: false,

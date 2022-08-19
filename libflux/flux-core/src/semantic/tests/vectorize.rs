@@ -19,15 +19,30 @@ fn analyzer_config() -> AnalyzerConfig {
 }
 
 fn vectorize(src: &str) -> anyhow::Result<Package> {
-    // Builtins which should be exposed to these tests can be defined here.
-    let env = Environment::from(parse_map(
-        None,
-        map![
+    // packages/symbols which should be exposed to these tests can be defined here.
+    let imp = map![
+        "boolean" => package![
+            "true" => "bool",
+            "false" => "bool",
+        ],
+        "universe" => package![
             "float" => "(v: A) => float",
         ],
-    ));
+    ];
+    let imports: SemanticMap<&str, _> = imp
+        .into_iter()
+        .map(|(path, pkg)| (path, parse_map(Some(path), pkg)))
+        .collect();
+    let importer: Packages = imports
+        .into_iter()
+        .map(|(path, types)| (path.to_string(), PackageExports::try_from(types).unwrap()))
+        .collect();
+    let mut prelude = PackageExports::new();
+    prelude.copy_bindings_from(importer.get("boolean").unwrap());
+    prelude.copy_bindings_from(importer.get("universe").unwrap());
+    let env = Environment::from(&prelude);
 
-    let mut analyzer = Analyzer::new(env, Packages::default(), analyzer_config());
+    let mut analyzer = Analyzer::new(env, importer, analyzer_config());
     let (_, pkg) = analyzer
         .analyze_source("main".into(), "".into(), src)
         .map_err(|err| err.error)?;
@@ -331,19 +346,18 @@ fn vectorize_with_construction_using_literal_int() -> anyhow::Result<()> {
 }
 
 #[test]
-#[ignore] // FIXME: "undefined identifier true"
 fn vectorize_with_construction_using_literal_bool() -> anyhow::Result<()> {
-    let pkg = vectorize(r#"(r) => ({ r with a: true })"#)?;
+    let pkg = vectorize(r#"(r) => ({ r with a: false, b: true })"#)?;
 
     let function = get_vectorized_function(&pkg);
 
     expect_test::expect![[r##"
         (r) => {
-            return {r:{#C with a: v[#B]} with b: r:{#C with a: v[#B]}.a:v[#B]}:{#C with b: v[#B], a: v[#B]}
-        }:(r: {#C with a: v[#B]}) => {#C with b: v[#B], a: v[#B]}"##]]
-        .assert_eq(&crate::semantic::formatter::format_node(
-            Node::FunctionExpr(function),
-        )?);
+            return {r:#A with a: ~~vecRepeat~~:bool(v: false):v[bool], b: ~~vecRepeat~~:bool(v: true):v[bool]}:{#A with a: v[bool], b: v[bool]}
+        }:(r: #A) => {#A with a: v[bool], b: v[bool]}"##]]
+    .assert_eq(&crate::semantic::formatter::format_node(
+        Node::FunctionExpr(function),
+    )?);
 
     Ok(())
 }

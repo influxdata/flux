@@ -16,9 +16,6 @@ import "testing"
 // For now, the verification of actually hitting the vectorized code path can be
 // done manually with a debugger, or by running these cases as individual scripts
 // on the CLI with tracing enabled.
-//
-// FIXME: add a testcase for vec repeat conditions once bool literals can be vectorized.
-//
 fn = (r) => ({v: if r.cond then r.a else r.b})
 
 testcase vec_conditional_time {
@@ -118,6 +115,26 @@ testcase vec_conditional_string_repeat {
     got =
         array.from(rows: [{cond: true}, {cond: false}])
             |> map(fn: (r) => ({v: if r.cond then "yes" else "no"}))
+
+    testing.diff(want: want, got: got)
+}
+
+testcase vec_conditional_bool {
+    want = array.from(rows: [{v: true}, {v: false}])
+
+    got =
+        array.from(rows: [{cond: true, a: true, b: false}, {cond: false, a: true, b: false}])
+            |> map(fn: fn)
+
+    testing.diff(want: want, got: got)
+}
+
+testcase vec_conditional_bool_repeat {
+    want = array.from(rows: [{v: true}, {v: false}])
+
+    got =
+        array.from(rows: [{cond: true}, {cond: false}])
+            |> map(fn: (r) => ({v: if r.cond then true else false}))
 
     testing.diff(want: want, got: got)
 }

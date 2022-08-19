@@ -59,13 +59,30 @@ testcase vec_with_float {
     testing.diff(want, got)
 }
 
-// FIXME: add bool literals to this once they are enabled in #4997
 testcase vec_with_float_const {
-    want = array.from(rows: [{x: 1, f: 123.456, i: 123.0}])
+    want =
+        array.from(
+            rows: [
+                {
+                    x: 1,
+                    f: 123.456,
+                    i: 123.0,
+                    bt: 1.0,
+                    bf: 0.0,
+                },
+            ],
+        )
 
     got =
         array.from(rows: [{x: 1}])
-            |> map(fn: (r) => ({r with f: float(v: 123.456), i: float(v: 123)}))
+            |> map(
+                fn: (r) =>
+                    ({r with f: float(v: 123.456),
+                        i: float(v: 123),
+                        bt: float(v: true),
+                        bf: float(v: false),
+                    }),
+            )
 
     testing.diff(want, got)
 }
