@@ -3,8 +3,11 @@ package universe_test
 
 import "array"
 import "testing"
+import "testing/expect"
 
 testcase vec_with_float {
+    expect.planner(rules: ["vectorizeMapRule": 1])
+
     want =
         array.from(
             rows: [
@@ -60,6 +63,8 @@ testcase vec_with_float {
 }
 
 testcase vec_with_float_const {
+    expect.planner(rules: ["vectorizeMapRule": 1])
+
     want =
         array.from(
             rows: [

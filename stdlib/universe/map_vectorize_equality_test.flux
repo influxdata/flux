@@ -3,6 +3,7 @@ package universe_test
 
 import "array"
 import "testing"
+import "testing/expect"
 
 // The intent with these tests is to ensure coverage for vectorized equality
 // operators. Only a subset of flux types work due to specifics of the
@@ -28,6 +29,8 @@ fn = (r) =>
     })
 
 testcase vec_equality_time {
+    expect.planner(rules: ["vectorizeMapRule": 1])
+
     want =
         array.from(
             rows: [
@@ -78,6 +81,8 @@ testcase vec_equality_time {
 }
 
 testcase vec_equality_time_repeat {
+    expect.planner(rules: ["vectorizeMapRule": 1])
+
     want =
         array.from(
             rows: [
@@ -131,6 +136,8 @@ testcase vec_equality_time_repeat {
 }
 
 testcase vec_equality_int {
+    expect.planner(rules: ["vectorizeMapRule": 1])
+
     want =
         array.from(
             rows: [
@@ -175,6 +182,8 @@ testcase vec_equality_int {
 }
 
 testcase vec_equality_int_repeat {
+    expect.planner(rules: ["vectorizeMapRule": 1])
+
     want =
         array.from(
             rows: [
@@ -226,6 +235,8 @@ testcase vec_equality_int_repeat {
 }
 
 testcase vec_equality_float {
+    expect.planner(rules: ["vectorizeMapRule": 1])
+
     want =
         array.from(
             rows: [
@@ -269,6 +280,8 @@ testcase vec_equality_float {
 }
 
 testcase vec_equality_float_repeat {
+    expect.planner(rules: ["vectorizeMapRule": 1])
+
     want =
         array.from(
             rows: [
@@ -321,6 +334,8 @@ testcase vec_equality_float_repeat {
 
 // FIXME: can't do a vec repeat version for uint until we vectorize uint
 testcase vec_equality_uint {
+    expect.planner(rules: ["vectorizeMapRule": 1])
+
     want =
         array.from(
             rows: [
@@ -371,6 +386,8 @@ testcase vec_equality_uint {
 }
 
 testcase vec_equality_string {
+    expect.planner(rules: ["vectorizeMapRule": 1])
+
     want =
         array.from(
             rows: [
@@ -415,6 +432,8 @@ testcase vec_equality_string {
 }
 
 testcase vec_equality_string_repeat {
+    expect.planner(rules: ["vectorizeMapRule": 1])
+
     want =
         array.from(
             rows: [
@@ -466,6 +485,8 @@ testcase vec_equality_string_repeat {
 }
 
 testcase vec_equality_bool {
+    expect.planner(rules: ["vectorizeMapRule": 1])
+
     want =
         array.from(
             rows: [
@@ -584,6 +605,8 @@ testcase vec_equality_bool_repeat {
 // In situations where any other number type is compared to a float, the other
 // is cast to float.
 testcase vec_equality_casts {
+    expect.planner(rules: ["vectorizeMapRule": 1])
+
     want =
         array.from(
             rows: [
