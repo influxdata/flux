@@ -2,6 +2,7 @@ package universe_test
 
 
 import "array"
+import "internal/debug"
 import "testing"
 import "testing/expect"
 
@@ -154,6 +155,79 @@ testcase vec_conditional_bool_repeat {
     got =
         array.from(rows: [{cond: true}, {cond: false}])
             |> map(fn: (r) => ({v: if r.cond then true else false}))
+
+    testing.diff(want: want, got: got)
+}
+
+testcase vec_conditional_null_test {
+    // When the condition is null, it's considered false so we should see the
+    // value of `r.a` for each record in the output.
+    want = array.from(rows: [{x: 0}, {x: 1}, {x: 2}, {x: 3}])
+
+    got =
+        array.from(rows: [{a: 0}, {a: 1}, {a: 2}, {a: 3}])
+            |> debug.opaque()
+            |> map(fn: (r) => ({x: if r.cond then 0 else r.a}))
+
+    testing.diff(want: want, got: got)
+}
+
+testcase vec_conditional_null_consequent {
+    want =
+        array.from(
+            rows: [
+                {x: debug.null(type: "int")},
+                {x: debug.null(type: "int")},
+                {x: 2},
+                {x: debug.null(type: "int")},
+            ],
+        )
+
+    got =
+        array.from(
+            rows: [{cond: true, a: 0}, {cond: true, a: 1}, {cond: false, a: 2}, {cond: true, a: 3}],
+        )
+            |> debug.opaque()
+            |> map(fn: (r) => ({x: if r.cond then r.b else r.a}))
+
+    testing.diff(want: want, got: got)
+}
+
+testcase vec_conditional_null_alternate {
+    want = array.from(rows: [{x: 0}, {x: 1}, {x: debug.null(type: "int")}, {x: 3}])
+
+    got =
+        array.from(
+            rows: [{cond: true, a: 0}, {cond: true, a: 1}, {cond: false, a: 2}, {cond: true, a: 3}],
+        )
+            |> debug.opaque()
+            |> map(fn: (r) => ({x: if r.cond then r.a else r.b}))
+
+    testing.diff(want: want, got: got)
+}
+
+testcase vec_conditional_null_consequent_alternate {
+    // when both branches are invalid, the outcome should be empty
+    want = array.from(rows: [{x: 99}]) |> debug.sink()
+
+    got =
+        array.from(
+            rows: [{cond: true, a: 0}, {cond: true, a: 1}, {cond: false, a: 2}, {cond: true, a: 3}],
+        )
+            |> debug.opaque()
+            |> map(fn: (r) => ({x: if r.cond then r.b else r.c}))
+
+    testing.diff(want: want, got: got)
+}
+
+testcase vec_conditional_null_test_consequent_alternate {
+    // when both branches AND the `test` are invalid, the outcome should be empty
+    want = array.from(rows: [{x: 99}]) |> debug.sink()
+
+    got =
+        array.from(rows: [{a: 0}, {a: 1}, {a: 2}, {a: 3}])
+            |> debug.opaque()
+            |> map(fn: (r) => ({x: if r.cond then r.b else r.c}))
 
     testing.diff(want: want, got: got)
 }
