@@ -503,16 +503,18 @@ func (e *conditionalVectorEvaluator) Eval(ctx context.Context, scope Scope) (val
 		return nil, errors.Newf(codes.Invalid, "cannot use test of type %s in vectorized conditional expression; expected vector of boolean", typ)
 	}
 
+	// If t is invalid/null, treat the same as "all false" and early return the
+	// alternate branch.
+	if t.IsNull() {
+		return eval(ctx, e.alternate, scope)
+	}
+
 	mem := memory.GetAllocator(ctx)
 
 	tv := t.Vector()
+
 	// If `t` is vec repeat, skip the varied check and immediately select the
 	// branch to return.
-	// FIXME: currently there's no way to vectorize bool literals.
-	//   This branch will never run until boolean literals work and/or we have
-	//	 const folding working with equality operators.
-	//   <https://github.com/influxdata/flux/issues/4997>
-	//   <https://github.com/influxdata/flux/issues/4608>
 	if vr, ok := tv.(*values.VectorRepeatValue); ok {
 		if vr.Value().Bool() {
 			return eval(ctx, e.consequent, scope)
@@ -556,7 +558,7 @@ func (e *conditionalVectorEvaluator) Eval(ctx context.Context, scope Scope) (val
 	}
 	defer a.Release()
 
-	return values.VectorConditional(tv, c.Vector(), a.Vector(), mem)
+	return values.VectorConditional(tv, c, a, mem)
 }
 
 type binaryEvaluator struct {
