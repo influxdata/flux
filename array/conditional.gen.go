@@ -94,7 +94,7 @@ func IntConditionalCConstAConst(t *Boolean, c, a *int64, mem memory.Allocator) (
 	if a == nil && c == nil {
 		return nil, errors.Newf(
 			codes.Invalid,
-			"consequent and alternate are both nil; caller should handle this case by returning `values.New(nil)`",
+			"consequent and alternate are both nil; caller should handle this case by returning `values.Null`",
 		)
 	}
 
@@ -200,7 +200,7 @@ func UintConditionalCConstAConst(t *Boolean, c, a *uint64, mem memory.Allocator)
 	if a == nil && c == nil {
 		return nil, errors.Newf(
 			codes.Invalid,
-			"consequent and alternate are both nil; caller should handle this case by returning `values.New(nil)`",
+			"consequent and alternate are both nil; caller should handle this case by returning `values.Null`",
 		)
 	}
 
@@ -306,7 +306,7 @@ func FloatConditionalCConstAConst(t *Boolean, c, a *float64, mem memory.Allocato
 	if a == nil && c == nil {
 		return nil, errors.Newf(
 			codes.Invalid,
-			"consequent and alternate are both nil; caller should handle this case by returning `values.New(nil)`",
+			"consequent and alternate are both nil; caller should handle this case by returning `values.Null`",
 		)
 	}
 
@@ -412,7 +412,7 @@ func StringConditionalCConstAConst(t *Boolean, c, a *string, mem memory.Allocato
 	if a == nil && c == nil {
 		return nil, errors.Newf(
 			codes.Invalid,
-			"consequent and alternate are both nil; caller should handle this case by returning `values.New(nil)`",
+			"consequent and alternate are both nil; caller should handle this case by returning `values.Null`",
 		)
 	}
 
@@ -518,7 +518,7 @@ func BooleanConditionalCConstAConst(t *Boolean, c, a *bool, mem memory.Allocator
 	if a == nil && c == nil {
 		return nil, errors.Newf(
 			codes.Invalid,
-			"consequent and alternate are both nil; caller should handle this case by returning `values.New(nil)`",
+			"consequent and alternate are both nil; caller should handle this case by returning `values.Null`",
 		)
 	}
 

@@ -89,7 +89,7 @@ func {{.Name}}ConditionalCConstAConst(t *Boolean, c, a *{{.PrimitiveType}}, mem 
 		if a == nil && c == nil {
 			return nil, errors.Newf(
 				codes.Invalid,
-				"consequent and alternate are both nil; caller should handle this case by returning `values.New(nil)`",
+				"consequent and alternate are both nil; caller should handle this case by returning `values.Null`",
 			)
 		}
 

@@ -38,7 +38,7 @@ func VectorConditional(t Vector, c, a Value, mem memory.Allocator) (Value, error
 	// When both branches are null, the output can only be null (aka Invalid).
 	var elemType semantic.MonoType
 	if c.IsNull() && a.IsNull() {
-		return New(nil), nil // early return an untyped null
+		return Null, nil // early return an untyped null
 	} else if c.IsNull() {
 		elemType = a.Vector().ElementType()
 	} else {
