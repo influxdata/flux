@@ -2,11 +2,10 @@ package bitwise
 
 import (
 	"github.com/influxdata/flux/internal/function"
-	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/values"
 )
 
-func uand(args interpreter.Arguments) (values.Value, error) {
+func uand(args *function.Arguments) (values.Value, error) {
 	a, err := args.GetRequiredUInt("a")
 	if err != nil {
 		return nil, err
@@ -17,7 +16,7 @@ func uand(args interpreter.Arguments) (values.Value, error) {
 	}
 	return values.NewUInt(a & b), nil
 }
-func uor(args interpreter.Arguments) (values.Value, error) {
+func uor(args *function.Arguments) (values.Value, error) {
 	a, err := args.GetRequiredUInt("a")
 	if err != nil {
 		return nil, err
@@ -28,14 +27,14 @@ func uor(args interpreter.Arguments) (values.Value, error) {
 	}
 	return values.NewUInt(a | b), nil
 }
-func unot(args interpreter.Arguments) (values.Value, error) {
+func unot(args *function.Arguments) (values.Value, error) {
 	a, err := args.GetRequiredUInt("a")
 	if err != nil {
 		return nil, err
 	}
 	return values.NewUInt(^a), nil
 }
-func uxor(args interpreter.Arguments) (values.Value, error) {
+func uxor(args *function.Arguments) (values.Value, error) {
 	a, err := args.GetRequiredUInt("a")
 	if err != nil {
 		return nil, err
@@ -46,7 +45,7 @@ func uxor(args interpreter.Arguments) (values.Value, error) {
 	}
 	return values.NewUInt(a ^ b), nil
 }
-func uclear(args interpreter.Arguments) (values.Value, error) {
+func uclear(args *function.Arguments) (values.Value, error) {
 	a, err := args.GetRequiredUInt("a")
 	if err != nil {
 		return nil, err
@@ -57,7 +56,7 @@ func uclear(args interpreter.Arguments) (values.Value, error) {
 	}
 	return values.NewUInt(a &^ b), nil
 }
-func ulshift(args interpreter.Arguments) (values.Value, error) {
+func ulshift(args *function.Arguments) (values.Value, error) {
 	a, err := args.GetRequiredUInt("a")
 	if err != nil {
 		return nil, err
@@ -68,7 +67,7 @@ func ulshift(args interpreter.Arguments) (values.Value, error) {
 	}
 	return values.NewUInt(a << b), nil
 }
-func urshift(args interpreter.Arguments) (values.Value, error) {
+func urshift(args *function.Arguments) (values.Value, error) {
 	a, err := args.GetRequiredUInt("a")
 	if err != nil {
 		return nil, err
@@ -80,7 +79,7 @@ func urshift(args interpreter.Arguments) (values.Value, error) {
 	return values.NewUInt(a >> b), nil
 }
 
-func sand(args interpreter.Arguments) (values.Value, error) {
+func sand(args *function.Arguments) (values.Value, error) {
 	a, err := args.GetRequiredInt("a")
 	if err != nil {
 		return nil, err
@@ -91,7 +90,7 @@ func sand(args interpreter.Arguments) (values.Value, error) {
 	}
 	return values.NewInt(a & b), nil
 }
-func sor(args interpreter.Arguments) (values.Value, error) {
+func sor(args *function.Arguments) (values.Value, error) {
 	a, err := args.GetRequiredInt("a")
 	if err != nil {
 		return nil, err
@@ -102,14 +101,14 @@ func sor(args interpreter.Arguments) (values.Value, error) {
 	}
 	return values.NewInt(a | b), nil
 }
-func snot(args interpreter.Arguments) (values.Value, error) {
+func snot(args *function.Arguments) (values.Value, error) {
 	a, err := args.GetRequiredInt("a")
 	if err != nil {
 		return nil, err
 	}
 	return values.NewInt(^a), nil
 }
-func sxor(args interpreter.Arguments) (values.Value, error) {
+func sxor(args *function.Arguments) (values.Value, error) {
 	a, err := args.GetRequiredInt("a")
 	if err != nil {
 		return nil, err
@@ -120,7 +119,7 @@ func sxor(args interpreter.Arguments) (values.Value, error) {
 	}
 	return values.NewInt(a ^ b), nil
 }
-func sclear(args interpreter.Arguments) (values.Value, error) {
+func sclear(args *function.Arguments) (values.Value, error) {
 	a, err := args.GetRequiredInt("a")
 	if err != nil {
 		return nil, err
@@ -131,7 +130,7 @@ func sclear(args interpreter.Arguments) (values.Value, error) {
 	}
 	return values.NewInt(a &^ b), nil
 }
-func slshift(args interpreter.Arguments) (values.Value, error) {
+func slshift(args *function.Arguments) (values.Value, error) {
 	a, err := args.GetRequiredInt("a")
 	if err != nil {
 		return nil, err
@@ -142,7 +141,7 @@ func slshift(args interpreter.Arguments) (values.Value, error) {
 	}
 	return values.NewInt(a << b), nil
 }
-func srshift(args interpreter.Arguments) (values.Value, error) {
+func srshift(args *function.Arguments) (values.Value, error) {
 	a, err := args.GetRequiredInt("a")
 	if err != nil {
 		return nil, err
