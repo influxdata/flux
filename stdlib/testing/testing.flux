@@ -272,8 +272,9 @@ shouldError = (fn, want) => {
 shouldErrorWithCode = (fn, want, code) => {
     got = experimental.catch(fn)
 
-    return diff(
-        got: array.from(rows: [{ code: got.code, match: got.msg =~ want }]),
-        want: array.from(rows: [{ code: code, match: true }]),
-    )
+    return
+        diff(
+            got: array.from(rows: [{code: got.code, match: got.msg =~ want}]),
+            want: array.from(rows: [{code: code, match: true}]),
+        )
 }
