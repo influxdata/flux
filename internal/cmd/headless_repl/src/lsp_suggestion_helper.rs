@@ -6,14 +6,24 @@ use rustyline_derive::{Completer, Helper, Highlighter, Validator};
 use std::collections::HashSet;
 use std::str::from_utf8;
 
+use crate::lsp_suggestion_helper::ExpType::{Argument, Normal};
 use log::trace;
+use once_cell::sync::{Lazy, OnceCell};
 use regex::Regex;
 use std::sync::{Arc, RwLock};
+
+static ARG: Lazy<Regex> = Lazy::new(|| Regex::new(r#"\s?:\pL([\pL|\p{Nd}|_]*)"#).unwrap());
+static IDEN: Lazy<Regex> = Lazy::new(|| Regex::new(r#"\pL([\pL|\p{Nd}|_]*)"#).unwrap());
+
+#[derive(PartialEq, Debug)]
+pub enum ExpType {
+    Argument,
+    Normal,
+}
 
 #[derive(Completer, Helper, Validator, Highlighter)]
 pub struct LSPSuggestionHelper {
     pub(crate) hints: Arc<RwLock<HashSet<CommandHint>>>,
-    // pub(crate) tx_new_hints_needed: Sender<String>,
 }
 
 #[derive(Hash, Debug, PartialEq, Eq)]
@@ -115,13 +125,16 @@ impl LSPSuggestionHelper {
                         if !arg_get_valid(line, hint.display(), &hint.display[overlap.len()..]) {
                             continue;
                         }
+                        // println!("swapping {}", hint.display);
+
                         best_ratio = ratio;
                         best_overlap = overlap.len();
                         best_hint = hint;
                     }
                 }
             }
-
+            // println!("hint: {}", hint.display);
+            //NOTE: adding one works for where there is a dot present but nothgin else so maybe do all other cases
             if let Some(overlap) = overlap_two(line, hint.display()) {
                 let ratio: f32 = overlap.len() as f32 / disp.len() as f32;
                 //if greater than store that hint
@@ -145,6 +158,7 @@ impl LSPSuggestionHelper {
             }
         }
         //if they are equal save the first arg
+
         let possibilities = best_ratio > 0 as f32;
         return match possibilities {
             false => {
@@ -171,8 +185,9 @@ impl LSPSuggestionHelper {
 //TODO:  date.t if you go back and get arg suggestions and go back till here gives invalid suggestion
 #[cfg(test)]
 mod tests_overlap {
+    use crate::lsp_suggestion_helper::ExpType::{Argument, Normal};
     use crate::lsp_suggestion_helper::{
-        arg_get_valid, get_last_ident, is_valid, overlap_two, LSPSuggestionHelper,
+        add_one, arg_get_valid, get_last_ident, is_valid, overlap_two, LSPSuggestionHelper,
     };
     use regex::Regex;
     use std::collections::HashSet;
@@ -226,13 +241,13 @@ mod tests_overlap {
 
     #[test]
     fn get_last_ident_test_one() {
-        let val = get_last_ident("date.truncate", r#"\pL([\pL|\p{Nd}|_]*)"#);
+        let val = get_last_ident("date.truncate", Normal);
         assert_eq!(val, Some("truncate".to_string()));
     }
 
     #[test]
     fn get_last_ident_test_two() {
-        let val = get_last_ident("x = date", r#"\pL([\pL|\p{Nd}|_]*)"#);
+        let val = get_last_ident("x = date", Normal);
         assert_eq!(val, Some("date".to_string()));
     }
 
@@ -258,9 +273,38 @@ mod tests_overlap {
         let test_string = "x=dat";
         let val = overlap_two(test_string, "date");
         assert_eq!(val, Some("dat"));
-        let last = get_last_ident(test_string, r#"\pL([\pL|\p{Nd}|_]*)"#);
+        let last = get_last_ident(test_string, Normal);
         assert_eq!(last, Some("dat".to_string()));
         assert_eq!(is_valid(test_string, "date", "e"), true);
+    }
+
+    #[test]
+    fn test_add_one_t_1() {
+        let val = add_one("date.trun");
+        assert_eq!(val, true);
+    }
+
+    #[test]
+    fn test_add_one_t_2() {
+        let val = add_one("x = date");
+        assert_eq!(val, false);
+    }
+
+    #[test]
+    fn test_getting_last_ident() {
+        let val = get_last_ident("date.truncate(unit: ", Argument);
+        assert_eq!(val, Some("unit: ".to_string()));
+    }
+
+    #[test]
+    fn test_regex_arg() {
+        let reg = Regex::new(r#"\s?:\pL([\pL|\p{Nd}|_]*)"#).unwrap();
+        let test = "date.truncate(unit: ";
+        let a: String = test.chars().rev().collect();
+
+        if let Some(val) = reg.find(a.as_str()) {
+            println!("{:?}", val)
+        }
     }
 }
 
@@ -277,22 +321,26 @@ fn overlap_two<'a>(line: &'a str, comp: &'a str) -> Option<&'a str> {
 fn is_valid(line: &str, hint: &str, suggested_addition: &str) -> bool {
     let mut owner = line.to_string();
     owner.push_str(suggested_addition);
-    let reg = r#"\pL([\pL|\p{Nd}|_]*)"#;
-    if let Some(val) = get_last_ident(&owner, reg) {
-        return val == hint;
+    if let Some(val) = get_last_ident(&owner, Normal) {
+        return val.trim() == hint;
     }
     false
 }
 
-pub fn get_last_ident(line: &str, reg: &str) -> Option<String> {
-    let matcher = Regex::new(reg).unwrap();
+pub fn get_last_ident(line: &str, inst: ExpType) -> Option<String> {
     let owner = line.to_string();
     let reversed: String = owner.chars().rev().collect();
 
-    if let Some(val) = matcher.find(reversed.as_str()) {
+    let find = match inst {
+        Argument => ARG.find(reversed.as_str()),
+        Normal => IDEN.find(reversed.as_str()),
+    };
+
+    if let Some(val) = find {
         let vals = val.range();
-        if vals.start == 0 {
+        if vals.start == 0 || (vals.start == 1 && inst == Argument) {
             let something = reversed.as_bytes();
+
             let ranger = &something[vals.start..vals.end];
 
             let res = from_utf8(ranger).unwrap();
@@ -300,15 +348,32 @@ pub fn get_last_ident(line: &str, reg: &str) -> Option<String> {
             return Some(retu);
         }
     }
+    // println!("no matches ");
     None
 }
 
 fn arg_get_valid(line: &str, hint: &str, suggested_addition: &str) -> bool {
     let mut owner = line.to_string();
     owner.push_str(suggested_addition);
-    let reg = r#"\s:\pL([\pL|\p{Nd}|_]*)"#;
-    if let Some(val) = get_last_ident(&owner, reg) {
+    // println!("owner:{}", owner);
+    if let Some(val) = get_last_ident(&owner, Argument) {
         return val == hint;
+    }
+    false
+}
+
+pub fn add_one(line: &str) -> bool {
+    let owner = line.to_string();
+    let reversed: String = owner.chars().rev().collect();
+    if line.ends_with("(") {
+        return true;
+    }
+    if let Some(val) = IDEN.find(reversed.as_str()) {
+        let range = val.range();
+        if range.end != reversed.len() {
+            let ch = reversed.chars().nth(range.end).unwrap();
+            return ch == '.';
+        }
     }
     false
 }

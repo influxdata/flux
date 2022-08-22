@@ -16,6 +16,7 @@ use rustyline::{
 use std::borrow::Cow;
 use std::borrow::Cow::{Borrowed, Owned};
 use std::collections::HashSet;
+use std::hash::Hash;
 use std::sync::mpsc::channel;
 use std::sync::mpsc::{Receiver, Sender};
 use std::sync::{Arc, RwLock};
@@ -40,23 +41,19 @@ impl Hinter for MyHelper {
 
     fn hint(&self, line: &str, pos: usize, _ctx: &Context<'_>) -> Option<CommandHint> {
         //hinter is going before the highlighter
-        // self.hinter_wait.swap(true, Ordering::Relaxed);
         //block till response
-        self.tx_stdin
-            .send(line.to_string())
-            .expect("failure sending when no hints");
-
-        self.rx_hints_updated.recv().unwrap();
-
         if line.is_empty() || pos < line.len() {
             return None;
         }
+
+        self.tx_stdin
+            .send(line.to_string())
+            .expect("failure sending when no hints");
 
         if let Some(hint) = self.hinter.trigger_finder(line) {
             return Some(hint);
         }
 
-        // println!("this is getting to the none and refetch section {}", line);
         trace!("get hints returned None refreshing hints");
         self.tx_stdin
             .send(line.to_string())
@@ -153,10 +150,10 @@ pub fn possible_main() -> Result<()> {
     let (tx_lsp, rx_lsp): (Sender<String>, Receiver<String>) = channel();
     //channel for the hinter so user input can be sent the coordinator gets the rx
     let (tx_hinter, rx_hinter): (Sender<String>, Receiver<String>) = channel();
-    //copy of the tx_hinter so that hints can be re-requested this is used in the hekoers
+    //copy of the tx_hinter so that hints can be re-requested this is used in the helpers
     let tx_more_hints = tx_hinter.clone();
 
-    //channel to indicate if the hints have been updated put that in the coordinator thread
+    //channel to send the new hints over sent via the coorinater
     let (tx_hints_updated, rx_hints_updated): (Sender<bool>, Receiver<bool>) = channel();
     //END: Channel Setup
 
@@ -188,7 +185,7 @@ pub fn possible_main() -> Result<()> {
 
     //start the coordinator
     // the coordinator thread uses the rx_hinter for receiving
-    run(hints, rx_hinter, rx_flux, tx_lsp, rx_lsp).unwrap();
+    run(hints, rx_hinter, tx_hints_updated, rx_flux, tx_lsp, rx_lsp).unwrap();
 
     //START: Rustyline Setup
     loop {

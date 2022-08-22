@@ -9,6 +9,7 @@ use std::io::Read;
 use std::process::{Child, ChildStdout, Command, Stdio};
 use std::str;
 use std::string::String;
+use std::sync::mpsc::Sender;
 use std::sync::{Arc, RwLock};
 use tower_lsp::jsonrpc;
 use tower_lsp::jsonrpc::RequestBuilder;
@@ -47,15 +48,17 @@ pub fn form_output(request_type: &str, text: &str) -> Result<String, OutputError
             let req: RequestBuilder = jsonrpc::Request::build("Service.DidOutput").params(paramm);
             let a = serde_json::to_value(req.finish())?;
             let res = serde_json::to_string(&a).unwrap();
-
-            // println!("{}", res);
             Ok(res)
         }
         _ => Err(InvalidMethod),
     }
 }
 
-pub fn read_json_rpc(child_stdout: ChildStdout, storage: Arc<RwLock<HashSet<CommandHint>>>) {
+pub fn read_json_rpc(
+    child_stdout: ChildStdout,
+    storage: Arc<RwLock<HashSet<CommandHint>>>,
+    tx_hints_updated: Sender<bool>,
+) -> Result<(), anyhow::Error> {
     let re = Regex::new(r"Content-Length: ").unwrap();
     let num = Regex::new(r"\d").unwrap();
     let mut buf: Vec<u8> = vec![];
@@ -73,9 +76,8 @@ pub fn read_json_rpc(child_stdout: ChildStdout, storage: Arc<RwLock<HashSet<Comm
             read_exact.1 = read_exact.1 - 1;
             if read_exact.1 == 0 {
                 //final result
-                let resp = str::from_utf8(&buf).unwrap();
-                // println!("{}", resp);
-                if let Some(val) = process_completions_response(&resp) {
+                let resp = str::from_utf8(&buf)?;
+                if let Some(val) = process_completions_response(&resp, tx_hints_updated.clone()) {
                     //since this is a write operation you need to lock
                     let mut write_lock = storage.write().unwrap();
                     *write_lock = val;
@@ -86,7 +88,7 @@ pub fn read_json_rpc(child_stdout: ChildStdout, storage: Arc<RwLock<HashSet<Comm
             continue;
         }
 
-        let a = str::from_utf8(&single).unwrap();
+        let a = str::from_utf8(&single)?;
         //if capturing numbers and the value is numeric add to number buffer
         if num_cap && num.is_match(a) {
             num_buf.insert(num_buf.len(), val);
@@ -95,7 +97,7 @@ pub fn read_json_rpc(child_stdout: ChildStdout, storage: Arc<RwLock<HashSet<Comm
                 //indicate you need to take that number and read that many bytes
                 num_cap = false;
                 buf.clear();
-                let read = str::from_utf8(&num_buf).unwrap();
+                let read = str::from_utf8(&num_buf)?;
                 //now read that many characters
                 let mut my_int: u16 = read.parse().unwrap();
                 //3 being the \r\n\n in the header
@@ -106,11 +108,12 @@ pub fn read_json_rpc(child_stdout: ChildStdout, storage: Arc<RwLock<HashSet<Comm
             }
             buf.insert(buf.len(), val);
         }
-        let cur = str::from_utf8(&buf).unwrap();
+        let cur = str::from_utf8(&buf)?;
         x = x + 1;
         y = y + 1;
         if !re.captures(cur).is_none() {
             num_cap = true;
         }
     }
+    Ok(())
 }

@@ -13,6 +13,8 @@ pub fn run(
     hints: Arc<RwLock<HashSet<CommandHint>>>,
     //what the coordinator gets from the hinter per character event handler
     rx_helper: Receiver<String>,
+    //when the hints have been updated send bool this goes to the lsp read thread
+    tx_update_hints: Sender<bool>,
     //what the user types and presses enter with sending to flux
     rx_flux: Receiver<String>,
     //what the coordinator sends to the lsp writer
@@ -27,7 +29,7 @@ pub fn run(
     //spawn the lsp writer thread
     write_lsp(lsp.stdin.take().unwrap(), rx_coordinator)?;
     //spawn the lsp reader thread
-    read_lsp(lsp.stdout.take().unwrap(), hints)?;
+    read_lsp(lsp.stdout.take().unwrap(), hints, tx_update_hints)?;
     //END: LSP setup
 
     //START: Flux setup

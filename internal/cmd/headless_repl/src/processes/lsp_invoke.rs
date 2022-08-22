@@ -15,6 +15,7 @@ use std::process::{Child, Command, Stdio};
 use tower_lsp::jsonrpc;
 
 use crate::lsp_suggestion_helper::get_last_ident;
+use crate::lsp_suggestion_helper::ExpType::Normal;
 use lsp_types::request::{Completion, Initialize, Request};
 use lsp_types::MarkupKind::PlainText;
 use regex::Regex;
@@ -209,23 +210,13 @@ pub fn formulate_request(
         LSPRequestType::Completion => {
             let line_num = text.matches("\n").count();
 
-            let mut add_one = false;
             //FIXME: Cases that don't work x = da will not complete to date and will not autocomplete functions that are args
-            if let Some(val) = get_last_ident(text, r#"\pL([\pL|\p{Nd}|_]*)"#) {
-                if val != text {
-                    add_one = true;
-                }
-            }
 
-            //FIXME: Sometimes +1 is needed to get correct suggestions but not always
-            // let character = match text.len() {
-            //     0 => 0,
-            //     _ => text.len() + 1,
-            // };
-            let character = match add_one {
+            let character = match super::super::lsp_suggestion_helper::add_one(text) {
                 true => text.len() as u32 + 1,
                 false => text.len() as u32,
             };
+
             // println!("here is the character {}", character);
 
             let req: RequestBuilder = jsonrpc::Request::build(Completion::METHOD).params(

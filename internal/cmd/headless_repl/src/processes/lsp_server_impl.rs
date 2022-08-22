@@ -3,7 +3,7 @@ use crate::{invoke_go, CommandHint};
 use std::collections::HashSet;
 use std::io::Write;
 use std::process::{ChildStdin, ChildStdout};
-use std::sync::mpsc::Receiver;
+use std::sync::mpsc::{Receiver, Sender};
 use std::sync::{Arc, RwLock};
 use std::thread;
 use std::time::Duration;
@@ -11,9 +11,10 @@ use std::time::Duration;
 pub fn read_lsp(
     stdout: ChildStdout,
     hints: Arc<RwLock<HashSet<CommandHint>>>,
+    tx_update_hints: Sender<bool>,
 ) -> Result<(), ServerError> {
     thread::spawn(move || {
-        invoke_go::read_json_rpc(stdout, hints);
+        invoke_go::read_json_rpc(stdout, hints, tx_update_hints).expect("TODO: panic message");
     });
     Ok(())
 }

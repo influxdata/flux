@@ -8,6 +8,7 @@ use std::borrow::{Borrow, Cow};
 use std::collections::HashSet;
 use std::fmt::{Display, Formatter};
 use std::hash::Hash;
+use std::sync::mpsc::Sender;
 
 #[derive(Hash, Debug, PartialEq, Eq)]
 pub enum HintType {
@@ -64,7 +65,10 @@ impl Clone for HintType {
     }
 }
 
-pub fn process_completions_response(resp: &str) -> Option<HashSet<CommandHint>> {
+pub fn process_completions_response(
+    resp: &str,
+    _tx_hints_updated: Sender<bool>,
+) -> Option<HashSet<CommandHint>> {
     //parse the response to a value using serde then enumerate the items adding each to the new set
     let json_bit: Value = serde_json::from_str::<Value>(resp).expect("failed to change");
     let snippet_fix = Regex::new(r#"\$\p{Nd}+"#).unwrap();
@@ -72,8 +76,7 @@ pub fn process_completions_response(resp: &str) -> Option<HashSet<CommandHint>> 
     // println!("here is the jsson version{:?}", json_bit);
 
     return if let Some(completions) = json_bit["result"]["items"].as_array() {
-        //create the set of completions
-        // println!("there are completions in here!");
+        //create new set of completions
         let mut set: HashSet<CommandHint> = HashSet::new();
 
         completions.iter().for_each(|x| {
@@ -84,10 +87,7 @@ pub fn process_completions_response(resp: &str) -> Option<HashSet<CommandHint>> 
 
             let replaced_snippets = snippet_fix.replace_all(arg, "");
             let val = Cow::borrow(&replaced_snippets);
-            // val = snippet_fix.replace_all(val, "").borrow();
             let kind = x["kind"].as_u64().unwrap();
-
-            // println!("insert hint: {} {}", val, kind);
 
             if let Some(detail) = x["detail"].as_str() {
                 let split = detail.split("->").collect::<Vec<&str>>();
@@ -103,11 +103,10 @@ pub fn process_completions_response(resp: &str) -> Option<HashSet<CommandHint>> 
                     ));
                 }
             } else {
-                // println!("inserted {}", val);
                 set.insert(CommandHint::new(val, val, kind.into(), None));
             }
         });
-        // trace!("{:?}", set);
+        //send the hashset over
         Some(set)
     } else {
         None
