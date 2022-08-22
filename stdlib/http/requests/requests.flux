@@ -183,6 +183,19 @@ do = (
 // > array.from(rows: [data])
 // ```
 //
+// ### Make a POST request with query parameters
+//
+// ```
+// import "http/requests"
+//
+// response = requests.post(
+//     url: "http://example.com",
+//     params: ["start": ["100"]],
+// )
+//
+// > requests.peek(response: response)
+// ```
+//
 // ## Metadata
 // tags: http,inputs
 post = (
