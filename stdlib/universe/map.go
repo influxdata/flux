@@ -2,13 +2,19 @@ package universe
 
 import (
 	"context"
+	"sort"
 
+	"github.com/apache/arrow/go/v7/arrow/memory"
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/array"
+	"github.com/influxdata/flux/arrow"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/compiler"
 	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/execute/table"
+	"github.com/influxdata/flux/internal/arrowutil"
 	"github.com/influxdata/flux/internal/errors"
-	"github.com/influxdata/flux/internal/feature"
+	"github.com/influxdata/flux/internal/mutable"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/runtime"
@@ -16,7 +22,9 @@ import (
 	"github.com/influxdata/flux/values"
 )
 
-const MapKind = "map"
+const (
+	MapKind = "map"
+)
 
 type MapOpSpec struct {
 	Fn       interpreter.ResolvedFunction `json:"fn"`
@@ -97,159 +105,264 @@ func createMapTransformation(id execute.DatasetID, mode execute.AccumulationMode
 		return nil, nil, errors.Newf(codes.Internal, "invalid spec type %T", spec)
 	}
 
-	if feature.VectorizedMap().Enabled(a.Context()) {
-		return newMapTransformation2(a.Context(), id, s, a.Allocator())
-	}
+	return newMapTransformation(a.Context(), id, s, a.Allocator())
+}
 
-	cache := execute.NewTableBuilderCache(a.Allocator())
-	d := execute.NewDataset(id, mode, cache)
-	t, err := NewMapTransformation(a.Context(), s, d, cache)
-
-	if err != nil {
-		return nil, nil, err
+func newMapTransformation(ctx context.Context, id execute.DatasetID, spec *MapProcedureSpec, mem memory.Allocator) (execute.Transformation, execute.Dataset, error) {
+	tr := &mapTransformation{
+		ctx: ctx,
+		fn: &mapRowFunc{
+			fn: execute.NewRowMapFn(
+				spec.Fn.Fn,
+				compiler.ToScope(spec.Fn.Scope),
+			),
+		},
 	}
-	return t, d, nil
+	return execute.NewGroupTransformation(id, tr, mem)
 }
 
 type mapTransformation struct {
-	execute.ExecutionNode
-	d        execute.Dataset
-	cache    execute.TableBuilderCache
-	ctx      context.Context
-	fn       *execute.RowMapFn
-	mergeKey bool
+	ctx context.Context
+	fn  mapFunc
 }
 
-func NewMapTransformation(ctx context.Context, spec *MapProcedureSpec, d execute.Dataset, cache execute.TableBuilderCache) (*mapTransformation, error) {
-	fn := execute.NewRowMapFn(spec.Fn.Fn, compiler.ToScope(spec.Fn.Scope))
-	return &mapTransformation{
-		d:        d,
-		cache:    cache,
-		fn:       fn,
-		ctx:      ctx,
-		mergeKey: spec.MergeKey,
+func (m *mapTransformation) Process(
+	chunk table.Chunk,
+	d *execute.TransportDataset,
+	mem memory.Allocator,
+) error {
+	// The current version of map just silently drops
+	// empty tables so let's just do that.
+	if chunk.Len() == 0 {
+		return nil
+	}
+
+	// Prepare the compiled function for the set of columns.
+	cols := chunk.Cols()
+	fn, err := m.fn.Prepare(cols)
+	if err != nil {
+		return err
+	}
+
+	// Execute function.
+	cols, arrs, err := fn.Eval(m.ctx, chunk, mem)
+	if err != nil {
+		return err
+	}
+	return m.regroup(cols, chunk.Key(), arrs, d, mem)
+}
+
+// regroup will take the mapped output columns and regroup them into new group keys
+// depending on the content of the columns.
+func (m *mapTransformation) regroup(cols []flux.ColMeta, key flux.GroupKey, arrs []array.Array, d *execute.TransportDataset, mem memory.Allocator) error {
+	// Determine which columns are part of the group key.
+	keyIndices, keyCols := m.determineKeyColumns(cols, key)
+
+	// Determine which of these key columns are not homogenous
+	// and require us to regroup.
+	regroupCols := m.regroupWith(keyIndices, arrs)
+	if len(regroupCols) == 0 {
+		// None of the columns are heterogeneous so
+		// we can use the array as-is without regrouping.
+		// Construct the values from the first row
+		// and send it.
+		key := m.makeKey(keyIndices, keyCols, cols, arrs, 0)
+		return m.processTable(d, key, cols, arrs)
+	}
+
+	// This will require a regroup because one of the group key
+	// columns is not homogenous. Since this is the case, we
+	// will reconstruct the buffers and so we can defer releasing
+	// the ones we have created.
+	defer func() {
+		for _, arr := range arrs {
+			arr.Release()
+		}
+	}()
+
+	// Determine which order the rows would be in if we sorted them.
+	rowIndices := m.sort(arrs, arrs[0].Len(), regroupCols, mem)
+	defer rowIndices.Release()
+
+	// Regroup the values using the sorted row indices.
+	return m.regroupSorted(d, regroupCols, keyIndices, keyCols, cols, rowIndices, arrs, mem)
+}
+
+// sort will use the given columns to create an index of sorted rows using the input arrays.
+// This returns a set of indices mapping the ordered values to their original location
+// in the array.
+func (m *mapTransformation) sort(arrs []array.Array, n int, cols []int, mem memory.Allocator) *array.Int {
+	// Construct the indices.
+	indices := mutable.NewInt64Array(mem)
+	indices.Resize(n)
+
+	// Retrieve the raw slice and initialize the offsets.
+	offsets := indices.Int64Values()
+	for i := range offsets {
+		offsets[i] = int64(i)
+	}
+
+	// Sort the offsets by using the comparison method.
+	sort.SliceStable(offsets, func(i, j int) bool {
+		i, j = int(offsets[i]), int(offsets[j])
+		for _, col := range cols {
+			arr := arrs[col]
+			if cmp := arrowutil.Compare(arr, arr, i, j); cmp != 0 {
+				return cmp < 0
+			}
+		}
+		return false
+	})
+
+	// Return the now sorted indices.
+	return indices.NewInt64Array()
+}
+
+// regroupSorted takes the sorted indices and regroups the columns into separate group keys.
+func (m *mapTransformation) regroupSorted(d *execute.TransportDataset, regroupCols, keyIndices []int, keyCols, cols []flux.ColMeta, rowIndices *array.Int, arrs []array.Array, mem memory.Allocator) error {
+	first, n := 0, arrs[0].Len()
+	for first < n {
+		// Use the first row to construct a key.
+		key := m.makeKey(keyIndices, keyCols, cols, arrs, first)
+
+		// Determine the last row that matches the same key.
+		last := first + 1
+		x := rowIndices.Value(first)
+	OUTER:
+		for last < n {
+			for _, col := range regroupCols {
+				arr := arrs[col]
+				y := rowIndices.Value(last)
+				if arrowutil.Compare(arr, arr, int(x), int(y)) != 0 {
+					break OUTER
+				}
+			}
+			// All the regroup columns were equivalent.
+			last++
+		}
+
+		// Copy over the values by index.
+		indices := arrow.IntSlice(rowIndices, first, last)
+		vals := make([]array.Array, len(cols))
+		for j, col := range cols {
+			b := arrow.NewBuilder(col.Type, mem)
+			b.Resize(last - first)
+			arrowutil.CopyByIndexTo(b, arrs[j], indices)
+			vals[j] = b.NewArray()
+		}
+		indices.Release()
+
+		if err := m.processTable(d, key, cols, vals); err != nil {
+			return err
+		}
+		first = last
+	}
+	return nil
+}
+
+// determineKeyColumns determines which columns should be part of the group key.
+// If a column previously existed in the group key and does not exist in the output,
+// it will not be returned here.
+//
+// This returns the index of the key column in the list of columns along with a
+// template for the key columns.
+func (m *mapTransformation) determineKeyColumns(cols []flux.ColMeta, key flux.GroupKey) ([]int, []flux.ColMeta) {
+	indices := make([]int, 0, len(key.Cols()))
+	keyCols := make([]flux.ColMeta, 0, len(key.Cols()))
+	for i, col := range cols {
+		if key.HasCol(col.Label) {
+			indices = append(indices, i)
+			keyCols = append(keyCols, col)
+		}
+	}
+	return indices, keyCols
+}
+
+// regroupWith determines which columns will need to be used to regroup.
+// A column needs to be regrouped if it was part of the group key and the values
+// are not a single constant value.
+//
+// If the group key columns are all constants, then they would all end up in
+// the same group key and we don't need to regroup. That is represented by returning
+// an empty slice.
+func (m *mapTransformation) regroupWith(keyIndices []int, arrs []array.Array) []int {
+	regroup := make([]int, 0, len(keyIndices))
+	for _, idx := range keyIndices {
+		if !arrowutil.IsConstant(arrs[idx]) {
+			regroup = append(regroup, idx)
+		}
+	}
+	return regroup
+}
+
+// makeKey will construct a group key using the given values in the row.
+func (m *mapTransformation) makeKey(keyIndices []int, keyCols []flux.ColMeta, cols []flux.ColMeta, arrs []array.Array, row int) flux.GroupKey {
+	buffer := arrow.TableBuffer{
+		Columns: cols,
+		Values:  arrs,
+	}
+	vals := make([]values.Value, len(keyCols))
+	for i, idx := range keyIndices {
+		vals[i] = execute.ValueForRow(&buffer, row, idx)
+	}
+	return execute.NewGroupKey(keyCols, vals)
+}
+
+// processTable is a utility function for creating a table chunk and sending it through the transport.
+func (m *mapTransformation) processTable(d *execute.TransportDataset, key flux.GroupKey, cols []flux.ColMeta, arrs []array.Array) error {
+	buffer := arrow.TableBuffer{
+		GroupKey: key,
+		Columns:  cols,
+		Values:   arrs,
+	}
+	chunk := table.ChunkFromBuffer(buffer)
+	return d.Process(chunk)
+}
+
+func (m *mapTransformation) Close() error {
+	return nil
+}
+
+type mapFunc interface {
+	Prepare(cols []flux.ColMeta) (mapPreparedFunc, error)
+}
+
+type mapPreparedFunc interface {
+	Eval(ctx context.Context, chunk table.Chunk, mem memory.Allocator) ([]flux.ColMeta, []array.Array, error)
+}
+
+type mapRowFunc struct {
+	fn *execute.RowMapFn
+}
+
+func (m *mapRowFunc) Prepare(cols []flux.ColMeta) (mapPreparedFunc, error) {
+	fn, err := m.fn.Prepare(cols)
+	if err != nil {
+		return nil, err
+	}
+	return &mapRowPreparedFunc{
+		fn: fn,
 	}, nil
 }
 
-func (t *mapTransformation) RetractTable(id execute.DatasetID, key flux.GroupKey) error {
-	return t.d.RetractTable(key)
+type mapRowPreparedFunc struct {
+	fn *execute.RowMapPreparedFn
 }
 
-func (t *mapTransformation) Process(id execute.DatasetID, tbl flux.Table) error {
-	// Prepare the functions for the column types.
-	cols := tbl.Cols()
-	fn, err := t.fn.Prepare(cols)
-	if err != nil {
-		// TODO(nathanielc): Should we not fail the query for failed compilation?
-		return err
+func (m *mapRowPreparedFunc) initialize(cols []flux.ColMeta, mem memory.Allocator) []array.Builder {
+	builders := make([]array.Builder, len(cols))
+	for i, col := range cols {
+		builders[i] = arrow.NewBuilder(col.Type, mem)
 	}
-
-	// TODO(jsternberg): Use type inference. The original algorithm
-	// didn't really use type inference at all so I removed its usage
-	// in favor of the real returned type.
-
-	var on map[string]bool
-	return tbl.Do(func(cr flux.ColReader) error {
-		l := cr.Len()
-		for i := 0; i < l; i++ {
-			m, err := fn.Eval(t.ctx, i, cr)
-			if err != nil {
-				return errors.Wrap(err, codes.Invalid, "failed to evaluate map function")
-			}
-
-			// If we haven't determined the columns to group on, do that now.
-			if on == nil {
-				var err error
-				on, err = t.groupOn(tbl.Key(), m.Type())
-				if err != nil {
-					return err
-				}
-			}
-
-			key := groupKeyForObject(i, cr, m, on)
-			builder, created := t.cache.TableBuilder(key)
-			if created {
-				if err := t.createSchema(fn, builder, m); err != nil {
-					return err
-				}
-			}
-
-			for j, c := range builder.Cols() {
-				v, ok := m.Get(c.Label)
-				if !ok {
-					if idx := execute.ColIdx(c.Label, tbl.Key().Cols()); t.mergeKey && idx >= 0 {
-						v = tbl.Key().Value(idx)
-					} else {
-						// This should be unreachable
-						return errors.Newf(codes.Internal, "could not find value for column %q", c.Label)
-					}
-				}
-				if !v.IsNull() && c.Type.String() != v.Type().Nature().String() {
-					return errors.Newf(codes.Invalid, "map regroups data such that column %q would include values"+
-						" of two different data types: %v, %v",
-						c.Label, c.Type, v.Type(),
-					)
-				}
-				if err := builder.AppendValue(j, v); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	})
+	return builders
 }
 
-func (t *mapTransformation) groupOn(key flux.GroupKey, m semantic.MonoType) (map[string]bool, error) {
-	on := make(map[string]bool, len(key.Cols()))
-	for _, c := range key.Cols() {
-		if t.mergeKey {
-			on[c.Label] = true
-			continue
-		}
-
-		// If the label isn't included in the properties,
-		// then it wasn't returned by the eval.
-		n, err := m.NumProperties()
-		if err != nil {
-			return nil, err
-		}
-
-		for i := 0; i < n; i++ {
-			Record, err := m.RecordProperty(i)
-			if err != nil {
-				return nil, err
-			}
-
-			if semantic.NewSymbol(Record.Name()).Name() == c.Label {
-				on[c.Label] = true
-				break
-			}
-		}
-	}
-	return on, nil
-}
-
-// createSchema will create the schema for a table based on the object.
-// This should only be called when a table is created anew.
-//
-// TODO(jsternberg): I am pretty sure this method and its usage don't
-// match with the spec, but it is a faithful reproduction of the current
-// map behavior. When we get around to rewriting portions of map, this
-// should be rewritten to use the inferred type from type inference
-// and it should be capable of consolidating schemas from non-uniform
-// tables.
-func (t *mapTransformation) createSchema(fn *execute.RowMapPreparedFn, b execute.TableBuilder, m values.Object) error {
-	if t.mergeKey {
-		if err := execute.AddTableKeyCols(b.Key(), b); err != nil {
-			return err
-		}
-	}
-
-	returnType := fn.Type()
+func (m *mapRowPreparedFunc) createSchema(record values.Object) ([]flux.ColMeta, error) {
+	returnType := m.fn.Type()
 
 	numProps, err := returnType.NumProperties()
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	props := make(map[string]semantic.Nature, numProps)
@@ -259,30 +372,34 @@ func (t *mapTransformation) createSchema(fn *execute.RowMapPreparedFn, b execute
 	for i := numProps - 1; i >= 0; i-- {
 		prop, err := returnType.RecordProperty(i)
 		if err != nil {
-			return err
+			return nil, err
 		}
 		typ, err := prop.TypeOf()
 		if err != nil {
-			return err
+			return nil, err
 		}
 		props[prop.Name()] = typ.Nature()
 	}
 
 	// Add columns from function in sorted order.
-	sortedProps, err := m.Type().SortedProperties()
+	n, err := record.Type().NumProperties()
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	for _, prop := range sortedProps {
-		s := semantic.NewSymbol(prop.Name())
-		k := s.Name()
-
-		if t.mergeKey && b.Key().HasCol(k) {
-			continue
+	keys := make([]string, 0, n)
+	for i := 0; i < n; i++ {
+		prop, err := record.Type().RecordProperty(i)
+		if err != nil {
+			return nil, err
 		}
+		keys = append(keys, prop.Name())
+	}
+	sort.Strings(keys)
 
-		v, ok := m.Get(k)
+	cols := make([]flux.ColMeta, 0, len(keys))
+	for _, k := range keys {
+		v, ok := record.Get(k)
 		if !ok {
 			continue
 		}
@@ -297,46 +414,52 @@ func (t *mapTransformation) createSchema(fn *execute.RowMapPreparedFn, b execute
 		}
 		ty := execute.ConvertFromKind(nature)
 		if ty == flux.TInvalid {
-			return errors.Newf(codes.Invalid, `map object property "%s" is %v type which is not supported in a flux table`, k, nature)
+			return nil, errors.Newf(codes.Invalid, `map object property "%s" is %v type which is not supported in a flux table`, k, nature)
 		}
-		if _, err := b.AddCol(flux.ColMeta{
+		cols = append(cols, flux.ColMeta{
 			Label: k,
 			Type:  ty,
-		}); err != nil {
-			return err
-		}
+		})
 	}
-	return nil
+	return cols, nil
 }
 
-func groupKeyForObject(i int, cr flux.ColReader, obj values.Object, on map[string]bool) flux.GroupKey {
-	cols := make([]flux.ColMeta, 0, len(on))
-	vs := make([]values.Value, 0, len(on))
-	for j, c := range cr.Cols() {
-		if !on[c.Label] {
-			continue
+func (m *mapRowPreparedFunc) Eval(ctx context.Context, chunk table.Chunk, mem memory.Allocator) ([]flux.ColMeta, []array.Array, error) {
+	var (
+		cols     []flux.ColMeta
+		builders []array.Builder
+	)
+
+	buffer := chunk.Buffer()
+	for i, n := 0, chunk.Len(); i < n; i++ {
+		res, err := m.fn.Eval(ctx, i, &buffer)
+		if err != nil {
+			return nil, nil, errors.Wrap(err, codes.Invalid, "failed to evaluate map function")
 		}
-		v, ok := obj.Get(c.Label)
-		if ok {
-			vs = append(vs, v)
-			cols = append(cols, flux.ColMeta{
-				Label: c.Label,
-				Type:  flux.ColumnType(v.Type()),
-			})
-		} else {
-			vs = append(vs, execute.ValueForRow(cr, i, j))
-			cols = append(cols, c)
+
+		if i == 0 {
+			cols, err = m.createSchema(res)
+			if err != nil {
+				return nil, nil, err
+			}
+
+			builders = m.initialize(cols, mem)
+			for _, b := range builders {
+				b.Resize(n)
+			}
+		}
+
+		for i, col := range cols {
+			v, _ := res.Get(col.Label)
+			if err := arrow.AppendValue(builders[i], v); err != nil {
+				return nil, nil, err
+			}
 		}
 	}
-	return execute.NewGroupKey(cols, vs)
-}
 
-func (t *mapTransformation) UpdateWatermark(id execute.DatasetID, mark execute.Time) error {
-	return t.d.UpdateWatermark(mark)
-}
-func (t *mapTransformation) UpdateProcessingTime(id execute.DatasetID, pt execute.Time) error {
-	return t.d.UpdateProcessingTime(pt)
-}
-func (t *mapTransformation) Finish(id execute.DatasetID, err error) {
-	t.d.Finish(err)
+	arrs := make([]array.Array, len(builders))
+	for i, b := range builders {
+		arrs[i] = b.NewArray()
+	}
+	return cols, arrs, nil
 }

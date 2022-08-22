@@ -3,6 +3,7 @@ package universe_test
 
 import "array"
 import "testing"
+import "testing/expect"
 
 // The intent with these tests is to ensure coverage for vectorized conditional
 // expressions. Only a subset of flux types work due to specifics of the
@@ -19,6 +20,8 @@ import "testing"
 fn = (r) => ({v: if r.cond then r.a else r.b})
 
 testcase vec_conditional_time {
+    expect.planner(rules: ["vectorizeMapRule": 1])
+
     want = array.from(rows: [{v: 2022-01-01T00:00:00Z}, {v: 2022-01-04T00:00:00Z}])
 
     got =
@@ -34,6 +37,8 @@ testcase vec_conditional_time {
 }
 
 testcase vec_conditional_time_repeat {
+    expect.planner(rules: ["vectorizeMapRule": 1])
+
     want = array.from(rows: [{v: 1955-11-12T00:00:00Z}, {v: 1985-10-26T00:00:00Z}])
 
     got =
@@ -44,6 +49,8 @@ testcase vec_conditional_time_repeat {
 }
 
 testcase vec_conditional_int {
+    expect.planner(rules: ["vectorizeMapRule": 1])
+
     want = array.from(rows: [{v: -1}, {v: 2}])
 
     got =
@@ -54,6 +61,8 @@ testcase vec_conditional_int {
 }
 
 testcase vec_conditional_int_repeat {
+    expect.planner(rules: ["vectorizeMapRule": 1])
+
     want = array.from(rows: [{v: 10}, {v: 20}])
 
     got =
@@ -64,6 +73,8 @@ testcase vec_conditional_int_repeat {
 }
 
 testcase vec_conditional_float {
+    expect.planner(rules: ["vectorizeMapRule": 1])
+
     want = array.from(rows: [{v: -1.0}, {v: 2.0}])
 
     got =
@@ -74,6 +85,8 @@ testcase vec_conditional_float {
 }
 
 testcase vec_conditional_float_repeat {
+    expect.planner(rules: ["vectorizeMapRule": 1])
+
     want = array.from(rows: [{v: 10.0}, {v: 20.0}])
 
     got =
@@ -85,6 +98,8 @@ testcase vec_conditional_float_repeat {
 
 // FIXME: can't do a vec repeat version for uint until we vectorize uint
 testcase vec_conditional_uint {
+    expect.planner(rules: ["vectorizeMapRule": 1])
+
     want = array.from(rows: [{v: uint(v: 0)}, {v: uint(v: 3)}])
 
     got =
@@ -100,6 +115,8 @@ testcase vec_conditional_uint {
 }
 
 testcase vec_conditional_string {
+    expect.planner(rules: ["vectorizeMapRule": 1])
+
     want = array.from(rows: [{v: "a"}, {v: "d"}])
 
     got =
@@ -110,6 +127,8 @@ testcase vec_conditional_string {
 }
 
 testcase vec_conditional_string_repeat {
+    expect.planner(rules: ["vectorizeMapRule": 1])
+
     want = array.from(rows: [{v: "yes"}, {v: "no"}])
 
     got =

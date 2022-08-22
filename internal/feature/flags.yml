@@ -28,12 +28,6 @@
   default: false
   contact: Jonathan Sternberg
 
-- name: Vectorized Map
-  description: Enables the version of map that supports vectorized functions
-  key: vectorizedMap
-  default: false
-  contact: Jonathan Sternberg
-
 - name: Narrow Transformation Difference
   description: Enable the NarrowTransformation implementation of difference
   key: narrowTransformationDifference

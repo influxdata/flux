@@ -3,6 +3,7 @@ package universe_test
 
 import "array"
 import "testing"
+import "testing/expect"
 
 // Vectorized constant values, aka "vec repeat" are vectors that only hold a
 // singleton value, unchanged during the processing of all rows.
@@ -18,6 +19,8 @@ import "testing"
 data = array.from(rows: [{x: 1}, {x: 2}])
 
 testcase vec_const_with_const {
+    expect.planner(rules: ["vectorizeMapRule": 1])
+
     want = array.from(rows: [{x: 1, y: 5}, {x: 2, y: 5}])
     got = data |> map(fn: (r) => ({r with y: 5}))
 
@@ -25,6 +28,8 @@ testcase vec_const_with_const {
 }
 
 testcase vec_const_with_const_add_const {
+    expect.planner(rules: ["vectorizeMapRule": 1])
+
     want = array.from(rows: [{x: 1, y: 7}, {x: 2, y: 7}])
     got = data |> map(fn: (r) => ({r with y: 5 + 2}))
 
@@ -32,6 +37,8 @@ testcase vec_const_with_const_add_const {
 }
 
 testcase vec_const_add_member_const {
+    expect.planner(rules: ["vectorizeMapRule": 1])
+
     want = array.from(rows: [{x: 1, y: 6}, {x: 2, y: 7}])
     got = data |> map(fn: (r) => ({r with y: r.x + 5}))
 
@@ -39,6 +46,8 @@ testcase vec_const_add_member_const {
 }
 
 testcase vec_const_with_const_add_const_add_member {
+    expect.planner(rules: ["vectorizeMapRule": 1])
+
     want = array.from(rows: [{x: 1, y: 7}, {x: 2, y: 8}])
     got = data |> map(fn: (r) => ({r with y: 5 + 1 + r.x}))
 
@@ -46,6 +55,8 @@ testcase vec_const_with_const_add_const_add_member {
 }
 
 testcase vec_const_with_const_add_member_add_const {
+    expect.planner(rules: ["vectorizeMapRule": 1])
+
     want = array.from(rows: [{x: 1, y: 7}, {x: 2, y: 8}])
     got = data |> map(fn: (r) => ({r with y: 5 + r.x + 1}))
 
@@ -53,6 +64,8 @@ testcase vec_const_with_const_add_member_add_const {
 }
 
 testcase vec_const_with_member_add_const_add_const {
+    expect.planner(rules: ["vectorizeMapRule": 1])
+
     want = array.from(rows: [{x: 1, y: 7}, {x: 2, y: 8}])
     got = data |> map(fn: (r) => ({r with y: r.x + 5 + 1}))
 
@@ -61,6 +74,8 @@ testcase vec_const_with_member_add_const_add_const {
 
 // Test to check that a range of literals are supported
 testcase vec_const_kitchen_sink_column_types {
+    expect.planner(rules: ["vectorizeMapRule": 1])
+
     want =
         array.from(
             rows: [
