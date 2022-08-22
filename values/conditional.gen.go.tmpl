@@ -22,71 +22,89 @@ import (
 //
 // Cases where either or both of the consequent `c` and alternate `a` are
 // `VectorRepeatValue`s are supported.
-func VectorConditional(t, c, a Vector, mem memory.Allocator) (Value, error) {
-	var tvr, cvr, avr *Value
-	if vr, ok := t.(*VectorRepeatValue); ok {
-		tvr = &vr.val
-	}
-	if vr, ok := c.(*VectorRepeatValue); ok {
-		cvr = &vr.val
-	}
-	if vr, ok := a.(*VectorRepeatValue); ok {
-		avr = &vr.val
+//
+// Similar to the vec repeat situation, cases where either `c` or `a` are
+// invalid (aka null), we treat this as if we have a null constant for the given
+// branch. Items selected from the branch will produce nulls in the output.
+// For cases where both `c` and `a` are null, we short circuit immediately
+// returning a new untyped null Value.
+func VectorConditional(t Vector, c, a Value, mem memory.Allocator) (Value, error) {
+	// We will know the output type only when at least one branch is not null.
+	// When both branches are null, the output can only be null (aka Invalid).
+	var elemType semantic.MonoType
+	if c.IsNull() && a.IsNull() {
+		return Null, nil // early return an untyped null
+	} else if c.IsNull() {
+		elemType = a.Vector().ElementType()
+	} else {
+		elemType = c.Vector().ElementType()
 	}
 
-	if tvr != nil {
+	if _, ok := t.(*VectorRepeatValue); ok {
 		panic("t is constant, should be handled higher up, such as in conditionalVectorEvaluator.Eval")
 	}
 
-	switch a.ElementType().Nature() {
+	switch elemType.Nature() {
 	{{range .}}
 	case semantic.{{if eq .Name "Uint"}}UInt{{else}}{{if eq .Name "Boolean"}}Bool{{else}}{{.Name}}{{end}}{{end}}:
 		var (
 		x *fluxarray.{{.ValueName}}
 			err error
 		)
-		if cvr != nil && avr != nil {
+
+		var cvr, avr *{{.PrimitiveType}}
+		crepeat := false
+		if vr, ok := c.(*VectorRepeatValue); ok {
+			crepeat = true
+			{{if eq .Name "Time"}}
+				prim := vr.val.Time().Time().UnixNano()
+			{{else}}
+				prim := vr.val.{{.ValueType}}()
+			{{end}}
+				cvr = &prim
+		} else if c.IsNull() {
+			crepeat = true // leave cvr as nil, but insist we treat it as a constant.
+		}
+
+		arepeat := false
+		if vr, ok := a.(*VectorRepeatValue); ok {
+			arepeat = true
+			{{if eq .Name "Time"}}
+				prim := vr.val.Time().Time().UnixNano()
+			{{else}}
+				prim := vr.val.{{.ValueType}}()
+			{{end}}
+			avr = &prim
+		} else if a.IsNull() {
+			arepeat = true // leave avr as nil, but insist we treat it as a constant.
+		}
+
+		if crepeat && arepeat {
 			x, err = fluxarray.{{.ValueName}}ConditionalCConstAConst(
 				t.Arr().(*fluxarray.Boolean),
-				{{if eq .Name "Time"}}
-					(*cvr).Time().Time().UnixNano(),
-				{{else}}
-					(*cvr).{{.ValueType}}(),
-				{{end}}
-				{{if eq .Name "Time"}}
-					(*avr).Time().Time().UnixNano(),
-				{{else}}
-					(*avr).{{.ValueType}}(),
-				{{end}}
+				cvr,
+				avr,
 				mem,
 			)
-		} else if cvr != nil {
+		} else if crepeat {
 			x, err = fluxarray.{{.ValueName}}ConditionalCConst(
 				t.Arr().(*fluxarray.Boolean),
-				{{if eq .Name "Time"}}
-					(*cvr).Time().Time().UnixNano(),
-				{{else}}
-					(*cvr).{{.ValueType}}(),
-				{{end}}
-				a.Arr().(*fluxarray.{{.ValueName}}),
+				cvr,
+				a.Vector().Arr().(*fluxarray.{{.ValueName}}),
 				mem,
 			)
-		} else if avr != nil {
+		} else if arepeat {
 			x, err = fluxarray.{{.ValueName}}ConditionalAConst(
 				t.Arr().(*fluxarray.Boolean),
-				c.Arr().(*fluxarray.{{.ValueName}}),
-				{{if eq .Name "Time"}}
-					(*avr).Time().Time().UnixNano(),
-				{{else}}
-					(*avr).{{.ValueType}}(),
-				{{end}}
+				c.Vector().Arr().(*fluxarray.{{.ValueName}}),
+				avr,
 				mem,
 			)
 		} else {
 			x, err = fluxarray.{{.ValueName}}Conditional(
 				t.Arr().(*fluxarray.Boolean),
-					c.Arr().(*fluxarray.{{.ValueName}}),
-					a.Arr().(*fluxarray.{{.ValueName}}),
+					c.Vector().Arr().(*fluxarray.{{.ValueName}}),
+					a.Vector().Arr().(*fluxarray.{{.ValueName}}),
 					mem,
 				)
 		}
@@ -96,6 +114,6 @@ func VectorConditional(t, c, a Vector, mem memory.Allocator) (Value, error) {
 		return NewVectorValue(x, {{.MonoType}}), nil
 	{{end}}
 	default:
-		return nil, errors.Newf(codes.Invalid, "unsupported type for vector: %v", a.ElementType())
+		return nil, errors.Newf(codes.Invalid, "unsupported type for vector: %v", elemType)
 	}
 }

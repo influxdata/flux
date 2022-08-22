@@ -32,7 +32,7 @@ func {{.Name}}Conditional(t *Boolean, c, a *{{.Name}}, mem memory.Allocator) (*{
 	return arr, nil
 }
 
-func {{.Name}}ConditionalCConst(t *Boolean, c {{.PrimitiveType}}, a *{{.Name}}, mem memory.Allocator) (*{{.Name}}, error) {
+func {{.Name}}ConditionalCConst(t *Boolean, c *{{.PrimitiveType}}, a *{{.Name}}, mem memory.Allocator) (*{{.Name}}, error) {
 		n := t.Len()
 		b := New{{.Name}}Builder(mem)
 		b.Resize(n)
@@ -44,8 +44,8 @@ func {{.Name}}ConditionalCConst(t *Boolean, c {{.PrimitiveType}}, a *{{.Name}}, 
 		for i := 0; i < n; i++ {
 			// nulls are considered as false
 			truthy := t.IsValid(i) && t.Value(i)
-			if truthy {
-				b.Append(c)
+			if truthy && c != nil {
+				b.Append(*c)
 			} else if !truthy && a.IsValid(i) {
 				b.Append(a.Value(i))
 			} else {
@@ -57,7 +57,7 @@ func {{.Name}}ConditionalCConst(t *Boolean, c {{.PrimitiveType}}, a *{{.Name}}, 
 	return arr, nil
 }
 
-func {{.Name}}ConditionalAConst(t *Boolean, c *{{.Name}}, a {{.PrimitiveType}}, mem memory.Allocator) (*{{.Name}}, error) {
+func {{.Name}}ConditionalAConst(t *Boolean, c *{{.Name}}, a *{{.PrimitiveType}}, mem memory.Allocator) (*{{.Name}}, error) {
 		n := t.Len()
 		b := New{{.Name}}Builder(mem)
 		b.Resize(n)
@@ -71,8 +71,8 @@ func {{.Name}}ConditionalAConst(t *Boolean, c *{{.Name}}, a {{.PrimitiveType}}, 
 			truthy := t.IsValid(i) && t.Value(i)
 			if truthy && c.IsValid(i) {
 				b.Append(c.Value(i))
-			} else if !truthy {
-				b.Append(a)
+			} else if !truthy && a != nil {
+				b.Append(*a)
 			} else {
 				b.AppendNull()
 			}
@@ -82,7 +82,17 @@ func {{.Name}}ConditionalAConst(t *Boolean, c *{{.Name}}, a {{.PrimitiveType}}, 
 	return arr, nil
 }
 
-func {{.Name}}ConditionalCConstAConst(t *Boolean, c, a {{.PrimitiveType}}, mem memory.Allocator) (*{{.Name}}, error) {
+func {{.Name}}ConditionalCConstAConst(t *Boolean, c, a *{{.PrimitiveType}}, mem memory.Allocator) (*{{.Name}}, error) {
+		// n.b. if both c and a are null, we probably don't know the output type
+		// so we can't produce a typed array. If we end up calling this function
+		// in this situation, it's probably a programmer error.
+		if a == nil && c == nil {
+			return nil, errors.Newf(
+				codes.Invalid,
+				"consequent and alternate are both nil; caller should handle this case by returning `values.Null`",
+			)
+		}
+
 		n := t.Len()
 		b := New{{.Name}}Builder(mem)
 		b.Resize(n)
@@ -90,10 +100,10 @@ func {{.Name}}ConditionalCConstAConst(t *Boolean, c, a {{.PrimitiveType}}, mem m
 		for i := 0; i < n; i++ {
 			// nulls are considered as false
 			truthy := t.IsValid(i) && t.Value(i)
-			if truthy {
-				b.Append(c)
-			} else if !truthy {
-				b.Append(a)
+			if truthy && c != nil {
+				b.Append(*c)
+			} else if !truthy && a != nil {
+				b.Append(*a)
 			} else {
 				b.AppendNull()
 			}

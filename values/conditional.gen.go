@@ -27,62 +27,85 @@ import (
 //
 // Cases where either or both of the consequent `c` and alternate `a` are
 // `VectorRepeatValue`s are supported.
-func VectorConditional(t, c, a Vector, mem memory.Allocator) (Value, error) {
-	var tvr, cvr, avr *Value
-	if vr, ok := t.(*VectorRepeatValue); ok {
-		tvr = &vr.val
-	}
-	if vr, ok := c.(*VectorRepeatValue); ok {
-		cvr = &vr.val
-	}
-	if vr, ok := a.(*VectorRepeatValue); ok {
-		avr = &vr.val
+//
+// Similar to the vec repeat situation, cases where either `c` or `a` are
+// invalid (aka null), we treat this as if we have a null constant for the given
+// branch. Items selected from the branch will produce nulls in the output.
+// For cases where both `c` and `a` are null, we short circuit immediately
+// returning a new untyped null Value.
+func VectorConditional(t Vector, c, a Value, mem memory.Allocator) (Value, error) {
+	// We will know the output type only when at least one branch is not null.
+	// When both branches are null, the output can only be null (aka Invalid).
+	var elemType semantic.MonoType
+	if c.IsNull() && a.IsNull() {
+		return Null, nil // early return an untyped null
+	} else if c.IsNull() {
+		elemType = a.Vector().ElementType()
+	} else {
+		elemType = c.Vector().ElementType()
 	}
 
-	if tvr != nil {
+	if _, ok := t.(*VectorRepeatValue); ok {
 		panic("t is constant, should be handled higher up, such as in conditionalVectorEvaluator.Eval")
 	}
 
-	switch a.ElementType().Nature() {
+	switch elemType.Nature() {
 
 	case semantic.Int:
 		var (
 			x   *fluxarray.Int
 			err error
 		)
-		if cvr != nil && avr != nil {
+
+		var cvr, avr *int64
+		crepeat := false
+		if vr, ok := c.(*VectorRepeatValue); ok {
+			crepeat = true
+
+			prim := vr.val.Int()
+
+			cvr = &prim
+		} else if c.IsNull() {
+			crepeat = true // leave cvr as nil, but insist we treat it as a constant.
+		}
+
+		arepeat := false
+		if vr, ok := a.(*VectorRepeatValue); ok {
+			arepeat = true
+
+			prim := vr.val.Int()
+
+			avr = &prim
+		} else if a.IsNull() {
+			arepeat = true // leave avr as nil, but insist we treat it as a constant.
+		}
+
+		if crepeat && arepeat {
 			x, err = fluxarray.IntConditionalCConstAConst(
 				t.Arr().(*fluxarray.Boolean),
-
-				(*cvr).Int(),
-
-				(*avr).Int(),
-
+				cvr,
+				avr,
 				mem,
 			)
-		} else if cvr != nil {
+		} else if crepeat {
 			x, err = fluxarray.IntConditionalCConst(
 				t.Arr().(*fluxarray.Boolean),
-
-				(*cvr).Int(),
-
-				a.Arr().(*fluxarray.Int),
+				cvr,
+				a.Vector().Arr().(*fluxarray.Int),
 				mem,
 			)
-		} else if avr != nil {
+		} else if arepeat {
 			x, err = fluxarray.IntConditionalAConst(
 				t.Arr().(*fluxarray.Boolean),
-				c.Arr().(*fluxarray.Int),
-
-				(*avr).Int(),
-
+				c.Vector().Arr().(*fluxarray.Int),
+				avr,
 				mem,
 			)
 		} else {
 			x, err = fluxarray.IntConditional(
 				t.Arr().(*fluxarray.Boolean),
-				c.Arr().(*fluxarray.Int),
-				a.Arr().(*fluxarray.Int),
+				c.Vector().Arr().(*fluxarray.Int),
+				a.Vector().Arr().(*fluxarray.Int),
 				mem,
 			)
 		}
@@ -96,39 +119,56 @@ func VectorConditional(t, c, a Vector, mem memory.Allocator) (Value, error) {
 			x   *fluxarray.Uint
 			err error
 		)
-		if cvr != nil && avr != nil {
+
+		var cvr, avr *uint64
+		crepeat := false
+		if vr, ok := c.(*VectorRepeatValue); ok {
+			crepeat = true
+
+			prim := vr.val.UInt()
+
+			cvr = &prim
+		} else if c.IsNull() {
+			crepeat = true // leave cvr as nil, but insist we treat it as a constant.
+		}
+
+		arepeat := false
+		if vr, ok := a.(*VectorRepeatValue); ok {
+			arepeat = true
+
+			prim := vr.val.UInt()
+
+			avr = &prim
+		} else if a.IsNull() {
+			arepeat = true // leave avr as nil, but insist we treat it as a constant.
+		}
+
+		if crepeat && arepeat {
 			x, err = fluxarray.UintConditionalCConstAConst(
 				t.Arr().(*fluxarray.Boolean),
-
-				(*cvr).UInt(),
-
-				(*avr).UInt(),
-
+				cvr,
+				avr,
 				mem,
 			)
-		} else if cvr != nil {
+		} else if crepeat {
 			x, err = fluxarray.UintConditionalCConst(
 				t.Arr().(*fluxarray.Boolean),
-
-				(*cvr).UInt(),
-
-				a.Arr().(*fluxarray.Uint),
+				cvr,
+				a.Vector().Arr().(*fluxarray.Uint),
 				mem,
 			)
-		} else if avr != nil {
+		} else if arepeat {
 			x, err = fluxarray.UintConditionalAConst(
 				t.Arr().(*fluxarray.Boolean),
-				c.Arr().(*fluxarray.Uint),
-
-				(*avr).UInt(),
-
+				c.Vector().Arr().(*fluxarray.Uint),
+				avr,
 				mem,
 			)
 		} else {
 			x, err = fluxarray.UintConditional(
 				t.Arr().(*fluxarray.Boolean),
-				c.Arr().(*fluxarray.Uint),
-				a.Arr().(*fluxarray.Uint),
+				c.Vector().Arr().(*fluxarray.Uint),
+				a.Vector().Arr().(*fluxarray.Uint),
 				mem,
 			)
 		}
@@ -142,39 +182,56 @@ func VectorConditional(t, c, a Vector, mem memory.Allocator) (Value, error) {
 			x   *fluxarray.Float
 			err error
 		)
-		if cvr != nil && avr != nil {
+
+		var cvr, avr *float64
+		crepeat := false
+		if vr, ok := c.(*VectorRepeatValue); ok {
+			crepeat = true
+
+			prim := vr.val.Float()
+
+			cvr = &prim
+		} else if c.IsNull() {
+			crepeat = true // leave cvr as nil, but insist we treat it as a constant.
+		}
+
+		arepeat := false
+		if vr, ok := a.(*VectorRepeatValue); ok {
+			arepeat = true
+
+			prim := vr.val.Float()
+
+			avr = &prim
+		} else if a.IsNull() {
+			arepeat = true // leave avr as nil, but insist we treat it as a constant.
+		}
+
+		if crepeat && arepeat {
 			x, err = fluxarray.FloatConditionalCConstAConst(
 				t.Arr().(*fluxarray.Boolean),
-
-				(*cvr).Float(),
-
-				(*avr).Float(),
-
+				cvr,
+				avr,
 				mem,
 			)
-		} else if cvr != nil {
+		} else if crepeat {
 			x, err = fluxarray.FloatConditionalCConst(
 				t.Arr().(*fluxarray.Boolean),
-
-				(*cvr).Float(),
-
-				a.Arr().(*fluxarray.Float),
+				cvr,
+				a.Vector().Arr().(*fluxarray.Float),
 				mem,
 			)
-		} else if avr != nil {
+		} else if arepeat {
 			x, err = fluxarray.FloatConditionalAConst(
 				t.Arr().(*fluxarray.Boolean),
-				c.Arr().(*fluxarray.Float),
-
-				(*avr).Float(),
-
+				c.Vector().Arr().(*fluxarray.Float),
+				avr,
 				mem,
 			)
 		} else {
 			x, err = fluxarray.FloatConditional(
 				t.Arr().(*fluxarray.Boolean),
-				c.Arr().(*fluxarray.Float),
-				a.Arr().(*fluxarray.Float),
+				c.Vector().Arr().(*fluxarray.Float),
+				a.Vector().Arr().(*fluxarray.Float),
 				mem,
 			)
 		}
@@ -188,39 +245,56 @@ func VectorConditional(t, c, a Vector, mem memory.Allocator) (Value, error) {
 			x   *fluxarray.Boolean
 			err error
 		)
-		if cvr != nil && avr != nil {
+
+		var cvr, avr *bool
+		crepeat := false
+		if vr, ok := c.(*VectorRepeatValue); ok {
+			crepeat = true
+
+			prim := vr.val.Bool()
+
+			cvr = &prim
+		} else if c.IsNull() {
+			crepeat = true // leave cvr as nil, but insist we treat it as a constant.
+		}
+
+		arepeat := false
+		if vr, ok := a.(*VectorRepeatValue); ok {
+			arepeat = true
+
+			prim := vr.val.Bool()
+
+			avr = &prim
+		} else if a.IsNull() {
+			arepeat = true // leave avr as nil, but insist we treat it as a constant.
+		}
+
+		if crepeat && arepeat {
 			x, err = fluxarray.BooleanConditionalCConstAConst(
 				t.Arr().(*fluxarray.Boolean),
-
-				(*cvr).Bool(),
-
-				(*avr).Bool(),
-
+				cvr,
+				avr,
 				mem,
 			)
-		} else if cvr != nil {
+		} else if crepeat {
 			x, err = fluxarray.BooleanConditionalCConst(
 				t.Arr().(*fluxarray.Boolean),
-
-				(*cvr).Bool(),
-
-				a.Arr().(*fluxarray.Boolean),
+				cvr,
+				a.Vector().Arr().(*fluxarray.Boolean),
 				mem,
 			)
-		} else if avr != nil {
+		} else if arepeat {
 			x, err = fluxarray.BooleanConditionalAConst(
 				t.Arr().(*fluxarray.Boolean),
-				c.Arr().(*fluxarray.Boolean),
-
-				(*avr).Bool(),
-
+				c.Vector().Arr().(*fluxarray.Boolean),
+				avr,
 				mem,
 			)
 		} else {
 			x, err = fluxarray.BooleanConditional(
 				t.Arr().(*fluxarray.Boolean),
-				c.Arr().(*fluxarray.Boolean),
-				a.Arr().(*fluxarray.Boolean),
+				c.Vector().Arr().(*fluxarray.Boolean),
+				a.Vector().Arr().(*fluxarray.Boolean),
 				mem,
 			)
 		}
@@ -234,39 +308,56 @@ func VectorConditional(t, c, a Vector, mem memory.Allocator) (Value, error) {
 			x   *fluxarray.String
 			err error
 		)
-		if cvr != nil && avr != nil {
+
+		var cvr, avr *string
+		crepeat := false
+		if vr, ok := c.(*VectorRepeatValue); ok {
+			crepeat = true
+
+			prim := vr.val.Str()
+
+			cvr = &prim
+		} else if c.IsNull() {
+			crepeat = true // leave cvr as nil, but insist we treat it as a constant.
+		}
+
+		arepeat := false
+		if vr, ok := a.(*VectorRepeatValue); ok {
+			arepeat = true
+
+			prim := vr.val.Str()
+
+			avr = &prim
+		} else if a.IsNull() {
+			arepeat = true // leave avr as nil, but insist we treat it as a constant.
+		}
+
+		if crepeat && arepeat {
 			x, err = fluxarray.StringConditionalCConstAConst(
 				t.Arr().(*fluxarray.Boolean),
-
-				(*cvr).Str(),
-
-				(*avr).Str(),
-
+				cvr,
+				avr,
 				mem,
 			)
-		} else if cvr != nil {
+		} else if crepeat {
 			x, err = fluxarray.StringConditionalCConst(
 				t.Arr().(*fluxarray.Boolean),
-
-				(*cvr).Str(),
-
-				a.Arr().(*fluxarray.String),
+				cvr,
+				a.Vector().Arr().(*fluxarray.String),
 				mem,
 			)
-		} else if avr != nil {
+		} else if arepeat {
 			x, err = fluxarray.StringConditionalAConst(
 				t.Arr().(*fluxarray.Boolean),
-				c.Arr().(*fluxarray.String),
-
-				(*avr).Str(),
-
+				c.Vector().Arr().(*fluxarray.String),
+				avr,
 				mem,
 			)
 		} else {
 			x, err = fluxarray.StringConditional(
 				t.Arr().(*fluxarray.Boolean),
-				c.Arr().(*fluxarray.String),
-				a.Arr().(*fluxarray.String),
+				c.Vector().Arr().(*fluxarray.String),
+				a.Vector().Arr().(*fluxarray.String),
 				mem,
 			)
 		}
@@ -280,39 +371,56 @@ func VectorConditional(t, c, a Vector, mem memory.Allocator) (Value, error) {
 			x   *fluxarray.Int
 			err error
 		)
-		if cvr != nil && avr != nil {
+
+		var cvr, avr *int64
+		crepeat := false
+		if vr, ok := c.(*VectorRepeatValue); ok {
+			crepeat = true
+
+			prim := vr.val.Time().Time().UnixNano()
+
+			cvr = &prim
+		} else if c.IsNull() {
+			crepeat = true // leave cvr as nil, but insist we treat it as a constant.
+		}
+
+		arepeat := false
+		if vr, ok := a.(*VectorRepeatValue); ok {
+			arepeat = true
+
+			prim := vr.val.Time().Time().UnixNano()
+
+			avr = &prim
+		} else if a.IsNull() {
+			arepeat = true // leave avr as nil, but insist we treat it as a constant.
+		}
+
+		if crepeat && arepeat {
 			x, err = fluxarray.IntConditionalCConstAConst(
 				t.Arr().(*fluxarray.Boolean),
-
-				(*cvr).Time().Time().UnixNano(),
-
-				(*avr).Time().Time().UnixNano(),
-
+				cvr,
+				avr,
 				mem,
 			)
-		} else if cvr != nil {
+		} else if crepeat {
 			x, err = fluxarray.IntConditionalCConst(
 				t.Arr().(*fluxarray.Boolean),
-
-				(*cvr).Time().Time().UnixNano(),
-
-				a.Arr().(*fluxarray.Int),
+				cvr,
+				a.Vector().Arr().(*fluxarray.Int),
 				mem,
 			)
-		} else if avr != nil {
+		} else if arepeat {
 			x, err = fluxarray.IntConditionalAConst(
 				t.Arr().(*fluxarray.Boolean),
-				c.Arr().(*fluxarray.Int),
-
-				(*avr).Time().Time().UnixNano(),
-
+				c.Vector().Arr().(*fluxarray.Int),
+				avr,
 				mem,
 			)
 		} else {
 			x, err = fluxarray.IntConditional(
 				t.Arr().(*fluxarray.Boolean),
-				c.Arr().(*fluxarray.Int),
-				a.Arr().(*fluxarray.Int),
+				c.Vector().Arr().(*fluxarray.Int),
+				a.Vector().Arr().(*fluxarray.Int),
 				mem,
 			)
 		}
@@ -322,6 +430,6 @@ func VectorConditional(t, c, a Vector, mem memory.Allocator) (Value, error) {
 		return NewVectorValue(x, semantic.BasicTime), nil
 
 	default:
-		return nil, errors.Newf(codes.Invalid, "unsupported type for vector: %v", a.ElementType())
+		return nil, errors.Newf(codes.Invalid, "unsupported type for vector: %v", elemType)
 	}
 }
