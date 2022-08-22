@@ -3751,7 +3751,7 @@ _fillEmpty = (tables=<-, createEmpty) =>
 //   Default is `_stop`.
 // - timeDst: Column to store time values for aggregate values in.
 //   Default is `_time`.
-// - createEmpty: Create empty tables for empty window. Default is `false`.
+// - createEmpty: Create empty tables for empty window. Default is `true`.
 //
 //   **Note:** When using `createEmpty: true`, aggregate functions return empty
 //   tables, but selector functions do not. By design, selectors drop empty tables.
