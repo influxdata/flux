@@ -3744,7 +3744,7 @@ _fillEmpty = (tables=<-, createEmpty) =>
 //
 //   `offset` can be negative, indicating that the offset goes backwards in time.
 //
-// - fn: Aggreate or selector function to apply to each time window.
+// - fn: Aggregate or selector function to apply to each time window.
 // - location: Location used to determine timezone. Default is the `location` option.
 // - column: Column to operate on.
 // - timeSrc: Column to use as the source of the new time value for aggregate values.
@@ -3819,7 +3819,7 @@ _fillEmpty = (tables=<-, createEmpty) =>
 // | Saturday   |   2d   |
 // | Sunday     |   3d   |
 //
-// ```js
+// ```
 // # import "array"
 // #
 // # data =
