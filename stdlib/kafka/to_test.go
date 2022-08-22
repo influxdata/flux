@@ -13,6 +13,7 @@ import (
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
 	_ "github.com/influxdata/flux/fluxinit/static" // We need to init flux for the tests to work.
+	"github.com/influxdata/flux/internal/operation"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/querytest"
 	"github.com/influxdata/flux/stdlib/influxdata/influxdb"
@@ -27,8 +28,8 @@ func TestToKafka_NewQuery(t *testing.T) {
 		{
 			Name: "from with database",
 			Raw:  `import "kafka" from(bucket:"mybucket") |> kafka.to(brokers:["brokerurl:8989"], name:"series1", topic:"totallynotfaketopic")`,
-			Want: &flux.Spec{
-				Operations: []*flux.Operation{
+			Want: &operation.Spec{
+				Operations: []*operation.Node{
 					{
 						ID: "from0",
 						Spec: &influxdb.FromOpSpec{
@@ -46,7 +47,7 @@ func TestToKafka_NewQuery(t *testing.T) {
 						},
 					},
 				},
-				Edges: []flux.Edge{
+				Edges: []operation.Edge{
 					{Parent: "from0", Child: "toKafka1"},
 				},
 			},

@@ -9,6 +9,7 @@ import (
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
+	"github.com/influxdata/flux/internal/operation"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/plan"
 	"github.com/opentracing/opentracing-go"
@@ -16,7 +17,7 @@ import (
 
 type ider struct {
 	id     *int
-	lookup map[*flux.TableObject]flux.OperationID
+	lookup map[*flux.TableObject]operation.NodeID
 }
 
 func (i *ider) nextID() int {
@@ -25,18 +26,18 @@ func (i *ider) nextID() int {
 	return next
 }
 
-func (i *ider) get(t *flux.TableObject) (flux.OperationID, bool) {
+func (i *ider) get(t *flux.TableObject) (operation.NodeID, bool) {
 	tableID, ok := i.lookup[t]
 	return tableID, ok
 }
 
-func (i *ider) set(t *flux.TableObject, id int) flux.OperationID {
-	opID := flux.OperationID(fmt.Sprintf("%s%d", t.Kind, id))
+func (i *ider) set(t *flux.TableObject, id int) operation.NodeID {
+	opID := operation.NodeID(fmt.Sprintf("%s%d", t.Kind, id))
 	i.lookup[t] = opID
 	return opID
 }
 
-func (i *ider) ID(t *flux.TableObject) flux.OperationID {
+func (i *ider) ID(t *flux.TableObject) operation.NodeID {
 	tableID, ok := i.get(t)
 	if !ok {
 		tableID = i.set(t, i.nextID())
@@ -52,7 +53,7 @@ func (i *ider) ID(t *flux.TableObject) flux.OperationID {
 // the terminal node in the plan.
 // In keeping with the "one result" requirement, when `skipYields` is true
 // FromEvaluation will produce an error for inputs producing > 1 result.
-func FromEvaluation(ctx context.Context, ses []interpreter.SideEffect, now time.Time, skipYields bool) (*flux.Spec, error) {
+func FromEvaluation(ctx context.Context, ses []interpreter.SideEffect, now time.Time, skipYields bool) (*operation.Spec, error) {
 	var nextNodeID *int
 	if value := ctx.Value(plan.NextPlanNodeIDKey); value != nil {
 		nextNodeID = value.(*int)
@@ -61,10 +62,10 @@ func FromEvaluation(ctx context.Context, ses []interpreter.SideEffect, now time.
 	}
 	ider := &ider{
 		id:     nextNodeID,
-		lookup: make(map[*flux.TableObject]flux.OperationID),
+		lookup: make(map[*flux.TableObject]operation.NodeID),
 	}
 
-	spec := &flux.Spec{Now: now}
+	spec := &operation.Spec{Now: now}
 	seen := make(map[*flux.TableObject]bool)
 	objs := make([]*flux.TableObject, 0, len(ses))
 	resultCount := 0
@@ -123,14 +124,14 @@ func isDuplicateTableObject(ctx context.Context, op *flux.TableObject, objs []*f
 	return false
 }
 
-func buildSpecWithTrace(ctx context.Context, t *flux.TableObject, ider flux.IDer, spec *flux.Spec, visited map[*flux.TableObject]bool, skipYields bool) {
+func buildSpecWithTrace(ctx context.Context, t *flux.TableObject, ider *ider, spec *operation.Spec, visited map[*flux.TableObject]bool, skipYields bool) {
 	s, _ := opentracing.StartSpanFromContext(ctx, "buildSpec")
 	s.SetTag("opKind", t.Kind)
 	buildSpec(t, ider, spec, visited, skipYields)
 	s.Finish()
 }
 
-func buildSpec(t *flux.TableObject, ider flux.IDer, spec *flux.Spec, visited map[*flux.TableObject]bool, skipYields bool) {
+func buildSpec(t *flux.TableObject, ider *ider, spec *operation.Spec, visited map[*flux.TableObject]bool, skipYields bool) {
 	// Traverse graph upwards to first unvisited node.
 	// Note: parents are sorted based on parameter name, so the visit order is consistent.
 
@@ -154,12 +155,19 @@ func buildSpec(t *flux.TableObject, ider flux.IDer, spec *flux.Spec, visited map
 	if !(skipYields && t.Kind == "yield") {
 		// Link table object to all parents after assigning ID.
 		for _, p := range parents {
-			spec.Edges = append(spec.Edges, flux.Edge{
+			spec.Edges = append(spec.Edges, operation.Edge{
 				Parent: ider.ID(p),
 				Child:  tableID,
 			})
 		}
-		spec.Operations = append(spec.Operations, t.Operation(ider))
+		op := &operation.Node{
+			ID:   ider.ID(t),
+			Spec: t.Spec,
+			Source: operation.NodeSource{
+				Stack: t.Source.Stack,
+			},
+		}
+		spec.Operations = append(spec.Operations, op)
 	}
 
 	visited[t] = true
@@ -178,14 +186,14 @@ func getNonYieldParents(acc []*flux.TableObject, to *flux.TableObject) []*flux.T
 }
 
 // FromTableObject returns a spec from a TableObject.
-func FromTableObject(ctx context.Context, to *flux.TableObject, now time.Time) (*flux.Spec, error) {
+func FromTableObject(ctx context.Context, to *flux.TableObject, now time.Time) (*operation.Spec, error) {
 	return FromEvaluation(ctx, []interpreter.SideEffect{{Value: to}}, now, true)
 }
 
 // FromScript returns a spec from a script expressed as a raw string.
 // This is duplicate logic for what happens when a flux.Program runs.
 // This function is used in tests that compare flux.Specs (e.g. in planner tests).
-func FromScript(ctx context.Context, runtime flux.Runtime, now time.Time, script string) (*flux.Spec, error) {
+func FromScript(ctx context.Context, runtime flux.Runtime, now time.Time, script string) (*operation.Spec, error) {
 	s, _ := opentracing.StartSpanFromContext(ctx, "parse")
 	astPkg, err := runtime.Parse(script)
 	if err != nil {

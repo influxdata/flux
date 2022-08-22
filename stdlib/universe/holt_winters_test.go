@@ -15,6 +15,7 @@ import (
 	"github.com/influxdata/flux/execute/executetest"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/internal/gen"
+	"github.com/influxdata/flux/internal/operation"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/querytest"
 	"github.com/influxdata/flux/stdlib/influxdata/influxdb"
@@ -32,8 +33,8 @@ func TestHoltWinters_NewQuery(t *testing.T) {
 		{
 			Name: "holt winters defaults",
 			Raw:  `from(bucket:"mydb") |> range(start:-1h) |> holtWinters(n: 84, interval: 42d)`,
-			Want: &flux.Spec{
-				Operations: []*flux.Operation{
+			Want: &operation.Spec{
+				Operations: []*operation.Node{
 					{
 						ID: "from0",
 						Spec: &influxdb.FromOpSpec{
@@ -65,7 +66,7 @@ func TestHoltWinters_NewQuery(t *testing.T) {
 						},
 					},
 				},
-				Edges: []flux.Edge{
+				Edges: []operation.Edge{
 					{Parent: "from0", Child: "range1"},
 					{Parent: "range1", Child: "holtWinters2"},
 				},
@@ -74,8 +75,8 @@ func TestHoltWinters_NewQuery(t *testing.T) {
 		{
 			Name: "holt winters no defaults",
 			Raw:  `from(bucket:"mydb") |> range(start:-1h) |> holtWinters(n: 84, seasonality: 4, interval: 42d, timeColumn: "t", column: "v", withFit: true)`,
-			Want: &flux.Spec{
-				Operations: []*flux.Operation{
+			Want: &operation.Spec{
+				Operations: []*operation.Node{
 					{
 						ID: "from0",
 						Spec: &influxdb.FromOpSpec{
@@ -107,7 +108,7 @@ func TestHoltWinters_NewQuery(t *testing.T) {
 						},
 					},
 				},
-				Edges: []flux.Edge{
+				Edges: []operation.Edge{
 					{Parent: "from0", Child: "range1"},
 					{Parent: "range1", Child: "holtWinters2"},
 				},

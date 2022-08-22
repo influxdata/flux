@@ -7,6 +7,7 @@ import (
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute/executetest"
 	_ "github.com/influxdata/flux/fluxinit/static"
+	"github.com/influxdata/flux/internal/operation"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/querytest"
 	"github.com/influxdata/flux/runtime"
@@ -31,8 +32,8 @@ func TestFrom_NewQuery(t *testing.T) {
 			Raw: ` import "generate"
 					generate.from(start: 0h, stop: 1h, count: 10, fn: (n) => n)`,
 
-			Want: &flux.Spec{
-				Operations: []*flux.Operation{
+			Want: &operation.Spec{
+				Operations: []*operation.Node{
 					{
 						ID: "fromGenerator0",
 						Spec: &generate.FromGeneratorOpSpec{
@@ -58,8 +59,8 @@ func TestFrom_NewQuery(t *testing.T) {
 			Raw: ` import "generate"
 					generate.from(start: 2030-01-01T00:00:00Z, stop: 2030-01-01T00:00:01Z, count: 10, fn: (n) => n)`,
 
-			Want: &flux.Spec{
-				Operations: []*flux.Operation{
+			Want: &operation.Spec{
+				Operations: []*operation.Node{
 					{
 						ID: "fromGenerator0",
 						Spec: &generate.FromGeneratorOpSpec{

@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/internal/operation"
 	"github.com/influxdata/flux/lang"
 	"github.com/influxdata/flux/plan"
 )
@@ -13,7 +14,7 @@ const CompilerType = "REPL"
 
 // Compiler specific to the Flux REPL
 type Compiler struct {
-	Spec *flux.Spec `json:"spec"`
+	Spec *operation.Spec `json:"spec"`
 }
 
 func (c Compiler) Compile(ctx context.Context, runtime flux.Runtime) (flux.Program, error) {

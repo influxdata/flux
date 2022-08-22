@@ -6,6 +6,7 @@ import (
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/internal/operation"
 	"github.com/influxdata/flux/querytest"
 	"github.com/influxdata/flux/stdlib/influxdata/influxdb"
 	"github.com/influxdata/flux/stdlib/universe"
@@ -19,8 +20,8 @@ func TestYield_NewQuery(t *testing.T) {
 				from(bucket: "foo") |> range(start:-1h) |> yield(name: "1")
 				from(bucket: "foo") |> range(start:-2h) |> yield(name: "2")
 			`,
-			Want: &flux.Spec{
-				Operations: []*flux.Operation{
+			Want: &operation.Spec{
+				Operations: []*operation.Node{
 					{
 						ID: "from0",
 						Spec: &influxdb.FromOpSpec{
@@ -76,22 +77,22 @@ func TestYield_NewQuery(t *testing.T) {
 						},
 					},
 				},
-				Edges: []flux.Edge{
+				Edges: []operation.Edge{
 					{
-						Parent: flux.OperationID("from0"),
-						Child:  flux.OperationID("range1"),
+						Parent: operation.NodeID("from0"),
+						Child:  operation.NodeID("range1"),
 					},
 					{
-						Parent: flux.OperationID("range1"),
-						Child:  flux.OperationID("yield2"),
+						Parent: operation.NodeID("range1"),
+						Child:  operation.NodeID("yield2"),
 					},
 					{
-						Parent: flux.OperationID("from3"),
-						Child:  flux.OperationID("range4"),
+						Parent: operation.NodeID("from3"),
+						Child:  operation.NodeID("range4"),
 					},
 					{
-						Parent: flux.OperationID("range4"),
-						Child:  flux.OperationID("yield5"),
+						Parent: operation.NodeID("range4"),
+						Child:  operation.NodeID("yield5"),
 					},
 				},
 			},
@@ -105,8 +106,8 @@ func TestYield_NewQuery(t *testing.T) {
 				}
 				f()()
 			`,
-			Want: &flux.Spec{
-				Operations: []*flux.Operation{
+			Want: &operation.Spec{
+				Operations: []*operation.Node{
 					{
 						ID: "from0",
 						Spec: &influxdb.FromOpSpec{
@@ -135,14 +136,14 @@ func TestYield_NewQuery(t *testing.T) {
 						},
 					},
 				},
-				Edges: []flux.Edge{
+				Edges: []operation.Edge{
 					{
-						Parent: flux.OperationID("from0"),
-						Child:  flux.OperationID("range1"),
+						Parent: operation.NodeID("from0"),
+						Child:  operation.NodeID("range1"),
 					},
 					{
-						Parent: flux.OperationID("range1"),
-						Child:  flux.OperationID("yield2"),
+						Parent: operation.NodeID("range1"),
+						Child:  operation.NodeID("yield2"),
 					},
 				},
 			},
@@ -152,8 +153,8 @@ func TestYield_NewQuery(t *testing.T) {
 			Raw: `
 				from(bucket: "foo") |> range(start:-1h) |> yield(name: "1") |> sum() |> yield(name: "2")
 			`,
-			Want: &flux.Spec{
-				Operations: []*flux.Operation{
+			Want: &operation.Spec{
+				Operations: []*operation.Node{
 					{
 						ID: "from0",
 						Spec: &influxdb.FromOpSpec{
@@ -196,22 +197,22 @@ func TestYield_NewQuery(t *testing.T) {
 						},
 					},
 				},
-				Edges: []flux.Edge{
+				Edges: []operation.Edge{
 					{
-						Parent: flux.OperationID("from0"),
-						Child:  flux.OperationID("range1"),
+						Parent: operation.NodeID("from0"),
+						Child:  operation.NodeID("range1"),
 					},
 					{
-						Parent: flux.OperationID("range1"),
-						Child:  flux.OperationID("yield2"),
+						Parent: operation.NodeID("range1"),
+						Child:  operation.NodeID("yield2"),
 					},
 					{
-						Parent: flux.OperationID("yield2"),
-						Child:  flux.OperationID("sum3"),
+						Parent: operation.NodeID("yield2"),
+						Child:  operation.NodeID("sum3"),
 					},
 					{
-						Parent: flux.OperationID("sum3"),
-						Child:  flux.OperationID("yield4"),
+						Parent: operation.NodeID("sum3"),
+						Child:  operation.NodeID("yield4"),
 					},
 				},
 			},

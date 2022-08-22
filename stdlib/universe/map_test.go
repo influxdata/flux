@@ -11,6 +11,7 @@ import (
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
 	"github.com/influxdata/flux/internal/gen"
+	"github.com/influxdata/flux/internal/operation"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/querytest"
@@ -27,8 +28,8 @@ func TestMap_NewQuery(t *testing.T) {
 		{
 			Name: "simple static map",
 			Raw:  `from(bucket:"mybucket") |> map(fn: (r) => r._value + 1)`,
-			Want: &flux.Spec{
-				Operations: []*flux.Operation{
+			Want: &operation.Spec{
+				Operations: []*operation.Node{
 					{
 						ID: "from0",
 						Spec: &influxdb.FromOpSpec{
@@ -45,7 +46,7 @@ func TestMap_NewQuery(t *testing.T) {
 						},
 					},
 				},
-				Edges: []flux.Edge{
+				Edges: []operation.Edge{
 					{Parent: "from0", Child: "map1"},
 				},
 			},
@@ -53,8 +54,8 @@ func TestMap_NewQuery(t *testing.T) {
 		{
 			Name: "simple static map mergeKey=true",
 			Raw:  `from(bucket:"mybucket") |> map(fn: (r) => r._value + 1, mergeKey:true)`,
-			Want: &flux.Spec{
-				Operations: []*flux.Operation{
+			Want: &operation.Spec{
+				Operations: []*operation.Node{
 					{
 						ID: "from0",
 						Spec: &influxdb.FromOpSpec{
@@ -72,7 +73,7 @@ func TestMap_NewQuery(t *testing.T) {
 						},
 					},
 				},
-				Edges: []flux.Edge{
+				Edges: []operation.Edge{
 					{Parent: "from0", Child: "map1"},
 				},
 			},
@@ -80,8 +81,8 @@ func TestMap_NewQuery(t *testing.T) {
 		{
 			Name: "resolve map",
 			Raw:  `x = 2 from(bucket:"mybucket") |> map(fn: (r) => r._value + x)`,
-			Want: &flux.Spec{
-				Operations: []*flux.Operation{
+			Want: &operation.Spec{
+				Operations: []*operation.Node{
 					{
 						ID: "from0",
 						Spec: &influxdb.FromOpSpec{
@@ -102,7 +103,7 @@ func TestMap_NewQuery(t *testing.T) {
 						},
 					},
 				},
-				Edges: []flux.Edge{
+				Edges: []operation.Edge{
 					{Parent: "from0", Child: "map1"},
 				},
 			},

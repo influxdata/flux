@@ -9,6 +9,7 @@ import (
 	"github.com/influxdata/flux/dependencies/dependenciestest"
 	"github.com/influxdata/flux/dependency"
 	"github.com/influxdata/flux/internal/gen"
+	"github.com/influxdata/flux/internal/operation"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
@@ -29,8 +30,8 @@ func TestFill_NewQuery(t *testing.T) {
 		{
 			Name: "from with range and fill",
 			Raw:  `from(bucket:"mydb") |> range(start:-4h, stop:-2h) |> fill(column: "c1", value: 1.0)`,
-			Want: &flux.Spec{
-				Operations: []*flux.Operation{
+			Want: &operation.Spec{
+				Operations: []*operation.Node{
 					{
 						ID: "from0",
 						Spec: &influxdb.FromOpSpec{
@@ -62,7 +63,7 @@ func TestFill_NewQuery(t *testing.T) {
 						},
 					},
 				},
-				Edges: []flux.Edge{
+				Edges: []operation.Edge{
 					{Parent: "from0", Child: "range1"},
 					{Parent: "range1", Child: "fill2"},
 				},

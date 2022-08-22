@@ -7,6 +7,7 @@ import (
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
+	"github.com/influxdata/flux/internal/operation"
 	"github.com/influxdata/flux/querytest"
 	"github.com/influxdata/flux/stdlib/influxdata/influxdb"
 	"github.com/influxdata/flux/stdlib/universe"
@@ -17,8 +18,8 @@ func TestKeys_NewQuery(t *testing.T) {
 		{
 			Name: "from range keys",
 			Raw:  `from(bucket: "mydb") |> range(start:-1h) |> keys()`,
-			Want: &flux.Spec{
-				Operations: []*flux.Operation{
+			Want: &operation.Spec{
+				Operations: []*operation.Node{
 					{
 						ID: "from0",
 						Spec: &influxdb.FromOpSpec{
@@ -45,7 +46,7 @@ func TestKeys_NewQuery(t *testing.T) {
 						},
 					},
 				},
-				Edges: []flux.Edge{
+				Edges: []operation.Edge{
 					{Parent: "from0", Child: "range1"},
 					{Parent: "range1", Child: "keys2"},
 				},
@@ -54,8 +55,8 @@ func TestKeys_NewQuery(t *testing.T) {
 		{
 			Name: "from keys custom label",
 			Raw:  `from(bucket: "mydb") |> keys(column: "keys")`,
-			Want: &flux.Spec{
-				Operations: []*flux.Operation{
+			Want: &operation.Spec{
+				Operations: []*operation.Node{
 					{
 						ID: "from0",
 						Spec: &influxdb.FromOpSpec{
@@ -69,7 +70,7 @@ func TestKeys_NewQuery(t *testing.T) {
 						},
 					},
 				},
-				Edges: []flux.Edge{
+				Edges: []operation.Edge{
 					{Parent: "from0", Child: "keys1"},
 				},
 			},

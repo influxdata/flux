@@ -1,4 +1,4 @@
-package flux_test
+package operation_test
 
 import (
 	"errors"
@@ -6,26 +6,26 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/internal/operation"
 )
 
 func TestSpec_Walk(t *testing.T) {
 	testCases := []struct {
-		query     *flux.Spec
-		walkOrder []flux.OperationID
+		query     *operation.Spec
+		walkOrder []operation.NodeID
 		err       error
 	}{
 		{
-			query: &flux.Spec{},
+			query: &operation.Spec{},
 			err:   errors.New("query has no root nodes"),
 		},
 		{
-			query: &flux.Spec{
-				Operations: []*flux.Operation{
+			query: &operation.Spec{
+				Operations: []*operation.Node{
 					{ID: "a"},
 					{ID: "b"},
 				},
-				Edges: []flux.Edge{
+				Edges: []operation.Edge{
 					{Parent: "a", Child: "b"},
 					{Parent: "a", Child: "c"},
 				},
@@ -33,13 +33,13 @@ func TestSpec_Walk(t *testing.T) {
 			err: errors.New("edge references unknown child operation \"c\""),
 		},
 		{
-			query: &flux.Spec{
-				Operations: []*flux.Operation{
+			query: &operation.Spec{
+				Operations: []*operation.Node{
 					{ID: "a"},
 					{ID: "b"},
 					{ID: "b"},
 				},
-				Edges: []flux.Edge{
+				Edges: []operation.Edge{
 					{Parent: "a", Child: "b"},
 					{Parent: "a", Child: "b"},
 				},
@@ -47,13 +47,13 @@ func TestSpec_Walk(t *testing.T) {
 			err: errors.New("found duplicate operation ID \"b\""),
 		},
 		{
-			query: &flux.Spec{
-				Operations: []*flux.Operation{
+			query: &operation.Spec{
+				Operations: []*operation.Node{
 					{ID: "a"},
 					{ID: "b"},
 					{ID: "c"},
 				},
-				Edges: []flux.Edge{
+				Edges: []operation.Edge{
 					{Parent: "a", Child: "b"},
 					{Parent: "b", Child: "c"},
 					{Parent: "c", Child: "b"},
@@ -62,14 +62,14 @@ func TestSpec_Walk(t *testing.T) {
 			err: errors.New("found cycle in query"),
 		},
 		{
-			query: &flux.Spec{
-				Operations: []*flux.Operation{
+			query: &operation.Spec{
+				Operations: []*operation.Node{
 					{ID: "a"},
 					{ID: "b"},
 					{ID: "c"},
 					{ID: "d"},
 				},
-				Edges: []flux.Edge{
+				Edges: []operation.Edge{
 					{Parent: "a", Child: "b"},
 					{Parent: "b", Child: "c"},
 					{Parent: "c", Child: "d"},
@@ -79,85 +79,85 @@ func TestSpec_Walk(t *testing.T) {
 			err: errors.New("found cycle in query"),
 		},
 		{
-			query: &flux.Spec{
-				Operations: []*flux.Operation{
+			query: &operation.Spec{
+				Operations: []*operation.Node{
 					{ID: "a"},
 					{ID: "b"},
 					{ID: "c"},
 					{ID: "d"},
 				},
-				Edges: []flux.Edge{
+				Edges: []operation.Edge{
 					{Parent: "a", Child: "b"},
 					{Parent: "b", Child: "c"},
 					{Parent: "c", Child: "d"},
 				},
 			},
-			walkOrder: []flux.OperationID{
+			walkOrder: []operation.NodeID{
 				"a", "b", "c", "d",
 			},
 		},
 		{
-			query: &flux.Spec{
-				Operations: []*flux.Operation{
+			query: &operation.Spec{
+				Operations: []*operation.Node{
 					{ID: "a"},
 				},
-				Edges: []flux.Edge{},
+				Edges: []operation.Edge{},
 			},
-			walkOrder: []flux.OperationID{
+			walkOrder: []operation.NodeID{
 				"a",
 			},
 		},
 		{
-			query: &flux.Spec{
-				Operations: []*flux.Operation{
+			query: &operation.Spec{
+				Operations: []*operation.Node{
 					{ID: "a"},
 					{ID: "b"},
 					{ID: "c"},
 					{ID: "d"},
 				},
-				Edges: []flux.Edge{
+				Edges: []operation.Edge{
 					{Parent: "a", Child: "b"},
 					{Parent: "a", Child: "c"},
 					{Parent: "b", Child: "d"},
 					{Parent: "c", Child: "d"},
 				},
 			},
-			walkOrder: []flux.OperationID{
+			walkOrder: []operation.NodeID{
 				"a", "c", "b", "d",
 			},
 		},
 		{
-			query: &flux.Spec{
-				Operations: []*flux.Operation{
+			query: &operation.Spec{
+				Operations: []*operation.Node{
 					{ID: "a"},
 					{ID: "b"},
 					{ID: "c"},
 					{ID: "d"},
 				},
-				Edges: []flux.Edge{
+				Edges: []operation.Edge{
 					{Parent: "a", Child: "c"},
 					{Parent: "b", Child: "c"},
 					{Parent: "c", Child: "d"},
 				},
 			},
-			walkOrder: []flux.OperationID{
+			walkOrder: []operation.NodeID{
 				"b", "a", "c", "d",
 			},
 		},
 		{
-			query: &flux.Spec{
-				Operations: []*flux.Operation{
+			query: &operation.Spec{
+				Operations: []*operation.Node{
 					{ID: "a"},
 					{ID: "b"},
 					{ID: "c"},
 					{ID: "d"},
 				},
-				Edges: []flux.Edge{
+				Edges: []operation.Edge{
 					{Parent: "a", Child: "c"},
 					{Parent: "b", Child: "d"},
 				},
 			},
-			walkOrder: []flux.OperationID{
+			walkOrder: []operation.NodeID{
 				"b", "d", "a", "c",
 			},
 		},
@@ -165,8 +165,8 @@ func TestSpec_Walk(t *testing.T) {
 	for i, tc := range testCases {
 		tc := tc
 		t.Run(strconv.Itoa(i), func(t *testing.T) {
-			var gotOrder []flux.OperationID
-			err := tc.query.Walk(func(o *flux.Operation) error {
+			var gotOrder []operation.NodeID
+			err := tc.query.Walk(func(o *operation.Node) error {
 				gotOrder = append(gotOrder, o.ID)
 				return nil
 			})

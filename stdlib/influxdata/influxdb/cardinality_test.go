@@ -8,6 +8,7 @@ import (
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
+	"github.com/influxdata/flux/internal/operation"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/querytest"
 	"github.com/influxdata/flux/runtime"
@@ -33,8 +34,8 @@ func TestCardinality_NewQuery(t *testing.T) {
 		{
 			Name: "cardinality with bucket and range",
 			Raw:  `influxdb.cardinality(bucket:"mybucket",start:-4h,stop:-2h) |> sum()`,
-			Want: &flux.Spec{
-				Operations: []*flux.Operation{
+			Want: &operation.Spec{
+				Operations: []*operation.Node{
 					{
 						ID: "influxdata/influxdb.cardinality0",
 						Spec: &influxdb.CardinalityOpSpec{
@@ -58,7 +59,7 @@ func TestCardinality_NewQuery(t *testing.T) {
 						},
 					},
 				},
-				Edges: []flux.Edge{
+				Edges: []operation.Edge{
 					{Parent: "influxdata/influxdb.cardinality0", Child: "sum1"},
 				},
 			},
@@ -66,8 +67,8 @@ func TestCardinality_NewQuery(t *testing.T) {
 		{
 			Name: "cardinality with host and token",
 			Raw:  `influxdb.cardinality(bucket:"mybucket", host: "http://localhost:8086", token: "mytoken", start: -2h)`,
-			Want: &flux.Spec{
-				Operations: []*flux.Operation{
+			Want: &operation.Spec{
+				Operations: []*operation.Node{
 					{
 						ID: "influxdata/influxdb.cardinality0",
 						Spec: &influxdb.CardinalityOpSpec{
@@ -89,8 +90,8 @@ func TestCardinality_NewQuery(t *testing.T) {
 		{
 			Name: "cardinality with org",
 			Raw:  `influxdb.cardinality(org: "influxdata", bucket:"mybucket", start: -2h)`,
-			Want: &flux.Spec{
-				Operations: []*flux.Operation{
+			Want: &operation.Spec{
+				Operations: []*operation.Node{
 					{
 						ID: "influxdata/influxdb.cardinality0",
 						Spec: &influxdb.CardinalityOpSpec{
@@ -111,8 +112,8 @@ func TestCardinality_NewQuery(t *testing.T) {
 		{
 			Name: "cardinality with org id and bucket id",
 			Raw:  `influxdb.cardinality(orgID: "97aa81cc0e247dc4", bucketID: "1e01ac57da723035", start: -2h)`,
-			Want: &flux.Spec{
-				Operations: []*flux.Operation{
+			Want: &operation.Spec{
+				Operations: []*operation.Node{
 					{
 						ID: "influxdata/influxdb.cardinality0",
 						Spec: &influxdb.CardinalityOpSpec{

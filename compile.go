@@ -66,17 +66,6 @@ func functionValue(name string, c CreateOperationSpec, mt semantic.MonoType, sid
 
 var _ = tableSpecKey // So that linter doesn't think tableSpecKey is unused, considering above TODO.
 
-// IDer produces the mapping of table Objects to OperationIDs
-type IDer interface {
-	ID(*TableObject) OperationID
-}
-
-// IDerOpSpec is the interface any operation spec that needs
-// access to OperationIDs in the query spec must implement.
-type IDerOpSpec interface {
-	IDer(ider IDer)
-}
-
 // TableObject represents the value returned by a transformation.
 // As such, it holds the OperationSpec of the transformation it is associated with,
 // and it is a values.Value (and, also, a values.Object).
@@ -84,25 +73,16 @@ type IDerOpSpec interface {
 type TableObject struct {
 	// TODO(Josh): Remove args once the
 	// OperationSpec interface has an Equal method.
-	t       semantic.MonoType
-	args    Arguments
-	Kind    OperationKind
-	Spec    OperationSpec
-	Source  OperationSource
+	t      semantic.MonoType
+	args   Arguments
+	Kind   OperationKind
+	Spec   OperationSpec
+	Source struct {
+		Stack []interpreter.StackEntry
+	}
 	Parents []*TableObject
 }
 
-func (t *TableObject) Operation(ider IDer) *Operation {
-	if iderOpSpec, ok := t.Spec.(IDerOpSpec); ok {
-		iderOpSpec.IDer(ider)
-	}
-
-	return &Operation{
-		ID:     ider.ID(t),
-		Spec:   t.Spec,
-		Source: t.Source,
-	}
-}
 func (t *TableObject) IsNull() bool {
 	return false
 }
@@ -326,17 +306,14 @@ func (f *function) call(ctx context.Context, args interpreter.Arguments) (values
 		return nil, err
 	}
 
-	stack := interpreter.Stack(ctx)
 	t := &TableObject{
-		t:    returnType,
-		args: arguments,
-		Kind: spec.Kind(),
-		Spec: spec,
-		Source: OperationSource{
-			Stack: stack,
-		},
+		t:       returnType,
+		args:    arguments,
+		Kind:    spec.Kind(),
+		Spec:    spec,
 		Parents: a.parents,
 	}
+	t.Source.Stack = interpreter.Stack(ctx)
 	return t, nil
 }
 func (f *function) String() string {

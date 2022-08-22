@@ -11,6 +11,7 @@ import (
 	"github.com/influxdata/flux/dependency"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
+	"github.com/influxdata/flux/internal/operation"
 	"github.com/influxdata/flux/internal/spec"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/parser"
@@ -24,7 +25,7 @@ import (
 	"github.com/influxdata/flux/values/valuestest"
 )
 
-func compile(fluxText string, now time.Time) (*flux.Spec, error) {
+func compile(fluxText string, now time.Time) (*operation.Spec, error) {
 	ctx, deps := dependency.Inject(context.Background(), dependenciestest.Default())
 	defer deps.Finish()
 	return spec.FromScript(ctx, runtime.Default, now, fluxText)

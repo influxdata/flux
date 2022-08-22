@@ -8,6 +8,7 @@ import (
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
 	_ "github.com/influxdata/flux/fluxinit/static" // We need to init flux for the tests to work.
+	"github.com/influxdata/flux/internal/operation"
 	"github.com/influxdata/flux/querytest"
 	"github.com/influxdata/flux/stdlib/contrib/tomhollingworth/events"
 	"github.com/influxdata/flux/stdlib/influxdata/influxdb"
@@ -30,8 +31,8 @@ func TestDuration_NewQuery(t *testing.T) {
 			Name:    "duration default",
 			Raw:     `import "contrib/tomhollingworth/events" from(bucket:"mydb") |> range(start:-1h)  |> events.duration()`,
 			WantErr: false,
-			Want: &flux.Spec{
-				Operations: []*flux.Operation{
+			Want: &operation.Spec{
+				Operations: []*operation.Node{
 					{
 						ID: "from0",
 						Spec: &influxdb.FromOpSpec{
@@ -63,7 +64,7 @@ func TestDuration_NewQuery(t *testing.T) {
 						},
 					},
 				},
-				Edges: []flux.Edge{
+				Edges: []operation.Edge{
 					{Parent: "from0", Child: "range1"},
 					{Parent: "range1", Child: "duration2"},
 				},
@@ -73,8 +74,8 @@ func TestDuration_NewQuery(t *testing.T) {
 			Name:    "duration different unit and columns",
 			Raw:     `import "contrib/tomhollingworth/events" from(bucket:"mydb") |> range(start:-1h)  |> events.duration(unit: 1ms, timeColumn: "start", stopColumn: "end", columnName: "result")`,
 			WantErr: false,
-			Want: &flux.Spec{
-				Operations: []*flux.Operation{
+			Want: &operation.Spec{
+				Operations: []*operation.Node{
 					{
 						ID: "from0",
 						Spec: &influxdb.FromOpSpec{
@@ -106,7 +107,7 @@ func TestDuration_NewQuery(t *testing.T) {
 						},
 					},
 				},
-				Edges: []flux.Edge{
+				Edges: []operation.Edge{
 					{Parent: "from0", Child: "range1"},
 					{Parent: "range1", Child: "duration2"},
 				},
@@ -116,8 +117,8 @@ func TestDuration_NewQuery(t *testing.T) {
 			Name:    "duration with stop",
 			Raw:     `import "contrib/tomhollingworth/events" from(bucket:"mydb") |> range(start:-1h)  |> events.duration(stop: 2020-10-20T08:30:00Z)`,
 			WantErr: false,
-			Want: &flux.Spec{
-				Operations: []*flux.Operation{
+			Want: &operation.Spec{
+				Operations: []*operation.Node{
 					{
 						ID: "from0",
 						Spec: &influxdb.FromOpSpec{
@@ -151,7 +152,7 @@ func TestDuration_NewQuery(t *testing.T) {
 						},
 					},
 				},
-				Edges: []flux.Edge{
+				Edges: []operation.Edge{
 					{Parent: "from0", Child: "range1"},
 					{Parent: "range1", Child: "duration2"},
 				},

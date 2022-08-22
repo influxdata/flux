@@ -9,6 +9,7 @@ import (
 	"github.com/influxdata/flux/arrow"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
+	"github.com/influxdata/flux/internal/operation"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/querytest"
 	"github.com/influxdata/flux/stdlib/influxdata/influxdb"
@@ -20,8 +21,8 @@ func TestQuantile_NewQuery(t *testing.T) {
 		{
 			Name: "tdigest",
 			Raw:  `from(bucket:"testdb") |> range(start: -1h) |> quantile(q: 0.99, method: "estimate_tdigest", compression: 1000.0)`,
-			Want: &flux.Spec{
-				Operations: []*flux.Operation{
+			Want: &operation.Spec{
+				Operations: []*operation.Node{
 					{
 						ID: "from0",
 						Spec: &influxdb.FromOpSpec{
@@ -53,7 +54,7 @@ func TestQuantile_NewQuery(t *testing.T) {
 						},
 					},
 				},
-				Edges: []flux.Edge{
+				Edges: []operation.Edge{
 					{Parent: "from0", Child: "range1"},
 					{Parent: "range1", Child: "quantile2"},
 				},
@@ -62,8 +63,8 @@ func TestQuantile_NewQuery(t *testing.T) {
 		{
 			Name: "exact_mean",
 			Raw:  `from(bucket:"testdb") |> range(start: -1h) |> quantile(q: 0.99, method: "exact_mean")`,
-			Want: &flux.Spec{
-				Operations: []*flux.Operation{
+			Want: &operation.Spec{
+				Operations: []*operation.Node{
 					{
 						ID: "from0",
 						Spec: &influxdb.FromOpSpec{
@@ -94,7 +95,7 @@ func TestQuantile_NewQuery(t *testing.T) {
 						},
 					},
 				},
-				Edges: []flux.Edge{
+				Edges: []operation.Edge{
 					{Parent: "from0", Child: "range1"},
 					{Parent: "range1", Child: "quantile2"},
 				},
@@ -103,8 +104,8 @@ func TestQuantile_NewQuery(t *testing.T) {
 		{
 			Name: "exact_selector",
 			Raw:  `from(bucket:"testdb") |> range(start: -1h) |> quantile(q: 0.99, method: "exact_selector")`,
-			Want: &flux.Spec{
-				Operations: []*flux.Operation{
+			Want: &operation.Spec{
+				Operations: []*operation.Node{
 					{
 						ID: "from0",
 						Spec: &influxdb.FromOpSpec{
@@ -135,7 +136,7 @@ func TestQuantile_NewQuery(t *testing.T) {
 						},
 					},
 				},
-				Edges: []flux.Edge{
+				Edges: []operation.Edge{
 					{Parent: "from0", Child: "range1"},
 					{Parent: "range1", Child: "quantile2"},
 				},
@@ -144,8 +145,8 @@ func TestQuantile_NewQuery(t *testing.T) {
 		{
 			Name: "custom col",
 			Raw:  `from(bucket:"testdb") |> range(start: -1h) |> quantile(q: 0.99, method: "exact_selector", column: "foo")`,
-			Want: &flux.Spec{
-				Operations: []*flux.Operation{
+			Want: &operation.Spec{
+				Operations: []*operation.Node{
 					{
 						ID: "from0",
 						Spec: &influxdb.FromOpSpec{
@@ -178,7 +179,7 @@ func TestQuantile_NewQuery(t *testing.T) {
 						},
 					},
 				},
-				Edges: []flux.Edge{
+				Edges: []operation.Edge{
 					{Parent: "from0", Child: "range1"},
 					{Parent: "range1", Child: "quantile2"},
 				},
@@ -187,8 +188,8 @@ func TestQuantile_NewQuery(t *testing.T) {
 		{
 			Name: "custom column",
 			Raw:  `from(bucket:"testdb") |> range(start: -1h) |> quantile(q: 0.99, method: "exact_mean", column: "foo")`,
-			Want: &flux.Spec{
-				Operations: []*flux.Operation{
+			Want: &operation.Spec{
+				Operations: []*operation.Node{
 					{
 						ID: "from0",
 						Spec: &influxdb.FromOpSpec{
@@ -221,7 +222,7 @@ func TestQuantile_NewQuery(t *testing.T) {
 						},
 					},
 				},
-				Edges: []flux.Edge{
+				Edges: []operation.Edge{
 					{Parent: "from0", Child: "range1"},
 					{Parent: "range1", Child: "quantile2"},
 				},
@@ -230,8 +231,8 @@ func TestQuantile_NewQuery(t *testing.T) {
 		{
 			Name: "default",
 			Raw:  `from(bucket:"testdb") |> range(start: -1h) |> quantile(q: 0.99)`,
-			Want: &flux.Spec{
-				Operations: []*flux.Operation{
+			Want: &operation.Spec{
+				Operations: []*operation.Node{
 					{
 						ID: "from0",
 						Spec: &influxdb.FromOpSpec{
@@ -263,7 +264,7 @@ func TestQuantile_NewQuery(t *testing.T) {
 						},
 					},
 				},
-				Edges: []flux.Edge{
+				Edges: []operation.Edge{
 					{Parent: "from0", Child: "range1"},
 					{Parent: "range1", Child: "quantile2"},
 				},

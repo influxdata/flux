@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/internal/errors"
+	"github.com/influxdata/flux/internal/operation"
 	"github.com/influxdata/flux/interpreter"
 )
 
@@ -18,7 +18,7 @@ import (
 // actual physical algorithms used to implement operations, and independent of
 // the actual data being processed.
 type LogicalPlanner interface {
-	CreateInitialPlan(spec *flux.Spec) (*Spec, error)
+	CreateInitialPlan(spec *operation.Spec) (*Spec, error)
 	Plan(context.Context, *Spec) (*Spec, error)
 }
 
@@ -93,7 +93,7 @@ func DisableIntegrityChecks() LogicalOption {
 }
 
 // CreateInitialPlan translates the flux.Spec into an unoptimized, naive plan.
-func (l *logicalPlanner) CreateInitialPlan(spec *flux.Spec) (*Spec, error) {
+func (l *logicalPlanner) CreateInitialPlan(spec *operation.Spec) (*Spec, error) {
 	return createLogicalPlan(spec)
 }
 
@@ -167,8 +167,8 @@ func (lpn *LogicalNode) ShallowCopy() Node {
 }
 
 // createLogicalPlan creates a logical query plan from a flux spec
-func createLogicalPlan(spec *flux.Spec) (*Spec, error) {
-	nodes := make(map[flux.OperationID]Node, len(spec.Operations))
+func createLogicalPlan(spec *operation.Spec) (*Spec, error) {
+	nodes := make(map[operation.NodeID]Node, len(spec.Operations))
 	admin := administration{now: spec.Now}
 
 	plan := NewPlanSpec()
@@ -193,9 +193,9 @@ func createLogicalPlan(spec *flux.Spec) (*Spec, error) {
 // fluxSpecVisitor visits a flux spec and constructs from it a logical plan DAG
 type fluxSpecVisitor struct {
 	a          Administration
-	spec       *flux.Spec
+	spec       *operation.Spec
 	plan       *Spec
-	nodes      map[flux.OperationID]Node
+	nodes      map[operation.NodeID]Node
 	yieldNames map[string]struct{}
 }
 
@@ -213,7 +213,7 @@ func (v *fluxSpecVisitor) addYieldName(pn Node) error {
 
 // visitOperation takes a flux spec operation, converts it to its equivalent
 // logical procedure spec, and adds it to the current logical plan DAG.
-func (v *fluxSpecVisitor) visitOperation(o *flux.Operation) error {
+func (v *fluxSpecVisitor) visitOperation(o *operation.Node) error {
 	// Retrieve the create function for this query operation
 	createFns, ok := createProcedureFnsFromKind(o.Spec.Kind())
 

@@ -6,6 +6,7 @@ import (
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute/executetest"
+	"github.com/influxdata/flux/internal/operation"
 	"github.com/influxdata/flux/querytest"
 	"github.com/influxdata/flux/stdlib/influxdata/influxdb"
 	"github.com/influxdata/flux/stdlib/influxdata/influxdb/internal/testutil"
@@ -16,8 +17,8 @@ func TestBuckets_NewQuery(t *testing.T) {
 		{
 			Name: "buckets no args",
 			Raw:  `buckets()`,
-			Want: &flux.Spec{
-				Operations: []*flux.Operation{
+			Want: &operation.Spec{
+				Operations: []*operation.Node{
 					{
 						ID:   "buckets0",
 						Spec: &influxdb.BucketsOpSpec{},
@@ -33,8 +34,8 @@ func TestBuckets_NewQuery(t *testing.T) {
 		{
 			Name: "buckets with host and token",
 			Raw:  `buckets(host: "http://localhost:8086", token: "mytoken")`,
-			Want: &flux.Spec{
-				Operations: []*flux.Operation{
+			Want: &operation.Spec{
+				Operations: []*operation.Node{
 					{
 						ID: "buckets0",
 						Spec: &influxdb.BucketsOpSpec{
@@ -48,8 +49,8 @@ func TestBuckets_NewQuery(t *testing.T) {
 		{
 			Name: "buckets with org",
 			Raw:  `buckets(org: "influxdata")`,
-			Want: &flux.Spec{
-				Operations: []*flux.Operation{
+			Want: &operation.Spec{
+				Operations: []*operation.Node{
 					{
 						ID: "buckets0",
 						Spec: &influxdb.BucketsOpSpec{
@@ -62,8 +63,8 @@ func TestBuckets_NewQuery(t *testing.T) {
 		{
 			Name: "buckets with org id",
 			Raw:  `buckets(orgID: "97aa81cc0e247dc4")`,
-			Want: &flux.Spec{
-				Operations: []*flux.Operation{
+			Want: &operation.Spec{
+				Operations: []*operation.Node{
 					{
 						ID: "buckets0",
 						Spec: &influxdb.BucketsOpSpec{

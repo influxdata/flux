@@ -7,12 +7,13 @@ import (
 	"time"
 
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/internal/operation"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/interval"
 )
 
 type Planner interface {
-	Plan(context.Context, *flux.Spec) (*Spec, error)
+	Plan(context.Context, *operation.Spec) (*Spec, error)
 }
 
 // Node defines the common interface for interacting with

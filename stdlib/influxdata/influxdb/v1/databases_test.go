@@ -6,6 +6,7 @@ import (
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute/executetest"
+	"github.com/influxdata/flux/internal/operation"
 	"github.com/influxdata/flux/querytest"
 	"github.com/influxdata/flux/stdlib/influxdata/influxdb"
 	"github.com/influxdata/flux/stdlib/influxdata/influxdb/internal/testutil"
@@ -18,8 +19,8 @@ func TestDatabases_NewQuery(t *testing.T) {
 			Name: "databases no args",
 			Raw: `import "influxdata/influxdb/v1"
 v1.databases()`,
-			Want: &flux.Spec{
-				Operations: []*flux.Operation{
+			Want: &operation.Spec{
+				Operations: []*operation.Node{
 					{
 						ID:   "databases0",
 						Spec: &v1.DatabasesOpSpec{},
@@ -37,8 +38,8 @@ v1.databases(chicken:"what is this?")`,
 			Name: "databases with host and token",
 			Raw: `import "influxdata/influxdb/v1"
 v1.databases(host: "http://localhost:8086", token: "mytoken")`,
-			Want: &flux.Spec{
-				Operations: []*flux.Operation{
+			Want: &operation.Spec{
+				Operations: []*operation.Node{
 					{
 						ID: "databases0",
 						Spec: &v1.DatabasesOpSpec{
@@ -53,8 +54,8 @@ v1.databases(host: "http://localhost:8086", token: "mytoken")`,
 			Name: "databases with org",
 			Raw: `import "influxdata/influxdb/v1"
 v1.databases(org: "influxdata")`,
-			Want: &flux.Spec{
-				Operations: []*flux.Operation{
+			Want: &operation.Spec{
+				Operations: []*operation.Node{
 					{
 						ID: "databases0",
 						Spec: &v1.DatabasesOpSpec{
@@ -68,8 +69,8 @@ v1.databases(org: "influxdata")`,
 			Name: "databases with org id",
 			Raw: `import "influxdata/influxdb/v1"
 v1.databases(orgID: "97aa81cc0e247dc4")`,
-			Want: &flux.Spec{
-				Operations: []*flux.Operation{
+			Want: &operation.Spec{
+				Operations: []*operation.Node{
 					{
 						ID: "databases0",
 						Spec: &v1.DatabasesOpSpec{

@@ -9,6 +9,7 @@ import (
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
 	_ "github.com/influxdata/flux/fluxinit/static"
+	"github.com/influxdata/flux/internal/operation"
 	"github.com/influxdata/flux/querytest"
 	"github.com/influxdata/flux/stdlib/experimental"
 	"github.com/influxdata/flux/stdlib/influxdata/influxdb"
@@ -21,8 +22,8 @@ func TestGroup_NewQuery(t *testing.T) {
 			Name: "experimental group extend",
 			Raw: `import "experimental"
 from(bucket: "telegraf") |> range(start: -1m) |> experimental.group(mode: "extend", columns: ["a"])`,
-			Want: &flux.Spec{
-				Operations: []*flux.Operation{
+			Want: &operation.Spec{
+				Operations: []*operation.Node{
 					{
 						ID: "from0",
 						Spec: &influxdb.FromOpSpec{
@@ -47,7 +48,7 @@ from(bucket: "telegraf") |> range(start: -1m) |> experimental.group(mode: "exten
 						Spec: &experimental.GroupOpSpec{Mode: "extend", Columns: []string{"a"}},
 					},
 				},
-				Edges: []flux.Edge{
+				Edges: []operation.Edge{
 					{Parent: "from0", Child: "range1"},
 					{Parent: "range1", Child: "experimental-group2"},
 				},

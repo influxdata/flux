@@ -12,6 +12,7 @@ import (
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
+	"github.com/influxdata/flux/internal/operation"
 	"github.com/influxdata/flux/mock"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/querytest"
@@ -39,8 +40,8 @@ socket.from(url: "url", decoder: "wrong")`,
 			Name: "from ok",
 			Raw: `import "socket"
 socket.from(url: "url", decoder: "line") |> range(start:-4h, stop:-2h) |> sum()`,
-			Want: &flux.Spec{
-				Operations: []*flux.Operation{
+			Want: &operation.Spec{
+				Operations: []*operation.Node{
 					{
 						ID: "fromSocket0",
 						Spec: &socket.FromSocketOpSpec{
@@ -71,7 +72,7 @@ socket.from(url: "url", decoder: "line") |> range(start:-4h, stop:-2h) |> sum()`
 						},
 					},
 				},
-				Edges: []flux.Edge{
+				Edges: []operation.Edge{
 					{Parent: "fromSocket0", Child: "range1"},
 					{Parent: "range1", Child: "sum2"},
 				},

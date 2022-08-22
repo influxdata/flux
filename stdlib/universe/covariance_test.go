@@ -6,6 +6,7 @@ import (
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
+	"github.com/influxdata/flux/internal/operation"
 	"github.com/influxdata/flux/querytest"
 	"github.com/influxdata/flux/runtime"
 	_ "github.com/influxdata/flux/stdlib"
@@ -22,8 +23,8 @@ func TestCovariance_NewQuery(t *testing.T) {
 		{
 			Name: "simple covariance",
 			Raw:  `from(bucket:"mybucket") |> covariance(columns:["a","b"],)`,
-			Want: &flux.Spec{
-				Operations: []*flux.Operation{
+			Want: &operation.Spec{
+				Operations: []*operation.Node{
 					{
 						ID: "from0",
 						Spec: &influxdb.FromOpSpec{
@@ -38,7 +39,7 @@ func TestCovariance_NewQuery(t *testing.T) {
 						},
 					},
 				},
-				Edges: []flux.Edge{
+				Edges: []operation.Edge{
 					{Parent: "from0", Child: "covariance1"},
 				},
 			},
@@ -46,8 +47,8 @@ func TestCovariance_NewQuery(t *testing.T) {
 		{
 			Name: "pearsonr",
 			Raw:  `from(bucket:"mybucket")|>covariance(columns:["a","b"],pearsonr:true)`,
-			Want: &flux.Spec{
-				Operations: []*flux.Operation{
+			Want: &operation.Spec{
+				Operations: []*operation.Node{
 					{
 						ID: "from0",
 						Spec: &influxdb.FromOpSpec{
@@ -63,7 +64,7 @@ func TestCovariance_NewQuery(t *testing.T) {
 						},
 					},
 				},
-				Edges: []flux.Edge{
+				Edges: []operation.Edge{
 					{Parent: "from0", Child: "covariance1"},
 				},
 			},
@@ -71,8 +72,8 @@ func TestCovariance_NewQuery(t *testing.T) {
 		{
 			Name: "global covariance",
 			Raw:  `cov(x: from(bucket:"mybucket"), y:from(bucket:"mybucket"), on:["host"], pearsonr:true)`,
-			Want: &flux.Spec{
-				Operations: []*flux.Operation{
+			Want: &operation.Spec{
+				Operations: []*operation.Node{
 					{
 						ID: "from0",
 						Spec: &influxdb.FromOpSpec{
@@ -101,7 +102,7 @@ func TestCovariance_NewQuery(t *testing.T) {
 						},
 					},
 				},
-				Edges: []flux.Edge{
+				Edges: []operation.Edge{
 					{Parent: "from0", Child: "join2"},
 					{Parent: "from1", Child: "join2"},
 					{Parent: "join2", Child: "covariance3"},

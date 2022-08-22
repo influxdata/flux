@@ -10,6 +10,7 @@ import (
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
 	"github.com/influxdata/flux/internal/gen"
+	"github.com/influxdata/flux/internal/operation"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/plan/plantest"
@@ -26,8 +27,8 @@ func TestGroup_NewQuery(t *testing.T) {
 			Name: "group with no arguments",
 			// group() defaults to group(columns: [], mode: "by")
 			Raw: `from(bucket: "telegraf") |> range(start: -1m) |> group()`,
-			Want: &flux.Spec{
-				Operations: []*flux.Operation{
+			Want: &operation.Spec{
+				Operations: []*operation.Node{
 					{
 						ID: "from0",
 						Spec: &influxdb.FromOpSpec{
@@ -52,7 +53,7 @@ func TestGroup_NewQuery(t *testing.T) {
 						Spec: &universe.GroupOpSpec{Mode: "by", Columns: []string{}},
 					},
 				},
-				Edges: []flux.Edge{
+				Edges: []operation.Edge{
 					{Parent: "from0", Child: "range1"},
 					{Parent: "range1", Child: "group2"},
 				},
@@ -61,8 +62,8 @@ func TestGroup_NewQuery(t *testing.T) {
 		{
 			Name: "group all",
 			Raw:  `from(bucket: "telegraf") |> range(start: -1m) |> group(columns:[], mode: "except")`,
-			Want: &flux.Spec{
-				Operations: []*flux.Operation{
+			Want: &operation.Spec{
+				Operations: []*operation.Node{
 					{
 						ID: "from0",
 						Spec: &influxdb.FromOpSpec{
@@ -87,7 +88,7 @@ func TestGroup_NewQuery(t *testing.T) {
 						Spec: &universe.GroupOpSpec{Mode: "except", Columns: []string{}},
 					},
 				},
-				Edges: []flux.Edge{
+				Edges: []operation.Edge{
 					{Parent: "from0", Child: "range1"},
 					{Parent: "range1", Child: "group2"},
 				},
@@ -96,8 +97,8 @@ func TestGroup_NewQuery(t *testing.T) {
 		{
 			Name: "group none",
 			Raw:  `from(bucket: "telegraf") |> range(start: -1m) |> group(columns: [], mode: "by")`,
-			Want: &flux.Spec{
-				Operations: []*flux.Operation{
+			Want: &operation.Spec{
+				Operations: []*operation.Node{
 					{
 						ID: "from0",
 						Spec: &influxdb.FromOpSpec{
@@ -122,7 +123,7 @@ func TestGroup_NewQuery(t *testing.T) {
 						Spec: &universe.GroupOpSpec{Mode: "by", Columns: []string{}},
 					},
 				},
-				Edges: []flux.Edge{
+				Edges: []operation.Edge{
 					{Parent: "from0", Child: "range1"},
 					{Parent: "range1", Child: "group2"},
 				},
@@ -131,8 +132,8 @@ func TestGroup_NewQuery(t *testing.T) {
 		{
 			Name: "group by",
 			Raw:  `from(bucket: "telegraf") |> range(start: -1m) |> group(columns: ["host"], mode: "by")`,
-			Want: &flux.Spec{
-				Operations: []*flux.Operation{
+			Want: &operation.Spec{
+				Operations: []*operation.Node{
 					{
 						ID: "from0",
 						Spec: &influxdb.FromOpSpec{
@@ -160,7 +161,7 @@ func TestGroup_NewQuery(t *testing.T) {
 						},
 					},
 				},
-				Edges: []flux.Edge{
+				Edges: []operation.Edge{
 					{Parent: "from0", Child: "range1"},
 					{Parent: "range1", Child: "group2"},
 				},
@@ -169,8 +170,8 @@ func TestGroup_NewQuery(t *testing.T) {
 		{
 			Name: "group except",
 			Raw:  `from(bucket: "telegraf") |> range(start: -1m) |> group(columns: ["host"], mode: "except")`,
-			Want: &flux.Spec{
-				Operations: []*flux.Operation{
+			Want: &operation.Spec{
+				Operations: []*operation.Node{
 					{
 						ID: "from0",
 						Spec: &influxdb.FromOpSpec{
@@ -198,7 +199,7 @@ func TestGroup_NewQuery(t *testing.T) {
 						},
 					},
 				},
-				Edges: []flux.Edge{
+				Edges: []operation.Edge{
 					{Parent: "from0", Child: "range1"},
 					{Parent: "range1", Child: "group2"},
 				},

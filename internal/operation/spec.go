@@ -1,34 +1,52 @@
-package flux
+package operation
 
 import (
 	"time"
 
+	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/internal/errors"
+	"github.com/influxdata/flux/interpreter"
 )
+
+// Node denotes a single operation in a query.
+type Node struct {
+	ID     NodeID             `json:"id"`
+	Spec   flux.OperationSpec `json:"spec"`
+	Source NodeSource         `json:"source"`
+}
+
+// NodeSource specifies the source location that created
+// an operation.
+type NodeSource struct {
+	Stack []interpreter.StackEntry `json:"stack"`
+}
+
+// NodeID is a unique ID within a query for the operation.
+type NodeID string
 
 // Spec specifies a query.
 type Spec struct {
-	Operations []*Operation       `json:"operations"`
-	Edges      []Edge             `json:"edges"`
-	Resources  ResourceManagement `json:"resources"`
-	Now        time.Time          `json:"now"`
+	Operations []*Node                 `json:"operations"`
+	Edges      []Edge                  `json:"edges"`
+	Resources  flux.ResourceManagement `json:"resources"`
+	Now        time.Time               `json:"now"`
 
-	sorted   []*Operation
-	children map[OperationID][]*Operation
-	parents  map[OperationID][]*Operation
+	sorted   []*Node
+	children map[NodeID][]*Node
+	parents  map[NodeID][]*Node
 }
 
 // Edge is a data flow relationship between a parent and a child
 type Edge struct {
-	Parent OperationID `json:"parent"`
-	Child  OperationID `json:"child"`
+	Parent NodeID `json:"parent"`
+	Child  NodeID `json:"child"`
 }
 
 // Walk calls f on each operation exactly once.
 // The function f will be called on an operation only after
 // all of its parents have already been passed to f.
-func (q *Spec) Walk(f func(o *Operation) error) error {
+func (q *Spec) Walk(f func(o *Node) error) error {
 	if len(q.sorted) == 0 {
 		if err := q.prepare(); err != nil {
 			return err
@@ -53,7 +71,7 @@ func (q *Spec) Validate() error {
 
 // Children returns a list of children for a given operation.
 // If the query is invalid no children will be returned.
-func (q *Spec) Children(id OperationID) []*Operation {
+func (q *Spec) Children(id NodeID) []*Node {
 	if q.children == nil {
 		err := q.prepare()
 		if err != nil {
@@ -65,7 +83,7 @@ func (q *Spec) Children(id OperationID) []*Operation {
 
 // Parents returns a list of parents for a given operation.
 // If the query is invalid no parents will be returned.
-func (q *Spec) Parents(id OperationID) []*Operation {
+func (q *Spec) Parents(id NodeID) []*Node {
 	if q.parents == nil {
 		err := q.prepare()
 		if err != nil {
@@ -91,23 +109,23 @@ func (q *Spec) prepare() error {
 	q.parents = parents
 	q.children = children
 
-	tMarks := make(map[OperationID]bool)
-	pMarks := make(map[OperationID]bool)
+	tMarks := make(map[NodeID]bool)
+	pMarks := make(map[NodeID]bool)
 
 	for _, r := range roots {
 		if err := q.visit(tMarks, pMarks, r); err != nil {
 			return err
 		}
 	}
-	//reverse q.sorted
+	// reverse q.sorted
 	for i, j := 0, len(q.sorted)-1; i < j; i, j = i+1, j-1 {
 		q.sorted[i], q.sorted[j] = q.sorted[j], q.sorted[i]
 	}
 	return nil
 }
 
-func (q *Spec) computeLookup() (map[OperationID]*Operation, error) {
-	lookup := make(map[OperationID]*Operation, len(q.Operations))
+func (q *Spec) computeLookup() (map[NodeID]*Node, error) {
+	lookup := make(map[NodeID]*Node, len(q.Operations))
 	for _, o := range q.Operations {
 		if _, ok := lookup[o.ID]; ok {
 			return nil, errors.Newf(codes.Internal, "found duplicate operation ID %q", o.ID)
@@ -117,13 +135,13 @@ func (q *Spec) computeLookup() (map[OperationID]*Operation, error) {
 	return lookup, nil
 }
 
-func (q *Spec) determineParentsChildrenAndRoots() (parents, children map[OperationID][]*Operation, roots []*Operation, _ error) {
+func (q *Spec) determineParentsChildrenAndRoots() (parents, children map[NodeID][]*Node, roots []*Node, _ error) {
 	lookup, err := q.computeLookup()
 	if err != nil {
 		return nil, nil, nil, err
 	}
-	children = make(map[OperationID][]*Operation, len(q.Operations))
-	parents = make(map[OperationID][]*Operation, len(q.Operations))
+	children = make(map[NodeID][]*Node, len(q.Operations))
+	parents = make(map[NodeID][]*Node, len(q.Operations))
 	for _, e := range q.Edges {
 		// Build children map
 		c, ok := lookup[e.Child]
@@ -150,7 +168,7 @@ func (q *Spec) determineParentsChildrenAndRoots() (parents, children map[Operati
 
 // Depth first search topological sorting of a DAG.
 // https://en.wikipedia.org/wiki/Topological_sorting#Algorithms
-func (q *Spec) visit(tMarks, pMarks map[OperationID]bool, o *Operation) error {
+func (q *Spec) visit(tMarks, pMarks map[NodeID]bool, o *Node) error {
 	id := o.ID
 	if tMarks[id] {
 		return errors.New(codes.Invalid, "found cycle in query")
@@ -173,7 +191,7 @@ func (q *Spec) visit(tMarks, pMarks map[OperationID]bool, o *Operation) error {
 // Functions return the names of all functions used in the plan
 func (q *Spec) Functions() ([]string, error) {
 	funcs := []string{}
-	err := q.Walk(func(o *Operation) error {
+	err := q.Walk(func(o *Node) error {
 		funcs = append(funcs, string(o.Spec.Kind()))
 		return nil
 	})

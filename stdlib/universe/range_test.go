@@ -8,6 +8,7 @@ import (
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
+	"github.com/influxdata/flux/internal/operation"
 	"github.com/influxdata/flux/querytest"
 	"github.com/influxdata/flux/stdlib/csv"
 	"github.com/influxdata/flux/stdlib/influxdata/influxdb"
@@ -20,8 +21,8 @@ func TestRange_NewQuery(t *testing.T) {
 		{
 			Name: "from with database with range",
 			Raw:  `from(bucket:"mybucket") |> range(start:-4h, stop:-2h) |> sum()`,
-			Want: &flux.Spec{
-				Operations: []*flux.Operation{
+			Want: &operation.Spec{
+				Operations: []*operation.Node{
 					{
 						ID: "from0",
 						Spec: &influxdb.FromOpSpec{
@@ -51,7 +52,7 @@ func TestRange_NewQuery(t *testing.T) {
 						},
 					},
 				},
-				Edges: []flux.Edge{
+				Edges: []operation.Edge{
 					{Parent: "from0", Child: "range1"},
 					{Parent: "range1", Child: "sum2"},
 				},
@@ -60,8 +61,8 @@ func TestRange_NewQuery(t *testing.T) {
 		{
 			Name: "from csv with range",
 			Raw:  `import "csv" csv.from(csv: "1,2") |> range(start:-4h, stop:-2h) |> sum()`,
-			Want: &flux.Spec{
-				Operations: []*flux.Operation{
+			Want: &operation.Spec{
+				Operations: []*operation.Node{
 					{
 						ID: "fromCSV0",
 						Spec: &csv.FromCSVOpSpec{
@@ -92,7 +93,7 @@ func TestRange_NewQuery(t *testing.T) {
 						},
 					},
 				},
-				Edges: []flux.Edge{
+				Edges: []operation.Edge{
 					{Parent: "fromCSV0", Child: "range1"},
 					{Parent: "range1", Child: "sum2"},
 				},
