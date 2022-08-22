@@ -140,6 +140,8 @@ testcase vec_conditional_string_repeat {
 }
 
 testcase vec_conditional_bool {
+    expect.planner(rules: ["vectorizeMapRule": 1])
+
     want = array.from(rows: [{v: true}, {v: false}])
 
     got =
@@ -150,6 +152,8 @@ testcase vec_conditional_bool {
 }
 
 testcase vec_conditional_bool_repeat {
+    expect.planner(rules: ["vectorizeMapRule": 1])
+
     want = array.from(rows: [{v: true}, {v: false}])
 
     got =
@@ -160,6 +164,8 @@ testcase vec_conditional_bool_repeat {
 }
 
 testcase vec_conditional_null_test {
+    expect.planner(rules: ["vectorizeMapRule": 1])
+
     // When the condition is null, it's considered false so we should see the
     // value of `r.a` for each record in the output.
     want = array.from(rows: [{x: 0}, {x: 1}, {x: 2}, {x: 3}])
@@ -173,6 +179,8 @@ testcase vec_conditional_null_test {
 }
 
 testcase vec_conditional_null_consequent {
+    expect.planner(rules: ["vectorizeMapRule": 1])
+
     want =
         array.from(
             rows: [
@@ -194,6 +202,8 @@ testcase vec_conditional_null_consequent {
 }
 
 testcase vec_conditional_null_alternate {
+    expect.planner(rules: ["vectorizeMapRule": 1])
+
     want = array.from(rows: [{x: 0}, {x: 1}, {x: debug.null(type: "int")}, {x: 3}])
 
     got =
@@ -207,6 +217,8 @@ testcase vec_conditional_null_alternate {
 }
 
 testcase vec_conditional_null_consequent_alternate {
+    expect.planner(rules: ["vectorizeMapRule": 1])
+
     // when both branches are invalid, the outcome should be empty
     want = array.from(rows: [{x: 99}]) |> debug.sink()
 
@@ -221,6 +233,8 @@ testcase vec_conditional_null_consequent_alternate {
 }
 
 testcase vec_conditional_null_test_consequent_alternate {
+    expect.planner(rules: ["vectorizeMapRule": 1])
+
     // when both branches AND the `test` are invalid, the outcome should be empty
     want = array.from(rows: [{x: 99}]) |> debug.sink()
 

@@ -117,6 +117,8 @@ testcase vec_const_kitchen_sink_column_types {
 }
 
 testcase vec_const_bools {
+    expect.planner(rules: ["vectorizeMapRule": 1])
+
     input = array.from(rows: [{a: false}, {a: true}])
     want =
         array.from(
