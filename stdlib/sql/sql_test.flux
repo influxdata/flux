@@ -5,6 +5,7 @@ import "array"
 import "internal/debug"
 import "sql"
 import "testing"
+import internalTesting "internal/testing"
 
 hdbDsn = "hdb://SYSTEM:fluX!234@localhost:39041"
 mssqlDsn = "sqlserver://sa:fluX!234@localhost:1433?database=master"
@@ -477,7 +478,7 @@ testcase integration_sqlite_write_to {
 testcase integration_sqlite_query_error_not_internal {
     option testing.tags = ["integration_read"]
 
-    testing.shouldErrorWithCode(
+    internalTesting.shouldErrorWithCode(
         fn: () =>
             sql.from(
                 driverName: "sqlite3",
@@ -486,7 +487,7 @@ testcase integration_sqlite_query_error_not_internal {
             )
                 |> tableFind(fn: (key) => true),
         want: /syntax error/,
+        // Invalid
         code: uint(v: 3),
-    // Invalid
     )
 }
