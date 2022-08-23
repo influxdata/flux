@@ -5,13 +5,12 @@ import (
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/internal/function"
 	"github.com/influxdata/flux/internal/zoneinfo"
-	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/values"
 )
 
 const pkgpath = "timezone"
 
-func Location(args interpreter.Arguments) (values.Value, error) {
+func Location(args *function.Arguments) (values.Value, error) {
 	name, err := args.GetRequiredString("name")
 	if err != nil {
 		return nil, err

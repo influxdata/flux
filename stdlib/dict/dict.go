@@ -4,7 +4,6 @@ import (
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/internal/function"
-	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
@@ -12,7 +11,7 @@ import (
 const pkgpath = "dict"
 
 // FromList will convert a list of values into a Dictionary.
-func FromList(args interpreter.Arguments) (values.Value, error) {
+func FromList(args *function.Arguments) (values.Value, error) {
 	pairs, err := args.GetRequiredArray("pairs", semantic.Object)
 	if err != nil {
 		return nil, err
@@ -79,7 +78,7 @@ func FromList(args interpreter.Arguments) (values.Value, error) {
 }
 
 // Get will retrieve a value from a Dictionary.
-func Get(args interpreter.Arguments) (values.Value, error) {
+func Get(args *function.Arguments) (values.Value, error) {
 	from, err := args.GetRequiredDictionary("dict")
 	if err != nil {
 		return nil, err
@@ -100,7 +99,7 @@ func Get(args interpreter.Arguments) (values.Value, error) {
 // Insert will insert a value into a Dictionary and
 // return the new Dictionary. It will not modify
 // the original Dictionary.
-func Insert(args interpreter.Arguments) (values.Value, error) {
+func Insert(args *function.Arguments) (values.Value, error) {
 	dict, err := args.GetRequiredDictionary("dict")
 	if err != nil {
 		return nil, err
@@ -121,7 +120,7 @@ func Insert(args interpreter.Arguments) (values.Value, error) {
 // Remove will remove a value from a Dictionary and
 // return the new Dictionary. It will not modify
 // the original Dictionary.
-func Remove(args interpreter.Arguments) (values.Value, error) {
+func Remove(args *function.Arguments) (values.Value, error) {
 	dict, err := args.GetRequiredDictionary("dict")
 	if err != nil {
 		return nil, err

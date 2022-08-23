@@ -9,7 +9,6 @@ import (
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/internal/function"
 	"github.com/influxdata/flux/internal/zoneinfo"
-	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
@@ -21,7 +20,7 @@ func init() {
 	pkg.Register("scale", Scale)
 }
 
-func Add(ctx context.Context, args interpreter.Arguments) (values.Value, error) {
+func Add(ctx context.Context, args *function.Arguments) (values.Value, error) {
 	d, err := args.GetRequired("d")
 	if err != nil {
 		return nil, err
@@ -39,7 +38,7 @@ func Add(ctx context.Context, args interpreter.Arguments) (values.Value, error) 
 	return addDuration(ctx, t, d.Duration(), 1, loc)
 }
 
-func Sub(ctx context.Context, args interpreter.Arguments) (values.Value, error) {
+func Sub(ctx context.Context, args *function.Arguments) (values.Value, error) {
 	d, err := args.GetRequired("d")
 	if err != nil {
 		return nil, err
@@ -101,7 +100,7 @@ func addDuration(ctx context.Context, t values.Value, d values.Duration, scale i
 	return values.NewTime(time), nil
 }
 
-func Scale(args interpreter.Arguments) (values.Value, error) {
+func Scale(args *function.Arguments) (values.Value, error) {
 	d, err := args.GetRequired("d")
 	if err != nil {
 		return nil, err

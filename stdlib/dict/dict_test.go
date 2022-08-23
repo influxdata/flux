@@ -4,14 +4,14 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/influxdata/flux/interpreter"
+	"github.com/influxdata/flux/internal/function"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/stdlib/dict"
 	"github.com/influxdata/flux/values"
 )
 
 func TestFromList(t *testing.T) {
-	args := interpreter.NewArguments(values.NewObjectWithValues(
+	args := values.NewObjectWithValues(
 		map[string]values.Value{
 			"pairs": func() values.Array {
 				vals := []values.Value{
@@ -35,9 +35,9 @@ func TestFromList(t *testing.T) {
 				return arr
 			}(),
 		},
-	))
+	)
 
-	v, err := dict.FromList(args)
+	v, err := function.Invoke(dict.FromList, args)
 	if err != nil {
 		t.Fatalf("unexpected error: %s", err)
 	}
@@ -69,7 +69,7 @@ func TestFromList(t *testing.T) {
 }
 
 func TestGet(t *testing.T) {
-	args := interpreter.NewArguments(values.NewObjectWithValues(
+	args := values.NewObjectWithValues(
 		map[string]values.Value{
 			"dict": func() values.Dictionary {
 				dictType := semantic.NewDictType(semantic.BasicString, semantic.BasicInt)
@@ -80,9 +80,9 @@ func TestGet(t *testing.T) {
 			"key":     values.NewString("a"),
 			"default": values.NewInt(0),
 		},
-	))
+	)
 
-	v, err := dict.Get(args)
+	v, err := function.Invoke(dict.Get, args)
 	if err != nil {
 		t.Fatalf("unexpected error: %s", err)
 	}
@@ -96,7 +96,7 @@ func TestGet(t *testing.T) {
 }
 
 func TestInsert(t *testing.T) {
-	args := interpreter.NewArguments(values.NewObjectWithValues(
+	args := values.NewObjectWithValues(
 		map[string]values.Value{
 			"dict": func() values.Dictionary {
 				dictType := semantic.NewDictType(semantic.BasicString, semantic.BasicInt)
@@ -107,9 +107,9 @@ func TestInsert(t *testing.T) {
 			"key":   values.NewString("b"),
 			"value": values.NewInt(8),
 		},
-	))
+	)
 
-	v, err := dict.Insert(args)
+	v, err := function.Invoke(dict.Insert, args)
 	if err != nil {
 		t.Fatalf("unexpected error: %s", err)
 	}
@@ -141,7 +141,7 @@ func TestInsert(t *testing.T) {
 }
 
 func TestRemove(t *testing.T) {
-	args := interpreter.NewArguments(values.NewObjectWithValues(
+	args := values.NewObjectWithValues(
 		map[string]values.Value{
 			"dict": func() values.Dictionary {
 				dictType := semantic.NewDictType(semantic.BasicString, semantic.BasicInt)
@@ -153,9 +153,9 @@ func TestRemove(t *testing.T) {
 			}(),
 			"key": values.NewString("c"),
 		},
-	))
+	)
 
-	v, err := dict.Remove(args)
+	v, err := function.Invoke(dict.Remove, args)
 	if err != nil {
 		t.Fatalf("unexpected error: %s", err)
 	}
