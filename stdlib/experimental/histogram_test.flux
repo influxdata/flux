@@ -35,11 +35,9 @@ outData =
 ,,1,2018-05-22T19:53:00Z,y_duration_seconds,2,3,foo
 "
 
-// Passes in flux, fails in C2 and OSS
 testcase histogram {
     got =
         csv.from(csv: inData)
-            |> testing.load()
             |> range(start: 2018-05-22T00:00:00Z)
             |> experimental.histogram(bins: [-1.0, 0.0, 1.0, 2.0])
             |> drop(columns: ["_start", "_stop"])
