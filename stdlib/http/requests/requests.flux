@@ -190,8 +190,9 @@ do = (
 //
 // response = requests.post(
 //     url: "http://example.com",
-//     params: ["start": ["100"]],
+//     params: ["start": ["100"], "interval": ["1h", "1d"]],
 // )
+// // Full URL: http://example.com?start=100&interval=1h&interval=1d
 //
 // > requests.peek(response: response)
 // ```
