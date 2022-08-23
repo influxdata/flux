@@ -2,15 +2,15 @@ use crate::processes::process_completion::HintType::{
     ArgumentType, FunctionType, MethodType, PackageType, UnimplementedType,
 };
 use crate::CommandHint;
+use lsp_types::CompletionResponse;
 use regex::Regex;
 use serde_json::Value;
 use std::borrow::{Borrow, Cow};
 use std::collections::HashSet;
 use std::fmt::{Display, Formatter};
 use std::hash::Hash;
-use std::sync::mpsc::Sender;
 
-#[derive(Hash, Debug, PartialEq, Eq)]
+#[derive(Hash, Debug, PartialEq, Eq, Clone)]
 pub enum HintType {
     FunctionType,
     PackageType,
@@ -53,62 +53,72 @@ impl From<u64> for HintType {
     }
 }
 
-impl Clone for HintType {
-    fn clone(&self) -> Self {
-        match self {
-            FunctionType => FunctionType,
-            PackageType => PackageType,
-            ArgumentType => ArgumentType,
-            MethodType => MethodType,
-            UnimplementedType => UnimplementedType,
-        }
-    }
-}
-
 pub fn process_completions_response(
     resp: &str,
-    _tx_hints_updated: Sender<bool>,
-) -> Option<HashSet<CommandHint>> {
+) -> Result<Option<HashSet<CommandHint>>, anyhow::Error> {
     //parse the response to a value using serde then enumerate the items adding each to the new set
-    let json_bit: Value = serde_json::from_str::<Value>(resp).expect("failed to change");
-    let snippet_fix = Regex::new(r#"\$\p{Nd}+"#).unwrap();
+    //TODO: switch to lsp_types response object
+    let json_bit: Value = serde_json::from_str::<Value>(resp)?;
+    // let other = serde_json::from_str::<CompletionResponse>(resp);
+    // if let Ok(val) = other {
+    //     print!("{:?}", val);
+    // } else {
+    //     println!("not ok ")
+    // }
 
-    // println!("here is the jsson version{:?}", json_bit);
+    // if let other: CompletionResponse = serde_json::from_str(resp).is_ok();
+
+    let snippet_fix = Regex::new(r#"\$\p{Nd}+"#)?;
 
     return if let Some(completions) = json_bit["result"]["items"].as_array() {
         //create new set of completions
         let mut set: HashSet<CommandHint> = HashSet::new();
 
         completions.iter().for_each(|x| {
+            let mut skip = false;
             let arg = match x["insertText"].as_str() {
-                None => x["label"].as_str().unwrap(),
-                Some(val) => val,
+                None => match x["label"].as_str() {
+                    None => {
+                        skip = true;
+                        None
+                    }
+                    Some(val) => Some(val),
+                },
+                Some(val) => Some(val),
             };
 
-            let replaced_snippets = snippet_fix.replace_all(arg, "");
+            let replaced_snippets = snippet_fix.replace_all(arg.unwrap(), "");
             let val = Cow::borrow(&replaced_snippets);
-            let kind = x["kind"].as_u64().unwrap();
 
-            if let Some(detail) = x["detail"].as_str() {
-                let split = detail.split("->").collect::<Vec<&str>>();
-                if split[0].contains("<-") {
-                    set.insert(CommandHint::new(val, val, kind.into(), None));
-                } else if val.starts_with("_") {
-                } else {
-                    set.insert(CommandHint::new(
-                        val,
-                        val,
-                        kind.into(),
-                        Some(split[0].to_string()),
-                    ));
-                }
+            let mut kind = None;
+            if let Some(val) = x["kind"].as_u64() {
+                kind = Some(val)
             } else {
-                set.insert(CommandHint::new(val, val, kind.into(), None));
+                skip = true;
+            }
+
+            if !skip {
+                if let Some(detail) = x["detail"].as_str() {
+                    let split = detail.split("->").collect::<Vec<&str>>();
+                    if split[0].contains("<-") {
+                        set.insert(CommandHint::new(val, val, kind.unwrap().into(), None));
+                    } else if val.starts_with("_") {
+                    } else {
+                        set.insert(CommandHint::new(
+                            val,
+                            val,
+                            kind.unwrap().into(),
+                            Some(split[0].to_string()),
+                        ));
+                    }
+                } else {
+                    set.insert(CommandHint::new(val, val, kind.unwrap().into(), None));
+                }
             }
         });
         //send the hashset over
-        Some(set)
+        Ok(Some(set))
     } else {
-        None
+        Ok(None)
     };
 }

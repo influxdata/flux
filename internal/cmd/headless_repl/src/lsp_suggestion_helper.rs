@@ -1,5 +1,5 @@
 use crate::processes::process_completion::HintType;
-use crate::processes::process_completion::HintType::{ArgumentType, FunctionType};
+use crate::processes::process_completion::HintType::ArgumentType;
 use rustyline::hint::{Hint, Hinter};
 use rustyline::Context;
 use rustyline_derive::{Completer, Helper, Highlighter, Validator};
@@ -8,7 +8,7 @@ use std::str::from_utf8;
 
 use crate::lsp_suggestion_helper::ExpType::{Argument, Normal};
 use log::trace;
-use once_cell::sync::{Lazy, OnceCell};
+use once_cell::sync::Lazy;
 use regex::Regex;
 use std::sync::{Arc, RwLock};
 
@@ -26,7 +26,7 @@ pub struct LSPSuggestionHelper {
     pub(crate) hints: Arc<RwLock<HashSet<CommandHint>>>,
 }
 
-#[derive(Hash, Debug, PartialEq, Eq)]
+#[derive(Hash, Debug, PartialEq, Eq, Clone)]
 pub struct CommandHint {
     pub(crate) display: String,
     complete_up_to: usize,
@@ -55,7 +55,7 @@ impl CommandHint {
         hint_type: HintType,
         sig: Option<String>,
     ) -> CommandHint {
-        assert!(text.starts_with(complete_up_to));
+        debug_assert!(text.starts_with(complete_up_to));
         CommandHint {
             display: text.into(),
             complete_up_to: complete_up_to.len(),
@@ -115,8 +115,32 @@ impl LSPSuggestionHelper {
         for hint in lock.iter() {
             //if there is some overlap
             let disp = hint.display.as_str();
+            if hint.hint_type != ArgumentType {
+                if let Some(overlap) = overlap_two(line, hint.display()) {
+                    let ratio: f32 = overlap.len() as f32 / disp.len() as f32;
+                    //if greater than store that hint
 
-            if hint.hint_type == ArgumentType {
+                    trace!(
+                        "there is overlap {}   {}  >{}",
+                        hint.display,
+                        ratio,
+                        best_ratio
+                    );
+
+                    if ratio > best_ratio {
+                        //issue is that arguments with higher scores are not being saved
+                        if !is_valid(line, hint.display(), &hint.display[overlap.len()..]) {
+                            trace!("now is not valid {}", hint.display);
+                            continue;
+                        }
+                        // println!("hint winner {}  {}", hint.display, ratio);
+                        best_ratio = ratio;
+                        best_overlap = overlap.len();
+                        best_hint = hint;
+                    }
+                }
+            } else {
+                //for arguments
                 if let Some(overlap) = overlap_two(line, &hint.display) {
                     let ratio: f32 = overlap.len() as f32 / disp.len() as f32;
                     //if greater than store that hint
@@ -125,7 +149,7 @@ impl LSPSuggestionHelper {
                         if !arg_get_valid(line, hint.display(), &hint.display[overlap.len()..]) {
                             continue;
                         }
-                        // println!("swapping {}", hint.display);
+                        // println!("swapping {}   {}", hint.display, ratio);
 
                         best_ratio = ratio;
                         best_overlap = overlap.len();
@@ -133,50 +157,14 @@ impl LSPSuggestionHelper {
                     }
                 }
             }
-            // println!("hint: {}", hint.display);
-            //NOTE: adding one works for where there is a dot present but nothgin else so maybe do all other cases
-            if let Some(overlap) = overlap_two(line, hint.display()) {
-                let ratio: f32 = overlap.len() as f32 / disp.len() as f32;
-                //if greater than store that hint
-
-                trace!(
-                    "there is overlap {}   {}  >{}",
-                    hint.display,
-                    ratio,
-                    best_ratio
-                );
-
-                if ratio > best_ratio {
-                    if !is_valid(line, hint.display(), &hint.display[overlap.len()..]) {
-                        trace!("now is not valid {}", hint.display);
-                        continue;
-                    }
-                    best_ratio = ratio;
-                    best_overlap = overlap.len();
-                    best_hint = hint;
-                }
-            }
         }
         //if they are equal save the first arg
 
-        let possibilities = best_ratio > 0 as f32;
-        return match possibilities {
-            false => {
-                trace!(
-                    "Getting to the minimum float value with this input {}",
-                    line
-                );
-
-                return None;
-            }
-            _ => {
-                // println!("other high");
-                trace!("getting to the highest input on this input {}", line);
-                if best_hint.hint_type == FunctionType && best_hint.hint_signature.is_some() {
-                    return Some(best_hint.suffix(best_overlap));
-                }
-                Some(best_hint.suffix(best_overlap))
-            }
+        let possibilities = best_ratio > 0.0;
+        return if possibilities {
+            Some(best_hint.suffix(best_overlap))
+        } else {
+            None
         };
     }
 }

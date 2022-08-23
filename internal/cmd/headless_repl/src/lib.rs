@@ -1,22 +1,20 @@
-// mod invoke_go;
 mod lsp_suggestion_helper;
 mod processes;
 mod utils;
 use crate::processes::{invoke_go, run, start_go};
+use anyhow::Context as AnyHowContext;
 use log::trace;
 use processes::lsp_invoke::{formulate_request, start_lsp};
 use rustyline::error::ReadlineError;
 use rustyline::highlight::Highlighter;
 use rustyline::hint::Hinter;
-
 use rustyline::{
     Cmd, ConditionalEventHandler, Context, Editor, Event, EventContext, EventHandler, KeyCode,
-    KeyEvent, Modifiers, RepeatCount, Result,
+    KeyEvent, Modifiers, RepeatCount,
 };
 use std::borrow::Cow;
 use std::borrow::Cow::{Borrowed, Owned};
 use std::collections::HashSet;
-use std::hash::Hash;
 use std::sync::mpsc::channel;
 use std::sync::mpsc::{Receiver, Sender};
 use std::sync::{Arc, RwLock};
@@ -27,13 +25,12 @@ use crate::utils::process_response_flux;
 use rustyline_derive::{Completer, Helper, Validator};
 
 extern crate pretty_env_logger;
-#[macro_use]
+
 extern crate log;
 #[derive(Completer, Helper, Validator)]
 struct MyHelper {
     hinter: lsp_suggestion_helper::LSPSuggestionHelper,
     tx_stdin: Sender<String>,
-    rx_hints_updated: Receiver<bool>,
 }
 
 impl Hinter for MyHelper {
@@ -80,13 +77,6 @@ impl Highlighter for MyHelper {
     }
 }
 
-//lots = trace
-//rust build script
-//may help to build the lsp into the rustyline
-//may help with IOX integration run flux alongside IOX headless repl could work with IOX
-//using the lsp to get better suggestions
-//one cell crate
-
 #[derive(Clone)]
 struct CompleteHintHandler {}
 impl ConditionalEventHandler for CompleteHintHandler {
@@ -121,25 +111,7 @@ impl ConditionalEventHandler for CompleteHintHandler {
     }
 }
 
-struct TabEventHandler;
-impl ConditionalEventHandler for TabEventHandler {
-    fn handle(&self, evt: &Event, n: RepeatCount, _: bool, ctx: &EventContext) -> Option<Cmd> {
-        debug_assert_eq!(*evt, Event::from(KeyEvent::from('\t')));
-        if ctx.line()[..ctx.pos()]
-            .chars()
-            .rev()
-            .next()
-            .filter(|c| c.is_whitespace())
-            .is_some()
-        {
-            Some(Cmd::SelfInsert(n, '\t'))
-        } else {
-            None // default complete
-        }
-    }
-}
-
-pub fn possible_main() -> Result<()> {
+pub fn possible_main() -> anyhow::Result<()> {
     //logging
     pretty_env_logger::init();
 
@@ -153,8 +125,6 @@ pub fn possible_main() -> Result<()> {
     //copy of the tx_hinter so that hints can be re-requested this is used in the helpers
     let tx_more_hints = tx_hinter.clone();
 
-    //channel to send the new hints over sent via the coorinater
-    let (tx_hints_updated, rx_hints_updated): (Sender<bool>, Receiver<bool>) = channel();
     //END: Channel Setup
 
     //START: Helper and readline setup
@@ -172,7 +142,6 @@ pub fn possible_main() -> Result<()> {
     rl.set_helper(Some(MyHelper {
         hinter: lsp_helper,
         tx_stdin: tx_more_hints,
-        rx_hints_updated,
     }));
     //key handler setup
     let ceh = Box::new(CompleteHintHandler {});
@@ -185,8 +154,7 @@ pub fn possible_main() -> Result<()> {
 
     //start the coordinator
     // the coordinator thread uses the rx_hinter for receiving
-    run(hints, rx_hinter, tx_hints_updated, rx_flux, tx_lsp, rx_lsp).unwrap();
-
+    run(hints, rx_hinter, rx_flux, tx_lsp, rx_lsp).context("coordinator failed setup stages")?;
     //START: Rustyline Setup
     loop {
         let readline = rl.readline(">> ");
@@ -195,7 +163,9 @@ pub fn possible_main() -> Result<()> {
             Ok(line) => {
                 rl.add_history_entry(line.as_str());
                 //send to flux writer
-                tx_flux.send(line).expect("Failure getting user input!");
+                tx_flux
+                    .send(line)
+                    .context("failed to send user input to the flux writer thread")?;
             }
             Err(ReadlineError::Interrupted) => {
                 println!("CTRL-C");

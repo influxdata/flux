@@ -1,0 +1,14 @@
+### Requirements to build the project
+- The Flux LSP has to be in your path
+- You have run the make file and have generated a main executable of the headless repl and compiled the rust code
+- You are in the headless_repl directory
+
+
+### Building the Project 
+First run a ```make``` to compile and then ensure that you have ```flux-lsp``` in your path. Now you are free to ```cargo run```.
+
+### TODO
+- The hint function currently sends an updated line of what has currently been inputted, but the request to the lsp and the updating of hints only occurs at the end of the function. This means that hints will be delayed by a single character.
+- Adding multiline support back into Rustyline, it is possible and it does work.
+- Allow flag passing to the Coordinator.
+- Add a way to maintain variable state that can be shared with the lsp.

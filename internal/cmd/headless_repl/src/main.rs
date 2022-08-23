@@ -1,3 +1,4 @@
-fn main() {
-    caller::possible_main().unwrap();
+fn main() -> anyhow::Result<(), anyhow::Error> {
+    caller::possible_main()?;
+    Ok(())
 }

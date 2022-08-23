@@ -4,11 +4,15 @@ use std::io::{BufRead, BufReader};
 use std::process::{ChildStdin, ChildStdout};
 use std::sync::mpsc::Receiver;
 use std::thread;
+use std::thread::JoinHandle;
+use thiserror::Error;
 
 #[allow(dead_code)]
-#[derive(Debug)]
+#[derive(Debug, Error)]
 pub enum ServerError {
+    #[error("failed to initialize the server")]
     ErrorStartingServer,
+    #[error("Some error ")]
     GenericError,
 }
 
@@ -17,7 +21,7 @@ pub fn read_flux(stdout: ChildStdout) -> Result<(), ServerError> {
         let reader = BufReader::new(stdout);
         thread::spawn(move || {
             for line in reader.lines() {
-                process_response_flux(&line.unwrap());
+                process_response_flux(&line.unwrap()).unwrap();
             }
         });
     }
@@ -26,8 +30,8 @@ pub fn read_flux(stdout: ChildStdout) -> Result<(), ServerError> {
 pub fn write_flux(
     mut stdin: ChildStdin,
     rx_user_input: Receiver<String>,
-) -> Result<(), ServerError> {
-    thread::spawn(move || {
+) -> Result<JoinHandle<()>, ServerError> {
+    let a = thread::spawn(move || {
         loop {
             let resp = rx_user_input
                 .recv()
@@ -39,5 +43,5 @@ pub fn write_flux(
         }
     });
 
-    Ok(())
+    Ok(a)
 }

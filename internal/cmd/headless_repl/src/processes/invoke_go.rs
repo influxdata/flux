@@ -9,18 +9,16 @@ use std::io::Read;
 use std::process::{Child, ChildStdout, Command, Stdio};
 use std::str;
 use std::string::String;
-use std::sync::mpsc::Sender;
 use std::sync::{Arc, RwLock};
 use tower_lsp::jsonrpc;
 use tower_lsp::jsonrpc::RequestBuilder;
 
-pub fn start_go() -> Child {
+pub fn start_go() -> Result<Child, anyhow::Error> {
     let child = Command::new("./main")
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
-        .spawn()
-        .expect("failure to execute");
-    child
+        .spawn()?;
+    Ok(child)
 }
 
 #[derive(Debug)]
@@ -47,7 +45,7 @@ pub fn form_output(request_type: &str, text: &str) -> Result<String, OutputError
 
             let req: RequestBuilder = jsonrpc::Request::build("Service.DidOutput").params(paramm);
             let a = serde_json::to_value(req.finish())?;
-            let res = serde_json::to_string(&a).unwrap();
+            let res = serde_json::to_string(&a)?;
             Ok(res)
         }
         _ => Err(InvalidMethod),
@@ -57,7 +55,6 @@ pub fn form_output(request_type: &str, text: &str) -> Result<String, OutputError
 pub fn read_json_rpc(
     child_stdout: ChildStdout,
     storage: Arc<RwLock<HashSet<CommandHint>>>,
-    tx_hints_updated: Sender<bool>,
 ) -> Result<(), anyhow::Error> {
     let re = Regex::new(r"Content-Length: ").unwrap();
     let num = Regex::new(r"\d").unwrap();
@@ -69,7 +66,7 @@ pub fn read_json_rpc(
     let mut num_cap = false;
     let mut read_exact = (false, 0);
     for i in child_stdout.bytes() {
-        let val = i.unwrap();
+        let val = i?;
         let single = [val];
         if read_exact.0 {
             buf.insert(buf.len(), val);
@@ -77,13 +74,11 @@ pub fn read_json_rpc(
             if read_exact.1 == 0 {
                 //final result
                 let resp = str::from_utf8(&buf)?;
-                if let Some(val) = process_completions_response(&resp, tx_hints_updated.clone()) {
-                    //since this is a write operation you need to lock
+                if let Some(val) = process_completions_response(&resp)? {
                     let mut write_lock = storage.write().unwrap();
                     *write_lock = val;
                 }
                 read_exact.0 = false;
-                // break;
             }
             continue;
         }
@@ -99,7 +94,7 @@ pub fn read_json_rpc(
                 buf.clear();
                 let read = str::from_utf8(&num_buf)?;
                 //now read that many characters
-                let mut my_int: u16 = read.parse().unwrap();
+                let mut my_int: u16 = read.parse()?;
                 //3 being the \r\n\n in the header
                 my_int = my_int + 3;
                 read_exact.0 = true;

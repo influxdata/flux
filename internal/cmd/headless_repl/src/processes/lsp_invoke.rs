@@ -14,12 +14,10 @@ use std::fmt::Debug;
 use std::process::{Child, Command, Stdio};
 use tower_lsp::jsonrpc;
 
-use crate::lsp_suggestion_helper::get_last_ident;
-use crate::lsp_suggestion_helper::ExpType::Normal;
 use lsp_types::request::{Completion, Initialize, Request};
 use lsp_types::MarkupKind::PlainText;
-use regex::Regex;
 use std::sync::atomic::{AtomicUsize, Ordering};
+use thiserror::Error;
 use tower_lsp::jsonrpc::RequestBuilder;
 
 pub fn add_headers(a: String) -> String {
@@ -34,11 +32,14 @@ pub enum LSPRequestType {
     Completion,
 }
 #[allow(dead_code)]
-#[derive(Debug)]
+#[derive(Error, Debug)]
 pub enum LSPError {
+    #[error("failed to initialize the lsp")]
     InitError,
-    InvalidRequestType,
+    #[error("The request sent has invalid formatting")]
     InvalidFormatting,
+    #[allow(dead_code)]
+    #[error("Something went wrong internally")]
     InternalError,
 }
 
@@ -48,21 +49,15 @@ impl From<serde_json::Error> for LSPError {
     }
 }
 static NEXT_REQ_ID: AtomicUsize = AtomicUsize::new(1);
+#[allow(deprecated)]
 pub fn formulate_request(
     request_type: &LSPRequestType,
     text: &str,
     _pos: usize,
-) -> Result<String, LSPError> {
+) -> anyhow::Result<String, LSPError> {
     let req_id = NEXT_REQ_ID.fetch_add(1, Ordering::SeqCst) as i64;
     let version = NEXT_REQ_ID.fetch_add(1, Ordering::SeqCst) as i64;
 
-    //TODO: SPECIFY THINGS YOU ARE INTERESTED IN RECEIVING
-    //leading question marks are optional
-    //use insertion text
-    //only want plaintext over snippets
-    //completion item kinds
-    //kind 5 may be
-    //change request_type to an enum
     match request_type {
         LSPRequestType::Initialize => {
             let req: RequestBuilder = jsonrpc::Request::build(Initialize::METHOD)
@@ -210,14 +205,10 @@ pub fn formulate_request(
         LSPRequestType::Completion => {
             let line_num = text.matches("\n").count();
 
-            //FIXME: Cases that don't work x = da will not complete to date and will not autocomplete functions that are args
-
             let character = match super::super::lsp_suggestion_helper::add_one(text) {
                 true => text.len() as u32 + 1,
                 false => text.len() as u32,
             };
-
-            // println!("here is the character {}", character);
 
             let req: RequestBuilder = jsonrpc::Request::build(Completion::METHOD).params(
                 serde_json::to_value(CompletionParams {
@@ -243,26 +234,12 @@ pub fn formulate_request(
     }
 }
 
-pub fn start_lsp() -> Child {
+//change to be result
+pub fn start_lsp() -> Result<Child, anyhow::Error> {
     //step one: start the process
     let child = Command::new("flux-lsp")
-        // .arg("-l")
-        // .arg("./real_lsp_log/log.txt")
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
-        .spawn()
-        .expect("failure to execute");
-    child
-}
-
-pub fn characters_after_last(input: &str, charac: &str) -> Option<u32> {
-    if input == "" || charac == "" {
-        return None;
-    }
-
-    let last_occur = input.chars().position(|c| c == '\n');
-    if let Some(occur) = last_occur {
-        return Some((occur.abs_diff(input.len()) - 1) as u32);
-    }
-    None
+        .spawn()?;
+    Ok(child)
 }
