@@ -15,6 +15,7 @@ import (
 //go:generate tmpl -data=@types.tmpldata -o builder.gen.go builder.gen.go.tmpl
 //go:generate tmpl -data=@types.tmpldata -o repeat.gen.go repeat.gen.go.tmpl
 //go:generate tmpl -data=@types.tmpldata -o conditional.gen.go conditional.gen.go.tmpl
+//go:generate tmpl -data=@unary.tmpldata -o unary.gen.go unary.gen.go.tmpl
 
 type DataType = arrow.DataType
 
