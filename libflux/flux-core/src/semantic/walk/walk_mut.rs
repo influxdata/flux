@@ -48,6 +48,7 @@ impl NodeMut<'_> {
             NodeMut::BooleanLit(ref mut n) => n.loc = loc,
             NodeMut::DateTimeLit(ref mut n) => n.loc = loc,
             NodeMut::RegexpLit(ref mut n) => n.loc = loc,
+            NodeMut::LabelLit(ref mut n) => n.loc = loc,
             NodeMut::ErrorExpr(ref mut n) => n.loc = loc,
             NodeMut::ExprStmt(ref mut n) => n.loc = loc,
             NodeMut::OptionStmt(ref mut n) => n.loc = loc,

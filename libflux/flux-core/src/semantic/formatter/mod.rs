@@ -1041,7 +1041,7 @@ impl<'doc> DocFormatter<'doc> {
                     self.format_monotype(&n.retn),
                 ]
             }
-            MonoType::Label(label) => self.format_string_literal(label),
+            MonoType::Label(label) => docs![arena, ".", &label[..]],
         }
         .group()
     }

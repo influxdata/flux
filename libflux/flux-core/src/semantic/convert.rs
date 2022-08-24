@@ -630,7 +630,9 @@ impl<'a> Converter<'a> {
                                 name.name.clone(),
                                 types::Argument {
                                     typ: self.convert_monotype(monotype, tvars),
-                                    default: default.as_ref().map(|_| MonoType::STRING),
+                                    default: default.as_ref().map(|lit| {
+                                        MonoType::Label(types::Label::from(lit.value.as_str()))
+                                    }),
                                 },
                             );
                         }
@@ -698,9 +700,7 @@ impl<'a> Converter<'a> {
                 r
             }
 
-            ast::MonoType::Label(string_lit) => {
-                MonoType::Label(types::Label::from(string_lit.value.as_str()))
-            }
+            ast::MonoType::Label(lit) => MonoType::Label(types::Label::from(lit.value.as_str())),
         }
     }
 
@@ -835,6 +835,10 @@ impl<'a> Converter<'a> {
                     }
                 }
             }
+            ast::Expression::Label(lit) => Expression::Label(LabelLit {
+                loc: lit.base.location.clone(),
+                value: types::Label::from(self.symbols.lookup_property_key(&lit.value)),
+            }),
             ast::Expression::DateTime(lit) => {
                 Expression::DateTime(self.convert_date_time_literal(lit))
             }

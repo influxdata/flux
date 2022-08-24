@@ -189,6 +189,8 @@ pub enum Expression {
     Regexp(RegexpLit),
     #[serde(rename = "PipeLiteral")]
     PipeLit(PipeLit),
+    #[serde(rename = "LabelLiteral")]
+    Label(LabelLit),
 
     #[serde(rename = "BadExpression")]
     Bad(Box<BadExpr>),
@@ -220,6 +222,7 @@ impl Expression {
             Expression::DateTime(wrapped) => &wrapped.base,
             Expression::Regexp(wrapped) => &wrapped.base,
             Expression::PipeLit(wrapped) => &wrapped.base,
+            Expression::Label(wrapped) => &wrapped.base,
             Expression::Bad(wrapped) => &wrapped.base,
             Expression::StringExpr(wrapped) => &wrapped.base,
             Expression::Paren(wrapped) => &wrapped.base,
@@ -614,7 +617,7 @@ pub enum MonoType {
     #[serde(rename = "FunctionType")]
     Function(Box<FunctionType>),
     #[serde(rename = "LabelType")]
-    Label(Box<StringLit>),
+    Label(Box<LabelLit>),
 }
 
 impl MonoType {
@@ -727,7 +730,7 @@ pub enum ParameterType {
         monotype: MonoType,
         // Default value for this parameter. Currently only string literals are supported
         // (to allow default labels to be specified)
-        default: Option<StringLit>,
+        default: Option<LabelLit>,
     },
     Pipe {
         #[serde(skip_serializing_if = "BaseNode::is_empty")]
@@ -1447,6 +1450,18 @@ pub struct UintLit {
     #[serde(serialize_with = "serialize_to_string")]
     #[serde(deserialize_with = "deserialize_str_u64")]
     pub value: u64,
+}
+
+/// LabelLit represents a label. Used to specify specific record fields.
+#[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
+#[allow(missing_docs)]
+pub struct LabelLit {
+    #[serde(skip_serializing_if = "BaseNode::is_empty")]
+    #[serde(default)]
+    #[serde(flatten)]
+    pub base: BaseNode,
+
+    pub value: String,
 }
 
 struct U64Visitor;

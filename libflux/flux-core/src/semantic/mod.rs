@@ -626,7 +626,7 @@ impl<'env, I: import::Importer> Analyzer<'env, I> {
             (sem_pkg, package_info)
         };
 
-        if let Err(err) = check::check(&sem_pkg) {
+        if let Err(err) = check::check(&sem_pkg, &self.config) {
             errors.push(err.into());
         }
 

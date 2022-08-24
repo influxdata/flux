@@ -45,6 +45,7 @@ macro_rules! mk_node {
             BooleanLit(&'a $($mut)? BooleanLit),
             DateTimeLit(&'a $($mut)? DateTimeLit),
             RegexpLit(&'a $($mut)? RegexpLit),
+            LabelLit(&'a $($mut)? LabelLit),
             ErrorExpr(&'a $($mut)? BadExpr),
 
             // Statements.
@@ -95,6 +96,7 @@ macro_rules! mk_node {
                     Self::BooleanLit(_) => write!(f, "BooleanLit"),
                     Self::DateTimeLit(_) => write!(f, "DateTimeLit"),
                     Self::RegexpLit(_) => write!(f, "RegexpLit"),
+                    Self::LabelLit(_) => write!(f, "LabelLit"),
                     Self::ErrorExpr(_) => write!(f, "ErrorExpr"),
                     Self::ExprStmt(_) => write!(f, "ExprStmt"),
                     Self::OptionStmt(_) => write!(f, "OptionStmt"),
@@ -147,6 +149,7 @@ macro_rules! mk_node {
                     Self::BooleanLit(n) => &n.loc,
                     Self::DateTimeLit(n) => &n.loc,
                     Self::RegexpLit(n) => &n.loc,
+                    Self::LabelLit(n) => &n.loc,
                     Self::ExprStmt(n) => &n.loc,
                     Self::OptionStmt(n) => &n.loc,
                     Self::ReturnStmt(n) => &n.loc,
@@ -235,6 +238,7 @@ macro_rules! mk_node {
                     Expression::Boolean(e) => Self::BooleanLit(e),
                     Expression::DateTime(e) => Self::DateTimeLit(e),
                     Expression::Regexp(e) => Self::RegexpLit(e),
+                    Expression::Label(e) => Self::LabelLit(e),
                     Expression::Error(e) => Self::ErrorExpr(e),
                 }
             }
@@ -380,6 +384,7 @@ macro_rules! mk_node {
                     $name::BooleanLit(_) => {}
                     $name::DateTimeLit(_) => {}
                     $name::RegexpLit(_) => {}
+                    $name::LabelLit(_) => {}
                     $name::ExprStmt(n) => {
                         $walk(v, $name::from_expr(& $($mut)? n.expression));
                     }

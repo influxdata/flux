@@ -562,6 +562,7 @@ impl<'input> Parser<'input> {
             }
             TokenType::LBrace => self.parse_record_type(),
             TokenType::LParen => self.parse_function_type(),
+            TokenType::Dot => MonoType::Label(Box::new(self.parse_label_literal())),
             TokenType::Ident if t.lit == "stream" => {
                 let start = self.expect(TokenType::Ident);
                 self.open(TokenType::LBrack, TokenType::RBrack);
@@ -656,7 +657,7 @@ impl<'input> Parser<'input> {
 
                 let default = if self.peek().tok == TokenType::Assign {
                     self.expect(TokenType::Assign);
-                    Some(self.parse_string_literal())
+                    Some(self.parse_label_literal())
                 } else {
                     None
                 };
@@ -1469,6 +1470,7 @@ impl<'input> Parser<'input> {
             }
             TokenType::LBrace => Expression::Object(Box::new(self.parse_object_literal())),
             TokenType::LParen => self.parse_paren_expression(),
+            TokenType::Dot => Expression::Label(self.parse_label_literal()),
             // We got a bad token, do not consume it, but use it in the message.
             // Other methods will match BadExpr and consume the token if needed.
             _ => {
@@ -1611,6 +1613,20 @@ impl<'input> Parser<'input> {
             }
         }
     }
+
+    fn parse_label_literal(&mut self) -> LabelLit {
+        let dot = self.expect(TokenType::Dot);
+        let tok = self.expect_one_of(&[TokenType::Ident, TokenType::String]);
+
+        let base = self.base_node_from_tokens(&dot, &tok);
+        let value = match tok.tok {
+            TokenType::String => self.new_string_literal(tok).value,
+            _ => tok.lit,
+        };
+
+        LabelLit { base, value }
+    }
+
     fn parse_regexp_literal(&mut self) -> RegexpLit {
         let t = self.expect(TokenType::Regex);
         let value = strconv::parse_regex(t.lit.as_str());

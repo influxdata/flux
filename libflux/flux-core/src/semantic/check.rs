@@ -8,6 +8,7 @@ use crate::{
         nodes::{Assignment, Expression, Statement},
         walk,
         walk::Node,
+        AnalyzerConfig, Feature,
     },
 };
 
@@ -39,6 +40,8 @@ pub enum ErrorKind {
     DependentOptions(String, String),
     /// TestCase still remains in semantic graph.
     TestCase,
+    /// Emitted when labels are used without the label polymorphism feature
+    LabelWithoutFeature,
 }
 
 impl std::fmt::Display for ErrorKind {
@@ -63,6 +66,9 @@ impl std::fmt::Display for ErrorKind {
                 depender, dependee
             )),
             Self::TestCase => f.write_str("TestCase statement exists in semantic graph"),
+            Self::LabelWithoutFeature => f.write_str(
+                "Labels are currently experimental. (See the labelPolymorphism feature)",
+            ),
         }
     }
 }
@@ -88,11 +94,33 @@ impl AsDiagnostic for ErrorKind {
 /// - Dependent options: options declared within the same package must not depend on one another.
 ///
 /// If any of these errors are found, `check()` will return the first one it finds, and `Ok(())` otherwise.
-pub fn check(pkg: &nodes::Package) -> Result<()> {
+pub fn check(pkg: &nodes::Package, config: &AnalyzerConfig) -> Result<()> {
     let opts = check_option_stmts(pkg)?;
     check_vars(pkg, &opts)?;
+    check_labels(pkg, config)?;
     check_option_dependencies(&opts)?;
     check_testcase(pkg)
+}
+
+fn check_labels(pkg: &nodes::Package, config: &AnalyzerConfig) -> Result<()> {
+    let mut error = None;
+
+    if !config.features.contains(&Feature::LabelPolymorphism) {
+        walk::walk(
+            &mut |node| {
+                if let Node::LabelLit(lit) = node {
+                    error = Some(located(lit.loc.clone(), ErrorKind::LabelWithoutFeature));
+                }
+            },
+            walk::Node::Package(pkg),
+        );
+
+        if let Some(err) = error {
+            return Err(err);
+        }
+    }
+
+    Ok(())
 }
 
 /// `check_option_stmts` checks that options are not reassigned within a package.
@@ -375,7 +403,7 @@ mod tests {
             Err(e) => panic!("{}", e),
             Ok(pkg) => pkg,
         };
-        if let Err(e) = check::check(&pkg) {
+        if let Err(e) = check::check(&pkg, &Default::default()) {
             panic!("check failed: {}", e)
         }
     }
@@ -392,7 +420,7 @@ mod tests {
             }
         };
 
-        match check::check(&pkg) {
+        match check::check(&pkg, &Default::default()) {
             Ok(()) => panic!(r#"expected error "{}", got no error"#, want_msg),
             Err(e) => {
                 let got_msg = format!("{}", e);

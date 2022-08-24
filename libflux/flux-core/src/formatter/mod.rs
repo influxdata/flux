@@ -375,6 +375,7 @@ impl<'doc> Formatter<'doc> {
             Node::DateTimeLit(x) => self.format_date_time_literal(x),
             Node::RegexpLit(x) => self.format_regexp_literal(x),
             Node::PipeLit(x) => self.format_pipe_literal(x),
+            Node::LabelLit(x) => self.format_label_literal(x),
             Node::ExprStmt(x) => self.format_expression_statement(x),
             Node::OptionStmt(x) => self.format_option_statement(x),
             Node::ReturnStmt(x) => self.format_return_statement(x),
@@ -601,7 +602,12 @@ impl<'doc> Formatter<'doc> {
                     self.format_monotype(&n.monotype),
                 ]
             }
-            ast::MonoType::Label(label) => self.format_string_literal(label),
+            ast::MonoType::Label(label) => docs![
+                arena,
+                self.format_comments(&label.base.comments),
+                ".",
+                &label.value,
+            ],
         }
         .group()
     }
@@ -645,7 +651,7 @@ impl<'doc> Formatter<'doc> {
                     ": ",
                     self.format_monotype(monotype),
                     match default {
-                        Some(default) => docs![arena, " = ", self.format_string_literal(default)],
+                        Some(default) => docs![arena, " = ", self.format_label_literal(default)],
                         None => arena.nil(),
                     }
                 ]
@@ -1372,6 +1378,7 @@ impl<'doc> Formatter<'doc> {
             ast::Expression::DateTime(expr) => self.format_date_time_literal(expr),
             ast::Expression::Regexp(expr) => self.format_regexp_literal(expr),
             ast::Expression::PipeLit(expr) => self.format_pipe_literal(expr),
+            ast::Expression::Label(expr) => self.format_label_literal(expr),
             ast::Expression::Bad(expr) => {
                 self.err = Some(anyhow!("bad expression"));
                 arena.nil()
@@ -1610,6 +1617,12 @@ impl<'doc> Formatter<'doc> {
         let arena = self.arena;
 
         docs![arena, self.format_comments(&n.base.comments), "<-"]
+    }
+
+    fn format_label_literal(&mut self, n: &'doc ast::LabelLit) -> Doc<'doc> {
+        let arena = self.arena;
+
+        docs![arena, self.format_comments(&n.base.comments), ".", &n.value]
     }
 
     fn format_text_part(&mut self, n: &'doc ast::TextPart) -> Doc<'doc> {
@@ -2010,6 +2023,7 @@ fn starts_with_comment(n: Node) -> bool {
         Node::DateTimeLit(n) => !n.base.comments.is_empty(),
         Node::RegexpLit(n) => !n.base.comments.is_empty(),
         Node::PipeLit(n) => !n.base.comments.is_empty(),
+        Node::LabelLit(n) => !n.base.comments.is_empty(),
         Node::BadExpr(_) => false,
         Node::ExprStmt(n) => starts_with_comment(Node::from_expr(&n.expression)),
         Node::OptionStmt(n) => !n.base.comments.is_empty(),

@@ -71,6 +71,8 @@ pub enum Node<'a> {
     RegexpLit(&'a RegexpLit),
     #[display(fmt = "PipeLit")]
     PipeLit(&'a PipeLit),
+    #[display(fmt = "LabelLit")]
+    LabelLit(&'a LabelLit),
 
     #[display(fmt = "BadExpr")]
     BadExpr(&'a BadExpr),
@@ -153,6 +155,7 @@ impl<'a> Node<'a> {
             Node::DateTimeLit(n) => &n.base,
             Node::RegexpLit(n) => &n.base,
             Node::PipeLit(n) => &n.base,
+            Node::LabelLit(n) => &n.base,
             Node::BadExpr(n) => &n.base,
             Node::ExprStmt(n) => &n.base,
             Node::OptionStmt(n) => &n.base,
@@ -203,6 +206,7 @@ impl<'a> Node<'a> {
             Expression::DateTime(e) => Node::DateTimeLit(e),
             Expression::Regexp(e) => Node::RegexpLit(e),
             Expression::PipeLit(e) => Node::PipeLit(e),
+            Expression::Label(e) => Node::LabelLit(e),
             Expression::Bad(e) => Node::BadExpr(e),
         }
     }
@@ -377,6 +381,7 @@ where
             Node::DateTimeLit(_) => {}
             Node::RegexpLit(_) => {}
             Node::PipeLit(_) => {}
+            Node::LabelLit(_) => {}
             Node::BadExpr(n) => {
                 if let Some(e) = &n.expression {
                     walk(v, Node::from_expr(e));
@@ -455,7 +460,7 @@ where
 
                     walk(v, Node::MonoType(&f.monotype));
                 }
-                MonoType::Label(lit) => walk(v, Node::StringLit(lit)),
+                MonoType::Label(_) => (),
             },
             Node::PropertyType(n) => {
                 walk(v, Node::from_property_key(&n.name));
@@ -475,7 +480,7 @@ where
                     walk(v, Node::Identifier(name));
                     walk(v, Node::MonoType(monotype));
                     if let Some(default) = default {
-                        walk(v, Node::StringLit(default));
+                        walk(v, Node::LabelLit(default));
                     }
                 }
                 ParameterType::Pipe { name, monotype, .. } => {

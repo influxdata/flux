@@ -131,20 +131,8 @@ impl<'a, 'b> semantic::walk::Visitor<'_> for SerializingVisitor<'a, 'b> {
                     fbsemantic::Expression::RegexpLiteral,
                 ))
             }
-            walk::Node::StringLit(string) => {
-                let string_val = v.create_string(&string.value);
-                let string = fbsemantic::StringLiteral::create(
-                    v.builder,
-                    &fbsemantic::StringLiteralArgs {
-                        loc,
-                        value: string_val,
-                    },
-                );
-                v.expr_stack.push((
-                    string.as_union_value(),
-                    fbsemantic::Expression::StringLiteral,
-                ))
-            }
+            walk::Node::StringLit(string) => v.push_string_literal(loc, &string.value),
+            walk::Node::LabelLit(label) => v.push_string_literal(loc, &label.value),
             walk::Node::DurationLit(dur_lit) => {
                 let mut dur_vec: Vec<WIPOffset<fbsemantic::Duration>> = Vec::new();
                 let nanoseconds = dur_lit.value.nanoseconds;
@@ -1101,6 +1089,25 @@ impl<'a, 'b> SerializingVisitor<'a, 'b> {
                 )),
                 source,
             },
+        ))
+    }
+
+    fn push_string_literal(
+        &mut self,
+        loc: Option<WIPOffset<fbsemantic::SourceLocation<'a>>>,
+        value: &str,
+    ) {
+        let string_val = self.create_string(value);
+        let string = fbsemantic::StringLiteral::create(
+            self.builder,
+            &fbsemantic::StringLiteralArgs {
+                loc,
+                value: string_val,
+            },
+        );
+        self.expr_stack.push((
+            string.as_union_value(),
+            fbsemantic::Expression::StringLiteral,
         ))
     }
 }

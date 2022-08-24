@@ -367,6 +367,9 @@ func (t *TestRunner) Gather(roots []string) error {
 				baseAST.Files[0].Name = file.path
 			}
 			tcidens, asts, err := testcase.Transform(ctx, baseAST, modules)
+			if strings.Contains(file.path, "string_test") {
+				fmt.Printf("AAAAAAAAAAAAAAAAAAAAAA %s %v %v\n", file.path, len(asts), err)
+			}
 			if err != nil {
 				return err
 			}

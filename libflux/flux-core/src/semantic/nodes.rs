@@ -25,8 +25,8 @@ use crate::{
         infer::{self, Constraint},
         sub::{BindVars, Substitutable, Substituter, Substitution},
         types::{
-            self, BoundTvar, BoundTvarKinds, Dictionary, Function, Kind, MonoType, MonoTypeMap,
-            PolyType, RecordLabel, Tvar,
+            self, BoundTvar, BoundTvarKinds, Dictionary, Function, Kind, Label, MonoType,
+            MonoTypeMap, PolyType, RecordLabel, Tvar,
         },
     },
 };
@@ -311,6 +311,7 @@ pub enum Expression {
     Boolean(BooleanLit),
     DateTime(DateTimeLit),
     Regexp(RegexpLit),
+    Label(LabelLit),
 
     Error(BadExpr),
 }
@@ -340,6 +341,7 @@ impl Expression {
             Expression::Boolean(_) => MonoType::BOOL,
             Expression::DateTime(_) => MonoType::TIME,
             Expression::Regexp(_) => MonoType::REGEXP,
+            Expression::Label(lit) => MonoType::Label(lit.value.clone()),
             Expression::Error(_) => MonoType::Error,
         }
     }
@@ -367,6 +369,7 @@ impl Expression {
             Expression::Boolean(lit) => &lit.loc,
             Expression::DateTime(lit) => &lit.loc,
             Expression::Regexp(lit) => &lit.loc,
+            Expression::Label(lit) => &lit.loc,
             Expression::Error(e) => &e.loc,
         }
     }
@@ -393,6 +396,7 @@ impl Expression {
             Expression::Boolean(lit) => lit.infer(),
             Expression::DateTime(lit) => lit.infer(),
             Expression::Regexp(lit) => lit.infer(),
+            Expression::Label(lit) => lit.infer(),
             Expression::Error(_) => Ok(()),
         }
     }
@@ -419,6 +423,7 @@ impl Expression {
             Expression::Boolean(lit) => lit.apply(sub),
             Expression::DateTime(lit) => lit.apply(sub),
             Expression::Regexp(lit) => lit.apply(sub),
+            Expression::Label(lit) => lit.apply(sub),
             Expression::Error(_) => (),
         }
     }
@@ -1954,6 +1959,20 @@ pub fn convert_duration(ast_dur: &[ast::Duration]) -> AnyhowResult<Duration> {
         nanoseconds,
         negative,
     })
+}
+
+#[derive(Debug, PartialEq, Clone)]
+#[allow(missing_docs)]
+pub struct LabelLit {
+    pub loc: ast::SourceLocation,
+    pub value: Label,
+}
+
+impl LabelLit {
+    fn infer(&mut self) -> Result {
+        Ok(())
+    }
+    fn apply(&mut self, _sub: &mut dyn Substituter) {}
 }
 
 #[derive(Derivative)]
