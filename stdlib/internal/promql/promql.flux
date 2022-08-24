@@ -23,7 +23,7 @@ import "experimental"
 //
 // ### Return the number of times values in a series change
 // ```
-// import "internal"
+// import "internal/promql"
 // import "sampledata"
 //
 // < sampledata.float()
