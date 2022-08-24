@@ -2,6 +2,7 @@ use crate::invoke_go::OutputError::InvalidMethod;
 use crate::processes::process_completion::process_completions_response;
 use crate::CommandHint;
 
+use httparse::{parse_headers, Header};
 use regex::Regex;
 use serde_json::Value;
 use std::collections::HashSet;
@@ -62,6 +63,7 @@ pub fn read_json_rpc(
     let mut num_buf: Vec<u8> = vec![];
     let mut x = 0;
     let mut y = 0;
+    let mut header = [httparse::EMPTY_HEADER; 2];
     //indicate when to start and stop capturing numbers in the content length
     let mut num_cap = false;
     let mut read_exact = (false, 0);

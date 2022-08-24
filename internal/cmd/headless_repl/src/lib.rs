@@ -37,8 +37,6 @@ impl Hinter for MyHelper {
     type Hint = CommandHint;
 
     fn hint(&self, line: &str, pos: usize, _ctx: &Context<'_>) -> Option<CommandHint> {
-        //hinter is going before the highlighter
-        //block till response
         if line.is_empty() || pos < line.len() {
             return None;
         }
@@ -180,7 +178,9 @@ pub fn possible_main() -> anyhow::Result<()> {
             }
         }
         //clear the hints
-        let mut clear = hints_rustyline.write().unwrap();
+        let mut clear = hints_rustyline
+            .write()
+            .expect("failed to get a lock to clear hints");
         clear.clear()
     }
     //END: Rustyline setupt
