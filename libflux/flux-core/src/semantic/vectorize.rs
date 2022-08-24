@@ -7,7 +7,7 @@ use crate::{
         nodes::{
             BinaryExpr, Block, BooleanLit, CallExpr, ConditionalExpr, Error, ErrorKind, Expression,
             FunctionExpr, Identifier, IdentifierExpr, LogicalExpr, MemberExpr, ObjectExpr, Package,
-            Property, Result, ReturnStmt,
+            Property, Result, ReturnStmt, UnaryExpr,
         },
         types::{self, Function, Label, MonoType},
         AnalyzerConfig, Feature, Symbol,
@@ -99,6 +99,14 @@ impl Expression {
                     object,
                     property: member.property.clone(),
                 }))
+            }
+            Expression::Unary(unary) => {
+                return Ok(Expression::Unary(Box::new(UnaryExpr {
+                    loc: unary.loc.clone(),
+                    typ: MonoType::vector(unary.typ.clone()),
+                    operator: unary.operator.clone(),
+                    argument: unary.argument.vectorize(env)?,
+                })))
             }
             Expression::Binary(binary) => {
                 let left = binary.left.vectorize(env)?;
