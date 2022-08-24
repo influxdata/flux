@@ -1,3 +1,8 @@
+// Package testing provides functions for testing Flux operations.
+//
+// ## Metadata
+// introduced: NEXT
+//
 package testing
 
 
