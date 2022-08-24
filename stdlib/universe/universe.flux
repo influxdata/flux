@@ -2086,10 +2086,10 @@ builtin pivot : (
 //     |> range(start: 2021-05-22T23:30:00Z, stop: 2021-05-23T00:00:00Z)
 // ```
 //
-// ### Query an absolute time range using Unix nanosecond timestamps
+// ### Query an absolute time range using Unix timestamps
 // ```no_run
 // from(bucket:"example-bucket")
-//     |> range(start: 1621726200000000000, stop: 1621728000000000000)
+//     |> range(start: 1621726200, stop: 1621728000)
 // ```
 //
 // ## Metadata
