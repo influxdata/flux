@@ -377,7 +377,11 @@ stateChanges = (fromLevel="any", toLevel="any", tables=<-) => {
 // from(bucket: "example-bucket")
 //     |> range(start: -10m)
 //     |> filter(fn: (r) => r._measurement == "example-measurement")
+<<<<<<< HEAD
 //     |> monitor.deadman(t: date.add(d: -5m, from: now()))
+=======
+//     |> monitor.deadman(t: date.add(d: -5m, to: now()))
+>>>>>>> master
 // ```
 //
 // ## Metadata
