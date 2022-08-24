@@ -234,11 +234,7 @@ var sourceHashes = map[string]string{
 	"stdlib/influxdata/influxdb/monitor/check_test.flux":                                          "9f36d19fd834a8230beaba8782a721697b2b0e1b408ee3f948387b0b8d702bfb",
 	"stdlib/influxdata/influxdb/monitor/deadman_add_test.flux":                                    "4bc5d036f028cd9aa078ed653c61be8b43992779ead1ca5bb26e554d428ffe8a",
 	"stdlib/influxdata/influxdb/monitor/deadman_sub_test.flux":                                    "c1f892d5d078a3b2cf3c3fbf68710a676cc47c82e3959f0ce6fe82af932afb6a",
-<<<<<<< HEAD
-	"stdlib/influxdata/influxdb/monitor/monitor.flux":                                             "10bc0e897909d4ba6080a4863f75a6e09a4bf95734853984d089837faa0f4298",
-=======
 	"stdlib/influxdata/influxdb/monitor/monitor.flux":                                             "7cb7759fef78a70ec5305bafede5db2af7a4b591ce687746f1216eab1769fcee",
->>>>>>> master
 	"stdlib/influxdata/influxdb/monitor/notify_test.flux":                                         "f281a5fcbeae3a363ab4024eed18b1b59ef8d1c75d84a3360fd28bc779ec6dc5",
 	"stdlib/influxdata/influxdb/monitor/state_changes_any_to_any_same_source_timestamp_test.flux": "25a7231238a336886370ff185bbcac027ddde69dbc668b10d8acdb08b4ee1bee",
 	"stdlib/influxdata/influxdb/monitor/state_changes_any_to_any_test.flux":                       "f5828ed2b25fe799bf4e934ae182d5aa597df3b74c4c5e753deb947c61cfdd54",
