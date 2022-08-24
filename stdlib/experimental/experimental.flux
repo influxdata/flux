@@ -486,7 +486,7 @@ builtin chain : (first: stream[A], second: stream[B]) => stream[B] where A: Reco
 //
 // ## Metadata
 // introduced: 0.66.0
-// tags: transformations,data/time
+// tags: transformations, date/time
 //
 alignTime = (tables=<-, alignTo=time(v: 0)) =>
     tables
