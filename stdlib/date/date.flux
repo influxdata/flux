@@ -859,7 +859,7 @@ builtin _truncate : (t: T, unit: duration, location: {zone: string, offset: dura
 //
 // ### Query data from this calendar month
 //
-// ```
+// ```no_run
 // import "date"
 //
 // from(bucket: "example-bucket")
