@@ -196,6 +196,18 @@ func TestVectorizedFns(t *testing.T) {
 			vectorizable: true,
 			skipComp:     true,
 		},
+		{
+			name:         "unary expressions equality",
+			fn:           "(r) => ({ r with c: exists r._a, d: not r._b })",
+			vectorizable: true,
+			skipComp:     true,
+		},
+		{
+			name:         "unary expressions arithmetic",
+			fn:           "(r) => ({ r with c: -r._a, d: +r._b })",
+			vectorizable: true,
+			skipComp:     true,
+		},
 	}
 
 	additionTests := []struct {
@@ -271,7 +283,106 @@ func TestVectorizedFns(t *testing.T) {
 		})
 	}
 
-	operatorTests := []struct {
+	unaryOperatorTests := []struct {
+		operator  string
+		inType    semantic.MonoType
+		input     []interface{}
+		transform func(interface{}) interface{}
+	}{
+		{
+			operator: "-",
+			inType:   semantic.BasicInt,
+			input: []interface{}{
+				int64(1),
+				int64(10),
+				int64(112487),
+				nil,
+			},
+			transform: func(arg interface{}) interface{} {
+				if arg == nil {
+					return nil
+				}
+				return -arg.(int64)
+			},
+		},
+		{
+			operator: "+",
+			inType:   semantic.BasicInt,
+			input: []interface{}{
+				int64(1),
+				int64(10),
+				int64(112487),
+				nil,
+			},
+			transform: func(arg interface{}) interface{} {
+				if arg == nil {
+					return nil
+				}
+				// unary add "does nothing"
+				return arg
+			},
+		},
+		{
+
+			operator: "exists",
+			inType:   semantic.BasicInt,
+			input: []interface{}{
+				int64(1),
+				nil,
+			},
+			transform: func(arg interface{}) interface{} {
+				return arg != nil
+			},
+		},
+		{
+			operator: "not",
+			inType:   semantic.BasicBool,
+			input: []interface{}{
+				true,
+				false,
+				nil,
+			},
+			transform: func(arg interface{}) interface{} {
+				if arg == nil {
+					return nil
+				}
+				return !arg.(bool)
+			},
+		},
+	}
+
+	for _, test := range unaryOperatorTests {
+		a := []interface{}{}
+		output := []interface{}{}
+		for _, item := range test.input {
+			a = append(a, item)
+			output = append(output, test.transform(item))
+		}
+
+		testCases = append(testCases, TestCase{
+			name:         fmt.Sprintf("unary %s expression %s", test.operator, test.inType.String()),
+			fn:           fmt.Sprintf("(r) => ({b: %s r.a})", test.operator),
+			vectorizable: true,
+			skipComp:     false,
+			inType: semantic.NewObjectType([]semantic.PropertyType{
+				{Key: []byte("r"), Value: semantic.NewObjectType([]semantic.PropertyType{
+					{Key: []byte("a"), Value: semantic.NewVectorType(test.inType)},
+				})},
+			}),
+			input: map[string]interface{}{
+				"r": map[string]interface{}{
+					"a": a,
+				},
+			},
+			want: map[string]interface{}{
+				"b": output,
+			},
+
+			flagger: executetest.TestFlagger{},
+		})
+	}
+
+	binaryOperatorTests := []struct {
 		operator  string
 		input     [][2]int64
 		transform func(int64, int64) interface{}
@@ -397,7 +508,8 @@ func TestVectorizedFns(t *testing.T) {
 			},
 		},
 	}
-	for _, test := range operatorTests {
+
+	for _, test := range binaryOperatorTests {
 		a := []interface{}{}
 		b := []interface{}{}
 		output := []interface{}{}
@@ -430,6 +542,7 @@ func TestVectorizedFns(t *testing.T) {
 			flagger: executetest.TestFlagger{},
 		})
 	}
+
 	conditionalTests := []struct {
 		name   string // a default name will be generated based on the input type, but can optionally be overridden
 		inType semantic.MonoType
