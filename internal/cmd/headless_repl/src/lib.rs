@@ -15,6 +15,7 @@ use rustyline::{
 use std::borrow::Cow;
 use std::borrow::Cow::{Borrowed, Owned};
 use std::collections::HashSet;
+use std::process::exit;
 use std::sync::mpsc::channel;
 use std::sync::mpsc::{Receiver, Sender};
 use std::sync::{Arc, RwLock};
@@ -41,18 +42,18 @@ impl Hinter for MyHelper {
             return None;
         }
 
-        self.tx_stdin
-            .send(line.to_string())
-            .expect("failure sending when no hints");
+        if let Err(_) = self.tx_stdin.send(line.to_string()) {
+            exit(101);
+        }
 
         if let Some(hint) = self.hinter.trigger_finder(line) {
             return Some(hint);
         }
 
         trace!("get hints returned None refreshing hints");
-        self.tx_stdin
-            .send(line.to_string())
-            .expect("failure sending when no hints");
+        if let Err(_) = self.tx_stdin.send(line.to_string()) {
+            exit(101);
+        }
 
         None
     }

@@ -6,6 +6,7 @@ use crate::{
 };
 use anyhow::Result;
 use std::collections::{HashSet, VecDeque};
+use std::process::exit;
 use std::sync::mpsc::{Receiver, Sender};
 use std::sync::{Arc, RwLock};
 use std::thread;
@@ -56,15 +57,18 @@ pub fn run(
         //normal looping for user input
         loop {
             //channel for the rustyline hinter when the user types
-            let input = rx_helper.recv().unwrap();
-            //send to the lsp writer thread
-            tx_coordinator
-                .send(formulate_request(&DidChange, &input, 0).expect("invalid request type"))
-                .expect("TODO: panic message");
-
-            tx_coordinator
-                .send(formulate_request(&Completion, &input, 0).expect("invalid request type"))
-                .expect("TODO: panic message");
+            if let Ok(input) = rx_helper.recv() {
+                if let Err(_) = tx_coordinator
+                    .send(formulate_request(&DidChange, &input, 0).expect("invalid request type"))
+                {
+                    exit(101);
+                }
+                if let Err(_) = tx_coordinator
+                    .send(formulate_request(&Completion, &input, 0).expect("invalid request type"))
+                {
+                    exit(101);
+                }
+            }
         }
     });
     //END: Coordinator setup

@@ -2,7 +2,7 @@ use crate::invoke_go::OutputError::InvalidMethod;
 use crate::processes::process_completion::process_completions_response;
 use crate::CommandHint;
 
-use httparse::{parse_headers, Header};
+use once_cell::sync::Lazy;
 use regex::Regex;
 use serde_json::Value;
 use std::collections::HashSet;
@@ -13,6 +13,10 @@ use std::string::String;
 use std::sync::{Arc, RwLock};
 use tower_lsp::jsonrpc;
 use tower_lsp::jsonrpc::RequestBuilder;
+
+static CL: Lazy<Regex> =
+    Lazy::new(|| Regex::new(r#"Content-Length: "#).expect("invalid regex pattern"));
+static NUM: Lazy<Regex> = Lazy::new(|| Regex::new(r#"\d"#).expect("invalid regex pattern"));
 
 pub fn start_go() -> Result<Child, anyhow::Error> {
     let child = Command::new("./main")
@@ -57,13 +61,10 @@ pub fn read_json_rpc(
     child_stdout: ChildStdout,
     storage: Arc<RwLock<HashSet<CommandHint>>>,
 ) -> Result<(), anyhow::Error> {
-    let re = Regex::new(r"Content-Length: ").unwrap();
-    let num = Regex::new(r"\d").unwrap();
     let mut buf: Vec<u8> = vec![];
     let mut num_buf: Vec<u8> = vec![];
     let mut x = 0;
     let mut y = 0;
-    let mut header = [httparse::EMPTY_HEADER; 2];
     //indicate when to start and stop capturing numbers in the content length
     let mut num_cap = false;
     let mut read_exact = (false, 0);
@@ -87,7 +88,7 @@ pub fn read_json_rpc(
 
         let a = str::from_utf8(&single)?;
         //if capturing numbers and the value is numeric add to number buffer
-        if num_cap && num.is_match(a) {
+        if num_cap && NUM.is_match(a) {
             num_buf.insert(num_buf.len(), val);
         } else {
             if num_cap {
@@ -108,7 +109,7 @@ pub fn read_json_rpc(
         let cur = str::from_utf8(&buf)?;
         x = x + 1;
         y = y + 1;
-        if !re.captures(cur).is_none() {
+        if !CL.captures(cur).is_none() {
             num_cap = true;
         }
     }

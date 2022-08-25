@@ -2,7 +2,6 @@ use crate::processes::process_completion::HintType::{
     ArgumentType, FunctionType, MethodType, PackageType, UnimplementedType,
 };
 use crate::CommandHint;
-use lsp_types::{CompletionList, CompletionResponse};
 use regex::Regex;
 use serde_json::Value;
 use std::borrow::{Borrow, Cow};
@@ -58,10 +57,9 @@ pub fn process_completions_response(
 ) -> Result<Option<HashSet<CommandHint>>, anyhow::Error> {
     //parse the response to a value using serde then enumerate the items adding each to the new set
     //TODO: switch to lsp_types response object
-    let json_bit: Value = serde_json::from_str::<Value>(resp)?;
-    let other = serde_json::from_str::<CompletionList>(resp);
+    // println!("here is the resp {}", resp);
 
-    // if let other: CompletionResponse = serde_json::from_str(resp).is_ok();
+    let json_bit: Value = serde_json::from_str::<Value>(resp)?;
 
     let snippet_fix = Regex::new(r#"\$\p{Nd}+"#)?;
 
@@ -82,7 +80,7 @@ pub fn process_completions_response(
                 Some(val) => Some(val),
             };
 
-            let replaced_snippets = snippet_fix.replace_all(arg.expect("infailable"), "");
+            let replaced_snippets = snippet_fix.replace_all(arg.expect("infallible"), "");
             let val = Cow::borrow(&replaced_snippets);
 
             let mut kind = None;
