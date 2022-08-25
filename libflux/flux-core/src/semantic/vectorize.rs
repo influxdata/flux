@@ -100,7 +100,9 @@ impl Expression {
                     property: member.property.clone(),
                 }))
             }
-            Expression::Unary(unary) => {
+            Expression::Unary(unary)
+                if env.config.features.contains(&Feature::VectorizedUnaryOps) =>
+            {
                 return Ok(Expression::Unary(Box::new(UnaryExpr {
                     loc: unary.loc.clone(),
                     typ: MonoType::vector(unary.typ.clone()),
