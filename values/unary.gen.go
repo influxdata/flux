@@ -43,7 +43,7 @@ func VectorUnarySub(v Vector, mem memory.Allocator) (Value, error) {
 		return NewVectorValue(x, semantic.BasicFloat), nil
 
 	default:
-		return nil, errors.Newf(codes.Invalid, "unsupported type for vector Unary Sub: %v", elemType)
+		return nil, errors.Newf(codes.Invalid, "unsupported type for vector UnarySub: %v", elemType)
 	}
 }
 

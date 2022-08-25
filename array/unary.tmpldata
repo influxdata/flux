@@ -1,7 +1,7 @@
 {
     "Ops":[
         {
-            "Name": "Sub",
+            "Name": "UnarySub",
             "Op": "-",
             "Types": ["Int", "Float"]
         }
@@ -17,19 +17,5 @@
             "Op": "not",
             "Types": ["Boolean"]
         }
-    ],
-    "TypeMap": {
-        "Int": "int64",
-        "Uint": "uint64",
-        "Float": "float64",
-        "String": "string",
-        "Boolean": "bool"
-    },
-    "ValMap": {
-        "Int": "Int",
-        "Uint": "UInt",
-        "Float": "Float",
-        "String": "Str",
-        "Boolean": "Bool"
-    }
+    ]
 }

@@ -12,11 +12,7 @@ import (
 {{if eq $type "Time"}}
 {{continue}}
 {{end}}
-{{/*
-	n.b. the "unary" part of the name is added to avoid clashing with the
-	binary version of the op.
- */}}
-func {{$type}}Unary{{$op.Name}}(v *{{$type}}, mem memory.Allocator) (*{{$type}}, error) {
+func {{$type}}{{$op.Name}}(v *{{$type}}, mem memory.Allocator) (*{{$type}}, error) {
 	n := v.Len()
 	b := New{{$type}}Builder(mem)
 	b.Resize(n)

@@ -9,7 +9,7 @@ import (
 )
 
 {{range $index, $op := .Ops}}
-func VectorUnary{{$op.Name}}(v Vector, mem memory.Allocator) (Value, error) {
+func Vector{{$op.Name}}(v Vector, mem memory.Allocator) (Value, error) {
 	elemType := v.ElementType()
 	switch elemType.Nature() {
 		{{range $index, $type := .Types}}
@@ -24,14 +24,14 @@ func VectorUnary{{$op.Name}}(v Vector, mem memory.Allocator) (Value, error) {
 				x *fluxarray.{{$type}}
 				err error
 			)
-			x, err = fluxarray.{{$type}}Unary{{$op.Name}}(v.Arr().(*fluxarray.{{$type}}), mem)
+			x, err = fluxarray.{{$type}}{{$op.Name}}(v.Arr().(*fluxarray.{{$type}}), mem)
 			if err != nil {
 				return nil, err
 			}
 			return NewVectorValue(x, semantic.Basic{{$type}}), nil
 		{{end}}
 		default:
-			return nil, errors.Newf(codes.Invalid, "unsupported type for vector Unary {{$op.Name}}: %v", elemType)
+			return nil, errors.Newf(codes.Invalid, "unsupported type for vector {{$op.Name}}: %v", elemType)
 	}
 }
 {{end}}
