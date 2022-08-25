@@ -502,9 +502,11 @@ func (d *diffTransformation) diff(key flux.GroupKey, want, got table.Chunk) (tab
 		Columns:  schema.cols,
 		Values:   make([]array.Array, 0, len(schema.cols)),
 	}
+	// `diff.NewArray()` will move the array out of `diff` and thereby zero the length so we read it here for later use
+	diffLen := diff.Len()
 	buf.Values = append(buf.Values, diff.NewArray())
 	for i, col := range key.Cols() {
-		arr := arrow.Repeat(col.Type, key.Value(i), diff.Len(), d.mem)
+		arr := arrow.Repeat(col.Type, key.Value(i), diffLen, d.mem)
 		buf.Values = append(buf.Values, arr)
 	}
 	for _, b := range builders {

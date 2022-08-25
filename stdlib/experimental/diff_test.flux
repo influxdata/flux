@@ -230,3 +230,44 @@ testcase empty_got {
         |> rename(columns: {_diff: "diff"})
         |> testing.diff(want: exp)
 }
+
+testcase mismatch_non_string_group_key {
+    want =
+        array.from(
+            rows: [{_measurement: "m0", _field: "f0", _start: 2022-07-12T00:00:00Z, _time: 2022-07-12T00:00:00Z, _value: 2.0}],
+        )
+            |> group(columns: ["_measurement", "_field", "_start"])
+
+    got =
+        array.from(
+            rows: [{_measurement: "m0", _field: "f0", _start: 2022-07-12T00:00:00Z, _time: 2022-07-12T00:00:00Z, _value: 3.0}],
+        )
+            |> group(columns: ["_measurement", "_field", "_start"])
+
+    exp =
+        array.from(
+            rows: [
+                {
+                    diff: "-",
+                    _measurement: "m0",
+                    _field: "f0",
+                    _start: 2022-07-12T00:00:00Z,
+                    _time: 2022-07-12T00:00:00Z,
+                    _value: 2.0,
+                },
+                {
+                    diff: "+",
+                    _measurement: "m0",
+                    _field: "f0",
+                    _start: 2022-07-12T00:00:00Z,
+                    _time: 2022-07-12T00:00:00Z,
+                    _value: 3.0,
+                },
+            ],
+        )
+            |> group(columns: ["_measurement", "_field", "_start"])
+
+    experimental.diff(want, got)
+        |> rename(columns: {_diff: "diff"})
+        |> testing.diff(want: exp)
+}
