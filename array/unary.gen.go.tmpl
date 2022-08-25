@@ -1,0 +1,65 @@
+package array
+
+import (
+	"github.com/apache/arrow/go/v7/arrow/memory"
+)
+
+//
+// Arithmetic Ops
+//
+{{range $index, $op := .Ops}}
+{{range $index, $type := .Types}}
+{{if eq $type "Time"}}
+{{continue}}
+{{end}}
+func {{$type}}{{$op.Name}}(v *{{$type}}, mem memory.Allocator) (*{{$type}}, error) {
+	n := v.Len()
+	b := New{{$type}}Builder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+		if v.IsValid(i) {
+			b.Append({{$op.Op}} v.Value(i))
+		} else {
+			b.AppendNull()
+		}
+	}
+    a := b.New{{$type}}Array()
+    b.Release()
+	return a, nil
+}
+{{end}}
+{{end}}
+
+//
+// Equality Ops
+//
+{{range $index, $op := .EqualityOps}}
+{{range $index, $type := .Types}}
+{{if eq $type "Time"}}
+{{continue}}
+{{end}}
+{{/*
+Equality Ops differ from the rest in that they have boolean outputs regardless
+of the input types.
+*/}}
+func {{$type}}{{$op.Name}}(v *{{$type}}, mem memory.Allocator) (*Boolean, error) {
+	n := v.Len()
+	b := NewBooleanBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+		{{if eq $op.Op "exists"}}
+			b.Append(v.IsValid(i))
+		{{else if eq $op.Op "not"}}
+		if v.IsValid(i) {
+			b.Append(!v.Value(i))
+		} else {
+			b.AppendNull()
+		}
+		{{end}}
+	}
+	a := b.NewBooleanArray()
+	b.Release()
+	return a, nil
+}
+{{end}}
+{{end}}

@@ -605,6 +605,13 @@ func compile(n semantic.Node, subst semantic.Substitutor) (Evaluator, error) {
 		if err != nil {
 			return nil, err
 		}
+		if node.Type().Nature() == semantic.Vector {
+			return &unaryVectorEvaluator{
+				t:    apply(subst, nil, n.TypeOf()),
+				node: node,
+				op:   n.Operator,
+			}, nil
+		}
 		return &unaryEvaluator{
 			t:    apply(subst, nil, n.TypeOf()),
 			node: node,

@@ -12,6 +12,7 @@ fn analyzer_config() -> AnalyzerConfig {
             Feature::VectorizedConditionals,
             Feature::VectorizedEqualityOps,
             Feature::VectorizedFloat,
+            Feature::VectorizedUnaryOps,
         ],
         ..AnalyzerConfig::default()
     }
@@ -417,6 +418,51 @@ fn vectorize_with_float_calls() -> anyhow::Result<()> {
         (r) => {
             return {r:{#E with _value: v[#D]} with a: _vectorizedFloat:v[float](v: r:{#E with _value: v[#D]}._value:v[#D]):v[float]}:{#E with a: v[float], _value: v[#D]}
         }:(r: {#E with _value: v[#D]}) => {#E with a: v[float], _value: v[#D]}"##]].assert_eq(&crate::semantic::formatter::format_node(
+        Node::FunctionExpr(function),
+    )?);
+    Ok(())
+}
+
+#[test]
+fn vectorize_with_unary_add_sub() -> anyhow::Result<()> {
+    let pkg = vectorize(r#"(r) => ({ r with add: +r._value, sub: -r._value })"#).unwrap();
+
+    let function = get_vectorized_function(&pkg);
+
+    expect_test::expect![[r##"
+        (r) => {
+            return {r:{#C with _value: v[#B]} with add: +r:{#C with _value: v[#B]}._value:v[#B]:v[#B], sub: -r:{#C with _value: v[#B]}._value:v[#B]:v[#B]}:{#C with add: v[#B], sub: v[#B], _value: v[#B]}
+        }:(r: {#C with _value: v[#B]}) => {#C with add: v[#B], sub: v[#B], _value: v[#B]}"##]].assert_eq(&crate::semantic::formatter::format_node(
+        Node::FunctionExpr(function),
+    )?);
+    Ok(())
+}
+
+#[test]
+fn vectorize_with_unary_not() -> anyhow::Result<()> {
+    let pkg = vectorize(r#"(r) => ({ r with a: not r._value })"#).unwrap();
+
+    let function = get_vectorized_function(&pkg);
+
+    expect_test::expect![[r##"
+        (r) => {
+            return {r:{#C with _value: v[bool]} with a: not r:{#C with _value: v[bool]}._value:v[bool]:v[bool]}:{#C with a: v[bool], _value: v[bool]}
+        }:(r: {#C with _value: v[bool]}) => {#C with a: v[bool], _value: v[bool]}"##]].assert_eq(&crate::semantic::formatter::format_node(
+        Node::FunctionExpr(function),
+    )?);
+    Ok(())
+}
+
+#[test]
+fn vectorize_with_unary_exists() -> anyhow::Result<()> {
+    let pkg = vectorize(r#"(r) => ({ r with a: exists r._value })"#).unwrap();
+
+    let function = get_vectorized_function(&pkg);
+
+    expect_test::expect![[r##"
+        (r) => {
+            return {r:{#C with _value: v[#B]} with a: exists r:{#C with _value: v[#B]}._value:v[#B]:v[bool]}:{#C with a: v[bool], _value: v[#B]}
+        }:(r: {#C with _value: v[#B]}) => {#C with a: v[bool], _value: v[#B]}"##]].assert_eq(&crate::semantic::formatter::format_node(
         Node::FunctionExpr(function),
     )?);
     Ok(())
