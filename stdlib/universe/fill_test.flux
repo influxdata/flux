@@ -6,7 +6,6 @@ import "csv"
 
 option now = () => 2030-01-01T00:00:00Z
 
-// Passes in flux, fails in C2 and OSS
 testcase fill_bool {
     inData =
         "
@@ -49,7 +48,6 @@ testcase fill_bool {
 
     got =
         csv.from(csv: inData)
-            |> testing.load()
             |> range(start: 2018-12-15T00:00:00Z)
             |> fill(value: false)
     want = csv.from(csv: outData)
@@ -97,10 +95,8 @@ testcase fill_int {
 ,,1,2018-12-15T00:00:00Z,2030-01-01T00:00:00Z,m1,f1,server02,2018-12-19T22:14:20Z,99
 "
 
-    // Passes in flux, fails in C2 and OSS
     got =
         csv.from(csv: inData)
-            |> testing.load()
             |> range(start: 2018-12-15T00:00:00Z)
             |> fill(column: "_value", value: -1)
     want = csv.from(csv: outData)
@@ -108,7 +104,6 @@ testcase fill_int {
     testing.diff(got, want)
 }
 
-// Passes in flux, fails in C2 and OSS
 testcase fill_time {
     inData =
         "
@@ -152,14 +147,12 @@ testcase fill_time {
 
     got =
         csv.from(csv: inData)
-            |> testing.load()
             |> fill(column: "_time", value: 2077-12-19T22:14:00Z)
     want = csv.from(csv: outData)
 
     testing.diff(got, want)
 }
 
-// Passes in flux, fails in C2 and OSS
 testcase fill_uint {
     inData =
         "
@@ -201,7 +194,6 @@ testcase fill_uint {
 "
     got =
         csv.from(csv: inData)
-            |> testing.load()
             |> range(start: 2018-12-15T00:00:00Z)
             |> fill(column: "_value", value: uint(v: 0))
     want = csv.from(csv: outData)
@@ -209,7 +201,6 @@ testcase fill_uint {
     testing.diff(got, want)
 }
 
-// Passes in flux, fails in C2 and OSS
 testcase fill_float {
     inData =
         "
@@ -252,7 +243,6 @@ testcase fill_float {
 
     got =
         csv.from(csv: inData)
-            |> testing.load()
             |> range(start: 2018-12-15T00:00:00Z)
             |> fill(value: 0.01)
     want = csv.from(csv: outData)
@@ -260,7 +250,6 @@ testcase fill_float {
     testing.diff(got, want)
 }
 
-// Passes in flux, fails in C2 and OSS
 testcase fill_string {
     inData =
         "
@@ -303,7 +292,6 @@ testcase fill_string {
 
     got =
         csv.from(csv: inData)
-            |> testing.load()
             |> range(start: 2018-12-15T00:00:00Z)
             |> fill(column: "_value", value: "A")
     want = csv.from(csv: outData)
