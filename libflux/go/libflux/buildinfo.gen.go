@@ -173,7 +173,7 @@ var sourceHashes = map[string]string{
 	"stdlib/experimental/geo/gridFilterLevel_test.flux":                                           "f9d7c9b79a91cfcff7b4cd29a3b511fc397cb8666481a1ac40f0d8f28d94e146",
 	"stdlib/experimental/geo/gridFilter_test.flux":                                                "6de30bc0d5672a18d4d4e0351efabb9d24b783b71945faa6f67302ac4409b225",
 	"stdlib/experimental/geo/groupByArea_test.flux":                                               "cce3a07b36b7b30a51b1f55ff495cc86ef4f673d95928e8b18641ba3a8b2db30",
-	"stdlib/experimental/geo/shapeDataWithFilter_test.flux":                                       "160682b35f76306932efab564dda7299a3636ccb7ff2df8d95b97118767c2d40",
+	"stdlib/experimental/geo/shapeDataWithFilter_test.flux":                                       "7ba25988412e8336b47c4a36690de5a1ad7419585f51a5786bf7b4a4eb2c7ed0",
 	"stdlib/experimental/geo/shapeData_test.flux":                                                 "160682b35f76306932efab564dda7299a3636ccb7ff2df8d95b97118767c2d40",
 	"stdlib/experimental/geo/st_contains_linestring_test.flux":                                    "9a9ea47b3e8ce2c5f7f392757f882272eb76c5d7346c0ebf4c5fe2d02b5a77af",
 	"stdlib/experimental/geo/st_contains_test.flux":                                               "99c228b180d4dbb8f4df70c5bf5ac557b0b13ef1b39874ef341d0bcfe1d3e95e",
