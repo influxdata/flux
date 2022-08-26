@@ -20,6 +20,7 @@ import (
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
 	"github.com/influxdata/flux/fluxinit"
+	"github.com/influxdata/flux/internal/operation"
 	"github.com/influxdata/flux/internal/spec"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/lang"
@@ -249,7 +250,7 @@ func (r *ScopeHolder) analyzeLine(t string) (*semantic.Package, *libflux.FluxErr
 	return x, nil, err
 }
 
-func (r *ScopeHolder) doQuery(ctx context.Context, spec *flux.Spec) error {
+func (r *ScopeHolder) doQuery(ctx context.Context, spec *operation.Spec) error {
 	// Setup cancel context
 	ctx, cancelFunc := context.WithCancel(ctx)
 	r.setCancel(cancelFunc)
