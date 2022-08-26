@@ -1,5 +1,5 @@
 use crate::processes::process_completion::HintType;
-use crate::processes::process_completion::HintType::ArgumentType;
+use crate::processes::process_completion::HintType::{ArgumentType, FunctionType};
 use rustyline::hint::{Hint, Hinter};
 use rustyline::Context;
 use rustyline_derive::{Completer, Helper, Highlighter, Validator};
@@ -33,7 +33,6 @@ pub struct CommandHint {
     pub(crate) display: String,
     complete_up_to: usize,
     hint_type: HintType,
-    hint_signature: Option<String>,
 }
 
 impl Hint for CommandHint {
@@ -51,18 +50,12 @@ impl Hint for CommandHint {
 }
 
 impl CommandHint {
-    pub fn new(
-        text: &str,
-        complete_up_to: &str,
-        hint_type: HintType,
-        sig: Option<String>,
-    ) -> CommandHint {
+    pub fn new(text: &str, complete_up_to: &str, hint_type: HintType) -> CommandHint {
         debug_assert!(text.starts_with(complete_up_to));
         CommandHint {
             display: text.into(),
             complete_up_to: complete_up_to.len(),
             hint_type,
-            hint_signature: sig,
         }
     }
 
@@ -71,7 +64,6 @@ impl CommandHint {
             display: self.display[strip_chars..].to_owned(),
             complete_up_to: self.complete_up_to.saturating_sub(strip_chars),
             hint_type: self.hint_type.clone(),
-            hint_signature: self.hint_signature.clone(),
         }
     }
 }
@@ -114,7 +106,7 @@ impl LSPSuggestionHelper {
             .read()
             .expect("failed to get a read lock on the hints");
         let mut best_ratio = f32::MIN;
-        let mut best_hint = &CommandHint::new("", "", HintType::FunctionType, None);
+        let mut best_hint = &CommandHint::new("", "", FunctionType);
         let mut best_overlap = 0;
 
         for hint in lock.iter() {
