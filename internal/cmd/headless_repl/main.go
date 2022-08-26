@@ -287,10 +287,6 @@ func (r *ScopeHolder) doQuery(ctx context.Context, spec *flux.Spec) error {
 	return qry.Err()
 }
 
-func getFluxFiles(path string) ([]string, error) {
-	return filepath.Glob(path + "*.flux")
-}
-
 // LoadQuery returns the Flux query q, except for two special cases:
 // if q is exactly "-", the query will be read from stdin;
 // and if the first character of q is "@",
