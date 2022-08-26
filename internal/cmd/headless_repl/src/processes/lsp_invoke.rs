@@ -203,7 +203,7 @@ pub fn formulate_request(
             Ok(headed)
         }
         LSPRequestType::Completion => {
-            let line_num = text.matches("\n").count();
+            let line_num = text.matches('\n').count();
 
             let character = match super::super::lsp_suggestion_helper::add_one(text) {
                 true => text.len() as u32 + 1,

@@ -40,7 +40,7 @@ impl From<serde_json::Error> for OutputError {
 pub fn form_output(request_type: &str, text: &str) -> Result<String, OutputError> {
     match request_type {
         "Service.DidOutput" => {
-            let cleaned = text.replace("\"", "\\\"");
+            let cleaned = text.replace('\"', "\\\"");
             let mut param = r#"[{"input": "#.to_string();
             let mut other_side = format!(r#""{}""#, cleaned);
             other_side.push_str("}]");
@@ -63,8 +63,6 @@ pub fn read_json_rpc(
 ) -> Result<(), anyhow::Error> {
     let mut buf: Vec<u8> = vec![];
     let mut num_buf: Vec<u8> = vec![];
-    let mut x = 0;
-    let mut y = 0;
     //indicate when to start and stop capturing numbers in the content length
     let mut num_cap = false;
     let mut read_exact = (false, 0);
@@ -73,11 +71,11 @@ pub fn read_json_rpc(
         let single = [val];
         if read_exact.0 {
             buf.insert(buf.len(), val);
-            read_exact.1 = read_exact.1 - 1;
+            read_exact.1 -= 1;
             if read_exact.1 == 0 {
                 //final result
                 let resp = str::from_utf8(&buf)?;
-                if let Some(val) = process_completions_response(&resp)? {
+                if let Some(val) = process_completions_response(resp)? {
                     let mut write_lock = storage.write().unwrap();
                     *write_lock = val;
                 }
@@ -99,7 +97,7 @@ pub fn read_json_rpc(
                 //now read that many characters
                 let mut my_int: u16 = read.parse()?;
                 //3 being the \r\n\n in the header
-                my_int = my_int + 3;
+                my_int += 3;
                 read_exact.0 = true;
                 read_exact.1 = my_int;
                 num_buf.clear();
@@ -107,9 +105,7 @@ pub fn read_json_rpc(
             buf.insert(buf.len(), val);
         }
         let cur = str::from_utf8(&buf)?;
-        x = x + 1;
-        y = y + 1;
-        if !CL.captures(cur).is_none() {
+        if CL.captures(cur).is_some() {
             num_cap = true;
         }
     }

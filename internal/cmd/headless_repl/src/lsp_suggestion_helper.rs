@@ -1,5 +1,4 @@
 use crate::processes::process_completion::HintType;
-use crate::processes::process_completion::HintType::{ArgumentType, FunctionType};
 use rustyline::hint::{Hint, Hinter};
 use rustyline::Context;
 use rustyline_derive::{Completer, Helper, Highlighter, Validator};
@@ -106,13 +105,13 @@ impl LSPSuggestionHelper {
             .read()
             .expect("failed to get a read lock on the hints");
         let mut best_ratio = f32::MIN;
-        let mut best_hint = &CommandHint::new("", "", FunctionType);
+        let mut best_hint = &CommandHint::new("", "", HintType::Function);
         let mut best_overlap = 0;
 
         for hint in lock.iter() {
             //if there is some overlap
             let disp = hint.display.as_str();
-            if hint.hint_type != ArgumentType {
+            if hint.hint_type != HintType::Argument {
                 if let Some(overlap) = overlap_two(line, hint.display()) {
                     let ratio: f32 = overlap.len() as f32 / disp.len() as f32;
                     //if greater than store that hint
@@ -156,11 +155,11 @@ impl LSPSuggestionHelper {
         //if they are equal save the first arg
 
         let possibilities = best_ratio > 0.0;
-        return if possibilities {
+        if possibilities {
             Some(best_hint.suffix(best_overlap))
         } else {
             None
-        };
+        }
     }
 }
 
@@ -219,7 +218,7 @@ fn arg_get_valid(line: &str, hint: &str, suggested_addition: &str) -> bool {
 pub fn add_one(line: &str) -> bool {
     let owner = line.to_string();
     let reversed: String = owner.chars().rev().collect();
-    if line.ends_with("(") {
+    if line.ends_with('(') {
         return true;
     }
     if let Some(val) = IDEN.find(reversed.as_str()) {

@@ -42,7 +42,7 @@ impl Hinter for MyHelper {
             return None;
         }
 
-        if let Err(_) = self.tx_stdin.send(line.to_string()) {
+        if self.tx_stdin.send(line.to_string()).is_err() {
             exit(101);
         }
 
@@ -51,7 +51,7 @@ impl Hinter for MyHelper {
         }
 
         trace!("get hints returned None refreshing hints");
-        if let Err(_) = self.tx_stdin.send(line.to_string()) {
+        if self.tx_stdin.send(line.to_string()).is_err() {
             exit(101);
         }
 
@@ -121,8 +121,6 @@ pub fn possible_main() -> anyhow::Result<()> {
     let (tx_lsp, rx_lsp): (Sender<String>, Receiver<String>) = channel();
     //channel for the hinter so user input can be sent the coordinator gets the rx
     let (tx_hinter, rx_hinter): (Sender<String>, Receiver<String>) = channel();
-    //copy of the tx_hinter so that hints can be re-requested this is used in the helpers
-    let tx_more_hints = tx_hinter.clone();
 
     //END: Channel Setup
 
@@ -140,14 +138,14 @@ pub fn possible_main() -> anyhow::Result<()> {
     };
     rl.set_helper(Some(MyHelper {
         hinter: lsp_helper,
-        tx_stdin: tx_more_hints,
+        //copy of the tx_hinter so that hints can be re-requested this is used in the helpers
+        tx_stdin: tx_hinter,
     }));
     //key handler setup
     let ceh = Box::new(CompleteHintHandler {});
-    let nex = ceh.clone();
     rl.bind_sequence(
         KeyEvent(KeyCode::Tab, Modifiers::NONE),
-        EventHandler::Conditional(nex),
+        EventHandler::Conditional(ceh),
     );
     //END: helper and readline setup
 

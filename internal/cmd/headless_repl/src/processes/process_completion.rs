@@ -1,6 +1,4 @@
-use crate::processes::process_completion::HintType::{
-    ArgumentType, FunctionType, MethodType, PackageType, UnimplementedType,
-};
+use crate::processes::process_completion::HintType::Unimplemented;
 use crate::CommandHint;
 use lsp_types::{CompletionList, CompletionResponse, InsertTextFormat};
 use once_cell::sync::Lazy;
@@ -12,29 +10,29 @@ use std::hash::Hash;
 
 #[derive(Hash, Debug, PartialEq, Eq, Clone)]
 pub enum HintType {
-    FunctionType,
-    PackageType,
-    ArgumentType,
-    MethodType,
-    UnimplementedType,
+    Function,
+    Package,
+    Argument,
+    Method,
+    Unimplemented,
 }
 
 impl Display for HintType {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
-            FunctionType => {
+            HintType::Function => {
                 write!(f, "Function Type")
             }
-            PackageType => {
+            HintType::Package => {
                 write!(f, "Package Type")
             }
-            ArgumentType => {
+            HintType::Argument => {
                 write!(f, "Argument Type")
             }
-            MethodType => {
+            HintType::Method => {
                 write!(f, "Argument Type")
             }
-            UnimplementedType => {
+            HintType::Unimplemented => {
                 write!(f, "Unimplemented Type")
             }
         }
@@ -44,9 +42,9 @@ impl Display for HintType {
 impl From<lsp_types::CompletionItemKind> for HintType {
     fn from(kind: lsp_types::CompletionItemKind) -> Self {
         match kind {
-            lsp_types::CompletionItemKind::FUNCTION => FunctionType,
-            lsp_types::CompletionItemKind::FIELD => ArgumentType,
-            _ => UnimplementedType,
+            lsp_types::CompletionItemKind::FUNCTION => HintType::Function,
+            lsp_types::CompletionItemKind::FIELD => HintType::Argument,
+            _ => Unimplemented,
         }
     }
 }
@@ -54,11 +52,11 @@ impl From<lsp_types::CompletionItemKind> for HintType {
 impl From<u64> for HintType {
     fn from(num: u64) -> Self {
         match num {
-            3 => FunctionType,
-            5 => ArgumentType,
-            6 => MethodType,
-            9 => PackageType,
-            _ => UnimplementedType,
+            3 => HintType::Function,
+            5 => HintType::Argument,
+            6 => HintType::Method,
+            9 => HintType::Package,
+            _ => HintType::Unimplemented,
         }
     }
 }
@@ -84,12 +82,12 @@ pub fn process_completions_response(
         let mut res: HashSet<CommandHint> = HashSet::new();
         for mut x in items {
             let label = x.label;
-            if label.starts_with("_") {
+            if label.starts_with('_') {
                 continue;
             }
             let mut arg = x.insert_text.get_or_insert(label).to_string();
             if x.insert_text_format == Some(InsertTextFormat::SNIPPET) {
-                arg = SNIP.replace_all(&arg.as_str(), "").to_string();
+                arg = SNIP.replace_all(arg.as_str(), "").to_string();
             }
             if x.kind.is_none() {
                 continue;

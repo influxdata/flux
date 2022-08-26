@@ -13,6 +13,5 @@ First run a ```make``` to compile and then ensure that you have ```flux-lsp``` i
 - Allow flag passing to the Coordinator.
 - Add a way to maintain variable state that can be shared with the lsp.
 - Formatting for the flux output so the prompt ">>" is not displayed before the new line 
-- Parsing the Completion Response into ```lsp_types``` ```CompletionResponse```
 - Add a ```make check``` command in the makefile that will run ```which "flux-lsp"``` to see if the flux-lsp is in their path
 - Using a json-rpc parsing library rather the ```read_json_rpc``` function that I have made.

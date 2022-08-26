@@ -44,11 +44,11 @@ pub fn run(
     //initialize the document
     let mut setup = [Initialize, Initialized, DidOpen]
         .iter()
-        .map(|x| formulate_request(&x, "", 0).unwrap())
+        .map(|x| formulate_request(x, "", 0).unwrap())
         .collect::<VecDeque<String>>();
     //the processing thread
     thread::spawn(move || {
-        while setup.len() != 0 {
+        while !setup.is_empty() {
             let cur = setup.pop_front().unwrap();
             //send to the writer thread
             tx_coordinator.send(cur).unwrap();
@@ -58,13 +58,15 @@ pub fn run(
         loop {
             //channel for the rustyline hinter when the user types
             if let Ok(input) = rx_helper.recv() {
-                if let Err(_) = tx_coordinator
+                if tx_coordinator
                     .send(formulate_request(&DidChange, &input, 0).expect("invalid request type"))
+                    .is_err()
                 {
                     exit(101);
                 }
-                if let Err(_) = tx_coordinator
+                if tx_coordinator
                     .send(formulate_request(&Completion, &input, 0).expect("invalid request type"))
+                    .is_err()
                 {
                     exit(101);
                 }
