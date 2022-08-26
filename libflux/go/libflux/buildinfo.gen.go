@@ -467,7 +467,7 @@ var sourceHashes = map[string]string{
 	"stdlib/universe/elapsed_median_test.flux":                                                    "ee43ac37904e780954be4d85ed48bee8f1f8db51a50f390de2460e6f48e0fa55",
 	"stdlib/universe/elapsed_test.flux":                                                           "0db5ca1ab33d9df6719cf3801c3d848af9ec58df6909daf8a783fdc3359b4601",
 	"stdlib/universe/exponential_moving_average_test.flux":                                        "e52f7e3e0d56afa315bca3d5def4692cb6fc95449616d084ac28605e6d506215",
-	"stdlib/universe/fill_test.flux":                                                              "7a889ab7db15b3ade78c949665fa5c1030681b76e0152f7b73475c6c195a53b0",
+	"stdlib/universe/fill_test.flux":                                                              "911d83d55a35f149e1ffaab698888525a545fce763ece6f61c08fac143c65c84",
 	"stdlib/universe/filter_by_regex_compile_test.flux":                                           "9cf4aa647d745a565a7f4050fdc008879fe728ccdbfbc6eaac63174ed23304c7",
 	"stdlib/universe/filter_by_regex_function_test.flux":                                          "e4f118697db9d0978a5aa106d0790c1b4d57abeac936bbf2eb6418b819a473c6",
 	"stdlib/universe/filter_by_regex_test.flux":                                                   "1df07191ee0e12f878442e5af3fe46e16fb6d1a4ca9906a2656fcf54fbce916a",
