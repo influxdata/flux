@@ -10,7 +10,6 @@ import (
 	"net/rpc/jsonrpc"
 	"os"
 	"os/signal"
-	"path/filepath"
 	"sync"
 	"syscall"
 
