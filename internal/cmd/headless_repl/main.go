@@ -46,7 +46,6 @@ type ScopeHolder struct {
 	resChan chan string
 }
 
-
 func New(ctx context.Context) *ScopeHolder {
 	scope := values.NewScope()
 	importer := runtime.StdLib()
@@ -133,7 +132,6 @@ func (r *ScopeHolder) Run() {
 	}
 
 }
-
 
 func (r *ScopeHolder) cancel() {
 	r.cancelMu.Lock()
@@ -293,8 +291,6 @@ func getFluxFiles(path string) ([]string, error) {
 	return filepath.Glob(path + "*.flux")
 }
 
-
-
 // LoadQuery returns the Flux query q, except for two special cases:
 // if q is exactly "-", the query will be read from stdin;
 // and if the first character of q is "@",
@@ -319,8 +315,6 @@ func LoadQuery(q string) (string, error) {
 
 	return q, nil
 }
-
-
 
 const DefaultInfluxDBHost = "http://localhost:9999"
 
