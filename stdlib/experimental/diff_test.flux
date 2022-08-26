@@ -234,13 +234,29 @@ testcase empty_got {
 testcase mismatch_non_string_group_key {
     want =
         array.from(
-            rows: [{_measurement: "m0", _field: "f0", _start: 2022-07-12T00:00:00Z, _time: 2022-07-12T00:00:00Z, _value: 2.0}],
+            rows: [
+                {
+                    _measurement: "m0",
+                    _field: "f0",
+                    _start: 2022-07-12T00:00:00Z,
+                    _time: 2022-07-12T00:00:00Z,
+                    _value: 2.0,
+                },
+            ],
         )
             |> group(columns: ["_measurement", "_field", "_start"])
 
     got =
         array.from(
-            rows: [{_measurement: "m0", _field: "f0", _start: 2022-07-12T00:00:00Z, _time: 2022-07-12T00:00:00Z, _value: 3.0}],
+            rows: [
+                {
+                    _measurement: "m0",
+                    _field: "f0",
+                    _start: 2022-07-12T00:00:00Z,
+                    _time: 2022-07-12T00:00:00Z,
+                    _value: 3.0,
+                },
+            ],
         )
             |> group(columns: ["_measurement", "_field", "_start"])
 
