@@ -46,9 +46,6 @@ type ScopeHolder struct {
 	resChan chan string
 }
 
-type Option interface {
-	applyOption()
-}
 
 func New(ctx context.Context) *ScopeHolder {
 	scope := values.NewScope()
@@ -137,9 +134,6 @@ func (r *ScopeHolder) Run() {
 
 }
 
-func newServer() {
-	panic("unimplemented")
-}
 
 func (r *ScopeHolder) cancel() {
 	r.cancelMu.Lock()
@@ -299,20 +293,7 @@ func getFluxFiles(path string) ([]string, error) {
 	return filepath.Glob(path + "*.flux")
 }
 
-func getDirs(path string) ([]string, error) {
-	dir := filepath.Dir(path)
-	files, err := ioutil.ReadDir(dir)
-	if err != nil {
-		return nil, err
-	}
-	dirs := make([]string, 0, len(files))
-	for _, f := range files {
-		if f.IsDir() {
-			dirs = append(dirs, filepath.Join(dir, f.Name()))
-		}
-	}
-	return dirs, nil
-}
+
 
 // LoadQuery returns the Flux query q, except for two special cases:
 // if q is exactly "-", the query will be read from stdin;
@@ -339,11 +320,7 @@ func LoadQuery(q string) (string, error) {
 	return q, nil
 }
 
-type option func(r *ScopeHolder)
 
-func (o option) applyOption(r *ScopeHolder) {
-	o(r)
-}
 
 const DefaultInfluxDBHost = "http://localhost:9999"
 
