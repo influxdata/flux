@@ -99,3 +99,9 @@
   key: vectorizedFloat
   default: false
   contact: Owen Nelson
+
+- name: Vectorized Unary Ops
+  description: Calls to map can be vectorized when unary ops appear in the function
+  key: vectorizedUnaryOps
+  default: false
+  contact: Owen Nelson

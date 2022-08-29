@@ -197,6 +197,18 @@ func VectorizedFloat() BoolFlag {
 	return vectorizedFloat
 }
 
+var vectorizedUnaryOps = feature.MakeBoolFlag(
+	"Vectorized Unary Ops",
+	"vectorizedUnaryOps",
+	"Owen Nelson",
+	false,
+)
+
+// VectorizedUnaryOps - Calls to map can be vectorized when unary ops appear in the function
+func VectorizedUnaryOps() BoolFlag {
+	return vectorizedUnaryOps
+}
+
 // Inject will inject the Flagger into the context.
 func Inject(ctx context.Context, flagger Flagger) context.Context {
 	return feature.Inject(ctx, flagger)
@@ -218,6 +230,7 @@ var all = []Flag{
 	vectorizedEqualityOps,
 	vectorizedConst,
 	vectorizedFloat,
+	vectorizedUnaryOps,
 }
 
 var byKey = map[string]Flag{
@@ -236,6 +249,7 @@ var byKey = map[string]Flag{
 	"vectorizedEqualityOps":            vectorizedEqualityOps,
 	"vectorizedConst":                  vectorizedConst,
 	"vectorizedFloat":                  vectorizedFloat,
+	"vectorizedUnaryOps":               vectorizedUnaryOps,
 }
 
 // Flags returns all feature flags.

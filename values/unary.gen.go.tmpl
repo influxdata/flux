@@ -1,0 +1,69 @@
+package values
+
+import (
+	fluxarray "github.com/influxdata/flux/array"
+	"github.com/apache/arrow/go/v7/arrow/memory"
+	"github.com/influxdata/flux/codes"
+	"github.com/influxdata/flux/internal/errors"
+	"github.com/influxdata/flux/semantic"
+)
+
+{{range $index, $op := .Ops}}
+func Vector{{$op.Name}}(v Vector, mem memory.Allocator) (Value, error) {
+	elemType := v.ElementType()
+	switch elemType.Nature() {
+		{{range $index, $type := .Types}}
+		{{if eq $type "Boolean"}}
+		case semantic.Bool:
+		{{else if eq $type "Uint"}}
+		case semantic.UInt:
+		{{else}}
+		case semantic.{{$type}}:
+		{{end}}
+			var (
+				x *fluxarray.{{$type}}
+				err error
+			)
+			x, err = fluxarray.{{$type}}{{$op.Name}}(v.Arr().(*fluxarray.{{$type}}), mem)
+			if err != nil {
+				return nil, err
+			}
+			return NewVectorValue(x, semantic.Basic{{$type}}), nil
+		{{end}}
+		default:
+			return nil, errors.Newf(codes.Invalid, "unsupported type for vector {{$op.Name}}: %v", elemType)
+	}
+}
+{{end}}
+
+{{range $index, $op := .EqualityOps}}
+func Vector{{$op.Name}}(v Vector, mem memory.Allocator) (Value, error) {
+	elemType := v.ElementType()
+	switch elemType.Nature() {
+		{{range $index, $type := .Types}}
+		{{if eq $type "Boolean"}}
+		case semantic.Bool:
+		{{else if eq $type "Uint"}}
+		case semantic.UInt:
+		{{else}}
+		case semantic.{{$type}}:
+		{{end}}
+			var (
+				x *fluxarray.Boolean
+				err error
+			)
+			{{if eq $type "Time"}}
+			x, err = fluxarray.Int{{$op.Name}}(v.Arr().(*fluxarray.Int), mem)
+			{{else}}
+			x, err = fluxarray.{{$type}}{{$op.Name}}(v.Arr().(*fluxarray.{{$type}}), mem)
+			{{end}}
+			if err != nil {
+				return nil, err
+			}
+			return NewVectorValue(x, semantic.BasicBool), nil
+		{{end}}
+		default:
+			return nil, errors.Newf(codes.Invalid, "unsupported type for vector {{$op.Name}}: %v", elemType)
+	}
+}
+{{end}}

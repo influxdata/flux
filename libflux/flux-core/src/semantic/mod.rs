@@ -537,6 +537,10 @@ pub enum Feature {
     /// Enables calls to map to be vectorized when the function contains
     /// float casts.
     VectorizedFloat,
+
+    /// Enables calls to map to be vectorized when the function contains
+    /// unary operators like: add, sub exists, not.
+    VectorizedUnaryOps,
 }
 
 impl FromStr for Feature {

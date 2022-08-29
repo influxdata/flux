@@ -1,0 +1,21 @@
+{
+    "Ops":[
+        {
+            "Name": "UnarySub",
+            "Op": "-",
+            "Types": ["Int", "Float"]
+        }
+    ],
+    "EqualityOps":[
+        {
+            "Name": "Exists",
+            "Op": "exists",
+            "Types": ["Int", "Uint", "Float", "String", "Boolean", "Time"]
+        },
+        {
+            "Name": "Not",
+            "Op": "not",
+            "Types": ["Boolean"]
+        }
+    ]
+}

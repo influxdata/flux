@@ -47,6 +47,7 @@ import (
 	_ "github.com/influxdata/flux/stdlib/experimental/json"
 	_ "github.com/influxdata/flux/stdlib/experimental/mqtt"
 	_ "github.com/influxdata/flux/stdlib/experimental/oee"
+	_ "github.com/influxdata/flux/stdlib/experimental/polyline"
 	_ "github.com/influxdata/flux/stdlib/experimental/prometheus"
 	_ "github.com/influxdata/flux/stdlib/experimental/query"
 	_ "github.com/influxdata/flux/stdlib/experimental/record"

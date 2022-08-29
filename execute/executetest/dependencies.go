@@ -36,6 +36,7 @@ var testFlags = map[string]interface{}{
 	"vectorizedFloat":           true,
 	"vectorizeLogicalOperators": true,
 	"vectorizedEqualityOps":     true,
+	"vectorizedUnaryOps":        true,
 	"optimizeAggregateWindow":   true,
 	"optimizeStateTracking":     true,
 	"optimizeSetTransformation": true,
