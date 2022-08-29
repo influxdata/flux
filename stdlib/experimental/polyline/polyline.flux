@@ -31,7 +31,7 @@ package polyline
 //
 // When using `polyline.rdp()`, leave both `epsilon` and `retention` unspecified
 // to automatically calculate the maximum tolerance beyond which producing a
-// visually indistingushable curve is not be possible.
+// visually indistinguishable curve is not be possible.
 //
 // ```
 // # import "internal/gen"
