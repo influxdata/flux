@@ -4,7 +4,7 @@
 // This is done by reducing the number of vertices that do not contribute significantly to the convexity and concavity of the shape.
 //
 // ## Metadata
-// introduced: NEXT
+// introduced: 0.181.0
 //
 package polyline
 
