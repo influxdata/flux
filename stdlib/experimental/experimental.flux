@@ -1349,6 +1349,7 @@ builtin preview : (<-tables: stream[A], ?nrows: int, ?ntables: int) => stream[A]
 //
 builtin unpivot : (
         <-tables: stream[{A with _time: time}],
+        ?ungroupedTagColumns: [string],
     ) => stream[{B with _field: string, _value: C}]
     where
     A: Record,

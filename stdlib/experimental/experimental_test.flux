@@ -326,3 +326,18 @@ testcase unpivot_with_nulls_2 {
 
     testing.diff(want, got)
 }
+
+testcase unpivot_ungrouped_tag_columns {
+    testing.shouldError(
+      fn: () =>
+          array.from(
+            rows: [
+              {_measurement: "m", tag: "t1", f0: 10.1, f1: 10.2, _time: 2018-12-18T20:52:33Z}
+            ],
+          )
+            |> group(columns: ["_measurement", "_field"])
+            |> experimental.unpivot(ungroupedTagColumns: ["tag"])
+            |> tableFind(fn: (key) => true),
+      want: /parameter not supported yet/,
+    )
+}

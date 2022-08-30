@@ -11,14 +11,18 @@ import (
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/internal/execute/groupkey"
 	"github.com/influxdata/flux/internal/execute/table"
+	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/runtime"
+	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
 
 const UnpivotKind = "experimental.unpivot"
 
-type UnpivotOpSpec struct{}
+type UnpivotOpSpec struct {
+	ungroupedTagColumns []string
+}
 
 func init() {
 	unpivotSig := runtime.MustLookupBuiltinType("experimental", "unpivot")
@@ -33,7 +37,20 @@ func createUnpivotOpSpec(args flux.Arguments, a *flux.Administration) (flux.Oper
 		return nil, err
 	}
 
-	return new(UnpivotOpSpec), nil
+	spec := new(UnpivotOpSpec)
+
+	if columns, ok, err := args.GetArray("ungroupedTagColumns", semantic.String); err != nil {
+		return nil, err
+	} else if ok {
+		spec.ungroupedTagColumns, err = interpreter.ToStringArray(columns)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		spec.ungroupedTagColumns = []string{}
+	}
+
+	return spec, nil
 }
 
 func (s *UnpivotOpSpec) Kind() flux.OperationKind {
@@ -41,12 +58,14 @@ func (s *UnpivotOpSpec) Kind() flux.OperationKind {
 }
 
 func newUnpivotProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
-	_, ok := qs.(*UnpivotOpSpec)
+	opSpec, ok := qs.(*UnpivotOpSpec)
 	if !ok {
 		return nil, errors.Newf(codes.Internal, "invalid spec type %T", qs)
 	}
 
-	return &UnpivotProcedureSpec{}, nil
+	return &UnpivotProcedureSpec{
+		ungroupedTagColumns: opSpec.ungroupedTagColumns,
+	}, nil
 }
 
 func createUnpivotTransformation(id execute.DatasetID, mode execute.AccumulationMode, spec plan.ProcedureSpec, a execute.Administration) (execute.Transformation, execute.Dataset, error) {
@@ -61,6 +80,7 @@ func createUnpivotTransformation(id execute.DatasetID, mode execute.Accumulation
 
 type UnpivotProcedureSpec struct {
 	plan.DefaultCost
+	ungroupedTagColumns []string
 }
 
 func (s *UnpivotProcedureSpec) Kind() plan.ProcedureKind {
@@ -73,18 +93,24 @@ func (s *UnpivotProcedureSpec) Copy() plan.ProcedureSpec {
 }
 
 func NewUnpivotTransformation(spec *UnpivotProcedureSpec, id execute.DatasetID, alloc memory.Allocator) (execute.Transformation, execute.Dataset, error) {
-	t := &unpivotTransformation{}
+	t := &unpivotTransformation{
+		ungroupedTagColumns: spec.ungroupedTagColumns,
+	}
 	return execute.NewNarrowTransformation(id, t, alloc)
 
 }
 
 type unpivotTransformation struct {
 	execute.ExecutionNode
+	ungroupedTagColumns []string
 }
 
 func (t *unpivotTransformation) Close() error { return nil }
 
 func (t *unpivotTransformation) Process(chunk table.Chunk, d *execute.TransportDataset, mem memory.Allocator) error {
+	if len(t.ungroupedTagColumns) > 0 {
+		return errors.New(codes.Invalid, "ungroupedTagColumns parameter not supported yet")
+	}
 
 	timeColumn := -1
 	for j, c := range chunk.Cols() {
