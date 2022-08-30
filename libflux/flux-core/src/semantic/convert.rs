@@ -2457,7 +2457,11 @@ mod tests {
             typ: type_info(),
             params: vec![
                 piped.clone(),
+                // XXX: clippy reports these clones as redundant but rustc complains
+                // that these can't move since they are borrowed by `defaults` (which is true!)
+                #[allow(clippy::redundant_clone)]
                 default1.clone(),
+                #[allow(clippy::redundant_clone)]
                 default2.clone(),
                 no_default,
             ],
