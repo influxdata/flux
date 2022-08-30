@@ -916,8 +916,6 @@ from(bucket: v.bucket)
     }
 
     #[test]
-    // TODO Remove once rust is updated (see https://github.com/rust-lang/rust-clippy/pull/8450)
-    #[allow(clippy::undocumented_unsafe_blocks)]
     fn test_ast_get_error() {
         let ast = crate::parser::parse_string("test".to_string(), "x = 3 + / 10 - \"");
         let ast = Box::new(ast.into());

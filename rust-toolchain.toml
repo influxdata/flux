@@ -1,9 +1,5 @@
 [toolchain]
-# Note: we are stuck on Rust version 1.58 for the time being until
-# this issue is fixed:
-#   https://github.com/rust-lang/rust/issues/97117
-# Since it blocks the ARM64 build of InfluxDB.
-channel = "1.58"
+channel = "1.63"
 components = ["rustfmt", "clippy"]
 targets = [
     "wasm32-unknown-unknown",

@@ -9,7 +9,7 @@
 # this issue is fixed:
 #   https://github.com/rust-lang/rust/issues/97117
 # Since it blocks the ARM64 build of InfluxDB.
-FROM rust:1.58 as RUSTBUILD
+FROM rust:1.63 as RUSTBUILD
 
 FROM golang:1.19 as PKGCONFIG
 COPY go.mod go.sum /go/src/github.com/influxdata/flux/
