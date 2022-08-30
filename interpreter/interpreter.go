@@ -1419,6 +1419,7 @@ type Arguments interface {
 	GetRequiredArrayAllowEmpty(name string, t semantic.Nature) (values.Array, error)
 	GetRequiredObject(name string) (values.Object, error)
 	GetRequiredDictionary(name string) (values.Dictionary, error)
+	RawObject() values.Object
 
 	// listUnused returns the list of provided arguments that were not used by the function.
 	listUnused() []string
@@ -1646,6 +1647,10 @@ func (a *arguments) GetRequiredDictionary(name string) (values.Dictionary, error
 		return nil, err
 	}
 	return v.Dict(), nil
+}
+
+func (a *arguments) RawObject() values.Object {
+	return a.obj
 }
 
 func (a *arguments) get(name string, kind semantic.Nature, required bool) (values.Value, bool, error) {
