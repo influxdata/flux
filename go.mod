@@ -62,6 +62,8 @@ require (
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 
+require github.com/apache/arrow/go/arrow v0.0.0-20211112161151-bc219186db40
+
 require (
 	cloud.google.com/go/bigquery v1.8.0 // indirect
 	github.com/Azure/azure-pipeline-go v0.2.3 // indirect
@@ -72,7 +74,6 @@ require (
 	github.com/Azure/go-autorest/logger v0.2.1 // indirect
 	github.com/Azure/go-autorest/tracing v0.6.0 // indirect
 	github.com/Masterminds/semver v1.4.2 // indirect
-	github.com/apache/arrow/go/arrow v0.0.0-20211112161151-bc219186db40 // indirect
 	github.com/aws/aws-sdk-go v1.29.16 // indirect
 	github.com/aws/aws-sdk-go-v2 v1.11.0 // indirect
 	github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream v1.0.0 // indirect

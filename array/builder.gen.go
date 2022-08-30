@@ -76,8 +76,11 @@ func (b *IntBuilder) CopyValidValues(values *Int, nullCheckArray Array) {
 		panic("Length mismatch between the value array and the null check array")
 	}
 	b.Reserve(values.Len() - nullCheckArray.NullN())
+
+	nullBitMapBytes := nullCheckArray.NullBitmapBytes()
+	nullOffset := nullCheckArray.Data().Offset()
 	for i := 0; i < values.Len(); i++ {
-		if nullCheckArray.IsValid(i) {
+		if isValid(nullBitMapBytes, nullOffset, i) {
 			b.Append(values.Value(i))
 		}
 	}
@@ -139,8 +142,11 @@ func (b *UintBuilder) CopyValidValues(values *Uint, nullCheckArray Array) {
 		panic("Length mismatch between the value array and the null check array")
 	}
 	b.Reserve(values.Len() - nullCheckArray.NullN())
+
+	nullBitMapBytes := nullCheckArray.NullBitmapBytes()
+	nullOffset := nullCheckArray.Data().Offset()
 	for i := 0; i < values.Len(); i++ {
-		if nullCheckArray.IsValid(i) {
+		if isValid(nullBitMapBytes, nullOffset, i) {
 			b.Append(values.Value(i))
 		}
 	}
@@ -202,8 +208,11 @@ func (b *FloatBuilder) CopyValidValues(values *Float, nullCheckArray Array) {
 		panic("Length mismatch between the value array and the null check array")
 	}
 	b.Reserve(values.Len() - nullCheckArray.NullN())
+
+	nullBitMapBytes := nullCheckArray.NullBitmapBytes()
+	nullOffset := nullCheckArray.Data().Offset()
 	for i := 0; i < values.Len(); i++ {
-		if nullCheckArray.IsValid(i) {
+		if isValid(nullBitMapBytes, nullOffset, i) {
 			b.Append(values.Value(i))
 		}
 	}
@@ -265,8 +274,11 @@ func (b *BooleanBuilder) CopyValidValues(values *Boolean, nullCheckArray Array) 
 		panic("Length mismatch between the value array and the null check array")
 	}
 	b.Reserve(values.Len() - nullCheckArray.NullN())
+
+	nullBitMapBytes := nullCheckArray.NullBitmapBytes()
+	nullOffset := nullCheckArray.Data().Offset()
 	for i := 0; i < values.Len(); i++ {
-		if nullCheckArray.IsValid(i) {
+		if isValid(nullBitMapBytes, nullOffset, i) {
 			b.Append(values.Value(i))
 		}
 	}

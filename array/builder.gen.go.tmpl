@@ -69,11 +69,14 @@ func (b *{{.Name}}Builder) CopyValidValues(values *{{.Name}}, nullCheckArray Arr
         panic("Length mismatch between the value array and the null check array")
     }
     b.Reserve(values.Len() - nullCheckArray.NullN())
-    for i := 0; i < values.Len(); i++ {
-        if nullCheckArray.IsValid(i) {
-            b.Append(values.Value(i))
-        }
-    }
+
+	nullBitMapBytes := nullCheckArray.NullBitmapBytes()
+	nullOffset := nullCheckArray.Data().Offset()
+	for i := 0; i < values.Len(); i++ {
+		if isValid(nullBitMapBytes, nullOffset, i) {
+			b.Append(values.Value(i))
+		}
+	}
 }
 {{end}}{{end}}
 
