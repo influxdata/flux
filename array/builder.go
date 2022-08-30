@@ -155,10 +155,13 @@ func (b *StringBuilder) NewStringArray() *String {
 	b.reset()
 	return arr
 }
-func (b *StringBuilder) CopyValidValues(values *String) {
-	b.Reserve(values.Len() - values.NullN())
+func (b *StringBuilder) CopyValidValues(values *String, nullCheckArray Array) {
+	if values.Len() != nullCheckArray.Len() {
+		panic("Length mismatch between the value array and the null check array")
+	}
+	b.Reserve(values.Len() - nullCheckArray.NullN())
 	for i := 0; i < values.Len(); i++ {
-		if values.IsValid(i) {
+		if nullCheckArray.IsValid(i) {
 			b.Append(values.Value(i))
 		}
 	}

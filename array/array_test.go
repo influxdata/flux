@@ -391,7 +391,7 @@ func TestCopyValid(t *testing.T) {
 
 			input := tc.input(mem)
 
-			got := array.CopyValidValues(mem, input).(*array.Int)
+			got := array.CopyValidValues(mem, input, input).(*array.Int)
 
 			want := tc.want
 			if diff := cmp.Diff(want, got.Int64Values()); diff != "" {
