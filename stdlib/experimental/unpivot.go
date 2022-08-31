@@ -118,11 +118,16 @@ func (t *unpivotTransformation) Process(chunk table.Chunk, d *execute.TransportD
 
 	ungroupedTagCols := make([]flux.ColMeta, len(t.ungroupedTagColumns))
 	for i, utc := range t.ungroupedTagColumns {
+		found := false
 		for _, c := range chunk.Cols() {
 			if c.Label == utc {
 				ungroupedTagCols[i] = c
+				found = true
 				break
 			}
+		}
+		if !found {
+			return errors.Newf(codes.Internal, "unpivot could not find column named %q", utc)
 		}
 	}
 
