@@ -243,7 +243,7 @@ shouldError = (fn, want) => {
     got = experimental.catch(fn)
 
     return
-        array.from(rows: [{v: got}])
+        array.from(rows: [{v: got.msg}])
             |> filter(fn: (r) => r.v !~ want)
             |> yield(name: "errorOutput")
 }

@@ -173,7 +173,7 @@ func (c *sqlIterator) Do(ctx context.Context, f func(flux.Table) error) error {
 
 	rows, err := db.QueryContext(ctx, c.spec.Query)
 	if err != nil {
-		return err
+		return errors.Wrap(err, codes.Invalid)
 	}
 	defer func() { _ = rows.Close() }()
 
