@@ -111,9 +111,6 @@ func runFluxTests(out io.Writer, setup TestSetupFunc, flags TestFlags) (bool, er
 	reporter := TestReporter{
 		out:       out,
 		verbosity: flags.verbosity,
-		// If an explicit list of test is specified, the user is unlikely interested in all the other, skipped tests.
-		// So avoid cluttering the test report with skips.
-		reportSkips: len(flags.testNames) == 0,
 	}
 
 	runner := NewTestRunner(reporter)
@@ -968,9 +965,8 @@ func (t *TestRunner) Finish() bool {
 
 // TestReporter handles reporting of test results.
 type TestReporter struct {
-	out         io.Writer
-	verbosity   int
-	reportSkips bool
+	out       io.Writer
+	verbosity int
 }
 
 // ReportTestRun reports the result a single test run, intended to be run as
@@ -978,9 +974,6 @@ type TestReporter struct {
 func (t *TestReporter) ReportTestRun(test *Test) {
 	if t.verbosity == 0 {
 		if test.skip {
-			if t.reportSkips {
-				fmt.Fprint(t.out, color.YellowString("s"))
-			}
 		} else if test.Error() != nil {
 			fmt.Fprint(t.out, color.RedString("x"))
 		} else {
@@ -996,9 +989,6 @@ func (t *TestReporter) ReportTestRun(test *Test) {
 			}
 		}
 		if test.skip {
-			if t.reportSkips {
-				fmt.Fprintf(t.out, "%s ... %s\n", test.FullName(), color.YellowString("skip"))
-			}
 		} else if err := test.Error(); err != nil {
 			fmt.Fprintf(t.out, "%s ... %s: %s\n", test.FullName(), color.RedString("fail"), err)
 		} else {
