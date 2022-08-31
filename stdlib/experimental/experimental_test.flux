@@ -328,16 +328,121 @@ testcase unpivot_with_nulls_2 {
 }
 
 testcase unpivot_ungrouped_tag_columns {
-    testing.shouldError(
-      fn: () =>
-          array.from(
+    got =
+        array.from(
             rows: [
-              {_measurement: "m", tag: "t1", f0: 10.1, f1: 10.2, _time: 2018-12-18T20:52:33Z}
+                {
+                    _measurement: "m",
+                    tag: "t1",
+                    f0: 10.1,
+                    f1: 10.2,
+                    _time: 2018-12-01T00:00:00Z,
+                },
+                {
+                    _measurement: "m",
+                    tag: "t1",
+                    f0: 20.1,
+                    f1: 20.2,
+                    _time: 2018-12-01T00:00:10Z,
+                },
             ],
-          )
-            |> group(columns: ["_measurement", "_field"])
+        )
+            |> group(columns: ["_measurement"])
             |> experimental.unpivot(ungroupedTagColumns: ["tag"])
-            |> tableFind(fn: (key) => true),
-      want: /parameter not supported yet/,
-    )
+
+    want =
+        array.from(
+            rows: [
+                {
+                    _measurement: "m",
+                    tag: "t1",
+                    _field: "f0",
+                    _value: 10.1,
+                    _time: 2018-12-01T00:00:00Z,
+                },
+                {
+                    _measurement: "m",
+                    tag: "t1",
+                    _field: "f1",
+                    _value: 10.2,
+                    _time: 2018-12-01T00:00:00Z,
+                },
+                {
+                    _measurement: "m",
+                    tag: "t1",
+                    _field: "f0",
+                    _value: 20.1,
+                    _time: 2018-12-01T00:00:10Z,
+                },
+                {
+                    _measurement: "m",
+                    tag: "t1",
+                    _field: "f1",
+                    _value: 20.2,
+                    _time: 2018-12-01T00:00:10Z,
+                },
+            ],
+        )
+            |> group(columns: ["_measurement", "_field"])
+
+    testing.diff(want, got)
+}
+
+testcase unpivot_ungrouped_tag_columns_nulls {
+    got =
+        array.from(
+            rows: [
+                {
+                    _measurement: "m",
+                    tag0: "foo",
+                    tag1: "bar",
+                    f0: 10.1,
+                    f1: debug.null(type: "float"),
+                    _time: 2018-12-01T00:00:00Z,
+                },
+                {
+                    _measurement: "m",
+                    tag0: "foz",
+                    tag1: "baz",
+                    f0: 20.1,
+                    f1: 20.2,
+                    _time: 2018-12-01T00:00:10Z,
+                },
+            ],
+        )
+            |> group(columns: ["_measurement"])
+            |> experimental.unpivot(ungroupedTagColumns: ["tag0", "tag1"])
+
+    want =
+        array.from(
+            rows: [
+                {
+                    _measurement: "m",
+                    tag0: "foo",
+                    tag1: "bar",
+                    _field: "f0",
+                    _value: 10.1,
+                    _time: 2018-12-01T00:00:00Z,
+                },
+                {
+                    _measurement: "m",
+                    tag0: "foz",
+                    tag1: "baz",
+                    _field: "f0",
+                    _value: 20.1,
+                    _time: 2018-12-01T00:00:10Z,
+                },
+                {
+                    _measurement: "m",
+                    tag0: "foz",
+                    tag1: "baz",
+                    _field: "f1",
+                    _value: 20.2,
+                    _time: 2018-12-01T00:00:10Z,
+                },
+            ],
+        )
+            |> group(columns: ["_measurement", "_field"])
+
+    testing.diff(want, got)
 }
