@@ -915,3 +915,21 @@ map(fn: (r) => ({ r with _value: if true and false then 1}) )
             .to_string(),
     );
 }
+
+#[test]
+fn missing_property() {
+    let mut p = Parser::new(
+        r#"
+x.
+
+builtin y : int
+"#,
+    );
+    let parsed = p.parse_file("".to_string());
+    expect_test::expect![[r#"error @4:1-4:8: expected IDENT, got BUILTIN (builtin) at 4:1"#]]
+        .assert_eq(
+            &ast::check::check(ast::walk::Node::File(&parsed))
+                .unwrap_err()
+                .to_string(),
+        );
+}
