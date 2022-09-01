@@ -88,6 +88,12 @@ func {{$type}}{{$op.Name}}(l, r *{{$type}}, mem memory.Allocator) (*{{$type}}, e
 
             {{else}}
 
+            {{if and (eq $op.Op "/") (eq $type "Int" "Uint")}}
+			if r.Value(i) == 0 {
+				return nil, errors.Newf(codes.FailedPrecondition, "cannot divide by zero")
+			}
+			{{end}}
+
 			b.Append(l.Value(i) {{$op.Op}} r.Value(i))
 
             {{end}}
@@ -112,6 +118,12 @@ func {{$type}}{{$op.Name}}LConst(l {{index $.TypeMap $type}}, r *{{$type}}, mem 
 
             {{else}}
 
+            {{if and (eq $op.Op "/") (eq $type "Int" "Uint")}}
+			if r.Value(i) == 0 {
+				return nil, errors.Newf(codes.FailedPrecondition, "cannot divide by zero")
+			}
+			{{end}}
+
 			b.Append(l {{$op.Op}} r.Value(i))
 
             {{end}}
@@ -135,6 +147,12 @@ func {{$type}}{{$op.Name}}RConst(l *{{$type}}, r {{index $.TypeMap $type}}, mem 
 			b.Append(math.Mod(l.Value(i), r))
 
             {{else}}
+
+            {{if and (eq $op.Op "/") (eq $type "Int" "Uint")}}
+			if r == 0 {
+				return nil, errors.Newf(codes.FailedPrecondition, "cannot divide by zero")
+			}
+			{{end}}
 
 			b.Append(l.Value(i) {{$op.Op}} r)
 
