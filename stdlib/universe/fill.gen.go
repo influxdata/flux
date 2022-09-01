@@ -210,7 +210,7 @@ func (t *fillTransformation) fillTimeColumn(arr *array.Int, fillValue *interface
 		}
 	}
 	if t.spec.UsePrevious && !fillValueNull {
-		*fillValue = fillValueTime
+		*fillValue = values.Time(fillValueTime)
 	}
 	return b.NewArray()
 }
