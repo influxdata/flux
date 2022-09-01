@@ -143,13 +143,12 @@ func (t *unpivotTransformation) Process(chunk table.Chunk, d *execute.TransportD
 
 		groupKey := chunk.Key()
 		columns := groupKey.Cols()
+
 		if timeColumn != -1 {
 			columns = append(columns, flux.ColMeta{Label: execute.DefaultTimeColLabel, Type: flux.TTime})
 		}
 
-		for _, ungroupedTagCol := range ungroupedTagCols {
-			columns = append(columns, ungroupedTagCol)
-		}
+		columns = append(columns, ungroupedTagCols...)
 		columns = append(columns,
 			flux.ColMeta{Label: "_field", Type: flux.TString},
 			flux.ColMeta{Label: execute.DefaultValueColLabel, Type: c.Type},
@@ -167,7 +166,7 @@ func (t *unpivotTransformation) Process(chunk table.Chunk, d *execute.TransportD
 		}
 
 		// Copy group key columns
-		for toColumn, _ := range groupKey.Cols() {
+		for toColumn := range groupKey.Cols() {
 			fromColumn := execute.ColIdx(c.Label, chunk.Cols())
 
 			oldValues := chunk.Values(fromColumn)
