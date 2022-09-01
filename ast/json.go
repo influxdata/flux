@@ -990,6 +990,17 @@ func (l *StringLiteral) MarshalJSON() ([]byte, error) {
 	}
 	return json.Marshal(raw)
 }
+func (l *LabelLiteral) MarshalJSON() ([]byte, error) {
+	type Alias LabelLiteral
+	raw := struct {
+		Type string `json:"type"`
+		*Alias
+	}{
+		Type:  l.Type(),
+		Alias: (*Alias)(l),
+	}
+	return json.Marshal(raw)
+}
 func (l *BooleanLiteral) MarshalJSON() ([]byte, error) {
 	type Alias BooleanLiteral
 	raw := struct {
@@ -1685,6 +1696,8 @@ func unmarshalNode(msg json.RawMessage) (Node, error) {
 		node = new(ParenExpression)
 	case "StringLiteral":
 		node = new(StringLiteral)
+	case "LabelLiteral":
+		node = new(LabelLiteral)
 	case "BooleanLiteral":
 		node = new(BooleanLiteral)
 	case "FloatLiteral":

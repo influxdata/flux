@@ -30,6 +30,7 @@ var testFlags = map[string]interface{}{
 	// "aggregateTransformationTransport": true,
 	// "groupTransformationGroup":         true,
 	// "optimizeUnionTransformation": true,
+	"labelPolymorphism":         true,
 	"vectorizedMap":             true,
 	"vectorizedConst":           true,
 	"vectorizedConditionals":    true,

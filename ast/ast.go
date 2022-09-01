@@ -123,6 +123,7 @@ func (*IntegerLiteral) node()         {}
 func (*PipeLiteral) node()            {}
 func (*RegexpLiteral) node()          {}
 func (*StringLiteral) node()          {}
+func (*LabelLiteral) node()           {}
 func (*UnsignedIntegerLiteral) node() {}
 
 func (*NamedType) node()      {}
@@ -885,6 +886,7 @@ func (*PipeExpression) expression()         {}
 func (*PipeLiteral) expression()            {}
 func (*RegexpLiteral) expression()          {}
 func (*StringLiteral) expression()          {}
+func (*LabelLiteral) expression()           {}
 func (*UnaryExpression) expression()        {}
 func (*UnsignedIntegerLiteral) expression() {}
 
@@ -1576,6 +1578,30 @@ func (l *StringLiteral) Copy() Node {
 		return l
 	}
 	nl := new(StringLiteral)
+	*nl = *l
+	nl.BaseNode = l.BaseNode.Copy()
+	return nl
+}
+
+// LabelLiteral expressions begin and end with double quote marks.
+type LabelLiteral struct {
+	BaseNode
+	// Value is the unescaped value of the string literal
+	Value string `json:"value"`
+}
+
+// LabelLiterals are valid object keys
+func (l *LabelLiteral) Key() string {
+	return l.Value
+}
+
+func (*LabelLiteral) Type() string { return "LabelLiteral" }
+
+func (l *LabelLiteral) Copy() Node {
+	if l == nil {
+		return l
+	}
+	nl := new(LabelLiteral)
 	*nl = *l
 	nl.BaseNode = l.BaseNode.Copy()
 	return nl
