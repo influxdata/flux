@@ -69,6 +69,7 @@ import (
 	_ "github.com/influxdata/flux/stdlib/internal/influxql"
 	_ "github.com/influxdata/flux/stdlib/internal/location"
 	_ "github.com/influxdata/flux/stdlib/internal/promql"
+	_ "github.com/influxdata/flux/stdlib/internal/testing"
 	_ "github.com/influxdata/flux/stdlib/internal/testutil"
 	_ "github.com/influxdata/flux/stdlib/interpolate"
 	_ "github.com/influxdata/flux/stdlib/join"

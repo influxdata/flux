@@ -3,6 +3,7 @@ package experimental
 import (
 	"context"
 
+	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic"
@@ -30,10 +31,18 @@ func Catch() values.Function {
 				value, err := fn.Call(ctx, values.NewObject(semantic.NewObjectType(nil)))
 
 				if err == nil {
-					return values.Stringify(value)
+					return values.NewObjectWithValues(map[string]values.Value{
+						"value": value,
+						"code":  values.NewNull(semantic.BasicUint),
+						"msg":   values.NewNull(semantic.BasicString),
+					}), nil
 				}
 
-				return values.NewString(err.Error()), nil
+				return values.NewObjectWithValues(map[string]values.Value{
+					"value": values.Null,
+					"code":  values.NewUInt(uint64(flux.ErrorCode(err))),
+					"msg":   values.NewString(err.Error()),
+				}), nil
 			}, ctx, args)
 		}, false,
 	)

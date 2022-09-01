@@ -149,6 +149,7 @@ jobs:
           command: go generate ./libflux/go/libflux
       - run:
           name: Build flux
+          no_output_timeout: 20m
           command: go build ./...
 
   release:

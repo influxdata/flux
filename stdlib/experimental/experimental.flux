@@ -1339,7 +1339,7 @@ builtin unpivot : (
 //
 // ## Metadata
 // introduced: 0.174.0
-builtin catch : (fn: () => A) => string
+builtin catch : (fn: () => A) => {value: A, code: uint, msg: string}
 
 // diff takes two table streams as input and produces a diff.
 //

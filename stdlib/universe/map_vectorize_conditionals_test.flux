@@ -245,3 +245,108 @@ testcase vec_conditional_null_test_consequent_alternate {
 
     testing.diff(want: want, got: got)
 }
+
+testcase vec_nested_logical_conditional_repro {
+    // Using a logical expr in the test of the conditional expr produced a
+    // runtime error:
+    // ```
+    // cannot use test of type vector in conditional expression; expected boolean
+    // ```
+    expect.planner(rules: ["vectorizeMapRule": 1])
+
+    want = array.from(rows: [{a: 0, x: 1}])
+
+    got =
+        array.from(rows: [{a: 0}])
+            |> map(fn: (r) => ({r with x: if true and true then 1 else 0}))
+
+    testing.diff(want: want, got: got)
+}
+
+testcase vec_nested_logical_conditional_repro2 {
+    // Using a logical expr in the test of the conditional expr produced a
+    // runtime error:
+    // ```
+    // cannot use test of type vector in conditional expression; expected boolean
+    // ```
+    expect.planner(rules: ["vectorizeMapRule": 1])
+
+    want =
+        array.from(
+            rows: [
+                {
+                    Brake_Code_3: 1,
+                    Brake_Code_2: 0,
+                    Brake_Code_1: 1,
+                    BrakeEmergency: 1,
+                    brakeStep: 4.0,
+                },
+                {
+                    Brake_Code_3: 1,
+                    Brake_Code_2: 1,
+                    Brake_Code_1: 1,
+                    BrakeEmergency: 0,
+                    brakeStep: 0.0,
+                },
+                {
+                    Brake_Code_3: 1,
+                    Brake_Code_2: 0,
+                    Brake_Code_1: 1,
+                    BrakeEmergency: 0,
+                    brakeStep: 2.0,
+                },
+                {
+                    Brake_Code_3: 0,
+                    Brake_Code_2: 0,
+                    Brake_Code_1: 0,
+                    BrakeEmergency: 0,
+                    brakeStep: 3.0,
+                },
+                {
+                    Brake_Code_3: 1,
+                    Brake_Code_2: 1,
+                    Brake_Code_1: 0,
+                    BrakeEmergency: 0,
+                    brakeStep: 1.0,
+                },
+            ],
+        )
+
+    got =
+        array.from(
+            rows: [
+                {Brake_Code_3: 1, Brake_Code_2: 0, Brake_Code_1: 1, BrakeEmergency: 1},
+                {Brake_Code_3: 1, Brake_Code_2: 1, Brake_Code_1: 1, BrakeEmergency: 0},
+                {Brake_Code_3: 1, Brake_Code_2: 0, Brake_Code_1: 1, BrakeEmergency: 0},
+                {Brake_Code_3: 0, Brake_Code_2: 0, Brake_Code_1: 0, BrakeEmergency: 0},
+                {Brake_Code_3: 1, Brake_Code_2: 1, Brake_Code_1: 0, BrakeEmergency: 0},
+            ],
+        )
+            |> map(
+                fn: (r) =>
+                    ({r with brakeStep:
+                            if r.BrakeEmergency == 1 then
+                                4.0
+                            else if r.Brake_Code_3 == 1 and r.Brake_Code_2 == 1 and r.Brake_Code_1
+                                    ==
+                                    1 then
+                                0.0
+                            else if r.Brake_Code_3 == 1 and r.Brake_Code_2 == 1 and r.Brake_Code_1
+                                    ==
+                                    0 then
+                                1.0
+                            else if r.Brake_Code_3 == 1 and r.Brake_Code_2 == 0 and r.Brake_Code_1
+                                    ==
+                                    1 then
+                                2.0
+                            else if r.Brake_Code_3 == 0 and r.Brake_Code_2 == 0 and r.Brake_Code_1
+                                    ==
+                                    0 then
+                                3.0
+                            else
+                                0.0,
+                    }),
+            )
+
+    testing.diff(want: want, got: got)
+}

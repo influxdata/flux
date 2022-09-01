@@ -1,0 +1,29 @@
+[package]
+name = "flux_rustyline"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[lib]
+name = "caller"
+
+[[bin]]
+name = "repl"
+path = "src/main.rs"
+
+[dependencies]
+rustyline = "9.1.2"
+base64 = "0.13.0"
+tower-lsp = "0.17.0"
+lsp-types = "=0.91.1"
+serde_json = "1.0"
+scoped_threadpool = "0.1.9"
+rustyline-derive = "0.6.0"
+unicode-width = "0.1.9"
+regex = "1"
+log = "0.4.17"
+pretty_env_logger = "0.4.0"
+once_cell = "1.13.1"
+anyhow = "1.0.61"
+thiserror = "1.0.32"

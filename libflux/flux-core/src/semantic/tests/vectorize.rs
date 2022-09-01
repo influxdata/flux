@@ -467,3 +467,18 @@ fn vectorize_with_unary_exists() -> anyhow::Result<()> {
     )?);
     Ok(())
 }
+
+#[test]
+fn vectorize_with_conditional_nested_logical() -> anyhow::Result<()> {
+    let pkg = vectorize(r#"(r) => ({x: if r.a and r.b then r.x else r.y})"#).unwrap();
+
+    let function = get_vectorized_function(&pkg);
+
+    expect_test::expect![[r##"
+        (r) => {
+            return {x: (if r:{#O with a: v[bool], b: v[bool], x: v[#K], y: v[#K]}.a:v[bool] and:bool r:{#O with a: v[bool], b: v[bool], x: v[#K], y: v[#K]}.b:v[bool] then r:{#O with a: v[bool], b: v[bool], x: v[#K], y: v[#K]}.x:v[#K] else r:{#O with a: v[bool], b: v[bool], x: v[#K], y: v[#K]}.y:v[#K]):v[#G]}:{x: v[#G]}
+        }:(r: {#O with a: v[bool], b: v[bool], x: v[#K], y: v[#K]}) => {x: v[#G]}"##]].assert_eq(&crate::semantic::formatter::format_node(
+        Node::FunctionExpr(function),
+    )?);
+    Ok(())
+}

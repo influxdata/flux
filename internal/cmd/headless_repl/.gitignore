@@ -1,0 +1,7 @@
+*.flux
+real_lsp_log
+lsp
+bin
+main
+../../../go.mod
+../../../go.sum
