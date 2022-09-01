@@ -335,7 +335,7 @@ type logicalVectorEvaluator struct {
 }
 
 func (e *logicalVectorEvaluator) Type() semantic.MonoType {
-	return semantic.BasicBool
+	return semantic.NewVectorType(semantic.BasicBool)
 }
 
 func (e *logicalVectorEvaluator) Eval(ctx context.Context, scope Scope) (values.Value, error) {
