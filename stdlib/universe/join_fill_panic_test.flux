@@ -8,7 +8,12 @@ import "join"
 
 testcase fill_time_previous {
     left =
-        array.from(rows: [{_time: 2022-01-01T00:00:00Z, _value: 2}, {_time: 2022-01-01T00:00:15Z, _value: 1}])
+        array.from(
+            rows: [
+                {_time: 2022-01-01T00:00:00Z, _value: 2},
+                {_time: 2022-01-01T00:00:15Z, _value: 1},
+            ],
+        )
             |> map(fn: (r) => ({r with myStart: r._time}))
 
     right = array.from(rows: [{_time: 2022-01-01T00:00:30Z, _value: 0}])
