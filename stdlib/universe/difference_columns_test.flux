@@ -43,11 +43,9 @@ outData =
 ,,1,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,2018-05-22T19:54:16Z,34.982252364543626,f,m2,22,42
 "
 
-// Passes in flux, fails in C2 and OSS
 testcase difference_columns {
     got =
         csv.from(csv: inData)
-            |> testing.load()
             |> range(start: 2018-05-22T19:53:26Z)
             |> difference(columns: ["x", "y"])
     want = csv.from(csv: outData)
