@@ -12,7 +12,7 @@ package array
 // records must have the same keys and data types.
 //
 // ## Parameters
-// - rows: Array of records to construct a table with.
+// - rows: Array of records to construct a table with. Default is the piped-forward array (`<-`).
 //
 // ## Examples
 //
@@ -45,7 +45,7 @@ package array
 //
 // ## Metadata
 // tags: inputs
-builtin from : (rows: [A]) => stream[A] where A: Record
+builtin from : (<-rows: [A]) => stream[A] where A: Record
 
 // concat appends two arrays and returns a new array.
 //
