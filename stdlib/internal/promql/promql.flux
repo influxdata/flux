@@ -21,7 +21,7 @@ import "experimental"
 //
 // ## Examples
 //
-// ### Return the number of times values in a series change
+// ### Return the number of times that values in a series change
 // ```
 // import "internal/promql"
 // import "sampledata"
