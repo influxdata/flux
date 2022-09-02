@@ -48,6 +48,8 @@ type Array interface {
 	// NOTE: IsValid will panic if NullBitmapBytes is not empty and 0 > i ≥ Len.
 	IsValid(i int) bool
 
+	Data() arrow.ArrayData
+
 	// Len returns the number of elements in the array.
 	Len() int
 
@@ -144,6 +146,12 @@ func (a *String) IsValid(i int) bool {
 		return a.data.IsValid(i)
 	}
 	return true
+}
+func (a *String) Data() arrow.ArrayData {
+	if a.data != nil {
+		return a.data.Data()
+	}
+	return nil
 }
 func (a *String) Len() int {
 	if a.data != nil {

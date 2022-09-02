@@ -94,10 +94,6 @@ func (t *unpivotTransformation) Process(chunk table.Chunk, d *execute.TransportD
 		}
 	}
 
-	if timeColumn == -1 || chunk.Cols()[timeColumn].Type != flux.TTime {
-		return errors.Newf(codes.Internal, "Expected a `_time` column in the input")
-	}
-
 	for i, c := range chunk.Cols() {
 		if chunk.Key().HasCol(c.Label) || c.Label == execute.DefaultTimeColLabel {
 			continue
@@ -110,9 +106,11 @@ func (t *unpivotTransformation) Process(chunk table.Chunk, d *execute.TransportD
 
 		groupKey := chunk.Key()
 		columns := groupKey.Cols()
+		if timeColumn != -1 {
+			columns = append(columns, flux.ColMeta{Label: execute.DefaultTimeColLabel, Type: flux.TTime})
+		}
 		columns = append(columns,
 			flux.ColMeta{Label: "_field", Type: flux.TString},
-			flux.ColMeta{Label: execute.DefaultTimeColLabel, Type: flux.TTime},
 			flux.ColMeta{Label: execute.DefaultValueColLabel, Type: c.Type},
 		)
 
@@ -150,12 +148,17 @@ func (t *unpivotTransformation) Process(chunk table.Chunk, d *execute.TransportD
 			buffer.Values[toColumn] = values
 		}
 
-		buffer.Values[len(buffer.Values)-3] = array.StringRepeat(c.Label, newChunkLen, mem)
+		oldValues := chunk.Values(i)
 
-		times := array.CopyValidValues(mem, chunk.Values(timeColumn))
-		buffer.Values[len(buffer.Values)-2] = times
+		if timeColumn != -1 {
+			// The time array does not contain any nulls so we use the value array for that information
+			times := array.CopyValidValues(mem, chunk.Values(timeColumn), oldValues)
+			buffer.Values[len(buffer.Values)-3] = times
+		}
 
-		values := array.CopyValidValues(mem, chunk.Values(i))
+		buffer.Values[len(buffer.Values)-2] = array.StringRepeat(c.Label, newChunkLen, mem)
+
+		values := array.CopyValidValues(mem, oldValues, oldValues)
 		buffer.Values[len(buffer.Values)-1] = values
 
 		out := table.ChunkFromBuffer(buffer)

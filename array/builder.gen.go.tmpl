@@ -64,20 +64,30 @@ func (b *{{.Name}}Builder) NewArray() Array {
 func (b *{{.Name}}Builder) New{{.Name}}Array() *{{.Name}} {
     return b.b.New{{.ArrowType}}Array()
 }
-func (b *{{.Name}}Builder) CopyValidValues(values *{{.Name}}) {
-    b.Reserve(values.Len() - values.NullN())
-    for i := 0; i < values.Len(); i++ {
-        if values.IsValid(i) {
-            b.Append(values.Value(i))
-        }
+func (b *{{.Name}}Builder) CopyValidValues(values *{{.Name}}, nullCheckArray Array) {
+    if values.Len() != nullCheckArray.Len() {
+        panic("Length mismatch between the value array and the null check array")
     }
+    b.Reserve(values.Len() - nullCheckArray.NullN())
+
+	nullBitMapBytes := nullCheckArray.NullBitmapBytes()
+	nullOffset := nullCheckArray.Data().Offset()
+	for i := 0; i < values.Len(); i++ {
+		if isValid(nullBitMapBytes, nullOffset, i) {
+            if values.IsValid(i) {
+			    b.Append(values.Value(i))
+            } else {
+			    b.AppendNull()
+            }
+		}
+	}
 }
 {{end}}{{end}}
 
-// Copies all valid (non-null) values from `values`.
+// Copies all valid (non-null) values from `values` using the bitmap of nullCheckArray.
 // If the entire array is valid a new reference to `values` is returned (as an optimization)
-func CopyValidValues(mem memory.Allocator, values Array) Array {
-    if values.NullN() == 0 {
+func CopyValidValues(mem memory.Allocator, values Array, nullCheckArray Array) Array {
+    if nullCheckArray.NullN() == 0 {
         values.Retain()
         return values
     }
@@ -86,7 +96,7 @@ func CopyValidValues(mem memory.Allocator, values Array) Array {
 {{range .}}
 	case *{{.Name}}:
         b := New{{.Name}}Builder(mem)
-        b.CopyValidValues(values)
+        b.CopyValidValues(values, nullCheckArray)
         return b.NewArray()
 {{end}}
         default:

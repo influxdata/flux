@@ -2,6 +2,7 @@ package array
 
 import (
 	"github.com/apache/arrow/go/v7/arrow/array"
+	"github.com/apache/arrow/go/v7/arrow/bitutil"
 	"github.com/apache/arrow/go/v7/arrow/memory"
 )
 
@@ -155,11 +156,22 @@ func (b *StringBuilder) NewStringArray() *String {
 	b.reset()
 	return arr
 }
-func (b *StringBuilder) CopyValidValues(values *String) {
-	b.Reserve(values.Len() - values.NullN())
+func (b *StringBuilder) CopyValidValues(values *String, nullCheckArray Array) {
+	if values.Len() != nullCheckArray.Len() {
+		panic("Length mismatch between the value array and the null check array")
+	}
+	b.Reserve(values.Len() - nullCheckArray.NullN())
+
+	nullBitMapBytes := nullCheckArray.NullBitmapBytes()
+	nullOffset := nullCheckArray.Data().Offset()
 	for i := 0; i < values.Len(); i++ {
-		if values.IsValid(i) {
+		if isValid(nullBitMapBytes, nullOffset, i) {
 			b.Append(values.Value(i))
 		}
 	}
+}
+
+// Copy of Array.IsValid from arrow, allowing the IsValid check to be done without going through an interface
+func isValid(nullBitmapBytes []byte, offset int, i int) bool {
+	return len(nullBitmapBytes) == 0 || bitutil.BitIsSet(nullBitmapBytes, offset+i)
 }

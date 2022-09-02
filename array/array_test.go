@@ -346,9 +346,10 @@ func TestSlice(t *testing.T) {
 
 func TestCopyValid(t *testing.T) {
 	for _, tc := range []struct {
-		name  string
-		input func(memory.Allocator) *array.Int
-		want  []int64
+		name       string
+		input      func(memory.Allocator) *array.Int
+		nullBitmap func(memory.Allocator) *array.Int
+		want       []interface{}
 	}{
 		{
 			name: "nulls",
@@ -362,7 +363,55 @@ func TestCopyValid(t *testing.T) {
 				b.AppendNull()
 				return b.NewIntArray()
 			},
-			want: []int64{2, 3, 5},
+			want: []interface{}{int64(2), int64(3), int64(5)},
+		},
+		{
+			name: "nulls with nullBitmap",
+			input: func(mem memory.Allocator) *array.Int {
+				b := array.NewIntBuilder(mem)
+				b.AppendNull()
+				b.Append(2)
+				b.Append(3)
+				b.AppendNull()
+				b.Append(5)
+				b.AppendNull()
+				return b.NewIntArray()
+			},
+			nullBitmap: func(mem memory.Allocator) *array.Int {
+				b := array.NewIntBuilder(mem)
+				b.Append(1)
+				b.AppendNull()
+				b.Append(3)
+				b.AppendNull()
+				b.AppendNull()
+				b.Append(6)
+				return b.NewIntArray()
+			},
+			want: []interface{}{nil, int64(3), nil},
+		},
+		{
+			name: "all nulls in nullBitmap",
+			input: func(mem memory.Allocator) *array.Int {
+				b := array.NewIntBuilder(mem)
+				b.AppendNull()
+				b.Append(2)
+				b.Append(3)
+				b.AppendNull()
+				b.Append(5)
+				b.AppendNull()
+				return b.NewIntArray()
+			},
+			nullBitmap: func(mem memory.Allocator) *array.Int {
+				b := array.NewIntBuilder(mem)
+				b.AppendNull()
+				b.AppendNull()
+				b.AppendNull()
+				b.AppendNull()
+				b.AppendNull()
+				b.AppendNull()
+				return b.NewIntArray()
+			},
+			want: []interface{}{},
 		},
 		{
 			name: "no nulls",
@@ -374,7 +423,7 @@ func TestCopyValid(t *testing.T) {
 				b.Append(4)
 				return b.NewIntArray()
 			},
-			want: []int64{1, 2, 3, 4},
+			want: []interface{}{int64(1), int64(2), int64(3), int64(4)},
 		},
 		{
 			name: "empty",
@@ -382,7 +431,7 @@ func TestCopyValid(t *testing.T) {
 				b := array.NewIntBuilder(mem)
 				return b.NewIntArray()
 			},
-			want: nil,
+			want: []interface{}{},
 		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
@@ -390,11 +439,17 @@ func TestCopyValid(t *testing.T) {
 			defer mem.AssertSize(t, 0)
 
 			input := tc.input(mem)
+			nullBitmap := input
+			if tc.nullBitmap != nil {
+				nullBitmap = tc.nullBitmap(mem)
+				defer nullBitmap.Release()
+			}
 
-			got := array.CopyValidValues(mem, input).(*array.Int)
+			got := array.CopyValidValues(mem, input, nullBitmap).(*array.Int)
 
 			want := tc.want
-			if diff := cmp.Diff(want, got.Int64Values()); diff != "" {
+
+			if diff := cmp.Diff(want, arrayToInterfaceSlice(got)); diff != "" {
 				t.Errorf("unexpected value -want/+got:\n%v", diff)
 			}
 
@@ -402,6 +457,18 @@ func TestCopyValid(t *testing.T) {
 			got.Release()
 		})
 	}
+}
+
+func arrayToInterfaceSlice(array *array.Int) []interface{} {
+	out := []interface{}{}
+	for i := 0; i < array.Len(); i++ {
+		if array.IsValid(i) {
+			out = append(out, array.Value(i))
+		} else {
+			out = append(out, nil)
+		}
+	}
+	return out
 }
 
 func getValue(arr array.Array, i int) interface{} {

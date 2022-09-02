@@ -71,11 +71,21 @@ func (b *IntBuilder) NewArray() Array {
 func (b *IntBuilder) NewIntArray() *Int {
 	return b.b.NewInt64Array()
 }
-func (b *IntBuilder) CopyValidValues(values *Int) {
-	b.Reserve(values.Len() - values.NullN())
+func (b *IntBuilder) CopyValidValues(values *Int, nullCheckArray Array) {
+	if values.Len() != nullCheckArray.Len() {
+		panic("Length mismatch between the value array and the null check array")
+	}
+	b.Reserve(values.Len() - nullCheckArray.NullN())
+
+	nullBitMapBytes := nullCheckArray.NullBitmapBytes()
+	nullOffset := nullCheckArray.Data().Offset()
 	for i := 0; i < values.Len(); i++ {
-		if values.IsValid(i) {
-			b.Append(values.Value(i))
+		if isValid(nullBitMapBytes, nullOffset, i) {
+			if values.IsValid(i) {
+				b.Append(values.Value(i))
+			} else {
+				b.AppendNull()
+			}
 		}
 	}
 }
@@ -131,11 +141,21 @@ func (b *UintBuilder) NewArray() Array {
 func (b *UintBuilder) NewUintArray() *Uint {
 	return b.b.NewUint64Array()
 }
-func (b *UintBuilder) CopyValidValues(values *Uint) {
-	b.Reserve(values.Len() - values.NullN())
+func (b *UintBuilder) CopyValidValues(values *Uint, nullCheckArray Array) {
+	if values.Len() != nullCheckArray.Len() {
+		panic("Length mismatch between the value array and the null check array")
+	}
+	b.Reserve(values.Len() - nullCheckArray.NullN())
+
+	nullBitMapBytes := nullCheckArray.NullBitmapBytes()
+	nullOffset := nullCheckArray.Data().Offset()
 	for i := 0; i < values.Len(); i++ {
-		if values.IsValid(i) {
-			b.Append(values.Value(i))
+		if isValid(nullBitMapBytes, nullOffset, i) {
+			if values.IsValid(i) {
+				b.Append(values.Value(i))
+			} else {
+				b.AppendNull()
+			}
 		}
 	}
 }
@@ -191,11 +211,21 @@ func (b *FloatBuilder) NewArray() Array {
 func (b *FloatBuilder) NewFloatArray() *Float {
 	return b.b.NewFloat64Array()
 }
-func (b *FloatBuilder) CopyValidValues(values *Float) {
-	b.Reserve(values.Len() - values.NullN())
+func (b *FloatBuilder) CopyValidValues(values *Float, nullCheckArray Array) {
+	if values.Len() != nullCheckArray.Len() {
+		panic("Length mismatch between the value array and the null check array")
+	}
+	b.Reserve(values.Len() - nullCheckArray.NullN())
+
+	nullBitMapBytes := nullCheckArray.NullBitmapBytes()
+	nullOffset := nullCheckArray.Data().Offset()
 	for i := 0; i < values.Len(); i++ {
-		if values.IsValid(i) {
-			b.Append(values.Value(i))
+		if isValid(nullBitMapBytes, nullOffset, i) {
+			if values.IsValid(i) {
+				b.Append(values.Value(i))
+			} else {
+				b.AppendNull()
+			}
 		}
 	}
 }
@@ -251,19 +281,29 @@ func (b *BooleanBuilder) NewArray() Array {
 func (b *BooleanBuilder) NewBooleanArray() *Boolean {
 	return b.b.NewBooleanArray()
 }
-func (b *BooleanBuilder) CopyValidValues(values *Boolean) {
-	b.Reserve(values.Len() - values.NullN())
+func (b *BooleanBuilder) CopyValidValues(values *Boolean, nullCheckArray Array) {
+	if values.Len() != nullCheckArray.Len() {
+		panic("Length mismatch between the value array and the null check array")
+	}
+	b.Reserve(values.Len() - nullCheckArray.NullN())
+
+	nullBitMapBytes := nullCheckArray.NullBitmapBytes()
+	nullOffset := nullCheckArray.Data().Offset()
 	for i := 0; i < values.Len(); i++ {
-		if values.IsValid(i) {
-			b.Append(values.Value(i))
+		if isValid(nullBitMapBytes, nullOffset, i) {
+			if values.IsValid(i) {
+				b.Append(values.Value(i))
+			} else {
+				b.AppendNull()
+			}
 		}
 	}
 }
 
-// Copies all valid (non-null) values from `values`.
+// Copies all valid (non-null) values from `values` using the bitmap of nullCheckArray.
 // If the entire array is valid a new reference to `values` is returned (as an optimization)
-func CopyValidValues(mem memory.Allocator, values Array) Array {
-	if values.NullN() == 0 {
+func CopyValidValues(mem memory.Allocator, values Array, nullCheckArray Array) Array {
+	if nullCheckArray.NullN() == 0 {
 		values.Retain()
 		return values
 	}
@@ -272,27 +312,27 @@ func CopyValidValues(mem memory.Allocator, values Array) Array {
 
 	case *Int:
 		b := NewIntBuilder(mem)
-		b.CopyValidValues(values)
+		b.CopyValidValues(values, nullCheckArray)
 		return b.NewArray()
 
 	case *Uint:
 		b := NewUintBuilder(mem)
-		b.CopyValidValues(values)
+		b.CopyValidValues(values, nullCheckArray)
 		return b.NewArray()
 
 	case *Float:
 		b := NewFloatBuilder(mem)
-		b.CopyValidValues(values)
+		b.CopyValidValues(values, nullCheckArray)
 		return b.NewArray()
 
 	case *String:
 		b := NewStringBuilder(mem)
-		b.CopyValidValues(values)
+		b.CopyValidValues(values, nullCheckArray)
 		return b.NewArray()
 
 	case *Boolean:
 		b := NewBooleanBuilder(mem)
-		b.CopyValidValues(values)
+		b.CopyValidValues(values, nullCheckArray)
 		return b.NewArray()
 
 	default:
