@@ -81,7 +81,11 @@ func (b *IntBuilder) CopyValidValues(values *Int, nullCheckArray Array) {
 	nullOffset := nullCheckArray.Data().Offset()
 	for i := 0; i < values.Len(); i++ {
 		if isValid(nullBitMapBytes, nullOffset, i) {
-			b.Append(values.Value(i))
+			if values.IsValid(i) {
+				b.Append(values.Value(i))
+			} else {
+				b.AppendNull()
+			}
 		}
 	}
 }
@@ -147,7 +151,11 @@ func (b *UintBuilder) CopyValidValues(values *Uint, nullCheckArray Array) {
 	nullOffset := nullCheckArray.Data().Offset()
 	for i := 0; i < values.Len(); i++ {
 		if isValid(nullBitMapBytes, nullOffset, i) {
-			b.Append(values.Value(i))
+			if values.IsValid(i) {
+				b.Append(values.Value(i))
+			} else {
+				b.AppendNull()
+			}
 		}
 	}
 }
@@ -213,7 +221,11 @@ func (b *FloatBuilder) CopyValidValues(values *Float, nullCheckArray Array) {
 	nullOffset := nullCheckArray.Data().Offset()
 	for i := 0; i < values.Len(); i++ {
 		if isValid(nullBitMapBytes, nullOffset, i) {
-			b.Append(values.Value(i))
+			if values.IsValid(i) {
+				b.Append(values.Value(i))
+			} else {
+				b.AppendNull()
+			}
 		}
 	}
 }
@@ -279,7 +291,11 @@ func (b *BooleanBuilder) CopyValidValues(values *Boolean, nullCheckArray Array) 
 	nullOffset := nullCheckArray.Data().Offset()
 	for i := 0; i < values.Len(); i++ {
 		if isValid(nullBitMapBytes, nullOffset, i) {
-			b.Append(values.Value(i))
+			if values.IsValid(i) {
+				b.Append(values.Value(i))
+			} else {
+				b.AppendNull()
+			}
 		}
 	}
 }

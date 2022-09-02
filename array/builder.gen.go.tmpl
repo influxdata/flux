@@ -74,7 +74,11 @@ func (b *{{.Name}}Builder) CopyValidValues(values *{{.Name}}, nullCheckArray Arr
 	nullOffset := nullCheckArray.Data().Offset()
 	for i := 0; i < values.Len(); i++ {
 		if isValid(nullBitMapBytes, nullOffset, i) {
-			b.Append(values.Value(i))
+            if values.IsValid(i) {
+			    b.Append(values.Value(i))
+            } else {
+			    b.AppendNull()
+            }
 		}
 	}
 }
