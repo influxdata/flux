@@ -27,7 +27,23 @@ package polyline
 //
 // ## Examples
 //
-// ### Downsample the data using the epsilon value 1.5
+// ### Downsample data using the RDP algorithm
+//
+// When using `polyline.rdp()`, leave both `epsilon` and `retention` unspecified
+// to automatically calculate the maximum tolerance for producing a visually
+// indistinguishable curve.
+//
+// ```
+// # import "internal/gen"
+// import "experimental/polyline"
+//
+// # data = gen.tables(n: 16, seed: 1234)
+// #
+// < data
+// >     |> polyline.rdp()
+// ```
+//
+// ### Downsample data using the RDP algorithm with an epsilon of 1.5
 // ```
 // # import "internal/gen"
 // import "experimental/polyline"
@@ -38,7 +54,7 @@ package polyline
 // >     |> polyline.rdp(epsilon: 1.5)
 // ```
 //
-// ### Downsample the data using a retention rate of 90%
+// ### Downsample data using the RDP algorithm with a retention rate of 90%
 // ```
 // # import "internal/gen"
 // import "experimental/polyline"
@@ -47,17 +63,6 @@ package polyline
 // #
 // < data
 // >     |> polyline.rdp(retention: 90.0)
-// ```
-//
-// ### Downsample the data by automatically calculating the maximum tolerance beyond which producing a visually indistingushable curve will not be possible. This can be used when both epsilon and the retention rate are tricky to be judged.
-// ```
-// # import "internal/gen"
-// import "experimental/polyline"
-//
-// # data = gen.tables(n: 16, seed: 1234)
-// #
-// < data
-// >     |> polyline.rdp()
 // ```
 //
 // ## Metadata

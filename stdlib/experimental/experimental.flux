@@ -18,6 +18,8 @@ import "date"
 
 // addDuration adds a duration to a time value and returns the resulting time value.
 //
+// **Deprecated**: `experimental.addDuration()` is deprecated in favor of [`date.add()`](https://docs.influxdata.com/flux/v0.x/stdlib/date/add/).
+//
 // ## Parameters
 // - d: Duration to add.
 // - to: Time to add the duration to.
@@ -75,6 +77,8 @@ import "date"
 addDuration = (d, to, location=location) => date.add(d, to, location)
 
 // subDuration subtracts a duration from a time value and returns the resulting time value.
+//
+// **Deprecated**: `experimental.subDuration()` is deprecated in favor of [`date.sub()`](https://docs.influxdata.com/flux/v0.x/stdlib/date/sub/).
 //
 // ## Parameters
 // - from: Time to subtract the duration from.
@@ -486,7 +490,7 @@ builtin chain : (first: stream[A], second: stream[B]) => stream[B] where A: Reco
 //
 // ## Metadata
 // introduced: 0.66.0
-// tags: transformations,data/time
+// tags: transformations, date/time
 //
 alignTime = (tables=<-, alignTo=time(v: 0)) =>
     tables

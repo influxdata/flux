@@ -37,6 +37,15 @@ package date
 //
 // // Returns 28
 // ```
+//
+// ### Return the current second
+//
+// ```no_run
+// import "date"
+//
+// date.second(t: now())
+// ```
+//
 builtin second : (t: T) => int where T: Timeable
 
 // builtin _time used by time
@@ -119,6 +128,15 @@ builtin _minute : (t: T, location: {zone: string, offset: duration}) => int wher
 //
 // // Returns 6
 // ```
+//
+// ### Return the current minute
+//
+// ```no_run
+// import "date"
+//
+// date.minute(t: now())
+// ```
+//
 minute = (t, location=location) => _minute(t, location)
 
 // builtin _hour used by hour
@@ -158,6 +176,15 @@ builtin _hour : (t: T, location: {zone: string, offset: duration}) => int where 
 //
 // // Returns 7
 // ```
+//
+// ### Return the current hour
+//
+// ```no_run
+// import "date"
+//
+// date.hour(t: now())
+// ```
+//
 hour = (t, location=location) => _hour(t, location)
 
 // builtin _weekDay used by weekDay
@@ -198,6 +225,15 @@ builtin _weekDay : (t: T, location: {zone: string, offset: duration}) => int whe
 //
 // // Returns 6
 // ```
+//
+// ### Return the current day of the week
+//
+// ```no_run
+// import "date"
+//
+// date.weekDay(t: now())
+// ```
+//
 weekDay = (t, location=location) => _weekDay(t, location)
 
 // builtin _monthDay used by monthDay
@@ -238,6 +274,15 @@ builtin _monthDay : (t: T, location: {zone: string, offset: duration}) => int wh
 //
 // // Returns 25
 // ```
+//
+// ### Return the current day of the month
+//
+// ```no_run
+// import "date"
+//
+// date.monthDay(t: now())
+// ```
+//
 monthDay = (t, location=location) => _monthDay(t, location)
 
 // builtin _yearDay used by yearDay
@@ -278,6 +323,15 @@ builtin _yearDay : (t: T, location: {zone: string, offset: duration}) => int whe
 //
 // // Returns 276
 // ```
+//
+// ### Return the current day of the year
+//
+// ```no_run
+// import "date"
+//
+// date.yearDay(t: now())
+// ```
+//
 yearDay = (t, location=location) => _yearDay(t, location)
 
 // builtin _month used by month
@@ -317,6 +371,15 @@ builtin _month : (t: T, location: {zone: string, offset: duration}) => int where
 //
 // // Returns 8
 // ```
+//
+// ### Return the current numeric month
+//
+// ```no_run
+// import "date"
+//
+// date.month(t: now())
+// ```
+//
 month = (t, location=location) => _month(t, location)
 
 // builtin _year used by year
@@ -356,6 +419,15 @@ builtin _year : (t: T, location: {zone: string, offset: duration}) => int where 
 //
 // // Returns 2007
 // ```
+//
+// ### Return the current year
+//
+// ```no_run
+// import "date"
+//
+// date.year(t: now())
+// ```
+//
 year = (t, location=location) => _year(t, location)
 
 // builtin _week used by week
@@ -396,6 +468,15 @@ builtin _week : (t: T, location: {zone: string, offset: duration}) => int where 
 //
 // // Returns 42
 // ```
+//
+// ### Return the current week of the year
+//
+// ```no_run
+// import "date"
+//
+// date.week(t: now())
+// ```
+//
 week = (t, location=location) => _week(t, location)
 
 // builtin _quarter used by quarter
@@ -435,6 +516,15 @@ builtin _quarter : (t: T, location: {zone: string, offset: duration}) => int whe
 //
 // // Returns 2
 // ```
+//
+// ### Return the current quarter
+//
+// ```no_run
+// import "date"
+//
+// date.quarter(t: now())
+// ```
+//
 quarter = (t, location=location) => _quarter(t, location)
 
 // millisecond returns the milliseconds for a specified time.
@@ -469,6 +559,15 @@ quarter = (t, location=location) => _quarter(t, location)
 //
 // // Returns 127
 // ```
+//
+// ### Return the current millisecond unit
+//
+// ```no_run
+// import "date"
+//
+// date.millisecond(t: now())
+// ```
+//
 builtin millisecond : (t: T) => int where T: Timeable
 
 // microsecond returns the microseconds for a specified time.
@@ -503,6 +602,15 @@ builtin millisecond : (t: T) => int where T: Timeable
 //
 // // Returns 322661
 // ```
+//
+// ### Return the current microsecond unit
+//
+// ```no_run
+// import "date"
+//
+// date.microsecond(t: now())
+// ```
+//
 builtin microsecond : (t: T) => int where T: Timeable
 
 // nanosecond returns the nanoseconds for a specified time.
@@ -537,6 +645,15 @@ builtin microsecond : (t: T) => int where T: Timeable
 //
 // // Returns 128412016
 // ```
+//
+// ### Return the current nanosecond unit
+//
+// ```no_run
+// import "date"
+//
+// date.nanosecond(t: now())
+// ```
+//
 builtin nanosecond : (t: T) => int where T: Timeable
 
 // builtin _add used by add
@@ -597,6 +714,7 @@ builtin _add : (d: duration, to: T, location: {zone: string, offset: duration}) 
 //
 // ## Metadata
 // tags: date/time
+// introduced: 0.162.0
 //
 add = (d, to, location=location) => _add(d, to, location)
 
@@ -659,6 +777,7 @@ builtin _sub : (from: T, d: duration, location: {zone: string, offset: duration}
 //
 // ## Metadata
 // tags: date/time
+// introduced: 0.162.0
 //
 sub = (d, from, location=location) => _sub(d, from, location)
 
@@ -728,6 +847,25 @@ builtin _truncate : (t: T, unit: duration, location: {zone: string, offset: dura
 // date.truncate(t: -1h, unit: 1h)
 // // Returns 2019-12-31T23:00:00.000000000Z
 // ```
+//
+// ### Query data from this year
+//
+// ```no_run
+// import "date"
+//
+// from(bucket: "example-bucket")
+//     |> range(start: date.truncate(t: now(), unit: 1y))
+// ```
+//
+// ### Query data from this calendar month
+//
+// ```no_run
+// import "date"
+//
+// from(bucket: "example-bucket")
+//     |> range(start: date.truncate(t: now(), unit: 1mo))
+// ```
+//
 truncate = (t, unit, location=location) => _truncate(t, unit, location)
 
 // scale will multiply the duration by the given value.
