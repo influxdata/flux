@@ -598,6 +598,10 @@ func IntDiv(l, r *Int, mem memory.Allocator) (*Int, error) {
 	for i := 0; i < n; i++ {
 		if l.IsValid(i) && r.IsValid(i) {
 
+			if r.Value(i) == 0 {
+				return nil, errors.Newf(codes.FailedPrecondition, "cannot divide by zero")
+			}
+
 			b.Append(l.Value(i) / r.Value(i))
 
 		} else {
@@ -616,6 +620,10 @@ func IntDivLConst(l int64, r *Int, mem memory.Allocator) (*Int, error) {
 	for i := 0; i < n; i++ {
 		if r.IsValid(i) {
 
+			if r.Value(i) == 0 {
+				return nil, errors.Newf(codes.FailedPrecondition, "cannot divide by zero")
+			}
+
 			b.Append(l / r.Value(i))
 
 		} else {
@@ -633,6 +641,10 @@ func IntDivRConst(l *Int, r int64, mem memory.Allocator) (*Int, error) {
 	b.Resize(n)
 	for i := 0; i < n; i++ {
 		if l.IsValid(i) {
+
+			if r == 0 {
+				return nil, errors.Newf(codes.FailedPrecondition, "cannot divide by zero")
+			}
 
 			b.Append(l.Value(i) / r)
 
@@ -655,6 +667,10 @@ func UintDiv(l, r *Uint, mem memory.Allocator) (*Uint, error) {
 	for i := 0; i < n; i++ {
 		if l.IsValid(i) && r.IsValid(i) {
 
+			if r.Value(i) == 0 {
+				return nil, errors.Newf(codes.FailedPrecondition, "cannot divide by zero")
+			}
+
 			b.Append(l.Value(i) / r.Value(i))
 
 		} else {
@@ -673,6 +689,10 @@ func UintDivLConst(l uint64, r *Uint, mem memory.Allocator) (*Uint, error) {
 	for i := 0; i < n; i++ {
 		if r.IsValid(i) {
 
+			if r.Value(i) == 0 {
+				return nil, errors.Newf(codes.FailedPrecondition, "cannot divide by zero")
+			}
+
 			b.Append(l / r.Value(i))
 
 		} else {
@@ -690,6 +710,10 @@ func UintDivRConst(l *Uint, r uint64, mem memory.Allocator) (*Uint, error) {
 	b.Resize(n)
 	for i := 0; i < n; i++ {
 		if l.IsValid(i) {
+
+			if r == 0 {
+				return nil, errors.Newf(codes.FailedPrecondition, "cannot divide by zero")
+			}
 
 			b.Append(l.Value(i) / r)
 

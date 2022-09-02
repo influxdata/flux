@@ -4,6 +4,7 @@ package universe_test
 import "array"
 import "csv"
 import "testing"
+import "testing/expect"
 
 option now = () => 2030-01-01T00:00:00Z
 
@@ -501,6 +502,8 @@ testcase vectorize_addition_operator {
 }
 
 testcase vectorize_and_operator {
+    expect.planner(rules: ["vectorizeMapRule": 1])
+
     want = array.from(rows: [{a: true, b: false, c: false}])
 
     got =
@@ -511,6 +514,8 @@ testcase vectorize_and_operator {
 }
 
 testcase vectorize_or_operator {
+    expect.planner(rules: ["vectorizeMapRule": 1])
+
     want = array.from(rows: [{a: true, b: false, c: true}])
 
     got =
@@ -521,6 +526,8 @@ testcase vectorize_or_operator {
 }
 
 testcase vectorize_with_operator_overwrite_attribute {
+    expect.planner(rules: ["vectorizeMapRule": 1])
+
     got =
         array.from(rows: [{x: 1, y: "a"}])
             |> map(fn: (r) => ({r with x: r.x}))
@@ -529,4 +536,52 @@ testcase vectorize_with_operator_overwrite_attribute {
     want = array.from(rows: [{x: 1}])
 
     testing.diff(got, want)
+}
+
+testcase vectorize_div_by_zero_int {
+    expect.planner(rules: ["vectorizeMapRule": 1])
+
+    fn = () =>
+        array.from(rows: [{a: 1, b: 0}])
+            |> map(fn: (r) => ({r with x: r.a / r.b}))
+            |> tableFind(fn: (key) => true)
+            |> findRecord(fn: (key) => true, idx: 0)
+
+    testing.shouldError(fn: fn, want: /cannot divide by zero/)
+}
+
+testcase vectorize_div_by_zero_uint {
+    expect.planner(rules: ["vectorizeMapRule": 1])
+
+    fn = () =>
+        array.from(rows: [{a: uint(v: 1), b: uint(v: 0)}])
+            |> map(fn: (r) => ({r with x: r.a / r.b}))
+            |> tableFind(fn: (key) => true)
+            |> findRecord(fn: (key) => true, idx: 0)
+
+    testing.shouldError(fn: fn, want: /cannot divide by zero/)
+}
+
+testcase vectorize_div_by_zero_int_const {
+    expect.planner(rules: ["vectorizeMapRule": 1])
+
+    fn = () =>
+        array.from(rows: [{a: 1}])
+            |> map(fn: (r) => ({r with x: r.a / 0}))
+            |> tableFind(fn: (key) => true)
+            |> findRecord(fn: (key) => true, idx: 0)
+
+    testing.shouldError(fn: fn, want: /cannot divide by zero/)
+}
+
+testcase vectorize_div_by_zero_int_const_const {
+    expect.planner(rules: ["vectorizeMapRule": 1])
+
+    fn = () =>
+        array.from(rows: [{a: 1}])
+            |> map(fn: (r) => ({r with x: 1 / 0}))
+            |> tableFind(fn: (key) => true)
+            |> findRecord(fn: (key) => true, idx: 0)
+
+    testing.shouldError(fn: fn, want: /cannot divide by zero/)
 }
