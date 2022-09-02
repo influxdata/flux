@@ -62,7 +62,7 @@ require (
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 
-require github.com/apache/arrow/go/arrow v0.0.0-20211112161151-bc219186db40
+require github.com/apache/arrow/go/arrow v0.0.0-20211112161151-bc219186db40 // indirect
 
 require (
 	cloud.google.com/go/bigquery v1.8.0 // indirect
