@@ -361,13 +361,19 @@ func (d *diffSchema) appendRow(builders []array.Builder, which, i int) {
 	}
 
 	for j, idx := range idxs {
+		builder := builders[j]
 		if idx < 0 {
-			builders[j].AppendNull()
+			builder.AppendNull()
 			continue
 		}
 
 		arr := chunk.Values(idx)
-		switch b := builders[j].(type) {
+		if arr.IsNull(i) {
+			builder.AppendNull()
+			continue
+		}
+
+		switch b := builder.(type) {
 		case *array.FloatBuilder:
 			b.Append(arr.(*array.Float).Value(i))
 		case *array.IntBuilder:
