@@ -31,12 +31,11 @@ outData =
 "
 
 testcase selector_preserve_time {
-    option testing.tags = ["skip"]
-
     got =
         csv.from(csv: inData)
             |> testing.load()
             |> range(start: 2018-05-22T19:53:26Z)
+            |> group(columns: ["_field", "_measurement"])
             |> top(n: 3)
             |> group(columns: ["host"])
     want = csv.from(csv: outData)
