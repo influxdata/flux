@@ -57,7 +57,7 @@ testcase join_use_previous_test {
     // https://github.com/influxdata/flux/issues2996
     option testing.tags = ["skip"]
 
-    table =
+    tables =
         csv.from(csv: inData)
             |> testing.load()
             |> range(start: 2019-05-10T20:50:00Z, stop: 2019-05-10T20:51:00Z)
