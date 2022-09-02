@@ -327,7 +327,7 @@ testcase unpivot_with_nulls_2 {
     testing.diff(want, got)
 }
 
-testcase unpivot_ungrouped_tag_columns {
+testcase unpivot_other_columns {
     got =
         array.from(
             rows: [
@@ -348,7 +348,7 @@ testcase unpivot_ungrouped_tag_columns {
             ],
         )
             |> group(columns: ["_measurement"])
-            |> experimental.unpivot(ungroupedTagColumns: ["tag"])
+            |> experimental.unpivot(otherColumns: ["_time", "tag"])
 
     want =
         array.from(
@@ -388,7 +388,7 @@ testcase unpivot_ungrouped_tag_columns {
     testing.diff(want, got)
 }
 
-testcase unpivot_ungrouped_tag_columns_nulls {
+testcase unpivot_other_columns_nulls {
     got =
         array.from(
             rows: [
@@ -411,7 +411,7 @@ testcase unpivot_ungrouped_tag_columns_nulls {
             ],
         )
             |> group(columns: ["_measurement"])
-            |> experimental.unpivot(ungroupedTagColumns: ["tag0", "tag1"])
+            |> experimental.unpivot(otherColumns: ["_time", "tag0", "tag1"])
 
     want =
         array.from(
@@ -447,10 +447,10 @@ testcase unpivot_ungrouped_tag_columns_nulls {
     testing.diff(want, got)
 }
 
-testcase unpivot_ungrouped_tag_cols_error {
+testcase unpivot_other_cols_error {
     fn = () =>
         array.from(rows: [{foo: "bar", v0: 10, _time: 2020-01-01T00:00:00Z}])
-            |> experimental.unpivot(ungroupedTagColumns: ["does not exist"])
+            |> experimental.unpivot(otherColumns: ["does not exist"])
             |> tableFind(fn: (key) => true)
 
     testing.shouldError(fn: fn, want: /unpivot could not find column named "does not exist"/)

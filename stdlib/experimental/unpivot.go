@@ -21,7 +21,7 @@ import (
 const UnpivotKind = "experimental.unpivot"
 
 type UnpivotOpSpec struct {
-	ungroupedTagColumns []string
+	otherColumns []string
 }
 
 func init() {
@@ -39,15 +39,15 @@ func createUnpivotOpSpec(args flux.Arguments, a *flux.Administration) (flux.Oper
 
 	spec := new(UnpivotOpSpec)
 
-	if columns, ok, err := args.GetArray("ungroupedTagColumns", semantic.String); err != nil {
+	if columns, ok, err := args.GetArray("otherColumns", semantic.String); err != nil {
 		return nil, err
 	} else if ok {
-		spec.ungroupedTagColumns, err = interpreter.ToStringArray(columns)
+		spec.otherColumns, err = interpreter.ToStringArray(columns)
 		if err != nil {
 			return nil, err
 		}
 	} else {
-		spec.ungroupedTagColumns = []string{}
+		spec.otherColumns = []string{execute.DefaultTimeColLabel}
 	}
 
 	return spec, nil
@@ -64,7 +64,7 @@ func newUnpivotProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.Pr
 	}
 
 	return &UnpivotProcedureSpec{
-		ungroupedTagColumns: opSpec.ungroupedTagColumns,
+		otherColumns: opSpec.otherColumns,
 	}, nil
 }
 
@@ -80,7 +80,7 @@ func createUnpivotTransformation(id execute.DatasetID, mode execute.Accumulation
 
 type UnpivotProcedureSpec struct {
 	plan.DefaultCost
-	ungroupedTagColumns []string
+	otherColumns []string
 }
 
 func (s *UnpivotProcedureSpec) Kind() plan.ProcedureKind {
@@ -94,7 +94,7 @@ func (s *UnpivotProcedureSpec) Copy() plan.ProcedureSpec {
 
 func NewUnpivotTransformation(spec *UnpivotProcedureSpec, id execute.DatasetID, alloc memory.Allocator) (execute.Transformation, execute.Dataset, error) {
 	t := &unpivotTransformation{
-		ungroupedTagColumns: spec.ungroupedTagColumns,
+		otherColumns: spec.otherColumns,
 	}
 	return execute.NewNarrowTransformation(id, t, alloc)
 
@@ -102,26 +102,18 @@ func NewUnpivotTransformation(spec *UnpivotProcedureSpec, id execute.DatasetID, 
 
 type unpivotTransformation struct {
 	execute.ExecutionNode
-	ungroupedTagColumns []string
+	otherColumns []string
 }
 
 func (t *unpivotTransformation) Close() error { return nil }
 
 func (t *unpivotTransformation) Process(chunk table.Chunk, d *execute.TransportDataset, mem memory.Allocator) error {
-	timeColumn := -1
-	for j, c := range chunk.Cols() {
-		if c.Label == execute.DefaultTimeColLabel {
-			timeColumn = j
-			break
-		}
-	}
-
-	ungroupedTagCols := make([]flux.ColMeta, len(t.ungroupedTagColumns))
-	for i, utc := range t.ungroupedTagColumns {
+	otherCols := make([]flux.ColMeta, len(t.otherColumns))
+	for i, utc := range t.otherColumns {
 		found := false
 		for _, c := range chunk.Cols() {
 			if c.Label == utc {
-				ungroupedTagCols[i] = c
+				otherCols[i] = c
 				found = true
 				break
 			}
@@ -132,7 +124,7 @@ func (t *unpivotTransformation) Process(chunk table.Chunk, d *execute.TransportD
 	}
 
 	for i, c := range chunk.Cols() {
-		if chunk.Key().HasCol(c.Label) || c.Label == execute.DefaultTimeColLabel || execute.HasCol(c.Label, ungroupedTagCols) {
+		if chunk.Key().HasCol(c.Label) || execute.HasCol(c.Label, otherCols) {
 			continue
 		}
 
@@ -141,33 +133,46 @@ func (t *unpivotTransformation) Process(chunk table.Chunk, d *execute.TransportD
 
 		newChunkLen := chunk.Len() - chunkValues.NullN()
 
+		// The schema of the output table will be
+		//
+		// gk_col_0
+		// gk_col_1
+		// ...
+		// gk_col_n
+		// _field
+		// other_col_0 (one of these may be _time)
+		// other_col_1
+		// ...
+		// other_col_n
+		// _value
+
 		groupKey := chunk.Key()
-		columns := groupKey.Cols()
+		nCols := len(groupKey.Cols()) + len(otherCols) + 2
 
-		if timeColumn != -1 {
-			columns = append(columns, flux.ColMeta{Label: execute.DefaultTimeColLabel, Type: flux.TTime})
-		}
+		columns := make([]flux.ColMeta, 0, nCols)
+		columns = append(columns, groupKey.Cols()...)
+		columns = append(columns, flux.ColMeta{Label: "_field", Type: flux.TString})
+		columns = append(columns, otherCols...)
+		columns = append(columns, flux.ColMeta{Label: execute.DefaultValueColLabel, Type: c.Type})
 
-		columns = append(columns, ungroupedTagCols...)
-		columns = append(columns,
-			flux.ColMeta{Label: "_field", Type: flux.TString},
-			flux.ColMeta{Label: execute.DefaultValueColLabel, Type: c.Type},
-		)
+		groupCols := make([]flux.ColMeta, 0, len(groupKey.Cols())+1)
+		groupCols = append(groupCols, groupKey.Cols()...)
+		groupCols = append(groupCols, flux.ColMeta{Label: "_field", Type: flux.TString})
 
-		groupCols := []flux.ColMeta{{Label: "_field", Type: flux.TString}}
-		groupValues := []values.Value{values.NewString(c.Label)}
+		groupValues := make([]values.Value, 0, len(groupKey.Cols())+1)
+		groupValues = append(groupValues, groupKey.Values()...)
+		groupValues = append(groupValues, values.NewString(c.Label))
+
 		buffer := arrow.TableBuffer{
-			GroupKey: groupkey.New(
-				append(groupCols, groupKey.Cols()...),
-				append(groupValues, groupKey.Values()...),
-			),
-			Columns: columns,
-			Values:  make([]array.Array, len(columns)),
+			GroupKey: groupkey.New(groupCols, groupValues),
+			Columns:  columns,
+			// we append to this below
+			Values: make([]array.Array, 0, len(columns)),
 		}
 
 		// Copy group key columns
-		for toColumn := range groupKey.Cols() {
-			fromColumn := execute.ColIdx(c.Label, chunk.Cols())
+		for _, gkCol := range groupKey.Cols() {
+			fromColumn := execute.ColIdx(gkCol.Label, chunk.Cols())
 
 			oldValues := chunk.Values(fromColumn)
 			var values array.Array
@@ -179,37 +184,25 @@ func (t *unpivotTransformation) Process(chunk table.Chunk, d *execute.TransportD
 				// output, otherwise they show up as extra rows
 				values = array.Slice(oldValues, 0, newChunkLen)
 			}
-			buffer.Values[toColumn] = values
+			buffer.Values = append(buffer.Values, values)
 		}
+		// append the name of the value column into _field
+		buffer.Values = append(buffer.Values, array.StringRepeat(c.Label, newChunkLen, mem))
 
-		oldValues := chunk.Values(i)
-
-		if timeColumn != -1 {
-			// The time array does not contain any nulls so we use the value array for that information
-			times := array.CopyValidValues(mem, chunk.Values(timeColumn), oldValues)
-			buffer.Values[len(buffer.Values)-3] = times
-		}
-
-		// Copy tag cols that are not in the group key because of a group transformation
-		for idx, ungroupedTagCol := range ungroupedTagCols {
-			fromColumn := execute.ColIdx(ungroupedTagCol.Label, chunk.Cols())
+		// Copy cols that are neither group columns nor value columns
+		// Often _time will be in here, but sometimes others as well, in case of a group() transformation.
+		for _, otherCol := range otherCols {
+			fromColumn := execute.ColIdx(otherCol.Label, chunk.Cols())
 
 			// copy these cols but only when the value column does not have a null
 			oldValues := chunk.Values(fromColumn)
-			newValues := array.CopyValuesWithMask(mem, oldValues, chunk.Values(i))
-			newIdx := len(groupKey.Cols()) + idx
-			buffer.Values[newIdx] = newValues
+			newValues := array.CopyValidValues(mem, oldValues, chunk.Values(i))
+			buffer.Values = append(buffer.Values, newValues)
 		}
 
-		buffer.Values[len(buffer.Values)-3] = array.StringRepeat(c.Label, newChunkLen, mem)
-
-		times := array.CopyValuesWithMask(mem, chunk.Values(timeColumn), chunk.Values(i))
-		buffer.Values[len(buffer.Values)-2] = times
-
-		buffer.Values[len(buffer.Values)-2] = array.StringRepeat(c.Label, newChunkLen, mem)
-
+		oldValues := chunk.Values(i)
 		values := array.CopyValidValues(mem, oldValues, oldValues)
-		buffer.Values[len(buffer.Values)-1] = values
+		buffer.Values = append(buffer.Values, values)
 
 		out := table.ChunkFromBuffer(buffer)
 		if err := d.Process(out); err != nil {
