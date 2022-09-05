@@ -4,6 +4,7 @@ package experimental_test
 import "testing"
 import "array"
 import "experimental"
+import "internal/debug"
 
 testcase match {
     rows = [{_measurement: "m0", _field: "f0", _time: 2022-07-12T00:00:00Z, _value: 2.0}]
@@ -21,15 +22,11 @@ testcase match {
 
 testcase mismatch {
     want =
-        array.from(
-            rows: [{_measurement: "m0", _field: "f0", _time: 2022-07-12T00:00:00Z, _value: 2.0}],
-        )
+        array.from(rows: [{_measurement: "m0", _field: "f0", _time: 2022-07-12T00:00:00Z, _value: 2.0}])
             |> group(columns: ["_measurement", "_field"])
 
     got =
-        array.from(
-            rows: [{_measurement: "m0", _field: "f0", _time: 2022-07-12T00:00:00Z, _value: 3.0}],
-        )
+        array.from(rows: [{_measurement: "m0", _field: "f0", _time: 2022-07-12T00:00:00Z, _value: 3.0}])
             |> group(columns: ["_measurement", "_field"])
 
     exp =
@@ -163,9 +160,7 @@ testcase partial_match {
 
 testcase empty_want {
     want =
-        array.from(
-            rows: [{_measurement: "m0", _field: "f0", _time: 2022-07-12T00:00:00Z, _value: 2.0}],
-        )
+        array.from(rows: [{_measurement: "m0", _field: "f0", _time: 2022-07-12T00:00:00Z, _value: 2.0}])
             |> group(columns: ["_measurement", "_field"])
 
     got =
@@ -207,9 +202,7 @@ testcase empty_got {
             |> group(columns: ["_measurement", "_field"])
 
     got =
-        array.from(
-            rows: [{_measurement: "m0", _field: "f0", _time: 2022-07-12T00:00:00Z, _value: 2.0}],
-        )
+        array.from(rows: [{_measurement: "m0", _field: "f0", _time: 2022-07-12T00:00:00Z, _value: 2.0}])
             |> group(columns: ["_measurement", "_field"])
 
     exp =
@@ -282,6 +275,41 @@ testcase mismatch_non_string_group_key {
             ],
         )
             |> group(columns: ["_measurement", "_field", "_start"])
+
+    experimental.diff(want, got)
+        |> rename(columns: {_diff: "diff"})
+        |> testing.diff(want: exp)
+}
+
+testcase mismatch_null {
+    want =
+        array.from(rows: [{_measurement: "m0", _field: "f0", _time: 2022-07-12T00:00:00Z, _value: 2.0}])
+            |> group(columns: ["_measurement", "_field"])
+
+    got =
+        array.from(rows: [{_measurement: "m0", _field: "f0", _time: 2022-07-12T00:00:00Z, _value: debug.null(type: "float")}])
+            |> group(columns: ["_measurement", "_field"])
+
+    exp =
+        array.from(
+            rows: [
+                {
+                    diff: "-",
+                    _measurement: "m0",
+                    _field: "f0",
+                    _time: 2022-07-12T00:00:00Z,
+                    _value: 2.0,
+                },
+                {
+                    diff: "+",
+                    _measurement: "m0",
+                    _field: "f0",
+                    _time: 2022-07-12T00:00:00Z,
+                    _value: debug.null(type: "float"),
+                },
+            ],
+        )
+            |> group(columns: ["_measurement", "_field"])
 
     experimental.diff(want, got)
         |> rename(columns: {_diff: "diff"})
