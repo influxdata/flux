@@ -56,7 +56,6 @@ outData =
 testcase join_use_previous_test {
     tables =
         csv.from(csv: inData)
-            |> testing.load()
 
     lhs =
         tables
