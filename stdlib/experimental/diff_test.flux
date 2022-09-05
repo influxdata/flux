@@ -22,11 +22,15 @@ testcase match {
 
 testcase mismatch {
     want =
-        array.from(rows: [{_measurement: "m0", _field: "f0", _time: 2022-07-12T00:00:00Z, _value: 2.0}])
+        array.from(
+            rows: [{_measurement: "m0", _field: "f0", _time: 2022-07-12T00:00:00Z, _value: 2.0}],
+        )
             |> group(columns: ["_measurement", "_field"])
 
     got =
-        array.from(rows: [{_measurement: "m0", _field: "f0", _time: 2022-07-12T00:00:00Z, _value: 3.0}])
+        array.from(
+            rows: [{_measurement: "m0", _field: "f0", _time: 2022-07-12T00:00:00Z, _value: 3.0}],
+        )
             |> group(columns: ["_measurement", "_field"])
 
     exp =
@@ -160,7 +164,9 @@ testcase partial_match {
 
 testcase empty_want {
     want =
-        array.from(rows: [{_measurement: "m0", _field: "f0", _time: 2022-07-12T00:00:00Z, _value: 2.0}])
+        array.from(
+            rows: [{_measurement: "m0", _field: "f0", _time: 2022-07-12T00:00:00Z, _value: 2.0}],
+        )
             |> group(columns: ["_measurement", "_field"])
 
     got =
@@ -202,7 +208,9 @@ testcase empty_got {
             |> group(columns: ["_measurement", "_field"])
 
     got =
-        array.from(rows: [{_measurement: "m0", _field: "f0", _time: 2022-07-12T00:00:00Z, _value: 2.0}])
+        array.from(
+            rows: [{_measurement: "m0", _field: "f0", _time: 2022-07-12T00:00:00Z, _value: 2.0}],
+        )
             |> group(columns: ["_measurement", "_field"])
 
     exp =
@@ -283,11 +291,22 @@ testcase mismatch_non_string_group_key {
 
 testcase mismatch_null {
     want =
-        array.from(rows: [{_measurement: "m0", _field: "f0", _time: 2022-07-12T00:00:00Z, _value: 2.0}])
+        array.from(
+            rows: [{_measurement: "m0", _field: "f0", _time: 2022-07-12T00:00:00Z, _value: 2.0}],
+        )
             |> group(columns: ["_measurement", "_field"])
 
     got =
-        array.from(rows: [{_measurement: "m0", _field: "f0", _time: 2022-07-12T00:00:00Z, _value: debug.null(type: "float")}])
+        array.from(
+            rows: [
+                {
+                    _measurement: "m0",
+                    _field: "f0",
+                    _time: 2022-07-12T00:00:00Z,
+                    _value: debug.null(type: "float"),
+                },
+            ],
+        )
             |> group(columns: ["_measurement", "_field"])
 
     exp =

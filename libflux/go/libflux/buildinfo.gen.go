@@ -159,7 +159,7 @@ var sourceHashes = map[string]string{
 	"stdlib/experimental/csv/csv.flux":                                                            "7f033d93ed2e456d7ee181f0afa88f8c4c81f3b1a0984e56d53d3e146db48d20",
 	"stdlib/experimental/date/boundaries/boundaries.flux":                                         "d89786ac0607574da4cd130800670907e404f9dbfea0e74dd7b2c887707feaae",
 	"stdlib/experimental/date/boundaries/boundaries_test.flux":                                    "35f4198aae27017b38227a20d16ecf5c6ec81382643a36aafadda844b8d36e2b",
-	"stdlib/experimental/diff_test.flux":                                                          "9e008f0ce38d69faa2a4ab48ffcae8090262809e24ac80625bae558b68b6554c",
+	"stdlib/experimental/diff_test.flux":                                                          "b75aa4095b24d67f027b24b0c08e926824a6f68ea292821c025bcb8ac76c0339",
 	"stdlib/experimental/distinct_test.flux":                                                      "c7358d31972d0931aef6735ea94d901827c13fbaaeb9b02ff255391b5f95ea30",
 	"stdlib/experimental/experimental.flux":                                                       "24cf87d3a5ce2f7cb6534856c1cee16047721f313eaa6e981c826caa611fd2a0",
 	"stdlib/experimental/experimental_test.flux":                                                  "b417f361be23e610b6caffa266c40c421b19dedc3289ce064bb065cb0bcd825c",
