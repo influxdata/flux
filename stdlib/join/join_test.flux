@@ -390,7 +390,12 @@ testcase multi_join {
             right: right,
             on: (l, r) => l.label == r.id and l._time == r._time,
             as: (l, r) => {
-                return {label: l.label, _time: r._time, key: l.key, _value: l._value + float(v: r._value)}
+                return {
+                    label: l.label,
+                    _time: r._time,
+                    key: l.key,
+                    _value: l._value + float(v: r._value),
+                }
             },
             method: "inner",
         )
@@ -407,7 +412,9 @@ testcase multi_join {
     want =
         right
             |> filter(fn: (r) => r.id == "a")
-            |> map(fn: (r) => ({key: r.key, _time: r._time, _value: float(v: r._value), label: r.id}))
+            |> map(
+                fn: (r) => ({key: r.key, _time: r._time, _value: float(v: r._value), label: r.id}),
+            )
 
     testing.diff(want: want, got: got)
 }

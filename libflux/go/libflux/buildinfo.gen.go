@@ -277,7 +277,7 @@ var sourceHashes = map[string]string{
 	"stdlib/interpolate/interpolate.flux":                                                         "3d480c9058c584b65841db7889c459ad9bfed679f4ce24d17a84ec020cce768b",
 	"stdlib/interpolate/interpolate_test.flux":                                                    "f938f88db50a5ec8cddb765ac9e8836ef0aff2694c87778a2294810761cddef8",
 	"stdlib/join/join.flux":                                                                       "379330a0fa31a2a932ec94dbc84295b031832da08a416e6a57f2b581fc0d45d0",
-	"stdlib/join/join_test.flux":                                                                  "03c47d50f7b609a0d30d05e868bfdde3f5e42ad8440c0026bb4af1f184a9bddf",
+	"stdlib/join/join_test.flux":                                                                  "ba13f89885037f884363568dfd3fd9e98f501dbaf78c6ed6cac41a9f54da9f15",
 	"stdlib/json/json.flux":                                                                       "180dec063b8042db9fafb7a9e633a00451f0343ccf565ed8bf9650bebcd12674",
 	"stdlib/kafka/kafka.flux":                                                                     "c93e5a56f16d56d69f905e8fd3b02156ccb41742bb513c9d6fd82b26187ab5e8",
 	"stdlib/math/math.flux":                                                                       "590b501bc712d134fae22c966dc8cec4722b2f5e05853474017ab4d0d93406be",
