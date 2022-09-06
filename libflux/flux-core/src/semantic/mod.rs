@@ -333,19 +333,6 @@ fn build_record(
     (r, cons)
 }
 
-/// Wrapper around `FileErrors` which defaults to using codespan to print the errors
-#[derive(Error, Debug, PartialEq)]
-pub struct PrettyFileErrors(pub FileErrors);
-
-impl fmt::Display for PrettyFileErrors {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match &self.0.source {
-            Some(source) => f.write_str(&self.0.pretty(source)),
-            None => self.0.fmt(f),
-        }
-    }
-}
-
 /// Error represents any any error that can occur during any step of the type analysis process.
 #[derive(Error, Debug, PartialEq)]
 pub struct FileErrors {
@@ -358,11 +345,16 @@ pub struct FileErrors {
     #[source]
     /// The collection of diagnostics
     pub diagnostics: Diagnostics<ErrorKind, WarningKind>,
+
+    pretty_fmt: bool,
 }
 
 impl fmt::Display for FileErrors {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        self.diagnostics.fmt(f)
+        match &self.source {
+            Some(source) if self.pretty_fmt => f.write_str(&self.pretty(source)),
+            _ => self.diagnostics.fmt(f),
+        }
     }
 }
 
@@ -382,7 +374,6 @@ where
     W: fmt::Display,
 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        // TODO Use codespan's formatting for errors
         self.errors.fmt(f)
     }
 }
@@ -419,8 +410,9 @@ impl FileErrors {
 
     /// Wraps `FileErrors` in type which defaults to the more readable codespan error
     /// representation
-    pub fn pretty_error(self) -> PrettyFileErrors {
-        PrettyFileErrors(self)
+    pub fn pretty_error(mut self) -> Self {
+        self.pretty_fmt = true;
+        self
     }
 
     /// Prints the errors in their short form
@@ -521,6 +513,9 @@ pub enum Feature {
 
     /// Enables warnings for unused symbols
     UnusedSymbolWarnings,
+
+    /// Enables formatting with codespan for errors
+    PrettyError,
 
     /// Enables calls to map to be vectorized when the function contains select
     /// literal values.
@@ -678,6 +673,7 @@ impl<'env, I: import::Importer> Analyzer<'env, I> {
                     file: sem_pkg.package.clone(),
                     source: None,
                     diagnostics: Diagnostics { errors, warnings },
+                    pretty_fmt: self.config.features.contains(&Feature::PrettyError),
                 },
                 value: Some((env, sem_pkg)),
             });
