@@ -25,24 +25,29 @@ inData =
 ,,1,2018-05-22T19:54:06Z,648,io_time,diskio,host.local,disk2
 ,,1,2018-05-22T19:54:16Z,648,io_time,diskio,host.local,disk2
 "
+
 outData =
     "
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,string,string,dateTime:RFC3339,long
-#group,false,false,true,false,true,false,false,true,false,false
+#group,false,false,true,true,true,false,false,true,false,false
 #default,_result,,,,,,,,,
 ,result,table,_start,_stop,_measurement,_field,host,name,_time,_value
 ,,0,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,diskio,io_time,host.local,disk0,2018-05-22T19:54:16Z,15205755
 ,,1,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,diskio,io_time,host.local,disk2,2018-05-22T19:53:26Z,648
 "
 
-// Passes in flux, fails in C2 and OSS
 testcase group {
     got =
         csv.from(csv: inData)
             |> testing.load()
             |> range(start: 2018-05-22T19:53:26Z)
             |> filter(fn: (r) => r._measurement == "diskio" and r._field == "io_time")
-            |> group(columns: ["_measurement", "_start", "name"])
+            // XXX: C2 keeps `_stop` in the group key even when not specified here.
+            // Adding it to the group columns here, and in `outData` makes vanilla
+            // and C2 match.
+            // Could be a bug? Should flux not be able to unset `_stop` in the
+            // group key when we read from storage? If so, maybe add a separate test.
+            |> group(columns: ["_measurement", "_start", "_stop", "name"])
             |> max()
     want = csv.from(csv: outData)
 

@@ -1,114 +1,72 @@
 package universe_test
 
 
+import "array"
+import "internal/debug"
 import "testing"
-import c "csv"
-import "csv"
-
-option now = () => 2030-01-01T00:00:00Z
-
-inData =
-    "
-#datatype,string,long,dateTime:RFC3339,long,string,string,string,string
-#group,false,false,false,false,true,true,true,true
-#default,_result,,,,,,,
-,result,table,_time,_value,_field,_measurement,host,name
-,,0,2018-05-22T19:54:16Z,15205755,io_time,diskio,,disk1
-
-#datatype,string,long,dateTime:RFC3339,long,string,string,string
-#group,false,false,false,false,true,true,true
-#default,_result,,,,,,
-,result,table,_time,_value,_field,_measurement,host
-,,1,2018-05-22T19:53:46Z,15205102,io_time,diskio,
-,,1,,15205226,io_time,diskio,
-,,1,2018-05-22T19:54:06Z,15205499,io_time,diskio,
-,,2,2018-05-22T19:53:26Z,15204688,io_time,diskio,host1
-,,2,,15204894,io_time,diskio,host1
-,,2,2018-05-22T19:53:46Z,15205102,io_time,diskio,host1
-,,2,2018-05-22T19:53:56Z,15205226,io_time,diskio,host1
-,,2,2018-05-22T19:54:06Z,15205499,io_time,diskio,host1
-,,2,2018-05-22T19:54:16Z,,io_time,diskio,host1
-
-#datatype,string,long,dateTime:RFC3339,long,string,string,string,string
-#group,false,false,false,false,true,true,true,true
-#default,_result,,,,,,,
-,result,table,_time,_value,_field,_measurement,host,name
-,,3,2018-05-22T19:53:26Z,,io_time,diskio,host1,disk0
-,,3,2018-05-22T19:53:36Z,15204894,io_time,diskio,host1,disk0
-,,3,2018-05-22T19:53:46Z,15205102,io_time,diskio,host1,disk0
-,,3,2018-05-22T19:53:56Z,,io_time,diskio,host1,disk0
-,,3,2018-05-22T19:54:06Z,15205499,io_time,diskio,host1,disk0
-,,3,,15205755,io_time,diskio,host1,disk0
-,,4,2018-05-22T19:53:26Z,15204688,io_time,diskio,host1,disk1
-,,4,,,io_time,diskio,host1,disk1
-,,4,2018-05-22T19:53:46Z,,io_time,diskio,host1,disk1
-,,4,2018-05-22T19:53:56Z,15205226,io_time,diskio,host1,disk1
-,,4,2018-05-22T19:54:06Z,15205499,io_time,diskio,host1,disk1
-,,4,2018-05-22T19:54:16Z,15205755,io_time,diskio,host1,disk1
-
-#datatype,string,long,dateTime:RFC3339,long,string,string,string
-#group,false,false,false,false,true,true,true
-#default,_result,,,,,,
-,result,table,_time,_value,_field,_measurement,host
-,,5,,15204688,io_time,diskio,host2
-,,5,2018-05-22T19:53:36Z,,io_time,diskio,host2
-,,5,2018-05-22T19:53:46Z,15205102,io_time,diskio,host2
-,,5,2018-05-22T19:53:56Z,15205226,io_time,diskio,host2
-,,5,2018-05-22T19:54:06Z,15205499,io_time,diskio,host2
-,,5,2018-05-22T19:54:16Z,,io_time,diskio,host2
-"
-outData =
-    "
-#datatype,string,long,dateTime:RFC3339,long,string,string,string,string
-#group,false,false,false,false,false,false,true,false
-#default,_result,,,,,,,
-,result,table,_time,_value,_field,_measurement,host,name
-,,0,2018-05-22T19:54:16Z,15205755,io_time,diskio,,disk1
-,,0,2018-05-22T19:53:46Z,15205102,io_time,diskio,,
-,,0,,15205226,io_time,diskio,,
-,,0,2018-05-22T19:54:06Z,15205499,io_time,diskio,,
-
-,,1,2018-05-22T19:53:26Z,15204688,io_time,diskio,host1,
-,,1,,15204894,io_time,diskio,host1,
-,,1,2018-05-22T19:53:46Z,15205102,io_time,diskio,host1,
-,,1,2018-05-22T19:53:56Z,15205226,io_time,diskio,host1,
-,,1,2018-05-22T19:54:06Z,15205499,io_time,diskio,host1,
-,,1,2018-05-22T19:54:16Z,,io_time,diskio,host1,
-,,1,2018-05-22T19:53:26Z,,io_time,diskio,host1,disk0
-,,1,2018-05-22T19:53:36Z,15204894,io_time,diskio,host1,disk0
-,,1,2018-05-22T19:53:46Z,15205102,io_time,diskio,host1,disk0
-,,1,2018-05-22T19:53:56Z,,io_time,diskio,host1,disk0
-,,1,2018-05-22T19:54:06Z,15205499,io_time,diskio,host1,disk0
-,,1,,15205755,io_time,diskio,host1,disk0
-,,1,2018-05-22T19:53:26Z,15204688,io_time,diskio,host1,disk1
-,,1,,,io_time,diskio,host1,disk1
-,,1,2018-05-22T19:53:46Z,,io_time,diskio,host1,disk1
-,,1,2018-05-22T19:53:56Z,15205226,io_time,diskio,host1,disk1
-,,1,2018-05-22T19:54:06Z,15205499,io_time,diskio,host1,disk1
-,,1,2018-05-22T19:54:16Z,15205755,io_time,diskio,host1,disk1
-
-#datatype,string,long,dateTime:RFC3339,long,string,string,string
-#group,false,false,false,false,false,false,true
-#default,_result,,,,,,
-,result,table,_time,_value,_field,_measurement,host
-,,2,,15204688,io_time,diskio,host2
-,,2,2018-05-22T19:53:36Z,,io_time,diskio,host2
-,,2,2018-05-22T19:53:46Z,15205102,io_time,diskio,host2
-,,2,2018-05-22T19:53:56Z,15205226,io_time,diskio,host2
-,,2,2018-05-22T19:54:06Z,15205499,io_time,diskio,host2
-,,2,2018-05-22T19:54:16Z,,io_time,diskio,host2
-"
 
 testcase group_nulls {
+    // FIXME: in C2/OSS since the group key incorrectly empty for the case where `t0` is null.
+    // Remove skip tag after https://github.com/influxdata/flux/issues/5178
     option testing.tags = ["skip"]
 
+    input =
+        array.from(
+            rows: [
+                {
+                    _time: 2022-09-07T00:00:01Z,
+                    _measurement: "m0",
+                    _field: "f0",
+                    _value: 1,
+                    t0: "a",
+                },
+                {
+                    _time: 2022-09-07T00:00:02Z,
+                    _measurement: "m0",
+                    _field: "f0",
+                    _value: 2,
+                    t0: "a",
+                },
+                {
+                    _time: 2022-09-07T00:00:03Z,
+                    _measurement: "m0",
+                    _field: "f0",
+                    _value: 3,
+                    t0: "a",
+                },
+                {
+                    _time: 2022-09-07T00:00:01Z,
+                    _measurement: "m0",
+                    _field: "f0",
+                    _value: 1,
+                    t0: debug.null(type: "string"),
+                },
+                {
+                    _time: 2022-09-07T00:00:02Z,
+                    _measurement: "m0",
+                    _field: "f0",
+                    _value: 2,
+                    t0: debug.null(type: "string"),
+                },
+                {
+                    _time: 2022-09-07T00:00:03Z,
+                    _measurement: "m0",
+                    _field: "f0",
+                    _value: 3,
+                    t0: debug.null(type: "string"),
+                },
+            ],
+        )
+
+    want = input |> group(columns: ["t0"])
+
     got =
-        csv.from(csv: inData)
+        input
+            |> group(columns: ["_measurement", "_field", "_time", "t0"])
             |> testing.load()
-            |> range(start: 2018-05-22T19:53:26Z)
-            |> group(columns: ["host"])
+            |> range(start: 2022-09-07T00:00:00Z)
+            |> group(columns: ["t0"])
             |> drop(columns: ["_start", "_stop"])
-    want = csv.from(csv: outData)
 
     testing.diff(got, want)
 }
