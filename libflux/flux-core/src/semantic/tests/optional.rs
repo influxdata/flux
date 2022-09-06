@@ -140,3 +140,20 @@ fn null_argument_function() {
         ],
     }
 }
+
+#[test]
+fn double_optional_disallowed() {
+    test_error_msg! {
+        src: r#"
+            builtin x: A??
+        "#,
+        expect: expect![[r#"
+            error: invalid statement: ?
+              ┌─ main:2:26
+              │
+            2 │             builtin x: A??
+              │                          ^
+
+        "#]],
+    }
+}
