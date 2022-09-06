@@ -59,7 +59,8 @@ table Basic {
 enum CollectionType : ubyte {
     Array,
     Vector,
-    Stream
+    Stream,
+    Optional
 }
 
 // TODO: required directives have been commented out due to the following issue:

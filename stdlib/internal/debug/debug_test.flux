@@ -78,3 +78,21 @@ testcase get_option_in_map {
     testing.diff(got: got, want: array.from(rows: [{v: want}]))
         |> yield()
 }
+
+f = (x=debug.null()) => if exists x then x else 100
+
+testcase null_argument {
+    got = f(x: 1)
+    want = 1
+
+    testing.assertEqualValues(got, want)
+}
+
+g = (x=debug.null()) => f(x: x)
+
+testcase null_argument_2 {
+    got = g()
+    want = 100
+
+    testing.assertEqualValues(got, want)
+}

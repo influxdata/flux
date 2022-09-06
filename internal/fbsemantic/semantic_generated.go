@@ -95,21 +95,24 @@ func (v Type) String() string {
 type CollectionType byte
 
 const (
-	CollectionTypeArray  CollectionType = 0
-	CollectionTypeVector CollectionType = 1
-	CollectionTypeStream CollectionType = 2
+	CollectionTypeArray    CollectionType = 0
+	CollectionTypeVector   CollectionType = 1
+	CollectionTypeStream   CollectionType = 2
+	CollectionTypeOptional CollectionType = 3
 )
 
 var EnumNamesCollectionType = map[CollectionType]string{
-	CollectionTypeArray:  "Array",
-	CollectionTypeVector: "Vector",
-	CollectionTypeStream: "Stream",
+	CollectionTypeArray:    "Array",
+	CollectionTypeVector:   "Vector",
+	CollectionTypeStream:   "Stream",
+	CollectionTypeOptional: "Optional",
 }
 
 var EnumValuesCollectionType = map[string]CollectionType{
-	"Array":  CollectionTypeArray,
-	"Vector": CollectionTypeVector,
-	"Stream": CollectionTypeStream,
+	"Array":    CollectionTypeArray,
+	"Vector":   CollectionTypeVector,
+	"Stream":   CollectionTypeStream,
+	"Optional": CollectionTypeOptional,
 }
 
 func (v CollectionType) String() string {
