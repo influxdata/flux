@@ -16,6 +16,24 @@ fn optional_type() {
 }
 
 #[test]
+fn optional_type_passed_through_identity() {
+    test_infer! {
+        env: map![
+            "id" => "(x: A) => A",
+            "null" => "B?",
+        ],
+        src: r#"
+            x = id(x: 1)
+            y = id(x: null)
+        "#,
+        exp: map![
+            "x" => "int",
+            "y" => "A?",
+        ],
+    }
+}
+
+#[test]
 fn optional_can_be_passed_to_optional_argument() {
     test_infer! {
         env: map![
@@ -100,5 +118,25 @@ fn wrong_type_to_optional_parameter() {
               │                      ^^
 
         "#]],
+    }
+}
+
+#[test]
+fn null_argument_function() {
+    test_infer! {
+        env: map![
+            "null" => "A?",
+            "f" => "(?x: B) => B",
+        ],
+        src: r#"
+            g = (x=null) => f(x)
+            x = g()
+            y = g(x: 1)
+        "#,
+        exp: map![
+            "g" => "(?x: A) => A",
+            "x" => "A",
+            "y" => "int",
+        ],
     }
 }
