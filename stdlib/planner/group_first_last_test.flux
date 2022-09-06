@@ -207,7 +207,6 @@ inData =
 
 // Group + first test
 // Group on one tag across fields
-// Fails in C2
 testcase group_one_tag_first {
     want =
         array.from(
@@ -244,7 +243,6 @@ testcase group_one_tag_first {
     testing.diff(got, want) |> yield()
 }
 
-// Fails in C2
 testcase group_all_filter_field_first {
     want =
         array.from(
@@ -273,7 +271,6 @@ testcase group_all_filter_field_first {
     testing.diff(got, want) |> yield()
 }
 
-// Fails in C2
 testcase group_one_tag_filter_field_first {
     want =
         array.from(
@@ -362,7 +359,6 @@ testcase group_two_tag_filter_field_first {
 }
 
 // Group + last tests
-// Fails in C2
 testcase group_one_tag_last {
     want =
         array.from(
@@ -399,7 +395,6 @@ testcase group_one_tag_last {
     testing.diff(got, want) |> yield()
 }
 
-// Fails in C2
 testcase group_all_filter_field_last {
     want =
         array.from(
@@ -428,7 +423,6 @@ testcase group_all_filter_field_last {
     testing.diff(got, want) |> yield()
 }
 
-// Fails in C2
 testcase group_one_tag_filter_field_last {
     want =
         array.from(
