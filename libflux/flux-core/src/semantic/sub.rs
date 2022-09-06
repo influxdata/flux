@@ -112,6 +112,16 @@ impl Substitution {
         self.cons.get_mut()
     }
 
+    pub(crate) fn real<'a>(&self, typ: &'a MonoType) -> Cow<'a, MonoType> {
+        match *typ {
+            MonoType::Var(var) => self
+                .try_apply(var)
+                .map(Cow::Owned)
+                .unwrap_or_else(|| Cow::Borrowed(typ)),
+            _ => Cow::Borrowed(typ),
+        }
+    }
+
     /// Apply a substitution to a type variable.
     pub fn apply(&self, tv: Tvar) -> MonoType {
         self.try_apply(tv).unwrap_or(MonoType::Var(tv))

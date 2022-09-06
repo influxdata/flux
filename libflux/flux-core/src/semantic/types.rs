@@ -31,6 +31,62 @@ pub type SemanticMap<K, V> = BTreeMap<K, V>;
 #[allow(missing_docs)]
 pub type SemanticMapIter<'a, K, V> = std::collections::btree_map::Iter<'a, K, V>;
 
+trait Matcher<E> {
+    fn name(&self) -> &'static str;
+
+    fn match_types(
+        &self,
+        unifier: &mut Unifier<'_, E>,
+        expected: &MonoType,
+        actual: &MonoType,
+    ) -> MonoType;
+}
+
+struct Unify;
+
+impl Matcher<Error> for Unify {
+    fn name(&self) -> &'static str {
+        "Unify"
+    }
+
+    fn match_types(
+        &self,
+        unifier: &mut Unifier<'_, Error>,
+        expected: &MonoType,
+        actual: &MonoType,
+    ) -> MonoType {
+        expected.unify_inner(&actual, unifier)
+    }
+}
+
+struct Subsume;
+
+impl Matcher<Error> for Subsume {
+    fn name(&self) -> &'static str {
+        "Subsume"
+    }
+
+    fn match_types(
+        &self,
+        unifier: &mut Unifier<'_, Error>,
+        expected: &MonoType,
+        actual: &MonoType,
+    ) -> MonoType {
+        let actual = unifier.sub.real(actual);
+        let expected = unifier.sub.real(expected);
+
+        match (&*expected, &*actual) {
+            (MonoType::Collection(expected), actual)
+                if expected.collection == CollectionType::Optional =>
+            {
+                expected.arg.unify(actual, unifier)
+            }
+
+            _ => expected.unify_inner(&actual, unifier),
+        }
+    }
+}
+
 pub(crate) enum Context {
     CannotUnifyArgument(String),
     CannotUnifyReturn { exp: MonoType, act: MonoType },
@@ -57,19 +113,29 @@ struct Unifier<'a, E = Error> {
     // the remaining context.
     delayed_records: Vec<(Record, Record)>,
     errors: Errors<E>,
+    matcher: &'a dyn Matcher<Error>,
 }
 
 impl<'a, E> Unifier<'a, E> {
-    fn new(sub: &'a mut Substitution) -> Self {
+    fn new(sub: &'a mut Substitution, matcher: &'a dyn Matcher<Error>) -> Self {
         Unifier {
             sub,
             delayed_records: Vec::new(),
             errors: Errors::new(),
+            matcher,
         }
     }
 
+    fn new_unify(sub: &'a mut Substitution) -> Self {
+        Unifier::new(sub, &Unify)
+    }
+
+    fn new_subsume(sub: &'a mut Substitution) -> Self {
+        Unifier::new(sub, &Subsume)
+    }
+
     fn sub_unifier<F>(&mut self) -> Unifier<'_, F> {
-        Unifier::new(self.sub)
+        Unifier::new(self.sub, self.matcher)
     }
 
     fn finish(
@@ -78,7 +144,7 @@ impl<'a, E> Unifier<'a, E> {
         mk_error: impl Fn(Error) -> E,
     ) -> Result<MonoType, Errors<E>> {
         if !self.delayed_records.is_empty() {
-            let mut sub_unifier = Unifier::new(self.sub);
+            let mut sub_unifier = Unifier::new_unify(self.sub);
             while let Some((expected, actual)) = self.delayed_records.pop() {
                 let expected = expected.apply(sub_unifier.sub);
                 let actual = actual.apply(sub_unifier.sub);
@@ -860,7 +926,23 @@ impl MonoType {
         actual: &Self,
         sub: &mut Substitution,
     ) -> Result<MonoType, Errors<Error>> {
-        let mut unifier = Unifier::new(sub);
+        let mut unifier = Unifier::new_unify(sub);
+
+        let typ = self.unify(actual, &mut unifier);
+
+        unifier.finish(typ, From::from)
+    }
+
+    /// Performs subsumption on the type with another type.
+    /// If successful, results in a solution to the unification problem,
+    /// in the form of a substitution. If there is no solution to the
+    /// unification problem then unification fails and an error is reported.
+    pub fn try_subsume(
+        &self, // self represents the expected type
+        actual: &Self,
+        sub: &mut Substitution,
+    ) -> Result<MonoType, Errors<Error>> {
+        let mut unifier = Unifier::new_subsume(sub);
 
         let typ = self.unify(actual, &mut unifier);
 
@@ -872,8 +954,16 @@ impl MonoType {
         actual: &Self,
         unifier: &mut Unifier<'_>,
     ) -> MonoType {
-        log::debug!("Unify {} <=> {}", self, actual);
+        log::debug!("{} {} <=> {}", unifier.matcher.name(), self, actual);
 
+        unifier.matcher.match_types(unifier, self, actual)
+    }
+
+    fn unify_inner(
+        &self, // self represents the expected type
+        actual: &Self,
+        unifier: &mut Unifier<'_>,
+    ) -> MonoType {
         match (self, actual) {
             // An error has already occurred so assume everything is ok here so that we do not
             // create additional, spurious errors
@@ -1557,7 +1647,7 @@ fn unify_in_context<T>(
 ) where
     T: TypeLike,
 {
-    let mut sub_unifier = Unifier::new(unifier.sub);
+    let mut sub_unifier = Unifier::new_unify(unifier.sub);
     exp.unify(act.typ(), &mut sub_unifier);
 
     unifier.errors.extend(
@@ -1938,6 +2028,7 @@ impl Function {
         self.try_unify_with(actual, sub, Clone::clone, From::from)
     }
 
+    #[cfg(test)]
     pub(crate) fn try_unify_with<T>(
         &self,
         actual: &Function<T>,
@@ -1948,7 +2039,25 @@ impl Function {
     where
         T: TypeLike + Clone,
     {
-        let mut unifier = Unifier::new(sub);
+        let mut unifier = Unifier::new_unify(sub);
+
+        self.unify(actual, &mut unifier, mk_type);
+
+        unifier.finish(MonoType::from(self.clone()), mk_error)?;
+        Ok(())
+    }
+
+    pub(crate) fn try_subsume_with<T>(
+        &self,
+        actual: &Function<T>,
+        sub: &mut Substitution,
+        mk_type: impl Fn(&MonoType) -> T,
+        mk_error: impl Fn(Error) -> T::Error,
+    ) -> Result<(), Errors<T::Error>>
+    where
+        T: TypeLike + Clone,
+    {
+        let mut unifier = Unifier::new_subsume(sub);
 
         self.unify(actual, &mut unifier, mk_type);
 

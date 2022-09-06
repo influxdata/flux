@@ -189,19 +189,33 @@ impl InferState<'_, '_> {
         }
     }
 
-    fn unify_function(
+    fn subsume(&mut self, exp: &MonoType, act: &MonoType, loc: &ast::SourceLocation) -> MonoType {
+        match infer::subsume(exp, act, loc, self.sub) {
+            Ok(typ) => typ,
+            Err(err) => {
+                self.errors
+                    .extend(err.error.into_iter().map(|error| Located {
+                        location: loc.clone(),
+                        error: error.into(),
+                    }));
+                MonoType::Error
+            }
+        }
+    }
+
+    fn subsume_function(
         &mut self,
         call_expr: &CallExpr,
         exp: &Function,
         act: Function<(MonoType, &ast::SourceLocation)>,
     ) {
         log::debug!(
-            "Unify {:?}: {} <===> {}",
+            "Subsume {:?}: {} <===> {}",
             call_expr.callee.loc().source,
             exp,
             act.clone().map(|(typ, _)| typ),
         );
-        if let Err(err) = exp.try_unify_with(
+        if let Err(err) = exp.try_subsume_with(
             &act,
             self.sub,
             |typ| (typ.clone(), call_expr.callee.loc()),
@@ -1128,7 +1142,7 @@ impl FunctionExpr {
 
         infer.solve(&ncons);
 
-        infer.equal(&exp, &default_func, &self.loc);
+        infer.subsume(&exp, &default_func, &self.loc);
 
         Ok(())
     }
@@ -1422,7 +1436,7 @@ impl CallExpr {
 
         match &*self.callee.type_of().apply_cow(infer.sub) {
             MonoType::Fun(func) => {
-                infer.unify_function(self, func, act);
+                infer.subsume_function(self, func, act);
             }
             callee => {
                 let act = act.map(|(typ, _)| typ);
