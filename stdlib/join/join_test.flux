@@ -390,12 +390,7 @@ testcase multi_join {
             right: right,
             on: (l, r) => l.label == r.id and l._time == r._time,
             as: (l, r) => {
-                return {
-                    label: l.label,
-                    _time: r._time,
-                    key: l.key,
-                    _value: l._value + float(v: r._value),
-                }
+                return {label: l.label, _time: r._time, key: l.key, _value: l._value + float(v: r._value)}
             },
             method: "inner",
         )
@@ -412,9 +407,31 @@ testcase multi_join {
     want =
         right
             |> filter(fn: (r) => r.id == "a")
-            |> map(
-                fn: (r) => ({key: r.key, _time: r._time, _value: float(v: r._value), label: r.id}),
-            )
+            |> map(fn: (r) => ({key: r.key, _time: r._time, _value: float(v: r._value), label: r.id}))
 
     testing.diff(want: want, got: got)
+}
+
+testcase join_empty_table {
+    something = array.from(rows: [{_value: 1, id: "a"}])
+
+    nothing =
+        array.from(rows: [{_value: 0.6, id: "b"}])
+            |> filter(fn: (r) => r.id == "empty table")
+
+    fn = () =>
+        join.tables(
+            method: "full",
+            left: something,
+            right: nothing,
+            on: (l, r) => l.id == r.id,
+            as: (l, r) => {
+                id = if exists l.id then l.id else r.id
+
+                return {id: id, v_left: l._value, v_right: r._value}
+            },
+        )
+    want = /error preparing right sight of join: cannot join on empty table/
+
+    testing.shouldError(fn, want)
 }
