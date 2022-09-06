@@ -82,6 +82,7 @@ impl Matcher<Error> for Subsume {
             {
                 expected.arg.unify(&actual.arg, unifier)
             }
+
             (MonoType::Collection(expected), actual)
                 if expected.collection == CollectionType::Optional =>
             {
@@ -2050,6 +2051,11 @@ impl Function {
     }
 
     #[cfg(test)]
+    fn try_subsume(&self, actual: &Function, sub: &mut Substitution) -> Result<(), Errors<Error>> {
+        self.try_subsume_with(actual, sub, Clone::clone, From::from)
+    }
+
+    #[cfg(test)]
     pub(crate) fn try_unify_with<T>(
         &self,
         actual: &Function<T>,
@@ -3182,7 +3188,8 @@ mod tests {
 
         if let (MonoType::Fun(f), MonoType::Fun(g)) = (f, g) {
             sub.mk_fresh(2);
-            f.try_unify(&g, &mut sub).unwrap();
+            f.try_subsume(&g, &mut sub)
+                .unwrap_or_else(|err| panic!("{}", err));
             assert_eq!(sub.apply(Tvar(0)), MonoType::INT);
             assert_eq!(sub.apply(Tvar(1)), MonoType::FLOAT);
             // we know everything about tvars, there is no constraint.
