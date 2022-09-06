@@ -1,7 +1,7 @@
 // Package testing provides functions for testing Flux operations.
 //
 // ## Metadata
-// introduced: NEXT
+// introduced: 0.182.0
 //
 package testing
 
@@ -28,7 +28,7 @@ import "testing"
 // ```
 //
 // ## Metadata
-// introduced: NEXT
+// introduced: 0.182.0
 // tags: tests
 //
 shouldErrorWithCode = (fn, want, code) => {
