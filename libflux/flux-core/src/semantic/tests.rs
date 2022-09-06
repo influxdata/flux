@@ -4325,6 +4325,24 @@ fn optional_type() {
 }
 
 #[test]
+fn optional_can_be_passed_to_optional_argument() {
+    test_infer! {
+        env: map![
+            "x" => "int?",
+            "f" => "(?x: A) => A",
+        ],
+        src: r#"
+            y = f(x)
+            z = f(x: "")
+        "#,
+        exp: map![
+            "y" => "int",
+            "z" => "string",
+        ],
+    }
+}
+
+#[test]
 fn pass_optional_to_mandatory_is_error() {
     test_error_msg! {
         env: map![

@@ -76,6 +76,12 @@ impl Matcher<Error> for Subsume {
         let expected = unifier.sub.real(expected);
 
         match (&*expected, &*actual) {
+            (MonoType::Collection(expected), MonoType::Collection(actual))
+                if expected.collection == CollectionType::Optional
+                    && actual.collection == CollectionType::Optional =>
+            {
+                expected.arg.unify(&actual.arg, unifier)
+            }
             (MonoType::Collection(expected), actual)
                 if expected.collection == CollectionType::Optional =>
             {
@@ -89,7 +95,15 @@ impl Matcher<Error> for Subsume {
 
 pub(crate) enum Context {
     CannotUnifyArgument(String),
-    CannotUnifyReturn { exp: MonoType, act: MonoType },
+    CannotUnifyReturn {
+        exp: MonoType,
+        act: MonoType,
+    },
+    CannotUnifyLabel {
+        lab: String,
+        exp: MonoType,
+        act: MonoType,
+    },
 }
 
 impl Context {
@@ -99,6 +113,12 @@ impl Context {
                 Error::CannotUnifyArgument(name.clone(), Box::new(err))
             }
             Self::CannotUnifyReturn { exp, act } => Error::CannotUnifyReturn {
+                exp: exp.clone(),
+                act: act.clone(),
+                cause: Box::new(err),
+            },
+            Self::CannotUnifyLabel { lab, exp, act } => Error::CannotUnifyLabel {
+                lab: lab.clone(),
                 exp: exp.clone(),
                 act: act.clone(),
                 cause: Box::new(err),
@@ -1444,12 +1464,13 @@ impl Record {
                     head: Property { k: b, v: u },
                     tail: MonoType::Var(r),
                 },
-            ) if a == b && l == r => unify_in_context(t, u, unifier, |e| Error::CannotUnifyLabel {
-                lab: a.to_string(),
-                exp: t.clone(),
-                act: u.clone(),
-                cause: Box::new(e),
-            }),
+            ) if a == b && l == r => {
+                unify_in_context(t, u, unifier, || Context::CannotUnifyLabel {
+                    lab: a.to_string(),
+                    exp: t.clone(),
+                    act: u.clone(),
+                })
+            }
             (
                 Record::Extension {
                     head: Property { k: a, .. },
@@ -1643,7 +1664,7 @@ fn unify_in_context<T>(
     exp: &MonoType,
     act: &T,
     unifier: &mut Unifier<'_, T::Error>,
-    mut context: impl FnMut(Error) -> Error,
+    mut context: impl FnMut() -> Context,
 ) where
     T: TypeLike,
 {
@@ -1654,7 +1675,7 @@ fn unify_in_context<T>(
         sub_unifier
             .errors
             .into_iter()
-            .map(|e| act.error(context(e))),
+            .map(|e| act.error(context().apply(e))),
     );
 
     unifier.delayed_records.extend(sub_unifier.delayed_records);
@@ -2037,7 +2058,7 @@ impl Function {
         mk_error: impl Fn(Error) -> T::Error,
     ) -> Result<(), Errors<T::Error>>
     where
-        T: TypeLike + Clone,
+        T: TypeLike + Clone + fmt::Debug,
     {
         let mut unifier = Unifier::new_unify(sub);
 
@@ -2055,7 +2076,7 @@ impl Function {
         mk_error: impl Fn(Error) -> T::Error,
     ) -> Result<(), Errors<T::Error>>
     where
-        T: TypeLike + Clone,
+        T: TypeLike + Clone + fmt::Debug,
     {
         let mut unifier = Unifier::new_subsume(sub);
 
@@ -2106,7 +2127,7 @@ impl Function {
         unifier: &mut Unifier<'_, T::Error>,
         mk_type: impl Fn(&MonoType) -> T,
     ) where
-        T: TypeLike + Clone,
+        T: TypeLike + Clone + fmt::Debug,
     {
         // Some aliasing for coherence with the doc.
         let mut f = Cow::Borrowed(self);
@@ -2188,7 +2209,7 @@ impl Function {
         // Unify f's optional arguments.
         for (name, exp) in &f.opt {
             if let Some(act) = g.parameter(name) {
-                merge_in_context(&exp.typ, act, unifier, || {
+                merge_in_context(&MonoType::optional(exp.typ.clone()), act, unifier, || {
                     Context::CannotUnifyArgument(name.clone())
                 });
             } else if let Some(default) = &exp.default {
@@ -2201,7 +2222,7 @@ impl Function {
         }
 
         // Unify return types.
-        merge_in_context(&f.retn, &g.retn, unifier, || Context::CannotUnifyReturn {
+        unify_in_context(&f.retn, &g.retn, unifier, || Context::CannotUnifyReturn {
             exp: f.retn.clone(),
             act: g.retn.typ().clone(),
         })
