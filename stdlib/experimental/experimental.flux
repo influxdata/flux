@@ -1309,12 +1309,46 @@ builtin histogram : (
 //
 builtin preview : (<-tables: stream[A], ?nrows: int, ?ntables: int) => stream[A] where A: Record
 
-// unpivot removes the `_time` column and any other column not in the group key and outputs a new table with `_field` and `_value` columns pairs.
+// unpivot creates `_field` and `_value` columns pairs using all columns (other than `_time`)
+// _not_ in the group key.
+// The `_field` column cotains the original column label and the `_value` column
+// contains the original column value.
+//
 // The output stream retains the group key and all group key columns of the input stream.
-// Specialized to transform the pivoted output from `iox.from()` into the unpivoted format.
+// `_field` is added to the output group key.
+// This function is designed to transform the pivoted output from `iox.from()`
+// into the unpivoted format.
 //
 // ## Parameters
 // - tables: Input data. Default is piped-forward data (`<-`).
+//
+// ## Examples
+//
+// ### Unpivot data into _field and _value columns
+//
+// ```
+// # import "array"
+// import "experimental"
+//
+// # data =
+// #     array.from(
+// #         rows: [
+// #             {_time: 2022-01-01T00:00:00Z, location: "New York", temp: 50.1, hum: 99.2},
+// #             {_time: 2022-01-02T00:00:00Z, location: "New York", temp: 55.8, hum: 97.7},
+// #             {_time: 2022-01-01T00:00:00Z, location: "Denver", temp: 10.2, hum: 81.5},
+// #             {_time: 2022-01-02T00:00:00Z, location: "Denver", temp: 12.4, hum: 41.3},
+// #         ],
+// #     )
+// #         |> group(columns: ["location"])
+// #
+// < data
+// >     |> experimental.unpivot()
+// ```
+//
+// ## Metadata
+// introduced: 0.172.0
+// tags: transformations
+//
 builtin unpivot : (
         <-tables: stream[{A with _time: time}],
     ) => stream[{B with _field: string, _value: C}]
