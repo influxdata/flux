@@ -45,7 +45,7 @@ func (t *fillTransformation) fill{{.Name}}Column(arr *{{.ArrowType}}, fillValue 
         }
     }
     if t.spec.UsePrevious && !fillValueNull {
-        *fillValue = fillValue{{.Name}}
+        *fillValue = {{if eq .Name "Time"}}values.Time(fillValue{{.Name}}){{else}}fillValue{{.Name}}{{end}}
     }
     return b.NewArray()
 }
