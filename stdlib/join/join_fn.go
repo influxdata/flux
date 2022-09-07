@@ -42,7 +42,7 @@ func (f *JoinFn) Prepare(lcols, rcols []flux.ColMeta) error {
 	if f.ltyp == nil {
 		ltyp, err := getObjectType(args[0], lcols)
 		if err != nil {
-			return err
+			return errors.Wrap(err, codes.Invalid, "error preparing left side of join")
 		}
 		f.ltyp = &ltyp
 	}
@@ -50,7 +50,7 @@ func (f *JoinFn) Prepare(lcols, rcols []flux.ColMeta) error {
 	if f.rtyp == nil {
 		rtyp, err := getObjectType(args[1], rcols)
 		if err != nil {
-			return err
+			return errors.Wrap(err, codes.Invalid, "error preparing right side of join")
 		}
 		f.rtyp = &rtyp
 	}
@@ -294,6 +294,9 @@ func checkCols(arg *semantic.Argument, cols []flux.ColMeta) error {
 	for _, prop := range props {
 		name := prop.Name()
 		found := false
+		if len(cols) == 0 {
+			return errors.Newf(codes.Invalid, "cannot join on an empty table")
+		}
 		for _, column := range cols {
 			if column.Label == name {
 				found = true
