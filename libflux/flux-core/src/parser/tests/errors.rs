@@ -901,16 +901,14 @@ fn int_literal_zero_prefix() {
     )
 }
 
-macro_rules! test_error_msg {
-    (src: $src:expr $(,)?, expect: $expect:expr $(,)?) => {
-        let mut p = Parser::new($src);
-        let parsed = p.parse_file("".to_string());
-        $expect.assert_eq(
-            &ast::check::check(ast::walk::Node::File(&parsed))
-                .unwrap_err()
-                .to_string(),
-        );
-    };
+fn test_error_msg(src: &str, expect: expect_test::Expect) {
+    let mut p = Parser::new(src);
+    let parsed = p.parse_file("".to_string());
+    expect.assert_eq(
+        &ast::check::check(ast::walk::Node::File(&parsed))
+            .unwrap_err()
+            .to_string(),
+    );
 }
 
 #[test]
@@ -928,34 +926,36 @@ fn parse_invalid_call() {
 
 #[test]
 fn issue_4231() {
-    test_error_msg! {
-        src: r#"
+    test_error_msg(
+        r#"
             map(fn: (r) => ({ r with _value: if true and false then 1}) )
         "#,
-        expect: expect_test::expect![[r#"error @2:46-2:70: expected ELSE, got RBRACE (}) at 2:70"#]],
-    }
+        expect_test::expect![[r#"error @2:46-2:70: expected ELSE, got RBRACE (}) at 2:70"#]],
+    );
 }
 
 #[test]
 fn missing_property() {
-    test_error_msg! {
-        src: r#"
+    test_error_msg(
+        r#"
             x.
 
             builtin y : int
         "#,
-        expect: expect_test::expect![[r#"error @4:13-4:13: expected IDENT, got BUILTIN (builtin) at 4:13"#]],
-    }
+        expect_test::expect![[
+            r#"error @4:13-4:13: expected IDENT, got BUILTIN (builtin) at 4:13"#
+        ]],
+    );
 }
 
 #[test]
 fn missing_identifier_in_option() {
-    test_error_msg! {
-        src: r#"
+    test_error_msg(
+        r#"
             option =
 
             buckets()
         "#,
-        expect: expect_test::expect![[r#"error @2:20-2:21: expected IDENT, got ASSIGN (=) at 2:20"#]],
-    }
+        expect_test::expect![[r#"error @2:20-2:20: expected IDENT, got ASSIGN (=) at 2:20"#]],
+    );
 }
