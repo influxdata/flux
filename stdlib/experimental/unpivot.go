@@ -64,7 +64,7 @@ func newUnpivotProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.Pr
 	}
 
 	return &UnpivotProcedureSpec{
-		otherColumns: opSpec.otherColumns,
+		OtherColumns: opSpec.otherColumns,
 	}, nil
 }
 
@@ -80,7 +80,7 @@ func createUnpivotTransformation(id execute.DatasetID, mode execute.Accumulation
 
 type UnpivotProcedureSpec struct {
 	plan.DefaultCost
-	otherColumns []string
+	OtherColumns []string
 }
 
 func (s *UnpivotProcedureSpec) Kind() plan.ProcedureKind {
@@ -94,7 +94,7 @@ func (s *UnpivotProcedureSpec) Copy() plan.ProcedureSpec {
 
 func NewUnpivotTransformation(spec *UnpivotProcedureSpec, id execute.DatasetID, alloc memory.Allocator) (execute.Transformation, execute.Dataset, error) {
 	t := &unpivotTransformation{
-		otherColumns: spec.otherColumns,
+		otherColumns: spec.OtherColumns,
 	}
 	return execute.NewNarrowTransformation(id, t, alloc)
 
