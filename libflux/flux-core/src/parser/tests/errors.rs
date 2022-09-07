@@ -947,3 +947,15 @@ fn missing_property() {
         expect: expect_test::expect![[r#"error @4:13-4:13: expected IDENT, got BUILTIN (builtin) at 4:13"#]],
     }
 }
+
+#[test]
+fn missing_identifier_in_option() {
+    test_error_msg! {
+        src: r#"
+            option =
+
+            buckets()
+        "#,
+        expect: expect_test::expect![[r#"error @2:20-2:21: expected IDENT, got ASSIGN (=) at 2:20"#]],
+    }
+}
