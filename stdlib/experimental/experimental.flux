@@ -1311,13 +1311,11 @@ builtin preview : (<-tables: stream[A], ?nrows: int, ?ntables: int) => stream[A]
 
 // unpivot creates `_field` and `_value` columns pairs using all columns (other than `_time`)
 // _not_ in the group key.
-// The `_field` column cotains the original column label and the `_value` column
+// The `_field` column contains the original column label and the `_value` column
 // contains the original column value.
 //
 // The output stream retains the group key and all group key columns of the input stream.
 // `_field` is added to the output group key.
-// This function is designed to transform the pivoted output from `iox.from()`
-// into the unpivoted format.
 //
 // ## Parameters
 // - tables: Input data. Default is piped-forward data (`<-`).
