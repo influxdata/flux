@@ -5,6 +5,7 @@ import "array"
 import "csv"
 import "testing"
 import "testing/expect"
+import "internal/debug"
 
 option now = () => 2030-01-01T00:00:00Z
 
@@ -533,6 +534,43 @@ testcase vectorize_nested_logicals {
     got =
         array.from(rows: [{a: true, b: false}])
             |> map(fn: (r) => ({r with c: r.a and r.b or r.a}))
+
+    testing.diff(want: want, got: got)
+}
+
+testcase vectorize_null_logicals {
+    expect.planner(rules: ["vectorizeMapRule": 1])
+
+    want =
+        array.from(
+            rows: [
+                {
+                    a: true,
+                    orAB: true,
+                    andAB: false,
+                    orBA: true,
+                    andBA: false,
+                    bothNullAnd: false,
+                    bothNullOr: false,
+                },
+            ],
+        )
+            |> debug.opaque()
+
+    got =
+        array.from(rows: [{a: true}])
+            |> debug.opaque()
+            |> map(
+                fn: (r) =>
+                    ({r with
+                        orAB: r.a or r.b,
+                        andAB: r.a and r.b,
+                        orBA: r.b or r.a,
+                        andBA: r.b and r.a,
+                        bothNullAnd: r.never and r.nope,
+                        bothNullOr: r.never or r.nope,
+                    }),
+            )
 
     testing.diff(want: want, got: got)
 }
