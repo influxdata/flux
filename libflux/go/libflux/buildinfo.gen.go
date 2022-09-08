@@ -520,7 +520,7 @@ var sourceHashes = map[string]string{
 	"stdlib/universe/lowestAverage_test.flux":                                                     "79681d441fc0340d4f76e238f10ccc50dd2b67be62f6c5061157a4e11f634055",
 	"stdlib/universe/lowestCurrent_test.flux":                                                     "0110e5d56e9feb926cba8097d418b08fce0a70d194aeb0bf93254272d3f4136b",
 	"stdlib/universe/lowestMin_test.flux":                                                         "823a9d836aaf31f1692eadffb46822ab12ac2d5051eafaf4ec4ffc67fb15d2d6",
-	"stdlib/universe/map_test.flux":                                                               "7bf5f268c00742f8c6784cbf7b320814b9ffc90e3e21b8a6902d85987734d45d",
+	"stdlib/universe/map_test.flux":                                                               "eb9117631941df83cc86a27ff237f4f86408eaaa1fa45b82ea48639f3841cec2",
 	"stdlib/universe/map_vectorize_conditionals_test.flux":                                        "cbe50d0dbd1b5a30c8ed8d61e1926d2e6dbdcc55dd6cde9db9cafb28835f0406",
 	"stdlib/universe/map_vectorize_const_test.flux":                                               "636889211f387eb2b56517acd090ab16340c1610bc33c1640302a84d87fb5cee",
 	"stdlib/universe/map_vectorize_equality_test.flux":                                            "b06a0cf70625e99b0503e72ae0cc445f71a0f66e77cc7110cc9369e87ed1079a",
