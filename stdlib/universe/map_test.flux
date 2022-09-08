@@ -525,6 +525,18 @@ testcase vectorize_or_operator {
     testing.diff(want: want, got: got) |> yield()
 }
 
+testcase vectorize_nested_logicals {
+    expect.planner(rules: ["vectorizeMapRule": 1])
+
+    want = array.from(rows: [{a: true, b: false, c: true}])
+
+    got =
+        array.from(rows: [{a: true, b: false}])
+            |> map(fn: (r) => ({r with c: r.a and r.b or r.a}))
+
+    testing.diff(want: want, got: got)
+}
+
 testcase vectorize_with_operator_overwrite_attribute {
     expect.planner(rules: ["vectorizeMapRule": 1])
 
