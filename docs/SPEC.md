@@ -365,6 +365,18 @@ Examples:
 
 The regular expression syntax is defined by [RE2](https://github.com/google/re2/wiki/Syntax).
 
+#### Label literals
+
+```flux
+
+.mylabel
+._value
+."with spaces"
+```
+
+A label literal represents a "label" used to refer to specific record fields. They have two variants, where the `.` can
+be followed by either an identifier or a string literal (allowing labels with characters that are not allowed in identifiers to be specified).
+
 ### Variables
 
 A variable represents a storage location for a single value.

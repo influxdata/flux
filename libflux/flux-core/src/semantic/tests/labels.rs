@@ -3,7 +3,6 @@ use super::*;
 use crate::semantic::Feature;
 
 #[test]
-#[ignore]
 fn labels_simple() {
     test_infer! {
         config: AnalyzerConfig{
@@ -16,13 +15,13 @@ fn labels_simple() {
                 "
         ],
         src: r#"
-            x = [{ a: 1 }] |> fill(column: "a", value: "x")
-            y = [{ a: 1, b: ""}] |> fill(column: "b", value: 1.0)
-            b = "b"
+            x = [{ a: 1 }] |> fill(column: .a, value: "x")
+            y = [{ a: 1, b: ""}] |> fill(column: .b, value: 1.0)
+            b = .b
             z = [{ a: 1, b: ""}] |> fill(column: b, value: 1.0)
         "#,
         exp: map![
-            "b" => "\"b\"",
+            "b" => ".b",
             "x" => "[{ a: string }]",
             "y" => "[{ a: int, b: float }]",
             "z" => "[{ a: int, b: float }]",
@@ -31,7 +30,6 @@ fn labels_simple() {
 }
 
 #[test]
-#[ignore]
 fn labels_unbound() {
     test_infer! {
         config: AnalyzerConfig{
@@ -44,16 +42,15 @@ fn labels_unbound() {
                 "
         ],
         src: r#"
-            x = [{ a: 1, b: 2.0 }] |> f(value: "x")
+            x = [{ a: 1, b: 2.0 }] |> f(value: .x)
         "#,
         exp: map![
-            "x" => "[{A with a:int, B:string}] where B: Label",
+            "x" => "[{A with a:int, B:.x}] where B: Label",
         ],
     }
 }
 
 #[test]
-#[ignore]
 fn labels_dynamic_string() {
     test_error_msg! {
         config: AnalyzerConfig{
@@ -87,7 +84,6 @@ fn labels_dynamic_string() {
 }
 
 #[test]
-#[ignore]
 fn undefined_field() {
     test_error_msg! {
         config: AnalyzerConfig{
@@ -100,21 +96,20 @@ fn undefined_field() {
                 "
         ],
         src: r#"
-            x = [{ b: 1 }] |> fill(column: "a", value: "x")
+            x = [{ b: 1 }] |> fill(column: .a, value: "x")
         "#,
         expect: expect![[r#"
             error: record is missing label a
               ┌─ main:2:31
               │
-            2 │             x = [{ b: 1 }] |> fill(column: "a", value: "x")
-              │                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+            2 │             x = [{ b: 1 }] |> fill(column: .a, value: "x")
+              │                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
         "#]],
     }
 }
 
 #[test]
-#[ignore]
 fn merge_labels_to_string() {
     test_infer! {
         config: AnalyzerConfig{
@@ -135,7 +130,6 @@ fn merge_labels_to_string() {
 }
 
 #[test]
-#[ignore]
 fn merge_labels_to_string_in_function() {
     test_infer! {
         config: AnalyzerConfig{
@@ -163,27 +157,20 @@ fn attempt_to_use_label_polymorphism_without_feature() {
             "columns" => "(table: A, ?column: C) => { C: string } where A: Record, C: Label",
         ],
         src: r#"
-            x = columns(table: { a: 1, b: "b" }, column: "abc")
+            x = columns(table: { a: 1, b: "b" }, column: .abc)
             y = x.abc
         "#,
         expect: expect![[r#"
-            error: string is not Label (argument column)
+            error: Labels are currently experimental. (See the labelPolymorphism feature)
               ┌─ main:2:58
               │
-            2 │             x = columns(table: { a: 1, b: "b" }, column: "abc")
-              │                                                          ^^^^^
-
-            error: record is missing label abc
-              ┌─ main:3:17
-              │
-            3 │             y = x.abc
-              │                 ^
+            2 │             x = columns(table: { a: 1, b: "b" }, column: .abc)
+              │                                                          ^^^^
 
         "#]],
     }
 }
 #[test]
-#[ignore]
 fn columns() {
     test_infer! {
         config: AnalyzerConfig{
@@ -207,7 +194,7 @@ fn columns() {
             import "experimental/universe"
 
             x = stream
-                |> universe.columns(column: "abc")
+                |> universe.columns(column: .abc)
                 |> map(fn: (r) => ({ x: r.abc }))
         "#,
         exp: map![
@@ -217,7 +204,6 @@ fn columns() {
 }
 
 #[test]
-#[ignore]
 fn optional_label_defined() {
     test_infer! {
         config: AnalyzerConfig{
@@ -225,7 +211,7 @@ fn optional_label_defined() {
             ..AnalyzerConfig::default()
         },
         env: map![
-            "columns" => r#"(table: A, ?column: C = "abc") => { C: string } where A: Record, C: Label"#,
+            "columns" => r#"(table: A, ?column: C = .abc) => { C: string } where A: Record, C: Label"#,
         ],
         src: r#"
             x = columns(table: { a: 1, b: "b" })
@@ -246,13 +232,13 @@ fn label_types_are_preserved_in_exports() {
             ..AnalyzerConfig::default()
         },
         src: r#"
-            builtin elapsed: (?timeColumn: T = "_time") => stream[{ A with T: time }]
+            builtin elapsed: (?timeColumn: T = ._time) => stream[{ A with T: time }]
                     where
                     A: Record,
                     T: Label
         "#,
         exp: map![
-            "elapsed" => r#"(?timeColumn:A = "_time") => stream[{B with A:time}] where A: Label, B: Record"#
+            "elapsed" => r#"(?timeColumn:A = ._time) => stream[{B with A:time}] where A: Label, B: Record"#
         ],
     }
 }
@@ -284,7 +270,6 @@ fn optional_label_undefined() {
 }
 
 #[test]
-#[ignore]
 fn default_arguments_do_not_try_to_treat_literals_as_strings_when_they_must_be_a_label() {
     test_infer! {
         config: AnalyzerConfig{
@@ -299,7 +284,7 @@ fn default_arguments_do_not_try_to_treat_literals_as_strings_when_they_must_be_a
         ],
         src: r#"
             f = (
-                column="_value",
+                column=._value,
                 tables=<-,
             ) =>
                 tables
@@ -314,7 +299,6 @@ fn default_arguments_do_not_try_to_treat_literals_as_strings_when_they_must_be_a
 }
 
 #[test]
-#[ignore]
 fn constraints_propagate_fully() {
     test_infer! {
         config: AnalyzerConfig{
@@ -331,7 +315,7 @@ fn constraints_propagate_fully() {
         src: r#"
             x = aggregateWindow(
                 fn: max,
-                column: "_value",
+                column: ._value,
             )
         "#,
         exp: map![
@@ -348,15 +332,36 @@ fn variables_used_in_label_position_must_have_label_kind() {
             ..AnalyzerConfig::default()
         },
         src: r#"
-            builtin abc: (record: { A with T: time }, ?timeColumn: T = "_time") => int
+            builtin abc: (record: { A with T: time }, ?timeColumn: T = ._time) => int
         "#,
         expect: expect![[r#"
             error: variable T lacks the Label constraint
               ┌─ main:2:13
               │
-            2 │             builtin abc: (record: { A with T: time }, ?timeColumn: T = "_time") => int
-              │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+            2 │             builtin abc: (record: { A with T: time }, ?timeColumn: T = ._time) => int
+              │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
         "#]],
+    }
+}
+
+#[test]
+fn labels_with_spaces() {
+    test_infer! {
+        config: AnalyzerConfig{
+            features: vec![Feature::LabelPolymorphism],
+            ..AnalyzerConfig::default()
+        },
+        env: map![
+            "fill" => "(<-tables: [{ A with B: C }], ?column: B, ?value: D) => [{ A with B: D }]
+                where B: Label
+                "
+        ],
+        src: r#"
+            x = [{ "with spaces": 1 }] |> fill(column: ."with spaces", value: "x")
+        "#,
+        exp: map![
+            "x" => r#"[{ "with spaces": string }]"#,
+        ],
     }
 }
