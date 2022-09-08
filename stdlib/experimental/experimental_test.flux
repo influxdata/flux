@@ -326,3 +326,132 @@ testcase unpivot_with_nulls_2 {
 
     testing.diff(want, got)
 }
+
+testcase unpivot_other_columns {
+    got =
+        array.from(
+            rows: [
+                {
+                    _measurement: "m",
+                    tag: "t1",
+                    f0: 10.1,
+                    f1: 10.2,
+                    _time: 2018-12-01T00:00:00Z,
+                },
+                {
+                    _measurement: "m",
+                    tag: "t1",
+                    f0: 20.1,
+                    f1: 20.2,
+                    _time: 2018-12-01T00:00:10Z,
+                },
+            ],
+        )
+            |> group(columns: ["_measurement"])
+            |> experimental.unpivot(otherColumns: ["_time", "tag"])
+
+    want =
+        array.from(
+            rows: [
+                {
+                    _measurement: "m",
+                    tag: "t1",
+                    _field: "f0",
+                    _value: 10.1,
+                    _time: 2018-12-01T00:00:00Z,
+                },
+                {
+                    _measurement: "m",
+                    tag: "t1",
+                    _field: "f1",
+                    _value: 10.2,
+                    _time: 2018-12-01T00:00:00Z,
+                },
+                {
+                    _measurement: "m",
+                    tag: "t1",
+                    _field: "f0",
+                    _value: 20.1,
+                    _time: 2018-12-01T00:00:10Z,
+                },
+                {
+                    _measurement: "m",
+                    tag: "t1",
+                    _field: "f1",
+                    _value: 20.2,
+                    _time: 2018-12-01T00:00:10Z,
+                },
+            ],
+        )
+            |> group(columns: ["_measurement", "_field"])
+
+    testing.diff(want, got)
+}
+
+testcase unpivot_other_columns_nulls {
+    got =
+        array.from(
+            rows: [
+                {
+                    _measurement: "m",
+                    tag0: "foo",
+                    tag1: "bar",
+                    f0: 10.1,
+                    f1: debug.null(type: "float"),
+                    _time: 2018-12-01T00:00:00Z,
+                },
+                {
+                    _measurement: "m",
+                    tag0: "foz",
+                    tag1: "baz",
+                    f0: 20.1,
+                    f1: 20.2,
+                    _time: 2018-12-01T00:00:10Z,
+                },
+            ],
+        )
+            |> group(columns: ["_measurement"])
+            |> experimental.unpivot(otherColumns: ["_time", "tag0", "tag1"])
+
+    want =
+        array.from(
+            rows: [
+                {
+                    _measurement: "m",
+                    tag0: "foo",
+                    tag1: "bar",
+                    _field: "f0",
+                    _value: 10.1,
+                    _time: 2018-12-01T00:00:00Z,
+                },
+                {
+                    _measurement: "m",
+                    tag0: "foz",
+                    tag1: "baz",
+                    _field: "f0",
+                    _value: 20.1,
+                    _time: 2018-12-01T00:00:10Z,
+                },
+                {
+                    _measurement: "m",
+                    tag0: "foz",
+                    tag1: "baz",
+                    _field: "f1",
+                    _value: 20.2,
+                    _time: 2018-12-01T00:00:10Z,
+                },
+            ],
+        )
+            |> group(columns: ["_measurement", "_field"])
+
+    testing.diff(want, got)
+}
+
+testcase unpivot_other_cols_error {
+    fn = () =>
+        array.from(rows: [{foo: "bar", v0: 10, _time: 2020-01-01T00:00:00Z}])
+            |> experimental.unpivot(otherColumns: ["does not exist"])
+            |> tableFind(fn: (key) => true)
+
+    testing.shouldError(fn: fn, want: /unpivot could not find column named "does not exist"/)
+}

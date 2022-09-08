@@ -1319,6 +1319,7 @@ builtin preview : (<-tables: stream[A], ?nrows: int, ?ntables: int) => stream[A]
 //
 // ## Parameters
 // - tables: Input data. Default is piped-forward data (`<-`).
+// - otherColumns: List of column names that are not in the group key but are also not field columns. Default is `["_time"]`.
 //
 // ## Examples
 //
@@ -1346,9 +1347,9 @@ builtin preview : (<-tables: stream[A], ?nrows: int, ?ntables: int) => stream[A]
 // ## Metadata
 // introduced: 0.172.0
 // tags: transformations
-//
 builtin unpivot : (
         <-tables: stream[{A with _time: time}],
+        ?otherColumns: [string],
     ) => stream[{B with _field: string, _value: C}]
     where
     A: Record,
