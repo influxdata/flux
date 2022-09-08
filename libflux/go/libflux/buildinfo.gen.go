@@ -503,7 +503,7 @@ var sourceHashes = map[string]string{
 	"stdlib/universe/join_test.flux":                                                              "c9df025c419b32ea11295281c02693c46839047de1515f93c4193ca655ddb8aa",
 	"stdlib/universe/join_two_same_sources_test.flux":                                             "e2c3347ab52bf85311532f6f06d1c23dfda1189372591c7156169b0c6acd60b5",
 	"stdlib/universe/join_unsorted_columns_test.flux":                                             "1e67d4c1aef04040f9ce31cc6a7394ed84c066d286c9ba4d93f5e0db78308632",
-	"stdlib/universe/join_use_previous_test.flux":                                                 "df525d8dfaccfbbec1d0fb57f72359e30e93b7a4ddc356c56a5570c2ee323406",
+	"stdlib/universe/join_use_previous_test.flux":                                                 "604728f9f1e43325aa4aa9f1c26495ddcd9f2e05f516d3ce40d9ce7813b859f5",
 	"stdlib/universe/kama_test.flux":                                                              "a4c04e049a217333131267aee134f6a6aa3c22493b99bab8cf62ee8c702ed861",
 	"stdlib/universe/kama_v2_test.flux":                                                           "1c74e4ee5266d78f851041d3264f72436e573dc176cf2653d3ec31958b0dcff9",
 	"stdlib/universe/keep_fn_test.flux":                                                           "197e9d0d112d40c468ad73166fb6f2a2e27913ba6f5d145b22cc427020958fdf",
