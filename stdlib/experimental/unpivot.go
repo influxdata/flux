@@ -119,7 +119,7 @@ func (t *unpivotTransformation) Process(chunk table.Chunk, d *execute.TransportD
 			}
 		}
 		if !found {
-			return errors.Newf(codes.Internal, "unpivot could not find column named %q", utc)
+			return errors.Newf(codes.Invalid, "unpivot could not find column named %q", utc)
 		}
 	}
 
