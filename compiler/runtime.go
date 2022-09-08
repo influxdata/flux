@@ -345,34 +345,49 @@ func (e *logicalVectorEvaluator) Eval(ctx context.Context, scope Scope) (values.
 	}
 	defer l.Release()
 
-	if typ := l.Type().Nature(); typ != semantic.Vector {
-		return nil, errors.Newf(codes.Invalid, "cannot use vectorized %s operation on non-vector %s", e.operator, typ)
-	} else if elemType := l.Vector().ElementType().Nature(); elemType != semantic.Bool {
-		return nil, errors.Newf(codes.Invalid, "cannot use operand of type %s with logical %s; expected boolean", elemType, e.operator)
+	lv, err := getLogicalVectorInput(e.operator, l)
+	if err != nil {
+		return nil, err
 	}
-
 	r, err := e.right.Eval(ctx, scope)
 	if err != nil {
 		return nil, err
 	}
+	defer r.Release()
 
-	if typ := r.Type().Nature(); typ != semantic.Vector {
-		return nil, errors.Newf(codes.Invalid, "cannot use vectorized %s operation on non-vector %s", e.operator, typ)
-	} else if elemType := r.Vector().ElementType().Nature(); elemType != semantic.Bool {
-		return nil, errors.Newf(codes.Invalid, "cannot use operand of type %s with logical %s; expected boolean", elemType, e.operator)
+	rv, err := getLogicalVectorInput(e.operator, r)
+	if err != nil {
+		return nil, err
 	}
-
 	mem := memory.GetAllocator(ctx)
 
 	switch e.operator {
 	case ast.AndOperator:
-		return vectorAnd(l.Vector(), r.Vector(), mem)
+		return vectorAnd(lv, rv, mem)
 	case ast.OrOperator:
-		return vectorOr(l.Vector(), r.Vector(), mem)
+		return vectorOr(lv, rv, mem)
 	default:
 		panic(errors.Newf(codes.Internal, "unknown logical operator %v", e.operator))
 	}
 
+}
+
+// getLogicalVectorInput handles the preparation of inputs for vectorized logical ops.
+//
+// If the input value is null, it is converted to a vec repeat boolean false, otherwise
+// the value is validated to make sure it is a vector of bool.
+func getLogicalVectorInput(op ast.LogicalOperatorKind, v values.Value) (values.Vector, error) {
+	if v.IsNull() {
+		return values.NewVectorRepeatValue(values.NewBool(false)), nil
+	}
+
+	if typ := v.Type().Nature(); typ != semantic.Vector {
+		return nil, errors.Newf(codes.Invalid, "cannot use vectorized %s operation on non-vector %s", op, typ)
+	} else if elemType := v.Vector().ElementType().Nature(); elemType != semantic.Bool {
+		return nil, errors.Newf(codes.Invalid, "cannot use operand of type %s with logical %s; expected boolean", elemType, op)
+	}
+
+	return v.Vector(), nil
 }
 
 func vectorAnd(l, r values.Vector, mem memory.Allocator) (values.Vector, error) {
