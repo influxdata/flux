@@ -54,8 +54,7 @@ outData =
 "
 
 testcase join_use_previous_test {
-    tables =
-        csv.from(csv: inData)
+    tables = csv.from(csv: inData)
 
     lhs =
         tables
@@ -70,11 +69,7 @@ testcase join_use_previous_test {
             |> yield(name: "R")
             |> drop(columns: ["_start", "_stop", "_field", "_measurement"])
     got =
-        join(
-            tables: {left: lhs, right: rhs},
-            on: ["_time"],
-            method: "inner",
-        )
+        join(tables: {left: lhs, right: rhs}, on: ["_time"], method: "inner")
             |> group(columns: [])
             |> fill(column: "flag", usePrevious: true)
     want = csv.from(csv: outData)
