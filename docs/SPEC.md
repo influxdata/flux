@@ -963,7 +963,7 @@ If `rec` is bounded and does *not* contain a property `k`, both `rec.k` and `rec
 If `rec` is unbounded and does *not* contain a property `k`, both `rec.k` and `rec["k"]` return _null_.
 
     MemberExpression        = DotExpression  | MemberBracketExpression
-    DotExpression           = "." identifer
+    DotExpression           = "." identifier
     MemberBracketExpression = "[" string_lit "]" .
 
 #### Conditional Expressions
@@ -1170,7 +1170,7 @@ These preassigned values are defined in the source files for the various built-i
 When a built-in value is not expressible in Flux its value may be defined by the hosting environment.
 All such values must have a corresponding builtin statement to declare the existence and type of the built-in value.
 
-    BuiltinStatement = "builtin" identifer ":" TypeExpression .
+    BuiltinStatement = "builtin" identifier ":" TypeExpression .
     TypeExpression   = MonoType ["where" Constraints] .
 
     MonoType = Tvar | Basic | Array | Record | Function .
