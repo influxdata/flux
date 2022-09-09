@@ -20,6 +20,8 @@ struct TokenError {
     pub token: Token,
 }
 
+const MAX_DEPTH: u32 = 80;
+
 /// Represents a Flux parser and its state.
 pub struct Parser<'input> {
     s: Scanner<'input>,
@@ -31,6 +33,8 @@ pub struct Parser<'input> {
 
     fname: String,
     source: &'input str,
+
+    depth: u32,
 }
 
 impl<'input> Parser<'input> {
@@ -44,6 +48,7 @@ impl<'input> Parser<'input> {
             blocks: HashMap::default(),
             fname: "".to_string(),
             source: src,
+            depth: 0,
         }
     }
 
@@ -433,6 +438,17 @@ impl<'input> Parser<'input> {
 
     /// Parses a flux statement
     pub fn parse_statement(&mut self) -> Statement {
+        self.depth_guard(|this| this.parse_statement_inner())
+            .unwrap_or_else(|| {
+                let t = self.consume();
+                Statement::Bad(Box::new(BadStmt {
+                    base: self.base_node_from_token(&t),
+                    text: t.lit,
+                }))
+            })
+    }
+
+    fn parse_statement_inner(&mut self) -> Statement {
         let t = self.peek();
         match t.tok {
             TokenType::Int
@@ -899,10 +915,30 @@ impl<'input> Parser<'input> {
         }
     }
 
+    fn depth_guard<T>(&mut self, f: impl FnOnce(&mut Self) -> T) -> Option<T> {
+        self.depth += 1;
+
+        let x = if self.depth > MAX_DEPTH {
+            self.errs.push(format!("Program is nested too deep"));
+            None
+        } else {
+            Some(f(self))
+        };
+
+        self.depth -= 1;
+
+        x
+    }
+
     /// Parses a flux expression
     pub fn parse_expression(&mut self) -> Expression {
-        self.parse_conditional_expression()
+        self.depth_guard(|this| this.parse_conditional_expression())
+            .unwrap_or_else(|| {
+                let t = self.consume();
+                self.create_bad_expression(t)
+            })
     }
+
     // From GoDoc:
     // parseExpressionWhile will continue to parse expressions until
     // the function while returns true.
