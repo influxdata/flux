@@ -907,8 +907,7 @@ fn parse_invalid_call() {
     let parsed = p.parse_file("".to_string());
 
     // Checks that the identifier in the ast after the `.` does not get assigned `(` which would
-    // show up as `json.((v: r._value)`. Interferes with completion in the LSP as no identifer
-    // contains `(`
+    // show up as `json.((v: r._value)`.
     assert_eq!(
         crate::formatter::format_node(&parsed).unwrap(),
         "json.(v: r._value)\n"
