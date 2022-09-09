@@ -902,6 +902,20 @@ fn int_literal_zero_prefix() {
 }
 
 #[test]
+fn parse_invalid_call() {
+    let mut p = Parser::new("json.(v: r._value)");
+    let parsed = p.parse_file("".to_string());
+
+    // Checks that the identifier in the ast after the `.` does not get assigned `(` which would
+    // show up as `json.((v: r._value)`. Interferes with completion in the LSP as no identifer
+    // contains `(`
+    assert_eq!(
+        crate::formatter::format_node(&parsed).unwrap(),
+        "json.(v: r._value)\n"
+    );
+}
+
+#[test]
 fn issue_4231() {
     let mut p = Parser::new(
         r#"
