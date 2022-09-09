@@ -45,7 +45,6 @@ outData =
 ,,0,2018-05-22T19:54:16Z,648
 "
 
-// Passes in flux and OSS, fails in C2
 testcase group_ungroup {
     got =
         csv.from(csv: inData)
@@ -54,7 +53,10 @@ testcase group_ungroup {
             |> group(columns: ["name"])
             |> group()
             |> map(fn: (r) => ({_time: r._time, io_time: r._value}))
-    want = csv.from(csv: outData)
+            // When reading from storage, row ordering can differ.
+            // Sort explicitly to make comparison reliable.
+            |> sort(columns: ["_time", "io_time"])
+    want = csv.from(csv: outData) |> sort(columns: ["_time", "io_time"])
 
     testing.diff(got, want)
 }

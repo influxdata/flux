@@ -21,9 +21,9 @@ inData =
 ,,1,2018-05-22T19:53:26Z,648,io_time,diskio2,host.local,disk2
 ,,1,2018-05-22T19:53:36Z,648,io_time,diskio2,host.local,disk2
 ,,1,2018-05-22T19:53:46Z,648,io_time,diskio3,host.local,disk2
-,,1,2018-05-22T19:53:56Z,648,io_time,diskio3,host.local,disk2
-,,1,2018-05-22T19:54:06Z,648,io_time,diskio3,host.local,disk2
-,,1,2018-05-22T19:54:16Z,648,io_time,diskio3,host.local,disk2
+,,1,2018-05-22T19:53:56Z,1200,io_time,diskio3,host.local,disk2
+,,1,2018-05-22T19:54:06Z,1200,io_time,diskio3,host.local,disk2
+,,1,2018-05-22T19:54:16Z,1200,io_time,diskio3,host.local,disk2
 "
 outData =
     "
@@ -32,10 +32,9 @@ outData =
 #default,_result,,,,,,,,,
 ,result,table,_start,_stop,_time,_value,_field,_measurement,host,name
 ,,0,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,2018-05-22T19:54:16Z,15205755,io_time,diskio2,host.local,disk0
-,,1,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,2018-05-22T19:53:26Z,648,io_time,diskio2,host.local,disk2
+,,1,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,2018-05-22T19:53:56Z,1200,io_time,diskio3,host.local,disk2
 "
 
-// Passes in Flux and OSS, fails in C2
 testcase group_except {
     got =
         csv.from(csv: inData)

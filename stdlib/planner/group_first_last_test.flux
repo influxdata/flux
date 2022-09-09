@@ -207,7 +207,6 @@ inData =
 
 // Group + first test
 // Group on one tag across fields
-// Fails in C2
 testcase group_one_tag_first {
     want =
         array.from(
@@ -235,13 +234,15 @@ testcase group_one_tag_first {
         testing.load(tables: inData)
             |> range(start: -100y)
             |> group(columns: ["t0"])
+            // Sort to make comparison more reliable when using storage (where
+            // row ordering can vary).
+            |> sort(columns: ["_time", "_field", "t0", "t1"])
             |> first()
             |> drop(columns: ["_start", "_stop"])
 
     testing.diff(got, want) |> yield()
 }
 
-// Fails in C2
 testcase group_all_filter_field_first {
     want =
         array.from(
@@ -261,13 +262,15 @@ testcase group_all_filter_field_first {
             |> range(start: -100y)
             |> filter(fn: (r) => r._field == "f0")
             |> group()
+            // Sort to make comparison more reliable when using storage (where
+            // row ordering can vary).
+            |> sort(columns: ["_time", "_field", "t0", "t1"])
             |> first()
             |> drop(columns: ["_start", "_stop"])
 
     testing.diff(got, want) |> yield()
 }
 
-// Fails in C2
 testcase group_one_tag_filter_field_first {
     want =
         array.from(
@@ -296,6 +299,9 @@ testcase group_one_tag_filter_field_first {
             |> range(start: -100y)
             |> filter(fn: (r) => r._field == "f0")
             |> group(columns: ["t0"])
+            // Sort to make comparison more reliable when using storage (where
+            // row ordering can vary).
+            |> sort(columns: ["_time", "_field", "t0", "t1"])
             |> first()
             |> drop(columns: ["_start", "_stop"])
 
@@ -353,7 +359,6 @@ testcase group_two_tag_filter_field_first {
 }
 
 // Group + last tests
-// Fails in C2
 testcase group_one_tag_last {
     want =
         array.from(
@@ -381,13 +386,15 @@ testcase group_one_tag_last {
         testing.load(tables: inData)
             |> range(start: -100y)
             |> group(columns: ["t0"])
+            // Sort to make comparison more reliable when using storage (where
+            // row ordering can vary).
+            |> sort(columns: ["_time", "_field", "t0", "t1"])
             |> last()
             |> drop(columns: ["_start", "_stop"])
 
     testing.diff(got, want) |> yield()
 }
 
-// Fails in C2
 testcase group_all_filter_field_last {
     want =
         array.from(
@@ -407,13 +414,15 @@ testcase group_all_filter_field_last {
             |> range(start: -100y)
             |> filter(fn: (r) => r._field == "f0")
             |> group()
+            // Sort to make comparison more reliable when using storage (where
+            // row ordering can vary).
+            |> sort(columns: ["_time", "_field", "t0", "t1"])
             |> last()
             |> drop(columns: ["_start", "_stop"])
 
     testing.diff(got, want) |> yield()
 }
 
-// Fails in C2
 testcase group_one_tag_filter_field_last {
     want =
         array.from(
@@ -442,6 +451,9 @@ testcase group_one_tag_filter_field_last {
             |> range(start: -100y)
             |> filter(fn: (r) => r._field == "f0")
             |> group(columns: ["t0"])
+            // Sort to make comparison more reliable when using storage (where
+            // row ordering can vary).
+            |> sort(columns: ["_time", "_field", "t0", "t1"])
             |> last()
             |> drop(columns: ["_start", "_stop"])
 
