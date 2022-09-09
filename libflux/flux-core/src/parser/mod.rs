@@ -922,7 +922,8 @@ impl<'input> Parser<'input> {
             self.errs.push(format!("Program is nested too deep"));
             None
         } else {
-            Some(f(self))
+            // Numbers are arbitrary and were just picked from the stack docs
+            Some(stacker::maybe_grow(32 * 1024, 1024 * 1024, || f(self)))
         };
 
         self.depth -= 1;
