@@ -132,9 +132,7 @@ testcase sort_limit_zero_row_table {
             |> filter(fn: (r) => r._value > 10, onEmpty: "keep")
     want = input
 
-    // the call to pass() here is required due to
-    // https://github.com/influxdata/flux/issues/4699
-    got = input |> debug.pass() |> sort() |> limit(n: 5)
+    got = input |> sort() |> limit(n: 5)
 
     testing.diff(got, want)
 }
