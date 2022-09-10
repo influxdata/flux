@@ -1173,19 +1173,19 @@ All such values must have a corresponding builtin statement to declare the exist
     BuiltinStatement = "builtin" identifer ":" TypeExpression .
     TypeExpression   = MonoType ["where" Constraints] .
 
-    MonoType = Tvar | Basic | Array | Record | Function .
-    Tvar     = "A" … "Z" .
-    Basic    = "int" | "uint" | "float" | "string" | "bool" | "time" | "duration" | "bytes" | "regexp" .
-    Array    = "[" MonoType "]" .
-    Record   = ( "{" [Properties] "}" ) | ( "{" Tvar "with" Properties "}" ) .
-    Function = "(" [Parameters] ")" "=>" MonoType .
+    MonoType     = Tvar | BasicType | ArrayType | RecordType | FunctionType .
+    Tvar         = "A" … "Z" .
+    BasicType    = "int" | "uint" | "float" | "string" | "bool" | "time" | "duration" | "bytes" | "regexp" .
+    ArrayType    = "[" MonoType "]" .
+    RecordType   = ( "{" [RecordTypeProperties] "}" ) | ( "{" Tvar "with" RecordTypeProperties "}" ) .
+    FunctionType = "(" [FunctionTypeParameters] ")" "=>" MonoType .
 
-    Properties = Property { "," Property } .
-    Property   = Label ":" MonoType .
-    Label      = identifier | string_lit
+    RecordTypeProperties = RecordTypeProperty { "," RecordTypeProperty } .
+    RecordTypeProperty   = Label ":" MonoType .
+    Label = identifier | string_lit
 
-    Parameters = Parameter { "," Parameter } .
-    Parameter  = [ "<-" | "?" ] identifier ":" MonoType .
+    FunctionTypeParameters = FunctionTypeParameter { "," FunctionTypeParameter } .
+    FunctionTypeParameter = [ "<-" | "?" ] identifier ":" MonoType .
 
     Constraints = Constraint { "," Constraint } .
     Constraint  = Tvar ":" Kinds .
