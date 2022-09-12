@@ -96,7 +96,7 @@ The following keywords are reserved and may not be used as identifiers:
     and    import  not  return   option   test
     empty  in      or   package  builtin
 
-[IMPL#256](https://github.com/influxdata/platform/issues/256) Add in and empty operator support
+[IMPL#256](https://github.com/influxdata/flux/issues/764) Add in and empty operator support
 
 #### Operators
 
@@ -120,7 +120,7 @@ The following coercion rules apply to numeric literals:
 * an error will occur if the coerced type cannot represent the literal value.
 
 
-[IMPL#255](https://github.com/influxdata/platform/issues/255) Allow numeric literal coercion.
+[IMPL#255](https://github.com/influxdata/flux/issues/476) Allow numeric literal coercion.
 
 ##### Integer literals
 
@@ -159,7 +159,7 @@ Examples:
     2.71828
     .26
 
-[IMPL#254](https://github.com/influxdata/platform/issues/254) Parse float literals
+<!-- no corresponding issue [IMPL#254](https://github.com/influxdata/platform/issues/254) Parse float literals -->
 
 #### Duration literals
 
@@ -247,7 +247,7 @@ Examples:
     2018-01-31T00:00:00Z + 1mo * 2  // 2018-03-31T00:00:00Z
     2018-01-31T00:00:00Z + 1mo * 3  // 2018-04-30T00:00:00Z
 
-[IMPL#657](https://github.com/influxdata/platform/issues/657) Implement Duration vectors
+[IMPL#657](https://github.com/influxdata/flux/issues/413) Implement Duration vectors
 
 #### Date and time literals
 
@@ -319,7 +319,7 @@ A function "printf" exists to allow more precise control over formatting of vari
 To include the literal `${` within a string it must be escaped.
 
 
-[IMPL#248](https://github.com/influxdata/platform/issues/248) Add printf function
+[IMPL#248](https://github.com/influxdata/flux/issues/731) Add printf function
 
 Interpolation example:
 
@@ -422,8 +422,6 @@ The default value is set using the time zone of the running process.
 
     option location = fixedZone(offset:-5h) // set timezone to be 5 hours west of UTC
     option location = loadLocation(name:"America/Denver") // set location to be America/Denver
-
-[IMPL#660](https://github.com/influxdata/platform/issues/660) Implement Location option
 
 ### Types
 
@@ -577,7 +575,7 @@ A _function type_ represents a set of all functions with the same argument and r
 A _generator type_ represents a value that produces an unknown number of other values.
 The generated values may be of any other type but must all be the same type.
 
-[IMPL#658](https://github.com/influxdata/platform/issues/658) Implement Generators types
+<!-- no corresponding issue [IMPL#658](https://github.com/influxdata/platform/issues/658) Implement Generators types -->
 
 #### Polymorphism
 
@@ -735,7 +733,6 @@ Note that the package clause is not an assignment.
 The package name does not appear in any scope.
 Its purpose is to identify the files belonging to the same package and to specify the default package name for import declarations.
 
-[IMPL#247](https://github.com/influxdata/platform/issues/247) Add package/namespace support
 
 #### Variable assignment
 
@@ -1065,7 +1062,6 @@ The package clause must be at the begining of any Flux source file.
 All files in the same package must declare the same package name.
 When a file does not declare a package clause, all identifiers in that file will belong to the special _main_ package.
 
-[IMPL#247](https://github.com/influxdata/platform/issues/247) Add package/namespace support
 
 ##### package main
 
