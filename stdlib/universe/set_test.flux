@@ -177,11 +177,9 @@ outData =
 ,,4,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,zmk1YWi,server01,2018-12-19T22:14:20Z,10
 "
 
-// Passes in fluxand OSS, fails in C2
 testcase set {
     got =
         csv.from(csv: inData)
-            |> testing.load()
             |> range(start: 2018-01-01T00:00:00Z)
             |> set(key: "t0", value: "server01")
     want = csv.from(csv: outData)

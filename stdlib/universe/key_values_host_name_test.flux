@@ -62,11 +62,9 @@ outData =
 ,,3,_m3,name,n4,ff
 "
 
-// Passes in flux, fails in C2 and OSS
 testcase key_values_host_name {
     got =
         csv.from(csv: inData)
-            |> testing.load()
             |> range(start: 2018-05-22T19:53:00Z, stop: 2018-05-22T19:55:00Z)
             |> keyValues(keyColumns: ["host", "name"])
             |> drop(columns: ["_start", "_stop"])

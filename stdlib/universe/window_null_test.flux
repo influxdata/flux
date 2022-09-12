@@ -35,11 +35,9 @@ outData =
 
 option now = () => 2019-01-15T21:40:32Z
 
-// Passes in flux, fails in C2 and OSS
 testcase window_null {
     got =
         csv.from(csv: inData)
-            |> testing.load()
             |> range(start: -5m)
             |> window(every: 30s)
     want = csv.from(csv: outData)
