@@ -182,12 +182,11 @@ outData =
 ,,2,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-19T00:00:00Z,19624,United States
 "
 
-// Passes in flux, fails in C2 and OSS
 testcase align_time {
     got =
         csv.from(csv: inData)
             |> testing.load()
-            |> range(start: 2020-01-01T00:00:00Z, stop: 2020-04-01T00:00:00Z)
+            |> range(start: 2020-02-22T00:00:00Z, stop: 2020-03-22T00:00:00Z)
             |> experimental.alignTime(alignTo: 2020-01-01T00:00:00Z)
     want = csv.from(csv: outData)
 

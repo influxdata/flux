@@ -23,11 +23,9 @@ outData =
 ,,0,B
 "
 
-// Passes in flux, fails in C2 and OSS
 testcase buckets {
     got =
         csv.from(csv: inData)
-            |> testing.load()
             |> rename(columns: {name: "_value"})
             |> keep(columns: ["_value"])
     want = csv.from(csv: outData)

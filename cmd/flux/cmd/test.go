@@ -431,7 +431,6 @@ func (t *TestRunner) MarkSkipped(testNames, skips, tags []string, skipUntagged b
 		}
 		// Now we assume the test is not skipped and check the rest of the rules
 		skipBecauseTags := false
-
 		if len(t.tests[i].tags) > 0 {
 			// Tags must be present for all test tags
 			isMatch := true
