@@ -1,4 +1,4 @@
-use std::{io, path::PathBuf};
+use std::{collections::BTreeMap, io, path::PathBuf};
 
 use anyhow::{anyhow, Context as _, Error, Result};
 use rayon::prelude::*;
@@ -87,18 +87,17 @@ fn main() -> Result<()> {
     let (prelude, imports, _sem_pkgs) =
         semantic::bootstrap::infer_stdlib_dir(&stdlib_path, semantic::AnalyzerConfig::default())?;
 
-    let analyzer = || {
-        Analyzer::new(
-            (&prelude).into(),
-            &imports,
-            semantic::AnalyzerConfig::default(),
-        )
-    };
-
-    let (prelude, imports, _sem_pkgs) =
+    let (new_prelude, new_imports, _sem_pkgs) =
         semantic::bootstrap::infer_stdlib_dir(&stdlib_path, new_config.clone())?;
 
-    let new_analyzer = || Analyzer::new((&prelude).into(), &imports, new_config.clone());
+    let analysis = FeatureDiff {
+        prelude,
+        imports,
+        new_prelude,
+        new_imports,
+        new_config: new_config.clone(),
+        report_already_failing_scripts: app.report_already_failing_scripts,
+    };
 
     let mut connection;
 
@@ -106,9 +105,15 @@ fn main() -> Result<()> {
         match app.database.extension().and_then(|e| e.to_str()) {
             Some("flux") => {
                 let source = std::fs::read_to_string(&app.database)?;
-                new_analyzer()
-                    .analyze_source("".into(), "".into(), &source)
-                    .map_err(|err| err.error.pretty_error())?;
+
+                Analyzer::new(
+                    (&analysis.new_prelude).into(),
+                    &analysis.new_imports,
+                    new_config.clone(),
+                )
+                .analyze_source("".into(), "".into(), &source)
+                .map_err(|err| err.error.pretty_error())?;
+
                 return Ok(());
             }
             Some("csv") => {
@@ -181,61 +186,7 @@ fn main() -> Result<()> {
                 .try_for_each(|(i, source): (usize, String)| {
                     // eprintln!("{}", source);
 
-                    let current_result = match std::panic::catch_unwind(|| {
-                        analyzer().analyze_source("".into(), "".into(), &source)
-                    }) {
-                        Ok(x) => x,
-                        Err(_) => panic!("Panic at source {}: {}", i, source),
-                    };
-
-                    let new_result = match std::panic::catch_unwind(|| {
-                        new_analyzer().analyze_source("".into(), "".into(), &source)
-                    }) {
-                        Ok(x) => x,
-                        Err(_) => panic!("Panic at source {}: {}", i, source),
-                    };
-
-                    match (current_result, new_result) {
-                        (Ok(_), Ok(_)) => (),
-                        (Err(err), Ok(_)) => {
-                            eprintln!("### {}", i);
-                            eprintln!("{}", source);
-
-                            eprintln!(
-                                "Missing errors when the features are enabled: {}",
-                                err.error.pretty(&source)
-                            );
-                            eprintln!("-------------------------------");
-                        }
-                        (Ok(_), Err(err)) => {
-                            eprintln!("### {}", i);
-                            eprintln!("{}", source);
-
-                            eprintln!(
-                                "New errors when the features are enabled: {}",
-                                err.error.pretty(&source)
-                            );
-                            eprintln!("-------------------------------");
-                        }
-                        (Err(current_err), Err(new_err)) => {
-                            if app.report_already_failing_scripts {
-                                let current_err = current_err.error.pretty(&source);
-                                let new_err = new_err.error.pretty(&source);
-                                if current_err != new_err {
-                                    eprintln!("{}", source);
-
-                                    eprintln!(
-                                        "Different when the new features are enabled:\n{}",
-                                        pretty_assertions::StrComparison::new(
-                                            &current_err,
-                                            &new_err,
-                                        )
-                                    );
-                                    eprintln!("-------------------------------");
-                                }
-                            }
-                        }
-                    }
+                    analysis.analyze(i, &source)?;
 
                     final_tx.send(())?;
 
@@ -259,6 +210,93 @@ fn main() -> Result<()> {
     eprintln!("Done! Checked {} queries", count);
 
     Ok(())
+}
+
+trait Analysis {
+    fn analyze(&self, i: usize, source: &str) -> Result<()>;
+}
+
+struct FeatureDiff {
+    prelude: semantic::PackageExports,
+    imports: BTreeMap<String, semantic::PackageExports>,
+    new_prelude: semantic::PackageExports,
+    new_imports: BTreeMap<String, semantic::PackageExports>,
+    new_config: semantic::AnalyzerConfig,
+    report_already_failing_scripts: bool,
+}
+
+impl Analysis for FeatureDiff {
+    fn analyze(&self, i: usize, source: &str) -> Result<()> {
+        let analyzer = || {
+            Analyzer::new(
+                (&self.prelude).into(),
+                &self.imports,
+                semantic::AnalyzerConfig::default(),
+            )
+        };
+
+        let current_result = match std::panic::catch_unwind(|| {
+            analyzer().analyze_source("".into(), "".into(), &source)
+        }) {
+            Ok(x) => x,
+            Err(_) => panic!("Panic at source {}: {}", i, source),
+        };
+
+        let new_analyzer = || {
+            Analyzer::new(
+                (&self.new_prelude).into(),
+                &self.new_imports,
+                self.new_config.clone(),
+            )
+        };
+        let new_result = match std::panic::catch_unwind(|| {
+            new_analyzer().analyze_source("".into(), "".into(), &source)
+        }) {
+            Ok(x) => x,
+            Err(_) => panic!("Panic at source {}: {}", i, source),
+        };
+
+        match (current_result, new_result) {
+            (Ok(_), Ok(_)) => (),
+            (Err(err), Ok(_)) => {
+                eprintln!("### {}", i);
+                eprintln!("{}", source);
+
+                eprintln!(
+                    "Missing errors when the features are enabled: {}",
+                    err.error.pretty(&source)
+                );
+                eprintln!("-------------------------------");
+            }
+            (Ok(_), Err(err)) => {
+                eprintln!("### {}", i);
+                eprintln!("{}", source);
+
+                eprintln!(
+                    "New errors when the features are enabled: {}",
+                    err.error.pretty(&source)
+                );
+                eprintln!("-------------------------------");
+            }
+            (Err(current_err), Err(new_err)) => {
+                if self.report_already_failing_scripts {
+                    let current_err = current_err.error.pretty(&source);
+                    let new_err = new_err.error.pretty(&source);
+                    if current_err != new_err {
+                        eprintln!("{}", source);
+
+                        eprintln!(
+                            "Different when the new features are enabled:\n{}",
+                            pretty_assertions::StrComparison::new(&current_err, &new_err,)
+                        );
+                        eprintln!("-------------------------------");
+                    }
+                }
+            }
+        }
+
+        Ok(())
+    }
 }
 
 fn join3<A, B, C>(
