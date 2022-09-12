@@ -1536,13 +1536,11 @@ inData =
 "
 
 testcase naive_bayes {
+    option testing.tags = ["skip"]
+
     got =
         csv.from(csv: inData)
-            |> naiveBayesClassifier.naiveBayes(
-                myClass: "airborne",
-                myField: "aquatic",
-                myMeasurement: "zoo-data",
-            )
+            |> naiveBayesClassifier.naiveBayes(myClass: "airborne", myField: "aquatic", myMeasurement: "zoo-data")
 
     want =
         csv.from(
