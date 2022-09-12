@@ -954,7 +954,7 @@ groupByArea = (tables=<-, newColumn, level, s2cellIDLevel=-1) => {
 //   Default is `["id","tid"]`.
 // - orderBy: Columns to order results by. Default is `["_time"]`.
 //
-// Sort precedence is determined by list order (left to right).
+//   Sort precedence is determined by list order (left to right).
 //
 // - tables: Input data. Default is piped-forward data (`<-`).
 //
