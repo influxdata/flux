@@ -584,7 +584,7 @@ Flux supports parametric, record, and ad hoc polymorphism.
 
 ##### Type variables
 
-Polymorphism are represented via "type variables" which are specified with a single uppercase
+Polymorphic types are represented via "type variables" which are specified with a single uppercase
 letter (`A`, `B`, etc).
 
 ##### Parametric Polymorphism
