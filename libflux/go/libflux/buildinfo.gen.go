@@ -74,7 +74,7 @@ var sourceHashes = map[string]string{
 	"stdlib/array/from_test.flux":                                                                 "688a3593d27aed7110d016c0b7634808dee533311d4349669a1104bc50a9f3e7",
 	"stdlib/bitwise/bitwise.flux":                                                                 "580114d80074f27c12c28b5832e52269cd8f3a99890a53617c25aa778fd04acd",
 	"stdlib/bitwise/bitwise_test.flux":                                                            "150d847157570fe95f1ddeb65c75b7e30bb5fa8422df281d72b889b62e8db54c",
-	"stdlib/contrib/RohanSreerama5/naiveBayesClassifier/bayes_test.flux":                          "e02e637a7b50a0e1fb977491c349c547f9ab1d1daef4999735e73051c14291c1",
+	"stdlib/contrib/RohanSreerama5/naiveBayesClassifier/bayes_test.flux":                          "b744dc54c4ad0df21d1ebaa13af6074776ef68bc90c889ab0816ec411d1eb941",
 	"stdlib/contrib/RohanSreerama5/naiveBayesClassifier/naiveBayesClassifier.flux":                "8ea19d137aa34d2d58a90b8e93668f7c8ce917565785f1f02183f4deec7a3600",
 	"stdlib/contrib/anaisdg/anomalydetection/mad.flux":                                            "e7f6f8e600e3fcb0086a896bb5886d67482b3deba3bafc5be0e30716ae88a4cd",
 	"stdlib/contrib/anaisdg/anomalydetection/mad_test.flux":                                       "ef886757f79114d8b6785f5a3ef718c83cfd020946b10e4ec0c351cdf4153293",
