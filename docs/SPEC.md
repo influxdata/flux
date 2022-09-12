@@ -159,7 +159,7 @@ Examples:
     2.71828
     .26
 
-<!-- [IMPL#254](https://github.com/influxdata/platform/issues/254) Parse float literals -->
+<!-- no corresponding issue [IMPL#254](https://github.com/influxdata/platform/issues/254) Parse float literals -->
 
 #### Duration literals
 
@@ -423,8 +423,6 @@ The default value is set using the time zone of the running process.
     option location = fixedZone(offset:-5h) // set timezone to be 5 hours west of UTC
     option location = loadLocation(name:"America/Denver") // set location to be America/Denver
 
-<!-- [IMPL#660](https://github.com/influxdata/platform/issues/660) Implement Location option -->
-
 ### Types
 
 A type defines a set of values and operations on those values.
@@ -498,7 +496,7 @@ Examples:
     2018-07-01T00:00:00Z + 2y  // 2020-07-01T00:00:00Z
     2018-07-01T00:00:00Z + 5h  // 2018-07-01T05:00:00Z
 
-<!-- [IMPL#2026](https://github.com/influxdata/flux/issues/2026) -->
+[IMPL#2026](https://github.com/influxdata/flux/issues/2026)
 
 #### Binary types
 
@@ -577,7 +575,7 @@ A _function type_ represents a set of all functions with the same argument and r
 A _generator type_ represents a value that produces an unknown number of other values.
 The generated values may be of any other type but must all be the same type.
 
-<!-- [IMPL#658](https://github.com/influxdata/platform/issues/658) Implement Generators types -->
+<!-- no corresponding issue [IMPL#658](https://github.com/influxdata/platform/issues/658) Implement Generators types -->
 
 #### Polymorphism
 
