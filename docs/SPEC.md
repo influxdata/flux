@@ -1016,8 +1016,8 @@ The operator precedence is encoded directly into the grammar as the following.
     UnaryLogicalExpression   = ComparisonExpression
                              | UnaryLogicalOperator UnaryLogicalExpression .
     UnaryLogicalOperator     = "not" | "exists" .
-    ComparisonExpression     = MultiplicativeExpression
-                             | ComparisonExpression ComparisonOperator MultiplicativeExpression .
+    ComparisonExpression     = AdditiveExpression
+                             | ComparisonExpression ComparisonOperator AdditiveExpression .
     ComparisonOperator       = "==" | "!=" | "<" | "<=" | ">" | ">=" | "=~" | "!~" .
     AdditiveExpression       = MultiplicativeExpression
                              | AdditiveExpression AdditiveOperator MultiplicativeExpression .
