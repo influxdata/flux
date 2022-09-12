@@ -158,10 +158,12 @@ impl<'input> Parser<'input> {
     fn expect_or_skip(&mut self, exp: TokenType) -> Token {
         let t = self.scan();
         match t.tok {
-            tok if tok == exp => (),
+            tok if tok == exp => t,
             TokenType::Eof => {
                 self.errs.push(format!("expected {}, got EOF", exp));
                 self.t = Some(t.clone());
+
+                t
             }
             _ => {
                 let pos = ast::Position::from(&t.start_pos);
@@ -170,9 +172,18 @@ impl<'input> Parser<'input> {
                     exp, t.tok, t.lit, pos.line, pos.column,
                 ));
                 self.t = Some(t.clone());
+
+                Token {
+                    tok: TokenType::Illegal,
+                    lit: "".into(),
+                    start_offset: t.start_offset,
+                    end_offset: t.start_offset,
+                    start_pos: t.start_pos,
+                    end_pos: t.start_pos,
+                    comments: Vec::new(),
+                }
             }
         }
-        t
     }
 
     // open will open a new block. It will expect that the next token
