@@ -22,6 +22,20 @@ struct TokenError {
 
 const MAX_DEPTH: u32 = 80;
 
+#[cfg(not(target = "wasm32-unknown-unknown"))]
+#[inline]
+fn maybe_grow_stack<T>(f: impl FnOnce() -> T) -> T {
+    // Numbers are arbitrary and were just picked from the stack docs
+    stacker::maybe_grow(32 * 1024, 1024 * 1024, f)
+}
+
+// Stacker doesn't work on wasm so we just have to rely on checking against `MAX_DEPTH`
+#[cfg(target = "wasm32-unknown-unknown")]
+#[inline]
+fn maybe_grow_stack<T>(f: impl FnOnce() -> T) -> T {
+    f()
+}
+
 /// Represents a Flux parser and its state.
 pub struct Parser<'input> {
     s: Scanner<'input>,
@@ -922,8 +936,7 @@ impl<'input> Parser<'input> {
             self.errs.push(format!("Program is nested too deep"));
             None
         } else {
-            // Numbers are arbitrary and were just picked from the stack docs
-            Some(stacker::maybe_grow(32 * 1024, 1024 * 1024, || f(self)))
+            Some(maybe_grow_stack(|| f(self)))
         };
 
         self.depth -= 1;
