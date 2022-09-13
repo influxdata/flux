@@ -1750,7 +1750,7 @@ builtin map : (<-tables: stream[A], fn: (r: A) => B, ?mergeKey: bool) => stream[
 //
 // ## Examples
 //
-// ### Return the row with the maximum value
+// ### Return the row with the maximum value from each input table
 // ```
 // import "sampledata"
 //
@@ -2065,7 +2065,7 @@ builtin pivot : (
 //
 // - stop: Latest time to include in results. Default is `now()`.
 //
-//   Results _exclude_ rows with `_time` values that match the specified start time.
+//   Results _exclude_ rows with `_time` values that match the specified stop time.
 //   Use a relative duration, absolute time, or integer (Unix timestamp in seconds).
 //   For example, `-1h`, `2019-08-28T22:00:00Z`, or `1567029600`.
 //   Durations are relative to `now()`.
@@ -2231,7 +2231,7 @@ builtin relativeStrengthIndex : (<-tables: stream[A], n: int, ?columns: [string]
 
 // rename renames columns in a table.
 //
-// If a column in group key is renamed, the column name in the group key is updated.
+// If a column in the group key is renamed, the column name in the group key is updated.
 //
 // ## Parameters
 // - columns: Record that maps old column names to new column names.
@@ -2241,7 +2241,7 @@ builtin relativeStrengthIndex : (<-tables: stream[A], n: int, ?columns: [string]
 //
 // ## Examples
 //
-// ### Map column names to new column names
+// ### Explicitly map column names to new column names
 // ```
 // import "sampledata"
 //
@@ -2255,6 +2255,20 @@ builtin relativeStrengthIndex : (<-tables: stream[A], n: int, ?columns: [string]
 //
 // < sampledata.int()
 // >     |> rename(fn: (column) => "${column}_new")
+// ```
+//
+// ### Conditionally rename columns using a function
+// ```
+// import "sampledata"
+//
+// < sampledata.int()
+//     |> rename(
+//         fn: (column) => {
+//             _newColumnName = if column =~ /^_/ then "${column} (Reserved)" else column
+//
+//             return _newColumnName
+//         },
+// >     )
 // ```
 //
 // ## Metadata
@@ -2453,7 +2467,7 @@ builtin spread : (<-tables: stream[A], ?column: string) => stream[B] where A: Re
 // When `desc: true`, null values are first in the sort order.
 //
 // ## Parameters
-// - columns: List of columns to sort by. Default is ["_value"].
+// - columns: List of columns to sort by. Default is `["_value"]`.
 //
 //   Sort precedence is determined by list order (left to right).
 //

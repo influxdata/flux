@@ -953,27 +953,53 @@ groupByArea = (tables=<-, newColumn, level, s2cellIDLevel=-1) => {
 // - groupBy: Columns to group by. These columns should uniquely identify each track.
 //   Default is `["id","tid"]`.
 // - orderBy: Columns to order results by. Default is `["_time"]`.
+//
+//   Sort precedence is determined by list order (left to right).
+//
 // - tables: Input data. Default is piped-forward data (`<-`).
 //
 // ## Examples
+//
 // ### Group geotemporal data into tracks
 // ```
 // # import "array"
 // import "experimental/geo"
 // #
-// # data = array.from(
-// #     rows: [
-// #         {_time: 2021-01-01T00:00:00Z, id: "a213b", lat: 14.01433, lon: -14.5464},
-// #         {_time: 2021-01-02T01:00:00Z, id: "a213b", lat: 13.9228, lon: -13.3338},
-// #         {_time: 2021-01-03T02:00:00Z, id: "a213b", lat: 15.08433, lon: -12.0433},
-// #         {_time: 2021-01-01T00:00:00Z, id: "b546c", lat: 14.01433, lon: 39.7515},
-// #         {_time: 2021-01-02T01:00:00Z, id: "b546c", lat: 13.9228, lon: 38.3527},
-// #         {_time: 2021-01-03T02:00:00Z, id: "b546c", lat: 15.08433, lon: 36.9978},
-// #     ],
-// # )
+// # data =
+// #     array.from(
+// #         rows: [
+// #             {_time: 2021-01-01T00:00:00Z, id: "a213b", lat: 14.01433, lon: -14.5464},
+// #             {_time: 2021-01-02T01:00:00Z, id: "a213b", lat: 13.9228, lon: -13.3338},
+// #             {_time: 2021-01-03T02:00:00Z, id: "a213b", lat: 15.08433, lon: -12.0433},
+// #             {_time: 2021-01-01T00:00:00Z, id: "b546c", lat: 14.01433, lon: 39.7515},
+// #             {_time: 2021-01-02T01:00:00Z, id: "b546c", lat: 13.9228, lon: 38.3527},
+// #             {_time: 2021-01-03T02:00:00Z, id: "b546c", lat: 15.08433, lon: 36.9978},
+// #         ],
+// #     )
 //
 // < data
 // >     |> geo.asTracks()
+// ```
+//
+// ### Group geotemporal data into tracks and sort by specified columns
+// ```
+// # import "array"
+// import "experimental/geo"
+// #
+// # data =
+// #     array.from(
+// #         rows: [
+// #             {_time: 2021-01-01T00:00:00Z, id: "a213b", lat: 14.01433, lon: -14.5464},
+// #             {_time: 2021-01-02T01:00:00Z, id: "a213b", lat: 13.9228, lon: -13.3338},
+// #             {_time: 2021-01-03T02:00:00Z, id: "a213b", lat: 15.08433, lon: -12.0433},
+// #             {_time: 2021-01-01T00:00:00Z, id: "b546c", lat: 14.01433, lon: 39.7515},
+// #             {_time: 2021-01-02T01:00:00Z, id: "b546c", lat: 13.9228, lon: 38.3527},
+// #             {_time: 2021-01-03T02:00:00Z, id: "b546c", lat: 15.08433, lon: 36.9978},
+// #         ],
+// #     )
+//
+// < data
+// >     |> geo.asTracks(orderBy: ["lat", "lon"])
 // ```
 //
 // ## Metadata
