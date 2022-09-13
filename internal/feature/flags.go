@@ -209,6 +209,18 @@ func VectorizedUnaryOps() BoolFlag {
 	return vectorizedUnaryOps
 }
 
+var strictNullLogicalOps = feature.MakeBoolFlag(
+	"StrictNullLogicalOps",
+	"strictNullLogicalOps",
+	"Owen Nelson",
+	false,
+)
+
+// Strictnulllogicalops - When enabled, nulls in logical expressions should match the behavior language spec.
+func Strictnulllogicalops() BoolFlag {
+	return strictNullLogicalOps
+}
+
 // Inject will inject the Flagger into the context.
 func Inject(ctx context.Context, flagger Flagger) context.Context {
 	return feature.Inject(ctx, flagger)
@@ -231,6 +243,7 @@ var all = []Flag{
 	vectorizedConst,
 	vectorizedFloat,
 	vectorizedUnaryOps,
+	strictNullLogicalOps,
 }
 
 var byKey = map[string]Flag{
@@ -250,6 +263,7 @@ var byKey = map[string]Flag{
 	"vectorizedConst":                  vectorizedConst,
 	"vectorizedFloat":                  vectorizedFloat,
 	"vectorizedUnaryOps":               vectorizedUnaryOps,
+	"strictNullLogicalOps":             strictNullLogicalOps,
 }
 
 // Flags returns all feature flags.

@@ -634,8 +634,11 @@ func compile(n semantic.Node, subst semantic.Substitutor) (Evaluator, error) {
 				right:    r,
 			}, nil
 		}
-
-		return &logicalEvaluator{
+		// TODO(onelson): try to select strict or regular logical here.
+		//   Need ctx to read flagger.
+		//   Currently this happens during Eval() where ctx is available and
+		//   will fallback to the regular logicalEvaluator if the flag is unset.
+		return &logicalStrictNullEvaluator{
 			operator: n.Operator,
 			left:     l,
 			right:    r,

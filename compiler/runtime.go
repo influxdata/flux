@@ -11,6 +11,7 @@ import (
 	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/internal/errors"
+	fluxfeature "github.com/influxdata/flux/internal/feature"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/semantic"
@@ -327,6 +328,73 @@ func (e *logicalEvaluator) Eval(ctx context.Context, scope Scope) (values.Value,
 	}
 
 	return r, nil
+}
+
+// logicalStrictNullEvaluator differs from logicalEvaluator by how it adheres to the
+// flux language spec with respect to null inputs.
+type logicalStrictNullEvaluator struct {
+	operator    ast.LogicalOperatorKind
+	left, right Evaluator
+}
+
+func (e *logicalStrictNullEvaluator) Type() semantic.MonoType {
+	return semantic.BasicBool
+}
+
+func (e *logicalStrictNullEvaluator) Eval(ctx context.Context, scope Scope) (values.Value, error) {
+	// Fallback to plain logicalEvaluator if the flag is not set.
+	if !fluxfeature.Strictnulllogicalops().Enabled(ctx) {
+		e := logicalEvaluator{operator: e.operator, left: e.left, right: e.right}
+		return e.Eval(ctx, scope)
+	}
+
+	l, err := e.left.Eval(ctx, scope)
+	if err != nil {
+		return nil, err
+	}
+	defer l.Release()
+	if typ := l.Type().Nature(); !l.IsNull() && typ != semantic.Bool {
+		return nil, errors.Newf(codes.Invalid, "cannot use operand of type %s with logical %s; expected boolean", typ, e.operator)
+	}
+	r, err := e.right.Eval(ctx, scope)
+	if err != nil {
+		return nil, err
+	}
+	defer r.Release()
+	if typ := r.Type().Nature(); !r.IsNull() && typ != semantic.Bool {
+		return nil, errors.Newf(codes.Invalid, "cannot use operand of type %s with logical %s; expected boolean", typ, e.operator)
+	}
+
+	switch e.operator {
+	case ast.AndOperator:
+		if l.IsNull() && !r.IsNull() && !r.Bool() {
+			// null and false
+			return values.NewBool(false), nil
+		} else if l.IsNull() && r.IsNull() ||
+			(l.IsNull() && !r.IsNull() && r.Bool()) {
+			// null and true, null and null
+			l.Retain()
+			return l, nil
+		} else {
+			// non-null
+			return values.NewBool(l.Bool() && r.Bool()), nil
+		}
+	case ast.OrOperator:
+		if l.IsNull() && !r.IsNull() && r.Bool() {
+			// null or true
+			return values.NewBool(true), nil
+		} else if l.IsNull() && r.IsNull() ||
+			(l.IsNull() && !r.IsNull() && !r.Bool()) {
+			// null or false, null or null
+			l.Retain()
+			return l, nil
+		} else {
+			// non-null
+			return values.NewBool(l.Bool() || r.Bool()), nil
+		}
+	default:
+		panic(errors.Newf(codes.Internal, "unknown logical operator %v", e.operator))
+	}
 }
 
 type logicalVectorEvaluator struct {
