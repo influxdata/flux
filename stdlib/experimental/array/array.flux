@@ -372,4 +372,4 @@ toTime = (arr=<-) => array.map(arr: arr, fn: (x) => time(v: x))
 // introduced: NEXT
 // tags: type-conversions
 //
-toUInt = (arr=<-) => array.map(arr: arr, fn: (x) => uint(v: uint))
+toUInt = (arr=<-) => array.map(arr: arr, fn: (x) => uint(v: x))
