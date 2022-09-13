@@ -475,13 +475,15 @@ func vectorAnd(l, r values.Vector, mem memory.Allocator) (values.Vector, error) 
 		b := (*rvr).Bool()
 		return values.NewVectorRepeatValue(values.NewBool(a && b)), nil
 	} else if lvr != nil {
-		res, err := array.AndLConst((*lvr).Bool(), r.Arr().(*array.Boolean), mem)
+		fixed := (*lvr).Bool()
+		res, err := array.AndConst(&fixed, r.Arr().(*array.Boolean), mem)
 		if err != nil {
 			return nil, err
 		}
 		return values.NewVectorValue(res, semantic.BasicBool), nil
 	} else if rvr != nil {
-		res, err := array.AndRConst(l.Arr().(*array.Boolean), (*rvr).Bool(), mem)
+		fixed := (*rvr).Bool()
+		res, err := array.AndConst(&fixed, l.Arr().(*array.Boolean), mem)
 		if err != nil {
 			return nil, err
 		}
@@ -513,13 +515,15 @@ func vectorOr(l, r values.Vector, mem memory.Allocator) (values.Vector, error) {
 		b := (*rvr).Bool()
 		return values.NewVectorRepeatValue(values.NewBool(a || b)), nil
 	} else if lvr != nil {
-		res, err := array.OrLConst((*lvr).Bool(), r.Arr().(*array.Boolean), mem)
+		fixed := (*lvr).Bool()
+		res, err := array.OrConst(&fixed, r.Arr().(*array.Boolean), mem)
 		if err != nil {
 			return nil, err
 		}
 		return values.NewVectorValue(res, semantic.BasicBool), nil
 	} else if rvr != nil {
-		res, err := array.OrRConst(l.Arr().(*array.Boolean), (*rvr).Bool(), mem)
+		fixed := (*rvr).Bool()
+		res, err := array.OrConst(&fixed, l.Arr().(*array.Boolean), mem)
 		if err != nil {
 			return nil, err
 		}
