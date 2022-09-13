@@ -25,6 +25,9 @@ struct AnalyzeQueryLog {
     )]
     report_already_failing_scripts: bool,
     database: PathBuf,
+
+    #[structopt(long, help = "Prints the source code for each script in the input")]
+    print_sources: bool,
 }
 
 trait Source {
@@ -90,13 +93,17 @@ fn main() -> Result<()> {
     let (new_prelude, new_imports, _sem_pkgs) =
         semantic::bootstrap::infer_stdlib_dir(&stdlib_path, new_config.clone())?;
 
-    let analysis = FeatureDiff {
-        prelude,
-        imports,
-        new_prelude,
-        new_imports,
-        new_config: new_config.clone(),
-        report_already_failing_scripts: app.report_already_failing_scripts,
+    let analysis: Box<dyn Analysis> = if app.print_sources {
+        Box::new(PrintSources {})
+    } else {
+        Box::new(FeatureDiff {
+            prelude,
+            imports,
+            new_prelude,
+            new_imports,
+            new_config: new_config.clone(),
+            report_already_failing_scripts: app.report_already_failing_scripts,
+        })
     };
 
     let mut connection;
@@ -106,13 +113,7 @@ fn main() -> Result<()> {
             Some("flux") => {
                 let source = std::fs::read_to_string(&app.database)?;
 
-                Analyzer::new(
-                    (&analysis.new_prelude).into(),
-                    &analysis.new_imports,
-                    new_config.clone(),
-                )
-                .analyze_source("".into(), "".into(), &source)
-                .map_err(|err| err.error.pretty_error())?;
+                analysis.analyze(0, &source)?;
 
                 return Ok(());
             }
@@ -212,7 +213,7 @@ fn main() -> Result<()> {
     Ok(())
 }
 
-trait Analysis {
+trait Analysis: Send + Sync {
     fn analyze(&self, i: usize, source: &str) -> Result<()>;
 }
 
@@ -294,6 +295,20 @@ impl Analysis for FeatureDiff {
                 }
             }
         }
+
+        Ok(())
+    }
+}
+
+struct PrintSources {}
+
+impl Analysis for PrintSources {
+    fn analyze(&self, i: usize, source: &str) -> Result<()> {
+        eprintln!("### {}", i);
+        eprintln!("{}", source);
+
+        let mut s = String::new();
+        std::io::stdin().read_line(&mut s)?;
 
         Ok(())
     }
