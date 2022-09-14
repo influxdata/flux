@@ -64,7 +64,6 @@ outData =
 testcase shift {
     got =
         csv.from(csv: inData)
-            |> testing.load()
             |> range(start: 2018-05-22T19:53:26Z)
             |> timeShift(duration: 120s)
             |> drop(columns: ["_start", "_stop"])
