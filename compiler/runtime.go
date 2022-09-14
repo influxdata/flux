@@ -356,6 +356,26 @@ func (e *logicalStrictNullEvaluator) Eval(ctx context.Context, scope Scope) (val
 	if typ := l.Type().Nature(); !l.IsNull() && typ != semantic.Bool {
 		return nil, errors.Newf(codes.Invalid, "cannot use operand of type %s with logical %s; expected boolean", typ, e.operator)
 	}
+
+	// Short circuit opportunity.
+	// If the op is AND, look for `false`.
+	// For OR, look for `true`.
+	// Return without evaluating the r in these situations.
+	switch e.operator {
+	case ast.AndOperator:
+		if !l.IsNull() && !l.Bool() {
+			l.Retain()
+			return l, nil
+		}
+	case ast.OrOperator:
+		if !l.IsNull() && l.Bool() {
+			l.Retain()
+			return l, nil
+		}
+	default:
+		panic(errors.Newf(codes.Internal, "unknown logical operator %v", e.operator))
+	}
+
 	r, err := e.right.Eval(ctx, scope)
 	if err != nil {
 		return nil, err
@@ -365,32 +385,39 @@ func (e *logicalStrictNullEvaluator) Eval(ctx context.Context, scope Scope) (val
 		return nil, errors.Newf(codes.Invalid, "cannot use operand of type %s with logical %s; expected boolean", typ, e.operator)
 	}
 
+	// At this point, we know `l` is either "null or true"  in the AND case,
+	// "null or false" in the OR case thanks to the earlier short circuit.
+	//
+	// The remaining cases we need to check for:
+	// - the base case of neither side being null (actually performing the logical op).
+	// - `r` is false for AND, true for OR (as in the earlier short circuit).
+	// - either or both of `l`/`r` is null.
 	switch e.operator {
 	case ast.AndOperator:
-		if l.IsNull() && !r.IsNull() && !r.Bool() {
-			// null and false
-			return values.NewBool(false), nil
-		} else if l.IsNull() && r.IsNull() ||
-			(l.IsNull() && !r.IsNull() && r.Bool()) {
-			// null and true, null and null
+		if !l.IsNull() && !r.IsNull() {
+			return values.NewBool(l.Bool() && r.Bool()), nil
+		} else if !r.IsNull() && !r.Bool() {
+			r.Retain()
+			return r, nil
+		} else if l.IsNull() {
 			l.Retain()
 			return l, nil
 		} else {
-			// non-null
-			return values.NewBool(l.Bool() && r.Bool()), nil
+			r.Retain()
+			return r, nil
 		}
 	case ast.OrOperator:
-		if l.IsNull() && !r.IsNull() && r.Bool() {
-			// null or true
-			return values.NewBool(true), nil
-		} else if l.IsNull() && r.IsNull() ||
-			(l.IsNull() && !r.IsNull() && !r.Bool()) {
-			// null or false, null or null
+		if !l.IsNull() && !r.IsNull() {
+			return values.NewBool(l.Bool() || r.Bool()), nil
+		} else if !r.IsNull() && r.Bool() {
+			r.Retain()
+			return r, nil
+		} else if l.IsNull() {
 			l.Retain()
 			return l, nil
 		} else {
-			// non-null
-			return values.NewBool(l.Bool() || r.Bool()), nil
+			r.Retain()
+			return r, nil
 		}
 	default:
 		panic(errors.Newf(codes.Internal, "unknown logical operator %v", e.operator))
