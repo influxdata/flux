@@ -933,7 +933,7 @@ impl<'input> Parser<'input> {
         self.depth += 1;
 
         let x = if self.depth > MAX_DEPTH {
-            self.errs.push(format!("Program is nested too deep"));
+            self.errs.push("Program is nested too deep".into());
             None
         } else {
             Some(maybe_grow_stack(|| f(self)))
