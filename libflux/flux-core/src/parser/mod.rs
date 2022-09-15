@@ -22,7 +22,7 @@ struct TokenError {
 
 const MAX_DEPTH: u32 = 80;
 
-#[cfg(not(target_arch = "wasm32"))]
+#[cfg(not(any(target_arch = "wasm32", windows)))]
 #[inline]
 fn maybe_grow_stack<T>(f: impl FnOnce() -> T) -> T {
     // Numbers are arbitrary and were just picked from the stacker docs
@@ -30,7 +30,7 @@ fn maybe_grow_stack<T>(f: impl FnOnce() -> T) -> T {
 }
 
 // Stacker doesn't work on wasm so we just have to rely on checking against `MAX_DEPTH`
-#[cfg(target_arch = "wasm32")]
+#[cfg(any(target_arch = "wasm32", windows))]
 #[inline]
 fn maybe_grow_stack<T>(f: impl FnOnce() -> T) -> T {
     f()
