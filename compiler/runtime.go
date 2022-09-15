@@ -434,134 +434,324 @@ func (e *logicalVectorEvaluator) Type() semantic.MonoType {
 }
 
 func (e *logicalVectorEvaluator) Eval(ctx context.Context, scope Scope) (values.Value, error) {
+	// The flow in here is a little complicated in support of avoiding evaluating
+	// the RHS if it is not needed, as well as reducing either side to a fixed
+	// value to avoid allocating arrays that might not be needed.
+	//
+	// As such, there is some repetition as we look to short circuit certain cases:
+	// - either side is `true` and the op is OR (this should give `true`)
+	// - either side is `false` and the op is AND (this should give `false`)
+	// - both sides are `null` (the output can only be `null`)
+	//
+	// There are a couple places where we can arrive at fixed values for each
+	// side, which is where the repetition comes from.
+
 	l, err := e.left.Eval(ctx, scope)
 	if err != nil {
 		return nil, err
 	}
 	defer l.Release()
 
-	lv, err := getLogicalVectorInput(e.operator, l)
-	if err != nil {
-		return nil, err
+	ltyp := l.Type()
+	// Will err if typ is not Vector or Array, but that's fine.
+	// We're testing first to make sure this is a Vector.
+	letyp, _ := ltyp.ElemType()
+
+	if !l.IsNull() && !(ltyp.Nature() == semantic.Vector && letyp.Nature() == semantic.Bool) {
+		return nil, errors.Newf(codes.Invalid, "cannot use type %s in vectorized logical expression; expected vector of boolean", ltyp)
 	}
+
+	var (
+		lArr      *array.Boolean
+		lFixedVal *bool
+		lIsFixed  = l.IsNull()
+	)
+
+	if !l.IsNull() {
+		v := l.Vector()
+
+		// If `v` is vec repeat, skip the varied check and immediately select the
+		// branch to return.
+		if vr, ok := v.(*values.VectorRepeatValue); ok {
+			x := vr.Value().Bool()
+			lFixedVal = &x
+			lIsFixed = true
+		}
+
+		// Check to see if the LHS happens to match the short circuit rules in
+		// a constant way.
+		if lFixedVal != nil {
+			switch e.operator {
+			case ast.AndOperator:
+				// base case for "all false"
+				if !*lFixedVal {
+					v.Retain()
+					return v, nil
+				}
+			case ast.OrOperator:
+				// base case for "all true"
+				if *lFixedVal {
+					v.Retain()
+					return v, nil
+				}
+			default:
+				panic(errors.Newf(codes.Internal, "unknown logical operator %v", e.operator))
+			}
+		}
+
+		// When non-repeat, scan to see if all elems are true, false, or null
+		if !lIsFixed {
+			lArr = v.Arr().(*array.Boolean)
+			var initialOutcome *bool
+			if lArr.IsValid(0) {
+				x := lArr.Value(0)
+				initialOutcome = &x
+			}
+
+			varied := false
+			for i := 0; i < lArr.Len(); i++ {
+				var x *bool
+				if lArr.IsValid(i) {
+					y := lArr.Value(i)
+					x = &y
+				}
+
+				if initialOutcome != x {
+					varied = true
+					break
+				}
+			}
+
+			if !varied {
+				lFixedVal = initialOutcome
+				lIsFixed = true
+			}
+
+			// Check to see if the LHS happens to match the short circuit rules in
+			// a constant way.
+			if !varied && initialOutcome != nil {
+				switch e.operator {
+				case ast.AndOperator:
+					// base case for "all false"
+					if !*initialOutcome {
+						return values.NewVectorRepeatValue(values.NewBool(false)), nil
+					}
+				case ast.OrOperator:
+					// base case for "all true"
+					if *initialOutcome {
+						return values.NewVectorRepeatValue(values.NewBool(true)), nil
+					}
+				default:
+					panic(errors.Newf(codes.Internal, "unknown logical operator %v", e.operator))
+				}
+			}
+		}
+	}
+
+	// XXX: If we get here without returning already, LHS will be one of
+	// the non-short-circuit cases:
+	// - null
+	// - false (if op is OR)
+	// - true (if op is AND)
+	//
+	// Next, look for the short circuit cases with the RHS
 	r, err := e.right.Eval(ctx, scope)
 	if err != nil {
 		return nil, err
 	}
 	defer r.Release()
 
-	rv, err := getLogicalVectorInput(e.operator, r)
-	if err != nil {
-		return nil, err
+	// XXX: another early return opportunity when both sides are null (which always produces a null)
+	if l.IsNull() && r.IsNull() {
+		l.Retain()
+		return l, nil
 	}
-	mem := memory.GetAllocator(ctx)
 
+	rtyp := r.Type()
+	// Will err if typ is not Vector or Array, but that's fine.
+	// We're testing first to make sure this is a Vector.
+	retyp, _ := rtyp.ElemType()
+	if !r.IsNull() && !(rtyp.Nature() == semantic.Vector && retyp.Nature() == semantic.Bool) {
+		return nil, errors.Newf(codes.Invalid, "cannot use type %s in vectorized logical expression; expected vector of boolean", rtyp)
+	}
+
+	var (
+		rArr      *array.Boolean
+		rFixedVal *bool
+		rIsFixed  = r.IsNull()
+	)
+
+	if !r.IsNull() {
+		v := r.Vector()
+
+		// If `v` is vec repeat, skip the varied check and immediately select the
+		// branch to return.
+		if vr, ok := v.(*values.VectorRepeatValue); ok {
+			x := vr.Value().Bool()
+			rFixedVal = &x
+			rIsFixed = true
+		}
+
+		// Check to see if the LHS happens to match the short circuit rules in
+		// a constant way.
+		if rFixedVal != nil {
+			switch e.operator {
+			case ast.AndOperator:
+				// base case for "all false"
+				if !*rFixedVal {
+					v.Retain()
+					return v, nil
+				}
+			case ast.OrOperator:
+				// base case for "all true"
+				if *rFixedVal {
+					v.Retain()
+					return v, nil
+				}
+			default:
+				panic(errors.Newf(codes.Internal, "unknown logical operator %v", e.operator))
+			}
+		}
+
+		// When non-repeat, scan to see if all elems are true, false, or null
+		if !rIsFixed {
+			rArr = v.Arr().(*array.Boolean)
+			var initialOutcome *bool
+			if rArr.IsValid(0) {
+				x := rArr.Value(0)
+				initialOutcome = &x
+			}
+
+			varied := false
+			for i := 0; i < rArr.Len(); i++ {
+				var x *bool
+				if rArr.IsValid(i) {
+					y := rArr.Value(i)
+					x = &y
+				}
+
+				if initialOutcome != x {
+					varied = true
+					break
+				}
+			}
+
+			if !varied {
+				rFixedVal = initialOutcome
+				rIsFixed = true
+			}
+
+			// Check to see if the RHS happens to match the short circuit rules in
+			// a constant way.
+			if !varied && initialOutcome != nil {
+				switch e.operator {
+				case ast.AndOperator:
+					// base case for "all false"
+					if !*initialOutcome {
+						return values.NewVectorRepeatValue(values.NewBool(false)), nil
+					}
+				case ast.OrOperator:
+					// base case for "all true"
+					if *initialOutcome {
+						return values.NewVectorRepeatValue(values.NewBool(true)), nil
+					}
+				default:
+					panic(errors.Newf(codes.Internal, "unknown logical operator %v", e.operator))
+				}
+			}
+		}
+	}
+
+	mem := memory.GetAllocator(ctx)
+	// XXX: At this point our inputs can look like:
+	// - One or both sides is a constant true/false/null, but a non-terminal value for the given op.
+	// - Both sides are Array-backed vectors.
+	//
+	// When constants are in play, they should already be captured as vars in this scope (indicated by `lIsFixed` and `rIsFixed`).
+	// The value in each case will be captured in the corresponding vars: `lFixedVal`, `rFixedVal`.
+	// For the cases where the LHS or RHS actually is an Array-backed vector, the array will be captured in: `lArr`, `rArr`.
 	switch e.operator {
 	case ast.AndOperator:
-		return vectorAnd(lv, rv, mem)
+		if lIsFixed && rIsFixed {
+			// If we're here and we have 2 fixed values, we're here because either
+			// side was a single value scanned out of an incoming vector, but we can
+			// still reduce the output as a vec repeat.
+
+			// Terminal case for AND: one side is false we must return false
+			if (lFixedVal != nil && !*lFixedVal) || (rFixedVal != nil && !*rFixedVal) {
+				return values.NewVectorRepeatValue(values.NewBool(false)), nil
+			} else if lFixedVal == nil || rFixedVal == nil {
+				// if we don't have a false but we have a null, the output must be null
+				return values.NewNull(semantic.BasicBool), nil
+			} else {
+				// No nulls means we actually do the op
+				return values.NewVectorRepeatValue(values.NewBool(*lFixedVal && *rFixedVal)), nil
+			}
+		} else if lIsFixed {
+			fixed := lFixedVal
+			arr := rArr
+			res, err := array.AndConst(fixed, arr, mem)
+			if err != nil {
+				return nil, err
+			}
+			return values.NewVectorValue(res, semantic.BasicBool), nil
+		} else if rIsFixed {
+			fixed := rFixedVal
+			arr := lArr
+			res, err := array.AndConst(fixed, arr, mem)
+			if err != nil {
+				return nil, err
+			}
+			return values.NewVectorValue(res, semantic.BasicBool), nil
+		}
+		// XXX: fall through case for 2 varied vector inputs where the output must be built element by element.
+		res, err := array.And(lArr, rArr, mem)
+		if err != nil {
+			return nil, err
+		}
+		return values.NewVectorValue(res, semantic.BasicBool), nil
 	case ast.OrOperator:
-		return vectorOr(lv, rv, mem)
+		if lIsFixed && rIsFixed {
+			// If we're here and we have 2 fixed values, we're here because either
+			// side was a single value scanned out of an incoming vector, but we can
+			// still reduce the output as a vec repeat.
+
+			// Terminal case for OR: one side is true we must return true
+			if (lFixedVal != nil && *lFixedVal) || (rFixedVal != nil && *rFixedVal) {
+				return values.NewVectorRepeatValue(values.NewBool(true)), nil
+			} else if lFixedVal == nil || rFixedVal == nil {
+				// if we don't have a true but we have a null, the output must be null
+				return values.NewNull(semantic.BasicBool), nil
+			} else {
+				// No nulls means we actually do the op
+				return values.NewVectorRepeatValue(values.NewBool(*lFixedVal || *rFixedVal)), nil
+			}
+		} else if lIsFixed {
+			fixed := lFixedVal
+			arr := rArr
+			res, err := array.OrConst(fixed, arr, mem)
+			if err != nil {
+				return nil, err
+			}
+			return values.NewVectorValue(res, semantic.BasicBool), nil
+		} else if rIsFixed {
+			fixed := rFixedVal
+			arr := lArr
+			res, err := array.OrConst(fixed, arr, mem)
+			if err != nil {
+				return nil, err
+			}
+			return values.NewVectorValue(res, semantic.BasicBool), nil
+		}
+		// XXX: fall through case for 2 varied vector inputs where the output must be built element by element.
+		res, err := array.Or(lArr, rArr, mem)
+		if err != nil {
+			return nil, err
+		}
+		return values.NewVectorValue(res, semantic.BasicBool), nil
 	default:
 		panic(errors.Newf(codes.Internal, "unknown logical operator %v", e.operator))
 	}
-
-}
-
-// getLogicalVectorInput handles the preparation of inputs for vectorized logical ops.
-//
-// If the input value is null, it is converted to a vec repeat boolean false, otherwise
-// the value is validated to make sure it is a vector of bool.
-func getLogicalVectorInput(op ast.LogicalOperatorKind, v values.Value) (values.Vector, error) {
-	if v.IsNull() {
-		return values.NewVectorRepeatValue(values.NewBool(false)), nil
-	}
-
-	if typ := v.Type().Nature(); typ != semantic.Vector {
-		return nil, errors.Newf(codes.Invalid, "cannot use vectorized %s operation on non-vector %s", op, typ)
-	} else if elemType := v.Vector().ElementType().Nature(); elemType != semantic.Bool {
-		return nil, errors.Newf(codes.Invalid, "cannot use operand of type %s with logical %s; expected boolean", elemType, op)
-	}
-
-	return v.Vector(), nil
-}
-
-func vectorAnd(l, r values.Vector, mem memory.Allocator) (values.Vector, error) {
-	var lvr, rvr *values.Value
-
-	if vr, ok := l.(*values.VectorRepeatValue); ok {
-		v := vr.Value()
-		lvr = &v
-	}
-	if vr, ok := r.(*values.VectorRepeatValue); ok {
-		v := vr.Value()
-		rvr = &v
-	}
-
-	if lvr != nil && rvr != nil {
-		a := (*lvr).Bool()
-		b := (*rvr).Bool()
-		return values.NewVectorRepeatValue(values.NewBool(a && b)), nil
-	} else if lvr != nil {
-		fixed := (*lvr).Bool()
-		res, err := array.AndConst(&fixed, r.Arr().(*array.Boolean), mem)
-		if err != nil {
-			return nil, err
-		}
-		return values.NewVectorValue(res, semantic.BasicBool), nil
-	} else if rvr != nil {
-		fixed := (*rvr).Bool()
-		res, err := array.AndConst(&fixed, l.Arr().(*array.Boolean), mem)
-		if err != nil {
-			return nil, err
-		}
-		return values.NewVectorValue(res, semantic.BasicBool), nil
-	}
-
-	res, err := array.And(l.Arr().(*array.Boolean), r.Arr().(*array.Boolean), mem)
-	if err != nil {
-		return nil, err
-	}
-	return values.NewVectorValue(res, semantic.BasicBool), nil
-
-}
-
-func vectorOr(l, r values.Vector, mem memory.Allocator) (values.Vector, error) {
-	var lvr, rvr *values.Value
-
-	if vr, ok := l.(*values.VectorRepeatValue); ok {
-		v := vr.Value()
-		lvr = &v
-	}
-	if vr, ok := r.(*values.VectorRepeatValue); ok {
-		v := vr.Value()
-		rvr = &v
-	}
-
-	if lvr != nil && rvr != nil {
-		a := (*lvr).Bool()
-		b := (*rvr).Bool()
-		return values.NewVectorRepeatValue(values.NewBool(a || b)), nil
-	} else if lvr != nil {
-		fixed := (*lvr).Bool()
-		res, err := array.OrConst(&fixed, r.Arr().(*array.Boolean), mem)
-		if err != nil {
-			return nil, err
-		}
-		return values.NewVectorValue(res, semantic.BasicBool), nil
-	} else if rvr != nil {
-		fixed := (*rvr).Bool()
-		res, err := array.OrConst(&fixed, l.Arr().(*array.Boolean), mem)
-		if err != nil {
-			return nil, err
-		}
-		return values.NewVectorValue(res, semantic.BasicBool), nil
-	}
-
-	res, err := array.Or(l.Arr().(*array.Boolean), r.Arr().(*array.Boolean), mem)
-	if err != nil {
-		return nil, err
-	}
-	return values.NewVectorValue(res, semantic.BasicBool), nil
 }
 
 type conditionalEvaluator struct {
