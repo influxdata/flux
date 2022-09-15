@@ -49,7 +49,7 @@ use crate::scanner::*;
     string_lit_char = ( unicode_value | byte_value | dollar_value );
     string_lit = '"' string_lit_char* "$"? :> '"';
 
-    regex_escaped_char = "\\" ( "/" | "\\");
+    regex_escaped_char = "\\/" ;
     regex_unicode_value = (any_count_line - "/") | regex_escaped_char;
     regex_lit = "/" ( regex_unicode_value | byte_value )+ "/";
 
@@ -83,15 +83,12 @@ use crate::scanner::*;
         "and" => { tok = TokenType::And; fbreak; };
         "or" => { tok = TokenType::Or; fbreak; };
         "not" => { tok = TokenType::Not; fbreak; };
-        "empty" => { tok = TokenType::Empty; fbreak; };
-        "in" => { tok = TokenType::In; fbreak; };
         "import" => { tok = TokenType::Import; fbreak; };
         "package" => { tok = TokenType::Package; fbreak; };
         "return" => { tok = TokenType::Return; fbreak; };
         "option" => { tok = TokenType::Option; fbreak; };
         "builtin" => { tok = TokenType::Builtin; fbreak; };
         "testcase" => { tok = TokenType::TestCase; fbreak; };
-        "test" => { tok = TokenType::Test; fbreak; };
         "if" => { tok = TokenType::If; fbreak; };
         "then" => { tok = TokenType::Then; fbreak; };
         "else" => { tok = TokenType::Else; fbreak; };

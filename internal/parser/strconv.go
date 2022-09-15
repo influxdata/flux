@@ -18,10 +18,17 @@ import (
 func ParseTime(lit string) (time.Time, error) {
 	if !strings.Contains(lit, "T") {
 		// This is a date.
-		return time.Parse("2006-01-02", lit)
+		t, err := time.Parse("2006-01-02", lit)
+		if err != nil {
+			return time.Time{}, errors.New(codes.Invalid, "cannot parse date")
+		}
+		return t, nil
 	}
-	// todo(jsternberg): need to also parse when there is no time offset.
-	return time.Parse(time.RFC3339Nano, lit)
+	t, err := time.Parse(time.RFC3339Nano, lit)
+	if err != nil {
+		return time.Time{}, errors.New(codes.Invalid, "cannot parse date time")
+	}
+	return t, nil
 }
 
 // MustParseTime parses a time literal and panics in the case of an error.
@@ -138,16 +145,11 @@ func writeNextUnescapedRune(s string, builder *strings.Builder) (width int, err 
 		case '$':
 			r = '$'
 		case 'x':
-			// Decode two hex chars as a single byte
-			if len(s[width:]) < 2 {
-				return 0, fmt.Errorf("invalid byte value %q", s[width:])
+			b, err := fromHexDigits(s[width:])
+			if err != nil {
+				return 0, err
 			}
-			ch1, ok1 := fromHexChar(s[width])
-			ch2, ok2 := fromHexChar(s[width+1])
-			if !ok1 || !ok2 {
-				return 0, fmt.Errorf("invalid byte value %q", s[width:])
-			}
-			builder.WriteByte((ch1 << 4) | ch2)
+			builder.WriteByte(b)
 			return width + 2, nil
 		default:
 			return 0, fmt.Errorf("invalid escape character %q", next)
@@ -158,6 +160,20 @@ func writeNextUnescapedRune(s string, builder *strings.Builder) (width int, err 
 		builder.WriteRune(r)
 	}
 	return
+}
+
+// fromHexDigits decodes a single byte from two hex digits from the string or an error
+func fromHexDigits(s string) (byte, error) {
+	// Decode two hex chars as a single byte
+	if len(s) < 2 {
+		return 0, errors.New(codes.Invalid, "expected 2 hex characters")
+	}
+	ch1, ok1 := fromHexChar(s[0])
+	ch2, ok2 := fromHexChar(s[1])
+	if !ok1 || !ok2 {
+		return 0, fmt.Errorf("invalid byte value %q", s)
+	}
+	return ((ch1 << 4) | ch2), nil
 }
 
 // fromHexChar converts a hex character into its value and a success flag.
@@ -186,8 +202,50 @@ func ParseRegexp(lit string) (*regexp.Regexp, error) {
 	}
 
 	expr := lit[1 : len(lit)-1]
-	if index := strings.Index(expr, "\\/"); index != -1 {
-		expr = strings.Replace(expr, "\\/", "/", -1)
+	// Unescape regex literal
+	var (
+		builder    strings.Builder
+		width, pos int
+		err        error
+	)
+	builder.Grow(len(expr))
+	for pos < len(expr) {
+		width, err = writeNextUnescapedRegexRune(expr[pos:], &builder)
+		if err != nil {
+			return nil, err
+		}
+		pos += width
 	}
-	return regexp.Compile(expr)
+	return regexp.Compile(builder.String())
+
+}
+
+// writeNextUnescapedRegexRune writes a rune to builder from s.
+// The rune is the next decoded UTF-8 rune with regex escaping rules applied.
+func writeNextUnescapedRegexRune(s string, builder *strings.Builder) (int, error) {
+	r, width := utf8.DecodeRuneInString(s)
+	if r == '\\' {
+		next, w := utf8.DecodeRuneInString(s[width:])
+		width += w
+		switch next {
+		case '/':
+			builder.WriteRune('/')
+			return width, nil
+		case 'x':
+			b, err := fromHexDigits(s[width:])
+			if err != nil {
+				return 0, err
+			}
+			builder.WriteByte(b)
+			return width + 2, nil
+		default:
+			// Standard regexp escape characters may exist,
+			// we leave them alone and let Go's regex parser validate them.
+			builder.WriteRune('\\')
+			builder.WriteRune(next)
+			return width, nil
+		}
+	}
+	builder.WriteRune(r)
+	return width, nil
 }
