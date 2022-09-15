@@ -166,11 +166,28 @@ pub extern "C" fn flux_ast_format(
 #[no_mangle]
 pub unsafe extern "C" fn flux_ast_get_error(
     ast_pkg: *const ast::Package,
+    options: *const c_char,
 ) -> Option<Box<ErrorHandle>> {
     catch_unwind(|| {
-        let ast_pkg = ast::walk::Node::Package(&*ast_pkg);
+        let options = match Options::from_c_str(options) {
+            Ok(x) => x,
+            Err(err) => return Some(err.into()),
+        };
+
+        let ast_pkg = &*ast_pkg;
         match ast::check::check(ast_pkg) {
-            Err(e) => Some(Error::from(anyhow::Error::from(e)).into()),
+            Err(e) => Some(
+                Error::from(anyhow::Error::from(semantic::FileErrors {
+                    file: ast_pkg.package.clone(),
+                    source: ast_pkg.files[0].base.location.source.clone(),
+                    diagnostics: semantic::Diagnostics {
+                        errors: e.into_iter().map(From::from).collect::<Vec<_>>().into(),
+                        warnings: Default::default(),
+                    },
+                    pretty_fmt: options.features.contains(&Feature::PrettyError),
+                }))
+                .into(),
+            ),
             Ok(_) => None,
         }
     })

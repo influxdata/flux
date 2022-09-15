@@ -25,7 +25,7 @@ void test_ast() {
     struct flux_ast_pkg_t *ast_pkg_foo = flux_parse("test", "package foo\nx = 1 + 1");
     assert(ast_pkg_foo !=  NULL);
 
-    struct flux_error_t* err = flux_ast_get_error(ast_pkg_foo);
+    struct flux_error_t* err = flux_ast_get_error(ast_pkg_foo, "");
     assert(err == NULL);
 
     printf("Marshaling to JSON\n");
@@ -43,7 +43,7 @@ void test_ast() {
     struct flux_ast_pkg_t *ast_pkg_foo = flux_parse("test", "x = 1 + / 1");
     assert(ast_pkg_foo !=  NULL);
 
-    struct flux_error_t* err = flux_ast_get_error(ast_pkg_foo);
+    struct flux_error_t* err = flux_ast_get_error(ast_pkg_foo, "");
     assert(err != NULL);
     const char* err_str = flux_error_str(err);
     printf("  error: %s\n", err_str);
@@ -56,7 +56,7 @@ void test_ast() {
     struct flux_ast_pkg_t *ast_pkg_foo = flux_parse("test", "package foo\nx=1+1");
     assert(ast_pkg_foo != NULL);
 
-    struct flux_error_t* err = flux_ast_get_error(ast_pkg_foo);
+    struct flux_error_t* err = flux_ast_get_error(ast_pkg_foo, "");
     assert(err == NULL);
 
     struct flux_buffer_t buf;

@@ -7,7 +7,6 @@ import "C"
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"path"
 	"runtime"
 	"unsafe"

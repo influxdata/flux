@@ -346,7 +346,8 @@ pub struct FileErrors {
     /// The collection of diagnostics
     pub diagnostics: Diagnostics<ErrorKind, WarningKind>,
 
-    pretty_fmt: bool,
+    /// Whether to use codespan to display diagnostics
+    pub pretty_fmt: bool,
 }
 
 impl fmt::Display for FileErrors {
@@ -580,7 +581,9 @@ impl<'env, I: import::Importer> Analyzer<'env, I> {
             files: vec![ast_file],
         };
         self.analyze_ast(&ast_pkg).map_err(|mut err| {
-            err.error.source = Some(src.into());
+            if err.error.source.is_none() {
+                err.error.source = Some(src.into());
+            }
             err
         })
     }
@@ -614,6 +617,7 @@ impl<'env, I: import::Importer> Analyzer<'env, I> {
                             errors,
                             warnings: Errors::new(),
                         },
+                        pretty_fmt: self.config.features.contains(&Feature::PrettyError),
                     },
                     value: None,
                 });
@@ -671,7 +675,7 @@ impl<'env, I: import::Importer> Analyzer<'env, I> {
             return Err(Salvage {
                 error: FileErrors {
                     file: sem_pkg.package.clone(),
-                    source: None,
+                    source: ast_pkg.files[0].base.location.source.clone(),
                     diagnostics: Diagnostics { errors, warnings },
                     pretty_fmt: self.config.features.contains(&Feature::PrettyError),
                 },

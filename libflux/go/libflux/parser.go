@@ -48,8 +48,15 @@ func (p ASTPkg) Format() (string, error) {
 }
 
 // GetError will return the first error in the AST, if any
-func (p ASTPkg) GetError() error {
-	if err := C.flux_ast_get_error(p.ptr); err != nil {
+func (p ASTPkg) GetError(options Options) error {
+	stringOptions, err := marshalOptions(options)
+	if err != nil {
+		return err
+	}
+	cOptions := C.CString(stringOptions)
+	defer C.free(unsafe.Pointer(cOptions))
+
+	if err := C.flux_ast_get_error(p.ptr, cOptions); err != nil {
 		defer C.flux_free_error(err)
 		cstr := C.flux_error_str(err)
 		str := C.GoString(cstr)

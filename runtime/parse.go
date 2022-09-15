@@ -1,22 +1,24 @@
 package runtime
 
 import (
+	"context"
+
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/libflux/go/libflux"
 	"github.com/influxdata/flux/parser"
 )
 
 // Parse parses a Flux script and produces an ast.Package.
-func Parse(flux string) (flux.ASTHandle, error) {
-	astPkg, err := parser.ParseToHandle([]byte(flux))
+func Parse(ctx context.Context, flux string) (flux.ASTHandle, error) {
+	astPkg, err := parser.ParseToHandle(ctx, []byte(flux))
 	if err != nil {
 		return nil, err
 	}
 	return astPkg, nil
 }
 
-func ParseToJSON(flux string) ([]byte, error) {
-	h, err := Parse(flux)
+func ParseToJSON(ctx context.Context, flux string) ([]byte, error) {
+	h, err := Parse(ctx, flux)
 	if err != nil {
 		return nil, err
 	}

@@ -24,8 +24,8 @@ type runtime struct {
 	finalized bool
 }
 
-func (r *runtime) Parse(flux string) (flux.ASTHandle, error) {
-	return Parse(flux)
+func (r *runtime) Parse(ctx context.Context, flux string) (flux.ASTHandle, error) {
+	return Parse(ctx, flux)
 }
 
 func (r *runtime) JSONToHandle(json []byte) (flux.ASTHandle, error) {

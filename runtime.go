@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/influxdata/flux/interpreter"
+	"github.com/influxdata/flux/libflux/go/libflux"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
@@ -12,7 +13,7 @@ import (
 // Runtime encapsulates the operations supported by the flux runtime.
 type Runtime interface {
 	// Parse parses a Flux script and produces a handle to an AST.
-	Parse(flux string) (ASTHandle, error)
+	Parse(ctx context.Context, flux string) (ASTHandle, error)
 
 	// JSONToHandle takes JSON data and returns an AST handle.
 	JSONToHandle(json []byte) (ASTHandle, error)
@@ -44,7 +45,7 @@ type ASTHandle interface {
 
 	// GetError will return the first error encountered when parsing Flux source code,
 	// if any.
-	GetError() error
+	GetError(options libflux.Options) error
 }
 
 // ScopeMutator is any function that mutates the scope of an identifier.

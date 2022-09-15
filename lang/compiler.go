@@ -15,6 +15,7 @@ import (
 	"github.com/influxdata/flux/internal/operation"
 	"github.com/influxdata/flux/internal/spec"
 	"github.com/influxdata/flux/interpreter"
+	"github.com/influxdata/flux/libflux/go/libflux"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/metadata"
 	"github.com/influxdata/flux/plan"
@@ -92,8 +93,8 @@ func applyOptions(opts ...CompileOption) *compileOptions {
 
 // Compile evaluates a Flux script producing a flux.Program.
 // now parameter must be non-zero, that is the default now time should be set before compiling.
-func Compile(q string, runtime flux.Runtime, now time.Time, opts ...CompileOption) (*AstProgram, error) {
-	astPkg, err := runtime.Parse(q)
+func Compile(ctx context.Context, q string, runtime flux.Runtime, now time.Time, opts ...CompileOption) (*AstProgram, error) {
+	astPkg, err := runtime.Parse(ctx, q)
 	if err != nil {
 		return nil, err
 	}
@@ -183,9 +184,9 @@ func (c FluxCompiler) Compile(ctx context.Context, runtime flux.Runtime) (flux.P
 		if err != nil {
 			return nil, errors.Wrap(err, codes.Inherit, "extern json parse error")
 		}
-		return Compile(query, runtime, c.Now, WithExtern(hdl))
+		return Compile(ctx, query, runtime, c.Now, WithExtern(hdl))
 	}
-	return Compile(query, runtime, c.Now)
+	return Compile(ctx, query, runtime, c.Now)
 }
 
 func (c FluxCompiler) CompilerType() flux.CompilerType {
@@ -208,7 +209,7 @@ func (c ASTCompiler) Compile(ctx context.Context, runtime flux.Runtime) (flux.Pr
 	if err != nil {
 		return nil, err
 	}
-	if err := hdl.GetError(); err != nil {
+	if err := hdl.GetError(libflux.NewOptions(ctx)); err != nil {
 		return nil, err
 	}
 
