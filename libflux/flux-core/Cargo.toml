@@ -68,7 +68,7 @@ walkdir = "2.2.9"
 rusqlite = { version = "0.26", optional = true }
 pretty_assertions = { version = "1", optional = true }
 
-[target.'cfg(not(target = "wasm32-unknown-unknown"))'.dependencies]
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 stacker = "0.1"
 
 [dev-dependencies]
