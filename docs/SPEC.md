@@ -688,7 +688,7 @@ Records are the only types that fall under this constraint.
 
 ##### Negatable Constraint
 
-Negatable types ore those the unary arithmetic operator `-` accepts.
+Negatable types are those the unary arithmetic operator `-` accepts.
 Int, Uint, Float, and Duration types are Negatable.
 
 ##### Timeable Constraint
