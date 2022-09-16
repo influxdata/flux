@@ -81,7 +81,7 @@ token = "` + token + `"
 endpoint = webexteams.endpoint(url:url,token:token)(mapFn: (r) => {
 	return {roomId:r.roomId,text:r.text,markdown:r.markdown}
  })
- 
+
  data = "
 #datatype,string,string,string,string,string
 #group,false,false,false,false,false
@@ -91,11 +91,12 @@ endpoint = webexteams.endpoint(url:url,token:token)(mapFn: (r) => {
 
 csv.from(csv:data) |> endpoint()
  `
-			prog, err := lang.Compile(fluxString, runtime.Default, time.Now())
+			ctx := flux.NewDefaultDependencies().Inject(context.Background())
+
+			prog, err := lang.Compile(ctx, fluxString, runtime.Default, time.Now())
 			if err != nil {
 				t.Fatal(err)
 			}
-			ctx := flux.NewDefaultDependencies().Inject(context.Background())
 			fmt.Println("*** ", tc.name)
 			query, err := prog.Start(ctx, &memory.ResourceAllocator{})
 

@@ -137,7 +137,7 @@ endpoint = bigpanda.endpoint(url: url, appKey: appKey, token: "token123")(mapFn:
 	return {r with status: bigpanda.statusFromLevel(level: r.level)}
 })
 
-csv.from(csv:data) |> endpoint() 
+csv.from(csv:data) |> endpoint()
 `
 
 			extern := `
@@ -150,15 +150,16 @@ data = "
 ,result,,host,level,description,check
 ,,,` + strings.Join([]string{tc.host, tc.level, tc.description, tc.check}, ",") + `"`
 
-			extHdl, err := runtime.Default.Parse(extern)
-			if err != nil {
-				t.Fatal(err)
-			}
-			prog, err := lang.Compile(fluxString, runtime.Default, time.Now(), lang.WithExtern(extHdl))
-			if err != nil {
-				t.Fatal(err)
-			}
 			ctx := flux.NewDefaultDependencies().Inject(context.Background())
+
+			extHdl, err := runtime.Default.Parse(ctx, extern)
+			if err != nil {
+				t.Fatal(err)
+			}
+			prog, err := lang.Compile(ctx, fluxString, runtime.Default, time.Now(), lang.WithExtern(extHdl))
+			if err != nil {
+				t.Fatal(err)
+			}
 			query, err := prog.Start(ctx, &memory.ResourceAllocator{})
 
 			if err != nil {

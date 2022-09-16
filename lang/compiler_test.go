@@ -209,14 +209,14 @@ func TestFluxCompiler(t *testing.T) {
 }
 
 func TestCompilationError(t *testing.T) {
-	program, err := lang.Compile(`illegal query`, runtime.Default, time.Unix(0, 0))
+	ctx, deps := dependency.Inject(context.Background(), executetest.NewTestExecuteDependencies())
+	defer deps.Finish()
+
+	program, err := lang.Compile(ctx, `illegal query`, runtime.Default, time.Unix(0, 0))
 	if err != nil {
 		// This shouldn't happen, has the script should be evaluated at program Start.
 		t.Fatal(err)
 	}
-
-	ctx, deps := dependency.Inject(context.Background(), executetest.NewTestExecuteDependencies())
-	defer deps.Finish()
 
 	_, err = program.Start(ctx, &memory.ResourceAllocator{})
 	if err == nil {
@@ -346,10 +346,13 @@ csv.from(csv: "foo,bar") |> range(start: 2017-10-10T00:00:00Z)
 	rt := runtime.Default
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
+			ctx, deps := dependency.Inject(context.Background(), executetest.NewTestExecuteDependencies())
+			defer deps.Finish()
+
 			var c lang.ASTCompiler
 			{
 				if tc.script != "" {
-					astPkg, err := rt.Parse(tc.script)
+					astPkg, err := rt.Parse(ctx, tc.script)
 					if err != nil {
 						t.Fatalf("failed to parse script: %v", err)
 					}
@@ -407,8 +410,6 @@ csv.from(csv: "foo,bar") |> range(start: 2017-10-10T00:00:00Z)
 			if err != nil {
 				t.Fatalf("failed to compile AST: %v", err)
 			}
-			ctx, deps := dependency.Inject(context.Background(), executetest.NewTestExecuteDependencies())
-			defer deps.Finish()
 
 			// we need to start the program to get compile errors derived from AST evaluation
 			if _, err := program.Start(ctx, &memory.ResourceAllocator{}); err != nil {
@@ -487,6 +488,10 @@ csv.from(csv: "
 }
 
 func TestCompileOptions(t *testing.T) {
+	// start program in order to evaluate planner options
+	ctx, deps := dependency.Inject(context.Background(), executetest.NewTestExecuteDependencies())
+	defer deps.Finish()
+
 	src := `import "csv"
 			csv.from(csv: "foo,bar")
 				|> range(start: 2017-10-10T00:00:00Z)
@@ -496,14 +501,10 @@ func TestCompileOptions(t *testing.T) {
 
 	opt := lang.WithLogPlanOpts(plan.OnlyLogicalRules(removeCount{}))
 
-	program, err := lang.Compile(src, runtime.Default, now, opt)
+	program, err := lang.Compile(ctx, src, runtime.Default, now, opt)
 	if err != nil {
 		t.Fatalf("failed to compile script: %v", err)
 	}
-
-	// start program in order to evaluate planner options
-	ctx, deps := dependency.Inject(context.Background(), executetest.NewTestExecuteDependencies())
-	defer deps.Finish()
 
 	if _, err := program.Start(ctx, &memory.ResourceAllocator{}); err != nil {
 		t.Fatalf("failed to start program: %v", err)
@@ -783,14 +784,18 @@ option planner.disableLogicalRules = ["removeCountRule"]`},
 			if len(tc.files) == 0 {
 				t.Fatal("the test should have at least one file")
 			}
-			astPkg, err := runtime.Parse(tc.files[0])
+
+			ctx, deps := dependency.Inject(context.Background(), executetest.NewTestExecuteDependencies())
+			defer deps.Finish()
+
+			astPkg, err := runtime.Parse(ctx, tc.files[0])
 			if err != nil {
 				t.Fatal(err)
 			}
 
 			if len(tc.files) > 1 {
 				for _, file := range tc.files[1:] {
-					otherPkg, err := runtime.Parse(file)
+					otherPkg, err := runtime.Parse(ctx, file)
 					if err != nil {
 						t.Fatal(err)
 					}
@@ -801,8 +806,6 @@ option planner.disableLogicalRules = ["removeCountRule"]`},
 			}
 
 			program := lang.CompileAST(astPkg, runtime.Default, nowFn())
-			ctx, deps := dependency.Inject(context.Background(), executetest.NewTestExecuteDependencies())
-			defer deps.Finish()
 
 			if q, err := program.Start(ctx, &memory.ResourceAllocator{}); err != nil {
 				if tc.wantErr == "" {
