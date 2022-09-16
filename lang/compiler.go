@@ -286,7 +286,7 @@ func (p *Program) Start(ctx context.Context, alloc memory.Allocator) (flux.Query
 		span:    s,
 		cancel:  cancel,
 		stats: flux.Statistics{
-			Metadata: make(metadata.Metadata),
+			Metadata: metadata.NewMetadata(),
 		},
 	}
 

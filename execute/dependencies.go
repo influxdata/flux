@@ -86,7 +86,7 @@ func NewExecutionDependencies(allocator memory.Allocator, now *time.Time, logger
 		Allocator:        allocator,
 		Now:              now,
 		Logger:           logger,
-		Metadata:         make(metadata.Metadata),
+		Metadata:         metadata.NewMetadata(),
 		ExecutionOptions: &ExecutionOptions{},
 	}
 }
