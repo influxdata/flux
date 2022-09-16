@@ -219,68 +219,32 @@ This could be changed to:
 When we perform vectorization, it's easy to see the correlation to vectorization.
 We could have an operation for vectorization that adds two vectors and one that adds a constant to a vector.
 
-## Development Plan
-
-The goal of the development plan would be to perform an "as much as possible" compiler and VM implementation that would be resilient to unimplemented operations.
-
-An "as much as possible" implementation would be a compiler that attempts to materialize as many instructions as it can.
-If it runs into an operation that is not implemented, it will not emit that function definition, but it will continue to process other function definitions that are contained in the body.
-This effectively creates a bottom-up approach since the compiler will emit a partial IR that implements the script.
-
-If the full program gets translated, the `main` function will exist.
-For builtin functions like `map`, they will check to see if the function has a VM implementation and will use that one if it is present.
-Otherwise, it will use the existing compiler.
-
-For languages, I believe that Rust is a more suitable location to implement the compiler.
-The compiler will translate semantic graph to IR, run optimization passes on the IR, then emit an IR suitable to be run by the VM.
-The VM will be defined in Go because our runtime is defined in Go.
-
-This plan allows us to gradually implement different instructions in the VM and continue to expand the scope of what can be run by the VM.
-The eventual goal is the removal of the interpreter and compiler from Go.
-
-At the end of development, the following will have been implemented:
-
-* Defined an SSA IR with a textual output.
-* Constructed function definitions.
-* Implemented function objects and call invocations.
-* Implemented closures as a part of function objects.
-* Constructed VM from SSA IR.
-* Ran VM program with function calls, closures, and plan execution operations.
-* Implement yield and table find.
-
-### Compiler
-
-The compiler, written in Rust, would be responsible for implementing the following:
-
-* Define an SSA IR with a textual output.
-* Translate semantic graph to IR.
-* Define function definitions that can be reified at runtime.
-
-The output of this would be a system roughly equivalent to what we have today.
-From there, we can use the debug output of the IR and use existing compiler optimization algorithms to implement optimization passes.
-The optimization passes would take IR as input and produce IR as output.
+## Design
 
 ### VM
-
-The VM, written in Go, would be responsible for implementing the instructions from the compiler.
-For the compiler to emit an instruction, it needs to be implemented in the VM.
-
-The VM is also responsible for constructing plan nodes when they are executed and passing them to the executor to be executed.
-The VM finishes execution when its main thread and all dispatcher threads have finished.
 
 ## Design
 
 ### Compiler
 
-The compiler would evaluate the semantic graph from the type system and produce an SSA IR.
-The IR would define various primitive operations that correspond to existing concepts.
-Looking at the IR would give a good indication of what the compiled flux script will do and the SSA form will allow easy construction of a control-flow graph.
-This will make it generally easier to perform introspection of the program along with making and debugging necessary transformations.
+The compiler would evaluate the semantic graph from the type system and produce an IR.
+The purpose of the IR is to have a common language to describe the primitive operations.
+We can perform transformations on the IR before the IR is then transformed into bytecode for the VM to execute.
+Looking at the IR would give a good indication of what the compiled flux script will do.
 
-The IR format will be representable textually to aid with debugging.
+We may choose for the IR to follow a number of different possible IR styles.
+The two most prominent are a stack-based machine and an SSA form.
+A stack-based machine is helpful because it is more easily produced and maps more directly with different VM implementations.
+At the same time, an SSA form similar to LLVM offers more opportunities for performing our own changes and optimizations because SSA forms are generally easier to work with.
+
+It's not necessary for us to decide this at the moment and it's not really necessary for us to decide it before we begin implementation.
+It is fully possible for us to decide on one form and then later decide to change that form.
+The reason for this is we will have abstracted the IR and the VM to be different concepts so updating the IR would only involve changes to the compiler.
+
+The IR format will need to be representable textually to aid with debugging.
 There is no requirement that the underlying system interact with a textual IR.
 
-A sample of the textual output of an IR for a Flux program follows:
+A sample of a possible textual output of an IR for a Flux program follows:
 
     // y = 2
     // addy = (x) => x + y
@@ -320,11 +284,23 @@ For a minimum-viable product, we would also need to execute a function that prod
 
 ### VM
 
-The purpose of the VM would be to run the above.
-The VM would be responsible for handling the dispatcher.
-It would be responsible for grouping sources and transformations into plans that would be passed to the planner and then executed by the dispatcher.
-It would be responsible for executing each instruction that was chosen by the IR.
-It would be responsible for determining storage locations for each register and determining the size of those virtual registers.
+The VM would be responsible for implementing the instructions from the compiler.
+For the compiler to emit an instruction, it needs to be implemented in the VM.
+
+The VM may be implemented in Go or Rust.
+The only requirement on the VM is that it must be able to invoke Go functions in some way because the planner and executor are in Go.
+**We will not rewrite the planner, executor, or any sources/transformations in Rust**.
+
+We may choose to implement the VM in Rust using our own custom solution or an off the shelf one like wasmtime.
+An off the shelf solution has the advantage that we will get some aspects for free, such as a JIT, tooling, and additional places where we can run the target.
+A custom solution may have the advantage of simplicity that may be good enough for our purposes.
+A custom solution also means that we aren't limited to an outside project for additional features we might need.
+At the same time, a custom solution means we have to do everything ourselves.
+
+I am not quite decided on which is the best option.
+My current leaning is to implement the VM in Rust using wasmtime.
+The IR code generation would target wasm bytecode.
+We would implement a flux runtime for the wasm runtime.
 
 #### Function Invocation
 
@@ -335,7 +311,7 @@ That isn't always possible.
 When we invoke a generic function, it might be required to instantiate a generic function into a version with the proper types at runtime.
 This is reification and would be a responsibility for the `call` instruction in the VM.
 
-## Development Phases
+## Development Plan
 
 ### Summary
 
