@@ -592,6 +592,9 @@ testcase logical_untyped_null_vectorized {
 
     got =
         array.from(rows: [{_true: true, _false: false}])
+            // N.b. The "untyped" null here is introduced by hiding the type
+            // information from flux via `debug.opaque()` then accessing the
+            // undefined field `_null` inside our map func.
             |> debug.opaque()
             |> map(
                 fn: (r) =>
@@ -669,6 +672,9 @@ testcase logical_untyped_null {
 
     got =
         array.from(rows: [{_true: true, _false: false}])
+            // N.b. The "untyped" null here is introduced by hiding the type
+            // information from flux via `debug.opaque()` then accessing the
+            // undefined field `_null` inside our map func.
             |> debug.opaque()
             |> map(
                 fn: (r) =>
