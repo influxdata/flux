@@ -337,113 +337,361 @@ This is reification and would be a responsibility for the `call` instruction in 
 
 ## Development Phases
 
-### Phase 1
+### Summary
 
-Phase 1 would focus on the proof of concept for an SSA IR and the accompanying VM.
-This would prove that you could create a simple IR definition and invoke it.
-We would then run this in a VM.
+The focus of the development phases is to get a basic feature complete VM into production as soon as we can.
+Each phase will focus on the creation of the IR and VM components first followed by the conversion of semantic graph into IR.
 
-The following will be true at the end of this phase:
+In general, the focus will be on replacing the interpreter first followed by the compiler.
+Areas that are not implemented can fallback to the existing implementations.
+If a script uses a feature that is not supported as part of the VM implementation, we can fallback to running through the interpreter.
+Similarly, transformations can continue to utilize the compiler for things like filter and map.
 
-* IR is generated for main function if all operations are supported.
-* No IR is generated if a node cannot be converted to IR, but no error occurs.
-* Generics are not implemented.
-* Function expressions and call invocations are not implemented.
-* Constants are implemented.
-* Some subset of binary expressions are implemented.
-* Meta `print` expression exists and will print the result of an expression statement to allow for debugging.
+When this project is complete, the interpreter and compiler packages will no longer be operational and can be deleted.
 
-There is no production output from this phase.
+Due to the non-linear nature of this development, an effort has been made to diagram the development phases into a flowchart.
 
-### Phase 2
+```mermaid
+flowchart TB
+    initial_vm["Initial VM"]
+    yield["Yield Source"]
+    table_find_spike["Table Find Spike"]
+    table_find["Table Find"]
+    value_type["Value Type"]
+    functions["Functions"]
+    value_ops["Value Operations"]
+    imports["Imports"]
+    builtins["Builtins"]
+    closures["Function Closures"]
+    native_types["Native Types"]
+    native_ops["Native Operations"]
+    generics["Generic Functions"]
+    reified_generics["Reified Generic Functions"]
+    interpreter_conditional_replacement["Interpreter Conditional Replacement"]
+    compiler_conditional_replacement["Compiler Conditional Replacement"]
+    feature_complete["Feature Complete"]
+    
+    initial_vm --> yield
+    yield --> table_find_spike
+    table_find_spike --> table_find
+    value_type --> table_find
+    initial_vm --> value_type
+    value_type --> functions
+    value_type --> value_ops
+    functions --> imports
+    functions --> closures
+    value_type --> native_types
+    native_types --> native_ops
+    native_ops --> generics
+    functions --> generics
+    generics --> reified_generics
+    imports --> builtins
+    table_find --> interpreter_conditional_replacement
+    builtins --> interpreter_conditional_replacement
+    interpreter_conditional_replacement --> feature_complete
+    functions --> compiler_conditional_replacement
+    value_ops --> compiler_conditional_replacement
+    closures --> feature_complete
+    compiler_conditional_replacement --> feature_complete
+```
 
-Phase 2 would focus on ensuring functions can be created and used.
-This would prove you could create functions and call them.
-It would also introduce generics into function definitions and reify them based on type arguments in the VM.
+### Initial VM
 
-Similar to the above, a function that cannot be converted will just not be emitted.
-Functions that are not emitted should still emit nested function definitions.
-This is to allow a function invoked by a transformation like `map()` to still be emitted even if the main program cannot be.
+The phase is the proof of concept for an IR and the accompanying VM.
+This phase is the most important as it sets the tone for the remainder of the project.
+To keep its scope limited, this phase focuses _only_ on defining an IR, getting it translated to a bytecode, and then having that bytecode executed by a VM.
 
-The following will be true at the end of this phase:
+The VM can be either a custom implemented one or something off the shelf, like wasmtime.
+The important part is that the IR is used as a driver to generate the bytecode and the actual bytecode/VM should be disconnected from the VM implementation.
+This architecture should allow us to have the IR translated into different bytecode targets.
 
-* IR is generated for native flux functions if all operations are supported.
-* Recursive function definitions are generated even if the function they are contained within is not.
-* Generics are implemented.
-* Function objects exist.
-* Closures are not implemented.
-* Indirect call instruction is implemented in the IR and capable of reifying functions.
-* Imports and packages are not implemented.
+It is important that the IR and VM are documented on how to add and implement additional instructions.
+Future phases will need to add IR and VM instructions using this initial base.
 
-### Phase 3
-
-Phase 3 is focused on records, their data layout, passing them as arguments, and accessing them.
-
-A primary requirement of this phase is that record literals should be cheap to allocate and use.
-In the current implementation, record literals create a memory allocation.
-In this version, records should not allocate memory outside the VM stack.
-
-During this phase, we will also explore if the above requirements are unrealistic regarding memory allocations.
-While there are situations where records would be faster when passed by value, there are others where they are constructed once and passed around many times.
-We may want to explore these areas during this time.
-
-The following will be true at the end of this phase:
-
-* Record literals can be used and returned from functions.
-* Records can be passed as an argument to a function.
-* Records will be representable directly on the stack.
-* Member expressions will be implemented in the IR and VM.
-
-### Phase 4
-
-Phase 4 is focused on implementing closures.
-
-The following will be true at the end of this phase:
-
-* Values that are closed over will be saved as part of the function object.
-* Closure mechanics can be visibly seen from the IR.
-
-### Phase 5
-
-Phase 5 is focused on importing packages and using builtin functions that are not streams.
-
-The following will be true at the end of this phase:
-
-* Imports function.
-* Builtin values that do not interact with table streams will work.
-
-At this point, the remaining instructions can be implemented separately and the VM can replace the compiler for most circumstances.
-This includes any remaining instructions that have not been implemented from phase 1.
-
-### Phase 6
-
-Phase 6 is focused on integrating table streams into the VM.
-Functions that return table streams will construct a plan and the VM will optimize the plan and then pass it to the executor/dispatcher.
+The IR does need a way to visually inspect it.
+Any IR generated should have a visual debug output associated with it.
 
 The following will be true at the end of this phase:
 
-* Sources and transformations are constructed by the VM.
-* Constructed plans are passed through the planner and executed by the executor.
-* The yield instruction is implemented and is capable of returning table stream data.
-* Table find style functions do not work.
+* IR instructions for `print` and `const` exist.
+* IR can be translated into bytecode.
+* A VM exists that can execute the bytecode.
+* A method exists to take a flux package and translate it into IR.
+* The method to translate flux to the IR should ignore all statements/expressions and have a way to report that it could not generate IR for the gicen input.
 
-### Phase 7
+### Yield Source
 
-Phase 7 is focused on ensuring table find style functions work properly within the VM.
+This phase is focused on creating and executing plans within the VM.
+This involves creating procedure specs, linking them together, and then yielding the results.
 
-The following will be true at the end of this phase:
-
-* Table find style functions will be capable of using the same planner/executor as yielded table streams.
-* Table find style functions work.
-
-### Phase 8
-
-Phase 8 is focused on polishing up the implementation and ensuring it is feature complete.
-This phase can be started as early as after phase 5 and is primarily focused on implementing any remaining instructions from the semantic graph that haven't been implemented.
+See the [table-find.md](../table-find.md) for details about how plans are created and executed.
 
 The following will be true at the end of this phase:
 
-* The bytecode compiler and VM will be feature complete and capable of replacing the compiler and interpreter for all flux programs.
+* IR instructions exist that allow a procedure spec to be created.
+* IR instruction for yield.
+* Execute yielded plan and output the results.
+* A debug source and debug transformation can be created and used to demonstrate this functionality.
+* An expression statement that ends in a stream should be automatically yielded instead of printed.
+
+### Table Find Spike
+
+This phase is focused on demonstrating that the plan execution from the previous phase can also be utilized for table find operations.
+This involves creating an instruction that forces the execution of a plan and returns the result as a value.
+
+For the sake of this phase, the returned result doesn't necessarily have to be the exact implementation of one of the table find operations.
+A debug table find style operation that just does something like counting the number of tables in a stream and returning that is fine.
+
+The important part is both demonstrating that we can execute the plan during the VM execution.
+This is in contrast to yield which gets implicitly executed after the main function has been executed.
+It is also important in this phase to demonstrate that we can detect when a plan node is split between multiple plans and should result in an error.
+
+More details about that situation are in the [table-find.md](../table-find.md) planning document.
+
+The following will be true at the end of this phase:
+
+* IR instructions exist that will execute a plan.
+* The IR instruction does not need to be useful or actually implement an existing `tableFind` function.
+* It should be an error to use a procedure spec in multiple disconnected plans.
+* Orphaned plan node children (ones that are included in a plan, but not actually materialized) should be detected as an error.
+
+### Value Type <a name="value-type"></a>
+
+This phase follows the creation of the initial VM.
+We will create a way to represent a value type in the IR and then have a corresponding generic value type that can represent any value in the VM.
+
+As part of this phase, additional `const` operations should be created that will create a value from a constant value.
+This should correspond with the various literal nodes in the semantic graph.
+
+Similarly, the IR generation will be capable of transforming literals to the `const` operation.
+
+The following will be true at the end of this phase:
+
+* A value type exists in the IR.
+* A value exists in the VM.
+* Types that are generic should resolve to the value type.
+* Constant operations are included in the IR.
+* Constant operations are implemented in the VM.
+
+### Value Operations
+
+This phase focuses on implementing the various builtin operations that are associated with manipulating values.
+This primarily includes binary operations but also includes unary operations, member operations, index operations, etc.
+
+The only thing this doesn't include are functions which will be handled separately.
+
+The following will be true at the end of this phase:
+
+* Operations manipulating values will be included in the IR.
+* Operations manipulating values will be implemented in the IR.
+
+### Table Find
+
+This phase continues the work from the previous spike by implementing the builtins associated with table find.
+These are presently `tableFind`, `getColumn`, and `getRecord`.
+
+The output of these should be the corresponding value from the [Value Type](#value-type) phase.
+
+### Functions
+
+This phase focuses on manifesting functions from function expressions.
+The functions can then be invoked later by a call expression.
+
+This phase does not include reifying generic types.
+In fact, generic types should resolve to being value types and therefore use value operations.
+Function expressions will then create a reference to the function label.
+
+This phase will also not include support for closures.
+If a closure is encountered, the IR creation is a failure.
+
+The following will be true at the end of this phase:
+
+* Function definitions are emitted when a function expression is encountered.
+* Function expressions will create a function value that references the function definition.
+* Call expressions will invoke the function expression with the given parameters.
+
+### Imports
+
+This phase focuses on allowing another package to be imported.
+Importing a package involves transforming that package into its own IR and bytecode so it can be referenced from the main package.
+
+Function definitions in other packages should be able to be referenced by the main package.
+
+The following will be true at the end of this phase:
+
+* Imports will be processed and compiled like the main module.
+* Function definitions from other packages can be referenced in the main module.
+
+### Builtins
+
+This phase focuses on processing builtins to the IR.
+This phase may introduce some additional complications because the method by how builtins may need to be implemented in a different way.
+In general, each builtin will likely have to be translated to its own set of IR instructions.
+
+To give a general example, we can take the builtin `from`.
+We might translate that builtin to a function defined in the IR like such:
+
+    define stream @from(%bucket: string) {
+        %1 = create source "influxdb.from", bucket: %bucket
+        ret stream %1
+    }
+
+Rather than the `from` function being its own special implementation, it would be implemented using a more generic instruction.
+This instruction has no way to be represented by flux, but would be part of the runtime implementation.
+
+On the other hand, some builtins might translate directly to IR operations.
+An example of this is the `string()` function which might get translated as:
+
+    // v = string(v: 1)
+    %1 = const int 1
+    %2 = conv string %1
+
+The following will be true at the end of this phase:
+
+* Builtin statements will function correctly.
+
+### Interpreter Conditional Replacement
+
+This phase focuses on replacing usages of the interpreter with the VM.
+This is a conditional replacement because we should be able to identify if the VM has implemented all features required by the script before executing it.
+If the script will not successfully execute in the VM, we will fallback to the interpreter.
+
+The following will be true at the end of this phase:
+
+* Scripts that would normally use the interpreter will selectively use the VM when possible.
+* Scripts that would not execute correctly in the VM will not run in the VM.
+
+### Function Closures
+
+This phase is about implementing function closures.
+A function closure will capture values that are used inside a function when that function may be invoked at a later time.
+
+The following will be true at the end of this phase:
+
+* The compiler will be able to emit function definitions for functions with closures.
+* The call operation will handle passing closure variables to the function.
+* The VM will implement the logic from the IR.
+
+### Generic Functions
+
+It should be noted that this phase is not required for the VM to be considered feature complete.
+
+This phase focuses on getting the performance benefits from the type system and generic functions.
+It will focus on creating templates from generic functions and allowing those generic functions to be generated at the point they are used during IR generation.
+
+This phase focuses _only_ on the situations where we can determine types at compile time.
+As an example, consider the given function:
+
+    add1 = (x) => int(v: x) + 1
+    add1(x: 2)
+
+Without generics, this may be implemented as:
+
+    define int @add1(%x: value) {
+        %1 = conv int %x
+        %2 = const int 1
+        %3 = add int %1, %2
+        ret int %3
+    }
+
+    define void @main() {
+        %1 = const int 2
+        %2 = as_value %1
+        %3 = call int @add1, x: %2
+        print %3
+    }
+
+With generics, we may do this instead:
+
+    define (V) int @add1(%x: V) {
+        %1 = conv int %x
+        %2 = const int 1
+        %3 = add int %1, %2
+        ret int %3
+    }
+
+    define int @add1.int(%x: int) {
+        ; %1 = conv int %x // determined redundant
+        %2 = const int 1
+        %3 = add int %1, %2
+        ret int %3
+    }
+
+This avoids the allocation from `as_value` and removes an instruction from `add1` to treat the value as an integer.
+
+The following will be true at the end of this phase:
+
+* The IR will have a way to represent generic function templates.
+* It will be possible to generate function definitions where generic parameters are specified.
+* Areas where the type can be determined statically will use the generated function definitions rather than the default generic version.
+
+### Reified Generic Functions
+
+It should be noted that this phase is not required for the VM to be considered feature complete.
+
+This phase focuses on extending the performance benefits from generic functions to ones that are only determinable at runtime.
+It will focus on keeping the created templates at runtime and reifying the function when it is required in generic contexts.
+
+If successful, this will likely replace the value type in most if not all situations.
+Note that we may determine that fully reifying functions at all times may not be worth it.
+There are potentially situations where reifying a unique function for every shape of data is both not practical and may make performance worse.
+In particular, functions that only modify a record using the `with` operator may not benefit from having a unique implementation for each potential record that can be invoked by the function.
+Functions that are only invoked once, such as in the interpreter, may also not benefit from reification because the cost to do so may greatly exceed the cost of using the generic value type.
+
+The following will be true at the end of this phase:
+
+* Functions will be capable of being reified at runtime.
+* The degree this is utilized may vary.
+
+### Value Operations
+
+This phase is about implementing the various operations (such as addition) as operations in the IR and the VM.
+
+The following will be true at the end of this phase:
+
+* All operations from the semantic graph (excluding calls) will be implemented to operate on values.
+
+### Compiler Conditional Replacement
+
+This phase focuses on replacing usages of the compiler with the VM.
+This is a conditional replacement because we should be able to identify if the VM has implemented all features required by the function before executing it.
+If the function will not successfully execute in the VM, we will fallback to the compiler.
+
+The following will be true at the end of this phase:
+
+* Functions that would normally use the compiler will selectively use the VM when possible.
+* Functions that would not execute correctly in the VM will not run in the VM.
+
+### Native Types
+
+It should be noted that this phase is not required for the VM to be considered feature complete.
+
+This phase focuses on introducing native types to the IR and utilizing those native types in the VM.
+When we can definitively know that we are operating on an integer, we should generate integer specific instructions so those can be more optimized.
+Part of this phase may include using native types in places where we previously used the generic value type.
+
+The following will be true at the end of this phase:
+
+* Functions that have a known type will use the native type instead of the value type.
+
+### Native Operations
+
+It should be noted that this phase is not required for the VM to be considered feature complete.
+
+Similar to the value operations phase, this is about implementing the needed operations on the new native types.
+
+The following will be true at the end of this phase:
+
+* Operations on native types will use the native operations.
+
+### Feature Complete
+
+This phase involves confirming that the VM implements all behavior from the interpreter and compiler and is able to replace them permanently.
+At this point, no more code should be executed through the interpreter and compiler packages and all existing paths are implemented.
+We can remove the old implementations and switch to using the VM exclusively.
+
+Note that feature complete does not include everything listed in this proposal.
+There will be projects after feature complete is reached.
 
 ## Optimizations
 
