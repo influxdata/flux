@@ -453,21 +453,10 @@ fn missing_arrow_in_function_expression() {
         File {
             base: BaseNode {
                 location: SourceLocation {
-                    file: None,
-                    start: Position {
-                        line: 1,
-                        column: 1,
-                    },
-                    end: Position {
-                        line: 1,
-                        column: 13,
-                    },
-                    source: Some(
-                        "(a, b) a + b",
-                    ),
+                    start: "line: 1, column: 1",
+                    end: "line: 1, column: 13",
+                    source: "(a, b) a + b",
                 },
-                comments: [],
-                errors: [],
             },
             name: "",
             metadata: "parser-type=rust",
@@ -478,82 +467,38 @@ fn missing_arrow_in_function_expression() {
                     ExprStmt {
                         base: BaseNode {
                             location: SourceLocation {
-                                file: None,
-                                start: Position {
-                                    line: 1,
-                                    column: 1,
-                                },
-                                end: Position {
-                                    line: 1,
-                                    column: 13,
-                                },
-                                source: Some(
-                                    "(a, b) a + b",
-                                ),
+                                start: "line: 1, column: 1",
+                                end: "line: 1, column: 13",
+                                source: "(a, b) a + b",
                             },
-                            comments: [],
-                            errors: [],
                         },
                         expression: Function(
                             FunctionExpr {
                                 base: BaseNode {
                                     location: SourceLocation {
-                                        file: None,
-                                        start: Position {
-                                            line: 1,
-                                            column: 1,
-                                        },
-                                        end: Position {
-                                            line: 1,
-                                            column: 13,
-                                        },
-                                        source: Some(
-                                            "(a, b) a + b",
-                                        ),
+                                        start: "line: 1, column: 1",
+                                        end: "line: 1, column: 13",
+                                        source: "(a, b) a + b",
                                     },
-                                    comments: [],
-                                    errors: [],
                                 },
                                 lparen: [],
                                 params: [
                                     Property {
                                         base: BaseNode {
                                             location: SourceLocation {
-                                                file: None,
-                                                start: Position {
-                                                    line: 1,
-                                                    column: 2,
-                                                },
-                                                end: Position {
-                                                    line: 1,
-                                                    column: 3,
-                                                },
-                                                source: Some(
-                                                    "a",
-                                                ),
+                                                start: "line: 1, column: 2",
+                                                end: "line: 1, column: 3",
+                                                source: "a",
                                             },
-                                            comments: [],
-                                            errors: [],
                                         },
                                         key: Identifier(
                                             Identifier {
                                                 base: BaseNode {
                                                     location: SourceLocation {
-                                                        file: None,
-                                                        start: Position {
-                                                            line: 1,
-                                                            column: 2,
-                                                        },
-                                                        end: Position {
-                                                            line: 1,
-                                                            column: 3,
-                                                        },
-                                                        source: Some(
-                                                            "a",
-                                                        ),
+                                                        start: "line: 1, column: 2",
+                                                        end: "line: 1, column: 3",
+                                                        source: "a",
                                                     },
-                                                    comments: [],
-                                                    errors: [],
                                                 },
                                                 name: "a",
                                             },
@@ -565,41 +510,19 @@ fn missing_arrow_in_function_expression() {
                                     Property {
                                         base: BaseNode {
                                             location: SourceLocation {
-                                                file: None,
-                                                start: Position {
-                                                    line: 1,
-                                                    column: 5,
-                                                },
-                                                end: Position {
-                                                    line: 1,
-                                                    column: 6,
-                                                },
-                                                source: Some(
-                                                    "b",
-                                                ),
+                                                start: "line: 1, column: 5",
+                                                end: "line: 1, column: 6",
+                                                source: "b",
                                             },
-                                            comments: [],
-                                            errors: [],
                                         },
                                         key: Identifier(
                                             Identifier {
                                                 base: BaseNode {
                                                     location: SourceLocation {
-                                                        file: None,
-                                                        start: Position {
-                                                            line: 1,
-                                                            column: 5,
-                                                        },
-                                                        end: Position {
-                                                            line: 1,
-                                                            column: 6,
-                                                        },
-                                                        source: Some(
-                                                            "b",
-                                                        ),
+                                                        start: "line: 1, column: 5",
+                                                        end: "line: 1, column: 6",
+                                                        source: "b",
                                                     },
-                                                    comments: [],
-                                                    errors: [],
                                                 },
                                                 name: "b",
                                             },
@@ -616,41 +539,20 @@ fn missing_arrow_in_function_expression() {
                                         BinaryExpr {
                                             base: BaseNode {
                                                 location: SourceLocation {
-                                                    file: None,
-                                                    start: Position {
-                                                        line: 1,
-                                                        column: 8,
-                                                    },
-                                                    end: Position {
-                                                        line: 1,
-                                                        column: 13,
-                                                    },
-                                                    source: Some(
-                                                        "a + b",
-                                                    ),
+                                                    start: "line: 1, column: 8",
+                                                    end: "line: 1, column: 13",
+                                                    source: "a + b",
                                                 },
-                                                comments: [],
-                                                errors: [],
                                             },
                                             operator: AdditionOperator,
                                             left: Identifier(
                                                 Identifier {
                                                     base: BaseNode {
                                                         location: SourceLocation {
-                                                            file: None,
-                                                            start: Position {
-                                                                line: 1,
-                                                                column: 8,
-                                                            },
-                                                            end: Position {
-                                                                line: 1,
-                                                                column: 9,
-                                                            },
-                                                            source: Some(
-                                                                "a",
-                                                            ),
+                                                            start: "line: 1, column: 8",
+                                                            end: "line: 1, column: 9",
+                                                            source: "a",
                                                         },
-                                                        comments: [],
                                                         errors: [
                                                             "expected ARROW, got IDENT (a) at 1:8",
                                                         ],
@@ -662,21 +564,10 @@ fn missing_arrow_in_function_expression() {
                                                 Identifier {
                                                     base: BaseNode {
                                                         location: SourceLocation {
-                                                            file: None,
-                                                            start: Position {
-                                                                line: 1,
-                                                                column: 12,
-                                                            },
-                                                            end: Position {
-                                                                line: 1,
-                                                                column: 13,
-                                                            },
-                                                            source: Some(
-                                                                "b",
-                                                            ),
+                                                            start: "line: 1, column: 12",
+                                                            end: "line: 1, column: 13",
+                                                            source: "b",
                                                         },
-                                                        comments: [],
-                                                        errors: [],
                                                     },
                                                     name: "b",
                                                 },

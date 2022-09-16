@@ -74,7 +74,7 @@ impl From<Position> for lsp_types::Position {
 }
 
 /// Represents the location of a node in the AST.
-#[derive(Debug, Default, PartialEq, Clone, Serialize, Deserialize)]
+#[derive(Default, PartialEq, Clone, Serialize, Deserialize)]
 pub struct SourceLocation {
     /// File is the optional file name.
     #[serde(skip_serializing_if = "skip_string_option")]
@@ -86,6 +86,33 @@ pub struct SourceLocation {
     /// Source is optional raw source.
     #[serde(skip_serializing_if = "skip_string_option")]
     pub source: Option<String>,
+}
+
+// Custom debug implentation which reduces the size of `Debug` printing `AST`s
+impl fmt::Debug for SourceLocation {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let mut f = f.debug_struct("SourceLocation");
+
+        if let Some(file) = &self.file {
+            f.field("file", file);
+        }
+
+        // Render the positions on a single line so that `Debug` printing `AST`s are less verbose
+        f.field(
+            "start",
+            &format!("line: {}, column: {}", self.start.line, self.start.column),
+        );
+        f.field(
+            "end",
+            &format!("line: {}, column: {}", self.end.line, self.end.column),
+        );
+
+        if let Some(source) = &self.source {
+            f.field("source", source);
+        }
+
+        f.finish()
+    }
 }
 
 impl SourceLocation {
@@ -391,7 +418,7 @@ pub struct Comment {
 }
 
 /// BaseNode holds the attributes every expression or statement must have.
-#[derive(Debug, Default, PartialEq, Clone, Serialize, Deserialize)]
+#[derive(Default, PartialEq, Clone, Serialize, Deserialize)]
 #[allow(missing_docs)]
 pub struct BaseNode {
     #[serde(default)]
@@ -407,6 +434,24 @@ pub struct BaseNode {
     #[serde(serialize_with = "serialize_errors")]
     #[serde(default)]
     pub errors: Vec<String>,
+}
+
+// Custom debug implentation which reduces the size of `Debug` printing `AST`s
+impl fmt::Debug for BaseNode {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let mut f = f.debug_struct("BaseNode");
+        f.field("location", &self.location);
+
+        if !self.comments.is_empty() {
+            f.field("comments", &self.comments);
+        }
+
+        if !self.errors.is_empty() {
+            f.field("errors", &self.errors);
+        }
+
+        f.finish()
+    }
 }
 
 impl BaseNode {

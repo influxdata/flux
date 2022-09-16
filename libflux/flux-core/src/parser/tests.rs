@@ -3888,55 +3888,88 @@ fn parse_testcase() {
 fn parse_testcase_extends() {
     let mut parser = Parser::new(r#"testcase my_test extends "other_test" { a = 1 }"#);
     let parsed = parser.parse_file("".to_string());
-    let loc = Locator::new(parser.source);
-    let expected = vec![Statement::TestCase(Box::new(TestCaseStmt {
-        base: BaseNode {
-            location: loc.get(1, 1, 1, 48),
-            ..BaseNode::default()
-        },
-        id: Identifier {
-            base: BaseNode {
-                location: loc.get(1, 10, 1, 17),
-                ..BaseNode::default()
-            },
-            name: "my_test".to_string(),
-        },
-        extends: Some(StringLit {
-            base: BaseNode {
-                location: loc.get(1, 26, 1, 38),
-                ..BaseNode::default()
-            },
-            value: "other_test".to_string(),
-        }),
-        block: Block {
-            base: BaseNode {
-                location: loc.get(1, 39, 1, 48),
-                ..BaseNode::default()
-            },
-            lbrace: vec![],
-            body: vec![Variable(Box::new(VariableAssgn {
-                base: BaseNode {
-                    location: loc.get(1, 41, 1, 46),
-                    ..BaseNode::default()
-                },
-                id: Identifier {
-                    base: BaseNode {
-                        location: loc.get(1, 41, 1, 42),
-                        ..BaseNode::default()
-                    },
-                    name: "a".to_string(),
-                },
-                init: Expression::Integer(IntegerLit {
-                    base: BaseNode {
-                        location: loc.get(1, 45, 1, 46),
-                        ..BaseNode::default()
-                    },
-                    value: 1,
-                }),
-            }))],
-            rbrace: vec![],
-        },
-    }))];
 
-    assert_eq!(expected, parsed.body);
+    expect_test::expect![[r#"
+        [
+            TestCase(
+                TestCaseStmt {
+                    base: BaseNode {
+                        location: SourceLocation {
+                            start: "line: 1, column: 1",
+                            end: "line: 1, column: 48",
+                            source: "testcase my_test extends \"other_test\" { a = 1 }",
+                        },
+                    },
+                    id: Identifier {
+                        base: BaseNode {
+                            location: SourceLocation {
+                                start: "line: 1, column: 10",
+                                end: "line: 1, column: 17",
+                                source: "my_test",
+                            },
+                        },
+                        name: "my_test",
+                    },
+                    extends: Some(
+                        StringLit {
+                            base: BaseNode {
+                                location: SourceLocation {
+                                    start: "line: 1, column: 26",
+                                    end: "line: 1, column: 38",
+                                    source: "\"other_test\"",
+                                },
+                            },
+                            value: "other_test",
+                        },
+                    ),
+                    block: Block {
+                        base: BaseNode {
+                            location: SourceLocation {
+                                start: "line: 1, column: 39",
+                                end: "line: 1, column: 48",
+                                source: "{ a = 1 }",
+                            },
+                        },
+                        lbrace: [],
+                        body: [
+                            Variable(
+                                VariableAssgn {
+                                    base: BaseNode {
+                                        location: SourceLocation {
+                                            start: "line: 1, column: 41",
+                                            end: "line: 1, column: 46",
+                                            source: "a = 1",
+                                        },
+                                    },
+                                    id: Identifier {
+                                        base: BaseNode {
+                                            location: SourceLocation {
+                                                start: "line: 1, column: 41",
+                                                end: "line: 1, column: 42",
+                                                source: "a",
+                                            },
+                                        },
+                                        name: "a",
+                                    },
+                                    init: Integer(
+                                        IntegerLit {
+                                            base: BaseNode {
+                                                location: SourceLocation {
+                                                    start: "line: 1, column: 45",
+                                                    end: "line: 1, column: 46",
+                                                    source: "1",
+                                                },
+                                            },
+                                            value: 1,
+                                        },
+                                    ),
+                                },
+                            ),
+                        ],
+                        rbrace: [],
+                    },
+                },
+            ),
+        ]
+    "#]].assert_debug_eq(&parsed.body);
 }

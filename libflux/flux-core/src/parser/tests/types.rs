@@ -624,62 +624,29 @@ fn test_parse_record_type_string_literal_property() {
             RecordType {
                 base: BaseNode {
                     location: SourceLocation {
-                        file: None,
-                        start: Position {
-                            line: 1,
-                            column: 1,
-                        },
-                        end: Position {
-                            line: 1,
-                            column: 18,
-                        },
-                        source: Some(
-                            "{\"a\":int, b:uint}",
-                        ),
+                        start: "line: 1, column: 1",
+                        end: "line: 1, column: 18",
+                        source: "{\"a\":int, b:uint}",
                     },
-                    comments: [],
-                    errors: [],
                 },
                 tvar: None,
                 properties: [
                     PropertyType {
                         base: BaseNode {
                             location: SourceLocation {
-                                file: None,
-                                start: Position {
-                                    line: 1,
-                                    column: 2,
-                                },
-                                end: Position {
-                                    line: 1,
-                                    column: 9,
-                                },
-                                source: Some(
-                                    "\"a\":int",
-                                ),
+                                start: "line: 1, column: 2",
+                                end: "line: 1, column: 9",
+                                source: "\"a\":int",
                             },
-                            comments: [],
-                            errors: [],
                         },
                         name: StringLit(
                             StringLit {
                                 base: BaseNode {
                                     location: SourceLocation {
-                                        file: None,
-                                        start: Position {
-                                            line: 1,
-                                            column: 2,
-                                        },
-                                        end: Position {
-                                            line: 1,
-                                            column: 5,
-                                        },
-                                        source: Some(
-                                            "\"a\"",
-                                        ),
+                                        start: "line: 1, column: 2",
+                                        end: "line: 1, column: 5",
+                                        source: "\"a\"",
                                     },
-                                    comments: [],
-                                    errors: [],
                                 },
                                 value: "a",
                             },
@@ -688,40 +655,18 @@ fn test_parse_record_type_string_literal_property() {
                             NamedType {
                                 base: BaseNode {
                                     location: SourceLocation {
-                                        file: None,
-                                        start: Position {
-                                            line: 1,
-                                            column: 6,
-                                        },
-                                        end: Position {
-                                            line: 1,
-                                            column: 9,
-                                        },
-                                        source: Some(
-                                            "int",
-                                        ),
+                                        start: "line: 1, column: 6",
+                                        end: "line: 1, column: 9",
+                                        source: "int",
                                     },
-                                    comments: [],
-                                    errors: [],
                                 },
                                 name: Identifier {
                                     base: BaseNode {
                                         location: SourceLocation {
-                                            file: None,
-                                            start: Position {
-                                                line: 1,
-                                                column: 6,
-                                            },
-                                            end: Position {
-                                                line: 1,
-                                                column: 9,
-                                            },
-                                            source: Some(
-                                                "int",
-                                            ),
+                                            start: "line: 1, column: 6",
+                                            end: "line: 1, column: 9",
+                                            source: "int",
                                         },
-                                        comments: [],
-                                        errors: [],
                                     },
                                     name: "int",
                                 },
@@ -731,41 +676,19 @@ fn test_parse_record_type_string_literal_property() {
                     PropertyType {
                         base: BaseNode {
                             location: SourceLocation {
-                                file: None,
-                                start: Position {
-                                    line: 1,
-                                    column: 11,
-                                },
-                                end: Position {
-                                    line: 1,
-                                    column: 17,
-                                },
-                                source: Some(
-                                    "b:uint",
-                                ),
+                                start: "line: 1, column: 11",
+                                end: "line: 1, column: 17",
+                                source: "b:uint",
                             },
-                            comments: [],
-                            errors: [],
                         },
                         name: Identifier(
                             Identifier {
                                 base: BaseNode {
                                     location: SourceLocation {
-                                        file: None,
-                                        start: Position {
-                                            line: 1,
-                                            column: 11,
-                                        },
-                                        end: Position {
-                                            line: 1,
-                                            column: 12,
-                                        },
-                                        source: Some(
-                                            "b",
-                                        ),
+                                        start: "line: 1, column: 11",
+                                        end: "line: 1, column: 12",
+                                        source: "b",
                                     },
-                                    comments: [],
-                                    errors: [],
                                 },
                                 name: "b",
                             },
@@ -774,40 +697,18 @@ fn test_parse_record_type_string_literal_property() {
                             NamedType {
                                 base: BaseNode {
                                     location: SourceLocation {
-                                        file: None,
-                                        start: Position {
-                                            line: 1,
-                                            column: 13,
-                                        },
-                                        end: Position {
-                                            line: 1,
-                                            column: 17,
-                                        },
-                                        source: Some(
-                                            "uint",
-                                        ),
+                                        start: "line: 1, column: 13",
+                                        end: "line: 1, column: 17",
+                                        source: "uint",
                                     },
-                                    comments: [],
-                                    errors: [],
                                 },
                                 name: Identifier {
                                     base: BaseNode {
                                         location: SourceLocation {
-                                            file: None,
-                                            start: Position {
-                                                line: 1,
-                                                column: 13,
-                                            },
-                                            end: Position {
-                                                line: 1,
-                                                column: 17,
-                                            },
-                                            source: Some(
-                                                "uint",
-                                            ),
+                                            start: "line: 1, column: 13",
+                                            end: "line: 1, column: 17",
+                                            source: "uint",
                                         },
-                                        comments: [],
-                                        errors: [],
                                     },
                                     name: "uint",
                                 },
