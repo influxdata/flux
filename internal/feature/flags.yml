@@ -105,3 +105,9 @@
   key: vectorizedUnaryOps
   default: false
   contact: Owen Nelson
+
+- name: StrictNullLogicalOps
+  description: When enabled, nulls in logical expressions should match the behavior language spec.
+  key: strictNullLogicalOps
+  default: false
+  contact: Owen Nelson

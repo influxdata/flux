@@ -5,6 +5,7 @@ import "array"
 import "csv"
 import "testing"
 import "testing/expect"
+import "internal/debug"
 
 option now = () => 2030-01-01T00:00:00Z
 
@@ -533,6 +534,297 @@ testcase vectorize_nested_logicals {
     got =
         array.from(rows: [{a: true, b: false}])
             |> map(fn: (r) => ({r with c: r.a and r.b or r.a}))
+
+    testing.diff(want: want, got: got)
+}
+
+testcase logical_typed_null_vectorized {
+    expect.planner(rules: ["vectorizeMapRule": 1])
+
+    want =
+        array.from(
+            rows: [
+                {
+                    nullOrFalse: debug.null(type: "bool"),
+                    falseOrNull: debug.null(type: "bool"),
+                    nullOrTrue: true,
+                    trueOrNull: true,
+                    nullAndFalse: false,
+                    falseAndNull: false,
+                    nullAndTrue: debug.null(type: "bool"),
+                    trueAndNull: debug.null(type: "bool"),
+                    nullAndNull: debug.null(type: "bool"),
+                    nullOrNull: debug.null(type: "bool"),
+                },
+            ],
+        )
+
+    got =
+        array.from(rows: [{_true: true, _false: false, _null: debug.null(type: "bool")}])
+            |> map(
+                fn: (r) =>
+                    ({r with
+                        nullOrFalse: r._null or r._false,
+                        falseOrNull: r._false or r._null,
+                        nullAndFalse: r._null and r._false,
+                        falseAndNull: r._false and r._null,
+                        nullOrTrue: r._null or r._true,
+                        trueOrNull: r._true or r._null,
+                        nullAndTrue: r._null and r._true,
+                        trueAndNull: r._true and r._null,
+                        nullAndNull: r._null and r._null,
+                        nullOrNull: r._null or r._null,
+                    }),
+            )
+            |> drop(columns: ["_null", "_true", "_false"])
+
+    testing.diff(want: want, got: got)
+}
+
+testcase logical_untyped_null_vectorized {
+    expect.planner(rules: ["vectorizeMapRule": 1])
+
+    want =
+        array.from(
+            // N.b. the "untyped" nulls are dropped silently by map() when it produces its output.
+            rows: [{nullOrTrue: true, trueOrNull: true, nullAndFalse: false, falseAndNull: false}],
+        )
+            |> debug.opaque()
+
+    got =
+        array.from(rows: [{_true: true, _false: false}])
+            // N.b. The "untyped" null here is introduced by hiding the type
+            // information from flux via `debug.opaque()` then accessing the
+            // undefined field `_null` inside our map func.
+            |> debug.opaque()
+            |> map(
+                fn: (r) =>
+                    ({r with
+                        nullOrFalse: r._null or r._false,
+                        falseOrNull: r._false or r._null,
+                        nullAndFalse: r._null and r._false,
+                        falseAndNull: r._false and r._null,
+                        nullOrTrue: r._null or r._true,
+                        trueOrNull: r._true or r._null,
+                        nullAndTrue: r._null and r._true,
+                        trueAndNull: r._true and r._null,
+                        nullAndNull: r._null and r._null,
+                        nullOrNull: r._null or r._null,
+                    }),
+            )
+            |> drop(columns: ["_true", "_false"])
+
+    testing.diff(want: want, got: got)
+}
+
+testcase logical_typed_null_vectorized_const {
+    expect.planner(rules: ["vectorizeMapRule": 1])
+
+    want =
+        array.from(
+            rows: [
+                {
+                    nullOrFalse: debug.null(type: "bool"),
+                    falseOrNull: debug.null(type: "bool"),
+                    nullOrTrue: true,
+                    trueOrNull: true,
+                    nullAndFalse: false,
+                    falseAndNull: false,
+                    nullAndTrue: debug.null(type: "bool"),
+                    trueAndNull: debug.null(type: "bool"),
+                    nullAndNull: debug.null(type: "bool"),
+                    nullOrNull: debug.null(type: "bool"),
+                },
+            ],
+        )
+
+    got =
+        array.from(rows: [{x: 0, _null: debug.null(type: "bool")}])
+            |> map(
+                fn: (r) =>
+                    ({r with
+                        nullOrFalse: r._null or false,
+                        falseOrNull: false or r._null,
+                        nullAndFalse: r._null and false,
+                        falseAndNull: false and r._null,
+                        nullOrTrue: r._null or true,
+                        trueOrNull: true or r._null,
+                        nullAndTrue: r._null and true,
+                        trueAndNull: true and r._null,
+                        nullAndNull: r._null and r._null,
+                        nullOrNull: r._null or r._null,
+                    }),
+            )
+            |> drop(columns: ["x", "_null"])
+
+    testing.diff(want: want, got: got)
+}
+
+testcase logical_untyped_null_vectorized_const {
+    expect.planner(rules: ["vectorizeMapRule": 1])
+
+    want =
+        array.from(
+            // N.b. the "untyped" nulls are dropped silently by map() when it produces its output.
+            rows: [{nullOrTrue: true, trueOrNull: true, nullAndFalse: false, falseAndNull: false}],
+        )
+            |> debug.opaque()
+
+    got =
+        array.from(rows: [{x: 0}])
+            // N.b. The "untyped" null here is introduced by hiding the type
+            // information from flux via `debug.opaque()` then accessing the
+            // undefined field `_null` inside our map func.
+            |> debug.opaque()
+            |> map(
+                fn: (r) =>
+                    ({r with
+                        nullOrFalse: r._null or false,
+                        falseOrNull: false or r._null,
+                        nullAndFalse: r._null and false,
+                        falseAndNull: false and r._null,
+                        nullOrTrue: r._null or true,
+                        trueOrNull: true or r._null,
+                        nullAndTrue: r._null and true,
+                        trueAndNull: true and r._null,
+                        nullAndNull: r._null and r._null,
+                        nullOrNull: r._null or r._null,
+                    }),
+            )
+            |> drop(columns: ["x"])
+
+    testing.diff(want: want, got: got)
+}
+
+testcase logical_typed_null {
+    expect.planner(rules: ["vectorizeMapRule": 0])
+
+    want =
+        array.from(
+            rows: [
+                {
+                    nullOrFalse: debug.null(type: "bool"),
+                    falseOrNull: debug.null(type: "bool"),
+                    nullOrTrue: true,
+                    trueOrNull: true,
+                    nullAndFalse: false,
+                    falseAndNull: false,
+                    nullAndTrue: debug.null(type: "bool"),
+                    trueAndNull: debug.null(type: "bool"),
+                    nullAndNull: debug.null(type: "bool"),
+                    nullOrNull: debug.null(type: "bool"),
+                },
+            ],
+        )
+
+    got =
+        array.from(rows: [{_true: true, _false: false, _null: debug.null(type: "bool")}])
+            |> map(
+                fn: (r) =>
+                    ({r with
+                        nullOrFalse: r._null or r._false,
+                        falseOrNull: r._false or r._null,
+                        nullAndFalse: r._null and r._false,
+                        falseAndNull: r._false and r._null,
+                        nullOrTrue: r._null or r._true,
+                        trueOrNull: r._true or r._null,
+                        nullAndTrue: r._null and r._true,
+                        trueAndNull: r._true and r._null,
+                        nullAndNull: r._null and r._null,
+                        nullOrNull: r._null or r._null,
+                        // forces vectorization to fail
+                        _drop: (() => true)(),
+                    }),
+            )
+            |> drop(columns: ["_drop", "_null", "_true", "_false"])
+
+    testing.diff(want: want, got: got)
+}
+
+testcase logical_untyped_null {
+    expect.planner(rules: ["vectorizeMapRule": 0])
+
+    want =
+        array.from(
+            // N.b. the "untyped" nulls are dropped silently by map() when it produces its output.
+            rows: [{nullOrTrue: true, trueOrNull: true, nullAndFalse: false, falseAndNull: false}],
+        )
+            |> debug.opaque()
+
+    got =
+        array.from(rows: [{_true: true, _false: false}])
+            // N.b. The "untyped" null here is introduced by hiding the type
+            // information from flux via `debug.opaque()` then accessing the
+            // undefined field `_null` inside our map func.
+            |> debug.opaque()
+            |> map(
+                fn: (r) =>
+                    ({r with
+                        nullOrFalse: r._null or r._false,
+                        falseOrNull: r._false or r._null,
+                        nullAndFalse: r._null and r._false,
+                        falseAndNull: r._false and r._null,
+                        nullOrTrue: r._null or r._true,
+                        trueOrNull: r._true or r._null,
+                        nullAndTrue: r._null and r._true,
+                        trueAndNull: r._true and r._null,
+                        nullAndNull: r._null and r._null,
+                        nullOrNull: r._null or r._null,
+                        // forces vectorization to fail
+                        _drop: (() => true)(),
+                    }),
+            )
+            |> drop(columns: ["_drop", "_true", "_false"])
+
+    testing.diff(want: want, got: got)
+}
+
+// XXX(onelson): this test doesn't actually use `map`, but is so similar to the
+// other logical expr tests! I'm sorry!
+// FIXME: can't figure out how to write this test in a way that will work for untyped nulls.
+//   In `map()`, the untyped nulls are quietly dropped from the output tables.
+//   In this situation, the untyped nulls produce an error:
+//   ```
+//   cannot represent the type null as column data
+//   ```
+testcase logical_typed_null_interp {
+    r = {_true: true, _false: false, _null: debug.null(type: "bool")}
+
+    want =
+        array.from(
+            rows: [
+                {
+                    nullOrFalse: debug.null(type: "bool"),
+                    falseOrNull: debug.null(type: "bool"),
+                    nullOrTrue: true,
+                    trueOrNull: true,
+                    nullAndFalse: false,
+                    falseAndNull: false,
+                    nullAndTrue: debug.null(type: "bool"),
+                    trueAndNull: debug.null(type: "bool"),
+                    nullAndNull: debug.null(type: "bool"),
+                    nullOrNull: debug.null(type: "bool"),
+                },
+            ],
+        )
+
+    got =
+        array.from(
+            rows: [
+                {
+                    nullOrFalse: r._null or r._false,
+                    falseOrNull: r._false or r._null,
+                    nullAndFalse: r._null and r._false,
+                    falseAndNull: r._false and r._null,
+                    nullOrTrue: r._null or r._true,
+                    trueOrNull: r._true or r._null,
+                    nullAndTrue: r._null and r._true,
+                    trueAndNull: r._true and r._null,
+                    nullAndNull: r._null and r._null,
+                    nullOrNull: r._null or r._null,
+                },
+            ],
+        )
 
     testing.diff(want: want, got: got)
 }

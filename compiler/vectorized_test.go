@@ -208,6 +208,89 @@ func TestVectorizedFns(t *testing.T) {
 			vectorizable: true,
 			skipComp:     true,
 		},
+		{
+			name:         "logical expressions",
+			fn:           "(r) => ({ r with c: r._a and r._b, d: r._a or r._b })",
+			vectorizable: true,
+			skipComp:     true,
+		},
+	}
+
+	logicalTests := []struct {
+		name  string
+		input map[string]interface{}
+		want  map[string]interface{}
+	}{
+		{
+			name: "null handling",
+			input: map[string]interface{}{
+				"r": map[string]interface{}{
+					"a": []interface{}{true, true, false, nil, false, nil},
+					"b": []interface{}{false, nil, true, true, nil, nil},
+				},
+			},
+			want: map[string]interface{}{
+				"c": []interface{}{false, nil, false, nil, false, nil},
+				"d": []interface{}{true, true, true, true, nil, nil},
+			},
+		},
+		{
+			name: "all true LHS",
+			input: map[string]interface{}{
+				"r": map[string]interface{}{
+					"a": []interface{}{true, true, true, true},
+					"b": []interface{}{false, false, true, false},
+				},
+			},
+			want: map[string]interface{}{
+				"c": []interface{}{false, false, true, false},
+				"d": []interface{}{true, true, true, true},
+			},
+		},
+		{
+			name: "all false both sides",
+			input: map[string]interface{}{
+				"r": map[string]interface{}{
+					"a": []interface{}{false, false, false, false},
+					"b": []interface{}{false, false, false, false},
+				},
+			},
+			want: map[string]interface{}{
+				"c": []interface{}{false, false, false, false},
+				"d": []interface{}{false, false, false, false},
+			},
+		},
+		{
+			name: "all true RHS",
+			input: map[string]interface{}{
+				"r": map[string]interface{}{
+					"a": []interface{}{false, true, true, false},
+					"b": []interface{}{true, true, true, true},
+				},
+			},
+			want: map[string]interface{}{
+				"c": []interface{}{false, true, true, false},
+				"d": []interface{}{true, true, true, true},
+			},
+		},
+	}
+
+	for _, test := range logicalTests {
+		testCases = append(testCases, TestCase{
+			name:         fmt.Sprintf("logical expression %s", test.name),
+			fn:           `(r) => ({c: r.a and r.b, d: r.a or r.b})`,
+			vectorizable: true,
+			inType: semantic.NewObjectType([]semantic.PropertyType{
+				{Key: []byte("r"), Value: semantic.NewObjectType([]semantic.PropertyType{
+					{Key: []byte("a"), Value: semantic.NewVectorType(semantic.BasicBool)},
+					{Key: []byte("b"), Value: semantic.NewVectorType(semantic.BasicBool)},
+				})},
+			}),
+			input: test.input,
+			want:  test.want,
+
+			flagger: executetest.TestFlagger{},
+		})
 	}
 
 	additionTests := []struct {

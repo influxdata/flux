@@ -10,6 +10,7 @@ import (
 	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/internal/errors"
+	fluxfeature "github.com/influxdata/flux/internal/feature"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
@@ -445,39 +446,105 @@ func (itrp *Interpreter) doExpression(ctx context.Context, expr semantic.Express
 		}
 		return bf(l, r)
 	case *semantic.LogicalExpression:
-		l, err := itrp.doExpression(ctx, e.Left, scope)
-		if err != nil {
-			return nil, err
-		}
-		if l.Type().Nature() != semantic.Bool {
-			return nil, errors.Newf(codes.Invalid, "left operand to logcial expression is not a boolean value, got %v", l.Type())
-		}
-		left := l.Bool()
+		if fluxfeature.Strictnulllogicalops().Enabled(ctx) {
+			l, err := itrp.doExpression(ctx, e.Left, scope)
+			if err != nil {
+				return nil, err
+			}
 
-		if e.Operator == ast.AndOperator && !left {
-			// Early return
-			return values.NewBool(false), nil
-		} else if e.Operator == ast.OrOperator && left {
-			// Early return
-			return values.NewBool(true), nil
-		}
+			if !l.IsNull() && l.Type().Nature() != semantic.Bool {
+				return nil, errors.Newf(codes.Invalid, "left operand to logical expression is not a boolean value, got %v", l.Type())
+			}
 
-		r, err := itrp.doExpression(ctx, e.Right, scope)
-		if err != nil {
-			return nil, err
-		}
-		if r.Type().Nature() != semantic.Bool {
-			return nil, errors.New(codes.Invalid, "right operand to logical expression is not a boolean value")
-		}
-		right := r.Bool()
+			var left *bool
+			if !l.IsNull() {
+				x := l.Bool()
+				left = &x
+			}
 
-		switch e.Operator {
-		case ast.AndOperator:
-			return values.NewBool(left && right), nil
-		case ast.OrOperator:
-			return values.NewBool(left || right), nil
-		default:
-			return nil, errors.Newf(codes.Invalid, "invalid logical operator %v", e.Operator)
+			if e.Operator == ast.AndOperator && left != nil && !*left {
+				return values.NewBool(false), nil
+			} else if e.Operator == ast.OrOperator && left != nil && *left {
+				return values.NewBool(true), nil
+			}
+
+			r, err := itrp.doExpression(ctx, e.Right, scope)
+			if err != nil {
+				return nil, err
+			}
+			if !r.IsNull() && r.Type().Nature() != semantic.Bool {
+				return nil, errors.New(codes.Invalid, "right operand to logical expression is not a boolean value")
+			}
+
+			var right *bool
+			if !r.IsNull() {
+				x := r.Bool()
+				right = &x
+			}
+
+			// This is the same check as we did for the left hand side.
+			// Look for the values that would make the later checks redundant.
+			if e.Operator == ast.AndOperator && right != nil && !*right {
+				return values.NewBool(false), nil
+			} else if e.Operator == ast.OrOperator && right != nil && *right {
+				return values.NewBool(true), nil
+			}
+
+			// By now, if either side is null, the outcome must be null
+			if l.IsNull() {
+				l.Retain()
+				return l, nil
+			} else if r.IsNull() {
+				r.Retain()
+				return r, nil
+			}
+
+			// At this point, neither are null, we do the op.
+			switch e.Operator {
+			case ast.AndOperator:
+				return values.NewBool(*left && *right), nil
+			case ast.OrOperator:
+				return values.NewBool(*left || *right), nil
+			default:
+				return nil, errors.Newf(codes.Invalid, "invalid logical operator %v", e.Operator)
+			}
+
+		} else {
+			l, err := itrp.doExpression(ctx, e.Left, scope)
+			if err != nil {
+				return nil, err
+			}
+
+			if l.Type().Nature() != semantic.Bool {
+				return nil, errors.Newf(codes.Invalid, "left operand to logical expression is not a boolean value, got %v", l.Type())
+			}
+			left := l.Bool()
+
+			if e.Operator == ast.AndOperator && !left {
+				// Early return
+				return values.NewBool(false), nil
+			} else if e.Operator == ast.OrOperator && left {
+				// Early return
+				return values.NewBool(true), nil
+			}
+
+			r, err := itrp.doExpression(ctx, e.Right, scope)
+			if err != nil {
+				return nil, err
+			}
+			if r.Type().Nature() != semantic.Bool {
+				return nil, errors.New(codes.Invalid, "right operand to logical expression is not a boolean value")
+			}
+			right := r.Bool()
+
+			switch e.Operator {
+			case ast.AndOperator:
+				return values.NewBool(left && right), nil
+			case ast.OrOperator:
+				return values.NewBool(left || right), nil
+			default:
+				return nil, errors.Newf(codes.Invalid, "invalid logical operator %v", e.Operator)
+			}
 		}
 	case *semantic.ConditionalExpression:
 		t, err := itrp.doExpression(ctx, e.Test, scope)
