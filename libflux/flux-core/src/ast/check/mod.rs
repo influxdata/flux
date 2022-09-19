@@ -11,29 +11,48 @@ use crate::{
 /// Inspects an AST node and returns a list of found AST errors plus
 /// any errors existed before `ast.check()` is performed.
 pub fn check(node: walk::Node) -> Result<(), Errors<Error>> {
-    let mut errors = Errors::new();
-    walk::walk(
-        &mut |n: walk::Node| {
+    const MAX_DEPTH: u32 = 180;
+
+    #[derive(Default)]
+    struct Check {
+        depth: u32,
+        errors: Errors<Error>,
+    }
+
+    impl<'a> walk::Visitor<'a> for Check {
+        fn visit(&mut self, n: walk::Node<'a>) -> bool {
+            self.depth += 1;
+
+            let errors = &mut self.errors;
+
+            if self.depth > MAX_DEPTH {
+                errors.push(located(n.base().location.clone(), ErrorKind::NestedToDeep));
+
+                return false;
+            }
+
             // collect any errors we found prior to ast.check().
             for err in n.base().errors.iter() {
-                errors.push(located(
-                    n.base().location.clone(),
-                    ErrorKind {
+                let err = if err == "Program is nested too deep" {
+                    ErrorKind::NestedToDeep
+                } else {
+                    ErrorKind::Message {
                         message: err.clone(),
-                    },
-                ));
+                    }
+                };
+                errors.push(located(n.base().location.clone(), err));
             }
 
             match n {
                 walk::Node::BadStmt(n) => errors.push(located(
                     n.base.location.clone(),
-                    ErrorKind {
+                    ErrorKind::Message {
                         message: format!("invalid statement: {}", n.text),
                     },
                 )),
                 walk::Node::BadExpr(n) if !n.text.is_empty() => errors.push(located(
                     n.base.location.clone(),
-                    ErrorKind {
+                    ErrorKind::Message {
                         message: format!("invalid expression: {}", n.text),
                     },
                 )),
@@ -48,7 +67,7 @@ pub fn check(node: walk::Node) -> Result<(), Errors<Error>> {
                                     if let PropertyKey::StringLit(s) = &p.key {
                                         errors.push(located(
                                             n.base.location.clone(),
-                                            ErrorKind {
+                                            ErrorKind::Message {
                                                 message: format!(
                                                     "string literal key {} must have a value",
                                                     s.value
@@ -66,7 +85,7 @@ pub fn check(node: walk::Node) -> Result<(), Errors<Error>> {
                     if has_implicit && has_explicit {
                         errors.push(located(
                             n.base.location.clone(),
-                            ErrorKind {
+                            ErrorKind::Message {
                                 message: String::from(
                                     "cannot mix implicit and explicit properties",
                                 ),
@@ -76,9 +95,19 @@ pub fn check(node: walk::Node) -> Result<(), Errors<Error>> {
                 }
                 _ => {}
             }
-        },
-        node,
-    );
+
+            true
+        }
+
+        fn done(&mut self, _: walk::Node<'a>) {
+            self.depth -= 1;
+        }
+    }
+
+    let mut check = Check::default();
+    walk::walk(&mut check, node);
+    let errors = check.errors;
+
     if errors.is_empty() {
         Ok(())
     } else {
@@ -91,10 +120,18 @@ pub type Error = Located<ErrorKind>;
 
 /// An error that can be returned while checking the AST.
 #[derive(Error, Debug, PartialEq)]
-#[error("{}", message)]
-pub struct ErrorKind {
-    /// Error message.
-    pub message: String,
+#[allow(missing_docs)]
+pub enum ErrorKind {
+    #[error("Program is nested too deep")]
+    NestedToDeep,
+    #[error("{message}")]
+    Message { message: String },
+}
+
+impl ErrorKind {
+    pub(crate) fn is_fatal(&self) -> bool {
+        matches!(self, Self::NestedToDeep)
+    }
 }
 
 impl AsDiagnostic for ErrorKind {

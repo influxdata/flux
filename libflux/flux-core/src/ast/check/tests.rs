@@ -21,7 +21,7 @@ fn test_object_check() {
             },
             source: Some(String::from("{c: 2, a}")),
         },
-        ErrorKind {
+        ErrorKind::Message {
             message: String::from("cannot mix implicit and explicit properties"),
         },
     )]));
@@ -39,7 +39,7 @@ fn test_bad_stmt() {
             end: Position { line: 3, column: 3 },
             source: Some(String::from("=")),
         },
-        ErrorKind {
+        ErrorKind::Message {
             message: String::from("invalid statement: ="),
         },
     )]));
@@ -60,7 +60,7 @@ fn test_bad_expr() {
             },
             source: Some(String::from("/")),
         },
-        ErrorKind {
+        ErrorKind::Message {
             message: String::from("invalid expression: invalid token for primary expression: DIV"),
         },
     )]));
@@ -131,6 +131,6 @@ fn test_check_collect_existing_error() {
     let got = check(walk::Node::File(&file)).unwrap_err();
     assert_eq!(3, got.len());
     for (i, err) in got.iter().enumerate() {
-        assert_eq!(err.error.message, format!("error {}", i + 1));
+        assert_eq!(err.error.to_string(), format!("error {}", i + 1));
     }
 }

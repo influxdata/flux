@@ -946,3 +946,23 @@ builtin y : int
                 .to_string(),
         );
 }
+
+#[test]
+fn dont_stack_overflow() {
+    let mut p = Parser::new(include_str!("stack_overflow.flux"));
+    let parsed = p.parse_file("".to_string());
+    assert!(&ast::check::check(ast::walk::Node::File(&parsed))
+        .unwrap_err()
+        .iter()
+        .any(|err| err.error.is_fatal()));
+}
+
+#[test]
+fn dont_stack_overflow_2() {
+    let mut p = Parser::new(include_str!("stack_overflow_2.flux"));
+    let parsed = p.parse_file("".to_string());
+    assert!(&ast::check::check(ast::walk::Node::File(&parsed))
+        .unwrap_err()
+        .iter()
+        .any(|err| err.error.is_fatal()));
+}

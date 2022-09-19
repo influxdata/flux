@@ -612,7 +612,21 @@ impl<'env, I: import::Importer> Analyzer<'env, I> {
         let mut errors = Errors::new();
 
         if let Err(err) = ast::check::check(ast::walk::Node::Package(ast_pkg)) {
+            let has_fatal_error = err.iter().any(|e| e.error.is_fatal());
             errors.extend(err.into_iter().map(Error::from));
+            if has_fatal_error {
+                return Err(Salvage {
+                    error: FileErrors {
+                        file: ast_pkg.package.clone(),
+                        source: None,
+                        diagnostics: Diagnostics {
+                            errors,
+                            warnings: Errors::new(),
+                        },
+                    },
+                    value: None,
+                });
+            }
         }
 
         let (mut sem_pkg, package_info) = {
