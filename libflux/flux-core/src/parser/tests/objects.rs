@@ -1,7 +1,4 @@
-use pretty_assertions::assert_eq;
-
 use super::*;
-use crate::ast::tests::Locator;
 
 #[test]
 fn map_member_expressions() {
@@ -12,378 +9,573 @@ fn map_member_expressions() {
 			"#,
     );
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(p.source);
-    assert_eq!(
-        parsed,
+    expect![[r#"
         File {
             base: BaseNode {
-                location: loc.get(1, 1, 3, 13),
-                ..BaseNode::default()
+                location: SourceLocation {
+                    start: "line: 1, column: 1",
+                    end: "line: 3, column: 13",
+                    source: "m = {key1: 1, key2:\"value2\"}\n\t\t\tm.key1\n\t\t\tm[\"key2\"]",
+                },
             },
-            name: "".to_string(),
-            metadata: "parser-type=rust".to_string(),
+            name: "",
+            metadata: "parser-type=rust",
             package: None,
-            imports: vec![],
-            body: vec![
-                Statement::Variable(Box::new(VariableAssgn {
-                    base: BaseNode {
-                        location: loc.get(1, 1, 1, 29),
-                        ..BaseNode::default()
-                    },
-                    id: Identifier {
+            imports: [],
+            body: [
+                Variable(
+                    VariableAssgn {
                         base: BaseNode {
-                            location: loc.get(1, 1, 1, 2),
-                            ..BaseNode::default()
+                            location: SourceLocation {
+                                start: "line: 1, column: 1",
+                                end: "line: 1, column: 29",
+                                source: "m = {key1: 1, key2:\"value2\"}",
+                            },
                         },
-                        name: "m".to_string()
-                    },
-                    init: Expression::Object(Box::new(ObjectExpr {
-                        base: BaseNode {
-                            location: loc.get(1, 5, 1, 29),
-                            ..BaseNode::default()
-                        },
-                        lbrace: vec![],
-                        with: None,
-                        properties: vec![
-                            Property {
-                                base: BaseNode {
-                                    location: loc.get(1, 6, 1, 13),
-                                    ..BaseNode::default()
+                        id: Identifier {
+                            base: BaseNode {
+                                location: SourceLocation {
+                                    start: "line: 1, column: 1",
+                                    end: "line: 1, column: 2",
+                                    source: "m",
                                 },
-                                key: PropertyKey::Identifier(Identifier {
-                                    base: BaseNode {
-                                        location: loc.get(1, 6, 1, 10),
-                                        ..BaseNode::default()
-                                    },
-                                    name: "key1".to_string()
-                                }),
-                                separator: vec![],
-                                value: Some(Expression::Integer(IntegerLit {
-                                    base: BaseNode {
-                                        location: loc.get(1, 12, 1, 13),
-                                        ..BaseNode::default()
-                                    },
-                                    value: 1
-                                })),
-                                comma: vec![],
                             },
-                            Property {
+                            name: "m",
+                        },
+                        init: Object(
+                            ObjectExpr {
                                 base: BaseNode {
-                                    location: loc.get(1, 15, 1, 28),
-                                    ..BaseNode::default()
+                                    location: SourceLocation {
+                                        start: "line: 1, column: 5",
+                                        end: "line: 1, column: 29",
+                                        source: "{key1: 1, key2:\"value2\"}",
+                                    },
                                 },
-                                key: PropertyKey::Identifier(Identifier {
-                                    base: BaseNode {
-                                        location: loc.get(1, 15, 1, 19),
-                                        ..BaseNode::default()
+                                lbrace: [],
+                                with: None,
+                                properties: [
+                                    Property {
+                                        base: BaseNode {
+                                            location: SourceLocation {
+                                                start: "line: 1, column: 6",
+                                                end: "line: 1, column: 13",
+                                                source: "key1: 1",
+                                            },
+                                        },
+                                        key: Identifier(
+                                            Identifier {
+                                                base: BaseNode {
+                                                    location: SourceLocation {
+                                                        start: "line: 1, column: 6",
+                                                        end: "line: 1, column: 10",
+                                                        source: "key1",
+                                                    },
+                                                },
+                                                name: "key1",
+                                            },
+                                        ),
+                                        separator: [],
+                                        value: Some(
+                                            Integer(
+                                                IntegerLit {
+                                                    base: BaseNode {
+                                                        location: SourceLocation {
+                                                            start: "line: 1, column: 12",
+                                                            end: "line: 1, column: 13",
+                                                            source: "1",
+                                                        },
+                                                    },
+                                                    value: 1,
+                                                },
+                                            ),
+                                        ),
+                                        comma: [],
                                     },
-                                    name: "key2".to_string()
-                                }),
-                                separator: vec![],
-                                value: Some(Expression::StringLit(StringLit {
-                                    base: BaseNode {
-                                        location: loc.get(1, 20, 1, 28),
-                                        ..BaseNode::default()
+                                    Property {
+                                        base: BaseNode {
+                                            location: SourceLocation {
+                                                start: "line: 1, column: 15",
+                                                end: "line: 1, column: 28",
+                                                source: "key2:\"value2\"",
+                                            },
+                                        },
+                                        key: Identifier(
+                                            Identifier {
+                                                base: BaseNode {
+                                                    location: SourceLocation {
+                                                        start: "line: 1, column: 15",
+                                                        end: "line: 1, column: 19",
+                                                        source: "key2",
+                                                    },
+                                                },
+                                                name: "key2",
+                                            },
+                                        ),
+                                        separator: [],
+                                        value: Some(
+                                            StringLit(
+                                                StringLit {
+                                                    base: BaseNode {
+                                                        location: SourceLocation {
+                                                            start: "line: 1, column: 20",
+                                                            end: "line: 1, column: 28",
+                                                            source: "\"value2\"",
+                                                        },
+                                                    },
+                                                    value: "value2",
+                                                },
+                                            ),
+                                        ),
+                                        comma: [],
                                     },
-                                    value: "value2".to_string()
-                                })),
-                                comma: vec![],
-                            }
-                        ],
-                        rbrace: vec![],
-                    }))
-                })),
-                Statement::Expr(Box::new(ExprStmt {
-                    base: BaseNode {
-                        location: loc.get(2, 4, 2, 10),
-                        ..BaseNode::default()
+                                ],
+                                rbrace: [],
+                            },
+                        ),
                     },
-                    expression: Expression::Member(Box::new(MemberExpr {
+                ),
+                Expr(
+                    ExprStmt {
                         base: BaseNode {
-                            location: loc.get(2, 4, 2, 10),
-                            ..BaseNode::default()
+                            location: SourceLocation {
+                                start: "line: 2, column: 4",
+                                end: "line: 2, column: 10",
+                                source: "m.key1",
+                            },
                         },
-                        object: Expression::Identifier(Identifier {
-                            base: BaseNode {
-                                location: loc.get(2, 4, 2, 5),
-                                ..BaseNode::default()
+                        expression: Member(
+                            MemberExpr {
+                                base: BaseNode {
+                                    location: SourceLocation {
+                                        start: "line: 2, column: 4",
+                                        end: "line: 2, column: 10",
+                                        source: "m.key1",
+                                    },
+                                },
+                                object: Identifier(
+                                    Identifier {
+                                        base: BaseNode {
+                                            location: SourceLocation {
+                                                start: "line: 2, column: 4",
+                                                end: "line: 2, column: 5",
+                                                source: "m",
+                                            },
+                                        },
+                                        name: "m",
+                                    },
+                                ),
+                                lbrack: [],
+                                property: Identifier(
+                                    Identifier {
+                                        base: BaseNode {
+                                            location: SourceLocation {
+                                                start: "line: 2, column: 6",
+                                                end: "line: 2, column: 10",
+                                                source: "key1",
+                                            },
+                                        },
+                                        name: "key1",
+                                    },
+                                ),
+                                rbrack: [],
                             },
-                            name: "m".to_string()
-                        }),
-                        lbrack: vec![],
-                        property: PropertyKey::Identifier(Identifier {
-                            base: BaseNode {
-                                location: loc.get(2, 6, 2, 10),
-                                ..BaseNode::default()
-                            },
-                            name: "key1".to_string()
-                        }),
-                        rbrack: vec![],
-                    }))
-                })),
-                Statement::Expr(Box::new(ExprStmt {
-                    base: BaseNode {
-                        location: loc.get(3, 4, 3, 13),
-                        ..BaseNode::default()
+                        ),
                     },
-                    expression: Expression::Member(Box::new(MemberExpr {
+                ),
+                Expr(
+                    ExprStmt {
                         base: BaseNode {
-                            location: loc.get(3, 4, 3, 13),
-                            ..BaseNode::default()
+                            location: SourceLocation {
+                                start: "line: 3, column: 4",
+                                end: "line: 3, column: 13",
+                                source: "m[\"key2\"]",
+                            },
                         },
-                        object: Expression::Identifier(Identifier {
-                            base: BaseNode {
-                                location: loc.get(3, 4, 3, 5),
-                                ..BaseNode::default()
+                        expression: Member(
+                            MemberExpr {
+                                base: BaseNode {
+                                    location: SourceLocation {
+                                        start: "line: 3, column: 4",
+                                        end: "line: 3, column: 13",
+                                        source: "m[\"key2\"]",
+                                    },
+                                },
+                                object: Identifier(
+                                    Identifier {
+                                        base: BaseNode {
+                                            location: SourceLocation {
+                                                start: "line: 3, column: 4",
+                                                end: "line: 3, column: 5",
+                                                source: "m",
+                                            },
+                                        },
+                                        name: "m",
+                                    },
+                                ),
+                                lbrack: [],
+                                property: StringLit(
+                                    StringLit {
+                                        base: BaseNode {
+                                            location: SourceLocation {
+                                                start: "line: 3, column: 6",
+                                                end: "line: 3, column: 12",
+                                                source: "\"key2\"",
+                                            },
+                                        },
+                                        value: "key2",
+                                    },
+                                ),
+                                rbrack: [],
                             },
-                            name: "m".to_string()
-                        }),
-                        lbrack: vec![],
-                        property: PropertyKey::StringLit(StringLit {
-                            base: BaseNode {
-                                location: loc.get(3, 6, 3, 12),
-                                ..BaseNode::default()
-                            },
-                            value: "key2".to_string()
-                        }),
-                        rbrack: vec![],
-                    }))
-                }))
+                        ),
+                    },
+                ),
             ],
-            eof: vec![],
-        },
-    )
+            eof: [],
+        }
+    "#]].assert_debug_eq(&parsed);
 }
 
 #[test]
 fn object_with_string_literal_key() {
     let mut p = Parser::new(r#"x = {"a": 10}"#);
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(p.source);
-    assert_eq!(
-        parsed,
+    expect![[r#"
         File {
             base: BaseNode {
-                location: loc.get(1, 1, 1, 14),
-                ..BaseNode::default()
+                location: SourceLocation {
+                    start: "line: 1, column: 1",
+                    end: "line: 1, column: 14",
+                    source: "x = {\"a\": 10}",
+                },
             },
-            name: "".to_string(),
-            metadata: "parser-type=rust".to_string(),
+            name: "",
+            metadata: "parser-type=rust",
             package: None,
-            imports: vec![],
-            body: vec![Statement::Variable(Box::new(VariableAssgn {
-                base: BaseNode {
-                    location: loc.get(1, 1, 1, 14),
-                    ..BaseNode::default()
-                },
-                id: Identifier {
-                    base: BaseNode {
-                        location: loc.get(1, 1, 1, 2),
-                        ..BaseNode::default()
-                    },
-                    name: "x".to_string()
-                },
-                init: Expression::Object(Box::new(ObjectExpr {
-                    base: BaseNode {
-                        location: loc.get(1, 5, 1, 14),
-                        ..BaseNode::default()
-                    },
-                    lbrace: vec![],
-                    with: None,
-                    properties: vec![Property {
+            imports: [],
+            body: [
+                Variable(
+                    VariableAssgn {
                         base: BaseNode {
-                            location: loc.get(1, 6, 1, 13),
-                            ..BaseNode::default()
+                            location: SourceLocation {
+                                start: "line: 1, column: 1",
+                                end: "line: 1, column: 14",
+                                source: "x = {\"a\": 10}",
+                            },
                         },
-                        key: PropertyKey::StringLit(StringLit {
+                        id: Identifier {
                             base: BaseNode {
-                                location: loc.get(1, 6, 1, 9),
-                                ..BaseNode::default()
+                                location: SourceLocation {
+                                    start: "line: 1, column: 1",
+                                    end: "line: 1, column: 2",
+                                    source: "x",
+                                },
                             },
-                            value: "a".to_string()
-                        }),
-                        separator: vec![],
-                        value: Some(Expression::Integer(IntegerLit {
-                            base: BaseNode {
-                                location: loc.get(1, 11, 1, 13),
-                                ..BaseNode::default()
+                            name: "x",
+                        },
+                        init: Object(
+                            ObjectExpr {
+                                base: BaseNode {
+                                    location: SourceLocation {
+                                        start: "line: 1, column: 5",
+                                        end: "line: 1, column: 14",
+                                        source: "{\"a\": 10}",
+                                    },
+                                },
+                                lbrace: [],
+                                with: None,
+                                properties: [
+                                    Property {
+                                        base: BaseNode {
+                                            location: SourceLocation {
+                                                start: "line: 1, column: 6",
+                                                end: "line: 1, column: 13",
+                                                source: "\"a\": 10",
+                                            },
+                                        },
+                                        key: StringLit(
+                                            StringLit {
+                                                base: BaseNode {
+                                                    location: SourceLocation {
+                                                        start: "line: 1, column: 6",
+                                                        end: "line: 1, column: 9",
+                                                        source: "\"a\"",
+                                                    },
+                                                },
+                                                value: "a",
+                                            },
+                                        ),
+                                        separator: [],
+                                        value: Some(
+                                            Integer(
+                                                IntegerLit {
+                                                    base: BaseNode {
+                                                        location: SourceLocation {
+                                                            start: "line: 1, column: 11",
+                                                            end: "line: 1, column: 13",
+                                                            source: "10",
+                                                        },
+                                                    },
+                                                    value: 10,
+                                                },
+                                            ),
+                                        ),
+                                        comma: [],
+                                    },
+                                ],
+                                rbrace: [],
                             },
-                            value: 10
-                        })),
-                        comma: vec![],
-                    }],
-                    rbrace: vec![],
-                }))
-            }))],
-            eof: vec![],
-        },
-    )
+                        ),
+                    },
+                ),
+            ],
+            eof: [],
+        }
+    "#]].assert_debug_eq(&parsed);
 }
 
 #[test]
 fn object_with_mixed_keys() {
     let mut p = Parser::new(r#"x = {"a": 10, b: 11}"#);
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(p.source);
-    assert_eq!(
-        parsed,
+    expect![[r#"
         File {
             base: BaseNode {
-                location: loc.get(1, 1, 1, 21),
-                ..BaseNode::default()
+                location: SourceLocation {
+                    start: "line: 1, column: 1",
+                    end: "line: 1, column: 21",
+                    source: "x = {\"a\": 10, b: 11}",
+                },
             },
-            name: "".to_string(),
-            metadata: "parser-type=rust".to_string(),
+            name: "",
+            metadata: "parser-type=rust",
             package: None,
-            imports: vec![],
-            body: vec![Statement::Variable(Box::new(VariableAssgn {
-                base: BaseNode {
-                    location: loc.get(1, 1, 1, 21),
-                    ..BaseNode::default()
-                },
-                id: Identifier {
-                    base: BaseNode {
-                        location: loc.get(1, 1, 1, 2),
-                        ..BaseNode::default()
-                    },
-                    name: "x".to_string()
-                },
-                init: Expression::Object(Box::new(ObjectExpr {
-                    base: BaseNode {
-                        location: loc.get(1, 5, 1, 21),
-                        ..BaseNode::default()
-                    },
-                    lbrace: vec![],
-                    with: None,
-                    properties: vec![
-                        Property {
-                            base: BaseNode {
-                                location: loc.get(1, 6, 1, 13),
-                                ..BaseNode::default()
+            imports: [],
+            body: [
+                Variable(
+                    VariableAssgn {
+                        base: BaseNode {
+                            location: SourceLocation {
+                                start: "line: 1, column: 1",
+                                end: "line: 1, column: 21",
+                                source: "x = {\"a\": 10, b: 11}",
                             },
-                            key: PropertyKey::StringLit(StringLit {
-                                base: BaseNode {
-                                    location: loc.get(1, 6, 1, 9),
-                                    ..BaseNode::default()
-                                },
-                                value: "a".to_string()
-                            }),
-                            separator: vec![],
-                            value: Some(Expression::Integer(IntegerLit {
-                                base: BaseNode {
-                                    location: loc.get(1, 11, 1, 13),
-                                    ..BaseNode::default()
-                                },
-                                value: 10
-                            })),
-                            comma: vec![],
                         },
-                        Property {
+                        id: Identifier {
                             base: BaseNode {
-                                location: loc.get(1, 15, 1, 20),
-                                ..BaseNode::default()
+                                location: SourceLocation {
+                                    start: "line: 1, column: 1",
+                                    end: "line: 1, column: 2",
+                                    source: "x",
+                                },
                             },
-                            key: PropertyKey::Identifier(Identifier {
+                            name: "x",
+                        },
+                        init: Object(
+                            ObjectExpr {
                                 base: BaseNode {
-                                    location: loc.get(1, 15, 1, 16),
-                                    ..BaseNode::default()
+                                    location: SourceLocation {
+                                        start: "line: 1, column: 5",
+                                        end: "line: 1, column: 21",
+                                        source: "{\"a\": 10, b: 11}",
+                                    },
                                 },
-                                name: "b".to_string()
-                            }),
-                            separator: vec![],
-                            value: Some(Expression::Integer(IntegerLit {
-                                base: BaseNode {
-                                    location: loc.get(1, 18, 1, 20),
-                                    ..BaseNode::default()
-                                },
-                                value: 11
-                            })),
-                            comma: vec![],
-                        }
-                    ],
-                    rbrace: vec![],
-                }))
-            }))],
-            eof: vec![],
-        },
-    )
+                                lbrace: [],
+                                with: None,
+                                properties: [
+                                    Property {
+                                        base: BaseNode {
+                                            location: SourceLocation {
+                                                start: "line: 1, column: 6",
+                                                end: "line: 1, column: 13",
+                                                source: "\"a\": 10",
+                                            },
+                                        },
+                                        key: StringLit(
+                                            StringLit {
+                                                base: BaseNode {
+                                                    location: SourceLocation {
+                                                        start: "line: 1, column: 6",
+                                                        end: "line: 1, column: 9",
+                                                        source: "\"a\"",
+                                                    },
+                                                },
+                                                value: "a",
+                                            },
+                                        ),
+                                        separator: [],
+                                        value: Some(
+                                            Integer(
+                                                IntegerLit {
+                                                    base: BaseNode {
+                                                        location: SourceLocation {
+                                                            start: "line: 1, column: 11",
+                                                            end: "line: 1, column: 13",
+                                                            source: "10",
+                                                        },
+                                                    },
+                                                    value: 10,
+                                                },
+                                            ),
+                                        ),
+                                        comma: [],
+                                    },
+                                    Property {
+                                        base: BaseNode {
+                                            location: SourceLocation {
+                                                start: "line: 1, column: 15",
+                                                end: "line: 1, column: 20",
+                                                source: "b: 11",
+                                            },
+                                        },
+                                        key: Identifier(
+                                            Identifier {
+                                                base: BaseNode {
+                                                    location: SourceLocation {
+                                                        start: "line: 1, column: 15",
+                                                        end: "line: 1, column: 16",
+                                                        source: "b",
+                                                    },
+                                                },
+                                                name: "b",
+                                            },
+                                        ),
+                                        separator: [],
+                                        value: Some(
+                                            Integer(
+                                                IntegerLit {
+                                                    base: BaseNode {
+                                                        location: SourceLocation {
+                                                            start: "line: 1, column: 18",
+                                                            end: "line: 1, column: 20",
+                                                            source: "11",
+                                                        },
+                                                    },
+                                                    value: 11,
+                                                },
+                                            ),
+                                        ),
+                                        comma: [],
+                                    },
+                                ],
+                                rbrace: [],
+                            },
+                        ),
+                    },
+                ),
+            ],
+            eof: [],
+        }
+    "#]].assert_debug_eq(&parsed);
 }
 
 #[test]
 fn implicit_key_object_literal() {
     let mut p = Parser::new(r#"x = {a, b}"#);
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(p.source);
-    assert_eq!(
-        parsed,
+    expect![[r#"
         File {
             base: BaseNode {
-                location: loc.get(1, 1, 1, 11),
-                ..BaseNode::default()
+                location: SourceLocation {
+                    start: "line: 1, column: 1",
+                    end: "line: 1, column: 11",
+                    source: "x = {a, b}",
+                },
             },
-            name: "".to_string(),
-            metadata: "parser-type=rust".to_string(),
+            name: "",
+            metadata: "parser-type=rust",
             package: None,
-            imports: vec![],
-            body: vec![Statement::Variable(Box::new(VariableAssgn {
-                base: BaseNode {
-                    location: loc.get(1, 1, 1, 11),
-                    ..BaseNode::default()
-                },
-                id: Identifier {
-                    base: BaseNode {
-                        location: loc.get(1, 1, 1, 2),
-                        ..BaseNode::default()
-                    },
-                    name: "x".to_string()
-                },
-                init: Expression::Object(Box::new(ObjectExpr {
-                    base: BaseNode {
-                        location: loc.get(1, 5, 1, 11),
-                        ..BaseNode::default()
-                    },
-                    lbrace: vec![],
-                    with: None,
-                    properties: vec![
-                        Property {
-                            base: BaseNode {
-                                location: loc.get(1, 6, 1, 7),
-                                ..BaseNode::default()
+            imports: [],
+            body: [
+                Variable(
+                    VariableAssgn {
+                        base: BaseNode {
+                            location: SourceLocation {
+                                start: "line: 1, column: 1",
+                                end: "line: 1, column: 11",
+                                source: "x = {a, b}",
                             },
-                            key: PropertyKey::Identifier(Identifier {
-                                base: BaseNode {
-                                    location: loc.get(1, 6, 1, 7),
-                                    ..BaseNode::default()
-                                },
-                                name: "a".to_string()
-                            }),
-                            separator: vec![],
-                            value: None,
-                            comma: vec![],
                         },
-                        Property {
+                        id: Identifier {
                             base: BaseNode {
-                                location: loc.get(1, 9, 1, 10),
-                                ..BaseNode::default()
-                            },
-                            key: PropertyKey::Identifier(Identifier {
-                                base: BaseNode {
-                                    location: loc.get(1, 9, 1, 10),
-                                    ..BaseNode::default()
+                                location: SourceLocation {
+                                    start: "line: 1, column: 1",
+                                    end: "line: 1, column: 2",
+                                    source: "x",
                                 },
-                                name: "b".to_string()
-                            }),
-                            separator: vec![],
-                            value: None,
-                            comma: vec![],
-                        }
-                    ],
-                    rbrace: vec![],
-                }))
-            }))],
-            eof: vec![],
-        },
-    )
+                            },
+                            name: "x",
+                        },
+                        init: Object(
+                            ObjectExpr {
+                                base: BaseNode {
+                                    location: SourceLocation {
+                                        start: "line: 1, column: 5",
+                                        end: "line: 1, column: 11",
+                                        source: "{a, b}",
+                                    },
+                                },
+                                lbrace: [],
+                                with: None,
+                                properties: [
+                                    Property {
+                                        base: BaseNode {
+                                            location: SourceLocation {
+                                                start: "line: 1, column: 6",
+                                                end: "line: 1, column: 7",
+                                                source: "a",
+                                            },
+                                        },
+                                        key: Identifier(
+                                            Identifier {
+                                                base: BaseNode {
+                                                    location: SourceLocation {
+                                                        start: "line: 1, column: 6",
+                                                        end: "line: 1, column: 7",
+                                                        source: "a",
+                                                    },
+                                                },
+                                                name: "a",
+                                            },
+                                        ),
+                                        separator: [],
+                                        value: None,
+                                        comma: [],
+                                    },
+                                    Property {
+                                        base: BaseNode {
+                                            location: SourceLocation {
+                                                start: "line: 1, column: 9",
+                                                end: "line: 1, column: 10",
+                                                source: "b",
+                                            },
+                                        },
+                                        key: Identifier(
+                                            Identifier {
+                                                base: BaseNode {
+                                                    location: SourceLocation {
+                                                        start: "line: 1, column: 9",
+                                                        end: "line: 1, column: 10",
+                                                        source: "b",
+                                                    },
+                                                },
+                                                name: "b",
+                                            },
+                                        ),
+                                        separator: [],
+                                        value: None,
+                                        comma: [],
+                                    },
+                                ],
+                                rbrace: [],
+                            },
+                        ),
+                    },
+                ),
+            ],
+            eof: [],
+        }
+    "#]].assert_debug_eq(&parsed);
 }
 
 // TODO(affo): that error is injected by ast.Check().
@@ -391,78 +583,109 @@ fn implicit_key_object_literal() {
 fn implicit_key_object_literal_error() {
     let mut p = Parser::new(r#"x = {"a", b}"#);
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(p.source);
-    assert_eq!(
-        parsed,
+    expect![[r#"
         File {
             base: BaseNode {
-                location: loc.get(1, 1, 1, 13),
-                ..BaseNode::default()
+                location: SourceLocation {
+                    start: "line: 1, column: 1",
+                    end: "line: 1, column: 13",
+                    source: "x = {\"a\", b}",
+                },
             },
-            name: "".to_string(),
-            metadata: "parser-type=rust".to_string(),
+            name: "",
+            metadata: "parser-type=rust",
             package: None,
-            imports: vec![],
-            body: vec![Statement::Variable(Box::new(VariableAssgn {
-                base: BaseNode {
-                    location: loc.get(1, 1, 1, 13),
-                    ..BaseNode::default()
-                },
-                id: Identifier {
-                    base: BaseNode {
-                        location: loc.get(1, 1, 1, 2),
-                        ..BaseNode::default()
-                    },
-                    name: "x".to_string()
-                },
-                init: Expression::Object(Box::new(ObjectExpr {
-                    base: BaseNode {
-                        location: loc.get(1, 5, 1, 13),
-                        ..BaseNode::default()
-                    },
-                    lbrace: vec![],
-                    with: None,
-                    properties: vec![
-                        Property {
-                            // TODO(affo): this should error with ast.Check: "string literal key "a" must have a value".
-                            base: BaseNode {
-                                location: loc.get(1, 6, 1, 9),
-                                ..BaseNode::default()
+            imports: [],
+            body: [
+                Variable(
+                    VariableAssgn {
+                        base: BaseNode {
+                            location: SourceLocation {
+                                start: "line: 1, column: 1",
+                                end: "line: 1, column: 13",
+                                source: "x = {\"a\", b}",
                             },
-                            key: PropertyKey::StringLit(StringLit {
-                                base: BaseNode {
-                                    location: loc.get(1, 6, 1, 9),
-                                    ..BaseNode::default()
-                                },
-                                value: "a".to_string()
-                            }),
-                            separator: vec![],
-                            value: None,
-                            comma: vec![],
                         },
-                        Property {
+                        id: Identifier {
                             base: BaseNode {
-                                location: loc.get(1, 11, 1, 12),
-                                ..BaseNode::default()
-                            },
-                            key: PropertyKey::Identifier(Identifier {
-                                base: BaseNode {
-                                    location: loc.get(1, 11, 1, 12),
-                                    ..BaseNode::default()
+                                location: SourceLocation {
+                                    start: "line: 1, column: 1",
+                                    end: "line: 1, column: 2",
+                                    source: "x",
                                 },
-                                name: "b".to_string()
-                            }),
-                            separator: vec![],
-                            value: None,
-                            comma: vec![],
-                        }
-                    ],
-                    rbrace: vec![],
-                }))
-            }))],
-            eof: vec![],
-        },
-    )
+                            },
+                            name: "x",
+                        },
+                        init: Object(
+                            ObjectExpr {
+                                base: BaseNode {
+                                    location: SourceLocation {
+                                        start: "line: 1, column: 5",
+                                        end: "line: 1, column: 13",
+                                        source: "{\"a\", b}",
+                                    },
+                                },
+                                lbrace: [],
+                                with: None,
+                                properties: [
+                                    Property {
+                                        base: BaseNode {
+                                            location: SourceLocation {
+                                                start: "line: 1, column: 6",
+                                                end: "line: 1, column: 9",
+                                                source: "\"a\"",
+                                            },
+                                        },
+                                        key: StringLit(
+                                            StringLit {
+                                                base: BaseNode {
+                                                    location: SourceLocation {
+                                                        start: "line: 1, column: 6",
+                                                        end: "line: 1, column: 9",
+                                                        source: "\"a\"",
+                                                    },
+                                                },
+                                                value: "a",
+                                            },
+                                        ),
+                                        separator: [],
+                                        value: None,
+                                        comma: [],
+                                    },
+                                    Property {
+                                        base: BaseNode {
+                                            location: SourceLocation {
+                                                start: "line: 1, column: 11",
+                                                end: "line: 1, column: 12",
+                                                source: "b",
+                                            },
+                                        },
+                                        key: Identifier(
+                                            Identifier {
+                                                base: BaseNode {
+                                                    location: SourceLocation {
+                                                        start: "line: 1, column: 11",
+                                                        end: "line: 1, column: 12",
+                                                        source: "b",
+                                                    },
+                                                },
+                                                name: "b",
+                                            },
+                                        ),
+                                        separator: [],
+                                        value: None,
+                                        comma: [],
+                                    },
+                                ],
+                                rbrace: [],
+                            },
+                        ),
+                    },
+                ),
+            ],
+            eof: [],
+        }
+    "#]].assert_debug_eq(&parsed);
 }
 
 // TODO(affo): that error is injected by ast.Check().
@@ -470,252 +693,372 @@ fn implicit_key_object_literal_error() {
 fn implicit_and_explicit_keys_object_literal_error() {
     let mut p = Parser::new(r#"x = {a, b:c}"#);
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(p.source);
-    assert_eq!(
-        parsed,
+    expect![[r#"
         File {
             base: BaseNode {
-                location: loc.get(1, 1, 1, 13),
-                ..BaseNode::default()
+                location: SourceLocation {
+                    start: "line: 1, column: 1",
+                    end: "line: 1, column: 13",
+                    source: "x = {a, b:c}",
+                },
             },
-            name: "".to_string(),
-            metadata: "parser-type=rust".to_string(),
+            name: "",
+            metadata: "parser-type=rust",
             package: None,
-            imports: vec![],
-            body: vec![Statement::Variable(Box::new(VariableAssgn {
-                base: BaseNode {
-                    location: loc.get(1, 1, 1, 13),
-                    ..BaseNode::default()
-                },
-                id: Identifier {
-                    base: BaseNode {
-                        location: loc.get(1, 1, 1, 2),
-                        ..BaseNode::default()
-                    },
-                    name: "x".to_string()
-                },
-                init: Expression::Object(Box::new(ObjectExpr {
-                    // TODO(affo): this should error in ast.Check(): "cannot mix implicit and explicit properties".
-                    base: BaseNode {
-                        location: loc.get(1, 5, 1, 13),
-                        ..BaseNode::default()
-                    },
-                    lbrace: vec![],
-                    with: None,
-                    properties: vec![
-                        Property {
-                            base: BaseNode {
-                                location: loc.get(1, 6, 1, 7),
-                                ..BaseNode::default()
+            imports: [],
+            body: [
+                Variable(
+                    VariableAssgn {
+                        base: BaseNode {
+                            location: SourceLocation {
+                                start: "line: 1, column: 1",
+                                end: "line: 1, column: 13",
+                                source: "x = {a, b:c}",
                             },
-                            key: PropertyKey::Identifier(Identifier {
-                                base: BaseNode {
-                                    location: loc.get(1, 6, 1, 7),
-                                    ..BaseNode::default()
-                                },
-                                name: "a".to_string()
-                            }),
-                            separator: vec![],
-                            value: None,
-                            comma: vec![],
                         },
-                        Property {
+                        id: Identifier {
                             base: BaseNode {
-                                location: loc.get(1, 9, 1, 12),
-                                ..BaseNode::default()
+                                location: SourceLocation {
+                                    start: "line: 1, column: 1",
+                                    end: "line: 1, column: 2",
+                                    source: "x",
+                                },
                             },
-                            key: PropertyKey::Identifier(Identifier {
+                            name: "x",
+                        },
+                        init: Object(
+                            ObjectExpr {
                                 base: BaseNode {
-                                    location: loc.get(1, 9, 1, 10),
-                                    ..BaseNode::default()
+                                    location: SourceLocation {
+                                        start: "line: 1, column: 5",
+                                        end: "line: 1, column: 13",
+                                        source: "{a, b:c}",
+                                    },
                                 },
-                                name: "b".to_string()
-                            }),
-                            separator: vec![],
-                            value: Some(Expression::Identifier(Identifier {
-                                base: BaseNode {
-                                    location: loc.get(1, 11, 1, 12),
-                                    ..BaseNode::default()
-                                },
-                                name: "c".to_string()
-                            })),
-                            comma: vec![],
-                        }
-                    ],
-                    rbrace: vec![],
-                }))
-            }))],
-            eof: vec![],
-        },
-    )
+                                lbrace: [],
+                                with: None,
+                                properties: [
+                                    Property {
+                                        base: BaseNode {
+                                            location: SourceLocation {
+                                                start: "line: 1, column: 6",
+                                                end: "line: 1, column: 7",
+                                                source: "a",
+                                            },
+                                        },
+                                        key: Identifier(
+                                            Identifier {
+                                                base: BaseNode {
+                                                    location: SourceLocation {
+                                                        start: "line: 1, column: 6",
+                                                        end: "line: 1, column: 7",
+                                                        source: "a",
+                                                    },
+                                                },
+                                                name: "a",
+                                            },
+                                        ),
+                                        separator: [],
+                                        value: None,
+                                        comma: [],
+                                    },
+                                    Property {
+                                        base: BaseNode {
+                                            location: SourceLocation {
+                                                start: "line: 1, column: 9",
+                                                end: "line: 1, column: 12",
+                                                source: "b:c",
+                                            },
+                                        },
+                                        key: Identifier(
+                                            Identifier {
+                                                base: BaseNode {
+                                                    location: SourceLocation {
+                                                        start: "line: 1, column: 9",
+                                                        end: "line: 1, column: 10",
+                                                        source: "b",
+                                                    },
+                                                },
+                                                name: "b",
+                                            },
+                                        ),
+                                        separator: [],
+                                        value: Some(
+                                            Identifier(
+                                                Identifier {
+                                                    base: BaseNode {
+                                                        location: SourceLocation {
+                                                            start: "line: 1, column: 11",
+                                                            end: "line: 1, column: 12",
+                                                            source: "c",
+                                                        },
+                                                    },
+                                                    name: "c",
+                                                },
+                                            ),
+                                        ),
+                                        comma: [],
+                                    },
+                                ],
+                                rbrace: [],
+                            },
+                        ),
+                    },
+                ),
+            ],
+            eof: [],
+        }
+    "#]].assert_debug_eq(&parsed);
 }
 
 #[test]
 fn object_with() {
     let mut p = Parser::new(r#"{a with b:c, d:e}"#);
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(p.source);
-    assert_eq!(
-        parsed,
+    expect![[r#"
         File {
             base: BaseNode {
-                location: loc.get(1, 1, 1, 18),
-                ..BaseNode::default()
-            },
-            name: "".to_string(),
-            metadata: "parser-type=rust".to_string(),
-            package: None,
-            imports: vec![],
-            body: vec![Statement::Expr(Box::new(ExprStmt {
-                base: BaseNode {
-                    location: loc.get(1, 1, 1, 18),
-                    ..BaseNode::default()
+                location: SourceLocation {
+                    start: "line: 1, column: 1",
+                    end: "line: 1, column: 18",
+                    source: "{a with b:c, d:e}",
                 },
-                expression: Expression::Object(Box::new(ObjectExpr {
-                    base: BaseNode {
-                        location: loc.get(1, 1, 1, 18),
-                        ..BaseNode::default()
+            },
+            name: "",
+            metadata: "parser-type=rust",
+            package: None,
+            imports: [],
+            body: [
+                Expr(
+                    ExprStmt {
+                        base: BaseNode {
+                            location: SourceLocation {
+                                start: "line: 1, column: 1",
+                                end: "line: 1, column: 18",
+                                source: "{a with b:c, d:e}",
+                            },
+                        },
+                        expression: Object(
+                            ObjectExpr {
+                                base: BaseNode {
+                                    location: SourceLocation {
+                                        start: "line: 1, column: 1",
+                                        end: "line: 1, column: 18",
+                                        source: "{a with b:c, d:e}",
+                                    },
+                                },
+                                lbrace: [],
+                                with: Some(
+                                    WithSource {
+                                        source: Identifier {
+                                            base: BaseNode {
+                                                location: SourceLocation {
+                                                    start: "line: 1, column: 2",
+                                                    end: "line: 1, column: 3",
+                                                    source: "a",
+                                                },
+                                            },
+                                            name: "a",
+                                        },
+                                        with: [],
+                                    },
+                                ),
+                                properties: [
+                                    Property {
+                                        base: BaseNode {
+                                            location: SourceLocation {
+                                                start: "line: 1, column: 9",
+                                                end: "line: 1, column: 12",
+                                                source: "b:c",
+                                            },
+                                        },
+                                        key: Identifier(
+                                            Identifier {
+                                                base: BaseNode {
+                                                    location: SourceLocation {
+                                                        start: "line: 1, column: 9",
+                                                        end: "line: 1, column: 10",
+                                                        source: "b",
+                                                    },
+                                                },
+                                                name: "b",
+                                            },
+                                        ),
+                                        separator: [],
+                                        value: Some(
+                                            Identifier(
+                                                Identifier {
+                                                    base: BaseNode {
+                                                        location: SourceLocation {
+                                                            start: "line: 1, column: 11",
+                                                            end: "line: 1, column: 12",
+                                                            source: "c",
+                                                        },
+                                                    },
+                                                    name: "c",
+                                                },
+                                            ),
+                                        ),
+                                        comma: [],
+                                    },
+                                    Property {
+                                        base: BaseNode {
+                                            location: SourceLocation {
+                                                start: "line: 1, column: 14",
+                                                end: "line: 1, column: 17",
+                                                source: "d:e",
+                                            },
+                                        },
+                                        key: Identifier(
+                                            Identifier {
+                                                base: BaseNode {
+                                                    location: SourceLocation {
+                                                        start: "line: 1, column: 14",
+                                                        end: "line: 1, column: 15",
+                                                        source: "d",
+                                                    },
+                                                },
+                                                name: "d",
+                                            },
+                                        ),
+                                        separator: [],
+                                        value: Some(
+                                            Identifier(
+                                                Identifier {
+                                                    base: BaseNode {
+                                                        location: SourceLocation {
+                                                            start: "line: 1, column: 16",
+                                                            end: "line: 1, column: 17",
+                                                            source: "e",
+                                                        },
+                                                    },
+                                                    name: "e",
+                                                },
+                                            ),
+                                        ),
+                                        comma: [],
+                                    },
+                                ],
+                                rbrace: [],
+                            },
+                        ),
                     },
-                    lbrace: vec![],
-                    with: Some(WithSource {
-                        source: Identifier {
-                            base: BaseNode {
-                                location: loc.get(1, 2, 1, 3),
-                                ..BaseNode::default()
-                            },
-                            name: "a".to_string()
-                        },
-                        with: vec![]
-                    }),
-                    properties: vec![
-                        Property {
-                            base: BaseNode {
-                                location: loc.get(1, 9, 1, 12),
-                                ..BaseNode::default()
-                            },
-                            key: PropertyKey::Identifier(Identifier {
-                                base: BaseNode {
-                                    location: loc.get(1, 9, 1, 10),
-                                    ..BaseNode::default()
-                                },
-                                name: "b".to_string()
-                            }),
-                            separator: vec![],
-                            value: Some(Expression::Identifier(Identifier {
-                                base: BaseNode {
-                                    location: loc.get(1, 11, 1, 12),
-                                    ..BaseNode::default()
-                                },
-                                name: "c".to_string()
-                            })),
-                            comma: vec![],
-                        },
-                        Property {
-                            base: BaseNode {
-                                location: loc.get(1, 14, 1, 17),
-                                ..BaseNode::default()
-                            },
-                            key: PropertyKey::Identifier(Identifier {
-                                base: BaseNode {
-                                    location: loc.get(1, 14, 1, 15),
-                                    ..BaseNode::default()
-                                },
-                                name: "d".to_string()
-                            }),
-                            separator: vec![],
-                            value: Some(Expression::Identifier(Identifier {
-                                base: BaseNode {
-                                    location: loc.get(1, 16, 1, 17),
-                                    ..BaseNode::default()
-                                },
-                                name: "e".to_string()
-                            })),
-                            comma: vec![],
-                        }
-                    ],
-                    rbrace: vec![],
-                }))
-            }))],
-            eof: vec![],
-        },
-    )
+                ),
+            ],
+            eof: [],
+        }
+    "#]].assert_debug_eq(&parsed);
 }
 
 #[test]
 fn object_with_implicit_keys() {
     let mut p = Parser::new(r#"{a with b, c}"#);
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(p.source);
-    assert_eq!(
-        parsed,
+    expect![[r#"
         File {
             base: BaseNode {
-                location: loc.get(1, 1, 1, 14),
-                ..BaseNode::default()
-            },
-            name: "".to_string(),
-            metadata: "parser-type=rust".to_string(),
-            package: None,
-            imports: vec![],
-            body: vec![Statement::Expr(Box::new(ExprStmt {
-                base: BaseNode {
-                    location: loc.get(1, 1, 1, 14),
-                    ..BaseNode::default()
+                location: SourceLocation {
+                    start: "line: 1, column: 1",
+                    end: "line: 1, column: 14",
+                    source: "{a with b, c}",
                 },
-                expression: Expression::Object(Box::new(ObjectExpr {
-                    base: BaseNode {
-                        location: loc.get(1, 1, 1, 14),
-                        ..BaseNode::default()
+            },
+            name: "",
+            metadata: "parser-type=rust",
+            package: None,
+            imports: [],
+            body: [
+                Expr(
+                    ExprStmt {
+                        base: BaseNode {
+                            location: SourceLocation {
+                                start: "line: 1, column: 1",
+                                end: "line: 1, column: 14",
+                                source: "{a with b, c}",
+                            },
+                        },
+                        expression: Object(
+                            ObjectExpr {
+                                base: BaseNode {
+                                    location: SourceLocation {
+                                        start: "line: 1, column: 1",
+                                        end: "line: 1, column: 14",
+                                        source: "{a with b, c}",
+                                    },
+                                },
+                                lbrace: [],
+                                with: Some(
+                                    WithSource {
+                                        source: Identifier {
+                                            base: BaseNode {
+                                                location: SourceLocation {
+                                                    start: "line: 1, column: 2",
+                                                    end: "line: 1, column: 3",
+                                                    source: "a",
+                                                },
+                                            },
+                                            name: "a",
+                                        },
+                                        with: [],
+                                    },
+                                ),
+                                properties: [
+                                    Property {
+                                        base: BaseNode {
+                                            location: SourceLocation {
+                                                start: "line: 1, column: 9",
+                                                end: "line: 1, column: 10",
+                                                source: "b",
+                                            },
+                                        },
+                                        key: Identifier(
+                                            Identifier {
+                                                base: BaseNode {
+                                                    location: SourceLocation {
+                                                        start: "line: 1, column: 9",
+                                                        end: "line: 1, column: 10",
+                                                        source: "b",
+                                                    },
+                                                },
+                                                name: "b",
+                                            },
+                                        ),
+                                        separator: [],
+                                        value: None,
+                                        comma: [],
+                                    },
+                                    Property {
+                                        base: BaseNode {
+                                            location: SourceLocation {
+                                                start: "line: 1, column: 12",
+                                                end: "line: 1, column: 13",
+                                                source: "c",
+                                            },
+                                        },
+                                        key: Identifier(
+                                            Identifier {
+                                                base: BaseNode {
+                                                    location: SourceLocation {
+                                                        start: "line: 1, column: 12",
+                                                        end: "line: 1, column: 13",
+                                                        source: "c",
+                                                    },
+                                                },
+                                                name: "c",
+                                            },
+                                        ),
+                                        separator: [],
+                                        value: None,
+                                        comma: [],
+                                    },
+                                ],
+                                rbrace: [],
+                            },
+                        ),
                     },
-                    lbrace: vec![],
-                    with: Some(WithSource {
-                        source: Identifier {
-                            base: BaseNode {
-                                location: loc.get(1, 2, 1, 3),
-                                ..BaseNode::default()
-                            },
-                            name: "a".to_string()
-                        },
-                        with: vec![],
-                    }),
-                    properties: vec![
-                        Property {
-                            base: BaseNode {
-                                location: loc.get(1, 9, 1, 10),
-                                ..BaseNode::default()
-                            },
-                            key: PropertyKey::Identifier(Identifier {
-                                base: BaseNode {
-                                    location: loc.get(1, 9, 1, 10),
-                                    ..BaseNode::default()
-                                },
-                                name: "b".to_string()
-                            }),
-                            separator: vec![],
-                            value: None,
-                            comma: vec![],
-                        },
-                        Property {
-                            base: BaseNode {
-                                location: loc.get(1, 12, 1, 13),
-                                ..BaseNode::default()
-                            },
-                            key: PropertyKey::Identifier(Identifier {
-                                base: BaseNode {
-                                    location: loc.get(1, 12, 1, 13),
-                                    ..BaseNode::default()
-                                },
-                                name: "c".to_string()
-                            }),
-                            separator: vec![],
-                            value: None,
-                            comma: vec![],
-                        }
-                    ],
-                    rbrace: vec![],
-                }))
-            }))],
-            eof: vec![],
-        },
-    )
+                ),
+            ],
+            eof: [],
+        }
+    "#]].assert_debug_eq(&parsed);
 }
