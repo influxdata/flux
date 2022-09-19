@@ -2,7 +2,7 @@ use chrono;
 use pretty_assertions::assert_eq;
 
 use super::*;
-use crate::{ast, ast::Statement::Variable};
+use crate::ast;
 
 use expect_test::expect;
 
@@ -70,7 +70,9 @@ sort(columns: ["_time"], desc: true)|> limit(n: [object Object])
 
 #[test]
 fn parse_invalid_unicode_bare() {
-    test_file(r#"®some string®"#, expect![[r#"
+    test_file(
+        r#"®some string®"#,
+        expect![[r#"
         File {
             base: BaseNode {
                 location: SourceLocation {
@@ -157,12 +159,15 @@ fn parse_invalid_unicode_bare() {
             ],
             eof: [],
         }
-    "#]]);
+    "#]],
+    );
 }
 
 #[test]
 fn parse_invalid_unicode_paren_wrapped() {
-    test_file(r#"(‛some string‛)"#, expect![[r#"
+    test_file(
+        r#"(‛some string‛)"#,
+        expect![[r#"
         File {
             base: BaseNode {
                 location: SourceLocation {
@@ -245,12 +250,15 @@ fn parse_invalid_unicode_paren_wrapped() {
             ],
             eof: [],
         }
-    "#]]);
+    "#]],
+    );
 }
 
 #[test]
 fn parse_invalid_unicode_interspersed() {
-    test_file(r#"®s®t®r®i®n®g"#, expect![[r#"
+    test_file(
+        r#"®s®t®r®i®n®g"#,
+        expect![[r#"
         File {
             base: BaseNode {
                 location: SourceLocation {
@@ -477,12 +485,15 @@ fn parse_invalid_unicode_interspersed() {
             ],
             eof: [],
         }
-    "#]]);
+    "#]],
+    );
 }
 
 #[test]
 fn parse_greedy_quotes_paren_wrapped() {
-    test_file(r#"(“some string”)"#, expect![[r#"
+    test_file(
+        r#"(“some string”)"#,
+        expect![[r#"
         File {
             base: BaseNode {
                 location: SourceLocation {
@@ -565,12 +576,15 @@ fn parse_greedy_quotes_paren_wrapped() {
             ],
             eof: [],
         }
-    "#]]);
+    "#]],
+    );
 }
 
 #[test]
 fn parse_greedy_quotes_bare() {
-    test_file(r#"“some string”"#, expect![[r#"
+    test_file(
+        r#"“some string”"#,
+        expect![[r#"
         File {
             base: BaseNode {
                 location: SourceLocation {
@@ -657,12 +671,15 @@ fn parse_greedy_quotes_bare() {
             ],
             eof: [],
         }
-    "#]]);
+    "#]],
+    );
 }
 
 #[test]
 fn parse_greedy_quotes_interspersed() {
-    test_file(r#"“s”t“r”i“n”g"#, expect![[r#"
+    test_file(
+        r#"“s”t“r”i“n”g"#,
+        expect![[r#"
         File {
             base: BaseNode {
                 location: SourceLocation {
@@ -889,12 +906,15 @@ fn parse_greedy_quotes_interspersed() {
             ],
             eof: [],
         }
-    "#]]);
+    "#]],
+    );
 }
 
 #[test]
 fn package_clause() {
-    test_file(r#"package foo"#, expect![[r#"
+    test_file(
+        r#"package foo"#,
+        expect![[r#"
         File {
             base: BaseNode {
                 location: SourceLocation {
@@ -930,12 +950,15 @@ fn package_clause() {
             body: [],
             eof: [],
         }
-    "#]]);
+    "#]],
+    );
 }
 
 #[test]
 fn string_interpolation_trailing_dollar() {
-    test_file(r#""a + b = ${a + b}$""#, expect![[r#"
+    test_file(
+        r#""a + b = ${a + b}$""#,
+        expect![[r#"
         File {
             base: BaseNode {
                 location: SourceLocation {
@@ -1047,12 +1070,15 @@ fn string_interpolation_trailing_dollar() {
             ],
             eof: [],
         }
-    "#]]);
+    "#]],
+    );
 }
 
 #[test]
 fn import() {
-    test_file(r#"import "path/foo""#, expect![[r#"
+    test_file(
+        r#"import "path/foo""#,
+        expect![[r#"
         File {
             base: BaseNode {
                 location: SourceLocation {
@@ -1089,12 +1115,15 @@ fn import() {
             body: [],
             eof: [],
         }
-    "#]]);
+    "#]],
+    );
 }
 
 #[test]
 fn import_as() {
-    test_file(r#"import bar "path/foo""#, expect![[r#"
+    test_file(
+        r#"import bar "path/foo""#,
+        expect![[r#"
         File {
             base: BaseNode {
                 location: SourceLocation {
@@ -1142,7 +1171,8 @@ fn import_as() {
             body: [],
             eof: [],
         }
-    "#]]);
+    "#]],
+    );
 }
 
 #[test]
@@ -1715,7 +1745,9 @@ fn optional_query_metadata() {
 
 #[test]
 fn qualified_option() {
-    test_file(r#"option alert.state = "Warning""#, expect![[r#"
+    test_file(
+        r#"option alert.state = "Warning""#,
+        expect![[r#"
         File {
             base: BaseNode {
                 location: SourceLocation {
@@ -1801,12 +1833,15 @@ fn qualified_option() {
             ],
             eof: [],
         }
-    "#]]);
+    "#]],
+    );
 }
 
 #[test]
 fn builtin() {
-    test_file(r#"builtin from : int"#, expect![[r#"
+    test_file(
+        r#"builtin from : int"#,
+        expect![[r#"
         File {
             base: BaseNode {
                 location: SourceLocation {
@@ -1876,7 +1911,8 @@ fn builtin() {
             ],
             eof: [],
         }
-    "#]]);
+    "#]],
+    );
 }
 
 #[test]
@@ -2169,7 +2205,9 @@ fn comment_function_body() {
 
 #[test]
 fn identifier_with_number() {
-    test_file(r#"tan2()"#, expect![[r#"
+    test_file(
+        r#"tan2()"#,
+        expect![[r#"
         File {
             base: BaseNode {
                 location: SourceLocation {
@@ -2223,12 +2261,15 @@ fn identifier_with_number() {
             ],
             eof: [],
         }
-    "#]]);
+    "#]],
+    );
 }
 
 #[test]
 fn regex_match_operators() {
-    test_file(r#""a" =~ /.*/ and "b" !~ /c$/"#, expect![[r#"
+    test_file(
+        r#""a" =~ /.*/ and "b" !~ /c$/"#,
+        expect![[r#"
         File {
             base: BaseNode {
                 location: SourceLocation {
@@ -2340,12 +2381,15 @@ fn regex_match_operators() {
             ],
             eof: [],
         }
-    "#]]);
+    "#]],
+    );
 }
 
 #[test]
 fn declare_variable_as_an_int() {
-    test_file(r#"howdy = 1"#, expect![[r#"
+    test_file(
+        r#"howdy = 1"#,
+        expect![[r#"
         File {
             base: BaseNode {
                 location: SourceLocation {
@@ -2395,12 +2439,15 @@ fn declare_variable_as_an_int() {
             ],
             eof: [],
         }
-    "#]]);
+    "#]],
+    );
 }
 
 #[test]
 fn declare_variable_as_a_float() {
-    test_file(r#"howdy = 1.1"#, expect![[r#"
+    test_file(
+        r#"howdy = 1.1"#,
+        expect![[r#"
         File {
             base: BaseNode {
                 location: SourceLocation {
@@ -2450,12 +2497,15 @@ fn declare_variable_as_a_float() {
             ],
             eof: [],
         }
-    "#]]);
+    "#]],
+    );
 }
 
 #[test]
 fn declare_variable_as_an_array() {
-    test_file(r#"howdy = [1, 2, 3, 4]"#, expect![[r#"
+    test_file(
+        r#"howdy = [1, 2, 3, 4]"#,
+        expect![[r#"
         File {
             base: BaseNode {
                 location: SourceLocation {
@@ -2568,12 +2618,15 @@ fn declare_variable_as_an_array() {
             ],
             eof: [],
         }
-    "#]]);
+    "#]],
+    );
 }
 
 #[test]
 fn declare_variable_as_an_empty_array() {
-    test_file(r#"howdy = []"#, expect![[r#"
+    test_file(
+        r#"howdy = []"#,
+        expect![[r#"
         File {
             base: BaseNode {
                 location: SourceLocation {
@@ -2625,12 +2678,15 @@ fn declare_variable_as_an_empty_array() {
             ],
             eof: [],
         }
-    "#]]);
+    "#]],
+    );
 }
 
 #[test]
 fn parse_empty_dict() {
-    test_file(r#"[:]"#, expect![[r#"
+    test_file(
+        r#"[:]"#,
+        expect![[r#"
         File {
             base: BaseNode {
                 location: SourceLocation {
@@ -2672,12 +2728,15 @@ fn parse_empty_dict() {
             ],
             eof: [],
         }
-    "#]]);
+    "#]],
+    );
 }
 
 #[test]
 fn parse_single_element_dict() {
-    test_file(r#"["a": 0]"#, expect![[r#"
+    test_file(
+        r#"["a": 0]"#,
+        expect![[r#"
         File {
             base: BaseNode {
                 location: SourceLocation {
@@ -2747,12 +2806,15 @@ fn parse_single_element_dict() {
             ],
             eof: [],
         }
-    "#]]);
+    "#]],
+    );
 }
 
 #[test]
 fn parse_multi_element_dict() {
-    test_file(r#"["a": 0, "b": 1]"#, expect![[r#"
+    test_file(
+        r#"["a": 0, "b": 1]"#,
+        expect![[r#"
         File {
             base: BaseNode {
                 location: SourceLocation {
@@ -2849,12 +2911,15 @@ fn parse_multi_element_dict() {
             ],
             eof: [],
         }
-    "#]]);
+    "#]],
+    );
 }
 
 #[test]
 fn parse_dict_trailing_comma0() {
-    test_file(r#"["a": 0, ]"#, expect![[r#"
+    test_file(
+        r#"["a": 0, ]"#,
+        expect![[r#"
         File {
             base: BaseNode {
                 location: SourceLocation {
@@ -2924,12 +2989,15 @@ fn parse_dict_trailing_comma0() {
             ],
             eof: [],
         }
-    "#]]);
+    "#]],
+    );
 }
 
 #[test]
 fn parse_dict_trailing_comma1() {
-    test_file(r#"["a": 0, "b": 1, ]"#, expect![[r#"
+    test_file(
+        r#"["a": 0, "b": 1, ]"#,
+        expect![[r#"
         File {
             base: BaseNode {
                 location: SourceLocation {
@@ -3026,12 +3094,15 @@ fn parse_dict_trailing_comma1() {
             ],
             eof: [],
         }
-    "#]]);
+    "#]],
+    );
 }
 
 #[test]
 fn parse_dict_arbitrary_keys() {
-    test_file(r#"[1-1: 0, 1+1: 1]"#, expect![[r#"
+    test_file(
+        r#"[1-1: 0, 1+1: 1]"#,
+        expect![[r#"
         File {
             base: BaseNode {
                 location: SourceLocation {
@@ -3176,7 +3247,8 @@ fn parse_dict_arbitrary_keys() {
             ],
             eof: [],
         }
-    "#]]);
+    "#]],
+    );
 }
 
 #[test]
@@ -3412,7 +3484,9 @@ fn variable_is_from_statement() {
 
 #[test]
 fn pipe_expression() {
-    test_file(r#"from() |> count()"#, expect![[r#"
+    test_file(
+        r#"from() |> count()"#,
+        expect![[r#"
         File {
             base: BaseNode {
                 location: SourceLocation {
@@ -3501,12 +3575,15 @@ fn pipe_expression() {
             ],
             eof: [],
         }
-    "#]]);
+    "#]],
+    );
 }
 
 #[test]
 fn pipe_expression_to_member_expression_function() {
-    test_file(r#"a |> b.c(d:e)"#, expect![[r#"
+    test_file(
+        r#"a |> b.c(d:e)"#,
+        expect![[r#"
         File {
             base: BaseNode {
                 location: SourceLocation {
@@ -3660,12 +3737,15 @@ fn pipe_expression_to_member_expression_function() {
             ],
             eof: [],
         }
-    "#]]);
+    "#]],
+    );
 }
 
 #[test]
 fn literal_pipe_expression() {
-    test_file(r#"5 |> pow2()"#, expect![[r#"
+    test_file(
+        r#"5 |> pow2()"#,
+        expect![[r#"
         File {
             base: BaseNode {
                 location: SourceLocation {
@@ -3740,12 +3820,15 @@ fn literal_pipe_expression() {
             ],
             eof: [],
         }
-    "#]]);
+    "#]],
+    );
 }
 
 #[test]
 fn member_expression_pipe_expression() {
-    test_file(r#"foo.bar |> baz()"#, expect![[r#"
+    test_file(
+        r#"foo.bar |> baz()"#,
+        expect![[r#"
         File {
             base: BaseNode {
                 location: SourceLocation {
@@ -3845,12 +3928,15 @@ fn member_expression_pipe_expression() {
             ],
             eof: [],
         }
-    "#]]);
+    "#]],
+    );
 }
 
 #[test]
 fn multiple_pipe_expressions() {
-    test_file(r#"from() |> range() |> filter() |> count()"#, expect![[r#"
+    test_file(
+        r#"from() |> range() |> filter() |> count()"#,
+        expect![[r#"
         File {
             base: BaseNode {
                 location: SourceLocation {
@@ -4009,12 +4095,15 @@ fn multiple_pipe_expressions() {
             ],
             eof: [],
         }
-    "#]]);
+    "#]],
+    );
 }
 
 #[test]
 fn pipe_expression_into_non_call_expression() {
-    test_file(r#"foo() |> bar"#, expect![[r#"
+    test_file(
+        r#"foo() |> bar"#,
+        expect![[r#"
         File {
             base: BaseNode {
                 location: SourceLocation {
@@ -4106,7 +4195,8 @@ fn pipe_expression_into_non_call_expression() {
             ],
             eof: [],
         }
-    "#]]);
+    "#]],
+    );
 }
 
 #[test]
@@ -4349,7 +4439,9 @@ fn two_variables_for_two_froms() {
 
 #[test]
 fn index_expression() {
-    test_file(r#"a[3]"#, expect![[r#"
+    test_file(
+        r#"a[3]"#,
+        expect![[r#"
         File {
             base: BaseNode {
                 location: SourceLocation {
@@ -4414,12 +4506,15 @@ fn index_expression() {
             ],
             eof: [],
         }
-    "#]]);
+    "#]],
+    );
 }
 
 #[test]
 fn nested_index_expression() {
-    test_file(r#"a[3][5]"#, expect![[r#"
+    test_file(
+        r#"a[3][5]"#,
+        expect![[r#"
         File {
             base: BaseNode {
                 location: SourceLocation {
@@ -4509,12 +4604,15 @@ fn nested_index_expression() {
             ],
             eof: [],
         }
-    "#]]);
+    "#]],
+    );
 }
 
 #[test]
 fn access_indexed_object_returned_from_function_call() {
-    test_file(r#"f()[3]"#, expect![[r#"
+    test_file(
+        r#"f()[3]"#,
+        expect![[r#"
         File {
             base: BaseNode {
                 location: SourceLocation {
@@ -4593,12 +4691,15 @@ fn access_indexed_object_returned_from_function_call() {
             ],
             eof: [],
         }
-    "#]]);
+    "#]],
+    );
 }
 
 #[test]
 fn index_with_member_expressions() {
-    test_file(r#"a.b["c"]"#, expect![[r#"
+    test_file(
+        r#"a.b["c"]"#,
+        expect![[r#"
         File {
             base: BaseNode {
                 location: SourceLocation {
@@ -4688,12 +4789,15 @@ fn index_with_member_expressions() {
             ],
             eof: [],
         }
-    "#]]);
+    "#]],
+    );
 }
 
 #[test]
 fn index_with_member_with_call_expression() {
-    test_file(r#"a.b()["c"]"#, expect![[r#"
+    test_file(
+        r#"a.b()["c"]"#,
+        expect![[r#"
         File {
             base: BaseNode {
                 location: SourceLocation {
@@ -4797,12 +4901,15 @@ fn index_with_member_with_call_expression() {
             ],
             eof: [],
         }
-    "#]]);
+    "#]],
+    );
 }
 
 #[test]
 fn expressions_with_function_calls() {
-    test_file(r#"a = foo() == 10"#, expect![[r#"
+    test_file(
+        r#"a = foo() == 10"#,
+        expect![[r#"
         File {
             base: BaseNode {
                 location: SourceLocation {
@@ -4890,12 +4997,15 @@ fn expressions_with_function_calls() {
             ],
             eof: [],
         }
-    "#]]);
+    "#]],
+    );
 }
 
 #[test]
 fn conditional() {
-    test_file(r#"a = if true then 0 else 1"#, expect![[r#"
+    test_file(
+        r#"a = if true then 0 else 1"#,
+        expect![[r#"
         File {
             base: BaseNode {
                 location: SourceLocation {
@@ -4983,7 +5093,8 @@ fn conditional() {
             ],
             eof: [],
         }
-    "#]]);
+    "#]],
+    );
 }
 
 #[test]
@@ -5563,7 +5674,9 @@ fn nested_conditionals() {
 
 #[test]
 fn parse_testcase() {
-    test_file(r#"testcase my_test { a = 1 }"#, expect![[r#"
+    test_file(
+        r#"testcase my_test { a = 1 }"#,
+        expect![[r#"
         File {
             base: BaseNode {
                 location: SourceLocation {
@@ -5648,7 +5761,8 @@ fn parse_testcase() {
             ],
             eof: [],
         }
-    "#]]);
+    "#]],
+    );
 }
 
 #[test]
