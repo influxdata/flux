@@ -80,6 +80,13 @@ func (s *sortLimitTransformation) Aggregate(chunk table.Chunk, state interface{}
 
 	}
 
+	// If the chunk is empty, ignore this chunk.
+	// We still return the merge heap though as we still need to recognize that
+	// the group key/schema exist.
+	if chunk.Len() == 0 {
+		return mh, true, nil
+	}
+
 	if err := s.appendChunk(mh, chunk, mem); err != nil {
 		return nil, false, err
 	}

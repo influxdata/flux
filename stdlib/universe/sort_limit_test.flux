@@ -170,3 +170,29 @@ testcase sort_limit_multi_successor {
 
     testing.diff(got: got, want: want)
 }
+
+testcase sort_limit_empty_chunk {
+    got =
+        array.from(
+            rows: [
+                {_time: 2022-01-11T00:00:00Z, t0: "aa", _value: 12.0},
+                {_time: 2022-01-11T00:00:00Z, t0: "ab", _value: 10.0},
+                {_time: 2022-01-11T00:00:00Z, t0: "ba", _value: 18.0},
+                {_time: 2022-01-11T00:00:00Z, t0: "bb", _value: 4.0},
+            ],
+        )
+            |> group(columns: ["t0"])
+            |> filter(fn: (r) => r.t0 =~ /b/, onEmpty: "keep")
+            |> group()
+            |> top(n: 2)
+
+    want =
+        array.from(
+            rows: [
+                {_time: 2022-01-11T00:00:00Z, t0: "ba", _value: 18.0},
+                {_time: 2022-01-11T00:00:00Z, t0: "ab", _value: 10.0},
+            ],
+        )
+
+    testing.diff(got: got, want: want)
+}
