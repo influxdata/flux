@@ -286,13 +286,15 @@ func (p *Program) Start(ctx context.Context, alloc memory.Allocator) (flux.Query
 		span:    s,
 		cancel:  cancel,
 		stats: flux.Statistics{
-			Metadata: metadata.NewMetadata(),
+			Metadata: make(metadata.Metadata),
 		},
 	}
 
 	if execute.HaveExecutionDependencies(ctx) {
 		deps := execute.GetExecutionDependencies(ctx)
-		q.stats.Metadata.AddAll(deps.Metadata)
+		deps.Metadata.ReadView(func(meta metadata.Metadata) {
+			q.stats.Metadata.AddAll(meta)
+		})
 	}
 
 	if traceID, sampled, found := jaeger.InfoFromSpan(s); found {

@@ -71,7 +71,7 @@ func (s Statistics) Add(other Statistics) Statistics {
 	errs := make([]string, len(s.RuntimeErrors), len(s.RuntimeErrors)+len(other.RuntimeErrors))
 	copy(errs, s.RuntimeErrors)
 	errs = append(errs, other.RuntimeErrors...)
-	md := metadata.NewMetadata()
+	md := make(metadata.Metadata)
 	md.AddAll(s.Metadata)
 	md.AddAll(other.Metadata)
 	profiles := make([]TransportProfile, 0, len(s.Profiles)+len(other.Profiles))

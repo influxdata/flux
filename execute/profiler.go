@@ -250,7 +250,7 @@ func (s *QueryProfiler) getTableBuilder(q flux.Query, alloc memory.Allocator) (*
 		stats.TotalAllocated,
 		strings.Join(stats.RuntimeErrors, "\n"),
 	}
-	stats.Metadata.RangeSlices(func(key string, values []interface{}) bool {
+	for key, values := range stats.Metadata {
 		var ty flux.ColType
 		if intValue, ok := values[0].(int); ok {
 			ty = flux.TInt
@@ -268,9 +268,7 @@ func (s *QueryProfiler) getTableBuilder(q flux.Query, alloc memory.Allocator) (*
 			Label: key,
 			Type:  ty,
 		})
-
-		return true
-	})
+	}
 	for _, col := range colMeta {
 		if _, err := b.AddCol(col); err != nil {
 			return nil, err

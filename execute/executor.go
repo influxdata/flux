@@ -509,7 +509,7 @@ func (es *executionState) do() {
 		fn(&stats)
 	}
 
-	stats.Metadata = metadata.NewMetadata()
+	stats.Metadata = make(metadata.Metadata)
 	for _, src := range es.sources {
 		wg.Add(1)
 		go func(src Source) {
