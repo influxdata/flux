@@ -922,7 +922,10 @@ from(bucket: v.bucket)
         let ast = crate::parser::parse_string("test".to_string(), "x = 3 + / 10 - \"");
         let ast = Box::new(ast.into());
         // Safety: `ast` is a valid pointer
-        let errh = unsafe { flux_ast_get_error(&*ast) };
+        let errh = unsafe {
+            let options = CString::new("").unwrap();
+            flux_ast_get_error(&*ast, options.as_ptr())
+        };
 
         expect_test::expect![[r#"
             error test@1:9-1:10: invalid expression: invalid token for primary expression: DIV
