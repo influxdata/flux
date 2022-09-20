@@ -633,6 +633,7 @@ carriage return \r
 horizontal tab \t
 double quote \"
 backslash \\
+dollar curly bracket \${
 ""#,
     );
     let parsed = p.parse_file("".to_string());
@@ -640,16 +641,16 @@ backslash \\
     assert_eq!(
         parsed,
         File {
-            base: BaseNode {location: loc.get(1, 1, 6, 2), .. BaseNode::default() },
+            base: BaseNode {location: loc.get(1, 1, 7, 2), .. BaseNode::default() },
             name: "".to_string(),
             metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
             body: vec![Statement::Expr(Box::new(ExprStmt {
-                base: BaseNode {location: loc.get(1, 1, 6, 2), .. BaseNode::default() },
+                base: BaseNode {location: loc.get(1, 1, 7, 2), .. BaseNode::default() },
                 expression: Expression::StringLit(StringLit {
-                    base: BaseNode {location: loc.get(1, 1, 6, 2), .. BaseNode::default() },
-                    value: "newline \n\ncarriage return \r\nhorizontal tab \t\ndouble quote \"\nbackslash \\\n".to_string()
+                    base: BaseNode {location: loc.get(1, 1, 7, 2), .. BaseNode::default() },
+                    value: "newline \n\ncarriage return \r\nhorizontal tab \t\ndouble quote \"\nbackslash \\\ndollar curly bracket ${\n".to_string()
                 })
             }))],
             eof: vec![],

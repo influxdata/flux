@@ -18,10 +18,6 @@ pub enum TokenType {
     Or,
     #[display(fmt = "NOT")]
     Not,
-    #[display(fmt = "EMPTY")]
-    Empty,
-    #[display(fmt = "IN")]
-    In,
     #[display(fmt = "IMPORT")]
     Import,
     #[display(fmt = "PACKAGE")]
@@ -32,8 +28,6 @@ pub enum TokenType {
     Option,
     #[display(fmt = "BUILTIN")]
     Builtin,
-    #[display(fmt = "TEST")]
-    Test,
     #[display(fmt = "TESTCASE")]
     TestCase,
     #[display(fmt = "IF")]

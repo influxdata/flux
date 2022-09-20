@@ -1,7 +1,4 @@
-use std::{
-    iter::Peekable,
-    str::{CharIndices, Chars},
-};
+use std::{iter::Peekable, str::Chars};
 
 use chrono::{prelude::*, FixedOffset};
 use regex::Regex;
@@ -17,11 +14,11 @@ pub fn parse_string(lit: &str) -> Result<String, String> {
 
 pub fn parse_text(lit: &str) -> Result<String, String> {
     let mut s = Vec::with_capacity(lit.len());
-    let mut chars = lit.char_indices();
-    while let Some((_, c)) = chars.next() {
+    let mut chars = lit.chars();
+    while let Some(c) = chars.next() {
         match c {
             '\\' => {
-                if let Err(e) = push_unescaped(&mut s, &mut chars) {
+                if let Err(e) = push_unescaped_string(&mut s, &mut chars) {
                     return Err(e);
                 }
             }
@@ -36,9 +33,9 @@ pub fn parse_text(lit: &str) -> Result<String, String> {
     }
 }
 
-fn push_unescaped(s: &mut Vec<u8>, chars: &mut CharIndices) -> Result<(), String> {
+fn push_unescaped_string(s: &mut Vec<u8>, chars: &mut Chars) -> Result<(), String> {
     match chars.next() {
-        Some((_, c)) => match c {
+        Some(c) => match c {
             'n' => s.push(b'\n'),
             'r' => s.push(b'\r'),
             't' => s.push(b'\t'),
@@ -46,26 +43,31 @@ fn push_unescaped(s: &mut Vec<u8>, chars: &mut CharIndices) -> Result<(), String
             '"' => s.push(b'"'),
             '$' => s.push(b'$'),
             'x' => {
-                let ch1 = match chars.next() {
-                    Some((_, c)) => c,
-                    None => return Err(r#"\x followed by 0 char, must be 2"#.to_string()),
-                };
-                let ch2 = match chars.next() {
-                    Some((_, c)) => c,
-                    None => return Err(r#"\x followed by 1 char, must be 2"#.to_string()),
-                };
-                let b1 = to_byte(ch1);
-                let b2 = to_byte(ch2);
-                if b1.is_none() || b2.is_none() {
-                    return Err("invalid byte value".to_string());
-                }
-                let b = (b1.unwrap() << 4) | b2.unwrap();
-                s.push(b);
+                push_hex_byte(s, chars)?;
             }
             _ => return Err(format!("invalid escape character {}", c)),
         },
         None => return Err("invalid escape sequence".to_string()),
     };
+    Ok(())
+}
+
+fn push_hex_byte(s: &mut Vec<u8>, chars: &mut Chars) -> Result<(), String> {
+    let ch1 = match chars.next() {
+        Some(c) => c,
+        None => return Err(r#"\x followed by 0 char, must be 2"#.to_string()),
+    };
+    let ch2 = match chars.next() {
+        Some(c) => c,
+        None => return Err(r#"\x followed by 1 char, must be 2"#.to_string()),
+    };
+    let b1 = to_byte(ch1);
+    let b2 = to_byte(ch2);
+    if b1.is_none() || b2.is_none() {
+        return Err("invalid byte value".to_string());
+    }
+    let b = (b1.unwrap() << 4) | b2.unwrap();
+    s.push(b);
     Ok(())
 }
 
@@ -90,9 +92,40 @@ pub fn parse_regex(lit: &str) -> Result<String, String> {
     }
 
     let expr = &lit[1..lit.len() - 1];
-    let expr = expr.replace("\\/", "/");
-    match Regex::new(expr.as_str()) {
-        Ok(_) => Ok(expr),
+    let mut unescaped = Vec::with_capacity(expr.len());
+    let mut chars = expr.chars();
+
+    // Unescape regex
+    while let Some(c) = chars.next() {
+        match c {
+            '\\' => match chars.next() {
+                Some('/') => {
+                    unescaped.push(b'/');
+                }
+                Some('x') => {
+                    push_hex_byte(&mut unescaped, &mut chars)?;
+                }
+                Some(c) => {
+                    // Other escape sequences are allowed, we let the regex parser check
+                    // for these kinds of errors
+                    unescaped.push(b'\\');
+                    // this char can have any byte length
+                    unescaped.extend_from_slice(c.to_string().as_bytes());
+                }
+                None => return Err("unterminated regex sequence".to_string()),
+            },
+            // this char can have any byte length
+            _ => unescaped.extend_from_slice(c.to_string().as_bytes()),
+        }
+    }
+    let converted = match std::str::from_utf8(&unescaped) {
+        Ok(s) => s,
+        Err(e) => return Err(e.to_string()),
+    };
+
+    // Validate regex
+    match Regex::new(converted) {
+        Ok(_) => Ok(converted.to_string()),
         Err(e) => match e {
             regex::Error::Syntax(msg) => {
                 // removes newlines, 4 spaces tabs, and the pointer to the error in the regexp.
@@ -120,7 +153,6 @@ pub fn parse_time(lit: &str) -> Result<DateTime<FixedOffset>, String> {
             Err(e) => Err(e),
         }
     } else {
-        // TODO(jsternberg): need to also parse when there is no time offset.
         DateTime::parse_from_rfc3339(lit)
     };
     match parsed {

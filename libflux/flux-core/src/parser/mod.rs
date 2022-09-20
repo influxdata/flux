@@ -1457,6 +1457,10 @@ impl<'input> Parser<'input> {
     }
 
     fn create_bad_expression(&mut self, t: Token) -> Expression {
+        let text = format!("invalid token for primary expression: {}", t.tok);
+        self.create_bad_expression_with_text(t, text)
+    }
+    fn create_bad_expression_with_text(&mut self, t: Token, text: String) -> Expression {
         Expression::Bad(Box::new(BadExpr {
             // Do not use `self.base_node_*` in order not to steal errors.
             // The BadExpr is an error per se. We want to leave errors to parents.
@@ -1467,7 +1471,7 @@ impl<'input> Parser<'input> {
                 ),
                 ..BaseNode::default()
             },
-            text: format!("invalid token for primary expression: {}", t.tok),
+            text,
             expression: None,
         }))
     }
@@ -1513,7 +1517,13 @@ impl<'input> Parser<'input> {
                 let lit = self.parse_time_literal();
                 match lit {
                     Ok(lit) => Expression::DateTime(lit),
-                    Err(terr) => self.create_bad_expression(terr.token),
+                    Err(terr) => match terr.token.tok {
+                        TokenType::Time => self.create_bad_expression_with_text(
+                            terr.token,
+                            "invalid date time literal, missing time offset".to_string(),
+                        ),
+                        _ => self.create_bad_expression(terr.token),
+                    },
                 }
             }
             TokenType::Duration => {

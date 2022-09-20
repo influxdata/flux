@@ -675,7 +675,7 @@ func TestTypeconv_Time(t *testing.T) {
 			name:      "time(error)",
 			v:         "NotATime",
 			want:      values.Time(0),
-			expectErr: errors.New("cannot convert string \"NotATime\" to time due to invalid syntax: parsing time \"NotATime\" as \"2006-01-02T15:04:05.999999999Z07:00\": cannot parse \"NotATime\" as \"2006\""),
+			expectErr: errors.New(`cannot convert string "NotATime" to time due to invalid syntax: cannot parse date time`),
 		},
 		{
 			name:     "time(v:nil)",
