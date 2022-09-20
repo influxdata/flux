@@ -1,588 +1,897 @@
-use pretty_assertions::assert_eq;
-
 use super::*;
-use crate::ast::tests::Locator;
 
 #[test]
 fn binary_operator_precedence() {
     let mut p = Parser::new(r#"a / b - 1.0"#);
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(p.source);
-    assert_eq!(
-        parsed,
+    expect![[r#"
         File {
             base: BaseNode {
-                location: loc.get(1, 1, 1, 12),
-                ..BaseNode::default()
-            },
-            name: "".to_string(),
-            metadata: "parser-type=rust".to_string(),
-            package: None,
-            imports: vec![],
-            body: vec![Statement::Expr(Box::new(ExprStmt {
-                base: BaseNode {
-                    location: loc.get(1, 1, 1, 12),
-                    ..BaseNode::default()
+                location: SourceLocation {
+                    start: "line: 1, column: 1",
+                    end: "line: 1, column: 12",
+                    source: "a / b - 1.0",
                 },
-                expression: Expression::Binary(Box::new(BinaryExpr {
-                    base: BaseNode {
-                        location: loc.get(1, 1, 1, 12),
-                        ..BaseNode::default()
+            },
+            name: "",
+            metadata: "parser-type=rust",
+            package: None,
+            imports: [],
+            body: [
+                Expr(
+                    ExprStmt {
+                        base: BaseNode {
+                            location: SourceLocation {
+                                start: "line: 1, column: 1",
+                                end: "line: 1, column: 12",
+                                source: "a / b - 1.0",
+                            },
+                        },
+                        expression: Binary(
+                            BinaryExpr {
+                                base: BaseNode {
+                                    location: SourceLocation {
+                                        start: "line: 1, column: 1",
+                                        end: "line: 1, column: 12",
+                                        source: "a / b - 1.0",
+                                    },
+                                },
+                                operator: SubtractionOperator,
+                                left: Binary(
+                                    BinaryExpr {
+                                        base: BaseNode {
+                                            location: SourceLocation {
+                                                start: "line: 1, column: 1",
+                                                end: "line: 1, column: 6",
+                                                source: "a / b",
+                                            },
+                                        },
+                                        operator: DivisionOperator,
+                                        left: Identifier(
+                                            Identifier {
+                                                base: BaseNode {
+                                                    location: SourceLocation {
+                                                        start: "line: 1, column: 1",
+                                                        end: "line: 1, column: 2",
+                                                        source: "a",
+                                                    },
+                                                },
+                                                name: "a",
+                                            },
+                                        ),
+                                        right: Identifier(
+                                            Identifier {
+                                                base: BaseNode {
+                                                    location: SourceLocation {
+                                                        start: "line: 1, column: 5",
+                                                        end: "line: 1, column: 6",
+                                                        source: "b",
+                                                    },
+                                                },
+                                                name: "b",
+                                            },
+                                        ),
+                                    },
+                                ),
+                                right: Float(
+                                    FloatLit {
+                                        base: BaseNode {
+                                            location: SourceLocation {
+                                                start: "line: 1, column: 9",
+                                                end: "line: 1, column: 12",
+                                                source: "1.0",
+                                            },
+                                        },
+                                        value: 1.0,
+                                    },
+                                ),
+                            },
+                        ),
                     },
-                    operator: Operator::SubtractionOperator,
-                    left: Expression::Binary(Box::new(BinaryExpr {
-                        base: BaseNode {
-                            location: loc.get(1, 1, 1, 6),
-                            ..BaseNode::default()
-                        },
-                        operator: Operator::DivisionOperator,
-                        left: Expression::Identifier(Identifier {
-                            base: BaseNode {
-                                location: loc.get(1, 1, 1, 2),
-                                ..BaseNode::default()
-                            },
-                            name: "a".to_string()
-                        }),
-                        right: Expression::Identifier(Identifier {
-                            base: BaseNode {
-                                location: loc.get(1, 5, 1, 6),
-                                ..BaseNode::default()
-                            },
-                            name: "b".to_string()
-                        })
-                    })),
-                    right: Expression::Float(FloatLit {
-                        base: BaseNode {
-                            location: loc.get(1, 9, 1, 12),
-                            ..BaseNode::default()
-                        },
-                        value: 1.0
-                    })
-                }))
-            }))],
-            eof: vec![],
-        },
-    )
+                ),
+            ],
+            eof: [],
+        }
+    "#]].assert_debug_eq(&parsed);
 }
 
 #[test]
 fn binary_operator_precedence_literals_only() {
     let mut p = Parser::new(r#"2 / "a" - 1.0"#);
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(p.source);
-    assert_eq!(
-        parsed,
+    expect![[r#"
         File {
             base: BaseNode {
-                location: loc.get(1, 1, 1, 14),
-                ..BaseNode::default()
-            },
-            name: "".to_string(),
-            metadata: "parser-type=rust".to_string(),
-            package: None,
-            imports: vec![],
-            body: vec![Statement::Expr(Box::new(ExprStmt {
-                base: BaseNode {
-                    location: loc.get(1, 1, 1, 14),
-                    ..BaseNode::default()
+                location: SourceLocation {
+                    start: "line: 1, column: 1",
+                    end: "line: 1, column: 14",
+                    source: "2 / \"a\" - 1.0",
                 },
-                expression: Expression::Binary(Box::new(BinaryExpr {
-                    base: BaseNode {
-                        location: loc.get(1, 1, 1, 14),
-                        ..BaseNode::default()
+            },
+            name: "",
+            metadata: "parser-type=rust",
+            package: None,
+            imports: [],
+            body: [
+                Expr(
+                    ExprStmt {
+                        base: BaseNode {
+                            location: SourceLocation {
+                                start: "line: 1, column: 1",
+                                end: "line: 1, column: 14",
+                                source: "2 / \"a\" - 1.0",
+                            },
+                        },
+                        expression: Binary(
+                            BinaryExpr {
+                                base: BaseNode {
+                                    location: SourceLocation {
+                                        start: "line: 1, column: 1",
+                                        end: "line: 1, column: 14",
+                                        source: "2 / \"a\" - 1.0",
+                                    },
+                                },
+                                operator: SubtractionOperator,
+                                left: Binary(
+                                    BinaryExpr {
+                                        base: BaseNode {
+                                            location: SourceLocation {
+                                                start: "line: 1, column: 1",
+                                                end: "line: 1, column: 8",
+                                                source: "2 / \"a\"",
+                                            },
+                                        },
+                                        operator: DivisionOperator,
+                                        left: Integer(
+                                            IntegerLit {
+                                                base: BaseNode {
+                                                    location: SourceLocation {
+                                                        start: "line: 1, column: 1",
+                                                        end: "line: 1, column: 2",
+                                                        source: "2",
+                                                    },
+                                                },
+                                                value: 2,
+                                            },
+                                        ),
+                                        right: StringLit(
+                                            StringLit {
+                                                base: BaseNode {
+                                                    location: SourceLocation {
+                                                        start: "line: 1, column: 5",
+                                                        end: "line: 1, column: 8",
+                                                        source: "\"a\"",
+                                                    },
+                                                },
+                                                value: "a",
+                                            },
+                                        ),
+                                    },
+                                ),
+                                right: Float(
+                                    FloatLit {
+                                        base: BaseNode {
+                                            location: SourceLocation {
+                                                start: "line: 1, column: 11",
+                                                end: "line: 1, column: 14",
+                                                source: "1.0",
+                                            },
+                                        },
+                                        value: 1.0,
+                                    },
+                                ),
+                            },
+                        ),
                     },
-                    operator: Operator::SubtractionOperator,
-                    left: Expression::Binary(Box::new(BinaryExpr {
-                        base: BaseNode {
-                            location: loc.get(1, 1, 1, 8),
-                            ..BaseNode::default()
-                        },
-                        operator: Operator::DivisionOperator,
-                        left: Expression::Integer(IntegerLit {
-                            base: BaseNode {
-                                location: loc.get(1, 1, 1, 2),
-                                ..BaseNode::default()
-                            },
-                            value: 2
-                        }),
-                        right: Expression::StringLit(StringLit {
-                            base: BaseNode {
-                                location: loc.get(1, 5, 1, 8),
-                                ..BaseNode::default()
-                            },
-                            value: "a".to_string()
-                        })
-                    })),
-                    right: Expression::Float(FloatLit {
-                        base: BaseNode {
-                            location: loc.get(1, 11, 1, 14),
-                            ..BaseNode::default()
-                        },
-                        value: 1.0
-                    })
-                }))
-            }))],
-            eof: vec![],
-        },
-    )
+                ),
+            ],
+            eof: [],
+        }
+    "#]].assert_debug_eq(&parsed);
 }
 
 #[test]
 fn binary_operator_precedence_double_subtraction() {
     let mut p = Parser::new(r#"1 - 2 - 3"#);
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(p.source);
-    assert_eq!(
-        parsed,
+    expect![[r#"
         File {
             base: BaseNode {
-                location: loc.get(1, 1, 1, 10),
-                ..BaseNode::default()
-            },
-            name: "".to_string(),
-            metadata: "parser-type=rust".to_string(),
-            package: None,
-            imports: vec![],
-            body: vec![Statement::Expr(Box::new(ExprStmt {
-                base: BaseNode {
-                    location: loc.get(1, 1, 1, 10),
-                    ..BaseNode::default()
+                location: SourceLocation {
+                    start: "line: 1, column: 1",
+                    end: "line: 1, column: 10",
+                    source: "1 - 2 - 3",
                 },
-                expression: Expression::Binary(Box::new(BinaryExpr {
-                    base: BaseNode {
-                        location: loc.get(1, 1, 1, 10),
-                        ..BaseNode::default()
+            },
+            name: "",
+            metadata: "parser-type=rust",
+            package: None,
+            imports: [],
+            body: [
+                Expr(
+                    ExprStmt {
+                        base: BaseNode {
+                            location: SourceLocation {
+                                start: "line: 1, column: 1",
+                                end: "line: 1, column: 10",
+                                source: "1 - 2 - 3",
+                            },
+                        },
+                        expression: Binary(
+                            BinaryExpr {
+                                base: BaseNode {
+                                    location: SourceLocation {
+                                        start: "line: 1, column: 1",
+                                        end: "line: 1, column: 10",
+                                        source: "1 - 2 - 3",
+                                    },
+                                },
+                                operator: SubtractionOperator,
+                                left: Binary(
+                                    BinaryExpr {
+                                        base: BaseNode {
+                                            location: SourceLocation {
+                                                start: "line: 1, column: 1",
+                                                end: "line: 1, column: 6",
+                                                source: "1 - 2",
+                                            },
+                                        },
+                                        operator: SubtractionOperator,
+                                        left: Integer(
+                                            IntegerLit {
+                                                base: BaseNode {
+                                                    location: SourceLocation {
+                                                        start: "line: 1, column: 1",
+                                                        end: "line: 1, column: 2",
+                                                        source: "1",
+                                                    },
+                                                },
+                                                value: 1,
+                                            },
+                                        ),
+                                        right: Integer(
+                                            IntegerLit {
+                                                base: BaseNode {
+                                                    location: SourceLocation {
+                                                        start: "line: 1, column: 5",
+                                                        end: "line: 1, column: 6",
+                                                        source: "2",
+                                                    },
+                                                },
+                                                value: 2,
+                                            },
+                                        ),
+                                    },
+                                ),
+                                right: Integer(
+                                    IntegerLit {
+                                        base: BaseNode {
+                                            location: SourceLocation {
+                                                start: "line: 1, column: 9",
+                                                end: "line: 1, column: 10",
+                                                source: "3",
+                                            },
+                                        },
+                                        value: 3,
+                                    },
+                                ),
+                            },
+                        ),
                     },
-                    operator: Operator::SubtractionOperator,
-                    left: Expression::Binary(Box::new(BinaryExpr {
-                        base: BaseNode {
-                            location: loc.get(1, 1, 1, 6),
-                            ..BaseNode::default()
-                        },
-                        operator: Operator::SubtractionOperator,
-                        left: Expression::Integer(IntegerLit {
-                            base: BaseNode {
-                                location: loc.get(1, 1, 1, 2),
-                                ..BaseNode::default()
-                            },
-                            value: 1
-                        }),
-                        right: Expression::Integer(IntegerLit {
-                            base: BaseNode {
-                                location: loc.get(1, 5, 1, 6),
-                                ..BaseNode::default()
-                            },
-                            value: 2
-                        })
-                    })),
-                    right: Expression::Integer(IntegerLit {
-                        base: BaseNode {
-                            location: loc.get(1, 9, 1, 10),
-                            ..BaseNode::default()
-                        },
-                        value: 3
-                    })
-                }))
-            }))],
-            eof: vec![],
-        },
-    )
+                ),
+            ],
+            eof: [],
+        }
+    "#]].assert_debug_eq(&parsed);
 }
 
 #[test]
 fn binary_operator_precedence_double_subtraction_with_parens() {
     let mut p = Parser::new(r#"1 - (2 - 3)"#);
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(p.source);
-    assert_eq!(
-        parsed,
+    expect![[r#"
         File {
             base: BaseNode {
-                location: loc.get(1, 1, 1, 12),
-                ..BaseNode::default()
-            },
-            name: "".to_string(),
-            metadata: "parser-type=rust".to_string(),
-            package: None,
-            imports: vec![],
-            body: vec![Statement::Expr(Box::new(ExprStmt {
-                base: BaseNode {
-                    location: loc.get(1, 1, 1, 12),
-                    ..BaseNode::default()
+                location: SourceLocation {
+                    start: "line: 1, column: 1",
+                    end: "line: 1, column: 12",
+                    source: "1 - (2 - 3)",
                 },
-                expression: Expression::Binary(Box::new(BinaryExpr {
-                    base: BaseNode {
-                        location: loc.get(1, 1, 1, 12),
-                        ..BaseNode::default()
-                    },
-                    operator: Operator::SubtractionOperator,
-                    left: Expression::Integer(IntegerLit {
+            },
+            name: "",
+            metadata: "parser-type=rust",
+            package: None,
+            imports: [],
+            body: [
+                Expr(
+                    ExprStmt {
                         base: BaseNode {
-                            location: loc.get(1, 1, 1, 2),
-                            ..BaseNode::default()
-                        },
-                        value: 1
-                    }),
-                    right: Expression::Paren(Box::new(ParenExpr {
-                        base: BaseNode {
-                            location: loc.get(1, 5, 1, 12),
-                            ..BaseNode::default()
-                        },
-                        lparen: vec![],
-                        expression: Expression::Binary(Box::new(BinaryExpr {
-                            base: BaseNode {
-                                location: loc.get(1, 6, 1, 11),
-                                ..BaseNode::default()
+                            location: SourceLocation {
+                                start: "line: 1, column: 1",
+                                end: "line: 1, column: 12",
+                                source: "1 - (2 - 3)",
                             },
-                            operator: Operator::SubtractionOperator,
-                            left: Expression::Integer(IntegerLit {
+                        },
+                        expression: Binary(
+                            BinaryExpr {
                                 base: BaseNode {
-                                    location: loc.get(1, 6, 1, 7),
-                                    ..BaseNode::default()
+                                    location: SourceLocation {
+                                        start: "line: 1, column: 1",
+                                        end: "line: 1, column: 12",
+                                        source: "1 - (2 - 3)",
+                                    },
                                 },
-                                value: 2
-                            }),
-                            right: Expression::Integer(IntegerLit {
-                                base: BaseNode {
-                                    location: loc.get(1, 10, 1, 11),
-                                    ..BaseNode::default()
-                                },
-                                value: 3
-                            })
-                        })),
-                        rparen: vec![],
-                    }))
-                }))
-            }))],
-            eof: vec![],
-        },
-    )
+                                operator: SubtractionOperator,
+                                left: Integer(
+                                    IntegerLit {
+                                        base: BaseNode {
+                                            location: SourceLocation {
+                                                start: "line: 1, column: 1",
+                                                end: "line: 1, column: 2",
+                                                source: "1",
+                                            },
+                                        },
+                                        value: 1,
+                                    },
+                                ),
+                                right: Paren(
+                                    ParenExpr {
+                                        base: BaseNode {
+                                            location: SourceLocation {
+                                                start: "line: 1, column: 5",
+                                                end: "line: 1, column: 12",
+                                                source: "(2 - 3)",
+                                            },
+                                        },
+                                        lparen: [],
+                                        expression: Binary(
+                                            BinaryExpr {
+                                                base: BaseNode {
+                                                    location: SourceLocation {
+                                                        start: "line: 1, column: 6",
+                                                        end: "line: 1, column: 11",
+                                                        source: "2 - 3",
+                                                    },
+                                                },
+                                                operator: SubtractionOperator,
+                                                left: Integer(
+                                                    IntegerLit {
+                                                        base: BaseNode {
+                                                            location: SourceLocation {
+                                                                start: "line: 1, column: 6",
+                                                                end: "line: 1, column: 7",
+                                                                source: "2",
+                                                            },
+                                                        },
+                                                        value: 2,
+                                                    },
+                                                ),
+                                                right: Integer(
+                                                    IntegerLit {
+                                                        base: BaseNode {
+                                                            location: SourceLocation {
+                                                                start: "line: 1, column: 10",
+                                                                end: "line: 1, column: 11",
+                                                                source: "3",
+                                                            },
+                                                        },
+                                                        value: 3,
+                                                    },
+                                                ),
+                                            },
+                                        ),
+                                        rparen: [],
+                                    },
+                                ),
+                            },
+                        ),
+                    },
+                ),
+            ],
+            eof: [],
+        }
+    "#]].assert_debug_eq(&parsed);
 }
 
 #[test]
 fn binary_operator_precedence_double_sum() {
     let mut p = Parser::new(r#"1 + 2 + 3"#);
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(p.source);
-    assert_eq!(
-        parsed,
+    expect![[r#"
         File {
             base: BaseNode {
-                location: loc.get(1, 1, 1, 10),
-                ..BaseNode::default()
-            },
-            name: "".to_string(),
-            metadata: "parser-type=rust".to_string(),
-            package: None,
-            imports: vec![],
-            body: vec![Statement::Expr(Box::new(ExprStmt {
-                base: BaseNode {
-                    location: loc.get(1, 1, 1, 10),
-                    ..BaseNode::default()
+                location: SourceLocation {
+                    start: "line: 1, column: 1",
+                    end: "line: 1, column: 10",
+                    source: "1 + 2 + 3",
                 },
-                expression: Expression::Binary(Box::new(BinaryExpr {
-                    base: BaseNode {
-                        location: loc.get(1, 1, 1, 10),
-                        ..BaseNode::default()
+            },
+            name: "",
+            metadata: "parser-type=rust",
+            package: None,
+            imports: [],
+            body: [
+                Expr(
+                    ExprStmt {
+                        base: BaseNode {
+                            location: SourceLocation {
+                                start: "line: 1, column: 1",
+                                end: "line: 1, column: 10",
+                                source: "1 + 2 + 3",
+                            },
+                        },
+                        expression: Binary(
+                            BinaryExpr {
+                                base: BaseNode {
+                                    location: SourceLocation {
+                                        start: "line: 1, column: 1",
+                                        end: "line: 1, column: 10",
+                                        source: "1 + 2 + 3",
+                                    },
+                                },
+                                operator: AdditionOperator,
+                                left: Binary(
+                                    BinaryExpr {
+                                        base: BaseNode {
+                                            location: SourceLocation {
+                                                start: "line: 1, column: 1",
+                                                end: "line: 1, column: 6",
+                                                source: "1 + 2",
+                                            },
+                                        },
+                                        operator: AdditionOperator,
+                                        left: Integer(
+                                            IntegerLit {
+                                                base: BaseNode {
+                                                    location: SourceLocation {
+                                                        start: "line: 1, column: 1",
+                                                        end: "line: 1, column: 2",
+                                                        source: "1",
+                                                    },
+                                                },
+                                                value: 1,
+                                            },
+                                        ),
+                                        right: Integer(
+                                            IntegerLit {
+                                                base: BaseNode {
+                                                    location: SourceLocation {
+                                                        start: "line: 1, column: 5",
+                                                        end: "line: 1, column: 6",
+                                                        source: "2",
+                                                    },
+                                                },
+                                                value: 2,
+                                            },
+                                        ),
+                                    },
+                                ),
+                                right: Integer(
+                                    IntegerLit {
+                                        base: BaseNode {
+                                            location: SourceLocation {
+                                                start: "line: 1, column: 9",
+                                                end: "line: 1, column: 10",
+                                                source: "3",
+                                            },
+                                        },
+                                        value: 3,
+                                    },
+                                ),
+                            },
+                        ),
                     },
-                    operator: Operator::AdditionOperator,
-                    left: Expression::Binary(Box::new(BinaryExpr {
-                        base: BaseNode {
-                            location: loc.get(1, 1, 1, 6),
-                            ..BaseNode::default()
-                        },
-                        operator: Operator::AdditionOperator,
-                        left: Expression::Integer(IntegerLit {
-                            base: BaseNode {
-                                location: loc.get(1, 1, 1, 2),
-                                ..BaseNode::default()
-                            },
-                            value: 1
-                        }),
-                        right: Expression::Integer(IntegerLit {
-                            base: BaseNode {
-                                location: loc.get(1, 5, 1, 6),
-                                ..BaseNode::default()
-                            },
-                            value: 2
-                        })
-                    })),
-                    right: Expression::Integer(IntegerLit {
-                        base: BaseNode {
-                            location: loc.get(1, 9, 1, 10),
-                            ..BaseNode::default()
-                        },
-                        value: 3
-                    })
-                }))
-            }))],
-            eof: vec![],
-        },
-    )
+                ),
+            ],
+            eof: [],
+        }
+    "#]].assert_debug_eq(&parsed);
 }
 
 #[test]
 fn binary_operator_precedence_exponent() {
     let mut p = Parser::new(r#"5 * 1 ^ 5"#);
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(p.source);
-    assert_eq!(
-        parsed,
+    expect![[r#"
         File {
             base: BaseNode {
-                location: loc.get(1, 1, 1, 10),
-                ..BaseNode::default()
-            },
-            name: "".to_string(),
-            metadata: "parser-type=rust".to_string(),
-            package: None,
-            imports: vec![],
-            body: vec![Statement::Expr(Box::new(ExprStmt {
-                base: BaseNode {
-                    location: loc.get(1, 1, 1, 10),
-                    ..BaseNode::default()
+                location: SourceLocation {
+                    start: "line: 1, column: 1",
+                    end: "line: 1, column: 10",
+                    source: "5 * 1 ^ 5",
                 },
-                expression: Expression::Binary(Box::new(BinaryExpr {
-                    base: BaseNode {
-                        location: loc.get(1, 1, 1, 10),
-                        ..BaseNode::default()
+            },
+            name: "",
+            metadata: "parser-type=rust",
+            package: None,
+            imports: [],
+            body: [
+                Expr(
+                    ExprStmt {
+                        base: BaseNode {
+                            location: SourceLocation {
+                                start: "line: 1, column: 1",
+                                end: "line: 1, column: 10",
+                                source: "5 * 1 ^ 5",
+                            },
+                        },
+                        expression: Binary(
+                            BinaryExpr {
+                                base: BaseNode {
+                                    location: SourceLocation {
+                                        start: "line: 1, column: 1",
+                                        end: "line: 1, column: 10",
+                                        source: "5 * 1 ^ 5",
+                                    },
+                                },
+                                operator: MultiplicationOperator,
+                                left: Integer(
+                                    IntegerLit {
+                                        base: BaseNode {
+                                            location: SourceLocation {
+                                                start: "line: 1, column: 1",
+                                                end: "line: 1, column: 2",
+                                                source: "5",
+                                            },
+                                        },
+                                        value: 5,
+                                    },
+                                ),
+                                right: Binary(
+                                    BinaryExpr {
+                                        base: BaseNode {
+                                            location: SourceLocation {
+                                                start: "line: 1, column: 5",
+                                                end: "line: 1, column: 10",
+                                                source: "1 ^ 5",
+                                            },
+                                        },
+                                        operator: PowerOperator,
+                                        left: Integer(
+                                            IntegerLit {
+                                                base: BaseNode {
+                                                    location: SourceLocation {
+                                                        start: "line: 1, column: 5",
+                                                        end: "line: 1, column: 6",
+                                                        source: "1",
+                                                    },
+                                                },
+                                                value: 1,
+                                            },
+                                        ),
+                                        right: Integer(
+                                            IntegerLit {
+                                                base: BaseNode {
+                                                    location: SourceLocation {
+                                                        start: "line: 1, column: 9",
+                                                        end: "line: 1, column: 10",
+                                                        source: "5",
+                                                    },
+                                                },
+                                                value: 5,
+                                            },
+                                        ),
+                                    },
+                                ),
+                            },
+                        ),
                     },
-                    operator: Operator::MultiplicationOperator,
-                    left: Expression::Integer(IntegerLit {
-                        base: BaseNode {
-                            location: loc.get(1, 1, 1, 2),
-                            ..BaseNode::default()
-                        },
-                        value: 5
-                    }),
-                    right: Expression::Binary(Box::new(BinaryExpr {
-                        base: BaseNode {
-                            location: loc.get(1, 5, 1, 10),
-                            ..BaseNode::default()
-                        },
-                        operator: Operator::PowerOperator,
-                        left: Expression::Integer(IntegerLit {
-                            base: BaseNode {
-                                location: loc.get(1, 5, 1, 6),
-                                ..BaseNode::default()
-                            },
-                            value: 1
-                        }),
-                        right: Expression::Integer(IntegerLit {
-                            base: BaseNode {
-                                location: loc.get(1, 9, 1, 10),
-                                ..BaseNode::default()
-                            },
-                            value: 5
-                        })
-                    })),
-                }))
-            }))],
-            eof: vec![],
-        },
-    )
+                ),
+            ],
+            eof: [],
+        }
+    "#]].assert_debug_eq(&parsed);
 }
 
 #[test]
 fn binary_operator_precedence_double_sum_with_parens() {
     let mut p = Parser::new(r#"1 + (2 + 3)"#);
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(p.source);
-    assert_eq!(
-        parsed,
+    expect![[r#"
         File {
             base: BaseNode {
-                location: loc.get(1, 1, 1, 12),
-                ..BaseNode::default()
-            },
-            name: "".to_string(),
-            metadata: "parser-type=rust".to_string(),
-            package: None,
-            imports: vec![],
-            body: vec![Statement::Expr(Box::new(ExprStmt {
-                base: BaseNode {
-                    location: loc.get(1, 1, 1, 12),
-                    ..BaseNode::default()
+                location: SourceLocation {
+                    start: "line: 1, column: 1",
+                    end: "line: 1, column: 12",
+                    source: "1 + (2 + 3)",
                 },
-                expression: Expression::Binary(Box::new(BinaryExpr {
-                    base: BaseNode {
-                        location: loc.get(1, 1, 1, 12),
-                        ..BaseNode::default()
-                    },
-                    operator: Operator::AdditionOperator,
-                    left: Expression::Integer(IntegerLit {
+            },
+            name: "",
+            metadata: "parser-type=rust",
+            package: None,
+            imports: [],
+            body: [
+                Expr(
+                    ExprStmt {
                         base: BaseNode {
-                            location: loc.get(1, 1, 1, 2),
-                            ..BaseNode::default()
-                        },
-                        value: 1
-                    }),
-                    right: Expression::Paren(Box::new(ParenExpr {
-                        base: BaseNode {
-                            location: loc.get(1, 5, 1, 12),
-                            ..BaseNode::default()
-                        },
-                        lparen: vec![],
-                        expression: Expression::Binary(Box::new(BinaryExpr {
-                            base: BaseNode {
-                                location: loc.get(1, 6, 1, 11),
-                                ..BaseNode::default()
+                            location: SourceLocation {
+                                start: "line: 1, column: 1",
+                                end: "line: 1, column: 12",
+                                source: "1 + (2 + 3)",
                             },
-                            operator: Operator::AdditionOperator,
-                            left: Expression::Integer(IntegerLit {
+                        },
+                        expression: Binary(
+                            BinaryExpr {
                                 base: BaseNode {
-                                    location: loc.get(1, 6, 1, 7),
-                                    ..BaseNode::default()
+                                    location: SourceLocation {
+                                        start: "line: 1, column: 1",
+                                        end: "line: 1, column: 12",
+                                        source: "1 + (2 + 3)",
+                                    },
                                 },
-                                value: 2
-                            }),
-                            right: Expression::Integer(IntegerLit {
-                                base: BaseNode {
-                                    location: loc.get(1, 10, 1, 11),
-                                    ..BaseNode::default()
-                                },
-                                value: 3
-                            })
-                        })),
-                        rparen: vec![],
-                    }))
-                }))
-            }))],
-            eof: vec![],
-        },
-    )
+                                operator: AdditionOperator,
+                                left: Integer(
+                                    IntegerLit {
+                                        base: BaseNode {
+                                            location: SourceLocation {
+                                                start: "line: 1, column: 1",
+                                                end: "line: 1, column: 2",
+                                                source: "1",
+                                            },
+                                        },
+                                        value: 1,
+                                    },
+                                ),
+                                right: Paren(
+                                    ParenExpr {
+                                        base: BaseNode {
+                                            location: SourceLocation {
+                                                start: "line: 1, column: 5",
+                                                end: "line: 1, column: 12",
+                                                source: "(2 + 3)",
+                                            },
+                                        },
+                                        lparen: [],
+                                        expression: Binary(
+                                            BinaryExpr {
+                                                base: BaseNode {
+                                                    location: SourceLocation {
+                                                        start: "line: 1, column: 6",
+                                                        end: "line: 1, column: 11",
+                                                        source: "2 + 3",
+                                                    },
+                                                },
+                                                operator: AdditionOperator,
+                                                left: Integer(
+                                                    IntegerLit {
+                                                        base: BaseNode {
+                                                            location: SourceLocation {
+                                                                start: "line: 1, column: 6",
+                                                                end: "line: 1, column: 7",
+                                                                source: "2",
+                                                            },
+                                                        },
+                                                        value: 2,
+                                                    },
+                                                ),
+                                                right: Integer(
+                                                    IntegerLit {
+                                                        base: BaseNode {
+                                                            location: SourceLocation {
+                                                                start: "line: 1, column: 10",
+                                                                end: "line: 1, column: 11",
+                                                                source: "3",
+                                                            },
+                                                        },
+                                                        value: 3,
+                                                    },
+                                                ),
+                                            },
+                                        ),
+                                        rparen: [],
+                                    },
+                                ),
+                            },
+                        ),
+                    },
+                ),
+            ],
+            eof: [],
+        }
+    "#]].assert_debug_eq(&parsed);
 }
 
 #[test]
 fn binary_operator_precedence_exponent_with_parens() {
     let mut p = Parser::new(r#"2 ^ (1 + 3)"#);
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(p.source);
-    assert_eq!(
-        parsed,
+    expect![[r#"
         File {
             base: BaseNode {
-                location: loc.get(1, 1, 1, 12),
-                ..BaseNode::default()
-            },
-            name: "".to_string(),
-            metadata: "parser-type=rust".to_string(),
-            package: None,
-            imports: vec![],
-            body: vec![Statement::Expr(Box::new(ExprStmt {
-                base: BaseNode {
-                    location: loc.get(1, 1, 1, 12),
-                    ..BaseNode::default()
+                location: SourceLocation {
+                    start: "line: 1, column: 1",
+                    end: "line: 1, column: 12",
+                    source: "2 ^ (1 + 3)",
                 },
-                expression: Expression::Binary(Box::new(BinaryExpr {
-                    base: BaseNode {
-                        location: loc.get(1, 1, 1, 12),
-                        ..BaseNode::default()
-                    },
-                    operator: Operator::PowerOperator,
-                    left: Expression::Integer(IntegerLit {
+            },
+            name: "",
+            metadata: "parser-type=rust",
+            package: None,
+            imports: [],
+            body: [
+                Expr(
+                    ExprStmt {
                         base: BaseNode {
-                            location: loc.get(1, 1, 1, 2),
-                            ..BaseNode::default()
-                        },
-                        value: 2
-                    }),
-                    right: Expression::Paren(Box::new(ParenExpr {
-                        base: BaseNode {
-                            location: loc.get(1, 5, 1, 12),
-                            ..BaseNode::default()
-                        },
-                        lparen: vec![],
-                        expression: Expression::Binary(Box::new(BinaryExpr {
-                            base: BaseNode {
-                                location: loc.get(1, 6, 1, 11),
-                                ..BaseNode::default()
+                            location: SourceLocation {
+                                start: "line: 1, column: 1",
+                                end: "line: 1, column: 12",
+                                source: "2 ^ (1 + 3)",
                             },
-                            operator: Operator::AdditionOperator,
-                            left: Expression::Integer(IntegerLit {
+                        },
+                        expression: Binary(
+                            BinaryExpr {
                                 base: BaseNode {
-                                    location: loc.get(1, 6, 1, 7),
-                                    ..BaseNode::default()
+                                    location: SourceLocation {
+                                        start: "line: 1, column: 1",
+                                        end: "line: 1, column: 12",
+                                        source: "2 ^ (1 + 3)",
+                                    },
                                 },
-                                value: 1
-                            }),
-                            right: Expression::Integer(IntegerLit {
-                                base: BaseNode {
-                                    location: loc.get(1, 10, 1, 11),
-                                    ..BaseNode::default()
-                                },
-                                value: 3
-                            })
-                        })),
-                        rparen: vec![],
-                    }))
-                }))
-            }))],
-            eof: vec![],
-        },
-    )
+                                operator: PowerOperator,
+                                left: Integer(
+                                    IntegerLit {
+                                        base: BaseNode {
+                                            location: SourceLocation {
+                                                start: "line: 1, column: 1",
+                                                end: "line: 1, column: 2",
+                                                source: "2",
+                                            },
+                                        },
+                                        value: 2,
+                                    },
+                                ),
+                                right: Paren(
+                                    ParenExpr {
+                                        base: BaseNode {
+                                            location: SourceLocation {
+                                                start: "line: 1, column: 5",
+                                                end: "line: 1, column: 12",
+                                                source: "(1 + 3)",
+                                            },
+                                        },
+                                        lparen: [],
+                                        expression: Binary(
+                                            BinaryExpr {
+                                                base: BaseNode {
+                                                    location: SourceLocation {
+                                                        start: "line: 1, column: 6",
+                                                        end: "line: 1, column: 11",
+                                                        source: "1 + 3",
+                                                    },
+                                                },
+                                                operator: AdditionOperator,
+                                                left: Integer(
+                                                    IntegerLit {
+                                                        base: BaseNode {
+                                                            location: SourceLocation {
+                                                                start: "line: 1, column: 6",
+                                                                end: "line: 1, column: 7",
+                                                                source: "1",
+                                                            },
+                                                        },
+                                                        value: 1,
+                                                    },
+                                                ),
+                                                right: Integer(
+                                                    IntegerLit {
+                                                        base: BaseNode {
+                                                            location: SourceLocation {
+                                                                start: "line: 1, column: 10",
+                                                                end: "line: 1, column: 11",
+                                                                source: "3",
+                                                            },
+                                                        },
+                                                        value: 3,
+                                                    },
+                                                ),
+                                            },
+                                        ),
+                                        rparen: [],
+                                    },
+                                ),
+                            },
+                        ),
+                    },
+                ),
+            ],
+            eof: [],
+        }
+    "#]].assert_debug_eq(&parsed);
 }
 
 #[test]
 fn logical_unary_operator_precedence() {
     let mut p = Parser::new(r#"not -1 == a"#);
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(p.source);
-    assert_eq!(
-        parsed,
+    expect![[r#"
         File {
             base: BaseNode {
-                location: loc.get(1, 1, 1, 12),
-                ..BaseNode::default()
-            },
-            name: "".to_string(),
-            metadata: "parser-type=rust".to_string(),
-            package: None,
-            imports: vec![],
-            body: vec![Statement::Expr(Box::new(ExprStmt {
-                base: BaseNode {
-                    location: loc.get(1, 1, 1, 12),
-                    ..BaseNode::default()
+                location: SourceLocation {
+                    start: "line: 1, column: 1",
+                    end: "line: 1, column: 12",
+                    source: "not -1 == a",
                 },
-                expression: Expression::Unary(Box::new(UnaryExpr {
-                    base: BaseNode {
-                        location: loc.get(1, 1, 1, 12),
-                        ..BaseNode::default()
-                    },
-                    operator: Operator::NotOperator,
-                    argument: Expression::Binary(Box::new(BinaryExpr {
+            },
+            name: "",
+            metadata: "parser-type=rust",
+            package: None,
+            imports: [],
+            body: [
+                Expr(
+                    ExprStmt {
                         base: BaseNode {
-                            location: loc.get(1, 5, 1, 12),
-                            ..BaseNode::default()
+                            location: SourceLocation {
+                                start: "line: 1, column: 1",
+                                end: "line: 1, column: 12",
+                                source: "not -1 == a",
+                            },
                         },
-                        operator: Operator::EqualOperator,
-                        left: Expression::Unary(Box::new(UnaryExpr {
-                            base: BaseNode {
-                                location: loc.get(1, 5, 1, 7),
-                                ..BaseNode::default()
-                            },
-                            operator: Operator::SubtractionOperator,
-                            argument: Expression::Integer(IntegerLit {
+                        expression: Unary(
+                            UnaryExpr {
                                 base: BaseNode {
-                                    location: loc.get(1, 6, 1, 7),
-                                    ..BaseNode::default()
+                                    location: SourceLocation {
+                                        start: "line: 1, column: 1",
+                                        end: "line: 1, column: 12",
+                                        source: "not -1 == a",
+                                    },
                                 },
-                                value: 1
-                            })
-                        })),
-                        right: Expression::Identifier(Identifier {
-                            base: BaseNode {
-                                location: loc.get(1, 11, 1, 12),
-                                ..BaseNode::default()
+                                operator: NotOperator,
+                                argument: Binary(
+                                    BinaryExpr {
+                                        base: BaseNode {
+                                            location: SourceLocation {
+                                                start: "line: 1, column: 5",
+                                                end: "line: 1, column: 12",
+                                                source: "-1 == a",
+                                            },
+                                        },
+                                        operator: EqualOperator,
+                                        left: Unary(
+                                            UnaryExpr {
+                                                base: BaseNode {
+                                                    location: SourceLocation {
+                                                        start: "line: 1, column: 5",
+                                                        end: "line: 1, column: 7",
+                                                        source: "-1",
+                                                    },
+                                                },
+                                                operator: SubtractionOperator,
+                                                argument: Integer(
+                                                    IntegerLit {
+                                                        base: BaseNode {
+                                                            location: SourceLocation {
+                                                                start: "line: 1, column: 6",
+                                                                end: "line: 1, column: 7",
+                                                                source: "1",
+                                                            },
+                                                        },
+                                                        value: 1,
+                                                    },
+                                                ),
+                                            },
+                                        ),
+                                        right: Identifier(
+                                            Identifier {
+                                                base: BaseNode {
+                                                    location: SourceLocation {
+                                                        start: "line: 1, column: 11",
+                                                        end: "line: 1, column: 12",
+                                                        source: "a",
+                                                    },
+                                                },
+                                                name: "a",
+                                            },
+                                        ),
+                                    },
+                                ),
                             },
-                            name: "a".to_string()
-                        })
-                    }))
-                }))
-            }))],
-            eof: vec![],
-        },
-    )
+                        ),
+                    },
+                ),
+            ],
+            eof: [],
+        }
+    "#]].assert_debug_eq(&parsed);
 }
 
 #[test]
@@ -592,1039 +901,1634 @@ fn all_operators_precedence() {
 k / l < m + n - o or p() <= q() or r >= s and not t =~ /a/ and u !~ /a/"#,
     );
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(p.source);
-    assert_eq!(
-        parsed,
+    expect![[r#"
         File {
             base: BaseNode {
-                location: loc.get(1, 1, 2, 72),
-                ..BaseNode::default()
-            },
-            name: "".to_string(),
-            metadata: "parser-type=rust".to_string(),
-            package: None,
-            imports: vec![],
-            body: vec![Statement::Expr(Box::new(ExprStmt {
-                base: BaseNode {
-                    location: loc.get(1, 1, 2, 72),
-                    ..BaseNode::default()
+                location: SourceLocation {
+                    start: "line: 1, column: 1",
+                    end: "line: 2, column: 72",
+                    source: "a() == b.a + b.c * d < 100 and e != f[g] and h > i * j and\nk / l < m + n - o or p() <= q() or r >= s and not t =~ /a/ and u !~ /a/",
                 },
-                expression: Expression::Logical(Box::new(LogicalExpr {
-                    base: BaseNode {
-                        location: loc.get(1, 1, 2, 72),
-                        ..BaseNode::default()
-                    },
-                    operator: LogicalOperator::OrOperator,
-                    left: Expression::Logical(Box::new(LogicalExpr {
+            },
+            name: "",
+            metadata: "parser-type=rust",
+            package: None,
+            imports: [],
+            body: [
+                Expr(
+                    ExprStmt {
                         base: BaseNode {
-                            location: loc.get(1, 1, 2, 32),
-                            ..BaseNode::default()
-                        },
-                        operator: LogicalOperator::OrOperator,
-                        left: Expression::Logical(Box::new(LogicalExpr {
-                            base: BaseNode {
-                                location: loc.get(1, 1, 2, 18),
-                                ..BaseNode::default()
+                            location: SourceLocation {
+                                start: "line: 1, column: 1",
+                                end: "line: 2, column: 72",
+                                source: "a() == b.a + b.c * d < 100 and e != f[g] and h > i * j and\nk / l < m + n - o or p() <= q() or r >= s and not t =~ /a/ and u !~ /a/",
                             },
-                            operator: LogicalOperator::AndOperator,
-                            left: Expression::Logical(Box::new(LogicalExpr {
+                        },
+                        expression: Logical(
+                            LogicalExpr {
                                 base: BaseNode {
-                                    location: loc.get(1, 1, 1, 55),
-                                    ..BaseNode::default()
-                                },
-                                operator: LogicalOperator::AndOperator,
-                                left: Expression::Logical(Box::new(LogicalExpr {
-                                    base: BaseNode {
-                                        location: loc.get(1, 1, 1, 41),
-                                        ..BaseNode::default()
+                                    location: SourceLocation {
+                                        start: "line: 1, column: 1",
+                                        end: "line: 2, column: 72",
+                                        source: "a() == b.a + b.c * d < 100 and e != f[g] and h > i * j and\nk / l < m + n - o or p() <= q() or r >= s and not t =~ /a/ and u !~ /a/",
                                     },
-                                    operator: LogicalOperator::AndOperator,
-                                    left: Expression::Binary(Box::new(BinaryExpr {
+                                },
+                                operator: OrOperator,
+                                left: Logical(
+                                    LogicalExpr {
                                         base: BaseNode {
-                                            location: loc.get(1, 1, 1, 27),
-                                            ..BaseNode::default()
-                                        },
-                                        operator: Operator::LessThanOperator,
-                                        left: Expression::Binary(Box::new(BinaryExpr {
-                                            base: BaseNode {
-                                                location: loc.get(1, 1, 1, 21),
-                                                ..BaseNode::default()
+                                            location: SourceLocation {
+                                                start: "line: 1, column: 1",
+                                                end: "line: 2, column: 32",
+                                                source: "a() == b.a + b.c * d < 100 and e != f[g] and h > i * j and\nk / l < m + n - o or p() <= q()",
                                             },
-                                            operator: Operator::EqualOperator,
-                                            left: Expression::Call(Box::new(CallExpr {
+                                        },
+                                        operator: OrOperator,
+                                        left: Logical(
+                                            LogicalExpr {
                                                 base: BaseNode {
-                                                    location: loc.get(1, 1, 1, 4),
-                                                    ..BaseNode::default()
+                                                    location: SourceLocation {
+                                                        start: "line: 1, column: 1",
+                                                        end: "line: 2, column: 18",
+                                                        source: "a() == b.a + b.c * d < 100 and e != f[g] and h > i * j and\nk / l < m + n - o",
+                                                    },
                                                 },
-                                                callee: Expression::Identifier(Identifier {
-                                                    base: BaseNode {
-                                                        location: loc.get(1, 1, 1, 2),
-                                                        ..BaseNode::default()
-                                                    },
-                                                    name: "a".to_string()
-                                                }),
-                                                lparen: vec![],
-                                                arguments: vec![],
-                                                rparen: vec![],
-                                            })),
-                                            right: Expression::Binary(Box::new(BinaryExpr {
-                                                base: BaseNode {
-                                                    location: loc.get(1, 8, 1, 21),
-                                                    ..BaseNode::default()
-                                                },
-                                                operator: Operator::AdditionOperator,
-                                                left: Expression::Member(Box::new(MemberExpr {
-                                                    base: BaseNode {
-                                                        location: loc.get(1, 8, 1, 11),
-                                                        ..BaseNode::default()
-                                                    },
-                                                    object: Expression::Identifier(Identifier {
+                                                operator: AndOperator,
+                                                left: Logical(
+                                                    LogicalExpr {
                                                         base: BaseNode {
-                                                            location: loc.get(1, 8, 1, 9),
-                                                            ..BaseNode::default()
-                                                        },
-                                                        name: "b".to_string()
-                                                    }),
-                                                    lbrack: vec![],
-                                                    property: PropertyKey::Identifier(Identifier {
-                                                        base: BaseNode {
-                                                            location: loc.get(1, 10, 1, 11),
-                                                            ..BaseNode::default()
-                                                        },
-                                                        name: "a".to_string()
-                                                    }),
-                                                    rbrack: vec![],
-                                                })),
-                                                right: Expression::Binary(Box::new(BinaryExpr {
-                                                    base: BaseNode {
-                                                        location: loc.get(1, 14, 1, 21),
-                                                        ..BaseNode::default()
-                                                    },
-                                                    operator: Operator::MultiplicationOperator,
-                                                    left: Expression::Member(Box::new(
-                                                        MemberExpr {
-                                                            base: BaseNode {
-                                                                location: loc.get(1, 14, 1, 17),
-                                                                ..BaseNode::default()
+                                                            location: SourceLocation {
+                                                                start: "line: 1, column: 1",
+                                                                end: "line: 1, column: 55",
+                                                                source: "a() == b.a + b.c * d < 100 and e != f[g] and h > i * j",
                                                             },
-                                                            object: Expression::Identifier(
-                                                                Identifier {
-                                                                    base: BaseNode {
-                                                                        location: loc
-                                                                            .get(1, 14, 1, 15),
-                                                                        ..BaseNode::default()
-                                                                    },
-                                                                    name: "b".to_string()
-                                                                }
-                                                            ),
-                                                            lbrack: vec![],
-                                                            property: PropertyKey::Identifier(
-                                                                Identifier {
-                                                                    base: BaseNode {
-                                                                        location: loc
-                                                                            .get(1, 16, 1, 17),
-                                                                        ..BaseNode::default()
-                                                                    },
-                                                                    name: "c".to_string()
-                                                                }
-                                                            ),
-                                                            rbrack: vec![],
-                                                        }
-                                                    )),
-                                                    right: Expression::Identifier(Identifier {
-                                                        base: BaseNode {
-                                                            location: loc.get(1, 20, 1, 21),
-                                                            ..BaseNode::default()
                                                         },
-                                                        name: "d".to_string()
-                                                    })
-                                                }))
-                                            }))
-                                        })),
-                                        right: Expression::Integer(IntegerLit {
-                                            base: BaseNode {
-                                                location: loc.get(1, 24, 1, 27),
-                                                ..BaseNode::default()
+                                                        operator: AndOperator,
+                                                        left: Logical(
+                                                            LogicalExpr {
+                                                                base: BaseNode {
+                                                                    location: SourceLocation {
+                                                                        start: "line: 1, column: 1",
+                                                                        end: "line: 1, column: 41",
+                                                                        source: "a() == b.a + b.c * d < 100 and e != f[g]",
+                                                                    },
+                                                                },
+                                                                operator: AndOperator,
+                                                                left: Binary(
+                                                                    BinaryExpr {
+                                                                        base: BaseNode {
+                                                                            location: SourceLocation {
+                                                                                start: "line: 1, column: 1",
+                                                                                end: "line: 1, column: 27",
+                                                                                source: "a() == b.a + b.c * d < 100",
+                                                                            },
+                                                                        },
+                                                                        operator: LessThanOperator,
+                                                                        left: Binary(
+                                                                            BinaryExpr {
+                                                                                base: BaseNode {
+                                                                                    location: SourceLocation {
+                                                                                        start: "line: 1, column: 1",
+                                                                                        end: "line: 1, column: 21",
+                                                                                        source: "a() == b.a + b.c * d",
+                                                                                    },
+                                                                                },
+                                                                                operator: EqualOperator,
+                                                                                left: Call(
+                                                                                    CallExpr {
+                                                                                        base: BaseNode {
+                                                                                            location: SourceLocation {
+                                                                                                start: "line: 1, column: 1",
+                                                                                                end: "line: 1, column: 4",
+                                                                                                source: "a()",
+                                                                                            },
+                                                                                        },
+                                                                                        callee: Identifier(
+                                                                                            Identifier {
+                                                                                                base: BaseNode {
+                                                                                                    location: SourceLocation {
+                                                                                                        start: "line: 1, column: 1",
+                                                                                                        end: "line: 1, column: 2",
+                                                                                                        source: "a",
+                                                                                                    },
+                                                                                                },
+                                                                                                name: "a",
+                                                                                            },
+                                                                                        ),
+                                                                                        lparen: [],
+                                                                                        arguments: [],
+                                                                                        rparen: [],
+                                                                                    },
+                                                                                ),
+                                                                                right: Binary(
+                                                                                    BinaryExpr {
+                                                                                        base: BaseNode {
+                                                                                            location: SourceLocation {
+                                                                                                start: "line: 1, column: 8",
+                                                                                                end: "line: 1, column: 21",
+                                                                                                source: "b.a + b.c * d",
+                                                                                            },
+                                                                                        },
+                                                                                        operator: AdditionOperator,
+                                                                                        left: Member(
+                                                                                            MemberExpr {
+                                                                                                base: BaseNode {
+                                                                                                    location: SourceLocation {
+                                                                                                        start: "line: 1, column: 8",
+                                                                                                        end: "line: 1, column: 11",
+                                                                                                        source: "b.a",
+                                                                                                    },
+                                                                                                },
+                                                                                                object: Identifier(
+                                                                                                    Identifier {
+                                                                                                        base: BaseNode {
+                                                                                                            location: SourceLocation {
+                                                                                                                start: "line: 1, column: 8",
+                                                                                                                end: "line: 1, column: 9",
+                                                                                                                source: "b",
+                                                                                                            },
+                                                                                                        },
+                                                                                                        name: "b",
+                                                                                                    },
+                                                                                                ),
+                                                                                                lbrack: [],
+                                                                                                property: Identifier(
+                                                                                                    Identifier {
+                                                                                                        base: BaseNode {
+                                                                                                            location: SourceLocation {
+                                                                                                                start: "line: 1, column: 10",
+                                                                                                                end: "line: 1, column: 11",
+                                                                                                                source: "a",
+                                                                                                            },
+                                                                                                        },
+                                                                                                        name: "a",
+                                                                                                    },
+                                                                                                ),
+                                                                                                rbrack: [],
+                                                                                            },
+                                                                                        ),
+                                                                                        right: Binary(
+                                                                                            BinaryExpr {
+                                                                                                base: BaseNode {
+                                                                                                    location: SourceLocation {
+                                                                                                        start: "line: 1, column: 14",
+                                                                                                        end: "line: 1, column: 21",
+                                                                                                        source: "b.c * d",
+                                                                                                    },
+                                                                                                },
+                                                                                                operator: MultiplicationOperator,
+                                                                                                left: Member(
+                                                                                                    MemberExpr {
+                                                                                                        base: BaseNode {
+                                                                                                            location: SourceLocation {
+                                                                                                                start: "line: 1, column: 14",
+                                                                                                                end: "line: 1, column: 17",
+                                                                                                                source: "b.c",
+                                                                                                            },
+                                                                                                        },
+                                                                                                        object: Identifier(
+                                                                                                            Identifier {
+                                                                                                                base: BaseNode {
+                                                                                                                    location: SourceLocation {
+                                                                                                                        start: "line: 1, column: 14",
+                                                                                                                        end: "line: 1, column: 15",
+                                                                                                                        source: "b",
+                                                                                                                    },
+                                                                                                                },
+                                                                                                                name: "b",
+                                                                                                            },
+                                                                                                        ),
+                                                                                                        lbrack: [],
+                                                                                                        property: Identifier(
+                                                                                                            Identifier {
+                                                                                                                base: BaseNode {
+                                                                                                                    location: SourceLocation {
+                                                                                                                        start: "line: 1, column: 16",
+                                                                                                                        end: "line: 1, column: 17",
+                                                                                                                        source: "c",
+                                                                                                                    },
+                                                                                                                },
+                                                                                                                name: "c",
+                                                                                                            },
+                                                                                                        ),
+                                                                                                        rbrack: [],
+                                                                                                    },
+                                                                                                ),
+                                                                                                right: Identifier(
+                                                                                                    Identifier {
+                                                                                                        base: BaseNode {
+                                                                                                            location: SourceLocation {
+                                                                                                                start: "line: 1, column: 20",
+                                                                                                                end: "line: 1, column: 21",
+                                                                                                                source: "d",
+                                                                                                            },
+                                                                                                        },
+                                                                                                        name: "d",
+                                                                                                    },
+                                                                                                ),
+                                                                                            },
+                                                                                        ),
+                                                                                    },
+                                                                                ),
+                                                                            },
+                                                                        ),
+                                                                        right: Integer(
+                                                                            IntegerLit {
+                                                                                base: BaseNode {
+                                                                                    location: SourceLocation {
+                                                                                        start: "line: 1, column: 24",
+                                                                                        end: "line: 1, column: 27",
+                                                                                        source: "100",
+                                                                                    },
+                                                                                },
+                                                                                value: 100,
+                                                                            },
+                                                                        ),
+                                                                    },
+                                                                ),
+                                                                right: Binary(
+                                                                    BinaryExpr {
+                                                                        base: BaseNode {
+                                                                            location: SourceLocation {
+                                                                                start: "line: 1, column: 32",
+                                                                                end: "line: 1, column: 41",
+                                                                                source: "e != f[g]",
+                                                                            },
+                                                                        },
+                                                                        operator: NotEqualOperator,
+                                                                        left: Identifier(
+                                                                            Identifier {
+                                                                                base: BaseNode {
+                                                                                    location: SourceLocation {
+                                                                                        start: "line: 1, column: 32",
+                                                                                        end: "line: 1, column: 33",
+                                                                                        source: "e",
+                                                                                    },
+                                                                                },
+                                                                                name: "e",
+                                                                            },
+                                                                        ),
+                                                                        right: Index(
+                                                                            IndexExpr {
+                                                                                base: BaseNode {
+                                                                                    location: SourceLocation {
+                                                                                        start: "line: 1, column: 37",
+                                                                                        end: "line: 1, column: 41",
+                                                                                        source: "f[g]",
+                                                                                    },
+                                                                                },
+                                                                                array: Identifier(
+                                                                                    Identifier {
+                                                                                        base: BaseNode {
+                                                                                            location: SourceLocation {
+                                                                                                start: "line: 1, column: 37",
+                                                                                                end: "line: 1, column: 38",
+                                                                                                source: "f",
+                                                                                            },
+                                                                                        },
+                                                                                        name: "f",
+                                                                                    },
+                                                                                ),
+                                                                                lbrack: [],
+                                                                                index: Identifier(
+                                                                                    Identifier {
+                                                                                        base: BaseNode {
+                                                                                            location: SourceLocation {
+                                                                                                start: "line: 1, column: 39",
+                                                                                                end: "line: 1, column: 40",
+                                                                                                source: "g",
+                                                                                            },
+                                                                                        },
+                                                                                        name: "g",
+                                                                                    },
+                                                                                ),
+                                                                                rbrack: [],
+                                                                            },
+                                                                        ),
+                                                                    },
+                                                                ),
+                                                            },
+                                                        ),
+                                                        right: Binary(
+                                                            BinaryExpr {
+                                                                base: BaseNode {
+                                                                    location: SourceLocation {
+                                                                        start: "line: 1, column: 46",
+                                                                        end: "line: 1, column: 55",
+                                                                        source: "h > i * j",
+                                                                    },
+                                                                },
+                                                                operator: GreaterThanOperator,
+                                                                left: Identifier(
+                                                                    Identifier {
+                                                                        base: BaseNode {
+                                                                            location: SourceLocation {
+                                                                                start: "line: 1, column: 46",
+                                                                                end: "line: 1, column: 47",
+                                                                                source: "h",
+                                                                            },
+                                                                        },
+                                                                        name: "h",
+                                                                    },
+                                                                ),
+                                                                right: Binary(
+                                                                    BinaryExpr {
+                                                                        base: BaseNode {
+                                                                            location: SourceLocation {
+                                                                                start: "line: 1, column: 50",
+                                                                                end: "line: 1, column: 55",
+                                                                                source: "i * j",
+                                                                            },
+                                                                        },
+                                                                        operator: MultiplicationOperator,
+                                                                        left: Identifier(
+                                                                            Identifier {
+                                                                                base: BaseNode {
+                                                                                    location: SourceLocation {
+                                                                                        start: "line: 1, column: 50",
+                                                                                        end: "line: 1, column: 51",
+                                                                                        source: "i",
+                                                                                    },
+                                                                                },
+                                                                                name: "i",
+                                                                            },
+                                                                        ),
+                                                                        right: Identifier(
+                                                                            Identifier {
+                                                                                base: BaseNode {
+                                                                                    location: SourceLocation {
+                                                                                        start: "line: 1, column: 54",
+                                                                                        end: "line: 1, column: 55",
+                                                                                        source: "j",
+                                                                                    },
+                                                                                },
+                                                                                name: "j",
+                                                                            },
+                                                                        ),
+                                                                    },
+                                                                ),
+                                                            },
+                                                        ),
+                                                    },
+                                                ),
+                                                right: Binary(
+                                                    BinaryExpr {
+                                                        base: BaseNode {
+                                                            location: SourceLocation {
+                                                                start: "line: 2, column: 1",
+                                                                end: "line: 2, column: 18",
+                                                                source: "k / l < m + n - o",
+                                                            },
+                                                        },
+                                                        operator: LessThanOperator,
+                                                        left: Binary(
+                                                            BinaryExpr {
+                                                                base: BaseNode {
+                                                                    location: SourceLocation {
+                                                                        start: "line: 2, column: 1",
+                                                                        end: "line: 2, column: 6",
+                                                                        source: "k / l",
+                                                                    },
+                                                                },
+                                                                operator: DivisionOperator,
+                                                                left: Identifier(
+                                                                    Identifier {
+                                                                        base: BaseNode {
+                                                                            location: SourceLocation {
+                                                                                start: "line: 2, column: 1",
+                                                                                end: "line: 2, column: 2",
+                                                                                source: "k",
+                                                                            },
+                                                                        },
+                                                                        name: "k",
+                                                                    },
+                                                                ),
+                                                                right: Identifier(
+                                                                    Identifier {
+                                                                        base: BaseNode {
+                                                                            location: SourceLocation {
+                                                                                start: "line: 2, column: 5",
+                                                                                end: "line: 2, column: 6",
+                                                                                source: "l",
+                                                                            },
+                                                                        },
+                                                                        name: "l",
+                                                                    },
+                                                                ),
+                                                            },
+                                                        ),
+                                                        right: Binary(
+                                                            BinaryExpr {
+                                                                base: BaseNode {
+                                                                    location: SourceLocation {
+                                                                        start: "line: 2, column: 9",
+                                                                        end: "line: 2, column: 18",
+                                                                        source: "m + n - o",
+                                                                    },
+                                                                },
+                                                                operator: SubtractionOperator,
+                                                                left: Binary(
+                                                                    BinaryExpr {
+                                                                        base: BaseNode {
+                                                                            location: SourceLocation {
+                                                                                start: "line: 2, column: 9",
+                                                                                end: "line: 2, column: 14",
+                                                                                source: "m + n",
+                                                                            },
+                                                                        },
+                                                                        operator: AdditionOperator,
+                                                                        left: Identifier(
+                                                                            Identifier {
+                                                                                base: BaseNode {
+                                                                                    location: SourceLocation {
+                                                                                        start: "line: 2, column: 9",
+                                                                                        end: "line: 2, column: 10",
+                                                                                        source: "m",
+                                                                                    },
+                                                                                },
+                                                                                name: "m",
+                                                                            },
+                                                                        ),
+                                                                        right: Identifier(
+                                                                            Identifier {
+                                                                                base: BaseNode {
+                                                                                    location: SourceLocation {
+                                                                                        start: "line: 2, column: 13",
+                                                                                        end: "line: 2, column: 14",
+                                                                                        source: "n",
+                                                                                    },
+                                                                                },
+                                                                                name: "n",
+                                                                            },
+                                                                        ),
+                                                                    },
+                                                                ),
+                                                                right: Identifier(
+                                                                    Identifier {
+                                                                        base: BaseNode {
+                                                                            location: SourceLocation {
+                                                                                start: "line: 2, column: 17",
+                                                                                end: "line: 2, column: 18",
+                                                                                source: "o",
+                                                                            },
+                                                                        },
+                                                                        name: "o",
+                                                                    },
+                                                                ),
+                                                            },
+                                                        ),
+                                                    },
+                                                ),
                                             },
-                                            value: 100
-                                        })
-                                    })),
-                                    right: Expression::Binary(Box::new(BinaryExpr {
-                                        base: BaseNode {
-                                            location: loc.get(1, 32, 1, 41),
-                                            ..BaseNode::default()
-                                        },
-                                        operator: Operator::NotEqualOperator,
-                                        left: Expression::Identifier(Identifier {
-                                            base: BaseNode {
-                                                location: loc.get(1, 32, 1, 33),
-                                                ..BaseNode::default()
-                                            },
-                                            name: "e".to_string()
-                                        }),
-                                        right: Expression::Index(Box::new(IndexExpr {
-                                            base: BaseNode {
-                                                location: loc.get(1, 37, 1, 41),
-                                                ..BaseNode::default()
-                                            },
-                                            array: Expression::Identifier(Identifier {
+                                        ),
+                                        right: Binary(
+                                            BinaryExpr {
                                                 base: BaseNode {
-                                                    location: loc.get(1, 37, 1, 38),
-                                                    ..BaseNode::default()
+                                                    location: SourceLocation {
+                                                        start: "line: 2, column: 22",
+                                                        end: "line: 2, column: 32",
+                                                        source: "p() <= q()",
+                                                    },
                                                 },
-                                                name: "f".to_string()
-                                            }),
-                                            lbrack: vec![],
-                                            index: Expression::Identifier(Identifier {
+                                                operator: LessThanEqualOperator,
+                                                left: Call(
+                                                    CallExpr {
+                                                        base: BaseNode {
+                                                            location: SourceLocation {
+                                                                start: "line: 2, column: 22",
+                                                                end: "line: 2, column: 25",
+                                                                source: "p()",
+                                                            },
+                                                        },
+                                                        callee: Identifier(
+                                                            Identifier {
+                                                                base: BaseNode {
+                                                                    location: SourceLocation {
+                                                                        start: "line: 2, column: 22",
+                                                                        end: "line: 2, column: 23",
+                                                                        source: "p",
+                                                                    },
+                                                                },
+                                                                name: "p",
+                                                            },
+                                                        ),
+                                                        lparen: [],
+                                                        arguments: [],
+                                                        rparen: [],
+                                                    },
+                                                ),
+                                                right: Call(
+                                                    CallExpr {
+                                                        base: BaseNode {
+                                                            location: SourceLocation {
+                                                                start: "line: 2, column: 29",
+                                                                end: "line: 2, column: 32",
+                                                                source: "q()",
+                                                            },
+                                                        },
+                                                        callee: Identifier(
+                                                            Identifier {
+                                                                base: BaseNode {
+                                                                    location: SourceLocation {
+                                                                        start: "line: 2, column: 29",
+                                                                        end: "line: 2, column: 30",
+                                                                        source: "q",
+                                                                    },
+                                                                },
+                                                                name: "q",
+                                                            },
+                                                        ),
+                                                        lparen: [],
+                                                        arguments: [],
+                                                        rparen: [],
+                                                    },
+                                                ),
+                                            },
+                                        ),
+                                    },
+                                ),
+                                right: Logical(
+                                    LogicalExpr {
+                                        base: BaseNode {
+                                            location: SourceLocation {
+                                                start: "line: 2, column: 36",
+                                                end: "line: 2, column: 72",
+                                                source: "r >= s and not t =~ /a/ and u !~ /a/",
+                                            },
+                                        },
+                                        operator: AndOperator,
+                                        left: Logical(
+                                            LogicalExpr {
                                                 base: BaseNode {
-                                                    location: loc.get(1, 39, 1, 40),
-                                                    ..BaseNode::default()
+                                                    location: SourceLocation {
+                                                        start: "line: 2, column: 36",
+                                                        end: "line: 2, column: 59",
+                                                        source: "r >= s and not t =~ /a/",
+                                                    },
                                                 },
-                                                name: "g".to_string()
-                                            }),
-                                            rbrack: vec![],
-                                        }))
-                                    }))
-                                })),
-                                right: Expression::Binary(Box::new(BinaryExpr {
-                                    base: BaseNode {
-                                        location: loc.get(1, 46, 1, 55),
-                                        ..BaseNode::default()
+                                                operator: AndOperator,
+                                                left: Binary(
+                                                    BinaryExpr {
+                                                        base: BaseNode {
+                                                            location: SourceLocation {
+                                                                start: "line: 2, column: 36",
+                                                                end: "line: 2, column: 42",
+                                                                source: "r >= s",
+                                                            },
+                                                        },
+                                                        operator: GreaterThanEqualOperator,
+                                                        left: Identifier(
+                                                            Identifier {
+                                                                base: BaseNode {
+                                                                    location: SourceLocation {
+                                                                        start: "line: 2, column: 36",
+                                                                        end: "line: 2, column: 37",
+                                                                        source: "r",
+                                                                    },
+                                                                },
+                                                                name: "r",
+                                                            },
+                                                        ),
+                                                        right: Identifier(
+                                                            Identifier {
+                                                                base: BaseNode {
+                                                                    location: SourceLocation {
+                                                                        start: "line: 2, column: 41",
+                                                                        end: "line: 2, column: 42",
+                                                                        source: "s",
+                                                                    },
+                                                                },
+                                                                name: "s",
+                                                            },
+                                                        ),
+                                                    },
+                                                ),
+                                                right: Unary(
+                                                    UnaryExpr {
+                                                        base: BaseNode {
+                                                            location: SourceLocation {
+                                                                start: "line: 2, column: 47",
+                                                                end: "line: 2, column: 59",
+                                                                source: "not t =~ /a/",
+                                                            },
+                                                        },
+                                                        operator: NotOperator,
+                                                        argument: Binary(
+                                                            BinaryExpr {
+                                                                base: BaseNode {
+                                                                    location: SourceLocation {
+                                                                        start: "line: 2, column: 51",
+                                                                        end: "line: 2, column: 59",
+                                                                        source: "t =~ /a/",
+                                                                    },
+                                                                },
+                                                                operator: RegexpMatchOperator,
+                                                                left: Identifier(
+                                                                    Identifier {
+                                                                        base: BaseNode {
+                                                                            location: SourceLocation {
+                                                                                start: "line: 2, column: 51",
+                                                                                end: "line: 2, column: 52",
+                                                                                source: "t",
+                                                                            },
+                                                                        },
+                                                                        name: "t",
+                                                                    },
+                                                                ),
+                                                                right: Regexp(
+                                                                    RegexpLit {
+                                                                        base: BaseNode {
+                                                                            location: SourceLocation {
+                                                                                start: "line: 2, column: 56",
+                                                                                end: "line: 2, column: 59",
+                                                                                source: "/a/",
+                                                                            },
+                                                                        },
+                                                                        value: "a",
+                                                                    },
+                                                                ),
+                                                            },
+                                                        ),
+                                                    },
+                                                ),
+                                            },
+                                        ),
+                                        right: Binary(
+                                            BinaryExpr {
+                                                base: BaseNode {
+                                                    location: SourceLocation {
+                                                        start: "line: 2, column: 64",
+                                                        end: "line: 2, column: 72",
+                                                        source: "u !~ /a/",
+                                                    },
+                                                },
+                                                operator: NotRegexpMatchOperator,
+                                                left: Identifier(
+                                                    Identifier {
+                                                        base: BaseNode {
+                                                            location: SourceLocation {
+                                                                start: "line: 2, column: 64",
+                                                                end: "line: 2, column: 65",
+                                                                source: "u",
+                                                            },
+                                                        },
+                                                        name: "u",
+                                                    },
+                                                ),
+                                                right: Regexp(
+                                                    RegexpLit {
+                                                        base: BaseNode {
+                                                            location: SourceLocation {
+                                                                start: "line: 2, column: 69",
+                                                                end: "line: 2, column: 72",
+                                                                source: "/a/",
+                                                            },
+                                                        },
+                                                        value: "a",
+                                                    },
+                                                ),
+                                            },
+                                        ),
                                     },
-                                    operator: Operator::GreaterThanOperator,
-                                    left: Expression::Identifier(Identifier {
-                                        base: BaseNode {
-                                            location: loc.get(1, 46, 1, 47),
-                                            ..BaseNode::default()
-                                        },
-                                        name: "h".to_string()
-                                    }),
-                                    right: Expression::Binary(Box::new(BinaryExpr {
-                                        base: BaseNode {
-                                            location: loc.get(1, 50, 1, 55),
-                                            ..BaseNode::default()
-                                        },
-                                        operator: Operator::MultiplicationOperator,
-                                        left: Expression::Identifier(Identifier {
-                                            base: BaseNode {
-                                                location: loc.get(1, 50, 1, 51),
-                                                ..BaseNode::default()
-                                            },
-                                            name: "i".to_string()
-                                        }),
-                                        right: Expression::Identifier(Identifier {
-                                            base: BaseNode {
-                                                location: loc.get(1, 54, 1, 55),
-                                                ..BaseNode::default()
-                                            },
-                                            name: "j".to_string()
-                                        })
-                                    }))
-                                }))
-                            })),
-                            right: Expression::Binary(Box::new(BinaryExpr {
-                                base: BaseNode {
-                                    location: loc.get(2, 1, 2, 18),
-                                    ..BaseNode::default()
-                                },
-                                operator: Operator::LessThanOperator,
-                                left: Expression::Binary(Box::new(BinaryExpr {
-                                    base: BaseNode {
-                                        location: loc.get(2, 1, 2, 6),
-                                        ..BaseNode::default()
-                                    },
-                                    operator: Operator::DivisionOperator,
-                                    left: Expression::Identifier(Identifier {
-                                        base: BaseNode {
-                                            location: loc.get(2, 1, 2, 2),
-                                            ..BaseNode::default()
-                                        },
-                                        name: "k".to_string()
-                                    }),
-                                    right: Expression::Identifier(Identifier {
-                                        base: BaseNode {
-                                            location: loc.get(2, 5, 2, 6),
-                                            ..BaseNode::default()
-                                        },
-                                        name: "l".to_string()
-                                    })
-                                })),
-                                right: Expression::Binary(Box::new(BinaryExpr {
-                                    base: BaseNode {
-                                        location: loc.get(2, 9, 2, 18),
-                                        ..BaseNode::default()
-                                    },
-                                    operator: Operator::SubtractionOperator,
-                                    left: Expression::Binary(Box::new(BinaryExpr {
-                                        base: BaseNode {
-                                            location: loc.get(2, 9, 2, 14),
-                                            ..BaseNode::default()
-                                        },
-                                        operator: Operator::AdditionOperator,
-                                        left: Expression::Identifier(Identifier {
-                                            base: BaseNode {
-                                                location: loc.get(2, 9, 2, 10),
-                                                ..BaseNode::default()
-                                            },
-                                            name: "m".to_string()
-                                        }),
-                                        right: Expression::Identifier(Identifier {
-                                            base: BaseNode {
-                                                location: loc.get(2, 13, 2, 14),
-                                                ..BaseNode::default()
-                                            },
-                                            name: "n".to_string()
-                                        })
-                                    })),
-                                    right: Expression::Identifier(Identifier {
-                                        base: BaseNode {
-                                            location: loc.get(2, 17, 2, 18),
-                                            ..BaseNode::default()
-                                        },
-                                        name: "o".to_string()
-                                    })
-                                }))
-                            }))
-                        })),
-                        right: Expression::Binary(Box::new(BinaryExpr {
-                            base: BaseNode {
-                                location: loc.get(2, 22, 2, 32),
-                                ..BaseNode::default()
+                                ),
                             },
-                            operator: Operator::LessThanEqualOperator,
-                            left: Expression::Call(Box::new(CallExpr {
-                                base: BaseNode {
-                                    location: loc.get(2, 22, 2, 25),
-                                    ..BaseNode::default()
-                                },
-                                callee: Expression::Identifier(Identifier {
-                                    base: BaseNode {
-                                        location: loc.get(2, 22, 2, 23),
-                                        ..BaseNode::default()
-                                    },
-                                    name: "p".to_string()
-                                }),
-                                lparen: vec![],
-                                arguments: vec![],
-                                rparen: vec![],
-                            })),
-                            right: Expression::Call(Box::new(CallExpr {
-                                base: BaseNode {
-                                    location: loc.get(2, 29, 2, 32),
-                                    ..BaseNode::default()
-                                },
-                                callee: Expression::Identifier(Identifier {
-                                    base: BaseNode {
-                                        location: loc.get(2, 29, 2, 30),
-                                        ..BaseNode::default()
-                                    },
-                                    name: "q".to_string()
-                                }),
-                                lparen: vec![],
-                                arguments: vec![],
-                                rparen: vec![],
-                            }))
-                        }))
-                    })),
-                    right: Expression::Logical(Box::new(LogicalExpr {
-                        base: BaseNode {
-                            location: loc.get(2, 36, 2, 72),
-                            ..BaseNode::default()
-                        },
-                        operator: LogicalOperator::AndOperator,
-                        left: Expression::Logical(Box::new(LogicalExpr {
-                            base: BaseNode {
-                                location: loc.get(2, 36, 2, 59),
-                                ..BaseNode::default()
-                            },
-                            operator: LogicalOperator::AndOperator,
-                            left: Expression::Binary(Box::new(BinaryExpr {
-                                base: BaseNode {
-                                    location: loc.get(2, 36, 2, 42),
-                                    ..BaseNode::default()
-                                },
-                                operator: Operator::GreaterThanEqualOperator,
-                                left: Expression::Identifier(Identifier {
-                                    base: BaseNode {
-                                        location: loc.get(2, 36, 2, 37),
-                                        ..BaseNode::default()
-                                    },
-                                    name: "r".to_string()
-                                }),
-                                right: Expression::Identifier(Identifier {
-                                    base: BaseNode {
-                                        location: loc.get(2, 41, 2, 42),
-                                        ..BaseNode::default()
-                                    },
-                                    name: "s".to_string()
-                                })
-                            })),
-                            right: Expression::Unary(Box::new(UnaryExpr {
-                                base: BaseNode {
-                                    location: loc.get(2, 47, 2, 59),
-                                    ..BaseNode::default()
-                                },
-                                operator: Operator::NotOperator,
-                                argument: Expression::Binary(Box::new(BinaryExpr {
-                                    base: BaseNode {
-                                        location: loc.get(2, 51, 2, 59),
-                                        ..BaseNode::default()
-                                    },
-                                    operator: Operator::RegexpMatchOperator,
-                                    left: Expression::Identifier(Identifier {
-                                        base: BaseNode {
-                                            location: loc.get(2, 51, 2, 52),
-                                            ..BaseNode::default()
-                                        },
-                                        name: "t".to_string()
-                                    }),
-                                    right: Expression::Regexp(RegexpLit {
-                                        base: BaseNode {
-                                            location: loc.get(2, 56, 2, 59),
-                                            ..BaseNode::default()
-                                        },
-                                        value: "a".to_string()
-                                    })
-                                }))
-                            }))
-                        })),
-                        right: Expression::Binary(Box::new(BinaryExpr {
-                            base: BaseNode {
-                                location: loc.get(2, 64, 2, 72),
-                                ..BaseNode::default()
-                            },
-                            operator: Operator::NotRegexpMatchOperator,
-                            left: Expression::Identifier(Identifier {
-                                base: BaseNode {
-                                    location: loc.get(2, 64, 2, 65),
-                                    ..BaseNode::default()
-                                },
-                                name: "u".to_string()
-                            }),
-                            right: Expression::Regexp(RegexpLit {
-                                base: BaseNode {
-                                    location: loc.get(2, 69, 2, 72),
-                                    ..BaseNode::default()
-                                },
-                                value: "a".to_string()
-                            })
-                        }))
-                    }))
-                }))
-            }))],
-            eof: vec![],
-        },
-    )
+                        ),
+                    },
+                ),
+            ],
+            eof: [],
+        }
+    "#]].assert_debug_eq(&parsed);
 }
 
 #[test]
 fn logical_operators_precedence_1() {
     let mut p = Parser::new(r#"not a or b"#);
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(p.source);
-    assert_eq!(
-        parsed,
+    expect![[r#"
         File {
             base: BaseNode {
-                location: loc.get(1, 1, 1, 11),
-                ..BaseNode::default()
-            },
-            name: "".to_string(),
-            metadata: "parser-type=rust".to_string(),
-            package: None,
-            imports: vec![],
-            body: vec![Statement::Expr(Box::new(ExprStmt {
-                base: BaseNode {
-                    location: loc.get(1, 1, 1, 11),
-                    ..BaseNode::default()
+                location: SourceLocation {
+                    start: "line: 1, column: 1",
+                    end: "line: 1, column: 11",
+                    source: "not a or b",
                 },
-                expression: Expression::Logical(Box::new(LogicalExpr {
-                    base: BaseNode {
-                        location: loc.get(1, 1, 1, 11),
-                        ..BaseNode::default()
-                    },
-                    operator: LogicalOperator::OrOperator,
-                    left: Expression::Unary(Box::new(UnaryExpr {
+            },
+            name: "",
+            metadata: "parser-type=rust",
+            package: None,
+            imports: [],
+            body: [
+                Expr(
+                    ExprStmt {
                         base: BaseNode {
-                            location: loc.get(1, 1, 1, 6),
-                            ..BaseNode::default()
-                        },
-                        operator: Operator::NotOperator,
-                        argument: Expression::Identifier(Identifier {
-                            base: BaseNode {
-                                location: loc.get(1, 5, 1, 6),
-                                ..BaseNode::default()
+                            location: SourceLocation {
+                                start: "line: 1, column: 1",
+                                end: "line: 1, column: 11",
+                                source: "not a or b",
                             },
-                            name: "a".to_string()
-                        })
-                    })),
-                    right: Expression::Identifier(Identifier {
-                        base: BaseNode {
-                            location: loc.get(1, 10, 1, 11),
-                            ..BaseNode::default()
                         },
-                        name: "b".to_string()
-                    })
-                }))
-            }))],
-            eof: vec![],
-        },
-    )
+                        expression: Logical(
+                            LogicalExpr {
+                                base: BaseNode {
+                                    location: SourceLocation {
+                                        start: "line: 1, column: 1",
+                                        end: "line: 1, column: 11",
+                                        source: "not a or b",
+                                    },
+                                },
+                                operator: OrOperator,
+                                left: Unary(
+                                    UnaryExpr {
+                                        base: BaseNode {
+                                            location: SourceLocation {
+                                                start: "line: 1, column: 1",
+                                                end: "line: 1, column: 6",
+                                                source: "not a",
+                                            },
+                                        },
+                                        operator: NotOperator,
+                                        argument: Identifier(
+                                            Identifier {
+                                                base: BaseNode {
+                                                    location: SourceLocation {
+                                                        start: "line: 1, column: 5",
+                                                        end: "line: 1, column: 6",
+                                                        source: "a",
+                                                    },
+                                                },
+                                                name: "a",
+                                            },
+                                        ),
+                                    },
+                                ),
+                                right: Identifier(
+                                    Identifier {
+                                        base: BaseNode {
+                                            location: SourceLocation {
+                                                start: "line: 1, column: 10",
+                                                end: "line: 1, column: 11",
+                                                source: "b",
+                                            },
+                                        },
+                                        name: "b",
+                                    },
+                                ),
+                            },
+                        ),
+                    },
+                ),
+            ],
+            eof: [],
+        }
+    "#]].assert_debug_eq(&parsed);
 }
 
 #[test]
 fn logical_operators_precedence_2() {
     let mut p = Parser::new(r#"a or not b"#);
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(p.source);
-    assert_eq!(
-        parsed,
+    expect![[r#"
         File {
             base: BaseNode {
-                location: loc.get(1, 1, 1, 11),
-                ..BaseNode::default()
-            },
-            name: "".to_string(),
-            metadata: "parser-type=rust".to_string(),
-            package: None,
-            imports: vec![],
-            body: vec![Statement::Expr(Box::new(ExprStmt {
-                base: BaseNode {
-                    location: loc.get(1, 1, 1, 11),
-                    ..BaseNode::default()
+                location: SourceLocation {
+                    start: "line: 1, column: 1",
+                    end: "line: 1, column: 11",
+                    source: "a or not b",
                 },
-                expression: Expression::Logical(Box::new(LogicalExpr {
-                    base: BaseNode {
-                        location: loc.get(1, 1, 1, 11),
-                        ..BaseNode::default()
-                    },
-                    operator: LogicalOperator::OrOperator,
-                    left: Expression::Identifier(Identifier {
+            },
+            name: "",
+            metadata: "parser-type=rust",
+            package: None,
+            imports: [],
+            body: [
+                Expr(
+                    ExprStmt {
                         base: BaseNode {
-                            location: loc.get(1, 1, 1, 2),
-                            ..BaseNode::default()
-                        },
-                        name: "a".to_string()
-                    }),
-                    right: Expression::Unary(Box::new(UnaryExpr {
-                        base: BaseNode {
-                            location: loc.get(1, 6, 1, 11),
-                            ..BaseNode::default()
-                        },
-                        operator: Operator::NotOperator,
-                        argument: Expression::Identifier(Identifier {
-                            base: BaseNode {
-                                location: loc.get(1, 10, 1, 11),
-                                ..BaseNode::default()
+                            location: SourceLocation {
+                                start: "line: 1, column: 1",
+                                end: "line: 1, column: 11",
+                                source: "a or not b",
                             },
-                            name: "b".to_string()
-                        })
-                    }))
-                }))
-            }))],
-            eof: vec![],
-        },
-    )
+                        },
+                        expression: Logical(
+                            LogicalExpr {
+                                base: BaseNode {
+                                    location: SourceLocation {
+                                        start: "line: 1, column: 1",
+                                        end: "line: 1, column: 11",
+                                        source: "a or not b",
+                                    },
+                                },
+                                operator: OrOperator,
+                                left: Identifier(
+                                    Identifier {
+                                        base: BaseNode {
+                                            location: SourceLocation {
+                                                start: "line: 1, column: 1",
+                                                end: "line: 1, column: 2",
+                                                source: "a",
+                                            },
+                                        },
+                                        name: "a",
+                                    },
+                                ),
+                                right: Unary(
+                                    UnaryExpr {
+                                        base: BaseNode {
+                                            location: SourceLocation {
+                                                start: "line: 1, column: 6",
+                                                end: "line: 1, column: 11",
+                                                source: "not b",
+                                            },
+                                        },
+                                        operator: NotOperator,
+                                        argument: Identifier(
+                                            Identifier {
+                                                base: BaseNode {
+                                                    location: SourceLocation {
+                                                        start: "line: 1, column: 10",
+                                                        end: "line: 1, column: 11",
+                                                        source: "b",
+                                                    },
+                                                },
+                                                name: "b",
+                                            },
+                                        ),
+                                    },
+                                ),
+                            },
+                        ),
+                    },
+                ),
+            ],
+            eof: [],
+        }
+    "#]].assert_debug_eq(&parsed);
 }
 
 #[test]
 fn logical_operators_precedence_3() {
     let mut p = Parser::new(r#"not a and b"#);
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(p.source);
-    assert_eq!(
-        parsed,
+    expect![[r#"
         File {
             base: BaseNode {
-                location: loc.get(1, 1, 1, 12),
-                ..BaseNode::default()
-            },
-            name: "".to_string(),
-            metadata: "parser-type=rust".to_string(),
-            package: None,
-            imports: vec![],
-            body: vec![Statement::Expr(Box::new(ExprStmt {
-                base: BaseNode {
-                    location: loc.get(1, 1, 1, 12),
-                    ..BaseNode::default()
+                location: SourceLocation {
+                    start: "line: 1, column: 1",
+                    end: "line: 1, column: 12",
+                    source: "not a and b",
                 },
-                expression: Expression::Logical(Box::new(LogicalExpr {
-                    base: BaseNode {
-                        location: loc.get(1, 1, 1, 12),
-                        ..BaseNode::default()
-                    },
-                    operator: LogicalOperator::AndOperator,
-                    left: Expression::Unary(Box::new(UnaryExpr {
+            },
+            name: "",
+            metadata: "parser-type=rust",
+            package: None,
+            imports: [],
+            body: [
+                Expr(
+                    ExprStmt {
                         base: BaseNode {
-                            location: loc.get(1, 1, 1, 6),
-                            ..BaseNode::default()
-                        },
-                        operator: Operator::NotOperator,
-                        argument: Expression::Identifier(Identifier {
-                            base: BaseNode {
-                                location: loc.get(1, 5, 1, 6),
-                                ..BaseNode::default()
+                            location: SourceLocation {
+                                start: "line: 1, column: 1",
+                                end: "line: 1, column: 12",
+                                source: "not a and b",
                             },
-                            name: "a".to_string()
-                        })
-                    })),
-                    right: Expression::Identifier(Identifier {
-                        base: BaseNode {
-                            location: loc.get(1, 11, 1, 12),
-                            ..BaseNode::default()
                         },
-                        name: "b".to_string()
-                    })
-                }))
-            }))],
-            eof: vec![],
-        },
-    )
+                        expression: Logical(
+                            LogicalExpr {
+                                base: BaseNode {
+                                    location: SourceLocation {
+                                        start: "line: 1, column: 1",
+                                        end: "line: 1, column: 12",
+                                        source: "not a and b",
+                                    },
+                                },
+                                operator: AndOperator,
+                                left: Unary(
+                                    UnaryExpr {
+                                        base: BaseNode {
+                                            location: SourceLocation {
+                                                start: "line: 1, column: 1",
+                                                end: "line: 1, column: 6",
+                                                source: "not a",
+                                            },
+                                        },
+                                        operator: NotOperator,
+                                        argument: Identifier(
+                                            Identifier {
+                                                base: BaseNode {
+                                                    location: SourceLocation {
+                                                        start: "line: 1, column: 5",
+                                                        end: "line: 1, column: 6",
+                                                        source: "a",
+                                                    },
+                                                },
+                                                name: "a",
+                                            },
+                                        ),
+                                    },
+                                ),
+                                right: Identifier(
+                                    Identifier {
+                                        base: BaseNode {
+                                            location: SourceLocation {
+                                                start: "line: 1, column: 11",
+                                                end: "line: 1, column: 12",
+                                                source: "b",
+                                            },
+                                        },
+                                        name: "b",
+                                    },
+                                ),
+                            },
+                        ),
+                    },
+                ),
+            ],
+            eof: [],
+        }
+    "#]].assert_debug_eq(&parsed);
 }
 
 #[test]
 fn logical_operators_precedence_4() {
     let mut p = Parser::new(r#"a and not b"#);
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(p.source);
-    assert_eq!(
-        parsed,
+    expect![[r#"
         File {
             base: BaseNode {
-                location: loc.get(1, 1, 1, 12),
-                ..BaseNode::default()
-            },
-            name: "".to_string(),
-            metadata: "parser-type=rust".to_string(),
-            package: None,
-            imports: vec![],
-            body: vec![Statement::Expr(Box::new(ExprStmt {
-                base: BaseNode {
-                    location: loc.get(1, 1, 1, 12),
-                    ..BaseNode::default()
+                location: SourceLocation {
+                    start: "line: 1, column: 1",
+                    end: "line: 1, column: 12",
+                    source: "a and not b",
                 },
-                expression: Expression::Logical(Box::new(LogicalExpr {
-                    base: BaseNode {
-                        location: loc.get(1, 1, 1, 12),
-                        ..BaseNode::default()
-                    },
-                    operator: LogicalOperator::AndOperator,
-                    left: Expression::Identifier(Identifier {
+            },
+            name: "",
+            metadata: "parser-type=rust",
+            package: None,
+            imports: [],
+            body: [
+                Expr(
+                    ExprStmt {
                         base: BaseNode {
-                            location: loc.get(1, 1, 1, 2),
-                            ..BaseNode::default()
-                        },
-                        name: "a".to_string()
-                    }),
-                    right: Expression::Unary(Box::new(UnaryExpr {
-                        base: BaseNode {
-                            location: loc.get(1, 7, 1, 12),
-                            ..BaseNode::default()
-                        },
-                        operator: Operator::NotOperator,
-                        argument: Expression::Identifier(Identifier {
-                            base: BaseNode {
-                                location: loc.get(1, 11, 1, 12),
-                                ..BaseNode::default()
+                            location: SourceLocation {
+                                start: "line: 1, column: 1",
+                                end: "line: 1, column: 12",
+                                source: "a and not b",
                             },
-                            name: "b".to_string()
-                        })
-                    }))
-                }))
-            }))],
-            eof: vec![],
-        },
-    )
+                        },
+                        expression: Logical(
+                            LogicalExpr {
+                                base: BaseNode {
+                                    location: SourceLocation {
+                                        start: "line: 1, column: 1",
+                                        end: "line: 1, column: 12",
+                                        source: "a and not b",
+                                    },
+                                },
+                                operator: AndOperator,
+                                left: Identifier(
+                                    Identifier {
+                                        base: BaseNode {
+                                            location: SourceLocation {
+                                                start: "line: 1, column: 1",
+                                                end: "line: 1, column: 2",
+                                                source: "a",
+                                            },
+                                        },
+                                        name: "a",
+                                    },
+                                ),
+                                right: Unary(
+                                    UnaryExpr {
+                                        base: BaseNode {
+                                            location: SourceLocation {
+                                                start: "line: 1, column: 7",
+                                                end: "line: 1, column: 12",
+                                                source: "not b",
+                                            },
+                                        },
+                                        operator: NotOperator,
+                                        argument: Identifier(
+                                            Identifier {
+                                                base: BaseNode {
+                                                    location: SourceLocation {
+                                                        start: "line: 1, column: 11",
+                                                        end: "line: 1, column: 12",
+                                                        source: "b",
+                                                    },
+                                                },
+                                                name: "b",
+                                            },
+                                        ),
+                                    },
+                                ),
+                            },
+                        ),
+                    },
+                ),
+            ],
+            eof: [],
+        }
+    "#]].assert_debug_eq(&parsed);
 }
 
 #[test]
 fn logical_operators_precedence_5() {
     let mut p = Parser::new(r#"a and b or c"#);
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(p.source);
-    assert_eq!(
-        parsed,
+    expect![[r#"
         File {
             base: BaseNode {
-                location: loc.get(1, 1, 1, 13),
-                ..BaseNode::default()
-            },
-            name: "".to_string(),
-            metadata: "parser-type=rust".to_string(),
-            package: None,
-            imports: vec![],
-            body: vec![Statement::Expr(Box::new(ExprStmt {
-                base: BaseNode {
-                    location: loc.get(1, 1, 1, 13),
-                    ..BaseNode::default()
+                location: SourceLocation {
+                    start: "line: 1, column: 1",
+                    end: "line: 1, column: 13",
+                    source: "a and b or c",
                 },
-                expression: Expression::Logical(Box::new(LogicalExpr {
-                    base: BaseNode {
-                        location: loc.get(1, 1, 1, 13),
-                        ..BaseNode::default()
+            },
+            name: "",
+            metadata: "parser-type=rust",
+            package: None,
+            imports: [],
+            body: [
+                Expr(
+                    ExprStmt {
+                        base: BaseNode {
+                            location: SourceLocation {
+                                start: "line: 1, column: 1",
+                                end: "line: 1, column: 13",
+                                source: "a and b or c",
+                            },
+                        },
+                        expression: Logical(
+                            LogicalExpr {
+                                base: BaseNode {
+                                    location: SourceLocation {
+                                        start: "line: 1, column: 1",
+                                        end: "line: 1, column: 13",
+                                        source: "a and b or c",
+                                    },
+                                },
+                                operator: OrOperator,
+                                left: Logical(
+                                    LogicalExpr {
+                                        base: BaseNode {
+                                            location: SourceLocation {
+                                                start: "line: 1, column: 1",
+                                                end: "line: 1, column: 8",
+                                                source: "a and b",
+                                            },
+                                        },
+                                        operator: AndOperator,
+                                        left: Identifier(
+                                            Identifier {
+                                                base: BaseNode {
+                                                    location: SourceLocation {
+                                                        start: "line: 1, column: 1",
+                                                        end: "line: 1, column: 2",
+                                                        source: "a",
+                                                    },
+                                                },
+                                                name: "a",
+                                            },
+                                        ),
+                                        right: Identifier(
+                                            Identifier {
+                                                base: BaseNode {
+                                                    location: SourceLocation {
+                                                        start: "line: 1, column: 7",
+                                                        end: "line: 1, column: 8",
+                                                        source: "b",
+                                                    },
+                                                },
+                                                name: "b",
+                                            },
+                                        ),
+                                    },
+                                ),
+                                right: Identifier(
+                                    Identifier {
+                                        base: BaseNode {
+                                            location: SourceLocation {
+                                                start: "line: 1, column: 12",
+                                                end: "line: 1, column: 13",
+                                                source: "c",
+                                            },
+                                        },
+                                        name: "c",
+                                    },
+                                ),
+                            },
+                        ),
                     },
-                    operator: LogicalOperator::OrOperator,
-                    left: Expression::Logical(Box::new(LogicalExpr {
-                        base: BaseNode {
-                            location: loc.get(1, 1, 1, 8),
-                            ..BaseNode::default()
-                        },
-                        operator: LogicalOperator::AndOperator,
-                        left: Expression::Identifier(Identifier {
-                            base: BaseNode {
-                                location: loc.get(1, 1, 1, 2),
-                                ..BaseNode::default()
-                            },
-                            name: "a".to_string()
-                        }),
-                        right: Expression::Identifier(Identifier {
-                            base: BaseNode {
-                                location: loc.get(1, 7, 1, 8),
-                                ..BaseNode::default()
-                            },
-                            name: "b".to_string()
-                        })
-                    })),
-                    right: Expression::Identifier(Identifier {
-                        base: BaseNode {
-                            location: loc.get(1, 12, 1, 13),
-                            ..BaseNode::default()
-                        },
-                        name: "c".to_string()
-                    })
-                }))
-            }))],
-            eof: vec![],
-        },
-    )
+                ),
+            ],
+            eof: [],
+        }
+    "#]].assert_debug_eq(&parsed);
 }
 
 #[test]
 fn logical_operators_precedence_6() {
     let mut p = Parser::new(r#"a or b and c"#);
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(p.source);
-    assert_eq!(
-        parsed,
+    expect![[r#"
         File {
             base: BaseNode {
-                location: loc.get(1, 1, 1, 13),
-                ..BaseNode::default()
-            },
-            name: "".to_string(),
-            metadata: "parser-type=rust".to_string(),
-            package: None,
-            imports: vec![],
-            body: vec![Statement::Expr(Box::new(ExprStmt {
-                base: BaseNode {
-                    location: loc.get(1, 1, 1, 13),
-                    ..BaseNode::default()
+                location: SourceLocation {
+                    start: "line: 1, column: 1",
+                    end: "line: 1, column: 13",
+                    source: "a or b and c",
                 },
-                expression: Expression::Logical(Box::new(LogicalExpr {
-                    base: BaseNode {
-                        location: loc.get(1, 1, 1, 13),
-                        ..BaseNode::default()
+            },
+            name: "",
+            metadata: "parser-type=rust",
+            package: None,
+            imports: [],
+            body: [
+                Expr(
+                    ExprStmt {
+                        base: BaseNode {
+                            location: SourceLocation {
+                                start: "line: 1, column: 1",
+                                end: "line: 1, column: 13",
+                                source: "a or b and c",
+                            },
+                        },
+                        expression: Logical(
+                            LogicalExpr {
+                                base: BaseNode {
+                                    location: SourceLocation {
+                                        start: "line: 1, column: 1",
+                                        end: "line: 1, column: 13",
+                                        source: "a or b and c",
+                                    },
+                                },
+                                operator: OrOperator,
+                                left: Identifier(
+                                    Identifier {
+                                        base: BaseNode {
+                                            location: SourceLocation {
+                                                start: "line: 1, column: 1",
+                                                end: "line: 1, column: 2",
+                                                source: "a",
+                                            },
+                                        },
+                                        name: "a",
+                                    },
+                                ),
+                                right: Logical(
+                                    LogicalExpr {
+                                        base: BaseNode {
+                                            location: SourceLocation {
+                                                start: "line: 1, column: 6",
+                                                end: "line: 1, column: 13",
+                                                source: "b and c",
+                                            },
+                                        },
+                                        operator: AndOperator,
+                                        left: Identifier(
+                                            Identifier {
+                                                base: BaseNode {
+                                                    location: SourceLocation {
+                                                        start: "line: 1, column: 6",
+                                                        end: "line: 1, column: 7",
+                                                        source: "b",
+                                                    },
+                                                },
+                                                name: "b",
+                                            },
+                                        ),
+                                        right: Identifier(
+                                            Identifier {
+                                                base: BaseNode {
+                                                    location: SourceLocation {
+                                                        start: "line: 1, column: 12",
+                                                        end: "line: 1, column: 13",
+                                                        source: "c",
+                                                    },
+                                                },
+                                                name: "c",
+                                            },
+                                        ),
+                                    },
+                                ),
+                            },
+                        ),
                     },
-                    operator: LogicalOperator::OrOperator,
-                    left: Expression::Identifier(Identifier {
-                        base: BaseNode {
-                            location: loc.get(1, 1, 1, 2),
-                            ..BaseNode::default()
-                        },
-                        name: "a".to_string()
-                    }),
-                    right: Expression::Logical(Box::new(LogicalExpr {
-                        base: BaseNode {
-                            location: loc.get(1, 6, 1, 13),
-                            ..BaseNode::default()
-                        },
-                        operator: LogicalOperator::AndOperator,
-                        left: Expression::Identifier(Identifier {
-                            base: BaseNode {
-                                location: loc.get(1, 6, 1, 7),
-                                ..BaseNode::default()
-                            },
-                            name: "b".to_string()
-                        }),
-                        right: Expression::Identifier(Identifier {
-                            base: BaseNode {
-                                location: loc.get(1, 12, 1, 13),
-                                ..BaseNode::default()
-                            },
-                            name: "c".to_string()
-                        })
-                    }))
-                }))
-            }))],
-            eof: vec![],
-        },
-    )
+                ),
+            ],
+            eof: [],
+        }
+    "#]].assert_debug_eq(&parsed);
 }
 
 #[test]
 fn logical_operators_precedence_7() {
     let mut p = Parser::new(r#"not (a or b)"#);
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(p.source);
-    assert_eq!(
-        parsed,
+    expect![[r#"
         File {
             base: BaseNode {
-                location: loc.get(1, 1, 1, 13),
-                ..BaseNode::default()
-            },
-            name: "".to_string(),
-            metadata: "parser-type=rust".to_string(),
-            package: None,
-            imports: vec![],
-            body: vec![Statement::Expr(Box::new(ExprStmt {
-                base: BaseNode {
-                    location: loc.get(1, 1, 1, 13),
-                    ..BaseNode::default()
+                location: SourceLocation {
+                    start: "line: 1, column: 1",
+                    end: "line: 1, column: 13",
+                    source: "not (a or b)",
                 },
-                expression: Expression::Unary(Box::new(UnaryExpr {
-                    base: BaseNode {
-                        location: loc.get(1, 1, 1, 13),
-                        ..BaseNode::default()
-                    },
-                    operator: Operator::NotOperator,
-                    argument: Expression::Paren(Box::new(ParenExpr {
+            },
+            name: "",
+            metadata: "parser-type=rust",
+            package: None,
+            imports: [],
+            body: [
+                Expr(
+                    ExprStmt {
                         base: BaseNode {
-                            location: loc.get(1, 5, 1, 13),
-                            ..BaseNode::default()
-                        },
-                        lparen: vec![],
-                        expression: Expression::Logical(Box::new(LogicalExpr {
-                            base: BaseNode {
-                                location: loc.get(1, 6, 1, 12),
-                                ..BaseNode::default()
+                            location: SourceLocation {
+                                start: "line: 1, column: 1",
+                                end: "line: 1, column: 13",
+                                source: "not (a or b)",
                             },
-                            operator: LogicalOperator::OrOperator,
-                            left: Expression::Identifier(Identifier {
+                        },
+                        expression: Unary(
+                            UnaryExpr {
                                 base: BaseNode {
-                                    location: loc.get(1, 6, 1, 7),
-                                    ..BaseNode::default()
+                                    location: SourceLocation {
+                                        start: "line: 1, column: 1",
+                                        end: "line: 1, column: 13",
+                                        source: "not (a or b)",
+                                    },
                                 },
-                                name: "a".to_string()
-                            }),
-                            right: Expression::Identifier(Identifier {
-                                base: BaseNode {
-                                    location: loc.get(1, 11, 1, 12),
-                                    ..BaseNode::default()
-                                },
-                                name: "b".to_string()
-                            })
-                        })),
-                        rparen: vec![],
-                    }))
-                }))
-            }))],
-            eof: vec![],
-        },
-    )
+                                operator: NotOperator,
+                                argument: Paren(
+                                    ParenExpr {
+                                        base: BaseNode {
+                                            location: SourceLocation {
+                                                start: "line: 1, column: 5",
+                                                end: "line: 1, column: 13",
+                                                source: "(a or b)",
+                                            },
+                                        },
+                                        lparen: [],
+                                        expression: Logical(
+                                            LogicalExpr {
+                                                base: BaseNode {
+                                                    location: SourceLocation {
+                                                        start: "line: 1, column: 6",
+                                                        end: "line: 1, column: 12",
+                                                        source: "a or b",
+                                                    },
+                                                },
+                                                operator: OrOperator,
+                                                left: Identifier(
+                                                    Identifier {
+                                                        base: BaseNode {
+                                                            location: SourceLocation {
+                                                                start: "line: 1, column: 6",
+                                                                end: "line: 1, column: 7",
+                                                                source: "a",
+                                                            },
+                                                        },
+                                                        name: "a",
+                                                    },
+                                                ),
+                                                right: Identifier(
+                                                    Identifier {
+                                                        base: BaseNode {
+                                                            location: SourceLocation {
+                                                                start: "line: 1, column: 11",
+                                                                end: "line: 1, column: 12",
+                                                                source: "b",
+                                                            },
+                                                        },
+                                                        name: "b",
+                                                    },
+                                                ),
+                                            },
+                                        ),
+                                        rparen: [],
+                                    },
+                                ),
+                            },
+                        ),
+                    },
+                ),
+            ],
+            eof: [],
+        }
+    "#]].assert_debug_eq(&parsed);
 }
 
 #[test]
 fn logical_operators_precedence_8() {
     let mut p = Parser::new(r#"not (a and b)"#);
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(p.source);
-    assert_eq!(
-        parsed,
+    expect![[r#"
         File {
             base: BaseNode {
-                location: loc.get(1, 1, 1, 14),
-                ..BaseNode::default()
-            },
-            name: "".to_string(),
-            metadata: "parser-type=rust".to_string(),
-            package: None,
-            imports: vec![],
-            body: vec![Statement::Expr(Box::new(ExprStmt {
-                base: BaseNode {
-                    location: loc.get(1, 1, 1, 14),
-                    ..BaseNode::default()
+                location: SourceLocation {
+                    start: "line: 1, column: 1",
+                    end: "line: 1, column: 14",
+                    source: "not (a and b)",
                 },
-                expression: Expression::Unary(Box::new(UnaryExpr {
-                    base: BaseNode {
-                        location: loc.get(1, 1, 1, 14),
-                        ..BaseNode::default()
-                    },
-                    operator: Operator::NotOperator,
-                    argument: Expression::Paren(Box::new(ParenExpr {
+            },
+            name: "",
+            metadata: "parser-type=rust",
+            package: None,
+            imports: [],
+            body: [
+                Expr(
+                    ExprStmt {
                         base: BaseNode {
-                            location: loc.get(1, 5, 1, 14),
-                            ..BaseNode::default()
-                        },
-                        lparen: vec![],
-                        expression: Expression::Logical(Box::new(LogicalExpr {
-                            base: BaseNode {
-                                location: loc.get(1, 6, 1, 13),
-                                ..BaseNode::default()
+                            location: SourceLocation {
+                                start: "line: 1, column: 1",
+                                end: "line: 1, column: 14",
+                                source: "not (a and b)",
                             },
-                            operator: LogicalOperator::AndOperator,
-                            left: Expression::Identifier(Identifier {
+                        },
+                        expression: Unary(
+                            UnaryExpr {
                                 base: BaseNode {
-                                    location: loc.get(1, 6, 1, 7),
-                                    ..BaseNode::default()
+                                    location: SourceLocation {
+                                        start: "line: 1, column: 1",
+                                        end: "line: 1, column: 14",
+                                        source: "not (a and b)",
+                                    },
                                 },
-                                name: "a".to_string()
-                            }),
-                            right: Expression::Identifier(Identifier {
-                                base: BaseNode {
-                                    location: loc.get(1, 12, 1, 13),
-                                    ..BaseNode::default()
-                                },
-                                name: "b".to_string()
-                            })
-                        })),
-                        rparen: vec![],
-                    }))
-                }))
-            }))],
-            eof: vec![],
-        },
-    )
+                                operator: NotOperator,
+                                argument: Paren(
+                                    ParenExpr {
+                                        base: BaseNode {
+                                            location: SourceLocation {
+                                                start: "line: 1, column: 5",
+                                                end: "line: 1, column: 14",
+                                                source: "(a and b)",
+                                            },
+                                        },
+                                        lparen: [],
+                                        expression: Logical(
+                                            LogicalExpr {
+                                                base: BaseNode {
+                                                    location: SourceLocation {
+                                                        start: "line: 1, column: 6",
+                                                        end: "line: 1, column: 13",
+                                                        source: "a and b",
+                                                    },
+                                                },
+                                                operator: AndOperator,
+                                                left: Identifier(
+                                                    Identifier {
+                                                        base: BaseNode {
+                                                            location: SourceLocation {
+                                                                start: "line: 1, column: 6",
+                                                                end: "line: 1, column: 7",
+                                                                source: "a",
+                                                            },
+                                                        },
+                                                        name: "a",
+                                                    },
+                                                ),
+                                                right: Identifier(
+                                                    Identifier {
+                                                        base: BaseNode {
+                                                            location: SourceLocation {
+                                                                start: "line: 1, column: 12",
+                                                                end: "line: 1, column: 13",
+                                                                source: "b",
+                                                            },
+                                                        },
+                                                        name: "b",
+                                                    },
+                                                ),
+                                            },
+                                        ),
+                                        rparen: [],
+                                    },
+                                ),
+                            },
+                        ),
+                    },
+                ),
+            ],
+            eof: [],
+        }
+    "#]].assert_debug_eq(&parsed);
 }
 
 #[test]
 fn logical_operators_precedence_9() {
     let mut p = Parser::new(r#"(a or b) and c"#);
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(p.source);
-    assert_eq!(
-        parsed,
+    expect![[r#"
         File {
             base: BaseNode {
-                location: loc.get(1, 1, 1, 15),
-                ..BaseNode::default()
-            },
-            name: "".to_string(),
-            metadata: "parser-type=rust".to_string(),
-            package: None,
-            imports: vec![],
-            body: vec![Statement::Expr(Box::new(ExprStmt {
-                base: BaseNode {
-                    location: loc.get(1, 1, 1, 15),
-                    ..BaseNode::default()
+                location: SourceLocation {
+                    start: "line: 1, column: 1",
+                    end: "line: 1, column: 15",
+                    source: "(a or b) and c",
                 },
-                expression: Expression::Logical(Box::new(LogicalExpr {
-                    base: BaseNode {
-                        location: loc.get(1, 1, 1, 15),
-                        ..BaseNode::default()
-                    },
-                    operator: LogicalOperator::AndOperator,
-                    left: Expression::Paren(Box::new(ParenExpr {
+            },
+            name: "",
+            metadata: "parser-type=rust",
+            package: None,
+            imports: [],
+            body: [
+                Expr(
+                    ExprStmt {
                         base: BaseNode {
-                            location: loc.get(1, 1, 1, 9),
-                            ..BaseNode::default()
-                        },
-                        lparen: vec![],
-                        expression: Expression::Logical(Box::new(LogicalExpr {
-                            base: BaseNode {
-                                location: loc.get(1, 2, 1, 8),
-                                ..BaseNode::default()
+                            location: SourceLocation {
+                                start: "line: 1, column: 1",
+                                end: "line: 1, column: 15",
+                                source: "(a or b) and c",
                             },
-                            operator: LogicalOperator::OrOperator,
-                            left: Expression::Identifier(Identifier {
-                                base: BaseNode {
-                                    location: loc.get(1, 2, 1, 3),
-                                    ..BaseNode::default()
-                                },
-                                name: "a".to_string()
-                            }),
-                            right: Expression::Identifier(Identifier {
-                                base: BaseNode {
-                                    location: loc.get(1, 7, 1, 8),
-                                    ..BaseNode::default()
-                                },
-                                name: "b".to_string()
-                            })
-                        })),
-                        rparen: vec![],
-                    })),
-                    right: Expression::Identifier(Identifier {
-                        base: BaseNode {
-                            location: loc.get(1, 14, 1, 15),
-                            ..BaseNode::default()
                         },
-                        name: "c".to_string()
-                    })
-                }))
-            }))],
-            eof: vec![],
-        },
-    )
+                        expression: Logical(
+                            LogicalExpr {
+                                base: BaseNode {
+                                    location: SourceLocation {
+                                        start: "line: 1, column: 1",
+                                        end: "line: 1, column: 15",
+                                        source: "(a or b) and c",
+                                    },
+                                },
+                                operator: AndOperator,
+                                left: Paren(
+                                    ParenExpr {
+                                        base: BaseNode {
+                                            location: SourceLocation {
+                                                start: "line: 1, column: 1",
+                                                end: "line: 1, column: 9",
+                                                source: "(a or b)",
+                                            },
+                                        },
+                                        lparen: [],
+                                        expression: Logical(
+                                            LogicalExpr {
+                                                base: BaseNode {
+                                                    location: SourceLocation {
+                                                        start: "line: 1, column: 2",
+                                                        end: "line: 1, column: 8",
+                                                        source: "a or b",
+                                                    },
+                                                },
+                                                operator: OrOperator,
+                                                left: Identifier(
+                                                    Identifier {
+                                                        base: BaseNode {
+                                                            location: SourceLocation {
+                                                                start: "line: 1, column: 2",
+                                                                end: "line: 1, column: 3",
+                                                                source: "a",
+                                                            },
+                                                        },
+                                                        name: "a",
+                                                    },
+                                                ),
+                                                right: Identifier(
+                                                    Identifier {
+                                                        base: BaseNode {
+                                                            location: SourceLocation {
+                                                                start: "line: 1, column: 7",
+                                                                end: "line: 1, column: 8",
+                                                                source: "b",
+                                                            },
+                                                        },
+                                                        name: "b",
+                                                    },
+                                                ),
+                                            },
+                                        ),
+                                        rparen: [],
+                                    },
+                                ),
+                                right: Identifier(
+                                    Identifier {
+                                        base: BaseNode {
+                                            location: SourceLocation {
+                                                start: "line: 1, column: 14",
+                                                end: "line: 1, column: 15",
+                                                source: "c",
+                                            },
+                                        },
+                                        name: "c",
+                                    },
+                                ),
+                            },
+                        ),
+                    },
+                ),
+            ],
+            eof: [],
+        }
+    "#]].assert_debug_eq(&parsed);
 }
 
 #[test]
 fn logical_operators_precedence_10() {
     let mut p = Parser::new(r#"a and (b or c)"#);
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(p.source);
-    assert_eq!(
-        parsed,
+    expect![[r#"
         File {
             base: BaseNode {
-                location: loc.get(1, 1, 1, 15),
-                ..BaseNode::default()
-            },
-            name: "".to_string(),
-            metadata: "parser-type=rust".to_string(),
-            package: None,
-            imports: vec![],
-            body: vec![Statement::Expr(Box::new(ExprStmt {
-                base: BaseNode {
-                    location: loc.get(1, 1, 1, 15),
-                    ..BaseNode::default()
+                location: SourceLocation {
+                    start: "line: 1, column: 1",
+                    end: "line: 1, column: 15",
+                    source: "a and (b or c)",
                 },
-                expression: Expression::Logical(Box::new(LogicalExpr {
-                    base: BaseNode {
-                        location: loc.get(1, 1, 1, 15),
-                        ..BaseNode::default()
-                    },
-                    operator: LogicalOperator::AndOperator,
-                    left: Expression::Identifier(Identifier {
+            },
+            name: "",
+            metadata: "parser-type=rust",
+            package: None,
+            imports: [],
+            body: [
+                Expr(
+                    ExprStmt {
                         base: BaseNode {
-                            location: loc.get(1, 1, 1, 2),
-                            ..BaseNode::default()
-                        },
-                        name: "a".to_string()
-                    }),
-                    right: Expression::Paren(Box::new(ParenExpr {
-                        base: BaseNode {
-                            location: loc.get(1, 7, 1, 15),
-                            ..BaseNode::default()
-                        },
-                        lparen: vec![],
-                        expression: Expression::Logical(Box::new(LogicalExpr {
-                            base: BaseNode {
-                                location: loc.get(1, 8, 1, 14),
-                                ..BaseNode::default()
+                            location: SourceLocation {
+                                start: "line: 1, column: 1",
+                                end: "line: 1, column: 15",
+                                source: "a and (b or c)",
                             },
-                            operator: LogicalOperator::OrOperator,
-                            left: Expression::Identifier(Identifier {
+                        },
+                        expression: Logical(
+                            LogicalExpr {
                                 base: BaseNode {
-                                    location: loc.get(1, 8, 1, 9),
-                                    ..BaseNode::default()
+                                    location: SourceLocation {
+                                        start: "line: 1, column: 1",
+                                        end: "line: 1, column: 15",
+                                        source: "a and (b or c)",
+                                    },
                                 },
-                                name: "b".to_string()
-                            }),
-                            right: Expression::Identifier(Identifier {
-                                base: BaseNode {
-                                    location: loc.get(1, 13, 1, 14),
-                                    ..BaseNode::default()
-                                },
-                                name: "c".to_string()
-                            })
-                        })),
-                        rparen: vec![],
-                    }))
-                }))
-            }))],
-            eof: vec![],
-        },
-    )
+                                operator: AndOperator,
+                                left: Identifier(
+                                    Identifier {
+                                        base: BaseNode {
+                                            location: SourceLocation {
+                                                start: "line: 1, column: 1",
+                                                end: "line: 1, column: 2",
+                                                source: "a",
+                                            },
+                                        },
+                                        name: "a",
+                                    },
+                                ),
+                                right: Paren(
+                                    ParenExpr {
+                                        base: BaseNode {
+                                            location: SourceLocation {
+                                                start: "line: 1, column: 7",
+                                                end: "line: 1, column: 15",
+                                                source: "(b or c)",
+                                            },
+                                        },
+                                        lparen: [],
+                                        expression: Logical(
+                                            LogicalExpr {
+                                                base: BaseNode {
+                                                    location: SourceLocation {
+                                                        start: "line: 1, column: 8",
+                                                        end: "line: 1, column: 14",
+                                                        source: "b or c",
+                                                    },
+                                                },
+                                                operator: OrOperator,
+                                                left: Identifier(
+                                                    Identifier {
+                                                        base: BaseNode {
+                                                            location: SourceLocation {
+                                                                start: "line: 1, column: 8",
+                                                                end: "line: 1, column: 9",
+                                                                source: "b",
+                                                            },
+                                                        },
+                                                        name: "b",
+                                                    },
+                                                ),
+                                                right: Identifier(
+                                                    Identifier {
+                                                        base: BaseNode {
+                                                            location: SourceLocation {
+                                                                start: "line: 1, column: 13",
+                                                                end: "line: 1, column: 14",
+                                                                source: "c",
+                                                            },
+                                                        },
+                                                        name: "c",
+                                                    },
+                                                ),
+                                            },
+                                        ),
+                                        rparen: [],
+                                    },
+                                ),
+                            },
+                        ),
+                    },
+                ),
+            ],
+            eof: [],
+        }
+    "#]].assert_debug_eq(&parsed);
 }
 
 // The following test case demonstrates confusing behavior:
@@ -1637,244 +2541,372 @@ fn two_logical_operations_with_parens() {
 (a or b) and c"#,
     );
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(p.source);
-    assert_eq!(
-        parsed,
+    expect![[r#"
         File {
             base: BaseNode {
-                location: loc.get(1, 1, 2, 15),
-                ..BaseNode::default()
-            },
-            name: "".to_string(),
-            metadata: "parser-type=rust".to_string(),
-            package: None,
-            imports: vec![],
-            body: vec![Statement::Expr(Box::new(ExprStmt {
-                base: BaseNode {
-                    location: loc.get(1, 1, 2, 15),
-                    ..BaseNode::default()
+                location: SourceLocation {
+                    start: "line: 1, column: 1",
+                    end: "line: 2, column: 15",
+                    source: "not (a and b)\n(a or b) and c",
                 },
-                expression: Expression::Logical(Box::new(LogicalExpr {
-                    base: BaseNode {
-                        location: loc.get(1, 1, 2, 15),
-                        ..BaseNode::default()
-                    },
-                    operator: LogicalOperator::AndOperator,
-                    left: Expression::Unary(Box::new(UnaryExpr {
+            },
+            name: "",
+            metadata: "parser-type=rust",
+            package: None,
+            imports: [],
+            body: [
+                Expr(
+                    ExprStmt {
                         base: BaseNode {
-                            location: loc.get(1, 1, 2, 9),
-                            ..BaseNode::default()
-                        },
-                        operator: Operator::NotOperator,
-                        argument: Expression::Call(Box::new(CallExpr {
-                            base: BaseNode {
-                                location: loc.get(1, 5, 2, 9),
-                                errors: vec!["expected comma in property list, got OR".to_string()],
-                                ..BaseNode::default()
+                            location: SourceLocation {
+                                start: "line: 1, column: 1",
+                                end: "line: 2, column: 15",
+                                source: "not (a and b)\n(a or b) and c",
                             },
-                            callee: Expression::Paren(Box::new(ParenExpr {
-                                base: BaseNode {
-                                    location: loc.get(1, 5, 1, 14),
-                                    ..BaseNode::default()
-                                },
-                                lparen: vec![],
-                                expression: Expression::Logical(Box::new(LogicalExpr {
-                                    base: BaseNode {
-                                        location: loc.get(1, 6, 1, 13),
-                                        ..BaseNode::default()
-                                    },
-                                    operator: LogicalOperator::AndOperator,
-                                    left: Expression::Identifier(Identifier {
-                                        base: BaseNode {
-                                            location: loc.get(1, 6, 1, 7),
-                                            ..BaseNode::default()
-                                        },
-                                        name: "a".to_string()
-                                    }),
-                                    right: Expression::Identifier(Identifier {
-                                        base: BaseNode {
-                                            location: loc.get(1, 12, 1, 13),
-                                            ..BaseNode::default()
-                                        },
-                                        name: "b".to_string()
-                                    })
-                                })),
-                                rparen: vec![],
-                            })),
-                            lparen: vec![],
-                            arguments: vec![Expression::Object(Box::new(ObjectExpr {
-                                base: BaseNode {
-                                    location: loc.get(2, 2, 2, 8),
-                                    ..BaseNode::default()
-                                },
-                                lbrace: vec![],
-                                with: None,
-                                properties: vec![
-                                    Property {
-                                        base: BaseNode {
-                                            location: loc.get(2, 2, 2, 3),
-                                            ..BaseNode::default()
-                                        },
-                                        key: PropertyKey::Identifier(Identifier {
-                                            base: BaseNode {
-                                                location: loc.get(2, 2, 2, 3),
-                                                ..BaseNode::default()
-                                            },
-                                            name: "a".to_string()
-                                        }),
-                                        separator: vec![],
-                                        value: None,
-                                        comma: vec![],
-                                    },
-                                    Property {
-                                        base: BaseNode {
-                                            location: loc.get(2, 4, 2, 8),
-                                            errors: vec![
-                                                "unexpected token for property key: OR (or)"
-                                                    .to_string()
-                                            ],
-                                            ..BaseNode::default()
-                                        },
-                                        key: PropertyKey::StringLit(StringLit {
-                                            base: BaseNode {
-                                                location: loc.get(2, 4, 2, 4),
-                                                ..BaseNode::default()
-                                            },
-                                            value: "<invalid>".to_string()
-                                        }),
-                                        separator: vec![],
-                                        value: None,
-                                        comma: vec![],
-                                    }
-                                ],
-                                rbrace: vec![],
-                            }))],
-                            rparen: vec![],
-                        }))
-                    })),
-                    right: Expression::Identifier(Identifier {
-                        base: BaseNode {
-                            location: loc.get(2, 14, 2, 15),
-                            ..BaseNode::default()
                         },
-                        name: "c".to_string()
-                    })
-                }))
-            }))],
-            eof: vec![],
-        },
-    )
+                        expression: Logical(
+                            LogicalExpr {
+                                base: BaseNode {
+                                    location: SourceLocation {
+                                        start: "line: 1, column: 1",
+                                        end: "line: 2, column: 15",
+                                        source: "not (a and b)\n(a or b) and c",
+                                    },
+                                },
+                                operator: AndOperator,
+                                left: Unary(
+                                    UnaryExpr {
+                                        base: BaseNode {
+                                            location: SourceLocation {
+                                                start: "line: 1, column: 1",
+                                                end: "line: 2, column: 9",
+                                                source: "not (a and b)\n(a or b)",
+                                            },
+                                        },
+                                        operator: NotOperator,
+                                        argument: Call(
+                                            CallExpr {
+                                                base: BaseNode {
+                                                    location: SourceLocation {
+                                                        start: "line: 1, column: 5",
+                                                        end: "line: 2, column: 9",
+                                                        source: "(a and b)\n(a or b)",
+                                                    },
+                                                    errors: [
+                                                        "expected comma in property list, got OR",
+                                                    ],
+                                                },
+                                                callee: Paren(
+                                                    ParenExpr {
+                                                        base: BaseNode {
+                                                            location: SourceLocation {
+                                                                start: "line: 1, column: 5",
+                                                                end: "line: 1, column: 14",
+                                                                source: "(a and b)",
+                                                            },
+                                                        },
+                                                        lparen: [],
+                                                        expression: Logical(
+                                                            LogicalExpr {
+                                                                base: BaseNode {
+                                                                    location: SourceLocation {
+                                                                        start: "line: 1, column: 6",
+                                                                        end: "line: 1, column: 13",
+                                                                        source: "a and b",
+                                                                    },
+                                                                },
+                                                                operator: AndOperator,
+                                                                left: Identifier(
+                                                                    Identifier {
+                                                                        base: BaseNode {
+                                                                            location: SourceLocation {
+                                                                                start: "line: 1, column: 6",
+                                                                                end: "line: 1, column: 7",
+                                                                                source: "a",
+                                                                            },
+                                                                        },
+                                                                        name: "a",
+                                                                    },
+                                                                ),
+                                                                right: Identifier(
+                                                                    Identifier {
+                                                                        base: BaseNode {
+                                                                            location: SourceLocation {
+                                                                                start: "line: 1, column: 12",
+                                                                                end: "line: 1, column: 13",
+                                                                                source: "b",
+                                                                            },
+                                                                        },
+                                                                        name: "b",
+                                                                    },
+                                                                ),
+                                                            },
+                                                        ),
+                                                        rparen: [],
+                                                    },
+                                                ),
+                                                lparen: [],
+                                                arguments: [
+                                                    Object(
+                                                        ObjectExpr {
+                                                            base: BaseNode {
+                                                                location: SourceLocation {
+                                                                    start: "line: 2, column: 2",
+                                                                    end: "line: 2, column: 8",
+                                                                    source: "a or b",
+                                                                },
+                                                            },
+                                                            lbrace: [],
+                                                            with: None,
+                                                            properties: [
+                                                                Property {
+                                                                    base: BaseNode {
+                                                                        location: SourceLocation {
+                                                                            start: "line: 2, column: 2",
+                                                                            end: "line: 2, column: 3",
+                                                                            source: "a",
+                                                                        },
+                                                                    },
+                                                                    key: Identifier(
+                                                                        Identifier {
+                                                                            base: BaseNode {
+                                                                                location: SourceLocation {
+                                                                                    start: "line: 2, column: 2",
+                                                                                    end: "line: 2, column: 3",
+                                                                                    source: "a",
+                                                                                },
+                                                                            },
+                                                                            name: "a",
+                                                                        },
+                                                                    ),
+                                                                    separator: [],
+                                                                    value: None,
+                                                                    comma: [],
+                                                                },
+                                                                Property {
+                                                                    base: BaseNode {
+                                                                        location: SourceLocation {
+                                                                            start: "line: 2, column: 4",
+                                                                            end: "line: 2, column: 8",
+                                                                            source: "or b",
+                                                                        },
+                                                                        errors: [
+                                                                            "unexpected token for property key: OR (or)",
+                                                                        ],
+                                                                    },
+                                                                    key: StringLit(
+                                                                        StringLit {
+                                                                            base: BaseNode {
+                                                                                location: SourceLocation {
+                                                                                    start: "line: 2, column: 4",
+                                                                                    end: "line: 2, column: 4",
+                                                                                    source: "",
+                                                                                },
+                                                                            },
+                                                                            value: "<invalid>",
+                                                                        },
+                                                                    ),
+                                                                    separator: [],
+                                                                    value: None,
+                                                                    comma: [],
+                                                                },
+                                                            ],
+                                                            rbrace: [],
+                                                        },
+                                                    ),
+                                                ],
+                                                rparen: [],
+                                            },
+                                        ),
+                                    },
+                                ),
+                                right: Identifier(
+                                    Identifier {
+                                        base: BaseNode {
+                                            location: SourceLocation {
+                                                start: "line: 2, column: 14",
+                                                end: "line: 2, column: 15",
+                                                source: "c",
+                                            },
+                                        },
+                                        name: "c",
+                                    },
+                                ),
+                            },
+                        ),
+                    },
+                ),
+            ],
+            eof: [],
+        }
+    "#]].assert_debug_eq(&parsed);
 }
 
 #[test]
 fn binary_expression() {
     let mut p = Parser::new(r#"_value < 10.0"#);
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(p.source);
-    assert_eq!(
-        parsed,
+    expect![[r#"
         File {
             base: BaseNode {
-                location: loc.get(1, 1, 1, 14),
-                ..BaseNode::default()
-            },
-            name: "".to_string(),
-            metadata: "parser-type=rust".to_string(),
-            package: None,
-            imports: vec![],
-            body: vec![Statement::Expr(Box::new(ExprStmt {
-                base: BaseNode {
-                    location: loc.get(1, 1, 1, 14),
-                    ..BaseNode::default()
+                location: SourceLocation {
+                    start: "line: 1, column: 1",
+                    end: "line: 1, column: 14",
+                    source: "_value < 10.0",
                 },
-                expression: Expression::Binary(Box::new(BinaryExpr {
-                    base: BaseNode {
-                        location: loc.get(1, 1, 1, 14),
-                        ..BaseNode::default()
+            },
+            name: "",
+            metadata: "parser-type=rust",
+            package: None,
+            imports: [],
+            body: [
+                Expr(
+                    ExprStmt {
+                        base: BaseNode {
+                            location: SourceLocation {
+                                start: "line: 1, column: 1",
+                                end: "line: 1, column: 14",
+                                source: "_value < 10.0",
+                            },
+                        },
+                        expression: Binary(
+                            BinaryExpr {
+                                base: BaseNode {
+                                    location: SourceLocation {
+                                        start: "line: 1, column: 1",
+                                        end: "line: 1, column: 14",
+                                        source: "_value < 10.0",
+                                    },
+                                },
+                                operator: LessThanOperator,
+                                left: Identifier(
+                                    Identifier {
+                                        base: BaseNode {
+                                            location: SourceLocation {
+                                                start: "line: 1, column: 1",
+                                                end: "line: 1, column: 7",
+                                                source: "_value",
+                                            },
+                                        },
+                                        name: "_value",
+                                    },
+                                ),
+                                right: Float(
+                                    FloatLit {
+                                        base: BaseNode {
+                                            location: SourceLocation {
+                                                start: "line: 1, column: 10",
+                                                end: "line: 1, column: 14",
+                                                source: "10.0",
+                                            },
+                                        },
+                                        value: 10.0,
+                                    },
+                                ),
+                            },
+                        ),
                     },
-                    operator: Operator::LessThanOperator,
-                    left: Expression::Identifier(Identifier {
-                        base: BaseNode {
-                            location: loc.get(1, 1, 1, 7),
-                            ..BaseNode::default()
-                        },
-                        name: "_value".to_string()
-                    }),
-                    right: Expression::Float(FloatLit {
-                        base: BaseNode {
-                            location: loc.get(1, 10, 1, 14),
-                            ..BaseNode::default()
-                        },
-                        value: 10.0
-                    })
-                }))
-            }))],
-            eof: vec![],
-        },
-    )
+                ),
+            ],
+            eof: [],
+        }
+    "#]].assert_debug_eq(&parsed);
 }
 
 #[test]
 fn member_expression_binary_expression() {
     let mut p = Parser::new(r#"r._value < 10.0"#);
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(p.source);
-    assert_eq!(
-        parsed,
+    expect![[r#"
         File {
             base: BaseNode {
-                location: loc.get(1, 1, 1, 16),
-                ..BaseNode::default()
-            },
-            name: "".to_string(),
-            metadata: "parser-type=rust".to_string(),
-            package: None,
-            imports: vec![],
-            body: vec![Statement::Expr(Box::new(ExprStmt {
-                base: BaseNode {
-                    location: loc.get(1, 1, 1, 16),
-                    ..BaseNode::default()
+                location: SourceLocation {
+                    start: "line: 1, column: 1",
+                    end: "line: 1, column: 16",
+                    source: "r._value < 10.0",
                 },
-                expression: Expression::Binary(Box::new(BinaryExpr {
-                    base: BaseNode {
-                        location: loc.get(1, 1, 1, 16),
-                        ..BaseNode::default()
+            },
+            name: "",
+            metadata: "parser-type=rust",
+            package: None,
+            imports: [],
+            body: [
+                Expr(
+                    ExprStmt {
+                        base: BaseNode {
+                            location: SourceLocation {
+                                start: "line: 1, column: 1",
+                                end: "line: 1, column: 16",
+                                source: "r._value < 10.0",
+                            },
+                        },
+                        expression: Binary(
+                            BinaryExpr {
+                                base: BaseNode {
+                                    location: SourceLocation {
+                                        start: "line: 1, column: 1",
+                                        end: "line: 1, column: 16",
+                                        source: "r._value < 10.0",
+                                    },
+                                },
+                                operator: LessThanOperator,
+                                left: Member(
+                                    MemberExpr {
+                                        base: BaseNode {
+                                            location: SourceLocation {
+                                                start: "line: 1, column: 1",
+                                                end: "line: 1, column: 9",
+                                                source: "r._value",
+                                            },
+                                        },
+                                        object: Identifier(
+                                            Identifier {
+                                                base: BaseNode {
+                                                    location: SourceLocation {
+                                                        start: "line: 1, column: 1",
+                                                        end: "line: 1, column: 2",
+                                                        source: "r",
+                                                    },
+                                                },
+                                                name: "r",
+                                            },
+                                        ),
+                                        lbrack: [],
+                                        property: Identifier(
+                                            Identifier {
+                                                base: BaseNode {
+                                                    location: SourceLocation {
+                                                        start: "line: 1, column: 3",
+                                                        end: "line: 1, column: 9",
+                                                        source: "_value",
+                                                    },
+                                                },
+                                                name: "_value",
+                                            },
+                                        ),
+                                        rbrack: [],
+                                    },
+                                ),
+                                right: Float(
+                                    FloatLit {
+                                        base: BaseNode {
+                                            location: SourceLocation {
+                                                start: "line: 1, column: 12",
+                                                end: "line: 1, column: 16",
+                                                source: "10.0",
+                                            },
+                                        },
+                                        value: 10.0,
+                                    },
+                                ),
+                            },
+                        ),
                     },
-                    operator: Operator::LessThanOperator,
-                    left: Expression::Member(Box::new(MemberExpr {
-                        base: BaseNode {
-                            location: loc.get(1, 1, 1, 9),
-                            ..BaseNode::default()
-                        },
-                        object: Expression::Identifier(Identifier {
-                            base: BaseNode {
-                                location: loc.get(1, 1, 1, 2),
-                                ..BaseNode::default()
-                            },
-                            name: "r".to_string()
-                        }),
-                        lbrack: vec![],
-                        property: PropertyKey::Identifier(Identifier {
-                            base: BaseNode {
-                                location: loc.get(1, 3, 1, 9),
-                                ..BaseNode::default()
-                            },
-                            name: "_value".to_string()
-                        }),
-                        rbrack: vec![],
-                    })),
-                    right: Expression::Float(FloatLit {
-                        base: BaseNode {
-                            location: loc.get(1, 12, 1, 16),
-                            ..BaseNode::default()
-                        },
-                        value: 10.0
-                    })
-                }))
-            }))],
-            eof: vec![],
-        },
-    )
+                ),
+            ],
+            eof: [],
+        }
+    "#]].assert_debug_eq(&parsed);
 }
 
 #[test]
@@ -1886,117 +2918,180 @@ fn var_as_binary_expression_of_other_vars() {
             d = a"#,
     );
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(p.source);
-    assert_eq!(
-        parsed,
+    expect![[r#"
         File {
             base: BaseNode {
-                location: loc.get(1, 1, 4, 18),
-                ..BaseNode::default()
+                location: SourceLocation {
+                    start: "line: 1, column: 1",
+                    end: "line: 4, column: 18",
+                    source: "a = 1\n            b = 2\n            c = a + b\n            d = a",
+                },
             },
-            name: "".to_string(),
-            metadata: "parser-type=rust".to_string(),
+            name: "",
+            metadata: "parser-type=rust",
             package: None,
-            imports: vec![],
-            body: vec![
-                Statement::Variable(Box::new(VariableAssgn {
-                    base: BaseNode {
-                        location: loc.get(1, 1, 1, 6),
-                        ..BaseNode::default()
-                    },
-                    id: Identifier {
+            imports: [],
+            body: [
+                Variable(
+                    VariableAssgn {
                         base: BaseNode {
-                            location: loc.get(1, 1, 1, 2),
-                            ..BaseNode::default()
-                        },
-                        name: "a".to_string()
-                    },
-                    init: Expression::Integer(IntegerLit {
-                        base: BaseNode {
-                            location: loc.get(1, 5, 1, 6),
-                            ..BaseNode::default()
-                        },
-                        value: 1
-                    })
-                })),
-                Statement::Variable(Box::new(VariableAssgn {
-                    base: BaseNode {
-                        location: loc.get(2, 13, 2, 18),
-                        ..BaseNode::default()
-                    },
-                    id: Identifier {
-                        base: BaseNode {
-                            location: loc.get(2, 13, 2, 14),
-                            ..BaseNode::default()
-                        },
-                        name: "b".to_string()
-                    },
-                    init: Expression::Integer(IntegerLit {
-                        base: BaseNode {
-                            location: loc.get(2, 17, 2, 18),
-                            ..BaseNode::default()
-                        },
-                        value: 2
-                    })
-                })),
-                Statement::Variable(Box::new(VariableAssgn {
-                    base: BaseNode {
-                        location: loc.get(3, 13, 3, 22),
-                        ..BaseNode::default()
-                    },
-                    id: Identifier {
-                        base: BaseNode {
-                            location: loc.get(3, 13, 3, 14),
-                            ..BaseNode::default()
-                        },
-                        name: "c".to_string()
-                    },
-                    init: Expression::Binary(Box::new(BinaryExpr {
-                        base: BaseNode {
-                            location: loc.get(3, 17, 3, 22),
-                            ..BaseNode::default()
-                        },
-                        operator: Operator::AdditionOperator,
-                        left: Expression::Identifier(Identifier {
-                            base: BaseNode {
-                                location: loc.get(3, 17, 3, 18),
-                                ..BaseNode::default()
+                            location: SourceLocation {
+                                start: "line: 1, column: 1",
+                                end: "line: 1, column: 6",
+                                source: "a = 1",
                             },
-                            name: "a".to_string()
-                        }),
-                        right: Expression::Identifier(Identifier {
+                        },
+                        id: Identifier {
                             base: BaseNode {
-                                location: loc.get(3, 21, 3, 22),
-                                ..BaseNode::default()
+                                location: SourceLocation {
+                                    start: "line: 1, column: 1",
+                                    end: "line: 1, column: 2",
+                                    source: "a",
+                                },
                             },
-                            name: "b".to_string()
-                        })
-                    }))
-                })),
-                Statement::Variable(Box::new(VariableAssgn {
-                    base: BaseNode {
-                        location: loc.get(4, 13, 4, 18),
-                        ..BaseNode::default()
-                    },
-                    id: Identifier {
-                        base: BaseNode {
-                            location: loc.get(4, 13, 4, 14),
-                            ..BaseNode::default()
+                            name: "a",
                         },
-                        name: "d".to_string()
+                        init: Integer(
+                            IntegerLit {
+                                base: BaseNode {
+                                    location: SourceLocation {
+                                        start: "line: 1, column: 5",
+                                        end: "line: 1, column: 6",
+                                        source: "1",
+                                    },
+                                },
+                                value: 1,
+                            },
+                        ),
                     },
-                    init: Expression::Identifier(Identifier {
+                ),
+                Variable(
+                    VariableAssgn {
                         base: BaseNode {
-                            location: loc.get(4, 17, 4, 18),
-                            ..BaseNode::default()
+                            location: SourceLocation {
+                                start: "line: 2, column: 13",
+                                end: "line: 2, column: 18",
+                                source: "b = 2",
+                            },
                         },
-                        name: "a".to_string()
-                    })
-                }))
+                        id: Identifier {
+                            base: BaseNode {
+                                location: SourceLocation {
+                                    start: "line: 2, column: 13",
+                                    end: "line: 2, column: 14",
+                                    source: "b",
+                                },
+                            },
+                            name: "b",
+                        },
+                        init: Integer(
+                            IntegerLit {
+                                base: BaseNode {
+                                    location: SourceLocation {
+                                        start: "line: 2, column: 17",
+                                        end: "line: 2, column: 18",
+                                        source: "2",
+                                    },
+                                },
+                                value: 2,
+                            },
+                        ),
+                    },
+                ),
+                Variable(
+                    VariableAssgn {
+                        base: BaseNode {
+                            location: SourceLocation {
+                                start: "line: 3, column: 13",
+                                end: "line: 3, column: 22",
+                                source: "c = a + b",
+                            },
+                        },
+                        id: Identifier {
+                            base: BaseNode {
+                                location: SourceLocation {
+                                    start: "line: 3, column: 13",
+                                    end: "line: 3, column: 14",
+                                    source: "c",
+                                },
+                            },
+                            name: "c",
+                        },
+                        init: Binary(
+                            BinaryExpr {
+                                base: BaseNode {
+                                    location: SourceLocation {
+                                        start: "line: 3, column: 17",
+                                        end: "line: 3, column: 22",
+                                        source: "a + b",
+                                    },
+                                },
+                                operator: AdditionOperator,
+                                left: Identifier(
+                                    Identifier {
+                                        base: BaseNode {
+                                            location: SourceLocation {
+                                                start: "line: 3, column: 17",
+                                                end: "line: 3, column: 18",
+                                                source: "a",
+                                            },
+                                        },
+                                        name: "a",
+                                    },
+                                ),
+                                right: Identifier(
+                                    Identifier {
+                                        base: BaseNode {
+                                            location: SourceLocation {
+                                                start: "line: 3, column: 21",
+                                                end: "line: 3, column: 22",
+                                                source: "b",
+                                            },
+                                        },
+                                        name: "b",
+                                    },
+                                ),
+                            },
+                        ),
+                    },
+                ),
+                Variable(
+                    VariableAssgn {
+                        base: BaseNode {
+                            location: SourceLocation {
+                                start: "line: 4, column: 13",
+                                end: "line: 4, column: 18",
+                                source: "d = a",
+                            },
+                        },
+                        id: Identifier {
+                            base: BaseNode {
+                                location: SourceLocation {
+                                    start: "line: 4, column: 13",
+                                    end: "line: 4, column: 14",
+                                    source: "d",
+                                },
+                            },
+                            name: "d",
+                        },
+                        init: Identifier(
+                            Identifier {
+                                base: BaseNode {
+                                    location: SourceLocation {
+                                        start: "line: 4, column: 17",
+                                        end: "line: 4, column: 18",
+                                        source: "a",
+                                    },
+                                },
+                                name: "a",
+                            },
+                        ),
+                    },
+                ),
             ],
-            eof: vec![],
-        },
-    )
+            eof: [],
+        }
+    "#]].assert_debug_eq(&parsed);
 }
 
 #[test]
@@ -2006,70 +3101,102 @@ fn var_as_unary_expression_of_other_vars() {
             c = -a"#,
     );
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(p.source);
-    assert_eq!(
-        parsed,
+    expect![[r#"
         File {
             base: BaseNode {
-                location: loc.get(1, 1, 2, 19),
-                ..BaseNode::default()
+                location: SourceLocation {
+                    start: "line: 1, column: 1",
+                    end: "line: 2, column: 19",
+                    source: "a = 5\n            c = -a",
+                },
             },
-            name: "".to_string(),
-            metadata: "parser-type=rust".to_string(),
+            name: "",
+            metadata: "parser-type=rust",
             package: None,
-            imports: vec![],
-            body: vec![
-                Statement::Variable(Box::new(VariableAssgn {
-                    base: BaseNode {
-                        location: loc.get(1, 1, 1, 6),
-                        ..BaseNode::default()
-                    },
-                    id: Identifier {
+            imports: [],
+            body: [
+                Variable(
+                    VariableAssgn {
                         base: BaseNode {
-                            location: loc.get(1, 1, 1, 2),
-                            ..BaseNode::default()
-                        },
-                        name: "a".to_string()
-                    },
-                    init: Expression::Integer(IntegerLit {
-                        base: BaseNode {
-                            location: loc.get(1, 5, 1, 6),
-                            ..BaseNode::default()
-                        },
-                        value: 5
-                    })
-                })),
-                Statement::Variable(Box::new(VariableAssgn {
-                    base: BaseNode {
-                        location: loc.get(2, 13, 2, 19),
-                        ..BaseNode::default()
-                    },
-                    id: Identifier {
-                        base: BaseNode {
-                            location: loc.get(2, 13, 2, 14),
-                            ..BaseNode::default()
-                        },
-                        name: "c".to_string()
-                    },
-                    init: Expression::Unary(Box::new(UnaryExpr {
-                        base: BaseNode {
-                            location: loc.get(2, 17, 2, 19),
-                            ..BaseNode::default()
-                        },
-                        operator: Operator::SubtractionOperator,
-                        argument: Expression::Identifier(Identifier {
-                            base: BaseNode {
-                                location: loc.get(2, 18, 2, 19),
-                                ..BaseNode::default()
+                            location: SourceLocation {
+                                start: "line: 1, column: 1",
+                                end: "line: 1, column: 6",
+                                source: "a = 5",
                             },
-                            name: "a".to_string()
-                        })
-                    }))
-                }))
+                        },
+                        id: Identifier {
+                            base: BaseNode {
+                                location: SourceLocation {
+                                    start: "line: 1, column: 1",
+                                    end: "line: 1, column: 2",
+                                    source: "a",
+                                },
+                            },
+                            name: "a",
+                        },
+                        init: Integer(
+                            IntegerLit {
+                                base: BaseNode {
+                                    location: SourceLocation {
+                                        start: "line: 1, column: 5",
+                                        end: "line: 1, column: 6",
+                                        source: "5",
+                                    },
+                                },
+                                value: 5,
+                            },
+                        ),
+                    },
+                ),
+                Variable(
+                    VariableAssgn {
+                        base: BaseNode {
+                            location: SourceLocation {
+                                start: "line: 2, column: 13",
+                                end: "line: 2, column: 19",
+                                source: "c = -a",
+                            },
+                        },
+                        id: Identifier {
+                            base: BaseNode {
+                                location: SourceLocation {
+                                    start: "line: 2, column: 13",
+                                    end: "line: 2, column: 14",
+                                    source: "c",
+                                },
+                            },
+                            name: "c",
+                        },
+                        init: Unary(
+                            UnaryExpr {
+                                base: BaseNode {
+                                    location: SourceLocation {
+                                        start: "line: 2, column: 17",
+                                        end: "line: 2, column: 19",
+                                        source: "-a",
+                                    },
+                                },
+                                operator: SubtractionOperator,
+                                argument: Identifier(
+                                    Identifier {
+                                        base: BaseNode {
+                                            location: SourceLocation {
+                                                start: "line: 2, column: 18",
+                                                end: "line: 2, column: 19",
+                                                source: "a",
+                                            },
+                                        },
+                                        name: "a",
+                                    },
+                                ),
+                            },
+                        ),
+                    },
+                ),
             ],
-            eof: vec![],
-        },
-    )
+            eof: [],
+        }
+    "#]].assert_debug_eq(&parsed);
 }
 
 #[test]
@@ -2079,84 +3206,126 @@ fn var_as_both_binary_and_unary_expressions() {
             c = 10 * -a"#,
     );
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(p.source);
-    assert_eq!(
-        parsed,
+    expect![[r#"
         File {
             base: BaseNode {
-                location: loc.get(1, 1, 2, 24),
-                ..BaseNode::default()
+                location: SourceLocation {
+                    start: "line: 1, column: 1",
+                    end: "line: 2, column: 24",
+                    source: "a = 5\n            c = 10 * -a",
+                },
             },
-            name: "".to_string(),
-            metadata: "parser-type=rust".to_string(),
+            name: "",
+            metadata: "parser-type=rust",
             package: None,
-            imports: vec![],
-            body: vec![
-                Statement::Variable(Box::new(VariableAssgn {
-                    base: BaseNode {
-                        location: loc.get(1, 1, 1, 6),
-                        ..BaseNode::default()
-                    },
-                    id: Identifier {
+            imports: [],
+            body: [
+                Variable(
+                    VariableAssgn {
                         base: BaseNode {
-                            location: loc.get(1, 1, 1, 2),
-                            ..BaseNode::default()
-                        },
-                        name: "a".to_string()
-                    },
-                    init: Expression::Integer(IntegerLit {
-                        base: BaseNode {
-                            location: loc.get(1, 5, 1, 6),
-                            ..BaseNode::default()
-                        },
-                        value: 5
-                    })
-                })),
-                Statement::Variable(Box::new(VariableAssgn {
-                    base: BaseNode {
-                        location: loc.get(2, 13, 2, 24),
-                        ..BaseNode::default()
-                    },
-                    id: Identifier {
-                        base: BaseNode {
-                            location: loc.get(2, 13, 2, 14),
-                            ..BaseNode::default()
-                        },
-                        name: "c".to_string()
-                    },
-                    init: Expression::Binary(Box::new(BinaryExpr {
-                        base: BaseNode {
-                            location: loc.get(2, 17, 2, 24),
-                            ..BaseNode::default()
-                        },
-                        operator: Operator::MultiplicationOperator,
-                        left: Expression::Integer(IntegerLit {
-                            base: BaseNode {
-                                location: loc.get(2, 17, 2, 19),
-                                ..BaseNode::default()
+                            location: SourceLocation {
+                                start: "line: 1, column: 1",
+                                end: "line: 1, column: 6",
+                                source: "a = 5",
                             },
-                            value: 10
-                        }),
-                        right: Expression::Unary(Box::new(UnaryExpr {
+                        },
+                        id: Identifier {
                             base: BaseNode {
-                                location: loc.get(2, 22, 2, 24),
-                                ..BaseNode::default()
-                            },
-                            operator: Operator::SubtractionOperator,
-                            argument: Expression::Identifier(Identifier {
-                                base: BaseNode {
-                                    location: loc.get(2, 23, 2, 24),
-                                    ..BaseNode::default()
+                                location: SourceLocation {
+                                    start: "line: 1, column: 1",
+                                    end: "line: 1, column: 2",
+                                    source: "a",
                                 },
-                                name: "a".to_string()
-                            })
-                        }))
-                    }))
-                }))
+                            },
+                            name: "a",
+                        },
+                        init: Integer(
+                            IntegerLit {
+                                base: BaseNode {
+                                    location: SourceLocation {
+                                        start: "line: 1, column: 5",
+                                        end: "line: 1, column: 6",
+                                        source: "5",
+                                    },
+                                },
+                                value: 5,
+                            },
+                        ),
+                    },
+                ),
+                Variable(
+                    VariableAssgn {
+                        base: BaseNode {
+                            location: SourceLocation {
+                                start: "line: 2, column: 13",
+                                end: "line: 2, column: 24",
+                                source: "c = 10 * -a",
+                            },
+                        },
+                        id: Identifier {
+                            base: BaseNode {
+                                location: SourceLocation {
+                                    start: "line: 2, column: 13",
+                                    end: "line: 2, column: 14",
+                                    source: "c",
+                                },
+                            },
+                            name: "c",
+                        },
+                        init: Binary(
+                            BinaryExpr {
+                                base: BaseNode {
+                                    location: SourceLocation {
+                                        start: "line: 2, column: 17",
+                                        end: "line: 2, column: 24",
+                                        source: "10 * -a",
+                                    },
+                                },
+                                operator: MultiplicationOperator,
+                                left: Integer(
+                                    IntegerLit {
+                                        base: BaseNode {
+                                            location: SourceLocation {
+                                                start: "line: 2, column: 17",
+                                                end: "line: 2, column: 19",
+                                                source: "10",
+                                            },
+                                        },
+                                        value: 10,
+                                    },
+                                ),
+                                right: Unary(
+                                    UnaryExpr {
+                                        base: BaseNode {
+                                            location: SourceLocation {
+                                                start: "line: 2, column: 22",
+                                                end: "line: 2, column: 24",
+                                                source: "-a",
+                                            },
+                                        },
+                                        operator: SubtractionOperator,
+                                        argument: Identifier(
+                                            Identifier {
+                                                base: BaseNode {
+                                                    location: SourceLocation {
+                                                        start: "line: 2, column: 23",
+                                                        end: "line: 2, column: 24",
+                                                        source: "a",
+                                                    },
+                                                },
+                                                name: "a",
+                                            },
+                                        ),
+                                    },
+                                ),
+                            },
+                        ),
+                    },
+                ),
             ],
-            eof: vec![],
-        },
-    )
+            eof: [],
+        }
+    "#]].assert_debug_eq(&parsed);
 }
 
 #[test]
@@ -2166,182 +3335,284 @@ fn unary_expressions_within_logical_expression() {
             10.0 * -a == -0.5 or a == 6.0"#,
     );
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(p.source);
-    assert_eq!(
-        parsed,
+    expect![[r#"
         File {
             base: BaseNode {
-                location: loc.get(1, 1, 2, 42),
-                ..BaseNode::default()
+                location: SourceLocation {
+                    start: "line: 1, column: 1",
+                    end: "line: 2, column: 42",
+                    source: "a = 5.0\n            10.0 * -a == -0.5 or a == 6.0",
+                },
             },
-            name: "".to_string(),
-            metadata: "parser-type=rust".to_string(),
+            name: "",
+            metadata: "parser-type=rust",
             package: None,
-            imports: vec![],
-            body: vec![
-                Statement::Variable(Box::new(VariableAssgn {
-                    base: BaseNode {
-                        location: loc.get(1, 1, 1, 8),
-                        ..BaseNode::default()
-                    },
-                    id: Identifier {
+            imports: [],
+            body: [
+                Variable(
+                    VariableAssgn {
                         base: BaseNode {
-                            location: loc.get(1, 1, 1, 2),
-                            ..BaseNode::default()
-                        },
-                        name: "a".to_string()
-                    },
-                    init: Expression::Float(FloatLit {
-                        base: BaseNode {
-                            location: loc.get(1, 5, 1, 8),
-                            ..BaseNode::default()
-                        },
-                        value: 5.0
-                    })
-                })),
-                Statement::Expr(Box::new(ExprStmt {
-                    base: BaseNode {
-                        location: loc.get(2, 13, 2, 42),
-                        ..BaseNode::default()
-                    },
-                    expression: Expression::Logical(Box::new(LogicalExpr {
-                        base: BaseNode {
-                            location: loc.get(2, 13, 2, 42),
-                            ..BaseNode::default()
-                        },
-                        operator: LogicalOperator::OrOperator,
-                        left: Expression::Binary(Box::new(BinaryExpr {
-                            base: BaseNode {
-                                location: loc.get(2, 13, 2, 30),
-                                ..BaseNode::default()
+                            location: SourceLocation {
+                                start: "line: 1, column: 1",
+                                end: "line: 1, column: 8",
+                                source: "a = 5.0",
                             },
-                            operator: Operator::EqualOperator,
-                            left: Expression::Binary(Box::new(BinaryExpr {
-                                base: BaseNode {
-                                    location: loc.get(2, 13, 2, 22),
-                                    ..BaseNode::default()
+                        },
+                        id: Identifier {
+                            base: BaseNode {
+                                location: SourceLocation {
+                                    start: "line: 1, column: 1",
+                                    end: "line: 1, column: 2",
+                                    source: "a",
                                 },
-                                operator: Operator::MultiplicationOperator,
-                                left: Expression::Float(FloatLit {
-                                    base: BaseNode {
-                                        location: loc.get(2, 13, 2, 17),
-                                        ..BaseNode::default()
+                            },
+                            name: "a",
+                        },
+                        init: Float(
+                            FloatLit {
+                                base: BaseNode {
+                                    location: SourceLocation {
+                                        start: "line: 1, column: 5",
+                                        end: "line: 1, column: 8",
+                                        source: "5.0",
                                     },
-                                    value: 10.0
-                                }),
-                                right: Expression::Unary(Box::new(UnaryExpr {
-                                    base: BaseNode {
-                                        location: loc.get(2, 20, 2, 22),
-                                        ..BaseNode::default()
+                                },
+                                value: 5.0,
+                            },
+                        ),
+                    },
+                ),
+                Expr(
+                    ExprStmt {
+                        base: BaseNode {
+                            location: SourceLocation {
+                                start: "line: 2, column: 13",
+                                end: "line: 2, column: 42",
+                                source: "10.0 * -a == -0.5 or a == 6.0",
+                            },
+                        },
+                        expression: Logical(
+                            LogicalExpr {
+                                base: BaseNode {
+                                    location: SourceLocation {
+                                        start: "line: 2, column: 13",
+                                        end: "line: 2, column: 42",
+                                        source: "10.0 * -a == -0.5 or a == 6.0",
                                     },
-                                    operator: Operator::SubtractionOperator,
-                                    argument: Expression::Identifier(Identifier {
+                                },
+                                operator: OrOperator,
+                                left: Binary(
+                                    BinaryExpr {
                                         base: BaseNode {
-                                            location: loc.get(2, 21, 2, 22),
-                                            ..BaseNode::default()
+                                            location: SourceLocation {
+                                                start: "line: 2, column: 13",
+                                                end: "line: 2, column: 30",
+                                                source: "10.0 * -a == -0.5",
+                                            },
                                         },
-                                        name: "a".to_string()
-                                    })
-                                }))
-                            })),
-                            right: Expression::Unary(Box::new(UnaryExpr {
-                                base: BaseNode {
-                                    location: loc.get(2, 26, 2, 30),
-                                    ..BaseNode::default()
-                                },
-                                operator: Operator::SubtractionOperator,
-                                argument: Expression::Float(FloatLit {
-                                    base: BaseNode {
-                                        location: loc.get(2, 27, 2, 30),
-                                        ..BaseNode::default()
+                                        operator: EqualOperator,
+                                        left: Binary(
+                                            BinaryExpr {
+                                                base: BaseNode {
+                                                    location: SourceLocation {
+                                                        start: "line: 2, column: 13",
+                                                        end: "line: 2, column: 22",
+                                                        source: "10.0 * -a",
+                                                    },
+                                                },
+                                                operator: MultiplicationOperator,
+                                                left: Float(
+                                                    FloatLit {
+                                                        base: BaseNode {
+                                                            location: SourceLocation {
+                                                                start: "line: 2, column: 13",
+                                                                end: "line: 2, column: 17",
+                                                                source: "10.0",
+                                                            },
+                                                        },
+                                                        value: 10.0,
+                                                    },
+                                                ),
+                                                right: Unary(
+                                                    UnaryExpr {
+                                                        base: BaseNode {
+                                                            location: SourceLocation {
+                                                                start: "line: 2, column: 20",
+                                                                end: "line: 2, column: 22",
+                                                                source: "-a",
+                                                            },
+                                                        },
+                                                        operator: SubtractionOperator,
+                                                        argument: Identifier(
+                                                            Identifier {
+                                                                base: BaseNode {
+                                                                    location: SourceLocation {
+                                                                        start: "line: 2, column: 21",
+                                                                        end: "line: 2, column: 22",
+                                                                        source: "a",
+                                                                    },
+                                                                },
+                                                                name: "a",
+                                                            },
+                                                        ),
+                                                    },
+                                                ),
+                                            },
+                                        ),
+                                        right: Unary(
+                                            UnaryExpr {
+                                                base: BaseNode {
+                                                    location: SourceLocation {
+                                                        start: "line: 2, column: 26",
+                                                        end: "line: 2, column: 30",
+                                                        source: "-0.5",
+                                                    },
+                                                },
+                                                operator: SubtractionOperator,
+                                                argument: Float(
+                                                    FloatLit {
+                                                        base: BaseNode {
+                                                            location: SourceLocation {
+                                                                start: "line: 2, column: 27",
+                                                                end: "line: 2, column: 30",
+                                                                source: "0.5",
+                                                            },
+                                                        },
+                                                        value: 0.5,
+                                                    },
+                                                ),
+                                            },
+                                        ),
                                     },
-                                    value: 0.5
-                                })
-                            }))
-                        })),
-                        right: Expression::Binary(Box::new(BinaryExpr {
-                            base: BaseNode {
-                                location: loc.get(2, 34, 2, 42),
-                                ..BaseNode::default()
+                                ),
+                                right: Binary(
+                                    BinaryExpr {
+                                        base: BaseNode {
+                                            location: SourceLocation {
+                                                start: "line: 2, column: 34",
+                                                end: "line: 2, column: 42",
+                                                source: "a == 6.0",
+                                            },
+                                        },
+                                        operator: EqualOperator,
+                                        left: Identifier(
+                                            Identifier {
+                                                base: BaseNode {
+                                                    location: SourceLocation {
+                                                        start: "line: 2, column: 34",
+                                                        end: "line: 2, column: 35",
+                                                        source: "a",
+                                                    },
+                                                },
+                                                name: "a",
+                                            },
+                                        ),
+                                        right: Float(
+                                            FloatLit {
+                                                base: BaseNode {
+                                                    location: SourceLocation {
+                                                        start: "line: 2, column: 39",
+                                                        end: "line: 2, column: 42",
+                                                        source: "6.0",
+                                                    },
+                                                },
+                                                value: 6.0,
+                                            },
+                                        ),
+                                    },
+                                ),
                             },
-                            operator: Operator::EqualOperator,
-                            left: Expression::Identifier(Identifier {
-                                base: BaseNode {
-                                    location: loc.get(2, 34, 2, 35),
-                                    ..BaseNode::default()
-                                },
-                                name: "a".to_string()
-                            }),
-                            right: Expression::Float(FloatLit {
-                                base: BaseNode {
-                                    location: loc.get(2, 39, 2, 42),
-                                    ..BaseNode::default()
-                                },
-                                value: 6.0
-                            })
-                        }))
-                    }))
-                }))
+                        ),
+                    },
+                ),
             ],
-            eof: vec![],
-        },
-    )
+            eof: [],
+        }
+    "#]].assert_debug_eq(&parsed);
 }
 
 #[test]
 fn unary_expression_with_member_expression() {
     let mut p = Parser::new(r#"not m.b"#);
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(p.source);
-    assert_eq!(
-        parsed,
+    expect![[r#"
         File {
             base: BaseNode {
-                location: loc.get(1, 1, 1, 8),
-                ..BaseNode::default()
-            },
-            name: "".to_string(),
-            metadata: "parser-type=rust".to_string(),
-            package: None,
-            imports: vec![],
-            body: vec![Statement::Expr(Box::new(ExprStmt {
-                base: BaseNode {
-                    location: loc.get(1, 1, 1, 8),
-                    ..BaseNode::default()
+                location: SourceLocation {
+                    start: "line: 1, column: 1",
+                    end: "line: 1, column: 8",
+                    source: "not m.b",
                 },
-                expression: Expression::Unary(Box::new(UnaryExpr {
-                    base: BaseNode {
-                        location: loc.get(1, 1, 1, 8),
-                        ..BaseNode::default()
-                    },
-                    operator: Operator::NotOperator,
-                    argument: Expression::Member(Box::new(MemberExpr {
+            },
+            name: "",
+            metadata: "parser-type=rust",
+            package: None,
+            imports: [],
+            body: [
+                Expr(
+                    ExprStmt {
                         base: BaseNode {
-                            location: loc.get(1, 5, 1, 8),
-                            ..BaseNode::default()
+                            location: SourceLocation {
+                                start: "line: 1, column: 1",
+                                end: "line: 1, column: 8",
+                                source: "not m.b",
+                            },
                         },
-                        object: Expression::Identifier(Identifier {
-                            base: BaseNode {
-                                location: loc.get(1, 5, 1, 6),
-                                ..BaseNode::default()
+                        expression: Unary(
+                            UnaryExpr {
+                                base: BaseNode {
+                                    location: SourceLocation {
+                                        start: "line: 1, column: 1",
+                                        end: "line: 1, column: 8",
+                                        source: "not m.b",
+                                    },
+                                },
+                                operator: NotOperator,
+                                argument: Member(
+                                    MemberExpr {
+                                        base: BaseNode {
+                                            location: SourceLocation {
+                                                start: "line: 1, column: 5",
+                                                end: "line: 1, column: 8",
+                                                source: "m.b",
+                                            },
+                                        },
+                                        object: Identifier(
+                                            Identifier {
+                                                base: BaseNode {
+                                                    location: SourceLocation {
+                                                        start: "line: 1, column: 5",
+                                                        end: "line: 1, column: 6",
+                                                        source: "m",
+                                                    },
+                                                },
+                                                name: "m",
+                                            },
+                                        ),
+                                        lbrack: [],
+                                        property: Identifier(
+                                            Identifier {
+                                                base: BaseNode {
+                                                    location: SourceLocation {
+                                                        start: "line: 1, column: 7",
+                                                        end: "line: 1, column: 8",
+                                                        source: "b",
+                                                    },
+                                                },
+                                                name: "b",
+                                            },
+                                        ),
+                                        rbrack: [],
+                                    },
+                                ),
                             },
-                            name: "m".to_string()
-                        }),
-                        lbrack: vec![],
-                        property: PropertyKey::Identifier(Identifier {
-                            base: BaseNode {
-                                location: loc.get(1, 7, 1, 8),
-                                ..BaseNode::default()
-                            },
-                            name: "b".to_string()
-                        }),
-                        rbrack: vec![],
-                    }))
-                }))
-            }))],
-            eof: vec![],
-        },
-    )
+                        ),
+                    },
+                ),
+            ],
+            eof: [],
+        }
+    "#]].assert_debug_eq(&parsed);
 }
 
 #[test]
@@ -2355,135 +3626,215 @@ a = 5.0
 	or a == 6.0"#,
     );
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(p.source);
-    assert_eq!(
-        parsed,
+    expect![[r#"
         File {
             base: BaseNode {
-                location: loc.get(2, 1, 6, 13),
-                ..BaseNode::default()
+                location: SourceLocation {
+                    start: "line: 2, column: 1",
+                    end: "line: 6, column: 13",
+                    source: "a = 5.0\n// eval this\n10.0 * -a == -0.5\n\t// or this\n\tor a == 6.0",
+                },
             },
-            name: "".to_string(),
-            metadata: "parser-type=rust".to_string(),
+            name: "",
+            metadata: "parser-type=rust",
             package: None,
-            imports: vec![],
-            body: vec![
-                Statement::Variable(Box::new(VariableAssgn {
-                    base: BaseNode {
-                        location: loc.get(2, 1, 2, 8),
-                        ..BaseNode::default()
-                    },
-                    id: Identifier {
+            imports: [],
+            body: [
+                Variable(
+                    VariableAssgn {
                         base: BaseNode {
-                            location: loc.get(2, 1, 2, 2),
-                            comments: vec![ast::Comment {
-                                text: String::from("// define a\n"),
-                            }],
-                            ..BaseNode::default()
-                        },
-                        name: "a".to_string()
-                    },
-                    init: Expression::Float(FloatLit {
-                        base: BaseNode {
-                            location: loc.get(2, 5, 2, 8),
-                            ..BaseNode::default()
-                        },
-                        value: 5.0
-                    })
-                })),
-                Statement::Expr(Box::new(ExprStmt {
-                    base: BaseNode {
-                        location: loc.get(4, 1, 6, 13),
-                        ..BaseNode::default()
-                    },
-                    expression: Expression::Logical(Box::new(LogicalExpr {
-                        base: BaseNode {
-                            location: loc.get(4, 1, 6, 13),
-                            comments: vec![ast::Comment {
-                                text: String::from("// or this\n"),
-                            }],
-                            ..BaseNode::default()
-                        },
-                        operator: LogicalOperator::OrOperator,
-                        left: Expression::Binary(Box::new(BinaryExpr {
-                            base: BaseNode {
-                                location: loc.get(4, 1, 4, 18),
-                                ..BaseNode::default()
+                            location: SourceLocation {
+                                start: "line: 2, column: 1",
+                                end: "line: 2, column: 8",
+                                source: "a = 5.0",
                             },
-                            operator: Operator::EqualOperator,
-                            left: Expression::Binary(Box::new(BinaryExpr {
-                                base: BaseNode {
-                                    location: loc.get(4, 1, 4, 10),
-                                    ..BaseNode::default()
+                        },
+                        id: Identifier {
+                            base: BaseNode {
+                                location: SourceLocation {
+                                    start: "line: 2, column: 1",
+                                    end: "line: 2, column: 2",
+                                    source: "a",
                                 },
-                                operator: Operator::MultiplicationOperator,
-                                left: Expression::Float(FloatLit {
-                                    base: BaseNode {
-                                        location: loc.get(4, 1, 4, 5),
-                                        comments: vec![ast::Comment {
-                                            text: String::from("// eval this\n"),
-                                        }],
-                                        ..BaseNode::default()
+                                comments: [
+                                    Comment {
+                                        text: "// define a\n",
                                     },
-                                    value: 10.0
-                                }),
-                                right: Expression::Unary(Box::new(UnaryExpr {
-                                    base: BaseNode {
-                                        location: loc.get(4, 8, 4, 10),
-                                        ..BaseNode::default()
+                                ],
+                            },
+                            name: "a",
+                        },
+                        init: Float(
+                            FloatLit {
+                                base: BaseNode {
+                                    location: SourceLocation {
+                                        start: "line: 2, column: 5",
+                                        end: "line: 2, column: 8",
+                                        source: "5.0",
                                     },
-                                    operator: Operator::SubtractionOperator,
-                                    argument: Expression::Identifier(Identifier {
-                                        base: BaseNode {
-                                            location: loc.get(4, 9, 4, 10),
-                                            ..BaseNode::default()
+                                },
+                                value: 5.0,
+                            },
+                        ),
+                    },
+                ),
+                Expr(
+                    ExprStmt {
+                        base: BaseNode {
+                            location: SourceLocation {
+                                start: "line: 4, column: 1",
+                                end: "line: 6, column: 13",
+                                source: "10.0 * -a == -0.5\n\t// or this\n\tor a == 6.0",
+                            },
+                        },
+                        expression: Logical(
+                            LogicalExpr {
+                                base: BaseNode {
+                                    location: SourceLocation {
+                                        start: "line: 4, column: 1",
+                                        end: "line: 6, column: 13",
+                                        source: "10.0 * -a == -0.5\n\t// or this\n\tor a == 6.0",
+                                    },
+                                    comments: [
+                                        Comment {
+                                            text: "// or this\n",
                                         },
-                                        name: "a".to_string()
-                                    })
-                                }))
-                            })),
-                            right: Expression::Unary(Box::new(UnaryExpr {
-                                base: BaseNode {
-                                    location: loc.get(4, 14, 4, 18),
-                                    ..BaseNode::default()
+                                    ],
                                 },
-                                operator: Operator::SubtractionOperator,
-                                argument: Expression::Float(FloatLit {
-                                    base: BaseNode {
-                                        location: loc.get(4, 15, 4, 18),
-                                        ..BaseNode::default()
+                                operator: OrOperator,
+                                left: Binary(
+                                    BinaryExpr {
+                                        base: BaseNode {
+                                            location: SourceLocation {
+                                                start: "line: 4, column: 1",
+                                                end: "line: 4, column: 18",
+                                                source: "10.0 * -a == -0.5",
+                                            },
+                                        },
+                                        operator: EqualOperator,
+                                        left: Binary(
+                                            BinaryExpr {
+                                                base: BaseNode {
+                                                    location: SourceLocation {
+                                                        start: "line: 4, column: 1",
+                                                        end: "line: 4, column: 10",
+                                                        source: "10.0 * -a",
+                                                    },
+                                                },
+                                                operator: MultiplicationOperator,
+                                                left: Float(
+                                                    FloatLit {
+                                                        base: BaseNode {
+                                                            location: SourceLocation {
+                                                                start: "line: 4, column: 1",
+                                                                end: "line: 4, column: 5",
+                                                                source: "10.0",
+                                                            },
+                                                            comments: [
+                                                                Comment {
+                                                                    text: "// eval this\n",
+                                                                },
+                                                            ],
+                                                        },
+                                                        value: 10.0,
+                                                    },
+                                                ),
+                                                right: Unary(
+                                                    UnaryExpr {
+                                                        base: BaseNode {
+                                                            location: SourceLocation {
+                                                                start: "line: 4, column: 8",
+                                                                end: "line: 4, column: 10",
+                                                                source: "-a",
+                                                            },
+                                                        },
+                                                        operator: SubtractionOperator,
+                                                        argument: Identifier(
+                                                            Identifier {
+                                                                base: BaseNode {
+                                                                    location: SourceLocation {
+                                                                        start: "line: 4, column: 9",
+                                                                        end: "line: 4, column: 10",
+                                                                        source: "a",
+                                                                    },
+                                                                },
+                                                                name: "a",
+                                                            },
+                                                        ),
+                                                    },
+                                                ),
+                                            },
+                                        ),
+                                        right: Unary(
+                                            UnaryExpr {
+                                                base: BaseNode {
+                                                    location: SourceLocation {
+                                                        start: "line: 4, column: 14",
+                                                        end: "line: 4, column: 18",
+                                                        source: "-0.5",
+                                                    },
+                                                },
+                                                operator: SubtractionOperator,
+                                                argument: Float(
+                                                    FloatLit {
+                                                        base: BaseNode {
+                                                            location: SourceLocation {
+                                                                start: "line: 4, column: 15",
+                                                                end: "line: 4, column: 18",
+                                                                source: "0.5",
+                                                            },
+                                                        },
+                                                        value: 0.5,
+                                                    },
+                                                ),
+                                            },
+                                        ),
                                     },
-                                    value: 0.5
-                                })
-                            }))
-                        })),
-                        right: Expression::Binary(Box::new(BinaryExpr {
-                            base: BaseNode {
-                                location: loc.get(6, 5, 6, 13),
-                                ..BaseNode::default()
+                                ),
+                                right: Binary(
+                                    BinaryExpr {
+                                        base: BaseNode {
+                                            location: SourceLocation {
+                                                start: "line: 6, column: 5",
+                                                end: "line: 6, column: 13",
+                                                source: "a == 6.0",
+                                            },
+                                        },
+                                        operator: EqualOperator,
+                                        left: Identifier(
+                                            Identifier {
+                                                base: BaseNode {
+                                                    location: SourceLocation {
+                                                        start: "line: 6, column: 5",
+                                                        end: "line: 6, column: 6",
+                                                        source: "a",
+                                                    },
+                                                },
+                                                name: "a",
+                                            },
+                                        ),
+                                        right: Float(
+                                            FloatLit {
+                                                base: BaseNode {
+                                                    location: SourceLocation {
+                                                        start: "line: 6, column: 10",
+                                                        end: "line: 6, column: 13",
+                                                        source: "6.0",
+                                                    },
+                                                },
+                                                value: 6.0,
+                                            },
+                                        ),
+                                    },
+                                ),
                             },
-                            operator: Operator::EqualOperator,
-                            left: Expression::Identifier(Identifier {
-                                base: BaseNode {
-                                    location: loc.get(6, 5, 6, 6),
-                                    ..BaseNode::default()
-                                },
-                                name: "a".to_string()
-                            }),
-                            right: Expression::Float(FloatLit {
-                                base: BaseNode {
-                                    location: loc.get(6, 10, 6, 13),
-                                    ..BaseNode::default()
-                                },
-                                value: 6.0
-                            })
-                        }))
-                    }))
-                }))
+                        ),
+                    },
+                ),
             ],
-            eof: vec![],
-        },
-    )
+            eof: [],
+        }
+    "#]].assert_debug_eq(&parsed);
 }
 
 #[test]
@@ -2493,109 +3844,172 @@ fn mix_unary_logical_and_binary_expressions() {
             not (f() == 6.0 * x) or fail()"#,
     );
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(p.source);
-    assert_eq!(
-        parsed,
+    expect![[r#"
         File {
             base: BaseNode {
-                location: loc.get(2, 13, 2, 43),
-                ..BaseNode::default()
-            },
-            name: "".to_string(),
-            metadata: "parser-type=rust".to_string(),
-            package: None,
-            imports: vec![],
-            body: vec![Statement::Expr(Box::new(ExprStmt {
-                base: BaseNode {
-                    location: loc.get(2, 13, 2, 43),
-                    ..BaseNode::default()
+                location: SourceLocation {
+                    start: "line: 2, column: 13",
+                    end: "line: 2, column: 43",
+                    source: "not (f() == 6.0 * x) or fail()",
                 },
-                expression: Expression::Logical(Box::new(LogicalExpr {
-                    base: BaseNode {
-                        location: loc.get(2, 13, 2, 43),
-                        ..BaseNode::default()
-                    },
-                    operator: LogicalOperator::OrOperator,
-                    left: Expression::Unary(Box::new(UnaryExpr {
+            },
+            name: "",
+            metadata: "parser-type=rust",
+            package: None,
+            imports: [],
+            body: [
+                Expr(
+                    ExprStmt {
                         base: BaseNode {
-                            location: loc.get(2, 13, 2, 33),
-                            ..BaseNode::default()
-                        },
-                        operator: Operator::NotOperator,
-                        argument: Expression::Paren(Box::new(ParenExpr {
-                            base: BaseNode {
-                                location: loc.get(2, 17, 2, 33),
-                                ..BaseNode::default()
+                            location: SourceLocation {
+                                start: "line: 2, column: 13",
+                                end: "line: 2, column: 43",
+                                source: "not (f() == 6.0 * x) or fail()",
                             },
-                            lparen: vec![],
-                            expression: Expression::Binary(Box::new(BinaryExpr {
+                        },
+                        expression: Logical(
+                            LogicalExpr {
                                 base: BaseNode {
-                                    location: loc.get(2, 18, 2, 32),
-                                    ..BaseNode::default()
+                                    location: SourceLocation {
+                                        start: "line: 2, column: 13",
+                                        end: "line: 2, column: 43",
+                                        source: "not (f() == 6.0 * x) or fail()",
+                                    },
                                 },
-                                operator: Operator::EqualOperator,
-                                left: Expression::Call(Box::new(CallExpr {
-                                    base: BaseNode {
-                                        location: loc.get(2, 18, 2, 21),
-                                        ..BaseNode::default()
+                                operator: OrOperator,
+                                left: Unary(
+                                    UnaryExpr {
+                                        base: BaseNode {
+                                            location: SourceLocation {
+                                                start: "line: 2, column: 13",
+                                                end: "line: 2, column: 33",
+                                                source: "not (f() == 6.0 * x)",
+                                            },
+                                        },
+                                        operator: NotOperator,
+                                        argument: Paren(
+                                            ParenExpr {
+                                                base: BaseNode {
+                                                    location: SourceLocation {
+                                                        start: "line: 2, column: 17",
+                                                        end: "line: 2, column: 33",
+                                                        source: "(f() == 6.0 * x)",
+                                                    },
+                                                },
+                                                lparen: [],
+                                                expression: Binary(
+                                                    BinaryExpr {
+                                                        base: BaseNode {
+                                                            location: SourceLocation {
+                                                                start: "line: 2, column: 18",
+                                                                end: "line: 2, column: 32",
+                                                                source: "f() == 6.0 * x",
+                                                            },
+                                                        },
+                                                        operator: EqualOperator,
+                                                        left: Call(
+                                                            CallExpr {
+                                                                base: BaseNode {
+                                                                    location: SourceLocation {
+                                                                        start: "line: 2, column: 18",
+                                                                        end: "line: 2, column: 21",
+                                                                        source: "f()",
+                                                                    },
+                                                                },
+                                                                callee: Identifier(
+                                                                    Identifier {
+                                                                        base: BaseNode {
+                                                                            location: SourceLocation {
+                                                                                start: "line: 2, column: 18",
+                                                                                end: "line: 2, column: 19",
+                                                                                source: "f",
+                                                                            },
+                                                                        },
+                                                                        name: "f",
+                                                                    },
+                                                                ),
+                                                                lparen: [],
+                                                                arguments: [],
+                                                                rparen: [],
+                                                            },
+                                                        ),
+                                                        right: Binary(
+                                                            BinaryExpr {
+                                                                base: BaseNode {
+                                                                    location: SourceLocation {
+                                                                        start: "line: 2, column: 25",
+                                                                        end: "line: 2, column: 32",
+                                                                        source: "6.0 * x",
+                                                                    },
+                                                                },
+                                                                operator: MultiplicationOperator,
+                                                                left: Float(
+                                                                    FloatLit {
+                                                                        base: BaseNode {
+                                                                            location: SourceLocation {
+                                                                                start: "line: 2, column: 25",
+                                                                                end: "line: 2, column: 28",
+                                                                                source: "6.0",
+                                                                            },
+                                                                        },
+                                                                        value: 6.0,
+                                                                    },
+                                                                ),
+                                                                right: Identifier(
+                                                                    Identifier {
+                                                                        base: BaseNode {
+                                                                            location: SourceLocation {
+                                                                                start: "line: 2, column: 31",
+                                                                                end: "line: 2, column: 32",
+                                                                                source: "x",
+                                                                            },
+                                                                        },
+                                                                        name: "x",
+                                                                    },
+                                                                ),
+                                                            },
+                                                        ),
+                                                    },
+                                                ),
+                                                rparen: [],
+                                            },
+                                        ),
                                     },
-                                    lparen: vec![],
-                                    callee: Expression::Identifier(Identifier {
+                                ),
+                                right: Call(
+                                    CallExpr {
                                         base: BaseNode {
-                                            location: loc.get(2, 18, 2, 19),
-                                            ..BaseNode::default()
+                                            location: SourceLocation {
+                                                start: "line: 2, column: 37",
+                                                end: "line: 2, column: 43",
+                                                source: "fail()",
+                                            },
                                         },
-                                        name: "f".to_string()
-                                    }),
-                                    arguments: vec![],
-                                    rparen: vec![],
-                                })),
-                                right: Expression::Binary(Box::new(BinaryExpr {
-                                    base: BaseNode {
-                                        location: loc.get(2, 25, 2, 32),
-                                        ..BaseNode::default()
+                                        callee: Identifier(
+                                            Identifier {
+                                                base: BaseNode {
+                                                    location: SourceLocation {
+                                                        start: "line: 2, column: 37",
+                                                        end: "line: 2, column: 41",
+                                                        source: "fail",
+                                                    },
+                                                },
+                                                name: "fail",
+                                            },
+                                        ),
+                                        lparen: [],
+                                        arguments: [],
+                                        rparen: [],
                                     },
-                                    operator: Operator::MultiplicationOperator,
-                                    left: Expression::Float(FloatLit {
-                                        base: BaseNode {
-                                            location: loc.get(2, 25, 2, 28),
-                                            ..BaseNode::default()
-                                        },
-                                        value: 6.0
-                                    }),
-                                    right: Expression::Identifier(Identifier {
-                                        base: BaseNode {
-                                            location: loc.get(2, 31, 2, 32),
-                                            ..BaseNode::default()
-                                        },
-                                        name: "x".to_string()
-                                    })
-                                }))
-                            })),
-                            rparen: vec![],
-                        }))
-                    })),
-                    right: Expression::Call(Box::new(CallExpr {
-                        base: BaseNode {
-                            location: loc.get(2, 37, 2, 43),
-                            ..BaseNode::default()
-                        },
-                        lparen: vec![],
-                        callee: Expression::Identifier(Identifier {
-                            base: BaseNode {
-                                location: loc.get(2, 37, 2, 41),
-                                ..BaseNode::default()
+                                ),
                             },
-                            name: "fail".to_string()
-                        }),
-                        arguments: vec![],
-                        rparen: vec![],
-                    })),
-                }))
-            }))],
-            eof: vec![],
-        },
-    )
+                        ),
+                    },
+                ),
+            ],
+            eof: [],
+        }
+    "#]].assert_debug_eq(&parsed);
 }
 
 #[test]
@@ -2605,259 +4019,396 @@ fn mix_unary_logical_and_binary_expressions_with_extra_parens() {
             (not (f() == 6.0 * x) or fail())"#,
     );
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(p.source);
-    assert_eq!(
-        parsed,
+    expect![[r#"
         File {
             base: BaseNode {
-                location: loc.get(2, 13, 2, 45),
-                ..BaseNode::default()
-            },
-            name: "".to_string(),
-            metadata: "parser-type=rust".to_string(),
-            package: None,
-            imports: vec![],
-            body: vec![Statement::Expr(Box::new(ExprStmt {
-                base: BaseNode {
-                    location: loc.get(2, 13, 2, 45),
-                    ..BaseNode::default()
+                location: SourceLocation {
+                    start: "line: 2, column: 13",
+                    end: "line: 2, column: 45",
+                    source: "(not (f() == 6.0 * x) or fail())",
                 },
-                expression: Expression::Paren(Box::new(ParenExpr {
-                    base: BaseNode {
-                        location: loc.get(2, 13, 2, 45),
-                        ..BaseNode::default()
-                    },
-                    lparen: vec![],
-                    expression: Expression::Logical(Box::new(LogicalExpr {
+            },
+            name: "",
+            metadata: "parser-type=rust",
+            package: None,
+            imports: [],
+            body: [
+                Expr(
+                    ExprStmt {
                         base: BaseNode {
-                            location: loc.get(2, 14, 2, 44),
-                            ..BaseNode::default()
+                            location: SourceLocation {
+                                start: "line: 2, column: 13",
+                                end: "line: 2, column: 45",
+                                source: "(not (f() == 6.0 * x) or fail())",
+                            },
                         },
-                        operator: LogicalOperator::OrOperator,
-                        left: Expression::Unary(Box::new(UnaryExpr {
-                            base: BaseNode {
-                                location: loc.get(2, 14, 2, 34),
-                                ..BaseNode::default()
-                            },
-                            operator: Operator::NotOperator,
-                            argument: Expression::Paren(Box::new(ParenExpr {
+                        expression: Paren(
+                            ParenExpr {
                                 base: BaseNode {
-                                    location: loc.get(2, 18, 2, 34),
-                                    ..BaseNode::default()
-                                },
-                                lparen: vec![],
-                                expression: Expression::Binary(Box::new(BinaryExpr {
-                                    base: BaseNode {
-                                        location: loc.get(2, 19, 2, 33),
-                                        ..BaseNode::default()
+                                    location: SourceLocation {
+                                        start: "line: 2, column: 13",
+                                        end: "line: 2, column: 45",
+                                        source: "(not (f() == 6.0 * x) or fail())",
                                     },
-                                    operator: Operator::EqualOperator,
-                                    left: Expression::Call(Box::new(CallExpr {
-                                        base: BaseNode {
-                                            location: loc.get(2, 19, 2, 22),
-                                            ..BaseNode::default()
-                                        },
-                                        lparen: vec![],
-                                        callee: Expression::Identifier(Identifier {
-                                            base: BaseNode {
-                                                location: loc.get(2, 19, 2, 20),
-                                                ..BaseNode::default()
-                                            },
-                                            name: "f".to_string()
-                                        }),
-                                        arguments: vec![],
-                                        rparen: vec![],
-                                    })),
-                                    right: Expression::Binary(Box::new(BinaryExpr {
-                                        base: BaseNode {
-                                            location: loc.get(2, 26, 2, 33),
-                                            ..BaseNode::default()
-                                        },
-                                        operator: Operator::MultiplicationOperator,
-                                        left: Expression::Float(FloatLit {
-                                            base: BaseNode {
-                                                location: loc.get(2, 26, 2, 29),
-                                                ..BaseNode::default()
-                                            },
-                                            value: 6.0
-                                        }),
-                                        right: Expression::Identifier(Identifier {
-                                            base: BaseNode {
-                                                location: loc.get(2, 32, 2, 33),
-                                                ..BaseNode::default()
-                                            },
-                                            name: "x".to_string()
-                                        })
-                                    }))
-                                })),
-                                rparen: vec![],
-                            }))
-                        })),
-                        right: Expression::Call(Box::new(CallExpr {
-                            base: BaseNode {
-                                location: loc.get(2, 38, 2, 44),
-                                ..BaseNode::default()
-                            },
-                            lparen: vec![],
-                            callee: Expression::Identifier(Identifier {
-                                base: BaseNode {
-                                    location: loc.get(2, 38, 2, 42),
-                                    ..BaseNode::default()
                                 },
-                                name: "fail".to_string()
-                            }),
-                            arguments: vec![],
-                            rparen: vec![],
-                        })),
-                    })),
-                    rparen: vec![],
-                }))
-            }))],
-            eof: vec![],
-        },
-    )
+                                lparen: [],
+                                expression: Logical(
+                                    LogicalExpr {
+                                        base: BaseNode {
+                                            location: SourceLocation {
+                                                start: "line: 2, column: 14",
+                                                end: "line: 2, column: 44",
+                                                source: "not (f() == 6.0 * x) or fail()",
+                                            },
+                                        },
+                                        operator: OrOperator,
+                                        left: Unary(
+                                            UnaryExpr {
+                                                base: BaseNode {
+                                                    location: SourceLocation {
+                                                        start: "line: 2, column: 14",
+                                                        end: "line: 2, column: 34",
+                                                        source: "not (f() == 6.0 * x)",
+                                                    },
+                                                },
+                                                operator: NotOperator,
+                                                argument: Paren(
+                                                    ParenExpr {
+                                                        base: BaseNode {
+                                                            location: SourceLocation {
+                                                                start: "line: 2, column: 18",
+                                                                end: "line: 2, column: 34",
+                                                                source: "(f() == 6.0 * x)",
+                                                            },
+                                                        },
+                                                        lparen: [],
+                                                        expression: Binary(
+                                                            BinaryExpr {
+                                                                base: BaseNode {
+                                                                    location: SourceLocation {
+                                                                        start: "line: 2, column: 19",
+                                                                        end: "line: 2, column: 33",
+                                                                        source: "f() == 6.0 * x",
+                                                                    },
+                                                                },
+                                                                operator: EqualOperator,
+                                                                left: Call(
+                                                                    CallExpr {
+                                                                        base: BaseNode {
+                                                                            location: SourceLocation {
+                                                                                start: "line: 2, column: 19",
+                                                                                end: "line: 2, column: 22",
+                                                                                source: "f()",
+                                                                            },
+                                                                        },
+                                                                        callee: Identifier(
+                                                                            Identifier {
+                                                                                base: BaseNode {
+                                                                                    location: SourceLocation {
+                                                                                        start: "line: 2, column: 19",
+                                                                                        end: "line: 2, column: 20",
+                                                                                        source: "f",
+                                                                                    },
+                                                                                },
+                                                                                name: "f",
+                                                                            },
+                                                                        ),
+                                                                        lparen: [],
+                                                                        arguments: [],
+                                                                        rparen: [],
+                                                                    },
+                                                                ),
+                                                                right: Binary(
+                                                                    BinaryExpr {
+                                                                        base: BaseNode {
+                                                                            location: SourceLocation {
+                                                                                start: "line: 2, column: 26",
+                                                                                end: "line: 2, column: 33",
+                                                                                source: "6.0 * x",
+                                                                            },
+                                                                        },
+                                                                        operator: MultiplicationOperator,
+                                                                        left: Float(
+                                                                            FloatLit {
+                                                                                base: BaseNode {
+                                                                                    location: SourceLocation {
+                                                                                        start: "line: 2, column: 26",
+                                                                                        end: "line: 2, column: 29",
+                                                                                        source: "6.0",
+                                                                                    },
+                                                                                },
+                                                                                value: 6.0,
+                                                                            },
+                                                                        ),
+                                                                        right: Identifier(
+                                                                            Identifier {
+                                                                                base: BaseNode {
+                                                                                    location: SourceLocation {
+                                                                                        start: "line: 2, column: 32",
+                                                                                        end: "line: 2, column: 33",
+                                                                                        source: "x",
+                                                                                    },
+                                                                                },
+                                                                                name: "x",
+                                                                            },
+                                                                        ),
+                                                                    },
+                                                                ),
+                                                            },
+                                                        ),
+                                                        rparen: [],
+                                                    },
+                                                ),
+                                            },
+                                        ),
+                                        right: Call(
+                                            CallExpr {
+                                                base: BaseNode {
+                                                    location: SourceLocation {
+                                                        start: "line: 2, column: 38",
+                                                        end: "line: 2, column: 44",
+                                                        source: "fail()",
+                                                    },
+                                                },
+                                                callee: Identifier(
+                                                    Identifier {
+                                                        base: BaseNode {
+                                                            location: SourceLocation {
+                                                                start: "line: 2, column: 38",
+                                                                end: "line: 2, column: 42",
+                                                                source: "fail",
+                                                            },
+                                                        },
+                                                        name: "fail",
+                                                    },
+                                                ),
+                                                lparen: [],
+                                                arguments: [],
+                                                rparen: [],
+                                            },
+                                        ),
+                                    },
+                                ),
+                                rparen: [],
+                            },
+                        ),
+                    },
+                ),
+            ],
+            eof: [],
+        }
+    "#]].assert_debug_eq(&parsed);
 }
 
 #[test]
 fn modulo_op_ints() {
     let mut p = Parser::new(r#"3 % 8"#);
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(p.source);
-    assert_eq!(
-        parsed,
+    expect![[r#"
         File {
             base: BaseNode {
-                location: loc.get(1, 1, 1, 6),
-                ..BaseNode::default()
-            },
-            name: "".to_string(),
-            metadata: "parser-type=rust".to_string(),
-            package: None,
-            imports: vec![],
-            body: vec![Statement::Expr(Box::new(ExprStmt {
-                base: BaseNode {
-                    location: loc.get(1, 1, 1, 6),
-                    ..BaseNode::default()
+                location: SourceLocation {
+                    start: "line: 1, column: 1",
+                    end: "line: 1, column: 6",
+                    source: "3 % 8",
                 },
-                expression: Expression::Binary(Box::new(BinaryExpr {
-                    base: BaseNode {
-                        location: loc.get(1, 1, 1, 6),
-                        ..BaseNode::default()
+            },
+            name: "",
+            metadata: "parser-type=rust",
+            package: None,
+            imports: [],
+            body: [
+                Expr(
+                    ExprStmt {
+                        base: BaseNode {
+                            location: SourceLocation {
+                                start: "line: 1, column: 1",
+                                end: "line: 1, column: 6",
+                                source: "3 % 8",
+                            },
+                        },
+                        expression: Binary(
+                            BinaryExpr {
+                                base: BaseNode {
+                                    location: SourceLocation {
+                                        start: "line: 1, column: 1",
+                                        end: "line: 1, column: 6",
+                                        source: "3 % 8",
+                                    },
+                                },
+                                operator: ModuloOperator,
+                                left: Integer(
+                                    IntegerLit {
+                                        base: BaseNode {
+                                            location: SourceLocation {
+                                                start: "line: 1, column: 1",
+                                                end: "line: 1, column: 2",
+                                                source: "3",
+                                            },
+                                        },
+                                        value: 3,
+                                    },
+                                ),
+                                right: Integer(
+                                    IntegerLit {
+                                        base: BaseNode {
+                                            location: SourceLocation {
+                                                start: "line: 1, column: 5",
+                                                end: "line: 1, column: 6",
+                                                source: "8",
+                                            },
+                                        },
+                                        value: 8,
+                                    },
+                                ),
+                            },
+                        ),
                     },
-                    operator: Operator::ModuloOperator,
-                    left: Expression::Integer(IntegerLit {
-                        base: BaseNode {
-                            location: loc.get(1, 1, 1, 2),
-                            ..BaseNode::default()
-                        },
-                        value: 3
-                    }),
-                    right: Expression::Integer(IntegerLit {
-                        base: BaseNode {
-                            location: loc.get(1, 5, 1, 6),
-                            ..BaseNode::default()
-                        },
-                        value: 8
-                    })
-                }))
-            }))],
-            eof: vec![],
-        },
-    )
+                ),
+            ],
+            eof: [],
+        }
+    "#]].assert_debug_eq(&parsed);
 }
 
 #[test]
 fn modulo_op_floats() {
     let mut p = Parser::new(r#"8.3 % 3.1"#);
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(p.source);
-    assert_eq!(
-        parsed,
+    expect![[r#"
         File {
             base: BaseNode {
-                location: loc.get(1, 1, 1, 10),
-                ..BaseNode::default()
-            },
-            name: "".to_string(),
-            metadata: "parser-type=rust".to_string(),
-            package: None,
-            imports: vec![],
-            body: vec![Statement::Expr(Box::new(ExprStmt {
-                base: BaseNode {
-                    location: loc.get(1, 1, 1, 10),
-                    ..BaseNode::default()
+                location: SourceLocation {
+                    start: "line: 1, column: 1",
+                    end: "line: 1, column: 10",
+                    source: "8.3 % 3.1",
                 },
-                expression: Expression::Binary(Box::new(BinaryExpr {
-                    base: BaseNode {
-                        location: loc.get(1, 1, 1, 10),
-                        ..BaseNode::default()
+            },
+            name: "",
+            metadata: "parser-type=rust",
+            package: None,
+            imports: [],
+            body: [
+                Expr(
+                    ExprStmt {
+                        base: BaseNode {
+                            location: SourceLocation {
+                                start: "line: 1, column: 1",
+                                end: "line: 1, column: 10",
+                                source: "8.3 % 3.1",
+                            },
+                        },
+                        expression: Binary(
+                            BinaryExpr {
+                                base: BaseNode {
+                                    location: SourceLocation {
+                                        start: "line: 1, column: 1",
+                                        end: "line: 1, column: 10",
+                                        source: "8.3 % 3.1",
+                                    },
+                                },
+                                operator: ModuloOperator,
+                                left: Float(
+                                    FloatLit {
+                                        base: BaseNode {
+                                            location: SourceLocation {
+                                                start: "line: 1, column: 1",
+                                                end: "line: 1, column: 4",
+                                                source: "8.3",
+                                            },
+                                        },
+                                        value: 8.3,
+                                    },
+                                ),
+                                right: Float(
+                                    FloatLit {
+                                        base: BaseNode {
+                                            location: SourceLocation {
+                                                start: "line: 1, column: 7",
+                                                end: "line: 1, column: 10",
+                                                source: "3.1",
+                                            },
+                                        },
+                                        value: 3.1,
+                                    },
+                                ),
+                            },
+                        ),
                     },
-                    operator: Operator::ModuloOperator,
-                    left: Expression::Float(FloatLit {
-                        base: BaseNode {
-                            location: loc.get(1, 1, 1, 4),
-                            ..BaseNode::default()
-                        },
-                        value: 8.3
-                    }),
-                    right: Expression::Float(FloatLit {
-                        base: BaseNode {
-                            location: loc.get(1, 7, 1, 10),
-                            ..BaseNode::default()
-                        },
-                        value: 3.1
-                    })
-                }))
-            }))],
-            eof: vec![],
-        },
-    )
+                ),
+            ],
+            eof: [],
+        }
+    "#]].assert_debug_eq(&parsed);
 }
 
 #[test]
 fn power_op() {
     let mut p = Parser::new(r#"2 ^ 4"#);
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(p.source);
-    assert_eq!(
-        parsed,
+    expect![[r#"
         File {
             base: BaseNode {
-                location: loc.get(1, 1, 1, 6),
-                ..BaseNode::default()
-            },
-            name: "".to_string(),
-            metadata: "parser-type=rust".to_string(),
-            package: None,
-            imports: vec![],
-            body: vec![Statement::Expr(Box::new(ExprStmt {
-                base: BaseNode {
-                    location: loc.get(1, 1, 1, 6),
-                    ..BaseNode::default()
+                location: SourceLocation {
+                    start: "line: 1, column: 1",
+                    end: "line: 1, column: 6",
+                    source: "2 ^ 4",
                 },
-                expression: Expression::Binary(Box::new(BinaryExpr {
-                    base: BaseNode {
-                        location: loc.get(1, 1, 1, 6),
-                        ..BaseNode::default()
+            },
+            name: "",
+            metadata: "parser-type=rust",
+            package: None,
+            imports: [],
+            body: [
+                Expr(
+                    ExprStmt {
+                        base: BaseNode {
+                            location: SourceLocation {
+                                start: "line: 1, column: 1",
+                                end: "line: 1, column: 6",
+                                source: "2 ^ 4",
+                            },
+                        },
+                        expression: Binary(
+                            BinaryExpr {
+                                base: BaseNode {
+                                    location: SourceLocation {
+                                        start: "line: 1, column: 1",
+                                        end: "line: 1, column: 6",
+                                        source: "2 ^ 4",
+                                    },
+                                },
+                                operator: PowerOperator,
+                                left: Integer(
+                                    IntegerLit {
+                                        base: BaseNode {
+                                            location: SourceLocation {
+                                                start: "line: 1, column: 1",
+                                                end: "line: 1, column: 2",
+                                                source: "2",
+                                            },
+                                        },
+                                        value: 2,
+                                    },
+                                ),
+                                right: Integer(
+                                    IntegerLit {
+                                        base: BaseNode {
+                                            location: SourceLocation {
+                                                start: "line: 1, column: 5",
+                                                end: "line: 1, column: 6",
+                                                source: "4",
+                                            },
+                                        },
+                                        value: 4,
+                                    },
+                                ),
+                            },
+                        ),
                     },
-                    operator: Operator::PowerOperator,
-                    left: Expression::Integer(IntegerLit {
-                        base: BaseNode {
-                            location: loc.get(1, 1, 1, 2),
-                            ..BaseNode::default()
-                        },
-                        value: 2
-                    }),
-                    right: Expression::Integer(IntegerLit {
-                        base: BaseNode {
-                            location: loc.get(1, 5, 1, 6),
-                            ..BaseNode::default()
-                        },
-                        value: 4
-                    })
-                }))
-            }))],
-            eof: vec![],
-        },
-    )
+                ),
+            ],
+            eof: [],
+        }
+    "#]].assert_debug_eq(&parsed);
 }
