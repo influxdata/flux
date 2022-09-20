@@ -11,6 +11,7 @@ mod from;
 mod literals;
 mod objects;
 mod operator_precedence;
+mod property_list;
 mod strings;
 mod types;
 
