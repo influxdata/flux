@@ -901,6 +901,16 @@ fn int_literal_zero_prefix() {
     )
 }
 
+fn test_error_msg(src: &str, expect: expect_test::Expect) {
+    let mut p = Parser::new(src);
+    let parsed = p.parse_file("".to_string());
+    expect.assert_eq(
+        &ast::check::check(ast::walk::Node::File(&parsed))
+            .unwrap_err()
+            .to_string(),
+    );
+}
+
 #[test]
 fn parse_invalid_call() {
     let mut p = Parser::new("json.(v: r._value)");
@@ -916,35 +926,38 @@ fn parse_invalid_call() {
 
 #[test]
 fn issue_4231() {
-    let mut p = Parser::new(
+    test_error_msg(
         r#"
-map(fn: (r) => ({ r with _value: if true and false then 1}) )
-"#,
-    );
-    let parsed = p.parse_file("".to_string());
-    expect_test::expect![[r#"error @2:34-2:58: expected ELSE, got RBRACE (}) at 2:58"#]].assert_eq(
-        &ast::check::check(ast::walk::Node::File(&parsed))
-            .unwrap_err()
-            .to_string(),
+            map(fn: (r) => ({ r with _value: if true and false then 1}) )
+        "#,
+        expect_test::expect![[r#"error @2:46-2:70: expected ELSE, got RBRACE (}) at 2:70"#]],
     );
 }
 
 #[test]
 fn missing_property() {
-    let mut p = Parser::new(
+    test_error_msg(
         r#"
-x.
+            x.
 
-builtin y : int
-"#,
+            builtin y : int
+        "#,
+        expect_test::expect![[
+            r#"error @4:13-4:13: expected IDENT, got BUILTIN (builtin) at 4:13"#
+        ]],
     );
-    let parsed = p.parse_file("".to_string());
-    expect_test::expect![[r#"error @4:1-4:1: expected IDENT, got BUILTIN (builtin) at 4:1"#]]
-        .assert_eq(
-            &ast::check::check(ast::walk::Node::File(&parsed))
-                .unwrap_err()
-                .to_string(),
-        );
+}
+
+#[test]
+fn missing_identifier_in_option() {
+    test_error_msg(
+        r#"
+            option =
+
+            buckets()
+        "#,
+        expect_test::expect![[r#"error @2:20-2:20: expected IDENT, got ASSIGN (=) at 2:20"#]],
+    );
 }
 
 #[test]
