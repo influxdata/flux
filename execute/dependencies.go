@@ -35,7 +35,7 @@ type ExecutionDependencies struct {
 
 	// Metadata is passed up from any invocations of execution up to the parent
 	// execution, and out through the statistics.
-	Metadata metadata.Metadata
+	Metadata metadata.SyncMetadata
 
 	ExecutionOptions *ExecutionOptions
 }
@@ -86,7 +86,7 @@ func NewExecutionDependencies(allocator memory.Allocator, now *time.Time, logger
 		Allocator:        allocator,
 		Now:              now,
 		Logger:           logger,
-		Metadata:         make(metadata.Metadata),
+		Metadata:         metadata.NewSyncMetadata(),
 		ExecutionOptions: &ExecutionOptions{},
 	}
 }
