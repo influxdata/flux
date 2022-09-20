@@ -338,7 +338,8 @@ fn illegal_statement_token() {
             ],
             eof: [],
         }
-    "#]].assert_debug_eq(&parsed);
+    "#]]
+    .assert_debug_eq(&parsed);
 }
 
 // TODO(affo): that error is injected by ast.Check().
@@ -423,7 +424,8 @@ fn multiple_idents_in_parens() {
             ],
             eof: [],
         }
-    "#]].assert_debug_eq(&parsed);
+    "#]]
+    .assert_debug_eq(&parsed);
 }
 
 // TODO(affo): that error is injected by ast.Check().
@@ -510,7 +512,8 @@ fn missing_left_hand_side() {
             ],
             eof: [],
         }
-    "#]].assert_debug_eq(&parsed);
+    "#]]
+    .assert_debug_eq(&parsed);
 }
 
 // TODO(affo): that error is injected by ast.Check().
@@ -661,7 +664,8 @@ fn illegal_expression() {
             ],
             eof: [],
         }
-    "#]].assert_debug_eq(&parsed);
+    "#]]
+    .assert_debug_eq(&parsed);
 }
 
 // NOTE(affo): this is slightly different from Go. We have a BadExpr in the body.
@@ -892,7 +896,8 @@ fn index_with_unclosed_bracket() {
             ],
             eof: [],
         }
-    "#]].assert_debug_eq(&parsed);
+    "#]]
+    .assert_debug_eq(&parsed);
 }
 
 #[test]
@@ -981,7 +986,8 @@ fn index_with_unbalanced_parenthesis() {
             ],
             eof: [],
         }
-    "#]].assert_debug_eq(&parsed);
+    "#]]
+    .assert_debug_eq(&parsed);
 }
 
 #[test]
@@ -1056,7 +1062,8 @@ fn index_with_unexpected_rparen() {
             ],
             eof: [],
         }
-    "#]].assert_debug_eq(&parsed);
+    "#]]
+    .assert_debug_eq(&parsed);
 }
 
 #[test]

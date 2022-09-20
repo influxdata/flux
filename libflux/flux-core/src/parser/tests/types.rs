@@ -185,7 +185,9 @@ fn test_parse_type_expression() {
 
 #[test]
 fn test_parse_type_expression_tvar() {
-    test_type_expression(r#"A"#, expect![[r#"
+    test_type_expression(
+        r#"A"#,
+        expect![[r#"
         TypeExpression {
             base: BaseNode {
                 location: SourceLocation {
@@ -217,12 +219,15 @@ fn test_parse_type_expression_tvar() {
             ),
             constraints: [],
         }
-    "#]]);
+    "#]],
+    );
 }
 
 #[test]
 fn test_parse_type_expression_int() {
-    test_type_expression(r#"int"#, expect![[r#"
+    test_type_expression(
+        r#"int"#,
+        expect![[r#"
         TypeExpression {
             base: BaseNode {
                 location: SourceLocation {
@@ -254,12 +259,15 @@ fn test_parse_type_expression_int() {
             ),
             constraints: [],
         }
-    "#]]);
+    "#]],
+    );
 }
 
 #[test]
 fn test_parse_type_expression_uint() {
-    test_type_expression(r#"uint"#, expect![[r#"
+    test_type_expression(
+        r#"uint"#,
+        expect![[r#"
         TypeExpression {
             base: BaseNode {
                 location: SourceLocation {
@@ -291,12 +299,15 @@ fn test_parse_type_expression_uint() {
             ),
             constraints: [],
         }
-    "#]]);
+    "#]],
+    );
 }
 
 #[test]
 fn test_parse_type_expression_float() {
-    test_type_expression(r#"float"#, expect![[r#"
+    test_type_expression(
+        r#"float"#,
+        expect![[r#"
         TypeExpression {
             base: BaseNode {
                 location: SourceLocation {
@@ -328,12 +339,15 @@ fn test_parse_type_expression_float() {
             ),
             constraints: [],
         }
-    "#]]);
+    "#]],
+    );
 }
 
 #[test]
 fn test_parse_type_expression_string() {
-    test_type_expression(r#"string"#, expect![[r#"
+    test_type_expression(
+        r#"string"#,
+        expect![[r#"
         TypeExpression {
             base: BaseNode {
                 location: SourceLocation {
@@ -365,12 +379,15 @@ fn test_parse_type_expression_string() {
             ),
             constraints: [],
         }
-    "#]]);
+    "#]],
+    );
 }
 
 #[test]
 fn test_parse_type_expression_bool() {
-    test_type_expression(r#"bool"#, expect![[r#"
+    test_type_expression(
+        r#"bool"#,
+        expect![[r#"
         TypeExpression {
             base: BaseNode {
                 location: SourceLocation {
@@ -402,12 +419,15 @@ fn test_parse_type_expression_bool() {
             ),
             constraints: [],
         }
-    "#]]);
+    "#]],
+    );
 }
 
 #[test]
 fn test_parse_type_expression_time() {
-    test_type_expression(r#"time"#, expect![[r#"
+    test_type_expression(
+        r#"time"#,
+        expect![[r#"
         TypeExpression {
             base: BaseNode {
                 location: SourceLocation {
@@ -439,12 +459,15 @@ fn test_parse_type_expression_time() {
             ),
             constraints: [],
         }
-    "#]]);
+    "#]],
+    );
 }
 
 #[test]
 fn test_parse_type_expression_duration() {
-    test_type_expression(r#"duration"#, expect![[r#"
+    test_type_expression(
+        r#"duration"#,
+        expect![[r#"
         TypeExpression {
             base: BaseNode {
                 location: SourceLocation {
@@ -476,12 +499,15 @@ fn test_parse_type_expression_duration() {
             ),
             constraints: [],
         }
-    "#]]);
+    "#]],
+    );
 }
 
 #[test]
 fn test_parse_type_expression_bytes() {
-    test_type_expression(r#"bytes"#, expect![[r#"
+    test_type_expression(
+        r#"bytes"#,
+        expect![[r#"
         TypeExpression {
             base: BaseNode {
                 location: SourceLocation {
@@ -513,12 +539,15 @@ fn test_parse_type_expression_bytes() {
             ),
             constraints: [],
         }
-    "#]]);
+    "#]],
+    );
 }
 
 #[test]
 fn test_parse_type_expression_regexp() {
-    test_type_expression(r#"regexp"#, expect![[r#"
+    test_type_expression(
+        r#"regexp"#,
+        expect![[r#"
         TypeExpression {
             base: BaseNode {
                 location: SourceLocation {
@@ -550,12 +579,15 @@ fn test_parse_type_expression_regexp() {
             ),
             constraints: [],
         }
-    "#]]);
+    "#]],
+    );
 }
 
 #[test]
 fn test_parse_type_expression_array_int() {
-    test_type_expression(r#"[int]"#, expect![[r#"
+    test_type_expression(
+        r#"[int]"#,
+        expect![[r#"
         TypeExpression {
             base: BaseNode {
                 location: SourceLocation {
@@ -598,12 +630,15 @@ fn test_parse_type_expression_array_int() {
             ),
             constraints: [],
         }
-    "#]]);
+    "#]],
+    );
 }
 
 #[test]
 fn test_parse_type_expression_array_string() {
-    test_type_expression(r#"[string]"#, expect![[r#"
+    test_type_expression(
+        r#"[string]"#,
+        expect![[r#"
         TypeExpression {
             base: BaseNode {
                 location: SourceLocation {
@@ -646,12 +681,15 @@ fn test_parse_type_expression_array_string() {
             ),
             constraints: [],
         }
-    "#]]);
+    "#]],
+    );
 }
 
 #[test]
 fn test_parse_type_expression_dict() {
-    test_type_expression(r#"[string:int]"#, expect![[r#"
+    test_type_expression(
+        r#"[string:int]"#,
+        expect![[r#"
         TypeExpression {
             base: BaseNode {
                 location: SourceLocation {
@@ -715,7 +753,8 @@ fn test_parse_type_expression_dict() {
             ),
             constraints: [],
         }
-    "#]]);
+    "#]],
+    );
 }
 
 #[test]
@@ -821,7 +860,8 @@ fn test_parse_record_type_only_properties() {
                 ],
             },
         )
-    "#]].assert_debug_eq(&parsed);
+    "#]]
+    .assert_debug_eq(&parsed);
 }
 
 #[test]
@@ -992,7 +1032,8 @@ fn test_parse_record_type_trailing_comma() {
                 ],
             },
         )
-    "#]].assert_debug_eq(&parsed);
+    "#]]
+    .assert_debug_eq(&parsed);
 }
 
 #[test]
@@ -1016,7 +1057,8 @@ fn test_parse_record_type_invalid() {
                 properties: [],
             },
         )
-    "#]].assert_debug_eq(&parsed);
+    "#]]
+    .assert_debug_eq(&parsed);
 }
 
 #[test]
@@ -1057,7 +1099,8 @@ fn test_parse_constraint_one_ident() {
                 ],
             },
         ]
-    "#]].assert_debug_eq(&parsed);
+    "#]]
+    .assert_debug_eq(&parsed);
 }
 #[test]
 fn test_parse_record_type_blank() {
@@ -1077,12 +1120,15 @@ fn test_parse_record_type_blank() {
                 properties: [],
             },
         )
-    "#]].assert_debug_eq(&parsed);
+    "#]]
+    .assert_debug_eq(&parsed);
 }
 
 #[test]
 fn test_parse_type_expression_function_with_no_params() {
-    test_type_expression(r#"() => int"#, expect![[r#"
+    test_type_expression(
+        r#"() => int"#,
+        expect![[r#"
         TypeExpression {
             base: BaseNode {
                 location: SourceLocation {
@@ -1126,12 +1172,15 @@ fn test_parse_type_expression_function_with_no_params() {
             ),
             constraints: [],
         }
-    "#]]);
+    "#]],
+    );
 }
 
 #[test]
 fn test_parse_function_type_trailing_comma() {
-    test_type_expression(r#"(a:int,) => int"#, expect![[r#"
+    test_type_expression(
+        r#"(a:int,) => int"#,
+        expect![[r#"
         TypeExpression {
             base: BaseNode {
                 location: SourceLocation {
@@ -1216,12 +1265,15 @@ fn test_parse_function_type_trailing_comma() {
             ),
             constraints: [],
         }
-    "#]]);
+    "#]],
+    );
 }
 
 #[test]
 fn test_parse_type_expression_function_with_params() {
-    test_type_expression(r#"(A: int, B: uint) => int"#, expect![[r#"
+    test_type_expression(
+        r#"(A: int, B: uint) => int"#,
+        expect![[r#"
         TypeExpression {
             base: BaseNode {
                 location: SourceLocation {
@@ -1346,13 +1398,16 @@ fn test_parse_type_expression_function_with_params() {
             ),
             constraints: [],
         }
-    "#]]);
+    "#]],
+    );
 }
 
 // optional parameters like (.., ?n: ..) -> ..
 #[test]
 fn test_parse_type_expression_function_optional_params() {
-    test_type_expression(r#"(?A: int) => int"#, expect![[r#"
+    test_type_expression(
+        r#"(?A: int) => int"#,
+        expect![[r#"
         TypeExpression {
             base: BaseNode {
                 location: SourceLocation {
@@ -1438,12 +1493,15 @@ fn test_parse_type_expression_function_optional_params() {
             ),
             constraints: [],
         }
-    "#]]);
+    "#]],
+    );
 }
 
 #[test]
 fn test_parse_type_expression_function_named_params() {
-    test_type_expression(r#"(<-A: int) => int"#, expect![[r#"
+    test_type_expression(
+        r#"(<-A: int) => int"#,
+        expect![[r#"
         TypeExpression {
             base: BaseNode {
                 location: SourceLocation {
@@ -1530,12 +1588,15 @@ fn test_parse_type_expression_function_named_params() {
             ),
             constraints: [],
         }
-    "#]]);
+    "#]],
+    );
 }
 
 #[test]
 fn test_parse_type_expression_function_unnamed_params() {
-    test_type_expression(r#"(<- : int) => int"#, expect![[r#"
+    test_type_expression(
+        r#"(<- : int) => int"#,
+        expect![[r#"
         TypeExpression {
             base: BaseNode {
                 location: SourceLocation {
@@ -1611,7 +1672,8 @@ fn test_parse_type_expression_function_unnamed_params() {
             ),
             constraints: [],
         }
-    "#]]);
+    "#]],
+    );
 }
 
 #[test]
@@ -1662,7 +1724,8 @@ fn test_parse_constraint_two_ident() {
                 ],
             },
         ]
-    "#]].assert_debug_eq(&parsed);
+    "#]]
+    .assert_debug_eq(&parsed);
 }
 
 #[test]
@@ -1734,7 +1797,8 @@ fn test_parse_constraint_two_con() {
                 ],
             },
         ]
-    "#]].assert_debug_eq(&parsed);
+    "#]]
+    .assert_debug_eq(&parsed);
 }
 
 #[test]
@@ -1852,7 +1916,8 @@ fn test_parse_record_type_tvar_properties() {
                 ],
             },
         )
-    "#]].assert_debug_eq(&parsed);
+    "#]]
+    .assert_debug_eq(&parsed);
 }
 
 #[test]

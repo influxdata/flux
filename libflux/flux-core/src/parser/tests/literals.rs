@@ -44,7 +44,8 @@ fn regex_literal() {
             ],
             eof: [],
         }
-    "#]].assert_debug_eq(&parsed);
+    "#]]
+    .assert_debug_eq(&parsed);
 }
 
 #[test]
@@ -91,7 +92,8 @@ fn regex_literal_with_escape_sequence() {
             ],
             eof: [],
         }
-    "#]].assert_debug_eq(&parsed);
+    "#]]
+    .assert_debug_eq(&parsed);
 }
 
 #[test]
@@ -184,7 +186,8 @@ fn regex_literal_empty_pattern() {
             ],
             eof: [],
         }
-    "#]].assert_debug_eq(&parsed);
+    "#]]
+    .assert_debug_eq(&parsed);
 }
 
 #[test]
@@ -332,7 +335,8 @@ fn duration_literal_all_units() {
             ],
             eof: [],
         }
-    "#]].assert_debug_eq(&parsed);
+    "#]]
+    .assert_debug_eq(&parsed);
 }
 
 #[test]
@@ -430,7 +434,8 @@ fn duration_literal_leading_zero() {
             ],
             eof: [],
         }
-    "#]].assert_debug_eq(&parsed);
+    "#]]
+    .assert_debug_eq(&parsed);
 }
 
 #[test]
@@ -492,7 +497,8 @@ fn duration_literal_months() {
             ],
             eof: [],
         }
-    "#]].assert_debug_eq(&parsed);
+    "#]]
+    .assert_debug_eq(&parsed);
 }
 
 #[test]
@@ -554,7 +560,8 @@ fn duration_literal_milliseconds() {
             ],
             eof: [],
         }
-    "#]].assert_debug_eq(&parsed);
+    "#]]
+    .assert_debug_eq(&parsed);
 }
 
 #[test]
@@ -624,7 +631,8 @@ fn duration_literal_months_minutes_milliseconds() {
             ],
             eof: [],
         }
-    "#]].assert_debug_eq(&parsed);
+    "#]]
+    .assert_debug_eq(&parsed);
 }
 
 #[test]
@@ -681,7 +689,8 @@ fn date_literal_in_the_default_location() {
             ],
             eof: [],
         }
-    "#]].assert_debug_eq(&parsed);
+    "#]]
+    .assert_debug_eq(&parsed);
 }
 
 #[test]
@@ -854,7 +863,8 @@ fn date_time_literal_no_offset_error() {
             ],
             eof: [],
         }
-    "#]].assert_debug_eq(&parsed);
+    "#]]
+    .assert_debug_eq(&parsed);
 }
 
 #[test]
@@ -911,7 +921,8 @@ fn date_time_literal() {
             ],
             eof: [],
         }
-    "#]].assert_debug_eq(&parsed);
+    "#]]
+    .assert_debug_eq(&parsed);
 }
 
 #[test]
@@ -968,7 +979,8 @@ fn date_time_literal_with_fractional_seconds() {
             ],
             eof: [],
         }
-    "#]].assert_debug_eq(&parsed);
+    "#]]
+    .assert_debug_eq(&parsed);
 }
 
 #[test]

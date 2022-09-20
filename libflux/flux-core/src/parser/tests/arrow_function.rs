@@ -504,7 +504,8 @@ fn arrow_function() {
             ],
             eof: [],
         }
-    "#]].assert_debug_eq(&parsed);
+    "#]]
+    .assert_debug_eq(&parsed);
 }
 
 #[test]
@@ -664,7 +665,8 @@ fn arrow_function_with_default_arg() {
             ],
             eof: [],
         }
-    "#]].assert_debug_eq(&parsed);
+    "#]]
+    .assert_debug_eq(&parsed);
 }
 
 #[test]
@@ -1092,7 +1094,8 @@ fn arrow_function_as_single_expression() {
             ],
             eof: [],
         }
-    "#]].assert_debug_eq(&parsed);
+    "#]]
+    .assert_debug_eq(&parsed);
 }
 
 #[test]

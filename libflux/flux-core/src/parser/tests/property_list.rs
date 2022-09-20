@@ -159,7 +159,8 @@ fn property_list_missing_property() {
             ],
             eof: [],
         }
-    "#]].assert_debug_eq(&parsed);
+    "#]]
+    .assert_debug_eq(&parsed);
 }
 
 #[test]
@@ -260,7 +261,8 @@ fn property_list_missing_key() {
             ],
             eof: [],
         }
-    "#]].assert_debug_eq(&parsed);
+    "#]]
+    .assert_debug_eq(&parsed);
 }
 
 #[test]
@@ -348,7 +350,8 @@ fn property_list_missing_value() {
             ],
             eof: [],
         }
-    "#]].assert_debug_eq(&parsed);
+    "#]]
+    .assert_debug_eq(&parsed);
 }
 
 // TODO(affo): that error is injected by ast.Check().
@@ -612,7 +615,8 @@ fn property_list_trailing_comma() {
             ],
             eof: [],
         }
-    "#]].assert_debug_eq(&parsed);
+    "#]]
+    .assert_debug_eq(&parsed);
 }
 
 #[test]
@@ -774,5 +778,6 @@ fn property_list_bad_property() {
             ],
             eof: [],
         }
-    "#]].assert_debug_eq(&parsed);
+    "#]]
+    .assert_debug_eq(&parsed);
 }
