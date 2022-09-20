@@ -101,7 +101,7 @@ fn main() -> Result<()> {
             imports,
             new_prelude,
             new_imports,
-            new_config: new_config.clone(),
+            new_config,
             report_already_failing_scripts: app.report_already_failing_scripts,
         })
     };
@@ -237,7 +237,7 @@ impl Analysis for FeatureDiff {
         };
 
         let current_result = match std::panic::catch_unwind(|| {
-            analyzer().analyze_source("".into(), "".into(), &source)
+            analyzer().analyze_source("".into(), "".into(), source)
         }) {
             Ok(x) => x,
             Err(_) => panic!("Panic at source {}: {}", i, source),
@@ -251,7 +251,7 @@ impl Analysis for FeatureDiff {
             )
         };
         let new_result = match std::panic::catch_unwind(|| {
-            new_analyzer().analyze_source("".into(), "".into(), &source)
+            new_analyzer().analyze_source("".into(), "".into(), source)
         }) {
             Ok(x) => x,
             Err(_) => panic!("Panic at source {}: {}", i, source),
@@ -265,7 +265,7 @@ impl Analysis for FeatureDiff {
 
                 eprintln!(
                     "Missing errors when the features are enabled: {}",
-                    err.error.pretty(&source)
+                    err.error.pretty(source)
                 );
                 eprintln!("-------------------------------");
             }
@@ -275,14 +275,14 @@ impl Analysis for FeatureDiff {
 
                 eprintln!(
                     "New errors when the features are enabled: {}",
-                    err.error.pretty(&source)
+                    err.error.pretty(source)
                 );
                 eprintln!("-------------------------------");
             }
             (Err(current_err), Err(new_err)) => {
                 if self.report_already_failing_scripts {
-                    let current_err = current_err.error.pretty(&source);
-                    let new_err = new_err.error.pretty(&source);
+                    let current_err = current_err.error.pretty(source);
+                    let new_err = new_err.error.pretty(source);
                     if current_err != new_err {
                         eprintln!("{}", source);
 
