@@ -170,7 +170,7 @@ filter = array.filter
 // ```
 //
 // ## Metadata
-// introduced: NEXT
+// introduced: 0.184.0
 // tags: type-conversions
 //
 toBool = (arr=<-) => array.map(arr: arr, fn: (x) => bool(v: x))
@@ -199,7 +199,7 @@ toBool = (arr=<-) => array.map(arr: arr, fn: (x) => bool(v: x))
 // ```
 //
 // ## Metadata
-// introduced: NEXT
+// introduced: 0.184.0
 // tags: type-conversions
 //
 toDuration = (arr=<-) => array.map(arr: arr, fn: (x) => duration(v: x))
@@ -239,7 +239,7 @@ toDuration = (arr=<-) => array.map(arr: arr, fn: (x) => duration(v: x))
 // ```
 //
 // ## Metadata
-// introduced: NEXT
+// introduced: 0.184.0
 // tags: type-conversions
 //
 toFloat = (arr=<-) => array.map(arr: arr, fn: (x) => float(v: x))
@@ -273,7 +273,7 @@ toFloat = (arr=<-) => array.map(arr: arr, fn: (x) => float(v: x))
 // ```
 //
 // ## Metadata
-// introduced: NEXT
+// introduced: 0.184.0
 // tags: type-conversions
 //
 toInt = (arr=<-) => array.map(arr: arr, fn: (x) => int(v: x))
@@ -305,7 +305,7 @@ toInt = (arr=<-) => array.map(arr: arr, fn: (x) => int(v: x))
 // ```
 //
 // ## Metadata
-// introduced: NEXT
+// introduced: 0.184.0
 // tags: type-conversions
 //
 toString = (arr=<-) => array.map(arr: arr, fn: (x) => string(v: x))
@@ -335,7 +335,7 @@ toString = (arr=<-) => array.map(arr: arr, fn: (x) => string(v: x))
 // ```
 //
 // ## Metadata
-// introduced: NEXT
+// introduced: 0.184.0
 // tags: type-conversions
 //
 toTime = (arr=<-) => array.map(arr: arr, fn: (x) => time(v: x))
@@ -369,7 +369,7 @@ toTime = (arr=<-) => array.map(arr: arr, fn: (x) => time(v: x))
 // ```
 //
 // ## Metadata
-// introduced: NEXT
+// introduced: 0.184.0
 // tags: type-conversions
 //
 toUInt = (arr=<-) => array.map(arr: arr, fn: (x) => uint(v: x))
