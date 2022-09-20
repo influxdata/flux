@@ -258,6 +258,7 @@ pub unsafe extern "C" fn flux_semantic_marshal_fb(
 ) -> Option<Box<ErrorHandle>> {
     catch_unwind(|| {
         let sem_pkg = &*sem_pkg;
+
         let (mut vec, offset) = match semantic::flatbuffers::serialize_pkg(sem_pkg) {
             Ok(vec_offset) => vec_offset,
             Err(err) => {

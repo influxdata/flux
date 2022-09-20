@@ -38,8 +38,6 @@ pub enum ErrorKind {
     VarReassignOption(String),
     /// An option depends on another option declared in the same package.
     DependentOptions(String, String),
-    /// TestCase still remains in semantic graph.
-    TestCase,
     /// Emitted when labels are used without the label polymorphism feature
     LabelWithoutFeature,
 }
@@ -65,7 +63,6 @@ impl std::fmt::Display for ErrorKind {
                 r#"option "{}" depends on option "{}", which is defined in the same package"#,
                 depender, dependee
             )),
-            Self::TestCase => f.write_str("TestCase statement exists in semantic graph"),
             Self::LabelWithoutFeature => f.write_str(
                 "Labels are currently experimental. (See the labelPolymorphism feature)",
             ),
@@ -99,7 +96,7 @@ pub fn check(pkg: &nodes::Package, config: &AnalyzerConfig) -> Result<()> {
     check_vars(pkg, &opts)?;
     check_labels(pkg, config)?;
     check_option_dependencies(&opts)?;
-    check_testcase(pkg)
+    Ok(())
 }
 
 fn check_labels(pkg: &nodes::Package, config: &AnalyzerConfig) -> Result<()> {
@@ -214,7 +211,9 @@ impl<'a> walk::Visitor<'a> for VarVisitor<'a> {
                 // These can only be inside option statements
                 self.in_option = false;
             }
-            walk::Node::FunctionExpr(_) => self.vars_stack.push(VariableAssignMap::new()),
+            walk::Node::FunctionExpr(_) | walk::Node::TestCaseStmt(_) => {
+                self.vars_stack.push(VariableAssignMap::new())
+            }
             walk::Node::FunctionParameter(fp) => {
                 let name = fp.key.name.as_str();
                 self.vars_stack.last_mut().unwrap().insert(name, None);
@@ -248,7 +247,10 @@ impl<'a> walk::Visitor<'a> for VarVisitor<'a> {
     }
 
     fn done(&mut self, node: Node<'a>) {
-        if let walk::Node::FunctionExpr(_) = node {
+        if matches!(
+            node,
+            walk::Node::FunctionExpr(_) | walk::Node::TestCaseStmt(_)
+        ) {
             self.vars_stack.pop();
         }
     }
@@ -328,37 +330,6 @@ impl<'a> walk::Visitor<'a> for OptionDepVisitor<'a> {
     fn done(&mut self, node: Node<'a>) {
         if let Node::FunctionExpr(_) = node {
             self.vars_stack.pop();
-        }
-    }
-}
-
-/// `check_testcase()` checks that no TestCaseStmt still exist in the semantic graph.
-fn check_testcase(pkg: &nodes::Package) -> Result<()> {
-    let mut v = TestCaseVisitor { err: None };
-    walk::walk(&mut v, walk::Node::Package(pkg));
-    match v.err {
-        Some(e) => Err(e),
-        None => Ok(()),
-    }
-}
-
-struct TestCaseVisitor {
-    err: Option<Error>,
-}
-
-impl<'a> walk::Visitor<'a> for TestCaseVisitor {
-    fn visit(&mut self, node: Node<'a>) -> bool {
-        if self.err.is_some() {
-            return false;
-        }
-        match node {
-            walk::Node::TestCaseStmt(s) => {
-                self.err = Some(located(s.loc.clone(), ErrorKind::TestCase));
-                false
-            }
-            walk::Node::Package(_) => true,
-            walk::Node::File(_) => true,
-            _ => false,
         }
     }
 }
@@ -914,21 +885,5 @@ mod tests {
                 option monitor.log = (tables=<-) => tables
             "#,
         ]);
-    }
-    #[test]
-    fn test_testcase() {
-        // testcase statement
-        check_fail(
-            vec![
-                r#"
-                    package foo
-
-                    testcase x {
-                        y = 1
-                    }
-                "#,
-            ],
-            "file_0.flux@4:21-6:22: TestCase statement exists in semantic graph",
-        );
     }
 }

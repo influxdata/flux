@@ -4308,3 +4308,42 @@ fn multiple_builtins() {
         ],
     }
 }
+
+#[test]
+fn infer_testcase() {
+    test_infer! {
+        src: r#"
+            y = 1
+
+            testcase mytest {
+                x = 1
+            }
+            testcase mytest {
+                x = 2 + y
+            }
+        "#,
+        exp: map![
+            "y" => "int",
+        ],
+    }
+}
+
+#[test]
+fn infer_testcase_not_in_scope() {
+    test_error_msg! {
+        src: r#"
+            testcase mytest {
+                x = 1
+            }
+            y = x + 2
+        "#,
+        expect: expect![[r#"
+            error: undefined identifier x
+              ┌─ main:5:17
+              │
+            5 │             y = x + 2
+              │                 ^
+
+        "#]],
+    }
+}

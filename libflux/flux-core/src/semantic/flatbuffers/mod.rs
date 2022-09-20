@@ -761,11 +761,13 @@ impl<'a, 'b> semantic::walk::Visitor<'_> for SerializingVisitor<'a, 'b> {
                 ));
             }
 
-            walk::Node::TestCaseStmt(test) => {
+            walk::Node::TestCaseStmt(_) => {
                 // TestCase statements should be transformed before the semantic phase. Even without
                 // the explicit panic here, an error would occur because the block has no function
                 // scope.
-                panic!("TestCaseStmt is not supported in semantic analysis.");
+                v.err = Some(anyhow!(
+                    "TestCaseStmt is not supported in semantic analysis."
+                ));
             }
 
             walk::Node::BuiltinStmt(builtin) => {
