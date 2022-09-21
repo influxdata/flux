@@ -266,6 +266,11 @@ func defaultRow(key flux.GroupKey, objType semantic.MonoType) values.Object {
 }
 
 func getObjectType(arg *semantic.Argument, cols []flux.ColMeta) (semantic.MonoType, error) {
+	// XXX(sean): This appears to fix the empty table bug, but what's the point of the `getObjectType()`
+	// function if we have this information already? Is this type info not always available?
+	if len(cols) < 1 {
+		return arg.TypeOf()
+	}
 	if err := checkCols(arg, cols); err != nil {
 		return semantic.MonoType{}, err
 	}
@@ -294,9 +299,6 @@ func checkCols(arg *semantic.Argument, cols []flux.ColMeta) error {
 	for _, prop := range props {
 		name := prop.Name()
 		found := false
-		if len(cols) == 0 {
-			return errors.Newf(codes.Invalid, "cannot join on an empty table")
-		}
 		for _, column := range cols {
 			if column.Label == name {
 				found = true

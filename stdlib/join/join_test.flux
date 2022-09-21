@@ -5,6 +5,7 @@ import "join"
 import "array"
 import "csv"
 import "testing"
+import "internal/debug"
 
 right =
     array.from(
@@ -426,7 +427,7 @@ testcase join_empty_table {
         array.from(rows: [{_value: 0.6, id: "b"}])
             |> filter(fn: (r) => r.id == "empty table")
 
-    fn = () =>
+    got =
         join.tables(
             method: "full",
             left: something,
@@ -438,7 +439,7 @@ testcase join_empty_table {
                 return {id: id, v_left: l._value, v_right: r._value}
             },
         )
-    want = /error preparing right sight of join: cannot join on empty table/
+    want = array.from(rows: [{id: "a", v_left: 1, v_right: debug.null(type: "float")}])
 
-    testing.shouldError(fn, want)
+    testing.diff(want, got)
 }
