@@ -1,11 +1,6 @@
 use pretty_assertions::assert_eq;
 
 use super::*;
-use crate::ast::{
-    tests::Locator,
-    Expression::{Array, Member},
-    StringExprPart::{Interpolated, Text},
-};
 
 #[test]
 fn parse_string_literal() {
@@ -34,595 +29,903 @@ fn parse_string_literal_invalid_string() {
 fn string_interpolation_simple() {
     let mut p = Parser::new(r#""a + b = ${a + b}""#);
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(p.source);
-    assert_eq!(
-        parsed,
+    expect![[r#"
         File {
             base: BaseNode {
-                location: loc.get(1, 1, 1, 19),
-                ..BaseNode::default()
-            },
-            name: "".to_string(),
-            metadata: "parser-type=rust".to_string(),
-            package: None,
-            imports: vec![],
-            body: vec![Statement::Expr(Box::new(ExprStmt {
-                base: BaseNode {
-                    location: loc.get(1, 1, 1, 19),
-                    ..BaseNode::default()
+                location: SourceLocation {
+                    start: "line: 1, column: 1",
+                    end: "line: 1, column: 19",
+                    source: "\"a + b = ${a + b}\"",
                 },
-                expression: Expression::StringExpr(Box::new(StringExpr {
-                    base: BaseNode {
-                        location: loc.get(1, 1, 1, 19),
-                        ..BaseNode::default()
-                    },
-                    parts: vec![
-                        StringExprPart::Text(TextPart {
-                            base: BaseNode {
-                                location: loc.get(1, 2, 1, 10),
-                                ..BaseNode::default()
+            },
+            name: "",
+            metadata: "parser-type=rust",
+            package: None,
+            imports: [],
+            body: [
+                Expr(
+                    ExprStmt {
+                        base: BaseNode {
+                            location: SourceLocation {
+                                start: "line: 1, column: 1",
+                                end: "line: 1, column: 19",
+                                source: "\"a + b = ${a + b}\"",
                             },
-                            value: "a + b = ".to_string(),
-                        }),
-                        StringExprPart::Interpolated(InterpolatedPart {
-                            base: BaseNode {
-                                location: loc.get(1, 10, 1, 18),
-                                ..BaseNode::default()
-                            },
-                            expression: Expression::Binary(Box::new(BinaryExpr {
+                        },
+                        expression: StringExpr(
+                            StringExpr {
                                 base: BaseNode {
-                                    location: loc.get(1, 12, 1, 17),
-                                    ..BaseNode::default()
+                                    location: SourceLocation {
+                                        start: "line: 1, column: 1",
+                                        end: "line: 1, column: 19",
+                                        source: "\"a + b = ${a + b}\"",
+                                    },
                                 },
-                                left: Expression::Identifier(Identifier {
-                                    base: BaseNode {
-                                        location: loc.get(1, 12, 1, 13),
-                                        ..BaseNode::default()
-                                    },
-                                    name: "a".to_string(),
-                                }),
-                                right: Expression::Identifier(Identifier {
-                                    base: BaseNode {
-                                        location: loc.get(1, 16, 1, 17),
-                                        ..BaseNode::default()
-                                    },
-                                    name: "b".to_string(),
-                                }),
-                                operator: Operator::AdditionOperator,
-                            })),
-                        }),
-                    ],
-                })),
-            })),],
-            eof: vec![],
-        },
-    )
+                                parts: [
+                                    Text(
+                                        TextPart {
+                                            base: BaseNode {
+                                                location: SourceLocation {
+                                                    start: "line: 1, column: 2",
+                                                    end: "line: 1, column: 10",
+                                                    source: "a + b = ",
+                                                },
+                                            },
+                                            value: "a + b = ",
+                                        },
+                                    ),
+                                    Interpolated(
+                                        InterpolatedPart {
+                                            base: BaseNode {
+                                                location: SourceLocation {
+                                                    start: "line: 1, column: 10",
+                                                    end: "line: 1, column: 18",
+                                                    source: "${a + b}",
+                                                },
+                                            },
+                                            expression: Binary(
+                                                BinaryExpr {
+                                                    base: BaseNode {
+                                                        location: SourceLocation {
+                                                            start: "line: 1, column: 12",
+                                                            end: "line: 1, column: 17",
+                                                            source: "a + b",
+                                                        },
+                                                    },
+                                                    operator: AdditionOperator,
+                                                    left: Identifier(
+                                                        Identifier {
+                                                            base: BaseNode {
+                                                                location: SourceLocation {
+                                                                    start: "line: 1, column: 12",
+                                                                    end: "line: 1, column: 13",
+                                                                    source: "a",
+                                                                },
+                                                            },
+                                                            name: "a",
+                                                        },
+                                                    ),
+                                                    right: Identifier(
+                                                        Identifier {
+                                                            base: BaseNode {
+                                                                location: SourceLocation {
+                                                                    start: "line: 1, column: 16",
+                                                                    end: "line: 1, column: 17",
+                                                                    source: "b",
+                                                                },
+                                                            },
+                                                            name: "b",
+                                                        },
+                                                    ),
+                                                },
+                                            ),
+                                        },
+                                    ),
+                                ],
+                            },
+                        ),
+                    },
+                ),
+            ],
+            eof: [],
+        }
+    "#]]
+    .assert_debug_eq(&parsed);
 }
 
 #[test]
 fn string_interpolation_array() {
     let mut p = Parser::new(r#"a = ["influx", "test", "InfluxOfflineTimeAlert", "acu:${r.a}"]"#);
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(p.source);
-    assert_eq!(
-        parsed,
+    expect![[r#"
         File {
             base: BaseNode {
-                location: loc.get(1, 1, 1, 63),
-                ..BaseNode::default()
+                location: SourceLocation {
+                    start: "line: 1, column: 1",
+                    end: "line: 1, column: 63",
+                    source: "a = [\"influx\", \"test\", \"InfluxOfflineTimeAlert\", \"acu:${r.a}\"]",
+                },
             },
-            name: "".to_string(),
-            metadata: "parser-type=rust".to_string(),
+            name: "",
+            metadata: "parser-type=rust",
             package: None,
-            imports: vec![],
-            body: vec![Variable(Box::new(VariableAssgn {
-                base: BaseNode {
-                    location: loc.get(1, 1, 1, 63),
-                    ..BaseNode::default()
-                },
-                id: Identifier {
-                    base: BaseNode {
-                        location: loc.get(1, 1, 1, 2),
-                        ..BaseNode::default()
-                    },
-                    name: "a".to_string(),
-                },
-                init: Array(Box::new(ArrayExpr {
-                    base: BaseNode {
-                        location: loc.get(1, 5, 1, 63),
-                        ..BaseNode::default()
-                    },
-                    lbrack: vec![],
-                    elements: vec![
-                        ArrayItem {
-                            expression: Expression::StringLit(StringLit {
-                                base: BaseNode {
-                                    location: loc.get(1, 6, 1, 14),
-                                    ..BaseNode::default()
-                                },
-                                value: "influx".to_string(),
-                            }),
-                            comma: vec![],
+            imports: [],
+            body: [
+                Variable(
+                    VariableAssgn {
+                        base: BaseNode {
+                            location: SourceLocation {
+                                start: "line: 1, column: 1",
+                                end: "line: 1, column: 63",
+                                source: "a = [\"influx\", \"test\", \"InfluxOfflineTimeAlert\", \"acu:${r.a}\"]",
+                            },
                         },
-                        ArrayItem {
-                            expression: Expression::StringLit(StringLit {
-                                base: BaseNode {
-                                    location: loc.get(1, 16, 1, 22),
-                                    ..BaseNode::default()
+                        id: Identifier {
+                            base: BaseNode {
+                                location: SourceLocation {
+                                    start: "line: 1, column: 1",
+                                    end: "line: 1, column: 2",
+                                    source: "a",
                                 },
-                                value: "test".to_string(),
-                            }),
-                            comma: vec![],
+                            },
+                            name: "a",
                         },
-                        ArrayItem {
-                            expression: Expression::StringLit(StringLit {
+                        init: Array(
+                            ArrayExpr {
                                 base: BaseNode {
-                                    location: loc.get(1, 24, 1, 48),
-                                    ..BaseNode::default()
+                                    location: SourceLocation {
+                                        start: "line: 1, column: 5",
+                                        end: "line: 1, column: 63",
+                                        source: "[\"influx\", \"test\", \"InfluxOfflineTimeAlert\", \"acu:${r.a}\"]",
+                                    },
                                 },
-                                value: "InfluxOfflineTimeAlert".to_string(),
-                            }),
-                            comma: vec![],
-                        },
-                        ArrayItem {
-                            expression: Expression::StringExpr(Box::new(StringExpr {
-                                base: BaseNode {
-                                    location: loc.get(1, 50, 1, 62),
-                                    ..BaseNode::default()
-                                },
-                                parts: vec![
-                                    Text(TextPart {
-                                        base: BaseNode {
-                                            location: loc.get(1, 51, 1, 55),
-                                            ..BaseNode::default()
-                                        },
-                                        value: "acu:".to_string(),
-                                    }),
-                                    Interpolated(InterpolatedPart {
-                                        base: BaseNode {
-                                            location: loc.get(1, 55, 1, 61),
-                                            ..BaseNode::default()
-                                        },
-                                        expression: Member(Box::new(MemberExpr {
-                                            base: BaseNode {
-                                                location: loc.get(1, 57, 1, 60),
-                                                ..BaseNode::default()
+                                lbrack: [],
+                                elements: [
+                                    ArrayItem {
+                                        expression: StringLit(
+                                            StringLit {
+                                                base: BaseNode {
+                                                    location: SourceLocation {
+                                                        start: "line: 1, column: 6",
+                                                        end: "line: 1, column: 14",
+                                                        source: "\"influx\"",
+                                                    },
+                                                },
+                                                value: "influx",
                                             },
-                                            object: Expression::Identifier(Identifier {
+                                        ),
+                                        comma: [],
+                                    },
+                                    ArrayItem {
+                                        expression: StringLit(
+                                            StringLit {
                                                 base: BaseNode {
-                                                    location: loc.get(1, 57, 1, 58),
-                                                    ..BaseNode::default()
+                                                    location: SourceLocation {
+                                                        start: "line: 1, column: 16",
+                                                        end: "line: 1, column: 22",
+                                                        source: "\"test\"",
+                                                    },
                                                 },
-                                                name: "r".to_string(),
-                                            }),
-                                            lbrack: vec![],
-                                            property: PropertyKey::Identifier(Identifier {
+                                                value: "test",
+                                            },
+                                        ),
+                                        comma: [],
+                                    },
+                                    ArrayItem {
+                                        expression: StringLit(
+                                            StringLit {
                                                 base: BaseNode {
-                                                    location: loc.get(1, 59, 1, 60),
-                                                    ..BaseNode::default()
+                                                    location: SourceLocation {
+                                                        start: "line: 1, column: 24",
+                                                        end: "line: 1, column: 48",
+                                                        source: "\"InfluxOfflineTimeAlert\"",
+                                                    },
                                                 },
-                                                name: "a".to_string(),
-                                            }),
-                                            rbrack: vec![],
-                                        })),
-                                    }),
+                                                value: "InfluxOfflineTimeAlert",
+                                            },
+                                        ),
+                                        comma: [],
+                                    },
+                                    ArrayItem {
+                                        expression: StringExpr(
+                                            StringExpr {
+                                                base: BaseNode {
+                                                    location: SourceLocation {
+                                                        start: "line: 1, column: 50",
+                                                        end: "line: 1, column: 62",
+                                                        source: "\"acu:${r.a}\"",
+                                                    },
+                                                },
+                                                parts: [
+                                                    Text(
+                                                        TextPart {
+                                                            base: BaseNode {
+                                                                location: SourceLocation {
+                                                                    start: "line: 1, column: 51",
+                                                                    end: "line: 1, column: 55",
+                                                                    source: "acu:",
+                                                                },
+                                                            },
+                                                            value: "acu:",
+                                                        },
+                                                    ),
+                                                    Interpolated(
+                                                        InterpolatedPart {
+                                                            base: BaseNode {
+                                                                location: SourceLocation {
+                                                                    start: "line: 1, column: 55",
+                                                                    end: "line: 1, column: 61",
+                                                                    source: "${r.a}",
+                                                                },
+                                                            },
+                                                            expression: Member(
+                                                                MemberExpr {
+                                                                    base: BaseNode {
+                                                                        location: SourceLocation {
+                                                                            start: "line: 1, column: 57",
+                                                                            end: "line: 1, column: 60",
+                                                                            source: "r.a",
+                                                                        },
+                                                                    },
+                                                                    object: Identifier(
+                                                                        Identifier {
+                                                                            base: BaseNode {
+                                                                                location: SourceLocation {
+                                                                                    start: "line: 1, column: 57",
+                                                                                    end: "line: 1, column: 58",
+                                                                                    source: "r",
+                                                                                },
+                                                                            },
+                                                                            name: "r",
+                                                                        },
+                                                                    ),
+                                                                    lbrack: [],
+                                                                    property: Identifier(
+                                                                        Identifier {
+                                                                            base: BaseNode {
+                                                                                location: SourceLocation {
+                                                                                    start: "line: 1, column: 59",
+                                                                                    end: "line: 1, column: 60",
+                                                                                    source: "a",
+                                                                                },
+                                                                            },
+                                                                            name: "a",
+                                                                        },
+                                                                    ),
+                                                                    rbrack: [],
+                                                                },
+                                                            ),
+                                                        },
+                                                    ),
+                                                ],
+                                            },
+                                        ),
+                                        comma: [],
+                                    },
                                 ],
-                            }),),
-                            comma: vec![],
-                        },
-                    ],
-                    rbrack: vec![],
-                },)),
-            }),),],
-            eof: vec![],
+                                rbrack: [],
+                            },
+                        ),
+                    },
+                ),
+            ],
+            eof: [],
         }
-    )
+    "#]].assert_debug_eq(&parsed);
 }
 
 #[test]
 fn string_interpolation_multiple() {
     let mut p = Parser::new(r#""a = ${a} and b = ${b}""#);
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(p.source);
-    assert_eq!(
-        parsed,
+    expect![[r#"
         File {
             base: BaseNode {
-                location: loc.get(1, 1, 1, 24),
-                ..BaseNode::default()
-            },
-            name: "".to_string(),
-            metadata: "parser-type=rust".to_string(),
-            package: None,
-            imports: vec![],
-            body: vec![Statement::Expr(Box::new(ExprStmt {
-                base: BaseNode {
-                    location: loc.get(1, 1, 1, 24),
-                    ..BaseNode::default()
+                location: SourceLocation {
+                    start: "line: 1, column: 1",
+                    end: "line: 1, column: 24",
+                    source: "\"a = ${a} and b = ${b}\"",
                 },
-                expression: Expression::StringExpr(Box::new(StringExpr {
-                    base: BaseNode {
-                        location: loc.get(1, 1, 1, 24),
-                        ..BaseNode::default()
+            },
+            name: "",
+            metadata: "parser-type=rust",
+            package: None,
+            imports: [],
+            body: [
+                Expr(
+                    ExprStmt {
+                        base: BaseNode {
+                            location: SourceLocation {
+                                start: "line: 1, column: 1",
+                                end: "line: 1, column: 24",
+                                source: "\"a = ${a} and b = ${b}\"",
+                            },
+                        },
+                        expression: StringExpr(
+                            StringExpr {
+                                base: BaseNode {
+                                    location: SourceLocation {
+                                        start: "line: 1, column: 1",
+                                        end: "line: 1, column: 24",
+                                        source: "\"a = ${a} and b = ${b}\"",
+                                    },
+                                },
+                                parts: [
+                                    Text(
+                                        TextPart {
+                                            base: BaseNode {
+                                                location: SourceLocation {
+                                                    start: "line: 1, column: 2",
+                                                    end: "line: 1, column: 6",
+                                                    source: "a = ",
+                                                },
+                                            },
+                                            value: "a = ",
+                                        },
+                                    ),
+                                    Interpolated(
+                                        InterpolatedPart {
+                                            base: BaseNode {
+                                                location: SourceLocation {
+                                                    start: "line: 1, column: 6",
+                                                    end: "line: 1, column: 10",
+                                                    source: "${a}",
+                                                },
+                                            },
+                                            expression: Identifier(
+                                                Identifier {
+                                                    base: BaseNode {
+                                                        location: SourceLocation {
+                                                            start: "line: 1, column: 8",
+                                                            end: "line: 1, column: 9",
+                                                            source: "a",
+                                                        },
+                                                    },
+                                                    name: "a",
+                                                },
+                                            ),
+                                        },
+                                    ),
+                                    Text(
+                                        TextPart {
+                                            base: BaseNode {
+                                                location: SourceLocation {
+                                                    start: "line: 1, column: 10",
+                                                    end: "line: 1, column: 19",
+                                                    source: " and b = ",
+                                                },
+                                            },
+                                            value: " and b = ",
+                                        },
+                                    ),
+                                    Interpolated(
+                                        InterpolatedPart {
+                                            base: BaseNode {
+                                                location: SourceLocation {
+                                                    start: "line: 1, column: 19",
+                                                    end: "line: 1, column: 23",
+                                                    source: "${b}",
+                                                },
+                                            },
+                                            expression: Identifier(
+                                                Identifier {
+                                                    base: BaseNode {
+                                                        location: SourceLocation {
+                                                            start: "line: 1, column: 21",
+                                                            end: "line: 1, column: 22",
+                                                            source: "b",
+                                                        },
+                                                    },
+                                                    name: "b",
+                                                },
+                                            ),
+                                        },
+                                    ),
+                                ],
+                            },
+                        ),
                     },
-                    parts: vec![
-                        StringExprPart::Text(TextPart {
-                            base: BaseNode {
-                                location: loc.get(1, 2, 1, 6),
-                                ..BaseNode::default()
-                            },
-                            value: "a = ".to_string(),
-                        }),
-                        StringExprPart::Interpolated(InterpolatedPart {
-                            base: BaseNode {
-                                location: loc.get(1, 6, 1, 10),
-                                ..BaseNode::default()
-                            },
-                            expression: Expression::Identifier(Identifier {
-                                base: BaseNode {
-                                    location: loc.get(1, 8, 1, 9),
-                                    ..BaseNode::default()
-                                },
-                                name: "a".to_string(),
-                            }),
-                        }),
-                        StringExprPart::Text(TextPart {
-                            base: BaseNode {
-                                location: loc.get(1, 10, 1, 19),
-                                ..BaseNode::default()
-                            },
-                            value: " and b = ".to_string(),
-                        }),
-                        StringExprPart::Interpolated(InterpolatedPart {
-                            base: BaseNode {
-                                location: loc.get(1, 19, 1, 23),
-                                ..BaseNode::default()
-                            },
-                            expression: Expression::Identifier(Identifier {
-                                base: BaseNode {
-                                    location: loc.get(1, 21, 1, 22),
-                                    ..BaseNode::default()
-                                },
-                                name: "b".to_string(),
-                            }),
-                        }),
-                    ],
-                })),
-            })),],
-            eof: vec![],
-        },
-    )
+                ),
+            ],
+            eof: [],
+        }
+    "#]]
+    .assert_debug_eq(&parsed);
 }
 
 #[test]
 fn string_interpolation_nested() {
     let mut p = Parser::new(r#""we ${"can ${"add" + "strings"}"} together""#);
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(p.source);
-    assert_eq!(
-        parsed,
+    expect![[r#"
         File {
             base: BaseNode {
-                location: loc.get(1, 1, 1, 44),
-                ..BaseNode::default()
-            },
-            name: "".to_string(),
-            metadata: "parser-type=rust".to_string(),
-            package: None,
-            imports: vec![],
-            body: vec![Statement::Expr(Box::new(ExprStmt {
-                base: BaseNode {
-                    location: loc.get(1, 1, 1, 44),
-                    ..BaseNode::default()
+                location: SourceLocation {
+                    start: "line: 1, column: 1",
+                    end: "line: 1, column: 44",
+                    source: "\"we ${\"can ${\"add\" + \"strings\"}\"} together\"",
                 },
-                expression: Expression::StringExpr(Box::new(StringExpr {
-                    base: BaseNode {
-                        location: loc.get(1, 1, 1, 44),
-                        ..BaseNode::default()
-                    },
-                    parts: vec![
-                        StringExprPart::Text(TextPart {
-                            base: BaseNode {
-                                location: loc.get(1, 2, 1, 5),
-                                ..BaseNode::default()
+            },
+            name: "",
+            metadata: "parser-type=rust",
+            package: None,
+            imports: [],
+            body: [
+                Expr(
+                    ExprStmt {
+                        base: BaseNode {
+                            location: SourceLocation {
+                                start: "line: 1, column: 1",
+                                end: "line: 1, column: 44",
+                                source: "\"we ${\"can ${\"add\" + \"strings\"}\"} together\"",
                             },
-                            value: "we ".to_string(),
-                        }),
-                        StringExprPart::Interpolated(InterpolatedPart {
-                            base: BaseNode {
-                                location: loc.get(1, 5, 1, 34),
-                                ..BaseNode::default()
-                            },
-                            expression: Expression::StringExpr(Box::new(StringExpr {
+                        },
+                        expression: StringExpr(
+                            StringExpr {
                                 base: BaseNode {
-                                    location: loc.get(1, 7, 1, 33),
-                                    ..BaseNode::default()
+                                    location: SourceLocation {
+                                        start: "line: 1, column: 1",
+                                        end: "line: 1, column: 44",
+                                        source: "\"we ${\"can ${\"add\" + \"strings\"}\"} together\"",
+                                    },
                                 },
-                                parts: vec![
-                                    StringExprPart::Text(TextPart {
-                                        base: BaseNode {
-                                            location: loc.get(1, 8, 1, 12),
-                                            ..BaseNode::default()
-                                        },
-                                        value: "can ".to_string(),
-                                    }),
-                                    StringExprPart::Interpolated(InterpolatedPart {
-                                        base: BaseNode {
-                                            location: loc.get(1, 12, 1, 32),
-                                            ..BaseNode::default()
-                                        },
-                                        expression: Expression::Binary(Box::new(BinaryExpr {
+                                parts: [
+                                    Text(
+                                        TextPart {
                                             base: BaseNode {
-                                                location: loc.get(1, 14, 1, 31),
-                                                ..BaseNode::default()
+                                                location: SourceLocation {
+                                                    start: "line: 1, column: 2",
+                                                    end: "line: 1, column: 5",
+                                                    source: "we ",
+                                                },
                                             },
-                                            left: Expression::StringLit(StringLit {
-                                                base: BaseNode {
-                                                    location: loc.get(1, 14, 1, 19),
-                                                    ..BaseNode::default()
+                                            value: "we ",
+                                        },
+                                    ),
+                                    Interpolated(
+                                        InterpolatedPart {
+                                            base: BaseNode {
+                                                location: SourceLocation {
+                                                    start: "line: 1, column: 5",
+                                                    end: "line: 1, column: 34",
+                                                    source: "${\"can ${\"add\" + \"strings\"}\"}",
                                                 },
-                                                value: "add".to_string(),
-                                            }),
-                                            right: Expression::StringLit(StringLit {
-                                                base: BaseNode {
-                                                    location: loc.get(1, 22, 1, 31),
-                                                    ..BaseNode::default()
+                                            },
+                                            expression: StringExpr(
+                                                StringExpr {
+                                                    base: BaseNode {
+                                                        location: SourceLocation {
+                                                            start: "line: 1, column: 7",
+                                                            end: "line: 1, column: 33",
+                                                            source: "\"can ${\"add\" + \"strings\"}\"",
+                                                        },
+                                                    },
+                                                    parts: [
+                                                        Text(
+                                                            TextPart {
+                                                                base: BaseNode {
+                                                                    location: SourceLocation {
+                                                                        start: "line: 1, column: 8",
+                                                                        end: "line: 1, column: 12",
+                                                                        source: "can ",
+                                                                    },
+                                                                },
+                                                                value: "can ",
+                                                            },
+                                                        ),
+                                                        Interpolated(
+                                                            InterpolatedPart {
+                                                                base: BaseNode {
+                                                                    location: SourceLocation {
+                                                                        start: "line: 1, column: 12",
+                                                                        end: "line: 1, column: 32",
+                                                                        source: "${\"add\" + \"strings\"}",
+                                                                    },
+                                                                },
+                                                                expression: Binary(
+                                                                    BinaryExpr {
+                                                                        base: BaseNode {
+                                                                            location: SourceLocation {
+                                                                                start: "line: 1, column: 14",
+                                                                                end: "line: 1, column: 31",
+                                                                                source: "\"add\" + \"strings\"",
+                                                                            },
+                                                                        },
+                                                                        operator: AdditionOperator,
+                                                                        left: StringLit(
+                                                                            StringLit {
+                                                                                base: BaseNode {
+                                                                                    location: SourceLocation {
+                                                                                        start: "line: 1, column: 14",
+                                                                                        end: "line: 1, column: 19",
+                                                                                        source: "\"add\"",
+                                                                                    },
+                                                                                },
+                                                                                value: "add",
+                                                                            },
+                                                                        ),
+                                                                        right: StringLit(
+                                                                            StringLit {
+                                                                                base: BaseNode {
+                                                                                    location: SourceLocation {
+                                                                                        start: "line: 1, column: 22",
+                                                                                        end: "line: 1, column: 31",
+                                                                                        source: "\"strings\"",
+                                                                                    },
+                                                                                },
+                                                                                value: "strings",
+                                                                            },
+                                                                        ),
+                                                                    },
+                                                                ),
+                                                            },
+                                                        ),
+                                                    ],
                                                 },
-                                                value: "strings".to_string(),
-                                            }),
-                                            operator: Operator::AdditionOperator,
-                                        })),
-                                    }),
+                                            ),
+                                        },
+                                    ),
+                                    Text(
+                                        TextPart {
+                                            base: BaseNode {
+                                                location: SourceLocation {
+                                                    start: "line: 1, column: 34",
+                                                    end: "line: 1, column: 43",
+                                                    source: " together",
+                                                },
+                                            },
+                                            value: " together",
+                                        },
+                                    ),
                                 ],
-                            }))
-                        }),
-                        StringExprPart::Text(TextPart {
-                            base: BaseNode {
-                                location: loc.get(1, 34, 1, 43),
-                                ..BaseNode::default()
                             },
-                            value: " together".to_string(),
-                        }),
-                    ],
-                })),
-            })),],
-            eof: vec![],
-        },
-    )
+                        ),
+                    },
+                ),
+            ],
+            eof: [],
+        }
+    "#]].assert_debug_eq(&parsed);
 }
 
 #[test]
 fn string_interp_with_escapes() {
     let mut p = Parser::new(r#""string \"interpolation with ${"escapes"}\"""#);
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(p.source);
-    assert_eq!(
-        parsed,
+    expect![[r#"
         File {
             base: BaseNode {
-                location: loc.get(1, 1, 1, 45),
-                ..BaseNode::default()
-            },
-            name: "".to_string(),
-            metadata: "parser-type=rust".to_string(),
-            package: None,
-            imports: vec![],
-            body: vec![Statement::Expr(Box::new(ExprStmt {
-                base: BaseNode {
-                    location: loc.get(1, 1, 1, 45),
-                    ..BaseNode::default()
+                location: SourceLocation {
+                    start: "line: 1, column: 1",
+                    end: "line: 1, column: 45",
+                    source: "\"string \\\"interpolation with ${\"escapes\"}\\\"\"",
                 },
-                expression: Expression::StringExpr(Box::new(StringExpr {
-                    base: BaseNode {
-                        location: loc.get(1, 1, 1, 45),
-                        ..BaseNode::default()
-                    },
-                    parts: vec![
-                        StringExprPart::Text(TextPart {
-                            base: BaseNode {
-                                location: loc.get(1, 2, 1, 30),
-                                ..BaseNode::default()
+            },
+            name: "",
+            metadata: "parser-type=rust",
+            package: None,
+            imports: [],
+            body: [
+                Expr(
+                    ExprStmt {
+                        base: BaseNode {
+                            location: SourceLocation {
+                                start: "line: 1, column: 1",
+                                end: "line: 1, column: 45",
+                                source: "\"string \\\"interpolation with ${\"escapes\"}\\\"\"",
                             },
-                            value: "string \"interpolation with ".to_string(),
-                        }),
-                        StringExprPart::Interpolated(InterpolatedPart {
-                            base: BaseNode {
-                                location: loc.get(1, 30, 1, 42),
-                                ..BaseNode::default()
-                            },
-                            expression: Expression::StringLit(StringLit {
+                        },
+                        expression: StringExpr(
+                            StringExpr {
                                 base: BaseNode {
-                                    location: loc.get(1, 32, 1, 41),
-                                    ..BaseNode::default()
+                                    location: SourceLocation {
+                                        start: "line: 1, column: 1",
+                                        end: "line: 1, column: 45",
+                                        source: "\"string \\\"interpolation with ${\"escapes\"}\\\"\"",
+                                    },
                                 },
-                                value: "escapes".to_string(),
-                            }),
-                        }),
-                        StringExprPart::Text(TextPart {
-                            base: BaseNode {
-                                location: loc.get(1, 42, 1, 44),
-                                ..BaseNode::default()
+                                parts: [
+                                    Text(
+                                        TextPart {
+                                            base: BaseNode {
+                                                location: SourceLocation {
+                                                    start: "line: 1, column: 2",
+                                                    end: "line: 1, column: 30",
+                                                    source: "string \\\"interpolation with ",
+                                                },
+                                            },
+                                            value: "string \"interpolation with ",
+                                        },
+                                    ),
+                                    Interpolated(
+                                        InterpolatedPart {
+                                            base: BaseNode {
+                                                location: SourceLocation {
+                                                    start: "line: 1, column: 30",
+                                                    end: "line: 1, column: 42",
+                                                    source: "${\"escapes\"}",
+                                                },
+                                            },
+                                            expression: StringLit(
+                                                StringLit {
+                                                    base: BaseNode {
+                                                        location: SourceLocation {
+                                                            start: "line: 1, column: 32",
+                                                            end: "line: 1, column: 41",
+                                                            source: "\"escapes\"",
+                                                        },
+                                                    },
+                                                    value: "escapes",
+                                                },
+                                            ),
+                                        },
+                                    ),
+                                    Text(
+                                        TextPart {
+                                            base: BaseNode {
+                                                location: SourceLocation {
+                                                    start: "line: 1, column: 42",
+                                                    end: "line: 1, column: 44",
+                                                    source: "\\\"",
+                                                },
+                                            },
+                                            value: "\"",
+                                        },
+                                    ),
+                                ],
                             },
-                            value: "\"".to_string(),
-                        }),
-                    ],
-                })),
-            })),],
-            eof: vec![],
-        },
-    )
+                        ),
+                    },
+                ),
+            ],
+            eof: [],
+        }
+    "#]].assert_debug_eq(&parsed);
 }
 
 #[test]
 fn bad_string_expression() {
     let mut p = Parser::new(r#"fn = (a) => "${a}"#);
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(p.source);
-    assert_eq!(
-        parsed,
+    expect![[r#"
         File {
             base: BaseNode {
-                location: loc.get(1, 1, 1, 18),
-                ..BaseNode::default()
+                location: SourceLocation {
+                    start: "line: 1, column: 1",
+                    end: "line: 1, column: 18",
+                    source: "fn = (a) => \"${a}",
+                },
             },
-            name: "".to_string(),
-            metadata: "parser-type=rust".to_string(),
+            name: "",
+            metadata: "parser-type=rust",
             package: None,
-            imports: vec![],
-            body: vec![Statement::Variable(Box::new(VariableAssgn {
-                base: BaseNode {
-                    location: loc.get(1, 1, 1, 18),
-                    ..BaseNode::default()
-                },
-                id: Identifier {
-                    base: BaseNode {
-                        location: loc.get(1, 1, 1, 3),
-                        ..BaseNode::default()
-                    },
-                    name: "fn".to_string(),
-                },
-                init: Expression::Function(Box::new(FunctionExpr {
-                    base: BaseNode {
-                        location: loc.get(1, 6, 1, 18),
-                        ..BaseNode::default()
-                    },
-                    lparen: vec![],
-                    params: vec![Property {
+            imports: [],
+            body: [
+                Variable(
+                    VariableAssgn {
                         base: BaseNode {
-                            location: loc.get(1, 7, 1, 8),
-                            ..BaseNode::default()
-                        },
-                        key: PropertyKey::Identifier(Identifier {
-                            base: BaseNode {
-                                location: loc.get(1, 7, 1, 8),
-                                ..BaseNode::default()
+                            location: SourceLocation {
+                                start: "line: 1, column: 1",
+                                end: "line: 1, column: 18",
+                                source: "fn = (a) => \"${a}",
                             },
-                            name: "a".to_string()
-                        }),
-                        separator: vec![],
-                        value: None,
-                        comma: vec![],
-                    }],
-                    rparen: vec![],
-                    arrow: vec![],
-                    body: FunctionBody::Expr(Expression::StringExpr(Box::new(StringExpr {
-                        base: BaseNode {
-                            location: loc.get(1, 13, 1, 18),
-                            errors: vec![
-                                "got unexpected token in string expression @1:18-1:18: EOF"
-                                    .to_string()
-                            ],
-                            ..BaseNode::default()
                         },
-                        parts: vec![],
-                    }))),
-                })),
-            }))],
-            eof: vec![],
-        },
-    )
+                        id: Identifier {
+                            base: BaseNode {
+                                location: SourceLocation {
+                                    start: "line: 1, column: 1",
+                                    end: "line: 1, column: 3",
+                                    source: "fn",
+                                },
+                            },
+                            name: "fn",
+                        },
+                        init: Function(
+                            FunctionExpr {
+                                base: BaseNode {
+                                    location: SourceLocation {
+                                        start: "line: 1, column: 6",
+                                        end: "line: 1, column: 18",
+                                        source: "(a) => \"${a}",
+                                    },
+                                },
+                                lparen: [],
+                                params: [
+                                    Property {
+                                        base: BaseNode {
+                                            location: SourceLocation {
+                                                start: "line: 1, column: 7",
+                                                end: "line: 1, column: 8",
+                                                source: "a",
+                                            },
+                                        },
+                                        key: Identifier(
+                                            Identifier {
+                                                base: BaseNode {
+                                                    location: SourceLocation {
+                                                        start: "line: 1, column: 7",
+                                                        end: "line: 1, column: 8",
+                                                        source: "a",
+                                                    },
+                                                },
+                                                name: "a",
+                                            },
+                                        ),
+                                        separator: [],
+                                        value: None,
+                                        comma: [],
+                                    },
+                                ],
+                                rparen: [],
+                                arrow: [],
+                                body: Expr(
+                                    StringExpr(
+                                        StringExpr {
+                                            base: BaseNode {
+                                                location: SourceLocation {
+                                                    start: "line: 1, column: 13",
+                                                    end: "line: 1, column: 18",
+                                                    source: "\"${a}",
+                                                },
+                                                errors: [
+                                                    "got unexpected token in string expression @1:18-1:18: EOF",
+                                                ],
+                                            },
+                                            parts: [],
+                                        },
+                                    ),
+                                ),
+                            },
+                        ),
+                    },
+                ),
+            ],
+            eof: [],
+        }
+    "#]].assert_debug_eq(&parsed);
 }
 
 #[test]
 fn string_with_utf_8() {
     let mut p = Parser::new(r#""日本語""#);
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(p.source);
-    assert_eq!(
-        parsed,
+    expect![[r#"
         File {
             base: BaseNode {
-                location: loc.get(1, 1, 1, 12),
-                ..BaseNode::default()
-            },
-            name: "".to_string(),
-            metadata: "parser-type=rust".to_string(),
-            package: None,
-            imports: vec![],
-            body: vec![Statement::Expr(Box::new(ExprStmt {
-                base: BaseNode {
-                    location: loc.get(1, 1, 1, 12),
-                    ..BaseNode::default()
+                location: SourceLocation {
+                    start: "line: 1, column: 1",
+                    end: "line: 1, column: 12",
+                    source: "\"日本語\"",
                 },
-                expression: Expression::StringLit(StringLit {
-                    base: BaseNode {
-                        location: loc.get(1, 1, 1, 12),
-                        ..BaseNode::default()
+            },
+            name: "",
+            metadata: "parser-type=rust",
+            package: None,
+            imports: [],
+            body: [
+                Expr(
+                    ExprStmt {
+                        base: BaseNode {
+                            location: SourceLocation {
+                                start: "line: 1, column: 1",
+                                end: "line: 1, column: 12",
+                                source: "\"日本語\"",
+                            },
+                        },
+                        expression: StringLit(
+                            StringLit {
+                                base: BaseNode {
+                                    location: SourceLocation {
+                                        start: "line: 1, column: 1",
+                                        end: "line: 1, column: 12",
+                                        source: "\"日本語\"",
+                                    },
+                                },
+                                value: "日本語",
+                            },
+                        ),
                     },
-                    value: "日本語".to_string()
-                })
-            }))],
-            eof: vec![],
-        },
-    )
+                ),
+            ],
+            eof: [],
+        }
+    "#]]
+    .assert_debug_eq(&parsed);
 }
 
 #[test]
 fn string_with_byte_values() {
     let mut p = Parser::new(r#""\xe6\x97\xa5\xe6\x9c\xac\xe8\xaa\x9e""#);
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(p.source);
-    assert_eq!(
-        parsed,
+    expect![[r#"
         File {
             base: BaseNode {
-                location: loc.get(1, 1, 1, 39),
-                ..BaseNode::default()
-            },
-            name: "".to_string(),
-            metadata: "parser-type=rust".to_string(),
-            package: None,
-            imports: vec![],
-            body: vec![Statement::Expr(Box::new(ExprStmt {
-                base: BaseNode {
-                    location: loc.get(1, 1, 1, 39),
-                    ..BaseNode::default()
+                location: SourceLocation {
+                    start: "line: 1, column: 1",
+                    end: "line: 1, column: 39",
+                    source: "\"\\xe6\\x97\\xa5\\xe6\\x9c\\xac\\xe8\\xaa\\x9e\"",
                 },
-                expression: Expression::StringLit(StringLit {
-                    base: BaseNode {
-                        location: loc.get(1, 1, 1, 39),
-                        ..BaseNode::default()
+            },
+            name: "",
+            metadata: "parser-type=rust",
+            package: None,
+            imports: [],
+            body: [
+                Expr(
+                    ExprStmt {
+                        base: BaseNode {
+                            location: SourceLocation {
+                                start: "line: 1, column: 1",
+                                end: "line: 1, column: 39",
+                                source: "\"\\xe6\\x97\\xa5\\xe6\\x9c\\xac\\xe8\\xaa\\x9e\"",
+                            },
+                        },
+                        expression: StringLit(
+                            StringLit {
+                                base: BaseNode {
+                                    location: SourceLocation {
+                                        start: "line: 1, column: 1",
+                                        end: "line: 1, column: 39",
+                                        source: "\"\\xe6\\x97\\xa5\\xe6\\x9c\\xac\\xe8\\xaa\\x9e\"",
+                                    },
+                                },
+                                value: "日本語",
+                            },
+                        ),
                     },
-                    value: "日本語".to_string()
-                })
-            }))],
-            eof: vec![],
-        },
-    )
+                ),
+            ],
+            eof: [],
+        }
+    "#]]
+    .assert_debug_eq(&parsed);
 }
 
 #[test]
 fn string_with_mixed_values() {
     let mut p = Parser::new(r#""hello 日x本 \xe6\x97\xa5\xe6\x9c\xac\xe8\xaa\x9e \xc2\xb5s""#);
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(p.source);
-    assert_eq!(
-        parsed,
+    expect![[r#"
         File {
             base: BaseNode {
-                location: loc.get(1, 1, 1, 63),
-                ..BaseNode::default()
-            },
-            name: "".to_string(),
-            metadata: "parser-type=rust".to_string(),
-            package: None,
-            imports: vec![],
-            body: vec![Statement::Expr(Box::new(ExprStmt {
-                base: BaseNode {
-                    location: loc.get(1, 1, 1, 63),
-                    ..BaseNode::default()
+                location: SourceLocation {
+                    start: "line: 1, column: 1",
+                    end: "line: 1, column: 63",
+                    source: "\"hello 日x本 \\xe6\\x97\\xa5\\xe6\\x9c\\xac\\xe8\\xaa\\x9e \\xc2\\xb5s\"",
                 },
-                expression: Expression::StringLit(StringLit {
-                    base: BaseNode {
-                        location: loc.get(1, 1, 1, 63),
-                        ..BaseNode::default()
+            },
+            name: "",
+            metadata: "parser-type=rust",
+            package: None,
+            imports: [],
+            body: [
+                Expr(
+                    ExprStmt {
+                        base: BaseNode {
+                            location: SourceLocation {
+                                start: "line: 1, column: 1",
+                                end: "line: 1, column: 63",
+                                source: "\"hello 日x本 \\xe6\\x97\\xa5\\xe6\\x9c\\xac\\xe8\\xaa\\x9e \\xc2\\xb5s\"",
+                            },
+                        },
+                        expression: StringLit(
+                            StringLit {
+                                base: BaseNode {
+                                    location: SourceLocation {
+                                        start: "line: 1, column: 1",
+                                        end: "line: 1, column: 63",
+                                        source: "\"hello 日x本 \\xe6\\x97\\xa5\\xe6\\x9c\\xac\\xe8\\xaa\\x9e \\xc2\\xb5s\"",
+                                    },
+                                },
+                                value: "hello 日x本 日本語 µs",
+                            },
+                        ),
                     },
-                    value: "hello 日x本 日本語 µs".to_string()
-                })
-            }))],
-            eof: vec![],
-        },
-    )
+                ),
+            ],
+            eof: [],
+        }
+    "#]].assert_debug_eq(&parsed);
 }
 
 #[test]
@@ -637,25 +940,47 @@ dollar curly bracket \${
 ""#,
     );
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(p.source);
-    assert_eq!(
-        parsed,
+    expect![[r#"
         File {
-            base: BaseNode {location: loc.get(1, 1, 7, 2), .. BaseNode::default() },
-            name: "".to_string(),
-            metadata: "parser-type=rust".to_string(),
+            base: BaseNode {
+                location: SourceLocation {
+                    start: "line: 1, column: 1",
+                    end: "line: 7, column: 2",
+                    source: "\"newline \\n\ncarriage return \\r\nhorizontal tab \\t\ndouble quote \\\"\nbackslash \\\\\ndollar curly bracket \\${\n\"",
+                },
+            },
+            name: "",
+            metadata: "parser-type=rust",
             package: None,
-            imports: vec![],
-            body: vec![Statement::Expr(Box::new(ExprStmt {
-                base: BaseNode {location: loc.get(1, 1, 7, 2), .. BaseNode::default() },
-                expression: Expression::StringLit(StringLit {
-                    base: BaseNode {location: loc.get(1, 1, 7, 2), .. BaseNode::default() },
-                    value: "newline \n\ncarriage return \r\nhorizontal tab \t\ndouble quote \"\nbackslash \\\ndollar curly bracket ${\n".to_string()
-                })
-            }))],
-            eof: vec![],
-        },
-    )
+            imports: [],
+            body: [
+                Expr(
+                    ExprStmt {
+                        base: BaseNode {
+                            location: SourceLocation {
+                                start: "line: 1, column: 1",
+                                end: "line: 7, column: 2",
+                                source: "\"newline \\n\ncarriage return \\r\nhorizontal tab \\t\ndouble quote \\\"\nbackslash \\\\\ndollar curly bracket \\${\n\"",
+                            },
+                        },
+                        expression: StringLit(
+                            StringLit {
+                                base: BaseNode {
+                                    location: SourceLocation {
+                                        start: "line: 1, column: 1",
+                                        end: "line: 7, column: 2",
+                                        source: "\"newline \\n\ncarriage return \\r\nhorizontal tab \\t\ndouble quote \\\"\nbackslash \\\\\ndollar curly bracket \\${\n\"",
+                                    },
+                                },
+                                value: "newline \n\ncarriage return \r\nhorizontal tab \t\ndouble quote \"\nbackslash \\\ndollar curly bracket ${\n",
+                            },
+                        ),
+                    },
+                ),
+            ],
+            eof: [],
+        }
+    "#]].assert_debug_eq(&parsed);
 }
 
 #[test]
@@ -668,32 +993,46 @@ string"
 "#,
     );
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(p.source);
-    assert_eq!(
-        parsed,
+    expect![[r#"
         File {
             base: BaseNode {
-                location: loc.get(1, 1, 4, 8),
-                ..BaseNode::default()
-            },
-            name: "".to_string(),
-            metadata: "parser-type=rust".to_string(),
-            package: None,
-            imports: vec![],
-            body: vec![Statement::Expr(Box::new(ExprStmt {
-                base: BaseNode {
-                    location: loc.get(1, 1, 4, 8),
-                    ..BaseNode::default()
+                location: SourceLocation {
+                    start: "line: 1, column: 1",
+                    end: "line: 4, column: 8",
+                    source: "\"\n this is a\nmultiline\nstring\"",
                 },
-                expression: Expression::StringLit(StringLit {
-                    base: BaseNode {
-                        location: loc.get(1, 1, 4, 8),
-                        ..BaseNode::default()
+            },
+            name: "",
+            metadata: "parser-type=rust",
+            package: None,
+            imports: [],
+            body: [
+                Expr(
+                    ExprStmt {
+                        base: BaseNode {
+                            location: SourceLocation {
+                                start: "line: 1, column: 1",
+                                end: "line: 4, column: 8",
+                                source: "\"\n this is a\nmultiline\nstring\"",
+                            },
+                        },
+                        expression: StringLit(
+                            StringLit {
+                                base: BaseNode {
+                                    location: SourceLocation {
+                                        start: "line: 1, column: 1",
+                                        end: "line: 4, column: 8",
+                                        source: "\"\n this is a\nmultiline\nstring\"",
+                                    },
+                                },
+                                value: "\n this is a\nmultiline\nstring",
+                            },
+                        ),
                     },
-                    value: "\n this is a\nmultiline\nstring".to_string()
-                })
-            }))],
-            eof: vec![],
-        },
-    )
+                ),
+            ],
+            eof: [],
+        }
+    "#]]
+    .assert_debug_eq(&parsed);
 }
