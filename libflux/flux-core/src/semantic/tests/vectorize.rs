@@ -10,7 +10,6 @@ fn analyzer_config() -> AnalyzerConfig {
         features: vec![
             Feature::VectorizedConst,
             Feature::VectorizedConditionals,
-            Feature::VectorizedEqualityOps,
             Feature::VectorizedFloat,
             Feature::VectorizedUnaryOps,
         ],
