@@ -6,6 +6,7 @@ import "array"
 import "csv"
 import "testing"
 import "internal/debug"
+import "internal/gen"
 
 right =
     array.from(
@@ -424,7 +425,7 @@ testcase join_empty_table {
     something = array.from(rows: [{_value: 1, id: "a"}])
 
     nothing =
-        array.from(rows: [{_value: 0.6, id: "b"}])
+        gen.tables(n: 1, tags: [{name: "id", cardinality: 1}])
             |> filter(fn: (r) => r.id == "empty table")
 
     got =
@@ -433,13 +434,9 @@ testcase join_empty_table {
             left: something,
             right: nothing,
             on: (l, r) => l.id == r.id,
-            as: (l, r) => {
-                id = if exists l.id then l.id else r.id
-
-                return {id: id, v_left: l._value, v_right: r._value}
-            },
+            as: (l, r) => ({l with v_right: r._value}),
         )
-    want = array.from(rows: [{id: "a", v_left: 1, v_right: debug.null(type: "float")}])
+    want = array.from(rows: [{id: "a", _value: 1, v_right: debug.null(type: "float")}])
 
     testing.diff(want, got)
 }
