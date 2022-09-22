@@ -531,10 +531,6 @@ pub enum Feature {
     VectorizedConditionals,
 
     /// Enables calls to map to be vectorized when the function contains
-    /// equality operators.
-    VectorizedEqualityOps,
-
-    /// Enables calls to map to be vectorized when the function contains
     /// float casts.
     VectorizedFloat,
 
