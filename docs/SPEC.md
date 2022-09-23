@@ -775,7 +775,7 @@ Literals construct a value.
     Literal = int_lit
             | float_lit
             | string_lit
-            | regex_lit
+            | regexp_lit
             | duration_lit
             | pipe_receive_lit
             | RecordLiteral
