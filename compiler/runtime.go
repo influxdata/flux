@@ -332,6 +332,7 @@ func (e *logicalEvaluator) Eval(ctx context.Context, scope Scope) (values.Value,
 
 // logicalStrictNullEvaluator differs from logicalEvaluator by how it adheres to the
 // flux language spec with respect to null inputs.
+//
 //lint:ignore U1000 investigating a perf issue related to the ff check in this - not dead yet...
 type logicalStrictNullEvaluator struct {
 	operator    ast.LogicalOperatorKind
