@@ -11,12 +11,12 @@
 # Since it blocks the ARM64 build of InfluxDB.
 FROM rust:1.58 as RUSTBUILD
 
-FROM golang:1.18 as PKGCONFIG
+FROM golang:1.19 as PKGCONFIG
 COPY go.mod go.sum /go/src/github.com/influxdata/flux/
 RUN cd /go/src/github.com/influxdata/flux && \
     go build -o /usr/local/bin/cgo-pkgbuild github.com/influxdata/pkg-config
 
-FROM golang:1.18
+FROM golang:1.19
 
 # Install common packages
 RUN apt-get update && \
