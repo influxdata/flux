@@ -287,13 +287,13 @@ func (t *tableTransformation) prepare(cols []flux.ColMeta, n int) ([]*columnStat
 		arrayType := semantic.NewArrayType(flux.SemanticType(cols[j].Type))
 
 		cs := &columnState{Label: c.As, Column: j}
-		if err := cs.compileInitFunc(c, arrayType); err != nil {
+		if err := cs.compileInitFunc(t.ctx, c, arrayType); err != nil {
 			return nil, err
 		}
-		if err := cs.compileReduceFunc(c, arrayType); err != nil {
+		if err := cs.compileReduceFunc(t.ctx, c, arrayType); err != nil {
 			return nil, err
 		}
-		if err := cs.compileComputeFunc(c, n, t.mem); err != nil {
+		if err := cs.compileComputeFunc(t.ctx, c, n, t.mem); err != nil {
 			return nil, err
 		}
 		columns[i] = cs
@@ -420,13 +420,13 @@ func (cs *columnState) Write(ctx context.Context, state values.Value) error {
 	return arrow.AppendValue(cs.Builder, v)
 }
 
-func (cs *columnState) compileInitFunc(c TableColumn, arrayType semantic.MonoType) error {
+func (cs *columnState) compileInitFunc(ctx context.Context, c TableColumn, arrayType semantic.MonoType) error {
 	cs.Init.Input = semantic.NewObjectType([]semantic.PropertyType{
 		{Key: []byte("values"), Value: arrayType},
 	})
 
 	scope := compiler.ToScope(c.Init.Scope)
-	fn, err := compiler.Compile(scope, c.Init.Fn, cs.Init.Input)
+	fn, err := compiler.Compile(ctx, scope, c.Init.Fn, cs.Init.Input)
 	if err != nil {
 		return errors.Wrap(err, codes.Inherit, "error compiling aggregate init function")
 	}
@@ -434,13 +434,13 @@ func (cs *columnState) compileInitFunc(c TableColumn, arrayType semantic.MonoTyp
 	return nil
 }
 
-func (cs *columnState) compileReduceFunc(c TableColumn, arrayType semantic.MonoType) error {
+func (cs *columnState) compileReduceFunc(ctx context.Context, c TableColumn, arrayType semantic.MonoType) error {
 	cs.Reduce.Input = semantic.NewObjectType([]semantic.PropertyType{
 		{Key: []byte("values"), Value: arrayType},
 		{Key: []byte("state"), Value: cs.Init.Fn.Type()},
 	})
 	scope := compiler.ToScope(c.Reduce.Scope)
-	fn, err := compiler.Compile(scope, c.Reduce.Fn, cs.Reduce.Input)
+	fn, err := compiler.Compile(ctx, scope, c.Reduce.Fn, cs.Reduce.Input)
 	if err != nil {
 		return errors.Wrap(err, codes.Inherit, "error compiling aggregate reduce function")
 	}
@@ -448,12 +448,12 @@ func (cs *columnState) compileReduceFunc(c TableColumn, arrayType semantic.MonoT
 	return nil
 }
 
-func (cs *columnState) compileComputeFunc(c TableColumn, n int, mem memory.Allocator) error {
+func (cs *columnState) compileComputeFunc(ctx context.Context, c TableColumn, n int, mem memory.Allocator) error {
 	cs.Compute.Input = semantic.NewObjectType([]semantic.PropertyType{
 		{Key: []byte("state"), Value: cs.Reduce.Fn.Type()},
 	})
 	scope := compiler.ToScope(c.Compute.Scope)
-	fn, err := compiler.Compile(scope, c.Compute.Fn, cs.Compute.Input)
+	fn, err := compiler.Compile(ctx, scope, c.Compute.Fn, cs.Compute.Input)
 	if err != nil {
 		return errors.Wrap(err, codes.Inherit, "error compiling aggregate compute function")
 	}

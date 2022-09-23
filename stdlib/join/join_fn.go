@@ -32,7 +32,7 @@ func NewJoinFn(fn interpreter.ResolvedFunction) *JoinFn {
 	}
 }
 
-func (f *JoinFn) Prepare(lcols, rcols []flux.ColMeta) error {
+func (f *JoinFn) Prepare(ctx context.Context, lcols, rcols []flux.ColMeta) error {
 	typ := f.Type()
 	args, err := typ.SortedArguments()
 	if err != nil {
@@ -61,6 +61,7 @@ func (f *JoinFn) Prepare(lcols, rcols []flux.ColMeta) error {
 	})
 	f.args = values.NewObject(in)
 	prepared, err := f.fn.Prepare(
+		ctx,
 		lcols,
 		map[string]semantic.MonoType{"r": *f.rtyp},
 		false,

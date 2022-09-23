@@ -114,7 +114,7 @@ func createFromGeneratorSource(prSpec plan.ProcedureSpec, dsid execute.DatasetID
 	s.Start = spec.Start
 	s.Stop = spec.Stop
 	s.Count = spec.Count
-	fn, err := compiler.Compile(compiler.ToScope(spec.Fn.Scope), spec.Fn.Fn, semantic.NewObjectType(
+	fn, err := compiler.Compile(a.Context(), compiler.ToScope(spec.Fn.Scope), spec.Fn.Fn, semantic.NewObjectType(
 		[]semantic.PropertyType{
 			{Key: []byte("n"), Value: semantic.BasicInt},
 		},

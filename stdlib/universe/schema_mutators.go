@@ -52,7 +52,7 @@ type SchemaMutator interface {
 }
 
 type SchemaMutation interface {
-	Mutator() (SchemaMutator, error)
+	Mutator(ctx context.Context) (SchemaMutator, error)
 	Copy() SchemaMutation
 }
 
@@ -82,11 +82,11 @@ type schemaFnMutator struct {
 	Input values.Object
 }
 
-func (m *schemaFnMutator) compile(fn interpreter.ResolvedFunction) error {
+func (m *schemaFnMutator) compile(ctx context.Context, fn interpreter.ResolvedFunction) error {
 	in := semantic.NewObjectType([]semantic.PropertyType{
 		{Key: []byte(schemaFnMutatorParamName), Value: semantic.BasicString},
 	})
-	preparedFn, err := compiler.Compile(compiler.ToScope(fn.Scope), fn.Fn, in)
+	preparedFn, err := compiler.Compile(ctx, compiler.ToScope(fn.Scope), fn.Fn, in)
 	if err != nil {
 		return err
 	}
@@ -110,7 +110,7 @@ type RenameMutator struct {
 	Columns map[string]string
 }
 
-func NewRenameMutator(qs flux.OperationSpec) (*RenameMutator, error) {
+func NewRenameMutator(ctx context.Context, qs flux.OperationSpec) (*RenameMutator, error) {
 	s, ok := qs.(*RenameOpSpec)
 
 	m := &RenameMutator{}
@@ -123,7 +123,7 @@ func NewRenameMutator(qs flux.OperationSpec) (*RenameMutator, error) {
 	}
 
 	if s.Fn.Fn != nil {
-		if err := m.compile(s.Fn); err != nil {
+		if err := m.compile(ctx, s.Fn); err != nil {
 			return nil, err
 		}
 	}
@@ -191,13 +191,13 @@ type DropKeepMutator struct {
 	FlipPredicate bool
 }
 
-func NewDropMutator(s *DropOpSpec) (*DropKeepMutator, error) {
+func NewDropMutator(ctx context.Context, s *DropOpSpec) (*DropKeepMutator, error) {
 	m := &DropKeepMutator{}
 	if s.Columns != nil {
 		m.DropCols = toStringSet(s.Columns)
 	}
 	if s.Predicate.Fn != nil {
-		if err := m.compile(s.Predicate); err != nil {
+		if err := m.compile(ctx, s.Predicate); err != nil {
 			return nil, err
 		}
 	}
@@ -205,14 +205,14 @@ func NewDropMutator(s *DropOpSpec) (*DropKeepMutator, error) {
 	return m, nil
 }
 
-func NewKeepMutator(s *KeepOpSpec) (*DropKeepMutator, error) {
+func NewKeepMutator(ctx context.Context, s *KeepOpSpec) (*DropKeepMutator, error) {
 	m := &DropKeepMutator{}
 
 	if s.Columns != nil {
 		m.KeepCols = toStringSet(s.Columns)
 	}
 	if s.Predicate.Fn != nil {
-		if err := m.compile(s.Predicate); err != nil {
+		if err := m.compile(ctx, s.Predicate); err != nil {
 			return nil, err
 		}
 		m.FlipPredicate = true

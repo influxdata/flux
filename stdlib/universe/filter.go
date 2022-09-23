@@ -162,7 +162,7 @@ type filterTransformation struct {
 func (t *filterTransformation) Process(chunk table.Chunk, d *execute.TransportDataset, mem arrowmem.Allocator) error {
 	// Prepare the function for the column types.
 	cols := chunk.Cols()
-	fn, err := t.fn.Prepare(cols)
+	fn, err := t.fn.Prepare(t.ctx, cols)
 	if err != nil {
 		// TODO(nathanielc): Should we not fail the query for failed compilation?
 		return err

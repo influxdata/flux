@@ -1,13 +1,15 @@
 package compiler
 
 import (
+	"context"
+
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
 
-func Compile(scope Scope, f *semantic.FunctionExpression, in semantic.MonoType) (Func, error) {
+func Compile(ctx context.Context, scope Scope, f *semantic.FunctionExpression, in semantic.MonoType) (Func, error) {
 	if scope == nil {
 		scope = NewScope()
 	}
@@ -60,7 +62,7 @@ func Compile(scope Scope, f *semantic.FunctionExpression, in semantic.MonoType) 
 		}
 	}
 
-	compiler := &compiler{}
+	compiler := &compiler{ctx}
 	root, err := compiler.compile(f.Block, subst)
 	if err != nil {
 		return nil, errors.Wrapf(err, codes.Inherit, "cannot compile @ %v", f.Location())
@@ -401,6 +403,7 @@ func apply(sub semantic.Substitutor, props []semantic.PropertyType, t semantic.M
 }
 
 type compiler struct {
+	ctx context.Context
 }
 
 // compile recursively compiles semantic nodes into evaluators.

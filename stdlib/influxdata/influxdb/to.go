@@ -198,7 +198,7 @@ func (t *toTransformation) writeTable(chunk table.Chunk) (err error) {
 	var fn *execute.RowMapPreparedFn
 	if spec.FieldFn.Fn != nil {
 		var err error
-		if fn, err = t.fn.Prepare(columns); err != nil {
+		if fn, err = t.fn.Prepare(t.ctx, columns); err != nil {
 			return err
 		}
 	}

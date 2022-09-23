@@ -22,8 +22,8 @@ func NewVectorMapFn(fn *semantic.FunctionExpression, scope compiler.Scope) *Vect
 	}
 }
 
-func (f *VectorMapFn) Prepare(cols []flux.ColMeta) (*VectorMapPreparedFn, error) {
-	fn, err := f.prepare(cols, nil, true)
+func (f *VectorMapFn) Prepare(ctx context.Context, cols []flux.ColMeta) (*VectorMapPreparedFn, error) {
+	fn, err := f.prepare(ctx, cols, nil, true)
 	if err != nil {
 		return nil, err
 	} else if k := fn.returnType().Nature(); k != semantic.Object {

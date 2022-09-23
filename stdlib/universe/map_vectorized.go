@@ -91,8 +91,8 @@ type mapVectorFunc struct {
 	fn *execute.VectorMapFn
 }
 
-func (m *mapVectorFunc) Prepare(cols []flux.ColMeta) (mapPreparedFunc, error) {
-	fn, err := m.fn.Prepare(cols)
+func (m *mapVectorFunc) Prepare(ctx context.Context, cols []flux.ColMeta) (mapPreparedFunc, error) {
+	fn, err := m.fn.Prepare(ctx, cols)
 	if err != nil {
 		return nil, err
 	}
