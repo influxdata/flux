@@ -60,7 +60,8 @@ func Compile(scope Scope, f *semantic.FunctionExpression, in semantic.MonoType) 
 		}
 	}
 
-	root, err := compile(f.Block, subst)
+	compiler := &compiler{}
+	root, err := compiler.compile(f.Block, subst)
 	if err != nil {
 		return nil, errors.Wrapf(err, codes.Inherit, "cannot compile @ %v", f.Location())
 	}
@@ -399,13 +400,16 @@ func apply(sub semantic.Substitutor, props []semantic.PropertyType, t semantic.M
 	panic("unknown type")
 }
 
+type compiler struct {
+}
+
 // compile recursively compiles semantic nodes into evaluators.
-func compile(n semantic.Node, subst semantic.Substitutor) (Evaluator, error) {
+func (compiler *compiler) compile(n semantic.Node, subst semantic.Substitutor) (Evaluator, error) {
 	switch n := n.(type) {
 	case *semantic.Block:
 		body := make([]Evaluator, len(n.Body))
 		for i, s := range n.Body {
-			node, err := compile(s, subst)
+			node, err := compiler.compile(s, subst)
 			if err != nil {
 				return nil, err
 			}
@@ -418,7 +422,7 @@ func compile(n semantic.Node, subst semantic.Substitutor) (Evaluator, error) {
 	case *semantic.ExpressionStatement:
 		return nil, errors.New(codes.Internal, "statement does nothing, side effects are not supported by the compiler")
 	case *semantic.ReturnStatement:
-		node, err := compile(n.Argument, subst)
+		node, err := compiler.compile(n.Argument, subst)
 		if err != nil {
 			return nil, err
 		}
@@ -430,7 +434,7 @@ func compile(n semantic.Node, subst semantic.Substitutor) (Evaluator, error) {
 		if err != nil {
 			return nil, err
 		}
-		node, err := compile(n.Init, subst)
+		node, err := compiler.compile(n.Init, subst)
 		if err != nil {
 			return nil, err
 		}
@@ -444,7 +448,7 @@ func compile(n semantic.Node, subst semantic.Substitutor) (Evaluator, error) {
 		properties := make(map[string]Evaluator, len(n.Properties))
 
 		for _, p := range n.Properties {
-			node, err := compile(p.Value, subst)
+			node, err := compiler.compile(p.Value, subst)
 			if err != nil {
 				return nil, err
 			}
@@ -453,7 +457,7 @@ func compile(n semantic.Node, subst semantic.Substitutor) (Evaluator, error) {
 
 		var extends *identifierEvaluator
 		if n.With != nil {
-			node, err := compile(n.With, subst)
+			node, err := compiler.compile(n.With, subst)
 			if err != nil {
 				return nil, err
 			}
@@ -475,7 +479,7 @@ func compile(n semantic.Node, subst semantic.Substitutor) (Evaluator, error) {
 		if len(n.Elements) > 0 {
 			elements = make([]Evaluator, len(n.Elements))
 			for i, e := range n.Elements {
-				node, err := compile(e, subst)
+				node, err := compiler.compile(e, subst)
 				if err != nil {
 					return nil, err
 				}
@@ -492,11 +496,11 @@ func compile(n semantic.Node, subst semantic.Substitutor) (Evaluator, error) {
 			Val Evaluator
 		}, len(n.Elements))
 		for i, item := range n.Elements {
-			key, err := compile(item.Key, subst)
+			key, err := compiler.compile(item.Key, subst)
 			if err != nil {
 				return nil, err
 			}
-			val, err := compile(item.Val, subst)
+			val, err := compiler.compile(item.Val, subst)
 			if err != nil {
 				return nil, err
 			}
@@ -515,7 +519,7 @@ func compile(n semantic.Node, subst semantic.Substitutor) (Evaluator, error) {
 			name: n.Name.Name(),
 		}, nil
 	case *semantic.MemberExpression:
-		object, err := compile(n.Object, subst)
+		object, err := compiler.compile(n.Object, subst)
 		if err != nil {
 			return nil, err
 		}
@@ -527,11 +531,11 @@ func compile(n semantic.Node, subst semantic.Substitutor) (Evaluator, error) {
 			nullable: isNullable(t),
 		}, nil
 	case *semantic.IndexExpression:
-		arr, err := compile(n.Array, subst)
+		arr, err := compiler.compile(n.Array, subst)
 		if err != nil {
 			return nil, err
 		}
-		idx, err := compile(n.Index, subst)
+		idx, err := compiler.compile(n.Index, subst)
 		if err != nil {
 			return nil, err
 		}
@@ -543,7 +547,7 @@ func compile(n semantic.Node, subst semantic.Substitutor) (Evaluator, error) {
 	case *semantic.StringExpression:
 		parts := make([]Evaluator, len(n.Parts))
 		for i, p := range n.Parts {
-			e, err := compile(p, subst)
+			e, err := compiler.compile(p, subst)
 			if err != nil {
 				return nil, err
 			}
@@ -557,7 +561,7 @@ func compile(n semantic.Node, subst semantic.Substitutor) (Evaluator, error) {
 			value: n.Value,
 		}, nil
 	case *semantic.InterpolatedPart:
-		e, err := compile(n.Expression, subst)
+		e, err := compiler.compile(n.Expression, subst)
 		if err != nil {
 			return nil, err
 		}
@@ -601,7 +605,7 @@ func compile(n semantic.Node, subst semantic.Substitutor) (Evaluator, error) {
 			duration: v,
 		}, nil
 	case *semantic.UnaryExpression:
-		node, err := compile(n.Argument, subst)
+		node, err := compiler.compile(n.Argument, subst)
 		if err != nil {
 			return nil, err
 		}
@@ -618,11 +622,11 @@ func compile(n semantic.Node, subst semantic.Substitutor) (Evaluator, error) {
 			op:   n.Operator,
 		}, nil
 	case *semantic.LogicalExpression:
-		l, err := compile(n.Left, subst)
+		l, err := compiler.compile(n.Left, subst)
 		if err != nil {
 			return nil, err
 		}
-		r, err := compile(n.Right, subst)
+		r, err := compiler.compile(n.Right, subst)
 		if err != nil {
 			return nil, err
 		}
@@ -645,15 +649,15 @@ func compile(n semantic.Node, subst semantic.Substitutor) (Evaluator, error) {
 			right:    r,
 		}, nil
 	case *semantic.ConditionalExpression:
-		test, err := compile(n.Test, subst)
+		test, err := compiler.compile(n.Test, subst)
 		if err != nil {
 			return nil, err
 		}
-		c, err := compile(n.Consequent, subst)
+		c, err := compiler.compile(n.Consequent, subst)
 		if err != nil {
 			return nil, err
 		}
-		a, err := compile(n.Alternate, subst)
+		a, err := compiler.compile(n.Alternate, subst)
 		if err != nil {
 			return nil, err
 		}
@@ -672,12 +676,12 @@ func compile(n semantic.Node, subst semantic.Substitutor) (Evaluator, error) {
 			alternate:  a,
 		}, nil
 	case *semantic.BinaryExpression:
-		l, err := compile(n.Left, subst)
+		l, err := compiler.compile(n.Left, subst)
 		if err != nil {
 			return nil, err
 		}
 		lt := l.Type().Nature()
-		r, err := compile(n.Right, subst)
+		r, err := compiler.compile(n.Right, subst)
 		if err != nil {
 			return nil, err
 		}
@@ -716,7 +720,7 @@ func compile(n semantic.Node, subst semantic.Substitutor) (Evaluator, error) {
 			f:     g,
 		}, nil
 	case *semantic.CallExpression:
-		args, err := compile(n.Arguments, subst)
+		args, err := compiler.compile(n.Arguments, subst)
 		if err != nil {
 			return nil, err
 		}
@@ -739,13 +743,13 @@ func compile(n semantic.Node, subst semantic.Substitutor) (Evaluator, error) {
 				// This should be caught during type inference
 				return nil, errors.Newf(codes.Internal, "callee lacks a pipe argument, but one was provided")
 			}
-			pipe, err := compile(n.Pipe, subst)
+			pipe, err := compiler.compile(n.Pipe, subst)
 			if err != nil {
 				return nil, err
 			}
 			args.(*objEvaluator).properties[string(pipeArg.Name())] = pipe
 		}
-		callee, err := compile(n.Callee, subst)
+		callee, err := compiler.compile(n.Callee, subst)
 		if err != nil {
 			return nil, err
 		}
@@ -779,7 +783,7 @@ func compile(n semantic.Node, subst semantic.Substitutor) (Evaluator, error) {
 				// Search for default value
 				for _, d := range n.Defaults.Properties {
 					if d.Key.Key() == k {
-						d, err := compile(d.Value, subst)
+						d, err := compiler.compile(d.Value, subst)
 						if err != nil {
 							return nil, err
 						}
