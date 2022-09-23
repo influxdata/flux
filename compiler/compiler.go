@@ -638,7 +638,8 @@ func compile(n semantic.Node, subst semantic.Substitutor) (Evaluator, error) {
 		//   Need ctx to read flagger.
 		//   Currently this happens during Eval() where ctx is available and
 		//   will fallback to the regular logicalEvaluator if the flag is unset.
-		return &logicalStrictNullEvaluator{
+		// FIXME: disabling the strict null  evaluator while looking at a perf regression...
+		return &logicalEvaluator{
 			operator: n.Operator,
 			left:     l,
 			right:    r,
