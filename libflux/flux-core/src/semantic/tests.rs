@@ -4347,3 +4347,71 @@ fn infer_testcase_not_in_scope() {
         "#]],
     }
 }
+
+#[test]
+fn dynamic_builtin_signature() {
+    test_infer! {
+        src: r#"builtin x : (x: dynamic) => A"#,
+        exp: map![
+            "x" => "(x: dynamic) => A",
+        ],
+    }
+}
+
+#[test]
+fn index_dynamic() {
+    test_infer! {
+        env: map![
+            "d" => "dynamic"
+        ],
+        src: r#"arr = [d]
+v = arr[0]
+"#,
+        exp: map![
+            "arr" => "[dynamic]",
+            "v" => "dynamic",
+        ],
+    }
+}
+
+#[test]
+fn member_dynamic() {
+    test_infer! {
+        env: map![
+            "d" => "dynamic"
+        ],
+        src: r#"foo = {bar: d}
+v = foo.bar
+"#,
+        exp: map![
+            "foo" => "{bar: dynamic}",
+            "v" => "dynamic",
+        ],
+    }
+}
+
+#[test]
+fn dynamic_member() {
+    test_infer! {
+        env: map![
+            "d" => "dynamic"
+        ],
+        src: r#"v = d.foo"#,
+        exp: map![
+            "v" => "dynamic",
+        ],
+    }
+}
+
+#[test]
+fn dynamic_index() {
+    test_infer! {
+        env: map![
+            "d" => "dynamic"
+        ],
+        src: r#"v = d[0]"#,
+        exp: map![
+            "v" => "dynamic",
+        ],
+    }
+}

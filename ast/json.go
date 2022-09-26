@@ -1318,6 +1318,31 @@ func (c *DictType) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
+func (c DynamicType) MarshalJSON() ([]byte, error) {
+	type Alias DynamicType
+	raw := struct {
+		Type string `json:"type"`
+		Alias
+	}{
+		Type:  c.Type(),
+		Alias: (Alias)(c),
+	}
+	return json.Marshal(raw)
+}
+func (c *DynamicType) UnmarshalJSON(data []byte) error {
+	type Alias DynamicType
+	raw := struct {
+		*Alias
+	}{}
+	if err := json.Unmarshal(data, &raw); err != nil {
+		return err
+	}
+	if raw.Alias != nil {
+		*c = *(*DynamicType)(raw.Alias)
+	}
+	return nil
+}
+
 func (rec RecordType) MarshalJSON() ([]byte, error) {
 	type Alias RecordType
 	raw := struct {
@@ -1626,6 +1651,8 @@ func unmarshalNode(msg json.RawMessage) (Node, error) {
 		node = new(StreamType)
 	case "DictType":
 		node = new(DictType)
+	case "DynamicType":
+		node = new(DynamicType)
 	case "TvarType":
 		node = new(TvarType)
 	case "NamedType":

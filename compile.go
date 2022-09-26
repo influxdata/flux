@@ -83,6 +83,10 @@ type TableObject struct {
 	Parents []*TableObject
 }
 
+func (t *TableObject) Dynamic() values.Dynamic {
+	panic(values.UnexpectedKind(t.Type().Nature(), semantic.Dynamic))
+}
+
 func (t *TableObject) IsNull() bool {
 	return false
 }
@@ -225,6 +229,10 @@ type function struct {
 	t             semantic.MonoType
 	createOpSpec  CreateOperationSpec
 	hasSideEffect bool
+}
+
+func (f *function) Dynamic() values.Dynamic {
+	panic(values.UnexpectedKind(semantic.Function, semantic.Dynamic))
 }
 
 func (f *function) Type() semantic.MonoType {

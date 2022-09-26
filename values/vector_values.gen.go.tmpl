@@ -119,6 +119,7 @@ func (v *VectorRepeatValue) Array() Array { panic(UnexpectedKind(semantic.Vector
 func (v *VectorRepeatValue) Object() Object { panic(UnexpectedKind(semantic.Vector, semantic.Object)) }
 func (v *VectorRepeatValue) Function() Function { panic(UnexpectedKind(semantic.Vector, semantic.Function)) }
 func (v *VectorRepeatValue) Dict() Dictionary { panic(UnexpectedKind(semantic.Vector, semantic.Dictionary)) }
+func (v *VectorRepeatValue) Dynamic() Dynamic { panic(UnexpectedKind(semantic.Vector, semantic.Dynamic)) }
 func (v *VectorRepeatValue) Vector() Vector {
 	return v
 }
@@ -177,6 +178,7 @@ func (v *{{.Name}}VectorValue) Array() Array { panic(UnexpectedKind(semantic.Vec
 func (v *{{.Name}}VectorValue) Object() Object { panic(UnexpectedKind(semantic.Vector, semantic.Object)) }
 func (v *{{.Name}}VectorValue) Function() Function { panic(UnexpectedKind(semantic.Vector, semantic.Function)) }
 func (v *{{.Name}}VectorValue) Dict() Dictionary { panic(UnexpectedKind(semantic.Vector, semantic.Dictionary)) }
+func (v *{{.Name}}VectorValue) Dynamic() Dynamic { panic(UnexpectedKind(semantic.Vector, semantic.Dynamic)) }
 func (v *{{.Name}}VectorValue) Vector() Vector {
 	return v
 }

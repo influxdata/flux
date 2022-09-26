@@ -561,7 +561,7 @@ impl<'input> Parser<'input> {
 
     /// Parses a mono type
     pub fn parse_monotype(&mut self) -> MonoType {
-        // Tvar | Basic | Array | Dict | Record | Function
+        // Tvar | Basic | Array | Dict | Dynamic | Record | Function
         let t = self.peek();
         match t.tok {
             TokenType::LBrack => {
@@ -610,6 +610,7 @@ impl<'input> Parser<'input> {
                     element: ty,
                 }))
             }
+            TokenType::Ident if t.lit == "dynamic" => self.parse_dynamic_type(),
             _ => {
                 if t.lit.len() == 1 {
                     self.parse_tvar()
@@ -618,6 +619,13 @@ impl<'input> Parser<'input> {
                 }
             }
         }
+    }
+
+    fn parse_dynamic_type(&mut self) -> MonoType {
+        let t = self.expect(TokenType::Ident);
+        MonoType::Dynamic(Box::new(DynamicType {
+            base: self.base_node_from_token(&t),
+        }))
     }
 
     fn parse_basic_type(&mut self) -> MonoType {

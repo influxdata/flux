@@ -36,6 +36,10 @@ type function struct {
 	hasSideEffect bool
 }
 
+func (f *function) Dynamic() Dynamic {
+	panic(UnexpectedKind(semantic.Function, semantic.Dynamic))
+}
+
 func (f *function) IsNull() bool {
 	return false
 }
