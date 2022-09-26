@@ -5,7 +5,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/rpc"
 	"net/rpc/jsonrpc"
 	"os"
@@ -293,7 +292,7 @@ func (r *ScopeHolder) doQuery(ctx context.Context, spec *operation.Spec) error {
 // the @ prefix is removed and the contents of the file specified by the rest of q are returned.
 func LoadQuery(q string) (string, error) {
 	if q == "-" {
-		data, err := ioutil.ReadAll(os.Stdin)
+		data, err := io.ReadAll(os.Stdin)
 		if err != nil {
 			return "", err
 		}
@@ -301,7 +300,7 @@ func LoadQuery(q string) (string, error) {
 	}
 
 	if len(q) > 0 && q[0] == '@' {
-		data, err := ioutil.ReadFile(q[1:])
+		data, err := os.ReadFile(q[1:])
 		if err != nil {
 			return "", err
 		}

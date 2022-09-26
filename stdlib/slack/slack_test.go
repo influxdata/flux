@@ -3,7 +3,7 @@ package slack_test
 import (
 	"context"
 	"encoding/json"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -71,7 +71,7 @@ func NewServer(t *testing.T) *Server {
 			URL:           r.URL.String(), // r.URL.String(),
 			Authorization: r.Header.Get("Authorization"),
 		}
-		b, err := ioutil.ReadAll(r.Body)
+		b, err := io.ReadAll(r.Body)
 		defer r.Body.Close()
 		if err != nil {
 			t.Error(err)

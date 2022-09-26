@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"io/ioutil"
 	"os"
 	"path"
 	"path/filepath"
@@ -75,7 +74,7 @@ func generate(cmd *cobra.Command, args []string) error {
 }
 
 func walkDirs(path string, f func(dir string) error) error {
-	files, err := ioutil.ReadDir(path)
+	files, err := os.ReadDir(path)
 	if err != nil {
 		return err
 	}
@@ -94,7 +93,7 @@ func walkDirs(path string, f func(dir string) error) error {
 }
 
 func dirProps(dir string) (hasGo, hasFlux bool, err error) {
-	files, err := ioutil.ReadDir(dir)
+	files, err := os.ReadDir(dir)
 	if err != nil {
 		return
 	}

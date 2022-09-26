@@ -5,7 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"go/format"
-	"io/ioutil"
+	"io"
 	"os"
 	"strings"
 	"text/template"
@@ -182,7 +182,7 @@ func run() error {
 	}
 	defer in.Close()
 
-	configuration, err := ioutil.ReadAll(in)
+	configuration, err := io.ReadAll(in)
 	if err != nil {
 		return err
 	}
@@ -222,7 +222,7 @@ func run() error {
 		return err
 	}
 
-	raw, err := ioutil.ReadAll(buf)
+	raw, err := io.ReadAll(buf)
 	if err != nil {
 		return err
 	}

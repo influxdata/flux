@@ -3,7 +3,6 @@ package filesystem_test
 import (
 	"context"
 	"io"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
@@ -12,7 +11,7 @@ import (
 )
 
 func TestSystemFS_Open(t *testing.T) {
-	tmpfile, err := ioutil.TempFile("", "flux-systemfs-test")
+	tmpfile, err := os.CreateTemp("", "flux-systemfs-test")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -33,7 +32,7 @@ func TestSystemFS_Open(t *testing.T) {
 	}
 	defer func() { _ = f.Close() }()
 
-	data, err := ioutil.ReadAll(f)
+	data, err := io.ReadAll(f)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -48,7 +47,7 @@ func TestSystemFS_Open(t *testing.T) {
 }
 
 func TestSystemFS_Stat(t *testing.T) {
-	tmpfile, err := ioutil.TempFile("", "flux-systemfs-test")
+	tmpfile, err := os.CreateTemp("", "flux-systemfs-test")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -71,7 +70,7 @@ func TestSystemFS_Stat(t *testing.T) {
 }
 
 func TestSystemFS_ReadFile(t *testing.T) {
-	tmpfile, err := ioutil.TempFile("", "flux-systemfs-test")
+	tmpfile, err := os.CreateTemp("", "flux-systemfs-test")
 	if err != nil {
 		t.Fatal(err)
 	}

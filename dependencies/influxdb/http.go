@@ -5,7 +5,6 @@ import (
 	"context"
 	"encoding/json"
 	"io"
-	"io/ioutil"
 	stdhttp "net/http"
 	"net/url"
 	"sort"
@@ -149,7 +148,7 @@ func (h *HttpClient) Query(ctx context.Context, f func(table flux.Table) error, 
 	if err != nil {
 		return err
 	} else if resp.StatusCode != 200 {
-		data, err := ioutil.ReadAll(resp.Body)
+		data, err := io.ReadAll(resp.Body)
 		if err != nil {
 			return errors.Newf(codes.Invalid, "error when reading response body: %s", err)
 		}

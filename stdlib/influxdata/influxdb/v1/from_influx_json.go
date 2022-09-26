@@ -6,7 +6,6 @@ import (
 	stderrors "errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"strings"
 
@@ -125,7 +124,7 @@ func createFromInfluxJSONSource(prSpec plan.ProcedureSpec, dsid execute.DatasetI
 	}
 
 	decoder := influxql.NewResultDecoder(a.Allocator())
-	results, err := decoder.Decode(ioutil.NopCloser(jsonReader))
+	results, err := decoder.Decode(io.NopCloser(jsonReader))
 	if err != nil {
 		return nil, err
 	}

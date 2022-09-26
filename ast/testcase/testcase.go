@@ -2,7 +2,7 @@ package testcase
 
 import (
 	"context"
-	"io/ioutil"
+	"io"
 	"path/filepath"
 	"strings"
 
@@ -149,7 +149,7 @@ func extendTest(file *ast.File, extends string, modules TestModules) ([]*ast.Imp
 	if err != nil {
 		return nil, nil, nil, err
 	}
-	contents, err := ioutil.ReadAll(f)
+	contents, err := io.ReadAll(f)
 	_ = f.Close()
 	if err != nil {
 		return nil, nil, nil, err

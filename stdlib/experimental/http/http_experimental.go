@@ -3,7 +3,7 @@ package http
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/url"
 	"strings"
@@ -100,7 +100,7 @@ var get = values.NewFunction(
 				}
 				return 0, nil, nil, err
 			}
-			body, err := ioutil.ReadAll(response.Body)
+			body, err := io.ReadAll(response.Body)
 			_ = response.Body.Close()
 			if err != nil {
 				return 0, nil, nil, err

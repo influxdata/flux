@@ -3,7 +3,6 @@ package main
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 
@@ -52,7 +51,7 @@ func formatFile(cmd *cobra.Command, args []string) error {
 }
 
 func format(script string) (bool, error) {
-	fromFile, err := ioutil.ReadFile(script)
+	fromFile, err := os.ReadFile(script)
 	if err != nil {
 		return false, err
 	}
@@ -86,7 +85,7 @@ func format(script string) (bool, error) {
 }
 
 func updateScript(fname string, script string) error {
-	err := ioutil.WriteFile(fname, []byte(script), 0644)
+	err := os.WriteFile(fname, []byte(script), 0644)
 	if err != nil {
 		return err
 	}

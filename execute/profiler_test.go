@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"strings"
 	"testing"
 	"time"
@@ -96,7 +96,7 @@ func TestOperatorProfiler_GetResult(t *testing.T) {
 	result := table.NewProfilerResult(tbl)
 	got := flux.NewSliceResultIterator([]flux.Result{&result})
 	dec := csv.NewMultiResultDecoder(csv.ResultDecoderConfig{})
-	want, e := dec.Decode(ioutil.NopCloser(strings.NewReader(wantStr.String())))
+	want, e := dec.Decode(io.NopCloser(strings.NewReader(wantStr.String())))
 	if e != nil {
 		t.Error(err)
 	}
@@ -142,7 +142,7 @@ func TestQueryProfiler_GetResult(t *testing.T) {
 	result := table.NewProfilerResult(tbl)
 	got := flux.NewSliceResultIterator([]flux.Result{&result})
 	dec := csv.NewMultiResultDecoder(csv.ResultDecoderConfig{})
-	want, e := dec.Decode(ioutil.NopCloser(strings.NewReader(wantStr)))
+	want, e := dec.Decode(io.NopCloser(strings.NewReader(wantStr)))
 	if e != nil {
 		t.Error(err)
 	}

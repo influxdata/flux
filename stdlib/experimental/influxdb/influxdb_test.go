@@ -3,7 +3,7 @@ package influxdb
 import (
 	"bytes"
 	"context"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -197,7 +197,7 @@ func Test_api(t *testing.T) {
 					t.Errorf("unexpected request URL query: %s", diff)
 				}
 
-				if requestBody, _ := ioutil.ReadAll(r.Body); !bytes.Equal(requestBody, test.expectedRequestBody) {
+				if requestBody, _ := io.ReadAll(r.Body); !bytes.Equal(requestBody, test.expectedRequestBody) {
 					t.Errorf("unexpected request body: got %s, expected %s", requestBody, test.expectedRequestBody)
 				}
 

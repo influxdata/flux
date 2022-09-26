@@ -3,7 +3,6 @@ package csv
 import (
 	"context"
 	"io"
-	"io/ioutil"
 	"strings"
 
 	"github.com/influxdata/flux"
@@ -128,7 +127,7 @@ func CreateSource(spec *FromCSVProcedureSpec, dsid execute.DatasetID, a execute.
 		}
 	} else { // if spec.File is empty then spec.CSV is not empty
 		getDataStream = func() (io.ReadCloser, error) {
-			return ioutil.NopCloser(strings.NewReader(spec.CSV)), nil
+			return io.NopCloser(strings.NewReader(spec.CSV)), nil
 		}
 	}
 	csvSource := CSVSource{

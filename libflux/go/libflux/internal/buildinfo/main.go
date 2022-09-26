@@ -8,7 +8,6 @@ import (
 	"go/format"
 	"hash"
 	"io"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -212,7 +211,7 @@ var sourceHashes = map[string]string{
 	if err != nil {
 		return err
 	}
-	return ioutil.WriteFile("buildinfo.gen.go", buildinfo, 0644)
+	return os.WriteFile("buildinfo.gen.go", buildinfo, 0644)
 }
 
 func main() {

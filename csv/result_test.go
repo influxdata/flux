@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"context"
 	"errors"
-	"io/ioutil"
+	"io"
 	"regexp"
 	"strings"
 	"testing"
@@ -2485,7 +2485,7 @@ func TestMultiResultDecoder(t *testing.T) {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			decoder := csv.NewMultiResultDecoder(tc.config)
-			results, err := decoder.Decode(ioutil.NopCloser(bytes.NewReader(tc.encoded)))
+			results, err := decoder.Decode(io.NopCloser(bytes.NewReader(tc.encoded)))
 			if err != nil {
 				t.Fatal(err)
 			}

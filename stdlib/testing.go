@@ -2,7 +2,7 @@ package stdlib
 
 import (
 	"fmt"
-	"io/ioutil"
+	"os"
 	"path"
 	"path/filepath"
 	"strings"
@@ -167,7 +167,7 @@ func FindTestPackages(rootDir string) ([]*ast.Package, error) {
 }
 
 func walkDirs(path string, f func(dir string) error) error {
-	files, err := ioutil.ReadDir(path)
+	files, err := os.ReadDir(path)
 	if err != nil {
 		return err
 	}

@@ -3,7 +3,7 @@ package libflux_test
 import (
 	"bytes"
 	"encoding/json"
-	"io/ioutil"
+	"io"
 	"os"
 	"testing"
 
@@ -21,7 +21,7 @@ func BenchmarkRustParse(b *testing.B) {
 		defer func() {
 			_ = f.Close()
 		}()
-		bs, err := ioutil.ReadAll(f)
+		bs, err := io.ReadAll(f)
 		if err != nil {
 			b.Fatal(err)
 		}

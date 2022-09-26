@@ -5,7 +5,6 @@ import (
 	"context"
 	"errors"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"strings"
 	"testing"
@@ -97,7 +96,7 @@ func TestWideToTransformation(t *testing.T) {
 				return &http.Response{
 					StatusCode: http.StatusInternalServerError,
 					Status:     http.StatusText(http.StatusInternalServerError),
-					Body:       ioutil.NopCloser(strings.NewReader(err.Error())),
+					Body:       io.NopCloser(strings.NewReader(err.Error())),
 					Header:     make(http.Header),
 				}
 			}
@@ -105,7 +104,7 @@ func TestWideToTransformation(t *testing.T) {
 			return &http.Response{
 				StatusCode: http.StatusNoContent,
 				Status:     http.StatusText(http.StatusNoContent),
-				Body:       ioutil.NopCloser(bytes.NewReader(nil)),
+				Body:       io.NopCloser(bytes.NewReader(nil)),
 				Header:     make(http.Header),
 			}
 		}),
@@ -234,7 +233,7 @@ func TestWideToTransformation_Errors(t *testing.T) {
 					return &http.Response{
 						StatusCode: http.StatusNoContent,
 						Status:     http.StatusText(http.StatusNoContent),
-						Body:       ioutil.NopCloser(bytes.NewReader(nil)),
+						Body:       io.NopCloser(bytes.NewReader(nil)),
 						Header:     make(http.Header),
 					}
 				}),
