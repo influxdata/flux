@@ -586,7 +586,7 @@ func TestCompileAndEval(t *testing.T) {
 
 			stmt := pkg.Files[0].Body[0].(*semantic.ExpressionStatement)
 			fn := stmt.Expression.(*semantic.FunctionExpression)
-			f, err := compiler.Compile(nil, fn, tc.inType)
+			f, err := compiler.Compile(ctx, nil, fn, tc.inType)
 			if err != nil {
 				if !tc.wantCompileErr {
 					t.Fatalf("unexpected error: %s", err)
@@ -784,7 +784,7 @@ func TestRuntimeTypeErrors(t *testing.T) {
 
 			stmt := pkg.Files[0].Body[0].(*semantic.ExpressionStatement)
 			fn := stmt.Expression.(*semantic.FunctionExpression)
-			f, err := compiler.Compile(sc, fn, inType)
+			f, err := compiler.Compile(ctx, sc, fn, inType)
 			if err != nil {
 				t.Fatalf("unexpected error during compilation: %s", err)
 			}
@@ -844,7 +844,7 @@ func TestCompiler_ReturnType(t *testing.T) {
 
 			stmt := pkg.Files[0].Body[0].(*semantic.ExpressionStatement)
 			fn := stmt.Expression.(*semantic.FunctionExpression)
-			f, err := compiler.Compile(nil, fn, tc.inType)
+			f, err := compiler.Compile(ctx, nil, fn, tc.inType)
 			if err != nil {
 				t.Fatalf("unexpected error: %s", err)
 			}
