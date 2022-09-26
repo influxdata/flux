@@ -518,10 +518,6 @@ pub enum Feature {
     /// Enables formatting with codespan for errors
     PrettyError,
 
-    /// Enables calls to map to be vectorized when the function contains select
-    /// literal values.
-    VectorizedConst,
-
     /// Enables calls to map to be vectorized when the function contains
     /// conditional expressions.
     VectorizedConditionals,

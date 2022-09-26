@@ -8,7 +8,6 @@ use crate::semantic::{
 fn analyzer_config() -> AnalyzerConfig {
     AnalyzerConfig {
         features: vec![
-            Feature::VectorizedConst,
             Feature::VectorizedConditionals,
             Feature::VectorizedFloat,
             Feature::VectorizedUnaryOps,

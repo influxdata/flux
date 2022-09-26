@@ -161,18 +161,6 @@ func VectorizedConditionals() BoolFlag {
 	return vectorizedConditionals
 }
 
-var vectorizedConst = feature.MakeBoolFlag(
-	"Vectorized Const",
-	"vectorizedConst",
-	"Owen Nelson",
-	false,
-)
-
-// VectorizedConst - Calls to map can be vectorized when select literals appear in the function
-func VectorizedConst() BoolFlag {
-	return vectorizedConst
-}
-
 var vectorizedFloat = feature.MakeBoolFlag(
 	"Vectorized Float",
 	"vectorizedFloat",
@@ -239,7 +227,6 @@ var all = []Flag{
 	removeRedundantSortNodes,
 	queryConcurrencyIncrease,
 	vectorizedConditionals,
-	vectorizedConst,
 	vectorizedFloat,
 	vectorizedUnaryOps,
 	strictNullLogicalOps,
@@ -259,7 +246,6 @@ var byKey = map[string]Flag{
 	"removeRedundantSortNodes":         removeRedundantSortNodes,
 	"queryConcurrencyIncrease":         queryConcurrencyIncrease,
 	"vectorizedConditionals":           vectorizedConditionals,
-	"vectorizedConst":                  vectorizedConst,
 	"vectorizedFloat":                  vectorizedFloat,
 	"vectorizedUnaryOps":               vectorizedUnaryOps,
 	"strictNullLogicalOps":             strictNullLogicalOps,
