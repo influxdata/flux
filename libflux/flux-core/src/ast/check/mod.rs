@@ -10,7 +10,11 @@ use crate::{
 
 /// Inspects an AST node and returns a list of found AST errors plus
 /// any errors existed before `ast.check()` is performed.
-pub fn check(node: walk::Node) -> Result<(), Errors<Error>> {
+pub fn check<'a>(node: impl Into<walk::Node<'a>>) -> Result<(), Errors<Error>> {
+    check_(node.into())
+}
+
+fn check_(node: walk::Node) -> Result<(), Errors<Error>> {
     const MAX_DEPTH: u32 = 180;
 
     #[derive(Default)]

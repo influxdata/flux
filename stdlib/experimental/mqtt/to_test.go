@@ -120,11 +120,11 @@ func runScript(script string) error {
 }
 
 func runScriptWithPipeline(script string) error {
-	prog, err := lang.Compile(script, runtime.Default, time.Now())
+	ctx := flux.NewDefaultDependencies().Inject(context.Background())
+	prog, err := lang.Compile(ctx, script, runtime.Default, time.Now())
 	if err != nil {
 		return err
 	}
-	ctx := flux.NewDefaultDependencies().Inject(context.Background())
 	query, err := prog.Start(ctx, &memory.ResourceAllocator{})
 	if err != nil {
 		return err

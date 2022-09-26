@@ -333,19 +333,6 @@ fn build_record(
     (r, cons)
 }
 
-/// Wrapper around `FileErrors` which defaults to using codespan to print the errors
-#[derive(Error, Debug, PartialEq)]
-pub struct PrettyFileErrors(pub FileErrors);
-
-impl fmt::Display for PrettyFileErrors {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match &self.0.source {
-            Some(source) => f.write_str(&self.0.pretty(source)),
-            None => self.0.fmt(f),
-        }
-    }
-}
-
 /// Error represents any any error that can occur during any step of the type analysis process.
 #[derive(Error, Debug, PartialEq)]
 pub struct FileErrors {
@@ -358,11 +345,17 @@ pub struct FileErrors {
     #[source]
     /// The collection of diagnostics
     pub diagnostics: Diagnostics<ErrorKind, WarningKind>,
+
+    /// Whether to use codespan to display diagnostics
+    pub pretty_fmt: bool,
 }
 
 impl fmt::Display for FileErrors {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        self.diagnostics.fmt(f)
+        match &self.source {
+            Some(source) if self.pretty_fmt => f.write_str(&self.pretty(source)),
+            _ => self.diagnostics.fmt(f),
+        }
     }
 }
 
@@ -382,7 +375,6 @@ where
     W: fmt::Display,
 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        // TODO Use codespan's formatting for errors
         self.errors.fmt(f)
     }
 }
@@ -419,8 +411,9 @@ impl FileErrors {
 
     /// Wraps `FileErrors` in type which defaults to the more readable codespan error
     /// representation
-    pub fn pretty_error(self) -> PrettyFileErrors {
-        PrettyFileErrors(self)
+    pub fn pretty_error(mut self) -> Self {
+        self.pretty_fmt = true;
+        self
     }
 
     /// Prints the errors in their short form
@@ -522,6 +515,9 @@ pub enum Feature {
     /// Enables warnings for unused symbols
     UnusedSymbolWarnings,
 
+    /// Enables formatting with codespan for errors
+    PrettyError,
+
     /// Enables calls to map to be vectorized when the function contains select
     /// literal values.
     VectorizedConst,
@@ -585,7 +581,9 @@ impl<'env, I: import::Importer> Analyzer<'env, I> {
             files: vec![ast_file],
         };
         self.analyze_ast(&ast_pkg).map_err(|mut err| {
-            err.error.source = Some(src.into());
+            if err.error.source.is_none() {
+                err.error.source = Some(src.into());
+            }
             err
         })
     }
@@ -619,6 +617,7 @@ impl<'env, I: import::Importer> Analyzer<'env, I> {
                             errors,
                             warnings: Errors::new(),
                         },
+                        pretty_fmt: self.config.features.contains(&Feature::PrettyError),
                     },
                     value: None,
                 });
@@ -676,8 +675,9 @@ impl<'env, I: import::Importer> Analyzer<'env, I> {
             return Err(Salvage {
                 error: FileErrors {
                     file: sem_pkg.package.clone(),
-                    source: None,
+                    source: ast_pkg.files[0].base.location.source.clone(),
                     diagnostics: Diagnostics { errors, warnings },
+                    pretty_fmt: self.config.features.contains(&Feature::PrettyError),
                 },
                 value: Some((env, sem_pkg)),
             });

@@ -144,8 +144,12 @@ func runFluxTests(out io.Writer, setup TestSetupFunc, flags TestFlags) (bool, er
 	return runner.Finish(), nil
 }
 
+var defaultCmdFeatureFlags = executetest.TestFlagger{
+	"prettyError": true,
+}
+
 func WithFeatureFlags(ctx context.Context, features string) (context.Context, error) {
-	flagger := executetest.TestFlagger{}
+	flagger := defaultCmdFeatureFlags
 	if len(features) != 0 {
 		if err := json.Unmarshal([]byte(features), &flagger); err != nil {
 			return nil, errors.Newf(codes.Invalid, "Unable to unmarshal features as json: %s", err)

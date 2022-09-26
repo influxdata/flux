@@ -343,16 +343,18 @@ data = "
 				tc.name,
 				tc.otherGroupKey,
 				"0"}, ",") + `"`
-			extHdl, err := rt.Parse(extern)
+
+			ctx := flux.NewDefaultDependencies().Inject(context.Background())
+
+			extHdl, err := rt.Parse(ctx, extern)
 			if err != nil {
 				t.Fatal(err)
 			}
-			prog, err := lang.Compile(fluxString, runtime.Default, time.Now(), lang.WithExtern(extHdl))
+			prog, err := lang.Compile(ctx, fluxString, runtime.Default, time.Now(), lang.WithExtern(extHdl))
 
 			if err != nil {
 				t.Error(err)
 			}
-			ctx := flux.NewDefaultDependencies().Inject(context.Background())
 			query, err := prog.Start(ctx, &memory.ResourceAllocator{})
 			if err != nil {
 				t.Fatal(err)

@@ -19,7 +19,12 @@ func TestExecutionOptions(t *testing.T) {
 		option now = () => ( 2020-10-15T00:00:00Z )
 	`
 
-	h, err := parser.ParseToHandle([]byte(src))
+	// Prepare a context with execution dependencies.
+	ctx := context.TODO()
+	deps := execute.DefaultExecutionDependencies()
+	ctx = deps.Inject(ctx)
+
+	h, err := parser.ParseToHandle(ctx, []byte(src))
 	if err != nil {
 		t.Fatalf("failed to parse test case: %v", err)
 	}
@@ -38,11 +43,6 @@ func TestExecutionOptions(t *testing.T) {
 		}
 		pkg.Range(scope.Set)
 	}
-
-	// Prepare a context with execution dependencies.
-	ctx := context.TODO()
-	deps := execute.DefaultExecutionDependencies()
-	ctx = deps.Inject(ctx)
 
 	// Pass lang.ExecutionOptions as the options configurator. It is
 	// responsible for installing the configured options into the execution

@@ -105,3 +105,9 @@
   key: strictNullLogicalOps
   default: false
   contact: Owen Nelson
+
+- name: Pretty Error
+  description: Enables formatting with codespan for errors
+  key: prettyError
+  default: false
+  contact: Markus Westerlind

@@ -1,11 +1,13 @@
 package main
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
 
+	fluxcmd "github.com/influxdata/flux/cmd/flux/cmd"
 	"github.com/influxdata/flux/libflux/go/libflux"
 	"github.com/spf13/cobra"
 )
@@ -16,9 +18,17 @@ var fmtFlags struct {
 }
 
 func formatFile(cmd *cobra.Command, args []string) error {
+
+	ctx := context.Background()
+
+	ctx, err := fluxcmd.WithFeatureFlags(ctx, flags.Features)
+	if err != nil {
+		return err
+	}
+
 	script := args[0]
 	var bad []string
-	err := filepath.Walk(script,
+	err = filepath.Walk(script,
 		func(path string, info os.FileInfo, err error) error {
 			if err != nil {
 				return err
@@ -26,7 +36,7 @@ func formatFile(cmd *cobra.Command, args []string) error {
 			if info.IsDir() || filepath.Ext(info.Name()) != ".flux" {
 				return nil
 			}
-			ok, err := format(path)
+			ok, err := format(ctx, path)
 			if err != nil {
 				return err
 			}
@@ -50,7 +60,7 @@ func formatFile(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-func format(script string) (bool, error) {
+func format(ctx context.Context, script string) (bool, error) {
 	fromFile, err := os.ReadFile(script)
 	if err != nil {
 		return false, err
@@ -58,7 +68,7 @@ func format(script string) (bool, error) {
 	curFileStr := string(fromFile)
 	ast := libflux.ParseString(curFileStr)
 	defer ast.Free()
-	if err := ast.GetError(); err != nil {
+	if err := ast.GetError(libflux.NewOptions(ctx)); err != nil {
 		return false, fmt.Errorf("parse error: %s, %s", script, err)
 
 	}

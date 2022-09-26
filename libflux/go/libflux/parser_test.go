@@ -2,6 +2,7 @@ package libflux_test
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -21,7 +22,7 @@ from(bucket: "telegraf")
 	|> mean()
 `
 	ast := libflux.ParseString(text)
-	if err := ast.GetError(); err != nil {
+	if err := ast.GetError(libflux.NewOptions(context.Background())); err != nil {
 		t.Fatal(err)
 	}
 
@@ -62,7 +63,7 @@ func TestASTPkg_GetError(t *testing.T) {
 	src := `x = 1 + / 3`
 	ast := libflux.ParseString(src)
 	defer ast.Free()
-	err := ast.GetError()
+	err := ast.GetError(libflux.NewOptions(context.Background()))
 	if err == nil {
 		t.Fatal("expected parse error, got none")
 	}

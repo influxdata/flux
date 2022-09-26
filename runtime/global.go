@@ -37,7 +37,7 @@ func Prelude() values.Scope {
 
 // Eval accepts a Flux script and evaluates it to produce a set of side effects (as a slice of values) and a scope.
 func Eval(ctx context.Context, flux string, opts ...flux.ScopeMutator) ([]interpreter.SideEffect, values.Scope, error) {
-	h, err := parser.ParseToHandle([]byte(flux))
+	h, err := parser.ParseToHandle(ctx, []byte(flux))
 	if err != nil {
 		return nil, nil, err
 	}

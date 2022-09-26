@@ -19,11 +19,12 @@ import (
 )
 
 func runQuery(ctx context.Context, script string) (flux.Query, func(), error) {
-	program, err := lang.Compile(script, runtime.Default, time.Unix(0, 0))
+	ctx, deps := dependency.Inject(ctx, executetest.NewTestExecuteDependencies())
+
+	program, err := lang.Compile(ctx, script, runtime.Default, time.Unix(0, 0))
 	if err != nil {
 		return nil, nil, err
 	}
-	ctx, deps := dependency.Inject(ctx, executetest.NewTestExecuteDependencies())
 	q, err := program.Start(ctx, memory.DefaultAllocator)
 	if err != nil {
 		deps.Finish()

@@ -52,6 +52,7 @@ type Options struct {
 
 func NewOptions(ctx context.Context) Options {
 	var features []string
+	features = addFlag(ctx, features, feature.PrettyError())
 	features = addFlag(ctx, features, feature.VectorizedConst())
 	features = addFlag(ctx, features, feature.VectorizedConditionals())
 	features = addFlag(ctx, features, feature.VectorizedFloat())
@@ -210,11 +211,6 @@ func FindVarTypeSemantic(pkg *SemanticPkg, varName string) (semantic.MonoType, e
 
 type Analyzer struct {
 	ptr *C.struct_flux_stateful_analyzer_t
-}
-
-func NewAnalyzer() *Analyzer {
-	analyzer, _ := NewAnalyzerWithOptions(Options{})
-	return analyzer
 }
 
 func NewAnalyzerWithOptions(options Options) (*Analyzer, error) {

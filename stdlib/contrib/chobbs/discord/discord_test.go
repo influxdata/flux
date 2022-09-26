@@ -139,15 +139,16 @@ data = "
 ,result,,qtext
 ,,,` + tc.content + `"`
 
-			extHdl, err := runtime.Default.Parse(extern)
-			if err != nil {
-				t.Fatal(err)
-			}
-			prog, err := lang.Compile(fluxString, runtime.Default, time.Now(), lang.WithExtern(extHdl))
-			if err != nil {
-				t.Fatal(err)
-			}
 			ctx := flux.NewDefaultDependencies().Inject(context.Background())
+
+			extHdl, err := runtime.Default.Parse(ctx, extern)
+			if err != nil {
+				t.Fatal(err)
+			}
+			prog, err := lang.Compile(ctx, fluxString, runtime.Default, time.Now(), lang.WithExtern(extHdl))
+			if err != nil {
+				t.Fatal(err)
+			}
 			query, err := prog.Start(ctx, &memory.ResourceAllocator{})
 
 			if err != nil {

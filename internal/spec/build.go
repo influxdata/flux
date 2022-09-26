@@ -195,7 +195,7 @@ func FromTableObject(ctx context.Context, to *flux.TableObject, now time.Time) (
 // This function is used in tests that compare flux.Specs (e.g. in planner tests).
 func FromScript(ctx context.Context, runtime flux.Runtime, now time.Time, script string) (*operation.Spec, error) {
 	s, _ := opentracing.StartSpanFromContext(ctx, "parse")
-	astPkg, err := runtime.Parse(script)
+	astPkg, err := runtime.Parse(ctx, script)
 	if err != nil {
 		return nil, err
 	}

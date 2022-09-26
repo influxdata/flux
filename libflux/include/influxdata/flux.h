@@ -48,7 +48,7 @@ struct flux_ast_pkg_t *flux_parse(const char *file_name, const char *flux_source
 struct flux_error_t *flux_ast_format(struct flux_ast_pkg_t *, struct flux_buffer_t *);
 
 // flux_ast_get_error will return the first error in the AST, if any.
-struct flux_error_t *flux_ast_get_error(struct flux_ast_pkg_t *);
+struct flux_error_t *flux_ast_get_error(struct flux_ast_pkg_t *, const char* options);
 
 // flux_free_ast_pkg will release the memory associated with the given pointer.
 void flux_free_ast_pkg(struct flux_ast_pkg_t *);

@@ -159,12 +159,13 @@ endpoint = ` + tc.fn + `(mapFn: (r) => ({
 
 csv.from(csv:data) |> endpoint()`
 
-			prog, err := lang.Compile(fluxString, runtime.Default, time.Now())
+			ctx := flux.NewDefaultDependencies().Inject(context.Background())
+
+			prog, err := lang.Compile(ctx, fluxString, runtime.Default, time.Now())
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			ctx := flux.NewDefaultDependencies().Inject(context.Background())
 			query, err := prog.Start(ctx, &memory.ResourceAllocator{})
 			if err != nil {
 				t.Fatal(err)

@@ -1,6 +1,7 @@
 package parser_test
 
 import (
+	"context"
 	"os"
 	"path/filepath"
 	"testing"
@@ -187,7 +188,7 @@ a = 1
 
 func TestHandleToJSON(t *testing.T) {
 	src := `x = 0`
-	hdl, err := parser.ParseToHandle([]byte(src))
+	hdl, err := parser.ParseToHandle(context.Background(), []byte(src))
 	if err != nil {
 		t.Fatal(err)
 	}
