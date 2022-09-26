@@ -5,7 +5,6 @@ import (
 	"context"
 	"crypto/tls"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"strings"
@@ -184,7 +183,7 @@ var do = values.NewFunction(
 				}
 				return
 			}
-			body, err = ioutil.ReadAll(response.Body)
+			body, err = io.ReadAll(response.Body)
 			_ = response.Body.Close()
 			if err != nil {
 				return

@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"io"
-	"io/ioutil"
 	"net"
 	"net/http"
 	"net/url"
@@ -92,7 +91,7 @@ func init() {
 					return 0, err
 				}
 
-				wc := iocounter.Writer{Writer: ioutil.Discard}
+				wc := iocounter.Writer{Writer: io.Discard}
 				_, _ = io.Copy(&wc, response.Body)
 				_ = response.Body.Close()
 				s.LogFields(

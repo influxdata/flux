@@ -12,7 +12,6 @@ package zoneinfo
 import (
 	"errors"
 	"io"
-	"io/ioutil"
 	"os"
 	"runtime"
 	"time"
@@ -343,7 +342,7 @@ func loadTzinfoFromDirOrZip(dir, name string) ([]byte, error) {
 	if dir != "" {
 		name = dir + "/" + name
 	}
-	return ioutil.ReadFile(name)
+	return os.ReadFile(name)
 }
 
 // There are 500+ zoneinfo files. Rather than distribute them all

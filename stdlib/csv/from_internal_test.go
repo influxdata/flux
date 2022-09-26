@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"errors"
 	"io"
-	"io/ioutil"
 	"testing"
 )
 
@@ -17,34 +16,34 @@ func TestSkipBOMReader(t *testing.T) {
 	}{
 		{
 			name: "no BOM",
-			in:   ioutil.NopCloser(bytes.NewReader([]byte("hello world"))),
+			in:   io.NopCloser(bytes.NewReader([]byte("hello world"))),
 			want: []byte{104, 101, 108, 108, 111, 32, 119, 111, 114, 108, 100},
 		},
 		{
 			name: "has BOM",
-			in:   ioutil.NopCloser(bytes.NewReader([]byte{0xEF, 0xBB, 0xBF, 104, 101, 108, 108, 111, 32, 119, 111, 114, 108, 100})),
+			in:   io.NopCloser(bytes.NewReader([]byte{0xEF, 0xBB, 0xBF, 104, 101, 108, 108, 111, 32, 119, 111, 114, 108, 100})),
 			want: []byte{104, 101, 108, 108, 111, 32, 119, 111, 114, 108, 100},
 		},
 		{
 			name: "empty",
-			in:   ioutil.NopCloser(bytes.NewReader([]byte{})),
+			in:   io.NopCloser(bytes.NewReader([]byte{})),
 			want: []byte{},
 		},
 		{
 			name: "short",
-			in:   ioutil.NopCloser(bytes.NewReader([]byte{1, 2})),
+			in:   io.NopCloser(bytes.NewReader([]byte{1, 2})),
 			want: []byte{1, 2},
 		},
 		{
 			name: "error",
-			in:   ioutil.NopCloser(errReader{err: errors.New("test error")}),
+			in:   io.NopCloser(errReader{err: errors.New("test error")}),
 			err:  errors.New("test error"),
 		},
 	}
 	for _, tc := range testCases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			got, err := ioutil.ReadAll(newSkipBOMReader(tc.in))
+			got, err := io.ReadAll(newSkipBOMReader(tc.in))
 			if !bytes.Equal(tc.want, got) {
 				t.Errorf("unequal bytes \nwant:\n%v\ngot: %v\n", tc.want, got)
 			}

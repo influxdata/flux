@@ -4,7 +4,7 @@ package repl
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"os"
 	"os/signal"
 	"path/filepath"
@@ -287,7 +287,7 @@ func getFluxFiles(path string) ([]string, error) {
 
 func getDirs(path string) ([]string, error) {
 	dir := filepath.Dir(path)
-	files, err := ioutil.ReadDir(dir)
+	files, err := os.ReadDir(dir)
 	if err != nil {
 		return nil, err
 	}
@@ -306,7 +306,7 @@ func getDirs(path string) ([]string, error) {
 // the @ prefix is removed and the contents of the file specified by the rest of q are returned.
 func LoadQuery(q string) (string, error) {
 	if q == "-" {
-		data, err := ioutil.ReadAll(os.Stdin)
+		data, err := io.ReadAll(os.Stdin)
 		if err != nil {
 			return "", err
 		}
@@ -314,7 +314,7 @@ func LoadQuery(q string) (string, error) {
 	}
 
 	if len(q) > 0 && q[0] == '@' {
-		data, err := ioutil.ReadFile(q[1:])
+		data, err := os.ReadFile(q[1:])
 		if err != nil {
 			return "", err
 		}

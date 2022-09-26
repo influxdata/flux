@@ -1,7 +1,6 @@
 package parser_test
 
 import (
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
@@ -17,7 +16,7 @@ import (
 var parserType = "parser-type=rust"
 
 func TestParseDir(t *testing.T) {
-	tmpDir, err := ioutil.TempDir("", "TestParseDir")
+	tmpDir, err := os.MkdirTemp("", "TestParseDir")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -111,7 +110,7 @@ c = 3
 }
 
 func TestParseFile(t *testing.T) {
-	tmpDir, err := ioutil.TempDir("", "TestParseDir")
+	tmpDir, err := os.MkdirTemp("", "TestParseDir")
 	if err != nil {
 		t.Fatal(err)
 	}

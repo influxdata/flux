@@ -3,7 +3,7 @@ package socket_test
 import (
 	"bytes"
 	"context"
-	"io/ioutil"
+	"io"
 	"testing"
 	"time"
 
@@ -203,7 +203,7 @@ source
 			d := executetest.NewDataset(id)
 			c := execute.NewTableBuilderCache(executetest.UnlimitedAllocator)
 			c.SetTriggerSpec(plan.DefaultTriggerSpec)
-			r := ioutil.NopCloser(bytes.NewReader([]byte(tc.input)))
+			r := io.NopCloser(bytes.NewReader([]byte(tc.input)))
 			ss, err := socket.NewSocketSource(tc.spec, r, &mock.AscendingTimeProvider{}, id)
 			if err != nil {
 				t.Fatal(err)

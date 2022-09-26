@@ -1,7 +1,7 @@
 package influxql_test
 
 import (
-	"io/ioutil"
+	"io"
 	"strings"
 	"testing"
 
@@ -36,7 +36,7 @@ func TestDecoder(t *testing.T) {
 	}
 
 	dec := influxql.NewResultDecoder(executetest.UnlimitedAllocator)
-	ri, err := dec.Decode(ioutil.NopCloser(strings.NewReader(`
+	ri, err := dec.Decode(io.NopCloser(strings.NewReader(`
 {
 	"results": [
 		{

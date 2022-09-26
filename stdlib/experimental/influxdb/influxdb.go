@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"context"
 	"errors"
-	"io/ioutil"
+	"io"
 	"net/http"
 	neturl "net/url"
 	"strings"
@@ -162,7 +162,7 @@ func api(ctx context.Context, a values.Object) (values.Value, error) {
 		return nil, err
 	}
 
-	b, err := ioutil.ReadAll(resp.Body)
+	b, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}

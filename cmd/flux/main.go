@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
 	"os"
 
 	fluxcmd "github.com/influxdata/flux/cmd/flux/cmd"
@@ -35,7 +34,7 @@ func runE(cmd *cobra.Command, args []string) error {
 		if flags.ExecScript {
 			script = args[0]
 		} else {
-			content, err := ioutil.ReadFile(args[0])
+			content, err := os.ReadFile(args[0])
 			if err != nil {
 				return err
 			}

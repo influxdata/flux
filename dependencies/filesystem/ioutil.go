@@ -2,7 +2,7 @@ package filesystem
 
 import (
 	"context"
-	"io/ioutil"
+	"io"
 	"os"
 )
 
@@ -18,7 +18,7 @@ func ReadFile(ctx context.Context, filename string) ([]byte, error) {
 		return nil, err
 	}
 	defer func() { _ = f.Close() }()
-	return ioutil.ReadAll(f)
+	return io.ReadAll(f)
 }
 
 // OpenFile will open the file from the service.

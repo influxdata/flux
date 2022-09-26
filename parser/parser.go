@@ -1,7 +1,6 @@
 package parser
 
 import (
-	"io/ioutil"
 	"os"
 	"path/filepath"
 
@@ -17,7 +16,7 @@ const defaultPackageName = "main"
 // All discovered packages are returned.
 // The parsed packages may contain errors, use ast.Check to check for errors.
 func ParseDir(fset *token.FileSet, path string) (map[string]*ast.Package, error) {
-	files, err := ioutil.ReadDir(path)
+	files, err := os.ReadDir(path)
 	if err != nil {
 		return nil, err
 	}
@@ -53,7 +52,7 @@ func ParseFile(fset *token.FileSet, path string) (*ast.File, error) {
 		return nil, err
 	}
 	f := fset.AddFile(filepath.Base(path), int(fi.Size()))
-	src, err := ioutil.ReadFile(path)
+	src, err := os.ReadFile(path)
 	if err != nil {
 		return nil, err
 	}

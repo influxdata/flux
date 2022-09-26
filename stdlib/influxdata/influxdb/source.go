@@ -5,7 +5,6 @@ import (
 	"context"
 	"encoding/json"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 
@@ -85,7 +84,7 @@ func (s *source) run(ctx context.Context) error {
 	if err != nil {
 		return err
 	} else if resp.StatusCode != 200 {
-		data, err := ioutil.ReadAll(resp.Body)
+		data, err := io.ReadAll(resp.Body)
 		if err != nil {
 			return errors.Newf(codes.Invalid, "error when reading response body: %s", err)
 		}

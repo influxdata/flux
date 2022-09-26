@@ -2,7 +2,7 @@ package http
 
 import (
 	"bytes"
-	"io/ioutil"
+	"io"
 	"log"
 	"net"
 	"net/http"
@@ -75,7 +75,7 @@ func TestIpValidation(t *testing.T) {
 	}
 
 	// Mock a dns server.
-	dnsLogger := log.New(ioutil.Discard, "mockdns server: ", log.LstdFlags)
+	dnsLogger := log.New(io.Discard, "mockdns server: ", log.LstdFlags)
 	srv, _ := mockdns.NewServerWithLogger(bad, dnsLogger, false)
 	defer srv.Close()
 
@@ -125,7 +125,7 @@ func TestInvalidRedirects(t *testing.T) {
 	}
 
 	// Mock a dns server.
-	dnsLogger := log.New(ioutil.Discard, "mockdns server: ", log.LstdFlags)
+	dnsLogger := log.New(io.Discard, "mockdns server: ", log.LstdFlags)
 	srv, _ := mockdns.NewServerWithLogger(bad, dnsLogger, false)
 	defer srv.Close()
 

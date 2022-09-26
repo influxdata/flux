@@ -10,7 +10,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -571,7 +570,7 @@ func gatherFromTarArchive(filename string) ([]testFile, fs, testcase.TestModules
 			continue
 		}
 
-		source, err := ioutil.ReadAll(archive)
+		source, err := io.ReadAll(archive)
 		if err != nil {
 			return nil, nil, nil, err
 		}
@@ -830,7 +829,7 @@ func readTestRoot(f io.Reader, err error) (string, []string, error) {
 	if rc, ok := f.(io.ReadCloser); ok {
 		defer func() { _ = rc.Close() }()
 	}
-	data, err := ioutil.ReadAll(f)
+	data, err := io.ReadAll(f)
 	if err != nil {
 		return "", nil, err
 	}
