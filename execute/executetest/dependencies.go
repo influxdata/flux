@@ -32,7 +32,6 @@ var testFlags = map[string]interface{}{
 	// "optimizeUnionTransformation": true,
 	"labelPolymorphism":         true,
 	"vectorizedMap":             true,
-	"vectorizedConst":           true,
 	"vectorizedConditionals":    true,
 	"vectorizedFloat":           true,
 	"vectorizeLogicalOperators": true,

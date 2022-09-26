@@ -494,6 +494,33 @@ func TestLogicalPlanner(t *testing.T) {
 						Fn: interpreter.ResolvedFunction{
 							Scope: valuestest.Scope(),
 							Fn: &semantic.FunctionExpression{
+								Vectorized: &semantic.FunctionExpression{
+									Loc: semantic.Loc{Start: ast.Position{Line: 3, Column: 41}, End: ast.Position{Line: 3, Column: 81}, Source: "(r) => ({r with _value: r._value})"},
+									Block: &semantic.Block{
+										Loc: semantic.Loc{Start: ast.Position{Line: 3, Column: 49}, End: ast.Position{Line: 3, Column: 80}},
+										Body: []semantic.Statement{&semantic.ReturnStatement{
+											Argument: &semantic.ObjectExpression{
+												With: &semantic.IdentifierExpression{Name: semantic.NewSymbol("r")},
+												Properties: []*semantic.Property{{
+													Key: &semantic.Identifier{Name: semantic.NewSymbol("_value")},
+													Value: &semantic.BinaryExpression{
+														Operator: ast.MultiplicationOperator,
+														Left:     &semantic.MemberExpression{Object: &semantic.IdentifierExpression{Name: semantic.NewSymbol("r")}, Property: semantic.NewSymbol("_value")},
+														Right: &semantic.CallExpression{
+															Loc:    semantic.Loc{Start: ast.Position{Line: 3, Column: 76}, End: ast.Position{Line: 3, Column: 79}, Source: "2.0"},
+															Callee: &semantic.IdentifierExpression{Name: semantic.Symbol{LocalName: "~~vecRepeat~~"}},
+															Arguments: &semantic.ObjectExpression{
+																Properties: []*semantic.Property{{Key: &semantic.Identifier{Name: semantic.Symbol{LocalName: "v"}}, Value: &semantic.FloatLiteral{Value: 2}}},
+															},
+														},
+													},
+												}},
+											},
+										}},
+									},
+									Parameters: &semantic.FunctionParameters{
+										List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: semantic.NewSymbol("r")}}}},
+								},
 								Parameters: &semantic.FunctionParameters{
 									List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: semantic.NewSymbol("r")}}}},
 								Block: &semantic.Block{
@@ -516,7 +543,8 @@ func TestLogicalPlanner(t *testing.T) {
 					{2, 3},
 				},
 				Now: now,
-			}},
+			},
+		},
 		{
 			name: "rules working together",
 			flux: `
@@ -558,6 +586,29 @@ func TestLogicalPlanner(t *testing.T) {
 						Fn: interpreter.ResolvedFunction{
 							Scope: valuestest.Scope(),
 							Fn: &semantic.FunctionExpression{
+								Vectorized: &semantic.FunctionExpression{
+									Parameters: &semantic.FunctionParameters{
+										List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: semantic.NewSymbol("r")}}}},
+									Block: &semantic.Block{Body: []semantic.Statement{
+										&semantic.ReturnStatement{Argument: &semantic.ObjectExpression{
+											With: &semantic.IdentifierExpression{Name: semantic.NewSymbol("r")},
+											Properties: []*semantic.Property{{
+												Key: &semantic.Identifier{Name: semantic.NewSymbol("_value")},
+												Value: &semantic.BinaryExpression{
+													Operator: ast.MultiplicationOperator,
+													Left:     &semantic.MemberExpression{Object: &semantic.IdentifierExpression{Name: semantic.NewSymbol("r")}, Property: semantic.NewSymbol("_value")},
+													Right: &semantic.CallExpression{
+														Loc:    semantic.Loc{Start: ast.Position{Line: 5, Column: 49}, End: ast.Position{Line: 5, Column: 51}, Source: "10"},
+														Callee: &semantic.IdentifierExpression{Name: semantic.Symbol{LocalName: "~~vecRepeat~~"}},
+														Arguments: &semantic.ObjectExpression{
+															Properties: []*semantic.Property{{Key: &semantic.Identifier{Name: semantic.Symbol{LocalName: "v"}}, Value: &semantic.IntegerLiteral{Value: 10}}},
+														},
+													},
+												},
+											}},
+										}},
+									}},
+								},
 								Parameters: &semantic.FunctionParameters{
 									List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: semantic.NewSymbol("r")}}}},
 								Block: &semantic.Block{Body: []semantic.Statement{

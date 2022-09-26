@@ -66,8 +66,7 @@ impl Expression {
     fn vectorize(&self, env: &VectorizeEnv<'_>) -> Result<Self> {
         Ok(match self {
             Expression::Identifier(identifier) => {
-                if env.config.features.contains(&Feature::VectorizedConst)
-                    && (identifier.name == "true" || identifier.name == "false")
+                if (identifier.name == "true" || identifier.name == "false")
                     && identifier.name.package() == Some("boolean")
                 {
                     return Ok(wrap_vec_repeat(Expression::Boolean(BooleanLit {
@@ -157,26 +156,10 @@ impl Expression {
                     typ: MonoType::vector(expr.typ.clone()),
                 }))
             }
-            expr @ Expression::Integer(_)
-                if env.config.features.contains(&Feature::VectorizedConst) =>
-            {
-                wrap_vec_repeat(expr.clone())
-            }
-            expr @ Expression::DateTime(_)
-                if env.config.features.contains(&Feature::VectorizedConst) =>
-            {
-                wrap_vec_repeat(expr.clone())
-            }
-            expr @ Expression::Float(_)
-                if env.config.features.contains(&Feature::VectorizedConst) =>
-            {
-                wrap_vec_repeat(expr.clone())
-            }
-            expr @ Expression::StringLit(_)
-                if env.config.features.contains(&Feature::VectorizedConst) =>
-            {
-                wrap_vec_repeat(expr.clone())
-            }
+            expr @ Expression::Integer(_) => wrap_vec_repeat(expr.clone()),
+            expr @ Expression::DateTime(_) => wrap_vec_repeat(expr.clone()),
+            expr @ Expression::Float(_) => wrap_vec_repeat(expr.clone()),
+            expr @ Expression::StringLit(_) => wrap_vec_repeat(expr.clone()),
             Expression::Call(expr) => Expression::Call(Box::new(expr.vectorize(env)?)),
             _ => {
                 return Err(located(
