@@ -3552,7 +3552,7 @@ builtin display : (v: A) => string
 //
 builtin contains : (value: A, set: [A]) => bool where A: Nullable
 
-// inf represents an infinte float value.
+// inf represents a floating point value of infinity.
 builtin inf : duration
 
 // length returns the number of elements in an array.
