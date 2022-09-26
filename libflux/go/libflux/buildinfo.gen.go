@@ -16,7 +16,7 @@ var sourceHashes = map[string]string{
 	"libflux/Cargo.lock":                                                                          "5f21e43655bf7ae60d4c59731ab1e5a74567fa9561c090555545cdaa0a09132d",
 	"libflux/Cargo.toml":                                                                          "91ac4e8b467440c6e8a9438011de0e7b78c2732403bb067d4dd31539ac8a90c1",
 	"libflux/flux-core/Cargo.toml":                                                                "9c49e87c57b0027b7a0f525c55174eea2ddf391dadb7cb38e7f354b5b3b894b1",
-	"libflux/flux-core/src/ast/check/mod.rs":                                                      "14ceca38c9c57c2a3fd56a8eca23616128badcc79708238cef17788c729bd825",
+	"libflux/flux-core/src/ast/check/mod.rs":                                                      "4f5cf44c5fd55def344b4e2f637e4f95b835a1a30dd95e32fdf850c248e21cf1",
 	"libflux/flux-core/src/ast/mod.rs":                                                            "53a22049c37450669757b7bdd1dca3a030df1fc1f0db44d303ce642452d5a33c",
 	"libflux/flux-core/src/ast/walk/mod.rs":                                                       "76b93aa401766a680474141c280fab35af096efb0686f9560d54ffd66187b37d",
 	"libflux/flux-core/src/bin/README.md":                                                         "c1245a4938c923d065647b4dc4f7e19486e85c93d868ef2f7f47ddff62ec81df",
