@@ -4,6 +4,7 @@ package universe_test
 import "array"
 import "testing"
 import "testing/expect"
+import "internal/debug"
 
 testcase vec_with_float {
     expect.planner(rules: ["vectorizeMapRule": 1])
@@ -88,6 +89,41 @@ testcase vec_with_float_const {
                         bf: float(v: false),
                     }),
             )
+
+    testing.diff(want, got)
+}
+
+testcase vec_with_float_typed_null {
+    expect.planner(rules: ["vectorizeMapRule": 1])
+
+    // When the input to float() is a typed null, the output will be a null of
+    // type float since this matches the column type generally. The input type
+    // is not propagated - essentially we do a type cast of other-null to float-null.
+    want =
+        array.from(
+            rows: [{x: 1, _null: debug.null(type: "int"), output: debug.null(type: "float")}],
+        )
+
+    got =
+        array.from(rows: [{x: 1, _null: debug.null(type: "int")}])
+            |> map(fn: (r) => ({r with output: float(v: r._null)}))
+
+    testing.diff(want, got)
+}
+
+testcase vec_with_float_untyped_null {
+    expect.planner(rules: ["vectorizeMapRule": 1])
+
+    // When the input to float() is an untyped null, the output is also an
+    // untyped null meaning the column is dropped from the output.
+    want =
+        array.from(rows: [{x: 1}])
+            |> debug.opaque()
+
+    got =
+        array.from(rows: [{x: 1}])
+            |> debug.opaque()
+            |> map(fn: (r) => ({r with output: float(v: r._null)}))
 
     testing.diff(want, got)
 }

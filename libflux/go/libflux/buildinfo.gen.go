@@ -524,7 +524,7 @@ var sourceHashes = map[string]string{
 	"stdlib/universe/map_vectorize_conditionals_test.flux":                                        "cbe50d0dbd1b5a30c8ed8d61e1926d2e6dbdcc55dd6cde9db9cafb28835f0406",
 	"stdlib/universe/map_vectorize_const_test.flux":                                               "636889211f387eb2b56517acd090ab16340c1610bc33c1640302a84d87fb5cee",
 	"stdlib/universe/map_vectorize_equality_test.flux":                                            "b06a0cf70625e99b0503e72ae0cc445f71a0f66e77cc7110cc9369e87ed1079a",
-	"stdlib/universe/map_vectorize_float_test.flux":                                               "346f1bff9ade79f668de5818cad4945d35000c7968f77b6a95735cd03cdb9819",
+	"stdlib/universe/map_vectorize_float_test.flux":                                               "aafbaf907f1921b39a9c7794781161d7d067fcb3cf08fc93bf292061ff48c1f5",
 	"stdlib/universe/map_vectorize_unary_test.flux":                                               "87972a06988b92a7682f12d2aff91e24dac49a90242b7efa5152b318da2aef42",
 	"stdlib/universe/math_fn_constant_test.flux":                                                  "8eca1c46dbf36f5f502446545316bbbbe53afedfc7cf4e3b260bcb2e91568830",
 	"stdlib/universe/math_m_max_test.flux":                                                        "b55994b73bb128a6818e78fa125fa58d7356bd933360e83cb75f6775281d4245",

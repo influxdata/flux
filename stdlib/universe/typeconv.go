@@ -370,6 +370,12 @@ var vectorizedFloatConv = values.NewFunction(
 		if !ok {
 			return nil, errMissingArg
 		}
+
+		if v.IsNull() {
+			v.Retain()
+			return v, nil
+		}
+
 		mem := memory.GetAllocator(ctx)
 
 		switch v.Type().Nature() {
