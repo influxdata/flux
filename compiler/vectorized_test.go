@@ -797,7 +797,7 @@ func TestVectorizedFns(t *testing.T) {
 				return
 			}
 
-			f, err := compiler.Compile(nil, fn, tc.inType)
+			f, err := compiler.Compile(ctx, nil, fn, tc.inType)
 			if err != nil {
 				t.Fatalf("unexpected error: %s", err)
 			}

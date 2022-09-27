@@ -308,7 +308,7 @@ func (c *mergeJoinCache) SetTriggerSpec(spec plan.TriggerSpec) {
 
 func (c *mergeJoinCache) join(key flux.GroupKey, a, b *RowIterator) (flux.Table, error) {
 	// Compile row fn for the input rows
-	if err := c.fn.Prepare(a.columns, b.columns); err != nil {
+	if err := c.fn.Prepare(c.ctx, a.columns, b.columns); err != nil {
 		return nil, err
 	}
 
@@ -498,7 +498,7 @@ func newRowJoinFn(fn *semantic.FunctionExpression, scope compiler.Scope) *rowJoi
 	}
 }
 
-func (fn *rowJoinFn) Prepare(left, right []flux.ColMeta) error {
+func (fn *rowJoinFn) Prepare(ctx context.Context, left, right []flux.ColMeta) error {
 	// Check the left and right types to make sure required properties are
 	// columns in their respective ColMeta.
 	fntype := fn.fn.TypeOf()
@@ -570,7 +570,7 @@ func (fn *rowJoinFn) Prepare(left, right []flux.ColMeta) error {
 		{Key: []byte("left"), Value: semantic.NewObjectType(l)},
 		{Key: []byte("right"), Value: semantic.NewObjectType(r)},
 	})
-	f, err := compiler.Compile(fn.scope, fn.fn, in)
+	f, err := compiler.Compile(ctx, fn.scope, fn.fn, in)
 	if err != nil {
 		return err
 	}

@@ -417,7 +417,7 @@ func (s *joinState) join(
 	} else {
 		rschema = defaultRight
 	}
-	err := fn.Prepare(lschema, rschema)
+	err := fn.Prepare(ctx, lschema, rschema)
 	if err != nil {
 		return nil, err
 	}

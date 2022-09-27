@@ -128,7 +128,7 @@ func NewReduceTransformation(ctx context.Context, spec *ReduceProcedureSpec, d e
 func (t *reduceTransformation) Process(id execute.DatasetID, tbl flux.Table) error {
 	// Prepare the function with the column types list.
 	cols := tbl.Cols()
-	fn, err := t.fn.Prepare(cols, map[string]semantic.MonoType{"accumulator": t.identity.Type()})
+	fn, err := t.fn.Prepare(t.ctx, cols, map[string]semantic.MonoType{"accumulator": t.identity.Type()})
 	if err != nil {
 		return err
 	}

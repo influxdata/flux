@@ -90,7 +90,7 @@ func init() {
 					inputType := semantic.NewObjectType([]semantic.PropertyType{
 						{Key: []byte("x"), Value: elementType},
 					})
-					f, err := compiler.Compile(compiler.ToScope(fn.Scope), fn.Fn, inputType)
+					f, err := compiler.Compile(ctx, compiler.ToScope(fn.Scope), fn.Fn, inputType)
 					if err != nil {
 						return nil, err
 					}
@@ -149,7 +149,7 @@ func init() {
 					inputType := semantic.NewObjectType([]semantic.PropertyType{
 						{Key: []byte("x"), Value: elementType},
 					})
-					f, err := compiler.Compile(compiler.ToScope(fn.Scope), fn.Fn, inputType)
+					f, err := compiler.Compile(ctx, compiler.ToScope(fn.Scope), fn.Fn, inputType)
 					if err != nil {
 						return nil, err
 					}

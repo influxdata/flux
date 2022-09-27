@@ -128,7 +128,7 @@ func TestRowMapFn_Eval(t *testing.T) {
 
 			stmt := pkg.Files[0].Body[0].(*semantic.ExpressionStatement)
 			fn := stmt.Expression.(*semantic.FunctionExpression)
-			f, err := execute.NewRowMapFn(fn, nil).Prepare(tc.data.ColMeta)
+			f, err := execute.NewRowMapFn(fn, nil).Prepare(ctx, tc.data.ColMeta)
 			if err != nil {
 				if tc.prepareErr != nil {
 					if !cmp.Equal(tc.prepareErr.Error(), err.Error()) {
@@ -246,12 +246,13 @@ func testRowPredicateFn_EvalRow(t *testing.T, scope compiler.Scope) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
-			f, err := gt2F().Prepare(tc.data.ColMeta)
+			// ctx := dependenciestest.Default().Inject(context.Background())
+			ctx := context.TODO()
+
+			f, err := gt2F().Prepare(ctx, tc.data.ColMeta)
 			if err != nil {
 				t.Fatal(err)
 			}
-			// ctx := dependenciestest.Default().Inject(context.Background())
-			ctx := context.TODO()
 			got := make([]bool, 0, len(tc.data.Data))
 			tc.data.Do(func(cr flux.ColReader) error {
 				for i := 0; i < cr.Len(); i++ {

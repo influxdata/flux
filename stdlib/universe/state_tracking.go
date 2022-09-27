@@ -186,7 +186,7 @@ func (n *stateTrackingTransformation) Process(chunk table.Chunk, state *trackedS
 		}
 		mod = true
 	}
-	mod, err := n.processChunk(chunk, state, d, mem, mod)
+	mod, err := n.processChunk(n.ctx, chunk, state, d, mem, mod)
 	return state, mod, err
 }
 
@@ -195,8 +195,8 @@ func (n *stateTrackingTransformation) Close() error { return nil }
 // Updates the state object for each row in the chunk, creates a new chunk with
 // columns tracking counts and/or durations, and passes that chunk to the next
 // transport node.
-func (n *stateTrackingTransformation) processChunk(chunk table.Chunk, state *trackedState, d *execute.TransportDataset, mem memory.Allocator, mod bool) (bool, error) {
-	fn, err := n.fn.Prepare(chunk.Cols())
+func (n *stateTrackingTransformation) processChunk(ctx context.Context, chunk table.Chunk, state *trackedState, d *execute.TransportDataset, mem memory.Allocator, mod bool) (bool, error) {
+	fn, err := n.fn.Prepare(ctx, chunk.Cols())
 	if err != nil {
 		return mod, err
 	}

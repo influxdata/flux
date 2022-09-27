@@ -139,7 +139,7 @@ func (m *mapTransformation) Process(
 
 	// Prepare the compiled function for the set of columns.
 	cols := chunk.Cols()
-	fn, err := m.fn.Prepare(cols)
+	fn, err := m.fn.Prepare(m.ctx, cols)
 	if err != nil {
 		return err
 	}
@@ -324,7 +324,7 @@ func (m *mapTransformation) Close() error {
 }
 
 type mapFunc interface {
-	Prepare(cols []flux.ColMeta) (mapPreparedFunc, error)
+	Prepare(ctx context.Context, cols []flux.ColMeta) (mapPreparedFunc, error)
 }
 
 type mapPreparedFunc interface {
@@ -335,8 +335,8 @@ type mapRowFunc struct {
 	fn *execute.RowMapFn
 }
 
-func (m *mapRowFunc) Prepare(cols []flux.ColMeta) (mapPreparedFunc, error) {
-	fn, err := m.fn.Prepare(cols)
+func (m *mapRowFunc) Prepare(ctx context.Context, cols []flux.ColMeta) (mapPreparedFunc, error) {
+	fn, err := m.fn.Prepare(ctx, cols)
 	if err != nil {
 		return nil, err
 	}

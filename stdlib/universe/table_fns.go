@@ -113,7 +113,7 @@ func tableFind(ctx context.Context, to *flux.TableObject, fn *execute.TablePredi
 				return nil
 			}
 
-			preparedFn, err := fn.Prepare(tbl)
+			preparedFn, err := fn.Prepare(ctx, tbl)
 			if err != nil {
 				return err
 			}

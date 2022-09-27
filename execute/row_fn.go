@@ -79,7 +79,7 @@ func (f *dynamicFn) typeof(cols []flux.ColMeta, vectorized bool) (semantic.MonoT
 	return semantic.NewObjectType(properties), nil
 }
 
-func (f *dynamicFn) compileFunction(cols []flux.ColMeta, extraTypes map[string]semantic.MonoType, vectorized bool) error {
+func (f *dynamicFn) compileFunction(ctx context.Context, cols []flux.ColMeta, extraTypes map[string]semantic.MonoType, vectorized bool) error {
 
 	// If the types have not changed we do not need to recompile, just use the cached version
 	if f.compiledFn == nil || !f.compiledFn.isCacheHit(cols, extraTypes, vectorized) {
@@ -101,7 +101,7 @@ func (f *dynamicFn) compileFunction(cols []flux.ColMeta, extraTypes map[string]s
 		}
 
 		inType := semantic.NewObjectType(properties)
-		fn, err := compiler.Compile(f.scope, f.fn, inType)
+		fn, err := compiler.Compile(ctx, f.scope, f.fn, inType)
 		if err != nil {
 			return err
 		}
@@ -117,8 +117,8 @@ func (f *dynamicFn) compileFunction(cols []flux.ColMeta, extraTypes map[string]s
 	return nil
 }
 
-func (f *dynamicFn) prepare(cols []flux.ColMeta, extraTypes map[string]semantic.MonoType, vectorized bool) (preparedFn, error) {
-	err := f.compileFunction(cols, extraTypes, vectorized)
+func (f *dynamicFn) prepare(ctx context.Context, cols []flux.ColMeta, extraTypes map[string]semantic.MonoType, vectorized bool) (preparedFn, error) {
+	err := f.compileFunction(ctx, cols, extraTypes, vectorized)
 	if err != nil {
 		return preparedFn{}, err
 	}
@@ -213,8 +213,8 @@ func NewTablePredicateFn(fn *semantic.FunctionExpression, scope compiler.Scope) 
 	}
 }
 
-func (f *TablePredicateFn) Prepare(tbl flux.Table) (*TablePredicatePreparedFn, error) {
-	fn, err := f.prepare(tbl.Key().Cols(), nil, false)
+func (f *TablePredicateFn) Prepare(ctx context.Context, tbl flux.Table) (*TablePredicatePreparedFn, error) {
+	fn, err := f.prepare(ctx, tbl.Key().Cols(), nil, false)
 	if err != nil {
 		return nil, err
 	} else if fn.returnType().Nature() != semantic.Bool {
@@ -260,8 +260,8 @@ func NewRowPredicateFn(fn *semantic.FunctionExpression, scope compiler.Scope) *R
 	return &RowPredicateFn{dynamicFn: r}
 }
 
-func (f *RowPredicateFn) Prepare(cols []flux.ColMeta) (*RowPredicatePreparedFn, error) {
-	fn, err := f.prepare(cols, nil, false)
+func (f *RowPredicateFn) Prepare(ctx context.Context, cols []flux.ColMeta) (*RowPredicatePreparedFn, error) {
+	fn, err := f.prepare(ctx, cols, nil, false)
 	if err != nil {
 		return nil, err
 	} else if fn.returnType().Nature() != semantic.Bool {
@@ -317,8 +317,8 @@ func NewRowMapFn(fn *semantic.FunctionExpression, scope compiler.Scope) *RowMapF
 	}
 }
 
-func (f *RowMapFn) Prepare(cols []flux.ColMeta) (*RowMapPreparedFn, error) {
-	fn, err := f.prepare(cols, nil, false)
+func (f *RowMapFn) Prepare(ctx context.Context, cols []flux.ColMeta) (*RowMapPreparedFn, error) {
+	fn, err := f.prepare(ctx, cols, nil, false)
 	if err != nil {
 		return nil, err
 	} else if k := fn.returnType().Nature(); k != semantic.Object {
@@ -355,8 +355,8 @@ func NewRowReduceFn(fn *semantic.FunctionExpression, scope compiler.Scope) *RowR
 	}
 }
 
-func (f *RowReduceFn) Prepare(cols []flux.ColMeta, reducerType map[string]semantic.MonoType) (*RowReducePreparedFn, error) {
-	fn, err := f.prepare(cols, reducerType, false)
+func (f *RowReduceFn) Prepare(ctx context.Context, cols []flux.ColMeta, reducerType map[string]semantic.MonoType) (*RowReducePreparedFn, error) {
+	fn, err := f.prepare(ctx, cols, reducerType, false)
 	if err != nil {
 		return nil, err
 	}
@@ -391,8 +391,8 @@ func NewRowJoinFn(fn *semantic.FunctionExpression, scope compiler.Scope) *RowJoi
 	}
 }
 
-func (f *RowJoinFn) Prepare(cols []flux.ColMeta, rightType map[string]semantic.MonoType, vectorized bool) (*RowJoinPreparedFn, error) {
-	fn, err := f.prepare(cols, rightType, vectorized)
+func (f *RowJoinFn) Prepare(ctx context.Context, cols []flux.ColMeta, rightType map[string]semantic.MonoType, vectorized bool) (*RowJoinPreparedFn, error) {
+	fn, err := f.prepare(ctx, cols, rightType, vectorized)
 	if err != nil {
 		return nil, err
 	}

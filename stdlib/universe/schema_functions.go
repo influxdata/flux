@@ -333,31 +333,31 @@ func (s *DuplicateOpSpec) Copy() SchemaMutation {
 	}
 }
 
-func (s *RenameOpSpec) Mutator() (SchemaMutator, error) {
-	m, err := NewRenameMutator(s)
+func (s *RenameOpSpec) Mutator(ctx context.Context) (SchemaMutator, error) {
+	m, err := NewRenameMutator(ctx, s)
 	if err != nil {
 		return nil, err
 	}
 	return m, nil
 }
 
-func (s *DropOpSpec) Mutator() (SchemaMutator, error) {
-	m, err := NewDropMutator(s)
+func (s *DropOpSpec) Mutator(ctx context.Context) (SchemaMutator, error) {
+	m, err := NewDropMutator(ctx, s)
 	if err != nil {
 		return nil, err
 	}
 	return m, nil
 }
 
-func (s *KeepOpSpec) Mutator() (SchemaMutator, error) {
-	m, err := NewKeepMutator(s)
+func (s *KeepOpSpec) Mutator(ctx context.Context) (SchemaMutator, error) {
+	m, err := NewKeepMutator(ctx, s)
 	if err != nil {
 		return nil, err
 	}
 	return m, nil
 }
 
-func (s *DuplicateOpSpec) Mutator() (SchemaMutator, error) {
+func (s *DuplicateOpSpec) Mutator(ctx context.Context) (SchemaMutator, error) {
 	m, err := NewDuplicateMutator(s)
 	if err != nil {
 		return nil, err
@@ -415,7 +415,7 @@ func createSchemaMutationTransformation(id execute.DatasetID, mode execute.Accum
 func NewSchemaMutationTransformation(ctx context.Context, spec *SchemaMutationProcedureSpec, id execute.DatasetID, mem memory.Allocator) (execute.Transformation, execute.Dataset, error) {
 	mutators := make([]SchemaMutator, len(spec.Mutations))
 	for i, mutation := range spec.Mutations {
-		m, err := mutation.Mutator()
+		m, err := mutation.Mutator(ctx)
 		if err != nil {
 			return nil, nil, err
 		}
