@@ -11,7 +11,6 @@ import (
 	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/internal/errors"
-	fluxfeature "github.com/influxdata/flux/internal/feature"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/semantic"
@@ -332,8 +331,6 @@ func (e *logicalEvaluator) Eval(ctx context.Context, scope Scope) (values.Value,
 
 // logicalStrictNullEvaluator differs from logicalEvaluator by how it adheres to the
 // flux language spec with respect to null inputs.
-//
-//lint:ignore U1000 investigating a perf issue related to the ff check in this - not dead yet...
 type logicalStrictNullEvaluator struct {
 	operator    ast.LogicalOperatorKind
 	left, right Evaluator
@@ -344,12 +341,6 @@ func (e *logicalStrictNullEvaluator) Type() semantic.MonoType {
 }
 
 func (e *logicalStrictNullEvaluator) Eval(ctx context.Context, scope Scope) (values.Value, error) {
-	// Fallback to plain logicalEvaluator if the flag is not set.
-	if !fluxfeature.Strictnulllogicalops().Enabled(ctx) {
-		e := logicalEvaluator{operator: e.operator, left: e.left, right: e.right}
-		return e.Eval(ctx, scope)
-	}
-
 	l, err := e.left.Eval(ctx, scope)
 	if err != nil {
 		return nil, err

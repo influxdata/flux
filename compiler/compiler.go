@@ -5,6 +5,7 @@ import (
 
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/internal/errors"
+	fluxfeature "github.com/influxdata/flux/internal/feature"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
@@ -641,11 +642,13 @@ func (compiler *compiler) compile(n semantic.Node, subst semantic.Substitutor) (
 				right:    r,
 			}, nil
 		}
-		// TODO(onelson): try to select strict or regular logical here.
-		//   Need ctx to read flagger.
-		//   Currently this happens during Eval() where ctx is available and
-		//   will fallback to the regular logicalEvaluator if the flag is unset.
-		// FIXME: disabling the strict null  evaluator while looking at a perf regression...
+		if fluxfeature.Strictnulllogicalops().Enabled(compiler.ctx) {
+			return &logicalStrictNullEvaluator{
+				operator: n.Operator,
+				left:     l,
+				right:    r,
+			}, nil
+		}
 		return &logicalEvaluator{
 			operator: n.Operator,
 			left:     l,
