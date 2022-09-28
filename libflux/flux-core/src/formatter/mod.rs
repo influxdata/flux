@@ -543,6 +543,9 @@ impl<'doc> Formatter<'doc> {
                     "]",
                 ]
             }
+            ast::MonoType::Dynamic(dynamic) => {
+                docs![arena, "dynamic"]
+            }
             ast::MonoType::Record(n) => {
                 let multiline = n.properties.len() > MULTILINE;
                 let line = self.multiline(multiline);

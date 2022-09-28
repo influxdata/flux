@@ -186,6 +186,10 @@ func (t *Table) Release() {
 	}
 }
 
+func (t *Table) Dynamic() values.Dynamic {
+	panic(values.UnexpectedKind(t.Type().Nature(), semantic.Dynamic))
+}
+
 func (t *Table) String() string {
 	w := bytes.NewBuffer([]byte{})
 	if _, err := execute.NewFormatter(t, nil).WriteTo(w); err != nil {

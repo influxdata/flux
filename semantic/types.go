@@ -22,6 +22,7 @@ const (
 	Object
 	Function
 	Dictionary
+	Dynamic
 	Vector
 	Stream
 )
@@ -41,6 +42,7 @@ var natureNames = []string{
 	Object:     "object",
 	Function:   "function",
 	Dictionary: "dictionary",
+	Dynamic:    "dynamic",
 	Vector:     "vector",
 	Stream:     "stream",
 }

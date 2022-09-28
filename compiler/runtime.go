@@ -1257,6 +1257,10 @@ type functionValue struct {
 	scope  Scope
 }
 
+func (f *functionValue) Dynamic() values.Dynamic {
+	panic(values.UnexpectedKind(f.Type().Nature(), semantic.Dynamic))
+}
+
 // functionValue implements the interpreter.Resolver interface.
 var _ interpreter.Resolver = (*functionValue)(nil)
 

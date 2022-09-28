@@ -29,6 +29,10 @@ type Package struct {
 	sideEffects []SideEffect
 }
 
+func (p *Package) Dynamic() values.Dynamic {
+	panic(values.UnexpectedKind(p.Type().Nature(), semantic.Dynamic))
+}
+
 func NewPackageWithValues(name, path string, obj values.Object) *Package {
 	return &Package{
 		name:   name,

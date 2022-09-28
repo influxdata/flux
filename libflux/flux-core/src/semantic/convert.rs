@@ -610,6 +610,7 @@ impl<'a> Converter<'a> {
                 let val = self.convert_monotype(&dict.val, tvars);
                 MonoType::from(types::Dictionary { key, val })
             }
+            ast::MonoType::Dynamic(_) => MonoType::from(types::Dynamic {}),
             ast::MonoType::Function(func) => {
                 let mut req = MonoTypeMap::new();
                 let mut opt = MonoTypeMap::new();
@@ -1369,7 +1370,7 @@ mod tests {
         ast,
         parser::Parser,
         semantic::{
-            types::{BoundTvar, MonoType, Tvar},
+            types::{BoundTvar, Dynamic, MonoType, Tvar},
             walk::{walk_mut, NodeMut},
         },
     };
@@ -2884,5 +2885,20 @@ mod tests {
             get_attribute(["// @feature labelPolymorphism\n"], "feature"),
             Some("labelPolymorphism"),
         );
+    }
+
+    #[test]
+    fn test_convert_dynamic_function() {
+        let monotype_ex = Parser::new("() => dynamic").parse_monotype();
+
+        let mut m = BTreeMap::<String, types::BoundTvar>::new();
+        let got = convert_monotype(&monotype_ex, &mut m, &AnalyzerConfig::default()).unwrap();
+        let want = MonoType::from(types::Function {
+            req: MonoTypeMap::new(),
+            opt: MonoTypeMap::new(),
+            pipe: None,
+            retn: MonoType::from(Dynamic {}),
+        });
+        assert_eq!(want, got);
     }
 }

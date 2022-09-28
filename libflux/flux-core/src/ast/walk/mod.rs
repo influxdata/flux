@@ -444,6 +444,7 @@ where
                     walk(v, Node::MonoType(&d.key));
                     walk(v, Node::MonoType(&d.val));
                 }
+                MonoType::Dynamic(_) => (),
                 MonoType::Record(r) => {
                     if let Some(tvar) = &r.tvar {
                         walk(v, Node::Identifier(tvar));

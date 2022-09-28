@@ -1556,6 +1556,11 @@ impl MemberExpr {
             }
         }
 
+        if let MonoType::Dynamic(_) = &t {
+            self.typ = t.clone();
+            return Ok(());
+        }
+
         // If we can determine that the type of `self.object` already has `self.property`
         // we can skip type inference
         match t
@@ -1612,6 +1617,7 @@ impl IndexExpr {
             MonoType::Collection(col) if col.collection == types::CollectionType::Array => {
                 self.typ = col.arg.clone();
             }
+            MonoType::Dynamic(d) => self.typ = MonoType::Dynamic(d.clone()),
             _ => {
                 self.typ = MonoType::Var(infer.sub.fresh());
                 infer.equal(

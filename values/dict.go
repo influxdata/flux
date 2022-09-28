@@ -392,3 +392,11 @@ func (d *DictionaryBuilder) Remove(key Value) {
 		d.b.Delete(key)
 	}
 }
+
+func (d emptyDict) Dynamic() Dynamic {
+	panic(UnexpectedKind(semantic.Dictionary, semantic.Dynamic))
+}
+
+func (d dict) Dynamic() Dynamic {
+	panic(UnexpectedKind(semantic.Dictionary, semantic.Dynamic))
+}

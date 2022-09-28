@@ -494,6 +494,7 @@ pub enum MonoType {
     BoundVar(BoundTvar),
     Collection(Ptr<Collection>),
     Dict(Ptr<Dictionary>),
+    Dynamic(Ptr<Dynamic>),
     Record(Ptr<Record>),
     Fun(Ptr<Function>),
 }
@@ -527,6 +528,7 @@ impl Serialize for MonoType {
             Label(&'a Label),
             Arr(&'a MonoType),
             Dict(&'a Ptr<Dictionary>),
+            Dynamic(&'a Ptr<Dynamic>),
             Record(&'a Ptr<Record>),
             Fun(&'a Ptr<Function>),
             Vector(&'a MonoType),
@@ -557,6 +559,7 @@ impl Serialize for MonoType {
             },
             Self::Label(p) => MonoTypeSer::Label(p),
             Self::Dict(p) => MonoTypeSer::Dict(p),
+            Self::Dynamic(p) => MonoTypeSer::Dynamic(p),
             Self::Record(p) => MonoTypeSer::Record(p),
             Self::Fun(p) => MonoTypeSer::Fun(p),
         }
@@ -722,6 +725,7 @@ impl Substitutable for MonoType {
             | MonoType::Var(_) => None,
             MonoType::Collection(app) => app.visit(sub).map(MonoType::app),
             MonoType::Dict(dict) => dict.visit(sub).map(MonoType::dict),
+            MonoType::Dynamic(dynamic) => dynamic.visit(sub).map(MonoType::dynamic),
             MonoType::Record(obj) => obj.visit(sub).map(MonoType::record),
             MonoType::Fun(fun) => fun.visit(sub).map(MonoType::fun),
         }
@@ -755,6 +759,12 @@ impl From<Collection> for MonoType {
 impl From<Dictionary> for MonoType {
     fn from(d: Dictionary) -> MonoType {
         MonoType::Dict(Ptr::new(d))
+    }
+}
+
+impl From<Dynamic> for MonoType {
+    fn from(d: Dynamic) -> MonoType {
+        MonoType::Dynamic(Ptr::new(d))
     }
 }
 
@@ -816,6 +826,11 @@ impl MonoType {
     /// Creates a dictionary type
     pub fn dict(d: impl Into<Ptr<Dictionary>>) -> Self {
         Self::Dict(d.into())
+    }
+
+    /// Creates a dynamic type
+    pub fn dynamic(d: impl Into<Ptr<Dynamic>>) -> Self {
+        Self::Dynamic(d.into())
     }
 
     /// Creates a function type
@@ -906,7 +921,6 @@ impl MonoType {
             (MonoType::Record(t), MonoType::Record(s)) => t.unify(s, unifier),
 
             (MonoType::Fun(t), MonoType::Fun(s)) => t.unify(s, unifier, MonoType::clone),
-
             (exp, act) => unifier.errors.push(Error::CannotUnify {
                 exp: exp.clone(),
                 act: act.clone(),
@@ -939,6 +953,7 @@ impl MonoType {
             MonoType::Var(tvr) => tvr.constrain(with, sub),
             MonoType::Collection(app) => app.constrain(with, sub),
             MonoType::Dict(dict) => dict.constrain(with, sub),
+            MonoType::Dynamic(dynamic) => dynamic.constrain(with, sub),
             MonoType::Record(obj) => obj.constrain(with, sub),
             MonoType::Fun(fun) => fun.constrain(with, sub),
         }
@@ -952,6 +967,7 @@ impl MonoType {
             MonoType::Var(tvr) => tv == *tvr,
             MonoType::Collection(app) => app.contains(tv),
             MonoType::Dict(dict) => dict.contains(tv),
+            MonoType::Dynamic(dynamic) => dynamic.contains(tv),
             MonoType::Record(row) => row.contains(tv),
             MonoType::Fun(fun) => fun.contains(tv),
         }
@@ -998,6 +1014,7 @@ impl MonoType {
             MonoType::Fun(_) => " (function)",
             MonoType::Dict(_) => " (dictionary)",
             MonoType::Record(_) => " (record)",
+            MonoType::Dynamic(_) => " (dynamic)",
             MonoType::Collection(app) => match app.collection {
                 CollectionType::Array => " (array)",
                 CollectionType::Vector => " (vector)",
@@ -1193,6 +1210,31 @@ impl Dictionary {
     }
     fn contains(&self, tv: Tvar) -> bool {
         self.key.contains(tv) || self.val.contains(tv)
+    }
+}
+
+/// `Dynamic` values are not subject to static checks, relying instead on
+/// runtime validation to know whether or not a given operation can be performed.
+#[derive(Debug, Display, Clone, Eq, PartialEq, Serialize)]
+#[display(fmt = "dynamic")]
+pub struct Dynamic {}
+
+impl Substitutable for Dynamic {
+    fn walk(&self, _sub: &mut (impl ?Sized + Substituter)) -> Option<Self>
+    where
+        Self: Sized,
+    {
+        Some(Dynamic {})
+    }
+}
+
+impl Dynamic {
+    fn constrain(&self, _with: Kind, _: &mut Substitution) -> Result<(), Error> {
+        Ok(())
+    }
+
+    fn contains(&self, _tvar: Tvar) -> bool {
+        false
     }
 }
 

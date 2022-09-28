@@ -949,6 +949,9 @@ impl<'doc> DocFormatter<'doc> {
                     "]",
                 ]
             }
+            MonoType::Dynamic(dynamic) => {
+                docs![arena, "dynamic"]
+            }
             MonoType::Record(n) => {
                 let multiline = n.fields().count() > MULTILINE;
                 let line = self.multiline(multiline);

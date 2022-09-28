@@ -12,9 +12,9 @@ use crate::semantic::{
     import::Packages,
     nodes::Symbol,
     types::{
-        self, BoundTvar, BoundTvarKinds, BuiltinType, Collection, CollectionType, Dictionary,
+        BoundTvar, BoundTvarKinds, BuiltinType, Collection, CollectionType, Dictionary, Dynamic,
         Function, Kind, MonoType, MonoTypeMap, PolyType, PolyTypeMap, Property, Record,
-        RecordLabel, Tvar, TvarKinds,
+        RecordLabel, SemanticMap, Tvar, TvarKinds,
     },
 };
 
@@ -192,6 +192,10 @@ fn from_table(table: flatbuffers::Table, t: fb::MonoType) -> Option<MonoType> {
             let opt: Option<Dictionary> = fb::Dict::init_from_table(table).into();
             Some(MonoType::from(opt?))
         }
+        fb::MonoType::Dynamic => {
+            let opt: Option<Dynamic> = fb::Dynamic::init_from_table(table).into();
+            Some(MonoType::from(opt?))
+        }
         fb::MonoType::NONE => None,
         _ => unreachable!("Unknown type from table"),
     }
@@ -246,6 +250,12 @@ impl From<fb::Dict<'_>> for Option<Dictionary> {
             key: from_table(t.k()?, t.k_type())?,
             val: from_table(t.v()?, t.v_type())?,
         })
+    }
+}
+
+impl From<fb::Dynamic<'_>> for Option<Dynamic> {
+    fn from(t: fb::Dynamic) -> Option<Dynamic> {
+        Some(Dynamic {})
     }
 }
 
@@ -439,7 +449,7 @@ pub fn build_polytype<'a>(
     let vars: Vec<_> = t
         .vars
         .iter()
-        .map(|v| build_var(builder, types::Tvar(v.0)))
+        .map(|v| build_var(builder, Tvar(v.0)))
         .collect();
     let vars = builder.create_vector(vars.as_slice());
 
@@ -497,7 +507,7 @@ pub fn build_type(
             (offset.as_union_value(), fb::MonoType::Var)
         }
         MonoType::BoundVar(tvr) => {
-            let offset = build_var(builder, types::Tvar(tvr.0));
+            let offset = build_var(builder, Tvar(tvr.0));
             (offset.as_union_value(), fb::MonoType::Var)
         }
         MonoType::Collection(app) => {
@@ -507,6 +517,10 @@ pub fn build_type(
         MonoType::Dict(dict) => {
             let offset = build_dict(builder, dict);
             (offset.as_union_value(), fb::MonoType::Dict)
+        }
+        MonoType::Dynamic(dynamic) => {
+            let offset = build_dynamic(builder, dynamic);
+            (offset.as_union_value(), fb::MonoType::Dynamic)
         }
         MonoType::Record(record) => {
             let offset = build_record(builder, record);
@@ -587,6 +601,13 @@ fn build_dict<'a>(
     )
 }
 
+fn build_dynamic<'a>(
+    builder: &mut flatbuffers::FlatBufferBuilder<'a>,
+    mut _dynamic: &Dynamic,
+) -> flatbuffers::WIPOffset<fb::Dynamic<'a>> {
+    fb::Dynamic::create(builder, &fb::DynamicArgs {})
+}
+
 fn build_record<'a>(
     builder: &mut flatbuffers::FlatBufferBuilder<'a>,
     mut record: &Record,
@@ -599,7 +620,7 @@ fn build_record<'a>(
     }
     let extends = fields.tail().and_then(|typ| match typ {
         MonoType::Var(t) => Some(*t),
-        MonoType::BoundVar(t) => Some(types::Tvar(t.0)),
+        MonoType::BoundVar(t) => Some(Tvar(t.0)),
         _ => None,
     });
 
@@ -626,7 +647,7 @@ fn build_prop<'a>(
             (concrete.as_union_value(), fb::RecordLabel::Var)
         }
         RecordLabel::BoundVariable(var) => {
-            let concrete = build_var(builder, types::Tvar(var.0));
+            let concrete = build_var(builder, Tvar(var.0));
             (concrete.as_union_value(), fb::RecordLabel::Var)
         }
         RecordLabel::Concrete(name) => {
@@ -894,5 +915,10 @@ mod tests {
         builder.finish(pkg, None);
         let bytes = builder.finished_data();
         assert_ne!(bytes.len(), 0);
+    }
+
+    #[test]
+    fn serde_dynamic_type() {
+        test_serde("dynamic")
     }
 }

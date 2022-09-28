@@ -26,6 +26,10 @@ type array struct {
 	elements []Value
 }
 
+func (a *array) Dynamic() Dynamic {
+	panic(UnexpectedKind(a.Type().Nature(), semantic.Dynamic))
+}
+
 func NewArray(arrType semantic.MonoType) Array {
 	return NewArrayWithBacking(arrType, nil)
 }

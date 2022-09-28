@@ -53,6 +53,7 @@ func (v {{.Name}}ArrayValue) Object() values.Object { panic(values.UnexpectedKin
 func (v {{.Name}}ArrayValue) Function() values.Function { panic(values.UnexpectedKind(semantic.Array, semantic.Function)) }
 func (v {{.Name}}ArrayValue) Dict() values.Dictionary { panic(values.UnexpectedKind(semantic.Array, semantic.Dictionary)) }
 func (v {{.Name}}ArrayValue) Vector() values.Vector { panic(values.UnexpectedKind(semantic.Array, semantic.Vector)) }
+func (v {{.Name}}ArrayValue) Dynamic() values.Dynamic { panic(values.UnexpectedKind(semantic.Array, semantic.Dynamic)) }
 
 func (v {{.Name}}ArrayValue) Equal(other values.Value) bool {
 	if other.Type().Nature() != semantic.Array {

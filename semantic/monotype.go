@@ -42,6 +42,8 @@ func NewMonoType(tbl flatbuffers.Table, t fbsemantic.MonoType) (MonoType, error)
 		tbler = new(fbsemantic.Fun)
 	case fbsemantic.MonoTypeDict:
 		tbler = new(fbsemantic.Dict)
+	case fbsemantic.MonoTypeDynamic:
+		tbler = new(fbsemantic.Dynamic)
 	default:
 		return MonoType{}, errors.Newf(codes.Internal, "unknown type (%v)", t)
 	}
@@ -103,6 +105,8 @@ func nature(tbl flatbuffers.Table, t fbsemantic.MonoType) Nature {
 		return Function
 	case fbsemantic.MonoTypeDict:
 		return Dictionary
+	case fbsemantic.MonoTypeDynamic:
+		return Dynamic
 	case fbsemantic.MonoTypeNONE,
 		fbsemantic.MonoTypeVar:
 		fallthrough
@@ -122,6 +126,7 @@ const (
 	Record     = Kind(fbsemantic.MonoTypeRecord)
 	Fun        = Kind(fbsemantic.MonoTypeFun)
 	Dict       = Kind(fbsemantic.MonoTypeDict)
+	Dyn        = Kind(fbsemantic.MonoTypeDynamic)
 )
 
 // Kind returns what kind of monotype the receiver is.
@@ -762,6 +767,8 @@ func (mt MonoType) string(m map[uint64]uint64) string {
 			return "<" + err.Error() + ">"
 		}
 		return "[" + kt.string(m) + ": " + vt.string(m) + "]"
+	case Dyn:
+		return "dynamic"
 	default:
 		return "<" + fmt.Sprintf("unknown monotype (%v)", tk) + ">"
 	}
@@ -906,6 +913,21 @@ func NewDictType(keyType, valueType MonoType) MonoType {
 	return mt
 }
 
+// NewDynamicType will construct a new Dynamic MonoType
+func NewDynamicType() MonoType {
+	builder := flatbuffers.NewBuilder(0)
+	offset := buildDynamicType(builder)
+	builder.Finish(offset)
+
+	buf := builder.FinishedBytes()
+	arr := fbsemantic.GetRootAsDynamic(buf, 0)
+	mt, err := NewMonoType(arr.Table(), fbsemantic.MonoTypeDynamic)
+	if err != nil {
+		panic(err)
+	}
+	return mt
+}
+
 // copyMonoType will reconstruct the type contained within the
 // MonoType for the new builder. When building a new buffer,
 // flatbuffers cannot reference data in another buffer and the
@@ -984,6 +1006,8 @@ func copyMonoType(builder *flatbuffers.Builder, t MonoType) flatbuffers.UOffsetT
 		key := monoTypeFromFunc(dict.K, dict.KType())
 		value := monoTypeFromFunc(dict.V, dict.VType())
 		return buildDictType(builder, key, value)
+	case fbsemantic.MonoTypeDynamic:
+		return buildDynamicType(builder)
 	default:
 		panic(fmt.Sprintf("unknown monotype (%v)", t.mt))
 	}
@@ -1123,6 +1147,13 @@ func buildDictType(builder *flatbuffers.Builder, keyType, valueType MonoType) fl
 	fbsemantic.DictAddVType(builder, valueType.mt)
 	fbsemantic.DictAddV(builder, voffset)
 	return fbsemantic.DictEnd(builder)
+}
+
+// buildDynamicType will construct a dynamic type in the builder
+// and return the offset for the type.
+func buildDynamicType(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
+	fbsemantic.DynamicStart(builder)
+	return fbsemantic.DynamicEnd(builder)
 }
 
 func updateTVarMap(counter *uint64, m map[uint64]uint64, tv uint64) {
