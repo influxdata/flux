@@ -20,9 +20,17 @@ func (d dependencyList) Inject(ctx context.Context) context.Context {
 func NewTestExecuteDependencies() flux.Dependency {
 	return dependencyList{
 		dependenciestest.Default(),
-		feature.Dependency{
-			Flagger: TestFlagger(testFlags),
-		},
+		NewDefaultTestFlagger(),
+	}
+}
+
+// NewDefaultTestFlagger gives a flagger dependency for a test harnesses to use as a baseline.
+//
+// Likely this will be made redundant by <https://github.com/influxdata/flux/issues/4777>
+// since testcases will then be able to manage their own feature selection.
+func NewDefaultTestFlagger() feature.Dependency {
+	return feature.Dependency{
+		Flagger: TestFlagger(testFlags),
 	}
 }
 
