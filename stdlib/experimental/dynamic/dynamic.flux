@@ -24,3 +24,6 @@ builtin dynamic : (v: A) => dynamic
 // ## Metadata
 // tags: type-conversions
 builtin asArray : (<-v: dynamic) => [dynamic]
+
+// _equal returns true if both values are essentially equivalent.
+builtin _equal : (a: dynamic, b: dynamic) => bool
