@@ -27,6 +27,12 @@ var dynamicConv = values.NewFunction(
 			return nil, err
 		}
 
+		// Nothing to do if the incoming value is already a dynamic
+		if v.Type().Nature() == semantic.Dynamic {
+			v.Retain()
+			return v, nil
+		}
+
 		// FIXME(onelson): do we need to special case nulls here?
 		//   Ex: if the input is null, should the output be null or a
 		//   Dynamic with a null in it? My sense is the latter.

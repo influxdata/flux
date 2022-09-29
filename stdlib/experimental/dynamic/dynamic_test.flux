@@ -12,6 +12,13 @@ testcase dynamic_not_comparable {
     )
 }
 
+testcase dynamic_does_not_rewrap {
+    a = dynamic.dynamic(v: 123)
+    b = dynamic.dynamic(v: a)
+
+    testing.assertEqualValues(want: true, got: dynamic._equal(a, b))
+}
+
 // asArray should blow up if you feed it a dynamic that doesn't have an array in it.
 testcase asArray_errors_on_nonarray {
     testing.shouldError(
