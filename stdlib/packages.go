@@ -39,6 +39,7 @@ import (
 	_ "github.com/influxdata/flux/stdlib/experimental/bitwise"
 	_ "github.com/influxdata/flux/stdlib/experimental/csv"
 	_ "github.com/influxdata/flux/stdlib/experimental/date/boundaries"
+	_ "github.com/influxdata/flux/stdlib/experimental/dynamic"
 	_ "github.com/influxdata/flux/stdlib/experimental/geo"
 	_ "github.com/influxdata/flux/stdlib/experimental/http"
 	_ "github.com/influxdata/flux/stdlib/experimental/http/requests"
