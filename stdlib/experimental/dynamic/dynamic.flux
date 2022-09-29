@@ -10,8 +10,4 @@ package dynamic
 //
 // ## Parameters
 // - v: Value to wrap as dynamic.
-//
-// ## Examples
-//
-// TODO(onelson): need to do more work before we can really demonstrate this
 builtin dynamic : (v: A) => dynamic
