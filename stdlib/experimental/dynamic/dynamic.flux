@@ -9,7 +9,7 @@ package dynamic
 // dynamic wraps a value so it can be used as a `dynamic` value.
 //
 // ## Parameters
-// - v: the value to wrap
+// - v: Value to wrap as dynamic.
 //
 // ## Examples
 //
