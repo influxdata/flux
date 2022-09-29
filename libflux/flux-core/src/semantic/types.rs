@@ -882,6 +882,8 @@ impl MonoType {
             // An error has already occurred so assume everything is ok here so that we do not
             // create additional, spurious errors
             (MonoType::Error, _) | (_, MonoType::Error) => (),
+            // Similarly if both sides are dynamic, there's nothing more to do.
+            (MonoType::Dynamic(_), MonoType::Dynamic(_)) => (),
 
             (MonoType::Builtin(exp), MonoType::Builtin(act)) => exp.unify(*act, unifier),
 
