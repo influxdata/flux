@@ -10,4 +10,7 @@ package dynamic
 //
 // ## Parameters
 // - v: Value to wrap as dynamic.
+//
+// ## Metadata
+// tags: type-conversions
 builtin dynamic : (v: A) => dynamic
