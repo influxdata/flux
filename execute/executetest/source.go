@@ -326,6 +326,7 @@ func CreateParallelFromSource(spec plan.ProcedureSpec, id execute.DatasetID, a e
 // by calling it from inside of a closure.
 func RunSourceHelper(
 	t *testing.T,
+	ctx context.Context,
 	want []*Table,
 	wantErr error,
 	create func(id execute.DatasetID) execute.Source,
@@ -342,7 +343,7 @@ func RunSourceHelper(
 	store := NewDataStore()
 	s := create(RandomDatasetID())
 	s.AddTransformation(store)
-	s.Run(context.Background())
+	s.Run(ctx)
 
 	gotErr := store.Err()
 	if gotErr == nil && wantErr != nil {
