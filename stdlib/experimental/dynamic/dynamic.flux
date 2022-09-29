@@ -15,11 +15,12 @@ package dynamic
 // tags: type-conversions
 builtin dynamic : (v: A) => dynamic
 
-// asArray attempts to convert a dynamic value into an array of dynamic elements.
-// If the value is not an array, `asArray` will result in a fatal error.
+// asArray converts a dynamic value into an array of dynamic elements.
+//
+// The dynamic input value must be an array. If it is not an array, `dynamic.asArray()` returns an error.
 //
 // ## Parameters
-// - v: Dynamic value to convert. Defaults is the piped-forward value (`<-`).
+// - v: Dynamic value to convert. Default is the piped-forward value (`<-`).
 //
 // ## Metadata
 // tags: type-conversions
