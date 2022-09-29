@@ -168,6 +168,7 @@ func TestFromCSV_ReturnSingleResult(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			executetest.RunSourceHelper(t,
+				context.Background(),
 				test.want,
 				test.wantErr,
 				func(id execute.DatasetID) execute.Source {
@@ -329,6 +330,7 @@ func TestFromCSV_Run(t *testing.T) {
 		},
 	}
 	executetest.RunSourceHelper(t,
+		context.Background(),
 		want,
 		nil,
 		func(id execute.DatasetID) execute.Source {
