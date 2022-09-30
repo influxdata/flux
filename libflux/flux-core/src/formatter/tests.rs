@@ -905,17 +905,18 @@ testcase x {
 #[test]
 fn testcase_indentation() {
     assert_unchanged(
-        r#"testcase basic {
-    inData =
-        "
+        r#"testcase basic
+    {
+        inData =
+            "
 #datatype,string,long,dateTime:RFC3339,long,string,string,string
 #group,false,false,false,false,true,true,true
 #default,_result,,,,,,
 ,result,table,_time,_value,_field,_measurement,host
 ,,0,2018-05-22T19:53:26Z,100,load1,system,host.local
 "
-    outData =
-        "
+        outData =
+            "
 #datatype,string,long,double
 #group,false,false,false
 #default,_result,,
@@ -923,15 +924,15 @@ fn testcase_indentation() {
 ,,0,100.0
 "
 
-    got =
-        csv.from(csv: inData)
-            |> testing.load()
-            |> range(start: 2018-05-22T19:53:26Z)
-            |> map(fn: (r) => ({newValue: float(v: r._value)}))
-    want = csv.from(csv: outData)
+        got =
+            csv.from(csv: inData)
+                |> testing.load()
+                |> range(start: 2018-05-22T19:53:26Z)
+                |> map(fn: (r) => ({newValue: float(v: r._value)}))
+        want = csv.from(csv: outData)
 
-    testing.diff(want: want, got: got) |> yield()
-}"#,
+        testing.diff(want: want, got: got) |> yield()
+    }"#,
     );
 }
 
@@ -2040,4 +2041,24 @@ a",
     let expr = p.parse_expression();
 
     expect![["1 + a"]].assert_eq(&format_node(Node::from_expr(&expr)).unwrap());
+}
+
+#[test]
+fn format_long_extends_testcase() {
+    expect_format(
+        r#"
+testcase iox_tagValues_with_predicate extends "flux/influxdata/influxdb/schema/schema_test.tagValues_with_predicate" {
+
+    super()
+}
+"#,
+        expect![[r#"
+            testcase
+                iox_tagValues_with_predicate
+                extends
+                "flux/influxdata/influxdb/schema/schema_test.tagValues_with_predicate"
+                {
+                    super()
+                }"#]],
+    );
 }

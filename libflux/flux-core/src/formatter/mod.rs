@@ -828,9 +828,9 @@ impl<'doc> Formatter<'doc> {
         let arena = self.arena;
 
         let comment = self.format_comments(&n.base.comments);
-        let prefix = docs![
+        let prefix = docs![arena, "testcase"];
+        let prefix2 = docs![
             arena,
-            "testcase",
             arena.line(),
             self.format_identifier(&n.id),
             if let Some(extends) = &n.extends {
@@ -844,11 +844,13 @@ impl<'doc> Formatter<'doc> {
             } else {
                 arena.nil()
             },
-            arena.line(),
-        ];
+        ]
+        .group();
 
         let mut hang_doc = self.hang_block(&n.block);
-        hang_doc.affixes.push(affixes(prefix, arena.nil()).nest());
+        hang_doc.add_prefix(arena.line());
+        hang_doc.affixes.push(affixes(prefix2, arena.nil()).nest());
+        hang_doc.affixes.push(affixes(prefix, arena.nil()));
         docs![
             arena,
             // Do not put the leading comment into the hang_doc so that
