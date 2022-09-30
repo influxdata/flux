@@ -78,7 +78,7 @@ func TestDisplay(t *testing.T) {
 					values.NewInt(4),
 				},
 			),
-			display: "[\n    1, \n    2, \n    3, \n    4\n]",
+			display: "[\n    1,\n    2,\n    3,\n    4\n]",
 		},
 		{
 			value: values.NewObjectWithValues(
@@ -136,6 +136,14 @@ func TestDisplay(t *testing.T) {
 				false,
 			),
 			display: "() => int",
+		},
+		{
+			value:   values.NewDynamic(values.NewInt(100)),
+			display: "dynamic(100)",
+		},
+		{
+			value:   values.NewDynamic(values.Null),
+			display: "dynamic(<null>)",
 		},
 	}
 	for _, tc := range testCases {
