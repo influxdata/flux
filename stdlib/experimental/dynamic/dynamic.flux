@@ -29,3 +29,24 @@ builtin asArray : (<-v: dynamic) => [dynamic]
 // _isNotDistinct returns true if both values print the same way, indicating
 // they are essentially equivalent.
 _isNotDistinct = (a, b) => display(v: a) == display(v: b)
+
+// jsonParse takes JSON data as bytes and returns dynamic values.
+//
+// JSON input is converted to dynamic-typed values which may be converted to
+// a statically typed value with asArray or casting functions in this package.
+//
+// ## Parameters
+// - data: JSON data (as bytes) to parse.
+//
+// ## Metadata
+// tags: type-conversions
+builtin jsonParse : (data: bytes) => dynamic
+
+// jsonEncode converts a dynamic value into JSON bytes.
+//
+// ## Parameters
+// - v: value to be encoded into JSON
+//
+// ## Metadata
+// tags: type-conversions
+builtin jsonEncode : (v: dynamic) => bytes
