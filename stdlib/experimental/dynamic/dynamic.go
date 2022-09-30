@@ -52,7 +52,7 @@ var asArray = values.NewFunction(
 		}
 
 		if v.IsNull() {
-			panic("TODO")
+			return nil, errors.Newf(codes.Invalid, "unable to convert <null> to array")
 		}
 
 		d := v.Dynamic()

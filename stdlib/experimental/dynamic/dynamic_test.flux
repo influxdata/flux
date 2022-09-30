@@ -4,6 +4,7 @@ package dynamic_test
 import "array"
 import "testing"
 import "experimental/dynamic"
+import "internal/debug"
 
 testcase dynamic_not_comparable {
     testing.shouldError(
@@ -25,6 +26,10 @@ testcase asArray_errors_on_nonarray {
         fn: () => dynamic.dynamic(v: 123) |> dynamic.asArray(),
         want: /unable to convert/,
     )
+}
+
+testcase asArray_errors_on_null {
+    testing.shouldError(fn: () => debug.null() |> dynamic.asArray(), want: /unable to convert/)
 }
 
 // Verify we can pass an array of dynamic elements into dynamic() to wrap it, then unwrap it with asArray.
