@@ -29,6 +29,17 @@ func Display(w io.Writer, v Value) error {
 }
 
 func display(w *bufio.Writer, v Value, indent int) (err error) {
+	if v.Type().Nature() == semantic.Dynamic {
+		// We want a dynamic null to be displayed as
+		// dynamic(<null>) rather than just <null>
+		_, err = w.WriteString("dynamic(")
+		if err != nil {
+			return
+		}
+		display(w, v.Dynamic().Inner(), indent)
+		_, err = w.WriteString(")")
+		return
+	}
 	if v.IsNull() {
 		_, err = w.WriteString("<null>")
 		return
@@ -80,7 +91,9 @@ func display(w *bufio.Writer, v Value, indent int) (err error) {
 		if err != nil {
 			return
 		}
+		var sep = ", "
 		if multiline {
+			sep = ","
 			err = newline(w, indent+1)
 			if err != nil {
 				return
@@ -91,7 +104,7 @@ func display(w *bufio.Writer, v Value, indent int) (err error) {
 				return
 			}
 			if i != 0 {
-				_, err = w.WriteString(", ")
+				_, err = w.WriteString(sep)
 				if err != nil {
 					return
 				}
