@@ -32,7 +32,30 @@ var dynamicConv = values.NewFunction(
 			return v, nil
 		}
 
-		// FIXME(onelson): wrap the value recursively.
+		// FIXME(onelson): wrap the value recursively, not just if v is an Array
+		//  We want to produce a dynamic where every single value contained
+		//  within it is also wrapped with a dynamic.
+		if v.Type().Nature() == semantic.Array {
+			arr := v.Array()
+			elmType, err := arr.Type().ElemType()
+			if err != nil {
+				return nil, err
+			}
+			if elmType.Nature() == semantic.Dynamic {
+				arr.Retain()
+				return values.NewDynamic(arr), nil
+			} else {
+				elems := make([]values.Value, arr.Len())
+				for i := 0; i < arr.Len(); i++ {
+					v := arr.Get(i)
+					v.Retain()
+					elems[i] = values.NewDynamic(v)
+				}
+				dynArr := values.NewArrayWithBacking(semantic.NewArrayType(semantic.NewDynamicType()), elems)
+				return values.NewDynamic(dynArr), nil
+			}
+		}
+
 		return values.NewDynamic(v), nil
 	},
 	false,
@@ -63,28 +86,12 @@ var asArray = values.NewFunction(
 			return nil, err
 		}
 
-		// The contract for this function says it accepts a dynamic and produces
-		// an array of dynamic.
-		// Note that just because we've verified the argument `v` was a dynamic
-		// value holding an array, it doesn't mean the elements inside that array
-		// are wrapped in dynamic.
-		// Therefore, check to see if the elements are dynamic and wrap them if they aren't.
-		if elmType.Nature() == semantic.Dynamic {
-			arr.Retain()
-			return arr, nil
-		} else {
-			// FIXME(onelson): produce an Internal error if the thing isn't already a `[dynamic]`
-			//  We should be wrapping recursively in functions that produce new `dynamic` values, not here.
-
-			elems := make([]values.Value, arr.Len())
-			for i := 0; i < arr.Len(); i++ {
-				v := arr.Get(i)
-				v.Retain()
-				elems[i] = values.NewDynamic(v)
-			}
-			dynArr := values.NewArrayWithBacking(semantic.NewArrayType(semantic.NewDynamicType()), elems)
-			return dynArr, nil
+		if elmType.Nature() != semantic.Dynamic {
+			return nil, errors.Newf(codes.Internal, "expected array to have dynamic elements, got %s", elmType)
 		}
+
+		arr.Retain()
+		return arr, nil
 	},
 	false,
 )
