@@ -32,9 +32,7 @@ var dynamicConv = values.NewFunction(
 			return v, nil
 		}
 
-		// FIXME(onelson): do we need to special case nulls here?
-		//   Ex: if the input is null, should the output be null or a
-		//   Dynamic with a null in it? My sense is the latter.
+		// FIXME(onelson): wrap the value recursively.
 		return values.NewDynamic(v), nil
 	},
 	false,
@@ -75,6 +73,9 @@ var asArray = values.NewFunction(
 			arr.Retain()
 			return arr, nil
 		} else {
+			// FIXME(onelson): produce an Internal error if the thing isn't already a `[dynamic]`
+			//  We should be wrapping recursively in functions that produce new `dynamic` values, not here.
+
 			elems := make([]values.Value, arr.Len())
 			for i := 0; i < arr.Len(); i++ {
 				v := arr.Get(i)
