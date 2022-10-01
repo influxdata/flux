@@ -17,7 +17,7 @@ testcase dynamic_does_not_rewrap {
     a = dynamic.dynamic(v: 123)
     b = dynamic.dynamic(v: a)
 
-    testing.assertEqualValues(want: true, got: dynamic._equal(a, b))
+    testing.assertEqualValues(want: true, got: dynamic._isNotDistinct(a, b))
 }
 
 // asArray should blow up if you feed it a dynamic that doesn't have an array in it.
@@ -38,7 +38,7 @@ testcase asArray_accepts_actual_array {
 
     testing.assertEqualValues(
         want: true,
-        got: dynamic._equal(a: dynamic.dynamic(v: 123), b: arr[0]),
+        got: dynamic._isNotDistinct(a: dynamic.dynamic(v: 123), b: arr[0]),
     )
 }
 
@@ -50,8 +50,8 @@ testcase asArray_converts_non_dynamic_homogeneous_array_elements {
     converted = dynamic.dynamic(v: input) |> dynamic.asArray()
 
     got = {
-        elm0: dynamic._equal(a: dynamic.dynamic(v: input[0]), b: converted[0]),
-        elm1: dynamic._equal(a: dynamic.dynamic(v: input[1]), b: converted[1]),
+        elm0: dynamic._isNotDistinct(a: dynamic.dynamic(v: input[0]), b: converted[0]),
+        elm1: dynamic._isNotDistinct(a: dynamic.dynamic(v: input[1]), b: converted[1]),
     }
 
     testing.diff(want: array.from(rows: [{elm0: true, elm1: true}]), got: array.from(rows: [got]))
@@ -63,8 +63,8 @@ testcase dynamic_heterogeneous_array_roundtrip {
     converted = dynamic.dynamic(v: input) |> dynamic.asArray()
 
     got = {
-        elm0: dynamic._equal(a: input[0], b: converted[0]),
-        elm1: dynamic._equal(a: input[1], b: converted[1]),
+        elm0: dynamic._isNotDistinct(a: input[0], b: converted[0]),
+        elm1: dynamic._isNotDistinct(a: input[1], b: converted[1]),
     }
 
     testing.diff(want: array.from(rows: [{elm0: true, elm1: true}]), got: array.from(rows: [got]))

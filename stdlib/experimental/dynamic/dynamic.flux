@@ -26,5 +26,6 @@ builtin dynamic : (v: A) => dynamic
 // tags: type-conversions
 builtin asArray : (<-v: dynamic) => [dynamic]
 
-// _equal returns true if both values are essentially equivalent.
-_equal = (a, b) => display(v: a) == display(v: b)
+// _isNotDistinct returns true if both values print the same way, indicating
+// they are essentially equivalent.
+_isNotDistinct = (a, b) => display(v: a) == display(v: b)
