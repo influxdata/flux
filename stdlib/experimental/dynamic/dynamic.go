@@ -14,7 +14,6 @@ import (
 func init() {
 	runtime.RegisterPackageValue("experimental/dynamic", "dynamic", dynamicConv)
 	runtime.RegisterPackageValue("experimental/dynamic", "asArray", asArray)
-	runtime.RegisterPackageValue("experimental/dynamic", "_equal", equal)
 }
 
 var dynamicConv = values.NewFunction(
@@ -85,36 +84,6 @@ var asArray = values.NewFunction(
 			dynArr := values.NewArrayWithBacking(semantic.NewArrayType(semantic.NewDynamicType()), elems)
 			return dynArr, nil
 		}
-	},
-	false,
-)
-
-var equal = values.NewFunction(
-	"_equal",
-	runtime.MustLookupBuiltinType("experimental/dynamic", "_equal"),
-	func(ctx context.Context, args values.Object) (values.Value, error) {
-		arguments := interpreter.NewArguments(args)
-		a, err := arguments.GetRequired("a")
-		if err != nil {
-			return nil, err
-		}
-		if a.IsNull() {
-			return values.NewBool(false), nil
-		}
-		if a.Type().Nature() != semantic.Dynamic {
-			return nil, errors.Newf(codes.Invalid, "expected dynamic value for argument a, got %s", a.Type())
-		}
-		b, err := arguments.GetRequired("b")
-		if err != nil {
-			return nil, err
-		}
-		if b.IsNull() {
-			return values.NewBool(false), nil
-		}
-		if b.Type().Nature() != semantic.Dynamic {
-			return nil, errors.Newf(codes.Invalid, "expected dynamic value for argument b, got %s", b.Type())
-		}
-		return values.NewBool(a.Dynamic().Equal(b.Dynamic())), nil
 	},
 	false,
 )

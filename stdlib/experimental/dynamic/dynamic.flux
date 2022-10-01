@@ -27,4 +27,4 @@ builtin dynamic : (v: A) => dynamic
 builtin asArray : (<-v: dynamic) => [dynamic]
 
 // _equal returns true if both values are essentially equivalent.
-builtin _equal : (a: dynamic, b: dynamic) => bool
+_equal = (a, b) => display(v: a) == display(v: b)
