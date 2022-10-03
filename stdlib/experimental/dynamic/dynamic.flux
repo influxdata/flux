@@ -1,7 +1,7 @@
 // Package dynamic provides tools for working with values of unknown types.
 //
 // ## Metadata
-// introduced: NEXT
+// introduced: 0.185.0
 //
 package dynamic
 
