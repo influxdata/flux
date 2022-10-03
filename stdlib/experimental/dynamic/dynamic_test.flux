@@ -69,3 +69,55 @@ testcase dynamic_heterogeneous_array_roundtrip {
 
     testing.diff(want: array.from(rows: [{elm0: true, elm1: true}]), got: array.from(rows: [got]))
 }
+
+jsonArray = "[0,\"foo\",true,false,{\"bar\":100},[1,2],null]"
+jsonObject =
+    "{\"arr\":[1,2],\"bfalse\":false,\"btrue\":true,\"n\":null,\"num\":0,\"obj\":{\"bar\":100},\"str\":\"foo\"}"
+
+testcase dynamic_json_parse_array {
+    want =
+        "dynamic([
+    dynamic(0),
+    dynamic(foo),
+    dynamic(true),
+    dynamic(false),
+    dynamic({bar: dynamic(100)}),
+    dynamic([dynamic(1), dynamic(2)]),
+    dynamic(<null>)
+])"
+    got = display(v: dynamic.jsonParse(data: bytes(v: jsonArray)))
+
+    testing.assertEqualValues(got, want)
+}
+
+testcase dynamic_json_parse_object {
+    want =
+        "dynamic({
+    arr: dynamic([dynamic(1), dynamic(2)]),
+    bfalse: dynamic(false),
+    btrue: dynamic(true),
+    n: dynamic(<null>),
+    num: dynamic(0),
+    obj: dynamic({bar: dynamic(100)}),
+    str: dynamic(foo)
+})"
+    got = display(v: dynamic.jsonParse(data: bytes(v: jsonObject)))
+
+    testing.assertEqualValues(got, want)
+}
+
+testcase dynamic_json_encode {
+    want = array.from(rows: [{name: "array", data: jsonArray}, {name: "object", data: jsonObject}])
+
+    got =
+        want
+            |> map(
+                fn: (r) => {
+                    roundtrip = dynamic.jsonEncode(v: dynamic.jsonParse(data: bytes(v: r.data)))
+
+                    return {name: r.name, data: string(v: roundtrip)}
+                },
+            )
+
+    testing.diff(got, want)
+}

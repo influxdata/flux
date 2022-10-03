@@ -291,9 +291,10 @@ func findProperty(name string, t semantic.MonoType) (*semantic.RecordProperty, b
 // This is safe becase we already validated that the function type is a monotype.
 func apply(sub semantic.Substitutor, props []semantic.PropertyType, t semantic.MonoType) semantic.MonoType {
 	switch t.Kind() {
-	case semantic.Unknown, semantic.Basic:
+	case semantic.Unknown, semantic.Basic, semantic.Dyn:
 		// Basic types do not contain type variables.
 		// As a result there is nothing to substitute.
+		// The dynamic type is similar.
 		return t
 	case semantic.Var:
 		tv, err := t.VarNum()
