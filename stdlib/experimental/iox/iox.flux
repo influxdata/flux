@@ -18,3 +18,16 @@ package iox
 // ## Metadata
 // tags: inputs
 builtin from : (bucket: string, measurement: string) => stream[{A with _time: time}] where A: Record
+
+// sql executes an SQL query against a bucket in an IOx storage node.
+//
+// This function creates a source that reads data from IOx.
+//
+// ## Parameters
+// - bucket: IOx bucket to read data from.
+// - query: Query to execute.
+//
+// ## Metadata
+// introduced: NEXT
+// tags: inputs
+builtin sql : (bucket: string, query: string) => stream[A] where A: Record

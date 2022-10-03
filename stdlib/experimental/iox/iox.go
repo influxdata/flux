@@ -14,4 +14,5 @@ func init() {
 	b.Register("from", func(args *function.Arguments) (values.Value, error) {
 		return nil, errors.New(codes.Unimplemented, "iox.from() is not implemented outside cloud 2.x")
 	})
+	b.RegisterSource("sql", SqlKind, createSqlProcedureSpec)
 }
