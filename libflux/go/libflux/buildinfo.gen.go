@@ -91,7 +91,7 @@ var sourceHashes = map[string]string{
 	"stdlib/contrib/bonitoo-io/victorops/victorops.flux":                                          "44d6674a86ceff7995153deca38db142fc0422b5a3526f5d0263a761d222269f",
 	"stdlib/contrib/bonitoo-io/zenoss/zenoss.flux":                                                "8f6de802b3176bf2524018e32ec5dc4eddd66db86abdeec837e9ca65ad7cc863",
 	"stdlib/contrib/chobbs/discord/discord.flux":                                                  "bbda9aaee1966d67d310dc099d00476adda777394a1af279d447e4524e0d5e58",
-	"stdlib/contrib/jsternberg/aggregate/aggregate.flux":                                          "b077250cbed500bc209db468e7308572f5633e8762aef827e80999d649683b55",
+	"stdlib/contrib/jsternberg/aggregate/aggregate.flux":                                          "3c48f5dff5972bd3feee480b92409328af44f21e68e850bdd3350a15fbfd9ffa",
 	"stdlib/contrib/jsternberg/aggregate/table_test.flux":                                         "5e227979820698120fd6d98cfa30e47f6b8fdb2ee04445fc43a63e10fc27452b",
 	"stdlib/contrib/jsternberg/aggregate/window_test.flux":                                        "a8308af4edc31e0932ba20c40e6a6e73483a991502ca5fbc9dbe162f93ebb1e8",
 	"stdlib/contrib/jsternberg/influxdb/influxdb.flux":                                            "afc52f2e31d5e063e318b752d077c58189317c373494563ea0895cdcdea49074",
