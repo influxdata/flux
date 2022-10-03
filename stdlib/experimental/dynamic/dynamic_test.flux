@@ -42,29 +42,6 @@ testcase dynamic_member_access_undefined {
     testing.assertEqualValues(want: true, got: dynamic._isNotDistinct(a, b))
 }
 
-testcase dynamic_index_access_valid {
-    a = dynamic.dynamic(v: [123])[0]
-    b = dynamic.dynamic(v: 123)
-
-    testing.assertEqualValues(want: true, got: dynamic._isNotDistinct(a, b))
-}
-
-testcase dynamic_index_access_invalid {
-    // not an array
-    a = dynamic.dynamic(v: 123)[0]
-    b = dynamic.dynamic(v: debug.null())
-
-    testing.assertEqualValues(want: true, got: dynamic._isNotDistinct(a, b))
-}
-
-testcase dynamic_index_access_oob {
-    // is an array, but index is out of bounds
-    a = dynamic.dynamic(v: [123])[4]
-    b = dynamic.dynamic(v: debug.null())
-
-    testing.assertEqualValues(want: true, got: dynamic._isNotDistinct(a, b))
-}
-
 // asArray should blow up if you feed it a dynamic that doesn't have an array in it.
 testcase asArray_errors_on_nonarray {
     testing.shouldError(

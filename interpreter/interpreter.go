@@ -408,18 +408,6 @@ func (itrp *Interpreter) doExpression(ctx context.Context, expr semantic.Express
 			return nil, err
 		}
 		ix := int(idx.Int())
-		if typ := arr.Type().Nature(); typ == semantic.Dynamic {
-			// FIXME(onelson): handle dynamic array access
-			// There are a couple options for what we can do here.
-			// The original plan was to be permissive and allow arbitrary
-			// indexing, giving dynamic(null) when out of bounds or the value
-			// doesn't happen to contain an array.
-			// We could also decide we want to blow up here at runtime if the
-			// index is out of bounds, but that might be unexpected in the
-			// scheme of things. For now, to be consistent, keep handing back
-			// dynamic(null) and let the blow-up happen during casting.
-			return nil, errors.New(codes.Invalid, "TODO: dynamic indexing")
-		}
 		l := arr.Array().Len()
 		if ix < 0 || ix >= l {
 			return nil, errors.Newf(codes.Invalid, "cannot access element %v of array of length %v", ix, l)
