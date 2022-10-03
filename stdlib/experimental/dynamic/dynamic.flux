@@ -33,7 +33,7 @@ _isNotDistinct = (a, b) => display(v: a) == display(v: b)
 // jsonParse takes JSON data as bytes and returns dynamic values.
 //
 // JSON input is converted to dynamic-typed values which may be converted to
-// a statically typed value with asArray or casting functions in this package.
+// a statically typed value with `dynamic.asArray()` or casting functions in the `dynamic` package.
 //
 // ## Parameters
 // - data: JSON data (as bytes) to parse.
