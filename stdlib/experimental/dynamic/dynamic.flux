@@ -40,13 +40,15 @@ _isNotDistinct = (a, b) => display(v: a) == display(v: b)
 //
 // ## Metadata
 // tags: type-conversions
+// introduced: NEXT
 builtin jsonParse : (data: bytes) => dynamic
 
 // jsonEncode converts a dynamic value into JSON bytes.
 //
 // ## Parameters
-// - v: value to be encoded into JSON
+// - v: Value to encode into JSON.
 //
 // ## Metadata
 // tags: type-conversions
+// introduced: NEXT
 builtin jsonEncode : (v: dynamic) => bytes
