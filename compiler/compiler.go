@@ -294,7 +294,7 @@ func apply(sub semantic.Substitutor, props []semantic.PropertyType, t semantic.M
 	case semantic.Unknown, semantic.Basic, semantic.Dyn:
 		// Basic types do not contain type variables.
 		// As a result there is nothing to substitute.
-		// The dynamic types is similar.
+		// The dynamic type is similar.
 		return t
 	case semantic.Var:
 		tv, err := t.VarNum()
