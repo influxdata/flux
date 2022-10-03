@@ -34,9 +34,18 @@ testcase dynamic_member_access_invalid {
 
     testing.assertEqualValues(want: true, got: dynamic._isNotDistinct(a, b))
 }
+
 testcase dynamic_member_access_undefined {
     // is an object, but f1 does not exist
     a = dynamic.dynamic(v: {f0: 123}).f1
+    b = dynamic.dynamic(v: debug.null())
+
+    testing.assertEqualValues(want: true, got: dynamic._isNotDistinct(a, b))
+}
+
+testcase dynamic_member_access_undefined_deep {
+    // is an object, but f1 does not exist, nor does f2 or f3
+    a = dynamic.dynamic(v: {f0: 123}).f1.f2.f3
     b = dynamic.dynamic(v: debug.null())
 
     testing.assertEqualValues(want: true, got: dynamic._isNotDistinct(a, b))
