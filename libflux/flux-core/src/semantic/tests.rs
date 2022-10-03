@@ -4415,3 +4415,17 @@ fn dynamic_index() {
         ],
     }
 }
+
+#[test]
+fn dynamic_array_multiple_elements() {
+    test_infer! {
+        env: map![
+            "a" => "dynamic",
+            "b" => "dynamic"
+        ],
+        src: r#"v = [a, b]"#,
+        exp: map![
+            "v" => "[dynamic]",
+        ],
+    }
+}
