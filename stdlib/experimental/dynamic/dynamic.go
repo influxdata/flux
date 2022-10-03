@@ -28,7 +28,6 @@ var dynamicConv = values.NewFunction(
 
 		// Nothing to do if the incoming value is already a dynamic
 		if v.Type().Nature() == semantic.Dynamic {
-			v.Retain()
 			return v, nil
 		}
 
@@ -42,13 +41,11 @@ var dynamicConv = values.NewFunction(
 				return nil, err
 			}
 			if elmType.Nature() == semantic.Dynamic {
-				arr.Retain()
 				return values.NewDynamic(arr), nil
 			} else {
 				elems := make([]values.Value, arr.Len())
 				for i := 0; i < arr.Len(); i++ {
 					v := arr.Get(i)
-					v.Retain()
 					elems[i] = values.NewDynamic(v)
 				}
 				dynArr := values.NewArrayWithBacking(semantic.NewArrayType(semantic.NewDynamicType()), elems)
@@ -90,7 +87,6 @@ var asArray = values.NewFunction(
 			return nil, errors.Newf(codes.Internal, "expected array to have dynamic elements, got %s", elmType)
 		}
 
-		arr.Retain()
 		return arr, nil
 	},
 	false,
