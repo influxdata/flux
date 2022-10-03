@@ -40,16 +40,16 @@ import "contrib/jsternberg/math"
 //
 // ## Examples
 //
-// ### Compute the min of a specific column
+// ### Compute the minimum value in a specific column
 //
 // ```
 // import "sampledata"
 // import "contrib/jsternberg/aggregate"
 //
-// > sampledata.float()
+// < sampledata.float()
 //      |> aggregate.table(columns: {
 //         "min_bottom_degrees": aggregate.min(column: "_value"),
-// <    })
+// >    })
 // ```
 builtin table : (<-tables: stream[A], columns: C) => stream[B] where A: Record, B: Record, C: Record
 
