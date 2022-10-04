@@ -1617,7 +1617,6 @@ impl IndexExpr {
             MonoType::Collection(col) if col.collection == types::CollectionType::Array => {
                 self.typ = col.arg.clone();
             }
-            MonoType::Dynamic(d) => self.typ = MonoType::Dynamic(d.clone()),
             _ => {
                 self.typ = MonoType::Var(infer.sub.fresh());
                 infer.equal(

@@ -4404,19 +4404,6 @@ fn dynamic_member() {
 }
 
 #[test]
-fn dynamic_index() {
-    test_infer! {
-        env: map![
-            "d" => "dynamic"
-        ],
-        src: r#"v = d[0]"#,
-        exp: map![
-            "v" => "dynamic",
-        ],
-    }
-}
-
-#[test]
 fn dynamic_array_multiple_elements() {
     test_infer! {
         env: map![

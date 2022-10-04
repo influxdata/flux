@@ -349,6 +349,19 @@ func (itrp *Interpreter) doAssignment(ctx context.Context, a semantic.Assignment
 	}
 }
 
+// getMember tries to get a member of an Object; helpful for member expressions.
+func getMember(obj values.Value, name string) (values.Value, error) {
+	if typ := obj.Type().Nature(); typ != semantic.Object {
+		return nil, errors.Newf(codes.Invalid, "cannot access property %q on value of type %s", name, typ)
+	}
+	v, _ := obj.Object().Get(name)
+	if pkg, ok := v.(*Package); ok {
+		// If the property of a member expression represents a package, then the object itself must be a package.
+		return nil, errors.Newf(codes.Invalid, "cannot access imported package %q of imported package %q", pkg.Name(), obj.(*Package).Name())
+	}
+	return v, nil
+}
+
 func (itrp *Interpreter) doExpression(ctx context.Context, expr semantic.Expression, scope values.Scope) (ret values.Value, err error) {
 	switch e := expr.(type) {
 	case semantic.Literal:
@@ -372,15 +385,19 @@ func (itrp *Interpreter) doExpression(ctx context.Context, expr semantic.Express
 		if err != nil {
 			return nil, err
 		}
-		if typ := obj.Type().Nature(); typ != semantic.Object {
-			return nil, errors.Newf(codes.Invalid, "cannot access property %q on value of type %s", e.Property, typ)
+
+		if typ := obj.Type().Nature(); typ == semantic.Dynamic {
+			member, err := getMember(obj.Dynamic().Inner(), e.Property.Name())
+			if err != nil {
+				return values.NewDynamic(values.Null), nil
+			}
+			// TODO: this check will be redundant as of https://github.com/influxdata/flux/issues/5252
+			if member.Type().Nature() != semantic.Dynamic {
+				return values.NewDynamic(member), nil
+			}
+			return member, nil
 		}
-		v, _ := obj.Object().Get(e.Property.Name())
-		if pkg, ok := v.(*Package); ok {
-			// If the property of a member expression represents a package, then the object itself must be a package.
-			return nil, errors.Newf(codes.Invalid, "cannot access imported package %q of imported package %q", pkg.Name(), obj.(*Package).Name())
-		}
-		return v, nil
+		return getMember(obj, e.Property.Name())
 	case *semantic.IndexExpression:
 		arr, err := itrp.doExpression(ctx, e.Array, scope)
 		if err != nil {
