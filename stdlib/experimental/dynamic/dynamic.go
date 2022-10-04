@@ -30,30 +30,7 @@ var dynamicConv = values.NewFunction(
 		if v.Type().Nature() == semantic.Dynamic {
 			return v, nil
 		}
-
-		// FIXME(onelson): wrap the value recursively, not just if v is an Array
-		//  We want to produce a dynamic where every single value contained
-		//  within it is also wrapped with a dynamic.
-		if v.Type().Nature() == semantic.Array {
-			arr := v.Array()
-			elmType, err := arr.Type().ElemType()
-			if err != nil {
-				return nil, err
-			}
-			if elmType.Nature() == semantic.Dynamic {
-				return values.NewDynamic(arr), nil
-			} else {
-				elems := make([]values.Value, arr.Len())
-				for i := 0; i < arr.Len(); i++ {
-					v := arr.Get(i)
-					elems[i] = values.NewDynamic(v)
-				}
-				dynArr := values.NewArrayWithBacking(semantic.NewArrayType(semantic.NewDynamicType()), elems)
-				return values.NewDynamic(dynArr), nil
-			}
-		}
-
-		return values.NewDynamic(v), nil
+		return wrapValue(v)
 	},
 	false,
 )
@@ -91,3 +68,80 @@ var asArray = values.NewFunction(
 	},
 	false,
 )
+
+func wrapValue(v values.Value) (values.Dynamic, error) {
+	if v.IsNull() {
+		return values.NewDynamic(v), nil
+	}
+	switch n := v.Type().Nature(); n {
+	case semantic.Dynamic:
+		return v.Dynamic(), nil // Return as-is
+
+	// Basic types wrap plainly.
+	case semantic.String,
+		semantic.Bytes,
+		semantic.Int,
+		semantic.UInt,
+		semantic.Float,
+		semantic.Bool,
+		semantic.Time,
+		semantic.Duration:
+		return values.NewDynamic(v), nil
+
+	// The composite types need to recurse.
+	case semantic.Array:
+		arr := v.Array()
+		elems := make([]values.Value, arr.Len())
+		var rangeErr error
+		arr.Range(func(i int, v values.Value) {
+			if rangeErr != nil {
+				return // short circuit if we already hit an error
+			}
+			val, err := wrapValue(v)
+			if err != nil {
+				rangeErr = err
+				return
+			}
+			elems[i] = val
+		})
+		if rangeErr != nil {
+			return nil, rangeErr
+		}
+		return values.NewDynamic(
+			values.NewArrayWithBacking(
+				semantic.NewArrayType(semantic.NewDynamicType()),
+				elems,
+			)), nil
+	case semantic.Object:
+		obj := v.Object()
+		o := make(map[string]values.Value, obj.Len())
+		var rangeErr error
+		obj.Range(func(k string, v values.Value) {
+			if rangeErr != nil {
+				return // short circuit if we already hit an error
+			}
+			val, err := wrapValue(v)
+			if err != nil {
+				rangeErr = err
+				return
+			}
+			o[k] = val
+		})
+		if rangeErr != nil {
+			return nil, rangeErr
+		}
+		return values.NewDynamic(values.NewObjectWithValues(o)), nil
+
+	case semantic.Dictionary:
+		// FIXME(onelson): should dict work? Seems like member expressions should work as-is on dict.
+		panic("TODO")
+	// FIXME(onelson): stands to reason we should only allow wrapping of types that can be cast INTO
+	case semantic.Regexp:
+	case semantic.Function:
+	case semantic.Stream:
+	default:
+		return nil, errors.Newf(codes.Unknown, "unknown nature %v", n)
+	}
+
+	return nil, errors.Newf(codes.Invalid, "unsupported type for dynamic %s", v.Type())
+}
