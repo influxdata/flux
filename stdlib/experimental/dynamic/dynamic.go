@@ -25,7 +25,11 @@ var dynamicConv = values.NewFunction(
 		if err != nil {
 			return nil, err
 		}
-		return values.WrapDynamic(v)
+		// N.b. all types are accepted, but only a subset have ways to be
+		// extracted.
+		// Add checks here for the nature of `v` if you want to make certain
+		// types a runtime error.
+		return values.NewDynamic(v), nil
 	},
 	false,
 )
