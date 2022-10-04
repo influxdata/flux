@@ -391,8 +391,10 @@ func (itrp *Interpreter) doExpression(ctx context.Context, expr semantic.Express
 			if err != nil {
 				return values.NewDynamic(values.Null), nil
 			}
-			// TODO: this check will be redundant as of https://github.com/influxdata/flux/issues/5252
-			if member.Type().Nature() != semantic.Dynamic {
+			// Dynamic values should have all elements of their internal values
+			// pre-wrapped, but in the case of a member that isn't actually
+			// defined we need to wrap the null here.
+			if member.IsNull() {
 				return values.NewDynamic(member), nil
 			}
 			return member, nil

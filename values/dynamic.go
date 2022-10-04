@@ -3,6 +3,8 @@ package values
 import (
 	"regexp"
 
+	"github.com/influxdata/flux/codes"
+	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/semantic"
 )
 
@@ -105,4 +107,78 @@ func (d dynamic) Retain() {
 
 func (d dynamic) Release() {
 	d.inner.Release()
+}
+
+// WrapDynamic will recursively wrap a Value in Dynamic
+func WrapDynamic(v Value) (Dynamic, error) {
+	if v.IsNull() {
+		return NewDynamic(v), nil
+	}
+	switch n := v.Type().Nature(); n {
+	case semantic.Dynamic:
+		return v.Dynamic(), nil // Return as-is
+
+	// Basic types wrap plainly.
+	case semantic.String,
+		semantic.Bytes,
+		semantic.Int,
+		semantic.UInt,
+		semantic.Float,
+		semantic.Bool,
+		semantic.Time,
+		semantic.Duration:
+		return NewDynamic(v), nil
+
+	// The composite types need to recurse.
+	case semantic.Array:
+		arr := v.Array()
+		elems := make([]Value, arr.Len())
+		var rangeErr error
+		arr.Range(func(i int, v Value) {
+			if rangeErr != nil {
+				return // short circuit if we already hit an error
+			}
+			val, err := WrapDynamic(v)
+			if err != nil {
+				rangeErr = err
+				return
+			}
+			elems[i] = val
+		})
+		if rangeErr != nil {
+			return nil, rangeErr
+		}
+		return NewDynamic(
+			NewArrayWithBacking(
+				semantic.NewArrayType(semantic.NewDynamicType()),
+				elems,
+			)), nil
+	case semantic.Object:
+		obj := v.Object()
+		o := make(map[string]Value, obj.Len())
+		var rangeErr error
+		obj.Range(func(k string, v Value) {
+			if rangeErr != nil {
+				return // short circuit if we already hit an error
+			}
+			val, err := WrapDynamic(v)
+			if err != nil {
+				rangeErr = err
+				return
+			}
+			o[k] = val
+		})
+		if rangeErr != nil {
+			return nil, rangeErr
+		}
+		return NewDynamic(NewObjectWithValues(o)), nil
+	// It's possible we could support many of the remaining types but today
+	// there aren't good ways to extract the inner value.
+	// We'd need to add support for casting dynamic to each.
+	default:
+		return nil, errors.Newf(
+			codes.Invalid,
+			"unsupported type for dynamic: %s %s", v.Type().Nature(), v.Type(),
+		)
+	}
 }
