@@ -199,7 +199,8 @@ testcase dynamic_kitchen_sink {
                         dur: 1y,
                         bfalse: false,
                         btrue: true,
-                        bytes: bytes(v: "abc"),  // -> 0x616263
+                        // -> 0x616263
+                        bytes: bytes(v: "abc"),
                         n: debug.null(),
                         num: 0,
                         obj: {bar: 100},
