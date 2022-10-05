@@ -77,7 +77,7 @@ func (f *JoinFn) Prepare(ctx context.Context, lcols, rcols []flux.ColMeta) error
 // the specified join method might require that no output be produced if one side is empty.
 // If the returned bool == true, that means this function returned a non-empty table chunk
 // containing the joined data.
-func (f *JoinFn) Eval(ctx context.Context, p *joinProduct, method string, mem memory.Allocator) ([]table.Chunk, bool, error) {
+func (f *JoinFn) Eval(ctx context.Context, p *joinProduct, method string, mem memory.Allocator, lcols, rcols []flux.ColMeta) ([]table.Chunk, bool, error) {
 	// It's possible for either side to be empty, in which case we consult the join method
 	// to determine what to do next. However, it shouldn't be possible for both left and right
 	// to be empty.
@@ -93,6 +93,8 @@ func (f *JoinFn) Eval(ctx context.Context, p *joinProduct, method string, mem me
 		if method == "inner" || method == "left" {
 			return nil, false, nil
 		}
+		// Should be able to change this to be:
+		// p.left = append(p.left, defaultRow(groupKey, mem))
 		groupKey := p.right[0].Key()
 		defaultRow := defaultRow(groupKey, f.leftType())
 		cols := colsFromObjectType(f.leftType())

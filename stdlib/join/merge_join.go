@@ -424,7 +424,7 @@ func (s *joinState) join(
 	joined := make([]table.Chunk, 0, joinable+1)
 	for i := 0; i <= joinable; i++ {
 		prod := s.products[i]
-		p, ok, err := prod.evaluate(ctx, method, *fn, mem)
+		p, ok, err := prod.evaluate(ctx, method, *fn, mem, lschema, rschema)
 		if err != nil {
 			return joined, err
 		}
@@ -622,8 +622,8 @@ func (p *joinProduct) isDone() bool {
 
 // Returns the joined output of the product, if there is any. If the returned bool is `true`,
 // the returned table chunk contains joined data that should be passed along to the next node.
-func (p *joinProduct) evaluate(ctx context.Context, method string, fn JoinFn, mem memory.Allocator) ([]table.Chunk, bool, error) {
-	return fn.Eval(ctx, p, method, mem)
+func (p *joinProduct) evaluate(ctx context.Context, method string, fn JoinFn, mem memory.Allocator, lcols, rcols []flux.ColMeta) ([]table.Chunk, bool, error) {
+	return fn.Eval(ctx, p, method, mem, lcols, rcols)
 }
 
 func rowFromChunk(c table.Chunk, i int, mt semantic.MonoType) values.Object {
