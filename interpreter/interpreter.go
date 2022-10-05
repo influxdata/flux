@@ -1738,6 +1738,15 @@ func (a *arguments) GetRequiredDictionary(name string) (values.Dictionary, error
 }
 
 func (a *arguments) RawObject() values.Object {
+	// Mark all attributes in the object as used.
+	// This is because we are going to use the raw object somewhere else
+	// and the tracking code for used attributes is really meaningless in
+	// that context.
+	if a.obj != nil {
+		a.obj.Range(func(name string, v values.Value) {
+			a.used[name] = true
+		})
+	}
 	return a.obj
 }
 
