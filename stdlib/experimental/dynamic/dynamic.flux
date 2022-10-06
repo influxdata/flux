@@ -53,6 +53,28 @@ builtin jsonParse : (data: bytes) => dynamic
 // introduced: NEXT
 builtin jsonEncode : (v: dynamic) => bytes
 
+// isType tests if a `dynamic` holds a value is a specified type.
+//
+// ## Parameters
+// - v: Value to test.
+// - type: String describing the type to check against.
+//
+//     **Supported types**:
+//     - string
+//     - bytes
+//     - int
+//     - uint
+//     - float
+//     - bool
+//     - time
+//     - duration
+//     - regexp
+//     - array
+//     - object
+//     - function
+//     - dictionary
+//     - vector
+//
 // ## Metadata
 // tags: types, tests
 // introduced: NEXT
