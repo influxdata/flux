@@ -2,6 +2,8 @@
 
 use std::{collections::HashMap, mem, str};
 
+use ordered_float::NotNan;
+
 use super::DefaultHasher;
 use crate::{ast, ast::*, scanner, scanner::*};
 
@@ -1654,7 +1656,7 @@ impl<'input> Parser<'input> {
         match value {
             Ok(value) => Ok(FloatLit {
                 base: self.base_node_from_token(&t),
-                value,
+                value: NotNan::new(value).map_err(|_| TokenError { token: t })?,
             }),
             Err(_) => Err(TokenError { token: t }),
         }

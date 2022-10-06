@@ -82,7 +82,9 @@ fn binary_operator_precedence() {
                                                 source: "1.0",
                                             },
                                         },
-                                        value: 1.0,
+                                        value: NotNan(
+                                            1.0,
+                                        ),
                                     },
                                 ),
                             },
@@ -178,7 +180,9 @@ fn binary_operator_precedence_literals_only() {
                                                 source: "1.0",
                                             },
                                         },
-                                        value: 1.0,
+                                        value: NotNan(
+                                            1.0,
+                                        ),
                                     },
                                 ),
                             },
@@ -2819,7 +2823,9 @@ fn binary_expression() {
                                                 source: "10.0",
                                             },
                                         },
-                                        value: 10.0,
+                                        value: NotNan(
+                                            10.0,
+                                        ),
                                     },
                                 ),
                             },
@@ -2916,7 +2922,9 @@ fn member_expression_binary_expression() {
                                                 source: "10.0",
                                             },
                                         },
-                                        value: 10.0,
+                                        value: NotNan(
+                                            10.0,
+                                        ),
                                     },
                                 ),
                             },
@@ -3401,7 +3409,9 @@ fn unary_expressions_within_logical_expression() {
                                         source: "5.0",
                                     },
                                 },
-                                value: 5.0,
+                                value: NotNan(
+                                    5.0,
+                                ),
                             },
                         ),
                     },
@@ -3454,7 +3464,9 @@ fn unary_expressions_within_logical_expression() {
                                                                 source: "10.0",
                                                             },
                                                         },
-                                                        value: 10.0,
+                                                        value: NotNan(
+                                                            10.0,
+                                                        ),
                                                     },
                                                 ),
                                                 right: Unary(
@@ -3502,7 +3514,9 @@ fn unary_expressions_within_logical_expression() {
                                                                 source: "0.5",
                                                             },
                                                         },
-                                                        value: 0.5,
+                                                        value: NotNan(
+                                                            0.5,
+                                                        ),
                                                     },
                                                 ),
                                             },
@@ -3540,7 +3554,9 @@ fn unary_expressions_within_logical_expression() {
                                                         source: "6.0",
                                                     },
                                                 },
-                                                value: 6.0,
+                                                value: NotNan(
+                                                    6.0,
+                                                ),
                                             },
                                         ),
                                     },
@@ -3698,7 +3714,9 @@ a = 5.0
                                         source: "5.0",
                                     },
                                 },
-                                value: 5.0,
+                                value: NotNan(
+                                    5.0,
+                                ),
                             },
                         ),
                     },
@@ -3761,7 +3779,9 @@ a = 5.0
                                                                 },
                                                             ],
                                                         },
-                                                        value: 10.0,
+                                                        value: NotNan(
+                                                            10.0,
+                                                        ),
                                                     },
                                                 ),
                                                 right: Unary(
@@ -3809,7 +3829,9 @@ a = 5.0
                                                                 source: "0.5",
                                                             },
                                                         },
-                                                        value: 0.5,
+                                                        value: NotNan(
+                                                            0.5,
+                                                        ),
                                                     },
                                                 ),
                                             },
@@ -3847,7 +3869,9 @@ a = 5.0
                                                         source: "6.0",
                                                     },
                                                 },
-                                                value: 6.0,
+                                                value: NotNan(
+                                                    6.0,
+                                                ),
                                             },
                                         ),
                                     },
@@ -3978,7 +4002,9 @@ fn mix_unary_logical_and_binary_expressions() {
                                                                                 source: "6.0",
                                                                             },
                                                                         },
-                                                                        value: 6.0,
+                                                                        value: NotNan(
+                                                                            6.0,
+                                                                        ),
                                                                     },
                                                                 ),
                                                                 right: Identifier(
@@ -4163,7 +4189,9 @@ fn mix_unary_logical_and_binary_expressions_with_extra_parens() {
                                                                                         source: "6.0",
                                                                                     },
                                                                                 },
-                                                                                value: 6.0,
+                                                                                value: NotNan(
+                                                                                    6.0,
+                                                                                ),
                                                                             },
                                                                         ),
                                                                         right: Identifier(
@@ -4344,7 +4372,9 @@ fn modulo_op_floats() {
                                                 source: "8.3",
                                             },
                                         },
-                                        value: 8.3,
+                                        value: NotNan(
+                                            8.3,
+                                        ),
                                     },
                                 ),
                                 right: Float(
@@ -4356,7 +4386,9 @@ fn modulo_op_floats() {
                                                 source: "3.1",
                                             },
                                         },
-                                        value: 3.1,
+                                        value: NotNan(
+                                            3.1,
+                                        ),
                                     },
                                 ),
                             },

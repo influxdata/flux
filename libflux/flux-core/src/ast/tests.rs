@@ -1832,7 +1832,7 @@ fn test_json_boolean_literal() {
 fn test_json_float_literal() {
     let n = Expression::Float(FloatLit {
         base: BaseNode::default(),
-        value: 42.1,
+        value: NotNan::try_from(42.1).unwrap(),
     });
     let serialized = serde_json::to_string(&n).unwrap();
     assert_eq!(serialized, r#"{"type":"FloatLiteral","value":42.1}"#);
