@@ -1312,7 +1312,7 @@ impl<'a> Converter<'a> {
     fn convert_float_literal(&mut self, lit: &ast::FloatLit) -> FloatLit {
         FloatLit {
             loc: lit.base.location.clone(),
-            value: lit.value.into_inner(),
+            value: lit.value,
         }
     }
 
