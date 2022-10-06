@@ -173,6 +173,7 @@ testcase dynamic_kitchen_sink {
     bytes: dynamic(0x616263),
     dict: dynamic([a: 1]),
     dur: dynamic(1y),
+    func: dynamic(() => bool),
     n: dynamic(<null>),
     num: dynamic(0),
     obj: dynamic({bar: dynamic(100)}),
@@ -195,12 +196,13 @@ testcase dynamic_kitchen_sink {
                         arr4: [[1, 2], [3, 4]],
                         // n.b. uint renders just like int - just the number.
                         arr5: [{a: 1, b: uint(v: 2)}, {a: 3, b: uint(v: 4)}],
-                        dict: ["a": 1],
-                        dur: 1y,
                         bfalse: false,
                         btrue: true,
                         // -> 0x616263
                         bytes: bytes(v: "abc"),
+                        dict: ["a": 1],
+                        dur: 1y,
+                        func: () => true,
                         n: debug.null(),
                         num: 0,
                         obj: {bar: 100},
