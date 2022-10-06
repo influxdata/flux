@@ -83,7 +83,7 @@ var isType = values.NewFunction(
 		// explicit check for `semantic.Invalid`, but this early return avoids
 		// the panic we'd see when trying to access the inner value of the
 		// dynamic (which is not valid when we get a true `null` rather than a
-		//`dynamic(null)`).
+		// `dynamic(null)`).
 		if v.IsNull() {
 			return values.NewBool(false), nil
 		}
