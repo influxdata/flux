@@ -1576,13 +1576,17 @@ impl<'doc> Formatter<'doc> {
     fn format_float_literal(&mut self, expr: &'doc ast::FloatLit) -> Doc<'doc> {
         let arena = self.arena;
 
-        docs![arena, self.format_comments(&expr.base.comments), {
-            let mut s = format!("{}", expr.value);
-            if !s.contains('.') {
-                s.push_str(".0");
-            }
-            s
-        }]
+        if let Some(text) = &expr.base.location.source {
+            docs![arena, self.format_comments(&expr.base.comments), text]
+        } else {
+            docs![arena, self.format_comments(&expr.base.comments), {
+                let mut s = format!("{}", expr.value);
+                if !s.contains('.') {
+                    s.push_str(".0");
+                }
+                s
+            }]
+        }
     }
 
     fn format_duration_literal(&mut self, n: &'doc ast::DurationLit) -> Doc<'doc> {
