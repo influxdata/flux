@@ -7,7 +7,10 @@
 //  Uncommented node types are a direct port of the AST ones.
 #![allow(clippy::match_single_binding)]
 
-use std::{fmt::Debug, vec::Vec};
+use std::{
+    fmt::{Debug, Write},
+    vec::Vec,
+};
 
 use anyhow::{anyhow, bail, Result as AnyhowResult};
 use chrono::{prelude::DateTime, FixedOffset};
@@ -64,8 +67,12 @@ pub enum ErrorKind {
     #[display(fmt = "invalid import path {}", _0)]
     InvalidImportPath(String),
 
-    #[display(fmt = "cycle {:?}", cycle)]
-    ImportCycle { cycle: Vec<String> },
+    #[display(
+        fmt = "package \"{}\" depends on itself: {}",
+        package,
+        "display_cycle(package, cycle)"
+    )]
+    ImportCycle { package: String, cycle: Vec<String> },
 
     #[display(fmt = "return not valid in file block")]
     InvalidReturn,
@@ -78,6 +85,18 @@ pub enum ErrorKind {
 
     #[display(fmt = "{}. This is a bug in type inference", _0)]
     Bug(String),
+}
+
+fn display_cycle(package: &str, cycle: &[String]) -> String {
+    let mut s = format!("{}", package);
+
+    for c in cycle {
+        write!(s, " -> {}", c).unwrap();
+    }
+
+    write!(s, " -> {}", package).unwrap();
+
+    s
 }
 
 impl std::error::Error for Error {}

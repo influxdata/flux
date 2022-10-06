@@ -512,7 +512,10 @@ mod db {
             source: None,
             diagnostics: From::from(located(
                 Default::default(),
-                semantic::ErrorKind::Inference(nodes::ErrorKind::ImportCycle { cycle }),
+                semantic::ErrorKind::Inference(nodes::ErrorKind::ImportCycle {
+                    package: name.into(),
+                    cycle,
+                }),
             )),
             pretty_fmt: db
                 .analyzer_config()
@@ -524,7 +527,7 @@ mod db {
     fn recover_cycle<T>(
         _db: &dyn Flux,
         cycle: &[String],
-        _name: &str,
+        name: &str,
     ) -> Result<T, nodes::ErrorKind> {
         // We get a list of strings like "semantic_package_inner(\"b\")",
         let mut cycle: Vec<_> = cycle
@@ -538,7 +541,10 @@ mod db {
             .collect();
         cycle.pop();
 
-        Err(nodes::ErrorKind::ImportCycle { cycle })
+        Err(nodes::ErrorKind::ImportCycle {
+            package: name.into(),
+            cycle,
+        })
     }
 
     impl Importer for Database {
@@ -661,7 +667,7 @@ mod tests {
             .expect_err("expected cyclic dependency error");
 
         assert_eq!(
-            r#"package "b" depends on itself"#.to_string(),
+            r#"error @0:0-0:0: package "b" depends on itself: b -> a -> b"#.to_string(),
             got_err.to_string(),
         );
     }
