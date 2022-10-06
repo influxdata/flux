@@ -244,7 +244,7 @@ impl InferState<'_, '_> {
     }
 }
 
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 #[allow(missing_docs)]
 pub enum Statement {
     Expr(ExprStmt),
@@ -270,7 +270,7 @@ impl Statement {
     }
 }
 
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 #[allow(missing_docs)]
 pub enum Assignment {
     Variable(VariableAssgn),
@@ -286,7 +286,7 @@ impl Assignment {
     }
 }
 
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 #[allow(missing_docs)]
 pub enum Expression {
     Identifier(IdentifierExpr),
@@ -489,7 +489,7 @@ impl Substituter for FinalizeTypes<'_> {
     }
 }
 
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 #[allow(missing_docs)]
 pub struct Package {
     pub loc: ast::SourceLocation,
@@ -512,7 +512,7 @@ impl Package {
     }
 }
 
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 #[allow(missing_docs)]
 pub struct File {
     pub loc: ast::SourceLocation,
@@ -563,7 +563,7 @@ impl File {
     }
 }
 
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 #[allow(missing_docs)]
 pub struct PackageClause {
     pub loc: ast::SourceLocation,
@@ -571,7 +571,7 @@ pub struct PackageClause {
     pub name: Identifier,
 }
 
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 #[allow(missing_docs)]
 pub struct ImportDeclaration {
     pub loc: ast::SourceLocation,
@@ -581,7 +581,7 @@ pub struct ImportDeclaration {
     pub import_symbol: Symbol,
 }
 
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 #[allow(missing_docs)]
 pub struct OptionStmt {
     pub loc: ast::SourceLocation,
@@ -614,7 +614,7 @@ impl OptionStmt {
     }
 }
 
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 #[allow(missing_docs)]
 pub struct BuiltinStmt {
     pub loc: ast::SourceLocation,
@@ -697,7 +697,7 @@ impl PolyType {
     }
 }
 
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 #[allow(missing_docs)]
 pub struct TestCaseStmt {
     pub loc: ast::SourceLocation,
@@ -733,7 +733,7 @@ impl TestCaseStmt {
     }
 }
 
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 #[allow(missing_docs)]
 pub struct ExprStmt {
     pub loc: ast::SourceLocation,
@@ -751,7 +751,7 @@ impl ExprStmt {
     }
 }
 
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 #[allow(missing_docs)]
 pub struct ReturnStmt {
     pub loc: ast::SourceLocation,
@@ -770,7 +770,7 @@ impl ReturnStmt {
 }
 
 #[derive(Debug, Derivative, Clone)]
-#[derivative(PartialEq)]
+#[derivative(PartialEq, Eq)]
 #[allow(missing_docs)]
 pub struct VariableAssgn {
     #[derivative(PartialEq = "ignore")]
@@ -839,7 +839,7 @@ impl VariableAssgn {
     }
 }
 
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 #[allow(missing_docs)]
 pub struct MemberAssgn {
     pub loc: ast::SourceLocation,
@@ -856,7 +856,7 @@ impl MemberAssgn {
 }
 
 #[derive(Derivative)]
-#[derivative(Debug, PartialEq, Clone)]
+#[derivative(Debug, PartialEq, Eq, Clone)]
 #[allow(missing_docs)]
 pub struct StringExpr {
     pub loc: ast::SourceLocation,
@@ -884,7 +884,7 @@ impl StringExpr {
     }
 }
 
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 #[allow(missing_docs)]
 pub enum StringExprPart {
     Text(TextPart),
@@ -900,7 +900,7 @@ impl StringExprPart {
     }
 }
 
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 #[allow(missing_docs)]
 pub struct TextPart {
     pub loc: ast::SourceLocation,
@@ -908,7 +908,7 @@ pub struct TextPart {
     pub value: String,
 }
 
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 #[allow(missing_docs)]
 pub struct InterpolatedPart {
     pub loc: ast::SourceLocation,
@@ -923,7 +923,7 @@ impl InterpolatedPart {
 }
 
 #[derive(Derivative)]
-#[derivative(Debug, PartialEq, Clone)]
+#[derivative(Debug, PartialEq, Eq, Clone)]
 #[allow(missing_docs)]
 pub struct ArrayExpr {
     pub loc: ast::SourceLocation,
@@ -958,7 +958,7 @@ impl ArrayExpr {
 }
 
 #[derive(Derivative)]
-#[derivative(Debug, PartialEq, Clone)]
+#[derivative(Debug, PartialEq, Eq, Clone)]
 #[allow(missing_docs)]
 pub struct DictExpr {
     pub loc: ast::SourceLocation,
@@ -1003,7 +1003,7 @@ impl DictExpr {
 
 /// Represents the definition of a function.
 #[derive(Derivative)]
-#[derivative(Debug, PartialEq, Clone)]
+#[derivative(Debug, PartialEq, Eq, Clone)]
 #[allow(missing_docs)]
 pub struct FunctionExpr {
     pub loc: ast::SourceLocation,
@@ -1181,7 +1181,7 @@ impl FunctionExpr {
 ///
 /// A function block is an expression that evaluates to the argument of
 /// its terminating ReturnStmt.
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 #[allow(missing_docs)]
 pub enum Block {
     Variable(Box<VariableAssgn>, Box<Block>),
@@ -1242,7 +1242,7 @@ impl Block {
 }
 
 /// FunctionParameter represents a function parameter.
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 #[allow(missing_docs)]
 pub struct FunctionParameter {
     pub loc: ast::SourceLocation,
@@ -1261,7 +1261,7 @@ impl FunctionParameter {
 }
 
 #[derive(Derivative)]
-#[derivative(Debug, PartialEq, Clone)]
+#[derivative(Debug, PartialEq, Eq, Clone)]
 #[allow(missing_docs)]
 pub struct BinaryExpr {
     pub loc: ast::SourceLocation,
@@ -1377,7 +1377,7 @@ impl BinaryExpr {
 }
 
 #[derive(Derivative)]
-#[derivative(Debug, PartialEq, Clone)]
+#[derivative(Debug, PartialEq, Eq, Clone)]
 #[allow(missing_docs)]
 pub struct CallExpr {
     pub loc: ast::SourceLocation,
@@ -1456,7 +1456,7 @@ impl CallExpr {
 }
 
 #[derive(Derivative)]
-#[derivative(Debug, PartialEq, Clone)]
+#[derivative(Debug, PartialEq, Eq, Clone)]
 #[allow(missing_docs)]
 pub struct ConditionalExpr {
     pub loc: ast::SourceLocation,
@@ -1490,7 +1490,7 @@ impl ConditionalExpr {
 }
 
 #[derive(Derivative)]
-#[derivative(Debug, PartialEq, Clone)]
+#[derivative(Debug, PartialEq, Eq, Clone)]
 #[allow(missing_docs)]
 pub struct LogicalExpr {
     pub loc: ast::SourceLocation,
@@ -1526,7 +1526,7 @@ impl LogicalExpr {
 }
 
 #[derive(Derivative)]
-#[derivative(Debug, PartialEq, Clone)]
+#[derivative(Debug, PartialEq, Eq, Clone)]
 #[allow(missing_docs)]
 pub struct MemberExpr {
     pub loc: ast::SourceLocation,
@@ -1595,7 +1595,7 @@ impl MemberExpr {
 }
 
 #[derive(Derivative)]
-#[derivative(Debug, PartialEq, Clone)]
+#[derivative(Debug, PartialEq, Eq, Clone)]
 #[allow(missing_docs)]
 pub struct IndexExpr {
     pub loc: ast::SourceLocation,
@@ -1636,7 +1636,7 @@ impl IndexExpr {
 }
 
 #[derive(Derivative)]
-#[derivative(Debug, PartialEq, Clone)]
+#[derivative(Debug, PartialEq, Eq, Clone)]
 #[allow(missing_docs)]
 pub struct ObjectExpr {
     pub loc: ast::SourceLocation,
@@ -1683,7 +1683,7 @@ impl ObjectExpr {
 }
 
 #[derive(Derivative)]
-#[derivative(Debug, PartialEq, Clone)]
+#[derivative(Debug, PartialEq, Eq, Clone)]
 #[allow(missing_docs)]
 pub struct UnaryExpr {
     pub loc: ast::SourceLocation,
@@ -1732,7 +1732,7 @@ impl UnaryExpr {
     }
 }
 
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 #[allow(missing_docs)]
 pub struct Property {
     pub loc: ast::SourceLocation,
@@ -1748,7 +1748,7 @@ impl Property {
 }
 
 #[derive(Derivative)]
-#[derivative(Debug, PartialEq, Clone)]
+#[derivative(Debug, PartialEq, Eq, Clone)]
 #[allow(missing_docs)]
 pub struct IdentifierExpr {
     pub loc: ast::SourceLocation,
@@ -1772,7 +1772,7 @@ impl IdentifierExpr {
     }
 }
 
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 #[allow(missing_docs)]
 pub struct Identifier {
     pub loc: ast::SourceLocation,
@@ -1781,7 +1781,7 @@ pub struct Identifier {
 }
 
 #[derive(Derivative)]
-#[derivative(Debug, PartialEq, Clone)]
+#[derivative(Debug, PartialEq, Eq, Clone)]
 #[allow(missing_docs)]
 pub struct BooleanLit {
     pub loc: ast::SourceLocation,
@@ -1796,7 +1796,7 @@ impl BooleanLit {
 }
 
 #[derive(Derivative)]
-#[derivative(Debug, PartialEq, Clone)]
+#[derivative(Debug, PartialEq, Eq, Clone)]
 #[allow(missing_docs)]
 pub struct IntegerLit {
     pub loc: ast::SourceLocation,
@@ -1811,7 +1811,7 @@ impl IntegerLit {
 }
 
 #[derive(Derivative)]
-#[derivative(Debug, PartialEq, Clone)]
+#[derivative(Debug, PartialEq, Eq, Clone)]
 #[allow(missing_docs)]
 pub struct FloatLit {
     pub loc: ast::SourceLocation,
@@ -1826,7 +1826,7 @@ impl FloatLit {
 }
 
 #[derive(Derivative)]
-#[derivative(Debug, PartialEq, Clone)]
+#[derivative(Debug, PartialEq, Eq, Clone)]
 #[allow(missing_docs)]
 pub struct RegexpLit {
     pub loc: ast::SourceLocation,
@@ -1841,7 +1841,7 @@ impl RegexpLit {
 }
 
 #[derive(Derivative)]
-#[derivative(Debug, PartialEq, Clone)]
+#[derivative(Debug, PartialEq, Eq, Clone)]
 #[allow(missing_docs)]
 pub struct StringLit {
     pub loc: ast::SourceLocation,
@@ -1856,7 +1856,7 @@ impl StringLit {
 }
 
 #[derive(Derivative)]
-#[derivative(Debug, PartialEq, Clone)]
+#[derivative(Debug, PartialEq, Eq, Clone)]
 #[allow(missing_docs)]
 pub struct UintLit {
     pub loc: ast::SourceLocation,
@@ -1871,7 +1871,7 @@ impl UintLit {
 }
 
 #[derive(Derivative)]
-#[derivative(Debug, PartialEq, Clone)]
+#[derivative(Debug, PartialEq, Eq, Clone)]
 #[allow(missing_docs)]
 pub struct DateTimeLit {
     pub loc: ast::SourceLocation,
@@ -1886,7 +1886,7 @@ impl DateTimeLit {
 }
 
 /// A struct that keeps track of time in months and nanoseconds.
-#[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
+#[derive(Debug, PartialEq, Eq, Clone, Serialize, Deserialize)]
 #[serde(rename = "Duration")]
 pub struct Duration {
     /// Must be a positive value.
@@ -1902,7 +1902,7 @@ pub struct Duration {
 ///
 /// A `DurationLit` is a pair consisting of a length of time and the unit of time measured.
 #[derive(Derivative)]
-#[derivative(Debug, PartialEq, Clone)]
+#[derivative(Debug, PartialEq, Eq, Clone)]
 #[allow(missing_docs)]
 pub struct DurationLit {
     pub loc: ast::SourceLocation,
@@ -1971,7 +1971,7 @@ pub fn convert_duration(ast_dur: &[ast::Duration]) -> AnyhowResult<Duration> {
     })
 }
 
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 #[allow(missing_docs)]
 pub struct LabelLit {
     pub loc: ast::SourceLocation,
@@ -1986,14 +1986,14 @@ impl LabelLit {
 }
 
 #[derive(Derivative)]
-#[derivative(Debug, PartialEq, Clone)]
+#[derivative(Debug, PartialEq, Eq, Clone)]
 #[allow(missing_docs)]
 pub struct BadExpr {
     pub loc: ast::SourceLocation,
 }
 
 #[derive(Derivative)]
-#[derivative(Debug, PartialEq, Clone)]
+#[derivative(Debug, PartialEq, Eq, Clone)]
 #[allow(missing_docs)]
 pub struct BadStmt {
     pub loc: ast::SourceLocation,
