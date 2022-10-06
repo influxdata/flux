@@ -26,7 +26,7 @@ use crate::{
 pub type Error = Located<ErrorKind>;
 
 /// Error that categorizes errors when converting from AST to semantic graph.
-#[derive(Error, Debug, PartialEq)]
+#[derive(Error, Debug, Eq, PartialEq)]
 #[allow(missing_docs)]
 pub enum ErrorKind {
     #[error("invalid named type {0}")]

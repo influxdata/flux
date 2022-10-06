@@ -42,7 +42,7 @@ pub type Result<T = ()> = std::result::Result<T, Error>;
 /// module.
 pub type Error = Located<ErrorKind>;
 
-#[derive(Debug, Display, PartialEq)]
+#[derive(Debug, Display, Eq, PartialEq)]
 #[allow(missing_docs)]
 pub enum ErrorKind {
     #[display(fmt = "{}", _0)]

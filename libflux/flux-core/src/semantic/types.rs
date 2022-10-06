@@ -98,7 +98,7 @@ impl<'a, E> Unifier<'a, E> {
 }
 
 /// A type scheme that quantifies the free variables of a monotype.
-#[derive(Debug, Clone)]
+#[derive(Debug, Eq, Clone)]
 pub struct PolyType {
     /// List of the free variables within the monotypes.
     pub vars: Vec<BoundTvar>,
@@ -252,7 +252,7 @@ pub(crate) fn union<T: PartialEq>(mut vars: Vec<T>, mut with: Vec<T>) -> Vec<T> 
 /// Errors that can be returned during type inference.
 /// (Note that these error messages are read by end users.
 /// This should be kept in mind when returning one of these errors.)
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 #[allow(missing_docs)]
 pub enum Error {
     CannotUnify {
