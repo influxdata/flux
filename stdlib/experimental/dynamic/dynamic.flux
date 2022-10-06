@@ -52,3 +52,8 @@ builtin jsonParse : (data: bytes) => dynamic
 // tags: type-conversions
 // introduced: NEXT
 builtin jsonEncode : (v: dynamic) => bytes
+
+// ## Metadata
+// tags: types, tests
+// introduced: NEXT
+builtin isType : (v: dynamic, type: string) => bool
