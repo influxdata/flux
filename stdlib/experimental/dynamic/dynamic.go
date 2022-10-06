@@ -78,15 +78,21 @@ var isType = values.NewFunction(
 		if err != nil {
 			return nil, err
 		}
+
+		// Normally nulls would land in the default case since we don't have an
+		// explicit check for `semantic.Invalid`, but this early return avoids
+		// the panic we'd see when trying to access the inner value of the
+		// dynamic (which is not valid when we get a true `null` rather than a
+		//`dynamic(null)`).
+		if v.IsNull() {
+			return values.NewBool(false), nil
+		}
+
 		type_, err := arguments.GetRequiredString("type")
 		if err != nil {
 			return nil, err
 		}
 		result := false
-
-		if v.IsNull() {
-			return values.NewBool(type_ == "null"), nil
-		}
 
 		d := v.Dynamic()
 		inner := d.Inner()
