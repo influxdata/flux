@@ -25,34 +25,10 @@ var dynamicConv = values.NewFunction(
 		if err != nil {
 			return nil, err
 		}
-
-		// Nothing to do if the incoming value is already a dynamic
-		if v.Type().Nature() == semantic.Dynamic {
-			return v, nil
-		}
-
-		// FIXME(onelson): wrap the value recursively, not just if v is an Array
-		//  We want to produce a dynamic where every single value contained
-		//  within it is also wrapped with a dynamic.
-		if v.Type().Nature() == semantic.Array {
-			arr := v.Array()
-			elmType, err := arr.Type().ElemType()
-			if err != nil {
-				return nil, err
-			}
-			if elmType.Nature() == semantic.Dynamic {
-				return values.NewDynamic(arr), nil
-			} else {
-				elems := make([]values.Value, arr.Len())
-				for i := 0; i < arr.Len(); i++ {
-					v := arr.Get(i)
-					elems[i] = values.NewDynamic(v)
-				}
-				dynArr := values.NewArrayWithBacking(semantic.NewArrayType(semantic.NewDynamicType()), elems)
-				return values.NewDynamic(dynArr), nil
-			}
-		}
-
+		// N.b. all types are accepted, but only a subset have ways to be
+		// extracted.
+		// Add checks here for the nature of `v` if you want to make certain
+		// types a runtime error.
 		return values.NewDynamic(v), nil
 	},
 	false,

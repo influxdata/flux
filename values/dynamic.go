@@ -1,6 +1,7 @@
 package values
 
 import (
+	"fmt"
 	"regexp"
 
 	"github.com/influxdata/flux/semantic"
@@ -13,10 +14,6 @@ type Dynamic interface {
 
 type dynamic struct {
 	inner Value
-}
-
-func NewDynamic(inner Value) Dynamic {
-	return dynamic{inner: inner}
 }
 
 func (d dynamic) Inner() Value {
@@ -105,4 +102,63 @@ func (d dynamic) Retain() {
 
 func (d dynamic) Release() {
 	d.inner.Release()
+}
+
+// NewDynamic will recursively wrap a Value in Dynamic.
+// Note that any Value can be wrapped, but only a subset have user-facing
+// means of extraction.
+// If you want to produce a user-facing error for certain types, do so in the
+// caller.
+func NewDynamic(v Value) Dynamic {
+	switch n := v.Type().Nature(); n {
+	// N.b check to see if the incoming value is Dynamic before all else.
+	// We want to avoid re-wrapping, and in the case of nulls a check like
+	//`Dynamic.IsNull` will report `true` when the inner value is null.
+	case semantic.Dynamic:
+		return v.Dynamic()
+	case
+		// Basic types wrap plainly.
+		semantic.String,
+		semantic.Bytes,
+		semantic.Int,
+		semantic.UInt,
+		semantic.Float,
+		semantic.Bool,
+		semantic.Time,
+		semantic.Duration,
+		// Currently this set of types are not well-supported.
+		// For now, wrap them like basic types.
+		// Callers may not be able to access the inner types in these cases.
+		semantic.Regexp,
+		semantic.Dictionary,
+		semantic.Vector,
+		semantic.Stream,
+		// Nulls are included in the "wrap plainly" category.
+		semantic.Invalid:
+		return dynamic{inner: v}
+	// Composite types need to recurse.
+	case semantic.Array:
+		arr := v.Array()
+		elems := make([]Value, arr.Len())
+		arr.Range(func(i int, v Value) {
+			val := NewDynamic(v)
+			elems[i] = val
+		})
+		return dynamic{
+			inner: NewArrayWithBacking(
+				semantic.NewArrayType(semantic.NewDynamicType()),
+				elems,
+			),
+		}
+	case semantic.Object:
+		obj := v.Object()
+		o := make(map[string]Value, obj.Len())
+		obj.Range(func(k string, v Value) {
+			val := NewDynamic(v)
+			o[k] = val
+		})
+		return dynamic{inner: NewObjectWithValues(o)}
+	default:
+		panic(fmt.Errorf("unexpected nature %v", n))
+	}
 }

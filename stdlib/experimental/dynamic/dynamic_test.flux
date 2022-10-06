@@ -152,3 +152,65 @@ testcase dynamic_json_encode {
 
     testing.diff(got, want)
 }
+
+testcase dynamic_kitchen_sink {
+    // The stuff this is aiming to hit:
+    // - homogenous arrays
+    // - heterogeneous arrays
+    // - full range of types (baring vector which cannot be constructed trivially)
+    // - nested combinations
+    // Note: display() will order the fields in its output.
+    // Also, the whitespace is tricky -- would be nice to have an easier way to compare these.
+    want =
+        "dynamic({
+    arr1: dynamic([dynamic(1), dynamic(2)]),
+    arr2: dynamic([dynamic(1), dynamic(2.3)]),
+    arr3: dynamic([dynamic({x: dynamic(1), y: dynamic(2)}), dynamic({x: dynamic(1), y: dynamic(<null>), z: dynamic(3)})]),
+    arr4: dynamic([dynamic([dynamic(1), dynamic(2)]), dynamic([dynamic(3), dynamic(4)])]),
+    arr5: dynamic([dynamic({a: dynamic(1), b: dynamic(2)}), dynamic({a: dynamic(3), b: dynamic(4)})]),
+    bfalse: dynamic(false),
+    btrue: dynamic(true),
+    bytes: dynamic(0x616263),
+    dict: dynamic([a: 1]),
+    dur: dynamic(1y),
+    n: dynamic(<null>),
+    num: dynamic(0),
+    obj: dynamic({bar: dynamic(100)}),
+    re: dynamic(abc\\d),
+    str: dynamic(foo),
+    stream: dynamic(<stream>),
+    time: dynamic(2022-10-05T00:00:00.000000000Z)
+})"
+    got =
+        display(
+            v:
+                dynamic.dynamic(
+                    v: {
+                        arr1: [1, 2],
+                        arr2: [dynamic.dynamic(v: 1), dynamic.dynamic(v: 2.3)],
+                        arr3: [
+                            dynamic.dynamic(v: {x: 1, y: 2}),
+                            dynamic.dynamic(v: {x: 1, y: debug.null(), z: 3}),
+                        ],
+                        arr4: [[1, 2], [3, 4]],
+                        // n.b. uint renders just like int - just the number.
+                        arr5: [{a: 1, b: uint(v: 2)}, {a: 3, b: uint(v: 4)}],
+                        dict: ["a": 1],
+                        dur: 1y,
+                        bfalse: false,
+                        btrue: true,
+                        // -> 0x616263
+                        bytes: bytes(v: "abc"),
+                        n: debug.null(),
+                        num: 0,
+                        obj: {bar: 100},
+                        re: /abc\d/,
+                        str: "foo",
+                        stream: array.from(rows: [{x: 1}]),
+                        time: 2022-10-05T00:00:00Z,
+                    },
+                ),
+        )
+
+    testing.assertEqualValues(got, want)
+}
