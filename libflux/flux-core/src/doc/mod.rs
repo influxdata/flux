@@ -25,7 +25,7 @@ use crate::{
 
 /// Diagnostic represents an issue with the documentation comments.
 /// Something about the formatting or content of the comments does not meet expectations.
-#[derive(PartialEq, Debug, Display)]
+#[derive(Eq, PartialEq, Debug, Display)]
 #[display(fmt = "error {}: {}", loc, msg)]
 pub struct Diagnostic {
     msg: String,
@@ -72,7 +72,7 @@ pub struct PackageDoc {
 /// ValueDoc represents the documentation for a single value within a package.
 /// Values include options, builtins, or any variable assignment within the top level scope of a
 /// package.
-#[derive(PartialEq, Debug, Serialize, Deserialize)]
+#[derive(Eq, PartialEq, Debug, Serialize, Deserialize)]
 pub struct ValueDoc {
     /// the name of the value
     pub name: String,
@@ -93,7 +93,7 @@ pub struct ValueDoc {
 }
 
 /// FunctionDoc represents the documentation for a single Function within a package.
-#[derive(PartialEq, Debug, Serialize, Deserialize)]
+#[derive(Eq, PartialEq, Debug, Serialize, Deserialize)]
 pub struct FunctionDoc {
     /// the name of the function
     pub name: String,
@@ -116,7 +116,7 @@ pub struct FunctionDoc {
 }
 
 /// ParameterDoc represents the documentation for a single parameter within a function.
-#[derive(PartialEq, Debug, Serialize, Deserialize)]
+#[derive(Eq, PartialEq, Debug, Serialize, Deserialize)]
 pub struct ParameterDoc {
     /// the name of the parameter
     pub name: String,
@@ -129,7 +129,7 @@ pub struct ParameterDoc {
 }
 
 /// Example represents an extracted example with optional input and outputs.
-#[derive(PartialEq, Debug, Serialize, Deserialize)]
+#[derive(Eq, PartialEq, Debug, Serialize, Deserialize)]
 pub struct Example {
     /// Title is the heading given to the example.
     pub title: String,
