@@ -111,7 +111,7 @@ impl<'a, 'b> semantic::walk::Visitor<'_> for SerializingVisitor<'a, 'b> {
                     v.builder,
                     &fbsemantic::FloatLiteralArgs {
                         loc,
-                        value: float.value,
+                        value: float.value.into_inner(),
                     },
                 );
                 v.expr_stack

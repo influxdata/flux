@@ -64,7 +64,7 @@ pub type Error = Located<ErrorKind>;
 ///
 /// However users of this library may care and therefore can use this enum to determine where in
 /// the process an error occurred.
-#[derive(Error, Debug, PartialEq)]
+#[derive(Error, Debug, Eq, PartialEq)]
 pub enum ErrorKind {
     /// Errors that occur because of bad syntax or in valid AST
     #[error("{0}")]
@@ -126,7 +126,7 @@ impl From<Errors<nodes::Error>> for Errors<Error> {
 pub type Warning = Located<WarningKind>;
 
 /// `WarningKind` exposes details about where in the type analysis process a warning occurred.
-#[derive(Error, Debug, PartialEq)]
+#[derive(Error, Debug, Eq, PartialEq)]
 pub enum WarningKind {
     /// An unused symbol was found in the source
     #[error("symbol {0} is never used")]
@@ -134,7 +134,7 @@ pub enum WarningKind {
 }
 
 /// `PackageEntry` contains the information for one exported item of a package
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct PackageEntry {
     /// The globally unique `Symbol` representing this item
     pub symbol: Symbol,
@@ -145,7 +145,7 @@ pub struct PackageEntry {
 }
 
 /// An environment of values that are available outside of a package
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct PackageExports {
     /// Values in the environment.
     values: types::SemanticMap<String, PackageEntry>,
@@ -334,7 +334,7 @@ fn build_record(
 }
 
 /// Error represents any any error that can occur during any step of the type analysis process.
-#[derive(Error, Debug, PartialEq)]
+#[derive(Error, Debug, Eq, PartialEq)]
 pub struct FileErrors {
     /// The file that the errors occured in
     pub file: String,
@@ -360,7 +360,7 @@ impl fmt::Display for FileErrors {
 }
 
 /// A collection of diagnostics
-#[derive(Error, Debug, PartialEq)]
+#[derive(Error, Debug, Eq, PartialEq)]
 pub struct Diagnostics<E, W> {
     #[source]
     /// The errors the occurred in that file

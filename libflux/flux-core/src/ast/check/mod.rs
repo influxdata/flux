@@ -123,7 +123,7 @@ fn check_(node: walk::Node) -> Result<(), Errors<Error>> {
 pub type Error = Located<ErrorKind>;
 
 /// An error that can be returned while checking the AST.
-#[derive(Error, Debug, PartialEq)]
+#[derive(Error, Debug, Eq, PartialEq)]
 #[allow(missing_docs)]
 pub enum ErrorKind {
     #[error("Program is nested too deep")]

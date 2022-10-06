@@ -2448,56 +2448,58 @@ fn declare_variable_as_a_float() {
     test_file(
         r#"howdy = 1.1"#,
         expect![[r#"
-        File {
-            base: BaseNode {
-                location: SourceLocation {
-                    start: "line: 1, column: 1",
-                    end: "line: 1, column: 12",
-                    source: "howdy = 1.1",
+            File {
+                base: BaseNode {
+                    location: SourceLocation {
+                        start: "line: 1, column: 1",
+                        end: "line: 1, column: 12",
+                        source: "howdy = 1.1",
+                    },
                 },
-            },
-            name: "",
-            metadata: "parser-type=rust",
-            package: None,
-            imports: [],
-            body: [
-                Variable(
-                    VariableAssgn {
-                        base: BaseNode {
-                            location: SourceLocation {
-                                start: "line: 1, column: 1",
-                                end: "line: 1, column: 12",
-                                source: "howdy = 1.1",
-                            },
-                        },
-                        id: Identifier {
+                name: "",
+                metadata: "parser-type=rust",
+                package: None,
+                imports: [],
+                body: [
+                    Variable(
+                        VariableAssgn {
                             base: BaseNode {
                                 location: SourceLocation {
                                     start: "line: 1, column: 1",
-                                    end: "line: 1, column: 6",
-                                    source: "howdy",
+                                    end: "line: 1, column: 12",
+                                    source: "howdy = 1.1",
                                 },
                             },
-                            name: "howdy",
-                        },
-                        init: Float(
-                            FloatLit {
+                            id: Identifier {
                                 base: BaseNode {
                                     location: SourceLocation {
-                                        start: "line: 1, column: 9",
-                                        end: "line: 1, column: 12",
-                                        source: "1.1",
+                                        start: "line: 1, column: 1",
+                                        end: "line: 1, column: 6",
+                                        source: "howdy",
                                     },
                                 },
-                                value: 1.1,
+                                name: "howdy",
                             },
-                        ),
-                    },
-                ),
-            ],
-            eof: [],
-        }
-    "#]],
+                            init: Float(
+                                FloatLit {
+                                    base: BaseNode {
+                                        location: SourceLocation {
+                                            start: "line: 1, column: 9",
+                                            end: "line: 1, column: 12",
+                                            source: "1.1",
+                                        },
+                                    },
+                                    value: NotNan(
+                                        1.1,
+                                    ),
+                                },
+                            ),
+                        },
+                    ),
+                ],
+                eof: [],
+            }
+        "#]],
     );
 }
 
