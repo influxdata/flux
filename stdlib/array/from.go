@@ -9,9 +9,9 @@ import (
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/internal/execute/table"
+	"github.com/influxdata/flux/internal/function"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/plan"
-	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
@@ -20,19 +20,17 @@ const (
 	FromKind = "array.from"
 )
 
-type FromOpSpec struct {
+func registerSource(b *function.Builder) {
+	b.RegisterSource("from", FromKind, createFromProcedure)
+}
+
+type FromProcedureSpec struct {
+	plan.DefaultCost
 	Rows values.Array
 }
 
-func init() {
-	fromSignature := runtime.MustLookupBuiltinType("array", "from")
-	runtime.RegisterPackageValue("array", "from", flux.MustValue(flux.FunctionValue(FromKind, createFromOpSpec, fromSignature)))
-	plan.RegisterProcedureSpec(FromKind, newFromProcedure, FromKind)
-	execute.RegisterSource(FromKind, createFromSource)
-}
-
-func createFromOpSpec(args flux.Arguments, a *flux.Administration) (flux.OperationSpec, error) {
-	spec := new(FromOpSpec)
+func createFromProcedure(args *function.Arguments) (function.Source, error) {
+	spec := new(FromProcedureSpec)
 
 	if rows, err := args.GetRequired("rows"); err != nil {
 		return nil, err
@@ -49,26 +47,6 @@ func createFromOpSpec(args flux.Arguments, a *flux.Administration) (flux.Operati
 	return spec, nil
 }
 
-func (s *FromOpSpec) Kind() flux.OperationKind {
-	return FromKind
-}
-
-type FromProcedureSpec struct {
-	plan.DefaultCost
-	Rows values.Array
-}
-
-func newFromProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
-	spec, ok := qs.(*FromOpSpec)
-	if !ok {
-		return nil, errors.Newf(codes.Internal, "invalid spec type %T", qs)
-	}
-
-	return &FromProcedureSpec{
-		Rows: spec.Rows,
-	}, nil
-}
-
 func (s *FromProcedureSpec) Kind() plan.ProcedureKind {
 	return FromKind
 }
@@ -79,12 +57,11 @@ func (s *FromProcedureSpec) Copy() plan.ProcedureSpec {
 	return ns
 }
 
-func createFromSource(ps plan.ProcedureSpec, id execute.DatasetID, a execute.Administration) (execute.Source, error) {
-	spec := ps.(*FromProcedureSpec)
+func (s *FromProcedureSpec) CreateSource(id execute.DatasetID, a execute.Administration) (execute.Source, error) {
 	return &tableSource{
 		id:   id,
 		mem:  a.Allocator(),
-		rows: spec.Rows,
+		rows: s.Rows,
 	}, nil
 }
 

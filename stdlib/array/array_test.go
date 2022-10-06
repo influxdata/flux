@@ -7,6 +7,7 @@ import (
 	"github.com/influxdata/flux/dependencies/dependenciestest"
 	"github.com/influxdata/flux/dependency"
 	_ "github.com/influxdata/flux/fluxinit/static"
+	"github.com/influxdata/flux/internal/function"
 	"github.com/influxdata/flux/querytest"
 	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic"
@@ -108,8 +109,6 @@ func TestConcat_Process(t *testing.T) {
 		},
 	}
 
-	concatFn := array.SpecialFns["concat"]
-
 	for _, tc := range testCases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
@@ -118,9 +117,8 @@ func TestConcat_Process(t *testing.T) {
 				"v":   values.NewArrayWithBacking(semantic.NewArrayType(tc.typ), tovalarr(tc.typ, tc.v)),
 			})
 			want := values.NewArrayWithBacking(semantic.NewArrayType(tc.typ), tovalarr(tc.typ, tc.want))
-			ctx, deps := dependency.Inject(context.Background(), dependenciestest.Default())
-			defer deps.Finish()
-			result, err := concatFn.Call(ctx, fluxArg)
+
+			result, err := function.Invoke(array.Concat, fluxArg)
 			if err != nil {
 				t.Error(err.Error())
 			}
@@ -207,8 +205,6 @@ func TestMap_Process(t *testing.T) {
 		},
 	}
 
-	mapFn := array.SpecialFns["map"]
-
 	for _, tc := range testCases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
@@ -227,7 +223,8 @@ func TestMap_Process(t *testing.T) {
 				"fn":  fx,
 			})
 			want := values.NewArrayWithBacking(semantic.NewArrayType(tc.wtyp), tovalarr(tc.wtyp, tc.want))
-			result, err := mapFn.Call(ctx, fluxArg)
+
+			result, err := function.InvokeContext(array.Map, ctx, fluxArg)
 			if err != nil {
 				t.Error(err.Error())
 			}
