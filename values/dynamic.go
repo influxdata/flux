@@ -133,6 +133,7 @@ func NewDynamic(v Value) Dynamic {
 		semantic.Dictionary,
 		semantic.Vector,
 		semantic.Stream,
+		semantic.Function,
 		// Nulls are included in the "wrap plainly" category.
 		semantic.Invalid:
 		return dynamic{inner: v}
