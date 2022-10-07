@@ -314,3 +314,11 @@ testcase dynamic_isType_dictionary {
 testcase dynamic_isType_null_should_not_panic {
     testing.assertEqualValues(want: false, got: dynamic.isType(v: debug.null(), type: "int"))
 }
+
+testcase dynamic_cast_bool_to_bool {
+    testing.assertEqualValues(want: true, got: bool(v: dynamic.dynamic(v: true)))
+}
+
+testcase dynamic_cast_float_to_bool_error {
+    testing.shouldError(fn: () => bool(v: dynamic.dynamic(v: 1.1)), want: /cannot convert float/)
+}
