@@ -425,6 +425,7 @@ testcase dynamic_cast_from_json_deep {
     // ```
     // Seems like `array.map()` expects `x` to have known fields here, but shouldn't.
     option testing.tags = ["skip"]
+
     data =
         "
     {

@@ -57,10 +57,7 @@ var stringConv = values.NewFunction(
 			return nil, errMissingArg
 		} else if v.IsNull() {
 			return values.Null, nil
-		}
-
-		// When the incoming value is Dynamic, pull out the inner value.
-		if v.Type().Nature() == semantic.Dynamic {
+		} else if v.Type().Nature() == semantic.Dynamic {
 			v = v.Dynamic().Inner()
 		}
 
@@ -110,10 +107,7 @@ var intConv = values.NewFunction(
 			return nil, errMissingArg
 		} else if v.IsNull() {
 			return values.Null, nil
-		}
-
-		// When the incoming value is Dynamic, pull out the inner value.
-		if v.Type().Nature() == semantic.Dynamic {
+		} else if v.Type().Nature() == semantic.Dynamic {
 			v = v.Dynamic().Inner()
 		}
 
@@ -158,10 +152,7 @@ var uintConv = values.NewFunction(
 			return nil, errMissingArg
 		} else if v.IsNull() {
 			return values.Null, nil
-		}
-
-		// When the incoming value is Dynamic, pull out the inner value.
-		if v.Type().Nature() == semantic.Dynamic {
+		} else if v.Type().Nature() == semantic.Dynamic {
 			v = v.Dynamic().Inner()
 		}
 
@@ -233,10 +224,7 @@ var floatConv = values.NewFunction(
 			return nil, errMissingArg
 		} else if v.IsNull() {
 			return values.Null, nil
-		}
-
-		// When the incoming value is Dynamic, pull out the inner value.
-		if v.Type().Nature() == semantic.Dynamic {
+		} else if v.Type().Nature() == semantic.Dynamic {
 			v = v.Dynamic().Inner()
 		}
 
@@ -255,10 +243,7 @@ var boolConv = values.NewFunction(
 			return nil, errMissingArg
 		} else if v.IsNull() {
 			return values.Null, nil
-		}
-
-		// When the incoming value is Dynamic, pull out the inner value.
-		if v.Type().Nature() == semantic.Dynamic {
+		} else if v.Type().Nature() == semantic.Dynamic {
 			v = v.Dynamic().Inner()
 		}
 
@@ -319,10 +304,7 @@ var timeConv = values.NewFunction(
 			return nil, errMissingArg
 		} else if v.IsNull() {
 			return values.Null, nil
-		}
-
-		// When the incoming value is Dynamic, pull out the inner value.
-		if v.Type().Nature() == semantic.Dynamic {
+		} else if v.Type().Nature() == semantic.Dynamic {
 			v = v.Dynamic().Inner()
 		}
 
@@ -357,10 +339,7 @@ var durationConv = values.NewFunction(
 			return nil, errMissingArg
 		} else if v.IsNull() {
 			return values.Null, nil
-		}
-
-		// When the incoming value is Dynamic, pull out the inner value.
-		if v.Type().Nature() == semantic.Dynamic {
+		} else if v.Type().Nature() == semantic.Dynamic {
 			v = v.Dynamic().Inner()
 		}
 
@@ -392,10 +371,7 @@ var byteConv = values.NewFunction(
 		v, ok := args.Get(conversionArg)
 		if !ok {
 			return nil, errMissingArg
-		}
-
-		// When the incoming value is Dynamic, pull out the inner value.
-		if v.Type().Nature() == semantic.Dynamic {
+		} else if v.Type().Nature() == semantic.Dynamic {
 			v = v.Dynamic().Inner()
 		}
 
