@@ -53,7 +53,7 @@ builtin jsonParse : (data: bytes) => dynamic
 // introduced: NEXT
 builtin jsonEncode : (v: dynamic) => bytes
 
-// isType tests if a `dynamic` holds a value is a specified type.
+// isType tests if a dynamic type holds a value of a specified type.
 //
 // ## Parameters
 // - v: Value to test.
