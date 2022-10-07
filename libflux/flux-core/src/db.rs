@@ -2,8 +2,12 @@ use crate::{
     errors::{located, Errors, SalvageResult},
     parser,
     semantic::{
-        convert::Symbol, env::Environment, import::Importer, nodes, types::PolyType, Analyzer,
-        AnalyzerConfig, FileErrors, PackageExports,
+        convert::Symbol,
+        env::Environment,
+        import::{Importer, Packages},
+        nodes,
+        types::PolyType,
+        Analyzer, AnalyzerConfig, FileErrors, PackageExports,
     },
 };
 
@@ -34,30 +38,50 @@ pub trait Flux: FluxBase {
     #[doc(hidden)]
     fn source_inner(&self, path: String) -> Arc<str>;
 
+    /// Sets the AnalyzerConfig for the compilation
     #[salsa::input]
     fn analyzer_config(&self) -> AnalyzerConfig;
 
+    /// Enables the prelude for all compiled packages
+    ///
+    /// Default: true
     #[salsa::input]
     fn use_prelude(&self) -> bool;
 
+    /// Sets any precompiled packages that should be included in the compilation
+    #[salsa::input]
+    fn precompiled_packages(&self) -> Option<&'static Packages>;
+
+    #[doc(hidden)]
     fn ast_package_inner(&self, path: String) -> Arc<ast::Package>;
 
+    /// Returns the `ast::Package` for a given module path
     #[salsa::transparent]
     fn ast_package(&self, path: String) -> Option<Arc<ast::Package>>;
 
+    #[doc(hidden)]
     fn internal_prelude(&self) -> Result<Arc<PackageExports>, Arc<FileErrors>>;
 
+    #[doc(hidden)]
     fn prelude_inner(&self) -> Result<Arc<PackageExports>, Arc<FileErrors>>;
 
+    /// Returns the `PackageExports` for the prelude
     #[salsa::transparent]
     fn prelude(&self) -> Result<Arc<PackageExports>, Arc<FileErrors>>;
 
+    /// Returns the `semantic::Package`
     #[salsa::cycle(recover_cycle2)]
     fn semantic_package(
         &self,
         path: String,
     ) -> SalvageResult<(Arc<PackageExports>, Arc<nodes::Package>), Arc<FileErrors>>;
 
+    /// Returns the `PackageExports` for a given package path. Will consuled `precompiled_packages`
+    /// if it is set.
+    #[salsa::transparent]
+    fn package_exports(&self, path: String) -> SalvageResult<Arc<PackageExports>, Arc<FileErrors>>;
+
+    #[doc(hidden)]
     #[salsa::cycle(recover_cycle)]
     fn semantic_package_cycle(&self, path: String)
         -> Result<Arc<PackageExports>, nodes::ErrorKind>;
@@ -80,6 +104,7 @@ impl Default for Database {
         };
         db.set_analyzer_config(AnalyzerConfig::default());
         db.set_use_prelude(true);
+        db.set_precompiled_packages(None);
         db
     }
 }
@@ -96,6 +121,8 @@ impl FluxBase for Database {
         let found_packages = packages
             .iter()
             .filter(|p| {
+                // Example: package: `internal/boolean` matches the file
+                // `internal/boolean/XXX.flux`
                 p.starts_with(package)
                     && p[package.len()..].starts_with('/')
                     && p[package.len() + 1..].split('/').count() == 1
@@ -238,12 +265,27 @@ fn semantic_package_with_prelude(
     Ok((Arc::new(exports), Arc::new(sem_pkg)))
 }
 
+fn package_exports(
+    db: &dyn Flux,
+    path: String,
+) -> SalvageResult<Arc<PackageExports>, Arc<FileErrors>> {
+    if let Some(packages) = db.precompiled_packages() {
+        if let Some(exports) = packages.get(&path) {
+            return Ok(exports.clone());
+        }
+    }
+    let (exports, _) = db
+        .semantic_package(path)
+        .map_err(|err| err.map(|(exports, _)| exports))?;
+    Ok(exports)
+}
+
 fn semantic_package_cycle(
     db: &dyn Flux,
     path: String,
 ) -> Result<Arc<PackageExports>, nodes::ErrorKind> {
-    db.semantic_package(path.clone())
-        .map(|(exports, _)| {
+    db.package_exports(path.clone())
+        .map(|exports| {
             db.clear_error(&path);
             exports
         })

@@ -46,6 +46,7 @@ use std::hash::BuildHasherDefault;
 
 use anyhow::{bail, Result};
 pub use ast::DEFAULT_PACKAGE_NAME;
+pub use db::{Database, Flux};
 use fnv::FnvHasher;
 
 type DefaultHasher = BuildHasherDefault<FnvHasher>;
