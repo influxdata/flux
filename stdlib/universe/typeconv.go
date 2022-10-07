@@ -58,6 +58,12 @@ var stringConv = values.NewFunction(
 		} else if v.IsNull() {
 			return values.Null, nil
 		}
+
+		// When the incoming value is Dynamic, pull out the inner value.
+		if v.Type().Nature() == semantic.Dynamic {
+			v = v.Dynamic().Inner()
+		}
+
 		switch v.Type().Nature() {
 		case semantic.String:
 			str = v.Str()

@@ -379,3 +379,17 @@ testcase dynamic_cast_string_to_int_error {
         want: /cannot convert string/,
     )
 }
+
+testcase dynamic_cast_int_to_string {
+    testing.assertEqualValues(
+        want: "123",
+        got: string(v: dynamic.dynamic(v: 123)),
+    )
+}
+
+testcase dynamic_cast_function_to_string_error {
+    testing.shouldError(
+        fn: () => string(v: dynamic.dynamic(v: () => true)),
+        want: /cannot convert \(\) => bool to string/,
+    )
+}
