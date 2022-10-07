@@ -613,8 +613,13 @@ impl<'env, I: import::Importer> Analyzer<'env, I> {
             if has_fatal_error {
                 return Err(Salvage {
                     error: FileErrors {
-                        file: ast_pkg.package.clone(),
-                        source: None,
+                        file: ast_pkg.files[0]
+                            .base
+                            .location
+                            .file
+                            .clone()
+                            .unwrap_or_else(|| ast_pkg.package.clone()),
+                        source: ast_pkg.files[0].base.location.source.clone(),
                         diagnostics: Diagnostics {
                             errors,
                             warnings: Errors::new(),
@@ -676,7 +681,12 @@ impl<'env, I: import::Importer> Analyzer<'env, I> {
         if errors.has_errors() {
             return Err(Salvage {
                 error: FileErrors {
-                    file: sem_pkg.package.clone(),
+                    file: ast_pkg.files[0]
+                        .base
+                        .location
+                        .file
+                        .clone()
+                        .unwrap_or_else(|| ast_pkg.package.clone()),
                     source: ast_pkg.files[0].base.location.source.clone(),
                     diagnostics: Diagnostics { errors, warnings },
                     pretty_fmt: self.config.features.contains(&Feature::PrettyError),

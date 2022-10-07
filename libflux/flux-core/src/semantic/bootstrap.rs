@@ -252,7 +252,7 @@ pub struct Module {
 #[allow(missing_docs)] // Warns on the generated FluxStorage type
 mod db {
     use crate::{
-        errors::{located, SalvageResult},
+        errors::{located, Errors, SalvageResult},
         parser,
         semantic::{nodes, FileErrors, PackageExports},
     };
@@ -260,12 +260,15 @@ mod db {
     use super::*;
 
     use std::{
-        collections::HashSet,
+        collections::{HashMap, HashSet},
         sync::{Arc, Mutex},
     };
 
     pub trait FluxBase {
         fn has_package(&self, package: &str) -> bool;
+        fn clear_error(&self, package: &str);
+        fn record_error(&self, package: String, error: Arc<FileErrors>);
+        fn package_errors(&self) -> Errors<Arc<FileErrors>>;
         fn package_files(&self, package: &str) -> Vec<String>;
         fn set_source(&mut self, path: String, source: Arc<str>);
         fn source(&self, path: String) -> Arc<str>;
@@ -322,6 +325,7 @@ mod db {
     pub struct Database {
         storage: salsa::Storage<Self>,
         pub(crate) packages: Mutex<HashSet<String>>,
+        package_errors: Mutex<HashMap<String, Arc<FileErrors>>>,
     }
 
     impl Default for Database {
@@ -329,6 +333,7 @@ mod db {
             let mut db = Self {
                 storage: Default::default(),
                 packages: Default::default(),
+                package_errors: Default::default(),
             };
             db.set_analyzer_config(AnalyzerConfig::default());
             db.set_use_prelude(true);
@@ -362,6 +367,23 @@ mod db {
             );
 
             found_packages
+        }
+
+        fn clear_error(&self, package: &str) {
+            self.package_errors.lock().unwrap().remove(package);
+        }
+
+        fn record_error(&self, package: String, error: Arc<FileErrors>) {
+            self.package_errors.lock().unwrap().insert(package, error);
+        }
+
+        fn package_errors(&self) -> Errors<Arc<FileErrors>> {
+            self.package_errors
+                .lock()
+                .unwrap()
+                .values()
+                .cloned()
+                .collect::<Errors<_>>()
         }
 
         fn source(&self, path: String) -> Arc<str> {
@@ -485,9 +507,14 @@ mod db {
         path: String,
     ) -> Result<Arc<PackageExports>, nodes::ErrorKind> {
         db.semantic_package(path.clone())
-            .ok()
-            .map(|(exports, _)| exports)
-            .ok_or_else(|| nodes::ErrorKind::InvalidImportPath(path.clone()))
+            .map(|(exports, _)| {
+                db.clear_error(&path);
+                exports
+            })
+            .map_err(|err| {
+                db.record_error(path.clone(), err.error);
+                nodes::ErrorKind::InvalidImportPath(path)
+            })
     }
 
     fn recover_cycle2<T>(
@@ -676,5 +703,51 @@ mod tests {
     fn bootstrap() {
         infer_stdlib_dir("../../stdlib", AnalyzerConfig::default())
             .unwrap_or_else(|err| panic!("{}", err));
+    }
+
+    #[test]
+    fn cross_module_error() {
+        let a = r#"
+            x = 1 + ""
+        "#;
+        let b = r#"
+            import "a"
+
+            y = a.x
+        "#;
+
+        let mut db = Database::default();
+
+        db.set_use_prelude(false);
+        db.set_analyzer_config(AnalyzerConfig {
+            features: vec![semantic::Feature::PrettyError],
+        });
+
+        for (k, v) in [("a/a.flux", a), ("b/b.flux", b)] {
+            db.set_source(k.into(), v.into());
+        }
+
+        let got_err = db
+            .semantic_package("b".into())
+            .expect_err("expected error error");
+        let mut errors = db.package_errors();
+        errors.push(got_err.error);
+
+        expect_test::expect![[r#"
+            error: expected int but found string
+              ┌─ a/a.flux:1:1
+              │
+            1 │ x = 1 + ""
+              │ ^
+
+
+
+            error: invalid import path a
+              ┌─ b/b.flux:3:12
+              │
+            3 │             y = a.x
+              │            ^^^^^^^^^
+
+        "#]].assert_eq(&errors.to_string());
     }
 }
