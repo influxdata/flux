@@ -353,10 +353,7 @@ testcase dynamic_cast_string_to_duration_error {
 }
 
 testcase dynamic_cast_int_to_float {
-    testing.assertEqualValues(
-        want: 123.0,
-        got: float(v: dynamic.dynamic(v: 123)),
-    )
+    testing.assertEqualValues(want: 123.0, got: float(v: dynamic.dynamic(v: 123)))
 }
 
 testcase dynamic_cast_string_to_float_error {
@@ -367,10 +364,7 @@ testcase dynamic_cast_string_to_float_error {
 }
 
 testcase dynamic_cast_float_to_int {
-    testing.assertEqualValues(
-        want: 123,
-        got: int(v: dynamic.dynamic(v: 123.0)),
-    )
+    testing.assertEqualValues(want: 123, got: int(v: dynamic.dynamic(v: 123.0)))
 }
 
 testcase dynamic_cast_string_to_int_error {
@@ -381,10 +375,7 @@ testcase dynamic_cast_string_to_int_error {
 }
 
 testcase dynamic_cast_int_to_string {
-    testing.assertEqualValues(
-        want: "123",
-        got: string(v: dynamic.dynamic(v: 123)),
-    )
+    testing.assertEqualValues(want: "123", got: string(v: dynamic.dynamic(v: 123)))
 }
 
 testcase dynamic_cast_function_to_string_error {
@@ -395,10 +386,7 @@ testcase dynamic_cast_function_to_string_error {
 }
 
 testcase dynamic_cast_int_to_time {
-    testing.assertEqualValues(
-        want: 1970-01-01T00:00:00.000000000Z,
-        got: time(v: dynamic.dynamic(v: 0)),
-    )
+    testing.assertEqualValues(want: 1970-01-01T00:00:00Z, got: time(v: dynamic.dynamic(v: 0)))
 }
 
 testcase dynamic_cast_string_to_time_error {
@@ -409,10 +397,7 @@ testcase dynamic_cast_string_to_time_error {
 }
 
 testcase dynamic_cast_int_to_uint {
-    testing.assertEqualValues(
-        want: uint(v:123),
-        got: uint(v: dynamic.dynamic(v: 123)),
-    )
+    testing.assertEqualValues(want: uint(v: 123), got: uint(v: dynamic.dynamic(v: 123)))
 }
 
 testcase dynamic_cast_string_to_uint_error {
