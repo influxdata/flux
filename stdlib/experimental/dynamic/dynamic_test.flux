@@ -335,3 +335,19 @@ testcase dynamic_cast_string_to_bytes {
 testcase dynamic_cast_int_to_bytes_error {
     testing.shouldError(fn: () => bytes(v: dynamic.dynamic(v: 1)), want: /cannot convert int/)
 }
+
+testcase dynamic_cast_int_to_duration {
+    // duration can't be used as column data so we need to use `display()` to
+    // convert to string before we compare.
+    testing.assertEqualValues(
+        want: "18ms",
+        got: display(v: duration(v: dynamic.dynamic(v: 18000000))),
+    )
+}
+
+testcase dynamic_cast_string_to_duration_error {
+    testing.shouldError(
+        fn: () => duration(v: dynamic.dynamic(v: "not a duration")),
+        want: /cannot convert string/,
+    )
+}
