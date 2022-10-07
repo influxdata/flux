@@ -393,3 +393,17 @@ testcase dynamic_cast_function_to_string_error {
         want: /cannot convert \(\) => bool to string/,
     )
 }
+
+testcase dynamic_cast_int_to_time {
+    testing.assertEqualValues(
+        want: 1970-01-01T00:00:00.000000000Z,
+        got: time(v: dynamic.dynamic(v: 0)),
+    )
+}
+
+testcase dynamic_cast_string_to_time_error {
+    testing.shouldError(
+        fn: () => time(v: dynamic.dynamic(v: "not a time")),
+        want: /cannot convert string/,
+    )
+}
