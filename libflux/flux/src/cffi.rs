@@ -625,7 +625,7 @@ pub unsafe extern "C" fn flux_get_env_stdlib(buf: *mut flux_buffer_t) {
     )
     .unwrap();
     let mut builder = flatbuffers::FlatBufferBuilder::new();
-    let fb_type_env = build_env(&mut builder, env);
+    let fb_type_env = build_env(&mut builder, &env);
 
     builder.finish(fb_type_env, None);
     let (mut vec, offset) = builder.collapse();

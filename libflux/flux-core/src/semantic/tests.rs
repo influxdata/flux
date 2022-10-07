@@ -22,6 +22,8 @@
 //! arbitrarily complex.
 //!
 
+use std::sync::Arc;
+
 use colored::*;
 use derive_more::Display;
 use expect_test::expect;
@@ -122,7 +124,12 @@ fn infer_types(
     // Instantiate package importer using generic objects
     let importer: Packages = imports
         .into_iter()
-        .map(|(path, types)| (path.to_string(), PackageExports::try_from(types).unwrap()))
+        .map(|(path, types)| {
+            (
+                path.to_string(),
+                Arc::new(PackageExports::try_from(types).unwrap()),
+            )
+        })
         .collect();
 
     // Parse polytype expressions in initial environment.

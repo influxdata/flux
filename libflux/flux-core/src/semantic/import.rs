@@ -1,4 +1,5 @@
 //! Module import defines the abstractions for importing Flux package types from various sources.
+use std::sync::Arc;
 
 use crate::semantic::{
     nodes::{ErrorKind, Symbol},
@@ -33,7 +34,7 @@ where
 }
 
 /// In memory storage for packages
-pub type Packages = SemanticMap<String, PackageExports>;
+pub type Packages = SemanticMap<String, Arc<PackageExports>>;
 
 impl Importer for Packages {
     fn import(&mut self, path: &str) -> Result<PolyType, ErrorKind> {

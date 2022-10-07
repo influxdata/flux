@@ -1,5 +1,6 @@
 //! This module defines methods for serializing and deserializing MonoTypes
 //! and PolyTypes using the flatbuffer encoding.
+use std::sync::Arc;
 
 use crate::{
     map::HashMap,
@@ -29,7 +30,7 @@ impl DeserializeFlatBuffer {
         let mut packages = Packages::new();
         for package in fb_packages.iter() {
             let (id, package) = self.deserialize_package_entry(package)?;
-            packages.insert(id, package);
+            packages.insert(id, Arc::new(package));
         }
         Some(packages)
     }
@@ -372,7 +373,10 @@ pub fn build_packages<'a>(
     builder: &mut flatbuffers::FlatBufferBuilder<'a>,
     env: Packages,
 ) -> flatbuffers::WIPOffset<fb::Packages<'a>> {
-    let packages = build_vec(env.into_iter().collect(), builder, build_package);
+    let packages = env
+        .iter()
+        .map(|(id, p)| build_package(builder, id, p))
+        .collect::<Vec<_>>();
     let packages = builder.create_vector(packages.as_slice());
     fb::Packages::create(
         builder,
@@ -384,7 +388,8 @@ pub fn build_packages<'a>(
 
 fn build_package<'a>(
     builder: &mut flatbuffers::FlatBufferBuilder<'a>,
-    (id, package): (String, PackageExports),
+    id: &str,
+    package: &PackageExports,
 ) -> flatbuffers::WIPOffset<fb::PackageExports<'a>> {
     let id = builder.create_string(&id);
     let package = build_env(builder, package);
@@ -399,10 +404,12 @@ fn build_package<'a>(
 
 pub fn build_env<'a>(
     builder: &mut flatbuffers::FlatBufferBuilder<'a>,
-    env: PackageExports,
+    env: &PackageExports,
 ) -> flatbuffers::WIPOffset<fb::TypeEnvironment<'a>> {
     let assignments = build_vec(
-        env.into_bindings().collect(),
+        env.bindings_iter()
+            .map(|(k, v)| (k.clone(), v.clone()))
+            .collect(),
         builder,
         build_type_assignment,
     );
@@ -784,7 +791,7 @@ mod tests {
         .unwrap();
 
         let mut builder = flatbuffers::FlatBufferBuilder::new();
-        let buf = serialize(&mut builder, want, build_env);
+        let buf = serialize(&mut builder, &want, build_env);
         let got = deserialize::<fb::TypeEnvironment, Option<PackageExports>>(buf);
         let mut deserializer = DeserializeFlatBuffer::default();
         let got = deserializer

@@ -37,7 +37,7 @@ pub(crate) const PRELUDE: [&str; 4] = [
 /// A mapping of package import paths to the corresponding AST package.
 pub type ASTPackageMap = SemanticMap<String, ast::Package>;
 /// A mapping of package import paths to the corresponding semantic graph package.
-pub type SemanticPackageMap = SemanticMap<String, Package>;
+pub type SemanticPackageMap = SemanticMap<String, Arc<Package>>;
 
 /// Infers the Flux standard library given the path to the source code.
 /// The prelude and the imports are returned.
@@ -62,8 +62,8 @@ fn infer_stdlib_dir_(
     let mut sem_pkg_map = SemanticPackageMap::default();
     for name in &package_list {
         let (exports, pkg) = db.semantic_package(name.clone())?;
-        imports.insert(name.clone(), PackageExports::clone(&exports)); // TODO Clone Arc
-        sem_pkg_map.insert(name.clone(), Package::clone(&pkg)); // TODO Clone Arc
+        imports.insert(name.clone(), exports.clone());
+        sem_pkg_map.insert(name.clone(), pkg.clone());
     }
 
     let prelude = db.prelude()?;
@@ -243,7 +243,7 @@ pub struct Module {
     /// The polytype
     pub polytype: Option<PolyType>,
     /// The code
-    pub code: Option<nodes::Package>,
+    pub code: Option<Arc<nodes::Package>>,
 }
 
 #[cfg(test)]

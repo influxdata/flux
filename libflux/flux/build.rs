@@ -76,7 +76,7 @@ fn main() -> Result<()> {
     }
 
     let path = dir.join("prelude.data");
-    serialize(prelude, fb::build_env, &path)?;
+    serialize(&prelude, fb::build_env, &path)?;
 
     let path = dir.join("stdlib.data");
     serialize(imports, fb::build_packages, &path)?;
