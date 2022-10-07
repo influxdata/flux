@@ -217,6 +217,11 @@ var floatConv = values.NewFunction(
 			return values.Null, nil
 		}
 
+		// When the incoming value is Dynamic, pull out the inner value.
+		if v.Type().Nature() == semantic.Dynamic {
+			v = v.Dynamic().Inner()
+		}
+
 		return toFloatValue(v)
 	},
 	false,

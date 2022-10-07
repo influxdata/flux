@@ -351,3 +351,16 @@ testcase dynamic_cast_string_to_duration_error {
         want: /cannot convert string/,
     )
 }
+testcase dynamic_cast_int_to_float {
+    testing.assertEqualValues(
+        want: 123.0,
+        got: float(v: dynamic.dynamic(v: 123)),
+    )
+}
+
+testcase dynamic_cast_string_to_float_error {
+    testing.shouldError(
+        fn: () => float(v: dynamic.dynamic(v: "not a float")),
+        want: /cannot convert string/,
+    )
+}
