@@ -53,13 +53,6 @@ pub trait Flux: FluxBase {
     fn prelude(&self) -> Result<Arc<PackageExports>, Arc<FileErrors>>;
 
     #[salsa::cycle(recover_cycle2)]
-    #[allow(clippy::type_complexity)]
-    fn semantic_package_inner(
-        &self,
-        path: String,
-    ) -> SalvageResult<(Arc<PackageExports>, Arc<nodes::Package>), Arc<FileErrors>>;
-
-    #[salsa::transparent]
     fn semantic_package(
         &self,
         path: String,
@@ -202,7 +195,7 @@ fn prelude(db: &dyn Flux) -> Result<Arc<PackageExports>, Arc<FileErrors>> {
     db.prelude_inner()
 }
 
-fn semantic_package_inner(
+fn semantic_package(
     db: &dyn Flux,
     path: String,
 ) -> SalvageResult<(Arc<PackageExports>, Arc<nodes::Package>), Arc<FileErrors>> {
@@ -225,13 +218,6 @@ fn semantic_package_inner(
     };
 
     semantic_package_with_prelude(db, path, &prelude)
-}
-
-fn semantic_package(
-    db: &dyn Flux,
-    path: String,
-) -> SalvageResult<(Arc<PackageExports>, Arc<nodes::Package>), Arc<FileErrors>> {
-    db.semantic_package_inner(path)
 }
 
 fn semantic_package_with_prelude(
@@ -305,7 +291,7 @@ fn recover_cycle<T>(_db: &dyn Flux, cycle: &[String], name: &str) -> Result<T, n
     // We get a list of strings like "semantic_package_inner(\"b\")",
     let mut cycle: Vec<_> = cycle
         .iter()
-        .filter(|k| k.starts_with("semantic_package_inner("))
+        .filter(|k| k.starts_with("semantic_package("))
         .map(|k| {
             k.trim_matches(|c: char| c != '"')
                 .trim_matches('"')
