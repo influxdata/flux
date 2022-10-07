@@ -407,3 +407,17 @@ testcase dynamic_cast_string_to_time_error {
         want: /cannot convert string/,
     )
 }
+
+testcase dynamic_cast_int_to_uint {
+    testing.assertEqualValues(
+        want: uint(v:123),
+        got: uint(v: dynamic.dynamic(v: 123)),
+    )
+}
+
+testcase dynamic_cast_string_to_uint_error {
+    testing.shouldError(
+        fn: () => uint(v: dynamic.dynamic(v: "not a uint")),
+        want: /cannot convert string/,
+    )
+}
