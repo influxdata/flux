@@ -48,7 +48,6 @@ var testFlags = map[string]interface{}{
 	"optimizeAggregateWindow":   true,
 	"optimizeStateTracking":     true,
 	"optimizeSetTransformation": true,
-	"removeRedundantSortNodes":  true,
 	"strictNullLogicalOps":      true,
 }
 

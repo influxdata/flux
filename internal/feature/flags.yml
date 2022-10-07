@@ -64,12 +64,6 @@
   default: false
   contact: Markus Westerlind
 
-- name: Remove Redundant Sort Nodes
-  description: Planner will remove sort nodes when tables are already sorted
-  key: removeRedundantSortNodes
-  default: false
-  contact: Chris Wolff
-
 - name: Query Concurrency Increase
   description: Additional dispatcher workers to allocate on top of the minimimum allowable computed by the engine
   key: queryConcurrencyIncrease
