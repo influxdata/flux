@@ -2041,3 +2041,8 @@ a",
 
     expect![["1 + a"]].assert_eq(&format_node(Node::from_expr(&expr)).unwrap());
 }
+
+#[test]
+fn format_unrepresentable_float() {
+    assert_unchanged("0.3333333333333333333333333333333");
+}
