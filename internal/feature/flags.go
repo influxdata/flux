@@ -125,18 +125,6 @@ func UnusedSymbolWarnings() BoolFlag {
 	return unusedSymbolWarnings
 }
 
-var removeRedundantSortNodes = feature.MakeBoolFlag(
-	"Remove Redundant Sort Nodes",
-	"removeRedundantSortNodes",
-	"Chris Wolff",
-	false,
-)
-
-// RemoveRedundantSortNodes - Planner will remove sort nodes when tables are already sorted
-func RemoveRedundantSortNodes() BoolFlag {
-	return removeRedundantSortNodes
-}
-
 var queryConcurrencyIncrease = feature.MakeIntFlag(
 	"Query Concurrency Increase",
 	"queryConcurrencyIncrease",
@@ -224,7 +212,6 @@ var all = []Flag{
 	labelPolymorphism,
 	optimizeSetTransformation,
 	unusedSymbolWarnings,
-	removeRedundantSortNodes,
 	queryConcurrencyIncrease,
 	vectorizedConditionals,
 	vectorizedFloat,
@@ -243,7 +230,6 @@ var byKey = map[string]Flag{
 	"labelPolymorphism":                labelPolymorphism,
 	"optimizeSetTransformation":        optimizeSetTransformation,
 	"unusedSymbolWarnings":             unusedSymbolWarnings,
-	"removeRedundantSortNodes":         removeRedundantSortNodes,
 	"queryConcurrencyIncrease":         queryConcurrencyIncrease,
 	"vectorizedConditionals":           vectorizedConditionals,
 	"vectorizedFloat":                  vectorizedFloat,

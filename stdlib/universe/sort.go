@@ -14,7 +14,6 @@ import (
 	"github.com/influxdata/flux/execute/table"
 	"github.com/influxdata/flux/internal/arrowutil"
 	"github.com/influxdata/flux/internal/errors"
-	"github.com/influxdata/flux/internal/feature"
 	"github.com/influxdata/flux/internal/mutable"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/plan"
@@ -493,10 +492,6 @@ func (r RemoveRedundantSort) Pattern() plan.Pattern {
 }
 
 func (r RemoveRedundantSort) Rewrite(ctx context.Context, node plan.Node) (plan.Node, bool, error) {
-	if !feature.RemoveRedundantSortNodes().Enabled(ctx) {
-		return node, false, nil
-	}
-
 	pred := node.Predecessors()[0]
 	inputCollation := plan.GetOutputAttribute(pred, plan.CollationKey)
 	if inputCollation == nil {
