@@ -406,3 +406,62 @@ testcase dynamic_cast_string_to_uint_error {
         want: /cannot convert string/,
     )
 }
+
+testcase dynamic_cast_from_json {
+    want = {number: 123, msg: "flux dynamic support", isWorking: true}
+    data = "{\"number\": 123,\"msg\": \"flux dynamic support\",\"isWorking\":true}"
+    raw = dynamic.jsonParse(data: bytes(v: data))
+    got = {number: int(v: raw.number), msg: string(v: raw.msg), isWorking: bool(v: raw.isWorking)}
+
+    testing.assertEqualValues(want: display(v: want), got: display(v: got))
+}
+
+testcase dynamic_cast_from_json_deep {
+    data =
+        "
+    {
+      \"items\":  [
+          {\"name\": \"a\", \"pos\": {\"x\": 10, \"y\": 10, \"z\": 20}},
+          {\"name\": \"b\", \"pos\": {\"x\": 30, \"y\": 99}},
+          {\"name\": \"c\", \"pos\": {}},
+          {\"name\": \"d\"}
+        ]
+    }
+    "
+    raw = dynamic.jsonParse(data: bytes(v: data))
+    converted =
+        raw.items
+            |> dynamic.asArray()
+            |> array.map(
+                fn: (x) =>
+                    ({
+                        name: string(v: x.name),
+                        posX: int(v: x.pos.x),
+                        posY: int(v: x.pos.y),
+                        posZ: int(v: x.pos.z),
+                    }),
+            )
+
+    want =
+        array.from(
+            rows: [
+                {name: "a", posX: 10, posY: 10, posZ: 20},
+                {name: "b", posX: 30, posY: 99, posZ: debug.null(type: "int")},
+                {
+                    name: "c",
+                    posX: debug.null(type: "int"),
+                    posY: debug.null(type: "int"),
+                    posZ: debug.null(type: "int"),
+                },
+                {
+                    name: "d",
+                    posX: debug.null(type: "int"),
+                    posY: debug.null(type: "int"),
+                    posZ: debug.null(type: "int"),
+                },
+            ],
+        )
+    got = array.from(rows: converted)
+
+    testing.diff(want, got)
+}
