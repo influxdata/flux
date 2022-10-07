@@ -113,7 +113,7 @@ func NewDynamic(v Value) Dynamic {
 	switch n := v.Type().Nature(); n {
 	// N.b check to see if the incoming value is Dynamic before all else.
 	// We want to avoid re-wrapping, and in the case of nulls a check like
-	//`Dynamic.IsNull` will report `true` when the inner value is null.
+	// `Dynamic.IsNull` will report `true` when the inner value is null.
 	case semantic.Dynamic:
 		return v.Dynamic()
 	case
@@ -133,6 +133,7 @@ func NewDynamic(v Value) Dynamic {
 		semantic.Dictionary,
 		semantic.Vector,
 		semantic.Stream,
+		semantic.Function,
 		// Nulls are included in the "wrap plainly" category.
 		semantic.Invalid:
 		return dynamic{inner: v}

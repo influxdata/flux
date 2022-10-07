@@ -14,6 +14,7 @@ import (
 func init() {
 	runtime.RegisterPackageValue("experimental/dynamic", "dynamic", dynamicConv)
 	runtime.RegisterPackageValue("experimental/dynamic", "asArray", asArray)
+	runtime.RegisterPackageValue("experimental/dynamic", "isType", isType)
 }
 
 var dynamicConv = values.NewFunction(
@@ -64,6 +65,70 @@ var asArray = values.NewFunction(
 		}
 
 		return arr, nil
+	},
+	false,
+)
+
+var isType = values.NewFunction(
+	"isType",
+	runtime.MustLookupBuiltinType("experimental/dynamic", "isType"),
+	func(ctx context.Context, args values.Object) (values.Value, error) {
+		arguments := interpreter.NewArguments(args)
+		v, err := arguments.GetRequired("v")
+		if err != nil {
+			return nil, err
+		}
+
+		// Normally nulls would land in the default case since we don't have an
+		// explicit check for `semantic.Invalid`, but this early return avoids
+		// the panic we'd see when trying to access the inner value of the
+		// dynamic (which is not valid when we get a true `null` rather than a
+		// `dynamic(null)`).
+		if v.IsNull() {
+			return values.NewBool(false), nil
+		}
+
+		type_, err := arguments.GetRequiredString("type")
+		if err != nil {
+			return nil, err
+		}
+		result := false
+
+		d := v.Dynamic()
+		inner := d.Inner()
+		switch inner.Type().Nature() {
+		case semantic.String:
+			result = type_ == "string"
+		case semantic.Bytes:
+			result = type_ == "bytes"
+		case semantic.Int:
+			result = type_ == "int"
+		case semantic.UInt:
+			result = type_ == "uint"
+		case semantic.Float:
+			result = type_ == "float"
+		case semantic.Bool:
+			result = type_ == "bool"
+		case semantic.Time:
+			result = type_ == "time"
+		case semantic.Duration:
+			result = type_ == "duration"
+		case semantic.Regexp:
+			result = type_ == "regexp"
+		case semantic.Array:
+			result = type_ == "array"
+		case semantic.Object:
+			result = type_ == "object"
+		case semantic.Function:
+			result = type_ == "function"
+		case semantic.Dictionary:
+			result = type_ == "dictionary"
+		case semantic.Vector:
+			result = type_ == "vector"
+		default:
+			result = false
+		}
+		return values.NewBool(result), nil
 	},
 	false,
 )

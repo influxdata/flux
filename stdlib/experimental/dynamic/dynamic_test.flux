@@ -173,6 +173,7 @@ testcase dynamic_kitchen_sink {
     bytes: dynamic(0x616263),
     dict: dynamic([a: 1]),
     dur: dynamic(1y),
+    func: dynamic(() => bool),
     n: dynamic(<null>),
     num: dynamic(0),
     obj: dynamic({bar: dynamic(100)}),
@@ -195,12 +196,13 @@ testcase dynamic_kitchen_sink {
                         arr4: [[1, 2], [3, 4]],
                         // n.b. uint renders just like int - just the number.
                         arr5: [{a: 1, b: uint(v: 2)}, {a: 3, b: uint(v: 4)}],
-                        dict: ["a": 1],
-                        dur: 1y,
                         bfalse: false,
                         btrue: true,
                         // -> 0x616263
                         bytes: bytes(v: "abc"),
+                        dict: ["a": 1],
+                        dur: 1y,
+                        func: () => true,
                         n: debug.null(),
                         num: 0,
                         obj: {bar: 100},
@@ -213,4 +215,102 @@ testcase dynamic_kitchen_sink {
         )
 
     testing.assertEqualValues(got, want)
+}
+
+testcase dynamic_isType_string {
+    testing.assertEqualValues(
+        want: true,
+        got: dynamic.isType(v: dynamic.dynamic(v: ""), type: "string"),
+    )
+}
+
+testcase dynamic_isType_bytes {
+    testing.assertEqualValues(
+        want: true,
+        got: dynamic.isType(v: dynamic.dynamic(v: bytes(v: "foo")), type: "bytes"),
+    )
+}
+
+testcase dynamic_isType_int {
+    testing.assertEqualValues(
+        want: true,
+        got: dynamic.isType(v: dynamic.dynamic(v: 123), type: "int"),
+    )
+}
+
+testcase dynamic_isType_uint {
+    testing.assertEqualValues(
+        want: true,
+        got: dynamic.isType(v: dynamic.dynamic(v: uint(v: 123)), type: "uint"),
+    )
+}
+
+testcase dynamic_isType_float {
+    testing.assertEqualValues(
+        want: true,
+        got: dynamic.isType(v: dynamic.dynamic(v: 1.23), type: "float"),
+    )
+}
+
+testcase dynamic_isType_bool {
+    testing.assertEqualValues(
+        want: true,
+        got: dynamic.isType(v: dynamic.dynamic(v: false), type: "bool"),
+    )
+}
+
+testcase dynamic_isType_time {
+    testing.assertEqualValues(
+        want: true,
+        got: dynamic.isType(v: dynamic.dynamic(v: 2022-10-06T00:00:00Z), type: "time"),
+    )
+}
+
+testcase dynamic_isType_duration {
+    testing.assertEqualValues(
+        want: true,
+        got: dynamic.isType(v: dynamic.dynamic(v: 1d), type: "duration"),
+    )
+}
+
+testcase dynamic_isType_regexp {
+    testing.assertEqualValues(
+        want: true,
+        got: dynamic.isType(v: dynamic.dynamic(v: /abc\d/), type: "regexp"),
+    )
+}
+
+testcase dynamic_isType_array {
+    testing.assertEqualValues(
+        want: true,
+        got: dynamic.isType(v: dynamic.dynamic(v: [1, 2, 3]), type: "array"),
+    )
+}
+
+testcase dynamic_isType_object {
+    testing.assertEqualValues(
+        want: true,
+        got: dynamic.isType(v: dynamic.dynamic(v: {foo: "bar"}), type: "object"),
+    )
+}
+
+testcase dynamic_isType_function {
+    testing.assertEqualValues(
+        want: true,
+        got: dynamic.isType(v: dynamic.dynamic(v: () => true), type: "function"),
+    )
+}
+
+testcase dynamic_isType_dictionary {
+    testing.assertEqualValues(
+        want: true,
+        got: dynamic.isType(v: dynamic.dynamic(v: [1: "one"]), type: "dictionary"),
+    )
+}
+
+// isType won't let you ask if a dynamic contains a null (callers can use
+// `exists` for that), but there is a case where we risk a panic if we don't
+// short circuit on null inputs.
+testcase dynamic_isType_null_should_not_panic {
+    testing.assertEqualValues(want: false, got: dynamic.isType(v: debug.null(), type: "int"))
 }
