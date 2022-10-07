@@ -322,3 +322,16 @@ testcase dynamic_cast_bool_to_bool {
 testcase dynamic_cast_float_to_bool_error {
     testing.shouldError(fn: () => bool(v: dynamic.dynamic(v: 1.1)), want: /cannot convert float/)
 }
+
+testcase dynamic_cast_string_to_bytes {
+    // bytes can't be used as column data so we need to use `display()` to
+    // convert to string before we compare.
+    testing.assertEqualValues(
+        want: "0x616263",
+        got: display(v: bytes(v: dynamic.dynamic(v: "abc"))),
+    )
+}
+
+testcase dynamic_cast_int_to_bytes_error {
+    testing.shouldError(fn: () => bytes(v: dynamic.dynamic(v: 1)), want: /cannot convert int/)
+}

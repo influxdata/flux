@@ -358,6 +358,12 @@ var byteConv = values.NewFunction(
 		if !ok {
 			return nil, errMissingArg
 		}
+
+		// When the incoming value is Dynamic, pull out the inner value.
+		if v.Type().Nature() == semantic.Dynamic {
+			v = v.Dynamic().Inner()
+		}
+
 		switch v.Type().Nature() {
 		case semantic.String:
 			return values.NewBytes([]byte(v.Str())), nil
