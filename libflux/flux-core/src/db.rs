@@ -21,7 +21,6 @@ use std::{
 const INTERNAL_PRELUDE: [&str; 2] = ["internal/boolean", "internal/location"];
 
 pub trait FluxBase {
-    fn has_package(&self, package: &str) -> bool;
     fn clear_error(&self, package: &str);
     fn record_error(&self, package: String, error: Arc<FileErrors>);
     fn package_errors(&self) -> Errors<Arc<FileErrors>>;
@@ -52,21 +51,13 @@ pub trait Flux: FluxBase {
     #[salsa::input]
     fn precompiled_packages(&self) -> Option<&'static Packages>;
 
-    #[doc(hidden)]
-    fn ast_package_inner(&self, path: String) -> Arc<ast::Package>;
-
     /// Returns the `ast::Package` for a given module path
-    #[salsa::transparent]
     fn ast_package(&self, path: String) -> Option<Arc<ast::Package>>;
 
     #[doc(hidden)]
     fn internal_prelude(&self) -> Result<Arc<PackageExports>, Arc<FileErrors>>;
 
-    #[doc(hidden)]
-    fn prelude_inner(&self) -> Result<Arc<PackageExports>, Arc<FileErrors>>;
-
     /// Returns the `PackageExports` for the prelude
-    #[salsa::transparent]
     fn prelude(&self) -> Result<Arc<PackageExports>, Arc<FileErrors>>;
 
     /// Returns the `semantic::Package`
@@ -83,7 +74,7 @@ pub trait Flux: FluxBase {
 
     #[doc(hidden)]
     #[salsa::cycle(recover_cycle)]
-    fn semantic_package_cycle(&self, path: String)
+    fn package_exports_import(&self, path: String)
         -> Result<Arc<PackageExports>, nodes::ErrorKind>;
 }
 
@@ -112,10 +103,6 @@ impl Default for Database {
 impl salsa::Database for Database {}
 
 impl FluxBase for Database {
-    fn has_package(&self, package: &str) -> bool {
-        self.packages.lock().unwrap().contains(package)
-    }
-
     fn package_files(&self, package: &str) -> Vec<String> {
         let packages = self.packages.lock().unwrap();
         let found_packages = packages
@@ -167,7 +154,7 @@ impl FluxBase for Database {
     }
 }
 
-fn ast_package_inner(db: &dyn Flux, path: String) -> Arc<ast::Package> {
+fn ast_package(db: &dyn Flux, path: String) -> Option<Arc<ast::Package>> {
     let files = db
         .package_files(&path)
         .into_iter()
@@ -178,19 +165,15 @@ fn ast_package_inner(db: &dyn Flux, path: String) -> Arc<ast::Package> {
         })
         .collect::<Vec<_>>();
 
-    Arc::new(ast::Package {
-        base: ast::BaseNode::default(),
-        path,
-        package: String::from(files[0].get_package()),
-        files,
-    })
-}
-
-fn ast_package(db: &dyn Flux, path: String) -> Option<Arc<ast::Package>> {
-    if db.has_package(&path) {
-        Some(db.ast_package_inner(path))
-    } else {
+    if files.is_empty() {
         None
+    } else {
+        Some(Arc::new(ast::Package {
+            base: ast::BaseNode::default(),
+            path,
+            package: String::from(files[0].get_package()),
+            files,
+        }))
     }
 }
 
@@ -206,7 +189,7 @@ fn internal_prelude(db: &dyn Flux) -> Result<Arc<PackageExports>, Arc<FileErrors
     Ok(Arc::new(prelude_map))
 }
 
-fn prelude_inner(db: &dyn Flux) -> Result<Arc<PackageExports>, Arc<FileErrors>> {
+fn prelude(db: &dyn Flux) -> Result<Arc<PackageExports>, Arc<FileErrors>> {
     let mut prelude_map = PackageExports::new();
     for name in crate::semantic::bootstrap::PRELUDE {
         // Infer each package in the prelude allowing the earlier packages to be used by later
@@ -216,10 +199,6 @@ fn prelude_inner(db: &dyn Flux) -> Result<Arc<PackageExports>, Arc<FileErrors>> 
         prelude_map.copy_bindings_from(&types);
     }
     Ok(Arc::new(prelude_map))
-}
-
-fn prelude(db: &dyn Flux) -> Result<Arc<PackageExports>, Arc<FileErrors>> {
-    db.prelude_inner()
 }
 
 fn semantic_package(
@@ -252,7 +231,9 @@ fn semantic_package_with_prelude(
     path: String,
     prelude: &PackageExports,
 ) -> SalvageResult<(Arc<PackageExports>, Arc<nodes::Package>), Arc<FileErrors>> {
-    let file = db.ast_package_inner(path);
+    let file = db
+        .ast_package(path.clone())
+        .unwrap_or_else(|| panic!("Missing {}", path));
 
     let env = Environment::new(prelude.into());
     let mut importer = &*db;
@@ -280,7 +261,7 @@ fn package_exports(
     Ok(exports)
 }
 
-fn semantic_package_cycle(
+fn package_exports_import(
     db: &dyn Flux,
     path: String,
 ) -> Result<Arc<PackageExports>, nodes::ErrorKind> {
@@ -302,7 +283,7 @@ fn recover_cycle2<T>(
 ) -> SalvageResult<T, Arc<FileErrors>> {
     let mut cycle: Vec<_> = cycle
         .iter()
-        .filter(|k| k.starts_with("semantic_package_cycle("))
+        .filter(|k| k.starts_with("package_exports_import("))
         .map(|k| {
             k.trim_matches(|c: char| c != '"')
                 .trim_matches('"')
@@ -330,7 +311,7 @@ fn recover_cycle2<T>(
     .into())
 }
 fn recover_cycle<T>(_db: &dyn Flux, cycle: &[String], name: &str) -> Result<T, nodes::ErrorKind> {
-    // We get a list of strings like "semantic_package_inner(\"b\")",
+    // We get a list of strings like "semantic_package(\"b\")",
     let mut cycle: Vec<_> = cycle
         .iter()
         .filter(|k| k.starts_with("semantic_package("))
@@ -350,11 +331,11 @@ fn recover_cycle<T>(_db: &dyn Flux, cycle: &[String], name: &str) -> Result<T, n
 
 impl Importer for Database {
     fn import(&mut self, path: &str) -> Result<PolyType, nodes::ErrorKind> {
-        self.semantic_package_cycle(path.into())
+        self.package_exports_import(path.into())
             .map(|exports| exports.typ())
     }
     fn symbol(&mut self, path: &str, symbol_name: &str) -> Option<Symbol> {
-        self.semantic_package_cycle(path.into())
+        self.package_exports_import(path.into())
             .ok()
             .and_then(|exports| exports.lookup_symbol(symbol_name).cloned())
     }
@@ -362,11 +343,11 @@ impl Importer for Database {
 
 impl Importer for &dyn Flux {
     fn import(&mut self, path: &str) -> Result<PolyType, nodes::ErrorKind> {
-        self.semantic_package_cycle(path.into())
+        self.package_exports_import(path.into())
             .map(|exports| exports.typ())
     }
     fn symbol(&mut self, path: &str, symbol_name: &str) -> Option<Symbol> {
-        self.semantic_package_cycle(path.into())
+        self.package_exports_import(path.into())
             .ok()
             .and_then(|exports| exports.lookup_symbol(symbol_name).cloned())
     }
