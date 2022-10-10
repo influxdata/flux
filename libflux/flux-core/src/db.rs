@@ -15,18 +15,32 @@ use super::*;
 
 use std::{
     collections::{HashMap, HashSet},
+    path::PathBuf,
     sync::{Arc, Mutex},
 };
 
+use thiserror::Error;
+
 const INTERNAL_PRELUDE: [&str; 2] = ["internal/boolean", "internal/location"];
+
+pub type Result<T, E = Error> = std::result::Result<T, E>;
+
+#[derive(Error, Clone, Debug, Eq, PartialEq)]
+pub enum Error {
+    #[error("{0}")]
+    FileError(#[from] Arc<FileErrors>),
+
+    #[error("{0}")]
+    Message(String),
+}
 
 pub trait FluxBase {
     fn clear_error(&self, package: &str);
-    fn record_error(&self, package: String, error: Arc<FileErrors>);
-    fn package_errors(&self) -> Errors<Arc<FileErrors>>;
-    fn package_files(&self, package: &str) -> Vec<String>;
+    fn record_error(&self, package: String, error: Error);
+    fn package_errors(&self) -> Errors<Error>;
+    fn package_files(&self, package: &str) -> Result<Vec<String>>;
     fn set_source(&mut self, path: String, source: Arc<str>);
-    fn source(&self, path: String) -> Arc<str>;
+    fn source(&self, path: String) -> Result<Arc<str>>;
 }
 
 /// Defines queries that drives flux compilation
@@ -52,25 +66,25 @@ pub trait Flux: FluxBase {
     fn precompiled_packages(&self) -> Option<&'static Packages>;
 
     /// Returns the `ast::Package` for a given module path
-    fn ast_package(&self, path: String) -> Option<Arc<ast::Package>>;
+    fn ast_package(&self, path: String) -> Result<Arc<ast::Package>>;
 
     #[doc(hidden)]
-    fn internal_prelude(&self) -> Result<Arc<PackageExports>, Arc<FileErrors>>;
+    fn internal_prelude(&self) -> Result<Arc<PackageExports>>;
 
     /// Returns the `PackageExports` for the prelude
-    fn prelude(&self) -> Result<Arc<PackageExports>, Arc<FileErrors>>;
+    fn prelude(&self) -> Result<Arc<PackageExports>>;
 
     /// Returns the `semantic::Package`
     #[salsa::cycle(recover_cycle2)]
     fn semantic_package(
         &self,
         path: String,
-    ) -> SalvageResult<(Arc<PackageExports>, Arc<nodes::Package>), Arc<FileErrors>>;
+    ) -> SalvageResult<(Arc<PackageExports>, Arc<nodes::Package>), Error>;
 
     /// Returns the `PackageExports` for a given package path. Will consuled `precompiled_packages`
     /// if it is set.
     #[salsa::transparent]
-    fn package_exports(&self, path: String) -> SalvageResult<Arc<PackageExports>, Arc<FileErrors>>;
+    fn package_exports(&self, path: String) -> SalvageResult<Arc<PackageExports>, Error>;
 
     #[doc(hidden)]
     #[salsa::cycle(recover_cycle)]
@@ -78,12 +92,41 @@ pub trait Flux: FluxBase {
         -> Result<Arc<PackageExports>, nodes::ErrorKind>;
 }
 
+/// Builder that configures a flux compiler database
+#[derive(Default)]
+pub struct DatabaseBuilder {
+    filesystem_root: PathBuf,
+}
+
+impl DatabaseBuilder {
+    /// Creates a new builder with the default values
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    /// Enables loading `.flux` files from `filesystem_root`
+    pub fn filesystem_root(mut self, filesystem_root: PathBuf) -> Self {
+        self.filesystem_root = filesystem_root;
+        self
+    }
+
+    /// Builds the flux compiler database
+    pub fn build(self) -> Database {
+        let mut db = Database::default();
+
+        db.filesystem_root = Some(self.filesystem_root);
+
+        db
+    }
+}
+
 /// Storage for flux programs and their intermediates
 #[salsa::database(FluxStorage)]
 pub struct Database {
     storage: salsa::Storage<Self>,
     pub(crate) packages: Mutex<HashSet<String>>,
-    package_errors: Mutex<HashMap<String, Arc<FileErrors>>>,
+    package_errors: Mutex<HashMap<String, Error>>,
+    filesystem_root: Option<PathBuf>,
 }
 
 impl Default for Database {
@@ -92,6 +135,7 @@ impl Default for Database {
             storage: Default::default(),
             packages: Default::default(),
             package_errors: Default::default(),
+            filesystem_root: None,
         };
         db.set_analyzer_config(AnalyzerConfig::default());
         db.set_use_prelude(true);
@@ -103,38 +147,63 @@ impl Default for Database {
 impl salsa::Database for Database {}
 
 impl FluxBase for Database {
-    fn package_files(&self, package: &str) -> Vec<String> {
-        let packages = self.packages.lock().unwrap();
-        let found_packages = packages
-            .iter()
-            .filter(|p| {
-                // Example: package: `internal/boolean` matches the file
-                // `internal/boolean/XXX.flux`
-                p.starts_with(package)
-                    && p[package.len()..].starts_with('/')
-                    && p[package.len() + 1..].split('/').count() == 1
-            })
-            .cloned()
-            .collect::<Vec<_>>();
+    fn package_files(&self, package: &str) -> Result<Vec<String>> {
+        let mut found_files = Vec::new();
+        if let Some(filesystem_root) = &self.filesystem_root {
+            let package_root = filesystem_root.join(package);
+            for entry in std::fs::read_dir(&package_root).map_err(|err| {
+                Error::Message(format!("Unable to read directory `{}`: {}", package, err))
+            })? {
+                let path = entry
+                    .map_err(|err| {
+                        Error::Message(format!("Unable to read path `{}`: {}", package, err))
+                    })?
+                    .path();
+                let path = path.strip_prefix(&filesystem_root).map_err(|err| {
+                    Error::Message(format!(
+                        "Unable to strip prefix `{}` of `{}`: {}",
+                        filesystem_root.display(),
+                        path.display(),
+                        err
+                    ))
+                })?;
 
-        assert!(
-            !packages.is_empty(),
-            "Did not find any package files for `{}`",
-            package,
+                let path = path
+                    .to_str()
+                    .ok_or_else(|| Error::Message(format!("Invalid UTF-8 in path: {:?}", path)))?;
+                if path.ends_with(".flux") && !path.ends_with("_test.flux") {
+                    found_files.push(path.to_string());
+                }
+            }
+        }
+
+        let packages = self.packages.lock().unwrap();
+
+        found_files.extend(
+            packages
+                .iter()
+                .filter(|p| {
+                    // Example: package: `internal/boolean` matches the file
+                    // `internal/boolean/XXX.flux`
+                    p.starts_with(package)
+                        && p[package.len()..].starts_with('/')
+                        && p[package.len() + 1..].split('/').count() == 1
+                })
+                .cloned(),
         );
 
-        found_packages
+        Ok(found_files)
     }
 
     fn clear_error(&self, package: &str) {
         self.package_errors.lock().unwrap().remove(package);
     }
 
-    fn record_error(&self, package: String, error: Arc<FileErrors>) {
+    fn record_error(&self, package: String, error: Error) {
         self.package_errors.lock().unwrap().insert(package, error);
     }
 
-    fn package_errors(&self) -> Errors<Arc<FileErrors>> {
+    fn package_errors(&self) -> Errors<Error> {
         self.package_errors
             .lock()
             .unwrap()
@@ -143,8 +212,14 @@ impl FluxBase for Database {
             .collect::<Errors<_>>()
     }
 
-    fn source(&self, path: String) -> Arc<str> {
-        self.source_inner(path)
+    fn source(&self, path: String) -> Result<Arc<str>> {
+        if let Some(filesystem_root) = &self.filesystem_root {
+            let source = std::fs::read_to_string(filesystem_root.join(&path))
+                .map_err(|err| Error::Message(format!("Unable to read `{}`: {}", path, err)))?;
+            self.packages.lock().unwrap().insert(path.clone());
+            return Ok(Arc::from(source));
+        }
+        Ok(self.source_inner(path))
     }
 
     fn set_source(&mut self, path: String, source: Arc<str>) {
@@ -154,21 +229,24 @@ impl FluxBase for Database {
     }
 }
 
-fn ast_package(db: &dyn Flux, path: String) -> Option<Arc<ast::Package>> {
+fn ast_package(db: &dyn Flux, path: String) -> Result<Arc<ast::Package>> {
     let files = db
-        .package_files(&path)
+        .package_files(&path)?
         .into_iter()
         .map(|file_path| {
-            let source = db.source(file_path.clone());
+            let source = db.source(file_path.clone())?;
 
-            parser::parse_string(file_path, &source)
+            Ok(parser::parse_string(file_path, &source))
         })
-        .collect::<Vec<_>>();
+        .collect::<Result<Vec<_>>>()?;
 
     if files.is_empty() {
-        None
+        Err(Error::Message(format!(
+            "No files exist for package `{}`",
+            path
+        )))
     } else {
-        Some(Arc::new(ast::Package {
+        Ok(Arc::new(ast::Package {
             base: ast::BaseNode::default(),
             path,
             package: String::from(files[0].get_package()),
@@ -177,7 +255,7 @@ fn ast_package(db: &dyn Flux, path: String) -> Option<Arc<ast::Package>> {
     }
 }
 
-fn internal_prelude(db: &dyn Flux) -> Result<Arc<PackageExports>, Arc<FileErrors>> {
+fn internal_prelude(db: &dyn Flux) -> Result<Arc<PackageExports>> {
     let mut prelude_map = PackageExports::new();
     for name in INTERNAL_PRELUDE {
         // Infer each package in the prelude allowing the earlier packages to be used by later
@@ -189,7 +267,7 @@ fn internal_prelude(db: &dyn Flux) -> Result<Arc<PackageExports>, Arc<FileErrors
     Ok(Arc::new(prelude_map))
 }
 
-fn prelude(db: &dyn Flux) -> Result<Arc<PackageExports>, Arc<FileErrors>> {
+fn prelude(db: &dyn Flux) -> Result<Arc<PackageExports>> {
     let mut prelude_map = PackageExports::new();
     for name in crate::semantic::bootstrap::PRELUDE {
         // Infer each package in the prelude allowing the earlier packages to be used by later
@@ -204,7 +282,7 @@ fn prelude(db: &dyn Flux) -> Result<Arc<PackageExports>, Arc<FileErrors>> {
 fn semantic_package(
     db: &dyn Flux,
     path: String,
-) -> SalvageResult<(Arc<PackageExports>, Arc<nodes::Package>), Arc<FileErrors>> {
+) -> SalvageResult<(Arc<PackageExports>, Arc<nodes::Package>), Error> {
     let prelude = if !db.use_prelude() || INTERNAL_PRELUDE.contains(&&path[..]) {
         Default::default()
     } else if [
@@ -230,10 +308,8 @@ fn semantic_package_with_prelude(
     db: &dyn Flux,
     path: String,
     prelude: &PackageExports,
-) -> SalvageResult<(Arc<PackageExports>, Arc<nodes::Package>), Arc<FileErrors>> {
-    let file = db
-        .ast_package(path.clone())
-        .unwrap_or_else(|| panic!("Missing {}", path));
+) -> SalvageResult<(Arc<PackageExports>, Arc<nodes::Package>), Error> {
+    let file = db.ast_package(path.clone())?;
 
     let env = Environment::new(prelude.into());
     let mut importer = &*db;
@@ -241,15 +317,13 @@ fn semantic_package_with_prelude(
     let (exports, sem_pkg) = analyzer.analyze_ast(&file).map_err(|err| {
         err.map(|(exports, sem_pkg)| (Arc::new(exports), Arc::new(sem_pkg)))
             .map_err(Arc::new)
+            .map_err(Error::from)
     })?;
 
     Ok((Arc::new(exports), Arc::new(sem_pkg)))
 }
 
-fn package_exports(
-    db: &dyn Flux,
-    path: String,
-) -> SalvageResult<Arc<PackageExports>, Arc<FileErrors>> {
+fn package_exports(db: &dyn Flux, path: String) -> SalvageResult<Arc<PackageExports>, Error> {
     if let Some(packages) = db.precompiled_packages() {
         if let Some(exports) = packages.get(&path) {
             return Ok(exports.clone());
@@ -276,11 +350,7 @@ fn package_exports_import(
         })
 }
 
-fn recover_cycle2<T>(
-    db: &dyn Flux,
-    cycle: &[String],
-    name: &str,
-) -> SalvageResult<T, Arc<FileErrors>> {
+fn recover_cycle2<T>(db: &dyn Flux, cycle: &[String], name: &str) -> SalvageResult<T, Error> {
     let mut cycle: Vec<_> = cycle
         .iter()
         .filter(|k| k.starts_with("package_exports_import("))
@@ -293,7 +363,7 @@ fn recover_cycle2<T>(
         .collect();
     cycle.pop();
 
-    Err(Arc::new(FileErrors {
+    Err(Error::FileError(Arc::new(FileErrors {
         file: name.to_owned(),
         source: None,
         diagnostics: From::from(located(
@@ -307,7 +377,7 @@ fn recover_cycle2<T>(
             .analyzer_config()
             .features
             .contains(&semantic::Feature::PrettyError),
-    })
+    }))
     .into())
 }
 fn recover_cycle<T>(_db: &dyn Flux, cycle: &[String], name: &str) -> Result<T, nodes::ErrorKind> {

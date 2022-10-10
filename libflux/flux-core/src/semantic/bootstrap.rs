@@ -11,7 +11,7 @@ use walkdir::WalkDir;
 
 use crate::{
     ast,
-    db::{Database, Flux, FluxBase},
+    db::{Database, DatabaseBuilder, Flux},
     semantic::{
         flatbuffers::types::{build_module, finish_serialize},
         fs::{FileSystemImporter, StdFS},
@@ -72,7 +72,9 @@ fn infer_stdlib_dir_(
 
 /// Recursively parse all flux files within a directory.
 pub fn parse_dir(dir: &Path) -> io::Result<(Database, Vec<String>)> {
-    let mut db = Database::default();
+    let db = DatabaseBuilder::default()
+        .filesystem_root(dir.into())
+        .build();
     let mut package_names = Vec::new();
     let entries = WalkDir::new(dir)
         .into_iter()
@@ -93,7 +95,6 @@ pub fn parse_dir(dir: &Path) -> io::Result<(Database, Vec<String>)> {
                     // to work with either separator.
                     normalized_path = normalized_path.replace('\\', "/");
                 }
-                let source = Arc::<str>::from(fs::read_to_string(entry.path())?);
 
                 let file_name = normalized_path
                     .rsplitn(2, "/stdlib/")
@@ -101,7 +102,6 @@ pub fn parse_dir(dir: &Path) -> io::Result<(Database, Vec<String>)> {
                     .to_owned();
                 let path = file_name.rsplitn(2, '/').collect::<Vec<&str>>()[1].to_string();
                 package_names.push(path);
-                db.set_source(file_name, source.clone());
             }
         }
     }
