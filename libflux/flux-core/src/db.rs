@@ -49,7 +49,9 @@ pub trait Flux: FluxBase {
     /// Source code for a particular flux file
     #[salsa::input]
     #[doc(hidden)]
-    fn source_inner(&self, path: String) -> Arc<str>;
+    // Input queries generates both `<QUERY>` and set_<QUERY>` methods which can be called to set and later retrieve
+    // values
+    fn source_inner(&self, file_path: String) -> Arc<str>;
 
     /// Sets the AnalyzerConfig for the compilation
     #[salsa::input]
@@ -66,7 +68,10 @@ pub trait Flux: FluxBase {
     fn precompiled_packages(&self) -> Option<&'static Packages>;
 
     /// Returns the `ast::Package` for a given module path
-    fn ast_package(&self, path: String) -> Result<Arc<ast::Package>>;
+    // Normal `dependency` query that may call recursively into other queries. If the recursive
+    // queries change their outpot then this will be forced to run again, otherwise we always
+    // return the cached value (hence the `Arc`, so we can clone it easily)
+    fn ast_package(&self, package_path: String) -> Result<Arc<ast::Package>>;
 
     #[doc(hidden)]
     fn internal_prelude(&self) -> Result<Arc<PackageExports>>;
@@ -75,21 +80,29 @@ pub trait Flux: FluxBase {
     fn prelude(&self) -> Result<Arc<PackageExports>>;
 
     /// Returns the `semantic::Package`
+    // We need to query for the semantic package when compiling `import`s so it is possible for
+    // users to write cycles. `salsa::cycle` adds a handler which tells salsa how to recover
+    // (by default it assumes it is a bug and panics)
     #[salsa::cycle(recover_cycle2)]
     fn semantic_package(
         &self,
-        path: String,
+        package_path: String,
     ) -> SalvageResult<(Arc<PackageExports>, Arc<nodes::Package>), Error>;
 
     /// Returns the `PackageExports` for a given package path. Will consuled `precompiled_packages`
     /// if it is set.
+    // Transparent queries are just plain functions, no special behavior
     #[salsa::transparent]
-    fn package_exports(&self, path: String) -> SalvageResult<Arc<PackageExports>, Error>;
+    fn package_exports(&self, package_path: String) -> SalvageResult<Arc<PackageExports>, Error>;
 
+    // Wrapper around `semantic_package` which is called when resolving imports. Only returns
+    // `PackageExports` since it also checks any precompiled data (if it exists).
     #[doc(hidden)]
     #[salsa::cycle(recover_cycle)]
-    fn package_exports_import(&self, path: String)
-        -> Result<Arc<PackageExports>, nodes::ErrorKind>;
+    fn package_exports_import(
+        &self,
+        package_path: String,
+    ) -> Result<Arc<PackageExports>, nodes::ErrorKind>;
 }
 
 /// Builder that configures a flux compiler database
@@ -283,6 +296,10 @@ fn semantic_package(
     db: &dyn Flux,
     path: String,
 ) -> SalvageResult<(Arc<PackageExports>, Arc<nodes::Package>), Error> {
+    // The previous standard library compiler happened to result in the prelude being incrementally
+    // added to with later packages in the prelude depending on earlier ones. This was mostly
+    // arbitrary and we should try to encode these dependencies more deliberately but these stages
+    // of no/internal/full prelude seem to do the trick in getting things to work.
     let prelude = if !db.use_prelude() || INTERNAL_PRELUDE.contains(&&path[..]) {
         Default::default()
     } else if [
