@@ -66,10 +66,10 @@ func (f *JoinFn) Prepare(ctx context.Context, lcols, rcols []flux.ColMeta) error
 		map[string]semantic.MonoType{"r": *f.rtyp},
 		false,
 	)
-	f.prepared = prepared
 	if err != nil {
 		return err
 	}
+	f.prepared = prepared
 	return nil
 }
 
@@ -77,7 +77,7 @@ func (f *JoinFn) Prepare(ctx context.Context, lcols, rcols []flux.ColMeta) error
 // the specified join method might require that no output be produced if one side is empty.
 // If the returned bool == true, that means this function returned a non-empty table chunk
 // containing the joined data.
-func (f *JoinFn) Eval(ctx context.Context, p *joinProduct, method string, mem memory.Allocator, lcols, rcols []flux.ColMeta) ([]table.Chunk, bool, error) {
+func (f *JoinFn) Eval(ctx context.Context, p *joinProduct, method string, mem memory.Allocator, lschema, rschema []flux.ColMeta) ([]table.Chunk, bool, error) {
 	// It's possible for either side to be empty, in which case we consult the join method
 	// to determine what to do next. However, it shouldn't be possible for both left and right
 	// to be empty.
@@ -93,26 +93,29 @@ func (f *JoinFn) Eval(ctx context.Context, p *joinProduct, method string, mem me
 		if method == "inner" || method == "left" {
 			return nil, false, nil
 		}
-		// Should be able to change this to be:
-		// p.left = append(p.left, defaultRow(groupKey, mem))
-		groupKey := p.right[0].Key()
-		defaultRow := defaultRow(groupKey, f.leftType())
-		cols := colsFromObjectType(f.leftType())
-		b := execute.NewChunkBuilder(cols, 1, mem)
-		b.AppendRecord(defaultRow)
-		c := b.Build(groupKey)
-		p.left = append(p.left, c)
+		dr := defaultRow(p.right[0].Key(), mem)
+		p.left = append(p.left, dr)
 	} else if p.right.nrows() < 1 {
 		if method == "inner" || method == "right" {
 			return nil, false, nil
 		}
-		groupKey := p.left[0].Key()
-		defaultRow := defaultRow(groupKey, f.rightType())
-		cols := colsFromObjectType(f.rightType())
-		b := execute.NewChunkBuilder(cols, 1, mem)
-		b.AppendRecord(defaultRow)
-		c := b.Build(groupKey)
-		p.right = append(p.right, c)
+		dr := defaultRow(p.left[0].Key(), mem)
+		p.right = append(p.right, dr)
+	}
+	var lcols, rcols []flux.ColMeta
+	if len(lschema) > 0 {
+		lcols = lschema
+	} else {
+		lcols = p.left[0].Cols()
+	}
+	if len(rschema) > 0 {
+		rcols = rschema
+	} else {
+		rcols = p.right[0].Cols()
+	}
+	err := f.Prepare(ctx, lcols, rcols)
+	if err != nil {
+		return nil, false, err
 	}
 	c, err := f.crossProduct(ctx, p, mem)
 	if err != nil {
@@ -135,7 +138,7 @@ func (f *JoinFn) crossProduct(ctx context.Context, p *joinProduct, mem memory.Al
 				return nil, err
 			}
 
-			// Make sure the group key is not modfied
+			// Make sure the group key is not modified
 			// TODO(sean): Potential optimization - determine whether or not it is
 			// necessary to validate every row. There may be some cases where we can
 			// know for sure if the group key is never going to change.
@@ -255,8 +258,9 @@ func (f *JoinFn) rightType() semantic.MonoType {
 	return *f.rtyp
 }
 
-func defaultRow(key flux.GroupKey, objType semantic.MonoType) values.Object {
-	obj := values.NewObject(objType)
+func defaultRow(key flux.GroupKey, mem memory.Allocator) table.Chunk {
+	cols := key.Cols()
+	obj := values.NewObject(objectTypeFromCols(cols))
 	obj.Range(func(name string, v values.Value) {
 		val := key.LabelValue(name)
 		if val != nil {
@@ -265,12 +269,30 @@ func defaultRow(key flux.GroupKey, objType semantic.MonoType) values.Object {
 			obj.Set(name, values.Null)
 		}
 	})
-	return obj
+	b := execute.NewChunkBuilder(cols, 1, mem)
+	b.AppendRecord(obj)
+	return b.Build(key)
+}
+
+func objectTypeFromCols(cols []flux.ColMeta) semantic.MonoType {
+	t := make([]semantic.PropertyType, len(cols))
+	for i, col := range cols {
+		t[i] = semantic.PropertyType{
+			Key:   []byte(col.Label),
+			Value: flux.SemanticType(col.Type),
+		}
+	}
+	return semantic.NewObjectType(t)
 }
 
 func getObjectType(arg *semantic.Argument, cols []flux.ColMeta) (semantic.MonoType, error) {
-	if err := checkCols(arg, cols); err != nil {
-		return semantic.MonoType{}, err
+	useCols, err := checkCols(arg, cols)
+	if err != nil {
+		if useCols {
+			return objectTypeFromCols(cols), nil
+		} else {
+			return semantic.MonoType{}, err
+		}
 	}
 
 	t := make([]semantic.PropertyType, len(cols))
@@ -283,23 +305,20 @@ func getObjectType(arg *semantic.Argument, cols []flux.ColMeta) (semantic.MonoTy
 	return semantic.NewObjectType(t), nil
 }
 
-func checkCols(arg *semantic.Argument, cols []flux.ColMeta) error {
+func checkCols(arg *semantic.Argument, cols []flux.ColMeta) (bool, error) {
 	argType, err := arg.TypeOf()
 	if err != nil {
-		return err
+		return false, err
 	}
 
 	props, err := argType.SortedProperties()
 	if err != nil {
-		return err
+		return false, err
 	}
 
 	for _, prop := range props {
 		name := prop.Name()
 		found := false
-		if len(cols) == 0 {
-			return errors.Newf(codes.Invalid, "cannot join on an empty table")
-		}
 		for _, column := range cols {
 			if column.Label == name {
 				found = true
@@ -307,10 +326,10 @@ func checkCols(arg *semantic.Argument, cols []flux.ColMeta) error {
 			}
 		}
 		if !found {
-			return errors.Newf(codes.Invalid, "table is missing label %s", name)
+			return true, errors.Newf(codes.Invalid, "table is missing label %s", name)
 		}
 	}
-	return nil
+	return false, nil
 }
 
 func colsFromObjectType(t semantic.MonoType) []flux.ColMeta {

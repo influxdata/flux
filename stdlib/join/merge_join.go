@@ -417,10 +417,6 @@ func (s *joinState) join(
 	} else {
 		rschema = defaultRight
 	}
-	err := fn.Prepare(ctx, lschema, rschema)
-	if err != nil {
-		return nil, err
-	}
 	joined := make([]table.Chunk, 0, joinable+1)
 	for i := 0; i <= joinable; i++ {
 		prod := s.products[i]
@@ -627,13 +623,21 @@ func (p *joinProduct) evaluate(ctx context.Context, method string, fn JoinFn, me
 }
 
 func rowFromChunk(c table.Chunk, i int, mt semantic.MonoType) values.Object {
-	obj := values.NewObject(mt)
+	objMap := make(map[string]values.Value, c.NCols())
 	buf := c.Buffer()
 	for j := 0; j < c.NCols(); j++ {
 		col := c.Col(j).Label
 		v := execute.ValueForRow(&buf, i, j)
-		obj.Set(col, v)
+		objMap[col] = v
 	}
+
+	var obj values.Object
+	if c.NCols() < 1 {
+		obj = values.NewObject(mt)
+	} else {
+		obj = values.NewObjectWithValues(objMap)
+	}
+
 	obj.Range(func(name string, v values.Value) {
 		if v == nil {
 			obj.Set(name, values.Null)

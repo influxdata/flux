@@ -71,7 +71,7 @@ func (d *poolDispatcher) Start(n int, ctx context.Context) {
 		go func() {
 			defer d.wg.Done()
 			// Setup panic handling on the worker goroutines
-			defer d.recover()
+			// defer d.recover()
 			d.run(ctx)
 		}()
 	}

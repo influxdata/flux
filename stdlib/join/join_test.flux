@@ -5,6 +5,7 @@ import "join"
 import "array"
 import "csv"
 import "testing"
+import "internal/debug"
 
 right =
     array.from(
@@ -420,13 +421,39 @@ testcase multi_join {
 }
 
 testcase join_empty_table {
+    something = array.from(rows: [{_value: 1, id: "a", key: "x"}]) |> group(columns: ["key"])
+
+    nothing =
+        array.from(rows: [{_value: 0.6, id: "b"}])
+            |> filter(fn: (r) => r.id == "empty table")
+
+    got =
+        join.tables(
+            method: "full",
+            left: something,
+            right: nothing,
+            on: (l, r) => l.id == r.id,
+            as: (l, r) => {
+                id = if exists l.id then l.id else r.id
+
+                return {id: id, v_left: l._value, v_right: r._value, key: l.key}
+            },
+        )
+    want =
+        array.from(rows: [{key: "x", id: "a", v_left: 1, v_right: debug.null(type: "float")}])
+            |> group(columns: ["key"])
+
+    testing.diff(got, want)
+}
+
+testcase join_empty_table_no_group {
     something = array.from(rows: [{_value: 1, id: "a"}])
 
     nothing =
         array.from(rows: [{_value: 0.6, id: "b"}])
             |> filter(fn: (r) => r.id == "empty table")
 
-    fn = () =>
+    got =
         join.tables(
             method: "full",
             left: something,
@@ -438,7 +465,9 @@ testcase join_empty_table {
                 return {id: id, v_left: l._value, v_right: r._value}
             },
         )
-    want = /error preparing right sight of join: cannot join on empty table/
+    want =
+        array.from(rows: [{id: "a", v_left: 1, v_right: debug.null(type: "float")}])
+            |> group(columns: ["key"])
 
-    testing.shouldError(fn, want)
+    testing.diff(got, want)
 }
