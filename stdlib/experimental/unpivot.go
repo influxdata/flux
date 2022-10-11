@@ -15,6 +15,7 @@ import (
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic"
+	"github.com/influxdata/flux/stdlib/influxdata/influxdb"
 	"github.com/influxdata/flux/values"
 )
 
@@ -146,22 +147,34 @@ func (t *unpivotTransformation) Process(chunk table.Chunk, d *execute.TransportD
 		// other_col_n
 		// _value
 
+		defaultValueColLen := 1
+		defaultFieldColLen := 1
+		if execute.HasCol(influxdb.DefaultFieldColLabel, otherCols) {
+			defaultFieldColLen = 0
+		}
+
 		groupKey := chunk.Key()
-		nCols := len(groupKey.Cols()) + len(otherCols) + 2
+		nCols := len(groupKey.Cols()) + len(otherCols) + defaultValueColLen + defaultFieldColLen
 
 		columns := make([]flux.ColMeta, 0, nCols)
 		columns = append(columns, groupKey.Cols()...)
-		columns = append(columns, flux.ColMeta{Label: "_field", Type: flux.TString})
+		if defaultFieldColLen != 0 {
+			columns = append(columns, flux.ColMeta{Label: influxdb.DefaultFieldColLabel, Type: flux.TString})
+		}
 		columns = append(columns, otherCols...)
 		columns = append(columns, flux.ColMeta{Label: execute.DefaultValueColLabel, Type: c.Type})
 
-		groupCols := make([]flux.ColMeta, 0, len(groupKey.Cols())+1)
+		groupCols := make([]flux.ColMeta, 0, len(groupKey.Cols())+defaultFieldColLen)
 		groupCols = append(groupCols, groupKey.Cols()...)
-		groupCols = append(groupCols, flux.ColMeta{Label: "_field", Type: flux.TString})
+		if defaultFieldColLen != 0 {
+			groupCols = append(groupCols, flux.ColMeta{Label: influxdb.DefaultFieldColLabel, Type: flux.TString})
+		}
 
-		groupValues := make([]values.Value, 0, len(groupKey.Cols())+1)
+		groupValues := make([]values.Value, 0, len(groupKey.Cols())+defaultFieldColLen)
 		groupValues = append(groupValues, groupKey.Values()...)
-		groupValues = append(groupValues, values.NewString(c.Label))
+		if defaultFieldColLen != 0 {
+			groupValues = append(groupValues, values.NewString(c.Label))
+		}
 
 		buffer := arrow.TableBuffer{
 			GroupKey: groupkey.New(groupCols, groupValues),
@@ -187,11 +200,17 @@ func (t *unpivotTransformation) Process(chunk table.Chunk, d *execute.TransportD
 			buffer.Values = append(buffer.Values, values)
 		}
 		// append the name of the value column into _field
-		buffer.Values = append(buffer.Values, array.StringRepeat(c.Label, newChunkLen, mem))
+		if defaultFieldColLen != 0 {
+			buffer.Values = append(buffer.Values, array.StringRepeat(c.Label, newChunkLen, mem))
+		}
 
 		// Copy cols that are neither group columns nor value columns
 		// Often _time will be in here, but sometimes others as well, in case of a group() transformation.
 		for _, otherCol := range otherCols {
+			if otherCol.Label == influxdb.DefaultFieldColLabel {
+				buffer.Values = append(buffer.Values, array.StringRepeat(c.Label, newChunkLen, mem))
+				continue
+			}
 			fromColumn := execute.ColIdx(otherCol.Label, chunk.Cols())
 
 			// copy these cols but only when the value column does not have a null

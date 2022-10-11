@@ -388,6 +388,69 @@ testcase unpivot_other_columns {
     testing.diff(want, got)
 }
 
+testcase unpivot_field_in_other_columns {
+    got =
+        array.from(
+            rows: [
+                {
+                    _measurement: "m",
+                    tag: "t1",
+                    f0: 10.1,
+                    f1: 10.2,
+                    _time: 2018-12-01T00:00:00Z,
+                    _field: "load1",
+                },
+                {
+                    _measurement: "m",
+                    tag: "t1",
+                    f0: 20.1,
+                    f1: 20.2,
+                    _time: 2018-12-01T00:00:10Z,
+                    _field: "load1",
+                },
+            ],
+        )
+            |> group(columns: ["_measurement"])
+            |> experimental.unpivot(otherColumns: ["_time", "tag", "_field"])
+
+    want =
+        array.from(
+            rows: [
+                {
+                    _measurement: "m",
+                    tag: "t1",
+                    _field: "f0",
+                    _value: 10.1,
+                    _time: 2018-12-01T00:00:00Z,
+                },
+                {
+                    _measurement: "m",
+                    tag: "t1",
+                    _field: "f0",
+                    _value: 20.1,
+                    _time: 2018-12-01T00:00:10Z,
+                },
+                {
+                    _measurement: "m",
+                    tag: "t1",
+                    _field: "f1",
+                    _value: 10.2,
+                    _time: 2018-12-01T00:00:00Z,
+                },
+                {
+                    _measurement: "m",
+                    tag: "t1",
+                    _field: "f1",
+                    _value: 20.2,
+                    _time: 2018-12-01T00:00:10Z,
+                },
+            ],
+        )
+            |> group(columns: ["_measurement"])
+
+    testing.diff(want, got)
+}
+
 testcase unpivot_other_columns_nulls {
     got =
         array.from(
