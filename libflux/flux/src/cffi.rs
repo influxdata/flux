@@ -97,7 +97,7 @@ pub extern "C" fn flux_free_error(_err: Option<Box<ErrorHandle>>) {}
 /// function is called twice on the same raw pointer.
 #[no_mangle]
 pub unsafe extern "C" fn flux_free_bytes(cstr: *mut c_char) {
-    Box::from_raw(cstr);
+    drop(Box::from_raw(cstr));
 }
 
 /// A buffer of flux source.
