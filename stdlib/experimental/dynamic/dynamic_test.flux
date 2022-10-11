@@ -314,3 +314,220 @@ testcase dynamic_isType_dictionary {
 testcase dynamic_isType_null_should_not_panic {
     testing.assertEqualValues(want: false, got: dynamic.isType(v: debug.null(), type: "int"))
 }
+
+testcase dynamic_cast_bool_to_bool {
+    testing.assertEqualValues(want: true, got: bool(v: dynamic.dynamic(v: true)))
+}
+
+testcase dynamic_cast_null_to_bool {
+    testing.assertEqualValues(
+        want: "<null>",
+        got: display(v: bool(v: dynamic.dynamic(v: debug.null()))),
+    )
+}
+
+testcase dynamic_cast_float_to_bool_error {
+    testing.shouldError(fn: () => bool(v: dynamic.dynamic(v: 1.1)), want: /cannot convert float/)
+}
+
+testcase dynamic_cast_string_to_bytes {
+    // bytes can't be used as column data so we need to use `display()` to
+    // convert to string before we compare.
+    testing.assertEqualValues(
+        want: "0x616263",
+        got: display(v: bytes(v: dynamic.dynamic(v: "abc"))),
+    )
+}
+
+// The rest of the cast fns propagate nulls, but bytes treats them as an error.
+testcase dynamic_cast_null_to_bytes_error {
+    testing.shouldError(
+        fn: () => bytes(v: dynamic.dynamic(v: debug.null())),
+        want: /cannot convert null to bytes/,
+    )
+}
+
+testcase dynamic_cast_int_to_bytes_error {
+    testing.shouldError(fn: () => bytes(v: dynamic.dynamic(v: 1)), want: /cannot convert int/)
+}
+
+testcase dynamic_cast_int_to_duration {
+    // duration can't be used as column data so we need to use `display()` to
+    // convert to string before we compare.
+    testing.assertEqualValues(
+        want: "18ms",
+        got: display(v: duration(v: dynamic.dynamic(v: 18000000))),
+    )
+}
+
+testcase dynamic_cast_null_to_duration {
+    testing.assertEqualValues(
+        want: "<null>",
+        got: display(v: duration(v: dynamic.dynamic(v: debug.null()))),
+    )
+}
+
+testcase dynamic_cast_string_to_duration_error {
+    testing.shouldError(
+        fn: () => duration(v: dynamic.dynamic(v: "not a duration")),
+        want: /cannot convert string/,
+    )
+}
+
+testcase dynamic_cast_int_to_float {
+    testing.assertEqualValues(want: 123.0, got: float(v: dynamic.dynamic(v: 123)))
+}
+
+testcase dynamic_cast_null_to_float {
+    testing.assertEqualValues(
+        want: "<null>",
+        got: display(v: float(v: dynamic.dynamic(v: debug.null()))),
+    )
+}
+
+testcase dynamic_cast_string_to_float_error {
+    testing.shouldError(
+        fn: () => float(v: dynamic.dynamic(v: "not a float")),
+        want: /cannot convert string/,
+    )
+}
+
+testcase dynamic_cast_float_to_int {
+    testing.assertEqualValues(want: 123, got: int(v: dynamic.dynamic(v: 123.0)))
+}
+
+testcase dynamic_cast_null_to_int {
+    testing.assertEqualValues(
+        want: "<null>",
+        got: display(v: int(v: dynamic.dynamic(v: debug.null()))),
+    )
+}
+
+testcase dynamic_cast_string_to_int_error {
+    testing.shouldError(
+        fn: () => int(v: dynamic.dynamic(v: "not an int")),
+        want: /cannot convert string/,
+    )
+}
+
+testcase dynamic_cast_int_to_string {
+    testing.assertEqualValues(want: "123", got: string(v: dynamic.dynamic(v: 123)))
+}
+
+testcase dynamic_cast_null_to_string {
+    testing.assertEqualValues(
+        want: "<null>",
+        got: display(v: string(v: dynamic.dynamic(v: debug.null()))),
+    )
+}
+
+testcase dynamic_cast_function_to_string_error {
+    testing.shouldError(
+        fn: () => string(v: dynamic.dynamic(v: () => true)),
+        want: /cannot convert \(\) => bool to string/,
+    )
+}
+
+testcase dynamic_cast_int_to_time {
+    testing.assertEqualValues(want: 1970-01-01T00:00:00Z, got: time(v: dynamic.dynamic(v: 0)))
+}
+
+testcase dynamic_cast_null_to_time {
+    testing.assertEqualValues(
+        want: "<null>",
+        got: display(v: time(v: dynamic.dynamic(v: debug.null()))),
+    )
+}
+
+testcase dynamic_cast_string_to_time_error {
+    testing.shouldError(
+        fn: () => time(v: dynamic.dynamic(v: "not a time")),
+        want: /cannot convert string/,
+    )
+}
+
+testcase dynamic_cast_int_to_uint {
+    testing.assertEqualValues(want: uint(v: 123), got: uint(v: dynamic.dynamic(v: 123)))
+}
+
+testcase dynamic_cast_null_to_uint {
+    testing.assertEqualValues(
+        want: "<null>",
+        got: display(v: uint(v: dynamic.dynamic(v: debug.null()))),
+    )
+}
+
+testcase dynamic_cast_string_to_uint_error {
+    testing.shouldError(
+        fn: () => uint(v: dynamic.dynamic(v: "not a uint")),
+        want: /cannot convert string/,
+    )
+}
+
+testcase dynamic_cast_from_json {
+    want = {number: 123, msg: "flux dynamic support", isWorking: true}
+    data = "{\"number\": 123,\"msg\": \"flux dynamic support\",\"isWorking\":true}"
+    raw = dynamic.jsonParse(data: bytes(v: data))
+    got = {number: int(v: raw.number), msg: string(v: raw.msg), isWorking: bool(v: raw.isWorking)}
+
+    testing.assertEqualValues(want: display(v: want), got: display(v: got))
+}
+
+testcase dynamic_cast_from_json_deep {
+    // FIXME(onelson): inference seems off for dynamic here.
+    // Test fails with:
+    // ```
+    // expected dynamic (dynamic) but found
+    //   {A with pos: {C with z: F, y: E, x: D}, name: B} (record) (argument x) (argument fn)
+    // ```
+    // Seems like `array.map()` expects `x` to have known fields here, but shouldn't.
+    option testing.tags = ["skip"]
+
+    data =
+        "
+    {
+      \"items\":  [
+          {\"name\": \"a\", \"pos\": {\"x\": 10, \"y\": 10, \"z\": 20}},
+          {\"name\": \"b\", \"pos\": {\"x\": 30, \"y\": 99}},
+          {\"name\": \"c\", \"pos\": {}},
+          {\"name\": \"d\"}
+        ]
+    }
+    "
+    raw = dynamic.jsonParse(data: bytes(v: data))
+    converted =
+        raw.items
+            |> dynamic.asArray()
+            |> array.map(
+                fn: (x) =>
+                    ({
+                        name: string(v: x.name),
+                        posX: int(v: x.pos.x),
+                        posY: int(v: x.pos.y),
+                        posZ: int(v: x.pos.z),
+                    }),
+            )
+
+    want =
+        array.from(
+            rows: [
+                {name: "a", posX: 10, posY: 10, posZ: 20},
+                {name: "b", posX: 30, posY: 99, posZ: debug.null(type: "int")},
+                {
+                    name: "c",
+                    posX: debug.null(type: "int"),
+                    posY: debug.null(type: "int"),
+                    posZ: debug.null(type: "int"),
+                },
+                {
+                    name: "d",
+                    posX: debug.null(type: "int"),
+                    posY: debug.null(type: "int"),
+                    posZ: debug.null(type: "int"),
+                },
+            ],
+        )
+    got = array.from(rows: converted)
+
+    testing.diff(want, got)
+}

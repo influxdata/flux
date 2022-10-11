@@ -57,7 +57,10 @@ var stringConv = values.NewFunction(
 			return nil, errMissingArg
 		} else if v.IsNull() {
 			return values.Null, nil
+		} else if v.Type().Nature() == semantic.Dynamic {
+			v = v.Dynamic().Inner()
 		}
+
 		switch v.Type().Nature() {
 		case semantic.String:
 			str = v.Str()
@@ -104,7 +107,10 @@ var intConv = values.NewFunction(
 			return nil, errMissingArg
 		} else if v.IsNull() {
 			return values.Null, nil
+		} else if v.Type().Nature() == semantic.Dynamic {
+			v = v.Dynamic().Inner()
 		}
+
 		switch v.Type().Nature() {
 		case semantic.String:
 			n, err := strconv.ParseInt(v.Str(), 10, 64)
@@ -146,7 +152,10 @@ var uintConv = values.NewFunction(
 			return nil, errMissingArg
 		} else if v.IsNull() {
 			return values.Null, nil
+		} else if v.Type().Nature() == semantic.Dynamic {
+			v = v.Dynamic().Inner()
 		}
+
 		switch v.Type().Nature() {
 		case semantic.String:
 			n, err := strconv.ParseUint(v.Str(), 10, 64)
@@ -215,6 +224,8 @@ var floatConv = values.NewFunction(
 			return nil, errMissingArg
 		} else if v.IsNull() {
 			return values.Null, nil
+		} else if v.Type().Nature() == semantic.Dynamic {
+			v = v.Dynamic().Inner()
 		}
 
 		return toFloatValue(v)
@@ -232,7 +243,10 @@ var boolConv = values.NewFunction(
 			return nil, errMissingArg
 		} else if v.IsNull() {
 			return values.Null, nil
+		} else if v.Type().Nature() == semantic.Dynamic {
+			v = v.Dynamic().Inner()
 		}
+
 		switch v.Type().Nature() {
 		case semantic.String:
 			switch s := v.Str(); s {
@@ -290,7 +304,10 @@ var timeConv = values.NewFunction(
 			return nil, errMissingArg
 		} else if v.IsNull() {
 			return values.Null, nil
+		} else if v.Type().Nature() == semantic.Dynamic {
+			v = v.Dynamic().Inner()
 		}
+
 		switch v.Type().Nature() {
 		case semantic.String:
 			ts, err := parser.ParseTime(v.Str())
@@ -322,7 +339,10 @@ var durationConv = values.NewFunction(
 			return nil, errMissingArg
 		} else if v.IsNull() {
 			return values.Null, nil
+		} else if v.Type().Nature() == semantic.Dynamic {
+			v = v.Dynamic().Inner()
 		}
+
 		switch v.Type().Nature() {
 		case semantic.String:
 			n, err := values.ParseDuration(v.Str())
@@ -351,7 +371,10 @@ var byteConv = values.NewFunction(
 		v, ok := args.Get(conversionArg)
 		if !ok {
 			return nil, errMissingArg
+		} else if v.Type().Nature() == semantic.Dynamic {
+			v = v.Dynamic().Inner()
 		}
+
 		switch v.Type().Nature() {
 		case semantic.String:
 			return values.NewBytes([]byte(v.Str())), nil
