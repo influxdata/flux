@@ -15,6 +15,7 @@ use super::*;
 
 use std::{
     collections::{HashMap, HashSet},
+    io,
     path::PathBuf,
     sync::{Arc, Mutex},
 };
@@ -34,12 +35,25 @@ pub enum Error {
     Message(String),
 }
 
+/// Base trait for the flux database
 pub trait FluxBase {
+    #[doc(hidden)]
     fn clear_error(&self, package: &str);
+
+    #[doc(hidden)]
     fn record_error(&self, package: String, error: Error);
+
+    /// Returns the errors for all compiled packages
     fn package_errors(&self) -> Errors<Error>;
+
+    /// Returns the file names that are part of `package`
     fn package_files(&self, package: &str) -> Result<Vec<String>>;
+
+    /// Sets the source code for a file at `path`. (Alternative to loading the files dynamically
+    /// from disk).
     fn set_source(&mut self, path: String, source: Arc<str>);
+
+    /// Returns the source code for `path`, returning an error if it does not exist
     fn source(&self, path: String) -> Result<Arc<str>>;
 }
 
@@ -108,7 +122,7 @@ pub trait Flux: FluxBase {
 /// Builder that configures a flux compiler database
 #[derive(Default)]
 pub struct DatabaseBuilder {
-    filesystem_root: PathBuf,
+    filesystem_roots: Vec<PathBuf>,
 }
 
 impl DatabaseBuilder {
@@ -117,9 +131,9 @@ impl DatabaseBuilder {
         Self::default()
     }
 
-    /// Enables loading `.flux` files from `filesystem_root`
-    pub fn filesystem_root(mut self, filesystem_root: PathBuf) -> Self {
-        self.filesystem_root = filesystem_root;
+    /// Enables loading `.flux` files from `filesystem_roots`
+    pub fn filesystem_roots(mut self, filesystem_root: Vec<PathBuf>) -> Self {
+        self.filesystem_roots = filesystem_root;
         self
     }
 
@@ -127,7 +141,7 @@ impl DatabaseBuilder {
     pub fn build(self) -> Database {
         let mut db = Database::default();
 
-        db.filesystem_root = Some(self.filesystem_root);
+        db.filesystem_roots = self.filesystem_roots;
 
         db
     }
@@ -139,7 +153,7 @@ pub struct Database {
     storage: salsa::Storage<Self>,
     pub(crate) packages: Mutex<HashSet<String>>,
     package_errors: Mutex<HashMap<String, Error>>,
-    filesystem_root: Option<PathBuf>,
+    filesystem_roots: Vec<PathBuf>,
 }
 
 impl Default for Database {
@@ -148,7 +162,7 @@ impl Default for Database {
             storage: Default::default(),
             packages: Default::default(),
             package_errors: Default::default(),
-            filesystem_root: None,
+            filesystem_roots: Vec::new(),
         };
         db.set_analyzer_config(AnalyzerConfig::default());
         db.set_use_prelude(true);
@@ -161,34 +175,7 @@ impl salsa::Database for Database {}
 
 impl FluxBase for Database {
     fn package_files(&self, package: &str) -> Result<Vec<String>> {
-        let mut found_files = Vec::new();
-        if let Some(filesystem_root) = &self.filesystem_root {
-            let package_root = filesystem_root.join(package);
-            for entry in std::fs::read_dir(&package_root).map_err(|err| {
-                Error::Message(format!("Unable to read directory `{}`: {}", package, err))
-            })? {
-                let path = entry
-                    .map_err(|err| {
-                        Error::Message(format!("Unable to read path `{}`: {}", package, err))
-                    })?
-                    .path();
-                let path = path.strip_prefix(&filesystem_root).map_err(|err| {
-                    Error::Message(format!(
-                        "Unable to strip prefix `{}` of `{}`: {}",
-                        filesystem_root.display(),
-                        path.display(),
-                        err
-                    ))
-                })?;
-
-                let path = path
-                    .to_str()
-                    .ok_or_else(|| Error::Message(format!("Invalid UTF-8 in path: {:?}", path)))?;
-                if path.ends_with(".flux") && !path.ends_with("_test.flux") {
-                    found_files.push(path.to_string());
-                }
-            }
-        }
+        let mut found_files = self.search_flux_files(package)?;
 
         let packages = self.packages.lock().unwrap();
 
@@ -226,11 +213,21 @@ impl FluxBase for Database {
     }
 
     fn source(&self, path: String) -> Result<Arc<str>> {
-        if let Some(filesystem_root) = &self.filesystem_root {
-            let source = std::fs::read_to_string(filesystem_root.join(&path))
-                .map_err(|err| Error::Message(format!("Unable to read `{}`: {}", path, err)))?;
-            self.packages.lock().unwrap().insert(path.clone());
-            return Ok(Arc::from(source));
+        if !self.filesystem_roots.is_empty() {
+            for filesystem_root in &self.filesystem_roots {
+                let source = match std::fs::read_to_string(filesystem_root.join(&path)) {
+                    Ok(source) => source,
+                    Err(err) if err.kind() == io::ErrorKind::NotFound => continue,
+                    Err(err) => {
+                        return Err(Error::Message(format!(
+                            "Unable to read `{}`: {}",
+                            path, err
+                        )))
+                    }
+                };
+                self.packages.lock().unwrap().insert(path.clone());
+                return Ok(Arc::from(source));
+            }
         }
         Ok(self.source_inner(path))
     }
@@ -239,6 +236,53 @@ impl FluxBase for Database {
         self.packages.lock().unwrap().insert(path.clone());
 
         self.set_source_inner(path, source)
+    }
+}
+
+impl Database {
+    fn search_flux_files(&self, package: &str) -> Result<Vec<String>> {
+        let mut found_files = Vec::new();
+
+        if !self.filesystem_roots.is_empty() {
+            for filesystem_root in &self.filesystem_roots {
+                let package_root = filesystem_root.join(package);
+                for entry in std::fs::read_dir(&package_root).map_err(|err| {
+                    Error::Message(format!("Unable to read directory `{}`: {}", package, err))
+                })? {
+                    let path = entry
+                        .map_err(|err| {
+                            Error::Message(format!("Unable to read path `{}`: {}", package, err))
+                        })?
+                        .path();
+                    let path = path.strip_prefix(&filesystem_root).map_err(|err| {
+                        Error::Message(format!(
+                            "Unable to strip prefix `{}` of `{}`: {}",
+                            filesystem_root.display(),
+                            path.display(),
+                            err
+                        ))
+                    })?;
+
+                    if path.extension().and_then(|e| e.to_str()) == Some("flux")
+                        && path
+                            .file_stem()
+                            .and_then(|f| f.to_str())
+                            .map_or(true, |f| !f.ends_with("_test"))
+                    {
+                        let path = path.to_str().ok_or_else(|| {
+                            Error::Message(format!("Invalid UTF-8 in path: {:?}", path))
+                        })?;
+                        found_files.push(path.to_string());
+                    }
+                }
+            }
+        }
+
+        // It is possible that we find the same file twice if the roots contain duplicates
+        found_files.sort();
+        found_files.dedup();
+
+        Ok(found_files)
     }
 }
 
@@ -346,6 +390,7 @@ fn package_exports(db: &dyn Flux, path: String) -> SalvageResult<Arc<PackageExpo
             return Ok(exports.clone());
         }
     }
+
     let (exports, _) = db
         .semantic_package(path)
         .map_err(|err| err.map(|(exports, _)| exports))?;
@@ -397,6 +442,7 @@ fn recover_cycle2<T>(db: &dyn Flux, cycle: &[String], name: &str) -> SalvageResu
     }))
     .into())
 }
+
 fn recover_cycle<T>(_db: &dyn Flux, cycle: &[String], name: &str) -> Result<T, nodes::ErrorKind> {
     // We get a list of strings like "semantic_package(\"b\")",
     let mut cycle: Vec<_> = cycle

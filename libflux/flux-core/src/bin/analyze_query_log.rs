@@ -1,11 +1,11 @@
-use std::{collections::BTreeMap, io, path::PathBuf};
+use std::{io, path::PathBuf};
 
 use anyhow::{anyhow, Context as _, Error, Result};
 use rayon::prelude::*;
 use serde::Deserialize;
 use structopt::StructOpt;
 
-use fluxcore::semantic::{self, Analyzer};
+use fluxcore::semantic::{self, import::Packages, Analyzer};
 
 #[derive(Debug, StructOpt)]
 #[structopt(about = "analyze a query log database")]
@@ -219,9 +219,9 @@ trait Analysis: Send + Sync {
 
 struct FeatureDiff {
     prelude: semantic::PackageExports,
-    imports: BTreeMap<String, semantic::PackageExports>,
+    imports: Packages,
     new_prelude: semantic::PackageExports,
-    new_imports: BTreeMap<String, semantic::PackageExports>,
+    new_imports: Packages,
     new_config: semantic::AnalyzerConfig,
     report_already_failing_scripts: bool,
 }

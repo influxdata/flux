@@ -11,7 +11,7 @@ use walkdir::WalkDir;
 
 use crate::{
     ast,
-    db::{Database, DatabaseBuilder, Flux},
+    db::{DatabaseBuilder, Flux},
     semantic::{
         flatbuffers::types::{build_module, finish_serialize},
         fs::{FileSystemImporter, StdFS},
@@ -54,7 +54,11 @@ fn infer_stdlib_dir_(
     path: &Path,
     config: AnalyzerConfig,
 ) -> Result<(PackageExports, Packages, SemanticPackageMap)> {
-    let (mut db, package_list) = parse_dir(path)?;
+    let package_list = parse_dir(path)?;
+
+    let mut db = DatabaseBuilder::default()
+        .filesystem_roots(vec![path.into()])
+        .build();
 
     db.set_analyzer_config(config);
 
@@ -71,10 +75,7 @@ fn infer_stdlib_dir_(
 }
 
 /// Recursively parse all flux files within a directory.
-pub fn parse_dir(dir: &Path) -> io::Result<(Database, Vec<String>)> {
-    let db = DatabaseBuilder::default()
-        .filesystem_root(dir.into())
-        .build();
+pub fn parse_dir(dir: &Path) -> io::Result<Vec<String>> {
     let mut package_names = Vec::new();
     let entries = WalkDir::new(dir)
         .into_iter()
@@ -106,7 +107,7 @@ pub fn parse_dir(dir: &Path) -> io::Result<(Database, Vec<String>)> {
         }
     }
 
-    Ok((db, package_names))
+    Ok(package_names)
 }
 
 fn stdlib_importer(path: &Path) -> FileSystemImporter<StdFS> {
