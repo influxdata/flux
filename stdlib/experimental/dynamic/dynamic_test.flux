@@ -319,6 +319,13 @@ testcase dynamic_cast_bool_to_bool {
     testing.assertEqualValues(want: true, got: bool(v: dynamic.dynamic(v: true)))
 }
 
+testcase dynamic_cast_null_to_bool {
+    testing.assertEqualValues(
+        want: "<null>",
+        got: display(v: bool(v: dynamic.dynamic(v: debug.null()))),
+    )
+}
+
 testcase dynamic_cast_float_to_bool_error {
     testing.shouldError(fn: () => bool(v: dynamic.dynamic(v: 1.1)), want: /cannot convert float/)
 }
@@ -329,6 +336,14 @@ testcase dynamic_cast_string_to_bytes {
     testing.assertEqualValues(
         want: "0x616263",
         got: display(v: bytes(v: dynamic.dynamic(v: "abc"))),
+    )
+}
+
+// The rest of the cast fns propagate nulls, but bytes treats them as an error.
+testcase dynamic_cast_null_to_bytes_error {
+    testing.shouldError(
+        fn: () => bytes(v: dynamic.dynamic(v: debug.null())),
+        want: /cannot convert null to bytes/,
     )
 }
 
@@ -345,6 +360,13 @@ testcase dynamic_cast_int_to_duration {
     )
 }
 
+testcase dynamic_cast_null_to_duration {
+    testing.assertEqualValues(
+        want: "<null>",
+        got: display(v: duration(v: dynamic.dynamic(v: debug.null()))),
+    )
+}
+
 testcase dynamic_cast_string_to_duration_error {
     testing.shouldError(
         fn: () => duration(v: dynamic.dynamic(v: "not a duration")),
@@ -354,6 +376,13 @@ testcase dynamic_cast_string_to_duration_error {
 
 testcase dynamic_cast_int_to_float {
     testing.assertEqualValues(want: 123.0, got: float(v: dynamic.dynamic(v: 123)))
+}
+
+testcase dynamic_cast_null_to_float {
+    testing.assertEqualValues(
+        want: "<null>",
+        got: display(v: float(v: dynamic.dynamic(v: debug.null()))),
+    )
 }
 
 testcase dynamic_cast_string_to_float_error {
@@ -367,6 +396,13 @@ testcase dynamic_cast_float_to_int {
     testing.assertEqualValues(want: 123, got: int(v: dynamic.dynamic(v: 123.0)))
 }
 
+testcase dynamic_cast_null_to_int {
+    testing.assertEqualValues(
+        want: "<null>",
+        got: display(v: int(v: dynamic.dynamic(v: debug.null()))),
+    )
+}
+
 testcase dynamic_cast_string_to_int_error {
     testing.shouldError(
         fn: () => int(v: dynamic.dynamic(v: "not an int")),
@@ -376,6 +412,13 @@ testcase dynamic_cast_string_to_int_error {
 
 testcase dynamic_cast_int_to_string {
     testing.assertEqualValues(want: "123", got: string(v: dynamic.dynamic(v: 123)))
+}
+
+testcase dynamic_cast_null_to_string {
+    testing.assertEqualValues(
+        want: "<null>",
+        got: display(v: string(v: dynamic.dynamic(v: debug.null()))),
+    )
 }
 
 testcase dynamic_cast_function_to_string_error {
@@ -389,6 +432,13 @@ testcase dynamic_cast_int_to_time {
     testing.assertEqualValues(want: 1970-01-01T00:00:00Z, got: time(v: dynamic.dynamic(v: 0)))
 }
 
+testcase dynamic_cast_null_to_time {
+    testing.assertEqualValues(
+        want: "<null>",
+        got: display(v: time(v: dynamic.dynamic(v: debug.null()))),
+    )
+}
+
 testcase dynamic_cast_string_to_time_error {
     testing.shouldError(
         fn: () => time(v: dynamic.dynamic(v: "not a time")),
@@ -398,6 +448,13 @@ testcase dynamic_cast_string_to_time_error {
 
 testcase dynamic_cast_int_to_uint {
     testing.assertEqualValues(want: uint(v: 123), got: uint(v: dynamic.dynamic(v: 123)))
+}
+
+testcase dynamic_cast_null_to_uint {
+    testing.assertEqualValues(
+        want: "<null>",
+        got: display(v: uint(v: dynamic.dynamic(v: debug.null()))),
+    )
 }
 
 testcase dynamic_cast_string_to_uint_error {
