@@ -183,10 +183,10 @@ testcase array_touint_exp {
     want =
         array.from(
             rows: [
-                {_value: uint(v: -12)},
-                {_value: uint(v: 24)},
-                {_value: uint(v: -48)},
-                {_value: uint(v: 96)},
+                {_value: uint(v: -12.1)},
+                {_value: uint(v: 24.2)},
+                {_value: uint(v: -48.4)},
+                {_value: uint(v: 96.8)},
             ],
         )
 
