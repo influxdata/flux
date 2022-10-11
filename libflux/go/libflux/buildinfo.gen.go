@@ -147,7 +147,7 @@ var sourceHashes = map[string]string{
 	"stdlib/experimental/aggregate/aggregate_test.flux":                                           "dfebbe6d046de66d167c0a6ea97b30436fb6019f27fd68fd4106089cbe9b31fd",
 	"stdlib/experimental/alignTime_test.flux":                                                     "b5cc60a2d67fcf77f0a3c94a90568aa61de8c20364d68d726d21a02b1456edce",
 	"stdlib/experimental/array/array.flux":                                                        "6f78880c2f88954273bdd8b3f0f6013f111d89561032dd846c45338712b2ad2e",
-	"stdlib/experimental/array/array_test.flux":                                                   "5aed9e3e9d872b35235fc3525c270d6d102d12f1fa33e9e408e803f6945475e4",
+	"stdlib/experimental/array/array_test.flux":                                                   "e8dfb9b563af6e4020253a44cf4337df25fd5047cec644a26cd5f5e999e6aefb",
 	"stdlib/experimental/bigtable/bigtable.flux":                                                  "3dff8e5951fb7b3635406ac175ecd0fd9ce877b58e2f92b6c98f5e8976c0f15f",
 	"stdlib/experimental/bitwise/bitwise.flux":                                                    "ec1f4e358301b06905a4af3d8c5f5f98530bf31a2476f5c3875746f0b22fe6d9",
 	"stdlib/experimental/bitwise/bitwise_test.flux":                                               "183680b761f7e3bb0421043cb6575bfce71f7a973bf737391ecf6510004346e0",
