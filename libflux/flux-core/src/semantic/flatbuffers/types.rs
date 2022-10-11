@@ -391,7 +391,7 @@ fn build_package<'a>(
     id: &str,
     package: &PackageExports,
 ) -> flatbuffers::WIPOffset<fb::PackageExports<'a>> {
-    let id = builder.create_string(&id);
+    let id = builder.create_string(id);
     let package = build_env(builder, package);
     fb::PackageExports::create(
         builder,

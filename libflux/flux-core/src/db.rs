@@ -139,11 +139,10 @@ impl DatabaseBuilder {
 
     /// Builds the flux compiler database
     pub fn build(self) -> Database {
-        let mut db = Database::default();
-
-        db.filesystem_roots = self.filesystem_roots;
-
-        db
+        Database {
+            filesystem_roots: self.filesystem_roots,
+            ..Default::default()
+        }
     }
 }
 
@@ -225,7 +224,7 @@ impl FluxBase for Database {
                         )))
                     }
                 };
-                self.packages.lock().unwrap().insert(path.clone());
+                self.packages.lock().unwrap().insert(path);
                 return Ok(Arc::from(source));
             }
         }
@@ -370,10 +369,10 @@ fn semantic_package_with_prelude(
     path: String,
     prelude: &PackageExports,
 ) -> SalvageResult<(Arc<PackageExports>, Arc<nodes::Package>), Error> {
-    let file = db.ast_package(path.clone())?;
+    let file = db.ast_package(path)?;
 
     let env = Environment::new(prelude.into());
-    let mut importer = &*db;
+    let mut importer = db;
     let mut analyzer = Analyzer::new(env, &mut importer, db.analyzer_config());
     let (exports, sem_pkg) = analyzer.analyze_ast(&file).map_err(|err| {
         err.map(|(exports, sem_pkg)| (Arc::new(exports), Arc::new(sem_pkg)))

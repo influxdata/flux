@@ -88,7 +88,7 @@ pub enum ErrorKind {
 }
 
 fn display_cycle(package: &str, cycle: &[String]) -> String {
-    let mut s = format!("{}", package);
+    let mut s = package.to_string();
 
     for c in cycle {
         write!(s, " -> {}", c).unwrap();

@@ -85,7 +85,7 @@ fn new_db() -> Result<Database> {
     let imports = IMPORTS
         .as_ref()
         .ok_or_else(|| anyhow!("missing stdlib imports"))?;
-    db.set_precompiled_packages(Some(&imports));
+    db.set_precompiled_packages(Some(imports));
 
     Ok(db)
 }
