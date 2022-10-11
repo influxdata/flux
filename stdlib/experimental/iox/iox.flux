@@ -28,6 +28,6 @@ builtin from : (bucket: string, measurement: string) => stream[{A with _time: ti
 // - query: Query to execute.
 //
 // ## Metadata
-// introduced: NEXT
+// introduced: 0.186.0
 // tags: inputs
 builtin sql : (bucket: string, query: string) => stream[A] where A: Record
