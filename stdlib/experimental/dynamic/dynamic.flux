@@ -40,7 +40,7 @@ _isNotDistinct = (a, b) => display(v: a) == display(v: b)
 //
 // ## Metadata
 // tags: type-conversions
-// introduced: NEXT
+// introduced: 0.186.0
 builtin jsonParse : (data: bytes) => dynamic
 
 // jsonEncode converts a dynamic value into JSON bytes.
@@ -50,7 +50,7 @@ builtin jsonParse : (data: bytes) => dynamic
 //
 // ## Metadata
 // tags: type-conversions
-// introduced: NEXT
+// introduced: 0.186.0
 builtin jsonEncode : (v: dynamic) => bytes
 
 // isType tests if a dynamic type holds a value of a specified type.
@@ -77,5 +77,5 @@ builtin jsonEncode : (v: dynamic) => bytes
 //
 // ## Metadata
 // tags: types, tests
-// introduced: NEXT
+// introduced: 0.186.0
 builtin isType : (v: dynamic, type: string) => bool
