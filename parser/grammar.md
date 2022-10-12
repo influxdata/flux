@@ -106,6 +106,10 @@ The parser directly implements the following grammar.
     PropertySuffix                 = [ ":" Expression ].
     ParameterList                  = [ Parameter { "," Parameter } ] .
     Parameter                      = identifer [ "=" Expression ] .
+    AttributeList                  = { Attribute } .
+    Attribute                      = attribute [ AttributeParams ] .
+    AttributeParams                = "(" [ AttributeParam { "," AttributeParam } ] ")" .
+    AttributeParam                 = Expression .
 
 When processing the grammar, the parser follows a few simple rules.
 

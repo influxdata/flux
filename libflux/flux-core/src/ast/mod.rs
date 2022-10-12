@@ -292,6 +292,19 @@ impl Statement {
         }
     }
 
+    /// Returns the [`BaseNode`] for a [`Statement`].
+    pub fn base_mut(&mut self) -> &mut BaseNode {
+        match self {
+            Statement::Expr(wrapped) => &mut wrapped.base,
+            Statement::Variable(wrapped) => &mut wrapped.base,
+            Statement::Option(wrapped) => &mut wrapped.base,
+            Statement::Return(wrapped) => &mut wrapped.base,
+            Statement::Bad(wrapped) => &mut wrapped.base,
+            Statement::TestCase(wrapped) => &mut wrapped.base,
+            Statement::Builtin(wrapped) => &mut wrapped.base,
+        }
+    }
+
     /// Returns an integer-based type value.
     pub fn typ(&self) -> i8 {
         match self {
@@ -432,6 +445,9 @@ pub struct BaseNode {
     #[serde(default)]
     pub comments: Vec<Comment>,
     #[serde(skip_serializing_if = "Vec::is_empty")]
+    #[serde(default)]
+    pub attributes: Vec<Attribute>,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
     #[serde(serialize_with = "serialize_errors")]
     #[serde(default)]
     pub errors: Vec<String>,
@@ -442,6 +458,10 @@ impl fmt::Debug for BaseNode {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let mut f = f.debug_struct("BaseNode");
         f.field("location", &self.location);
+
+        if !self.attributes.is_empty() {
+            f.field("attributes", &self.attributes);
+        }
 
         if !self.comments.is_empty() {
             f.field("comments", &self.comments);
@@ -468,6 +488,39 @@ impl BaseNode {
     pub fn set_comments(&mut self, comments: Vec<Comment>) {
         self.comments = comments;
     }
+}
+
+#[derive(Debug, PartialEq, Eq, Clone, Serialize, Deserialize)]
+#[allow(missing_docs)]
+pub struct Attribute {
+    #[serde(skip_serializing_if = "BaseNode::is_empty")]
+    #[serde(default)]
+    #[serde(flatten)]
+    pub base: BaseNode,
+
+    // Name of the attribute (such as @edition).
+    // Does not include the @ symbol.
+    pub name: String,
+
+    // Attribute parameters.
+    pub params: Vec<AttributeParam>,
+}
+
+#[derive(Debug, PartialEq, Eq, Clone, Serialize, Deserialize)]
+#[allow(missing_docs)]
+pub struct AttributeParam {
+    #[serde(skip_serializing_if = "BaseNode::is_empty")]
+    #[serde(default)]
+    #[serde(flatten)]
+    pub base: BaseNode,
+
+    // Represented as an Expression for simplicity when parsing,
+    // but must be a literal.
+    pub value: Expression,
+
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    #[serde(default)]
+    pub comma: Vec<Comment>,
 }
 
 /// Package represents a complete package source tree.

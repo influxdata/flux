@@ -121,4 +121,7 @@ pub enum TokenType {
 
     #[display(fmt = "QUESTION_MARK")]
     QuestionMark,
+
+    #[display(fmt = "ATTRIBUTE")]
+    Attribute,
 }
