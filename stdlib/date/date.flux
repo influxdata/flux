@@ -193,6 +193,16 @@ builtin _weekDay : (t: T, location: {zone: string, offset: duration}) => int whe
 // weekDay returns the day of the week for a specified time.
 // Results range from `[0 - 6]`.
 //
+// | Returned value | Day of the week |
+// | :------------: | :-------------- |
+// |       0        | Sunday          |
+// |       1        | Monday          |
+// |       2        | Tuesday         |
+// |       3        | Wednesday       |
+// |       4        | Thursday        |
+// |       5        | Friday          |
+// |       6        | Saturday        |
+//
 // ## Parameters
 // - t: Time to operate on.
 //
@@ -241,6 +251,21 @@ builtin _monthDay : (t: T, location: {zone: string, offset: duration}) => int wh
 
 // monthDay returns the day of the month for a specified time.
 // Results range from `[1 - 31]`.
+//
+// | Returned value | Month     |
+// | :------------: | :-------- |
+// |       1        | January   |
+// |       2        | February  |
+// |       3        | March     |
+// |       4        | April     |
+// |       5        | May       |
+// |       6        | June      |
+// |       7        | July      |
+// |       8        | August    |
+// |       9        | September |
+// |       10       | October   |
+// |       11       | November  |
+// |       12       | December  |
 //
 // ## Parameters
 // - t: Time to operate on.
