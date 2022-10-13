@@ -4462,8 +4462,30 @@ fn dynamic_receiver() {
         v = fn(x: d)
         "#,
         exp: map![
-            "fn"=> "(x: {B with f0: A}) => {f: A}",
-            "v"=> "{f: A}",
+            "fn" => "(x: {B with f0: A}) => {f: A}",
+            "v" => "{f: A}",
+        ],
+    }
+}
+
+#[test]
+fn dynamic_receiver2() {
+    // Something closer to a real-life use case, approximating `dynamic.asArray()`
+    // used with `array.map()`.
+    test_infer! {
+        env: map![
+            "d" => "dynamic",
+            "asArray" => "(v: dynamic) => [dynamic]",
+            "map" => "(<-arr: [A], fn: (x: A) => B) => [B]",
+            "int" => "(v: A) => int",
+        ],
+        src: r#"
+        arr = asArray(v: d)
+        out = map(arr: arr, fn: (x) => ({ posX: int(v: x.pos.x), posY: int(v: x.pos.y) }))
+        "#,
+        exp: map![
+            "arr" => "[dynamic]",
+            "out" => "[{posX: int, posY: int}]",
         ],
     }
 }
