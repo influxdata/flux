@@ -4450,3 +4450,20 @@ fn dynamic_array_multiple_elements() {
         ],
     }
 }
+
+#[test]
+fn dynamic_receiver() {
+    test_infer! {
+        env: map![
+            "d" => "dynamic",
+        ],
+        src: r#"
+        fn = (x) => ({ f: x.f0 })
+        v = fn(x: d)
+        "#,
+        exp: map![
+            "fn"=> "(x: {B with f0: A}) => {f: A}",
+            "v"=> "{f: A}",
+        ],
+    }
+}
