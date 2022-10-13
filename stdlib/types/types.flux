@@ -126,3 +126,65 @@ package types
 // tags: types, tests
 //
 builtin isType : (v: A, type: string) => bool where A: Basic
+
+// isNumeric tests if a value is a numeric type (int, uint, or float).
+//
+// This is a helper function to test or filter for values that can be used in
+// arithmatic operations or aggregations.
+//
+// ## Parameters
+// - value: Value to test.
+//
+// ## Examples
+//
+// ### Filter by numeric values
+// ```
+// # import "csv"
+// import "types"
+//
+// # data =
+// #     csv.from(
+// #         csv: "
+// # #group,false,false,false,true,false
+// # #datatype,string,long,dateTime:RFC3339,string,double
+// # #default,_result,,,,
+// # ,result,table,_time,type,_value
+// # ,,0,2021-01-01T00:00:00Z,float,-2.18
+// # ,,0,2021-01-01T00:00:10Z,float,10.92
+// # ,,0,2021-01-01T00:00:20Z,float,7.35
+// #
+// # #group,false,false,false,true,false
+// # #datatype,string,long,dateTime:RFC3339,string,boolean
+// # #default,_result,,,,
+// # ,result,table,_time,type,_value
+// # ,,0,2021-01-01T00:00:00Z,bool,true
+// # ,,0,2021-01-01T00:00:10Z,bool,true
+// # ,,0,2021-01-01T00:00:20Z,bool,false
+// #
+// # #group,false,false,false,true,false
+// # #datatype,string,long,dateTime:RFC3339,string,string
+// # #default,_result,,,,
+// # ,result,table,_time,type,_value
+// # ,,0,2021-01-01T00:00:00Z,string,smpl_g9qczs
+// # ,,0,2021-01-01T00:00:10Z,string,smpl_0mgv9n
+// # ,,0,2021-01-01T00:00:20Z,string,smpl_phw664
+// #
+// # #group,false,false,false,true,false
+// # #datatype,string,long,dateTime:RFC3339,string,long
+// # #default,_result,,,,
+// # ,result,table,_time,type,_value
+// # ,,0,2021-01-01T00:00:00Z,int,-2
+// # ,,0,2021-01-01T00:00:10Z,int,10
+// # ,,0,2021-01-01T00:00:20Z,int,7
+// # ",
+// #     )
+// #
+// < data
+// >     |> filter(fn: (r) => isNumeric(v: r._value))
+// ```
+//
+// ## Metadata
+// introduced: NEXT
+// tags: types, tests
+isNumeric = (v) =>
+    isType(v: v, type: "int") or isType(v: v, type: "uint") or isType(v: v, type: "float")

@@ -101,6 +101,8 @@ tableData =
         ],
     )
 
+numericTableData = union(tables: [tableDataF1, tableDataF2, tableDataF3])
+
 testcase isTypeTableString {
     want = tableDataF0
     got =
@@ -151,6 +153,17 @@ testcase isTypeTableBool {
         testing.load(tables: tableData)
             |> range(start: -100)
             |> filter(fn: (r) => types.isType(v: r._value, type: "bool"))
+            |> drop(columns: ["_start", "_stop"])
+
+    testing.diff(got, want) |> yield()
+}
+
+testcase isTypeTableNumeric {
+    want = numericTableData
+    got =
+        testing.load(tables: tableData)
+            |> range(start: -100)
+            |> filter(fn: (r) => types.isNumeric(v: r._value))
             |> drop(columns: ["_start", "_stop"])
 
     testing.diff(got, want) |> yield()
