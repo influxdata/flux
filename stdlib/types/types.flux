@@ -133,7 +133,7 @@ builtin isType : (v: A, type: string) => bool where A: Basic
 // arithmatic operations or aggregations.
 //
 // ## Parameters
-// - value: Value to test.
+// - v: Value to test.
 //
 // ## Examples
 //
