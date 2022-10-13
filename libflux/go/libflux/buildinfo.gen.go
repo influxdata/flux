@@ -53,7 +53,7 @@ var sourceHashes = map[string]string{
 	"libflux/flux-core/src/semantic/nodes.rs":                                                     "a35e2e194a0369080d413db4f1f132d5b32fd4d3cff50ce47f505cc4e31fc2b8",
 	"libflux/flux-core/src/semantic/sub.rs":                                                       "8bc05ffff0990facea2130e0faf5a837f8663d59996ff85869c6e631ac654553",
 	"libflux/flux-core/src/semantic/symbols.rs":                                                   "f061d57fe4ef7f23d0adad80d43fe1c8ae92d5e25a0da4b81e21b8087e30d253",
-	"libflux/flux-core/src/semantic/types.rs":                                                     "ff5f9b636222096415ec978f1941fabbaa6d329af48598bd3b5931cbeaba9aba",
+	"libflux/flux-core/src/semantic/types.rs":                                                     "c55bac3abc22d7868bbf3eafe821b49699f174432b2b99db6465189ce7c858d8",
 	"libflux/flux-core/src/semantic/vectorize.rs":                                                 "eda5347c1257a6541727c50d90f49f6b10876017f6c51ad98d10f90388b5dbaf",
 	"libflux/flux-core/src/semantic/walk/_walk.rs":                                                "285b7e9237e218954eddcdabeaa0a7cadd566af30ad96f714faf1b5fbcc05544",
 	"libflux/flux-core/src/semantic/walk/mod.rs":                                                  "1f8b312b728692eeea0deaa8c608b60019f5c32bd8ed3355133608102851442c",
