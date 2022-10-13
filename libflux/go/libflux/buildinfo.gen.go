@@ -419,7 +419,7 @@ var sourceHashes = map[string]string{
 	"stdlib/testing/usage/writes_test.flux":                                                       "ea7c8932381b626dcd543fd9e03e93069e33ff102e49db92df084eee61a359b5",
 	"stdlib/timezone/timezone.flux":                                                               "71a3cc48cd1fe3797515fcaca342e2eb3a79545e1cdd302d5dbd3f631204d542",
 	"stdlib/types/is_type_test.flux":                                                              "29aba0f8fdd089b09f5abc697290c06d2e498874bec6d02f8dbb2b0a0f5a2223",
-	"stdlib/types/types.flux":                                                                     "fba18d0d3d574e2a1635bffc37b09a39eca45007bc4632b0d73c2100002036da",
+	"stdlib/types/types.flux":                                                                     "ccaaecd0411cde4c6e4fc6ce0fb6710082c54123174c12473fce04b043cef9e0",
 	"stdlib/universe/aggregate_empty_window_count_test.flux":                                      "c0cebc3c5c3c6ba5b64f0c396a73270e0d53a4370c8d90302bdf7856c1c774d8",
 	"stdlib/universe/aggregate_empty_window_first_test.flux":                                      "8318f95aaec7a2e07385ed0e713de7056c448aef3daacf8f0408af13609ac096",
 	"stdlib/universe/aggregate_empty_window_last_test.flux":                                       "3082e38b9d5fb6093c434db1f784da6b97100e5ff073a23cfc08dd7df68db9b7",
