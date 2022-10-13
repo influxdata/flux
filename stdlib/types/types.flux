@@ -180,11 +180,10 @@ builtin isType : (v: A, type: string) => bool where A: Basic
 // #     )
 // #
 // < data
-// >     |> filter(fn: (r) => isNumeric(v: r._value))
+// >     |> filter(fn: (r) => types.isNumeric(v: r._value))
 // ```
 //
 // ## Metadata
 // introduced: NEXT
 // tags: types, tests
-isNumeric = (v) =>
-    isType(v: v, type: "int") or isType(v: v, type: "uint") or isType(v: v, type: "float")
+isNumeric = (v) => isType(v: v, type: "int") or isType(v: v, type: "uint") or isType(v: v, type: "float")
