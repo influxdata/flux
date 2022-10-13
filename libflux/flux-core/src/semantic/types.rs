@@ -273,7 +273,10 @@ pub enum Error {
         cause: Box<Error>,
     },
     MissingArgument(String),
-    ExtraArgument(String),
+    ExtraArgument {
+        unexpected: String,
+        expected: Vec<String>,
+    },
     CannotUnifyArgument(String, Box<Error>),
     CannotUnifyReturn {
         exp: MonoType,
@@ -328,7 +331,24 @@ impl fmt::Display for Error {
                 cause = cause
             ),
             Error::MissingArgument(x) => write!(f, "missing required argument {}", x),
-            Error::ExtraArgument(x) => write!(f, "found unexpected argument {}", x),
+            Error::ExtraArgument { unexpected, expected } => {
+                write!(f, "found unexpected argument {}", unexpected)?;
+                if !expected.is_empty() {
+                    write!(f, " (Expected")?;
+                    if expected.len() > 1 {
+                        write!(f, " one of")?;
+                    }
+                    for (i, exp) in expected.iter().enumerate() {
+                        match i {
+                            0 => write!(f, " `{}`", exp)?,
+                            _ if i == expected.len() - 1 => write!(f, " or `{}`", exp)?,
+                            _ => write!(f, ", `{}`", exp)?,
+                        }
+                    }
+                    write!(f, ")")?;
+                }
+                Ok(())
+            }
             Error::CannotUnifyArgument(x, e) => write!(f, "{} (argument {})", e, x),
             Error::CannotUnifyReturn { exp, act, cause } => write!(
                 f,
@@ -380,7 +400,7 @@ impl Substitutable for Error {
             Error::MissingLabel(_)
             | Error::ExtraLabel(_)
             | Error::MissingArgument(_)
-            | Error::ExtraArgument(_)
+            | Error::ExtraArgument { .. }
             | Error::MissingPipeArgument
             | Error::MultiplePipeArguments { .. } => None,
         }
@@ -2089,9 +2109,19 @@ impl Function {
         // Now that f has not been consumed yet, check that every required argument in g is in f too.
         for (name, typ) in &g.req {
             if !f.req.contains_key(name) && !f.opt.contains_key(name) {
-                unifier
-                    .errors
-                    .push(typ.error(Error::ExtraArgument(String::from(name))));
+                unifier.errors.push(
+                    typ.error(Error::ExtraArgument {
+                        unexpected: String::from(name),
+                        expected: f
+                            .req
+                            .keys()
+                            .chain(f.opt.keys())
+                            // Don't recommend arguments that are already specified
+                            .filter(|k| g.parameter(*k).is_none())
+                            .cloned()
+                            .collect(),
+                    }),
+                );
             }
         }
         // Unify f's required arguments.

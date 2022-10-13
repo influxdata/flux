@@ -3807,19 +3807,19 @@ test_error_msg! {
         "#,
     // Location points to call expression `match(r)`
     expect: expect![[r#"
-            error: found unexpected argument r
-              ┌─ main:3:31
-              │
-            3 │             fn = (r) => match(r)
-              │                               ^
+        error: found unexpected argument r (Expected `o`)
+          ┌─ main:3:31
+          │
+        3 │             fn = (r) => match(r)
+          │                               ^
 
-            error: missing required argument o
-              ┌─ main:3:25
-              │
-            3 │             fn = (r) => match(r)
-              │                         ^^^^^^^^
+        error: missing required argument o
+          ┌─ main:3:25
+          │
+        3 │             fn = (r) => match(r)
+          │                         ^^^^^^^^
 
-        "#]],
+    "#]],
 }
 test_error_msg! {
     test: location_points_to_call_error_2,
@@ -3829,19 +3829,19 @@ test_error_msg! {
         "#,
     // Location points to call expression `f(a: 0, c: 1)`
     expect: expect![[r#"
-            error: found unexpected argument c
-              ┌─ main:3:24
-              │
-            3 │             f(a: 0, c: 1)
-              │                        ^
+        error: found unexpected argument c (Expected `b`)
+          ┌─ main:3:24
+          │
+        3 │             f(a: 0, c: 1)
+          │                        ^
 
-            error: missing required argument b
-              ┌─ main:3:13
-              │
-            3 │             f(a: 0, c: 1)
-              │             ^^^^^^^^^^^^^
+        error: missing required argument b
+          ┌─ main:3:13
+          │
+        3 │             f(a: 0, c: 1)
+          │             ^^^^^^^^^^^^^
 
-        "#]],
+    "#]],
 }
 
 test_error_msg! {
@@ -3856,6 +3856,40 @@ test_error_msg! {
           ┌─ main:3:13
           │
         3 │             f(a: 0)
+          │             ^^^^^^^
+
+    "#]],
+}
+
+test_error_msg! {
+    test: multiple_extra_argument_recommendations,
+    src: r#"
+            f = (a, b, c) => a + b + c
+            f(d: 1)
+        "#,
+    expect: expect![[r#"
+        error: found unexpected argument d (Expected one of `a`, `b` or `c`)
+          ┌─ main:3:18
+          │
+        3 │             f(d: 1)
+          │                  ^
+
+        error: missing required argument a
+          ┌─ main:3:13
+          │
+        3 │             f(d: 1)
+          │             ^^^^^^^
+
+        error: missing required argument b
+          ┌─ main:3:13
+          │
+        3 │             f(d: 1)
+          │             ^^^^^^^
+
+        error: missing required argument c
+          ┌─ main:3:13
+          │
+        3 │             f(d: 1)
           │             ^^^^^^^
 
     "#]],
@@ -4118,7 +4152,7 @@ fn multiple_errors_in_function_call() {
             f(a: 1, b: "record", d: {})
         "#,
         expect: expect![[r#"
-            error: found unexpected argument d
+            error: found unexpected argument d (Expected `c`)
               ┌─ main:2:37
               │
             2 │             f(a: 1, b: "record", d: {})
