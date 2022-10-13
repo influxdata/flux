@@ -388,6 +388,67 @@ testcase unpivot_other_columns {
     testing.diff(want, got)
 }
 
+testcase unpivot_field_in_other_columns {
+    got =
+        array.from(
+            rows: [
+                {
+                    _measurement: "m",
+                    tag: "t1",
+                    f0: 10.1,
+                    f1: 10.2,
+                    _time: 2018-12-01T00:00:00Z,
+                },
+                {
+                    _measurement: "m",
+                    tag: "t1",
+                    f0: 20.1,
+                    f1: 20.2,
+                    _time: 2018-12-01T00:00:10Z,
+                },
+            ],
+        )
+            |> group(columns: ["_measurement"])
+            |> experimental.unpivot(otherColumns: ["_time", "tag", "_field"])
+
+    want =
+        array.from(
+            rows: [
+                {
+                    _measurement: "m",
+                    tag: "t1",
+                    _field: "f0",
+                    _value: 10.1,
+                    _time: 2018-12-01T00:00:00Z,
+                },
+                {
+                    _measurement: "m",
+                    tag: "t1",
+                    _field: "f0",
+                    _value: 20.1,
+                    _time: 2018-12-01T00:00:10Z,
+                },
+                {
+                    _measurement: "m",
+                    tag: "t1",
+                    _field: "f1",
+                    _value: 10.2,
+                    _time: 2018-12-01T00:00:00Z,
+                },
+                {
+                    _measurement: "m",
+                    tag: "t1",
+                    _field: "f1",
+                    _value: 20.2,
+                    _time: 2018-12-01T00:00:10Z,
+                },
+            ],
+        )
+            |> group(columns: ["_measurement"])
+
+    testing.diff(want, got)
+}
+
 testcase unpivot_other_columns_nulls {
     got =
         array.from(
@@ -454,4 +515,13 @@ testcase unpivot_other_cols_error {
             |> tableFind(fn: (key) => true)
 
     testing.shouldError(fn: fn, want: /unpivot could not find column named "does not exist"/)
+}
+
+testcase unpivot_field_in_input_columns {
+    fn = () =>
+        array.from(rows: [{foo: "bar", _field: 10, _time: 2020-01-01T00:00:00Z}])
+            |> experimental.unpivot(otherColumns: ["does not exist"])
+            |> tableFind(fn: (key) => true)
+
+    testing.shouldError(fn: fn, want: /unpivot can't have "_field" or "_value" as an input column/)
 }
