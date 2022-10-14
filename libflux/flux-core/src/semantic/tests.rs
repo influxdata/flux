@@ -4500,6 +4500,13 @@ fn dynamic_rejected_where_record_expected() {
         src: r#"
         x = fn(v: d)
         "#,
-        expect: expect![[r#"tbd"#]]
+        expect: expect![[r#"
+            error: dynamic (dynamic) is not Record (argument v)
+              ┌─ main:2:19
+              │
+            2 │         x = fn(v: d)
+              │                   ^
+
+        "#]]
     }
 }
