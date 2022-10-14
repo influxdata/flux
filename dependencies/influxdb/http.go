@@ -86,7 +86,19 @@ func (h HttpProvider) WriterFor(ctx context.Context, conf Config) (Writer, error
 
 func (h HttpProvider) clientFor(ctx context.Context, conf Config) (*HttpClient, error) {
 	deps := flux.GetDependencies(ctx)
-	httpc, err := deps.HTTPClient()
+	var (
+		httpc http.Client
+		err   error
+	)
+	// If no host is specified, it means we're making a request
+	// against an internal source. In that case, we want to obscure
+	// errors from the http client.
+	if conf.Host == "" {
+		conf.Host = h.DefaultConfig.Host
+		httpc, err = deps.PrivateHTTPClient()
+	} else {
+		httpc, err = deps.HTTPClient()
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -96,9 +108,6 @@ func (h HttpProvider) clientFor(ctx context.Context, conf Config) (*HttpClient, 
 	}
 	if conf.Bucket.IsZero() {
 		conf.Bucket = h.DefaultConfig.Bucket
-	}
-	if conf.Host == "" {
-		conf.Host = h.DefaultConfig.Host
 	}
 	if err := h.validateHost(deps, conf.Host); err != nil {
 		return nil, err
