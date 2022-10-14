@@ -6,13 +6,6 @@ import "testing"
 import "experimental/dynamic"
 import "internal/debug"
 
-testcase dynamic_not_comparable {
-    testing.shouldError(
-        fn: () => dynamic.dynamic(v: 123) == dynamic.dynamic(v: 123),
-        want: /unsupported/,
-    )
-}
-
 testcase dynamic_does_not_rewrap {
     a = dynamic.dynamic(v: 123)
     b = dynamic.dynamic(v: a)

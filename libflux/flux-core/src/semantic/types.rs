@@ -1256,10 +1256,14 @@ impl Substitutable for Dynamic {
 
 impl Dynamic {
     fn constrain(&self, with: Kind, _: &mut Substitution) -> Result<(), Error> {
-        Err(Error::CannotConstrain {
-            act: MonoType::Dynamic(self.clone().into()),
-            exp: with,
-        })
+        match with {
+            // Dynamic needs to be able to go into the various cast functions
+            Kind::Basic => Ok(()),
+            _ => Err(Error::CannotConstrain {
+                act: MonoType::Dynamic(self.clone().into()),
+                exp: with,
+            }),
+        }
     }
 
     fn contains(&self, _tvar: Tvar) -> bool {
