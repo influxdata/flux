@@ -38,7 +38,7 @@ func TestPrivateClient(t *testing.T) {
 	}
 	_, err = c.Client.Do(&nethttp.Request{})
 	if err != nil {
-		if err.Error() != "an internal error has occurred" {
+		if err.Error() != "an internal error has occurred: mock error" {
 			t.Fatalf("got unexpected error: %s", err)
 		}
 	} else {
