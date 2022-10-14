@@ -110,6 +110,12 @@ func (d dynamic) Release() {
 // If you want to produce a user-facing error for certain types, do so in the
 // caller.
 func NewDynamic(v Value) Dynamic {
+
+	// Both typed and untyled nulls should wrap plainly
+	if v.IsNull() && v.Type().Nature() != semantic.Dynamic {
+		return dynamic{inner: v}
+	}
+
 	switch n := v.Type().Nature(); n {
 	// N.b check to see if the incoming value is Dynamic before all else.
 	// We want to avoid re-wrapping, and in the case of nulls a check like
@@ -133,9 +139,7 @@ func NewDynamic(v Value) Dynamic {
 		semantic.Dictionary,
 		semantic.Vector,
 		semantic.Stream,
-		semantic.Function,
-		// Nulls are included in the "wrap plainly" category.
-		semantic.Invalid:
+		semantic.Function:
 		return dynamic{inner: v}
 	// Composite types need to recurse.
 	case semantic.Array:
