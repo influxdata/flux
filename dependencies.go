@@ -160,7 +160,7 @@ func newPrivateClient(c http.Client) http.Client {
 func (c *privateClient) Do(req *nethttp.Request) (*nethttp.Response, error) {
 	resp, err := c.client.Do(req)
 	if err != nil {
-		return nil, errors.Wrap(codes.Internal, "an internal error has occurred", err)
+		return nil, errors.Wrap(err, codes.Internal, "an internal error has occurred")
 	}
 	return resp, nil
 }
