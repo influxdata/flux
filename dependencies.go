@@ -3,6 +3,7 @@ package flux
 import (
 	"context"
 	"net"
+	nethttp "net/http"
 	"syscall"
 	"time"
 
@@ -26,6 +27,7 @@ const dependenciesKey key = iota
 type Dependencies interface {
 	Dependency
 	HTTPClient() (http.Client, error)
+	PrivateHTTPClient() (http.Client, error)
 	FilesystemService() (filesystem.Service, error)
 	SecretService() (secret.Service, error)
 	URLValidator() (url.Validator, error)
@@ -49,6 +51,14 @@ func (d Deps) HTTPClient() (http.Client, error) {
 		return d.Deps.HTTPClient, nil
 	}
 	return nil, errors.New(codes.Unimplemented, "http client uninitialized in dependencies")
+}
+
+func (d Deps) PrivateHTTPClient() (http.Client, error) {
+	c, err := d.HTTPClient()
+	if err != nil {
+		return nil, err
+	}
+	return newPrivateClient(c), nil
 }
 
 func (d Deps) FilesystemService() (filesystem.Service, error) {
@@ -135,4 +145,22 @@ func GetDialer(ctx context.Context) (*net.Dialer, error) {
 		KeepAlive: 30 * time.Second,
 		Control:   control,
 	}, nil
+}
+
+// privateClient is an http client that obscures error messages that may contain
+// sensitive information
+type privateClient struct {
+	client http.Client
+}
+
+func newPrivateClient(c http.Client) http.Client {
+	return &privateClient{client: c}
+}
+
+func (c *privateClient) Do(req *nethttp.Request) (*nethttp.Response, error) {
+	resp, err := c.client.Do(req)
+	if err != nil {
+		return nil, errors.New(codes.Internal, "an internal error has occurred")
+	}
+	return resp, nil
 }
