@@ -4489,3 +4489,17 @@ fn dynamic_receiver2() {
         ],
     }
 }
+
+#[test]
+fn dynamic_rejected_where_record_expected() {
+    test_error_msg! {
+        env: map![
+            "d" => "dynamic",
+            "fn" => "(v: A) => bool where A: Record",
+        ],
+        src: r#"
+        x = fn(v: d)
+        "#,
+        expect: expect![[r#"tbd"#]]
+    }
+}
