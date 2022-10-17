@@ -503,24 +503,24 @@ testcase dynamic_cast_from_json_deep {
                         posX:
                             int(
                                 v:
-                                    if exists x.pos then
-                                        if exists x.pos.x then x.pos.x else debug.null()
+                                    if exists x.pos and exists x.pos.x then
+                                        x.pos.x
                                     else
                                         debug.null(),
                             ),
                         posY:
                             int(
                                 v:
-                                    if exists x.pos then
-                                        if exists x.pos.y then x.pos.y else debug.null()
+                                    if exists x.pos and exists x.pos.y then
+                                        x.pos.y
                                     else
                                         debug.null(),
                             ),
                         posZ:
                             int(
                                 v:
-                                    if exists x.pos then
-                                        if exists x.pos.z then x.pos.z else debug.null()
+                                    if exists x.pos and exists x.pos.z then
+                                        x.pos.z
                                     else
                                         debug.null(),
                             ),
