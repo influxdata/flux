@@ -53,9 +53,6 @@ type Options struct {
 func NewOptions(ctx context.Context) Options {
 	var features []string
 	features = addFlag(ctx, features, feature.PrettyError())
-	features = addFlag(ctx, features, feature.VectorizedConditionals())
-	features = addFlag(ctx, features, feature.VectorizedFloat())
-	features = addFlag(ctx, features, feature.VectorizedUnaryOps())
 	features = addFlag(ctx, features, feature.LabelPolymorphism())
 	features = addFlag(ctx, features, feature.UnusedSymbolWarnings())
 	return Options{Features: features}

@@ -10,7 +10,7 @@ use crate::{
             Property, Result, ReturnStmt, UnaryExpr,
         },
         types::{self, Function, Label, MonoType},
-        AnalyzerConfig, Feature, Symbol,
+        AnalyzerConfig, Symbol,
     },
 };
 
@@ -99,9 +99,7 @@ impl Expression {
                     property: member.property.clone(),
                 }))
             }
-            Expression::Unary(unary)
-                if env.config.features.contains(&Feature::VectorizedUnaryOps) =>
-            {
+            Expression::Unary(unary) => {
                 return Ok(Expression::Unary(Box::new(UnaryExpr {
                     loc: unary.loc.clone(),
                     typ: MonoType::vector(unary.typ.clone()),
@@ -142,20 +140,13 @@ impl Expression {
                     right,
                 }))
             }
-            Expression::Conditional(expr)
-                if env
-                    .config
-                    .features
-                    .contains(&Feature::VectorizedConditionals) =>
-            {
-                Expression::Conditional(Box::new(ConditionalExpr {
-                    loc: expr.loc.clone(),
-                    test: expr.test.vectorize(env)?,
-                    consequent: expr.consequent.vectorize(env)?,
-                    alternate: expr.alternate.vectorize(env)?,
-                    typ: MonoType::vector(expr.typ.clone()),
-                }))
-            }
+            Expression::Conditional(expr) => Expression::Conditional(Box::new(ConditionalExpr {
+                loc: expr.loc.clone(),
+                test: expr.test.vectorize(env)?,
+                consequent: expr.consequent.vectorize(env)?,
+                alternate: expr.alternate.vectorize(env)?,
+                typ: MonoType::vector(expr.typ.clone()),
+            })),
             expr @ Expression::Integer(_) => wrap_vec_repeat(expr.clone()),
             expr @ Expression::DateTime(_) => wrap_vec_repeat(expr.clone()),
             expr @ Expression::Float(_) => wrap_vec_repeat(expr.clone()),
@@ -175,8 +166,7 @@ impl CallExpr {
     fn vectorize(&self, env: &VectorizeEnv) -> Result<Self> {
         match &self.callee {
             ident @ Expression::Identifier(IdentifierExpr { name, .. }) => {
-                if env.config.features.contains(&Feature::VectorizedFloat)
-                    && name == "float"
+                if name == "float"
                     && name.package() == Some("universe")
                     && self.arguments.len() == 1
                     && self.arguments[0].key.name == "v"

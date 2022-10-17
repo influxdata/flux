@@ -2,18 +2,11 @@ use super::*;
 use crate::semantic::{
     nodes::{FunctionExpr, Package},
     walk::{walk, Node},
-    AnalyzerConfig, Feature,
+    AnalyzerConfig,
 };
 
 fn analyzer_config() -> AnalyzerConfig {
-    AnalyzerConfig {
-        features: vec![
-            Feature::VectorizedConditionals,
-            Feature::VectorizedFloat,
-            Feature::VectorizedUnaryOps,
-        ],
-        ..AnalyzerConfig::default()
-    }
+    AnalyzerConfig::default()
 }
 
 fn vectorize(src: &str) -> anyhow::Result<Package> {

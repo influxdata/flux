@@ -70,24 +70,6 @@
   default: 0
   contact: Jonathan Sternberg, Adrian Thurston
 
-- name: Vectorized Conditionals
-  description: Calls to map can be vectorized when conditional expressions appear in the function
-  key: vectorizedConditionals
-  default: false
-  contact: Owen Nelson
-
-- name: Vectorized Float
-  description: Calls to map can be vectorized when float casts appear in the function
-  key: vectorizedFloat
-  default: false
-  contact: Owen Nelson
-
-- name: Vectorized Unary Ops
-  description: Calls to map can be vectorized when unary ops appear in the function
-  key: vectorizedUnaryOps
-  default: false
-  contact: Owen Nelson
-
 - name: StrictNullLogicalOps
   description: When enabled, nulls in logical expressions should match the behavior language spec.
   key: strictNullLogicalOps
