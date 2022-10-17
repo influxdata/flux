@@ -184,7 +184,7 @@ builtin isType : (v: A, type: string) => bool where A: Basic
 // ```
 //
 // ## Metadata
-// introduced: NEXT
+// introduced: 0.187.0
 // tags: types, tests
 isNumeric = (v) =>
     isType(v: v, type: "int") or isType(v: v, type: "uint") or isType(v: v, type: "float")
