@@ -349,19 +349,6 @@ func (itrp *Interpreter) doAssignment(ctx context.Context, a semantic.Assignment
 	}
 }
 
-// getMember tries to get a member of an Object; helpful for member expressions.
-func getMember(obj values.Value, name string) (values.Value, error) {
-	if typ := obj.Type().Nature(); typ != semantic.Object {
-		return nil, errors.Newf(codes.Invalid, "cannot access property %q on value of type %s", name, typ)
-	}
-	v, _ := obj.Object().Get(name)
-	if pkg, ok := v.(*Package); ok {
-		// If the property of a member expression represents a package, then the object itself must be a package.
-		return nil, errors.Newf(codes.Invalid, "cannot access imported package %q of imported package %q", pkg.Name(), obj.(*Package).Name())
-	}
-	return v, nil
-}
-
 func (itrp *Interpreter) doExpression(ctx context.Context, expr semantic.Expression, scope values.Scope) (ret values.Value, err error) {
 	switch e := expr.(type) {
 	case semantic.Literal:
@@ -386,20 +373,29 @@ func (itrp *Interpreter) doExpression(ctx context.Context, expr semantic.Express
 			return nil, err
 		}
 
-		if typ := obj.Type().Nature(); typ == semantic.Dynamic {
-			member, err := getMember(obj.Dynamic().Inner(), e.Property.Name())
-			if err != nil {
-				return values.NewDynamic(values.Null), nil
-			}
-			// Dynamic values should have all elements of their internal values
-			// pre-wrapped, but in the case of a member that isn't actually
-			// defined we need to wrap the null here.
-			if member.IsNull() {
-				return values.NewDynamic(member), nil
-			}
-			return member, nil
+		name := e.Property.Name()
+
+		isDynamic := obj.Type().Nature() == semantic.Dynamic
+		if isDynamic {
+			obj = obj.Dynamic().Inner()
 		}
-		return getMember(obj, e.Property.Name())
+
+		if typ := obj.Type().Nature(); typ != semantic.Object {
+			return nil, errors.Newf(codes.Invalid, "cannot access property %q on value of type %s", name, typ)
+		}
+		v, _ := obj.Object().Get(name)
+		if pkg, ok := v.(*Package); ok {
+			// If the property of a member expression represents a package, then the object itself must be a package.
+			return nil, errors.Newf(codes.Invalid, "cannot access imported package %q of imported package %q", pkg.Name(), obj.(*Package).Name())
+		}
+
+		if isDynamic {
+			// In the case where the property doesn't exist, and the incoming value
+			// is dynamic we may get a plain null that needs to be wrapped.
+			return values.NewDynamic(v), nil
+		} else {
+			return v, nil
+		}
 	case *semantic.IndexExpression:
 		arr, err := itrp.doExpression(ctx, e.Array, scope)
 		if err != nil {

@@ -20,16 +20,24 @@ testcase dynamic_member_access_valid {
     testing.assertEqualValues(want: true, got: dynamic._isNotDistinct(a, b))
 }
 
-testcase dynamic_member_access_invalid {
-    // not an object
-    a = dynamic.dynamic(v: 123).f1
-    b = dynamic.dynamic(v: debug.null())
+testcase dynamic_member_access_on_non_object_is_error {
+    testing.shouldError(
+        // not an object
+        fn: () => dynamic.dynamic(v: 123).f0,
+        want: /cannot access property "f0"/,
+    )
+}
 
-    testing.assertEqualValues(want: true, got: dynamic._isNotDistinct(a, b))
+testcase dynamic_member_access_on_null_is_error {
+    testing.shouldError(
+        fn: () => dynamic.dynamic(v: debug.null()).f0,
+        want: /cannot access property "f0"/,
+    )
 }
 
 testcase dynamic_member_access_undefined {
     // is an object, but f1 does not exist
+    // This should work, but return a null.
     a = dynamic.dynamic(v: {f0: 123}).f1
     b = dynamic.dynamic(v: debug.null())
 
@@ -38,10 +46,12 @@ testcase dynamic_member_access_undefined {
 
 testcase dynamic_member_access_undefined_deep {
     // is an object, but f1 does not exist, nor does f2 or f3
-    a = dynamic.dynamic(v: {f0: 123}).f1.f2.f3
-    b = dynamic.dynamic(v: debug.null())
-
-    testing.assertEqualValues(want: true, got: dynamic._isNotDistinct(a, b))
+    // This should error at the point where we try to access a member on a null,
+    // i.e. where we try to lookup `_.f1.f2`
+    testing.shouldError(
+        fn: () => dynamic.dynamic(v: {f0: 123}).f1.f2.f3,
+        want: /cannot access property "f2"/,
+    )
 }
 
 // asArray should blow up if you feed it a dynamic that doesn't have an array in it.
@@ -486,9 +496,34 @@ testcase dynamic_cast_from_json_deep {
                 fn: (x) =>
                     ({
                         name: string(v: x.name),
-                        posX: int(v: x.pos.x),
-                        posY: int(v: x.pos.y),
-                        posZ: int(v: x.pos.z),
+                        // Far from ideal. Relying on `debug.null()` for the
+                        // alternate is super ugly.
+                        // Use <https://github.com/influxdata/flux/issues/5287>
+                        // when available.
+                        posX:
+                            int(
+                                v:
+                                    if exists x.pos then
+                                        if exists x.pos.x then x.pos.x else debug.null()
+                                    else
+                                        debug.null(),
+                            ),
+                        posY:
+                            int(
+                                v:
+                                    if exists x.pos then
+                                        if exists x.pos.y then x.pos.y else debug.null()
+                                    else
+                                        debug.null(),
+                            ),
+                        posZ:
+                            int(
+                                v:
+                                    if exists x.pos then
+                                        if exists x.pos.z then x.pos.z else debug.null()
+                                    else
+                                        debug.null(),
+                            ),
                     }),
             )
 
