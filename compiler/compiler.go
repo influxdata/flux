@@ -84,6 +84,9 @@ func substituteTypes(subst *semantic.Substitution, inferredType, actualType sema
 	// which isn't represented in type inference.
 	if actualType.Nature() == semantic.Invalid {
 		return nil
+	} else if actualType.Nature() == semantic.Dynamic {
+		// Dynamic values are as reduced as they are going to get.
+		return nil
 	} else if inferredType.Kind() == semantic.Var {
 		vn, err := inferredType.VarNum()
 		if err != nil {

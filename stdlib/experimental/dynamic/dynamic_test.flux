@@ -6,13 +6,6 @@ import "testing"
 import "experimental/dynamic"
 import "internal/debug"
 
-testcase dynamic_not_comparable {
-    testing.shouldError(
-        fn: () => dynamic.dynamic(v: 123) == dynamic.dynamic(v: 123),
-        want: /unsupported/,
-    )
-}
-
 testcase dynamic_does_not_rewrap {
     a = dynamic.dynamic(v: 123)
     b = dynamic.dynamic(v: a)
@@ -474,15 +467,6 @@ testcase dynamic_cast_from_json {
 }
 
 testcase dynamic_cast_from_json_deep {
-    // FIXME(onelson): inference seems off for dynamic here.
-    // Test fails with:
-    // ```
-    // expected dynamic (dynamic) but found
-    //   {A with pos: {C with z: F, y: E, x: D}, name: B} (record) (argument x) (argument fn)
-    // ```
-    // Seems like `array.map()` expects `x` to have known fields here, but shouldn't.
-    option testing.tags = ["skip"]
-
     data =
         "
     {

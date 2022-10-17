@@ -1136,15 +1136,12 @@ func (e *memberEvaluator) Type() semantic.MonoType {
 	return e.t
 }
 
-func (e *memberEvaluator) Eval(ctx context.Context, scope Scope) (values.Value, error) {
-	o, err := e.object.Eval(ctx, scope)
-	if err != nil {
-		return nil, err
-	}
-	defer o.Release()
+// getMember tries to get a member of an Object; helpful for member expressions.
+func (e *memberEvaluator) getMember(o values.Value) (values.Value, error) {
 	if o.IsNull() {
 		return nil, errors.Newf(codes.Invalid, "cannot access property of a null value; expected record")
 	}
+
 	if typ := o.Type().Nature(); typ != semantic.Object {
 		return nil, errors.Newf(codes.Invalid, "cannot access property of a value with type %s; expected record", typ)
 	}
@@ -1155,6 +1152,30 @@ func (e *memberEvaluator) Eval(ctx context.Context, scope Scope) (values.Value, 
 	}
 	v.Retain()
 	return v, nil
+}
+
+func (e *memberEvaluator) Eval(ctx context.Context, scope Scope) (values.Value, error) {
+	o, err := e.object.Eval(ctx, scope)
+	if err != nil {
+		return nil, err
+	}
+	defer o.Release()
+
+	// dynamic values allow member access like records but they give a fallback
+	// of `dynamic(null)` if the member lookup fails.
+	if o.Type().Nature() == semantic.Dynamic {
+		inner := o.Dynamic().Inner()
+		v, err := e.getMember(inner)
+		if err != nil {
+			// TODO(onelson): typed or untyped null?
+			// We could return a null using the type on the evaluator (e.g. `e.t`),
+			// but it seems like having a dynamic value here would mean we can't
+			// truly know if the type is accurate.
+			return values.NewDynamic(values.Null), nil
+		}
+		return v, nil
+	}
+	return e.getMember(o)
 }
 
 type arrayIndexEvaluator struct {

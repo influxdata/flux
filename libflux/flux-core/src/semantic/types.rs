@@ -904,7 +904,11 @@ impl MonoType {
             (MonoType::Error, _) | (_, MonoType::Error) => (),
             // Similarly if both sides are dynamic, there's nothing more to do.
             (MonoType::Dynamic(_), MonoType::Dynamic(_)) => (),
-
+            // In situations where a function receives a dynamic value as an
+            // unbounded parameter, this allows the value to be used like a
+            // record (ie, granting member access).
+            (MonoType::Dynamic(_), MonoType::Record(_))
+            | (MonoType::Record(_), MonoType::Dynamic(_)) => (),
             (MonoType::Builtin(exp), MonoType::Builtin(act)) => exp.unify(*act, unifier),
 
             (MonoType::Label(l), MonoType::Label(r)) if l == r => {}
@@ -1251,8 +1255,15 @@ impl Substitutable for Dynamic {
 }
 
 impl Dynamic {
-    fn constrain(&self, _with: Kind, _: &mut Substitution) -> Result<(), Error> {
-        Ok(())
+    fn constrain(&self, with: Kind, _: &mut Substitution) -> Result<(), Error> {
+        match with {
+            // Dynamic needs to be able to go into the various cast functions
+            Kind::Basic => Ok(()),
+            _ => Err(Error::CannotConstrain {
+                act: MonoType::Dynamic(self.clone().into()),
+                exp: with,
+            }),
+        }
     }
 
     fn contains(&self, _tvar: Tvar) -> bool {

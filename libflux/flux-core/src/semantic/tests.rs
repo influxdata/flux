@@ -4450,3 +4450,63 @@ fn dynamic_array_multiple_elements() {
         ],
     }
 }
+
+#[test]
+fn dynamic_receiver() {
+    test_infer! {
+        env: map![
+            "d" => "dynamic",
+        ],
+        src: r#"
+        fn = (x) => ({ f: x.f0 })
+        v = fn(x: d)
+        "#,
+        exp: map![
+            "fn" => "(x: {B with f0: A}) => {f: A}",
+            "v" => "{f: A}",
+        ],
+    }
+}
+
+#[test]
+fn dynamic_receiver2() {
+    // Something closer to a real-life use case, approximating `dynamic.asArray()`
+    // used with `array.map()`.
+    test_infer! {
+        env: map![
+            "d" => "dynamic",
+            "asArray" => "(v: dynamic) => [dynamic]",
+            "map" => "(<-arr: [A], fn: (x: A) => B) => [B]",
+            "int" => "(v: A) => int",
+        ],
+        src: r#"
+        arr = asArray(v: d)
+        out = map(arr: arr, fn: (x) => ({ posX: int(v: x.pos.x), posY: int(v: x.pos.y) }))
+        "#,
+        exp: map![
+            "arr" => "[dynamic]",
+            "out" => "[{posX: int, posY: int}]",
+        ],
+    }
+}
+
+#[test]
+fn dynamic_rejected_where_record_expected() {
+    test_error_msg! {
+        env: map![
+            "d" => "dynamic",
+            "fn" => "(v: A) => bool where A: Record",
+        ],
+        src: r#"
+        x = fn(v: d)
+        "#,
+        expect: expect![[r#"
+            error: dynamic (dynamic) is not Record (argument v)
+              ┌─ main:2:19
+              │
+            2 │         x = fn(v: d)
+              │                   ^
+
+        "#]]
+    }
+}
