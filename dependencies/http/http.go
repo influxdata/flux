@@ -142,3 +142,21 @@ func WithTLSConfig(c Client, config *tls.Config) (Client, error) {
 	}
 	return &newClient, nil
 }
+
+// privateClient is an http client that obscures error messages that may contain
+// sensitive information
+type privateClient struct {
+	client Client
+}
+
+func NewPrivateClient(c Client) Client {
+	return &privateClient{client: c}
+}
+
+func (c *privateClient) Do(req *http.Request) (*http.Response, error) {
+	resp, err := c.client.Do(req)
+	if err != nil {
+		return nil, errors.Wrap(err, codes.Internal, "an internal error has occurred")
+	}
+	return resp, nil
+}
