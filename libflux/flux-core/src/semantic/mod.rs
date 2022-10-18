@@ -540,6 +540,9 @@ pub enum Feature {
 
     /// Enables formatting with codespan for errors
     PrettyError,
+
+    /// Enables salsa for use with the semantic analyzer
+    SalsaDatabase,
 }
 
 impl FromStr for Feature {
