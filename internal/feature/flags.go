@@ -137,42 +137,6 @@ func QueryConcurrencyIncrease() IntFlag {
 	return queryConcurrencyIncrease
 }
 
-var vectorizedConditionals = feature.MakeBoolFlag(
-	"Vectorized Conditionals",
-	"vectorizedConditionals",
-	"Owen Nelson",
-	false,
-)
-
-// VectorizedConditionals - Calls to map can be vectorized when conditional expressions appear in the function
-func VectorizedConditionals() BoolFlag {
-	return vectorizedConditionals
-}
-
-var vectorizedFloat = feature.MakeBoolFlag(
-	"Vectorized Float",
-	"vectorizedFloat",
-	"Owen Nelson",
-	false,
-)
-
-// VectorizedFloat - Calls to map can be vectorized when float casts appear in the function
-func VectorizedFloat() BoolFlag {
-	return vectorizedFloat
-}
-
-var vectorizedUnaryOps = feature.MakeBoolFlag(
-	"Vectorized Unary Ops",
-	"vectorizedUnaryOps",
-	"Owen Nelson",
-	false,
-)
-
-// VectorizedUnaryOps - Calls to map can be vectorized when unary ops appear in the function
-func VectorizedUnaryOps() BoolFlag {
-	return vectorizedUnaryOps
-}
-
 var strictNullLogicalOps = feature.MakeBoolFlag(
 	"StrictNullLogicalOps",
 	"strictNullLogicalOps",
@@ -213,9 +177,6 @@ var all = []Flag{
 	optimizeSetTransformation,
 	unusedSymbolWarnings,
 	queryConcurrencyIncrease,
-	vectorizedConditionals,
-	vectorizedFloat,
-	vectorizedUnaryOps,
 	strictNullLogicalOps,
 	prettyError,
 }
@@ -231,9 +192,6 @@ var byKey = map[string]Flag{
 	"optimizeSetTransformation":        optimizeSetTransformation,
 	"unusedSymbolWarnings":             unusedSymbolWarnings,
 	"queryConcurrencyIncrease":         queryConcurrencyIncrease,
-	"vectorizedConditionals":           vectorizedConditionals,
-	"vectorizedFloat":                  vectorizedFloat,
-	"vectorizedUnaryOps":               vectorizedUnaryOps,
 	"strictNullLogicalOps":             strictNullLogicalOps,
 	"prettyError":                      prettyError,
 }

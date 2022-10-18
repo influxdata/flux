@@ -517,18 +517,6 @@ pub enum Feature {
 
     /// Enables formatting with codespan for errors
     PrettyError,
-
-    /// Enables calls to map to be vectorized when the function contains
-    /// conditional expressions.
-    VectorizedConditionals,
-
-    /// Enables calls to map to be vectorized when the function contains
-    /// float casts.
-    VectorizedFloat,
-
-    /// Enables calls to map to be vectorized when the function contains
-    /// unary operators like: add, sub exists, not.
-    VectorizedUnaryOps,
 }
 
 impl FromStr for Feature {
