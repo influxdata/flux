@@ -3,7 +3,6 @@ package flux
 import (
 	"context"
 	"net"
-	nethttp "net/http"
 	"syscall"
 	"time"
 
@@ -58,7 +57,7 @@ func (d Deps) PrivateHTTPClient() (http.Client, error) {
 	if err != nil {
 		return nil, err
 	}
-	return newPrivateClient(c), nil
+	return http.NewPrivateClient(c), nil
 }
 
 func (d Deps) FilesystemService() (filesystem.Service, error) {
@@ -145,22 +144,4 @@ func GetDialer(ctx context.Context) (*net.Dialer, error) {
 		KeepAlive: 30 * time.Second,
 		Control:   control,
 	}, nil
-}
-
-// privateClient is an http client that obscures error messages that may contain
-// sensitive information
-type privateClient struct {
-	client http.Client
-}
-
-func newPrivateClient(c http.Client) http.Client {
-	return &privateClient{client: c}
-}
-
-func (c *privateClient) Do(req *nethttp.Request) (*nethttp.Response, error) {
-	resp, err := c.client.Do(req)
-	if err != nil {
-		return nil, errors.Wrap(err, codes.Internal, "an internal error has occurred")
-	}
-	return resp, nil
 }
