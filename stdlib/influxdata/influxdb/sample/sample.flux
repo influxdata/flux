@@ -1,4 +1,4 @@
-// Package sample provides functions for downloading and ouputting InfluxDB sample datasets.
+// Package sample provides functions for downloading and outputting InfluxDB sample datasets.
 //
 // ## Metadata
 // introduced: 0.123.0
