@@ -2787,6 +2787,9 @@ builtin _window : (
 // A single input row may be placed into zero or more output tables depending on
 // the parameters passed into `window()`.
 //
+// This function is intended to be used when `timeColumn` (`_time` by default) is not in the group key.
+// If `timeColumn` _is_ in the group key, resulting output is confusing and generally not useful.
+//
 // #### Window by calendar months and years
 // `every`, `period`, and `offset` parameters support all valid duration units,
 // including calendar months (`1mo`) and years (`1y`).
@@ -3738,6 +3741,9 @@ _fillEmpty = (tables=<-, createEmpty) =>
 //
 // `aggregateWindow()` requires `_start` and `_stop` columns in input data.
 // Use `range()` to assign `_start` and `_stop` values.
+//
+// This function is intended to be used when `timeColumn` (`_time` by default) is not in the group key.
+// If `timeColumn` _is_ in the group key, resulting output is confusing and generally not useful.
 //
 // #### Downsample by calendar months and years
 // `every`, `period`, and `offset` parameters support all valid duration units,
