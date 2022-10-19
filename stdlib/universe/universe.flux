@@ -2787,7 +2787,7 @@ builtin _window : (
 // A single input row may be placed into zero or more output tables depending on
 // the parameters passed into `window()`.
 //
-// This funcion is intended to be used when `timeColumn` (`_time` by default) is not in the group key.
+// This function is intended to be used when `timeColumn` (`_time` by default) is not in the group key.
 // If `timeColumn` _is_ in the group key, resulting output is confusing and generally not useful.
 // In a future release, `window()` may produce an error for this case.
 //
@@ -3743,7 +3743,7 @@ _fillEmpty = (tables=<-, createEmpty) =>
 // `aggregateWindow()` requires `_start` and `_stop` columns in input data.
 // Use `range()` to assign `_start` and `_stop` values.
 //
-// This funcion is intended to be used when `timeColumn` (`_time` by default) is not in the group key.
+// This function is intended to be used when `timeColumn` (`_time` by default) is not in the group key.
 // If `timeColumn` _is_ in the group key, resulting output is confusing and generally not useful.
 // In a future release, `aggregateWindow()` may produce an error for this case.
 //
