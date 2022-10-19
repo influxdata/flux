@@ -1,6 +1,8 @@
 //! FlatBuffers serialization for the semantic graph.
 
-#[allow(clippy::all, missing_docs, clippy::undocumented_unsafe_blocks)]
+#![allow(clippy::undocumented_unsafe_blocks)]
+
+#[allow(clippy::all, missing_docs)]
 pub mod semantic_generated;
 #[allow(missing_docs)]
 pub mod types;

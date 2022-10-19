@@ -25,7 +25,7 @@ require (
 	github.com/go-sql-driver/mysql v1.5.0
 	github.com/gofrs/uuid v3.3.0+incompatible
 	github.com/golang/geo v0.0.0-20190916061304-5b978397cfec
-	github.com/google/flatbuffers v2.0.5+incompatible
+	github.com/google/flatbuffers v22.9.30-0.20221019131441-5792623df42e+incompatible
 	github.com/google/go-cmp v0.5.7
 	github.com/influxdata/gosnowflake v1.6.9
 	github.com/influxdata/influxdb-client-go/v2 v2.3.1-0.20210518120617-5d1fff431040
