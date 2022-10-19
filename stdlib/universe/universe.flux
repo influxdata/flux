@@ -2789,7 +2789,6 @@ builtin _window : (
 //
 // This function is intended to be used when `timeColumn` (`_time` by default) is not in the group key.
 // If `timeColumn` _is_ in the group key, resulting output is confusing and generally not useful.
-// In a future release, `window()` may produce an error for this case.
 //
 // #### Window by calendar months and years
 // `every`, `period`, and `offset` parameters support all valid duration units,
@@ -3745,7 +3744,6 @@ _fillEmpty = (tables=<-, createEmpty) =>
 //
 // This function is intended to be used when `timeColumn` (`_time` by default) is not in the group key.
 // If `timeColumn` _is_ in the group key, resulting output is confusing and generally not useful.
-// In a future release, `aggregateWindow()` may produce an error for this case.
 //
 // #### Downsample by calendar months and years
 // `every`, `period`, and `offset` parameters support all valid duration units,
