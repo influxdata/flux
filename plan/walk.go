@@ -8,6 +8,12 @@ import (
 // TopDownWalk will execute f for each plan node in the Spec.
 // It always visits a node before visiting its predecessors.
 func (plan *Spec) TopDownWalk(f func(node Node) error) error {
+	return plan.ReplacingTopDownWalk(func(node Node) (Node, error) {
+		return nil, f(node)
+	})
+}
+
+func (plan *Spec) ReplacingTopDownWalk(f func(node Node) (Node, error)) error {
 	visited := make(map[Node]struct{})
 
 	roots := make([]Node, 0, len(plan.Roots))
@@ -52,8 +58,8 @@ func (plan *Spec) BottomUpWalk(f func(Node) error) error {
 		return roots[i].ID() < roots[j].ID()
 	})
 
-	preFn := func(Node) error {
-		return nil
+	preFn := func(Node) (Node, error) {
+		return nil, nil
 	}
 
 	for _, root := range roots {
@@ -66,7 +72,7 @@ func (plan *Spec) BottomUpWalk(f func(Node) error) error {
 	return nil
 }
 
-func walk(node Node, preFn, postFn func(Node) error, visited map[Node]struct{}) error {
+func walk(node Node, preFn func(Node) (Node, error), postFn func(Node) error, visited map[Node]struct{}) error {
 	if _, ok := visited[node]; ok {
 		return nil
 	}
@@ -74,8 +80,12 @@ func walk(node Node, preFn, postFn func(Node) error, visited map[Node]struct{}) 
 	visited[node] = struct{}{}
 
 	// Pre-order traversal
-	if err := preFn(node); err != nil {
+	newNode, err := preFn(node)
+	if err != nil {
 		return err
+	}
+	if newNode != nil {
+		node = newNode
 	}
 
 	for _, pred := range node.Predecessors() {

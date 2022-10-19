@@ -3,7 +3,6 @@ package plan
 import (
 	"context"
 	"fmt"
-	"sort"
 
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/dependencies/testing"
@@ -115,45 +114,21 @@ func (p *heuristicPlanner) matchRules(ctx context.Context, spec *Spec, node Node
 // plan, err = plan.Plan(plan)
 func (p *heuristicPlanner) Plan(ctx context.Context, inputPlan *Spec) (*Spec, error) {
 	for anyChanged := true; anyChanged; {
-		visited := make(map[Node]struct{})
-		visitedSuccessors := make(map[Node]int)
-		// the plan is traversed starting from the sinks,
-		// moving toward the sources.
-		nodeStack := make([]Node, 0, len(inputPlan.Roots))
-		for root := range inputPlan.Roots {
-			nodeStack = append(nodeStack, root)
-		}
-
-		// Sort the roots so that we always traverse deterministically
-		// (sort descending so that we pop off the stack in ascending order)
-		sort.Slice(nodeStack, func(i, j int) bool {
-			return nodeStack[i].ID() > nodeStack[j].ID()
-		})
-
 		anyChanged = false
-		for len(nodeStack) > 0 {
-			node := nodeStack[len(nodeStack)-1]
-			nodeStack = nodeStack[0 : len(nodeStack)-1]
 
-			_, alreadyVisited := visited[node]
-			visitable := visitedSuccessors[node] == len(node.Successors())
-
-			if !alreadyVisited && visitable {
-				newNode, changed, err := p.matchRules(ctx, inputPlan, node)
-				if err != nil {
-					return nil, err
-				}
-				anyChanged = anyChanged || changed
-
-				// append to stack in reverse order so lower-indexed children
-				// are visited first.
-				for i := len(newNode.Predecessors()); i > 0; i-- {
-					visitedSuccessors[newNode.Predecessors()[i-1]] += 1
-					nodeStack = append(nodeStack, newNode.Predecessors()[i-1])
-				}
-
-				visited[node] = struct{}{}
+		err := inputPlan.ReplacingTopDownWalk(func(node Node) (Node, error) {
+			newNode, changed, err := p.matchRules(ctx, inputPlan, node)
+			if err != nil {
+				return nil, err
 			}
+
+			anyChanged = anyChanged || changed
+
+			return newNode, nil
+
+		})
+		if err != nil {
+			return nil, err
 		}
 	}
 
