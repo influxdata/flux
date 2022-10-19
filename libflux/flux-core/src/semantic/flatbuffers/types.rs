@@ -156,11 +156,11 @@ impl From<Kind> for fb::Kind {
 fn record_label_from_table(table: flatbuffers::Table, t: fb::RecordLabel) -> Option<RecordLabel> {
     match t {
         fb::RecordLabel::Var => {
-            let var = fb::Var::init_from_table(table);
+            let var = unsafe { fb::Var::init_from_table(table) };
             Some(RecordLabel::BoundVariable(BoundTvar::from(var)))
         }
         fb::RecordLabel::Concrete => {
-            let concrete = fb::Concrete::init_from_table(table);
+            let concrete = unsafe { fb::Concrete::init_from_table(table) };
             let id = concrete.id()?;
             Some(RecordLabel::from(id))
         }
@@ -172,28 +172,28 @@ fn record_label_from_table(table: flatbuffers::Table, t: fb::RecordLabel) -> Opt
 fn from_table(table: flatbuffers::Table, t: fb::MonoType) -> Option<MonoType> {
     match t {
         fb::MonoType::Basic => {
-            let basic = fb::Basic::init_from_table(table);
+            let basic = unsafe { fb::Basic::init_from_table(table) };
             Some(basic.into())
         }
         fb::MonoType::Var => {
-            let var = fb::Var::init_from_table(table);
+            let var = unsafe { fb::Var::init_from_table(table) };
             Some(MonoType::BoundVar(BoundTvar::from(var)))
         }
         fb::MonoType::Collection => {
-            let opt: Option<Collection> = fb::Collection::init_from_table(table).into();
+            let opt: Option<Collection> = unsafe { fb::Collection::init_from_table(table).into() };
             Some(MonoType::from(opt?))
         }
         fb::MonoType::Fun => {
-            let opt: Option<Function> = fb::Fun::init_from_table(table).into();
+            let opt: Option<Function> = unsafe { fb::Fun::init_from_table(table).into() };
             Some(MonoType::from(opt?))
         }
-        fb::MonoType::Record => fb::Record::init_from_table(table).into(),
+        fb::MonoType::Record => unsafe { fb::Record::init_from_table(table).into() },
         fb::MonoType::Dict => {
-            let opt: Option<Dictionary> = fb::Dict::init_from_table(table).into();
+            let opt: Option<Dictionary> = unsafe { fb::Dict::init_from_table(table).into() };
             Some(MonoType::from(opt?))
         }
         fb::MonoType::Dynamic => {
-            let opt: Option<Dynamic> = fb::Dynamic::init_from_table(table).into();
+            let opt: Option<Dynamic> = unsafe { fb::Dynamic::init_from_table(table).into() };
             Some(MonoType::from(opt?))
         }
         fb::MonoType::NONE => None,
