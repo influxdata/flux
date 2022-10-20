@@ -2337,11 +2337,9 @@ impl<'input> Parser<'input> {
         self.open(TokenType::LParen, TokenType::RParen);
         let params = self.parse_attribute_params();
         let end = self.close(TokenType::RParen);
-        Attribute {
-            base: self.base_node_from_tokens(&tok, &end),
-            name,
-            params,
-        }
+        let mut base = self.base_node_from_tokens(&tok, &end);
+        base.set_comments(tok.comments.clone());
+        Attribute { base, name, params }
     }
 
     fn parse_attribute_params(&mut self) -> Vec<AttributeParam> {

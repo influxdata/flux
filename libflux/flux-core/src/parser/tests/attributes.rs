@@ -281,6 +281,97 @@ foo = "a"
 }
 
 #[test]
+fn parse_attribute_package_comment() {
+    let mut p = Parser::new(
+        r#"
+// Package foo implements foo things.
+@edition("2022.1")
+package foo
+"#,
+    );
+    let parsed = p.parse_file("".to_string());
+    expect![[r#"
+        File {
+            base: BaseNode {
+                location: SourceLocation {
+                    start: "line: 3, column: 1",
+                    end: "line: 4, column: 12",
+                    source: "@edition(\"2022.1\")\npackage foo",
+                },
+                attributes: [
+                    Attribute {
+                        base: BaseNode {
+                            location: SourceLocation {
+                                start: "line: 3, column: 1",
+                                end: "line: 3, column: 19",
+                                source: "@edition(\"2022.1\")",
+                            },
+                            comments: [
+                                Comment {
+                                    text: "// Package foo implements foo things.\n",
+                                },
+                            ],
+                        },
+                        name: "edition",
+                        params: [
+                            AttributeParam {
+                                base: BaseNode {
+                                    location: SourceLocation {
+                                        start: "line: 3, column: 10",
+                                        end: "line: 3, column: 18",
+                                        source: "\"2022.1\"",
+                                    },
+                                },
+                                value: StringLit(
+                                    StringLit {
+                                        base: BaseNode {
+                                            location: SourceLocation {
+                                                start: "line: 3, column: 10",
+                                                end: "line: 3, column: 18",
+                                                source: "\"2022.1\"",
+                                            },
+                                        },
+                                        value: "2022.1",
+                                    },
+                                ),
+                                comma: [],
+                            },
+                        ],
+                    },
+                ],
+            },
+            name: "",
+            metadata: "parser-type=rust",
+            package: Some(
+                PackageClause {
+                    base: BaseNode {
+                        location: SourceLocation {
+                            start: "line: 4, column: 1",
+                            end: "line: 4, column: 12",
+                            source: "package foo",
+                        },
+                    },
+                    name: Identifier {
+                        base: BaseNode {
+                            location: SourceLocation {
+                                start: "line: 4, column: 9",
+                                end: "line: 4, column: 12",
+                                source: "foo",
+                            },
+                        },
+                        name: "foo",
+                    },
+                },
+            ),
+            imports: [],
+            body: [],
+            eof: [],
+        }
+    "#]]
+    .assert_debug_eq(&parsed);
+}
+
+#[test]
 fn parse_attribute_doc_comment() {
     let mut p = Parser::new(
         r#"
