@@ -135,21 +135,22 @@ func CompileTableObject(ctx context.Context, to *flux.TableObject, now time.Time
 func buildPlan(ctx context.Context, spec *operation.Spec, opts *compileOptions) (*plan.Spec, error) {
 	s, _ := opentracing.StartSpanFromContext(ctx, "plan")
 	defer s.Finish()
-	pb := plan.PlannerBuilder{}
 
-	planOptions := opts.planOptions
-
-	lopts := planOptions.logical
-	popts := planOptions.physical
-
-	pb.AddLogicalOptions(lopts...)
-	pb.AddPhysicalOptions(popts...)
-
-	ps, err := pb.Build().Plan(ctx, spec)
+	p, err := plan.CreateLogicalPlan(spec)
 	if err != nil {
 		return nil, err
 	}
-	return ps, nil
+
+	planSvc, err := flux.GetDependencies(ctx).PlanService()
+	if err != nil {
+		return nil, err
+	}
+
+	pp, err := planSvc.Plan(ctx, p)
+	if err != nil {
+		return nil, err
+	}
+	return pp.(*plan.Spec), nil
 }
 
 // FluxCompiler compiles a Flux script into a spec.

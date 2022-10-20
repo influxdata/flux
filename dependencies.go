@@ -9,6 +9,7 @@ import (
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/dependencies/filesystem"
 	"github.com/influxdata/flux/dependencies/http"
+	"github.com/influxdata/flux/dependencies/plan"
 	"github.com/influxdata/flux/dependencies/secret"
 	"github.com/influxdata/flux/dependencies/url"
 	"github.com/influxdata/flux/dependency"
@@ -30,6 +31,7 @@ type Dependencies interface {
 	FilesystemService() (filesystem.Service, error)
 	SecretService() (secret.Service, error)
 	URLValidator() (url.Validator, error)
+	PlanService() (plan.Service, error)
 }
 
 // Deps implements Dependencies.
@@ -43,6 +45,7 @@ type WrappedDeps struct {
 	FilesystemService filesystem.Service
 	SecretService     secret.Service
 	URLValidator      url.Validator
+	PlanService       plan.Service
 }
 
 func (d Deps) HTTPClient() (http.Client, error) {
@@ -79,6 +82,13 @@ func (d Deps) URLValidator() (url.Validator, error) {
 		return d.Deps.URLValidator, nil
 	}
 	return nil, errors.New(codes.Unimplemented, "url validator uninitialized in dependencies")
+}
+
+func (d Deps) PlanService() (plan.Service, error) {
+	if d.Deps.PlanService != nil {
+		return d.Deps.PlanService, nil
+	}
+	return nil, errors.New(codes.Unimplemented, "plan service uninitialized in dependencies")
 }
 
 func (d Deps) Inject(ctx context.Context) context.Context {

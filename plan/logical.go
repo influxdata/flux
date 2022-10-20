@@ -18,7 +18,6 @@ import (
 // actual physical algorithms used to implement operations, and independent of
 // the actual data being processed.
 type LogicalPlanner interface {
-	CreateInitialPlan(spec *operation.Spec) (*Spec, error)
 	Plan(context.Context, *Spec) (*Spec, error)
 }
 
@@ -92,11 +91,6 @@ func DisableIntegrityChecks() LogicalOption {
 	})
 }
 
-// CreateInitialPlan translates the flux.Spec into an unoptimized, naive plan.
-func (l *logicalPlanner) CreateInitialPlan(spec *operation.Spec) (*Spec, error) {
-	return createLogicalPlan(spec)
-}
-
 // Plan transforms the given naive plan by applying rules.
 func (l *logicalPlanner) Plan(ctx context.Context, logicalPlan *Spec) (*Spec, error) {
 	newLogicalPlan, err := l.heuristicPlanner.Plan(ctx, logicalPlan)
@@ -166,8 +160,8 @@ func (lpn *LogicalNode) ShallowCopy() Node {
 	return newNode
 }
 
-// createLogicalPlan creates a logical query plan from a flux spec
-func createLogicalPlan(spec *operation.Spec) (*Spec, error) {
+// CreateLogicalPlan creates a logical query plan from a flux spec
+func CreateLogicalPlan(spec *operation.Spec) (*Spec, error) {
 	nodes := make(map[operation.NodeID]Node, len(spec.Operations))
 	admin := administration{now: spec.Now}
 

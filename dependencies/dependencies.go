@@ -8,6 +8,7 @@ import (
 	"github.com/influxdata/flux/dependencies/filesystem"
 	"github.com/influxdata/flux/dependencies/influxdb"
 	"github.com/influxdata/flux/dependencies/mqtt"
+	"github.com/influxdata/flux/plan"
 )
 
 type Dependencies struct {
@@ -27,6 +28,7 @@ func (d Dependencies) Inject(ctx context.Context) context.Context {
 func NewDefaultDependencies(defaultInfluxDBHost string) Dependencies {
 	deps := flux.NewDefaultDependencies()
 	deps.Deps.FilesystemService = filesystem.SystemFS
+	deps.Deps.PlanService = plan.DefaultPlanService()
 
 	return Dependencies{
 		Deps: deps,

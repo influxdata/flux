@@ -18,14 +18,23 @@ type Compiler struct {
 }
 
 func (c Compiler) Compile(ctx context.Context, runtime flux.Runtime) (flux.Program, error) {
-	planner := plan.PlannerBuilder{}.Build()
-	ps, err := planner.Plan(ctx, c.Spec)
+	lp, err := plan.CreateLogicalPlan(c.Spec)
+	if err != nil {
+		return nil, err
+	}
+
+	planSvc, err := flux.GetDependencies(ctx).PlanService()
+	if err != nil {
+		return nil, err
+	}
+
+	pp, err := planSvc.Plan(ctx, lp)
 	if err != nil {
 		return nil, err
 	}
 
 	return &lang.Program{
-		PlanSpec: ps,
+		PlanSpec: pp.(*plan.Spec),
 	}, err
 }
 
