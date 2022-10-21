@@ -154,7 +154,6 @@ func (lpn *LogicalNode) ReplaceSpec(newSpec ProcedureSpec) error {
 
 func (lpn *LogicalNode) ShallowCopy() Node {
 	newNode := new(LogicalNode)
-	newNode.edges = lpn.edges.shallowCopy()
 	newNode.id = lpn.id + "_copy"
 	newNode.Spec = lpn.Spec.Copy()
 	return newNode

@@ -273,7 +273,12 @@ func (ppn *PhysicalPlanNode) CallStack() []interpreter.StackEntry {
 
 func (ppn *PhysicalPlanNode) ShallowCopy() Node {
 	newNode := new(PhysicalPlanNode)
-	newNode.edges = ppn.edges.shallowCopy()
+	if ppn.bounds.value != nil {
+		newNode.bounds = bounds{value: &Bounds{
+			Start: ppn.bounds.value.Start,
+			Stop:  ppn.bounds.value.Stop,
+		}}
+	}
 	newNode.id = ppn.id + "_copy"
 	// TODO: the type assertion below... is it needed?
 	newNode.Spec = ppn.Spec.Copy().(PhysicalProcedureSpec)

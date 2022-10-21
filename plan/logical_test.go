@@ -297,7 +297,7 @@ func TestPlan_LogicalPlanFromSpec(t *testing.T) {
 			thePlanner := plan.NewLogicalPlanner()
 
 			// Convert flux spec to initial logical plan
-			initPlan, err := thePlanner.CreateInitialPlan(spec)
+			initPlan, err := plan.CreateLogicalPlan(spec)
 
 			if tc.wantErr {
 				if err == nil {
@@ -645,7 +645,7 @@ func TestLogicalPlanner(t *testing.T) {
 			}
 
 			logicalPlanner := plan.NewLogicalPlanner(plan.OnlyLogicalRules(MergeFiltersRule{}, PushFilterThroughMapRule{}))
-			initPlan, err := logicalPlanner.CreateInitialPlan(fluxSpec)
+			initPlan, err := plan.CreateLogicalPlan(fluxSpec)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -684,7 +684,7 @@ from(bucket: "telegraf")
 		),
 		plan.DisableIntegrityChecks(),
 	)
-	initPlan, err := planner.CreateInitialPlan(spec)
+	initPlan, err := plan.CreateLogicalPlan(spec)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -696,7 +696,7 @@ from(bucket: "telegraf")
 	// let's smash the plan
 	planner = plan.NewLogicalPlanner(
 		plan.OnlyLogicalRules(plantest.SmashPlanRule{Intruder: intruder, Kind: k}))
-	initPlan, err = planner.CreateInitialPlan(spec)
+	initPlan, err = plan.CreateLogicalPlan(spec)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -708,7 +708,7 @@ from(bucket: "telegraf")
 	// let's introduce a cycle
 	planner = plan.NewLogicalPlanner(
 		plan.OnlyLogicalRules(plantest.CreateCycleRule{Kind: k}))
-	initPlan, err = planner.CreateInitialPlan(spec)
+	initPlan, err = plan.CreateLogicalPlan(spec)
 	if err != nil {
 		t.Fatal(err)
 	}

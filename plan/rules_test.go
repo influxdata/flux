@@ -47,7 +47,7 @@ func TestRuleRegistration(t *testing.T) {
 	}
 
 	logicalPlanner := plan.NewLogicalPlanner()
-	initPlan, err := logicalPlanner.CreateInitialPlan(fluxSpec)
+	initPlan, err := plan.CreateLogicalPlan(fluxSpec)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -112,7 +112,7 @@ func TestRewriteWithContext(t *testing.T) {
 	}
 
 	logicalPlanner := plan.NewLogicalPlanner()
-	initPlan, err := logicalPlanner.CreateInitialPlan(fluxSpec)
+	initPlan, err := plan.CreateLogicalPlan(fluxSpec)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -210,7 +210,7 @@ func TestMultiRootMatch(t *testing.T) {
 	}
 
 	logicalPlanner := plan.NewLogicalPlanner()
-	initPlan, err := logicalPlanner.CreateInitialPlan(fluxSpec)
+	initPlan, err := plan.CreateLogicalPlan(fluxSpec)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -250,7 +250,7 @@ func TestExpectPlannerRule(t *testing.T) {
 	}
 
 	logicalPlanner := plan.NewLogicalPlanner()
-	initPlan, err := logicalPlanner.CreateInitialPlan(fluxSpec)
+	initPlan, err := plan.CreateLogicalPlan(fluxSpec)
 	if err != nil {
 		t.Fatal(err)
 	}

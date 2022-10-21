@@ -206,13 +206,6 @@ func (e *edges) ClearPredecessors() {
 	e.predecessors = e.predecessors[0:0]
 }
 
-func (e *edges) shallowCopy() edges {
-	newEdges := new(edges)
-	copy(newEdges.predecessors, e.predecessors)
-	copy(newEdges.successors, e.successors)
-	return *newEdges
-}
-
 // MergeToLogicalNode merges top and bottom plan nodes into a new plan node, with the
 // given procedure spec.
 //
