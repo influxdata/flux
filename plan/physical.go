@@ -76,15 +76,13 @@ func (pp *physicalPlanner) Plan(ctx context.Context, spec *Spec) (*Spec, error) 
 		return nil, err
 	}
 
-	// Ensure that the plan is valid
-	if !pp.disableValidation {
-		err := transformedSpec.CheckIntegrity()
-		if err != nil {
-			return nil, err
-		}
+	if err := transformedSpec.CheckIntegrity(); err != nil {
+		return nil, err
+	}
 
-		err = ValidatePhysicalPlan(transformedSpec)
-		if err != nil {
+	// Validate plan if requested
+	if !pp.disableValidation {
+		if ValidatePhysicalPlan(transformedSpec) != nil {
 			return nil, err
 		}
 	}

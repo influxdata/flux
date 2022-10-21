@@ -7,12 +7,12 @@ import (
 )
 
 func DefaultPlanService() plan.Service {
-	return planService{}
+	return defaultPlanService{}
 }
 
-type planService struct{}
+type defaultPlanService struct{}
 
-func (s planService) Plan(ctx context.Context, p plan.Spec) (plan.Spec, error) {
+func (s defaultPlanService) Plan(ctx context.Context, p plan.Spec) (plan.Spec, error) {
 	pspec := p.(*Spec)
 	pb := PlannerBuilder{}
 
@@ -30,4 +30,31 @@ func (s planService) Plan(ctx context.Context, p plan.Spec) (plan.Spec, error) {
 		return nil, err
 	}
 	return ps, nil
+}
+
+func PlanLogically(ctx context.Context, p plan.Spec, rules ...Rule) (plan.Spec, error) {
+	lp := NewLogicalPlanner(OnlyLogicalRules(rules...))
+	newPlan, err := lp.Plan(ctx, p.(*Spec))
+	if err != nil {
+		return nil, err
+	}
+	return newPlan, nil
+}
+
+func PlanPhysically(ctx context.Context, p plan.Spec, rules ...Rule) (plan.Spec, error) {
+	pp := NewPhysicalPlanner(OnlyPhysicalRules(rules...))
+	newPlan, err := pp.Plan(ctx, p.(*Spec))
+	if err != nil {
+		return nil, err
+	}
+	return newPlan, nil
+}
+
+func PlanPhysicallySkipValidation(ctx context.Context, p plan.Spec, rules ...Rule) (plan.Spec, error) {
+	pp := NewPhysicalPlanner(OnlyPhysicalRules(rules...), DisableValidation())
+	newPlan, err := pp.Plan(ctx, p.(*Spec))
+	if err != nil {
+		return nil, err
+	}
+	return newPlan, nil
 }
