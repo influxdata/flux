@@ -1,6 +1,7 @@
 package json_test
 
 
+import "array"
 import "experimental/json"
 import "testing"
 import "csv"
@@ -41,6 +42,15 @@ testcase parse {
                 },
             )
     want = csv.from(csv: outData)
+
+    testing.diff(got, want)
+}
+
+testcase parse_to_array_from {
+    data = json.parse(data: bytes(v: "[{\"_value\": 2}]"))
+    got = array.from(rows: data)
+
+    want = array.from(rows: [{_value: 2.0}])
 
     testing.diff(got, want)
 }
