@@ -55,6 +55,10 @@ func TestTranslationDriverReturn(t *testing.T) {
 	_, err = getTranslationFunc("mysql")
 	assertErrorIsNil(t, err)
 
+	// verify that valid returns expected happiness for Clickhouse
+	_, err = getTranslationFunc("clickhouse")
+	assertErrorIsNil(t, err)
+
 	// verify that valid returns expected happiness for Snowflake
 	_, err = getTranslationFunc("snowflake")
 	assertErrorIsNil(t, err)
@@ -128,6 +132,34 @@ func TestPostgresTranslation(t *testing.T) {
 	// test no match
 	_, err = sqlT()(unsupportedType, columnLabel)
 	assertErrorMsg(t, "PostgreSQL does not support column type unknown", err)
+}
+
+func TestClickhouseTranslation(t *testing.T) {
+	clickhouseTypeTranslations := map[string]flux.ColType{
+		"FLOAT":     flux.TFloat,
+		"TEXT":      flux.TString,
+		"BIGINT":    flux.TInt,
+		"TIMESTAMP": flux.TTime,
+		"BOOL":      flux.TBool,
+	}
+
+	columnLabel := "apples"
+	// verify that valid returns expected happiness for clickhouse
+	quote, err := getQuoteIdentFunc("clickhouse")
+	assertErrorIsNil(t, err)
+
+	sqlT, err := getTranslationFunc("clickhouse")
+	assertErrorIsNil(t, err)
+
+	for dbTypeString, fluxType := range clickhouseTypeTranslations {
+		v, err := sqlT()(fluxType, columnLabel)
+		assertErrorIsNil(t, err)
+		assertTranslation(t, quote, columnLabel, dbTypeString, v)
+	}
+
+	// test no match
+	_, err = sqlT()(unsupportedType, columnLabel)
+	assertErrorMsg(t, "ClickHouse does not support column type unknown", err)
 }
 
 func TestMysqlTranslation(t *testing.T) {

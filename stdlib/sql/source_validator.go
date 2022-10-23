@@ -48,6 +48,13 @@ func validateDataSource(validator url.Validator, driverName string, dataSourceNa
 		if err != nil {
 			return errors.Newf(codes.Invalid, "invalid data source url: %v", err)
 		}
+	case "clickhouse":
+		// an example for clickhouse data source is: clickhouse://username:password@host1:9000/database?dial_timeout=200ms&max_execution_time=60
+		// this follows the URI semantics
+		u, err = neturl.Parse(dataSourceName)
+		if err != nil {
+			return errors.Newf(codes.Invalid, "invalid data source url: %v", err)
+		}
 	case "vertica", "vertigo":
 		// an example for vertica data source is: vertica://dbadmin:password@localhost:5433/VMart
 		// this follows the URI semantics
