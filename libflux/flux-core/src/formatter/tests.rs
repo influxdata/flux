@@ -295,6 +295,36 @@ fn str_lit2() {
 }
 
 #[test]
+fn package_attribute() {
+    assert_unchanged(
+        r#"@edition("2022.1")
+package foo
+"#,
+    );
+    assert_unchanged(
+        r#"// Package foo is documented here.
+@edition("2022.1")
+package foo
+"#,
+    );
+    assert_unchanged(
+        r#"// Documentation before attribute.
+@deprecated
+// My function is below this.
+identity = (x) => x"#,
+    );
+    assert_unchanged(
+        r#"@edition(
+    // Documented.
+    "2022.1",
+)
+package foo
+"#,
+    );
+    assert_format("@edition package foo", "@edition\npackage foo\n");
+}
+
+#[test]
 fn package_import() {
     assert_unchanged(
         r#"package foo

@@ -2277,3 +2277,90 @@ c = 1 + 2
         })
     );
 }
+
+#[test]
+fn test_scan_attribute() {
+    let text = r#"@edition("2022.1")"#;
+    let mut s = Scanner::new(text);
+    assert_eq!(
+        s.scan(),
+        Token {
+            tok: TokenType::Attribute,
+            lit: String::from("@edition"),
+            start_offset: 0,
+            end_offset: 8,
+            start_pos: Position { line: 1, column: 1 },
+            end_pos: Position { line: 1, column: 9 },
+            comments: vec![],
+        }
+    );
+    assert_eq!(
+        s.scan(),
+        Token {
+            tok: TokenType::LParen,
+            lit: String::from("("),
+            start_offset: 8,
+            end_offset: 9,
+            start_pos: Position { line: 1, column: 9 },
+            end_pos: Position {
+                line: 1,
+                column: 10
+            },
+            comments: vec![],
+        }
+    );
+    assert_eq!(
+        s.scan(),
+        Token {
+            tok: TokenType::String,
+            lit: String::from("\"2022.1\""),
+            start_offset: 9,
+            end_offset: 17,
+            start_pos: Position {
+                line: 1,
+                column: 10
+            },
+            end_pos: Position {
+                line: 1,
+                column: 18
+            },
+            comments: vec![],
+        }
+    );
+    assert_eq!(
+        s.scan(),
+        Token {
+            tok: TokenType::RParen,
+            lit: String::from(")"),
+            start_offset: 17,
+            end_offset: 18,
+            start_pos: Position {
+                line: 1,
+                column: 18
+            },
+            end_pos: Position {
+                line: 1,
+                column: 19
+            },
+            comments: vec![],
+        }
+    );
+    assert_eq!(
+        s.scan(),
+        Token {
+            tok: TokenType::Eof,
+            lit: String::from(""),
+            start_offset: 18,
+            end_offset: 18,
+            start_pos: Position {
+                line: 1,
+                column: 19
+            },
+            end_pos: Position {
+                line: 1,
+                column: 19
+            },
+            comments: vec![],
+        }
+    );
+}

@@ -416,6 +416,7 @@ impl<'doc> Formatter<'doc> {
     fn format_file(&mut self, file: &'doc File, include_pkg: bool) -> Doc<'doc> {
         let arena = self.arena;
         let mut doc = arena.nil();
+        doc += self.format_attribute_list(&file.base.attributes);
         if let Some(pkg) = &file.package {
             if include_pkg && !pkg.name.name.is_empty() {
                 doc += self.format_package_clause(pkg);
@@ -728,8 +729,12 @@ impl<'doc> Formatter<'doc> {
                     let current_location: i32 = stmt.base().location.start.line as i32;
                     //compare the line position of adjacent lines to preserve formatted double new lines
                     let line_gap = current_location - previous_location;
-                    // separate different statements with double newline or statements with comments
-                    if line_gap > 1 || cur != prev || starts_with_comment(Node::from_stmt(stmt)) {
+                    // separate different statements with double newline or statements with comments/attributes.
+                    if line_gap > 1
+                        || cur != prev
+                        || starts_with_comment(Node::from_stmt(stmt))
+                        || !stmt.base().attributes.is_empty()
+                    {
                         extra_line = arena.hardline();
                     }
                 }
@@ -788,19 +793,23 @@ impl<'doc> Formatter<'doc> {
 
     fn format_statement(&mut self, s: &'doc Statement) -> Doc<'doc> {
         let arena = self.arena;
-        match s {
-            Statement::Expr(s) => self.format_expression_statement(s),
-            Statement::Variable(s) => self.format_variable_assignment(s),
-            Statement::Option(s) => self.format_option_statement(s),
-            Statement::Return(s) => self.format_return_statement(s),
-            Statement::Bad(s) => {
-                self.err = Some(anyhow!("bad statement"));
-                arena.nil()
+        docs![
+            arena,
+            self.format_attribute_list(&s.base().attributes),
+            match s {
+                Statement::Expr(s) => self.format_expression_statement(s),
+                Statement::Variable(s) => self.format_variable_assignment(s),
+                Statement::Option(s) => self.format_option_statement(s),
+                Statement::Return(s) => self.format_return_statement(s),
+                Statement::Bad(s) => {
+                    self.err = Some(anyhow!("bad statement"));
+                    arena.nil()
+                }
+                Statement::TestCase(n) => self.format_testcase(n),
+                Statement::Builtin(n) => self.format_builtin(n),
             }
-            Statement::TestCase(n) => self.format_testcase(n),
-            Statement::Builtin(n) => self.format_builtin(n),
-        }
-        .group()
+            .group(),
+        ]
     }
 
     fn format_expression_statement(&mut self, s: &'doc ast::ExprStmt) -> Doc<'doc> {
@@ -1818,6 +1827,50 @@ impl<'doc> Formatter<'doc> {
             n.value.replace('/', "\\/"),
             "/",
         ]
+    }
+
+    fn format_attribute_list(&mut self, n: &'doc Vec<ast::Attribute>) -> Doc<'doc> {
+        let arena = self.arena;
+        let mut doc = arena.nil();
+        for attr in n {
+            doc += self.format_attribute(attr).group();
+            doc += arena.hardline();
+        }
+        doc
+    }
+
+    fn format_attribute(&mut self, n: &'doc ast::Attribute) -> Doc<'doc> {
+        let arena = self.arena;
+        let mut doc = docs![arena, self.format_comments(&n.base.comments), "@", &n.name,];
+        if !n.params.is_empty() {
+            doc += self.format_attribute_params(&n.params);
+        }
+        doc
+    }
+
+    fn format_attribute_params(&mut self, n: &'doc [ast::AttributeParam]) -> Doc<'doc> {
+        self.hang_attribute_params(n).format()
+    }
+
+    fn hang_attribute_params(&mut self, n: &'doc [ast::AttributeParam]) -> HangDoc<'doc> {
+        let arena = self.arena;
+
+        let (prefix, body, suffix) = format_item_list(
+            arena,
+            ("(", ")"),
+            arena.nil(),
+            n.iter().map(|item| {
+                docs![
+                    arena,
+                    self.format_expression(&item.value),
+                    self.format_comments(&item.comma),
+                ]
+            }),
+        );
+        HangDoc {
+            affixes: vec![affixes(prefix, suffix)],
+            body,
+        }
     }
 }
 

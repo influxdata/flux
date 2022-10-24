@@ -362,6 +362,10 @@ impl<'input> Parser<'input> {
         self.fname = fname;
         let start_pos = ast::Position::from(&self.peek().start_pos);
         let mut end = ast::Position::invalid();
+
+        // Parse attributes at the beginning of the file.
+        let mut attributes = self.parse_attribute_list();
+
         let pkg = self.parse_package_clause();
         if let Some(pkg) = &pkg {
             end = pkg.base.location.end;
@@ -370,14 +374,22 @@ impl<'input> Parser<'input> {
         if let Some(import) = imports.last() {
             end = import.base.location.end;
         }
-        let body = self.parse_statement_list();
+        let mut body = self.parse_statement_list();
         if let Some(stmt) = body.last() {
             end = stmt.base().location.end;
         }
+
+        // If no package or imports were specified, then attach
+        // the attributes to the first statement if it exists.
+        if let (None, 0, Some(stmt)) = (&pkg, imports.len(), body.first_mut()) {
+            stmt.base_mut().attributes.append(&mut attributes);
+        }
+
         let eof = self.peek().comments.clone();
         File {
             base: BaseNode {
                 location: self.source_location(&start_pos, &end),
+                attributes,
                 ..BaseNode::default()
             },
             name: self.fname.clone(),
@@ -451,8 +463,10 @@ impl<'input> Parser<'input> {
     }
 
     fn parse_statement_inner(&mut self) -> Statement {
+        let attributes = self.parse_attribute_list();
+
         let t = self.peek();
-        match t.tok {
+        let mut stmt = match t.tok {
             TokenType::Int
             | TokenType::Float
             | TokenType::String
@@ -481,7 +495,9 @@ impl<'input> Parser<'input> {
                     text: t.lit,
                 }))
             }
-        }
+        };
+        stmt.base_mut().attributes = attributes;
+        stmt
     }
     fn parse_option_assignment(&mut self) -> Statement {
         let t = self.expect(TokenType::Option);
@@ -2295,6 +2311,69 @@ impl<'input> Parser<'input> {
                 }))
             }
         }
+    }
+
+    fn parse_attribute_list(&mut self) -> Vec<Attribute> {
+        let mut attributes = Vec::new();
+        while self.peek().tok == TokenType::Attribute {
+            attributes.push(self.parse_attribute());
+        }
+        attributes
+    }
+
+    fn parse_attribute(&mut self) -> Attribute {
+        let tok = self.expect(TokenType::Attribute);
+        let name = tok.lit.trim_start_matches('@').to_string();
+
+        // Parenthesis are optional. No parenthesis means no parameters.
+        if self.peek().tok != TokenType::LParen {
+            return Attribute {
+                base: self.base_node_from_token(&tok),
+                name,
+                params: Vec::new(),
+            };
+        }
+
+        self.open(TokenType::LParen, TokenType::RParen);
+        let params = self.parse_attribute_params();
+        let end = self.close(TokenType::RParen);
+        let mut base = self.base_node_from_tokens(&tok, &end);
+        base.set_comments(tok.comments.clone());
+        Attribute { base, name, params }
+    }
+
+    fn parse_attribute_params(&mut self) -> Vec<AttributeParam> {
+        let mut params = Vec::new();
+        let mut errs = Vec::new();
+        while self.more() {
+            let value = self.parse_primary_expression();
+            let start_pos = value.base().location.start;
+            let mut end_pos = value.base().location.end;
+            let mut comments = Vec::new();
+
+            if self.more() {
+                let t = self.peek();
+                if t.tok != TokenType::Comma {
+                    errs.push(format!(
+                        "expected comma in attribute parameter list, got {}",
+                        t.tok
+                    ))
+                } else {
+                    let t = self.consume();
+                    end_pos = ast::Position::from(&t.end_pos);
+                    comments = t.comments;
+                }
+            }
+
+            let param = AttributeParam {
+                base: self.base_node_from_pos(&start_pos, &end_pos),
+                value,
+                comma: comments,
+            };
+            params.push(param);
+        }
+        self.errs.append(&mut errs);
+        params
     }
 }
 
