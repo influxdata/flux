@@ -5,6 +5,7 @@ import "join"
 import "array"
 import "csv"
 import "testing"
+import "internal/debug"
 
 right =
     array.from(
@@ -441,4 +442,154 @@ testcase join_empty_table {
     want = /error preparing right sight of join: cannot join on empty table/
 
     testing.shouldError(fn, want)
+}
+
+testcase large_input_in_join {
+    rTbl =
+        array.from(
+            rows: [
+                {_time: 2022-09-28T12:24:30Z, bool_value: true},
+                {_time: 2022-09-28T17:00:00Z, bool_value: false},
+                {_time: 2022-09-29T07:00:00Z, bool_value: true},
+                {_time: 2022-09-29T17:00:00Z, bool_value: false},
+                {_time: 2022-09-30T08:00:00Z, bool_value: true},
+                {_time: 2022-09-30T16:00:00Z, bool_value: false},
+                {_time: 2022-10-03T07:00:00Z, bool_value: true},
+                {_time: 2022-10-03T17:00:00Z, bool_value: false},
+                {_time: 2022-10-04T07:00:00Z, bool_value: true},
+                {_time: 2022-10-04T17:00:00Z, bool_value: false},
+                {_time: 2022-10-05T07:00:00Z, bool_value: true},
+                {_time: 2022-10-05T12:24:30Z, bool_value: true},
+                {_time: 2022-10-05T12:24:30Z, bool_value: true},
+            ],
+        )
+            |> debug.opaque()
+    lTbl =
+        array.from(
+            rows: [
+                {_time: 2022-10-05T10:26:38Z, _value: "d", id: "id1"},
+                {_time: 2022-09-28T13:57:12Z, _value: "d", id: "id2"},
+                {_time: 2022-09-28T13:57:24Z, _value: "d", id: "id3"},
+                {_time: 2022-09-28T13:57:27Z, _value: "d", id: "id4"},
+                {_time: 2022-09-28T13:57:39Z, _value: "d", id: "id5"},
+                {_time: 2022-09-28T13:57:41Z, _value: "d", id: "id6"},
+                {_time: 2022-09-28T13:57:44Z, _value: "d", id: "id7"},
+                {_time: 2022-09-28T13:57:47Z, _value: "d", id: "id8"},
+                {_time: 2022-09-29T06:35:08Z, _value: "d", id: "id9"},
+                {_time: 2022-09-29T06:35:26Z, _value: "ip", id: "id10"},
+                {_time: 2022-09-28T13:01:45Z, _value: "pp", id: "id11"},
+                {_time: 2022-09-28T15:42:52Z, _value: "a", id: "id12"},
+                {_time: 2022-09-29T10:47:35Z, _value: "d", id: "id13"},
+                {_time: 2022-09-30T10:54:23Z, _value: "d", id: "id14"},
+                {_time: 2022-10-04T15:43:50Z, _value: "d", id: "id15"},
+                {_time: 2022-10-05T08:43:58Z, _value: "d", id: "id16"},
+                {_time: 2022-10-05T08:44:07Z, _value: "d", id: "id17"},
+                {_time: 2022-10-05T08:44:29Z, _value: "d", id: "id18"},
+                {_time: 2022-10-05T08:44:20Z, _value: "d", id: "id19"},
+                {_time: 2022-09-29T13:53:56Z, _value: "d", id: "id20"},
+                {_time: 2022-10-03T15:12:30Z, _value: "d", id: "id21"},
+                {_time: 2022-10-05T08:44:36Z, _value: "d", id: "id22"},
+                {_time: 2022-09-28T15:57:40Z, _value: "d", id: "id23"},
+                {_time: 2022-09-29T14:24:25Z, _value: "d", id: "id24"},
+                {_time: 2022-09-29T14:27:06Z, _value: "d", id: "id25"},
+                {_time: 2022-10-04T09:56:55Z, _value: "d", id: "id26"},
+                {_time: 2022-10-05T08:44:44Z, _value: "d", id: "id27"},
+                {_time: 2022-10-05T09:02:50Z, _value: "d", id: "id28"},
+                {_time: 2022-09-29T10:47:23Z, _value: "r", id: "id29"},
+                {_time: 2022-10-05T09:03:32Z, _value: "d", id: "id30"},
+                {_time: 2022-09-29T12:41:00Z, _value: "d", id: "id31"},
+                {_time: 2022-10-04T14:43:00Z, _value: "d", id: "id32"},
+                {_time: 2022-09-29T12:41:14Z, _value: "f", id: "id33"},
+                {_time: 2022-10-05T08:45:15Z, _value: "d", id: "id34"},
+                {_time: 2022-09-29T15:53:57Z, _value: "r", id: "id35"},
+                {_time: 2022-09-29T15:54:14Z, _value: "r", id: "id36"},
+                {_time: 2022-10-05T09:14:18Z, _value: "d", id: "id37"},
+                {_time: 2022-09-30T11:54:37Z, _value: "r", id: "id38"},
+                {_time: 2022-10-05T09:03:52Z, _value: "d", id: "id39"},
+                {_time: 2022-10-05T09:02:30Z, _value: "d", id: "id40"},
+                {_time: 2022-10-05T09:08:21Z, _value: "d", id: "id41"},
+                {_time: 2022-10-03T07:31:56Z, _value: "d", id: "id42"},
+                {_time: 2022-10-03T15:06:16Z, _value: "d", id: "id43"},
+                {_time: 2022-10-03T07:54:57Z, _value: "r", id: "id44"},
+                {_time: 2022-10-04T08:30:25Z, _value: "d", id: "id45"},
+                {_time: 2022-10-05T08:45:44Z, _value: "d", id: "id46"},
+                {_time: 2022-10-05T08:45:58Z, _value: "d", id: "id47"},
+                {_time: 2022-10-05T08:46:06Z, _value: "d", id: "id48"},
+                {_time: 2022-10-03T13:30:01Z, _value: "b", id: "id49"},
+                {_time: 2022-10-03T14:18:00Z, _value: "b", id: "id50"},
+                {_time: 2022-10-03T14:18:07Z, _value: "b", id: "id51"},
+                {_time: 2022-10-03T14:18:58Z, _value: "d", id: "id52"},
+                {_time: 2022-10-03T14:21:45Z, _value: "f", id: "id53"},
+                {_time: 2022-10-03T14:33:13Z, _value: "d", id: "id54"},
+                {_time: 2022-10-03T14:33:34Z, _value: "f", id: "id55"},
+                {_time: 2022-10-04T07:32:29Z, _value: "d", id: "id56"},
+                {_time: 2022-10-04T07:32:52Z, _value: "f", id: "id57"},
+                {_time: 2022-10-04T09:06:14Z, _value: "r", id: "id58"},
+                {_time: 2022-10-04T11:49:50Z, _value: "f", id: "id59"},
+                {_time: 2022-10-04T12:12:05Z, _value: "d", id: "id60"},
+                {_time: 2022-10-04T14:38:21Z, _value: "r", id: "id61"},
+                {_time: 2022-10-04T14:52:05Z, _value: "r", id: "id62"},
+                {_time: 2022-10-04T15:11:23Z, _value: "f", id: "id63"},
+                {_time: 2022-10-04T15:14:30Z, _value: "d", id: "id64"},
+                {_time: 2022-10-05T12:12:11Z, _value: "r", id: "id65"},
+                {_time: 2022-10-05T12:20:34Z, _value: "av", id: "id66"},
+                {_time: 2022-10-05T12:21:09Z, _value: "d", id: "id67"},
+                {_time: 2022-10-05T12:20:30Z, _value: "f", id: "id68"},
+                {_time: 2022-09-28T14:18:25Z, _value: "d", id: "id69"},
+                {_time: 2022-09-28T14:18:35Z, _value: "d", id: "id70"},
+                {_time: 2022-09-28T14:18:37Z, _value: "d", id: "id71"},
+                {_time: 2022-10-05T09:15:09Z, _value: "pd", id: "id72"},
+                {_time: 2022-10-05T07:06:07Z, _value: "pd", id: "id73"},
+                {_time: 2022-10-03T08:08:53Z, _value: "rec", id: "id74"},
+                {_time: 2022-10-03T08:08:38Z, _value: "rec", id: "id75"},
+                {_time: 2022-10-05T07:09:44Z, _value: "pd", id: "id76"},
+                {_time: 2022-10-05T07:06:08Z, _value: "pd", id: "id77"},
+                {_time: 2022-10-05T09:14:32Z, _value: "pd", id: "id78"},
+                {_time: 2022-09-29T13:12:37Z, _value: "pd", id: "id79"},
+                {_time: 2022-09-29T15:54:15Z, _value: "o", id: "id80"},
+                {_time: 2022-09-30T14:43:29Z, _value: "c", id: "id81"},
+                {_time: 2022-09-29T13:54:20Z, _value: "fp", id: "id82"},
+                {_time: 2022-09-29T15:53:59Z, _value: "o", id: "id83"},
+            ],
+        )
+            |> debug.opaque()
+
+    mappedRight =
+        rTbl
+            |> set(key: "on", value: "x")
+
+    mappedLeft =
+        lTbl
+            |> set(key: "on", value: "x")
+    want =
+        array.from(
+            rows: [
+                {_time: 2022-09-28T12:24:30Z, bool_value: true, id: "id83", on: "x"},
+                {_time: 2022-09-28T17:00:00Z, bool_value: false, id: "id83", on: "x"},
+                {_time: 2022-09-29T07:00:00Z, bool_value: true, id: "id83", on: "x"},
+                {_time: 2022-09-29T17:00:00Z, bool_value: false, id: "id83", on: "x"},
+                {_time: 2022-09-30T08:00:00Z, bool_value: true, id: "id83", on: "x"},
+                {_time: 2022-09-30T16:00:00Z, bool_value: false, id: "id83", on: "x"},
+                {_time: 2022-10-03T07:00:00Z, bool_value: true, id: "id83", on: "x"},
+                {_time: 2022-10-03T17:00:00Z, bool_value: false, id: "id83", on: "x"},
+                {_time: 2022-10-04T07:00:00Z, bool_value: true, id: "id83", on: "x"},
+                {_time: 2022-10-04T17:00:00Z, bool_value: false, id: "id83", on: "x"},
+                {_time: 2022-10-05T07:00:00Z, bool_value: true, id: "id83", on: "x"},
+                {_time: 2022-10-05T12:24:30Z, bool_value: true, id: "id83", on: "x"},
+                {_time: 2022-10-05T12:24:30Z, bool_value: true, id: "id83", on: "x"},
+            ],
+        )
+
+    got =
+        join.inner(
+            left: mappedLeft,
+            right: mappedRight,
+            on: (l, r) => l.on == r.on,
+            as: (l, r) => {
+                return {r with id: l.id}
+            },
+        )
+            |> tail(n: 13)
+
+    testing.diff(want: want, got: got)
 }
