@@ -20,16 +20,18 @@ use fluxcore::{
             types::{build_env, build_type},
         },
         import::Importer,
-        import::Packages,
         nodes::{Package, Symbol},
         types::{BoundTvar, MonoType},
         Analyzer, AnalyzerConfig, Feature, PackageExports,
     },
+    Database, Flux,
 };
 
-use crate::semantic::flatbuffers::semantic_generated::fbsemantic::MonoTypeHolderArgs;
+use crate::{
+    new_db, semantic::flatbuffers::semantic_generated::fbsemantic::MonoTypeHolderArgs, Packages,
+};
 
-use super::{new_semantic_analyzer, prelude, Error, Result, IMPORTS};
+use super::{new_semantic_analyzer, new_semantic_salsa_analyzer, prelude, Error, Result, IMPORTS};
 
 /// An error handle designed to allow passing `Error` instances to library
 /// consumers across language boundaries.
@@ -428,9 +430,17 @@ fn new_stateful_analyzer(options: Options) -> Result<StatefulAnalyzer> {
         Some(imports) => imports,
         None => return Err(anyhow!("missing stdlib imports").into()),
     };
+
+    let db = if options.features.contains(&Feature::SalsaDatabase) {
+        Some(new_db()?)
+    } else {
+        None
+    };
+
     Ok(StatefulAnalyzer {
         env,
         imports,
+        db,
         options,
     })
 }
@@ -440,31 +450,30 @@ fn new_stateful_analyzer(options: Options) -> Result<StatefulAnalyzer> {
 pub struct StatefulAnalyzer {
     env: PackageExports,
     imports: &'static Packages,
+    db: Option<Database>,
     options: Options,
 }
 
 impl StatefulAnalyzer {
     fn analyze(&mut self, ast_pkg: &ast::Package) -> Result<fluxcore::semantic::nodes::Package> {
         let Options { features } = self.options.clone();
-        let mut analyzer = Analyzer::new(
-            Environment::from(&self.env),
-            self.imports,
-            AnalyzerConfig { features },
-        );
-        let (mut env, sem_pkg) = match analyzer.analyze_ast(ast_pkg) {
+
+        let env = Environment::from(&self.env);
+
+        let result = if let Some(db) = &self.db {
+            let mut db = db as &dyn Flux;
+            let mut analyzer = Analyzer::new(env, &mut db, AnalyzerConfig { features });
+            analyzer.analyze_ast(ast_pkg)
+        } else {
+            let mut analyzer = Analyzer::new(env, &mut self.imports, AnalyzerConfig { features });
+            analyzer.analyze_ast(ast_pkg)
+        };
+        let (mut env, sem_pkg) = match result {
             Ok(r) => r,
             Err(e) => {
-                // In the face of an error we need to get the imports
-                // back from the analyzer.
-                let (_env, imports) = analyzer.drop();
-                self.imports = imports;
                 return Err(e.error.into());
             }
         };
-        // Restore the imports.
-        // We restore the env below.
-        let (_, imports) = analyzer.drop();
-        self.imports = imports;
 
         // Re-export any imported names into the env.
         // Normally we do not do this but we need to remember
@@ -476,7 +485,7 @@ impl StatefulAnalyzer {
 
                 // A failure should have already happened if any of these
                 // imports would have failed.
-                if let Some(typ) = self.imports.import(path) {
+                if let Ok(typ) = self.imports.import(path) {
                     env.add(dec.import_symbol.clone(), typ);
                 }
             }
@@ -595,11 +604,20 @@ impl Options {
 /// and prelude.
 pub fn analyze(ast_pkg: &ast::Package, options: Options) -> SalvageResult<Package, Error> {
     let Options { features } = options;
-    let mut analyzer = new_semantic_analyzer(AnalyzerConfig { features })?;
-    let (_, sem_pkg) = analyzer
-        .analyze_ast(ast_pkg)
-        .map_err(|salvage| salvage.err_into().map(|(_, sem_pkg)| sem_pkg))?;
-    Ok(sem_pkg)
+
+    if features.contains(&Feature::SalsaDatabase) {
+        let mut analyzer = new_semantic_salsa_analyzer(AnalyzerConfig { features })?;
+        let (_, sem_pkg) = analyzer
+            .analyze_ast(ast_pkg)
+            .map_err(|salvage| salvage.err_into().map(|(_, sem_pkg)| sem_pkg))?;
+        Ok(sem_pkg)
+    } else {
+        let mut analyzer = new_semantic_analyzer(AnalyzerConfig { features })?;
+        let (_, sem_pkg) = analyzer
+            .analyze_ast(ast_pkg)
+            .map_err(|salvage| salvage.err_into().map(|(_, sem_pkg)| sem_pkg))?;
+        Ok(sem_pkg)
+    }
 }
 
 /// Given a Flux source and a variable name, find out the type of that variable in the Flux source code.
@@ -625,7 +643,7 @@ pub unsafe extern "C" fn flux_get_env_stdlib(buf: *mut flux_buffer_t) {
     )
     .unwrap();
     let mut builder = flatbuffers::FlatBufferBuilder::new();
-    let fb_type_env = build_env(&mut builder, env);
+    let fb_type_env = build_env(&mut builder, &env);
 
     builder.finish(fb_type_env, None);
     let (mut vec, offset) = builder.collapse();
@@ -768,7 +786,7 @@ mod tests {
     }
 
     fn find_var_type_from_source(source: &str, var_name: &str) -> Result<MonoType> {
-        let mut analyzer = new_semantic_analyzer(AnalyzerConfig::default())?;
+        let mut analyzer = new_semantic_salsa_analyzer(AnalyzerConfig::default())?;
         let pkg = match analyzer.analyze_source("".into(), "".into(), source) {
             Ok((_, pkg)) => pkg,
             Err(err) => match err.value {
@@ -934,7 +952,7 @@ from(bucket: v.bucket)
 
     #[test]
     fn deserialize_and_infer() {
-        let mut analyzer = new_semantic_analyzer(AnalyzerConfig::default()).unwrap();
+        let mut analyzer = new_semantic_salsa_analyzer(AnalyzerConfig::default()).unwrap();
 
         let src = r#"
             x = from(bucket: "b")
@@ -969,7 +987,7 @@ from(bucket: v.bucket)
 
     #[test]
     fn infer_union() {
-        let mut analyzer = new_semantic_analyzer(AnalyzerConfig::default()).unwrap();
+        let mut analyzer = new_semantic_salsa_analyzer(AnalyzerConfig::default()).unwrap();
 
         let src = r#"
             a = from(bucket: "b")
@@ -1053,7 +1071,7 @@ from(bucket: v.bucket)
 
     #[test]
     fn prelude_symbols_retain_their_package() {
-        let mut analyzer = new_semantic_analyzer(AnalyzerConfig::default()).unwrap();
+        let mut analyzer = new_semantic_salsa_analyzer(AnalyzerConfig::default()).unwrap();
 
         let src = r#"
             derivative

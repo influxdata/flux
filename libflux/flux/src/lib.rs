@@ -2,12 +2,14 @@
 
 //! This module provides the public facing API for Flux's Go runtime, including formatting,
 //! parsing, and standard library analysis.
+use std::sync::Arc;
 
 use anyhow::anyhow;
 use fluxcore::semantic::env::Environment;
 use fluxcore::semantic::flatbuffers::semantic_generated::fbsemantic as fb;
 use fluxcore::semantic::import::Packages;
 use fluxcore::semantic::{Analyzer, AnalyzerConfig, PackageExports};
+use fluxcore::{Database, Flux};
 use once_cell::sync::Lazy;
 use thiserror::Error;
 
@@ -52,7 +54,7 @@ pub fn prelude() -> Option<PackageExports> {
         .into()
 }
 
-static PRELUDE: Lazy<Option<PackageExports>> = Lazy::new(prelude);
+static PRELUDE: Lazy<Option<Arc<PackageExports>>> = Lazy::new(|| prelude().map(Arc::new));
 
 /// Imports is a map of import path to types of packages.
 pub fn imports() -> Option<Packages> {
@@ -72,11 +74,30 @@ static IMPORTS: Lazy<Option<Packages>> = Lazy::new(imports);
 pub fn new_semantic_analyzer(
     config: AnalyzerConfig,
 ) -> Result<Analyzer<'static, &'static Packages>> {
-    let env = PRELUDE.as_ref().ok_or_else(|| anyhow!("missing prelude"))?;
+    let env = &**PRELUDE.as_ref().ok_or_else(|| anyhow!("missing prelude"))?;
 
     let importer = IMPORTS
         .as_ref()
         .ok_or_else(|| anyhow!("missing stdlib imports"))?;
 
     Ok(Analyzer::new(Environment::from(env), importer, config))
+}
+
+fn new_semantic_salsa_analyzer(config: AnalyzerConfig) -> Result<Analyzer<'static, Database>> {
+    let env = PRELUDE.as_ref().ok_or_else(|| anyhow!("missing prelude"))?;
+
+    let db = new_db()?;
+
+    Ok(Analyzer::new(Environment::from(&**env), db, config))
+}
+
+fn new_db() -> Result<Database> {
+    let mut db = fluxcore::Database::default();
+
+    let imports = IMPORTS
+        .as_ref()
+        .ok_or_else(|| anyhow!("missing stdlib imports"))?;
+    db.set_precompiled_packages(Some(imports));
+
+    Ok(db)
 }

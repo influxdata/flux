@@ -39,12 +39,14 @@ pub mod parser;
 pub mod scanner;
 pub mod semantic;
 
+mod db;
 mod map;
 
 use std::hash::BuildHasherDefault;
 
 use anyhow::{bail, Result};
 pub use ast::DEFAULT_PACKAGE_NAME;
+pub use db::{Database, DatabaseBuilder, Flux, FluxBase};
 use fnv::FnvHasher;
 
 type DefaultHasher = BuildHasherDefault<FnvHasher>;

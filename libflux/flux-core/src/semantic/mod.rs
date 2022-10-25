@@ -290,6 +290,11 @@ impl PackageExports {
     pub fn into_bindings(self) -> impl Iterator<Item = (Symbol, PolyType)> {
         self.values.into_iter().map(|(_, v)| (v.symbol, v.typ))
     }
+
+    /// Returns an iterator over exported bindings in this package
+    pub fn bindings_iter(&self) -> impl Iterator<Item = (&Symbol, &PolyType)> + '_ {
+        self.values.iter().map(|(_, v)| (&v.symbol, &v.typ))
+    }
 }
 
 /// Constructs a polytype, or more specifically a generic record type, from a hash map.
@@ -350,6 +355,15 @@ pub struct FileErrors {
     pub pretty_fmt: bool,
 }
 
+impl<W> From<Error> for Diagnostics<ErrorKind, W> {
+    fn from(error: Error) -> Self {
+        Self {
+            errors: error.into(),
+            warnings: Errors::default(),
+        }
+    }
+}
+
 impl fmt::Display for FileErrors {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match &self.source {
@@ -367,6 +381,15 @@ pub struct Diagnostics<E, W> {
     pub errors: Errors<Located<E>>,
     /// The warnings the occurred in that file
     pub warnings: Errors<Located<W>>,
+}
+
+impl<E, W> Default for Diagnostics<E, W> {
+    fn default() -> Self {
+        Self {
+            errors: Default::default(),
+            warnings: Default::default(),
+        }
+    }
 }
 
 impl<E, W> fmt::Display for Diagnostics<E, W>
@@ -517,6 +540,9 @@ pub enum Feature {
 
     /// Enables formatting with codespan for errors
     PrettyError,
+
+    /// Enables salsa for use with the semantic analyzer
+    SalsaDatabase,
 }
 
 impl FromStr for Feature {
@@ -595,8 +621,13 @@ impl<'env, I: import::Importer> Analyzer<'env, I> {
             if has_fatal_error {
                 return Err(Salvage {
                     error: FileErrors {
-                        file: ast_pkg.package.clone(),
-                        source: None,
+                        file: ast_pkg.files[0]
+                            .base
+                            .location
+                            .file
+                            .clone()
+                            .unwrap_or_else(|| ast_pkg.package.clone()),
+                        source: ast_pkg.files[0].base.location.source.clone(),
                         diagnostics: Diagnostics {
                             errors,
                             warnings: Errors::new(),
@@ -658,7 +689,12 @@ impl<'env, I: import::Importer> Analyzer<'env, I> {
         if errors.has_errors() {
             return Err(Salvage {
                 error: FileErrors {
-                    file: sem_pkg.package.clone(),
+                    file: ast_pkg.files[0]
+                        .base
+                        .location
+                        .file
+                        .clone()
+                        .unwrap_or_else(|| ast_pkg.package.clone()),
                     source: ast_pkg.files[0].base.location.source.clone(),
                     diagnostics: Diagnostics { errors, warnings },
                     pretty_fmt: self.config.features.contains(&Feature::PrettyError),

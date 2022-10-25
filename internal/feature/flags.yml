@@ -81,3 +81,9 @@
   key: prettyError
   default: false
   contact: Markus Westerlind
+
+- name: Salsa Database
+  description: Enables the salsa database for semantic analysis
+  key: salsaDatabase
+  default: false
+  contact: Markus Westerlind

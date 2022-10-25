@@ -1,4 +1,7 @@
+use std::sync::Arc;
+
 use super::*;
+
 use crate::semantic::{
     nodes::{FunctionExpr, Package},
     walk::{walk, Node},
@@ -26,7 +29,12 @@ fn vectorize(src: &str) -> anyhow::Result<Package> {
         .collect();
     let importer: Packages = imports
         .into_iter()
-        .map(|(path, types)| (path.to_string(), PackageExports::try_from(types).unwrap()))
+        .map(|(path, types)| {
+            (
+                path.to_string(),
+                Arc::new(PackageExports::try_from(types).unwrap()),
+            )
+        })
         .collect();
     let mut prelude = PackageExports::new();
     prelude.copy_bindings_from(importer.get("boolean").unwrap());

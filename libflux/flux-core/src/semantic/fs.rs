@@ -7,6 +7,7 @@ use libflate::gzip::Decoder;
 use crate::semantic::{
     flatbuffers::semantic_generated::fbsemantic as fb,
     import::Importer,
+    nodes::ErrorKind,
     types::{PolyType, PolyTypeMap},
 };
 
@@ -45,53 +46,57 @@ impl<F: FileSystem> FileSystemImporter<F> {
             cache: PolyTypeMap::new(),
         }
     }
-}
-impl<F: FileSystem> Importer for FileSystemImporter<F> {
-    fn import(&mut self, path: &str) -> Option<PolyType> {
-        match self.cache.get(path) {
-            Some(pt) => Some(pt.clone()),
-            None => {
-                match self.fs.open(path) {
+
+    fn read_file(&mut self, path: &str) -> Option<PolyType> {
+        match self.fs.open(path) {
+            Err(_) => {
+                // TODO(nathanielc): Update Importer trait to allow for errors
+                //eprintln!("error importing package {}: {}", path, e);
+                None
+            }
+            Ok(f) => {
+                match Decoder::new(f) {
                     Err(_) => {
                         // TODO(nathanielc): Update Importer trait to allow for errors
-                        //eprintln!("error importing package {}: {}", path, e);
+                        //eprintln!("error creating decoder {}: {}", path, e);
                         None
                     }
-                    Ok(f) => {
-                        match Decoder::new(f) {
+                    Ok(mut decoder) => {
+                        // read and parse file as flatbuffers types
+                        let mut buf: Vec<u8> = Vec::new();
+                        match decoder.read_to_end(&mut buf) {
                             Err(_) => {
                                 // TODO(nathanielc): Update Importer trait to allow for errors
-                                //eprintln!("error creating decoder {}: {}", path, e);
+                                //eprintln!("error reading package {}: {}", path, e);
                                 None
                             }
-                            Ok(mut decoder) => {
-                                // read and parse file as flatbuffers types
-                                let mut buf: Vec<u8> = Vec::new();
-                                match decoder.read_to_end(&mut buf) {
+                            Ok(_) => {
+                                let pt: PolyType = match flatbuffers::root::<fb::Module>(&buf) {
+                                    Ok(module) => module.polytype()?.into(),
                                     Err(_) => {
                                         // TODO(nathanielc): Update Importer trait to allow for errors
-                                        //eprintln!("error reading package {}: {}", path, e);
+                                        //eprintln!("error parsing package {}: {}", path, e);
                                         None
                                     }
-                                    Ok(_) => {
-                                        let pt: PolyType =
-                                            match flatbuffers::root::<fb::Module>(&buf) {
-                                                Ok(module) => module.polytype()?.into(),
-                                                Err(_) => {
-                                                    // TODO(nathanielc): Update Importer trait to allow for errors
-                                                    //eprintln!("error parsing package {}: {}", path, e);
-                                                    None
-                                                }
-                                            }?;
-                                        self.cache.insert(path.to_string(), pt.clone());
-                                        Some(pt)
-                                    }
-                                }
+                                }?;
+                                self.cache.insert(path.to_string(), pt.clone());
+                                Some(pt)
                             }
                         }
                     }
                 }
             }
+        }
+    }
+}
+
+impl<F: FileSystem> Importer for FileSystemImporter<F> {
+    fn import(&mut self, path: &str) -> Result<PolyType, ErrorKind> {
+        match self.cache.get(path) {
+            Some(pt) => Ok(pt.clone()),
+            None => self
+                .read_file(path)
+                .ok_or_else(|| ErrorKind::InvalidImportPath(path.to_owned())),
         }
     }
 }

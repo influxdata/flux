@@ -37,6 +37,7 @@ pretty_assertions = "1"
 
 [build-dependencies]
 anyhow = "1"
+env_logger = "0.9"
 flatbuffers = "22.9.29"
 flux-core = { path = "../flux-core" }
 walkdir = "2"

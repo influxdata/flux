@@ -49,6 +49,8 @@ fn canonicalize_all_files(root: &Path) -> Vec<String> {
 }
 
 fn main() -> Result<()> {
+    env_logger::init();
+
     let dir = path::PathBuf::from(env::var("OUT_DIR")?);
 
     let stdlib_path = Path::new(stdlib_relative_path());
@@ -74,7 +76,7 @@ fn main() -> Result<()> {
     }
 
     let path = dir.join("prelude.data");
-    serialize(prelude, fb::build_env, &path)?;
+    serialize(&prelude, fb::build_env, &path)?;
 
     let path = dir.join("stdlib.data");
     serialize(imports, fb::build_packages, &path)?;

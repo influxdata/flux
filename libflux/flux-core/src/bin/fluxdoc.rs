@@ -12,7 +12,8 @@ use structopt::StructOpt;
 
 use fluxcore::{
     doc::{self, example},
-    semantic::{bootstrap, env::Environment, Analyzer},
+    semantic::bootstrap,
+    DatabaseBuilder, Flux, FluxBase,
 };
 
 #[derive(Debug, StructOpt)]
@@ -271,14 +272,27 @@ fn consume_sequentially<T>(
 
 /// Parse documentation for the specified directory.
 fn parse_docs(stdlib_dir: &Path, dir: &Path) -> Result<(Vec<doc::PackageDoc>, doc::Diagnostics)> {
-    let (prelude, stdlib_importer) = bootstrap::stdlib(stdlib_dir)?;
+    let db = DatabaseBuilder::default()
+        // We resolve paths in stdlib_dir first, then `dir` which mimicks the previous behavior
+        // most closely
+        .filesystem_roots(vec![stdlib_dir.into(), dir.into()])
+        .build();
 
-    let mut analyzer = Analyzer::new_with_defaults(Environment::from(&prelude), stdlib_importer);
-    let ast_packages = bootstrap::parse_dir(dir)?;
-    let mut docs = Vec::with_capacity(ast_packages.len());
+    let package_names = bootstrap::parse_dir(dir)?;
+    let mut docs = Vec::with_capacity(package_names.len());
     let mut diagnostics = Vec::new();
-    for (pkgpath, ast_pkg) in ast_packages {
-        let (pkgtypes, _) = analyzer.analyze_ast(&ast_pkg).map_err(|err| err.error)?;
+    for pkgpath in package_names {
+        let ast_pkg = db.ast_package(pkgpath.clone()).map_err(|err| {
+            let mut errors = db.package_errors();
+            errors.push(err);
+            errors
+        })?;
+        let (pkgtypes, _) = db.semantic_package(pkgpath.clone()).map_err(|err| {
+            let mut errors = db.package_errors();
+            errors.push(err.error);
+            errors
+        })?;
+
         let (doc, mut diags) = doc::parse_package_doc_comments(&ast_pkg, &pkgpath, &pkgtypes)
             .context(format!("generating docs for \"{}\"", &pkgpath))?;
         diagnostics.append(&mut diags);

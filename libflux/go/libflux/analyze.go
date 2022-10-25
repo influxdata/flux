@@ -40,7 +40,8 @@ func SemanticPackages() (map[string]*semantic.Package, error) {
 			return nil, err
 		}
 
-		m[path.Dir(pkg.Files[0].File)] = &pkg
+		k := path.Dir(pkg.Files[0].File)
+		m[k] = &pkg
 	}
 
 	return m, nil

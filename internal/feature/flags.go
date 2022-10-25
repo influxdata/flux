@@ -161,6 +161,18 @@ func PrettyError() BoolFlag {
 	return prettyError
 }
 
+var salsaDatabase = feature.MakeBoolFlag(
+	"Salsa Database",
+	"salsaDatabase",
+	"Markus Westerlind",
+	false,
+)
+
+// SalsaDatabase - Enables the salsa database for semantic analysis
+func SalsaDatabase() BoolFlag {
+	return salsaDatabase
+}
+
 // Inject will inject the Flagger into the context.
 func Inject(ctx context.Context, flagger Flagger) context.Context {
 	return feature.Inject(ctx, flagger)
@@ -179,6 +191,7 @@ var all = []Flag{
 	queryConcurrencyIncrease,
 	strictNullLogicalOps,
 	prettyError,
+	salsaDatabase,
 }
 
 var byKey = map[string]Flag{
@@ -194,6 +207,7 @@ var byKey = map[string]Flag{
 	"queryConcurrencyIncrease":         queryConcurrencyIncrease,
 	"strictNullLogicalOps":             strictNullLogicalOps,
 	"prettyError":                      prettyError,
+	"salsaDatabase":                    salsaDatabase,
 }
 
 // Flags returns all feature flags.
