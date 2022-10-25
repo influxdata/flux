@@ -10,6 +10,7 @@ import (
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/table"
+	"github.com/influxdata/flux/internal/date"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/plan"
@@ -21,12 +22,14 @@ import (
 const ShiftKind = "timeShift"
 
 type ShiftOpSpec struct {
-	Shift   flux.Duration `json:"duration"`
-	Columns []string      `json:"columns"`
+	Shift    flux.Duration   `json:"duration"`
+	Location string          `json:"location"`
+	Offset   values.Duration `json:"offset"`
+	Columns  []string        `json:"columns"`
 }
 
 func init() {
-	shiftSignature := runtime.MustLookupBuiltinType("universe", "timeShift")
+	shiftSignature := runtime.MustLookupBuiltinType("universe", "_timeShift")
 
 	runtime.RegisterPackageValue("universe", ShiftKind, flux.MustValue(flux.FunctionValue(ShiftKind, createShiftOpSpec, shiftSignature)))
 	plan.RegisterProcedureSpec(ShiftKind, newShiftProcedure, ShiftKind)
@@ -45,6 +48,13 @@ func createShiftOpSpec(args flux.Arguments, a *flux.Administration) (flux.Operat
 	} else {
 		spec.Shift = shift
 	}
+
+	location, offset, err := date.GetLocationFromFluxArgs(args)
+	if err != nil {
+		return nil, err
+	}
+	spec.Location = location
+	spec.Offset = offset
 
 	if cols, ok, err := args.GetArray("columns", semantic.String); err != nil {
 		return nil, err
@@ -70,9 +80,11 @@ func (s *ShiftOpSpec) Kind() flux.OperationKind {
 
 type ShiftProcedureSpec struct {
 	plan.DefaultCost
-	Shift   flux.Duration
-	Columns []string
-	Now     time.Time
+	Shift    flux.Duration
+	Location string
+	Offset   values.Duration
+	Columns  []string
+	Now      time.Time
 }
 
 // TimeBounds implements plan.BoundsAwareProcedureSpec
@@ -90,9 +102,11 @@ func newShiftProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.Proc
 	}
 
 	return &ShiftProcedureSpec{
-		Shift:   spec.Shift,
-		Columns: spec.Columns,
-		Now:     pa.Now(),
+		Shift:    spec.Shift,
+		Location: spec.Location,
+		Offset:   spec.Offset,
+		Columns:  spec.Columns,
+		Now:      pa.Now(),
 	}, nil
 }
 
@@ -125,14 +139,18 @@ func createShiftTransformation(id execute.DatasetID, mode execute.AccumulationMo
 }
 
 type shiftTransformation struct {
-	columns []string
-	shift   execute.Duration
+	shift    execute.Duration
+	location string
+	offset   values.Duration
+	columns  []string
 }
 
 func NewShiftTransformation(id execute.DatasetID, spec *ShiftProcedureSpec, mem memory.Allocator) (execute.Transformation, execute.Dataset, error) {
 	tr := &shiftTransformation{
-		columns: spec.Columns,
-		shift:   spec.Shift,
+		shift:    spec.Shift,
+		location: spec.Location,
+		offset:   spec.Offset,
+		columns:  spec.Columns,
 	}
 	return execute.NewNarrowTransformation(id, tr, mem)
 }

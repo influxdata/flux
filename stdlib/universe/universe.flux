@@ -2377,6 +2377,13 @@ builtin set : (<-tables: stream[A], key: string, value: string) => stream[A] whe
 //
 builtin tail : (<-tables: stream[A], n: int, ?offset: int) => stream[A]
 
+builtin _timeShift : (
+        <-tables: stream[A],
+        duration: duration,
+        location: {zone: string, offset: duration},
+        ?columns: [string],
+    ) => stream[A]
+
 // timeShift adds a fixed duration to time columns.
 //
 // The output table schema is the same as the input table schema.
@@ -2384,6 +2391,7 @@ builtin tail : (<-tables: stream[A], n: int, ?offset: int) => stream[A]
 //
 // ## Parameters
 // - duration: Amount of time to add to each time value. May be a negative duration.
+// - location: Location used to determine timezone. Default is the `location` option.
 // - columns: List of time columns to operate on. Default is `["_start", "_stop", "_time"]`.
 // - tables: Input data. Default is piped-forward data (`<-`).
 //
@@ -2409,7 +2417,8 @@ builtin tail : (<-tables: stream[A], n: int, ?offset: int) => stream[A]
 // introduced: 0.7.0
 // tags: transformations, date/time
 //
-builtin timeShift : (<-tables: stream[A], duration: duration, ?columns: [string]) => stream[A]
+timeShift = (tables=<-, duration, location=location, columns=["_start", "_stop", "_time"]) =>
+    tables |> _timeShift(duration, location, columns)
 
 // skew returns the skew of non-null records in each input table as a float.
 //
