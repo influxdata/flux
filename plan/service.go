@@ -62,3 +62,7 @@ func PlanPhysicallySkipValidation(ctx context.Context, p plan.Spec, rules ...Rul
 func CloneSpec(p plan.Spec) (plan.Spec, error) {
 	return cloneSpec(p.(*Spec))
 }
+
+func ValidatePlan(p plan.Spec) error {
+	return ValidatePhysicalPlan(p.(*Spec))
+}
