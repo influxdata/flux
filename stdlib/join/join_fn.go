@@ -326,14 +326,25 @@ func colsFromObjectType(t semantic.MonoType) []flux.ColMeta {
 // splits a chunk into a list of chunks, each with a max size of 1000 rows
 func splitChunk(c table.Chunk) []table.Chunk {
 	l := c.Len()
-	size := table.BufferSize
-	if l <= size {
+	bufferSize := table.BufferSize
+	if l <= bufferSize {
 		return []table.Chunk{c}
 	}
 
-	chunks := make([]table.Chunk, 0, int(l/size)+1)
-	for i := 0; i < l; i += size {
-		slice := getChunkSlice(c, i, i+size)
+	chunks := make([]table.Chunk, 0, int(l/bufferSize)+1)
+	curSize := l
+	var i, start, stop int
+	for ; curSize > 0; i++ {
+		if curSize > bufferSize {
+			start = i * bufferSize
+			stop = bufferSize
+			curSize -= bufferSize
+		} else {
+			start = i * bufferSize
+			stop = start + curSize
+			curSize = 0
+		}
+		slice := getChunkSlice(c, start, stop)
 		chunks = append(chunks, slice)
 	}
 	return chunks
