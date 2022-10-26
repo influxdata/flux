@@ -1,0 +1,27 @@
+{
+  "name": "Flux Project",
+  "build": {
+    "dockerfile": "Dockerfile"
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "golang.go",
+        "rust-lang.rust-analyzer",
+        "influxdata.flux"
+      ]
+    }
+  },
+  "mounts": [
+    {
+      "type": "volume",
+      "source": "vscode-flux-cargo",
+      "target": "/home/builder/.cargo"
+    },
+    {
+      "type": "volume",
+      "source": "vscode-flux-gopkg",
+      "target": "/home/builder/go/pkg"
+    }
+  ]
+}
