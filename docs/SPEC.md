@@ -102,7 +102,7 @@ The following character sequences represent operators:
     -   <    !~   [   ]   ^
     *   >    =~   {   }   ?
     /   <=   =    ,   :   "
-    %   >=   <-   .   |>
+    %   >=   <-   .   |>  @
 
 ##### Integer literals
 
@@ -1024,8 +1024,11 @@ Flux source is organized into packages.
 A package consists of one or more source files.
 Each source file is parsed individually and composed into a single package.
 
-    File = [ PackageClause ] [ ImportList ] StatementList .
+    File = [ Attributes ] [ PackageClause ] [ ImportList ] StatementList .
     ImportList = { ImportDeclaration } .
+
+The first attributes defined before the package clause or import lists whether they exists or not apply to the entire package.
+A package clause or import list is required to associate attributes with the first statement in a file.
 
 #### Package clause
 
@@ -1038,6 +1041,7 @@ All files in the same package must declare the same package name.
 When a file does not declare a package clause, all identifiers in that file will belong to the special _main_ package.
 
 
+
 ##### package main
 
 The _main_ package is special for a few reasons:
@@ -1045,17 +1049,6 @@ The _main_ package is special for a few reasons:
 1. It defines the entrypoint of a Flux program
 2. It cannot be imported
 3. All statements are marked as producing side effects
-
-### Statements
-
-A statement controls execution.
-
-    Statement = OptionAssignment
-              | BuiltinStatement
-              | VariableAssignment
-              | ReturnStatement
-              | ExpressionStatement .
-
 
 #### Import declaration
 
@@ -1086,6 +1079,38 @@ A package may reassign a new value to an option identifier declared in one of it
 A package cannot access nor modify the identifiers belonging to the imported packages of its imported packages.
 Every statement contained in an imported package is evaluated.
 
+### Attributes
+
+Attributes define a set of properties on the subsequent source code element.
+
+    Attributes             = { Attribute } .
+    Attribute              = "@" identifier AttributeParameters .
+    AttributeParameters    = "(" [ AttributeParameterList [ "," ] ] ")" .
+    AttributeParameterList = AttributeParameter { "," AttributeParameter } .
+    AttributeParameter     = PrimaryExpression
+
+The set of defined attributes and their meaning is left to the runtime to specify.
+
+Example
+
+    @edition("2022.1")
+    package main
+
+
+### Statements
+
+A statement controls execution.
+
+    Statement      = [ Attributes ] StatementInner .
+    StatementInner = OptionAssignment
+                   | BuiltinStatement
+                   | VariableAssignment
+                   | ReturnStatement
+                   | ExpressionStatement
+                   | TestcaseStatement .
+
+
+
 #### Return statements
 
 A terminating statement prevents execution of all statements that appear after it in the same block.
@@ -1104,6 +1129,41 @@ Examples:
     1 + 1
     f()
     a
+
+#### Testcase statements
+
+>NOTE: Testcase statements only work within the context of a Flux developement environment. We expect to expand their use in the future.
+
+A statement that defines a test case.
+
+    TestcaseStatement = "testcase" identifier [ TestcaseExtention ] Block .
+    TestcaseExtention = "extends" string_lit
+
+Test cases are defined as a set of statements with special scoping rules.
+Each test case statement in a file is considered to be its own main package.
+In effect all statements in package scope and all statements contained within the test case statment are flattened into a single main package and executed.
+Use the `testing` package from the standard library to control the pass failure of the test case.
+
+Test extention augments an existing test case with more statements or attributes.
+A special function call `super()` must be made inside the body of a test case extention, in its place all statements from the parent test case will be executed.
+
+
+Examples:
+
+A basic test case for addition
+
+    import "testing"
+
+    testcase addition {
+        testing.assertEqualValues(got: 1 + 1, want: 2)
+    }
+
+An example of test case extention to validate a feature does not regress existing behavior.
+
+    @feature({vectorization: true})
+    testcase vector_addition extends "basics_test.addition" {
+        super()
+    }
 
 ### Side Effects
 

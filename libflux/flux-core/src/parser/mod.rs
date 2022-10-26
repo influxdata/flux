@@ -364,7 +364,7 @@ impl<'input> Parser<'input> {
         let mut end = ast::Position::invalid();
 
         // Parse attributes at the beginning of the file.
-        let mut attributes = self.parse_attribute_list();
+        let attributes = self.parse_attribute_list();
 
         let pkg = self.parse_package_clause();
         if let Some(pkg) = &pkg {
@@ -374,15 +374,9 @@ impl<'input> Parser<'input> {
         if let Some(import) = imports.last() {
             end = import.base.location.end;
         }
-        let mut body = self.parse_statement_list();
+        let body = self.parse_statement_list();
         if let Some(stmt) = body.last() {
             end = stmt.base().location.end;
-        }
-
-        // If no package or imports were specified, then attach
-        // the attributes to the first statement if it exists.
-        if let (None, 0, Some(stmt)) = (&pkg, imports.len(), body.first_mut()) {
-            stmt.base_mut().attributes.append(&mut attributes);
         }
 
         let eof = self.peek().comments.clone();
