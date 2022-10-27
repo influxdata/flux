@@ -1142,25 +1142,14 @@ impl<'a> Parser<'a> {
 
 #[cfg(test)]
 mod test {
-    use std::collections::BTreeMap;
+    use expect_test::expect;
 
-    use super::{
-        parse_package_doc_comments, shorten, Diagnostic, Diagnostics, Doc, Example, FunctionDoc,
-        PackageDoc, ParameterDoc, Parser, Token, ValueDoc,
-    };
+    use super::{parse_package_doc_comments, shorten, Diagnostics, PackageDoc, Parser, Token};
     use crate::{
-        ast::{self, tests::Locator},
+        ast,
         parser::parse_string,
         semantic::{env::Environment, import::Packages, Analyzer},
     };
-
-    macro_rules! map {
-        ($( $key: expr => $val: expr ),*$(,)?) => {{
-             let mut map = BTreeMap::default();
-             $( map.insert($key.to_string(), $val); )*
-             map
-        }}
-    }
 
     fn parse_program(src: &str) -> ast::Package {
         let file = parse_string("".to_string(), src);
@@ -1177,13 +1166,13 @@ mod test {
         let got = parser.parse().unwrap();
         assert_eq!(want, got, "\nwant:\n{:#?}\ngot:\n{:#?}\n", want, got);
     }
-    fn assert_docs_full(src: &str, pkg: PackageDoc, diags: Diagnostics) {
-        assert_docs(src, pkg, diags, false)
+    fn assert_docs_full(src: &str) -> (PackageDoc, Diagnostics) {
+        assert_docs(src, false)
     }
-    fn assert_docs_short(src: &str, pkg: PackageDoc, diags: Diagnostics) {
-        assert_docs(src, pkg, diags, true)
+    fn assert_docs_short(src: &str) -> (PackageDoc, Diagnostics) {
+        assert_docs(src, true)
     }
-    fn assert_docs(src: &str, pkg: PackageDoc, diags: Diagnostics, short: bool) {
+    fn assert_docs(src: &str, short: bool) -> (PackageDoc, Diagnostics) {
         let mut analyzer = Analyzer::new_with_defaults(Environment::empty(true), Packages::new());
         let ast_pkg = parse_program(src);
         let (types, _) = match analyzer.analyze_ast(&ast_pkg) {
@@ -1197,14 +1186,7 @@ mod test {
         if short {
             shorten(&mut got_pkg);
         }
-        // assert the diagnostics first as they may contain clues as to why the rest of the docs do
-        // not match.
-        assert_eq!(
-            diags, got_diags,
-            "want:\n{:#?}\ngot:\n{:#?}\n",
-            diags, got_diags
-        );
-        assert_eq!(pkg, got_pkg, "want:\n{:#?}\ngot:\n{:#?}\n", pkg, got_pkg);
+        (got_pkg, got_diags)
     }
     #[test]
     fn test_package_doc() {
@@ -1212,19 +1194,22 @@ mod test {
         // Package foo does a thing.
         package foo
         ";
-        assert_docs_full(
-            src,
-            PackageDoc {
-                path: "path".to_string(),
-                name: "foo".to_string(),
-                headline: "Package foo does a thing.".to_string(),
-                description: None,
-                members: BTreeMap::default(),
-                examples: Vec::new(),
-                metadata: None,
-            },
-            vec![],
-        );
+        let docs = assert_docs_full(src);
+        expect![[r#"
+            (
+                PackageDoc {
+                    path: "path",
+                    name: "foo",
+                    headline: "Package foo does a thing.",
+                    description: None,
+                    members: {},
+                    examples: [],
+                    metadata: None,
+                },
+                [],
+            )
+        "#]]
+        .assert_debug_eq(&docs);
     }
     #[test]
     fn test_package_private_values() {
@@ -1234,19 +1219,22 @@ mod test {
 
         _thisIsPrivate = 1
         ";
-        assert_docs_full(
-            src,
-            PackageDoc {
-                path: "path".to_string(),
-                name: "foo".to_string(),
-                headline: "Package foo does a thing.".to_string(),
-                description: None,
-                members: BTreeMap::default(),
-                examples: Vec::new(),
-                metadata: None,
-            },
-            vec![],
-        );
+        let docs = assert_docs_full(src);
+        expect![[r#"
+            (
+                PackageDoc {
+                    path: "path",
+                    name: "foo",
+                    headline: "Package foo does a thing.",
+                    description: None,
+                    members: {},
+                    examples: [],
+                    metadata: None,
+                },
+                [],
+            )
+        "#]]
+        .assert_debug_eq(&docs);
     }
     #[test]
     fn test_package_headline_invalid() {
@@ -1254,24 +1242,31 @@ mod test {
         // foo does a thing.
         package foo
         ";
-        let loc = Locator::new(src);
-        assert_docs_full(
-            src,
-            PackageDoc {
-                path: "path".to_string(),
-                name: "foo".to_string(),
-                headline: "foo does a thing.".to_string(),
-                description: None,
-                members: BTreeMap::default(),
-                examples: Vec::new(),
-                metadata: None,
-            },
-            vec![Diagnostic {
-                msg: "package headline must start with \"Package foo\" found \"foo does\""
-                    .to_string(),
-                loc: loc.get(3, 9, 3, 20),
-            }],
-        );
+        let docs = assert_docs_full(src);
+        expect![[r#"
+            (
+                PackageDoc {
+                    path: "path",
+                    name: "foo",
+                    headline: "foo does a thing.",
+                    description: None,
+                    members: {},
+                    examples: [],
+                    metadata: None,
+                },
+                [
+                    Diagnostic {
+                        msg: "package headline must start with \"Package foo\" found \"foo does\"",
+                        loc: SourceLocation {
+                            start: "line: 3, column: 9",
+                            end: "line: 3, column: 20",
+                            source: "package foo",
+                        },
+                    },
+                ],
+            )
+        "#]]
+        .assert_debug_eq(&docs);
     }
     #[test]
     fn test_value_doc_no_desc() {
@@ -1282,31 +1277,39 @@ mod test {
         // a is a constant.
         a = 1
         ";
-        let loc = Locator::new(src);
-        assert_docs_full(
-            src,
-            PackageDoc {
-                path: "path".to_string(),
-                name: "foo".to_string(),
-                headline: "Package foo does a thing.".to_string(),
-                description: None,
-                members: map![
-                    "a" => Doc::Value(Box::new(ValueDoc{
-                        name: "a".to_string(),
-                        headline: "a is a constant.".to_string(),
-                        description: None,
-                        flux_type: "int".to_string(),
-                        is_option: false,
-                        source_location: loc.get(6,9,6,14),
-                        examples: vec![],
-                        metadata: None,
-                    })),
-                ],
-                examples: Vec::new(),
-                metadata: None,
-            },
-            vec![],
-        );
+        let docs = assert_docs_full(src);
+        expect![[r#"
+            (
+                PackageDoc {
+                    path: "path",
+                    name: "foo",
+                    headline: "Package foo does a thing.",
+                    description: None,
+                    members: {
+                        "a": Value(
+                            ValueDoc {
+                                name: "a",
+                                headline: "a is a constant.",
+                                description: None,
+                                flux_type: "int",
+                                is_option: false,
+                                source_location: SourceLocation {
+                                    start: "line: 6, column: 9",
+                                    end: "line: 6, column: 14",
+                                    source: "a = 1",
+                                },
+                                examples: [],
+                                metadata: None,
+                            },
+                        ),
+                    },
+                    examples: [],
+                    metadata: None,
+                },
+                [],
+            )
+        "#]]
+        .assert_debug_eq(&docs);
     }
     #[test]
     fn test_value_doc_multiline_headline_no_desc() {
@@ -1318,31 +1321,38 @@ mod test {
         // and multiple lines.
         a = 1
         ";
-        let loc = Locator::new(src);
-        assert_docs_full(
-            src,
-            PackageDoc {
-                path: "path".to_string(),
-                name: "foo".to_string(),
-                headline: "Package foo does a thing.".to_string(),
-                description: None,
-                members: map![
-                    "a" => Doc::Value(Box::new(ValueDoc{
-                        name: "a".to_string(),
-                        headline: "a is a constant. This headline has `code`\nand multiple lines.".to_string(),
-                        description: None,
-                        flux_type: "int".to_string(),
-                        is_option: false,
-                        source_location: loc.get(7,9,7,14),
-                        examples: vec![],
-                        metadata: None,
-                    })),
-                ],
-                examples: Vec::new(),
-                metadata: None,
-            },
-            vec![],
-        );
+        let docs = assert_docs_full(src);
+        expect![[r#"
+            (
+                PackageDoc {
+                    path: "path",
+                    name: "foo",
+                    headline: "Package foo does a thing.",
+                    description: None,
+                    members: {
+                        "a": Value(
+                            ValueDoc {
+                                name: "a",
+                                headline: "a is a constant. This headline has `code`\nand multiple lines.",
+                                description: None,
+                                flux_type: "int",
+                                is_option: false,
+                                source_location: SourceLocation {
+                                    start: "line: 7, column: 9",
+                                    end: "line: 7, column: 14",
+                                    source: "a = 1",
+                                },
+                                examples: [],
+                                metadata: None,
+                            },
+                        ),
+                    },
+                    examples: [],
+                    metadata: None,
+                },
+                [],
+            )
+        "#]].assert_debug_eq(&docs);
     }
     #[test]
     fn test_value_doc_code_headline_no_desc() {
@@ -1353,31 +1363,39 @@ mod test {
         // a is a constant. This headline has `code`.
         a = 1
         ";
-        let loc = Locator::new(src);
-        assert_docs_full(
-            src,
-            PackageDoc {
-                path: "path".to_string(),
-                name: "foo".to_string(),
-                headline: "Package foo does a thing.".to_string(),
-                description: None,
-                members: map![
-                    "a" => Doc::Value(Box::new(ValueDoc{
-                        name: "a".to_string(),
-                        headline: "a is a constant. This headline has `code`.".to_string(),
-                        description: None,
-                        flux_type: "int".to_string(),
-                        is_option: false,
-                        source_location: loc.get(6,9,6,14),
-                        examples: vec![],
-                        metadata: None,
-                    })),
-                ],
-                examples: Vec::new(),
-                metadata: None,
-            },
-            vec![],
-        );
+        let docs = assert_docs_full(src);
+        expect![[r#"
+            (
+                PackageDoc {
+                    path: "path",
+                    name: "foo",
+                    headline: "Package foo does a thing.",
+                    description: None,
+                    members: {
+                        "a": Value(
+                            ValueDoc {
+                                name: "a",
+                                headline: "a is a constant. This headline has `code`.",
+                                description: None,
+                                flux_type: "int",
+                                is_option: false,
+                                source_location: SourceLocation {
+                                    start: "line: 6, column: 9",
+                                    end: "line: 6, column: 14",
+                                    source: "a = 1",
+                                },
+                                examples: [],
+                                metadata: None,
+                            },
+                        ),
+                    },
+                    examples: [],
+                    metadata: None,
+                },
+                [],
+            )
+        "#]]
+        .assert_debug_eq(&docs);
     }
     #[test]
     fn test_value_doc_headline_invalid() {
@@ -1388,34 +1406,48 @@ mod test {
         // A is a constant.
         a = 1
         ";
-        let loc = Locator::new(src);
-        assert_docs_full(
-            src,
-            PackageDoc {
-                path: "path".to_string(),
-                name: "foo".to_string(),
-                headline: "Package foo does a thing.".to_string(),
-                description: None,
-                members: map![
-                    "a" => Doc::Value(Box::new(ValueDoc{
-                        name: "a".to_string(),
-                        headline: "A is a constant.".to_string(),
-                        description: None,
-                        flux_type: "int".to_string(),
-                        is_option: false,
-                        source_location: loc.get(6,9,6,14),
-                        examples: vec![],
-                        metadata: None,
-                    })),
+        let docs = assert_docs_full(src);
+        expect![[r#"
+            (
+                PackageDoc {
+                    path: "path",
+                    name: "foo",
+                    headline: "Package foo does a thing.",
+                    description: None,
+                    members: {
+                        "a": Value(
+                            ValueDoc {
+                                name: "a",
+                                headline: "A is a constant.",
+                                description: None,
+                                flux_type: "int",
+                                is_option: false,
+                                source_location: SourceLocation {
+                                    start: "line: 6, column: 9",
+                                    end: "line: 6, column: 14",
+                                    source: "a = 1",
+                                },
+                                examples: [],
+                                metadata: None,
+                            },
+                        ),
+                    },
+                    examples: [],
+                    metadata: None,
+                },
+                [
+                    Diagnostic {
+                        msg: "headline must start with \"a\" found \"A\"",
+                        loc: SourceLocation {
+                            start: "line: 6, column: 9",
+                            end: "line: 6, column: 14",
+                            source: "a = 1",
+                        },
+                    },
                 ],
-                examples: Vec::new(),
-                metadata: None,
-            },
-            vec![Diagnostic {
-                msg: "headline must start with \"a\" found \"A\"".to_string(),
-                loc: loc.get(6, 9, 6, 14),
-            }],
-        );
+            )
+        "#]]
+        .assert_debug_eq(&docs);
     }
     #[test]
     fn test_value_doc_full() {
@@ -1431,31 +1463,40 @@ mod test {
         // The description contains any remaining markdown content.
         a = 1
         ";
-        let loc = Locator::new(src);
-        assert_docs_full(
-            src,
-            PackageDoc {
-                path: "path".to_string(),
-                name: "foo".to_string(),
-                headline: "Package foo does a thing.".to_string(),
-                description: None,
-                members: map![
-                    "a" => Doc::Value(Box::new(ValueDoc{
-                        name: "a".to_string(),
-                        headline: "a is a constant.\nThe value is one.".to_string(),
-                        description: Some("This is the start of the description.\n\nThe description contains any remaining markdown content.".to_string()),
-                        flux_type: "int".to_string(),
-                        is_option: false,
-                        source_location: loc.get(11,9,11,14),
-                        examples: vec![],
-                        metadata: None,
-                    })),
-                ],
-                examples: Vec::new(),
-                metadata: None,
-            },
-            vec![],
-        );
+        let docs = assert_docs_full(src);
+        expect![[r#"
+            (
+                PackageDoc {
+                    path: "path",
+                    name: "foo",
+                    headline: "Package foo does a thing.",
+                    description: None,
+                    members: {
+                        "a": Value(
+                            ValueDoc {
+                                name: "a",
+                                headline: "a is a constant.\nThe value is one.",
+                                description: Some(
+                                    "This is the start of the description.\n\nThe description contains any remaining markdown content.",
+                                ),
+                                flux_type: "int",
+                                is_option: false,
+                                source_location: SourceLocation {
+                                    start: "line: 11, column: 9",
+                                    end: "line: 11, column: 14",
+                                    source: "a = 1",
+                                },
+                                examples: [],
+                                metadata: None,
+                            },
+                        ),
+                    },
+                    examples: [],
+                    metadata: None,
+                },
+                [],
+            )
+        "#]].assert_debug_eq(&docs);
     }
     #[test]
     fn test_shorten() {
@@ -1523,57 +1564,79 @@ mod test {
         // ```
         option o = 1
         "#;
-        let loc = Locator::new(src);
-        assert_docs_short(
-            src,
-            PackageDoc {
-                path: "path".to_string(),
-                name: "foo".to_string(),
-                headline: "Package foo does a thing.".to_string(),
-                description: None,
-                members: map![
-                    "a" => Doc::Value(Box::new(ValueDoc{
-                        name: "a".to_string(),
-                        headline: "a is a constant.".to_string(),
-                        description: None,
-                        flux_type: "int".to_string(),
-                        is_option: false,
-                        source_location: loc.get(29,9,29,14),
-                        examples: vec![],
-                        metadata: None,
-                    })),
-                    "f" => Doc::Function(Box::new(FunctionDoc{
-                        name: "f".to_string(),
-                        headline: "f is a function.".to_string(),
-                        description: None,
-                        parameters: vec![ParameterDoc{
-                            name: "x".to_string(),
-                            headline: "x: is a parameter.".to_string(),
-                            description: None,
-                            required: true,
-                        } ],
-                        flux_type: "(x: A) => int".to_string(),
-                        is_option: false,
-                        source_location: loc.get(49,9,49,21),
-                        examples: vec![],
-                        metadata: None,
-                    })),
-                    "o" => Doc::Value(Box::new(ValueDoc{
-                        name: "o".to_string(),
-                        headline: "o is an option.".to_string(),
-                        description: None,
-                        flux_type: "int".to_string(),
-                        is_option: true,
-                        source_location: loc.get(63,9,63,21),
-                        examples: vec![],
-                        metadata: None,
-                    })),
-                ],
-                examples: Vec::new(),
-                metadata: None,
-            },
-            vec![],
-        );
+        let docs = assert_docs_short(src);
+        expect![[r#"
+            (
+                PackageDoc {
+                    path: "path",
+                    name: "foo",
+                    headline: "Package foo does a thing.",
+                    description: None,
+                    members: {
+                        "a": Value(
+                            ValueDoc {
+                                name: "a",
+                                headline: "a is a constant.",
+                                description: None,
+                                flux_type: "int",
+                                is_option: false,
+                                source_location: SourceLocation {
+                                    start: "line: 29, column: 9",
+                                    end: "line: 29, column: 14",
+                                    source: "a = 1",
+                                },
+                                examples: [],
+                                metadata: None,
+                            },
+                        ),
+                        "f": Function(
+                            FunctionDoc {
+                                name: "f",
+                                headline: "f is a function.",
+                                description: None,
+                                parameters: [
+                                    ParameterDoc {
+                                        name: "x",
+                                        headline: "x: is a parameter.",
+                                        description: None,
+                                        required: true,
+                                    },
+                                ],
+                                flux_type: "(x: A) => int",
+                                is_option: false,
+                                source_location: SourceLocation {
+                                    start: "line: 49, column: 9",
+                                    end: "line: 49, column: 21",
+                                    source: "f = (x) => 1",
+                                },
+                                examples: [],
+                                metadata: None,
+                            },
+                        ),
+                        "o": Value(
+                            ValueDoc {
+                                name: "o",
+                                headline: "o is an option.",
+                                description: None,
+                                flux_type: "int",
+                                is_option: true,
+                                source_location: SourceLocation {
+                                    start: "line: 63, column: 9",
+                                    end: "line: 63, column: 21",
+                                    source: "option o = 1",
+                                },
+                                examples: [],
+                                metadata: None,
+                            },
+                        ),
+                    },
+                    examples: [],
+                    metadata: None,
+                },
+                [],
+            )
+        "#]]
+        .assert_debug_eq(&docs);
     }
     #[test]
     fn test_examples() {
@@ -1641,93 +1704,117 @@ mod test {
         // ```
         option o = 1
         "#;
-        let loc = Locator::new(src);
-        assert_docs_full(
-            src,
-            PackageDoc {
-                path: "path".to_string(),
-                name: "foo".to_string(),
-                headline: "Package foo does a thing.".to_string(),
-                description: Some("This is a description.".to_string()),
-                members: map![
-                    "a" => Doc::Value(Box::new(ValueDoc{
-                        name: "a".to_string(),
-                        headline: "a is a constant.".to_string(),
-                        description: Some("This is a description.".to_string()),
-                        flux_type: "int".to_string(),
-                        is_option: false,
-                        source_location: loc.get(29,9,29,14),
-                        examples: vec![Example {
-                            title: "### Using a".to_string(),
-                            content: r#"```
-# import "foo"
-foo.a
-```"# .to_string(),
+        let docs = assert_docs_full(src);
+        expect![[r####"
+            (
+                PackageDoc {
+                    path: "path",
+                    name: "foo",
+                    headline: "Package foo does a thing.",
+                    description: Some(
+                        "This is a description.",
+                    ),
+                    members: {
+                        "a": Value(
+                            ValueDoc {
+                                name: "a",
+                                headline: "a is a constant.",
+                                description: Some(
+                                    "This is a description.",
+                                ),
+                                flux_type: "int",
+                                is_option: false,
+                                source_location: SourceLocation {
+                                    start: "line: 29, column: 9",
+                                    end: "line: 29, column: 14",
+                                    source: "a = 1",
+                                },
+                                examples: [
+                                    Example {
+                                        title: "### Using a",
+                                        content: "```\n# import \"foo\"\nfoo.a\n```",
+                                        input: None,
+                                        output: None,
+                                    },
+                                ],
+                                metadata: None,
+                            },
+                        ),
+                        "f": Function(
+                            FunctionDoc {
+                                name: "f",
+                                headline: "f is a function.",
+                                description: Some(
+                                    "This is a description.",
+                                ),
+                                parameters: [
+                                    ParameterDoc {
+                                        name: "x",
+                                        headline: "x: is a parameter.",
+                                        description: Some(
+                                            "This is a description of x.",
+                                        ),
+                                        required: true,
+                                    },
+                                ],
+                                flux_type: "(x: A) => int",
+                                is_option: false,
+                                source_location: SourceLocation {
+                                    start: "line: 49, column: 9",
+                                    end: "line: 49, column: 21",
+                                    source: "f = (x) => 1",
+                                },
+                                examples: [
+                                    Example {
+                                        title: "### Using f",
+                                        content: "```\n# import \"foo\"\nfoo.f(x:1)\n```",
+                                        input: None,
+                                        output: None,
+                                    },
+                                ],
+                                metadata: None,
+                            },
+                        ),
+                        "o": Value(
+                            ValueDoc {
+                                name: "o",
+                                headline: "o is an option.",
+                                description: Some(
+                                    "This is a description.",
+                                ),
+                                flux_type: "int",
+                                is_option: true,
+                                source_location: SourceLocation {
+                                    start: "line: 63, column: 9",
+                                    end: "line: 63, column: 21",
+                                    source: "option o = 1",
+                                },
+                                examples: [
+                                    Example {
+                                        title: "### Using o",
+                                        content: "```\n# import \"foo\"\noption foo.o = 2\n```",
+                                        input: None,
+                                        output: None,
+                                    },
+                                ],
+                                metadata: None,
+                            },
+                        ),
+                    },
+                    examples: [
+                        Example {
+                            title: "### Using foo",
+                            content: "```\nimport \"foo\"\n\nfoo.a\n```",
                             input: None,
                             output: None,
-                        }],
-                        metadata: None,
-                    })),
-                    "f" => Doc::Function(Box::new(FunctionDoc{
-                        name: "f".to_string(),
-                        headline: "f is a function.".to_string(),
-                        description: Some("This is a description.".to_string()),
-                        parameters: vec![ParameterDoc{
-                            name: "x".to_string(),
-                            headline: "x: is a parameter.".to_string(),
-                            description: Some("This is a description of x.".to_string()),
-                            required: true,
-                        } ],
-                        flux_type: "(x: A) => int".to_string(),
-                        is_option: false,
-                        source_location: loc.get(49,9,49,21),
-                        examples: vec![Example {
-                            title: "### Using f".to_string(),
-                            content: r#"```
-# import "foo"
-foo.f(x:1)
-```"#
-                            .to_string(),
-                            input: None,
-                            output: None,
-                        }],
-                        metadata: None,
-                    })),
-                    "o" => Doc::Value(Box::new(ValueDoc{
-                        name: "o".to_string(),
-                        headline: "o is an option.".to_string(),
-                        description: Some("This is a description.".to_string()),
-                        flux_type: "int".to_string(),
-                        is_option: true,
-                        source_location: loc.get(63,9,63,21),
-                        examples: vec![Example {
-                            title: "### Using o".to_string(),
-                            content: r#"```
-# import "foo"
-option foo.o = 2
-```"#
-                            .to_string(),
-                            input: None,
-                            output: None,
-                        }],
-                        metadata: None,
-                    })),
-                ],
-                examples: vec![Example {
-                    title: "### Using foo".to_string(),
-                    content: r#"```
-import "foo"
-
-foo.a
-```"#
-                        .to_string(),
-                    input: None,
-                    output: None,
-                }],
-                metadata: None,
-            },
-            vec![],
-        );
+                        },
+                    ],
+                    metadata: None,
+                },
+                [],
+            )
+        "####]]
+        .assert_debug_eq(&docs);
     }
     #[test]
     fn test_metadata_all_docs() {
@@ -1777,72 +1864,112 @@ foo.a
         // k0: v0
         option o = 1
         ";
-        let loc = Locator::new(src);
-        assert_docs_full(
-            src,
-            PackageDoc {
-                path: "path".to_string(),
-                name: "foo".to_string(),
-                headline: "Package foo does a thing.".to_string(),
-                description: Some("This is a description.".to_string()),
-                members: map![
-                    "a" => Doc::Value(Box::new(ValueDoc{
-                        name: "a".to_string(),
-                        headline: "a is a constant.".to_string(),
-                        description: Some("This is a description.".to_string()),
-                        flux_type: "int".to_string(),
-                        is_option: false,
-                        source_location: loc.get(20,9,20,14),
-                        examples: vec![],
-                        metadata: Some(map![
-                            "k3" => "v3".to_string(),
-                            "k4" => "v4".to_string(),
-                            "k5" => "v5".to_string(),
-                        ]),
-                    })),
-                    "f" => Doc::Function(Box::new(FunctionDoc{
-                        name: "f".to_string(),
-                        headline: "f is a function.".to_string(),
-                        description: Some("This is a description.".to_string()),
-                        parameters: vec![ParameterDoc{
-                            name: "x".to_string(),
-                            headline: "x: is a parameter.".to_string(),
-                            description: Some("This is a description of x.".to_string()),
-                            required: true,
-                        } ],
-                        flux_type: "(x: A) => int".to_string(),
-                        is_option: false,
-                        source_location: loc.get(36,9,36,21),
-                        examples: vec![],
-                        metadata: Some(map![
-                            "k6" => "v6".to_string(),
-                            "k7" => "v7".to_string(),
-                            "k8" => "v8".to_string(),
-                        ]),
-                    })),
-                    "o" => Doc::Value(Box::new(ValueDoc{
-                        name: "o".to_string(),
-                        headline: "o is an option.".to_string(),
-                        description: Some("This is a description.".to_string()),
-                        flux_type: "int".to_string(),
-                        is_option: true,
-                        source_location: loc.get(45,9,45,21),
-                        examples: vec![],
-                        metadata: Some(map![
-                            "k9" => "v9".to_string(),
-                            "k0" => "v0".to_string(),
-                        ]),
-                    })),
-                ],
-                examples: Vec::new(),
-                metadata: Some(map![
-                    "k0" => "v0".to_string(),
-                    "k1" => "v1".to_string(),
-                    "k2" => "v2".to_string(),
-                ]),
-            },
-            vec![],
-        );
+        let docs = assert_docs_full(src);
+        expect![[r#"
+            (
+                PackageDoc {
+                    path: "path",
+                    name: "foo",
+                    headline: "Package foo does a thing.",
+                    description: Some(
+                        "This is a description.",
+                    ),
+                    members: {
+                        "a": Value(
+                            ValueDoc {
+                                name: "a",
+                                headline: "a is a constant.",
+                                description: Some(
+                                    "This is a description.",
+                                ),
+                                flux_type: "int",
+                                is_option: false,
+                                source_location: SourceLocation {
+                                    start: "line: 20, column: 9",
+                                    end: "line: 20, column: 14",
+                                    source: "a = 1",
+                                },
+                                examples: [],
+                                metadata: Some(
+                                    {
+                                        "k3": "v3",
+                                        "k4": "v4",
+                                        "k5": "v5",
+                                    },
+                                ),
+                            },
+                        ),
+                        "f": Function(
+                            FunctionDoc {
+                                name: "f",
+                                headline: "f is a function.",
+                                description: Some(
+                                    "This is a description.",
+                                ),
+                                parameters: [
+                                    ParameterDoc {
+                                        name: "x",
+                                        headline: "x: is a parameter.",
+                                        description: Some(
+                                            "This is a description of x.",
+                                        ),
+                                        required: true,
+                                    },
+                                ],
+                                flux_type: "(x: A) => int",
+                                is_option: false,
+                                source_location: SourceLocation {
+                                    start: "line: 36, column: 9",
+                                    end: "line: 36, column: 21",
+                                    source: "f = (x) => 1",
+                                },
+                                examples: [],
+                                metadata: Some(
+                                    {
+                                        "k6": "v6",
+                                        "k7": "v7",
+                                        "k8": "v8",
+                                    },
+                                ),
+                            },
+                        ),
+                        "o": Value(
+                            ValueDoc {
+                                name: "o",
+                                headline: "o is an option.",
+                                description: Some(
+                                    "This is a description.",
+                                ),
+                                flux_type: "int",
+                                is_option: true,
+                                source_location: SourceLocation {
+                                    start: "line: 45, column: 9",
+                                    end: "line: 45, column: 21",
+                                    source: "option o = 1",
+                                },
+                                examples: [],
+                                metadata: Some(
+                                    {
+                                        "k0": "v0",
+                                        "k9": "v9",
+                                    },
+                                ),
+                            },
+                        ),
+                    },
+                    examples: [],
+                    metadata: Some(
+                        {
+                            "k0": "v0",
+                            "k1": "v1",
+                            "k2": "v2",
+                        },
+                    ),
+                },
+                [],
+            )
+        "#]]
+        .assert_debug_eq(&docs);
     }
     #[test]
     fn test_metadata_pkg() {
@@ -1858,27 +1985,39 @@ foo.a
         // key_with_underscores: value
         package foo
         ";
-        let loc = Locator::new(src);
-        assert_docs_full(
-            src,
-            PackageDoc {
-                path: "path".to_string(),
-                name: "foo".to_string(),
-                headline: "Package foo does a thing.".to_string(),
-                description: Some("This is a description.".to_string()),
-                members: BTreeMap::default(),
-                examples: Vec::new(),
-                metadata: Some(map![
-                    "key" => "valueB".to_string(),
-                    "key1" => "value with spaces".to_string(),
-                    "key_with_underscores" => "value".to_string(),
-                ]),
-            },
-            vec![Diagnostic {
-                msg: "found duplicate metadata key \"key\"".to_string(),
-                loc: loc.get(11, 9, 11, 20),
-            }],
-        );
+        let docs = assert_docs_full(src);
+        expect![[r#"
+            (
+                PackageDoc {
+                    path: "path",
+                    name: "foo",
+                    headline: "Package foo does a thing.",
+                    description: Some(
+                        "This is a description.",
+                    ),
+                    members: {},
+                    examples: [],
+                    metadata: Some(
+                        {
+                            "key": "valueB",
+                            "key1": "value with spaces",
+                            "key_with_underscores": "value",
+                        },
+                    ),
+                },
+                [
+                    Diagnostic {
+                        msg: "found duplicate metadata key \"key\"",
+                        loc: SourceLocation {
+                            start: "line: 11, column: 9",
+                            end: "line: 11, column: 20",
+                            source: "package foo",
+                        },
+                    },
+                ],
+            )
+        "#]]
+        .assert_debug_eq(&docs);
     }
     #[test]
     fn test_metadata_no_desc_pkg() {
@@ -1892,27 +2031,37 @@ foo.a
         // key_with_underscores: value
         package foo
         ";
-        let loc = Locator::new(src);
-        assert_docs_full(
-            src,
-            PackageDoc {
-                path: "path".to_string(),
-                name: "foo".to_string(),
-                headline: "Package foo does a thing.".to_string(),
-                description: None,
-                members: BTreeMap::default(),
-                examples: Vec::new(),
-                metadata: Some(map![
-                    "key" => "valueB".to_string(),
-                    "key1" => "value with spaces".to_string(),
-                    "key_with_underscores" => "value".to_string(),
-                ]),
-            },
-            vec![Diagnostic {
-                msg: "found duplicate metadata key \"key\"".to_string(),
-                loc: loc.get(9, 9, 9, 20),
-            }],
-        );
+        let docs = assert_docs_full(src);
+        expect![[r#"
+            (
+                PackageDoc {
+                    path: "path",
+                    name: "foo",
+                    headline: "Package foo does a thing.",
+                    description: None,
+                    members: {},
+                    examples: [],
+                    metadata: Some(
+                        {
+                            "key": "valueB",
+                            "key1": "value with spaces",
+                            "key_with_underscores": "value",
+                        },
+                    ),
+                },
+                [
+                    Diagnostic {
+                        msg: "found duplicate metadata key \"key\"",
+                        loc: SourceLocation {
+                            start: "line: 9, column: 9",
+                            end: "line: 9, column: 20",
+                            source: "package foo",
+                        },
+                    },
+                ],
+            )
+        "#]]
+        .assert_debug_eq(&docs);
     }
     #[test]
     fn test_function_doc() {
@@ -1932,45 +2081,54 @@ foo.a
         // More description after the parameter list.
         f = (x,p=<-) => p + x
         ";
-        let loc = Locator::new(src);
-        assert_docs_full(
-            src,
-            PackageDoc {
-                path: "path".to_string(),
-                name: "foo".to_string(),
-                headline: "Package foo does a thing.".to_string(),
-                description: None,
-                members: map![
-                    "f" => Doc::Function(Box::new(FunctionDoc{
-                        name: "f".to_string(),
-                        headline: "f is a function.".to_string(),
-                        description: Some("More specifically f is the identity function, it returns any value it is passed as a\nparameter.\n\nMore description after the parameter list.".to_string()),
-                        parameters: vec![
-                            ParameterDoc{
-                                name: "x".to_string(),
-                                headline: "x: is any value.".to_string(),
-                                description: None,
-                                required: true,
+        let docs = assert_docs_full(src);
+        expect![[r#"
+            (
+                PackageDoc {
+                    path: "path",
+                    name: "foo",
+                    headline: "Package foo does a thing.",
+                    description: None,
+                    members: {
+                        "f": Function(
+                            FunctionDoc {
+                                name: "f",
+                                headline: "f is a function.",
+                                description: Some(
+                                    "More specifically f is the identity function, it returns any value it is passed as a\nparameter.\n\nMore description after the parameter list.",
+                                ),
+                                parameters: [
+                                    ParameterDoc {
+                                        name: "x",
+                                        headline: "x: is any value.",
+                                        description: None,
+                                        required: true,
+                                    },
+                                    ParameterDoc {
+                                        name: "p",
+                                        headline: "p: is any value piped to the function.",
+                                        description: None,
+                                        required: false,
+                                    },
+                                ],
+                                flux_type: "(<-p: A, x: A) => A where A: Addable",
+                                is_option: false,
+                                source_location: SourceLocation {
+                                    start: "line: 15, column: 9",
+                                    end: "line: 15, column: 30",
+                                    source: "f = (x,p=<-) => p + x",
+                                },
+                                examples: [],
+                                metadata: None,
                             },
-                            ParameterDoc{
-                                name: "p".to_string(),
-                                headline: "p: is any value piped to the function.".to_string(),
-                                description: None,
-                                required: false,
-                            }
-                        ],
-                        flux_type: "(<-p: A, x: A) => A where A: Addable".to_string(),
-                        is_option: false,
-                        source_location: loc.get(15,9,15,30),
-                        examples: vec![],
-                        metadata: None,
-                    })),
-                ],
-                examples: Vec::new(),
-                metadata: None,
-            },
-            vec![],
-        );
+                        ),
+                    },
+                    examples: [],
+                    metadata: None,
+                },
+                [],
+            )
+        "#]].assert_debug_eq(&docs);
     }
     #[test]
     fn test_function_doc_multiline() {
@@ -1993,51 +2151,58 @@ foo.a
         //     headline without a paragraph but with `code`.
         f = (a, b, c) => 1
         ";
-        let loc = Locator::new(src);
-        assert_docs_full(
-            src,
-            PackageDoc {
-                path: "path".to_string(),
-                name: "foo".to_string(),
-                headline: "Package foo does a thing.".to_string(),
-                description: None,
-                members: map![
-                    "f" => Doc::Function(Box::new(FunctionDoc{
-                        name: "f".to_string(),
-                        headline: "f is a function".to_string(),
-                        description: None,
-                        parameters: vec![
-                            ParameterDoc{
-                                name: "a".to_string(),
-                                headline: "a: parameter with a multiline\n    headline without a paragraph.".to_string(),
+        let docs = assert_docs_full(src);
+        expect![[r#"
+            (
+                PackageDoc {
+                    path: "path",
+                    name: "foo",
+                    headline: "Package foo does a thing.",
+                    description: None,
+                    members: {
+                        "f": Function(
+                            FunctionDoc {
+                                name: "f",
+                                headline: "f is a function",
                                 description: None,
-                                required: true,
+                                parameters: [
+                                    ParameterDoc {
+                                        name: "a",
+                                        headline: "a: parameter with a multiline\n    headline without a paragraph.",
+                                        description: None,
+                                        required: true,
+                                    },
+                                    ParameterDoc {
+                                        name: "b",
+                                        headline: "b: parameter with `code` and a multiline\n    headline without a paragraph.",
+                                        description: None,
+                                        required: true,
+                                    },
+                                    ParameterDoc {
+                                        name: "c",
+                                        headline: "c: parameter with a multiline\n    headline without a paragraph but with `code`.",
+                                        description: None,
+                                        required: true,
+                                    },
+                                ],
+                                flux_type: "(a: A, b: B, c: C) => int",
+                                is_option: false,
+                                source_location: SourceLocation {
+                                    start: "line: 14, column: 9",
+                                    end: "line: 14, column: 27",
+                                    source: "f = (a, b, c) => 1",
+                                },
+                                examples: [],
+                                metadata: None,
                             },
-                            ParameterDoc{
-                                name: "b".to_string(),
-                                headline: "b: parameter with `code` and a multiline\n    headline without a paragraph.".to_string(),
-                                description: None,
-                                required: true,
-                            },
-                            ParameterDoc{
-                                name: "c".to_string(),
-                                headline: "c: parameter with a multiline\n    headline without a paragraph but with `code`.".to_string(),
-                                description: None,
-                                required: true,
-                            },
-                        ],
-                        flux_type: "(a: A, b: B, c: C) => int".to_string(),
-                        is_option: false,
-                        source_location: loc.get(14,9,14,27),
-                        examples: vec![],
-                        metadata: None,
-                    })),
-                ],
-                examples: Vec::new(),
-                metadata: None,
-            },
-            vec![],
-        );
+                        ),
+                    },
+                    examples: [],
+                    metadata: None,
+                },
+                [],
+            )
+        "#]].assert_debug_eq(&docs);
     }
     #[test]
     fn test_function_headline_invalid() {
@@ -2048,35 +2213,49 @@ foo.a
         // F is a function.
         f = () => 1
         ";
-        let loc = Locator::new(src);
-        assert_docs_full(
-            src,
-            PackageDoc {
-                path: "path".to_string(),
-                name: "foo".to_string(),
-                headline: "Package foo does a thing.".to_string(),
-                description: None,
-                members: map![
-                    "f" => Doc::Function(Box::new(FunctionDoc{
-                        name: "f".to_string(),
-                        headline: "F is a function.".to_string(),
-                        description: None,
-                        parameters: vec![],
-                        flux_type: "() => int".to_string(),
-                        is_option: false,
-                        source_location: loc.get(6,9,6,20),
-                        examples: vec![],
-                        metadata: None,
-                    })),
+        let docs = assert_docs_full(src);
+        expect![[r#"
+            (
+                PackageDoc {
+                    path: "path",
+                    name: "foo",
+                    headline: "Package foo does a thing.",
+                    description: None,
+                    members: {
+                        "f": Function(
+                            FunctionDoc {
+                                name: "f",
+                                headline: "F is a function.",
+                                description: None,
+                                parameters: [],
+                                flux_type: "() => int",
+                                is_option: false,
+                                source_location: SourceLocation {
+                                    start: "line: 6, column: 9",
+                                    end: "line: 6, column: 20",
+                                    source: "f = () => 1",
+                                },
+                                examples: [],
+                                metadata: None,
+                            },
+                        ),
+                    },
+                    examples: [],
+                    metadata: None,
+                },
+                [
+                    Diagnostic {
+                        msg: "headline must start with \"f\" found \"F\"",
+                        loc: SourceLocation {
+                            start: "line: 6, column: 9",
+                            end: "line: 6, column: 20",
+                            source: "f = () => 1",
+                        },
+                    },
                 ],
-                examples: Vec::new(),
-                metadata: None,
-            },
-            vec![Diagnostic {
-                msg: "headline must start with \"f\" found \"F\"".to_string(),
-                loc: loc.get(6, 9, 6, 20),
-            }],
-        );
+            )
+        "#]]
+        .assert_debug_eq(&docs);
     }
     #[test]
     fn test_function_doc_parameter_desc() {
@@ -2101,43 +2280,58 @@ foo.a
         // More description after the parameter list.
         f = (x,y) => x + y
         ";
-        let loc = Locator::new(src);
-        assert_docs_full(
-            src,
-            PackageDoc {
-                path: "path".to_string(),
-                name: "foo".to_string(),
-                headline: "Package foo does a thing.".to_string(),
-                description: None,
-                members: map![
-                    "f" => Doc::Function(Box::new(FunctionDoc{
-                        name: "f".to_string(),
-                        headline: "f is a function.".to_string(),
-                        description: Some("More specifically f is the identity function, it returns any value it is passed as a\nparameter.\n\nMore description after the parameter list.".to_string()),
-                        parameters: vec![ParameterDoc{
-                            name: "x".to_string(),
-                            headline: "x: is any value.".to_string(),
-                            description: Some("Long description of x.".to_string()),
-                            required: true,
-                        },
-                        ParameterDoc{
-                            name: "y".to_string(),
-                            headline: "y: is any value.".to_string(),
-                            description: Some("Y has a long description too.".to_string()),
-                            required: true,
-                        }],
-                        flux_type: "(x: A, y: A) => A where A: Addable".to_string(),
-                        is_option: false,
-                        source_location: loc.get(20,9,20,27),
-                        examples: vec![],
-                        metadata: None,
-                    })),
-                ],
-                examples: Vec::new(),
-                metadata: None,
-            },
-            vec![],
-        );
+        let docs = assert_docs_full(src);
+        expect![[r#"
+            (
+                PackageDoc {
+                    path: "path",
+                    name: "foo",
+                    headline: "Package foo does a thing.",
+                    description: None,
+                    members: {
+                        "f": Function(
+                            FunctionDoc {
+                                name: "f",
+                                headline: "f is a function.",
+                                description: Some(
+                                    "More specifically f is the identity function, it returns any value it is passed as a\nparameter.\n\nMore description after the parameter list.",
+                                ),
+                                parameters: [
+                                    ParameterDoc {
+                                        name: "x",
+                                        headline: "x: is any value.",
+                                        description: Some(
+                                            "Long description of x.",
+                                        ),
+                                        required: true,
+                                    },
+                                    ParameterDoc {
+                                        name: "y",
+                                        headline: "y: is any value.",
+                                        description: Some(
+                                            "Y has a long description too.",
+                                        ),
+                                        required: true,
+                                    },
+                                ],
+                                flux_type: "(x: A, y: A) => A where A: Addable",
+                                is_option: false,
+                                source_location: SourceLocation {
+                                    start: "line: 20, column: 9",
+                                    end: "line: 20, column: 27",
+                                    source: "f = (x,y) => x + y",
+                                },
+                                examples: [],
+                                metadata: None,
+                            },
+                        ),
+                    },
+                    examples: [],
+                    metadata: None,
+                },
+                [],
+            )
+        "#]].assert_debug_eq(&docs);
     }
     #[test]
     fn test_function_doc_parameter_name_invalid() {
@@ -2162,60 +2356,91 @@ foo.a
         // More description after the parameter list.
         f = (x,y) => x + y
         ";
-        let loc = Locator::new(src);
-        assert_docs_full(
-            src,
-            PackageDoc {
-                path: "path".to_string(),
-                name: "foo".to_string(),
-                headline: "Package foo does a thing.".to_string(),
-                description: None,
-                members: map![
-                    "f" => Doc::Function(Box::new(FunctionDoc{
-                        name: "f".to_string(),
-                        headline: "f is a function.".to_string(),
-                        description: Some("More specifically f is the identity function, it returns any value it is passed as a\nparameter.\n\nMore description after the parameter list.".to_string()),
-                        parameters: vec![ParameterDoc{
-                            name: "".to_string(),
-                            headline: "x is any value.".to_string(),
-                            description: Some("Long description of x.".to_string()),
-                            required: false,
+        let docs = assert_docs_full(src);
+        expect![[r#"
+            (
+                PackageDoc {
+                    path: "path",
+                    name: "foo",
+                    headline: "Package foo does a thing.",
+                    description: None,
+                    members: {
+                        "f": Function(
+                            FunctionDoc {
+                                name: "f",
+                                headline: "f is a function.",
+                                description: Some(
+                                    "More specifically f is the identity function, it returns any value it is passed as a\nparameter.\n\nMore description after the parameter list.",
+                                ),
+                                parameters: [
+                                    ParameterDoc {
+                                        name: "",
+                                        headline: "x is any value.",
+                                        description: Some(
+                                            "Long description of x.",
+                                        ),
+                                        required: false,
+                                    },
+                                    ParameterDoc {
+                                        name: "",
+                                        headline: "`y` is any value.",
+                                        description: Some(
+                                            "Y has a long description too.",
+                                        ),
+                                        required: false,
+                                    },
+                                ],
+                                flux_type: "(x: A, y: A) => A where A: Addable",
+                                is_option: false,
+                                source_location: SourceLocation {
+                                    start: "line: 20, column: 9",
+                                    end: "line: 20, column: 27",
+                                    source: "f = (x,y) => x + y",
+                                },
+                                examples: [],
+                                metadata: None,
+                            },
+                        ),
+                    },
+                    examples: [],
+                    metadata: None,
+                },
+                [
+                    Diagnostic {
+                        msg: "parameter headline must start with \"{parameter_name}:\"",
+                        loc: SourceLocation {
+                            start: "line: 20, column: 9",
+                            end: "line: 20, column: 27",
+                            source: "f = (x,y) => x + y",
                         },
-                        ParameterDoc{
-                            name: "".to_string(),
-                            headline: "`y` is any value.".to_string(),
-                            description: Some("Y has a long description too.".to_string()),
-                            required: false,
-                        }],
-                        flux_type: "(x: A, y: A) => A where A: Addable".to_string(),
-                        is_option: false,
-                        source_location: loc.get(20,9,20,27),
-                        examples: vec![],
-                        metadata: None,
-                    })),
+                    },
+                    Diagnostic {
+                        msg: "parameter headline must start with \"{parameter_name}:\"",
+                        loc: SourceLocation {
+                            start: "line: 20, column: 9",
+                            end: "line: 20, column: 27",
+                            source: "f = (x,y) => x + y",
+                        },
+                    },
+                    Diagnostic {
+                        msg: "missing documentation for parameter \"x\"",
+                        loc: SourceLocation {
+                            start: "line: 20, column: 9",
+                            end: "line: 20, column: 27",
+                            source: "f = (x,y) => x + y",
+                        },
+                    },
+                    Diagnostic {
+                        msg: "missing documentation for parameter \"y\"",
+                        loc: SourceLocation {
+                            start: "line: 20, column: 9",
+                            end: "line: 20, column: 27",
+                            source: "f = (x,y) => x + y",
+                        },
+                    },
                 ],
-                examples: Vec::new(),
-                metadata: None,
-            },
-            vec![
-                Diagnostic {
-                    msg: "parameter headline must start with \"{parameter_name}:\"".to_string(),
-                    loc: loc.get(20, 9, 20, 27),
-                },
-                Diagnostic {
-                    msg: "parameter headline must start with \"{parameter_name}:\"".to_string(),
-                    loc: loc.get(20, 9, 20, 27),
-                },
-                Diagnostic {
-                    msg: "missing documentation for parameter \"x\"".to_string(),
-                    loc: loc.get(20, 9, 20, 27),
-                },
-                Diagnostic {
-                    msg: "missing documentation for parameter \"y\"".to_string(),
-                    loc: loc.get(20, 9, 20, 27),
-                },
-            ],
-        );
+            )
+        "#]].assert_debug_eq(&docs);
     }
     #[test]
     fn test_function_doc_missing_description() {
@@ -2226,35 +2451,49 @@ foo.a
         // f is a function.
         f = (x) => x
         ";
-        let loc = Locator::new(src);
-        assert_docs_full(
-            src,
-            PackageDoc {
-                path: "path".to_string(),
-                name: "foo".to_string(),
-                headline: "Package foo does a thing.".to_string(),
-                description: None,
-                members: map![
-                    "f" => Doc::Function(Box::new(FunctionDoc{
-                        name: "f".to_string(),
-                        headline: "f is a function.".to_string(),
-                        description: None,
-                        parameters: vec![],
-                        flux_type: "(x: A) => A".to_string(),
-                        is_option: false,
-                        source_location: loc.get(6, 9, 6, 21),
-                        examples: vec![],
-                        metadata: None,
-                    })),
+        let docs = assert_docs_full(src);
+        expect![[r#"
+            (
+                PackageDoc {
+                    path: "path",
+                    name: "foo",
+                    headline: "Package foo does a thing.",
+                    description: None,
+                    members: {
+                        "f": Function(
+                            FunctionDoc {
+                                name: "f",
+                                headline: "f is a function.",
+                                description: None,
+                                parameters: [],
+                                flux_type: "(x: A) => A",
+                                is_option: false,
+                                source_location: SourceLocation {
+                                    start: "line: 6, column: 9",
+                                    end: "line: 6, column: 21",
+                                    source: "f = (x) => x",
+                                },
+                                examples: [],
+                                metadata: None,
+                            },
+                        ),
+                    },
+                    examples: [],
+                    metadata: None,
+                },
+                [
+                    Diagnostic {
+                        msg: "missing documentation for parameter \"x\"",
+                        loc: SourceLocation {
+                            start: "line: 6, column: 9",
+                            end: "line: 6, column: 21",
+                            source: "f = (x) => x",
+                        },
+                    },
                 ],
-                examples: Vec::new(),
-                metadata: None,
-            },
-            vec![Diagnostic {
-                msg: "missing documentation for parameter \"x\"".to_string(),
-                loc: loc.get(6, 9, 6, 21),
-            }],
-        );
+            )
+        "#]]
+        .assert_debug_eq(&docs);
     }
     #[test]
     fn test_function_doc_missing_parameter() {
@@ -2268,40 +2507,56 @@ foo.a
         // - x: is any value.
         add = (x,y) => x + y
         ";
-        let loc = Locator::new(src);
-        assert_docs_full(
-            src,
-            PackageDoc {
-                path: "path".to_string(),
-                name: "foo".to_string(),
-                headline: "Package foo does a thing.".to_string(),
-                description: None,
-                members: map![
-                    "add" => Doc::Function(Box::new(FunctionDoc{
-                        name: "add".to_string(),
-                        headline: "add is a function.".to_string(),
-                        description: None,
-                        parameters: vec![ParameterDoc{
-                            name: "x".to_string(),
-                            headline: "x: is any value.".to_string(),
-                            description: None,
-                            required: true,
-                        }],
-                        flux_type: "(x: A, y: A) => A where A: Addable".to_string(),
-                        is_option: false,
-                        source_location: loc.get(9, 9, 9, 29),
-                        examples: vec![],
-                        metadata: None,
-                    })),
+        let docs = assert_docs_full(src);
+        expect![[r#"
+            (
+                PackageDoc {
+                    path: "path",
+                    name: "foo",
+                    headline: "Package foo does a thing.",
+                    description: None,
+                    members: {
+                        "add": Function(
+                            FunctionDoc {
+                                name: "add",
+                                headline: "add is a function.",
+                                description: None,
+                                parameters: [
+                                    ParameterDoc {
+                                        name: "x",
+                                        headline: "x: is any value.",
+                                        description: None,
+                                        required: true,
+                                    },
+                                ],
+                                flux_type: "(x: A, y: A) => A where A: Addable",
+                                is_option: false,
+                                source_location: SourceLocation {
+                                    start: "line: 9, column: 9",
+                                    end: "line: 9, column: 29",
+                                    source: "add = (x,y) => x + y",
+                                },
+                                examples: [],
+                                metadata: None,
+                            },
+                        ),
+                    },
+                    examples: [],
+                    metadata: None,
+                },
+                [
+                    Diagnostic {
+                        msg: "missing documentation for parameter \"y\"",
+                        loc: SourceLocation {
+                            start: "line: 9, column: 9",
+                            end: "line: 9, column: 29",
+                            source: "add = (x,y) => x + y",
+                        },
+                    },
                 ],
-                examples: Vec::new(),
-                metadata: None,
-            },
-            vec![Diagnostic {
-                msg: "missing documentation for parameter \"y\"".to_string(),
-                loc: loc.get(9, 9, 9, 29),
-            }],
-        );
+            )
+        "#]]
+        .assert_debug_eq(&docs);
     }
     #[test]
     fn test_function_doc_missing_pipe_parameter() {
@@ -2315,40 +2570,56 @@ foo.a
         // - x: is any value.
         add = (x,y=<-) => x + y
         ";
-        let loc = Locator::new(src);
-        assert_docs_full(
-            src,
-            PackageDoc {
-                path: "path".to_string(),
-                name: "foo".to_string(),
-                headline: "Package foo does a thing.".to_string(),
-                description: None,
-                members: map![
-                    "add" => Doc::Function(Box::new(FunctionDoc{
-                        name: "add".to_string(),
-                        headline: "add is a function.".to_string(),
-                        description: None,
-                        parameters: vec![ParameterDoc{
-                            name: "x".to_string(),
-                            headline: "x: is any value.".to_string(),
-                            description: None,
-                            required: true,
-                        }],
-                        flux_type: "(<-y: A, x: A) => A where A: Addable".to_string(),
-                        is_option: false,
-                        source_location: loc.get(9, 9, 9, 32),
-                        examples: vec![],
-                        metadata: None,
-                    })),
+        let docs = assert_docs_full(src);
+        expect![[r#"
+            (
+                PackageDoc {
+                    path: "path",
+                    name: "foo",
+                    headline: "Package foo does a thing.",
+                    description: None,
+                    members: {
+                        "add": Function(
+                            FunctionDoc {
+                                name: "add",
+                                headline: "add is a function.",
+                                description: None,
+                                parameters: [
+                                    ParameterDoc {
+                                        name: "x",
+                                        headline: "x: is any value.",
+                                        description: None,
+                                        required: true,
+                                    },
+                                ],
+                                flux_type: "(<-y: A, x: A) => A where A: Addable",
+                                is_option: false,
+                                source_location: SourceLocation {
+                                    start: "line: 9, column: 9",
+                                    end: "line: 9, column: 32",
+                                    source: "add = (x,y=<-) => x + y",
+                                },
+                                examples: [],
+                                metadata: None,
+                            },
+                        ),
+                    },
+                    examples: [],
+                    metadata: None,
+                },
+                [
+                    Diagnostic {
+                        msg: "missing documentation for parameter \"y\"",
+                        loc: SourceLocation {
+                            start: "line: 9, column: 9",
+                            end: "line: 9, column: 32",
+                            source: "add = (x,y=<-) => x + y",
+                        },
+                    },
                 ],
-                examples: Vec::new(),
-                metadata: None,
-            },
-            vec![Diagnostic {
-                msg: "missing documentation for parameter \"y\"".to_string(),
-                loc: loc.get(9, 9, 9, 32),
-            }],
-        );
+            )
+        "#]]
+        .assert_debug_eq(&docs);
     }
     #[test]
     fn test_function_doc_missing_optional_parameter() {
@@ -2362,40 +2633,56 @@ foo.a
         // - x: is any value.
         add = (x,y=1) => x + y
         ";
-        let loc = Locator::new(src);
-        assert_docs_full(
-            src,
-            PackageDoc {
-                path: "path".to_string(),
-                name: "foo".to_string(),
-                headline: "Package foo does a thing.".to_string(),
-                description: None,
-                members: map![
-                    "add" => Doc::Function(Box::new(FunctionDoc{
-                        name: "add".to_string(),
-                        headline: "add is a function.".to_string(),
-                        description: None,
-                        parameters: vec![ParameterDoc{
-                            name: "x".to_string(),
-                            headline: "x: is any value.".to_string(),
-                            description: None,
-                            required: true,
-                        }],
-                        flux_type: "(x: A, ?y: A) => A where A: Addable".to_string(),
-                        is_option: false,
-                        source_location: loc.get(9, 9, 9, 31),
-                        examples: vec![],
-                        metadata: None,
-                    })),
+        let docs = assert_docs_full(src);
+        expect![[r#"
+            (
+                PackageDoc {
+                    path: "path",
+                    name: "foo",
+                    headline: "Package foo does a thing.",
+                    description: None,
+                    members: {
+                        "add": Function(
+                            FunctionDoc {
+                                name: "add",
+                                headline: "add is a function.",
+                                description: None,
+                                parameters: [
+                                    ParameterDoc {
+                                        name: "x",
+                                        headline: "x: is any value.",
+                                        description: None,
+                                        required: true,
+                                    },
+                                ],
+                                flux_type: "(x: A, ?y: A) => A where A: Addable",
+                                is_option: false,
+                                source_location: SourceLocation {
+                                    start: "line: 9, column: 9",
+                                    end: "line: 9, column: 31",
+                                    source: "add = (x,y=1) => x + y",
+                                },
+                                examples: [],
+                                metadata: None,
+                            },
+                        ),
+                    },
+                    examples: [],
+                    metadata: None,
+                },
+                [
+                    Diagnostic {
+                        msg: "missing documentation for parameter \"y\"",
+                        loc: SourceLocation {
+                            start: "line: 9, column: 9",
+                            end: "line: 9, column: 31",
+                            source: "add = (x,y=1) => x + y",
+                        },
+                    },
                 ],
-                examples: Vec::new(),
-                metadata: None,
-            },
-            vec![Diagnostic {
-                msg: "missing documentation for parameter \"y\"".to_string(),
-                loc: loc.get(9, 9, 9, 31),
-            }],
-        );
+            )
+        "#]]
+        .assert_debug_eq(&docs);
     }
     #[test]
     fn test_function_doc_extra_parameter() {
@@ -2409,40 +2696,56 @@ foo.a
         // - x: is any value.
         one = () => 1
         ";
-        let loc = Locator::new(src);
-        assert_docs_full(
-            src,
-            PackageDoc {
-                path: "path".to_string(),
-                name: "foo".to_string(),
-                headline: "Package foo does a thing.".to_string(),
-                description: None,
-                members: map![
-                    "one" => Doc::Function(Box::new(FunctionDoc{
-                        name: "one".to_string(),
-                        headline: "one is a function.".to_string(),
-                        description: None,
-                        parameters: vec![ParameterDoc{
-                            name: "x".to_string(),
-                            headline: "x: is any value.".to_string(),
-                            description: None,
-                            required: false,
-                        }],
-                        flux_type: "() => int".to_string(),
-                        is_option: false,
-                        source_location: loc.get(9, 9, 9, 22),
-                        examples: vec![],
-                        metadata: None,
-                    })),
+        let docs = assert_docs_full(src);
+        expect![[r#"
+            (
+                PackageDoc {
+                    path: "path",
+                    name: "foo",
+                    headline: "Package foo does a thing.",
+                    description: None,
+                    members: {
+                        "one": Function(
+                            FunctionDoc {
+                                name: "one",
+                                headline: "one is a function.",
+                                description: None,
+                                parameters: [
+                                    ParameterDoc {
+                                        name: "x",
+                                        headline: "x: is any value.",
+                                        description: None,
+                                        required: false,
+                                    },
+                                ],
+                                flux_type: "() => int",
+                                is_option: false,
+                                source_location: SourceLocation {
+                                    start: "line: 9, column: 9",
+                                    end: "line: 9, column: 22",
+                                    source: "one = () => 1",
+                                },
+                                examples: [],
+                                metadata: None,
+                            },
+                        ),
+                    },
+                    examples: [],
+                    metadata: None,
+                },
+                [
+                    Diagnostic {
+                        msg: "extra documentation for parameter \"x\"",
+                        loc: SourceLocation {
+                            start: "line: 9, column: 9",
+                            end: "line: 9, column: 22",
+                            source: "one = () => 1",
+                        },
+                    },
                 ],
-                examples: Vec::new(),
-                metadata: None,
-            },
-            vec![Diagnostic {
-                msg: "extra documentation for parameter \"x\"".to_string(),
-                loc: loc.get(9, 9, 9, 22),
-            }],
-        );
+            )
+        "#]]
+        .assert_debug_eq(&docs);
     }
     #[test]
     fn test_function_no_parameters() {
@@ -2453,32 +2756,40 @@ foo.a
         // one returns the number one.
         one = () => 1
         ";
-        let loc = Locator::new(src);
-        assert_docs_full(
-            src,
-            PackageDoc {
-                path: "path".to_string(),
-                name: "foo".to_string(),
-                headline: "Package foo does a thing.".to_string(),
-                description: None,
-                members: map![
-                    "one" => Doc::Function(Box::new(FunctionDoc{
-                        name: "one".to_string(),
-                        headline: "one returns the number one.".to_string(),
-                        description: None,
-                        parameters: vec![],
-                        flux_type: "() => int".to_string(),
-                        is_option: false,
-                        source_location: loc.get(6, 9, 6, 22),
-                        examples: vec![],
-                        metadata: None,
-                    })),
-                ],
-                examples: Vec::new(),
-                metadata: None,
-            },
-            vec![],
-        );
+        let docs = assert_docs_full(src);
+        expect![[r#"
+            (
+                PackageDoc {
+                    path: "path",
+                    name: "foo",
+                    headline: "Package foo does a thing.",
+                    description: None,
+                    members: {
+                        "one": Function(
+                            FunctionDoc {
+                                name: "one",
+                                headline: "one returns the number one.",
+                                description: None,
+                                parameters: [],
+                                flux_type: "() => int",
+                                is_option: false,
+                                source_location: SourceLocation {
+                                    start: "line: 6, column: 9",
+                                    end: "line: 6, column: 22",
+                                    source: "one = () => 1",
+                                },
+                                examples: [],
+                                metadata: None,
+                            },
+                        ),
+                    },
+                    examples: [],
+                    metadata: None,
+                },
+                [],
+            )
+        "#]]
+        .assert_debug_eq(&docs);
     }
     #[test]
     fn test_value_option() {
@@ -2489,31 +2800,39 @@ foo.a
         // one is the number one.
         option one = 1
         ";
-        let loc = Locator::new(src);
-        assert_docs_full(
-            src,
-            PackageDoc {
-                path: "path".to_string(),
-                name: "foo".to_string(),
-                headline: "Package foo does a thing.".to_string(),
-                description: None,
-                members: map![
-                    "one" => Doc::Value(Box::new(ValueDoc{
-                        name: "one".to_string(),
-                        headline: "one is the number one.".to_string(),
-                        description: None,
-                        flux_type: "int".to_string(),
-                        is_option: true,
-                        source_location: loc.get(6, 9, 6, 23),
-                        examples: vec![],
-                        metadata: None,
-                    })),
-                ],
-                examples: Vec::new(),
-                metadata: None,
-            },
-            vec![],
-        );
+        let docs = assert_docs_full(src);
+        expect![[r#"
+            (
+                PackageDoc {
+                    path: "path",
+                    name: "foo",
+                    headline: "Package foo does a thing.",
+                    description: None,
+                    members: {
+                        "one": Value(
+                            ValueDoc {
+                                name: "one",
+                                headline: "one is the number one.",
+                                description: None,
+                                flux_type: "int",
+                                is_option: true,
+                                source_location: SourceLocation {
+                                    start: "line: 6, column: 9",
+                                    end: "line: 6, column: 23",
+                                    source: "option one = 1",
+                                },
+                                examples: [],
+                                metadata: None,
+                            },
+                        ),
+                    },
+                    examples: [],
+                    metadata: None,
+                },
+                [],
+            )
+        "#]]
+        .assert_debug_eq(&docs);
     }
     #[test]
     fn test_function_option() {
@@ -2524,32 +2843,40 @@ foo.a
         // one returns the number one.
         option one = () => 1
         ";
-        let loc = Locator::new(src);
-        assert_docs_full(
-            src,
-            PackageDoc {
-                path: "path".to_string(),
-                name: "foo".to_string(),
-                headline: "Package foo does a thing.".to_string(),
-                description: None,
-                members: map![
-                    "one" => Doc::Function(Box::new(FunctionDoc{
-                        name: "one".to_string(),
-                        headline: "one returns the number one.".to_string(),
-                        description: None,
-                        parameters: vec![],
-                        flux_type: "() => int".to_string(),
-                        is_option: true,
-                        source_location: loc.get(6, 9, 6, 29),
-                        examples: vec![],
-                        metadata: None,
-                    })),
-                ],
-                examples: Vec::new(),
-                metadata: None,
-            },
-            vec![],
-        );
+        let docs = assert_docs_full(src);
+        expect![[r#"
+            (
+                PackageDoc {
+                    path: "path",
+                    name: "foo",
+                    headline: "Package foo does a thing.",
+                    description: None,
+                    members: {
+                        "one": Function(
+                            FunctionDoc {
+                                name: "one",
+                                headline: "one returns the number one.",
+                                description: None,
+                                parameters: [],
+                                flux_type: "() => int",
+                                is_option: true,
+                                source_location: SourceLocation {
+                                    start: "line: 6, column: 9",
+                                    end: "line: 6, column: 29",
+                                    source: "option one = () => 1",
+                                },
+                                examples: [],
+                                metadata: None,
+                            },
+                        ),
+                    },
+                    examples: [],
+                    metadata: None,
+                },
+                [],
+            )
+        "#]]
+        .assert_debug_eq(&docs);
     }
     #[test]
     fn test_parser_headline() {
