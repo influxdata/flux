@@ -77,6 +77,8 @@ builtin _mask : (<-tables: stream[A], columns: [string]) => stream[B] where A: R
 //     token: token,
 // )
 // ```
+// _**Note:** For InfluxDB Cloud regions, there must be no trailing slash on the
+// 'host' url._
 //
 // ## Metadata
 // tags: inputs
