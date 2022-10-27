@@ -92,7 +92,7 @@ var sourceHashes = map[string]string{
 	"stdlib/contrib/bonitoo-io/victorops/victorops.flux":                                          "44d6674a86ceff7995153deca38db142fc0422b5a3526f5d0263a761d222269f",
 	"stdlib/contrib/bonitoo-io/zenoss/zenoss.flux":                                                "8f6de802b3176bf2524018e32ec5dc4eddd66db86abdeec837e9ca65ad7cc863",
 	"stdlib/contrib/chobbs/discord/discord.flux":                                                  "bbda9aaee1966d67d310dc099d00476adda777394a1af279d447e4524e0d5e58",
-	"stdlib/contrib/jsternberg/influxdb/influxdb.flux":                                            "afc52f2e31d5e063e318b752d077c58189317c373494563ea0895cdcdea49074",
+	"stdlib/contrib/jsternberg/influxdb/influxdb.flux":                                            "8e7f6a29f2a065cdcee18223a0d45e2c94375cf9b47c204c4b7e7f6194c11024",
 	"stdlib/contrib/rhajek/bigpanda/bigpanda.flux":                                                "0f4d43a7ae08f0ce5e00a746082dbdae06008bcd69cb00b52f0b4f1bb10b7323",
 	"stdlib/contrib/sranka/opsgenie/opsgenie.flux":                                                "5313b78a30ffb01c606397c9bea954bdd4ca06c44663268bab1e0f706fc6d2c5",
 	"stdlib/contrib/sranka/sensu/sensu.flux":                                                      "c3aff3caa234f7f1991f0d37cc40abaee7ad493fbcd7914a0009ac7d66ce0325",
