@@ -156,6 +156,17 @@ pub fn parse_package_doc_comments(
     parse_file_doc_comments(&pkg.files[0], pkgpath, types)
 }
 
+fn collect_comments(base: &ast::BaseNode) -> Vec<&ast::Comment> {
+    let mut comments: Vec<&ast::Comment> = base.comments.iter().collect();
+    // Extend with all comments associated with the attributes
+    comments.extend(
+        base.attributes
+            .iter()
+            .flat_map(|attr| collect_comments(&attr.base)),
+    );
+    comments
+}
+
 fn parse_file_doc_comments(
     file: &ast::File,
     pkgpath: &str,
@@ -164,9 +175,11 @@ fn parse_file_doc_comments(
     let mut diagnostics: Diagnostics = Vec::new();
     let mut pkg = match &file.package {
         Some(pkg_clause) => {
-            let comment = comments_to_string(&pkg_clause.base.comments);
+            println!("pkg_clause {:?}", pkg_clause);
+            let comment = comments_to_string(&collect_comments(&pkg_clause.base));
             let pr = parse_comment(
                 comment.as_str(),
+                &pkg_clause.base.attributes,
                 false,
                 &pkg_clause.base.location,
                 &mut diagnostics,
@@ -240,6 +253,7 @@ struct HeadlineDescription {
 }
 fn parse_comment(
     comment: &str,
+    attributes: &[ast::Attribute],
     expect_parameters: bool,
     loc: &ast::SourceLocation,
     diagnostics: &mut Diagnostics,
@@ -294,7 +308,22 @@ fn parse_comment(
         description
     };
     let examples = examples_from_tokens(&mut tokens);
-    let metadata = metadata_from_tokens(&mut tokens, loc, diagnostics);
+    let mut metadata = metadata_from_tokens(&mut tokens, loc, diagnostics);
+
+    // Check attributes for more metadata
+    for attr in attributes {
+        // Add deprecated metadata if attribute exists
+        if attr.name == "deprecated" {
+            if let Some(param) = attr.params.first() {
+                if let ast::Expression::StringLit(v) = &param.value {
+                    metadata
+                        .get_or_insert_with(Default::default)
+                        .insert("deprecated".to_string(), v.value.to_string());
+                }
+            }
+        }
+    }
+
     Ok(ParseResult {
         headline,
         description,
@@ -446,23 +475,26 @@ fn parse_package_values(
 ) -> Result<BTreeMap<String, Doc>> {
     let mut members: BTreeMap<String, Doc> = BTreeMap::new();
     for stmt in &f.body {
-        if let Some((name, comment, loc, is_option)) = match stmt {
+        if let Some((name, comment, attributes, loc, is_option)) = match stmt {
             ast::Statement::Variable(s) => {
-                let comment = comments_to_string(&s.id.base.comments);
+                // Comments can be present on the statment or the identifier
+                let mut comments = collect_comments(&s.base);
+                comments.extend(collect_comments(&s.id.base));
+                let comment = comments_to_string(&comments);
                 let name = s.id.name.clone();
-                Some((name, comment, &s.base.location, false))
+                Some((name, comment, &s.base.attributes, &s.base.location, false))
             }
             ast::Statement::Builtin(s) => {
-                let comment = comments_to_string(&s.base.comments);
+                let comment = comments_to_string(&collect_comments(&s.base));
                 let name = s.id.name.clone();
-                Some((name, comment, &s.base.location, false))
+                Some((name, comment, &s.base.attributes, &s.base.location, false))
             }
             ast::Statement::Option(s) => {
                 match &s.assignment {
                     ast::Assignment::Variable(v) => {
-                        let comment = comments_to_string(&s.base.comments);
+                        let comment = comments_to_string(&collect_comments(&s.base));
                         let name = v.id.name.clone();
-                        Some((name, comment, &s.base.location, true))
+                        Some((name, comment, &s.base.attributes, &s.base.location, true))
                     }
                     // Member assignments are not exported values from a package
                     // and do not need documentation.
@@ -479,7 +511,15 @@ fn parse_package_values(
                     // that are behind feature flags as there is an original binding as well
                     && !comment.contains("@feature")
                 {
-                    let doc = parse_any_value(&name, &comment, typ, loc, diagnostics, is_option)?;
+                    let doc = parse_any_value(
+                        &name,
+                        &comment,
+                        &attributes,
+                        typ,
+                        loc,
+                        diagnostics,
+                        is_option,
+                    )?;
                     members.insert(name.clone(), doc);
                 }
             } else {
@@ -531,6 +571,7 @@ fn check_headline(name: &str, headline: &str, loc: &ast::SourceLocation) -> Opti
 fn parse_any_value(
     name: &str,
     comment: &str,
+    attributes: &[ast::Attribute],
     typ: &PolyType,
     loc: &ast::SourceLocation,
     diagnostics: &mut Diagnostics,
@@ -538,11 +579,20 @@ fn parse_any_value(
 ) -> Result<Doc> {
     match &typ.expr {
         MonoType::Fun(f) => {
-            let doc = parse_function_doc(name, comment, typ, f, loc, diagnostics, is_option)?;
+            let doc = parse_function_doc(
+                name,
+                comment,
+                attributes,
+                typ,
+                f,
+                loc,
+                diagnostics,
+                is_option,
+            )?;
             Ok(Doc::Function(Box::new(doc)))
         }
         _ => {
-            let doc = parse_value_doc(name, comment, typ, loc, diagnostics, is_option)?;
+            let doc = parse_value_doc(name, comment, attributes, typ, loc, diagnostics, is_option)?;
             Ok(Doc::Value(Box::new(doc)))
         }
     }
@@ -551,13 +601,14 @@ fn parse_any_value(
 fn parse_function_doc(
     name: &str,
     comment: &str,
+    attributes: &[ast::Attribute],
     typ: &PolyType,
     fun_typ: &Function,
     loc: &ast::SourceLocation,
     diagnostics: &mut Diagnostics,
     is_option: bool,
 ) -> Result<FunctionDoc> {
-    let pr = parse_comment(comment, true, loc, diagnostics)?;
+    let pr = parse_comment(comment, attributes, true, loc, diagnostics)?;
     if pr.headline.is_empty() {
         diagnostics.push(Diagnostic {
             msg: format!("function \"{}\" must contain a non empty comment", name),
@@ -631,12 +682,13 @@ fn contains_parameter(params: &[ParameterDoc], name: &str) -> bool {
 fn parse_value_doc(
     name: &str,
     comment: &str,
+    attributes: &[ast::Attribute],
     typ: &PolyType,
     loc: &ast::SourceLocation,
     diagnostics: &mut Diagnostics,
     is_option: bool,
 ) -> Result<ValueDoc> {
-    let pr = parse_comment(comment, false, loc, diagnostics)?;
+    let pr = parse_comment(comment, attributes, false, loc, diagnostics)?;
     if pr.headline.is_empty() {
         diagnostics.push(Diagnostic {
             msg: format!("value {} must contain a non empty comment", name),
@@ -657,7 +709,7 @@ fn parse_value_doc(
     })
 }
 
-fn comments_to_string(comments: &[ast::Comment]) -> String {
+fn comments_to_string(comments: &[&ast::Comment]) -> String {
     let mut s = String::new();
     if !comments.is_empty() {
         for c in comments {
@@ -1175,6 +1227,7 @@ mod test {
     fn assert_docs(src: &str, short: bool) -> (PackageDoc, Diagnostics) {
         let mut analyzer = Analyzer::new_with_defaults(Environment::empty(true), Packages::new());
         let ast_pkg = parse_program(src);
+        println!("ast_pkg {:#?}", ast_pkg);
         let (types, _) = match analyzer.analyze_ast(&ast_pkg) {
             Ok(t) => t,
             Err(e) => panic!("error inferring types {}", e),
@@ -1960,6 +2013,169 @@ mod test {
                     examples: [],
                     metadata: Some(
                         {
+                            "k0": "v0",
+                            "k1": "v1",
+                            "k2": "v2",
+                        },
+                    ),
+                },
+                [],
+            )
+        "#]]
+        .assert_debug_eq(&docs);
+    }
+    #[test]
+    fn test_deprecated_metadata() {
+        let src = r#"
+        // Package foo does a thing.
+        //
+        // This is a description.
+        //
+        // ## Metadata
+        // k0: v0
+        // k1: v1
+        // k2: v2
+        @deprecated("0.134.0")
+        package foo
+
+        // a is a constant.
+        //
+        // This is a description.
+        //
+        // ## Metadata
+        // k3: v3
+        // k4: v4
+        // k5: v5
+        @deprecated("0.134.0")
+        a = 1
+
+        // f is a function.
+        //
+        // This is a description.
+        //
+        // ## Parameters
+        //
+        // - x: is a parameter.
+        //
+        //     This is a description of x.
+        //
+        // ## Metadata
+        // k6: v6
+        // k7: v7
+        // k8: v8
+        @deprecated("0.134.0")
+        f = (x) => 1
+
+        // o is an option.
+        //
+        // This is a description.
+        //
+        // ## Metadata
+        // k9: v9
+        // k0: v0
+        @deprecated("0.134.0")
+        option o = 1
+        "#;
+        let docs = assert_docs_full(src);
+        expect![[r#"
+            (
+                PackageDoc {
+                    path: "path",
+                    name: "foo",
+                    headline: "Package foo does a thing.",
+                    description: Some(
+                        "This is a description.",
+                    ),
+                    members: {
+                        "a": Value(
+                            ValueDoc {
+                                name: "a",
+                                headline: "a is a constant.",
+                                description: Some(
+                                    "This is a description.",
+                                ),
+                                flux_type: "int",
+                                is_option: false,
+                                source_location: SourceLocation {
+                                    start: "line: 22, column: 9",
+                                    end: "line: 22, column: 14",
+                                    source: "a = 1",
+                                },
+                                examples: [],
+                                metadata: Some(
+                                    {
+                                        "deprecated": "0.134.0",
+                                        "k3": "v3",
+                                        "k4": "v4",
+                                        "k5": "v5",
+                                    },
+                                ),
+                            },
+                        ),
+                        "f": Function(
+                            FunctionDoc {
+                                name: "f",
+                                headline: "f is a function.",
+                                description: Some(
+                                    "This is a description.",
+                                ),
+                                parameters: [
+                                    ParameterDoc {
+                                        name: "x",
+                                        headline: "x: is a parameter.",
+                                        description: Some(
+                                            "This is a description of x.",
+                                        ),
+                                        required: true,
+                                    },
+                                ],
+                                flux_type: "(x: A) => int",
+                                is_option: false,
+                                source_location: SourceLocation {
+                                    start: "line: 39, column: 9",
+                                    end: "line: 39, column: 21",
+                                    source: "f = (x) => 1",
+                                },
+                                examples: [],
+                                metadata: Some(
+                                    {
+                                        "deprecated": "0.134.0",
+                                        "k6": "v6",
+                                        "k7": "v7",
+                                        "k8": "v8",
+                                    },
+                                ),
+                            },
+                        ),
+                        "o": Value(
+                            ValueDoc {
+                                name: "o",
+                                headline: "o is an option.",
+                                description: Some(
+                                    "This is a description.",
+                                ),
+                                flux_type: "int",
+                                is_option: true,
+                                source_location: SourceLocation {
+                                    start: "line: 49, column: 9",
+                                    end: "line: 49, column: 21",
+                                    source: "option o = 1",
+                                },
+                                examples: [],
+                                metadata: Some(
+                                    {
+                                        "deprecated": "0.134.0",
+                                        "k0": "v0",
+                                        "k9": "v9",
+                                    },
+                                ),
+                            },
+                        ),
+                    },
+                    examples: [],
+                    metadata: Some(
+                        {
+                            "deprecated": "0.134.0",
                             "k0": "v0",
                             "k1": "v1",
                             "k2": "v2",
