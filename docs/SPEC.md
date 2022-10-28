@@ -1024,15 +1024,12 @@ Flux source is organized into packages.
 A package consists of one or more source files.
 Each source file is parsed individually and composed into a single package.
 
-    File = [ Attributes ] [ PackageClause ] [ ImportList ] StatementList .
+    File = [ PackageClause ] [ ImportList ] StatementList .
     ImportList = { ImportDeclaration } .
-
-The first attributes defined before the package clause or import lists whether they exists or not apply to the entire package.
-A package clause or import list is required to associate attributes with the first statement in a file.
 
 #### Package clause
 
-    PackageClause = "package" identifier .
+    PackageClause = [ Attributes ] "package" identifier .
 
 A package clause defines the name for the current package.
 Package names must be valid Flux identifiers.
@@ -1052,7 +1049,7 @@ The _main_ package is special for a few reasons:
 
 #### Import declaration
 
-    ImportDeclaration = "import" [identifier] string_lit
+    ImportDeclaration = [ Attributes ] "import" [identifier] string_lit
 
 Associated with every package is a package name and an import path.
 The import statement takes a package's import path and brings all of the identifiers defined in that package into the current scope under a namespace.
@@ -1081,7 +1078,7 @@ Every statement contained in an imported package is evaluated.
 
 ### Attributes
 
-Attributes define a set of properties on the subsequent source code element.
+Attributes define a set of properties on source code elements.
 
     Attributes             = { Attribute } .
     Attribute              = "@" identifier AttributeParameters .

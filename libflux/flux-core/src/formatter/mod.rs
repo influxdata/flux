@@ -401,8 +401,10 @@ impl<'doc> Formatter<'doc> {
     fn format_package_clause(&mut self, pkg: &'doc ast::PackageClause) -> Doc<'doc> {
         let arena = self.arena;
         if !pkg.name.name.is_empty() {
+            let attrs = self.format_attribute_list(&pkg.base.attributes);
             docs![
                 arena,
+                attrs,
                 self.format_comments(&pkg.base.comments),
                 "package ",
                 self.format_identifier(&pkg.name),
@@ -681,8 +683,10 @@ impl<'doc> Formatter<'doc> {
 
     fn format_import_declaration(&mut self, n: &'doc ast::ImportDeclaration) -> Doc<'doc> {
         let arena = self.arena;
+        let attrs = self.format_attribute_list(&n.base.attributes);
         docs![
             arena,
+            attrs,
             self.format_comments(&n.base.comments),
             "import ",
             if let Some(alias) = &n.alias {
@@ -795,7 +799,7 @@ impl<'doc> Formatter<'doc> {
         let arena = self.arena;
         docs![
             arena,
-            self.format_attribute_list(&s.base().attributes),
+            self.format_attribute_list(&s.base().attributes,),
             match s {
                 Statement::Expr(s) => self.format_expression_statement(s),
                 Statement::Variable(s) => self.format_variable_assignment(s),
