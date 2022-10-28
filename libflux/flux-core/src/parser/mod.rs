@@ -377,6 +377,9 @@ impl<'input> Parser<'input> {
         let start_pos = ast::Position::from(&self.peek().start_pos);
         let mut end = ast::Position::invalid();
 
+        // Parse outer attributes at the beginning of the file.
+        let outer_attributes = self.parse_attribute_outer_list();
+
         // Parse inner attributes at the beginning of the file and hand them off to the first
         // clause, declaration or statement that exists
         let inner_attributes = self.parse_attribute_inner_list();
@@ -391,7 +394,7 @@ impl<'input> Parser<'input> {
         }
         let (mut body, inner_attributes) = self.parse_statement_list(inner_attributes);
         if let Some(attrs) = inner_attributes {
-            if !attrs.is_empty() {
+            if attrs.len() > 0 {
                 // We have left over attributes from the beginning of the file.
                 body.push(Statement::Bad(Box::new(BadStmt {
                     base: self.base_node_from_others(&attrs[0].base, &attrs[attrs.len() - 1].base),
@@ -407,6 +410,7 @@ impl<'input> Parser<'input> {
         File {
             base: BaseNode {
                 location: self.source_location(&start_pos, &end),
+                attributes: outer_attributes,
                 ..BaseNode::default()
             },
             name: self.fname.clone(),
@@ -2360,6 +2364,14 @@ impl<'input> Parser<'input> {
         }
     }
 
+    fn parse_attribute_outer_list(&mut self) -> Vec<Attribute> {
+        let mut attributes = Vec::new();
+        while self.peek().tok == TokenType::AttributeOuter {
+            attributes.push(self.parse_attribute_outer());
+        }
+        attributes
+    }
+
     fn parse_attribute_inner_list(&mut self) -> Vec<Attribute> {
         let mut attributes = Vec::new();
         while self.peek().tok == TokenType::Attribute {
@@ -2368,6 +2380,11 @@ impl<'input> Parser<'input> {
         attributes
     }
 
+    fn parse_attribute_outer(&mut self) -> Attribute {
+        let tok = self.expect(TokenType::AttributeOuter);
+        let name = tok.lit.trim_start_matches('#').to_string();
+        self.parse_attribute_rest(tok, name)
+    }
     fn parse_attribute_inner(&mut self) -> Attribute {
         let tok = self.expect(TokenType::Attribute);
         let name = tok.lit.trim_start_matches('@').to_string();

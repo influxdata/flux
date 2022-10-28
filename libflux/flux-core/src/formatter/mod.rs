@@ -401,7 +401,7 @@ impl<'doc> Formatter<'doc> {
     fn format_package_clause(&mut self, pkg: &'doc ast::PackageClause) -> Doc<'doc> {
         let arena = self.arena;
         if !pkg.name.name.is_empty() {
-            let attrs = self.format_attribute_list(&pkg.base.attributes);
+            let attrs = self.format_attribute_list(&pkg.base.attributes, false);
             docs![
                 arena,
                 attrs,
@@ -418,7 +418,8 @@ impl<'doc> Formatter<'doc> {
     fn format_file(&mut self, file: &'doc File, include_pkg: bool) -> Doc<'doc> {
         let arena = self.arena;
         let mut doc = arena.nil();
-        doc += self.format_attribute_list(&file.base.attributes);
+        // File attributes are always outer attributes
+        doc += self.format_attribute_list(&file.base.attributes, true);
         if let Some(pkg) = &file.package {
             if include_pkg && !pkg.name.name.is_empty() {
                 doc += self.format_package_clause(pkg);
@@ -683,7 +684,7 @@ impl<'doc> Formatter<'doc> {
 
     fn format_import_declaration(&mut self, n: &'doc ast::ImportDeclaration) -> Doc<'doc> {
         let arena = self.arena;
-        let attrs = self.format_attribute_list(&n.base.attributes);
+        let attrs = self.format_attribute_list(&n.base.attributes, false);
         docs![
             arena,
             attrs,
@@ -799,7 +800,7 @@ impl<'doc> Formatter<'doc> {
         let arena = self.arena;
         docs![
             arena,
-            self.format_attribute_list(&s.base().attributes,),
+            self.format_attribute_list(&s.base().attributes, false),
             match s {
                 Statement::Expr(s) => self.format_expression_statement(s),
                 Statement::Variable(s) => self.format_variable_assignment(s),
@@ -1833,19 +1834,29 @@ impl<'doc> Formatter<'doc> {
         ]
     }
 
-    fn format_attribute_list(&mut self, n: &'doc Vec<ast::Attribute>) -> Doc<'doc> {
+    fn format_attribute_list(&mut self, n: &'doc Vec<ast::Attribute>, outer: bool) -> Doc<'doc> {
         let arena = self.arena;
         let mut doc = arena.nil();
         for attr in n {
-            doc += self.format_attribute(attr).group();
+            doc += self.format_attribute(attr, outer).group();
+            doc += arena.hardline();
+        }
+        // Add an extra hardline after outer attributes
+        if n.len() > 0 && outer {
             doc += arena.hardline();
         }
         doc
     }
 
-    fn format_attribute(&mut self, n: &'doc ast::Attribute) -> Doc<'doc> {
+    fn format_attribute(&mut self, n: &'doc ast::Attribute, outer: bool) -> Doc<'doc> {
         let arena = self.arena;
-        let mut doc = docs![arena, self.format_comments(&n.base.comments), "@", &n.name,];
+        let symbol = if outer { "#" } else { "@" };
+        let mut doc = docs![
+            arena,
+            self.format_comments(&n.base.comments),
+            symbol,
+            &n.name,
+        ];
         if !n.params.is_empty() {
             doc += self.format_attribute_params(&n.params);
         }

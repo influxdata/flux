@@ -1024,12 +1024,14 @@ Flux source is organized into packages.
 A package consists of one or more source files.
 Each source file is parsed individually and composed into a single package.
 
-    File = [ PackageClause ] [ ImportList ] StatementList .
+    File = [ AttributesOuter ] [ PackageClause ] [ ImportList ] StatementList .
     ImportList = { ImportDeclaration } .
+
+A file may contain outer attributes which apply to the entire context of the file.
 
 #### Package clause
 
-    PackageClause = [ Attributes ] "package" identifier .
+    PackageClause = [ AttributesInner ] "package" identifier .
 
 A package clause defines the name for the current package.
 Package names must be valid Flux identifiers.
@@ -1049,7 +1051,7 @@ The _main_ package is special for a few reasons:
 
 #### Import declaration
 
-    ImportDeclaration = [ Attributes ] "import" [identifier] string_lit
+    ImportDeclaration = [ AttributesInner ] "import" [identifier] string_lit
 
 Associated with every package is a package name and an import path.
 The import statement takes a package's import path and brings all of the identifiers defined in that package into the current scope under a namespace.
@@ -1080,8 +1082,10 @@ Every statement contained in an imported package is evaluated.
 
 Attributes define a set of properties on source code elements.
 
-    Attributes             = { Attribute } .
-    Attribute              = "@" identifier AttributeParameters .
+    AttributesOuter        = { AttributeOuter } .
+    AttributeOuter         = "#" identifier AttributeParameters .
+    AttributesInner        = { AttributeInner } .
+    AttributeInner         = "@" identifier AttributeParameters .
     AttributeParameters    = "(" [ AttributeParameterList [ "," ] ] ")" .
     AttributeParameterList = AttributeParameter { "," AttributeParameter } .
     AttributeParameter     = PrimaryExpression
@@ -1098,7 +1102,7 @@ Example
 
 A statement controls execution.
 
-    Statement      = [ Attributes ] StatementInner .
+    Statement      = [ AttributesInner ] StatementInner .
     StatementInner = OptionAssignment
                    | BuiltinStatement
                    | VariableAssignment

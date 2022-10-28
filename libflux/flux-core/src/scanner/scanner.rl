@@ -53,6 +53,7 @@ use crate::scanner::*;
     regex_unicode_value = (any_count_line - "/") | regex_escaped_char;
     regex_lit = "/" ( regex_unicode_value | byte_value )+ "/";
 
+    attribute_lit_outer = "#" identifier;
     attribute_lit = "@" identifier;
 
     # The newline is optional so that a comment at the end of a file is considered valid.
@@ -102,6 +103,7 @@ use crate::scanner::*;
         duration_lit => { tok = TokenType::Duration; fbreak; };
         date_time_lit => { tok = TokenType::Time; fbreak; };
         string_lit => { tok = TokenType::String; fbreak; };
+        attribute_lit_outer => { tok = TokenType::AttributeOuter; fbreak; };
         attribute_lit => { tok = TokenType::Attribute; fbreak; };
 
         "+" => { tok = TokenType::Add; fbreak; };

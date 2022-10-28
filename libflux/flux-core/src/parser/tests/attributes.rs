@@ -1,6 +1,138 @@
 use super::*;
 
 #[test]
+fn parse_package_attribute_outer() {
+    let mut p = Parser::new(
+        r#"#attribute
+package main"#,
+    );
+    let parsed = p.parse_file("".to_string());
+    expect![[r##"
+        File {
+            base: BaseNode {
+                location: SourceLocation {
+                    start: "line: 1, column: 1",
+                    end: "line: 2, column: 13",
+                    source: "#attribute\npackage main",
+                },
+                attributes: [
+                    Attribute {
+                        base: BaseNode {
+                            location: SourceLocation {
+                                start: "line: 1, column: 1",
+                                end: "line: 1, column: 11",
+                                source: "#attribute",
+                            },
+                        },
+                        name: "attribute",
+                        params: [],
+                    },
+                ],
+            },
+            name: "",
+            metadata: "parser-type=rust",
+            package: Some(
+                PackageClause {
+                    base: BaseNode {
+                        location: SourceLocation {
+                            start: "line: 2, column: 1",
+                            end: "line: 2, column: 13",
+                            source: "package main",
+                        },
+                    },
+                    name: Identifier {
+                        base: BaseNode {
+                            location: SourceLocation {
+                                start: "line: 2, column: 9",
+                                end: "line: 2, column: 13",
+                                source: "main",
+                            },
+                        },
+                        name: "main",
+                    },
+                },
+            ),
+            imports: [],
+            body: [],
+            eof: [],
+        }
+    "##]]
+    .assert_debug_eq(&parsed);
+}
+#[test]
+fn parse_attribute_outer_no_package() {
+    let mut p = Parser::new(
+        r#"#attribute
+m = 1"#,
+    );
+    let parsed = p.parse_file("".to_string());
+    expect![[r##"
+        File {
+            base: BaseNode {
+                location: SourceLocation {
+                    start: "line: 1, column: 1",
+                    end: "line: 2, column: 6",
+                    source: "#attribute\nm = 1",
+                },
+                attributes: [
+                    Attribute {
+                        base: BaseNode {
+                            location: SourceLocation {
+                                start: "line: 1, column: 1",
+                                end: "line: 1, column: 11",
+                                source: "#attribute",
+                            },
+                        },
+                        name: "attribute",
+                        params: [],
+                    },
+                ],
+            },
+            name: "",
+            metadata: "parser-type=rust",
+            package: None,
+            imports: [],
+            body: [
+                Variable(
+                    VariableAssgn {
+                        base: BaseNode {
+                            location: SourceLocation {
+                                start: "line: 2, column: 1",
+                                end: "line: 2, column: 6",
+                                source: "m = 1",
+                            },
+                        },
+                        id: Identifier {
+                            base: BaseNode {
+                                location: SourceLocation {
+                                    start: "line: 2, column: 1",
+                                    end: "line: 2, column: 2",
+                                    source: "m",
+                                },
+                            },
+                            name: "m",
+                        },
+                        init: Integer(
+                            IntegerLit {
+                                base: BaseNode {
+                                    location: SourceLocation {
+                                        start: "line: 2, column: 5",
+                                        end: "line: 2, column: 6",
+                                        source: "1",
+                                    },
+                                },
+                                value: 1,
+                            },
+                        ),
+                    },
+                ),
+            ],
+            eof: [],
+        }
+    "##]]
+    .assert_debug_eq(&parsed);
+}
+#[test]
 fn parse_attribute_inner_nothing_follows() {
     let mut p = Parser::new(
         r#"@attribute
@@ -614,7 +746,10 @@ import "bar"
 #[test]
 fn parse_many_attributes() {
     let mut p = Parser::new(
-        r#"// Package comments
+        r#"#edition("2022.1")
+#foo
+
+// Package comments
 @mount("fluxlang.dev", "https://fluxlang.dev/api/modules")
 @two
 @three
@@ -632,14 +767,61 @@ x = 1
 "#,
     );
     let parsed = p.parse_file("".to_string());
-    expect![[r#"
+    expect![[r##"
         File {
             base: BaseNode {
                 location: SourceLocation {
-                    start: "line: 2, column: 1",
-                    end: "line: 15, column: 6",
-                    source: "@mount(\"fluxlang.dev\", \"https://fluxlang.dev/api/modules\")\n@two\n@three\n@four\npackage foo\n\n// Comments for import\n@registry(\"fluxlang.dev\")\n@double\nimport \"date\"\n\n// x is one\n@deprecated(\"0.123.0\")\nx = 1",
+                    start: "line: 1, column: 1",
+                    end: "line: 18, column: 6",
+                    source: "#edition(\"2022.1\")\n#foo\n\n// Package comments\n@mount(\"fluxlang.dev\", \"https://fluxlang.dev/api/modules\")\n@two\n@three\n@four\npackage foo\n\n// Comments for import\n@registry(\"fluxlang.dev\")\n@double\nimport \"date\"\n\n// x is one\n@deprecated(\"0.123.0\")\nx = 1",
                 },
+                attributes: [
+                    Attribute {
+                        base: BaseNode {
+                            location: SourceLocation {
+                                start: "line: 1, column: 1",
+                                end: "line: 1, column: 19",
+                                source: "#edition(\"2022.1\")",
+                            },
+                        },
+                        name: "edition",
+                        params: [
+                            AttributeParam {
+                                base: BaseNode {
+                                    location: SourceLocation {
+                                        start: "line: 1, column: 10",
+                                        end: "line: 1, column: 18",
+                                        source: "\"2022.1\"",
+                                    },
+                                },
+                                value: StringLit(
+                                    StringLit {
+                                        base: BaseNode {
+                                            location: SourceLocation {
+                                                start: "line: 1, column: 10",
+                                                end: "line: 1, column: 18",
+                                                source: "\"2022.1\"",
+                                            },
+                                        },
+                                        value: "2022.1",
+                                    },
+                                ),
+                                comma: [],
+                            },
+                        ],
+                    },
+                    Attribute {
+                        base: BaseNode {
+                            location: SourceLocation {
+                                start: "line: 2, column: 1",
+                                end: "line: 2, column: 5",
+                                source: "#foo",
+                            },
+                        },
+                        name: "foo",
+                        params: [],
+                    },
+                ],
             },
             name: "",
             metadata: "parser-type=rust",
@@ -647,16 +829,16 @@ x = 1
                 PackageClause {
                     base: BaseNode {
                         location: SourceLocation {
-                            start: "line: 6, column: 1",
-                            end: "line: 6, column: 12",
+                            start: "line: 9, column: 1",
+                            end: "line: 9, column: 12",
                             source: "package foo",
                         },
                         attributes: [
                             Attribute {
                                 base: BaseNode {
                                     location: SourceLocation {
-                                        start: "line: 2, column: 1",
-                                        end: "line: 2, column: 59",
+                                        start: "line: 5, column: 1",
+                                        end: "line: 5, column: 59",
                                         source: "@mount(\"fluxlang.dev\", \"https://fluxlang.dev/api/modules\")",
                                     },
                                     comments: [
@@ -670,8 +852,8 @@ x = 1
                                     AttributeParam {
                                         base: BaseNode {
                                             location: SourceLocation {
-                                                start: "line: 2, column: 8",
-                                                end: "line: 2, column: 23",
+                                                start: "line: 5, column: 8",
+                                                end: "line: 5, column: 23",
                                                 source: "\"fluxlang.dev\",",
                                             },
                                         },
@@ -679,8 +861,8 @@ x = 1
                                             StringLit {
                                                 base: BaseNode {
                                                     location: SourceLocation {
-                                                        start: "line: 2, column: 8",
-                                                        end: "line: 2, column: 22",
+                                                        start: "line: 5, column: 8",
+                                                        end: "line: 5, column: 22",
                                                         source: "\"fluxlang.dev\"",
                                                     },
                                                 },
@@ -692,8 +874,8 @@ x = 1
                                     AttributeParam {
                                         base: BaseNode {
                                             location: SourceLocation {
-                                                start: "line: 2, column: 24",
-                                                end: "line: 2, column: 58",
+                                                start: "line: 5, column: 24",
+                                                end: "line: 5, column: 58",
                                                 source: "\"https://fluxlang.dev/api/modules\"",
                                             },
                                         },
@@ -701,8 +883,8 @@ x = 1
                                             StringLit {
                                                 base: BaseNode {
                                                     location: SourceLocation {
-                                                        start: "line: 2, column: 24",
-                                                        end: "line: 2, column: 58",
+                                                        start: "line: 5, column: 24",
+                                                        end: "line: 5, column: 58",
                                                         source: "\"https://fluxlang.dev/api/modules\"",
                                                     },
                                                 },
@@ -716,8 +898,8 @@ x = 1
                             Attribute {
                                 base: BaseNode {
                                     location: SourceLocation {
-                                        start: "line: 3, column: 1",
-                                        end: "line: 3, column: 5",
+                                        start: "line: 6, column: 1",
+                                        end: "line: 6, column: 5",
                                         source: "@two",
                                     },
                                 },
@@ -727,8 +909,8 @@ x = 1
                             Attribute {
                                 base: BaseNode {
                                     location: SourceLocation {
-                                        start: "line: 4, column: 1",
-                                        end: "line: 4, column: 7",
+                                        start: "line: 7, column: 1",
+                                        end: "line: 7, column: 7",
                                         source: "@three",
                                     },
                                 },
@@ -738,8 +920,8 @@ x = 1
                             Attribute {
                                 base: BaseNode {
                                     location: SourceLocation {
-                                        start: "line: 5, column: 1",
-                                        end: "line: 5, column: 6",
+                                        start: "line: 8, column: 1",
+                                        end: "line: 8, column: 6",
                                         source: "@four",
                                     },
                                 },
@@ -751,8 +933,8 @@ x = 1
                     name: Identifier {
                         base: BaseNode {
                             location: SourceLocation {
-                                start: "line: 6, column: 9",
-                                end: "line: 6, column: 12",
+                                start: "line: 9, column: 9",
+                                end: "line: 9, column: 12",
                                 source: "foo",
                             },
                         },
@@ -764,16 +946,16 @@ x = 1
                 ImportDeclaration {
                     base: BaseNode {
                         location: SourceLocation {
-                            start: "line: 11, column: 1",
-                            end: "line: 11, column: 14",
+                            start: "line: 14, column: 1",
+                            end: "line: 14, column: 14",
                             source: "import \"date\"",
                         },
                         attributes: [
                             Attribute {
                                 base: BaseNode {
                                     location: SourceLocation {
-                                        start: "line: 9, column: 1",
-                                        end: "line: 9, column: 26",
+                                        start: "line: 12, column: 1",
+                                        end: "line: 12, column: 26",
                                         source: "@registry(\"fluxlang.dev\")",
                                     },
                                     comments: [
@@ -787,8 +969,8 @@ x = 1
                                     AttributeParam {
                                         base: BaseNode {
                                             location: SourceLocation {
-                                                start: "line: 9, column: 11",
-                                                end: "line: 9, column: 25",
+                                                start: "line: 12, column: 11",
+                                                end: "line: 12, column: 25",
                                                 source: "\"fluxlang.dev\"",
                                             },
                                         },
@@ -796,8 +978,8 @@ x = 1
                                             StringLit {
                                                 base: BaseNode {
                                                     location: SourceLocation {
-                                                        start: "line: 9, column: 11",
-                                                        end: "line: 9, column: 25",
+                                                        start: "line: 12, column: 11",
+                                                        end: "line: 12, column: 25",
                                                         source: "\"fluxlang.dev\"",
                                                     },
                                                 },
@@ -811,8 +993,8 @@ x = 1
                             Attribute {
                                 base: BaseNode {
                                     location: SourceLocation {
-                                        start: "line: 10, column: 1",
-                                        end: "line: 10, column: 8",
+                                        start: "line: 13, column: 1",
+                                        end: "line: 13, column: 8",
                                         source: "@double",
                                     },
                                 },
@@ -825,8 +1007,8 @@ x = 1
                     path: StringLit {
                         base: BaseNode {
                             location: SourceLocation {
-                                start: "line: 11, column: 8",
-                                end: "line: 11, column: 14",
+                                start: "line: 14, column: 8",
+                                end: "line: 14, column: 14",
                                 source: "\"date\"",
                             },
                         },
@@ -839,16 +1021,16 @@ x = 1
                     VariableAssgn {
                         base: BaseNode {
                             location: SourceLocation {
-                                start: "line: 15, column: 1",
-                                end: "line: 15, column: 6",
+                                start: "line: 18, column: 1",
+                                end: "line: 18, column: 6",
                                 source: "x = 1",
                             },
                             attributes: [
                                 Attribute {
                                     base: BaseNode {
                                         location: SourceLocation {
-                                            start: "line: 14, column: 1",
-                                            end: "line: 14, column: 23",
+                                            start: "line: 17, column: 1",
+                                            end: "line: 17, column: 23",
                                             source: "@deprecated(\"0.123.0\")",
                                         },
                                         comments: [
@@ -862,8 +1044,8 @@ x = 1
                                         AttributeParam {
                                             base: BaseNode {
                                                 location: SourceLocation {
-                                                    start: "line: 14, column: 13",
-                                                    end: "line: 14, column: 22",
+                                                    start: "line: 17, column: 13",
+                                                    end: "line: 17, column: 22",
                                                     source: "\"0.123.0\"",
                                                 },
                                             },
@@ -871,8 +1053,8 @@ x = 1
                                                 StringLit {
                                                     base: BaseNode {
                                                         location: SourceLocation {
-                                                            start: "line: 14, column: 13",
-                                                            end: "line: 14, column: 22",
+                                                            start: "line: 17, column: 13",
+                                                            end: "line: 17, column: 22",
                                                             source: "\"0.123.0\"",
                                                         },
                                                     },
@@ -888,8 +1070,8 @@ x = 1
                         id: Identifier {
                             base: BaseNode {
                                 location: SourceLocation {
-                                    start: "line: 15, column: 1",
-                                    end: "line: 15, column: 2",
+                                    start: "line: 18, column: 1",
+                                    end: "line: 18, column: 2",
                                     source: "x",
                                 },
                             },
@@ -899,8 +1081,8 @@ x = 1
                             IntegerLit {
                                 base: BaseNode {
                                     location: SourceLocation {
-                                        start: "line: 15, column: 5",
-                                        end: "line: 15, column: 6",
+                                        start: "line: 18, column: 5",
+                                        end: "line: 18, column: 6",
                                         source: "1",
                                     },
                                 },
@@ -912,7 +1094,7 @@ x = 1
             ],
             eof: [],
         }
-    "#]]
+    "##]]
     .assert_debug_eq(&parsed);
 }
 

@@ -328,9 +328,19 @@ import "foo""#,
     );
     assert_format("@edition package foo", "@edition\npackage foo\n");
 
+    assert_unchanged(
+        r#"#edition("2022.1")
+
+package foo
+"#,
+    );
+
     // All the attributes
     assert_unchanged(
-        r#"// Package comments
+        r#"#edition("2022.1")
+#foo
+
+// Package comments
 @mount("fluxlang.dev", "https://fluxlang.dev/api/modules")
 @two
 @three
