@@ -35,7 +35,8 @@ import "testing"
 shouldErrorWithCode = (fn, want, code) => {
     got = experimental.catch(fn)
 
-    return if exists got.msg then
+    return
+        if exists got.msg then
             testing.diff(
                 got: array.from(rows: [{code: got.code, match: got.msg =~ want}]),
                 want: array.from(rows: [{code: code, match: true}]),
@@ -64,7 +65,8 @@ shouldErrorWithCode = (fn, want, code) => {
 // tags: tests
 //
 assertMatches = (got, want) => {
-    return if got =~ want then
+    return
+        if got =~ want then
             testing.assertEqualValues(got: "", want: "")
         else
             die(msg: "Regex `${regexp.getString(r: want)}` does not match `${got}`")

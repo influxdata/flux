@@ -421,6 +421,9 @@ testcase multi_join {
 }
 
 testcase join_empty_table {
+    // TODO Enable/fix in https://github.com/influxdata/flux/issues/5307
+    option testing.tags = ["skip"]
+
     something = array.from(rows: [{_value: 1, id: "a"}])
 
     nothing =

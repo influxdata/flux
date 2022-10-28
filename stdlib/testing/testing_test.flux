@@ -32,7 +32,6 @@ testcase test_should_error {
     testing.shouldError(fn: () => die(msg: "error message"), want: /error message$/)
 }
 
-
 testcase test_should_error_should_error_when_no_error {
     got = experimental.catch(fn: () => testing.shouldError(fn: () => "abc", want: /error message$/))
 

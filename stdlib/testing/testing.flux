@@ -242,10 +242,11 @@ assertEqualValues = (got, want) => {
 shouldError = (fn, want) => {
     got = experimental.catch(fn)
 
-    return if exists got.msg then
-        array.from(rows: [{v: got.msg}])
-            |> filter(fn: (r) => r.v !~ want)
-            |> yield(name: "errorOutput")
+    return
+        if exists got.msg then
+            array.from(rows: [{v: got.msg}])
+                |> filter(fn: (r) => r.v !~ want)
+                |> yield(name: "errorOutput")
         else
             die(msg: "shouldError expected an error")
 }

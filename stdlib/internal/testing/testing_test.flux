@@ -1,5 +1,6 @@
 package testing
 
+
 import "array"
 import "experimental"
 import "regexp"
@@ -11,5 +12,8 @@ testcase test_assert_matches {
 }
 
 testcase test_assert_matches_should_error {
-    testing.shouldError(fn: () => internalTesting.assertMatches(got: "", want: /4+/), want: /Regex `4\+` does not match ``/)
+    testing.shouldError(
+        fn: () => internalTesting.assertMatches(got: "", want: /4+/),
+        want: /Regex `4\+` does not match ``/,
+    )
 }
