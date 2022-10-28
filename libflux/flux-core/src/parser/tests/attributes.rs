@@ -15,19 +15,6 @@ package main"#,
                     end: "line: 2, column: 13",
                     source: "@attribute\npackage main",
                 },
-                attributes: [
-                    Attribute {
-                        base: BaseNode {
-                            location: SourceLocation {
-                                start: "line: 1, column: 1",
-                                end: "line: 1, column: 11",
-                                source: "@attribute",
-                            },
-                        },
-                        name: "attribute",
-                        params: [],
-                    },
-                ],
             },
             name: "",
             metadata: "parser-type=rust",
@@ -39,6 +26,19 @@ package main"#,
                             end: "line: 2, column: 13",
                             source: "package main",
                         },
+                        attributes: [
+                            Attribute {
+                                base: BaseNode {
+                                    location: SourceLocation {
+                                        start: "line: 1, column: 1",
+                                        end: "line: 1, column: 11",
+                                        source: "@attribute",
+                                    },
+                                },
+                                name: "attribute",
+                                params: [],
+                            },
+                        ],
                     },
                     name: Identifier {
                         base: BaseNode {
@@ -75,42 +75,6 @@ package main"#,
                     end: "line: 2, column: 13",
                     source: "@edition(\"2022.1\")\npackage main",
                 },
-                attributes: [
-                    Attribute {
-                        base: BaseNode {
-                            location: SourceLocation {
-                                start: "line: 1, column: 1",
-                                end: "line: 1, column: 19",
-                                source: "@edition(\"2022.1\")",
-                            },
-                        },
-                        name: "edition",
-                        params: [
-                            AttributeParam {
-                                base: BaseNode {
-                                    location: SourceLocation {
-                                        start: "line: 1, column: 10",
-                                        end: "line: 1, column: 18",
-                                        source: "\"2022.1\"",
-                                    },
-                                },
-                                value: StringLit(
-                                    StringLit {
-                                        base: BaseNode {
-                                            location: SourceLocation {
-                                                start: "line: 1, column: 10",
-                                                end: "line: 1, column: 18",
-                                                source: "\"2022.1\"",
-                                            },
-                                        },
-                                        value: "2022.1",
-                                    },
-                                ),
-                                comma: [],
-                            },
-                        ],
-                    },
-                ],
             },
             name: "",
             metadata: "parser-type=rust",
@@ -122,6 +86,42 @@ package main"#,
                             end: "line: 2, column: 13",
                             source: "package main",
                         },
+                        attributes: [
+                            Attribute {
+                                base: BaseNode {
+                                    location: SourceLocation {
+                                        start: "line: 1, column: 1",
+                                        end: "line: 1, column: 19",
+                                        source: "@edition(\"2022.1\")",
+                                    },
+                                },
+                                name: "edition",
+                                params: [
+                                    AttributeParam {
+                                        base: BaseNode {
+                                            location: SourceLocation {
+                                                start: "line: 1, column: 10",
+                                                end: "line: 1, column: 18",
+                                                source: "\"2022.1\"",
+                                            },
+                                        },
+                                        value: StringLit(
+                                            StringLit {
+                                                base: BaseNode {
+                                                    location: SourceLocation {
+                                                        start: "line: 1, column: 10",
+                                                        end: "line: 1, column: 18",
+                                                        source: "\"2022.1\"",
+                                                    },
+                                                },
+                                                value: "2022.1",
+                                            },
+                                        ),
+                                        comma: [],
+                                    },
+                                ],
+                            },
+                        ],
                     },
                     name: Identifier {
                         base: BaseNode {
@@ -159,19 +159,6 @@ import "date"
                     end: "line: 2, column: 14",
                     source: "@attribute\nimport \"date\"",
                 },
-                attributes: [
-                    Attribute {
-                        base: BaseNode {
-                            location: SourceLocation {
-                                start: "line: 1, column: 1",
-                                end: "line: 1, column: 11",
-                                source: "@attribute",
-                            },
-                        },
-                        name: "attribute",
-                        params: [],
-                    },
-                ],
             },
             name: "",
             metadata: "parser-type=rust",
@@ -184,6 +171,19 @@ import "date"
                             end: "line: 2, column: 14",
                             source: "import \"date\"",
                         },
+                        attributes: [
+                            Attribute {
+                                base: BaseNode {
+                                    location: SourceLocation {
+                                        start: "line: 1, column: 1",
+                                        end: "line: 1, column: 11",
+                                        source: "@attribute",
+                                    },
+                                },
+                                name: "attribute",
+                                params: [],
+                            },
+                        ],
                     },
                     alias: None,
                     path: StringLit {
@@ -221,19 +221,6 @@ foo = "a"
                     end: "line: 2, column: 10",
                     source: "@attribute\nfoo = \"a\"",
                 },
-                attributes: [
-                    Attribute {
-                        base: BaseNode {
-                            location: SourceLocation {
-                                start: "line: 1, column: 1",
-                                end: "line: 1, column: 11",
-                                source: "@attribute",
-                            },
-                        },
-                        name: "attribute",
-                        params: [],
-                    },
-                ],
             },
             name: "",
             metadata: "parser-type=rust",
@@ -248,6 +235,19 @@ foo = "a"
                                 end: "line: 2, column: 10",
                                 source: "foo = \"a\"",
                             },
+                            attributes: [
+                                Attribute {
+                                    base: BaseNode {
+                                        location: SourceLocation {
+                                            start: "line: 1, column: 1",
+                                            end: "line: 1, column: 11",
+                                            source: "@attribute",
+                                        },
+                                    },
+                                    name: "attribute",
+                                    params: [],
+                                },
+                            ],
                         },
                         id: Identifier {
                             base: BaseNode {
@@ -298,47 +298,6 @@ package foo
                     end: "line: 4, column: 12",
                     source: "@edition(\"2022.1\")\npackage foo",
                 },
-                attributes: [
-                    Attribute {
-                        base: BaseNode {
-                            location: SourceLocation {
-                                start: "line: 3, column: 1",
-                                end: "line: 3, column: 19",
-                                source: "@edition(\"2022.1\")",
-                            },
-                            comments: [
-                                Comment {
-                                    text: "// Package foo implements foo things.\n",
-                                },
-                            ],
-                        },
-                        name: "edition",
-                        params: [
-                            AttributeParam {
-                                base: BaseNode {
-                                    location: SourceLocation {
-                                        start: "line: 3, column: 10",
-                                        end: "line: 3, column: 18",
-                                        source: "\"2022.1\"",
-                                    },
-                                },
-                                value: StringLit(
-                                    StringLit {
-                                        base: BaseNode {
-                                            location: SourceLocation {
-                                                start: "line: 3, column: 10",
-                                                end: "line: 3, column: 18",
-                                                source: "\"2022.1\"",
-                                            },
-                                        },
-                                        value: "2022.1",
-                                    },
-                                ),
-                                comma: [],
-                            },
-                        ],
-                    },
-                ],
             },
             name: "",
             metadata: "parser-type=rust",
@@ -350,6 +309,47 @@ package foo
                             end: "line: 4, column: 12",
                             source: "package foo",
                         },
+                        attributes: [
+                            Attribute {
+                                base: BaseNode {
+                                    location: SourceLocation {
+                                        start: "line: 3, column: 1",
+                                        end: "line: 3, column: 19",
+                                        source: "@edition(\"2022.1\")",
+                                    },
+                                    comments: [
+                                        Comment {
+                                            text: "// Package foo implements foo things.\n",
+                                        },
+                                    ],
+                                },
+                                name: "edition",
+                                params: [
+                                    AttributeParam {
+                                        base: BaseNode {
+                                            location: SourceLocation {
+                                                start: "line: 3, column: 10",
+                                                end: "line: 3, column: 18",
+                                                source: "\"2022.1\"",
+                                            },
+                                        },
+                                        value: StringLit(
+                                            StringLit {
+                                                base: BaseNode {
+                                                    location: SourceLocation {
+                                                        start: "line: 3, column: 10",
+                                                        end: "line: 3, column: 18",
+                                                        source: "\"2022.1\"",
+                                                    },
+                                                },
+                                                value: "2022.1",
+                                            },
+                                        ),
+                                        comma: [],
+                                    },
+                                ],
+                            },
+                        ],
                     },
                     name: Identifier {
                         base: BaseNode {
@@ -389,24 +389,6 @@ identity = (x) => x
                     end: "line: 4, column: 20",
                     source: "@deprecated\nidentity = (x) => x",
                 },
-                attributes: [
-                    Attribute {
-                        base: BaseNode {
-                            location: SourceLocation {
-                                start: "line: 3, column: 1",
-                                end: "line: 3, column: 12",
-                                source: "@deprecated",
-                            },
-                            comments: [
-                                Comment {
-                                    text: "// My documentation comment.\n",
-                                },
-                            ],
-                        },
-                        name: "deprecated",
-                        params: [],
-                    },
-                ],
             },
             name: "",
             metadata: "parser-type=rust",
@@ -421,6 +403,24 @@ identity = (x) => x
                                 end: "line: 4, column: 20",
                                 source: "identity = (x) => x",
                             },
+                            attributes: [
+                                Attribute {
+                                    base: BaseNode {
+                                        location: SourceLocation {
+                                            start: "line: 3, column: 1",
+                                            end: "line: 3, column: 12",
+                                            source: "@deprecated",
+                                        },
+                                        comments: [
+                                            Comment {
+                                                text: "// My documentation comment.\n",
+                                            },
+                                        ],
+                                    },
+                                    name: "deprecated",
+                                    params: [],
+                                },
+                            ],
                         },
                         id: Identifier {
                             base: BaseNode {

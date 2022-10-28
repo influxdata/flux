@@ -363,18 +363,28 @@ impl<'input> Parser<'input> {
         let start_pos = ast::Position::from(&self.peek().start_pos);
         let mut end = ast::Position::invalid();
 
-        // Parse attributes at the beginning of the file.
-        let attributes = self.parse_attribute_list();
+        // Parse outer attributes at the beginning of the file.
+        let outer_attributes = self.parse_attribute_outer_list();
+        // Parse inner attributes at the beginning of the file and hand them off to the first
+        // declaration or statement that exists
+        let inner_attributes = self.parse_attribute_list();
 
-        let pkg = self.parse_package_clause();
+        let (pkg, inner_attributes) = self.parse_package_clause(inner_attributes);
         if let Some(pkg) = &pkg {
             end = pkg.base.location.end;
         }
-        let imports = self.parse_import_list();
+        let (imports, inner_attributes) = self.parse_import_list(inner_attributes);
         if let Some(import) = imports.last() {
             end = import.base.location.end;
         }
-        let body = self.parse_statement_list();
+        let (body, inner_attributes) = self.parse_statement_list(inner_attributes);
+        if let Some(_attrs) = inner_attributes {
+            // We have left over attributes from the beginning of the file.
+            //body.push(Statement::Bad(Box::new(BadStmt {
+            //    base: self.base_node_from_token(&t),
+            //    text: t.lit,
+            //})));
+        }
         if let Some(stmt) = body.last() {
             end = stmt.base().location.end;
         }
@@ -383,7 +393,7 @@ impl<'input> Parser<'input> {
         File {
             base: BaseNode {
                 location: self.source_location(&start_pos, &end),
-                attributes,
+                attributes: outer_attributes,
                 ..BaseNode::default()
             },
             name: self.fname.clone(),
@@ -395,31 +405,47 @@ impl<'input> Parser<'input> {
         }
     }
 
-    fn parse_package_clause(&mut self) -> Option<PackageClause> {
+    fn parse_package_clause(
+        &mut self,
+        attributes: Vec<Attribute>,
+    ) -> (Option<PackageClause>, Option<Vec<Attribute>>) {
         let t = self.peek();
         if t.tok == TokenType::Package {
             let t = self.consume();
             let ident = self.parse_identifier();
-            return Some(PackageClause {
-                base: self.base_node_from_other_end_c(&t, &ident.base, &t),
-                name: ident,
-            });
+            let mut base = self.base_node_from_other_end_c(&t, &ident.base, &t);
+            base.attributes = attributes;
+            return (Some(PackageClause { base, name: ident }), None);
         }
-        None
+        (None, Some(attributes))
     }
 
-    fn parse_import_list(&mut self) -> Vec<ImportDeclaration> {
+    fn parse_import_list(
+        &mut self,
+        attributes: Option<Vec<Attribute>>,
+    ) -> (Vec<ImportDeclaration>, Option<Vec<Attribute>>) {
         let mut imports: Vec<ImportDeclaration> = Vec::new();
+        let mut attrs = attributes;
         loop {
             let t = self.peek();
             if t.tok != TokenType::Import {
-                return imports;
+                return (imports, attrs);
             }
-            imports.push(self.parse_import_declaration())
+            imports.push(self.parse_import_declaration(attrs));
+            attrs = None
         }
     }
 
-    fn parse_import_declaration(&mut self) -> ImportDeclaration {
+    fn parse_import_declaration(
+        &mut self,
+        attributes: Option<Vec<Attribute>>,
+    ) -> ImportDeclaration {
+        let attrs = if let Some(attributes) = attributes {
+            attributes
+        } else {
+            self.parse_attribute_list()
+        };
+        println!("import attrs {:?}", attrs);
         let t = self.expect(TokenType::Import);
         let alias = if self.peek().tok == TokenType::Ident {
             Some(self.parse_identifier())
@@ -427,26 +453,29 @@ impl<'input> Parser<'input> {
             None
         };
         let path = self.parse_string_literal();
-        ImportDeclaration {
-            base: self.base_node_from_other_end_c(&t, &path.base, &t),
-            alias,
-            path,
-        }
+        let mut base = self.base_node_from_other_end_c(&t, &path.base, &t);
+        base.attributes = attrs;
+        ImportDeclaration { base, alias, path }
     }
 
-    fn parse_statement_list(&mut self) -> Vec<Statement> {
+    fn parse_statement_list(
+        &mut self,
+        attributes: Option<Vec<Attribute>>,
+    ) -> (Vec<Statement>, Option<Vec<Attribute>>) {
         let mut stmts: Vec<Statement> = Vec::new();
+        let mut attrs = attributes;
         loop {
             if !self.more() {
-                return stmts;
+                return (stmts, attrs);
             }
-            stmts.push(self.parse_statement());
+            stmts.push(self.parse_statement(attrs));
+            attrs = None;
         }
     }
 
     /// Parses a flux statement
-    pub fn parse_statement(&mut self) -> Statement {
-        self.depth_guard(|this| this.parse_statement_inner())
+    pub fn parse_statement(&mut self, attributes: Option<Vec<Attribute>>) -> Statement {
+        self.depth_guard(|this| this.parse_statement_inner(attributes))
             .unwrap_or_else(|| {
                 let t = self.consume();
                 Statement::Bad(Box::new(BadStmt {
@@ -456,8 +485,12 @@ impl<'input> Parser<'input> {
             })
     }
 
-    fn parse_statement_inner(&mut self) -> Statement {
-        let attributes = self.parse_attribute_list();
+    fn parse_statement_inner(&mut self, attributes: Option<Vec<Attribute>>) -> Statement {
+        let attributes = if let Some(attributes) = attributes {
+            attributes
+        } else {
+            self.parse_attribute_list()
+        };
 
         let t = self.peek();
         let mut stmt = match t.tok {
@@ -925,7 +958,7 @@ impl<'input> Parser<'input> {
     }
     fn parse_block(&mut self) -> Block {
         let start = self.open(TokenType::LBrace, TokenType::RBrace);
-        let stmts = self.parse_statement_list();
+        let (stmts, _) = self.parse_statement_list(None);
         let end = self.close(TokenType::RBrace);
         Block {
             base: self.base_node_from_tokens(&start, &end),
@@ -2305,6 +2338,14 @@ impl<'input> Parser<'input> {
                 }))
             }
         }
+    }
+
+    fn parse_attribute_outer_list(&mut self) -> Vec<Attribute> {
+        let mut attributes = Vec::new();
+        while self.peek().tok == TokenType::AttributeOuter {
+            attributes.push(self.parse_attribute());
+        }
+        attributes
     }
 
     fn parse_attribute_list(&mut self) -> Vec<Attribute> {
