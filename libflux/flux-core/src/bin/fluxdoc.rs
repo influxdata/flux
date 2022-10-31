@@ -21,9 +21,6 @@ use fluxcore::{
 enum FluxDoc {
     /// Dump JSON encoding of documentation from Flux source code.
     Dump {
-        /// Directory containing Flux source code.
-        #[structopt(short, long, parse(from_os_str))]
-        stdlib_dir: Option<PathBuf>,
         /// Path to flux command, must be the cmd from internal/cmd/flux
         #[structopt(long, parse(from_os_str))]
         flux_cmd_path: Option<PathBuf>,
@@ -42,9 +39,6 @@ enum FluxDoc {
     },
     /// Check Flux source code for documentation linting errors
     Lint {
-        /// Directory containing Flux source code.
-        #[structopt(short, long, parse(from_os_str))]
-        stdlib_dir: Option<PathBuf>,
         /// Path to flux command, must be the cmd from internal/cmd/flux
         #[structopt(long, parse(from_os_str))]
         flux_cmd_path: Option<PathBuf>,
@@ -63,14 +57,12 @@ fn main() -> Result<()> {
     let app = FluxDoc::from_args();
     match app {
         FluxDoc::Dump {
-            stdlib_dir,
             flux_cmd_path,
             dir,
             output,
             nested,
             short,
         } => dump(
-            stdlib_dir.as_deref(),
             flux_cmd_path.as_deref(),
             &dir,
             output.as_deref(),
@@ -78,49 +70,39 @@ fn main() -> Result<()> {
             short,
         )?,
         FluxDoc::Lint {
-            stdlib_dir,
             flux_cmd_path,
             dir,
             limit,
-        } => lint(stdlib_dir.as_deref(), flux_cmd_path.as_deref(), &dir, limit)?,
+        } => lint(flux_cmd_path.as_deref(), &dir, limit)?,
     };
     Ok(())
 }
 
-const DEFAULT_STDLIB_PATH: &str = "./stdlib-compiled";
 const DEFAULT_FLUX_CMD_PATH: &str = "flux";
 
-fn resolve_default_paths<'a>(
-    stdlib_dir: Option<&'a Path>,
-    flux_cmd_path: Option<&'a Path>,
-) -> (&'a Path, &'a Path) {
-    let stdlib_dir = match stdlib_dir {
-        Some(stdlib_dir) => stdlib_dir,
-        None => Path::new(DEFAULT_STDLIB_PATH),
-    };
+fn resolve_default_paths(flux_cmd_path: Option<&Path>) -> &Path {
     let flux_cmd_path = match flux_cmd_path {
         Some(flux_cmd_path) => flux_cmd_path,
         None => Path::new(DEFAULT_FLUX_CMD_PATH),
     };
-    (stdlib_dir, flux_cmd_path)
+    flux_cmd_path
 }
 
 fn dump(
-    stdlib_dir: Option<&Path>,
     flux_cmd_path: Option<&Path>,
     dir: &Path,
     output: Option<&Path>,
     nested: bool,
     short: bool,
 ) -> Result<()> {
-    let (stdlib_dir, flux_cmd_path) = resolve_default_paths(stdlib_dir, flux_cmd_path);
+    let flux_cmd_path = resolve_default_paths(flux_cmd_path);
     let f = match output {
         Some(p) => Box::new(File::create(p).context(format!("creating output file {:?}", p))?)
             as Box<dyn io::Write>,
         None => Box::new(io::stdout()),
     };
 
-    let (mut docs, diagnostics) = parse_docs(stdlib_dir, dir).context("parsing source code")?;
+    let (mut docs, diagnostics) = parse_docs(dir).context("parsing source code")?;
     if !diagnostics.is_empty() {
         bail!(
             "found {} diagnostics when building documentation:\n{}",
@@ -157,19 +139,14 @@ fn dump(
     Ok(())
 }
 
-fn lint(
-    stdlib_dir: Option<&Path>,
-    flux_cmd_path: Option<&Path>,
-    dir: &Path,
-    limit: Option<i64>,
-) -> Result<()> {
-    let (stdlib_dir, flux_cmd_path) = resolve_default_paths(stdlib_dir, flux_cmd_path);
+fn lint(flux_cmd_path: Option<&Path>, dir: &Path, limit: Option<i64>) -> Result<()> {
+    let flux_cmd_path = resolve_default_paths(flux_cmd_path);
     let limit = match limit {
         Some(limit) if limit == 0 => i64::MAX,
         Some(limit) => limit,
         None => 10,
     };
-    let (mut docs, mut diagnostics) = parse_docs(stdlib_dir, dir)?;
+    let (mut docs, mut diagnostics) = parse_docs(dir)?;
     let mut pass = true;
     if !diagnostics.is_empty() {
         let rest = diagnostics.len() as i64 - limit;
@@ -198,7 +175,9 @@ fn lint(
         for result in results {
             test_count += 1;
             match result {
-                Ok(name) => eprintln!("OK ... {}", name),
+                Ok((name, duration)) => {
+                    eprintln!("OK ... {}, took {}ms", name, duration.as_millis())
+                }
                 Err(e) => {
                     eprintln!("Error {:?}\n", e);
                     pass = false;
@@ -271,14 +250,13 @@ fn consume_sequentially<T>(
 }
 
 /// Parse documentation for the specified directory.
-fn parse_docs(stdlib_dir: &Path, dir: &Path) -> Result<(Vec<doc::PackageDoc>, doc::Diagnostics)> {
+fn parse_docs(dir: &Path) -> Result<(Vec<doc::PackageDoc>, doc::Diagnostics)> {
     let db = DatabaseBuilder::default()
-        // We resolve paths in stdlib_dir first, then `dir` which mimicks the previous behavior
-        // most closely
-        .filesystem_roots(vec![stdlib_dir.into(), dir.into()])
+        .filesystem_roots(vec![dir.into()])
         .build();
 
-    let package_names = bootstrap::parse_dir(dir)?;
+    let mut package_names = bootstrap::parse_dir(dir)?;
+    package_names.sort();
     let mut docs = Vec::with_capacity(package_names.len());
     let mut diagnostics = Vec::new();
     for pkgpath in package_names {

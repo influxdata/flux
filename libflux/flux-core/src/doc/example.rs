@@ -1,7 +1,11 @@
 //! Parse documentation examples for their code and execute them collecting their inputs and
 //! outputs.
 
-use std::{collections::HashMap, ops::Range};
+use std::{
+    collections::HashMap,
+    ops::Range,
+    time::{Duration, SystemTime},
+};
 
 use anyhow::{bail, Context, Result};
 use csv::StringRecord;
@@ -20,7 +24,7 @@ pub trait Executor {
 }
 
 /// A list of test results
-pub type TestResults = Vec<Result<String>>;
+pub type TestResults = Vec<Result<(String, Duration)>>;
 
 /// Evaluates all examples in the documentation perfoming an inplace update of their inputs/outpts
 /// and content.
@@ -31,7 +35,7 @@ pub fn evaluate_package_examples(docs: &mut PackageDoc, executor: &impl Executor
         results.push(
             evaluate_example(example, executor)
                 .with_context(|| format!("executing example for package {}", path))
-                .map(|()| path.to_string()),
+                .map(|duration| (path.to_string(), duration)),
         );
     }
     for (name, doc) in docs.members.iter_mut() {
@@ -41,7 +45,7 @@ pub fn evaluate_package_examples(docs: &mut PackageDoc, executor: &impl Executor
                 .map(|result| {
                     result
                         .with_context(|| format!("executing example for {}.{}", path, name))
-                        .map(|title| format!("{}.{}.{}", path, name, title))
+                        .map(|(title, duration)| (format!("{}.{}:{}", path, name, title), duration))
                 }),
         );
     }
@@ -55,7 +59,11 @@ fn evaluate_doc_examples(doc: &mut Doc, executor: &impl Executor) -> TestResults
         Doc::Value(v) => v
             .examples
             .iter_mut()
-            .map(|example| evaluate_example(example, executor).map(|()| example.title.clone()))
+            .map(|example| {
+                evaluate_example(example, executor)
+                    .with_context(|| format!("executing `{}`", example.title))
+                    .map(|duration| (example.title.clone(), duration))
+            })
             .collect(),
         Doc::Function(f) => f
             .examples
@@ -63,13 +71,15 @@ fn evaluate_doc_examples(doc: &mut Doc, executor: &impl Executor) -> TestResults
             .map(|example| {
                 evaluate_example(example, executor)
                     .with_context(|| format!("executing `{}`", example.title))
-                    .map(|()| example.title.clone())
+                    .map(|duration| (example.title.clone(), duration))
             })
             .collect(),
     }
 }
 
-fn evaluate_example(example: &mut Example, executor: &impl Executor) -> Result<()> {
+fn evaluate_example(example: &mut Example, executor: &impl Executor) -> Result<Duration> {
+    // Time the evaluation
+    let start = SystemTime::now();
     let blocks = preprocess_code_blocks(&example.content)?;
     if blocks.len() > 1 {
         bail!(
@@ -89,7 +99,8 @@ fn evaluate_example(example: &mut Example, executor: &impl Executor) -> Result<(
             BlockMode::NoRun => {}
         }
     }
-    Ok(())
+    let end = SystemTime::now();
+    Ok(end.duration_since(start)?)
 }
 
 enum BlockMode {

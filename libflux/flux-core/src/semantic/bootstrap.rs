@@ -3,17 +3,15 @@
 //! This package does not assume a location of the source code but does assume which packages are
 //! part of the prelude.
 
-use std::{env::consts, fs, io, io::Write, path::Path, sync::Arc};
+use std::{env::consts, io, path::Path, sync::Arc};
 
 use anyhow::{bail, Result};
-use libflate::gzip::Encoder;
 use walkdir::WalkDir;
 
 use crate::{
     ast,
     db::{DatabaseBuilder, Flux},
     semantic::{
-        flatbuffers::types::{build_module, finish_serialize},
         fs::{FileSystemImporter, StdFS},
         import::{Importer, Packages},
         nodes::{self, Package, Symbol},
@@ -200,35 +198,6 @@ pub fn stdlib(dir: &Path) -> Result<(PackageExports, FileSystemImporter<StdFS>)>
     let mut stdlib_importer = stdlib_importer(dir);
     let prelude = prelude_from_importer(&mut stdlib_importer)?;
     Ok((prelude, stdlib_importer))
-}
-
-/// Compiles the stdlib found at the srcdir into the outdir.
-pub fn compile_stdlib(srcdir: &Path, outdir: &Path) -> Result<()> {
-    let (_, imports, mut sem_pkgs) = infer_stdlib_dir(srcdir, AnalyzerConfig::default())?;
-    // Write each file as compiled module
-    for (path, exports) in &imports {
-        if let Some(code) = sem_pkgs.remove(path) {
-            let module = Module {
-                polytype: Some(exports.typ()),
-                code: Some(code),
-            };
-            let mut builder = flatbuffers::FlatBufferBuilder::new();
-            let offset = build_module(&mut builder, module);
-            let buf = finish_serialize(&mut builder, offset);
-
-            // Write module contents to file
-            let mut fpath = outdir.join(path);
-            fpath.set_extension("fc");
-            fs::create_dir_all(fpath.parent().unwrap())?;
-            let file = fs::File::create(&fpath)?;
-            let mut encoder = Encoder::new(file)?;
-            encoder.write_all(buf)?;
-            encoder.finish().into_result()?;
-        } else {
-            bail!("package {} missing code", &path);
-        }
-    }
-    Ok(())
 }
 
 /// Module represenets the result of compiling Flux source code.

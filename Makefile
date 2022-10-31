@@ -191,17 +191,15 @@ bin/flux: $(STDLIB_SOURCES) $$(call go_deps,./cmd/flux)
 	$(GO_BUILD) -o ./bin/flux ./cmd/flux
 
 
-libflux/target/release/fluxc: libflux
-	cd libflux && $(CARGO) build $(CARGO_ARGS) --release --bin fluxc
 
 libflux/target/release/fluxdoc: libflux
 	cd libflux && $(CARGO) build $(CARGO_ARGS) --features=doc --release --bin fluxdoc
 
-fluxdocs: $(STDLIB_SOURCES) libflux/target/release/fluxc libflux/target/release/fluxdoc bin/flux
-	FLUXC=./libflux/target/release/fluxc FLUXDOC=./libflux/target/release/fluxdoc ./etc/gen_docs.sh
+fluxdocs: $(STDLIB_SOURCES) libflux/target/release/fluxdoc bin/flux
+	FLUXDOC=./libflux/target/release/fluxdoc ./etc/gen_docs.sh
 
-checkdocs: $(STDLIB_SOURCES) libflux/target/release/fluxc libflux/target/release/fluxdoc bin/flux
-	FLUXC=./libflux/target/release/fluxc FLUXDOC=./libflux/target/release/fluxdoc ./etc/checkdocs.sh
+checkdocs: $(STDLIB_SOURCES) libflux/target/release/fluxdoc bin/flux
+	FLUXDOC=./libflux/target/release/fluxdoc ./etc/checkdocs.sh
 
 # This list is sorted for easy inspection
 .PHONY: bench \
