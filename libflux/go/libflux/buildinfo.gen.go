@@ -271,7 +271,7 @@ var sourceHashes = map[string]string{
 	"stdlib/internal/location/location.flux":                                                      "28a2887a2a1241e8228c0fa8a592ea7ccf0bc26e14e903f899c4480d1169c754",
 	"stdlib/internal/promql/join_test.flux":                                                       "87fde732a159a2cffb81dbc21eebf70df352b69e04781e6e4526f57336b30146",
 	"stdlib/internal/promql/promql.flux":                                                          "e01099d8479cf1cfebe0042f0c84fa52252a2fa41c33eaccb4983335aaaebec5",
-	"stdlib/internal/testing/testing.flux":                                                        "e1c2e56af99f8dd641001c08626da56ce89818639613d747df75513745208676",
+	"stdlib/internal/testing/testing.flux":                                                        "27cc3eaadead956184ebc9572f25e9451ca6fe471857054941cd7591b830b168",
 	"stdlib/internal/testing/testing_test.flux":                                                   "9e2d1acc4f9ea69c5b52735c94a225a3bb23f92a382ec5bae301312e8467bdf3",
 	"stdlib/internal/testutil/testutil.flux":                                                      "7ac37402f39cfc8a778ceb893fe9431c9fd7fc3c96cb6729303e44bf8a8bfa1a",
 	"stdlib/interpolate/interpolate.flux":                                                         "3d480c9058c584b65841db7889c459ad9bfed679f4ce24d17a84ec020cce768b",

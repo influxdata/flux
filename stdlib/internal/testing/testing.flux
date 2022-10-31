@@ -55,7 +55,7 @@ shouldErrorWithCode = (fn, want, code) => {
 //
 // ### Test if two values are equal
 // ```
-// import "testing"
+// import "internal/testing"
 //
 // < testing.assertMatches(got: "123", want: /12/)
 // ```
