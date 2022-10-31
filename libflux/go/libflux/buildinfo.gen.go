@@ -25,7 +25,7 @@ var sourceHashes = map[string]string{
 	"libflux/flux-core/src/bin/fluxdoc.rs":                                                        "c2aac8033e9db895b40aa5c91d76f8ac659ebe89a6864fbe13832b86ce541918",
 	"libflux/flux-core/src/db.rs":                                                                 "a7be134ca32c8e802d83fb18e8849803925e04ff72dfc33ff4d491b680b41dcd",
 	"libflux/flux-core/src/doc/example.rs":                                                        "443cea4bb2a78ff0667681f42c8259829cd17c1e99ac8ac9ecf5effb48f41a76",
-	"libflux/flux-core/src/doc/mod.rs":                                                            "11c93fd68406bb36f0591d89f11bff2a7049e9ad888486431aae9418d80947bd",
+	"libflux/flux-core/src/doc/mod.rs":                                                            "64941b878e1dda70be8b1b03e0bb850ea644755e8045b0b6f648c8af9b2f4dc6",
 	"libflux/flux-core/src/errors.rs":                                                             "05f6c3b6db7a4d479e8e5bfa12cecefddcc6657ce40b8979f548c8ccc4149f8b",
 	"libflux/flux-core/src/formatter/mod.rs":                                                      "92e1d75b0e50e3ba2fbb2b16d4db8ed525004c411742f64de3bac7668047577c",
 	"libflux/flux-core/src/lib.rs":                                                                "487c5b2db051f7ed5276c566a9a6b2ee75d6a13459443cf94b51b6d90d20edd2",
