@@ -19,10 +19,10 @@ type HoltWinters struct {
 	s              int
 	seasonal       bool
 	includeFitData bool
-	// NelderMead optimizer
-	optim *Optimizer
 	// Small difference bound for the optimizer
 	epsilon float64
+	// number of iterations for the optimizer
+	iterations int
 
 	vs    *array.Float
 	alloc memory.Allocator
@@ -34,6 +34,8 @@ const (
 	hwWeight = 0.5
 	// Epsilon value for the minimization process
 	hwDefaultEpsilon = 1.0e-4
+	// Maximum iterations during minimization process
+	hwDefaultMaxIterations = 100
 	// Define a grid of initial guesses for the parameters: alpha, beta, gamma, and phi.
 	// Keep in mind that this grid is N^4 so we should keep N small
 	// The starting lower guess
@@ -54,8 +56,8 @@ func New(n, s int, withFit bool, alloc memory.Allocator) *HoltWinters {
 		s:              s,
 		seasonal:       seasonal,
 		includeFitData: withFit,
-		optim:          NewOptimizer(alloc),
 		epsilon:        hwDefaultEpsilon,
+		iterations:     hwDefaultMaxIterations,
 		alloc:          alloc,
 	}
 }
@@ -137,7 +139,7 @@ func (r *HoltWinters) Do(vs *array.Float) (*array.Float, float64) {
 			return r.sse(f)
 		},
 	}
-	settings := optimize.Settings{Converger: &optimize.FunctionConverge{Absolute: 1e-10, Iterations: 100}}
+	settings := optimize.Settings{Converger: &optimize.FunctionConverge{Absolute: r.epsilon, Iterations: r.iterations}}
 
 	for alpha := hwGuessLower; alpha < hwGuessUpper; alpha += hwGuessStep {
 		for beta := hwGuessLower; beta < hwGuessUpper; beta += hwGuessStep {
