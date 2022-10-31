@@ -35,7 +35,7 @@ type ExecutionDependencies struct {
 
 	// Metadata is passed up from any invocations of execution up to the parent
 	// execution, and out through the statistics.
-	Metadata metadata.SyncMetadata
+	Metadata *metadata.SyncMetadata
 
 	ExecutionOptions *ExecutionOptions
 }

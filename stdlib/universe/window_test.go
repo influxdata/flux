@@ -78,6 +78,7 @@ func TestFixedWindow_PassThrough(t *testing.T) {
 	w, _ := interval.NewWindow(values.ConvertDurationNsecs(time.Minute), values.ConvertDurationNsecs(time.Minute), values.MakeDuration(0, 0, false))
 	executetest.TransformationPassThroughTestHelper(t, func(d execute.Dataset, c execute.TableBuilderCache) execute.Transformation {
 		fw := universe.NewFixedWindowTransformation(
+			context.Background(),
 			d,
 			c,
 			interval.Bounds{},
@@ -836,6 +837,7 @@ func TestFixedWindow_Process(t *testing.T) {
 				t.Fatalf("unexpected error while creating window: %s", err)
 			}
 			fw := universe.NewFixedWindowTransformation(
+				context.Background(),
 				d,
 				c,
 				tc.bounds,

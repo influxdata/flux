@@ -221,6 +221,7 @@ func createWindowTransformation(id execute.DatasetID, mode execute.AccumulationM
 		return nil, nil, err
 	}
 	t := NewFixedWindowTransformation(
+		a.Context(),
 		d,
 		cache,
 		newBounds,
@@ -235,6 +236,7 @@ func createWindowTransformation(id execute.DatasetID, mode execute.AccumulationM
 
 type fixedWindowTransformation struct {
 	execute.ExecutionNode
+	ctx       context.Context
 	d         execute.Dataset
 	cache     execute.TableBuilderCache
 	w         interval.Window
@@ -248,6 +250,7 @@ type fixedWindowTransformation struct {
 }
 
 func NewFixedWindowTransformation(
+	ctx context.Context,
 	d execute.Dataset,
 	cache execute.TableBuilderCache,
 	bounds interval.Bounds,
@@ -258,6 +261,7 @@ func NewFixedWindowTransformation(
 	createEmpty bool,
 ) execute.Transformation {
 	t := &fixedWindowTransformation{
+		ctx:         ctx,
 		d:           d,
 		cache:       cache,
 		w:           w,
@@ -285,6 +289,10 @@ func (t *fixedWindowTransformation) Process(id execute.DatasetID, tbl flux.Table
 		const docURL = "https://v2.docs.influxdata.com/v2.0/reference/flux/stdlib/built-in/transformations/window/#missing-time-column"
 		return errors.Newf(codes.FailedPrecondition, "missing time column %q", t.timeCol).
 			WithDocURL(docURL)
+	}
+
+	if tbl.Key().HasCol(t.timeCol) {
+		execute.RecordEvent(t.ctx, "window/time-in-group-key")
 	}
 
 	newCols := make([]flux.ColMeta, 0, len(tbl.Cols())+2)

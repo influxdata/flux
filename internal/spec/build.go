@@ -125,16 +125,21 @@ func isDuplicateTableObject(ctx context.Context, op *flux.TableObject, objs []*f
 }
 
 func buildSpecWithTrace(ctx context.Context, t *flux.TableObject, ider *ider, spec *operation.Spec, visited map[*flux.TableObject]bool, skipYields bool) {
-	s, _ := opentracing.StartSpanFromContext(ctx, "buildSpec")
+	s, cctx := opentracing.StartSpanFromContext(ctx, "buildSpec")
 	s.SetTag("opKind", t.Kind)
-	buildSpec(t, ider, spec, visited, skipYields)
+	buildSpec(cctx, t, ider, spec, visited, skipYields)
 	s.Finish()
 }
 
-func buildSpec(t *flux.TableObject, ider *ider, spec *operation.Spec, visited map[*flux.TableObject]bool, skipYields bool) {
+func buildSpec(ctx context.Context, t *flux.TableObject, ider *ider, spec *operation.Spec, visited map[*flux.TableObject]bool, skipYields bool) {
+	// Check if this table object has already been used
+	// and mark the spec as having a conflict if it has.
+	if t.Owned {
+		spec.HasConflict = true
+	}
+
 	// Traverse graph upwards to first unvisited node.
 	// Note: parents are sorted based on parameter name, so the visit order is consistent.
-
 	var parents []*flux.TableObject
 	if skipYields {
 		parents = getNonYieldParents(make([]*flux.TableObject, 0), t)
@@ -145,7 +150,7 @@ func buildSpec(t *flux.TableObject, ider *ider, spec *operation.Spec, visited ma
 	for _, p := range parents {
 		if !visited[p] {
 			// recurse up parents
-			buildSpec(p, ider, spec, visited, skipYields)
+			buildSpec(ctx, p, ider, spec, visited, skipYields)
 		}
 	}
 
@@ -171,6 +176,7 @@ func buildSpec(t *flux.TableObject, ider *ider, spec *operation.Spec, visited ma
 	}
 
 	visited[t] = true
+	t.Owned = true
 }
 
 // getNonYieldParents builds an array of parents, skipping any yields found along the way.

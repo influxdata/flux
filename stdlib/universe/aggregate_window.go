@@ -107,6 +107,7 @@ type aggregateWindow interface {
 }
 
 type aggregateWindowTransformation struct {
+	ctx         context.Context
 	w           interval.Window
 	bounds      *execute.Bounds
 	createEmpty bool
@@ -128,10 +129,10 @@ func createAggregateWindowTransformation(id execute.DatasetID, mode execute.Accu
 		return nil, nil, errors.New(codes.Invalid, "nil bounds passed to window; use range to set the window range").
 			WithDocURL(docURL)
 	}
-	return newAggregateWindowTransformation(id, a.Parents(), s, bounds, a.Allocator())
+	return newAggregateWindowTransformation(a.Context(), id, a.Parents(), s, bounds, a.Allocator())
 }
 
-func newAggregateWindowTransformation(id execute.DatasetID, parents []execute.DatasetID, s *AggregateWindowProcedureSpec, bounds *execute.Bounds, mem memory.Allocator) (execute.Transformation, execute.Dataset, error) {
+func newAggregateWindowTransformation(ctx context.Context, id execute.DatasetID, parents []execute.DatasetID, s *AggregateWindowProcedureSpec, bounds *execute.Bounds, mem memory.Allocator) (execute.Transformation, execute.Dataset, error) {
 	loc, err := s.WindowSpec.Window.LoadLocation()
 	if err != nil {
 		return nil, nil, err
@@ -148,6 +149,7 @@ func newAggregateWindowTransformation(id execute.DatasetID, parents []execute.Da
 	}
 
 	tr := &aggregateWindowTransformation{
+		ctx:         ctx,
 		w:           w,
 		bounds:      bounds,
 		createEmpty: s.WindowSpec.CreateEmpty,
@@ -253,6 +255,10 @@ func (a *aggregateWindowTransformation) getTimeColumn(chunk table.Chunk) (*array
 
 	if colType := chunk.Col(idx).Type; colType != flux.TTime {
 		return nil, errors.Newf(codes.FailedPrecondition, "time column is not a time value: %s", colType)
+	}
+
+	if chunk.Key().HasCol(a.timeCol) {
+		execute.RecordEvent(a.ctx, "window/time-in-group-key")
 	}
 	return chunk.Ints(idx), nil
 }

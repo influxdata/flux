@@ -32,6 +32,12 @@ type Spec struct {
 	Resources  flux.ResourceManagement `json:"resources"`
 	Now        time.Time               `json:"now"`
 
+	// HasConflict is true if one of the operations in this spec
+	// was previously used in another spec. This indicates
+	// that two nodes from distinct specs relate to the same
+	// operation.
+	HasConflict bool
+
 	sorted   []*Node
 	children map[NodeID][]*Node
 	parents  map[NodeID][]*Node

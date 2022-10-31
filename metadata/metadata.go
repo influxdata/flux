@@ -1,7 +1,6 @@
 package metadata
 
 import (
-	"fmt"
 	"sync"
 )
 
@@ -36,11 +35,11 @@ func (md Metadata) Del(key string) {
 	delete(md, key)
 }
 
-func (md Metadata) Get(key string) (interface{}, error) {
+func (md Metadata) Get(key string) (interface{}, bool) {
 	if values, ok := md[key]; ok && len(values) != 0 {
-		return values[0], nil
+		return values[0], true
 	}
-	return nil, fmt.Errorf("key %s does not exist in Metadata", key)
+	return nil, false
 }
 
 func (md Metadata) GetAll(key string) []interface{} {
@@ -52,30 +51,28 @@ func (md Metadata) GetAll(key string) []interface{} {
 
 // SyncMetadata is a version of `Metadata` which allows concurrent modifications to it
 type SyncMetadata struct {
-	// Metadata is passed as a value so we must store the mutex as a pointer to ensure it does not get copied
-	lock *sync.RWMutex
+	lock sync.RWMutex
 	meta Metadata
 }
 
-func NewSyncMetadata() SyncMetadata {
+func NewSyncMetadata() *SyncMetadata {
 	return NewSyncMetadataWith(make(Metadata))
 }
 
-func NewSyncMetadataWith(meta Metadata) SyncMetadata {
-	return SyncMetadata{
-		lock: &sync.RWMutex{},
+func NewSyncMetadataWith(meta Metadata) *SyncMetadata {
+	return &SyncMetadata{
 		meta: meta,
 	}
 }
 
-func (md SyncMetadata) Add(key string, value interface{}) {
+func (md *SyncMetadata) Add(key string, value interface{}) {
 	md.lock.Lock()
 	defer md.lock.Unlock()
 
 	md.meta.Add(key, value)
 }
 
-func (md SyncMetadata) AddAll(other Metadata) {
+func (md *SyncMetadata) AddAll(other Metadata) {
 	md.lock.Lock()
 	defer md.lock.Unlock()
 
@@ -85,39 +82,47 @@ func (md SyncMetadata) AddAll(other Metadata) {
 // Range will iterate over the SyncMetadata. It will invoke the function for each
 // key/value pair. If there are multiple values for a single key, then this will
 // be called with the same key once for each value.
-func (md SyncMetadata) Range(fn func(key string, value interface{}) bool) {
+func (md *SyncMetadata) Range(fn func(key string, value interface{}) bool) {
 	md.lock.RLock()
 	defer md.lock.RUnlock()
 
 	md.meta.Range(fn)
 }
 
-func (md SyncMetadata) Del(key string) {
+func (md *SyncMetadata) Del(key string) {
 	md.lock.Lock()
 	defer md.lock.Unlock()
 
 	md.meta.Del(key)
 }
 
-func (md SyncMetadata) Get(key string) (interface{}, error) {
+func (md *SyncMetadata) Get(key string) (interface{}, bool) {
 	md.lock.RLock()
 	defer md.lock.RUnlock()
 
 	return md.meta.Get(key)
 }
 
-func (md SyncMetadata) GetAll(key string) []interface{} {
+func (md *SyncMetadata) GetAll(key string) []interface{} {
 	md.lock.RLock()
 	defer md.lock.RUnlock()
 
 	return md.meta.GetAll(key)
 }
 
-// Provides read access to the underlying `Metadata` map. Since the map may be concurrently modified outside of the closure
-// it should not be allowed to escape it
-func (md SyncMetadata) ReadView(fn func(meta Metadata)) {
+// ReadView provides read access to the underlying `Metadata` map.
+// Since the map may be concurrently modified outside of the closure
+// it should not be allowed to escape it.
+func (md *SyncMetadata) ReadView(fn func(meta Metadata)) {
 	md.lock.RLock()
 	defer md.lock.RUnlock()
 
 	fn(md.meta)
+}
+
+func (md *SyncMetadata) ReadWriteView(fn func(meta *Metadata)) {
+	md.lock.Lock()
+	defer md.lock.Unlock()
+
+	fn(&md.meta)
 }
