@@ -135,6 +135,10 @@ func CompileTableObject(ctx context.Context, to *flux.TableObject, now time.Time
 func buildPlan(ctx context.Context, spec *operation.Spec, opts *compileOptions) (*plan.Spec, error) {
 	s, _ := opentracing.StartSpanFromContext(ctx, "plan")
 	defer s.Finish()
+
+	if spec.HasConflict {
+		execute.RecordEvent(ctx, "table-find/disjoint-plan")
+	}
 	pb := plan.PlannerBuilder{}
 
 	planOptions := opts.planOptions
@@ -289,13 +293,6 @@ func (p *Program) Start(ctx context.Context, alloc memory.Allocator) (flux.Query
 		stats: flux.Statistics{
 			Metadata: make(metadata.Metadata),
 		},
-	}
-
-	if execute.HaveExecutionDependencies(ctx) {
-		deps := execute.GetExecutionDependencies(ctx)
-		deps.Metadata.ReadView(func(meta metadata.Metadata) {
-			q.stats.Metadata.AddAll(meta)
-		})
 	}
 
 	if traceID, sampled, found := jaeger.InfoFromSpan(s); found {
@@ -513,8 +510,9 @@ func (p *AstProgram) Start(ctx context.Context, alloc memory.Allocator) (flux.Qu
 		return nil, err
 	}
 	return &spanQuery{
-		Query: q,
-		span:  span,
+		Query:    q,
+		span:     span,
+		metadata: deps.Metadata,
 	}, nil
 }
 
@@ -547,12 +545,23 @@ func (p *AstProgram) updateOpts(scope values.Scope) error {
 
 type spanQuery struct {
 	flux.Query
-	span *dependency.Span
+	span     *dependency.Span
+	stats    flux.Statistics
+	metadata *metadata.SyncMetadata
 }
 
 func (q *spanQuery) Done() {
 	q.Query.Done()
+	q.stats.Metadata = make(metadata.Metadata)
+	q.metadata.ReadView(func(meta metadata.Metadata) {
+		q.stats.Metadata.AddAll(meta)
+	})
+	q.stats.Merge(q.Query.Statistics())
 	q.span.Finish()
+}
+
+func (q *spanQuery) Statistics() flux.Statistics {
+	return q.stats
 }
 
 func getPackageFromScope(pkgName string, scope values.Scope) (values.Package, bool) {

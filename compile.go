@@ -81,6 +81,12 @@ type TableObject struct {
 		Stack []interpreter.StackEntry
 	}
 	Parents []*TableObject
+
+	// Owned is set to true when this TableObject has
+	// ownership claimed by an operation spec.
+	// A TableObject should only be owned by one spec.
+	// TableObjects are initially created unowned.
+	Owned bool
 }
 
 func (t *TableObject) Dynamic() values.Dynamic {

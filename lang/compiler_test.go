@@ -1126,3 +1126,75 @@ var crlfPattern = regexp.MustCompile(`\r?\n`)
 func toCRLF(data string) string {
 	return crlfPattern.ReplaceAllString(data, "\r\n")
 }
+
+func TestAstProgram_RecordedEvents(t *testing.T) {
+	now := time.Now()
+	for _, tt := range []struct {
+		name string
+		src  string
+		key  string
+	}{
+		{
+			name: "window_groupbytime",
+			src: `import "internal/gen"
+gen.tables(n: 30)
+|> range(start: -5m)
+|> group(columns: ["_time"])
+|> window(every: 1m, createEmpty: false)
+`,
+			key: "window/time-in-group-key",
+		},
+		{
+			name: "aggregatewindow_groupbytime",
+			src: `import "internal/gen"
+gen.tables(n: 30)
+|> range(start: -5m)
+|> group(columns: ["_time"])
+|> aggregateWindow(every: 1m, fn: mean, createEmpty: false)
+`,
+			key: "window/time-in-group-key",
+		},
+		{
+			name: "disjoint_tablefind",
+			src: `import "internal/gen"
+a = gen.tables(n: 10)
+b = a
+	|> tableFind(fn: (key) => true)
+	|> getRecord(idx: 0)
+a
+	|> map(fn: (r) => ({_time: r._time, _value: r._value + b._value}))
+	|> yield(name: "_result")
+`,
+			key: "table-find/disjoint-plan",
+		},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			ctx, deps := dependency.Inject(context.Background(), executetest.NewTestExecuteDependencies())
+			defer deps.Finish()
+
+			program, err := lang.Compile(ctx, tt.src, runtime.Default, now)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			q, err := program.Start(ctx, memory.DefaultAllocator)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			for res := range q.Results() {
+				if err := res.Tables().Do(func(table flux.Table) error {
+					return nil
+				}); err != nil {
+					t.Error(err)
+				}
+			}
+			q.Done()
+
+			stats := q.Statistics()
+			if _, ok := stats.Metadata.Get(tt.key); !ok {
+				t.Errorf("metadata key %q not present", tt.key)
+			}
+		})
+	}
+}
