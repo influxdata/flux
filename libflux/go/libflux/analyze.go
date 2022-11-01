@@ -56,6 +56,7 @@ func NewOptions(ctx context.Context) Options {
 	features = addFlag(ctx, features, feature.PrettyError())
 	features = addFlag(ctx, features, feature.LabelPolymorphism())
 	features = addFlag(ctx, features, feature.UnusedSymbolWarnings())
+	features = addFlag(ctx, features, feature.SalsaDatabase())
 	return Options{Features: features}
 }
 
