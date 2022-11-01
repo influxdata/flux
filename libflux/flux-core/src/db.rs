@@ -15,7 +15,7 @@ use super::*;
 
 use std::{
     collections::{HashMap, HashSet},
-    io,
+    fmt, io,
     path::PathBuf,
     sync::{Arc, Mutex},
 };
@@ -33,6 +33,19 @@ pub enum Error {
 
     #[error("{0}")]
     Message(String),
+}
+
+/// Interface for retrieving external flux modules
+pub trait Fluxmod: fmt::Debug + std::panic::RefUnwindSafe {
+    fn get_module(&self, path: &str) -> Option<Vec<(String, Arc<str>)>>;
+}
+
+impl Fluxmod for HashMap<String, Vec<(String, Arc<str>)>> {
+    fn get_module(&self, path: &str) -> Option<Vec<(String, Arc<str>)>> {
+        let module = path.split('/').next()?;
+        dbg!(module);
+        self.get(module).cloned()
+    }
 }
 
 /// Base trait for the flux database
@@ -70,6 +83,10 @@ pub trait Flux: FluxBase {
     /// Sets the AnalyzerConfig for the compilation
     #[salsa::input]
     fn analyzer_config(&self) -> AnalyzerConfig;
+
+    /// Defines the fluxmod interface for fetching external modules
+    #[salsa::input]
+    fn flux_mod(&self) -> Option<Arc<dyn Fluxmod>>;
 
     /// Enables the prelude for all compiled packages
     ///
@@ -166,6 +183,7 @@ impl Default for Database {
         db.set_analyzer_config(AnalyzerConfig::default());
         db.set_use_prelude(true);
         db.set_precompiled_packages(None);
+        db.set_flux_mod(None);
         db
     }
 }
@@ -175,6 +193,7 @@ impl salsa::Database for Database {}
 impl FluxBase for Database {
     fn package_files(&self, package: &str) -> Result<Vec<String>> {
         let mut found_files = self.search_flux_files(package)?;
+        dbg!(&found_files);
 
         let packages = self.packages.lock().unwrap();
 
@@ -228,6 +247,20 @@ impl FluxBase for Database {
                 return Ok(Arc::from(source));
             }
         }
+        if let Some(flux_mod) = &self.flux_mod() {
+            match flux_mod.get_module(&path) {
+                Some(modules) => {
+                    if let Some(source) = modules
+                        .iter()
+                        .find(|(k, _)| *k == path)
+                        .map(|(_, source)| source)
+                    {
+                        return Ok(source.clone());
+                    }
+                }
+                None => (),
+            }
+        }
         Ok(self.source_inner(path))
     }
 
@@ -274,6 +307,15 @@ impl Database {
                         found_files.push(path.to_string());
                     }
                 }
+            }
+        }
+
+        if let Some(flux_mod) = self.flux_mod() {
+            match flux_mod.get_module(package) {
+                Some(modules) => {
+                    found_files.extend(modules.iter().map(|(k, _)| k.clone()));
+                }
+                None => (),
             }
         }
 
@@ -482,5 +524,36 @@ impl Importer for &dyn Flux {
         self.package_exports_import(path.into())
             .ok()
             .and_then(|exports| exports.lookup_symbol(symbol_name).cloned())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn flux_mod() {
+        let mut db = Database::default();
+        db.set_use_prelude(false);
+        db.set_flux_mod(Some(Arc::new(
+            [(
+                "mymodule".into(),
+                vec![("mymodule/pack.flux".into(), "x = 1".into())],
+            )]
+            .into_iter()
+            .collect::<HashMap<_, _>>(),
+        )));
+
+        db.set_source(
+            "main/main.flux".into(),
+            r#"
+        import "mymodule/pack"
+        y = pack.x + 1
+        "#
+            .into(),
+        );
+
+        db.semantic_package("main".into())
+            .unwrap_or_else(|err| panic!("{}", err));
     }
 }
