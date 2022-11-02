@@ -2123,3 +2123,16 @@ impl<'a> Locator<'a> {
         &self.source[start_offset as usize..end_offset as usize]
     }
 }
+
+#[test]
+fn test_position_ord() {
+    let before = Position {
+        line: 5,
+        column: 10,
+    };
+    let after = Position {
+        line: 5,
+        column: 11,
+    };
+    assert!(before < after);
+}
