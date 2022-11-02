@@ -27,6 +27,8 @@ strict = []
 lsp = ["lsp-types"]
 doc = ["csv", "once_cell", "pad", "pulldown-cmark", "rayon", "tempfile"]
 
+integration_test = []
+
 [dependencies]
 anyhow = "1.0.56"
 chrono = { version = "0.4", features = ["serde"] }
@@ -61,7 +63,9 @@ serde_json = "1.0.79"
 structopt = "0.3.26"
 thiserror = "1"
 tempfile = { version = "3.3.0", optional = true }
+ureq = "2"
 walkdir = "2.2.9"
+zip = "0.6"
 
 rusqlite = { version = "0.26", optional = true }
 pretty_assertions = { version = "1", optional = true }

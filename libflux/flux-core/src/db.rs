@@ -15,7 +15,8 @@ use super::*;
 
 use std::{
     collections::{HashMap, HashSet},
-    fmt, io,
+    fmt,
+    io::{self, Read},
     path::PathBuf,
     sync::{Arc, Mutex},
 };
@@ -37,7 +38,85 @@ pub enum Error {
 
 /// Interface for retrieving external flux modules
 pub trait Fluxmod: fmt::Debug + std::panic::RefUnwindSafe {
-    fn get_module(&self, path: &str) -> Option<Vec<(String, Arc<str>)>>;
+    fn get_module(&self, module: &str) -> Option<Vec<(String, Arc<str>)>>;
+}
+
+#[derive(Debug)]
+struct HttpFluxmod {
+    token: String,
+}
+
+impl HttpFluxmod {
+    fn download_module(&self, module: &str) -> Result<Vec<(String, Arc<str>)>> {
+        log::debug!("Searching fluxmod for `{}`", module);
+        if module.contains("/") {
+            return Err(Error::Message(format!("Invalid module name `{}`", module)));
+        }
+        let base =
+            "https://twodotoh-dev-markus20221018125005.remocal.influxdev.co/api/v2private/modules";
+
+        let response = ureq::get(&format!("{}/{}/@latest", base, module))
+            .set("Authorization", &format!("Token {}", self.token))
+            .call()
+            .map_err(|err| Error::Message(err.to_string()))?;
+        if response.status() != 200 {
+            return Err(Error::Message(
+                response
+                    .into_string()
+                    .map_err(|err| Error::Message(err.to_string()))?,
+            ));
+        }
+
+        let version = response
+            .into_string()
+            .map_err(|err| Error::Message(err.to_string()))?;
+
+        log::debug!("Found latest version `{}` for `{}`", version, module);
+
+        let response = ureq::get(&format!("{}/{}/@v/{}.zip", base, module, version))
+            .set("Authorization", &format!("Token {}", self.token))
+            .call()
+            .map_err(|err| Error::Message(err.to_string()))?;
+
+        if response.status() != 200 {
+            return Err(Error::Message(
+                response
+                    .into_string()
+                    .map_err(|err| Error::Message(err.to_string()))?,
+            ));
+        }
+
+        let mut module_files = Vec::new();
+        let mut bytes = Vec::new();
+        // TODO Limit the size
+        response
+            .into_reader()
+            .read_to_end(&mut bytes)
+            .map_err(|err| Error::Message(err.to_string()))?;
+        let mut archive = zip::ZipArchive::new(io::Cursor::new(&bytes[..]))
+            .map_err(|err| Error::Message(err.to_string()))?;
+        for i in 0..archive.len() {
+            let mut file = archive
+                .by_index(i)
+                .map_err(|err| Error::Message(err.to_string()))?;
+
+            let mut source = String::new();
+            file.read_to_string(&mut source)
+                .map_err(|err| Error::Message(err.to_string()))?;
+
+            module_files.push(([module, file.name()].join("/"), Arc::from(source)));
+        }
+
+        Ok(module_files)
+    }
+}
+
+impl Fluxmod for HttpFluxmod {
+    fn get_module(&self, module: &str) -> Option<Vec<(String, Arc<str>)>> {
+        self.download_module(module)
+            .map_err(|err| eprintln!("{}", err))
+            .ok()
+    }
 }
 
 impl Fluxmod for HashMap<String, Vec<(String, Arc<str>)>> {
@@ -190,23 +269,25 @@ impl Default for Database {
 
 impl salsa::Database for Database {}
 
+fn is_part_of_package(package: &str, path: &str) -> bool {
+    dbg!((&package, path));
+    // Example: package: `internal/boolean` matches the file
+    // `internal/boolean/XXX.flux`
+    path.starts_with(package)
+        && path[package.len()..].starts_with('/')
+        && path[package.len() + 1..].split('/').count() == 1
+}
+
 impl FluxBase for Database {
     fn package_files(&self, package: &str) -> Result<Vec<String>> {
         let mut found_files = self.search_flux_files(package)?;
-        dbg!(&found_files);
 
         let packages = self.packages.lock().unwrap();
 
         found_files.extend(
             packages
                 .iter()
-                .filter(|p| {
-                    // Example: package: `internal/boolean` matches the file
-                    // `internal/boolean/XXX.flux`
-                    p.starts_with(package)
-                        && p[package.len()..].starts_with('/')
-                        && p[package.len() + 1..].split('/').count() == 1
-                })
+                .filter(|path| is_part_of_package(package, path))
                 .cloned(),
         );
 
@@ -248,17 +329,21 @@ impl FluxBase for Database {
             }
         }
         if let Some(flux_mod) = &self.flux_mod() {
-            match flux_mod.get_module(&path) {
-                Some(modules) => {
-                    if let Some(source) = modules
-                        .iter()
-                        .find(|(k, _)| *k == path)
-                        .map(|(_, source)| source)
-                    {
-                        return Ok(source.clone());
-                    }
-                }
-                None => (),
+            let module = path.split('/').next().unwrap();
+            if let Some(modules) = flux_mod.get_module(&module) {
+                dbg!((&modules, &path));
+                return if let Some(source) = modules
+                    .iter()
+                    .find(|(k, _)| *k == path)
+                    .map(|(_, source)| source)
+                {
+                    Ok(source.clone())
+                } else {
+                    Err(Error::Message(format!(
+                        "No files exist for package `{}`",
+                        path
+                    )))
+                };
             }
         }
         Ok(self.source_inner(path))
@@ -311,13 +396,21 @@ impl Database {
         }
 
         if let Some(flux_mod) = self.flux_mod() {
-            match flux_mod.get_module(package) {
+            let module = package.split('/').next().unwrap();
+            match flux_mod.get_module(module) {
                 Some(modules) => {
-                    found_files.extend(modules.iter().map(|(k, _)| k.clone()));
+                    dbg!((package, &modules));
+                    found_files.extend(
+                        modules
+                            .iter()
+                            .map(|(k, _)| k.clone())
+                            .filter(|path| is_part_of_package(package, path)),
+                    );
                 }
                 None => (),
             }
         }
+        dbg!(&found_files);
 
         // It is possible that we find the same file twice if the roots contain duplicates
         found_files.sort();
@@ -448,6 +541,7 @@ fn package_exports_import(
             exports
         })
         .map_err(|err| {
+            dbg!(&err);
             db.record_error(path.clone(), err.error);
             nodes::ErrorKind::InvalidImportPath(path)
         })
@@ -533,6 +627,8 @@ mod tests {
 
     #[test]
     fn flux_mod() {
+        let _ = env_logger::try_init();
+
         let mut db = Database::default();
         db.set_use_prelude(false);
         db.set_flux_mod(Some(Arc::new(
@@ -555,5 +651,35 @@ mod tests {
 
         db.semantic_package("main".into())
             .unwrap_or_else(|err| panic!("{}", err));
+    }
+
+    #[test]
+    #[cfg(feature = "integration_test")]
+    fn http_flux_mod() {
+        let _ = env_logger::try_init();
+
+        let mut db = Database::default();
+        db.set_use_prelude(false);
+        db.set_flux_mod(Some(Arc::new(HttpFluxmod {
+            token: std::env::var("FLUXMOD_TOKEN").unwrap_or_else(|err| panic!("{}", err)),
+        })));
+
+        db.set_source(
+            "main/main.flux".into(),
+            r#"
+        import "mymodule"
+        y = mymodule.x + 1
+        "#
+            .into(),
+        );
+
+        match db.semantic_package("main".into()) {
+            Ok(_) => (),
+            Err(err) => {
+                let mut errors = db.package_errors();
+                errors.push(err.error);
+                panic!("{}", errors);
+            }
+        }
     }
 }
