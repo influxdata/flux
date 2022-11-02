@@ -47,15 +47,48 @@ struct HttpFluxmod {
 }
 
 impl HttpFluxmod {
-    fn download_module(&self, module: &str) -> Result<Vec<(String, Arc<str>)>> {
-        log::debug!("Searching fluxmod for `{}`", module);
-        if module.contains("/") {
-            return Err(Error::Message(format!("Invalid module name `{}`", module)));
-        }
-        let base =
-            "https://twodotoh-dev-markus20221018125005.remocal.influxdev.co/api/v2private/modules";
+    const BASE: &'static str =
+        "https://twodotoh-dev-markus20221018125005.remocal.influxdev.co/api/v2private/modules";
 
-        let response = ureq::get(&format!("{}/{}/@latest", base, module))
+    #[cfg(test)]
+    fn publish(
+        &self,
+        module: &str,
+        files: Vec<(String, String)>,
+        version: semver::Version,
+    ) -> Result<()> {
+        let mut multipart = multipart::client::lazy::Multipart::new();
+        for (name, contents) in &files {
+            multipart.add_stream("module", contents.as_bytes(), Some(name), None);
+        }
+        let body = multipart
+            .prepare()
+            .map_err(|err| Error::Message(err.to_string()))?;
+
+        let response = ureq::post(&format!("{}/{}/@v/v{}.zip", Self::BASE, module, version))
+            .set("Authorization", &format!("Token {}", self.token))
+            .set(
+                "Content-Type",
+                &format!("multipart/form-data; boundary={}", body.boundary()),
+            )
+            .send(body)
+            .map_err(|err| Error::Message(err.to_string()))?;
+
+        if !(200..300).contains(&response.status()) {
+            return Err(Error::Message(format!(
+                "Unable to publish: {} {}",
+                response.status(),
+                response
+                    .into_string()
+                    .map_err(|err| Error::Message(err.to_string()))?
+            )));
+        }
+
+        Ok(())
+    }
+
+    fn latest_version(&self, module: &str) -> Result<String> {
+        let response = ureq::get(&format!("{}/{}/@latest", Self::BASE, module))
             .set("Authorization", &format!("Token {}", self.token))
             .call()
             .map_err(|err| Error::Message(err.to_string()))?;
@@ -69,11 +102,23 @@ impl HttpFluxmod {
 
         let version = response
             .into_string()
-            .map_err(|err| Error::Message(err.to_string()))?;
+            .map_err(|err| Error::Message(err.to_string()))?
+            .trim()
+            .to_owned();
 
+        Ok(version)
+    }
+
+    fn download_module(&self, module: &str) -> Result<Vec<(String, Arc<str>)>> {
+        log::debug!("Searching fluxmod for `{}`", module);
+        if module.contains("/") {
+            return Err(Error::Message(format!("Invalid module name `{}`", module)));
+        }
+
+        let version = self.latest_version(module)?;
         log::debug!("Found latest version `{}` for `{}`", version, module);
 
-        let response = ureq::get(&format!("{}/{}/@v/{}.zip", base, module, version))
+        let response = ureq::get(&format!("{}/{}/@v/{}.zip", Self::BASE, module, version))
             .set("Authorization", &format!("Token {}", self.token))
             .call()
             .map_err(|err| Error::Message(err.to_string()))?;
@@ -100,6 +145,7 @@ impl HttpFluxmod {
                 .by_index(i)
                 .map_err(|err| Error::Message(err.to_string()))?;
 
+            dbg!(("######", &file.name()));
             let mut source = String::new();
             file.read_to_string(&mut source)
                 .map_err(|err| Error::Message(err.to_string()))?;
@@ -625,6 +671,16 @@ impl Importer for &dyn Flux {
 mod tests {
     use super::*;
 
+    fn setup_module(fluxmod: &HttpFluxmod, name: &str, module: Vec<(String, String)>) {
+        let version = fluxmod
+            .latest_version("mymodule")
+            .unwrap_or_else(|err| panic!("{}", err));
+
+        let mut version = semver::Version::parse(version.trim_start_matches("v")).unwrap();
+        version.patch += 1;
+        fluxmod.publish(name, module, version).unwrap();
+    }
+
     #[test]
     fn flux_mod() {
         let _ = env_logger::try_init();
@@ -658,17 +714,68 @@ mod tests {
     fn http_flux_mod() {
         let _ = env_logger::try_init();
 
+        let fluxmod = HttpFluxmod {
+            token: std::env::var("FLUXMOD_TOKEN").unwrap_or_else(|err| panic!("{}", err)),
+        };
+
+        setup_module(
+            &fluxmod,
+            "mymodule",
+            vec![("pack.flux".into(), "x = 1".into())],
+        );
+
         let mut db = Database::default();
         db.set_use_prelude(false);
-        db.set_flux_mod(Some(Arc::new(HttpFluxmod {
-            token: std::env::var("FLUXMOD_TOKEN").unwrap_or_else(|err| panic!("{}", err)),
-        })));
+        db.set_flux_mod(Some(Arc::new(fluxmod)));
 
         db.set_source(
             "main/main.flux".into(),
             r#"
         import "mymodule"
         y = mymodule.x + 1
+        "#
+            .into(),
+        );
+
+        match db.semantic_package("main".into()) {
+            Ok(_) => (),
+            Err(err) => {
+                let mut errors = db.package_errors();
+                errors.push(err.error);
+                panic!("{}", errors);
+            }
+        }
+    }
+
+    #[test]
+    #[cfg(feature = "integration_test")]
+    #[ignore] // Waiting on fluxmod to handle directories
+    fn http_flux_mod_nested() {
+        let _ = env_logger::try_init();
+
+        let fluxmod = HttpFluxmod {
+            token: std::env::var("FLUXMOD_TOKEN").unwrap_or_else(|err| panic!("{}", err)),
+        };
+
+        setup_module(
+            &fluxmod,
+            "mymodulenested",
+            vec![
+                ("nested/nested.flux".into(), "y = 1".into()),
+                ("nested/nestedagain/nestedagain.flux".into(), "z = 3".into()),
+            ],
+        );
+
+        let mut db = Database::default();
+        db.set_use_prelude(false);
+        db.set_flux_mod(Some(Arc::new(fluxmod)));
+
+        db.set_source(
+            "main/main.flux".into(),
+            r#"
+        import "mymodulenested/nested"
+        import "mymodulenested/nested/nestedagain"
+        y = nested.y + nestedagain.z
         "#
             .into(),
         );

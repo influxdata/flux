@@ -75,7 +75,9 @@ colored = "2.0"
 criterion = "0.3.3"
 env_logger = "0.9"
 expect-test = "1.2.2"
+multipart = "0.18"
 pretty_assertions = "1.2.1"
+semver = "1"
 
 [[bench]]
 name = "scanner"
