@@ -8,6 +8,7 @@ package testing
 
 import "array"
 import "experimental"
+import "regexp"
 import "testing"
 
 // shouldErrorWithCode calls a function that catches any error and checks that the error matches the expected value.
@@ -35,8 +36,38 @@ shouldErrorWithCode = (fn, want, code) => {
     got = experimental.catch(fn)
 
     return
-        testing.diff(
-            got: array.from(rows: [{code: got.code, match: got.msg =~ want}]),
-            want: array.from(rows: [{code: code, match: true}]),
-        )
+        if exists got.msg then
+            testing.diff(
+                got: array.from(rows: [{code: got.code, match: got.msg =~ want}]),
+                want: array.from(rows: [{code: code, match: true}]),
+            )
+        else
+            die(msg: "shouldErrorWithCode expected an error")
+}
+
+// assertMatches tests whether a string matches a given regex.
+//
+// ## Parameters
+// - got: Value to test.
+// - want: Regex to test against.
+//
+// ## Examples
+//
+// ### Test if two values are equal
+// ```
+// import "internal/testing"
+//
+// < testing.assertMatches(got: "123", want: /12/)
+// ```
+//
+// ## Metadata
+// introduced: LATEST
+// tags: tests
+//
+assertMatches = (got, want) => {
+    return
+        if got =~ want then
+            testing.assertEqualValues(got: "", want: "")
+        else
+            die(msg: "Regex `${regexp.getString(r: want)}` does not match `${got}`")
 }

@@ -243,7 +243,10 @@ shouldError = (fn, want) => {
     got = experimental.catch(fn)
 
     return
-        array.from(rows: [{v: got.msg}])
-            |> filter(fn: (r) => r.v !~ want)
-            |> yield(name: "errorOutput")
+        if exists got.msg then
+            array.from(rows: [{v: got.msg}])
+                |> filter(fn: (r) => r.v !~ want)
+                |> yield(name: "errorOutput")
+        else
+            die(msg: "shouldError expected an error")
 }

@@ -1,7 +1,9 @@
 package testing_test
 
 
+import internalTesting "internal/testing"
 import "testing"
+import "experimental"
 import "array"
 import "csv"
 import "json"
@@ -28,4 +30,10 @@ testcase succeed_on_non_empty_result {
 
 testcase test_should_error {
     testing.shouldError(fn: () => die(msg: "error message"), want: /error message$/)
+}
+
+testcase test_should_error_should_error_when_no_error {
+    got = experimental.catch(fn: () => testing.shouldError(fn: () => "abc", want: /error message$/))
+
+    internalTesting.assertMatches(got: got.msg, want: /shouldError expected an error/)
 }
