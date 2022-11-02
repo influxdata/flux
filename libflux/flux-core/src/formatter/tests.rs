@@ -321,7 +321,32 @@ identity = (x) => x"#,
 package foo
 "#,
     );
+    assert_unchanged(
+        r#"// Attributes on imports
+@edition("2022.1")
+import "foo""#,
+    );
     assert_format("@edition package foo", "@edition\npackage foo\n");
+
+    // All the attributes
+    assert_unchanged(
+        r#"// Package comments
+@mount("fluxlang.dev", "https://fluxlang.dev/api/modules")
+@two
+@three
+@four
+package foo
+
+
+// Comments for import
+@registry("fluxlang.dev")
+@double
+import "date"
+
+// x is one
+@deprecated("0.123.0")
+x = 1"#,
+    );
 }
 
 #[test]
