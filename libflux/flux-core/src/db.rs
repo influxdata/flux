@@ -50,7 +50,7 @@ impl HttpFluxmod {
     const BASE: &'static str =
         "https://twodotoh-dev-markus20221018125005.remocal.influxdev.co/api/v2private/modules";
 
-    #[cfg(test)]
+    #[cfg(all(test, feature = "integration_test"))]
     fn publish(
         &self,
         module: &str,
@@ -165,11 +165,17 @@ impl Fluxmod for HttpFluxmod {
     }
 }
 
-impl Fluxmod for HashMap<String, Vec<(String, Arc<str>)>> {
+type MockFluxmod = HashMap<String, Vec<(String, Arc<str>)>>;
+
+impl Fluxmod for MockFluxmod {
     fn get_module(&self, path: &str) -> Option<Vec<(String, Arc<str>)>> {
         let module = path.split('/').next()?;
-        dbg!(module);
-        self.get(module).cloned()
+        dbg!((module, &self));
+        self.get(module).map(|v| {
+            v.iter()
+                .map(|(file, v)| ([path, file].join("/"), v.clone()))
+                .collect()
+        })
     }
 }
 
@@ -671,6 +677,7 @@ impl Importer for &dyn Flux {
 mod tests {
     use super::*;
 
+    #[cfg(feature = "integration_test")]
     fn setup_module(fluxmod: &HttpFluxmod, name: &str, module: Vec<(String, String)>) {
         let version = fluxmod
             .latest_version("mymodule")
@@ -681,52 +688,42 @@ mod tests {
         fluxmod.publish(name, module, version).unwrap();
     }
 
-    #[test]
-    fn flux_mod() {
-        let _ = env_logger::try_init();
-
+    #[cfg(not(feature = "integration_test"))]
+    fn test_db(name: &str, modules: Vec<(String, String)>) -> Database {
         let mut db = Database::default();
         db.set_use_prelude(false);
         db.set_flux_mod(Some(Arc::new(
             [(
-                "mymodule".into(),
-                vec![("mymodule/pack.flux".into(), "x = 1".into())],
+                String::from(name),
+                modules
+                    .into_iter()
+                    .map(|(k, v)| (k, Arc::from(v)))
+                    .collect::<Vec<_>>(),
             )]
             .into_iter()
-            .collect::<HashMap<_, _>>(),
+            .collect::<MockFluxmod>(),
         )));
-
-        db.set_source(
-            "main/main.flux".into(),
-            r#"
-        import "mymodule/pack"
-        y = pack.x + 1
-        "#
-            .into(),
-        );
-
-        db.semantic_package("main".into())
-            .unwrap_or_else(|err| panic!("{}", err));
+        db
     }
 
-    #[test]
     #[cfg(feature = "integration_test")]
-    fn http_flux_mod() {
-        let _ = env_logger::try_init();
-
+    fn test_db(name: &str, modules: Vec<(String, String)>) -> Database {
         let fluxmod = HttpFluxmod {
             token: std::env::var("FLUXMOD_TOKEN").unwrap_or_else(|err| panic!("{}", err)),
         };
-
-        setup_module(
-            &fluxmod,
-            "mymodule",
-            vec![("pack.flux".into(), "x = 1".into())],
-        );
+        setup_module(&fluxmod, name, modules);
 
         let mut db = Database::default();
         db.set_use_prelude(false);
         db.set_flux_mod(Some(Arc::new(fluxmod)));
+        db
+    }
+
+    #[test]
+    fn http_flux_mod() {
+        let _ = env_logger::try_init();
+
+        let mut db = test_db("mymodule", vec![("pack.flux".into(), "x = 1".into())]);
 
         db.set_source(
             "main/main.flux".into(),
@@ -748,27 +745,16 @@ mod tests {
     }
 
     #[test]
-    #[cfg(feature = "integration_test")]
-    #[ignore] // Waiting on fluxmod to handle directories
     fn http_flux_mod_nested() {
         let _ = env_logger::try_init();
 
-        let fluxmod = HttpFluxmod {
-            token: std::env::var("FLUXMOD_TOKEN").unwrap_or_else(|err| panic!("{}", err)),
-        };
-
-        setup_module(
-            &fluxmod,
+        let mut db = test_db(
             "mymodulenested",
             vec![
                 ("nested/nested.flux".into(), "y = 1".into()),
                 ("nested/nestedagain/nestedagain.flux".into(), "z = 3".into()),
             ],
         );
-
-        let mut db = Database::default();
-        db.set_use_prelude(false);
-        db.set_flux_mod(Some(Arc::new(fluxmod)));
 
         db.set_source(
             "main/main.flux".into(),
