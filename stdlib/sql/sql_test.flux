@@ -13,6 +13,7 @@ mysqlDsn = "flux:flux@tcp(127.0.0.1:3306)/flux"
 mariaDbDsn = "flux:flux@tcp(127.0.0.1:3307)/flux"
 pgDsn = "postgresql://postgres@127.0.0.1:5432/postgres?sslmode=disable"
 verticaDsn = "vertica://dbadmin@localhost:5433/flux"
+clickhouseDsn = "clickhouse://clickhouse@127.0.0.1:9000/clickhouse?secure=false"
 sqliteDsn = "file:///tmp/flux-integ-tests-sqlite.db"
 
 // Some db engines will UPPERCASE table/column names when the identifiers are unquoted.

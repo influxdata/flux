@@ -288,6 +288,8 @@ func getTranslationFunc(driverName string) (func() translationFunc, error) {
 	switch driverName {
 	case "sqlite3":
 		return SqliteColumnTranslateFunc, nil
+	case "clickhouse":
+		return ClickhouseColumnTranslateFunc, nil
 	case "postgres", "sqlmock":
 		return PostgresColumnTranslateFunc, nil
 	case "vertica", "vertigo":
@@ -317,6 +319,8 @@ func getQuoteIdentFunc(driverName string) (quoteIdentFunc, error) {
 		return postgresQuoteIdent, nil
 	case "vertica", "vertigo":
 		return doubleQuote, nil
+	case "clickhouse":
+		return clickhouseQuoteIdent, nil
 	case "mysql":
 		return mysqlQuoteIdent, nil
 	case "snowflake":
