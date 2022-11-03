@@ -217,7 +217,7 @@ pub trait Flux: FluxBase {
 
     /// Defines the fluxmod interface for fetching external modules
     #[salsa::input]
-    fn flux_mod(&self) -> Option<Arc<dyn Fluxmod>>;
+    fn fluxmod(&self) -> Option<Arc<dyn Fluxmod>>;
 
     /// Enables the prelude for all compiled packages
     ///
@@ -314,7 +314,7 @@ impl Default for Database {
         db.set_analyzer_config(AnalyzerConfig::default());
         db.set_use_prelude(true);
         db.set_precompiled_packages(None);
-        db.set_flux_mod(None);
+        db.set_fluxmod(None);
         db
     }
 }
@@ -380,9 +380,9 @@ impl FluxBase for Database {
                 return Ok(Arc::from(source));
             }
         }
-        if let Some(flux_mod) = &self.flux_mod() {
+        if let Some(fluxmod) = &self.fluxmod() {
             let module = path.split('/').next().unwrap();
-            if let Some(modules) = flux_mod.get_module(&module) {
+            if let Some(modules) = fluxmod.get_module(&module) {
                 dbg!((&modules, &path));
                 return if let Some(source) = modules
                     .iter()
@@ -447,9 +447,9 @@ impl Database {
             }
         }
 
-        if let Some(flux_mod) = self.flux_mod() {
+        if let Some(fluxmod) = self.fluxmod() {
             let module = package.split('/').next().unwrap();
-            match flux_mod.get_module(module) {
+            match fluxmod.get_module(module) {
                 Some(modules) => {
                     dbg!((package, &modules));
                     found_files.extend(
@@ -692,7 +692,7 @@ mod tests {
     fn test_db(name: &str, modules: Vec<(String, String)>) -> Database {
         let mut db = Database::default();
         db.set_use_prelude(false);
-        db.set_flux_mod(Some(Arc::new(
+        db.set_fluxmod(Some(Arc::new(
             [(
                 String::from(name),
                 modules
@@ -715,12 +715,12 @@ mod tests {
 
         let mut db = Database::default();
         db.set_use_prelude(false);
-        db.set_flux_mod(Some(Arc::new(fluxmod)));
+        db.set_fluxmod(Some(Arc::new(fluxmod)));
         db
     }
 
     #[test]
-    fn http_flux_mod() {
+    fn fluxmod() {
         let _ = env_logger::try_init();
 
         let mut db = test_db("mymodule", vec![("pack.flux".into(), "x = 1".into())]);
@@ -745,7 +745,7 @@ mod tests {
     }
 
     #[test]
-    fn http_flux_mod_nested() {
+    fn fluxmod_nested() {
         let _ = env_logger::try_init();
 
         let mut db = test_db(
