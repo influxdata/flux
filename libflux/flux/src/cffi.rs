@@ -628,6 +628,10 @@ pub unsafe extern "C" fn flux_get_env_stdlib(buf: *mut flux_buffer_t) {
 
 #[cfg(test)]
 mod tests {
+    use super::*;
+
+    use std::{collections::HashMap, sync::Arc};
+
     use fluxcore::{
         ast,
         semantic::{
@@ -636,9 +640,8 @@ mod tests {
             types::{BoundTvar, Label, MonoType, Property, Ptr, Record, Tvar, TvarMap},
             walk,
         },
+        FluxBase,
     };
-
-    use super::*;
 
     use crate::parser;
 
@@ -1062,8 +1065,53 @@ from(bucket: v.bucket)
             walk::Node::Package(&pkg),
         );
 
-        dbg!(&pkg);
-
         assert_eq!(identifier.unwrap().name.package(), Some("universe"));
+    }
+
+    #[test]
+    fn fluxmod_with_prelude() {
+        let _ = env_logger::try_init();
+
+        let modules = [
+            (
+                "mymodule".into(),
+                vec![(
+                    "pack.flux".into(),
+                    Arc::from(
+                        r#"
+                    import "mymodule2"
+                    x = 1 + mymodule2.y
+                    "#,
+                    ),
+                )],
+            ),
+            (
+                "mymodule2".into(),
+                vec![("main.flux".into(), Arc::from("y = 3"))],
+            ),
+        ]
+        .into_iter()
+        .collect::<HashMap<String, Vec<(String, Arc<str>)>>>();
+        let mut db = new_db().unwrap();
+        db.set_fluxmod(Some(Arc::new(modules)));
+
+        db.set_source(
+            "main/main.flux".into(),
+            r#"
+        import "mymodule"
+        import "mymodule2"
+        y = mymodule.x + mymodule2.y + 3
+        "#
+            .into(),
+        );
+
+        match db.semantic_package("main".into()) {
+            Ok(_) => (),
+            Err(err) => {
+                let mut errors = db.package_errors();
+                errors.push(err.error);
+                panic!("{}", errors);
+            }
+        }
     }
 }

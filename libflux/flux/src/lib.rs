@@ -92,7 +92,15 @@ fn new_semantic_salsa_analyzer(config: AnalyzerConfig) -> Result<Analyzer<'stati
 }
 
 fn new_db() -> Result<Database> {
-    let mut db = fluxcore::Database::default();
+    let mut db = {
+        let mut builder = fluxcore::DatabaseBuilder::default();
+
+        if let Ok(token) = std::env::var("FLUXMOD_TOKEN") {
+            builder = builder.enable_fluxmod(token);
+        }
+
+        builder.build()
+    };
 
     let imports = IMPORTS
         .as_ref()

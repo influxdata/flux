@@ -47,6 +47,10 @@ struct HttpFluxmod {
 }
 
 impl HttpFluxmod {
+    fn new(token: String) -> Self {
+        HttpFluxmod { token }
+    }
+
     const BASE: &'static str =
         "https://twodotoh-dev-markus20221018125005.remocal.influxdev.co/api/v2private/modules";
 
@@ -55,7 +59,7 @@ impl HttpFluxmod {
         &self,
         module: &str,
         files: Vec<(String, Arc<str>)>,
-        version: semver::Version,
+        version: &semver::Version,
     ) -> Result<()> {
         let mut multipart = multipart::client::lazy::Multipart::new();
         for (name, contents) in &files {
@@ -145,7 +149,6 @@ impl HttpFluxmod {
                 .by_index(i)
                 .map_err(|err| Error::Message(err.to_string()))?;
 
-            dbg!(("######", &file.name()));
             let mut source = String::new();
             file.read_to_string(&mut source)
                 .map_err(|err| Error::Message(err.to_string()))?;
@@ -170,7 +173,6 @@ type MockFluxmod = HashMap<String, Vec<(String, Arc<str>)>>;
 impl Fluxmod for MockFluxmod {
     fn get_module(&self, path: &str) -> Option<Vec<(String, Arc<str>)>> {
         let module = path.split('/').next()?;
-        dbg!((module, &self));
         self.get(module).map(|v| {
             v.iter()
                 .map(|(file, v)| ([path, file].join("/"), v.clone()))
@@ -271,6 +273,7 @@ pub trait Flux: FluxBase {
 #[derive(Default)]
 pub struct DatabaseBuilder {
     filesystem_roots: Vec<PathBuf>,
+    token: Option<String>,
 }
 
 impl DatabaseBuilder {
@@ -285,12 +288,25 @@ impl DatabaseBuilder {
         self
     }
 
+    /// Enables fluxmod lookups for the database
+    pub fn enable_fluxmod(mut self, token: String) -> Self {
+        log::debug!("Enabling fluxmod");
+        self.token = Some(token);
+        self
+    }
+
     /// Builds the flux compiler database
     pub fn build(self) -> Database {
-        Database {
+        let mut db = Database {
             filesystem_roots: self.filesystem_roots,
             ..Default::default()
+        };
+
+        if let Some(token) = self.token {
+            db.set_fluxmod(Some(Arc::new(HttpFluxmod::new(token))));
         }
+
+        db
     }
 }
 
@@ -322,7 +338,6 @@ impl Default for Database {
 impl salsa::Database for Database {}
 
 fn is_part_of_package(package: &str, path: &str) -> bool {
-    dbg!((&package, path));
     // Example: package: `internal/boolean` matches the file
     // `internal/boolean/XXX.flux`
     path.starts_with(package)
@@ -383,7 +398,6 @@ impl FluxBase for Database {
         if let Some(fluxmod) = &self.fluxmod() {
             let module = path.split('/').next().unwrap();
             if let Some(modules) = fluxmod.get_module(&module) {
-                dbg!((&modules, &path));
                 return if let Some(source) = modules
                     .iter()
                     .find(|(k, _)| *k == path)
@@ -398,6 +412,7 @@ impl FluxBase for Database {
                 };
             }
         }
+
         Ok(self.source_inner(path))
     }
 
@@ -451,7 +466,6 @@ impl Database {
             let module = package.split('/').next().unwrap();
             match fluxmod.get_module(module) {
                 Some(modules) => {
-                    dbg!((package, &modules));
                     found_files.extend(
                         modules
                             .iter()
@@ -462,7 +476,6 @@ impl Database {
                 None => (),
             }
         }
-        dbg!(&found_files);
 
         // It is possible that we find the same file twice if the roots contain duplicates
         found_files.sort();
@@ -515,7 +528,7 @@ fn prelude(db: &dyn Flux) -> Result<Arc<PackageExports>> {
     for name in crate::semantic::bootstrap::PRELUDE {
         // Infer each package in the prelude allowing the earlier packages to be used by later
         // packages within the prelude list.
-        let (types, _sem_pkg) = db.semantic_package(name.into()).map_err(|err| err.error)?;
+        let types = db.package_exports(name.into()).map_err(|err| err.error)?;
 
         prelude_map.copy_bindings_from(&types);
     }
@@ -593,7 +606,6 @@ fn package_exports_import(
             exports
         })
         .map_err(|err| {
-            dbg!(&err);
             db.record_error(path.clone(), err.error);
             nodes::ErrorKind::InvalidImportPath(path)
         })
@@ -687,7 +699,7 @@ mod tests {
         version.patch += 1;
 
         for (name, module) in modules {
-            fluxmod.publish(name, module, version).unwrap();
+            fluxmod.publish(&name, module, &version).unwrap();
         }
     }
 
