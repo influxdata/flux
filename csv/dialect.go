@@ -3,7 +3,6 @@ package csv
 import (
 	"fmt"
 	"net/http"
-	"time"
 
 	"github.com/influxdata/flux"
 )
@@ -27,9 +26,8 @@ type Dialect struct {
 func (d Dialect) SetHeaders(w http.ResponseWriter) {
 	w.Header().Set("Content-Type", "text/csv; charset=utf-8")
 	w.Header().Set("Transfer-Encoding", "chunked")
-	if d.ResultEncoderConfig.DownloadHeader {
-		timestamp := time.Now().Format(time.RFC3339)
-		w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=\"influxdata_%s.csv\"; filename*=UTF-8''influxdata_%s.csv", timestamp, timestamp))
+	if d.ResultEncoderConfig.AttachmentFilename != "" {
+		w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=%q; filename*=UTF-8''%q", d.ResultEncoderConfig.AttachmentFilename, d.ResultEncoderConfig.AttachmentFilename))
 	}
 }
 

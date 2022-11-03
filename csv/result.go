@@ -794,8 +794,8 @@ type ResultEncoderConfig struct {
 	// NoHeader indicates whether a header row should be added.
 	NoHeader bool
 
-	// Indicates whether http headers for download should be added.
-	DownloadHeader bool
+	// If present, add the download header matching this AttachmentFilename.
+	AttachmentFilename string
 
 	// Delimiter is the character to delimite columns.
 	// It must not be \r, \n, or the Unicode replacement character (0xFFFD).
