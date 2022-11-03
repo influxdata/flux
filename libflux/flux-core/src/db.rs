@@ -54,7 +54,7 @@ impl HttpFluxmod {
     fn publish(
         &self,
         module: &str,
-        files: Vec<(String, String)>,
+        files: Vec<(String, Arc<str>)>,
         version: semver::Version,
     ) -> Result<()> {
         let mut multipart = multipart::client::lazy::Multipart::new();
@@ -678,40 +678,33 @@ mod tests {
     use super::*;
 
     #[cfg(feature = "integration_test")]
-    fn setup_module(fluxmod: &HttpFluxmod, name: &str, module: Vec<(String, String)>) {
+    fn setup_module(fluxmod: &HttpFluxmod, modules: MockFluxmod) {
         let version = fluxmod
             .latest_version("mymodule")
             .unwrap_or_else(|err| panic!("{}", err));
 
         let mut version = semver::Version::parse(version.trim_start_matches("v")).unwrap();
         version.patch += 1;
-        fluxmod.publish(name, module, version).unwrap();
+
+        for (name, module) in modules {
+            fluxmod.publish(name, module, version).unwrap();
+        }
     }
 
     #[cfg(not(feature = "integration_test"))]
-    fn test_db(name: &str, modules: Vec<(String, String)>) -> Database {
+    fn test_db(modules: MockFluxmod) -> Database {
         let mut db = Database::default();
         db.set_use_prelude(false);
-        db.set_fluxmod(Some(Arc::new(
-            [(
-                String::from(name),
-                modules
-                    .into_iter()
-                    .map(|(k, v)| (k, Arc::from(v)))
-                    .collect::<Vec<_>>(),
-            )]
-            .into_iter()
-            .collect::<MockFluxmod>(),
-        )));
+        db.set_fluxmod(Some(Arc::new(modules)));
         db
     }
 
     #[cfg(feature = "integration_test")]
-    fn test_db(name: &str, modules: Vec<(String, String)>) -> Database {
+    fn test_db(modules: MockFluxmod) -> Database {
         let fluxmod = HttpFluxmod {
             token: std::env::var("FLUXMOD_TOKEN").unwrap_or_else(|err| panic!("{}", err)),
         };
-        setup_module(&fluxmod, name, modules);
+        setup_module(&fluxmod, modules);
 
         let mut db = Database::default();
         db.set_use_prelude(false);
@@ -723,7 +716,14 @@ mod tests {
     fn fluxmod() {
         let _ = env_logger::try_init();
 
-        let mut db = test_db("mymodule", vec![("pack.flux".into(), "x = 1".into())]);
+        let mut db = test_db(
+            [(
+                "mymodule".into(),
+                vec![("pack.flux".into(), "x = 1".into())],
+            )]
+            .into_iter()
+            .collect(),
+        );
 
         db.set_source(
             "main/main.flux".into(),
@@ -749,11 +749,15 @@ mod tests {
         let _ = env_logger::try_init();
 
         let mut db = test_db(
-            "mymodulenested",
-            vec![
-                ("nested/nested.flux".into(), "y = 1".into()),
-                ("nested/nestedagain/nestedagain.flux".into(), "z = 3".into()),
-            ],
+            [(
+                "mymodulenested".into(),
+                vec![
+                    ("nested/nested.flux".into(), "y = 1".into()),
+                    ("nested/nestedagain/nestedagain.flux".into(), "z = 3".into()),
+                ],
+            )]
+            .into_iter()
+            .collect(),
         );
 
         db.set_source(
@@ -762,6 +766,99 @@ mod tests {
         import "mymodulenested/nested"
         import "mymodulenested/nested/nestedagain"
         y = nested.y + nestedagain.z
+        "#
+            .into(),
+        );
+
+        match db.semantic_package("main".into()) {
+            Ok(_) => (),
+            Err(err) => {
+                let mut errors = db.package_errors();
+                errors.push(err.error);
+                panic!("{}", errors);
+            }
+        }
+    }
+
+    #[test]
+    fn fluxmod_recursive_dependencies() {
+        let _ = env_logger::try_init();
+
+        let mut db = test_db(
+            [
+                (
+                    "mymodule".into(),
+                    vec![(
+                        "pack.flux".into(),
+                        Arc::from(
+                            r#"
+                    import "mymodule2"
+                    x = 1 + mymodule2.y
+                    "#,
+                        ),
+                    )],
+                ),
+                (
+                    "mymodule2".into(),
+                    vec![("main.flux".into(), Arc::from("y = 3"))],
+                ),
+            ]
+            .into_iter()
+            .collect(),
+        );
+
+        db.set_source(
+            "main/main.flux".into(),
+            r#"
+        import "mymodule"
+        y = mymodule.x + 1
+        "#
+            .into(),
+        );
+
+        match db.semantic_package("main".into()) {
+            Ok(_) => (),
+            Err(err) => {
+                let mut errors = db.package_errors();
+                errors.push(err.error);
+                panic!("{}", errors);
+            }
+        }
+    }
+
+    #[test]
+    fn fluxmod_recursive_dependencies_2() {
+        let _ = env_logger::try_init();
+
+        let mut db = test_db(
+            [
+                (
+                    "mymodule".into(),
+                    vec![(
+                        "pack.flux".into(),
+                        Arc::from(
+                            r#"
+                    import "mymodule2"
+                    x = 1 + mymodule2.y
+                    "#,
+                        ),
+                    )],
+                ),
+                (
+                    "mymodule2".into(),
+                    vec![("main.flux".into(), Arc::from("y = 3"))],
+                ),
+            ]
+            .into_iter()
+            .collect(),
+        );
+
+        db.set_source(
+            "main/main.flux".into(),
+            r#"
+        import "mymodule"
+        import "mymodule2"
+        y = mymodule.x + mymodule2.y + 3
         "#
             .into(),
         );
