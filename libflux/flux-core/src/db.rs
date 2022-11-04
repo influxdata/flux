@@ -400,6 +400,7 @@ impl FluxBase for Database {
         }
         if self.fluxmod().is_some() {
             let module = path.split('/').next().unwrap();
+            // TODO Only reach out to fluxmod if `module` points to a registry
             if let Some(modules) = self.get_flux_module(module.to_owned()) {
                 return if let Some(source) = modules
                     .iter()
@@ -467,6 +468,7 @@ impl Database {
 
         if self.fluxmod().is_some() {
             let module = package.split('/').next().unwrap();
+            // TODO Only reach out to fluxmod if `module` points to a registry
             if let Some(modules) = self.get_flux_module(module.to_owned()) {
                 found_files.extend(
                     modules
