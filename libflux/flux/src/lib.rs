@@ -83,19 +83,23 @@ pub fn new_semantic_analyzer(
     Ok(Analyzer::new(Environment::from(env), importer, config))
 }
 
-fn new_semantic_salsa_analyzer(config: AnalyzerConfig) -> Result<Analyzer<'static, Database>> {
+fn new_semantic_salsa_analyzer(options: Options) -> Result<Analyzer<'static, Database>> {
     let env = PRELUDE.as_ref().ok_or_else(|| anyhow!("missing prelude"))?;
 
-    let db = new_db()?;
+    let db = new_db(options.clone())?;
+
+    let config = AnalyzerConfig {
+        features: options.features,
+    };
 
     Ok(Analyzer::new(Environment::from(&**env), db, config))
 }
 
-fn new_db() -> Result<Database> {
+fn new_db(options: Options) -> Result<Database> {
     let mut db = {
         let mut builder = fluxcore::DatabaseBuilder::default();
 
-        if let Ok(token) = std::env::var("FLUXMOD_TOKEN") {
+        if let Some(token) = options.fluxmod_token {
             builder = builder.enable_fluxmod(token);
         }
 
