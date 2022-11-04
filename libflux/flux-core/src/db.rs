@@ -231,6 +231,9 @@ pub trait Flux: FluxBase {
     #[salsa::input]
     fn precompiled_packages(&self) -> Option<&'static Packages>;
 
+    /// Defines the fluxmod interface for fetching external modules
+    fn get_flux_module(&self, module: String) -> Option<Arc<Vec<(String, Arc<str>)>>>;
+
     /// Returns the `ast::Package` for a given module path
     // Normal `dependency` query that may call recursively into other queries. If the recursive
     // queries change their outpot then this will be forced to run again, otherwise we always
@@ -395,9 +398,9 @@ impl FluxBase for Database {
                 return Ok(Arc::from(source));
             }
         }
-        if let Some(fluxmod) = &self.fluxmod() {
+        if self.fluxmod().is_some() {
             let module = path.split('/').next().unwrap();
-            if let Some(modules) = fluxmod.get_module(&module) {
+            if let Some(modules) = self.get_flux_module(module.to_owned()) {
                 return if let Some(source) = modules
                     .iter()
                     .find(|(k, _)| *k == path)
@@ -462,18 +465,15 @@ impl Database {
             }
         }
 
-        if let Some(fluxmod) = self.fluxmod() {
+        if self.fluxmod().is_some() {
             let module = package.split('/').next().unwrap();
-            match fluxmod.get_module(module) {
-                Some(modules) => {
-                    found_files.extend(
-                        modules
-                            .iter()
-                            .map(|(k, _)| k.clone())
-                            .filter(|path| is_part_of_package(package, path)),
-                    );
-                }
-                None => (),
+            if let Some(modules) = self.get_flux_module(module.to_owned()) {
+                found_files.extend(
+                    modules
+                        .iter()
+                        .map(|(k, _)| k.clone())
+                        .filter(|path| is_part_of_package(package, path)),
+                );
             }
         }
 
@@ -482,6 +482,14 @@ impl Database {
         found_files.dedup();
 
         Ok(found_files)
+    }
+}
+
+fn get_flux_module(db: &dyn Flux, module: String) -> Option<Arc<Vec<(String, Arc<str>)>>> {
+    if let Some(fluxmod) = db.fluxmod() {
+        fluxmod.get_module(&module).map(Arc::new)
+    } else {
+        None
     }
 }
 
