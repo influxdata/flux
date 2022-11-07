@@ -52,25 +52,46 @@ func createDiffOpSpec(args flux.Arguments, a *flux.Administration) (flux.Operati
 	}
 	a.AddParent(p)
 
-	return &DiffOpSpec{}, nil
+	exact, ok, err := args.GetBool("exact")
+	if err != nil {
+		return nil, err
+	}
+	if !ok {
+		exact = true
+	}
+
+	eps, ok, err := args.GetFloat("epsilon")
+	if err != nil {
+		return nil, err
+	}
+	if !ok {
+		eps = DefaultEpsilon
+	}
+
+	return &DiffOpSpec{Exact: exact, Epsilon: eps}, nil
 }
 
-type DiffOpSpec struct{}
+type DiffOpSpec struct {
+	Exact   bool
+	Epsilon float64
+}
 
 func (s *DiffOpSpec) Kind() flux.OperationKind {
 	return DiffKind
 }
 
 func newDiffProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
-	_, ok := qs.(*DiffOpSpec)
+	os, ok := qs.(*DiffOpSpec)
 	if !ok {
 		return nil, errors.Newf(codes.Internal, "invalid spec type %T", qs)
 	}
-	return &DiffProcedureSpec{}, nil
+	return &DiffProcedureSpec{Exact: os.Exact, Epsilon: os.Epsilon}, nil
 }
 
 type DiffProcedureSpec struct {
 	plan.DefaultCost
+	Exact   bool
+	Epsilon float64
 }
 
 func (s *DiffProcedureSpec) Kind() plan.ProcedureKind {
@@ -105,6 +126,9 @@ type diffTransformation struct {
 
 	inputs        [2]*execute.RandomAccessGroupLookup
 	wantID, gotID execute.DatasetID
+
+	exact   bool
+	epsilon float64
 }
 
 func NewDiffTransformation(id execute.DatasetID, spec *DiffProcedureSpec, wantID, gotID execute.DatasetID, mem memory.Allocator) (execute.Transformation, execute.Dataset, error) {
@@ -115,8 +139,10 @@ func NewDiffTransformation(id execute.DatasetID, spec *DiffProcedureSpec, wantID
 			execute.NewRandomAccessGroupLookup(),
 			execute.NewRandomAccessGroupLookup(),
 		},
-		wantID: wantID,
-		gotID:  gotID,
+		wantID:  wantID,
+		gotID:   gotID,
+		exact:   spec.Exact,
+		epsilon: spec.Epsilon,
 	}
 	return execute.NewTransformationFromTransport(tr), tr.d, nil
 }
@@ -319,8 +345,16 @@ func (d *diffSchema) equal(t *diffTransformation, i, j int) bool {
 				// treat NaNs as equal so go to next column
 				continue
 			}
-			if math.Abs(want-got) > DefaultEpsilon {
-				return false
+			if t.exact {
+				if math.Abs(want-got) > DefaultEpsilon {
+					return false
+				}
+			} else {
+				diff := math.Abs(want - got)
+				adj := diff / want
+				if adj > t.epsilon {
+					return false
+				}
 			}
 		case flux.TInt:
 			want, got := wantCol.(*array.Int), gotCol.(*array.Int)

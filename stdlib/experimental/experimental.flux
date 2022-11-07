@@ -1417,4 +1417,9 @@ builtin catch : (fn: () => A) => {value: A, code: uint, msg: string}
 // ## Metadata
 // introduced: 0.175.0
 //
-builtin diff : (<-got: stream[A], want: stream[A]) => stream[{A with _diff: string}]
+builtin diff : (
+        <-got: stream[A],
+        want: stream[A],
+        ?exact: bool,
+        ?epsilon: float,
+    ) => stream[{A with _diff: string}]

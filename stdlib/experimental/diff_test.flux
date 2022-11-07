@@ -334,3 +334,33 @@ testcase mismatch_null {
         |> rename(columns: {_diff: "diff"})
         |> testing.diff(want: exp)
 }
+
+testcase float_precision {
+    want =
+        array.from(
+            rows: [
+                {_value: 1.0},
+                {_value: 1.0},
+                {_value: 10.0},
+                {_value: 10.0},
+                {_value: 1000000.0},
+                {_value: 1000000.0},
+            ],
+        )
+    got =
+        array.from(
+            rows: [
+                {_value: 0.999998},
+                {_value: 1.000009},
+                {_value: 9.99991},
+                {_value: 10.00009},
+                {_value: 1000010.0},
+                {_value: 999990.0},
+            ],
+        )
+    exact = false
+    epsilon = 0.00001
+
+    // testing.diff() just calls `experimental.diff() under the hood`
+    testing.diff(want, got, exact, epsilon)
+}

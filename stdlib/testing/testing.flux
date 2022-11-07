@@ -147,10 +147,11 @@ diff = (
         verbose=false,
         epsilon=0.000001,
         nansEqual=false,
+        exact=true,
     ) =>
     {
         return
-            experimental.diff(got, want)
+            experimental.diff(got, want, exact, epsilon)
                 |> yield(name: "errorOutput")
     }
 
