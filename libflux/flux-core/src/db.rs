@@ -18,7 +18,10 @@ use std::{
     fmt,
     io::{self, Read},
     path::PathBuf,
-    sync::{Arc, Mutex, RwLock},
+    sync::{
+        atomic::{self, AtomicUsize},
+        Arc, Mutex, RwLock,
+    },
 };
 
 use thiserror::Error;
@@ -213,6 +216,18 @@ impl Fluxmod for MockFluxmod {
     }
 }
 
+// Technically exposed through the `FluxBase` trait but should only be used internally
+#[doc(hidden)]
+pub struct DepthGuard<'a> {
+    flux: &'a dyn FluxBase,
+}
+
+impl Drop for DepthGuard<'_> {
+    fn drop(&mut self) {
+        self.flux.exit_scope();
+    }
+}
+
 /// Base trait for the flux database
 pub trait FluxBase {
     #[doc(hidden)]
@@ -233,6 +248,11 @@ pub trait FluxBase {
 
     /// Returns the source code for `path`, returning an error if it does not exist
     fn source(&self, path: String) -> Result<Arc<str>>;
+
+    #[doc(hidden)]
+    fn enter_scope(&self) -> Result<DepthGuard<'_>>;
+    #[doc(hidden)]
+    fn exit_scope(&self);
 }
 
 /// Defines queries that drives flux compilation
@@ -354,6 +374,7 @@ pub struct Database {
     pub(crate) packages: Mutex<HashSet<String>>,
     package_errors: Mutex<HashMap<String, Error>>,
     filesystem_roots: Vec<PathBuf>,
+    package_depth: AtomicUsize,
 }
 
 impl Default for Database {
@@ -363,6 +384,7 @@ impl Default for Database {
             packages: Default::default(),
             package_errors: Default::default(),
             filesystem_roots: Vec::new(),
+            package_depth: AtomicUsize::default(),
         };
         db.set_analyzer_config(AnalyzerConfig::default());
         db.set_use_prelude(true);
@@ -458,6 +480,25 @@ impl FluxBase for Database {
         self.packages.lock().unwrap().insert(path.clone());
 
         self.set_source_inner(path, source)
+    }
+
+    fn enter_scope(&self) -> Result<DepthGuard<'_>> {
+        // This is maybe a bit low but should be fine for most practical uses and is low enough
+        // that the depth test errors instead of overflowing the stack. Could be raised if there is
+        // a need for it (though that requires some tweaking to get the test working).
+        const MAX_MODULE_DEPTH: usize = 60;
+        let depth = self.package_depth.fetch_add(1, atomic::Ordering::Acquire);
+        if depth < MAX_MODULE_DEPTH {
+            Ok(DepthGuard { flux: self })
+        } else {
+            Err(Error::Message(format!(
+                "Module imports exceeded the maximum depth of `{}`",
+                MAX_MODULE_DEPTH
+            )))
+        }
+    }
+    fn exit_scope(&self) {
+        self.package_depth.fetch_sub(1, atomic::Ordering::Release);
     }
 }
 
@@ -583,6 +624,7 @@ fn semantic_package(
     db: &dyn Flux,
     path: String,
 ) -> SalvageResult<(Arc<PackageExports>, Arc<nodes::Package>), Error> {
+    let _guard = db.enter_scope()?;
     // The previous standard library compiler happened to result in the prelude being incrementally
     // added to with later packages in the prelude depending on earlier ones. This was mostly
     // arbitrary and we should try to encode these dependencies more deliberately but these stages
@@ -989,6 +1031,181 @@ mod tests {
                     error @0:0-0:0: package "cycle2" depends on itself: cycle2 -> cycle -> cycle2
 
                     error main/main.flux@2:9-2:23: package "cycle" depends on itself: cycle -> cycle -> cycle"#]].assert_eq(&errors.to_string());
+            }
+        }
+    }
+
+    #[test]
+    fn fluxmod_deep_dependency_error() {
+        let _ = env_logger::try_init();
+
+        let mut db = Database::default();
+        db.set_use_prelude(false);
+
+        // Returns a module "deepN" which imports "deep{N+1}" etc
+        #[derive(Default, Debug)]
+        struct DeepFluxmod;
+        impl Fluxmod for DeepFluxmod {
+            fn get_module(&self, module: &str) -> Option<Vec<(String, Arc<str>)>> {
+                eprintln!("{}", module);
+                if module.starts_with("deep") {
+                    let i = module.trim_start_matches("deep").parse::<i32>().unwrap() + 1;
+                    Some(vec![(
+                        format!("{}/file.flux", module),
+                        Arc::from(format!(
+                            r#"
+                            import "deep{i}"
+                            x = deep{i}.x
+                        "#,
+                            i = i,
+                        )),
+                    )])
+                } else {
+                    None
+                }
+            }
+        }
+        db.set_fluxmod(Some(Arc::new(DeepFluxmod::default())));
+
+        db.set_source(
+            "main/main.flux".into(),
+            r#"
+        import "deep0"
+        y = deep0.x
+        "#
+            .into(),
+        );
+
+        match db.semantic_package("main".into()) {
+            Ok(_) => panic!("Expected cycle error"),
+            Err(err) => {
+                let mut errors = db.package_errors();
+                errors.push(err.error);
+
+                // TODO This should ideally just be one error
+                expect_test::expect![[r#"
+                    error deep40/file.flux@2:29-2:44: invalid import path deep41
+
+                    error deep19/file.flux@2:29-2:44: invalid import path deep20
+
+                    error deep4/file.flux@2:29-2:43: invalid import path deep5
+
+                    error deep52/file.flux@2:29-2:44: invalid import path deep53
+
+                    error deep47/file.flux@2:29-2:44: invalid import path deep48
+
+                    error deep38/file.flux@2:29-2:44: invalid import path deep39
+
+                    error deep54/file.flux@2:29-2:44: invalid import path deep55
+
+                    error deep43/file.flux@2:29-2:44: invalid import path deep44
+
+                    error deep39/file.flux@2:29-2:44: invalid import path deep40
+
+                    error deep51/file.flux@2:29-2:44: invalid import path deep52
+
+                    error deep1/file.flux@2:29-2:43: invalid import path deep2
+
+                    error deep58/file.flux@2:29-2:44: invalid import path deep59
+
+                    error deep57/file.flux@2:29-2:44: invalid import path deep58
+
+                    error deep31/file.flux@2:29-2:44: invalid import path deep32
+
+                    error deep35/file.flux@2:29-2:44: invalid import path deep36
+
+                    error deep22/file.flux@2:29-2:44: invalid import path deep23
+
+                    error deep41/file.flux@2:29-2:44: invalid import path deep42
+
+                    error deep2/file.flux@2:29-2:43: invalid import path deep3
+
+                    error deep45/file.flux@2:29-2:44: invalid import path deep46
+
+                    error deep34/file.flux@2:29-2:44: invalid import path deep35
+
+                    error deep9/file.flux@2:29-2:44: invalid import path deep10
+
+                    error deep26/file.flux@2:29-2:44: invalid import path deep27
+
+                    error deep21/file.flux@2:29-2:44: invalid import path deep22
+
+                    error deep10/file.flux@2:29-2:44: invalid import path deep11
+
+                    error deep48/file.flux@2:29-2:44: invalid import path deep49
+
+                    error deep13/file.flux@2:29-2:44: invalid import path deep14
+
+                    error deep49/file.flux@2:29-2:44: invalid import path deep50
+
+                    error deep42/file.flux@2:29-2:44: invalid import path deep43
+
+                    error deep36/file.flux@2:29-2:44: invalid import path deep37
+
+                    error deep17/file.flux@2:29-2:44: invalid import path deep18
+
+                    error deep44/file.flux@2:29-2:44: invalid import path deep45
+
+                    error deep16/file.flux@2:29-2:44: invalid import path deep17
+
+                    error deep53/file.flux@2:29-2:44: invalid import path deep54
+
+                    error deep55/file.flux@2:29-2:44: invalid import path deep56
+
+                    error deep0/file.flux@2:29-2:43: invalid import path deep1
+
+                    error deep5/file.flux@2:29-2:43: invalid import path deep6
+
+                    error deep20/file.flux@2:29-2:44: invalid import path deep21
+
+                    error deep29/file.flux@2:29-2:44: invalid import path deep30
+
+                    error deep25/file.flux@2:29-2:44: invalid import path deep26
+
+                    error deep12/file.flux@2:29-2:44: invalid import path deep13
+
+                    error deep50/file.flux@2:29-2:44: invalid import path deep51
+
+                    error deep3/file.flux@2:29-2:43: invalid import path deep4
+
+                    error deep6/file.flux@2:29-2:43: invalid import path deep7
+
+                    error deep28/file.flux@2:29-2:44: invalid import path deep29
+
+                    error deep8/file.flux@2:29-2:43: invalid import path deep9
+
+                    error deep15/file.flux@2:29-2:44: invalid import path deep16
+
+                    error deep56/file.flux@2:29-2:44: invalid import path deep57
+
+                    error deep37/file.flux@2:29-2:44: invalid import path deep38
+
+                    Module imports exceeded the maximum depth of `60`
+
+                    error deep27/file.flux@2:29-2:44: invalid import path deep28
+
+                    error deep14/file.flux@2:29-2:44: invalid import path deep15
+
+                    error deep18/file.flux@2:29-2:44: invalid import path deep19
+
+                    error deep7/file.flux@2:29-2:43: invalid import path deep8
+
+                    error deep23/file.flux@2:29-2:44: invalid import path deep24
+
+                    error deep46/file.flux@2:29-2:44: invalid import path deep47
+
+                    error deep30/file.flux@2:29-2:44: invalid import path deep31
+
+                    error deep11/file.flux@2:29-2:44: invalid import path deep12
+
+                    error deep32/file.flux@2:29-2:44: invalid import path deep33
+
+                    error deep33/file.flux@2:29-2:44: invalid import path deep34
+
+                    error deep24/file.flux@2:29-2:44: invalid import path deep25
+
+                    error main/main.flux@2:9-2:23: invalid import path deep0"#]]
+                .assert_eq(&errors.to_string());
             }
         }
     }
