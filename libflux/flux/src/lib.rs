@@ -99,8 +99,8 @@ fn new_db(options: Options) -> Result<Database> {
     let mut db = {
         let mut builder = fluxcore::DatabaseBuilder::default();
 
-        if let Some(token) = options.fluxmod_token {
-            builder = builder.enable_fluxmod(token);
+        if let (Some(base_url), Some(token)) = (options.fluxmod_base_url, options.fluxmod_token) {
+            builder = builder.enable_fluxmod(base_url, token);
         }
 
         builder.build()

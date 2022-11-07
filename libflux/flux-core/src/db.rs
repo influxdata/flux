@@ -43,6 +43,7 @@ pub trait Fluxmod: fmt::Debug + std::panic::RefUnwindSafe {
 
 #[derive(Debug)]
 struct HttpFluxmod {
+    base_url: String,
     token: String,
     // The `RwLock` implements `UnwindSafe`, allowing this to be stored in salsa (which uses
     // panics for some errors)
@@ -50,15 +51,13 @@ struct HttpFluxmod {
 }
 
 impl HttpFluxmod {
-    fn new(token: String) -> Self {
+    fn new(base_url: String, token: String) -> Self {
         HttpFluxmod {
+            base_url,
             token,
             agent: RwLock::new(ureq::agent()),
         }
     }
-
-    const BASE: &'static str =
-        "https://twodotoh-dev-markus20221018125005.remocal.influxdev.co/api/v2private/modules";
 
     #[cfg(all(test, feature = "integration_test"))]
     fn publish(
@@ -77,7 +76,7 @@ impl HttpFluxmod {
 
         let agent = self.agent.read().unwrap();
         let response = agent
-            .post(&format!("{}/{}/@v/v{}.zip", Self::BASE, module, version))
+            .post(&format!("{}/{}/@v/v{}.zip", self.base_url, module, version))
             .set("Authorization", &format!("Token {}", self.token))
             .set(
                 "Content-Type",
@@ -102,7 +101,7 @@ impl HttpFluxmod {
     fn latest_version(&self, module: &str) -> Result<String> {
         let agent = self.agent.read().unwrap();
         let response = agent
-            .get(&format!("{}/{}/@latest", Self::BASE, module))
+            .get(&format!("{}/{}/@latest", self.base_url, module))
             .set("Authorization", &format!("Token {}", self.token))
             .call()
             .map_err(|err| Error::Message(err.to_string()))?;
@@ -134,7 +133,7 @@ impl HttpFluxmod {
 
         let agent = self.agent.read().unwrap();
         let response = agent
-            .get(&format!("{}/{}/@v/{}.zip", Self::BASE, module, version))
+            .get(&format!("{}/{}/@v/{}.zip", self.base_url, module, version))
             .set("Authorization", &format!("Token {}", self.token))
             .call()
             .map_err(|err| Error::Message(err.to_string()))?;
@@ -288,6 +287,7 @@ pub trait Flux: FluxBase {
 #[derive(Default)]
 pub struct DatabaseBuilder {
     filesystem_roots: Vec<PathBuf>,
+    base_url: Option<String>,
     token: Option<String>,
 }
 
@@ -304,8 +304,9 @@ impl DatabaseBuilder {
     }
 
     /// Enables fluxmod lookups for the database
-    pub fn enable_fluxmod(mut self, token: String) -> Self {
+    pub fn enable_fluxmod(mut self, base_url: String, token: String) -> Self {
         log::debug!("Enabling fluxmod");
+        self.base_url = Some(base_url);
         self.token = Some(token);
         self
     }
@@ -317,8 +318,8 @@ impl DatabaseBuilder {
             ..Default::default()
         };
 
-        if let Some(token) = self.token {
-            db.set_fluxmod(Some(Arc::new(HttpFluxmod::new(token))));
+        if let (Some(base_url), Some(token)) = (self.base_url, self.token) {
+            db.set_fluxmod(Some(Arc::new(HttpFluxmod::new(base_url, token))));
         }
 
         db

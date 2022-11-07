@@ -547,6 +547,10 @@ pub struct Options {
     #[serde(default)]
     pub features: Vec<Feature>,
 
+    /// Base url pointing to fluxmod
+    #[serde(default)]
+    pub fluxmod_base_url: Option<String>,
+
     /// API token used to authenticate against fluxmod
     #[serde(default)]
     pub fluxmod_token: Option<String>,
