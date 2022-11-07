@@ -28,7 +28,8 @@ use fluxcore::{
 };
 
 use crate::{
-    new_db, semantic::flatbuffers::semantic_generated::fbsemantic::MonoTypeHolderArgs, Packages,
+    new_db, semantic::flatbuffers::semantic_generated::fbsemantic::MonoTypeHolderArgs, Options,
+    Packages,
 };
 
 use super::{new_semantic_analyzer, new_semantic_salsa_analyzer, prelude, Error, Result, IMPORTS};
@@ -537,23 +538,6 @@ pub unsafe extern "C" fn flux_analyze_with(
         None
     })
     .unwrap_or_else(|err| Some(err.into()))
-}
-
-/// Compilation options. Deserialized from json when called via the C API
-#[derive(Clone, Default, Debug)]
-#[cfg_attr(feature = "serde", derive(serde::Deserialize))]
-pub struct Options {
-    /// Features used in the flux compiler
-    #[serde(default)]
-    pub features: Vec<Feature>,
-
-    /// Base url pointing to fluxmod
-    #[serde(default)]
-    pub fluxmod_base_url: Option<String>,
-
-    /// API token used to authenticate against fluxmod
-    #[serde(default)]
-    pub fluxmod_token: Option<String>,
 }
 
 impl Options {

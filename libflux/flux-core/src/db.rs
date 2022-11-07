@@ -44,6 +44,7 @@ pub trait Fluxmod: fmt::Debug + std::panic::RefUnwindSafe {
     fn get_module(&self, module: &str) -> Option<Vec<(String, Arc<str>)>>;
 }
 
+#[cfg(feature = "fluxmod")]
 #[derive(Debug)]
 struct HttpFluxmod {
     base_url: String,
@@ -53,6 +54,7 @@ struct HttpFluxmod {
     agent: RwLock<ureq::Agent>,
 }
 
+#[cfg(feature = "fluxmod")]
 impl HttpFluxmod {
     fn new(base_url: String, token: String) -> Self {
         HttpFluxmod {
@@ -195,6 +197,7 @@ impl HttpFluxmod {
     }
 }
 
+#[cfg(feature = "fluxmod")]
 impl Fluxmod for HttpFluxmod {
     fn get_module(&self, module: &str) -> Option<Vec<(String, Arc<str>)>> {
         self.download_module(module)
@@ -360,7 +363,10 @@ impl DatabaseBuilder {
         };
 
         if let (Some(base_url), Some(token)) = (self.base_url, self.token) {
+            #[cfg(feature = "fluxmod")]
             db.set_fluxmod(Some(Arc::new(HttpFluxmod::new(base_url, token))));
+            #[cfg(not(feature = "fluxmod"))]
+            panic!("`fluxmod` feature must be enabled to use flux modules");
         }
 
         db

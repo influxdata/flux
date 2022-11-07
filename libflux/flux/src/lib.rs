@@ -8,7 +8,8 @@ use anyhow::anyhow;
 use fluxcore::semantic::env::Environment;
 use fluxcore::semantic::flatbuffers::semantic_generated::fbsemantic as fb;
 use fluxcore::semantic::import::Packages;
-use fluxcore::semantic::{Analyzer, AnalyzerConfig, PackageExports};
+use fluxcore::semantic::{Analyzer, AnalyzerConfig, Feature, PackageExports};
+#[cfg(feature = "cffi")]
 use fluxcore::{Database, Flux};
 use once_cell::sync::Lazy;
 use thiserror::Error;
@@ -42,6 +43,23 @@ pub enum Error {
 
 /// Result type for flux
 pub type Result<T, E = Error> = std::result::Result<T, E>;
+
+/// Compilation options. Deserialized from json when called via the C API
+#[derive(Clone, Default, Debug)]
+#[cfg_attr(feature = "serde", derive(serde::Deserialize))]
+pub struct Options {
+    /// Features used in the flux compiler
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub features: Vec<Feature>,
+
+    /// Base url pointing to fluxmod
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub fluxmod_base_url: Option<String>,
+
+    /// API token used to authenticate against fluxmod
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub fluxmod_token: Option<String>,
+}
 
 /// Prelude are the names and types of values that are inscope in all Flux scripts.
 pub fn prelude() -> Option<PackageExports> {
@@ -83,6 +101,7 @@ pub fn new_semantic_analyzer(
     Ok(Analyzer::new(Environment::from(env), importer, config))
 }
 
+#[cfg(feature = "cffi")]
 fn new_semantic_salsa_analyzer(options: Options) -> Result<Analyzer<'static, Database>> {
     let env = PRELUDE.as_ref().ok_or_else(|| anyhow!("missing prelude"))?;
 
@@ -95,6 +114,7 @@ fn new_semantic_salsa_analyzer(options: Options) -> Result<Analyzer<'static, Dat
     Ok(Analyzer::new(Environment::from(&**env), db, config))
 }
 
+#[cfg(feature = "cffi")]
 fn new_db(options: Options) -> Result<Database> {
     let mut db = {
         let mut builder = fluxcore::DatabaseBuilder::default();
