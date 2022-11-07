@@ -931,4 +931,65 @@ mod tests {
             }
         }
     }
+
+    #[test]
+    fn fluxmod_cyclic_dependency() {
+        let _ = env_logger::try_init();
+
+        let mut db = test_db(
+            [
+                (
+                    "cycle".into(),
+                    vec![(
+                        "pack.flux".into(),
+                        Arc::from(
+                            r#"
+                    import "cycle2"
+                    x = 1 + cycle2.y
+                    "#,
+                        ),
+                    )],
+                ),
+                (
+                    "cycle2".into(),
+                    vec![(
+                        "main.flux".into(),
+                        Arc::from(
+                            r#"
+                    import "cycle"
+                    y = cycle.x + 3
+                    "#,
+                        ),
+                    )],
+                ),
+            ]
+            .into_iter()
+            .collect(),
+        );
+
+        db.set_source(
+            "main/main.flux".into(),
+            r#"
+        import "cycle"
+        y = cycle.x
+        "#
+            .into(),
+        );
+
+        match db.semantic_package("main".into()) {
+            Ok(_) => panic!("Expected cycle error"),
+            Err(err) => {
+                let mut errors = db.package_errors();
+                errors.push(err.error);
+
+                // TODO This should ideally just be one error
+                expect_test::expect![[r#"
+                    error @0:0-0:0: package "cycle" depends on itself: cycle -> cycle -> cycle
+
+                    error @0:0-0:0: package "cycle2" depends on itself: cycle2 -> cycle -> cycle2
+
+                    error main/main.flux@2:9-2:23: package "cycle" depends on itself: cycle -> cycle -> cycle"#]].assert_eq(&errors.to_string());
+            }
+        }
+    }
 }
