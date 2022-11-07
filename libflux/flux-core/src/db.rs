@@ -72,7 +72,7 @@ impl HttpFluxmod {
         }
         let body = multipart
             .prepare()
-            .map_err(|err| Error::Message(err.to_string()))?;
+            .map_err(|err| Error::Message(format!("Unable to publish module: {}", err)))?;
 
         let agent = self.agent.read().unwrap();
         let response = agent
@@ -83,11 +83,11 @@ impl HttpFluxmod {
                 &format!("multipart/form-data; boundary={}", body.boundary()),
             )
             .send(body)
-            .map_err(|err| Error::Message(err.to_string()))?;
+            .map_err(Self::ureq_error)?;
 
         if !(200..300).contains(&response.status()) {
             return Err(Error::Message(format!(
-                "Unable to publish: {} {}",
+                "Unable to publish module: {} {}",
                 response.status(),
                 response
                     .into_string()
@@ -98,13 +98,30 @@ impl HttpFluxmod {
         Ok(())
     }
 
+    fn ureq_error(err: ureq::Error) -> Error {
+        match err {
+            ureq::Error::Status(status, response) => Error::Message(format!(
+                "Unable to publish module: {} {}",
+                status,
+                match response
+                    .into_string()
+                    .map_err(|err| Error::Message(err.to_string()))
+                {
+                    Ok(text) => text,
+                    Err(err) => return err,
+                }
+            )),
+            _ => Error::Message(format!("Unable to publish module: {}", err)),
+        }
+    }
+
     fn latest_version(&self, module: &str) -> Result<String> {
         let agent = self.agent.read().unwrap();
         let response = agent
             .get(&format!("{}/{}/@latest", self.base_url, module))
             .set("Authorization", &format!("Token {}", self.token))
             .call()
-            .map_err(|err| Error::Message(err.to_string()))?;
+            .map_err(Self::ureq_error)?;
         if response.status() != 200 {
             return Err(Error::Message(
                 response
@@ -136,7 +153,7 @@ impl HttpFluxmod {
             .get(&format!("{}/{}/@v/{}.zip", self.base_url, module, version))
             .set("Authorization", &format!("Token {}", self.token))
             .call()
-            .map_err(|err| Error::Message(err.to_string()))?;
+            .map_err(Self::ureq_error)?;
 
         if response.status() != 200 {
             return Err(Error::Message(
@@ -722,7 +739,9 @@ mod tests {
         version.patch += 1;
 
         for (name, module) in modules {
-            fluxmod.publish(&name, module, &version).unwrap();
+            fluxmod
+                .publish(&name, module, &version)
+                .unwrap_or_else(|err| panic!("{}", err));
         }
     }
 
@@ -736,9 +755,10 @@ mod tests {
 
     #[cfg(feature = "integration_test")]
     fn test_db(modules: MockFluxmod) -> Database {
-        let fluxmod = HttpFluxmod {
-            token: std::env::var("FLUXMOD_TOKEN").unwrap_or_else(|err| panic!("{}", err)),
-        };
+        let fluxmod = HttpFluxmod::new(
+            std::env::var("FLUXMOD_BASE_URL").unwrap_or_else(|err| panic!("{}", err)),
+            std::env::var("FLUXMOD_TOKEN").unwrap_or_else(|err| panic!("{}", err)),
+        );
         setup_module(&fluxmod, modules);
 
         let mut db = Database::default();
@@ -822,19 +842,19 @@ mod tests {
         let mut db = test_db(
             [
                 (
-                    "mymodule".into(),
+                    "recursive_mymodule".into(),
                     vec![(
                         "pack.flux".into(),
                         Arc::from(
                             r#"
-                    import "mymodule2"
-                    x = 1 + mymodule2.y
+                    import "recursive_mymodule2"
+                    x = 1 + recursive_mymodule2.y
                     "#,
                         ),
                     )],
                 ),
                 (
-                    "mymodule2".into(),
+                    "recursive_mymodule2".into(),
                     vec![("main.flux".into(), Arc::from("y = 3"))],
                 ),
             ]
@@ -845,8 +865,8 @@ mod tests {
         db.set_source(
             "main/main.flux".into(),
             r#"
-        import "mymodule"
-        y = mymodule.x + 1
+        import "recursive_mymodule"
+        y = recursive_mymodule.x + 1
         "#
             .into(),
         );
@@ -868,19 +888,19 @@ mod tests {
         let mut db = test_db(
             [
                 (
-                    "mymodule".into(),
+                    "recursive2_mymodule".into(),
                     vec![(
                         "pack.flux".into(),
                         Arc::from(
                             r#"
-                    import "mymodule2"
-                    x = 1 + mymodule2.y
+                    import "recursive2_mymodule2"
+                    x = 1 + recursive2_mymodule2.y
                     "#,
                         ),
                     )],
                 ),
                 (
-                    "mymodule2".into(),
+                    "recursive2_mymodule2".into(),
                     vec![("main.flux".into(), Arc::from("y = 3"))],
                 ),
             ]
@@ -891,9 +911,9 @@ mod tests {
         db.set_source(
             "main/main.flux".into(),
             r#"
-        import "mymodule"
-        import "mymodule2"
-        y = mymodule.x + mymodule2.y + 3
+        import "recursive2_mymodule"
+        import "recursive2_mymodule2"
+        y = recursive2_mymodule.x + recursive2_mymodule2.y + 3
         "#
             .into(),
         );
