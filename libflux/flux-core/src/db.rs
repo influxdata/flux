@@ -86,7 +86,7 @@ impl HttpFluxmod {
                 &format!("multipart/form-data; boundary={}", body.boundary()),
             )
             .send(body)
-            .map_err(Self::ureq_error)?;
+            .map_err(|err| Self::ureq_error("Unable to publish module", err))?;
 
         if !(200..300).contains(&response.status()) {
             return Err(Error::Message(format!(
@@ -101,10 +101,11 @@ impl HttpFluxmod {
         Ok(())
     }
 
-    fn ureq_error(err: ureq::Error) -> Error {
+    fn ureq_error(msg: &str, err: ureq::Error) -> Error {
         match err {
             ureq::Error::Status(status, response) => Error::Message(format!(
-                "Unable to publish module: {} {}",
+                "{}: {} {}",
+                msg,
                 status,
                 match response
                     .into_string()
@@ -114,7 +115,7 @@ impl HttpFluxmod {
                     Err(err) => return err,
                 }
             )),
-            _ => Error::Message(format!("Unable to publish module: {}", err)),
+            _ => Error::Message(format!("{}: {}", msg, err)),
         }
     }
 
@@ -124,7 +125,7 @@ impl HttpFluxmod {
             .get(&format!("{}/{}/@latest", self.base_url, module))
             .set("Authorization", &format!("Token {}", self.token))
             .call()
-            .map_err(Self::ureq_error)?;
+            .map_err(|err| Self::ureq_error("Unable to retrieve the latest version", err))?;
         if response.status() != 200 {
             return Err(Error::Message(
                 response
@@ -156,7 +157,7 @@ impl HttpFluxmod {
             .get(&format!("{}/{}/@v/{}.zip", self.base_url, module, version))
             .set("Authorization", &format!("Token {}", self.token))
             .call()
-            .map_err(Self::ureq_error)?;
+            .map_err(|err| Self::ureq_error("Unable to download flux module", err))?;
 
         if response.status() != 200 {
             return Err(Error::Message(
