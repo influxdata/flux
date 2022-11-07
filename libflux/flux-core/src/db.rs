@@ -6,7 +6,7 @@ use crate::{
         env::Environment,
         import::{Importer, Packages},
         nodes,
-        types::PolyType,
+        types::{MonoType, PolyType},
         Analyzer, AnalyzerConfig, FileErrors, PackageExports,
     },
 };
@@ -14,7 +14,7 @@ use crate::{
 use super::*;
 
 use std::{
-    collections::{HashMap, HashSet},
+    collections::{BTreeMap, HashMap, HashSet},
     fmt,
     io::{self, Read},
     path::PathBuf,
@@ -198,7 +198,7 @@ impl HttpFluxmod {
 impl Fluxmod for HttpFluxmod {
     fn get_module(&self, module: &str) -> Option<Vec<(String, Arc<str>)>> {
         self.download_module(module)
-            .map_err(|err| eprintln!("{}", err))
+            .map_err(|err| log::debug!("{}", err))
             .ok()
     }
 }
@@ -321,7 +321,7 @@ pub trait Flux: FluxBase {
     fn package_exports_import(
         &self,
         package_path: String,
-    ) -> Result<Arc<PackageExports>, nodes::ErrorKind>;
+    ) -> Result<Arc<PackageExports>, Option<nodes::ErrorKind>>;
 }
 
 /// Builder that configures a flux compiler database
@@ -372,7 +372,7 @@ impl DatabaseBuilder {
 pub struct Database {
     storage: salsa::Storage<Self>,
     pub(crate) packages: Mutex<HashSet<String>>,
-    package_errors: Mutex<HashMap<String, Error>>,
+    package_errors: Mutex<BTreeMap<String, Error>>,
     filesystem_roots: Vec<PathBuf>,
     package_depth: AtomicUsize,
 }
@@ -685,15 +685,19 @@ fn package_exports(db: &dyn Flux, path: String) -> SalvageResult<Arc<PackageExpo
 fn package_exports_import(
     db: &dyn Flux,
     path: String,
-) -> Result<Arc<PackageExports>, nodes::ErrorKind> {
+) -> Result<Arc<PackageExports>, Option<nodes::ErrorKind>> {
     db.package_exports(path.clone())
         .map(|exports| {
             db.clear_error(&path);
             exports
         })
-        .map_err(|err| {
-            db.record_error(path.clone(), err.error);
-            nodes::ErrorKind::InvalidImportPath(path)
+        .map_err(|err| match err.error {
+            Error::FileError(_) => {
+                // Only record error for this package don't generate a new one
+                db.record_error(path, err.error);
+                None
+            }
+            Error::Message(msg) => Some(nodes::ErrorKind::Message(msg)),
         })
 }
 
@@ -728,7 +732,11 @@ fn recover_cycle2<T>(db: &dyn Flux, cycle: &[String], name: &str) -> SalvageResu
     .into())
 }
 
-fn recover_cycle<T>(_db: &dyn Flux, cycle: &[String], name: &str) -> Result<T, nodes::ErrorKind> {
+fn recover_cycle<T>(
+    _db: &dyn Flux,
+    cycle: &[String],
+    name: &str,
+) -> Result<T, Option<nodes::ErrorKind>> {
     // We get a list of strings like "semantic_package(\"b\")",
     let mut cycle: Vec<_> = cycle
         .iter()
@@ -741,16 +749,20 @@ fn recover_cycle<T>(_db: &dyn Flux, cycle: &[String], name: &str) -> Result<T, n
         .collect();
     cycle.pop();
 
-    Err(nodes::ErrorKind::ImportCycle {
+    Err(Some(nodes::ErrorKind::ImportCycle {
         package: name.into(),
         cycle,
-    })
+    }))
 }
 
 impl Importer for Database {
     fn import(&mut self, path: &str) -> Result<PolyType, nodes::ErrorKind> {
         self.package_exports_import(path.into())
             .map(|exports| exports.typ())
+            .or_else(|err| match err {
+                None => Ok(PolyType::from(MonoType::Error)),
+                Some(err) => Err(err),
+            })
     }
     fn symbol(&mut self, path: &str, symbol_name: &str) -> Option<Symbol> {
         self.package_exports_import(path.into())
@@ -763,7 +775,12 @@ impl Importer for &dyn Flux {
     fn import(&mut self, path: &str) -> Result<PolyType, nodes::ErrorKind> {
         self.package_exports_import(path.into())
             .map(|exports| exports.typ())
+            .or_else(|err| match err {
+                None => Ok(PolyType::from(MonoType::Error)),
+                Some(err) => Err(err),
+            })
     }
+
     fn symbol(&mut self, path: &str, symbol_name: &str) -> Option<Symbol> {
         self.package_exports_import(path.into())
             .ok()
@@ -1047,7 +1064,6 @@ mod tests {
         struct DeepFluxmod;
         impl Fluxmod for DeepFluxmod {
             fn get_module(&self, module: &str) -> Option<Vec<(String, Arc<str>)>> {
-                eprintln!("{}", module);
                 if module.starts_with("deep") {
                     let i = module.trim_start_matches("deep").parse::<i32>().unwrap() + 1;
                     Some(vec![(
@@ -1076,137 +1092,15 @@ mod tests {
             .into(),
         );
 
-        match db.semantic_package("main".into()) {
-            Ok(_) => panic!("Expected cycle error"),
-            Err(err) => {
-                let mut errors = db.package_errors();
-                errors.push(err.error);
-
-                // TODO This should ideally just be one error
-                expect_test::expect![[r#"
-                    error deep40/file.flux@2:29-2:44: invalid import path deep41
-
-                    error deep19/file.flux@2:29-2:44: invalid import path deep20
-
-                    error deep4/file.flux@2:29-2:43: invalid import path deep5
-
-                    error deep52/file.flux@2:29-2:44: invalid import path deep53
-
-                    error deep47/file.flux@2:29-2:44: invalid import path deep48
-
-                    error deep38/file.flux@2:29-2:44: invalid import path deep39
-
-                    error deep54/file.flux@2:29-2:44: invalid import path deep55
-
-                    error deep43/file.flux@2:29-2:44: invalid import path deep44
-
-                    error deep39/file.flux@2:29-2:44: invalid import path deep40
-
-                    error deep51/file.flux@2:29-2:44: invalid import path deep52
-
-                    error deep1/file.flux@2:29-2:43: invalid import path deep2
-
-                    error deep58/file.flux@2:29-2:44: invalid import path deep59
-
-                    error deep57/file.flux@2:29-2:44: invalid import path deep58
-
-                    error deep31/file.flux@2:29-2:44: invalid import path deep32
-
-                    error deep35/file.flux@2:29-2:44: invalid import path deep36
-
-                    error deep22/file.flux@2:29-2:44: invalid import path deep23
-
-                    error deep41/file.flux@2:29-2:44: invalid import path deep42
-
-                    error deep2/file.flux@2:29-2:43: invalid import path deep3
-
-                    error deep45/file.flux@2:29-2:44: invalid import path deep46
-
-                    error deep34/file.flux@2:29-2:44: invalid import path deep35
-
-                    error deep9/file.flux@2:29-2:44: invalid import path deep10
-
-                    error deep26/file.flux@2:29-2:44: invalid import path deep27
-
-                    error deep21/file.flux@2:29-2:44: invalid import path deep22
-
-                    error deep10/file.flux@2:29-2:44: invalid import path deep11
-
-                    error deep48/file.flux@2:29-2:44: invalid import path deep49
-
-                    error deep13/file.flux@2:29-2:44: invalid import path deep14
-
-                    error deep49/file.flux@2:29-2:44: invalid import path deep50
-
-                    error deep42/file.flux@2:29-2:44: invalid import path deep43
-
-                    error deep36/file.flux@2:29-2:44: invalid import path deep37
-
-                    error deep17/file.flux@2:29-2:44: invalid import path deep18
-
-                    error deep44/file.flux@2:29-2:44: invalid import path deep45
-
-                    error deep16/file.flux@2:29-2:44: invalid import path deep17
-
-                    error deep53/file.flux@2:29-2:44: invalid import path deep54
-
-                    error deep55/file.flux@2:29-2:44: invalid import path deep56
-
-                    error deep0/file.flux@2:29-2:43: invalid import path deep1
-
-                    error deep5/file.flux@2:29-2:43: invalid import path deep6
-
-                    error deep20/file.flux@2:29-2:44: invalid import path deep21
-
-                    error deep29/file.flux@2:29-2:44: invalid import path deep30
-
-                    error deep25/file.flux@2:29-2:44: invalid import path deep26
-
-                    error deep12/file.flux@2:29-2:44: invalid import path deep13
-
-                    error deep50/file.flux@2:29-2:44: invalid import path deep51
-
-                    error deep3/file.flux@2:29-2:43: invalid import path deep4
-
-                    error deep6/file.flux@2:29-2:43: invalid import path deep7
-
-                    error deep28/file.flux@2:29-2:44: invalid import path deep29
-
-                    error deep8/file.flux@2:29-2:43: invalid import path deep9
-
-                    error deep15/file.flux@2:29-2:44: invalid import path deep16
-
-                    error deep56/file.flux@2:29-2:44: invalid import path deep57
-
-                    error deep37/file.flux@2:29-2:44: invalid import path deep38
-
-                    Module imports exceeded the maximum depth of `60`
-
-                    error deep27/file.flux@2:29-2:44: invalid import path deep28
-
-                    error deep14/file.flux@2:29-2:44: invalid import path deep15
-
-                    error deep18/file.flux@2:29-2:44: invalid import path deep19
-
-                    error deep7/file.flux@2:29-2:43: invalid import path deep8
-
-                    error deep23/file.flux@2:29-2:44: invalid import path deep24
-
-                    error deep46/file.flux@2:29-2:44: invalid import path deep47
-
-                    error deep30/file.flux@2:29-2:44: invalid import path deep31
-
-                    error deep11/file.flux@2:29-2:44: invalid import path deep12
-
-                    error deep32/file.flux@2:29-2:44: invalid import path deep33
-
-                    error deep33/file.flux@2:29-2:44: invalid import path deep34
-
-                    error deep24/file.flux@2:29-2:44: invalid import path deep25
-
-                    error main/main.flux@2:9-2:23: invalid import path deep0"#]]
-                .assert_eq(&errors.to_string());
-            }
+        let result = db.semantic_package("main".into());
+        let mut errors = db.package_errors();
+        if let Err(err) = result {
+            errors.push(err.error);
         }
+
+        expect_test::expect![[
+            r#"error deep58/file.flux@2:29-2:44: Module imports exceeded the maximum depth of `60`"#
+        ]]
+        .assert_eq(&errors.to_string());
     }
 }

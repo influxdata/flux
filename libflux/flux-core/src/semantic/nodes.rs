@@ -83,6 +83,9 @@ pub enum ErrorKind {
     #[display(fmt = "variable {} lacks the {} constraint", var, kind)]
     MissingConstraint { var: BoundTvar, kind: Kind },
 
+    #[display(fmt = "{}", _0)]
+    Message(String),
+
     #[display(fmt = "{}. This is a bug in type inference", _0)]
     Bug(String),
 }
@@ -128,6 +131,7 @@ impl Substitutable for ErrorKind {
             | Self::ImportCycle { .. }
             | Self::UnableToVectorize(_)
             | Self::InvalidReturn
+            | Self::Message(_)
             | Self::Bug(_) => None,
         }
     }
