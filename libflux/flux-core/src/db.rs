@@ -68,6 +68,9 @@ impl HttpFluxmod {
     ) -> Result<()> {
         let mut multipart = multipart::client::lazy::Multipart::new();
         for (name, contents) in &files {
+            let name =
+                percent_encoding::utf8_percent_encode(name, &percent_encoding::NON_ALPHANUMERIC)
+                    .to_string();
             multipart.add_stream("module", contents.as_bytes(), Some(name), None);
         }
         let body = multipart

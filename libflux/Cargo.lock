@@ -618,6 +618,7 @@ dependencies = [
  "once_cell",
  "ordered-float",
  "pad",
+ "percent-encoding 2.1.0",
  "pretty",
  "pretty_assertions",
  "pulldown-cmark",
