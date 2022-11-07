@@ -13,9 +13,9 @@ import "array"
 
 // from constructs a table from an array of records.
 //
-// **Deprecated**: `from()` is deprecated in favor of [`from()`](https://docs.influxdata.com/flux/v0.x/stdlib/array/from).
+// **Deprecated**: Experimental `array.from()` is deprecated in favor of
+// [`array.from()`](https://docs.influxdata.com/flux/v0.x/stdlib/array/from).
 // This function is available for backwards compatibility, but we recommend using the `array` package instead.
-//
 //
 // Each record in the array is converted into an output row or record. All
 // records must have the same keys and data types.
@@ -58,7 +58,8 @@ from = array.from
 
 // concat appends two arrays and returns a new array.
 //
-// **Deprecated**: `concat()` is deprecated in favor of [`concat()`](https://docs.influxdata.com/flux/v0.x/stdlib/array/concat).
+// **Deprecated**: Experimetnal `array.concat()` is deprecated in favor of
+// [`array.concat()`](https://docs.influxdata.com/flux/v0.x/stdlib/array/concat).
 //
 // ## Parameters
 // - arr: First array. Default is the piped-forward array (`<-`).
@@ -90,7 +91,8 @@ concat = array.concat
 // map iterates over an array, applies a function to each element to produce a new element,
 // and then returns a new array.
 //
-// **Deprecated**: `map()` is deprecated in favor of [`map()`](https://docs.influxdata.com/flux/v0.x/stdlib/array/map).
+// **Deprecated**: Experimental `array.map()` is deprecated in favor of
+// [`array.map()`](https://docs.influxdata.com/flux/v0.x/stdlib/array/map).
 //
 // ## Parameters
 // - arr: Array to operate on. Defaults is the piped-forward array (`<-`).
@@ -118,7 +120,8 @@ map = array.map
 // filter iterates over an array, evaluates each element with a predicate function, and then returns
 // a new array with only elements that match the predicate.
 //
-// **Deprecated**: `filter()` is deprecated in favor of [`filter()`](https://docs.influxdata.com/flux/v0.x/stdlib/array/filter).
+// **Deprecated**: Experimental `array.filter()` is deprecated in favor of
+// [`array.filter()`](https://docs.influxdata.com/flux/v0.x/stdlib/array/filter).
 //
 // ## Parameters
 // - arr: Array to filter. Default is the piped-forward array (`<-`).

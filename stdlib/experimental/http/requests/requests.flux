@@ -19,7 +19,8 @@ _emptyBody = requests._emptyBody
 // Changing this config will affect all other packages using the requests package.
 // To change the config for a single request, pass a new config directly into the corresponding function.
 //
-// **Deprecated**: `defautlConfig` is deprecated in favor of [`requests`](https://docs.influxdata.com/flux/v0.x/stdlib/http/requests/#options).
+// **Deprecated**: Experimental `requests.defaultConfig` is deprecated in favor of
+// [`requests.defaultConfig`](https://docs.influxdata.com/flux/v0.x/stdlib/http/requests/#options).
 // Do not mix usage of this experimental package with the `requests` package as the `defaultConfig` is not shared between the two packages.
 //
 // ## Examples
@@ -71,7 +72,7 @@ _do = requests._do
 
 // do makes an http request.
 //
-// **Deprecated**: `do` is deprecated in favor of [`requests`](https://docs.influxdata.com/flux/v0.x/stdlib/http/requests/do/).
+// **Deprecated**: Experimental `requests.do` is deprecated in favor of [`requests.do`](https://docs.influxdata.com/flux/v0.x/stdlib/http/requests/do/).
 //
 // ## Parameters
 // - method: method of the http request.
@@ -157,7 +158,7 @@ do =
 
 // post makes a http POST request. This identical to calling `request.do(method: "POST", ...)`.
 //
-// **Deprecated**: `post` is deprecated in favor of [`requests`](https://docs.influxdata.com/flux/v0.x/stdlib/http/requests/post/).
+// **Deprecated**: Experimental `requests.post` is deprecated in favor of [`requests.post`](https://docs.influxdata.com/flux/v0.x/stdlib/http/requests/post/).
 //
 // ## Parameters
 // - url: URL to request. This should not include any query parameters.
@@ -213,7 +214,7 @@ post =
 
 // get makes a http GET request. This identical to calling `request.do(method: "GET", ...)`.
 //
-// **Deprecated**: `get` is deprecated in favor of [`requests`](https://docs.influxdata.com/flux/v0.x/stdlib/http/requests/get/).
+// **Deprecated**: Experimental `requests.get` is deprecated in favor of [`requests.get`](https://docs.influxdata.com/flux/v0.x/stdlib/http/requests/get/).
 //
 // ## Parameters
 // - url: URL to request. This should not include any query parameters.
@@ -290,7 +291,7 @@ get =
 
 // peek converts an HTTP response into a table for easy inspection.
 //
-// **Deprecated**: `peek` is deprecated in favor of [`requests`](https://docs.influxdata.com/flux/v0.x/stdlib/http/requests/peek/).
+// **Deprecated**: Experimental `requests.peek` is deprecated in favor of [`requests.peek`](https://docs.influxdata.com/flux/v0.x/stdlib/http/requests/peek/).
 //
 // The output table includes the following columns:
 //  - **body** with the response body as a string
