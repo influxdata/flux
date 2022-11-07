@@ -18,7 +18,7 @@ use std::{
     fmt,
     io::{self, Read},
     path::PathBuf,
-    sync::{Arc, Mutex},
+    sync::{Arc, Mutex, RwLock},
 };
 
 use thiserror::Error;
@@ -44,11 +44,17 @@ pub trait Fluxmod: fmt::Debug + std::panic::RefUnwindSafe {
 #[derive(Debug)]
 struct HttpFluxmod {
     token: String,
+    // The `RwLock` implements `UnwindSafe`, allowing this to be stored in salsa (which uses
+    // panics for some errors)
+    agent: RwLock<ureq::Agent>,
 }
 
 impl HttpFluxmod {
     fn new(token: String) -> Self {
-        HttpFluxmod { token }
+        HttpFluxmod {
+            token,
+            agent: RwLock::new(ureq::agent()),
+        }
     }
 
     const BASE: &'static str =
@@ -69,7 +75,9 @@ impl HttpFluxmod {
             .prepare()
             .map_err(|err| Error::Message(err.to_string()))?;
 
-        let response = ureq::post(&format!("{}/{}/@v/v{}.zip", Self::BASE, module, version))
+        let agent = self.agent.read().unwrap();
+        let response = agent
+            .post(&format!("{}/{}/@v/v{}.zip", Self::BASE, module, version))
             .set("Authorization", &format!("Token {}", self.token))
             .set(
                 "Content-Type",
@@ -92,7 +100,9 @@ impl HttpFluxmod {
     }
 
     fn latest_version(&self, module: &str) -> Result<String> {
-        let response = ureq::get(&format!("{}/{}/@latest", Self::BASE, module))
+        let agent = self.agent.read().unwrap();
+        let response = agent
+            .get(&format!("{}/{}/@latest", Self::BASE, module))
             .set("Authorization", &format!("Token {}", self.token))
             .call()
             .map_err(|err| Error::Message(err.to_string()))?;
@@ -122,7 +132,9 @@ impl HttpFluxmod {
         let version = self.latest_version(module)?;
         log::debug!("Found latest version `{}` for `{}`", version, module);
 
-        let response = ureq::get(&format!("{}/{}/@v/{}.zip", Self::BASE, module, version))
+        let agent = self.agent.read().unwrap();
+        let response = agent
+            .get(&format!("{}/{}/@v/{}.zip", Self::BASE, module, version))
             .set("Authorization", &format!("Token {}", self.token))
             .call()
             .map_err(|err| Error::Message(err.to_string()))?;

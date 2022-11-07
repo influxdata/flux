@@ -763,7 +763,7 @@ mod tests {
     }
 
     fn find_var_type_from_source(source: &str, var_name: &str) -> Result<MonoType> {
-        let mut analyzer = new_semantic_salsa_analyzer(AnalyzerConfig::default())?;
+        let mut analyzer = new_semantic_salsa_analyzer(Options::default())?;
         let pkg = match analyzer.analyze_source("".into(), "".into(), source) {
             Ok((_, pkg)) => pkg,
             Err(err) => match err.value {
@@ -929,7 +929,7 @@ from(bucket: v.bucket)
 
     #[test]
     fn deserialize_and_infer() {
-        let mut analyzer = new_semantic_salsa_analyzer(AnalyzerConfig::default()).unwrap();
+        let mut analyzer = new_semantic_salsa_analyzer(Options::default()).unwrap();
 
         let src = r#"
             x = from(bucket: "b")
@@ -964,7 +964,7 @@ from(bucket: v.bucket)
 
     #[test]
     fn infer_union() {
-        let mut analyzer = new_semantic_salsa_analyzer(AnalyzerConfig::default()).unwrap();
+        let mut analyzer = new_semantic_salsa_analyzer(Options::default()).unwrap();
 
         let src = r#"
             a = from(bucket: "b")
@@ -1048,7 +1048,7 @@ from(bucket: v.bucket)
 
     #[test]
     fn prelude_symbols_retain_their_package() {
-        let mut analyzer = new_semantic_salsa_analyzer(AnalyzerConfig::default()).unwrap();
+        let mut analyzer = new_semantic_salsa_analyzer(Options::default()).unwrap();
 
         let src = r#"
             derivative
@@ -1095,7 +1095,7 @@ from(bucket: v.bucket)
         ]
         .into_iter()
         .collect::<HashMap<String, Vec<(String, Arc<str>)>>>();
-        let mut db = new_db().unwrap();
+        let mut db = new_db(Options::default()).unwrap();
         db.set_fluxmod(Some(Arc::new(modules)));
 
         db.set_source(
