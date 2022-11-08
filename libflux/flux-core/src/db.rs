@@ -41,7 +41,7 @@ pub enum Error {
 
 /// Interface for retrieving external flux modules
 pub trait Fluxmod: fmt::Debug + std::panic::RefUnwindSafe {
-    fn get_module(&self, module: &str) -> Option<Vec<(String, Arc<str>)>>;
+    fn get_module(&self, path: &str) -> Option<FluxModule>;
 }
 
 #[cfg(feature = "fluxmod")]
@@ -74,7 +74,7 @@ impl HttpFluxmod {
         let mut multipart = multipart::client::lazy::Multipart::new();
         for (name, contents) in &files {
             let name =
-                percent_encoding::utf8_percent_encode(name, &percent_encoding::NON_ALPHANUMERIC)
+                percent_encoding::utf8_percent_encode(name, percent_encoding::NON_ALPHANUMERIC)
                     .to_string();
             multipart.add_stream("module", contents.as_bytes(), Some(name), None);
         }
@@ -148,9 +148,9 @@ impl HttpFluxmod {
         Ok(version)
     }
 
-    fn download_module(&self, module: &str) -> Result<Vec<(String, Arc<str>)>> {
+    fn download_module(&self, module: &str) -> Result<FluxModule> {
         log::debug!("Searching fluxmod for `{}`", module);
-        if module.contains("/") {
+        if module.contains('/') {
             return Err(Error::Message(format!("Invalid module name `{}`", module)));
         }
 
@@ -193,28 +193,32 @@ impl HttpFluxmod {
             module_files.push(([module, file.name()].join("/"), Arc::from(source)));
         }
 
-        Ok(module_files)
+        Ok(FluxModule {
+            files: module_files,
+        })
     }
 }
 
 #[cfg(feature = "fluxmod")]
 impl Fluxmod for HttpFluxmod {
-    fn get_module(&self, module: &str) -> Option<Vec<(String, Arc<str>)>> {
-        self.download_module(module)
+    fn get_module(&self, path: &str) -> Option<FluxModule> {
+        self.download_module(path)
             .map_err(|err| log::debug!("{}", err))
             .ok()
     }
 }
 
-type MockFluxmod = HashMap<String, Vec<(String, Arc<str>)>>;
+type MockFluxmod = HashMap<String, FluxModule>;
 
 impl Fluxmod for MockFluxmod {
-    fn get_module(&self, path: &str) -> Option<Vec<(String, Arc<str>)>> {
+    fn get_module(&self, path: &str) -> Option<FluxModule> {
         let module = path.split('/').next()?;
-        self.get(module).map(|v| {
-            v.iter()
+        self.get(module).map(|v| FluxModule {
+            files: v
+                .files
+                .iter()
                 .map(|(file, v)| ([path, file].join("/"), v.clone()))
-                .collect()
+                .collect(),
         })
     }
 }
@@ -287,7 +291,7 @@ pub trait Flux: FluxBase {
     fn precompiled_packages(&self) -> Option<&'static Packages>;
 
     /// Defines the fluxmod interface for fetching external modules
-    fn get_flux_module(&self, module: String) -> Option<Arc<Vec<(String, Arc<str>)>>>;
+    fn get_flux_module(&self, module: String) -> Option<Arc<FluxModule>>;
 
     /// Returns the `ast::Package` for a given module path
     // Normal `dependency` query that may call recursively into other queries. If the recursive
@@ -461,10 +465,11 @@ impl FluxBase for Database {
             }
         }
         if self.fluxmod().is_some() {
-            let module = path.split('/').next().unwrap();
+            let module_name = path.split('/').next().unwrap();
             // TODO Only reach out to fluxmod if `module` points to a registry
-            if let Some(modules) = self.get_flux_module(module.to_owned()) {
-                return if let Some(source) = modules
+            if let Some(module) = self.get_flux_module(module_name.to_owned()) {
+                return if let Some(source) = module
+                    .files
                     .iter()
                     .find(|(k, _)| *k == path)
                     .map(|(_, source)| source)
@@ -548,11 +553,12 @@ impl Database {
         }
 
         if self.fluxmod().is_some() {
-            let module = package.split('/').next().unwrap();
+            let module_name = package.split('/').next().unwrap();
             // TODO Only reach out to fluxmod if `module` points to a registry
-            if let Some(modules) = self.get_flux_module(module.to_owned()) {
+            if let Some(module) = self.get_flux_module(module_name.to_owned()) {
                 found_files.extend(
-                    modules
+                    module
+                        .files
                         .iter()
                         .map(|(k, _)| k.clone())
                         .filter(|path| is_part_of_package(package, path)),
@@ -568,7 +574,14 @@ impl Database {
     }
 }
 
-fn get_flux_module(db: &dyn Flux, module: String) -> Option<Arc<Vec<(String, Arc<str>)>>> {
+/// Representation of a flux module
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct FluxModule {
+    /// The files of the module
+    pub files: Vec<(String, Arc<str>)>,
+}
+
+fn get_flux_module(db: &dyn Flux, module: String) -> Option<Arc<FluxModule>> {
     if let Some(fluxmod) = db.fluxmod() {
         fluxmod.get_module(&module).map(Arc::new)
     } else {
@@ -804,12 +817,12 @@ mod tests {
             .latest_version("mymodule")
             .unwrap_or_else(|err| panic!("{}", err));
 
-        let mut version = semver::Version::parse(version.trim_start_matches("v")).unwrap();
+        let mut version = semver::Version::parse(version.trim_start_matches('v')).unwrap();
         version.patch += 1;
 
         for (name, module) in modules {
             fluxmod
-                .publish(&name, module, &version)
+                .publish(&name, module.files, &version)
                 .unwrap_or_else(|err| panic!("{}", err));
         }
     }
@@ -843,7 +856,9 @@ mod tests {
         let mut db = test_db(
             [(
                 "mymodule".into(),
-                vec![("pack.flux".into(), "x = 1".into())],
+                FluxModule {
+                    files: vec![("pack.flux".into(), "x = 1".into())],
+                },
             )]
             .into_iter()
             .collect(),
@@ -875,10 +890,12 @@ mod tests {
         let mut db = test_db(
             [(
                 "mymodulenested".into(),
-                vec![
-                    ("nested/nested.flux".into(), "y = 1".into()),
-                    ("nested/nestedagain/nestedagain.flux".into(), "z = 3".into()),
-                ],
+                FluxModule {
+                    files: vec![
+                        ("nested/nested.flux".into(), "y = 1".into()),
+                        ("nested/nestedagain/nestedagain.flux".into(), "z = 3".into()),
+                    ],
+                },
             )]
             .into_iter()
             .collect(),
@@ -912,19 +929,23 @@ mod tests {
             [
                 (
                     "recursive_mymodule".into(),
-                    vec![(
-                        "pack.flux".into(),
-                        Arc::from(
-                            r#"
+                    FluxModule {
+                        files: vec![(
+                            "pack.flux".into(),
+                            Arc::from(
+                                r#"
                     import "recursive_mymodule2"
                     x = 1 + recursive_mymodule2.y
                     "#,
-                        ),
-                    )],
+                            ),
+                        )],
+                    },
                 ),
                 (
                     "recursive_mymodule2".into(),
-                    vec![("main.flux".into(), Arc::from("y = 3"))],
+                    FluxModule {
+                        files: vec![("main.flux".into(), Arc::from("y = 3"))],
+                    },
                 ),
             ]
             .into_iter()
@@ -958,19 +979,23 @@ mod tests {
             [
                 (
                     "recursive2_mymodule".into(),
-                    vec![(
-                        "pack.flux".into(),
-                        Arc::from(
-                            r#"
+                    FluxModule {
+                        files: vec![(
+                            "pack.flux".into(),
+                            Arc::from(
+                                r#"
                     import "recursive2_mymodule2"
                     x = 1 + recursive2_mymodule2.y
                     "#,
-                        ),
-                    )],
+                            ),
+                        )],
+                    },
                 ),
                 (
                     "recursive2_mymodule2".into(),
-                    vec![("main.flux".into(), Arc::from("y = 3"))],
+                    FluxModule {
+                        files: vec![("main.flux".into(), Arc::from("y = 3"))],
+                    },
                 ),
             ]
             .into_iter()
@@ -1005,27 +1030,31 @@ mod tests {
             [
                 (
                     "cycle".into(),
-                    vec![(
-                        "pack.flux".into(),
-                        Arc::from(
-                            r#"
-                    import "cycle2"
-                    x = 1 + cycle2.y
-                    "#,
-                        ),
-                    )],
+                    FluxModule {
+                        files: vec![(
+                            "pack.flux".into(),
+                            Arc::from(
+                                r#"
+                            import "cycle2"
+                            x = 1 + cycle2.y
+                            "#,
+                            ),
+                        )],
+                    },
                 ),
                 (
                     "cycle2".into(),
-                    vec![(
-                        "main.flux".into(),
-                        Arc::from(
-                            r#"
-                    import "cycle"
-                    y = cycle.x + 3
-                    "#,
-                        ),
-                    )],
+                    FluxModule {
+                        files: vec![(
+                            "main.flux".into(),
+                            Arc::from(
+                                r#"
+                            import "cycle"
+                            y = cycle.x + 3
+                            "#,
+                            ),
+                        )],
+                    },
                 ),
             ]
             .into_iter()
@@ -1069,19 +1098,21 @@ mod tests {
         #[derive(Default, Debug)]
         struct DeepFluxmod;
         impl Fluxmod for DeepFluxmod {
-            fn get_module(&self, module: &str) -> Option<Vec<(String, Arc<str>)>> {
-                if module.starts_with("deep") {
-                    let i = module.trim_start_matches("deep").parse::<i32>().unwrap() + 1;
-                    Some(vec![(
-                        format!("{}/file.flux", module),
-                        Arc::from(format!(
-                            r#"
+            fn get_module(&self, path: &str) -> Option<FluxModule> {
+                if path.starts_with("deep") {
+                    let i = path.trim_start_matches("deep").parse::<i32>().unwrap() + 1;
+                    Some(FluxModule {
+                        files: vec![(
+                            format!("{}/file.flux", path),
+                            Arc::from(format!(
+                                r#"
                             import "deep{i}"
                             x = deep{i}.x
                         "#,
-                            i = i,
-                        )),
-                    )])
+                                i = i,
+                            )),
+                        )],
+                    })
                 } else {
                     None
                 }

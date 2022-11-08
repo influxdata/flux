@@ -631,7 +631,7 @@ mod tests {
             types::{BoundTvar, Label, MonoType, Property, Ptr, Record, Tvar, TvarMap},
             walk,
         },
-        FluxBase,
+        FluxBase, FluxModule,
     };
 
     use crate::parser;
@@ -1066,23 +1066,27 @@ from(bucket: v.bucket)
         let modules = [
             (
                 "mymodule".into(),
-                vec![(
-                    "pack.flux".into(),
-                    Arc::from(
-                        r#"
+                FluxModule {
+                    files: vec![(
+                        "pack.flux".into(),
+                        Arc::from(
+                            r#"
                     import "mymodule2"
                     x = 1 + mymodule2.y
                     "#,
-                    ),
-                )],
+                        ),
+                    )],
+                },
             ),
             (
                 "mymodule2".into(),
-                vec![("main.flux".into(), Arc::from("y = 3"))],
+                FluxModule {
+                    files: vec![("main.flux".into(), Arc::from("y = 3"))],
+                },
             ),
         ]
         .into_iter()
-        .collect::<HashMap<String, Vec<(String, Arc<str>)>>>();
+        .collect::<HashMap<String, _>>();
         let mut db = new_db(Options::default()).unwrap();
         db.set_fluxmod(Some(Arc::new(modules)));
 
