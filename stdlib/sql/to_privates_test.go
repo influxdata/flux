@@ -160,6 +160,9 @@ func TestMysqlTranslation(t *testing.T) {
 }
 
 func TestSnowflakeTranslation(t *testing.T) {
+	if !isDriverEnabled("snowflake") {
+		t.Skip("snowflake is disabled, skipping test")
+	}
 	snowflakeTypeTranslations := map[string]flux.ColType{
 		"FLOAT":         flux.TFloat,
 		"NUMBER":        flux.TInt,
@@ -188,6 +191,9 @@ func TestSnowflakeTranslation(t *testing.T) {
 }
 
 func TestMssqlTranslation(t *testing.T) {
+	if !isDriverEnabled("sqlserver") {
+		t.Skip("mssql is disabled")
+	}
 	mssqlTypeTranslations := map[string]flux.ColType{
 		"FLOAT":          flux.TFloat,
 		"BIGINT":         flux.TInt,
