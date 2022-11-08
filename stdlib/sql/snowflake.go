@@ -1,3 +1,5 @@
+//go:build !fipsonly
+
 package sql
 
 import (
@@ -33,11 +35,17 @@ type SnowflakeRowReader struct {
 	CloseFunc   func() error
 }
 
+type snowflakeConfig snowflake.Config
+
 const (
 	layoutDate         = "2006-01-02"
 	layoutTime         = "15:04:05"
 	layoutTimeStampNtz = "2006-01-02T15:04:05.0000000000"
 )
+
+func snowflakeParseDSN(dsn string) (cfg *snowflakeConfig, err error) {
+	return snowflake.ParseDSN(dsn)
+}
 
 // Next prepares SnowflakeRowReader to return rows
 func (m *SnowflakeRowReader) Next() bool {

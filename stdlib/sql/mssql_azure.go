@@ -1,3 +1,5 @@
+//go:build !fipsonly
+
 package sql
 
 import (
