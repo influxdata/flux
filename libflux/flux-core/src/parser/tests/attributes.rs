@@ -12,8 +12,8 @@ fn parse_attribute_inner_nothing_follows() {
             base: BaseNode {
                 location: SourceLocation {
                     start: "line: 1, column: 1",
-                    end: "line: 1, column: 11",
-                    source: "@attribute",
+                    end: "line: 2, column: 1",
+                    source: "@attribute\n",
                 },
             },
             name: "",
@@ -195,8 +195,8 @@ import "date"
             base: BaseNode {
                 location: SourceLocation {
                     start: "line: 1, column: 1",
-                    end: "line: 2, column: 14",
-                    source: "@attribute\nimport \"date\"",
+                    end: "line: 3, column: 1",
+                    source: "@attribute\nimport \"date\"\n",
                 },
             },
             name: "",
@@ -257,8 +257,8 @@ foo = "a"
             base: BaseNode {
                 location: SourceLocation {
                     start: "line: 1, column: 1",
-                    end: "line: 2, column: 10",
-                    source: "@attribute\nfoo = \"a\"",
+                    end: "line: 3, column: 1",
+                    source: "@attribute\nfoo = \"a\"\n",
                 },
             },
             name: "",
@@ -333,9 +333,9 @@ package foo
         File {
             base: BaseNode {
                 location: SourceLocation {
-                    start: "line: 3, column: 1",
-                    end: "line: 4, column: 12",
-                    source: "@edition(\"2022.1\")\npackage foo",
+                    start: "line: 1, column: 1",
+                    end: "line: 5, column: 1",
+                    source: "\n// Package foo implements foo things.\n@edition(\"2022.1\")\npackage foo\n",
                 },
             },
             name: "",
@@ -426,9 +426,9 @@ import "bar"
         File {
             base: BaseNode {
                 location: SourceLocation {
-                    start: "line: 2, column: 1",
-                    end: "line: 7, column: 13",
-                    source: "@registry(\"stdlib\")\nimport \"date\"\n@registry(\"fluxlang.dev\")\nimport \"foo\"\n@registry(\"baz\")\nimport \"bar\"",
+                    start: "line: 1, column: 1",
+                    end: "line: 8, column: 1",
+                    source: "\n@registry(\"stdlib\")\nimport \"date\"\n@registry(\"fluxlang.dev\")\nimport \"foo\"\n@registry(\"baz\")\nimport \"bar\"\n",
                 },
             },
             name: "",
@@ -636,9 +636,9 @@ x = 1
         File {
             base: BaseNode {
                 location: SourceLocation {
-                    start: "line: 2, column: 1",
-                    end: "line: 15, column: 6",
-                    source: "@mount(\"fluxlang.dev\", \"https://fluxlang.dev/api/modules\")\n@two\n@three\n@four\npackage foo\n\n// Comments for import\n@registry(\"fluxlang.dev\")\n@double\nimport \"date\"\n\n// x is one\n@deprecated(\"0.123.0\")\nx = 1",
+                    start: "line: 1, column: 1",
+                    end: "line: 16, column: 1",
+                    source: "// Package comments\n@mount(\"fluxlang.dev\", \"https://fluxlang.dev/api/modules\")\n@two\n@three\n@four\npackage foo\n\n// Comments for import\n@registry(\"fluxlang.dev\")\n@double\nimport \"date\"\n\n// x is one\n@deprecated(\"0.123.0\")\nx = 1\n",
                 },
             },
             name: "",
@@ -930,9 +930,9 @@ identity = (x) => x
         File {
             base: BaseNode {
                 location: SourceLocation {
-                    start: "line: 3, column: 1",
-                    end: "line: 4, column: 20",
-                    source: "@deprecated\nidentity = (x) => x",
+                    start: "line: 1, column: 1",
+                    end: "line: 5, column: 1",
+                    source: "\n// My documentation comment.\n@deprecated\nidentity = (x) => x\n",
                 },
             },
             name: "",

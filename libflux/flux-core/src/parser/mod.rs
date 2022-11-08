@@ -374,21 +374,13 @@ impl<'input> Parser<'input> {
     /// Parses a file of Flux source code, returning a [`File`].
     pub fn parse_file(&mut self, fname: String) -> File {
         self.fname = fname;
-        let start_pos = ast::Position::from(&self.peek().start_pos);
-        let mut end = ast::Position::invalid();
 
         // Parse inner attributes at the beginning of the file and hand them off to the first
         // clause, declaration or statement that exists
         let inner_attributes = self.parse_attribute_inner_list();
 
         let (pkg, inner_attributes) = self.parse_package_clause(inner_attributes);
-        if let Some(pkg) = &pkg {
-            end = pkg.base.location.end;
-        }
         let (imports, inner_attributes) = self.parse_import_list(inner_attributes);
-        if let Some(import) = imports.last() {
-            end = import.base.location.end;
-        }
         let (mut body, inner_attributes) = self.parse_statement_list(inner_attributes);
         if let Some(attrs) = inner_attributes {
             if !attrs.is_empty() {
@@ -399,14 +391,16 @@ impl<'input> Parser<'input> {
                 })));
             }
         }
-        if let Some(stmt) = body.last() {
-            end = stmt.base().location.end;
-        }
 
-        let eof = self.peek().comments.clone();
+        let eof_t = self.peek();
+        let eof_pos = eof_t.start_pos;
+        let eof = eof_t.comments.clone();
         File {
             base: BaseNode {
-                location: self.source_location(&start_pos, &end),
+                location: self.source_location(
+                    &ast::Position { line: 1, column: 1 },
+                    &ast::Position::from(&eof_pos),
+                ),
                 ..BaseNode::default()
             },
             name: self.fname.clone(),

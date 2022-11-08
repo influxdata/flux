@@ -221,7 +221,7 @@ mod tests {
         let got_err = merge_packages(&mut out_pkg, &mut in_pkg)
             .unwrap_err()
             .to_string();
-        let want_err = r#"error at test_in.flux@1:1-1:9: file is in default package "main", but other files are in package "foo""#;
+        let want_err = r#"error at test_in.flux@1:1-2:1: file is in default package "main", but other files are in package "foo""#;
         assert_eq!(got_err, want_err);
     }
 

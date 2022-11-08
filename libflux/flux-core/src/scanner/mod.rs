@@ -85,7 +85,7 @@ impl<'a> Scanner<'a> {
             checkpoint: 0,
             checkpoint_line: 1,
             checkpoint_last_newline: 0,
-            positions: HashMap::default(),
+            positions: [(Position { line: 1, column: 1 }, 0)].into_iter().collect(),
             comments: Vec::new(),
         }
     }

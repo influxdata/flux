@@ -14,8 +14,8 @@ fn map_member_expressions() {
             base: BaseNode {
                 location: SourceLocation {
                     start: "line: 1, column: 1",
-                    end: "line: 3, column: 13",
-                    source: "m = {key1: 1, key2:\"value2\"}\n\t\t\tm.key1\n\t\t\tm[\"key2\"]",
+                    end: "line: 4, column: 4",
+                    source: "m = {key1: 1, key2:\"value2\"}\n\t\t\tm.key1\n\t\t\tm[\"key2\"]\n\t\t\t",
                 },
             },
             name: "",

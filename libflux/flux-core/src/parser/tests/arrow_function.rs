@@ -681,9 +681,9 @@ fn arrow_function_called_in_binary_expression() {
         File {
             base: BaseNode {
                 location: SourceLocation {
-                    start: "line: 2, column: 13",
+                    start: "line: 1, column: 1",
                     end: "line: 3, column: 39",
-                    source: "plusOne = (r) => r + 1\n            plusOne(r:5) == 6 or die()",
+                    source: "\n            plusOne = (r) => r + 1\n            plusOne(r:5) == 6 or die()",
                 },
             },
             name: "",

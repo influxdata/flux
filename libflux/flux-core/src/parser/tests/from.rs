@@ -1859,9 +1859,9 @@ join(tables:[a,b], on:["host"], fn: (a,b) => a["_field"] + b["_field"])"#,
         File {
             base: BaseNode {
                 location: SourceLocation {
-                    start: "line: 2, column: 1",
+                    start: "line: 1, column: 1",
                     end: "line: 4, column: 72",
-                    source: "a = from(bucket:\"dbA/autogen\") |> range(start:-1h)\nb = from(bucket:\"dbB/autogen\") |> range(start:-1h)\njoin(tables:[a,b], on:[\"host\"], fn: (a,b) => a[\"_field\"] + b[\"_field\"])",
+                    source: "\na = from(bucket:\"dbA/autogen\") |> range(start:-1h)\nb = from(bucket:\"dbB/autogen\") |> range(start:-1h)\njoin(tables:[a,b], on:[\"host\"], fn: (a,b) => a[\"_field\"] + b[\"_field\"])",
                 },
             },
             name: "",
@@ -2665,9 +2665,9 @@ join(tables:[a,b], on:["t1"], fn: (a,b) => (a["_field"] - b["_field"]) / b["_fie
         File {
             base: BaseNode {
                 location: SourceLocation {
-                    start: "line: 2, column: 1",
+                    start: "line: 1, column: 1",
                     end: "line: 10, column: 86",
-                    source: "a = from(bucket:\"Flux/autogen\")\n\t|> filter(fn: (r) => r[\"_measurement\"] == \"a\")\n\t|> range(start:-1h)\n\nb = from(bucket:\"Flux/autogen\")\n\t|> filter(fn: (r) => r[\"_measurement\"] == \"b\")\n\t|> range(start:-1h)\n\njoin(tables:[a,b], on:[\"t1\"], fn: (a,b) => (a[\"_field\"] - b[\"_field\"]) / b[\"_field\"])",
+                    source: "\na = from(bucket:\"Flux/autogen\")\n\t|> filter(fn: (r) => r[\"_measurement\"] == \"a\")\n\t|> range(start:-1h)\n\nb = from(bucket:\"Flux/autogen\")\n\t|> filter(fn: (r) => r[\"_measurement\"] == \"b\")\n\t|> range(start:-1h)\n\njoin(tables:[a,b], on:[\"t1\"], fn: (a,b) => (a[\"_field\"] - b[\"_field\"]) / b[\"_field\"])",
                 },
             },
             name: "",
