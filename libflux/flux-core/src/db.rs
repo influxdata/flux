@@ -64,7 +64,7 @@ impl HttpFluxmod {
         }
     }
 
-    #[cfg(all(test, feature = "integration_test"))]
+    #[cfg(test)]
     fn publish(
         &self,
         module: &str,
@@ -811,7 +811,6 @@ impl Importer for &dyn Flux {
 mod tests {
     use super::*;
 
-    #[cfg(feature = "integration_test")]
     fn setup_module(fluxmod: &HttpFluxmod, modules: MockFluxmod) {
         let version = fluxmod
             .latest_version("mymodule")
@@ -827,25 +826,21 @@ mod tests {
         }
     }
 
-    #[cfg(not(feature = "integration_test"))]
     fn test_db(modules: MockFluxmod) -> Database {
         let mut db = Database::default();
         db.set_use_prelude(false);
-        db.set_fluxmod(Some(Arc::new(modules)));
-        db
-    }
 
-    #[cfg(feature = "integration_test")]
-    fn test_db(modules: MockFluxmod) -> Database {
-        let fluxmod = HttpFluxmod::new(
-            std::env::var("FLUXMOD_BASE_URL").unwrap_or_else(|err| panic!("{}", err)),
-            std::env::var("FLUXMOD_TOKEN").unwrap_or_else(|err| panic!("{}", err)),
-        );
-        setup_module(&fluxmod, modules);
+        if let Ok(base_url) = std::env::var("FLUXMOD_BASE_URL") {
+            let fluxmod = HttpFluxmod::new(
+                base_url,
+                std::env::var("FLUXMOD_TOKEN").unwrap_or_else(|err| panic!("{}", err)),
+            );
+            setup_module(&fluxmod, modules);
 
-        let mut db = Database::default();
-        db.set_use_prelude(false);
-        db.set_fluxmod(Some(Arc::new(fluxmod)));
+            db.set_fluxmod(Some(Arc::new(fluxmod)));
+        } else {
+            db.set_fluxmod(Some(Arc::new(modules)));
+        }
         db
     }
 

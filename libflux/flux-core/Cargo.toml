@@ -28,8 +28,6 @@ lsp = ["lsp-types"]
 doc = ["csv", "once_cell", "pad", "pulldown-cmark", "rayon", "tempfile"]
 fluxmod = ["ureq", "zip"]
 
-integration_test = []
-
 [dependencies]
 anyhow = "1.0.56"
 chrono = { version = "0.4", features = ["serde"] }
