@@ -220,8 +220,9 @@ func (p *PackageClause) Copy() Node {
 type ImportDeclaration struct {
 	Loc
 
-	As   *Identifier
-	Path *StringLiteral
+	As       *Identifier
+	Registry *string
+	Path     string
 }
 
 func (*ImportDeclaration) NodeType() string { return "ImportDeclaration" }
@@ -234,7 +235,6 @@ func (d *ImportDeclaration) Copy() Node {
 	*nd = *d
 
 	nd.As = d.As.Copy().(*Identifier)
-	nd.Path = d.Path.Copy().(*StringLiteral)
 
 	return nd
 }

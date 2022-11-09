@@ -167,7 +167,7 @@ func GetOption(ctx context.Context, pkg string, option string) (values.Value, bo
 }
 
 func (itrp *Interpreter) doImport(ctx context.Context, dec *semantic.ImportDeclaration, scope values.Scope, importer Importer) error {
-	path := dec.Path.Value
+	path := dec.Path
 	pkg, err := importer.ImportPackageObject(path)
 	if err != nil {
 		return err
