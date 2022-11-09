@@ -24,7 +24,7 @@ required-features = ["doc"]
 [features]
 default = ["strict"]
 strict = []
-lsp = ["lsp-types"]
+lsp = ["lsp-types", "chrono/wasmbind"]
 doc = ["csv", "once_cell", "pad", "pulldown-cmark", "rayon", "tempfile"]
 
 [dependencies]
