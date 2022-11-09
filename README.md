@@ -35,7 +35,7 @@ $ sudo apt-get install -y clang pkg-config
 $ brew install pkg-config
 
 # Next, install the pkg-config wrapper utility
-$ go get github.com/influxdata/pkg-config
+$ go install github.com/influxdata/pkg-config@latest
 
 # Optionally, add the GOBIN directory to your PATH
 $ export PATH=${GOPATH}/bin:${PATH}
