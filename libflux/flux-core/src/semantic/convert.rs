@@ -49,6 +49,16 @@ pub enum ErrorKind {
     ExtraParameterRecord,
     #[error("invalid duration, {0}")]
     InvalidDuration(String),
+    #[error("path segment \"{0}\" is not allowed in import path")]
+    InvalidImportPathSegment(String),
+    #[error("import path {0} conflicts with registry definition with the same path")]
+    ImportRegistryConflict(String),
+    #[error("incorrect number of parameters for registry annotation")]
+    RegistryIncorrectNumberOfParameters,
+    #[error("registry parameters must be string literals")]
+    RegistryInvalidLiteralForParameters,
+    #[error("duplicate registry definition")]
+    RegistryDuplicateName,
 }
 
 impl AsDiagnostic for ErrorKind {
@@ -356,6 +366,7 @@ impl<'a> Symbols<'a> {
 
 pub(crate) struct Converter<'a> {
     symbols: Symbols<'a>,
+    registry_map: HashMap<String, String>,
     errors: Errors<Error>,
     config: &'a AnalyzerConfig,
 }
@@ -364,6 +375,7 @@ impl<'a> Converter<'a> {
     fn new(config: &'a AnalyzerConfig) -> Self {
         Converter {
             symbols: Symbols::new(None),
+            registry_map: HashMap::new(),
             errors: Errors::new(),
             config,
         }
@@ -372,6 +384,7 @@ impl<'a> Converter<'a> {
     pub(crate) fn with_env(env: &'a Environment, config: &'a AnalyzerConfig) -> Self {
         Converter {
             symbols: Symbols::new(Some(env)),
+            registry_map: HashMap::new(),
             errors: Errors::new(),
             config,
         }
@@ -391,6 +404,7 @@ impl<'a> Converter<'a> {
 
     pub(crate) fn convert_package(&mut self, pkg: &ast::Package) -> Package {
         let package = pkg.package.clone();
+        self.collect_registry_definitions(pkg);
 
         self.symbols.enter_scope();
 
@@ -406,6 +420,45 @@ impl<'a> Converter<'a> {
             loc: pkg.base.location.clone(),
             package,
             files,
+        }
+    }
+
+    fn collect_registry_definitions(&mut self, pkg: &ast::Package) {
+        for file in &pkg.files {
+            if let Some(pkg_clause) = &file.package {
+                for attr in &pkg_clause.base.attributes {
+                    if attr.params.len() != 2 {
+                        let err = located(
+                            attr.base.location.clone(),
+                            ErrorKind::RegistryIncorrectNumberOfParameters,
+                        );
+                        self.errors.push(err);
+                        continue;
+                    }
+
+                    match (&attr.params[0].value, &attr.params[1].value) {
+                        (ast::Expression::StringLit(name), ast::Expression::StringLit(url)) => {
+                            if self.registry_map.contains_key(name.value.as_str()) {
+                                let err = located(
+                                    attr.base.location.clone(),
+                                    ErrorKind::RegistryDuplicateName,
+                                );
+                                self.errors.push(err);
+                                continue;
+                            }
+                            self.registry_map
+                                .insert(name.value.clone(), url.value.clone());
+                        }
+                        _ => {
+                            let err = located(
+                                attr.base.location.clone(),
+                                ErrorKind::RegistryInvalidLiteralForParameters,
+                            );
+                            self.errors.push(err);
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -450,14 +503,52 @@ impl<'a> Converter<'a> {
                 (id.name.clone(), Some(id))
             }
         };
-        let path = self.convert_string_literal(&imp.path);
+        let (registry, path) = self.convert_import_path(&imp.path);
 
         ImportDeclaration {
             loc: imp.base.location.clone(),
             alias,
+            registry,
             path,
             import_symbol,
         }
+    }
+
+    fn convert_import_path(&mut self, path: &ast::StringLit) -> (Option<String>, String) {
+        let path_str = path.value.as_str();
+        // Empty components or components completely composed of dots are just not allowed.
+        for p in path_str.split('/') {
+            if p.is_empty() || p == "." || p == ".." {
+                self.errors.push(located(
+                    path.base.location.clone(),
+                    ErrorKind::InvalidImportPathSegment(p.to_string()),
+                ));
+                return (None, path_str.to_string());
+            }
+        }
+
+        // Determine which registry names match the path and
+        // return the longest one that matches.
+        let registry = self
+            .registry_map
+            .iter()
+            .filter(|(name, _)| path_str.starts_with(name.as_str()))
+            .max_by_key(|(name, _)| name.as_str().len());
+        if let Some((name, url)) = registry {
+            // At least one registry definition matched.
+            // Determine if it is valid.
+            let import_path = path_str.trim_start_matches(name.as_str());
+            // This logic works because we already checked for empty path segments above.
+            if !import_path.is_empty() && import_path.starts_with('/') {
+                return (Some(url.to_string()), import_path[1..].to_string());
+            }
+
+            self.errors.push(located(
+                path.base.location.clone(),
+                ErrorKind::ImportRegistryConflict(path_str.to_string()),
+            ));
+        }
+        (None, path_str.to_string())
     }
 
     fn convert_statements(&mut self, package: &str, stmts: &[ast::Statement]) -> Vec<Statement> {
@@ -1500,19 +1591,66 @@ mod tests {
                 imports: vec![
                     ImportDeclaration {
                         loc: b.location.clone(),
-                        path: StringLit {
-                            loc: b.location.clone(),
-                            value: "path/foo".to_string(),
-                        },
+                        registry: None,
+                        path: "path/foo".to_string(),
                         alias: None,
                         import_symbol: symbols["foo"].clone(),
                     },
                     ImportDeclaration {
                         loc: b.location.clone(),
-                        path: StringLit {
-                            loc: b.location.clone(),
-                            value: "path/bar".to_string(),
-                        },
+                        registry: None,
+                        path: "path/bar".to_string(),
+                        alias: Some(Identifier {
+                            loc: b.location,
+                            name: symbols["b"].clone(),
+                        }),
+                        import_symbol: symbols["b"].clone(),
+                    },
+                ],
+                body: Vec::new(),
+            }],
+        };
+        assert_eq!(want, got);
+    }
+
+    #[test]
+    fn test_convert_imports_with_registry() {
+        let b = ast::BaseNode::default();
+        let pkg = parse_package(
+            r#"@registry("modules", "https://fluxlang.dev/modules")
+            package qux
+            import "path/foo"
+            import b "modules/path/bar"
+            "#,
+        );
+
+        let got = test_convert(pkg).unwrap();
+        let symbols = collect_symbols(&got);
+
+        let want = Package {
+            loc: b.location.clone(),
+            package: "qux".to_string(),
+            files: vec![File {
+                loc: b.location.clone(),
+                package: Some(PackageClause {
+                    loc: b.location.clone(),
+                    name: Identifier {
+                        loc: b.location.clone(),
+                        name: symbols["qux"].clone(),
+                    },
+                }),
+                imports: vec![
+                    ImportDeclaration {
+                        loc: b.location.clone(),
+                        registry: None,
+                        path: "path/foo".to_string(),
+                        alias: None,
+                        import_symbol: symbols["foo"].clone(),
+                    },
+                    ImportDeclaration {
+                        loc: b.location.clone(),
+                        registry: Some("https://fluxlang.dev/modules".to_string()),
+                        path: "path/bar".to_string(),
                         alias: Some(Identifier {
                             loc: b.location,
                             name: symbols["b"].clone(),

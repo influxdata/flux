@@ -558,7 +558,7 @@ pub struct File {
 impl File {
     fn infer(&mut self, infer: &mut InferState) -> Result {
         for dec in &self.imports {
-            let path = &dec.path.value;
+            let path = &dec.path;
             let name = dec.import_symbol.clone();
 
             infer.imports.insert(name.clone(), path.clone());
@@ -610,7 +610,8 @@ pub struct ImportDeclaration {
     pub loc: ast::SourceLocation,
 
     pub alias: Option<Identifier>,
-    pub path: StringLit,
+    pub registry: Option<String>,
+    pub path: String,
     pub import_symbol: Symbol,
 }
 
