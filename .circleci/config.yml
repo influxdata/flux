@@ -145,11 +145,11 @@ jobs:
             go install github.com/influxdata/pkg-config
       - run:
           name: Generate libflux
-          command: go generate ./libflux/go/libflux
+          command: RUSTUP_TOOLCHAIN=1.63-x86_64-pc-windows-gnu go generate ./libflux/go/libflux
       - run:
           name: Build flux
           no_output_timeout: 20m
-          command: go build ./...
+          command: RUSTUP_TOOLCHAIN=1.63-x86_64-pc-windows-gnu go build ./...
 
   release:
     docker:
