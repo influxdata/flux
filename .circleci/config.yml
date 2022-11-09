@@ -114,8 +114,7 @@ jobs:
               llvm \
               pkgconfiglite
 
-            # rustc depends on a version of libgcc_eh that isn't present in the latest mingw.
-            choco install mingw --version=8.1.0
+            choco install mingw --version=12.2.0
 
             echo 'export PATH="${HOME}/.cargo/bin:/c/Program Files/Go/bin:${PATH}"' >> $BASH_ENV
       - checkout
