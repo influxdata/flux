@@ -147,7 +147,7 @@ func TestFormatWithCommentsUnaryExpressions(t *testing.T) {
 a = 5.0
 
 // eval this
-10.0 * (-a) == -0.5
+10.0 * -a == -0.5
     // or this
     or
     a == 6.0

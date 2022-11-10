@@ -192,7 +192,7 @@ fn dict_type() {
 #[test]
 fn conditional() {
     assert_unchanged("if a then b else c");
-    assert_unchanged(r#"if not a or b and c then 2 / (3 * 2) else obj.a(par: "foo")"#);
+    assert_unchanged(r#"if not (a or b) and c then 2 / (3 * 2) else obj.a(par: "foo")"#);
     assert_unchanged(
         "if x then
     y
@@ -568,7 +568,7 @@ fn comments1() {
     assert_unchanged("1\n    //comment\n    *\n    1");
     assert_unchanged("from()\n    //comment\n    |> to()");
     assert_unchanged("//comment\n+1");
-    assert_format("1 * //comment\n-1", "1 * (//comment\n    -1)");
+    assert_unchanged("1 * //comment\n    -1");
 }
 
 #[test]
@@ -2100,4 +2100,22 @@ a",
 #[test]
 fn format_unrepresentable_float() {
     assert_unchanged("0.3333333333333333333333333333333");
+}
+
+#[test]
+fn unary_add_and_sub_operator() {
+    assert_unchanged("-(a + b)");
+    assert_unchanged("-(a + b) * (c - d)");
+    assert_format("10.0 * (-a) == -0.5", "10.0 * -a == -0.5");
+}
+
+#[test]
+fn unary_not_and_exist_operator() {
+    assert_unchanged("not -a == b");
+    assert_unchanged("not (true and true)");
+    assert_unchanged("exists a * b + c");
+    assert_unchanged("not exists a * b + c");
+    assert_unchanged("not exists a * b + c == d");
+    assert_unchanged(r#"filter(fn: (r) => not (r.a == "foo" and r.b =~ /^\/$/))"#);
+    assert_unchanged(r#"filter(fn: (r) => exists r.a or exists r.b)"#);
 }

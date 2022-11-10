@@ -21,7 +21,7 @@ testcase unionTwoStreamsWithEmptyGroupKeys {
     t2 =
         generate.from(
             count: 4,
-            fn: (n) => n * (-1),
+            fn: (n) => n * -1,
             start: 2021-01-01T00:00:00Z,
             stop: 2021-01-05T00:00:00Z,
         )

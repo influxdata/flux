@@ -1914,28 +1914,28 @@ fn get_precedences(parent: &Node, child: &Node) -> (u32, u32) {
     let pvp: u32 = match parent {
         Node::BinaryExpr(p) => Operator::new(&p.operator).get_precedence(),
         Node::LogicalExpr(p) => Operator::new_logical(&p.operator).get_precedence(),
-        Node::UnaryExpr(p) => Operator::new(&p.operator).get_precedence(),
-        Node::FunctionExpr(_) => 3,
-        Node::PipeExpr(_) => 2,
+        Node::UnaryExpr(p) => Operator::new_unary(&p.operator).get_precedence(),
+        Node::FunctionExpr(_) => 4,
+        Node::PipeExpr(_) => 3,
         Node::CallExpr(_) => 1,
         Node::MemberExpr(_) => 1,
         Node::IndexExpr(_) => 1,
         Node::ParenExpr(p) => return get_precedences(&(Node::from_expr(&p.expression)), child),
-        Node::ConditionalExpr(_) => 11,
+        Node::ConditionalExpr(_) => 12,
         _ => 0,
     };
 
     let pvc: u32 = match child {
         Node::BinaryExpr(p) => Operator::new(&p.operator).get_precedence(),
         Node::LogicalExpr(p) => Operator::new_logical(&p.operator).get_precedence(),
-        Node::UnaryExpr(p) => Operator::new(&p.operator).get_precedence(),
-        Node::FunctionExpr(_) => 3,
-        Node::PipeExpr(_) => 2,
+        Node::UnaryExpr(p) => Operator::new_unary(&p.operator).get_precedence(),
+        Node::FunctionExpr(_) => 4,
+        Node::PipeExpr(_) => 3,
         Node::CallExpr(_) => 1,
         Node::MemberExpr(_) => 1,
         Node::IndexExpr(_) => 1,
         Node::ParenExpr(p) => return get_precedences(parent, &(Node::from_expr(&p.expression))),
-        Node::ConditionalExpr(_) => 11,
+        Node::ConditionalExpr(_) => 12,
         _ => 0,
     };
 
@@ -1946,6 +1946,7 @@ struct Operator<'a> {
     op: Option<&'a ast::Operator>,
     l_op: Option<&'a ast::LogicalOperator>,
     is_logical: bool,
+    is_unary: bool,
 }
 
 impl<'a> Operator<'a> {
@@ -1954,6 +1955,7 @@ impl<'a> Operator<'a> {
             op: Some(op),
             l_op: None,
             is_logical: false,
+            is_unary: false,
         }
     }
 
@@ -1962,39 +1964,59 @@ impl<'a> Operator<'a> {
             op: None,
             l_op: Some(op),
             is_logical: true,
+            is_unary: false,
+        }
+    }
+
+    fn new_unary(op: &ast::Operator) -> Operator {
+        Operator {
+            op: Some(op),
+            l_op: None,
+            is_logical: false,
+            is_unary: true,
         }
     }
 
     fn get_precedence(&self) -> u32 {
-        if !self.is_logical {
+        if self.is_unary {
             return match self.op.unwrap() {
-                ast::Operator::PowerOperator => 4,
-                ast::Operator::MultiplicationOperator => 5,
-                ast::Operator::DivisionOperator => 5,
-                ast::Operator::ModuloOperator => 5,
-                ast::Operator::AdditionOperator => 6,
-                ast::Operator::SubtractionOperator => 6,
-                ast::Operator::LessThanEqualOperator => 7,
-                ast::Operator::LessThanOperator => 7,
-                ast::Operator::GreaterThanEqualOperator => 7,
-                ast::Operator::GreaterThanOperator => 7,
-                ast::Operator::StartsWithOperator => 7,
-                ast::Operator::InOperator => 7,
-                ast::Operator::NotEmptyOperator => 7,
-                ast::Operator::EmptyOperator => 7,
-                ast::Operator::EqualOperator => 7,
-                ast::Operator::NotEqualOperator => 7,
-                ast::Operator::RegexpMatchOperator => 7,
-                ast::Operator::NotRegexpMatchOperator => 7,
-                ast::Operator::NotOperator => 8,
-                ast::Operator::ExistsOperator => 8,
-                ast::Operator::InvalidOperator => 0,
+                ast::Operator::AdditionOperator => 2,
+                ast::Operator::SubtractionOperator => 2,
+                ast::Operator::NotOperator => 9,
+                ast::Operator::ExistsOperator => 9,
+                _ => 0,
             };
         }
-        match self.l_op.unwrap() {
-            ast::LogicalOperator::AndOperator => 9,
-            ast::LogicalOperator::OrOperator => 10,
+        if self.is_logical {
+            return match self.l_op.unwrap() {
+                ast::LogicalOperator::AndOperator => 10,
+                ast::LogicalOperator::OrOperator => 11,
+            };
         }
+        match self.op.unwrap() {
+                ast::Operator::PowerOperator => 5,
+                ast::Operator::MultiplicationOperator => 6,
+                ast::Operator::DivisionOperator => 6,
+                ast::Operator::ModuloOperator => 6,
+                ast::Operator::AdditionOperator => 7,
+                ast::Operator::SubtractionOperator => 7,
+                ast::Operator::LessThanEqualOperator => 8,
+                ast::Operator::LessThanOperator => 8,
+                ast::Operator::GreaterThanEqualOperator => 8,
+                ast::Operator::GreaterThanOperator => 8,
+                ast::Operator::StartsWithOperator => 8,
+                ast::Operator::InOperator => 8,
+                ast::Operator::NotEmptyOperator => 8,
+                ast::Operator::EmptyOperator => 8,
+                ast::Operator::EqualOperator => 8,
+                ast::Operator::NotEqualOperator => 8,
+                ast::Operator::RegexpMatchOperator => 8,
+                ast::Operator::NotRegexpMatchOperator => 8,
+                ast::Operator::NotOperator => 9,
+                ast::Operator::ExistsOperator => 9,
+                ast::Operator::InvalidOperator => 0,
+            }
+        
     }
 }
 

@@ -964,21 +964,22 @@ The precedence of the operators is given in the table below. Operators with a lo
 | 1          | `a()`          | Function call             |
 |            | `a[]`          | Member or index access    |
 |            | `.`            | Member access             |
-| 2          | `\|>`          | Pipe forward              |
-| 3          | `() => 1`      | FunctionLiteral           |
-| 4          | `^`            | Exponentiation            |
-| 5          | `*` `/` `%`    | Multiplication, division, |
+| 2          | `+` `-`        | Unary positive negative   |
+| 3          | `\|>`          | Pipe forward              |
+| 4          | `() => 1`      | FunctionLiteral           |
+| 5          | `^`            | Exponentiation            |
+| 6          | `*` `/` `%`    | Multiplication, division, |
 |            |                | and modulo                |
-| 6          | `+` `-`        | Addition and subtraction  |
-| 7          | `==` `!=`      | Comparison operators      |
+| 7          | `+` `-`        | Addition and subtraction  |
+| 8          | `==` `!=`      | Comparison operators      |
 |            | `<` `<=`       |                           |
 |            | `>` `>=`       |                           |
 |            | `=~` `!~`      |                           |
-| 8          | `not`          | Unary logical operator    |
+| 9          | `not`          | Unary logical operator    |
 |            | `exists`       | Null check operator       |
-| 9          | `and`          | Logical AND               |
-| 10         | `or`           | Logical OR                |
-| 11         | `if/then/else` | Conditional               |
+| 10         | `and`          | Logical AND               |
+| 11         | `or`           | Logical OR                |
+| 12         | `if/then/else` | Conditional               |
 
 The operator precedence is encoded directly into the grammar as the following.
 
