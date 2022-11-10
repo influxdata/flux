@@ -3671,9 +3671,9 @@ a = 5.0
         File {
             base: BaseNode {
                 location: SourceLocation {
-                    start: "line: 2, column: 1",
+                    start: "line: 1, column: 1",
                     end: "line: 6, column: 13",
-                    source: "a = 5.0\n// eval this\n10.0 * -a == -0.5\n\t// or this\n\tor a == 6.0",
+                    source: "// define a\na = 5.0\n// eval this\n10.0 * -a == -0.5\n\t// or this\n\tor a == 6.0",
                 },
             },
             name: "",
@@ -3898,9 +3898,9 @@ fn mix_unary_logical_and_binary_expressions() {
         File {
             base: BaseNode {
                 location: SourceLocation {
-                    start: "line: 2, column: 13",
+                    start: "line: 1, column: 1",
                     end: "line: 2, column: 43",
-                    source: "not (f() == 6.0 * x) or fail()",
+                    source: "\n            not (f() == 6.0 * x) or fail()",
                 },
             },
             name: "",
@@ -4075,9 +4075,9 @@ fn mix_unary_logical_and_binary_expressions_with_extra_parens() {
         File {
             base: BaseNode {
                 location: SourceLocation {
-                    start: "line: 2, column: 13",
+                    start: "line: 1, column: 1",
                     end: "line: 2, column: 45",
-                    source: "(not (f() == 6.0 * x) or fail())",
+                    source: "\n            (not (f() == 6.0 * x) or fail())",
                 },
             },
             name: "",

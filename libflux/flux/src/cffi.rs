@@ -28,7 +28,8 @@ use fluxcore::{
 };
 
 use crate::{
-    new_db, semantic::flatbuffers::semantic_generated::fbsemantic::MonoTypeHolderArgs, Packages,
+    new_db, semantic::flatbuffers::semantic_generated::fbsemantic::MonoTypeHolderArgs, Options,
+    Packages,
 };
 
 use super::{new_semantic_analyzer, new_semantic_salsa_analyzer, prelude, Error, Result, IMPORTS};
@@ -398,7 +399,7 @@ fn new_stateful_analyzer(options: Options) -> Result<StatefulAnalyzer> {
     };
 
     let db = if options.features.contains(&Feature::SalsaDatabase) {
-        Some(new_db()?)
+        Some(new_db(options.clone())?)
     } else {
         None
     };
@@ -425,11 +426,11 @@ impl StatefulAnalyzer {
         &mut self,
         ast_pkg: &ast::Package,
     ) -> SalvageResult<fluxcore::semantic::nodes::Package, Error> {
-        let Options { features } = self.options.clone();
+        let Options { features, .. } = self.options.clone();
 
         let env = Environment::from(&self.env);
 
-        let result = if let Some(db) = &self.db {
+        let result = if let Some(db) = &mut self.db {
             let mut db = db as &dyn Flux;
             let mut analyzer = Analyzer::new(env, &mut db, AnalyzerConfig { features });
             analyzer.analyze_ast(ast_pkg)
@@ -539,15 +540,6 @@ pub unsafe extern "C" fn flux_analyze_with(
     .unwrap_or_else(|err| Some(err.into()))
 }
 
-/// Compilation options. Deserialized from json when called via the C API
-#[derive(Clone, Default, Debug)]
-#[cfg_attr(feature = "serde", derive(serde::Deserialize))]
-pub struct Options {
-    /// Features used in the flux compiler
-    #[serde(default)]
-    pub features: Vec<Feature>,
-}
-
 impl Options {
     unsafe fn from_c_str(options: *const c_char) -> Result<Self> {
         let options = CStr::from_ptr(options).to_bytes();
@@ -574,15 +566,14 @@ impl Options {
 /// that has been type-inferred.  This function is aware of the standard library
 /// and prelude.
 pub fn analyze(ast_pkg: &ast::Package, options: Options) -> SalvageResult<Package, Error> {
-    let Options { features } = options;
-
-    if features.contains(&Feature::SalsaDatabase) {
-        let mut analyzer = new_semantic_salsa_analyzer(AnalyzerConfig { features })?;
+    if options.features.contains(&Feature::SalsaDatabase) {
+        let mut analyzer = new_semantic_salsa_analyzer(options)?;
         let (_, sem_pkg) = analyzer
             .analyze_ast(ast_pkg)
             .map_err(|salvage| salvage.err_into().map(|(_, sem_pkg)| sem_pkg))?;
         Ok(sem_pkg)
     } else {
+        let Options { features, .. } = options;
         let mut analyzer = new_semantic_analyzer(AnalyzerConfig { features })?;
         let (_, sem_pkg) = analyzer
             .analyze_ast(ast_pkg)
@@ -628,6 +619,10 @@ pub unsafe extern "C" fn flux_get_env_stdlib(buf: *mut flux_buffer_t) {
 
 #[cfg(test)]
 mod tests {
+    use super::*;
+
+    use std::{collections::HashMap, sync::Arc};
+
     use fluxcore::{
         ast,
         semantic::{
@@ -636,9 +631,8 @@ mod tests {
             types::{BoundTvar, Label, MonoType, Property, Ptr, Record, Tvar, TvarMap},
             walk,
         },
+        FluxBase, FluxModule,
     };
-
-    use super::*;
 
     use crate::parser;
 
@@ -757,7 +751,7 @@ mod tests {
     }
 
     fn find_var_type_from_source(source: &str, var_name: &str) -> Result<MonoType> {
-        let mut analyzer = new_semantic_salsa_analyzer(AnalyzerConfig::default())?;
+        let mut analyzer = new_semantic_salsa_analyzer(Options::default())?;
         let pkg = match analyzer.analyze_source("".into(), "".into(), source) {
             Ok((_, pkg)) => pkg,
             Err(err) => match err.value {
@@ -923,7 +917,7 @@ from(bucket: v.bucket)
 
     #[test]
     fn deserialize_and_infer() {
-        let mut analyzer = new_semantic_salsa_analyzer(AnalyzerConfig::default()).unwrap();
+        let mut analyzer = new_semantic_salsa_analyzer(Options::default()).unwrap();
 
         let src = r#"
             x = from(bucket: "b")
@@ -958,7 +952,7 @@ from(bucket: v.bucket)
 
     #[test]
     fn infer_union() {
-        let mut analyzer = new_semantic_salsa_analyzer(AnalyzerConfig::default()).unwrap();
+        let mut analyzer = new_semantic_salsa_analyzer(Options::default()).unwrap();
 
         let src = r#"
             a = from(bucket: "b")
@@ -1042,7 +1036,7 @@ from(bucket: v.bucket)
 
     #[test]
     fn prelude_symbols_retain_their_package() {
-        let mut analyzer = new_semantic_salsa_analyzer(AnalyzerConfig::default()).unwrap();
+        let mut analyzer = new_semantic_salsa_analyzer(Options::default()).unwrap();
 
         let src = r#"
             derivative
@@ -1062,8 +1056,57 @@ from(bucket: v.bucket)
             walk::Node::Package(&pkg),
         );
 
-        dbg!(&pkg);
-
         assert_eq!(identifier.unwrap().name.package(), Some("universe"));
+    }
+
+    #[test]
+    fn fluxmod_with_prelude() {
+        let _ = env_logger::try_init();
+
+        let modules = [
+            (
+                "mymodule".into(),
+                FluxModule {
+                    files: vec![(
+                        "pack.flux".into(),
+                        Arc::from(
+                            r#"
+                    import "mymodule2"
+                    x = 1 + mymodule2.y
+                    "#,
+                        ),
+                    )],
+                },
+            ),
+            (
+                "mymodule2".into(),
+                FluxModule {
+                    files: vec![("main.flux".into(), Arc::from("y = 3"))],
+                },
+            ),
+        ]
+        .into_iter()
+        .collect::<HashMap<String, _>>();
+        let mut db = new_db(Options::default()).unwrap();
+        db.set_fluxmod(Some(Arc::new(modules)));
+
+        db.set_source(
+            "main/main.flux".into(),
+            r#"
+        import "mymodule"
+        import "mymodule2"
+        y = mymodule.x + mymodule2.y + 3
+        "#
+            .into(),
+        );
+
+        match db.semantic_package("main".into()) {
+            Ok(_) => (),
+            Err(err) => {
+                let mut errors = db.package_errors();
+                errors.push(err.error);
+                panic!("{}", errors);
+            }
+        }
     }
 }

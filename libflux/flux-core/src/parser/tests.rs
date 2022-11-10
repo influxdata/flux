@@ -1254,9 +1254,9 @@ import "path/bar""#,
             File {
                 base: BaseNode {
                     location: SourceLocation {
-                        start: "line: 2, column: 1",
+                        start: "line: 1, column: 1",
                         end: "line: 5, column: 18",
-                        source: "package baz\n\nimport \"path/foo\"\nimport \"path/bar\"",
+                        source: "\npackage baz\n\nimport \"path/foo\"\nimport \"path/bar\"",
                     },
                 },
                 name: "",
@@ -1345,9 +1345,9 @@ import "path/bar"
             File {
                 base: BaseNode {
                     location: SourceLocation {
-                        start: "line: 2, column: 1",
+                        start: "line: 1, column: 1",
                         end: "line: 7, column: 6",
-                        source: "package baz\n\nimport \"path/foo\"\nimport \"path/bar\"\n\n1 + 1",
+                        source: "\npackage baz\n\nimport \"path/foo\"\nimport \"path/bar\"\n\n1 + 1",
                     },
                 },
                 name: "",
@@ -1925,9 +1925,9 @@ fn comment() {
             File {
                 base: BaseNode {
                     location: SourceLocation {
-                        start: "line: 2, column: 4",
+                        start: "line: 1, column: 1",
                         end: "line: 2, column: 10",
-                        source: "from()",
+                        source: "// Comment\n\t\t\tfrom()",
                     },
                 },
                 name: "",
@@ -1994,9 +1994,9 @@ builtin foo
             File {
                 base: BaseNode {
                     location: SourceLocation {
-                        start: "line: 2, column: 1",
+                        start: "line: 1, column: 1",
                         end: "line: 4, column: 6",
-                        source: "builtin foo\n// colon comment\n: int",
+                        source: "// Comment\nbuiltin foo\n// colon comment\n: int",
                     },
                 },
                 name: "",

@@ -6,7 +6,7 @@ use crate::{
         env::Environment,
         import::{Importer, Packages},
         nodes,
-        types::PolyType,
+        types::{MonoType, PolyType},
         Analyzer, AnalyzerConfig, FileErrors, PackageExports,
     },
 };
@@ -14,10 +14,14 @@ use crate::{
 use super::*;
 
 use std::{
-    collections::{HashMap, HashSet},
-    io,
+    collections::{BTreeMap, HashMap, HashSet},
+    fmt,
+    io::{self, Read},
     path::PathBuf,
-    sync::{Arc, Mutex},
+    sync::{
+        atomic::{self, AtomicUsize},
+        Arc, Mutex, RwLock,
+    },
 };
 
 use thiserror::Error;
@@ -33,6 +37,202 @@ pub enum Error {
 
     #[error("{0}")]
     Message(String),
+}
+
+/// Interface for retrieving external flux modules
+pub trait Fluxmod: fmt::Debug + std::panic::RefUnwindSafe {
+    fn get_module(&self, path: &str) -> Option<FluxModule>;
+}
+
+#[cfg(feature = "fluxmod")]
+#[derive(Debug)]
+struct HttpFluxmod {
+    base_url: String,
+    token: String,
+    // The `RwLock` implements `UnwindSafe`, allowing this to be stored in salsa (which uses
+    // panics for some errors)
+    agent: RwLock<ureq::Agent>,
+}
+
+#[cfg(feature = "fluxmod")]
+impl HttpFluxmod {
+    fn new(base_url: String, token: String) -> Self {
+        HttpFluxmod {
+            base_url,
+            token,
+            agent: RwLock::new(ureq::agent()),
+        }
+    }
+
+    #[cfg(test)]
+    fn publish(
+        &self,
+        module: &str,
+        files: Vec<(String, Arc<str>)>,
+        version: &semver::Version,
+    ) -> Result<()> {
+        let mut multipart = multipart::client::lazy::Multipart::new();
+        for (name, contents) in &files {
+            let name =
+                percent_encoding::utf8_percent_encode(name, percent_encoding::NON_ALPHANUMERIC)
+                    .to_string();
+            multipart.add_stream("module", contents.as_bytes(), Some(name), None);
+        }
+        let body = multipart
+            .prepare()
+            .map_err(|err| Error::Message(format!("Unable to publish module: {}", err)))?;
+
+        let agent = self.agent.read().unwrap();
+        let response = agent
+            .post(&format!("{}/{}/@v/v{}.zip", self.base_url, module, version))
+            .set("Authorization", &format!("Token {}", self.token))
+            .set(
+                "Content-Type",
+                &format!("multipart/form-data; boundary={}", body.boundary()),
+            )
+            .send(body)
+            .map_err(|err| Self::ureq_error("Unable to publish module", err))?;
+
+        if !(200..300).contains(&response.status()) {
+            return Err(Error::Message(format!(
+                "Unable to publish module: {} {}",
+                response.status(),
+                response
+                    .into_string()
+                    .map_err(|err| Error::Message(err.to_string()))?
+            )));
+        }
+
+        Ok(())
+    }
+
+    fn ureq_error(msg: &str, err: ureq::Error) -> Error {
+        match err {
+            ureq::Error::Status(status, response) => Error::Message(format!(
+                "{}: {} {}",
+                msg,
+                status,
+                match response
+                    .into_string()
+                    .map_err(|err| Error::Message(err.to_string()))
+                {
+                    Ok(text) => text,
+                    Err(err) => return err,
+                }
+            )),
+            _ => Error::Message(format!("{}: {}", msg, err)),
+        }
+    }
+
+    fn latest_version(&self, module: &str) -> Result<String> {
+        let agent = self.agent.read().unwrap();
+        let response = agent
+            .get(&format!("{}/{}/@latest", self.base_url, module))
+            .set("Authorization", &format!("Token {}", self.token))
+            .call()
+            .map_err(|err| Self::ureq_error("Unable to retrieve the latest version", err))?;
+        if response.status() != 200 {
+            return Err(Error::Message(
+                response
+                    .into_string()
+                    .map_err(|err| Error::Message(err.to_string()))?,
+            ));
+        }
+
+        let version = response
+            .into_string()
+            .map_err(|err| Error::Message(err.to_string()))?
+            .trim()
+            .to_owned();
+
+        Ok(version)
+    }
+
+    fn download_module(&self, module: &str) -> Result<FluxModule> {
+        log::debug!("Searching fluxmod for `{}`", module);
+        if module.contains('/') {
+            return Err(Error::Message(format!("Invalid module name `{}`", module)));
+        }
+
+        let version = self.latest_version(module)?;
+        log::debug!("Found latest version `{}` for `{}`", version, module);
+
+        let agent = self.agent.read().unwrap();
+        let response = agent
+            .get(&format!("{}/{}/@v/{}.zip", self.base_url, module, version))
+            .set("Authorization", &format!("Token {}", self.token))
+            .call()
+            .map_err(|err| Self::ureq_error("Unable to download flux module", err))?;
+
+        if response.status() != 200 {
+            return Err(Error::Message(
+                response
+                    .into_string()
+                    .map_err(|err| Error::Message(err.to_string()))?,
+            ));
+        }
+
+        let mut module_files = Vec::new();
+        let mut bytes = Vec::new();
+        // TODO Limit the size
+        response
+            .into_reader()
+            .read_to_end(&mut bytes)
+            .map_err(|err| Error::Message(err.to_string()))?;
+        let mut archive = zip::ZipArchive::new(io::Cursor::new(&bytes[..]))
+            .map_err(|err| Error::Message(err.to_string()))?;
+        for i in 0..archive.len() {
+            let mut file = archive
+                .by_index(i)
+                .map_err(|err| Error::Message(err.to_string()))?;
+
+            let mut source = String::new();
+            file.read_to_string(&mut source)
+                .map_err(|err| Error::Message(err.to_string()))?;
+
+            module_files.push(([module, file.name()].join("/"), Arc::from(source)));
+        }
+
+        Ok(FluxModule {
+            files: module_files,
+        })
+    }
+}
+
+#[cfg(feature = "fluxmod")]
+impl Fluxmod for HttpFluxmod {
+    fn get_module(&self, path: &str) -> Option<FluxModule> {
+        self.download_module(path)
+            .map_err(|err| log::debug!("{}", err))
+            .ok()
+    }
+}
+
+type MockFluxmod = HashMap<String, FluxModule>;
+
+impl Fluxmod for MockFluxmod {
+    fn get_module(&self, path: &str) -> Option<FluxModule> {
+        let module = path.split('/').next()?;
+        self.get(module).map(|v| FluxModule {
+            files: v
+                .files
+                .iter()
+                .map(|(file, v)| ([path, file].join("/"), v.clone()))
+                .collect(),
+        })
+    }
+}
+
+// Technically exposed through the `FluxBase` trait but should only be used internally
+#[doc(hidden)]
+pub struct DepthGuard<'a> {
+    flux: &'a dyn FluxBase,
+}
+
+impl Drop for DepthGuard<'_> {
+    fn drop(&mut self) {
+        self.flux.exit_scope();
+    }
 }
 
 /// Base trait for the flux database
@@ -55,6 +255,11 @@ pub trait FluxBase {
 
     /// Returns the source code for `path`, returning an error if it does not exist
     fn source(&self, path: String) -> Result<Arc<str>>;
+
+    #[doc(hidden)]
+    fn enter_scope(&self) -> Result<DepthGuard<'_>>;
+    #[doc(hidden)]
+    fn exit_scope(&self);
 }
 
 /// Defines queries that drives flux compilation
@@ -71,6 +276,10 @@ pub trait Flux: FluxBase {
     #[salsa::input]
     fn analyzer_config(&self) -> AnalyzerConfig;
 
+    /// Defines the fluxmod interface for fetching external modules
+    #[salsa::input]
+    fn fluxmod(&self) -> Option<Arc<dyn Fluxmod>>;
+
     /// Enables the prelude for all compiled packages
     ///
     /// Default: true
@@ -80,6 +289,9 @@ pub trait Flux: FluxBase {
     /// Sets any precompiled packages that should be included in the compilation
     #[salsa::input]
     fn precompiled_packages(&self) -> Option<&'static Packages>;
+
+    /// Defines the fluxmod interface for fetching external modules
+    fn get_flux_module(&self, module: String) -> Option<Arc<FluxModule>>;
 
     /// Returns the `ast::Package` for a given module path
     // Normal `dependency` query that may call recursively into other queries. If the recursive
@@ -116,13 +328,15 @@ pub trait Flux: FluxBase {
     fn package_exports_import(
         &self,
         package_path: String,
-    ) -> Result<Arc<PackageExports>, nodes::ErrorKind>;
+    ) -> Result<Arc<PackageExports>, Option<nodes::ErrorKind>>;
 }
 
 /// Builder that configures a flux compiler database
 #[derive(Default)]
 pub struct DatabaseBuilder {
     filesystem_roots: Vec<PathBuf>,
+    base_url: Option<String>,
+    token: Option<String>,
 }
 
 impl DatabaseBuilder {
@@ -137,12 +351,29 @@ impl DatabaseBuilder {
         self
     }
 
+    /// Enables fluxmod lookups for the database
+    pub fn enable_fluxmod(mut self, base_url: String, token: String) -> Self {
+        log::debug!("Enabling fluxmod");
+        self.base_url = Some(base_url);
+        self.token = Some(token);
+        self
+    }
+
     /// Builds the flux compiler database
     pub fn build(self) -> Database {
-        Database {
+        let mut db = Database {
             filesystem_roots: self.filesystem_roots,
             ..Default::default()
+        };
+
+        if let (Some(base_url), Some(token)) = (self.base_url, self.token) {
+            #[cfg(feature = "fluxmod")]
+            db.set_fluxmod(Some(Arc::new(HttpFluxmod::new(base_url, token))));
+            #[cfg(not(feature = "fluxmod"))]
+            panic!("`fluxmod` feature must be enabled to use flux modules");
         }
+
+        db
     }
 }
 
@@ -151,8 +382,9 @@ impl DatabaseBuilder {
 pub struct Database {
     storage: salsa::Storage<Self>,
     pub(crate) packages: Mutex<HashSet<String>>,
-    package_errors: Mutex<HashMap<String, Error>>,
+    package_errors: Mutex<BTreeMap<String, Error>>,
     filesystem_roots: Vec<PathBuf>,
+    package_depth: AtomicUsize,
 }
 
 impl Default for Database {
@@ -162,15 +394,25 @@ impl Default for Database {
             packages: Default::default(),
             package_errors: Default::default(),
             filesystem_roots: Vec::new(),
+            package_depth: AtomicUsize::default(),
         };
         db.set_analyzer_config(AnalyzerConfig::default());
         db.set_use_prelude(true);
         db.set_precompiled_packages(None);
+        db.set_fluxmod(None);
         db
     }
 }
 
 impl salsa::Database for Database {}
+
+fn is_part_of_package(package: &str, path: &str) -> bool {
+    // Example: package: `internal/boolean` matches the file
+    // `internal/boolean/XXX.flux`
+    path.starts_with(package)
+        && path[package.len()..].starts_with('/')
+        && path[package.len() + 1..].split('/').count() == 1
+}
 
 impl FluxBase for Database {
     fn package_files(&self, package: &str) -> Result<Vec<String>> {
@@ -181,13 +423,7 @@ impl FluxBase for Database {
         found_files.extend(
             packages
                 .iter()
-                .filter(|p| {
-                    // Example: package: `internal/boolean` matches the file
-                    // `internal/boolean/XXX.flux`
-                    p.starts_with(package)
-                        && p[package.len()..].starts_with('/')
-                        && p[package.len() + 1..].split('/').count() == 1
-                })
+                .filter(|path| is_part_of_package(package, path))
                 .cloned(),
         );
 
@@ -228,6 +464,26 @@ impl FluxBase for Database {
                 return Ok(Arc::from(source));
             }
         }
+        if self.fluxmod().is_some() {
+            let module_name = path.split('/').next().unwrap();
+            // TODO Only reach out to fluxmod if `module` points to a registry
+            if let Some(module) = self.get_flux_module(module_name.to_owned()) {
+                return if let Some(source) = module
+                    .files
+                    .iter()
+                    .find(|(k, _)| *k == path)
+                    .map(|(_, source)| source)
+                {
+                    Ok(source.clone())
+                } else {
+                    Err(Error::Message(format!(
+                        "No files exist for package `{}`",
+                        path
+                    )))
+                };
+            }
+        }
+
         Ok(self.source_inner(path))
     }
 
@@ -235,6 +491,25 @@ impl FluxBase for Database {
         self.packages.lock().unwrap().insert(path.clone());
 
         self.set_source_inner(path, source)
+    }
+
+    fn enter_scope(&self) -> Result<DepthGuard<'_>> {
+        // This is maybe a bit low but should be fine for most practical uses and is low enough
+        // that the depth test errors instead of overflowing the stack. Could be raised if there is
+        // a need for it (though that requires some tweaking to get the test working).
+        const MAX_MODULE_DEPTH: usize = 60;
+        let depth = self.package_depth.fetch_add(1, atomic::Ordering::Acquire);
+        if depth < MAX_MODULE_DEPTH {
+            Ok(DepthGuard { flux: self })
+        } else {
+            Err(Error::Message(format!(
+                "Module imports exceeded the maximum depth of `{}`",
+                MAX_MODULE_DEPTH
+            )))
+        }
+    }
+    fn exit_scope(&self) {
+        self.package_depth.fetch_sub(1, atomic::Ordering::Release);
     }
 }
 
@@ -277,11 +552,40 @@ impl Database {
             }
         }
 
+        if self.fluxmod().is_some() {
+            let module_name = package.split('/').next().unwrap();
+            // TODO Only reach out to fluxmod if `module` points to a registry
+            if let Some(module) = self.get_flux_module(module_name.to_owned()) {
+                found_files.extend(
+                    module
+                        .files
+                        .iter()
+                        .map(|(k, _)| k.clone())
+                        .filter(|path| is_part_of_package(package, path)),
+                );
+            }
+        }
+
         // It is possible that we find the same file twice if the roots contain duplicates
         found_files.sort();
         found_files.dedup();
 
         Ok(found_files)
+    }
+}
+
+/// Representation of a flux module
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct FluxModule {
+    /// The files of the module
+    pub files: Vec<(String, Arc<str>)>,
+}
+
+fn get_flux_module(db: &dyn Flux, module: String) -> Option<Arc<FluxModule>> {
+    if let Some(fluxmod) = db.fluxmod() {
+        fluxmod.get_module(&module).map(Arc::new)
+    } else {
+        None
     }
 }
 
@@ -328,7 +632,7 @@ fn prelude(db: &dyn Flux) -> Result<Arc<PackageExports>> {
     for name in crate::semantic::bootstrap::PRELUDE {
         // Infer each package in the prelude allowing the earlier packages to be used by later
         // packages within the prelude list.
-        let (types, _sem_pkg) = db.semantic_package(name.into()).map_err(|err| err.error)?;
+        let types = db.package_exports(name.into()).map_err(|err| err.error)?;
 
         prelude_map.copy_bindings_from(&types);
     }
@@ -339,6 +643,7 @@ fn semantic_package(
     db: &dyn Flux,
     path: String,
 ) -> SalvageResult<(Arc<PackageExports>, Arc<nodes::Package>), Error> {
+    let _guard = db.enter_scope()?;
     // The previous standard library compiler happened to result in the prelude being incrementally
     // added to with later packages in the prelude depending on earlier ones. This was mostly
     // arbitrary and we should try to encode these dependencies more deliberately but these stages
@@ -399,15 +704,19 @@ fn package_exports(db: &dyn Flux, path: String) -> SalvageResult<Arc<PackageExpo
 fn package_exports_import(
     db: &dyn Flux,
     path: String,
-) -> Result<Arc<PackageExports>, nodes::ErrorKind> {
+) -> Result<Arc<PackageExports>, Option<nodes::ErrorKind>> {
     db.package_exports(path.clone())
         .map(|exports| {
             db.clear_error(&path);
             exports
         })
-        .map_err(|err| {
-            db.record_error(path.clone(), err.error);
-            nodes::ErrorKind::InvalidImportPath(path)
+        .map_err(|err| match err.error {
+            Error::FileError(_) => {
+                // Only record error for this package don't generate a new one
+                db.record_error(path, err.error);
+                None
+            }
+            Error::Message(msg) => Some(nodes::ErrorKind::Message(msg)),
         })
 }
 
@@ -442,7 +751,11 @@ fn recover_cycle2<T>(db: &dyn Flux, cycle: &[String], name: &str) -> SalvageResu
     .into())
 }
 
-fn recover_cycle<T>(_db: &dyn Flux, cycle: &[String], name: &str) -> Result<T, nodes::ErrorKind> {
+fn recover_cycle<T>(
+    _db: &dyn Flux,
+    cycle: &[String],
+    name: &str,
+) -> Result<T, Option<nodes::ErrorKind>> {
     // We get a list of strings like "semantic_package(\"b\")",
     let mut cycle: Vec<_> = cycle
         .iter()
@@ -455,16 +768,20 @@ fn recover_cycle<T>(_db: &dyn Flux, cycle: &[String], name: &str) -> Result<T, n
         .collect();
     cycle.pop();
 
-    Err(nodes::ErrorKind::ImportCycle {
+    Err(Some(nodes::ErrorKind::ImportCycle {
         package: name.into(),
         cycle,
-    })
+    }))
 }
 
 impl Importer for Database {
     fn import(&mut self, path: &str) -> Result<PolyType, nodes::ErrorKind> {
         self.package_exports_import(path.into())
             .map(|exports| exports.typ())
+            .or_else(|err| match err {
+                None => Ok(PolyType::from(MonoType::Error)),
+                Some(err) => Err(err),
+            })
     }
     fn symbol(&mut self, path: &str, symbol_name: &str) -> Option<Symbol> {
         self.package_exports_import(path.into())
@@ -477,10 +794,345 @@ impl Importer for &dyn Flux {
     fn import(&mut self, path: &str) -> Result<PolyType, nodes::ErrorKind> {
         self.package_exports_import(path.into())
             .map(|exports| exports.typ())
+            .or_else(|err| match err {
+                None => Ok(PolyType::from(MonoType::Error)),
+                Some(err) => Err(err),
+            })
     }
+
     fn symbol(&mut self, path: &str, symbol_name: &str) -> Option<Symbol> {
         self.package_exports_import(path.into())
             .ok()
             .and_then(|exports| exports.lookup_symbol(symbol_name).cloned())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn setup_module(fluxmod: &HttpFluxmod, modules: MockFluxmod) {
+        let version = fluxmod
+            .latest_version("mymodule")
+            .unwrap_or_else(|err| panic!("{}", err));
+
+        let mut version = semver::Version::parse(version.trim_start_matches('v')).unwrap();
+        version.patch += 1;
+
+        for (name, module) in modules {
+            fluxmod
+                .publish(&name, module.files, &version)
+                .unwrap_or_else(|err| panic!("{}", err));
+        }
+    }
+
+    fn test_db(modules: MockFluxmod) -> Database {
+        let mut db = Database::default();
+        db.set_use_prelude(false);
+
+        if let Ok(base_url) = std::env::var("FLUXMOD_BASE_URL") {
+            let fluxmod = HttpFluxmod::new(
+                base_url,
+                std::env::var("FLUXMOD_TOKEN").unwrap_or_else(|err| panic!("{}", err)),
+            );
+            setup_module(&fluxmod, modules);
+
+            db.set_fluxmod(Some(Arc::new(fluxmod)));
+        } else {
+            db.set_fluxmod(Some(Arc::new(modules)));
+        }
+        db
+    }
+
+    #[test]
+    fn fluxmod() {
+        let _ = env_logger::try_init();
+
+        let mut db = test_db(
+            [(
+                "mymodule".into(),
+                FluxModule {
+                    files: vec![("pack.flux".into(), "x = 1".into())],
+                },
+            )]
+            .into_iter()
+            .collect(),
+        );
+
+        db.set_source(
+            "main/main.flux".into(),
+            r#"
+        import "mymodule"
+        y = mymodule.x + 1
+        "#
+            .into(),
+        );
+
+        match db.semantic_package("main".into()) {
+            Ok(_) => (),
+            Err(err) => {
+                let mut errors = db.package_errors();
+                errors.push(err.error);
+                panic!("{}", errors);
+            }
+        }
+    }
+
+    #[test]
+    fn fluxmod_nested() {
+        let _ = env_logger::try_init();
+
+        let mut db = test_db(
+            [(
+                "mymodulenested".into(),
+                FluxModule {
+                    files: vec![
+                        ("nested/nested.flux".into(), "y = 1".into()),
+                        ("nested/nestedagain/nestedagain.flux".into(), "z = 3".into()),
+                    ],
+                },
+            )]
+            .into_iter()
+            .collect(),
+        );
+
+        db.set_source(
+            "main/main.flux".into(),
+            r#"
+        import "mymodulenested/nested"
+        import "mymodulenested/nested/nestedagain"
+        y = nested.y + nestedagain.z
+        "#
+            .into(),
+        );
+
+        match db.semantic_package("main".into()) {
+            Ok(_) => (),
+            Err(err) => {
+                let mut errors = db.package_errors();
+                errors.push(err.error);
+                panic!("{}", errors);
+            }
+        }
+    }
+
+    #[test]
+    fn fluxmod_recursive_dependencies() {
+        let _ = env_logger::try_init();
+
+        let mut db = test_db(
+            [
+                (
+                    "recursive_mymodule".into(),
+                    FluxModule {
+                        files: vec![(
+                            "pack.flux".into(),
+                            Arc::from(
+                                r#"
+                    import "recursive_mymodule2"
+                    x = 1 + recursive_mymodule2.y
+                    "#,
+                            ),
+                        )],
+                    },
+                ),
+                (
+                    "recursive_mymodule2".into(),
+                    FluxModule {
+                        files: vec![("main.flux".into(), Arc::from("y = 3"))],
+                    },
+                ),
+            ]
+            .into_iter()
+            .collect(),
+        );
+
+        db.set_source(
+            "main/main.flux".into(),
+            r#"
+        import "recursive_mymodule"
+        y = recursive_mymodule.x + 1
+        "#
+            .into(),
+        );
+
+        match db.semantic_package("main".into()) {
+            Ok(_) => (),
+            Err(err) => {
+                let mut errors = db.package_errors();
+                errors.push(err.error);
+                panic!("{}", errors);
+            }
+        }
+    }
+
+    #[test]
+    fn fluxmod_recursive_dependencies_2() {
+        let _ = env_logger::try_init();
+
+        let mut db = test_db(
+            [
+                (
+                    "recursive2_mymodule".into(),
+                    FluxModule {
+                        files: vec![(
+                            "pack.flux".into(),
+                            Arc::from(
+                                r#"
+                    import "recursive2_mymodule2"
+                    x = 1 + recursive2_mymodule2.y
+                    "#,
+                            ),
+                        )],
+                    },
+                ),
+                (
+                    "recursive2_mymodule2".into(),
+                    FluxModule {
+                        files: vec![("main.flux".into(), Arc::from("y = 3"))],
+                    },
+                ),
+            ]
+            .into_iter()
+            .collect(),
+        );
+
+        db.set_source(
+            "main/main.flux".into(),
+            r#"
+        import "recursive2_mymodule"
+        import "recursive2_mymodule2"
+        y = recursive2_mymodule.x + recursive2_mymodule2.y + 3
+        "#
+            .into(),
+        );
+
+        match db.semantic_package("main".into()) {
+            Ok(_) => (),
+            Err(err) => {
+                let mut errors = db.package_errors();
+                errors.push(err.error);
+                panic!("{}", errors);
+            }
+        }
+    }
+
+    #[test]
+    fn fluxmod_cyclic_dependency() {
+        let _ = env_logger::try_init();
+
+        let mut db = test_db(
+            [
+                (
+                    "cycle".into(),
+                    FluxModule {
+                        files: vec![(
+                            "pack.flux".into(),
+                            Arc::from(
+                                r#"
+                            import "cycle2"
+                            x = 1 + cycle2.y
+                            "#,
+                            ),
+                        )],
+                    },
+                ),
+                (
+                    "cycle2".into(),
+                    FluxModule {
+                        files: vec![(
+                            "main.flux".into(),
+                            Arc::from(
+                                r#"
+                            import "cycle"
+                            y = cycle.x + 3
+                            "#,
+                            ),
+                        )],
+                    },
+                ),
+            ]
+            .into_iter()
+            .collect(),
+        );
+
+        db.set_source(
+            "main/main.flux".into(),
+            r#"
+        import "cycle"
+        y = cycle.x
+        "#
+            .into(),
+        );
+
+        match db.semantic_package("main".into()) {
+            Ok(_) => panic!("Expected cycle error"),
+            Err(err) => {
+                let mut errors = db.package_errors();
+                errors.push(err.error);
+
+                // TODO This should ideally just be one error
+                expect_test::expect![[r#"
+                    error @0:0-0:0: package "cycle" depends on itself: cycle -> cycle -> cycle
+
+                    error @0:0-0:0: package "cycle2" depends on itself: cycle2 -> cycle -> cycle2
+
+                    error main/main.flux@2:9-2:23: package "cycle" depends on itself: cycle -> cycle -> cycle"#]].assert_eq(&errors.to_string());
+            }
+        }
+    }
+
+    #[test]
+    fn fluxmod_deep_dependency_error() {
+        let _ = env_logger::try_init();
+
+        let mut db = Database::default();
+        db.set_use_prelude(false);
+
+        // Returns a module "deepN" which imports "deep{N+1}" etc
+        #[derive(Default, Debug)]
+        struct DeepFluxmod;
+        impl Fluxmod for DeepFluxmod {
+            fn get_module(&self, path: &str) -> Option<FluxModule> {
+                if path.starts_with("deep") {
+                    let i = path.trim_start_matches("deep").parse::<i32>().unwrap() + 1;
+                    Some(FluxModule {
+                        files: vec![(
+                            format!("{}/file.flux", path),
+                            Arc::from(format!(
+                                r#"
+                            import "deep{i}"
+                            x = deep{i}.x
+                        "#,
+                                i = i,
+                            )),
+                        )],
+                    })
+                } else {
+                    None
+                }
+            }
+        }
+        db.set_fluxmod(Some(Arc::new(DeepFluxmod::default())));
+
+        db.set_source(
+            "main/main.flux".into(),
+            r#"
+        import "deep0"
+        y = deep0.x
+        "#
+            .into(),
+        );
+
+        let result = db.semantic_package("main".into());
+        let mut errors = db.package_errors();
+        if let Err(err) = result {
+            errors.push(err.error);
+        }
+
+        expect_test::expect![[
+            r#"error deep58/file.flux@2:29-2:44: Module imports exceeded the maximum depth of `60`"#
+        ]]
+        .assert_eq(&errors.to_string());
     }
 }

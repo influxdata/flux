@@ -998,8 +998,8 @@ string"
             base: BaseNode {
                 location: SourceLocation {
                     start: "line: 1, column: 1",
-                    end: "line: 4, column: 8",
-                    source: "\"\n this is a\nmultiline\nstring\"",
+                    end: "line: 5, column: 1",
+                    source: "\"\n this is a\nmultiline\nstring\"\n",
                 },
             },
             name: "",

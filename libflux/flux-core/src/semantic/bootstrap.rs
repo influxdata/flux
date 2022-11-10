@@ -348,26 +348,18 @@ mod tests {
             db.set_source(k.into(), v.into());
         }
 
-        let got_err = db
-            .semantic_package("b".into())
-            .expect_err("expected error error");
+        let result = db.semantic_package("b".into());
         let mut errors = db.package_errors();
-        errors.push(got_err.error);
+        if let Err(err) = result {
+            errors.push(err.error);
+        }
 
         expect_test::expect![[r#"
             error: expected int but found string
-              ┌─ a/a.flux:1:1
+              ┌─ a/a.flux:2:21
               │
-            1 │ x = 1 + ""
-              │ ^
-
-
-
-            error: invalid import path a
-              ┌─ b/b.flux:3:12
-              │
-            3 │             y = a.x
-              │            ^^^^^^^^^
+            2 │             x = 1 + ""
+              │                     ^^
 
         "#]]
         .assert_eq(&errors.to_string());
