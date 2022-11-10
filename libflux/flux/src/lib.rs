@@ -10,7 +10,7 @@ use fluxcore::semantic::flatbuffers::semantic_generated::fbsemantic as fb;
 use fluxcore::semantic::import::Packages;
 use fluxcore::semantic::{Analyzer, AnalyzerConfig, Feature, PackageExports};
 #[cfg(feature = "cffi")]
-use fluxcore::{Database, Flux};
+use fluxcore::{db, errors::Errors, Database, Flux};
 use once_cell::sync::Lazy;
 use thiserror::Error;
 
@@ -31,6 +31,10 @@ pub enum Error {
     /// Semantic error
     #[error(transparent)]
     Semantic(#[from] semantic::FileErrors),
+
+    /// Semantic error
+    #[error(transparent)]
+    Db(#[from] Errors<db::Error>),
 
     /// Options error
     #[error("Invalid compilation options: {0}")]

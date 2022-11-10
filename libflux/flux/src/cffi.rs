@@ -4,12 +4,13 @@ use std::{
     mem,
     os::raw::c_char,
     panic::{catch_unwind, resume_unwind},
+    sync::Arc,
 };
 
 use anyhow::anyhow;
 use fluxcore::{
-    ast,
-    errors::SalvageResult,
+    ast, db,
+    errors::{Salvage, SalvageResult},
     formatter, merge_packages,
     parser::Parser,
     semantic::{
@@ -316,6 +317,14 @@ pub unsafe extern "C" fn flux_error_str(errh: &ErrorHandle) -> *const c_char {
 pub unsafe extern "C" fn flux_error_print(errh: &ErrorHandle) {
     match &errh.err {
         Error::Semantic(err) => err.print(),
+        Error::Db(errors) => {
+            for err in errors {
+                match err {
+                    db::Error::FileError(err) => err.print(),
+                    _ => println!("{}", err),
+                }
+            }
+        }
         err => println!("{}", err),
     }
 }
@@ -433,10 +442,33 @@ impl StatefulAnalyzer {
         let result = if let Some(db) = &mut self.db {
             let mut db = db as &dyn Flux;
             let mut analyzer = Analyzer::new(env, &mut db, AnalyzerConfig { features });
-            analyzer.analyze_ast(ast_pkg)
+            let result = analyzer.analyze_ast(ast_pkg);
+
+            let mut errors = db.package_errors();
+            match result {
+                Ok(value) => {
+                    if errors.is_empty() {
+                        Ok(value)
+                    } else {
+                        Err(Salvage {
+                            value: Some(value),
+                            error: Error::from(errors),
+                        })
+                    }
+                }
+                Err(err) => {
+                    errors.push(Arc::new(err.error).into());
+                    Err(Salvage {
+                        value: err.value,
+                        error: Error::from(errors),
+                    })
+                }
+            }
         } else {
             let mut analyzer = Analyzer::new(env, &mut self.imports, AnalyzerConfig { features });
-            analyzer.analyze_ast(ast_pkg)
+            analyzer
+                .analyze_ast(ast_pkg)
+                .map_err(|err| err.map_err(Error::from))
         };
         let (mut env, sem_pkg) = match result {
             Ok(r) => r,
@@ -1108,5 +1140,67 @@ from(bucket: v.bucket)
                 panic!("{}", errors);
             }
         }
+    }
+
+    #[test]
+    fn multiple_errors_in_modules() {
+        let _ = env_logger::try_init();
+
+        let modules = [
+            (
+                "error1".into(),
+                FluxModule {
+                    files: vec![(
+                        "pack.flux".into(),
+                        Arc::from(
+                            r#"
+                            x = 1 + ""
+                            "#,
+                        ),
+                    )],
+                },
+            ),
+            (
+                "error2".into(),
+                FluxModule {
+                    files: vec![(
+                        "main.flux".into(),
+                        Arc::from(
+                            r#"
+                            y = 1 +
+                            "#,
+                        ),
+                    )],
+                },
+            ),
+        ]
+        .into_iter()
+        .collect::<HashMap<String, _>>();
+        let mut analyzer = new_stateful_analyzer(Options {
+            features: vec![Feature::SalsaDatabase],
+            ..Options::default()
+        })
+        .unwrap();
+        analyzer
+            .db
+            .as_mut()
+            .unwrap()
+            .set_fluxmod(Some(Arc::new(modules)));
+
+        let err = analyzer
+            .analyze(&parse(
+                "main".into(),
+                r#"
+            import "error1"
+            import "error2"
+            y = error1.x + error2.y
+        "#,
+            ))
+            .unwrap_err();
+
+        expect_test::expect![[r#"
+            error error1/pack.flux@2:37-2:39: expected int but found string
+
+            error error2/main.flux@3:29-3:29: invalid expression: invalid token for primary expression: EOF"#]].assert_eq(&err.to_string());
     }
 }
