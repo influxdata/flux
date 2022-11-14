@@ -83,9 +83,6 @@ pub enum ErrorKind {
     #[display(fmt = "variable {} lacks the {} constraint", var, kind)]
     MissingConstraint { var: BoundTvar, kind: Kind },
 
-    #[display(fmt = "{}", _0)]
-    Message(String),
-
     #[display(fmt = "{}. This is a bug in type inference", _0)]
     Bug(String),
 }
@@ -131,7 +128,6 @@ impl Substitutable for ErrorKind {
             | Self::ImportCycle { .. }
             | Self::UnableToVectorize(_)
             | Self::InvalidReturn
-            | Self::Message(_)
             | Self::Bug(_) => None,
         }
     }
@@ -562,7 +558,7 @@ pub struct File {
 impl File {
     fn infer(&mut self, infer: &mut InferState) -> Result {
         for dec in &self.imports {
-            let path = &dec.path;
+            let path = &dec.path.value;
             let name = dec.import_symbol.clone();
 
             infer.imports.insert(name.clone(), path.clone());
@@ -614,8 +610,7 @@ pub struct ImportDeclaration {
     pub loc: ast::SourceLocation,
 
     pub alias: Option<Identifier>,
-    pub registry: Option<String>,
-    pub path: String,
+    pub path: StringLit,
     pub import_symbol: Symbol,
 }
 

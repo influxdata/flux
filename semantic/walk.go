@@ -70,6 +70,7 @@ func walk(v Visitor, n Node) {
 		w := v.Visit(n)
 		if w != nil {
 			walk(w, n.As)
+			walk(w, n.Path)
 		}
 	case *Block:
 		if n == nil {

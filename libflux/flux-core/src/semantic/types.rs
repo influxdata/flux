@@ -108,16 +108,6 @@ pub struct PolyType {
     pub expr: MonoType,
 }
 
-impl From<MonoType> for PolyType {
-    fn from(expr: MonoType) -> Self {
-        Self {
-            vars: Vec::new(),
-            cons: BoundTvarKinds::new(),
-            expr,
-        }
-    }
-}
-
 /// Map of identifier to a polytype that preserves a sorted order when iterating.
 pub type PolyTypeMap<T = String> = SemanticMap<T, PolyType>;
 /// Nested map of polytypes that preserves a sorted order when iterating

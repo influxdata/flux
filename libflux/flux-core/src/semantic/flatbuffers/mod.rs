@@ -841,19 +841,10 @@ impl<'a, 'b> semantic::walk::Visitor<'_> for SerializingVisitor<'a, 'b> {
                     }
                 };
 
-                let registry = imp
-                    .registry
-                    .as_ref()
-                    .and_then(|registry| v.create_string(registry));
-                let path = v.create_string(imp.path.as_str());
+                let path = v.pop_expr_with_kind(fbsemantic::Expression::StringLiteral);
                 let import = fbsemantic::ImportDeclaration::create(
                     v.builder,
-                    &fbsemantic::ImportDeclarationArgs {
-                        loc,
-                        alias,
-                        registry,
-                        path,
-                    },
+                    &fbsemantic::ImportDeclarationArgs { loc, alias, path },
                 );
                 v.import_decls.push(import);
             }

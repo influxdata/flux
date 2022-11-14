@@ -63,7 +63,7 @@ func TestAccessNestedImport(t *testing.T) {
 				},
 				Imports: []*semantic.ImportDeclaration{
 					{
-						Path: "b",
+						Path: &semantic.StringLiteral{Value: "b"},
 					},
 				},
 				Body: []semantic.Statement{

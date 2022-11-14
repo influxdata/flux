@@ -351,11 +351,11 @@ func (rcv *ImportDeclaration) FromBuf(fb *fbsemantic.ImportDeclaration) error {
 			return errors.Wrap(err, codes.Inherit, "ImportDeclaration.As")
 		}
 	}
-	if fbRegistry := fb.Registry(); fbRegistry != nil {
-		rcv.Registry = stringPtr(string(fbRegistry))
-	}
-	if fbPath := fb.Path(); fbPath != nil {
-		rcv.Path = string(fbPath)
+	if fbPath := fb.Path(nil); fbPath != nil {
+		rcv.Path = new(StringLiteral)
+		if err = rcv.Path.FromBuf(fbPath); err != nil {
+			return errors.Wrap(err, codes.Inherit, "ImportDeclaration.Path")
+		}
 	}
 	return nil
 }
@@ -721,8 +721,4 @@ func (rcv *UnsignedIntegerLiteral) FromBuf(fb *fbsemantic.UnsignedIntegerLiteral
 	}
 	rcv.Value = fb.Value()
 	return nil
-}
-
-func stringPtr(v string) *string {
-	return &v
 }

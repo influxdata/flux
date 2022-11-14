@@ -105,6 +105,17 @@ void flux_free_stateful_analyzer(struct flux_stateful_analyzer_t *);
 // a semantic graph for that snippet.
 struct flux_error_t *flux_analyze_with(struct flux_stateful_analyzer_t *, const char * src, struct flux_ast_pkg_t *, struct flux_semantic_pkg_t **);
 
+// flux_analyze analyzes the given AST and will populate the second pointer argument with
+// a pointer to the resulting semantic graph.
+// It is the caller's responsibility to free the resulting semantic graph with a call to flux_free_semantic_pkg().
+// Note that the caller should free the pointer to the semantic graph, not the pointer to the pointer
+// to the semantic graph.  It is the former that references memory allocated by Rust.
+// If analysis fails, the second pointer argument wil be pointed at 0, and an error will be returned.
+// Any non-null error must be freed by calling flux_free_error.
+// Regardless of whether an error is returned, this function will consume and free its
+// flux_ast_pkg_t* argument, so it should not be reused after calling this function.
+struct flux_error_t *flux_analyze(struct flux_ast_pkg_t *, const char * options, struct flux_semantic_pkg_t **);
+
 // Find out the type of a variable referenced in the given Flux AST and return a MonoType flat buffer for it.
 // The Flux AST should not contain any definition for the referenced variable.
 // A type variable for the designated variable will be automatically injected into the type environment

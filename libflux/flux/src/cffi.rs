@@ -28,8 +28,7 @@ use fluxcore::{
 };
 
 use crate::{
-    new_db, semantic::flatbuffers::semantic_generated::fbsemantic::MonoTypeHolderArgs, Options,
-    Packages,
+    new_db, semantic::flatbuffers::semantic_generated::fbsemantic::MonoTypeHolderArgs, Packages,
 };
 
 use super::{new_semantic_analyzer, new_semantic_salsa_analyzer, prelude, Error, Result, IMPORTS};
@@ -345,6 +344,40 @@ pub unsafe extern "C" fn flux_merge_ast_pkgs(
     .unwrap_or_else(|err| Some(err.into()))
 }
 
+/// flux_analyze is a C-compatible wrapper around the analyze() function below
+///
+/// Note that Box<T> is used to indicate we are receiving/returning a C pointer and also
+/// transferring ownership.
+///
+/// # Safety
+///
+/// This function is unsafe because it dereferences a raw pointer.
+#[no_mangle]
+#[allow(clippy::boxed_local)]
+pub unsafe extern "C" fn flux_analyze(
+    ast_pkg: Box<ast::Package>,
+    options: *const c_char,
+    out_sem_pkg: *mut Option<Box<semantic::nodes::Package>>,
+) -> Option<Box<ErrorHandle>> {
+    catch_unwind(|| {
+        let options = match Options::from_c_str(options) {
+            Ok(x) => x,
+            Err(err) => return Some(err.into()),
+        };
+        match analyze(&ast_pkg, options) {
+            Ok(sem_pkg) => {
+                *out_sem_pkg = Some(Box::new(sem_pkg));
+                None
+            }
+            Err(salvage) => {
+                *out_sem_pkg = salvage.value.map(Box::new);
+                Some(salvage.error.into())
+            }
+        }
+    })
+    .unwrap_or_else(|err| Some(err.into()))
+}
+
 /// flux_find_var_type() is a C-compatible wrapper around the find_var_type() function below.
 /// Note that Box<T> is used to indicate we are receiving/returning a C pointer and also
 /// transferring ownership.
@@ -399,7 +432,7 @@ fn new_stateful_analyzer(options: Options) -> Result<StatefulAnalyzer> {
     };
 
     let db = if options.features.contains(&Feature::SalsaDatabase) {
-        Some(new_db(options.clone())?)
+        Some(new_db()?)
     } else {
         None
     };
@@ -422,15 +455,12 @@ pub struct StatefulAnalyzer {
 }
 
 impl StatefulAnalyzer {
-    fn analyze(
-        &mut self,
-        ast_pkg: &ast::Package,
-    ) -> SalvageResult<fluxcore::semantic::nodes::Package, Error> {
-        let Options { features, .. } = self.options.clone();
+    fn analyze(&mut self, ast_pkg: &ast::Package) -> Result<fluxcore::semantic::nodes::Package> {
+        let Options { features } = self.options.clone();
 
         let env = Environment::from(&self.env);
 
-        let result = if let Some(db) = &mut self.db {
+        let result = if let Some(db) = &self.db {
             let mut db = db as &dyn Flux;
             let mut analyzer = Analyzer::new(env, &mut db, AnalyzerConfig { features });
             analyzer.analyze_ast(ast_pkg)
@@ -441,7 +471,7 @@ impl StatefulAnalyzer {
         let (mut env, sem_pkg) = match result {
             Ok(r) => r,
             Err(e) => {
-                return Err(e.err_into().map(|(_, x)| x));
+                return Err(e.error.into());
             }
         };
 
@@ -451,7 +481,7 @@ impl StatefulAnalyzer {
         // each line of source is analyzed independently.
         for file in &sem_pkg.files {
             for dec in &file.imports {
-                let path = &dec.path;
+                let path = &dec.path.value;
 
                 // A failure should have already happened if any of these
                 // imports would have failed.
@@ -520,24 +550,31 @@ pub unsafe extern "C" fn flux_analyze_with(
             Some(std::str::from_utf8(CStr::from_ptr(csrc).to_bytes()).unwrap())
         };
 
-        match analyzer.analyze(ast_pkg) {
-            Ok(sem_pkg) => {
-                *out_sem_pkg = Some(Box::new(sem_pkg));
-            }
+        let sem_pkg = Box::new(match analyzer.analyze(ast_pkg) {
+            Ok(sem_pkg) => sem_pkg,
             Err(mut err) => {
-                *out_sem_pkg = err.value.map(Box::new);
                 if let Some(src) = src {
-                    if let Error::Semantic(err) = &mut err.error {
+                    if let Error::Semantic(err) = &mut err {
                         err.source = Some(src.into());
                     }
                 }
-                return Some(err.error.into());
+                return Some(err.into());
             }
-        }
+        });
 
+        *out_sem_pkg = Some(sem_pkg);
         None
     })
     .unwrap_or_else(|err| Some(err.into()))
+}
+
+/// Compilation options. Deserialized from json when called via the C API
+#[derive(Clone, Default, Debug)]
+#[cfg_attr(feature = "serde", derive(serde::Deserialize))]
+pub struct Options {
+    /// Features used in the flux compiler
+    #[serde(default)]
+    pub features: Vec<Feature>,
 }
 
 impl Options {
@@ -566,14 +603,15 @@ impl Options {
 /// that has been type-inferred.  This function is aware of the standard library
 /// and prelude.
 pub fn analyze(ast_pkg: &ast::Package, options: Options) -> SalvageResult<Package, Error> {
-    if options.features.contains(&Feature::SalsaDatabase) {
-        let mut analyzer = new_semantic_salsa_analyzer(options)?;
+    let Options { features } = options;
+
+    if features.contains(&Feature::SalsaDatabase) {
+        let mut analyzer = new_semantic_salsa_analyzer(AnalyzerConfig { features })?;
         let (_, sem_pkg) = analyzer
             .analyze_ast(ast_pkg)
             .map_err(|salvage| salvage.err_into().map(|(_, sem_pkg)| sem_pkg))?;
         Ok(sem_pkg)
     } else {
-        let Options { features, .. } = options;
         let mut analyzer = new_semantic_analyzer(AnalyzerConfig { features })?;
         let (_, sem_pkg) = analyzer
             .analyze_ast(ast_pkg)
@@ -619,10 +657,6 @@ pub unsafe extern "C" fn flux_get_env_stdlib(buf: *mut flux_buffer_t) {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-
-    use std::{collections::HashMap, sync::Arc};
-
     use fluxcore::{
         ast,
         semantic::{
@@ -631,8 +665,9 @@ mod tests {
             types::{BoundTvar, Label, MonoType, Property, Ptr, Record, Tvar, TvarMap},
             walk,
         },
-        FluxBase, FluxModule,
     };
+
+    use super::*;
 
     use crate::parser;
 
@@ -751,7 +786,7 @@ mod tests {
     }
 
     fn find_var_type_from_source(source: &str, var_name: &str) -> Result<MonoType> {
-        let mut analyzer = new_semantic_salsa_analyzer(Options::default())?;
+        let mut analyzer = new_semantic_salsa_analyzer(AnalyzerConfig::default())?;
         let pkg = match analyzer.analyze_source("".into(), "".into(), source) {
             Ok((_, pkg)) => pkg,
             Err(err) => match err.value {
@@ -917,7 +952,7 @@ from(bucket: v.bucket)
 
     #[test]
     fn deserialize_and_infer() {
-        let mut analyzer = new_semantic_salsa_analyzer(Options::default()).unwrap();
+        let mut analyzer = new_semantic_salsa_analyzer(AnalyzerConfig::default()).unwrap();
 
         let src = r#"
             x = from(bucket: "b")
@@ -952,7 +987,7 @@ from(bucket: v.bucket)
 
     #[test]
     fn infer_union() {
-        let mut analyzer = new_semantic_salsa_analyzer(Options::default()).unwrap();
+        let mut analyzer = new_semantic_salsa_analyzer(AnalyzerConfig::default()).unwrap();
 
         let src = r#"
             a = from(bucket: "b")
@@ -1036,7 +1071,7 @@ from(bucket: v.bucket)
 
     #[test]
     fn prelude_symbols_retain_their_package() {
-        let mut analyzer = new_semantic_salsa_analyzer(Options::default()).unwrap();
+        let mut analyzer = new_semantic_salsa_analyzer(AnalyzerConfig::default()).unwrap();
 
         let src = r#"
             derivative
@@ -1056,57 +1091,8 @@ from(bucket: v.bucket)
             walk::Node::Package(&pkg),
         );
 
+        dbg!(&pkg);
+
         assert_eq!(identifier.unwrap().name.package(), Some("universe"));
-    }
-
-    #[test]
-    fn fluxmod_with_prelude() {
-        let _ = env_logger::try_init();
-
-        let modules = [
-            (
-                "mymodule".into(),
-                FluxModule {
-                    files: vec![(
-                        "pack.flux".into(),
-                        Arc::from(
-                            r#"
-                    import "mymodule2"
-                    x = 1 + mymodule2.y
-                    "#,
-                        ),
-                    )],
-                },
-            ),
-            (
-                "mymodule2".into(),
-                FluxModule {
-                    files: vec![("main.flux".into(), Arc::from("y = 3"))],
-                },
-            ),
-        ]
-        .into_iter()
-        .collect::<HashMap<String, _>>();
-        let mut db = new_db(Options::default()).unwrap();
-        db.set_fluxmod(Some(Arc::new(modules)));
-
-        db.set_source(
-            "main/main.flux".into(),
-            r#"
-        import "mymodule"
-        import "mymodule2"
-        y = mymodule.x + mymodule2.y + 3
-        "#
-            .into(),
-        );
-
-        match db.semantic_package("main".into()) {
-            Ok(_) => (),
-            Err(err) => {
-                let mut errors = db.package_errors();
-                errors.push(err.error);
-                panic!("{}", errors);
-            }
-        }
     }
 }

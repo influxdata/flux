@@ -207,8 +207,7 @@ table PackageClause {
 table ImportDeclaration {
   loc:SourceLocation;
   alias:Identifier;
-  registry:string;
-  path:string;
+  path:StringLiteral;
 }
 
 table SourceLocation {

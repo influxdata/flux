@@ -2133,24 +2133,21 @@ func (rcv *ImportDeclaration) Alias(obj *Identifier) *Identifier {
 	return nil
 }
 
-func (rcv *ImportDeclaration) Registry() []byte {
+func (rcv *ImportDeclaration) Path(obj *StringLiteral) *StringLiteral {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(8))
 	if o != 0 {
-		return rcv._tab.ByteVector(o + rcv._tab.Pos)
-	}
-	return nil
-}
-
-func (rcv *ImportDeclaration) Path() []byte {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(10))
-	if o != 0 {
-		return rcv._tab.ByteVector(o + rcv._tab.Pos)
+		x := rcv._tab.Indirect(o + rcv._tab.Pos)
+		if obj == nil {
+			obj = new(StringLiteral)
+		}
+		obj.Init(rcv._tab.Bytes, x)
+		return obj
 	}
 	return nil
 }
 
 func ImportDeclarationStart(builder *flatbuffers.Builder) {
-	builder.StartObject(4)
+	builder.StartObject(3)
 }
 func ImportDeclarationAddLoc(builder *flatbuffers.Builder, loc flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(0, flatbuffers.UOffsetT(loc), 0)
@@ -2158,11 +2155,8 @@ func ImportDeclarationAddLoc(builder *flatbuffers.Builder, loc flatbuffers.UOffs
 func ImportDeclarationAddAlias(builder *flatbuffers.Builder, alias flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(1, flatbuffers.UOffsetT(alias), 0)
 }
-func ImportDeclarationAddRegistry(builder *flatbuffers.Builder, registry flatbuffers.UOffsetT) {
-	builder.PrependUOffsetTSlot(2, flatbuffers.UOffsetT(registry), 0)
-}
 func ImportDeclarationAddPath(builder *flatbuffers.Builder, path flatbuffers.UOffsetT) {
-	builder.PrependUOffsetTSlot(3, flatbuffers.UOffsetT(path), 0)
+	builder.PrependUOffsetTSlot(2, flatbuffers.UOffsetT(path), 0)
 }
 func ImportDeclarationEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
 	return builder.EndObject()
