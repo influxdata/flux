@@ -7,7 +7,6 @@ import "C"
 import (
 	"context"
 	"encoding/json"
-	"os"
 	"path"
 	"runtime"
 	"unsafe"
@@ -49,9 +48,7 @@ func SemanticPackages() (map[string]*semantic.Package, error) {
 }
 
 type Options struct {
-	Features       []string `json:"features,omitempty"`
-	FluxmodBaseUrl *string  `json:"fluxmod_base_url,omitempty"`
-	FluxmodToken   *string  `json:"fluxmod_token,omitempty"`
+	Features []string `json:"features,omitempty"`
 }
 
 func NewOptions(ctx context.Context) Options {
@@ -60,22 +57,7 @@ func NewOptions(ctx context.Context) Options {
 	features = addFlag(ctx, features, feature.LabelPolymorphism())
 	features = addFlag(ctx, features, feature.UnusedSymbolWarnings())
 	features = addFlag(ctx, features, feature.SalsaDatabase())
-	// TODO Retrieve the token from context
-	b, ok := os.LookupEnv("FLUXMOD_BASE_URL")
-	var base_url *string
-	if ok {
-		base_url = &b
-	}
-	t, ok := os.LookupEnv("FLUXMOD_TOKEN")
-	var token *string
-	if ok {
-		token = &t
-	}
-	return Options{
-		Features:       features,
-		FluxmodBaseUrl: base_url,
-		FluxmodToken:   token,
-	}
+	return Options{Features: features}
 }
 
 func addFlag(ctx context.Context, features []string, flag feature.BoolFlag) []string {

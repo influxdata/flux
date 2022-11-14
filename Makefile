@@ -161,19 +161,19 @@ libflux-go: $(LIBFLUX_GENERATED_TARGETS)
 	$(GO_GENERATE) ./libflux/go/libflux
 
 libflux-wasm:
-	cd libflux/flux && CC=clang AR=llvm-ar wasm-pack build --scope influxdata --dev --no-default-features
+	cd libflux/flux && CC=clang AR=llvm-ar wasm-pack build --scope influxdata --dev
 
 clean-wasm:
 	rm -rf libflux/flux/pkg
 
 build-wasm:
-	cd libflux/flux && CC=clang AR=llvm-ar wasm-pack build -t nodejs --scope influxdata --no-default-features
+	cd libflux/flux && CC=clang AR=llvm-ar wasm-pack build -t nodejs --scope influxdata
 
 publish-wasm: clean-wasm build-wasm
 	cd libflux/flux/pkg && npm publish --access public
 
 test-wasm: clean-wasm build-wasm
-	cd libflux/flux && CC=clang AR==llvm-ar wasm-pack test --node --no-default-features
+	cd libflux/flux && CC=clang AR==llvm-ar wasm-pack test --node
 
 test-valgrind: libflux
 	cd libflux/c && $(MAKE) test-valgrind
