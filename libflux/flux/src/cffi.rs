@@ -344,6 +344,40 @@ pub unsafe extern "C" fn flux_merge_ast_pkgs(
     .unwrap_or_else(|err| Some(err.into()))
 }
 
+/// flux_analyze is a C-compatible wrapper around the analyze() function below
+///
+/// Note that Box<T> is used to indicate we are receiving/returning a C pointer and also
+/// transferring ownership.
+///
+/// # Safety
+///
+/// This function is unsafe because it dereferences a raw pointer.
+#[no_mangle]
+#[allow(clippy::boxed_local)]
+pub unsafe extern "C" fn flux_analyze(
+    ast_pkg: Box<ast::Package>,
+    options: *const c_char,
+    out_sem_pkg: *mut Option<Box<semantic::nodes::Package>>,
+) -> Option<Box<ErrorHandle>> {
+    catch_unwind(|| {
+        let options = match Options::from_c_str(options) {
+            Ok(x) => x,
+            Err(err) => return Some(err.into()),
+        };
+        match analyze(&ast_pkg, options) {
+            Ok(sem_pkg) => {
+                *out_sem_pkg = Some(Box::new(sem_pkg));
+                None
+            }
+            Err(salvage) => {
+                *out_sem_pkg = salvage.value.map(Box::new);
+                Some(salvage.error.into())
+            }
+        }
+    })
+    .unwrap_or_else(|err| Some(err.into()))
+}
+
 /// flux_find_var_type() is a C-compatible wrapper around the find_var_type() function below.
 /// Note that Box<T> is used to indicate we are receiving/returning a C pointer and also
 /// transferring ownership.
@@ -421,10 +455,7 @@ pub struct StatefulAnalyzer {
 }
 
 impl StatefulAnalyzer {
-    fn analyze(
-        &mut self,
-        ast_pkg: &ast::Package,
-    ) -> SalvageResult<fluxcore::semantic::nodes::Package, Error> {
+    fn analyze(&mut self, ast_pkg: &ast::Package) -> Result<fluxcore::semantic::nodes::Package> {
         let Options { features } = self.options.clone();
 
         let env = Environment::from(&self.env);
@@ -440,7 +471,7 @@ impl StatefulAnalyzer {
         let (mut env, sem_pkg) = match result {
             Ok(r) => r,
             Err(e) => {
-                return Err(e.err_into().map(|(_, x)| x));
+                return Err(e.error.into());
             }
         };
 
@@ -519,21 +550,19 @@ pub unsafe extern "C" fn flux_analyze_with(
             Some(std::str::from_utf8(CStr::from_ptr(csrc).to_bytes()).unwrap())
         };
 
-        match analyzer.analyze(ast_pkg) {
-            Ok(sem_pkg) => {
-                *out_sem_pkg = Some(Box::new(sem_pkg));
-            }
+        let sem_pkg = Box::new(match analyzer.analyze(ast_pkg) {
+            Ok(sem_pkg) => sem_pkg,
             Err(mut err) => {
-                *out_sem_pkg = err.value.map(Box::new);
                 if let Some(src) = src {
-                    if let Error::Semantic(err) = &mut err.error {
+                    if let Error::Semantic(err) = &mut err {
                         err.source = Some(src.into());
                     }
                 }
-                return Some(err.error.into());
+                return Some(err.into());
             }
-        }
+        });
 
+        *out_sem_pkg = Some(sem_pkg);
         None
     })
     .unwrap_or_else(|err| Some(err.into()))

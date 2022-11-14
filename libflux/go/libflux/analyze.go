@@ -120,6 +120,7 @@ func Analyze(astPkg *ASTPkg) (*SemanticPkg, error) {
 }
 
 func AnalyzeWithOptions(astPkg *ASTPkg, options Options) (*SemanticPkg, error) {
+	var semPkg *C.struct_flux_semantic_pkg_t
 	defer func() {
 		// This is necessary because the ASTPkg returned from the libflux API calls has its finalizer
 		// set with the Go runtime. But this API will consume the AST package during
@@ -135,13 +136,25 @@ func AnalyzeWithOptions(astPkg *ASTPkg, options Options) (*SemanticPkg, error) {
 	cOptions := C.CString(stringOptions)
 	defer C.free(unsafe.Pointer(cOptions))
 
-	analyzer, err := NewAnalyzerWithOptions(options)
+	// Analyze may return a semantic package even on errors
+	fluxErr := C.flux_analyze(astPkg.ptr, cOptions, &semPkg)
 
-	semPkg, fluxErr := analyzer.Analyze("", astPkg)
-	if fluxErr != nil {
-		err = fluxErr.GoError()
+	runtime.KeepAlive(astPkg)
+
+	var p *SemanticPkg
+	if semPkg != nil {
+		p = &SemanticPkg{ptr: semPkg}
+		runtime.SetFinalizer(p, free)
 	}
-	return semPkg, err
+
+	if fluxErr != nil {
+		defer C.flux_free_error(fluxErr)
+		cstr := C.flux_error_str(fluxErr)
+		str := C.GoString(cstr)
+		err = errors.New(codes.Invalid, str)
+	}
+
+	return p, err
 }
 
 func AnalyzeString(script string) (*SemanticPkg, error) {
@@ -220,7 +233,7 @@ func (p *Analyzer) Analyze(src string, astPkg *ASTPkg) (*SemanticPkg, *FluxError
 	csrc := C.CString(src)
 	defer C.free(unsafe.Pointer(csrc))
 
-	var cSemPkg *C.struct_flux_semantic_pkg_t
+	var semPkg *C.struct_flux_semantic_pkg_t
 	defer func() {
 		// This is necessary because the ASTPkg returned from the libflux API calls has its finalizer
 		// set with the Go runtime. But this API will consume the AST package during
@@ -229,23 +242,16 @@ func (p *Analyzer) Analyze(src string, astPkg *ASTPkg) (*SemanticPkg, *FluxError
 		astPkg.ptr = nil
 	}()
 
-	fluxErr := C.flux_analyze_with(p.ptr, csrc, astPkg.ptr, &cSemPkg)
-
-	runtime.KeepAlive(astPkg)
-
-	var semPkg *SemanticPkg
-	if cSemPkg != nil {
-		semPkg = &SemanticPkg{ptr: cSemPkg}
-		runtime.SetFinalizer(semPkg, free)
-	}
-
-	var err *FluxError
-	if fluxErr != nil {
-		err = &FluxError{ptr: fluxErr}
+	if err := C.flux_analyze_with(p.ptr, csrc, astPkg.ptr, &semPkg); err != nil {
+		err := &FluxError{ptr: err}
 		runtime.SetFinalizer(err, free)
+		return nil, err
 	}
+	runtime.KeepAlive(p)
 
-	return semPkg, err
+	pkg := &SemanticPkg{ptr: semPkg}
+	runtime.SetFinalizer(pkg, free)
+	return pkg, nil
 }
 
 // Free frees the memory allocated by Rust for the semantic graph.

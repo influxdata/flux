@@ -11,6 +11,7 @@ void test_env_stdlib();
 
 int main(int argc, char* argv[]) {
   test_ast();
+  test_semantic();
   test_stateful_analyzer();
   test_env_stdlib();
   return 0;
@@ -67,6 +68,91 @@ void test_ast() {
   }
 }
 
+void test_semantic() {
+  printf("Testing semantic graph functions...\n");
+
+  {
+    printf("Parsing to AST\n");
+    struct flux_ast_pkg_t *ast_pkg_foo = flux_parse("test", "package foo\nx = 1 + 1");
+    assert(ast_pkg_foo !=  NULL);
+
+    printf("Analyzing (expect success)\n");
+    struct flux_semantic_pkg_t* sem_pkg = NULL;
+    struct flux_error_t* err = flux_analyze(ast_pkg_foo, "", &sem_pkg);
+    assert(err == NULL);
+
+    printf("Marshaling to FlatBuffer\n");
+    struct flux_buffer_t buf;
+    err = flux_semantic_marshal_fb(sem_pkg, &buf);
+    assert(err == NULL);
+    printf("  FlatBuffer is length %ld\n", buf.len);
+    flux_free_bytes(buf.data);
+
+    flux_free_semantic_pkg(sem_pkg);
+  }
+
+  {
+    printf("Parsing to AST\n");
+    struct flux_ast_pkg_t *ast_pkg_foo = flux_parse("test", "package foo\nx = 1 + 1.0");
+    assert(ast_pkg_foo !=  NULL);
+
+    printf("Analyzing (expect failure)\n");
+    struct flux_semantic_pkg_t* sem_pkg = NULL;
+    struct flux_error_t* err = flux_analyze(ast_pkg_foo, "", &sem_pkg);
+    assert(err != NULL);
+    assert(sem_pkg != NULL);
+    const char* err_str = flux_error_str(err);
+    printf("  error: %s\n", err_str);
+    flux_free_error(err);
+    flux_free_semantic_pkg(sem_pkg);
+  }
+
+  {
+    printf("Parsing to AST\n");
+    struct flux_ast_pkg_t *ast_pkg_foo = flux_parse("test", "package foo\nx = 1 + 1");
+    assert(ast_pkg_foo != NULL);
+
+    struct flux_semantic_pkg_t* sem_pkg = NULL;
+    struct flux_error_t* err = flux_analyze(ast_pkg_foo, "", &sem_pkg);
+    assert(err == NULL);
+    assert(sem_pkg != NULL);
+
+    printf("Find variable type v (expect success)\n");
+    struct flux_buffer_t buf;
+    err = flux_find_var_type(sem_pkg, "v", &buf);
+    // Note that we do not call flux_free_ast_pkg(ast_pkg_foo); here because we will
+    // consume the AST package during the conversion from the AST package to the semantic package.
+    assert(err == NULL);
+    printf("  FlatBuffer is length %ld\n", buf.len);
+    flux_free_bytes(buf.data);
+    flux_free_semantic_pkg(sem_pkg);
+  }
+
+  {
+    printf("Parsing to AST\n");
+    struct flux_ast_pkg_t *ast_pkg_foo = flux_parse("test", "package foo\nx = 1 + 1.0");
+    assert(ast_pkg_foo !=  NULL);
+
+    struct flux_semantic_pkg_t* sem_pkg = NULL;
+    struct flux_error_t* err = flux_analyze(ast_pkg_foo, "", &sem_pkg);
+    assert(err != NULL);
+    assert(sem_pkg != NULL);
+    const char* err_str = flux_error_str(err);
+    printf("  error: %s\n", err_str);
+    flux_free_error(err);
+
+    printf("Find variable type v (expect failure)\n");
+    struct flux_buffer_t buf;
+    err = flux_find_var_type(sem_pkg, "v", &buf);
+    assert(err == NULL);
+
+    flux_free_bytes(buf.data);
+    flux_free_semantic_pkg(sem_pkg);
+  }
+
+  printf("\n");
+}
+
 void test_stateful_analyzer() {
   printf("Testing semantic analyzer...\n");
 
@@ -100,8 +186,7 @@ void test_stateful_analyzer() {
   sem_pkg = NULL;
   err = flux_analyze_with(analyzer, NULL, ast_pkg, &sem_pkg);
   assert(err != NULL);
-  assert(sem_pkg != NULL);
-  flux_free_semantic_pkg(sem_pkg);
+  assert(sem_pkg == NULL);
   const char* err_str = flux_error_str(err);
   printf("  error: %s\n", err_str);
   flux_error_print(err);
