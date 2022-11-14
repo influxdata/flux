@@ -726,11 +726,7 @@ impl Formatter {
                 self.write_rune(' ')
             }
         }
-        // Write out escaped string value
-        self.write_rune('"');
-        let escaped_string = escape_string(&n.path);
-        self.write_string(&escaped_string);
-        self.write_rune('"');
+        self.format_node(&walk::Node::StringLit(&n.path))
     }
 
     fn format_expression_statement(&mut self, n: &semantic::nodes::ExprStmt) {

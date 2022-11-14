@@ -298,6 +298,7 @@ macro_rules! mk_node {
                         if let Some(alias) = &$($mut)? n.alias {
                             $walk(v, $name::Identifier(alias));
                         }
+                        $walk(v, $name::StringLit(& $($mut)? n.path));
                     }
                     $name::Identifier(_) => {}
                     $name::Expr(n) => {
@@ -511,6 +512,7 @@ mod test_node_ids {
             [
                 "File",
                 "ImportDeclaration",
+                "StringLit",
             ]
         "#]],
         )

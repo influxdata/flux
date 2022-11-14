@@ -6686,8 +6686,7 @@ pub mod fbsemantic {
     impl<'a> ImportDeclaration<'a> {
         pub const VT_LOC: flatbuffers::VOffsetT = 4;
         pub const VT_ALIAS: flatbuffers::VOffsetT = 6;
-        pub const VT_REGISTRY: flatbuffers::VOffsetT = 8;
-        pub const VT_PATH: flatbuffers::VOffsetT = 10;
+        pub const VT_PATH: flatbuffers::VOffsetT = 8;
 
         #[inline]
         pub unsafe fn init_from_table(table: flatbuffers::Table<'a>) -> Self {
@@ -6701,9 +6700,6 @@ pub mod fbsemantic {
             let mut builder = ImportDeclarationBuilder::new(_fbb);
             if let Some(x) = args.path {
                 builder.add_path(x);
-            }
-            if let Some(x) = args.registry {
-                builder.add_registry(x);
             }
             if let Some(x) = args.alias {
                 builder.add_alias(x);
@@ -6740,23 +6736,16 @@ pub mod fbsemantic {
             }
         }
         #[inline]
-        pub fn registry(&self) -> Option<&'a str> {
+        pub fn path(&self) -> Option<StringLiteral<'a>> {
             // Safety:
             // Created from valid Table for this object
             // which contains a valid value in this slot
             unsafe {
                 self._tab
-                    .get::<flatbuffers::ForwardsUOffset<&str>>(ImportDeclaration::VT_REGISTRY, None)
-            }
-        }
-        #[inline]
-        pub fn path(&self) -> Option<&'a str> {
-            // Safety:
-            // Created from valid Table for this object
-            // which contains a valid value in this slot
-            unsafe {
-                self._tab
-                    .get::<flatbuffers::ForwardsUOffset<&str>>(ImportDeclaration::VT_PATH, None)
+                    .get::<flatbuffers::ForwardsUOffset<StringLiteral>>(
+                        ImportDeclaration::VT_PATH,
+                        None,
+                    )
             }
         }
     }
@@ -6779,12 +6768,11 @@ pub mod fbsemantic {
                     Self::VT_ALIAS,
                     false,
                 )?
-                .visit_field::<flatbuffers::ForwardsUOffset<&str>>(
-                    "registry",
-                    Self::VT_REGISTRY,
+                .visit_field::<flatbuffers::ForwardsUOffset<StringLiteral>>(
+                    "path",
+                    Self::VT_PATH,
                     false,
                 )?
-                .visit_field::<flatbuffers::ForwardsUOffset<&str>>("path", Self::VT_PATH, false)?
                 .finish();
             Ok(())
         }
@@ -6792,8 +6780,7 @@ pub mod fbsemantic {
     pub struct ImportDeclarationArgs<'a> {
         pub loc: Option<flatbuffers::WIPOffset<SourceLocation<'a>>>,
         pub alias: Option<flatbuffers::WIPOffset<Identifier<'a>>>,
-        pub registry: Option<flatbuffers::WIPOffset<&'a str>>,
-        pub path: Option<flatbuffers::WIPOffset<&'a str>>,
+        pub path: Option<flatbuffers::WIPOffset<StringLiteral<'a>>>,
     }
     impl<'a> Default for ImportDeclarationArgs<'a> {
         #[inline]
@@ -6801,7 +6788,6 @@ pub mod fbsemantic {
             ImportDeclarationArgs {
                 loc: None,
                 alias: None,
-                registry: None,
                 path: None,
             }
         }
@@ -6829,16 +6815,12 @@ pub mod fbsemantic {
                 );
         }
         #[inline]
-        pub fn add_registry(&mut self, registry: flatbuffers::WIPOffset<&'b str>) {
-            self.fbb_.push_slot_always::<flatbuffers::WIPOffset<_>>(
-                ImportDeclaration::VT_REGISTRY,
-                registry,
-            );
-        }
-        #[inline]
-        pub fn add_path(&mut self, path: flatbuffers::WIPOffset<&'b str>) {
+        pub fn add_path(&mut self, path: flatbuffers::WIPOffset<StringLiteral<'b>>) {
             self.fbb_
-                .push_slot_always::<flatbuffers::WIPOffset<_>>(ImportDeclaration::VT_PATH, path);
+                .push_slot_always::<flatbuffers::WIPOffset<StringLiteral>>(
+                    ImportDeclaration::VT_PATH,
+                    path,
+                );
         }
         #[inline]
         pub fn new(
@@ -6862,7 +6844,6 @@ pub mod fbsemantic {
             let mut ds = f.debug_struct("ImportDeclaration");
             ds.field("loc", &self.loc());
             ds.field("alias", &self.alias());
-            ds.field("registry", &self.registry());
             ds.field("path", &self.path());
             ds.finish()
         }

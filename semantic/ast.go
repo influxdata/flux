@@ -50,7 +50,7 @@ func ToAST(n Node) ast.Node {
 		}
 	case *ImportDeclaration:
 		decl := &ast.ImportDeclaration{
-			Path: &ast.StringLiteral{Value: n.Path},
+			Path: &ast.StringLiteral{Value: n.Path.Value},
 		}
 		if n.As != nil {
 			decl.As = &ast.Identifier{Name: n.As.Name.Name()}

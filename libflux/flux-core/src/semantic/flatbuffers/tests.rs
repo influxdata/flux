@@ -812,8 +812,7 @@ fn compare_import_decls(
     fb_id: &fbsemantic::ImportDeclaration,
 ) -> Result<()> {
     compare_opt_ids(&semantic_id.alias, &fb_id.alias())?;
-    compare_opt_strings("registry path", &semantic_id.registry, &fb_id.registry())?;
-    compare_strings("import path", &semantic_id.path, &fb_id.path())?;
+    compare_string_lits(&semantic_id.path, &fb_id.path())?;
     Ok(())
 }
 

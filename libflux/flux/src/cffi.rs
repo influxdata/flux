@@ -450,7 +450,7 @@ impl StatefulAnalyzer {
         // each line of source is analyzed independently.
         for file in &sem_pkg.files {
             for dec in &file.imports {
-                let path = &dec.path;
+                let path = &dec.path.value;
 
                 // A failure should have already happened if any of these
                 // imports would have failed.
