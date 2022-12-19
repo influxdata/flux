@@ -17,6 +17,9 @@ import (
 	"github.com/influxdata/flux/internal/function"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/plan"
+	"github.com/opentracing/opentracing-go"
+	"github.com/opentracing/opentracing-go/ext"
+	"github.com/opentracing/opentracing-go/log"
 )
 
 const SqlKind = "experimental/iox.sql"
@@ -116,6 +119,10 @@ func (s *sqlSource) createSchema(schema *stdarrow.Schema) ([]flux.ColMeta, error
 }
 
 func (s *sqlSource) run(ctx context.Context) error {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "sqlSouce.run")
+	defer span.Finish()
+	span.LogFields(log.String("query", s.query))
+
 	// Note: query args are not actually supported yet, see
 	// https://github.com/influxdata/influxdb_iox/issues/3718
 	rr, err := s.client.Query(ctx, s.query, nil, s.mem)
@@ -130,12 +137,29 @@ func (s *sqlSource) run(ctx context.Context) error {
 	}
 	key := execute.NewGroupKey(nil, nil)
 
-	for rr.Next() {
+	hasMore, err := nextRecordBatch(rr)
+	for hasMore && err == nil {
 		if err := s.produce(key, cols, rr.Record()); err != nil {
+			ext.LogError(span, err)
 			return err
 		}
+		hasMore, err = nextRecordBatch(rr)
 	}
+	if err != nil {
+		ext.LogError(span, err)
+		return err
+	}
+
 	return nil
+}
+
+func nextRecordBatch(rr iox.RecordReader) (bool, error) {
+	n := rr.Next()
+	if n {
+		return true, nil
+	}
+
+	return false, rr.Err()
 }
 
 func (s *sqlSource) produce(key flux.GroupKey, cols []flux.ColMeta, record stdarrow.Record) error {
