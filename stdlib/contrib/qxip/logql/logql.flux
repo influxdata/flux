@@ -31,14 +31,14 @@ option defaultAPI = "/loki/api/v1/query_range"
 // - start: Earliest time to include in results. Default is `-1h`.
 //
 //   Results include points that match the specified start time.
-//   Use a relative duration, absolute time, or integer (Unix timestamp in nanoseconds).
-//   For example, `-1h`, `2019-08-28T22:00:00.801064Z`, or `1545136086801064`.
+//   Use a relative duration or absolute time.
+//   For example, `-1h` or `2022-01-01T22:00:00.801064Z`.
 //
 // - end: Latest time to include in results. Default is `now()`.
 //
 //   Results exclude points that match the specified stop time.
-//   Use a relative duration, absolute time, or integer (Unix timestamp in nanoseconds).
-//   For example, `now()`, `2019-08-28T22:00:00.801064Z`, or `1545136086801064`.
+//   Use a relative duration or absolute time.
+//   For example, `-1h` or `2022-01-01T22:00:00.801064Z`.
 //
 // - step: Query resolution step width in seconds. Default is 10.
 //
