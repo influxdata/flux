@@ -19,6 +19,7 @@ import (
 	_ "github.com/influxdata/flux/stdlib/contrib/bonitoo-io/zenoss"
 	_ "github.com/influxdata/flux/stdlib/contrib/chobbs/discord"
 	_ "github.com/influxdata/flux/stdlib/contrib/jsternberg/influxdb"
+	_ "github.com/influxdata/flux/stdlib/contrib/qxip/clickhouse"
 	_ "github.com/influxdata/flux/stdlib/contrib/rhajek/bigpanda"
 	_ "github.com/influxdata/flux/stdlib/contrib/sranka/opsgenie"
 	_ "github.com/influxdata/flux/stdlib/contrib/sranka/sensu"
