@@ -5,7 +5,7 @@ import "array"
 import "testing"
 import "experimental/iox"
 
-testcase iox_sqlInterval_testcase {
+testcase iox_sql_interval_testcase {
     got =
         array.from(
             rows: [
@@ -21,7 +21,7 @@ testcase iox_sqlInterval_testcase {
         array.from(
             rows: [
                 {_value: "12 years 3 months 4 weeks"},
-                {_value: " 1 weeks 6 days 10 hours 5 minutes"},
+                {_value: "1 weeks 6 days 10 hours 5 minutes"},
                 {_value: "2 minutes 3 seconds 56 milliseconds"},
                 {_value: "1 millisecond"},
             ],
