@@ -39,7 +39,7 @@ builtin from : (bucket: string, measurement: string) => stream[{A with _time: ti
 //
 // ## Parameters
 // - bucket: IOx bucket to read data from.
-// - query: SQL Query to execute.
+// - query: SQL query to execute.
 //
 // ## Examples
 //
