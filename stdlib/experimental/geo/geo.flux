@@ -1009,3 +1009,98 @@ asTracks = (tables=<-, groupBy=["id", "tid"], orderBy=["_time"]) =>
     tables
         |> group(columns: groupBy)
         |> sort(columns: orderBy)
+
+// totalDistance calculates the total distance covered by subsequent points
+// in each input table.
+//
+// Each row must contain `lat` (latitude) and `lon` (longitude) columns that
+// represent the geographic coordinates of the point.
+// Row sort order determines the order in which distance between points is calculated.
+// Use the `geo.units` option to specify the unit of distance to return (default is km).
+//
+// ## Parameters
+// - outputColumn: Total distance output column. Default is `_value`.
+// - tables: Input data. Default is piped-forward data (`<-`).
+//
+// ## Examples
+//
+// ### Return the total distance travelled per input table
+// ```
+// # import "array"
+// import "experimental/geo"
+//
+// # data =
+// #     array.from(
+// #         rows: [
+// #             {id: "ABC1", _time: 2022-01-01T00:00:00Z, lat: 85.1, lon: 42.2},
+// #             {id: "ABC1", _time: 2022-01-01T01:00:00Z, lat: 71.3, lon: 50.8},
+// #             {id: "ABC1", _time: 2022-01-01T02:00:00Z, lat: 63.1, lon: 62.3},
+// #             {id: "ABC1", _time: 2022-01-01T03:00:00Z, lat: 50.6, lon: 74.9},
+// #             {id: "DEF2", _time: 2022-01-01T00:00:00Z, lat: -10.8, lon: -12.2},
+// #             {id: "DEF2", _time: 2022-01-01T01:00:00Z, lat: -16.3, lon: -0.8},
+// #             {id: "DEF2", _time: 2022-01-01T02:00:00Z, lat: -23.2, lon: 12.3},
+// #             {id: "DEF2", _time: 2022-01-01T03:00:00Z, lat: -30.4, lon: 24.9},
+// #         ],
+// #     )
+// #     |> group(columns: ["id"])
+// #
+// < data
+// >     |> geo.totalDistance()
+// ```
+//
+// ### Return the total distance travelled in miles
+// ```
+// # import "array"
+// import "experimental/geo"
+//
+// option geo.units = {distance: "mile"}
+//
+// # data =
+// #     array.from(
+// #         rows: [
+// #             {id: "ABC1", _time: 2022-01-01T00:00:00Z, lat: 85.1, lon: 42.2},
+// #             {id: "ABC1", _time: 2022-01-01T01:00:00Z, lat: 71.3, lon: 50.8},
+// #             {id: "ABC1", _time: 2022-01-01T02:00:00Z, lat: 63.1, lon: 62.3},
+// #             {id: "ABC1", _time: 2022-01-01T03:00:00Z, lat: 50.6, lon: 74.9},
+// #             {id: "DEF2", _time: 2022-01-01T00:00:00Z, lat: -10.8, lon: -12.2},
+// #             {id: "DEF2", _time: 2022-01-01T01:00:00Z, lat: -16.3, lon: -0.8},
+// #             {id: "DEF2", _time: 2022-01-01T02:00:00Z, lat: -23.2, lon: 12.3},
+// #             {id: "DEF2", _time: 2022-01-01T03:00:00Z, lat: -30.4, lon: 24.9},
+// #         ],
+// #     )
+// #     |> group(columns: ["id"])
+// #
+// < data
+// >     |> geo.totalDistance()
+// ```
+//
+// ## Metadata
+// introduced: NEXT
+// tags: transformations, geotemporal, aggregates
+//
+totalDistance = (tables=<-, outputColumn="_value") =>
+    tables
+        |> reduce(
+            identity: {index: 0, lat: 0.0, lon: 0.0, totalDistance: 0.0},
+            fn: (r, accumulator) => {
+                _lastPoint =
+                    if accumulator.index == 0 then
+                        {lat: r.lat, lon: r.lon}
+                    else
+                        {lat: accumulator.lat, lon: accumulator.lon}
+                _currentPoint = {lat: r.lat, lon: r.lon}
+
+                return {
+                    index: accumulator.index + 1,
+                    lat: r.lat,
+                    lon: r.lon,
+                    totalDistance:
+                        accumulator.totalDistance + ST_Distance(
+                                region: _lastPoint,
+                                geometry: _currentPoint,
+                            ),
+                }
+            },
+        )
+        |> drop(columns: ["index", "lat", "lon"])
+        |> rename(columns: {totalDistance: outputColumn})
