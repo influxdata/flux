@@ -3,7 +3,7 @@
 // The primary function in this package is `logql.query_range()`
 //
 // ## Metadata
-// introduced: NEXT
+// introduced: 0.192.0
 //
 package logql
 

@@ -1075,7 +1075,7 @@ asTracks = (tables=<-, groupBy=["id", "tid"], orderBy=["_time"]) =>
 // ```
 //
 // ## Metadata
-// introduced: NEXT
+// introduced: 0.192.0
 // tags: transformations, geotemporal, aggregates
 //
 totalDistance = (tables=<-, outputColumn="_value") =>
