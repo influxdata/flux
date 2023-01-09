@@ -95,7 +95,7 @@ builtin sql : (bucket: string, query: string) => stream[A] where A: Record
 // ```
 //
 // ## Metadata
-// introduced: NEXT
+// introduced: 0.192.0
 // tags: sql, type-conversions
 sqlInterval = (d) => {
     _durationString = string(v: d)

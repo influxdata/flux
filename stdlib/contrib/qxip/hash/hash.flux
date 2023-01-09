@@ -1,7 +1,7 @@
 // Package hash provides functions that convert string values to hashes.
 //
 // ## Metadata
-// introduced: NEXT
+// introduced: 0.192.0
 // contributors: **GitHub**: [@lmangani](https://github.com/lmangani)
 //
 package hash

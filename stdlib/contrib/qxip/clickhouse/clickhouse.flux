@@ -1,7 +1,7 @@
 // Package clickhouse provides functions to query [ClickHouse](https://clickhouse.com/) using the ClickHouse HTTP API.
 //
 // ## Metadata
-// introduced: NEXT
+// introduced: 0.192.0
 //
 package clickhouse
 
