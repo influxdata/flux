@@ -107,7 +107,7 @@ var sourceHashes = map[string]string{
 	"stdlib/csv/csv.flux":                                                                         "94a1d8dd59c0e092617e9c974bad4edaf1a2c6ebb20fd185524b58cb657329b0",
 	"stdlib/csv/csv_test.flux":                                                                    "3840dd74e86252b6f91faa6ae758b064efb1b5ae9af4cd270607a5b18efcbe4c",
 	"stdlib/date/boundaries/boundaries.flux":                                                      "06360d7fedab9f7725c106ee20edbd932633f6ef97393537e951979d4dc12083",
-	"stdlib/date/date.flux":                                                                       "a9c57854ba09d5ad33df66f0fd59a89343a872e800d1f987bffde4ebfda5265a",
+	"stdlib/date/date.flux":                                                                       "77f5e4f1f0292b72ba857068cb6466086d87002993140cbf5d2a341b15f4e381",
 	"stdlib/date/date_test.flux":                                                                  "9138acd0c0072fe50b0ede6a958bbf96eea12648fb4e20cbc268869e411b6b28",
 	"stdlib/date/durations_test.flux":                                                             "06cc04f4979f1eb50a5f909f70c77fc3ff7409a902cfd46117954be293b56098",
 	"stdlib/date/hour_duration_test.flux":                                                         "d79f5a139fd4e07f40073534b44c9211b10cd9f36e9b93626a4f23fae5392826",
