@@ -12,7 +12,7 @@ import (
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/values"
-	_ "github.com/influxdata/gosnowflake"
+	"github.com/influxdata/gosnowflake"
 )
 
 // Snowflake DB support.
@@ -35,7 +35,7 @@ type SnowflakeRowReader struct {
 	CloseFunc   func() error
 }
 
-type snowflakeConfig snowflake.Config
+type snowflakeConfig gosnowflake.Config
 
 const (
 	layoutDate         = "2006-01-02"
@@ -44,7 +44,8 @@ const (
 )
 
 func snowflakeParseDSN(dsn string) (cfg *snowflakeConfig, err error) {
-	return snowflake.ParseDSN(dsn)
+	gsConfig, err := gosnowflake.ParseDSN(dsn)
+	return (*snowflakeConfig)(gsConfig), err
 }
 
 // Next prepares SnowflakeRowReader to return rows
