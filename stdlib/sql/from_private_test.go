@@ -170,7 +170,7 @@ func TestFromSqlUrlValidation(t *testing.T) {
 		},
 	}
 	// Scan over test cases and adjust any that the driver is disabled for
-	for i, _ := range testCases {
+	for i := range testCases {
 		if spec, ok := testCases[i].Spec.(*FromSQLProcedureSpec); ok {
 			if err := disabledDriverError(spec.DriverName); err != nil {
 				testCases[i].ErrMsg = err.Error()
