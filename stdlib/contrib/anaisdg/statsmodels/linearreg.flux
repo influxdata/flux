@@ -17,14 +17,14 @@ import "generate"
 // Output data includes the following columns:
 //
 // - **N**: Number of points in the calculation.
-// - **slope**: Slope of the calculated regression.
+// - **slope**: Slope of the calculated regression (slope "x" unit is nanoseconds).
 // - **sx**: Sum of x.
 // - **sxx**: Sum of x squared.
 // - **sxy**: Sum of x*y.
 // - **sy**: Sum of y.
 // - **errors**: Residual sum of squares.
 //   Defined by `(r.y - r.y_hat) ^ 2` in this context
-// - **x**: An index [1,2,3,4...n], with the assumption that the timestamps are regularly spaced.
+// - **x**: An index [1,2,3,4...n] of the input _time column in nanoseconds.
 // - **y**: Field value
 // - **y\_hat**: Linear regression values
 //
@@ -43,11 +43,17 @@ import "generate"
 // >     |> statsmodels.linearRegression()
 // ```
 linearRegression = (tables=<-) => {
+    // extract first record of table for later use
+    firstRecord = tables 
+        |> findRecord(
+            fn: (key) => true,
+            idx: 0
+        )
     renameAndSum =
         tables
             |> rename(columns: {_value: "y"})
-            |> map(fn: (r) => ({r with x: 1.0}))
-            |> cumulativeSum(columns: ["x"])
+            // calculate x as difference from first value (in seconds)
+            |> map(fn: (r) => ({ r with x : float(v: uint(v: r._time)  - uint(v: firstRecord._time)) }))
     t =
         renameAndSum
             |> reduce(
