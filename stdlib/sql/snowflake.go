@@ -1,3 +1,5 @@
+//go:build !fipsonly
+
 package sql
 
 import (
@@ -10,7 +12,7 @@ import (
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/values"
-	_ "github.com/influxdata/gosnowflake"
+	"github.com/influxdata/gosnowflake"
 )
 
 // Snowflake DB support.
@@ -33,11 +35,18 @@ type SnowflakeRowReader struct {
 	CloseFunc   func() error
 }
 
+type snowflakeConfig gosnowflake.Config
+
 const (
 	layoutDate         = "2006-01-02"
 	layoutTime         = "15:04:05"
 	layoutTimeStampNtz = "2006-01-02T15:04:05.0000000000"
 )
+
+func snowflakeParseDSN(dsn string) (cfg *snowflakeConfig, err error) {
+	gsConfig, err := gosnowflake.ParseDSN(dsn)
+	return (*snowflakeConfig)(gsConfig), err
+}
 
 // Next prepares SnowflakeRowReader to return rows
 func (m *SnowflakeRowReader) Next() bool {

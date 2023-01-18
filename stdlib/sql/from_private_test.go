@@ -169,6 +169,14 @@ func TestFromSqlUrlValidation(t *testing.T) {
 			ErrMsg: "invalid data source dsn: may not set allowAllFiles",
 		},
 	}
+	// Scan over test cases and adjust any that the driver is disabled for
+	for i := range testCases {
+		if spec, ok := testCases[i].Spec.(*FromSQLProcedureSpec); ok {
+			if err := disabledDriverError(spec.DriverName); err != nil {
+				testCases[i].ErrMsg = err.Error()
+			}
+		}
+	}
 	testCases.Run(t, createFromSQLSource)
 }
 
