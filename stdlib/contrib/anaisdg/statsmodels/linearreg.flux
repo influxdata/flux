@@ -52,7 +52,7 @@ linearRegression = (tables=<-) => {
     renameAndSum =
         tables
             |> rename(columns: {_value: "y"})
-            // calculate x as difference from first value (in seconds)
+            // calculate x as difference from first value (in nanoseconds)
             |> map(fn: (r) => ({ r with x : float(v: uint(v: r._time)  - uint(v: firstRecord._time)) }))
     t =
         renameAndSum
