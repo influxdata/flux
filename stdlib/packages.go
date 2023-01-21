@@ -20,6 +20,7 @@ import (
 	_ "github.com/influxdata/flux/stdlib/contrib/chobbs/discord"
 	_ "github.com/influxdata/flux/stdlib/contrib/jsternberg/influxdb"
 	_ "github.com/influxdata/flux/stdlib/contrib/qxip/clickhouse"
+	_ "github.com/influxdata/flux/stdlib/contrib/qxip/env"
 	_ "github.com/influxdata/flux/stdlib/contrib/qxip/hash"
 	_ "github.com/influxdata/flux/stdlib/contrib/qxip/logql"
 	_ "github.com/influxdata/flux/stdlib/contrib/rhajek/bigpanda"

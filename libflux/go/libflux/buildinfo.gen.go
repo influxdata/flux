@@ -93,6 +93,7 @@ var sourceHashes = map[string]string{
 	"stdlib/contrib/chobbs/discord/discord.flux":                                                  "bbda9aaee1966d67d310dc099d00476adda777394a1af279d447e4524e0d5e58",
 	"stdlib/contrib/jsternberg/influxdb/influxdb.flux":                                            "afc52f2e31d5e063e318b752d077c58189317c373494563ea0895cdcdea49074",
 	"stdlib/contrib/qxip/clickhouse/clickhouse.flux":                                              "8ad86d9c3c7a4271178d5e2fa9bb850856363cf470d92c3f5010b6de9e770db1",
+	"stdlib/contrib/qxip/env/env.flux":                                                            "d72b887c147d1a27239098c67a35a43730958fcc04aca118f343628f4c44adc9",
 	"stdlib/contrib/qxip/hash/hash.flux":                                                          "abf7de64cbecd3f1019058be5240ba7289355df80b1771ca253f2dca857b9b1f",
 	"stdlib/contrib/qxip/logql/logql.flux":                                                        "f855e5a58efd4332c63bbdbb41efc9522c97722c44202f4b26c5226c89e7a646",
 	"stdlib/contrib/rhajek/bigpanda/bigpanda.flux":                                                "0f4d43a7ae08f0ce5e00a746082dbdae06008bcd69cb00b52f0b4f1bb10b7323",
