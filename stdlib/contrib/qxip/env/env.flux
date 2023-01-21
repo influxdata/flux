@@ -18,7 +18,7 @@ package env
 // ```no_run
 // import "contrib/qxip/env"
 //
-// env.get(key: "KEY_NAME")
+// env.get(key: "FLUX_KEY_NAME")
 // ```
 //
 // ### Populate sensitive credentials with ENV variables//
