@@ -191,7 +191,7 @@ func Test_Base64(t *testing.T) {
 		{
 			name: "b64(v:string)",
 			v:    "Hello, world!",
-			want: "SGVsbG8sIHdvcmxkIQ",
+			want: "SGVsbG8sIHdvcmxkIQ==",
 		},
 	}
 	for _, tc := range testCases {
