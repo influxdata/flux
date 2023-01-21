@@ -10,9 +10,21 @@ Example:
 ```
     import "contrib/qxip/hash"
 
-    a = hash.sha256("Hello, world!")
+    a = hash.sha256(v: "Hello, world!")
     // a is "315f5bdb76d078c43b8ac0064e4a0164612b1fce77c869345bfc94c75894edd3"
 ```
+
+## hash.sha256
+The `hash.sha256()` function converts a single string to a hash using sha256.
+
+Example:
+
+```
+    import "contrib/qxip/hash"
+
+    a = hash.sha1(v: "Hello, world!")
+```
+
 ## hash.xxhash64
 The `hash.xxhash64()` function converts a single string to a hash using xxhash64.
 
@@ -21,9 +33,10 @@ Example:
 ```
     import "contrib/qxip/hash"
 
-    a = hash.xxhash64("Hello, world!")
+    a = hash.xxhash64(v: "Hello, world!")
     // a is "17691043854468224118"
 ```
+
 ## hash.cityhash64
 The `hash.cityhash64()` function converts a single string to hash using cityhash64.
 
@@ -32,8 +45,30 @@ Example:
 ```
     import "contrib/qxip/hash"
 
-    a = hash.cityhash64("Hello, world!")
+    a = hash.cityhash64(v: "Hello, world!")
     // a is "2359500134450972198"
+```
+
+## hash.md5
+The `hash.md5()` function converts a single string to hash using MD5.
+
+Example:
+
+```
+    import "contrib/qxip/hash"
+
+    a = hash.md5(v: "Hello, world!")
+```
+
+## hash.b64
+The `hash.b64()` function converts a single string to a Base64 string.
+
+Example:
+
+```
+    import "contrib/qxip/hash"
+
+    a = hash.b64(v: "Hello, world!")
 ```
 
 ## Contact

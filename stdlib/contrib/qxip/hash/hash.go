@@ -2,9 +2,9 @@ package hash
 
 import (
 	"context"
-	_sha256 "crypto/sha256"
-	_sha1 "crypto/sha1"
 	_md5 "crypto/md5"
+	_sha1 "crypto/sha1"
+	_sha256 "crypto/sha256"
 	_b64 "encoding/base64"
 	"encoding/hex"
 	"github.com/cespare/xxhash/v2"
