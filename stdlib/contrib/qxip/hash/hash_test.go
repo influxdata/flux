@@ -62,7 +62,7 @@ func Test_Sha1(t *testing.T) {
 		{
 			name: "sha1(v:string)",
 			v:    "Hello, world!",
-			want: "315f5bdb76d078c43b8ac0064e4a0164612b1fce77c869345bfc94c75894edd3",
+			want: "943a702d06f34599aee1f8da8ef9f7296031d699",
 		},
 	}
 	for _, tc := range testCases {
@@ -191,7 +191,7 @@ func Test_Base64(t *testing.T) {
 		{
 			name: "b64(v:string)",
 			v:    "Hello, world!",
-			want: "315f5bdb76d078c43b8ac0064e4a0164612b1fce77c869345bfc94c75894edd3",
+			want: "SGVsbG8sIHdvcmxkIQ",
 		},
 	}
 	for _, tc := range testCases {
@@ -234,7 +234,7 @@ func Test_MD5(t *testing.T) {
 		{
 			name: "md5(v:string)",
 			v:    "Hello, world!",
-			want: "315f5bdb76d078c43b8ac0064e4a0164612b1fce77c869345bfc94c75894edd3",
+			want: "6cd3556deb0da54bca060b4c39479839",
 		},
 	}
 	for _, tc := range testCases {
