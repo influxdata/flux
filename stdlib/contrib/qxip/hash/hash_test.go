@@ -71,7 +71,7 @@ func Test_Sha1(t *testing.T) {
 				"v": values.New(tc.v),
 			}
 			args := interpreter.NewArguments(values.NewObjectWithValues(myMap))
-			got, err := sha256(args)
+			got, err := sha1(args)
 			if err != nil {
 				if tc.expectErr == nil {
 					t.Errorf("unexpected error - want: <nil>, got: %s", err.Error())
@@ -200,7 +200,7 @@ func Test_Base64(t *testing.T) {
 				"v": values.New(tc.v),
 			}
 			args := interpreter.NewArguments(values.NewObjectWithValues(myMap))
-			got, err := sha256(args)
+			got, err := b64(args)
 			if err != nil {
 				if tc.expectErr == nil {
 					t.Errorf("unexpected error - want: <nil>, got: %s", err.Error())
@@ -243,7 +243,7 @@ func Test_MD5(t *testing.T) {
 				"v": values.New(tc.v),
 			}
 			args := interpreter.NewArguments(values.NewObjectWithValues(myMap))
-			got, err := sha256(args)
+			got, err := md5(args)
 			if err != nil {
 				if tc.expectErr == nil {
 					t.Errorf("unexpected error - want: <nil>, got: %s", err.Error())
