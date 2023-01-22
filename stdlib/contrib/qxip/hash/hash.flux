@@ -126,3 +126,24 @@ builtin b64 : (v: A) => string
 // ## Metadata
 // tag: type-conversion
 builtin md5 : (v: A) => string
+
+// hmac converts a string value to an MD5 signed sha1 hash.
+//
+// ## Parameters
+//
+// - v: String to hash.
+// - k: Key to sign hash.
+//
+// ## Examples
+// ### Converts a string, key to base64 signed hash for S3 auth.
+// ```no_run
+// import "contrib/qxip/hash"
+//
+// hash.hmac(v: "helloworld", k: "123456")
+//
+// // Returns 75B5ueLnnGepYvh+KoevTzXCrjc=
+// ```
+//
+// ## Metadata
+// tag: type-conversion
+builtin hmac : (v: A, k: A) => string

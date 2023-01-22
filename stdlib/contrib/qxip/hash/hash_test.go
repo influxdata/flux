@@ -265,3 +265,48 @@ func Test_MD5(t *testing.T) {
 		})
 	}
 }
+
+func Test_HMac(t *testing.T) {
+	testCases := []struct {
+		name      string
+		v         interface{}
+		want      string
+		wantNull  bool
+		expectErr error
+	}{
+		{
+			name: "hmac(v:string, k: key)",
+			v:    "helloworld",
+			k:    "123456",
+			want: "75B5ueLnnGepYvh+KoevTzXCrjc=",
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			myMap := map[string]values.Value{
+				"v": values.New(tc.v),
+				"k": values.New(tc.k),
+			}
+			args := interpreter.NewArguments(values.NewObjectWithValues(myMap))
+			got, err := hmac(args)
+			if err != nil {
+				if tc.expectErr == nil {
+					t.Errorf("unexpected error - want: <nil>, got: %s", err.Error())
+				} else if want, got := tc.expectErr.Error(), err.Error(); got != want {
+					t.Errorf("unexpected error - want: %s, got: %s", want, got)
+				}
+				return
+			}
+			if !tc.wantNull {
+				want := values.NewString(tc.want)
+				if !got.Equal(want) {
+					t.Errorf("Wanted: %s, got: %v", want, got)
+				}
+			} else {
+				if !got.IsNull() {
+					t.Errorf("Wanted: %v, got: %v", values.Null, got)
+				}
+			}
+		})
+	}
+}

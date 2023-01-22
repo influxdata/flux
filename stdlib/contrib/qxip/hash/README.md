@@ -68,6 +68,17 @@ Example:
     a = hash.b64(v: "Hello, world!")
 ```
 
+## hash.hmac
+The `hash.hmac()` function converts a string and key pair to sha1 signed Base64 string.
+
+Example:
+
+```
+    import "contrib/qxip/hash"
+
+    a = hash.hmac(v: "helloworld", k: "123456")
+```
+
 ## Contact
 - Author: Lorenzo Mangani
 - Email: lorenzo.mangani@gmail.com

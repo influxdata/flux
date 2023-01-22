@@ -2,6 +2,7 @@ package hash
 
 import (
 	"context"
+	_hmac "crypto/hmac"
 	_md5 "crypto/md5"
 	_sha1 "crypto/sha1"
 	_sha256 "crypto/sha256"
@@ -41,6 +42,7 @@ func init() {
 	runtime.RegisterPackageValue(pkgName, "cityhash64", makeFunction("cityhash64", cityhash64))
 	runtime.RegisterPackageValue(pkgName, "md5", makeFunction("md5", md5))
 	runtime.RegisterPackageValue(pkgName, "b64", makeFunction("b64", b64))
+	runtime.RegisterPackageValue(pkgName, "hmac", makeFunction("hmac", hmac))
 }
 
 var errMissingArg = errors.Newf(codes.Invalid, "missing argument %q", conversionArg)
@@ -149,5 +151,30 @@ func cityhash64(args interpreter.Arguments) (values.Value, error) {
 		return values.NewString(str), nil
 	default:
 		return nil, errors.Newf(codes.Invalid, "hash cannot convert %v to sha256", v.Type())
+	}
+}
+
+func hmac(args interpreter.Arguments) (values.Value, error) {
+	v, ok := args.Get(conversionArg)
+	if !ok {
+		return nil, errMissingArg
+	} else if v.IsNull() {
+		return values.Null, nil
+	}
+	k, kok := args.Get("k")
+	if !kok {
+		return nil, errMissingArg
+	} else if k.IsNull() {
+		return values.Null, nil
+	}
+	switch v.Type().Nature() {
+	case semantic.String:
+		key_for_sign := []byte(k.Str())
+		h := _hmac.New(_sha1.New, key_for_sign)
+		h.Write([]byte(v.Str()))
+		str := _b64.StdEncoding.EncodeToString(h.Sum(nil))
+		return values.NewString(str), nil
+	default:
+		return nil, errors.Newf(codes.Invalid, "hash cannot convert %v to hmac", v.Type())
 	}
 }
