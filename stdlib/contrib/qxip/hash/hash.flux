@@ -87,7 +87,7 @@ builtin xxhash64 : (v: A) => string
 // tag: type-conversion
 builtin cityhash64 : (v: A) => string
 
-// b64 converts a string value to Base64 string.
+// b64 converts a string value to a Base64 string.
 //
 // ## Parameters
 //
