@@ -93,7 +93,7 @@ var sourceHashes = map[string]string{
 	"stdlib/contrib/chobbs/discord/discord.flux":                                                  "bbda9aaee1966d67d310dc099d00476adda777394a1af279d447e4524e0d5e58",
 	"stdlib/contrib/jsternberg/influxdb/influxdb.flux":                                            "afc52f2e31d5e063e318b752d077c58189317c373494563ea0895cdcdea49074",
 	"stdlib/contrib/qxip/clickhouse/clickhouse.flux":                                              "8ad86d9c3c7a4271178d5e2fa9bb850856363cf470d92c3f5010b6de9e770db1",
-	"stdlib/contrib/qxip/env/env.flux":                                                            "29a0f8f9763a3fb820204f9f92fd7618ddfc1023fa8c2652698004c32a45bc1a",
+	"stdlib/contrib/qxip/env/env.flux":                                                            "0160ecc4fd471b76b7fd0b679381fe3c3e0421deeb5ef12deee7dbe13340ebab",
 	"stdlib/contrib/qxip/hash/hash.flux":                                                          "abf7de64cbecd3f1019058be5240ba7289355df80b1771ca253f2dca857b9b1f",
 	"stdlib/contrib/qxip/logql/logql.flux":                                                        "f855e5a58efd4332c63bbdbb41efc9522c97722c44202f4b26c5226c89e7a646",
 	"stdlib/contrib/rhajek/bigpanda/bigpanda.flux":                                                "0f4d43a7ae08f0ce5e00a746082dbdae06008bcd69cb00b52f0b4f1bb10b7323",
