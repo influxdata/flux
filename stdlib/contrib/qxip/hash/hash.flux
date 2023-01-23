@@ -135,7 +135,7 @@ builtin md5 : (v: A) => string
 // - k: Key to sign hash.
 //
 // ## Examples
-// ### Converts a string, key to base64 signed hash for S3 auth.
+// ### Convert a string and key to a base64-signed hash
 // ```no_run
 // import "contrib/qxip/hash"
 //
