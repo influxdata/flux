@@ -7,7 +7,7 @@
 package env
 
 
-// get retrieves a key variable from the process ENV.
+// get retrieves an environment variable from the process ENV.
 //
 // ## Parameters
 // - key: ENV key to retrieve.
