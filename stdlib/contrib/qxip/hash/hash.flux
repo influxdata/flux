@@ -27,7 +27,7 @@ package hash
 // tag: type-conversion
 builtin sha256 : (v: A) => string
 
-// sha1 converts a string value to a hexadecimal hash using the SHA 1 hash algorithm.
+// sha1 converts a string value to a hexadecimal hash using the SHA-1 hash algorithm.
 //
 // ## Parameters
 //
