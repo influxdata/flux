@@ -21,7 +21,7 @@ package env
 // env.get(key: "FLUX_KEY_NAME")
 // ```
 //
-// ### Populate sensitive credentials with ENV variables//
+// ### Populate sensitive credentials with ENV variables
 // ```no_run
 // import "sql"
 // import "contrib/qxip/env"
