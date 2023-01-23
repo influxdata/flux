@@ -270,6 +270,7 @@ func Test_HMac(t *testing.T) {
 	testCases := []struct {
 		name      string
 		v         interface{}
+		k         interface{}
 		want      string
 		wantNull  bool
 		expectErr error
