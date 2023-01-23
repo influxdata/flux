@@ -14,7 +14,7 @@ package env
 //
 // ## Examples
 //
-// ### Retrive a key from ENV variables
+// ### Retrieve an environment variable
 // ```no_run
 // import "contrib/qxip/env"
 //
