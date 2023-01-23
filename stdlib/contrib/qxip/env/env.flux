@@ -1,4 +1,4 @@
-// Package env provides a function for reading ENV variables starting with the FLUX_ prefix.
+// Package env provides a function for reading environment variables starting with the `FLUX_` prefix.
 //
 // ## Metadata
 // introduced: NEXT
