@@ -114,7 +114,7 @@ builtin b64 : (v: A) => string
 // - v: String to hash.
 //
 // ## Examples
-// ### Convert a string to a 64-bit hash using CityHash64
+// ### Convert a string to an MD5 hash
 // ```no_run
 // import "contrib/qxip/hash"
 //
