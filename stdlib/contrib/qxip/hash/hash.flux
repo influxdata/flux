@@ -127,7 +127,7 @@ builtin b64 : (v: A) => string
 // tag: type-conversion
 builtin md5 : (v: A) => string
 
-// hmac converts a string value to an MD5 signed sha1 hash.
+// hmac converts a string value to an MD5-signed SHA-1 hash.
 //
 // ## Parameters
 //
