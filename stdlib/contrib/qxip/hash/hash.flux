@@ -34,7 +34,7 @@ builtin sha256 : (v: A) => string
 // - v: String to hash.
 //
 // ## Examples
-// ### Convert a string to a SHA 256 hash
+// ### Convert a string to a SHA-1 hash
 // ```no_run
 // import "contrib/qxip/hash"
 //
