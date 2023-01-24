@@ -389,6 +389,10 @@ func TestSQLiteParsing(t *testing.T) {
 }
 
 func TestSnowflakeParsing(t *testing.T) {
+	if !isDriverEnabled("snowflake") {
+		t.Skip("snowflake driver is disabled")
+	}
+
 	// here we want to build a mocked representation of what's in our Snowflake db, and then run our RowReader over it, then verify that the results
 	// are as expected.
 	testCases := []struct {
@@ -455,6 +459,9 @@ func TestSnowflakeParsing(t *testing.T) {
 }
 
 func TestMssqlParsing(t *testing.T) {
+	if !isDriverEnabled("mssql") {
+		t.Skip("mssql is disabled")
+	}
 	// here we want to build a mocked representation of what's in our SQLServer db, and then run our RowReader over it, then verify that the results
 	// are as expected.
 	testCases := []struct {

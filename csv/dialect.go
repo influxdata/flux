@@ -1,6 +1,8 @@
 package csv
 
 import (
+	"fmt"
+	"mime"
 	"net/http"
 
 	"github.com/influxdata/flux"
@@ -25,6 +27,14 @@ type Dialect struct {
 func (d Dialect) SetHeaders(w http.ResponseWriter) {
 	w.Header().Set("Content-Type", "text/csv; charset=utf-8")
 	w.Header().Set("Transfer-Encoding", "chunked")
+	if d.ResultEncoderConfig.AttachmentFilename != "" {
+		mediatype := "attachment"
+		params := map[string]string{
+			"filename":  d.ResultEncoderConfig.AttachmentFilename,
+			"filename*": fmt.Sprintf("UTF-8''%s", d.ResultEncoderConfig.AttachmentFilename),
+		}
+		w.Header().Set("Content-Disposition", mime.FormatMediaType(mediatype, params))
+	}
 }
 
 func (d Dialect) Encoder() flux.MultiResultEncoder {

@@ -19,7 +19,8 @@ import "bitwise"
 
 // uand performs the bitwise operation, `a AND b`, with unsigned integers.
 //
-// **Deprecated**: `uand` is deprecated in favor of [`bitwise`](https://docs.influxdata.com/flux/v0.x/stdlib/bitwise/uand/).
+// **Deprecated**: Experimental `bitwise.uand` is deprecated in favor of
+// [`bitwise.uand`](https://docs.influxdata.com/flux/v0.x/stdlib/bitwise/uand/).
 //
 // ## Parameters
 // - a: Left hand operand.
@@ -48,7 +49,8 @@ uand = bitwise.uand
 
 // uor performs the bitwise operation, `a OR b`, with unsigned integers.
 //
-// **Deprecated**: `uor` is deprecated in favor of [`bitwise`](https://docs.influxdata.com/flux/v0.x/stdlib/bitwise/uor/).
+// **Deprecated**: Experimental `bitwise.uor` is deprecated in favor of
+// [`bitwise.uor`](https://docs.influxdata.com/flux/v0.x/stdlib/bitwise/uor/).
 //
 // ## Parameters
 // - a: Left hand operand.
@@ -77,7 +79,8 @@ uor = bitwise.uor
 
 // unot inverts every bit in `a`, an unsigned integer.
 //
-// **Deprecated**: `unot` is deprecated in favor of [`bitwise`](https://docs.influxdata.com/flux/v0.x/stdlib/bitwise/unot/).
+// **Deprecated**: Experimental `bitwise.unot` is deprecated in favor of
+// [`bitwise.unot`](https://docs.influxdata.com/flux/v0.x/stdlib/bitwise/unot/).
 //
 // ## Parameters
 // - a: Unsigned integer to invert.
@@ -105,7 +108,8 @@ unot = bitwise.unot
 
 // uxor performs the bitwise operation, `a XOR b`, with unsigned integers.
 //
-// **Deprecated**: `uxor` is deprecated in favor of [`bitwise`](https://docs.influxdata.com/flux/v0.x/stdlib/bitwise/uxor/).
+// **Deprecated**: Experimental `bitwise.uxor` is deprecated in favor of
+// [`bitwise.uxor`](https://docs.influxdata.com/flux/v0.x/stdlib/bitwise/uxor/).
 //
 // ## Parameters
 // - a: Left hand operand.
@@ -134,7 +138,8 @@ uxor = bitwise.uxor
 
 // uclear performs the bitwise operation `a AND NOT b`, with unsigned integers.
 //
-// **Deprecated**: `uclear` is deprecated in favor of [`bitwise`](https://docs.influxdata.com/flux/v0.x/stdlib/bitwise/uclear/).
+// **Deprecated**: Experimental `bitwise.uclear` is deprecated in favor of
+// [`bitwise.uclear`](https://docs.influxdata.com/flux/v0.x/stdlib/bitwise/uclear/).
 //
 // ## Parameters
 // - a: Left hand operand.
@@ -164,7 +169,8 @@ uclear = bitwise.uclear
 // ulshift shifts the bits in `a` left by `b` bits.
 // Both `a` and `b` are unsigned integers.
 //
-// **Deprecated**: `ulshift` is deprecated in favor of [`bitwise`](https://docs.influxdata.com/flux/v0.x/stdlib/bitwise/ulshift/).
+// **Deprecated**: Experimental `bitwise.ulshift` is deprecated in favor of
+// [`bitwise.ulshift`](https://docs.influxdata.com/flux/v0.x/stdlib/bitwise/ulshift/).
 //
 // ## Parameters
 // - a: Left hand operand.
@@ -194,7 +200,8 @@ ulshift = bitwise.ulshift
 // urshift shifts the bits in `a` right by `b` bits.
 // Both `a` and `b` are unsigned integers.
 //
-// **Deprecated**: `urshift` is deprecated in favor of [`bitwise`](https://docs.influxdata.com/flux/v0.x/stdlib/bitwise/urshift/).
+// **Deprecated**: Experimental `bitwise.urshift` is deprecated in favor of
+// [`bitwise.urshift`](https://docs.influxdata.com/flux/v0.x/stdlib/bitwise/urshift/).
 //
 // ## Parameters
 // - a: Left hand operand.
@@ -223,7 +230,8 @@ urshift = bitwise.urshift
 
 // sand performs the bitwise operation, `a AND b`, with integers.
 //
-// **Deprecated**: `sand` is deprecated in favor of [`bitwise`](https://docs.influxdata.com/flux/v0.x/stdlib/bitwise/sand/).
+// **Deprecated**: Experimental `bitwise.sand` is deprecated in favor of
+// [`bitwise.sand`](https://docs.influxdata.com/flux/v0.x/stdlib/bitwise/sand/).
 //
 // ## Parameters
 // - a: Left hand operand.
@@ -252,7 +260,8 @@ sand = bitwise.sand
 
 // sor performs the bitwise operation, `a OR b`, with integers.
 //
-// **Deprecated**: `sor` is deprecated in favor of [`bitwise`](https://docs.influxdata.com/flux/v0.x/stdlib/bitwise/sor/).
+// **Deprecated**: Experimental `bitwise.sor` is deprecated in favor of
+// [`bitwise.sor`](https://docs.influxdata.com/flux/v0.x/stdlib/bitwise/sor/).
 //
 // ## Parameters
 // - a: Left hand operand.
@@ -281,7 +290,8 @@ sor = bitwise.sor
 
 // snot inverts every bit in `a`, an integer.
 //
-// **Deprecated**: `snot` is deprecated in favor of [`bitwise`](https://docs.influxdata.com/flux/v0.x/stdlib/bitwise/snot/).
+// **Deprecated**: Experimental `bitwise.snot` is deprecated in favor of
+// [`bitwise.snot`](https://docs.influxdata.com/flux/v0.x/stdlib/bitwise/snot/).
 //
 // ## Parameters
 // - a: Integer to invert.
@@ -309,7 +319,8 @@ snot = bitwise.snot
 
 // sxor performs the bitwise operation, `a XOR b`, with integers.
 //
-// **Deprecated**: `sxor` is deprecated in favor of [`bitwise`](https://docs.influxdata.com/flux/v0.x/stdlib/bitwise/sxor/).
+// **Deprecated**: Experimental `bitwise.sxor` is deprecated in favor of
+// [`bitwise.sxor`](https://docs.influxdata.com/flux/v0.x/stdlib/bitwise/sxor/).
 //
 // ## Parameters
 // - a: Left hand operand.
@@ -339,7 +350,8 @@ sxor = bitwise.sxor
 // sclear performs the bitwise operation `a AND NOT b`.
 // Both `a` and `b` are integers.
 //
-// **Deprecated**: `sclear` is deprecated in favor of [`bitwise`](https://docs.influxdata.com/flux/v0.x/stdlib/bitwise/sclear/).
+// **Deprecated**: Experimental `bitwise.sclear` is deprecated in favor of
+// [`bitwise.sclear`](https://docs.influxdata.com/flux/v0.x/stdlib/bitwise/sclear/).
 //
 // ## Parameters
 // - a: Left hand operand.
@@ -369,7 +381,8 @@ sclear = bitwise.sclear
 // slshift shifts the bits in `a` left by `b` bits.
 // Both `a` and `b` are integers.
 //
-// **Deprecated**: `slshift` is deprecated in favor of [`bitwise`](https://docs.influxdata.com/flux/v0.x/stdlib/bitwise/slshift/).
+// **Deprecated**: Experimental `bitwise.slshift` is deprecated in favor of
+// [`bitwise.slshift`](https://docs.influxdata.com/flux/v0.x/stdlib/bitwise/slshift/).
 //
 // ## Parameters
 // - a: Left hand operand.
@@ -399,7 +412,8 @@ slshift = bitwise.slshift
 // srshift shifts the bits in `a` right by `b` bits.
 // Both `a` and `b` are integers.
 //
-// **Deprecated**: `srshift` is deprecated in favor of [`bitwise`](https://docs.influxdata.com/flux/v0.x/stdlib/bitwise/srshift/).
+// **Deprecated**: Experimental `bitwise.srshift` is deprecated in favor of
+// [`bitwise.srshift`](https://docs.influxdata.com/flux/v0.x/stdlib/bitwise/srshift/).
 //
 // ## Parameters
 // - a: Left hand operand.

@@ -252,21 +252,6 @@ builtin _monthDay : (t: T, location: {zone: string, offset: duration}) => int wh
 // monthDay returns the day of the month for a specified time.
 // Results range from `[1 - 31]`.
 //
-// | Returned value | Month     |
-// | :------------: | :-------- |
-// |       1        | January   |
-// |       2        | February  |
-// |       3        | March     |
-// |       4        | April     |
-// |       5        | May       |
-// |       6        | June      |
-// |       7        | July      |
-// |       8        | August    |
-// |       9        | September |
-// |       10       | October   |
-// |       11       | November  |
-// |       12       | December  |
-//
 // ## Parameters
 // - t: Time to operate on.
 //
@@ -363,6 +348,21 @@ yearDay = (t, location=location) => _yearDay(t, location)
 builtin _month : (t: T, location: {zone: string, offset: duration}) => int where T: Timeable
 
 // month returns the month of a specified time. Results range from `[1 - 12]`.
+//
+// | Returned value | Month     |
+// | :------------: | :-------- |
+// |       1        | January   |
+// |       2        | February  |
+// |       3        | March     |
+// |       4        | April     |
+// |       5        | May       |
+// |       6        | June      |
+// |       7        | July      |
+// |       8        | August    |
+// |       9        | September |
+// |       10       | October   |
+// |       11       | November  |
+// |       12       | December  |
 //
 // ## Parameters
 // - t: Time to operate on.

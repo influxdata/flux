@@ -8,11 +8,16 @@ package aggregate
 
 import "experimental"
 
-// rate calculates the rate of change per windows of time for each input table.
+// rate calculates the average rate of increase per window of time for each
+// input table.
 //
 // `aggregate.rate()` requires that input data have `_start` and `_stop` columns
 // to calculate windows of time to operate on.
 // Use `range()` to assign `_start` and `_stop` values.
+//
+// This function is designed to replicate the
+// [Prometheus `rate()` function](https://prometheus.io/docs/prometheus/latest/querying/functions/#rate)
+// and should only be used with [counters](https://docs.influxdata.com/flux/v0.x/prometheus/metric-types/counter/).
 //
 // ## Parameters
 //

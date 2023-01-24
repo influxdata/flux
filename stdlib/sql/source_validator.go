@@ -9,7 +9,6 @@ import (
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/dependencies/url"
 	"github.com/influxdata/flux/internal/errors"
-	"github.com/influxdata/gosnowflake"
 )
 
 // helper function to validate the data source url (postgres, sqlmock) / dsn (mysql, snowflake) using the URLValidator.
@@ -81,7 +80,7 @@ func validateDataSource(validator url.Validator, driverName string, dataSourceNa
 		}
 	case "snowflake":
 		// an example is: username:password@accountname/dbname/testschema?warehouse=mywh
-		cfg, err := gosnowflake.ParseDSN(dataSourceName)
+		cfg, err := snowflakeParseDSN(dataSourceName)
 		if err != nil {
 			return errors.Newf(codes.Invalid, "invalid data source dsn: %v", err)
 		}
