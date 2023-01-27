@@ -13,7 +13,7 @@ package libflux
 //
 //lint:ignore U1000 generated code
 var sourceHashes = map[string]string{
-	"libflux/Cargo.lock":                                                                          "e62bb8738c28d0bad677ce1e8ba10363560d51e270a19bbee45c28341f6381d3",
+	"libflux/Cargo.lock":                                                                          "d999466b15d354bc55bd77826c2f724f3f72edc4e020e06c2daac99e5347d509",
 	"libflux/Cargo.toml":                                                                          "91ac4e8b467440c6e8a9438011de0e7b78c2732403bb067d4dd31539ac8a90c1",
 	"libflux/flux-core/Cargo.toml":                                                                "bc7b79f0b098ddc5fd0a2575315ce5ac2f85db942857dddc44345f7e36060d66",
 	"libflux/flux-core/src/ast/check/mod.rs":                                                      "4a6511e9ccc9718eada01b29544bd4d5c324ae87a85906c25ad7193a890f86fc",
