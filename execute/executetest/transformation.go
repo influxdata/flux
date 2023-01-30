@@ -142,7 +142,7 @@ func ProcessTestHelper2(
 		}
 	}()
 
-	alloc := &memory.ResourceAllocator{}
+	alloc := UnlimitedAllocator
 	store := NewDataStore()
 	tx, d := create(RandomDatasetID(), alloc)
 	d.SetTriggerSpec(plan.DefaultTriggerSpec)
