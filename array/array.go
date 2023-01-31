@@ -2,9 +2,11 @@ package array
 
 import (
 	"strconv"
+	"sync/atomic"
 
 	"github.com/apache/arrow/go/v7/arrow"
 	"github.com/apache/arrow/go/v7/arrow/array"
+	arrowmem "github.com/apache/arrow/go/v7/arrow/memory"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/memory"
@@ -102,9 +104,9 @@ type Builder interface {
 }
 
 type String struct {
-	value  string
 	length int
 	data   *array.Binary
+	value  *stringValue
 }
 
 // NewStringFromBinaryArray creates an instance of String from
@@ -162,12 +164,16 @@ func (a *String) Len() int {
 func (a *String) Retain() {
 	if a.data != nil {
 		a.data.Retain()
+		return
 	}
+	a.value.Retain()
 }
 func (a *String) Release() {
 	if a.data != nil {
 		a.data.Release()
+		return
 	}
+	a.value.Release()
 }
 func (a *String) Slice(i, j int) Array {
 	if a.data != nil {
@@ -177,25 +183,75 @@ func (a *String) Slice(i, j int) Array {
 			data: array.NewBinaryData(data),
 		}
 	}
+	a.value.Retain()
 	return &String{
 		value:  a.value,
 		length: j - i,
 	}
 }
-func (a *String) Value(i int) string {
+
+// ValueBytes returns a byte slice containing the value of this string
+// at index i. This slice points to the contents of the data buffer and
+// is only valid for the lifetime of the array.
+func (a *String) ValueBytes(i int) []byte {
 	if a.data != nil {
-		return a.data.ValueString(i)
+		return a.data.Value(i)
 	}
-	return a.value
+	return a.value.Bytes()
+}
+
+// Value returns a string copy of the value stored at index i. The
+// returned value will outlive the array and is safe to use like any
+// other go string. The memory backing the string will be allocated by
+// the runtime, rather than any provided allocator.
+func (a *String) Value(i int) string {
+	return string(a.ValueBytes(i))
 }
 func (a *String) ValueLen(i int) int {
 	if a.data != nil {
 		return a.data.ValueLen(i)
 	}
-	return len(a.value)
+	return a.value.Len()
 }
 func (a *String) IsConstant() bool {
 	return a.data == nil
+}
+
+type stringValue struct {
+	data []byte
+
+	mem arrowmem.Allocator
+	rc  int64
+}
+
+func (v *stringValue) Retain() {
+	if v == nil {
+		return
+	}
+	atomic.AddInt64(&v.rc, 1)
+}
+
+func (v *stringValue) Release() {
+	if v == nil {
+		return
+	}
+	if atomic.AddInt64(&v.rc, -1) == 0 {
+		v.mem.Free(v.data)
+	}
+}
+
+func (v *stringValue) Bytes() []byte {
+	if v == nil {
+		return nil
+	}
+	return v.data
+}
+
+func (v *stringValue) Len() int {
+	if v == nil {
+		return 0
+	}
+	return len(v.data)
 }
 
 type sliceable interface {

@@ -1,6 +1,9 @@
 package array
 
 import (
+	"bytes"
+	"sync/atomic"
+
 	"github.com/apache/arrow/go/v7/arrow/array"
 	"github.com/apache/arrow/go/v7/arrow/bitutil"
 	"github.com/apache/arrow/go/v7/arrow/memory"
@@ -9,11 +12,11 @@ import (
 type StringBuilder struct {
 	builder      *array.BinaryBuilder
 	mem          memory.Allocator
-	value        string
+	value        *stringValue
 	length       int
 	capacity     int
 	dataCapacity int
-	refCount     int
+	refCount     int64
 }
 
 func NewStringBuilder(mem memory.Allocator) *StringBuilder {
@@ -23,52 +26,49 @@ func NewStringBuilder(mem memory.Allocator) *StringBuilder {
 	}
 }
 func (b *StringBuilder) init() {
-	if b.builder == nil {
-		if b.refCount <= 0 {
-			return
-		}
-
-		builder := array.NewBinaryBuilder(b.mem, StringType)
-		if capacity := b.Cap(); capacity > 0 {
-			builder.Resize(capacity)
-			dataCapacity := len(b.value) * capacity
-			if dataCapacity < b.dataCapacity {
-				dataCapacity = b.dataCapacity
-			}
-			builder.ReserveData(dataCapacity)
-		}
-		if b.length > 0 {
-			for i := 0; i < b.length; i++ {
-				builder.AppendString(b.value)
-			}
-		}
-
-		for i := 1; i < b.refCount; i++ {
-			builder.Retain()
-		}
-		b.builder = builder
+	if b.builder != nil {
+		return
 	}
+	builder := array.NewBinaryBuilder(b.mem, StringType)
+	if capacity := b.Cap(); capacity > 0 {
+		builder.Resize(capacity)
+		dataCapacity := b.value.Len() * capacity
+		if dataCapacity < b.dataCapacity {
+			dataCapacity = b.dataCapacity
+		}
+		builder.ReserveData(dataCapacity)
+	}
+	if b.length > 0 {
+		for i := 0; i < b.length; i++ {
+			builder.Append(b.value.Bytes())
+		}
+	}
+	b.builder = builder
+	b.value.Release()
+	b.value = nil
 }
 func (b *StringBuilder) reset() {
 	b.builder = nil
 	b.length = 0
+	b.value = nil
 	b.capacity = 0
 	b.dataCapacity = 0
-	b.value = ""
 }
 func (b *StringBuilder) Retain() {
-	if b.builder != nil {
-		b.builder.Retain()
-		return
-	}
-	b.refCount++
+	atomic.AddInt64(&b.refCount, 1)
 }
 func (b *StringBuilder) Release() {
-	if b.builder != nil {
-		b.builder.Release()
+	if atomic.AddInt64(&b.refCount, -1) != 0 {
 		return
 	}
-	b.refCount--
+	if b.builder != nil {
+		b.builder.Release()
+		b.builder = nil
+	}
+	if b.value != nil {
+		b.value.Release()
+		b.value = nil
+	}
 }
 func (b *StringBuilder) Len() int {
 	if b.builder != nil {
@@ -93,15 +93,47 @@ func (b *StringBuilder) NullN() int {
 	}
 	return 0
 }
-func (b *StringBuilder) Append(v string) {
-	if b.builder == nil && (b.length == 0 || v == b.value) {
-		b.value = v
+
+func (b *StringBuilder) AppendBytes(buf []byte) {
+	if b.builder == nil && (b.length == 0 || bytes.Equal(buf, b.value.Bytes())) {
+		if b.value == nil {
+			b.initValue(len(buf))
+			copy(b.value.data, buf)
+		}
 		b.length++
 		return
 	}
-	b.init()
+	if b.value != nil {
+		b.init()
+	}
+	b.builder.Append(buf)
+}
+
+// Append appends a string to the array being built. The input string
+// will always be copied.
+func (b *StringBuilder) Append(v string) {
+	if b.builder == nil && (b.length == 0 || v == string(b.value.Bytes())) {
+		if b.value == nil {
+			b.initValue(len(v))
+			copy(b.value.data, v)
+		}
+		b.length++
+		return
+	}
+	if b.value != nil {
+		b.init()
+	}
 	b.builder.AppendString(v)
 }
+
+func (b *StringBuilder) initValue(size int) {
+	b.value = &stringValue{
+		data: b.mem.Allocate(size),
+		mem:  b.mem,
+		rc:   1,
+	}
+}
+
 func (b *StringBuilder) AppendValues(v []string, valid []bool) {
 	for i, val := range v {
 		if len(valid) != 0 && valid[i] {

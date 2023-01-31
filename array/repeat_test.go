@@ -39,7 +39,7 @@ func TestRepeat(t *testing.T) {
 			name: "String",
 			t:    flux.TString,
 			v:    values.NewString("a"),
-			sz:   0, // optimized away
+			sz:   1, // optimized to a single instance
 		},
 		{
 			name: "Boolean",
