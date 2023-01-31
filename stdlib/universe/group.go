@@ -427,7 +427,7 @@ func (t *groupTransformation) appendValueFromRow(b array.Builder, cr flux.ColRea
 		if vs.IsNull(i) {
 			b.AppendNull()
 		} else {
-			b.Append(vs.Value(i))
+			b.AppendBytes(vs.ValueBytes(i))
 		}
 	case flux.TBool:
 		b := b.(*array.BooleanBuilder)

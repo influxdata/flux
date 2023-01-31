@@ -381,7 +381,7 @@ func (d *diffSchema) appendRow(builders []array.Builder, which, i int) {
 		case *array.UintBuilder:
 			b.Append(arr.(*array.Uint).Value(i))
 		case *array.StringBuilder:
-			b.Append(arr.(*array.String).Value(i))
+			b.AppendBytes(arr.(*array.String).ValueBytes(i))
 		case *array.BooleanBuilder:
 			b.Append(arr.(*array.Boolean).Value(i))
 		default:
