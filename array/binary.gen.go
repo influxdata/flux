@@ -189,63 +189,6 @@ func FloatAddRConst(l *Float, r float64, mem memory.Allocator) (*Float, error) {
 	return a, nil
 }
 
-func StringAdd(l, r *String, mem memory.Allocator) (*String, error) {
-	n := l.Len()
-	if n != r.Len() {
-		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
-	}
-	b := NewStringBuilder(mem)
-	b.Resize(n)
-	for i := 0; i < n; i++ {
-		if l.IsValid(i) && r.IsValid(i) {
-
-			b.Append(l.Value(i) + r.Value(i))
-
-		} else {
-			b.AppendNull()
-		}
-	}
-	a := b.NewStringArray()
-	b.Release()
-	return a, nil
-}
-
-func StringAddLConst(l string, r *String, mem memory.Allocator) (*String, error) {
-	n := r.Len()
-	b := NewStringBuilder(mem)
-	b.Resize(n)
-	for i := 0; i < n; i++ {
-		if r.IsValid(i) {
-
-			b.Append(l + r.Value(i))
-
-		} else {
-			b.AppendNull()
-		}
-	}
-	a := b.NewStringArray()
-	b.Release()
-	return a, nil
-}
-
-func StringAddRConst(l *String, r string, mem memory.Allocator) (*String, error) {
-	n := l.Len()
-	b := NewStringBuilder(mem)
-	b.Resize(n)
-	for i := 0; i < n; i++ {
-		if l.IsValid(i) {
-
-			b.Append(l.Value(i) + r)
-
-		} else {
-			b.AppendNull()
-		}
-	}
-	a := b.NewStringArray()
-	b.Release()
-	return a, nil
-}
-
 func IntSub(l, r *Int, mem memory.Allocator) (*Int, error) {
 	n := l.Len()
 	if n != r.Len() {

@@ -3,7 +3,7 @@
         {
             "Name": "Add",
             "Op": "+",
-            "Types": ["Int", "Uint", "Float", "String"]
+            "Types": ["Int", "Uint", "Float"]
         },
         {
             "Name": "Sub",

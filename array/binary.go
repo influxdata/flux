@@ -145,3 +145,70 @@ func OrConst(fixed *bool, arr *Boolean, mem memory.Allocator) (*Boolean, error) 
 	b.Release()
 	return a, nil
 }
+
+func StringAdd(l, r *String, mem memory.Allocator) (*String, error) {
+	n := l.Len()
+	if n != r.Len() {
+		return nil, errors.Newf(codes.Invalid, "vectors must have equal length for binary operations")
+	}
+	b := NewStringBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+		if l.IsValid(i) && r.IsValid(i) {
+			lb := l.ValueBytes(i)
+			rb := r.ValueBytes(i)
+			buf := make([]byte, len(lb)+len(rb))
+			copy(buf, lb)
+			copy(buf[len(lb):], rb)
+			b.AppendBytes(buf)
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewStringArray()
+	b.Release()
+	return a, nil
+}
+
+func StringAddLConst(l string, r *String, mem memory.Allocator) (*String, error) {
+	n := r.Len()
+	b := NewStringBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+		if r.IsValid(i) {
+			rb := r.ValueBytes(i)
+			buf := make([]byte, len(l)+len(rb))
+			copy(buf, l)
+			copy(buf[len(l):], rb)
+			b.AppendBytes(buf)
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewStringArray()
+	b.Release()
+	return a, nil
+}
+
+func StringAddRConst(l *String, r string, mem memory.Allocator) (*String, error) {
+	n := l.Len()
+	b := NewStringBuilder(mem)
+	b.Resize(n)
+	for i := 0; i < n; i++ {
+		if l.IsValid(i) {
+			lb := l.ValueBytes(i)
+			buf := make([]byte, len(lb)+len(r))
+			copy(buf, lb)
+			copy(buf[len(lb):], r)
+			b.AppendBytes(buf)
+
+		} else {
+			b.AppendNull()
+		}
+	}
+	a := b.NewStringArray()
+	b.Release()
+	return a, nil
+}

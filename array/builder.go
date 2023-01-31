@@ -198,7 +198,7 @@ func (b *StringBuilder) CopyValidValues(values *String, nullCheckArray Array) {
 	nullOffset := nullCheckArray.Data().Offset()
 	for i := 0; i < values.Len(); i++ {
 		if isValid(nullBitMapBytes, nullOffset, i) {
-			b.Append(values.Value(i))
+			b.AppendBytes(values.ValueBytes(i))
 		}
 	}
 }
