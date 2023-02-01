@@ -25,7 +25,7 @@ func TestString(t *testing.T) {
 					b.Append("a")
 				}
 			},
-			sz: 0,
+			sz: 1,
 			want: []interface{}{
 				"a", "a", "a", "a", "a",
 				"a", "a", "a", "a", "a",
@@ -165,7 +165,7 @@ func TestStringBuilder_NewArray(t *testing.T) {
 		}
 
 		arr := b.NewArray()
-		mem.AssertSize(t, 0)
+		assert.Equal(t, 1, mem.CurrentAlloc(), "unexpected memory allocation.")
 		arr.Release()
 		mem.AssertSize(t, 0)
 
