@@ -8,6 +8,7 @@ import (
 	"context"
 	"encoding/json"
 	"path"
+	"path/filepath"
 	"runtime"
 	"unsafe"
 
@@ -40,7 +41,8 @@ func SemanticPackages() (map[string]*semantic.Package, error) {
 			return nil, err
 		}
 
-		k := path.Dir(pkg.Files[0].File)
+		k := path.Dir(filepath.ToSlash(pkg.Files[0].File))
+
 		m[k] = &pkg
 	}
 
