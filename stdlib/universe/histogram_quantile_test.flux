@@ -88,3 +88,18 @@ testcase histogram_quantile_minvalue {
 
     testing.diff(got, want)
 }
+
+testcase histogramQuantileInvalidOnNonmonotonic {
+    inData =
+        "
+#datatype,string,long,dateTime:RFC3339,string,double,double,string
+#group,false,false,true,true,false,false,true
+#default,_result,,,,,,
+,result,table,_time,_field,_value,le,_measurement
+,,0,2018-05-22T19:53:00Z,x_duration_seconds,10,-80,mm
+"
+    fn = () => csv.from(csv: inData)
+            |> range(start: 2018-05-22T19:53:00Z)
+            |> histogramQuantile(quantile: 0.25, minValue: -100.0, onNonmonotonic: "force")
+    testing.shouldError(fn: fn, want: /hi/)
+}

@@ -12,9 +12,15 @@ import (
 	"github.com/influxdata/flux/runtime"
 )
 
-const HistogramQuantileKind = "histogramQuantile"
+const (
+	HistogramQuantileKind = "histogramQuantile"
 
-const DefaultUpperBoundColumnLabel = "le"
+	DefaultUpperBoundColumnLabel = "le"
+
+	onNonmonotonicError = "error"
+	onNonmonotonicDrop  = "drop"
+	onNonmonotonicForce = "force"
+)
 
 type HistogramQuantileOpSpec struct {
 	Quantile         float64 `json:"quantile"`
@@ -22,6 +28,7 @@ type HistogramQuantileOpSpec struct {
 	UpperBoundColumn string  `json:"upperBoundColumn"`
 	ValueColumn      string  `json:"valueColumn"`
 	MinValue         float64 `json:"minValue"`
+	OnNonmonotonic   string  `json:"onNonmonotonic"`
 }
 
 func init() {
@@ -71,6 +78,18 @@ func CreateHistogramQuantileOpSpec(args flux.Arguments, a *flux.Administration) 
 		return nil, err
 	} else if ok {
 		s.MinValue = min
+	}
+
+	if onNonmonotonic, ok, err := args.GetString("onNonmonotonic"); err != nil {
+		return nil, err
+	} else if ok {
+		s.OnNonmonotonic = onNonmonotonic
+	} else {
+		s.OnNonmonotonic = onNonmonotonicError
+	}
+
+	if s.OnNonmonotonic != onNonmonotonicError {
+		return nil, errors.New(codes.Invalid, "value provided to histogramQuantile parameter onNonmonotonic is invalid; only \"error\" is currently supported")
 	}
 
 	return s, nil

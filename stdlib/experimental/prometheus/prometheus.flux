@@ -46,6 +46,9 @@ builtin scrape : (url: string) => stream[A] where A: Record
 //   Available versions are `1` and `2`.
 //   Default is `2`.
 // - tables: Input data. Default is piped-forward data (`<-`).
+// - onNonmonotonic: Describes behavior when counts are not monotonically increasing
+//   when sorted by upper bound. Currently only `"error"` is supported, which is the
+//   default.
 //
 // ## Examples
 //
@@ -72,7 +75,7 @@ builtin scrape : (url: string) => stream[A] where A: Record
 // ## Metadata
 // tags: transformations,aggregates,prometheus
 //
-histogramQuantile = (tables=<-, quantile, metricVersion=2) => {
+histogramQuantile = (tables=<-, quantile, metricVersion=2, onNonmonotonic="error") => {
     _version2 = () =>
         tables
             |> group(mode: "except", columns: ["le", "_value"])
