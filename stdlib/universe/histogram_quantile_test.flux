@@ -88,3 +88,129 @@ testcase histogram_quantile_minvalue {
 
     testing.diff(got, want)
 }
+
+testcase histogramQuantileInvalidOnNonmonotonic {
+    inData =
+        "
+#datatype,string,long,dateTime:RFC3339,string,double,double,string
+#group,false,false,true,true,false,false,true
+#default,_result,,,,,,
+,result,table,_time,_field,_value,le,_measurement
+,,0,2018-05-22T19:53:00Z,x_duration_seconds,10,-80,mm
+"
+    fn = () =>
+        csv.from(csv: inData)
+            |> range(start: 2018-05-22T19:53:00Z)
+            |> histogramQuantile(quantile: 0.25, minValue: -100.0, onNonmonotonic: "asdf")
+
+    testing.shouldError(
+        fn: fn,
+        want: /value provided to histogramQuantile parameter onNonmonotonic is invalid/,
+    )
+}
+
+testcase histogramQuantileOnNonmonotonicError {
+    inData =
+        "
+#datatype,string,long,dateTime:RFC3339,string,double,double,string
+#group,false,false,true,true,false,false,true
+#default,_result,,,,,,
+,result,table,_time,_field,_value,le,_measurement
+,,0,2018-05-22T19:53:00Z,x_duration_seconds,1,0.1,l
+,,0,2018-05-22T19:53:00Z,x_duration_seconds,2,0.2,l
+,,0,2018-05-22T19:53:00Z,x_duration_seconds,2,0.3,l
+,,0,2018-05-22T19:53:00Z,x_duration_seconds,3,0.4,l
+,,0,2018-05-22T19:53:00Z,x_duration_seconds,2,0.5,l
+,,0,2018-05-22T19:53:00Z,x_duration_seconds,2,0.6,l
+,,0,2018-05-22T19:53:00Z,x_duration_seconds,2,0.7,l
+,,0,2018-05-22T19:53:00Z,x_duration_seconds,8,0.8,l
+,,0,2018-05-22T19:53:00Z,x_duration_seconds,10,0.9,l
+,,0,2018-05-22T19:53:00Z,x_duration_seconds,10,+Inf,l
+"
+    fn = () =>
+        csv.from(csv: inData)
+            |> histogramQuantile(quantile: 0.9)
+            |> tableFind(fn: (key) => true)
+            |> findRecord(fn: (key) => true, idx: 0)
+
+    testing.shouldError(fn: fn, want: /histogram records counts are not monotonic/)
+}
+
+testcase histogramQuantileOnNonmonotonicForce {
+    inData =
+        "
+#datatype,string,long,dateTime:RFC3339,string,double,double,string
+#group,false,false,true,true,false,false,true
+#default,_result,,,,,,
+,result,table,_time,_field,_value,le,_measurement
+,,0,2018-05-22T19:53:00Z,x_duration_seconds,1,0.1,l
+,,0,2018-05-22T19:53:00Z,x_duration_seconds,2,0.2,l
+,,0,2018-05-22T19:53:00Z,x_duration_seconds,2,0.3,l
+,,0,2018-05-22T19:53:00Z,x_duration_seconds,0,0.4,l
+,,0,2018-05-22T19:53:00Z,x_duration_seconds,1,0.5,l
+,,0,2018-05-22T19:53:00Z,x_duration_seconds,1,0.6,l
+,,0,2018-05-22T19:53:00Z,x_duration_seconds,2,0.7,l
+,,0,2018-05-22T19:53:00Z,x_duration_seconds,8,0.8,l
+,,0,2018-05-22T19:53:00Z,x_duration_seconds,10,0.9,l
+,,0,2018-05-22T19:53:00Z,x_duration_seconds,10,+Inf,l
+"
+    outData =
+        "
+#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,double,string
+#group,false,false,true,true,true,true,false,true
+#default,_result,,,,,,,
+,result,table,_start,_stop,_time,_field,_value,_measurement
+,,0,2018-05-22T19:53:00Z,2030-01-01T00:00:00Z,2018-05-22T19:53:00Z,x_duration_seconds,0.8500000000000001,l
+"
+
+    got =
+        csv.from(csv: inData)
+            |> range(start: 2018-05-22T19:53:00Z)
+            |> histogramQuantile(quantile: 0.9, onNonmonotonic: "force")
+    want = csv.from(csv: outData)
+
+    testing.diff(got, want)
+}
+
+testcase histogramQuantileOnNonmonotonicDrop {
+    inData =
+        "
+#datatype,string,long,dateTime:RFC3339,string,double,double,string
+#group,false,false,true,true,false,false,true
+#default,_result,,,,,,
+,result,table,_time,_field,_value,le,_measurement
+,,0,2018-05-22T19:53:00Z,x_duration_seconds,1,0.1,l
+,,0,2018-05-22T19:53:00Z,x_duration_seconds,2,0.2,l
+,,0,2018-05-22T19:53:00Z,x_duration_seconds,2,0.3,l
+,,0,2018-05-22T19:53:00Z,x_duration_seconds,0,0.4,l
+,,0,2018-05-22T19:53:00Z,x_duration_seconds,1,0.5,l
+,,0,2018-05-22T19:53:00Z,x_duration_seconds,1,0.6,l
+,,0,2018-05-22T19:53:00Z,x_duration_seconds,2,0.7,l
+,,0,2018-05-22T19:53:00Z,x_duration_seconds,8,0.8,l
+,,0,2018-05-22T19:53:00Z,x_duration_seconds,10,0.9,l
+,,0,2018-05-22T19:53:00Z,x_duration_seconds,10,+Inf,l
+,,1,2018-05-22T19:53:00Z,y_duration_seconds,0,-Inf,l
+,,1,2018-05-22T19:53:00Z,y_duration_seconds,10,0.2,l
+,,1,2018-05-22T19:53:00Z,y_duration_seconds,15,0.4,l
+,,1,2018-05-22T19:53:00Z,y_duration_seconds,25,0.6,l
+,,1,2018-05-22T19:53:00Z,y_duration_seconds,35,0.8,l
+,,1,2018-05-22T19:53:00Z,y_duration_seconds,45,1,l
+,,1,2018-05-22T19:53:00Z,y_duration_seconds,45,+Inf,l
+"
+    outData =
+        "
+#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,double,string
+#group,false,false,true,true,true,true,false,true
+#default,_result,,,,,,,
+,result,table,_start,_stop,_time,_field,_value,_measurement
+,,1,2018-05-22T19:53:00Z,2030-01-01T00:00:00Z,2018-05-22T19:53:00Z,y_duration_seconds,0.91,l
+"
+
+    got =
+        csv.from(csv: inData)
+            |> range(start: 2018-05-22T19:53:00Z)
+            |> histogramQuantile(quantile: 0.9, onNonmonotonic: "drop")
+    want = csv.from(csv: outData)
+
+    testing.diff(got, want)
+}

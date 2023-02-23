@@ -292,3 +292,86 @@ testcase prometheus_histogramQuantile_v1 {
 
     testing.diff(got: got, want: want)
 }
+
+testcase prometheus_histogramQuantile_onNonmonotonicForce {
+    inData =
+        "#group,false,false,true,true,false,false,true,true
+#datatype,string,long,string,string,dateTime:RFC3339,double,string,string
+#default,_result,,,,,,,
+,result,table,_field,_measurement,_time,_value,le,org
+,,0,qc_all_duration_seconds,prometheus,2021-10-08T00:00:00.412729Z,0,0.001,0001
+,,2,qc_all_duration_seconds,prometheus,2021-10-08T00:00:00.412729Z,1,0.005,0001
+,,3,qc_all_duration_seconds,prometheus,2021-10-08T00:00:00.412729Z,1,0.025,0001
+,,4,qc_all_duration_seconds,prometheus,2021-10-08T00:00:00.412729Z,3,0.125,0001
+,,4,qc_all_duration_seconds,prometheus,2021-10-08T00:00:00.412729Z,2,0.625,0001
+,,5,qc_all_duration_seconds,prometheus,2021-10-08T00:00:00.412729Z,7,3.125,0001
+,,6,qc_all_duration_seconds,prometheus,2021-10-08T00:00:00.412729Z,10,15.625,0001
+,,7,qc_all_duration_seconds,prometheus,2021-10-08T00:00:00.412729Z,10,+Inf,0001
+"
+    outData =
+        "#group,false,false,true,true,true,true,false,true,false,true
+#datatype,string,long,string,string,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,double,string
+#default,_result,,,,,,,,,
+,result,table,_field,_measurement,_start,_stop,_time,org,_value,quantile
+,,0,qc_all_duration_seconds,prometheus,2021-10-08T00:00:00Z,2021-10-08T00:01:00Z,2021-10-08T00:00:00.412729Z,0001,15.208333333333336,0.99
+"
+    want = csv.from(csv: outData)
+    got =
+        csv.from(csv: inData)
+            |> range(start: 2021-10-08T00:00:00Z, stop: 2021-10-08T00:01:00Z)
+            |> prometheus.histogramQuantile(
+                quantile: 0.99,
+                metricVersion: 2,
+                onNonmonotonic: "force",
+            )
+
+    testing.diff(got: got, want: want)
+}
+
+testcase prometheus_histogramQuantile_onNonmonotonicDrop {
+    // Data for org 0002 is not monotonic
+    inData =
+        "#group,false,false,true,true,false,false,true
+#datatype,string,long,string,string,dateTime:RFC3339,double,string
+#default,_result,,,,,,
+,result,table,_field,_measurement,_time,_value,org
+,,0,+Inf,qc_all_duration_seconds,2021-10-08T00:00:01.866064Z,10,0001
+,,1,+Inf,qc_all_duration_seconds,2021-10-08T00:00:01.866064Z,1405,0002
+,,2,0.001,qc_all_duration_seconds,2021-10-08T00:00:01.866064Z,0,0001
+,,3,0.001,qc_all_duration_seconds,2021-10-08T00:00:01.866064Z,1,0002
+,,4,0.005,qc_all_duration_seconds,2021-10-08T00:00:01.866064Z,0,0001
+,,5,0.005,qc_all_duration_seconds,2021-10-08T00:00:01.866064Z,1,0002
+,,6,0.025,qc_all_duration_seconds,2021-10-08T00:00:01.866064Z,0,0001
+,,7,0.025,qc_all_duration_seconds,2021-10-08T00:00:01.866064Z,84,0002
+,,8,0.125,qc_all_duration_seconds,2021-10-08T00:00:01.866064Z,0,0001
+,,9,0.125,qc_all_duration_seconds,2021-10-08T00:00:01.866064Z,83,0002
+,,10,0.625,qc_all_duration_seconds,2021-10-08T00:00:01.866064Z,0,0001
+,,11,0.625,qc_all_duration_seconds,2021-10-08T00:00:01.866064Z,1373,0002
+,,12,15.625,qc_all_duration_seconds,2021-10-08T00:00:01.866064Z,10,0001
+,,13,15.625,qc_all_duration_seconds,2021-10-08T00:00:01.866064Z,1405,0002
+,,14,3.125,qc_all_duration_seconds,2021-10-08T00:00:01.866064Z,0,0001
+,,15,3.125,qc_all_duration_seconds,2021-10-08T00:00:01.866064Z,1401,0002
+,,16,count,qc_all_duration_seconds,2021-10-08T00:00:01.866064Z,10,0001
+,,17,count,qc_all_duration_seconds,2021-10-08T00:00:01.866064Z,1405,0002
+,,18,sum,qc_all_duration_seconds,2021-10-08T00:00:01.866064Z,45.746700925,0001
+,,19,sum,qc_all_duration_seconds,2021-10-08T00:00:01.866064Z,178.4667627259998,0002
+"
+    outData =
+        "#group,false,false,true,true,true,false,true,false,true
+#datatype,string,long,string,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,double,string
+#default,_result,,,,,,,,
+,result,table,_measurement,_start,_stop,_time,org,_value,quantile
+,,0,qc_all_duration_seconds,2021-10-08T00:00:00Z,2021-10-08T00:01:00Z,2021-10-08T00:00:01.866064Z,0001,15.5,0.99
+"
+    want = csv.from(csv: outData)
+    got =
+        csv.from(csv: inData)
+            |> range(start: 2021-10-08T00:00:00Z, stop: 2021-10-08T00:01:00Z)
+            |> prometheus.histogramQuantile(
+                quantile: 0.99,
+                metricVersion: 1,
+                onNonmonotonic: "drop",
+            )
+
+    testing.diff(got: got, want: want)
+}

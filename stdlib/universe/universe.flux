@@ -850,6 +850,14 @@ builtin histogram : (
 //   Default is `le`.
 // - valueColumn: Column to store the computed quantile in. Default is `_value.
 // - minValue: Assumed minimum value of the dataset. Default is `0.0`.
+// - onNonmonotonic: Describes behavior when counts are not monotonically increasing
+//   when sorted by upper bound. Default is `error`.
+//
+//   **Supported values**:
+//   - **error**: Produce an error.
+//   - **force**: Force bin counts to be monotonic by adding to each bin such that it
+//     is equal to the next smaller bin.
+//   - **drop**: When a nonmonotonic table is encountered, produce no output.
 //
 //   If the quantile falls below the lowest upper bound, interpolation is
 //   performed between `minValue` and the lowest upper bound.
@@ -880,6 +888,7 @@ builtin histogramQuantile : (
         ?upperBoundColumn: string,
         ?valueColumn: string,
         ?minValue: float,
+        ?onNonmonotonic: string,
     ) => stream[B]
     where
     A: Record,

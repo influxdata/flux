@@ -46,6 +46,14 @@ builtin scrape : (url: string) => stream[A] where A: Record
 //   Available versions are `1` and `2`.
 //   Default is `2`.
 // - tables: Input data. Default is piped-forward data (`<-`).
+// - onNonmonotonic: Describes behavior when counts are not monotonically increasing
+//   when sorted by upper bound. Default is `error`.
+//
+//   **Supported values**:
+//   - **error**: Produce an error.
+//   - **force**: Force bin counts to be monotonic by adding to each bin such that it
+//     is equal to the next smaller bin.
+//   - **drop**: When a nonmonotonic table is encountered, produce no output.
 //
 // ## Examples
 //
@@ -72,31 +80,31 @@ builtin scrape : (url: string) => stream[A] where A: Record
 // ## Metadata
 // tags: transformations,aggregates,prometheus
 //
-histogramQuantile = (tables=<-, quantile, metricVersion=2) => {
-    _version2 = () =>
+histogramQuantile = (tables=<-, quantile, metricVersion=2, onNonmonotonic="error") => {
+    _version2 = (onNonmonotonic) =>
         tables
             |> group(mode: "except", columns: ["le", "_value"])
             |> map(fn: (r) => ({r with le: float(v: r.le)}))
-            |> universe.histogramQuantile(quantile: quantile)
+            |> universe.histogramQuantile(quantile: quantile, onNonmonotonic: onNonmonotonic)
             |> group(mode: "except", columns: ["le", "_value", "_time"])
             |> set(key: "quantile", value: string(v: quantile))
             |> experimental.group(columns: ["quantile"], mode: "extend")
 
-    _version1 = () =>
+    _version1 = (onNonmonotonic) =>
         tables
             |> filter(fn: (r) => r._field != "sum" and r._field != "count")
             |> map(fn: (r) => ({r with le: float(v: r._field)}))
             |> group(mode: "except", columns: ["_field", "le", "_value"])
-            |> universe.histogramQuantile(quantile: quantile)
+            |> universe.histogramQuantile(quantile: quantile, onNonmonotonic: onNonmonotonic)
             |> group(mode: "except", columns: ["le", "_value", "_time"])
             |> set(key: "quantile", value: string(v: quantile))
             |> experimental.group(columns: ["quantile"], mode: "extend")
 
     output =
         if metricVersion == 2 then
-            _version2()
+            _version2(onNonmonotonic)
         else if metricVersion == 1 then
-            _version1()
+            _version1(onNonmonotonic)
         else
             universe.die(msg: "Invalid metricVersion. Available versions are 1 and 2.")
 
