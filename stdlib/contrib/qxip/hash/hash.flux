@@ -45,6 +45,7 @@ builtin sha256 : (v: A) => string
 //
 // ## Metadata
 // tag: type-conversion
+// introduced: 0.193.0
 builtin sha1 : (v: A) => string
 
 // xxhash64 converts a string value to a 64-bit hexadecimal hash using the xxHash algorithm.
@@ -105,6 +106,7 @@ builtin cityhash64 : (v: A) => string
 //
 // ## Metadata
 // tag: type-conversion
+// introduced: 0.193.0
 builtin b64 : (v: A) => string
 
 // md5 converts a string value to an MD5 hash.
@@ -125,6 +127,7 @@ builtin b64 : (v: A) => string
 //
 // ## Metadata
 // tag: type-conversion
+// introduced: 0.193.0
 builtin md5 : (v: A) => string
 
 // hmac converts a string value to an MD5-signed SHA-1 hash.
@@ -146,4 +149,5 @@ builtin md5 : (v: A) => string
 //
 // ## Metadata
 // tag: type-conversion
+// introduced: 0.193.0
 builtin hmac : (v: A, k: A) => string
