@@ -10,13 +10,13 @@ import (
 )
 
 type StringBuilder struct {
+	refCount     int64
 	builder      *array.BinaryBuilder
 	mem          memory.Allocator
 	value        *stringValue
 	length       int
 	capacity     int
 	dataCapacity int
-	refCount     int64
 }
 
 func NewStringBuilder(mem memory.Allocator) *StringBuilder {
