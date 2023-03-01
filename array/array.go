@@ -218,10 +218,10 @@ func (a *String) IsConstant() bool {
 }
 
 type stringValue struct {
+	rc   int64
 	data []byte
 
 	mem arrowmem.Allocator
-	rc  int64
 }
 
 func (v *stringValue) Retain() {
