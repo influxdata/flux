@@ -2814,7 +2814,7 @@ builtin _window : (
 //
 //   `period` can be negative, indicating the start and stop boundaries are reversed.
 //
-// - offset: Duration to shift the window boundaries by. Defualt is `0s`.
+// - offset: Duration to shift the window boundaries by. Default is `0s`.
 //
 //   `offset` can be negative, indicating that the offset goes backwards in time.
 //
@@ -3769,7 +3769,7 @@ _fillEmpty = (tables=<-, createEmpty) =>
 //
 //   `period` can be negative, indicating the start and stop boundaries are reversed.
 //
-// - offset: Duration to shift the window boundaries by. Defualt is `0s`.
+// - offset: Duration to shift the window boundaries by. Default is `0s`.
 //
 //   `offset` can be negative, indicating that the offset goes backwards in time.
 //
