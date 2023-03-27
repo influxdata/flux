@@ -101,8 +101,9 @@ sqlInterval = (d) => {
     _durationString = string(v: d)
     _pipeRegex = (v=<-, r, t) => regexp.replaceAllString(v: v, r: r, t: t)
     _intervalString =
-        _pipeRegex(v: _durationString, r: /[\d]+(us|ns)/, t: "")
-            |> _pipeRegex(r: /([^\d]+)/, t: " $1 ")
+        _pipeRegex(v: _durationString, r: /([^\d]+)/, t: " $1 ")
+            |> _pipeRegex(r: / ns /, t: " nanoseconds ")
+            |> _pipeRegex(r: / us /, t: " microseconds ")
             |> _pipeRegex(r: / ms /, t: " milliseconds ")
             |> _pipeRegex(r: / s /, t: " seconds ")
             |> _pipeRegex(r: / m /, t: " minutes ")
@@ -111,7 +112,6 @@ sqlInterval = (d) => {
             |> _pipeRegex(r: / w /, t: " weeks ")
             |> _pipeRegex(r: / mo /, t: " months ")
             |> _pipeRegex(r: / y /, t: " years ")
-    _output = if _intervalString == "" then "1 millisecond" else _intervalString
 
-    return strings.trimSpace(v: _output)
+    return strings.trimSpace(v: _intervalString)
 }
