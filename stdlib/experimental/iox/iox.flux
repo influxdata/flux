@@ -57,10 +57,6 @@ builtin sql : (bucket: string, query: string) => stream[A] where A: Record
 
 // sqlInterval converts a duration value to a SQL interval string.
 //
-// SQL interval strings support down to millisecond precision.
-// Any microsecond or nanosecond duration units are dropped from the duration value.
-// If the duration only consists of microseconds or nanosecond units,
-// `iox.sqlInterval()` returns `1 millisecond`.
 // Duration values must be positive to work as a SQL interval string.
 //
 // ## Parameters
@@ -83,12 +79,12 @@ builtin sql : (bucket: string, query: string) => stream[A] where A: Record
 // windowInterval = 1d12h
 // sqlQuery = "
 // SELECT
-//   DATE_BIN(INTERVAL '${iox.sqlInterval(d: windowInterval)}', time, TIMESTAMP '2023-01-01T00:00:00Z')
+//   DATE_BIN(INTERVAL '${iox.sqlInterval(d: windowInterval)}', time, TIMESTAMP '2023-01-01T00:00:00Z') AS time_bin,
 //   COUNT(field1)
 // FROM
 //   measurement
 // GROUP BY
-//   time
+//   time_bin
 // "
 //
 // iox.sql(bucket: "example-bucket", query: sqlQuery)
