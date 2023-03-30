@@ -337,7 +337,7 @@ func splitChunk(c table.Chunk) []table.Chunk {
 	for ; curSize > 0; i++ {
 		if curSize > bufferSize {
 			start = i * bufferSize
-			stop = bufferSize
+			stop = start + bufferSize
 			curSize -= bufferSize
 		} else {
 			start = i * bufferSize
