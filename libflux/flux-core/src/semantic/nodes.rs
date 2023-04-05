@@ -1178,12 +1178,7 @@ impl FunctionExpr {
 
     #[allow(missing_docs)]
     pub fn pipe(&self) -> Option<&FunctionParameter> {
-        for p in &self.params {
-            if p.is_pipe {
-                return Some(p);
-            }
-        }
-        None
+        self.params.iter().find(|&p| p.is_pipe)
     }
     #[allow(missing_docs)]
     pub fn defaults(&self) -> Vec<&FunctionParameter> {

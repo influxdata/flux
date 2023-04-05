@@ -17,11 +17,7 @@ pub fn parse_text(lit: &str) -> Result<String, String> {
     let mut chars = lit.chars();
     while let Some(c) = chars.next() {
         match c {
-            '\\' => {
-                if let Err(e) = push_unescaped_string(&mut s, &mut chars) {
-                    return Err(e);
-                }
-            }
+            '\\' => push_unescaped_string(&mut s, &mut chars)?,
             // this char can have any byte length
             _ => s.extend_from_slice(c.to_string().as_bytes()),
         }

@@ -1694,7 +1694,7 @@ impl<'input> Parser<'input> {
             };
         }
 
-        match (&t.lit).parse::<i64>() {
+        match t.lit.parse::<i64>() {
             Err(_e) => {
                 self.errs.push(format!(
                     "invalid integer literal \"{}\": value out of range",
@@ -1714,7 +1714,7 @@ impl<'input> Parser<'input> {
     fn parse_float_literal(&mut self) -> Result<FloatLit, TokenError> {
         let t = self.expect(TokenType::Float);
 
-        let value = (&t.lit).parse::<f64>();
+        let value = t.lit.parse::<f64>();
 
         match value {
             Ok(value) => Ok(FloatLit {

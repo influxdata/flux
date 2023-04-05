@@ -329,8 +329,8 @@ impl From<fb::Argument<'_>> for Option<(String, MonoType, bool, bool)> {
     }
 }
 
-pub fn finish_serialize<'a, 'b, S>(
-    builder: &'a mut flatbuffers::FlatBufferBuilder<'b>,
+pub fn finish_serialize<'a, S>(
+    builder: &'a mut flatbuffers::FlatBufferBuilder<'_>,
     offset: flatbuffers::WIPOffset<S>,
 ) -> &'a [u8] {
     builder.finish(offset, None);
