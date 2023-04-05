@@ -288,12 +288,12 @@ impl PackageExports {
 
     /// Returns an iterator over exported bindings in this package
     pub fn into_bindings(self) -> impl Iterator<Item = (Symbol, PolyType)> {
-        self.values.into_iter().map(|(_, v)| (v.symbol, v.typ))
+        self.values.into_values().map(|v| (v.symbol, v.typ))
     }
 
     /// Returns an iterator over exported bindings in this package
     pub fn bindings_iter(&self) -> impl Iterator<Item = (&Symbol, &PolyType)> + '_ {
-        self.values.iter().map(|(_, v)| (&v.symbol, &v.typ))
+        self.values.values().map(|v| (&v.symbol, &v.typ))
     }
 }
 

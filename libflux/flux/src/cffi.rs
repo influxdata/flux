@@ -346,7 +346,7 @@ pub unsafe extern "C" fn flux_merge_ast_pkgs(
 
 /// flux_analyze is a C-compatible wrapper around the analyze() function below
 ///
-/// Note that Box<T> is used to indicate we are receiving/returning a C pointer and also
+/// Note that `Box<T>` is used to indicate we are receiving/returning a C pointer and also
 /// transferring ownership.
 ///
 /// # Safety
@@ -379,7 +379,7 @@ pub unsafe extern "C" fn flux_analyze(
 }
 
 /// flux_find_var_type() is a C-compatible wrapper around the find_var_type() function below.
-/// Note that Box<T> is used to indicate we are receiving/returning a C pointer and also
+/// Note that `Box<T>` is used to indicate we are receiving/returning a C pointer and also
 /// transferring ownership.
 ///
 /// # Safety

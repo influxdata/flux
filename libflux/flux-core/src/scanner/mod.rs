@@ -206,11 +206,11 @@ impl<'a> Scanner<'a> {
             end_offset: data_len,
             start_pos: Position {
                 line: self.cur_line as u32,
-                column: column as u32,
+                column,
             },
             end_pos: Position {
                 line: self.cur_line as u32,
-                column: column as u32,
+                column,
             },
             comments: vec![],
         }
