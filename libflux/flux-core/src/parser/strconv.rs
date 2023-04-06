@@ -139,9 +139,9 @@ pub fn parse_time(lit: &str) -> Result<DateTime<FixedOffset>, String> {
         match naive {
             Ok(date) => {
                 // no offset by default.
-                let offset = FixedOffset::east(0);
+                let offset = FixedOffset::east_opt(0).unwrap();
                 // default to midnight.
-                let time = NaiveTime::from_hms(0, 0, 0);
+                let time = NaiveTime::from_hms_opt(0, 0, 0).unwrap();
                 // Naive date time, with no time zone information
                 let datetime = date.and_time(time);
                 Ok(DateTime::from_utc(datetime, offset))
