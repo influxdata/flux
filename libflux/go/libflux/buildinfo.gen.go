@@ -62,7 +62,7 @@ var sourceHashes = map[string]string{
 	"libflux/flux/Cargo.toml":                                                                     "308c541b31f6ef25094ed4a4c2fddaf38244b0632b93c1f44b2ee4b4209d479c",
 	"libflux/flux/FLUXDOC.md":                                                                     "92e6dd8043bd87b4924e09aa28fb5346630aee1214de28ea2c8fc0687cad0785",
 	"libflux/flux/build.rs":                                                                       "31dcb1e825555e56b4d959244c4ea630b1d32ccddc1f8615620e0c23552d914f",
-	"libflux/flux/src/cffi.rs":                                                                    "d490e117f0e46386dee9fa35cc19209a07d1d57d7db352ab216b4d6fea1536a0",
+	"libflux/flux/src/cffi.rs":                                                                    "ada09b4330ef37de0569d6d8036e191cc583069edc79ef447de4cc280311bc35",
 	"libflux/flux/src/lib.rs":                                                                     "af2f62a02ec08ee476121e035c6587e31c1b6d5d4912ccace1e2e9ae019ad9c1",
 	"libflux/flux/templates/base.html":                                                            "a818747b9621828bb96b94291c60922db54052bbe35d5e354f8e589d2a4ebd02",
 	"libflux/flux/templates/home.html":                                                            "f9927514dd42ca7271b4817ad1ca33ec79c03a77a783581b4dcafabd246ebf3f",
