@@ -5,7 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -26,11 +26,10 @@ from(bucket: "telegraf")
 		t.Fatal(err)
 	}
 
-	jsonBuf, err := ast.MarshalJSON()
+	_, err := ast.MarshalJSON()
 	if err != nil {
 		panic(err)
 	}
-	fmt.Printf("json has %v bytes:\n%v\n", len(jsonBuf), string(jsonBuf))
 
 	ast.Free()
 }
@@ -249,6 +248,19 @@ re !~ /foo/
 			}
 			compareIndentedJSON(t, rustJSONA, rustJSONB)
 		})
+	}
+}
+
+func TestParseJSON_NullByte(t *testing.T) {
+	bytes := []byte(`{"type":"Package","package":"main","files":[{"body":[{"type":"\u0000"}]}]}`)
+	_, err := libflux.ParseJSON(bytes)
+	if err == nil {
+		t.Fatal("expected error")
+	}
+	want := "unknown variant `\\0`, expected one of"
+	got := err.Error()
+	if !strings.Contains(got, want) {
+		t.Fatalf("expected error message to contain\n%q\nbut it contained\n%q", want, got)
 	}
 }
 
