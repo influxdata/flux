@@ -124,28 +124,34 @@ pub unsafe extern "C" fn flux_parse(
     cfname: *const c_char,
     csrc: *const c_char,
 ) -> Box<ast::Package> {
-    let fname = match String::from_utf8(CStr::from_ptr(cfname).to_bytes().to_vec()) {
-        Err(e) => return err_pkg(format!("flux file name: {}", e)),
-        Ok(s) => s,
-    };
-    let src = match String::from_utf8(CStr::from_ptr(csrc).to_bytes().to_vec()) {
-        Err(e) => return err_pkg(format!("flux source: {}", e)),
-        Ok(s) => s,
-    };
-    let pkg = parse(fname, &src);
+    let pkg = catch_unwind(|| {
+        let fname = match String::from_utf8(CStr::from_ptr(cfname).to_bytes().to_vec()) {
+            Err(e) => return err_pkg(format!("flux file name: {}", e)),
+            Ok(s) => s,
+        };
+        let src = match String::from_utf8(CStr::from_ptr(csrc).to_bytes().to_vec()) {
+            Err(e) => return err_pkg(format!("flux source: {}", e)),
+            Ok(s) => s,
+        };
+        parse(fname, &src)
+    })
+    .unwrap_or_else(|panic_arg| match panic_arg.downcast_ref::<String>() {
+        Some(msg) => err_pkg(msg),
+        None => err_pkg("could not downcast message for caught panic"),
+    });
     Box::new(pkg)
 }
 
-fn err_pkg(msg: String) -> Box<ast::Package> {
-    Box::new(ast::Package {
+fn err_pkg<S: ToString>(msg: S) -> ast::Package {
+    ast::Package {
         base: BaseNode {
-            errors: vec![msg],
+            errors: vec![msg.to_string()],
             ..BaseNode::default()
         },
         path: "".to_string(),
         package: "".to_string(),
         files: vec![],
-    })
+    }
 }
 
 /// Parse the contents of a string.
