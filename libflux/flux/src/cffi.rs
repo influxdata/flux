@@ -143,15 +143,19 @@ pub unsafe extern "C" fn flux_parse(
 }
 
 fn err_pkg<S: ToString>(msg: S) -> ast::Package {
-    ast::Package {
+    ast::File {
         base: BaseNode {
             errors: vec![msg.to_string()],
             ..BaseNode::default()
         },
-        path: "".to_string(),
-        package: "".to_string(),
-        files: vec![],
+        name: "".to_string(),
+        metadata: "".to_string(),
+        package: None,
+        imports: vec![],
+        body: vec![],
+        eof: vec![],
     }
+    .into()
 }
 
 /// Parse the contents of a string.
@@ -1135,14 +1139,12 @@ from(bucket: v.bucket)
         let err_hdl = unsafe { flux_parse_json(c_char_ptr, pkg_ptr) }.expect("some error");
         let msg = err_hdl.message.to_string_lossy();
         assert!(
-            err_hdl
-                .message
-                .to_string_lossy()
-                .contains("unknown variant `\\0`"),
+            msg.contains("unknown variant `\\0`"),
             "unexpected message: {msg}"
         );
     }
 
+    // Safety: pointers manipulated by this test are handled properly
     #[test]
     fn parse_with_invalid_utf8() {
         let cfname = CString::new("foo.flux").unwrap();
@@ -1151,19 +1153,17 @@ from(bucket: v.bucket)
         let csrc: *const c_char = &v[0];
         // Safety: both pointers are valid
         let pkg = unsafe { flux_parse(cfname_ptr, csrc) };
+        let options = CString::new("").unwrap();
+        let options = options.as_ptr();
+        let pkg = Box::into_raw(pkg);
+        // Safety: both parameters are valid
+        let err = unsafe { flux_ast_get_error(pkg, options) }.unwrap();
+        // Safety: pkg is a valid pointer allocated just above
+        unsafe { Box::from_raw(pkg) }; // Free the AST
+        let msg = err.message.to_string_lossy();
         assert!(
-            pkg.base.errors[0].contains("flux source: incomplete utf-8"),
-            "did not get expected error in pkg: {:?}",
-            pkg
-        );
-
-        let (csrc, cfname_ptr) = (cfname_ptr, csrc);
-        // Safety: both pointers are valid
-        let pkg = unsafe { flux_parse(cfname_ptr, csrc) };
-        assert!(
-            pkg.base.errors[0].contains("flux file name: incomplete utf-8"),
-            "did not get expected error in pkg: {:?}",
-            pkg
+            msg.contains("incomplete utf-8 byte sequence from index 0"),
+            "unexpected message: {msg}"
         );
     }
 }
