@@ -293,7 +293,7 @@ type quantileResult struct {
 //
 // If force is set, it will force them to be monotonic
 // by assuming no increase from the previous bucket.
-// When force is is set, this function will always return true.
+// When force is set, this function will always return true.
 func isMonotonic(force bool, cdf []bucket) bool {
 	prevCount := 0.0
 	for i := range cdf {
