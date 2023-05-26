@@ -375,3 +375,34 @@ testcase prometheus_histogramQuantile_onNonmonotonicDrop {
 
     testing.diff(got: got, want: want)
 }
+
+testcase prometheus_histogramQuantile_zeroSamples {
+    inData =
+        "#group,false,false,true,true,false,false,true,true
+#datatype,string,long,string,string,dateTime:RFC3339,double,string,string
+#default,_result,,,,,,,
+,result,table,_field,_measurement,_time,_value,le,org
+,,0,qc_all_duration_seconds,prometheus,2021-10-08T00:00:00.412729Z,0,0.001,0001
+,,2,qc_all_duration_seconds,prometheus,2021-10-08T00:00:00.412729Z,0,0.005,0001
+,,3,qc_all_duration_seconds,prometheus,2021-10-08T00:00:00.412729Z,0,0.025,0001
+,,4,qc_all_duration_seconds,prometheus,2021-10-08T00:00:00.412729Z,0,0.125,0001
+,,4,qc_all_duration_seconds,prometheus,2021-10-08T00:00:00.412729Z,0,0.625,0001
+,,5,qc_all_duration_seconds,prometheus,2021-10-08T00:00:00.412729Z,0,3.125,0001
+,,6,qc_all_duration_seconds,prometheus,2021-10-08T00:00:00.412729Z,0,15.625,0001
+,,7,qc_all_duration_seconds,prometheus,2021-10-08T00:00:00.412729Z,0,+Inf,0001
+"
+    outData =
+        "#group,false,false,true,true,true,true,false,true,false,true
+#datatype,string,long,string,string,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,double,string
+#default,_result,,,,,,,,,
+,result,table,_field,_measurement,_start,_stop,_time,org,_value,quantile
+,,0,qc_all_duration_seconds,prometheus,2021-10-08T00:00:00Z,2021-10-08T00:01:00Z,2021-10-08T00:00:00.412729Z,0001,,0.99
+"
+    want = csv.from(csv: outData)
+    got =
+        csv.from(csv: inData)
+            |> range(start: 2021-10-08T00:00:00Z, stop: 2021-10-08T00:01:00Z)
+            |> prometheus.histogramQuantile(quantile: 0.99, metricVersion: 2)
+
+    testing.diff(got: got, want: want)
+}
