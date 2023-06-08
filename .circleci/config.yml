@@ -32,7 +32,6 @@ jobs:
       - run: make checkrelease
       - run: make vet
       - run: GOGC=50 make staticcheck
-      - run: make libflux-wasm
       - run: make test GO_TEST_FLAGS='-coverprofile=coverage.txt -covermode=atomic' GO_TAGS=assert
       - save_cache:
           name: Saving GOPATH/pkg/mod

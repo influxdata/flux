@@ -1,8 +1,8 @@
 package boolean
 
 import (
-	"github.com/influxdata/flux/runtime"
-	"github.com/influxdata/flux/values"
+	"github.com/InfluxCommunity/flux/runtime"
+	"github.com/InfluxCommunity/flux/values"
 )
 
 func init() {

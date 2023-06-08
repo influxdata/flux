@@ -10,9 +10,9 @@ import (
 	"github.com/Azure/go-autorest/autorest/adal"
 	"github.com/Azure/go-autorest/autorest/azure"
 	"github.com/Azure/go-autorest/autorest/azure/auth"
+	"github.com/InfluxCommunity/flux/codes"
+	"github.com/InfluxCommunity/flux/internal/errors"
 	"github.com/denisenkom/go-mssqldb"
-	"github.com/influxdata/flux/codes"
-	"github.com/influxdata/flux/internal/errors"
 )
 
 //

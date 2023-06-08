@@ -3,11 +3,11 @@ package dict_test
 import (
 	"testing"
 
+	"github.com/InfluxCommunity/flux/internal/function"
+	"github.com/InfluxCommunity/flux/semantic"
+	"github.com/InfluxCommunity/flux/stdlib/dict"
+	"github.com/InfluxCommunity/flux/values"
 	"github.com/google/go-cmp/cmp"
-	"github.com/influxdata/flux/internal/function"
-	"github.com/influxdata/flux/semantic"
-	"github.com/influxdata/flux/stdlib/dict"
-	"github.com/influxdata/flux/values"
 )
 
 func TestFromList(t *testing.T) {

@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/influxdata/flux"
+	"github.com/InfluxCommunity/flux"
 )
 
 func TestBounds_HasZero(t *testing.T) {

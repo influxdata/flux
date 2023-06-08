@@ -3,7 +3,7 @@ package execute
 import (
 	"context"
 
-	"github.com/influxdata/flux"
+	"github.com/InfluxCommunity/flux"
 )
 
 // SourceDecoder is an interface that generalizes the process of retrieving data from an unspecified data source.

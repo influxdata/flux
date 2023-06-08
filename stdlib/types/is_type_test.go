@@ -4,12 +4,12 @@ import (
 	"context"
 	"testing"
 
+	"github.com/InfluxCommunity/flux/dependencies/dependenciestest"
+	"github.com/InfluxCommunity/flux/dependency"
+	"github.com/InfluxCommunity/flux/semantic"
+	"github.com/InfluxCommunity/flux/stdlib/types"
+	"github.com/InfluxCommunity/flux/values"
 	"github.com/google/go-cmp/cmp"
-	"github.com/influxdata/flux/dependencies/dependenciestest"
-	"github.com/influxdata/flux/dependency"
-	"github.com/influxdata/flux/semantic"
-	"github.com/influxdata/flux/stdlib/types"
-	"github.com/influxdata/flux/values"
 )
 
 type isTypeCase struct {

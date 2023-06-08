@@ -1,10 +1,10 @@
 package table
 
 import (
-	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/array"
-	"github.com/influxdata/flux/internal/execute/groupkey"
-	"github.com/influxdata/flux/values"
+	"github.com/InfluxCommunity/flux"
+	"github.com/InfluxCommunity/flux/array"
+	"github.com/InfluxCommunity/flux/internal/execute/groupkey"
+	"github.com/InfluxCommunity/flux/values"
 )
 
 // Mask will return a no-copy Table that masks the given

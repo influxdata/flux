@@ -3,8 +3,8 @@ package values_test
 import (
 	"testing"
 
+	"github.com/InfluxCommunity/flux/values"
 	"github.com/google/go-cmp/cmp"
-	"github.com/influxdata/flux/values"
 )
 
 func TestObjectEqual(t *testing.T) {

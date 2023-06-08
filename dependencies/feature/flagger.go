@@ -3,7 +3,7 @@ package feature
 import (
 	"context"
 
-	"github.com/influxdata/flux/internal/feature"
+	"github.com/InfluxCommunity/flux/internal/feature"
 )
 
 type (

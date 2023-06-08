@@ -7,8 +7,8 @@
 FROM rust:1.68 as RUSTBUILD
 
 FROM golang:1.19 as PKGCONFIG
-COPY go.mod go.sum /go/src/github.com/influxdata/flux/
-RUN cd /go/src/github.com/influxdata/flux && \
+COPY go.mod go.sum /go/src/github.com/InfluxCommunity/flux/
+RUN cd /go/src/github.com/InfluxCommunity/flux && \
     go build -o /usr/local/bin/cgo-pkgbuild github.com/influxdata/pkg-config
 
 FROM golang:1.19

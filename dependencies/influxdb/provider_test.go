@@ -4,8 +4,8 @@ import (
 	"context"
 	"testing"
 
+	"github.com/InfluxCommunity/flux/dependencies/influxdb"
 	"github.com/google/go-cmp/cmp"
-	"github.com/influxdata/flux/dependencies/influxdb"
 )
 
 func TestGetProvider(t *testing.T) {

@@ -4,13 +4,13 @@ import (
 	"context"
 	"strconv"
 
+	"github.com/InfluxCommunity/flux"
+	"github.com/InfluxCommunity/flux/codes"
+	"github.com/InfluxCommunity/flux/execute/table"
+	"github.com/InfluxCommunity/flux/internal/errors"
+	"github.com/InfluxCommunity/flux/plan"
 	"github.com/apache/arrow/go/v7/arrow/memory"
 	uuid "github.com/gofrs/uuid"
-	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/codes"
-	"github.com/influxdata/flux/execute/table"
-	"github.com/influxdata/flux/internal/errors"
-	"github.com/influxdata/flux/plan"
 )
 
 // Dataset represents the set of data produced by a transformation.

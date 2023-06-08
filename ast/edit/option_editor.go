@@ -3,7 +3,7 @@ package edit
 import (
 	"fmt"
 
-	"github.com/influxdata/flux/ast"
+	"github.com/InfluxCommunity/flux/ast"
 )
 
 // `OptionFn` is a function that, provided with an `OptionStatement`, returns

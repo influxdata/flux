@@ -1,8 +1,8 @@
 package values
 
 import (
-	arrow "github.com/influxdata/flux/array"
-	"github.com/influxdata/flux/semantic"
+	arrow "github.com/InfluxCommunity/flux/array"
+	"github.com/InfluxCommunity/flux/semantic"
 )
 
 type Vector interface {

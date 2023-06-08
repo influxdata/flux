@@ -4,12 +4,12 @@ import (
 	"bytes"
 	"testing"
 
+	"github.com/InfluxCommunity/flux"
+	"github.com/InfluxCommunity/flux/execute"
+	"github.com/InfluxCommunity/flux/execute/executetest"
+	"github.com/InfluxCommunity/flux/internal/line"
+	"github.com/InfluxCommunity/flux/mock"
 	"github.com/google/go-cmp/cmp"
-	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/execute"
-	"github.com/influxdata/flux/execute/executetest"
-	"github.com/influxdata/flux/internal/line"
-	"github.com/influxdata/flux/mock"
 )
 
 func TestResultDecoder(t *testing.T) {

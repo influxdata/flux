@@ -3,11 +3,11 @@ package array_test
 import (
 	"testing"
 
+	"github.com/InfluxCommunity/flux/array"
+	fluxmemory "github.com/InfluxCommunity/flux/memory"
 	apachearray "github.com/apache/arrow/go/v7/arrow/array"
 	"github.com/apache/arrow/go/v7/arrow/memory"
 	"github.com/google/go-cmp/cmp"
-	"github.com/influxdata/flux/array"
-	fluxmemory "github.com/influxdata/flux/memory"
 	"github.com/stretchr/testify/assert"
 )
 

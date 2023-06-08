@@ -4,11 +4,11 @@ import (
 	"regexp"
 	"time"
 
+	"github.com/InfluxCommunity/flux/ast"
+	"github.com/InfluxCommunity/flux/codes"
+	"github.com/InfluxCommunity/flux/internal/errors"
+	"github.com/InfluxCommunity/flux/internal/fbsemantic"
 	flatbuffers "github.com/google/flatbuffers/go"
-	"github.com/influxdata/flux/ast"
-	"github.com/influxdata/flux/codes"
-	"github.com/influxdata/flux/internal/errors"
-	"github.com/influxdata/flux/internal/fbsemantic"
 )
 
 func DeserializeFromFlatBuffer(buf []byte) (*Package, error) {

@@ -15,7 +15,7 @@ if [ "$remote" != "$local" ]; then
     exit 1
 fi
 
-state=`curl -s https://api.github.com/repos/influxdata/flux/commits/${local}/status | jq -r ".state"`
+state=`curl -s https://api.github.com/repos/InfluxCommunity/flux/commits/${local}/status | jq -r ".state"`
 if [ "$state" != "success" ]; then
     echo "Error: commit state is \"$state\". Exiting release script"
     exit 1

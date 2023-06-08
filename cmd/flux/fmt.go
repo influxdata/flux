@@ -7,8 +7,8 @@ import (
 	"os"
 	"path/filepath"
 
-	fluxcmd "github.com/influxdata/flux/cmd/flux/cmd"
-	"github.com/influxdata/flux/libflux/go/libflux"
+	fluxcmd "github.com/InfluxCommunity/flux/cmd/flux/cmd"
+	"github.com/InfluxCommunity/flux/libflux/go/libflux"
 	"github.com/spf13/cobra"
 )
 

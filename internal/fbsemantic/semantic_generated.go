@@ -3,9 +3,8 @@
 package fbsemantic
 
 import (
-	"strconv"
-
 	flatbuffers "github.com/google/flatbuffers/go"
+	"strconv"
 )
 
 type MonoType byte

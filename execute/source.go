@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/influxdata/flux/metadata"
-	"github.com/influxdata/flux/plan"
+	"github.com/InfluxCommunity/flux/metadata"
+	"github.com/InfluxCommunity/flux/plan"
 )
 
 type Node interface {

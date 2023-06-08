@@ -12,12 +12,12 @@ import (
 	"runtime"
 	"unsafe"
 
+	"github.com/InfluxCommunity/flux/codes"
+	"github.com/InfluxCommunity/flux/internal/errors"
+	"github.com/InfluxCommunity/flux/internal/fbsemantic"
+	"github.com/InfluxCommunity/flux/internal/feature"
+	"github.com/InfluxCommunity/flux/semantic"
 	flatbuffers "github.com/google/flatbuffers/go"
-	"github.com/influxdata/flux/codes"
-	"github.com/influxdata/flux/internal/errors"
-	"github.com/influxdata/flux/internal/fbsemantic"
-	"github.com/influxdata/flux/internal/feature"
-	"github.com/influxdata/flux/semantic"
 )
 
 func SemanticPackages() (map[string]*semantic.Package, error) {

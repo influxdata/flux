@@ -4,11 +4,11 @@ import (
 	neturl "net/url"
 	"strings"
 
+	"github.com/InfluxCommunity/flux/codes"
+	"github.com/InfluxCommunity/flux/dependencies/url"
+	"github.com/InfluxCommunity/flux/internal/errors"
 	bigquery "github.com/bonitoo-io/go-sql-bigquery"
 	"github.com/go-sql-driver/mysql"
-	"github.com/influxdata/flux/codes"
-	"github.com/influxdata/flux/dependencies/url"
-	"github.com/influxdata/flux/internal/errors"
 )
 
 // helper function to validate the data source url (postgres, sqlmock) / dsn (mysql, snowflake) using the URLValidator.

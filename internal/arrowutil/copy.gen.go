@@ -9,8 +9,8 @@ package arrowutil
 import (
 	"fmt"
 
+	"github.com/InfluxCommunity/flux/array"
 	"github.com/apache/arrow/go/v7/arrow/memory"
-	"github.com/influxdata/flux/array"
 )
 
 // CopyTo will copy the contents of the array into a new array builder.

@@ -160,21 +160,6 @@ libflux/flux-core/src/scanner/scanner_generated.rs: libflux/flux-core/src/scanne
 libflux-go: $(LIBFLUX_GENERATED_TARGETS)
 	$(GO_GENERATE) ./libflux/go/libflux
 
-libflux-wasm:
-	cd libflux/flux && CC=clang AR=llvm-ar wasm-pack build --scope influxdata --dev
-
-clean-wasm:
-	rm -rf libflux/flux/pkg
-
-build-wasm:
-	cd libflux/flux && CC=clang AR=llvm-ar wasm-pack build -t nodejs --scope influxdata
-
-publish-wasm: clean-wasm build-wasm
-	cd libflux/flux/pkg && npm publish --access public
-
-test-wasm: clean-wasm build-wasm
-	cd libflux/flux && CC=clang AR==llvm-ar wasm-pack test --node
-
 test-valgrind: libflux
 	cd libflux/c && $(MAKE) test-valgrind
 
@@ -204,7 +189,6 @@ checkdocs: $(STDLIB_SOURCES) libflux/target/release/fluxdoc bin/flux
 # This list is sorted for easy inspection
 .PHONY: bench \
 	build \
-	build-wasm \
 	checkdocs \
 	checkfmt \
 	checkgenerate \
@@ -212,7 +196,6 @@ checkdocs: $(STDLIB_SOURCES) libflux/target/release/fluxdoc bin/flux
 	checkreproducibility \
 	checktidy \
 	clean \
-	clean-wasm \
 	cleangenerate \
 	default \
 	fluxdocs \
@@ -220,9 +203,7 @@ checkdocs: $(STDLIB_SOURCES) libflux/target/release/fluxdoc bin/flux
 	generate \
 	libflux \
 	libflux-go \
-	libflux-wasm \
 	lint-rust \
-	publish-wasm \
 	release \
 	staticcheck \
 	test \

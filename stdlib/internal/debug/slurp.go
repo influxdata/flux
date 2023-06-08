@@ -3,13 +3,13 @@ package debug
 import (
 	"fmt"
 
+	"github.com/InfluxCommunity/flux"
+	"github.com/InfluxCommunity/flux/execute"
+	"github.com/InfluxCommunity/flux/internal/arrowutil"
+	"github.com/InfluxCommunity/flux/internal/execute/table"
+	"github.com/InfluxCommunity/flux/plan"
+	"github.com/InfluxCommunity/flux/runtime"
 	"github.com/apache/arrow/go/v7/arrow/memory"
-	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/execute"
-	"github.com/influxdata/flux/internal/arrowutil"
-	"github.com/influxdata/flux/internal/execute/table"
-	"github.com/influxdata/flux/plan"
-	"github.com/influxdata/flux/runtime"
 )
 
 const SlurpKind = "internal/debug.slurp"

@@ -6,16 +6,16 @@ import (
 	"testing"
 	"time"
 
+	"github.com/InfluxCommunity/flux"
+	"github.com/InfluxCommunity/flux/array"
+	"github.com/InfluxCommunity/flux/arrow"
+	"github.com/InfluxCommunity/flux/execute"
+	"github.com/InfluxCommunity/flux/execute/executetest"
+	"github.com/InfluxCommunity/flux/execute/table"
+	"github.com/InfluxCommunity/flux/internal/gen"
+	"github.com/InfluxCommunity/flux/memory"
+	"github.com/InfluxCommunity/flux/values"
 	"github.com/google/go-cmp/cmp"
-	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/array"
-	"github.com/influxdata/flux/arrow"
-	"github.com/influxdata/flux/execute"
-	"github.com/influxdata/flux/execute/executetest"
-	"github.com/influxdata/flux/execute/table"
-	"github.com/influxdata/flux/internal/gen"
-	"github.com/influxdata/flux/memory"
-	"github.com/influxdata/flux/values"
 )
 
 func TestTablesEqual(t *testing.T) {
@@ -371,7 +371,7 @@ func TestCopyTable(t *testing.T) {
 
 func TestCopyTable_DoubleCopy(t *testing.T) {
 	// This is a slight twist on the above `TestCopyTable`.
-	// In <https://github.com/influxdata/flux/issues/4780> we saw that when
+	// In <https://github.com/InfluxCommunity/flux/issues/4780> we saw that when
 	// `yield` and `tableFind` are combined, we can end up calling `Copy`
 	// on and already copied table.
 	// This test checks that each copy can be consumed independently and that

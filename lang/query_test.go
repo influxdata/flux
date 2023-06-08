@@ -7,15 +7,15 @@ import (
 	"testing"
 	"time"
 
+	"github.com/InfluxCommunity/flux"
+	ftesting "github.com/InfluxCommunity/flux/dependencies/testing"
+	"github.com/InfluxCommunity/flux/dependency"
+	"github.com/InfluxCommunity/flux/execute/executetest"
+	_ "github.com/InfluxCommunity/flux/fluxinit/static"
+	"github.com/InfluxCommunity/flux/lang"
+	"github.com/InfluxCommunity/flux/memory"
+	"github.com/InfluxCommunity/flux/runtime"
 	"github.com/google/go-cmp/cmp"
-	"github.com/influxdata/flux"
-	ftesting "github.com/influxdata/flux/dependencies/testing"
-	"github.com/influxdata/flux/dependency"
-	"github.com/influxdata/flux/execute/executetest"
-	_ "github.com/influxdata/flux/fluxinit/static"
-	"github.com/influxdata/flux/lang"
-	"github.com/influxdata/flux/memory"
-	"github.com/influxdata/flux/runtime"
 )
 
 func runQuery(ctx context.Context, script string) (flux.Query, func(), error) {

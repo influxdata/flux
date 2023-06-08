@@ -1,9 +1,9 @@
 package execute
 
 import (
-	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/internal/execute/groupkey"
-	"github.com/influxdata/flux/values"
+	"github.com/InfluxCommunity/flux"
+	"github.com/InfluxCommunity/flux/internal/execute/groupkey"
+	"github.com/InfluxCommunity/flux/values"
 )
 
 func NewGroupKey(cols []flux.ColMeta, values []values.Value) flux.GroupKey {

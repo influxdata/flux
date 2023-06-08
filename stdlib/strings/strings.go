@@ -7,10 +7,10 @@ import (
 	"unicode"
 	"unicode/utf8"
 
-	"github.com/influxdata/flux/interpreter"
-	"github.com/influxdata/flux/runtime"
-	"github.com/influxdata/flux/semantic"
-	"github.com/influxdata/flux/values"
+	"github.com/InfluxCommunity/flux/interpreter"
+	"github.com/InfluxCommunity/flux/runtime"
+	"github.com/InfluxCommunity/flux/semantic"
+	"github.com/InfluxCommunity/flux/values"
 )
 
 var SpecialFns map[string]values.Function
@@ -384,7 +384,7 @@ func init() {
 	runtime.RegisterPackageValue("strings", "trimSuffix",
 		generateDualArgStringFunction("trimSuffix", []string{stringArgV, suffix}, strings.TrimSuffix))
 	runtime.RegisterPackageValue("strings", "title",
-		//lint:ignore SA1019 https://github.com/influxdata/flux/issues/4946
+		//lint:ignore SA1019 https://github.com/InfluxCommunity/flux/issues/4946
 		generateSingleArgStringFunction("title", strings.Title))
 	runtime.RegisterPackageValue("strings", "toUpper",
 		generateSingleArgStringFunction("toUpper", strings.ToUpper))

@@ -3,11 +3,11 @@ package values
 import (
 	"math"
 
-	"github.com/influxdata/flux/ast"
-	"github.com/influxdata/flux/codes"
-	"github.com/influxdata/flux/internal/errors"
-	"github.com/influxdata/flux/memory"
-	"github.com/influxdata/flux/semantic"
+	"github.com/InfluxCommunity/flux/ast"
+	"github.com/InfluxCommunity/flux/codes"
+	"github.com/InfluxCommunity/flux/internal/errors"
+	"github.com/InfluxCommunity/flux/memory"
+	"github.com/InfluxCommunity/flux/semantic"
 )
 
 //go:generate -command tmpl ../gotool.sh github.com/benbjohnson/tmpl

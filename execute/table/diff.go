@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/InfluxCommunity/flux"
 	"github.com/andreyvit/diff"
-	"github.com/influxdata/flux"
 )
 
 // Diff will perform a diff between two table iterators.

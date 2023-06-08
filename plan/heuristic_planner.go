@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"sort"
 
-	"github.com/influxdata/flux/codes"
-	"github.com/influxdata/flux/dependencies/testing"
-	"github.com/influxdata/flux/internal/errors"
+	"github.com/InfluxCommunity/flux/codes"
+	"github.com/InfluxCommunity/flux/dependencies/testing"
+	"github.com/InfluxCommunity/flux/internal/errors"
 )
 
 // heuristicPlanner applies a set of rules to the nodes in a Spec

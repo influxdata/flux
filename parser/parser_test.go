@@ -7,11 +7,11 @@ import (
 	"testing"
 	"time"
 
+	"github.com/InfluxCommunity/flux/ast"
+	"github.com/InfluxCommunity/flux/ast/asttest"
+	"github.com/InfluxCommunity/flux/internal/token"
+	"github.com/InfluxCommunity/flux/parser"
 	"github.com/google/go-cmp/cmp"
-	"github.com/influxdata/flux/ast"
-	"github.com/influxdata/flux/ast/asttest"
-	"github.com/influxdata/flux/internal/token"
-	"github.com/influxdata/flux/parser"
 )
 
 var parserType = "parser-type=rust"

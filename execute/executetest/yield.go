@@ -1,9 +1,9 @@
 package executetest
 
 import (
-	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/execute"
-	"github.com/influxdata/flux/plan"
+	"github.com/InfluxCommunity/flux"
+	"github.com/InfluxCommunity/flux/execute"
+	"github.com/InfluxCommunity/flux/plan"
 )
 
 func NewYieldProcedureSpec(name string) plan.PhysicalProcedureSpec {

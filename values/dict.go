@@ -3,10 +3,10 @@ package values
 import (
 	"regexp"
 
+	"github.com/InfluxCommunity/flux/codes"
+	"github.com/InfluxCommunity/flux/internal/errors"
+	"github.com/InfluxCommunity/flux/semantic"
 	"github.com/benbjohnson/immutable"
-	"github.com/influxdata/flux/codes"
-	"github.com/influxdata/flux/internal/errors"
-	"github.com/influxdata/flux/semantic"
 )
 
 // Dictionary defines the interface for a dictionary.

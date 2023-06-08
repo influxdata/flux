@@ -1,8 +1,8 @@
 package arrow
 
 import (
-	"github.com/influxdata/flux/array"
-	"github.com/influxdata/flux/memory"
+	"github.com/InfluxCommunity/flux/array"
+	"github.com/InfluxCommunity/flux/memory"
 )
 
 func NewString(vs []string, alloc memory.Allocator) *array.String {

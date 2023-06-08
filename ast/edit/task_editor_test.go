@@ -4,11 +4,11 @@ import (
 	"testing"
 	"time"
 
+	"github.com/InfluxCommunity/flux/ast"
+	"github.com/InfluxCommunity/flux/ast/asttest"
+	"github.com/InfluxCommunity/flux/ast/edit"
+	"github.com/InfluxCommunity/flux/parser"
 	"github.com/google/go-cmp/cmp"
-	"github.com/influxdata/flux/ast"
-	"github.com/influxdata/flux/ast/asttest"
-	"github.com/influxdata/flux/ast/edit"
-	"github.com/influxdata/flux/parser"
 )
 
 func TestGetOptionBlockMissing(t *testing.T) {
