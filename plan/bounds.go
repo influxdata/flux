@@ -1,8 +1,8 @@
 package plan
 
 import (
-	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/values"
+	"github.com/InfluxCommunity/flux"
+	"github.com/InfluxCommunity/flux/values"
 )
 
 // EmptyBounds is a time range containing only a single point

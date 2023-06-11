@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/influxdata/flux/dependency"
+	"github.com/InfluxCommunity/flux/dependency"
 )
 
 type Dependency struct {

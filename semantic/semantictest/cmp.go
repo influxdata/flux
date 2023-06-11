@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"regexp"
 
+	"github.com/InfluxCommunity/flux/array"
+	"github.com/InfluxCommunity/flux/semantic"
+	"github.com/InfluxCommunity/flux/values"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
-	"github.com/influxdata/flux/array"
-	"github.com/influxdata/flux/semantic"
-	"github.com/influxdata/flux/values"
 )
 
 var CmpOptions = []cmp.Option{

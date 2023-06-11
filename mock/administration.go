@@ -3,9 +3,9 @@ package mock
 import (
 	"context"
 
-	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/execute"
-	"github.com/influxdata/flux/memory"
+	"github.com/InfluxCommunity/flux"
+	"github.com/InfluxCommunity/flux/execute"
+	"github.com/InfluxCommunity/flux/memory"
 )
 
 // Administration is a mock implementation of the execute.Administration interface.

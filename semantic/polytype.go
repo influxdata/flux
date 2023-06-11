@@ -4,10 +4,10 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/InfluxCommunity/flux/codes"
+	"github.com/InfluxCommunity/flux/internal/errors"
+	"github.com/InfluxCommunity/flux/internal/fbsemantic"
 	flatbuffers "github.com/google/flatbuffers/go"
-	"github.com/influxdata/flux/codes"
-	"github.com/influxdata/flux/internal/errors"
-	"github.com/influxdata/flux/internal/fbsemantic"
 )
 
 // PolyType represents a polytype.  This struct is a thin wrapper around
@@ -217,7 +217,7 @@ func (pt *PolyType) getCanonicalMapping() (map[uint64]uint64, error) {
 		// Normally all the tvars should already be in the mapping because we
 		// have already visited the monotype expression.
 		// However, for the sake of debugging issues like this one
-		//   https://github.com/influxdata/flux/issues/2355
+		//   https://github.com/InfluxCommunity/flux/issues/2355
 		// generate a mapping for the quantified vars just in case.
 		v, err := pt.Var(i)
 		if err != nil {

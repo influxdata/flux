@@ -6,11 +6,11 @@ import (
 	"math"
 	"testing"
 
+	"github.com/InfluxCommunity/flux/dependencies/dependenciestest"
+	"github.com/InfluxCommunity/flux/dependency"
+	"github.com/InfluxCommunity/flux/memory"
+	"github.com/InfluxCommunity/flux/values"
 	"github.com/apache/arrow/go/v7/arrow/array"
-	"github.com/influxdata/flux/dependencies/dependenciestest"
-	"github.com/influxdata/flux/dependency"
-	"github.com/influxdata/flux/memory"
-	"github.com/influxdata/flux/values"
 )
 
 func TestTypeconv_String(t *testing.T) {

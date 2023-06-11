@@ -5,9 +5,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/InfluxCommunity/flux/semantic"
+	"github.com/InfluxCommunity/flux/values"
 	"github.com/google/go-cmp/cmp"
-	"github.com/influxdata/flux/semantic"
-	"github.com/influxdata/flux/values"
 )
 
 func TestDict_Type(t *testing.T) {

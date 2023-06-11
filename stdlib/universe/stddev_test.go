@@ -4,11 +4,11 @@ import (
 	"math"
 	"testing"
 
-	"github.com/influxdata/flux/array"
-	"github.com/influxdata/flux/arrow"
-	"github.com/influxdata/flux/execute/executetest"
-	"github.com/influxdata/flux/memory"
-	"github.com/influxdata/flux/stdlib/universe"
+	"github.com/InfluxCommunity/flux/array"
+	"github.com/InfluxCommunity/flux/arrow"
+	"github.com/InfluxCommunity/flux/execute/executetest"
+	"github.com/InfluxCommunity/flux/memory"
+	"github.com/InfluxCommunity/flux/stdlib/universe"
 )
 
 func TestStddev_Process(t *testing.T) {

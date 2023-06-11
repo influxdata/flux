@@ -3,11 +3,11 @@ package iox
 import (
 	"context"
 
+	"github.com/InfluxCommunity/flux/codes"
+	"github.com/InfluxCommunity/flux/dependencies/influxdb"
+	"github.com/InfluxCommunity/flux/internal/errors"
+	"github.com/InfluxCommunity/flux/memory"
 	"github.com/apache/arrow/go/v7/arrow/array"
-	"github.com/influxdata/flux/codes"
-	"github.com/influxdata/flux/dependencies/influxdb"
-	"github.com/influxdata/flux/internal/errors"
-	"github.com/influxdata/flux/memory"
 	influxdbiox "github.com/influxdata/influxdb-iox-client-go"
 )
 

@@ -4,8 +4,8 @@ import (
 	"context"
 	"testing"
 
+	"github.com/InfluxCommunity/flux/internal/pkg/feature"
 	"github.com/google/go-cmp/cmp"
-	"github.com/influxdata/flux/internal/pkg/feature"
 )
 
 type flagger map[string]interface{}

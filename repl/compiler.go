@@ -3,10 +3,10 @@ package repl
 import (
 	"context"
 
-	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/internal/operation"
-	"github.com/influxdata/flux/lang"
-	"github.com/influxdata/flux/plan"
+	"github.com/InfluxCommunity/flux"
+	"github.com/InfluxCommunity/flux/internal/operation"
+	"github.com/InfluxCommunity/flux/lang"
+	"github.com/InfluxCommunity/flux/plan"
 )
 
 // CompilerType specific to the Flux REPL

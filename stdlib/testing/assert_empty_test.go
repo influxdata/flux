@@ -4,10 +4,10 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/execute"
-	"github.com/influxdata/flux/execute/executetest"
-	fluxtesting "github.com/influxdata/flux/stdlib/testing"
+	"github.com/InfluxCommunity/flux"
+	"github.com/InfluxCommunity/flux/execute"
+	"github.com/InfluxCommunity/flux/execute/executetest"
+	fluxtesting "github.com/InfluxCommunity/flux/stdlib/testing"
 )
 
 func TestAssertEmpty_Process(t *testing.T) {

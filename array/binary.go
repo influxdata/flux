@@ -1,9 +1,9 @@
 package array
 
 import (
+	"github.com/InfluxCommunity/flux/codes"
+	"github.com/InfluxCommunity/flux/internal/errors"
 	"github.com/apache/arrow/go/v7/arrow/memory"
-	"github.com/influxdata/flux/codes"
-	"github.com/influxdata/flux/internal/errors"
 )
 
 func And(l, r *Boolean, mem memory.Allocator) (*Boolean, error) {

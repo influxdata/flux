@@ -3,9 +3,9 @@ package ast_test
 import (
 	"testing"
 
+	"github.com/InfluxCommunity/flux/ast"
+	"github.com/InfluxCommunity/flux/ast/asttest"
 	"github.com/google/go-cmp/cmp"
-	"github.com/influxdata/flux/ast"
-	"github.com/influxdata/flux/ast/asttest"
 )
 
 func TestWalk(t *testing.T) {

@@ -6,12 +6,12 @@ import (
 	"time"
 
 	"cloud.google.com/go/civil"
+	"github.com/InfluxCommunity/flux"
+	"github.com/InfluxCommunity/flux/codes"
+	"github.com/InfluxCommunity/flux/execute"
+	"github.com/InfluxCommunity/flux/internal/errors"
+	"github.com/InfluxCommunity/flux/values"
 	_ "github.com/bonitoo-io/go-sql-bigquery"
-	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/codes"
-	"github.com/influxdata/flux/execute"
-	"github.com/influxdata/flux/internal/errors"
-	"github.com/influxdata/flux/values"
 )
 
 // Google BigQuery support.

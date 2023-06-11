@@ -3,8 +3,8 @@ package table
 import (
 	"reflect"
 
-	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/internal/execute/groupkey"
+	"github.com/InfluxCommunity/flux"
+	"github.com/InfluxCommunity/flux/internal/execute/groupkey"
 )
 
 // Builder is the minimum interface for constructing a Table.

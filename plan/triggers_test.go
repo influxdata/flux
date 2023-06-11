@@ -3,8 +3,8 @@ package plan_test
 import (
 	"testing"
 
+	"github.com/InfluxCommunity/flux/plan"
 	"github.com/google/go-cmp/cmp"
-	"github.com/influxdata/flux/plan"
 )
 
 type triggerAwareProcedureSpec struct {

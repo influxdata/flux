@@ -1,11 +1,11 @@
-# Flux - Influx data language
-
-[![CircleCI](https://circleci.com/gh/influxdata/flux/tree/master.svg?style=svg)](https://circleci.com/gh/influxdata/flux/tree/master)
-
+# Flux - Community fork of Influx data language
 
 Flux is a lightweight scripting language for querying databases (like [InfluxDB](https://github.com/influxdata/influxdb)) and working with data.
 It is part of InfluxDB 1.7 and 2.0, but can be run independently of those.
 This repository contains the language definition and an implementation of the language core.
+
+**Note:** This is the community fork of Flux. The Flux version that is maintained by InfluxData lives [here](https://github.com/influxdata/flux).
+If you are seeking to make changes to Flux for use in your own projects, this repo is the right place to be.
 
 ## Specification
 

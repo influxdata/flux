@@ -3,11 +3,11 @@ package arrow_test
 import (
 	"testing"
 
+	"github.com/InfluxCommunity/flux/array"
+	"github.com/InfluxCommunity/flux/arrow"
 	"github.com/apache/arrow/go/v7/arrow/math"
 	arrowmemory "github.com/apache/arrow/go/v7/arrow/memory"
 	"github.com/google/go-cmp/cmp"
-	"github.com/influxdata/flux/array"
-	"github.com/influxdata/flux/arrow"
 )
 
 func TestSum_Float64_Empty(t *testing.T) {

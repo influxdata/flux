@@ -3,8 +3,8 @@ package sql
 import (
 	"testing"
 
+	"github.com/InfluxCommunity/flux"
 	"github.com/google/go-cmp/cmp"
-	"github.com/influxdata/flux"
 )
 
 // represents unsupported type

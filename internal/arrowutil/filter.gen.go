@@ -9,9 +9,9 @@ package arrowutil
 import (
 	"fmt"
 
+	"github.com/InfluxCommunity/flux/array"
 	"github.com/apache/arrow/go/v7/arrow/bitutil"
 	"github.com/apache/arrow/go/v7/arrow/memory"
-	"github.com/influxdata/flux/array"
 )
 
 func Filter(arr array.Array, bitset []byte, mem memory.Allocator) array.Array {

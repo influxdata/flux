@@ -8,13 +8,13 @@ import (
 	"testing"
 	"time"
 
+	"github.com/InfluxCommunity/flux/ast"
+	"github.com/InfluxCommunity/flux/ast/asttest"
+	"github.com/InfluxCommunity/flux/ast/astutil"
+	"github.com/InfluxCommunity/flux/ast/testcase"
+	"github.com/InfluxCommunity/flux/dependencies/filesystem"
+	"github.com/InfluxCommunity/flux/parser"
 	"github.com/google/go-cmp/cmp"
-	"github.com/influxdata/flux/ast"
-	"github.com/influxdata/flux/ast/asttest"
-	"github.com/influxdata/flux/ast/astutil"
-	"github.com/influxdata/flux/ast/testcase"
-	"github.com/influxdata/flux/dependencies/filesystem"
-	"github.com/influxdata/flux/parser"
 )
 
 func TestTransform(t *testing.T) {

@@ -1,8 +1,8 @@
 package execute
 
 import (
+	"github.com/InfluxCommunity/flux/execute/table"
 	"github.com/apache/arrow/go/v7/arrow/memory"
-	"github.com/influxdata/flux/execute/table"
 )
 
 // NarrowTransformation implements a transformation that processes

@@ -7,11 +7,11 @@ import (
 	"sync"
 	"time"
 
+	"github.com/InfluxCommunity/flux"
+	"github.com/InfluxCommunity/flux/codes"
+	"github.com/InfluxCommunity/flux/dependency"
+	"github.com/InfluxCommunity/flux/internal/errors"
 	mqtt "github.com/eclipse/paho.mqtt.golang"
-	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/codes"
-	"github.com/influxdata/flux/dependency"
-	"github.com/influxdata/flux/internal/errors"
 )
 
 const (

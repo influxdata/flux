@@ -1,10 +1,10 @@
 package moving_average
 
 import (
-	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/array"
-	"github.com/influxdata/flux/execute"
-	"github.com/influxdata/flux/values"
+	"github.com/InfluxCommunity/flux"
+	"github.com/InfluxCommunity/flux/array"
+	"github.com/InfluxCommunity/flux/execute"
+	"github.com/InfluxCommunity/flux/values"
 )
 
 type ExponentialMovingAverage struct {

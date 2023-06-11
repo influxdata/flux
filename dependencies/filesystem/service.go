@@ -5,8 +5,8 @@ import (
 	"io"
 	"os"
 
-	"github.com/influxdata/flux/codes"
-	"github.com/influxdata/flux/internal/errors"
+	"github.com/InfluxCommunity/flux/codes"
+	"github.com/InfluxCommunity/flux/internal/errors"
 )
 
 // File is an interface for interacting with a file.

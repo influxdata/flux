@@ -3,15 +3,15 @@ package universe_test
 import (
 	"testing"
 
-	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/execute"
-	"github.com/influxdata/flux/execute/executetest"
-	"github.com/influxdata/flux/internal/operation"
-	"github.com/influxdata/flux/querytest"
-	"github.com/influxdata/flux/runtime"
-	_ "github.com/influxdata/flux/stdlib"
-	"github.com/influxdata/flux/stdlib/influxdata/influxdb"
-	"github.com/influxdata/flux/stdlib/universe"
+	"github.com/InfluxCommunity/flux"
+	"github.com/InfluxCommunity/flux/execute"
+	"github.com/InfluxCommunity/flux/execute/executetest"
+	"github.com/InfluxCommunity/flux/internal/operation"
+	"github.com/InfluxCommunity/flux/querytest"
+	"github.com/InfluxCommunity/flux/runtime"
+	_ "github.com/InfluxCommunity/flux/stdlib"
+	"github.com/InfluxCommunity/flux/stdlib/influxdata/influxdb"
+	"github.com/InfluxCommunity/flux/stdlib/universe"
 )
 
 func init() {

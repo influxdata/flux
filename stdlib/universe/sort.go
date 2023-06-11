@@ -5,20 +5,20 @@ import (
 	"context"
 	"sort"
 
+	"github.com/InfluxCommunity/flux"
+	"github.com/InfluxCommunity/flux/array"
+	"github.com/InfluxCommunity/flux/arrow"
+	"github.com/InfluxCommunity/flux/codes"
+	"github.com/InfluxCommunity/flux/execute"
+	"github.com/InfluxCommunity/flux/execute/table"
+	"github.com/InfluxCommunity/flux/internal/arrowutil"
+	"github.com/InfluxCommunity/flux/internal/errors"
+	"github.com/InfluxCommunity/flux/internal/mutable"
+	"github.com/InfluxCommunity/flux/interpreter"
+	"github.com/InfluxCommunity/flux/plan"
+	"github.com/InfluxCommunity/flux/runtime"
+	"github.com/InfluxCommunity/flux/semantic"
 	"github.com/apache/arrow/go/v7/arrow/memory"
-	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/array"
-	"github.com/influxdata/flux/arrow"
-	"github.com/influxdata/flux/codes"
-	"github.com/influxdata/flux/execute"
-	"github.com/influxdata/flux/execute/table"
-	"github.com/influxdata/flux/internal/arrowutil"
-	"github.com/influxdata/flux/internal/errors"
-	"github.com/influxdata/flux/internal/mutable"
-	"github.com/influxdata/flux/interpreter"
-	"github.com/influxdata/flux/plan"
-	"github.com/influxdata/flux/runtime"
-	"github.com/influxdata/flux/semantic"
 )
 
 const SortKind = "sort"
@@ -487,7 +487,7 @@ func (r RemoveRedundantSort) Name() string {
 
 func (r RemoveRedundantSort) Pattern() plan.Pattern {
 	// Predecessor to the sort must have only the single successor (the sort node)
-	// to work around https://github.com/influxdata/flux/issues/5044
+	// to work around https://github.com/InfluxCommunity/flux/issues/5044
 	return plan.MultiSuccessor(SortKind, plan.AnySingleSuccessor())
 }
 

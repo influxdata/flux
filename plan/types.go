@@ -6,10 +6,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/internal/operation"
-	"github.com/influxdata/flux/interpreter"
-	"github.com/influxdata/flux/interval"
+	"github.com/InfluxCommunity/flux"
+	"github.com/InfluxCommunity/flux/internal/operation"
+	"github.com/InfluxCommunity/flux/interpreter"
+	"github.com/InfluxCommunity/flux/interval"
 )
 
 type Planner interface {

@@ -38,5 +38,5 @@ fi
 
 if [ $HAS_HUB -eq 1 ]
 then
-    hub pull-request -m "$message" -r influxdata/flux-team
+    hub pull-request -m "$message"
 fi

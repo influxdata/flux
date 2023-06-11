@@ -3,8 +3,8 @@ package executetest
 import (
 	"fmt"
 
+	"github.com/InfluxCommunity/flux"
 	"github.com/google/go-cmp/cmp"
-	"github.com/influxdata/flux"
 )
 
 type Result struct {

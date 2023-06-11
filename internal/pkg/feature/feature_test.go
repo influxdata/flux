@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/influxdata/flux/internal/pkg/feature"
+	"github.com/InfluxCommunity/flux/internal/pkg/feature"
 )
 
 func Test_feature(t *testing.T) {

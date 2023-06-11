@@ -4,9 +4,9 @@ import (
 	"database/sql"
 	"testing"
 
+	flux "github.com/InfluxCommunity/flux"
+	"github.com/InfluxCommunity/flux/values"
 	"github.com/google/go-cmp/cmp"
-	flux "github.com/influxdata/flux"
-	"github.com/influxdata/flux/values"
 	_ "github.com/mattn/go-sqlite3"
 )
 
