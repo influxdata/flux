@@ -4,10 +4,10 @@ import (
 	"sync"
 	"testing"
 
+	"github.com/InfluxCommunity/flux/codes"
+	"github.com/InfluxCommunity/flux/internal/errors"
+	"github.com/InfluxCommunity/flux/memory"
 	arrowmemory "github.com/apache/arrow/go/v7/arrow/memory"
-	"github.com/influxdata/flux/codes"
-	"github.com/influxdata/flux/internal/errors"
-	"github.com/influxdata/flux/memory"
 	"github.com/stretchr/testify/assert"
 )
 

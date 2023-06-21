@@ -8,13 +8,13 @@ import (
 	"runtime/debug"
 	"testing"
 
+	"github.com/InfluxCommunity/flux/codes"
+	"github.com/InfluxCommunity/flux/dependencies/dependenciestest"
+	"github.com/InfluxCommunity/flux/dependency"
+	"github.com/InfluxCommunity/flux/internal/errors"
+	"github.com/InfluxCommunity/flux/stdlib/runtime"
+	"github.com/InfluxCommunity/flux/values"
 	"github.com/google/go-cmp/cmp"
-	"github.com/influxdata/flux/codes"
-	"github.com/influxdata/flux/dependencies/dependenciestest"
-	"github.com/influxdata/flux/dependency"
-	"github.com/influxdata/flux/internal/errors"
-	"github.com/influxdata/flux/stdlib/runtime"
-	"github.com/influxdata/flux/values"
 )
 
 func TestVersion(t *testing.T) {
@@ -27,9 +27,9 @@ func TestVersion(t *testing.T) {
 		{
 			name: "main module",
 			bi: &debug.BuildInfo{
-				Path: "github.com/influxdata/flux",
+				Path: "github.com/InfluxCommunity/flux",
 				Main: debug.Module{
-					Path:    "github.com/influxdata/flux",
+					Path:    "github.com/InfluxCommunity/flux",
 					Version: "v0.38.0",
 				},
 			},
@@ -38,12 +38,12 @@ func TestVersion(t *testing.T) {
 		{
 			name: "replaced main module",
 			bi: &debug.BuildInfo{
-				Path: "github.com/influxdata/flux",
+				Path: "github.com/InfluxCommunity/flux",
 				Main: debug.Module{
-					Path:    "github.com/influxdata/flux",
+					Path:    "github.com/InfluxCommunity/flux",
 					Version: "v0.38.0",
 					Replace: &debug.Module{
-						Path:    "github.com/influxdata/flux",
+						Path:    "github.com/InfluxCommunity/flux",
 						Version: "(devel)",
 					},
 				},
@@ -60,7 +60,7 @@ func TestVersion(t *testing.T) {
 				},
 				Deps: []*debug.Module{
 					{
-						Path:    "github.com/influxdata/flux",
+						Path:    "github.com/InfluxCommunity/flux",
 						Version: "v0.38.0",
 					},
 				},
@@ -77,10 +77,10 @@ func TestVersion(t *testing.T) {
 				},
 				Deps: []*debug.Module{
 					{
-						Path:    "github.com/influxdata/flux",
+						Path:    "github.com/InfluxCommunity/flux",
 						Version: "v0.38.0",
 						Replace: &debug.Module{
-							Path: "github.com/influxdata/flux",
+							Path: "github.com/InfluxCommunity/flux",
 						},
 					},
 				},

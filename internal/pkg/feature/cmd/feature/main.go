@@ -20,7 +20,7 @@ package {{.PackageName}}
 import (
 	"context"
 
-	"github.com/influxdata/flux/internal/pkg/feature"
+	"github.com/InfluxCommunity/flux/internal/pkg/feature"
 )
 
 type (

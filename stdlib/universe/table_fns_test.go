@@ -5,17 +5,17 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/InfluxCommunity/flux"
+	"github.com/InfluxCommunity/flux/dependencies/dependenciestest"
+	"github.com/InfluxCommunity/flux/dependency"
+	"github.com/InfluxCommunity/flux/execute"
+	"github.com/InfluxCommunity/flux/execute/executetest"
+	"github.com/InfluxCommunity/flux/runtime"
+	"github.com/InfluxCommunity/flux/semantic"
+	"github.com/InfluxCommunity/flux/stdlib/universe"
+	"github.com/InfluxCommunity/flux/values"
+	"github.com/InfluxCommunity/flux/values/objects"
 	"github.com/google/go-cmp/cmp"
-	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/dependencies/dependenciestest"
-	"github.com/influxdata/flux/dependency"
-	"github.com/influxdata/flux/execute"
-	"github.com/influxdata/flux/execute/executetest"
-	"github.com/influxdata/flux/runtime"
-	"github.com/influxdata/flux/semantic"
-	"github.com/influxdata/flux/stdlib/universe"
-	"github.com/influxdata/flux/values"
-	"github.com/influxdata/flux/values/objects"
 )
 
 var prelude = `

@@ -5,12 +5,12 @@ import (
 	"sort"
 	"testing"
 
+	"github.com/InfluxCommunity/flux"
+	"github.com/InfluxCommunity/flux/execute"
+	"github.com/InfluxCommunity/flux/execute/executetest"
+	"github.com/InfluxCommunity/flux/plan"
+	fluxtesting "github.com/InfluxCommunity/flux/stdlib/testing"
 	"github.com/google/go-cmp/cmp"
-	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/execute"
-	"github.com/influxdata/flux/execute/executetest"
-	"github.com/influxdata/flux/plan"
-	fluxtesting "github.com/influxdata/flux/stdlib/testing"
 )
 
 func TestAssertEquals_Process(t *testing.T) {

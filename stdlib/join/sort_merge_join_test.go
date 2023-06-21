@@ -5,13 +5,13 @@ import (
 	"testing"
 	"time"
 
+	_ "github.com/InfluxCommunity/flux/fluxinit/static"
+	"github.com/InfluxCommunity/flux/plan"
+	"github.com/InfluxCommunity/flux/plan/plantest"
+	"github.com/InfluxCommunity/flux/stdlib/influxdata/influxdb"
+	"github.com/InfluxCommunity/flux/stdlib/join"
+	"github.com/InfluxCommunity/flux/stdlib/universe"
 	"github.com/google/go-cmp/cmp"
-	_ "github.com/influxdata/flux/fluxinit/static"
-	"github.com/influxdata/flux/plan"
-	"github.com/influxdata/flux/plan/plantest"
-	"github.com/influxdata/flux/stdlib/influxdata/influxdb"
-	"github.com/influxdata/flux/stdlib/join"
-	"github.com/influxdata/flux/stdlib/universe"
 )
 
 func TestSortMergeJoinPredicateRule(t *testing.T) {

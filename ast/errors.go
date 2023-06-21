@@ -6,8 +6,8 @@ import (
 	"io"
 	"strconv"
 
-	"github.com/influxdata/flux/codes"
-	"github.com/influxdata/flux/internal/errors"
+	"github.com/InfluxCommunity/flux/codes"
+	"github.com/InfluxCommunity/flux/internal/errors"
 )
 
 // Check will inspect each node and annotate it with any AST errors.

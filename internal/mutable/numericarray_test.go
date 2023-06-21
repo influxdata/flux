@@ -3,8 +3,8 @@ package mutable_test
 import (
 	"testing"
 
+	"github.com/InfluxCommunity/flux/internal/mutable"
 	"github.com/apache/arrow/go/v7/arrow/memory"
-	"github.com/influxdata/flux/internal/mutable"
 )
 
 func TestInt64Array_Append(t *testing.T) {

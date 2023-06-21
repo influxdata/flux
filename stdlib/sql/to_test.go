@@ -4,20 +4,20 @@ import (
 	"testing"
 
 	"github.com/DATA-DOG/go-sqlmock"
+	"github.com/InfluxCommunity/flux"
+	"github.com/InfluxCommunity/flux/dependencies/dependenciestest"
+	"github.com/InfluxCommunity/flux/dependencies/url"
+	"github.com/InfluxCommunity/flux/execute"
+	"github.com/InfluxCommunity/flux/execute/executetest"
+	_ "github.com/InfluxCommunity/flux/fluxinit/static" // We need to init flux for the tests to work.
+	"github.com/InfluxCommunity/flux/internal/operation"
+	"github.com/InfluxCommunity/flux/plan"
+	"github.com/InfluxCommunity/flux/querytest"
+	"github.com/InfluxCommunity/flux/stdlib/influxdata/influxdb"
+	fsql "github.com/InfluxCommunity/flux/stdlib/sql"
+	"github.com/InfluxCommunity/flux/values"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
-	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/dependencies/dependenciestest"
-	"github.com/influxdata/flux/dependencies/url"
-	"github.com/influxdata/flux/execute"
-	"github.com/influxdata/flux/execute/executetest"
-	_ "github.com/influxdata/flux/fluxinit/static" // We need to init flux for the tests to work.
-	"github.com/influxdata/flux/internal/operation"
-	"github.com/influxdata/flux/plan"
-	"github.com/influxdata/flux/querytest"
-	"github.com/influxdata/flux/stdlib/influxdata/influxdb"
-	fsql "github.com/influxdata/flux/stdlib/sql"
-	"github.com/influxdata/flux/values"
 	_ "github.com/mattn/go-sqlite3"
 )
 

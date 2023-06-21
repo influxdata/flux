@@ -511,8 +511,9 @@ fn compare_exprs(
             let fb_dtl = unsafe { fbsemantic::DateTimeLiteral::init_from_table(*fb_tbl) };
             let fb_dtl_val = fb_dtl.value().unwrap();
             let dtl = chrono::DateTime::<FixedOffset>::from_utc(
-                chrono::NaiveDateTime::from_timestamp(fb_dtl_val.secs(), fb_dtl_val.nsecs()),
-                FixedOffset::east(fb_dtl_val.offset()),
+                chrono::NaiveDateTime::from_timestamp_opt(fb_dtl_val.secs(), fb_dtl_val.nsecs())
+                    .unwrap(),
+                FixedOffset::east_opt(fb_dtl_val.offset()).unwrap(),
             );
             compare_loc(&semantic_dtl.loc, &fb_dtl.loc())?;
             if semantic_dtl.value != dtl {

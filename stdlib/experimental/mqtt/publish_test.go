@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"testing"
 
+	_ "github.com/InfluxCommunity/flux/fluxinit/static"
+	"github.com/InfluxCommunity/flux/querytest"
 	MQTT "github.com/eclipse/paho.mqtt.golang"
 	"github.com/google/go-cmp/cmp"
-	_ "github.com/influxdata/flux/fluxinit/static"
-	"github.com/influxdata/flux/querytest"
 )
 
 func TestPublishMQTT_NewQuery(t *testing.T) {

@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/influxdata/flux/ast"
+	"github.com/InfluxCommunity/flux/ast"
 )
 
 type Node interface {

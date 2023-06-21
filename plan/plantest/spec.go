@@ -1,8 +1,8 @@
 package plantest
 
 import (
-	"github.com/influxdata/flux/plan"
-	"github.com/influxdata/flux/plan/plantest/spec"
+	"github.com/InfluxCommunity/flux/plan"
+	"github.com/InfluxCommunity/flux/plan/plantest/spec"
 )
 
 //

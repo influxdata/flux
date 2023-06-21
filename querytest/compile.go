@@ -7,18 +7,18 @@ import (
 	"testing"
 	"time"
 
+	"github.com/InfluxCommunity/flux"
+	"github.com/InfluxCommunity/flux/dependencies/dependenciestest"
+	"github.com/InfluxCommunity/flux/dependency"
+	"github.com/InfluxCommunity/flux/internal/operation"
+	"github.com/InfluxCommunity/flux/internal/spec"
+	"github.com/InfluxCommunity/flux/runtime"
+	"github.com/InfluxCommunity/flux/semantic/semantictest"
+	"github.com/InfluxCommunity/flux/stdlib/universe"
+	"github.com/InfluxCommunity/flux/values/valuestest"
 	"github.com/andreyvit/diff"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
-	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/dependencies/dependenciestest"
-	"github.com/influxdata/flux/dependency"
-	"github.com/influxdata/flux/internal/operation"
-	"github.com/influxdata/flux/internal/spec"
-	"github.com/influxdata/flux/runtime"
-	"github.com/influxdata/flux/semantic/semantictest"
-	"github.com/influxdata/flux/stdlib/universe"
-	"github.com/influxdata/flux/values/valuestest"
 )
 
 type NewQueryTestCase struct {

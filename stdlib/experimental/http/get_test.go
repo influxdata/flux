@@ -9,11 +9,11 @@ import (
 	"testing"
 	"time"
 
+	"github.com/InfluxCommunity/flux"
+	"github.com/InfluxCommunity/flux/dependencies/url"
+	_ "github.com/InfluxCommunity/flux/fluxinit/static"
+	"github.com/InfluxCommunity/flux/runtime"
 	"github.com/google/go-cmp/cmp"
-	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/dependencies/url"
-	_ "github.com/influxdata/flux/fluxinit/static"
-	"github.com/influxdata/flux/runtime"
 )
 
 func TestGet(t *testing.T) {

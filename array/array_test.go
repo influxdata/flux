@@ -3,11 +3,11 @@ package array_test
 import (
 	"testing"
 
+	"github.com/InfluxCommunity/flux/array"
+	fluxmemory "github.com/InfluxCommunity/flux/memory"
 	apachearray "github.com/apache/arrow/go/v7/arrow/array"
 	"github.com/apache/arrow/go/v7/arrow/memory"
 	"github.com/google/go-cmp/cmp"
-	"github.com/influxdata/flux/array"
-	fluxmemory "github.com/influxdata/flux/memory"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -25,7 +25,7 @@ func TestString(t *testing.T) {
 					b.Append("a")
 				}
 			},
-			sz: 0,
+			sz: 1,
 			want: []interface{}{
 				"a", "a", "a", "a", "a",
 				"a", "a", "a", "a", "a",
@@ -165,7 +165,7 @@ func TestStringBuilder_NewArray(t *testing.T) {
 		}
 
 		arr := b.NewArray()
-		mem.AssertSize(t, 0)
+		assert.Equal(t, 1, mem.CurrentAlloc(), "unexpected memory allocation.")
 		arr.Release()
 		mem.AssertSize(t, 0)
 

@@ -3,10 +3,10 @@ package holt_winters
 import (
 	"math"
 
+	"github.com/InfluxCommunity/flux/array"
+	"github.com/InfluxCommunity/flux/arrow"
+	"github.com/InfluxCommunity/flux/internal/mutable"
 	"github.com/apache/arrow/go/v7/arrow/memory"
-	"github.com/influxdata/flux/array"
-	"github.com/influxdata/flux/arrow"
-	"github.com/influxdata/flux/internal/mutable"
 	"gonum.org/v1/gonum/optimize"
 )
 

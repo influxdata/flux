@@ -4,17 +4,23 @@ import (
 	"math"
 	"sort"
 
-	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/codes"
-	"github.com/influxdata/flux/execute"
-	"github.com/influxdata/flux/internal/errors"
-	"github.com/influxdata/flux/plan"
-	"github.com/influxdata/flux/runtime"
+	"github.com/InfluxCommunity/flux"
+	"github.com/InfluxCommunity/flux/codes"
+	"github.com/InfluxCommunity/flux/execute"
+	"github.com/InfluxCommunity/flux/internal/errors"
+	"github.com/InfluxCommunity/flux/plan"
+	"github.com/InfluxCommunity/flux/runtime"
 )
 
-const HistogramQuantileKind = "histogramQuantile"
+const (
+	HistogramQuantileKind = "histogramQuantile"
 
-const DefaultUpperBoundColumnLabel = "le"
+	DefaultUpperBoundColumnLabel = "le"
+
+	onNonmonotonicError = "error"
+	onNonmonotonicDrop  = "drop"
+	onNonmonotonicForce = "force"
+)
 
 type HistogramQuantileOpSpec struct {
 	Quantile         float64 `json:"quantile"`
@@ -22,6 +28,7 @@ type HistogramQuantileOpSpec struct {
 	UpperBoundColumn string  `json:"upperBoundColumn"`
 	ValueColumn      string  `json:"valueColumn"`
 	MinValue         float64 `json:"minValue"`
+	OnNonmonotonic   string  `json:"onNonmonotonic"`
 }
 
 func init() {
@@ -73,6 +80,18 @@ func CreateHistogramQuantileOpSpec(args flux.Arguments, a *flux.Administration) 
 		s.MinValue = min
 	}
 
+	if onNonmonotonic, ok, err := args.GetString("onNonmonotonic"); err != nil {
+		return nil, err
+	} else if ok {
+		s.OnNonmonotonic = onNonmonotonic
+	} else {
+		s.OnNonmonotonic = onNonmonotonicError
+	}
+
+	if s.OnNonmonotonic != onNonmonotonicError && s.OnNonmonotonic != onNonmonotonicForce && s.OnNonmonotonic != onNonmonotonicDrop {
+		return nil, errors.Newf(codes.Invalid, "value provided to histogramQuantile parameter onNonmonotonic is invalid; must be one of %q, %q or %q", onNonmonotonicError, onNonmonotonicForce, onNonmonotonicDrop)
+	}
+
 	return s, nil
 }
 
@@ -87,6 +106,7 @@ type HistogramQuantileProcedureSpec struct {
 	UpperBoundColumn string  `json:"upperBoundColumn"`
 	ValueColumn      string  `json:"valueColumn"`
 	MinValue         float64 `json:"minValue"`
+	OnNonmonotonic   string  `json:"onNonmonotonic"`
 }
 
 func newHistogramQuantileProcedure(qs flux.OperationSpec, a plan.Administration) (plan.ProcedureSpec, error) {
@@ -100,6 +120,7 @@ func newHistogramQuantileProcedure(qs flux.OperationSpec, a plan.Administration)
 		UpperBoundColumn: spec.UpperBoundColumn,
 		ValueColumn:      spec.ValueColumn,
 		MinValue:         spec.MinValue,
+		OnNonmonotonic:   spec.OnNonmonotonic,
 	}, nil
 }
 
@@ -230,38 +251,97 @@ func (t histogramQuantileTransformation) Process(id execute.DatasetID, tbl flux.
 		})
 	}
 
-	q, err := t.computeQuantile(cdf)
+	result, err := t.computeQuantile(cdf)
 	if err != nil {
 		return err
+	}
+	if result.action == drop {
+		return nil
 	}
 	if err := execute.AppendKeyValues(tbl.Key(), builder); err != nil {
 		return err
 	}
-	if err := builder.AppendFloat(valueIdx, q); err != nil {
-		return err
+	if result.action == appendValue {
+		if err := builder.AppendFloat(valueIdx, result.v); err != nil {
+			return err
+		}
+	} else {
+		// action is appendNil
+		if err := builder.AppendNil(valueIdx); err != nil {
+			return err
+		}
+
 	}
 	return nil
 }
 
-func (t *histogramQuantileTransformation) computeQuantile(cdf []bucket) (float64, error) {
-	if len(cdf) == 0 {
-		return 0, errors.New(codes.FailedPrecondition, "histogram is empty")
-	}
-	// Find rank index and check counts are monotonic
+type quantileAction int
+
+const (
+	appendValue quantileAction = iota
+	appendNil
+	drop
+)
+
+type quantileResult struct {
+	action quantileAction
+	v      float64
+}
+
+// isMonotonic will check if the buckets are monotonic and
+// return true if so.
+//
+// If force is set, it will force them to be monotonic
+// by assuming no increase from the previous bucket.
+// When force is set, this function will always return true.
+func isMonotonic(force bool, cdf []bucket) bool {
 	prevCount := 0.0
+	for i := range cdf {
+		if cdf[i].count < prevCount {
+			if force {
+				cdf[i].count = prevCount
+			} else {
+				return false
+			}
+		} else {
+			prevCount = cdf[i].count
+		}
+	}
+	return true
+}
+
+func (t *histogramQuantileTransformation) computeQuantile(cdf []bucket) (quantileResult, error) {
+	if len(cdf) == 0 {
+		return quantileResult{}, errors.New(codes.FailedPrecondition, "histogram is empty")
+	}
+
+	if !isMonotonic(t.spec.OnNonmonotonic == onNonmonotonicForce, cdf) {
+		switch t.spec.OnNonmonotonic {
+		case onNonmonotonicError:
+			return quantileResult{}, errors.New(codes.FailedPrecondition, "histogram records counts are not monotonic")
+		case onNonmonotonicDrop:
+			return quantileResult{action: drop}, nil
+		default:
+			// "force" is not possible because isMonotonic will fix the buckets
+			return quantileResult{}, errors.Newf(codes.Internal, "unknown or unexpected value for onNonmonotonic: %q", t.spec.OnNonmonotonic)
+		}
+	}
+
+	// Find rank index and check counts are monotonic
 	totalCount := cdf[len(cdf)-1].count
+	if totalCount == 0 {
+		// Produce a null value if there were no samples
+		return quantileResult{action: appendNil}, nil
+	}
+
 	rank := t.spec.Quantile * totalCount
 	rankIdx := -1
 	for i, b := range cdf {
-		if b.count < prevCount {
-			return 0, errors.New(codes.FailedPrecondition, "histogram records counts are not monotonic")
-		}
-		prevCount = b.count
-
 		if rank >= b.count {
 			rankIdx = i
 		}
 	}
+
 	var (
 		lowerCount,
 		lowerBound,
@@ -277,7 +357,7 @@ func (t *histogramQuantileTransformation) computeQuantile(cdf []bucket) (float64
 		upperBound = cdf[0].upperBound
 	case len(cdf) - 1:
 		// Quantile is above the highest upper bound, simply return it as it must be finite
-		return cdf[len(cdf)-1].upperBound, nil
+		return quantileResult{action: appendValue, v: cdf[len(cdf)-1].upperBound}, nil
 	default:
 		lowerCount = cdf[rankIdx].count
 		lowerBound = cdf[rankIdx].upperBound
@@ -286,19 +366,19 @@ func (t *histogramQuantileTransformation) computeQuantile(cdf []bucket) (float64
 	}
 	if rank == lowerCount {
 		// No need to interpolate
-		return lowerBound, nil
+		return quantileResult{action: appendValue, v: lowerBound}, nil
 	}
 	if math.IsInf(lowerBound, -1) {
 		// We cannot interpolate with infinity
-		return upperBound, nil
+		return quantileResult{action: appendValue, v: upperBound}, nil
 	}
 	if math.IsInf(upperBound, 1) {
 		// We cannot interpolate with infinity
-		return lowerBound, nil
+		return quantileResult{action: appendValue, v: lowerBound}, nil
 	}
 	// Compute quantile using linear interpolation
 	scale := (rank - lowerCount) / (upperCount - lowerCount)
-	return lowerBound + (upperBound-lowerBound)*scale, nil
+	return quantileResult{action: appendValue, v: lowerBound + (upperBound-lowerBound)*scale}, nil
 }
 
 func (t histogramQuantileTransformation) UpdateWatermark(id execute.DatasetID, mark execute.Time) error {

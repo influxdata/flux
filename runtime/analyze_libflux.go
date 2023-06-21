@@ -3,9 +3,9 @@ package runtime
 import (
 	"context"
 
-	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/libflux/go/libflux"
-	"github.com/influxdata/flux/semantic"
+	"github.com/InfluxCommunity/flux"
+	"github.com/InfluxCommunity/flux/libflux/go/libflux"
+	"github.com/InfluxCommunity/flux/semantic"
 )
 
 // AnalyzeSource parses and analyzes the given Flux source,

@@ -3,7 +3,7 @@ package influxdb
 import (
 	"context"
 
-	"github.com/influxdata/flux/dependencies/influxdb"
+	"github.com/InfluxCommunity/flux/dependencies/influxdb"
 )
 
 type (

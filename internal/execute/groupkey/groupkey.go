@@ -6,10 +6,10 @@ import (
 	"strings"
 	"sync/atomic"
 
+	"github.com/InfluxCommunity/flux"
+	"github.com/InfluxCommunity/flux/values"
 	"github.com/apache/arrow/go/v7/arrow"
 	"github.com/cespare/xxhash/v2"
-	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/values"
 )
 
 type groupKey struct {

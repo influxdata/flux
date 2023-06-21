@@ -4,22 +4,22 @@ import (
 	"context"
 	"sort"
 
+	"github.com/InfluxCommunity/flux"
+	"github.com/InfluxCommunity/flux/array"
+	"github.com/InfluxCommunity/flux/arrow"
+	"github.com/InfluxCommunity/flux/codes"
+	"github.com/InfluxCommunity/flux/execute"
+	"github.com/InfluxCommunity/flux/internal/errors"
+	"github.com/InfluxCommunity/flux/internal/execute/dataset"
+	"github.com/InfluxCommunity/flux/internal/execute/table"
+	"github.com/InfluxCommunity/flux/internal/feature"
+	"github.com/InfluxCommunity/flux/interpreter"
+	"github.com/InfluxCommunity/flux/memory"
+	"github.com/InfluxCommunity/flux/plan"
+	"github.com/InfluxCommunity/flux/runtime"
+	"github.com/InfluxCommunity/flux/semantic"
+	"github.com/InfluxCommunity/flux/values"
 	arrowmem "github.com/apache/arrow/go/v7/arrow/memory"
-	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/array"
-	"github.com/influxdata/flux/arrow"
-	"github.com/influxdata/flux/codes"
-	"github.com/influxdata/flux/execute"
-	"github.com/influxdata/flux/internal/errors"
-	"github.com/influxdata/flux/internal/execute/dataset"
-	"github.com/influxdata/flux/internal/execute/table"
-	"github.com/influxdata/flux/internal/feature"
-	"github.com/influxdata/flux/interpreter"
-	"github.com/influxdata/flux/memory"
-	"github.com/influxdata/flux/plan"
-	"github.com/influxdata/flux/runtime"
-	"github.com/influxdata/flux/semantic"
-	"github.com/influxdata/flux/values"
 )
 
 const GroupKind = "group"
@@ -427,7 +427,7 @@ func (t *groupTransformation) appendValueFromRow(b array.Builder, cr flux.ColRea
 		if vs.IsNull(i) {
 			b.AppendNull()
 		} else {
-			b.Append(vs.Value(i))
+			b.AppendBytes(vs.ValueBytes(i))
 		}
 	case flux.TBool:
 		b := b.(*array.BooleanBuilder)

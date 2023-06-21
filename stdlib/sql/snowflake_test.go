@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/influxdata/flux/dependencies/dependenciestest"
+	"github.com/InfluxCommunity/flux/dependencies/dependenciestest"
 	"github.com/influxdata/gosnowflake"
 )
 

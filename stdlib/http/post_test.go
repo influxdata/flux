@@ -10,14 +10,14 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/InfluxCommunity/flux"
+	"github.com/InfluxCommunity/flux/codes"
+	fluxhttp "github.com/InfluxCommunity/flux/dependencies/http"
+	"github.com/InfluxCommunity/flux/dependencies/url"
+	_ "github.com/InfluxCommunity/flux/fluxinit/static"
+	"github.com/InfluxCommunity/flux/internal/errors"
+	"github.com/InfluxCommunity/flux/runtime"
 	"github.com/google/go-cmp/cmp"
-	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/codes"
-	fluxhttp "github.com/influxdata/flux/dependencies/http"
-	"github.com/influxdata/flux/dependencies/url"
-	_ "github.com/influxdata/flux/fluxinit/static"
-	"github.com/influxdata/flux/internal/errors"
-	"github.com/influxdata/flux/runtime"
 )
 
 func TestPost(t *testing.T) {

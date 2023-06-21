@@ -22,8 +22,8 @@ pub fn build_sem_packages<'a>(
     sem_pkgs: crate::semantic::bootstrap::SemanticPackageMap,
 ) -> flatbuffers::WIPOffset<fbsemantic::PackageList<'a>> {
     let packages: Vec<_> = sem_pkgs
-        .into_iter()
-        .map(|(_, pkg)| serialize_pkg_into(&pkg, builder).unwrap())
+        .into_values()
+        .map(|pkg| serialize_pkg_into(&pkg, builder).unwrap())
         .collect::<Vec<_>>();
     let packages = builder.create_vector(packages.as_slice());
 
@@ -53,9 +53,9 @@ pub fn serialize_pkg_into<'a>(
 }
 
 /// Serializes a [`semantic::nodes::Package`] into an existing builder.
-fn serialize<'a, 'b>(
+fn serialize<'a>(
     semantic_pkg: &semantic::nodes::Package,
-    builder: &'b mut flatbuffers::FlatBufferBuilder<'a>,
+    builder: &mut flatbuffers::FlatBufferBuilder<'a>,
 ) -> Result<flatbuffers::WIPOffset<fbsemantic::Package<'a>>> {
     let mut v = SerializingVisitor::with_builder(builder);
     walk::walk(&mut v, walk::Node::Package(semantic_pkg));

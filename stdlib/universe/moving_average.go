@@ -1,18 +1,18 @@
 package universe
 
 import (
+	"github.com/InfluxCommunity/flux"
+	"github.com/InfluxCommunity/flux/array"
+	"github.com/InfluxCommunity/flux/arrow"
+	"github.com/InfluxCommunity/flux/codes"
+	"github.com/InfluxCommunity/flux/execute"
+	"github.com/InfluxCommunity/flux/execute/table"
+	"github.com/InfluxCommunity/flux/internal/errors"
+	"github.com/InfluxCommunity/flux/plan"
+	"github.com/InfluxCommunity/flux/runtime"
 	stdarrow "github.com/apache/arrow/go/v7/arrow"
 	"github.com/apache/arrow/go/v7/arrow/bitutil"
 	"github.com/apache/arrow/go/v7/arrow/memory"
-	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/array"
-	"github.com/influxdata/flux/arrow"
-	"github.com/influxdata/flux/codes"
-	"github.com/influxdata/flux/execute"
-	"github.com/influxdata/flux/execute/table"
-	"github.com/influxdata/flux/internal/errors"
-	"github.com/influxdata/flux/plan"
-	"github.com/influxdata/flux/runtime"
 )
 
 const MovingAverageKind = "movingAverage"
@@ -373,7 +373,7 @@ func (m *movingAverageState) forceValue() error {
 				b.Append(arr.Value(arr.Len() - 1))
 			case *array.StringBuilder:
 				arr := arr.(*array.String)
-				b.Append(arr.Value(arr.Len() - 1))
+				b.AppendBytes(arr.ValueBytes(arr.Len() - 1))
 			case *array.BooleanBuilder:
 				arr := arr.(*array.Boolean)
 				b.Append(arr.Value(arr.Len() - 1))

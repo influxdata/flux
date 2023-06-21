@@ -7,8 +7,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/values"
+	"github.com/InfluxCommunity/flux"
+	"github.com/InfluxCommunity/flux/values"
 )
 
 const fixedWidthTimeFmt = "2006-01-02T15:04:05.000000000Z"
@@ -251,7 +251,7 @@ func (f *Formatter) valueBuf(i, j int, typ flux.ColType, cr flux.ColReader) []by
 		}
 	case flux.TString:
 		if cr.Strings(j).IsValid(i) {
-			buf = []byte(cr.Strings(j).Value(i))
+			buf = cr.Strings(j).ValueBytes(i)
 		}
 	case flux.TTime:
 		if cr.Times(j).IsValid(i) {

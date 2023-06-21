@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/influxdata/flux/plan"
-	"github.com/influxdata/flux/plan/plantest"
+	"github.com/InfluxCommunity/flux/plan"
+	"github.com/InfluxCommunity/flux/plan/plantest"
 	"github.com/stretchr/testify/require"
 )
 

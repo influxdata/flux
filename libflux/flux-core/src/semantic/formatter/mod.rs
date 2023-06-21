@@ -66,16 +66,16 @@ impl Formatter {
     }
 
     fn write_string(&mut self, s: &str) {
-        (&mut self.builder).push_str(s);
+        self.builder.push_str(s);
     }
 
     fn write_rune(&mut self, c: char) {
-        (&mut self.builder).push(c);
+        self.builder.push(c);
     }
 
     fn write_indent(&mut self) {
         for _ in 0..self.indentation {
-            (&mut self.builder).push_str(INDENT_BYTES);
+            self.builder.push_str(INDENT_BYTES);
         }
     }
     fn indent(&mut self) {
@@ -222,7 +222,7 @@ impl Formatter {
                 true => ",\n",
                 false => ", ",
             };
-            for (i, c) in (&n.vars).iter().enumerate() {
+            for (i, c) in n.vars.iter().enumerate() {
                 if i != 0 {
                     self.write_string(sep);
                     if multiline {
@@ -325,7 +325,7 @@ impl Formatter {
             true => ",\n",
             false => ", ",
         };
-        for (i, item) in (&n.elements).iter().enumerate() {
+        for (i, item) in n.elements.iter().enumerate() {
             if i != 0 {
                 self.write_string(sep);
                 if multiline {
@@ -356,7 +356,7 @@ impl Formatter {
             false => ", ",
         };
         if !n.elements.is_empty() {
-            for (i, item) in (&n.elements).iter().enumerate() {
+            for (i, item) in n.elements.iter().enumerate() {
                 if i != 0 {
                     self.write_string(sep);
                     if multiline {
@@ -501,7 +501,7 @@ impl Formatter {
             true => ",\n",
             false => ", ",
         };
-        for (i, property) in (&n.properties).iter().enumerate() {
+        for (i, property) in n.properties.iter().enumerate() {
             if i != 0 {
                 self.write_string(sep);
                 if multiline {
@@ -534,7 +534,7 @@ impl Formatter {
         } else {
             sep = ", ";
         }
-        for (i, function_parameter) in (&n.params).iter().enumerate() {
+        for (i, function_parameter) in n.params.iter().enumerate() {
             if i != 0 {
                 self.write_string(sep);
                 if multiline {

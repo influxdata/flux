@@ -4,12 +4,12 @@ import (
 	"context"
 	"testing"
 
-	"github.com/influxdata/flux/dependencies/dependenciestest"
-	"github.com/influxdata/flux/dependency"
-	"github.com/influxdata/flux/execute"
-	"github.com/influxdata/flux/runtime"
-	"github.com/influxdata/flux/stdlib/experimental"
-	"github.com/influxdata/flux/values"
+	"github.com/InfluxCommunity/flux/dependencies/dependenciestest"
+	"github.com/InfluxCommunity/flux/dependency"
+	"github.com/InfluxCommunity/flux/execute"
+	"github.com/InfluxCommunity/flux/runtime"
+	"github.com/InfluxCommunity/flux/stdlib/experimental"
+	"github.com/InfluxCommunity/flux/values"
 )
 
 var table1 = `

@@ -4,13 +4,13 @@ import (
 	"context"
 	"testing"
 
-	"github.com/influxdata/flux/dependency"
-	"github.com/influxdata/flux/execute"
-	"github.com/influxdata/flux/execute/executetest"
-	"github.com/influxdata/flux/plan"
-	"github.com/influxdata/flux/plan/plantest"
-	"github.com/influxdata/flux/stdlib/influxdata/influxdb"
-	"github.com/influxdata/flux/stdlib/universe"
+	"github.com/InfluxCommunity/flux/dependency"
+	"github.com/InfluxCommunity/flux/execute"
+	"github.com/InfluxCommunity/flux/execute/executetest"
+	"github.com/InfluxCommunity/flux/plan"
+	"github.com/InfluxCommunity/flux/plan/plantest"
+	"github.com/InfluxCommunity/flux/stdlib/influxdata/influxdb"
+	"github.com/InfluxCommunity/flux/stdlib/universe"
 )
 
 func TestSortLimitRule(t *testing.T) {

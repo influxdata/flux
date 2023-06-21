@@ -3,7 +3,7 @@ package experimental_test
 import (
 	"testing"
 
-	"github.com/influxdata/flux/querytest"
+	"github.com/InfluxCommunity/flux/querytest"
 )
 
 func TestExperimentalJoin_Errors(t *testing.T) {

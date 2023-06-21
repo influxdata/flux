@@ -5,8 +5,8 @@ import (
 	"strconv"
 	"testing"
 
+	"github.com/InfluxCommunity/flux/internal/operation"
 	"github.com/google/go-cmp/cmp"
-	"github.com/influxdata/flux/internal/operation"
 )
 
 func TestSpec_Walk(t *testing.T) {

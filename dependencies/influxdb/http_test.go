@@ -11,13 +11,13 @@ import (
 	"testing"
 	"time"
 
+	"github.com/InfluxCommunity/flux"
+	"github.com/InfluxCommunity/flux/codes"
+	"github.com/InfluxCommunity/flux/dependencies/dependenciestest"
+	"github.com/InfluxCommunity/flux/dependencies/influxdb"
+	"github.com/InfluxCommunity/flux/dependency"
+	influxdb2 "github.com/InfluxCommunity/flux/stdlib/influxdata/influxdb"
 	"github.com/google/go-cmp/cmp"
-	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/codes"
-	"github.com/influxdata/flux/dependencies/dependenciestest"
-	"github.com/influxdata/flux/dependencies/influxdb"
-	"github.com/influxdata/flux/dependency"
-	influxdb2 "github.com/influxdata/flux/stdlib/influxdata/influxdb"
 )
 
 type RoundTrip struct {

@@ -6,11 +6,11 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/InfluxCommunity/flux/ast"
+	"github.com/InfluxCommunity/flux/internal/fbsemantic"
+	"github.com/InfluxCommunity/flux/semantic"
 	flatbuffers "github.com/google/flatbuffers/go"
 	"github.com/google/go-cmp/cmp"
-	"github.com/influxdata/flux/ast"
-	"github.com/influxdata/flux/internal/fbsemantic"
-	"github.com/influxdata/flux/semantic"
 )
 
 var cmpOpts = []cmp.Option{

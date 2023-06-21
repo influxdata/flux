@@ -5,10 +5,10 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/ast"
-	"github.com/influxdata/flux/internal/token"
-	"github.com/influxdata/flux/libflux/go/libflux"
+	"github.com/InfluxCommunity/flux"
+	"github.com/InfluxCommunity/flux/ast"
+	"github.com/InfluxCommunity/flux/internal/token"
+	"github.com/InfluxCommunity/flux/libflux/go/libflux"
 )
 
 const defaultPackageName = "main"

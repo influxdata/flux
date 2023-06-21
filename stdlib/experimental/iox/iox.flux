@@ -57,10 +57,6 @@ builtin sql : (bucket: string, query: string) => stream[A] where A: Record
 
 // sqlInterval converts a duration value to a SQL interval string.
 //
-// SQL interval strings support down to millisecond precision.
-// Any microsecond or nanosecond duration units are dropped from the duration value.
-// If the duration only consists of microseconds or nanosecond units,
-// `iox.sqlInterval()` returns `1 millisecond`.
 // Duration values must be positive to work as a SQL interval string.
 //
 // ## Parameters
@@ -83,12 +79,12 @@ builtin sql : (bucket: string, query: string) => stream[A] where A: Record
 // windowInterval = 1d12h
 // sqlQuery = "
 // SELECT
-//   DATE_BIN(INTERVAL '${iox.sqlInterval(d: windowInterval)}', time, TIMESTAMP '2023-01-01T00:00:00Z')
+//   DATE_BIN(INTERVAL '${iox.sqlInterval(d: windowInterval)}', time, TIMESTAMP '2023-01-01T00:00:00Z') AS time_bin,
 //   COUNT(field1)
 // FROM
 //   measurement
 // GROUP BY
-//   time
+//   time_bin
 // "
 //
 // iox.sql(bucket: "example-bucket", query: sqlQuery)
@@ -101,8 +97,9 @@ sqlInterval = (d) => {
     _durationString = string(v: d)
     _pipeRegex = (v=<-, r, t) => regexp.replaceAllString(v: v, r: r, t: t)
     _intervalString =
-        _pipeRegex(v: _durationString, r: /[\d]+(us|ns)/, t: "")
-            |> _pipeRegex(r: /([^\d]+)/, t: " $1 ")
+        _pipeRegex(v: _durationString, r: /([^\d]+)/, t: " $1 ")
+            |> _pipeRegex(r: / ns /, t: " nanoseconds ")
+            |> _pipeRegex(r: / us /, t: " microseconds ")
             |> _pipeRegex(r: / ms /, t: " milliseconds ")
             |> _pipeRegex(r: / s /, t: " seconds ")
             |> _pipeRegex(r: / m /, t: " minutes ")
@@ -111,7 +108,6 @@ sqlInterval = (d) => {
             |> _pipeRegex(r: / w /, t: " weeks ")
             |> _pipeRegex(r: / mo /, t: " months ")
             |> _pipeRegex(r: / y /, t: " years ")
-    _output = if _intervalString == "" then "1 millisecond" else _intervalString
 
-    return strings.trimSpace(v: _output)
+    return strings.trimSpace(v: _intervalString)
 }

@@ -9,7 +9,7 @@ package arrowutil
 import (
 	"fmt"
 
-	"github.com/influxdata/flux/array"
+	"github.com/InfluxCommunity/flux/array"
 )
 
 // CompareFunc defines the interface for a comparison function.

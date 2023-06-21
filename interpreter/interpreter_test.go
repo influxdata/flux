@@ -5,19 +5,19 @@ import (
 	"regexp"
 	"testing"
 
+	"github.com/InfluxCommunity/flux"
+	"github.com/InfluxCommunity/flux/ast"
+	"github.com/InfluxCommunity/flux/codes"
+	"github.com/InfluxCommunity/flux/dependencies/dependenciestest"
+	"github.com/InfluxCommunity/flux/dependency"
+	"github.com/InfluxCommunity/flux/execute/executetest"
+	"github.com/InfluxCommunity/flux/interpreter"
+	"github.com/InfluxCommunity/flux/repl"
+	"github.com/InfluxCommunity/flux/runtime"
+	"github.com/InfluxCommunity/flux/semantic"
+	"github.com/InfluxCommunity/flux/semantic/semantictest"
+	"github.com/InfluxCommunity/flux/values"
 	"github.com/google/go-cmp/cmp"
-	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/ast"
-	"github.com/influxdata/flux/codes"
-	"github.com/influxdata/flux/dependencies/dependenciestest"
-	"github.com/influxdata/flux/dependency"
-	"github.com/influxdata/flux/execute/executetest"
-	"github.com/influxdata/flux/interpreter"
-	"github.com/influxdata/flux/repl"
-	"github.com/influxdata/flux/runtime"
-	"github.com/influxdata/flux/semantic"
-	"github.com/influxdata/flux/semantic/semantictest"
-	"github.com/influxdata/flux/values"
 )
 
 var prelude = `
@@ -883,8 +883,8 @@ func TestStack(t *testing.T) {
 			FunctionName: "window",
 			Location: ast.SourceLocation{
 				File:   "universe/universe.flux",
-				Start:  ast.Position{Line: 3895, Column: 12},
-				End:    ast.Position{Line: 3895, Column: 51},
+				Start:  ast.Position{Line: 3904, Column: 12},
+				End:    ast.Position{Line: 3904, Column: 51},
 				Source: `window(every: inf, timeColumn: timeDst)`,
 			},
 		},

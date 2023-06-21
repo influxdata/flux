@@ -3,8 +3,8 @@ package ast_test
 import (
 	"testing"
 
+	"github.com/InfluxCommunity/flux/ast"
 	"github.com/google/go-cmp/cmp"
-	"github.com/influxdata/flux/ast"
 )
 
 func TestDurationLiteralString(t *testing.T) {

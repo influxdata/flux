@@ -4,12 +4,12 @@ import (
 	"testing"
 	"time"
 
+	"github.com/InfluxCommunity/flux/codes"
+	"github.com/InfluxCommunity/flux/execute"
+	"github.com/InfluxCommunity/flux/internal/errors"
+	"github.com/InfluxCommunity/flux/interval"
+	"github.com/InfluxCommunity/flux/values"
 	"github.com/google/go-cmp/cmp"
-	"github.com/influxdata/flux/codes"
-	"github.com/influxdata/flux/execute"
-	"github.com/influxdata/flux/internal/errors"
-	"github.com/influxdata/flux/interval"
-	"github.com/influxdata/flux/values"
 )
 
 func TestNewWindow(t *testing.T) {

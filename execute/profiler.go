@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/memory"
-	"github.com/influxdata/flux/values"
+	"github.com/InfluxCommunity/flux"
+	"github.com/InfluxCommunity/flux/memory"
+	"github.com/InfluxCommunity/flux/values"
 )
 
 type Profiler interface {

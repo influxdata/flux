@@ -1,9 +1,9 @@
 package edit
 
 import (
-	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/ast"
-	"github.com/influxdata/flux/codes"
+	"github.com/InfluxCommunity/flux"
+	"github.com/InfluxCommunity/flux/ast"
+	"github.com/InfluxCommunity/flux/codes"
 )
 
 // OptionNotFoundError variable is to handle the error gracefully in the client code

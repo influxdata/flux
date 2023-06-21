@@ -30,8 +30,8 @@ import (
 )
 
 func inFlux(path string) bool {
-	return path == "github.com/influxdata/flux" ||
-		strings.HasPrefix(path, "github.com/influxdata/flux/")
+	return path == "github.com/InfluxCommunity/flux" ||
+		strings.HasPrefix(path, "github.com/InfluxCommunity/flux/")
 }
 
 func shorten(targ string) string {
@@ -112,7 +112,7 @@ func showFluxUsage(args []string) error {
 			packages.NeedCompiledGoFiles |
 			packages.NeedImports |
 			packages.NeedDeps |
-			packages.NeedExportsFile |
+			packages.NeedExportFile |
 			packages.NeedTypes |
 			packages.NeedSyntax |
 			packages.NeedTypesInfo |

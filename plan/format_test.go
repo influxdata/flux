@@ -4,14 +4,14 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/InfluxCommunity/flux/execute/executetest"
+	"github.com/InfluxCommunity/flux/interpreter"
+	"github.com/InfluxCommunity/flux/plan"
+	"github.com/InfluxCommunity/flux/plan/plantest"
+	"github.com/InfluxCommunity/flux/plan/plantest/spec"
+	"github.com/InfluxCommunity/flux/stdlib/influxdata/influxdb"
+	"github.com/InfluxCommunity/flux/stdlib/universe"
 	"github.com/andreyvit/diff"
-	"github.com/influxdata/flux/execute/executetest"
-	"github.com/influxdata/flux/interpreter"
-	"github.com/influxdata/flux/plan"
-	"github.com/influxdata/flux/plan/plantest"
-	"github.com/influxdata/flux/plan/plantest/spec"
-	"github.com/influxdata/flux/stdlib/influxdata/influxdb"
-	"github.com/influxdata/flux/stdlib/universe"
 )
 
 func TestFormatted(t *testing.T) {

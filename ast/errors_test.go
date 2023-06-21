@@ -4,9 +4,9 @@ import (
 	"bytes"
 	"testing"
 
-	"github.com/influxdata/flux/ast"
-	"github.com/influxdata/flux/codes"
-	"github.com/influxdata/flux/internal/errors"
+	"github.com/InfluxCommunity/flux/ast"
+	"github.com/InfluxCommunity/flux/codes"
+	"github.com/InfluxCommunity/flux/internal/errors"
 )
 
 func TestPrintErrors(t *testing.T) {

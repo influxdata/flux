@@ -7,10 +7,10 @@
 package universe
 
 import (
+	"github.com/InfluxCommunity/flux"
+	"github.com/InfluxCommunity/flux/array"
+	"github.com/InfluxCommunity/flux/arrow"
 	"github.com/apache/arrow/go/v7/arrow/memory"
-	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/array"
-	"github.com/influxdata/flux/arrow"
 )
 
 type derivativeInt struct {

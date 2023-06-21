@@ -9,14 +9,14 @@ import (
 	"context"
 	"testing"
 
-	"github.com/influxdata/flux/dependency"
-	fluxstdlibstrings "github.com/influxdata/flux/stdlib/strings"
+	"github.com/InfluxCommunity/flux/dependency"
+	fluxstdlibstrings "github.com/InfluxCommunity/flux/stdlib/strings"
 
-	"github.com/influxdata/flux/dependencies/dependenciestest"
-	_ "github.com/influxdata/flux/fluxinit/static"
-	"github.com/influxdata/flux/runtime"
-	"github.com/influxdata/flux/semantic"
-	"github.com/influxdata/flux/values"
+	"github.com/InfluxCommunity/flux/dependencies/dependenciestest"
+	_ "github.com/InfluxCommunity/flux/fluxinit/static"
+	"github.com/InfluxCommunity/flux/runtime"
+	"github.com/InfluxCommunity/flux/semantic"
+	"github.com/InfluxCommunity/flux/values"
 )
 
 func TestJoinStr_ReceiveTableObjectIsError(t *testing.T) {

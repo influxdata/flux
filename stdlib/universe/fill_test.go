@@ -6,23 +6,23 @@ import (
 	"testing"
 	"time"
 
-	"github.com/influxdata/flux/dependencies/dependenciestest"
-	"github.com/influxdata/flux/dependency"
-	"github.com/influxdata/flux/internal/gen"
-	"github.com/influxdata/flux/internal/operation"
-	"github.com/influxdata/flux/memory"
-	"github.com/influxdata/flux/semantic"
-	"github.com/influxdata/flux/values"
+	"github.com/InfluxCommunity/flux/dependencies/dependenciestest"
+	"github.com/InfluxCommunity/flux/dependency"
+	"github.com/InfluxCommunity/flux/internal/gen"
+	"github.com/InfluxCommunity/flux/internal/operation"
+	"github.com/InfluxCommunity/flux/memory"
+	"github.com/InfluxCommunity/flux/semantic"
+	"github.com/InfluxCommunity/flux/values"
 
-	"github.com/influxdata/flux/stdlib/influxdata/influxdb"
+	"github.com/InfluxCommunity/flux/stdlib/influxdata/influxdb"
 
-	"github.com/influxdata/flux/plan"
+	"github.com/InfluxCommunity/flux/plan"
 
-	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/execute"
-	"github.com/influxdata/flux/execute/executetest"
-	"github.com/influxdata/flux/querytest"
-	"github.com/influxdata/flux/stdlib/universe"
+	"github.com/InfluxCommunity/flux"
+	"github.com/InfluxCommunity/flux/execute"
+	"github.com/InfluxCommunity/flux/execute/executetest"
+	"github.com/InfluxCommunity/flux/querytest"
+	"github.com/InfluxCommunity/flux/stdlib/universe"
 )
 
 func TestFill_NewQuery(t *testing.T) {

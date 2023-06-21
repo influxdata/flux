@@ -21,7 +21,7 @@ builtin _lastSuccess : (orTime: T, lastSuccessTime: time) => time where T: Timea
 // or the value of the `orTime` parameter if the task has never successfully run.
 //
 // ## Parameters
-// - orTime: Defualt time value returned if the task has never successfully run.
+// - orTime: Default time value returned if the task has never successfully run.
 //
 // ## Examples
 //

@@ -10,14 +10,14 @@ import (
 	"testing"
 	"time"
 
+	"github.com/InfluxCommunity/flux"
+	"github.com/InfluxCommunity/flux/csv"
+	"github.com/InfluxCommunity/flux/execute/executetest"
+	"github.com/InfluxCommunity/flux/memory"
+	"github.com/InfluxCommunity/flux/values"
 	"github.com/andreyvit/diff"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
-	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/csv"
-	"github.com/influxdata/flux/execute/executetest"
-	"github.com/influxdata/flux/memory"
-	"github.com/influxdata/flux/values"
 )
 
 type TestCase struct {

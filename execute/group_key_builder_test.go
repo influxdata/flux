@@ -3,11 +3,11 @@ package execute_test
 import (
 	"testing"
 
+	"github.com/InfluxCommunity/flux"
+	"github.com/InfluxCommunity/flux/values"
 	"github.com/google/go-cmp/cmp"
-	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/values"
 
-	"github.com/influxdata/flux/execute"
+	"github.com/InfluxCommunity/flux/execute"
 )
 
 func TestGroupKeyBuilder_Empty(t *testing.T) {

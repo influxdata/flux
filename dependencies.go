@@ -6,13 +6,13 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/influxdata/flux/codes"
-	"github.com/influxdata/flux/dependencies/filesystem"
-	"github.com/influxdata/flux/dependencies/http"
-	"github.com/influxdata/flux/dependencies/secret"
-	"github.com/influxdata/flux/dependencies/url"
-	"github.com/influxdata/flux/dependency"
-	"github.com/influxdata/flux/internal/errors"
+	"github.com/InfluxCommunity/flux/codes"
+	"github.com/InfluxCommunity/flux/dependencies/filesystem"
+	"github.com/InfluxCommunity/flux/dependencies/http"
+	"github.com/InfluxCommunity/flux/dependencies/secret"
+	"github.com/InfluxCommunity/flux/dependencies/url"
+	"github.com/InfluxCommunity/flux/dependency"
+	"github.com/InfluxCommunity/flux/internal/errors"
 )
 
 var _ Dependencies = (*Deps)(nil)

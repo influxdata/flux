@@ -6,16 +6,16 @@ import (
 	"testing"
 	"time"
 
+	"github.com/InfluxCommunity/flux"
+	"github.com/InfluxCommunity/flux/codes"
+	"github.com/InfluxCommunity/flux/compiler"
+	_ "github.com/InfluxCommunity/flux/fluxinit/static"
+	"github.com/InfluxCommunity/flux/internal/errors"
+	"github.com/InfluxCommunity/flux/runtime"
+	"github.com/InfluxCommunity/flux/semantic"
+	"github.com/InfluxCommunity/flux/semantic/semantictest"
+	"github.com/InfluxCommunity/flux/values"
 	"github.com/google/go-cmp/cmp"
-	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/codes"
-	"github.com/influxdata/flux/compiler"
-	_ "github.com/influxdata/flux/fluxinit/static"
-	"github.com/influxdata/flux/internal/errors"
-	"github.com/influxdata/flux/runtime"
-	"github.com/influxdata/flux/semantic"
-	"github.com/influxdata/flux/semantic/semantictest"
-	"github.com/influxdata/flux/values"
 )
 
 var CmpOptions = semantictest.CmpOptions

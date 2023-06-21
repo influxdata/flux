@@ -9,10 +9,10 @@ package universe
 import (
 	"fmt"
 
+	"github.com/InfluxCommunity/flux"
+	"github.com/InfluxCommunity/flux/array"
+	"github.com/InfluxCommunity/flux/values"
 	arrowmem "github.com/apache/arrow/go/v7/arrow/memory"
-	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/array"
-	"github.com/influxdata/flux/values"
 )
 
 func (t *fillTransformation) fillColumn(typ flux.ColType, arr array.Array, fillValue *interface{}, mem arrowmem.Allocator) array.Array {

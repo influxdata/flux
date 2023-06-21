@@ -6,15 +6,15 @@ import (
 	"math"
 	"testing"
 
+	"github.com/InfluxCommunity/flux/compiler"
+	"github.com/InfluxCommunity/flux/execute/executetest"
+	"github.com/InfluxCommunity/flux/internal/pkg/feature"
+	"github.com/InfluxCommunity/flux/memory"
+	"github.com/InfluxCommunity/flux/runtime"
+	"github.com/InfluxCommunity/flux/semantic"
+	"github.com/InfluxCommunity/flux/values"
 	arrow "github.com/apache/arrow/go/v7/arrow/memory"
 	"github.com/google/go-cmp/cmp"
-	"github.com/influxdata/flux/compiler"
-	"github.com/influxdata/flux/execute/executetest"
-	"github.com/influxdata/flux/internal/pkg/feature"
-	"github.com/influxdata/flux/memory"
-	"github.com/influxdata/flux/runtime"
-	"github.com/influxdata/flux/semantic"
-	"github.com/influxdata/flux/values"
 )
 
 func vectorizedObjectFromMap(mp map[string]interface{}, mem memory.Allocator) values.Object {

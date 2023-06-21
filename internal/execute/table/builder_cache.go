@@ -1,7 +1,7 @@
 package table
 
 import (
-	"github.com/influxdata/flux/execute/table"
+	"github.com/InfluxCommunity/flux/execute/table"
 )
 
 type (

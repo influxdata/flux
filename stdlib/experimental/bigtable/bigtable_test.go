@@ -7,17 +7,17 @@ import (
 	"time"
 
 	"cloud.google.com/go/bigtable"
+	"github.com/InfluxCommunity/flux"
+	"github.com/InfluxCommunity/flux/execute"
+	"github.com/InfluxCommunity/flux/execute/executetest"
+	_ "github.com/InfluxCommunity/flux/fluxinit/static"
+	"github.com/InfluxCommunity/flux/interpreter"
+	"github.com/InfluxCommunity/flux/mock"
+	"github.com/InfluxCommunity/flux/plan"
+	fbt "github.com/InfluxCommunity/flux/stdlib/experimental/bigtable"
+	"github.com/InfluxCommunity/flux/stdlib/universe"
+	"github.com/InfluxCommunity/flux/values"
 	"github.com/google/go-cmp/cmp"
-	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/execute"
-	"github.com/influxdata/flux/execute/executetest"
-	_ "github.com/influxdata/flux/fluxinit/static"
-	"github.com/influxdata/flux/interpreter"
-	"github.com/influxdata/flux/mock"
-	"github.com/influxdata/flux/plan"
-	fbt "github.com/influxdata/flux/stdlib/experimental/bigtable"
-	"github.com/influxdata/flux/stdlib/universe"
-	"github.com/influxdata/flux/values"
 )
 
 func TestBigtableDecode(t *testing.T) {

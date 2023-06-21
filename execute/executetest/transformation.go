@@ -7,16 +7,16 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/InfluxCommunity/flux"
+	"github.com/InfluxCommunity/flux/codes"
+	"github.com/InfluxCommunity/flux/dependencies/dependenciestest"
+	"github.com/InfluxCommunity/flux/dependencies/url"
+	"github.com/InfluxCommunity/flux/execute"
+	"github.com/InfluxCommunity/flux/internal/errors"
+	"github.com/InfluxCommunity/flux/memory"
+	"github.com/InfluxCommunity/flux/plan"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
-	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/codes"
-	"github.com/influxdata/flux/dependencies/dependenciestest"
-	"github.com/influxdata/flux/dependencies/url"
-	"github.com/influxdata/flux/execute"
-	"github.com/influxdata/flux/internal/errors"
-	"github.com/influxdata/flux/memory"
-	"github.com/influxdata/flux/plan"
 	"gonum.org/v1/gonum/floats/scalar"
 )
 
@@ -142,7 +142,7 @@ func ProcessTestHelper2(
 		}
 	}()
 
-	alloc := &memory.ResourceAllocator{}
+	alloc := UnlimitedAllocator
 	store := NewDataStore()
 	tx, d := create(RandomDatasetID(), alloc)
 	d.SetTriggerSpec(plan.DefaultTriggerSpec)
@@ -386,6 +386,7 @@ type CreateNewTransformationWithDeps func(d execute.Dataset, deps flux.Dependenc
 
 func (test *TfUrlValidationTest) Run(t *testing.T) {
 	for _, tc := range test.Cases {
+		tc := tc
 		t.Run(tc.Name, func(t *testing.T) {
 			t.Parallel()
 			d := NewDataset(RandomDatasetID())

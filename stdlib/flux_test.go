@@ -8,16 +8,16 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/InfluxCommunity/flux"
+	"github.com/InfluxCommunity/flux/ast"
+	"github.com/InfluxCommunity/flux/dependency"
+	"github.com/InfluxCommunity/flux/execute"
+	"github.com/InfluxCommunity/flux/execute/executetest"
+	"github.com/InfluxCommunity/flux/lang"
+	"github.com/InfluxCommunity/flux/memory"
+	"github.com/InfluxCommunity/flux/runtime"
+	"github.com/InfluxCommunity/flux/stdlib"
 	arrowmem "github.com/apache/arrow/go/v7/arrow/memory"
-	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/ast"
-	"github.com/influxdata/flux/dependency"
-	"github.com/influxdata/flux/execute"
-	"github.com/influxdata/flux/execute/executetest"
-	"github.com/influxdata/flux/lang"
-	"github.com/influxdata/flux/memory"
-	"github.com/influxdata/flux/runtime"
-	"github.com/influxdata/flux/stdlib"
 )
 
 func init() {
@@ -30,29 +30,29 @@ var skip = map[string]map[string]string{
 		"string_max":                  "error: invalid use of function: *functions.MaxSelector has no implementation for type string (https://github.com/influxdata/platform/issues/224)",
 		"null_as_value":               "null not supported as value in influxql (https://github.com/influxdata/platform/issues/353)",
 		"string_interp":               "string interpolation not working as expected in flux (https://github.com/influxdata/platform/issues/404)",
-		"to":                          "to functions are not supported in the testing framework (https://github.com/influxdata/flux/issues/77)",
-		"covariance_missing_column_1": "need to support known errors in new test framework (https://github.com/influxdata/flux/issues/536)",
-		"covariance_missing_column_2": "need to support known errors in new test framework (https://github.com/influxdata/flux/issues/536)",
-		"drop_before_rename":          "need to support known errors in new test framework (https://github.com/influxdata/flux/issues/536)",
-		"drop_referenced":             "need to support known errors in new test framework (https://github.com/influxdata/flux/issues/536)",
-		"yield":                       "yield requires special test case (https://github.com/influxdata/flux/issues/535)",
-		"task_per_line":               "join produces inconsistent/racy results when table schemas do not match (https://github.com/influxdata/flux/issues/855)",
+		"to":                          "to functions are not supported in the testing framework (https://github.com/InfluxCommunity/flux/issues/77)",
+		"covariance_missing_column_1": "need to support known errors in new test framework (https://github.com/InfluxCommunity/flux/issues/536)",
+		"covariance_missing_column_2": "need to support known errors in new test framework (https://github.com/InfluxCommunity/flux/issues/536)",
+		"drop_before_rename":          "need to support known errors in new test framework (https://github.com/InfluxCommunity/flux/issues/536)",
+		"drop_referenced":             "need to support known errors in new test framework (https://github.com/InfluxCommunity/flux/issues/536)",
+		"yield":                       "yield requires special test case (https://github.com/InfluxCommunity/flux/issues/535)",
+		"task_per_line":               "join produces inconsistent/racy results when table schemas do not match (https://github.com/InfluxCommunity/flux/issues/855)",
 		"integral_columns":            "aggregates changed to operate on just a single column",
 	},
 	"http": {
-		"http_endpoint": "need ability to test side effects in e2e tests: https://github.com/influxdata/flux/issues/1723)",
+		"http_endpoint": "need ability to test side effects in e2e tests: https://github.com/InfluxCommunity/flux/issues/1723)",
 	},
 	"interval": {
-		"interval": "switch these tests cases to produce a non-table stream once that is supported (https://github.com/influxdata/flux/issues/535)",
+		"interval": "switch these tests cases to produce a non-table stream once that is supported (https://github.com/InfluxCommunity/flux/issues/535)",
 	},
 	"testing/chronograf": {
-		"measurement_tag_keys":   "unskip chronograf flux tests once filter is refactored (https://github.com/influxdata/flux/issues/1289)",
-		"aggregate_window_mean":  "unskip chronograf flux tests once filter is refactored (https://github.com/influxdata/flux/issues/1289)",
-		"aggregate_window_count": "unskip chronograf flux tests once filter is refactored (https://github.com/influxdata/flux/issues/1289)",
+		"measurement_tag_keys":   "unskip chronograf flux tests once filter is refactored (https://github.com/InfluxCommunity/flux/issues/1289)",
+		"aggregate_window_mean":  "unskip chronograf flux tests once filter is refactored (https://github.com/InfluxCommunity/flux/issues/1289)",
+		"aggregate_window_count": "unskip chronograf flux tests once filter is refactored (https://github.com/InfluxCommunity/flux/issues/1289)",
 	},
 	"testing/pandas": {
-		"extract_regexp_findStringIndex": "pandas. map does not correctly handled returned arrays (https://github.com/influxdata/flux/issues/1387)",
-		"partition_strings_splitN":       "pandas. map does not correctly handled returned arrays (https://github.com/influxdata/flux/issues/1387)",
+		"extract_regexp_findStringIndex": "pandas. map does not correctly handled returned arrays (https://github.com/InfluxCommunity/flux/issues/1387)",
+		"partition_strings_splitN":       "pandas. map does not correctly handled returned arrays (https://github.com/InfluxCommunity/flux/issues/1387)",
 	},
 }
 

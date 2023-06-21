@@ -1,8 +1,8 @@
 package semantic
 
 import (
-	"github.com/influxdata/flux/codes"
-	"github.com/influxdata/flux/internal/errors"
+	"github.com/InfluxCommunity/flux/codes"
+	"github.com/InfluxCommunity/flux/internal/errors"
 )
 
 func Walk(v Visitor, node Node) {

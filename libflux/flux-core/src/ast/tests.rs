@@ -1,6 +1,6 @@
 // NOTE: These test cases directly match ast/json_test.go.
 // Every test is preceded by the correspondent test case in golang.
-use chrono::TimeZone;
+use chrono::{NaiveDate, TimeZone};
 
 use super::*;
 
@@ -1960,11 +1960,15 @@ fn test_json_duration_literal() {
 // and it will be parsed by the Go backend.
 #[test]
 fn test_json_datetime_literal() {
+    let utc_datetime = NaiveDate::from_ymd_opt(2017, 8, 8)
+        .unwrap()
+        .and_hms_nano_opt(8, 8, 8, 8)
+        .unwrap();
     let n = Expression::DateTime(DateTimeLit {
         base: BaseNode::default(),
-        value: FixedOffset::east(0)
-            .ymd(2017, 8, 8)
-            .and_hms_nano(8, 8, 8, 8),
+        value: FixedOffset::east_opt(0)
+            .unwrap()
+            .from_utc_datetime(&utc_datetime),
     });
     let serialized = serde_json::to_string(&n).unwrap();
     assert_eq!(

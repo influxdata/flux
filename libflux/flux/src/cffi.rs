@@ -8,7 +8,7 @@ use std::{
 
 use anyhow::anyhow;
 use fluxcore::{
-    ast,
+    ast::{self, BaseNode},
     errors::SalvageResult,
     formatter, merge_packages,
     parser::Parser,
@@ -45,8 +45,9 @@ pub struct ErrorHandle {
 
 impl From<Error> for Box<ErrorHandle> {
     fn from(err: Error) -> Self {
+        let msg = err.to_string().replace('\0', "\\0");
         Box::new(ErrorHandle {
-            message: CString::new(format!("{}", err)).unwrap(),
+            message: CString::new(msg).unwrap(),
             err,
         })
     }
@@ -123,10 +124,38 @@ pub unsafe extern "C" fn flux_parse(
     cfname: *const c_char,
     csrc: *const c_char,
 ) -> Box<ast::Package> {
-    let fname = String::from_utf8(CStr::from_ptr(cfname).to_bytes().to_vec()).unwrap();
-    let src = String::from_utf8(CStr::from_ptr(csrc).to_bytes().to_vec()).unwrap();
-    let pkg = parse(fname, &src);
+    let pkg = catch_unwind(|| {
+        let fname = match String::from_utf8(CStr::from_ptr(cfname).to_bytes().to_vec()) {
+            Err(e) => return err_pkg(format!("flux file name: {}", e)),
+            Ok(s) => s,
+        };
+        let src = match String::from_utf8(CStr::from_ptr(csrc).to_bytes().to_vec()) {
+            Err(e) => return err_pkg(format!("flux source: {}", e)),
+            Ok(s) => s,
+        };
+        parse(fname, &src)
+    })
+    .unwrap_or_else(|panic_arg| match panic_arg.downcast_ref::<String>() {
+        Some(msg) => err_pkg(msg),
+        None => err_pkg("could not downcast message for caught panic"),
+    });
     Box::new(pkg)
+}
+
+fn err_pkg<S: ToString>(msg: S) -> ast::Package {
+    ast::File {
+        base: BaseNode {
+            errors: vec![msg.to_string()],
+            ..BaseNode::default()
+        },
+        name: "".to_string(),
+        metadata: "".to_string(),
+        package: None,
+        imports: vec![],
+        body: vec![],
+        eof: vec![],
+    }
+    .into()
 }
 
 /// Parse the contents of a string.
@@ -215,7 +244,7 @@ pub extern "C" fn flux_free_ast_pkg(_: Option<Box<ast::Package>>) {}
 /// could occur.
 #[no_mangle]
 pub unsafe extern "C" fn flux_parse_json(
-    cstr: *mut c_char,
+    cstr: *const c_char,
     out_pkg: *mut Option<Box<ast::Package>>,
 ) -> Option<Box<ErrorHandle>> {
     catch_unwind(|| {
@@ -346,7 +375,7 @@ pub unsafe extern "C" fn flux_merge_ast_pkgs(
 
 /// flux_analyze is a C-compatible wrapper around the analyze() function below
 ///
-/// Note that Box<T> is used to indicate we are receiving/returning a C pointer and also
+/// Note that `Box<T>` is used to indicate we are receiving/returning a C pointer and also
 /// transferring ownership.
 ///
 /// # Safety
@@ -379,7 +408,7 @@ pub unsafe extern "C" fn flux_analyze(
 }
 
 /// flux_find_var_type() is a C-compatible wrapper around the find_var_type() function below.
-/// Note that Box<T> is used to indicate we are receiving/returning a C pointer and also
+/// Note that `Box<T>` is used to indicate we are receiving/returning a C pointer and also
 /// transferring ownership.
 ///
 /// # Safety
@@ -1094,5 +1123,47 @@ from(bucket: v.bucket)
         dbg!(&pkg);
 
         assert_eq!(identifier.unwrap().name.package(), Some("universe"));
+    }
+
+    #[test]
+    fn parse_json_with_nul() {
+        let c_str = CString::new(
+            r#"{"type":"Package","package":"main","files":[{"body":[{"type":"\u0000"}]}]}"#,
+        )
+        .expect("no interior nuls");
+        let c_char_ptr = c_str.as_ptr();
+        let mut pkg: Option<Box<ast::Package>> = None;
+        let pkg_ptr: *mut Option<Box<ast::Package>> = &mut pkg;
+
+        // Safety: both pointers are valid
+        let err_hdl = unsafe { flux_parse_json(c_char_ptr, pkg_ptr) }.expect("some error");
+        let msg = err_hdl.message.to_string_lossy();
+        assert!(
+            msg.contains("unknown variant `\\0`"),
+            "unexpected message: {msg}"
+        );
+    }
+
+    // Safety: pointers manipulated by this test are handled properly
+    #[test]
+    fn parse_with_invalid_utf8() {
+        let cfname = CString::new("foo.flux").unwrap();
+        let cfname_ptr: *const c_char = cfname.as_ptr();
+        let v: Vec<c_char> = vec![-61, 0];
+        let csrc: *const c_char = &v[0];
+        // Safety: both pointers are valid
+        let pkg = unsafe { flux_parse(cfname_ptr, csrc) };
+        let options = CString::new("").unwrap();
+        let options = options.as_ptr();
+        let pkg = Box::into_raw(pkg);
+        // Safety: both parameters are valid
+        let err = unsafe { flux_ast_get_error(pkg, options) }.unwrap();
+        // Safety: pkg is a valid pointer allocated just above
+        unsafe { Box::from_raw(pkg) }; // Free the AST
+        let msg = err.message.to_string_lossy();
+        assert!(
+            msg.contains("incomplete utf-8 byte sequence from index 0"),
+            "unexpected message: {msg}"
+        );
     }
 }

@@ -4,13 +4,13 @@ import (
 	"context"
 	"math"
 
+	"github.com/InfluxCommunity/flux/codes"
+	"github.com/InfluxCommunity/flux/internal/errors"
+	"github.com/InfluxCommunity/flux/interpreter"
+	"github.com/InfluxCommunity/flux/runtime"
+	"github.com/InfluxCommunity/flux/values"
 	"github.com/golang/geo/s1"
 	"github.com/golang/geo/s2"
-	"github.com/influxdata/flux/codes"
-	"github.com/influxdata/flux/internal/errors"
-	"github.com/influxdata/flux/interpreter"
-	"github.com/influxdata/flux/runtime"
-	"github.com/influxdata/flux/values"
 )
 
 func generateSTContainsFunc() values.Function {

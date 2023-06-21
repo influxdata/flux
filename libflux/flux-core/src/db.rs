@@ -253,7 +253,7 @@ impl Database {
                             Error::Message(format!("Unable to read path `{}`: {}", package, err))
                         })?
                         .path();
-                    let path = path.strip_prefix(&filesystem_root).map_err(|err| {
+                    let path = path.strip_prefix(filesystem_root).map_err(|err| {
                         Error::Message(format!(
                             "Unable to strip prefix `{}` of `{}`: {}",
                             filesystem_root.display(),

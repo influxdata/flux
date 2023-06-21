@@ -3,9 +3,9 @@ package plan_test
 import (
 	"testing"
 
+	"github.com/InfluxCommunity/flux/plan"
+	"github.com/InfluxCommunity/flux/plan/plantest"
 	"github.com/google/go-cmp/cmp"
-	"github.com/influxdata/flux/plan"
-	"github.com/influxdata/flux/plan/plantest"
 )
 
 func TestPlanSpec_BottomUpWalk(t *testing.T) {

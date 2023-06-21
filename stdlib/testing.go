@@ -7,11 +7,11 @@ import (
 	"path/filepath"
 	"strings"
 
-	ast "github.com/influxdata/flux/ast"
-	"github.com/influxdata/flux/codes"
-	"github.com/influxdata/flux/internal/errors"
-	"github.com/influxdata/flux/internal/token"
-	"github.com/influxdata/flux/parser"
+	ast "github.com/InfluxCommunity/flux/ast"
+	"github.com/InfluxCommunity/flux/codes"
+	"github.com/InfluxCommunity/flux/internal/errors"
+	"github.com/InfluxCommunity/flux/internal/token"
+	"github.com/InfluxCommunity/flux/parser"
 )
 
 // TestingRunCalls constructs an ast.File that calls testing.run for each test case within the package.
@@ -76,7 +76,7 @@ func (v testStmtVisitor) Done(node ast.Node) {}
 // / Scans `rootDir` for all packages that contain `testcase` statements and returns them
 func FindTestPackages(rootDir string) ([]*ast.Package, error) {
 	var testPackages []*ast.Package
-	pkgName := "github.com/influxdata/flux/stdlib"
+	pkgName := "github.com/InfluxCommunity/flux/stdlib"
 	err := walkDirs(rootDir, func(dir string) error {
 		// Determine the absolute flux package path
 		fluxPath, err := filepath.Rel(rootDir, dir)

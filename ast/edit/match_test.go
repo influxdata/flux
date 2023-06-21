@@ -3,10 +3,10 @@ package edit_test
 import (
 	"testing"
 
+	"github.com/InfluxCommunity/flux/ast"
+	"github.com/InfluxCommunity/flux/ast/asttest"
+	"github.com/InfluxCommunity/flux/ast/edit"
 	"github.com/google/go-cmp/cmp"
-	"github.com/influxdata/flux/ast"
-	"github.com/influxdata/flux/ast/asttest"
-	"github.com/influxdata/flux/ast/edit"
 )
 
 func TestMatch(t *testing.T) {

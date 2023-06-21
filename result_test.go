@@ -7,13 +7,13 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/InfluxCommunity/flux"
+	"github.com/InfluxCommunity/flux/execute"
+	"github.com/InfluxCommunity/flux/execute/executetest"
+	"github.com/InfluxCommunity/flux/iocounter"
+	"github.com/InfluxCommunity/flux/mock"
+	"github.com/InfluxCommunity/flux/semantic"
 	"github.com/andreyvit/diff"
-	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/execute"
-	"github.com/influxdata/flux/execute/executetest"
-	"github.com/influxdata/flux/iocounter"
-	"github.com/influxdata/flux/mock"
-	"github.com/influxdata/flux/semantic"
 )
 
 // TestColumnType tests that the column type gets returned from a semantic type correctly.

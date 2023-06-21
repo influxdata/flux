@@ -23,7 +23,7 @@ testcase iox_sql_interval_testcase {
                 {_value: "12 years 3 months 4 weeks"},
                 {_value: "1 weeks 6 days 10 hours 5 minutes"},
                 {_value: "2 minutes 3 seconds 56 milliseconds"},
-                {_value: "1 millisecond"},
+                {_value: "123 microseconds 56 nanoseconds"},
             ],
         )
 

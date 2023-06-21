@@ -5,10 +5,10 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/InfluxCommunity/flux/codes"
+	"github.com/InfluxCommunity/flux/internal/errors"
+	"github.com/InfluxCommunity/flux/internal/fbsemantic"
 	flatbuffers "github.com/google/flatbuffers/go"
-	"github.com/influxdata/flux/codes"
-	"github.com/influxdata/flux/internal/errors"
-	"github.com/influxdata/flux/internal/fbsemantic"
 )
 
 type fbTabler interface {

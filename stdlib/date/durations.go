@@ -3,14 +3,14 @@ package date
 import (
 	"context"
 
-	"github.com/influxdata/flux/codes"
-	"github.com/influxdata/flux/execute"
-	"github.com/influxdata/flux/internal/date"
-	"github.com/influxdata/flux/internal/errors"
-	"github.com/influxdata/flux/internal/function"
-	"github.com/influxdata/flux/internal/zoneinfo"
-	"github.com/influxdata/flux/semantic"
-	"github.com/influxdata/flux/values"
+	"github.com/InfluxCommunity/flux/codes"
+	"github.com/InfluxCommunity/flux/execute"
+	"github.com/InfluxCommunity/flux/internal/date"
+	"github.com/InfluxCommunity/flux/internal/errors"
+	"github.com/InfluxCommunity/flux/internal/function"
+	"github.com/InfluxCommunity/flux/internal/zoneinfo"
+	"github.com/InfluxCommunity/flux/semantic"
+	"github.com/InfluxCommunity/flux/values"
 )
 
 func init() {

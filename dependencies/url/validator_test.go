@@ -4,7 +4,7 @@ import (
 	nurl "net/url"
 	"testing"
 
-	"github.com/influxdata/flux/dependencies/url"
+	"github.com/InfluxCommunity/flux/dependencies/url"
 )
 
 func TestPassValidator(t *testing.T) {

@@ -1,10 +1,10 @@
 package iox
 
 import (
-	"github.com/influxdata/flux/codes"
-	"github.com/influxdata/flux/internal/errors"
-	"github.com/influxdata/flux/internal/function"
-	"github.com/influxdata/flux/values"
+	"github.com/InfluxCommunity/flux/codes"
+	"github.com/InfluxCommunity/flux/internal/errors"
+	"github.com/InfluxCommunity/flux/internal/function"
+	"github.com/InfluxCommunity/flux/values"
 )
 
 const pkgpath = "experimental/iox"

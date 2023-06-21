@@ -1,8 +1,8 @@
 package execute
 
 import (
-	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/execute/table"
+	"github.com/InfluxCommunity/flux"
+	"github.com/InfluxCommunity/flux/execute/table"
 )
 
 func NewProcessMsg(tbl flux.Table) ProcessMsg {

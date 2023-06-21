@@ -3,7 +3,7 @@ package semantic
 import (
 	"fmt"
 
-	"github.com/influxdata/flux/ast"
+	"github.com/InfluxCommunity/flux/ast"
 )
 
 // ToAST will construct an AST from the semantic graph.

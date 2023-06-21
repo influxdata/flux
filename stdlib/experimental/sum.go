@@ -1,9 +1,9 @@
 package experimental
 
 import (
-	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/runtime"
-	"github.com/influxdata/flux/stdlib/universe"
+	"github.com/InfluxCommunity/flux"
+	"github.com/InfluxCommunity/flux/runtime"
+	"github.com/InfluxCommunity/flux/stdlib/universe"
 )
 
 func init() {

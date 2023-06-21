@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/influxdata/flux/dependencies/filesystem"
+	"github.com/InfluxCommunity/flux/dependencies/filesystem"
 )
 
 func TestSystemFS_Open(t *testing.T) {

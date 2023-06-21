@@ -12,10 +12,10 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/InfluxCommunity/flux/codes"
+	depsUrl "github.com/InfluxCommunity/flux/dependencies/url"
+	"github.com/InfluxCommunity/flux/internal/errors"
 	"github.com/foxcpp/go-mockdns"
-	"github.com/influxdata/flux/codes"
-	depsUrl "github.com/influxdata/flux/dependencies/url"
-	"github.com/influxdata/flux/internal/errors"
 )
 
 func TestNewDefaultClient(t *testing.T) {

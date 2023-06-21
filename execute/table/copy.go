@@ -3,10 +3,10 @@ package table
 import (
 	"sync/atomic"
 
-	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/codes"
-	"github.com/influxdata/flux/internal/debug"
-	"github.com/influxdata/flux/internal/errors"
+	"github.com/InfluxCommunity/flux"
+	"github.com/InfluxCommunity/flux/codes"
+	"github.com/InfluxCommunity/flux/internal/debug"
+	"github.com/InfluxCommunity/flux/internal/errors"
 )
 
 // Copy returns a buffered copy of the table and consumes the

@@ -3,7 +3,7 @@ package mock
 import (
 	"context"
 
-	"github.com/influxdata/flux/dependencies/mqtt"
+	"github.com/InfluxCommunity/flux/dependencies/mqtt"
 )
 
 type MqttDialer struct {

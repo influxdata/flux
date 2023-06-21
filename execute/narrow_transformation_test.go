@@ -3,17 +3,17 @@ package execute_test
 import (
 	"testing"
 
+	"github.com/InfluxCommunity/flux"
+	"github.com/InfluxCommunity/flux/codes"
+	"github.com/InfluxCommunity/flux/execute"
+	"github.com/InfluxCommunity/flux/execute/executetest"
+	"github.com/InfluxCommunity/flux/execute/table"
+	"github.com/InfluxCommunity/flux/execute/table/static"
+	"github.com/InfluxCommunity/flux/internal/errors"
+	"github.com/InfluxCommunity/flux/mock"
+	"github.com/InfluxCommunity/flux/values"
 	"github.com/apache/arrow/go/v7/arrow/memory"
 	"github.com/google/go-cmp/cmp"
-	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/codes"
-	"github.com/influxdata/flux/execute"
-	"github.com/influxdata/flux/execute/executetest"
-	"github.com/influxdata/flux/execute/table"
-	"github.com/influxdata/flux/execute/table/static"
-	"github.com/influxdata/flux/internal/errors"
-	"github.com/influxdata/flux/mock"
-	"github.com/influxdata/flux/values"
 	"github.com/stretchr/testify/assert"
 )
 

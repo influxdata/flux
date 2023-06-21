@@ -3,9 +3,9 @@ package table
 import (
 	"sync/atomic"
 
-	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/codes"
-	"github.com/influxdata/flux/internal/errors"
+	"github.com/InfluxCommunity/flux"
+	"github.com/InfluxCommunity/flux/codes"
+	"github.com/InfluxCommunity/flux/internal/errors"
 )
 
 // BufferSize represents a constant buffer size to be used by flux

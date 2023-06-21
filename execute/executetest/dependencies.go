@@ -3,9 +3,9 @@ package executetest
 import (
 	"context"
 
-	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/dependencies/dependenciestest"
-	"github.com/influxdata/flux/dependencies/feature"
+	"github.com/InfluxCommunity/flux"
+	"github.com/InfluxCommunity/flux/dependencies/dependenciestest"
+	"github.com/InfluxCommunity/flux/dependencies/feature"
 )
 
 type dependencyList []flux.Dependency
@@ -26,7 +26,7 @@ func NewTestExecuteDependencies() flux.Dependency {
 
 // NewDefaultTestFlagger gives a flagger dependency for a test harnesses to use as a baseline.
 //
-// Likely this will be made redundant by <https://github.com/influxdata/flux/issues/4777>
+// Likely this will be made redundant by <https://github.com/InfluxCommunity/flux/issues/4777>
 // since testcases will then be able to manage their own feature selection.
 func NewDefaultTestFlagger() feature.Dependency {
 	return feature.Dependency{

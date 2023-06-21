@@ -4,7 +4,7 @@
 package runtime
 
 import (
-	"github.com/influxdata/flux/values"
+	"github.com/InfluxCommunity/flux/values"
 )
 
 func Version() (values.Value, error) {

@@ -1,7 +1,7 @@
 package table
 
 import (
-	"github.com/influxdata/flux"
+	"github.com/InfluxCommunity/flux"
 )
 
 type ProfilerResult struct {
