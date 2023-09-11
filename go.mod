@@ -46,7 +46,7 @@ require (
 	github.com/segmentio/kafka-go v0.1.0
 	github.com/sergi/go-diff v1.0.0 // indirect
 	github.com/spf13/cobra v0.0.3
-	github.com/stretchr/testify v1.8.1
+	github.com/stretchr/testify v1.8.4
 	github.com/uber/athenadriver v1.1.4
 	github.com/uber/jaeger-client-go v2.28.0+incompatible
 	github.com/uber/jaeger-lib v2.4.1+incompatible // indirect
@@ -66,6 +66,8 @@ require github.com/apache/arrow/go/arrow v0.0.0-20211112161151-bc219186db40 // i
 
 require github.com/influxdata/influxdb-iox-client-go/v2 v2.0.0-beta.2
 
+replace github.com/influxdata/influxdb-iox-client-go/v2 v2.0.0-beta.2 => github.com/akvlad/influxdb-iox-client-go/v2 v2.0.1
+
 require (
 	cloud.google.com/go/bigquery v1.8.0 // indirect
 	github.com/Azure/azure-pipeline-go v0.2.3 // indirect
@@ -77,7 +79,7 @@ require (
 	github.com/Azure/go-autorest/tracing v0.6.0 // indirect
 	github.com/Masterminds/semver v1.4.2 // indirect
 	github.com/andybalholm/brotli v1.0.4 // indirect
-	github.com/apache/arrow/go/v10 v10.0.0 // indirect
+	github.com/apache/arrow/go/v10 v10.0.1 // indirect
 	github.com/apache/thrift v0.16.0 // indirect
 	github.com/aws/aws-sdk-go v1.34.0 // indirect
 	github.com/aws/aws-sdk-go-v2 v1.11.0 // indirect
@@ -136,5 +138,5 @@ require (
 	golang.org/x/xerrors v0.0.0-20220907171357-04be3eba64a2 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/genproto v0.0.0-20220919141832-68c03719ef51 // indirect
-	google.golang.org/protobuf v1.28.1 // indirect
+	google.golang.org/protobuf v1.31.0 // indirect
 )
