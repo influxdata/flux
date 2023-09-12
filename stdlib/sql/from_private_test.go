@@ -26,6 +26,14 @@ func TestFromSqlUrlValidation(t *testing.T) {
 			},
 			ErrMsg: "",
 		}, {
+			Name: "ok clickhouse",
+			Spec: &FromSQLProcedureSpec{
+				DriverName:     "clickhouse",
+				DataSourceName: "clickhouse://username:password@localhost:12345/default?secure=true",
+				Query:          "",
+			},
+			ErrMsg: "",
+		}, {
 			Name: "ok vertica",
 			Spec: &FromSQLProcedureSpec{
 				DriverName:     "vertica",

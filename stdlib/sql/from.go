@@ -121,6 +121,8 @@ func createFromSQLSource(prSpec plan.ProcedureSpec, dsid execute.DatasetID, a ex
 		newRowReader = NewSnowflakeRowReader
 	case "mssql", "sqlserver":
 		newRowReader = NewMssqlRowReader
+	case "clickhouse":
+		newRowReader = NewClickhouseRowReader
 	case "awsathena":
 		newRowReader = NewAwsAthenaRowReader
 	case "bigquery":

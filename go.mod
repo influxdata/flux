@@ -26,7 +26,7 @@ require (
 	github.com/gofrs/uuid v3.3.0+incompatible
 	github.com/golang/geo v0.0.0-20190916061304-5b978397cfec
 	github.com/google/flatbuffers v22.9.30-0.20221019131441-5792623df42e+incompatible
-	github.com/google/go-cmp v0.5.7
+	github.com/google/go-cmp v0.5.8
 	github.com/influxdata/gosnowflake v1.6.9
 	github.com/influxdata/influxdb-client-go/v2 v2.3.1-0.20210518120617-5d1fff431040
 	github.com/influxdata/line-protocol v0.0.0-20200327222509-2487e7298839
@@ -51,7 +51,7 @@ require (
 	github.com/uber/jaeger-client-go v2.28.0+incompatible
 	github.com/uber/jaeger-lib v2.4.1+incompatible // indirect
 	github.com/vertica/vertica-sql-go v1.1.1
-	go.uber.org/zap v1.16.0
+	go.uber.org/zap v1.22.0
 	golang.org/x/exp v0.0.0-20211216164055-b2b84827b756
 	golang.org/x/net v0.7.0
 	golang.org/x/tools v0.1.12
@@ -88,6 +88,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/internal/s3shared v1.9.0 // indirect
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.19.0 // indirect
 	github.com/aws/smithy-go v1.9.0 // indirect
+	github.com/benbjohnson/clock v1.1.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/deepmap/oapi-codegen v1.6.0 // indirect
 	github.com/dimchansky/utfbom v1.1.0 // indirect
@@ -102,21 +103,21 @@ require (
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/jstemmer/go-junit-report v0.9.1 // indirect
-	github.com/klauspost/compress v1.14.2 // indirect
+	github.com/klauspost/compress v1.15.9 // indirect
 	github.com/mattn/go-colorable v0.1.9 // indirect
 	github.com/mattn/go-ieproxy v0.0.1 // indirect
 	github.com/mattn/go-isatty v0.0.14 // indirect
 	github.com/miekg/dns v1.1.25 // indirect
 	github.com/mitchellh/go-homedir v1.1.0 // indirect
-	github.com/pierrec/lz4/v4 v4.1.12 // indirect
+	github.com/pierrec/lz4/v4 v4.1.15 // indirect
 	github.com/pkg/browser v0.0.0-20210911075715-681adbf594b8 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/sirupsen/logrus v1.8.1 // indirect
 	github.com/spf13/pflag v1.0.3 // indirect
 	github.com/uber-go/tally v3.3.15+incompatible // indirect
 	go.opencensus.io v0.23.0 // indirect
-	go.uber.org/atomic v1.7.0 // indirect
-	go.uber.org/multierr v1.6.0 // indirect
+	go.uber.org/atomic v1.10.0 // indirect
+	go.uber.org/multierr v1.8.0 // indirect
 	golang.org/x/crypto v0.1.0 // indirect
 	golang.org/x/lint v0.0.0-20210508222113-6edffad5e616 // indirect
 	golang.org/x/mod v0.6.0-dev.0.20220419223038-86c51ed26bb4 // indirect
