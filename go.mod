@@ -38,7 +38,6 @@ require (
 	github.com/mattn/go-sqlite3 v1.11.0
 	github.com/mattn/go-tty v0.0.0-20180907095812-13ff1204f104 // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.1
-	github.com/metrico/influxdb-iox-client-go/v2 v2.0.0-beta.5
 	github.com/opentracing/opentracing-go v1.2.0
 	github.com/pkg/errors v0.9.1
 	github.com/pkg/term v0.0.0-20180730021639-bffc007b7fd5 // indirect
@@ -66,6 +65,8 @@ require (
 require github.com/apache/arrow/go/arrow v0.0.0-20211112161151-bc219186db40 // indirect
 
 require github.com/influxdata/influxdb-iox-client-go/v2 v2.0.0-beta.2
+
+replace github.com/influxdata/influxdb-iox-client-go/v2 v2.0.0-beta.2 => github.com/metrico/influxdb-iox-client-go/v2 v2.0.0-beta.3
 
 require (
 	cloud.google.com/go/bigquery v1.8.0 // indirect
