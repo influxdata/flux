@@ -7,4 +7,7 @@ on:
 
 jobs:
   semantic:
+    with:
+      CHECK_PR_TITLE_OR_ONE_COMMIT: true
     uses: influxdata/validate-semantic-github-messages/.github/workflows/semantic.yml@main
+
