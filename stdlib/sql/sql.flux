@@ -41,6 +41,9 @@
 //
 // # Vertica driver DSN
 // vertica://<user>:<password>@<host>:<port>/<database>?<queryArgs>
+//
+// # InfluxDB IOX driver DSN
+// iox://<host>:<port>/<namespace>?secure=true/false&token=...
 // ```
 //
 // ### AWS Athena connection strings
@@ -127,6 +130,7 @@ package sql
 //   - sqlite3 _(Does not work with InfluxDB OSS or InfluxDB Cloud)_
 //   - sqlserver
 //   - vertica, vertigo
+//   - influxdb-iox
 //
 // - dataSourceName: Data source name (DNS) or connection string used to connect
 //   to the SQL database.

@@ -38,6 +38,8 @@ func getOpenFunc(driverName, dataSourceName string) openFunc {
 	switch driverName {
 	case "mssql", "sqlserver":
 		return mssqlOpenFunction(driverName, dataSourceName)
+	case "influxdb-iox":
+		return ioxOpenFunction(driverName, dataSourceName)
 	default:
 		return defaultOpenFunction(driverName, dataSourceName)
 	}

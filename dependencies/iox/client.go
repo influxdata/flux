@@ -8,7 +8,7 @@ import (
 	"github.com/InfluxCommunity/flux/internal/errors"
 	"github.com/InfluxCommunity/flux/memory"
 	"github.com/apache/arrow/go/v7/arrow/array"
-	influxdbiox "github.com/influxdata/influxdb-iox-client-go"
+	influxdbiox "github.com/influxdata/influxdb-iox-client-go/v2"
 )
 
 type key int

@@ -54,6 +54,23 @@ func validateDataSource(validator url.Validator, driverName string, dataSourceNa
 		if err != nil {
 			return errors.Newf(codes.Invalid, "invalid data source url: %v", err)
 		}
+	case "influxdb-iox":
+		// an example for iox data source is: iox://host1:8080/bucket?secure=true&token=q1w2e3r4
+		// this follows the URI semantics
+		u, err = neturl.Parse(dataSourceName)
+		if err != nil {
+			return errors.Newf(codes.Invalid, "invalid data source url: %v", err)
+		}
+		if u.Scheme != "iox" {
+			return errors.Newf(codes.Invalid, "invalid data source scheme: %v", u.Scheme)
+		}
+		if u.Path == "" {
+			return errors.Newf(codes.Invalid, "bucket is not set")
+		}
+		if u.Port() == "" {
+			return errors.Newf(codes.Invalid, "port is not set")
+		}
+		return nil
 	case "vertica", "vertigo":
 		// an example for vertica data source is: vertica://dbadmin:password@localhost:5433/VMart
 		// this follows the URI semantics

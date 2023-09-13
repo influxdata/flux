@@ -34,6 +34,14 @@ func TestFromSqlUrlValidation(t *testing.T) {
 			},
 			ErrMsg: "",
 		}, {
+			Name: "ok influxdb-iox",
+			Spec: &FromSQLProcedureSpec{
+				DriverName:     "influxdb-iox",
+				DataSourceName: "iox://localhost:12345/default?secure=true",
+				Query:          "",
+			},
+			ErrMsg: "",
+		}, {
 			Name: "ok vertica",
 			Spec: &FromSQLProcedureSpec{
 				DriverName:     "vertica",
@@ -175,6 +183,14 @@ func TestFromSqlUrlValidation(t *testing.T) {
 				Query:          "",
 			},
 			ErrMsg: "invalid data source dsn: may not set allowAllFiles",
+		}, {
+			Name: "invalid influxdb-iox",
+			Spec: &FromSQLProcedureSpec{
+				DriverName:     "influxdb-iox",
+				DataSourceName: "iox2://localhost:12345/default?secure=true",
+				Query:          "",
+			},
+			ErrMsg: "invalid data source scheme: iox2",
 		},
 	}
 	// Scan over test cases and adjust any that the driver is disabled for

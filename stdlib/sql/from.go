@@ -123,6 +123,8 @@ func createFromSQLSource(prSpec plan.ProcedureSpec, dsid execute.DatasetID, a ex
 		newRowReader = NewMssqlRowReader
 	case "clickhouse":
 		newRowReader = NewClickhouseRowReader
+	case "influxdb-iox":
+		newRowReader = NewIOXRowReader
 	case "awsathena":
 		newRowReader = NewAwsAthenaRowReader
 	case "bigquery":
