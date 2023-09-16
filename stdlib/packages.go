@@ -21,6 +21,7 @@ import (
 	_ "github.com/InfluxCommunity/flux/stdlib/contrib/jsternberg/influxdb"
 	_ "github.com/InfluxCommunity/flux/stdlib/contrib/qxip/clickhouse"
 	_ "github.com/InfluxCommunity/flux/stdlib/contrib/qxip/hash"
+	_ "github.com/InfluxCommunity/flux/stdlib/contrib/qxip/iox"
 	_ "github.com/InfluxCommunity/flux/stdlib/contrib/qxip/logql"
 	_ "github.com/InfluxCommunity/flux/stdlib/contrib/rhajek/bigpanda"
 	_ "github.com/InfluxCommunity/flux/stdlib/contrib/sranka/opsgenie"
