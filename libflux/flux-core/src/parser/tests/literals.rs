@@ -1032,3 +1032,261 @@ fn integer_literal_overflow() {
         }
     "#]].assert_debug_eq(&parsed);
 }
+
+#[test]
+fn dictionary_literal() {
+    let mut p = Parser::new(r#"["a":1, "b":2]"#);
+    let parsed = p.parse_file("".to_string());
+    expect![[r#"
+        File {
+            base: BaseNode {
+                location: SourceLocation {
+                    start: "line: 1, column: 1",
+                    end: "line: 1, column: 15",
+                    source: "[\"a\":1, \"b\":2]",
+                },
+            },
+            name: "",
+            metadata: "parser-type=rust",
+            package: None,
+            imports: [],
+            body: [
+                Expr(
+                    ExprStmt {
+                        base: BaseNode {
+                            location: SourceLocation {
+                                start: "line: 1, column: 1",
+                                end: "line: 1, column: 15",
+                                source: "[\"a\":1, \"b\":2]",
+                            },
+                        },
+                        expression: Dict(
+                            DictExpr {
+                                base: BaseNode {
+                                    location: SourceLocation {
+                                        start: "line: 1, column: 1",
+                                        end: "line: 1, column: 15",
+                                        source: "[\"a\":1, \"b\":2]",
+                                    },
+                                },
+                                lbrack: [],
+                                elements: [
+                                    DictItem {
+                                        key: StringLit(
+                                            StringLit {
+                                                base: BaseNode {
+                                                    location: SourceLocation {
+                                                        start: "line: 1, column: 2",
+                                                        end: "line: 1, column: 5",
+                                                        source: "\"a\"",
+                                                    },
+                                                },
+                                                value: "a",
+                                            },
+                                        ),
+                                        val: Integer(
+                                            IntegerLit {
+                                                base: BaseNode {
+                                                    location: SourceLocation {
+                                                        start: "line: 1, column: 6",
+                                                        end: "line: 1, column: 7",
+                                                        source: "1",
+                                                    },
+                                                },
+                                                value: 1,
+                                            },
+                                        ),
+                                        comma: [],
+                                    },
+                                    DictItem {
+                                        key: StringLit(
+                                            StringLit {
+                                                base: BaseNode {
+                                                    location: SourceLocation {
+                                                        start: "line: 1, column: 9",
+                                                        end: "line: 1, column: 12",
+                                                        source: "\"b\"",
+                                                    },
+                                                },
+                                                value: "b",
+                                            },
+                                        ),
+                                        val: Integer(
+                                            IntegerLit {
+                                                base: BaseNode {
+                                                    location: SourceLocation {
+                                                        start: "line: 1, column: 13",
+                                                        end: "line: 1, column: 14",
+                                                        source: "2",
+                                                    },
+                                                },
+                                                value: 2,
+                                            },
+                                        ),
+                                        comma: [],
+                                    },
+                                ],
+                                rbrack: [],
+                            },
+                        ),
+                    },
+                ),
+            ],
+            eof: [],
+        }
+    "#]]
+    .assert_debug_eq(&parsed);
+}
+
+#[test]
+fn unclosed_dictionary_literal() {
+    let mut p = Parser::new(
+        r#"
+        A = ["a":1, "b":2
+        B = 100
+"#,
+    );
+    let parsed = p.parse_file("".to_string());
+    expect![[r#"
+        File {
+            base: BaseNode {
+                location: SourceLocation {
+                    start: "line: 2, column: 9",
+                    end: "line: 4, column: 1",
+                    source: "A = [\"a\":1, \"b\":2\n        B = 100\n",
+                },
+            },
+            name: "",
+            metadata: "parser-type=rust",
+            package: None,
+            imports: [],
+            body: [
+                Variable(
+                    VariableAssgn {
+                        base: BaseNode {
+                            location: SourceLocation {
+                                start: "line: 2, column: 9",
+                                end: "line: 4, column: 1",
+                                source: "A = [\"a\":1, \"b\":2\n        B = 100\n",
+                            },
+                        },
+                        id: Identifier {
+                            base: BaseNode {
+                                location: SourceLocation {
+                                    start: "line: 2, column: 9",
+                                    end: "line: 2, column: 10",
+                                    source: "A",
+                                },
+                            },
+                            name: "A",
+                        },
+                        init: Dict(
+                            DictExpr {
+                                base: BaseNode {
+                                    location: SourceLocation {
+                                        start: "line: 2, column: 13",
+                                        end: "line: 4, column: 1",
+                                        source: "[\"a\":1, \"b\":2\n        B = 100\n",
+                                    },
+                                    errors: [
+                                        "expected RBRACK, got EOF",
+                                    ],
+                                },
+                                lbrack: [],
+                                elements: [
+                                    DictItem {
+                                        key: StringLit(
+                                            StringLit {
+                                                base: BaseNode {
+                                                    location: SourceLocation {
+                                                        start: "line: 2, column: 14",
+                                                        end: "line: 2, column: 17",
+                                                        source: "\"a\"",
+                                                    },
+                                                },
+                                                value: "a",
+                                            },
+                                        ),
+                                        val: Integer(
+                                            IntegerLit {
+                                                base: BaseNode {
+                                                    location: SourceLocation {
+                                                        start: "line: 2, column: 18",
+                                                        end: "line: 2, column: 19",
+                                                        source: "1",
+                                                    },
+                                                },
+                                                value: 1,
+                                            },
+                                        ),
+                                        comma: [],
+                                    },
+                                    DictItem {
+                                        key: StringLit(
+                                            StringLit {
+                                                base: BaseNode {
+                                                    location: SourceLocation {
+                                                        start: "line: 2, column: 21",
+                                                        end: "line: 2, column: 24",
+                                                        source: "\"b\"",
+                                                    },
+                                                },
+                                                value: "b",
+                                            },
+                                        ),
+                                        val: Integer(
+                                            IntegerLit {
+                                                base: BaseNode {
+                                                    location: SourceLocation {
+                                                        start: "line: 2, column: 25",
+                                                        end: "line: 2, column: 26",
+                                                        source: "2",
+                                                    },
+                                                },
+                                                value: 2,
+                                            },
+                                        ),
+                                        comma: [],
+                                    },
+                                    DictItem {
+                                        key: Identifier(
+                                            Identifier {
+                                                base: BaseNode {
+                                                    location: SourceLocation {
+                                                        start: "line: 3, column: 9",
+                                                        end: "line: 3, column: 10",
+                                                        source: "B",
+                                                    },
+                                                },
+                                                name: "B",
+                                            },
+                                        ),
+                                        val: Integer(
+                                            IntegerLit {
+                                                base: BaseNode {
+                                                    location: SourceLocation {
+                                                        start: "line: 3, column: 13",
+                                                        end: "line: 3, column: 16",
+                                                        source: "100",
+                                                    },
+                                                    errors: [
+                                                        "expected COLON, got ASSIGN (=) at 3:11",
+                                                    ],
+                                                },
+                                                value: 100,
+                                            },
+                                        ),
+                                        comma: [],
+                                    },
+                                ],
+                                rbrack: [],
+                            },
+                        ),
+                    },
+                ),
+            ],
+            eof: [],
+        }
+    "#]]
+    .assert_debug_eq(&parsed);
+}

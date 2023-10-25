@@ -1039,3 +1039,148 @@ identity = (x) => x
     "#]]
     .assert_debug_eq(&parsed);
 }
+
+#[test]
+fn parse_attribute_unfinished_parameters() {
+    let mut p = Parser::new(
+        r#"@attr1("param1", "param2"
+@attr2
+package main"#,
+    );
+    let parsed = p.parse_file("".to_string());
+    expect![[r#"
+        File {
+            base: BaseNode {
+                location: SourceLocation {
+                    start: "line: 1, column: 1",
+                    end: "line: 3, column: 13",
+                    source: "@attr1(\"param1\", \"param2\"\n@attr2\npackage main",
+                },
+            },
+            name: "",
+            metadata: "parser-type=rust",
+            package: Some(
+                PackageClause {
+                    base: BaseNode {
+                        location: SourceLocation {
+                            start: "line: 3, column: 1",
+                            end: "line: 3, column: 13",
+                            source: "package main",
+                        },
+                        attributes: [
+                            Attribute {
+                                base: BaseNode {
+                                    location: SourceLocation {
+                                        start: "line: 1, column: 1",
+                                        end: "line: 2, column: 7",
+                                        source: "@attr1(\"param1\", \"param2\"\n@attr2",
+                                    },
+                                    errors: [
+                                        "expected comma in attribute parameter list, got ATTRIBUTE",
+                                        "expected comma in attribute parameter list, got ATTRIBUTE",
+                                        "expected RPAREN, got ATTRIBUTE",
+                                    ],
+                                },
+                                name: "attr1",
+                                params: [
+                                    AttributeParam {
+                                        base: BaseNode {
+                                            location: SourceLocation {
+                                                start: "line: 1, column: 8",
+                                                end: "line: 1, column: 17",
+                                                source: "\"param1\",",
+                                            },
+                                        },
+                                        value: StringLit(
+                                            StringLit {
+                                                base: BaseNode {
+                                                    location: SourceLocation {
+                                                        start: "line: 1, column: 8",
+                                                        end: "line: 1, column: 16",
+                                                        source: "\"param1\"",
+                                                    },
+                                                },
+                                                value: "param1",
+                                            },
+                                        ),
+                                        comma: [],
+                                    },
+                                    AttributeParam {
+                                        base: BaseNode {
+                                            location: SourceLocation {
+                                                start: "line: 1, column: 18",
+                                                end: "line: 1, column: 26",
+                                                source: "\"param2\"",
+                                            },
+                                        },
+                                        value: StringLit(
+                                            StringLit {
+                                                base: BaseNode {
+                                                    location: SourceLocation {
+                                                        start: "line: 1, column: 18",
+                                                        end: "line: 1, column: 26",
+                                                        source: "\"param2\"",
+                                                    },
+                                                },
+                                                value: "param2",
+                                            },
+                                        ),
+                                        comma: [],
+                                    },
+                                    AttributeParam {
+                                        base: BaseNode {
+                                            location: SourceLocation {
+                                                start: "line: 2, column: 1",
+                                                end: "line: 2, column: 7",
+                                                source: "@attr2",
+                                            },
+                                        },
+                                        value: Bad(
+                                            BadExpr {
+                                                base: BaseNode {
+                                                    location: SourceLocation {
+                                                        start: "line: 2, column: 1",
+                                                        end: "line: 2, column: 7",
+                                                        source: "@attr2",
+                                                    },
+                                                },
+                                                text: "invalid token for primary expression: ATTRIBUTE",
+                                                expression: None,
+                                            },
+                                        ),
+                                        comma: [],
+                                    },
+                                ],
+                            },
+                            Attribute {
+                                base: BaseNode {
+                                    location: SourceLocation {
+                                        start: "line: 2, column: 1",
+                                        end: "line: 2, column: 7",
+                                        source: "@attr2",
+                                    },
+                                },
+                                name: "attr2",
+                                params: [],
+                            },
+                        ],
+                    },
+                    name: Identifier {
+                        base: BaseNode {
+                            location: SourceLocation {
+                                start: "line: 3, column: 9",
+                                end: "line: 3, column: 13",
+                                source: "main",
+                            },
+                        },
+                        name: "main",
+                    },
+                },
+            ),
+            imports: [],
+            body: [],
+            eof: [],
+        }
+    "#]]
+    .assert_debug_eq(&parsed);
+}

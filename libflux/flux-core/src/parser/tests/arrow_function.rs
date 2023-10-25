@@ -1307,3 +1307,291 @@ fn arrow_function_as_block() {
         }
     "#]].assert_debug_eq(&parsed);
 }
+
+#[test]
+fn arrow_function_with_bad_parameter_list() {
+    let mut p = Parser::new(r#"myfun = (t=<-, fn=(r) => ({r with _field: ""}) => { }"#);
+    let parsed = p.parse_file("".to_string());
+    expect![[r#"
+    File {
+        base: BaseNode {
+            location: SourceLocation {
+                start: "line: 1, column: 1",
+                end: "line: 1, column: 54",
+                source: "myfun = (t=<-, fn=(r) => ({r with _field: \"\"}) => { }",
+            },
+        },
+        name: "",
+        metadata: "parser-type=rust",
+        package: None,
+        imports: [],
+        body: [
+            Variable(
+                VariableAssgn {
+                    base: BaseNode {
+                        location: SourceLocation {
+                            start: "line: 1, column: 1",
+                            end: "line: 1, column: 54",
+                            source: "myfun = (t=<-, fn=(r) => ({r with _field: \"\"}) => { }",
+                        },
+                    },
+                    id: Identifier {
+                        base: BaseNode {
+                            location: SourceLocation {
+                                start: "line: 1, column: 1",
+                                end: "line: 1, column: 6",
+                                source: "myfun",
+                            },
+                        },
+                        name: "myfun",
+                    },
+                    init: Function(
+                        FunctionExpr {
+                            base: BaseNode {
+                                location: SourceLocation {
+                                    start: "line: 1, column: 9",
+                                    end: "line: 1, column: 54",
+                                    source: "(t=<-, fn=(r) => ({r with _field: \"\"}) => { }",
+                                },
+                            },
+                            lparen: [],
+                            params: [
+                                Property {
+                                    base: BaseNode {
+                                        location: SourceLocation {
+                                            start: "line: 1, column: 10",
+                                            end: "line: 1, column: 14",
+                                            source: "t=<-",
+                                        },
+                                    },
+                                    key: Identifier(
+                                        Identifier {
+                                            base: BaseNode {
+                                                location: SourceLocation {
+                                                    start: "line: 1, column: 10",
+                                                    end: "line: 1, column: 11",
+                                                    source: "t",
+                                                },
+                                            },
+                                            name: "t",
+                                        },
+                                    ),
+                                    separator: [],
+                                    value: Some(
+                                        PipeLit(
+                                            PipeLit {
+                                                base: BaseNode {
+                                                    location: SourceLocation {
+                                                        start: "line: 1, column: 12",
+                                                        end: "line: 1, column: 14",
+                                                        source: "<-",
+                                                    },
+                                                },
+                                            },
+                                        ),
+                                    ),
+                                    comma: [],
+                                },
+                                Property {
+                                    base: BaseNode {
+                                        location: SourceLocation {
+                                            start: "line: 1, column: 16",
+                                            end: "line: 1, column: 47",
+                                            source: "fn=(r) => ({r with _field: \"\"})",
+                                        },
+                                    },
+                                    key: Identifier(
+                                        Identifier {
+                                            base: BaseNode {
+                                                location: SourceLocation {
+                                                    start: "line: 1, column: 16",
+                                                    end: "line: 1, column: 18",
+                                                    source: "fn",
+                                                },
+                                            },
+                                            name: "fn",
+                                        },
+                                    ),
+                                    separator: [],
+                                    value: Some(
+                                        Function(
+                                            FunctionExpr {
+                                                base: BaseNode {
+                                                    location: SourceLocation {
+                                                        start: "line: 1, column: 19",
+                                                        end: "line: 1, column: 47",
+                                                        source: "(r) => ({r with _field: \"\"})",
+                                                    },
+                                                },
+                                                lparen: [],
+                                                params: [
+                                                    Property {
+                                                        base: BaseNode {
+                                                            location: SourceLocation {
+                                                                start: "line: 1, column: 20",
+                                                                end: "line: 1, column: 21",
+                                                                source: "r",
+                                                            },
+                                                        },
+                                                        key: Identifier(
+                                                            Identifier {
+                                                                base: BaseNode {
+                                                                    location: SourceLocation {
+                                                                        start: "line: 1, column: 20",
+                                                                        end: "line: 1, column: 21",
+                                                                        source: "r",
+                                                                    },
+                                                                },
+                                                                name: "r",
+                                                            },
+                                                        ),
+                                                        separator: [],
+                                                        value: None,
+                                                        comma: [],
+                                                    },
+                                                ],
+                                                rparen: [],
+                                                arrow: [],
+                                                body: Expr(
+                                                    Paren(
+                                                        ParenExpr {
+                                                            base: BaseNode {
+                                                                location: SourceLocation {
+                                                                    start: "line: 1, column: 26",
+                                                                    end: "line: 1, column: 47",
+                                                                    source: "({r with _field: \"\"})",
+                                                                },
+                                                            },
+                                                            lparen: [],
+                                                            expression: Object(
+                                                                ObjectExpr {
+                                                                    base: BaseNode {
+                                                                        location: SourceLocation {
+                                                                            start: "line: 1, column: 27",
+                                                                            end: "line: 1, column: 46",
+                                                                            source: "{r with _field: \"\"}",
+                                                                        },
+                                                                    },
+                                                                    lbrace: [],
+                                                                    with: Some(
+                                                                        WithSource {
+                                                                            source: Identifier {
+                                                                                base: BaseNode {
+                                                                                    location: SourceLocation {
+                                                                                        start: "line: 1, column: 28",
+                                                                                        end: "line: 1, column: 29",
+                                                                                        source: "r",
+                                                                                    },
+                                                                                },
+                                                                                name: "r",
+                                                                            },
+                                                                            with: [],
+                                                                        },
+                                                                    ),
+                                                                    properties: [
+                                                                        Property {
+                                                                            base: BaseNode {
+                                                                                location: SourceLocation {
+                                                                                    start: "line: 1, column: 35",
+                                                                                    end: "line: 1, column: 45",
+                                                                                    source: "_field: \"\"",
+                                                                                },
+                                                                            },
+                                                                            key: Identifier(
+                                                                                Identifier {
+                                                                                    base: BaseNode {
+                                                                                        location: SourceLocation {
+                                                                                            start: "line: 1, column: 35",
+                                                                                            end: "line: 1, column: 41",
+                                                                                            source: "_field",
+                                                                                        },
+                                                                                    },
+                                                                                    name: "_field",
+                                                                                },
+                                                                            ),
+                                                                            separator: [],
+                                                                            value: Some(
+                                                                                StringLit(
+                                                                                    StringLit {
+                                                                                        base: BaseNode {
+                                                                                            location: SourceLocation {
+                                                                                                start: "line: 1, column: 43",
+                                                                                                end: "line: 1, column: 45",
+                                                                                                source: "\"\"",
+                                                                                            },
+                                                                                        },
+                                                                                        value: "",
+                                                                                    },
+                                                                                ),
+                                                                            ),
+                                                                            comma: [],
+                                                                        },
+                                                                    ],
+                                                                    rbrace: [],
+                                                                },
+                                                            ),
+                                                            rparen: [],
+                                                        },
+                                                    ),
+                                                ),
+                                            },
+                                        ),
+                                    ),
+                                    comma: [],
+                                },
+                                Property {
+                                    base: BaseNode {
+                                        location: SourceLocation {
+                                            start: "line: 1, column: 48",
+                                            end: "line: 1, column: 48",
+                                            source: "",
+                                        },
+                                    },
+                                    key: Identifier(
+                                        Identifier {
+                                            base: BaseNode {
+                                                location: SourceLocation {
+                                                    start: "line: 1, column: 48",
+                                                    end: "line: 1, column: 48",
+                                                    source: "",
+                                                },
+                                                errors: [
+                                                    "expected IDENT, got ARROW (=>) at 1:48",
+                                                ],
+                                            },
+                                            name: "",
+                                        },
+                                    ),
+                                    separator: [],
+                                    value: None,
+                                    comma: [],
+                                },
+                            ],
+                            rparen: [],
+                            arrow: [],
+                            body: Block(
+                                Block {
+                                    base: BaseNode {
+                                        location: SourceLocation {
+                                            start: "line: 1, column: 51",
+                                            end: "line: 1, column: 54",
+                                            source: "{ }",
+                                        },
+                                        errors: [
+                                            "expected RPAREN, got ARROW",
+                                        ],
+                                    },
+                                    lbrace: [],
+                                    body: [],
+                                    rbrace: [],
+                                },
+                            ),
+                        },
+                    ),
+                },
+            ),
+        ],
+        eof: [],
+    }
+    "#]].assert_debug_eq(&parsed);
+}

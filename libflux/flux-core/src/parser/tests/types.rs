@@ -1930,3 +1930,24 @@ fn test_parse_record_unclosed_error() {
             .to_string(),
     );
 }
+
+#[test]
+fn test_parse_parameters_unclosed_error() {
+    let mut p = Parser::new(r#"(a:int, b:int: => int"#);
+    let parsed = p.parse_type_expression();
+    expect_test::expect![[r#"
+        error @1:14-1:14: expected IDENT, got COLON (:) at 1:14
+
+        error @1:16-1:16: expected IDENT, got ARROW (=>) at 1:16
+
+        error @1:19-1:22: expected COLON, got ARROW (=>) at 1:16
+
+        error @1:22-1:22: expected RPAREN, got EOF
+
+        error @1:22-1:22: expected ARROW, got EOF"#]]
+    .assert_eq(
+        &ast::check::check(ast::walk::Node::TypeExpression(&parsed))
+            .unwrap_err()
+            .to_string(),
+    );
+}
