@@ -1134,15 +1134,18 @@ fn dictionary_literal() {
             ],
             eof: [],
         }
-    "#]].assert_debug_eq(&parsed);
+    "#]]
+    .assert_debug_eq(&parsed);
 }
 
 #[test]
 fn unclosed_dictionary_literal() {
-    let mut p = Parser::new(r#"
+    let mut p = Parser::new(
+        r#"
         A = ["a":1, "b":2
         B = 100
-"#);
+"#,
+    );
     let parsed = p.parse_file("".to_string());
     expect![[r#"
         File {
@@ -1284,5 +1287,6 @@ fn unclosed_dictionary_literal() {
             ],
             eof: [],
         }
-    "#]].assert_debug_eq(&parsed);
+    "#]]
+    .assert_debug_eq(&parsed);
 }

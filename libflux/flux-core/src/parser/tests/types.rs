@@ -1944,7 +1944,8 @@ fn test_parse_parameters_unclosed_error() {
 
         error @1:22-1:22: expected RPAREN, got EOF
 
-        error @1:22-1:22: expected ARROW, got EOF"#]].assert_eq(
+        error @1:22-1:22: expected ARROW, got EOF"#]]
+    .assert_eq(
         &ast::check::check(ast::walk::Node::TypeExpression(&parsed))
             .unwrap_err()
             .to_string(),
