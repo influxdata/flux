@@ -734,12 +734,23 @@ impl<'input> Parser<'input> {
     // Parameters = Parameter { "," Parameter } .
     fn parse_parameters(&mut self) -> Vec<ParameterType> {
         let mut params = Vec::<ParameterType>::new();
+        // keep track of the last token's byte offsets
+        let mut last = self.peek().start_offset;
         while self.more() {
             let parameter = self.parse_parameter_type();
             params.push(parameter);
             if self.peek().tok == TokenType::Comma {
                 self.consume();
             }
+
+            // If we parse the same token twice in a row,
+            // it means we've hit a parse error, and that
+            // we're now in an infinite loop.
+            let this = self.peek().start_offset;
+            if last == this {
+                break;
+            }
+            last = this;
         }
         params
     }
@@ -889,11 +900,22 @@ impl<'input> Parser<'input> {
             self.consume();
         }
         // check for more properties
+        // keep track of the last token's byte offsets
+        let mut last = self.peek().start_offset;
         while self.more() {
             properties.push(self.parse_property_type());
             if self.peek().tok == TokenType::Comma {
                 self.consume();
             }
+
+            // If we parse the same token twice in a row,
+            // it means we've hit a parse error, and that
+            // we're now in an infinite loop.
+            let this = self.peek().start_offset;
+            if last == this {
+                break;
+            }
+            last = this;
         }
         properties
     }
@@ -1928,6 +1950,8 @@ impl<'input> Parser<'input> {
                     val,
                     comma: comma.comments,
                 }];
+                // keep track of the last token's byte offsets
+                let mut last = self.peek().start_offset;
                 while self.more() {
                     let key = self.parse_expression();
                     self.expect(TokenType::Colon);
@@ -1940,6 +1964,15 @@ impl<'input> Parser<'input> {
                         _ => vec![],
                     };
                     items.push(DictItem { key, val, comma });
+
+                    // If we parse the same token twice in a row,
+                    // it means we've hit a parse error, and that
+                    // we're now in an infinite loop.
+                    let this = self.peek().start_offset;
+                    if last == this {
+                        break;
+                    }
+                    last = this;
                 }
                 let end = self.close(TokenType::RBrack);
                 Expression::Dict(Box::new(DictExpr {
@@ -2066,6 +2099,8 @@ impl<'input> Parser<'input> {
             }
             _ => {
                 let mut expr = self.parse_expression_suffix(Expression::Identifier(key));
+                // keep track of the last token's byte offsets
+                let mut last = self.peek().start_offset;
                 while self.more() {
                     let rhs = self.parse_expression();
                     if let Expression::Bad(_) = rhs {
@@ -2084,6 +2119,15 @@ impl<'input> Parser<'input> {
                         left: expr,
                         right: rhs,
                     }));
+
+                    // If we parse the same token twice in a row,
+                    // it means we've hit a parse error, and that
+                    // we're now in an infinite loop.
+                    let this = self.peek().start_offset;
+                    if last == this {
+                        break;
+                    }
+                    last = this;
                 }
                 let rparen = self.close(TokenType::RParen);
                 Expression::Paren(Box::new(ParenExpr {
@@ -2180,6 +2224,8 @@ impl<'input> Parser<'input> {
     fn parse_property_list(&mut self) -> Vec<Property> {
         let mut params = Vec::new();
         let mut errs = Vec::new();
+        // keep track of the last token's byte offsets
+        let mut last = self.peek().start_offset;
         while self.more() {
             let t = self.peek();
             let mut p: Property = match t.tok {
@@ -2198,6 +2244,15 @@ impl<'input> Parser<'input> {
             }
 
             params.push(p);
+
+            // If we parse the same token twice in a row,
+            // it means we've hit a parse error, and that
+            // we're now in an infinite loop.
+            let this = self.peek().start_offset;
+            if last == this {
+                break;
+            }
+            last = this;
         }
         self.errs.append(&mut errs);
         params
@@ -2285,6 +2340,8 @@ impl<'input> Parser<'input> {
     }
     fn parse_parameter_list(&mut self) -> Vec<Property> {
         let mut params = Vec::new();
+        // keep track of the last token's byte offsets
+        let mut last = self.peek().start_offset;
         while self.more() {
             let mut p = self.parse_parameter();
             if self.peek().tok == TokenType::Comma {
@@ -2292,6 +2349,15 @@ impl<'input> Parser<'input> {
                 p.comma = t.comments;
             };
             params.push(p);
+
+            // If we parse the same token twice in a row,
+            // it means we've hit a parse error, and that
+            // we're now in an infinite loop.
+            let this = self.peek().start_offset;
+            if last == this {
+                break;
+            }
+            last = this;
         }
         params
     }
@@ -2394,6 +2460,8 @@ impl<'input> Parser<'input> {
     fn parse_attribute_params(&mut self) -> Vec<AttributeParam> {
         let mut params = Vec::new();
         let mut errs = Vec::new();
+        // keep track of the last token's byte offsets
+        let mut last = self.peek().start_offset;
         while self.more() {
             let value = self.parse_primary_expression();
             let start_pos = value.base().location.start;
@@ -2420,6 +2488,15 @@ impl<'input> Parser<'input> {
                 comma: comments,
             };
             params.push(param);
+
+            // If we parse the same token twice in a row,
+            // it means we've hit a parse error, and that
+            // we're now in an infinite loop.
+            let this = self.peek().start_offset;
+            if last == this {
+                break;
+            }
+            last = this;
         }
         self.errs.append(&mut errs);
         params
