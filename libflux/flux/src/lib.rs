@@ -9,7 +9,6 @@ use fluxcore::semantic::env::Environment;
 use fluxcore::semantic::flatbuffers::semantic_generated::fbsemantic as fb;
 use fluxcore::semantic::import::Packages;
 use fluxcore::semantic::{Analyzer, AnalyzerConfig, PackageExports};
-use fluxcore::{Database, Flux};
 use once_cell::sync::Lazy;
 use thiserror::Error;
 
