@@ -212,10 +212,8 @@ func (c *TypeConstraint) Copy() Node {
 	nc.BaseNode = c.BaseNode.Copy()
 
 	nc.Tvar = c.Tvar.Copy().(*Identifier)
-	//nc.Kinds = c.Kinds.Copy().([]*Identifier)
-	for k := range c.Kinds {
-		nc.Kinds = append(nc.Kinds, c.Kinds[k])
-	}
+	nc.Kinds = append(nc.Kinds, c.Kinds...)
+
 	return nc
 }
 
@@ -231,9 +229,7 @@ func (c *TypeExpression) Copy() Node {
 	nc.BaseNode = c.BaseNode.Copy()
 
 	nc.Ty = c.Ty.Copy().(MonoType)
-	for cnstr := range c.Constraints {
-		nc.Constraints = append(nc.Constraints, c.Constraints[cnstr])
-	}
+	nc.Constraints = append(nc.Constraints, c.Constraints...)
 	return nc
 }
 
@@ -410,10 +406,7 @@ func (c *RecordType) Copy() Node {
 	nc := new(RecordType)
 	*nc = *c
 	nc.BaseNode = c.BaseNode.Copy()
-
-	for p := range c.Properties {
-		nc.Properties = append(nc.Properties, c.Properties[p])
-	}
+	nc.Properties = append(nc.Properties, c.Properties...)
 	nc.Tvar = c.Tvar.Copy().(*Identifier)
 	return nc
 }
