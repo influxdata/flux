@@ -78,7 +78,9 @@ jobs:
           keys:
             - flux-gomod-{{checksum "go.sum"}}
       # Run tests
-      - run: make test-bench
+      - run:
+          command: make test-bench
+          no_output_timeout: 20m
       # No need to save the pkg/mod cache since the other job does it
   test-build-reproducibility:
     docker:
