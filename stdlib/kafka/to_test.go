@@ -570,7 +570,7 @@ func TestToKafka_NewTransformation(t *testing.T) {
 						Brokers: []string{":this:is:invalid:"},
 					},
 				},
-				WantErr: "invalid kafka broker url: parse :this:is:invalid:: missing protocol scheme",
+				WantErr: "invalid kafka broker url: parse \":this:is:invalid:\": missing protocol scheme",
 			}, {
 				Name: "no lookup",
 				Spec: &fkafka.ToKafkaProcedureSpec{
