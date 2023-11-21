@@ -386,6 +386,7 @@ type CreateNewTransformationWithDeps func(d execute.Dataset, deps flux.Dependenc
 
 func (test *TfUrlValidationTest) Run(t *testing.T) {
 	for _, tc := range test.Cases {
+		tc := tc
 		t.Run(tc.Name, func(t *testing.T) {
 			t.Parallel()
 			d := NewDataset(RandomDatasetID())
