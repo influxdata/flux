@@ -107,7 +107,7 @@ jobs:
               git checkout bump-v1.25.1
               choco install -dvf ./rustup.install.nuspec
             cd -
-            choco upgrade golang --version=1.18 --allow-downgrade
+            choco upgrade golang --version=1.21 --allow-downgrade
 
             choco install \
               grep \
