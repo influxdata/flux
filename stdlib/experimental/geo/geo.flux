@@ -179,7 +179,7 @@ package geo
 import "experimental"
 import "influxdata/influxdb/v1"
 
-// units defines the unit of measurment used in geotemporal operations.
+// units defines the unit of measurement used in geotemporal operations.
 //
 // ## Metadata
 // introduced: 0.78.0

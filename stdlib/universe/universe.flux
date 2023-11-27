@@ -700,7 +700,7 @@ builtin first : (<-tables: stream[A], ?column: string) => stream[A] where A: Rec
 
 // group regroups input data by modifying group key of input tables.
 //
-// **Note**: Group does not gaurantee sort order.
+// **Note**: Group does not guarantee sort order.
 // To ensure data is sorted correctly, use `sort()` after `group()`.
 //
 // ## Parameters
@@ -711,7 +711,7 @@ builtin first : (<-tables: stream[A], ?column: string) => stream[A] where A: Rec
 //
 // - mode: Grouping mode. Default is `by`.
 //
-//   **Avaliable modes**:
+//   **Available modes**:
 //   - **by**: Group by columns defined in the `columns` parameter.
 //   - **except**: Group by all columns _except_ those in defined in the
 //     `columns` parameter.
@@ -1196,7 +1196,7 @@ builtin join : (<-tables: A, ?method: string, ?on: [string]) => stream[B] where 
 //
 // ## Examples
 //
-// ### Caclulate Kaufman's Adaptive Moving Average for input data
+// ### Calculate Kaufman's Adaptive Moving Average for input data
 // ```
 // import "sampledata"
 //
@@ -1215,7 +1215,7 @@ builtin kaufmansAMA : (<-tables: stream[A], n: int, ?column: string) => stream[B
 
 // keep returns a stream of tables containing only the specified columns.
 //
-// Columns in the group key that are not specifed in the `columns` parameter or
+// Columns in the group key that are not specified in the `columns` parameter or
 // identified by the `fn` parameter are removed from the group key and dropped
 // from output tables. `keep()` is the inverse of `drop()`.
 //
@@ -1696,7 +1696,7 @@ builtin limit : (<-tables: stream[A], n: int, ?offset: int) => stream[A]
 // the group key.
 //
 // #### Preserve columns
-// `map()` drops any columns that are not mapped explictly by column label or
+// `map()` drops any columns that are not mapped explicitly by column label or
 // implicitly using the `with` operator in the `fn` function.
 // The `with` operator updates a record property if it already exists, creates
 // a new record property if it doesn’t exist, and includes all existing
@@ -1917,7 +1917,7 @@ builtin movingAverage : (
 // - q: Quantile to compute. Must be between `0.0` and `1.0`.
 // - method: Computation method. Default is `estimate_tdigest`.
 //
-//     **Avaialable methods**:
+//     **Available methods**:
 //
 //     - **estimate_tdigest**: Aggregate method that uses a
 //       [t-digest data structure](https://github.com/tdunning/t-digest) to
@@ -2465,7 +2465,7 @@ builtin skew : (<-tables: stream[A], ?column: string) => stream[B] where A: Reco
 //
 builtin spread : (<-tables: stream[A], ?column: string) => stream[B] where A: Record, B: Record
 
-// sort orders rows in each intput table based on values in specified columns.
+// sort orders rows in each input table based on values in specified columns.
 //
 // #### Output data
 // One output table is produced for each input table.
@@ -2585,7 +2585,7 @@ builtin stateTracking : (
 // - mode: Standard deviation mode or type of standard deviation to calculate.
 //   Default is `sample`.
 //
-//   **Availble modes:**
+//   **Available modes:**
 //
 //   - **sample**: Calculate the sample standard deviation where the data is
 //     considered part of a larger population.
@@ -3122,7 +3122,7 @@ builtin findRecord : (<-tables: stream[A], fn: (key: B) => bool, idx: int) => A
 // ### Convert all values in a column to booleans
 // If converting the `_value` column to boolean types, use `toBool()`.
 // If converting columns other than `_value`, use `map()` to iterate over each
-// row and `bool()` to covert a column value to a boolean type.
+// row and `bool()` to convert a column value to a boolean type.
 //
 // ```
 // # import "sampledata"
@@ -3234,7 +3234,7 @@ builtin duration : (v: A) => duration
 // ### Convert all values in a column to floats
 // If converting the `_value` column to float types, use `toFloat()`.
 // If converting columns other than `_value`, use `map()` to iterate over each
-// row and `float()` to covert a column value to a float type.
+// row and `float()` to convert a column value to a float type.
 //
 // ```
 // # import "sampledata"
@@ -3294,7 +3294,7 @@ builtin _vectorizedFloat : (v: vector[A]) => vector[float]
 // ### Convert all values in a column to integers
 // If converting the `_value` column to integer types, use `toInt()`.
 // If converting columns other than `_value`, use `map()` to iterate over each
-// row and `int()` to covert a column value to a integer type.
+// row and `int()` to convert a column value to a integer type.
 //
 // ```
 // # import "sampledata"
@@ -3331,7 +3331,7 @@ builtin int : (v: A) => int
 // ### Convert all values in a column to strings
 // If converting the `_value` column to string types, use `toString()`.
 // If converting columns other than `_value`, use `map()` to iterate over each
-// row and `string()` to covert a column value to a string type.
+// row and `string()` to convert a column value to a string type.
 //
 // ```
 // # import "sampledata"
@@ -3373,7 +3373,7 @@ builtin string : (v: A) => string
 // ### Convert all values in a column to time
 // If converting the `_value` column to time types, use `toTime()`.
 // If converting columns other than `_value`, use `map()` to iterate over each
-// row and `time()` to covert a column value to a time type.
+// row and `time()` to convert a column value to a time type.
 //
 // ```
 // # import "sampledata"
@@ -3422,7 +3422,7 @@ builtin time : (v: A) => time
 // ### Convert all values in a column to unsigned integers
 // If converting the `_value` column to uint types, use `toUInt()`.
 // If converting columns other than `_value`, use `map()` to iterate over each
-// row and `uint()` to covert a column value to a uint type.
+// row and `uint()` to convert a column value to a uint type.
 //
 // ```
 // # import "sampledata"
@@ -3951,7 +3951,7 @@ increase = (tables=<-, columns=["_value"]) =>
 // - column: Column to use to compute the median. Default is `_value`.
 // - method: Computation method. Default is `estimate_tdigest`.
 //
-//     **Avaialable methods**:
+//     **Available methods**:
 //
 //     - **estimate_tdigest**: Aggregate method that uses a
 //       [t-digest data structure](https://github.com/tdunning/t-digest) to

@@ -537,7 +537,7 @@ builtin cosh : (x: float) => float
 //
 // ## Examples
 //
-// ### Return the maximum difference betwee two values
+// ### Return the maximum difference between two values
 // ```no_run
 // import "math"
 //
@@ -1191,7 +1191,7 @@ builtin isNaN : (f: float) => bool
 //
 builtin j0 : (x: float) => float
 
-// j1 is a funciton that returns the order-one Bessel function for the first kind.
+// j1 is a function that returns the order-one Bessel function for the first kind.
 //
 // ## Parameters
 // - x: Value to operate on.
@@ -1223,7 +1223,7 @@ builtin j0 : (x: float) => float
 //
 builtin j1 : (x: float) => float
 
-// jn returns the order-n Bessel funciton of the first kind.
+// jn returns the order-n Bessel function of the first kind.
 //
 // ## Parameters
 // - n: Order number.
@@ -1566,7 +1566,7 @@ builtin logb : (x: float) => float
 //
 builtin mMax : (x: float, y: float) => float
 
-// mMin is a function taht returns the lessser of `x` or `y`.
+// mMin is a function that returns the lesser of `x` or `y`.
 //
 // ## Parameters
 // - x: x-value to use in the operation.

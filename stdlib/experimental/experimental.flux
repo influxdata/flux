@@ -412,7 +412,7 @@ builtin join : (left: stream[A], right: stream[B], fn: (left: A, right: B) => C)
 // ##### Applicable use cases
 // - Write to an InfluxDB bucket and query the written data in a single Flux script.
 //
-//   _**Note:** `experimental.chain()` does not gaurantee that data written to
+//   _**Note:** `experimental.chain()` does not guarantee that data written to
 //   InfluxDB is immediately queryable. A delay between when data is written and
 //   when it is queryable may cause a query using `experimental.chain()` to fail.
 //
@@ -938,7 +938,7 @@ builtin spread : (<-tables: stream[{T with _value: A}]) => stream[{T with _value
 // column for each input table.
 //
 // ## Standard deviation modes
-// The following modes are avaialable when calculating the standard deviation of data.
+// The following modes are available when calculating the standard deviation of data.
 //
 // ##### sample
 // Calculate the sample standard deviation where the data is considered to be
@@ -1198,7 +1198,7 @@ builtin min : (<-tables: stream[{T with _value: A}]) => stream[{T with _value: A
 // - Outputs a single table for each input table.
 // - Outputs a single record for each unique value in an input table.
 // - Leaves group keys, columns, and values unmodified.
-// - Drops emtpy tables.
+// - Drops empty tables.
 //
 // ## Parameters
 // - tables: Input data. Default is piped-forward data (`<-`).
@@ -1254,7 +1254,7 @@ builtin unique : (<-tables: stream[{T with _value: A}]) => stream[{T with _value
 // - tables: Input data. Default is piped-forward data (`<-`).
 //
 // ## Examples
-// ### Create a histgram from input data
+// ### Create a histogram from input data
 // ```
 // import "experimental"
 // import "sampledata"

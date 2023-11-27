@@ -60,7 +60,7 @@
 // authentication credentials using one of the following methods:
 //
 // - The `GOOGLE_APPLICATION_CREDENTIALS` environment variable that identifies the
-//   location of yur credential JSON file.
+//   location of your credential JSON file.
 // - Provide your BigQuery credentials using the `credentials` URL parameters in your BigQuery DSN.
 //
 // #### BigQuery credential URL parameter

@@ -54,7 +54,7 @@ option defaultURL = "https://events.pagerduty.com/v2/enqueue"
 //
 // ## Examples
 //
-// ### Convert a status level to a PagerDuty serverity
+// ### Convert a status level to a PagerDuty severity
 // ```no_run
 // import "pagerduty"
 //
