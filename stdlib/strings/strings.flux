@@ -391,7 +391,7 @@ builtin compare : (v: string, t: string) => int
 // ## Parameters
 //
 // - v: String value to search.
-// - substr: Substring to count occurences of.
+// - substr: Substring to count occurrences of.
 //
 //   The function counts only non-overlapping instances of `substr`.
 //

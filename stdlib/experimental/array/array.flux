@@ -58,7 +58,7 @@ from = array.from
 
 // concat appends two arrays and returns a new array.
 //
-// **Deprecated**: Experimetnal `array.concat()` is deprecated in favor of
+// **Deprecated**: Experimental `array.concat()` is deprecated in favor of
 // [`array.concat()`](https://docs.influxdata.com/flux/v0.x/stdlib/array/concat).
 //
 // ## Parameters

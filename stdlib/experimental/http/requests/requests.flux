@@ -2,7 +2,7 @@
 //
 // **Deprecated**: This package is deprecated in favor of [`requests`](https://docs.influxdata.com/flux/v0.x/stdlib/http/requests/).
 // Do not mix usage of this experimental package with the `requests` package as the `defaultConfig` is not shared between the two packages.
-// This experimental package is completely superceded by the `requests` package so there should be no need to mix them.
+// This experimental package is completely superseded by the `requests` package so there should be no need to mix them.
 //
 // ## Metadata
 // introduced: 0.152.0
@@ -181,8 +181,8 @@ do =
 //
 // response =
 //     requests.post(
-//         url: "https://goolnk.com/api/v1/shorten",
-//         body: json.encode(v: {url: "http://www.influxdata.com"}),
+//         url: "https://reqres.in/api/users",
+//         body: json.encode(v: {name: "doc brown", job: "time traveler"}),
 //         headers: ["Content-Type": "application/json"],
 //     )
 //

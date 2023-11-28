@@ -14,7 +14,7 @@ package secrets
 //
 // ## Examples
 //
-// ### Retrive a key from the InfluxDB secret store
+// ### Retrieve a key from the InfluxDB secret store
 // ```no_run
 // import "influxdata/influxdb/secrets"
 //

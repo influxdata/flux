@@ -25,7 +25,7 @@ builtin _lastSuccess : (orTime: T, lastSuccessTime: time) => time where T: Timea
 //
 // ## Examples
 //
-// ### Return the time an InfluxDB task last succesfully ran
+// ### Return the time an InfluxDB task last successfully ran
 // ```no_run
 // import "influxdata/influxdb/tasks"
 //
