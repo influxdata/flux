@@ -181,8 +181,8 @@ do =
 //
 // response =
 //     requests.post(
-//         url: "https://goolnk.com/api/v1/shorten",
-//         body: json.encode(v: {url: "http://www.influxdata.com"}),
+//         url: "https://reqres.in/api/users",
+//         body: json.encode(v: {name: "doc brown", job: "time traveler"}),
 //         headers: ["Content-Type": "application/json"],
 //     )
 //
