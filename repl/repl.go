@@ -41,6 +41,8 @@ type REPL struct {
 	cancelMu   sync.Mutex
 	cancelFunc context.CancelFunc
 
+	lineBuf string
+
 	enableSuggestions bool
 }
 
@@ -201,6 +203,13 @@ func (r *REPL) evalWithFluxError(t string) ([]interpreter.SideEffect, *libflux.F
 // executeLine processes a line of input.
 // If the input evaluates to a valid value, that value is returned.
 func (r *REPL) executeLine(t string) (*libflux.FluxError, error) {
+	t = r.lineBuf + t
+	if strings.HasSuffix(t, "\\") {
+		r.lineBuf = t[:len(t)-1] + "\n"
+		return nil, nil
+	}
+	r.lineBuf = ""
+
 	ses, fluxError, err := r.evalWithFluxError(t)
 	if err != nil {
 		return fluxError, err
