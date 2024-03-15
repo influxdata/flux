@@ -25,14 +25,14 @@ testcase integral {
 ,,1,2018-05-22T19:53:50Z,_m,QQ,1
 ,,1,2018-05-22T19:54:00Z,_m,QQ,1
 ,,1,2018-05-22T19:54:10Z,_m,QQ,1
-,,1,2018-05-22T19:54:20Z,_m,QQ,1
-,,2,2018-05-22T19:53:00Z,_m,RR,1
+,,1,2018-05-22T19:54:20Z,_m,QQ,2
+,,2,2018-05-22T19:53:00Z,_m,RR,2
 ,,2,2018-05-22T19:53:10Z,_m,RR,1
 ,,2,2018-05-22T19:53:20Z,_m,RR,1
 ,,2,2018-05-22T19:53:30Z,_m,RR,1
-,,3,2018-05-22T19:53:40Z,_m,SR,1
-,,3,2018-05-22T19:53:50Z,_m,SR,1
-,,3,2018-05-22T19:54:00Z,_m,SR,1
+,,3,2018-05-22T19:53:40Z,_m,SR,2
+,,3,2018-05-22T19:53:50Z,_m,SR,2
+,,3,2018-05-22T19:54:00Z,_m,SR,2
 "
     outData =
         "
@@ -40,10 +40,10 @@ testcase integral {
 #group,false,false,true,true,false
 #default,_result,,,,
 ,result,table,_measurement,_field,_value
-,,0,_m,FF,5
-,,1,_m,QQ,8
-,,2,_m,RR,3
-,,3,_m,SR,2
+,,0,_m,FF,12
+,,1,_m,QQ,16
+,,2,_m,RR,13
+,,3,_m,SR,24
 "
     got =
         csv.from(csv: inData)
@@ -84,9 +84,9 @@ testcase integral_interpolate {
 #group,false,false,true,true,false
 #default,_result,,,,
 ,result,table,_measurement,_field,_value
-,,0,_m,FF,36.5
+,,0,_m,FF,35.5
 ,,1,_m,QQ,6
-,,2,_m,RR,-2
+,,2,_m,RR,2.5
 "
     got =
         csv.from(csv: inData)
