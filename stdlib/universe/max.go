@@ -1,6 +1,8 @@
 package universe
 
 import (
+	"fmt"
+
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/array"
 	"github.com/influxdata/flux/codes"
@@ -58,6 +60,7 @@ func newMaxProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.Proced
 func (s *MaxProcedureSpec) Kind() plan.ProcedureKind {
 	return MaxKind
 }
+
 func (s *MaxProcedureSpec) Copy() plan.ProcedureSpec {
 	ns := new(MaxProcedureSpec)
 	ns.SelectorConfig = s.SelectorConfig
@@ -80,7 +83,15 @@ func createMaxTransformation(id execute.DatasetID, mode execute.AccumulationMode
 		return nil, nil, errors.Newf(codes.Internal, "invalid spec type %T", ps)
 	}
 	t, d := execute.NewRowSelectorTransformationAndDataset(id, mode, new(MaxSelector), ps.SelectorConfig, a.Allocator())
+
+	fmt.Println(t, d)
 	return t, d, nil
+}
+
+type MaxBoolSelector struct {
+	MaxSelector
+	max  bool
+	edge bool
 }
 
 type MaxIntSelector struct {
@@ -104,7 +115,7 @@ func (s *MaxSelector) NewTimeSelector() execute.DoTimeRowSelector {
 }
 
 func (s *MaxSelector) NewBoolSelector() execute.DoBoolRowSelector {
-	return nil
+	return new(MaxBoolSelector)
 }
 
 func (s *MaxSelector) NewIntSelector() execute.DoIntRowSelector {
@@ -140,6 +151,7 @@ func (s *MaxSelector) selectRow(idx int, cr flux.ColReader) {
 func (s *MaxTimeSelector) DoTime(vs *array.Int, cr flux.ColReader) {
 	s.MaxIntSelector.DoInt(vs, cr)
 }
+
 func (s *MaxIntSelector) DoInt(vs *array.Int, cr flux.ColReader) {
 	maxIdx := -1
 	for i := 0; i < vs.Len(); i++ {
@@ -153,6 +165,7 @@ func (s *MaxIntSelector) DoInt(vs *array.Int, cr flux.ColReader) {
 	}
 	s.selectRow(maxIdx, cr)
 }
+
 func (s *MaxUIntSelector) DoUInt(vs *array.Uint, cr flux.ColReader) {
 	maxIdx := -1
 	for i := 0; i < vs.Len(); i++ {
@@ -166,6 +179,7 @@ func (s *MaxUIntSelector) DoUInt(vs *array.Uint, cr flux.ColReader) {
 	}
 	s.selectRow(maxIdx, cr)
 }
+
 func (s *MaxFloatSelector) DoFloat(vs *array.Float, cr flux.ColReader) {
 	maxIdx := -1
 	for i := 0; i < vs.Len(); i++ {
@@ -177,5 +191,30 @@ func (s *MaxFloatSelector) DoFloat(vs *array.Float, cr flux.ColReader) {
 			}
 		}
 	}
+	s.selectRow(maxIdx, cr)
+}
+
+func (s *MaxBoolSelector) DoBool(vs *array.Boolean, cr flux.ColReader) {
+	maxIdx := -1
+
+	for i := 0; i < vs.Len(); i++ {
+		if vs.IsValid(i) {
+			if v := vs.Value(i); !s.edge && v {
+				s.edge = true
+				s.set = true
+				s.max = v
+				maxIdx = i
+			}
+		}
+	}
+
+	// store first point to return if
+	// no edge is found
+	if !s.set && !s.edge && vs.Len() > 0 {
+		s.selectRow(0, cr)
+		s.set = true
+		return
+	}
+
 	s.selectRow(maxIdx, cr)
 }
