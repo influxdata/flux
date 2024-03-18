@@ -109,4 +109,3 @@ testcase min_bool {
 
     testing.diff(got, want)
 }
-
