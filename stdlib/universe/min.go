@@ -58,6 +58,7 @@ func newMinProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.Proced
 func (s *MinProcedureSpec) Kind() plan.ProcedureKind {
 	return MinKind
 }
+
 func (s *MinProcedureSpec) Copy() plan.ProcedureSpec {
 	ns := new(MinProcedureSpec)
 	ns.SelectorConfig = s.SelectorConfig
@@ -99,12 +100,18 @@ type MinTimeSelector struct {
 	MinIntSelector
 }
 
+type MinBoolSelector struct {
+	MinSelector
+	min  bool
+	edge bool
+}
+
 func (s *MinSelector) NewTimeSelector() execute.DoTimeRowSelector {
 	return new(MinTimeSelector)
 }
 
 func (s *MinSelector) NewBoolSelector() execute.DoBoolRowSelector {
-	return nil
+	return new(MinBoolSelector)
 }
 
 func (s *MinSelector) NewIntSelector() execute.DoIntRowSelector {
@@ -140,6 +147,7 @@ func (s *MinSelector) selectRow(idx int, cr flux.ColReader) {
 func (s *MinTimeSelector) DoTime(vs *array.Int, cr flux.ColReader) {
 	s.MinIntSelector.DoInt(vs, cr)
 }
+
 func (s *MinIntSelector) DoInt(vs *array.Int, cr flux.ColReader) {
 	minIdx := -1
 	for i := 0; i < vs.Len(); i++ {
@@ -153,6 +161,7 @@ func (s *MinIntSelector) DoInt(vs *array.Int, cr flux.ColReader) {
 	}
 	s.selectRow(minIdx, cr)
 }
+
 func (s *MinUIntSelector) DoUInt(vs *array.Uint, cr flux.ColReader) {
 	minIdx := -1
 	for i := 0; i < vs.Len(); i++ {
@@ -166,6 +175,7 @@ func (s *MinUIntSelector) DoUInt(vs *array.Uint, cr flux.ColReader) {
 	}
 	s.selectRow(minIdx, cr)
 }
+
 func (s *MinFloatSelector) DoFloat(vs *array.Float, cr flux.ColReader) {
 	minIdx := -1
 	for i := 0; i < vs.Len(); i++ {
@@ -177,5 +187,30 @@ func (s *MinFloatSelector) DoFloat(vs *array.Float, cr flux.ColReader) {
 			}
 		}
 	}
+	s.selectRow(minIdx, cr)
+}
+
+func (s *MinBoolSelector) DoBool(vs *array.Boolean, cr flux.ColReader) {
+	minIdx := -1
+
+	for i := 0; i < vs.Len(); i++ {
+		if vs.IsValid(i) {
+			if v := vs.Value(i); !s.edge && !v {
+				s.edge = true
+				s.set = true
+				s.min = v
+				minIdx = i
+			}
+		}
+	}
+
+	// store first point to return if
+	// no edge is found
+	if !s.set && !s.edge && vs.Len() > 0 {
+		s.selectRow(0, cr)
+		s.set = true
+		return
+	}
+
 	s.selectRow(minIdx, cr)
 }

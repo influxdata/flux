@@ -30,6 +30,28 @@ func RowSelectorFuncTestHelper(t *testing.T, selector execute.RowSelector, data 
 	}
 }
 
+func BoolRowSelectorFuncTestHelper(t *testing.T, selector execute.RowSelector, data flux.Table, want []execute.Row) {
+	t.Helper()
+
+	s := selector.NewBoolSelector()
+	valueIdx := execute.ColIdx(execute.DefaultValueColLabel, data.Cols())
+	if valueIdx < 0 {
+		t.Fatal("no _value column found")
+	}
+	if err := data.Do(func(cr flux.ColReader) error {
+		s.DoBool(cr.Bools(valueIdx), cr)
+		return nil
+	}); err != nil {
+		t.Fatal(err)
+	}
+
+	got := s.Rows()
+
+	if !cmp.Equal(want, got) {
+		t.Errorf("unexpected value -want/+got\n%s", cmp.Diff(want, got))
+	}
+}
+
 //lint:ignore U1000 Not sure why we need this...someone write a better reason :) .
 var rows []execute.Row
 

@@ -142,3 +142,144 @@ func TestMin_Process(t *testing.T) {
 func BenchmarkMin(b *testing.B) {
 	executetest.RowSelectorFuncBenchmarkHelper(b, new(universe.MinSelector), NormalTable)
 }
+
+func TestMinBool_Process(t *testing.T) {
+	testCases := []struct {
+		name string
+		data *executetest.Table
+		want []execute.Row
+	}{
+		{
+			name: "first",
+			data: &executetest.Table{
+				KeyCols: []string{"t1"},
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TBool},
+					{Label: "t1", Type: flux.TString},
+					{Label: "t2", Type: flux.TString},
+				},
+				Data: [][]interface{}{
+					{execute.Time(0), false, "a", "y"},
+					{execute.Time(10), true, "a", "x"},
+					{execute.Time(20), false, "a", "y"},
+					{execute.Time(30), true, "a", "x"},
+				},
+			},
+			want: []execute.Row{{
+				Values: []interface{}{execute.Time(0), false, "a", "y"},
+			}},
+		},
+		{
+			name: "last",
+			data: &executetest.Table{
+				KeyCols: []string{"t1"},
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TBool},
+					{Label: "t1", Type: flux.TString},
+					{Label: "t2", Type: flux.TString},
+				},
+				Data: [][]interface{}{
+					{execute.Time(0), true, "a", "y"},
+					{execute.Time(10), true, "a", "x"},
+					{execute.Time(20), true, "a", "y"},
+					{execute.Time(30), false, "a", "x"},
+				},
+			},
+			want: []execute.Row{{
+				Values: []interface{}{execute.Time(30), false, "a", "x"},
+			}},
+		},
+		{
+			name: "middle",
+			data: &executetest.Table{
+				KeyCols: []string{"t1"},
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TBool},
+					{Label: "t1", Type: flux.TString},
+					{Label: "t2", Type: flux.TString},
+				},
+				Data: [][]interface{}{
+					{execute.Time(0), true, "a", "y"},
+					{execute.Time(10), true, "a", "x"},
+					{execute.Time(20), false, "a", "y"},
+					{execute.Time(30), true, "a", "x"},
+				},
+			},
+			want: []execute.Row{{
+				Values: []interface{}{execute.Time(20), false, "a", "y"},
+			}},
+		},
+		{
+			name: "nulls",
+			data: &executetest.Table{
+				KeyCols: []string{"t1"},
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TBool},
+					{Label: "t1", Type: flux.TString},
+					{Label: "t2", Type: flux.TString},
+				},
+				Data: [][]interface{}{
+					{execute.Time(0), true, "a", "y"},
+					{execute.Time(10), false, "a", "x"},
+					{execute.Time(20), nil, "a", "y"},
+					{execute.Time(30), true, "a", "x"},
+				},
+			},
+			want: []execute.Row{{
+				Values: []interface{}{execute.Time(10), false, "a", "x"},
+			}},
+		},
+		{
+			name: "all-true",
+			data: &executetest.Table{
+				KeyCols: []string{"t1"},
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TBool},
+					{Label: "t1", Type: flux.TString},
+					{Label: "t2", Type: flux.TString},
+				},
+				Data: [][]interface{}{
+					{execute.Time(0), true, "a", "y"},
+					{execute.Time(10), true, "a", "x"},
+					{execute.Time(20), true, "a", "y"},
+					{execute.Time(30), true, "a", "x"},
+				},
+			},
+			want: []execute.Row{{
+				Values: []interface{}{execute.Time(0), true, "a", "y"},
+			}},
+		},
+		{
+			name: "empty",
+			data: &executetest.Table{
+				KeyCols: []string{"t1"},
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TBool},
+					{Label: "t1", Type: flux.TString},
+					{Label: "t2", Type: flux.TString},
+				},
+				Data: [][]interface{}{},
+			},
+			want: nil,
+		},
+	}
+	for _, tc := range testCases {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			executetest.BoolRowSelectorFuncTestHelper(
+				t,
+				new(universe.MinSelector),
+				&executetest.RowWiseTable{
+					Table: tc.data,
+				},
+				tc.want,
+			)
+		})
+	}
+}
