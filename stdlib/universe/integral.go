@@ -95,6 +95,7 @@ func newIntegralProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.P
 func (s *IntegralProcedureSpec) Kind() plan.ProcedureKind {
 	return IntegralKind
 }
+
 func (s *IntegralProcedureSpec) Copy() plan.ProcedureSpec {
 	ns := new(IntegralProcedureSpec)
 	*ns = *s
@@ -260,22 +261,9 @@ func (t *integralTransformation) Process(id execute.DatasetID, tbl flux.Table) e
 			if err := builder.AppendFloat(colMap[j], 0.0); err != nil {
 				return err
 			}
-		case 1:
-			// A single value integral with interplation implies that
-			// the value was the same for the entire time range,
-			// therefore the area under the curve is a rectangle of the
-			// value by the time range, scaled by the unit.
-			v := in.vs[0] * float64(in.bounds[1]-in.bounds[0]) / in.unit
-			if !in.interpolate {
-				v = 0
-			}
-			if err := builder.AppendFloat(colMap[j], v); err != nil {
-				return err
-			}
 		default:
-			// We have 2+ values interpolate to the end of the window
-			// and use the integral value.
-			in.interpolateStop()
+			// Stretch the last point to the end (bound[1]) and add it to the sum
+			in.sum += in.lastVS * float64(in.bounds[1]-in.lastTS) / in.unit
 			if err := builder.AppendFloat(colMap[j], in.value()); err != nil {
 				return err
 			}
@@ -288,9 +276,11 @@ func (t *integralTransformation) Process(id execute.DatasetID, tbl flux.Table) e
 func (t *integralTransformation) UpdateWatermark(id execute.DatasetID, mark execute.Time) error {
 	return t.d.UpdateWatermark(mark)
 }
+
 func (t *integralTransformation) UpdateProcessingTime(id execute.DatasetID, pt execute.Time) error {
 	return t.d.UpdateProcessingTime(pt)
 }
+
 func (t *integralTransformation) Finish(id execute.DatasetID, err error) {
 	t.d.Finish(err)
 }
@@ -306,8 +296,8 @@ func newIntegral(unit time.Duration, start, stop execute.Time, interpolate bool)
 type integral struct {
 	interpolate bool
 
-	ts [2]execute.Time
-	vs [2]float64
+	lastTS execute.Time
+	lastVS float64
 
 	bounds [2]execute.Time
 	points uint8
@@ -323,30 +313,17 @@ func (in *integral) value() float64 {
 func (in *integral) updateFloat(t execute.Time, v float64) {
 	switch in.points {
 	case 0:
-		in.ts[0], in.vs[0] = t, v
+		// stretch first point to the start (bound[0])
+		in.sum += v * float64(t-in.bounds[0]) / in.unit
+		in.lastTS, in.lastVS = t, v
 		in.points++
-	case 1:
-		in.sum += 0.5 * (v + in.vs[0]) * float64(t-in.ts[0]) / in.unit
-		in.ts[1], in.vs[1] = t, v
-		in.points++
-		in.interpolateStart()
 	default:
-		in.sum += 0.5 * (v + in.vs[1]) * float64(t-in.ts[1]) / in.unit
-		in.ts[0], in.ts[1] = in.ts[1], t
-		in.vs[0], in.vs[1] = in.vs[1], v
-	}
-}
-func (in *integral) interpolateStart() {
-	if in.interpolate && in.bounds[0] < in.ts[0] {
-		m := (in.vs[1] - in.vs[0]) / float64(in.ts[1]-in.ts[0])
-		y := in.vs[0] - m*float64(in.ts[0]-in.bounds[0])
-		in.sum += 0.5 * (y + in.vs[0]) * float64(in.ts[0]-in.bounds[0]) / in.unit
-	}
-}
-func (in *integral) interpolateStop() {
-	if in.interpolate {
-		m := (in.vs[1] - in.vs[0]) / float64(in.ts[1]-in.ts[0])
-		y := in.vs[1] + m*float64(in.bounds[1]-in.ts[1])
-		in.sum += 0.5 * (y + in.vs[1]) * float64(in.bounds[1]-in.ts[1]) / in.unit
+		if in.interpolate {
+			in.sum += 0.5 * (v + in.lastVS) * float64(t-in.lastTS) / in.unit
+		} else {
+			in.sum += in.lastVS * float64(t-in.lastTS) / in.unit
+		}
+		in.lastTS, in.lastVS = t, v
+		in.points++
 	}
 }

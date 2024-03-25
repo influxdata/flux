@@ -12,7 +12,7 @@ inData =
 #group,false,false,false,true,true,false
 #default,_result,,,,,
 ,result,table,_time,_measurement,_field,_value
-,,0,2018-05-22T19:53:00Z,_m,FF,0
+,,0,2018-05-22T19:53:00Z,_m,FF,2
 ,,0,2018-05-22T19:53:10Z,_m,FF,2
 ,,0,2018-05-22T19:53:20Z,_m,FF,4
 ,,0,2018-05-22T19:53:30Z,_m,FF,6
@@ -22,7 +22,7 @@ inData =
 ,,1,2018-05-22T19:53:20Z,_m,QQ,1
 ,,1,2018-05-22T19:53:30Z,_m,QQ,1
 ,,1,2018-05-22T19:53:40Z,_m,QQ,1
-,,2,2018-05-22T19:53:10Z,_m,RR,1
+,,2,2018-05-22T19:53:10Z,_m,RR,3
 ,,2,2018-05-22T19:53:30Z,_m,RR,0
 "
 outData =
@@ -33,7 +33,7 @@ outData =
 ,result,table,_measurement,_field,_value
 ,,0,_m,FF,6
 ,,1,_m,QQ,1
-,,2,_m,RR,0
+,,2,_m,RR,1
 "
 
 testcase twa_test {
