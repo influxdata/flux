@@ -1,3 +1,5 @@
+:warning: InfluxData still support Flux, but we are not doing active development on it or adding any new features to it. We still do security patches and will address any critical defects through the maintenance period. Our focus now is on features related to our latest database engine, InfluxDB 3.0, and its associated products (Cloud Serverless, Cloud Dedicated, Clustered, Edge). There is a community owned fork of [Flux](https://github.com/InfluxCommunity/flux) where active development is happening.
+
 # Flux - Influx data language
 
 [![CircleCI](https://circleci.com/gh/influxdata/flux/tree/master.svg?style=svg)](https://circleci.com/gh/influxdata/flux/tree/master)
