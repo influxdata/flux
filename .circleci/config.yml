@@ -188,7 +188,8 @@ jobs:
 
   build-ci-image:
     machine:
-      image: ubuntu-2204:2022.04.1
+      image: ubuntu-2204:current
+      resource_class: medium
     steps:
       - checkout
       - run:
