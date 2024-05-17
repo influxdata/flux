@@ -107,7 +107,8 @@ jobs:
             git clone https://github.com/influxdata/rustup.install.git "${TMP}/rustup.install"
             cd "${TMP}/rustup.install"
               git checkout bump-v1.25.1
-              choco install -dvf ./rustup.install.nuspec
+              choco pack --pre ./rustup.install.nuspec
+              choco install rustup.install --source="C:\Users\circleci\AppData\Local\Temp\rustup.install"
             cd -
             choco upgrade golang --version=1.21 --allow-downgrade
 
