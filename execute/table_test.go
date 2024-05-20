@@ -148,6 +148,58 @@ func TestTablesEqual(t *testing.T) {
 			},
 			want: false,
 		},
+		{
+			name: "string values",
+			data0: &executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TString},
+				},
+				Data: [][]interface{}{
+					{execute.Time(1), "1"},
+					{execute.Time(2), "2"},
+					{execute.Time(3), "3"},
+				},
+			},
+			data1: &executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TString},
+				},
+				Data: [][]interface{}{
+					{execute.Time(1), "1"},
+					{execute.Time(2), "2"},
+					{execute.Time(3), "3"},
+				},
+			},
+			want: true,
+		},
+		{
+			name: "string mismatch",
+			data0: &executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TString},
+				},
+				Data: [][]interface{}{
+					{execute.Time(1), "1"},
+					{execute.Time(2), "2"},
+					{execute.Time(3), "3"},
+				},
+			},
+			data1: &executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TString},
+				},
+				Data: [][]interface{}{
+					{execute.Time(1), "1"},
+					{execute.Time(2), "2"},
+					{execute.Time(3), "4"},
+				},
+			},
+			want: false,
+		},
 	}
 	for _, tc := range testCases {
 		tc := tc

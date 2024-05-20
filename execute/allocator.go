@@ -1,6 +1,8 @@
 package execute
 
 import (
+	arrowmem "github.com/apache/arrow/go/v7/arrow/memory"
+
 	"github.com/influxdata/flux/memory"
 )
 
@@ -156,17 +158,14 @@ func (a *Allocator) GrowFloats(slice []float64, n int) []float64 {
 	return s
 }
 
-// Strings makes a slice of string values.
-// Only the string headers are accounted for.
-func (a *Allocator) Strings(l, c int) []string {
+// Strings makes a slice of String values.
+func (a *Allocator) Strings(l, c int) []String {
 	a.account(c, stringSize)
-	return make([]string, l, c)
+	return make([]String, l, c)
 }
 
-// AppendStrings appends strings to a slice.
-// Only the string headers are accounted for.
-func (a *Allocator) AppendStrings(slice []string, vs ...string) []string {
-	// TODO(nathanielc): Account for actual size of strings
+// AppendStrings appends Strings to a slice.
+func (a *Allocator) AppendStrings(slice []String, vs ...String) []String {
 	if cap(slice)-len(slice) >= len(vs) {
 		return append(slice, vs...)
 	}
@@ -176,14 +175,14 @@ func (a *Allocator) AppendStrings(slice []string, vs ...string) []string {
 	return s
 }
 
-func (a *Allocator) GrowStrings(slice []string, n int) []string {
+func (a *Allocator) GrowStrings(slice []String, n int) []String {
 	newCap := len(slice) + n
 	if newCap < cap(slice) {
 		return slice[:newCap]
 	}
 	// grow capacity same way as built-in append
 	newCap = newCap*3/2 + 1
-	s := make([]string, len(slice)+n, newCap)
+	s := make([]String, len(slice)+n, newCap)
 	copy(s, slice)
 	diff := cap(s) - cap(slice)
 	a.account(diff, stringSize)
@@ -219,4 +218,14 @@ func (a *Allocator) GrowTimes(slice []Time, n int) []Time {
 	diff := cap(s) - cap(slice)
 	a.account(diff, timeSize)
 	return s
+}
+
+// String represents a string stored in some backing byte slice.
+type String struct {
+	offset int
+	len    int
+}
+
+func (s String) Bytes(buf *arrowmem.Buffer) []byte {
+	return buf.Bytes()[s.offset : s.offset+s.len]
 }
