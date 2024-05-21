@@ -15,6 +15,7 @@ func TestString(t *testing.T) {
 	for _, tc := range []struct {
 		name  string
 		build func(b *array.StringBuilder)
+		bsz   int
 		sz    int
 		want  []interface{}
 	}{
@@ -22,13 +23,22 @@ func TestString(t *testing.T) {
 			name: "Constant",
 			build: func(b *array.StringBuilder) {
 				for i := 0; i < 10; i++ {
-					b.Append("a")
+					b.Append("abcdefghij")
 				}
 			},
-			sz: 1,
+			bsz: 256, // 64 bytes nulls + 192 bytes data.
+			sz:  64,  // The minimum size of a buffer is 64 bytes
 			want: []interface{}{
-				"a", "a", "a", "a", "a",
-				"a", "a", "a", "a", "a",
+				"abcdefghij",
+				"abcdefghij",
+				"abcdefghij",
+				"abcdefghij",
+				"abcdefghij",
+				"abcdefghij",
+				"abcdefghij",
+				"abcdefghij",
+				"abcdefghij",
+				"abcdefghij",
 			},
 		},
 		{
@@ -41,7 +51,8 @@ func TestString(t *testing.T) {
 					b.Append("b")
 				}
 			},
-			sz: 192,
+			bsz: 192,
+			sz:  192,
 			want: []interface{}{
 				"a", "a", "a", "a", "a",
 				"b", "b", "b", "b", "b",
@@ -58,7 +69,8 @@ func TestString(t *testing.T) {
 					b.Append(v)
 				}
 			},
-			sz: 192,
+			bsz: 192,
+			sz:  192,
 			want: []interface{}{
 				"a", "b", "c", "d", "e",
 				nil, "g", "h", "i", "j",
@@ -90,7 +102,7 @@ func TestString(t *testing.T) {
 			if want, got := len(tc.want)+2, b.Cap(); want != got {
 				t.Errorf("unexpected builder cap -want/+got:\n\t- %d\n\t+ %d", want, got)
 			}
-			assert.Equal(t, tc.sz, mem.CurrentAlloc(), "unexpected memory allocation.")
+			assert.Equal(t, tc.bsz, mem.CurrentAlloc(), "unexpected memory allocation.")
 
 			arr := b.NewStringArray()
 			defer arr.Release()
@@ -165,7 +177,7 @@ func TestStringBuilder_NewArray(t *testing.T) {
 		}
 
 		arr := b.NewArray()
-		assert.Equal(t, 1, mem.CurrentAlloc(), "unexpected memory allocation.")
+		assert.Equal(t, 64, mem.CurrentAlloc(), "unexpected memory allocation.")
 		arr.Release()
 		mem.AssertSize(t, 0)
 

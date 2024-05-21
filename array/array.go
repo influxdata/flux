@@ -2,11 +2,11 @@ package array
 
 import (
 	"strconv"
-	"sync/atomic"
 
 	"github.com/apache/arrow/go/v7/arrow"
 	"github.com/apache/arrow/go/v7/arrow/array"
 	arrowmem "github.com/apache/arrow/go/v7/arrow/memory"
+
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/memory"
@@ -103,10 +103,23 @@ type Builder interface {
 	NewArray() Array
 }
 
+type binaryArray interface {
+	NullN() int
+	NullBitmapBytes() []byte
+	IsNull(i int) bool
+	IsValid(i int) bool
+	Data() arrow.ArrayData
+	Len() int
+	ValueBytes() []byte
+	ValueLen(i int) int
+	ValueOffset(i int) int
+	ValueString(i int) string
+	Retain()
+	Release()
+}
+
 type String struct {
-	length int
-	data   *array.Binary
-	value  *stringValue
+	binaryArray
 }
 
 // NewStringFromBinaryArray creates an instance of String from
@@ -118,140 +131,90 @@ type String struct {
 func NewStringFromBinaryArray(data *array.Binary) *String {
 	data.Retain()
 	return &String{
-		data: data,
+		binaryArray: data,
 	}
 }
 
 func (a *String) DataType() DataType {
 	return StringType
 }
-func (a *String) NullN() int {
-	if a.data != nil {
-		return a.data.NullN()
-	}
-	return 0
-}
-func (a *String) NullBitmapBytes() []byte {
-	if a.data != nil {
-		return a.data.NullBitmapBytes()
-	}
-	return nil
-}
-func (a *String) IsNull(i int) bool {
-	if a.data != nil {
-		return a.data.IsNull(i)
-	}
-	return false
-}
-func (a *String) IsValid(i int) bool {
-	if a.data != nil {
-		return a.data.IsValid(i)
-	}
-	return true
-}
-func (a *String) Data() arrow.ArrayData {
-	if a.data != nil {
-		return a.data.Data()
-	}
-	return nil
-}
-func (a *String) Len() int {
-	if a.data != nil {
-		return a.data.Len()
-	}
-	return a.length
-}
-func (a *String) Retain() {
-	if a.data != nil {
-		a.data.Retain()
-		return
-	}
-	a.value.Retain()
-}
-func (a *String) Release() {
-	if a.data != nil {
-		a.data.Release()
-		return
-	}
-	a.value.Release()
-}
+
 func (a *String) Slice(i, j int) Array {
-	if a.data != nil {
-		data := array.NewSliceData(a.data.Data(), int64(i), int64(j))
-		defer data.Release()
-		return &String{
-			data: array.NewBinaryData(data),
-		}
+	slice, ok := a.binaryArray.(interface{ Slice(i, j int) binaryArray })
+	if ok {
+		return &String{binaryArray: slice.Slice(i, j)}
 	}
-	a.value.Retain()
+	data := array.NewSliceData(a.binaryArray.Data(), int64(i), int64(j))
+	defer data.Release()
 	return &String{
-		value:  a.value,
-		length: j - i,
+		binaryArray: array.NewBinaryData(data),
 	}
 }
 
-// ValueBytes returns a byte slice containing the value of this string
-// at index i. This slice points to the contents of the data buffer and
-// is only valid for the lifetime of the array.
-func (a *String) ValueBytes(i int) []byte {
-	if a.data != nil {
-		return a.data.Value(i)
-	}
-	return a.value.Bytes()
-}
-
-// Value returns a string copy of the value stored at index i. The
-// returned value will outlive the array and is safe to use like any
-// other go string. The memory backing the string will be allocated by
-// the runtime, rather than any provided allocator.
+// Value returns a string view of the bytes in the array. The string
+// is only valid for the lifetime of the array. Care should be taken not
+// to store this string without also retaining the array.
 func (a *String) Value(i int) string {
-	return string(a.ValueBytes(i))
+	return a.ValueString(i)
 }
-func (a *String) ValueLen(i int) int {
-	if a.data != nil {
-		return a.data.ValueLen(i)
+
+// ValueRef returns a reference to the memory buffer and location that
+// stores the value at i. The reference is only valid for as long as the
+// array is, the buffer needs to be retained if further access is
+// required.
+func (a *String) ValueRef(i int) StringRef {
+	if vr, ok := a.binaryArray.(interface{ ValueRef(int) StringRef }); ok {
+		return vr.ValueRef(i)
 	}
-	return a.value.Len()
+	return StringRef{
+		buf: a.Data().Buffers()[2],
+		off: a.ValueOffset(i),
+		len: a.ValueLen(i),
+	}
 }
+
+// ValueCopy returns the value at the requested position copied into a
+// new memory location. This value will remain valid after the array is
+// released, but is not tracked by the memory allocator.
+//
+// This function is intended to be temporary while changes are being
+// made to reduce the amount of unaccounted data memory.
+func (a *String) ValueCopy(i int) string {
+	return string(a.ValueRef(i).Bytes())
+}
+
 func (a *String) IsConstant() bool {
-	return a.data == nil
+	ic, ok := a.binaryArray.(interface{ IsConstant() bool })
+	return ok && ic.IsConstant()
 }
 
-type stringValue struct {
-	rc   int64
-	data []byte
-
-	mem arrowmem.Allocator
+// StringRef contains a referenct to the storage for a value.
+type StringRef struct {
+	buf *arrowmem.Buffer
+	off int
+	len int
 }
 
-func (v *stringValue) Retain() {
-	if v == nil {
-		return
-	}
-	atomic.AddInt64(&v.rc, 1)
+// Buffer returns the memory buffer that contains the value.
+func (r StringRef) Buffer() *arrowmem.Buffer {
+	return r.buf
 }
 
-func (v *stringValue) Release() {
-	if v == nil {
-		return
-	}
-	if atomic.AddInt64(&v.rc, -1) == 0 {
-		v.mem.Free(v.data)
-	}
+// Offset returns the offset into the memory buffer at which the value
+// starts.
+func (r StringRef) Offset() int {
+	return r.off
 }
 
-func (v *stringValue) Bytes() []byte {
-	if v == nil {
-		return nil
-	}
-	return v.data
+// Len returns the length of the value.
+func (r StringRef) Len() int {
+	return r.len
 }
 
-func (v *stringValue) Len() int {
-	if v == nil {
-		return 0
-	}
-	return len(v.data)
+// Bytes returns the bytes from the memory buffer that contain the
+// value.
+func (r StringRef) Bytes() []byte {
+	return r.buf.Bytes()[r.off : r.off+r.len]
 }
 
 type sliceable interface {

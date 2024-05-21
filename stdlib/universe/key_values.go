@@ -396,7 +396,7 @@ func (t *keyValuesTransformation) Process(id execute.DatasetID, tbl flux.Table) 
 							}
 							nullDistinct = true
 						} else {
-							v := vs.Value(i)
+							v := vs.ValueCopy(i)
 							if stringDistinct[[2]string{c.name, v}] {
 								continue
 							}

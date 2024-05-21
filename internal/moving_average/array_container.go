@@ -37,7 +37,7 @@ func (a *ArrayContainer) Value(i int) values.Value {
 	case *array.Float:
 		return values.New(float64(a.array.(*array.Float).Value(i)))
 	case *array.String:
-		return values.New(string(a.array.(*array.String).Value(i)))
+		return values.New(string(a.array.(*array.String).ValueCopy(i)))
 	default:
 		return nil
 	}
@@ -54,7 +54,7 @@ func (a *ArrayContainer) OrigValue(i int) interface{} {
 	case *array.Float:
 		return a.array.(*array.Float).Value(i)
 	case *array.String:
-		return string(a.array.(*array.String).Value(i))
+		return a.array.(*array.String).ValueCopy(i)
 	default:
 		return nil
 	}

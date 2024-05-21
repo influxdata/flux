@@ -289,10 +289,10 @@ func IterateStrings(arrs []array.Array) StringIterator {
 	return StringIterator{Values: values}
 }
 
-// Value returns the current value in the iterator.
+// ValueCopy returns the current value in the iterator.
 func (i *StringIterator) Value() string {
 	vs := i.Values[0]
-	return vs.Value(i.i)
+	return vs.ValueCopy(i.i)
 }
 
 // IsValid returns if the current value is valid.

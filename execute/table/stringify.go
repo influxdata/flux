@@ -124,7 +124,7 @@ func valueForRow(cr flux.ColReader, i, j int) values.Value {
 		if cr.Strings(j).IsNull(i) {
 			return values.NewNull(semantic.BasicString)
 		}
-		return values.NewString(cr.Strings(j).Value(i))
+		return values.NewString(cr.Strings(j).ValueCopy(i))
 	case flux.TInt:
 		if cr.Ints(j).IsNull(i) {
 			return values.NewNull(semantic.BasicInt)

@@ -472,7 +472,7 @@ func TestSlice_String(t *testing.T) {
 
 	vs := make([]string, l)
 	for i := 0; i < l; i++ {
-		vs[i] = arr.Value(i)
+		vs[i] = arr.ValueCopy(i)
 	}
 
 	if !cmp.Equal(values, vs) {
@@ -540,7 +540,7 @@ func TestSlice_String(t *testing.T) {
 
 			vs = vs[:0]
 			for i := 0; i < l; i++ {
-				vs = append(vs, arr.Value(i))
+				vs = append(vs, arr.ValueCopy(i))
 			}
 
 			if !cmp.Equal(tc.want, vs) {

@@ -219,7 +219,7 @@ func getValue(arr array.Array, i int) values.Value {
 	case *array.Float:
 		return values.New(arr.Value(i))
 	case *array.String:
-		return values.New(arr.Value(i))
+		return values.New(arr.ValueCopy(i))
 	case *array.Boolean:
 		return values.New(arr.Value(i))
 	default:

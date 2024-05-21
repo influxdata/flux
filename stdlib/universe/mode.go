@@ -220,7 +220,7 @@ func (t *modeTransformation) doString(cr flux.ColReader, tbl flux.Table, builder
 		if cr.Strings(j).IsNull(i) {
 			continue
 		}
-		v := cr.Strings(j).Value(i)
+		v := cr.Strings(j).ValueCopy(i)
 		stringMode[v]++
 	}
 

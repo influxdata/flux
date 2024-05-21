@@ -373,7 +373,7 @@ func (m *movingAverageState) forceValue() error {
 				b.Append(arr.Value(arr.Len() - 1))
 			case *array.StringBuilder:
 				arr := arr.(*array.String)
-				b.AppendBytes(arr.ValueBytes(arr.Len() - 1))
+				b.Append(arr.Value(arr.Len() - 1))
 			case *array.BooleanBuilder:
 				arr := arr.(*array.Boolean)
 				b.Append(arr.Value(arr.Len() - 1))
