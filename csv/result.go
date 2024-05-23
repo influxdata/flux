@@ -1257,7 +1257,7 @@ func encodeValueFrom(i, j int, c colMeta, cr flux.ColReader) (string, error) {
 		}
 	case flux.TString:
 		if cr.Strings(j).IsValid(i) {
-			v = cr.Strings(j).Value(i)
+			v = cr.Strings(j).ValueCopy(i)
 		}
 	case flux.TTime:
 		if cr.Times(j).IsValid(i) {

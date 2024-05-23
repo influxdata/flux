@@ -498,7 +498,7 @@ func (v StringArrayValue) Get(i int) values.Value {
 	if v.arr.IsNull(i) {
 		return values.Null
 	}
-	return values.New(v.arr.Value(i))
+	return values.New(v.arr.ValueCopy(i))
 }
 
 func (v StringArrayValue) Set(i int, value values.Value) {

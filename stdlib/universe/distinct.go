@@ -309,7 +309,7 @@ func (t *distinctTransformation) Process(id execute.DatasetID, tbl flux.Table) e
 					}
 					nullDistinct = true
 				} else {
-					v := cr.Strings(j).Value(i)
+					v := cr.Strings(j).ValueCopy(i)
 					if stringDistinct[v] {
 						continue
 					}

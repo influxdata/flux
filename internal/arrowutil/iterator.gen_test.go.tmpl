@@ -36,7 +36,7 @@ func TestIterate{{.Name}}s(t *testing.T) {
 		if want, got := arr.IsValid(i%100), itr.IsValid(); !cmp.Equal(want, got) {
 			t.Fatalf("unexpected valid value at index %d -want/+got:\n%s", i, cmp.Diff(want, got))
 		} else if want && got {
-			if want, got := arr.{{.Value}}(i%100), itr.{{.Value}}(); !cmp.Equal(want, got) {
+			if want, got := arr.Value(i%100), itr.Value(); !cmp.Equal(want, got) {
 				t.Fatalf("unexpected value at index %d -want/+got:\n%s", i, cmp.Diff(want, got))
 			}
 		}

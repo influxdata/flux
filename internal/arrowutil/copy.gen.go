@@ -284,7 +284,7 @@ func CopyStringsTo(b *array.StringBuilder, arr *array.String) {
 			b.AppendNull()
 			continue
 		}
-		b.Append(arr.Value(i))
+		b.Append(arr.ValueCopy(i))
 	}
 }
 
@@ -315,7 +315,7 @@ func CopyStringsByIndexTo(b *array.StringBuilder, arr *array.String, indices *ar
 			b.AppendNull()
 			continue
 		}
-		b.Append(arr.Value(offset))
+		b.Append(arr.ValueCopy(offset))
 	}
 }
 
@@ -324,5 +324,5 @@ func CopyStringValue(b *array.StringBuilder, arr *array.String, i int) {
 		b.AppendNull()
 		return
 	}
-	b.Append(arr.Value(i))
+	b.Append(arr.ValueCopy(i))
 }

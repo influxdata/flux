@@ -20,8 +20,8 @@ func Iterate{{.Name}}s(arrs []array.Array) {{.Name}}Iterator {
 	return {{.Name}}Iterator{Values: values}
 }
 
-// {{.Value}} returns the current value in the iterator.
-func (i *{{.Name}}Iterator) {{.Value}}() {{.PrimitiveType}} {
+// Value returns the current value in the iterator.
+func (i *{{.Name}}Iterator) Value() {{.PrimitiveType}} {
 	vs := i.Values[0]
 	return vs.{{.Value}}(i.i)
 }
