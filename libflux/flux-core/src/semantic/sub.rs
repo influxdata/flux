@@ -431,7 +431,7 @@ where
 }
 
 #[allow(clippy::too_many_arguments, clippy::type_complexity)]
-pub(crate) fn merge4<A: ?Sized, B: ?Sized, C: ?Sized, D: ?Sized>(
+pub(crate) fn merge4<A, B, C, D>(
     a_original: &A,
     a: Option<A::Owned>,
     b_original: &B,
@@ -442,10 +442,10 @@ pub(crate) fn merge4<A: ?Sized, B: ?Sized, C: ?Sized, D: ?Sized>(
     d: Option<D::Owned>,
 ) -> Option<(A::Owned, B::Owned, C::Owned, D::Owned)>
 where
-    A: ToOwned,
-    B: ToOwned,
-    C: ToOwned,
-    D: ToOwned,
+    A: ToOwned + ?Sized,
+    B: ToOwned + ?Sized,
+    C: ToOwned + ?Sized,
+    D: ToOwned + ?Sized,
 {
     let a_b_c = merge3(a_original, a, b_original, b, c_original, c);
     merge_fn(
@@ -465,7 +465,7 @@ where
     .map(|((a, b, c), d)| (a, b, c, d))
 }
 
-pub(crate) fn merge3<A: ?Sized, B: ?Sized, C: ?Sized>(
+pub(crate) fn merge3<A, B, C>(
     a_original: &A,
     a: Option<A::Owned>,
     b_original: &B,
@@ -474,9 +474,9 @@ pub(crate) fn merge3<A: ?Sized, B: ?Sized, C: ?Sized>(
     c: Option<C::Owned>,
 ) -> Option<(A::Owned, B::Owned, C::Owned)>
 where
-    A: ToOwned,
-    B: ToOwned,
-    C: ToOwned,
+    A: ToOwned + ?Sized,
+    B: ToOwned + ?Sized,
+    C: ToOwned + ?Sized,
 {
     let a_b = merge(a_original, a, b_original, b);
     merge_fn(
@@ -492,15 +492,15 @@ where
 
 /// Merges two values using `f` if either or both them is `Some(..)`.
 /// If both are `None`, `None` is returned.
-pub(crate) fn merge<A: ?Sized, B: ?Sized>(
+pub(crate) fn merge<A, B>(
     a_original: &A,
     a: Option<A::Owned>,
     b_original: &B,
     b: Option<B::Owned>,
 ) -> Option<(A::Owned, B::Owned)>
 where
-    A: ToOwned,
-    B: ToOwned,
+    A: ToOwned + ?Sized,
+    B: ToOwned + ?Sized,
 {
     merge_fn(a_original, A::to_owned, a, b_original, B::to_owned, b)
 }

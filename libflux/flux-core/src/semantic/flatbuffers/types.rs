@@ -97,7 +97,7 @@ impl From<fb::PolyType<'_>> for Option<PolyType> {
         for value in c.iter() {
             let constraint: Option<(BoundTvar, Kind)> = value.into();
             let (tv, kind) = constraint?;
-            cons.entry(tv).or_insert_with(Vec::new).push(kind);
+            cons.entry(tv).or_default().push(kind);
         }
         Some(PolyType {
             vars,
@@ -350,9 +350,9 @@ where
     builder.finished_data()
 }
 
-pub fn deserialize<'a, T: 'a, S>(buf: &'a [u8]) -> S
+pub fn deserialize<'a, T, S>(buf: &'a [u8]) -> S
 where
-    T: flatbuffers::Follow<'a> + flatbuffers::Verifiable,
+    T: flatbuffers::Follow<'a> + flatbuffers::Verifiable + 'a,
     S: std::convert::From<T::Inner>,
 {
     flatbuffers::root::<T>(buf).unwrap().into()

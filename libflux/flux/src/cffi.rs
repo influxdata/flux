@@ -1159,7 +1159,7 @@ from(bucket: v.bucket)
         // Safety: both parameters are valid
         let err = unsafe { flux_ast_get_error(pkg, options) }.unwrap();
         // Safety: pkg is a valid pointer allocated just above
-        unsafe { Box::from_raw(pkg) }; // Free the AST
+        unsafe { drop(Box::from_raw(pkg)) }; // Free the AST
         let msg = err.message.to_string_lossy();
         assert!(
             msg.contains("incomplete utf-8 byte sequence from index 0"),
