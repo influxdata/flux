@@ -1314,7 +1314,7 @@ fn collect_record(record: &Record) -> (RefMonoTypeVecMap<'_, RecordLabel>, Optio
 
     let mut fields = record.fields();
     for field in &mut fields {
-        a.entry(&field.k).or_insert_with(Vec::new).push(&field.v);
+        a.entry(&field.k).or_default().push(&field.v);
     }
     (a, fields.tail())
 }
@@ -1804,7 +1804,7 @@ impl PartialEq<&str> for Label {
 
 impl PartialOrd for Label {
     fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
-        self.0.name().partial_cmp(other.0.name())
+        Some(self.cmp(other))
     }
 }
 
@@ -1955,10 +1955,10 @@ impl<T> Function<T> {
         self.opt.len() + self.req.len() + self.pipe.is_some() as usize
     }
 
-    pub(crate) fn parameter<Q: ?Sized>(&self, key: &Q) -> Option<&T>
+    pub(crate) fn parameter<Q>(&self, key: &Q) -> Option<&T>
     where
         String: Borrow<Q> + Ord,
-        Q: Ord,
+        Q: Ord + ?Sized,
     {
         self.req
             .get(key)
@@ -2189,8 +2189,10 @@ impl Function {
 pub(crate) trait TypeLike {
     type Error;
     fn typ(&self) -> &MonoType;
+    #[allow(dead_code)]
     fn into_type(self) -> MonoType;
     fn error(&self, error: Error) -> Self::Error;
+    #[allow(dead_code)]
     fn location(&self) -> crate::ast::SourceLocation;
 }
 

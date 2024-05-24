@@ -860,8 +860,8 @@ impl VariableAssgn {
         //
         // Note these variables are fixed after generalization
         // and so it is safe to update these nodes in place.
-        self.vars = p.vars.clone();
-        self.cons = p.cons.clone();
+        self.vars.clone_from(&p.vars);
+        self.cons.clone_from(&p.cons);
 
         // Update the type environment
         infer.add(self.id.name.clone(), p);

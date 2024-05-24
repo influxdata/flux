@@ -269,6 +269,7 @@ macro_rules! mk_node {
 
         /// Recursively visits children of a node given a Visitor.
         /// Nodes are visited in depth-first order.
+        #[allow(clippy::needless_lifetimes)]
         pub fn $walk<'a, T>(v: &mut T, $($mut)? node: $name<'a>)
         where
             T: ?Sized + $visitor $(<$visitor_lt>)?,
