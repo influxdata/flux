@@ -158,31 +158,6 @@ func (a *String) Value(i int) string {
 	return a.ValueString(i)
 }
 
-// ValueRef returns a reference to the memory buffer and location that
-// stores the value at i. The reference is only valid for as long as the
-// array is, the buffer needs to be retained if further access is
-// required.
-func (a *String) ValueRef(i int) StringRef {
-	if vr, ok := a.binaryArray.(interface{ ValueRef(int) StringRef }); ok {
-		return vr.ValueRef(i)
-	}
-	return StringRef{
-		buf: a.Data().Buffers()[2],
-		off: a.ValueOffset(i),
-		len: a.ValueLen(i),
-	}
-}
-
-// ValueCopy returns the value at the requested position copied into a
-// new memory location. This value will remain valid after the array is
-// released, but is not tracked by the memory allocator.
-//
-// This function is intended to be temporary while changes are being
-// made to reduce the amount of unaccounted data memory.
-func (a *String) ValueCopy(i int) string {
-	return string(a.ValueRef(i).Bytes())
-}
-
 func (a *String) IsConstant() bool {
 	ic, ok := a.binaryArray.(interface{ IsConstant() bool })
 	return ok && ic.IsConstant()

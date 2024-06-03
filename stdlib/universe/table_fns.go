@@ -189,7 +189,7 @@ func arrayFromColumn(idx int, tbl flux.Table) (values.Array, error) {
 			switch typ {
 			case flux.TString:
 				if vs := cr.Strings(idx); vs.IsValid(i) {
-					vsSlice = append(vsSlice, values.New(vs.ValueCopy(i)))
+					vsSlice = append(vsSlice, values.New(vs.Value(i)))
 				} else {
 					vsSlice = append(vsSlice, values.NewNull(semantic.BasicString))
 				}
@@ -279,7 +279,7 @@ func objectFromRow(idx int, cr flux.ColReader) values.Object {
 		switch c.Type {
 		case flux.TString:
 			if vs := cr.Strings(j); vs.IsValid(idx) {
-				v = values.New(vs.ValueCopy(idx))
+				v = values.New(vs.Value(idx))
 			} else {
 				v = values.NewNull(semantic.BasicString)
 			}

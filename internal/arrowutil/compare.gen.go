@@ -237,7 +237,7 @@ func StringCompare(x, y *array.String, i, j int) int {
 		return 1
 	}
 
-	if l, r := x.ValueCopy(i), y.ValueCopy(j); l < r {
+	if l, r := x.Value(i), y.Value(j); l < r {
 		return -1
 	} else if l == r {
 		return 0
@@ -256,7 +256,7 @@ func StringCompareDesc(x, y *array.String, i, j int) int {
 		return 1
 	}
 
-	if l, r := x.ValueCopy(i), y.ValueCopy(j); l > r {
+	if l, r := x.Value(i), y.Value(j); l > r {
 		return -1
 	} else if l == r {
 		return 0

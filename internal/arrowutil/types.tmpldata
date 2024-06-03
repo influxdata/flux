@@ -50,7 +50,7 @@
     "MonoType": "semantic.BasicString",
     "IsNumeric": false,
     "IsComparable": true,
-    "Value": "ValueCopy",
+    "Value": "Value",
     "Append": "Append",
     "NewArray": "NewStringArray"
   }
