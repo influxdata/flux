@@ -5,7 +5,6 @@ import (
 
 	"github.com/apache/arrow/go/v7/arrow"
 	"github.com/apache/arrow/go/v7/arrow/array"
-	arrowmem "github.com/apache/arrow/go/v7/arrow/memory"
 
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/internal/errors"
@@ -161,35 +160,6 @@ func (a *String) Value(i int) string {
 func (a *String) IsConstant() bool {
 	ic, ok := a.binaryArray.(interface{ IsConstant() bool })
 	return ok && ic.IsConstant()
-}
-
-// StringRef contains a referenct to the storage for a value.
-type StringRef struct {
-	buf *arrowmem.Buffer
-	off int
-	len int
-}
-
-// Buffer returns the memory buffer that contains the value.
-func (r StringRef) Buffer() *arrowmem.Buffer {
-	return r.buf
-}
-
-// Offset returns the offset into the memory buffer at which the value
-// starts.
-func (r StringRef) Offset() int {
-	return r.off
-}
-
-// Len returns the length of the value.
-func (r StringRef) Len() int {
-	return r.len
-}
-
-// Bytes returns the bytes from the memory buffer that contain the
-// value.
-func (r StringRef) Bytes() []byte {
-	return r.buf.Bytes()[r.off : r.off+r.len]
 }
 
 type sliceable interface {
