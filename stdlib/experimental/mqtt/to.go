@@ -316,12 +316,12 @@ func (t *ToMQTTTransformation) Process(id execute.DatasetID, tbl flux.Table) err
 						if col.Type != flux.TString {
 							return errors.Newf(codes.FailedPrecondition, "invalid type for measurement column: %s", col.Type)
 						}
-						m.name = er.Strings(j).ValueCopy(i)
+						m.name = er.Strings(j).Value(i)
 					case isTag[j]:
 						if col.Type != flux.TString {
 							return errors.Newf(codes.FailedPrecondition, "invalid type for tag column: %s", col.Type)
 						}
-						m.tags = append(m.tags, &protocol.Tag{Key: col.Label, Value: er.Strings(j).ValueCopy(i)})
+						m.tags = append(m.tags, &protocol.Tag{Key: col.Label, Value: er.Strings(j).Value(i)})
 
 					case isValue[j]:
 						switch col.Type {
@@ -332,7 +332,7 @@ func (t *ToMQTTTransformation) Process(id execute.DatasetID, tbl flux.Table) err
 						case flux.TUInt:
 							m.fields = append(m.fields, &protocol.Field{Key: col.Label, Value: er.UInts(j).Value(i)})
 						case flux.TString:
-							m.fields = append(m.fields, &protocol.Field{Key: col.Label, Value: er.Strings(j).ValueCopy(i)})
+							m.fields = append(m.fields, &protocol.Field{Key: col.Label, Value: er.Strings(j).Value(i)})
 						case flux.TTime:
 							m.fields = append(m.fields, &protocol.Field{Key: col.Label, Value: values.Time(er.Times(j).Value(i))})
 						case flux.TBool:

@@ -384,7 +384,7 @@ func valueToStr(cr flux.ColReader, c flux.ColMeta, row, col int) string {
 		}
 	case flux.TString:
 		if v := cr.Strings(col); v.IsValid(row) {
-			result = v.ValueCopy(row)
+			result = v.Value(row)
 		}
 	case flux.TTime:
 		if v := cr.Times(col); v.IsValid(row) {

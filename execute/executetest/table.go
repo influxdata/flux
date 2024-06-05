@@ -544,7 +544,7 @@ func ConvertTable(tbl flux.Table) (*Table, error) {
 					}
 				case flux.TString:
 					if col := cr.Strings(j); col.IsValid(i) {
-						row[j] = col.ValueCopy(i)
+						row[j] = col.Value(i)
 					}
 				case flux.TTime:
 					if col := cr.Times(j); col.IsValid(i) {

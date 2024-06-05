@@ -83,11 +83,3 @@ func (b *repeatedBinary) Slice(i, j int) binaryArray {
 		buf: b.buf,
 	}
 }
-
-func (b *repeatedBinary) ValueRef(int) StringRef {
-	return StringRef{
-		buf: b.buf,
-		off: 0,
-		len: b.buf.Len(),
-	}
-}

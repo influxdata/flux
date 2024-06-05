@@ -217,7 +217,7 @@ outer:
 		for j, col := range chunk.Cols() {
 			switch {
 			case col.Label == spec.MeasurementColumn:
-				metric.NameStr = er.Strings(j).ValueCopy(i)
+				metric.NameStr = er.Strings(j).Value(i)
 			case col.Label == timeColLabel:
 				valueTime := execute.ValueForRow(&er, i, j)
 				if valueTime.IsNull() {
@@ -230,7 +230,7 @@ outer:
 					return errors.New(codes.Invalid, "invalid type for tag column")
 				}
 
-				value := er.Strings(j).ValueCopy(i)
+				value := er.Strings(j).Value(i)
 				if value == "" {
 					// Skip tag value if it is empty.
 					continue

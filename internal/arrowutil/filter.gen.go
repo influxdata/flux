@@ -108,7 +108,7 @@ func FilterStrings(arr *array.String, bitset []byte, mem memory.Allocator) *arra
 	for i := 0; i < len(bitset); i++ {
 		if bitutil.BitIsSet(bitset, i) {
 			if arr.IsValid(i) {
-				b.Append(arr.ValueCopy(i))
+				b.Append(arr.Value(i))
 			} else {
 				b.AppendNull()
 			}
