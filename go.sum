@@ -161,8 +161,8 @@ github.com/aws/aws-sdk-go-v2/service/sts v1.10.0 h1:1jh8J+JjYRp+QWKOsaZt7rGUgoyr
 github.com/aws/aws-sdk-go-v2/service/sts v1.10.0/go.mod h1:jLKCFqS+1T4i7HDqCP9GM4Uk75YW1cS0o82LdxpMyOE=
 github.com/aws/smithy-go v1.9.0 h1:c7FUdEqrQA1/UVKKCNDFQPNKGp4FQg3YW4Ck5SLTG58=
 github.com/aws/smithy-go v1.9.0/go.mod h1:SObp3lf9smib00L/v3U2eAKG8FyQ7iLrJnQiAmR5n+E=
-github.com/benbjohnson/immutable v0.3.0 h1:TVRhuZx2wG9SZ0LRdqlbs9S5BZ6Y24hJEHTCgWHZEIw=
-github.com/benbjohnson/immutable v0.3.0/go.mod h1:uc6OHo6PN2++n98KHLxW8ef4W42ylHiQSENghE1ezxI=
+github.com/benbjohnson/immutable v0.4.3 h1:GYHcksoJ9K6HyAUpGxwZURrbTkXA0Dh4otXGqbhdrjA=
+github.com/benbjohnson/immutable v0.4.3/go.mod h1:qJIKKSmdqz1tVzNtst1DZzvaqOU1onk1rc03IeM3Owk=
 github.com/beorn7/perks v0.0.0-20180321164747-3a771d992973/go.mod h1:Dwedo/Wpr24TaqPxmxbtue+5NUziq4I4S80YR8gNf3Q=
 github.com/beorn7/perks v1.0.0/go.mod h1:KWe93zE9D1o94FZ5RNwFwVgaQK1VOXiVxmqh+CedLV8=
 github.com/beorn7/perks v1.0.1/go.mod h1:G2ZrVWU2WbWT9wwq4/hrbKbnv/1ERSJQ0ibhJ6rlkpw=
