@@ -138,7 +138,7 @@ func (d dict) Get(key, def Value) Value {
 	if !key.IsNull() {
 		v, ok := d.data.Get(key)
 		if ok {
-			return v.(Value)
+			return v
 		}
 	}
 	return def
@@ -241,7 +241,7 @@ func (d dict) Equal(v Value) bool {
 			equal = false
 			return
 		}
-		equal = value.Equal(v.(Value))
+		equal = value.Equal(v)
 	})
 	return equal
 }
@@ -374,7 +374,7 @@ func (d *DictionaryBuilder) Get(key Value) (Value, bool) {
 	if !ok {
 		return nil, false
 	}
-	return v.(Value), true
+	return v, true
 }
 
 // Insert will insert a new key/value pair into the Dictionary.
