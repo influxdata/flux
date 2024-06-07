@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"path"
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/ast"
@@ -111,7 +112,7 @@ func (s *source) newRequest(ctx context.Context) (*http.Request, error) {
 	if err != nil {
 		return nil, err
 	}
-	u.Path += "/api/v2/query"
+	u.Path = path.Join(u.Path, "/api/v2/query")
 	if org := s.spec.GetOrg(); org != nil {
 		u.RawQuery = func() string {
 			params := make(url.Values)
