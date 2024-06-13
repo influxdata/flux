@@ -10,6 +10,7 @@ import (
 	"github.com/influxdata/flux/dependencies/dependenciestest"
 	"github.com/influxdata/flux/dependency"
 	"github.com/influxdata/flux/memory"
+	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
 
@@ -784,5 +785,19 @@ func TestTypeconv_Duration(t *testing.T) {
 				}
 			}
 		})
+	}
+}
+
+func TestTypeconv_Bytes_NullString(t *testing.T) {
+	myMap := map[string]values.Value{
+		"v": values.NewNull(semantic.BasicString),
+	}
+	args := values.NewObjectWithValues(myMap)
+	c := byteConv
+	ctx, deps := dependency.Inject(context.Background(), dependenciestest.Default())
+	defer deps.Finish()
+	_, err := c.Call(ctx, args)
+	if err == nil || err.Error() != "cannot convert null to bytes" {
+		t.Errorf(`Expected error "cannot convert null to bytes", got %q`, err)
 	}
 }

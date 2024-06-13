@@ -374,6 +374,9 @@ var byteConv = values.NewFunction(
 		} else if v.Type().Nature() == semantic.Dynamic {
 			v = v.Dynamic().Inner()
 		}
+		if v.IsNull() {
+			v = values.Null
+		}
 
 		switch v.Type().Nature() {
 		case semantic.String:
