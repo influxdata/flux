@@ -134,7 +134,7 @@ func TestWideToTransformation(t *testing.T) {
 		static.Ints("f1", 1, nil, 3, nil),
 		static.StringKey("_measurement", "m0"),
 		static.TableList{
-			static.StringKeys("t0", "a", "b"),
+			static.StringKeys("t0", "a", nil, "b"),
 		},
 	}
 	if err := input.Do(func(tbl flux.Table) error {
@@ -147,6 +147,9 @@ func TestWideToTransformation(t *testing.T) {
 	want := `m0,t0=a f0=1,f1=1i 0
 m0,t0=a f0=2 10000000000
 m0,t0=a f0=3,f1=3i 20000000000
+m0 f0=1,f1=1i 0
+m0 f0=2 10000000000
+m0 f0=3,f1=3i 20000000000
 m0,t0=b f0=1,f1=1i 0
 m0,t0=b f0=2 10000000000
 m0,t0=b f0=3,f1=3i 20000000000

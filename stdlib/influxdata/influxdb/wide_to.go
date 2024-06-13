@@ -231,6 +231,11 @@ func getTablePointsMetadata(tbl flux.Table) (md tablePointsMetadata, err error) 
 			}
 			isTag[col.Label] = true
 
+			// If the tag is NULL then skip over adding its value to the tag set.
+			if tbl.Key().IsNull(j) {
+				continue
+			}
+
 			value := tbl.Key().ValueString(j)
 			if value == "" {
 				// Skip tag value if it is empty.
