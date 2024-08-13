@@ -88,8 +88,9 @@ func (b *StringBuilder) AppendBytes(buf []byte) {
 
 }
 
-// Append appends a string to the array being built. The input string
-// will always be copied.
+// Append appends a string to the array being built. A reference
+// to the input string will not be retained by the builder. The
+// string will be copied, if necessary.
 func (b *StringBuilder) Append(v string) {
 	// Avoid copying the input string as AppendBytes
 	// will never keep a reference or modify the input.
