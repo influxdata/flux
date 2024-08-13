@@ -26,8 +26,8 @@ func TestString(t *testing.T) {
 					b.Append("abcdefghij")
 				}
 			},
-			bsz: 256, // 64 bytes nulls + 192 bytes data.
-			sz:  64,  // The minimum size of a buffer is 64 bytes
+			bsz: 64, // 64 bytes data.
+			sz:  64, // The minimum size of a buffer is 64 bytes
 			want: []interface{}{
 				"abcdefghij",
 				"abcdefghij",
