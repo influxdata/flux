@@ -50,7 +50,7 @@ fn regex_literal() {
 
 #[test]
 fn regex_literal_with_escape_sequence() {
-    let mut p = Parser::new(r#"/a\/b\\c\d/"#);
+    let mut p = Parser::new(r"/a\/b\\c\d/");
     let parsed = p.parse_file("".to_string());
     expect![[r#"
         File {
@@ -98,7 +98,7 @@ fn regex_literal_with_escape_sequence() {
 
 #[test]
 fn regex_literal_with_hex_escape() {
-    let mut p = Parser::new(r#"/^\xe6\x97\xa5\xe6\x9c\xac\xe8\xaa\x9e(ZZ)?$/"#);
+    let mut p = Parser::new(r"/^\xe6\x97\xa5\xe6\x9c\xac\xe8\xaa\x9e(ZZ)?$/");
     let parsed = p.parse_file("".to_string());
     expect![[r#"
         File {

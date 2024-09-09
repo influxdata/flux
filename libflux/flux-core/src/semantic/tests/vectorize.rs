@@ -316,10 +316,10 @@ fn vectorize_with_construction_using_literal_string() -> anyhow::Result<()> {
 
     let function = get_vectorized_function(&pkg);
 
-    expect_test::expect![[r##"
+    expect_test::expect![[r#"
         (r) => {
             return {r:#A with a: ~~vecRepeat~~:string(v: "hello"):v[string]}:{#A with a: v[string]}
-        }:(r: #A) => {#A with a: v[string]}"##]]
+        }:(r: #A) => {#A with a: v[string]}"#]]
     .assert_eq(&crate::semantic::formatter::format_node(
         Node::FunctionExpr(function),
     )?);
