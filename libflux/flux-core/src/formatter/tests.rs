@@ -236,8 +236,8 @@ fn vars() {
     assert_unchanged("2018-05-22T19:53:01+07:00"); // zone
     assert_unchanged("2018-05-22T19:53:23.09012Z"); // nano sec
     assert_unchanged("2018-05-22T19:53:01.09012-07:00"); // nano with zone
-    assert_unchanged(r#"/^\w+@[a-zA-Z_]+?\.[a-zA-Z]{2,3}$/"#); // regexp
-    assert_unchanged(r#"/^http:\/\/\w+\.com$/"#); // regexp_escape
+    assert_unchanged(r"/^\w+@[a-zA-Z_]+?\.[a-zA-Z]{2,3}$/"); // regexp
+    assert_unchanged(r"/^http:\/\/\w+\.com$/"); // regexp_escape
 }
 
 #[test]
