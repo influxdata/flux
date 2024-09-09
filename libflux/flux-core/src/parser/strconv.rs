@@ -51,11 +51,11 @@ fn push_unescaped_string(s: &mut Vec<u8>, chars: &mut Chars) -> Result<(), Strin
 fn push_hex_byte(s: &mut Vec<u8>, chars: &mut Chars) -> Result<(), String> {
     let ch1 = match chars.next() {
         Some(c) => c,
-        None => return Err(r#"\x followed by 0 char, must be 2"#.to_string()),
+        None => return Err(r"\x followed by 0 char, must be 2".to_string()),
     };
     let ch2 = match chars.next() {
         Some(c) => c,
-        None => return Err(r#"\x followed by 1 char, must be 2"#.to_string()),
+        None => return Err(r"\x followed by 1 char, must be 2".to_string()),
     };
     let b1 = to_byte(ch1);
     let b2 = to_byte(ch2);

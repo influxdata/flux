@@ -30,7 +30,7 @@ var sourceHashes = map[string]string{
 	"libflux/flux-core/src/lib.rs":                                                                "487c5b2db051f7ed5276c566a9a6b2ee75d6a13459443cf94b51b6d90d20edd2",
 	"libflux/flux-core/src/map.rs":                                                                "342c1cc111d343f01b97f38be10a9f1097bdd57cdc56f55e92fd3ed5028e6973",
 	"libflux/flux-core/src/parser/mod.rs":                                                         "abc9f7fe02d4252c4046bf1f680916f328b5f04a73509413ef37b55a0daa1420",
-	"libflux/flux-core/src/parser/strconv.rs":                                                     "2e288c83dcc9cf6e1b6a503219108cd3ed74446f9a2906b551480fa298e14531",
+	"libflux/flux-core/src/parser/strconv.rs":                                                     "005ecd7a1a227d280dfd0bf065b7f9c49f68952daf7efe1c9bc3bfd91a30a909",
 	"libflux/flux-core/src/scanner/mod.rs":                                                        "eb7afb2eff162080046ddda7d1e9d01ffd4ec3a165bbcc95a001bf7edefa5e9c",
 	"libflux/flux-core/src/scanner/scanner.rl":                                                    "34e1f306994b8f69d0551110ce22efa75e0081b7c5f498ad293a739970bbcbc2",
 	"libflux/flux-core/src/scanner/scanner_generated.rs":                                          "d917184e05832393cb1ee3133723181a7eac31b259782ac3f1af56bf68a25ed4",
