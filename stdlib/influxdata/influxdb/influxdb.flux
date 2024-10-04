@@ -6,7 +6,14 @@
 package influxdb
 
 
-// cardinality returns the series cardinality of data stored in InfluxDB.
+// cardinality returns the series cardinality of data retrieved InfluxDB.
+//
+// Although this function is similar to InfluxQL's `SHOW SERIES CARDINALITY` it works in a slightly
+// different manner.
+//
+// Cardinality is time bounded and reports the cardinality of the data that matches the conditions
+// passed into it, rather than that of the bucket as a whole.
+//
 //
 // ## Parameters
 // - bucket: Bucket to query cardinality from.
@@ -31,6 +38,9 @@ package influxdb
 //      Use a relative duration or absolute time. For example, `-1h` or `2019-08-28T22:00:00Z`.
 //      Durations are relative to `now()`. Default is `now()`.
 //
+//      Note: because the default is `now()`, any points that have been written into the future
+//      will not be counted unless a future `stop` date is provided
+//
 // - predicate: Predicate function that filters records.
 //      Default is `(r) => true`.
 //
@@ -42,9 +52,11 @@ package influxdb
 //
 // influxdb.cardinality(
 //     bucket: "example-bucket",
-//     start: -1y,
+//     start: time(v: 1),
 // )
 // ```
+// Note: if points have been written into the future, you will need to add an appropriate `stop` date
+//
 //
 // ### Query series cardinality in a measurement//
 // ```no_run
@@ -52,7 +64,7 @@ package influxdb
 //
 // influxdb.cardinality(
 //     bucket: "example-bucket",
-//     start: -1y,
+//     start: time(v: 1),
 //     predicate: (r) => r._measurement == "example-measurement",
 // )
 // ```
@@ -63,11 +75,17 @@ package influxdb
 //
 // influxdb.cardinality(
 //    bucket: "example-bucket",
-//    start: -1y,
+//    start: time(v: 1),
 //    predicate: (r) => r.exampleTag == "foo",
 // )
 // ```
 //
+// ### Query cardinality of data written in the last 4 hours
+// ```no_run
+// import "influxdata/influxdb"
+//
+// influxdb.cardinality(bucket: "example-bucket", start: -4h)
+// ```
 // ## Metadata
 // introduced: 0.92.0
 // tags: metadata
