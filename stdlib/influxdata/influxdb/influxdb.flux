@@ -11,8 +11,8 @@ package influxdb
 // Although this function is similar to InfluxQL's `SHOW SERIES CARDINALITY` it works in a slightly
 // different manner.
 //
-// cardinality is time bounded and reports the the cardinality of data that matches the conditions
-// passed into it rather than that of the bucket as a whole.
+// Cardinality is time bounded and reports the cardinality of the data that matches the conditions
+// passed into it, rather than that of the bucket as a whole.
 //
 //
 // ## Parameters
