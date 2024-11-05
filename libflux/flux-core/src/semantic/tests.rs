@@ -173,38 +173,32 @@ fn infer_types(
 /// # Example
 ///
 /// ```
-/// #[test]
-/// fn instantiation() {
-///    test_infer! {
-///         env: map![
-///             "f" => "where A: Addable (a: A, b: A) => A",
-///         ],
-///         src: "x = f",
-///         exp: map![
-///             "x" => "where A: Addable (a: A, b: A) => A",
-///         ],
-///     }
+/// test_infer! {
+///     env: map![
+///         "f" => "where A: Addable (a: A, b: A) => A",
+///     ],
+///     src: "x = f",
+///     exp: map![
+///         "x" => "where A: Addable (a: A, b: A) => A",
+///     ],
 /// }
 /// ```
 ///
 /// ```
-/// #[test]
-/// fn with_imports() {
-///     test_infer! {
-///         imp: map![
-///             "path/to/foo" => package![
-///                 "f" => "(x: A) => A",
-///             ],
-///         ],
-///         src: r#"
-///             import foo "path/to/foo"
-///
-///             f = foo.f
-///         "#,
-///         exp: map![
+/// test_infer! {
+///     imp: map![
+///         "path/to/foo" => package![
 ///             "f" => "(x: A) => A",
 ///         ],
-///     }
+///     ],
+///     src: r#"
+///         import foo "path/to/foo"
+///
+///         f = foo.f
+///     "#,
+///     exp: map![
+///         "f" => "(x: A) => A",
+///     ],
 /// }
 /// ```
 ///
@@ -243,11 +237,8 @@ macro_rules! test_infer {
 /// # Example
 ///
 /// ```
-/// #[test]
-/// fn undeclared_variable() {
-///     test_infer_err! {
-///         src: "x = f",
-///     }
+/// test_infer_err! {
+///     src: "x = f",
 /// }
 /// ```
 ///
