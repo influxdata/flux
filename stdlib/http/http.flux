@@ -159,10 +159,12 @@ endpoint = (url) =>
                 |> map(
                     fn: (r) => {
                         obj = mapFn(r: r)
+                        status_code = post(url: url, headers: obj.headers, data: obj.data)
 
                         return {r with _sent:
+                                status_code: string(v: status_code),
                                 string(
-                                    v: 200 == post(url: url, headers: obj.headers, data: obj.data),
+                                    v: 200 == status_code,
                                 ),
                         }
                     },
