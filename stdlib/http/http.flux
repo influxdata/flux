@@ -161,9 +161,9 @@ endpoint = (url) =>
                         obj = mapFn(r: r)
                         status_code = post(url: url, headers: obj.headers, data: obj.data)
 
-                        return {r with _sent:
+                        return {r with
                                 status_code: string(v: status_code),
-                                string(
+                                 _sent: string(
                                     v: 200 == status_code,
                                 ),
                         }
