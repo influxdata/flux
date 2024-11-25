@@ -1,8 +1,8 @@
 module github.com/influxdata/flux/internal/tools
 
-go 1.21
+go 1.22
 
-toolchain go1.21.3
+toolchain go1.22.7
 
 require (
 	github.com/benbjohnson/tmpl v1.0.0
