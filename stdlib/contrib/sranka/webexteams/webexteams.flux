@@ -121,18 +121,15 @@ endpoint = (url="https://webexapis.com", token) =>
                 |> map(
                     fn: (r) => {
                         obj = mapFn(r: r)
+                        resp =
+                            message(
+                                url: url,
+                                token: token,
+                                roomId: obj.roomId,
+                                text: obj.text,
+                                markdown: obj.markdown,
+                            )
 
-                        return {r with _sent:
-                                string(
-                                    v:
-                                        2 == message(
-                                                url: url,
-                                                token: token,
-                                                roomId: obj.roomId,
-                                                text: obj.text,
-                                                markdown: obj.markdown,
-                                            ) / 100,
-                                ),
-                        }
+                        return {r with _status: string(v: resp), _sent: string(v: 2 == resp / 100)}
                     },
                 )
