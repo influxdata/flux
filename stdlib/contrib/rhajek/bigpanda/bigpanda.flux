@@ -218,18 +218,15 @@ endpoint = (url=defaultUrl, token, appKey) =>
                 |> map(
                     fn: (r) => {
                         obj = mapFn(r: r)
+                        resp =
+                            sendAlert(
+                                url: url,
+                                appKey: appKey,
+                                token: token,
+                                status: obj.status,
+                                rec: obj,
+                            )
 
-                        return {r with _sent:
-                                string(
-                                    v:
-                                        2 == sendAlert(
-                                                url: url,
-                                                appKey: appKey,
-                                                token: token,
-                                                status: obj.status,
-                                                rec: obj,
-                                            ) / 100,
-                                ),
-                        }
+                        return {r with _status: string(v: resp), _sent: string(v: 2 == resp / 100)}
                     },
                 )
