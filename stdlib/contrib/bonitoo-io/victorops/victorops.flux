@@ -167,20 +167,17 @@ endpoint = (url, monitoringTool="InfluxDB") =>
                 |> map(
                     fn: (r) => {
                         obj = mapFn(r: r)
+                        resp =
+                            alert(
+                                url: url,
+                                messageType: obj.messageType,
+                                entityID: obj.entityID,
+                                entityDisplayName: obj.entityDisplayName,
+                                stateMessage: obj.stateMessage,
+                                timestamp: obj.timestamp,
+                                monitoringTool: monitoringTool,
+                            )
 
-                        return {r with _sent:
-                                string(
-                                    v:
-                                        2 == alert(
-                                                url: url,
-                                                messageType: obj.messageType,
-                                                entityID: obj.entityID,
-                                                entityDisplayName: obj.entityDisplayName,
-                                                stateMessage: obj.stateMessage,
-                                                timestamp: obj.timestamp,
-                                                monitoringTool: monitoringTool,
-                                            ) / 100,
-                                ),
-                        }
+                        return {r with _status: string(v: resp), _sent: string(v: 2 == resp / 100)}
                     },
                 )
