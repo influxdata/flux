@@ -177,20 +177,17 @@ endpoint = (
                 |> map(
                     fn: (r) => {
                         obj = mapFn(r: r)
+                        resp =
+                            message(
+                                url: url,
+                                token: token,
+                                channel: obj.channel,
+                                text: obj.text,
+                                parseMode: parseMode,
+                                disableWebPagePreview: disableWebPagePreview,
+                                silent: obj.silent,
+                            )
 
-                        return {r with _sent:
-                                string(
-                                    v:
-                                        2 == message(
-                                                url: url,
-                                                token: token,
-                                                channel: obj.channel,
-                                                text: obj.text,
-                                                parseMode: parseMode,
-                                                disableWebPagePreview: disableWebPagePreview,
-                                                silent: obj.silent,
-                                            ) / 100,
-                                ),
-                        }
+                        return {r with _status: string(v: resp), _sent: string(v: 2 == resp / 100)}
                     },
                 )
