@@ -4,5 +4,4 @@
 package libflux
 
 // #cgo pkg-config: flux
-// #cgo LDFLAGS: -lntdll
 import "C"

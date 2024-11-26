@@ -146,7 +146,7 @@ jobs:
             echo "export GOPATH='${GOPATH}'" >> $BASH_ENV
             mkdir -p "${GOPATH}/bin"
             echo 'export PATH="${GOPATH}/bin:${PATH}"' >> $BASH_ENV
-            go install github.com/influxdata/pkg-config
+            go install github.com/influxdata/pkg-config@1e19b433dbc4e7d4beae6e8ef0c4df0dc6c29853
       - run:
           name: Generate libflux
           command: go generate ./libflux/go/libflux
