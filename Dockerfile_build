@@ -6,12 +6,12 @@
 # also include minor releases, so 1.2 includes 1.2.1 and so on, for bugfix releases.
 FROM rust:1.78 as RUSTBUILD
 
-FROM golang:1.22 as PKGCONFIG
+FROM golang:1.21 as PKGCONFIG
 COPY go.mod go.sum /go/src/github.com/influxdata/flux/
 RUN cd /go/src/github.com/influxdata/flux && \
     go build -o /usr/local/bin/cgo-pkgbuild github.com/influxdata/pkg-config
 
-FROM golang:1.22
+FROM golang:1.21
 
 # Install common packages
 RUN apt-get update && \
