@@ -129,7 +129,7 @@ endpoint = (webhookToken, webhookID, username, avatar_url="") =>
                 |> map(
                     fn: (r) => {
                         obj = mapFn(r: r)
-                        response =
+                        resp =
                             send(
                                 webhookToken: webhookToken,
                                 webhookID: webhookID,
@@ -138,8 +138,6 @@ endpoint = (webhookToken, webhookID, username, avatar_url="") =>
                                 content: obj.content,
                             )
 
-                        return {r with _status: string(v: response),
-                            _sent: string(v: 2 == response / 100),
-                        }
+                        return {r with _status: string(v: resp), _sent: string(v: 2 == resp / 100)}
                     },
                 )
