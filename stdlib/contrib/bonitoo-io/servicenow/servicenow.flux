@@ -207,30 +207,23 @@ endpoint = (url, username, password, source="Flux") =>
                 |> map(
                     fn: (r) => {
                         obj = mapFn(r: r)
+                        resp =
+                            event(
+                                url: url,
+                                username: username,
+                                password: password,
+                                source: source,
+                                node: obj.node,
+                                metricType: obj.metricType,
+                                resource: obj.resource,
+                                metricName: obj.metricName,
+                                messageKey: obj.messageKey,
+                                description: obj.description,
+                                severity: obj.severity,
+                                additionalInfo:
+                                    record.get(r: obj, key: "additionalInfo", default: record.any),
+                            )
 
-                        return {r with _sent:
-                                string(
-                                    v:
-                                        2 == event(
-                                                url: url,
-                                                username: username,
-                                                password: password,
-                                                source: source,
-                                                node: obj.node,
-                                                metricType: obj.metricType,
-                                                resource: obj.resource,
-                                                metricName: obj.metricName,
-                                                messageKey: obj.messageKey,
-                                                description: obj.description,
-                                                severity: obj.severity,
-                                                additionalInfo:
-                                                    record.get(
-                                                        r: obj,
-                                                        key: "additionalInfo",
-                                                        default: record.any,
-                                                    ),
-                                            ) / 100,
-                                ),
-                        }
+                        return {r with _status: string(v: resp), _sent: string(v: 2 == resp / 100)}
                     },
                 )
