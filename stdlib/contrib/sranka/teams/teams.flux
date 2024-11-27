@@ -132,18 +132,14 @@ endpoint = (url) =>
                 |> map(
                     fn: (r) => {
                         obj = mapFn(r: r)
+                        resp =
+                            message(
+                                url: url,
+                                title: obj.title,
+                                text: obj.text,
+                                summary: if exists obj.summary then obj.summary else "",
+                            )
 
-                        return {r with _sent:
-                                string(
-                                    v:
-                                        2 == message(
-                                                url: url,
-                                                title: obj.title,
-                                                text: obj.text,
-                                                summary:
-                                                    if exists obj.summary then obj.summary else "",
-                                            ) / 100,
-                                ),
-                        }
+                        return {r with _status: string(v: resp), _sent: string(v: 2 == resp / 100)}
                     },
                 )

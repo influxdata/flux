@@ -232,29 +232,26 @@ endpoint = (
                 |> map(
                     fn: (r) => {
                         obj = mapFn(r: r)
+                        resp =
+                            event(
+                                url: url,
+                                username: username,
+                                password: password,
+                                apiKey: apiKey,
+                                action: action,
+                                method: method,
+                                type: type,
+                                tid: tid,
+                                summary: obj.summary,
+                                device: obj.device,
+                                component: obj.component,
+                                severity: obj.severity,
+                                eventClass: obj.eventClass,
+                                eventClassKey: obj.eventClassKey,
+                                collector: obj.collector,
+                                message: obj.message,
+                            )
 
-                        return {r with _sent:
-                                string(
-                                    v:
-                                        2 == event(
-                                                url: url,
-                                                username: username,
-                                                password: password,
-                                                apiKey: apiKey,
-                                                action: action,
-                                                method: method,
-                                                type: type,
-                                                tid: tid,
-                                                summary: obj.summary,
-                                                device: obj.device,
-                                                component: obj.component,
-                                                severity: obj.severity,
-                                                eventClass: obj.eventClass,
-                                                eventClassKey: obj.eventClassKey,
-                                                collector: obj.collector,
-                                                message: obj.message,
-                                            ) / 100,
-                                ),
-                        }
+                        return {r with _status: string(v: resp), _sent: string(v: 2 == resp / 100)}
                     },
                 )

@@ -159,12 +159,9 @@ endpoint = (url) =>
                 |> map(
                     fn: (r) => {
                         obj = mapFn(r: r)
+                        resp = post(url: url, headers: obj.headers, data: obj.data)
 
-                        return {r with _sent:
-                                string(
-                                    v: 200 == post(url: url, headers: obj.headers, data: obj.data),
-                                ),
-                        }
+                        return {r with _status: string(v: resp), _sent: string(v: 200 == resp)}
                     },
                 )
                 |> experimental.group(mode: "extend", columns: ["_sent"])

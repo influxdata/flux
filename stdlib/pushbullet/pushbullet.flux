@@ -115,17 +115,8 @@ endpoint = (url=defaultURL, token="") =>
                 |> map(
                     fn: (r) => {
                         obj = mapFn(r: r)
+                        resp = pushNote(url: url, token: token, title: obj.title, text: obj.text)
 
-                        return {r with _sent:
-                                string(
-                                    v:
-                                        2 == pushNote(
-                                                url: url,
-                                                token: token,
-                                                title: obj.title,
-                                                text: obj.text,
-                                            ) / 100,
-                                ),
-                        }
+                        return {r with _status: string(v: resp), _sent: string(v: 2 == resp / 100)}
                     },
                 )

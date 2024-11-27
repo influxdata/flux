@@ -195,28 +195,25 @@ endpoint = (url, apiKey, environment="", origin="") =>
                 |> map(
                     fn: (r) => {
                         obj = mapFn(r: r)
+                        resp =
+                            alert(
+                                url: url,
+                                apiKey: apiKey,
+                                resource: obj.resource,
+                                event: obj.event,
+                                environment: environment,
+                                severity: obj.severity,
+                                service: obj.service,
+                                group: obj.group,
+                                value: obj.value,
+                                text: obj.text,
+                                tags: obj.tags,
+                                attributes: obj.attributes,
+                                origin: origin,
+                                type: obj.type,
+                                timestamp: obj.timestamp,
+                            )
 
-                        return {r with _sent:
-                                string(
-                                    v:
-                                        2 == alert(
-                                                url: url,
-                                                apiKey: apiKey,
-                                                resource: obj.resource,
-                                                event: obj.event,
-                                                environment: environment,
-                                                severity: obj.severity,
-                                                service: obj.service,
-                                                group: obj.group,
-                                                value: obj.value,
-                                                text: obj.text,
-                                                tags: obj.tags,
-                                                attributes: obj.attributes,
-                                                origin: origin,
-                                                type: obj.type,
-                                                timestamp: obj.timestamp,
-                                            ) / 100,
-                                ),
-                        }
+                        return {r with _status: string(v: resp), _sent: string(v: 2 == resp / 100)}
                     },
                 )

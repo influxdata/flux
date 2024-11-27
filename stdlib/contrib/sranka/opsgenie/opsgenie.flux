@@ -185,25 +185,22 @@ endpoint = (url="https://api.opsgenie.com/v2/alerts", apiKey, entity="") =>
                 |> map(
                     fn: (r) => {
                         obj = mapFn(r: r)
+                        resp =
+                            sendAlert(
+                                url: url,
+                                apiKey: apiKey,
+                                entity: entity,
+                                message: obj.message,
+                                alias: obj.alias,
+                                description: obj.description,
+                                priority: obj.priority,
+                                responders: obj.responders,
+                                tags: obj.tags,
+                                actions: obj.actions,
+                                visibleTo: obj.visibleTo,
+                                details: obj.details,
+                            )
 
-                        return {r with _sent:
-                                string(
-                                    v:
-                                        2 == sendAlert(
-                                                url: url,
-                                                apiKey: apiKey,
-                                                entity: entity,
-                                                message: obj.message,
-                                                alias: obj.alias,
-                                                description: obj.description,
-                                                priority: obj.priority,
-                                                responders: obj.responders,
-                                                tags: obj.tags,
-                                                actions: obj.actions,
-                                                visibleTo: obj.visibleTo,
-                                                details: obj.details,
-                                            ) / 100,
-                                ),
-                        }
+                        return {r with _status: string(v: resp), _sent: string(v: 2 == resp / 100)}
                     },
                 )

@@ -156,18 +156,15 @@ endpoint = (url=defaultURL, token="") =>
                 |> map(
                     fn: (r) => {
                         obj = mapFn(r: r)
+                        resp =
+                            message(
+                                url: url,
+                                token: token,
+                                channel: obj.channel,
+                                text: obj.text,
+                                color: obj.color,
+                            )
 
-                        return {r with _sent:
-                                string(
-                                    v:
-                                        2 == message(
-                                                url: url,
-                                                token: token,
-                                                channel: obj.channel,
-                                                text: obj.text,
-                                                color: obj.color,
-                                            ) / 100,
-                                ),
-                        }
+                        return {r with _status: string(v: resp), _sent: string(v: 2 == resp / 100)}
                     },
                 )
