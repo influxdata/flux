@@ -1,7 +1,7 @@
 extern crate fluxcore;
 
 use std::{
-    env::{self, consts, var},
+    env::{self, consts},
     fs,
     io::Write,
     path::{self, Path},
@@ -73,13 +73,6 @@ fn main() -> Result<()> {
         if !ty.free_vars(&mut Default::default()).is_empty() {
             bail!("found free variables in type of package {}: {}", name, ty);
         }
-    }
-
-    // When targeting x86_64-pc-windows-gnu, we need to tell it where to find things
-    // like ntdll
-    if var("TARGET").map(|target| target == "x86_64-pc-windows-gnu").unwrap_or(false) {
-        let dir = var("CARGO_MANIFEST_DIR").unwrap();
-        println!("cargo:rustc-link-search=native={}", Path::new(&dir).join("lib/x86_64").display());
     }
 
     let path = dir.join("prelude.data");
