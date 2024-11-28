@@ -188,6 +188,8 @@ github.com/bonitoo-io/go-sql-bigquery v0.3.4-1.4.0/go.mod h1:J4Y6YJm0qTWB9aFziB7
 github.com/boombuler/barcode v1.0.0/go.mod h1:paBWMcWSl3LHKBqUq+rly7CNSldXjb2rDl3JlRe0mD8=
 github.com/btasker/pkg-config v0.0.3 h1:FcHkuSdk06MoQssa1MysmOaKvXSMg3YXk9YS4d2pSiI=
 github.com/btasker/pkg-config v0.0.3/go.mod h1:HittfOkXR5uavbH/O94wknbNZD3p75iOQceX1D3sY44=
+github.com/btasker/pkg-config v0.0.4 h1:gErq/EWXedzWh/IdBxlhJLCVE4hSALrljOpougQ6Ee0=
+github.com/btasker/pkg-config v0.0.4/go.mod h1:HittfOkXR5uavbH/O94wknbNZD3p75iOQceX1D3sY44=
 github.com/c-bata/go-prompt v0.2.2 h1:uyKRz6Z6DUyj49QVijyM339UJV9yhbr70gESwbNU3e0=
 github.com/c-bata/go-prompt v0.2.2/go.mod h1:VzqtzE2ksDBcdln8G7mk2RX9QyGjH+OVqOCSiVIqS34=
 github.com/cactus/go-statsd-client/statsd v0.0.0-20191106001114-12b4e2b38748/go.mod h1:l/bIBLeOl9eX+wxJAzxS4TveKRtAqlyDpHjhkfO0MEI=
