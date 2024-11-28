@@ -467,7 +467,6 @@ dependencies = [
  "flux-core",
  "getrandom",
  "maplit",
- "ntdll",
  "once_cell",
  "pretty_assertions",
  "serde",
@@ -499,7 +498,6 @@ dependencies = [
  "log",
  "lsp-types",
  "maplit",
- "ntdll",
  "once_cell",
  "ordered-float",
  "pad",
@@ -806,15 +804,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d61c719bcfbcf5d62b3a09efa6088de8c54bc0bfcd3ea7ae39fcc186108b8de1"
 dependencies = [
  "autocfg",
-]
-
-[[package]]
-name = "ntdll"
-version = "0.0.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "86900cc3dffedfd3f94dd8f9f8e25858193dafac63d9b4653583e3f1d6099bb2"
-dependencies = [
- "winapi",
 ]
 
 [[package]]
