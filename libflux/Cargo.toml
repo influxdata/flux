@@ -1,3 +1,4 @@
+# no-op
 [workspace]
 members = ["flux-core", "flux"]
 
