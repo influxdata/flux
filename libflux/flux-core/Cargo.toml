@@ -48,6 +48,7 @@ libflate = "1.2.0"
 log = "0.4.16"
 lsp-types = { version = "0.91", optional = true }
 maplit = "1.0.2"
+ntdll = "=0.0.3"
 once_cell = { version = "1.10.0", optional = true }
 ordered-float = { version = "3", features = ["serde"] }
 pad = { version = "0.1.6", optional = true }
