@@ -1455,6 +1455,7 @@ impl<'input> Parser<'input> {
     // It returns Result::Ok(po) containing the postfix operator created.
     // If it fails to find a postix operator, it returns Result::Err(expr) containing the original
     // expression passed. This allows for further reuse of the given `expr`.
+    #[allow(clippy::result_large_err)]
     fn parse_postfix_operator(&mut self, expr: Expression) -> Result<Expression, Expression> {
         let t = self.peek();
         match t.tok {
@@ -2010,10 +2011,10 @@ impl<'input> Parser<'input> {
             }
             _ => {
                 let t = t.clone();
-                let mut expr = self.parse_expression_while_more(None, &[]);
-                match expr {
-                    None => {
-                        expr = Some(Expression::Bad(Box::new(BadExpr {
+                let expr = self
+                    .parse_expression_while_more(None, &[])
+                    .unwrap_or_else(|| {
+                        Expression::Bad(Box::new(BadExpr {
                             // Do not use `self.base_node_*` in order not to steal errors.
                             // The BadExpr is an error per se. We want to leave errors to parents.
                             base: BaseNode {
@@ -2025,15 +2026,13 @@ impl<'input> Parser<'input> {
                             },
                             text: t.lit,
                             expression: None,
-                        })));
-                    }
-                    Some(_) => (),
-                };
+                        }))
+                    });
                 let rparen = self.close(TokenType::RParen);
                 Expression::Paren(Box::new(ParenExpr {
                     base: self.base_node_from_tokens(&lparen, &rparen),
                     lparen: lparen.comments,
-                    expression: expr.expect("must be Some at this point"),
+                    expression: expr,
                     rparen: rparen.comments,
                 }))
             }

@@ -142,7 +142,7 @@ fn dump(
 fn lint(flux_cmd_path: Option<&Path>, dir: &Path, limit: Option<i64>) -> Result<()> {
     let flux_cmd_path = resolve_default_paths(flux_cmd_path);
     let limit = match limit {
-        Some(limit) if limit == 0 => i64::MAX,
+        Some(0) => i64::MAX,
         Some(limit) => limit,
         None => 10,
     };
@@ -217,7 +217,7 @@ fn consume_sequentially<T>(
 
     impl<T> PartialOrd for Element<T> {
         fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
-            other.0.partial_cmp(&self.0)
+            Some(self.cmp(other))
         }
     }
 
