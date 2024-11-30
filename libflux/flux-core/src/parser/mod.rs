@@ -41,7 +41,7 @@ pub struct Parser<'input> {
 
 impl<'input> Parser<'input> {
     /// Instantiates a new parser with the given string as input.
-    pub fn new(src: &'input str) -> Parser {
+    pub fn new(src: &'input str) -> Parser<'input> {
         let s = Scanner::new(src);
         Parser {
             s,
