@@ -180,7 +180,7 @@ impl<'a> Node<'a> {
 
 impl<'a> Node<'a> {
     #[allow(missing_docs)]
-    pub fn from_expr(expr: &'a Expression) -> Node {
+    pub fn from_expr(expr: &'a Expression) -> Node<'a> {
         match expr {
             Expression::Identifier(e) => Node::Identifier(e),
             Expression::Array(e) => Node::ArrayExpr(e),
