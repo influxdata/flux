@@ -396,7 +396,7 @@ impl PropertyKey {
 //  FunctionBodyExpression         = Block | Expression .
 #[derive(Debug, PartialEq, Eq, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
-#[allow(missing_docs)]
+#[allow(missing_docs, clippy::large_enum_variant)]
 pub enum FunctionBody {
     Block(Block),
     Expr(Expression),
