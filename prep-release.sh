@@ -24,19 +24,19 @@ make generate
 
 message="build(flux): prepare Flux release for $version"
 
-git commit -am "$message"
+git commit --allow-empty -am "$message"
 git push
 
-if ! command -v hub &> /dev/null
+if ! command -v gh &> /dev/null
 then
-    echo "hub is not installed. Cannot open github PRs automatically."
+    echo "gh is not installed. Cannot open github PRs automatically."
     echo "Pull requests will have to be manually created."
-    HAS_HUB=0
+    HAS_GH=0
 else
-    HAS_HUB=1
+    HAS_GH=1
 fi
 
-if [ $HAS_HUB -eq 1 ]
+if [ $HAS_GH -eq 1 ]
 then
-    hub pull-request -m "$message" -r influxdata/flux-team
+    gh pr create --repo influxdata/flux --fill-first -r influxdata/flux-team
 fi
