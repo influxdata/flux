@@ -1,6 +1,7 @@
 package promql_test
 
 import (
+	"errors"
 	"math"
 	"testing"
 
@@ -8,7 +9,6 @@ import (
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
 	"github.com/influxdata/flux/stdlib/internal/promql"
-	"github.com/pkg/errors"
 )
 
 var linearHist = func() []flux.Table {
