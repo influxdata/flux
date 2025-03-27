@@ -2,13 +2,13 @@ package promql
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
 	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
-	"github.com/pkg/errors"
 )
 
 func generateDateFunction(name string, dateFn func(time.Time) int) values.Function {
