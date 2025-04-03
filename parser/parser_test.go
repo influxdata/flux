@@ -206,7 +206,7 @@ func TestParseTimeLiteral(t *testing.T) {
 	inputTime := "2018-01-01"
 	got, err := parser.ParseTime(inputTime)
 	if err != nil {
-		t.Errorf(err.Error())
+		t.Error(err.Error())
 	}
 	want := time.Date(2018, 1, 1, 0, 0, 0, 0, time.UTC)
 	if !cmp.Equal(got.Value, want, asttest.IgnoreBaseNodeOptions...) {
