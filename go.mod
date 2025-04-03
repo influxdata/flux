@@ -4,7 +4,7 @@ go 1.21.0
 
 require (
 	cloud.google.com/go v0.114.0
-	cloud.google.com/go/bigtable v1.10.1
+	cloud.google.com/go/bigtable v1.16.0
 	github.com/Azure/go-autorest/autorest v0.11.9
 	github.com/Azure/go-autorest/autorest/adal v0.9.13
 	github.com/Azure/go-autorest/autorest/azure/auth v0.5.3
@@ -98,11 +98,15 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/internal/s3shared v1.17.8 // indirect
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.54.4 // indirect
 	github.com/aws/smithy-go v1.20.2 // indirect
+	github.com/census-instrumentation/opencensus-proto v0.4.1 // indirect
+	github.com/cncf/xds/go v0.0.0-20240318125728-8a4994d93e50 // indirect
 	github.com/danieljoos/wincred v1.2.1 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/deepmap/oapi-codegen v1.6.0 // indirect
 	github.com/dimchansky/utfbom v1.1.0 // indirect
 	github.com/dvsekhvalnov/jose2go v1.7.0 // indirect
+	github.com/envoyproxy/go-control-plane v0.12.0 // indirect
+	github.com/envoyproxy/protoc-gen-validate v1.0.4 // indirect
 	github.com/felixge/httpsnoop v1.0.4 // indirect
 	github.com/form3tech-oss/jwt-go v3.2.5+incompatible // indirect
 	github.com/gabriel-vasile/mimetype v1.4.4 // indirect
