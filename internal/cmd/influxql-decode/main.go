@@ -23,7 +23,7 @@ var rootCmd = &cobra.Command{
 		case 2:
 			return v2(cmd, args)
 		default:
-			return errors.New("Target version can only be 1 or 2.")
+			return errors.New("target version can only be 1 or 2")
 		}
 	},
 }
