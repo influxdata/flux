@@ -11,7 +11,6 @@ import (
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/values"
-	"github.com/pkg/errors"
 )
 
 const EmptyTableKind = "emptyTable"
@@ -110,7 +109,9 @@ func (s *EmptyTableSource) Run(ctx context.Context) {
 
 FINISH:
 	for _, t := range s.ts {
-		err = errors.Wrap(err, "error in promql.emptyTable()")
+		if err != nil {
+			err = fmt.Errorf("error in promql.emptyTable(): %w", err)
+		}
 		t.Finish(s.id, err)
 	}
 }
