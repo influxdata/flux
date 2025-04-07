@@ -109,7 +109,9 @@ func (s *EmptyTableSource) Run(ctx context.Context) {
 
 FINISH:
 	for _, t := range s.ts {
-		err = fmt.Errorf("error in promql.emptyTable(): %w", err)
+		if err != nil {
+			err = fmt.Errorf("error in promql.emptyTable(): %w", err)
+		}
 		t.Finish(s.id, err)
 	}
 }
