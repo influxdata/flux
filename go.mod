@@ -54,7 +54,7 @@ require (
 	github.com/vertica/vertica-sql-go v1.1.1
 	go.uber.org/zap v1.27.0
 	golang.org/x/exp v0.0.0-20240604190554-fc45aab8b7f8
-	golang.org/x/net v0.26.0
+	golang.org/x/net v0.36.0
 	golang.org/x/tools v0.22.0
 	gonum.org/v1/gonum v0.12.0
 	google.golang.org/api v0.183.0
