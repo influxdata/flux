@@ -1,7 +1,8 @@
 module github.com/influxdata/flux
 
-go 1.21.0
-toolchain go1.24.1
+go 1.23.0
+
+toolchain go1.24.2
 
 require (
 	cloud.google.com/go v0.114.0
