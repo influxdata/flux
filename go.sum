@@ -411,8 +411,6 @@ github.com/influxdata/gosnowflake v1.9.0 h1:fw6peFfTfJK+jbI98RzEEbte8F1SNBX8a91c
 github.com/influxdata/gosnowflake v1.9.0/go.mod h1:VYPoQhZtz3I1zh+YIMG4axm/iUxoKCTbTEQl/SYvUNM=
 github.com/influxdata/influxdb-client-go/v2 v2.3.1-0.20210518120617-5d1fff431040 h1:MBLCfcSsUyFPDJp6T7EoHp/Ph3Jkrm4EuUKLD2rUWHg=
 github.com/influxdata/influxdb-client-go/v2 v2.3.1-0.20210518120617-5d1fff431040/go.mod h1:vLNHdxTJkIf2mSLvGrpj8TCcISApPoXkaxP8g9uRlW8=
-github.com/influxdata/influxdb-iox-client-go v1.0.0-beta.1 h1:zDmAiE2o3Y/YZinI6CENzgQueJDuibUB9TWOZC5zCq0=
-github.com/influxdata/influxdb-iox-client-go v1.0.0-beta.1/go.mod h1:Chl4pz0SRqoPmEavex4vZaQlunqXqrtEPWAN54THFfo=
 github.com/influxdata/influxdb1-client v0.0.0-20191209144304-8bf82d3c094d/go.mod h1:qj24IKcXYK6Iy9ceXlo3Tc+vtHo9lIhSX5JddghvEPo=
 github.com/influxdata/line-protocol v0.0.0-20200327222509-2487e7298839 h1:W9WBk7wlPfJLvMCdtV4zPulc4uCPrlywQOmbFOhgQNU=
 github.com/influxdata/line-protocol v0.0.0-20200327222509-2487e7298839/go.mod h1:xaLFMmpvUxqXtVkUJfg9QmT88cDaCJ3ZKgdZ78oO8Qo=

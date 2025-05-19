@@ -8,7 +8,6 @@ import (
 	"github.com/influxdata/flux/dependencies/influxdb"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/memory"
-	influxdbiox "github.com/influxdata/influxdb-iox-client-go"
 )
 
 type key int
@@ -42,6 +41,49 @@ func GetProvider(ctx context.Context) Provider {
 	return p.(Provider)
 }
 
+// ColumnType defines the column data types IOx can represent.
+type ColumnType int32
+
+const (
+	// ColumnTypeUnknown is an invalid column type.
+	ColumnTypeUnknown ColumnType = 0
+	// ColumnType_I64 is an int64.
+	ColumnType_I64 ColumnType = 1
+	// ColumnType_U64 is an uint64.
+	ColumnType_U64 ColumnType = 2
+	// ColumnType_F64 is an float64.
+	ColumnType_F64 ColumnType = 3
+	// ColumnType_BOOL is a bool.
+	ColumnType_BOOL ColumnType = 4
+	// ColumnType_STRING is a string.
+	ColumnType_STRING ColumnType = 5
+	// ColumnType_TIME is a timestamp.
+	ColumnType_TIME ColumnType = 6
+	// ColumnType_TAG is a tag value.
+	ColumnType_TAG ColumnType = 7
+)
+
+func (c ColumnType) String() string {
+	switch c {
+	case ColumnType_I64:
+		return "int64"
+	case ColumnType_U64:
+		return "uint64"
+	case ColumnType_F64:
+		return "float64"
+	case ColumnType_BOOL:
+		return "bool"
+	case ColumnType_STRING:
+		return "string"
+	case ColumnType_TIME:
+		return "timestamp"
+	case ColumnType_TAG:
+		return "tag"
+	default:
+		return "unknown"
+	}
+}
+
 // RecordReader is similar to the RecordReader interface provided by Arrow's array
 // package, but includes a method for detecting errors that are sent mid-stream.
 type RecordReader interface {
@@ -58,7 +100,7 @@ type Client interface {
 	// GetSchema will retrieve a schema for the given table if this client supports that capability.
 	// If this Client doesn't support this capability, it should return a flux error with the code
 	// codes.Unimplemented.
-	GetSchema(ctx context.Context, table string) (map[string]influxdbiox.ColumnType, error)
+	GetSchema(ctx context.Context, table string) (map[string]ColumnType, error)
 }
 
 // ErrorProvider is an implementation of the Provider that returns an error.
