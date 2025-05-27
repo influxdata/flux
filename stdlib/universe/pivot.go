@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"sort"
 	"strconv"
+	"strings"
 
 	arrowmemory "github.com/apache/arrow/go/v7/arrow/memory"
 	"github.com/influxdata/flux"
@@ -268,23 +269,24 @@ func (t *pivotTransformation) Process(id execute.DatasetID, tbl flux.Table) erro
 
 	return tbl.Do(func(cr flux.ColReader) error {
 		for row := 0; row < cr.Len(); row++ {
-			rowKey := ""
-			colKey := ""
+			var rkb strings.Builder
 			for _, rk := range t.spec.RowKey {
 				j := rowKeyIndex[rk]
 				c := cr.Cols()[j]
-				rowKey += valueToStr(cr, c, row, j)
+				rkb.WriteString(valueToStr(cr, c, row, j))
 			}
+			rowKey := rkb.String()
 
+			var ckb strings.Builder
 			for _, ck := range t.spec.ColumnKey {
 				j := colKeyIndex[ck]
 				c := cr.Cols()[j]
-				if colKey == "" {
-					colKey = valueToStr(cr, c, row, j)
-				} else {
-					colKey = colKey + "_" + valueToStr(cr, c, row, j)
+				if ckb.Len() > 0 {
+					ckb.WriteByte('_')
 				}
+				ckb.WriteString(valueToStr(cr, c, row, j))
 			}
+			colKey := ckb.String()
 
 			// we have columns for the copy-over in place;
 			// we know the row key;
