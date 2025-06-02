@@ -3,7 +3,7 @@ package mutable_test
 import (
 	"testing"
 
-	"github.com/apache/arrow/go/v7/arrow/memory"
+	"github.com/apache/arrow-go/v18/arrow/memory"
 	"github.com/influxdata/flux/internal/mutable"
 )
 

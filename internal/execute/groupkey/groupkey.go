@@ -6,7 +6,7 @@ import (
 	"strings"
 	"sync/atomic"
 
-	"github.com/apache/arrow/go/v7/arrow"
+	"github.com/apache/arrow-go/v18/arrow"
 	"github.com/cespare/xxhash/v2"
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/values"

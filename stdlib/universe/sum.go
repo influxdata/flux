@@ -1,7 +1,7 @@
 package universe
 
 import (
-	"github.com/apache/arrow/go/v7/arrow/math"
+	"github.com/apache/arrow-go/v18/arrow/math"
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/array"
 	"github.com/influxdata/flux/codes"

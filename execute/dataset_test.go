@@ -3,7 +3,7 @@ package execute_test
 import (
 	"testing"
 
-	arrowmem "github.com/apache/arrow/go/v7/arrow/memory"
+	arrowmem "github.com/apache/arrow-go/v18/arrow/memory"
 	"github.com/google/go-cmp/cmp"
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/array"
