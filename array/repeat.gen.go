@@ -7,7 +7,7 @@
 package array
 
 import (
-	"github.com/apache/arrow/go/v7/arrow/memory"
+	"github.com/apache/arrow-go/v18/arrow/memory"
 )
 
 func IntRepeat(v int64, isNull bool, n int, mem memory.Allocator) *Int {

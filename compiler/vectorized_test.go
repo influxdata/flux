@@ -6,7 +6,7 @@ import (
 	"math"
 	"testing"
 
-	arrow "github.com/apache/arrow/go/v7/arrow/memory"
+	arrow "github.com/apache/arrow-go/v18/arrow/memory"
 	"github.com/google/go-cmp/cmp"
 	"github.com/influxdata/flux/compiler"
 	"github.com/influxdata/flux/execute/executetest"

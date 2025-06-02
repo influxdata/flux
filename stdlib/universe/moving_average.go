@@ -1,9 +1,9 @@
 package universe
 
 import (
-	stdarrow "github.com/apache/arrow/go/v7/arrow"
-	"github.com/apache/arrow/go/v7/arrow/bitutil"
-	"github.com/apache/arrow/go/v7/arrow/memory"
+	stdarrow "github.com/apache/arrow-go/v18/arrow"
+	"github.com/apache/arrow-go/v18/arrow/bitutil"
+	"github.com/apache/arrow-go/v18/arrow/memory"
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/array"
 	"github.com/influxdata/flux/arrow"

@@ -3,8 +3,8 @@ package array
 import (
 	"unsafe"
 
-	"github.com/apache/arrow/go/v7/arrow"
-	"github.com/apache/arrow/go/v7/arrow/memory"
+	"github.com/apache/arrow-go/v18/arrow"
+	"github.com/apache/arrow-go/v18/arrow/memory"
 )
 
 func StringRepeat(v string, n int, mem memory.Allocator) *String {

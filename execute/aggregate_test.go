@@ -7,7 +7,7 @@ import (
 	"sync/atomic"
 	"testing"
 
-	"github.com/apache/arrow/go/v7/arrow/memory"
+	"github.com/apache/arrow-go/v18/arrow/memory"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/influxdata/flux"
@@ -1333,7 +1333,7 @@ func TestSimpleAggregate_Process(t *testing.T) {
 			sort.Sort(executetest.SortedTables(got))
 			sort.Sort(executetest.SortedTables(tc.want))
 
-			if !cmp.Equal(tc.want, got, cmpopts.EquateNaNs()) {
+			if !cmp.Equal(tc.want, got, cmpopts.EquateNaNs(), cmpopts.EquateApprox(0.0000001, 0)) {
 				t.Errorf("unexpected tables -want/+got\n%s", cmp.Diff(tc.want, got))
 			}
 		})

@@ -3,7 +3,7 @@ package iox
 import (
 	"context"
 
-	"github.com/apache/arrow/go/v7/arrow/array"
+	"github.com/apache/arrow-go/v18/arrow/array"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/dependencies/influxdb"
 	"github.com/influxdata/flux/internal/errors"

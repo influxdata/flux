@@ -3,8 +3,8 @@ package array_test
 import (
 	"testing"
 
-	apachearray "github.com/apache/arrow/go/v7/arrow/array"
-	"github.com/apache/arrow/go/v7/arrow/memory"
+	apachearray "github.com/apache/arrow-go/v18/arrow/array"
+	"github.com/apache/arrow-go/v18/arrow/memory"
 	"github.com/google/go-cmp/cmp"
 	"github.com/influxdata/flux/array"
 	fluxmemory "github.com/influxdata/flux/memory"
