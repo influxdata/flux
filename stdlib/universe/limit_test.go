@@ -4,6 +4,7 @@ import (
 	"context"
 	"sort"
 	"testing"
+	"time"
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/influxdata/flux"
@@ -13,10 +14,103 @@ import (
 	"github.com/influxdata/flux/execute/executetest"
 	"github.com/influxdata/flux/execute/table"
 	"github.com/influxdata/flux/internal/gen"
+	"github.com/influxdata/flux/internal/operation"
 	"github.com/influxdata/flux/memory"
+	"github.com/influxdata/flux/querytest"
+	"github.com/influxdata/flux/stdlib/influxdata/influxdb"
 	"github.com/influxdata/flux/stdlib/universe"
 	"github.com/influxdata/flux/values"
 )
+
+func TestLimit_NewQuery(t *testing.T) {
+	tests := []querytest.NewQueryTestCase{
+		{
+			Name: "no offset",
+			Raw: `
+				from(bucket:"db") |> range(start:-1h) |> limit(n: 1)`,
+			Want: &operation.Spec{
+				Operations: []*operation.Node{
+					{
+						ID:   "from0",
+						Spec: &influxdb.FromOpSpec{Bucket: influxdb.NameOrID{Name: "db"}},
+					},
+					{
+						ID: "range1",
+						Spec: &universe.RangeOpSpec{
+							Start: flux.Time{
+								Relative:   -1 * time.Hour,
+								IsRelative: true,
+							},
+							Stop: flux.Time{
+								IsRelative: true,
+							},
+							TimeColumn:  "_time",
+							StartColumn: "_start",
+							StopColumn:  "_stop",
+						},
+					},
+					{
+						ID:   "limit2",
+						Spec: &universe.LimitOpSpec{N: 1},
+					},
+				},
+				Edges: []operation.Edge{
+					{Parent: "from0", Child: "range1"},
+					{Parent: "range1", Child: "limit2"},
+				},
+			},
+		},
+		{
+			Name: "positive offset",
+			Raw: `
+				from(bucket:"db") |> range(start:-1h) |> limit(n: 1, offset: 2)`,
+			Want: &operation.Spec{
+				Operations: []*operation.Node{
+					{
+						ID:   "from0",
+						Spec: &influxdb.FromOpSpec{Bucket: influxdb.NameOrID{Name: "db"}},
+					},
+					{
+						ID: "range1",
+						Spec: &universe.RangeOpSpec{
+							Start: flux.Time{
+								Relative:   -1 * time.Hour,
+								IsRelative: true,
+							},
+							Stop: flux.Time{
+								IsRelative: true,
+							},
+							TimeColumn:  "_time",
+							StartColumn: "_start",
+							StopColumn:  "_stop",
+						},
+					},
+					{
+						ID:   "limit2",
+						Spec: &universe.LimitOpSpec{N: 1, Offset: 2},
+					},
+				},
+				Edges: []operation.Edge{
+					{Parent: "from0", Child: "range1"},
+					{Parent: "range1", Child: "limit2"},
+				},
+			},
+		},
+		{
+			Name: "negative offset",
+			Raw: `
+				from(bucket:"db") |> range(start:-1h) |> limit(n: 1, offset: -1)`,
+			WantErr: true,
+		},
+	}
+	for _, tc := range tests {
+		tc := tc
+		t.Run(tc.Name, func(t *testing.T) {
+			t.Parallel()
+			querytest.NewQueryTestHelper(t, tc)
+		})
+	}
+}
 
 func TestLimit_Process(t *testing.T) {
 	testCases := []struct {

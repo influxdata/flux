@@ -49,6 +49,9 @@ func createLimitOpSpec(args flux.Arguments, a *flux.Administration) (flux.Operat
 	} else if ok {
 		spec.Offset = offset
 	}
+	if spec.Offset < 0 {
+		return nil, errors.Newf(codes.Invalid, "limit offset cannot be negative (%d)", spec.Offset)
+	}
 
 	return spec, nil
 }
