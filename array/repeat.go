@@ -1,85 +1,35 @@
 package array
 
 import (
-	"unsafe"
-
 	"github.com/apache/arrow-go/v18/arrow"
+	"github.com/apache/arrow-go/v18/arrow/array"
 	"github.com/apache/arrow-go/v18/arrow/memory"
 )
 
 func StringRepeat(v string, n int, mem memory.Allocator) *String {
-	buf := memory.NewResizableBuffer(mem)
-	buf.Resize(len(v))
-	copy(buf.Bytes(), v)
-	return &String{
-		binaryArray: &repeatedBinary{
-			len: n,
-			buf: buf,
-		},
+	db := array.NewBinaryBuilder(mem, arrow.BinaryTypes.String)
+	db.AppendString(v)
+	dict := db.NewArray()
+	db.Release()
+
+	ib := array.NewInt32Builder(mem)
+	for _ = range n {
+		ib.Append(0)
 	}
-}
+	indices := ib.NewArray()
+	ib.Release()
 
-type repeatedBinary struct {
-	len int
-	buf *memory.Buffer
-}
+	data := array.NewDataWithDictionary(
+		StringDictionaryType,
+		indices.Len(),
+		indices.Data().Buffers(),
+		indices.Data().NullN(),
+		indices.Data().Offset(),
+		dict.Data().(*array.Data),
+	)
+	defer data.Release()
+	indices.Release()
+	dict.Release()
 
-func (*repeatedBinary) Data() arrow.ArrayData {
-	return nil
-}
-
-func (*repeatedBinary) NullN() int {
-	return 0
-}
-
-func (*repeatedBinary) NullBitmapBytes() []byte {
-	return nil
-}
-
-func (*repeatedBinary) IsNull(i int) bool {
-	return false
-}
-
-func (b *repeatedBinary) IsValid(i int) bool {
-	return i < b.len
-}
-
-func (b *repeatedBinary) Len() int {
-	return b.len
-}
-
-func (b *repeatedBinary) ValueBytes() []byte {
-	return b.buf.Bytes()
-}
-
-func (b *repeatedBinary) ValueLen(int) int {
-	return b.buf.Len()
-}
-
-func (*repeatedBinary) ValueOffset(int) int {
-	return 0
-}
-
-func (b *repeatedBinary) ValueString(int) string {
-	return unsafe.String(unsafe.SliceData(b.buf.Bytes()), b.buf.Len())
-}
-
-func (b *repeatedBinary) Retain() {
-	b.buf.Retain()
-}
-
-func (b *repeatedBinary) Release() {
-	b.buf.Release()
-}
-
-func (b *repeatedBinary) IsConstant() bool {
-	return true
-}
-
-func (b *repeatedBinary) Slice(i, j int) binaryArray {
-	b.buf.Retain()
-	return &repeatedBinary{
-		len: j - i,
-		buf: b.buf,
-	}
+	return NewStringData(data)
 }

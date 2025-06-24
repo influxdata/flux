@@ -3,6 +3,7 @@ package array_test
 import (
 	"testing"
 
+	"github.com/apache/arrow-go/v18/arrow"
 	apachearray "github.com/apache/arrow-go/v18/arrow/array"
 	"github.com/apache/arrow-go/v18/arrow/memory"
 	"github.com/google/go-cmp/cmp"
@@ -11,13 +12,16 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+var _ arrow.Array = (*array.String)(nil)
+
 func TestString(t *testing.T) {
 	for _, tc := range []struct {
-		name  string
-		build func(b *array.StringBuilder)
-		bsz   int
-		sz    int
-		want  []interface{}
+		name       string
+		build      func(b *array.StringBuilder)
+		bsz        int
+		sz         int
+		want       []interface{}
+		wantString string
 	}{
 		{
 			name: "Constant",
@@ -26,9 +30,17 @@ func TestString(t *testing.T) {
 					b.Append("abcdefghij")
 				}
 			},
-			bsz: 64, // 64 bytes data.
-			sz:  64, // The minimum size of a buffer is 64 bytes
-			want: []interface{}{
+			bsz: 64 + // indices null bitmap
+				128 + // indices array
+				64 + // values null bitmap
+				64 + // values offset array
+				64, // values data array
+			sz: 64 + // indices null bitmap
+				64 + // indices array
+				64 + // values null bitmap
+				64 + // values offset array
+				64, // values data array
+			want: []any{
 				"abcdefghij",
 				"abcdefghij",
 				"abcdefghij",
@@ -40,23 +52,29 @@ func TestString(t *testing.T) {
 				"abcdefghij",
 				"abcdefghij",
 			},
+			wantString: `["abcdefghij" "abcdefghij" "abcdefghij" "abcdefghij" "abcdefghij" "abcdefghij" "abcdefghij" "abcdefghij" "abcdefghij" "abcdefghij"]`,
 		},
 		{
 			name: "RLE",
 			build: func(b *array.StringBuilder) {
-				for i := 0; i < 5; i++ {
+				for range 5 {
 					b.Append("a")
 				}
-				for i := 0; i < 5; i++ {
+				for range 5 {
 					b.Append("b")
 				}
 			},
-			bsz: 192,
-			sz:  192,
-			want: []interface{}{
+			bsz: 64 + // values null bitmap
+				128 + // values offset array
+				64, // values data array
+			sz: 64 + // values null bitmap
+				128 + // values offset array
+				64, // values data array
+			want: []any{
 				"a", "a", "a", "a", "a",
 				"b", "b", "b", "b", "b",
 			},
+			wantString: `["a" "a" "a" "a" "a" "b" "b" "b" "b" "b"]`,
 		},
 		{
 			name: "Random",
@@ -69,12 +87,17 @@ func TestString(t *testing.T) {
 					b.Append(v)
 				}
 			},
-			bsz: 192,
-			sz:  192,
-			want: []interface{}{
+			bsz: 64 + // values null bitmap
+				128 + // values offset array
+				64, // values data array
+			sz: 64 + // values null bitmap
+				128 + // values offset array
+				64, // values data array
+			want: []any{
 				"a", "b", "c", "d", "e",
 				nil, "g", "h", "i", "j",
 			},
+			wantString: `["a" "b" "c" "d" "e" (null) "g" "h" "i" "j"]`,
 		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
@@ -82,10 +105,11 @@ func TestString(t *testing.T) {
 			defer mem.AssertSize(t, 0)
 
 			// Construct a string builder, resize it to a capacity larger than
-			// what is required, then verify we see that value.
+			// what is required, then verify we see that value, or a higher
+			// value where the builder type has a minimum capacity.
 			b := array.NewStringBuilder(mem)
 			b.Resize(len(tc.want) + 2)
-			if want, got := len(tc.want)+2, b.Cap(); want != got {
+			if want, got := len(tc.want)+2, b.Cap(); want > got {
 				t.Errorf("unexpected builder cap -want/+got:\n\t- %d\n\t+ %d", want, got)
 			}
 
@@ -99,9 +123,10 @@ func TestString(t *testing.T) {
 			if want, got := len(tc.want), b.Len(); want != got {
 				t.Errorf("unexpected builder len -want/+got:\n\t- %d\n\t+ %d", want, got)
 			}
-			if want, got := len(tc.want)+2, b.Cap(); want != got {
+			if want, got := len(tc.want)+2, b.Cap(); want > got {
 				t.Errorf("unexpected builder cap -want/+got:\n\t- %d\n\t+ %d", want, got)
 			}
+
 			assert.Equal(t, tc.bsz, mem.CurrentAlloc(), "unexpected memory allocation.")
 
 			arr := b.NewStringArray()
@@ -130,6 +155,7 @@ func TestString(t *testing.T) {
 					}
 				}
 			}
+			assert.Equal(t, tc.wantString, arr.String())
 		})
 	}
 }
@@ -159,7 +185,7 @@ func TestNewStringFromBinaryArray(t *testing.T) {
 	s.Release()
 
 	if want, got := int64(0), alloc.Allocated(); want != got {
-		t.Errorf("epxected allocated to be %v, was %v", want, got)
+		t.Errorf("expected allocated to be %v, was %v", want, got)
 	}
 }
 
@@ -177,7 +203,7 @@ func TestStringBuilder_NewArray(t *testing.T) {
 		}
 
 		arr := b.NewArray()
-		assert.Equal(t, 64, mem.CurrentAlloc(), "unexpected memory allocation.")
+		assert.Equal(t, 64+64+64+64+64, mem.CurrentAlloc(), "unexpected memory allocation.")
 		arr.Release()
 		mem.AssertSize(t, 0)
 
@@ -191,7 +217,7 @@ func TestStringBuilder_NewArray(t *testing.T) {
 			}
 		}
 		arr = b.NewArray()
-		assert.Equal(t, 192, mem.CurrentAlloc(), "unexpected memory allocation.")
+		assert.Equal(t, 64+128+64, mem.CurrentAlloc(), "unexpected memory allocation.")
 		arr.Release()
 		mem.AssertSize(t, 0)
 	}
