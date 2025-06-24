@@ -160,7 +160,7 @@ func TestString(t *testing.T) {
 	}
 }
 
-func TestNewStringFromBinaryArray(t *testing.T) {
+func TestNewStringData(t *testing.T) {
 	alloc := fluxmemory.NewResourceAllocator(nil)
 	// Need to use the Apache binary builder to be able to create an actual
 	// Arrow Binary array.
@@ -170,7 +170,7 @@ func TestNewStringFromBinaryArray(t *testing.T) {
 		sb.AppendString(v)
 	}
 	a := sb.NewArray()
-	s := array.NewStringFromBinaryArray(a.(*apachearray.Binary))
+	s := array.NewStringData(a.Data())
 	if want, got := len(vals), s.Len(); want != got {
 		t.Errorf("wanted length of %v, got %v", want, got)
 		t.Fail()

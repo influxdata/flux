@@ -124,16 +124,6 @@ type String struct {
 	values  *array.Binary
 }
 
-// NewStringFromBinaryArray creates an instance of String from
-// an Arrow Binary array.
-//
-// Note: Generally client code should be using the types for arrays defined in Flux.
-// This method allows string data created outside of Flux (such as from Arrow Flight)
-// to be used in Flux.
-func NewStringFromBinaryArray(data *array.Binary) *String {
-	return NewStringData(data.Data())
-}
-
 // Create a new String array from an arrow.ArrayData that contains
 // either a `utf8` or a `dictionary<values=utf8, indices=int32, ordered=false>`
 // set of data buffers. NewStringData will panic if the array data is of

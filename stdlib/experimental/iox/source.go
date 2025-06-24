@@ -185,9 +185,7 @@ func (s *sqlSource) produce(key flux.GroupKey, cols []flux.ColMeta, record stdar
 		case stdarrow.STRING:
 			// IOx returns string columns as String arrays, but Flux uses
 			// Binary arrays. The underlying structure of the buffers is the same.
-			binaryData := arrowarray.NewBinaryData(data.Data())
-			buffer.Values[i] = array.NewStringFromBinaryArray(binaryData)
-			binaryData.Release() // The String in data now owns this binary data.
+			buffer.Values[i] = array.NewStringData(data.Data())
 		default:
 			return errors.Newf(codes.FailedPrecondition, "unsupported arrow data type %v", id)
 		}
