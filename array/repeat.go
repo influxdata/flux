@@ -13,7 +13,7 @@ func StringRepeat(v string, n int, mem memory.Allocator) *String {
 	db.Release()
 
 	ib := array.NewInt32Builder(mem)
-	for _ = range n {
+	for i := 0; i < n; i++ {
 		ib.Append(0)
 	}
 	indices := ib.NewArray()
