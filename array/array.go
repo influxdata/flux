@@ -1,14 +1,19 @@
 package array
 
 import (
+	"encoding/json"
+	"fmt"
 	"strconv"
+	"strings"
+	"sync/atomic"
 
 	"github.com/apache/arrow-go/v18/arrow"
 	"github.com/apache/arrow-go/v18/arrow/array"
+	"github.com/apache/arrow-go/v18/arrow/bitutil"
+	"github.com/apache/arrow-go/v18/arrow/memory"
 
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/internal/errors"
-	"github.com/influxdata/flux/memory"
 )
 
 //go:generate -command tmpl ../gotool.sh github.com/benbjohnson/tmpl
@@ -21,11 +26,16 @@ import (
 type DataType = arrow.DataType
 
 var (
-	IntType     = arrow.PrimitiveTypes.Int64
-	UintType    = arrow.PrimitiveTypes.Uint64
-	FloatType   = arrow.PrimitiveTypes.Float64
-	StringType  = arrow.BinaryTypes.String
-	BooleanType = arrow.FixedWidthTypes.Boolean
+	IntType              = arrow.PrimitiveTypes.Int64
+	UintType             = arrow.PrimitiveTypes.Uint64
+	FloatType            = arrow.PrimitiveTypes.Float64
+	StringType           = arrow.BinaryTypes.String
+	BooleanType          = arrow.FixedWidthTypes.Boolean
+	StringDictionaryType = &arrow.DictionaryType{
+		IndexType: arrow.PrimitiveTypes.Int32,
+		ValueType: arrow.BinaryTypes.String,
+		Ordered:   false,
+	}
 )
 
 // Array represents an immutable sequence of values.
@@ -102,68 +112,242 @@ type Builder interface {
 	NewArray() Array
 }
 
-type binaryArray interface {
-	NullN() int
-	NullBitmapBytes() []byte
-	IsNull(i int) bool
-	IsValid(i int) bool
-	Data() arrow.ArrayData
-	Len() int
-	ValueBytes() []byte
-	ValueLen(i int) int
-	ValueOffset(i int) int
-	ValueString(i int) string
-	Retain()
-	Release()
-}
-
+// String holds an array of flux string values. The arrow data must be
+// either a `utf8` or `dictionary<value=utf8, indices=int32, ordered=false>`.
+// Internally the string data is stored in an array.Binary value.
 type String struct {
-	binaryArray
+	refCount        int64
+	data            *array.Data
+	nullBitmapBytes []byte
+
+	indices *array.Int32
+	values  *array.Binary
 }
 
-// NewStringFromBinaryArray creates an instance of String from
-// an Arrow Binary array.
-//
-// Note: Generally client code should be using the types for arrays defined in Flux.
-// This method allows string data created outside of Flux (such as from Arrow Flight)
-// to be used in Flux.
-func NewStringFromBinaryArray(data *array.Binary) *String {
+// Create a new String array from an arrow.ArrayData that contains
+// either a `utf8` or a `dictionary<values=utf8, indices=int32, ordered=false>`
+// set of data buffers. NewStringData will panic if the array data is of
+// an unsupported type.
+func NewStringData(data arrow.ArrayData) *String {
+	a := String{
+		refCount: 1,
+	}
+	a.setData(data.(*array.Data))
+	return &a
+}
+
+// validateStringDataType checks that the datatype is supported for
+// using to create a String array.
+func validateStringDataType(dt arrow.DataType) {
+	switch dt := dt.(type) {
+	case *arrow.DictionaryType:
+		if dt.IndexType.ID() == arrow.INT32 && dt.ValueType.ID() == arrow.STRING {
+			return
+		}
+	default:
+		if dt.ID() == arrow.STRING {
+			return
+		}
+	}
+	panic(errors.Newf(codes.Internal, "incorrect data type for String (%s)", dt))
+}
+
+func (a *String) setData(data *array.Data) {
+	validateStringDataType(data.DataType())
 	data.Retain()
-	return &String{
-		binaryArray: data,
+
+	if a.data != nil {
+		a.data.Release()
+		a.data = nil
+		a.nullBitmapBytes = nil
+	}
+	buffers := data.Buffers()
+	if len(buffers) > 0 && buffers[0] != nil {
+		a.nullBitmapBytes = buffers[0].Bytes()
+	}
+
+	var indices *array.Int32
+	var values *array.Binary
+
+	if data.DataType().ID() == arrow.DICTIONARY {
+		idxData := array.NewData(arrow.PrimitiveTypes.Int32, data.Len(), data.Buffers(), nil, data.NullN(), data.Offset())
+		indices = array.NewInt32Data(idxData)
+		idxData.Release()
+		values = array.NewBinaryData(data.Dictionary())
+	} else {
+		values = array.NewBinaryData(data)
+	}
+	if a.indices != nil {
+		a.indices.Release()
+	}
+	if a.values != nil {
+		a.values.Release()
+	}
+	a.indices = indices
+	a.values = values
+	a.data = data
+}
+
+func (a *String) DataType() arrow.DataType {
+	return a.data.DataType()
+}
+
+func (a *String) NullN() int {
+	return a.data.NullN()
+}
+
+func (a *String) NullBitmapBytes() []byte {
+	return a.nullBitmapBytes
+}
+
+func (a *String) IsNull(i int) bool {
+	return len(a.nullBitmapBytes) != 0 && bitutil.BitIsNotSet(a.nullBitmapBytes, a.data.Offset()+i)
+}
+
+func (a *String) IsValid(i int) bool {
+	return len(a.nullBitmapBytes) == 0 || bitutil.BitIsSet(a.nullBitmapBytes, a.data.Offset()+i)
+}
+
+func (a *String) ValueStr(i int) string {
+	if a.IsNull(i) {
+		return array.NullValueStr
+	}
+	return a.Value(i)
+}
+
+func (a *String) GetOneForMarshal(i int) interface{} {
+	if a.IsNull(i) {
+		return nil
+	}
+	return a.Value(i)
+}
+
+func (a *String) MarshalJSON() ([]byte, error) {
+	vals := make([]interface{}, a.Len())
+	if a.indices != nil {
+		for i := 0; i < a.Len(); i++ {
+			if a.indices.IsValid(i) {
+				idx := int(a.indices.Value(i))
+				vals[i] = a.values.ValueString(idx)
+			} else {
+				vals[i] = nil
+			}
+		}
+	} else {
+		for i := 0; i < a.Len(); i++ {
+			if a.values.IsValid(i) {
+				vals[i] = a.values.ValueString(i)
+			} else {
+				vals[i] = nil
+			}
+		}
+	}
+	return json.Marshal(vals)
+}
+
+func (a *String) Data() arrow.ArrayData {
+	return a.data
+}
+
+func (a *String) Len() int {
+	return a.data.Len()
+}
+
+func (a *String) Retain() {
+	atomic.AddInt64(&a.refCount, 1)
+}
+
+func (a *String) Release() {
+	if atomic.AddInt64(&a.refCount, -1) == 0 {
+		a.nullBitmapBytes = nil
+		if a.indices != nil {
+			a.indices.Release()
+			a.indices = nil
+		}
+		if a.values != nil {
+			a.values.Release()
+			a.values = nil
+		}
+		if a.data != nil {
+			a.data.Release()
+		}
 	}
 }
 
-func (a *String) DataType() DataType {
-	return StringType
-}
-
-func (a *String) Slice(i, j int) Array {
-	slice, ok := a.binaryArray.(interface{ Slice(i, j int) binaryArray })
-	if ok {
-		return &String{binaryArray: slice.Slice(i, j)}
+func (a *String) String() string {
+	var sb strings.Builder
+	sb.WriteByte('[')
+	if a.indices != nil {
+		for i := 0; i < a.Len(); i++ {
+			if i > 0 {
+				sb.WriteByte(' ')
+			}
+			if a.indices.IsValid(i) {
+				idx := int(a.indices.Value(i))
+				fmt.Fprintf(&sb, "%q", a.values.ValueString(idx))
+			} else {
+				sb.WriteString(array.NullValueStr)
+			}
+		}
+	} else {
+		for i := 0; i < a.Len(); i++ {
+			if i > 0 {
+				sb.WriteByte(' ')
+			}
+			if a.values.IsValid(i) {
+				fmt.Fprintf(&sb, "%q", a.values.ValueString(i))
+			} else {
+				sb.WriteString(array.NullValueStr)
+			}
+		}
 	}
-	data := array.NewSliceData(a.binaryArray.Data(), int64(i), int64(j))
-	defer data.Release()
-	return &String{
-		binaryArray: array.NewBinaryData(data),
-	}
+	sb.WriteByte(']')
+	return sb.String()
 }
 
 // Value returns a string view of the bytes in the array. The string
 // is only valid for the lifetime of the array. Care should be taken not
 // to store this string without also retaining the array.
 func (a *String) Value(i int) string {
-	return a.ValueString(i)
+	if a.indices != nil {
+		if a.indices.IsNull(i) {
+			// Flux relies on a NULL entry in the String array returning
+			// the empty string.
+			return ""
+		}
+		i = int(a.indices.Value(i))
+	}
+	return a.values.ValueString(i)
+}
+
+func (a *String) ValueLen(i int) int {
+	if a.indices != nil {
+		i = int(a.indices.Value(i))
+	}
+	return a.values.ValueLen(i)
 }
 
 func (a *String) IsConstant() bool {
-	ic, ok := a.binaryArray.(interface{ IsConstant() bool })
-	return ok && ic.IsConstant()
-}
+	// If all the values are NULL then this is constant.
+	if a.data.NullN() == a.data.Len() {
+		return true
+	}
+	// Otherwise if any values are NULL then it can't be constant.
+	if a.data.NullN() > 0 {
+		return false
+	}
+	// If values is only 1 item long then it is constant.
+	if a.values.Len() == 1 {
+		return true
+	}
 
-type sliceable interface {
-	Slice(i, j int) Array
+	// Slow method - check all values.
+	for i := 1; i < a.Len(); i++ {
+		if a.Value(i) != a.Value(i-1) {
+			return false
+		}
+	}
+	return true
 }
 
 // Slice will construct a new slice of the array using the given
@@ -173,14 +357,28 @@ type sliceable interface {
 // but array.NewSlice will construct an array.String when
 // the data type is a string rather than an array.Binary.
 func Slice(arr Array, i, j int) Array {
-	if arr, ok := arr.(sliceable); ok {
-		return arr.Slice(i, j)
+	data := array.NewSliceData(arr.Data(), int64(i), int64(j))
+	defer data.Release()
+	return MakeFromData(data)
+}
+
+// MakeFromData creates a flux Array from the given data. This will
+// panic if the data type that is not understood as a flux array type.
+func MakeFromData(data arrow.ArrayData) Array {
+	switch data.DataType().ID() {
+	case arrow.BOOL:
+		return array.NewBooleanData(data)
+	case arrow.FLOAT64:
+		return array.NewFloat64Data(data)
+	case arrow.INT64:
+		return array.NewInt64Data(data)
+	case arrow.UINT64:
+		return array.NewUint64Data(data)
+	case arrow.STRING, arrow.DICTIONARY:
+		return NewStringData(data)
+	default:
+		panic(errors.Newf(codes.Internal, "invalid data type for flux array (%s)", data.DataType()))
 	}
-	if arr, ok := arr.(arrow.Array); ok {
-		return array.NewSlice(arr, int64(i), int64(j))
-	}
-	err := errors.Newf(codes.Internal, "cannot slice array of type %T", arr)
-	panic(err)
 }
 
 func ToFloatConv(mem memory.Allocator, arr Array) (*Float, error) {
@@ -203,9 +401,8 @@ func ToFloatConv(mem memory.Allocator, arr Array) (*Float, error) {
 
 	// n.b. we handle the arrow.FLOAT64 case at the top of this func so we don't
 	// have to handle it here in this switch.
-	switch arr.DataType().ID() {
-	case arrow.STRING:
-		vec := arr.(*String)
+	switch vec := arr.(type) {
+	case *String:
 		for i := 0; i < size; i++ {
 			if vec.IsNull(i) {
 				conv.AppendNull()
@@ -218,8 +415,7 @@ func ToFloatConv(mem memory.Allocator, arr Array) (*Float, error) {
 			}
 			conv.Append(val)
 		}
-	case arrow.INT64:
-		vec := arr.(*Int)
+	case *Int:
 		for i := 0; i < size; i++ {
 			if vec.IsNull(i) {
 				conv.AppendNull()
@@ -227,8 +423,7 @@ func ToFloatConv(mem memory.Allocator, arr Array) (*Float, error) {
 				conv.Append(float64(vec.Value(i)))
 			}
 		}
-	case arrow.UINT64:
-		vec := arr.(*Uint)
+	case *Uint:
 		for i := 0; i < size; i++ {
 			if vec.IsNull(i) {
 				conv.AppendNull()
@@ -236,8 +431,7 @@ func ToFloatConv(mem memory.Allocator, arr Array) (*Float, error) {
 				conv.Append(float64(vec.Value(i)))
 			}
 		}
-	case arrow.BOOL:
-		vec := arr.(*Boolean)
+	case *Boolean:
 		for i := 0; i < size; i++ {
 			if vec.IsNull(i) {
 				conv.AppendNull()

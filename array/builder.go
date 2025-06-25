@@ -5,31 +5,25 @@ import (
 	"sync/atomic"
 	"unsafe"
 
-	"github.com/apache/arrow-go/v18/arrow"
 	"github.com/apache/arrow-go/v18/arrow/array"
 	"github.com/apache/arrow-go/v18/arrow/bitutil"
 	"github.com/apache/arrow-go/v18/arrow/memory"
 )
 
 type StringBuilder struct {
-	mem         memory.Allocator
-	len         int
-	cap         int
-	reserveData int
-	buffer      *memory.Buffer
-	builder     *array.BinaryBuilder
-	refCount    int64
+	values   *array.BinaryBuilder
+	indices  *array.Int32Builder
+	refCount int64
+
+	hydratedArray bool
 }
 
 func NewStringBuilder(mem memory.Allocator) *StringBuilder {
 	return &StringBuilder{
-		mem:         mem,
-		len:         0,
-		cap:         0,
-		reserveData: 0,
-		buffer:      nil,
-		builder:     nil,
-		refCount:    1,
+		values:        array.NewBinaryBuilder(mem, StringType),
+		indices:       array.NewInt32Builder(mem),
+		refCount:      1,
+		hydratedArray: false,
 	}
 }
 
@@ -38,54 +32,64 @@ func (b *StringBuilder) Retain() {
 }
 func (b *StringBuilder) Release() {
 	if atomic.AddInt64(&b.refCount, -1) == 0 {
-		if b.buffer != nil {
-			b.buffer.Release()
+		if b.indices != nil {
+			b.indices.Release()
+			b.indices = nil
 		}
-		if b.builder != nil {
-			b.builder.Release()
+		if b.values != nil {
+			b.values.Release()
+			b.values = nil
 		}
 	}
 }
 func (b *StringBuilder) Len() int {
-	if b.builder != nil {
-		return b.builder.Len()
+	if b.hydratedArray {
+		return b.values.Len()
 	}
-	return b.len
+	return b.indices.Len()
 }
 func (b *StringBuilder) Cap() int {
-	if b.builder != nil {
-		return b.builder.Cap()
+	if b.hydratedArray {
+		return b.values.Cap()
 	}
-	if b.cap > b.len {
-		return b.cap
-	}
-	return b.len
+	return b.indices.Cap()
 }
 func (b *StringBuilder) NullN() int {
-	if b.builder != nil {
-		return b.builder.NullN()
+	if b.hydratedArray {
+		return b.values.NullN()
 	}
-	return 0
+	return b.indices.NullN()
 }
 
 func (b *StringBuilder) AppendBytes(buf []byte) {
-	if b.builder != nil {
-		b.builder.Append(buf)
-		return
+	if !b.hydratedArray {
+		if b.values.Len() == 0 {
+			b.values.Append(buf)
+			b.indices.Append(0)
+			return
+		}
+		if bytes.Equal(buf, b.values.Value(0)) {
+			b.indices.Append(0)
+			return
+		}
+		// Need to add a new value to the values array, that means we
+		// need to hydrate it.
+		b.hydratedArray = true
+		indices := b.indices.NewInt32Array()
+		values := b.values.NewBinaryArray()
+		b.values.Reserve(indices.Len())
+		b.values.ReserveData(values.ValueLen(0) * indices.Len())
+		for i := 0; i < indices.Len(); i++ {
+			if indices.IsNull(i) {
+				b.values.AppendNull()
+			} else {
+				b.values.Append(values.Value(int(indices.Value(i))))
+			}
+		}
+		values.Release()
+		indices.Release()
 	}
-	if b.len == 0 {
-		b.buffer = memory.NewResizableBuffer(b.mem)
-		b.buffer.Resize(len(buf))
-		copy(b.buffer.Bytes(), buf)
-		b.len = 1
-		return
-	}
-	if bytes.Equal(b.buffer.Bytes(), buf) {
-		b.len++
-		return
-	}
-	b.makeBuilder(buf)
-
+	b.values.Append(buf)
 }
 
 // Append appends a string to the array being built. A reference
@@ -108,38 +112,31 @@ func (b *StringBuilder) AppendValues(v []string, valid []bool) {
 	}
 }
 func (b *StringBuilder) AppendNull() {
-	if b.builder == nil {
-		b.makeBuilder(nil)
+	if b.hydratedArray {
+		b.values.AppendNull()
+		return
 	}
-	b.builder.AppendNull()
+	b.indices.AppendNull()
 }
 
 func (b *StringBuilder) Reserve(n int) {
-	if b.builder != nil {
-		b.builder.Reserve(n)
+	if b.hydratedArray {
+		b.values.Reserve(n)
 		return
 	}
-	if b.len+n > b.cap {
-		b.cap = b.len + n
-	}
+	b.indices.Reserve(n)
 }
 
 func (b *StringBuilder) ReserveData(n int) {
-	if b.builder != nil {
-		b.builder.ReserveData(n)
-		return
-	}
-	b.reserveData = n
+	b.values.ReserveData(n)
 }
 
 func (b *StringBuilder) Resize(n int) {
-	if b.builder != nil {
-		b.builder.Resize(n)
+	if b.hydratedArray {
+		b.values.Resize(n)
+		return
 	}
-	b.cap = n
-	if b.len > n {
-		b.len = n
-	}
+	b.indices.Resize(n)
 }
 
 func (b *StringBuilder) NewArray() Array {
@@ -147,27 +144,25 @@ func (b *StringBuilder) NewArray() Array {
 }
 
 func (b *StringBuilder) NewStringArray() *String {
-	if b.builder != nil {
-		arr := &String{b.builder.NewBinaryArray()}
-		b.builder.Release()
-		b.builder = nil
-		return arr
+	values := b.values.NewBinaryArray()
+	defer values.Release()
+	if b.hydratedArray {
+		b.hydratedArray = false
+		return NewStringData(values.Data())
 	}
-	if b.buffer != nil {
-		arr := &String{&repeatedBinary{
-			len: b.len,
-			buf: b.buffer,
-		}}
-		b.buffer = nil
-		b.len = 0
-		b.cap = 0
-		return arr
-	}
-	// getting this far means we have an empty array.
-	arr := StringRepeat("", b.len, b.mem)
-	b.len = 0
-	b.cap = 0
-	return arr
+
+	indices := b.indices.NewInt32Array()
+	defer indices.Release()
+	data := array.NewDataWithDictionary(
+		StringDictionaryType,
+		indices.Len(),
+		indices.Data().Buffers(),
+		indices.NullN(),
+		0,
+		values.Data().(*array.Data),
+	)
+	defer data.Release()
+	return NewStringData(data)
 }
 
 func (b *StringBuilder) CopyValidValues(values *String, nullCheckArray Array) {
@@ -183,43 +178,6 @@ func (b *StringBuilder) CopyValidValues(values *String, nullCheckArray Array) {
 			b.Append(values.Value(i))
 		}
 	}
-}
-
-func (b *StringBuilder) makeBuilder(value []byte) {
-	bufferLen := 0
-	if b.buffer != nil {
-		bufferLen = b.buffer.Len()
-	}
-	size := b.len
-	if b.cap > b.len {
-		size = b.cap
-	}
-	dataSize := b.len * bufferLen
-	if value != nil {
-		if b.cap <= b.len {
-			size++
-		}
-		dataSize += len(value)
-	}
-	if b.reserveData > dataSize {
-		dataSize = b.reserveData
-	}
-	b.builder = array.NewBinaryBuilder(b.mem, arrow.BinaryTypes.String)
-	b.builder.Resize(size)
-	b.builder.ReserveData(dataSize)
-	for i := 0; i < b.len; i++ {
-		b.builder.Append(b.buffer.Bytes())
-	}
-	if value != nil {
-		b.builder.Append(value)
-	}
-	if b.buffer != nil {
-		b.buffer.Release()
-		b.buffer = nil
-	}
-	b.len = 0
-	b.cap = 0
-	b.reserveData = 0
 }
 
 // Copy of Array.IsValid from arrow, allowing the IsValid check to be done without going through an interface
