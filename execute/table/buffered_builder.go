@@ -89,7 +89,7 @@ func (b *BufferedBuilder) appendBuffer(cr flux.ColReader, mem memory.Allocator) 
 func (b *BufferedBuilder) normalizeTableSchema(cols []flux.ColMeta, mem memory.Allocator) error {
 	// If there are no columns set for this builder, inherit the ones
 	// that were passed in.
-	if b.Columns == nil {
+	if len(b.Columns) == 0 {
 		b.Columns = cols
 		return nil
 	}

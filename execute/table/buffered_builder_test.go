@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/table"
 	"github.com/influxdata/flux/execute/table/static"
 	"github.com/influxdata/flux/memory"
@@ -181,5 +182,45 @@ func TestBufferedBuilder_AppendTable(t *testing.T) {
 				t.Fatalf("unexpected diff -want/+got:\n%s", diff)
 			}
 		})
+	}
+}
+
+func TestBufferedBuilder_AppendTable_EmptyTable(t *testing.T) {
+	mem := memory.DefaultAllocator
+
+	gk := execute.NewGroupKey(nil, nil)
+	emptyTable := execute.NewEmptyTable(gk, []flux.ColMeta{})
+	b := table.NewBufferedBuilder(gk, mem)
+
+	// Append an empty table to the builder.
+	err := b.AppendTable(emptyTable)
+	if err != nil {
+		t.Fatalf("unexpected error: %s", err)
+	}
+	in := static.TableGroup{
+		static.Table{
+			static.Times("_time", "2020-01-01T00:00:00Z", 10, 20, 30, 40, 50),
+			static.Floats("_value", 3, 8, 2, 4, 11, 6),
+		},
+	}
+	err = in.Do(func(tbl flux.Table) error {
+		return b.AppendTable(tbl)
+	})
+	if err != nil {
+		t.Fatalf("unexpected error: %s", err)
+	}
+
+	want := static.Table{
+		static.Times("_time", "2020-01-01T00:00:00Z", 10, 20, 30, 40, 50),
+		static.Floats("_value", 3, 8, 2, 4, 11, 6),
+	}
+
+	out, err := b.Table()
+	if err != nil {
+		t.Fatalf("unexpected error: %s", err)
+	}
+
+	if diff := table.Diff(want, table.Iterator{out}); diff != "" {
+		t.Fatalf("unexpected diff -want/+got:\n%s", diff)
 	}
 }

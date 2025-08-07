@@ -26,7 +26,7 @@ type TableBuffer struct {
 var _ flux.ColReader = (*TableBuffer)(nil)
 
 func (t *TableBuffer) Len() int {
-	if len(t.Columns) == 0 {
+	if len(t.Values) == 0 {
 		return 0
 	}
 	return t.Values[0].Len()
