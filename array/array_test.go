@@ -30,13 +30,11 @@ func TestString(t *testing.T) {
 					b.Append("abcdefghij")
 				}
 			},
-			bsz: 64 + // indices null bitmap
-				128 + // indices array
-				64 + // values null bitmap
+			bsz: 64 + // values null bitmap
 				64 + // values offset array
 				64, // values data array
-			sz: 64 + // indices null bitmap
-				64 + // indices array
+			sz: 64 + // run ends null bitmap
+				64 + // run-ends array
 				64 + // values null bitmap
 				64 + // values offset array
 				64, // values data array
@@ -537,4 +535,410 @@ func countNulls(arr []interface{}) (n int) {
 		}
 	}
 	return n
+}
+
+func TestRunEndEncodedString(t *testing.T) {
+	t.Run("DirectCreation", func(t *testing.T) {
+		mem := memory.NewCheckedAllocator(memory.DefaultAllocator)
+		defer mem.AssertSize(t, 0)
+
+		// Create run-end encoded array directly using Arrow API
+		vb := apachearray.NewBinaryBuilder(mem, arrow.BinaryTypes.String)
+		vb.AppendString("hello")
+		vb.AppendString("world")
+		vb.AppendNull()
+		values := vb.NewArray()
+		defer values.Release()
+
+		reb := apachearray.NewInt32Builder(mem)
+		reb.Append(3)  // First run ends at index 3 (3 "hello"s)
+		reb.Append(5)  // Second run ends at index 5 (2 "world"s)
+		reb.Append(8)  // Third run ends at index 8 (3 nulls)
+		runEnds := reb.NewArray()
+		defer runEnds.Release()
+
+		reeArr := apachearray.NewRunEndEncodedArray(runEnds, values, 8, 0)
+		defer reeArr.Release()
+
+		arr := array.NewStringData(reeArr.Data())
+		defer arr.Release()
+
+		// Verify the array properties
+		assert.Equal(t, 8, arr.Len())
+		assert.Equal(t, 3, arr.NullN())
+
+		// Check values
+		expected := []interface{}{
+			"hello", "hello", "hello",
+			"world", "world",
+			nil, nil, nil,
+		}
+		for i := 0; i < arr.Len(); i++ {
+			if expected[i] == nil {
+				assert.True(t, arr.IsNull(i), "Expected null at index %d", i)
+				assert.False(t, arr.IsValid(i), "Expected invalid at index %d", i)
+				assert.Equal(t, "", arr.Value(i), "Expected empty string for null at index %d", i)
+			} else {
+				assert.False(t, arr.IsNull(i), "Expected non-null at index %d", i)
+				assert.True(t, arr.IsValid(i), "Expected valid at index %d", i)
+				assert.Equal(t, expected[i], arr.Value(i), "Unexpected value at index %d", i)
+			}
+		}
+	})
+
+	t.Run("WithOffset", func(t *testing.T) {
+		mem := memory.NewCheckedAllocator(memory.DefaultAllocator)
+		defer mem.AssertSize(t, 0)
+
+		// Create values
+		vb := apachearray.NewBinaryBuilder(mem, arrow.BinaryTypes.String)
+		vb.AppendString("a")
+		vb.AppendString("b")
+		vb.AppendString("c")
+		values := vb.NewArray()
+		defer values.Release()
+
+		// Create run ends for logical array [a,a,a,b,b,c,c,c,c,c]
+		reb := apachearray.NewInt32Builder(mem)
+		reb.Append(3)  // "a" runs to index 3
+		reb.Append(5)  // "b" runs to index 5
+		reb.Append(10) // "c" runs to index 10
+		runEnds := reb.NewArray()
+		defer runEnds.Release()
+
+		// Create full array
+		fullArr := apachearray.NewRunEndEncodedArray(runEnds, values, 10, 0)
+		defer fullArr.Release()
+
+		// Create sliced array with offset 3, length 5
+		// This should give us [b,b,c,c,c]
+		slicedArr := apachearray.NewSlice(fullArr, 3, 8)
+		defer slicedArr.Release()
+
+		arr := array.NewStringData(slicedArr.Data())
+		defer arr.Release()
+
+		assert.Equal(t, 5, arr.Len())
+
+		expected := []string{"b", "b", "c", "c", "c"}
+		for i := 0; i < arr.Len(); i++ {
+			assert.Equal(t, expected[i], arr.Value(i), "Unexpected value at index %d", i)
+		}
+	})
+
+	t.Run("WithOffsetMidRun", func(t *testing.T) {
+		mem := memory.NewCheckedAllocator(memory.DefaultAllocator)
+		defer mem.AssertSize(t, 0)
+
+		// Create values
+		vb := apachearray.NewBinaryBuilder(mem, arrow.BinaryTypes.String)
+		vb.AppendString("first")
+		vb.AppendString("second")
+		vb.AppendString("third")
+		values := vb.NewArray()
+		defer values.Release()
+
+		// Create run ends for logical array:
+		// [first,first,first,first,first,second,second,second,third,third]
+		// Indices: 0,1,2,3,4,5,6,7,8,9
+		reb := apachearray.NewInt32Builder(mem)
+		reb.Append(5)  // "first" runs to index 5 (5 elements)
+		reb.Append(8)  // "second" runs to index 8 (3 elements)
+		reb.Append(10) // "third" runs to index 10 (2 elements)
+		runEnds := reb.NewArray()
+		defer runEnds.Release()
+
+		// Create full array
+		fullArr := apachearray.NewRunEndEncodedArray(runEnds, values, 10, 0)
+		defer fullArr.Release()
+
+		// Create sliced array with offset 2, length 6
+		// Starting partway through the first run
+		// This should give us [first,first,first,second,second,second]
+		slicedArr := apachearray.NewSlice(fullArr, 2, 8)
+		defer slicedArr.Release()
+
+		arr := array.NewStringData(slicedArr.Data())
+		defer arr.Release()
+
+		assert.Equal(t, 6, arr.Len())
+
+		expected := []string{"first", "first", "first", "second", "second", "second"}
+		for i := 0; i < arr.Len(); i++ {
+			assert.Equal(t, expected[i], arr.Value(i), "Unexpected value at index %d", i)
+		}
+
+		// Also test individual value access to ensure offset calculation is correct
+		assert.Equal(t, "first", arr.Value(0))
+		assert.Equal(t, "first", arr.Value(1))
+		assert.Equal(t, "first", arr.Value(2))
+		assert.Equal(t, "second", arr.Value(3))
+		assert.Equal(t, "second", arr.Value(4))
+		assert.Equal(t, "second", arr.Value(5))
+	})
+
+	t.Run("StringMethod", func(t *testing.T) {
+		mem := memory.NewCheckedAllocator(memory.DefaultAllocator)
+		defer mem.AssertSize(t, 0)
+
+		vb := apachearray.NewBinaryBuilder(mem, arrow.BinaryTypes.String)
+		vb.AppendString("foo")
+		vb.AppendNull()
+		vb.AppendString("bar")
+		values := vb.NewArray()
+		defer values.Release()
+
+		reb := apachearray.NewInt32Builder(mem)
+		reb.Append(2)  // "foo" x2
+		reb.Append(3)  // null x1
+		reb.Append(5)  // "bar" x2
+		runEnds := reb.NewArray()
+		defer runEnds.Release()
+
+		reeArr := apachearray.NewRunEndEncodedArray(runEnds, values, 5, 0)
+		defer reeArr.Release()
+
+		arr := array.NewStringData(reeArr.Data())
+		defer arr.Release()
+
+		expected := `["foo" "foo" (null) "bar" "bar"]`
+		assert.Equal(t, expected, arr.String())
+	})
+
+	t.Run("ValueLen", func(t *testing.T) {
+		mem := memory.NewCheckedAllocator(memory.DefaultAllocator)
+		defer mem.AssertSize(t, 0)
+
+		vb := apachearray.NewBinaryBuilder(mem, arrow.BinaryTypes.String)
+		vb.AppendString("short")
+		vb.AppendString("longer string")
+		vb.AppendNull()
+		values := vb.NewArray()
+		defer values.Release()
+
+		reb := apachearray.NewInt32Builder(mem)
+		reb.Append(2)  // "short" x2
+		reb.Append(4)  // "longer string" x2
+		reb.Append(5)  // null x1
+		runEnds := reb.NewArray()
+		defer runEnds.Release()
+
+		reeArr := apachearray.NewRunEndEncodedArray(runEnds, values, 5, 0)
+		defer reeArr.Release()
+
+		arr := array.NewStringData(reeArr.Data())
+		defer arr.Release()
+
+		expectedLengths := []int{5, 5, 13, 13, 0}
+		for i := 0; i < arr.Len(); i++ {
+			assert.Equal(t, expectedLengths[i], arr.ValueLen(i), "Unexpected length at index %d", i)
+		}
+	})
+}
+
+func TestStringBuilderRunEndEncoding(t *testing.T) {
+	t.Run("SingleValueRun", func(t *testing.T) {
+		mem := memory.NewCheckedAllocator(memory.DefaultAllocator)
+		defer mem.AssertSize(t, 0)
+
+		b := array.NewStringBuilder(mem)
+		defer b.Release()
+
+		// Append the same value multiple times
+		for i := 0; i < 5; i++ {
+			b.Append("repeated")
+		}
+
+		arr := b.NewStringArray()
+		defer arr.Release()
+
+		// Verify it's using run-end encoding
+		assert.Equal(t, arrow.RUN_END_ENCODED, arr.DataType().ID())
+		assert.Equal(t, 5, arr.Len())
+
+		for i := 0; i < 5; i++ {
+			assert.Equal(t, "repeated", arr.Value(i))
+		}
+	})
+
+	t.Run("TransitionToHydrated", func(t *testing.T) {
+		mem := memory.NewCheckedAllocator(memory.DefaultAllocator)
+		defer mem.AssertSize(t, 0)
+
+		b := array.NewStringBuilder(mem)
+		defer b.Release()
+
+		// Start with repeated values
+		for i := 0; i < 3; i++ {
+			b.Append("first")
+		}
+
+		// Add a different value (should trigger hydration)
+		b.Append("second")
+
+		// Add more values
+		b.Append("third")
+
+		arr := b.NewStringArray()
+		defer arr.Release()
+
+		assert.Equal(t, 5, arr.Len())
+		expected := []string{"first", "first", "first", "second", "third"}
+		for i := 0; i < 5; i++ {
+			assert.Equal(t, expected[i], arr.Value(i))
+		}
+	})
+
+	t.Run("NullHandling", func(t *testing.T) {
+		mem := memory.NewCheckedAllocator(memory.DefaultAllocator)
+		defer mem.AssertSize(t, 0)
+
+		b := array.NewStringBuilder(mem)
+		defer b.Release()
+
+		// Start with repeated values
+		for i := 0; i < 3; i++ {
+			b.Append("value")
+		}
+
+		// This should trigger hydration
+		b.AppendNull()
+		b.Append("value")
+		b.AppendNull()
+
+		arr := b.NewStringArray()
+		defer arr.Release()
+
+		assert.Equal(t, 6, arr.Len())
+		assert.Equal(t, 2, arr.NullN())
+
+		expected := []interface{}{"value", "value", "value", nil, "value", nil}
+		for i := 0; i < 6; i++ {
+			if expected[i] == nil {
+				assert.True(t, arr.IsNull(i))
+			} else {
+				assert.False(t, arr.IsNull(i))
+				assert.Equal(t, expected[i], arr.Value(i))
+			}
+		}
+	})
+
+	t.Run("AppendBytes", func(t *testing.T) {
+		mem := memory.NewCheckedAllocator(memory.DefaultAllocator)
+		defer mem.AssertSize(t, 0)
+
+		b := array.NewStringBuilder(mem)
+		defer b.Release()
+
+		// Use AppendBytes instead of Append
+		testBytes := []byte("test")
+		for i := 0; i < 4; i++ {
+			b.AppendBytes(testBytes)
+		}
+
+		arr := b.NewStringArray()
+		defer arr.Release()
+
+		assert.Equal(t, 4, arr.Len())
+		for i := 0; i < 4; i++ {
+			assert.Equal(t, "test", arr.Value(i))
+		}
+	})
+
+	t.Run("MultipleBuilds", func(t *testing.T) {
+		mem := memory.NewCheckedAllocator(memory.DefaultAllocator)
+		defer mem.AssertSize(t, 0)
+
+		b := array.NewStringBuilder(mem)
+		defer b.Release()
+
+		// First build with run-end encoding
+		for i := 0; i < 3; i++ {
+			b.Append("a")
+		}
+		arr1 := b.NewStringArray()
+		defer arr1.Release()
+		assert.Equal(t, arrow.RUN_END_ENCODED, arr1.DataType().ID())
+
+		// Second build with different pattern
+		b.Append("b")
+		b.Append("c")
+		arr2 := b.NewStringArray()
+		defer arr2.Release()
+
+		// Verify second array
+		assert.Equal(t, 2, arr2.Len())
+		assert.Equal(t, "b", arr2.Value(0))
+		assert.Equal(t, "c", arr2.Value(1))
+	})
+}
+
+func TestStringRepeatRunEndEncoding(t *testing.T) {
+	mem := memory.NewCheckedAllocator(memory.DefaultAllocator)
+	defer mem.AssertSize(t, 0)
+
+	arr := array.StringRepeat("repeated", 100, mem)
+	defer arr.Release()
+
+	// Verify it's using run-end encoding
+	assert.Equal(t, arrow.RUN_END_ENCODED, arr.DataType().ID())
+	assert.Equal(t, 100, arr.Len())
+
+	// Verify all values are the same
+	for i := 0; i < 100; i++ {
+		assert.Equal(t, "repeated", arr.Value(i))
+		assert.False(t, arr.IsNull(i))
+	}
+
+	// Test String() method doesn't crash with large arrays
+	str := arr.String()
+	assert.Contains(t, str, "repeated")
+}
+
+func TestRunEndEncodedSlice(t *testing.T) {
+	mem := memory.NewCheckedAllocator(memory.DefaultAllocator)
+	defer mem.AssertSize(t, 0)
+
+	// Create a run-end encoded array using StringRepeat
+	original := array.StringRepeat("value", 10, mem)
+	defer original.Release()
+
+	// Slice the array
+	sliced := array.Slice(original, 3, 8).(*array.String)
+	defer sliced.Release()
+
+	assert.Equal(t, 5, sliced.Len())
+	for i := 0; i < 5; i++ {
+		assert.Equal(t, "value", sliced.Value(i))
+	}
+}
+
+func TestMakeFromDataRunEndEncoded(t *testing.T) {
+	mem := memory.NewCheckedAllocator(memory.DefaultAllocator)
+	defer mem.AssertSize(t, 0)
+
+	// Create run-end encoded data
+	vb := apachearray.NewBinaryBuilder(mem, arrow.BinaryTypes.String)
+	vb.AppendString("test")
+	values := vb.NewArray()
+	defer values.Release()
+
+	reb := apachearray.NewInt32Builder(mem)
+	reb.Append(5)
+	runEnds := reb.NewArray()
+	defer runEnds.Release()
+
+	reeArr := apachearray.NewRunEndEncodedArray(runEnds, values, 5, 0)
+	defer reeArr.Release()
+
+	// Use MakeFromData
+	arr := array.MakeFromData(reeArr.Data())
+	defer arr.Release()
+
+	strArr, ok := arr.(*array.String)
+	assert.True(t, ok, "Expected String array from MakeFromData")
+	assert.Equal(t, 5, strArr.Len())
+	for i := 0; i < 5; i++ {
+		assert.Equal(t, "test", strArr.Value(i))
+	}
 }
