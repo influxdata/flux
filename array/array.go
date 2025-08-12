@@ -115,7 +115,8 @@ type Builder interface {
 }
 
 // String holds an array of flux string values. The arrow data must be
-// either a `utf8` or `dictionary<value=utf8, indices=int32, ordered=false>`.
+// either a `utf8`, a `dictionary<value=utf8, indices=int32, ordered=false>`,
+// or a `run_end_encoded<run_ends:int32, values:utf8>`.
 // Internally the string data is stored in an array.Binary value.
 type String struct {
 	refCount        int64
@@ -128,9 +129,10 @@ type String struct {
 }
 
 // Create a new String array from an arrow.ArrayData that contains
-// either a `utf8` or a `dictionary<values=utf8, indices=int32, ordered=false>`
-// set of data buffers. NewStringData will panic if the array data is of
-// an unsupported type.
+// either a `utf8`, a `dictionary<values=utf8, indices=int32, ordered=false>`,
+// or a `run_end_encoded<run_ends:int32, values:utf8>` set of data
+// buffers. NewStringData will panic if the array data is of an
+// unsupported type.
 func NewStringData(data arrow.ArrayData) *String {
 	a := String{
 		refCount: 1,
