@@ -39,7 +39,7 @@ func TestRepeat(t *testing.T) {
 			name: "String",
 			t:    flux.TString,
 			v:    values.NewString("a"),
-			sz:   320, // 128 bytes dictionary indices + 192 byte binary values
+			sz:   320, // 128 bytes run ends (64 nulls + 64 data) + 192 byte binary values (64 nulls + 64 offsets + 64 data)
 		},
 		{
 			name: "Boolean",

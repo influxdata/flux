@@ -3,6 +3,7 @@ package array
 import (
 	"encoding/json"
 	"fmt"
+	"sort"
 	"strconv"
 	"strings"
 	"sync/atomic"
@@ -36,6 +37,7 @@ var (
 		ValueType: arrow.BinaryTypes.String,
 		Ordered:   false,
 	}
+	StringREEType = arrow.RunEndEncodedOf(arrow.PrimitiveTypes.Int32, arrow.BinaryTypes.String)
 )
 
 // Array represents an immutable sequence of values.
@@ -113,7 +115,8 @@ type Builder interface {
 }
 
 // String holds an array of flux string values. The arrow data must be
-// either a `utf8` or `dictionary<value=utf8, indices=int32, ordered=false>`.
+// either a `utf8`, a `dictionary<value=utf8, indices=int32, ordered=false>`,
+// or a `run_end_encoded<run_ends:int32, values:utf8>`.
 // Internally the string data is stored in an array.Binary value.
 type String struct {
 	refCount        int64
@@ -121,13 +124,15 @@ type String struct {
 	nullBitmapBytes []byte
 
 	indices *array.Int32
+	runEnds *array.Int32
 	values  *array.Binary
 }
 
 // Create a new String array from an arrow.ArrayData that contains
-// either a `utf8` or a `dictionary<values=utf8, indices=int32, ordered=false>`
-// set of data buffers. NewStringData will panic if the array data is of
-// an unsupported type.
+// either a `utf8`, a `dictionary<values=utf8, indices=int32, ordered=false>`,
+// or a `run_end_encoded<run_ends:int32, values:utf8>` set of data
+// buffers. NewStringData will panic if the array data is of an
+// unsupported type.
 func NewStringData(data arrow.ArrayData) *String {
 	a := String{
 		refCount: 1,
@@ -136,18 +141,31 @@ func NewStringData(data arrow.ArrayData) *String {
 	return &a
 }
 
-// validateStringDataType checks that the datatype is supported for
-// using to create a String array.
-func validateStringDataType(dt arrow.DataType) {
+// isStringDataType checks if the given arrow.DataType is a string type
+// supported by flux.
+func isStringDataType(dt arrow.DataType) bool {
 	switch dt := dt.(type) {
 	case *arrow.DictionaryType:
 		if dt.IndexType.ID() == arrow.INT32 && dt.ValueType.ID() == arrow.STRING {
-			return
+			return true
+		}
+	case *arrow.RunEndEncodedType:
+		if dt.RunEnds().ID() == arrow.INT32 && dt.Encoded().ID() == arrow.STRING {
+			return true
 		}
 	default:
 		if dt.ID() == arrow.STRING {
-			return
+			return true
 		}
+	}
+	return false
+}
+
+// validateStringDataType checks that the datatype is supported for
+// using to create a String array.
+func validateStringDataType(dt arrow.DataType) {
+	if isStringDataType(dt) {
+		return
 	}
 	panic(errors.Newf(codes.Internal, "incorrect data type for String (%s)", dt))
 }
@@ -167,6 +185,7 @@ func (a *String) setData(data *array.Data) {
 	}
 
 	var indices *array.Int32
+	var runEnds *array.Int32
 	var values *array.Binary
 
 	if data.DataType().ID() == arrow.DICTIONARY {
@@ -174,18 +193,39 @@ func (a *String) setData(data *array.Data) {
 		indices = array.NewInt32Data(idxData)
 		idxData.Release()
 		values = array.NewBinaryData(data.Dictionary())
+	} else if data.DataType().ID() == arrow.RUN_END_ENCODED {
+		runEnds = array.NewInt32Data(data.Children()[0])
+		values = array.NewBinaryData(data.Children()[1])
 	} else {
 		values = array.NewBinaryData(data)
 	}
 	if a.indices != nil {
 		a.indices.Release()
 	}
+	if a.runEnds != nil {
+		a.runEnds.Release()
+	}
 	if a.values != nil {
 		a.values.Release()
 	}
 	a.indices = indices
+	a.runEnds = runEnds
 	a.values = values
 	a.data = data
+}
+
+func (a *String) valuesIndex(i int) (int, bool) {
+	if a.indices != nil {
+		if a.indices.IsNull(i) {
+			return 0, false
+		}
+		return int(a.indices.Value(i)), true
+	} else if a.runEnds != nil {
+		return sort.Search(a.runEnds.Len(), func(j int) bool {
+			return a.runEnds.Value(j) > int32(i+a.data.Offset())
+		}), true
+	}
+	return i, true
 }
 
 func (a *String) DataType() arrow.DataType {
@@ -193,19 +233,53 @@ func (a *String) DataType() arrow.DataType {
 }
 
 func (a *String) NullN() int {
+	if a.runEnds != nil {
+		nbm := a.NullBitmapBytes()
+		if nbm == nil {
+			return 0
+		}
+		sz := a.data.Len()
+		return sz - bitutil.CountSetBits(nbm, 0, sz)
+	}
 	return a.data.NullN()
 }
 
 func (a *String) NullBitmapBytes() []byte {
+	if a.runEnds == nil {
+		return a.nullBitmapBytes
+	}
+	if a.values.NullN() == 0 {
+		return nil
+	}
+	if a.nullBitmapBytes == nil {
+		a.nullBitmapBytes = make([]byte, bitutil.BytesForBits(int64(a.data.Len())))
+		last := int64(a.data.Offset())
+		end := last + int64(a.data.Len())
+		for i, _ := a.valuesIndex(0); i < a.runEnds.Len() && last < end; i++ {
+			runEnd := int64(a.runEnds.Value(i))
+			if runEnd > end {
+				runEnd = end
+			}
+			count := runEnd - last
+			bitutil.SetBitsTo(a.nullBitmapBytes, last, count, a.values.IsValid(i))
+			last += count
+		}
+	}
 	return a.nullBitmapBytes
 }
 
 func (a *String) IsNull(i int) bool {
-	return len(a.nullBitmapBytes) != 0 && bitutil.BitIsNotSet(a.nullBitmapBytes, a.data.Offset()+i)
+	if i, ok := a.valuesIndex(i); ok {
+		return a.values.IsNull(i)
+	}
+	return true
 }
 
 func (a *String) IsValid(i int) bool {
-	return len(a.nullBitmapBytes) == 0 || bitutil.BitIsSet(a.nullBitmapBytes, a.data.Offset()+i)
+	if i, ok := a.valuesIndex(i); ok {
+		return a.values.IsValid(i)
+	}
+	return false
 }
 
 func (a *String) ValueStr(i int) string {
@@ -264,6 +338,10 @@ func (a *String) Release() {
 			a.indices.Release()
 			a.indices = nil
 		}
+		if a.runEnds != nil {
+			a.runEnds.Release()
+			a.runEnds = nil
+		}
 		if a.values != nil {
 			a.values.Release()
 			a.values = nil
@@ -277,28 +355,14 @@ func (a *String) Release() {
 func (a *String) String() string {
 	var sb strings.Builder
 	sb.WriteByte('[')
-	if a.indices != nil {
-		for i := 0; i < a.Len(); i++ {
-			if i > 0 {
-				sb.WriteByte(' ')
-			}
-			if a.indices.IsValid(i) {
-				idx := int(a.indices.Value(i))
-				fmt.Fprintf(&sb, "%q", a.values.ValueString(idx))
-			} else {
-				sb.WriteString(array.NullValueStr)
-			}
+	for i := 0; i < a.Len(); i++ {
+		if i > 0 {
+			sb.WriteByte(' ')
 		}
-	} else {
-		for i := 0; i < a.Len(); i++ {
-			if i > 0 {
-				sb.WriteByte(' ')
-			}
-			if a.values.IsValid(i) {
-				fmt.Fprintf(&sb, "%q", a.values.ValueString(i))
-			} else {
-				sb.WriteString(array.NullValueStr)
-			}
+		if a.IsValid(i) {
+			fmt.Fprintf(&sb, "%q", a.Value(i))
+		} else {
+			sb.WriteString(array.NullValueStr)
 		}
 	}
 	sb.WriteByte(']')
@@ -309,20 +373,20 @@ func (a *String) String() string {
 // is only valid for the lifetime of the array. Care should be taken not
 // to store this string without also retaining the array.
 func (a *String) Value(i int) string {
-	if a.indices != nil {
-		if a.indices.IsNull(i) {
-			// Flux relies on a NULL entry in the String array returning
-			// the empty string.
-			return ""
-		}
-		i = int(a.indices.Value(i))
+	i, ok := a.valuesIndex(i)
+	if !ok {
+		// Flux relies on a NULL entry in the String array returning
+		// the empty string.
+		return ""
 	}
 	return a.values.ValueString(i)
 }
 
 func (a *String) ValueLen(i int) int {
-	if a.indices != nil {
-		i = int(a.indices.Value(i))
+	i, ok := a.valuesIndex(i)
+	if !ok {
+		// Null values are zero length.
+		return 0
 	}
 	return a.values.ValueLen(i)
 }
@@ -374,11 +438,14 @@ func MakeFromData(data arrow.ArrayData) Array {
 		return array.NewInt64Data(data)
 	case arrow.UINT64:
 		return array.NewUint64Data(data)
-	case arrow.STRING, arrow.DICTIONARY:
+	case arrow.STRING:
 		return NewStringData(data)
-	default:
-		panic(errors.Newf(codes.Internal, "invalid data type for flux array (%s)", data.DataType()))
+	case arrow.DICTIONARY, arrow.RUN_END_ENCODED:
+		if isStringDataType(data.DataType()) {
+			return NewStringData(data)
+		}
 	}
+	panic(errors.Newf(codes.Internal, "invalid data type for flux array (%s)", data.DataType()))
 }
 
 func ToFloatConv(mem memory.Allocator, arr Array) (*Float, error) {

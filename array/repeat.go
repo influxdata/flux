@@ -9,27 +9,18 @@ import (
 func StringRepeat(v string, n int, mem memory.Allocator) *String {
 	db := array.NewBinaryBuilder(mem, arrow.BinaryTypes.String)
 	db.AppendString(v)
-	dict := db.NewArray()
+	values := db.NewArray()
 	db.Release()
 
-	ib := array.NewInt32Builder(mem)
-	for i := 0; i < n; i++ {
-		ib.Append(0)
-	}
-	indices := ib.NewArray()
-	ib.Release()
+	reb := array.NewInt32Builder(mem)
+	reb.Append(int32(n))
+	runEnds := reb.NewArray()
+	reb.Release()
 
-	data := array.NewDataWithDictionary(
-		StringDictionaryType,
-		indices.Len(),
-		indices.Data().Buffers(),
-		indices.Data().NullN(),
-		indices.Data().Offset(),
-		dict.Data().(*array.Data),
-	)
-	defer data.Release()
-	indices.Release()
-	dict.Release()
+	arr := array.NewRunEndEncodedArray(runEnds, values, n, 0)
+	defer arr.Release()
+	runEnds.Release()
+	values.Release()
 
-	return NewStringData(data)
+	return NewStringData(arr.Data())
 }
