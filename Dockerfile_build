@@ -16,7 +16,7 @@ FROM golang:1.24
 # Install common packages
 RUN apt-get update && \
     apt-get install --no-install-recommends -y \
-    openssl libtinfo5 ruby \
+    openssl libtinfo6 ruby \
     ca-certificates curl file gnupg \
     build-essential cmake nodejs npm \
     libxml2-dev libssl-dev libsqlite3-dev zlib1g-dev \
