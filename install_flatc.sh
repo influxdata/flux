@@ -6,6 +6,6 @@ curl -LS https://github.com/google/flatbuffers/archive/v${FLATBUFFERS_VERSION}.t
     tar xvzf v${FLATBUFFERS_VERSION}.tar.gz && \
     mkdir flatbuffers-${FLATBUFFERS_VERSION}/build && \
     cd flatbuffers-${FLATBUFFERS_VERSION}/build && \
-    cmake -G "Unix Makefiles" .. && \
+    CC=/usr/bin/gcc-12 CXX=/usr/bin/g++-12 cmake -G "Unix Makefiles" .. && \
     make && make install && \
     cd ../.. && rm -rf flatbuffers-${FLATBUFFERS_VERSION} v${FLATBUFFERS_VERSION}.tar.gz
