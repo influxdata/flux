@@ -21,7 +21,7 @@ RUN apt-get update && \
     build-essential cmake nodejs npm \
     libxml2-dev libssl-dev libsqlite3-dev zlib1g-dev \
     autoconf automake autotools-dev libtool xutils-dev valgrind \
-    flatbuffers-compiler && \
+    gcc-12 g++-12 && \
     rm -rf /var/lib/apt/lists/*
 
 # Install rust and rust tooling
@@ -63,6 +63,9 @@ RUN gpg --import thurston.asc && \
     make && \
     make install && \
     cd .. && rm -rf ragel-${RAGEL7_VERSION}*
+
+COPY ./install_flatc.sh .
+RUN ./install_flatc.sh
 
 # Install pkg-config helper
 COPY --from=pkgconfig /usr/local/bin/cgo-pkgbuild /usr/local/bin/cgo-pkgbuild
