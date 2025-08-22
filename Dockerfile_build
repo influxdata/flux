@@ -4,9 +4,9 @@
 # and verification, we can list the rust container as a prior build stage, and
 # then pull in the artifacts we need. There is an added benefit that tagged versions
 # also include minor releases, so 1.2 includes 1.2.1 and so on, for bugfix releases.
-FROM rust:1.85 AS rustbuild
+FROM rust:1.85 as RUSTBUILD
 
-FROM golang:1.24 AS pkgconfig
+FROM golang:1.24 as PKGCONFIG
 COPY go.mod go.sum /go/src/github.com/influxdata/flux/
 RUN cd /go/src/github.com/influxdata/flux && \
     go build -o /usr/local/bin/cgo-pkgbuild github.com/influxdata/pkg-config
@@ -20,13 +20,12 @@ RUN apt-get update && \
     ca-certificates curl file gnupg \
     build-essential cmake nodejs npm \
     libxml2-dev libssl-dev libsqlite3-dev zlib1g-dev \
-    autoconf automake autotools-dev libtool xutils-dev valgrind \
-    flatbuffers-compiler && \
+    autoconf automake autotools-dev libtool xutils-dev valgrind && \
     rm -rf /var/lib/apt/lists/*
 
 # Install rust and rust tooling
-COPY --from=rustbuild /usr/local/cargo /usr/local/cargo
-COPY --from=rustbuild /usr/local/rustup /usr/local/rustup
+COPY --from=RUSTBUILD /usr/local/cargo /usr/local/cargo
+COPY --from=RUSTBUILD /usr/local/rustup /usr/local/rustup
 
 ENV RUSTUP_HOME=/usr/local/rustup \
     CARGO_HOME=/usr/local/cargo \
@@ -64,8 +63,11 @@ RUN gpg --import thurston.asc && \
     make install && \
     cd .. && rm -rf ragel-${RAGEL7_VERSION}*
 
+COPY ./install_flatc.sh .
+RUN ./install_flatc.sh
+
 # Install pkg-config helper
-COPY --from=pkgconfig /usr/local/bin/cgo-pkgbuild /usr/local/bin/cgo-pkgbuild
+COPY --from=PKGCONFIG /usr/local/bin/cgo-pkgbuild /usr/local/bin/cgo-pkgbuild
 
 # Add builder user
 ENV UNAME=builder
