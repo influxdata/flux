@@ -211,7 +211,7 @@ impl<'a> Node<'a> {
         }
     }
     #[allow(missing_docs)]
-    pub fn from_stmt(stmt: &Statement) -> Node {
+    pub fn from_stmt(stmt: &Statement) -> Node<'_> {
         match stmt {
             Statement::Expr(s) => Node::ExprStmt(s),
             Statement::Variable(s) => Node::VariableAssgn(s),
@@ -222,25 +222,25 @@ impl<'a> Node<'a> {
             Statement::Builtin(s) => Node::BuiltinStmt(s),
         }
     }
-    fn from_function_body(fb: &FunctionBody) -> Node {
+    fn from_function_body(fb: &FunctionBody) -> Node<'_> {
         match fb {
             FunctionBody::Block(b) => Node::Block(b),
             FunctionBody::Expr(e) => Node::from_expr(e),
         }
     }
-    fn from_property_key(pk: &PropertyKey) -> Node {
+    fn from_property_key(pk: &PropertyKey) -> Node<'_> {
         match pk {
             PropertyKey::Identifier(i) => Node::Identifier(i),
             PropertyKey::StringLit(s) => Node::StringLit(s),
         }
     }
-    fn from_string_expr_part(sp: &StringExprPart) -> Node {
+    fn from_string_expr_part(sp: &StringExprPart) -> Node<'_> {
         match sp {
             StringExprPart::Text(t) => Node::TextPart(t),
             StringExprPart::Interpolated(e) => Node::InterpolatedPart(e),
         }
     }
-    fn from_assignment(a: &Assignment) -> Node {
+    fn from_assignment(a: &Assignment) -> Node<'_> {
         match a {
             Assignment::Variable(v) => Node::VariableAssgn(v),
             Assignment::Member(m) => Node::MemberAssgn(m),

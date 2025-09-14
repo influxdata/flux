@@ -108,7 +108,7 @@ pub fn parse_dir(dir: &Path) -> io::Result<Vec<String>> {
     Ok(package_names)
 }
 
-fn stdlib_importer(path: &Path) -> FileSystemImporter<StdFS> {
+fn stdlib_importer(path: &Path) -> FileSystemImporter<StdFS<'_>> {
     let fs = StdFS::new(path);
     FileSystemImporter::new(fs)
 }
@@ -194,7 +194,7 @@ fn add_record_to_map(
 
 /// Stdlib returns the prelude and importer for the Flux standard library given a path to a
 /// compiled directory structure.
-pub fn stdlib(dir: &Path) -> Result<(PackageExports, FileSystemImporter<StdFS>)> {
+pub fn stdlib(dir: &Path) -> Result<(PackageExports, FileSystemImporter<StdFS<'_>>)> {
     let mut stdlib_importer = stdlib_importer(dir);
     let prelude = prelude_from_importer(&mut stdlib_importer)?;
     Ok((prelude, stdlib_importer))

@@ -59,11 +59,11 @@ impl<T> Errors<T> {
         self.errors.pop()
     }
 
-    pub fn iter(&self) -> slice::Iter<T> {
+    pub fn iter(&self) -> slice::Iter<'_, T> {
         self.errors.iter()
     }
 
-    pub fn iter_mut(&mut self) -> slice::IterMut<T> {
+    pub fn iter_mut(&mut self) -> slice::IterMut<'_, T> {
         self.errors.iter_mut()
     }
 

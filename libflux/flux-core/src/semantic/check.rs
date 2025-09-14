@@ -124,7 +124,7 @@ fn check_labels(pkg: &nodes::Package, config: &AnalyzerConfig) -> Result<()> {
 /// Note that options can only appear at file scope since the structure of the semantic
 /// graph only allows expression statements, assignments and return statements inside function bodies.
 /// As a convenience to later checks, it returns a map of all the option statements in the package.
-fn check_option_stmts(pkg: &nodes::Package) -> Result<OptionMap> {
+fn check_option_stmts(pkg: &nodes::Package) -> Result<OptionMap<'_>> {
     let mut opt_stmts = vec![];
     for f in &pkg.files {
         for st in &f.body {
