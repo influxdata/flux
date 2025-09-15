@@ -96,7 +96,14 @@ func (s *sqlSource) Run(ctx context.Context) {
 func (s *sqlSource) createSchema(schema *stdarrow.Schema) ([]flux.ColMeta, error) {
 	fields := schema.Fields()
 	cols := make([]flux.ColMeta, len(fields))
+	seen := make(map[string]bool, len(fields))
+
 	for i, f := range fields {
+		if seen[f.Name] {
+			return nil, errors.Newf(codes.Invalid, "duplicate field name '%s' in schema", f.Name)
+		}
+		seen[f.Name] = true
+
 		cols[i].Label = f.Name
 		switch id := f.Type.ID(); id {
 		case stdarrow.INT64:
