@@ -82,7 +82,7 @@ where
         self.0.remove(key)
     }
 
-    pub fn entry(&mut self, key: K) -> std::collections::hash_map::Entry<K, V> {
+    pub fn entry(&mut self, key: K) -> std::collections::hash_map::Entry<'_, K, V> {
         self.0.entry(key)
     }
 

@@ -1949,7 +1949,7 @@ struct Operator<'a> {
 }
 
 impl<'a> Operator<'a> {
-    fn new(op: &ast::Operator) -> Operator {
+    fn new(op: &ast::Operator) -> Operator<'_> {
         Operator {
             op: Some(op),
             l_op: None,
@@ -1957,7 +1957,7 @@ impl<'a> Operator<'a> {
         }
     }
 
-    fn new_logical(op: &ast::LogicalOperator) -> Operator {
+    fn new_logical(op: &ast::LogicalOperator) -> Operator<'_> {
         Operator {
             op: None,
             l_op: Some(op),
