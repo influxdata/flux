@@ -29559,7 +29559,7 @@ pub mod fbsemantic {
     /// catch every error, or be maximally performant. For the
     /// previous, unchecked, behavior use
     /// `root_as_package_unchecked`.
-    pub fn root_as_package(buf: &[u8]) -> Result<Package, flatbuffers::InvalidFlatbuffer> {
+    pub fn root_as_package(buf: &[u8]) -> Result<Package<'_>, flatbuffers::InvalidFlatbuffer> {
         flatbuffers::root::<Package>(buf)
     }
     #[inline]
@@ -29571,7 +29571,7 @@ pub mod fbsemantic {
     /// `size_prefixed_root_as_package_unchecked`.
     pub fn size_prefixed_root_as_package(
         buf: &[u8],
-    ) -> Result<Package, flatbuffers::InvalidFlatbuffer> {
+    ) -> Result<Package<'_>, flatbuffers::InvalidFlatbuffer> {
         flatbuffers::size_prefixed_root::<Package>(buf)
     }
     #[inline]
@@ -29604,14 +29604,14 @@ pub mod fbsemantic {
     /// Assumes, without verification, that a buffer of bytes contains a Package and returns it.
     /// # Safety
     /// Callers must trust the given bytes do indeed contain a valid `Package`.
-    pub unsafe fn root_as_package_unchecked(buf: &[u8]) -> Package {
+    pub unsafe fn root_as_package_unchecked(buf: &[u8]) -> Package<'_> {
         flatbuffers::root_unchecked::<Package>(buf)
     }
     #[inline]
     /// Assumes, without verification, that a buffer of bytes contains a size prefixed Package and returns it.
     /// # Safety
     /// Callers must trust the given bytes do indeed contain a valid size prefixed `Package`.
-    pub unsafe fn size_prefixed_root_as_package_unchecked(buf: &[u8]) -> Package {
+    pub unsafe fn size_prefixed_root_as_package_unchecked(buf: &[u8]) -> Package<'_> {
         flatbuffers::size_prefixed_root_unchecked::<Package>(buf)
     }
     #[inline]

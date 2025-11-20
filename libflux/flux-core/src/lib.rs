@@ -1,6 +1,4 @@
 #![cfg_attr(feature = "strict", deny(warnings, missing_docs))]
-#![allow(unknown_lints)] // Allow unknown lints for older Rust versions
-#![allow(dead_code, mismatched_lifetime_syntaxes)]
 #![allow(
     clippy::needless_update, //
     clippy::identity_op, // Warns on `1 * YEARS` which seems clearer than `YEARS`

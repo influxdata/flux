@@ -1,6 +1,6 @@
 #!/bin/bash
-FLATBUFFERS_VERSION=22.9.29
-FLATBUFFERS_CHECKSUM=372df01795c670f6538055a7932fc7eb3e81b3653be4a216c081e9c3c26b1b6d
+FLATBUFFERS_VERSION=23.5.26
+FLATBUFFERS_CHECKSUM=1cce06b17cddd896b6d73cc047e36a254fb8df4d7ea18a46acf16c4c0cd3f3f3
 curl -LS https://github.com/google/flatbuffers/archive/v${FLATBUFFERS_VERSION}.tar.gz -O && \
     echo "${FLATBUFFERS_CHECKSUM} v${FLATBUFFERS_VERSION}.tar.gz" | sha256sum --check -- && \
     tar xvzf v${FLATBUFFERS_VERSION}.tar.gz && \
