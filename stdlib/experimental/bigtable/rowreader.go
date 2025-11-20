@@ -1,6 +1,7 @@
 package bigtable
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/influxdata/flux"
@@ -8,7 +9,6 @@ import (
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
-	"golang.org/x/net/context"
 )
 
 type BigtableRowReader struct {

@@ -177,7 +177,7 @@ func (EquiJoinPredicateRule) Rewrite(ctx context.Context, n plan.Node) (plan.Nod
 }
 
 func wrapErr(code codes.Code, msg string) error {
-	return errors.Newf(code, fmt.Sprintf("error in join function - some expressions are not yet supported in the `on` parameter: %s", msg))
+	return errors.Newf(code, "error in join function - some expressions are not yet supported in the `on` parameter: %s", msg)
 }
 
 func getObjectName(me *semantic.MemberExpression) (string, error) {
